@@ -1,4 +1,4 @@
-import { Collection, Entity, Index, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyType, Property } from '@mikro-orm/core';
+import { Collection, Entity, Index, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyType, Property, t } from '@mikro-orm/core';
 import { User2 } from './User2';
 import { Test2 } from './Test2';
 
@@ -13,7 +13,7 @@ export class Car2 {
   @PrimaryKey()
   year: number;
 
-  @Property()
+  @Property({ type: t.integer })
   price: number;
 
   @ManyToMany(() => User2, u => u.cars)

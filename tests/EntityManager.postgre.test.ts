@@ -78,7 +78,8 @@ describe('EntityManagerPostgre', () => {
     await expect(driver.findOne(Book2.name, { double: 123 })).resolves.toBeNull();
     const author = await driver.nativeInsert(Author2.name, { name: 'author', email: 'email' });
     const tag = await driver.nativeInsert(BookTag2.name, { name: 'tag name' });
-    await expect(driver.nativeInsert(Book2.name, { uuid: v4(), author: author.insertId, tags: [tag.insertId] })).resolves.not.toBeNull();
+    const uuid1 = v4();
+    await expect(driver.nativeInsert(Book2.name, { uuid: uuid1, author: author.insertId, tags: [tag.insertId] })).resolves.not.toBeNull();
     await expect(driver.getConnection().execute('select 1 as count')).resolves.toEqual([{ count: 1 }]);
     await expect(driver.getConnection().execute('select 1 as count', [], 'get')).resolves.toEqual({ count: 1 });
     await expect(driver.getConnection().execute('select 1 as count', [], 'run')).resolves.toEqual({
@@ -106,7 +107,7 @@ describe('EntityManagerPostgre', () => {
     });
     expect(driver.getPlatform().denormalizePrimaryKey(1)).toBe(1);
     expect(driver.getPlatform().denormalizePrimaryKey('1')).toBe('1');
-    await expect(driver.find(BookTag2.name, { books: { $in: ['1'] } })).resolves.not.toBeNull();
+    await expect(driver.find(BookTag2.name, { books: { $in: [uuid1] } })).resolves.not.toBeNull();
     expect(driver.getPlatform().formatQuery('CREATE USER ?? WITH PASSWORD ?', ['foo', 'bar'])).toBe(`CREATE USER "foo" WITH PASSWORD 'bar'`);
     expect(driver.getPlatform().formatQuery('select \\?, ?, ?', ['foo', 'bar'])).toBe(`select ?, 'foo', 'bar'`);
 
@@ -321,7 +322,7 @@ describe('EntityManagerPostgre', () => {
     const count = await authorRepository.count();
     expect(count).toBe(authors.length);
 
-    const count2 = await authorRepository.count({ favouriteBook: '123' }, { groupBy: 'email' });
+    const count2 = await authorRepository.count({ favouriteBook: v4() }, { groupBy: 'email' });
     expect(count2).toBe(0);
 
     // identity map test

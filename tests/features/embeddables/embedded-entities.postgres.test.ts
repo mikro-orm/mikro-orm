@@ -1,4 +1,4 @@
-import { assign, Embeddable, Embedded, Entity, expr, Logger, MikroORM, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
+import { assign, Embeddable, Embedded, Entity, expr, Logger, MikroORM, PrimaryKey, Property, ReferenceType, t, wrap } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Embeddable()
@@ -9,6 +9,9 @@ class Address1 {
 
   @Property()
   number?: number;
+
+  @Property({ type: t.float, nullable: true })
+  rank?: number;
 
   @Property()
   postalCode?: string;
@@ -158,7 +161,7 @@ describe('embedded entities in postgresql', () => {
     await orm.em.persistAndFlush(user);
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into "user" ("addr_city", "addr_country", "addr_postal_code", "addr_street", "address1_city", "address1_country", "address1_number", "address1_postal_code", "address1_street", "address4", "addresses", "city", "country", "number", "postal_code", "street") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) returning "id"');
+    expect(mock.mock.calls[1][0]).toMatch('insert into "user" ("addr_city", "addr_country", "addr_postal_code", "addr_street", "address1_city", "address1_country", "address1_number", "address1_postal_code", "address1_rank", "address1_street", "address4", "addresses", "city", "country", "number", "postal_code", "rank", "street") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) returning "id"');
     expect(mock.mock.calls[2][0]).toMatch('commit');
 
     const u = await orm.em.findOneOrFail(User, user.id);
@@ -167,6 +170,7 @@ describe('embedded entities in postgresql', () => {
     expect(u.address1).toEqual({
       street: 'Downing street 10',
       number: 10,
+      rank: null,
       postalCode: '123',
       city: 'London 1',
       country: 'UK 1',
@@ -182,6 +186,7 @@ describe('embedded entities in postgresql', () => {
     expect(u.address3).toEqual({
       street: 'Downing street 12',
       number: 10,
+      rank: null,
       postalCode: '789',
       city: 'London 3',
       country: 'UK 3',

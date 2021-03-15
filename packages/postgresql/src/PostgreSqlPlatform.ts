@@ -1,12 +1,12 @@
 import { Client } from 'pg';
-import { EntityProperty, Utils } from '@mikro-orm/core';
+import { EntityProperty, Type, Utils } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
 import { PostgreSqlExceptionConverter } from './PostgreSqlExceptionConverter';
 
 export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
-  protected readonly schemaHelper = new PostgreSqlSchemaHelper();
+  protected readonly schemaHelper: PostgreSqlSchemaHelper = new PostgreSqlSchemaHelper(this);
   protected readonly exceptionConverter = new PostgreSqlExceptionConverter();
 
   usesReturningStatement(): boolean {
@@ -30,8 +30,37 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return `current_timestamp(${length})`;
   }
 
+  getDateTimeTypeDeclarationSQL(column: { length?: number }): string {
+    return 'timestamptz' + (column.length != null ? `(${column.length})` : '');
+  }
+
   getTimeTypeDeclarationSQL(): string {
     return 'time(0)';
+  }
+
+  getIntegerTypeDeclarationSQL(column: { length?: number; autoincrement?: boolean }): string {
+    if (column.autoincrement) {
+      return `serial`;
+    }
+
+    return `int`;
+  }
+
+  getBigIntTypeDeclarationSQL(column: { autoincrement?: boolean }): string {
+    /* istanbul ignore next */
+    if (column.autoincrement) {
+      return `bigserial`;
+    }
+
+    return 'bigint';
+  }
+
+  getTinyIntTypeDeclarationSQL(column: { length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
+    return 'smallint';
+  }
+
+  getUuidTypeDeclarationSQL(column: { length?: number }): string {
+    return `uuid`;
   }
 
   getRegExpOperator(): string {
@@ -44,6 +73,22 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
   getArrayDeclarationSQL(): string {
     return 'text[]';
+  }
+
+  getFloatDeclarationSQL(): string {
+    return 'real';
+  }
+
+  getDoubleDeclarationSQL(): string {
+    return 'double precision';
+  }
+
+  getEnumTypeDeclarationSQL(column: { fieldNames: string[]; items?: unknown[] }): string {
+    if (column.items?.every(item => Utils.isString(item))) {
+      return `text check (${this.quoteIdentifier(column.fieldNames[0])} in ('${column.items.join("', '")}'))`;
+    }
+
+    return `smallint`;
   }
 
   marshallArray(values: string[]): string {
@@ -98,6 +143,45 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     }
 
     return super.quoteValue(value);
+  }
+
+  getDefaultIntegrityRule(): string {
+    return 'no action';
+  }
+
+  indexForeignKeys() {
+    return false;
+  }
+
+  getMappedType(type: string): Type<unknown> {
+    const normalizedType = this.extractSimpleType(type);
+    const map = {
+      'int2': 'smallint',
+      'smallserial': 'smallint',
+      'int': 'integer',
+      'int4': 'integer',
+      'serial': 'integer',
+      'serial4': 'integer',
+      'int8': 'bigint',
+      'bigserial': 'bigint',
+      'serial8': 'bigint',
+      'numeric': 'decimal',
+      'bool': 'boolean',
+      'real': 'float',
+      'float4': 'float',
+      'float8': 'double',
+      'timestamp': 'datetime',
+      'timestamptz': 'datetime',
+      'bytea': 'blob',
+      'jsonb': 'json',
+      'character varying': 'varchar',
+    };
+
+    return super.getMappedType(map[normalizedType] ?? type);
+  }
+
+  supportsSchemas(): boolean {
+    return true;
   }
 
 }

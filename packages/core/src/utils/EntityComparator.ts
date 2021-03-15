@@ -403,7 +403,11 @@ export class EntityComparator {
     }
 
     if (prop.customType) {
-      type = prop.customType.compareAsType();
+      type = prop.customType.compareAsType().toLowerCase();
+    }
+
+    if (type.endsWith('[]')) {
+      type = 'array';
     }
 
     if (['string', 'number', 'boolean'].includes(type)) {

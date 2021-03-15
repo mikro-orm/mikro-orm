@@ -773,7 +773,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     if (!clear) {
       for (const entity of this.getUnitOfWork().getIdentityMap()) {
-        em.merge(entity);
+        em.merge(entity); // todo use registerManaged instead
       }
     }
 

@@ -287,6 +287,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
 export interface ConnectionOptions {
   dbName?: string;
+  schema?: string;
   name?: string;
   clientUrl?: string;
   host?: string;

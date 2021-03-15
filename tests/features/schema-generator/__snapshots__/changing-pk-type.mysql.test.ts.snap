@@ -1,0 +1,42 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`changing PK column type [mysql] (GH 1480) changing PK type: 0. create schema with text PK 1`] = `
+"create table \`user\` (\`id\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
+alter table \`user\` add primary key \`user_pkey\`(\`id\`);
+
+"
+`;
+
+exports[`changing PK column type [mysql] (GH 1480) changing PK type: 1. change PK type from text to int 1`] = `
+"alter table \`user\` modify \`id\` int not null;
+
+"
+`;
+
+exports[`changing PK column type [mysql] (GH 1480) changing PK type: 2. add new PK (make it composite PK) 1`] = `
+"alter table \`user\` add \`id2\` int not null;
+alter table \`user\` drop primary key;
+alter table \`user\` add primary key \`user_pkey\`(\`id\`, \`id2\`);
+
+"
+`;
+
+exports[`changing PK column type [mysql] (GH 1480) changing PK type: 3. remove old PK (make it single PK again) 1`] = `
+"alter table \`user\` drop primary key;
+alter table \`user\` drop \`id2\`;
+alter table \`user\` add primary key \`user_pkey\`(\`id\`);
+
+"
+`;
+
+exports[`changing PK column type [mysql] (GH 1480) changing PK type: 4. change PK type from int to serial 1`] = `
+"alter table \`user\` modify \`id\` int unsigned not null auto_increment;
+
+"
+`;
+
+exports[`changing PK column type [mysql] (GH 1480) changing PK type: 5. change PK type from AI int to text 1`] = `
+"alter table \`user\` modify \`id\` varchar(36) not null;
+
+"
+`;

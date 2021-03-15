@@ -1,11 +1,11 @@
 import c from 'ansi-colors';
 
 import { EntityManagerType, IDatabaseDriver } from './drivers';
-import { MetadataDiscovery, MetadataStorage, ReflectMetadataProvider } from './metadata';
+import { MetadataDiscovery, MetadataStorage, MetadataValidator, ReflectMetadataProvider } from './metadata';
 import { Configuration, ConfigurationLoader, Logger, Options, Utils } from './utils';
 import { NullCacheAdapter } from './cache';
 import { EntityManager } from './EntityManager';
-import { IEntityGenerator, IMigrator, ISchemaGenerator } from './typings';
+import { AnyEntity, Constructor, IEntityGenerator, IMigrator, ISchemaGenerator } from './typings';
 
 /**
  * Helper class for bootstrapping the MikroORM.
@@ -17,6 +17,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
   private metadata!: MetadataStorage;
   private readonly driver: D;
   private readonly logger: Logger;
+  private readonly discovery: MetadataDiscovery;
 
   /**
    * Initialize the ORM, load entity metadata, create EntityManager and connect to the database.
@@ -31,12 +32,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
 
     options = options instanceof Configuration ? options.getAll() : options;
     const orm = new MikroORM<D>(Utils.merge(options, env));
-    const discovery = new MetadataDiscovery(new MetadataStorage(), orm.driver.getPlatform(), orm.config);
-    orm.metadata = await discovery.discover(orm.config.get('tsNode'));
-    orm.driver.setMetadata(orm.metadata);
-    orm.em = orm.driver.createEntityManager<D>();
-    orm.metadata.decorate(orm.em);
-    orm.driver.setMetadata(orm.metadata);
+    await orm.discoverEntities();
 
     if (connect) {
       await orm.connect();
@@ -64,6 +60,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
 
     this.driver = this.config.getDriver();
     this.logger = this.config.getLogger();
+    this.discovery = new MetadataDiscovery(new MetadataStorage(), this.driver.getPlatform(), this.config);
   }
 
   /**
@@ -103,6 +100,26 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   getMetadata(): MetadataStorage {
     return this.metadata;
+  }
+
+  async discoverEntities(): Promise<void> {
+    this.metadata = await this.discovery.discover(this.config.get('tsNode'));
+    this.driver.setMetadata(this.metadata);
+    this.em = this.driver.createEntityManager<D>();
+    this.metadata.decorate(this.em);
+    this.driver.setMetadata(this.metadata);
+  }
+
+  /**
+   * Allows dynamically discovering new entity by reference, handy for testing schema diffing.
+   */
+  async discoverEntity<T>(entities: Constructor<T> | Constructor<AnyEntity>[]): Promise<void> {
+    entities = Utils.asArray(entities);
+    const tmp = await this.discovery.discoverReferences(entities);
+    new MetadataValidator().validateDiscovered([...Object.values(this.metadata.getAll()), ...tmp], this.config.get('discovery').warnWhenNoEntities!);
+    const metadata = this.discovery.processDiscoveredEntities(tmp);
+    metadata.forEach(meta => this.metadata.set(meta.className, meta));
+    this.metadata.decorate(this.em);
   }
 
   /**

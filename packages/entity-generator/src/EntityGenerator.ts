@@ -17,7 +17,7 @@ export class EntityGenerator {
 
   async generate(options: { baseDir?: string; save?: boolean } = {}): Promise<string[]> {
     const baseDir = Utils.normalizePath(options.baseDir || this.config.get('baseDir') + '/generated-entities');
-    const schema = await DatabaseSchema.create(this.connection, this.helper, this.config);
+    const schema = await DatabaseSchema.create(this.connection, this.platform, this.config);
     schema.getTables().forEach(table => this.createEntity(table));
 
     if (options.save) {
@@ -30,7 +30,7 @@ export class EntityGenerator {
 
   createEntity(table: DatabaseTable): void {
     const meta = table.getEntityDeclaration(this.namingStrategy, this.helper);
-    this.sources.push(new SourceFile(meta, this.namingStrategy, this.helper));
+    this.sources.push(new SourceFile(meta, this.namingStrategy, this.platform, this.helper));
   }
 
 }

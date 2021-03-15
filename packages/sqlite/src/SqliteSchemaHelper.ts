@@ -1,20 +1,7 @@
-import { Connection, Dictionary, EntityProperty } from '@mikro-orm/core';
-import { AbstractSqlConnection, Column, Index, IsSame, SchemaHelper } from '@mikro-orm/knex';
+import { Connection, Dictionary } from '@mikro-orm/core';
+import { AbstractSqlConnection, Index, SchemaHelper } from '@mikro-orm/knex';
 
 export class SqliteSchemaHelper extends SchemaHelper {
-
-  static readonly TYPES = {
-    number: ['integer', 'int', 'tinyint', 'smallint', 'bigint'],
-    tinyint: ['integer'],
-    smallint: ['integer'],
-    bigint: ['integer'],
-    boolean: ['integer', 'int'],
-    string: ['varchar', 'text'],
-    Date: ['datetime', 'text'],
-    date: ['datetime', 'text'],
-    object: ['text'],
-    text: ['text'],
-  };
 
   getSchemaBeginning(charset: string): string {
     return 'pragma foreign_keys = off;\n\n';
@@ -22,19 +9,6 @@ export class SqliteSchemaHelper extends SchemaHelper {
 
   getSchemaEnd(): string {
     return 'pragma foreign_keys = on;\n';
-  }
-
-  isSame(prop: EntityProperty, type: Column, idx?: number): IsSame {
-    return super.isSame(prop, type, idx, SqliteSchemaHelper.TYPES);
-  }
-
-  getTypeDefinition(prop: EntityProperty): string {
-    const t = prop.type.toLowerCase() as keyof typeof SqliteSchemaHelper.TYPES;
-    return (SqliteSchemaHelper.TYPES[t] || SqliteSchemaHelper.TYPES.string)[0];
-  }
-
-  getTypeFromDefinition(type: string, defaultType: string): string {
-    return super.getTypeFromDefinition(type, defaultType, SqliteSchemaHelper.TYPES);
   }
 
   supportsSchemaConstraints(): boolean {
@@ -52,9 +26,12 @@ export class SqliteSchemaHelper extends SchemaHelper {
     return columns.map(col => ({
       name: col.name,
       type: col.type,
-      defaultValue: col.dflt_value,
+      default: col.dflt_value,
       nullable: !col.notnull,
       primary: !!col.pk,
+      mappedType: connection.getPlatform().getMappedType(col.type),
+      unsigned: false,
+      autoincrement: false,
     }));
   }
 
@@ -66,51 +43,70 @@ export class SqliteSchemaHelper extends SchemaHelper {
   }
 
   async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Index[]> {
+    const sql = `pragma table_info(\`${tableName}\`)`;
+    const cols = await connection.execute<{ pk: number; name: string }[]>(sql);
     const indexes = await connection.execute<any[]>(`pragma index_list(\`${tableName}\`)`);
+    const ret: Index[] = [];
 
-    for (const index of indexes) {
-      const res = await connection.execute<any[]>(`pragma index_info(\`${index.name}\`)`);
-      index.column_name = res[0].name;
+    for (const col of cols.filter(c => c.pk)) {
+      ret.push({
+        columnNames: [col.name],
+        keyName: 'primary',
+        unique: true,
+        primary: true,
+      });
     }
 
-    return indexes.map(index => ({
-      columnName: index.column_name,
-      keyName: index.name,
-      unique: !!index.unique,
-      primary: false,
-    }));
-  }
+    for (const index of indexes.filter(index => !this.isImplicitIndex(index.name))) {
+      const res = await connection.execute<{ name: string }[]>(`pragma index_info(\`${index.name}\`)`);
+      ret.push(...res.map(row => ({
+        columnNames: [row.name],
+        keyName: index.name,
+        unique: !!index.unique,
+        primary: false,
+      })));
+    }
 
-  getRenameColumnSQL(tableName: string, from: Column, to: EntityProperty, idx = 0): string {
-    return super.getRenameColumnSQL(tableName, from, to, idx, '`');
+    return this.mapIndexes(ret);
   }
 
   getForeignKeysSQL(tableName: string): string {
     return `pragma foreign_key_list(\`${tableName}\`)`;
   }
 
-  mapForeignKeys(fks: any[]): Dictionary {
+  mapForeignKeys(fks: any[], tableName: string): Dictionary {
     return fks.reduce((ret, fk: any) => {
       ret[fk.from] = {
+        constraintName: this.getIndexName(tableName, [fk.from], 'foreign'),
         columnName: fk.from,
+        columnNames: [fk.from],
+        localTableName: tableName,
         referencedTableName: fk.table,
         referencedColumnName: fk.to,
-        updateRule: fk.on_update,
-        deleteRule: fk.on_delete,
+        referencedColumnNames: [fk.to],
+        updateRule: fk.on_update.toLowerCase(),
+        deleteRule: fk.on_delete.toLowerCase(),
       };
 
       return ret;
     }, {});
   }
 
-  supportsColumnAlter(): boolean {
-    return false;
-  }
-
   async databaseExists(connection: Connection, name: string): Promise<boolean> {
     return true;
   }
 
+  getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary'): string {
+    if (type === 'primary') {
+      return 'primary';
+    }
+
+    return super.getIndexName(tableName, columns, type);
+  }
+
+  /**
+   * Implicit indexes will be ignored when diffing
+   */
   isImplicitIndex(name: string): boolean {
     // Ignore indexes with reserved names, e.g. autoindexes
     return name.startsWith('sqlite_');

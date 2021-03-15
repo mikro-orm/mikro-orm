@@ -44,7 +44,8 @@ describe('EntityManagerSqlite', () => {
     const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(SqliteDriver);
     expect(await driver.findOne(Book3.name, { title: '123' })).toBeNull();
-    expect(await driver.nativeInsert(Book3.name, { title: '123' })).not.toBeNull();
+    expect(await driver.nativeInsert(Author3.name, { name: 'a', email: 'b' })).not.toBeNull();
+    expect(await driver.nativeInsert(Book3.name, { title: '123', author: 1 })).not.toBeNull();
     expect(await driver.nativeInsert(BookTag3.name, { name: 'tag', books: [1] })).not.toBeNull();
     await expect(driver.getConnection().execute('select 1 as count')).resolves.toEqual([{ count: 1 }]);
     await expect(driver.getConnection().execute('select 1 as count', [], 'get')).resolves.toEqual({ count: 1 });

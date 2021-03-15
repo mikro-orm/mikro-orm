@@ -23,7 +23,7 @@ export class BlobType extends Type<Buffer | null> {
   }
 
   compareAsType(): string {
-    return 'buffer';
+    return 'Buffer';
   }
 
   getColumnType(prop: EntityProperty, platform: Platform): string {

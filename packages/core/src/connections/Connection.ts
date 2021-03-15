@@ -87,6 +87,10 @@ export abstract class Connection {
     this.platform = platform;
   }
 
+  getPlatform(): Platform {
+    return this.platform;
+  }
+
   protected async executeQuery<T>(query: string, cb: () => Promise<T>): Promise<T> {
     const now = Date.now();
 

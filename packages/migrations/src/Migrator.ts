@@ -92,7 +92,7 @@ export class Migrator {
       throw new Error('Initial migration cannot be created, as some migrations already exist');
     }
 
-    const schema = await DatabaseSchema.create(this.em.getConnection(), this.em.getPlatform().getSchemaHelper()!, this.config);
+    const schema = await DatabaseSchema.create(this.em.getConnection(), this.em.getPlatform(), this.config);
     const exists = new Set<string>();
     const expected = new Set<string>();
 

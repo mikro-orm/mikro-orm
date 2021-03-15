@@ -51,6 +51,7 @@ const schema = {
     publisher: {
       reference: 'm:1',
       type: 'Publisher3',
+      nullable: true,
     },
     tags: {
       reference: 'm:n',

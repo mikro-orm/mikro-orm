@@ -1,4 +1,4 @@
-import Knex, { JoinClause, QueryBuilder as KnexQueryBuilder, Raw } from 'knex';
+import { Knex } from 'knex';
 import { inspect } from 'util';
 import {
   Dictionary,
@@ -29,7 +29,7 @@ export class QueryBuilderHelper {
 
   mapper(field: string, type?: QueryType): string;
   mapper(field: string, type?: QueryType, value?: any, alias?: string | null): string;
-  mapper(field: string, type = QueryType.SELECT, value?: any, alias?: string | null): string | Raw {
+  mapper(field: string, type = QueryType.SELECT, value?: any, alias?: string | null): string | Knex.Raw {
     const isTableNameAliasRequired = this.isTableNameAliasRequired(type);
     const fields = Utils.splitPrimaryKeys(field);
 
@@ -189,7 +189,7 @@ export class QueryBuilderHelper {
     };
   }
 
-  processJoins(qb: KnexQueryBuilder, joins: Dictionary<JoinOptions>): void {
+  processJoins(qb: Knex.QueryBuilder, joins: Dictionary<JoinOptions>): void {
     Object.values(joins).forEach(join => {
       const table = `${join.table} as ${join.alias}`;
       const method = join.type === 'pivotJoin' ? 'leftJoin' : join.type;
@@ -205,7 +205,7 @@ export class QueryBuilderHelper {
     });
   }
 
-  mapJoinColumns(type: QueryType, join: JoinOptions): (string | Raw)[] {
+  mapJoinColumns(type: QueryType, join: JoinOptions): (string | Knex.Raw)[] {
     if (join.prop && join.prop.reference === ReferenceType.ONE_TO_ONE && !join.prop.owner) {
       return join.prop.fieldNames.map((fieldName, idx) => {
         return this.mapper(`${join.alias}.${join.inverseJoinColumns![idx]}`, type, undefined, fieldName);
@@ -265,7 +265,7 @@ export class QueryBuilderHelper {
     return `%${value}%`;
   }
 
-  appendQueryCondition(type: QueryType, cond: any, qb: KnexQueryBuilder, operator?: '$and' | '$or', method: 'where' | 'having' = 'where'): void {
+  appendQueryCondition(type: QueryType, cond: any, qb: Knex.QueryBuilder, operator?: '$and' | '$or', method: 'where' | 'having' = 'where'): void {
     const m = operator === '$or' ? 'orWhere' : 'andWhere';
 
     Object.keys(cond).forEach(k => {
@@ -286,7 +286,7 @@ export class QueryBuilderHelper {
     });
   }
 
-  private appendQuerySubCondition(qb: KnexQueryBuilder, type: QueryType, method: 'where' | 'having', cond: any, key: string, operator?: '$and' | '$or'): void {
+  private appendQuerySubCondition(qb: Knex.QueryBuilder, type: QueryType, method: 'where' | 'having', cond: any, key: string, operator?: '$and' | '$or'): void {
     const m = operator === '$or' ? 'orWhere' : method;
 
     if (this.isSimpleRegExp(cond[key])) {
@@ -325,7 +325,7 @@ export class QueryBuilderHelper {
     clause[m](k);
   }
 
-  private processObjectSubCondition(cond: any, key: string, qb: KnexQueryBuilder, method: 'where' | 'having', m: 'where' | 'orWhere' | 'having', type: QueryType): void {
+  private processObjectSubCondition(cond: any, key: string, qb: Knex.QueryBuilder, method: 'where' | 'having', m: 'where' | 'orWhere' | 'having', type: QueryType): void {
     // grouped condition for one field
     let value = cond[key];
 
@@ -374,7 +374,7 @@ export class QueryBuilderHelper {
     return replacement;
   }
 
-  private appendJoinClause(clause: JoinClause, cond: Dictionary, operator?: '$and' | '$or'): void {
+  private appendJoinClause(clause: Knex.JoinClause, cond: Dictionary, operator?: '$and' | '$or'): void {
     Object.keys(cond).forEach(k => {
       if (k === '$and' || k === '$or') {
         const method = operator === '$or' ? 'orOn' : 'andOn';
@@ -392,7 +392,7 @@ export class QueryBuilderHelper {
     });
   }
 
-  private appendJoinSubClause(clause: JoinClause, cond: Dictionary, key: string, operator?: '$and' | '$or'): void {
+  private appendJoinSubClause(clause: Knex.JoinClause, cond: Dictionary, key: string, operator?: '$and' | '$or'): void {
     const m = operator === '$or' ? 'orOn' : 'andOn';
 
     if (cond[key] instanceof RegExp) {
@@ -411,7 +411,7 @@ export class QueryBuilderHelper {
     clause[m](this.knex.raw(`${this.knex.ref(this.mapper(key, QueryType.SELECT, cond[key]))} ${op} ?`, cond[key]));
   }
 
-  private processObjectSubClause(cond: any, key: string, clause: JoinClause, m: 'andOn' | 'orOn'): void {
+  private processObjectSubClause(cond: any, key: string, clause: Knex.JoinClause, m: 'andOn' | 'orOn'): void {
     // grouped condition for one field
     if (Utils.getObjectKeysSize(cond[key]) > 1) {
       const subCondition = Object.entries(cond[key]).map(([subKey, subValue]) => ({ [key]: { [subKey]: subValue } }));
@@ -458,7 +458,7 @@ export class QueryBuilderHelper {
     return ret.join(', ');
   }
 
-  finalize(type: QueryType, qb: KnexQueryBuilder, meta?: EntityMetadata): void {
+  finalize(type: QueryType, qb: Knex.QueryBuilder, meta?: EntityMetadata): void {
     const useReturningStatement = type === QueryType.INSERT && this.platform.usesReturningStatement() && meta && !meta.compositePK;
 
     if (useReturningStatement) {
@@ -475,7 +475,7 @@ export class QueryBuilderHelper {
     return [fromAlias, fromField];
   }
 
-  getLockSQL(qb: KnexQueryBuilder, lockMode?: LockMode): void {
+  getLockSQL(qb: Knex.QueryBuilder, lockMode?: LockMode): void {
     if (lockMode === LockMode.PESSIMISTIC_READ) {
       return void qb.forShare();
     }
@@ -491,7 +491,7 @@ export class QueryBuilderHelper {
     }
   }
 
-  updateVersionProperty(qb: KnexQueryBuilder, data: Dictionary): void {
+  updateVersionProperty(qb: Knex.QueryBuilder, data: Dictionary): void {
     const meta = this.metadata.find(this.entityName);
 
     if (!meta || !meta.versionProperty || meta.versionProperty in data) {
@@ -535,7 +535,7 @@ export class QueryBuilderHelper {
     return ret;
   }
 
-  private appendGroupCondition(type: QueryType, qb: KnexQueryBuilder, operator: '$and' | '$or', method: 'where' | 'having', subCondition: any[]): void {
+  private appendGroupCondition(type: QueryType, qb: Knex.QueryBuilder, operator: '$and' | '$or', method: 'where' | 'having', subCondition: any[]): void {
     // single sub-condition can be ignored to reduce nesting of parens
     if (subCondition.length === 1 || operator === '$and') {
       return subCondition.forEach(sub => this.appendQueryCondition(type, sub, qb, undefined, method));

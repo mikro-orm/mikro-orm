@@ -28,7 +28,7 @@ describe('GH issue 1143', () => {
     const generator = orm.getSchemaGenerator();
     await generator.ensureDatabase();
     await generator.dropSchema();
-    await generator.execute(`create schema if not exists "test"`);
+    await generator.execute(`drop schema if exists "test" cascade`);
     await generator.createSchema();
   });
 

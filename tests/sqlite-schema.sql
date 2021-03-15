@@ -11,37 +11,28 @@ drop table if exists `test3`;
 drop table if exists `book3_to_book_tag3`;
 drop table if exists `publisher3_to_test3`;
 
-create table `test3` (`id` integer not null primary key autoincrement, `name` varchar null, `version` integer not null default 1);
+create table `test3` (`id` integer not null primary key autoincrement, `name` text null, `version` integer not null default 1);
 
-create table `publisher3` (`id` integer not null primary key autoincrement, `name` varchar not null, `type` varchar not null);
+create table `publisher3` (`id` integer not null primary key autoincrement, `name` text not null, `type` text not null);
 
-create table `publisher3_tests` (`id` integer not null primary key autoincrement);
-
-create table `book_tag3` (`id` integer not null primary key autoincrement, `name` varchar not null, `version` datetime not null default current_timestamp);
-
-create table `author3` (`id` integer not null primary key autoincrement, `created_at` datetime null, `updated_at` datetime null, `name` varchar not null, `email` varchar not null, `age` integer null, `terms_accepted` integer not null default 0, `identities` text null, `born` date(3) null, `born_time` time(3) null);
-create unique index `author3_email_unique` on `author3` (`email`);
-
-create table `book3` (`id` integer not null primary key autoincrement, `created_at` datetime null, `updated_at` datetime null, `title` varchar not null default '');
-
-create table `book3_tags` (`id` integer not null primary key autoincrement);
-
-alter table `publisher3_tests` add column `publisher3_id` integer null references `publisher3` (`id`) on delete cascade on update cascade;
-alter table `publisher3_tests` add column `test3_id` integer null references `test3` (`id`) on delete cascade on update cascade;
+create table `publisher3_tests` (`id` integer not null primary key autoincrement, `publisher3_id` integer not null, `test3_id` integer not null, constraint `publisher3_tests_publisher3_id_foreign` foreign key(`publisher3_id`) references `publisher3`(`id`) on delete cascade on update cascade, constraint `publisher3_tests_test3_id_foreign` foreign key(`test3_id`) references `test3`(`id`) on delete cascade on update cascade);
 create index `publisher3_tests_publisher3_id_index` on `publisher3_tests` (`publisher3_id`);
 create index `publisher3_tests_test3_id_index` on `publisher3_tests` (`test3_id`);
 
-alter table `book3_tags` add column `book3_id` integer null references `book3` (`id`) on delete cascade on update cascade;
-alter table `book3_tags` add column `book_tag3_id` integer null references `book_tag3` (`id`) on delete cascade on update cascade;
+create table `book_tag3` (`id` integer not null primary key autoincrement, `name` text not null, `version` datetime not null default current_timestamp);
+
+create table `author3` (`id` integer not null primary key autoincrement, `created_at` datetime null, `updated_at` datetime null, `name` text not null, `email` text not null, `age` integer null, `terms_accepted` integer not null default 0, `identities` text null, `born` date(3) null, `born_time` time(3) null, `favourite_book_id` integer null, constraint `author3_favourite_book_id_foreign` foreign key(`favourite_book_id`) references `book3`(`id`) on update cascade);
+create unique index `author3_email_unique` on `author3` (`email`);
+create index `author3_favourite_book_idx` on `author3` (`favourite_book_id`);
+
+create table `book3` (`id` integer not null primary key autoincrement, `created_at` datetime null, `updated_at` datetime null, `title` text not null default '', `author_id` integer not null, `publisher_id` integer not null, constraint `book3_author_id_foreign` foreign key(`author_id`) references `author3`(`id`) on update cascade, constraint `book3_publisher_id_foreign` foreign key(`publisher_id`) references `publisher3`(`id`) on update cascade);
+create index `book3_author_id_index` on `book3` (`author_id`);
+create index `book3_publisher_id_index` on `book3` (`publisher_id`);
+
+create table `book3_tags` (`id` integer not null primary key autoincrement, `book3_id` integer not null, `book_tag3_id` integer not null, constraint `book3_tags_book3_id_foreign` foreign key(`book3_id`) references `book3`(`id`) on delete cascade on update cascade, constraint `book3_tags_book_tag3_id_foreign` foreign key(`book_tag3_id`) references `book_tag3`(`id`) on delete cascade on update cascade);
 create index `book3_tags_book3_id_index` on `book3_tags` (`book3_id`);
 create index `book3_tags_book_tag3_id_index` on `book3_tags` (`book_tag3_id`);
 
-alter table `author3` add column `favourite_book_id` integer null references `book3` (`id`) on delete set null on update cascade;
-create index `author3_favourite_book_id_index` on `author3` (`favourite_book_id`);
-
-alter table `book3` add column `author_id` integer null references `author3` (`id`) on delete set null on update cascade;
-alter table `book3` add column `publisher_id` integer null references `publisher3` (`id`) on delete set null on update cascade;
-create index `book3_author_id_index` on `book3` (`author_id`);
-create index `book3_publisher_id_index` on `book3` (`publisher_id`);
+create index `author3_name_favourite_book_id_index` on `author3` (`name`, `favourite_book_id`);
 
 pragma foreign_keys = on;

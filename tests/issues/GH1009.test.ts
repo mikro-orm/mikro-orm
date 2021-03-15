@@ -35,8 +35,8 @@ export class Placement {
   id!: number;
 
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  @ManyToOne({ entity: () => Publisher })
-  publisher!: any;
+  @ManyToOne({ entity: () => Publisher, nullable: true })
+  publisher?: any;
 
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToOne({ entity: () => Site })
@@ -59,8 +59,8 @@ export class Publisher {
 @Entity({ tableName: 'sites' })
 export class Site {
 
-  @ManyToOne({ entity: () => Publisher })
-  publisher!: Publisher;
+  @ManyToOne({ entity: () => Publisher, nullable: true })
+  publisher?: Publisher;
 
   @OneToMany({ entity: () => Placement, mappedBy: 'site' })
   placements = new Collection<Placement>(this);
@@ -97,8 +97,10 @@ describe('GH issue 1009', () => {
 
   it('sets keys from references', async () => {
     const site = new Site();
+    const brand = new Brand();
     const br = new BrandSiteRestriction();
     br.site = site;
+    br.brand = brand;
     await expect(orm.em.persistAndFlush(br)).resolves.toBeUndefined();
   });
 

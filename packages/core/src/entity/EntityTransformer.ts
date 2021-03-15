@@ -95,31 +95,20 @@ export class EntityTransformer {
     const root = wrapped.__serializationContext.root;
     const meta = entity.__meta!;
     const ret = {} as EntityData<T>;
+    const keys = new Set<string>();
 
-    meta.primaryKeys
-      .filter(pk => !Utils.isDefined(entity[pk], true) || !(meta.properties[pk].hidden || ignoreFields.includes(pk)))
-      .map(pk => {
-        let value: unknown;
-
-        if (meta.properties[pk].serializer) {
-          value = meta.properties[pk].serializer!(entity[pk]);
-        } else if (Utils.isEntity(entity[pk], true)) {
-          value = EntityTransformer.processEntity(pk, entity, entity.__platform!, raw);
-        } else {
-          value = entity.__platform!.normalizePrimaryKey(entity[pk] as unknown as IPrimaryKey);
-        }
-
-        return [pk, value] as [string & keyof T, string];
-      })
-      .forEach(([pk, value]) => ret[this.propertyName(meta, pk, entity.__platform!)] = value as unknown as T[keyof T]);
-
-    if (!wrapped.isInitialized() && wrapped.hasPrimaryKey()) {
-      return ret;
+    if (meta.serializedPrimaryKey && !meta.compositePK) {
+      keys.add(meta.serializedPrimaryKey);
+    } else {
+      meta.primaryKeys.forEach(pk => keys.add(pk));
     }
 
-    // normal properties
-    Object.keys(entity)
-      .filter(prop => this.isVisible(meta, prop as keyof T & string, ignoreFields))
+    if (wrapped.isInitialized() || !wrapped.hasPrimaryKey()) {
+      Object.keys(entity).forEach(prop => keys.add(prop));
+    }
+
+    [...keys]
+      .filter(prop => this.isVisible<T>(meta, prop, ignoreFields))
       .map(prop => {
         const cycle = root!.visit(meta.className, prop);
 
@@ -133,17 +122,21 @@ export class EntityTransformer {
         return [prop, val];
       })
       .filter(([, value]) => typeof value !== 'undefined')
-      .forEach(([prop, value]) => ret[this.propertyName(meta, prop as keyof T & string)] = value as T[keyof T]);
+      .forEach(([prop, value]) => ret[this.propertyName(meta, prop as keyof T & string, entity.__platform)] = value as T[keyof T]);
+
+    if (!wrapped.isInitialized() && wrapped.hasPrimaryKey()) {
+      return ret;
+    }
 
     // decorated getters
     meta.props
       .filter(prop => prop.getter && !prop.hidden && typeof entity[prop.name] !== 'undefined')
-      .forEach(prop => ret[this.propertyName(meta, prop.name)] = entity[prop.name]);
+      .forEach(prop => ret[this.propertyName(meta, prop.name, entity.__platform)] = entity[prop.name]);
 
     // decorated get methods
     meta.props
       .filter(prop => prop.getterName && !prop.hidden && entity[prop.getterName] as unknown instanceof Function)
-      .forEach(prop => ret[this.propertyName(meta, prop.name)] = (entity[prop.getterName!] as unknown as () => void)());
+      .forEach(prop => ret[this.propertyName(meta, prop.name, entity.__platform)] = (entity[prop.getterName!] as unknown as () => void)());
 
     if (contextCreated) {
       delete wrapped.__serializationContext.root;
@@ -152,9 +145,12 @@ export class EntityTransformer {
     return ret;
   }
 
-  private static isVisible<T extends AnyEntity<T>>(meta: EntityMetadata<T>, prop: keyof T & string, ignoreFields: string[]): boolean {
-    const visible = meta.properties[prop] && !meta.properties[prop].hidden;
-    return visible && !meta.primaryKeys.includes(prop) && !prop.startsWith('_') && !ignoreFields.includes(prop);
+  private static isVisible<T extends AnyEntity<T>>(meta: EntityMetadata<T>, propName: string, ignoreFields: string[]): boolean {
+    const prop = meta.properties[propName];
+    const visible = prop && !prop.hidden;
+    const prefixed = prop && !prop.primary && propName.startsWith('_'); // ignore prefixed properties, if it's not a PK
+
+    return visible && !prefixed && !ignoreFields.includes(propName);
   }
 
   private static propertyName<T extends AnyEntity<T>>(meta: EntityMetadata<T>, prop: keyof T & string, platform?: Platform): keyof T & string {
@@ -183,6 +179,10 @@ export class EntityTransformer {
       return EntityTransformer.processCollection(prop, entity, raw);
     }
 
+    if (Utils.isEntity(entity[prop], true)) {
+      return EntityTransformer.processEntity(prop, entity, entity.__platform!, raw);
+    }
+
     /* istanbul ignore next */
     const customType = property?.customType;
 
@@ -190,11 +190,7 @@ export class EntityTransformer {
       return customType.toJSON(entity[prop], entity.__platform!);
     }
 
-    if (Utils.isEntity(entity[prop], true)) {
-      return EntityTransformer.processEntity(prop, entity, entity.__platform!, raw);
-    }
-
-    return entity[prop];
+    return entity.__platform!.normalizePrimaryKey(entity[prop] as unknown as IPrimaryKey) as unknown as T[keyof T];
   }
 
   private static processEntity<T extends AnyEntity<T>>(prop: keyof T, entity: T, platform: Platform, raw: boolean): T[keyof T] | undefined {

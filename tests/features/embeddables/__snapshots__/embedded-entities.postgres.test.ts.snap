@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`embedded entities in postgresql schema: embeddables 1 1`] = `
-"create table \\"user\\" (\\"id\\" serial primary key, \\"address1_street\\" varchar(255) not null, \\"address1_number\\" int4 not null, \\"address1_postal_code\\" varchar(255) not null, \\"address1_city\\" varchar(255) not null, \\"address1_country\\" varchar(255) not null, \\"addr_street\\" varchar(255) null, \\"addr_postal_code\\" varchar(255) null, \\"addr_city\\" varchar(255) null, \\"addr_country\\" varchar(255) null, \\"street\\" varchar(255) not null, \\"number\\" int4 not null, \\"postal_code\\" varchar(255) not null, \\"city\\" varchar(255) not null, \\"country\\" varchar(255) not null, \\"address4\\" jsonb not null, \\"addresses\\" jsonb not null, \\"after\\" int4 null);
+"create table \\"user\\" (\\"id\\" serial primary key, \\"address1_street\\" varchar(255) not null, \\"address1_number\\" int not null, \\"address1_rank\\" real null, \\"address1_postal_code\\" varchar(255) not null, \\"address1_city\\" varchar(255) not null, \\"address1_country\\" varchar(255) not null, \\"addr_street\\" varchar(255) null, \\"addr_postal_code\\" varchar(255) null, \\"addr_city\\" varchar(255) null, \\"addr_country\\" varchar(255) null, \\"street\\" varchar(255) not null, \\"number\\" int not null, \\"rank\\" real null, \\"postal_code\\" varchar(255) not null, \\"city\\" varchar(255) not null, \\"country\\" varchar(255) not null, \\"address4\\" jsonb not null, \\"addresses\\" jsonb not null, \\"after\\" int null);
 
 "
 `;

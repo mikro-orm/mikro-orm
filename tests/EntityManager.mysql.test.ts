@@ -2227,8 +2227,8 @@ describe('EntityManagerMySql', () => {
     Object.assign(orm.config, { logger });
 
     const b = await orm.em.findOneOrFail(Book2, { author: { name: 'God' } });
-    expect(b.price).toBe(1000);
-    expect(b.priceTaxed).toBe(1190);
+    expect(b.price).toBe('1000.00');
+    expect(b.priceTaxed).toBe('1190.0000');
     expect(mock.mock.calls[0][0]).toMatch('select `e0`.`uuid_pk`, `e0`.`created_at`, `e0`.`title`, `e0`.`price`, `e0`.`double`, `e0`.`meta`, `e0`.`author_id`, `e0`.`publisher_id`, `e0`.price * 1.19 as `price_taxed`, `e2`.`id` as `test_id` ' +
       'from `book2` as `e0` ' +
       'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +

@@ -44,7 +44,7 @@
     "clean": "lerna run clean",
     "build": "lerna run build",
     "release": "yarn build && lerna publish from-package --contents dist --force-publish",
-    "publish:next": "lerna publish --canary --preid dev --dist-tag next --force-publish",
+    "publish:next": "lerna publish --canary major --preid dev --dist-tag next --force-publish",
     "release:next": "yarn build && yarn publish:next",
     "test": "jest --runInBand",
     "tsc-check-tests": "tsc --noEmit --project tests/tsconfig.json",

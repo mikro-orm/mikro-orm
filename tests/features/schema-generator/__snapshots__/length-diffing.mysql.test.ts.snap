@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`length diffing in mysql schema generator updates column types when length changes (varchar, decimal, ...) 1`] = `
+"alter table \`book\` modify \`id\` bigint unsigned not null auto_increment, modify \`name\` varchar(100) not null, modify \`length\` int unsigned not null, modify \`price\` numeric(16,0) not null;
+
+"
+`;
+
+exports[`length diffing in mysql schema generator updates column types when length changes (varchar, decimal, ...) 2`] = `
+"alter table \`book\` modify \`name\` varchar(150) not null, modify \`price\` numeric(16,4) not null;
+
+"
+`;
+
+exports[`length diffing in mysql schema generator updates column types when length changes (varchar, decimal, ...) 3`] = `
+"alter table \`book\` modify \`name\` varchar(100) not null;
+
+"
+`;

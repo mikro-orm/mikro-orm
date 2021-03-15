@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`adding FK column (GH 942) schema: adding 1:1 relation 1`] = `
+"alter table \`user\` add column \`profile_id\` text null constraint user_profile_id_foreign references \`profile\` (\`id\`) on update cascade on delete set null;
+create index \`user_profile_id_index\` on \`user\` (\`profile_id\`);
+create unique index \`user_profile_id_unique\` on \`user\` (\`profile_id\`);
+
+"
+`;

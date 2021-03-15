@@ -1,4 +1,4 @@
-import { Collection, EntitySchema } from '@mikro-orm/core';
+import { Collection, EntitySchema, Enum } from '@mikro-orm/core';
 import { IBaseEntity5 } from './BaseEntity5';
 import { IBook4 } from './Book4';
 import { ITest4 } from './Test4';
@@ -8,6 +8,7 @@ export interface IPublisher4 extends IBaseEntity5 {
   type: PublisherType;
   books: Collection<IBook4>;
   tests: Collection<ITest4>;
+  enum3?: number;
 }
 
 export enum PublisherType {
@@ -21,6 +22,7 @@ export const Publisher4 = new EntitySchema<IPublisher4, IBaseEntity5>({
   properties: {
     name: { type: 'string', default: 'asd' },
     type: { enum: true, items: () => PublisherType, default: PublisherType.LOCAL },
+    enum3: { enum: true, items: [1, 2, 3], nullable: true },
     books: { reference: '1:m', entity: 'Book4', mappedBy: 'publisher' },
     tests: { reference: 'm:n', entity:  'Test4', fixedOrder: true },
   },

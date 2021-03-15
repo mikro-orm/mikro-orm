@@ -1,0 +1,514 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SchemaGenerator [postgres] generate schema from metadata [postgres]: postgres-create-schema-dump 1`] = `
+"set names 'utf8';
+set session_replication_role = 'replica';
+
+create table \\"label2\\" (\\"uuid\\" uuid not null, \\"name\\" varchar(255) not null);
+alter table \\"label2\\" add constraint \\"label2_pkey\\" primary key (\\"uuid\\");
+
+create table \\"foo_baz2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));
+
+create table \\"foo_bar2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"baz_id\\" int null, \\"foo_bar_id\\" int null, \\"version\\" timestamptz(0) not null default current_timestamp(0), \\"blob\\" bytea null, \\"array\\" text[] null, \\"object\\" jsonb null);
+alter table \\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_unique\\" unique (\\"baz_id\\");
+alter table \\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_unique\\" unique (\\"foo_bar_id\\");
+
+create table \\"foo_param2\\" (\\"bar_id\\" int not null, \\"baz_id\\" int not null, \\"value\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));
+alter table \\"foo_param2\\" add constraint \\"foo_param2_pkey\\" primary key (\\"bar_id\\", \\"baz_id\\");
+
+create table \\"publisher2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"type\\" text check (\\"type\\" in ('local', 'global')) not null, \\"type2\\" text check (\\"type2\\" in ('LOCAL', 'GLOBAL')) not null, \\"enum1\\" smallint null, \\"enum2\\" smallint null, \\"enum3\\" smallint null, \\"enum4\\" text check (\\"enum4\\" in ('a', 'b', 'c')) null, \\"enum5\\" text check (\\"enum5\\" in ('a')) null);
+
+create table \\"book_tag2\\" (\\"id\\" bigserial primary key, \\"name\\" varchar(50) not null);
+
+create table \\"author2\\" (\\"id\\" serial primary key, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"updated_at\\" timestamptz(3) not null default current_timestamp(3), \\"name\\" varchar(255) not null, \\"email\\" varchar(255) not null, \\"age\\" int null default null, \\"terms_accepted\\" boolean not null default false, \\"optional\\" boolean null, \\"identities\\" text[] null, \\"born\\" date null, \\"born_time\\" time(0) null, \\"favourite_book_uuid_pk\\" uuid null, \\"favourite_author_id\\" int null);
+create index \\"custom_email_index_name\\" on \\"author2\\" (\\"email\\");
+alter table \\"author2\\" add constraint \\"custom_email_unique_name\\" unique (\\"email\\");
+create index \\"author2_terms_accepted_index\\" on \\"author2\\" (\\"terms_accepted\\");
+create index \\"author2_born_index\\" on \\"author2\\" (\\"born\\");
+create index \\"born_time_idx\\" on \\"author2\\" (\\"born_time\\");
+create index \\"custom_idx_name_123\\" on \\"author2\\" (\\"name\\");
+create index \\"author2_name_age_index\\" on \\"author2\\" (\\"name\\", \\"age\\");
+alter table \\"author2\\" add constraint \\"author2_name_email_unique\\" unique (\\"name\\", \\"email\\");
+
+create table \\"address2\\" (\\"author_id\\" int not null, \\"value\\" varchar(255) not null);
+comment on table \\"address2\\" is 'This is address table';
+comment on column \\"address2\\".\\"value\\" is 'This is address property';
+alter table \\"address2\\" add constraint \\"address2_pkey\\" primary key (\\"author_id\\");
+
+create table \\"book2\\" (\\"uuid_pk\\" uuid not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null default '', \\"perex\\" text null, \\"price\\" numeric(8,2) null, \\"double\\" double precision null, \\"meta\\" jsonb null, \\"author_id\\" int not null, \\"publisher_id\\" int null);
+alter table \\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\\");
+
+create table \\"test2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) null, \\"book_uuid_pk\\" uuid null, \\"parent_id\\" int null, \\"version\\" int not null default 1);
+alter table \\"test2\\" add constraint \\"test2_book_uuid_pk_unique\\" unique (\\"book_uuid_pk\\");
+
+create table \\"configuration2\\" (\\"property\\" varchar(255) not null, \\"test_id\\" int not null, \\"value\\" varchar(255) not null);
+alter table \\"configuration2\\" add constraint \\"configuration2_pkey\\" primary key (\\"property\\", \\"test_id\\");
+
+create table \\"publisher2_tests\\" (\\"id\\" serial primary key, \\"publisher2_id\\" int not null, \\"test2_id\\" int not null);
+
+create table \\"test2_bars\\" (\\"test2_id\\" int not null, \\"foo_bar2_id\\" int not null);
+alter table \\"test2_bars\\" add constraint \\"test2_bars_pkey\\" primary key (\\"test2_id\\", \\"foo_bar2_id\\");
+
+create table \\"book2_tags\\" (\\"order\\" serial primary key, \\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);
+
+create table \\"book_to_tag_unordered\\" (\\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);
+alter table \\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_pkey\\" primary key (\\"book2_uuid_pk\\", \\"book_tag2_id\\");
+
+create table \\"author_to_friend\\" (\\"author2_1_id\\" int not null, \\"author2_2_id\\" int not null);
+alter table \\"author_to_friend\\" add constraint \\"author_to_friend_pkey\\" primary key (\\"author2_1_id\\", \\"author2_2_id\\");
+
+create table \\"author2_following\\" (\\"author2_1_id\\" int not null, \\"author2_2_id\\" int not null);
+alter table \\"author2_following\\" add constraint \\"author2_following_pkey\\" primary key (\\"author2_1_id\\", \\"author2_2_id\\");
+
+alter table \\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_foreign\\" foreign key (\\"baz_id\\") references \\"foo_baz2\\" (\\"id\\") on update cascade on delete set null;
+alter table \\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_foreign\\" foreign key (\\"foo_bar_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade on delete set null;
+
+alter table \\"foo_param2\\" add constraint \\"foo_param2_bar_id_foreign\\" foreign key (\\"bar_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade;
+alter table \\"foo_param2\\" add constraint \\"foo_param2_baz_id_foreign\\" foreign key (\\"baz_id\\") references \\"foo_baz2\\" (\\"id\\") on update cascade;
+
+alter table \\"author2\\" add constraint \\"author2_favourite_book_uuid_pk_foreign\\" foreign key (\\"favourite_book_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update no action on delete cascade;
+alter table \\"author2\\" add constraint \\"author2_favourite_author_id_foreign\\" foreign key (\\"favourite_author_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete set null;
+
+alter table \\"address2\\" add constraint \\"address2_author_id_foreign\\" foreign key (\\"author_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;
+
+alter table \\"book2\\" add constraint \\"book2_author_id_foreign\\" foreign key (\\"author_id\\") references \\"author2\\" (\\"id\\");
+alter table \\"book2\\" add constraint \\"book2_publisher_id_foreign\\" foreign key (\\"publisher_id\\") references \\"publisher2\\" (\\"id\\") on update cascade on delete cascade;
+
+alter table \\"test2\\" add constraint \\"test2_book_uuid_pk_foreign\\" foreign key (\\"book_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on delete set null;
+alter table \\"test2\\" add constraint \\"test2_parent_id_foreign\\" foreign key (\\"parent_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete set null;
+
+alter table \\"configuration2\\" add constraint \\"configuration2_test_id_foreign\\" foreign key (\\"test_id\\") references \\"test2\\" (\\"id\\") on update cascade;
+
+alter table \\"publisher2_tests\\" add constraint \\"publisher2_tests_publisher2_id_foreign\\" foreign key (\\"publisher2_id\\") references \\"publisher2\\" (\\"id\\") on update cascade on delete cascade;
+alter table \\"publisher2_tests\\" add constraint \\"publisher2_tests_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;
+
+alter table \\"test2_bars\\" add constraint \\"test2_bars_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;
+alter table \\"test2_bars\\" add constraint \\"test2_bars_foo_bar2_id_foreign\\" foreign key (\\"foo_bar2_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade on delete cascade;
+
+alter table \\"book2_tags\\" add constraint \\"book2_tags_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;
+alter table \\"book2_tags\\" add constraint \\"book2_tags_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;
+
+alter table \\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;
+alter table \\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;
+
+alter table \\"author_to_friend\\" add constraint \\"author_to_friend_author2_1_id_foreign\\" foreign key (\\"author2_1_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;
+alter table \\"author_to_friend\\" add constraint \\"author_to_friend_author2_2_id_foreign\\" foreign key (\\"author2_2_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;
+
+alter table \\"author2_following\\" add constraint \\"author2_following_author2_1_id_foreign\\" foreign key (\\"author2_1_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;
+alter table \\"author2_following\\" add constraint \\"author2_following_author2_2_id_foreign\\" foreign key (\\"author2_2_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;
+
+set session_replication_role = 'origin';
+"
+`;
+
+exports[`SchemaGenerator [postgres] generate schema from metadata [postgres]: postgres-drop-schema-dump 1`] = `
+"set names 'utf8';
+set session_replication_role = 'replica';
+
+drop table if exists \\"author2_following\\" cascade;
+drop table if exists \\"author_to_friend\\" cascade;
+drop table if exists \\"book_to_tag_unordered\\" cascade;
+drop table if exists \\"book2_tags\\" cascade;
+drop table if exists \\"test2_bars\\" cascade;
+drop table if exists \\"publisher2_tests\\" cascade;
+drop table if exists \\"configuration2\\" cascade;
+drop table if exists \\"test2\\" cascade;
+drop table if exists \\"book2\\" cascade;
+drop table if exists \\"address2\\" cascade;
+drop table if exists \\"author2\\" cascade;
+drop table if exists \\"book_tag2\\" cascade;
+drop table if exists \\"publisher2\\" cascade;
+drop table if exists \\"foo_param2\\" cascade;
+drop table if exists \\"foo_bar2\\" cascade;
+drop table if exists \\"foo_baz2\\" cascade;
+drop table if exists \\"label2\\" cascade;
+
+set session_replication_role = 'origin';
+"
+`;
+
+exports[`SchemaGenerator [postgres] generate schema from metadata [postgres]: postgres-schema-dump 1`] = `
+"set names 'utf8';
+set session_replication_role = 'replica';
+
+drop table if exists \\"author2_following\\" cascade;
+drop table if exists \\"author_to_friend\\" cascade;
+drop table if exists \\"book_to_tag_unordered\\" cascade;
+drop table if exists \\"book2_tags\\" cascade;
+drop table if exists \\"test2_bars\\" cascade;
+drop table if exists \\"publisher2_tests\\" cascade;
+drop table if exists \\"configuration2\\" cascade;
+drop table if exists \\"test2\\" cascade;
+drop table if exists \\"book2\\" cascade;
+drop table if exists \\"address2\\" cascade;
+drop table if exists \\"author2\\" cascade;
+drop table if exists \\"book_tag2\\" cascade;
+drop table if exists \\"publisher2\\" cascade;
+drop table if exists \\"foo_param2\\" cascade;
+drop table if exists \\"foo_bar2\\" cascade;
+drop table if exists \\"foo_baz2\\" cascade;
+drop table if exists \\"label2\\" cascade;
+
+create table \\"label2\\" (\\"uuid\\" uuid not null, \\"name\\" varchar(255) not null);
+alter table \\"label2\\" add constraint \\"label2_pkey\\" primary key (\\"uuid\\");
+
+create table \\"foo_baz2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));
+
+create table \\"foo_bar2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"baz_id\\" int null, \\"foo_bar_id\\" int null, \\"version\\" timestamptz(0) not null default current_timestamp(0), \\"blob\\" bytea null, \\"array\\" text[] null, \\"object\\" jsonb null);
+alter table \\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_unique\\" unique (\\"baz_id\\");
+alter table \\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_unique\\" unique (\\"foo_bar_id\\");
+
+create table \\"foo_param2\\" (\\"bar_id\\" int not null, \\"baz_id\\" int not null, \\"value\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));
+alter table \\"foo_param2\\" add constraint \\"foo_param2_pkey\\" primary key (\\"bar_id\\", \\"baz_id\\");
+
+create table \\"publisher2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"type\\" text check (\\"type\\" in ('local', 'global')) not null, \\"type2\\" text check (\\"type2\\" in ('LOCAL', 'GLOBAL')) not null, \\"enum1\\" smallint null, \\"enum2\\" smallint null, \\"enum3\\" smallint null, \\"enum4\\" text check (\\"enum4\\" in ('a', 'b', 'c')) null, \\"enum5\\" text check (\\"enum5\\" in ('a')) null);
+
+create table \\"book_tag2\\" (\\"id\\" bigserial primary key, \\"name\\" varchar(50) not null);
+
+create table \\"author2\\" (\\"id\\" serial primary key, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"updated_at\\" timestamptz(3) not null default current_timestamp(3), \\"name\\" varchar(255) not null, \\"email\\" varchar(255) not null, \\"age\\" int null default null, \\"terms_accepted\\" boolean not null default false, \\"optional\\" boolean null, \\"identities\\" text[] null, \\"born\\" date null, \\"born_time\\" time(0) null, \\"favourite_book_uuid_pk\\" uuid null, \\"favourite_author_id\\" int null);
+create index \\"custom_email_index_name\\" on \\"author2\\" (\\"email\\");
+alter table \\"author2\\" add constraint \\"custom_email_unique_name\\" unique (\\"email\\");
+create index \\"author2_terms_accepted_index\\" on \\"author2\\" (\\"terms_accepted\\");
+create index \\"author2_born_index\\" on \\"author2\\" (\\"born\\");
+create index \\"born_time_idx\\" on \\"author2\\" (\\"born_time\\");
+create index \\"custom_idx_name_123\\" on \\"author2\\" (\\"name\\");
+create index \\"author2_name_age_index\\" on \\"author2\\" (\\"name\\", \\"age\\");
+alter table \\"author2\\" add constraint \\"author2_name_email_unique\\" unique (\\"name\\", \\"email\\");
+
+create table \\"address2\\" (\\"author_id\\" int not null, \\"value\\" varchar(255) not null);
+comment on table \\"address2\\" is 'This is address table';
+comment on column \\"address2\\".\\"value\\" is 'This is address property';
+alter table \\"address2\\" add constraint \\"address2_pkey\\" primary key (\\"author_id\\");
+
+create table \\"book2\\" (\\"uuid_pk\\" uuid not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null default '', \\"perex\\" text null, \\"price\\" numeric(8,2) null, \\"double\\" double precision null, \\"meta\\" jsonb null, \\"author_id\\" int not null, \\"publisher_id\\" int null);
+alter table \\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\\");
+
+create table \\"test2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) null, \\"book_uuid_pk\\" uuid null, \\"parent_id\\" int null, \\"version\\" int not null default 1);
+alter table \\"test2\\" add constraint \\"test2_book_uuid_pk_unique\\" unique (\\"book_uuid_pk\\");
+
+create table \\"configuration2\\" (\\"property\\" varchar(255) not null, \\"test_id\\" int not null, \\"value\\" varchar(255) not null);
+alter table \\"configuration2\\" add constraint \\"configuration2_pkey\\" primary key (\\"property\\", \\"test_id\\");
+
+create table \\"publisher2_tests\\" (\\"id\\" serial primary key, \\"publisher2_id\\" int not null, \\"test2_id\\" int not null);
+
+create table \\"test2_bars\\" (\\"test2_id\\" int not null, \\"foo_bar2_id\\" int not null);
+alter table \\"test2_bars\\" add constraint \\"test2_bars_pkey\\" primary key (\\"test2_id\\", \\"foo_bar2_id\\");
+
+create table \\"book2_tags\\" (\\"order\\" serial primary key, \\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);
+
+create table \\"book_to_tag_unordered\\" (\\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);
+alter table \\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_pkey\\" primary key (\\"book2_uuid_pk\\", \\"book_tag2_id\\");
+
+create table \\"author_to_friend\\" (\\"author2_1_id\\" int not null, \\"author2_2_id\\" int not null);
+alter table \\"author_to_friend\\" add constraint \\"author_to_friend_pkey\\" primary key (\\"author2_1_id\\", \\"author2_2_id\\");
+
+create table \\"author2_following\\" (\\"author2_1_id\\" int not null, \\"author2_2_id\\" int not null);
+alter table \\"author2_following\\" add constraint \\"author2_following_pkey\\" primary key (\\"author2_1_id\\", \\"author2_2_id\\");
+
+alter table \\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_foreign\\" foreign key (\\"baz_id\\") references \\"foo_baz2\\" (\\"id\\") on update cascade on delete set null;
+alter table \\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_foreign\\" foreign key (\\"foo_bar_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade on delete set null;
+
+alter table \\"foo_param2\\" add constraint \\"foo_param2_bar_id_foreign\\" foreign key (\\"bar_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade;
+alter table \\"foo_param2\\" add constraint \\"foo_param2_baz_id_foreign\\" foreign key (\\"baz_id\\") references \\"foo_baz2\\" (\\"id\\") on update cascade;
+
+alter table \\"author2\\" add constraint \\"author2_favourite_book_uuid_pk_foreign\\" foreign key (\\"favourite_book_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update no action on delete cascade;
+alter table \\"author2\\" add constraint \\"author2_favourite_author_id_foreign\\" foreign key (\\"favourite_author_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete set null;
+
+alter table \\"address2\\" add constraint \\"address2_author_id_foreign\\" foreign key (\\"author_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;
+
+alter table \\"book2\\" add constraint \\"book2_author_id_foreign\\" foreign key (\\"author_id\\") references \\"author2\\" (\\"id\\");
+alter table \\"book2\\" add constraint \\"book2_publisher_id_foreign\\" foreign key (\\"publisher_id\\") references \\"publisher2\\" (\\"id\\") on update cascade on delete cascade;
+
+alter table \\"test2\\" add constraint \\"test2_book_uuid_pk_foreign\\" foreign key (\\"book_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on delete set null;
+alter table \\"test2\\" add constraint \\"test2_parent_id_foreign\\" foreign key (\\"parent_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete set null;
+
+alter table \\"configuration2\\" add constraint \\"configuration2_test_id_foreign\\" foreign key (\\"test_id\\") references \\"test2\\" (\\"id\\") on update cascade;
+
+alter table \\"publisher2_tests\\" add constraint \\"publisher2_tests_publisher2_id_foreign\\" foreign key (\\"publisher2_id\\") references \\"publisher2\\" (\\"id\\") on update cascade on delete cascade;
+alter table \\"publisher2_tests\\" add constraint \\"publisher2_tests_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;
+
+alter table \\"test2_bars\\" add constraint \\"test2_bars_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;
+alter table \\"test2_bars\\" add constraint \\"test2_bars_foo_bar2_id_foreign\\" foreign key (\\"foo_bar2_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade on delete cascade;
+
+alter table \\"book2_tags\\" add constraint \\"book2_tags_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;
+alter table \\"book2_tags\\" add constraint \\"book2_tags_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;
+
+alter table \\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;
+alter table \\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;
+
+alter table \\"author_to_friend\\" add constraint \\"author_to_friend_author2_1_id_foreign\\" foreign key (\\"author2_1_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;
+alter table \\"author_to_friend\\" add constraint \\"author_to_friend_author2_2_id_foreign\\" foreign key (\\"author2_2_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;
+
+alter table \\"author2_following\\" add constraint \\"author2_following_author2_1_id_foreign\\" foreign key (\\"author2_1_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;
+alter table \\"author2_following\\" add constraint \\"author2_following_author2_2_id_foreign\\" foreign key (\\"author2_2_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;
+
+set session_replication_role = 'origin';
+"
+`;
+
+exports[`SchemaGenerator [postgres] generate schema from metadata [postgres]: postgres-update-schema-dump 1`] = `
+"set names 'utf8';
+set session_replication_role = 'replica';
+
+set session_replication_role = 'origin';
+"
+`;
+
+exports[`SchemaGenerator [postgres] update empty schema from metadata [postgres]: postgres-update-empty-schema-dump 1`] = `
+"set names 'utf8';
+set session_replication_role = 'replica';
+
+create table \\"label2\\" (\\"uuid\\" uuid not null, \\"name\\" varchar(255) not null);
+alter table \\"label2\\" add constraint \\"label2_pkey\\" primary key (\\"uuid\\");
+
+create table \\"foo_baz2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));
+
+create table \\"foo_bar2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"baz_id\\" int null, \\"foo_bar_id\\" int null, \\"version\\" timestamptz(0) not null default current_timestamp(0), \\"blob\\" bytea null, \\"array\\" text[] null, \\"object\\" jsonb null);
+alter table \\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_unique\\" unique (\\"baz_id\\");
+alter table \\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_unique\\" unique (\\"foo_bar_id\\");
+
+create table \\"foo_param2\\" (\\"bar_id\\" int not null, \\"baz_id\\" int not null, \\"value\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));
+alter table \\"foo_param2\\" add constraint \\"foo_param2_pkey\\" primary key (\\"bar_id\\", \\"baz_id\\");
+
+create table \\"publisher2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"type\\" text check (\\"type\\" in ('local', 'global')) not null, \\"type2\\" text check (\\"type2\\" in ('LOCAL', 'GLOBAL')) not null, \\"enum1\\" smallint null, \\"enum2\\" smallint null, \\"enum3\\" smallint null, \\"enum4\\" text check (\\"enum4\\" in ('a', 'b', 'c')) null, \\"enum5\\" text check (\\"enum5\\" in ('a')) null);
+
+create table \\"book_tag2\\" (\\"id\\" bigserial primary key, \\"name\\" varchar(50) not null);
+
+create table \\"author2\\" (\\"id\\" serial primary key, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"updated_at\\" timestamptz(3) not null default current_timestamp(3), \\"name\\" varchar(255) not null, \\"email\\" varchar(255) not null, \\"age\\" int null default null, \\"terms_accepted\\" boolean not null default false, \\"optional\\" boolean null, \\"identities\\" text[] null, \\"born\\" date null, \\"born_time\\" time(0) null, \\"favourite_book_uuid_pk\\" uuid null, \\"favourite_author_id\\" int null);
+create index \\"custom_email_index_name\\" on \\"author2\\" (\\"email\\");
+alter table \\"author2\\" add constraint \\"custom_email_unique_name\\" unique (\\"email\\");
+create index \\"author2_terms_accepted_index\\" on \\"author2\\" (\\"terms_accepted\\");
+create index \\"author2_born_index\\" on \\"author2\\" (\\"born\\");
+create index \\"born_time_idx\\" on \\"author2\\" (\\"born_time\\");
+create index \\"custom_idx_name_123\\" on \\"author2\\" (\\"name\\");
+create index \\"author2_name_age_index\\" on \\"author2\\" (\\"name\\", \\"age\\");
+alter table \\"author2\\" add constraint \\"author2_name_email_unique\\" unique (\\"name\\", \\"email\\");
+
+create table \\"address2\\" (\\"author_id\\" int not null, \\"value\\" varchar(255) not null);
+comment on table \\"address2\\" is 'This is address table';
+comment on column \\"address2\\".\\"value\\" is 'This is address property';
+alter table \\"address2\\" add constraint \\"address2_pkey\\" primary key (\\"author_id\\");
+
+create table \\"book2\\" (\\"uuid_pk\\" uuid not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null default '', \\"perex\\" text null, \\"price\\" numeric(8,2) null, \\"double\\" double precision null, \\"meta\\" jsonb null, \\"author_id\\" int not null, \\"publisher_id\\" int null);
+alter table \\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\\");
+
+create table \\"test2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) null, \\"book_uuid_pk\\" uuid null, \\"parent_id\\" int null, \\"version\\" int not null default 1);
+alter table \\"test2\\" add constraint \\"test2_book_uuid_pk_unique\\" unique (\\"book_uuid_pk\\");
+
+create table \\"configuration2\\" (\\"property\\" varchar(255) not null, \\"test_id\\" int not null, \\"value\\" varchar(255) not null);
+alter table \\"configuration2\\" add constraint \\"configuration2_pkey\\" primary key (\\"property\\", \\"test_id\\");
+
+create table \\"publisher2_tests\\" (\\"id\\" serial primary key, \\"publisher2_id\\" int not null, \\"test2_id\\" int not null);
+
+create table \\"test2_bars\\" (\\"test2_id\\" int not null, \\"foo_bar2_id\\" int not null);
+alter table \\"test2_bars\\" add constraint \\"test2_bars_pkey\\" primary key (\\"test2_id\\", \\"foo_bar2_id\\");
+
+create table \\"book2_tags\\" (\\"order\\" serial primary key, \\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);
+
+create table \\"book_to_tag_unordered\\" (\\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);
+alter table \\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_pkey\\" primary key (\\"book2_uuid_pk\\", \\"book_tag2_id\\");
+
+create table \\"author_to_friend\\" (\\"author2_1_id\\" int not null, \\"author2_2_id\\" int not null);
+alter table \\"author_to_friend\\" add constraint \\"author_to_friend_pkey\\" primary key (\\"author2_1_id\\", \\"author2_2_id\\");
+
+create table \\"author2_following\\" (\\"author2_1_id\\" int not null, \\"author2_2_id\\" int not null);
+alter table \\"author2_following\\" add constraint \\"author2_following_pkey\\" primary key (\\"author2_1_id\\", \\"author2_2_id\\");
+
+alter table \\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_foreign\\" foreign key (\\"baz_id\\") references \\"foo_baz2\\" (\\"id\\") on update cascade on delete set null;
+alter table \\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_foreign\\" foreign key (\\"foo_bar_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade on delete set null;
+
+alter table \\"foo_param2\\" add constraint \\"foo_param2_bar_id_foreign\\" foreign key (\\"bar_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade;
+alter table \\"foo_param2\\" add constraint \\"foo_param2_baz_id_foreign\\" foreign key (\\"baz_id\\") references \\"foo_baz2\\" (\\"id\\") on update cascade;
+
+alter table \\"author2\\" add constraint \\"author2_favourite_book_uuid_pk_foreign\\" foreign key (\\"favourite_book_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update no action on delete cascade;
+alter table \\"author2\\" add constraint \\"author2_favourite_author_id_foreign\\" foreign key (\\"favourite_author_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete set null;
+
+alter table \\"address2\\" add constraint \\"address2_author_id_foreign\\" foreign key (\\"author_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;
+
+alter table \\"book2\\" add constraint \\"book2_author_id_foreign\\" foreign key (\\"author_id\\") references \\"author2\\" (\\"id\\");
+alter table \\"book2\\" add constraint \\"book2_publisher_id_foreign\\" foreign key (\\"publisher_id\\") references \\"publisher2\\" (\\"id\\") on update cascade on delete cascade;
+
+alter table \\"test2\\" add constraint \\"test2_book_uuid_pk_foreign\\" foreign key (\\"book_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on delete set null;
+alter table \\"test2\\" add constraint \\"test2_parent_id_foreign\\" foreign key (\\"parent_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete set null;
+
+alter table \\"configuration2\\" add constraint \\"configuration2_test_id_foreign\\" foreign key (\\"test_id\\") references \\"test2\\" (\\"id\\") on update cascade;
+
+alter table \\"publisher2_tests\\" add constraint \\"publisher2_tests_publisher2_id_foreign\\" foreign key (\\"publisher2_id\\") references \\"publisher2\\" (\\"id\\") on update cascade on delete cascade;
+alter table \\"publisher2_tests\\" add constraint \\"publisher2_tests_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;
+
+alter table \\"test2_bars\\" add constraint \\"test2_bars_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;
+alter table \\"test2_bars\\" add constraint \\"test2_bars_foo_bar2_id_foreign\\" foreign key (\\"foo_bar2_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade on delete cascade;
+
+alter table \\"book2_tags\\" add constraint \\"book2_tags_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;
+alter table \\"book2_tags\\" add constraint \\"book2_tags_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;
+
+alter table \\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;
+alter table \\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;
+
+alter table \\"author_to_friend\\" add constraint \\"author_to_friend_author2_1_id_foreign\\" foreign key (\\"author2_1_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;
+alter table \\"author_to_friend\\" add constraint \\"author_to_friend_author2_2_id_foreign\\" foreign key (\\"author2_2_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;
+
+alter table \\"author2_following\\" add constraint \\"author2_following_author2_1_id_foreign\\" foreign key (\\"author2_1_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;
+alter table \\"author2_following\\" add constraint \\"author2_following_author2_2_id_foreign\\" foreign key (\\"author2_2_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;
+
+set session_replication_role = 'origin';
+"
+`;
+
+exports[`SchemaGenerator [postgres] update indexes [postgres]: postgres-update-schema-add-index 1`] = `
+"create index \\"book2_author_id_publisher_id_index\\" on \\"book2\\" (\\"author_id\\", \\"publisher_id\\");
+alter table \\"book2\\" add constraint \\"book2_author_id_publisher_id_unique\\" unique (\\"author_id\\", \\"publisher_id\\");
+
+"
+`;
+
+exports[`SchemaGenerator [postgres] update indexes [postgres]: postgres-update-schema-alter-index 1`] = `
+"alter index \\"book2_author_id_publisher_id_index\\" rename to \\"custom_idx_123\\";
+
+"
+`;
+
+exports[`SchemaGenerator [postgres] update indexes [postgres]: postgres-update-schema-drop-index 1`] = `
+"drop index \\"custom_idx_123\\";
+
+"
+`;
+
+exports[`SchemaGenerator [postgres] update indexes [postgres]: postgres-update-schema-drop-unique 1`] = `
+"alter table \\"book2\\" drop constraint \\"book2_author_id_publisher_id_unique\\";
+
+"
+`;
+
+exports[`SchemaGenerator [postgres] update schema [postgres]: postgres-update-schema-add-column 1`] = `
+"alter table \\"new_table\\" add column \\"id\\" serial primary key, add column \\"updated_at\\" timestamp(3) not null default current_timestamp(3);
+
+alter table \\"author2\\" add column \\"favourite_book_uuid_pk\\" uuid null;
+alter table \\"author2\\" add constraint \\"author2_favourite_book_uuid_pk_foreign\\" foreign key (\\"favourite_book_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update no action on delete cascade;
+
+"
+`;
+
+exports[`SchemaGenerator [postgres] update schema [postgres]: postgres-update-schema-alter-column 1`] = `
+"alter table \\"author2\\" drop constraint \\"author2_favourite_author_id_foreign\\";
+
+alter table \\"author2\\" drop constraint if exists \\"author2_name_check\\";
+alter table \\"author2\\" alter column \\"name\\" type int using (\\"name\\"::int);
+alter table \\"author2\\" alter column \\"name\\" set default 42;
+alter table \\"author2\\" alter column \\"name\\" drop not null;
+alter table \\"author2\\" drop constraint if exists \\"author2_age_check\\";
+alter table \\"author2\\" alter column \\"age\\" type int using (\\"age\\"::int);
+alter table \\"author2\\" alter column \\"age\\" set default 42;
+alter table \\"author2\\" add constraint \\"author2_favourite_author_id_foreign\\" foreign key (\\"favourite_author_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade on delete set null;
+
+"
+`;
+
+exports[`SchemaGenerator [postgres] update schema [postgres]: postgres-update-schema-create-table 1`] = `
+"create table \\"new_table\\" (\\"id\\" serial primary key, \\"created_at\\" timestamp(3) not null default current_timestamp(3), \\"updated_at\\" timestamp(3) not null default current_timestamp(3), \\"name\\" varchar(255) not null);
+
+"
+`;
+
+exports[`SchemaGenerator [postgres] update schema [postgres]: postgres-update-schema-drop-1:1 1`] = `
+"alter table \\"foo_bar2\\" drop constraint \\"foo_bar2_baz_id_foreign\\";
+
+alter table \\"foo_bar2\\" drop constraint \\"foo_bar2_baz_id_unique\\";
+alter table \\"foo_bar2\\" drop column \\"baz_id\\";
+
+"
+`;
+
+exports[`SchemaGenerator [postgres] update schema [postgres]: postgres-update-schema-drop-column 1`] = `
+"alter table \\"author2\\" drop constraint \\"author2_favourite_book_uuid_pk_foreign\\";
+
+alter table \\"new_table\\" drop constraint \\"new_table_pkey\\";
+alter table \\"new_table\\" drop column \\"id\\";
+alter table \\"new_table\\" drop column \\"updated_at\\";
+
+alter table \\"author2\\" drop constraint if exists \\"author2_name_check\\";
+alter table \\"author2\\" alter column \\"name\\" type int using (\\"name\\"::int);
+alter table \\"author2\\" alter column \\"name\\" drop default;
+alter table \\"author2\\" alter column \\"name\\" set not null;
+alter table \\"author2\\" drop column \\"favourite_book_uuid_pk\\";
+
+"
+`;
+
+exports[`SchemaGenerator [postgres] update schema [postgres]: postgres-update-schema-drop-table 1`] = `
+"alter table \\"address2\\" drop constraint \\"address2_author_id_foreign\\";
+
+alter table \\"author2_following\\" drop constraint \\"author2_following_author2_1_id_foreign\\";
+
+alter table \\"author2_following\\" drop constraint \\"author2_following_author2_2_id_foreign\\";
+
+alter table \\"author_to_friend\\" drop constraint \\"author_to_friend_author2_1_id_foreign\\";
+
+alter table \\"author_to_friend\\" drop constraint \\"author_to_friend_author2_2_id_foreign\\";
+
+alter table \\"book2\\" drop constraint \\"book2_author_id_foreign\\";
+
+drop table if exists \\"author2\\" cascade;
+
+drop table if exists \\"new_table\\" cascade;
+
+"
+`;
+
+exports[`SchemaGenerator [postgres] update schema [postgres]: postgres-update-schema-rename-column 1`] = `
+"alter table \\"author2\\" drop constraint \\"author2_favourite_author_id_foreign\\";
+
+drop index \\"author2_name_age_index\\";
+alter table \\"author2\\" rename column \\"age\\" to \\"age_in_years\\";
+alter table \\"author2\\" rename column \\"favourite_author_id\\" to \\"favourite_writer_id\\";
+alter table \\"author2\\" add constraint \\"author2_favourite_writer_id_foreign\\" foreign key (\\"favourite_writer_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade on delete set null;
+create index \\"author2_name_age_in_years_index\\" on \\"author2\\" (\\"name\\", \\"age_in_years\\");
+
+"
+`;
+
+exports[`SchemaGenerator [postgres] update schema - entity in different namespace [postgres] (GH #1215): postgres-update-schema-1215 1`] = `
+"create schema \\"other\\";
+
+create table \\"other\\".\\"new_table\\" (\\"id\\" serial primary key, \\"column_name\\" varchar(255) not null);
+alter table \\"other\\".\\"new_table\\" add constraint \\"new_table_column_name_unique\\" unique (\\"column_name\\");
+
+"
+`;
+
+exports[`SchemaGenerator [postgres] update schema - entity in different namespace [postgres] (GH #1215): postgres-update-schema-1215 2`] = `
+"drop table if exists \\"other\\".\\"new_table\\" cascade;
+
+drop schema \\"other\\";
+
+"
+`;
+
+exports[`SchemaGenerator [postgres] update schema enums [postgres]: postgres-update-schema-enums-1 1`] = `
+"create table \\"new_table\\" (\\"id\\" serial primary key, \\"enum_test\\" varchar(255) not null);
+
+"
+`;
+
+exports[`SchemaGenerator [postgres] update schema enums [postgres]: postgres-update-schema-enums-2 1`] = `
+"alter table \\"new_table\\" drop constraint if exists \\"new_table_enum_test_check\\";
+alter table \\"new_table\\" alter column \\"enum_test\\" type text using (\\"enum_test\\"::text);
+alter table \\"new_table\\" add constraint \\"new_table_enum_test_check\\" check (\\"enum_test\\" in ('a', 'b'));
+
+"
+`;
+
+exports[`SchemaGenerator [postgres] update schema enums [postgres]: postgres-update-schema-enums-3 1`] = `
+"alter table \\"new_table\\" drop constraint if exists \\"new_table_enum_test_check\\";
+alter table \\"new_table\\" alter column \\"enum_test\\" type text using (\\"enum_test\\"::text);
+alter table \\"new_table\\" add constraint \\"new_table_enum_test_check\\" check (\\"enum_test\\" in ('a', 'b', 'c'));
+
+"
+`;
+
+exports[`SchemaGenerator [postgres] update schema enums [postgres]: postgres-update-schema-enums-4 1`] = `
+"alter table \\"new_table\\" drop constraint if exists \\"new_table_enum_test_check\\";
+alter table \\"new_table\\" alter column \\"enum_test\\" type int using (\\"enum_test\\"::int);
+
+"
+`;

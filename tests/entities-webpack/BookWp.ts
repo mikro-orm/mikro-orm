@@ -1,11 +1,11 @@
 import { v4 as uuid } from 'uuid';
-import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property, t } from '@mikro-orm/core';
 import { AuthorWp } from './index';
 
 @Entity({ tableName: 'book2' })
 export class BookWp {
 
-  @PrimaryKey({ type: 'string', fieldName: 'uuid_pk', length: 36 })
+  @PrimaryKey({ type: t.uuid, fieldName: 'uuid_pk', length: 36 })
   uuid = uuid();
 
   @Property({ type: 'string' })

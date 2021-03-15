@@ -1,4 +1,4 @@
-import { Entity, LoadStrategy, Logger, ManyToOne, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
+import { Entity, LoadStrategy, Logger, ManyToOne, MikroORM, PrimaryKey, Property, t, Type } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 
 export class Point {
@@ -49,6 +49,9 @@ export class Location {
 
   @PrimaryKey()
   id!: number;
+
+  @Property({ type: t.float, nullable: true })
+  rank?: number;
 
   @Property({ type: PointType, nullable: true })
   point?: Point;
@@ -144,7 +147,7 @@ describe('custom types [mysql]', () => {
 
     // custom types with SQL fragments with joined strategy (GH #1594)
     const a2 = await orm.em.findOneOrFail(Address, addr, { populate: { location: LoadStrategy.JOINED } });
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.`id`, `e0`.`location_id`, `l1`.`id` as `l1__id`, ST_AsText(`l1`.`point`) as `l1__point`, ST_AsText(`l1`.`extended_point`) as `l1__extended_point` from `address` as `e0` left join `location` as `l1` on `e0`.`location_id` = `l1`.`id` where `e0`.`id` = ?');
+    expect(mock.mock.calls[0][0]).toMatch('select `e0`.`id`, `e0`.`location_id`, `l1`.`id` as `l1__id`, `l1`.`rank` as `l1__rank`, ST_AsText(`l1`.`point`) as `l1__point`, ST_AsText(`l1`.`extended_point`) as `l1__extended_point` from `address` as `e0` left join `location` as `l1` on `e0`.`location_id` = `l1`.`id` where `e0`.`id` = ?');
     expect(a2.location.point).toBeInstanceOf(Point);
     expect(a2.location.point).toMatchObject({ latitude: 2.34, longitude: 9.87 });
     expect(a2.location.extendedPoint).toBeInstanceOf(Point);

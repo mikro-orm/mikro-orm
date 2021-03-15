@@ -28,15 +28,17 @@ class OrderItem {
   @ManyToOne({
     entity: () => Order,
     eager: true,
+    nullable: true,
   })
-  order1!: Order;
+  order1?: Order;
 
   @ManyToOne({
     entity: () => Order,
     strategy: LoadStrategy.JOINED,
     eager: true,
+    nullable: true,
   })
-  order2!: Order;
+  order2?: Order;
 
   constructor(id: number) {
     this.id = id;

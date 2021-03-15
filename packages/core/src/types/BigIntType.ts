@@ -24,7 +24,11 @@ export class BigIntType extends Type<string | bigint | null | undefined, string 
   }
 
   getColumnType(prop: EntityProperty, platform: Platform) {
-    return platform.getBigIntTypeDeclarationSQL();
+    return platform.getBigIntTypeDeclarationSQL(prop);
+  }
+
+  compareAsType(): string {
+    return 'string';
   }
 
 }

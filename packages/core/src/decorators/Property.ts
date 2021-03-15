@@ -42,6 +42,9 @@ export type PropertyOptions<T> = {
   columnType?: string;
   type?: 'string' | 'number' | 'boolean' | 'bigint' | 'ObjectId' | string | unknown | bigint | Date | Constructor<Type<any>> | Type<any>;
   length?: number;
+  precision?: number;
+  scale?: number;
+  autoincrement?: boolean;
   onCreate?: (entity: T) => any;
   onUpdate?: (entity: T) => any;
   default?: string | string[] | number | number[] | boolean | null;

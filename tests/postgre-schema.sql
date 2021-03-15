@@ -36,11 +36,11 @@ alter table "foo_bar2" add constraint "foo_bar2_foo_bar_id_unique" unique ("foo_
 create table "foo_param2" ("bar_id" int4 not null, "baz_id" int4 not null, "value" varchar(255) not null, "version" timestamptz(3) not null default current_timestamp(3));
 alter table "foo_param2" add constraint "foo_param2_pkey" primary key ("bar_id", "baz_id");
 
-create table "publisher2" ("id" serial primary key, "name" varchar(255) not null, "type" text check ("type" in ('local', 'global')) not null, "type2" text check ("type2" in ('LOCAL', 'GLOBAL')) not null, "enum1" int2 null, "enum2" int2 null, "enum3" int2 null, "enum4" text check ("enum4" in ('a', 'b', 'c')) null);
+create table "publisher2" ("id" serial primary key, "name" varchar(255) not null, "type" text check ("type" in ('local', 'global')) not null, "type2" text check ("type2" in ('LOCAL', 'GLOBAL')) not null, "enum1" int2 null, "enum2" int2 null, "enum3" int2 null, "enum4" text check ("enum4" in ('a', 'b', 'c')) null, "enum5" text check ("enum5" in ('a')) null);
 
 create table "book_tag2" ("id" bigserial primary key, "name" varchar(50) not null);
 
-create table "author2" ("id" serial primary key, "created_at" timestamptz(3) not null default current_timestamp(3), "updated_at" timestamp(3) not null default current_timestamp(3), "name" varchar(255) not null, "email" varchar(255) not null, "age" int4 null default null, "terms_accepted" bool not null default false, "optional" bool null, "identities" text[] null, "born" date null, "born_time" time(0) null, "favourite_book_uuid_pk" varchar(36) null, "favourite_author_id" int4 null);
+create table "author2" ("id" serial primary key, "created_at" timestamptz(3) not null default current_timestamp(3), "updated_at" timestamp(3) not null default current_timestamp(3), "name" varchar(255) not null, "email" varchar(255) not null, "age" int4 null default null, "terms_accepted" bool not null default false, "optional" bool null, "identities" text[] null, "born" date null, "born_time" time(0) null, "favourite_book_uuid_pk" uuid null, "favourite_author_id" int4 null);
 create index "custom_email_index_name" on "author2" ("email");
 alter table "author2" add constraint "custom_email_unique_name" unique ("email");
 create index "author2_terms_accepted_index" on "author2" ("terms_accepted");
@@ -55,10 +55,10 @@ comment on table "address2" is 'This is address table';
 comment on column "address2"."value" is 'This is address property';
 alter table "address2" add constraint "address2_pkey" primary key ("author_id");
 
-create table "book2" ("uuid_pk" varchar(36) not null, "created_at" timestamptz(3) not null default current_timestamp(3), "title" varchar(255) null default '', "perex" text null, "price" float null, "double" numeric null, "meta" jsonb null, "author_id" int4 not null, "publisher_id" int4 null, "foo" varchar(255) null default 'lol');
+create table "book2" ("uuid_pk" uuid not null, "created_at" timestamptz(3) not null default current_timestamp(3), "title" varchar(255) null default '', "perex" text null, "price" numeric(8, 2) null, "double" numeric null, "meta" jsonb null, "author_id" int4 not null, "publisher_id" int4 null, "foo" varchar(255) null default 'lol');
 alter table "book2" add constraint "book2_pkey" primary key ("uuid_pk");
 
-create table "test2" ("id" serial primary key, "name" varchar(255) null, "book_uuid_pk" varchar(36) null, "parent_id" int4 null, "version" int4 not null default 1, "path" polygon null);
+create table "test2" ("id" serial primary key, "name" varchar(255) null, "book_uuid_pk" uuid null, "parent_id" int4 null, "version" int4 not null default 1, "path" polygon null);
 alter table "test2" add constraint "test2_book_uuid_pk_unique" unique ("book_uuid_pk");
 
 create table "configuration2" ("property" varchar(255) not null, "test_id" int4 not null, "value" varchar(255) not null);
@@ -69,9 +69,9 @@ create table "publisher2_tests" ("id" serial primary key, "publisher2_id" int4 n
 create table "test2_bars" ("test2_id" int4 not null, "foo_bar2_id" int4 not null);
 alter table "test2_bars" add constraint "test2_bars_pkey" primary key ("test2_id", "foo_bar2_id");
 
-create table "book2_tags" ("order" serial primary key, "book2_uuid_pk" varchar(36) not null, "book_tag2_id" bigint not null);
+create table "book2_tags" ("order" serial primary key, "book2_uuid_pk" uuid not null, "book_tag2_id" bigint not null);
 
-create table "book_to_tag_unordered" ("book2_uuid_pk" varchar(36) not null, "book_tag2_id" bigint not null);
+create table "book_to_tag_unordered" ("book2_uuid_pk" uuid not null, "book_tag2_id" bigint not null);
 alter table "book_to_tag_unordered" add constraint "book_to_tag_unordered_pkey" primary key ("book2_uuid_pk", "book_tag2_id");
 
 create table "author_to_friend" ("author2_1_id" int4 not null, "author2_2_id" int4 not null);

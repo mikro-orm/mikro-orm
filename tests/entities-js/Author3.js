@@ -1,4 +1,4 @@
-const { Collection, DateType, TimeType, ReferenceType, EntitySchema } = require('@mikro-orm/core');
+const { Collection, DateType, TimeType, ReferenceType, EntitySchema, t } = require('@mikro-orm/core');
 const { BaseEntity4 } = require('./index').BaseEntity4;
 
 /**
@@ -71,34 +71,34 @@ const schema = new EntitySchema({
       nullable: true,
     },
     updatedAt: {
-      type: 'Date',
+      type: t.datetime,
       nullable: true,
       onUpdate: () => new Date(),
     },
     name: { type: 'string' },
     email: {
-      type: 'string',
+      type: t.string,
       unique: true,
     },
     age: {
-      type: 'number',
+      type: t.tinyint,
       nullable: true,
     },
     termsAccepted: {
-      type: 'boolean',
+      type: t.boolean,
       default: 0,
     },
     identities: {
-      type: 'string[]',
+      type: t.array,
       nullable: true,
     },
     born: {
-      type: DateType,
+      type: t.date,
       nullable: true,
       length: 3,
     },
     bornTime: {
-      type: TimeType,
+      type: t.time,
       nullable: true,
       length: 3,
     },
@@ -110,6 +110,7 @@ const schema = new EntitySchema({
     favouriteBook: {
       reference: 'm:1',
       type: 'Book3',
+      nullable: true,
     },
   },
   hooks: {

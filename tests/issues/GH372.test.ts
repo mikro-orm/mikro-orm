@@ -1,16 +1,16 @@
 (global as any).process.env.FORCE_COLOR = 0;
 
-import Knex, { Raw } from 'knex';
+import { knex, Knex } from 'knex';
 import { SchemaGenerator } from '@mikro-orm/knex';
 import { Entity, Logger, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 type Point = { x: number; y: number };
 
-class PointType extends Type<Point, Raw> {
+class PointType extends Type<Point, Knex.Raw> {
 
-  convertToDatabaseValue(value: Point): Raw {
-    return Knex({ client: 'pg' }).raw(`point(?,?)`, [value.x, value.y]);
+  convertToDatabaseValue(value: Point): Knex.Raw {
+    return knex({ client: 'pg' }).raw(`point(?,?)`, [value.x, value.y]);
   }
 
   convertToJSValue(value: any): Point {

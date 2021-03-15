@@ -187,11 +187,11 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     this.addProperty(name, type, prop);
   }
 
-  addIndex<T>(options: Required<Omit<IndexOptions<T>, 'name' | 'type' | 'options'>> & { name?: string; type?: string; options?: Dictionary }): void {
+  addIndex<T>(options: Required<Omit<IndexOptions<T>, 'name' | 'type' | 'options' | 'expression'>> & { name?: string; expression?: string; options?: Dictionary }): void {
     this._meta.indexes.push(options as any);
   }
 
-  addUnique<T>(options: Required<Omit<UniqueOptions<T>, 'name' | 'options'>> & { name?: string; options?: Dictionary }): void {
+  addUnique<T>(options: Required<Omit<UniqueOptions<T>, 'name' | 'options' | 'expression'>> & { name?: string; options?: Dictionary }): void {
     this._meta.uniques.push(options as any);
   }
 
@@ -242,6 +242,13 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
       delete this._meta.name;
     }
 
+    const tableName = this._meta.collection ?? this._meta.tableName;
+
+    if (tableName?.includes('.') && !this._meta.schema) {
+      this._meta.schema = tableName.substr(0, tableName.indexOf('.'));
+      this._meta.collection = tableName.substr(tableName.indexOf('.') + 1);
+    }
+
     this.initProperties();
     this.initPrimaryKeys();
     this._meta.props = Object.values(this._meta.properties);
@@ -253,7 +260,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
 
   private initProperties(): void {
     Object.entries<Property<T, unknown>>(this._meta.properties as Dictionary).forEach(([name, options]) => {
-      options.type = 'customType' in options ? options.customType!.constructor.name : options.type;
+      options.type = options.customType != null ? options.customType.constructor.name : options.type;
 
       switch ((options as EntityProperty).reference) {
         case ReferenceType.ONE_TO_ONE:
@@ -298,6 +305,10 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     // FK used as PK, we need to cascade
     if (pks.length === 1 && pks[0].reference !== ReferenceType.SCALAR) {
       pks[0].onDelete = 'cascade';
+    }
+
+    if (pks.length === 1 && pks[0].type === 'number') {
+      pks[0].autoincrement = pks[0].autoincrement ?? true;
     }
 
     const serializedPrimaryKey = Object.values<EntityProperty<T>>(this._meta.properties).find(prop => prop.serializedPrimaryKey);

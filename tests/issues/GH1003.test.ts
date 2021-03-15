@@ -75,8 +75,7 @@ describe('GH issue 1003', () => {
           { id: 'newChildId' },
         ],
       },
-    })
-    ;
+    });
   });
 
 });

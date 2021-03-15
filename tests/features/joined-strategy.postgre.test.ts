@@ -23,9 +23,11 @@ describe('Joined loading strategy', () => {
     const a2 = await orm.em.findOneOrFail(Author2, author, { populate: ['books2', 'following'] });
     expect(a2.books2).toHaveLength(2);
     expect(a2.books2[0].title).toBe('The Fall');
-    expect(a2.books2[0].priceTaxed).toBe(238);
+    expect(a2.books2[0].price).toBe('200.00');
+    expect(a2.books2[0].priceTaxed).toBe('238.0000');
     expect(a2.books2[1].title).toBe('The Stranger');
-    expect(a2.books2[1].priceTaxed).toBe(119);
+    expect(a2.books2[1].price).toBe('100.00');
+    expect(a2.books2[1].priceTaxed).toBe('119.0000');
   });
 
   test('populate OneToMany with joined strategy [find()]', async () => {
@@ -42,19 +44,19 @@ describe('Joined loading strategy', () => {
     expect(ret).toHaveLength(3);
     expect(ret[0].books2).toHaveLength(2);
     expect(ret[0].books2[0].title).toEqual('The Fall 1');
-    expect(ret[0].books2[0].priceTaxed).toBe(238);
+    expect(ret[0].books2[0].priceTaxed).toBe('238.0000');
     expect(ret[0].books2[1].title).toEqual('The Stranger 1');
-    expect(ret[0].books2[1].priceTaxed).toBe(119);
+    expect(ret[0].books2[1].priceTaxed).toBe('119.0000');
     expect(ret[1].books2).toHaveLength(2);
     expect(ret[1].books2[0].title).toEqual('The Fall 2');
-    expect(ret[1].books2[0].priceTaxed).toBe(476);
+    expect(ret[1].books2[0].priceTaxed).toBe('476.0000');
     expect(ret[1].books2[1].title).toEqual('The Stranger 2');
-    expect(ret[1].books2[1].priceTaxed).toBe(357);
+    expect(ret[1].books2[1].priceTaxed).toBe('357.0000');
     expect(ret[2].books2).toHaveLength(2);
     expect(ret[2].books2[0].title).toEqual('The Fall 3');
-    expect(ret[2].books2[0].priceTaxed).toBe(714);
+    expect(ret[2].books2[0].priceTaxed).toBe('714.0000');
     expect(ret[2].books2[1].title).toEqual('The Stranger 3');
-    expect(ret[2].books2[1].priceTaxed).toBe(595);
+    expect(ret[2].books2[1].priceTaxed).toBe('595.0000');
   });
 
   test('populate ManyToOne with joined strategy [findOne()]', async () => {
@@ -393,7 +395,7 @@ describe('Joined loading strategy', () => {
     expect(mock.mock.calls[0][0]).toMatch('select "e0"."id", "e0"."name", ' +
       '"b1"."uuid_pk" as "b1__uuid_pk", "b1"."created_at" as "b1__created_at", "b1"."title" as "b1__title", "b1"."price" as "b1__price", "b1".price * 1.19 as "b1__price_taxed", "b1"."double" as "b1__double", "b1"."meta" as "b1__meta", "b1"."author_id" as "b1__author_id", "b1"."publisher_id" as "b1__publisher_id", ' +
       '"a3"."id" as "a3__id", "a3"."created_at" as "a3__created_at", "a3"."updated_at" as "a3__updated_at", "a3"."name" as "a3__name", "a3"."email" as "a3__email", "a3"."age" as "a3__age", "a3"."terms_accepted" as "a3__terms_accepted", "a3"."optional" as "a3__optional", "a3"."identities" as "a3__identities", "a3"."born" as "a3__born", "a3"."born_time" as "a3__born_time", "a3"."favourite_book_uuid_pk" as "a3__favourite_book_uuid_pk", "a3"."favourite_author_id" as "a3__favourite_author_id", ' +
-      '"p4"."id" as "p4__id", "p4"."name" as "p4__name", "p4"."type" as "p4__type", "p4"."type2" as "p4__type2", "p4"."enum1" as "p4__enum1", "p4"."enum2" as "p4__enum2", "p4"."enum3" as "p4__enum3", "p4"."enum4" as "p4__enum4", ' +
+      '"p4"."id" as "p4__id", "p4"."name" as "p4__name", "p4"."type" as "p4__type", "p4"."type2" as "p4__type2", "p4"."enum1" as "p4__enum1", "p4"."enum2" as "p4__enum2", "p4"."enum3" as "p4__enum3", "p4"."enum4" as "p4__enum4", "p4"."enum5" as "p4__enum5", ' +
       '"t5"."id" as "t5__id", "t5"."name" as "t5__name", "t5"."book_uuid_pk" as "t5__book_uuid_pk", "t5"."parent_id" as "t5__parent_id", "t5"."version" as "t5__version" ' +
       'from "book_tag2" as "e0" ' +
       'left join "book2_tags" as "e2" on "e0"."id" = "e2"."book_tag2_id" ' +

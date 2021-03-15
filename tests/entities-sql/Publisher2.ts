@@ -53,6 +53,9 @@ export class Publisher2 extends BaseEntity2 {
   @Enum({ items: ['a', 'b', 'c'], nullable: true })
   enum4?: any;
 
+  @Enum({ items: ['a'], nullable: true })
+  enum5?: any;
+
   constructor(name = 'asd', type = PublisherType.LOCAL) {
     super();
     this.name = name;

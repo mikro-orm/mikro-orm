@@ -33,7 +33,7 @@ describe('EntityGenerator', () => {
     const dump = await generator.generate();
     expect(dump).toMatchSnapshot('postgres-entity-dump');
 
-    const table = new DatabaseTable('test_entity', 'public');
+    const table = new DatabaseTable(orm.em.getPlatform(), 'test_entity', 'public');
     Object.assign(table, {
       indexes: [],
       columns: {
@@ -42,7 +42,7 @@ describe('EntityGenerator', () => {
           type: 'varchar(50)',
           maxLength: 50,
           nullable: true,
-          defaultValue: 'null::character varying',
+          default: 'null::character varying',
           indexes: [],
         },
         test: {
@@ -50,7 +50,7 @@ describe('EntityGenerator', () => {
           type: 'varchar(50)',
           maxLength: 50,
           nullable: true,
-          defaultValue: 'foo',
+          default: 'foo',
           indexes: [],
         },
       },

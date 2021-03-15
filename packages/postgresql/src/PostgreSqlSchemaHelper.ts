@@ -1,31 +1,8 @@
-import { Dictionary, EntityProperty } from '@mikro-orm/core';
-import { AbstractSqlConnection, IsSame, SchemaHelper, Column, Index } from '@mikro-orm/knex';
+import { BigIntType, Dictionary, EnumType, Utils } from '@mikro-orm/core';
+import { AbstractSqlConnection, SchemaHelper, Column, Index, DatabaseTable } from '@mikro-orm/knex';
+import { Knex } from 'knex';
 
 export class PostgreSqlSchemaHelper extends SchemaHelper {
-
-  static readonly TYPES = {
-    boolean: ['bool', 'boolean'],
-    number: ['int4', 'integer', 'int2', 'int', 'float', 'float8', 'double', 'double precision', 'bigint', 'smallint', 'decimal', 'numeric', 'real'],
-    string: ['varchar(?)', 'character varying', 'text', 'character', 'char', 'uuid', 'bigint', 'int8', 'enum'],
-    float: ['float'],
-    double: ['double precision', 'float8'],
-    tinyint: ['int2'],
-    smallint: ['int2'],
-    text: ['text'],
-    Date: ['timestamptz(?)', 'timestamp(?)', 'datetime(?)', 'timestamp with time zone', 'timestamp without time zone', 'datetimetz', 'time', 'date', 'timetz', 'datetz'],
-    date: ['timestamptz(?)', 'timestamp(?)', 'datetime(?)', 'timestamp with time zone', 'timestamp without time zone', 'datetimetz', 'time', 'date', 'timetz', 'datetz'],
-    object: ['jsonb', 'json'],
-    json: ['jsonb', 'json'],
-    uuid: ['uuid'],
-    Buffer: ['bytea'],
-    buffer: ['bytea'],
-    enum: ['text'], // enums are implemented as text columns with check constraints
-  };
-
-  static readonly DEFAULT_TYPE_LENGTHS = {
-    string: 255,
-    date: 0,
-  };
 
   static readonly DEFAULT_VALUES = {
     'now()': ['now()', 'current_timestamp'],
@@ -45,60 +22,68 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return `set session_replication_role = 'origin';\n`;
   }
 
-  getTypeDefinition(prop: EntityProperty): string {
-    return super.getTypeDefinition(prop, PostgreSqlSchemaHelper.TYPES, PostgreSqlSchemaHelper.DEFAULT_TYPE_LENGTHS, true);
-  }
-
-  getTypeFromDefinition(type: string, defaultType: string): string {
-    return super.getTypeFromDefinition(type, defaultType, PostgreSqlSchemaHelper.TYPES);
-  }
-
-  isSame(prop: EntityProperty, column: Column, idx?: number): IsSame {
-    return super.isSame(prop, column, idx, PostgreSqlSchemaHelper.TYPES, PostgreSqlSchemaHelper.DEFAULT_VALUES);
-  }
-
-  indexForeignKeys() {
-    return false;
-  }
-
-  isImplicitIndex(name: string): boolean {
-    return false;
-  }
-
   getListTablesSQL(): string {
-    return `select table_name, nullif(table_schema, 'public') as schema_name `
-      + `from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' `
+    return `select table_name, nullif(table_schema, 'public') as schema_name, `
+      + `(select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c
+          where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment `
+      + `from information_schema.tables `
+      + `where table_schema not like 'pg_%' and table_schema != 'information_schema' `
       + `and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name`;
   }
 
-  async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName = 'public'): Promise<any[]> {
-    const sql = `select column_name, column_default, is_nullable, udt_name, coalesce(datetime_precision, character_maximum_length) length, data_type
-      from information_schema.columns where table_schema = '${schemaName}' and table_name = '${tableName}'`;
+  async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName = 'public'): Promise<Column[]> {
+    const sql = `select column_name,
+      column_default,
+      is_nullable,
+      udt_name,
+      coalesce(datetime_precision,
+      character_maximum_length) length,
+      numeric_precision,
+      numeric_scale,
+      data_type,
+      (select pg_catalog.col_description(c.oid, cols.ordinal_position::int)
+        from pg_catalog.pg_class c
+        where c.oid = (select ('"' || cols.table_schema || '"."' || cols.table_name || '"')::regclass::oid) and c.relname = cols.table_name) as column_comment
+      from information_schema.columns cols where table_schema = '${schemaName}' and table_name = '${tableName}'`;
     const columns = await connection.execute<any[]>(sql);
+    const str = (val: string | number | undefined) => val != null ? '' + val : val;
 
-    return columns.map(col => ({
-      name: col.column_name,
-      type: col.data_type.toLowerCase() === 'array' ? col.udt_name.replace(/^_(.*)$/, '$1[]') : col.udt_name,
-      maxLength: col.length,
-      nullable: col.is_nullable === 'YES',
-      defaultValue: this.normalizeDefaultValue(col.column_default, col.length),
-    }));
+    return columns.map(col => {
+      const mappedType = connection.getPlatform().getMappedType(col.data_type);
+      const increments = col.column_default?.includes('nextval') && connection.getPlatform().isNumericColumn(mappedType);
+
+      return ({
+        name: col.column_name,
+        type: col.data_type.toLowerCase() === 'array' ? col.udt_name.replace(/^_(.*)$/, '$1[]') : col.udt_name,
+        mappedType,
+        length: col.length,
+        precision: col.numeric_precision,
+        scale: col.numeric_scale,
+        nullable: col.is_nullable === 'YES',
+        default: str(this.normalizeDefaultValue(col.column_default, col.length)),
+        unsigned: increments,
+        autoincrement: increments,
+        comment: col.column_comment,
+      });
+    });
   }
 
   async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName: string): Promise<Index[]> {
     const sql = this.getIndexesSQL(tableName, schemaName);
     const indexes = await connection.execute<any[]>(sql);
 
-    return indexes.map(index => ({
-      columnName: index.column_name,
+    return this.mapIndexes(indexes.map(index => ({
+      columnNames: [index.column_name],
       keyName: index.constraint_name,
       unique: index.unique,
       primary: index.primary,
-    }));
+    })));
   }
 
   getForeignKeysSQL(tableName: string, schemaName = 'public'): string {
-    return `select kcu.table_name as table_name, rel_kcu.table_name as referenced_table_name, kcu.column_name as column_name,
+    return `select kcu.table_name as table_name, rel_kcu.table_name as referenced_table_name,
+      case when rel_kcu.constraint_schema = 'public' then null else rel_kcu.constraint_schema end as referenced_schema_name,
+      kcu.column_name as column_name,
       rel_kcu.column_name as referenced_column_name, kcu.constraint_name, rco.update_rule, rco.delete_rule
       from information_schema.table_constraints tco
       join information_schema.key_column_usage kcu
@@ -112,7 +97,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         and rco.unique_constraint_name = rel_kcu.constraint_name
         and kcu.ordinal_position = rel_kcu.ordinal_position
       where tco.table_name = '${tableName}' and tco.table_schema = '${schemaName}' and tco.constraint_schema = '${schemaName}' and tco.constraint_type = 'FOREIGN KEY'
-      order by kcu.table_schema, kcu.table_name, kcu.ordinal_position`;
+      order by kcu.table_schema, kcu.table_name, kcu.ordinal_position, kcu.constraint_name`;
   }
 
   async getEnumDefinitions(connection: AbstractSqlConnection, tableName: string, schemaName = 'public'): Promise<Dictionary> {
@@ -125,8 +110,9 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       // check constraints are defined as one of:
       // `CHECK ((type = ANY (ARRAY['local'::text, 'global'::text])))`
       // `CHECK (((enum_test)::text = ANY ((ARRAY['a'::character varying, 'b'::character varying, 'c'::character varying])::text[])))`
-      const m1 = item.enum_def.match(/check \(\(\((\w+)\)::/i) || item.enum_def.match(/check \(\((\w+) = any/i);
-      const m2 = item.enum_def.match(/\(array\[(.*)]\)/i);
+      // `CHECK ((type = 'a'::text))`
+      const m1 = item.enum_def.match(/check \(\(\((\w+)\)::/i) || item.enum_def.match(/check \(\((\w+) = /i);
+      const m2 = item.enum_def.match(/\(array\[(.*)]\)/i) || item.enum_def.match(/ = (.*)\)/i);
 
       /* istanbul ignore else  */
       if (m1 && m2) {
@@ -135,6 +121,64 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
       return o;
     }, {} as Dictionary<string>);
+  }
+
+  createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>) {
+    const compositePK = fromTable.getPrimaryKey()?.composite;
+
+    if (column.autoincrement && !compositePK && !changedProperties) {
+      if (column.mappedType instanceof BigIntType) {
+        return table.bigIncrements(column.name);
+      }
+
+      return table.increments(column.name);
+    }
+
+    if (column.mappedType instanceof EnumType && column.enumItems?.every(item => Utils.isString(item))) {
+      return table.enum(column.name, column.enumItems);
+    }
+
+    // serial is just a pseudo type, it cannot be used for altering
+    /* istanbul ignore next */
+    if (changedProperties && column.type.includes('serial')) {
+      column.type = column.type.replace('serial', 'int');
+    }
+
+    return table.specificType(column.name, column.type);
+  }
+
+  configureColumn(column: Column, col: Knex.ColumnBuilder, knex: Knex, changedProperties?: Set<string>) {
+    const guard = (key: string) => !changedProperties || changedProperties.has(key);
+
+    Utils.runIfNotEmpty(() => col.nullable(), column.nullable && guard('nullable'));
+    Utils.runIfNotEmpty(() => col.notNullable(), !column.nullable && guard('nullable'));
+    Utils.runIfNotEmpty(() => col.unsigned(), column.unsigned && guard('unsigned'));
+    Utils.runIfNotEmpty(() => col.comment(column.comment!), column.comment && !changedProperties);
+    this.configureColumnDefault(column, col, knex, changedProperties);
+
+    return col;
+  }
+
+  getAlterColumnAutoincrement(tableName: string, column: Column): string {
+    const ret: string[] = [];
+    const quoted = (val: string) => this.platform.quoteIdentifier(val);
+
+    /* istanbul ignore else */
+    if (column.autoincrement) {
+      const seqName = `${tableName}_${column.name}_seq`; // TODO move to naming strategy
+      ret.push(`create sequence if not exists ${quoted(seqName)}`);
+      ret.push(`select setval('${seqName}', (select max(${quoted(column.name)}) from ${quoted(tableName)}))`);
+      ret.push(`alter table ${quoted(tableName)} alter column ${quoted(column.name)} set default nextval('${seqName}')`);
+    } else if (column.default == null) {
+      ret.push(`alter table ${quoted(tableName)} alter column ${quoted(column.name)} drop default`);
+    }
+
+    return ret.join(';\n');
+  }
+
+  getChangeColumnCommentSQL(tableName: string, to: Column): string {
+    const value = to.comment ? `'${to.comment}'` : 'null';
+    return `comment on column "${tableName}"."${to.name}" is ${value}`;
   }
 
   normalizeDefaultValue(defaultValue: string, length: number) {
@@ -165,6 +209,13 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
   getManagementDbName(): string {
     return 'postgres';
+  }
+
+  getRenameIndexSQL(tableName: string, index: Index, oldIndexName: string): string {
+    oldIndexName = this.platform.quoteIdentifier(oldIndexName);
+    const keyName = this.platform.quoteIdentifier(index.keyName);
+
+    return `alter index ${oldIndexName} rename to ${keyName}`;
   }
 
   private getIndexesSQL(tableName: string, schemaName = 'public'): string {

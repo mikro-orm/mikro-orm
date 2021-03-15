@@ -42,7 +42,7 @@ describe('GH issue 463', () => {
   afterAll(() => orm.close(true));
 
   test(`multiple inheritance`, async () => {
-    const sql = 'create table `b` (`id` integer not null primary key autoincrement, `foo` varchar not null, `bar` varchar not null, `name` varchar not null);\n' +
+    const sql = 'create table `b` (`id` integer not null primary key autoincrement, `foo` text not null, `bar` text not null, `name` text not null);\n' +
       'create index `b_foo_index` on `b` (`foo`);\n' +
       'create unique index `b_bar_unique` on `b` (`bar`);\n\n';
     expect(await new SchemaGenerator(orm.em).getCreateSchemaSQL(false)).toBe(sql);

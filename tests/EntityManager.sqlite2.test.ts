@@ -254,7 +254,7 @@ describe('EntityManagerSqlite2', () => {
       for (const book of author.books.$) {
         expect(book.title).toMatch(/My Life on The Wall, part \d/);
 
-        expect(book.author.constructor.name).toBe('Author4');
+        expect(book.author!.constructor.name).toBe('Author4');
         expect(wrap(book.author).isInitialized()).toBe(true);
         expect(book.publisher!.unwrap().constructor.name).toBe('Publisher4');
         expect(wrap(book.publisher).isInitialized()).toBe(false);
@@ -279,7 +279,7 @@ describe('EntityManagerSqlite2', () => {
     const lastBook = await booksRepository.find({ author: jon.id }, ['author'], { title: QueryOrder.DESC }, 2, 2);
     expect(lastBook.length).toBe(1);
     expect(lastBook[0].title).toBe('My Life on The Wall, part 1');
-    expect(lastBook[0].author.constructor.name).toBe('Author4');
+    expect(lastBook[0].author!.constructor.name).toBe('Author4');
     expect(wrap(lastBook[0].author).isInitialized()).toBe(true);
     await orm.em.getRepository(Book4).remove(lastBook[0]).flush();
   });
@@ -470,7 +470,7 @@ describe('EntityManagerSqlite2', () => {
 
     for (const book of books) {
       expect(wrap(book).toJSON()).toMatchObject({
-        author: book.author.id,
+        author: book.author!.id,
       });
     }
   });
@@ -496,7 +496,7 @@ describe('EntityManagerSqlite2', () => {
 
     for (const book of publisher.books) {
       expect(json.find((b: any) => b.id === book.id)).toMatchObject({
-        author: book.author.id,
+        author: book.author!.id,
       });
     }
   });
@@ -550,7 +550,7 @@ describe('EntityManagerSqlite2', () => {
   test('populate ManyToOne relation', async () => {
     const authorRepository = orm.em.getRepository(Author4);
     const god = orm.em.create(Author4, { name: 'God', email: 'hello@heaven.god' });
-    const bible = orm.em.create(Book4, { title: 'Bible', god });
+    const bible = orm.em.create(Book4, { title: 'Bible', author: god });
     await orm.em.persist(bible).flush();
 
     const jon = orm.em.create(Author4, { name: 'Jon Snow', email: 'snow@wall.st' });
@@ -1017,7 +1017,7 @@ describe('EntityManagerSqlite2', () => {
       .leftJoinAndSelect('b.tags', 't')
       .where({ 't.name': ['sick', 'sexy'] });
     const sql = 'select `a`.*, ' +
-      '`b`.`id` as `b__id`, `b`.`created_at` as `b__created_at`, `b`.`updated_at` as `b__updated_at`, `b`.`title` as `b__title`, `b`.`author_id` as `b__author_id`, `b`.`publisher_id` as `b__publisher_id`, `b`.`meta` as `b__meta`, ' +
+      '`b`.`id` as `b__id`, `b`.`created_at` as `b__created_at`, `b`.`updated_at` as `b__updated_at`, `b`.`title` as `b__title`, `b`.`price` as `b__price`, `b`.`author_id` as `b__author_id`, `b`.`publisher_id` as `b__publisher_id`, `b`.`meta` as `b__meta`, ' +
       '`t`.`id` as `t__id`, `t`.`created_at` as `t__created_at`, `t`.`updated_at` as `t__updated_at`, `t`.`name` as `t__name`, `t`.`version` as `t__version` ' +
       'from `author4` as `a` ' +
       'left join `book4` as `b` on `a`.`id` = `b`.`author_id` ' +
@@ -1099,7 +1099,6 @@ describe('EntityManagerSqlite2', () => {
     // Testing array collection implementation
     await orm.em.flush();
     orm.em.clear();
-
 
     // Updates when removing an item
     author = (await orm.em.findOneOrFail(Author4, author.id));

@@ -19,6 +19,7 @@ export function Entity(options: EntityOptions<any> = {}) {
 
 export type EntityOptions<T> = {
   tableName?: string;
+  schema?: string;
   collection?: string;
   discriminatorColumn?: string;
   discriminatorMap?: Dictionary<string>;

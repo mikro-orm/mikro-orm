@@ -2,7 +2,7 @@
 
 exports[`Migrator - with explicit migrations runner: migrator-migrations-list 1`] = `
 Array [
-  "select table_name as table_name from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
+  "select table_name as table_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
@@ -24,51 +24,57 @@ Object {
 export class Migration20191013214813 extends Migration {
 
   async up(): Promise<void> {
-    this.addSql('create table \`sandwich\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`price\` int(11) not null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`sandwich\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`price\` int not null) default character set utf8mb4 engine = InnoDB;');
 
-    this.addSql('create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`type\` enum(\\\\'local\\\\', \\\\'global\\\\') not null, \`type2\` enum(\\\\'LOCAL\\\\', \\\\'GLOBAL\\\\') not null, \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum(\\\\'a\\\\', \\\\'b\\\\', \\\\'c\\\\') null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`type\` enum(\\\\'local\\\\', \\\\'global\\\\') not null, \`type2\` enum(\\\\'LOCAL\\\\', \\\\'GLOBAL\\\\') not null, \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum(\\\\'a\\\\', \\\\'b\\\\', \\\\'c\\\\') null, \`enum5\` enum(\\\\'a\\\\') null) default character set utf8mb4 engine = InnoDB;');
 
     this.addSql('create table \`foo_baz2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;');
 
-    this.addSql('create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`baz_id\` int(11) unsigned null, \`foo_bar_id\` int(11) unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`array\` text null, \`object\` json null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`array\` text null, \`object\` json null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`foo_bar2\` add index \`foo_bar2_baz_id_index\`(\`baz_id\`);');
     this.addSql('alter table \`foo_bar2\` add unique \`foo_bar2_baz_id_unique\`(\`baz_id\`);');
     this.addSql('alter table \`foo_bar2\` add index \`foo_bar2_foo_bar_id_index\`(\`foo_bar_id\`);');
     this.addSql('alter table \`foo_bar2\` add unique \`foo_bar2_foo_bar_id_unique\`(\`foo_bar_id\`);');
 
-    this.addSql('create table \`foo_param2\` (\`bar_id\` int(11) unsigned not null, \`baz_id\` int(11) unsigned not null, \`value\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`foo_param2\` (\`bar_id\` int unsigned not null, \`baz_id\` int unsigned not null, \`value\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`foo_param2\` add index \`foo_param2_bar_id_index\`(\`bar_id\`);');
     this.addSql('alter table \`foo_param2\` add index \`foo_param2_baz_id_index\`(\`baz_id\`);');
     this.addSql('alter table \`foo_param2\` add primary key \`foo_param2_pkey\`(\`bar_id\`, \`baz_id\`);');
 
     this.addSql('create table \`dummy2\` (\`id\` int unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;');
 
-    this.addSql('create table \`car2\` (\`name\` varchar(100) not null, \`year\` int(11) unsigned not null, \`price\` int(11) not null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`car2\` (\`name\` varchar(100) not null, \`year\` int unsigned not null, \`price\` int not null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`car2\` add index \`car2_name_index\`(\`name\`);');
     this.addSql('alter table \`car2\` add index \`car2_year_index\`(\`year\`);');
     this.addSql('alter table \`car2\` add primary key \`car2_pkey\`(\`name\`, \`year\`);');
 
-    this.addSql('create table \`car_owner2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`car_name\` varchar(100) not null, \`car_year\` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`car_owner2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`car_name\` varchar(100) not null, \`car_year\` int unsigned not null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('alter table \`car_owner2\` add index \`car_owner2_car_name_car_year_index\`(\`car_name\`, \`car_year\`);');
 
-    this.addSql('create table \`user2\` (\`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`foo\` int(11) null, \`favourite_car_name\` varchar(100) null, \`favourite_car_year\` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`user2\` (\`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`foo\` int null, \`favourite_car_name\` varchar(100) null, \`favourite_car_year\` int unsigned null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('alter table \`user2\` add index \`user2_favourite_car_name_favourite_car_year_index\`(\`favourite_car_name\`, \`favourite_car_year\`);');
+    this.addSql('alter table \`user2\` add unique \`user2_favourite_car_name_favourite_car_year_unique\`(\`favourite_car_name\`, \`favourite_car_year\`);');
     this.addSql('alter table \`user2\` add primary key \`user2_pkey\`(\`first_name\`, \`last_name\`);');
 
-    this.addSql('create table \`user2_sandwiches\` (\`user2_first_name\` varchar(100) not null, \`user2_last_name\` varchar(100) not null, \`sandwich_id\` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`user2_sandwiches\` (\`user2_first_name\` varchar(100) not null, \`user2_last_name\` varchar(100) not null, \`sandwich_id\` int unsigned not null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`user2_sandwiches\` add index \`user2_sandwiches_sandwich_id_index\`(\`sandwich_id\`);');
+    this.addSql('alter table \`user2_sandwiches\` add index \`user2_sandwiches_user2_first_name_user2_last_name_index\`(\`user2_first_name\`, \`user2_last_name\`);');
     this.addSql('alter table \`user2_sandwiches\` add primary key \`user2_sandwiches_pkey\`(\`user2_first_name\`, \`user2_last_name\`, \`sandwich_id\`);');
 
-    this.addSql('create table \`user2_cars\` (\`user2_first_name\` varchar(100) not null, \`user2_last_name\` varchar(100) not null, \`car2_name\` varchar(100) not null, \`car2_year\` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`user2_cars\` (\`user2_first_name\` varchar(100) not null, \`user2_last_name\` varchar(100) not null, \`car2_name\` varchar(100) not null, \`car2_year\` int unsigned not null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('alter table \`user2_cars\` add index \`user2_cars_user2_first_name_user2_last_name_index\`(\`user2_first_name\`, \`user2_last_name\`);');
+    this.addSql('alter table \`user2_cars\` add index \`user2_cars_car2_name_car2_year_index\`(\`car2_name\`, \`car2_year\`);');
     this.addSql('alter table \`user2_cars\` add primary key \`user2_cars_pkey\`(\`user2_first_name\`, \`user2_last_name\`, \`car2_name\`, \`car2_year\`);');
 
     this.addSql('create table \`book_tag2\` (\`id\` bigint unsigned not null auto_increment primary key, \`name\` varchar(50) not null) default character set utf8mb4 engine = InnoDB;');
 
-    this.addSql('create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum(\\\\'employee\\\\', \\\\'manager\\\\', \\\\'owner\\\\') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int(11) unsigned null, \`favourite_manager_id\` int(11) unsigned null, \`employee_prop\` int(11) null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum(\\\\'employee\\\\', \\\\'manager\\\\', \\\\'owner\\\\') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`base_user2\` add index \`base_user2_type_index\`(\`type\`);');
     this.addSql('alter table \`base_user2\` add index \`base_user2_favourite_employee_id_index\`(\`favourite_employee_id\`);');
     this.addSql('alter table \`base_user2\` add index \`base_user2_favourite_manager_id_index\`(\`favourite_manager_id\`);');
     this.addSql('alter table \`base_user2\` add unique \`base_user2_favourite_manager_id_unique\`(\`favourite_manager_id\`);');
 
-    this.addSql('create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int(11) null default null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int null default null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int unsigned null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`author2\` add index \`custom_email_index_name\`(\`email\`);');
     this.addSql('alter table \`author2\` add unique \`custom_email_unique_name\`(\`email\`);');
     this.addSql('alter table \`author2\` add index \`author2_terms_accepted_index\`(\`terms_accepted\`);');
@@ -76,26 +82,29 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table \`author2\` add index \`born_time_idx\`(\`born_time\`);');
     this.addSql('alter table \`author2\` add index \`author2_favourite_book_uuid_pk_index\`(\`favourite_book_uuid_pk\`);');
     this.addSql('alter table \`author2\` add index \`author2_favourite_author_id_index\`(\`favourite_author_id\`);');
+    this.addSql('alter table \`author2\` add index \`custom_idx_name_123\`(\`name\`);');
+    this.addSql('alter table \`author2\` add index \`author2_name_age_index\`(\`name\`, \`age\`);');
+    this.addSql('alter table \`author2\` add unique \`author2_name_email_unique\`(\`name\`, \`email\`);');
 
-    this.addSql('create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null default \\\\'\\\\', \`perex\` text null, \`price\` float null, \`double\` double null, \`meta\` json null, \`author_id\` int(11) unsigned not null, \`publisher_id\` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;');
-    this.addSql('alter table \`book2\` add primary key \`book2_pkey\`(\`uuid_pk\`);');
+    this.addSql('create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null default \\\\'\\\\', \`perex\` text null, \`price\` numeric(8,2) null, \`double\` double null, \`meta\` json null, \`author_id\` int unsigned not null, \`publisher_id\` int unsigned null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`book2\` add index \`book2_author_id_index\`(\`author_id\`);');
     this.addSql('alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);');
+    this.addSql('alter table \`book2\` add primary key \`book2_pkey\`(\`uuid_pk\`);');
 
-    this.addSql('create table \`test2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) null, \`book_uuid_pk\` varchar(36) null, \`parent_id\` int(11) unsigned null, \`version\` int(11) not null default 1) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`test2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) null, \`book_uuid_pk\` varchar(36) null, \`parent_id\` int unsigned null, \`version\` int not null default 1) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`test2\` add index \`test2_book_uuid_pk_index\`(\`book_uuid_pk\`);');
     this.addSql('alter table \`test2\` add unique \`test2_book_uuid_pk_unique\`(\`book_uuid_pk\`);');
     this.addSql('alter table \`test2\` add index \`test2_parent_id_index\`(\`parent_id\`);');
 
-    this.addSql('create table \`configuration2\` (\`property\` varchar(255) not null, \`test_id\` int(11) unsigned not null, \`value\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`configuration2\` (\`property\` varchar(255) not null, \`test_id\` int unsigned not null, \`value\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`configuration2\` add index \`configuration2_test_id_index\`(\`test_id\`);');
     this.addSql('alter table \`configuration2\` add primary key \`configuration2_pkey\`(\`property\`, \`test_id\`);');
 
-    this.addSql('create table \`publisher2_tests\` (\`id\` int unsigned not null auto_increment primary key, \`publisher2_id\` int(11) unsigned not null, \`test2_id\` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`publisher2_tests\` (\`id\` int unsigned not null auto_increment primary key, \`publisher2_id\` int unsigned not null, \`test2_id\` int unsigned not null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`publisher2_tests\` add index \`publisher2_tests_publisher2_id_index\`(\`publisher2_id\`);');
     this.addSql('alter table \`publisher2_tests\` add index \`publisher2_tests_test2_id_index\`(\`test2_id\`);');
 
-    this.addSql('create table \`test2_bars\` (\`test2_id\` int(11) unsigned not null, \`foo_bar2_id\` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`test2_bars\` (\`test2_id\` int unsigned not null, \`foo_bar2_id\` int unsigned not null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`test2_bars\` add index \`test2_bars_test2_id_index\`(\`test2_id\`);');
     this.addSql('alter table \`test2_bars\` add index \`test2_bars_foo_bar2_id_index\`(\`foo_bar2_id\`);');
     this.addSql('alter table \`test2_bars\` add primary key \`test2_bars_pkey\`(\`test2_id\`, \`foo_bar2_id\`);');
@@ -109,19 +118,19 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table \`book_to_tag_unordered\` add index \`book_to_tag_unordered_book_tag2_id_index\`(\`book_tag2_id\`);');
     this.addSql('alter table \`book_to_tag_unordered\` add primary key \`book_to_tag_unordered_pkey\`(\`book2_uuid_pk\`, \`book_tag2_id\`);');
 
-    this.addSql('create table \`author_to_friend\` (\`author2_1_id\` int(11) unsigned not null, \`author2_2_id\` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`author_to_friend\` (\`author2_1_id\` int unsigned not null, \`author2_2_id\` int unsigned not null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`author_to_friend\` add index \`author_to_friend_author2_1_id_index\`(\`author2_1_id\`);');
     this.addSql('alter table \`author_to_friend\` add index \`author_to_friend_author2_2_id_index\`(\`author2_2_id\`);');
     this.addSql('alter table \`author_to_friend\` add primary key \`author_to_friend_pkey\`(\`author2_1_id\`, \`author2_2_id\`);');
 
-    this.addSql('create table \`author2_following\` (\`author2_1_id\` int(11) unsigned not null, \`author2_2_id\` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`author2_following\` (\`author2_1_id\` int unsigned not null, \`author2_2_id\` int unsigned not null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`author2_following\` add index \`author2_following_author2_1_id_index\`(\`author2_1_id\`);');
     this.addSql('alter table \`author2_following\` add index \`author2_following_author2_2_id_index\`(\`author2_2_id\`);');
     this.addSql('alter table \`author2_following\` add primary key \`author2_following_pkey\`(\`author2_1_id\`, \`author2_2_id\`);');
 
-    this.addSql('create table \`address2\` (\`author_id\` int(11) unsigned not null, \`value\` varchar(255) not null comment \\\\'This is address property\\\\') default character set utf8mb4 engine = InnoDB comment = \\\\'This is address table\\\\';');
-    this.addSql('alter table \`address2\` add primary key \`address2_pkey\`(\`author_id\`);');
+    this.addSql('create table \`address2\` (\`author_id\` int unsigned not null, \`value\` varchar(255) not null comment \\\\'This is address property\\\\') default character set utf8mb4 engine = InnoDB comment = \\\\'This is address table\\\\';');
     this.addSql('alter table \`address2\` add index \`address2_author_id_index\`(\`author_id\`);');
+    this.addSql('alter table \`address2\` add primary key \`address2_pkey\`(\`author_id\`);');
 
     this.addSql('alter table \`foo_bar2\` add constraint \`foo_bar2_baz_id_foreign\` foreign key (\`baz_id\`) references \`foo_baz2\` (\`id\`) on update cascade on delete set null;');
     this.addSql('alter table \`foo_bar2\` add constraint \`foo_bar2_foo_bar_id_foreign\` foreign key (\`foo_bar_id\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;');
@@ -172,70 +181,62 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table \`author2_following\` add constraint \`author2_following_author2_2_id_foreign\` foreign key (\`author2_2_id\`) references \`author2\` (\`id\`) on update cascade on delete cascade;');
 
     this.addSql('alter table \`address2\` add constraint \`address2_author_id_foreign\` foreign key (\`author_id\`) references \`author2\` (\`id\`) on update cascade on delete cascade;');
-
-    this.addSql('alter table \`car_owner2\` add index \`car_owner2_car_name_car_year_index\`(\`car_name\`, \`car_year\`);');
-
-    this.addSql('alter table \`user2\` add index \`user2_favourite_car_name_favourite_car_year_index\`(\`favourite_car_name\`, \`favourite_car_year\`);');
-    this.addSql('alter table \`user2\` add unique \`user2_favourite_car_name_favourite_car_year_unique\`(\`favourite_car_name\`, \`favourite_car_year\`);');
-
-    this.addSql('alter table \`user2_sandwiches\` add index \`user2_sandwiches_user2_first_name_user2_last_name_index\`(\`user2_first_name\`, \`user2_last_name\`);');
-
-    this.addSql('alter table \`user2_cars\` add index \`user2_cars_user2_first_name_user2_last_name_index\`(\`user2_first_name\`, \`user2_last_name\`);');
-    this.addSql('alter table \`user2_cars\` add index \`user2_cars_car2_name_car2_year_index\`(\`car2_name\`, \`car2_year\`);');
-
-    this.addSql('alter table \`author2\` add index \`custom_idx_name_123\`(\`name\`);');
-    this.addSql('alter table \`author2\` add index \`author2_name_age_index\`(\`name\`, \`age\`);');
-    this.addSql('alter table \`author2\` add unique \`author2_name_email_unique\`(\`name\`, \`email\`);');
   }
 
 }
 ",
   "diff": Array [
-    "create table \`sandwich\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`price\` int(11) not null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`sandwich\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`price\` int not null) default character set utf8mb4 engine = InnoDB;",
     "",
-    "create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`type\` enum('local', 'global') not null, \`type2\` enum('LOCAL', 'GLOBAL') not null, \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum('a', 'b', 'c') null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`type\` enum('local', 'global') not null, \`type2\` enum('LOCAL', 'GLOBAL') not null, \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum('a', 'b', 'c') null, \`enum5\` enum('a') null) default character set utf8mb4 engine = InnoDB;",
     "",
     "create table \`foo_baz2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;",
     "",
-    "create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`baz_id\` int(11) unsigned null, \`foo_bar_id\` int(11) unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`array\` text null, \`object\` json null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`array\` text null, \`object\` json null) default character set utf8mb4 engine = InnoDB;",
     "alter table \`foo_bar2\` add index \`foo_bar2_baz_id_index\`(\`baz_id\`);",
     "alter table \`foo_bar2\` add unique \`foo_bar2_baz_id_unique\`(\`baz_id\`);",
     "alter table \`foo_bar2\` add index \`foo_bar2_foo_bar_id_index\`(\`foo_bar_id\`);",
     "alter table \`foo_bar2\` add unique \`foo_bar2_foo_bar_id_unique\`(\`foo_bar_id\`);",
     "",
-    "create table \`foo_param2\` (\`bar_id\` int(11) unsigned not null, \`baz_id\` int(11) unsigned not null, \`value\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;",
+    "create table \`foo_param2\` (\`bar_id\` int unsigned not null, \`baz_id\` int unsigned not null, \`value\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;",
     "alter table \`foo_param2\` add index \`foo_param2_bar_id_index\`(\`bar_id\`);",
     "alter table \`foo_param2\` add index \`foo_param2_baz_id_index\`(\`baz_id\`);",
     "alter table \`foo_param2\` add primary key \`foo_param2_pkey\`(\`bar_id\`, \`baz_id\`);",
     "",
     "create table \`dummy2\` (\`id\` int unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;",
     "",
-    "create table \`car2\` (\`name\` varchar(100) not null, \`year\` int(11) unsigned not null, \`price\` int(11) not null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`car2\` (\`name\` varchar(100) not null, \`year\` int unsigned not null, \`price\` int not null) default character set utf8mb4 engine = InnoDB;",
     "alter table \`car2\` add index \`car2_name_index\`(\`name\`);",
     "alter table \`car2\` add index \`car2_year_index\`(\`year\`);",
     "alter table \`car2\` add primary key \`car2_pkey\`(\`name\`, \`year\`);",
     "",
-    "create table \`car_owner2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`car_name\` varchar(100) not null, \`car_year\` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`car_owner2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`car_name\` varchar(100) not null, \`car_year\` int unsigned not null) default character set utf8mb4 engine = InnoDB;",
+    "alter table \`car_owner2\` add index \`car_owner2_car_name_car_year_index\`(\`car_name\`, \`car_year\`);",
     "",
-    "create table \`user2\` (\`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`foo\` int(11) null, \`favourite_car_name\` varchar(100) null, \`favourite_car_year\` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`user2\` (\`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`foo\` int null, \`favourite_car_name\` varchar(100) null, \`favourite_car_year\` int unsigned null) default character set utf8mb4 engine = InnoDB;",
+    "alter table \`user2\` add index \`user2_favourite_car_name_favourite_car_year_index\`(\`favourite_car_name\`, \`favourite_car_year\`);",
+    "alter table \`user2\` add unique \`user2_favourite_car_name_favourite_car_year_unique\`(\`favourite_car_name\`, \`favourite_car_year\`);",
     "alter table \`user2\` add primary key \`user2_pkey\`(\`first_name\`, \`last_name\`);",
     "",
-    "create table \`user2_sandwiches\` (\`user2_first_name\` varchar(100) not null, \`user2_last_name\` varchar(100) not null, \`sandwich_id\` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`user2_sandwiches\` (\`user2_first_name\` varchar(100) not null, \`user2_last_name\` varchar(100) not null, \`sandwich_id\` int unsigned not null) default character set utf8mb4 engine = InnoDB;",
     "alter table \`user2_sandwiches\` add index \`user2_sandwiches_sandwich_id_index\`(\`sandwich_id\`);",
+    "alter table \`user2_sandwiches\` add index \`user2_sandwiches_user2_first_name_user2_last_name_index\`(\`user2_first_name\`, \`user2_last_name\`);",
     "alter table \`user2_sandwiches\` add primary key \`user2_sandwiches_pkey\`(\`user2_first_name\`, \`user2_last_name\`, \`sandwich_id\`);",
     "",
-    "create table \`user2_cars\` (\`user2_first_name\` varchar(100) not null, \`user2_last_name\` varchar(100) not null, \`car2_name\` varchar(100) not null, \`car2_year\` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`user2_cars\` (\`user2_first_name\` varchar(100) not null, \`user2_last_name\` varchar(100) not null, \`car2_name\` varchar(100) not null, \`car2_year\` int unsigned not null) default character set utf8mb4 engine = InnoDB;",
+    "alter table \`user2_cars\` add index \`user2_cars_user2_first_name_user2_last_name_index\`(\`user2_first_name\`, \`user2_last_name\`);",
+    "alter table \`user2_cars\` add index \`user2_cars_car2_name_car2_year_index\`(\`car2_name\`, \`car2_year\`);",
     "alter table \`user2_cars\` add primary key \`user2_cars_pkey\`(\`user2_first_name\`, \`user2_last_name\`, \`car2_name\`, \`car2_year\`);",
     "",
     "create table \`book_tag2\` (\`id\` bigint unsigned not null auto_increment primary key, \`name\` varchar(50) not null) default character set utf8mb4 engine = InnoDB;",
     "",
-    "create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum('employee', 'manager', 'owner') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int(11) unsigned null, \`favourite_manager_id\` int(11) unsigned null, \`employee_prop\` int(11) null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum('employee', 'manager', 'owner') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;",
     "alter table \`base_user2\` add index \`base_user2_type_index\`(\`type\`);",
     "alter table \`base_user2\` add index \`base_user2_favourite_employee_id_index\`(\`favourite_employee_id\`);",
     "alter table \`base_user2\` add index \`base_user2_favourite_manager_id_index\`(\`favourite_manager_id\`);",
     "alter table \`base_user2\` add unique \`base_user2_favourite_manager_id_unique\`(\`favourite_manager_id\`);",
     "",
-    "create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int(11) null default null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int null default null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int unsigned null) default character set utf8mb4 engine = InnoDB;",
     "alter table \`author2\` add index \`custom_email_index_name\`(\`email\`);",
     "alter table \`author2\` add unique \`custom_email_unique_name\`(\`email\`);",
     "alter table \`author2\` add index \`author2_terms_accepted_index\`(\`terms_accepted\`);",
@@ -243,26 +244,29 @@ export class Migration20191013214813 extends Migration {
     "alter table \`author2\` add index \`born_time_idx\`(\`born_time\`);",
     "alter table \`author2\` add index \`author2_favourite_book_uuid_pk_index\`(\`favourite_book_uuid_pk\`);",
     "alter table \`author2\` add index \`author2_favourite_author_id_index\`(\`favourite_author_id\`);",
+    "alter table \`author2\` add index \`custom_idx_name_123\`(\`name\`);",
+    "alter table \`author2\` add index \`author2_name_age_index\`(\`name\`, \`age\`);",
+    "alter table \`author2\` add unique \`author2_name_email_unique\`(\`name\`, \`email\`);",
     "",
-    "create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null default '', \`perex\` text null, \`price\` float null, \`double\` double null, \`meta\` json null, \`author_id\` int(11) unsigned not null, \`publisher_id\` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;",
-    "alter table \`book2\` add primary key \`book2_pkey\`(\`uuid_pk\`);",
+    "create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null default '', \`perex\` text null, \`price\` numeric(8,2) null, \`double\` double null, \`meta\` json null, \`author_id\` int unsigned not null, \`publisher_id\` int unsigned null) default character set utf8mb4 engine = InnoDB;",
     "alter table \`book2\` add index \`book2_author_id_index\`(\`author_id\`);",
     "alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);",
+    "alter table \`book2\` add primary key \`book2_pkey\`(\`uuid_pk\`);",
     "",
-    "create table \`test2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) null, \`book_uuid_pk\` varchar(36) null, \`parent_id\` int(11) unsigned null, \`version\` int(11) not null default 1) default character set utf8mb4 engine = InnoDB;",
+    "create table \`test2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) null, \`book_uuid_pk\` varchar(36) null, \`parent_id\` int unsigned null, \`version\` int not null default 1) default character set utf8mb4 engine = InnoDB;",
     "alter table \`test2\` add index \`test2_book_uuid_pk_index\`(\`book_uuid_pk\`);",
     "alter table \`test2\` add unique \`test2_book_uuid_pk_unique\`(\`book_uuid_pk\`);",
     "alter table \`test2\` add index \`test2_parent_id_index\`(\`parent_id\`);",
     "",
-    "create table \`configuration2\` (\`property\` varchar(255) not null, \`test_id\` int(11) unsigned not null, \`value\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`configuration2\` (\`property\` varchar(255) not null, \`test_id\` int unsigned not null, \`value\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;",
     "alter table \`configuration2\` add index \`configuration2_test_id_index\`(\`test_id\`);",
     "alter table \`configuration2\` add primary key \`configuration2_pkey\`(\`property\`, \`test_id\`);",
     "",
-    "create table \`publisher2_tests\` (\`id\` int unsigned not null auto_increment primary key, \`publisher2_id\` int(11) unsigned not null, \`test2_id\` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`publisher2_tests\` (\`id\` int unsigned not null auto_increment primary key, \`publisher2_id\` int unsigned not null, \`test2_id\` int unsigned not null) default character set utf8mb4 engine = InnoDB;",
     "alter table \`publisher2_tests\` add index \`publisher2_tests_publisher2_id_index\`(\`publisher2_id\`);",
     "alter table \`publisher2_tests\` add index \`publisher2_tests_test2_id_index\`(\`test2_id\`);",
     "",
-    "create table \`test2_bars\` (\`test2_id\` int(11) unsigned not null, \`foo_bar2_id\` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`test2_bars\` (\`test2_id\` int unsigned not null, \`foo_bar2_id\` int unsigned not null) default character set utf8mb4 engine = InnoDB;",
     "alter table \`test2_bars\` add index \`test2_bars_test2_id_index\`(\`test2_id\`);",
     "alter table \`test2_bars\` add index \`test2_bars_foo_bar2_id_index\`(\`foo_bar2_id\`);",
     "alter table \`test2_bars\` add primary key \`test2_bars_pkey\`(\`test2_id\`, \`foo_bar2_id\`);",
@@ -276,19 +280,19 @@ export class Migration20191013214813 extends Migration {
     "alter table \`book_to_tag_unordered\` add index \`book_to_tag_unordered_book_tag2_id_index\`(\`book_tag2_id\`);",
     "alter table \`book_to_tag_unordered\` add primary key \`book_to_tag_unordered_pkey\`(\`book2_uuid_pk\`, \`book_tag2_id\`);",
     "",
-    "create table \`author_to_friend\` (\`author2_1_id\` int(11) unsigned not null, \`author2_2_id\` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`author_to_friend\` (\`author2_1_id\` int unsigned not null, \`author2_2_id\` int unsigned not null) default character set utf8mb4 engine = InnoDB;",
     "alter table \`author_to_friend\` add index \`author_to_friend_author2_1_id_index\`(\`author2_1_id\`);",
     "alter table \`author_to_friend\` add index \`author_to_friend_author2_2_id_index\`(\`author2_2_id\`);",
     "alter table \`author_to_friend\` add primary key \`author_to_friend_pkey\`(\`author2_1_id\`, \`author2_2_id\`);",
     "",
-    "create table \`author2_following\` (\`author2_1_id\` int(11) unsigned not null, \`author2_2_id\` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`author2_following\` (\`author2_1_id\` int unsigned not null, \`author2_2_id\` int unsigned not null) default character set utf8mb4 engine = InnoDB;",
     "alter table \`author2_following\` add index \`author2_following_author2_1_id_index\`(\`author2_1_id\`);",
     "alter table \`author2_following\` add index \`author2_following_author2_2_id_index\`(\`author2_2_id\`);",
     "alter table \`author2_following\` add primary key \`author2_following_pkey\`(\`author2_1_id\`, \`author2_2_id\`);",
     "",
-    "create table \`address2\` (\`author_id\` int(11) unsigned not null, \`value\` varchar(255) not null comment 'This is address property') default character set utf8mb4 engine = InnoDB comment = 'This is address table';",
-    "alter table \`address2\` add primary key \`address2_pkey\`(\`author_id\`);",
+    "create table \`address2\` (\`author_id\` int unsigned not null, \`value\` varchar(255) not null comment 'This is address property') default character set utf8mb4 engine = InnoDB comment = 'This is address table';",
     "alter table \`address2\` add index \`address2_author_id_index\`(\`author_id\`);",
+    "alter table \`address2\` add primary key \`address2_pkey\`(\`author_id\`);",
     "",
     "alter table \`foo_bar2\` add constraint \`foo_bar2_baz_id_foreign\` foreign key (\`baz_id\`) references \`foo_baz2\` (\`id\`) on update cascade on delete set null;",
     "alter table \`foo_bar2\` add constraint \`foo_bar2_foo_bar_id_foreign\` foreign key (\`foo_bar_id\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;",
@@ -339,20 +343,6 @@ export class Migration20191013214813 extends Migration {
     "alter table \`author2_following\` add constraint \`author2_following_author2_2_id_foreign\` foreign key (\`author2_2_id\`) references \`author2\` (\`id\`) on update cascade on delete cascade;",
     "",
     "alter table \`address2\` add constraint \`address2_author_id_foreign\` foreign key (\`author_id\`) references \`author2\` (\`id\`) on update cascade on delete cascade;",
-    "",
-    "alter table \`car_owner2\` add index \`car_owner2_car_name_car_year_index\`(\`car_name\`, \`car_year\`);",
-    "",
-    "alter table \`user2\` add index \`user2_favourite_car_name_favourite_car_year_index\`(\`favourite_car_name\`, \`favourite_car_year\`);",
-    "alter table \`user2\` add unique \`user2_favourite_car_name_favourite_car_year_unique\`(\`favourite_car_name\`, \`favourite_car_year\`);",
-    "",
-    "alter table \`user2_sandwiches\` add index \`user2_sandwiches_user2_first_name_user2_last_name_index\`(\`user2_first_name\`, \`user2_last_name\`);",
-    "",
-    "alter table \`user2_cars\` add index \`user2_cars_user2_first_name_user2_last_name_index\`(\`user2_first_name\`, \`user2_last_name\`);",
-    "alter table \`user2_cars\` add index \`user2_cars_car2_name_car2_year_index\`(\`car2_name\`, \`car2_year\`);",
-    "",
-    "alter table \`author2\` add index \`custom_idx_name_123\`(\`name\`);",
-    "alter table \`author2\` add index \`author2_name_age_index\`(\`name\`, \`age\`);",
-    "alter table \`author2\` add unique \`author2_name_email_unique\`(\`name\`, \`email\`);",
   ],
   "fileName": "Migration20191013214813.ts",
 }
@@ -365,51 +355,57 @@ Object {
 export class Migration20191013214813 extends Migration {
 
   async up(): Promise<void> {
-    this.addSql('create table \`sandwich\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`price\` int(11) not null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`sandwich\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`price\` int not null) default character set utf8mb4 engine = InnoDB;');
 
-    this.addSql('create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`type\` enum(\\\\'local\\\\', \\\\'global\\\\') not null, \`type2\` enum(\\\\'LOCAL\\\\', \\\\'GLOBAL\\\\') not null, \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum(\\\\'a\\\\', \\\\'b\\\\', \\\\'c\\\\') null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`type\` enum(\\\\'local\\\\', \\\\'global\\\\') not null, \`type2\` enum(\\\\'LOCAL\\\\', \\\\'GLOBAL\\\\') not null, \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum(\\\\'a\\\\', \\\\'b\\\\', \\\\'c\\\\') null, \`enum5\` enum(\\\\'a\\\\') null) default character set utf8mb4 engine = InnoDB;');
 
     this.addSql('create table \`foo_baz2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;');
 
-    this.addSql('create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`baz_id\` int(11) unsigned null, \`foo_bar_id\` int(11) unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`array\` text null, \`object\` json null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`array\` text null, \`object\` json null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`foo_bar2\` add index \`foo_bar2_baz_id_index\`(\`baz_id\`);');
     this.addSql('alter table \`foo_bar2\` add unique \`foo_bar2_baz_id_unique\`(\`baz_id\`);');
     this.addSql('alter table \`foo_bar2\` add index \`foo_bar2_foo_bar_id_index\`(\`foo_bar_id\`);');
     this.addSql('alter table \`foo_bar2\` add unique \`foo_bar2_foo_bar_id_unique\`(\`foo_bar_id\`);');
 
-    this.addSql('create table \`foo_param2\` (\`bar_id\` int(11) unsigned not null, \`baz_id\` int(11) unsigned not null, \`value\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`foo_param2\` (\`bar_id\` int unsigned not null, \`baz_id\` int unsigned not null, \`value\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`foo_param2\` add index \`foo_param2_bar_id_index\`(\`bar_id\`);');
     this.addSql('alter table \`foo_param2\` add index \`foo_param2_baz_id_index\`(\`baz_id\`);');
     this.addSql('alter table \`foo_param2\` add primary key \`foo_param2_pkey\`(\`bar_id\`, \`baz_id\`);');
 
     this.addSql('create table \`dummy2\` (\`id\` int unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;');
 
-    this.addSql('create table \`car2\` (\`name\` varchar(100) not null, \`year\` int(11) unsigned not null, \`price\` int(11) not null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`car2\` (\`name\` varchar(100) not null, \`year\` int unsigned not null, \`price\` int not null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`car2\` add index \`car2_name_index\`(\`name\`);');
     this.addSql('alter table \`car2\` add index \`car2_year_index\`(\`year\`);');
     this.addSql('alter table \`car2\` add primary key \`car2_pkey\`(\`name\`, \`year\`);');
 
-    this.addSql('create table \`car_owner2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`car_name\` varchar(100) not null, \`car_year\` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`car_owner2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`car_name\` varchar(100) not null, \`car_year\` int unsigned not null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('alter table \`car_owner2\` add index \`car_owner2_car_name_car_year_index\`(\`car_name\`, \`car_year\`);');
 
-    this.addSql('create table \`user2\` (\`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`foo\` int(11) null, \`favourite_car_name\` varchar(100) null, \`favourite_car_year\` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`user2\` (\`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`foo\` int null, \`favourite_car_name\` varchar(100) null, \`favourite_car_year\` int unsigned null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('alter table \`user2\` add index \`user2_favourite_car_name_favourite_car_year_index\`(\`favourite_car_name\`, \`favourite_car_year\`);');
+    this.addSql('alter table \`user2\` add unique \`user2_favourite_car_name_favourite_car_year_unique\`(\`favourite_car_name\`, \`favourite_car_year\`);');
     this.addSql('alter table \`user2\` add primary key \`user2_pkey\`(\`first_name\`, \`last_name\`);');
 
-    this.addSql('create table \`user2_sandwiches\` (\`user2_first_name\` varchar(100) not null, \`user2_last_name\` varchar(100) not null, \`sandwich_id\` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`user2_sandwiches\` (\`user2_first_name\` varchar(100) not null, \`user2_last_name\` varchar(100) not null, \`sandwich_id\` int unsigned not null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`user2_sandwiches\` add index \`user2_sandwiches_sandwich_id_index\`(\`sandwich_id\`);');
+    this.addSql('alter table \`user2_sandwiches\` add index \`user2_sandwiches_user2_first_name_user2_last_name_index\`(\`user2_first_name\`, \`user2_last_name\`);');
     this.addSql('alter table \`user2_sandwiches\` add primary key \`user2_sandwiches_pkey\`(\`user2_first_name\`, \`user2_last_name\`, \`sandwich_id\`);');
 
-    this.addSql('create table \`user2_cars\` (\`user2_first_name\` varchar(100) not null, \`user2_last_name\` varchar(100) not null, \`car2_name\` varchar(100) not null, \`car2_year\` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`user2_cars\` (\`user2_first_name\` varchar(100) not null, \`user2_last_name\` varchar(100) not null, \`car2_name\` varchar(100) not null, \`car2_year\` int unsigned not null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('alter table \`user2_cars\` add index \`user2_cars_user2_first_name_user2_last_name_index\`(\`user2_first_name\`, \`user2_last_name\`);');
+    this.addSql('alter table \`user2_cars\` add index \`user2_cars_car2_name_car2_year_index\`(\`car2_name\`, \`car2_year\`);');
     this.addSql('alter table \`user2_cars\` add primary key \`user2_cars_pkey\`(\`user2_first_name\`, \`user2_last_name\`, \`car2_name\`, \`car2_year\`);');
 
     this.addSql('create table \`book_tag2\` (\`id\` bigint unsigned not null auto_increment primary key, \`name\` varchar(50) not null) default character set utf8mb4 engine = InnoDB;');
 
-    this.addSql('create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum(\\\\'employee\\\\', \\\\'manager\\\\', \\\\'owner\\\\') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int(11) unsigned null, \`favourite_manager_id\` int(11) unsigned null, \`employee_prop\` int(11) null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum(\\\\'employee\\\\', \\\\'manager\\\\', \\\\'owner\\\\') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`base_user2\` add index \`base_user2_type_index\`(\`type\`);');
     this.addSql('alter table \`base_user2\` add index \`base_user2_favourite_employee_id_index\`(\`favourite_employee_id\`);');
     this.addSql('alter table \`base_user2\` add index \`base_user2_favourite_manager_id_index\`(\`favourite_manager_id\`);');
     this.addSql('alter table \`base_user2\` add unique \`base_user2_favourite_manager_id_unique\`(\`favourite_manager_id\`);');
 
-    this.addSql('create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int(11) null default null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int null default null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int unsigned null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`author2\` add index \`custom_email_index_name\`(\`email\`);');
     this.addSql('alter table \`author2\` add unique \`custom_email_unique_name\`(\`email\`);');
     this.addSql('alter table \`author2\` add index \`author2_terms_accepted_index\`(\`terms_accepted\`);');
@@ -417,26 +413,29 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table \`author2\` add index \`born_time_idx\`(\`born_time\`);');
     this.addSql('alter table \`author2\` add index \`author2_favourite_book_uuid_pk_index\`(\`favourite_book_uuid_pk\`);');
     this.addSql('alter table \`author2\` add index \`author2_favourite_author_id_index\`(\`favourite_author_id\`);');
+    this.addSql('alter table \`author2\` add index \`custom_idx_name_123\`(\`name\`);');
+    this.addSql('alter table \`author2\` add index \`author2_name_age_index\`(\`name\`, \`age\`);');
+    this.addSql('alter table \`author2\` add unique \`author2_name_email_unique\`(\`name\`, \`email\`);');
 
-    this.addSql('create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null default \\\\'\\\\', \`perex\` text null, \`price\` float null, \`double\` double null, \`meta\` json null, \`author_id\` int(11) unsigned not null, \`publisher_id\` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;');
-    this.addSql('alter table \`book2\` add primary key \`book2_pkey\`(\`uuid_pk\`);');
+    this.addSql('create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null default \\\\'\\\\', \`perex\` text null, \`price\` numeric(8,2) null, \`double\` double null, \`meta\` json null, \`author_id\` int unsigned not null, \`publisher_id\` int unsigned null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`book2\` add index \`book2_author_id_index\`(\`author_id\`);');
     this.addSql('alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);');
+    this.addSql('alter table \`book2\` add primary key \`book2_pkey\`(\`uuid_pk\`);');
 
-    this.addSql('create table \`test2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) null, \`book_uuid_pk\` varchar(36) null, \`parent_id\` int(11) unsigned null, \`version\` int(11) not null default 1) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`test2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) null, \`book_uuid_pk\` varchar(36) null, \`parent_id\` int unsigned null, \`version\` int not null default 1) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`test2\` add index \`test2_book_uuid_pk_index\`(\`book_uuid_pk\`);');
     this.addSql('alter table \`test2\` add unique \`test2_book_uuid_pk_unique\`(\`book_uuid_pk\`);');
     this.addSql('alter table \`test2\` add index \`test2_parent_id_index\`(\`parent_id\`);');
 
-    this.addSql('create table \`configuration2\` (\`property\` varchar(255) not null, \`test_id\` int(11) unsigned not null, \`value\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`configuration2\` (\`property\` varchar(255) not null, \`test_id\` int unsigned not null, \`value\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`configuration2\` add index \`configuration2_test_id_index\`(\`test_id\`);');
     this.addSql('alter table \`configuration2\` add primary key \`configuration2_pkey\`(\`property\`, \`test_id\`);');
 
-    this.addSql('create table \`publisher2_tests\` (\`id\` int unsigned not null auto_increment primary key, \`publisher2_id\` int(11) unsigned not null, \`test2_id\` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`publisher2_tests\` (\`id\` int unsigned not null auto_increment primary key, \`publisher2_id\` int unsigned not null, \`test2_id\` int unsigned not null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`publisher2_tests\` add index \`publisher2_tests_publisher2_id_index\`(\`publisher2_id\`);');
     this.addSql('alter table \`publisher2_tests\` add index \`publisher2_tests_test2_id_index\`(\`test2_id\`);');
 
-    this.addSql('create table \`test2_bars\` (\`test2_id\` int(11) unsigned not null, \`foo_bar2_id\` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`test2_bars\` (\`test2_id\` int unsigned not null, \`foo_bar2_id\` int unsigned not null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`test2_bars\` add index \`test2_bars_test2_id_index\`(\`test2_id\`);');
     this.addSql('alter table \`test2_bars\` add index \`test2_bars_foo_bar2_id_index\`(\`foo_bar2_id\`);');
     this.addSql('alter table \`test2_bars\` add primary key \`test2_bars_pkey\`(\`test2_id\`, \`foo_bar2_id\`);');
@@ -450,19 +449,19 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table \`book_to_tag_unordered\` add index \`book_to_tag_unordered_book_tag2_id_index\`(\`book_tag2_id\`);');
     this.addSql('alter table \`book_to_tag_unordered\` add primary key \`book_to_tag_unordered_pkey\`(\`book2_uuid_pk\`, \`book_tag2_id\`);');
 
-    this.addSql('create table \`author_to_friend\` (\`author2_1_id\` int(11) unsigned not null, \`author2_2_id\` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`author_to_friend\` (\`author2_1_id\` int unsigned not null, \`author2_2_id\` int unsigned not null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`author_to_friend\` add index \`author_to_friend_author2_1_id_index\`(\`author2_1_id\`);');
     this.addSql('alter table \`author_to_friend\` add index \`author_to_friend_author2_2_id_index\`(\`author2_2_id\`);');
     this.addSql('alter table \`author_to_friend\` add primary key \`author_to_friend_pkey\`(\`author2_1_id\`, \`author2_2_id\`);');
 
-    this.addSql('create table \`author2_following\` (\`author2_1_id\` int(11) unsigned not null, \`author2_2_id\` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`author2_following\` (\`author2_1_id\` int unsigned not null, \`author2_2_id\` int unsigned not null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`author2_following\` add index \`author2_following_author2_1_id_index\`(\`author2_1_id\`);');
     this.addSql('alter table \`author2_following\` add index \`author2_following_author2_2_id_index\`(\`author2_2_id\`);');
     this.addSql('alter table \`author2_following\` add primary key \`author2_following_pkey\`(\`author2_1_id\`, \`author2_2_id\`);');
 
-    this.addSql('create table \`address2\` (\`author_id\` int(11) unsigned not null, \`value\` varchar(255) not null comment \\\\'This is address property\\\\') default character set utf8mb4 engine = InnoDB comment = \\\\'This is address table\\\\';');
-    this.addSql('alter table \`address2\` add primary key \`address2_pkey\`(\`author_id\`);');
+    this.addSql('create table \`address2\` (\`author_id\` int unsigned not null, \`value\` varchar(255) not null comment \\\\'This is address property\\\\') default character set utf8mb4 engine = InnoDB comment = \\\\'This is address table\\\\';');
     this.addSql('alter table \`address2\` add index \`address2_author_id_index\`(\`author_id\`);');
+    this.addSql('alter table \`address2\` add primary key \`address2_pkey\`(\`author_id\`);');
 
     this.addSql('alter table \`foo_bar2\` add constraint \`foo_bar2_baz_id_foreign\` foreign key (\`baz_id\`) references \`foo_baz2\` (\`id\`) on update cascade on delete set null;');
     this.addSql('alter table \`foo_bar2\` add constraint \`foo_bar2_foo_bar_id_foreign\` foreign key (\`foo_bar_id\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;');
@@ -513,70 +512,62 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table \`author2_following\` add constraint \`author2_following_author2_2_id_foreign\` foreign key (\`author2_2_id\`) references \`author2\` (\`id\`) on update cascade on delete cascade;');
 
     this.addSql('alter table \`address2\` add constraint \`address2_author_id_foreign\` foreign key (\`author_id\`) references \`author2\` (\`id\`) on update cascade on delete cascade;');
-
-    this.addSql('alter table \`car_owner2\` add index \`car_owner2_car_name_car_year_index\`(\`car_name\`, \`car_year\`);');
-
-    this.addSql('alter table \`user2\` add index \`user2_favourite_car_name_favourite_car_year_index\`(\`favourite_car_name\`, \`favourite_car_year\`);');
-    this.addSql('alter table \`user2\` add unique \`user2_favourite_car_name_favourite_car_year_unique\`(\`favourite_car_name\`, \`favourite_car_year\`);');
-
-    this.addSql('alter table \`user2_sandwiches\` add index \`user2_sandwiches_user2_first_name_user2_last_name_index\`(\`user2_first_name\`, \`user2_last_name\`);');
-
-    this.addSql('alter table \`user2_cars\` add index \`user2_cars_user2_first_name_user2_last_name_index\`(\`user2_first_name\`, \`user2_last_name\`);');
-    this.addSql('alter table \`user2_cars\` add index \`user2_cars_car2_name_car2_year_index\`(\`car2_name\`, \`car2_year\`);');
-
-    this.addSql('alter table \`author2\` add index \`custom_idx_name_123\`(\`name\`);');
-    this.addSql('alter table \`author2\` add index \`author2_name_age_index\`(\`name\`, \`age\`);');
-    this.addSql('alter table \`author2\` add unique \`author2_name_email_unique\`(\`name\`, \`email\`);');
   }
 
 }
 ",
   "diff": Array [
-    "create table \`sandwich\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`price\` int(11) not null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`sandwich\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`price\` int not null) default character set utf8mb4 engine = InnoDB;",
     "",
-    "create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`type\` enum('local', 'global') not null, \`type2\` enum('LOCAL', 'GLOBAL') not null, \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum('a', 'b', 'c') null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`type\` enum('local', 'global') not null, \`type2\` enum('LOCAL', 'GLOBAL') not null, \`enum1\` tinyint null, \`enum2\` tinyint null, \`enum3\` tinyint null, \`enum4\` enum('a', 'b', 'c') null, \`enum5\` enum('a') null) default character set utf8mb4 engine = InnoDB;",
     "",
     "create table \`foo_baz2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;",
     "",
-    "create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`baz_id\` int(11) unsigned null, \`foo_bar_id\` int(11) unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`array\` text null, \`object\` json null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`array\` text null, \`object\` json null) default character set utf8mb4 engine = InnoDB;",
     "alter table \`foo_bar2\` add index \`foo_bar2_baz_id_index\`(\`baz_id\`);",
     "alter table \`foo_bar2\` add unique \`foo_bar2_baz_id_unique\`(\`baz_id\`);",
     "alter table \`foo_bar2\` add index \`foo_bar2_foo_bar_id_index\`(\`foo_bar_id\`);",
     "alter table \`foo_bar2\` add unique \`foo_bar2_foo_bar_id_unique\`(\`foo_bar_id\`);",
     "",
-    "create table \`foo_param2\` (\`bar_id\` int(11) unsigned not null, \`baz_id\` int(11) unsigned not null, \`value\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;",
+    "create table \`foo_param2\` (\`bar_id\` int unsigned not null, \`baz_id\` int unsigned not null, \`value\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;",
     "alter table \`foo_param2\` add index \`foo_param2_bar_id_index\`(\`bar_id\`);",
     "alter table \`foo_param2\` add index \`foo_param2_baz_id_index\`(\`baz_id\`);",
     "alter table \`foo_param2\` add primary key \`foo_param2_pkey\`(\`bar_id\`, \`baz_id\`);",
     "",
     "create table \`dummy2\` (\`id\` int unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;",
     "",
-    "create table \`car2\` (\`name\` varchar(100) not null, \`year\` int(11) unsigned not null, \`price\` int(11) not null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`car2\` (\`name\` varchar(100) not null, \`year\` int unsigned not null, \`price\` int not null) default character set utf8mb4 engine = InnoDB;",
     "alter table \`car2\` add index \`car2_name_index\`(\`name\`);",
     "alter table \`car2\` add index \`car2_year_index\`(\`year\`);",
     "alter table \`car2\` add primary key \`car2_pkey\`(\`name\`, \`year\`);",
     "",
-    "create table \`car_owner2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`car_name\` varchar(100) not null, \`car_year\` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`car_owner2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`car_name\` varchar(100) not null, \`car_year\` int unsigned not null) default character set utf8mb4 engine = InnoDB;",
+    "alter table \`car_owner2\` add index \`car_owner2_car_name_car_year_index\`(\`car_name\`, \`car_year\`);",
     "",
-    "create table \`user2\` (\`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`foo\` int(11) null, \`favourite_car_name\` varchar(100) null, \`favourite_car_year\` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`user2\` (\`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`foo\` int null, \`favourite_car_name\` varchar(100) null, \`favourite_car_year\` int unsigned null) default character set utf8mb4 engine = InnoDB;",
+    "alter table \`user2\` add index \`user2_favourite_car_name_favourite_car_year_index\`(\`favourite_car_name\`, \`favourite_car_year\`);",
+    "alter table \`user2\` add unique \`user2_favourite_car_name_favourite_car_year_unique\`(\`favourite_car_name\`, \`favourite_car_year\`);",
     "alter table \`user2\` add primary key \`user2_pkey\`(\`first_name\`, \`last_name\`);",
     "",
-    "create table \`user2_sandwiches\` (\`user2_first_name\` varchar(100) not null, \`user2_last_name\` varchar(100) not null, \`sandwich_id\` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`user2_sandwiches\` (\`user2_first_name\` varchar(100) not null, \`user2_last_name\` varchar(100) not null, \`sandwich_id\` int unsigned not null) default character set utf8mb4 engine = InnoDB;",
     "alter table \`user2_sandwiches\` add index \`user2_sandwiches_sandwich_id_index\`(\`sandwich_id\`);",
+    "alter table \`user2_sandwiches\` add index \`user2_sandwiches_user2_first_name_user2_last_name_index\`(\`user2_first_name\`, \`user2_last_name\`);",
     "alter table \`user2_sandwiches\` add primary key \`user2_sandwiches_pkey\`(\`user2_first_name\`, \`user2_last_name\`, \`sandwich_id\`);",
     "",
-    "create table \`user2_cars\` (\`user2_first_name\` varchar(100) not null, \`user2_last_name\` varchar(100) not null, \`car2_name\` varchar(100) not null, \`car2_year\` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`user2_cars\` (\`user2_first_name\` varchar(100) not null, \`user2_last_name\` varchar(100) not null, \`car2_name\` varchar(100) not null, \`car2_year\` int unsigned not null) default character set utf8mb4 engine = InnoDB;",
+    "alter table \`user2_cars\` add index \`user2_cars_user2_first_name_user2_last_name_index\`(\`user2_first_name\`, \`user2_last_name\`);",
+    "alter table \`user2_cars\` add index \`user2_cars_car2_name_car2_year_index\`(\`car2_name\`, \`car2_year\`);",
     "alter table \`user2_cars\` add primary key \`user2_cars_pkey\`(\`user2_first_name\`, \`user2_last_name\`, \`car2_name\`, \`car2_year\`);",
     "",
     "create table \`book_tag2\` (\`id\` bigint unsigned not null auto_increment primary key, \`name\` varchar(50) not null) default character set utf8mb4 engine = InnoDB;",
     "",
-    "create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum('employee', 'manager', 'owner') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int(11) unsigned null, \`favourite_manager_id\` int(11) unsigned null, \`employee_prop\` int(11) null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum('employee', 'manager', 'owner') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;",
     "alter table \`base_user2\` add index \`base_user2_type_index\`(\`type\`);",
     "alter table \`base_user2\` add index \`base_user2_favourite_employee_id_index\`(\`favourite_employee_id\`);",
     "alter table \`base_user2\` add index \`base_user2_favourite_manager_id_index\`(\`favourite_manager_id\`);",
     "alter table \`base_user2\` add unique \`base_user2_favourite_manager_id_unique\`(\`favourite_manager_id\`);",
     "",
-    "create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int(11) null default null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int null default null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int unsigned null) default character set utf8mb4 engine = InnoDB;",
     "alter table \`author2\` add index \`custom_email_index_name\`(\`email\`);",
     "alter table \`author2\` add unique \`custom_email_unique_name\`(\`email\`);",
     "alter table \`author2\` add index \`author2_terms_accepted_index\`(\`terms_accepted\`);",
@@ -584,26 +575,29 @@ export class Migration20191013214813 extends Migration {
     "alter table \`author2\` add index \`born_time_idx\`(\`born_time\`);",
     "alter table \`author2\` add index \`author2_favourite_book_uuid_pk_index\`(\`favourite_book_uuid_pk\`);",
     "alter table \`author2\` add index \`author2_favourite_author_id_index\`(\`favourite_author_id\`);",
+    "alter table \`author2\` add index \`custom_idx_name_123\`(\`name\`);",
+    "alter table \`author2\` add index \`author2_name_age_index\`(\`name\`, \`age\`);",
+    "alter table \`author2\` add unique \`author2_name_email_unique\`(\`name\`, \`email\`);",
     "",
-    "create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null default '', \`perex\` text null, \`price\` float null, \`double\` double null, \`meta\` json null, \`author_id\` int(11) unsigned not null, \`publisher_id\` int(11) unsigned null) default character set utf8mb4 engine = InnoDB;",
-    "alter table \`book2\` add primary key \`book2_pkey\`(\`uuid_pk\`);",
+    "create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null default '', \`perex\` text null, \`price\` numeric(8,2) null, \`double\` double null, \`meta\` json null, \`author_id\` int unsigned not null, \`publisher_id\` int unsigned null) default character set utf8mb4 engine = InnoDB;",
     "alter table \`book2\` add index \`book2_author_id_index\`(\`author_id\`);",
     "alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);",
+    "alter table \`book2\` add primary key \`book2_pkey\`(\`uuid_pk\`);",
     "",
-    "create table \`test2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) null, \`book_uuid_pk\` varchar(36) null, \`parent_id\` int(11) unsigned null, \`version\` int(11) not null default 1) default character set utf8mb4 engine = InnoDB;",
+    "create table \`test2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) null, \`book_uuid_pk\` varchar(36) null, \`parent_id\` int unsigned null, \`version\` int not null default 1) default character set utf8mb4 engine = InnoDB;",
     "alter table \`test2\` add index \`test2_book_uuid_pk_index\`(\`book_uuid_pk\`);",
     "alter table \`test2\` add unique \`test2_book_uuid_pk_unique\`(\`book_uuid_pk\`);",
     "alter table \`test2\` add index \`test2_parent_id_index\`(\`parent_id\`);",
     "",
-    "create table \`configuration2\` (\`property\` varchar(255) not null, \`test_id\` int(11) unsigned not null, \`value\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`configuration2\` (\`property\` varchar(255) not null, \`test_id\` int unsigned not null, \`value\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;",
     "alter table \`configuration2\` add index \`configuration2_test_id_index\`(\`test_id\`);",
     "alter table \`configuration2\` add primary key \`configuration2_pkey\`(\`property\`, \`test_id\`);",
     "",
-    "create table \`publisher2_tests\` (\`id\` int unsigned not null auto_increment primary key, \`publisher2_id\` int(11) unsigned not null, \`test2_id\` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`publisher2_tests\` (\`id\` int unsigned not null auto_increment primary key, \`publisher2_id\` int unsigned not null, \`test2_id\` int unsigned not null) default character set utf8mb4 engine = InnoDB;",
     "alter table \`publisher2_tests\` add index \`publisher2_tests_publisher2_id_index\`(\`publisher2_id\`);",
     "alter table \`publisher2_tests\` add index \`publisher2_tests_test2_id_index\`(\`test2_id\`);",
     "",
-    "create table \`test2_bars\` (\`test2_id\` int(11) unsigned not null, \`foo_bar2_id\` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`test2_bars\` (\`test2_id\` int unsigned not null, \`foo_bar2_id\` int unsigned not null) default character set utf8mb4 engine = InnoDB;",
     "alter table \`test2_bars\` add index \`test2_bars_test2_id_index\`(\`test2_id\`);",
     "alter table \`test2_bars\` add index \`test2_bars_foo_bar2_id_index\`(\`foo_bar2_id\`);",
     "alter table \`test2_bars\` add primary key \`test2_bars_pkey\`(\`test2_id\`, \`foo_bar2_id\`);",
@@ -617,19 +611,19 @@ export class Migration20191013214813 extends Migration {
     "alter table \`book_to_tag_unordered\` add index \`book_to_tag_unordered_book_tag2_id_index\`(\`book_tag2_id\`);",
     "alter table \`book_to_tag_unordered\` add primary key \`book_to_tag_unordered_pkey\`(\`book2_uuid_pk\`, \`book_tag2_id\`);",
     "",
-    "create table \`author_to_friend\` (\`author2_1_id\` int(11) unsigned not null, \`author2_2_id\` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`author_to_friend\` (\`author2_1_id\` int unsigned not null, \`author2_2_id\` int unsigned not null) default character set utf8mb4 engine = InnoDB;",
     "alter table \`author_to_friend\` add index \`author_to_friend_author2_1_id_index\`(\`author2_1_id\`);",
     "alter table \`author_to_friend\` add index \`author_to_friend_author2_2_id_index\`(\`author2_2_id\`);",
     "alter table \`author_to_friend\` add primary key \`author_to_friend_pkey\`(\`author2_1_id\`, \`author2_2_id\`);",
     "",
-    "create table \`author2_following\` (\`author2_1_id\` int(11) unsigned not null, \`author2_2_id\` int(11) unsigned not null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`author2_following\` (\`author2_1_id\` int unsigned not null, \`author2_2_id\` int unsigned not null) default character set utf8mb4 engine = InnoDB;",
     "alter table \`author2_following\` add index \`author2_following_author2_1_id_index\`(\`author2_1_id\`);",
     "alter table \`author2_following\` add index \`author2_following_author2_2_id_index\`(\`author2_2_id\`);",
     "alter table \`author2_following\` add primary key \`author2_following_pkey\`(\`author2_1_id\`, \`author2_2_id\`);",
     "",
-    "create table \`address2\` (\`author_id\` int(11) unsigned not null, \`value\` varchar(255) not null comment 'This is address property') default character set utf8mb4 engine = InnoDB comment = 'This is address table';",
-    "alter table \`address2\` add primary key \`address2_pkey\`(\`author_id\`);",
+    "create table \`address2\` (\`author_id\` int unsigned not null, \`value\` varchar(255) not null comment 'This is address property') default character set utf8mb4 engine = InnoDB comment = 'This is address table';",
     "alter table \`address2\` add index \`address2_author_id_index\`(\`author_id\`);",
+    "alter table \`address2\` add primary key \`address2_pkey\`(\`author_id\`);",
     "",
     "alter table \`foo_bar2\` add constraint \`foo_bar2_baz_id_foreign\` foreign key (\`baz_id\`) references \`foo_baz2\` (\`id\`) on update cascade on delete set null;",
     "alter table \`foo_bar2\` add constraint \`foo_bar2_foo_bar_id_foreign\` foreign key (\`foo_bar_id\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;",
@@ -680,20 +674,6 @@ export class Migration20191013214813 extends Migration {
     "alter table \`author2_following\` add constraint \`author2_following_author2_2_id_foreign\` foreign key (\`author2_2_id\`) references \`author2\` (\`id\`) on update cascade on delete cascade;",
     "",
     "alter table \`address2\` add constraint \`address2_author_id_foreign\` foreign key (\`author_id\`) references \`author2\` (\`id\`) on update cascade on delete cascade;",
-    "",
-    "alter table \`car_owner2\` add index \`car_owner2_car_name_car_year_index\`(\`car_name\`, \`car_year\`);",
-    "",
-    "alter table \`user2\` add index \`user2_favourite_car_name_favourite_car_year_index\`(\`favourite_car_name\`, \`favourite_car_year\`);",
-    "alter table \`user2\` add unique \`user2_favourite_car_name_favourite_car_year_unique\`(\`favourite_car_name\`, \`favourite_car_year\`);",
-    "",
-    "alter table \`user2_sandwiches\` add index \`user2_sandwiches_user2_first_name_user2_last_name_index\`(\`user2_first_name\`, \`user2_last_name\`);",
-    "",
-    "alter table \`user2_cars\` add index \`user2_cars_user2_first_name_user2_last_name_index\`(\`user2_first_name\`, \`user2_last_name\`);",
-    "alter table \`user2_cars\` add index \`user2_cars_car2_name_car2_year_index\`(\`car2_name\`, \`car2_year\`);",
-    "",
-    "alter table \`author2\` add index \`custom_idx_name_123\`(\`name\`);",
-    "alter table \`author2\` add index \`author2_name_age_index\`(\`name\`, \`age\`);",
-    "alter table \`author2\` add unique \`author2_name_email_unique\`(\`name\`, \`email\`);",
   ],
   "fileName": "Migration20191013214813.ts",
 }
@@ -708,9 +688,10 @@ const Migration = require('@mikro-orm/migrations').Migration;
 class Migration20191013214813 extends Migration {
 
   async up() {
+    this.addSql('alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;');
+
     this.addSql('alter table \`book2\` drop \`foo\`;');
 
-    this.addSql('alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;');
     this.addSql('alter table \`test2\` drop index \`test2_foo___bar_unique\`;');
     this.addSql('alter table \`test2\` drop index \`test2_foo___bar_index\`;');
     this.addSql('alter table \`test2\` drop \`foo___bar\`;');
@@ -721,9 +702,10 @@ class Migration20191013214813 extends Migration {
 exports.Migration20191013214813 = Migration20191013214813;
 ",
   "diff": Array [
+    "alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;",
+    "",
     "alter table \`book2\` drop \`foo\`;",
     "",
-    "alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;",
     "alter table \`test2\` drop index \`test2_foo___bar_unique\`;",
     "alter table \`test2\` drop index \`test2_foo___bar_index\`;",
     "alter table \`test2\` drop \`foo___bar\`;",
@@ -740,9 +722,10 @@ Object {
 export class Migration20191013214813 extends Migration {
 
   async up(): Promise<void> {
+    this.addSql('alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;');
+
     this.addSql('alter table \`book2\` drop \`foo\`;');
 
-    this.addSql('alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;');
     this.addSql('alter table \`test2\` drop index \`test2_foo___bar_unique\`;');
     this.addSql('alter table \`test2\` drop index \`test2_foo___bar_index\`;');
     this.addSql('alter table \`test2\` drop \`foo___bar\`;');
@@ -752,9 +735,10 @@ export class Migration20191013214813 extends Migration {
 }
 ",
   "diff": Array [
+    "alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;",
+    "",
     "alter table \`book2\` drop \`foo\`;",
     "",
-    "alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;",
     "alter table \`test2\` drop index \`test2_foo___bar_unique\`;",
     "alter table \`test2\` drop index \`test2_foo___bar_index\`;",
     "alter table \`test2\` drop \`foo___bar\`;",
@@ -771,9 +755,10 @@ Object {
 export class Migration20191013214813 extends Migration {
 
   async up(): Promise<void> {
+    this.addSql('alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;');
+
     this.addSql('alter table \`book2\` drop \`foo\`;');
 
-    this.addSql('alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;');
     this.addSql('alter table \`test2\` drop index \`test2_foo___bar_unique\`;');
     this.addSql('alter table \`test2\` drop index \`test2_foo___bar_index\`;');
     this.addSql('alter table \`test2\` drop \`foo___bar\`;');
@@ -783,9 +768,10 @@ export class Migration20191013214813 extends Migration {
 }
 ",
   "diff": Array [
+    "alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;",
+    "",
     "alter table \`book2\` drop \`foo\`;",
     "",
-    "alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;",
     "alter table \`test2\` drop index \`test2_foo___bar_unique\`;",
     "alter table \`test2\` drop index \`test2_foo___bar_index\`;",
     "alter table \`test2\` drop \`foo___bar\`;",
@@ -797,7 +783,7 @@ export class Migration20191013214813 extends Migration {
 
 exports[`Migrator up/down params [all or nothing disabled]: all-or-nothing-disabled 1`] = `
 Array [
-  "select table_name as table_name from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
+  "select table_name as table_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "create table \`mikro_orm_migrations\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255), \`executed_at\` datetime default current_timestamp) (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
@@ -805,25 +791,25 @@ Array [
   "select 1 (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
   "insert into \`mikro_orm_migrations\` (\`name\`) values (?) (via write connection '127.0.0.1')",
-  "select table_name as table_name from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
+  "select table_name as table_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
   "delete from \`mikro_orm_migrations\` where \`name\` = ? (via write connection '127.0.0.1')",
-  "select table_name as table_name from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
+  "select table_name as table_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
   "select 1 (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
   "insert into \`mikro_orm_migrations\` (\`name\`) values (?) (via write connection '127.0.0.1')",
-  "select table_name as table_name from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
+  "select table_name as table_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
   "delete from \`mikro_orm_migrations\` where \`name\` = ? (via write connection '127.0.0.1')",
-  "select table_name as table_name from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
+  "select table_name as table_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
@@ -831,9 +817,9 @@ Array [
   "select 1 (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
   "insert into \`mikro_orm_migrations\` (\`name\`) values (?) (via write connection '127.0.0.1')",
-  "select table_name as table_name from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
+  "select table_name as table_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
-  "select table_name as table_name from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
+  "select table_name as table_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
@@ -845,7 +831,7 @@ Array [
 
 exports[`Migrator up/down params [all or nothing enabled]: all-or-nothing 1`] = `
 Array [
-  "select table_name as table_name from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
+  "select table_name as table_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "create table \`mikro_orm_migrations\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255), \`executed_at\` datetime default current_timestamp) (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
@@ -855,7 +841,7 @@ Array [
   "release savepointtrx\\\\d+ (via write connection '127.0.0.1')",
   "insert into \`mikro_orm_migrations\` (\`name\`) values (?) (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
-  "select table_name as table_name from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
+  "select table_name as table_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
@@ -863,7 +849,7 @@ Array [
   "release savepointtrx\\\\d+ (via write connection '127.0.0.1')",
   "delete from \`mikro_orm_migrations\` where \`name\` = ? (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
-  "select table_name as table_name from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
+  "select table_name as table_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "savepointtrx\\\\d+ (via write connection '127.0.0.1')",
@@ -871,7 +857,7 @@ Array [
   "release savepointtrx\\\\d+ (via write connection '127.0.0.1')",
   "insert into \`mikro_orm_migrations\` (\`name\`) values (?) (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
-  "select table_name as table_name from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
+  "select table_name as table_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
@@ -879,7 +865,7 @@ Array [
   "release savepointtrx\\\\d+ (via write connection '127.0.0.1')",
   "delete from \`mikro_orm_migrations\` where \`name\` = ? (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
-  "select table_name as table_name from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
+  "select table_name as table_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
@@ -889,11 +875,11 @@ Array [
   "release savepointtrx\\\\d+ (via write connection '127.0.0.1')",
   "insert into \`mikro_orm_migrations\` (\`name\`) values (?) (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
-  "select table_name as table_name from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
+  "select table_name as table_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
-  "select table_name as table_name from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
+  "select table_name as table_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "begin (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
@@ -908,7 +894,7 @@ Array [
 exports[`Migrator up/down with explicit transaction: explicit-tx 1`] = `
 Array [
   "begin (via write connection '127.0.0.1')",
-  "select table_name as table_name from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
+  "select table_name as table_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "create table \`mikro_orm_migrations\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255), \`executed_at\` datetime default current_timestamp) (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
@@ -921,21 +907,21 @@ Array [
   "select 1 (via write connection '127.0.0.1')",
   "release savepointtrx_xx (via write connection '127.0.0.1')",
   "insert into \`mikro_orm_migrations\` (\`name\`) values (?) (via write connection '127.0.0.1')",
-  "select table_name as table_name from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
+  "select table_name as table_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "savepointtrx_xx (via write connection '127.0.0.1')",
   "release savepointtrx_xx (via write connection '127.0.0.1')",
   "delete from \`mikro_orm_migrations\` where \`name\` = ? (via write connection '127.0.0.1')",
-  "select table_name as table_name from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
+  "select table_name as table_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "savepointtrx_xx (via write connection '127.0.0.1')",
   "release savepointtrx_xx (via write connection '127.0.0.1')",
   "delete from \`mikro_orm_migrations\` where \`name\` = ? (via write connection '127.0.0.1')",
-  "select table_name as table_name from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
+  "select table_name as table_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema() (via write connection '127.0.0.1')",
   "select * from \`mikro_orm_migrations\` order by \`id\` asc (via write connection '127.0.0.1')",
   "commit (via write connection '127.0.0.1')",
 ]

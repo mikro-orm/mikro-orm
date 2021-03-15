@@ -19,8 +19,8 @@ class B {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => A)
-  a!: A;
+  @ManyToOne(() => A, { nullable: true })
+  a?: A;
 
 }
 describe('GH issue 949', () => {

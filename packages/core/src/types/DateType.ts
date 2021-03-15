@@ -32,7 +32,7 @@ export class DateType extends Type<Date, string> {
   }
 
   compareAsType(): string {
-    return 'date';
+    return 'string';
   }
 
   getColumnType(prop: EntityProperty, platform: Platform): string {

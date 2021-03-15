@@ -1,4 +1,4 @@
-import { Dictionary, EntityMetadata, EntityProperty, NamingStrategy, ReferenceType, Utils } from '@mikro-orm/core';
+import { Dictionary, EntityMetadata, EntityProperty, NamingStrategy, Platform, ReferenceType, UnknownType, Utils } from '@mikro-orm/core';
 import { SchemaHelper } from '@mikro-orm/knex';
 
 export class SourceFile {
@@ -8,6 +8,7 @@ export class SourceFile {
 
   constructor(private readonly meta: EntityMetadata,
               private readonly namingStrategy: NamingStrategy,
+              private readonly platform: Platform,
               private readonly helper: SchemaHelper) { }
 
   generate(): string {
@@ -77,17 +78,16 @@ export class SourceFile {
   private getPropertyDecorator(prop: EntityProperty, padLeft: number): string {
     const padding = ' '.repeat(padLeft);
     const options = {} as Dictionary;
-    const columnType = this.helper.getTypeFromDefinition(prop.columnTypes[0], '__false') === '__false' ? prop.columnTypes[0] : undefined;
     let decorator = this.getDecoratorType(prop);
     this.coreImports.add(decorator.substr(1));
 
     if (prop.reference !== ReferenceType.SCALAR) {
       this.getForeignKeyDecoratorOptions(options, prop);
     } else {
-      this.getScalarPropertyDecoratorOptions(options, prop, columnType);
+      this.getScalarPropertyDecoratorOptions(options, prop);
     }
 
-    this.getCommonDecoratorOptions(options, prop, columnType);
+    this.getCommonDecoratorOptions(options, prop);
     const indexes = this.getPropertyIndexes(prop, options);
     decorator = [...indexes.sort(), decorator].map(d => padding + d).join('\n');
 
@@ -115,22 +115,30 @@ export class SourceFile {
       return ret;
     }
 
-    if (prop.index) {
-      options.index = `'${prop.index}'`;
-    }
+    const processIndex = (type: 'index' | 'unique') => {
+      if (!prop[type]) {
+        return;
+      }
 
-    if (prop.unique) {
-      options.unique = `'${prop.unique}'`;
-    }
+      const defaultName = this.helper.getIndexName(this.meta.collection, prop.fieldNames, type);
+      options[type] = defaultName === prop[type] ? 'true' : `'${prop[type]}'`;
+      const expected = {
+        index: this.platform.indexForeignKeys(),
+        unique: prop.reference === ReferenceType.ONE_TO_ONE,
+      };
+
+      if (expected[type] && options[type] === 'true') {
+        delete options[type];
+      }
+    };
+
+    processIndex('index');
+    processIndex('unique');
 
     return [];
   }
 
-  private getCommonDecoratorOptions(options: Dictionary, prop: EntityProperty, columnType: string | undefined) {
-    if (columnType) {
-      options.columnType = `'${columnType}'`;
-    }
-
+  private getCommonDecoratorOptions(options: Dictionary, prop: EntityProperty) {
     if (prop.nullable) {
       options.nullable = true;
     }
@@ -146,11 +154,20 @@ export class SourceFile {
     }
   }
 
-  private getScalarPropertyDecoratorOptions(options: Dictionary, prop: EntityProperty, columnType: string | undefined): void {
-    const defaultColumnType = this.helper.getTypeDefinition(prop).replace(/\(\d+\)/, '');
+  private getScalarPropertyDecoratorOptions(options: Dictionary, prop: EntityProperty): void {
+    let t = prop.type.toLowerCase();
 
-    if (!columnType && prop.columnTypes[0] !== defaultColumnType && prop.type !== columnType) {
-      options.columnType = `'${prop.columnTypes[0]}'`;
+    if (t === 'date') {
+      t = 'datetime';
+    }
+
+    const mappedType1 = this.platform.getMappedType(t);
+    const mappedType2 = this.platform.getMappedType(prop.columnTypes[0]);
+    const columnType1 = mappedType1.getColumnType({ ...prop, autoincrement: false }, this.platform);
+    const columnType2 = mappedType2.getColumnType({ ...prop, autoincrement: false }, this.platform);
+
+    if (columnType1 !== columnType2 || [mappedType1, mappedType2].some(t => t instanceof UnknownType)) {
+      options.columnType = this.quote(prop.columnTypes[0]);
     }
 
     if (prop.fieldNames[0] !== this.namingStrategy.propertyToColumnName(prop.name)) {
@@ -195,6 +212,10 @@ export class SourceFile {
     if (prop.primary) {
       options.primary = true;
     }
+  }
+
+  private quote(val: string) {
+    return val.includes(`'`) ? `\`${val}\`` : `'${val}'`;
   }
 
   private getDecoratorType(prop: EntityProperty): string {

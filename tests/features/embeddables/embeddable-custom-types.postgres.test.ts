@@ -76,14 +76,7 @@ export class Numeric extends Type<number, string> {
   }
 
   getColumnType(prop: EntityProperty, platform: Platform): string {
-    this.validatePlatformSupport(platform);
     return 'numeric(14,2)';
-  }
-
-  private validatePlatformSupport(platform: Platform): void {
-    if (!(platform instanceof PostgreSqlPlatform)) {
-      throw new Error('Numeric custom type implemented only for PG.');
-    }
   }
 
 }
@@ -132,15 +125,9 @@ describe('embedded entities with custom types', () => {
   afterAll(() => orm.close(true));
 
   test('schema', async () => {
-    await expect(
-      orm.getSchemaGenerator().getCreateSchemaSQL(false)
-    ).resolves.toMatchSnapshot('embeddables custom types 1');
-    await expect(
-      orm.getSchemaGenerator().getUpdateSchemaSQL(false)
-    ).resolves.toMatchSnapshot('embeddables custom types 2');
-    await expect(
-      orm.getSchemaGenerator().getDropSchemaSQL(false)
-    ).resolves.toMatchSnapshot('embeddables custom types 3');
+    await expect(orm.getSchemaGenerator().getCreateSchemaSQL(false)).resolves.toMatchSnapshot('embeddables custom types 1');
+    await expect(orm.getSchemaGenerator().getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('embeddables custom types 2');
+    await expect(orm.getSchemaGenerator().getDropSchemaSQL(false)).resolves.toMatchSnapshot('embeddables custom types 3');
   });
 
   test('persist and load', async () => {
