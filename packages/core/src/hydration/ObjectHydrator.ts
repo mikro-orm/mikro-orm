@@ -95,6 +95,8 @@ export class ObjectHydrator extends Hydrator {
           `    }`,
           `  }`,
         );
+      } else if (prop.type.toLowerCase() === 'boolean') {
+        ret.push(`  if (${preCond}typeof data.${dataKey} !== 'undefined') entity.${entityKey} = data.${dataKey} === null ? null : !!data.${dataKey};`);
       } else {
         ret.push(`  if (${preCond}typeof data.${dataKey} !== 'undefined') entity.${entityKey} = data.${dataKey};`);
       }
