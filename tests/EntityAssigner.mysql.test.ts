@@ -116,7 +116,6 @@ describe('EntityAssignerMySql', () => {
     expect(Reference.isReference(book2.publisher)).toEqual(true);
 
     wrap(book2).assign({ author: { name: 'Jon Snow2' }, publisher: { name: 'Better Books LLC' } }, { updateNestedEntities: true });
-    wrap(originalAuthorRef).populated(true);
 
     // this means that the original object has been replaced, something updateNestedEntities does not do
     expect(book2.author).not.toEqual(originalAuthorRef);
