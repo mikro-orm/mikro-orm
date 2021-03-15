@@ -1,7 +1,7 @@
-import { MikroORM, wrap } from '@mikro-orm/core';
+import { MikroORM, Reference, wrap } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
-import { Author2, Book2, BookTag2, FooBar2 } from './entities-sql';
+import { Author2, Book2, BookTag2, FooBar2, Publisher2, PublisherType } from './entities-sql';
 
 describe('EntityAssignerMySql', () => {
 
@@ -92,6 +92,35 @@ describe('EntityAssignerMySql', () => {
     expect(book2.author.name).toEqual('Jon Snow2');
     expect(book2.author.email).toEqual('snow3@wall.st');
     expect(book2.author).toEqual(jon2);
+  });
+
+  test('assign() with updateNestedEntities flag should ignore not initialized entities [mysql]', async () => {
+    const jon = new Author2('Jon2 Snow', 'snow3@wall.st');
+    const book = new Book2('Book2', jon);
+    const publisher = new Publisher2('Good Books LLC', PublisherType.LOCAL);
+    book.publisher = Reference.create(publisher);
+    await orm.em.persistAndFlush(book);
+
+    const id = book.uuid;
+
+    orm.em.clear();
+
+    const book2 = (await orm.em.getRepository(Book2).findOne(id))!;
+    const originalAuthorRef = book2.author;
+    const originalPublisherWrappedRef = book2.publisher;
+
+    expect(Reference.isReference(book2.author)).toEqual(false);
+    expect(wrap(book2.author).isInitialized()).toEqual(false);
+
+    expect(wrap(book2.publisher).isInitialized()).toEqual(false);
+    expect(Reference.isReference(book2.publisher)).toEqual(true);
+
+    wrap(book2).assign({ author: { name: 'Jon Snow2' }, publisher: { name: 'Better Books LLC' } }, { updateNestedEntities: true });
+    wrap(originalAuthorRef).populated(true);
+
+    // this means that the original object has been replaced, something updateNestedEntities does not do
+    expect(book2.author).not.toEqual(originalAuthorRef);
+    expect(book2.publisher).not.toEqual(originalPublisherWrappedRef);
   });
 
   test('assign() should update not initialized collection [mysql]', async () => {

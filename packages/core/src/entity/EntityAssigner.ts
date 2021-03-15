@@ -6,6 +6,7 @@ import { Utils } from '../utils/Utils';
 import { Reference } from './Reference';
 import { ReferenceType, SCALAR_TYPES } from '../enums';
 import { EntityValidator } from './EntityValidator';
+import { wrap } from './wrap';
 
 const validator = new EntityValidator(false);
 
@@ -43,7 +44,8 @@ export class EntityAssigner {
       }
 
       if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(props[prop]?.reference) && Utils.isDefined(value, true) && EntityAssigner.validateEM(em)) {
-        if (options.updateNestedEntities && Utils.isEntity(entity[prop], false) && Utils.isPlainObject(value)) {
+        // eslint-disable-next-line no-prototype-builtins
+        if (options.updateNestedEntities && entity.hasOwnProperty(prop) && Utils.isEntity(entity[prop]) && wrap(entity[prop]).isInitialized() && Utils.isPlainObject(value)) {
           return EntityAssigner.assign(entity[prop], value, options);
         }
 
@@ -60,8 +62,7 @@ export class EntityAssigner {
 
       if (options.mergeObjects && Utils.isPlainObject(value)) {
         Utils.merge(entity[prop as keyof T], value);
-      // eslint-disable-next-line no-prototype-builtins
-      } else if (entity.hasOwnProperty(prop) && (!props[prop] || props[prop].setter || !props[prop].getter)) {
+      } else if (!props[prop] || props[prop].setter || !props[prop].getter) {
         entity[prop as keyof T] = value;
       }
     });
