@@ -252,7 +252,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       throw new Error('No platform type specified, please fill in `type` or provide custom driver class in `driver` option. Available platforms types: ' + inspect(Object.keys(Configuration.PLATFORMS)));
     }
 
-    if (!(this.options.type! in Configuration.PLATFORMS)) {
+    if (this.options.type && !(this.options.type in Configuration.PLATFORMS)) {
       throw new Error(`Invalid platform type specified: '${this.options.type}', please fill in valid \`type\` or provide custom driver class in \`driver\` option. Available platforms types: ${inspect(Object.keys(Configuration.PLATFORMS))}`);
     }
 
