@@ -74,4 +74,8 @@ export abstract class AbstractSqlPlatform extends Platform {
     return JSON.stringify(data) as unknown as T; // keep string to ease escaping
   }
 
+  isRaw(value: any): boolean {
+    return super.isRaw(value) || (typeof value === 'object' && value !== null && value.client && value.ref && value.constructor.name === 'Ref');
+  }
+
 }

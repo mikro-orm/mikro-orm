@@ -115,11 +115,11 @@ export class QueryHelper {
         return o;
       }
 
-      if (prop?.customType && convertCustomTypes) {
+      if (prop?.customType && convertCustomTypes && !platform.isRaw(value)) {
         value = QueryHelper.processCustomType(prop, value, platform, undefined, true);
       }
 
-      if (prop?.customType instanceof JsonType && Utils.isPlainObject(value)) {
+      if (prop?.customType instanceof JsonType && Utils.isPlainObject(value) && !platform.isRaw(value)) {
         return this.processJsonCondition(o, value, [key], platform);
       }
 
