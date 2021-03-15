@@ -46,8 +46,8 @@ export class EntityAssigner {
         if (options.updateNestedEntities && Utils.isEntity(entity[prop], false) && Utils.isPlainObject(value)) {
           return EntityAssigner.assign(entity[prop], value, options);
         }
-          return EntityAssigner.assignReference<T>(entity, value, props[prop], em!, options);
 
+        return EntityAssigner.assignReference<T>(entity, value, props[prop], em!, options);
       }
 
       if (props[prop]?.reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(props[prop].type) && (props[prop].setter || !props[prop].getter)) {
