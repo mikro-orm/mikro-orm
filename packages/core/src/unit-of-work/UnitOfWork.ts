@@ -49,8 +49,13 @@ export class UnitOfWork {
     }
 
     this.identityMap.store(entity);
-    wrapped.__originalEntityData = this.comparator.prepareEntity(entity);
     wrapped.__populated = true;
+
+    // if visited is available, we are cascading, and need to be careful when resetting the entity data
+    // as there can be some entity with already changed state that is not yet flushed
+    if (!visited || !wrapped.__originalEntityData) {
+      wrapped.__originalEntityData = this.comparator.prepareEntity(entity);
+    }
 
     this.cascade(entity, Cascade.MERGE, visited ?? new WeakSet<AnyEntity>());
   }
