@@ -44,7 +44,7 @@ wrap(book).assign({
 ```
 
 By default, `entity.assign(data)` behaves same way as `Object.assign(entity, data)`, 
-e.g. it does not merge things recursively. To enable deep merging of object properties, 
+e.g. it does not merge things recursively. To enable deep merging of object properties (not referenced entities), 
 use second parameter to enable `mergeObjects` flag:
 
 ```typescript
@@ -57,6 +57,24 @@ console.log(book.meta); // { foo: 3, bar: 2 }
 
 wrap(book).assign({ meta: { foo: 4 } });
 console.log(book.meta); // { foo: 4 }
+```
+
+To get the same behavior as `mergeObjects` flag for m:1 and 1:1 references, enable the `updateNestedEntities` flag.
+
+```typescript
+import { wrap } from '@mikro-orm/core';
+
+const authorEntity = new Author('Jon2 Snow', 'snow3@wall.st');
+book.author = authorEntity;
+
+wrap(book).assign({ author: { name: 'Jon Snow2' } }, { updateNestedEntities: true });
+console.log(book.author); // { ... name: 'Jon Snow2' ... }
+console.log(book.author === authorEntity) // true
+
+//this will have no influence as author is an entity
+wrap(book).assign({ author: { name: 'Jon Snow2' } }, { mergeObjects: true });
+console.log(book.author); // { ... name: 'Jon Snow2' ... }
+console.log(book.author === authorEntity) // false
 ```
 
 ## `WrappedEntity` and `wrap()` helper

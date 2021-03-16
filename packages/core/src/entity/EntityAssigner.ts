@@ -6,6 +6,7 @@ import { Utils } from '../utils/Utils';
 import { Reference } from './Reference';
 import { ReferenceType, SCALAR_TYPES } from '../enums';
 import { EntityValidator } from './EntityValidator';
+import { wrap } from './wrap';
 
 const validator = new EntityValidator(false);
 
@@ -43,6 +44,16 @@ export class EntityAssigner {
       }
 
       if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(props[prop]?.reference) && Utils.isDefined(value, true) && EntityAssigner.validateEM(em)) {
+
+        // eslint-disable-next-line no-prototype-builtins
+        if (options.updateNestedEntities && entity.hasOwnProperty(prop) && (Utils.isEntity(entity[prop]) || Reference.isReference(entity[prop])) && Utils.isPlainObject(value)) {
+          const unwrappedEntity = Reference.unwrapReference(entity[prop]);
+
+          if (wrap(unwrappedEntity).isInitialized()) {
+            return EntityAssigner.assign(unwrappedEntity, value, options);
+          }
+        }
+
         return EntityAssigner.assignReference<T>(entity, value, props[prop], em!, options);
       }
 
@@ -172,6 +183,7 @@ export class EntityAssigner {
 export const assign = EntityAssigner.assign;
 
 export interface AssignOptions {
+  updateNestedEntities?: boolean;
   onlyProperties?: boolean;
   convertCustomTypes?: boolean;
   mergeObjects?: boolean;

@@ -1,7 +1,7 @@
-import { MikroORM, wrap } from '@mikro-orm/core';
+import { MikroORM, Reference, wrap } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
-import { Author2, Book2, BookTag2, FooBar2 } from './entities-sql';
+import { Author2, Book2, BookTag2, FooBar2, Publisher2, PublisherType } from './entities-sql';
 
 describe('EntityAssignerMySql', () => {
 
@@ -74,6 +74,85 @@ describe('EntityAssignerMySql', () => {
     const book2 = await orm.em.findOneOrFail(Book2, book.uuid);
     await book2.tags.init();
     expect(book2.tags.getIdentifiers()).toMatchObject([tag2.id]);
+  });
+
+  test('assign() should update m:1 or 1:1 nested entities [mysql]', async () => {
+    const jon = new Author2('Jon Snow', 'snow@wall.st');
+    const book1 = new Book2('Book2', jon);
+    const jon2 = new Author2('Jon2 Snow', 'snow3@wall.st');
+    const book2 = new Book2('Book2', jon2);
+    await orm.em.persistAndFlush(book1);
+    await orm.em.persistAndFlush(book2);
+    wrap(book1).assign({ author: { name: 'Jon Snow2' } });
+    expect(book1.author.name).toEqual('Jon Snow2');
+    expect(book1.author.email).toBeUndefined();
+    expect(book1.author).not.toEqual(jon);
+
+    wrap(book2).assign({ author: { name: 'Jon Snow2' } }, { updateNestedEntities: true });
+    expect(book2.author.name).toEqual('Jon Snow2');
+    expect(book2.author.email).toEqual('snow3@wall.st');
+    expect(book2.author).toEqual(jon2);
+  });
+
+  test('assign() with updateNestedEntities flag should ignore not initialized entities [mysql]', async () => {
+    const jon = new Author2('Jon2 Snow', 'snow3@wall.st');
+    const book = new Book2('Book2', jon);
+    const publisher = new Publisher2('Good Books LLC', PublisherType.LOCAL);
+    book.publisher = Reference.create(publisher);
+    await orm.em.persistAndFlush(book);
+
+    const id = book.uuid;
+
+    orm.em.clear();
+
+    const book2 = (await orm.em.getRepository(Book2).findOne(id))!;
+    const originalAuthorRef = book2.author;
+    const originalPublisherWrappedRef = book2.publisher;
+
+    expect(Reference.isReference(book2.author)).toEqual(false);
+    expect(wrap(book2.author).isInitialized()).toEqual(false);
+
+    expect(wrap(book2.publisher).isInitialized()).toEqual(false);
+    expect(Reference.isReference(book2.publisher)).toEqual(true);
+
+    const value = Reference.unwrapReference(book2.publisher!);
+
+    wrap(book2).assign({ author: { name: 'Jon Snow2' }, publisher: { name: 'Better Books LLC' } }, { updateNestedEntities: true });
+
+    expect(book2.author).not.toEqual(originalAuthorRef);
+    expect(book2.publisher).not.toEqual(originalPublisherWrappedRef);
+  });
+
+  test('assign() with updateNestedEntities flag should update wrapped initialized entities [mysql]', async () => {
+    const jon = new Author2('Jon2 Snow', 'snow3@wall.st');
+    const book = new Book2('Book2', jon);
+    const publisher = new Publisher2('Good Books LLC', PublisherType.LOCAL);
+    book.publisher = Reference.create(publisher);
+    await orm.em.persistAndFlush(book);
+
+    const id = book.uuid;
+
+    orm.em.clear();
+
+    const book2 = (await orm.em.getRepository(Book2).findOne(id))!;
+
+    expect(wrap(book2.publisher).isInitialized()).toEqual(false);
+    expect(Reference.isReference(book2.publisher)).toEqual(true);
+
+    await book2.publisher?.load();
+
+    expect(wrap(book2.publisher).isInitialized()).toEqual(true);
+
+    const originalValue = Reference.unwrapReference(book2.publisher!);
+    const originalRef = book2.publisher!;
+    expect(originalValue.name).toEqual('Good Books LLC');
+
+    wrap(book2).assign({ author: { name: 'Jon Snow2' }, publisher: { name: 'Better Books LLC' } }, { updateNestedEntities: true });
+
+    // this means that the original object has been replaced, something updateNestedEntities does not do
+    expect(book2.publisher).toEqual(originalRef);
+    expect(book2.publisher!.unwrap()).toEqual(originalValue);
+    expect(book2.publisher!.unwrap().name).toEqual('Better Books LLC');
   });
 
   test('assign() should update not initialized collection [mysql]', async () => {
