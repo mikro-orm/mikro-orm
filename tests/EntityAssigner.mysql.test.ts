@@ -115,11 +115,44 @@ describe('EntityAssignerMySql', () => {
     expect(wrap(book2.publisher).isInitialized()).toEqual(false);
     expect(Reference.isReference(book2.publisher)).toEqual(true);
 
+    const value = Reference.unwrapReference(book2.publisher!);
+
+    wrap(book2).assign({ author: { name: 'Jon Snow2' }, publisher: { name: 'Better Books LLC' } }, { updateNestedEntities: true });
+
+    expect(book2.author).not.toEqual(originalAuthorRef);
+    expect(book2.publisher).not.toEqual(originalPublisherWrappedRef);
+  });
+
+  test('assign() with updateNestedEntities flag should update wrapped initialized entities [mysql]', async () => {
+    const jon = new Author2('Jon2 Snow', 'snow3@wall.st');
+    const book = new Book2('Book2', jon);
+    const publisher = new Publisher2('Good Books LLC', PublisherType.LOCAL);
+    book.publisher = Reference.create(publisher);
+    await orm.em.persistAndFlush(book);
+
+    const id = book.uuid;
+
+    orm.em.clear();
+
+    const book2 = (await orm.em.getRepository(Book2).findOne(id))!;
+
+    expect(wrap(book2.publisher).isInitialized()).toEqual(false);
+    expect(Reference.isReference(book2.publisher)).toEqual(true);
+
+    await book2.publisher?.load();
+
+    expect(wrap(book2.publisher).isInitialized()).toEqual(true);
+
+    const originalValue = Reference.unwrapReference(book2.publisher!);
+    const originalRef = book2.publisher!;
+    expect(originalValue.name).toEqual('Good Books LLC');
+
     wrap(book2).assign({ author: { name: 'Jon Snow2' }, publisher: { name: 'Better Books LLC' } }, { updateNestedEntities: true });
 
     // this means that the original object has been replaced, something updateNestedEntities does not do
-    expect(book2.author).not.toEqual(originalAuthorRef);
-    expect(book2.publisher).not.toEqual(originalPublisherWrappedRef);
+    expect(book2.publisher).toEqual(originalRef);
+    expect(book2.publisher!.unwrap()).toEqual(originalValue);
+    expect(book2.publisher!.unwrap().name).toEqual('Better Books LLC');
   });
 
   test('assign() should update not initialized collection [mysql]', async () => {

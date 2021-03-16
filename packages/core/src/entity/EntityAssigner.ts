@@ -44,9 +44,14 @@ export class EntityAssigner {
       }
 
       if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(props[prop]?.reference) && Utils.isDefined(value, true) && EntityAssigner.validateEM(em)) {
+
         // eslint-disable-next-line no-prototype-builtins
-        if (options.updateNestedEntities && entity.hasOwnProperty(prop) && Utils.isEntity(entity[prop]) && wrap(entity[prop]).isInitialized() && Utils.isPlainObject(value)) {
-          return EntityAssigner.assign(entity[prop], value, options);
+        if (options.updateNestedEntities && entity.hasOwnProperty(prop) && (Utils.isEntity(entity[prop]) || Reference.isReference(entity[prop])) && Utils.isPlainObject(value)) {
+          const unwrappedEntity = Reference.isReference(entity[prop]) ? entity[prop].unwrap() : entity[prop];
+
+          if (wrap(unwrappedEntity).isInitialized()) {
+            return EntityAssigner.assign(unwrappedEntity, value, options);
+          }
         }
 
         return EntityAssigner.assignReference<T>(entity, value, props[prop], em!, options);
