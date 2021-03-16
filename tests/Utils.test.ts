@@ -322,6 +322,12 @@ describe('Utils', () => {
     ];
     expect(Utils.lookupPathFromDecorator('Customer', stack5)).toBe('Customer');
 
+    // unknown type of stack trace fallback
+    expect(Utils.lookupPathFromDecorator('Customer', [
+      '    at Object.__decorate (/usr/local/var/www/my-project/node_modules/tslib/tslib.js:92:96)',
+      '    at Object.<anonymous> ( ... )',
+    ])).toBe('Customer');
+
     // no decorated line found
     expect(Utils.lookupPathFromDecorator('Customer')).toBe('Customer');
   });

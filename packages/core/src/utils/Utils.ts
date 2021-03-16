@@ -541,9 +541,12 @@ export class Utils {
       line++;
     }
 
-    const re = stack[line].match(/\(.+\)/i) ? /\((.*):\d+:\d+\)/ : /at\s*(.*):\d+:\d+$/;
-
-    return Utils.normalizePath(stack[line].match(re)![1]);
+    try {
+      const re = stack[line].match(/\(.+\)/i) ? /\((.*):\d+:\d+\)/ : /at\s*(.*):\d+:\d+$/;
+      return Utils.normalizePath(stack[line].match(re)![1]);
+    } catch {
+      return name;
+    }
   }
 
   /**
