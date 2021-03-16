@@ -47,7 +47,7 @@ export class EntityAssigner {
 
         // eslint-disable-next-line no-prototype-builtins
         if (options.updateNestedEntities && entity.hasOwnProperty(prop) && (Utils.isEntity(entity[prop]) || Reference.isReference(entity[prop])) && Utils.isPlainObject(value)) {
-          const unwrappedEntity = Reference.isReference(entity[prop]) ? entity[prop].unwrap() : entity[prop];
+          const unwrappedEntity = Reference.unwrapReference(entity[prop]);
 
           if (wrap(unwrappedEntity).isInitialized()) {
             return EntityAssigner.assign(unwrappedEntity, value, options);
