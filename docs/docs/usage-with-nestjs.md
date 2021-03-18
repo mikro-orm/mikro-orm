@@ -44,22 +44,42 @@ Once the installation process is completed, we can import the `MikroOrmModule` i
 export class AppModule {}
 ```
 
-The `forRoot()` method accepts the same configuration object as `init()` from the MikroORM package. 
-You can also omit the parameter to use the CLI config.
+The `forRoot()` method accepts the same configuration object as `init()` from the MikroORM package. Check [this page](/configuration) for the complete configuration documentation.
+
+Alternatively we can [configure the CLI](/installation#setting-up-the-commandline-tool) by creating a configuration file `mikro-orm.config.ts` and then call the `forRoot()` without any arguments. This won't work when you use a build tools that use tree shaking. 
+
+```typescript
+@Module({
+  imports: [
+    MikroOrmModule.forRoot(),
+  ],
+  ...
+})
+export class AppModule {}
+```
 
 Afterward, the `EntityManager` will be available to inject across entire project (without importing any module elsewhere).
 
 ```ts
+import { MikroORM } from '@mikro-orm/core';
+import { EntityManager } from '@mikro-orm/mysql'; // Import EntityManager from your driver package or `@mikro-orm/knex`
+
 @Injectable()
 export class MyService {
 
-  constructor(private readonly orm: MikroORM,
-              private readonly em: EntityManager) { }
+    constructor(private readonly orm: MikroORM,
+                private readonly em: EntityManager) {
+    }
 
 }
 ```
 
-To define which repositories shall be registered in the current scope you can use the `forFeature()` method. For example, in this way:
+> Notice that the `EntityManager` is imported from the `@mikro-orm/driver` package, where driver is `mysql`, `sqlite`, `postgres` or what driver you are using.
+> 
+> In case you have `@mikro-orm/knex` installed as a dependency, you can also import the `EntityManager` from there.
+
+## Repositories
+MikroORM supports the repository design pattern. For every entity we can create a repository. Read the complete [documentation on repositories here](/repositories). To define which repositories shall be registered in the current scope you can use the `forFeature()` method. For example, in this way:
 
 > You should **not** register your base entities via `forFeature()`, as there are no
 > repositories for those. On the other hand, base entities need to be part of the list
@@ -97,11 +117,58 @@ export class PhotoService {
   ) {}
 
   // ...
+}
+```
+
+## Using custom repositories
+
+When using custom repositories, we can get around the need for `@InjectRepository()`
+decorator by naming our repositories the same way as `getRepositoryToken()` method do:
+
+```ts
+export const getRepositoryToken = <T> (entity: EntityName<T>) => `${Utils.className(entity)}Repository`;
+```
+
+In other words, as long as we name the repository same was as the entity is called,
+appending `Repository` suffix, the repository will be registered automatically in
+the Nest.js DI container.
+
+`**./author.entity.ts**`
+
+```ts
+@Entity()
+export class Author {
+
+  // to allow inference in `em.getRepository()`
+  [EntityRepositoryType]?: AuthorRepository;
 
 }
 ```
 
-## Auto entities automatically
+`**./author.repository.ts**`
+
+```ts
+@Repository(Author)
+export class AuthorRepository extends EntityRepository<Author> {
+
+  // your custom methods...
+
+}
+```
+
+As the custom repository name is the same as what `getRepositoryToken()` would
+return, we do not need the `@InjectRepository()` decorator anymore:
+
+```ts
+@Injectable()
+export class MyService {
+
+  constructor(private readonly repo: AuthorRepository) { }
+
+}
+```
+
+## Load entities automatically
 
 > `autoLoadEntities` option was added in v4.1.0 
 
@@ -144,8 +211,7 @@ object.
 
 > `@UseRequestContext()` decorator was added in v4.1.0 
 
-As mentioned in the docs, we need a clean state for each request. That is handled
-automatically thanks to the `RequestContext` helper registered via middleware. 
+As mentioned in the [docs](/identity-map), we need a clean state for each request. That is handled automatically thanks to the `RequestContext` helper registered via middleware. 
 
 But middlewares are executed only for regular HTTP request handles, what if we need
 a request scoped method outside of that? One example of that is queue handlers or 
@@ -200,54 +266,6 @@ app.use((req, res, next) => {
 });
 ```
 
-## Using custom repositories
-
-When using custom repositories, we can get around the need for `@InjectRepository()`
-decorator by naming our repositories the same way as `getRepositoryToken()` method do:
-
-```ts
-export const getRepositoryToken = <T> (entity: EntityName<T>) => `${Utils.className(entity)}Repository`;
-```
-
-In other words, as long as we name the repository same was as the entity is called, 
-appending `Repository` suffix, the repository will be registered automatically in 
-the Nest.js DI container.
-
-`**./author.entity.ts**`
-
-```ts
-@Entity()
-export class Author {
-
-  // to allow inference in `em.getRepository()`
-  [EntityRepositoryType]?: AuthorRepository;
-
-}
-```
-
-`**./author.repository.ts**`
-
-```ts
-@Repository(Author)
-export class AuthorRepository extends EntityRepository<Author> {
-
-  // your custom methods...
-
-}
-```
-
-As the custom repository name is the same as what `getRepositoryToken()` would
-return, we do not need the `@InjectRepository()` decorator anymore:
-
-```ts
-@Injectable()
-export class MyService {
-
-  constructor(private readonly repo: AuthorRepository) { }
-
-}
-```
-
 ## Testing
 
 The `@mikro-orm/nestjs` package exposes `getRepositoryToken()` function that returns prepared token based on a given entity to allow mocking the repository.
@@ -264,3 +282,6 @@ The `@mikro-orm/nestjs` package exposes `getRepositoryToken()` function that ret
 })
 export class PhotoModule {}
 ```
+
+## Example
+A real world example of NestJS with MikroORM can be found [here](https://github.com/mikro-orm/nestjs-realworld-example-app)
