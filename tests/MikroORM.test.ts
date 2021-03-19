@@ -1,6 +1,6 @@
 (global as any).process.env.FORCE_COLOR = 0;
 
-import { Configuration, EntityManager, MikroORM } from '@mikro-orm/core';
+import { Configuration, EntityManager, MikroORM, NullCacheAdapter } from '@mikro-orm/core';
 import fs from 'fs-extra';
 import { BASE_DIR } from './bootstrap';
 import { Author, Test } from './entities';
@@ -97,6 +97,29 @@ describe('MikroORM', () => {
     expect(orm.config.get('filters').needsTermsAccepted.default).toEqual(true);
     expect(orm.config.get('filters').hasBirthday.default).toEqual(false);
     await orm.close();
+  });
+
+  test('orm.close() calls CacheAdapter.close()', async () => {
+    let closed = 0;
+
+    class Adapter extends NullCacheAdapter {
+
+      async close() {
+        closed++;
+      }
+
+    }
+
+    const orm = await MikroORM.init({
+      type: 'sqlite',
+      dbName: ':memory:',
+      entities: [Car2, CarOwner2, User2, Sandwich],
+      cache: { adapter: Adapter, enabled: true },
+      resultCache: { adapter: Adapter },
+    }, true);
+    expect(closed).toBe(0);
+    await orm.close();
+    expect(closed).toBe(2);
   });
 
   test('should use CLI config', async () => {

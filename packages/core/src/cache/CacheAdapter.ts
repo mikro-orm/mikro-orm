@@ -15,4 +15,9 @@ export interface CacheAdapter {
    */
   clear(): Promise<void>;
 
+  /**
+   * Called inside `MikroORM.close()` Allows graceful shutdowns (e.g. for redis).
+   */
+  close?(): Promise<void>;
+
 }

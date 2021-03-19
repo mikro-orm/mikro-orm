@@ -93,6 +93,14 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   async close(force?: boolean): Promise<void> {
     await Promise.all(this.replicas.map(replica => replica.close(force)));
     await this.connection.close(force);
+
+    if (this.config.getCacheAdapter()?.close) {
+      await this.config.getCacheAdapter().close!();
+    }
+
+    if (this.config.getResultCacheAdapter()?.close) {
+      await this.config.getResultCacheAdapter().close!();
+    }
   }
 
   getPlatform(): Platform {
