@@ -628,9 +628,13 @@ describe('SchemaGenerator', () => {
     await generator.updateSchema();
 
     meta.get('Book2').indexes = [];
-    meta.get('Book2').uniques = [];
 
     await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-drop-index');
+    await generator.updateSchema();
+
+    meta.get('Book2').uniques = [];
+
+    await expect(generator.getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('postgres-update-schema-drop-unique');
     await generator.updateSchema();
 
     await orm.close(true);

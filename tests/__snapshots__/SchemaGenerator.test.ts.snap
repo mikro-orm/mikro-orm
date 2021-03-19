@@ -1285,9 +1285,13 @@ create index \\"custom_idx_123\\" on \\"book2\\" (\\"author_id\\", \\"publisher_
 `;
 
 exports[`SchemaGenerator update indexes [postgres]: postgres-update-schema-drop-index 1`] = `
-"alter table \\"book2\\" drop constraint \\"book2_author_id_publisher_id_unique\\";
+"drop index \\"custom_idx_123\\";
 
-drop index \\"custom_idx_123\\";
+"
+`;
+
+exports[`SchemaGenerator update indexes [postgres]: postgres-update-schema-drop-unique 1`] = `
+"alter table \\"book2\\" drop constraint \\"book2_author_id_publisher_id_unique\\";
 
 "
 `;
