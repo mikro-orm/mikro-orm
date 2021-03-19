@@ -44,9 +44,9 @@ Once the installation process is completed, we can import the `MikroOrmModule` i
 export class AppModule {}
 ```
 
-The `forRoot()` method accepts the same configuration object as `init()` from the MikroORM package. Check [this page](/configuration) for the complete configuration documentation.
+The `forRoot()` method accepts the same configuration object as `init()` from the MikroORM package. Check [this page](configuration.md) for the complete configuration documentation.
 
-Alternatively we can [configure the CLI](/installation#setting-up-the-commandline-tool) by creating a configuration file `mikro-orm.config.ts` and then call the `forRoot()` without any arguments. This won't work when you use a build tools that use tree shaking. 
+Alternatively we can [configure the CLI](installation.md#setting-up-the-commandline-tool) by creating a configuration file `mikro-orm.config.ts` and then call the `forRoot()` without any arguments. This won't work when you use a build tools that use tree shaking. 
 
 ```typescript
 @Module({
@@ -79,7 +79,7 @@ export class MyService {
 > In case you have `@mikro-orm/knex` installed as a dependency, you can also import the `EntityManager` from there.
 
 ## Repositories
-MikroORM supports the repository design pattern. For every entity we can create a repository. Read the complete [documentation on repositories here](/repositories). To define which repositories shall be registered in the current scope you can use the `forFeature()` method. For example, in this way:
+MikroORM supports the repository design pattern. For every entity we can create a repository. Read the complete [documentation on repositories here](repositories.md). To define which repositories shall be registered in the current scope you can use the `forFeature()` method. For example, in this way:
 
 > You should **not** register your base entities via `forFeature()`, as there are no
 > repositories for those. On the other hand, base entities need to be part of the list
@@ -211,7 +211,7 @@ object.
 
 > `@UseRequestContext()` decorator was added in v4.1.0 
 
-As mentioned in the [docs](/identity-map), we need a clean state for each request. That is handled automatically thanks to the `RequestContext` helper registered via middleware. 
+As mentioned in the [docs](identity-map.md), we need a clean state for each request. That is handled automatically thanks to the `RequestContext` helper registered via middleware. 
 
 But middlewares are executed only for regular HTTP request handles, what if we need
 a request scoped method outside of that? One example of that is queue handlers or 
