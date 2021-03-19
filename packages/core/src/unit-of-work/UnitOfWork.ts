@@ -232,7 +232,7 @@ export class UnitOfWork {
       }
 
       const groups = this.getChangeSetGroups();
-      const platform = this.em.getDriver().getPlatform();
+      const platform = this.em.getPlatform();
       const runInTransaction = !this.em.isInTransaction() && platform.supportsTransactions() && this.em.config.get('implicitTransactions');
 
       if (runInTransaction) {

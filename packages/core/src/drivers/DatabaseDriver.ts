@@ -94,10 +94,12 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     await Promise.all(this.replicas.map(replica => replica.close(force)));
     await this.connection.close(force);
 
+    /* istanbul ignore next */
     if (this.config.getCacheAdapter()?.close) {
       await this.config.getCacheAdapter().close!();
     }
 
+    /* istanbul ignore next */
     if (this.config.getResultCacheAdapter()?.close) {
       await this.config.getResultCacheAdapter().close!();
     }

@@ -21,7 +21,7 @@ export class EntityHelper {
     const pk = meta.properties[meta.primaryKeys[0]];
 
     if (pk.name === '_id' && meta.serializedPrimaryKey === 'id') {
-      EntityHelper.defineIdProperty(meta, em.getDriver().getPlatform());
+      EntityHelper.defineIdProperty(meta, em.getPlatform());
     }
 
     EntityHelper.defineBaseProperties(meta, meta.prototype, em);
@@ -56,7 +56,7 @@ export class EntityHelper {
     Object.defineProperties(prototype, {
       __entity: { value: true },
       __meta: { value: meta },
-      __platform: { value: em.getDriver().getPlatform() },
+      __platform: { value: em.getPlatform() },
       [entityHelperSymbol]: { value: null, writable: true, enumerable: false },
       __helper: {
         get(): WrappedEntity<T, keyof T> {
