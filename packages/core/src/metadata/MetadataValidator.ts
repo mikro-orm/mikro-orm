@@ -117,6 +117,17 @@ export class MetadataValidator {
     if (owner.mappedBy) {
       throw MetadataError.fromWrongOwnership(meta, prop, 'mappedBy');
     }
+
+    // owning side is not defined as inverse
+    const valid = [
+      { owner: ReferenceType.MANY_TO_ONE, inverse: ReferenceType.ONE_TO_MANY },
+      { owner: ReferenceType.MANY_TO_MANY, inverse: ReferenceType.MANY_TO_MANY },
+      { owner: ReferenceType.ONE_TO_ONE, inverse: ReferenceType.ONE_TO_ONE },
+    ];
+
+    if (!valid.find(spec => spec.owner === owner.reference && spec.inverse === prop.reference)) {
+      throw MetadataError.fromWrongReferenceType(meta, owner, prop);
+    }
   }
 
   private validateIndexes(meta: EntityMetadata, indexes: { properties: string | string[] }[], type: 'index' | 'unique'): void {

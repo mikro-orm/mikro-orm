@@ -158,6 +158,10 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return new MetadataError(`Both ${meta.className}.${prop.name} and ${prop.type}.${prop[key]} are defined as ${type} sides, use '${other}' on one of them`);
   }
 
+  static fromWrongReferenceType(meta: EntityMetadata, owner: EntityProperty, prop: EntityProperty): MetadataError {
+    return new MetadataError(`${meta.className}.${prop.name} is of type ${prop.reference} which is incompatible with its owning side ${prop.type}.${owner.name} of type ${owner.reference}`);
+  }
+
   /* istanbul ignore next */
   static entityNotFound(name: string, path: string): MetadataError {
     return new MetadataError(`Entity '${name}' not found in ${path}`);

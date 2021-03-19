@@ -23,6 +23,14 @@ describe('MetadataValidator', () => {
     meta.Author.properties.tests = { name: 'tests', reference: ReferenceType.ONE_TO_MANY, type: 'Test', mappedBy: 'foo' };
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'Author')).toThrowError(`Author.tests has unknown 'mappedBy' reference: Test.foo`);
 
+    meta.Test.properties.foo = { name: 'foo', reference: ReferenceType.ONE_TO_ONE, type: 'Author' };
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'Author')).toThrowError(`Author.tests is of type 1:m which is incompatible with its owning side Test.foo of type 1:1`);
+
+    meta.Test.properties.foo = { name: 'foo', reference: ReferenceType.MANY_TO_ONE, type: 'Author', inversedBy: 'tests' };
+    meta.Author.properties.tests.reference = ReferenceType.MANY_TO_MANY;
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'Author')).toThrowError(`Author.tests is of type m:n which is incompatible with its owning side Test.foo of type m:1`);
+
+    meta.Author.properties.tests.reference = ReferenceType.ONE_TO_MANY;
     meta.Test.properties.foo = { name: 'foo', reference: ReferenceType.MANY_TO_ONE, type: 'Wrong', mappedBy: 'foo' };
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'Author')).toThrowError(`Author.tests has wrong 'mappedBy' reference type: Wrong instead of Author`);
 
