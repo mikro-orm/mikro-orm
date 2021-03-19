@@ -222,25 +222,83 @@ export class EntityComparator {
     return ret;
   }
 
-  private getEmbeddedPropertySnapshot<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, context: Map<string, any>, level = 1, path: string[] = [prop.name]): string {
+  private getEmbeddedArrayPropertySnapshot<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, context: Map<string, any>, level: number, path: string[] = [prop.name], dataKey?: string, object?: boolean, serialize?: boolean): string {
+    const entityKey = path.join('.');
+    dataKey = dataKey ?? entityKey;
+    const ret: string[] = [];
     const padding = ' '.repeat(level * 2);
-    const cond = `entity.${path.join('.')} != null`;
-    const ret = `${level === 1 ? '' : '\n'}${padding}if (${cond}) {\n`;
 
-    if (prop.object) {
-      return `${ret + padding}  ret.${prop.name} = cloneEmbeddable(entity.${path.join('.')});\n${padding}}`;
+    ret.push(`${padding}if (Array.isArray(entity.${entityKey})) {`);
+    ret.push(`${padding}  ret.${dataKey} = [];`);
+    ret.push(`${padding}  entity.${entityKey}.forEach((_, idx) => {`);
+    const last = path.pop();
+    ret.push(this.getEmbeddedPropertySnapshot(meta, prop, context, level + 2, [...path, last + '[idx]'], dataKey + '[idx]', true));
+    ret.push(`${padding}  });`);
+
+    if (this.shouldSerialize(prop, dataKey)) {
+      ret.push(`${padding}  ret.${dataKey} = cloneEmbeddable(ret.${dataKey});`);
     }
 
-    return ret + meta.props.filter(p => p.embedded?.[0] === prop.name).map(childProp => {
-      if (childProp.reference === ReferenceType.EMBEDDED) {
-        return this.getEmbeddedPropertySnapshot(meta, childProp, context, level + 1, [...path, childProp.embedded![1]]);
-      }
+    ret.push(`${padding}}`);
 
-      return `${padding}  ret.${childProp.name} = clone(entity.${path.join('.')}.${childProp.embedded![1]});`;
-    }).join('\n') + `\n${padding}}`;
+    return ret.join('\n');
   }
 
-  private getPropertySnapshot<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, context: Map<string, any>): string {
+  /**
+   * we need to serialize only object embeddables, and only the top level ones, so root object embeddable
+   * properties and first child nested object embeddables with inlined parent
+   */
+  private shouldSerialize(prop: EntityProperty, dataKey: string): boolean {
+    const contains = (str: string, re: RegExp) => (str.match(re) || []).length > 0;
+    const a = contains(dataKey, /\./g);
+    const b = contains(dataKey, /\[/g);
+
+    return !!prop.object && !(a || b);
+  }
+
+  private getEmbeddedPropertySnapshot<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, context: Map<string, any>, level: number, path: string[] = [prop.name], dataKey?: string, object = prop.object): string {
+    const entityKey = path.join('.');
+    dataKey = dataKey ?? (object ? entityKey : prop.name);
+
+    const padding = ' '.repeat(level * 2);
+    const cond = `entity.${path.join('.')} != null`;
+    let ret = `${level === 1 ? '' : '\n'}${padding}if (${cond}) {\n`;
+
+    if (object) {
+      ret += `${padding}  ret.${dataKey} = {};\n`;
+    }
+
+    ret += meta.props.filter(p => p.embedded?.[0] === prop.name).map(childProp => {
+      const childDataKey = prop.object ? dataKey + '.' + childProp.embedded![1] : childProp.name;
+
+      if (childProp.reference === ReferenceType.EMBEDDED) {
+        return this.getPropertySnapshot(meta, childProp, context, childDataKey, [...path, childProp.embedded![1]], level + 1, prop.object);
+      }
+
+      const childEntityKey = `${path.join('.')}.${childProp.embedded![1]}`;
+
+      if (childProp.customType) {
+        context.set(`convertToDatabaseValue_${childProp.name}`, (val: any) => childProp.customType.convertToDatabaseValue(val, this.platform));
+
+        /* istanbul ignore next */
+        if (['number', 'string', 'boolean'].includes(childProp.customType.compareAsType().toLowerCase())) {
+          return `${padding}  ret.${childDataKey} = convertToDatabaseValue_${childProp.name}(entity.${childEntityKey});`;
+        }
+
+        return `${padding}  ret.${childDataKey} = clone(convertToDatabaseValue_${childProp.name}(entity.${childEntityKey}));`;
+      }
+
+      return `${padding}  ret.${childDataKey} = clone(entity.${childEntityKey});`;
+    }).join('\n') + `\n`;
+
+    if (this.shouldSerialize(prop, dataKey)) {
+      return `${ret + padding}  ret.${dataKey} = cloneEmbeddable(ret.${dataKey});\n${padding}}`;
+    }
+
+    return `${ret}${padding}}`;
+  }
+
+  private getPropertySnapshot<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, context: Map<string, any>, dataKey?: string, path?: string[], level = 1, object?: boolean): string {
     let ret = `  if (${this.getPropertyCondition(prop)}) {\n`;
 
     if (['number', 'string', 'boolean'].includes(prop.type.toLowerCase())) {
@@ -248,7 +306,11 @@ export class EntityComparator {
     }
 
     if (prop.reference === ReferenceType.EMBEDDED) {
-      return this.getEmbeddedPropertySnapshot(meta, prop, context) + '\n';
+      if (prop.array) {
+        return this.getEmbeddedArrayPropertySnapshot(meta, prop, context, level, path, dataKey, true) + '\n';
+      }
+
+      return this.getEmbeddedPropertySnapshot(meta, prop, context, level, path, dataKey, object) + '\n';
     }
 
     if (prop.reference === ReferenceType.ONE_TO_ONE || prop.reference === ReferenceType.MANY_TO_ONE) {

@@ -132,7 +132,7 @@ describe('embedded entities in postgres', () => {
     await orm.em.persistAndFlush([user1, user2]);
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
-    expect(mock.mock.calls[1][0]).toMatch(`insert into "user" ("name", "profile1_username", "profile1_identity_email", "profile1_identity_meta_foo", "profile1_identity_meta_bar", "profile1_identity_links", "profile2") values ('Uwe', 'u1', 'e1', 'f1', 'b1', '[]', '{"username":"u2","identity":{"links":[],"email":"e2","meta":{"foo":"f2","bar":"b2"}}}'), ('Uschi', 'u3', 'e3', NULL, NULL, '[{"url":"l1"},{"url":"l2"}]', '{"username":"u4","identity":{"links":[{"url":"l3"},{"url":"l4"}],"email":"e4","meta":{"foo":"f4"}}}') returning "id"`);
+    expect(mock.mock.calls[1][0]).toMatch(`insert into "user" ("name", "profile1_username", "profile1_identity_email", "profile1_identity_meta_foo", "profile1_identity_meta_bar", "profile1_identity_links", "profile2") values ('Uwe', 'u1', 'e1', 'f1', 'b1', '[]', '{"username":"u2","identity":{"email":"e2","meta":{"foo":"f2","bar":"b2"},"links":[]}}'), ('Uschi', 'u3', 'e3', NULL, NULL, '[{"url":"l1"},{"url":"l2"}]', '{"username":"u4","identity":{"email":"e4","meta":{"foo":"f4"},"links":[{"url":"l3"},{"url":"l4"}]}}') returning "id"`);
     expect(mock.mock.calls[2][0]).toMatch(`commit`);
 
     const u1 = await orm.em.findOneOrFail(User, user1.id);
@@ -141,7 +141,7 @@ describe('embedded entities in postgres', () => {
     expect(u1.profile1).toBeInstanceOf(Profile);
     expect(u1.profile1.identity).toBeInstanceOf(Identity);
     expect(u1.profile1.identity.meta).toBeInstanceOf(IdentityMeta);
-    expect(u1.profile1).toEqual({
+    expect(u1.profile1).toMatchObject({
       username: 'u1',
       identity: {
         email: 'e1',
@@ -155,7 +155,7 @@ describe('embedded entities in postgres', () => {
     expect(u1.profile2).toBeInstanceOf(Profile);
     expect(u1.profile2.identity).toBeInstanceOf(Identity);
     expect(u1.profile2.identity.meta).toBeInstanceOf(IdentityMeta);
-    expect(u1.profile2).toEqual({
+    expect(u1.profile2).toMatchObject({
       username: 'u2',
       identity: {
         email: 'e2',

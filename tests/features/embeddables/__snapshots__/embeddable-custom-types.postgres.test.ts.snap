@@ -1,0 +1,58 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`embedded entities with custom types schema: embeddables custom types 1 1`] = `
+"create table \\"user\\" (\\"id\\" serial primary key, \\"savings_amount\\" numeric(14,2) not null, \\"after\\" int4 null);
+
+create table \\"parent\\" (\\"id\\" serial primary key, \\"nested_some_value\\" varchar not null, \\"nested_deep_some_value\\" varchar not null, \\"nested2\\" jsonb not null, \\"after\\" int4 null, \\"some_value\\" varchar null);
+
+"
+`;
+
+exports[`embedded entities with custom types schema: embeddables custom types 2 1`] = `""`;
+
+exports[`embedded entities with custom types schema: embeddables custom types 3 1`] = `
+"drop table if exists \\"parent\\" cascade;
+drop table if exists \\"user\\" cascade;
+
+"
+`;
+
+exports[`embedded entities with custom types snapshot generator 1`] = `
+"function(entity) {
+  const ret = {};
+  if ('id' in entity && entity.id != null) {
+    ret.id = entity.id;
+  }
+
+  if (entity.nested != null) {
+    ret.nested_someValue = clone(convertToDatabaseValue_nested_someValue(entity.nested.someValue));
+
+    if (entity.nested.deep != null) {
+      ret.nested_deep_someValue = clone(convertToDatabaseValue_nested_deep_someValue(entity.nested.deep.someValue));
+    }
+
+  }
+
+  if (entity.nested2 != null) {
+    ret.nested2 = {};
+    ret.nested2.someValue = clone(convertToDatabaseValue_nested2_someValue(entity.nested2.someValue));
+
+    if (entity.nested2.deep != null) {
+      ret.nested2.deep = {};
+      ret.nested2.deep.someValue = clone(convertToDatabaseValue_nested2_deep_someValue(entity.nested2.deep.someValue));
+    }
+
+    ret.nested2 = cloneEmbeddable(ret.nested2);
+  }
+
+  if ('after' in entity) {
+    ret.after = entity.after;
+  }
+
+  if ('someValue' in entity) {
+    ret.someValue = clone(convertToDatabaseValue_someValue(entity.someValue));
+  }
+
+  return ret;
+}"
+`;

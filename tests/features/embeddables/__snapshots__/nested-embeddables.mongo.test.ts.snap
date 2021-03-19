@@ -21,11 +21,28 @@ exports[`embedded entities in mongo diffing 1`] = `
         ret.profile1_identity_meta_foo = clone(entity.profile1.identity.meta.foo);
         ret.profile1_identity_meta_bar = clone(entity.profile1.identity.meta.bar);
       }
+
     }
+
   }
 
   if (entity.profile2 != null) {
-    ret.profile2 = cloneEmbeddable(entity.profile2);
+    ret.profile2 = {};
+    ret.profile2.username = clone(entity.profile2.username);
+
+    if (entity.profile2.identity != null) {
+      ret.profile2.identity = {};
+      ret.profile2.identity.email = clone(entity.profile2.identity.email);
+
+      if (entity.profile2.identity.meta != null) {
+        ret.profile2.identity.meta = {};
+        ret.profile2.identity.meta.foo = clone(entity.profile2.identity.meta.foo);
+        ret.profile2.identity.meta.bar = clone(entity.profile2.identity.meta.bar);
+      }
+
+    }
+
+    ret.profile2 = cloneEmbeddable(ret.profile2);
   }
 
   return ret;

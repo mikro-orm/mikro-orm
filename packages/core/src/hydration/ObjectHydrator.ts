@@ -206,9 +206,8 @@ export class ObjectHydrator extends Hydrator {
       return ret;
     };
 
-    const hydrateEmbeddedArray = (prop: EntityProperty, path: string[]): string[] => {
+    const hydrateEmbeddedArray = (prop: EntityProperty, path: string[], dataKey: string): string[] => {
       const entityKey = path.join('.');
-      const dataKey = prop.fieldNames[0];
       const convertorKey = path.join('_').replace(/\[idx]$/, '');
       const ret: string[] = [];
 
@@ -235,7 +234,7 @@ export class ObjectHydrator extends Hydrator {
         ret.push(...hydrateToMany(prop));
       } else if (prop.reference === ReferenceType.EMBEDDED) {
         if (prop.array) {
-          ret.push(...hydrateEmbeddedArray(prop, path));
+          ret.push(...hydrateEmbeddedArray(prop, path, dataKey));
         } else {
           ret.push(...hydrateEmbedded(prop, object, path, dataKey));
         }

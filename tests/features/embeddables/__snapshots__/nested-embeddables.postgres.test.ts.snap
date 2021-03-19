@@ -22,14 +22,52 @@ exports[`embedded entities in postgres diffing 1`] = `
         ret.profile1_identity_meta_bar = clone(entity.profile1.identity.meta.bar);
       }
 
-      if (entity.profile1.identity.links != null) {
-        ret.profile1_identity_links = cloneEmbeddable(entity.profile1.identity.links);
+      if (Array.isArray(entity.profile1.identity.links)) {
+        ret.profile1_identity_links = [];
+        entity.profile1.identity.links.forEach((_, idx) => {
+
+          if (entity.profile1.identity.links[idx] != null) {
+            ret.profile1_identity_links[idx] = {};
+            ret.profile1_identity_links[idx].url = clone(entity.profile1.identity.links[idx].url);
+            ret.profile1_identity_links[idx].createdAt = clone(entity.profile1.identity.links[idx].createdAt);
+          }
+        });
+        ret.profile1_identity_links = cloneEmbeddable(ret.profile1_identity_links);
       }
+
     }
+
   }
 
   if (entity.profile2 != null) {
-    ret.profile2 = cloneEmbeddable(entity.profile2);
+    ret.profile2 = {};
+    ret.profile2.username = clone(entity.profile2.username);
+
+    if (entity.profile2.identity != null) {
+      ret.profile2.identity = {};
+      ret.profile2.identity.email = clone(entity.profile2.identity.email);
+
+      if (entity.profile2.identity.meta != null) {
+        ret.profile2.identity.meta = {};
+        ret.profile2.identity.meta.foo = clone(entity.profile2.identity.meta.foo);
+        ret.profile2.identity.meta.bar = clone(entity.profile2.identity.meta.bar);
+      }
+
+      if (Array.isArray(entity.profile2.identity.links)) {
+        ret.profile2.identity.links = [];
+        entity.profile2.identity.links.forEach((_, idx) => {
+
+          if (entity.profile2.identity.links[idx] != null) {
+            ret.profile2.identity.links[idx] = {};
+            ret.profile2.identity.links[idx].url = clone(entity.profile2.identity.links[idx].url);
+            ret.profile2.identity.links[idx].createdAt = clone(entity.profile2.identity.links[idx].createdAt);
+          }
+        });
+      }
+
+    }
+
+    ret.profile2 = cloneEmbeddable(ret.profile2);
   }
 
   return ret;
