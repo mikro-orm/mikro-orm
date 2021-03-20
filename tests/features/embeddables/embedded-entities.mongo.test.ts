@@ -95,17 +95,17 @@ class User {
 
 class NumericType extends Type<number, string> {
 
-  public convertToDatabaseValue(value: number, platform: Platform): string {
+  convertToDatabaseValue(value: number, platform: Platform): string {
     this.validatePlatformSupport(platform);
     return value.toString();
   }
 
-  public convertToJSValue(value: string, platform: Platform): number {
+  convertToJSValue(value: string, platform: Platform): number {
     this.validatePlatformSupport(platform);
     return Number(value);
   }
 
-  public getColumnType(): string {
+  getColumnType(): string {
     return 'double';
   }
 

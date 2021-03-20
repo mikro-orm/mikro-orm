@@ -34,10 +34,10 @@ export class SkuType extends Type<Sku, string> {
 export class Cart {
 
   @PrimaryKey()
-  public readonly id: string;
+  readonly id: string;
 
   @OneToMany({ entity: 'CartItem', mappedBy: 'cart', cascade: [Cascade.MERGE, Cascade.PERSIST] })
-  public readonly items = new Collection<CartItem>(this);
+  readonly items = new Collection<CartItem>(this);
 
   constructor(id: string, items: CartItem[]) {
     this.id = id;
@@ -58,15 +58,15 @@ export class Cart {
 export class CartItem {
 
   @ManyToOne({ primary: true, entity: 'Cart' })
-  public readonly cart!: Cart;
+  readonly cart!: Cart;
 
   @PrimaryKey({ type: SkuType })
-  public readonly sku: Sku;
+  readonly sku: Sku;
 
   [PrimaryKeyType]: [string, string];
 
   @Property()
-  public quantity: number;
+  quantity: number;
 
   constructor(sku: Sku, quantity: number) {
     this.sku = sku;
