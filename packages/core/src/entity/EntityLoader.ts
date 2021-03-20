@@ -276,7 +276,8 @@ export class EntityLoader {
   private async findChildrenFromPivotTable<T extends AnyEntity<T>>(filtered: T[], prop: EntityProperty<T>, options: Required<Options<T>>, orderBy?: QueryOrderMap, populate?: PopulateOptions<T>): Promise<AnyEntity[]> {
     const ids = filtered.map((e: AnyEntity<T>) => e.__helper!.__primaryKeys);
     const refresh = options.refresh;
-    const where = options.where[prop.name as string];
+    /* istanbul ignore next */
+    const where = await this.em.applyFilters(prop.type, options.where[prop.name as string] ?? {}, options.filters ?? {}, 'read');
     const fields = this.buildFields(prop, options);
     const options2 = { ...options } as FindOptions<T>;
     options2.fields = (fields.length > 0 ? fields : undefined) as string[];

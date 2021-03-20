@@ -212,7 +212,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return where;
   }
 
-  protected async applyFilters<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: Dictionary<boolean | Dictionary> | string[] | boolean, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<T>> {
+  /**
+   * @internal
+   */
+  async applyFilters<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: Dictionary<boolean | Dictionary> | string[] | boolean, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<T>> {
     const meta = this.metadata.find<T>(entityName);
     const filters: FilterDef<any>[] = [];
     const ret = {};

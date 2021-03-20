@@ -73,32 +73,6 @@ describe('MikroORM', () => {
     await orm.close();
   });
 
-  test('that filters in the config are enabled by default', async () => {
-    const orm = await MikroORM.init({
-      type: 'mongo', dbName: 'test', baseDir: BASE_DIR, entities: ['entities'], filters: {
-        needsTermsAccepted: {
-          cond: () => ({ termsAccepted: true }),
-          entity: ['Author'],
-        },
-        hasBirthday: {
-          cond: () => ({
-            birthday: {
-              $ne: null,
-            },
-          }),
-          entity: ['Author'],
-          default: false,
-        },
-      },
-    }, false);
-    expect(Object.keys(orm.config.get('filters')).length).toEqual(2);
-    expect(Object.keys(orm.config.get('filters'))[0]).toEqual('needsTermsAccepted');
-    expect(Object.keys(orm.config.get('filters'))[1]).toEqual('hasBirthday');
-    expect(orm.config.get('filters').needsTermsAccepted.default).toEqual(true);
-    expect(orm.config.get('filters').hasBirthday.default).toEqual(false);
-    await orm.close();
-  });
-
   test('orm.close() calls CacheAdapter.close()', async () => {
     let closed = 0;
 

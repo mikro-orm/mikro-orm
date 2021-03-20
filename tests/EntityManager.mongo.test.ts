@@ -2052,59 +2052,6 @@ describe('EntityManagerMongo', () => {
     expect(b4.object).toBe(123);
   });
 
-  test('global filters', async () => {
-    const em = orm.em.fork();
-    em.addFilter('writtenBy', args => ({ author: args.author }), Book, false);
-    em.addFilter('tenant', args => ({ tenant: args.tenant }));
-    em.addFilter('withoutParams2', () => ({}));
-    em.addFilter('fresh', { createdAt: { $gte: new Date('2020-01-01') } }, [Author, Book], false);
-
-    const author1 = new Author('n1', 'e1');
-    author1.createdAt = new Date('2019-02-01');
-    author1.tenant = 123;
-    const author2 = new Author('n2', 'e2');
-    author2.createdAt = new Date('2020-01-31');
-    author2.tenant = 321;
-    const book1 = new Book('b1', author1);
-    book1.createdAt = new Date('2019-12-31');
-    book1.tenant = 123;
-    const book2 = new Book('b2', author1);
-    book2.createdAt = new Date('2019-12-31');
-    book2.tenant = 123;
-    const book3 = new Book('b3', author2);
-    book3.createdAt = new Date('2019-12-31');
-    book3.tenant = 321;
-    await em.persistAndFlush([author1, author2]);
-    em.clear();
-
-    em.setFilterParams('tenant', { tenant: 123 });
-    em.setFilterParams('writtenBy', { author: book1.author });
-
-    expect(em.getFilterParams('tenant')).toMatchObject({ tenant: 123 });
-    expect(em.getFilterParams('writtenBy')).toMatchObject({ author: book1.author });
-
-    const mock = jest.fn();
-    const logger = new Logger(mock, true);
-    Object.assign(em.config, { logger });
-
-    await em.find(Author, {}, { populate: { books: { perex: true } } });
-    expect(mock.mock.calls.length).toBe(2);
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('author').find({ tenant: 123 }, { session: undefined }).toArray()`);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ author: { '\$in': \[ ObjectId\('.*'\) ] }, tenant: 123 }, { session: undefined }\)/);
-
-    await em.find(Book, {}, ['perex']);
-    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ tenant: 123 }, { session: undefined }\)/);
-    await em.find(Book, {}, { filters: ['writtenBy'], populate: ['perex'] });
-    expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ author: ObjectId\('.*'\), tenant: 123 }, { session: undefined }\)/);
-    await em.find(Book, {}, { filters: { writtenBy: { author: '123' }, tenant: false }, populate: ['perex'] });
-    expect(mock.mock.calls[4][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ author: '123' }, { session: undefined }\)/);
-    await em.find(Book, {}, { filters: false, populate: ['perex'] });
-    expect(mock.mock.calls[5][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({}, { session: undefined }\)/);
-
-    await em.find(FooBar, {}, { filters: { allowedFooBars: { allowed: [1, 2, 3] } } });
-    expect(mock.mock.calls[6][0]).toMatch(/db\.getCollection\('foo-bar'\)\.find\({ _id: { '\$in': \[ 1, 2, 3 \] }, tenant: 123 }, { session: undefined }\)/);
-  });
-
   test('lazy scalar properties', async () => {
     const book = new Book('b', new Author('n', 'e'));
     book.perex = '123';
