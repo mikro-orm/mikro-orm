@@ -37,7 +37,6 @@ describe('filters [postgres]', () => {
       entities: [Employee, Benefit],
       dbName: `mikro_orm_test_gh_1232`,
       type: 'postgresql',
-      debug: true,
     });
     await orm.getSchemaGenerator().ensureDatabase();
     await orm.getSchemaGenerator().dropSchema();

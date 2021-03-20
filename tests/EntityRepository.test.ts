@@ -77,9 +77,9 @@ describe('EntityRepository', () => {
     await repo.nativeInsert({ name: 'bar' });
     expect(methods.nativeInsert.mock.calls[0]).toEqual([Publisher, { name: 'bar' }]);
     await repo.nativeUpdate({ name: 'bar' }, { name: 'baz' });
-    expect(methods.nativeUpdate.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, { name: 'baz' }]);
+    expect(methods.nativeUpdate.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, { name: 'baz' }, undefined]);
     await repo.nativeDelete({ name: 'bar' });
-    expect(methods.nativeDelete.mock.calls[0]).toEqual([Publisher, { name: 'bar' }]);
+    expect(methods.nativeDelete.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, undefined]);
     await repoMongo.aggregate([{ name: 'bar' }]);
     expect(methods.aggregate.mock.calls[0]).toEqual([Publisher, [{ name: 'bar' }]]);
   });

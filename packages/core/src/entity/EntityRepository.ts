@@ -1,7 +1,7 @@
 import { EntityManager } from '../EntityManager';
 import { EntityData, EntityName, AnyEntity, Primary, Populate, Loaded, New, FilterQuery } from '../typings';
 import { QueryOrderMap } from '../enums';
-import { CountOptions, FindOneOptions, FindOneOrFailOptions, FindOptions } from '../drivers/IDatabaseDriver';
+import { CountOptions, DeleteOptions, FindOneOptions, FindOneOrFailOptions, FindOptions, UpdateOptions } from '../drivers/IDatabaseDriver';
 import { IdentifiedReference, Reference } from './Reference';
 
 export class EntityRepository<T extends AnyEntity<T>> {
@@ -177,15 +177,15 @@ export class EntityRepository<T extends AnyEntity<T>> {
   /**
    * Fires native update query. Calling this has no side effects on the context (identity map).
    */
-  async nativeUpdate(where: FilterQuery<T>, data: EntityData<T>): Promise<number> {
-    return this.em.nativeUpdate(this.entityName, where, data);
+  async nativeUpdate(where: FilterQuery<T>, data: EntityData<T>, options?: UpdateOptions<T>): Promise<number> {
+    return this.em.nativeUpdate(this.entityName, where, data, options);
   }
 
   /**
    * Fires native delete query. Calling this has no side effects on the context (identity map).
    */
-  async nativeDelete(where: FilterQuery<T> | any): Promise<number> {
-    return this.em.nativeDelete(this.entityName, where);
+  async nativeDelete(where: FilterQuery<T>, options?: DeleteOptions<T>): Promise<number> {
+    return this.em.nativeDelete(this.entityName, where, options);
   }
 
   /**
