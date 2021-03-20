@@ -1,12 +1,13 @@
 import { ObjectId } from 'mongodb';
-import { Entity, ManyToMany, OneToMany, PrimaryKey, Property, BeforeCreate, Enum, SerializedPrimaryKey } from '@mikro-orm/core';
+import { BeforeCreate, Entity, Enum, ManyToMany, OneToMany, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
 import { Book } from './Book';
 import { Test } from './Test';
 import { Collection } from '../TsMorphMetadataProvider.test';
+import { PublisherType } from './PublisherType';
 
-export enum PublisherType {
-  LOCAL = 'local',
-  GLOBAL = 'global',
+export enum PublisherType2 {
+  LOCAL2 = 'local2',
+  GLOBAL2 = 'global2',
 }
 
 @Entity()
@@ -29,6 +30,12 @@ export class Publisher {
 
   @Enum()
   type = PublisherType.LOCAL;
+
+  @Enum()
+  types = [PublisherType2.LOCAL2];
+
+  @Enum({ array: true })
+  types2 = [PublisherType2.LOCAL2];
 
   constructor(name = 'asd', type = PublisherType.LOCAL) {
     // this.name = name;

@@ -1,5 +1,5 @@
 import { MongoDriver } from '@mikro-orm/mongodb';
-import { AnyEntity, Collection as Collection_, MikroORM, Options, PrimaryProperty, Reference as Reference_, ReferenceType, Cast, IsUnknown } from '@mikro-orm/core';
+import { AnyEntity, Collection as Collection_, MikroORM, Options, PrimaryProperty, Reference as Reference_, ReferenceType, Cast, IsUnknown, EntityMetadata, EnumArrayType } from '@mikro-orm/core';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { Author, Book, Publisher, BaseEntity, BaseEntity3, BookTagSchema, Test, FooBaz } from './entities';
 import FooBar from './entities/FooBar';
@@ -80,6 +80,24 @@ describe('TsMorphMetadataProvider', () => {
     expect(metadata[Book.name].properties.author.type).toBe(Author.name);
     expect(metadata[Book.name].properties.author.reference).toBe(ReferenceType.MANY_TO_ONE);
     expect(metadata[Publisher.name].properties.tests.owner).toBe(true);
+    expect(metadata[Publisher.name].properties.types.customType).toBeInstanceOf(EnumArrayType);
+    expect(metadata[Publisher.name].properties.types2.customType).toBeInstanceOf(EnumArrayType);
+
+    // customType should be re-hydrated when loading metadata from cache
+    const provider = new TsMorphMetadataProvider(orm.config);
+    const cacheAdapter = orm.config.getCacheAdapter();
+    const cache = await cacheAdapter.get('Publisher.ts');
+    const meta = { properties: {
+      types: { name: 'types', customType: new EnumArrayType('Publisher.types') },
+      types2: { name: 'types2', customType: new EnumArrayType('Publisher.types2') },
+    } } as unknown as EntityMetadata;
+    provider.loadFromCache(meta, cache);
+    expect(meta.properties.types.array).toBe(true);
+    expect(meta.properties.types.enum).toBe(false);
+    expect(meta.properties.types.customType).toBeInstanceOf(EnumArrayType);
+    expect(meta.properties.types2.customType).toBeInstanceOf(EnumArrayType);
+    expect(meta.properties.types2.array).toBe(true);
+    expect(meta.properties.types2.enum).toBe(false);
 
     await orm.close(true);
   });

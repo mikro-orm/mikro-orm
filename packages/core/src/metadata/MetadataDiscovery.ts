@@ -11,7 +11,7 @@ import { EntitySchema } from './EntitySchema';
 import { Cascade, ReferenceType } from '../enums';
 import { MetadataError } from '../errors';
 import { Platform } from '../platforms';
-import { ArrayType, BlobType, JsonType, Type } from '../types';
+import { ArrayType, BlobType, EnumArrayType, JsonType, Type } from '../types';
 
 export class MetadataDiscovery {
 
@@ -46,7 +46,7 @@ export class MetadataDiscovery {
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initFactoryField(prop)));
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initFieldName(prop)));
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initVersionProperty(meta, prop)));
-    filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initCustomType(prop)));
+    filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initCustomType(meta, prop)));
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initColumnType(prop, meta.path)));
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initUnsigned(prop)));
     filtered.forEach(meta => this.autoWireBidirectionalProperties(meta));
@@ -369,7 +369,7 @@ export class MetadataDiscovery {
       this.applyNamingStrategy(meta, prop);
       this.initDefaultValue(prop);
       this.initVersionProperty(meta, prop);
-      this.initCustomType(prop);
+      this.initCustomType(meta, prop);
       this.initColumnType(prop, meta.path);
       this.initRelation(prop);
     });
@@ -719,7 +719,11 @@ export class MetadataDiscovery {
     prop.defaultRaw = this.getDefaultVersionValue(prop);
   }
 
-  private initCustomType(prop: EntityProperty): void {
+  private initCustomType(meta: EntityMetadata, prop: EntityProperty): void {
+    if (!prop.customType && prop.array && prop.items) {
+      prop.customType = new EnumArrayType(`${meta.className}.${prop.name}`, prop.items);
+    }
+
     // `string[]` can be returned via ts-morph, while reflect metadata will give us just `array`
     if (!prop.customType && !prop.columnTypes && ['string[]', 'array'].includes(prop.type)) {
       prop.customType = new ArrayType();
@@ -788,7 +792,7 @@ export class MetadataDiscovery {
     const meta = this.metadata.get(prop.type);
     prop.columnTypes = [];
     meta.getPrimaryProps().forEach(pk => {
-      this.initCustomType(pk);
+      this.initCustomType(meta, pk);
       this.initColumnType(pk);
 
       if (!pk.customType) {

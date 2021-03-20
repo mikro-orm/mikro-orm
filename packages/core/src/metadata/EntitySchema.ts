@@ -95,6 +95,11 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     }
 
     const prop = { enum: true, ...options };
+
+    if (prop.array) {
+      prop.enum = false;
+    }
+
     this.addProperty(name, this.internal ? type : type || 'enum', prop);
   }
 

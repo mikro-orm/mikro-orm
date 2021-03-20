@@ -33,6 +33,19 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     return (await this.getSourceFile(tsPath, validate))!;
   }
 
+  /**
+   * Re-hydrates missing attributes like `customType` (functions/instances are lost when caching to JSON)
+   */
+  loadFromCache(meta: EntityMetadata, cache: EntityMetadata): void {
+    Object.values(cache.properties).forEach(prop => {
+      if (prop.customType) {
+        prop.customType = meta.properties[prop.name].customType;
+      }
+    });
+
+    Utils.merge(meta, cache);
+  }
+
   protected async initProperties(meta: EntityMetadata): Promise<void> {
     // load types and column names
     for (const prop of Object.values(meta.properties)) {
@@ -82,13 +95,37 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
     const properties = cls.getInstanceProperties();
     const property = properties.find(v => v.getName() === prop.name) as PropertyDeclaration;
+    const tsType = property.getType();
 
     /* istanbul ignore next */
     if (!property) {
       return { type: prop.type, optional: prop.nullable };
     }
 
-    let type = property.getType().getText(property);
+    if (tsType.isEnum()) {
+      prop.enum = true;
+    }
+
+    const typeName = tsType.getText(property);
+
+    if (tsType.isEnum()) {
+      prop.items = tsType.getUnionTypes().map(t => t.getLiteralValueOrThrow()) as string[];
+    }
+
+    if (tsType.isArray()) {
+      prop.array = true;
+
+      /* istanbul ignore else */
+      if (tsType.getArrayElementType()!.isEnum()) {
+        prop.items = tsType.getArrayElementType()!.getUnionTypes().map(t => t.getLiteralValueOrThrow()) as string[];
+      }
+    }
+
+    if (prop.array && prop.enum) {
+      prop.enum = false;
+    }
+
+    let type = typeName;
     const union = type.split(' | ');
     /* istanbul ignore next */
     const optional = property.hasQuestionToken?.() || union.includes('null') || union.includes('undefined');

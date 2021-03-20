@@ -613,8 +613,8 @@ enum Role {
   Admin = 'admin',
 }
 
-@Enum({ items: () => Role, array: true, default: [Role.User] })
-roles: Role[] = [Role.User];
+@Enum({ default: [Role.User] })
+roles = [Role.User];
 ```
 
   </TabItem>
