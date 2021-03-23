@@ -30,6 +30,13 @@ exports[`embedded entities in postgres diffing 1`] = `
             ret.profile1_identity_links[idx] = {};
             ret.profile1_identity_links[idx].url = clone(entity.profile1.identity.links[idx].url);
             ret.profile1_identity_links[idx].createdAt = clone(entity.profile1.identity.links[idx].createdAt);
+
+            if (entity.profile1.identity.links[idx].meta != null) {
+              ret.profile1_identity_links[idx].meta = {};
+              ret.profile1_identity_links[idx].meta.foo = clone(entity.profile1.identity.links[idx].meta.foo);
+              ret.profile1_identity_links[idx].meta.bar = clone(entity.profile1.identity.links[idx].meta.bar);
+            }
+
           }
         });
         ret.profile1_identity_links = cloneEmbeddable(ret.profile1_identity_links);
@@ -61,6 +68,13 @@ exports[`embedded entities in postgres diffing 1`] = `
             ret.profile2.identity.links[idx] = {};
             ret.profile2.identity.links[idx].url = clone(entity.profile2.identity.links[idx].url);
             ret.profile2.identity.links[idx].createdAt = clone(entity.profile2.identity.links[idx].createdAt);
+
+            if (entity.profile2.identity.links[idx].meta != null) {
+              ret.profile2.identity.links[idx].meta = {};
+              ret.profile2.identity.links[idx].meta.foo = clone(entity.profile2.identity.links[idx].meta.foo);
+              ret.profile2.identity.links[idx].meta.bar = clone(entity.profile2.identity.links[idx].meta.bar);
+            }
+
           }
         });
       }
