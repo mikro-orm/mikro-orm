@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "globby": "11.0.2",
-    "ts-morph": "10.0.1"
+    "ts-morph": "10.0.2"
   },
   "devDependencies": {
     "@mikro-orm/core": "^4.5.0"
