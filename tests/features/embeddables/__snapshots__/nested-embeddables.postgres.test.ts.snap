@@ -24,17 +24,29 @@ exports[`embedded entities in postgres diffing 1`] = `
 
       if (Array.isArray(entity.profile1.identity.links)) {
         ret.profile1_identity_links = [];
-        entity.profile1.identity.links.forEach((_, idx) => {
+        entity.profile1.identity.links.forEach((_, idx_0) => {
 
-          if (entity.profile1.identity.links[idx] != null) {
-            ret.profile1_identity_links[idx] = {};
-            ret.profile1_identity_links[idx].url = clone(entity.profile1.identity.links[idx].url);
-            ret.profile1_identity_links[idx].createdAt = clone(entity.profile1.identity.links[idx].createdAt);
+          if (entity.profile1.identity.links[idx_0] != null) {
+            ret.profile1_identity_links[idx_0] = {};
+            ret.profile1_identity_links[idx_0].url = clone(entity.profile1.identity.links[idx_0].url);
+            ret.profile1_identity_links[idx_0].createdAt = clone(entity.profile1.identity.links[idx_0].createdAt);
 
-            if (entity.profile1.identity.links[idx].meta != null) {
-              ret.profile1_identity_links[idx].meta = {};
-              ret.profile1_identity_links[idx].meta.foo = clone(entity.profile1.identity.links[idx].meta.foo);
-              ret.profile1_identity_links[idx].meta.bar = clone(entity.profile1.identity.links[idx].meta.bar);
+            if (entity.profile1.identity.links[idx_0].meta != null) {
+              ret.profile1_identity_links[idx_0].meta = {};
+              ret.profile1_identity_links[idx_0].meta.foo = clone(entity.profile1.identity.links[idx_0].meta.foo);
+              ret.profile1_identity_links[idx_0].meta.bar = clone(entity.profile1.identity.links[idx_0].meta.bar);
+            }
+
+            if (Array.isArray(entity.profile1.identity.links[idx_0].metas)) {
+              ret.profile1_identity_links[idx_0].metas = [];
+              entity.profile1.identity.links[idx_0].metas.forEach((_, idx_1) => {
+
+                if (entity.profile1.identity.links[idx_0].metas[idx_1] != null) {
+                  ret.profile1_identity_links[idx_0].metas[idx_1] = {};
+                  ret.profile1_identity_links[idx_0].metas[idx_1].foo = clone(entity.profile1.identity.links[idx_0].metas[idx_1].foo);
+                  ret.profile1_identity_links[idx_0].metas[idx_1].bar = clone(entity.profile1.identity.links[idx_0].metas[idx_1].bar);
+                }
+              });
             }
 
           }
@@ -62,17 +74,29 @@ exports[`embedded entities in postgres diffing 1`] = `
 
       if (Array.isArray(entity.profile2.identity.links)) {
         ret.profile2.identity.links = [];
-        entity.profile2.identity.links.forEach((_, idx) => {
+        entity.profile2.identity.links.forEach((_, idx_2) => {
 
-          if (entity.profile2.identity.links[idx] != null) {
-            ret.profile2.identity.links[idx] = {};
-            ret.profile2.identity.links[idx].url = clone(entity.profile2.identity.links[idx].url);
-            ret.profile2.identity.links[idx].createdAt = clone(entity.profile2.identity.links[idx].createdAt);
+          if (entity.profile2.identity.links[idx_2] != null) {
+            ret.profile2.identity.links[idx_2] = {};
+            ret.profile2.identity.links[idx_2].url = clone(entity.profile2.identity.links[idx_2].url);
+            ret.profile2.identity.links[idx_2].createdAt = clone(entity.profile2.identity.links[idx_2].createdAt);
 
-            if (entity.profile2.identity.links[idx].meta != null) {
-              ret.profile2.identity.links[idx].meta = {};
-              ret.profile2.identity.links[idx].meta.foo = clone(entity.profile2.identity.links[idx].meta.foo);
-              ret.profile2.identity.links[idx].meta.bar = clone(entity.profile2.identity.links[idx].meta.bar);
+            if (entity.profile2.identity.links[idx_2].meta != null) {
+              ret.profile2.identity.links[idx_2].meta = {};
+              ret.profile2.identity.links[idx_2].meta.foo = clone(entity.profile2.identity.links[idx_2].meta.foo);
+              ret.profile2.identity.links[idx_2].meta.bar = clone(entity.profile2.identity.links[idx_2].meta.bar);
+            }
+
+            if (Array.isArray(entity.profile2.identity.links[idx_2].metas)) {
+              ret.profile2.identity.links[idx_2].metas = [];
+              entity.profile2.identity.links[idx_2].metas.forEach((_, idx_3) => {
+
+                if (entity.profile2.identity.links[idx_2].metas[idx_3] != null) {
+                  ret.profile2.identity.links[idx_2].metas[idx_3] = {};
+                  ret.profile2.identity.links[idx_2].metas[idx_3].foo = clone(entity.profile2.identity.links[idx_2].metas[idx_3].foo);
+                  ret.profile2.identity.links[idx_2].metas[idx_3].bar = clone(entity.profile2.identity.links[idx_2].metas[idx_3].bar);
+                }
+              });
             }
 
           }

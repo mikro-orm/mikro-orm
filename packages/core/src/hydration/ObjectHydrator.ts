@@ -16,6 +16,8 @@ export class ObjectHydrator extends Hydrator {
     returning: new Map<string, EntityHydrator<any>>(),
   };
 
+  private tmpIndex = 0;
+
   /**
    * @inheritDoc
    */
@@ -72,7 +74,7 @@ export class ObjectHydrator extends Hydrator {
     const hydrateScalar = <T, U>(prop: EntityProperty<T>, object: boolean | undefined, path: string[], dataKey: string): string[] => {
       const entityKey = path.join('.');
       const preCond = preCondition(dataKey);
-      const convertorKey = path.join('_').replace(/\[idx]/, '');
+      const convertorKey = path.join('_').replace(/\[idx_[\d+]]/g, '');
       const ret: string[] = [];
 
       if (prop.type.toLowerCase() === 'date') {
@@ -179,7 +181,7 @@ export class ObjectHydrator extends Hydrator {
 
     const hydrateEmbedded = (prop: EntityProperty, object: boolean | undefined, path: string[], dataKey: string): string[] => {
       const entityKey = path.join('.');
-      const convertorKey = path.join('_').replace(/\[idx]/, '');
+      const convertorKey = path.join('_').replace(/\[idx_[\d+]]/g, '');
       const ret: string[] = [];
       const conds: string[] = [];
       context.set(`prototype_${convertorKey}`, prop.embeddable.prototype);
@@ -208,15 +210,16 @@ export class ObjectHydrator extends Hydrator {
 
     const hydrateEmbeddedArray = (prop: EntityProperty, path: string[], dataKey: string): string[] => {
       const entityKey = path.join('.');
-      const convertorKey = path.join('_').replace(/\[idx]/, '');
+      const convertorKey = path.join('_').replace(/\[idx_[\d+]]/g, '');
       const ret: string[] = [];
+      const idx = this.tmpIndex++;
 
       context.set(`prototype_${convertorKey}`, prop.embeddable.prototype);
       ret.push(`  if (Array.isArray(data.${dataKey})) {`);
       ret.push(`    entity.${entityKey} = [];`);
-      ret.push(`    data.${dataKey}.forEach((_, idx) => {`);
+      ret.push(`    data.${dataKey}.forEach((_, idx_${idx}) => {`);
       const last = path.pop();
-      ret.push(...hydrateEmbedded(prop, true, [...path, last + '[idx]'], dataKey + '[idx]').map(l => '    ' + l));
+      ret.push(...hydrateEmbedded(prop, true, [...path, `${last}[idx_${idx}]`], `${dataKey}[idx_${idx}]`).map(l => '    ' + l));
       ret.push(`    });`);
       ret.push(`  }`);
 

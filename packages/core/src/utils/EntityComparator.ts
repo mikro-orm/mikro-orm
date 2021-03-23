@@ -17,6 +17,7 @@ export class EntityComparator {
   private readonly snapshotGenerators = new Map<string, SnapshotGenerator<any>>();
   private readonly pkGetters = new Map<string, PkGetter<any>>();
   private readonly pkSerializers = new Map<string, PkSerializer<any>>();
+  private tmpIndex = 0;
 
   constructor(private readonly metadata: IMetadataStorage,
               private readonly platform: Platform) { }
@@ -227,12 +228,13 @@ export class EntityComparator {
     dataKey = dataKey ?? entityKey;
     const ret: string[] = [];
     const padding = ' '.repeat(level * 2);
+    const idx = this.tmpIndex++;
 
     ret.push(`${padding}if (Array.isArray(entity.${entityKey})) {`);
     ret.push(`${padding}  ret.${dataKey} = [];`);
-    ret.push(`${padding}  entity.${entityKey}.forEach((_, idx) => {`);
+    ret.push(`${padding}  entity.${entityKey}.forEach((_, idx_${idx}) => {`);
     const last = path.pop();
-    ret.push(this.getEmbeddedPropertySnapshot(meta, prop, context, level + 2, [...path, last + '[idx]'], dataKey + '[idx]', true));
+    ret.push(this.getEmbeddedPropertySnapshot(meta, prop, context, level + 2, [...path, `${last}[idx_${idx}]`], `${dataKey}[idx_${idx}]`, true));
     ret.push(`${padding}  });`);
 
     if (this.shouldSerialize(prop, dataKey)) {

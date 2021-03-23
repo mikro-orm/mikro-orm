@@ -29,15 +29,15 @@ class IdentityLink {
   @Embedded(() => IdentityMeta)
   meta?: IdentityMeta;
 
-  // @Embedded(() => IdentityMeta, { array: true })
-  // metas: IdentityMeta[] = [];
+  @Embedded(() => IdentityMeta, { array: true })
+  metas: IdentityMeta[] = [];
 
   constructor(url: string) {
     this.url = url;
     this.meta = new IdentityMeta('f1', 'b1');
-    // this.metas.push(new IdentityMeta('f2', 'b2'));
-    // this.metas.push(new IdentityMeta('f3', 'b3'));
-    // this.metas.push(new IdentityMeta('f4', 'b4'));
+    this.metas.push(new IdentityMeta('f2', 'b2'));
+    this.metas.push(new IdentityMeta('f3', 'b3'));
+    this.metas.push(new IdentityMeta('f4', 'b4'));
   }
 
 }
@@ -142,7 +142,7 @@ describe('embedded entities in postgres', () => {
     await orm.em.persistAndFlush([user1, user2]);
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
-    expect(mock.mock.calls[1][0]).toMatch(`insert into "user" ("name", "profile1_username", "profile1_identity_email", "profile1_identity_meta_foo", "profile1_identity_meta_bar", "profile1_identity_links", "profile2") values ('Uwe', 'u1', 'e1', 'f1', 'b1', '[]', '{"username":"u2","identity":{"email":"e2","meta":{"foo":"f2","bar":"b2"},"links":[]}}'), ('Uschi', 'u3', 'e3', NULL, NULL, '[{"url":"l1","meta":{"foo":"f1","bar":"b1"}},{"url":"l2","meta":{"foo":"f1","bar":"b1"}}]', '{"username":"u4","identity":{"email":"e4","meta":{"foo":"f4"},"links":[{"url":"l3","meta":{"foo":"f1","bar":"b1"}},{"url":"l4","meta":{"foo":"f1","bar":"b1"}}]}}') returning "id"`);
+    expect(mock.mock.calls[1][0]).toMatch(`insert into "user" ("name", "profile1_username", "profile1_identity_email", "profile1_identity_meta_foo", "profile1_identity_meta_bar", "profile1_identity_links", "profile2") values ('Uwe', 'u1', 'e1', 'f1', 'b1', '[]', '{"username":"u2","identity":{"email":"e2","meta":{"foo":"f2","bar":"b2"},"links":[]}}'), ('Uschi', 'u3', 'e3', NULL, NULL, '[{"url":"l1","meta":{"foo":"f1","bar":"b1"},"metas":[{"foo":"f2","bar":"b2"},{"foo":"f3","bar":"b3"},{"foo":"f4","bar":"b4"}]},{"url":"l2","meta":{"foo":"f1","bar":"b1"},"metas":[{"foo":"f2","bar":"b2"},{"foo":"f3","bar":"b3"},{"foo":"f4","bar":"b4"}]}]', '{"username":"u4","identity":{"email":"e4","meta":{"foo":"f4"},"links":[{"url":"l3","meta":{"foo":"f1","bar":"b1"},"metas":[{"foo":"f2","bar":"b2"},{"foo":"f3","bar":"b3"},{"foo":"f4","bar":"b4"}]},{"url":"l4","meta":{"foo":"f1","bar":"b1"},"metas":[{"foo":"f2","bar":"b2"},{"foo":"f3","bar":"b3"},{"foo":"f4","bar":"b4"}]}]}}') returning "id"`);
     expect(mock.mock.calls[2][0]).toMatch(`commit`);
 
     const u1 = await orm.em.findOneOrFail(User, user1.id);
@@ -184,8 +184,16 @@ describe('embedded entities in postgres', () => {
       identity: {
         email: 'e3',
         links: [
-          { url: 'l1', meta: { bar: 'b1', foo: 'f1' } },
-          { url: 'l2', meta: { bar: 'b1', foo: 'f1' } },
+          { url: 'l1', meta: { bar: 'b1', foo: 'f1' }, metas: [
+            { bar: 'b2', foo: 'f2' },
+            { bar: 'b3', foo: 'f3' },
+            { bar: 'b4', foo: 'f4' },
+          ] },
+          { url: 'l2', meta: { bar: 'b1', foo: 'f1' }, metas: [
+            { bar: 'b2', foo: 'f2' },
+            { bar: 'b3', foo: 'f3' },
+            { bar: 'b4', foo: 'f4' },
+          ] },
         ],
       },
     });
@@ -198,8 +206,16 @@ describe('embedded entities in postgres', () => {
       identity: {
         email: 'e4',
         links: [
-          { url: 'l3', meta: { bar: 'b1', foo: 'f1' } },
-          { url: 'l4', meta: { bar: 'b1', foo: 'f1' } },
+          { url: 'l3', meta: { bar: 'b1', foo: 'f1' }, metas: [
+              { bar: 'b2', foo: 'f2' },
+              { bar: 'b3', foo: 'f3' },
+              { bar: 'b4', foo: 'f4' },
+            ] },
+          { url: 'l4', meta: { bar: 'b1', foo: 'f1' }, metas: [
+              { bar: 'b2', foo: 'f2' },
+              { bar: 'b3', foo: 'f3' },
+              { bar: 'b4', foo: 'f4' },
+            ] },
         ],
         meta: {
           foo: 'f4',
@@ -218,7 +234,7 @@ describe('embedded entities in postgres', () => {
     u2.profile1!.identity.links = [new IdentityLink('l6'), new IdentityLink('l7')];
     u2.profile2!.identity.links.push(new IdentityLink('l8'));
     await orm.em.flush();
-    expect(mock.mock.calls[6][0]).toMatch(`update "user" set "profile1_identity_email" = case when ("id" = 1) then 'e123' else "profile1_identity_email" end, "profile1_identity_meta_foo" = case when ("id" = 1) then 'foooooooo' else "profile1_identity_meta_foo" end, "profile2" = case when ("id" = 1) then '{"username":"u2","identity":{"email":"e2","meta":{"foo":"f2","bar":"bababar"},"links":[{"url":"l5","meta":{"foo":"f1","bar":"b1"}}]}}' when ("id" = 2) then '{"username":"u4","identity":{"email":"e4","meta":{"foo":"f4"},"links":[{"url":"l3","meta":{"foo":"f1","bar":"b1"}},{"url":"l4","meta":{"foo":"f1","bar":"b1"}},{"url":"l8","meta":{"foo":"f1","bar":"b1"}}]}}' else "profile2" end, "profile1_identity_links" = case when ("id" = 2) then '[{"url":"l6","meta":{"foo":"f1","bar":"b1"}},{"url":"l7","meta":{"foo":"f1","bar":"b1"}}]' else "profile1_identity_links" end where "id" in (1, 2)`);
+    expect(mock.mock.calls[6][0]).toMatch(`update "user" set "profile1_identity_email" = case when ("id" = 1) then 'e123' else "profile1_identity_email" end, "profile1_identity_meta_foo" = case when ("id" = 1) then 'foooooooo' else "profile1_identity_meta_foo" end, "profile2" = case when ("id" = 1) then '{"username":"u2","identity":{"email":"e2","meta":{"foo":"f2","bar":"bababar"},"links":[{"url":"l5","meta":{"foo":"f1","bar":"b1"},"metas":[{"foo":"f2","bar":"b2"},{"foo":"f3","bar":"b3"},{"foo":"f4","bar":"b4"}]}]}}' when ("id" = 2) then '{"username":"u4","identity":{"email":"e4","meta":{"foo":"f4"},"links":[{"url":"l3","meta":{"foo":"f1","bar":"b1"},"metas":[{"foo":"f2","bar":"b2"},{"foo":"f3","bar":"b3"},{"foo":"f4","bar":"b4"}]},{"url":"l4","meta":{"foo":"f1","bar":"b1"},"metas":[{"foo":"f2","bar":"b2"},{"foo":"f3","bar":"b3"},{"foo":"f4","bar":"b4"}]},{"url":"l8","meta":{"foo":"f1","bar":"b1"},"metas":[{"foo":"f2","bar":"b2"},{"foo":"f3","bar":"b3"},{"foo":"f4","bar":"b4"}]}]}}' else "profile2" end, "profile1_identity_links" = case when ("id" = 2) then '[{"url":"l6","meta":{"foo":"f1","bar":"b1"},"metas":[{"foo":"f2","bar":"b2"},{"foo":"f3","bar":"b3"},{"foo":"f4","bar":"b4"}]},{"url":"l7","meta":{"foo":"f1","bar":"b1"},"metas":[{"foo":"f2","bar":"b2"},{"foo":"f3","bar":"b3"},{"foo":"f4","bar":"b4"}]}]' else "profile1_identity_links" end where "id" in (1, 2)`);
     orm.em.clear();
     mock.mock.calls.length = 0;
 
