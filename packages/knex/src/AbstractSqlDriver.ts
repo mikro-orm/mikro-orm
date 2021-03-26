@@ -490,10 +490,15 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
    * @internal
    */
   mapPropToFieldNames<T extends AnyEntity<T>>(qb: QueryBuilder<T>, prop: EntityProperty<T>, tableAlias?: string): Field<T>[] {
+    const aliased = qb.ref(tableAlias ? `${tableAlias}__${prop.fieldNames[0]}` : prop.fieldNames[0]).toString();
+
+    if (prop.customType?.convertToJSValueSQL && tableAlias) {
+      const prefixed = qb.ref(prop.fieldNames[0]).withSchema(tableAlias).toString();
+      return [qb.raw(prop.customType.convertToJSValueSQL(prefixed, this.platform) + ' as ' + aliased).toString()];
+    }
+
     if (prop.formula) {
       const alias = qb.ref(tableAlias ?? qb.alias).toString();
-      const aliased = qb.ref(tableAlias ? `${tableAlias}__${prop.fieldNames[0]}` : prop.fieldNames[0]).toString();
-
       return [`${prop.formula!(alias)} as ${aliased}`];
     }
 
@@ -617,7 +622,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   protected buildFields<T extends AnyEntity<T>>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], joinedProps: PopulateOptions<T>[], qb: QueryBuilder<T>, fields?: Field<T>[]): Field<T>[] {
     const lazyProps = meta.props.filter(prop => prop.lazy && !populate.some(p => p.field === prop.name || p.all));
     const hasLazyFormulas = meta.props.some(p => p.lazy && p.formula);
-    const requiresSQLConversion = meta.props.some(p => p.customType?.convertToDatabaseValueSQL || p.customType?.convertToJSValueSQL);
+    const requiresSQLConversion = meta.props.some(p => p.customType?.convertToJSValueSQL);
     const hasExplicitFields = !!fields;
     const ret: Field<T>[] = [];
 

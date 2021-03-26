@@ -116,9 +116,9 @@ export class ObjectHydrator extends Hydrator {
       if (prop.mapToPk) {
         ret.push(`      entity.${prop.name} = data.${prop.name};`);
       } else if (prop.wrappedReference) {
-        ret.push(`      entity.${prop.name} = new Reference(factory.createReference('${prop.type}', data.${prop.name}, { merge: true }));`);
+        ret.push(`      entity.${prop.name} = new Reference(factory.createReference('${prop.type}', data.${prop.name}, { merge: true, convertCustomTypes }));`);
       } else {
-        ret.push(`      entity.${prop.name} = factory.createReference('${prop.type}', data.${prop.name}, { merge: true });`);
+        ret.push(`      entity.${prop.name} = factory.createReference('${prop.type}', data.${prop.name}, { merge: true, convertCustomTypes });`);
       }
 
       ret.push(`    } else if (data.${prop.name} && typeof data.${prop.name} === 'object') {`);
@@ -126,9 +126,9 @@ export class ObjectHydrator extends Hydrator {
       if (prop.mapToPk) {
         ret.push(`      entity.${prop.name} = data.${prop.name};`);
       } else if (prop.wrappedReference) {
-        ret.push(`      entity.${prop.name} = new Reference(factory.create('${prop.type}', data.${prop.name}, { initialized: true, merge: true, newEntity }));`);
+        ret.push(`      entity.${prop.name} = new Reference(factory.create('${prop.type}', data.${prop.name}, { initialized: true, merge: true, newEntity, convertCustomTypes }));`);
       } else {
-        ret.push(`      entity.${prop.name} = factory.create('${prop.type}', data.${prop.name}, { initialized: true, merge: true, newEntity });`);
+        ret.push(`      entity.${prop.name} = factory.create('${prop.type}', data.${prop.name}, { initialized: true, merge: true, newEntity, convertCustomTypes });`);
       }
 
       ret.push(`    }`);

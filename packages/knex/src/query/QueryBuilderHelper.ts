@@ -38,14 +38,15 @@ export class QueryBuilderHelper {
 
     let ret = field;
     const customExpression = QueryBuilderHelper.isCustomExpression(field);
-    const prop = this.getProperty(field, this.alias);
+    const [a, f] = this.splitField(field);
+    const prop = this.getProperty(f, a);
     const noPrefix = prop && prop.persist === false;
 
     if (prop?.fieldNameRaw) {
       return this.knex.raw(this.prefix(field, true));
     }
 
-    if (prop?.customType && 'convertToJSValueSQL' in prop.customType) {
+    if (prop?.customType?.convertToJSValueSQL) {
       const prefixed = this.prefix(field, true, true);
       /* istanbul ignore next */
       return this.knex.raw(prop.customType.convertToJSValueSQL!(prefixed, this.platform) + ' as ' + this.platform.quoteIdentifier(alias ?? prop.fieldNames[0]));

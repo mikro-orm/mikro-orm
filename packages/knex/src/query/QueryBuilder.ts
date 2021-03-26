@@ -550,7 +550,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
     const meta = this.metadata.find(this.entityName);
     /* istanbul ignore next */
-    const requiresSQLConversion = (meta?.props || []).filter(p => p.customType?.convertToDatabaseValueSQL || p.customType?.convertToJSValueSQL);
+    const requiresSQLConversion = (meta?.props || []).filter(p => p.customType?.convertToJSValueSQL);
 
     if (this.flags.has(QueryFlag.CONVERT_CUSTOM_TYPES) && (fields.includes('*') || fields.includes(`${this.alias}.*`)) && requiresSQLConversion.length > 0) {
       requiresSQLConversion.forEach(p => ret.push(this.helper.mapper(p.name, this.type)));
