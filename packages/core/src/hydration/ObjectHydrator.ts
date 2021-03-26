@@ -126,7 +126,7 @@ export class ObjectHydrator extends Hydrator {
       if (prop.mapToPk) {
         ret.push(`      entity.${prop.name} = data.${prop.name};`);
       } else if (prop.wrappedReference) {
-        ret.push(`      entity.${prop.name} = new Reference(factory.create('${prop.type}', data.${prop.name}, { initialized: true, merge: true }));`);
+        ret.push(`      entity.${prop.name} = new Reference(factory.create('${prop.type}', data.${prop.name}, { initialized: true, merge: true, newEntity }));`);
       } else {
         ret.push(`      entity.${prop.name} = factory.create('${prop.type}', data.${prop.name}, { initialized: true, merge: true, newEntity });`);
       }
