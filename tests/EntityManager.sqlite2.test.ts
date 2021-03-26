@@ -1082,8 +1082,7 @@ describe('EntityManagerSqlite2', () => {
     let author = orm.em.create(Author4, { name: 'Jon Doe', email: 'doe-jon@wall.st' });
     author.books.add(orm.em.create(Book4, { title: 'bo1' }));
     // Entity not managed yet
-    expect(() => author.books.loadCount()).rejects.toThrow(ValidationError);
-
+    await expect(author.books.loadCount()).rejects.toThrow(ValidationError);
     await orm.em.persistAndFlush(author);
 
     const reloadedBook = await author.books.loadCount();
@@ -1146,6 +1145,28 @@ describe('EntityManagerSqlite2', () => {
 
     taggedBook = await orm.em.findOneOrFail(Book4, taggedBook.id);
     await expect(taggedBook.tags.loadCount()).resolves.toEqual(tags.length - 1);
+  });
+
+  test('loadCount with unidirectional m:n (GH issue #1608)', async () => {
+    const publisher = orm.em.create(Publisher4, {});
+    const t1 = orm.em.create(Test4, { name: 't1' });
+    const t2 = orm.em.create(Test4, { name: 't2' });
+    const t3 = orm.em.create(Test4, { name: 't3' });
+    await orm.em.persist([t1, t2, t3]).flush();
+    publisher.tests.add(t2, t1, t3);
+    await orm.em.persistAndFlush(publisher);
+    orm.em.clear();
+
+    let ent = await orm.em.findOneOrFail(Publisher4, publisher.id);
+    await expect(ent.tests.loadCount()).resolves.toBe(3);
+    await ent.tests.init();
+    await expect(ent.tests.loadCount()).resolves.toBe(3);
+    orm.em.clear();
+
+    ent = await orm.em.findOneOrFail(Publisher4, publisher.id, ['tests']);
+    await expect(ent.tests.loadCount()).resolves.toBe(3);
+    await ent.tests.init();
+    await expect(ent.tests.loadCount()).resolves.toBe(3);
   });
 
   afterAll(async () => {

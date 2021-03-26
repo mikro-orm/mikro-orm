@@ -112,6 +112,7 @@ export interface CountOptions<T>  {
   groupBy?: string | string[];
   having?: QBFilterQuery<T>;
   cache?: boolean | number | [string, number];
+  populate?: Populate<T>;
 }
 
 export interface UpdateOptions<T>  {

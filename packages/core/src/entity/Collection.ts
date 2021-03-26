@@ -1,4 +1,4 @@
-import { AnyEntity, Dictionary, EntityData, FilterQuery, Populate, Primary } from '../typings';
+import { AnyEntity, Dictionary, EntityData, EntityMetadata, FilterQuery, Populate, Primary } from '../typings';
 import { ArrayCollection } from './ArrayCollection';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
@@ -61,14 +61,19 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
    * The value is cached, use `refresh = true` to force reload it.
    */
   async loadCount(refresh = false): Promise<number> {
-    const em = this.getEntityManager();
+    if (!refresh && Utils.isDefined(this._count)) {
+      return this._count!;
+    }
 
-    if (refresh || !Utils.isDefined(this._count)) {
-      if (!em.getPlatform().usesPivotTable() && this.property.reference === ReferenceType.MANY_TO_MANY) {
-        this._count = this.length;
-      } else {
-        this._count = await em.count(this.property.type, this.createLoadCountCondition({}));
-      }
+    const em = this.getEntityManager();
+    const pivotMeta = em.getMetadata().find(this.property.pivotTable)!;
+
+    if (!em.getPlatform().usesPivotTable() && this.property.reference === ReferenceType.MANY_TO_MANY) {
+      this._count = this.length;
+    } else if (this.property.pivotTable && !(this.property.inversedBy || this.property.mappedBy)) {
+      this._count = await em.count(this.property.type, this.createLoadCountCondition({}, pivotMeta), { populate: [{ field: this.property.pivotTable }] });
+    } else {
+      this._count = await em.count(this.property.type, this.createLoadCountCondition({}, pivotMeta));
     }
 
     return this._count!;
@@ -211,7 +216,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
       return this;
     }
 
-    where = this.createCondition<T>(options.where);
+    where = this.createCondition(options.where);
     const order = [...this.items]; // copy order of references
     const customOrder = !!options.orderBy;
     orderBy = this.createOrderBy(options.orderBy);
@@ -260,11 +265,11 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     return em;
   }
 
-  private createCondition<T extends AnyEntity<T>>(cond: FilterQuery<T> = {}): FilterQuery<T> {
+  private createCondition(cond: FilterQuery<T> = {}): FilterQuery<T> {
     if (this.property.reference === ReferenceType.ONE_TO_MANY) {
       cond[this.property.mappedBy] = this.owner.__helper!.getPrimaryKey();
     } else { // MANY_TO_MANY
-      this.createManyToManyCondition(cond as Dictionary);
+      this.createManyToManyCondition(cond);
     }
 
     return cond;
@@ -282,7 +287,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     return orderBy;
   }
 
-  private createManyToManyCondition(cond: Dictionary) {
+  private createManyToManyCondition(cond: FilterQuery<T>) {
     if (this.property.owner || this.property.pivotTable) {
       // we know there is at least one item as it was checked in load method
       const pk = this.property.targetMeta!.primaryKeys[0];
@@ -293,12 +298,19 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     }
   }
 
-  private createLoadCountCondition(cond: Dictionary) {
+  private createLoadCountCondition(cond: FilterQuery<T>, pivotMeta?: EntityMetadata) {
+    const val = this.owner.__meta!.compositePK ? { $in: this.owner.__helper!.__primaryKeys } : this.owner.__helper!.getPrimaryKey();
+
     if (this.property.reference === ReferenceType.ONE_TO_MANY) {
-      cond[this.property.mappedBy] = this.owner.__helper!.getPrimaryKey();
+      cond[this.property.mappedBy] = val;
+    } else if (pivotMeta && this.property.owner && !this.property.inversedBy) {
+      const pivotProp1 = pivotMeta.properties[this.property.type + '_inverse'];
+      const inverse = pivotProp1.mappedBy;
+      const key = `${this.property.pivotTable}.${pivotMeta.properties[inverse].name}`;
+      cond[key] = val;
     } else {
       const key = this.property.owner ? this.property.inversedBy : this.property.mappedBy;
-      cond[key] = this.owner.__meta!.compositePK ? { $in: this.owner.__helper!.__primaryKeys } : this.owner.__helper!.getPrimaryKey();
+      cond[key] = val;
     }
 
     return cond;

@@ -175,6 +175,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       .count(pks, true)
       .groupBy(options.groupBy!)
       .having(options.having!)
+      .populate(options.populate as PopulateOptions<T>[] ?? [])
       .withSchema(options.schema)
       .where(where);
     const res = await this.rethrow(qb.execute('get', false));
