@@ -20,7 +20,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
 
     - name: EditorConfig Lint
-      uses: docker://mstruebing/editorconfig-checker:2.3.3@sha256:0d95de7967db36c6add7f02495c5cdf80a9e2a791851e59fdf1699a7c7683e8d
+      uses: docker://mstruebing/editorconfig-checker:2.3.5@sha256:b78daacf0049058ca85afddbbed6c53bd3bc2a24d3dd0b2363e34ebb4463dee1
 
     - name: Install libkrb5-dev (for run-rs)
       run: |
