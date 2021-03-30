@@ -355,7 +355,7 @@ export class Utils {
       return true;
     }
 
-    return Utils.isString(key) || typeof key === 'number' || Utils.isObjectID(key) || key instanceof Date || key instanceof Buffer;
+    return Utils.isString(key) || typeof key === 'number' || typeof key === 'bigint' || Utils.isObjectID(key) || key instanceof Date || key instanceof Buffer;
   }
 
   /**
