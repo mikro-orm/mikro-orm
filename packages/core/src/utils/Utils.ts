@@ -448,12 +448,13 @@ export class Utils {
 
   static getOrderedPrimaryKeys<T extends AnyEntity<T>>(id: Primary<T> | Record<string, Primary<T>>, meta: EntityMetadata<T>, platform?: Platform, convertCustomTypes?: boolean): Primary<T>[] {
     const data = (Utils.isPrimaryKey(id) ? { [meta.primaryKeys[0]]: id } : id) as Record<string, Primary<T>>;
-    return meta.primaryKeys.map(pk => {
+    return meta.primaryKeys.map((pk, idx) => {
       const prop = meta.properties[pk];
-      let value = data[pk];
+      // `data` can be a composite PK in form of array of PKs, or a DTO
+      let value = Array.isArray(data) ? data[idx] : data[pk];
 
       if (prop.reference !== ReferenceType.SCALAR && prop.targetMeta) {
-        const value2 = this.getOrderedPrimaryKeys(value, prop.targetMeta); // do not convert custom types yet
+        const value2 = this.getOrderedPrimaryKeys(value, prop.targetMeta, platform); // do not convert custom types yet
         value = value2[0] as Primary<T>;
       }
 

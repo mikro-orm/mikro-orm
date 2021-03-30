@@ -126,7 +126,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
         .filter(prop => this.shouldHaveColumn(prop, p.children || []))
         .forEach(prop => {
           if (prop.fieldNames.length > 1) { // composite keys
-            relationPojo[prop.name] = prop.fieldNames.map(name => root![`${relationAlias}_${name}`]);
+            relationPojo[prop.name] = prop.fieldNames.map(name => root![`${relationAlias}__${name}`]);
             prop.fieldNames.map(name => delete root![`${relationAlias}__${name}`]);
           } else {
             const alias = `${relationAlias}__${prop.fieldNames[0]}`;
