@@ -225,12 +225,21 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       sql += ` values `;
       const params: any[] = [];
       sql += data.map(row => {
-        let len = 0;
+        const keys: string[] = [];
         props.forEach(prop => {
-          len += prop.fieldNames.length;
-          prop.fieldNames.length > 1 ? params.push(...(row[prop.name] as unknown[])) : params.push(row[prop.name]);
+          if (prop.fieldNames.length > 1) {
+            params.push(...(row[prop.name] as unknown[]));
+            keys.push(...prop.fieldNames.map(_ => '?'));
+          } else if (prop.customType && 'convertToDatabaseValueSQL' in prop.customType && !this.platform.isRaw(row[prop.name])) {
+            keys.push(prop.customType.convertToDatabaseValueSQL!('?', this.platform));
+            params.push(row[prop.name]);
+          } else {
+            params.push(row[prop.name]);
+            keys.push('?');
+          }
         });
-        return '(' + new Array(len).fill('?').join(', ') + ')';
+
+        return '(' + keys.join(', ') + ')';
       }).join(', ');
 
       if (this.platform.usesReturningStatement()) {
@@ -296,12 +305,20 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     keys.forEach(key => {
       const prop = meta.properties[key];
+
       prop.fieldNames.forEach((fieldName: string, fieldNameIdx: number) => {
         sql += `${this.platform.quoteIdentifier(fieldName)} = case`;
         where.forEach((cond, idx) => {
           if (key in data[idx]) {
             const pks = Utils.getOrderedPrimaryKeys(cond as Dictionary, meta);
-            sql += ` when (${pkCond}) then ?`;
+            sql += ` when (${pkCond}) then `;
+
+            if (prop.customType && 'convertToDatabaseValueSQL' in prop.customType && !this.platform.isRaw(data[idx][key])) {
+              sql += prop.customType.convertToDatabaseValueSQL!('?', this.platform);
+            } else {
+              sql += '?';
+            }
+
             params.push(...pks, prop.fieldNames.length > 1 ? data[idx][key][fieldNameIdx] : data[idx][key]);
           }
         });

@@ -160,4 +160,27 @@ describe('custom types [mysql]', () => {
     expect(meta.properties.extendedPoint.customType).toBeInstanceOf(ExtendedPointType);
   });
 
+  test('create and update many records with custom types (gh issue 1625)', async () => {
+    const mock = jest.fn();
+    const logger = new Logger(mock, ['query', 'query-params']);
+    Object.assign(orm.config, { logger });
+
+    const locations = [new Location(), new Location()];
+    locations[0].point = new Point(-1.23, -4.56);
+    locations[1].point = new Point(-7.89, -0.12);
+    await orm.em.persistAndFlush(locations);
+
+    locations[0].point = new Point(1.23, 4.56);
+    locations[1].point = new Point(7.89, 0.12);
+    await orm.em.persistAndFlush(locations);
+
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('insert into `location` (`point`) values (ST_PointFromText(\'point(-1.23 -4.56)\')), (ST_PointFromText(\'point(-7.89 -0.12)\'))');
+    expect(mock.mock.calls[2][0]).toMatch('commit');
+    expect(mock.mock.calls[3][0]).toMatch('begin');
+    expect(mock.mock.calls[4][0]).toMatch(`update \`location\` set \`point\` = case when (\`id\` = ${locations[0].id}) then ST_PointFromText('point(1.23 4.56)') when (\`id\` = ${locations[1].id}) then ST_PointFromText('point(7.89 0.12)') else \`point\` end where \`id\` in (${locations[0].id}, ${locations[1].id})`);
+    expect(mock.mock.calls[5][0]).toMatch('commit');
+    expect(mock.mock.calls).toHaveLength(6);
+  });
+
 });
