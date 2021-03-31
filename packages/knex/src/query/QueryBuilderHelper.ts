@@ -28,8 +28,8 @@ export class QueryBuilderHelper {
               private readonly platform: Platform) { }
 
   mapper(field: string, type?: QueryType): string;
-  mapper(field: string, type?: QueryType, value?: any, alias?: string): string;
-  mapper(field: string, type = QueryType.SELECT, value?: any, alias?: string): string | Raw {
+  mapper(field: string, type?: QueryType, value?: any, alias?: string | null): string;
+  mapper(field: string, type = QueryType.SELECT, value?: any, alias?: string | null): string | Raw {
     const fields = Utils.splitPrimaryKeys(field);
 
     if (fields.length > 1) {
@@ -48,8 +48,14 @@ export class QueryBuilderHelper {
 
     if (prop?.customType?.convertToJSValueSQL) {
       const prefixed = this.prefix(field, true, true);
+      const valueSQL = prop.customType.convertToJSValueSQL!(prefixed, this.platform);
+
+      if (alias === null) {
+        return this.knex.raw(valueSQL);
+      }
+
       /* istanbul ignore next */
-      return this.knex.raw(prop.customType.convertToJSValueSQL!(prefixed, this.platform) + ' as ' + this.platform.quoteIdentifier(alias ?? prop.fieldNames[0]));
+      return this.knex.raw(valueSQL + ' as ' + this.platform.quoteIdentifier(alias ?? prop.fieldNames[0]));
     }
 
     // do not wrap custom expressions
@@ -300,7 +306,7 @@ export class QueryBuilderHelper {
       return void qb[m](this.knex.raw(`(${this.subQueries[key]})`), op, cond[key]);
     }
 
-    qb[m](this.mapper(key, type, cond[key]), op, cond[key]);
+    qb[m](this.mapper(key, type, cond[key], null), op, cond[key]);
   }
 
   private processCustomExpression<T extends any[] = any[]>(clause: any, m: string, key: string, cond: any, type = QueryType.SELECT): void {
