@@ -54,6 +54,7 @@ export class QueryBuilderHelper {
         return this.knex.raw(valueSQL);
       }
 
+      /* istanbul ignore next */
       return this.knex.raw(valueSQL + ' as ' + this.platform.quoteIdentifier(alias ?? prop.fieldNames[0]));
     }
 
