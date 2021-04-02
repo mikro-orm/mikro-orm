@@ -8,6 +8,9 @@ class Address1 {
   street?: string;
 
   @Property()
+  number?: number;
+
+  @Property()
   postalCode?: string;
 
   @Property()
@@ -16,8 +19,9 @@ class Address1 {
   @Property()
   country?: string;
 
-  constructor(street?: string, postalCode?: string, city?: string, country?: string) {
+  constructor(street?: string, number?: number, postalCode?: string, city?: string, country?: string) {
     this.street = street;
+    this.number = number;
     this.postalCode = postalCode;
     this.city = city;
     this.country = country;
@@ -141,12 +145,12 @@ describe('embedded entities in postgresql', () => {
 
   test('persist and load', async () => {
     const user = new User();
-    user.address1 = new Address1('Downing street 10', '123', 'London 1', 'UK 1');
+    user.address1 = new Address1('Downing street 10', 10, '123', 'London 1', 'UK 1');
     user.address2 = new Address2('Downing street 11', 'London 2', 'UK 2');
-    user.address3 = new Address1('Downing street 12', '789', 'London 3', 'UK 3');
-    user.address4 = new Address1('Downing street 13', '10', 'London 4', 'UK 4');
-    user.addresses.push(new Address1('Downing street 13A', '10A', 'London 4A', 'UK 4A'));
-    user.addresses.push(new Address1('Downing street 13B', '10B', 'London 4B', 'UK 4B'));
+    user.address3 = new Address1('Downing street 12', 10, '789', 'London 3', 'UK 3');
+    user.address4 = new Address1('Downing street 13', 10, '10', 'London 4', 'UK 4');
+    user.addresses.push(new Address1('Downing street 13A', 10, '10A', 'London 4A', 'UK 4A'));
+    user.addresses.push(new Address1('Downing street 13B', 10, '10B', 'London 4B', 'UK 4B'));
 
     const mock = jest.fn();
     const logger = new Logger(mock, ['query']);
@@ -154,7 +158,7 @@ describe('embedded entities in postgresql', () => {
     await orm.em.persistAndFlush(user);
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into "user" ("addr_city", "addr_country", "addr_postal_code", "addr_street", "address1_city", "address1_country", "address1_postal_code", "address1_street", "address4", "addresses", "city", "country", "postal_code", "street") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) returning "id"');
+    expect(mock.mock.calls[1][0]).toMatch('insert into "user" ("addr_city", "addr_country", "addr_postal_code", "addr_street", "address1_city", "address1_country", "address1_number", "address1_postal_code", "address1_street", "address4", "addresses", "city", "country", "number", "postal_code", "street") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) returning "id"');
     expect(mock.mock.calls[2][0]).toMatch('commit');
 
     const u = await orm.em.findOneOrFail(User, user.id);
@@ -162,6 +166,7 @@ describe('embedded entities in postgresql', () => {
     expect(u.address1).toBeInstanceOf(Address1);
     expect(u.address1).toEqual({
       street: 'Downing street 10',
+      number: 10,
       postalCode: '123',
       city: 'London 1',
       country: 'UK 1',
@@ -176,6 +181,7 @@ describe('embedded entities in postgresql', () => {
     expect(u.address3).toBeInstanceOf(Address1);
     expect(u.address3).toEqual({
       street: 'Downing street 12',
+      number: 10,
       postalCode: '789',
       city: 'London 3',
       country: 'UK 3',
@@ -183,6 +189,7 @@ describe('embedded entities in postgresql', () => {
     expect(u.address4).toBeInstanceOf(Address1);
     expect(u.address4).toEqual({
       street: 'Downing street 13',
+      number: 10,
       postalCode: '10',
       city: 'London 4',
       country: 'UK 4',
@@ -215,6 +222,10 @@ describe('embedded entities in postgresql', () => {
     const u4 = await orm.em.findOneOrFail(User, { address4: { postalCode: '999' } });
     expect(u4).toBe(u1);
     expect(mock.mock.calls[10][0]).toMatch('select "e0".* from "user" as "e0" where "e0"."address4"->>\'postalCode\' = $1 limit $2');
+
+    const u5 = await orm.em.findOneOrFail(User, { address4: { number: { $gt: 2 } } });
+    expect(u5).toBe(u1);
+    expect(mock.mock.calls[11][0]).toMatch('select "e0".* from "user" as "e0" where ("e0"."address4"->>\'number\')::float8 > $1 limit $2');
   });
 
   test('assign', async () => {
@@ -251,9 +262,9 @@ describe('embedded entities in postgresql', () => {
 
   test('query by complex custom expressions with JSON operator and casting (GH issue 1261)', async () => {
     const user = new User();
-    user.address1 = new Address1('Test', '12000', 'Prague', 'CZ');
-    user.address3 = new Address1('Test', '12000', 'Prague', 'CZ');
-    user.address4 = new Address1('Test', '12000', 'Prague', 'CZ');
+    user.address1 = new Address1('Test', 10, '12000', 'Prague', 'CZ');
+    user.address3 = new Address1('Test', 10, '12000', 'Prague', 'CZ');
+    user.address4 = new Address1('Test', 10, '12000', 'Prague', 'CZ');
     await orm.em.persistAndFlush(user);
     orm.em.clear();
 

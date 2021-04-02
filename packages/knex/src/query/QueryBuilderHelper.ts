@@ -20,12 +20,12 @@ import { JoinOptions } from '../typings';
 export class QueryBuilderHelper {
 
   constructor(private readonly entityName: string,
-              private readonly alias: string,
-              private readonly aliasMap: Dictionary<string>,
-              private readonly subQueries: Dictionary<string>,
-              private readonly metadata: MetadataStorage,
-              private readonly knex: Knex,
-              private readonly platform: Platform) { }
+    private readonly alias: string,
+    private readonly aliasMap: Dictionary<string>,
+    private readonly subQueries: Dictionary<string>,
+    private readonly metadata: MetadataStorage,
+    private readonly knex: Knex,
+    private readonly platform: Platform) { }
 
   mapper(field: string, type?: QueryType): string;
   mapper(field: string, type?: QueryType, value?: any, alias?: string | null): string;
@@ -516,7 +516,12 @@ export class QueryBuilderHelper {
 
     if (!this.isPrefixed(field)) {
       const alias = always ? (quote ? this.alias : this.platform.quoteIdentifier(this.alias)) + '.' : '';
-      ret = alias + this.fieldName(field, this.alias);
+      const fieldName = this.fieldName(field, this.alias);
+      if (fieldName.startsWith('(')) {
+        ret = '(' + alias + fieldName.slice(1);
+      } else {
+        ret = alias + fieldName;
+      }
     } else {
       const [a, f] = field.split('.');
       ret = a + '.' + this.fieldName(f, a);
