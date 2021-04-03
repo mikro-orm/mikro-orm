@@ -20,12 +20,12 @@ import { JoinOptions } from '../typings';
 export class QueryBuilderHelper {
 
   constructor(private readonly entityName: string,
-    private readonly alias: string,
-    private readonly aliasMap: Dictionary<string>,
-    private readonly subQueries: Dictionary<string>,
-    private readonly metadata: MetadataStorage,
-    private readonly knex: Knex,
-    private readonly platform: Platform) { }
+              private readonly alias: string,
+              private readonly aliasMap: Dictionary<string>,
+              private readonly subQueries: Dictionary<string>,
+              private readonly metadata: MetadataStorage,
+              private readonly knex: Knex,
+              private readonly platform: Platform) { }
 
   mapper(field: string, type?: QueryType): string;
   mapper(field: string, type?: QueryType, value?: any, alias?: string | null): string;
