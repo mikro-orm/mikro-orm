@@ -204,4 +204,27 @@ describe('custom types [mysql]', () => {
 
     expect(foundLocation).toBeInstanceOf(Location);
   });
+
+  test('find entity by custom types with object subconditions', async () => {
+    const mock = jest.fn();
+    const logger = new Logger(mock, ['query', 'query-params']);
+
+    const location = new Location();
+    location.point = new Point(1, 1);
+    location.extendedPoint = new Point(1, 1);
+    await orm.em.persistAndFlush(location);
+    orm.em.clear();
+
+    Object.assign(orm.config, { logger });
+
+    const foundLocation = await orm.em.findOne(Location, {
+      point: new Point(1, 1),
+      extendedPoint: { $ne: null },
+    });
+
+    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, ST_AsText(`e0`.`point`) as `point`, ST_AsText(`e0`.`extended_point`) as `extended_point` from `location` as `e0` where ST_AsText(`e0`.`point`) = \'point(1 1)\' and ST_AsText(`e0`.`extended_point`) is not null limit 1');
+    expect(mock.mock.calls).toHaveLength(1);
+
+    expect(foundLocation).toBeInstanceOf(Location);
+  });
 });
