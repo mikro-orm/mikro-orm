@@ -287,38 +287,6 @@ describe('embedded entities in postgresql', () => {
     expect(userAfterUpdate?.after).toBe(2);
   });
 
-  test('assign', async () => {
-    const user = new User();
-    wrap(user).assign({
-      address1: { street: 'Downing street 10', postalCode: '123', city: 'London 1', country: 'UK 1' },
-      address2: { street: 'Downing street 11', city: 'London 2', country: 'UK 2' },
-      address3: { street: 'Downing street 12', postalCode: '789', city: 'London 3', country: 'UK 3' },
-    }, { em: orm.em });
-    assign(user, { address4: { city: '41', country: '42', postalCode: '43', street: '44' } });
-    expect(user.address4).toMatchObject({ city: '41', country: '42', postalCode: '43', street: '44' });
-
-    expect(user.address1).toBeInstanceOf(Address1);
-    expect(user.address1).toEqual({
-      street: 'Downing street 10',
-      postalCode: '123',
-      city: 'London 1',
-      country: 'UK 1',
-    });
-    expect(user.address2).toBeInstanceOf(Address2);
-    expect(user.address2).toEqual({
-      street: 'Downing street 11',
-      city: 'London 2',
-      country: 'UK 2',
-    });
-    expect(user.address3).toBeInstanceOf(Address1);
-    expect(user.address3).toEqual({
-      street: 'Downing street 12',
-      postalCode: '789',
-      city: 'London 3',
-      country: 'UK 3',
-    });
-  });
-
   test('query by complex custom expressions with JSON operator and casting (GH issue 1261)', async () => {
     const user = new User();
     user.address1 = new Address1('Test', 10, '12000', 'Prague', 'CZ');
