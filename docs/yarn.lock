@@ -6072,18 +6072,6 @@ handle-thing@^2.0.0:
   resolved "https://registry.yarnpkg.com/handle-thing/-/handle-thing-2.0.0.tgz#0e039695ff50c93fc288557d696f3c1dc6776754"
   integrity sha512-d4sze1JNC454Wdo2fkuyzCr6aHcbL6PGGuFAz0Li/NcOm1tCHGnWDRmJP85dh9IhQErTc2svWFEX5xHIOo//kQ==
 
-handlebars@^4.7.6:
-  version "4.7.6"
-  resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.7.6.tgz#d4c05c1baf90e9945f77aa68a7a219aa4a7df74e"
-  integrity sha512-1f2BACcBfiwAfStCKZNrUCgqNZkGsAT7UM3kkYtXuLo0KnaVfjKOyf7PRzB6++aK9STyT1Pd2ZCPe3EGOXleXA==
-  dependencies:
-    minimist "^1.2.5"
-    neo-async "^2.6.0"
-    source-map "^0.6.1"
-    wordwrap "^1.0.0"
-  optionalDependencies:
-    uglify-js "^3.1.4"
-
 handlebars@^4.7.7:
   version "4.7.7"
   resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.7.7.tgz#9ce33416aad02dbd6c8fafa8240d5d98004945a1"
@@ -10955,12 +10943,12 @@ typedoc-default-themes@^0.12.9:
   resolved "https://registry.yarnpkg.com/typedoc-default-themes/-/typedoc-default-themes-0.12.9.tgz#97dfecb74faca36f8aff81d3be984b095d2bbbd8"
   integrity sha512-Jd5fYTiqzinZdoIY382W7tQXTwAzWRdg8KbHfaxmb78m1/3jL9riXtk23oBOKwhi8GFVykCOdPzEJKY87/D0LQ==
 
-typedoc-plugin-markdown@3.6.0:
-  version "3.6.0"
-  resolved "https://registry.yarnpkg.com/typedoc-plugin-markdown/-/typedoc-plugin-markdown-3.6.0.tgz#08067aeb69a6b5e16c0eda72cceaa99cf91ff245"
-  integrity sha512-fg4xby3awJVVxB8TdhHNsZQfiTC5x1XmauVwhKXc6hGeu1bzTnqrkmDT8NCjxfUgw64si8cUX1jBfBjAHthWpQ==
+typedoc-plugin-markdown@3.6.1:
+  version "3.6.1"
+  resolved "https://registry.yarnpkg.com/typedoc-plugin-markdown/-/typedoc-plugin-markdown-3.6.1.tgz#b3e708606b2a8517d350b875b680490e77b88a5e"
+  integrity sha512-GT09K0/w+DpFk8W2lmsnDiYBHH/5EHscFmyIOv5624WSoqxgMf+xn2BLAYLebYeoIUx9uwhSFtQJlXKFfW9uHA==
   dependencies:
-    handlebars "^4.7.6"
+    handlebars "^4.7.7"
 
 typedoc@0.20.34:
   version "0.20.34"
