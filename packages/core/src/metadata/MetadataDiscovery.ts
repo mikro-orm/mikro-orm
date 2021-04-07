@@ -717,11 +717,11 @@ export class MetadataDiscovery {
     }
 
     if (!meta.concurrencyCheckKeys) {
-      meta.concurrencyCheckKeys = [];
+      meta.concurrencyCheckKeys = new Set();
     }
 
     if (prop.concurrencyCheck) {
-      meta.concurrencyCheckKeys.push(prop.name);
+      meta.concurrencyCheckKeys.add(prop.name);
     }
   }
 

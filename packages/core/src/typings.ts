@@ -293,7 +293,7 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   primaryKeys: (keyof T & string)[];
   compositePK: boolean;
   versionProperty: keyof T & string;
-  concurrencyCheckKeys: (keyof T & string)[];
+  concurrencyCheckKeys: Set<keyof T & string>;
   serializedPrimaryKey: keyof T & string;
   properties: { [K in keyof T & string]: EntityProperty<T> };
   props: EntityProperty<T>[];

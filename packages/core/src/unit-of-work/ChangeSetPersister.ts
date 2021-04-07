@@ -177,7 +177,7 @@ export class ChangeSetPersister {
   }
 
   private async updateEntity<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, ctx?: Transaction): Promise<QueryResult> {
-    if (meta.concurrencyCheckKeys.length === 0 && (!meta.versionProperty || !changeSet.entity[meta.versionProperty])) {
+    if (meta.concurrencyCheckKeys.size === 0 && (!meta.versionProperty || !changeSet.entity[meta.versionProperty])) {
       return this.driver.nativeUpdate(changeSet.name, changeSet.entity.__helper!.getPrimaryKey() as Dictionary, changeSet.payload, ctx, false);
     }
 
