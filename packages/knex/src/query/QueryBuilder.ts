@@ -482,7 +482,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   }
 
   getKnex(): KnexQueryBuilder {
-    const tableName = this.helper.getTableName(this.entityName) + (this.finalized && [QueryType.SELECT, QueryType.COUNT].includes(this.type) ? ` as ${this.alias}` : '');
+    const tableName = this.helper.getTableName(this.entityName) + (this.finalized && this.helper.isTableNameAliasRequired(this.type) ? ` as ${this.alias}` : '');
     const qb = this.knex(tableName);
 
     if (this.context) {
@@ -575,7 +575,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     this.type = type;
     this._aliasMap[this.alias] = this.entityName;
 
-    if (![QueryType.SELECT, QueryType.COUNT].includes(type)) {
+    if (!this.helper.isTableNameAliasRequired(type)) {
       delete this._fields;
     }
 
