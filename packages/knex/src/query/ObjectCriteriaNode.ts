@@ -23,13 +23,14 @@ export class ObjectCriteriaNode extends CriteriaNode {
       const operator = Utils.isOperator(field);
       const customExpression = ObjectCriteriaNode.isCustomExpression(field);
       const virtual = childNode.prop?.persist === false;
+      const primaryKey = this.metadata.find(this.entityName)?.primaryKeys.includes(field);
 
       if (childNode.shouldInline(payload)) {
         const childAlias = qb.getAliasForJoinPath(childNode.getPath());
         this.inlineChildPayload(o, payload, field, alias, childAlias);
       } else if (childNode.shouldRename(payload)) {
         o[childNode.renameFieldToPK(qb)] = payload;
-      } else if (virtual || operator || customExpression || field.includes('.') || ![QueryType.SELECT, QueryType.COUNT].includes(qb.type)) {
+      } else if (primaryKey || virtual || operator || customExpression || field.includes('.') || ![QueryType.SELECT, QueryType.COUNT].includes(qb.type)) {
         o[field] = payload;
       } else {
         o[`${alias}.${field}`] = payload;
@@ -66,13 +67,17 @@ export class ObjectCriteriaNode extends CriteriaNode {
   }
 
   private inlineChildPayload<T>(o: Dictionary, payload: Dictionary, field: string, alias?: string, childAlias?: string) {
+    const prop = this.metadata.find(this.entityName)!.properties[field];
+
     for (const k of Object.keys(payload)) {
       if (Utils.isOperator(k, false)) {
         const tmp = payload[k];
         delete payload[k];
         o[`${alias}.${field}`] = { [k]: tmp, ...(o[`${alias}.${field}`] || {}) };
       } else if (this.isPrefixed(k) || Utils.isOperator(k) || !childAlias) {
-        o[k] = payload[k];
+        const idx = prop.referencedPKs.indexOf(k);
+        const key = idx !== -1 && !childAlias ? prop.joinColumns[idx] : k;
+        o[key] = payload[k];
       } else {
         o[`${childAlias}.${k}`] = payload[k];
       }
@@ -87,8 +92,9 @@ export class ObjectCriteriaNode extends CriteriaNode {
     const embeddable = this.prop.reference === ReferenceType.EMBEDDED;
     const knownKey = [ReferenceType.SCALAR, ReferenceType.MANY_TO_ONE, ReferenceType.EMBEDDED].includes(this.prop.reference) || (this.prop.reference === ReferenceType.ONE_TO_ONE && this.prop.owner);
     const operatorKeys = knownKey && Object.keys(this.payload).every(key => Utils.isOperator(key, false));
+    const primaryKeys = knownKey && Object.keys(this.payload).every(key => this.metadata.find(this.entityName)!.primaryKeys.includes(key));
 
-    return !nestedAlias && !operatorKeys && !embeddable;
+    return !primaryKeys && !nestedAlias && !operatorKeys && !embeddable;
   }
 
   private autoJoin<T>(qb: IQueryBuilder<T>, alias: string): string {

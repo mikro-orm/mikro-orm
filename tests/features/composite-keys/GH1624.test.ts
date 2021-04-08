@@ -15,6 +15,9 @@ export class Organization {
   @OneToMany({ entity: 'User', mappedBy: 'organization', cascade: [] })
   users = new Collection<User>(this);
 
+  @OneToMany({ entity: 'Program', mappedBy: 'organization', cascade: [] })
+  programs = new Collection<Program>(this);
+
   constructor(value: Partial<Organization> = {}) {
     Object.assign(this, value);
   }
@@ -106,13 +109,67 @@ export class UserRole {
 
 }
 
-describe('GH issue 1624', () => {
+@Entity()
+export class Program {
+
+  @PrimaryKey({ columnType: 'varchar' })
+  id!: string;
+
+  @ManyToOne({
+    entity: () => Organization,
+    inversedBy: 'programs',
+    primary: true,
+    wrappedReference: true,
+  })
+  organization!: IdentifiedReference<Organization>;
+
+  @OneToMany({ entity: 'Site', mappedBy: 'program', cascade: [] })
+  sites = new Collection<Site, Program>(this);
+
+  @Property({ columnType: 'varchar' })
+  name!: string;
+
+  constructor(value: Partial<Program> = {}) {
+    Object.assign(this, value);
+  }
+
+}
+
+@Entity()
+export class Site {
+
+  @PrimaryKey({ columnType: 'varchar' })
+  id!: string;
+
+  @ManyToOne({
+    entity: () => Program,
+    inversedBy: 'sites',
+    primary: true,
+    wrappedReference: true,
+    cascade: [],
+    onUpdateIntegrity: 'no action',
+    onDelete: 'no action',
+  })
+  program!: Reference<Program>;
+
+  @Property({ columnType: 'varchar' })
+  name!: string;
+
+  [PrimaryKeyType]: [string, string, string];
+
+  constructor(value: Partial<Site> = {}) {
+    Object.assign(this, value);
+  }
+
+}
+
+describe('GH issue 1624, 1658', () => {
 
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [User, UserRole, Organization, Role],
+      entities: [User, UserRole, Organization, Role, Program, Site],
       dbName: 'mikro_orm_test_1624',
       type: 'postgresql',
     });
@@ -170,6 +227,33 @@ describe('GH issue 1624', () => {
     expect(b.userRoles[0].user.id).toBe(userId);
     expect(b.userRoles[0].role).toBeInstanceOf(Reference);
     expect(b.userRoles[0].role.id).toBe(roleId);
+  });
+
+  test(`GH issue 1658`, async () => {
+    const org = new Organization({ id: 'e3dca7ae-6389-49dc-931d-419716828a79', name: 'Organization' });
+    const program = new Program({
+      id: 'cc455d1f-f4c7-4b57-b833-e6ca88239b61',
+      organization: Reference.create(org),
+      name: 'Program 1',
+    });
+    const site = new Site({
+      id: '7007a128-4cc0-4177-b754-0cda0927368d',
+      program: Reference.create(program),
+      name: 'Site 1',
+    });
+
+    orm.em.persist(org);
+    orm.em.persist(program);
+    orm.em.persist(site);
+    await orm.em.flush();
+
+    const createdSite = await orm.em.findOneOrFail(Site, { id: site.id });
+    createdSite.name = 'Site 2';
+    await orm.em.flush();
+
+    orm.em.clear();
+    const updatedSite = await orm.em.findOneOrFail(Site, { id: site.id });
+    expect(updatedSite.name).toBe(createdSite.name);
   });
 
 });
