@@ -30,6 +30,7 @@ export class QueryBuilderHelper {
   mapper(field: string, type?: QueryType): string;
   mapper(field: string, type?: QueryType, value?: any, alias?: string | null): string;
   mapper(field: string, type = QueryType.SELECT, value?: any, alias?: string | null): string | Raw {
+    const isTableNameAliasRequired = this.isTableNameAliasRequired(type);
     const fields = Utils.splitPrimaryKeys(field);
 
     if (fields.length > 1) {
@@ -43,11 +44,11 @@ export class QueryBuilderHelper {
     const noPrefix = prop && prop.persist === false;
 
     if (prop?.fieldNameRaw) {
-      return this.knex.raw(this.prefix(field, true));
+      return this.knex.raw(this.prefix(field, isTableNameAliasRequired));
     }
 
     if (prop?.customType?.convertToJSValueSQL) {
-      const prefixed = this.prefix(field, true, true);
+      const prefixed = this.prefix(field, isTableNameAliasRequired, true);
       const valueSQL = prop.customType.convertToJSValueSQL!(prefixed, this.platform);
 
       if (alias === null) {
@@ -71,7 +72,7 @@ export class QueryBuilderHelper {
       return this.knex.raw(ret, value);
     }
 
-    if (![QueryType.SELECT, QueryType.COUNT].includes(type) || this.isPrefixed(ret) || noPrefix) {
+    if (!isTableNameAliasRequired || this.isPrefixed(ret) || noPrefix) {
       return ret;
     }
 
@@ -578,6 +579,10 @@ export class QueryBuilderHelper {
     const meta = this.metadata.find(entityName);
 
     return meta ? meta.properties[field] : undefined;
+  }
+
+  isTableNameAliasRequired(type: QueryType): boolean {
+    return [QueryType.SELECT, QueryType.COUNT].includes(type);
   }
 
 }

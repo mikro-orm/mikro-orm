@@ -260,6 +260,33 @@ describe('embedded entities in postgresql', () => {
     });
   });
 
+
+  test('native update entity', async () => {
+    const user = new User();
+    wrap(user).assign({
+      address1: { street: 'Downing street 10', number: 3, postalCode: '123', city: 'London 1', country: 'UK 1' },
+      address2: { street: 'Downing street 11', number: 3, city: 'London 2', country: 'UK 2' },
+      address3: { street: 'Downing street 12', number: 3, postalCode: '789', city: 'London 3', country: 'UK 3' },
+      address4: { street: 'Downing street 10', number: 3, postalCode: '123', city: 'London 1', country: 'UK 1' },
+    }, { em: orm.em });
+
+    await orm.em.persistAndFlush(user);
+
+    await orm.em.nativeUpdate(User, {
+      address4: {
+        number: {
+          $gt: 2,
+        },
+      },
+    }, {
+      after: 2,
+    });
+    orm.em.clear();
+
+    const userAfterUpdate = await orm.em.findOne(User, user.id);
+    expect(userAfterUpdate?.after).toBe(2);
+  });
+
   test('query by complex custom expressions with JSON operator and casting (GH issue 1261)', async () => {
     const user = new User();
     user.address1 = new Address1('Test', 10, '12000', 'Prague', 'CZ');
