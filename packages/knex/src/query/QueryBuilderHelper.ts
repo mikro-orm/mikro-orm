@@ -357,7 +357,7 @@ export class QueryBuilderHelper {
       return void qb[m](this.knex.raw(`(${this.subQueries[key]})`), replacement, value[op]);
     }
 
-    qb[m](this.mapper(key, type), replacement, value[op]);
+    qb[m](this.mapper(key, type, undefined, null), replacement, value[op]);
   }
 
   private getOperatorReplacement(op: string, value: Dictionary): string {
