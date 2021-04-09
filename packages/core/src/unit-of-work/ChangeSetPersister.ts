@@ -104,7 +104,8 @@ export class ChangeSetPersister {
       const wrapped = changeSet.entity.__helper!;
 
       if (!wrapped.hasPrimaryKey()) {
-        this.mapPrimaryKey(meta, res.rows![i][meta.primaryKeys[0]], changeSet);
+        const field = meta.getPrimaryProps()[0].fieldNames[0];
+        this.mapPrimaryKey(meta, res.rows![i][field], changeSet);
       }
 
       this.mapReturnedValues(changeSet, res, meta);
