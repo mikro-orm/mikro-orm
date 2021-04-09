@@ -407,7 +407,7 @@ export class EntityLoader {
         } else {
           ret.push({
             field: prefixed,
-            strategy: this.em.config.get('loadStrategy'),
+            strategy: prop.strategy ?? this.em.config.get('loadStrategy'),
           });
         }
       });
