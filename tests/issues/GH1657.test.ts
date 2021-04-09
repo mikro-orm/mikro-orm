@@ -44,7 +44,7 @@ class OrderItem {
 
 }
 
-describe('GH issue 234', () => {
+describe('GH issue 1657', () => {
 
   let orm: MikroORM<SqliteDriver>;
 

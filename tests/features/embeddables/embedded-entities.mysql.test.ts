@@ -1,16 +1,4 @@
-import {
-  assign,
-  Embeddable,
-  Embedded,
-  Entity,
-  Logger,
-  MetadataError,
-  MikroORM,
-  PrimaryKey,
-  Property,
-  ReferenceType,
-  wrap,
-} from '@mikro-orm/core';
+import { assign, Embeddable, Embedded, Entity, Logger, MikroORM, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 
 @Embeddable()
@@ -298,14 +286,14 @@ describe('embedded entities in mysql', () => {
     expect(user.address5).toBe(null);
   });
 
-  test('should throw error with object&prefix false', async () => {
+  test('should throw error with colliding definition of inlined embeddables without prefix', async () => {
+    const err = `Property UserWithCity:city is being overwritten by its child property address1:city. Consider using a prefix to overcome this issue.`;
     await expect(MikroORM.init({
       entities: [Address1, UserWithCity],
       dbName: `mikro_orm_test_embeddables`,
       type: 'mysql',
       port: 3307,
-      // eslint-disable-next-line no-console
-    })).rejects.toThrow(MetadataError);
+    })).rejects.toThrow(err);
   });
 
 });

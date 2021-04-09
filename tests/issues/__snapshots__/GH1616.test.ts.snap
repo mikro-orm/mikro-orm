@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`GH issue 1616 order of embeddables during discovery should not matter 1`] = `
+"create table \`a\` (\`id\` integer not null primary key autoincrement, \`b\` json not null);
+
+"
+`;

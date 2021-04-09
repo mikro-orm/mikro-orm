@@ -567,12 +567,13 @@ export class MetadataDiscovery {
     embeddedProp.embeddable = embeddable!.class;
     embeddedProp.embeddedProps = {};
     let order = meta.propertyOrder.get(embeddedProp.name)!;
+    const getRootProperty: (prop: EntityProperty) => EntityProperty = (prop: EntityProperty) => prop.embedded ? getRootProperty(meta.properties[prop.embedded[0]]) : prop;
 
     for (const prop of Object.values(embeddable!.properties)) {
       const prefix = embeddedProp.prefix === false ? '' : embeddedProp.prefix === true ? embeddedProp.name + '_' : embeddedProp.prefix;
       const name = prefix + prop.name;
 
-      if (meta.properties[name] !== undefined) {
+      if (meta.properties[name] !== undefined && getRootProperty(meta.properties[name]).reference !== ReferenceType.EMBEDDED) {
         throw MetadataError.conflictingPropertyName(meta.className, name, embeddedProp.name);
       }
 
@@ -586,7 +587,6 @@ export class MetadataDiscovery {
         meta.properties[name].nullable = true;
       }
 
-      const getRootProperty: (prop: EntityProperty) => EntityProperty = (prop: EntityProperty) => prop.embedded ? getRootProperty(meta.properties[prop.embedded[0]]) : prop;
       const isParentObject: (prop: EntityProperty) => boolean = (prop: EntityProperty) => {
         if (prop.object) {
           return true;
