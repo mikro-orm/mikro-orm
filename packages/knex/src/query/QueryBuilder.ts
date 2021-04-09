@@ -1,4 +1,4 @@
-import { QueryBuilder as KnexQueryBuilder, Raw, Transaction, Value } from 'knex';
+import { QueryBuilder as KnexQueryBuilder, Raw, RawBinding, Transaction, Value, ValueDict } from 'knex';
 import {
   AnyEntity,
   Dictionary,
@@ -258,8 +258,8 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.knex.ref(field);
   }
 
-  raw(sql: string): Raw {
-    const raw = this.knex.raw(sql);
+  raw(sql: string, bindings: RawBinding[] | ValueDict = []): Raw {
+    const raw = this.knex.raw(sql, bindings);
     (raw as Dictionary).__raw = true; // tag it as there is now way to check via `instanceof`
 
     return raw;

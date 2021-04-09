@@ -1176,10 +1176,16 @@ describe('QueryBuilder', () => {
 
   test('update query with JSON type and raw value', async () => {
     const qb = orm.em.createQueryBuilder(Book2);
-    const raw = qb.raw(`jsonb_set(payload, '$.{consumed}', 123)`);
+    const raw = qb.raw(`jsonb_set(payload, '$.{consumed}', ?)`, [123]);
     qb.update({ meta: raw }).where({ uuid: '456' });
-    expect(qb.getQuery()).toEqual('update `book2` set `meta` = jsonb_set(payload, \'$.{consumed}\', 123) where `uuid_pk` = ?');
-    expect(qb.getParams()).toEqual(['456']);
+    expect(qb.getFormattedQuery()).toEqual('update `book2` set `meta` = jsonb_set(payload, \'$.{consumed}\', 123) where `uuid_pk` = \'456\'');
+  });
+
+  test('qb.raw() with named bindings', async () => {
+    const qb = orm.em.createQueryBuilder(Book2);
+    const raw = qb.raw(`jsonb_set(payload, '$.{consumed}', :val)`, { val: 123 });
+    qb.update({ meta: raw }).where({ uuid: '456' });
+    expect(qb.getFormattedQuery()).toEqual('update `book2` set `meta` = jsonb_set(payload, \'$.{consumed}\', 123) where `uuid_pk` = \'456\'');
   });
 
   test('update query with auto-joining', async () => {
