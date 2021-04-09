@@ -22,7 +22,7 @@ export class UnitOfWork {
   private readonly orphanRemoveStack = new Set<AnyEntity>();
   private readonly changeSets = new Map<AnyEntity, ChangeSet<AnyEntity>>();
   private readonly collectionUpdates = new Set<Collection<AnyEntity>>();
-  private readonly extraUpdates = new Set<[AnyEntity, string, AnyEntity | Reference<any> | Collection<any>]>();
+  private readonly extraUpdates = new Set<[AnyEntity, string | string[], AnyEntity | AnyEntity[] | Reference<any> | Collection<any>]>();
   private readonly metadata = this.em.getMetadata();
   private readonly platform = this.em.getPlatform();
   private readonly eventManager = this.em.getEventManager();
@@ -151,7 +151,7 @@ export class UnitOfWork {
     return [...this.collectionUpdates];
   }
 
-  getExtraUpdates(): Set<[AnyEntity, string, (AnyEntity | Reference<any> | Collection<any>)]> {
+  getExtraUpdates(): Set<[AnyEntity, string | string[], (AnyEntity | AnyEntity[] | Reference<any> | Collection<any>)]> {
     return this.extraUpdates;
   }
 
@@ -308,10 +308,14 @@ export class UnitOfWork {
     }
   }
 
-  scheduleExtraUpdate<T>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {
-    this.extraUpdates.add([changeSet.entity, prop.name, changeSet.entity[prop.name]]);
-    delete changeSet.entity[prop.name];
-    delete changeSet.payload[prop.name];
+  scheduleExtraUpdate<T>(changeSet: ChangeSet<T>, props: EntityProperty<T>[]): void {
+    if (props.length === 0) {
+      return;
+    }
+
+    this.extraUpdates.add([changeSet.entity, props.map(p => p.name), props.map(p => changeSet.entity[p.name])]);
+    props.forEach(p => delete changeSet.entity[p.name]);
+    props.forEach(p => delete changeSet.payload[p.name]);
   }
 
   scheduleOrphanRemoval(entity?: AnyEntity): void {
@@ -353,16 +357,13 @@ export class UnitOfWork {
   }
 
   private checkUniqueProps<T extends AnyEntity<T>>(changeSet: ChangeSet<T>): boolean {
-    if (this.platform.allowsUniqueBatchUpdates()) {
+    if (this.platform.allowsUniqueBatchUpdates() || changeSet.type !== ChangeSetType.UPDATE) {
       return false;
     }
 
-    for (const prop of changeSet.entity.__meta!.props) {
-      // when changing a unique nullable property (or a 1:1 relation), we can't do it in a single query as it would cause unique constraint violations
-      if (prop.unique && prop.nullable && Utils.isDefined(changeSet.payload[prop.name], true)) {
-        this.scheduleExtraUpdate(changeSet, prop);
-      }
-    }
+    // when changing a unique nullable property (or a 1:1 relation), we can't do it in a single query as it would cause unique constraint violations
+    const uniqueProps = changeSet.entity.__meta!.props.filter(prop => prop.unique && prop.nullable && changeSet.payload[prop.name] != null);
+    this.scheduleExtraUpdate(changeSet, uniqueProps);
 
     return changeSet.type === ChangeSetType.UPDATE && !Utils.hasObjectKeys(changeSet.payload);
   }
@@ -593,7 +594,12 @@ export class UnitOfWork {
     const extraUpdates: ChangeSet<any>[] = [];
 
     for (const extraUpdate of this.extraUpdates) {
-      extraUpdate[0][extraUpdate[1]] = extraUpdate[2];
+      if (Array.isArray(extraUpdate[1])) {
+        extraUpdate[1].forEach((p, i) => extraUpdate[0][p] = extraUpdate[2][i]);
+      } else {
+        extraUpdate[0][extraUpdate[1]] = extraUpdate[2];
+      }
+
       const changeSet = this.changeSetComputer.computeChangeSet(extraUpdate[0])!;
 
       if (changeSet) {
@@ -643,7 +649,7 @@ export class UnitOfWork {
       const isScheduledForInsert = cs && cs.type === ChangeSetType.CREATE && !cs.persisted;
 
       if (isScheduledForInsert) {
-        this.scheduleExtraUpdate(changeSet, prop);
+        this.scheduleExtraUpdate(changeSet, [prop]);
       }
     }
   }
