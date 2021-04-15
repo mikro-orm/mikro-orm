@@ -2,7 +2,7 @@
 title: Using AsyncLocalStorage
 ---
 
-By default, `domain` api use used in the `RequestContext` helper. Since v4.0.3,
+By default, the `domain` api is used in the `RequestContext` helper. Since v4.0.3,
 you can use the new `AsyncLocalStorage` too, if you are on up to date node version:
 
 ```typescript
