@@ -123,7 +123,7 @@ export class PointType extends Type<Point | undefined, string | undefined> {
   }
 
   convertToJSValue(value: string | undefined): Point | undefined {
-    const m = value?.match(/point\((\d+(\.\d+)?) (\d+(\.\d+)?)\)/i);
+    const m = value?.match(/point\((-?\d+(\.\d+)?) (-?\d+(\.\d+)?)\)/i);
 
     if (!m) {
       return undefined;
