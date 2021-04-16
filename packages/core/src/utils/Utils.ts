@@ -417,13 +417,21 @@ export class Utils {
       return entity[primaryKeys[0]];
     }
 
-    return primaryKeys.map(pk => {
+    return primaryKeys.reduce((ret, pk) => {
       if (Utils.isEntity(entity[pk], true)) {
-        return entity[pk].__helper!.getPrimaryKey();
+        const childPk = entity[pk].__helper!.getPrimaryKey();
+
+        if (entity[pk].__meta.compositePK) {
+          ret.push(...Object.values(childPk) as Primary<T>[]);
+        } else {
+          ret.push(childPk);
+        }
+      } else {
+        ret.push(entity[pk]);
       }
 
-      return entity[pk];
-    });
+      return ret;
+    }, [] as Primary<T>[]);
   }
 
   static getPrimaryKeyCond<T extends AnyEntity<T>>(entity: T, primaryKeys: string[]): Record<string, Primary<T>> | null {
