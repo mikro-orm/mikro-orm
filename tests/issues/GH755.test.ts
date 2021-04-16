@@ -27,7 +27,7 @@ export const TestSchema = new EntitySchema<Test>({
 
 describe('GH issue 755', () => {
 
-  test('mapping values from returning statement to custom types', async () => {
+  test('index properties need to be property names, not column names', async () => {
     const options = {
       entities: [TestSchema],
       dbName: ':memory:',

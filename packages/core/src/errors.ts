@@ -135,7 +135,7 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return new MetadataError(`${meta.className} entity is missing @PrimaryKey()`);
   }
 
-  static fromWrongReference(meta: EntityMetadata, prop: EntityProperty, key: keyof EntityProperty, owner?: EntityProperty): MetadataError {
+  static fromWrongReference(meta: EntityMetadata, prop: EntityProperty, key: 'inversedBy' | 'mappedBy', owner?: EntityProperty): MetadataError {
     if (owner) {
       return MetadataError.fromMessage(meta, prop, `has wrong '${key}' reference type: ${owner.type} instead of ${meta.className}`);
     }
@@ -151,7 +151,7 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return MetadataError.fromMessage(meta, prop, `has unknown type: ${prop.type}`);
   }
 
-  static fromWrongOwnership(meta: EntityMetadata, prop: EntityProperty, key: keyof EntityProperty): MetadataError {
+  static fromWrongOwnership(meta: EntityMetadata, prop: EntityProperty, key: 'inversedBy' | 'mappedBy'): MetadataError {
     const type = key === 'inversedBy' ? 'owning' : 'inverse';
     const other = key === 'inversedBy' ? 'mappedBy' : 'inversedBy';
 

@@ -1,9 +1,13 @@
-import { TableBuilder } from 'knex';
-import { Connection, Dictionary, EntityProperty, ReferenceType, Utils } from '@mikro-orm/core';
+import { Knex } from 'knex';
+import { BigIntType, Connection, Dictionary, EnumType, Utils } from '@mikro-orm/core';
 import { AbstractSqlConnection } from '../AbstractSqlConnection';
-import { Column, Index, IsSame } from '../typings';
+import { AbstractSqlPlatform } from '../AbstractSqlPlatform';
+import { Column, Index, TableDifference } from '../typings';
+import { DatabaseTable } from './DatabaseTable';
 
 export abstract class SchemaHelper {
+
+  constructor(protected readonly platform: AbstractSqlPlatform) {}
 
   getSchemaBeginning(charset: string): string {
     return '';
@@ -13,69 +17,22 @@ export abstract class SchemaHelper {
     return '';
   }
 
-  finalizeTable(table: TableBuilder, charset: string, collate?: string): void {
+  finalizeTable(table: Knex.TableBuilder, charset: string, collate?: string): void {
     //
-  }
-
-  getTypeDefinition(prop: EntityProperty, types: Dictionary<string[]> = {}, lengths: Dictionary<number> = {}, allowZero = false): string {
-    let t = prop.type.toLowerCase();
-
-    if (prop.enum) {
-      t = prop.items?.every(item => Utils.isString(item)) ? 'enum' : 'tinyint';
-    }
-
-    let type = (types[t] || types.json || types.text || [t])[0];
-
-    if (type.includes('(?)')) {
-      type = this.processTypeWildCard(prop, lengths, t, allowZero, type);
-    }
-
-    return type;
-  }
-
-  isSame(prop: EntityProperty, column: Column, idx = 0, types: Dictionary<string[]> = {}, defaultValues: Dictionary<string[]> = {}): IsSame {
-    const sameTypes = this.hasSameType(prop.columnTypes[idx], column.type, types);
-    const sameEnums = this.hasSameEnumDefinition(prop, column);
-    const sameNullable = column.nullable === !!prop.nullable;
-    const sameDefault = this.hasSameDefaultValue(column, prop, defaultValues);
-    const sameIndex = this.hasSameIndex(prop, column);
-    const all = sameTypes && sameNullable && sameDefault && sameIndex && sameEnums;
-
-    return { all, sameTypes, sameEnums, sameNullable, sameDefault, sameIndex };
   }
 
   supportsSchemaConstraints(): boolean {
     return true;
   }
 
-  indexForeignKeys() {
-    return true;
-  }
-
-  /**
-   * Implicit indexes will be ignored when diffing
-   */
-  isImplicitIndex(name: string): boolean {
-    return false;
-  }
-
-  getTypeFromDefinition(type: string, defaultType: string, types?: Dictionary<string[]>): string {
-    type = type.replace(/\(.+\)/, '');
-
-    const found = Object.entries(types!)
-      .filter(([, tt]) => tt.find(ttt => ttt.replace(/\(.+\)/, '') === type))
-      .map(([t]) => t)[0];
-
-    return found || defaultType;
-  }
-
   async getPrimaryKeys(connection: AbstractSqlConnection, indexes: Index[], tableName: string, schemaName?: string): Promise<string[]> {
-    return indexes.filter(i => i.primary).map(i => i.columnName);
+    const pk = indexes.find(i => i.primary);
+    return pk ? pk.columnNames : [];
   }
 
   async getForeignKeys(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary> {
     const fks = await connection.execute<any[]>(this.getForeignKeysSQL(tableName, schemaName));
-    return this.mapForeignKeys(fks);
+    return this.mapForeignKeys(fks, tableName, schemaName);
   }
 
   async getEnumDefinitions(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary> {
@@ -86,16 +43,105 @@ export abstract class SchemaHelper {
     throw new Error('Not supported by given driver');
   }
 
-  getRenameColumnSQL(tableName: string, from: Column, to: EntityProperty, idx = 0, quote = '"'): string {
-    return `alter table ${quote}${tableName}${quote} rename column ${quote}${from.name}${quote} to ${quote}${to.fieldNames[0]}${quote}`;
+  getRenameColumnSQL(tableName: string, oldColumnName: string, to: Column): string {
+    return `alter table ${this.platform.quoteIdentifier(tableName)} rename column ${this.platform.quoteIdentifier(oldColumnName)} to ${this.platform.quoteIdentifier(to.name)}`;
   }
 
-  async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<any[]> {
+  getCreateIndexSQL(tableName: string, index: Index): string {
+    /* istanbul ignore if */
+    if (index.expression) {
+      return index.expression;
+    }
+
+    tableName = this.platform.quoteIdentifier(tableName);
+    const keyName = this.platform.quoteIdentifier(index.keyName);
+
+    return `create index ${keyName} on ${tableName} (${index.columnNames.map(c => this.platform.quoteIdentifier(c)).join(', ')})`;
+  }
+
+  getDropIndexSQL(tableName: string, index: Index): string {
+    return `drop index ${this.platform.quoteIdentifier(index.keyName)}`;
+  }
+
+  getRenameIndexSQL(tableName: string, index: Index, oldIndexName: string): string {
+    return [this.getDropIndexSQL(tableName, { ...index, keyName: oldIndexName }), this.getCreateIndexSQL(tableName, index)].join(';\n');
+  }
+
+  createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>) {
+    const compositePK = fromTable.getPrimaryKey()?.composite;
+
+    if (column.autoincrement && !compositePK && (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type'))) {
+      if (column.mappedType instanceof BigIntType) {
+        return (table.bigIncrements as any)(column.name, { primaryKey: !changedProperties });
+      }
+
+      return (table.increments as any)(column.name, { primaryKey: !changedProperties });
+    }
+
+    if (column.mappedType instanceof EnumType && column.enumItems?.every(item => Utils.isString(item))) {
+      return table.enum(column.name, column.enumItems);
+    }
+
+    return table.specificType(column.name, column.type);
+  }
+
+  configureColumn(column: Column, col: Knex.ColumnBuilder, knex: Knex, changedProperties?: Set<string>) {
+    const guard = (key: string) => !changedProperties || changedProperties.has(key);
+
+    Utils.runIfNotEmpty(() => col.nullable(), column.nullable && guard('nullable'));
+    Utils.runIfNotEmpty(() => col.notNullable(), !column.nullable);
+    Utils.runIfNotEmpty(() => col.unsigned(), column.unsigned);
+    Utils.runIfNotEmpty(() => col.comment(column.comment!), column.comment && !changedProperties);
+    this.configureColumnDefault(column, col, knex, changedProperties);
+
+    return col;
+  }
+
+  configureColumnDefault(column: Column, col: Knex.ColumnBuilder, knex: Knex, changedProperties?: Set<string>) {
+    const guard = (key: string) => !changedProperties || changedProperties.has(key);
+
+    if (changedProperties) {
+      Utils.runIfNotEmpty(() => col.defaultTo(column.default === undefined ? null : knex.raw(column.default)), guard('default'));
+    } else {
+      Utils.runIfNotEmpty(() => col.defaultTo(knex.raw(column.default!)), column.default !== undefined);
+    }
+
+    return col;
+  }
+
+  getPreAlterTable(tableDiff: TableDifference, safe: boolean): string {
+    return '';
+  }
+
+  getAlterColumnAutoincrement(tableName: string, column: Column): string {
+    return '';
+  }
+
+  getChangeColumnCommentSQL(tableName: string, to: Column): string {
+    return '';
+  }
+
+  async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Column[]> {
     throw new Error('Not supported by given driver');
   }
 
   async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Index[]> {
     throw new Error('Not supported by given driver');
+  }
+
+  protected async mapIndexes(indexes: Index[]): Promise<Index[]> {
+    const map = {} as Dictionary;
+
+    indexes.forEach(index => {
+      if (map[index.keyName]) {
+        map[index.keyName].composite = true;
+        map[index.keyName].columnNames.push(index.columnNames[0]);
+      } else {
+        map[index.keyName] = index;
+      }
+    });
+
+    return Object.values(map);
   }
 
   getForeignKeysSQL(tableName: string, schemaName?: string): string {
@@ -105,46 +151,44 @@ export abstract class SchemaHelper {
   /**
    * Returns the default name of index for the given columns
    */
-  getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign'): string {
+  getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary'): string {
     if (tableName.includes('.')) {
       tableName = tableName.substr(tableName.indexOf('.') + 1);
+    }
+
+    if (type === 'primary') {
+      return `${tableName}_pkey`;
     }
 
     return `${tableName}_${columns.join('_')}_${type}`;
   }
 
-  mapForeignKeys(fks: any[]): Dictionary {
+  mapForeignKeys(fks: any[], tableName: string, schemaName?: string): Dictionary {
     return fks.reduce((ret, fk: any) => {
-      ret[fk.column_name] = {
-        columnName: fk.column_name,
-        constraintName: fk.constraint_name,
-        referencedTableName: fk.referenced_table_name,
-        referencedColumnName: fk.referenced_column_name,
-        updateRule: fk.update_rule,
-        deleteRule: fk.delete_rule,
-      };
+      if (ret[fk.constraint_name]) {
+        ret[fk.constraint_name].columnNames.push(fk.column_name);
+        ret[fk.constraint_name].referencedColumnNames.push(fk.referenced_column_name);
+      } else {
+        ret[fk.constraint_name] = {
+          columnNames: [fk.column_name],
+          constraintName: fk.constraint_name,
+          localTableName: schemaName ? `${schemaName}.${tableName}` : tableName,
+          referencedTableName: fk.referenced_schema_name ? `${fk.referenced_schema_name}.${fk.referenced_table_name}` : fk.referenced_table_name,
+          referencedColumnNames: [fk.referenced_column_name],
+          updateRule: fk.update_rule.toLowerCase(),
+          deleteRule: fk.delete_rule.toLowerCase(),
+        };
+      }
 
       return ret;
     }, {});
   }
 
-  private processTypeWildCard(prop: EntityProperty, lengths: Dictionary<number>, propType: string, allowZero: boolean, type: string): string {
-    let length = prop.length || lengths[propType];
-
-    if (allowZero) {
-      length = '' + length;
+  normalizeDefaultValue(defaultValue: string, length?: number, defaultValues: Dictionary<string[]> = {}): string | number {
+    if (defaultValue == null) {
+      return defaultValue;
     }
 
-    type = length ? type.replace('?', length) : type.replace('(?)', '');
-
-    return type;
-  }
-
-  supportsColumnAlter(): boolean {
-    return true;
-  }
-
-  normalizeDefaultValue(defaultValue: string, length: number, defaultValues: Dictionary<string[]> = {}): string | number {
     const genericValue = defaultValue.replace(/\(\d+\)/, '(?)').toLowerCase();
     const norm = defaultValues[genericValue];
 
@@ -152,7 +196,7 @@ export abstract class SchemaHelper {
       return defaultValue;
     }
 
-    return norm[0].replace('(?)', `(${length})`);
+    return norm[0].replace('(?)', length != null ? `(${length})` : '');
   }
 
   getCreateDatabaseSQL(name: string): string {
@@ -192,72 +236,11 @@ export abstract class SchemaHelper {
     }
   }
 
-  private hasSameType(columnType: string, infoType: string, types: Dictionary<string[]>): boolean {
-    columnType = columnType.replace(/\([,?\d]+\)/, '').toLowerCase();
-    infoType = infoType.replace(/\([,?\d]+\)/, '').toLowerCase();
-
-    if (columnType === infoType) {
-      return true;
-    }
-
-    const type = Object.values(types).find(t => t.some(tt => tt.replace(/\([,?\d]+\)/, '').toLowerCase() === infoType));
-
-    if (!type) {
-      return false;
-    }
-
-    const propTypes = type.map(t => t.replace(/\([,?\d]+\)/, '').toLowerCase());
-
-    return propTypes.includes(columnType);
-  }
-
-  private hasSameDefaultValue(info: Column, prop: EntityProperty, defaultValues: Dictionary<string[]>): boolean {
-    if (info.defaultValue === null || info.defaultValue.toString().toLowerCase() === 'null' || info.defaultValue.toString().startsWith('nextval(')) {
-      return !Utils.isDefined(prop.defaultRaw, true) || prop.defaultRaw!.toLowerCase() === 'null';
-    }
-
-    if (prop.type === 'boolean') {
-      const defaultValue = !['0', 'false', 'f', 'n', 'no', 'off'].includes(info.defaultValue);
-      return '' + defaultValue === prop.defaultRaw;
-    }
-
-    if (info.defaultValue && prop.defaultRaw) {
-      const defaultValue = info.defaultValue.toString().replace(/\([?\d]+\)/, '').toLowerCase();
-      const propDefault = prop.defaultRaw.toString().toLowerCase();
-      const same = propDefault === info.defaultValue.toString().toLowerCase();
-      const equal = same || propDefault === defaultValue;
-
-      return equal || Object.keys(defaultValues).map(t => t.replace(/\([?\d]+\)/, '').toLowerCase()).includes(defaultValue);
-    }
-
-    if (['', this.getDefaultEmptyString()].includes(prop.defaultRaw!)) {
-      return ['', this.getDefaultEmptyString()].includes(info.defaultValue.toString());
-    }
-
-    // eslint-disable-next-line eqeqeq
-    return info.defaultValue == prop.defaultRaw; // == intentionally
-  }
-
-  private hasSameIndex(prop: EntityProperty, column: Column): boolean {
-    if ([ReferenceType.SCALAR, ReferenceType.EMBEDDED].includes(prop.reference)) {
-      return true;
-    }
-
-    return prop.referencedColumnNames.some(referencedColumnName => {
-      return !!column.fk && referencedColumnName === column.fk.referencedColumnName && prop.referencedTableName === column.fk.referencedTableName;
-    });
-  }
-
-  private hasSameEnumDefinition(prop: EntityProperty, column: Column): boolean {
-    if (!prop.enum || !prop.items) {
-      return true;
-    }
-
-    if (prop.items.every(item => typeof item === 'number')) {
-      return true;
-    }
-
-    return Utils.equals(prop.items, column.enumItems);
+  /**
+   * Uses `raw` method injected in `AbstractSqlConnection` to allow adding custom queries inside alter statements.
+   */
+  pushTableQuery(table: Knex.TableBuilder, expression: string, grouping = 'alterTable'): void {
+    (table as Dictionary)._statements.push({ grouping, method: 'raw', args: [expression] });
   }
 
 }

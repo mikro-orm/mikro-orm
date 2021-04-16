@@ -54,7 +54,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     clientUrl: `mysql://root@127.0.0.1:3306/mikro_orm_test`,
     port: type === 'mysql' ? 3307 : 3309,
     baseDir: BASE_DIR,
-    debug: ['query'],
+    debug: ['query', 'query-params'],
     timezone: 'Z',
     charset: 'utf8mb4',
     logger: (i: any) => i,
@@ -213,6 +213,7 @@ export async function wipeDatabasePostgreSql(em: SqlEntityManager) {
 }
 
 export async function wipeDatabaseSqlite(em: SqlEntityManager) {
+  await em.execute('pragma foreign_keys = off');
   await em.createQueryBuilder('Author3').delete().execute();
   await em.nativeDelete('Book3', {});
   await em.nativeDelete('BookTag3', {});
@@ -220,10 +221,12 @@ export async function wipeDatabaseSqlite(em: SqlEntityManager) {
   await em.nativeDelete('Test3', {});
   await em.nativeDelete('book3_tags', {});
   await em.nativeDelete('publisher3_tests', {});
+  await em.execute('pragma foreign_keys = on');
   em.clear();
 }
 
 export async function wipeDatabaseSqlite2(em: SqlEntityManager) {
+  await em.execute('pragma foreign_keys = off');
   await em.nativeDelete('Author4', {});
   await em.nativeDelete('Book4', {});
   await em.nativeDelete('BookTag4', {});
@@ -232,5 +235,6 @@ export async function wipeDatabaseSqlite2(em: SqlEntityManager) {
   await em.nativeDelete('tags_ordered', {});
   await em.nativeDelete('tags_unordered', {});
   await em.nativeDelete('publisher4_tests', {});
+  await em.execute('pragma foreign_keys = on');
   em.clear();
 }

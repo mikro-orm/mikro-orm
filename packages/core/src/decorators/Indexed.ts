@@ -33,4 +33,5 @@ export interface UniqueOptions<T extends AnyEntity<T>> {
 
 export interface IndexOptions<T extends AnyEntity<T>> extends UniqueOptions<T> {
   type?: string;
+  expression?: string;
 }

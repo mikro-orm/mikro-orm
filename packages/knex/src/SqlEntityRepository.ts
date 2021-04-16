@@ -1,4 +1,4 @@
-import Knex from 'knex';
+import { Knex } from 'knex';
 import { EntityRepository, EntityName } from '@mikro-orm/core';
 import { SqlEntityManager } from './SqlEntityManager';
 import { QueryBuilder } from './query';

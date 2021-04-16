@@ -245,6 +245,7 @@ describe('composite keys in sqlite', () => {
     await orm.getSchemaGenerator().createSchema();
   });
   beforeEach(async () => {
+    await orm.em.execute('pragma foreign_keys = off');
     await orm.em.nativeDelete(Author2, {});
     await orm.em.nativeDelete(Configuration2, {});
     await orm.em.nativeDelete(FooBar2, {});
@@ -256,6 +257,7 @@ describe('composite keys in sqlite', () => {
     await orm.em.nativeDelete(CarOwner2, {});
     await orm.em.nativeDelete(User2, {});
     await orm.em.nativeDelete(Sandwich, {});
+    await orm.em.execute('pragma foreign_keys = on');
     orm.em.clear();
   });
 

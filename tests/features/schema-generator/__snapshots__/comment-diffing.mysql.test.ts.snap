@@ -1,0 +1,24 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`comment diffing in mysql schema generator updates comments 1`] = `
+"alter table \`book\` modify \`id\` int unsigned auto_increment not null comment 'this is primary key';
+alter table \`book\` modify \`name\` varchar(255) not null comment 'this is name of book';
+alter table \`book\` comment = 'this is books table';
+
+"
+`;
+
+exports[`comment diffing in mysql schema generator updates comments 2`] = `
+"alter table \`book\` modify \`id\` int unsigned auto_increment not null comment 'new comment';
+alter table \`book\` modify \`name\` varchar(255) not null;
+alter table \`book\` comment = 'table comment';
+
+"
+`;
+
+exports[`comment diffing in mysql schema generator updates comments 3`] = `
+"alter table \`book\` modify \`id\` int unsigned auto_increment not null;
+alter table \`book\` comment = '';
+
+"
+`;

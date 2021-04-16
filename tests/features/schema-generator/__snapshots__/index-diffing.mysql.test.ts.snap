@@ -1,0 +1,42 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`indexes on FKs in postgres (GH 1518) schema generator respect indexes on FKs on column update 1`] = `
+"create table \`book\` (\`id\` int unsigned not null auto_increment primary key, \`author1_id\` int unsigned not null, \`author2_id\` int unsigned not null, \`author3_id\` int unsigned not null, \`author4_id\` int unsigned not null, \`author5_id\` int unsigned not null, \`title\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
+alter table \`book\` add index \`book_author1_id_index\`(\`author1_id\`);
+alter table \`book\` add index \`book_author2_id_index\`(\`author2_id\`);
+alter table \`book\` add index \`book_author3_id_index\`(\`author3_id\`);
+alter table \`book\` add index \`book_author4_id_index\`(\`author4_id\`);
+alter table \`book\` add index \`book_author5_id_index\`(\`author5_id\`);
+
+alter table \`book\` add constraint \`book_author1_id_foreign\` foreign key (\`author1_id\`) references \`author\` (\`id\`) on update cascade;
+alter table \`book\` add constraint \`book_author2_id_foreign\` foreign key (\`author2_id\`) references \`author\` (\`id\`) on update cascade;
+alter table \`book\` add constraint \`book_author3_id_foreign\` foreign key (\`author3_id\`) references \`author\` (\`id\`) on update cascade;
+alter table \`book\` add constraint \`book_author4_id_foreign\` foreign key (\`author4_id\`) references \`author\` (\`id\`) on update cascade;
+alter table \`book\` add constraint \`book_author5_id_foreign\` foreign key (\`author5_id\`) references \`author\` (\`id\`) on update cascade;
+
+"
+`;
+
+exports[`indexes on FKs in postgres (GH 1518) schema generator respect indexes on FKs on column update 2`] = `
+"alter table \`book\` add index \`custom_index_expr\`(\`title\`);
+
+"
+`;
+
+exports[`indexes on FKs in postgres (GH 1518) schema generator respect indexes on FKs on column update 3`] = `
+"alter table \`book\` add index \`lol41\`(\`author3_id\`);
+alter table \`book\` add index \`lol31\`(\`author3_id\`);
+alter table \`book\` rename index \`book_author5_id_index\` to \`auth_idx5\`;
+alter table \`book\` rename index \`custom_index_expr\` to \`custom_index_expr2\`;
+
+"
+`;
+
+exports[`indexes on FKs in postgres (GH 1518) schema generator respect indexes on FKs on column update 4`] = `
+"alter table \`book\` drop index \`lol41\`;
+alter table \`book\` drop index \`lol31\`;
+alter table \`book\` add index \`lol42\`(\`author3_id\`);
+alter table \`book\` add index \`lol32\`(\`author3_id\`);
+
+"
+`;

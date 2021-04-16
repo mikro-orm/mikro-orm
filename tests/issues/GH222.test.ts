@@ -40,8 +40,8 @@ export class B {
   @OneToOne(() => A, a => a.b, { eager: true })
   a!: A;
 
-  @ManyToOne(() => C)
-  c!: C;
+  @ManyToOne(() => C, { nullable: true })
+  c?: C;
 
   @Property({ type: String })
   prop!: string;

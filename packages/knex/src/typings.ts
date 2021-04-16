@@ -1,17 +1,19 @@
-import { QueryBuilder as KnexQueryBuilder, Ref } from 'knex';
-import { Dictionary, EntityProperty, GroupOperator, QBFilterQuery, QueryOrderMap } from '@mikro-orm/core';
+import { Knex } from 'knex';
+import { Dictionary, EntityProperty, GroupOperator, QBFilterQuery, QueryOrderMap, Type } from '@mikro-orm/core';
 import { QueryType } from './query/enums';
+import { DatabaseSchema, DatabaseTable } from './schema';
 
 export interface Table {
   table_name: string;
   schema_name?: string;
+  table_comment?: string;
 }
 
-export type KnexStringRef = Ref<string, {
+export type KnexStringRef = Knex.Ref<string, {
   [alias: string]: string;
 }>;
 
-export type Field<T> = string | keyof T | KnexStringRef | KnexQueryBuilder;
+export type Field<T> = string | keyof T | KnexStringRef | Knex.QueryBuilder;
 
 export interface JoinOptions {
   table: string;
@@ -30,56 +32,72 @@ export interface JoinOptions {
 export interface Column {
   name: string;
   type: string;
-  fk: ForeignKey;
-  fks: ForeignKey[];
-  indexes: Index[];
-  primary: boolean;
-  unique: boolean;
-  nullable: boolean;
-  maxLength: number;
-  defaultValue: string | null;
-  enumItems: string[];
+  mappedType: Type<unknown>;
+  unsigned?: boolean;
+  autoincrement?: boolean;
+  nullable?: boolean;
+  length?: number;
+  precision?: number;
+  scale?: number;
+  default?: string | null;
+  comment?: string;
+  enumItems?: string[];
+  primary?: boolean;
+  unique?: boolean;
 }
 
 export interface ForeignKey {
-  columnName: string;
+  columnNames: string[];
   constraintName: string;
+  localTableName: string;
   referencedTableName: string;
-  referencedColumnName: string;
-  updateRule: string;
-  deleteRule: string;
+  referencedColumnNames: string[];
+  updateRule?: string;
+  deleteRule?: string;
 }
 
 export interface Index {
-  columnName: string;
+  columnNames: string[];
   keyName: string;
   unique: boolean;
   primary: boolean;
   composite?: boolean;
+  expression?: string; // allows using custom sql expressions
+  type?: string; // for back compatibility mainly, to allow using knex's `index.type` option (e.g. gin index)
 }
 
-export interface IndexDef {
-  keyName: string;
-  columnNames: string[];
-  unique: boolean;
+export interface ColumnDifference {
+  oldColumnName: string;
+  column: Column;
+  fromColumn: Column;
+  changedProperties: Set<string>;
 }
 
 export interface TableDifference {
-  create: EntityProperty[];
-  update: { prop: EntityProperty; column: Column; diff: IsSame }[];
-  rename: { from: Column; to: EntityProperty }[];
-  remove: Column[];
-  addIndex: IndexDef[];
-  dropIndex: IndexDef[];
+  name: string;
+  changedComment?: string;
+  fromTable: DatabaseTable;
+  addedColumns: Dictionary<Column>;
+  changedColumns: Dictionary<ColumnDifference>;
+  removedColumns: Dictionary<Column>;
+  renamedColumns: Dictionary<Column>;
+  addedIndexes: Dictionary<Index>;
+  changedIndexes: Dictionary<Index>;
+  removedIndexes: Dictionary<Index>;
+  renamedIndexes: Dictionary<Index>;
+  addedForeignKeys: Dictionary<ForeignKey>;
+  changedForeignKeys: Dictionary<ForeignKey>;
+  removedForeignKeys: Dictionary<ForeignKey>;
 }
 
-export interface IsSame {
-  all?: boolean;
-  sameTypes?: boolean;
-  sameNullable?: boolean;
-  sameDefault?: boolean;
-  sameIndex?: boolean;
-  sameEnums?: boolean;
+export interface SchemaDifference {
+  newNamespaces: Set<string>;
+  newTables: Dictionary<DatabaseTable>;
+  changedTables: Dictionary<TableDifference>;
+  removedTables: Dictionary<DatabaseTable>;
+  removedNamespaces: Set<string>;
+  orphanedForeignKeys: ForeignKey[];
+  fromSchema: DatabaseSchema;
 }
 
 export interface IQueryBuilder<T> {
@@ -97,7 +115,7 @@ export interface IQueryBuilder<T> {
   leftJoin(field: string, alias: string, cond?: QBFilterQuery): this;
   joinAndSelect(field: string, alias: string, cond?: QBFilterQuery): this;
   leftJoinAndSelect(field: string, alias: string, cond?: QBFilterQuery): this;
-  withSubQuery(subQuery: KnexQueryBuilder, alias: string): this;
+  withSubQuery(subQuery: Knex.QueryBuilder, alias: string): this;
   where(cond: QBFilterQuery<T>, operator?: keyof typeof GroupOperator): this;
   where(cond: string, params?: any[], operator?: keyof typeof GroupOperator): this;
   andWhere(cond: QBFilterQuery<T>): this;

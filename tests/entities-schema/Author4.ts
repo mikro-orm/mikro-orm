@@ -1,4 +1,4 @@
-import { EntitySchema, Collection, DateType, TimeType } from '@mikro-orm/core';
+import { EntitySchema, Collection, DateType, TimeType, BooleanType, t } from '@mikro-orm/core';
 import { IBaseEntity5 } from './BaseEntity5';
 import { IBook4 } from './Book4';
 
@@ -21,13 +21,13 @@ export const Author4 = new EntitySchema<IAuthor4, IBaseEntity5>({
   properties: {
     name: { type: 'string' },
     email: { type: 'string', unique: true },
-    age: { type: 'number', nullable: true },
-    termsAccepted: { type: 'boolean', default: 0, onCreate: () => false },
+    age: { type: t.smallint, nullable: true },
+    termsAccepted: { type: BooleanType, default: 0, onCreate: () => false },
     identities: { type: 'string[]', nullable: true },
     born: { type: DateType, nullable: true, length: 3 },
     bornTime: { type: TimeType, nullable: true, length: 3 },
     books: { reference: '1:m', type: 'Book4', mappedBy: book => book.author },
-    favouriteBook: { reference: 'm:1', type: 'Book4' },
+    favouriteBook: { reference: 'm:1', type: 'Book4', nullable: true },
     version: { type: 'number', persist: false },
   },
 });

@@ -8,7 +8,7 @@ import { Author2 } from './Author2';
 @Entity()
 export class Address2 {
 
-  @OneToOne({ entity: () => Author2, cascade: [Cascade.ALL], primary: true, index: 'address2_author_id_index' })
+  @OneToOne({ entity: () => Author2, cascade: [Cascade.ALL], primary: true })
   author!: Author2;
 
   @Property({ length: 255 })
@@ -63,10 +63,10 @@ export class Author2 {
   @Property({ columnType: 'time', nullable: true })
   bornTime?: string;
 
-  @ManyToOne({ entity: () => Book2, cascade: [Cascade.REMOVE], nullable: true, index: 'author2_favourite_book_uuid_pk_index' })
+  @ManyToOne({ entity: () => Book2, cascade: [Cascade.REMOVE], nullable: true })
   favouriteBook?: Book2;
 
-  @ManyToOne({ entity: () => Author2, nullable: true, index: 'author2_favourite_author_id_index' })
+  @ManyToOne({ entity: () => Author2, nullable: true })
   favouriteAuthor?: Author2;
 
 }
@@ -77,10 +77,10 @@ import { Author2 } from './Author2';
 @Entity({ collection: 'author2_following' })
 export class Author2Following {
 
-  @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', cascade: [Cascade.ALL], primary: true, index: 'author2_following_author2_1_id_index' })
+  @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', cascade: [Cascade.ALL], primary: true })
   author21!: Author2;
 
-  @ManyToOne({ entity: () => Author2, fieldName: 'author2_2_id', cascade: [Cascade.ALL], primary: true, index: 'author2_following_author2_2_id_index' })
+  @ManyToOne({ entity: () => Author2, fieldName: 'author2_2_id', cascade: [Cascade.ALL], primary: true })
   author22!: Author2;
 
 }
@@ -91,10 +91,10 @@ import { Author2 } from './Author2';
 @Entity()
 export class AuthorToFriend {
 
-  @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', cascade: [Cascade.ALL], primary: true, index: 'author_to_friend_author2_1_id_index' })
+  @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', cascade: [Cascade.ALL], primary: true })
   author21!: Author2;
 
-  @ManyToOne({ entity: () => Author2, fieldName: 'author2_2_id', cascade: [Cascade.ALL], primary: true, index: 'author_to_friend_author2_2_id_index' })
+  @ManyToOne({ entity: () => Author2, fieldName: 'author2_2_id', cascade: [Cascade.ALL], primary: true })
   author22!: Author2;
 
 }
@@ -114,16 +114,16 @@ export class BaseUser2 {
   lastName!: string;
 
   @Index({ name: 'base_user2_type_index' })
-  @Property({ columnType: 'enum' })
+  @Property({ columnType: \`enum('employee','manager','owner')\`, length: 8 })
   type!: string;
 
   @Property({ length: 255, nullable: true })
   ownerProp?: string;
 
-  @ManyToOne({ entity: () => BaseUser2, nullable: true, index: 'base_user2_favourite_employee_id_index' })
+  @ManyToOne({ entity: () => BaseUser2, nullable: true })
   favouriteEmployee?: BaseUser2;
 
-  @OneToOne({ entity: () => BaseUser2, nullable: true, index: 'base_user2_favourite_manager_id_index', unique: 'base_user2_favourite_manager_id_unique' })
+  @OneToOne({ entity: () => BaseUser2, nullable: true })
   favouriteManager?: BaseUser2;
 
   @Property({ nullable: true })
@@ -153,19 +153,19 @@ export class Book2 {
   @Property({ columnType: 'text', length: 65535, nullable: true })
   perex?: string;
 
-  @Property({ columnType: 'float', nullable: true })
-  price?: number;
+  @Property({ columnType: 'decimal(8,2)', nullable: true })
+  price?: string;
 
   @Property({ columnType: 'double', nullable: true })
-  double?: number;
+  double?: string;
 
-  @Property({ nullable: true })
-  meta?: object;
+  @Property({ columnType: 'json', nullable: true })
+  meta?: any;
 
-  @ManyToOne({ entity: () => Author2, cascade: [], index: 'book2_author_id_index' })
+  @ManyToOne({ entity: () => Author2, cascade: [] })
   author!: Author2;
 
-  @ManyToOne({ entity: () => Publisher2, cascade: [Cascade.ALL], nullable: true, index: 'book2_publisher_id_index' })
+  @ManyToOne({ entity: () => Publisher2, cascade: [Cascade.ALL], nullable: true })
   publisher?: Publisher2;
 
   @Property({ length: 255, nullable: true, defaultRaw: \`lol\` })
@@ -183,10 +183,10 @@ export class Book2Tags {
   @PrimaryKey()
   order!: number;
 
-  @ManyToOne({ entity: () => Book2, cascade: [Cascade.ALL], index: 'book2_tags_book2_uuid_pk_index' })
+  @ManyToOne({ entity: () => Book2, cascade: [Cascade.ALL] })
   book2!: Book2;
 
-  @ManyToOne({ entity: () => BookTag2, cascade: [Cascade.ALL], index: 'book2_tags_book_tag2_id_index' })
+  @ManyToOne({ entity: () => BookTag2, cascade: [Cascade.ALL] })
   bookTag2!: BookTag2;
 
 }
@@ -211,10 +211,10 @@ import { BookTag2 } from './BookTag2';
 @Entity()
 export class BookToTagUnordered {
 
-  @ManyToOne({ entity: () => Book2, cascade: [Cascade.ALL], primary: true, index: 'book_to_tag_unordered_book2_uuid_pk_index' })
+  @ManyToOne({ entity: () => Book2, cascade: [Cascade.ALL], primary: true })
   book2!: Book2;
 
-  @ManyToOne({ entity: () => BookTag2, cascade: [Cascade.ALL], primary: true, index: 'book_to_tag_unordered_book_tag2_id_index' })
+  @ManyToOne({ entity: () => BookTag2, cascade: [Cascade.ALL], primary: true })
   bookTag2!: BookTag2;
 
 }
@@ -249,7 +249,7 @@ export class CarOwner2 {
   @Property({ length: 255 })
   name!: string;
 
-  @ManyToOne({ entity: () => Car2, index: 'car_owner2_car_name_car_year_index' })
+  @ManyToOne({ entity: () => Car2 })
   car!: Car2;
 
 }
@@ -263,7 +263,7 @@ export class Configuration2 {
   @PrimaryKey({ length: 255 })
   property!: string;
 
-  @ManyToOne({ entity: () => Test2, primary: true, index: 'configuration2_test_id_index' })
+  @ManyToOne({ entity: () => Test2, primary: true })
   test!: Test2;
 
   @Property({ length: 255 })
@@ -293,23 +293,23 @@ export class FooBar2 {
   @Property({ length: 255 })
   name!: string;
 
-  @OneToOne({ entity: () => FooBaz2, nullable: true, index: 'foo_bar2_baz_id_index', unique: 'foo_bar2_baz_id_unique' })
+  @OneToOne({ entity: () => FooBaz2, nullable: true })
   baz?: FooBaz2;
 
-  @OneToOne({ entity: () => FooBar2, nullable: true, index: 'foo_bar2_foo_bar_id_index', unique: 'foo_bar2_foo_bar_id_unique' })
+  @OneToOne({ entity: () => FooBar2, nullable: true })
   fooBar?: FooBar2;
 
   @Property({ defaultRaw: \`CURRENT_TIMESTAMP\` })
   version!: Date;
 
-  @Property({ length: 65535, columnType: 'blob', nullable: true })
-  blob?: string;
+  @Property({ length: 65535, nullable: true })
+  blob?: Buffer;
 
   @Property({ columnType: 'text', length: 65535, nullable: true })
   array?: string;
 
-  @Property({ nullable: true })
-  object?: object;
+  @Property({ columnType: 'json', nullable: true })
+  object?: any;
 
 }
 ",
@@ -336,10 +336,10 @@ import { FooBaz2 } from './FooBaz2';
 @Entity()
 export class FooParam2 {
 
-  @ManyToOne({ entity: () => FooBar2, primary: true, index: 'foo_param2_bar_id_index' })
+  @ManyToOne({ entity: () => FooBar2, primary: true })
   bar!: FooBar2;
 
-  @ManyToOne({ entity: () => FooBaz2, primary: true, index: 'foo_param2_baz_id_index' })
+  @ManyToOne({ entity: () => FooBaz2, primary: true })
   baz!: FooBaz2;
 
   @Property({ length: 255 })
@@ -361,23 +361,26 @@ export class Publisher2 {
   @Property({ length: 255 })
   name!: string;
 
-  @Property({ columnType: 'enum' })
+  @Property({ columnType: \`enum('local','global')\`, length: 6 })
   type!: string;
 
-  @Property({ columnType: 'enum' })
+  @Property({ columnType: \`enum('LOCAL','GLOBAL')\`, length: 6 })
   type2!: string;
 
-  @Property({ nullable: true })
-  enum1?: boolean;
+  @Property({ columnType: 'tinyint(4)', nullable: true })
+  enum1?: number;
 
-  @Property({ nullable: true })
-  enum2?: boolean;
+  @Property({ columnType: 'tinyint(4)', nullable: true })
+  enum2?: number;
 
-  @Property({ nullable: true })
-  enum3?: boolean;
+  @Property({ columnType: 'tinyint(4)', nullable: true })
+  enum3?: number;
 
-  @Property({ columnType: 'enum', nullable: true })
+  @Property({ columnType: \`enum('a','b','c')\`, length: 1, nullable: true })
   enum4?: string;
+
+  @Property({ columnType: \`enum('a')\`, length: 1, nullable: true })
+  enum5?: string;
 
 }
 ",
@@ -391,10 +394,10 @@ export class Publisher2Tests {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Publisher2, cascade: [Cascade.ALL], index: 'publisher2_tests_publisher2_id_index' })
+  @ManyToOne({ entity: () => Publisher2, cascade: [Cascade.ALL] })
   publisher2!: Publisher2;
 
-  @ManyToOne({ entity: () => Test2, cascade: [Cascade.ALL], index: 'publisher2_tests_test2_id_index' })
+  @ManyToOne({ entity: () => Test2, cascade: [Cascade.ALL] })
   test2!: Test2;
 
 }
@@ -428,16 +431,16 @@ export class Test2 {
   @Property({ length: 255, nullable: true })
   name?: string;
 
-  @OneToOne({ entity: () => Book2, cascade: [], nullable: true, index: 'test2_book_uuid_pk_index', unique: 'test2_book_uuid_pk_unique' })
+  @OneToOne({ entity: () => Book2, cascade: [], nullable: true })
   book?: Book2;
 
-  @ManyToOne({ entity: () => Test2, nullable: true, index: 'test2_parent_id_index' })
+  @ManyToOne({ entity: () => Test2, nullable: true })
   parent?: Test2;
 
   @Property()
   version: number = 1;
 
-  @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', nullable: true, index: 'test2_foo___bar_index', unique: 'test2_foo___bar_unique' })
+  @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', nullable: true })
   fooBar?: FooBar2;
 
   @Property({ fieldName: 'foo___baz', nullable: true })
@@ -452,10 +455,10 @@ import { Test2 } from './Test2';
 @Entity({ collection: 'test2_bars' })
 export class Test2Bars {
 
-  @ManyToOne({ entity: () => Test2, cascade: [Cascade.ALL], primary: true, index: 'test2_bars_test2_id_index' })
+  @ManyToOne({ entity: () => Test2, cascade: [Cascade.ALL], primary: true })
   test2!: Test2;
 
-  @ManyToOne({ entity: () => FooBar2, cascade: [Cascade.ALL], primary: true, index: 'test2_bars_foo_bar2_id_index' })
+  @ManyToOne({ entity: () => FooBar2, cascade: [Cascade.ALL], primary: true })
   fooBar2!: FooBar2;
 
 }
@@ -475,7 +478,7 @@ export class User2 {
   @Property({ nullable: true })
   foo?: number;
 
-  @OneToOne({ entity: () => Car2, nullable: true, index: 'user2_favourite_car_name_favourite_car_year_index' })
+  @OneToOne({ entity: () => Car2, nullable: true })
   favouriteCar?: Car2;
 
 }
@@ -487,10 +490,10 @@ import { User2 } from './User2';
 @Entity({ collection: 'user2_cars' })
 export class User2Cars {
 
-  @ManyToOne({ entity: () => User2, cascade: [Cascade.ALL], primary: true, index: 'user2_cars_user2_first_name_user2_last_name_index' })
+  @ManyToOne({ entity: () => User2, cascade: [Cascade.ALL], primary: true })
   user2!: User2;
 
-  @ManyToOne({ entity: () => Car2, cascade: [Cascade.ALL], primary: true, index: 'user2_cars_car2_name_car2_year_index' })
+  @ManyToOne({ entity: () => Car2, cascade: [Cascade.ALL], primary: true })
   car2!: Car2;
 
 }
@@ -502,10 +505,10 @@ import { User2 } from './User2';
 @Entity({ collection: 'user2_sandwiches' })
 export class User2Sandwiches {
 
-  @ManyToOne({ entity: () => User2, cascade: [Cascade.ALL], primary: true, index: 'user2_sandwiches_user2_first_name_user2_last_name_index' })
+  @ManyToOne({ entity: () => User2, cascade: [Cascade.ALL], primary: true })
   user2!: User2;
 
-  @ManyToOne({ entity: () => Sandwich, cascade: [Cascade.ALL], primary: true, index: 'user2_sandwiches_sandwich_id_index' })
+  @ManyToOne({ entity: () => Sandwich, cascade: [Cascade.ALL], primary: true })
   sandwich!: Sandwich;
 
 }
@@ -543,7 +546,7 @@ export class Author2 {
   @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date;
 
-  @Property({ columnType: 'timestamp', length: 3, defaultRaw: \`current_timestamp(3)\` })
+  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
   updatedAt!: Date;
 
   @Index({ name: 'custom_idx_name_123' })
@@ -565,16 +568,16 @@ export class Author2 {
   @Property({ nullable: true })
   optional?: boolean;
 
-  @Property({ columnType: 'text[]', nullable: true })
+  @Property({ nullable: true })
   identities?: string[];
 
   @Index({ name: 'author2_born_index' })
   @Property({ columnType: 'date', nullable: true })
-  born?: Date;
+  born?: string;
 
   @Index({ name: 'born_time_idx' })
   @Property({ columnType: 'time', nullable: true })
-  bornTime?: Date;
+  bornTime?: string;
 
   @ManyToOne({ entity: () => Book2, cascade: [Cascade.REMOVE], nullable: true })
   favouriteBook?: Book2;
@@ -619,7 +622,7 @@ import { Publisher2 } from './Publisher2';
 @Entity()
 export class Book2 {
 
-  @PrimaryKey({ length: 36 })
+  @PrimaryKey({ columnType: 'uuid' })
   uuidPk!: string;
 
   @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
@@ -631,14 +634,14 @@ export class Book2 {
   @Property({ columnType: 'text', nullable: true })
   perex?: string;
 
-  @Property({ columnType: 'float8', nullable: true })
-  price?: number;
+  @Property({ columnType: 'numeric', nullable: true })
+  price?: string;
 
   @Property({ columnType: 'numeric', nullable: true })
-  double?: number;
+  double?: string;
 
-  @Property({ nullable: true })
-  meta?: object;
+  @Property({ columnType: 'jsonb', nullable: true })
+  meta?: any;
 
   @ManyToOne({ entity: () => Author2, cascade: [] })
   author!: Author2;
@@ -726,10 +729,10 @@ export class FooBar2 {
   @Property({ length: 255 })
   name!: string;
 
-  @OneToOne({ entity: () => FooBaz2, nullable: true, unique: 'foo_bar2_baz_id_unique' })
+  @OneToOne({ entity: () => FooBaz2, nullable: true })
   baz?: FooBaz2;
 
-  @OneToOne({ entity: () => FooBar2, nullable: true, unique: 'foo_bar2_foo_bar_id_unique' })
+  @OneToOne({ entity: () => FooBar2, nullable: true })
   fooBar?: FooBar2;
 
   @Property({ defaultRaw: \`current_timestamp(0)\` })
@@ -738,11 +741,11 @@ export class FooBar2 {
   @Property({ nullable: true })
   blob?: Buffer;
 
-  @Property({ columnType: 'text[]', nullable: true })
+  @Property({ nullable: true })
   array?: string[];
 
-  @Property({ nullable: true })
-  object?: object;
+  @Property({ columnType: 'jsonb', nullable: true })
+  object?: any;
 
 }
 ",
@@ -825,6 +828,9 @@ export class Publisher2 {
   @Property({ columnType: 'text', nullable: true })
   enum4?: string;
 
+  @Property({ columnType: 'text', nullable: true })
+  enum5?: string;
+
 }
 ",
   "import { Cascade, Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
@@ -857,7 +863,7 @@ export class Test2 {
   @Property({ length: 255, nullable: true })
   name?: string;
 
-  @OneToOne({ entity: () => Book2, cascade: [], nullable: true, unique: 'test2_book_uuid_pk_unique' })
+  @OneToOne({ entity: () => Book2, cascade: [], nullable: true })
   book?: Book2;
 
   @ManyToOne({ entity: () => Test2, nullable: true })
@@ -867,7 +873,7 @@ export class Test2 {
   version: number = 1;
 
   @Property({ columnType: 'polygon', nullable: true })
-  path?: string;
+  path?: unknown;
 
 }
 ",
@@ -891,10 +897,11 @@ export class Test2Bars {
 
 exports[`EntityGenerator generate entities from schema [sqlite]: sqlite-entity-dump 1`] = `
 Array [
-  "import { Entity, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book3 } from './Book3';
 
 @Entity()
+@Index({ name: 'author3_name_favourite_book_id_index', properties: ['name', 'favouriteBook'] })
 export class Author3 {
 
   @PrimaryKey()
@@ -919,7 +926,7 @@ export class Author3 {
   @Property()
   termsAccepted!: number;
 
-  @Property({ columnType: 'text', nullable: true })
+  @Property({ nullable: true })
   identities?: string;
 
   @Property({ columnType: 'date(3)', nullable: true })
@@ -928,7 +935,7 @@ export class Author3 {
   @Property({ columnType: 'time(3)', nullable: true })
   bornTime?: string;
 
-  @ManyToOne({ entity: () => Book3, nullable: true, index: 'author3_favourite_book_id_index' })
+  @ManyToOne({ entity: () => Book3, nullable: true, index: 'author3_favourite_book_idx' })
   favouriteBook?: Book3;
 
 }
@@ -952,11 +959,11 @@ export class Book3 {
   @Property({ default: '' })
   title!: string;
 
-  @ManyToOne({ entity: () => Author3, nullable: true, index: 'book3_author_id_index' })
-  author?: Author3;
+  @ManyToOne({ entity: () => Author3 })
+  author!: Author3;
 
-  @ManyToOne({ entity: () => Publisher3, nullable: true, index: 'book3_publisher_id_index' })
-  publisher?: Publisher3;
+  @ManyToOne({ entity: () => Publisher3 })
+  publisher!: Publisher3;
 
 }
 ",
@@ -970,11 +977,11 @@ export class Book3Tags {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Book3, cascade: [Cascade.ALL], nullable: true, index: 'book3_tags_book3_id_index' })
-  book3?: Book3;
+  @ManyToOne({ entity: () => Book3, cascade: [Cascade.ALL] })
+  book3!: Book3;
 
-  @ManyToOne({ entity: () => BookTag3, cascade: [Cascade.ALL], nullable: true, index: 'book3_tags_book_tag3_id_index' })
-  bookTag3?: BookTag3;
+  @ManyToOne({ entity: () => BookTag3, cascade: [Cascade.ALL] })
+  bookTag3!: BookTag3;
 
 }
 ",
@@ -1020,11 +1027,11 @@ export class Publisher3Tests {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Publisher3, cascade: [Cascade.ALL], nullable: true, index: 'publisher3_tests_publisher3_id_index' })
-  publisher3?: Publisher3;
+  @ManyToOne({ entity: () => Publisher3, cascade: [Cascade.ALL] })
+  publisher3!: Publisher3;
 
-  @ManyToOne({ entity: () => Test3, cascade: [Cascade.ALL], nullable: true, index: 'publisher3_tests_test3_id_index' })
-  test3?: Test3;
+  @ManyToOne({ entity: () => Test3, cascade: [Cascade.ALL] })
+  test3!: Test3;
 
 }
 ",

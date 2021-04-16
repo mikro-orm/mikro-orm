@@ -1,10 +1,11 @@
-import Knex, { Config, QueryBuilder, Raw, Client, Transaction as KnexTransaction } from 'knex';
+import { knex, Knex } from 'knex';
 import { readFile } from 'fs-extra';
 import {
   AnyEntity, Configuration, Connection, ConnectionOptions, EntityData, EventType, QueryResult,
   Transaction, TransactionEventBroadcaster, Utils,
 } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from './AbstractSqlPlatform';
+import { MonkeyPatchable } from './MonkeyPatchable';
 
 const parentTransactionSymbol = Symbol('parentTransaction');
 
@@ -39,7 +40,7 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
-  async transactional<T>(cb: (trx: Transaction<KnexTransaction>) => Promise<T>, ctx?: Transaction<KnexTransaction>, eventBroadcaster?: TransactionEventBroadcaster): Promise<T> {
+  async transactional<T>(cb: (trx: Transaction<Knex.Transaction>) => Promise<T>, ctx?: Transaction<Knex.Transaction>, eventBroadcaster?: TransactionEventBroadcaster): Promise<T> {
     const trx = await this.begin(ctx, eventBroadcaster);
 
     try {
@@ -53,7 +54,7 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
-  async begin(ctx?: KnexTransaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<KnexTransaction> {
+  async begin(ctx?: Knex.Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<Knex.Transaction> {
     if (!ctx) {
       await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionStart);
     }
@@ -69,7 +70,7 @@ export abstract class AbstractSqlConnection extends Connection {
     return trx;
   }
 
-  async commit(ctx: KnexTransaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
+  async commit(ctx: Knex.Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
     const runTrxHooks = isRootTransaction(ctx);
 
     if (runTrxHooks) {
@@ -84,7 +85,7 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
-  async rollback(ctx: KnexTransaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
+  async rollback(ctx: Knex.Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
     const runTrxHooks = isRootTransaction(ctx);
 
     if (runTrxHooks) {
@@ -98,8 +99,8 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
-  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | QueryBuilder | Raw, params: any[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction): Promise<T> {
-    if (Utils.isObject<QueryBuilder | Raw>(queryOrKnex)) {
+  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | Knex.QueryBuilder | Knex.Raw, params: any[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction): Promise<T> {
+    if (Utils.isObject<Knex.QueryBuilder | Knex.Raw>(queryOrKnex)) {
       ctx = ctx ?? ((queryOrKnex as any).client.transacting ? queryOrKnex : null);
       const q = queryOrKnex.toSQL();
       queryOrKnex = q.sql;
@@ -134,7 +135,7 @@ export abstract class AbstractSqlConnection extends Connection {
   }
 
   protected createKnexClient(type: string): Knex {
-    return Knex(this.getKnexOptions(type))
+    return knex(this.getKnexOptions(type))
       .on('query', data => {
         if (!data.__knexQueryUid) {
           this.logQuery(data.sql.toLowerCase().replace(/;$/, ''));
@@ -142,7 +143,7 @@ export abstract class AbstractSqlConnection extends Connection {
       });
   }
 
-  protected getKnexOptions(type: string): Config {
+  protected getKnexOptions(type: string): Knex.Config {
     return Utils.merge({
       client: type,
       connection: this.getConnectionOptions(),
@@ -170,10 +171,10 @@ export abstract class AbstractSqlConnection extends Connection {
    * support edge cases like `\\?` strings (as `positionBindings` was removing the `\\`)
    */
   private patchKnexClient(): void {
-    const query = Client.prototype.query;
+    const query = MonkeyPatchable.Client.prototype.query;
 
     /* istanbul ignore next */
-    Client.prototype.query = function (this: any, connection: any, obj: any) {
+    MonkeyPatchable.Client.prototype.query = function (this: any, connection: any, obj: any) {
       if (typeof obj === 'string') {
         obj = { sql: obj };
       }
@@ -186,11 +187,11 @@ export abstract class AbstractSqlConnection extends Connection {
       const { __knexUid, __knexTxId } = connection;
       this.emit('query', Object.assign({ __knexUid, __knexTxId }, obj));
 
-      return this._query(connection, obj).catch((err: Error) => {
-        err.message = this._formatQuery(obj.sql, obj.bindings) + ' - ' + err.message;
-        this.emit('query-error', err, Object.assign({ __knexUid, __knexTxId }, obj));
-        throw err;
-      });
+      return MonkeyPatchable.QueryExecutioner.executeQuery(connection, obj, this);
+    };
+
+    MonkeyPatchable.TableCompiler.prototype.raw = function (this: any, query: string) {
+      this.pushQuery(query);
     };
   }
 

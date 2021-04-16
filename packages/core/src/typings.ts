@@ -5,7 +5,7 @@ import { Type } from './types';
 import { Platform } from './platforms';
 import { Configuration, EntityComparator, Utils } from './utils';
 
-export type Constructor<T> = new (...args: any[]) => T;
+export type Constructor<T = unknown> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type NonFunctionPropertyNames<T> = NonNullable<{ [K in keyof T]: T[K] extends Function ? never : K }[keyof T]>;
@@ -129,11 +129,14 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   targetMeta?: EntityMetadata;
   columnTypes: string[];
   customType: Type<any>;
-  primary: boolean;
+  autoincrement?: boolean;
+  primary?: boolean;
   serializedPrimaryKey: boolean;
   lazy?: boolean;
   array?: boolean;
-  length?: any;
+  length?: number;
+  precision?: number;
+  scale?: number;
   reference: ReferenceType;
   wrappedReference?: boolean;
   fieldNames: string[];
@@ -150,7 +153,7 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   unique?: boolean | string;
   nullable?: boolean;
   inherited?: boolean;
-  unsigned: boolean;
+  unsigned?: boolean;
   mapToPk?: boolean;
   persist?: boolean;
   hidden?: boolean;
@@ -245,7 +248,7 @@ export class EntityMetadata<T extends AnyEntity<T> = any> {
   }
 
   private initIndexes(prop: EntityProperty<T>): void {
-    const simpleIndex = this.indexes.find(index => index.properties === prop.name && !index.options && !index.type);
+    const simpleIndex = this.indexes.find(index => index.properties === prop.name && !index.options && !index.type && !index.expression);
     const simpleUnique = this.uniques.find(index => index.properties === prop.name && !index.options);
     const owner = prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
 
@@ -278,6 +281,7 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   name?: string; // abstract classes do not have a name, but once discovery ends, we have only non-abstract classes stored
   className: string;
   tableName: string;
+  schema?: string;
   pivotTable: boolean;
   discriminatorColumn?: string;
   discriminatorValue?: string;
@@ -298,7 +302,7 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   relations: EntityProperty<T>[];
   comparableProps: EntityProperty<T>[]; // for EntityComparator
   hydrateProps: EntityProperty<T>[]; // for Hydrator
-  indexes: { properties: (keyof T & string) | (keyof T & string)[]; name?: string; type?: string; options?: Dictionary }[];
+  indexes: { properties: (keyof T & string) | (keyof T & string)[]; name?: string; type?: string; options?: Dictionary; expression?: string }[];
   uniques: { properties: (keyof T & string) | (keyof T & string)[]; name?: string; options?: Dictionary }[];
   customRepository: () => Constructor<EntityRepository<T>>;
   hooks: Partial<Record<keyof typeof EventType, (string & keyof T)[]>>;
@@ -324,7 +328,7 @@ export interface ISchemaGenerator {
   getUpdateSchemaSQL(wrap?: boolean, safe?: boolean, dropDb?: boolean, dropTables?: boolean): Promise<string>;
   createDatabase(name: string): Promise<void>;
   dropDatabase(name: string): Promise<void>;
-  execute(sql: string): Promise<void>;
+  execute(sql: string, wrap?: boolean): Promise<void>;
 }
 
 export interface IEntityGenerator {

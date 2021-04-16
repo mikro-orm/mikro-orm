@@ -1,5 +1,5 @@
 import { v4 } from 'uuid';
-import { Cascade, Collection, Entity, Filter, Formula, IdentifiedReference, JsonType, ManyToMany, ManyToOne, OneToOne, PrimaryKey, Property, QueryOrder } from '@mikro-orm/core';
+import { Cascade, Collection, Entity, Filter, Formula, IdentifiedReference, ManyToMany, ManyToOne, OneToOne, PrimaryKey, Property, QueryOrder, t } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
@@ -12,8 +12,8 @@ import { Test2 } from './Test2';
 @Filter({ name: 'writtenBy', cond: args => ({ author: { name: args.name } }) })
 export class Book2 {
 
-  @PrimaryKey({ name: 'uuid_pk', length: 36 })
-  uuid: string = v4();
+  @PrimaryKey({ name: 'uuid_pk', type: t.uuid })
+  uuid = v4();
 
   @Property({ defaultRaw: 'current_timestamp(3)', length: 3 })
   createdAt: Date = new Date();
@@ -21,19 +21,19 @@ export class Book2 {
   @Property({ nullable: true, default: '' })
   title?: string;
 
-  @Property({ type: 'text', nullable: true, lazy: true })
+  @Property({ type: t.text, nullable: true, lazy: true })
   perex?: string;
 
-  @Property({ type: 'float', nullable: true })
+  @Property({ type: t.decimal, precision: 8, scale: 2, nullable: true })
   price?: number;
 
   @Formula(alias => `${alias}.price * 1.19`)
   priceTaxed?: number;
 
-  @Property({ type: 'double', nullable: true })
+  @Property({ type: t.double, nullable: true })
   double?: number;
 
-  @Property({ nullable: true, type: JsonType })
+  @Property({ nullable: true, type: t.json })
   meta?: Book2Meta;
 
   @ManyToOne({ entity: 'Author2', cascade: [] })

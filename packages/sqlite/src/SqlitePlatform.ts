@@ -7,12 +7,8 @@ import { SqliteExceptionConverter } from './SqliteExceptionConverter';
 
 export class SqlitePlatform extends AbstractSqlPlatform {
 
-  protected readonly schemaHelper = new SqliteSchemaHelper();
+  protected readonly schemaHelper: SqliteSchemaHelper = new SqliteSchemaHelper(this);
   protected readonly exceptionConverter = new SqliteExceptionConverter();
-
-  requiresNullableForAlteringColumn() {
-    return true;
-  }
 
   usesDefaultKeyword(): boolean {
     return false;
@@ -20,6 +16,43 @@ export class SqlitePlatform extends AbstractSqlPlatform {
 
   getCurrentTimestampSQL(length: number): string {
     return super.getCurrentTimestampSQL(0);
+  }
+
+  getDateTimeTypeDeclarationSQL(column: { length?: number }): string {
+    return super.getDateTimeTypeDeclarationSQL({ length: 0 });
+  }
+
+  getEnumTypeDeclarationSQL(column: { items?: unknown[]; fieldNames: string[]; length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
+    /* istanbul ignore next */
+    if (column.items?.every(item => Utils.isString(item))) {
+      return `text check (${this.quoteIdentifier(column.fieldNames[0])} in ('${column.items.join("', '")}')`;
+    }
+
+    return this.getTinyIntTypeDeclarationSQL(column);
+  }
+
+  getTinyIntTypeDeclarationSQL(column: { length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
+    return this.getIntegerTypeDeclarationSQL(column);
+  }
+
+  getSmallIntTypeDeclarationSQL(column: { length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
+    return this.getIntegerTypeDeclarationSQL(column);
+  }
+
+  getIntegerTypeDeclarationSQL(column: { length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
+    return 'integer';
+  }
+
+  getFloatDeclarationSQL(): string {
+    return 'real';
+  }
+
+  getBooleanTypeDeclarationSQL(): string {
+    return 'integer';
+  }
+
+  getVarcharTypeDeclarationSQL(column: { length?: number }): string {
+    return 'text';
   }
 
   convertsJsonAutomatically(): boolean {
@@ -72,6 +105,10 @@ export class SqlitePlatform extends AbstractSqlPlatform {
   getSearchJsonPropertyKey(path: string[], type: string): string {
     const [a, ...b] = path;
     return `json_extract(${this.quoteIdentifier(a)}, '$.${b.join('.')}')`;
+  }
+
+  getDefaultIntegrityRule(): string {
+    return 'no action';
   }
 
 }

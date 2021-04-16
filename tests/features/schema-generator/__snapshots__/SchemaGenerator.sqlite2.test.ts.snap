@@ -1,0 +1,135 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SchemaGenerator [sqlite2] generate schema from metadata [sqlite2]: sqlite2-create-schema-dump 1`] = `
+"pragma foreign_keys = off;
+
+create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);
+
+create table \`foo_bar4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null default 'asd', \`baz_id\` integer null, \`foo_bar_id\` integer null, \`version\` integer not null default 1, \`blob\` blob null, \`array\` text null, \`object\` json null, constraint \`foo_bar4_baz_id_foreign\` foreign key(\`baz_id\`) references \`foo_baz4\`(\`id\`) on delete set null on update cascade, constraint \`foo_bar4_foo_bar_id_foreign\` foreign key(\`foo_bar_id\`) references \`foo_bar4\`(\`id\`) on delete set null on update cascade);
+create index \`foo_bar4_baz_id_index\` on \`foo_bar4\` (\`baz_id\`);
+create unique index \`foo_bar4_baz_id_unique\` on \`foo_bar4\` (\`baz_id\`);
+create index \`foo_bar4_foo_bar_id_index\` on \`foo_bar4\` (\`foo_bar_id\`);
+create unique index \`foo_bar4_foo_bar_id_unique\` on \`foo_bar4\` (\`foo_bar_id\`);
+
+create table \`test4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text null, \`version\` integer not null default 1);
+
+create table \`publisher4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null default 'asd', \`type\` text check (\`type\` in ('local', 'global')) not null default 'local', \`enum3\` integer null);
+
+create table \`publisher4_tests\` (\`id\` integer not null primary key autoincrement, \`publisher4_id\` integer not null, \`test4_id\` integer not null, constraint \`publisher4_tests_publisher4_id_foreign\` foreign key(\`publisher4_id\`) references \`publisher4\`(\`id\`) on delete cascade on update cascade, constraint \`publisher4_tests_test4_id_foreign\` foreign key(\`test4_id\`) references \`test4\`(\`id\`) on delete cascade on update cascade);
+create index \`publisher4_tests_publisher4_id_index\` on \`publisher4_tests\` (\`publisher4_id\`);
+create index \`publisher4_tests_test4_id_index\` on \`publisher4_tests\` (\`test4_id\`);
+
+create table \`book_tag4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);
+
+create table \`author4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`email\` text not null, \`age\` integer null, \`terms_accepted\` integer not null default 0, \`identities\` text null, \`born\` date(3) null, \`born_time\` time(3) null, \`favourite_book_id\` integer null, constraint \`author4_favourite_book_id_foreign\` foreign key(\`favourite_book_id\`) references \`book4\`(\`id\`) on delete set null on update cascade);
+create unique index \`author4_email_unique\` on \`author4\` (\`email\`);
+create index \`author4_favourite_book_id_index\` on \`author4\` (\`favourite_book_id\`);
+
+create table \`book4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`title\` text not null, \`price\` real null, \`author_id\` integer null, \`publisher_id\` integer null, \`meta\` json null, constraint \`book4_author_id_foreign\` foreign key(\`author_id\`) references \`author4\`(\`id\`) on delete set null on update cascade, constraint \`book4_publisher_id_foreign\` foreign key(\`publisher_id\`) references \`publisher4\`(\`id\`) on delete set null on update cascade);
+create index \`book4_author_id_index\` on \`book4\` (\`author_id\`);
+create index \`book4_publisher_id_index\` on \`book4\` (\`publisher_id\`);
+
+create table \`tags_ordered\` (\`id\` integer not null primary key autoincrement, \`book4_id\` integer not null, \`book_tag4_id\` integer not null, constraint \`tags_ordered_book4_id_foreign\` foreign key(\`book4_id\`) references \`book4\`(\`id\`) on delete cascade on update cascade, constraint \`tags_ordered_book_tag4_id_foreign\` foreign key(\`book_tag4_id\`) references \`book_tag4\`(\`id\`) on delete cascade on update cascade);
+create index \`tags_ordered_book4_id_index\` on \`tags_ordered\` (\`book4_id\`);
+create index \`tags_ordered_book_tag4_id_index\` on \`tags_ordered\` (\`book_tag4_id\`);
+
+create table \`tags_unordered\` (\`book4_id\` integer not null, \`book_tag4_id\` integer not null, constraint \`tags_unordered_book4_id_foreign\` foreign key(\`book4_id\`) references \`book4\`(\`id\`) on delete cascade on update cascade, constraint \`tags_unordered_book_tag4_id_foreign\` foreign key(\`book_tag4_id\`) references \`book_tag4\`(\`id\`) on delete cascade on update cascade, primary key (\`book4_id\`, \`book_tag4_id\`));
+create index \`tags_unordered_book4_id_index\` on \`tags_unordered\` (\`book4_id\`);
+create index \`tags_unordered_book_tag4_id_index\` on \`tags_unordered\` (\`book_tag4_id\`);
+
+pragma foreign_keys = on;
+"
+`;
+
+exports[`SchemaGenerator [sqlite2] generate schema from metadata [sqlite2]: sqlite2-drop-schema-dump-1 1`] = `
+"drop table if exists \`tags_unordered\`;
+drop table if exists \`tags_ordered\`;
+drop table if exists \`book4\`;
+drop table if exists \`author4\`;
+drop table if exists \`book_tag4\`;
+drop table if exists \`publisher4_tests\`;
+drop table if exists \`publisher4\`;
+drop table if exists \`test4\`;
+drop table if exists \`foo_bar4\`;
+drop table if exists \`foo_baz4\`;
+drop table if exists \`mikro_orm_migrations\`;
+
+"
+`;
+
+exports[`SchemaGenerator [sqlite2] generate schema from metadata [sqlite2]: sqlite2-drop-schema-dump-2 1`] = `
+"pragma foreign_keys = off;
+
+drop table if exists \`tags_unordered\`;
+drop table if exists \`tags_ordered\`;
+drop table if exists \`book4\`;
+drop table if exists \`author4\`;
+drop table if exists \`book_tag4\`;
+drop table if exists \`publisher4_tests\`;
+drop table if exists \`publisher4\`;
+drop table if exists \`test4\`;
+drop table if exists \`foo_bar4\`;
+drop table if exists \`foo_baz4\`;
+
+pragma foreign_keys = on;
+"
+`;
+
+exports[`SchemaGenerator [sqlite2] generate schema from metadata [sqlite2]: sqlite2-schema-dump 1`] = `
+"pragma foreign_keys = off;
+
+drop table if exists \`tags_unordered\`;
+drop table if exists \`tags_ordered\`;
+drop table if exists \`book4\`;
+drop table if exists \`author4\`;
+drop table if exists \`book_tag4\`;
+drop table if exists \`publisher4_tests\`;
+drop table if exists \`publisher4\`;
+drop table if exists \`test4\`;
+drop table if exists \`foo_bar4\`;
+drop table if exists \`foo_baz4\`;
+
+create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);
+
+create table \`foo_bar4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null default 'asd', \`baz_id\` integer null, \`foo_bar_id\` integer null, \`version\` integer not null default 1, \`blob\` blob null, \`array\` text null, \`object\` json null, constraint \`foo_bar4_baz_id_foreign\` foreign key(\`baz_id\`) references \`foo_baz4\`(\`id\`) on delete set null on update cascade, constraint \`foo_bar4_foo_bar_id_foreign\` foreign key(\`foo_bar_id\`) references \`foo_bar4\`(\`id\`) on delete set null on update cascade);
+create index \`foo_bar4_baz_id_index\` on \`foo_bar4\` (\`baz_id\`);
+create unique index \`foo_bar4_baz_id_unique\` on \`foo_bar4\` (\`baz_id\`);
+create index \`foo_bar4_foo_bar_id_index\` on \`foo_bar4\` (\`foo_bar_id\`);
+create unique index \`foo_bar4_foo_bar_id_unique\` on \`foo_bar4\` (\`foo_bar_id\`);
+
+create table \`test4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text null, \`version\` integer not null default 1);
+
+create table \`publisher4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null default 'asd', \`type\` text check (\`type\` in ('local', 'global')) not null default 'local', \`enum3\` integer null);
+
+create table \`publisher4_tests\` (\`id\` integer not null primary key autoincrement, \`publisher4_id\` integer not null, \`test4_id\` integer not null, constraint \`publisher4_tests_publisher4_id_foreign\` foreign key(\`publisher4_id\`) references \`publisher4\`(\`id\`) on delete cascade on update cascade, constraint \`publisher4_tests_test4_id_foreign\` foreign key(\`test4_id\`) references \`test4\`(\`id\`) on delete cascade on update cascade);
+create index \`publisher4_tests_publisher4_id_index\` on \`publisher4_tests\` (\`publisher4_id\`);
+create index \`publisher4_tests_test4_id_index\` on \`publisher4_tests\` (\`test4_id\`);
+
+create table \`book_tag4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);
+
+create table \`author4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`email\` text not null, \`age\` integer null, \`terms_accepted\` integer not null default 0, \`identities\` text null, \`born\` date(3) null, \`born_time\` time(3) null, \`favourite_book_id\` integer null, constraint \`author4_favourite_book_id_foreign\` foreign key(\`favourite_book_id\`) references \`book4\`(\`id\`) on delete set null on update cascade);
+create unique index \`author4_email_unique\` on \`author4\` (\`email\`);
+create index \`author4_favourite_book_id_index\` on \`author4\` (\`favourite_book_id\`);
+
+create table \`book4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`title\` text not null, \`price\` real null, \`author_id\` integer null, \`publisher_id\` integer null, \`meta\` json null, constraint \`book4_author_id_foreign\` foreign key(\`author_id\`) references \`author4\`(\`id\`) on delete set null on update cascade, constraint \`book4_publisher_id_foreign\` foreign key(\`publisher_id\`) references \`publisher4\`(\`id\`) on delete set null on update cascade);
+create index \`book4_author_id_index\` on \`book4\` (\`author_id\`);
+create index \`book4_publisher_id_index\` on \`book4\` (\`publisher_id\`);
+
+create table \`tags_ordered\` (\`id\` integer not null primary key autoincrement, \`book4_id\` integer not null, \`book_tag4_id\` integer not null, constraint \`tags_ordered_book4_id_foreign\` foreign key(\`book4_id\`) references \`book4\`(\`id\`) on delete cascade on update cascade, constraint \`tags_ordered_book_tag4_id_foreign\` foreign key(\`book_tag4_id\`) references \`book_tag4\`(\`id\`) on delete cascade on update cascade);
+create index \`tags_ordered_book4_id_index\` on \`tags_ordered\` (\`book4_id\`);
+create index \`tags_ordered_book_tag4_id_index\` on \`tags_ordered\` (\`book_tag4_id\`);
+
+create table \`tags_unordered\` (\`book4_id\` integer not null, \`book_tag4_id\` integer not null, constraint \`tags_unordered_book4_id_foreign\` foreign key(\`book4_id\`) references \`book4\`(\`id\`) on delete cascade on update cascade, constraint \`tags_unordered_book_tag4_id_foreign\` foreign key(\`book_tag4_id\`) references \`book_tag4\`(\`id\`) on delete cascade on update cascade, primary key (\`book4_id\`, \`book_tag4_id\`));
+create index \`tags_unordered_book4_id_index\` on \`tags_unordered\` (\`book4_id\`);
+create index \`tags_unordered_book_tag4_id_index\` on \`tags_unordered\` (\`book_tag4_id\`);
+
+pragma foreign_keys = on;
+"
+`;
+
+exports[`SchemaGenerator [sqlite2] generate schema from metadata [sqlite2]: sqlite2-update-schema-dump 1`] = `
+"pragma foreign_keys = off;
+
+pragma foreign_keys = on;
+"
+`;

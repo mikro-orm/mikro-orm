@@ -39,7 +39,7 @@ export class ArrayType<T extends string | number = string> extends Type<T[] | nu
   }
 
   compareAsType(): string {
-    return 'array';
+    return 'string[]';
   }
 
   toJSON(value: T[]): T[] {

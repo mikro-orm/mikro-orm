@@ -1,6 +1,7 @@
 import { ensureDir, readFile } from 'fs-extra';
 import { dirname } from 'path';
 import { AbstractSqlConnection, Knex, MonkeyPatchable } from '@mikro-orm/knex';
+import { Dictionary } from '@mikro-orm/core';
 
 export class SqliteConnection extends AbstractSqlConnection {
 
@@ -55,7 +56,7 @@ export class SqliteConnection extends AbstractSqlConnection {
    * monkey patch knex' sqlite Dialect so it returns inserted id when doing raw insert query
    */
   private getPatchedDialect() {
-    const { Sqlite3Dialect } = MonkeyPatchable;
+    const { Sqlite3Dialect, Sqlite3DialectTableCompiler } = MonkeyPatchable;
     const processResponse = Sqlite3Dialect.prototype.processResponse;
     Sqlite3Dialect.prototype.processResponse = (obj: any, runner: any) => {
       if (obj.method === 'raw' && obj.sql.trim().match(SqliteConnection.RUN_QUERY_RE)) {
@@ -85,6 +86,40 @@ export class SqliteConnection extends AbstractSqlConnection {
           return resolve(obj);
         });
       });
+    };
+
+    /* istanbul ignore next */
+    Sqlite3DialectTableCompiler.prototype.foreign = function (this: typeof Sqlite3DialectTableCompiler, foreignInfo: Dictionary) {
+      foreignInfo.column = this.formatter.columnize(foreignInfo.column);
+      foreignInfo.column = Array.isArray(foreignInfo.column)
+        ? foreignInfo.column
+        : [foreignInfo.column];
+      foreignInfo.inTable = this.formatter.columnize(foreignInfo.inTable);
+      foreignInfo.references = this.formatter.columnize(foreignInfo.references);
+
+      const addColumnQuery = this.sequence.find((query: { sql: string }) => query.sql.includes(`add column ${foreignInfo.column[0]}`));
+
+      // no need for temp tables if we just add a column
+      if (addColumnQuery) {
+        const onUpdate = foreignInfo.onUpdate ? ` on update ${foreignInfo.onUpdate}` : '';
+        const onDelete = foreignInfo.onDelete ? ` on delete ${foreignInfo.onDelete}` : '';
+        addColumnQuery.sql += ` constraint ${foreignInfo.keyName} references ${foreignInfo.inTable} (${foreignInfo.references})${onUpdate}${onDelete}`;
+        return;
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      const compiler = this;
+
+      if (this.method !== 'create' && this.method !== 'createIfNot') {
+        this.pushQuery({
+          sql: `PRAGMA table_info(${this.tableName()})`,
+          statementsProducer(pragma: any, connection: any) {
+            return compiler.client
+              .ddl(compiler, pragma, connection)
+              .foreign(foreignInfo);
+          },
+        });
+      }
     };
 
     return Sqlite3Dialect;

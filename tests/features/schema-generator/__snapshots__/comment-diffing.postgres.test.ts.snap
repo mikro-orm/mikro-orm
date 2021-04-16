@@ -1,0 +1,24 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`comment diffing in postgres schema generator updates comments 1`] = `
+"comment on column \\"book\\".\\"id\\" is 'this is primary key';
+comment on column \\"book\\".\\"name\\" is 'this is name of book';
+comment on table \\"book\\" is 'this is books table';
+
+"
+`;
+
+exports[`comment diffing in postgres schema generator updates comments 2`] = `
+"comment on column \\"book\\".\\"id\\" is 'new comment';
+comment on column \\"book\\".\\"name\\" is null;
+comment on table \\"book\\" is 'table comment';
+
+"
+`;
+
+exports[`comment diffing in postgres schema generator updates comments 3`] = `
+"comment on column \\"book\\".\\"id\\" is null;
+comment on table \\"book\\" is '';
+
+"
+`;

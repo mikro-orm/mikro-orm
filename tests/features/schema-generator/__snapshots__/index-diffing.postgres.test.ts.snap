@@ -1,0 +1,48 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`indexes on FKs in postgres (GH 1518) schema generator respect indexes on FKs on column update 1`] = `
+"create table \\"book\\" (\\"id\\" serial primary key, \\"author1_id\\" int not null, \\"author2_id\\" int not null, \\"author3_id\\" int not null, \\"author4_id\\" int not null, \\"author5_id\\" int not null, \\"title\\" varchar(255) not null, \\"isbn\\" varchar(255) not null);
+alter table \\"book\\" add constraint \\"book_isbn_unique\\" unique (\\"isbn\\");
+
+alter table \\"book\\" add constraint \\"book_author1_id_foreign\\" foreign key (\\"author1_id\\") references \\"author\\" (\\"id\\") on update cascade;
+alter table \\"book\\" add constraint \\"book_author2_id_foreign\\" foreign key (\\"author2_id\\") references \\"author\\" (\\"id\\") on update cascade;
+alter table \\"book\\" add constraint \\"book_author3_id_foreign\\" foreign key (\\"author3_id\\") references \\"author\\" (\\"id\\") on update cascade;
+alter table \\"book\\" add constraint \\"book_author4_id_foreign\\" foreign key (\\"author4_id\\") references \\"author\\" (\\"id\\") on update cascade;
+alter table \\"book\\" add constraint \\"book_author5_id_foreign\\" foreign key (\\"author5_id\\") references \\"author\\" (\\"id\\") on update cascade;
+
+"
+`;
+
+exports[`indexes on FKs in postgres (GH 1518) schema generator respect indexes on FKs on column update 2`] = `
+"create index \\"book_author1_id_index\\" on \\"book\\" (\\"author1_id\\");
+create index \\"book_author2_id_index\\" on \\"book\\" (\\"author2_id\\");
+create index \\"book_author3_id_index\\" on \\"book\\" (\\"author3_id\\");
+create index \\"book_author4_id_index\\" on \\"book\\" (\\"author4_id\\");
+create index \\"book_author5_id_index\\" on \\"book\\" (\\"author5_id\\");
+create index \\"custom_index_expr\\" on \\"book\\" (\\"title\\");
+alter table \\"book\\" drop constraint \\"book_isbn_unique\\";
+alter table \\"book\\" add constraint \\"isbn_unique_constr\\" unique (\\"isbn\\");
+
+"
+`;
+
+exports[`indexes on FKs in postgres (GH 1518) schema generator respect indexes on FKs on column update 3`] = `
+"create index \\"lol31\\" on \\"book\\" (\\"author3_id\\");
+alter index \\"book_author3_id_index\\" rename to \\"lol41\\";
+alter index \\"book_author5_id_index\\" rename to \\"auth_idx5\\";
+alter table \\"book\\" drop constraint \\"isbn_unique_constr\\";
+alter table \\"book\\" add constraint \\"book_isbn_unique\\" unique (\\"isbn\\");
+alter index \\"custom_index_expr\\" rename to \\"custom_index_expr2\\";
+
+"
+`;
+
+exports[`indexes on FKs in postgres (GH 1518) schema generator respect indexes on FKs on column update 4`] = `
+"drop index \\"lol41\\";
+drop index \\"custom_index_expr2\\";
+drop index \\"lol31\\";
+create index \\"lol42\\" on \\"book\\" (\\"author3_id\\");
+create index \\"lol32\\" on \\"book\\" (\\"author3_id\\");
+
+"
+`;

@@ -53,8 +53,8 @@ describe('GH issue 450', () => {
     });
     await new SchemaGenerator(orm.em).ensureDatabase();
 
-    await orm.em.getConnection().execute('create schema if not exists auth');
-    await orm.em.getConnection().execute('create schema if not exists operations');
+    await orm.em.getConnection().execute('drop schema if exists auth');
+    await orm.em.getConnection().execute('drop schema if exists operations');
     await orm.em.getConnection().execute('set search_path to auth, operations, public');
 
     await new SchemaGenerator(orm.em).dropSchema();

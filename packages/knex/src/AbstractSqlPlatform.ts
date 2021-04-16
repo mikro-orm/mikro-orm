@@ -11,6 +11,10 @@ export abstract class AbstractSqlPlatform extends Platform {
     return true;
   }
 
+  indexForeignKeys() {
+    return true;
+  }
+
   getRepositoryClass<T>(): Constructor<EntityRepository<T>> {
     return SqlEntityRepository as Constructor<EntityRepository<T>>;
   }
@@ -76,6 +80,10 @@ export abstract class AbstractSqlPlatform extends Platform {
 
   isRaw(value: any): boolean {
     return super.isRaw(value) || (typeof value === 'object' && value !== null && value.client && value.ref && value.constructor.name === 'Ref');
+  }
+
+  supportsSchemas(): boolean {
+    return false;
   }
 
 }
