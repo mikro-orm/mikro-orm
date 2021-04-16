@@ -88,7 +88,7 @@
     "extends": [
       "config:base"
     ],
-    "semanticCommits": true,
+    "semanticCommits": "enabled",
     "packageRules": [
       {
         "depTypeList": ["devDependencies"],
@@ -98,7 +98,7 @@
     "schedule": ["every weekday"]
   },
   "engines": {
-    "node": ">= 10.13.0"
+    "node": ">= 12.17.0 || >= 13.10.0"
   },
   "devDependencies": {
     "@commitlint/cli": "12.1.1",
