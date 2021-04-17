@@ -91,11 +91,15 @@
     "semanticCommits": "enabled",
     "packageRules": [
       {
-        "depTypeList": ["devDependencies"],
+        "depTypeList": [
+          "devDependencies"
+        ],
         "automerge": true
       }
     ],
-    "schedule": ["every weekday"]
+    "schedule": [
+      "every weekday"
+    ]
   },
   "engines": {
     "node": ">= 12.17.0 || >= 13.10.0"
@@ -121,6 +125,7 @@
     "eslint": "7.24.0",
     "eslint-plugin-jsdoc": "32.3.0",
     "fs-extra": "9.1.0",
+    "gen-esm-wrapper": "^1.1.1",
     "husky": "6.0.0",
     "jest": "26.6.3",
     "lerna": "4.0.0",
