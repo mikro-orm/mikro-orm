@@ -73,12 +73,12 @@ describe('QueryHelper', () => {
     const test = Test2.create('t123');
     test.id = 123;
     expect(QueryHelper.processParams({ test })).toEqual({ test: test.id });
-    expect(QueryHelper.processParams(test)).toEqual({ id: test.id });
+    expect(QueryHelper.processParams(test)).toEqual(test.id);
     const author = new Author2('name', 'mail');
     const book = new Book2('test', author);
-    expect(QueryHelper.processParams(book)).toEqual({ uuid: book.uuid });
+    expect(QueryHelper.processParams(book)).toEqual(book.uuid);
     const bookRef = Reference.create(book);
-    expect(QueryHelper.processParams(bookRef)).toEqual({ uuid: bookRef.uuid });
+    expect(QueryHelper.processParams(bookRef)).toEqual(bookRef.uuid);
     expect(QueryHelper.processParams({ book: bookRef })).toEqual({ book: bookRef.uuid });
     const field = undefined;
     expect(QueryHelper.processParams({ field })).toEqual({ field: null });
@@ -89,12 +89,7 @@ describe('QueryHelper', () => {
     bar.id = 3;
     const baz = new FooBaz2('baz');
     baz.id = 7;
-    expect(QueryHelper.processParams({ field: new FooParam2(bar, baz, 'val') })).toEqual({
-      field: {
-        bar: 3,
-        baz: 7,
-      },
-    });
+    expect(QueryHelper.processParams({ field: new FooParam2(bar, baz, 'val') })).toEqual({ field: [3, 7] });
   });
 
   test('test array conversion to $in query', async () => {

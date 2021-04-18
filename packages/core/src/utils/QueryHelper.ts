@@ -10,13 +10,13 @@ export class QueryHelper {
 
   static readonly SUPPORTED_OPERATORS = ['>', '<', '<=', '>=', '!', '!=', ':in', ':nin', ':gt', ':gte', ':lt', ':lte', ':ne', ':not'];
 
-  static processParams(params: any, root?: boolean): any {
+  static processParams(params: any): any {
     if (Reference.isReference(params)) {
       params = params.unwrap();
     }
 
     if (Utils.isEntity(params)) {
-      return QueryHelper.processEntity(params, root);
+      return params.__helper!.__primaryKeyCond;
     }
 
     if (params === undefined) {
@@ -24,7 +24,7 @@ export class QueryHelper {
     }
 
     if (Array.isArray(params)) {
-      return params.map(item => QueryHelper.processParams(item, true));
+      return params.map(item => QueryHelper.processParams(item));
     }
 
     if (Utils.isPlainObject(params)) {
@@ -36,7 +36,7 @@ export class QueryHelper {
 
   static processObjectParams(params: Dictionary = {}): any {
     Object.keys(params).forEach(k => {
-      params[k] = QueryHelper.processParams(params[k], !!k);
+      params[k] = QueryHelper.processParams(params[k]);
     });
 
     return params;
@@ -78,7 +78,7 @@ export class QueryHelper {
       QueryHelper.inlinePrimaryKeyObjects(where as Dictionary, meta, metadata);
     }
 
-    where = QueryHelper.processParams(where, true) || {};
+    where = QueryHelper.processParams(where) || {};
 
     if (!root && Utils.isPrimaryKey(where)) {
       return where;
@@ -213,16 +213,6 @@ export class QueryHelper {
     }
 
     return prop.customType.convertToDatabaseValue(cond, platform, fromQuery);
-  }
-
-  private static processEntity(entity: AnyEntity, root?: boolean): any {
-    const wrapped = entity.__helper!;
-
-    if (root || wrapped.__meta.compositePK) {
-      return wrapped.getPrimaryKey();
-    }
-
-    return Utils.getPrimaryKeyCond(entity, wrapped.__meta.primaryKeys);
   }
 
   private static processExpression<T>(expr: string, value: T): Dictionary<T> {
