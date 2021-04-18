@@ -11,13 +11,13 @@ jobs:
 
     steps:
       - name: Checkout Source code
-        if: github.ref == 'refs/heads/master' && matrix.node-version == '15.x' && steps.changed_packages.outputs.changed_packages != '0'
+        if: github.ref == 'refs/heads/master' && matrix.node-version == '15.x'
         uses: actions/checkout@v2
         with:
           fetch-depth: 0 # we need to pull everything to have correct dev version suffix
           ref: master
       - name: Checkout Source code
-        if: github.ref != 'refs/heads/master' || matrix.node-version != '15.x' || steps.changed_packages.outputs.changed_packages == '0'
+        if: github.ref != 'refs/heads/master' || matrix.node-version != '15.x'
         uses: actions/checkout@v2
 
       - name: Use Node.js ${{ matrix.node-version }}
