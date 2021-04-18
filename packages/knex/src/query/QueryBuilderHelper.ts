@@ -17,6 +17,9 @@ import {
 import { QueryType } from './enums';
 import { JoinOptions } from '../typings';
 
+/**
+ * @internal
+ */
 export class QueryBuilderHelper {
 
   constructor(private readonly entityName: string,

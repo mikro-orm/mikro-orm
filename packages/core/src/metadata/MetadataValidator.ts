@@ -4,6 +4,9 @@ import { MetadataError } from '../errors';
 import { ReferenceType } from '../enums';
 import { MetadataStorage } from './MetadataStorage';
 
+/**
+ * @internal
+ */
 export class MetadataValidator {
 
   /**

@@ -5,6 +5,9 @@ import { ScalarCriteriaNode } from './ScalarCriteriaNode';
 import { CriteriaNode } from './CriteriaNode';
 import { ICriteriaNode } from '../typings';
 
+/**
+ * @internal
+ */
 export class CriteriaNodeFactory {
 
   static createNode(metadata: MetadataStorage, entityName: string, payload: any, parent?: ICriteriaNode, key?: string): ICriteriaNode {

@@ -175,16 +175,19 @@
       "label": "Reference",
       "items": [
         {
-          "type": "doc",
-          "id": "version-4.5/entity-manager-api"
+          "type": "link",
+          "label": "EntityManager API",
+          "href": "/docs/api/classes/core.entitymanager"
         },
         {
-          "type": "doc",
-          "id": "version-4.5/repositories-api"
+          "type": "link",
+          "label": "EntityRepository API",
+          "href": "/docs/api/classes/core.entityrepository"
         },
         {
-          "type": "doc",
-          "id": "version-4.5/query-builder-api"
+          "type": "link",
+          "label": "QueryBuilder API",
+          "href": "/docs/api/classes/knex.querybuilder"
         },
         {
           "type": "doc",

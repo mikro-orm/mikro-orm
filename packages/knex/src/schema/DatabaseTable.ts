@@ -3,6 +3,9 @@ import { SchemaHelper } from './SchemaHelper';
 import { Column, ForeignKey, Index } from '../typings';
 import { AbstractSqlPlatform } from '../AbstractSqlPlatform';
 
+/**
+ * @internal
+ */
 export class DatabaseTable {
 
   private columns: Dictionary<Column> = {};

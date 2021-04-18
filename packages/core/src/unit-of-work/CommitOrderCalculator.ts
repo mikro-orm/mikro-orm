@@ -27,6 +27,7 @@ export interface Edge {
  * between the nodes (E), resulting in a computational complexity of O(V + E).
  *
  * Based on https://github.com/doctrine/orm/blob/master/lib/Doctrine/ORM/Internal/CommitOrderCalculator.php
+ * @internal
  */
 export class CommitOrderCalculator {
 

@@ -5,6 +5,7 @@ import { ICriteriaNode, IQueryBuilder } from '../typings';
 /**
  * Helper for working with deeply nested where/orderBy/having criteria. Uses composite pattern to build tree from the payload.
  * Auto-joins relations and converts payload from { books: { publisher: { name: '...' } } } to { 'publisher_alias.name': '...' }
+ * @internal
  */
 export class CriteriaNode {
 

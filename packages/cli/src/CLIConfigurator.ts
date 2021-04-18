@@ -9,6 +9,9 @@ import { DebugCommand } from './commands/DebugCommand';
 import { GenerateCacheCommand } from './commands/GenerateCacheCommand';
 import { ImportCommand } from './commands/ImportCommand';
 
+/**
+ * @internal
+ */
 export class CLIConfigurator {
 
   static async configure(): Promise<Argv> {

@@ -4,6 +4,9 @@ import c from 'ansi-colors';
 
 import { Configuration, ConfigurationLoader, IDatabaseDriver, MikroORM, Options, Utils } from '@mikro-orm/core';
 
+/**
+ * @internal
+ */
 export class CLIHelper {
 
   static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true, options: Partial<Options> = {}): Promise<Configuration<D>> {

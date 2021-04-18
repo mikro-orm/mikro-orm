@@ -27,13 +27,33 @@ import { CriteriaNodeFactory } from './CriteriaNodeFactory';
 import { Field, JoinOptions } from '../typings';
 
 /**
- * SQL query builder
+ * SQL query builder with fluent interface.
+ *
+ * ```ts
+ * const qb = orm.em.createQueryBuilder(Publisher);
+ * qb.select('*')
+ *   .where({
+ *     name: 'test 123',
+ *     type: PublisherType.GLOBAL,
+ *   })
+ *   .orderBy({
+ *     name: QueryOrder.DESC,
+ *     type: QueryOrder.ASC,
+ *   })
+ *   .limit(2, 1);
+ *
+ * const publisher = await qb.getSingleResult();
+ * ```
  */
 export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
+  /** @internal */
   type!: QueryType;
+  /** @internal */
   _fields?: Field<T>[];
+  /** @internal */
   _populate: PopulateOptions<T>[] = [];
+  /** @internal */
   _populateMap: Dictionary<string> = {};
 
   private aliasCounter = 1;
@@ -58,6 +78,9 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   private readonly knex = this.driver.getConnection(this.connectionType).getKnex();
   private readonly helper = new QueryBuilderHelper(this.entityName, this.alias, this._aliasMap, this.subQueries, this.metadata, this.knex, this.platform);
 
+  /**
+   * @internal
+   */
   constructor(private readonly entityName: string,
               private readonly metadata: MetadataStorage,
               private readonly driver: AbstractSqlDriver,

@@ -15,6 +15,7 @@ import { OptimisticLockError, ValidationError } from './errors';
 /**
  * The EntityManager is the central access point to ORM functionality. It is a facade to all different ORM subsystems
  * such as UnitOfWork, Query Language and Repository API.
+ * @template {D} current driver type
  */
 export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
@@ -32,6 +33,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   private filterParams: Dictionary<Dictionary> = {};
   private transactionContext?: Transaction;
 
+  /**
+   * @internal
+   */
   constructor(readonly config: Configuration,
               private readonly driver: D,
               private readonly metadata: MetadataStorage,
@@ -965,6 +969,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
   }
 
+  /**
+   * @internal
+   */
   [inspect.custom]() {
     return `[EntityManager<${this.id}>]`;
   }

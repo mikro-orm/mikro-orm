@@ -7,6 +7,9 @@ import { Configuration, Options } from './Configuration';
 import { Utils } from './Utils';
 import { Dictionary } from '../typings';
 
+/**
+ * @internal
+ */
 export class ConfigurationLoader {
 
   static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true, options?: Partial<Options>): Promise<Configuration<D>> {

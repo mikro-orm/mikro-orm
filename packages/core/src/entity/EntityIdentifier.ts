@@ -1,5 +1,8 @@
 import { IPrimaryKey } from '../typings';
 
+/**
+ * @internal
+ */
 export class EntityIdentifier {
 
   constructor(private value?: IPrimaryKey) { }

@@ -3,6 +3,9 @@ import { CriteriaNode } from './CriteriaNode';
 import { IQueryBuilder } from '../typings';
 import { QueryType } from './enums';
 
+/**
+ * @internal
+ */
 export class ObjectCriteriaNode extends CriteriaNode {
 
   process<T>(qb: IQueryBuilder<T>, alias?: string): any {

@@ -44,9 +44,9 @@ module.exports = {
       'read-connections',
     ],
     'Reference': [
-      'entity-manager-api',
-      'repositories-api',
-      'query-builder-api',
+      { type: 'link', label: 'EntityManager API', href: '/docs/api/classes/core.entitymanager' },
+      { type: 'link', label: 'EntityRepository API', href: '/docs/api/classes/core.entityrepository' },
+      { type: 'link', label: 'QueryBuilder API', href: '/docs/api/classes/knex.querybuilder' },
       'decorators',
       'configuration',
     ],

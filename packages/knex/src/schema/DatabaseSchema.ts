@@ -4,6 +4,9 @@ import { AbstractSqlConnection } from '../AbstractSqlConnection';
 import { Table } from '../typings';
 import { AbstractSqlPlatform } from '../AbstractSqlPlatform';
 
+/**
+ * @internal
+ */
 export class DatabaseSchema {
 
   private readonly tables: DatabaseTable[] = [];
