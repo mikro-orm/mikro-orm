@@ -177,8 +177,12 @@ like `SchemaGenerator` and `EntityGenerator`. You can call this command from the
 directory or use `npx`:
 
 > To work with the CLI, first install `@mikro-orm/cli` package locally.
+> The version needs to be aligned with the `@mikro-orm/core` package.
 
 ```sh
+# install the CLI package first!
+$ yarn add @mikro-orm/cli
+
 # manually
 $ node node_modules/.bin/mikro-orm
 
