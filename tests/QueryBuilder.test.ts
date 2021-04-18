@@ -225,6 +225,34 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['baz', 1]);
   });
 
+  test('join and select with paginate', async () => {
+    const qb = orm.em.createQueryBuilder(FooBar2, 'fb1');
+    qb.select('*')
+      .joinAndSelect('fb1.baz', 'fz')
+      .leftJoinAndSelect('fz.bar', 'fb2')
+      .where({ 'fz.name': 'baz' })
+      .setFlag(QueryFlag.PAGINATE)
+      .limit(1);
+    const sql = 'select `fb1`.*, ' +
+      '`fz`.`id` as `fz__id`, `fz`.`name` as `fz__name`, `fz`.`version` as `fz__version`, ' +
+      '`fb2`.`id` as `fb2__id`, `fb2`.`name` as `fb2__name`, `fb2`.`baz_id` as `fb2__baz_id`, `fb2`.`foo_bar_id` as `fb2__foo_bar_id`, `fb2`.`version` as `fb2__version`, `fb2`.`blob` as `fb2__blob`, `fb2`.`array` as `fb2__array`, `fb2`.`object_property` as `fb2__object_property`, (select 123) as `fb2__random`, ' +
+      '(select 123) as `random` from `foo_bar2` as `fb1` ' +
+      'inner join `foo_baz2` as `fz` on `fb1`.`baz_id` = `fz`.`id` ' +
+      'left join `foo_bar2` as `fb2` on `fz`.`id` = `fb2`.`baz_id` ' +
+      'where `fb1`.`id` in (' +
+      'select `fb1`.`id` from (' +
+      'select `fb1`.`id` from (' +
+      'select `fb1`.`id` from `foo_bar2` as `fb1` ' +
+      'inner join `foo_baz2` as `fz` on `fb1`.`baz_id` = `fz`.`id` ' +
+      'left join `foo_bar2` as `fb2` on `fz`.`id` = `fb2`.`baz_id` ' +
+      'where `fz`.`name` = ?) as `fb1` ' +
+      'group by `fb1`.`id` ' +
+      'limit ?) as `fb1`)';
+    expect(qb.getQuery()).toEqual(sql);
+    expect(qb.getParams()).toEqual(['baz', 1]);
+    await qb.execute();
+  });
+
   test('select leftJoin 1:1 inverse', async () => {
     const qb = orm.em.createQueryBuilder(FooBaz2, 'fz');
     qb.select(['fb.*', 'fz.*'])

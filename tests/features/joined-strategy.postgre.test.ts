@@ -1,4 +1,4 @@
-import { LoadStrategy, Logger, MikroORM, QueryOrder, Reference, wrap } from '@mikro-orm/core';
+import { LoadStrategy, Logger, MikroORM, QueryFlag, QueryOrder, Reference, wrap } from '@mikro-orm/core';
 import { AbstractSqlConnection, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { initORMPostgreSql, wipeDatabasePostgreSql } from '../bootstrap';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2 } from '../entities-sql';
@@ -350,6 +350,22 @@ describe('Joined loading strategy', () => {
     expect(b3.bar!.random).toBe(123);
     expect(b3.bar!.lazyRandom).toBe(456);
     expect(wrap(b3).toJSON()).toMatchObject({ bar: { id: bar.id, baz: baz.id, name: 'bar' } });
+
+    // paginate with joined loading strategy
+    await orm.em.find(FooBaz2, { id: baz.id }, { populate: ['bar'], strategy: LoadStrategy.JOINED, flags: [QueryFlag.PAGINATE], limit: 3, offset: 10 });
+    expect(mock.mock.calls).toHaveLength(5);
+    expect(mock.mock.calls[4][0]).toMatch('select "e0"."id", "e0"."name", "e0"."version", ' +
+      '"b1"."id" as "b1__id", "b1"."name" as "b1__name", "b1"."baz_id" as "b1__baz_id", "b1"."foo_bar_id" as "b1__foo_bar_id", "b1"."version" as "b1__version", "b1"."blob" as "b1__blob", "b1"."array" as "b1__array", "b1"."object_property" as "b1__object_property", (select 123) as "b1__random", "b1"."id" as "bar_id" ' +
+      'from "foo_baz2" as "e0" ' +
+      'left join "foo_bar2" as "b1" on "e0"."id" = "b1"."baz_id" ' +
+      'where "e0"."id" in (' +
+      'select "e0"."id" from (' +
+      'select "e0"."id" from (' +
+      'select "e0"."id" from "foo_baz2" as "e0" ' +
+      'left join "foo_bar2" as "b1" on "e0"."id" = "b1"."baz_id" ' +
+      'where "e0"."id" = $1) as "e0" ' +
+      'group by "e0"."id" ' +
+      'limit $2 offset $3) as "e0")');
   });
 
   test('nested populating', async () => {
