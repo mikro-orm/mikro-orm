@@ -70,7 +70,7 @@ jobs:
         git status && git diff
 
     - name: Release dev version for testing
-      if: github.ref == 'refs/heads/master' && matrix.node-version == '15.x' && steps.changed_packages.outputs.changed_packages != '0'
+      if: github.ref == 'refs/heads/4.x' && matrix.node-version == '15.x' && steps.changed_packages.outputs.changed_packages != '0'
       run: |
         echo "access=public" >> .npmrc
         echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
