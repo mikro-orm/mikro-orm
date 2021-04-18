@@ -641,6 +641,15 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     }
 
     const meta = this.metadata.find(this.entityName);
+
+    if (meta && this.flags.has(QueryFlag.AUTO_JOIN_ONE_TO_ONE_OWNER)) {
+      const relationsToPopulate = this._populate.map(({ field }) => field);
+      meta.relations
+        .filter(prop => prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner && !relationsToPopulate.includes(prop.name))
+        .map(prop => ({ field: prop.name }))
+        .forEach(item => this._populate.push(item));
+    }
+
     this._populate.forEach(({ field }) => {
       const [fromAlias, fromField] = this.helper.splitField(field);
       const aliasedField = `${fromAlias}.${fromField}`;
