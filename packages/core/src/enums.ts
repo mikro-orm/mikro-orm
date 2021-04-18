@@ -61,6 +61,7 @@ export enum QueryFlag {
   DELETE_SUB_QUERY = 'DELETE_SUB_QUERY',
   CONVERT_CUSTOM_TYPES = 'CONVERT_CUSTOM_TYPES',
   INCLUDE_LAZY_FORMULAS = 'INCLUDE_LAZY_FORMULAS',
+  AUTO_JOIN_ONE_TO_ONE_OWNER = 'AUTO_JOIN_ONE_TO_ONE_OWNER',
 }
 
 export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date', 'Buffer', 'RegExp'];

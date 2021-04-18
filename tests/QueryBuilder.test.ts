@@ -193,6 +193,16 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['test 123', 2, 1]);
   });
 
+  test('select with 1:1 owner auto-join', async () => {
+    const qb = orm.em.createQueryBuilder(FooBaz2, 'fz');
+    qb.select('fz.*')
+      .setFlag(QueryFlag.AUTO_JOIN_ONE_TO_ONE_OWNER)
+      .limit(2, 1);
+    const sql = 'select `fz`.*, `e1`.`id` as `bar_id` from `foo_baz2` as `fz` left join `foo_bar2` as `e1` on `fz`.`id` = `e1`.`baz_id` limit ? offset ?';
+    expect(qb.getQuery()).toEqual(sql);
+    expect(qb.getParams()).toEqual([2, 1]);
+  });
+
   test('complex select with mapping of joined results', async () => {
     const qb = orm.em.createQueryBuilder(FooBar2, 'fb1');
     qb.select('*').joinAndSelect('fb1.baz', 'fz');
