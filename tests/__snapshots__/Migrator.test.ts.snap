@@ -30,7 +30,7 @@ export class Migration20191013214813 extends Migration {
 
     this.addSql('create table \`foo_baz2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;');
 
-    this.addSql('create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`array\` text null, \`object\` json null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`array\` text null, \`object_property\` json null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`foo_bar2\` add index \`foo_bar2_baz_id_index\`(\`baz_id\`);');
     this.addSql('alter table \`foo_bar2\` add unique \`foo_bar2_baz_id_unique\`(\`baz_id\`);');
     this.addSql('alter table \`foo_bar2\` add index \`foo_bar2_foo_bar_id_index\`(\`foo_bar_id\`);');
@@ -192,7 +192,7 @@ export class Migration20191013214813 extends Migration {
     "",
     "create table \`foo_baz2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;",
     "",
-    "create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`array\` text null, \`object\` json null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`array\` text null, \`object_property\` json null) default character set utf8mb4 engine = InnoDB;",
     "alter table \`foo_bar2\` add index \`foo_bar2_baz_id_index\`(\`baz_id\`);",
     "alter table \`foo_bar2\` add unique \`foo_bar2_baz_id_unique\`(\`baz_id\`);",
     "alter table \`foo_bar2\` add index \`foo_bar2_foo_bar_id_index\`(\`foo_bar_id\`);",
@@ -361,7 +361,7 @@ export class Migration20191013214813 extends Migration {
 
     this.addSql('create table \`foo_baz2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;');
 
-    this.addSql('create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`array\` text null, \`object\` json null) default character set utf8mb4 engine = InnoDB;');
+    this.addSql('create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`array\` text null, \`object_property\` json null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`foo_bar2\` add index \`foo_bar2_baz_id_index\`(\`baz_id\`);');
     this.addSql('alter table \`foo_bar2\` add unique \`foo_bar2_baz_id_unique\`(\`baz_id\`);');
     this.addSql('alter table \`foo_bar2\` add index \`foo_bar2_foo_bar_id_index\`(\`foo_bar_id\`);');
@@ -523,7 +523,7 @@ export class Migration20191013214813 extends Migration {
     "",
     "create table \`foo_baz2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;",
     "",
-    "create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`array\` text null, \`object\` json null) default character set utf8mb4 engine = InnoDB;",
+    "create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`array\` text null, \`object_property\` json null) default character set utf8mb4 engine = InnoDB;",
     "alter table \`foo_bar2\` add index \`foo_bar2_baz_id_index\`(\`baz_id\`);",
     "alter table \`foo_bar2\` add unique \`foo_bar2_baz_id_unique\`(\`baz_id\`);",
     "alter table \`foo_bar2\` add index \`foo_bar2_foo_bar_id_index\`(\`foo_bar_id\`);",

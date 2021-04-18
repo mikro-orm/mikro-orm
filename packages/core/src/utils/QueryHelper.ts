@@ -120,7 +120,7 @@ export class QueryHelper {
       }
 
       if (prop?.customType instanceof JsonType && Utils.isPlainObject(value) && !platform.isRaw(value)) {
-        return this.processJsonCondition(o, value, [key], platform);
+        return this.processJsonCondition(o, value, [prop.fieldNames[0]], platform);
       }
 
       if (Array.isArray(value) && !Utils.isOperator(key) && !QueryHelper.isSupportedOperator(key) && !key.includes('?')) {

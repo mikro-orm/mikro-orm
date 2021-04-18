@@ -420,6 +420,33 @@ describe('EntityManagerPostgre', () => {
     expect(b1).toBe(b7);
   });
 
+  test('json properties respect field names', async () => {
+    const bar = new FooBar2();
+    bar.name = 'b';
+    bar.objectProperty = { myPropName: { nestedProperty: 123, somethingElse: null } };
+    await orm.em.fork().persistAndFlush(bar);
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, ['query', 'query-params']);
+    Object.assign(orm.config, { logger });
+
+    const b0 = await orm.em.findOneOrFail(FooBar2, bar);
+    expect(b0.objectProperty).toEqual({ myPropName: { nestedProperty: 123, somethingElse: null } });
+
+    const b1 = await orm.em.findOneOrFail(FooBar2, { objectProperty: { myPropName: { nestedProperty: 123 } } });
+    const b2 = await orm.em.findOneOrFail(FooBar2, { objectProperty: { myPropName: { somethingElse: null } } });
+    const b3 = await orm.em.findOneOrFail(FooBar2, { objectProperty: { myPropName: { nestedProperty: 123, somethingElse: null } } });
+    expect(b0).toBe(b1);
+    expect(b0).toBe(b2);
+    expect(b0).toBe(b3);
+
+    expect(mock.mock.calls).toHaveLength(4);
+    expect(mock.mock.calls[0][0]).toMatch(`select "e0".*, (select 123) as "random" from "foo_bar2" as "e0" where "e0"."id" = 1 limit 1`);
+    expect(mock.mock.calls[1][0]).toMatch(`select "e0".*, (select 123) as "random" from "foo_bar2" as "e0" where ("object_property"->'myPropName'->>'nestedProperty')::float8 = 123 limit 1`);
+    expect(mock.mock.calls[2][0]).toMatch(`select "e0".*, (select 123) as "random" from "foo_bar2" as "e0" where "object_property"->'myPropName'->>'somethingElse' is null limit 1`);
+    expect(mock.mock.calls[3][0]).toMatch(`select "e0".*, (select 123) as "random" from "foo_bar2" as "e0" where ("object_property"->'myPropName'->>'nestedProperty')::float8 = 123 and "object_property"->'myPropName'->>'somethingElse' is null limit 1`);
+  });
+
   test('findOne should initialize entity that is already in IM', async () => {
     const god = new Author2('God', 'hello@heaven.god');
     const bible = new Book2('Bible', god);
@@ -1515,7 +1542,7 @@ describe('EntityManagerPostgre', () => {
     const bar = FooBar2.create('b1 "b" \'1\'');
     bar.blob = Buffer.from([1, 2, 3, 4, 5]);
     bar.array = [];
-    bar.object = { foo: `bar 'lol' baz "foo"`, bar: 3 };
+    bar.objectProperty = { foo: `bar 'lol' baz "foo"`, bar: 3 };
     await orm.em.persistAndFlush(bar);
     orm.em.clear();
 
@@ -1524,35 +1551,35 @@ describe('EntityManagerPostgre', () => {
     expect(b1.blob).toBeInstanceOf(Buffer);
     expect(b1.array).toEqual([]);
     expect(b1.array).toBeInstanceOf(Array);
-    expect(b1.object).toEqual({ foo: `bar 'lol' baz "foo"`, bar: 3 });
-    expect(b1.object).toBeInstanceOf(Object);
-    expect(b1.object!.bar).toBe(3);
+    expect(b1.objectProperty).toEqual({ foo: `bar 'lol' baz "foo"`, bar: 3 });
+    expect(b1.objectProperty).toBeInstanceOf(Object);
+    expect(b1.objectProperty!.bar).toBe(3);
 
-    b1.object = 'foo';
+    b1.objectProperty = 'foo';
     b1.array = [1, 2, 3, 4, 5];
     await orm.em.flush();
     orm.em.clear();
 
     const b2 = await orm.em.findOneOrFail(FooBar2, bar.id);
-    expect(b2.object).toBe('foo');
+    expect(b2.objectProperty).toBe('foo');
     expect(b2.array).toEqual([1, 2, 3, 4, 5]);
     expect(b2.array![2]).toBe(3);
 
-    b2.object = [1, 2, '3'];
+    b2.objectProperty = [1, 2, '3'];
     await orm.em.flush();
     orm.em.clear();
 
     const b3 = await orm.em.findOneOrFail(FooBar2, bar.id);
-    expect(b3.object[0]).toBe(1);
-    expect(b3.object[1]).toBe(2);
-    expect(b3.object[2]).toBe('3');
+    expect(b3.objectProperty[0]).toBe(1);
+    expect(b3.objectProperty[1]).toBe(2);
+    expect(b3.objectProperty[2]).toBe('3');
 
-    b3.object = 123;
+    b3.objectProperty = 123;
     await orm.em.flush();
     orm.em.clear();
 
     const b4 = await orm.em.findOneOrFail(FooBar2, bar.id);
-    expect(b4.object).toBe(123);
+    expect(b4.objectProperty).toBe(123);
   });
 
   test('using $contains', async () => {

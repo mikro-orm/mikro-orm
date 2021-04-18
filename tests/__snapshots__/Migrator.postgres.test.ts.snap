@@ -12,7 +12,7 @@ export class Migration20191013214813 extends Migration {
 
     this.addSql('create table \\"foo_baz2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));');
 
-    this.addSql('create table \\"foo_bar2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"baz_id\\" int null, \\"foo_bar_id\\" int null, \\"version\\" timestamptz(0) not null default current_timestamp(0), \\"blob\\" bytea null, \\"array\\" text[] null, \\"object\\" jsonb null);');
+    this.addSql('create table \\"foo_bar2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"baz_id\\" int null, \\"foo_bar_id\\" int null, \\"version\\" timestamptz(0) not null default current_timestamp(0), \\"blob\\" bytea null, \\"array\\" text[] null, \\"object_property\\" jsonb null);');
     this.addSql('alter table \\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_unique\\" unique (\\"baz_id\\");');
     this.addSql('alter table \\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_unique\\" unique (\\"foo_bar_id\\");');
 
@@ -109,7 +109,7 @@ export class Migration20191013214813 extends Migration {
     "",
     "create table \\"foo_baz2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));",
     "",
-    "create table \\"foo_bar2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"baz_id\\" int null, \\"foo_bar_id\\" int null, \\"version\\" timestamptz(0) not null default current_timestamp(0), \\"blob\\" bytea null, \\"array\\" text[] null, \\"object\\" jsonb null);",
+    "create table \\"foo_bar2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"baz_id\\" int null, \\"foo_bar_id\\" int null, \\"version\\" timestamptz(0) not null default current_timestamp(0), \\"blob\\" bytea null, \\"array\\" text[] null, \\"object_property\\" jsonb null);",
     "alter table \\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_unique\\" unique (\\"baz_id\\");",
     "alter table \\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_unique\\" unique (\\"foo_bar_id\\");",
     "",
@@ -213,7 +213,7 @@ export class Migration20191013214813 extends Migration {
 
     this.addSql('create table \\"foo_baz2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));');
 
-    this.addSql('create table \\"foo_bar2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"baz_id\\" int null, \\"foo_bar_id\\" int null, \\"version\\" timestamptz(0) not null default current_timestamp(0), \\"blob\\" bytea null, \\"array\\" text[] null, \\"object\\" jsonb null);');
+    this.addSql('create table \\"foo_bar2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"baz_id\\" int null, \\"foo_bar_id\\" int null, \\"version\\" timestamptz(0) not null default current_timestamp(0), \\"blob\\" bytea null, \\"array\\" text[] null, \\"object_property\\" jsonb null);');
     this.addSql('alter table \\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_unique\\" unique (\\"baz_id\\");');
     this.addSql('alter table \\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_unique\\" unique (\\"foo_bar_id\\");');
 
@@ -310,7 +310,7 @@ export class Migration20191013214813 extends Migration {
     "",
     "create table \\"foo_baz2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));",
     "",
-    "create table \\"foo_bar2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"baz_id\\" int null, \\"foo_bar_id\\" int null, \\"version\\" timestamptz(0) not null default current_timestamp(0), \\"blob\\" bytea null, \\"array\\" text[] null, \\"object\\" jsonb null);",
+    "create table \\"foo_bar2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"baz_id\\" int null, \\"foo_bar_id\\" int null, \\"version\\" timestamptz(0) not null default current_timestamp(0), \\"blob\\" bytea null, \\"array\\" text[] null, \\"object_property\\" jsonb null);",
     "alter table \\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_unique\\" unique (\\"baz_id\\");",
     "alter table \\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_unique\\" unique (\\"foo_bar_id\\");",
     "",

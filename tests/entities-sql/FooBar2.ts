@@ -28,7 +28,7 @@ export class FooBar2 extends BaseEntity22 {
   array?: number[];
 
   @Property({ type: JsonType, nullable: true })
-  object?: { foo: string; bar: number } | any;
+  objectProperty?: { foo: string; bar: number } | any;
 
   @Formula(`(select 123)`)
   random?: number;

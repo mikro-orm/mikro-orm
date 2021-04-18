@@ -309,7 +309,7 @@ export class FooBar2 {
   array?: string;
 
   @Property({ columnType: 'json', nullable: true })
-  object?: any;
+  objectProperty?: any;
 
 }
 ",
@@ -745,7 +745,7 @@ export class FooBar2 {
   array?: string[];
 
   @Property({ columnType: 'jsonb', nullable: true })
-  object?: any;
+  objectProperty?: any;
 
 }
 ",

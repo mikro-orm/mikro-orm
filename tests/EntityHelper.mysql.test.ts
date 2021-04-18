@@ -31,7 +31,7 @@ describe('EntityHelperMySql', () => {
         bar: {
           id: 1,
           name: 'fb',
-          object: null,
+          objectProperty: null,
           random: 123,
           version: a.version,
           array: null,
@@ -48,7 +48,7 @@ describe('EntityHelperMySql', () => {
       random: 123,
       version: a.version,
       array: null,
-      object: null,
+      objectProperty: null,
       blob: null,
     });
   });
