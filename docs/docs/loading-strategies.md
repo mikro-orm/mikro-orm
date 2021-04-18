@@ -3,7 +3,7 @@ title: Relationship Loading Strategies
 sidebar_label: Loading Strategies
 ---
 
-> SQL only feature
+> `JOINED` loading strategy is SQL only feature.
 
 Controls how relationships get loaded when querying. By default, populated relationships
 are loaded via the `select-in` strategy. This strategy issues one additional `SELECT`
@@ -63,12 +63,19 @@ This also works for nested populates:
 
 ```typescript
 // one level
-const author = await orm.em.findOne(Author, 1, { populate: { books: LoadStrategy.JOINED } });
+const author = await orm.em.findOne(Author, 1, { 
+  populate: {
+    books: LoadStrategy.JOINED,
+  },
+});
 
-// two levels
-const author = await orm.em.findOne(Author, 1, { populate: {
-  books: [LoadStrategy.JOINED, { publisher: LoadStrategy.JOINED }]
-} });
+// two or more levels - use `FindOptions.strategy`
+const author = await orm.em.findOne(Author, 1, {
+  populate: {
+    books: { publisher: true },
+  },
+  strategy: LoadStrategy.JOINED
+});
 ```
 
 ## Changing the loading strategy globally
