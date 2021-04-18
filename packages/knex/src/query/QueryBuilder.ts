@@ -497,8 +497,14 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     Object.assign(qb, this);
 
     // clone array/object properties
-    const properties = ['flags', '_fields', '_populate', '_populateMap', '_joins', '_joinedProps', '_aliasMap', '_cond', '_data', '_orderBy', '_schema', '_cache', 'subQueries'];
+    const properties = ['flags', '_populate', '_populateMap', '_joins', '_joinedProps', '_aliasMap', '_cond', '_data', '_orderBy', '_schema', '_cache', 'subQueries'];
     properties.forEach(prop => (qb as any)[prop] = Utils.copy(this[prop as keyof this]));
+
+    /* istanbul ignore else */
+    if (this._fields) {
+      qb._fields = [...this._fields];
+    }
+
     qb.finalized = false;
 
     return qb;
