@@ -319,7 +319,9 @@ export class QueryBuilderHelper {
     const k = this.mapper(key, type, params1);
 
     if (params2.length > 0) {
-      return void clause[m](k, this.knex.raw('?', params2));
+      /* istanbul ignore next */
+      const val = params2.length === 1 && params2[0] === null ? null : this.knex.raw('?', params2);
+      return void clause[m](k, val);
     }
 
     clause[m](k);
