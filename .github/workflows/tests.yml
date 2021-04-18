@@ -1,97 +1,105 @@
 name: tests
 
-on: [push, pull_request]
+on: [ push, pull_request ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 15.x]
+        node-version: [ 12.x, 14.x, 15.x ]
 
     steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
+      - name: Checkout Source code
+        if: github.event_name == 'push'
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # we need to pull everything to have correct dev version suffix
+          ref: master
+      - name: Checkout Source code
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v2
+        with:
+          ref: refs/pull/${{ github.event.number }}/head
 
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v2-beta
-      with:
-        node-version: ${{ matrix.node-version }}
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2-beta
+        with:
+          node-version: ${{ matrix.node-version }}
 
-    - name: EditorConfig Lint
-      uses: docker://mstruebing/editorconfig-checker:2.3.5@sha256:b78daacf0049058ca85afddbbed6c53bd3bc2a24d3dd0b2363e34ebb4463dee1
+      - name: EditorConfig Lint
+        uses: docker://mstruebing/editorconfig-checker:2.3.5@sha256:b78daacf0049058ca85afddbbed6c53bd3bc2a24d3dd0b2363e34ebb4463dee1
 
-    - name: Install libkrb5-dev (for run-rs)
-      run: |
-        sudo apt update
-        sudo apt install libkrb5-dev
+      - name: Install libkrb5-dev (for run-rs)
+        run: |
+          sudo apt update
+          sudo apt install libkrb5-dev
 
-    - name: Init docker
-      run: docker-compose up -d
+      - name: Init docker
+        run: docker-compose up -d
 
-    - name: Cache node_modules
-      uses: actions/cache@v2
-      with:
-        path: '**/node_modules'
-        key: ${{ runner.os }}-${{ matrix.node-version }}-modules-${{ hashFiles('**/yarn.lock') }}
+      - name: Cache node_modules
+        uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-${{ matrix.node-version }}-modules-${{ hashFiles('**/yarn.lock') }}
 
-    - name: Install
-      run: |
-        yarn config set ignore-engines true
-        yarn
+      - name: Install
+        run: |
+          yarn config set ignore-engines true
+          yarn
 
-    - name: Set CC Required env vars
-      run: export GIT_BRANCH=$GITHUB_HEAD_REF && export GIT_COMMIT_SHA=$(git rev-parse origin/$GITHUB_HEAD_REF)
+      - name: Set CC Required env vars
+        run: export GIT_BRANCH=$GITHUB_HEAD_REF && export GIT_COMMIT_SHA=$(git rev-parse origin/$GITHUB_HEAD_REF)
 
-    - name: Lint
-      run: yarn lint
+      - name: Lint
+        run: yarn lint
 
-    - name: Check for changes
-      id: changed_packages
-      run: |
-        echo "::set-output name=changed_packages::$(node ./node_modules/.bin/lerna changed -p | wc -l | xargs)"
+      - name: Check for changes
+        id: changed_packages
+        run: |
+          echo "::set-output name=changed_packages::$(node ./node_modules/.bin/lerna changed -p | wc -l | xargs)"
 
-    - name: Check for changes 2
-      if: steps.changed_packages.outputs.changed_packages == '0'
-      run: |
-        echo "no changes detected by lerna"
+      - name: Check for changes 2
+        if: steps.changed_packages.outputs.changed_packages == '0'
+        run: |
+          echo "no changes detected by lerna"
 
-    - name: Build
-      if: steps.changed_packages.outputs.changed_packages != '0'
-      run: yarn build
+      - name: Build
+        if: steps.changed_packages.outputs.changed_packages != '0'
+        run: yarn build
 
-    - name: Test
-      if: steps.changed_packages.outputs.changed_packages != '0'
-      run: |
-        yarn run-rs-in-background
-        yarn coverage > COVERAGE_RESULT
-        echo "$(cat COVERAGE_RESULT)"
-        git status && git diff
+      - name: Test
+        if: steps.changed_packages.outputs.changed_packages != '0'
+        run: |
+          yarn run-rs-in-background
+          yarn coverage > COVERAGE_RESULT
+          echo "$(cat COVERAGE_RESULT)"
+          git status && git diff
 
-    - name: Release dev version for testing
-      if: github.ref == 'refs/heads/master' && matrix.node-version == '15.x' && steps.changed_packages.outputs.changed_packages != '0'
-      run: |
-        echo "access=public" >> .npmrc
-        echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
-        git fetch --depth=1 origin +refs/tags/*:refs/tags/*
-        yarn publish:next --yes --no-verify-access
-      env:
-        NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Release dev version for testing
+        if: github.ref == 'refs/heads/master' && matrix.node-version == '15.x' && steps.changed_packages.outputs.changed_packages != '0'
+        run: |
+          echo "access=public" >> .npmrc
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
+          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+          yarn publish:next --yes --no-verify-access
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-    - name: Coveralls
-      if: steps.changed_packages.outputs.changed_packages != '0'
-      uses: coverallsapp/github-action@master
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Coveralls
+        if: steps.changed_packages.outputs.changed_packages != '0'
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Codeclimate
-      if: steps.changed_packages.outputs.changed_packages != '0'
-      uses: paambaati/codeclimate-action@v2.7.5
-      env:
-        CC_TEST_REPORTER_ID: e2a39c5dc1a13674e97e94a467bacfaec953814982c7de89e9f0b55031e43bd8
-      with:
-        coverageCommand: echo "$(cat COVERAGE_RESULT)"
+      - name: Codeclimate
+        if: steps.changed_packages.outputs.changed_packages != '0'
+        uses: paambaati/codeclimate-action@v2.7.5
+        env:
+          CC_TEST_REPORTER_ID: e2a39c5dc1a13674e97e94a467bacfaec953814982c7de89e9f0b55031e43bd8
+        with:
+          coverageCommand: echo "$(cat COVERAGE_RESULT)"
 
-    - name: Teardown docker
-      run: docker-compose down
+      - name: Teardown docker
+        run: docker-compose down
