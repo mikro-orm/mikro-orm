@@ -11,16 +11,14 @@ jobs:
 
     steps:
       - name: Checkout Source code
-        if: github.event_name == 'push'
+        if: github.ref == 'refs/heads/master' && matrix.node-version == '15.x' && steps.changed_packages.outputs.changed_packages != '0'
         uses: actions/checkout@v2
         with:
           fetch-depth: 0 # we need to pull everything to have correct dev version suffix
           ref: master
       - name: Checkout Source code
-        if: github.event_name == 'pull_request'
+        if: github.ref != 'refs/heads/master' || matrix.node-version != '15.x' || steps.changed_packages.outputs.changed_packages == '0'
         uses: actions/checkout@v2
-        with:
-          ref: refs/pull/${{ github.event.number }}/head
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2-beta
