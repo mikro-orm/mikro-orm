@@ -138,11 +138,24 @@ export class EntityAssigner {
   private static assignEmbeddable<T extends AnyEntity<T>>(entity: T, value: any, prop: EntityProperty, em: EntityManager, options: AssignOptions): void {
     const Embeddable = prop.embeddable;
     const propName = prop.embedded ? prop.embedded[1] : prop.name;
-    entity[propName] = options.mergeObjects ? entity[propName] || Object.create(Embeddable.prototype) : Object.create(Embeddable.prototype);
+    entity[propName] = prop.array || options.mergeObjects ? (entity[propName] || Object.create(Embeddable.prototype)) : Object.create(Embeddable.prototype);
 
     if (!value) {
       entity[propName] = value;
       return;
+    }
+
+    // if the value is not an array, we just push, otherwise we replace the array
+    if (prop.array && (Array.isArray(value) || entity[propName] == null)) {
+      entity[propName] = [];
+    }
+
+    if (prop.array) {
+      return Utils.asArray(value).forEach(item => {
+        const tmp = {};
+        this.assignEmbeddable(tmp, item, { ...prop, array: false }, em, options);
+        entity[propName].push(...Object.values(tmp));
+      });
     }
 
     Object.keys(value).forEach(key => {

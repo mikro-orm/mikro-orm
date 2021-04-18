@@ -143,6 +143,31 @@ describe('embedded entities in postgresql', () => {
     await expect(orm.getSchemaGenerator().getDropSchemaSQL(false)).resolves.toMatchSnapshot('embeddables 3');
   });
 
+  test('assigning to array embeddables (GH #1699)', async () => {
+    const user = new User();
+    expect(user.addresses).toEqual([]);
+    const address1 = new Address1('Downing street 13A', 10, '10A', 'London 4A', 'UK 4A');
+    const address2 = { street: 'Downing street 23A', number: 20, postalCode: '20A', city: 'London 24A', country: 'UK 24A' };
+
+    wrap(user).assign({ addresses: [address1] }, { mergeObjects: true });
+    expect(user.addresses).toEqual([address1]);
+    expect(user.addresses[0]).toBeInstanceOf(Address1);
+
+    wrap(user).assign({ addresses: [address1] }, { mergeObjects: true, updateNestedEntities: true });
+    expect(user.addresses).toEqual([address1]);
+    expect(user.addresses[0]).toBeInstanceOf(Address1);
+
+    wrap(user).assign({ addresses: [address2] });
+    expect(user.addresses).toEqual([address2]);
+    expect(user.addresses[0]).toBeInstanceOf(Address1);
+
+    wrap(user).assign({ addresses: address1 }); // push to existing array
+    expect(user.addresses).toEqual([address2, address1]);
+    expect(user.addresses[0]).toBeInstanceOf(Address1);
+    expect(user.addresses[1]).toBeInstanceOf(Address1);
+    expect(user.addresses).toHaveLength(2);
+  });
+
   test('persist and load', async () => {
     const user = new User();
     user.address1 = new Address1('Downing street 10', 10, '123', 'London 1', 'UK 1');
