@@ -328,6 +328,20 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       });
     });
 
+    if (meta.versionProperty) {
+      const versionProperty = meta.properties[meta.versionProperty];
+      const quotedFieldName = this.platform.quoteIdentifier(versionProperty.fieldNames[0]);
+      sql += `${quotedFieldName} = `;
+
+      if (versionProperty.type.toLowerCase() === 'date') {
+        sql += this.platform.getCurrentTimestampSQL(versionProperty.length);
+      } else {
+        sql += `${quotedFieldName} + 1`;
+      }
+
+      sql += `, `;
+    }
+
     sql = sql.substr(0, sql.length - 2) + ' where ';
     const pks = Utils.flatten(meta.primaryKeys.map(pk => meta.properties[pk].fieldNames));
     sql += pks.length > 1 ? `(${pks.map(pk => `${this.platform.quoteIdentifier(pk)}`).join(', ')})` : this.platform.quoteIdentifier(pks[0]);
