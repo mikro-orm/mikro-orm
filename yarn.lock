@@ -3829,7 +3829,7 @@ gauge@~2.7.3:
     strip-ansi "^3.0.1"
     wide-align "^1.1.0"
 
-gen-esm-wrapper@^1.1.1:
+gen-esm-wrapper@1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/gen-esm-wrapper/-/gen-esm-wrapper-1.1.1.tgz#1e4d508d0229284490f101d22ac33e09435f80fb"
   integrity sha512-/ZMuX3itPtnjjWuIArzBi6mDnkGVcsx8guLCeH3WLB+iLeFr8TOKhIrNaYmPuRtQcpeBKrlswCPAY9oLRKIxKw==
