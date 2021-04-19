@@ -581,6 +581,19 @@ describe('EntityManagerPostgre', () => {
     await expect(orm.em.lock(test, LockMode.OPTIMISTIC)).rejects.toThrowError('Entity Test2 is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()');
   });
 
+  test('batch updates increments version field (optimistic locking)', async () => {
+    const tests = [
+      new Test2({ name: 't1' }),
+      new Test2({ name: 't2' }),
+      new Test2({ name: 't3' }),
+    ];
+    await orm.em.persistAndFlush(tests);
+    expect(tests.map(t => t.version)).toEqual([1, 1, 1]);
+    tests.forEach(t => t.name += ' changed!');
+    await orm.em.flush();
+    expect(tests.map(t => t.version)).toEqual([2, 2, 2]);
+  });
+
   test('pessimistic locking requires active transaction', async () => {
     const test = Test2.create('Lock test');
     await orm.em.persistAndFlush(test);
