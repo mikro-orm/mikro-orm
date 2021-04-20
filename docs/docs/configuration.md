@@ -60,7 +60,7 @@ There are also some additional options how you can adjust the discovery process:
 MikroORM.init({
   discovery: {
     warnWhenNoEntities: false, // by default, discovery throws when no entity is processed
-    requireEntitiesArray: true, // force usage of class refrences in `entities` instead of paths
+    requireEntitiesArray: true, // force usage of class references in `entities` instead of paths
     alwaysAnalyseProperties: false, // do not analyse properties when not needed (with ts-morph)
   },
 });
