@@ -577,17 +577,17 @@ export class UnitOfWork {
 
     // 1. create
     for (const name of commitOrder) {
-      await this.commitCreateChangeSets(groups[ChangeSetType.CREATE][name] ?? [], tx);
+      await this.commitCreateChangeSets(groups[ChangeSetType.CREATE].get(name) ?? [], tx);
     }
 
     // 2. update
     for (const name of commitOrder) {
-      await this.commitUpdateChangeSets(groups[ChangeSetType.UPDATE][name] ?? [], tx);
+      await this.commitUpdateChangeSets(groups[ChangeSetType.UPDATE].get(name) ?? [], tx);
     }
 
     // 3. delete - entity deletions need to be in reverse commit order
     for (const name of commitOrderReversed) {
-      await this.commitDeleteChangeSets(groups[ChangeSetType.DELETE][name] ?? [], tx);
+      await this.commitDeleteChangeSets(groups[ChangeSetType.DELETE].get(name) ?? [], tx);
     }
 
     // 4. extra updates
@@ -700,8 +700,12 @@ export class UnitOfWork {
 
     this.changeSets.forEach(cs => {
       const group = groups[cs.type];
-      group[cs.rootName] = group[cs.rootName] ?? [];
-      group[cs.rootName].push(cs);
+      const classGroup = group.get(cs.rootName) ?? [];
+      classGroup.push(cs);
+
+      if (!group.has(cs.rootName)) {
+        group.set(cs.rootName, classGroup);
+      }
     });
 
     return groups;

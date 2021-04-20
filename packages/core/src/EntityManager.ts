@@ -4,7 +4,7 @@ import { Configuration, QueryHelper, TransactionContext, Utils } from './utils';
 import { AssignOptions, EntityAssigner, EntityFactory, EntityLoader, EntityRepository, EntityValidator, IdentifiedReference, Reference } from './entity';
 import { UnitOfWork } from './unit-of-work';
 import { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, UpdateOptions } from './drivers';
-import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityName, FilterDef, FilterQuery, Loaded, Primary, Populate, PopulateMap, PopulateOptions, New, GetRepository } from './typings';
+import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, New, Populate, PopulateMap, PopulateOptions, Primary } from './typings';
 import { LoadStrategy, LockMode, QueryOrderMap, ReferenceType, SCALAR_TYPES } from './enums';
 import { MetadataStorage } from './metadata';
 import { Transaction } from './connections';
@@ -118,6 +118,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const cached = await this.tryCache<T, Loaded<T, P>[]>(entityName, options.cache, [entityName, 'em.find', options, where], options.refresh, true);
 
     if (cached?.data) {
+      await this.entityLoader.populate<T>(entityName, cached.data, options.populate as unknown as PopulateOptions<T>[], { ...options, where, convertCustomTypes: false, lookup: false });
       return cached.data;
     }
 
@@ -325,6 +326,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const cached = await this.tryCache<T, Loaded<T, P>>(entityName, options.cache, [entityName, 'em.findOne', options, where], options.refresh, true);
 
     if (cached?.data) {
+      await this.entityLoader.populate<T>(entityName, [cached.data], options.populate as unknown as PopulateOptions<T>[], { ...options, where, convertCustomTypes: false, lookup: false });
       return cached.data;
     }
 
@@ -933,7 +935,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * @internal
    */
-  async tryCache<T, R>(entityName: string, config: boolean | number | [string, number] | undefined, key: unknown, refresh?: boolean, merge?: boolean): Promise<{ data?: R; key: string } | undefined> {
+  async tryCache<T extends AnyEntity, R>(entityName: string, config: boolean | number | [string, number] | undefined, key: unknown, refresh?: boolean, merge?: boolean): Promise<{ data?: R; key: string } | undefined> {
     if (!config) {
       return undefined;
     }
@@ -945,9 +947,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       let data: R;
 
       if (Array.isArray(cached) && merge) {
-        data = cached.map(item => this.merge<T>(entityName, item, refresh, true)) as unknown as R;
+        data = cached.map(item => this.getEntityFactory().create<T>(entityName, item, { merge: true, convertCustomTypes: true, refresh })) as unknown as R;
       } else if (Utils.isObject<EntityData<T>>(cached) && merge) {
-        data = this.merge<T>(entityName, cached, refresh, true) as unknown as R;
+        data = this.getEntityFactory().create<T>(entityName, cached, { merge: true, convertCustomTypes: true, refresh }) as unknown as R;
       } else {
         data = cached;
       }
