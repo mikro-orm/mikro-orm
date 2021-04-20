@@ -277,7 +277,7 @@ const storage = new AsyncLocalStorage<EntityManager>();
   imports: [
     MikroOrmModule.forRoot({
       // ...
-      registerRequestContext: false, // disable automatatic middleware
+      registerRequestContext: false, // disable automatic middleware
       context: () => storage.getStore(), // use our AsyncLocalStorage instance
     }),
   ],
