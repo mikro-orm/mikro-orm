@@ -205,7 +205,7 @@ object.
 
 > Using `autoLoadEntities` also has no effect on the MikroORM CLI - for that we 
 > still need CLI config with the full list of entities. On the other hand, we can
-> use globs there, as the CLI won't go thru webpack.
+> use globs there, as the CLI won't go through webpack.
 
 ## Request scoped handlers in queues
 
@@ -277,7 +277,7 @@ const storage = new AsyncLocalStorage<EntityManager>();
   imports: [
     MikroOrmModule.forRoot({
       // ...
-      registerRequestContext: false, // disable automatatic middleware
+      registerRequestContext: false, // disable automatic middleware
       context: () => storage.getStore(), // use our AsyncLocalStorage instance
     }),
   ],
