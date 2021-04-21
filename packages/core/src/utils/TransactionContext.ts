@@ -1,11 +1,9 @@
-import domain, { Domain } from 'domain';
+import { AsyncLocalStorage } from 'async_hooks';
 import { EntityManager } from '../EntityManager';
-import { Dictionary } from '../typings';
-
-export type TXDomain = Domain & { __mikro_orm_tx_context?: TransactionContext };
 
 export class TransactionContext {
 
+  private static storage = new AsyncLocalStorage<TransactionContext>();
   readonly id = this.em.id;
 
   constructor(readonly em: EntityManager) { }
@@ -15,13 +13,11 @@ export class TransactionContext {
    */
   static async createAsync<T>(em: EntityManager, next: (...args: any[]) => Promise<T>): Promise<T> {
     const context = new TransactionContext(em);
-    const old = (domain as Dictionary).active;
-    const d = domain.create() as TXDomain;
-    Object.assign(d, old);
-    d.__mikro_orm_tx_context = context;
+    const old = this.currentTransactionContext();
+    Object.assign(context, old);
 
     return new Promise((resolve, reject) => {
-      d.run(() => next().then(resolve).catch(reject));
+      this.storage.run(context, () => next().then(resolve).catch(reject));
     });
   }
 
@@ -29,8 +25,7 @@ export class TransactionContext {
    * Returns current TransactionContext (if available).
    */
   static currentTransactionContext(): TransactionContext | undefined {
-    const active = (domain as Dictionary).active as TXDomain;
-    return active ? active.__mikro_orm_tx_context : undefined;
+    return this.storage.getStore();
   }
 
   /**
