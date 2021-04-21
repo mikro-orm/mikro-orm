@@ -1911,6 +1911,14 @@ describe('QueryBuilder', () => {
     expect(sql3).toBe(expected);
   });
 
+  test('index hints', async () => {
+    const sql1 = orm.em.createQueryBuilder(Author2)
+      .indexHint('FORCE INDEX(custom_email_index_name)')
+      .where({ favouriteBook: { $in: ['1', '2', '3'] } })
+      .getFormattedQuery();
+    expect(sql1).toBe("select `e0`.* from author2 as e0 FORCE INDEX(custom_email_index_name) where `e0`.`favourite_book_uuid_pk` in ('1', '2', '3')");
+  });
+
   afterAll(async () => orm.close(true));
 
 });

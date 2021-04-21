@@ -72,6 +72,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   private _offset?: number;
   private _joinedProps = new Map<string, PopulateOptions<any>>();
   private _cache?: boolean | number | [string, number];
+  private _indexHint?: string;
   private lockMode?: LockMode;
   private subQueries: Dictionary<string> = {};
   private readonly platform = this.driver.getPlatform();
@@ -331,6 +332,14 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
   cache(config: boolean | number | [string, number] = true): this {
     this._cache = config;
+    return this;
+  }
+
+  /**
+   * Adds index hint to the FROM clause.
+   */
+  indexHint(sql: string): this {
+    this._indexHint = sql;
     return this;
   }
 
@@ -624,6 +633,11 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
     if (this._schema) {
       qb.withSchema(this._schema);
+    }
+
+    if (this._indexHint) {
+      const tableName = this.helper.getTableName(this.entityName) + (this.finalized && this.helper.isTableNameAliasRequired(this.type) ? ` as ${this.alias}` : '');
+      qb.from(this.knex.raw(`${tableName} ${this._indexHint}`));
     }
 
     switch (this.type) {
