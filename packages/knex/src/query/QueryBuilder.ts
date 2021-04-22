@@ -636,7 +636,9 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     }
 
     if (this._indexHint) {
-      const tableName = this.helper.getTableName(this.entityName) + (this.finalized && this.helper.isTableNameAliasRequired(this.type) ? ` as ${this.alias}` : '');
+      const alias = this.helper.isTableNameAliasRequired(this.type) ? ` as ${this.platform.quoteIdentifier(this.alias)}` : '';
+      const schema = this._schema ? this.platform.quoteIdentifier(this._schema) + '.' : '';
+      const tableName = schema + this.platform.quoteIdentifier(this.helper.getTableName(this.entityName)) + alias;
       qb.from(this.knex.raw(`${tableName} ${this._indexHint}`));
     }
 
