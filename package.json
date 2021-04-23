@@ -123,7 +123,7 @@
     "conditional-type-checks": "1.0.5",
     "coveralls": "3.1.0",
     "eslint": "7.24.0",
-    "eslint-plugin-jsdoc": "32.3.0",
+    "eslint-plugin-jsdoc": "32.3.1",
     "fs-extra": "9.1.0",
     "gen-esm-wrapper": "1.1.1",
     "husky": "6.0.0",
