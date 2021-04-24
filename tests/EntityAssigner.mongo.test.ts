@@ -1,4 +1,4 @@
-import { assign, EntityData, MikroORM, wrap } from '@mikro-orm/core';
+import { assign, EntityData, expr, MikroORM, wrap } from '@mikro-orm/core';
 import { MongoDriver, ObjectId } from '@mikro-orm/mongodb';
 import { Author, Book, BookTag } from './entities';
 import { initORMMongo, wipeDatabase } from './bootstrap';
@@ -17,7 +17,7 @@ describe('EntityAssignerMongo', () => {
     await orm.em.persistAndFlush(book);
     expect(book.title).toBe('Book2');
     expect(book.author).toBe(jon);
-    book.assign({ title: 'Better Book2 1', author: god, notExisting: true });
+    book.assign({ title: 'Better Book2 1', author: god, [expr('notExisting')]: true });
     expect(book.author).toBe(god);
     expect((book as any).notExisting).toBe(true);
     await orm.em.persistAndFlush(god);
@@ -57,7 +57,7 @@ describe('EntityAssignerMongo', () => {
 
   test('#assign() should ignore undefined properties', async () => {
     const jon = new Author('Jon Snow', 'snow@wall.st');
-    assign(jon, { name: 'test', unknown: 123 }, { onlyProperties: true });
+    assign<any>(jon, { name: 'test', unknown: 123 }, { onlyProperties: true });
     expect((jon as any).unknown).toBeUndefined();
   });
 
@@ -79,7 +79,7 @@ describe('EntityAssignerMongo', () => {
 
   test('#assign() ignores virtual props with only getters', async () => {
     const jon = new Author('n', 'e');
-    assign(jon, { code: '123' });
+    assign<any>(jon, { code: '123' });
     expect(jon.getCode()).toBe(`e - n`);
     expect((jon as any).code).toBeUndefined();
   });

@@ -1411,10 +1411,10 @@ describe('EntityManagerMongo', () => {
     const res6 = await orm.em.nativeUpdate(Author, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
     expect(res6).toBe(1);
 
-    const res7 = await orm.em.nativeInsert('test', { name: 'native name 1', test: 'abc' });
+    const res7 = await orm.em.nativeInsert<any>('test', { name: 'native name 1', test: 'abc' });
     expect(res7).toBeInstanceOf(ObjectId);
 
-    const res8 = await orm.em.nativeUpdate('test', { name: 'native name 1' }, { $unset: { test: 1 } });
+    const res8 = await orm.em.nativeUpdate<any>('test', { name: 'native name 1' }, { $unset: { test: 1 } });
     expect(res8).toBe(1);
 
     const res9 = await orm.em.nativeDelete('test', { name: 'native name 1' });

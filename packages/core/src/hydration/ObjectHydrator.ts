@@ -160,6 +160,10 @@ export class ObjectHydrator extends Hydrator {
       const ret: string[] = [];
 
       ret.push(...this.createCollectionItemMapper(prop));
+      ret.push(`  if (data.${prop.name} && !Array.isArray(data.${prop.name}) && typeof data.${prop.name} === 'object') {`);
+      ret.push(`    console.log('${prop.name}', data.${prop.name});`);
+      ret.push(`    data.${prop.name} = [data.${prop.name}];`);
+      ret.push(`  }`);
       ret.push(`  if (Array.isArray(data.${prop.name})) {`);
       ret.push(`     const items = data.${prop.name}.map(value => createCollectionItem_${prop.name}(value));`);
       ret.push(`     const coll = Collection.create(entity, '${prop.name}', items, newEntity);`);

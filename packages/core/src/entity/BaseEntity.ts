@@ -2,18 +2,18 @@ import { Reference } from './Reference';
 import { AnyEntity, Dictionary, EntityData, IWrappedEntity, Populate } from '../typings';
 import { AssignOptions, EntityAssigner } from './EntityAssigner';
 
-export abstract class BaseEntity<T extends AnyEntity<T>, PK extends keyof T, P extends Populate<T> | unknown = unknown> implements IWrappedEntity<T, PK, P> {
+export abstract class BaseEntity<T, PK extends keyof T, P extends Populate<T> | unknown = unknown> implements IWrappedEntity<T, PK, P> {
 
   constructor() {
     Object.defineProperty(this, '__baseEntity', { value: true });
   }
 
   isInitialized(): boolean {
-    return (this as unknown as T).__helper!.__initialized;
+    return (this as unknown as AnyEntity<T>).__helper!.__initialized;
   }
 
   populated(populated = true): void {
-    (this as unknown as T).__helper!.populated(populated);
+    (this as unknown as AnyEntity<T>).__helper!.populated(populated);
   }
 
   toReference() {
@@ -21,7 +21,7 @@ export abstract class BaseEntity<T extends AnyEntity<T>, PK extends keyof T, P e
   }
 
   toObject(ignoreFields: string[] = []): Dictionary {
-    return (this as unknown as T).__helper!.toObject(ignoreFields) as EntityData<T>;
+    return (this as unknown as AnyEntity<T>).__helper!.toObject(ignoreFields) as EntityData<T>;
   }
 
   toJSON(...args: any[]): Dictionary {
@@ -29,7 +29,7 @@ export abstract class BaseEntity<T extends AnyEntity<T>, PK extends keyof T, P e
   }
 
   toPOJO(): EntityData<T> {
-    return (this as unknown as T).__helper!.toPOJO();
+    return (this as unknown as AnyEntity<T>).__helper!.toPOJO();
   }
 
   assign(data: EntityData<T>, options?: AssignOptions): T {
@@ -37,7 +37,7 @@ export abstract class BaseEntity<T extends AnyEntity<T>, PK extends keyof T, P e
   }
 
   init(populated = true): Promise<T> {
-    return (this as unknown as T).__helper!.init(populated);
+    return (this as unknown as AnyEntity<T>).__helper!.init(populated);
   }
 
 }

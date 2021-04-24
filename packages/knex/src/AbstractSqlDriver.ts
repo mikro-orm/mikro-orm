@@ -2,7 +2,7 @@ import { Knex } from 'knex';
 import {
   AnyEntity, Collection, Configuration, Constructor, DatabaseDriver, Dictionary, EntityData, EntityManager, EntityManagerType,
   EntityMetadata, EntityProperty, QueryFlag, FilterQuery, FindOneOptions, FindOptions, IDatabaseDriver, LockMode, Primary,
-  QueryOrderMap, QueryResult, ReferenceType, Transaction, Utils, PopulateOptions, LoadStrategy, CountOptions, FieldsMap,
+  QueryOrderMap, QueryResult, ReferenceType, Transaction, Utils, PopulateOptions, LoadStrategy, CountOptions, FieldsMap, EntityDictionary,
 } from '@mikro-orm/core';
 import { AbstractSqlConnection } from './AbstractSqlConnection';
 import { AbstractSqlPlatform } from './AbstractSqlPlatform';
@@ -110,7 +110,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       const meta2 = this.metadata.find(relation.type)!;
       const path = parentJoinPath ? `${parentJoinPath}.${relation.name}` : `${meta.name}.${relation.name}`;
       const relationAlias = qb.getAliasForJoinPath(path);
-      const relationPojo = {};
+      const relationPojo: EntityData<unknown> = {};
 
       // If the primary key value for the relation is null, we know we haven't joined to anything
       // and therefore we don't return any record (since all values would be null)
@@ -121,7 +121,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       if (!hasPK) {
         // initialize empty collections
         if ([ReferenceType.MANY_TO_MANY, ReferenceType.ONE_TO_MANY].includes(relation.reference)) {
-          result[relation.name] = result[relation.name] || [];
+          result[relation.name] = result[relation.name] || [] as unknown as T[keyof T & string];
         }
 
         return;
@@ -149,10 +149,10 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       }
 
       if ([ReferenceType.MANY_TO_MANY, ReferenceType.ONE_TO_MANY].includes(relation.reference)) {
-        result[relation.name] = result[relation.name] || [];
-        this.appendToCollection(meta2, result[relation.name], relationPojo);
+        result[relation.name] = result[relation.name] || [] as unknown as T[keyof T & string];
+        this.appendToCollection(meta2, result[relation.name] as Dictionary[], relationPojo);
       } else {
-        result[relation.name] = relationPojo;
+        result[relation.name] = relationPojo as T[keyof T & string];
       }
 
       const populateChildren = p.children || [];
@@ -188,11 +188,11 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return res ? +res.count : 0;
   }
 
-  async nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>, ctx?: Transaction<Knex.Transaction>, convertCustomTypes = true): Promise<QueryResult> {
+  async nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>, ctx?: Transaction<Knex.Transaction>, convertCustomTypes = true): Promise<QueryResult> {
     const meta = this.metadata.find<T>(entityName);
     const collections = this.extractManyToMany(entityName, data);
     const pks = this.getPrimaryKeyFields(entityName);
-    const qb = this.createQueryBuilder(entityName, ctx, true, convertCustomTypes);
+    const qb = this.createQueryBuilder<T>(entityName, ctx, true, convertCustomTypes);
     const res = await this.rethrow(qb.insert(data).execute('run', false));
     res.row = res.row || {};
     let pk: any;
@@ -210,7 +210,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return res;
   }
 
-  async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>[], ctx?: Transaction<Knex.Transaction>, processCollections = true, convertCustomTypes = true): Promise<QueryResult> {
+  async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], ctx?: Transaction<Knex.Transaction>, processCollections = true, convertCustomTypes = true): Promise<QueryResult> {
     const meta = this.metadata.get<T>(entityName);
     const collections = processCollections ? data.map(d => this.extractManyToMany(entityName, d)) : [];
     const pks = this.getPrimaryKeyFields(entityName);
@@ -221,7 +221,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     let res: QueryResult;
 
     if (fields.length === 0) {
-      const qb = this.createQueryBuilder(entityName, ctx, true, convertCustomTypes);
+      const qb = this.createQueryBuilder<T>(entityName, ctx, true, convertCustomTypes);
       res = await this.rethrow(qb.insert(data).execute('run', false));
     } else {
       let sql = `insert into ${this.platform.quoteIdentifier(meta.collection)} `;
@@ -276,7 +276,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return res;
   }
 
-  async nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityData<T>, ctx?: Transaction<Knex.Transaction>, convertCustomTypes = true): Promise<QueryResult> {
+  async nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, ctx?: Transaction<Knex.Transaction>, convertCustomTypes = true): Promise<QueryResult> {
     const meta = this.metadata.find<T>(entityName);
     const pks = this.getPrimaryKeyFields(entityName);
     const collections = this.extractManyToMany(entityName, data);
@@ -300,7 +300,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return res;
   }
 
-  async nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityData<T>[], ctx?: Transaction<Knex.Transaction>, processCollections = true, convertCustomTypes = true): Promise<QueryResult> {
+  async nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], ctx?: Transaction<Knex.Transaction>, processCollections = true, convertCustomTypes = true): Promise<QueryResult> {
     const meta = this.metadata.get<T>(entityName);
     const collections = processCollections ? data.map(d => this.extractManyToMany(entityName, d)) : [];
     const keys = new Set<string>();
@@ -556,7 +556,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return qb;
   }
 
-  protected extractManyToMany<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>): EntityData<T> {
+  protected extractManyToMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>): EntityData<T> {
     if (!this.metadata.has(entityName)) {
       return {};
     }
@@ -580,7 +580,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     for (const prop of meta.relations) {
       if (collections[prop.name]) {
-        await this.rethrow(this.updateCollectionDiff(meta, prop, pks, clear, collections[prop.name], ctx));
+        await this.rethrow(this.updateCollectionDiff(meta, prop, pks, clear, collections[prop.name] as Primary<T>[][], ctx));
       }
     }
   }
@@ -618,7 +618,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     /* istanbul ignore else */
     if (this.platform.allowsMultiInsert()) {
-      await this.nativeInsertMany(prop.pivotTable, items, ctx);
+      await this.nativeInsertMany<T>(prop.pivotTable, items as EntityData<T>[], ctx);
     } else {
       await Utils.runSerial(items, item => this.createQueryBuilder(prop.pivotTable, ctx, true).unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES).insert(item).execute('run', false));
     }

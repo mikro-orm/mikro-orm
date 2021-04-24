@@ -1,5 +1,5 @@
 import clone from 'clone';
-import { AnyEntity, EntityData, EntityMetadata, EntityProperty, IMetadataStorage, Primary } from '../typings';
+import { AnyEntity, EntityData, EntityDictionary, EntityMetadata, EntityProperty, IMetadataStorage, Primary } from '../typings';
 import { ReferenceType } from '../enums';
 import { Platform } from '../platforms';
 import { compareArrays, compareBuffers, compareObjects, equals, Utils } from './Utils';
@@ -42,7 +42,7 @@ export class EntityComparator {
   /**
    * Maps database columns to properties.
    */
-  mapResult<T extends AnyEntity<T>>(entityName: string, result: EntityData<T>): EntityData<T> | null {
+  mapResult<T extends AnyEntity<T>>(entityName: string, result: EntityDictionary<T>): EntityData<T> | null {
     const mapper = this.getResultMapper<T>(entityName);
     return Utils.callCompiledFunction(mapper, result);
   }
@@ -223,7 +223,7 @@ export class EntityComparator {
     return ret;
   }
 
-  private getEmbeddedArrayPropertySnapshot<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, context: Map<string, any>, level: number, path: string[] = [prop.name], dataKey?: string, object?: boolean, serialize?: boolean): string {
+  private getEmbeddedArrayPropertySnapshot<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, context: Map<string, any>, level: number, path: string[] = [prop.name], dataKey?: string): string {
     const entityKey = path.join('.');
     dataKey = dataKey ?? entityKey;
     const ret: string[] = [];
@@ -309,7 +309,7 @@ export class EntityComparator {
 
     if (prop.reference === ReferenceType.EMBEDDED) {
       if (prop.array) {
-        return this.getEmbeddedArrayPropertySnapshot(meta, prop, context, level, path, dataKey, true) + '\n';
+        return this.getEmbeddedArrayPropertySnapshot(meta, prop, context, level, path, dataKey) + '\n';
       }
 
       return this.getEmbeddedPropertySnapshot(meta, prop, context, level, path, dataKey, object) + '\n';

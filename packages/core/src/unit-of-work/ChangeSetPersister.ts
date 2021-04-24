@@ -222,11 +222,11 @@ export class ChangeSetPersister {
 
     const pk = Utils.getPrimaryKeyHash(meta.primaryKeys);
     const pks = changeSets.map(cs => cs.entity.__helper!.__primaryKeyCond);
-    const data = await this.driver.find(meta.name!, { [pk]: { $in: pks } }, {
+    const data = await this.driver.find<T>(meta.name!, { [pk]: { $in: pks } }, {
       fields: [meta.versionProperty],
     }, ctx);
     const map = new Map<string, Date>();
-    data.forEach(e => map.set(Utils.getCompositeKeyHash<T>(e as T, meta), e[meta.versionProperty]));
+    data.forEach(e => map.set(Utils.getCompositeKeyHash<T>(e as T, meta), e[meta.versionProperty] as Date));
 
     for (const changeSet of changeSets) {
       const version = map.get(changeSet.entity.__helper!.getSerializedPrimaryKey());

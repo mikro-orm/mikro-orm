@@ -102,7 +102,7 @@ describe('GH issue 222', () => {
     expect(cc.bCollection.count()).toBe(1);
     expect(cc.a.prop).toEqual(cc.bCollection[0].a.prop);
     const ccJson = wrap(cc).toJSON();
-    expect(ccJson.a.prop).toEqual(ccJson.bCollection[0].a.prop);
+    expect(ccJson.a!.prop).toEqual(ccJson.bCollection[0].a.prop);
   });
 
 });

@@ -1170,11 +1170,11 @@ describe('QueryBuilder', () => {
     expect(qb1.getParams()).toEqual(['test 123', PublisherType.GLOBAL]);
 
     const qb2 = orm.em.createQueryBuilder(Author2);
-    qb2.insert({ name: 'test 123', favouriteBook: 2359, termsAccepted: true });
+    qb2.insert({ name: 'test 123', favouriteBook: '2359', termsAccepted: true });
     expect(qb2.getQuery()).toEqual('insert into `author2` (`favourite_book_uuid_pk`, `name`, `terms_accepted`) values (?, ?, ?)');
-    expect(qb2.getParams()).toEqual([2359, 'test 123', true]);
+    expect(qb2.getParams()).toEqual(['2359', 'test 123', true]);
 
-    const qb3 = orm.em.createQueryBuilder(BookTag2);
+    const qb3 = orm.em.createQueryBuilder<any>(BookTag2);
     qb3.insert({ books: 123 }).withSchema('test123');
     expect(qb3.getQuery()).toEqual('insert into `test123`.`book_tag2` (`books`) values (?)');
     expect(qb3.getParams()).toEqual([123]);
@@ -1186,7 +1186,7 @@ describe('QueryBuilder', () => {
     expect(qb0.getQuery()).toEqual('insert ignore into `author2` (`email`, `name`) values (?, ?)');
     expect(qb0.getParams()).toEqual(['ignore@example.com', 'John Doe']);
 
-    const timestamp = Date.now();
+    const timestamp = new Date();
     const qb1 = orm.em.createQueryBuilder(Author2)
       .insert({
         createdAt: timestamp,
@@ -1231,14 +1231,14 @@ describe('QueryBuilder', () => {
 
   test('update query with JSON type and raw value', async () => {
     const qb = orm.em.createQueryBuilder(Book2);
-    const raw = qb.raw(`jsonb_set(payload, '$.{consumed}', ?)`, [123]);
+    const raw = qb.raw<any>(`jsonb_set(payload, '$.{consumed}', ?)`, [123]);
     qb.update({ meta: raw }).where({ uuid: '456' });
     expect(qb.getFormattedQuery()).toEqual('update `book2` set `meta` = jsonb_set(payload, \'$.{consumed}\', 123) where `uuid_pk` = \'456\'');
   });
 
   test('qb.raw() with named bindings', async () => {
     const qb = orm.em.createQueryBuilder(Book2);
-    const raw = qb.raw(`jsonb_set(payload, '$.{consumed}', :val)`, { val: 123 });
+    const raw = qb.raw<any>(`jsonb_set(payload, '$.{consumed}', :val)`, { val: 123 });
     qb.update({ meta: raw }).where({ uuid: '456' });
     expect(qb.getFormattedQuery()).toEqual('update `book2` set `meta` = jsonb_set(payload, \'$.{consumed}\', 123) where `uuid_pk` = \'456\'');
   });
@@ -1301,7 +1301,7 @@ describe('QueryBuilder', () => {
   });
 
   test('update query with entity in data', async () => {
-    const qb = orm.em.createQueryBuilder(Publisher2);
+    const qb = orm.em.createQueryBuilder<any>(Publisher2);
     qb.withSchema('test123');
     const test = Test2.create('test');
     test.id = 321;
@@ -1800,7 +1800,7 @@ describe('QueryBuilder', () => {
     expect(qb9.getQuery()).toEqual('insert into "author2" ("email", "name") values ($1, $2) on conflict ("email") do nothing returning "id", "created_at", "updated_at", "age", "terms_accepted"');
     expect(qb9.getParams()).toEqual(['ignore@example.com', 'John Doe']);
 
-    const timestamp = Date.now();
+    const timestamp = new Date();
     const qb10 = pg.em.createQueryBuilder(Author2)
       .insert({
         createdAt: timestamp,

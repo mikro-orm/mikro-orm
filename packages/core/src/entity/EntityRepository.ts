@@ -1,5 +1,5 @@
 import { EntityManager } from '../EntityManager';
-import { EntityData, EntityName, AnyEntity, Primary, Populate, Loaded, New, FilterQuery } from '../typings';
+import { EntityData, EntityName, AnyEntity, Primary, Populate, Loaded, New, FilterQuery, EntityDictionary } from '../typings';
 import { QueryOrderMap } from '../enums';
 import { CountOptions, DeleteOptions, FindOneOptions, FindOneOrFailOptions, FindOptions, UpdateOptions } from '../drivers/IDatabaseDriver';
 import { IdentifiedReference, Reference } from './Reference';
@@ -191,7 +191,7 @@ export class EntityRepository<T extends AnyEntity<T>> {
   /**
    * Maps raw database result to an entity and merges it to this EntityManager.
    */
-  map(result: EntityData<T>): T {
+  map(result: EntityDictionary<T>): T {
     return this.em.map(this.entityName, result);
   }
 
