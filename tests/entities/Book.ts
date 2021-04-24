@@ -10,7 +10,7 @@ import { BaseEntity3 } from './BaseEntity3';
 @Index({ properties: 'title', type: 'text' })
 @Index({ options: { point: '2dsphere', title: -1 } })
 @Filter({ name: 'writtenBy', cond: args => ({ author: args.author }) })
-export class Book extends BaseEntity3 {
+export class Book extends BaseEntity3<Book> {
 
   @PrimaryKey()
   _id!: ObjectId;

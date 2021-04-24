@@ -27,7 +27,7 @@ export class EntityFactory {
   create<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, data: EntityData<T>, options: FactoryOptions = {}): New<T, P> {
     options.initialized = options.initialized ?? true;
 
-    if (data.__entity) {
+    if ((data as Dictionary).__entity) {
       return data as New<T, P>;
     }
 
@@ -117,7 +117,7 @@ export class EntityFactory {
 
   private findEntity<T>(data: EntityData<T>, meta: EntityMetadata<T>, convertCustomTypes?: boolean): T | undefined {
     if (!meta.compositePK && !meta.properties[meta.primaryKeys[0]].customType) {
-      return this.unitOfWork.getById<T>(meta.name!, data[meta.primaryKeys[0]]);
+      return this.unitOfWork.getById<T>(meta.name!, data[meta.primaryKeys[0]] as Primary<T>);
     }
 
     if (meta.primaryKeys.some(pk => !Utils.isDefined(data[pk as keyof T], true))) {

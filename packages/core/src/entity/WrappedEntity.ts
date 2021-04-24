@@ -1,6 +1,6 @@
 import { inspect } from 'util';
 import { EntityManager } from '../EntityManager';
-import { AnyEntity, Dictionary, EntityData, EntityMetadata, Populate, PopulateOptions, Primary } from '../typings';
+import { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, Populate, PopulateOptions, Primary } from '../typings';
 import { IdentifiedReference, Reference } from './Reference';
 import { EntityTransformer, SerializationContext } from './EntityTransformer';
 import { AssignOptions, EntityAssigner } from './EntityAssigner';
@@ -49,7 +49,7 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
     return EntityTransformer.toObject(this.entity, [], true);
   }
 
-  toJSON(...args: any[]): EntityData<T> & Dictionary {
+  toJSON(...args: any[]): EntityDictionary<T> {
     // toJSON methods is added to thee prototype during discovery to support automatic serialization via JSON.stringify()
     return (this.entity as Dictionary).toJSON(...args);
   }

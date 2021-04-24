@@ -68,7 +68,7 @@ export class EntityAssigner {
       if (options.mergeObjects && Utils.isPlainObject(value)) {
         Utils.merge(entity[prop as keyof T], value);
       } else if (!props[prop] || props[prop].setter || !props[prop].getter) {
-        entity[prop as keyof T] = value;
+        entity[prop as keyof T] = value as T[keyof T];
       }
     });
 

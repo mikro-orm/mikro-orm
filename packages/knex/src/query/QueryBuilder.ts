@@ -110,7 +110,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.select([...Utils.asArray(this._fields), ...Utils.asArray(fields)]);
   }
 
-  insert(data: EntityData<T>): this {
+  insert(data: EntityData<T> | EntityData<T>[]): this {
     return this.init(QueryType.INSERT, data);
   }
 
@@ -282,11 +282,11 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.knex.ref(field);
   }
 
-  raw(sql: string, bindings: Knex.RawBinding[] | Knex.ValueDict = []): Knex.Raw {
+  raw<R = Knex.Raw>(sql: string, bindings: Knex.RawBinding[] | Knex.ValueDict = []): R {
     const raw = this.knex.raw(sql, bindings);
     (raw as Dictionary).__raw = true; // tag it as there is now way to check via `instanceof`
 
-    return raw;
+    return raw as unknown as R;
   }
 
   limit(limit?: number, offset = 0): this {

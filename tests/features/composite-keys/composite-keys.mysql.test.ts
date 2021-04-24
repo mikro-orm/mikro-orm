@@ -285,7 +285,7 @@ describe('composite keys in mysql', () => {
 
     const c1 = new Car2('n1', 2000, 1);
     const c2 = { name: 'n3', year: 2000, price: 123 };
-    const c3 = ['n4', 2000]; // composite PK
+    const c3 = ['n4', 2000] as const; // composite PK
 
     // managed entity have an internal __em reference, so that is what we are testing here
     expect(wrap(c1, true).__em).toBeUndefined();

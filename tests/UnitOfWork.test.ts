@@ -1,5 +1,5 @@
 import { Author } from './entities';
-import { ChangeSet, ChangeSetComputer, ChangeSetType, EntityValidator, EventSubscriber, FlushEventArgs, IdentityMap, Logger, MikroORM, UnitOfWork, wrap } from '@mikro-orm/core';
+import { ChangeSet, ChangeSetComputer, ChangeSetType, EntityValidator, EventSubscriber, FlushEventArgs, IdentityMap, Logger, MikroORM, UnitOfWork } from '@mikro-orm/core';
 import { initORMMongo, wipeDatabase } from './bootstrap';
 import FooBar from './entities/FooBar';
 import { FooBaz } from './entities/FooBaz';

@@ -4,7 +4,7 @@ import { Configuration, QueryHelper, TransactionContext, Utils } from './utils';
 import { AssignOptions, EntityAssigner, EntityFactory, EntityLoader, EntityRepository, EntityValidator, IdentifiedReference, Reference } from './entity';
 import { UnitOfWork } from './unit-of-work';
 import { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, UpdateOptions } from './drivers';
-import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, New, Populate, PopulateMap, PopulateOptions, Primary } from './typings';
+import { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, New, Populate, PopulateMap, PopulateOptions, Primary } from './typings';
 import { LoadStrategy, LockMode, QueryOrderMap, ReferenceType, SCALAR_TYPES } from './enums';
 import { MetadataStorage } from './metadata';
 import { Transaction } from './connections';
@@ -484,7 +484,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Maps raw database result to an entity and merges it to this EntityManager.
    */
-  map<T extends AnyEntity<T>>(entityName: EntityName<T>, result: EntityData<T>): T {
+  map<T extends AnyEntity<T>>(entityName: EntityName<T>, result: EntityDictionary<T>): T {
     entityName = Utils.className(entityName);
     const meta = this.metadata.get(entityName);
     const data = this.driver.mapResult(result, meta) as Dictionary;
@@ -518,7 +518,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   merge<T extends AnyEntity<T>>(entityName: EntityName<T> | T, data?: EntityData<T> | boolean, refresh?: boolean, convertCustomTypes?: boolean): T {
     if (Utils.isEntity(entityName)) {
-      return this.merge(entityName.constructor.name, entityName as EntityData<T>, data as boolean);
+      return this.merge(entityName.constructor.name, entityName as unknown as EntityData<T>, data as boolean);
     }
 
     entityName = Utils.className(entityName as string);

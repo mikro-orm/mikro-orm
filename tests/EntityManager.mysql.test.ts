@@ -2346,7 +2346,7 @@ describe('EntityManagerMySql', () => {
   test('exceptions', async () => {
     await orm.em.nativeInsert(Author2, { name: 'author', email: 'email' });
     await expect(orm.em.nativeInsert(Author2, { name: 'author', email: 'email' })).rejects.toThrow(UniqueConstraintViolationException);
-    await expect(orm.em.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrow(TableNotFoundException);
+    await expect(orm.em.nativeInsert<any>('not_existing', { foo: 'bar' })).rejects.toThrow(TableNotFoundException);
     await expect(orm.em.execute('create table author2 (foo text not null)')).rejects.toThrow(TableExistsException);
     await expect(orm.em.execute('foo bar 123')).rejects.toThrow(SyntaxErrorException);
     await expect(orm.em.execute('select id from author2, foo_bar2')).rejects.toThrow(NonUniqueFieldNameException);
