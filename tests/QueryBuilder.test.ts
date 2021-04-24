@@ -253,6 +253,22 @@ describe('QueryBuilder', () => {
     await qb.execute();
   });
 
+  test('join and select with empty collections', async () => {
+    const qb = orm.em.createQueryBuilder(FooBar2, 'fb');
+    qb.select('*')
+      .leftJoinAndSelect('fb.tests', 't')
+      .orderBy({ name: 1 });
+
+    await orm.em.nativeInsert(Test2, { id: 1, name: 't' });
+    await orm.em.nativeInsert(FooBar2, { id: 1, name: 'fb 1', tests: [] });
+    await orm.em.nativeInsert(FooBar2, { id: 2, name: 'fb 2', tests: [1] });
+    const res = await qb.getResultList();
+    expect(res[0].tests.isInitialized()).toBe(true);
+    expect(res[0].tests.getItems()).toHaveLength(0);
+    expect(res[1].tests.isInitialized()).toBe(true);
+    expect(res[1].tests.getItems()).toHaveLength(1);
+  });
+
   test('select leftJoin 1:1 inverse', async () => {
     const qb = orm.em.createQueryBuilder(FooBaz2, 'fz');
     qb.select(['fb.*', 'fz.*'])

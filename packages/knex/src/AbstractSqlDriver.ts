@@ -115,10 +115,15 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       // If the primary key value for the relation is null, we know we haven't joined to anything
       // and therefore we don't return any record (since all values would be null)
       const hasPK = meta2.primaryKeys.every(pk => meta2.properties[pk].fieldNames.every(name => {
-        return Utils.isDefined(root![`${relationAlias}__${name}`], true);
+        return root![`${relationAlias}__${name}`] != null;
       }));
 
       if (!hasPK) {
+        // initialize empty collections
+        if ([ReferenceType.MANY_TO_MANY, ReferenceType.ONE_TO_MANY].includes(relation.reference)) {
+          result[relation.name] = result[relation.name] || [];
+        }
+
         return;
       }
 
