@@ -72,7 +72,7 @@ describe('EntityRepository', () => {
     await repo.assign(e, { name: 'bar' });
     expect(methods.assign.mock.calls[0]).toEqual([e, { name: 'bar' }]);
     await repo.populate([], 'bar');
-    expect(methods.populate.mock.calls[0]).toEqual([[], 'bar', {}, {}, false, true]);
+    expect(methods.populate.mock.calls[0]).toEqual([[], 'bar', undefined]);
 
     await repo.nativeInsert({ name: 'bar' });
     expect(methods.nativeInsert.mock.calls[0]).toEqual([Publisher, { name: 'bar' }]);

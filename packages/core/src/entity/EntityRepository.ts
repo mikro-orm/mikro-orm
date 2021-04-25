@@ -3,6 +3,7 @@ import { EntityData, EntityName, AnyEntity, Primary, Populate, Loaded, New, Filt
 import { QueryOrderMap } from '../enums';
 import { CountOptions, DeleteOptions, FindOneOptions, FindOneOrFailOptions, FindOptions, UpdateOptions } from '../drivers/IDatabaseDriver';
 import { IdentifiedReference, Reference } from './Reference';
+import { EntityLoaderOptions } from './EntityLoader';
 
 export class EntityRepository<T extends AnyEntity<T>> {
 
@@ -227,23 +228,23 @@ export class EntityRepository<T extends AnyEntity<T>> {
   /**
    * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
    */
-  async populate<P extends string | keyof T | Populate<T>>(entities: T, populate: P, where?: FilterQuery<T>, orderBy?: QueryOrderMap, refresh?: boolean, validate?: boolean): Promise<Loaded<T, P>>;
+  async populate<P extends string | keyof T | Populate<T>>(entities: T, populate: P, options?: EntityLoaderOptions<T>): Promise<Loaded<T, P>>;
 
   /**
    * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
    */
-  async populate<P extends string | keyof T | Populate<T>>(entities: T[], populate: P, where?: FilterQuery<T>, orderBy?: QueryOrderMap, refresh?: boolean, validate?: boolean): Promise<Loaded<T, P>[]>;
+  async populate<P extends string | keyof T | Populate<T>>(entities: T[], populate: P, options?: EntityLoaderOptions<T>): Promise<Loaded<T, P>[]>;
 
   /**
    * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
    */
-  async populate<P extends string | keyof T | Populate<T>>(entities: T | T[], populate: P, where?: FilterQuery<T>, orderBy?: QueryOrderMap, refresh?: boolean, validate?: boolean): Promise<Loaded<T, P> | Loaded<T, P>[]>;
+  async populate<P extends string | keyof T | Populate<T>>(entities: T | T[], populate: P, options?: EntityLoaderOptions<T>): Promise<Loaded<T, P> | Loaded<T, P>[]>;
 
   /**
    * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
    */
-  async populate<P extends string | keyof T | Populate<T>>(entities: T | T[], populate: P, where: FilterQuery<T> = {}, orderBy: QueryOrderMap = {}, refresh = false, validate = true): Promise<Loaded<T, P> | Loaded<T, P>[]> {
-    return this.em.populate<T, P>(entities, populate, where, orderBy, refresh, validate);
+  async populate<P extends string | keyof T | Populate<T>>(entities: T | T[], populate: P, options?: EntityLoaderOptions<T>): Promise<Loaded<T, P> | Loaded<T, P>[]> {
+    return this.em.populate<T, P>(entities, populate, options);
   }
 
   /**

@@ -501,13 +501,25 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return res;
   }
 
-  protected getFieldsForJoinedLoad<T extends AnyEntity<T>>(qb: QueryBuilder<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[] = [], parentTableAlias?: string, parentJoinPath?: string): Field<T>[] {
+  protected getFieldsForJoinedLoad<T extends AnyEntity<T>>(qb: QueryBuilder<T>, meta: EntityMetadata<T>, explicitFields?: Field<T>[], populate: PopulateOptions<T>[] = [], parentTableAlias?: string, parentJoinPath?: string): Field<T>[] {
     const fields: Field<T>[] = [];
     const joinedProps = this.joinedProps(meta, populate);
 
+    const shouldHaveColumn = <U>(prop: EntityProperty<U>, populate: PopulateOptions<U>[], fields?: Field<U>[]) => {
+      if (!this.shouldHaveColumn(prop, populate)) {
+        return false;
+      }
+
+      if (!fields || prop.primary) {
+        return true;
+      }
+
+      return fields.includes(prop.name);
+    };
+
     // alias all fields in the primary table
     meta.props
-      .filter(prop => this.shouldHaveColumn(prop, populate))
+      .filter(prop => shouldHaveColumn(prop, populate, explicitFields))
       .forEach(prop => fields.push(...this.mapPropToFieldNames(qb, prop, parentTableAlias)));
 
     joinedProps.forEach(relation => {
@@ -517,7 +529,8 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       const field = parentTableAlias ? `${parentTableAlias}.${prop.name}` : prop.name;
       const path = parentJoinPath ? `${parentJoinPath}.${prop.name}` : `${meta.name}.${prop.name}`;
       qb.join(field, tableAlias, {}, 'leftJoin', path);
-      fields.push(...this.getFieldsForJoinedLoad(qb, meta2, relation.children, tableAlias, path));
+      const childExplicitFields = explicitFields?.filter(f => Utils.isPlainObject(f)).map(o => o[prop.name])[0];
+      fields.push(...this.getFieldsForJoinedLoad(qb, meta2, childExplicitFields, relation.children, tableAlias, path));
     });
 
     return fields;
@@ -663,7 +676,9 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const hasExplicitFields = !!fields;
     const ret: Field<T>[] = [];
 
-    if (fields) {
+    if (joinedProps.length > 0) {
+      ret.push(...this.getFieldsForJoinedLoad(qb, meta, fields, populate));
+    } else if (fields) {
       for (const field of [...fields]) {
         if (Utils.isPlainObject(field) || field.toString().includes('.')) {
           continue;
@@ -673,8 +688,6 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       }
 
       ret.unshift(...meta.primaryKeys.filter(pk => !fields.includes(pk)));
-    } else if (joinedProps.length > 0) {
-      ret.push(...this.getFieldsForJoinedLoad(qb, meta, populate));
     } else if (lazyProps.filter(p => !p.formula).length > 0) {
       const props = meta.props.filter(prop => this.shouldHaveColumn(prop, populate, false));
       ret.push(...Utils.flatten(props.filter(p => !lazyProps.includes(p)).map(p => p.fieldNames)));
