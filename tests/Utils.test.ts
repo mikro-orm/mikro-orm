@@ -161,7 +161,8 @@ describe('Utils', () => {
     expect(Utils.extractPK({ id }, meta)).toBe(id);
     expect(Utils.extractPK({ _id: id }, meta)).toBe(id);
     expect(Utils.extractPK({ foo: 'bar' })).toBeNull();
-    expect(Utils.extractPK(new Test())).toBeNull();
+    const t = new Test();
+    expect(Utils.extractPK(t)).toBe(t);
     expect(Utils.extractPK(true)).toBeNull();
   });
 
