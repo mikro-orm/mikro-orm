@@ -351,11 +351,15 @@ export class Utils {
    * Checks whether the argument looks like primary key (string, number or ObjectId).
    */
   static isPrimaryKey<T>(key: any, allowComposite = false): key is Primary<T> {
-    if (allowComposite && Array.isArray(key) && key.every(v => Utils.isPrimaryKey(v))) {
+    if (allowComposite && Array.isArray(key) && key.every((v, i) => Utils.isPrimaryKey(v, true))) {
       return true;
     }
 
-    return Utils.isString(key) || typeof key === 'number' || typeof key === 'bigint' || Utils.isObjectID(key) || key instanceof Date || key instanceof Buffer;
+    if (Utils.isObject(key) && !Utils.isPlainObject(key) && !Utils.isEntity(key, true)) {
+      return true;
+    }
+
+    return ['string', 'number', 'bigint'].includes(typeof key) || Utils.isObjectID(key) || key instanceof Date || key instanceof Buffer;
   }
 
   /**
@@ -374,7 +378,7 @@ export class Utils {
       return null;
     }
 
-    if (Utils.isObject(data) && meta) {
+    if (Utils.isPlainObject(data) && meta) {
       if (meta.compositePK) {
         return Utils.getCompositeKeyHash<T>(data as T, meta);
       }
