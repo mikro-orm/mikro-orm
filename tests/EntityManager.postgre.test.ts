@@ -678,7 +678,7 @@ describe('EntityManagerPostgre', () => {
     const json = wrap(publisher).toJSON().books;
 
     for (const book of publisher.books) {
-      expect(json.find((b: Book2) => b.uuid === book.uuid)).toMatchObject({
+      expect(json.find(b => b.uuid === book.uuid)).toMatchObject({
         author: book.author.id,
       });
     }

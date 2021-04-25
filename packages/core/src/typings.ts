@@ -1,5 +1,5 @@
-import { Cascade, EventType, LoadStrategy, QueryOrder, ReferenceType, LockMode } from './enums';
-import { AssignOptions, Collection, EntityRepository, EntityIdentifier, IdentifiedReference, Reference, EntityFactory, SerializationContext } from './entity';
+import { Cascade, EventType, LoadStrategy, LockMode, QueryOrder, ReferenceType } from './enums';
+import { AssignOptions, Collection, EntityFactory, EntityIdentifier, EntityRepository, IdentifiedReference, Reference, SerializationContext } from './entity';
 import { EntitySchema, MetadataStorage } from './metadata';
 import { Type } from './types';
 import { Platform } from './platforms';
@@ -78,18 +78,18 @@ export type Query<T> = T extends Scalar
 export type FilterQuery<T> = NonNullable<Query<T>> | { [PrimaryKeyType]?: any };
 export type QBFilterQuery<T = any> = FilterQuery<T> & Dictionary | FilterQuery<T>;
 
-export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T, P extends Populate<T> | unknown = unknown> {
+export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T | unknown = PrimaryProperty<T>, P extends Populate<T> | unknown = unknown> {
   isInitialized(): boolean;
   populated(populated?: boolean): void;
   init<P extends Populate<T> = Populate<T>>(populated?: boolean, populate?: P, lockMode?: LockMode): Promise<T>;
   toReference<PK2 extends PK | unknown = PrimaryProperty<T>, P2 extends P | unknown = unknown>(): IdentifiedReference<T, PK2> & LoadedReference<T, P2>;
-  toObject(ignoreFields?: string[]): Dictionary;
-  toJSON(...args: any[]): Dictionary;
-  toPOJO(): EntityData<T>;
+  toObject(ignoreFields?: string[]): EntityDTO<T>;
+  toJSON(...args: any[]): EntityDTO<T>;
+  toPOJO(): EntityDTO<T>;
   assign(data: any, options?: AssignOptions | boolean): T;
 }
 
-export interface IWrappedEntityInternal<T, PK extends keyof T, P = keyof T> extends IWrappedEntity<T, PK, P> {
+export interface IWrappedEntityInternal<T, PK extends keyof T | unknown = PrimaryProperty<T>, P = keyof T> extends IWrappedEntity<T, PK, P> {
   hasPrimaryKey(): boolean;
   getPrimaryKey(): Primary<T>;
   setPrimaryKey(val: Primary<T>): void;
@@ -144,6 +144,22 @@ export type EntityDataNested<T> = T extends undefined
 type EntityDataItem<T> = T | EntityDataProp<T> | null;
 export type EntityData<T> = { [K in keyof T]?: EntityDataItem<T[K]> };
 export type EntityDictionary<T> = EntityData<T> & Dictionary;
+
+type Relation<T> = {
+  [P in keyof T as T[P] extends unknown[] | Record<string | number | symbol, unknown> ? P : never]?: T[P]
+};
+export type EntityDTOProp<T> = T extends Scalar
+  ? T
+  : T extends Reference<infer U>
+    ? EntityDTO<U>
+    : T extends Collection<infer U>
+      ? EntityDTO<U>[]
+      : T extends { $: infer U }
+        ? (U extends readonly (infer V)[] ? EntityDTO<V>[] : EntityDTO<U>)
+        : T extends Relation<T>
+          ? EntityDTO<T>
+          : T;
+export type EntityDTO<T> = { [K in keyof T as ExcludeFunctions<T, K>]: EntityDTOProp<T[K]> };
 
 export interface EntityProperty<T extends AnyEntity<T> = any> {
   name: string & keyof T;

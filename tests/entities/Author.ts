@@ -1,6 +1,6 @@
 import {
-  AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate, DateType, Collection, Filter,
-  Cascade, Entity, ManyToMany, ManyToOne, OneToMany, Property, Index, Unique, EntityAssigner, EntityRepositoryType,
+  AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate, DateType, Collection, Filter, EntityDTO,
+  Cascade, Entity, ManyToMany, ManyToOne, OneToMany, Property, Index, Unique, EntityAssigner, EntityRepositoryType, Dictionary,
 } from '@mikro-orm/core';
 
 import { Book } from './Book';
@@ -126,9 +126,9 @@ export class Author extends BaseEntity<Author> {
     return EntityAssigner.assign<Author>(this, data);
   }
 
-  toJSON(strict = true, strip = ['id', 'email'], ...args: any[]): { [p: string]: any } {
+  toJSON(strict = true, strip = ['id', 'email'], ...args: any[]): EntityDTO<Author> {
     const o = this.toObject(...args);
-    o.fooBar = 123;
+    (o as Dictionary).fooBar = 123;
 
     if (strict) {
       strip.forEach(k => delete o[k]);

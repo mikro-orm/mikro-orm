@@ -197,7 +197,7 @@ describe('EntityManagerMongo', () => {
     await orm.em.persistAndFlush(bar);
     orm.em.clear();
 
-    const a = await orm.em.findOne(FooBar, bar.id, ['baz']);
+    const a = await orm.em.findOneOrFail(FooBar, bar.id, ['baz']);
     expect(wrap(a).toJSON()).toMatchObject({
       name: 'fb',
       fooBaz: 'FooBaz id: ' + bar.baz.id,
@@ -496,7 +496,7 @@ describe('EntityManagerMongo', () => {
     const json = wrap(publisher).toJSON().books;
 
     for (const book of publisher.books) {
-      expect(json.find((b: Book) => b.id === book.id)).toMatchObject({
+      expect(json.find(b => b.id === book.id)).toMatchObject({
         author: book.author.id,
       });
     }
@@ -870,7 +870,7 @@ describe('EntityManagerMongo', () => {
     orm.em.clear();
 
     // cache author with favouriteBook and its tags
-    const jon = await orm.em.findOne(Author, author.id, ['favouriteBook.tags']);
+    const jon = await orm.em.findOneOrFail(Author, author.id, ['favouriteBook.tags']);
     const cache = wrap(jon).toObject();
 
     // merge cached author with his references

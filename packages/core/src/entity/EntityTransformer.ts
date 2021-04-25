@@ -198,7 +198,7 @@ export class EntityTransformer {
     const wrapped = (child as T).__helper!;
 
     if (raw && wrapped.isInitialized() && child !== entity) {
-      return wrapped.toPOJO() as T[keyof T];
+      return wrapped.toPOJO() as unknown as T[keyof T];
     }
 
     if (wrapped.isInitialized() && wrapped.__populated && child !== entity && !wrapped.__lazyInitialized) {

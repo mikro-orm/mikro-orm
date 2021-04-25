@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { Collection, IdentifiedReference, Cascade, Entity, Index, ManyToMany, ManyToOne, PrimaryKey, Property, Unique, wrap, Filter, Dictionary } from '@mikro-orm/core';
+import { Collection, IdentifiedReference, Cascade, Entity, Index, ManyToMany, ManyToOne, PrimaryKey, Property, Unique, wrap, Filter, Dictionary, EntityDTO } from '@mikro-orm/core';
 import { Publisher } from './Publisher';
 import { Author } from './Author';
 import { BookTag } from './book-tag';
@@ -56,8 +56,8 @@ export class Book extends BaseEntity3<Book> {
     this.author = author!;
   }
 
-  toJSON(strict = true, strip = ['metaObject', 'metaArray', 'metaArrayOfStrings'], ...args: any[]): { [p: string]: any } {
-    const o = wrap(this).toObject(...args);
+  toJSON(strict = true, strip = ['metaObject', 'metaArray', 'metaArrayOfStrings'], ...args: any[]): EntityDTO<Book> {
+    const o = wrap(this as Book).toObject(...args);
 
     if (strict) {
       strip.forEach(k => delete o[k]);
