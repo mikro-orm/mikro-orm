@@ -4,7 +4,7 @@ import { Configuration, QueryHelper, TransactionContext, Utils } from './utils';
 import { AssignOptions, EntityAssigner, EntityFactory, EntityLoader, EntityRepository, EntityValidator, IdentifiedReference, Reference } from './entity';
 import { UnitOfWork } from './unit-of-work';
 import { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, UpdateOptions } from './drivers';
-import { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, New, Populate, PopulateMap, PopulateOptions, Primary } from './typings';
+import { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityDTO, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, New, Populate, PopulateMap, PopulateOptions, Primary } from './typings';
 import { LoadStrategy, LockMode, QueryOrderMap, ReferenceType, SCALAR_TYPES } from './enums';
 import { MetadataStorage } from './metadata';
 import { Transaction } from './connections';
@@ -510,13 +510,13 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Merges given entity to this EntityManager so it becomes managed. You can force refreshing of existing entities
    * via second parameter. By default it will return already loaded entities without modifying them.
    */
-  merge<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityData<T>, refresh?: boolean, convertCustomTypes?: boolean): T;
+  merge<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityData<T> | EntityDTO<T>, refresh?: boolean, convertCustomTypes?: boolean): T;
 
   /**
    * Merges given entity to this EntityManager so it becomes managed. You can force refreshing of existing entities
    * via second parameter. By default it will return already loaded entities without modifying them.
    */
-  merge<T extends AnyEntity<T>>(entityName: EntityName<T> | T, data?: EntityData<T> | boolean, refresh?: boolean, convertCustomTypes?: boolean): T {
+  merge<T extends AnyEntity<T>>(entityName: EntityName<T> | T, data?: EntityData<T> | EntityDTO<T> | boolean, refresh?: boolean, convertCustomTypes?: boolean): T {
     if (Utils.isEntity(entityName)) {
       return this.merge(entityName.constructor.name, entityName as unknown as EntityData<T>, data as boolean);
     }

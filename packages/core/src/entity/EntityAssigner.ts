@@ -1,7 +1,7 @@
 import { inspect } from 'util';
 import { Collection } from './Collection';
 import { EntityManager } from '../EntityManager';
-import { AnyEntity, EntityData, EntityMetadata, EntityProperty } from '../typings';
+import { AnyEntity, EntityData, EntityDTO, EntityMetadata, EntityProperty } from '../typings';
 import { Utils } from '../utils/Utils';
 import { Reference } from './Reference';
 import { ReferenceType, SCALAR_TYPES } from '../enums';
@@ -12,9 +12,9 @@ const validator = new EntityValidator(false);
 
 export class EntityAssigner {
 
-  static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T>, options?: AssignOptions): T;
-  static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T>, onlyProperties?: boolean): T;
-  static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T>, onlyProperties: AssignOptions | boolean = false): T {
+  static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T> | Partial<EntityDTO<T>>, options?: AssignOptions): T;
+  static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T> | Partial<EntityDTO<T>>, onlyProperties?: boolean): T;
+  static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T> | Partial<EntityDTO<T>>, onlyProperties: AssignOptions | boolean = false): T {
     const options = (typeof onlyProperties === 'boolean' ? { onlyProperties } : onlyProperties);
     const wrapped = entity.__helper!;
     const meta = entity.__meta!;
@@ -26,7 +26,7 @@ export class EntityAssigner {
         return;
       }
 
-      let value = data[prop as keyof EntityData<T>];
+      let value = data[prop as keyof typeof data];
 
       if (props[prop] && !props[prop].nullable && (value === undefined || value === null)) {
         throw new Error(`You must pass a non-${value} value to the property ${prop} of entity ${entity.constructor.name}.`);
