@@ -761,11 +761,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     const entityName = entitiesArray[0].constructor.name;
     const preparedPopulate = this.preparePopulate<T>(entityName, populate as true);
-    await this.entityLoader.populate(entityName, entitiesArray, preparedPopulate, {
-      ...options,
-      /* istanbul ignore next */
-      convertCustomTypes: options.convertCustomTypes ?? false,
-    });
+    await this.entityLoader.populate(entityName, entitiesArray, preparedPopulate, options);
 
     return entities as Loaded<T, P>[];
   }
@@ -783,7 +779,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     if (!clear) {
       for (const entity of this.getUnitOfWork().getIdentityMap()) {
-        em.merge(entity); // todo use registerManaged instead
+        em.getUnitOfWork().registerManaged(entity);
       }
     }
 
