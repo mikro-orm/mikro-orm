@@ -420,6 +420,22 @@ describe('EntityManagerPostgre', () => {
     expect(b1).toBe(b7);
   });
 
+  test('properties with spaces in column names', async () => {
+    const bar = new FooBar2();
+    bar.name = 'n';
+    bar.nameWithSpace = '123';
+    await orm.em.fork().persistAndFlush(bar);
+
+    const b1 = await orm.em.findOneOrFail(FooBar2, bar);
+    expect(b1.nameWithSpace).toBe('123');
+    b1.nameWithSpace = '456';
+    await orm.em.flush();
+    orm.em.clear();
+
+    const b2 = await orm.em.findOneOrFail(FooBar2, bar);
+    expect(b2.nameWithSpace).toBe('456');
+  });
+
   test('json properties respect field names', async () => {
     const bar = new FooBar2();
     bar.name = 'b';

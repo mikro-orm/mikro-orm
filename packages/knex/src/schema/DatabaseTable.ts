@@ -142,7 +142,7 @@ export class DatabaseTable {
     const compositeFkUniques: Dictionary<{ keyName: string }> = {};
 
     for (const index of this.indexes.filter(index => index.columnNames.length > 1)) {
-      const properties = index.columnNames.map(col => this.getPropertyName(this.getColumn(col)!));
+      const properties = index.columnNames.map(col => this.getPropertyName(namingStrategy, this.getColumn(col)!));
       const ret = { name: index.keyName, properties: Utils.unique(properties) };
 
       if (ret.properties.length === 1) {
@@ -210,7 +210,7 @@ export class DatabaseTable {
 
   private getPropertyDeclaration(column: Column, namingStrategy: NamingStrategy, schemaHelper: SchemaHelper, compositeFkIndexes: Dictionary<{ keyName: string }>, compositeFkUniques: Dictionary<{ keyName: string }>) {
     const fk = Object.values(this.foreignKeys).find(fk => fk.columnNames.includes(column.name));
-    const prop = this.getPropertyName(column);
+    const prop = this.getPropertyName(namingStrategy, column);
     const index = compositeFkIndexes[prop] || this.indexes.find(idx => idx.columnNames[0] === column.name && !idx.composite && !idx.unique && !idx.primary);
     const unique = compositeFkUniques[prop] || this.indexes.find(idx => idx.columnNames[0] === column.name && !idx.composite && idx.unique && !idx.primary);
     const reference = this.getReferenceType(fk, unique);
@@ -256,7 +256,7 @@ export class DatabaseTable {
     return ReferenceType.SCALAR;
   }
 
-  private getPropertyName(column: Column): string {
+  private getPropertyName(namingStrategy: NamingStrategy, column: Column): string {
     const fk = Object.values(this.foreignKeys).find(fk => fk.columnNames.includes(column.name));
     let field = column.name;
 
@@ -265,7 +265,7 @@ export class DatabaseTable {
       field = field.replace(new RegExp(`_${fk.referencedColumnNames[idx]}$`), '');
     }
 
-    return field.replace(/_(\w)/g, m => m[1].toUpperCase()).replace(/_+/g, '');
+    return namingStrategy.columnNameToProperty(field);
   }
 
   private getPropertyType(namingStrategy: NamingStrategy, column: Column, fk?: ForeignKey): string {

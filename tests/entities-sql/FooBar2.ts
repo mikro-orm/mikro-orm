@@ -12,6 +12,9 @@ export class FooBar2 extends BaseEntity22 {
   @Property()
   name!: string;
 
+  @Property({ name: 'name with space', nullable: true })
+  nameWithSpace?: string;
+
   @OneToOne({ orphanRemoval: true, nullable: true })
   baz?: FooBaz2;
 

@@ -293,6 +293,9 @@ export class FooBar2 {
   @Property({ length: 255 })
   name!: string;
 
+  @Property({ fieldName: 'name with space', length: 255, nullable: true })
+  nameWithSpace?: string;
+
   @OneToOne({ entity: () => FooBaz2, nullable: true })
   baz?: FooBaz2;
 
@@ -728,6 +731,9 @@ export class FooBar2 {
 
   @Property({ length: 255 })
   name!: string;
+
+  @Property({ fieldName: 'name with space', length: 255, nullable: true })
+  nameWithSpace?: string;
 
   @OneToOne({ entity: () => FooBaz2, nullable: true })
   baz?: FooBaz2;

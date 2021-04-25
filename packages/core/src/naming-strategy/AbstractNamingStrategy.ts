@@ -29,6 +29,10 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
     return `${tableName}_${columns.join('_')}_${type}`;
   }
 
+  columnNameToProperty(columnName: string): string {
+    return columnName.replace(/[_ ](\w)/g, m => m[1].toUpperCase()).replace(/_+/g, '');
+  }
+
   abstract classToTableName(entityName: string): string;
 
   abstract joinColumnName(propertyName: string): string;
