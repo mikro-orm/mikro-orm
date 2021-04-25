@@ -77,7 +77,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
   mapForeignKeys(fks: any[], tableName: string): Dictionary {
     return fks.reduce((ret, fk: any) => {
       ret[fk.from] = {
-        constraintName: this.getIndexName(tableName, [fk.from], 'foreign'),
+        constraintName: this.platform.getIndexName(tableName, [fk.from], 'foreign'),
         columnName: fk.from,
         columnNames: [fk.from],
         localTableName: tableName,
@@ -94,14 +94,6 @@ export class SqliteSchemaHelper extends SchemaHelper {
 
   async databaseExists(connection: Connection, name: string): Promise<boolean> {
     return true;
-  }
-
-  getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary'): string {
-    if (type === 'primary') {
-      return 'primary';
-    }
-
-    return super.getIndexName(tableName, columns, type);
   }
 
   /**

@@ -120,7 +120,7 @@ export class SourceFile {
         return;
       }
 
-      const defaultName = this.helper.getIndexName(this.meta.collection, prop.fieldNames, type);
+      const defaultName = this.platform.getIndexName(this.meta.collection, prop.fieldNames, type);
       options[type] = defaultName === prop[type] ? 'true' : `'${prop[type]}'`;
       const expected = {
         index: this.platform.indexForeignKeys(),

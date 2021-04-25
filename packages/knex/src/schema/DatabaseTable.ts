@@ -132,7 +132,7 @@ export class DatabaseTable {
       return value;
     }
 
-    return this.platform.getSchemaHelper()!.getIndexName(this.name, columnNames, type);
+    return this.platform.getIndexName(this.name, columnNames, type);
   }
 
   getEntityDeclaration(namingStrategy: NamingStrategy, schemaHelper: SchemaHelper): EntityMetadata {

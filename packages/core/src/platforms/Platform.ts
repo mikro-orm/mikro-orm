@@ -14,6 +14,7 @@ export abstract class Platform {
 
   protected readonly exceptionConverter = new ExceptionConverter();
   protected config!: Configuration;
+  protected namingStrategy!: NamingStrategy;
   protected timezone?: string;
 
   usesPivotTable(): boolean {
@@ -312,6 +313,7 @@ export abstract class Platform {
 
   setConfig(config: Configuration): void {
     this.config = config;
+    this.namingStrategy = config.getNamingStrategy();
 
     if (this.config.get('forceUtcTimezone')) {
       this.timezone = 'Z';
@@ -326,6 +328,13 @@ export abstract class Platform {
 
   supportsUnsigned(): boolean {
     return false;
+  }
+
+  /**
+   * Returns the default name of index for the given columns
+   */
+  getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
+    return this.namingStrategy.indexName(tableName, columns, type);
   }
 
 }

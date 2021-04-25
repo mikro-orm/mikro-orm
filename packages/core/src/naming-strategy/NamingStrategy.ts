@@ -40,4 +40,9 @@ export interface NamingStrategy {
    */
   joinKeyColumnName(entityName: string, referencedColumnName?: string, composite?: boolean): string;
 
+  /**
+   * Returns key/constraint name for given type. Some drivers might not support all the types (e.g. mysql and sqlite enforce the PK name).
+   */
+  indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence'): string;
+
 }
