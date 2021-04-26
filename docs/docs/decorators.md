@@ -96,7 +96,7 @@ For MongoDB you can define serialized primary key, which will be then used in en
 serialization via `JSON.stringify()` (through method `entity.toJSON()`).
 You will be able to use it to manipulate with the primary key as string. 
  
-See [Usage with MongoDH](usage-with-mongo.md) and [Serializing](serializing.md).
+See [Usage with MongoDB](usage-with-mongo.md) and [Serializing](serializing.md).
 
 ```typescript
 @PrimaryKey()
