@@ -113,7 +113,7 @@
     "@types/fs-extra": "9.0.11",
     "@types/jest": "26.0.23",
     "@types/mysql2": "types/mysql2#d4ef3b2292f328049f7e4c545f6adab7d6a350a9",
-    "@types/node": "14.14.41",
+    "@types/node": "14.14.42",
     "@types/pg": "7.14.11",
     "@types/sqlstring": "2.3.0",
     "@types/uuid": "8.3.0",
