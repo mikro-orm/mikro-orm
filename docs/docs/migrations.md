@@ -36,10 +36,18 @@ accessed via `Migration.getKnex()`;
 
 ## Initial migration
 
-```sh
-npm install @mikro-orm/cli or yarn add @mikro-orm/cli
+Install mikro-orm cli as 
 
+```sh
+npm install @mikro-orm/cli 
 ```
+
+or
+
+```sh
+yarn add @mikro-orm/cli 
+```
+
 
 If you want to start using migrations, and you already have the schema generated, 
 you can do so by creating so called initial migration:
