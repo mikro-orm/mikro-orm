@@ -70,6 +70,8 @@ await MikroORM.init({
 
 ## Using via CLI
 
+Install cli using: ```yarn add @mikro-orm/cli```
+
 You can use it via CLI: 
 
 ```sh
