@@ -1948,6 +1948,22 @@ describe('QueryBuilder', () => {
     expect(sql3).toBe("update `my_schema`.`author2` force index(custom_email_index_name) set `name` = '...' where `favourite_book_uuid_pk` in ('1', '2', '3')");
   });
 
+  test('$or operator inside auto-joined relation', async () => {
+    const query = {
+      author: {
+        $or: [
+          { id: 123 },
+          { name: { $like: `%jon%` } },
+        ],
+      },
+    };
+    const expected = "select `e0`.*, `e0`.price * 1.19 as `price_taxed` from `book2` as `e0` left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` where (`e1`.`id` = 123 or `e1`.`name` like '%jon%')";
+    const sql1 = orm.em.createQueryBuilder(Book2).select('*').where(query).getFormattedQuery();
+    expect(sql1).toBe(expected);
+    const sql2 = orm.em.createQueryBuilder(Book2).where(query).getFormattedQuery();
+    expect(sql2).toBe(expected);
+  });
+
   afterAll(async () => orm.close(true));
 
 });

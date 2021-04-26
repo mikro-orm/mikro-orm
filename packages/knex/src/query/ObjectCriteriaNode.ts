@@ -26,14 +26,15 @@ export class ObjectCriteriaNode extends CriteriaNode {
       const operator = Utils.isOperator(field);
       const customExpression = ObjectCriteriaNode.isCustomExpression(field);
       const virtual = childNode.prop?.persist === false;
-      const primaryKey = this.metadata.find(this.entityName)?.primaryKeys.includes(field);
+      // if key is missing, we are inside group operator and we need to prefix with alias
+      const primaryKey = this.key && this.metadata.find(this.entityName)!.primaryKeys.includes(field);
 
       if (childNode.shouldInline(payload)) {
         const childAlias = qb.getAliasForJoinPath(childNode.getPath());
         this.inlineChildPayload(o, payload, field, alias, childAlias);
       } else if (childNode.shouldRename(payload)) {
         o[childNode.renameFieldToPK(qb)] = payload;
-      } else if (primaryKey || virtual || operator || customExpression || field.includes('.') || ![QueryType.SELECT, QueryType.COUNT].includes(qb.type)) {
+      } else if (primaryKey || virtual || operator || customExpression || field.includes('.') || ![QueryType.SELECT, QueryType.COUNT].includes(qb.type ?? QueryType.SELECT)) {
         o[field] = payload;
       } else {
         o[`${alias}.${field}`] = payload;
