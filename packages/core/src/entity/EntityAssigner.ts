@@ -28,7 +28,7 @@ export class EntityAssigner {
 
       let value = data[prop as keyof EntityData<T>];
 
-      if (props[prop] && !props[prop].nullable && (value === undefined || value === null)) {
+      if (props[prop] && !props[prop].nullable && value == null) {
         throw new Error(`You must pass a non-${value} value to the property ${prop} of entity ${entity.constructor.name}.`);
       }
 
@@ -44,7 +44,6 @@ export class EntityAssigner {
       }
 
       if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(props[prop]?.reference) && Utils.isDefined(value, true) && EntityAssigner.validateEM(em)) {
-
         // eslint-disable-next-line no-prototype-builtins
         if (options.updateNestedEntities && entity.hasOwnProperty(prop) && (Utils.isEntity(entity[prop]) || Reference.isReference(entity[prop])) && Utils.isPlainObject(value)) {
           const unwrappedEntity = Reference.unwrapReference(entity[prop]);
@@ -125,7 +124,14 @@ export class EntityAssigner {
 
   private static assignCollection<T extends AnyEntity<T>, U extends AnyEntity<U> = AnyEntity>(entity: T, collection: Collection<U>, value: any[], prop: EntityProperty, em: EntityManager, options: AssignOptions): void {
     const invalid: any[] = [];
-    const items = value.map((item: any) => this.createCollectionItem<U>(item, em, prop, invalid, options));
+    const items = value.map((item: any, idx) => {
+      /* istanbul ignore next */
+      if (options.updateNestedEntities && collection[idx]?.__helper!.isInitialized()) {
+        return EntityAssigner.assign(collection[idx], item, options);
+      }
+
+      return this.createCollectionItem<U>(item, em, prop, invalid, options);
+    });
 
     if (invalid.length > 0) {
       const name = entity.constructor.name;

@@ -1,4 +1,4 @@
-import { MikroORM, Reference, wrap } from '@mikro-orm/core';
+import { EntityData, MikroORM, Reference, wrap } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { Author2, Book2, BookTag2, FooBar2, Publisher2, PublisherType } from './entities-sql';
@@ -207,6 +207,23 @@ describe('EntityAssignerMySql', () => {
     const bar1 = await orm.em.fork().findOneOrFail(FooBar2, 1);
     expect(bar1.name).toBe('updated name');
     expect(bar1.blob!.toString()).toBe('123456');
+  });
+
+  test('assigning to collections with `updateNestedEntities` flag', async () => {
+    const entity = orm.em.create(Author2, {
+      id: 1,
+      name: 'god',
+      books: [
+        { title: 'b1' },
+        { title: 'b2' },
+      ],
+    });
+    entity.books.populated();
+    const updated = wrap(entity).toObject();
+    updated.books[0].title = 'updated name';
+    // TODO (v5) allow passing EntityDTO to assign()
+    orm.em.assign(entity, updated as EntityData<Author2>, { updateNestedEntities: true });
+    expect(entity.books[0].title).toBe('updated name');
   });
 
   afterAll(async () => orm.close(true));
