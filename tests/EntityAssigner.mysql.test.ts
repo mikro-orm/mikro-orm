@@ -220,8 +220,7 @@ describe('EntityAssignerMySql', () => {
     entity.books.populated();
     const updated = wrap(entity).toObject();
     updated.books[0].title = 'updated name';
-    // TODO (v5) allow passing EntityDTO to assign()
-    orm.em.assign(entity, updated as EntityData<Author2>, { updateNestedEntities: true });
+    orm.em.assign(entity, updated, { updateNestedEntities: true });
     expect(entity.books[0].title).toBe('updated name');
   });
 

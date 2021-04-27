@@ -549,7 +549,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Shortcut for `wrap(entity).assign(data, { em })`
    */
-  assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T>, options: AssignOptions = {}): T {
+  assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T> | Partial<EntityDTO<T>>, options: AssignOptions = {}): T {
     return EntityAssigner.assign(entity, data, { em: this, ...options });
   }
 
