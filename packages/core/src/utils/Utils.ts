@@ -119,7 +119,7 @@ export class Utils {
   static readonly PK_SEPARATOR = '~~~';
 
   /**
-   * Checks if the argument is not undefined
+   * Checks if the argument is not undefined or null
    */
   static isDefined<T = Record<string, unknown>>(data: any, considerNullUndefined = false): data is T {
     return typeof data !== 'undefined' && !(considerNullUndefined && data === null);
