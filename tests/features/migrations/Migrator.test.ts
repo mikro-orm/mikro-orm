@@ -4,7 +4,7 @@ import { Logger, MetadataStorage, MikroORM } from '@mikro-orm/core';
 import { Migration, MigrationStorage, Migrator } from '@mikro-orm/migrations';
 import { DatabaseSchema, DatabaseTable, MySqlDriver, SchemaGenerator } from '@mikro-orm/mysql';
 import { remove } from 'fs-extra';
-import { initORMMySql } from './bootstrap';
+import { initORMMySql } from '../../bootstrap';
 
 class MigrationTest1 extends Migration {
 

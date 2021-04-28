@@ -2,9 +2,8 @@ import { MikroORM } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 import { CLIHelper } from '@mikro-orm/cli';
-// noinspection ES6PreferShortImport
-import { GenerateEntitiesCommand } from '../../packages/cli/src/commands/GenerateEntitiesCommand';
-import { initORMSqlite } from '../bootstrap';
+import { GenerateEntitiesCommand } from '../../../packages/cli/src/commands/GenerateEntitiesCommand';
+import { initORMSqlite } from '../../bootstrap';
 
 const close = jest.fn();
 jest.spyOn(MikroORM.prototype, 'close').mockImplementation(close);

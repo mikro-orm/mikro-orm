@@ -1,7 +1,7 @@
 import { pathExists, remove } from 'fs-extra';
 import { DatabaseTable } from '@mikro-orm/knex';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
-import { initORMMySql, initORMPostgreSql, initORMSqlite } from './bootstrap';
+import { initORMMySql, initORMPostgreSql, initORMSqlite } from '../../bootstrap';
 
 describe('EntityGenerator', () => {
 

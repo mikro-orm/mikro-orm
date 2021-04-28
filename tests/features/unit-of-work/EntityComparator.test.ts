@@ -13,9 +13,9 @@ import {
   ReferenceType,
   Utils,
 } from '@mikro-orm/core';
-import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from './entities-sql';
-import { BaseEntity2 } from './entities-sql/BaseEntity2';
-import { BaseEntity22 } from './entities-sql/BaseEntity22';
+import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from '../../entities-sql';
+import { BaseEntity2 } from '../../entities-sql/BaseEntity2';
+import { BaseEntity22 } from '../../entities-sql/BaseEntity22';
 
 export class ObjectHydratorOld {
 

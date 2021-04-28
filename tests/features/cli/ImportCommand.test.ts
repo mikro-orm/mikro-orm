@@ -1,4 +1,4 @@
-import { Configuration, CLIHelper } from '../../packages/mikro-orm/src';
+import { Configuration, CLIHelper } from '@mikro-orm/mikro-orm';
 
 const close = jest.fn();
 const config = new Configuration({ type: 'mongo' } as any, false);
@@ -13,8 +13,7 @@ dumpMock.mockImplementation(() => void 0);
 
 (global as any).console.log = jest.fn();
 
-// noinspection ES6PreferShortImport
-import { ImportCommand } from '../../packages/cli/src/commands/ImportCommand';
+import { ImportCommand } from '../../../packages/cli/src/commands/ImportCommand';
 
 describe('ImportDatabaseCommand', () => {
 
