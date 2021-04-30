@@ -585,12 +585,7 @@ export class UnitOfWork {
       await this.commitUpdateChangeSets(groups[ChangeSetType.UPDATE].get(name) ?? [], tx);
     }
 
-    // 3. delete - entity deletions need to be in reverse commit order
-    for (const name of commitOrderReversed) {
-      await this.commitDeleteChangeSets(groups[ChangeSetType.DELETE].get(name) ?? [], tx);
-    }
-
-    // 4. extra updates
+    // 3. extra updates
     const extraUpdates: ChangeSet<any>[] = [];
 
     for (const extraUpdate of this.extraUpdates) {
@@ -609,10 +604,15 @@ export class UnitOfWork {
 
     await this.commitUpdateChangeSets(extraUpdates, tx, false);
 
-    // 5. collection updates
+    // 4. collection updates
     for (const coll of this.collectionUpdates) {
       await this.em.getDriver().syncCollection(coll, tx);
       coll.takeSnapshot();
+    }
+
+    // 5. delete - entity deletions need to be in reverse commit order
+    for (const name of commitOrderReversed) {
+      await this.commitDeleteChangeSets(groups[ChangeSetType.DELETE].get(name) ?? [], tx);
     }
   }
 
