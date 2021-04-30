@@ -419,6 +419,26 @@ describe('EntityManagerPostgre', () => {
     expect(b1).toBe(b7);
   });
 
+  test('order by json properties', async () => {
+    await orm.em.nativeDelete(Book2, {});
+    await orm.em.nativeDelete(Author2, {});
+    await orm.em.nativeInsert(Author2, { name: 'n', email: 'e', id: 1 });
+    await orm.em.getDriver().nativeInsertMany(Book2.name, [
+      { uuid: '123e4567-e89b-12d3-a456-426614174001', title: 't1', author: 1, meta: { foo: 3, bar: { str: 'c', num: 3 } } },
+      { uuid: '123e4567-e89b-12d3-a456-426614174002', title: 't2', author: 1, meta: { foo: 2, bar: { str: 'b', num: 1 } } },
+      { uuid: '123e4567-e89b-12d3-a456-426614174003', title: 't3', author: 1, meta: { foo: 1, bar: { str: 'a', num: 2 } } },
+    ]);
+
+    const res14 = await orm.em.fork().find(Book2, {}, { orderBy: { meta: { foo: 'asc' } } });
+    expect(res14.map(r => r.title)).toEqual(['t3', 't2', 't1']);
+
+    const res15 = await orm.em.fork().find(Book2, {}, { orderBy: { meta: { bar: { str: 'asc' } } } });
+    expect(res15.map(r => r.title)).toEqual(['t3', 't2', 't1']);
+
+    const res16 = await orm.em.fork().find(Book2, {}, { orderBy: { meta: { bar: { num: QueryOrder.DESC } } } });
+    expect(res16.map(r => r.title)).toEqual(['t1', 't3', 't2']);
+  });
+
   test('findOne should initialize entity that is already in IM', async () => {
     const god = new Author2('God', 'hello@heaven.god');
     const bible = new Book2('Bible', god);
