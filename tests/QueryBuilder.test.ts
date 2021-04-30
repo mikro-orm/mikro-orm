@@ -1825,6 +1825,31 @@ describe('QueryBuilder', () => {
     const qb13 = pg.em.createQueryBuilder(Book2).where({ meta: { foo: { $lte: 123 } } });
     expect(qb13.getFormattedQuery()).toBe(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where ("meta"->>'foo')::float8 <= 123`);
 
+    // order by json property
+    await pg.em.nativeDelete(Book2, {});
+    await pg.em.nativeDelete(Author2, {});
+    await pg.em.nativeInsert(Author2, { name: 'n', email: 'e', id: 1 });
+    await pg.em.getDriver().nativeInsertMany(Book2.name, [
+      { uuid: '123e4567-e89b-12d3-a456-426614174001', title: 't1', author: 1, meta: { foo: 3, bar: { str: 'c', num: 3 } } },
+      { uuid: '123e4567-e89b-12d3-a456-426614174002', title: 't2', author: 1, meta: { foo: 2, bar: { str: 'b', num: 1 } } },
+      { uuid: '123e4567-e89b-12d3-a456-426614174003', title: 't3', author: 1, meta: { foo: 1, bar: { str: 'a', num: 2 } } },
+    ]);
+
+    const qb14 = pg.em.createQueryBuilder(Book2).orderBy({ meta: { foo: 'asc' } });
+    expect(qb14.getFormattedQuery()).toBe(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" order by "meta"->>'foo' asc`);
+    const res14 = await qb14.getResultList();
+    expect(res14.map(r => r.title)).toEqual(['t3', 't2', 't1']);
+
+    const qb15 = pg.em.createQueryBuilder(Book2).orderBy({ meta: { bar: { str: 'asc' } } });
+    expect(qb15.getFormattedQuery()).toBe(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" order by "meta"->'bar'->>'str' asc`);
+    const res15 = await qb15.getResultList();
+    expect(res15.map(r => r.title)).toEqual(['t3', 't2', 't1']);
+
+    const qb16 = pg.em.createQueryBuilder(Book2).orderBy({ meta: { bar: { num: QueryOrder.DESC } } });
+    expect(qb16.getFormattedQuery()).toBe(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" order by "meta"->'bar'->>'num' desc`);
+    const res16 = await qb16.getResultList();
+    expect(res16.map(r => r.title)).toEqual(['t1', 't3', 't2']);
+
     await pg.close(true);
   });
 
