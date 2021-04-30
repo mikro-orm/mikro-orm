@@ -21,6 +21,11 @@ export interface NamingStrategy {
   propertyToColumnName(propertyName: string): string;
 
   /**
+   * Return a column name for a property (used in `EntityGenerator`).
+   */
+  columnNameToProperty(columnName: string): string;
+
+  /**
    * Return the default reference column name
    */
   referenceColumnName(): string;
@@ -39,5 +44,10 @@ export interface NamingStrategy {
    * Return the foreign key column name for the given parameters
    */
   joinKeyColumnName(entityName: string, referencedColumnName?: string, composite?: boolean): string;
+
+  /**
+   * Returns key/constraint name for given type. Some drivers might not support all the types (e.g. mysql and sqlite enforce the PK name).
+   */
+  indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence'): string;
 
 }

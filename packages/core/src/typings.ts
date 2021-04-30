@@ -1,5 +1,5 @@
-import { Cascade, EventType, LoadStrategy, QueryOrder, ReferenceType, LockMode } from './enums';
-import { AssignOptions, Collection, EntityRepository, EntityIdentifier, IdentifiedReference, Reference, EntityFactory, SerializationContext } from './entity';
+import { Cascade, EventType, LoadStrategy, LockMode, QueryOrder, ReferenceType } from './enums';
+import { AssignOptions, Collection, EntityFactory, EntityIdentifier, EntityRepository, IdentifiedReference, Reference, SerializationContext } from './entity';
 import { EntitySchema, MetadataStorage } from './metadata';
 import { Type } from './types';
 import { Platform } from './platforms';
@@ -8,7 +8,7 @@ import { Configuration, EntityComparator, Utils } from './utils';
 export type Constructor<T = unknown> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
 // eslint-disable-next-line @typescript-eslint/ban-types
-export type NonFunctionPropertyNames<T> = NonNullable<{ [K in keyof T]: T[K] extends Function ? never : K }[keyof T]>;
+export type ExcludeFunctions<T, K extends keyof T> = T[K] extends Function ? never : K;
 export type Cast<T, R> = T extends R ? T : R;
 export type IsUnknown<T> = T extends unknown ? unknown extends T ? true : never : never;
 
@@ -23,11 +23,13 @@ export type DeepPartial<T> = T & {
 export const EntityRepositoryType = Symbol('EntityRepositoryType');
 export const PrimaryKeyType = Symbol('PrimaryKeyType');
 export const PrimaryKeyProp = Symbol('PrimaryKeyProp');
+
+type ReadonlyPrimary<T> = T extends any[] ? Readonly<T> : T;
 export type Primary<T> = T extends { [PrimaryKeyType]: infer PK } // TODO `PrimaryKeyType` should be optional
-  ? PK : T extends { _id: infer PK }
-  ? PK | string : T extends { uuid: infer PK }
-  ? PK : T extends { id: infer PK }
-  ? PK : never;
+  ? ReadonlyPrimary<PK> : T extends { _id: infer PK }
+  ? ReadonlyPrimary<PK> | string : T extends { uuid: infer PK }
+  ? ReadonlyPrimary<PK> : T extends { id: infer PK }
+  ? ReadonlyPrimary<PK> : never;
 export type PrimaryProperty<T> = T extends { [PrimaryKeyProp]?: infer PK }
   ? PK : T extends { _id: any }
   ? '_id' | string : T extends { uuid: any }
@@ -66,7 +68,7 @@ export type OperatorMap<T> = {
 
 export type FilterValue2<T> = T | ExpandScalar<T> | Primary<T>;
 export type FilterValue<T> = OperatorMap<FilterValue2<T>> | FilterValue2<T> | FilterValue2<T>[] | null;
-type ExpandObject<U> = { [K in NonFunctionPropertyNames<U>]?: Query<ExpandProperty<U[K]>> | FilterValue<ExpandProperty<U[K]>> | null } | FilterValue<ExpandProperty<U>>;
+type ExpandObject<T> = { [K in keyof T as ExcludeFunctions<T, K>]?: Query<ExpandProperty<T[K]>> | FilterValue<ExpandProperty<T[K]>> | null } | FilterValue<ExpandProperty<T>>;
 
 export type Query<T> = T extends Scalar
   ? FilterValue<T>
@@ -76,18 +78,18 @@ export type Query<T> = T extends Scalar
 export type FilterQuery<T> = NonNullable<Query<T>> | { [PrimaryKeyType]?: any };
 export type QBFilterQuery<T = any> = FilterQuery<T> & Dictionary | FilterQuery<T>;
 
-export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T, P extends Populate<T> | unknown = unknown> {
+export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T | unknown = PrimaryProperty<T>, P extends Populate<T> | unknown = unknown> {
   isInitialized(): boolean;
   populated(populated?: boolean): void;
   init<P extends Populate<T> = Populate<T>>(populated?: boolean, populate?: P, lockMode?: LockMode): Promise<T>;
   toReference<PK2 extends PK | unknown = PrimaryProperty<T>, P2 extends P | unknown = unknown>(): IdentifiedReference<T, PK2> & LoadedReference<T, P2>;
-  toObject(ignoreFields?: string[]): Dictionary;
-  toJSON(...args: any[]): Dictionary;
-  toPOJO(): EntityData<T>;
+  toObject(ignoreFields?: string[]): EntityDTO<T>;
+  toJSON(...args: any[]): EntityDTO<T>;
+  toPOJO(): EntityDTO<T>;
   assign(data: any, options?: AssignOptions | boolean): T;
 }
 
-export interface IWrappedEntityInternal<T, PK extends keyof T, P = keyof T> extends IWrappedEntity<T, PK, P> {
+export interface IWrappedEntityInternal<T, PK extends keyof T | unknown = PrimaryProperty<T>, P = keyof T> extends IWrappedEntity<T, PK, P> {
   hasPrimaryKey(): boolean;
   getPrimaryKey(): Primary<T>;
   setPrimaryKey(val: Primary<T>): void;
@@ -119,8 +121,45 @@ export type AnyEntity<T = any> = Partial<T> & {
 export type EntityClass<T extends AnyEntity<T>> = Function & { prototype: T };
 export type EntityClassGroup<T extends AnyEntity<T>> = { entity: EntityClass<T>; schema: EntityMetadata<T> | EntitySchema<T> };
 export type EntityName<T extends AnyEntity<T>> = string | EntityClass<T> | EntitySchema<T, any>;
-export type EntityData<T> = { [P in keyof T]?: T[P] | any } & Dictionary;
 export type GetRepository<T extends AnyEntity<T>, U> = T[typeof EntityRepositoryType] extends EntityRepository<any> | undefined ? NonNullable<T[typeof EntityRepositoryType]> : U;
+
+export type EntityDataPropValue<T> = T | Primary<T>;
+type ExpandEntityProp<T> = T extends Record<string, any>
+  ? { [K in keyof T]?: EntityDataProp<ExpandProperty<T[K]>> | EntityDataPropValue<ExpandProperty<T[K]>> | null } | EntityDataPropValue<ExpandProperty<T>>
+  : T;
+
+export type EntityDataProp<T> = T extends Scalar
+  ? T
+  : T extends Reference<infer U>
+    ? EntityDataNested<U>
+    : T extends Collection<infer U>
+        ? U | U[] | EntityDataNested<U> | EntityDataNested<U>[]
+        : EntityDataNested<T>;
+
+export type EntityDataNested<T> = T extends undefined
+  ? never
+  : T extends any[]
+    ? Readonly<T>
+    : EntityData<T> | ExpandEntityProp<T>;
+type EntityDataItem<T> = T | EntityDataProp<T> | null;
+export type EntityData<T> = { [K in keyof T]?: EntityDataItem<T[K]> };
+export type EntityDictionary<T> = EntityData<T> & Dictionary;
+
+type Relation<T> = {
+  [P in keyof T as T[P] extends unknown[] | Record<string | number | symbol, unknown> ? P : never]?: T[P]
+};
+export type EntityDTOProp<T> = T extends Scalar
+  ? T
+  : T extends Reference<infer U>
+    ? EntityDTO<U>
+    : T extends Collection<infer U>
+      ? EntityDTO<U>[]
+      : T extends { $: infer U }
+        ? (U extends readonly (infer V)[] ? EntityDTO<V>[] : EntityDTO<U>)
+        : T extends Relation<T>
+          ? EntityDTO<T>
+          : T;
+export type EntityDTO<T> = { [K in keyof T as ExcludeFunctions<T, K>]: EntityDTOProp<T[K]> };
 
 export interface EntityProperty<T extends AnyEntity<T> = any> {
   name: string & keyof T;
@@ -372,7 +411,7 @@ export type ExpandProperty<T> = T extends Reference<infer U>
   : T extends Collection<infer U>
     ? NonNullable<U>
     : T extends (infer U)[]
-      ? NonNullable <U>
+      ? NonNullable<U>
       : NonNullable<T>;
 export type PopulateChildren<T> = { [K in keyof T]?: PopulateMap<ExpandProperty<T[K]>> };
 export type PopulateMap<T> = boolean | LoadStrategy | PopulateChildren<T>;

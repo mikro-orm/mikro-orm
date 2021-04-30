@@ -6,8 +6,7 @@ const getConfigurationMock = jest.spyOn(CLIHelper, 'getConfiguration');
 getConfigurationMock.mockResolvedValue(new Configuration({ type: 'mysql', cache: { enabled: true }, getDriver: () => ({ getPlatform: jest.fn() }) } as any, false));
 const clearMock = jest.spyOn(FileCacheAdapter.prototype, 'clear');
 
-// noinspection ES6PreferShortImport
-import { ClearCacheCommand } from '../../packages/cli/src/commands/ClearCacheCommand';
+import { ClearCacheCommand } from '../../../packages/cli/src/commands/ClearCacheCommand';
 
 describe('ClearCacheCommand', () => {
 

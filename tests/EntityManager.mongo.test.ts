@@ -197,7 +197,7 @@ describe('EntityManagerMongo', () => {
     await orm.em.persistAndFlush(bar);
     orm.em.clear();
 
-    const a = await orm.em.findOne(FooBar, bar.id, ['baz']);
+    const a = await orm.em.findOneOrFail(FooBar, bar.id, ['baz']);
     expect(wrap(a).toJSON()).toMatchObject({
       name: 'fb',
       fooBaz: 'FooBaz id: ' + bar.baz.id,
@@ -496,7 +496,7 @@ describe('EntityManagerMongo', () => {
     const json = wrap(publisher).toJSON().books;
 
     for (const book of publisher.books) {
-      expect(json.find((b: Book) => b.id === book.id)).toMatchObject({
+      expect(json.find(b => b.id === book.id)).toMatchObject({
         author: book.author.id,
       });
     }
@@ -870,7 +870,7 @@ describe('EntityManagerMongo', () => {
     orm.em.clear();
 
     // cache author with favouriteBook and its tags
-    const jon = await orm.em.findOne(Author, author.id, ['favouriteBook.tags']);
+    const jon = await orm.em.findOneOrFail(Author, author.id, ['favouriteBook.tags']);
     const cache = wrap(jon).toObject();
 
     // merge cached author with his references
@@ -1411,10 +1411,10 @@ describe('EntityManagerMongo', () => {
     const res6 = await orm.em.nativeUpdate(Author, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
     expect(res6).toBe(1);
 
-    const res7 = await orm.em.nativeInsert('test', { name: 'native name 1', test: 'abc' });
+    const res7 = await orm.em.nativeInsert<any>('test', { name: 'native name 1', test: 'abc' });
     expect(res7).toBeInstanceOf(ObjectId);
 
-    const res8 = await orm.em.nativeUpdate('test', { name: 'native name 1' }, { $unset: { test: 1 } });
+    const res8 = await orm.em.nativeUpdate<any>('test', { name: 'native name 1' }, { $unset: { test: 1 } });
     expect(res8).toBe(1);
 
     const res9 = await orm.em.nativeDelete('test', { name: 'native name 1' });

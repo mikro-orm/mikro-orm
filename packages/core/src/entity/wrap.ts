@@ -1,20 +1,20 @@
-import { AnyEntity, Dictionary, IWrappedEntity, IWrappedEntityInternal } from '../typings';
+import { AnyEntity, Dictionary, IWrappedEntity, IWrappedEntityInternal, PrimaryProperty } from '../typings';
 
 /**
  * returns WrappedEntity instance associated with this entity. This includes all the internal properties like `__meta` or `__em`.
  */
-export function wrap<T, PK extends keyof T>(entity: T, preferHelper: true): IWrappedEntityInternal<T, PK>;
+export function wrap<T, PK extends keyof T | unknown = PrimaryProperty<T>>(entity: T, preferHelper: true): IWrappedEntityInternal<T, PK>;
 
 /**
  * wraps entity type with WrappedEntity internal properties and helpers like init/isInitialized/populated/toJSON
  */
-export function wrap<T, PK extends keyof T>(entity: T, preferHelper?: false): IWrappedEntity<T, PK>;
+export function wrap<T, PK extends keyof T | unknown = PrimaryProperty<T>>(entity: T, preferHelper?: false): IWrappedEntity<T, PK>;
 
 /**
  * wraps entity type with WrappedEntity internal properties and helpers like init/isInitialized/populated/toJSON
  * use `preferHelper = true` to have access to the internal `__` properties like `__meta` or `__em`
  */
-export function wrap<T extends AnyEntity<T>, PK extends keyof T>(entity: T & Dictionary, preferHelper = false): IWrappedEntity<T, PK> | IWrappedEntityInternal<T, PK> {
+export function wrap<T extends AnyEntity<T>, PK extends keyof T | unknown = PrimaryProperty<T>>(entity: T & Dictionary, preferHelper = false): IWrappedEntity<T, PK> | IWrappedEntityInternal<T, PK> {
   if (entity?.__baseEntity && !preferHelper) {
     return entity as unknown as IWrappedEntity<T, PK>;
   }

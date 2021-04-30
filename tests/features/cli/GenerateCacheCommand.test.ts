@@ -1,6 +1,6 @@
 import { Configuration, MetadataDiscovery, MetadataStorage } from '@mikro-orm/core';
 import { CLIHelper } from '@mikro-orm/cli';
-import { GenerateCacheCommand } from '../../packages/cli/src/commands/GenerateCacheCommand';
+import { GenerateCacheCommand } from '../../../packages/cli/src/commands/GenerateCacheCommand';
 
 (global as any).console.log = jest.fn();
 

@@ -47,11 +47,14 @@ describe('EntityFactory', () => {
   });
 
   test('should return entity', async () => {
-    const entity = factory.create(Author, { id: '5b0d19b28b21c648c2c8a600', name: 'test', email: 'mail@test.com' });
+    const entity = factory.create(Author, { id: '5b0d19b28b21c648c2c8a600', name: 'test', email: 'mail@test.com', books: { title: 'asd' } });
     expect(entity).toBeInstanceOf(Author);
     expect(entity.id).toBe('5b0d19b28b21c648c2c8a600');
     expect(entity.name).toBe('test');
     expect(entity.email).toBe('mail@test.com');
+    expect(entity.books.isInitialized()).toBe(true);
+    expect(entity.books).toHaveLength(1);
+    expect(entity.books[0].title).toBe('asd');
   });
 
   test('entity ctor can have different params than props', async () => {

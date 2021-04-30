@@ -1,4 +1,4 @@
-import { AnyEntity, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary } from '../typings';
+import { AnyEntity, EntityData, EntityMetadata, EntityProperty, FilterQuery, IPrimaryKeyValue, Primary } from '../typings';
 import { Collection, EntityIdentifier, Reference } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { ChangeSetComputer } from './ChangeSetComputer';
@@ -443,7 +443,7 @@ export class UnitOfWork {
     const wrapped = changeSet.entity.__helper!;
 
     if (wrapped.__identifier && diff[wrapped.__meta.primaryKeys[0]]) {
-      wrapped.__identifier.setValue(diff[wrapped.__meta.primaryKeys[0]]);
+      wrapped.__identifier.setValue(diff[wrapped.__meta.primaryKeys[0]] as IPrimaryKeyValue);
     }
   }
 

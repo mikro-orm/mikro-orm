@@ -13,6 +13,26 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
     return `Migration${timestamp}`;
   }
 
+  indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence'): string {
+    if (tableName.includes('.')) {
+      tableName = tableName.substr(tableName.indexOf('.') + 1);
+    }
+
+    if (type === 'primary') {
+      return `${tableName}_pkey`;
+    }
+
+    if (type === 'sequence') {
+      return `${tableName}_${columns.join('_')}_seq`;
+    }
+
+    return `${tableName}_${columns.join('_')}_${type}`;
+  }
+
+  columnNameToProperty(columnName: string): string {
+    return columnName.replace(/[_ ](\w)/g, m => m[1].toUpperCase()).replace(/_+/g, '');
+  }
+
   abstract classToTableName(entityName: string): string;
 
   abstract joinColumnName(propertyName: string): string;

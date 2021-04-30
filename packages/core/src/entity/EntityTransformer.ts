@@ -122,7 +122,7 @@ export class EntityTransformer {
         return [prop, val];
       })
       .filter(([, value]) => typeof value !== 'undefined')
-      .forEach(([prop, value]) => ret[this.propertyName(meta, prop as keyof T & string, entity.__platform)] = value as T[keyof T]);
+      .forEach(([prop, value]) => ret[this.propertyName(meta, prop as keyof T & string, entity.__platform)] = value as T[keyof T & string]);
 
     if (!wrapped.isInitialized() && wrapped.hasPrimaryKey()) {
       return ret;
@@ -136,7 +136,7 @@ export class EntityTransformer {
     // decorated get methods
     meta.props
       .filter(prop => prop.getterName && !prop.hidden && entity[prop.getterName] as unknown instanceof Function)
-      .forEach(prop => ret[this.propertyName(meta, prop.name, entity.__platform)] = (entity[prop.getterName!] as unknown as () => void)());
+      .forEach(prop => ret[this.propertyName(meta, prop.name, entity.__platform)] = (entity[prop.getterName!] as unknown as () => T[keyof T & string])());
 
     if (contextCreated) {
       delete wrapped.__serializationContext.root;
@@ -198,7 +198,7 @@ export class EntityTransformer {
     const wrapped = (child as T).__helper!;
 
     if (raw && wrapped.isInitialized() && child !== entity) {
-      return wrapped.toPOJO() as T[keyof T];
+      return wrapped.toPOJO() as unknown as T[keyof T];
     }
 
     if (wrapped.isInitialized() && wrapped.__populated && child !== entity && !wrapped.__lazyInitialized) {

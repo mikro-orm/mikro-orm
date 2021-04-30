@@ -216,7 +216,7 @@ describe('QueryBuilder', () => {
       .limit(1);
     const sql = 'select `fb1`.*, ' +
       '`fz`.`id` as `fz__id`, `fz`.`name` as `fz__name`, `fz`.`version` as `fz__version`, ' +
-      '`fb2`.`id` as `fb2__id`, `fb2`.`name` as `fb2__name`, `fb2`.`baz_id` as `fb2__baz_id`, `fb2`.`foo_bar_id` as `fb2__foo_bar_id`, `fb2`.`version` as `fb2__version`, `fb2`.`blob` as `fb2__blob`, `fb2`.`array` as `fb2__array`, `fb2`.`object_property` as `fb2__object_property`, (select 123) as `fb2__random`, ' +
+      '`fb2`.`id` as `fb2__id`, `fb2`.`name` as `fb2__name`, `fb2`.`name with space` as `fb2__name with space`, `fb2`.`baz_id` as `fb2__baz_id`, `fb2`.`foo_bar_id` as `fb2__foo_bar_id`, `fb2`.`version` as `fb2__version`, `fb2`.`blob` as `fb2__blob`, `fb2`.`array` as `fb2__array`, `fb2`.`object_property` as `fb2__object_property`, (select 123) as `fb2__random`, ' +
       '(select 123) as `random` from `foo_bar2` as `fb1` ' +
       'inner join `foo_baz2` as `fz` on `fb1`.`baz_id` = `fz`.`id` ' +
       'left join `foo_bar2` as `fb2` on `fz`.`id` = `fb2`.`baz_id` ' +
@@ -236,7 +236,7 @@ describe('QueryBuilder', () => {
       .limit(1);
     const sql = 'select `fb1`.*, ' +
       '`fz`.`id` as `fz__id`, `fz`.`name` as `fz__name`, `fz`.`version` as `fz__version`, ' +
-      '`fb2`.`id` as `fb2__id`, `fb2`.`name` as `fb2__name`, `fb2`.`baz_id` as `fb2__baz_id`, `fb2`.`foo_bar_id` as `fb2__foo_bar_id`, `fb2`.`version` as `fb2__version`, `fb2`.`blob` as `fb2__blob`, `fb2`.`array` as `fb2__array`, `fb2`.`object_property` as `fb2__object_property`, (select 123) as `fb2__random`, ' +
+      '`fb2`.`id` as `fb2__id`, `fb2`.`name` as `fb2__name`, `fb2`.`name with space` as `fb2__name with space`, `fb2`.`baz_id` as `fb2__baz_id`, `fb2`.`foo_bar_id` as `fb2__foo_bar_id`, `fb2`.`version` as `fb2__version`, `fb2`.`blob` as `fb2__blob`, `fb2`.`array` as `fb2__array`, `fb2`.`object_property` as `fb2__object_property`, (select 123) as `fb2__random`, ' +
       '(select 123) as `random` from `foo_bar2` as `fb1` ' +
       'inner join `foo_baz2` as `fz` on `fb1`.`baz_id` = `fz`.`id` ' +
       'left join `foo_bar2` as `fb2` on `fz`.`id` = `fb2`.`baz_id` ' +
@@ -252,6 +252,22 @@ describe('QueryBuilder', () => {
     expect(qb.getQuery()).toEqual(sql);
     expect(qb.getParams()).toEqual(['baz', 1]);
     await qb.execute();
+  });
+
+  test('join and select with empty collections', async () => {
+    const qb = orm.em.createQueryBuilder(FooBar2, 'fb');
+    qb.select('*')
+      .leftJoinAndSelect('fb.tests', 't')
+      .orderBy({ name: 1 });
+
+    await orm.em.nativeInsert(Test2, { id: 1, name: 't' });
+    await orm.em.nativeInsert(FooBar2, { id: 1, name: 'fb 1', tests: [] });
+    await orm.em.nativeInsert(FooBar2, { id: 2, name: 'fb 2', tests: [1] });
+    const res = await qb.getResultList();
+    expect(res[0].tests.isInitialized()).toBe(true);
+    expect(res[0].tests.getItems()).toHaveLength(0);
+    expect(res[1].tests.isInitialized()).toBe(true);
+    expect(res[1].tests.getItems()).toHaveLength(1);
   });
 
   test('select leftJoin 1:1 inverse', async () => {
@@ -636,11 +652,11 @@ describe('QueryBuilder', () => {
 
   test('select distinct id with left join', async () => {
     const qb = orm.em.createQueryBuilder(BookTag2, 't');
-    qb.select(['distinct b.uuid_pk', 'b.*', 't.*'])
+    qb.select(['distinct `b`.`uuid_pk`', 'b.*', 't.*'])
       .leftJoin('t.books', 'b')
       .where({ 'b.title': 'test 123' })
       .limit(2, 1);
-    const sql = 'select distinct b.uuid_pk, `b`.*, `t`.* from `book_tag2` as `t` ' +
+    const sql = 'select distinct `b`.`uuid_pk`, `b`.*, `t`.* from `book_tag2` as `t` ' +
       'left join `book2_tags` as `e1` on `t`.`id` = `e1`.`book_tag2_id` ' +
       'left join `book2` as `b` on `e1`.`book2_uuid_pk` = `b`.`uuid_pk` ' +
       'where `b`.`title` = ? ' +
@@ -1154,11 +1170,11 @@ describe('QueryBuilder', () => {
     expect(qb1.getParams()).toEqual(['test 123', PublisherType.GLOBAL]);
 
     const qb2 = orm.em.createQueryBuilder(Author2);
-    qb2.insert({ name: 'test 123', favouriteBook: 2359, termsAccepted: true });
+    qb2.insert({ name: 'test 123', favouriteBook: '2359', termsAccepted: true });
     expect(qb2.getQuery()).toEqual('insert into `author2` (`favourite_book_uuid_pk`, `name`, `terms_accepted`) values (?, ?, ?)');
-    expect(qb2.getParams()).toEqual([2359, 'test 123', true]);
+    expect(qb2.getParams()).toEqual(['2359', 'test 123', true]);
 
-    const qb3 = orm.em.createQueryBuilder(BookTag2);
+    const qb3 = orm.em.createQueryBuilder<any>(BookTag2);
     qb3.insert({ books: 123 }).withSchema('test123');
     expect(qb3.getQuery()).toEqual('insert into `test123`.`book_tag2` (`books`) values (?)');
     expect(qb3.getParams()).toEqual([123]);
@@ -1170,7 +1186,7 @@ describe('QueryBuilder', () => {
     expect(qb0.getQuery()).toEqual('insert ignore into `author2` (`email`, `name`) values (?, ?)');
     expect(qb0.getParams()).toEqual(['ignore@example.com', 'John Doe']);
 
-    const timestamp = Date.now();
+    const timestamp = new Date();
     const qb1 = orm.em.createQueryBuilder(Author2)
       .insert({
         createdAt: timestamp,
@@ -1215,14 +1231,14 @@ describe('QueryBuilder', () => {
 
   test('update query with JSON type and raw value', async () => {
     const qb = orm.em.createQueryBuilder(Book2);
-    const raw = qb.raw(`jsonb_set(payload, '$.{consumed}', ?)`, [123]);
+    const raw = qb.raw<any>(`jsonb_set(payload, '$.{consumed}', ?)`, [123]);
     qb.update({ meta: raw }).where({ uuid: '456' });
     expect(qb.getFormattedQuery()).toEqual('update `book2` set `meta` = jsonb_set(payload, \'$.{consumed}\', 123) where `uuid_pk` = \'456\'');
   });
 
   test('qb.raw() with named bindings', async () => {
     const qb = orm.em.createQueryBuilder(Book2);
-    const raw = qb.raw(`jsonb_set(payload, '$.{consumed}', :val)`, { val: 123 });
+    const raw = qb.raw<any>(`jsonb_set(payload, '$.{consumed}', :val)`, { val: 123 });
     qb.update({ meta: raw }).where({ uuid: '456' });
     expect(qb.getFormattedQuery()).toEqual('update `book2` set `meta` = jsonb_set(payload, \'$.{consumed}\', 123) where `uuid_pk` = \'456\'');
   });
@@ -1285,7 +1301,7 @@ describe('QueryBuilder', () => {
   });
 
   test('update query with entity in data', async () => {
-    const qb = orm.em.createQueryBuilder(Publisher2);
+    const qb = orm.em.createQueryBuilder<any>(Publisher2);
     qb.withSchema('test123');
     const test = Test2.create('test');
     test.id = 321;
@@ -1784,7 +1800,7 @@ describe('QueryBuilder', () => {
     expect(qb9.getQuery()).toEqual('insert into "author2" ("email", "name") values ($1, $2) on conflict ("email") do nothing returning "id", "created_at", "updated_at", "age", "terms_accepted"');
     expect(qb9.getParams()).toEqual(['ignore@example.com', 'John Doe']);
 
-    const timestamp = Date.now();
+    const timestamp = new Date();
     const qb10 = pg.em.createQueryBuilder(Author2)
       .insert({
         createdAt: timestamp,
@@ -1801,6 +1817,13 @@ describe('QueryBuilder', () => {
 
     expect(qb10.getQuery()).toEqual('insert into "author2" ("created_at", "email", "name", "updated_at") values ($1, $2, $3, $4) on conflict ("email") do update set "name" = $5,"updatedAt" = $6 where "updated_at" < $7 returning "id", "created_at", "updated_at", "age", "terms_accepted"');
     expect(qb10.getParams()).toEqual([timestamp, 'ignore@example.com', 'John Doe', timestamp, 'John Doe', timestamp, timestamp]);
+
+    const qb11 = pg.em.createQueryBuilder(Book2).where({ meta: { foo: 123 } });
+    expect(qb11.getFormattedQuery()).toBe(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where ("meta"->>'foo')::float8 = 123`);
+    const qb12 = pg.em.createQueryBuilder(Book2).where({ meta: { foo: { $eq: 123 } } });
+    expect(qb12.getFormattedQuery()).toBe(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where ("meta"->>'foo')::float8 = 123`);
+    const qb13 = pg.em.createQueryBuilder(Book2).where({ meta: { foo: { $lte: 123 } } });
+    expect(qb13.getFormattedQuery()).toBe(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where ("meta"->>'foo')::float8 <= 123`);
 
     await pg.close(true);
   });
@@ -1930,6 +1953,22 @@ describe('QueryBuilder', () => {
       .where({ favouriteBook: { $in: ['1', '2', '3'] } })
       .getFormattedQuery();
     expect(sql3).toBe("update `my_schema`.`author2` force index(custom_email_index_name) set `name` = '...' where `favourite_book_uuid_pk` in ('1', '2', '3')");
+  });
+
+  test('$or operator inside auto-joined relation', async () => {
+    const query = {
+      author: {
+        $or: [
+          { id: 123 },
+          { name: { $like: `%jon%` } },
+        ],
+      },
+    };
+    const expected = "select `e0`.*, `e0`.price * 1.19 as `price_taxed` from `book2` as `e0` left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` where (`e1`.`id` = 123 or `e1`.`name` like '%jon%')";
+    const sql1 = orm.em.createQueryBuilder(Book2).select('*').where(query).getFormattedQuery();
+    expect(sql1).toBe(expected);
+    const sql2 = orm.em.createQueryBuilder(Book2).where(query).getFormattedQuery();
+    expect(sql2).toBe(expected);
   });
 
   afterAll(async () => orm.close(true));

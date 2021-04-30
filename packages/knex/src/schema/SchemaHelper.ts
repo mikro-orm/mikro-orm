@@ -148,21 +148,6 @@ export abstract class SchemaHelper {
     throw new Error('Not supported by given driver');
   }
 
-  /**
-   * Returns the default name of index for the given columns
-   */
-  getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary'): string {
-    if (tableName.includes('.')) {
-      tableName = tableName.substr(tableName.indexOf('.') + 1);
-    }
-
-    if (type === 'primary') {
-      return `${tableName}_pkey`;
-    }
-
-    return `${tableName}_${columns.join('_')}_${type}`;
-  }
-
   mapForeignKeys(fks: any[], tableName: string, schemaName?: string): Dictionary {
     return fks.reduce((ret, fk: any) => {
       if (ret[fk.constraint_name]) {

@@ -1,7 +1,7 @@
 import { ClientSession, ObjectId } from 'mongodb';
 import {
   DatabaseDriver, EntityData, AnyEntity, FilterQuery, EntityMetadata, EntityProperty, Configuration, Utils, ReferenceType, FindOneOptions, FindOptions,
-  QueryResult, Transaction, IDatabaseDriver, EntityManager, EntityManagerType, Dictionary, PopulateOptions, CountOptions, FieldsMap,
+  QueryResult, Transaction, IDatabaseDriver, EntityManager, EntityManagerType, Dictionary, PopulateOptions, CountOptions, FieldsMap, EntityDictionary,
 } from '@mikro-orm/core';
 import { MongoConnection } from './MongoConnection';
 import { MongoPlatform } from './MongoPlatform';
@@ -47,17 +47,17 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return this.rethrow(this.getConnection('read').countDocuments(entityName, where, ctx));
   }
 
-  async nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult> {
+  async nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult> {
     data = this.renameFields(entityName, data);
     return this.rethrow(this.getConnection('write').insertOne(entityName, data as { _id: any }, ctx));
   }
 
-  async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>[], ctx?: Transaction<ClientSession>, processCollections = true): Promise<QueryResult> {
+  async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], ctx?: Transaction<ClientSession>, processCollections = true): Promise<QueryResult> {
     data = data.map(d => this.renameFields(entityName, d));
     return this.rethrow(this.getConnection('write').insertMany(entityName, data as any[], ctx));
   }
 
-  async nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityData<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult> {
+  async nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult> {
     if (Utils.isPrimaryKey(where)) {
       where = this.buildFilterById(entityName, where as string);
     }
@@ -68,7 +68,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return this.rethrow(this.getConnection('write').updateMany(entityName, where as FilterQuery<T>, data as { _id: any }, ctx));
   }
 
-  async nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityData<T>[], ctx?: Transaction<ClientSession>, processCollections?: boolean): Promise<QueryResult> {
+  async nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], ctx?: Transaction<ClientSession>, processCollections?: boolean): Promise<QueryResult> {
     data = data.map(row => this.renameFields(entityName, row));
     return this.rethrow(this.getConnection('write').bulkUpdateMany(entityName, where, data as { _id: any }[], ctx));
   }

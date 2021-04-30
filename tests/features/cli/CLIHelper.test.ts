@@ -13,8 +13,7 @@ import c from 'ansi-colors';
 import chalk from 'chalk';
 import { ConfigurationLoader, Configuration, Utils, MikroORM } from '@mikro-orm/core';
 import { CLIConfigurator, CLIHelper } from '@mikro-orm/cli';
-// noinspection ES6PreferShortImport
-import { SchemaCommandFactory } from '../../packages/cli/src/commands/SchemaCommandFactory';
+import { SchemaCommandFactory } from '../../../packages/cli/src/commands/SchemaCommandFactory';
 
 c.enabled = false;
 
@@ -96,7 +95,7 @@ describe('CLIHelper', () => {
   test('gets ORM configuration [no mikro-orm.config]', async () => {
     await expect(CLIHelper.getConfiguration()).rejects.toThrowError(`MikroORM config file not found in ['./mikro-orm.config.js']`);
 
-    process.env.MIKRO_ORM_ENV = __dirname + '/../mikro-orm.env';
+    process.env.MIKRO_ORM_ENV = __dirname + '/../../mikro-orm.env';
     await expect(CLIHelper.getConfiguration()).resolves.toBeInstanceOf(Configuration);
     Object.keys(process.env).filter(k => k.startsWith('MIKRO_ORM_')).forEach(k => delete process.env[k]);
   });

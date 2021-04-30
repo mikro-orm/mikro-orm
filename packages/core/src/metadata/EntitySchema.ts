@@ -1,4 +1,4 @@
-import { AnyEntity, Constructor, DeepPartial, Dictionary, EntityMetadata, EntityName, EntityProperty, ExpandProperty, NonFunctionPropertyNames } from '../typings';
+import { AnyEntity, Constructor, DeepPartial, Dictionary, EntityMetadata, EntityName, EntityProperty, ExcludeFunctions, ExpandProperty } from '../typings';
 import {
   EmbeddedOptions, EnumOptions, IndexOptions, ManyToManyOptions, ManyToOneOptions, OneToManyOptions, OneToOneOptions, PrimaryKeyOptions, PropertyOptions,
   SerializedPrimaryKeyOptions, UniqueOptions,
@@ -19,11 +19,10 @@ type Property<T, O> =
   | ({ reference: ReferenceType.EMBEDDED | 'embedded' } & TypeDef<T> & EmbeddedOptions & PropertyOptions<O>)
   | ({ enum: true } & EnumOptions<O>)
   | (TypeDef<T> & PropertyOptions<O>);
-type PropertyKey<T, U> = NonFunctionPropertyNames<Omit<T, keyof U>>;
 type Metadata<T, U> =
   & Omit<Partial<EntityMetadata<T>>, 'name' | 'properties'>
   & ({ name: string } | { class: Constructor<T>; name?: string })
-  & { properties?: { [K in PropertyKey<T, U> & string]-?: Property<ExpandProperty<NonNullable<T[K]>>, T> } };
+  & { properties?: { [K in keyof Omit<T, keyof U> as ExcludeFunctions<Omit<T, keyof U>, K>]-?: Property<ExpandProperty<NonNullable<T[K]>>, T> } };
 
 export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntity<U> | undefined = undefined> {
 
@@ -44,7 +43,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
   }
 
   static fromMetadata<T extends AnyEntity<T> = AnyEntity, U extends AnyEntity<U> | undefined = undefined>(meta: EntityMetadata<T> | DeepPartial<EntityMetadata<T>>): EntitySchema<T, U> {
-    const schema = new EntitySchema<T, U>(meta as Metadata<T, U>);
+    const schema = new EntitySchema<T, U>(meta as unknown as Metadata<T, U>);
     schema.internal = true;
 
     return schema;

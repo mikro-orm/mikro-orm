@@ -13,9 +13,9 @@ import {
   ReferenceType,
   Utils,
 } from '@mikro-orm/core';
-import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from './entities-sql';
-import { BaseEntity2 } from './entities-sql/BaseEntity2';
-import { BaseEntity22 } from './entities-sql/BaseEntity22';
+import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from '../../entities-sql';
+import { BaseEntity2 } from '../../entities-sql/BaseEntity2';
+import { BaseEntity22 } from '../../entities-sql/BaseEntity22';
 
 export class ObjectHydratorOld {
 
@@ -71,7 +71,7 @@ export class ObjectHydratorOld {
   }
 
   private hydrateScalar<T>(entity: T, prop: EntityProperty<T>, data: EntityData<T>, convertCustomTypes: boolean): void {
-    let value = data[prop.name];
+    let value = data[prop.name as any];
 
     if (typeof value === 'undefined') {
       return;
@@ -79,13 +79,13 @@ export class ObjectHydratorOld {
 
     if (prop.customType && convertCustomTypes) {
       value = prop.customType.convertToJSValue(value, this.platform);
-      data[prop.name] = prop.customType.convertToDatabaseValue(value, this.platform); // make sure the value is comparable
+      data[prop.name as any] = prop.customType.convertToDatabaseValue(value, this.platform); // make sure the value is comparable
     }
 
     if (value && prop.type.toLowerCase() === 'date') {
-      entity[prop.name] = new Date(value) as unknown as T[keyof T & string];
+      entity[prop.name] = new Date(value as string) as unknown as T[keyof T & string];
     } else {
-      entity[prop.name] = value;
+      entity[prop.name] = value as any;
     }
   }
 
@@ -93,7 +93,7 @@ export class ObjectHydratorOld {
     const value: Dictionary = {};
 
     entity.__meta!.props.filter(p => p.embedded?.[0] === prop.name).forEach(childProp => {
-      value[childProp.embedded![1]] = data[childProp.name];
+      value[childProp.embedded![1]] = data[childProp.name as any];
     });
 
     entity[prop.name] = Object.create(prop.embeddable.prototype);
@@ -153,7 +153,7 @@ export class EntityComparatorOld {
     const ret = {} as EntityData<T>;
 
     if (meta.discriminatorValue) {
-      ret[meta.root.discriminatorColumn as keyof T] = meta.discriminatorValue as unknown as EntityData<T>[keyof T];
+      ret[meta.root.discriminatorColumn as any] = meta.discriminatorValue as any;
     }
 
     // copy all comparable props, ignore collections and references, process custom types
@@ -164,29 +164,29 @@ export class EntityComparatorOld {
 
       if (prop.reference === ReferenceType.EMBEDDED) {
         return meta.props.filter(p => p.embedded?.[0] === prop.name).forEach(childProp => {
-          ret[childProp.name as keyof T] = Utils.copy(entity[prop.name][childProp.embedded![1]]);
+          ret[childProp.name as any] = Utils.copy(entity[prop.name][childProp.embedded![1]]);
         });
       }
 
       if (Utils.isEntity(entity[prop.name], true)) {
-        ret[prop.name] = Utils.getPrimaryKeyValues(entity[prop.name], metadata.find(prop.type)!.primaryKeys, true);
+        ret[prop.name as any] = Utils.getPrimaryKeyValues(entity[prop.name], metadata.find(prop.type)!.primaryKeys, true);
 
         if (prop.customType) {
-          return ret[prop.name] = Utils.copy(prop.customType.convertToDatabaseValue(ret[prop.name], platform));
+          return ret[prop.name as any] = Utils.copy(prop.customType.convertToDatabaseValue(ret[prop.name as any], platform));
         }
 
         return;
       }
 
       if (prop.customType) {
-        return ret[prop.name] = Utils.copy(prop.customType.convertToDatabaseValue(entity[prop.name], platform));
+        return ret[prop.name as any] = Utils.copy(prop.customType.convertToDatabaseValue(entity[prop.name], platform));
       }
 
       if (prop.type.toLowerCase() === 'date') {
-        return ret[prop.name] = Utils.copy(platform.processDateProperty(entity[prop.name]));
+        return ret[prop.name as any] = Utils.copy(platform.processDateProperty(entity[prop.name])) as any;
       }
 
-      ret[prop.name] = Utils.copy(entity[prop.name]);
+      ret[prop.name as any] = Utils.copy(entity[prop.name]);
     });
 
     return ret;

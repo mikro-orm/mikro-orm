@@ -165,7 +165,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
     /* istanbul ignore else */
     if (column.autoincrement) {
-      const seqName = `${tableName}_${column.name}_seq`; // TODO move to naming strategy
+      const seqName = this.platform.getIndexName(tableName, [column.name], 'sequence');
       ret.push(`create sequence if not exists ${quoted(seqName)}`);
       ret.push(`select setval('${seqName}', (select max(${quoted(column.name)}) from ${quoted(tableName)}))`);
       ret.push(`alter table ${quoted(tableName)} alter column ${quoted(column.name)} set default nextval('${seqName}')`);

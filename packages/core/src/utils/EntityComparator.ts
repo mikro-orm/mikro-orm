@@ -1,5 +1,5 @@
 import clone from 'clone';
-import { AnyEntity, EntityData, EntityMetadata, EntityProperty, IMetadataStorage, Primary } from '../typings';
+import { AnyEntity, EntityData, EntityDictionary, EntityMetadata, EntityProperty, IMetadataStorage, Primary } from '../typings';
 import { ReferenceType } from '../enums';
 import { Platform } from '../platforms';
 import { compareArrays, compareBuffers, compareObjects, equals, Utils } from './Utils';
@@ -42,7 +42,7 @@ export class EntityComparator {
   /**
    * Maps database columns to properties.
    */
-  mapResult<T extends AnyEntity<T>>(entityName: string, result: EntityData<T>): EntityData<T> | null {
+  mapResult<T extends AnyEntity<T>>(entityName: string, result: EntityDictionary<T>): EntityData<T> | null {
     const mapper = this.getResultMapper<T>(entityName);
     return Utils.callCompiledFunction(mapper, result);
   }
@@ -180,20 +180,21 @@ export class EntityComparator {
     const meta = this.metadata.get<T>(entityName)!;
     const lines: string[] = [];
     const context = new Map<string, any>();
+    const propName = (name: string, parent = 'result') => parent + (name.includes(' ') ? `['${name}']` : `.${name}`);
 
     lines.push(`  const mapped = {};`);
     meta.props.forEach(prop => {
       if (prop.fieldNames) {
         if (prop.fieldNames.length > 1) {
-          lines.push(`  if (${prop.fieldNames.map(field => `result.${field} != null`).join(' && ')}) {\n    ret.${prop.name} = [${prop.fieldNames.map(field => `result.${field}`).join(', ')}];`);
-          lines.push(...prop.fieldNames.map(field => `    mapped.${field} = true;`));
-          lines.push(`  } else if (${prop.fieldNames.map(field => `result.${field} == null`).join(' && ')}) {\n    ret.${prop.name} = null;`);
-          lines.push(...prop.fieldNames.map(field => `    mapped.${field} = true;`), '  }');
+          lines.push(`  if (${prop.fieldNames.map(field => `${propName(field)} != null`).join(' && ')}) {\n    ret.${prop.name} = [${prop.fieldNames.map(field => `${propName(field)}`).join(', ')}];`);
+          lines.push(...prop.fieldNames.map(field => `    ${propName(field, 'mapped')} = true;`));
+          lines.push(`  } else if (${prop.fieldNames.map(field => `${propName(field)} == null`).join(' && ')}) {\n    ret.${prop.name} = null;`);
+          lines.push(...prop.fieldNames.map(field => `    ${propName(field, 'mapped')} = true;`), '  }');
         } else {
           if (prop.type === 'boolean') {
-            lines.push(`  if ('${prop.fieldNames[0]}' in result) { ret.${prop.name} = result.${prop.fieldNames[0]} == null ? result.${prop.fieldNames[0]} : !!result.${prop.fieldNames[0]}; mapped.${prop.fieldNames[0]} = true; }`);
+            lines.push(`  if ('${prop.fieldNames[0]}' in result) { ret.${prop.name} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : !!${propName(prop.fieldNames[0])}; mapped.${prop.fieldNames[0]} = true; }`);
           } else {
-            lines.push(`  if ('${prop.fieldNames[0]}' in result) { ret.${prop.name} = result.${prop.fieldNames[0]}; mapped.${prop.fieldNames[0]} = true; }`);
+            lines.push(`  if ('${prop.fieldNames[0]}' in result) { ret.${prop.name} = ${propName(prop.fieldNames[0])}; ${propName(prop.fieldNames[0], 'mapped')} = true; }`);
           }
         }
       }
@@ -223,7 +224,7 @@ export class EntityComparator {
     return ret;
   }
 
-  private getEmbeddedArrayPropertySnapshot<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, context: Map<string, any>, level: number, path: string[] = [prop.name], dataKey?: string, object?: boolean, serialize?: boolean): string {
+  private getEmbeddedArrayPropertySnapshot<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, context: Map<string, any>, level: number, path: string[] = [prop.name], dataKey?: string): string {
     const entityKey = path.join('.');
     dataKey = dataKey ?? entityKey;
     const ret: string[] = [];
@@ -309,7 +310,7 @@ export class EntityComparator {
 
     if (prop.reference === ReferenceType.EMBEDDED) {
       if (prop.array) {
-        return this.getEmbeddedArrayPropertySnapshot(meta, prop, context, level, path, dataKey, true) + '\n';
+        return this.getEmbeddedArrayPropertySnapshot(meta, prop, context, level, path, dataKey) + '\n';
       }
 
       return this.getEmbeddedPropertySnapshot(meta, prop, context, level, path, dataKey, object) + '\n';

@@ -8,7 +8,7 @@ import { LoadStrategy, QueryOrder, QueryOrderMap, ReferenceType } from '../enums
 import { Reference } from './Reference';
 import { FieldsMap, FindOptions } from '../drivers/IDatabaseDriver';
 
-type Options<T extends AnyEntity<T>> = {
+export type EntityLoaderOptions<T> = {
   where?: FilterQuery<T>;
   fields?: (string | FieldsMap)[];
   orderBy?: QueryOrderMap;
@@ -17,6 +17,7 @@ type Options<T extends AnyEntity<T>> = {
   lookup?: boolean;
   convertCustomTypes?: boolean;
   filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
+  strategy?: LoadStrategy;
 };
 
 export class EntityLoader {
@@ -29,7 +30,7 @@ export class EntityLoader {
   /**
    * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
    */
-  async populate<T extends AnyEntity<T>>(entityName: string, entities: T[], populate: PopulateOptions<T>[] | boolean, options: Options<T>): Promise<void> {
+  async populate<T extends AnyEntity<T>>(entityName: string, entities: T[], populate: PopulateOptions<T>[] | boolean, options: EntityLoaderOptions<T>): Promise<void> {
     if (entities.length === 0 || populate === false) {
       return;
     }
@@ -41,7 +42,7 @@ export class EntityLoader {
     options.validate = options.validate ?? true;
     options.refresh = options.refresh ?? false;
     options.convertCustomTypes = options.convertCustomTypes ?? true;
-    populate = this.normalizePopulate<T>(entityName, populate, options.lookup);
+    populate = this.normalizePopulate<T>(entityName, populate, options.strategy, options.lookup);
     const invalid = populate.find(({ field }) => !this.em.canPopulate(entityName, field));
 
     if (options.validate && invalid) {
@@ -51,19 +52,19 @@ export class EntityLoader {
     entities.forEach(e => e.__helper!.__serializationContext.populate = e.__helper!.__serializationContext.populate ?? populate as PopulateOptions<T>[]);
 
     for (const pop of populate) {
-      await this.populateField<T>(entityName, entities, pop, options as Required<Options<T>>);
+      await this.populateField<T>(entityName, entities, pop, options as Required<EntityLoaderOptions<T>>);
     }
   }
 
-  normalizePopulate<T>(entityName: string, populate: PopulateOptions<T>[] | true, lookup = true): PopulateOptions<T>[] {
+  normalizePopulate<T>(entityName: string, populate: PopulateOptions<T>[] | true, strategy?: LoadStrategy, lookup = true): PopulateOptions<T>[] {
     if (populate === true || populate.some(p => p.all)) {
-      populate = this.lookupAllRelationships(entityName);
+      populate = this.lookupAllRelationships(entityName, strategy);
     } else {
       populate = Utils.asArray(populate);
     }
 
     if (lookup) {
-      populate = this.lookupEagerLoadedRelationships(entityName, populate);
+      populate = this.lookupEagerLoadedRelationships(entityName, populate, strategy);
     }
 
     // convert nested `field` with dot syntax to PopulateOptions with children array
@@ -130,7 +131,7 @@ export class EntityLoader {
   /**
    * preload everything in one call (this will update already existing references in IM)
    */
-  private async populateMany<T extends AnyEntity<T>>(entityName: string, entities: T[], populate: PopulateOptions<T>, options: Required<Options<T>>): Promise<AnyEntity[]> {
+  private async populateMany<T extends AnyEntity<T>>(entityName: string, entities: T[], populate: PopulateOptions<T>, options: Required<EntityLoaderOptions<T>>): Promise<AnyEntity[]> {
     const field = populate.field as keyof T;
     const meta = this.metadata.find<T>(entityName)!;
     const prop = meta.properties[field as string];
@@ -208,7 +209,7 @@ export class EntityLoader {
     }
   }
 
-  private async findChildren<T extends AnyEntity<T>>(entities: T[], prop: EntityProperty, populate: PopulateOptions<T>, options: Required<Options<T>>): Promise<AnyEntity[]> {
+  private async findChildren<T extends AnyEntity<T>>(entities: T[], prop: EntityProperty, populate: PopulateOptions<T>, options: Required<EntityLoaderOptions<T>>): Promise<AnyEntity[]> {
     const children = this.getChildReferences<T>(entities, prop, options.refresh);
     const meta = this.metadata.find(prop.type)!;
     let fk = Utils.getPrimaryKeyHash(meta.primaryKeys);
@@ -241,7 +242,7 @@ export class EntityLoader {
     });
   }
 
-  private async populateField<T extends AnyEntity<T>>(entityName: string, entities: T[], populate: PopulateOptions<T>, options: Required<Options<T>>): Promise<void> {
+  private async populateField<T extends AnyEntity<T>>(entityName: string, entities: T[], populate: PopulateOptions<T>, options: Required<EntityLoaderOptions<T>>): Promise<void> {
     if (!populate.children) {
       return void await this.populateMany<T>(entityName, entities, populate, options);
     }
@@ -273,7 +274,7 @@ export class EntityLoader {
     });
   }
 
-  private async findChildrenFromPivotTable<T extends AnyEntity<T>>(filtered: T[], prop: EntityProperty<T>, options: Required<Options<T>>, orderBy?: QueryOrderMap, populate?: PopulateOptions<T>): Promise<AnyEntity[]> {
+  private async findChildrenFromPivotTable<T extends AnyEntity<T>>(filtered: T[], prop: EntityProperty<T>, options: Required<EntityLoaderOptions<T>>, orderBy?: QueryOrderMap, populate?: PopulateOptions<T>): Promise<AnyEntity[]> {
     const ids = filtered.map((e: AnyEntity<T>) => e.__helper!.__primaryKeys);
     const refresh = options.refresh;
     /* istanbul ignore next */
@@ -303,7 +304,7 @@ export class EntityLoader {
     return children;
   }
 
-  private buildFields<T>(prop: EntityProperty<T>, options: Required<Options<T>>) {
+  private buildFields<T>(prop: EntityProperty<T>, options: Required<EntityLoaderOptions<T>>) {
     return (options.fields || []).reduce((ret, f) => {
       if (Utils.isPlainObject(f)) {
         Object.keys(f)
@@ -359,7 +360,7 @@ export class EntityLoader {
     return children.filter(e => !(e[field] as AnyEntity).__helper!.__initialized).map(e => Reference.unwrapReference(e[field]));
   }
 
-  private lookupAllRelationships<T>(entityName: string, prefix = '', visited: string[] = []): PopulateOptions<T>[] {
+  private lookupAllRelationships<T>(entityName: string, strategy?: LoadStrategy, prefix = '', visited: string[] = []): PopulateOptions<T>[] {
     if (visited.includes(entityName)) {
       return [];
     }
@@ -370,14 +371,14 @@ export class EntityLoader {
 
     meta.relations.forEach(prop => {
       const prefixed = prefix ? `${prefix}.${prop.name}` : prop.name;
-      const nested = this.lookupAllRelationships(prop.type, prefixed, visited);
+      const nested = this.lookupAllRelationships(prop.type, strategy, prefixed, visited);
 
       if (nested.length > 0) {
         ret.push(...nested);
       } else {
         ret.push({
           field: prefixed,
-          strategy: this.em.config.get('loadStrategy'),
+          strategy: strategy ?? prop.strategy ?? this.em.config.get('loadStrategy'),
         });
       }
     });
@@ -385,7 +386,7 @@ export class EntityLoader {
     return ret;
   }
 
-  private lookupEagerLoadedRelationships<T>(entityName: string, populate: PopulateOptions<T>[], prefix = '', visited: string[] = []): PopulateOptions<T>[] {
+  private lookupEagerLoadedRelationships<T>(entityName: string, populate: PopulateOptions<T>[], strategy?: LoadStrategy, prefix = '', visited: string[] = []): PopulateOptions<T>[] {
     if (visited.includes(entityName)) {
       return [];
     }
@@ -400,14 +401,14 @@ export class EntityLoader {
         const prefixed = prefix ? `${prefix}.${prop.name}` : prop.name;
         /* istanbul ignore next */
         const nestedPopulate = populate.find(p => p.field === prop.name)?.children ?? [];
-        const nested = this.lookupEagerLoadedRelationships(prop.type, nestedPopulate, prefixed, visited);
+        const nested = this.lookupEagerLoadedRelationships(prop.type, nestedPopulate, strategy, prefixed, visited);
 
         if (nested.length > 0) {
           ret.push(...nested);
         } else {
           ret.push({
             field: prefixed,
-            strategy: prop.strategy ?? this.em.config.get('loadStrategy'),
+            strategy: strategy ?? prop.strategy ?? this.em.config.get('loadStrategy'),
           });
         }
       });

@@ -31,6 +31,7 @@ export class EntityValidator {
 
       this.setValue(payload, prop, newValue);
 
+      /* istanbul ignore else */
       if (entity[prop.name]) {
         entity[prop.name] = payload[prop.name];
       }

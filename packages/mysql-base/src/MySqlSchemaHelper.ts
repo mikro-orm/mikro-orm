@@ -1,5 +1,5 @@
 import { AbstractSqlConnection, SchemaHelper, Column, Index, Knex, TableDifference } from '@mikro-orm/knex';
-import { Dictionary, Utils } from '@mikro-orm/core';
+import { Dictionary } from '@mikro-orm/core';
 
 export class MySqlSchemaHelper extends SchemaHelper {
 
@@ -79,23 +79,6 @@ export class MySqlSchemaHelper extends SchemaHelper {
       + `from information_schema.key_column_usage k `
       + `inner join information_schema.referential_constraints c on c.constraint_name = k.constraint_name and c.table_name = '${tableName}' `
       + `where k.table_name = '${tableName}' and k.table_schema = database() and c.constraint_schema = database() and k.referenced_column_name is not null`;
-  }
-
-  /**
-   * Returns the default name of index for the given columns
-   * cannot go past 64 character length for identifiers in MySQL
-   */
-  getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary'): string {
-    if (type === 'primary') {
-      return 'PRIMARY'; // https://dev.mysql.com/doc/refman/8.0/en/create-table.html#create-table-indexes-keys
-    }
-
-    let indexName = super.getIndexName(tableName, columns, type);
-    if (indexName.length > 64) {
-      indexName = `${indexName.substr(0, 57 - type.length)}_${Utils.hash(indexName).substr(0, 5)}_${type}`;
-    }
-
-    return indexName;
   }
 
   async getEnumDefinitions(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary> {

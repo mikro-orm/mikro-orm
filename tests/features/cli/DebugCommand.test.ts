@@ -2,11 +2,9 @@
 
 import { Configuration, ConfigurationLoader, Utils } from '@mikro-orm/core';
 import { CLIHelper } from '@mikro-orm/cli';
-
-// noinspection ES6PreferShortImport
-import { DebugCommand } from '../../packages/cli/src/commands/DebugCommand';
-import FooBar from '../entities/FooBar';
-import { FooBaz } from '../entities/FooBaz';
+import { DebugCommand } from '../../../packages/cli/src/commands/DebugCommand';
+import FooBar from '../../entities/FooBar';
+import { FooBaz } from '../../entities/FooBaz';
 
 describe('DebugCommand', () => {
 

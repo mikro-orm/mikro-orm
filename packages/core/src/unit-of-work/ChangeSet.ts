@@ -1,10 +1,10 @@
-import { EntityData, AnyEntity, EntityMetadata } from '../typings';
+import { EntityData, AnyEntity, EntityMetadata, EntityDictionary } from '../typings';
 
 export class ChangeSet<T extends AnyEntity<T>> {
 
   constructor(public entity: T,
               public type: ChangeSetType,
-              public payload: EntityData<T>,
+              public payload: EntityDictionary<T>,
               meta: EntityMetadata<T>) {
     this.name = meta.className;
     this.rootName = meta.root.className;
@@ -19,7 +19,7 @@ export interface ChangeSet<T extends AnyEntity<T>> {
   collection: string;
   type: ChangeSetType;
   entity: T;
-  payload: EntityData<T>;
+  payload: EntityDictionary<T>;
   persisted: boolean;
   originalEntity?: EntityData<T>;
 }

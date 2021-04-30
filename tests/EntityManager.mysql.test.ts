@@ -441,7 +441,7 @@ describe('EntityManagerMySql', () => {
     const jon = (await authorRepository.findOne({ name: 'Jon Snow' }))!;
     await orm.em.populate(jon, ['books', 'favouriteBook']);
     const authors = await authorRepository.findAll();
-    await orm.em.populate(authors, ['books', 'favouriteBook'], { books: '123' });
+    await orm.em.populate(authors, ['books', 'favouriteBook'], { where: { books: '123' } });
     expect(await authorRepository.findOne({ email: 'not existing' })).toBeNull();
     await expect(orm.em.populate([], ['books', 'favouriteBook'])).resolves.toEqual([]);
 
@@ -834,7 +834,7 @@ describe('EntityManagerMySql', () => {
     const json = wrap(publisher).toJSON().books;
 
     for (const book of publisher.books) {
-      expect(json.find((b: Book2) => b.uuid === book.uuid)).toMatchObject({
+      expect(json.find(b => b.uuid === book.uuid)).toMatchObject({
         author: book.author.id,
       });
     }
@@ -2346,7 +2346,7 @@ describe('EntityManagerMySql', () => {
   test('exceptions', async () => {
     await orm.em.nativeInsert(Author2, { name: 'author', email: 'email' });
     await expect(orm.em.nativeInsert(Author2, { name: 'author', email: 'email' })).rejects.toThrow(UniqueConstraintViolationException);
-    await expect(orm.em.nativeInsert('not_existing', { foo: 'bar' })).rejects.toThrow(TableNotFoundException);
+    await expect(orm.em.nativeInsert<any>('not_existing', { foo: 'bar' })).rejects.toThrow(TableNotFoundException);
     await expect(orm.em.execute('create table author2 (foo text not null)')).rejects.toThrow(TableExistsException);
     await expect(orm.em.execute('foo bar 123')).rejects.toThrow(SyntaxErrorException);
     await expect(orm.em.execute('select id from author2, foo_bar2')).rejects.toThrow(NonUniqueFieldNameException);

@@ -41,7 +41,7 @@ export class QueryBuilderHelper {
     }
 
     let ret = field;
-    const customExpression = QueryBuilderHelper.isCustomExpression(field);
+    const customExpression = QueryBuilderHelper.isCustomExpression(field, !!alias);
     const [a, f] = this.splitField(field);
     const prop = this.getProperty(f, a);
     const noPrefix = prop && prop.persist === false;
@@ -512,8 +512,9 @@ export class QueryBuilderHelper {
     qb.update(versionProperty.fieldNames[0], this.knex.raw(sql));
   }
 
-  static isCustomExpression(field: string): boolean {
-    return !!field.match(/[ ?<>=()]|^\d/);
+  static isCustomExpression(field: string, hasAlias = false): boolean {
+    const re = hasAlias ? /[ ?<>=()'"`]|^\d/ : /[?<>=()'"`]|^\d/; // if we do not have alias, we don't consider spaces as custom expressions
+    return !!field.match(re);
   }
 
   private prefix(field: string, always = false, quote = false): string {

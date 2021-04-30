@@ -1,7 +1,7 @@
 import { inspect } from 'util';
 import { Collection } from './Collection';
 import { EntityManager } from '../EntityManager';
-import { AnyEntity, EntityData, EntityMetadata, EntityProperty } from '../typings';
+import { AnyEntity, EntityData, EntityDTO, EntityMetadata, EntityProperty } from '../typings';
 import { Utils } from '../utils/Utils';
 import { Reference } from './Reference';
 import { ReferenceType, SCALAR_TYPES } from '../enums';
@@ -12,9 +12,9 @@ const validator = new EntityValidator(false);
 
 export class EntityAssigner {
 
-  static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T>, options?: AssignOptions): T;
-  static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T>, onlyProperties?: boolean): T;
-  static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T>, onlyProperties: AssignOptions | boolean = false): T {
+  static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T> | Partial<EntityDTO<T>>, options?: AssignOptions): T;
+  static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T> | Partial<EntityDTO<T>>, onlyProperties?: boolean): T;
+  static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T> | Partial<EntityDTO<T>>, onlyProperties: AssignOptions | boolean = false): T {
     const options = (typeof onlyProperties === 'boolean' ? { onlyProperties } : onlyProperties);
     const wrapped = entity.__helper!;
     const meta = entity.__meta!;
@@ -26,7 +26,7 @@ export class EntityAssigner {
         return;
       }
 
-      let value = data[prop as keyof EntityData<T>];
+      let value = data[prop as keyof typeof data];
 
       if (props[prop] && !props[prop].nullable && (value === undefined || value === null)) {
         throw new Error(`You must pass a non-${value} value to the property ${prop} of entity ${entity.constructor.name}.`);
@@ -44,7 +44,6 @@ export class EntityAssigner {
       }
 
       if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(props[prop]?.reference) && Utils.isDefined(value, true) && EntityAssigner.validateEM(em)) {
-
         // eslint-disable-next-line no-prototype-builtins
         if (options.updateNestedEntities && entity.hasOwnProperty(prop) && (Utils.isEntity(entity[prop]) || Reference.isReference(entity[prop])) && Utils.isPlainObject(value)) {
           const unwrappedEntity = Reference.unwrapReference(entity[prop]);
@@ -68,7 +67,7 @@ export class EntityAssigner {
       if (options.mergeObjects && Utils.isPlainObject(value)) {
         Utils.merge(entity[prop as keyof T], value);
       } else if (!props[prop] || props[prop].setter || !props[prop].getter) {
-        entity[prop as keyof T] = value;
+        entity[prop as keyof T] = value as T[keyof T];
       }
     });
 
@@ -125,7 +124,14 @@ export class EntityAssigner {
 
   private static assignCollection<T extends AnyEntity<T>, U extends AnyEntity<U> = AnyEntity>(entity: T, collection: Collection<U>, value: any[], prop: EntityProperty, em: EntityManager, options: AssignOptions): void {
     const invalid: any[] = [];
-    const items = value.map((item: any) => this.createCollectionItem<U>(item, em, prop, invalid, options));
+    const items = value.map((item: any, idx) => {
+      /* istanbul ignore next */
+      if (options.updateNestedEntities && collection[idx]?.__helper!.isInitialized()) {
+        return EntityAssigner.assign(collection[idx], item, options);
+      }
+
+      return this.createCollectionItem<U>(item, em, prop, invalid, options);
+    });
 
     if (invalid.length > 0) {
       const name = entity.constructor.name;

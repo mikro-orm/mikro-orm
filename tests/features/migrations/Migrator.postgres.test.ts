@@ -4,7 +4,7 @@ import { Logger, MetadataStorage, MikroORM } from '@mikro-orm/core';
 import { Migration, MigrationStorage, Migrator } from '@mikro-orm/migrations';
 import { DatabaseSchema, DatabaseTable, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { remove } from 'fs-extra';
-import { initORMPostgreSql } from './bootstrap';
+import { initORMPostgreSql } from '../../bootstrap';
 
 class MigrationTest1 extends Migration {
 

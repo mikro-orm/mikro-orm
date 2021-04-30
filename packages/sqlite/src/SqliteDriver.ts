@@ -1,4 +1,4 @@
-import { AnyEntity, Configuration, EntityData, QueryResult, Transaction } from '@mikro-orm/core';
+import { AnyEntity, Configuration, EntityDictionary, QueryResult, Transaction } from '@mikro-orm/core';
 import { AbstractSqlDriver, Knex } from '@mikro-orm/knex';
 import { SqliteConnection } from './SqliteConnection';
 import { SqlitePlatform } from './SqlitePlatform';
@@ -9,7 +9,7 @@ export class SqliteDriver extends AbstractSqlDriver<SqliteConnection> {
     super(config, new SqlitePlatform(), SqliteConnection, ['knex', 'sqlite3']);
   }
 
-  async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityData<T>[], ctx?: Transaction<Knex.Transaction>, processCollections = true): Promise<QueryResult> {
+  async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], ctx?: Transaction<Knex.Transaction>, processCollections = true): Promise<QueryResult> {
     const res = await super.nativeInsertMany(entityName, data, ctx, processCollections);
     const pks = this.getPrimaryKeyFields(entityName);
     const first = res.insertId - data.length + 1;

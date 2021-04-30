@@ -1,7 +1,7 @@
 import { assert, Has, IsExact } from 'conditional-type-checks';
 import { ObjectId } from 'mongodb';
-import { FilterQuery, FilterValue, OperatorMap, Primary, PrimaryKeyType, Query } from '../packages/core/src/typings';
-import { Author2, Book2, BookTag2, FooBar2, FooParam2 } from './entities-sql';
+import { EntityData, EntityDTO, FilterQuery, FilterValue, Loaded, OperatorMap, Primary, PrimaryKeyType, Query } from '../packages/core/src/typings';
+import { Author2, Book2, BookTag2, Car2, FooBar2, FooParam2, Publisher2, User2 } from './entities-sql';
 import { Author, Book } from './entities';
 import { Collection, IdentifiedReference, Reference, wrap } from '@mikro-orm/core';
 
@@ -29,6 +29,85 @@ describe('check typings', () => {
     // bigint support
     assert<IsExact<Primary<BookTag2>, string>>(true);
     assert<IsExact<Primary<BookTag2>, number>>(false);
+  });
+
+  test('EntityData', async () => {
+    let b: EntityData<Book2>;
+    b = {};
+    b = {} as Author2;
+    b = { author: { name: 'a' } };
+    b = { author: { name: 'a', books: [] } };
+    b = { author: { name: 'a', books: [{ title: 'b', tags: { name: 't' } }] } };
+    b = { publisher: null };
+    b = { publisher: { name: 'p' } };
+    b = { publisher: {} as Publisher2 };
+    b = { publisher: {} as IdentifiedReference<Publisher2> };
+
+    // @ts-expect-error
+    b = { name: 'a' };
+    // @ts-expect-error
+    b = { author: { title: 'a' } };
+    // @ts-expect-error
+    b = { author: { name: 'a', books: [{ name: 'b' }] } };
+    // @ts-expect-error
+    b = { author: { name: 'a', books: [{ title: 'b', tags: { title: 't' } }] } };
+
+    let c: EntityData<Car2>;
+    c = {};
+    c = {} as Car2;
+    c = { name: 'n', price: 123, year: 2021 };
+    c = { name: 'n', price: 123, year: 2021, users: { firstName: 'f', lastName: 'l' } };
+    c = { name: 'n', price: 123, year: 2021, users: [{ firstName: 'f', lastName: 'l' }] };
+    c = { name: 'n', price: 123, year: 2021, users: [{} as User2] };
+    c = { name: 'n', price: 123, year: 2021, users: [['f', 'l']] };
+
+    // @ts-expect-error
+    c = { name: 'n', price: 123, year: '2021' };
+    // @ts-expect-error
+    c = { name: 'n', price: 123, year: 2021, users: { firstName: 321, lastName: 'l' } };
+    // @ts-expect-error
+    c = { name: 'n', price: 123, year: 2021, users: [{ firstName: 'f', lastName: 123 }] };
+    // @ts-expect-error
+    c = { name: 'n', price: 123, year: 2021, users: [{} as Car2] };
+    // @ts-expect-error
+    c = { name: 'n', price: 123, year: 2021, users: [['f', 1]] };
+  });
+
+  test('EntityDTO', async () => {
+    const b = { author: { books: [{}] } } as EntityDTO<Book2>;
+    const b1 = b.author.name;
+    const b2 = b.test?.name;
+    const b3 = b.test?.book?.author.books2;
+    const b4 = b.author.books[0].tags;
+    const b5 = b.publisher?.name;
+    const b6 = b.publisher?.tests;
+    const b7 = b.author.favouriteBook?.tags[0].name;
+
+    // @ts-expect-error
+    b.author.afterDelete?.();
+    // @ts-expect-error
+    b.author.title;
+    // @ts-expect-error
+    b.author.favouriteBook?.tags[0].title;
+    // @ts-expect-error
+    b.test?.getConfiguration?.();
+
+    const a = { books: [{ tags: [{}] }] } as EntityDTO<Loaded<Author2, { books: { tags: true; publisher: true } }>>;
+    const a11 = a.books;
+    const a12 = a.books[0];
+    const a1 = a.books[0].tags;
+    const a2 = a.books[0].publisher?.type;
+    const a3 = a.books;
+    const a4 = a.books.map(b => b.title);
+    const a5 = a.books[0].tags.map(t => t.name);
+    const a6 = a.books[0].tags[0].name;
+
+    // @ts-expect-error
+    a.books.map(b => b.name);
+    // @ts-expect-error
+    a.books[0].publisher?.title;
+    // @ts-expect-error
+    a.books[0].tags.map(t => t.title);
   });
 
   test('FilterValue', async () => {

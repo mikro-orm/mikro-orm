@@ -4,20 +4,19 @@ import { Migrator } from '@mikro-orm/migrations';
 import { MikroORM } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { CLIHelper } from '@mikro-orm/cli';
-// noinspection ES6PreferShortImport
-import { MigrationCommandFactory } from '../../packages/cli/src/commands/MigrationCommandFactory';
-import { initORMSqlite } from '../bootstrap';
+import { MigrationCommandFactory } from '../../../packages/cli/src/commands/MigrationCommandFactory';
+import { initORMSqlite } from '../../bootstrap';
 
 const close = jest.fn();
 jest.spyOn(MikroORM.prototype, 'close').mockImplementation(close);
 jest.spyOn(require('yargs'), 'showHelp').mockReturnValue('');
-const getPendingMigrations = jest.spyOn(Migrator.prototype, 'getPendingMigrations');
-getPendingMigrations.mockResolvedValue([{ file: '1' }]);
+const getExecutedMigrations = jest.spyOn(Migrator.prototype, 'getExecutedMigrations');
+getExecutedMigrations.mockResolvedValue([{ name: '1', executed_at: new Date() }]);
 const dumpMock = jest.spyOn(CLIHelper, 'dump');
 dumpMock.mockImplementation(() => void 0);
 jest.spyOn(CLIHelper, 'dumpTable').mockImplementation(() => void 0);
 
-describe('PendingMigrationsCommand', () => {
+describe('ListMigrationsCommand', () => {
 
   let orm: MikroORM<SqliteDriver>;
 
@@ -30,16 +29,16 @@ describe('PendingMigrationsCommand', () => {
   afterAll(async () => await orm.close(true));
 
   test('builder', async () => {
-    const cmd = MigrationCommandFactory.create('pending');
+    const cmd = MigrationCommandFactory.create('list');
     const args = { option: jest.fn() };
     cmd.builder(args as any);
   });
 
   test('handler', async () => {
-    const cmd = MigrationCommandFactory.create('pending');
+    const cmd = MigrationCommandFactory.create('list');
 
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
-    expect(getPendingMigrations.mock.calls.length).toBe(1);
+    expect(getExecutedMigrations.mock.calls.length).toBe(1);
     expect(close.mock.calls.length).toBe(1);
   });
 
