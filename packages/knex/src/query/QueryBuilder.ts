@@ -231,8 +231,8 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   }
 
   orderBy(orderBy: QueryOrderMap): this {
-    QueryHelper.inlinePrimaryKeyObjects(orderBy, this.metadata.find(this.entityName)!, this.metadata);
-    this._orderBy = CriteriaNodeFactory.createNode(this.metadata, this.entityName, orderBy).process(this);
+    const processed = QueryHelper.processWhere(orderBy, this.entityName, this.metadata, this.platform, false)!;
+    this._orderBy = CriteriaNodeFactory.createNode(this.metadata, this.entityName, processed).process(this);
     return this;
   }
 
