@@ -3,7 +3,7 @@ import { AbstractSqlDriver, SchemaGenerator } from '@mikro-orm/knex';
 
 export class DateTime {
 
-  constructor(private readonly date: Date) { }
+  constructor(private readonly date = new Date()) { }
 
   toDate() {
     return this.date;
@@ -57,6 +57,7 @@ export class Test {
 
   id!: string;
   createdAt!: DateTime;
+  updatedAt!: DateTime;
 
 }
 
@@ -71,6 +72,11 @@ export const TestSchema = new EntitySchema<Test>({
     },
     createdAt: {
       defaultRaw: 'now()',
+      type: DateTimeType,
+    },
+    updatedAt: {
+      onCreate: () => new DateTime(),
+      onUpdate: () => new DateTime(),
       type: DateTimeType,
     },
   },
@@ -92,6 +98,7 @@ export const TestSchema2 = new EntitySchema<Test2>({
   },
 });
 
+// TODO (v5) move to features/custom-types
 describe('GH issue 725', () => {
 
   test('mapping values from returning statement to custom types', async () => {
