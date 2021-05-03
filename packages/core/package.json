@@ -59,7 +59,7 @@
     "clone": "2.1.2",
     "dotenv": "8.2.0",
     "escaya": "0.0.61",
-    "fs-extra": "9.1.0",
+    "fs-extra": "10.0.0",
     "globby": "11.0.3",
     "reflect-metadata": "0.1.13",
     "strip-json-comments": "3.1.1"
