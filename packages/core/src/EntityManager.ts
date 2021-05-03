@@ -773,7 +773,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * @param useContext use request context? should be used only for top level request scope EM, defaults to false
    */
   fork(clear = true, useContext = false): D[typeof EntityManagerType] {
-    const em = new (this.constructor as typeof EntityManager)(this.config, this.driver, this.metadata, useContext);
+    const eventManager = new EventManager([], this.eventManager);
+    const em = new (this.constructor as typeof EntityManager)(this.config, this.driver, this.metadata, useContext, eventManager);
     em.filters = { ...this.filters };
     em.filterParams = Utils.copy(this.filterParams);
 

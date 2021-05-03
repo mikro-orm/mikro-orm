@@ -7,8 +7,10 @@ export class EventManager {
 
   private readonly listeners: Partial<Record<EventType, EventSubscriber[]>> = {};
   private readonly entities: Map<EventSubscriber, string[]> = new Map();
+  private readonly parentManager?: EventManager;
 
-  constructor(subscribers: EventSubscriber[]) {
+  constructor(subscribers: EventSubscriber[], parentManager?: EventManager) {
+    this.parentManager = parentManager;
     subscribers.forEach(subscriber => this.registerSubscriber(subscriber));
   }
 
@@ -22,6 +24,23 @@ export class EventManager {
       });
   }
 
+  getListenersForEvent<T extends AnyEntity<T>>(event: TransactionEventType, args: TransactionEventArgs): [EventType, EventSubscriber<T>][] {
+    const listeners: [EventType, EventSubscriber<T>][] = [];
+
+    for (const listener of this.listeners[event] || []) {
+      const entities = this.entities.get(listener)!;
+
+      if (entities.length === 0 || !entity || entities.includes(entity.constructor.name)) {
+        listeners.push([event, listener]);
+      }
+    }
+
+    if(this.parentManager) {
+      listeners.push(...this.parentManager.getListenersForEvent(event, args));
+    }
+    return listeners;
+  }
+
   dispatchEvent<T extends AnyEntity<T>>(event: TransactionEventType, args: TransactionEventArgs): unknown;
   dispatchEvent<T extends AnyEntity<T>>(event: EventType.onInit, args: Partial<EventArgs<T>>): unknown;
   dispatchEvent<T extends AnyEntity<T>>(event: EventType, args: Partial<EventArgs<T> | FlushEventArgs>): Promise<unknown>;
@@ -33,13 +52,7 @@ export class EventManager {
     const hooks = (entity && entity.__meta!.hooks[event]) || [];
     listeners.push(...hooks.map(hook => [hook, entity] as [EventType, EventSubscriber<T>]));
 
-    for (const listener of this.listeners[event] || []) {
-      const entities = this.entities.get(listener)!;
-
-      if (entities.length === 0 || !entity || entities.includes(entity.constructor.name)) {
-        listeners.push([event, listener]);
-      }
-    }
+    listeners.push(...this.getListenersForEvent(event, args));
 
     if (event === EventType.onInit) {
       return listeners.forEach(listener => listener[1][listener[0]]!(args as (EventArgs<T> & FlushEventArgs & TransactionEventArgs)));
