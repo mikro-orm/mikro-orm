@@ -72,7 +72,12 @@
     ],
     "coveragePathIgnorePatterns": [
       "<rootDir>/packages/cli/src/cli.ts"
-    ]
+    ],
+    "globals": {
+      "ts-jest": {
+        "tsconfig": "tests/tsconfig.json"
+      }
+    }
   },
   "commitlint": {
     "extends": [
