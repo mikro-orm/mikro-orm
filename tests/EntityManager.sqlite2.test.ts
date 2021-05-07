@@ -1168,6 +1168,22 @@ describe('EntityManagerSqlite2', () => {
     await expect(ent.tests.loadCount()).resolves.toBe(3);
   });
 
+  test('findAndCount with populate (GH issue #1736)', async () => {
+    const publisher = orm.em.create(Publisher4, {
+      name: 'pub',
+      tests: [
+        { name: 't1' },
+        { name: 't2' },
+        { name: 't3' },
+      ],
+    });
+    await orm.em.fork().persistAndFlush(publisher);
+
+    const [res, count] = await orm.em.findAndCount(Publisher4, { name: 'pub' }, { populate: ['tests'] });
+    expect(count).toBe(1);
+    expect(res[0].tests).toHaveLength(3);
+  });
+
   afterAll(async () => {
     await orm.close(true);
   });
