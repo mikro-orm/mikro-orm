@@ -598,6 +598,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async count<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T> = {}, options: CountOptions<T> = {}): Promise<number> {
     entityName = Utils.className(entityName);
     where = await this.processWhere(entityName, where, options, 'read');
+    options.populate = this.preparePopulate(entityName, options.populate) as Populate<T>;
     this.validator.validateParams(where);
 
     const cached = await this.tryCache<T, number>(entityName, options.cache, [entityName, 'em.count', options, where]);
