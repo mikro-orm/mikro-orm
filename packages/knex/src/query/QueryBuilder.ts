@@ -360,7 +360,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
         Utils.runIfNotEmpty(() => {
           const sub2 = sub.merge(item.merge);
           Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, item.where, sub2), item.where);
-        }, item.merge);
+        }, 'merge' in item);
       });
     }, this._onConflict);
 

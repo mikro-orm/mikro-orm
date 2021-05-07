@@ -1202,6 +1202,19 @@ describe('QueryBuilder', () => {
 
     expect(qb1.getQuery()).toEqual('insert into `author2` (`created_at`, `email`, `name`, `updated_at`) values (?, ?, ?, ?) on duplicate key update `name` = ?,`updatedAt` = ?');
     expect(qb1.getParams()).toEqual([timestamp, 'ignore@example.com', 'John Doe', timestamp, 'John Doe', timestamp]);
+
+    const qb2 = orm.em.createQueryBuilder(Author2)
+      .insert({
+        createdAt: timestamp,
+        email: 'ignore@example.com',
+        name: 'John Doe',
+        updatedAt: timestamp,
+      })
+      .onConflict('email')
+      .merge();
+
+    expect(qb2.getQuery()).toEqual('insert into `author2` (`created_at`, `email`, `name`, `updated_at`) values (?, ?, ?, ?) on duplicate key update `created_at` = values(`created_at`), `email` = values(`email`), `name` = values(`name`), `updated_at` = values(`updated_at`)');
+    expect(qb2.getParams()).toEqual([timestamp, 'ignore@example.com', 'John Doe', timestamp]);
   });
 
   test('insert many query', async () => {
