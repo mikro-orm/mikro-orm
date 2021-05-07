@@ -4,7 +4,7 @@ services:
   # mongodb is managed via `run-rs`
 
   mysql:
-    image: mysql:5.7
+    image: mysql:8.0
     platform: linux/x86_64
     restart: unless-stopped
     ports:
