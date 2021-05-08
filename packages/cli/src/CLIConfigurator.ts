@@ -8,6 +8,7 @@ import { MigrationCommandFactory } from './commands/MigrationCommandFactory';
 import { DebugCommand } from './commands/DebugCommand';
 import { GenerateCacheCommand } from './commands/GenerateCacheCommand';
 import { ImportCommand } from './commands/ImportCommand';
+import { CreateDatabaseCommand } from './commands/CreateDatabaseCommand';
 
 /**
  * @internal
@@ -32,6 +33,7 @@ export class CLIConfigurator {
       .command(new ClearCacheCommand())
       .command(new GenerateCacheCommand())
       .command(new GenerateEntitiesCommand())
+      .command(new CreateDatabaseCommand())
       .command(new ImportCommand())
       .command(SchemaCommandFactory.create('create'))
       .command(SchemaCommandFactory.create('drop'))
