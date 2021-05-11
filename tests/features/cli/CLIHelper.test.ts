@@ -26,6 +26,7 @@ describe('CLIHelper', () => {
       'cache:clear',
       'cache:generate',
       'generate-entities',
+      'database:create',
       'database:import',
       'schema:create',
       'schema:drop',
