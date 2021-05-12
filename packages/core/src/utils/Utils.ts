@@ -412,10 +412,10 @@ export class Utils {
     return key.split(this.PK_SEPARATOR);
   }
 
-  static getPrimaryKeyValues<T extends AnyEntity<T>>(entity: T, primaryKeys: string[], allowScalar = false) {
+  static getPrimaryKeyValues<T extends AnyEntity<T>>(entity: T, primaryKeys: string[], allowScalar = false, convertCustomTypes = false) {
     if (allowScalar && primaryKeys.length === 1) {
       if (Utils.isEntity(entity[primaryKeys[0]], true)) {
-        return entity[primaryKeys[0]].__helper!.getPrimaryKey();
+        return entity[primaryKeys[0]].__helper!.getPrimaryKey(convertCustomTypes);
       }
 
       return entity[primaryKeys[0]];
@@ -423,7 +423,7 @@ export class Utils {
 
     return primaryKeys.reduce((ret, pk) => {
       if (Utils.isEntity(entity[pk], true)) {
-        const childPk = entity[pk].__helper!.getPrimaryKey();
+        const childPk = entity[pk].__helper!.getPrimaryKey(convertCustomTypes);
 
         if (entity[pk].__meta.compositePK) {
           ret.push(...Object.values(childPk) as Primary<T>[]);
