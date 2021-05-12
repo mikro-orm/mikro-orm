@@ -16,6 +16,7 @@ export class EntityComparator {
   private readonly mappers = new Map<string, ResultMapper<any>>();
   private readonly snapshotGenerators = new Map<string, SnapshotGenerator<any>>();
   private readonly pkGetters = new Map<string, PkGetter<any>>();
+  private readonly pkGettersConverted = new Map<string, PkGetter<any>>();
   private readonly pkSerializers = new Map<string, PkSerializer<any>>();
   private tmpIndex = 0;
 
@@ -85,6 +86,53 @@ export class EntityComparator {
     const code = `return function(entity) {\n${lines.join('\n')}\n}`;
     const pkSerializer = Utils.createFunction(context, code);
     this.pkGetters.set(meta.className, pkSerializer);
+
+    return pkSerializer;
+  }
+
+  /**
+   * @internal Highly performance-sensitive method.
+   */
+  getPkGetterConverted<T extends AnyEntity<T>>(meta: EntityMetadata<T>) {
+    const exists = this.pkGettersConverted.get(meta.className);
+
+    if (exists) {
+      return exists;
+    }
+
+    const lines: string[] = [];
+    const context = new Map<string, any>();
+
+    if (meta.primaryKeys.length > 1) {
+      lines.push(`  const cond = {`);
+      meta.primaryKeys.forEach(pk => {
+        if (meta.properties[pk].reference !== ReferenceType.SCALAR) {
+          lines.push(`    ${pk}: (entity.${pk} != null && (entity.${pk}.__entity || entity.${pk}.__reference)) ? entity.${pk}.__helper.getPrimaryKey(true) : entity.${pk},`);
+        } else {
+          lines.push(`    ${pk}: entity.${pk},`);
+        }
+      });
+      lines.push(`  };`);
+      lines.push(`  if (${meta.primaryKeys.map(pk => `cond.${pk} == null`).join(' || ')}) return null;`);
+      lines.push(`  return cond;`);
+    } else {
+      const pk = meta.primaryKeys[0];
+
+      if (meta.properties[pk].reference !== ReferenceType.SCALAR) {
+        lines.push(`  if (entity.${pk} != null && (entity.${pk}.__entity || entity.${pk}.__reference)) return entity.${pk}.__helper.getPrimaryKey(true);`);
+      }
+
+      if (meta.properties[pk].customType) {
+        context.set(`convertToDatabaseValue_${pk}`, (val: any) => meta.properties[pk].customType.convertToDatabaseValue(val, this.platform));
+        lines.push(`  return convertToDatabaseValue_${pk}(entity.${pk});`);
+      } else {
+        lines.push(`  return entity.${pk};`);
+      }
+    }
+
+    const code = `return function(entity) {\n${lines.join('\n')}\n}`;
+    const pkSerializer = Utils.createFunction(context, code);
+    this.pkGettersConverted.set(meta.className, pkSerializer);
 
     return pkSerializer;
   }

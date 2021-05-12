@@ -61,7 +61,7 @@ export class EntityHelper {
       __helper: {
         get(): WrappedEntity<T, keyof T> {
           if (!this[entityHelperSymbol]) {
-            this[entityHelperSymbol] = new WrappedEntity(this, em.getComparator().getPkGetter(meta), em.getComparator().getPkSerializer(meta));
+            this[entityHelperSymbol] = new WrappedEntity(this, em.getComparator().getPkGetter(meta), em.getComparator().getPkSerializer(meta), em.getComparator().getPkGetterConverted(meta));
           }
 
           return this[entityHelperSymbol];

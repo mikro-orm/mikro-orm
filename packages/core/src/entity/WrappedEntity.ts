@@ -26,7 +26,8 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
 
   constructor(private readonly entity: T,
               private readonly pkGetter: (e: T) => Primary<T>,
-              private readonly pkSerializer: (e: T) => string) { }
+              private readonly pkSerializer: (e: T) => string,
+              private readonly pkGetterConverted: (e: T) => Primary<T>) { }
 
   isInitialized(): boolean {
     return this.__initialized;
@@ -79,7 +80,11 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
     return pk !== undefined && pk !== null;
   }
 
-  getPrimaryKey(): Primary<T> | null {
+  getPrimaryKey(convertCustomTypes = false): Primary<T> | null {
+    if (convertCustomTypes) {
+      return this.pkGetterConverted(this.entity);
+    }
+
     return this.pkGetter(this.entity);
   }
 
@@ -103,6 +108,7 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
     return Utils.getPrimaryKeyValues(this.entity, this.entity.__meta!.primaryKeys);
   }
 
+  // TODO used only at one place, probably replaceable
   get __primaryKeyCond(): Primary<T> | Primary<T>[] | null {
     if (this.entity.__meta!.compositePK) {
       return this.__primaryKeys;

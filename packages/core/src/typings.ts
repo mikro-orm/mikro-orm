@@ -91,7 +91,7 @@ export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T | unk
 
 export interface IWrappedEntityInternal<T, PK extends keyof T | unknown = PrimaryProperty<T>, P = keyof T> extends IWrappedEntity<T, PK, P> {
   hasPrimaryKey(): boolean;
-  getPrimaryKey(): Primary<T>;
+  getPrimaryKey(convertCustomTypes?: boolean): Primary<T>;
   setPrimaryKey(val: Primary<T>): void;
   getSerializedPrimaryKey(): string & keyof T;
   __meta: EntityMetadata<T>;

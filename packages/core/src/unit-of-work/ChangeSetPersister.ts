@@ -50,7 +50,7 @@ export class ChangeSetPersister {
 
     for (let i = 0; i < changeSets.length; i += size) {
       const chunk = changeSets.slice(i, i + size);
-      const pks = chunk.map(cs => cs.entity.__helper!.__primaryKeyCond);
+      const pks = chunk.map(cs => cs.getPrimaryKey());
       await this.driver.nativeDelete(meta.className, { [pk]: { $in: pks } }, ctx);
     }
   }
@@ -136,7 +136,7 @@ export class ChangeSetPersister {
 
   private async persistManagedEntitiesBatch<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
     await this.checkOptimisticLocks(meta, changeSets, ctx);
-    await this.driver.nativeUpdateMany(meta.className, changeSets.map(cs => cs.entity.__helper!.getPrimaryKey() as Dictionary), changeSets.map(cs => cs.payload), ctx, false, false);
+    await this.driver.nativeUpdateMany(meta.className, changeSets.map(cs => cs.getPrimaryKey() as Dictionary), changeSets.map(cs => cs.payload), ctx, false, false);
     changeSets.forEach(cs => cs.persisted = true);
   }
 
@@ -179,7 +179,7 @@ export class ChangeSetPersister {
 
   private async updateEntity<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, ctx?: Transaction): Promise<QueryResult> {
     if (!meta.versionProperty || !changeSet.entity[meta.versionProperty]) {
-      return this.driver.nativeUpdate(changeSet.name, changeSet.entity.__helper!.getPrimaryKey() as Dictionary, changeSet.payload, ctx, false);
+      return this.driver.nativeUpdate(changeSet.name, changeSet.getPrimaryKey() as Dictionary, changeSet.payload, ctx, false);
     }
 
     const cond = {
@@ -221,7 +221,7 @@ export class ChangeSetPersister {
     }
 
     const pk = Utils.getPrimaryKeyHash(meta.primaryKeys);
-    const pks = changeSets.map(cs => cs.entity.__helper!.__primaryKeyCond);
+    const pks = changeSets.map(cs => cs.getPrimaryKey());
     const data = await this.driver.find<T>(meta.name!, { [pk]: { $in: pks } }, {
       fields: [meta.versionProperty],
     }, ctx);
