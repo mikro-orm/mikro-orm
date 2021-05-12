@@ -47,7 +47,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   private _orderBy: QueryOrderMap = {};
   private _groupBy: Field<T>[] = [];
   private _having: Dictionary = {};
-  private _onConflict?: { fields: string[]; ignore?: boolean; merge?: EntityData<T>; where?: QBFilterQuery<T> }[];
+  private _onConflict?: { fields: string[]; ignore?: boolean; merge?: EntityData<T> | Field<T>[]; where?: QBFilterQuery<T> }[];
   private _limit?: number;
   private _offset?: number;
   private _joinedProps = new Map<string, PopulateOptions<any>>();
@@ -237,7 +237,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this;
   }
 
-  merge(data?: EntityData<T>): this {
+  merge(data?: EntityData<T> | Field<T>[]): this {
     this._onConflict![this._onConflict!.length - 1].merge = data;
     return this;
   }
