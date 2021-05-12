@@ -1215,18 +1215,19 @@ describe('QueryBuilder', () => {
     expect(qb2.getQuery()).toEqual('insert into `author2` (`created_at`, `email`, `name`, `updated_at`) values (?, ?, ?, ?) on duplicate key update `created_at` = values(`created_at`), `email` = values(`email`), `name` = values(`name`), `updated_at` = values(`updated_at`)');
     expect(qb2.getParams()).toEqual([timestamp, 'ignore@example.com', 'John Doe', timestamp]);
 
-    const qb3 = orm.em.createQueryBuilder(Author2)
-      .insert({
-        createdAt: timestamp,
-        email: 'ignore@example.com',
-        name: 'John Doe',
-        updatedAt: timestamp,
-      })
-      .onConflict('email')
-      .merge(['name']);
-
-    expect(qb3.getQuery()).toEqual('insert into `author2` (`created_at`, `email`, `name`, `updated_at`) values (?, ?, ?, ?) on duplicate key update `name` = values(`name`)');
-    expect(qb3.getParams()).toEqual([timestamp, 'ignore@example.com', 'John Doe', timestamp]);
+    // not supported in 4.x due to knex added this in 0.95 which is breaking for us (node + ts version bumps)
+    // const qb3 = orm.em.createQueryBuilder(Author2)
+    //   .insert({
+    //     createdAt: timestamp,
+    //     email: 'ignore@example.com',
+    //     name: 'John Doe',
+    //     updatedAt: timestamp,
+    //   })
+    //   .onConflict('email')
+    //   .merge(['name']);
+    //
+    // expect(qb3.getQuery()).toEqual('insert into `author2` (`created_at`, `email`, `name`, `updated_at`) values (?, ?, ?, ?) on duplicate key update `name` = values(`name`)');
+    // expect(qb3.getParams()).toEqual([timestamp, 'ignore@example.com', 'John Doe', timestamp]);
   });
 
   test('insert many query', async () => {
