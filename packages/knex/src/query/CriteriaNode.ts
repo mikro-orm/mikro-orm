@@ -6,7 +6,7 @@ import { ICriteriaNode, IQueryBuilder } from '../typings';
  * Helper for working with deeply nested where/orderBy/having criteria. Uses composite pattern to build tree from the payload.
  * Auto-joins relations and converts payload from { books: { publisher: { name: '...' } } } to { 'publisher_alias.name': '...' }
  */
-export class CriteriaNode {
+export class CriteriaNode implements ICriteriaNode {
 
   payload: any;
   prop?: EntityProperty;
@@ -97,7 +97,7 @@ export class CriteriaNode {
       return this.getPivotPath(ret);
     }
 
-    return ret;
+    return ret ?? '';
   }
 
   private isPivotJoin(): boolean {

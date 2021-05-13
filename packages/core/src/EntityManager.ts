@@ -219,15 +219,23 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async applyFilters<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: Dictionary<boolean | Dictionary> | string[] | boolean, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<T>> {
     const meta = this.metadata.find<T>(entityName);
     const filters: FilterDef<any>[] = [];
-    const ret = {};
+    const ret: Dictionary[] = [];
 
     if (!meta) {
       return where;
     }
 
-    filters.push(...QueryHelper.getActiveFilters(entityName, options, this.config.get('filters')));
-    filters.push(...QueryHelper.getActiveFilters(entityName, options, this.filters));
-    filters.push(...QueryHelper.getActiveFilters(entityName, options, meta.filters));
+    const active = new Set<string>();
+    const push = (source: Dictionary<FilterDef<any>>) => {
+      const activeFilters = QueryHelper
+        .getActiveFilters(entityName, options, source)
+        .filter(f => !active.has(f.name));
+      filters.push(...activeFilters);
+      activeFilters.forEach(f => active.add(f.name));
+    };
+    push(this.config.get('filters'));
+    push(this.filters);
+    push(meta.filters);
 
     if (filters.length === 0) {
       return where;
@@ -248,11 +256,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         cond = filter.cond;
       }
 
-      const cond2 = QueryHelper.processWhere(cond, entityName, this.metadata, this.driver.getPlatform());
-      Utils.merge(ret, cond2, where);
+      ret.push(QueryHelper.processWhere(cond, entityName, this.metadata, this.driver.getPlatform()));
     }
 
-    return Object.assign(where, ret);
+    const conds = [...ret, where as Dictionary].filter(c => Utils.hasObjectKeys(c));
+
+    return conds.length > 1 ? { $and: conds } as FilterQuery<T> : conds[0];
   }
 
   /**
@@ -883,11 +892,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   private preparePopulate<T extends AnyEntity<T>>(entityName: string, populate?: Populate<T>, strategy?: LoadStrategy): PopulateOptions<T>[] {
+    const meta = this.metadata.get(entityName);
+
     if (!populate) {
       return this.entityLoader.normalizePopulate<T>(entityName, []);
     }
-
-    const meta = this.metadata.get(entityName);
 
     if (Utils.isPlainObject(populate)) {
       return this.preparePopulateObject(meta, populate as true, strategy);

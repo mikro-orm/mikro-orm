@@ -17,7 +17,7 @@ export class ArrayCriteriaNode extends CriteriaNode {
 
   getPath(): string {
     /* istanbul ignore next */
-    return this.parent?.parent?.getPath() || '';
+    return this.parent?.parent?.getPath() ?? '';
   }
 
 }

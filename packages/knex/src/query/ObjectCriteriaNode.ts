@@ -78,7 +78,16 @@ export class ObjectCriteriaNode extends CriteriaNode {
       } else if (this.isPrefixed(k) || Utils.isOperator(k) || !childAlias) {
         const idx = prop.referencedPKs.indexOf(k);
         const key = idx !== -1 && !childAlias ? prop.joinColumns[idx] : k;
-        o[key] = payload[k];
+
+        if (key in o) {
+          /* istanbul ignore next */
+          const $and = o.$and ?? [];
+          $and.push({ [key]: o[key] }, { [key]: payload[k] });
+          delete o[key];
+          o.$and = $and;
+        } else {
+          o[key] = payload[k];
+        }
       } else {
         o[`${childAlias}.${k}`] = payload[k];
       }

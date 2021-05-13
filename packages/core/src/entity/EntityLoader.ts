@@ -157,21 +157,8 @@ export class EntityLoader {
       return this.findChildrenFromPivotTable<T>(filtered, prop, options, innerOrderBy, populate);
     }
 
-    const subCond = Utils.isPlainObject(options.where[prop.name]) ? options.where[prop.name] : {};
-    const operators = Object.keys(subCond).filter(key => Utils.isOperator(key, false));
-    const meta2 = this.metadata.find(prop.type)!;
-
-    if (operators.length > 0) {
-      operators.forEach(op => {
-        const pk = Utils.getPrimaryKeyHash(meta2.primaryKeys);
-        /* istanbul ignore next */
-        subCond[pk] = subCond[pk] ?? {};
-        subCond[pk][op] = subCond[op];
-        delete subCond[op];
-      });
-    }
-
-    const data = await this.findChildren<T>(entities, prop, populate, { ...options, where: subCond, orderBy: innerOrderBy! });
+    const where = await this.extractChildCondition(options, prop);
+    const data = await this.findChildren<T>(entities, prop, populate, { ...options, where, orderBy: innerOrderBy! });
     this.initializeCollections<T>(filtered, prop, field, data);
 
     return data;
@@ -263,7 +250,7 @@ export class EntityLoader {
     const prop = this.metadata.find(entityName)!.properties[populate.field];
     const fields = this.buildFields(prop, options);
     await this.populate<T>(prop.type, filtered, populate.children, {
-      where: options.where[prop.name],
+      where: await this.extractChildCondition(options, prop, false) as FilterQuery<T>,
       orderBy: options.orderBy[prop.name] as QueryOrderMap,
       refresh: options.refresh,
       fields: fields.length > 0 ? fields : undefined,
@@ -276,8 +263,7 @@ export class EntityLoader {
   private async findChildrenFromPivotTable<T extends AnyEntity<T>>(filtered: T[], prop: EntityProperty<T>, options: Required<Options<T>>, orderBy?: QueryOrderMap, populate?: PopulateOptions<T>): Promise<AnyEntity[]> {
     const ids = filtered.map((e: AnyEntity<T>) => e.__helper!.__primaryKeys);
     const refresh = options.refresh;
-    /* istanbul ignore next */
-    const where = await this.em.applyFilters(prop.type, options.where[prop.name as string] ?? {}, options.filters ?? {}, 'read');
+    const where = await this.extractChildCondition(options, prop, true);
     const fields = this.buildFields(prop, options);
     const options2 = { ...options } as FindOptions<T>;
     options2.fields = (fields.length > 0 ? fields : undefined) as string[];
@@ -301,6 +287,38 @@ export class EntityLoader {
     }
 
     return children;
+  }
+
+  private async extractChildCondition<T>(options: Required<Options<T>>, prop: EntityProperty<T>, filters = false) {
+    const subCond = Utils.isPlainObject(options.where[prop.name as string]) ? options.where[prop.name as string] : {};
+
+    ['$and', '$or'].forEach(op => {
+      if (options.where[op]) {
+        subCond[op] = options.where[op]
+          .map((cond: Dictionary) => cond[prop.name])
+          .filter((sub: unknown) => sub != null && !(Utils.isPlainObject(sub) && Object.keys(sub).every(key => Utils.isOperator(key, false))));
+      }
+    });
+
+    const operators = Object.keys(subCond).filter(key => Utils.isOperator(key, false));
+    const meta2 = this.metadata.find(prop.type)!;
+
+    if (operators.length > 0) {
+      operators.forEach(op => {
+        const pk = Utils.getPrimaryKeyHash(meta2.primaryKeys);
+        /* istanbul ignore next */
+        subCond[pk] = subCond[pk] ?? {};
+        subCond[pk][op] = subCond[op];
+        delete subCond[op];
+      });
+    }
+
+    if (filters) {
+      /* istanbul ignore next */
+      return this.em.applyFilters(prop.type, subCond, options.filters ?? {}, 'read');
+    }
+
+    return subCond;
   }
 
   private buildFields<T>(prop: EntityProperty<T>, options: Required<Options<T>>) {
