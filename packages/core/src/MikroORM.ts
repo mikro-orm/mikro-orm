@@ -133,18 +133,14 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets the EntityGenerator.
    */
   getEntityGenerator<T extends IEntityGenerator = IEntityGenerator>(): T {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { EntityGenerator } = require('@mikro-orm/entity-generator');
-    return new EntityGenerator(this.em);
+    return this.driver.getPlatform().getEntityGenerator(this.em) as T;
   }
 
   /**
    * Gets the Migrator.
    */
   getMigrator<T extends IMigrator = IMigrator>(): T {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { Migrator } = require('@mikro-orm/migrations');
-    return new Migrator(this.em);
+    return this.driver.getPlatform().getMigrator(this.em) as T;
   }
 
 }
