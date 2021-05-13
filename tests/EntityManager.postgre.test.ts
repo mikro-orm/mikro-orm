@@ -1305,14 +1305,14 @@ describe('EntityManagerPostgre', () => {
       [expr('upper(title)')]: ['B1', 'B2'],
     }, { populate: ['perex'] });
     expect(books1).toHaveLength(2);
-    expect(mock.mock.calls[0][0]).toMatch(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where upper(title) in ('B1', 'B2') and "e0"."author_id" is not null`);
+    expect(mock.mock.calls[0][0]).toMatch(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where "e0"."author_id" is not null and upper(title) in ('B1', 'B2')`);
     orm.em.clear();
 
     const books2 = await orm.em.find(Book2, {
       [expr('upper(title)')]: orm.em.getKnex().raw('upper(?)', ['b2']),
     }, { populate: ['perex'] });
     expect(books2).toHaveLength(1);
-    expect(mock.mock.calls[1][0]).toMatch(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where upper(title) = upper('b2') and "e0"."author_id" is not null`);
+    expect(mock.mock.calls[1][0]).toMatch(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where "e0"."author_id" is not null and upper(title) = upper('b2')`);
   });
 
   test('find by joined property', async () => {

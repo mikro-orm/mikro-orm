@@ -423,6 +423,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const targetMeta = this.metadata.find(prop.type)!;
     const cond = { [`${prop.pivotTable}.${pivotProp2.name}`]: { $in: ownerMeta.compositePK ? owners : owners.map(o => o[0]) } };
 
+    /* istanbul ignore next */
     if (!Utils.isEmpty(where) && Object.keys(where as Dictionary).every(k => Utils.isOperator(k, false))) {
       where = cond;
     } else {

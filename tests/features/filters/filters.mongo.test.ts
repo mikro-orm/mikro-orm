@@ -50,19 +50,19 @@ describe('filters [mongo]', () => {
     await em.find(Author, {}, { populate: { books: { perex: true } } });
     expect(mock.mock.calls.length).toBe(2);
     expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('author').find({ tenant: 123 }, { session: undefined }).toArray()`);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ author: { '\$in': \[ ObjectId\('.*'\) ] }, tenant: 123 }, { session: undefined }\)/);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ '\$and': \[ { tenant: 123 }, { author: { '\$in': \[ ObjectId\('.*'\) ] } } ] }, { session: undefined }\)/);
 
     await em.find(Book, {}, ['perex']);
     expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ tenant: 123 }, { session: undefined }\)/);
     await em.find(Book, {}, { filters: ['writtenBy'], populate: ['perex'] });
-    expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ author: ObjectId\('.*'\), tenant: 123 }, { session: undefined }\)/);
+    expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ '\$and': \[ { author: ObjectId\('.*'\) }, { tenant: 123 } ] }, { session: undefined }\)/);
     await em.find(Book, {}, { filters: { writtenBy: { author: '123' }, tenant: false }, populate: ['perex'] });
     expect(mock.mock.calls[4][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ author: '123' }, { session: undefined }\)/);
     await em.find(Book, {}, { filters: false, populate: ['perex'] });
     expect(mock.mock.calls[5][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({}, { session: undefined }\)/);
 
     await em.find(FooBar, {}, { filters: { allowedFooBars: { allowed: [1, 2, 3] } } });
-    expect(mock.mock.calls[6][0]).toMatch(/db\.getCollection\('foo-bar'\)\.find\({ _id: { '\$in': \[ 1, 2, 3 ] }, tenant: 123 }, { session: undefined }\)/);
+    expect(mock.mock.calls[6][0]).toMatch(/db\.getCollection\('foo-bar'\)\.find\({ '\$and': \[ { _id: { '\$in': \[ 1, 2, 3 ] } }, { tenant: 123 } ] }, { session: undefined }\)/);
   });
 
   test('that filters in the config are enabled by default', async () => {
