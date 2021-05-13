@@ -187,7 +187,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return this.getContext().filterParams[name] as T;
   }
 
-  protected async processWhere<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOptions<T>, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<T>> {
+  protected async processWhere<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOptions<T> | FindOneOptions<T>, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<T>> {
     where = QueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata, this.driver.getPlatform(), options.convertCustomTypes);
     where = await this.applyFilters(entityName, where, options.filters ?? {}, type);
     where = await this.applyDiscriminatorCondition(entityName, where);
@@ -430,8 +430,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Runs your callback wrapped inside a database transaction.
    */
-  async lock(entity: AnyEntity, lockMode: LockMode, lockVersion?: number | Date): Promise<void> {
-    await this.getUnitOfWork().lock(entity, lockMode, lockVersion);
+  async lock(entity: AnyEntity, lockMode: LockMode, options: { lockVersion?: number | Date; lockTableAliases?: string[] } | number | Date = {}): Promise<void> {
+    options = Utils.isPlainObject(options) ? options as Dictionary : { lockVersion: options };
+    await this.getUnitOfWork().lock(entity, lockMode, options.lockVersion, options.lockTableAliases);
   }
 
   /**
@@ -886,7 +887,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
   private async lockAndPopulate<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: string, entity: T, where: FilterQuery<T>, options: FindOneOptions<T>): Promise<Loaded<T, P>> {
     if (options.lockMode === LockMode.OPTIMISTIC) {
-      await this.lock(entity, options.lockMode, options.lockVersion);
+      await this.lock(entity, options.lockMode, {
+        lockVersion: options.lockVersion,
+        lockTableAliases: options.lockTableAliases,
+      });
     }
 
     const preparedPopulate = this.preparePopulate(entityName, options.populate as string[], options.strategy);

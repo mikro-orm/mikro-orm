@@ -253,7 +253,7 @@ export class UnitOfWork {
     }
   }
 
-  async lock<T extends AnyEntity<T>>(entity: T, mode: LockMode, version?: number | Date): Promise<void> {
+  async lock<T extends AnyEntity<T>>(entity: T, mode?: LockMode, version?: number | Date, tables?: string[]): Promise<void> {
     if (!this.getById(entity.constructor.name, entity.__helper!.__primaryKeys)) {
       throw ValidationError.entityNotManaged(entity);
     }
@@ -262,8 +262,8 @@ export class UnitOfWork {
 
     if (mode === LockMode.OPTIMISTIC) {
       await this.lockOptimistic(entity, meta, version!);
-    } else if ([LockMode.NONE, LockMode.PESSIMISTIC_READ, LockMode.PESSIMISTIC_WRITE].includes(mode)) {
-      await this.lockPessimistic(entity, mode);
+    } else if (mode != null) {
+      await this.lockPessimistic(entity, mode, tables);
     }
   }
 
@@ -521,12 +521,12 @@ export class UnitOfWork {
     return prop.cascade && (prop.cascade.includes(type) || prop.cascade.includes(Cascade.ALL));
   }
 
-  private async lockPessimistic<T extends AnyEntity<T>>(entity: T, mode: LockMode): Promise<void> {
+  private async lockPessimistic<T extends AnyEntity<T>>(entity: T, mode: LockMode, tables?: string[]): Promise<void> {
     if (!this.em.isInTransaction()) {
       throw ValidationError.transactionRequired();
     }
 
-    await this.em.getDriver().lockPessimistic(entity, mode, this.em.getTransactionContext());
+    await this.em.getDriver().lockPessimistic(entity, mode, tables, this.em.getTransactionContext());
   }
 
   private async lockOptimistic<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, version: number | Date): Promise<void> {

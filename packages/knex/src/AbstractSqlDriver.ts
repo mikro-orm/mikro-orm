@@ -58,8 +58,8 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       qb.limit(options.limit, options.offset);
     }
 
-    if ((options as FindOneOptions<T>).lockMode) {
-      qb.setLockMode((options as FindOneOptions<T>).lockMode);
+    if (options.lockMode) {
+      qb.setLockMode(options.lockMode, options.lockTableAliases);
     }
 
     Utils.asArray(options.flags).forEach(flag => qb.setFlag(flag));
@@ -638,11 +638,11 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
   }
 
-  async lockPessimistic<T extends AnyEntity<T>>(entity: T, mode: LockMode, ctx?: Transaction): Promise<void> {
+  async lockPessimistic<T extends AnyEntity<T>>(entity: T, mode: LockMode, tables?: string[], ctx?: Transaction): Promise<void> {
     const qb = this.createQueryBuilder(entity.constructor.name, ctx).unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);
     const meta = entity.__helper!.__meta;
     const cond = Utils.getPrimaryKeyCond(entity, meta.primaryKeys);
-    qb.select('1').where(cond!).setLockMode(mode);
+    qb.select('1').where(cond!).setLockMode(mode, tables);
     await this.rethrow(qb.execute());
   }
 

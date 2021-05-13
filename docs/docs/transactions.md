@@ -276,21 +276,46 @@ pessimistic locking inside MikroORM, rather vendor-specific and ANSI-SQL command
 acquire row-level locks. Every Entity can be part of a pessimistic lock, there is no special 
 metadata required to use this feature.
 
-However for Pessimistic Locking to work you have to disable the Auto-Commit Mode of your Database 
+However, for Pessimistic Locking to work you have to disable the Auto-Commit Mode of your Database 
 and start a transaction around your pessimistic lock use-case using the "Approach 2: Explicit 
 Transaction Demarcation" described above. MikroORM will throw an Exception if you attempt to 
-acquire an pessimistic lock and no transaction is running.
+acquire a pessimistic lock and no transaction is running.
 
-MikroORM currently supports two pessimistic lock modes:
+MikroORM currently supports 6 pessimistic lock modes:
 
-- Pessimistic Write (`LockMode.PESSIMISTIC_WRITE`), locks the underlying database rows for concurrent Read and Write Operations.
-- Pessimistic Read (`LockMode.PESSIMISTIC_READ`), locks other concurrent requests that attempt to update or lock rows in write mode.
+| Mode | Postgres | MySQL |
+|------|----------|-------|
+| `LockMode.PESSIMISTIC_READ` | `for share` | `lock in share mode` |
+| `LockMode.PESSIMISTIC_WRITE` | `for update` | `for update` |
+| `LockMode.PESSIMISTIC_PARTIAL_WRITE` | `for update skip locked` | `for update skip locked` |
+| `LockMode.PESSIMISTIC_WRITE_OR_FAIL` | `for update nowait` | `for update nowait` |
+| `LockMode.PESSIMISTIC_PARTIAL_READ` | `for share skip locked` | `lock in share mode skip locked` |
+| `LockMode.PESSIMISTIC_READ_OR_FAIL` | `for share nowait` | `lock in share mode nowait` |
 
 You can use pessimistic locks in three different scenarios:
 
 1. Using `em.findOne(className, id, { lockMode: LockMode.PESSIMISTIC_WRITE })` or `em.findOne(className, id, { lockMode: LockMode.PESSIMISTIC_READ })`
 2. Using `em.lock(entity, LockMode.PESSIMISTIC_WRITE)` or `em.lock(entity, LockMode.PESSIMISTIC_READ)`
 3. Using `QueryBuilder.setLockMode(LockMode.PESSIMISTIC_WRITE)` or `QueryBuilder.setLockMode(LockMode.PESSIMISTIC_READ)`
+
+Optionally we can also pass list of table aliases we want to lock via `lockTableAliases` option:
+
+> The root entity is always aliased as `e0` when using `em.find()` or `em.findOne()`.
+
+```typescript
+const res = await em.find(User, { name: 'Jon' }, {
+  populate: ['identities'],
+  strategy: LoadStrategy.JOINED,
+  lockMode: LockMode.PESSIMISTIC_READ,
+  lockTableAliases: ['e0'],
+});
+
+// select ... 
+//   from "user" as "e0"
+//   left join "identity" as "i1" on "e0"."id" = "i1"."user_id" 
+//   where "e0"."name" = 'Jon' 
+//   for update of "e0" skip locked
+```
 
 > This part of documentation is highly inspired by [doctrine internals docs](https://www.doctrine-project.org/projects/doctrine-orm/en/latest/reference/transactions-and-concurrency.html)
 > as the behaviour here is pretty much the same.

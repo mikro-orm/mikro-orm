@@ -668,10 +668,41 @@ describe('EntityManagerPostgre', () => {
     await orm.em.transactional(async em => {
       await em.lock(author, LockMode.PESSIMISTIC_READ);
     });
-
     expect(mock.mock.calls.length).toBe(3);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('select 1 from "author2" as "e0" where "e0"."id" = $1 for share');
+    expect(mock.mock.calls[2][0]).toMatch('commit');
+
+    mock.mock.calls.length = 0;
+    await orm.em.transactional(async em => {
+      await em.lock(author, LockMode.PESSIMISTIC_PARTIAL_WRITE);
+    });
+    expect(mock.mock.calls.length).toBe(3);
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('select 1 from "author2" as "e0" where "e0"."id" = $1 for update skip locked');
+    expect(mock.mock.calls[2][0]).toMatch('commit');
+
+    mock.mock.calls.length = 0;
+    await orm.em.transactional(async em => {
+      await em.lock(author, LockMode.PESSIMISTIC_PARTIAL_WRITE, { lockTableAliases: ['e0'] });
+    });
+    expect(mock.mock.calls.length).toBe(3);
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('select 1 from "author2" as "e0" where "e0"."id" = $1 for update of "e0" skip locked');
+    expect(mock.mock.calls[2][0]).toMatch('commit');
+
+    mock.mock.calls.length = 0;
+    await orm.em.transactional(async em => {
+      await em.find(Book2, {}, {
+        lockMode: LockMode.PESSIMISTIC_PARTIAL_WRITE,
+        lockTableAliases: ['e0'],
+        populate: ['author'],
+        strategy: LoadStrategy.JOINED,
+      });
+    });
+    expect(mock.mock.calls.length).toBe(3);
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('select "e0"."uuid_pk", "e0"."created_at", "e0"."title", "e0"."price", "e0".price * 1.19 as "price_taxed", "e0"."double", "e0"."meta", "e0"."author_id", "e0"."publisher_id", "a1"."id" as "a1__id", "a1"."created_at" as "a1__created_at", "a1"."updated_at" as "a1__updated_at", "a1"."name" as "a1__name", "a1"."email" as "a1__email", "a1"."age" as "a1__age", "a1"."terms_accepted" as "a1__terms_accepted", "a1"."optional" as "a1__optional", "a1"."identities" as "a1__identities", "a1"."born" as "a1__born", "a1"."born_time" as "a1__born_time", "a1"."favourite_book_uuid_pk" as "a1__favourite_book_uuid_pk", "a1"."favourite_author_id" as "a1__favourite_author_id", "e0".price * 1.19 as "price_taxed" from "book2" as "e0" left join "author2" as "a1" on "e0"."author_id" = "a1"."id" where "e0"."author_id" is not null for update of "e0" skip locked');
     expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 

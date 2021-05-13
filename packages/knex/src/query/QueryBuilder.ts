@@ -74,6 +74,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   private _cache?: boolean | number | [string, number];
   private _indexHint?: string;
   private lockMode?: LockMode;
+  private lockTables?: string[];
   private subQueries: Dictionary<string> = {};
   private readonly platform = this.driver.getPlatform();
   private readonly knex = this.driver.getConnection(this.connectionType).getKnex();
@@ -318,12 +319,13 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this;
   }
 
-  setLockMode(mode?: LockMode): this {
-    if ([LockMode.NONE, LockMode.PESSIMISTIC_READ, LockMode.PESSIMISTIC_WRITE].includes(mode!) && !this.context) {
+  setLockMode(mode?: LockMode, tables?: string[]): this {
+    if (mode != null && mode !== LockMode.OPTIMISTIC && !this.context) {
       throw ValidationError.transactionRequired();
     }
 
     this.lockMode = mode;
+    this.lockTables = tables;
 
     return this;
   }
@@ -376,7 +378,10 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       return this.knex.raw(qb.toSQL().toNative().sql + ' cascade') as any;
     }
 
-    this.helper.getLockSQL(qb, this.lockMode);
+    if (this.lockMode) {
+      this.helper.getLockSQL(qb, this.lockMode, this.lockTables);
+    }
+
     this.helper.finalize(this.type, qb, this.metadata.find(this.entityName));
 
     return qb;
@@ -514,7 +519,10 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     Object.assign(qb, this);
 
     // clone array/object properties
-    const properties = ['flags', '_populate', '_populateMap', '_joins', '_joinedProps', '_aliasMap', '_cond', '_data', '_orderBy', '_schema', '_indexHint', '_cache', 'subQueries'];
+    const properties = [
+      'flags', '_populate', '_populateMap', '_joins', '_joinedProps', '_aliasMap', '_cond', '_data', '_orderBy',
+      '_schema', '_indexHint', '_cache', 'subQueries', 'lockMode', 'lockTables',
+    ];
     properties.forEach(prop => (qb as any)[prop] = Utils.copy(this[prop as keyof this]));
 
     /* istanbul ignore else */

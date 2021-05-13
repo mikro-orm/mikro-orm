@@ -1155,6 +1155,10 @@ describe('QueryBuilder', () => {
     expect(() => qb.setLockMode(LockMode.NONE)).toThrowError('An open transaction is required for this operation');
     expect(() => qb.setLockMode(LockMode.PESSIMISTIC_READ)).toThrowError('An open transaction is required for this operation');
     expect(() => qb.setLockMode(LockMode.PESSIMISTIC_WRITE)).toThrowError('An open transaction is required for this operation');
+    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_WRITE_OR_FAIL)).toThrowError('An open transaction is required for this operation');
+    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_PARTIAL_WRITE)).toThrowError('An open transaction is required for this operation');
+    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_READ_OR_FAIL)).toThrowError('An open transaction is required for this operation');
+    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_PARTIAL_READ)).toThrowError('An open transaction is required for this operation');
     expect(() => qb.setLockMode(LockMode.OPTIMISTIC).getQuery()).toThrowError('The optimistic lock on entity Author2 failed');
   });
 
@@ -1881,6 +1885,29 @@ describe('QueryBuilder', () => {
     expect(qb15.getFormattedQuery()).toBe(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" order by "meta"->'bar'->>'str' asc`);
     const qb16 = pg.em.createQueryBuilder(Book2).orderBy({ meta: { bar: { num: QueryOrder.DESC } } });
     expect(qb16.getFormattedQuery()).toBe(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" order by "meta"->'bar'->>'num' desc`);
+
+    // pessimistic locking
+    await pg.em.transactional(async em => {
+      const qb1 = em.createQueryBuilder(Book2);
+      qb1.select('*').where({ title: 'test 123' }).setLockMode(LockMode.PESSIMISTIC_PARTIAL_READ);
+      expect(qb1.getQuery()).toEqual('select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where "e0"."title" = $1 for share skip locked');
+
+      const qb2 = em.createQueryBuilder(Book2);
+      qb2.select('*').where({ title: 'test 123' }).setLockMode(LockMode.PESSIMISTIC_PARTIAL_WRITE);
+      expect(qb2.getQuery()).toEqual('select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where "e0"."title" = $1 for update skip locked');
+
+      const qb3 = em.createQueryBuilder(Book2);
+      qb3.select('*').where({ title: 'test 123' }).setLockMode(LockMode.PESSIMISTIC_READ_OR_FAIL);
+      expect(qb3.getQuery()).toEqual('select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where "e0"."title" = $1 for share nowait');
+
+      const qb4 = em.createQueryBuilder(Book2);
+      qb4.select('*').where({ title: 'test 123' }).setLockMode(LockMode.PESSIMISTIC_WRITE_OR_FAIL);
+      expect(qb4.getQuery()).toEqual('select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where "e0"."title" = $1 for update nowait');
+
+      const qb5 = em.createQueryBuilder(Book2);
+      qb5.select('*').leftJoin('author', 'a').where({ title: 'test 123' }).setLockMode(LockMode.PESSIMISTIC_WRITE, ['book2']);
+      expect(qb5.getQuery()).toEqual('select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" left join "author2" as "a" on "e0"."author_id" = "a"."id" where "e0"."title" = $1 for update of "book2"');
+    });
 
     await pg.close(true);
   });
