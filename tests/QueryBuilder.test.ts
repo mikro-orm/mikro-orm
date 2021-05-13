@@ -1228,6 +1228,29 @@ describe('QueryBuilder', () => {
 
     expect(qb3.getQuery()).toEqual('insert into `author2` (`created_at`, `email`, `name`, `updated_at`) values (?, ?, ?, ?) on duplicate key update `name` = values(`name`)');
     expect(qb3.getParams()).toEqual([timestamp, 'ignore@example.com', 'John Doe', timestamp]);
+
+    const qb4 = orm.em.createQueryBuilder(Author2)
+      .insert({
+        createdAt: timestamp,
+        email: 'ignore@example.com',
+        name: 'John Doe',
+        updatedAt: timestamp,
+      })
+      .onConflict()
+      .ignore();
+
+    expect(qb4.getQuery()).toEqual('insert ignore into `author2` (`created_at`, `email`, `name`, `updated_at`) values (?, ?, ?, ?)');
+    expect(qb4.getParams()).toEqual([timestamp, 'ignore@example.com', 'John Doe', timestamp]);
+
+    const qb5 = orm.em.createQueryBuilder(Author2)
+      .insert({
+        createdAt: timestamp,
+        email: 'ignore@example.com',
+        name: 'John Doe',
+        updatedAt: timestamp,
+      });
+    expect(() => qb5.ignore()).toThrow('You need to call `qb.onConflict()` first to use `qb.ignore()`');
+    expect(() => qb5.merge()).toThrow('You need to call `qb.onConflict()` first to use `qb.merge()`');
   });
 
   test('insert many query', async () => {
