@@ -1,4 +1,5 @@
 import { pathExists, remove } from 'fs-extra';
+import { MikroORM } from '@mikro-orm/core';
 import { DatabaseTable } from '@mikro-orm/knex';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 import { initORMMySql, initORMPostgreSql, initORMSqlite } from './bootstrap';
@@ -66,6 +67,11 @@ describe('EntityGenerator', () => {
     expect(meta.properties.test.columnTypes[0]).toBe('varchar(50)');
 
     await orm.close(true);
+  });
+
+  test('not supported [mongodb]', async () => {
+    const orm = await MikroORM.init({ type: 'mongo', dbName: 'mikro-orm-test', discovery: { warnWhenNoEntities: false } }, false);
+    expect(() => orm.getEntityGenerator()).toThrowError('MongoPlatform does not support EntityGenerator');
   });
 
 });

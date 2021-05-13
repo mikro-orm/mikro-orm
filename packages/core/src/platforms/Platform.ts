@@ -1,6 +1,6 @@
 import { EntityRepository } from '../entity';
 import { NamingStrategy, UnderscoreNamingStrategy } from '../naming-strategy';
-import { Constructor, Dictionary, EntityProperty, IPrimaryKey, Primary, ISchemaGenerator } from '../typings';
+import { Constructor, Dictionary, EntityProperty, IEntityGenerator, IMigrator, IPrimaryKey, ISchemaGenerator, Primary } from '../typings';
 import { ExceptionConverter } from './ExceptionConverter';
 import { EntityManager } from '../EntityManager';
 import { Configuration } from '../utils/Configuration';
@@ -186,7 +186,15 @@ export abstract class Platform {
   }
 
   getSchemaGenerator(em: EntityManager): ISchemaGenerator {
-    throw new Error(`${this.constructor.name} does not use a schema generator`);
+    throw new Error(`${this.constructor.name} does not support SchemaGenerator`);
+  }
+
+  getEntityGenerator(em: EntityManager): IEntityGenerator {
+    throw new Error(`${this.constructor.name} does not support EntityGenerator`);
+  }
+
+  getMigrator(em: EntityManager): IMigrator {
+    throw new Error(`${this.constructor.name} does not support Migrator`);
   }
 
   processDateProperty(value: unknown): string | number | Date {

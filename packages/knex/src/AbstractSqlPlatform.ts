@@ -23,6 +23,18 @@ export abstract class AbstractSqlPlatform extends Platform {
     return new SchemaGenerator(em as any); // cast as `any` to get around circular dependencies
   }
 
+  getEntityGenerator(em: EntityManager) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { EntityGenerator } = require('@mikro-orm/entity-generator');
+    return new EntityGenerator(em);
+  }
+
+  getMigrator(em: EntityManager) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { Migrator } = require('@mikro-orm/migrations');
+    return new Migrator(em);
+  }
+
   quoteValue(value: any): string {
     /* istanbul ignore if */
     if (Utils.isPlainObject(value)) {
