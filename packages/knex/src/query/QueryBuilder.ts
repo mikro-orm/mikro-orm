@@ -226,19 +226,27 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this;
   }
 
-  onConflict(fields: string | string[]): this {
+  onConflict(fields: string | string[] = []): this {
     this._onConflict = this._onConflict || [];
     this._onConflict.push({ fields: Utils.asArray(fields) });
     return this;
   }
 
   ignore(): this {
-    this._onConflict![this._onConflict!.length - 1].ignore = true;
+    if (!this._onConflict) {
+      throw new Error('You need to call `qb.onConflict()` first to use `qb.ignore()`');
+    }
+
+    this._onConflict[this._onConflict.length - 1].ignore = true;
     return this;
   }
 
   merge(data?: EntityData<T> | Field<T>[]): this {
-    this._onConflict![this._onConflict!.length - 1].merge = data;
+    if (!this._onConflict) {
+      throw new Error('You need to call `qb.onConflict()` first to use `qb.merge()`');
+    }
+
+    this._onConflict[this._onConflict.length - 1].merge = data;
     return this;
   }
 
