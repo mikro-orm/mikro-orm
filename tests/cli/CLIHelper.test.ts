@@ -6,7 +6,14 @@ jest.mock(process.cwd() + '/mikro-orm-async.config.js', () => (Promise.resolve({
 jest.mock(process.cwd() + '/mikro-orm-async-catch.config.js', () => (Promise.reject('FooError')), { virtual: true });
 const pkg = { 'mikro-orm': {} } as any;
 jest.mock(process.cwd() + '/package.json', () => pkg, { virtual: true });
-const tsc = { compilerOptions: {} } as any;
+
+const tscBase = { compilerOptions: { baseUrl: '.', paths: { '@some-path/some': './libs/paths' } } } as any;
+jest.mock(process.cwd() + '/tsconfig.base.json', () => tscBase, { virtual: true });
+
+const tscExtended = { extends: './tsconfig.base.json', compilerOptions: { module: 'commonjs' } } as any;
+jest.mock(process.cwd() + '/tsconfig.json', () => tscExtended, { virtual: true });
+
+const tsc = { compilerOptions: { } } as any;
 jest.mock(process.cwd() + '/tsconfig.json', () => tsc, { virtual: true });
 
 import c from 'ansi-colors';
@@ -71,25 +78,22 @@ describe('CLIHelper', () => {
     requireFromMock.mockRestore();
   });
 
-  test('configures yargs instance [ts-node and ts-paths]', async () => {
-    const readFileMock = jest.spyOn(require('fs-extra'), 'readFile');
-    readFileMock.mockImplementation(async () => JSON.stringify(tsc));
+  test('configures yargs instance [ts-node and ts-paths and tsconfig.extends]', async () => {
     const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
     pathExistsMock.mockResolvedValue(true);
     pkg['mikro-orm'].useTsNode = true;
-    tsc.compilerOptions.paths = { alternativePath: ['alternativePath'] };
     const requireFromMock = jest.spyOn(Utils, 'requireFrom');
     requireFromMock
       .mockImplementationOnce(() => ({ register: jest.fn() }))
       .mockImplementationOnce(() => ({ register: jest.fn() }));
+    const tsconfigExtendsMock = jest.spyOn(ConfigurationLoader, 'getTsConfig');
     const cli = await CLIConfigurator.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
     expect(requireFromMock).toHaveBeenCalledWith('ts-node', process.cwd() + '/tsconfig.json');
     expect(requireFromMock).toHaveBeenCalledWith('tsconfig-paths', process.cwd() + '/tsconfig.json');
+    expect(tsconfigExtendsMock).toHaveBeenCalledTimes(2);
     pathExistsMock.mockRestore();
     pkg['mikro-orm'].useTsNode = false;
-    delete tsc.compilerOptions.paths;
-    readFileMock.mockRestore();
     requireFromMock.mockRestore();
   });
 
