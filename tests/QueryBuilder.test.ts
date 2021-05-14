@@ -1808,6 +1808,7 @@ describe('QueryBuilder', () => {
       dbName: `mikro_orm_test`,
       type: 'postgresql',
     });
+    await pg.getSchemaGenerator().ensureDatabase();
 
     const qb01 = pg.em.createQueryBuilder(FooBar2);
     qb01.insert({ array: [] });
