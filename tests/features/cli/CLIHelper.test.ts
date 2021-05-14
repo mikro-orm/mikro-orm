@@ -10,8 +10,11 @@ jest.mock(process.cwd() + '/package.json', () => pkg, { virtual: true });
 const tscBase = { compilerOptions: { baseUrl: '.', paths: { '@some-path/some': './libs/paths' } } } as any;
 jest.mock(process.cwd() + '/tsconfig.base.json', () => tscBase, { virtual: true });
 
-const tscExtended = { extends: './tsconfig.base.json', compilerOptions: { module: 'commonjs' } } as any;
-jest.mock(process.cwd() + '/tsconfig.json', () => tscExtended, { virtual: true });
+const tscExtendedAbs = { extends: process.cwd() + '/tsconfig.base.json', compilerOptions: { module: 'commonjs' } } as any;
+jest.mock(process.cwd() + '/tsconfig.extended-abs.json', () => tscExtendedAbs, { virtual: true });
+
+const tscExtended = { extends: './tsconfig.extended-abs.json', compilerOptions: { module: 'commonjs' } } as any;
+jest.mock(process.cwd() + '/tsconfig.extended.json', () => tscExtended, { virtual: true });
 
 const tsc = { compilerOptions: { } } as any;
 jest.mock(process.cwd() + '/tsconfig.json', () => tsc, { virtual: true });
@@ -83,9 +86,15 @@ describe('CLIHelper', () => {
   });
 
   test('configures yargs instance [ts-node and ts-paths and tsconfig.extends]', async () => {
+    const readFileMock = jest.spyOn(require('fs-extra'), 'readFile');
+    readFileMock
+      .mockImplementationOnce(async () => JSON.stringify(tscExtended))
+      .mockImplementationOnce(async () => JSON.stringify(tscExtendedAbs))
+      .mockImplementationOnce(async () => JSON.stringify(tscBase));
     const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
     pathExistsMock.mockResolvedValue(true);
     pkg['mikro-orm'].useTsNode = true;
+    pkg['mikro-orm'].tsConfigPath = './tsconfig.extended.json';
     const requireFromMock = jest.spyOn(Utils, 'requireFrom');
     requireFromMock
       .mockImplementationOnce(() => ({ register: jest.fn() }))
@@ -93,12 +102,17 @@ describe('CLIHelper', () => {
     const tsconfigExtendsMock = jest.spyOn(ConfigurationLoader, 'getTsConfig');
     const cli = await CLIConfigurator.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
-    expect(requireFromMock).toHaveBeenCalledWith('ts-node', process.cwd() + '/tsconfig.json');
-    expect(requireFromMock).toHaveBeenCalledWith('tsconfig-paths', process.cwd() + '/tsconfig.json');
-    expect(tsconfigExtendsMock).toHaveBeenCalledTimes(2);
+    expect(requireFromMock).toHaveBeenCalledWith('ts-node', process.cwd() + '/tsconfig.extended.json');
+    expect(requireFromMock).toHaveBeenCalledWith('tsconfig-paths', process.cwd() + '/tsconfig.extended.json');
+    expect(tsconfigExtendsMock).toHaveBeenCalledTimes(3);
+    expect(tsconfigExtendsMock).toHaveBeenCalledWith(`${process.cwd()}/tsconfig.extended.json`);
+    expect(tsconfigExtendsMock).toHaveBeenCalledWith(`${process.cwd()}/tsconfig.extended-abs.json`);
+    expect(tsconfigExtendsMock).toHaveBeenCalledWith(`${process.cwd()}/tsconfig.base.json`);
     pathExistsMock.mockRestore();
+    readFileMock.mockRestore();
     pkg['mikro-orm'].useTsNode = false;
     requireFromMock.mockRestore();
+    tsconfigExtendsMock.mockRestore();
   });
 
   test('gets ORM configuration [no mikro-orm.config]', async () => {
