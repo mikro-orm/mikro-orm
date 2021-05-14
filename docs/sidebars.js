@@ -41,6 +41,7 @@ module.exports = {
       'naming-strategy',
       'property-validation',
       'migrations',
+      'seeder',
       'read-connections',
     ],
     'Reference': [
