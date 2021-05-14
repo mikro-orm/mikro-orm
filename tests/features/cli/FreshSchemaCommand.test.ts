@@ -4,9 +4,8 @@ import { MikroORM } from '@mikro-orm/core';
 import { SeedManager } from '@mikro-orm/seeder';
 import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';
 import { CLIHelper } from '@mikro-orm/cli';
-// noinspection ES6PreferShortImport
-import { SchemaCommandFactory } from '../../packages/cli/src/commands/SchemaCommandFactory';
-import { initORMSqlite } from '../bootstrap';
+import { SchemaCommandFactory } from '../../../packages/cli/src/commands/SchemaCommandFactory';
+import { initORMSqlite } from '../../bootstrap';
 
 const close = jest.fn();
 jest.spyOn(MikroORM.prototype, 'close').mockImplementation(close);

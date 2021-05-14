@@ -98,6 +98,7 @@ export class ConfigurationLoader {
     }
 
     const tsConfigFolderPath = dirname(tsConfigPath);
+    /* istanbul ignore next */
     const tsConfigExtendsPath = isAbsolute(tsConfig.extends) ? tsConfig.extends : join(tsConfigFolderPath, tsConfig.extends);
     const baseTsConfig = await ConfigurationLoader.getTsConfig(tsConfigExtendsPath);
 

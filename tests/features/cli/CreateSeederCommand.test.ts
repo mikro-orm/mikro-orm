@@ -1,14 +1,13 @@
 import { SeedManager } from '@mikro-orm/seeder';
 
 (global as any).process.env.FORCE_COLOR = 0;
+(global as any).console.log = jest.fn();
 
-import { Migrator } from '@mikro-orm/migrations';
 import { MikroORM } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { CLIHelper } from '@mikro-orm/cli';
-// noinspection ES6PreferShortImport
-import { initORMSqlite } from '../bootstrap';
-import { CreateSeederCommand } from '../../packages/cli/src/commands/CreateSeederCommand';
+import { CreateSeederCommand } from '../../../packages/cli/src/commands/CreateSeederCommand';
+import { initORMSqlite } from '../../bootstrap';
 
 const close = jest.fn();
 jest.spyOn(MikroORM.prototype, 'close').mockImplementation(close);

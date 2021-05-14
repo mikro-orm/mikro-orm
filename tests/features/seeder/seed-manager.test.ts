@@ -1,14 +1,14 @@
 import SpyInstance = jest.SpyInstance;
 
 (global as any).process.env.FORCE_COLOR = 0;
-const { Author3, Book3 } = require('../entities-js/index');
+const { Author3, Book3 } = require('../../entities-js');
 
 import { Configuration, EntityManager, MikroORM } from '@mikro-orm/core';
 import { SeedManager, Seeder } from '@mikro-orm/seeder';
 import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';
 // noinspection ES6PreferShortImport
-import { initORMSqlite } from '../bootstrap';
-import { Book3Seeder } from '../database/seeder/book3.seeder';
+import { initORMSqlite } from '../../bootstrap';
+import { Book3Seeder } from '../../database/seeder/book3.seeder';
 import { remove } from 'fs-extra';
 
 const configuration = new Configuration({ type: 'mongo', dbName: 'test', entities: ['entities'], clientUrl: 'test' });

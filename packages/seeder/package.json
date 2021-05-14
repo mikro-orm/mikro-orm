@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/seeder",
-  "version": "4.4.4",
+  "version": "4.5.4",
   "description": "Seeder package for MikroORM.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -36,7 +36,7 @@
   },
   "homepage": "https://mikro-orm.io",
   "engines": {
-    "node": ">= 10.13.0"
+    "node": ">= 12.17.0 || >= 13.10.0"
   },
   "scripts": {
     "build": "yarn clean && yarn compile && yarn copy",
@@ -51,10 +51,10 @@
     "faker": "5.5.3"
   },
   "peerDependencies": {
-    "@mikro-orm/core": "^4.4.4"
+    "@mikro-orm/core": "^4.0.0"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^4.4.4",
+    "@mikro-orm/core": "^4.0.0",
     "@types/faker": "5.5.5"
   }
 }

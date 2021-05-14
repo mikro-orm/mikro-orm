@@ -1,9 +1,7 @@
 import { SeedManager } from '@mikro-orm/seeder';
-import { Configuration, CLIHelper, MikroORM } from '../../packages/mikro-orm/src';
+import { Configuration, CLIHelper, MikroORM } from '../../../packages/mikro-orm/src';
 
 const config = new Configuration({ type: 'mongo' } as any, false);
-const connection = { loadFile: jest.fn() };
-const em = { getConnection: () => connection };
 const showHelpMock = jest.spyOn(require('yargs'), 'showHelp');
 showHelpMock.mockReturnValue('');
 const close = jest.fn();
@@ -17,9 +15,8 @@ seed.mockImplementation(async () => void 0);
 
 (global as any).console.log = jest.fn();
 
-// noinspection ES6PreferShortImport
-import { DatabaseSeedCommand } from '../../packages/cli/src/commands/DatabaseSeedCommand';
-import { initORMSqlite } from '../bootstrap';
+import { DatabaseSeedCommand } from '../../../packages/cli/src/commands/DatabaseSeedCommand';
+import { initORMSqlite } from '../../bootstrap';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 describe('DatabaseSeedCommand', () => {
