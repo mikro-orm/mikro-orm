@@ -58,7 +58,6 @@ class D {
 
 }
 
-// TODO (v5) move to features/custom-types
 describe('GH issue 446', () => {
 
   let orm: MikroORM<MySqlDriver>;

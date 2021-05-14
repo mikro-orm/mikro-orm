@@ -98,7 +98,6 @@ export const TestSchema2 = new EntitySchema<Test2>({
   },
 });
 
-// TODO (v5) move to features/custom-types
 describe('GH issue 725', () => {
 
   test('mapping values from returning statement to custom types', async () => {
