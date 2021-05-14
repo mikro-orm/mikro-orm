@@ -128,7 +128,7 @@
     "conditional-type-checks": "1.0.5",
     "coveralls": "3.1.0",
     "eslint": "7.26.0",
-    "eslint-plugin-jsdoc": "34.0.2",
+    "eslint-plugin-jsdoc": "34.2.2",
     "fs-extra": "10.0.0",
     "gen-esm-wrapper": "1.1.1",
     "guid-typescript": "1.0.9",
