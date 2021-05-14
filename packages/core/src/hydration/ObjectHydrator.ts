@@ -274,9 +274,9 @@ export class ObjectHydrator extends Hydrator {
     const lines: string[] = [];
 
     lines.push(`  const createCollectionItem_${prop.name} = value => {`);
-    lines.push(`    if (isPrimaryKey(value, ${meta.compositePK})) return factory.createReference('${prop.type}', value, { merge: true });`);
+    lines.push(`    if (isPrimaryKey(value, ${meta.compositePK})) return factory.createReference('${prop.type}', value, { convertCustomTypes, merge: true });`);
     lines.push(`    if (value && value.__entity) return value;`);
-    lines.push(`    return factory.create('${prop.type}', value, { newEntity, merge: true });`);
+    lines.push(`    return factory.create('${prop.type}', value, { newEntity, convertCustomTypes, merge: true });`);
     lines.push(`  }`);
 
     return lines;
