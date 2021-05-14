@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import { pathExists, readFile } from 'fs-extra';
-import { join, isAbsolute } from 'path';
+import { dirname, join, isAbsolute } from 'path';
 import stripJsonComments from 'strip-json-comments';
 import { IDatabaseDriver } from '../drivers';
 import { Configuration, Options } from './Configuration';
@@ -90,8 +90,18 @@ export class ConfigurationLoader {
   }
 
   static async getTsConfig(tsConfigPath: string): Promise<Dictionary> {
-    const json = await readFile(tsConfigPath);
-    return JSON.parse(stripJsonComments(json.toString()));
+    const tsConfigFile = await readFile(tsConfigPath);
+    const tsConfig = JSON.parse(stripJsonComments(tsConfigFile.toString()));
+
+    if (!Object.keys(tsConfig).includes('extends')) {
+      return tsConfig;
+    }
+
+    const tsConfigFolderPath = dirname(tsConfigPath);
+    const tsConfigExtendsPath = isAbsolute(tsConfig.extends) ? tsConfig.extends : join(tsConfigFolderPath, tsConfig.extends);
+    const baseTsConfig = await ConfigurationLoader.getTsConfig(tsConfigExtendsPath);
+
+    return Utils.merge(baseTsConfig, tsConfig);
   }
 
   static loadEnvironmentVars<D extends IDatabaseDriver>(options?: Options<D> | Configuration<D>): Partial<Options<D>> {
