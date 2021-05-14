@@ -317,5 +317,23 @@ const res = await em.find(User, { name: 'Jon' }, {
 //   for update of "e0" skip locked
 ```
 
+### Isolation levels
+
+We can set the transaction isolation levels:
+
+```ts
+await orm.em.transactional(async em => {
+  // ...
+}, { isolationLevel: IsolationLevel.READ_UNCOMMITTED });
+```
+
+Available isolation levels:
+
+- `IsolationLevel.READ_UNCOMMITTED`
+- `IsolationLevel.READ_COMMITTED`
+- `IsolationLevel.SNAPSHOT`
+- `IsolationLevel.REPEATABLE_READ`
+- `IsolationLevel.SERIALIZABLE`
+
 > This part of documentation is highly inspired by [doctrine internals docs](https://www.doctrine-project.org/projects/doctrine-orm/en/latest/reference/transactions-and-concurrency.html)
 > as the behaviour here is pretty much the same.

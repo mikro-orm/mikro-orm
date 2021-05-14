@@ -236,7 +236,10 @@ export class UnitOfWork {
       const runInTransaction = !this.em.isInTransaction() && platform.supportsTransactions() && this.em.config.get('implicitTransactions');
 
       if (runInTransaction) {
-        await this.em.getConnection('write').transactional(trx => this.persistToDatabase(groups, trx), oldTx, new TransactionEventBroadcaster(this.em, this));
+        await this.em.getConnection('write').transactional(trx => this.persistToDatabase(groups, trx), {
+          ctx: oldTx,
+          eventBroadcaster: new TransactionEventBroadcaster(this.em, this),
+        });
       } else {
         await this.persistToDatabase(groups, this.em.getTransactionContext());
       }

@@ -6,6 +6,7 @@ import { MetadataStorage } from '../metadata';
 import { Dictionary } from '../typings';
 import { Platform } from '../platforms/Platform';
 import { TransactionEventBroadcaster } from '../events/TransactionEventBroadcaster';
+import { IsolationLevel } from '../enums';
 
 export abstract class Connection {
 
@@ -42,11 +43,11 @@ export abstract class Connection {
    */
   abstract getDefaultClientUrl(): string;
 
-  async transactional<T>(cb: (trx: Transaction) => Promise<T>, ctx?: Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<T> {
+  async transactional<T>(cb: (trx: Transaction) => Promise<T>, options?: { isolationLevel?: IsolationLevel; ctx?: Transaction; eventBroadcaster?: TransactionEventBroadcaster }): Promise<T> {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
-  async begin(ctx?: Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<unknown> {
+  async begin(options?: { isolationLevel?: IsolationLevel; ctx?: Transaction; eventBroadcaster?: TransactionEventBroadcaster }): Promise<Transaction> {
     throw new Error(`Transactions are not supported by current driver`);
   }
 

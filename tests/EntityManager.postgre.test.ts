@@ -2,7 +2,7 @@ import { v4 } from 'uuid';
 import {
   Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, Logger, ValidationError, ChangeSetType, wrap, expr,
   UniqueConstraintViolationException, TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException,
-  NonUniqueFieldNameException, InvalidFieldNameException, EventSubscriber, ChangeSet, AnyEntity, FlushEventArgs, LoadStrategy,
+  NonUniqueFieldNameException, InvalidFieldNameException, EventSubscriber, ChangeSet, AnyEntity, FlushEventArgs, LoadStrategy, IsolationLevel,
 } from '@mikro-orm/core';
 import { PostgreSqlDriver, PostgreSqlConnection } from '@mikro-orm/postgresql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2, Label2 } from './entities-sql';
@@ -212,6 +212,24 @@ describe('EntityManagerPostgre', () => {
       const res3 = await orm.em.findOne(Author2, { name: 'God4' });
       expect(res3).toBeNull();
     }
+  });
+
+  test('transactions with isolation levels', async () => {
+    const mock = jest.fn();
+    const logger = new Logger(mock, ['query']);
+    Object.assign(orm.config, { logger });
+
+    const god1 = new Author2('God1', 'hello@heaven1.god');
+    try {
+      await orm.em.transactional(async em => {
+        await em.persistAndFlush(god1);
+        throw new Error(); // rollback the transaction
+      }, { isolationLevel: IsolationLevel.READ_UNCOMMITTED });
+    } catch { }
+
+    expect(mock.mock.calls[0][0]).toMatch('begin isolation level read uncommitted');
+    expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "email", "name", "terms_accepted", "updated_at") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"');
+    expect(mock.mock.calls[2][0]).toMatch('rollback');
   });
 
   test('nested transactions with save-points', async () => {

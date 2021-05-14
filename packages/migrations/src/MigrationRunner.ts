@@ -23,7 +23,7 @@ export class MigrationRunner {
         migration.setTransactionContext(tx);
         const queries = await this.getQueries(migration, method);
         await Utils.runSerial(queries, sql => this.driver.execute(sql, undefined, 'all', tx));
-      }, this.masterTransaction);
+      }, { ctx: this.masterTransaction });
     }
   }
 

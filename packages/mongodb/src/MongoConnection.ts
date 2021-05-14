@@ -5,7 +5,7 @@ import {
 import { inspect } from 'util';
 import {
   Connection, ConnectionConfig, QueryResult, Transaction, Utils, QueryOrder, QueryOrderMap,
-  FilterQuery, AnyEntity, EntityName, Dictionary, EntityData, TransactionEventBroadcaster, EventType,
+  FilterQuery, AnyEntity, EntityName, Dictionary, EntityData, TransactionEventBroadcaster, EventType, IsolationLevel,
 } from '@mikro-orm/core';
 
 export class MongoConnection extends Connection {
@@ -148,33 +148,33 @@ export class MongoConnection extends Connection {
     return this.runQuery<T, number>('countDocuments', collection, undefined, where, ctx);
   }
 
-  async transactional<T>(cb: (trx: Transaction<ClientSession>) => Promise<T>, ctx?: Transaction<ClientSession>, eventBroadcaster?: TransactionEventBroadcaster): Promise<T> {
-    const session = await this.begin(ctx, eventBroadcaster);
+  async transactional<T>(cb: (trx: Transaction<ClientSession>) => Promise<T>, options: { isolationLevel?: IsolationLevel; ctx?: Transaction<ClientSession>; eventBroadcaster?: TransactionEventBroadcaster } = {}): Promise<T> {
+    const session = await this.begin(options);
 
     try {
       const ret = await cb(session);
-      await this.commit(session, eventBroadcaster);
+      await this.commit(session, options.eventBroadcaster);
 
       return ret;
     } catch (error) {
-      await this.rollback(session, eventBroadcaster);
+      await this.rollback(session, options.eventBroadcaster);
       throw error;
     } finally {
       session.endSession();
     }
   }
 
-  async begin(ctx?: ClientSession, eventBroadcaster?: TransactionEventBroadcaster): Promise<ClientSession> {
-    if (!ctx) {
+  async begin(options: { isolationLevel?: IsolationLevel; ctx?: ClientSession; eventBroadcaster?: TransactionEventBroadcaster } = {}): Promise<ClientSession> {
+    if (!options.ctx) {
       /* istanbul ignore next */
-      await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionStart);
+      await options.eventBroadcaster?.dispatchEvent(EventType.beforeTransactionStart);
     }
 
-    const session = ctx || this.client.startSession();
+    const session = options.ctx || this.client.startSession();
     session.startTransaction();
     this.logQuery('db.begin();');
     /* istanbul ignore next */
-    await eventBroadcaster?.dispatchEvent(EventType.afterTransactionStart, session);
+    await options.eventBroadcaster?.dispatchEvent(EventType.afterTransactionStart, session);
 
     return session;
   }

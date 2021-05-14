@@ -7,7 +7,7 @@ import chalk from 'chalk';
 import {
   Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, Logger, ValidationError, wrap,
   UniqueConstraintViolationException, TableNotFoundException, TableExistsException, SyntaxErrorException,
-  NonUniqueFieldNameException, InvalidFieldNameException, expr,
+  NonUniqueFieldNameException, InvalidFieldNameException, expr, IsolationLevel,
 } from '@mikro-orm/core';
 import { MySqlDriver, MySqlConnection } from '@mikro-orm/mysql';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
@@ -96,11 +96,11 @@ describe('EntityManagerMySql', () => {
     await expect(driver.ensureIndexes()).rejects.toThrowError('MySqlDriver does not use ensureIndexes');
 
     const conn = driver.getConnection();
-    await conn.transactional(async tx => {
-      await conn.execute('select 1', [], 'all', tx);
-      await conn.execute(orm.em.getKnex().raw('select 1'), [], 'all', tx);
-      await conn.execute(orm.em.getRepository(Author2).getKnex().raw('select 1'), [], 'all', tx);
-    });
+    const tx = await conn.begin();
+    await conn.execute('select 1', [], 'all', tx);
+    await conn.execute(orm.em.getKnex().raw('select 1'), [], 'all', tx);
+    await conn.execute(orm.em.getRepository(Author2).getKnex().raw('select 1'), [], 'all', tx);
+    await conn.commit(tx);
 
     // multi inserts
     const res = await driver.nativeInsertMany(Publisher2.name, [
@@ -332,6 +332,25 @@ describe('EntityManagerMySql', () => {
       const res4 = await orm.em.findOne(Author2, { name: 'God4' });
       expect(res4).toBeNull();
     }
+  });
+
+  test('transactions with isolation levels', async () => {
+    const mock = jest.fn();
+    const logger = new Logger(mock, ['query']);
+    Object.assign(orm.config, { logger });
+
+    const god1 = new Author2('God1', 'hello@heaven1.god');
+    try {
+      await orm.em.transactional(async em => {
+        await em.persistAndFlush(god1);
+        throw new Error(); // rollback the transaction
+      }, { isolationLevel: IsolationLevel.READ_UNCOMMITTED });
+    } catch { }
+
+    expect(mock.mock.calls[0][0]).toMatch('set transaction isolation level read uncommitted');
+    expect(mock.mock.calls[1][0]).toMatch('begin');
+    expect(mock.mock.calls[2][0]).toMatch('insert into `author2` (`created_at`, `email`, `name`, `terms_accepted`, `updated_at`) values (?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[3][0]).toMatch('rollback');
   });
 
   test('nested transactions with save-points', async () => {
