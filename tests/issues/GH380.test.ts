@@ -35,7 +35,7 @@ describe('GH issue 380', () => {
 
   test(`schema updates respect default values`, async () => {
     const generator = new SchemaGenerator(orm.em);
-    const dump = await generator.getUpdateSchemaSQL(false);
+    const dump = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(dump).toBe('');
   });
 

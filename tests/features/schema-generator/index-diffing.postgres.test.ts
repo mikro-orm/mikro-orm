@@ -167,25 +167,25 @@ describe('indexes on FKs in postgres (GH 1518)', () => {
   test('schema generator respect indexes on FKs on column update', async () => {
     await orm.discoverEntity(Book1);
     orm.getMetadata().reset('Book0');
-    const diff1 = await orm.getSchemaGenerator().getUpdateSchemaSQL(false);
+    const diff1 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
     await orm.getSchemaGenerator().execute(diff1);
 
     orm.getMetadata().reset('Book1');
     await orm.discoverEntity(Book2);
-    const diff2 = await orm.getSchemaGenerator().getUpdateSchemaSQL(false);
+    const diff2 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
     expect(diff2).toMatchSnapshot();
     await orm.getSchemaGenerator().execute(diff2);
 
     orm.getMetadata().reset('Book2');
     await orm.discoverEntity(Book3);
-    const diff3 = await orm.getSchemaGenerator().getUpdateSchemaSQL(false);
+    const diff3 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
     expect(diff3).toMatchSnapshot();
     await orm.getSchemaGenerator().execute(diff3);
 
     orm.getMetadata().reset('Book3');
     await orm.discoverEntity(Book4);
-    const diff4 = await orm.getSchemaGenerator().getUpdateSchemaSQL(false);
+    const diff4 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
     expect(diff4).toMatchSnapshot();
     await orm.getSchemaGenerator().execute(diff4);
   });

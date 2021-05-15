@@ -68,23 +68,23 @@ describe('comment diffing in mysql', () => {
   test('schema generator updates comments', async () => {
     await orm.discoverEntity(Book1);
     orm.getMetadata().reset('Book0');
-    const diff1 = await generator.getUpdateSchemaSQL(false);
+    const diff1 = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
     await generator.execute(diff1);
 
     orm.getMetadata().reset('Book1');
     await orm.discoverEntity(Book2);
-    const diff2 = await generator.getUpdateSchemaSQL(false);
+    const diff2 = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff2).toMatchSnapshot();
     await generator.execute(diff2);
 
     orm.getMetadata().reset('Book2');
     await orm.discoverEntity(Book3);
-    const diff3 = await generator.getUpdateSchemaSQL(false);
+    const diff3 = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff3).toMatchSnapshot();
     await generator.execute(diff3);
 
-    await expect(generator.getUpdateSchemaSQL(false)).resolves.toBe('');
+    await expect(generator.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
   });
 
 });

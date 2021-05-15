@@ -49,7 +49,7 @@ describe('GH issue 459', () => {
 
   test(`multiple inheritance`, async () => {
     const sql = 'create table `d` (`id` integer not null primary key autoincrement, `foo` text not null, `bar` text not null, `name` text not null);\n\n';
-    expect(await new SchemaGenerator(orm.em).getCreateSchemaSQL(false)).toBe(sql);
+    expect(await new SchemaGenerator(orm.em).getCreateSchemaSQL({ wrap: false })).toBe(sql);
 
     const d = new D();
     d.name = 'name';

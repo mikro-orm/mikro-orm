@@ -62,7 +62,7 @@ describe('GH issue 450', () => {
   });
 
   afterAll(async () => {
-    await new SchemaGenerator(orm.em).dropSchema(true, true, true);
+    await new SchemaGenerator(orm.em).dropSchema({ wrap: true, dropMigrationsTable: true, dropDb: true });
     await new SchemaGenerator(orm.em).dropDatabase('auth');
     await new SchemaGenerator(orm.em).dropDatabase('operations');
     await orm.close(true);

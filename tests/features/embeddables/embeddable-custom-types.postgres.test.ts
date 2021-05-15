@@ -125,9 +125,9 @@ describe('embedded entities with custom types', () => {
   afterAll(() => orm.close(true));
 
   test('schema', async () => {
-    await expect(orm.getSchemaGenerator().getCreateSchemaSQL(false)).resolves.toMatchSnapshot('embeddables custom types 1');
-    await expect(orm.getSchemaGenerator().getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('embeddables custom types 2');
-    await expect(orm.getSchemaGenerator().getDropSchemaSQL(false)).resolves.toMatchSnapshot('embeddables custom types 3');
+    await expect(orm.getSchemaGenerator().getCreateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('embeddables custom types 1');
+    await expect(orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('embeddables custom types 2');
+    await expect(orm.getSchemaGenerator().getDropSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('embeddables custom types 3');
   });
 
   test('persist and load', async () => {

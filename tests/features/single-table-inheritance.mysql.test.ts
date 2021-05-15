@@ -235,7 +235,7 @@ describe('single table inheritance in mysql', () => {
       type: 'sqlite',
       dbName: ':memory:',
     });
-    const sql = await orm.getSchemaGenerator().getCreateSchemaSQL(false);
+    const sql = await orm.getSchemaGenerator().getCreateSchemaSQL({ wrap: false });
     expect(sql).toMatchSnapshot();
   });
 

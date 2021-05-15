@@ -111,20 +111,20 @@ describe('dropping tables with  FKs in postgres', () => {
     orm.getMetadata().reset('Author0');
     orm.getMetadata().reset('Book0');
     await orm.discoverEntity([Author1, Book1]);
-    const diff1 = await orm.getSchemaGenerator().getUpdateSchemaSQL(false);
+    const diff1 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
     await orm.getSchemaGenerator().execute(diff1);
 
     orm.getMetadata().reset('Book1');
     await orm.discoverEntity(Book2);
-    const diff2 = await orm.getSchemaGenerator().getUpdateSchemaSQL(false);
+    const diff2 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
     expect(diff2).toMatchSnapshot();
     await orm.getSchemaGenerator().execute(diff2);
 
     orm.getMetadata().reset('Book2');
     await orm.discoverEntity(Book3);
     orm.getMetadata().reset('Author0');
-    const diff3 = await orm.getSchemaGenerator().getUpdateSchemaSQL(false);
+    const diff3 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
     expect(diff3).toMatchSnapshot();
     await orm.getSchemaGenerator().execute(diff3);
 
@@ -145,7 +145,7 @@ describe('dropping tables with  FKs in postgres', () => {
     orm.getMetadata().reset('Book0');
     await orm.discoverEntity(Book11);
     orm.getMetadata().reset('Author0');
-    const diff1 = await orm.getSchemaGenerator().getUpdateSchemaSQL(false);
+    const diff1 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
     await orm.getSchemaGenerator().execute(diff1);
 

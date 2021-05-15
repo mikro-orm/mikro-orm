@@ -35,12 +35,12 @@ describe('SchemaGenerator [postgres]', () => {
       tableName: 'other.new_table',
     }).init().meta;
     meta.set('NewTable', newTableMeta);
-    const diff1 = await generator.getUpdateSchemaSQL(false);
+    const diff1 = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toMatchSnapshot('postgres-update-schema-1215');
     await generator.execute(diff1);
 
     meta.reset('NewTable');
-    const diff2 = await generator.getUpdateSchemaSQL(false);
+    const diff2 = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff2).toMatchSnapshot('postgres-update-schema-1215');
     await generator.execute(diff2);
 
@@ -73,7 +73,7 @@ describe('SchemaGenerator [postgres]', () => {
       tableName: 'new_table',
     }).init().meta;
     meta.set('NewTable', newTableMeta);
-    let diff = await generator.getUpdateSchemaSQL(false);
+    let diff = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-enums-1');
     await generator.execute(diff);
 
@@ -82,19 +82,19 @@ describe('SchemaGenerator [postgres]', () => {
     newTableMeta.properties.enumTest.enum = true;
     newTableMeta.properties.enumTest.type = 'object';
     newTableMeta.properties.enumTest.columnTypes[0] = Type.getType(EnumType).getColumnType(newTableMeta.properties.enumTest, orm.em.getPlatform());
-    diff = await generator.getUpdateSchemaSQL(false);
+    diff = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-enums-2');
     await generator.execute(diff);
 
     // change enum items
     newTableMeta.properties.enumTest.items = ['a', 'b', 'c'];
     newTableMeta.properties.enumTest.columnTypes[0] = Type.getType(EnumType).getColumnType(newTableMeta.properties.enumTest, orm.em.getPlatform());
-    diff = await generator.getUpdateSchemaSQL(false);
+    diff = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-enums-3');
     await generator.execute(diff);
 
     // check that we do not produce anything as the schema should be up to date
-    diff = await generator.getUpdateSchemaSQL(false);
+    diff = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toBe('');
 
     // change the type from enum to int
@@ -102,7 +102,7 @@ describe('SchemaGenerator [postgres]', () => {
     newTableMeta.properties.enumTest.columnTypes[0] = 'int';
     newTableMeta.properties.enumTest.enum = false;
     newTableMeta.properties.enumTest.type = 'number';
-    diff = await generator.getUpdateSchemaSQL(false);
+    diff = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-enums-4');
     await generator.execute(diff);
 
@@ -136,7 +136,7 @@ describe('SchemaGenerator [postgres]', () => {
 
     const generator = new SchemaGenerator(orm.em as EntityManager);
     await generator.createSchema();
-    await generator.dropSchema(false, false, true);
+    await generator.dropSchema({ wrap: false, dropMigrationsTable: false, dropDb: true });
     await orm.close(true);
 
     await orm.isConnected();
@@ -151,15 +151,15 @@ describe('SchemaGenerator [postgres]', () => {
 
     const dropDump = await generator.getDropSchemaSQL();
     expect(dropDump).toMatchSnapshot('postgres-drop-schema-dump');
-    await generator.execute(dropDump, true);
+    await generator.execute(dropDump, { wrap: true });
 
     const createDump = await generator.getCreateSchemaSQL();
     expect(createDump).toMatchSnapshot('postgres-create-schema-dump');
-    await generator.execute(createDump, true);
+    await generator.execute(createDump, { wrap: true });
 
     const updateDump = await generator.getUpdateSchemaSQL();
     expect(updateDump).toMatchSnapshot('postgres-update-schema-dump');
-    await generator.execute(updateDump, true);
+    await generator.execute(updateDump, { wrap: true });
 
     await orm.close(true);
   });
@@ -219,9 +219,9 @@ describe('SchemaGenerator [postgres]', () => {
     const authorMeta = meta.get('Author2');
     authorMeta.properties.termsAccepted.defaultRaw = 'false';
 
-    let diff = await generator.getUpdateSchemaSQL(false);
+    let diff = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-create-table');
-    await generator.execute(diff, true);
+    await generator.execute(diff, { wrap: true });
 
     const favouriteBookProp = Utils.copy(authorMeta.properties.favouriteBook);
     authorMeta.properties.name.type = 'number';
@@ -231,9 +231,9 @@ describe('SchemaGenerator [postgres]', () => {
     authorMeta.properties.age.defaultRaw = '42';
     authorMeta.properties.favouriteAuthor.type = 'FooBar2';
     authorMeta.properties.favouriteAuthor.referencedTableName = 'foo_bar2';
-    diff = await generator.getUpdateSchemaSQL(false);
+    diff = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-alter-column');
-    await generator.execute(diff, true);
+    await generator.execute(diff, { wrap: true });
 
     delete authorMeta.properties.name.default;
     delete authorMeta.properties.name.defaultRaw;
@@ -243,9 +243,9 @@ describe('SchemaGenerator [postgres]', () => {
     newTableMeta.removeProperty('id');
     newTableMeta.removeProperty('updatedAt');
     authorMeta.removeProperty('favouriteBook');
-    diff = await generator.getUpdateSchemaSQL(false);
+    diff = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-drop-column');
-    await generator.execute(diff, true);
+    await generator.execute(diff, { wrap: true });
 
     const ageProp = authorMeta.properties.age;
     ageProp.name = 'ageInYears';
@@ -256,17 +256,17 @@ describe('SchemaGenerator [postgres]', () => {
     favouriteAuthorProp.joinColumns = ['favourite_writer_id'];
     authorMeta.removeProperty('favouriteAuthor');
     authorMeta.addProperty(favouriteAuthorProp);
-    diff = await generator.getUpdateSchemaSQL(false);
+    diff = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-rename-column');
-    await generator.execute(diff, true);
+    await generator.execute(diff, { wrap: true });
 
     newTableMeta.addProperty(idProp);
     newTableMeta.addProperty(updatedAtProp);
     authorMeta.addProperty(favouriteBookProp);
-    diff = await generator.getUpdateSchemaSQL(false);
+    diff = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-add-column');
-    await generator.execute(diff, true);
-    diff = await generator.getUpdateSchemaSQL(false);
+    await generator.execute(diff, { wrap: true });
+    diff = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toBe('');
 
     // remove 1:1 relation
@@ -274,15 +274,15 @@ describe('SchemaGenerator [postgres]', () => {
     const fooBazMeta = meta.get('FooBaz2');
     fooBarMeta.removeProperty('baz');
     fooBazMeta.removeProperty('bar');
-    diff = await generator.getUpdateSchemaSQL(false);
+    diff = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-drop-1:1');
-    await generator.execute(diff, true);
+    await generator.execute(diff, { wrap: true });
 
     meta.reset('Author2');
     meta.reset('NewTable');
-    diff = await generator.getUpdateSchemaSQL(false);
+    diff = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-drop-table');
-    await generator.execute(diff, true);
+    await generator.execute(diff, { wrap: true });
 
     await orm.close(true);
   });
@@ -301,27 +301,27 @@ describe('SchemaGenerator [postgres]', () => {
       properties: ['author', 'publisher'],
     });
 
-    let diff = await generator.getUpdateSchemaSQL(false);
+    let diff = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-add-index');
-    await generator.execute(diff, true);
+    await generator.execute(diff, { wrap: true });
 
     meta.get('Book2').indexes[0].name = 'custom_idx_123';
 
-    diff = await generator.getUpdateSchemaSQL(false);
+    diff = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-alter-index');
-    await generator.execute(diff, true);
+    await generator.execute(diff, { wrap: true });
 
     meta.get('Book2').indexes = [];
 
-    diff = await generator.getUpdateSchemaSQL(false);
+    diff = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-drop-index');
-    await generator.execute(diff, true);
+    await generator.execute(diff, { wrap: true });
 
     meta.get('Book2').uniques = [];
 
-    diff = await generator.getUpdateSchemaSQL(false);
+    diff = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-drop-unique');
-    await generator.execute(diff, true);
+    await generator.execute(diff, { wrap: true });
 
     await orm.close(true);
   });
@@ -333,7 +333,7 @@ describe('SchemaGenerator [postgres]', () => {
 
     const updateDump = await generator.getUpdateSchemaSQL();
     expect(updateDump).toMatchSnapshot('postgres-update-empty-schema-dump');
-    await generator.execute(updateDump, true);
+    await generator.execute(updateDump, { wrap: true });
 
     await orm.close(true);
   });

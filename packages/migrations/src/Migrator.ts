@@ -168,10 +168,10 @@ export class Migrator {
     if (blank) {
       lines.push('select 1');
     } else if (initial) {
-      const dump = await this.schemaGenerator.getCreateSchemaSQL(false);
+      const dump = await this.schemaGenerator.getCreateSchemaSQL({ wrap: false });
       lines.push(...dump.split('\n'));
     } else {
-      const dump = await this.schemaGenerator.getUpdateSchemaSQL(false, this.options.safe, this.options.dropTables);
+      const dump = await this.schemaGenerator.getUpdateSchemaSQL({ wrap: false, safe: this.options.safe, dropTables: this.options.dropTables });
       lines.push(...dump.split('\n'));
     }
 

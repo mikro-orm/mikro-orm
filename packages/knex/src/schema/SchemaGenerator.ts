@@ -20,16 +20,16 @@ export class SchemaGenerator {
 
   async generate(): Promise<string> {
     const [dropSchema, createSchema] = await Promise.all([
-      this.getDropSchemaSQL(false),
-      this.getCreateSchemaSQL(false),
+      this.getDropSchemaSQL({ wrap: false }),
+      this.getCreateSchemaSQL({ wrap: false }),
     ]);
 
     return this.wrapSchema(dropSchema + createSchema);
   }
 
-  async createSchema(wrap = true): Promise<void> {
+  async createSchema(options?: { wrap?: boolean }): Promise<void> {
     await this.ensureDatabase();
-    const sql = await this.getCreateSchemaSQL(wrap);
+    const sql = await this.getCreateSchemaSQL(options);
     await this.execute(sql);
   }
 
@@ -44,9 +44,14 @@ export class SchemaGenerator {
     }
   }
 
-  async getCreateSchemaSQL(wrap = true): Promise<string> {
+  getTargetSchema(): DatabaseSchema {
     const metadata = this.getOrderedMetadata();
-    const toSchema = DatabaseSchema.fromMetadata(metadata, this.platform, this.config);
+    return DatabaseSchema.fromMetadata(metadata, this.platform, this.config);
+  }
+
+  async getCreateSchemaSQL(options: { wrap?: boolean } = {}): Promise<string> {
+    const wrap = options.wrap ?? true;
+    const toSchema = this.getTargetSchema();
     let ret = '';
 
     for (const namespace of toSchema.getNamespaces()) {
@@ -61,20 +66,23 @@ export class SchemaGenerator {
       ret += await this.dump(this.knex.schema.alterTable(tableDef.getShortestName(), table => this.createForeignKeys(table, tableDef)));
     }
 
-    return this.wrapSchema(ret, wrap);
+    return this.wrapSchema(ret, { wrap });
   }
 
-  async dropSchema(wrap = true, dropMigrationsTable = false, dropDb = false): Promise<void> {
-    if (dropDb) {
+  async dropSchema(options: { wrap?: boolean; dropMigrationsTable?: boolean; dropDb?: boolean } = {}): Promise<void> {
+    options.wrap = options.wrap ?? true;
+
+    if (options.dropDb) {
       const name = this.config.get('dbName')!;
       return this.dropDatabase(name);
     }
 
-    const sql = await this.getDropSchemaSQL(wrap, dropMigrationsTable);
+    const sql = await this.getDropSchemaSQL(options);
     await this.execute(sql);
   }
 
-  async getDropSchemaSQL(wrap = true, dropMigrationsTable = false): Promise<string> {
+  async getDropSchemaSQL(options: { wrap?: boolean; dropMigrationsTable?: boolean } = {}): Promise<string> {
+    const wrap = options.wrap ?? true;
     const metadata = this.getOrderedMetadata().reverse();
     let ret = '';
 
@@ -82,21 +90,23 @@ export class SchemaGenerator {
       ret += await this.dump(this.dropTable(meta.collection), '\n');
     }
 
-    if (dropMigrationsTable) {
+    if (options.dropMigrationsTable) {
       ret += await this.dump(this.dropTable(this.config.get('migrations').tableName!), '\n');
     }
 
-    return this.wrapSchema(ret + '\n', wrap);
+    return this.wrapSchema(ret + '\n', { wrap });
   }
 
-  async updateSchema(wrap = true, safe = false, dropTables = true): Promise<void> {
-    const sql = await this.getUpdateSchemaSQL(wrap, safe, dropTables);
+  async updateSchema(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean } = {}): Promise<void> {
+    const sql = await this.getUpdateSchemaSQL(options);
     await this.execute(sql);
   }
 
-  async getUpdateSchemaSQL(wrap = true, safe = false, dropTables = true): Promise<string> {
-    const metadata = this.getOrderedMetadata();
-    const toSchema = DatabaseSchema.fromMetadata(metadata, this.platform, this.config);
+  async getUpdateSchemaSQL(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean } = {}): Promise<string> {
+    const wrap = options.wrap ?? true;
+    options.safe = options.safe ?? false;
+    options.dropTables = options.dropTables ?? true;
+    const toSchema = this.getTargetSchema();
     const fromSchema = await DatabaseSchema.create(this.connection, this.platform, this.config);
     const comparator = new SchemaComparator(this.platform);
     const schemaDiff = comparator.compare(fromSchema, toSchema);
@@ -108,7 +118,7 @@ export class SchemaGenerator {
       }
     }
 
-    if (!safe) {
+    if (!options.safe) {
       for (const orphanedForeignKey of schemaDiff.orphanedForeignKeys) {
         ret += await this.dump(this.knex.schema.alterTable(orphanedForeignKey.localTableName, table => table.dropForeign(orphanedForeignKey.columnNames, orphanedForeignKey.constraintName)));
       }
@@ -122,31 +132,31 @@ export class SchemaGenerator {
       ret += await this.dump(this.knex.schema.alterTable(newTable.getShortestName(), table => this.createForeignKeys(table, newTable)));
     }
 
-    if (dropTables && !safe) {
+    if (options.dropTables && !options.safe) {
       for (const table of Object.values(schemaDiff.removedTables)) {
         ret += await this.dump(this.dropTable(table.name, table.schema));
       }
     }
 
     for (const changedTable of Object.values(schemaDiff.changedTables)) {
-      for (const builder of this.preAlterTable(changedTable, safe)) {
+      for (const builder of this.preAlterTable(changedTable, options.safe)) {
         ret += await this.dump(builder);
       }
     }
 
     for (const changedTable of Object.values(schemaDiff.changedTables)) {
-      for (const builder of this.alterTable(changedTable, safe)) {
+      for (const builder of this.alterTable(changedTable, options.safe)) {
         ret += await this.dump(builder);
       }
     }
 
-    if (dropTables && !safe) {
+    if (options.dropTables && !options.safe) {
       for (const removedNamespace of schemaDiff.removedNamespaces) {
         ret += await this.dump(this.knex.schema.dropSchema(removedNamespace));
       }
     }
 
-    return this.wrapSchema(ret, wrap);
+    return this.wrapSchema(ret, { wrap });
   }
 
   private createForeignKey(table: Knex.CreateTableBuilder, foreignKey: ForeignKey) {
@@ -289,16 +299,19 @@ export class SchemaGenerator {
     await this.driver.execute(this.helper.getDropDatabaseSQL('' + this.knex.ref(name)));
   }
 
-  async execute(sql: string, wrap = false) {
-    const lines = this.wrapSchema(sql, wrap).split('\n').filter(i => i.trim());
+  async execute(sql: string, options: { wrap?: boolean } = {}) {
+    options.wrap = options.wrap ?? false;
+    const lines = this.wrapSchema(sql, options).split('\n').filter(i => i.trim());
 
     for (const line of lines) {
       await this.driver.execute(line);
     }
   }
 
-  private wrapSchema(sql: string, wrap = true): string {
-    if (!wrap) {
+  private wrapSchema(sql: string, options: { wrap?: boolean } = {}): string {
+    options.wrap = options.wrap ?? true;
+
+    if (!options.wrap) {
       return sql;
     }
 

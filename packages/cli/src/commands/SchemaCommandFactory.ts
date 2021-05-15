@@ -1,6 +1,6 @@
 import yargs, { Arguments, Argv, CommandModule } from 'yargs';
 import c from 'ansi-colors';
-import { MikroORM } from '@mikro-orm/core';
+import { Dictionary, MikroORM } from '@mikro-orm/core';
 import { AbstractSqlDriver, SchemaGenerator } from '@mikro-orm/knex';
 import { CLIHelper } from '../CLIHelper';
 
@@ -95,36 +95,39 @@ export class SchemaCommandFactory {
     const params = SchemaCommandFactory.getOrderedParams(args, method);
 
     if (args.dump) {
-      const m = `get${method.substr(0, 1).toUpperCase()}${method.substr(1)}SchemaSQL`;
-      const dump = await generator[m](...params);
+      const m = `get${method.substr(0, 1).toUpperCase()}${method.substr(1)}SchemaSQL` as 'getCreateSchemaSQL' | 'getUpdateSchemaSQL' | 'getDropSchemaSQL';
+      const dump = await generator[m](params);
       CLIHelper.dump(dump, orm.config);
     } else if (method === 'fresh') {
-      await generator.dropSchema(...SchemaCommandFactory.getOrderedParams(args, 'drop'));
-      await generator.createSchema(...SchemaCommandFactory.getOrderedParams(args, 'create'));
+      await generator.dropSchema(SchemaCommandFactory.getOrderedParams(args, 'drop'));
+      await generator.createSchema(SchemaCommandFactory.getOrderedParams(args, 'create'));
     } else {
       const m = method + 'Schema';
-      await generator[m](...params);
+      await generator[m](params);
     }
+
     if (args.seed !== undefined) {
       const seeder = orm.getSeeder();
       await seeder.seedString(args.seed || orm.config.get('seeder').defaultSeeder);
     }
+
     CLIHelper.dump(c.green(successMessage));
     await orm.close(true);
   }
 
-  private static getOrderedParams(args: Arguments<Options>, method: SchemaMethod): any[] {
-    const ret: any[] = [!args.fkChecks];
+  private static getOrderedParams(args: Arguments<Options>, method: SchemaMethod): Dictionary {
+    const ret: Dictionary = { wrap: !args.fkChecks };
 
     if (method === 'update') {
-      ret.push(args.safe, args.dropTables);
+      ret.safe = args.safe;
+      ret.dropTables = args.dropTables;
     }
 
     if (method === 'drop') {
-      ret.push(args.dropMigrationsTable);
+      ret.dropMigrationsTable = args.dropMigrationsTable;
 
       if (!args.dump) {
-        ret.push(args.dropDb);
+        ret.dropDb = args.dropDb;
       }
     }
 

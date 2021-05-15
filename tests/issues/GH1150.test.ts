@@ -86,7 +86,7 @@ describe('GH issue 1150', () => {
 
   it('numeric enum diffing (GH issue #1096)', async () => {
     const generator = orm.getSchemaGenerator();
-    await expect(generator.getUpdateSchemaSQL(false)).resolves.toBe('');
+    await expect(generator.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
   });
 
 });

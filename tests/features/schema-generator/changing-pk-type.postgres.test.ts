@@ -79,7 +79,7 @@ describe('changing PK column type [postgres] (GH 1480)', () => {
         orm.getMetadata().reset(e1.name);
       }
 
-      const diff = await generator.getUpdateSchemaSQL(false);
+      const diff = await generator.getUpdateSchemaSQL({ wrap: false });
       expect(diff).toMatchSnapshot(snap);
       await generator.execute(diff);
     };
@@ -89,9 +89,9 @@ describe('changing PK column type [postgres] (GH 1480)', () => {
     await testMigration(User1, User2, '2. add new PK (make it composite PK)');
     await testMigration(User2, User3, '3. remove old PK (make it single PK again)');
     await testMigration(User3, User4, '4. change PK type from int to serial');
-    await expect(generator.getUpdateSchemaSQL(false)).resolves.toBe('');
+    await expect(generator.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
     await testMigration(User4, User5, '5. change PK type from serial to text');
-    await expect(generator.getUpdateSchemaSQL(false)).resolves.toBe('');
+    await expect(generator.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
   });
 
 });
