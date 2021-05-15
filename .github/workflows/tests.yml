@@ -165,6 +165,17 @@ jobs:
         with:
           node-version: 15
 
+      - name: Cache node_modules
+        uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-15-modules-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Install libkrb5-dev (for run-rs)
+        run: |
+          sudo apt update
+          sudo apt install libkrb5-dev
+
       - name: Check for changes
         id: changed_packages
         run: |
