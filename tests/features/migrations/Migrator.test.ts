@@ -86,38 +86,65 @@ describe('Migrator', () => {
     await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
   });
 
-  test('generate initial migration', async () => {
+  test('initial migration cannot be created if migrations already exist', async () => {
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const getExecutedMigrationsMock = jest.spyOn<any, any>(Migrator.prototype, 'getExecutedMigrations');
-    const getPendingMigrationsMock = jest.spyOn<any, any>(Migrator.prototype, 'getPendingMigrations');
+
     getExecutedMigrationsMock.mockResolvedValueOnce(['test.ts']);
     const migrator = new Migrator(orm.em);
     const err = 'Initial migration cannot be created, as some migrations already exist';
     await expect(migrator.createMigration(undefined, false, true)).rejects.toThrowError(err);
+  });
 
+  test('initial migration cannot be created if tables already exist', async () => {
+    const migrator = new Migrator(orm.em);
+    const getExecutedMigrationsMock = jest.spyOn<any, any>(Migrator.prototype, 'getExecutedMigrations');
+    const getPendingMigrationsMock = jest.spyOn<any, any>(Migrator.prototype, 'getPendingMigrations');
     getExecutedMigrationsMock.mockResolvedValueOnce([]);
     const logMigrationMock = jest.spyOn<any, any>(MigrationStorage.prototype, 'logMigration');
     logMigrationMock.mockImplementationOnce(i => i);
-    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
-    dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
 
-    const metadataMock = jest.spyOn(MetadataStorage.prototype, 'getAll');
     const schemaMock = jest.spyOn(DatabaseSchema.prototype, 'getTables');
     schemaMock.mockReturnValueOnce([{ name: 'author2' } as DatabaseTable, { name: 'book2' } as DatabaseTable]);
     getPendingMigrationsMock.mockResolvedValueOnce([]);
     const err2 = `Some tables already exist in your schema, remove them first to create the initial migration: author2, book2`;
     await expect(migrator.createInitialMigration(undefined)).rejects.toThrowError(err2);
+  });
 
+  test('initial migration cannot be created if no entity metadata is found', async () => {
+    const migrator = new Migrator(orm.em);
+
+    const metadataMock = jest.spyOn(MetadataStorage.prototype, 'getAll');
     metadataMock.mockReturnValueOnce({});
     const err3 = `No entities found`;
     await expect(migrator.createInitialMigration(undefined)).rejects.toThrowError(err3);
+  });
+
+  test('do not log a migration if the schema does not exist yet', async () => {
+    const migrator = new Migrator(orm.em);
+
+    const schemaMock = jest.spyOn(DatabaseSchema.prototype, 'getTables');
+    const getPendingMigrationsMock = jest.spyOn<any, any>(Migrator.prototype, 'getPendingMigrations');
+    const logMigrationMock = jest.spyOn<any, any>(MigrationStorage.prototype, 'logMigration');
+
+    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValueOnce('2019-10-13T21:48:13.382Z');
 
     schemaMock.mockReturnValueOnce([]);
     getPendingMigrationsMock.mockResolvedValueOnce([]);
+    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migration1 = await migrator.createInitialMigration(undefined);
     expect(logMigrationMock).not.toBeCalledWith('Migration20191013214813.ts');
     expect(migration1).toMatchSnapshot('initial-migration-dump');
     await remove(process.cwd() + '/temp/migrations/' + migration1.fileName);
+  });
+
+  test('log a migration when the schema already exists', async () => {
+    const migrator = new Migrator(orm.em);
+    const logMigrationMock = jest.spyOn<any, any>(MigrationStorage.prototype, 'logMigration');
+
+    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValueOnce('2019-10-13T21:48:13.382Z');
 
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migration2 = await migrator.createInitialMigration(undefined);
