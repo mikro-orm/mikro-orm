@@ -66,6 +66,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       allOrNothing: true,
       dropTables: true,
       safe: false,
+      snapshot: true,
       emit: 'ts',
       fileName: (timestamp: string) => `Migration${timestamp}`,
     },
@@ -310,6 +311,7 @@ export type MigrationsOptions = {
   allOrNothing?: boolean;
   dropTables?: boolean;
   safe?: boolean;
+  snapshot?: boolean;
   emit?: 'js' | 'ts';
   fileName?: (timestamp: string) => string;
   migrationsList?: MigrationObject[];

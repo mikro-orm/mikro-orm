@@ -1,4 +1,4 @@
-import { Configuration, EntityMetadata, EntityProperty, ReferenceType } from '@mikro-orm/core';
+import { Configuration, Dictionary, EntityMetadata, EntityProperty, ReferenceType } from '@mikro-orm/core';
 import { DatabaseTable } from './DatabaseTable';
 import { AbstractSqlConnection } from '../AbstractSqlConnection';
 import { Table } from '../typings';
@@ -15,9 +15,9 @@ export class DatabaseSchema {
   constructor(private readonly platform: AbstractSqlPlatform,
               readonly name: string) { }
 
-  addTable(name: string, schema: string | undefined | null, meta?: EntityMetadata): DatabaseTable {
+  addTable(name: string, schema: string | undefined | null): DatabaseTable {
     const namespaceName = schema ?? undefined;
-    const table = new DatabaseTable(this.platform, name, namespaceName, meta);
+    const table = new DatabaseTable(this.platform, name, namespaceName);
     this.tables.push(table);
 
     if (namespaceName != null && !table.isInDefaultNamespace(this.name) && !this.hasNamespace(namespaceName)) {
@@ -74,7 +74,7 @@ export class DatabaseSchema {
     const schema = new DatabaseSchema(platform, config.get('schema'));
 
     for (const meta of metadata) {
-      const table = schema.addTable(meta.collection, meta.schema ?? config.get('schema'), meta);
+      const table = schema.addTable(meta.collection, meta.schema ?? config.get('schema'));
       table.comment = meta.comment;
       meta.props
         .filter(prop => this.shouldHaveColumn(meta, prop))
@@ -104,6 +104,11 @@ export class DatabaseSchema {
     }
 
     return [ReferenceType.SCALAR, ReferenceType.MANY_TO_ONE].includes(prop.reference) || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
+  }
+
+  toJSON(): Dictionary {
+    const { platform, ...rest } = this;
+    return rest;
   }
 
 }

@@ -62,7 +62,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     entityRepository: SqlEntityRepository,
     type,
     replicas: [{ name: 'read-1' }, { name: 'read-2' }], // create two read replicas with same configuration, just for testing purposes
-    migrations: { path: BASE_DIR + '/../temp/migrations' },
+    migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
   }, additionalOptions));
 
   const schemaGenerator = new SchemaGenerator(orm.em);
@@ -100,7 +100,7 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN) {
     autoJoinOneToOneOwner: false,
     logger: i => i,
     cache: { enabled: true },
-    migrations: { path: BASE_DIR + '/../temp/migrations' },
+    migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
     loadStrategy,
   });
 

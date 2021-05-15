@@ -86,6 +86,25 @@ describe('Migrator (postgres)', () => {
     await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
   });
 
+  test('generate migration with snapshot', async () => {
+    const migrations = orm.config.get('migrations');
+    migrations.snapshot = true;
+
+    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
+    const migrator = new Migrator(orm.em);
+    const migration1 = await migrator.createMigration();
+    expect(migration1).toMatchSnapshot('migration-snapshot-dump-1');
+    await remove(process.cwd() + '/temp/migrations/' + migration1.fileName);
+
+    // will use the snapshot, so should be empty
+    const migration2 = await migrator.createMigration();
+    expect(migration2.diff).toEqual([]);
+    expect(migration2).toMatchSnapshot('migration-snapshot-dump-2');
+
+    migrations.snapshot = false;
+  });
+
   test('generate initial migration', async () => {
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const getExecutedMigrationsMock = jest.spyOn<any, any>(Migrator.prototype, 'getExecutedMigrations');

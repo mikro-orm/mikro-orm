@@ -1,7 +1,8 @@
 import umzug, { migrationsList, Umzug } from 'umzug';
-import { ensureDir } from 'fs-extra';
-import { Constructor, Dictionary, Transaction, Utils } from '@mikro-orm/core';
-import { DatabaseSchema, EntityManager, SchemaGenerator } from '@mikro-orm/knex';
+import { join } from 'path';
+import { ensureDir, pathExists, writeJSON } from 'fs-extra';
+import { Constructor, Dictionary, Transaction, Utils, t, Type } from '@mikro-orm/core';
+import { DatabaseSchema, DatabaseTable, EntityManager, SchemaGenerator } from '@mikro-orm/knex';
 import { Migration } from './Migration';
 import { MigrationRunner } from './MigrationRunner';
 import { MigrationGenerator } from './MigrationGenerator';
@@ -18,10 +19,12 @@ export class Migrator {
   private readonly runner = new MigrationRunner(this.driver, this.options, this.config);
   private readonly generator = new MigrationGenerator(this.driver, this.config.getNamingStrategy(), this.options);
   private readonly storage = new MigrationStorage(this.driver, this.options);
+  private readonly absolutePath = Utils.absolutePath(this.options.path!, this.config.get('baseDir'));
+  private readonly snapshotPath = join(this.absolutePath, `.snapshot-${this.config.get('dbName')}.json`);
 
   constructor(private readonly em: EntityManager) {
     let migrations: Dictionary = {
-      path: Utils.absolutePath(this.options.path!, this.config.get('baseDir')),
+      path: this.absolutePath,
       pattern: this.options.pattern,
       customResolver: (file: string) => this.resolve(file),
     };
@@ -50,6 +53,7 @@ export class Migrator {
       return { fileName: '', code: '', diff };
     }
 
+    await this.storeCurrentSchema();
     const migration = await this.generator.generate(diff, path);
 
     return {
@@ -152,6 +156,40 @@ export class Migrator {
     return this.initialize(MigrationClass);
   }
 
+  protected async getCurrentSchema(): Promise<DatabaseSchema> {
+    if (!this.options.snapshot || !await pathExists(this.snapshotPath)) {
+      return DatabaseSchema.create(this.driver.getConnection(), this.driver.getPlatform(), this.config);
+    }
+
+    const data = await import(this.snapshotPath);
+    const schema = new DatabaseSchema(this.driver.getPlatform(), this.config.get('schema'));
+    const { tables, ...rest } = data;
+    const tableInstances = tables.map((tbl: Dictionary) => {
+      const table = new DatabaseTable(this.driver.getPlatform(), tbl.name);
+      const { columns, ...restTable } = tbl;
+      Object.assign(table, restTable);
+      Object.keys(columns).forEach(col => {
+        const column = { ...columns[col] };
+        column.mappedType = Type.getType(t[columns[col].mappedType]);
+        table.addColumn(column);
+      });
+
+      return table;
+    });
+    Object.assign(schema, { tables: tableInstances, ...rest });
+
+    return schema;
+  }
+
+  protected async storeCurrentSchema(): Promise<void> {
+    if (!this.options.snapshot) {
+      return;
+    }
+
+    const schema = this.schemaGenerator.getTargetSchema();
+    await writeJSON(this.snapshotPath, schema, { spaces: 2 });
+  }
+
   protected initialize(MigrationClass: Constructor<Migration>, name?: string) {
     const instance = new MigrationClass(this.driver, this.config);
 
@@ -171,7 +209,12 @@ export class Migrator {
       const dump = await this.schemaGenerator.getCreateSchemaSQL({ wrap: false });
       lines.push(...dump.split('\n'));
     } else {
-      const dump = await this.schemaGenerator.getUpdateSchemaSQL({ wrap: false, safe: this.options.safe, dropTables: this.options.dropTables });
+      const dump = await this.schemaGenerator.getUpdateSchemaSQL({
+        wrap: false,
+        safe: this.options.safe,
+        dropTables: this.options.dropTables,
+        fromSchema: await this.getCurrentSchema(),
+      });
       lines.push(...dump.split('\n'));
     }
 
