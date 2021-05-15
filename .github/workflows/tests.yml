@@ -1,29 +1,62 @@
 name: tests
 
-on: [ push, pull_request ]
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   build:
+    name: Build
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [ 12.x, 14.x, 15.x ]
-
     steps:
       - name: Checkout Source code
-        if: github.ref == 'refs/heads/master' && matrix.node-version == '15.x'
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0 # we need to pull everything to have correct dev version suffix
-          ref: master
-      - name: Checkout Source code
-        if: github.ref != 'refs/heads/master' || matrix.node-version != '15.x'
         uses: actions/checkout@v2
 
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2-beta
+      - name: Use Node.js 15
+        uses: actions/setup-node@v2
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 15
+
+      - name: Cache node_modules
+        uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-15-modules-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Install libkrb5-dev (for run-rs)
+        run: |
+          sudo apt update
+          sudo apt install libkrb5-dev
+
+      - name: Install
+        run: |
+          yarn config set ignore-engines true
+          yarn
+
+      - name: Lint
+        run: yarn build
+
+  lint:
+    name: Lint
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source code
+        uses: actions/checkout@v2
+
+      - name: Use Node.js 15
+        uses: actions/setup-node@v2
+        with:
+          node-version: 15
+
+      - name: Cache node_modules
+        uses: actions/cache@v2
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-15-modules-${{ hashFiles('**/yarn.lock') }}
 
       - name: EditorConfig Lint
         uses: docker://mstruebing/editorconfig-checker:2.3.5@sha256:b78daacf0049058ca85afddbbed6c53bd3bc2a24d3dd0b2363e34ebb4463dee1
@@ -33,14 +66,44 @@ jobs:
           sudo apt update
           sudo apt install libkrb5-dev
 
-      - name: Init docker
-        run: docker-compose up -d
+      - name: Install
+        run: |
+          yarn config set ignore-engines true
+          yarn
+
+      - name: Lint
+        run: yarn lint
+
+  test:
+    name: Tests
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [ 12, 14, 15, 16 ]
+    steps:
+      - name: Checkout Source code
+        uses: actions/checkout@v2
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
 
       - name: Cache node_modules
         uses: actions/cache@v2
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-${{ matrix.node-version }}-modules-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Install libkrb5-dev (for run-rs)
+        run: |
+          sudo apt update
+          sudo apt install libkrb5-dev
+
+      - name: Init docker
+        run: docker-compose up -d
 
       - name: Install
         run: |
@@ -49,9 +112,6 @@ jobs:
 
       - name: Set CC Required env vars
         run: export GIT_BRANCH=$GITHUB_HEAD_REF && export GIT_COMMIT_SHA=$(git rev-parse origin/$GITHUB_HEAD_REF)
-
-      - name: Lint
-        run: yarn lint
 
       - name: Check for changes
         id: changed_packages
@@ -63,10 +123,6 @@ jobs:
         run: |
           echo "no changes detected by lerna"
 
-      - name: Build
-        if: steps.changed_packages.outputs.changed_packages != '0'
-        run: yarn build
-
       - name: Test
         if: steps.changed_packages.outputs.changed_packages != '0'
         run: |
@@ -74,16 +130,6 @@ jobs:
           yarn coverage > COVERAGE_RESULT
           echo "$(cat COVERAGE_RESULT)"
           git status && git diff
-
-      - name: Release dev version for testing
-        if: github.ref == 'refs/heads/master' && matrix.node-version == '15.x' && steps.changed_packages.outputs.changed_packages != '0'
-        run: |
-          echo "access=public" >> .npmrc
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
-          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
-          yarn publish:next --yes --no-verify-access
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Coveralls
         if: steps.changed_packages.outputs.changed_packages != '0'
@@ -101,3 +147,44 @@ jobs:
 
       - name: Teardown docker
         run: docker-compose down
+
+  publish:
+    name: Publish
+    if: github.ref == 'refs/heads/master' && !contains(github.event.head_commit.message, '[skip ci]')
+    runs-on: ubuntu-latest
+    needs: [ test, build, lint ]
+    steps:
+      - name: Checkout Source code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # we need to pull everything to have correct dev version suffix
+          ref: master
+
+      - name: Use Node.js 15
+        uses: actions/setup-node@v2
+        with:
+          node-version: 15
+
+      - name: Check for changes
+        id: changed_packages
+        run: |
+          echo "::set-output name=changed_packages::$(node ./node_modules/.bin/lerna changed -p | wc -l | xargs)"
+
+      - name: Check for changes 2
+        if: steps.changed_packages.outputs.changed_packages == '0'
+        run: |
+          echo "no changes detected by lerna"
+
+      - name: Build
+        if: steps.changed_packages.outputs.changed_packages != '0'
+        run: yarn build
+
+      - name: Release dev version for testing
+        if: steps.changed_packages.outputs.changed_packages != '0'
+        run: |
+          echo "access=public" >> .npmrc
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
+          git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+          yarn publish:next --yes --no-verify-access
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
