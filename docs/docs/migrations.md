@@ -49,6 +49,17 @@ npx mikro-orm migration:create --initial
 This will create the initial migration, containing the schema dump from 
 `schema:create` command. The migration will be automatically marked as executed. 
 
+## Snapshots
+
+Creating new migration will automatically save the target schema snapshot into 
+migrations folder. This snapshot will be then used if you try to create new migration,
+instead of using current database schema. This means that if we try to create new 
+migration before we run the pending ones, we still get the right schema diff.
+
+> Snapshots should be versioned just like the regular migration files.
+
+Snapshotting can be disabled via `migrations.snapshot: false` in the ORM config.
+
 ## Configuration
 
 ```typescript
@@ -63,6 +74,7 @@ await MikroORM.init({
     allOrNothing: true, // wrap all migrations in master transaction
     dropTables: true, // allow to disable table dropping
     safe: false, // allow to disable table and column dropping
+    snapshot: true, // save snapshot when creating new migrations
     emit: 'ts', // migration generation mode
   },
 })

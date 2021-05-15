@@ -97,17 +97,17 @@ export class SchemaGenerator {
     return this.wrapSchema(ret + '\n', { wrap });
   }
 
-  async updateSchema(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean } = {}): Promise<void> {
+  async updateSchema(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema } = {}): Promise<void> {
     const sql = await this.getUpdateSchemaSQL(options);
     await this.execute(sql);
   }
 
-  async getUpdateSchemaSQL(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean } = {}): Promise<string> {
+  async getUpdateSchemaSQL(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema } = {}): Promise<string> {
     const wrap = options.wrap ?? true;
     options.safe = options.safe ?? false;
     options.dropTables = options.dropTables ?? true;
     const toSchema = this.getTargetSchema();
-    const fromSchema = await DatabaseSchema.create(this.connection, this.platform, this.config);
+    const fromSchema = options.fromSchema ?? await DatabaseSchema.create(this.connection, this.platform, this.config);
     const comparator = new SchemaComparator(this.platform);
     const schemaDiff = comparator.compare(fromSchema, toSchema);
     let ret = '';

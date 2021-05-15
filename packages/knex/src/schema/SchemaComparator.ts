@@ -420,8 +420,8 @@ export class SchemaComparator {
   }
 
   hasSameDefaultValue(from: Column, to: Column): boolean {
-    if (from.default === null || from.default?.toString().toLowerCase() === 'null' || from.default?.toString().startsWith('nextval(')) {
-      return !Utils.isDefined(to.default, true) || to.default!.toLowerCase() === 'null';
+    if (from.default == null || from.default.toString().toLowerCase() === 'null' || from.default.toString().startsWith('nextval(')) {
+      return to.default == null || to.default!.toLowerCase() === 'null';
     }
 
     if (to.mappedType instanceof BooleanType) {
