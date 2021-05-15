@@ -15,11 +15,11 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   };
 
   getSchemaBeginning(charset: string): string {
-    return `set names '${charset}';\nset session_replication_role = 'replica';\n\n`;
+    return `set names '${charset}';\n${this.disableForeignKeysSQL()}\n\n`;
   }
 
   getSchemaEnd(): string {
-    return `set session_replication_role = 'origin';\n`;
+    return `${this.enableForeignKeysSQL()}\n`;
   }
 
   getListTablesSQL(): string {
@@ -209,6 +209,14 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
   getManagementDbName(): string {
     return 'postgres';
+  }
+
+  disableForeignKeysSQL(): string {
+    return `set session_replication_role = 'replica';`;
+  }
+
+  enableForeignKeysSQL(): string {
+    return `set session_replication_role = 'origin';`;
   }
 
   getRenameIndexSQL(tableName: string, index: Index, oldIndexName: string): string {
