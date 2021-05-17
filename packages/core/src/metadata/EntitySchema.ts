@@ -21,7 +21,7 @@ type Property<T, O> =
   | (TypeDef<T> & PropertyOptions<O>);
 type Metadata<T, U> =
   & Omit<Partial<EntityMetadata<T>>, 'name' | 'properties'>
-  & ({ name: string } | { class: Constructor<T>; name?: string })
+  & ({ name: string; schema?: string } | { class: Constructor<T>; name?: string })
   & { properties?: { [K in keyof Omit<T, keyof U> as ExcludeFunctions<Omit<T, keyof U>, K>]-?: Property<ExpandProperty<NonNullable<T[K]>>, T> } };
 
 export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntity<U> | undefined = undefined> {

@@ -57,8 +57,19 @@ export class SourceFile {
 
   private getCollectionDecl() {
     const needsCollection = this.meta.collection !== this.namingStrategy.classToTableName(this.meta.className);
+    const needsSchema = this.meta.schema !== undefined;
 
-    return needsCollection ? `{ collection: '${this.meta.collection}' }` : '';
+    if (needsCollection || needsSchema) {
+      const contents = [];
+      if (needsCollection) {
+        contents.push(`collection: '${this.meta.collection}'`);
+      }
+      if (needsSchema) {
+        contents.push(`schema: '${this.meta.schema}'`);
+      }
+      return `{ ${contents.join(', ')} }`;
+    }
+    return '';
   }
 
   private getPropertyDefinition(prop: EntityProperty, padLeft: number): string {

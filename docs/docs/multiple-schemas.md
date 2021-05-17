@@ -8,22 +8,21 @@ terminology, it is called database, but from implementation point of view, it is
 > To use multiple schemas, your connection needs to have access to all of them (multiple 
 > connections are not supported).
 
-All you need to do is simply define the table name including schema name in `collection` option:
+All you need to do is simply define the schema name in the `schema` option:
 
 ```typescript
-@Entity({ tableName: 'first_schema.foo' })
+@Entity({ tableName: 'foo', schema: 'first_schema' })
 export class Foo { ... }
 
-@Entity({ tableName: 'second_schema.bar' })
+@Entity({ tableName: 'bar', schema: 'second_schema' })
 export class Bar { ... }
 ```
 
-Then use those entities as usual. Resulting SQL queries will use this `tableName` value as a 
-table name so as long as your connection has access to given schema, everything should work 
-as expected.
+Then use those entities as usual. Resulting SQL queries will combine this `schema` and `tableName` value and so as long 
+as your connection has access to given schema, everything should work as expected.
 
-You can also query for entity in specific schema via `EntityManager`, `EntityRepository` or 
-`QueryBuilder`:
+Even if you haven't defined the schema on your entity, you can query for that entity in a specific schema via 
+`EntityManager`, `EntityRepository` or `QueryBuilder`:
 
 ```typescript
 const user = await em.findOne(User, { ... }, { schema: 'client-123' });

@@ -372,7 +372,7 @@ export interface ISchemaGenerator {
 }
 
 export interface IEntityGenerator {
-  generate(options?: { baseDir?: string; save?: boolean }): Promise<string[]>;
+  generate(options?: { baseDir?: string; save?: boolean; schemas?: string[] }): Promise<string[]>;
 }
 
 type UmzugMigration = { path?: string; file: string };

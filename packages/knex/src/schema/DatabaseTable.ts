@@ -138,9 +138,9 @@ export class DatabaseTable {
     return this.platform.getIndexName(this.name, columnNames, type);
   }
 
-  getEntityDeclaration(namingStrategy: NamingStrategy, schemaHelper: SchemaHelper): EntityMetadata {
-    const name = namingStrategy.getClassName(this.name, '_');
-    const schema = new EntitySchema({ name, collection: this.name });
+  getEntityDeclaration(namingStrategy: NamingStrategy, schemaHelper: SchemaHelper, includeSchema = false, schemaInClassName = false): EntityMetadata {
+    const name = namingStrategy.getClassName((schemaInClassName ? this.schema : '')+this.name, '_');
+    const schema = new EntitySchema({ name, collection: this.name, schema: includeSchema ? this.schema : undefined });
     const compositeFkIndexes: Dictionary<{ keyName: string }> = {};
     const compositeFkUniques: Dictionary<{ keyName: string }> = {};
 

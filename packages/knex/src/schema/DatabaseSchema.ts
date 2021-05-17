@@ -48,12 +48,15 @@ export class DatabaseSchema {
     return this.namespaces;
   }
 
-  static async create(connection: AbstractSqlConnection, platform: AbstractSqlPlatform, config: Configuration): Promise<DatabaseSchema> {
-    const schema = new DatabaseSchema(platform, config.get('schema'));
-    const tables = await connection.execute<Table[]>(platform.getSchemaHelper()!.getListTablesSQL());
+  static async create(connection: AbstractSqlConnection, platform: AbstractSqlPlatform, config: Configuration, schemaName?: string): Promise<DatabaseSchema> {
+    const schema = new DatabaseSchema(platform, schemaName ? schemaName : config.get('schema'));
+    const tables = await connection.execute<Table[]>(platform.getSchemaHelper()!.getListTablesSQL(schemaName));
 
     for (const t of tables) {
       if (t.table_name === config.get('migrations').tableName) {
+        continue;
+      }
+      if (t.schema_name !== schemaName) {
         continue;
       }
 

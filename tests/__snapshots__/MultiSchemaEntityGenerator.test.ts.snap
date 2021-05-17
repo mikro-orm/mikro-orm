@@ -1,0 +1,411 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`EntityGenerator does not generate entities from schema with schema name even though requested [sqlite]: sqlite-entity-dump-with-explicit-schema 1`] = `
+Array [
+  "import { Entity, Index, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import { Book3 } from './Book3';
+
+@Entity()
+@Index({ name: 'author3_name_favourite_book_id_index', properties: ['name', 'favouriteBook'] })
+export class Author3 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ nullable: true })
+  createdAt?: Date;
+
+  @Property({ nullable: true })
+  updatedAt?: Date;
+
+  @Property()
+  name!: string;
+
+  @Unique({ name: 'author3_email_unique' })
+  @Property()
+  email!: string;
+
+  @Property({ nullable: true })
+  age?: number;
+
+  @Property()
+  termsAccepted!: number;
+
+  @Property({ nullable: true })
+  identities?: string;
+
+  @Property({ columnType: 'date(3)', nullable: true })
+  born?: string;
+
+  @Property({ columnType: 'time(3)', nullable: true })
+  bornTime?: string;
+
+  @ManyToOne({ entity: () => Book3, nullable: true, index: 'author3_favourite_book_idx' })
+  favouriteBook?: Book3;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Author3 } from './Author3';
+import { Publisher3 } from './Publisher3';
+
+@Entity()
+export class Book3 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ nullable: true })
+  createdAt?: Date;
+
+  @Property({ nullable: true })
+  updatedAt?: Date;
+
+  @Property({ default: '' })
+  title!: string;
+
+  @ManyToOne({ entity: () => Author3 })
+  author!: Author3;
+
+  @ManyToOne({ entity: () => Publisher3 })
+  publisher!: Publisher3;
+
+}
+",
+  "import { Cascade, Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+import { Book3 } from './Book3';
+import { BookTag3 } from './BookTag3';
+
+@Entity({ collection: 'book3_tags' })
+export class Book3Tags {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => Book3, cascade: [Cascade.ALL] })
+  book3!: Book3;
+
+  @ManyToOne({ entity: () => BookTag3, cascade: [Cascade.ALL] })
+  bookTag3!: BookTag3;
+
+}
+",
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class BookTag3 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name!: string;
+
+  @Property({ defaultRaw: \`current_timestamp\` })
+  version!: Date;
+
+}
+",
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Publisher3 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name!: string;
+
+  @Property()
+  type!: string;
+
+}
+",
+  "import { Cascade, Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+import { Publisher3 } from './Publisher3';
+import { Test3 } from './Test3';
+
+@Entity({ collection: 'publisher3_tests' })
+export class Publisher3Tests {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => Publisher3, cascade: [Cascade.ALL] })
+  publisher3!: Publisher3;
+
+  @ManyToOne({ entity: () => Test3, cascade: [Cascade.ALL] })
+  test3!: Test3;
+
+}
+",
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Test3 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ nullable: true })
+  name?: string;
+
+  @Property()
+  version: number = 1;
+
+}
+",
+]
+`;
+
+exports[`EntityGenerator generate entities from schema with schema name [mariadb]: mariadb-entity-dump-with-explicit-schema 1`] = `
+Array [
+  "import { Entity, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { FooBazSchema2 } from './FooBazSchema2';
+
+@Entity({ schema: 'mikro_orm_test_multi_1' })
+export class FooBarSchema2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @OneToOne({ entity: () => FooBazSchema2, nullable: true, defaultRaw: \`NULL\` })
+  baz?: FooBazSchema2;
+
+  @OneToOne({ entity: () => FooBarSchema2, nullable: true, defaultRaw: \`NULL\` })
+  fooBar?: FooBarSchema2;
+
+  @Property({ defaultRaw: \`current_timestamp()\` })
+  version!: Date;
+
+  @Property({ length: 65535, nullable: true, defaultRaw: \`NULL\` })
+  blob?: Buffer;
+
+  @Property({ columnType: 'text', length: 65535, nullable: true, defaultRaw: \`NULL\` })
+  array?: string;
+
+  @Property({ columnType: 'longtext', length: 4294967295, nullable: true, defaultRaw: \`NULL\` })
+  object?: unknown;
+
+}
+",
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity({ schema: 'mikro_orm_test_multi_2' })
+export class FooBazSchema2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  version!: Date;
+
+}
+",
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity({ collection: 'foo_bar_schema2', schema: 'mikro_orm_test_multi_2' })
+export class MikroOrmTestMulti2fooBarSchema2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ nullable: true })
+  bazId?: number;
+
+  @Property({ nullable: true })
+  fooBarId?: number;
+
+  @Property({ defaultRaw: \`current_timestamp()\` })
+  version!: Date;
+
+  @Property({ length: 65535, nullable: true, defaultRaw: \`NULL\` })
+  blob?: Buffer;
+
+  @Property({ columnType: 'text', length: 65535, nullable: true, defaultRaw: \`NULL\` })
+  array?: string;
+
+  @Property({ columnType: 'longtext', length: 4294967295, nullable: true, defaultRaw: \`NULL\` })
+  object?: unknown;
+
+}
+",
+]
+`;
+
+exports[`EntityGenerator generate entities from schema with schema name [mysql]: mysql-entity-dump-with-explicit-schema 1`] = `
+Array [
+  "import { Entity, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { FooBazSchema2 } from './FooBazSchema2';
+
+@Entity({ schema: 'mikro_orm_test_multi_1' })
+export class FooBarSchema2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @OneToOne({ entity: () => FooBazSchema2, nullable: true })
+  baz?: FooBazSchema2;
+
+  @OneToOne({ entity: () => FooBarSchema2, nullable: true })
+  fooBar?: FooBarSchema2;
+
+  @Property({ defaultRaw: \`CURRENT_TIMESTAMP\` })
+  version!: Date;
+
+  @Property({ length: 65535, nullable: true })
+  blob?: Buffer;
+
+  @Property({ columnType: 'text', length: 65535, nullable: true })
+  array?: string;
+
+  @Property({ columnType: 'json', nullable: true })
+  object?: any;
+
+}
+",
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity({ collection: 'foo_bar_schema2', schema: 'mikro_orm_test_multi_2' })
+export class MikroOrmTestMulti2fooBarSchema2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ nullable: true })
+  bazId?: number;
+
+  @Property({ nullable: true })
+  fooBarId?: number;
+
+  @Property({ defaultRaw: \`CURRENT_TIMESTAMP\` })
+  version!: Date;
+
+  @Property({ length: 65535, nullable: true })
+  blob?: Buffer;
+
+  @Property({ columnType: 'text', length: 65535, nullable: true })
+  array?: string;
+
+  @Property({ columnType: 'json', nullable: true })
+  object?: any;
+
+}
+",
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity({ schema: 'mikro_orm_test_multi_2' })
+export class FooBazSchema2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  version!: Date;
+
+}
+",
+]
+`;
+
+exports[`EntityGenerator generate entities from schema with schema name [postgresql]: postgresql-entity-dump-with-explicit-schema 1`] = `
+Array [
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity({ schema: 'mikro_orm_test_multi_1' })
+export class FooBarSchema2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ nullable: true })
+  bazId?: number;
+
+  @Property({ nullable: true })
+  fooBarId?: number;
+
+  @Property({ length: 6, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  version!: Date;
+
+  @Property({ nullable: true })
+  blob?: Buffer;
+
+  @Property({ columnType: 'text', nullable: true })
+  array?: string;
+
+  @Property({ columnType: 'json', nullable: true })
+  object?: any;
+
+}
+",
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity({ collection: 'foo_bar_schema2', schema: 'mikro_orm_test_multi_2' })
+export class MikroOrmTestMulti2fooBarSchema2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ nullable: true })
+  bazId?: number;
+
+  @Property({ nullable: true })
+  fooBarId?: number;
+
+  @Property({ length: 6, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  version!: Date;
+
+  @Property({ nullable: true })
+  blob?: Buffer;
+
+  @Property({ columnType: 'text', nullable: true })
+  array?: string;
+
+  @Property({ columnType: 'json', nullable: true })
+  object?: any;
+
+}
+",
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity({ schema: 'mikro_orm_test_multi_2' })
+export class FooBazSchema2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ length: 6, defaultRaw: \`current_timestamp(6)\` })
+  version!: Date;
+
+}
+",
+]
+`;

@@ -47,6 +47,7 @@
     "publish:next": "lerna publish --canary major --preid dev --dist-tag next --force-publish",
     "release:next": "yarn build && yarn publish:next",
     "test": "jest --runInBand",
+    "tsc": "tsc --noEmit",
     "tsc-check-tests": "tsc --noEmit --project tests/tsconfig.json",
     "coverage": "rimraf temp tests/generated-entities && yarn test --coverage",
     "coveralls": "cat ./coverage/lcov.info | coveralls",
@@ -142,5 +143,8 @@
     "ts-node": "10.0.0",
     "typescript": "4.3.2",
     "uuid": "8.3.2"
+  },
+  "dependencies": {
+    "jest-stare": "^2.2.2"
   }
 }

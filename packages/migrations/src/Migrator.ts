@@ -102,14 +102,18 @@ export class Migrator {
 
     Object.values(this.em.getMetadata().getAll())
       .filter(meta => meta.collection)
-      .forEach(meta => expected.add(meta.collection));
+      .forEach(meta => expected.add(meta.schema ? `${meta.schema}.${meta.collection}` : meta.collection));
 
     schema.getTables().forEach(table => {
-      /* istanbul ignore next */
-      const tableName = table.schema ? `${table.schema}.${table.name}` : table.name;
-
+      // We will always know the schema for a table when the DB supports it, since they come directly from
+      // getListTablesSQL but this isn't guaranteed for when getting it from metadata, since it might have an empty
+      // schema and just use the default from the connection.
+      const tableName = table.name;
+      const tableNameWithSchema = table.schema ? `${table.schema}.${table.name}` : undefined;
       if (expected.has(tableName)) {
         exists.add(tableName);
+      } else if (tableNameWithSchema && expected.has(tableNameWithSchema)) {
+        exists.add(tableNameWithSchema);
       }
     });
 

@@ -35,6 +35,7 @@ hide_title: true
   - [Metadata Providers](metadata-providers.md)
   - [Metadata Cache](metadata-cache.md)
   - [Debugging](debugging.md)
+  - [Multiple Schemas](multiple-schemas.md)
   - [Schema Generator](schema-generator.md)
   - [Entity Generator](entity-generator.md)
   - [Migrations](migrations.md)

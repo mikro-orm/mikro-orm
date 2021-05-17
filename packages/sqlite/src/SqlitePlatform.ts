@@ -10,6 +10,14 @@ export class SqlitePlatform extends AbstractSqlPlatform {
   protected readonly schemaHelper: SqliteSchemaHelper = new SqliteSchemaHelper(this);
   protected readonly exceptionConverter = new SqliteExceptionConverter();
 
+  requiresNullableForAlteringColumn() {
+    return true;
+  }
+
+  supportsMultipleSchemas(): boolean {
+    return false;
+  }
+
   usesDefaultKeyword(): boolean {
     return false;
   }

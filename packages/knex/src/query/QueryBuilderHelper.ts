@@ -230,7 +230,7 @@ export class QueryBuilderHelper {
 
   getTableName(entityName: string): string {
     const meta = this.metadata.find(entityName);
-    return meta ? meta.collection : entityName;
+    return meta ? `${meta.schema ? `${meta.schema}.` : ''}${meta.collection}` : entityName;
   }
 
   /**

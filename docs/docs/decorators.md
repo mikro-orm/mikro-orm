@@ -13,6 +13,7 @@ abstract base classes.
 |-----------|------|----------|-------------|
 | `tableName` | `string` | yes | Override default collection/table name. |
 | `collection` | `string` | yes | Alias for `tableName`. |
+| `schema` | `string` | yes | Override default connection schema name. |
 | `comment` | `string` | yes | Specify comment to table **(SQL only)** |
 | `customRepository` | `() => EntityRepository` | yes | Set custom repository class. |
 

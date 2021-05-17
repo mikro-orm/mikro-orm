@@ -28,6 +28,17 @@ describe('EntityGenerator', () => {
     await orm.close(true);
   });
 
+  test('generate entities from schema and ignore explicit schema name request [sqlite]', async () => {
+    const orm = await initORMSqlite(true);
+    const generator = new EntityGenerator(orm.em);
+    const dump = await generator.generate({ save: true });
+    expect(dump).toMatchSnapshot('sqlite-entity-dump');
+    await expect(pathExists('./tests/generated-entities/Author3.ts')).resolves.toBe(true);
+    await remove('./tests/generated-entities');
+
+    await orm.close(true);
+  });
+
   test('generate entities from schema [postgres]', async () => {
     const orm = await initORMPostgreSql();
     const generator = new EntityGenerator(orm.em);

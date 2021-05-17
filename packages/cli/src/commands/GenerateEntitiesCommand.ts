@@ -3,7 +3,7 @@ import { EntityGenerator } from '@mikro-orm/entity-generator';
 import { EntityManager } from '@mikro-orm/knex';
 import { CLIHelper } from '../CLIHelper';
 
-export type Options = { dump: boolean; save: boolean; path: string };
+export type Options = { dump: boolean; save: boolean; path: string; schemas?: string[] };
 
 export class GenerateEntitiesCommand<U extends Options = Options> implements CommandModule<unknown, U> {
 
@@ -29,6 +29,10 @@ export class GenerateEntitiesCommand<U extends Options = Options> implements Com
       type: 'string',
       desc: 'Sets path to directory where to save entities',
     });
+    args.option('schemas', {
+      type: 'array',
+      desc: 'A list of all the schemas to generate entities for (when different from default schema)',
+    });
 
     return args as unknown as Argv<U>;
   }
@@ -43,7 +47,7 @@ export class GenerateEntitiesCommand<U extends Options = Options> implements Com
 
     const orm = await CLIHelper.getORM(false);
     const generator = new EntityGenerator(orm.em as EntityManager);
-    const dump = await generator.generate({ save: args.save, baseDir: args.path });
+    const dump = await generator.generate({ save: args.save, baseDir: args.path, schemas: args.schemas });
 
     if (args.dump) {
       CLIHelper.dump(dump.join('\n\n'));

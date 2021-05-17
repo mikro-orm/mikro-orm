@@ -19,6 +19,10 @@ export abstract class AbstractSqlPlatform extends Platform {
     return SqlEntityRepository as Constructor<EntityRepository<T>>;
   }
 
+  supportsMultipleSchemas(): boolean {
+    return true;
+  }
+
   getSchemaHelper(): SchemaHelper | undefined {
     return this.schemaHelper;
   }

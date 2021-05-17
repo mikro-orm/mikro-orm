@@ -1059,3 +1059,162 @@ export class Test3 {
 ",
 ]
 `;
+
+exports[`EntityGenerator generate entities from schema and ignore explicit schema name request [sqlite]: sqlite-entity-dump 1`] = `
+Array [
+  "import { Entity, Index, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import { Book3 } from './Book3';
+
+@Entity()
+@Index({ name: 'author3_name_favourite_book_id_index', properties: ['name', 'favouriteBook'] })
+export class Author3 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ nullable: true })
+  createdAt?: Date;
+
+  @Property({ nullable: true })
+  updatedAt?: Date;
+
+  @Property()
+  name!: string;
+
+  @Unique({ name: 'author3_email_unique' })
+  @Property()
+  email!: string;
+
+  @Property({ nullable: true })
+  age?: number;
+
+  @Property()
+  termsAccepted!: number;
+
+  @Property({ nullable: true })
+  identities?: string;
+
+  @Property({ columnType: 'date(3)', nullable: true })
+  born?: string;
+
+  @Property({ columnType: 'time(3)', nullable: true })
+  bornTime?: string;
+
+  @ManyToOne({ entity: () => Book3, nullable: true, index: 'author3_favourite_book_idx' })
+  favouriteBook?: Book3;
+
+}
+",
+  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Author3 } from './Author3';
+import { Publisher3 } from './Publisher3';
+
+@Entity()
+export class Book3 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ nullable: true })
+  createdAt?: Date;
+
+  @Property({ nullable: true })
+  updatedAt?: Date;
+
+  @Property({ default: '' })
+  title!: string;
+
+  @ManyToOne({ entity: () => Author3 })
+  author!: Author3;
+
+  @ManyToOne({ entity: () => Publisher3 })
+  publisher!: Publisher3;
+
+}
+",
+  "import { Cascade, Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+import { Book3 } from './Book3';
+import { BookTag3 } from './BookTag3';
+
+@Entity({ collection: 'book3_tags' })
+export class Book3Tags {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => Book3, cascade: [Cascade.ALL] })
+  book3!: Book3;
+
+  @ManyToOne({ entity: () => BookTag3, cascade: [Cascade.ALL] })
+  bookTag3!: BookTag3;
+
+}
+",
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class BookTag3 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name!: string;
+
+  @Property({ defaultRaw: \`current_timestamp\` })
+  version!: Date;
+
+}
+",
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Publisher3 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name!: string;
+
+  @Property()
+  type!: string;
+
+}
+",
+  "import { Cascade, Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+import { Publisher3 } from './Publisher3';
+import { Test3 } from './Test3';
+
+@Entity({ collection: 'publisher3_tests' })
+export class Publisher3Tests {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => Publisher3, cascade: [Cascade.ALL] })
+  publisher3!: Publisher3;
+
+  @ManyToOne({ entity: () => Test3, cascade: [Cascade.ALL] })
+  test3!: Test3;
+
+}
+",
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Test3 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ nullable: true })
+  name?: string;
+
+  @Property()
+  version: number = 1;
+
+}
+",
+]
+`;

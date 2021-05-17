@@ -91,8 +91,8 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
   return orm as MikroORM<D>;
 }
 
-export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN) {
-  const orm = await MikroORM.init<PostgreSqlDriver>({
+export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, additionalOptions: Partial<Options> = {}) {
+  const options: Partial<Options> = {
     entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Label2, Configuration2],
     dbName: `mikro_orm_test`,
     baseDir: BASE_DIR,
@@ -104,7 +104,8 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN) {
     cache: { enabled: true },
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
     loadStrategy,
-  });
+  };
+  const orm = await MikroORM.init<PostgreSqlDriver>(Utils.merge(options, additionalOptions));
 
   const schemaGenerator = new SchemaGenerator(orm.em);
   await schemaGenerator.ensureDatabase();
@@ -118,12 +119,13 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN) {
   return orm;
 }
 
-export async function initORMSqlite() {
+export async function initORMSqlite(explicitSchemaName = false) {
   const orm = await MikroORM.init<SqliteDriver>({
     entities: [Author3, Book3, BookTag3, Publisher3, Test3, BaseEntity4],
     dbName: ':memory:',
     baseDir: BASE_DIR,
     driver: SqliteDriver,
+    explicitSchemaName,
     debug: ['query'],
     forceUtcTimezone: true,
     logger: i => i,

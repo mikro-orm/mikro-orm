@@ -1,0 +1,220 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SchemaGenerator generate multi-schema database from metadata [mariadb]: mariadb-create-schema-dump 1`] = `
+"set names utf8mb4;
+set foreign_key_checks = 0;
+
+create table \`mikro_orm_test_multi_2\`.\`foo_baz_schema2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;
+
+create table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`array\` text null, \`object\` json null) default character set utf8mb4 engine = InnoDB;
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add index \`foo_bar_schema2_baz_id_index\`(\`baz_id\`);
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add unique \`foo_bar_schema2_baz_id_unique\`(\`baz_id\`);
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add index \`foo_bar_schema2_foo_bar_id_index\`(\`foo_bar_id\`);
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add unique \`foo_bar_schema2_foo_bar_id_unique\`(\`foo_bar_id\`);
+
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add constraint \`foo_bar_schema2_baz_id_foreign\` foreign key (\`baz_id\`) references \`mikro_orm_test_multi_2\`.\`foo_baz_schema2\` (\`id\`) on update cascade on delete cascade;
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add constraint \`foo_bar_schema2_foo_bar_id_foreign\` foreign key (\`foo_bar_id\`) references \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` (\`id\`) on update cascade on delete set null;
+
+set foreign_key_checks = 1;
+"
+`;
+
+exports[`SchemaGenerator generate multi-schema database from metadata [mariadb]: mariadb-drop-schema-dump 1`] = `
+"set names utf8mb4;
+set foreign_key_checks = 0;
+
+drop table if exists \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\`;
+drop table if exists \`mikro_orm_test_multi_2\`.\`foo_baz_schema2\`;
+
+set foreign_key_checks = 1;
+"
+`;
+
+exports[`SchemaGenerator generate multi-schema database from metadata [mariadb]: mariadb-schema-dump 1`] = `
+"set names utf8mb4;
+set foreign_key_checks = 0;
+
+drop table if exists \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\`;
+drop table if exists \`mikro_orm_test_multi_2\`.\`foo_baz_schema2\`;
+
+create table \`mikro_orm_test_multi_2\`.\`foo_baz_schema2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;
+
+create table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`array\` text null, \`object\` json null) default character set utf8mb4 engine = InnoDB;
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add index \`foo_bar_schema2_baz_id_index\`(\`baz_id\`);
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add unique \`foo_bar_schema2_baz_id_unique\`(\`baz_id\`);
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add index \`foo_bar_schema2_foo_bar_id_index\`(\`foo_bar_id\`);
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add unique \`foo_bar_schema2_foo_bar_id_unique\`(\`foo_bar_id\`);
+
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add constraint \`foo_bar_schema2_baz_id_foreign\` foreign key (\`baz_id\`) references \`mikro_orm_test_multi_2\`.\`foo_baz_schema2\` (\`id\`) on update cascade on delete cascade;
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add constraint \`foo_bar_schema2_foo_bar_id_foreign\` foreign key (\`foo_bar_id\`) references \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` (\`id\`) on update cascade on delete set null;
+
+set foreign_key_checks = 1;
+"
+`;
+
+exports[`SchemaGenerator generate multi-schema database from metadata [mariadb]: mariadb-update-schema-dump 1`] = `
+"set names utf8mb4;
+set foreign_key_checks = 0;
+
+create table \`mikro_orm_test_multi_2\`.\`foo_baz_schema2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;
+
+create table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`array\` text null, \`object\` json null) default character set utf8mb4 engine = InnoDB;
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add index \`foo_bar_schema2_baz_id_index\`(\`baz_id\`);
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add unique \`foo_bar_schema2_baz_id_unique\`(\`baz_id\`);
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add index \`foo_bar_schema2_foo_bar_id_index\`(\`foo_bar_id\`);
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add unique \`foo_bar_schema2_foo_bar_id_unique\`(\`foo_bar_id\`);
+
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add constraint \`foo_bar_schema2_baz_id_foreign\` foreign key (\`baz_id\`) references \`mikro_orm_test_multi_2\`.\`foo_baz_schema2\` (\`id\`) on update cascade on delete cascade;
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add constraint \`foo_bar_schema2_foo_bar_id_foreign\` foreign key (\`foo_bar_id\`) references \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` (\`id\`) on update cascade on delete set null;
+
+set foreign_key_checks = 1;
+"
+`;
+
+exports[`SchemaGenerator generate multi-schema database from metadata [mysql]: mysql-create-schema-dump 1`] = `
+"set names utf8mb4;
+set foreign_key_checks = 0;
+
+create table \`mikro_orm_test_multi_2\`.\`foo_baz_schema2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;
+
+create table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`array\` text null, \`object\` json null) default character set utf8mb4 engine = InnoDB;
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add index \`foo_bar_schema2_baz_id_index\`(\`baz_id\`);
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add unique \`foo_bar_schema2_baz_id_unique\`(\`baz_id\`);
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add index \`foo_bar_schema2_foo_bar_id_index\`(\`foo_bar_id\`);
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add unique \`foo_bar_schema2_foo_bar_id_unique\`(\`foo_bar_id\`);
+
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add constraint \`foo_bar_schema2_baz_id_foreign\` foreign key (\`baz_id\`) references \`mikro_orm_test_multi_2\`.\`foo_baz_schema2\` (\`id\`) on update cascade on delete cascade;
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add constraint \`foo_bar_schema2_foo_bar_id_foreign\` foreign key (\`foo_bar_id\`) references \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` (\`id\`) on update cascade on delete set null;
+
+set foreign_key_checks = 1;
+"
+`;
+
+exports[`SchemaGenerator generate multi-schema database from metadata [mysql]: mysql-drop-schema-dump 1`] = `
+"set names utf8mb4;
+set foreign_key_checks = 0;
+
+drop table if exists \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\`;
+drop table if exists \`mikro_orm_test_multi_2\`.\`foo_baz_schema2\`;
+
+set foreign_key_checks = 1;
+"
+`;
+
+exports[`SchemaGenerator generate multi-schema database from metadata [mysql]: mysql-schema-dump 1`] = `
+"set names utf8mb4;
+set foreign_key_checks = 0;
+
+drop table if exists \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\`;
+drop table if exists \`mikro_orm_test_multi_2\`.\`foo_baz_schema2\`;
+
+create table \`mikro_orm_test_multi_2\`.\`foo_baz_schema2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;
+
+create table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`array\` text null, \`object\` json null) default character set utf8mb4 engine = InnoDB;
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add index \`foo_bar_schema2_baz_id_index\`(\`baz_id\`);
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add unique \`foo_bar_schema2_baz_id_unique\`(\`baz_id\`);
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add index \`foo_bar_schema2_foo_bar_id_index\`(\`foo_bar_id\`);
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add unique \`foo_bar_schema2_foo_bar_id_unique\`(\`foo_bar_id\`);
+
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add constraint \`foo_bar_schema2_baz_id_foreign\` foreign key (\`baz_id\`) references \`mikro_orm_test_multi_2\`.\`foo_baz_schema2\` (\`id\`) on update cascade on delete cascade;
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add constraint \`foo_bar_schema2_foo_bar_id_foreign\` foreign key (\`foo_bar_id\`) references \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` (\`id\`) on update cascade on delete set null;
+
+set foreign_key_checks = 1;
+"
+`;
+
+exports[`SchemaGenerator generate multi-schema database from metadata [mysql]: mysql-update-schema-dump 1`] = `
+"set names utf8mb4;
+set foreign_key_checks = 0;
+
+create table \`mikro_orm_test_multi_2\`.\`foo_baz_schema2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;
+
+create table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`array\` text null, \`object\` json null) default character set utf8mb4 engine = InnoDB;
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add index \`foo_bar_schema2_baz_id_index\`(\`baz_id\`);
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add unique \`foo_bar_schema2_baz_id_unique\`(\`baz_id\`);
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add index \`foo_bar_schema2_foo_bar_id_index\`(\`foo_bar_id\`);
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add unique \`foo_bar_schema2_foo_bar_id_unique\`(\`foo_bar_id\`);
+
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add constraint \`foo_bar_schema2_baz_id_foreign\` foreign key (\`baz_id\`) references \`mikro_orm_test_multi_2\`.\`foo_baz_schema2\` (\`id\`) on update cascade on delete cascade;
+alter table \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` add constraint \`foo_bar_schema2_foo_bar_id_foreign\` foreign key (\`foo_bar_id\`) references \`mikro_orm_test_multi_1\`.\`foo_bar_schema2\` (\`id\`) on update cascade on delete set null;
+
+set foreign_key_checks = 1;
+"
+`;
+
+exports[`SchemaGenerator generate multi-schema database from metadata [postgresql]: postgresql-create-schema-dump 1`] = `
+"set names 'utf8';
+set session_replication_role = 'replica';
+
+create schema if not exists \\"mikro_orm_test_multi_2\\";
+
+create schema if not exists \\"mikro_orm_test_multi_1\\";
+
+create table \\"mikro_orm_test_multi_2\\".\\"foo_baz_schema2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));
+
+create table \\"mikro_orm_test_multi_1\\".\\"foo_bar_schema2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"baz_id\\" int null, \\"foo_bar_id\\" int null, \\"version\\" timestamptz(0) not null default current_timestamp(0), \\"blob\\" bytea null, \\"array\\" text[] null, \\"object\\" jsonb null);
+alter table \\"mikro_orm_test_multi_1\\".\\"foo_bar_schema2\\" add constraint \\"foo_bar_schema2_baz_id_unique\\" unique (\\"baz_id\\");
+alter table \\"mikro_orm_test_multi_1\\".\\"foo_bar_schema2\\" add constraint \\"foo_bar_schema2_foo_bar_id_unique\\" unique (\\"foo_bar_id\\");
+
+alter table \\"mikro_orm_test_multi_1\\".\\"foo_bar_schema2\\" add constraint \\"foo_bar_schema2_baz_id_foreign\\" foreign key (\\"baz_id\\") references \\"mikro_orm_test_multi_2\\".\\"foo_baz_schema2\\" (\\"id\\") on update cascade on delete cascade;
+alter table \\"mikro_orm_test_multi_1\\".\\"foo_bar_schema2\\" add constraint \\"foo_bar_schema2_foo_bar_id_foreign\\" foreign key (\\"foo_bar_id\\") references \\"mikro_orm_test_multi_1\\".\\"foo_bar_schema2\\" (\\"id\\") on update cascade on delete set null;
+
+set session_replication_role = 'origin';
+"
+`;
+
+exports[`SchemaGenerator generate multi-schema database from metadata [postgresql]: postgresql-drop-schema-dump 1`] = `
+"set names 'utf8';
+set session_replication_role = 'replica';
+
+drop table if exists \\"mikro_orm_test_multi_1\\".\\"foo_bar_schema2\\" cascade;
+drop table if exists \\"mikro_orm_test_multi_2\\".\\"foo_baz_schema2\\" cascade;
+
+set session_replication_role = 'origin';
+"
+`;
+
+exports[`SchemaGenerator generate multi-schema database from metadata [postgresql]: postgresql-schema-dump 1`] = `
+"set names 'utf8';
+set session_replication_role = 'replica';
+
+drop table if exists \\"mikro_orm_test_multi_1\\".\\"foo_bar_schema2\\" cascade;
+drop table if exists \\"mikro_orm_test_multi_2\\".\\"foo_baz_schema2\\" cascade;
+
+create schema if not exists \\"mikro_orm_test_multi_2\\";
+
+create schema if not exists \\"mikro_orm_test_multi_1\\";
+
+create table \\"mikro_orm_test_multi_2\\".\\"foo_baz_schema2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));
+
+create table \\"mikro_orm_test_multi_1\\".\\"foo_bar_schema2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"baz_id\\" int null, \\"foo_bar_id\\" int null, \\"version\\" timestamptz(0) not null default current_timestamp(0), \\"blob\\" bytea null, \\"array\\" text[] null, \\"object\\" jsonb null);
+alter table \\"mikro_orm_test_multi_1\\".\\"foo_bar_schema2\\" add constraint \\"foo_bar_schema2_baz_id_unique\\" unique (\\"baz_id\\");
+alter table \\"mikro_orm_test_multi_1\\".\\"foo_bar_schema2\\" add constraint \\"foo_bar_schema2_foo_bar_id_unique\\" unique (\\"foo_bar_id\\");
+
+alter table \\"mikro_orm_test_multi_1\\".\\"foo_bar_schema2\\" add constraint \\"foo_bar_schema2_baz_id_foreign\\" foreign key (\\"baz_id\\") references \\"mikro_orm_test_multi_2\\".\\"foo_baz_schema2\\" (\\"id\\") on update cascade on delete cascade;
+alter table \\"mikro_orm_test_multi_1\\".\\"foo_bar_schema2\\" add constraint \\"foo_bar_schema2_foo_bar_id_foreign\\" foreign key (\\"foo_bar_id\\") references \\"mikro_orm_test_multi_1\\".\\"foo_bar_schema2\\" (\\"id\\") on update cascade on delete set null;
+
+set session_replication_role = 'origin';
+"
+`;
+
+exports[`SchemaGenerator generate multi-schema database from metadata [postgresql]: postgresql-update-schema-dump 1`] = `
+"set names 'utf8';
+set session_replication_role = 'replica';
+
+create schema \\"mikro_orm_test_multi_2\\";
+
+create schema \\"mikro_orm_test_multi_1\\";
+
+create table \\"mikro_orm_test_multi_2\\".\\"foo_baz_schema2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));
+
+create table \\"mikro_orm_test_multi_1\\".\\"foo_bar_schema2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"baz_id\\" int null, \\"foo_bar_id\\" int null, \\"version\\" timestamptz(0) not null default current_timestamp(0), \\"blob\\" bytea null, \\"array\\" text[] null, \\"object\\" jsonb null);
+alter table \\"mikro_orm_test_multi_1\\".\\"foo_bar_schema2\\" add constraint \\"foo_bar_schema2_baz_id_unique\\" unique (\\"baz_id\\");
+alter table \\"mikro_orm_test_multi_1\\".\\"foo_bar_schema2\\" add constraint \\"foo_bar_schema2_foo_bar_id_unique\\" unique (\\"foo_bar_id\\");
+
+alter table \\"mikro_orm_test_multi_1\\".\\"foo_bar_schema2\\" add constraint \\"foo_bar_schema2_baz_id_foreign\\" foreign key (\\"baz_id\\") references \\"mikro_orm_test_multi_2\\".\\"foo_baz_schema2\\" (\\"id\\") on update cascade on delete cascade;
+alter table \\"mikro_orm_test_multi_1\\".\\"foo_bar_schema2\\" add constraint \\"foo_bar_schema2_foo_bar_id_foreign\\" foreign key (\\"foo_bar_id\\") references \\"mikro_orm_test_multi_1\\".\\"foo_bar_schema2\\" (\\"id\\") on update cascade on delete set null;
+
+set session_replication_role = 'origin';
+"
+`;
