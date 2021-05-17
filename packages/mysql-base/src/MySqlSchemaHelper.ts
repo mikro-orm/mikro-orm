@@ -10,11 +10,19 @@ export class MySqlSchemaHelper extends SchemaHelper {
   };
 
   getSchemaBeginning(charset: string): string {
-    return `set names ${charset};\nset foreign_key_checks = 0;\n\n`;
+    return `set names ${charset};\n${this.disableForeignKeysSQL()}\n\n`;
   }
 
   getSchemaEnd(): string {
-    return 'set foreign_key_checks = 1;\n';
+    return `${this.enableForeignKeysSQL()}\n`;
+  }
+
+  disableForeignKeysSQL(): string {
+    return 'set foreign_key_checks = 0;';
+  }
+
+  enableForeignKeysSQL(): string {
+    return 'set foreign_key_checks = 1;';
   }
 
   finalizeTable(table: Knex.CreateTableBuilder, charset: string, collate?: string): void {

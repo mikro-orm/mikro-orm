@@ -10,11 +10,19 @@ export abstract class SchemaHelper {
   constructor(protected readonly platform: AbstractSqlPlatform) {}
 
   getSchemaBeginning(charset: string): string {
+    return `${this.disableForeignKeysSQL()}`;
+  }
+
+  disableForeignKeysSQL() {
+    return '';
+  }
+
+  enableForeignKeysSQL() {
     return '';
   }
 
   getSchemaEnd(): string {
-    return '';
+    return `${this.enableForeignKeysSQL()}`;
   }
 
   finalizeTable(table: Knex.TableBuilder, charset: string, collate?: string): void {
