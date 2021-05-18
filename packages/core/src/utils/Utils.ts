@@ -6,7 +6,16 @@ import { pathExists } from 'fs-extra';
 import { createHash } from 'crypto';
 import { recovery } from 'escaya';
 
-import { AnyEntity, Dictionary, EntityMetadata, EntityName, EntityProperty, IMetadataStorage, Primary } from '../typings';
+import {
+  AnyEntity,
+  Dictionary,
+  EntityMetadata,
+  EntityName,
+  EntityProperty,
+  IMetadataStorage,
+  Primary,
+  PlainObject,
+} from '../typings';
 import { GroupOperator, QueryOperator, ReferenceType } from '../enums';
 import { Collection } from '../entity';
 import { Platform } from '../platforms';
@@ -575,7 +584,7 @@ export class Utils {
    */
   static isPlainObject(value: any): value is Dictionary {
     // eslint-disable-next-line no-prototype-builtins
-    return value !== null && typeof value === 'object' && typeof value.constructor === 'function' && value.constructor.prototype.hasOwnProperty('isPrototypeOf');
+    return (value !== null && typeof value === 'object' && typeof value.constructor === 'function' && value.constructor.prototype.hasOwnProperty('isPrototypeOf')) || value instanceof PlainObject;
   }
 
   /**

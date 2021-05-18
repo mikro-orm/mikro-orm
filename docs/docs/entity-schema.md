@@ -35,6 +35,11 @@ await repo.persistAndFlush(author);
 
 > Using this approach, metadata caching is automatically disabled as it is not needed.
 
+#### Using DTO class
+It is very common to define a DTO (Data Transfer Object) to validate incoming request bodies and pass the request body data on to the other parts of your application. If you pass the DTO directly to the `create` method it could lead to unexpected results. The data for the `create` method should be provided as a POJO (Plain Old JS Object `{}`).
+
+You can achieve this by letting your DTO class extend the `PlainObject` class. This way MikroORM knows it should be treated as such.
+
 ## Using custom entity classes
 
 You can optionally use custom class for entity instances.  

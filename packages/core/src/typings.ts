@@ -514,3 +514,6 @@ export interface ISeedManager {
 export interface Seeder {
   run(em: EntityManager): Promise<void>;
 }
+
+export abstract class PlainObject {
+}

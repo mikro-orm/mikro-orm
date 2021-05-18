@@ -6,7 +6,7 @@
 export {
   Constructor, Dictionary, PrimaryKeyType, PrimaryKeyProp, Primary, IPrimaryKey, FilterQuery, IWrappedEntity, EntityName, EntityData, Highlighter,
   AnyEntity, EntityProperty, EntityMetadata, QBFilterQuery, PopulateOptions, Populate, Loaded, New, LoadedReference, LoadedCollection,
-  GetRepository, EntityRepositoryType, MigrationObject, DeepPartial, PrimaryProperty, Cast, IsUnknown, EntityDictionary, EntityDTO,
+  GetRepository, EntityRepositoryType, MigrationObject, DeepPartial, PrimaryProperty, Cast, IsUnknown, EntityDictionary, EntityDTO, PlainObject,
 } from './typings';
 export * from './enums';
 export * from './errors';
