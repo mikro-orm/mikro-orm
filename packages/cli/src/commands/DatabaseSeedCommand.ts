@@ -13,7 +13,6 @@ export class DatabaseSeedCommand<T> implements CommandModule<T, { class: string 
       alias: 'class',
       type: 'string',
       desc: 'Seeder class to run',
-      default: '',
     });
     return args as Argv<{ class: string }>;
   };

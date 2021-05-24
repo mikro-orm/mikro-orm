@@ -1,49 +1,9 @@
-import { EntityManager, MikroORM } from '@mikro-orm/core';
-import { Seeder } from '@mikro-orm/seeder';
+import { MikroORM } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { House } from './entities/house.entity';
 import { Project } from './entities/project.entity';
 import { User } from './entities/user.entity';
-
-class ProjectSeeder extends Seeder {
-
-  async run(em: EntityManager): Promise<void> {
-    const project = em.create(Project, {
-      name: 'Construction',
-      owner: 'Donald Duck',
-      worth: 313,
-    });
-    await em.persistAndFlush(project);
-    em.clear();
-  }
-
-}
-
-class UserSeeder extends Seeder {
-
-  async run(em: EntityManager): Promise<void> {
-    const user = em.create(User, {
-      name: 'Scrooge McDuck',
-      email: 'scrooge@money.dc',
-      password: 'MoneyIsForSwimming',
-    });
-    await em.persistAndFlush(user);
-    em.clear();
-  }
-
-}
-
-class DatabaseSeeder extends Seeder {
-
-  run(em: EntityManager): Promise<void> {
-    return this.call(em, [
-      ProjectSeeder,
-      UserSeeder,
-    ]);
-  }
-
-}
-
+import { DatabaseSeeder } from '../../database/seeder/database.seeder';
 
 describe('Run seeders', () => {
 
