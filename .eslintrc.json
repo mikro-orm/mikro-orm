@@ -1,0 +1,9 @@
+{
+  "extends": "./node_modules/gts/",
+  "env": {
+    "jest": true
+  },
+  "rules": {
+    "eqeqeq": [1, "allow-null"]
+  }
+}

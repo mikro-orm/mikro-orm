@@ -1,0 +1,15 @@
+version: '3.4'
+
+services:
+  postgre:
+    container_name: postgis-13-3.1
+    image: postgis/postgis:13-3.1
+    ports:
+      - 5433:5432
+    volumes:
+      - postgis1331:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: 'postgres'
+
+volumes:
+  postgis1331:

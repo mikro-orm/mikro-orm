@@ -1,0 +1,18 @@
+{
+  "extends": "./node_modules/gts/tsconfig-google.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "build",
+    "esModuleInterop": true,
+    "lib": ["es2019", "dom"],
+    "target": "es2019",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "typeRoots": [
+      "./declarations/",
+      "./node_modules/@types/",
+      "./**/node_modules/@types/"
+    ]
+  },
+  "include": ["src/**/*.ts", "./declarations/*.d.ts"]
+}

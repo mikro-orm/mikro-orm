@@ -1,0 +1,39 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Load even when queried separately in the same event loop 1`] = `
+Array [
+  Object {
+    "createdAt": 2030-02-01T00:01:00.000Z,
+    "id": 1,
+    "name": "Concert",
+  },
+  Object {
+    "createdAt": 2030-02-01T00:01:00.000Z,
+    "id": 1,
+    "name": "Concert",
+  },
+  Object {
+    "createdAt": 2030-03-02T01:02:00.000Z,
+    "id": 2,
+    "name": "Play",
+  },
+  Object {
+    "createdAt": 2030-02-01T00:01:00.000Z,
+    "id": 1,
+    "name": "Concert",
+  },
+  Object {
+    "createdAt": 2030-02-01T00:01:00.000Z,
+    "id": 1,
+    "name": "Concert",
+  },
+]
+`;
+
+exports[`Load should load a reference 1`] = `
+Object {
+  "createdAt": 2030-03-02T01:02:00.000Z,
+  "id": 2,
+  "name": "Play",
+}
+`;

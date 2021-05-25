@@ -1,0 +1,271 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LoadItems even when queried separately in the same event loop 1`] = `
+Array [
+  Array [
+    Object {
+      "createdAt": 2030-02-10T14:45:00.000Z,
+      "id": 1,
+      "name": "Niccolò",
+      "sex": 0,
+    },
+    Object {
+      "createdAt": 2030-02-11T09:10:00.000Z,
+      "id": 2,
+      "name": "Mario",
+      "sex": 0,
+    },
+    Object {
+      "createdAt": 2030-03-01T19:30:00.000Z,
+      "id": 4,
+      "name": "Mattia",
+      "sex": 0,
+    },
+    Object {
+      "createdAt": 2030-03-05T15:20:00.000Z,
+      "id": 6,
+      "name": "Filippo",
+      "sex": 0,
+    },
+  ],
+  Array [
+    Object {
+      "createdAt": 2030-02-10T14:45:00.000Z,
+      "id": 1,
+      "name": "Niccolò",
+      "sex": 0,
+    },
+    Object {
+      "createdAt": 2030-02-11T09:10:00.000Z,
+      "id": 2,
+      "name": "Mario",
+      "sex": 0,
+    },
+    Object {
+      "createdAt": 2030-03-01T19:30:00.000Z,
+      "id": 4,
+      "name": "Mattia",
+      "sex": 0,
+    },
+    Object {
+      "createdAt": 2030-03-05T15:20:00.000Z,
+      "id": 6,
+      "name": "Filippo",
+      "sex": 0,
+    },
+  ],
+  Array [
+    Object {
+      "createdAt": 2030-03-06T17:50:00.000Z,
+      "id": 7,
+      "name": "Sara",
+      "sex": 1,
+    },
+    Object {
+      "createdAt": 2030-03-06T20:30:00.000Z,
+      "id": 8,
+      "name": "Lucia",
+      "sex": 1,
+    },
+    Object {
+      "createdAt": 2030-03-06T21:50:00.000Z,
+      "id": 9,
+      "name": "Giorgia",
+      "sex": 1,
+    },
+    Object {
+      "createdAt": 2030-03-07T07:30:00.000Z,
+      "id": 10,
+      "name": "Claudia",
+      "sex": 1,
+    },
+  ],
+  Array [
+    Object {
+      "createdAt": 2030-02-11T09:10:00.000Z,
+      "id": 2,
+      "name": "Mario",
+      "sex": 0,
+    },
+    Object {
+      "createdAt": 2030-03-01T19:30:00.000Z,
+      "id": 4,
+      "name": "Mattia",
+      "sex": 0,
+    },
+    Object {
+      "createdAt": 2030-03-05T15:20:00.000Z,
+      "id": 6,
+      "name": "Filippo",
+      "sex": 0,
+    },
+  ],
+  Array [
+    Object {
+      "createdAt": 2030-02-10T14:45:00.000Z,
+      "id": 1,
+      "name": "Niccolò",
+      "sex": 0,
+    },
+    Object {
+      "createdAt": 2030-02-11T09:10:00.000Z,
+      "id": 2,
+      "name": "Mario",
+      "sex": 0,
+    },
+    Object {
+      "createdAt": 2030-03-01T19:30:00.000Z,
+      "id": 4,
+      "name": "Mattia",
+      "sex": 0,
+    },
+    Object {
+      "createdAt": 2030-03-05T15:20:00.000Z,
+      "id": 6,
+      "name": "Filippo",
+      "sex": 0,
+    },
+  ],
+  Array [
+    Object {
+      "createdAt": 2030-02-10T14:45:00.000Z,
+      "id": 1,
+      "name": "Niccolò",
+      "sex": 0,
+    },
+    Object {
+      "createdAt": 2030-02-11T09:10:00.000Z,
+      "id": 2,
+      "name": "Mario",
+      "sex": 0,
+    },
+    Object {
+      "createdAt": 2030-03-01T19:30:00.000Z,
+      "id": 4,
+      "name": "Mattia",
+      "sex": 0,
+    },
+    Object {
+      "createdAt": 2030-03-05T15:20:00.000Z,
+      "id": 6,
+      "name": "Filippo",
+      "sex": 0,
+    },
+  ],
+  Array [
+    Object {
+      "createdAt": 2030-02-10T14:45:00.000Z,
+      "id": 1,
+      "name": "Niccolò",
+      "sex": 0,
+    },
+    Object {
+      "createdAt": 2030-02-11T09:10:00.000Z,
+      "id": 2,
+      "name": "Mario",
+      "sex": 0,
+    },
+    Object {
+      "createdAt": 2030-03-01T19:30:00.000Z,
+      "id": 4,
+      "name": "Mattia",
+      "sex": 0,
+    },
+    Object {
+      "createdAt": 2030-03-05T15:20:00.000Z,
+      "id": 6,
+      "name": "Filippo",
+      "sex": 0,
+    },
+  ],
+  Array [
+    Object {
+      "createdAt": 2030-02-10T14:45:00.000Z,
+      "id": 1,
+      "name": "Niccolò",
+      "sex": 0,
+    },
+    Object {
+      "createdAt": 2030-02-15T08:15:00.000Z,
+      "id": 3,
+      "name": "Luigi",
+      "sex": 0,
+    },
+    Object {
+      "createdAt": 2030-03-06T20:30:00.000Z,
+      "id": 8,
+      "name": "Lucia",
+      "sex": 1,
+    },
+    Object {
+      "createdAt": 2030-03-07T07:30:00.000Z,
+      "id": 10,
+      "name": "Claudia",
+      "sex": 1,
+    },
+  ],
+  Array [
+    Object {
+      "createdAt": 2030-02-15T08:15:00.000Z,
+      "id": 3,
+      "name": "Luigi",
+      "sex": 0,
+    },
+    Object {
+      "createdAt": 2030-03-02T18:00:00.000Z,
+      "id": 5,
+      "name": "Riccardo",
+      "sex": 0,
+    },
+    Object {
+      "createdAt": 2030-03-06T20:30:00.000Z,
+      "id": 8,
+      "name": "Lucia",
+      "sex": 1,
+    },
+  ],
+  Array [
+    Object {
+      "createdAt": 2030-03-06T20:30:00.000Z,
+      "id": 8,
+      "name": "Lucia",
+      "sex": 1,
+    },
+    Object {
+      "createdAt": 2030-03-07T07:30:00.000Z,
+      "id": 10,
+      "name": "Claudia",
+      "sex": 1,
+    },
+  ],
+]
+`;
+
+exports[`LoadItems should load a collection 1`] = `
+Array [
+  Object {
+    "createdAt": 2030-03-06T17:50:00.000Z,
+    "id": 7,
+    "name": "Sara",
+    "sex": 1,
+  },
+  Object {
+    "createdAt": 2030-03-06T20:30:00.000Z,
+    "id": 8,
+    "name": "Lucia",
+    "sex": 1,
+  },
+  Object {
+    "createdAt": 2030-03-06T21:50:00.000Z,
+    "id": 9,
+    "name": "Giorgia",
+    "sex": 1,
+  },
+  Object {
+    "createdAt": 2030-03-07T07:30:00.000Z,
+    "id": 10,
+    "name": "Claudia",
+    "sex": 1,
+  },
+]
+`;

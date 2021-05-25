@@ -1,0 +1,67 @@
+{
+  "name": "sports",
+  "version": "0.0.1",
+  "description": "",
+  "main": "build/src/index.js",
+  "types": "build/src/index.d.ts",
+  "files": [
+    "build/src"
+  ],
+  "license": "Apache-2.0",
+  "keywords": [],
+  "mikro-orm": {
+    "useTsNode": true,
+    "configPaths": [
+      "./src/mikro-orm/config.ts",
+      "./build/src/mikro-orm/config.js"
+    ]
+  },
+  "scripts": {
+    "docker": "docker-compose up",
+    "start:ts-node": "ts-node --files src/index.ts",
+    "start:ts-node:docker": "DOCKER=true yarn start:ts-node",
+    "prestart": "yarn run compile",
+    "start": "node build/src/index.js",
+    "start:docker": "DOCKER=true yarn start",
+    "test": "jest",
+    "lint": "gts lint \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "clean": "gts clean",
+    "precompile": "yarn run clean && yarn run fix",
+    "compile": "tsc -p .",
+    "fix": "gts fix \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "prepare": "yarn run compile"
+  },
+  "devDependencies": {
+    "@jest/test-sequencer": "^27.0.1",
+    "@types/jest": "^26.0.23",
+    "@types/node": "^15.6.1",
+    "gts": "^3.1.0",
+    "jest": "^26.6.3",
+    "ts-jest": "^26.5.6",
+    "ts-node": "^10.0.0",
+    "typescript": "^4.2.4"
+  },
+  "dependencies": {
+    "@mikro-orm/cli": "^5.0.0-dev.149",
+    "@mikro-orm/core": "^5.0.0-dev.149",
+    "@mikro-orm/entity-generator": "^5.0.0-dev.149",
+    "@mikro-orm/knex": "^5.0.0-dev.149",
+    "@mikro-orm/migrations": "^5.0.0-dev.149",
+    "@mikro-orm/postgresql": "^5.0.0-dev.149",
+    "@mikro-orm/reflection": "^5.0.0-dev.149",
+    "dataloader": "^2.0.0",
+    "date-fns": "^2.21.3",
+    "reflect-metadata": "^0.1.13"
+  },
+  "resolutions": {},
+  "jest": {
+    "testTimeout": 10000,
+    "transform": {
+      "^.+\\.(ts)$": "<rootDir>/node_modules/ts-jest"
+    },
+    "preset": "ts-jest",
+    "maxWorkers": 1,
+    "verbose": true,
+    "testSequencer": "./tests/utils/alphSequencer.js"
+  }
+}

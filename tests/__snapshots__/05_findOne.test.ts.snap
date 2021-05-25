@@ -1,0 +1,45 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FindOne even when queried separately in the same event loop 1`] = `
+Array [
+  Object {
+    "createdAt": 2030-02-10T14:45:00.000Z,
+    "id": 1,
+    "name": "Niccolò",
+    "sex": 0,
+  },
+  Object {
+    "createdAt": 2030-02-15T08:15:00.000Z,
+    "id": 3,
+    "name": "Luigi",
+    "sex": 0,
+  },
+  Object {
+    "createdAt": 2030-03-02T18:00:00.000Z,
+    "id": 5,
+    "name": "Riccardo",
+    "sex": 0,
+  },
+  Object {
+    "createdAt": 2030-03-06T17:50:00.000Z,
+    "id": 7,
+    "name": "Sara",
+    "sex": 1,
+  },
+  Object {
+    "createdAt": 2030-03-06T21:50:00.000Z,
+    "id": 9,
+    "name": "Giorgia",
+    "sex": 1,
+  },
+]
+`;
+
+exports[`FindOne should fetch with a single condition 1`] = `
+Object {
+  "createdAt": 2030-03-06T21:50:00.000Z,
+  "id": 9,
+  "name": "Giorgia",
+  "sex": 1,
+}
+`;

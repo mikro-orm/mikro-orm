@@ -1,0 +1,316 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Find even when queried separately in the same event loop 1`] = `"[{\\"id\\":1,\\"createdAt\\":\\"2030-03-12T07:05:00.000Z\\",\\"name\\":\\"Event 1\\",\\"creator\\":1,\\"category\\":1,\\"site\\":1},{\\"id\\":2,\\"createdAt\\":\\"2030-03-13T14:45:00.000Z\\",\\"name\\":\\"Event 2\\",\\"creator\\":1,\\"category\\":3,\\"site\\":1}]"`;
+
+exports[`Find even when queried separately in the same event loop 2`] = `"[{\\"id\\":3,\\"createdAt\\":\\"2030-03-14T08:00:00.000Z\\",\\"name\\":\\"Event 3\\",\\"creator\\":1,\\"category\\":1,\\"site\\":1}]"`;
+
+exports[`Find even when queried separately in the same event loop 3`] = `"[{\\"id\\":4,\\"createdAt\\":\\"2030-03-14T17:30:00.000Z\\",\\"name\\":\\"Event 4\\",\\"creator\\":10,\\"category\\":3,\\"site\\":2}]"`;
+
+exports[`Find even when queried separately in the same event loop 4`] = `"[{\\"id\\":5,\\"createdAt\\":\\"2030-03-14T18:00:00.000Z\\",\\"name\\":\\"Event 5\\",\\"creator\\":7,\\"category\\":2,\\"site\\":1}]"`;
+
+exports[`Find even when queried separately in the same event loop 5`] = `"[{\\"id\\":6,\\"createdAt\\":\\"2030-03-14T18:30:00.000Z\\",\\"name\\":\\"Event 6\\",\\"creator\\":4,\\"category\\":3,\\"site\\":1}]"`;
+
+exports[`Find even when queried separately in the same event loop 6`] = `"[{\\"id\\":7,\\"createdAt\\":\\"2030-03-14T19:00:00.000Z\\",\\"name\\":\\"Event 7\\",\\"creator\\":2,\\"category\\":1,\\"site\\":1}]"`;
+
+exports[`Find even when queried separately in the same event loop 7`] = `"[{\\"id\\":8,\\"createdAt\\":\\"2030-03-14T19:30:00.000Z\\",\\"name\\":\\"Event 8\\",\\"creator\\":10,\\"category\\":3,\\"site\\":2}]"`;
+
+exports[`Find even when queried separately in the same event loop 8`] = `"[{\\"id\\":9,\\"createdAt\\":\\"2030-03-15T07:00:00.000Z\\",\\"name\\":\\"Event 9\\",\\"creator\\":1,\\"category\\":1,\\"site\\":1}]"`;
+
+exports[`Find even when queried separately in the same event loop 9`] = `"[{\\"id\\":10,\\"createdAt\\":\\"2030-03-15T07:30:00.000Z\\",\\"name\\":\\"Event 10\\",\\"creator\\":9,\\"category\\":3,\\"site\\":1}]"`;
+
+exports[`Find even when queried separately in the same event loop 10`] = `"[{\\"id\\":11,\\"createdAt\\":\\"2030-03-15T08:00:00.000Z\\",\\"name\\":\\"Event 11\\",\\"creator\\":6,\\"category\\":1,\\"site\\":1}]"`;
+
+exports[`Find even when queried separately in the same event loop 11`] = `"[{\\"id\\":12,\\"createdAt\\":\\"2030-03-15T08:30:00.000Z\\",\\"name\\":\\"Event 12\\",\\"creator\\":4,\\"category\\":3,\\"site\\":2}]"`;
+
+exports[`Find even when queried separately in the same event loop 12`] = `"[{\\"id\\":13,\\"createdAt\\":\\"2030-03-15T20:00:00.000Z\\",\\"name\\":\\"Event 13\\",\\"creator\\":1,\\"category\\":1,\\"site\\":1}]"`;
+
+exports[`Find even when queried separately in the same event loop 13`] = `"[{\\"id\\":14,\\"createdAt\\":\\"2030-03-16T15:00:00.000Z\\",\\"name\\":\\"Event 14\\",\\"creator\\":7,\\"category\\":3,\\"site\\":1}]"`;
+
+exports[`Find even when queried separately in the same event loop 14`] = `"[{\\"id\\":15,\\"createdAt\\":\\"2030-03-16T17:00:00.000Z\\",\\"name\\":\\"Event 15\\",\\"creator\\":3,\\"category\\":3,\\"site\\":1}]"`;
+
+exports[`Find even when queried separately in the same event loop 15`] = `"[{\\"id\\":1,\\"createdAt\\":\\"2030-03-12T07:05:00.000Z\\",\\"name\\":\\"Event 1\\",\\"creator\\":1,\\"category\\":1,\\"site\\":1},{\\"id\\":2,\\"createdAt\\":\\"2030-03-13T14:45:00.000Z\\",\\"name\\":\\"Event 2\\",\\"creator\\":1,\\"category\\":3,\\"site\\":1},{\\"id\\":3,\\"createdAt\\":\\"2030-03-14T08:00:00.000Z\\",\\"name\\":\\"Event 3\\",\\"creator\\":1,\\"category\\":1,\\"site\\":1},{\\"id\\":7,\\"createdAt\\":\\"2030-03-14T19:00:00.000Z\\",\\"name\\":\\"Event 7\\",\\"creator\\":2,\\"category\\":1,\\"site\\":1},{\\"id\\":9,\\"createdAt\\":\\"2030-03-15T07:00:00.000Z\\",\\"name\\":\\"Event 9\\",\\"creator\\":1,\\"category\\":1,\\"site\\":1},{\\"id\\":13,\\"createdAt\\":\\"2030-03-15T20:00:00.000Z\\",\\"name\\":\\"Event 13\\",\\"creator\\":1,\\"category\\":1,\\"site\\":1}]"`;
+
+exports[`Find even when queried separately in the same event loop 16`] = `"[{\\"id\\":15,\\"createdAt\\":\\"2030-03-16T17:00:00.000Z\\",\\"name\\":\\"Event 15\\",\\"creator\\":3,\\"category\\":3,\\"site\\":1},{\\"id\\":16,\\"createdAt\\":\\"2030-03-17T08:00:00.000Z\\",\\"name\\":\\"Event 16\\",\\"creator\\":3,\\"category\\":3,\\"site\\":2},{\\"id\\":17,\\"createdAt\\":\\"2030-03-17T09:00:00.000Z\\",\\"name\\":\\"Event 17\\",\\"creator\\":3,\\"category\\":3,\\"site\\":2}]"`;
+
+exports[`Find even when queried separately in the same event loop 17`] = `"[{\\"id\\":6,\\"createdAt\\":\\"2030-03-14T18:30:00.000Z\\",\\"name\\":\\"Event 6\\",\\"creator\\":4,\\"category\\":3,\\"site\\":1},{\\"id\\":12,\\"createdAt\\":\\"2030-03-15T08:30:00.000Z\\",\\"name\\":\\"Event 12\\",\\"creator\\":4,\\"category\\":3,\\"site\\":2}]"`;
+
+exports[`Find even when queried separately in the same event loop 18`] = `"[{\\"id\\":18,\\"createdAt\\":\\"2030-03-17T10:00:00.000Z\\",\\"name\\":\\"Event 18\\",\\"creator\\":5,\\"category\\":3,\\"site\\":2}]"`;
+
+exports[`Find even when queried separately in the same event loop 19`] = `"[{\\"id\\":11,\\"createdAt\\":\\"2030-03-15T08:00:00.000Z\\",\\"name\\":\\"Event 11\\",\\"creator\\":6,\\"category\\":1,\\"site\\":1}]"`;
+
+exports[`Find even when queried separately in the same event loop 20`] = `"[{\\"id\\":5,\\"createdAt\\":\\"2030-03-14T18:00:00.000Z\\",\\"name\\":\\"Event 5\\",\\"creator\\":7,\\"category\\":2,\\"site\\":1},{\\"id\\":14,\\"createdAt\\":\\"2030-03-16T15:00:00.000Z\\",\\"name\\":\\"Event 14\\",\\"creator\\":7,\\"category\\":3,\\"site\\":1}]"`;
+
+exports[`Find even when queried separately in the same event loop 21`] = `"[]"`;
+
+exports[`Find even when queried separately in the same event loop 22`] = `"[{\\"id\\":10,\\"createdAt\\":\\"2030-03-15T07:30:00.000Z\\",\\"name\\":\\"Event 10\\",\\"creator\\":9,\\"category\\":3,\\"site\\":1}]"`;
+
+exports[`Find even when queried separately in the same event loop 23`] = `"[{\\"id\\":1,\\"createdAt\\":\\"2030-03-12T07:05:00.000Z\\",\\"name\\":\\"Event 1\\",\\"creator\\":1,\\"category\\":1,\\"site\\":1},{\\"id\\":2,\\"createdAt\\":\\"2030-03-13T14:45:00.000Z\\",\\"name\\":\\"Event 2\\",\\"creator\\":1,\\"category\\":3,\\"site\\":1},{\\"id\\":3,\\"createdAt\\":\\"2030-03-14T08:00:00.000Z\\",\\"name\\":\\"Event 3\\",\\"creator\\":1,\\"category\\":1,\\"site\\":1},{\\"id\\":5,\\"createdAt\\":\\"2030-03-14T18:00:00.000Z\\",\\"name\\":\\"Event 5\\",\\"creator\\":7,\\"category\\":2,\\"site\\":1},{\\"id\\":6,\\"createdAt\\":\\"2030-03-14T18:30:00.000Z\\",\\"name\\":\\"Event 6\\",\\"creator\\":4,\\"category\\":3,\\"site\\":1},{\\"id\\":7,\\"createdAt\\":\\"2030-03-14T19:00:00.000Z\\",\\"name\\":\\"Event 7\\",\\"creator\\":2,\\"category\\":1,\\"site\\":1},{\\"id\\":9,\\"createdAt\\":\\"2030-03-15T07:00:00.000Z\\",\\"name\\":\\"Event 9\\",\\"creator\\":1,\\"category\\":1,\\"site\\":1},{\\"id\\":10,\\"createdAt\\":\\"2030-03-15T07:30:00.000Z\\",\\"name\\":\\"Event 10\\",\\"creator\\":9,\\"category\\":3,\\"site\\":1},{\\"id\\":11,\\"createdAt\\":\\"2030-03-15T08:00:00.000Z\\",\\"name\\":\\"Event 11\\",\\"creator\\":6,\\"category\\":1,\\"site\\":1},{\\"id\\":13,\\"createdAt\\":\\"2030-03-15T20:00:00.000Z\\",\\"name\\":\\"Event 13\\",\\"creator\\":1,\\"category\\":1,\\"site\\":1},{\\"id\\":14,\\"createdAt\\":\\"2030-03-16T15:00:00.000Z\\",\\"name\\":\\"Event 14\\",\\"creator\\":7,\\"category\\":3,\\"site\\":1},{\\"id\\":15,\\"createdAt\\":\\"2030-03-16T17:00:00.000Z\\",\\"name\\":\\"Event 15\\",\\"creator\\":3,\\"category\\":3,\\"site\\":1}]"`;
+
+exports[`Find even when queried separately in the same event loop 24`] = `"[{\\"id\\":4,\\"createdAt\\":\\"2030-03-14T17:30:00.000Z\\",\\"name\\":\\"Event 4\\",\\"creator\\":10,\\"category\\":3,\\"site\\":2},{\\"id\\":8,\\"createdAt\\":\\"2030-03-14T19:30:00.000Z\\",\\"name\\":\\"Event 8\\",\\"creator\\":10,\\"category\\":3,\\"site\\":2},{\\"id\\":12,\\"createdAt\\":\\"2030-03-15T08:30:00.000Z\\",\\"name\\":\\"Event 12\\",\\"creator\\":4,\\"category\\":3,\\"site\\":2},{\\"id\\":16,\\"createdAt\\":\\"2030-03-17T08:00:00.000Z\\",\\"name\\":\\"Event 16\\",\\"creator\\":3,\\"category\\":3,\\"site\\":2},{\\"id\\":17,\\"createdAt\\":\\"2030-03-17T09:00:00.000Z\\",\\"name\\":\\"Event 17\\",\\"creator\\":3,\\"category\\":3,\\"site\\":2},{\\"id\\":18,\\"createdAt\\":\\"2030-03-17T10:00:00.000Z\\",\\"name\\":\\"Event 18\\",\\"creator\\":5,\\"category\\":3,\\"site\\":2},{\\"id\\":19,\\"createdAt\\":\\"2030-03-17T11:00:00.000Z\\",\\"name\\":\\"Event 19\\",\\"creator\\":10,\\"category\\":3,\\"site\\":2}]"`;
+
+exports[`Find even when queried separately in the same event loop 25`] = `"[{\\"id\\":1,\\"createdAt\\":\\"2030-03-12T07:05:00.000Z\\",\\"name\\":\\"Event 1\\",\\"creator\\":1,\\"category\\":1,\\"site\\":1},{\\"id\\":3,\\"createdAt\\":\\"2030-03-14T08:00:00.000Z\\",\\"name\\":\\"Event 3\\",\\"creator\\":1,\\"category\\":1,\\"site\\":1},{\\"id\\":7,\\"createdAt\\":\\"2030-03-14T19:00:00.000Z\\",\\"name\\":\\"Event 7\\",\\"creator\\":2,\\"category\\":1,\\"site\\":1},{\\"id\\":9,\\"createdAt\\":\\"2030-03-15T07:00:00.000Z\\",\\"name\\":\\"Event 9\\",\\"creator\\":1,\\"category\\":1,\\"site\\":1},{\\"id\\":11,\\"createdAt\\":\\"2030-03-15T08:00:00.000Z\\",\\"name\\":\\"Event 11\\",\\"creator\\":6,\\"category\\":1,\\"site\\":1},{\\"id\\":13,\\"createdAt\\":\\"2030-03-15T20:00:00.000Z\\",\\"name\\":\\"Event 13\\",\\"creator\\":1,\\"category\\":1,\\"site\\":1}]"`;
+
+exports[`Find should be able to deal with different entities in the same event loop 1`] = `"[{\\"id\\":1,\\"createdAt\\":\\"2030-03-12T07:05:00.000Z\\",\\"name\\":\\"Event 1\\",\\"creator\\":1,\\"category\\":1,\\"site\\":1},{\\"id\\":2,\\"createdAt\\":\\"2030-03-13T14:45:00.000Z\\",\\"name\\":\\"Event 2\\",\\"creator\\":1,\\"category\\":3,\\"site\\":1}]"`;
+
+exports[`Find should be able to deal with different entities in the same event loop 2`] = `"[{\\"id\\":3,\\"createdAt\\":\\"2030-03-14T08:00:00.000Z\\",\\"name\\":\\"Event 3\\",\\"creator\\":1,\\"category\\":1,\\"site\\":1}]"`;
+
+exports[`Find should be able to deal with different entities in the same event loop 3`] = `"[{\\"id\\":4,\\"createdAt\\":\\"2030-03-14T17:30:00.000Z\\",\\"name\\":\\"Event 4\\",\\"creator\\":10,\\"category\\":3,\\"site\\":2}]"`;
+
+exports[`Find should be able to deal with different entities in the same event loop 4`] = `"[{\\"id\\":5,\\"createdAt\\":\\"2030-03-14T18:00:00.000Z\\",\\"name\\":\\"Event 5\\",\\"creator\\":7,\\"category\\":2,\\"site\\":1}]"`;
+
+exports[`Find should be able to deal with different entities in the same event loop 5`] = `"[{\\"id\\":6,\\"createdAt\\":\\"2030-03-14T18:30:00.000Z\\",\\"name\\":\\"Event 6\\",\\"creator\\":4,\\"category\\":3,\\"site\\":1}]"`;
+
+exports[`Find should be able to deal with different entities in the same event loop 6`] = `"[{\\"id\\":7,\\"createdAt\\":\\"2030-03-14T19:00:00.000Z\\",\\"name\\":\\"Event 7\\",\\"creator\\":2,\\"category\\":1,\\"site\\":1}]"`;
+
+exports[`Find should be able to deal with different entities in the same event loop 7`] = `"[{\\"id\\":8,\\"createdAt\\":\\"2030-03-14T19:30:00.000Z\\",\\"name\\":\\"Event 8\\",\\"creator\\":10,\\"category\\":3,\\"site\\":2}]"`;
+
+exports[`Find should be able to deal with different entities in the same event loop 8`] = `"[{\\"id\\":9,\\"createdAt\\":\\"2030-03-15T07:00:00.000Z\\",\\"name\\":\\"Event 9\\",\\"creator\\":1,\\"category\\":1,\\"site\\":1}]"`;
+
+exports[`Find should be able to deal with different entities in the same event loop 9`] = `"[{\\"id\\":1,\\"createdAt\\":\\"2030-03-12T07:05:00.000Z\\",\\"name\\":\\"Event 1\\",\\"creator\\":1,\\"category\\":1,\\"site\\":1},{\\"id\\":2,\\"createdAt\\":\\"2030-03-13T14:45:00.000Z\\",\\"name\\":\\"Event 2\\",\\"creator\\":1,\\"category\\":3,\\"site\\":1},{\\"id\\":3,\\"createdAt\\":\\"2030-03-14T08:00:00.000Z\\",\\"name\\":\\"Event 3\\",\\"creator\\":1,\\"category\\":1,\\"site\\":1},{\\"id\\":7,\\"createdAt\\":\\"2030-03-14T19:00:00.000Z\\",\\"name\\":\\"Event 7\\",\\"creator\\":2,\\"category\\":1,\\"site\\":1},{\\"id\\":9,\\"createdAt\\":\\"2030-03-15T07:00:00.000Z\\",\\"name\\":\\"Event 9\\",\\"creator\\":1,\\"category\\":1,\\"site\\":1},{\\"id\\":13,\\"createdAt\\":\\"2030-03-15T20:00:00.000Z\\",\\"name\\":\\"Event 13\\",\\"creator\\":1,\\"category\\":1,\\"site\\":1}]"`;
+
+exports[`Find should be able to deal with different entities in the same event loop 10`] = `"[{\\"id\\":15,\\"createdAt\\":\\"2030-03-16T17:00:00.000Z\\",\\"name\\":\\"Event 15\\",\\"creator\\":3,\\"category\\":3,\\"site\\":1},{\\"id\\":16,\\"createdAt\\":\\"2030-03-17T08:00:00.000Z\\",\\"name\\":\\"Event 16\\",\\"creator\\":3,\\"category\\":3,\\"site\\":2},{\\"id\\":17,\\"createdAt\\":\\"2030-03-17T09:00:00.000Z\\",\\"name\\":\\"Event 17\\",\\"creator\\":3,\\"category\\":3,\\"site\\":2}]"`;
+
+exports[`Find should be able to deal with different entities in the same event loop 11`] = `"[{\\"id\\":6,\\"createdAt\\":\\"2030-03-14T18:30:00.000Z\\",\\"name\\":\\"Event 6\\",\\"creator\\":4,\\"category\\":3,\\"site\\":1},{\\"id\\":12,\\"createdAt\\":\\"2030-03-15T08:30:00.000Z\\",\\"name\\":\\"Event 12\\",\\"creator\\":4,\\"category\\":3,\\"site\\":2}]"`;
+
+exports[`Find should be able to deal with different entities in the same event loop 12`] = `"[{\\"id\\":18,\\"createdAt\\":\\"2030-03-17T10:00:00.000Z\\",\\"name\\":\\"Event 18\\",\\"creator\\":5,\\"category\\":3,\\"site\\":2}]"`;
+
+exports[`Find should be able to deal with different entities in the same event loop 13`] = `"[{\\"id\\":11,\\"createdAt\\":\\"2030-03-15T08:00:00.000Z\\",\\"name\\":\\"Event 11\\",\\"creator\\":6,\\"category\\":1,\\"site\\":1}]"`;
+
+exports[`Find should be able to deal with different entities in the same event loop 14`] = `"[{\\"id\\":5,\\"createdAt\\":\\"2030-03-14T18:00:00.000Z\\",\\"name\\":\\"Event 5\\",\\"creator\\":7,\\"category\\":2,\\"site\\":1},{\\"id\\":14,\\"createdAt\\":\\"2030-03-16T15:00:00.000Z\\",\\"name\\":\\"Event 14\\",\\"creator\\":7,\\"category\\":3,\\"site\\":1}]"`;
+
+exports[`Find should be able to deal with different entities in the same event loop 15`] = `"[]"`;
+
+exports[`Find should be able to deal with different entities in the same event loop 16`] = `"[{\\"id\\":10,\\"createdAt\\":\\"2030-03-15T07:30:00.000Z\\",\\"name\\":\\"Event 10\\",\\"creator\\":9,\\"category\\":3,\\"site\\":1}]"`;
+
+exports[`Find should be able to deal with different entities in the same event loop 17`] = `"[{\\"id\\":1,\\"createdAt\\":\\"2030-02-10T14:45:00.000Z\\",\\"name\\":\\"Niccolò\\",\\"sex\\":0},{\\"id\\":2,\\"createdAt\\":\\"2030-02-11T09:10:00.000Z\\",\\"name\\":\\"Mario\\",\\"sex\\":0}]"`;
+
+exports[`Find should be able to deal with different entities in the same event loop 18`] = `"[{\\"id\\":3,\\"createdAt\\":\\"2030-02-15T08:15:00.000Z\\",\\"name\\":\\"Luigi\\",\\"sex\\":0}]"`;
+
+exports[`Find should be able to deal with different entities in the same event loop 19`] = `"[{\\"id\\":4,\\"createdAt\\":\\"2030-03-01T19:30:00.000Z\\",\\"name\\":\\"Mattia\\",\\"sex\\":0}]"`;
+
+exports[`Find should be able to deal with different entities in the same event loop 20`] = `"[{\\"id\\":5,\\"createdAt\\":\\"2030-03-02T18:00:00.000Z\\",\\"name\\":\\"Riccardo\\",\\"sex\\":0}]"`;
+
+exports[`Find should be able to deal with different entities in the same event loop 21`] = `"[{\\"id\\":6,\\"createdAt\\":\\"2030-03-05T15:20:00.000Z\\",\\"name\\":\\"Filippo\\",\\"sex\\":0}]"`;
+
+exports[`Find should be able to deal with different entities in the same event loop 22`] = `"[{\\"id\\":7,\\"createdAt\\":\\"2030-03-06T17:50:00.000Z\\",\\"name\\":\\"Sara\\",\\"sex\\":1}]"`;
+
+exports[`Find should be able to deal with different entities in the same event loop 23`] = `"[{\\"id\\":8,\\"createdAt\\":\\"2030-03-06T20:30:00.000Z\\",\\"name\\":\\"Lucia\\",\\"sex\\":1}]"`;
+
+exports[`Find should be able to deal with different entities in the same event loop 24`] = `"[{\\"id\\":9,\\"createdAt\\":\\"2030-03-06T21:50:00.000Z\\",\\"name\\":\\"Giorgia\\",\\"sex\\":1}]"`;
+
+exports[`Find should be able to deal with different entities in the same event loop 25`] = `"[{\\"id\\":1,\\"createdAt\\":\\"2030-02-10T14:45:00.000Z\\",\\"name\\":\\"Niccolò\\",\\"sex\\":0},{\\"id\\":2,\\"createdAt\\":\\"2030-02-11T09:10:00.000Z\\",\\"name\\":\\"Mario\\",\\"sex\\":0},{\\"id\\":3,\\"createdAt\\":\\"2030-02-15T08:15:00.000Z\\",\\"name\\":\\"Luigi\\",\\"sex\\":0},{\\"id\\":4,\\"createdAt\\":\\"2030-03-01T19:30:00.000Z\\",\\"name\\":\\"Mattia\\",\\"sex\\":0},{\\"id\\":5,\\"createdAt\\":\\"2030-03-02T18:00:00.000Z\\",\\"name\\":\\"Riccardo\\",\\"sex\\":0},{\\"id\\":6,\\"createdAt\\":\\"2030-03-05T15:20:00.000Z\\",\\"name\\":\\"Filippo\\",\\"sex\\":0}]"`;
+
+exports[`Find should fetch elements in array 1`] = `
+Array [
+  Object {
+    "createdAt": 2030-02-10T14:45:00.000Z,
+    "id": 1,
+    "name": "Niccolò",
+    "sex": 0,
+  },
+  Object {
+    "createdAt": 2030-02-15T08:15:00.000Z,
+    "id": 3,
+    "name": "Luigi",
+    "sex": 0,
+  },
+  Object {
+    "createdAt": 2030-03-02T18:00:00.000Z,
+    "id": 5,
+    "name": "Riccardo",
+    "sex": 0,
+  },
+  Object {
+    "createdAt": 2030-03-06T17:50:00.000Z,
+    "id": 7,
+    "name": "Sara",
+    "sex": 1,
+  },
+  Object {
+    "createdAt": 2030-03-06T21:50:00.000Z,
+    "id": 9,
+    "name": "Giorgia",
+    "sex": 1,
+  },
+]
+`;
+
+exports[`Find should fetch elements in array matching multiple condition 1`] = `
+Array [
+  Object {
+    "category": 1,
+    "createdAt": 2030-03-14T19:00:00.000Z,
+    "creator": 2,
+    "id": 7,
+    "name": "Event 7",
+    "site": 1,
+  },
+  Object {
+    "category": 1,
+    "createdAt": 2030-03-15T08:00:00.000Z,
+    "creator": 6,
+    "id": 11,
+    "name": "Event 11",
+    "site": 1,
+  },
+]
+`;
+
+exports[`Find should fetch with a single condition 1`] = `
+Array [
+  Object {
+    "createdAt": 2030-02-10T14:45:00.000Z,
+    "id": 1,
+    "name": "Niccolò",
+    "sex": 0,
+  },
+  Object {
+    "createdAt": 2030-02-11T09:10:00.000Z,
+    "id": 2,
+    "name": "Mario",
+    "sex": 0,
+  },
+  Object {
+    "createdAt": 2030-02-15T08:15:00.000Z,
+    "id": 3,
+    "name": "Luigi",
+    "sex": 0,
+  },
+  Object {
+    "createdAt": 2030-03-01T19:30:00.000Z,
+    "id": 4,
+    "name": "Mattia",
+    "sex": 0,
+  },
+  Object {
+    "createdAt": 2030-03-02T18:00:00.000Z,
+    "id": 5,
+    "name": "Riccardo",
+    "sex": 0,
+  },
+  Object {
+    "createdAt": 2030-03-05T15:20:00.000Z,
+    "id": 6,
+    "name": "Filippo",
+    "sex": 0,
+  },
+]
+`;
+
+exports[`Find should fetch with multiple conditions 1`] = `
+Array [
+  Object {
+    "category": 1,
+    "createdAt": 2030-03-12T07:05:00.000Z,
+    "creator": 1,
+    "id": 1,
+    "name": "Event 1",
+    "site": 1,
+  },
+  Object {
+    "category": 1,
+    "createdAt": 2030-03-14T08:00:00.000Z,
+    "creator": 1,
+    "id": 3,
+    "name": "Event 3",
+    "site": 1,
+  },
+  Object {
+    "category": 1,
+    "createdAt": 2030-03-14T19:00:00.000Z,
+    "creator": 2,
+    "id": 7,
+    "name": "Event 7",
+    "site": 1,
+  },
+  Object {
+    "category": 1,
+    "createdAt": 2030-03-15T07:00:00.000Z,
+    "creator": 1,
+    "id": 9,
+    "name": "Event 9",
+    "site": 1,
+  },
+  Object {
+    "category": 1,
+    "createdAt": 2030-03-15T08:00:00.000Z,
+    "creator": 6,
+    "id": 11,
+    "name": "Event 11",
+    "site": 1,
+  },
+  Object {
+    "category": 1,
+    "createdAt": 2030-03-15T20:00:00.000Z,
+    "creator": 1,
+    "id": 13,
+    "name": "Event 13",
+    "site": 1,
+  },
+]
+`;
+
+exports[`Find should fetch without conditions 1`] = `
+Array [
+  Object {
+    "createdAt": 2030-02-10T14:45:00.000Z,
+    "id": 1,
+    "name": "Niccolò",
+    "sex": 0,
+  },
+  Object {
+    "createdAt": 2030-02-11T09:10:00.000Z,
+    "id": 2,
+    "name": "Mario",
+    "sex": 0,
+  },
+  Object {
+    "createdAt": 2030-02-15T08:15:00.000Z,
+    "id": 3,
+    "name": "Luigi",
+    "sex": 0,
+  },
+  Object {
+    "createdAt": 2030-03-01T19:30:00.000Z,
+    "id": 4,
+    "name": "Mattia",
+    "sex": 0,
+  },
+  Object {
+    "createdAt": 2030-03-02T18:00:00.000Z,
+    "id": 5,
+    "name": "Riccardo",
+    "sex": 0,
+  },
+  Object {
+    "createdAt": 2030-03-05T15:20:00.000Z,
+    "id": 6,
+    "name": "Filippo",
+    "sex": 0,
+  },
+  Object {
+    "createdAt": 2030-03-06T17:50:00.000Z,
+    "id": 7,
+    "name": "Sara",
+    "sex": 1,
+  },
+  Object {
+    "createdAt": 2030-03-06T20:30:00.000Z,
+    "id": 8,
+    "name": "Lucia",
+    "sex": 1,
+  },
+  Object {
+    "createdAt": 2030-03-06T21:50:00.000Z,
+    "id": 9,
+    "name": "Giorgia",
+    "sex": 1,
+  },
+  Object {
+    "createdAt": 2030-03-07T07:30:00.000Z,
+    "id": 10,
+    "name": "Claudia",
+    "sex": 1,
+  },
+]
+`;
