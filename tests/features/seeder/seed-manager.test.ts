@@ -1,15 +1,13 @@
 import SpyInstance = jest.SpyInstance;
 
-(global as any).process.env.FORCE_COLOR = 0;
-const { Author3, Book3 } = require('../../entities-js');
-
-import { Configuration, EntityManager, MikroORM } from '@mikro-orm/core';
-import { SeedManager, Seeder } from '@mikro-orm/seeder';
+import { Configuration, MikroORM } from '@mikro-orm/core';
+import { SeedManager } from '@mikro-orm/seeder';
 import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';
 // noinspection ES6PreferShortImport
 import { initORMSqlite } from '../../bootstrap';
 import { Book3Seeder } from '../../database/seeder/book3.seeder';
-import { remove } from 'fs-extra';
+import { remove, readFile } from 'fs-extra';
+import { Author3Seeder } from '../../database/seeder/author3.seeder';
 
 const configuration = new Configuration({ type: 'mongo', dbName: 'test', entities: ['entities'], clientUrl: 'test' });
 const close = jest.fn();
@@ -18,14 +16,6 @@ const createSchema = jest.spyOn(SchemaGenerator.prototype, 'createSchema');
 createSchema.mockImplementation(async () => void 0);
 const dropSchema = jest.spyOn(SchemaGenerator.prototype, 'dropSchema');
 dropSchema.mockImplementation(async () => void 0);
-
-class Author3Seeder extends Seeder {
-
-  run(em: EntityManager): Promise<void> {
-    return Promise.resolve(undefined);
-  }
-
-}
 
 describe('MikroOrmSeeder', () => {
 
@@ -62,16 +52,9 @@ describe('MikroOrmSeeder', () => {
   });
 
   test('seedString', async () => {
-    orm.config.set('seeder', { path: 'database/seeder', defaultSeeder: 'DatabaseSeeder' });
+    orm.config.set('seeder', { path: 'tests/database/seeder', defaultSeeder: 'DatabaseSeeder' });
     const seeder = orm.getSeeder();
     const seedMock = jest.spyOn(SeedManager.prototype, 'seed');
-    seedMock.mockImplementation(async () => void 0);
-    jest.mock(`${process.cwd()}/database/seeder/book3.seeder.ts`, () => {
-      return Book3Seeder;
-    }, { virtual: true });
-    jest.mock(`${process.cwd()}/database/seeder/author3.seeder.ts`, () => {
-      return Book3Seeder;
-    }, { virtual: true });
 
     await seeder.seedString('Book3Seeder');
     expect(seedMock).toHaveBeenCalledTimes(1);
@@ -85,6 +68,8 @@ describe('MikroOrmSeeder', () => {
 
     const seederFile = await seeder.createSeeder('Book3Seeder');
     expect(seederFile).toBe(`./database/seeder/book3.seeder.ts`);
+    const fileContents = await readFile(`./database/seeder/book3.seeder.ts`, 'utf8');
+    expect(fileContents).toContain('export class Book3Seeder extends Seeder {');
     await remove('./database');
   });
 });

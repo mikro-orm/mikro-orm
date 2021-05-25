@@ -41,7 +41,6 @@ describe('DatabaseSeedCommand', () => {
       alias: 'class',
       type: 'string',
       desc: 'Seeder class to run',
-      default: '',
     });
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
     expect(seed).toBeCalledTimes(1);

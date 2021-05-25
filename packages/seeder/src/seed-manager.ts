@@ -24,9 +24,8 @@ export class SeedManager {
 
   async seedString(...seederClasses: string[]): Promise<void> {
     for (const seederClass of seederClasses) {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const seeder = require(`${process.cwd()}/${this.orm.config.get('seeder').path}/${this.getFileName(seederClass)}`);
-      await this.seed(seeder);
+      const seeder = await import(`${process.cwd()}/${this.orm.config.get('seeder').path}/${this.getFileName(seederClass)}`);
+      await this.seed(seeder[seederClass]);
     }
   }
 
@@ -51,12 +50,12 @@ export class SeedManager {
     await ensureDir(Utils.normalizePath(this.orm.config.get('seeder').path));
   }
 
-  private async generate(seeder: string): Promise<string> {
+  private async generate(seederClass: string): Promise<string> {
     const path = Utils.normalizePath(this.orm.config.get('seeder').path);
-    const fileName = this.getFileName(seeder);
+    const fileName = this.getFileName(seederClass);
     const ret = `import { EntityManager } from '@mikro-orm/core';
 import { Seeder } from '@mikro-orm/seeder';
-class DatabaseSeeder extends Seeder {
+export class ${seederClass} extends Seeder {
 
   run(em: EntityManager): Promise<void> {
   }
