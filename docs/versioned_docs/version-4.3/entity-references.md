@@ -53,9 +53,8 @@ defining `load(): Promise<T>` method that will first lazy load the association i
 available. You can also use `unwrap(): T` method to access the underlying entity without loading
 it.
 
-You can also use `load<K extends keyof T>(prop: K): Promise<T[K]>` helper, that will call `load()` 
-for you, making sure the entity is initialized first, then returning the value of given property 
-directly. 
+You can also use `load<K extends keyof T>(prop: K): Promise<T[K]>`, which works like `load()`
+but returns the specified property.
 
 ```typescript
 import { Entity, IdentifiedReference, ManyToOne, PrimaryKey, Reference } from '@mikro-orm/core';
