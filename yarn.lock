@@ -440,10 +440,10 @@
   dependencies:
     chalk "^4.0.0"
 
-"@es-joy/jsdoccomment@^0.6.0":
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/@es-joy/jsdoccomment/-/jsdoccomment-0.6.0.tgz#8926a8184df0968860f8c69b3bfc52efa6aeaa30"
-  integrity sha512-zT1EtysKMITJ7vE4RvOJqitxk/Str6It8hq+fykxkwLuTyzgak+TnVuVSIyovT/qrEz3i46ypCSXgNtIDYwNOg==
+"@es-joy/jsdoccomment@^0.7.2":
+  version "0.7.2"
+  resolved "https://registry.yarnpkg.com/@es-joy/jsdoccomment/-/jsdoccomment-0.7.2.tgz#5c0802982b28e7dcd381fbb1f52e6fd088525a31"
+  integrity sha512-i5p0VgxeCXbf5aPLPY9s9Fz6K5BkzYdbRCisw/vEY/FXAxUJ8SiAifPwkFUm0CJrmZ8tFBGW8bUtM7wiE4KTIA==
   dependencies:
     comment-parser "^1.1.5"
     esquery "^1.4.0"
@@ -3384,12 +3384,12 @@ escodegen@^2.0.0:
   optionalDependencies:
     source-map "~0.6.1"
 
-eslint-plugin-jsdoc@34.8.1:
-  version "34.8.1"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-jsdoc/-/eslint-plugin-jsdoc-34.8.1.tgz#d617663136d65cccbbd398be4bb87dc22f584d25"
-  integrity sha512-OLLq1UfzHr4Z+Y07R/t8x4eF5FS5yxWeUwaLaRv6DgX7pJEEl/3PzwDZfnYWFy2HQSanGmZnBhUQoHe6kPxN4g==
+eslint-plugin-jsdoc@35.0.0:
+  version "35.0.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-jsdoc/-/eslint-plugin-jsdoc-35.0.0.tgz#12634f12d1882a4f77b49aba2c4a17a7bc88cfcd"
+  integrity sha512-n92EO6g84qzjF4Lyvg+hDouMQTRHCKvW0hRobGRza0aqbG9fmmlS4p1x8cvPPAc0P87TmahMZnrP0F7hPOcAoQ==
   dependencies:
-    "@es-joy/jsdoccomment" "^0.6.0"
+    "@es-joy/jsdoccomment" "^0.7.2"
     comment-parser "1.1.5"
     debug "^4.3.1"
     esquery "^1.4.0"
