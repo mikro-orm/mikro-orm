@@ -91,7 +91,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
 
   async getEnumDefinitions(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary> {
     const sql =  `select column_name as column_name, column_type as column_type from information_schema.columns
-      where data_type = 'enum' and table_name = '${tableName}'`;
+      where table_schema = database() and data_type = 'enum' and table_name = '${tableName}'`;
     const enums = await connection.execute<any[]>(sql);
 
     return enums.reduce((o, item) => {
