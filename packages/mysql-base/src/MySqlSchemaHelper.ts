@@ -86,12 +86,12 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return `select distinct k.constraint_name as constraint_name, k.column_name as column_name, k.referenced_table_name as referenced_table_name, k.referenced_column_name as referenced_column_name, c.update_rule as update_rule, c.delete_rule as delete_rule `
       + `from information_schema.key_column_usage k `
       + `inner join information_schema.referential_constraints c on c.constraint_name = k.constraint_name and c.table_name = '${tableName}' `
-      + `where k.table_name = '${tableName}' and k.table_schema = database() and c.constraint_schema = database() and k.referenced_column_name is not null`;
+      + `where k.table_name = '${tableName}' and k.table_schema = ${schemaName ?? 'database()'} and c.constraint_schema = ${schemaName ?? 'database()'} and k.referenced_column_name is not null`;
   }
 
   async getEnumDefinitions(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary> {
     const sql =  `select column_name as column_name, column_type as column_type from information_schema.columns
-      where table_schema = database() and data_type = 'enum' and table_name = '${tableName}'`;
+      where table_schema = ${schemaName ?? 'database()'} and data_type = 'enum' and table_name = '${tableName}'`;
     const enums = await connection.execute<any[]>(sql);
 
     return enums.reduce((o, item) => {
@@ -112,7 +112,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
       numeric_precision as numeric_precision,
       numeric_scale as numeric_scale,
       ifnull(datetime_precision, character_maximum_length) length
-      from information_schema.columns where table_schema = database() and table_name = '${tableName}'`;
+      from information_schema.columns where table_schema = ${schemaName ?? 'database()'} and table_name = '${tableName}'`;
     const columns = await connection.execute<any[]>(sql);
 
     return columns.map(col => {
