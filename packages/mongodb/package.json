@@ -55,7 +55,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@types/mongodb": "3.6.16",
+    "@types/mongodb": "3.6.17",
     "mongodb": "3.6.9"
   },
   "devDependencies": {
