@@ -459,3 +459,6 @@ export interface IHydrator {
 export interface HydratorConstructor {
   new (metadata: MetadataStorage, platform: Platform, config: Configuration): IHydrator;
 }
+
+export abstract class PlainObject {
+}
