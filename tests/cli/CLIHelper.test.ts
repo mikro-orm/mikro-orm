@@ -52,7 +52,6 @@ describe('CLIHelper', () => {
     pathExistsMock.mockImplementation(path => (path as string).endsWith('package.json'));
     pkg['mikro-orm'].useTsNode = true;
     const requireFromMock = jest.spyOn(Utils, 'requireFrom');
-    requireFromMock.mockImplementationOnce(() => ({ register: jest.fn() }));
     const cli = await CLIConfigurator.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
     expect(requireFromMock).toHaveBeenCalledWith('ts-node', process.cwd() + '/tsconfig.json');
@@ -61,40 +60,19 @@ describe('CLIHelper', () => {
   });
 
   test('configures yargs instance [ts-node] without paths', async () => {
-    const readFileMock = jest.spyOn(require('fs-extra'), 'readFile');
-    readFileMock.mockImplementation(async () => JSON.stringify(tsc));
     const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
     pathExistsMock.mockResolvedValue(true);
     pkg['mikro-orm'].useTsNode = true;
     delete tsc.compilerOptions.paths;
-    const requireFromMock = jest.spyOn(Utils, 'requireFrom');
-    requireFromMock.mockImplementationOnce(() => ({ register: jest.fn() }));
+    const requireFromSpy = jest.spyOn(Utils, 'requireFrom');
+    const registerSpy = jest.spyOn(require('ts-node'), 'register');
     const cli = await CLIConfigurator.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
-    expect(requireFromMock).toHaveBeenCalledWith('ts-node', process.cwd() + '/tsconfig.json');
-    expect(requireFromMock).not.toHaveBeenCalledWith('tsconfig-paths', process.cwd() + '/tsconfig.json');
+    expect(requireFromSpy).toHaveBeenCalledWith('ts-node', process.cwd() + '/tsconfig.json');
+    expect(requireFromSpy).toHaveBeenCalledWith('tsconfig-paths', process.cwd() + '/tsconfig.json');
+    expect(registerSpy).toHaveBeenCalledTimes(1);
     pathExistsMock.mockRestore();
-    readFileMock.mockRestore();
-    requireFromMock.mockRestore();
-  });
-
-  test('configures yargs instance [ts-node and ts-paths and tsconfig.extends]', async () => {
-    const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
-    pathExistsMock.mockResolvedValue(true);
-    pkg['mikro-orm'].useTsNode = true;
-    const requireFromMock = jest.spyOn(Utils, 'requireFrom');
-    requireFromMock
-      .mockImplementationOnce(() => ({ register: jest.fn() }))
-      .mockImplementationOnce(() => ({ register: jest.fn() }));
-    const tsconfigExtendsMock = jest.spyOn(ConfigurationLoader, 'getTsConfig');
-    const cli = await CLIConfigurator.configure() as any;
-    expect(cli.$0).toBe('mikro-orm');
-    expect(requireFromMock).toHaveBeenCalledWith('ts-node', process.cwd() + '/tsconfig.json');
-    expect(requireFromMock).toHaveBeenCalledWith('tsconfig-paths', process.cwd() + '/tsconfig.json');
-    expect(tsconfigExtendsMock).toHaveBeenCalledTimes(2);
-    pathExistsMock.mockRestore();
-    pkg['mikro-orm'].useTsNode = false;
-    requireFromMock.mockRestore();
+    requireFromSpy.mockRestore();
   });
 
   test('gets ORM configuration [no mikro-orm.config]', async () => {
@@ -103,14 +81,6 @@ describe('CLIHelper', () => {
     process.env.MIKRO_ORM_ENV = __dirname + '/../mikro-orm.env';
     await expect(CLIHelper.getConfiguration()).resolves.toBeInstanceOf(Configuration);
     Object.keys(process.env).filter(k => k.startsWith('MIKRO_ORM_')).forEach(k => delete process.env[k]);
-  });
-
-  test('registerTsNode works with tsconfig.json with comments', async () => {
-    const requireFromMock = jest.spyOn(Utils, 'requireFrom');
-    requireFromMock.mockImplementation(() => ({ register: jest.fn() }));
-    await expect(ConfigurationLoader.registerTsNode(__dirname + '/../tsconfig.json')).resolves.toBeUndefined();
-    await expect(ConfigurationLoader.registerTsNode('./tests/tsconfig.json')).resolves.toBeUndefined();
-    requireFromMock.mockRestore();
   });
 
   test('gets ORM configuration [no package.json]', async () => {

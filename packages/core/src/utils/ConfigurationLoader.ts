@@ -1,7 +1,6 @@
 import dotenv from 'dotenv';
-import { pathExists, readFile } from 'fs-extra';
-import { dirname, join, isAbsolute } from 'path';
-import stripJsonComments from 'strip-json-comments';
+import { pathExists } from 'fs-extra';
+import { join, isAbsolute } from 'path';
 import { IDatabaseDriver } from '../drivers';
 import { Configuration, Options } from './Configuration';
 import { Utils } from './Utils';
@@ -67,38 +66,17 @@ export class ConfigurationLoader {
   static async registerTsNode(configPath = 'tsconfig.json'): Promise<void> {
     const tsConfigPath = isAbsolute(configPath) ? configPath : join(process.cwd(), configPath);
 
-    Utils.requireFrom('ts-node', tsConfigPath).register({
+    const { options: configOptions } = Utils.requireFrom('ts-node', tsConfigPath).register({
       project: tsConfigPath,
       transpileOnly: true,
-    });
+    }).config;
 
-    if (await pathExists(tsConfigPath)) {
-      const tsConfig = await this.getTsConfig(tsConfigPath);
-      /* istanbul ignore next */
-      const paths = tsConfig.compilerOptions?.paths;
-
-      if (paths) {
-        Utils.requireFrom('tsconfig-paths', tsConfigPath).register({
-          baseUrl: tsConfig.compilerOptions.baseUrl,
-          paths: tsConfig.compilerOptions.paths,
-        });
-      }
+    if (Object.entries(configOptions?.paths ?? {}).length > 0) {
+      Utils.requireFrom('tsconfig-paths', tsConfigPath).register({
+        baseUrl: configOptions.baseUrl,
+        paths: configOptions.paths,
+      });
     }
-  }
-
-  static async getTsConfig(tsConfigPath: string): Promise<Dictionary> {
-    const tsConfigFile = await readFile(tsConfigPath);
-    const tsConfig = JSON.parse(stripJsonComments(tsConfigFile.toString()));
-
-    if (!Object.keys(tsConfig).includes('extends')) {
-      return tsConfig;
-    }
-
-    const tsConfigFolderPath = dirname(tsConfigPath);
-    const tsConfigExtendsPath = isAbsolute(tsConfig.extends) ? tsConfig.extends : join(tsConfigFolderPath, tsConfig.extends);
-    const baseTsConfig = await ConfigurationLoader.getTsConfig(tsConfigExtendsPath);
-
-    return Utils.merge(baseTsConfig, tsConfig);
   }
 
   static loadEnvironmentVars<D extends IDatabaseDriver>(options?: Options<D> | Configuration<D>): Partial<Options<D>> {
