@@ -185,7 +185,7 @@ export class ObjectHydrator extends Hydrator {
       return ret;
     };
 
-    const hydrateEmbedded = (prop: EntityProperty, object: boolean | undefined, path: string[], dataKey: string): string[] => {
+    const hydrateEmbedded = (prop: EntityProperty, path: string[], dataKey: string): string[] => {
       const entityKey = path.join('.');
       const convertorKey = path.join('_').replace(/\[idx_[\d+]]/g, '');
       const ret: string[] = [];
@@ -225,7 +225,7 @@ export class ObjectHydrator extends Hydrator {
       ret.push(`    entity.${entityKey} = [];`);
       ret.push(`    data.${dataKey}.forEach((_, idx_${idx}) => {`);
       const last = path.pop();
-      ret.push(...hydrateEmbedded(prop, true, [...path, `${last}[idx_${idx}]`], `${dataKey}[idx_${idx}]`).map(l => '    ' + l));
+      ret.push(...hydrateEmbedded(prop, [...path, `${last}[idx_${idx}]`], `${dataKey}[idx_${idx}]`).map(l => '    ' + l));
       ret.push(`    });`);
       ret.push(`  }`);
 
@@ -245,7 +245,11 @@ export class ObjectHydrator extends Hydrator {
         if (prop.array) {
           ret.push(...hydrateEmbeddedArray(prop, path, dataKey));
         } else {
-          ret.push(...hydrateEmbedded(prop, object, path, dataKey));
+          ret.push(...hydrateEmbedded(prop, path, dataKey));
+
+          if (!prop.object) {
+            ret.push(...hydrateEmbedded({ ...prop, object: true }, path, dataKey));
+          }
         }
       } else { // ReferenceType.SCALAR
         ret.push(...hydrateScalar(prop, object, path, dataKey));

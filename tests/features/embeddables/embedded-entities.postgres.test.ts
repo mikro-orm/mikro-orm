@@ -172,13 +172,16 @@ describe('embedded entities in postgresql', () => {
   });
 
   test('persist and load', async () => {
-    const user = new User();
-    user.address1 = new Address1('Downing street 10', 10, '123', 'London 1', 'UK 1');
-    user.address2 = new Address2('Downing street 11', 'London 2', 'UK 2');
-    user.address3 = new Address1('Downing street 12', 10, '789', 'London 3', 'UK 3');
-    user.address4 = new Address1('Downing street 13', 10, '10', 'London 4', 'UK 4');
-    user.addresses.push(new Address1('Downing street 13A', 10, '10A', 'London 4A', 'UK 4A'));
-    user.addresses.push(new Address1('Downing street 13B', 10, '10B', 'London 4B', 'UK 4B'));
+    const user = orm.em.create(User, {
+      address1: { street: 'Downing street 10', number: 10, postalCode: '123', city: 'London 1', country: 'UK 1' },
+      address2: { street: 'Downing street 11', city: 'London 2', country: 'UK 2' },
+      address3: { street: 'Downing street 12', number: 10, postalCode: '789', city: 'London 3', country: 'UK 3' },
+      address4: { street: 'Downing street 13', number: 10, postalCode: '10', city: 'London 4', country: 'UK 4' },
+      addresses: [
+        { street: 'Downing street 13A', number: 10, postalCode: '10A', city: 'London 4A', country: 'UK 4A' },
+        { street: 'Downing street 13B', number: 10, postalCode: '10B', city: 'London 4B', country: 'UK 4B' },
+      ],
+    });
 
     const mock = jest.fn();
     const logger = new Logger(mock, ['query']);
