@@ -69,15 +69,15 @@ export class ConfigurationLoader {
   static async registerTsNode(configPath = 'tsconfig.json'): Promise<void> {
     const tsConfigPath = isAbsolute(configPath) ? configPath : join(process.cwd(), configPath);
 
-    const { options: configOptions } = Utils.requireFrom('ts-node', tsConfigPath).register({
+    const { options } = Utils.requireFrom('ts-node', tsConfigPath).register({
       project: tsConfigPath,
       transpileOnly: true,
     }).config;
 
-    if (Object.entries(configOptions?.paths ?? {}).length > 0) {
+    if (Object.entries(options?.paths ?? {}).length > 0) {
       Utils.requireFrom('tsconfig-paths', tsConfigPath).register({
-        baseUrl: configOptions.baseUrl,
-        paths: configOptions.paths,
+        baseUrl: options.baseUrl,
+        paths: options.paths,
       });
     }
   }

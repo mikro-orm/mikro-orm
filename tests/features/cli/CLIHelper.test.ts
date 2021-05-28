@@ -125,10 +125,13 @@ describe('CLIHelper', () => {
     Object.keys(process.env).filter(k => k.startsWith('MIKRO_ORM_')).forEach(k => delete process.env[k]);
   });
 
-  // No clue how we can test/mock this
-  test.skip('registerTsNode works with tsconfig.json with comments', async () => {
+  test('registerTsNode works with tsconfig.json with comments', async () => {
     const requireFromMock = jest.spyOn(Utils, 'requireFrom');
-    requireFromMock.mockImplementation(() => ({ register: jest.fn() }));
+    const register = jest.fn();
+    register.mockReturnValueOnce({ config: { options: {} } });
+    requireFromMock.mockImplementation(() => ({ register }));
+    await expect(ConfigurationLoader.registerTsNode(__dirname + '/../tsconfig.json')).resolves.toBeUndefined();
+    register.mockReturnValue({ config: {} });
     await expect(ConfigurationLoader.registerTsNode(__dirname + '/../tsconfig.json')).resolves.toBeUndefined();
     await expect(ConfigurationLoader.registerTsNode('./tests/tsconfig.json')).resolves.toBeUndefined();
     requireFromMock.mockRestore();
