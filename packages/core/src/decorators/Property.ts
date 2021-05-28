@@ -56,6 +56,8 @@ export type PropertyOptions<T> = {
   unique?: boolean | string;
   lazy?: boolean;
   primary?: boolean;
+  setter?: boolean;
+  getter?: boolean;
   serializedPrimaryKey?: boolean;
   serializer?: (value: any) => any;
   serializedName?: string;
