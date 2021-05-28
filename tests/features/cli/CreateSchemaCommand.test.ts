@@ -49,12 +49,14 @@ describe('CreateSchemaCommand', () => {
     expect(createSchema.mock.calls.length).toBe(0);
     expect(close.mock.calls.length).toBe(0);
     await expect(cmd.handler({ run: true } as any)).resolves.toBeUndefined();
+    expect(seed.mock.calls.length).toBe(0);
     expect(createSchema.mock.calls.length).toBe(1);
     expect(close.mock.calls.length).toBe(1);
 
     expect(getCreateSchemaSQL.mock.calls.length).toBe(0);
     await expect(cmd.handler({ dump: true } as any)).resolves.toBeUndefined();
     expect(getCreateSchemaSQL.mock.calls.length).toBe(1);
+    expect(seed.mock.calls.length).toBe(0);
     expect(close.mock.calls.length).toBe(2);
 
     expect(seed.mock.calls.length).toBe(0);
