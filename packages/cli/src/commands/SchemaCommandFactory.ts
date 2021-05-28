@@ -53,7 +53,6 @@ export class SchemaCommandFactory {
       args.option('seed', {
         type: 'string',
         desc: 'Allows to seed the database on create or drop and recreate',
-        default: '',
       });
     }
 
