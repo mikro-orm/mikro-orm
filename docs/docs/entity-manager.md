@@ -137,7 +137,12 @@ const user1 = await orm.em.findOne(User, 1);
 
 As you can see in the fifth example, one can also use operators like `$and`, `$or`, `$gte`, 
 `$gt`, `$lte`, `$lt`, `$in`, `$nin`, `$eq`, `$ne`, `$like`, `$re`. More about that can be found in 
-[Query Conditions](query-conditions.md) section. 
+[Query Conditions](query-conditions.md) section.
+
+#### Using custom FilterQuery DTO
+If you decide to abstract the filter options in your own object then you might run into the problem that the find option does not return the results you'd expect. This is due to the fact that the FilterQuery should be provided as a POJO (Plain Old JS Object `{}`).
+
+If you want to provide your own FilterQuery DTO, then your DTO class should extend the `PlainObject` class. This way MikroORM knows it should be treated as such.
 
 #### Mitigating `Type instantiation is excessively deep and possibly infinite.ts(2589)` error
 
