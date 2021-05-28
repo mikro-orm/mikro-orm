@@ -95,7 +95,7 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN) {
     dbName: `mikro_orm_test`,
     baseDir: BASE_DIR,
     type: 'postgresql',
-    debug: ['query'],
+    debug: ['query', 'query-params'],
     forceUtcTimezone: true,
     autoJoinOneToOneOwner: false,
     logger: i => i,

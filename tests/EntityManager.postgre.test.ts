@@ -474,6 +474,23 @@ describe('EntityManagerPostgre', () => {
     expect(b2.nameWithSpace).toBe('456');
   });
 
+  test('unsetting 1:1 inverse (GH #1872)', async () => {
+    const author = orm.em.create(Author2, { name: 'a', email: 'e' });
+    const fb1 = orm.em.create(Test2, { name: 'fb 1' });
+    const fb2 = orm.em.create(Test2, { name: 'fb 2' });
+    const fz1 = orm.em.create(Book2, { title: 'fb 1', author });
+    const fz2 = orm.em.create(Book2, { title: 'fb 2', author });
+    fz1.test = fb1;
+    await orm.em.persistAndFlush([fb1, fb2, fz1, fz2]);
+
+    fz1.test = undefined;
+    await orm.em.flush();
+    orm.em.clear();
+
+    const fz11 = await orm.em.findOneOrFail(Book2, fz1, ['test']);
+    expect(fz11.test).toBeNull();
+  });
+
   test('json properties respect field names', async () => {
     const bar = new FooBar2();
     bar.name = 'b';
