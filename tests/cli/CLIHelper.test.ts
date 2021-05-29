@@ -75,14 +75,6 @@ describe('CLIHelper', () => {
     requireFromSpy.mockRestore();
   });
 
-  test('gets ORM configuration [no mikro-orm.config]', async () => {
-    await expect(CLIHelper.getConfiguration()).rejects.toThrowError(`MikroORM config file not found in ['./mikro-orm.config.js']`);
-
-    process.env.MIKRO_ORM_ENV = __dirname + '/../mikro-orm.env';
-    await expect(CLIHelper.getConfiguration()).resolves.toBeInstanceOf(Configuration);
-    Object.keys(process.env).filter(k => k.startsWith('MIKRO_ORM_')).forEach(k => delete process.env[k]);
-  });
-
   test('gets ORM configuration [no package.json]', async () => {
     const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
     pathExistsMock.mockImplementation(async path => (path as string).endsWith('mikro-orm.config.js'));
