@@ -2,13 +2,13 @@
 
 exports[`EntityGenerator generate entities from schema [mysql]: mysql-entity-dump 1`] = `
 Array [
-  "import { Cascade, Entity, OneToOne, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
 @Entity()
 export class Address2 {
 
-  @OneToOne({ entity: () => Author2, cascade: [Cascade.ALL], primary: true })
+  @OneToOne({ entity: () => Author2, onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
   author!: Author2;
 
   @Property({ length: 255 })
@@ -16,7 +16,7 @@ export class Address2 {
 
 }
 ",
-  "import { Cascade, Entity, Index, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 @Entity()
@@ -63,38 +63,38 @@ export class Author2 {
   @Property({ columnType: 'time', nullable: true })
   bornTime?: string;
 
-  @ManyToOne({ entity: () => Book2, cascade: [Cascade.REMOVE], nullable: true })
+  @ManyToOne({ entity: () => Book2, onDelete: 'cascade', nullable: true })
   favouriteBook?: Book2;
 
-  @ManyToOne({ entity: () => Author2, nullable: true })
+  @ManyToOne({ entity: () => Author2, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
   favouriteAuthor?: Author2;
 
 }
 ",
-  "import { Cascade, Entity, ManyToOne } from '@mikro-orm/core';
+  "import { Entity, ManyToOne } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
 @Entity({ collection: 'author2_following' })
 export class Author2Following {
 
-  @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', cascade: [Cascade.ALL], primary: true })
+  @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
   author21!: Author2;
 
-  @ManyToOne({ entity: () => Author2, fieldName: 'author2_2_id', cascade: [Cascade.ALL], primary: true })
+  @ManyToOne({ entity: () => Author2, fieldName: 'author2_2_id', onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
   author22!: Author2;
 
 }
 ",
-  "import { Cascade, Entity, ManyToOne } from '@mikro-orm/core';
+  "import { Entity, ManyToOne } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
 @Entity()
 export class AuthorToFriend {
 
-  @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', cascade: [Cascade.ALL], primary: true })
+  @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
   author21!: Author2;
 
-  @ManyToOne({ entity: () => Author2, fieldName: 'author2_2_id', cascade: [Cascade.ALL], primary: true })
+  @ManyToOne({ entity: () => Author2, fieldName: 'author2_2_id', onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
   author22!: Author2;
 
 }
@@ -120,10 +120,10 @@ export class BaseUser2 {
   @Property({ length: 255, nullable: true })
   ownerProp?: string;
 
-  @ManyToOne({ entity: () => BaseUser2, nullable: true })
+  @ManyToOne({ entity: () => BaseUser2, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
   favouriteEmployee?: BaseUser2;
 
-  @OneToOne({ entity: () => BaseUser2, nullable: true })
+  @OneToOne({ entity: () => BaseUser2, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
   favouriteManager?: BaseUser2;
 
   @Property({ nullable: true })
@@ -134,7 +134,7 @@ export class BaseUser2 {
 
 }
 ",
-  "import { Cascade, Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { Publisher2 } from './Publisher2';
 
@@ -162,10 +162,10 @@ export class Book2 {
   @Property({ columnType: 'json', nullable: true })
   meta?: any;
 
-  @ManyToOne({ entity: () => Author2, cascade: [] })
+  @ManyToOne({ entity: () => Author2 })
   author!: Author2;
 
-  @ManyToOne({ entity: () => Publisher2, cascade: [Cascade.ALL], nullable: true })
+  @ManyToOne({ entity: () => Publisher2, onUpdateIntegrity: 'cascade', onDelete: 'cascade', nullable: true })
   publisher?: Publisher2;
 
   @Property({ length: 255, nullable: true, defaultRaw: \`lol\` })
@@ -173,7 +173,7 @@ export class Book2 {
 
 }
 ",
-  "import { Cascade, Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { BookTag2 } from './BookTag2';
 
@@ -183,10 +183,10 @@ export class Book2Tags {
   @PrimaryKey()
   order!: number;
 
-  @ManyToOne({ entity: () => Book2, cascade: [Cascade.ALL] })
+  @ManyToOne({ entity: () => Book2, onUpdateIntegrity: 'cascade', onDelete: 'cascade' })
   book2!: Book2;
 
-  @ManyToOne({ entity: () => BookTag2, cascade: [Cascade.ALL] })
+  @ManyToOne({ entity: () => BookTag2, onUpdateIntegrity: 'cascade', onDelete: 'cascade' })
   bookTag2!: BookTag2;
 
 }
@@ -204,17 +204,17 @@ export class BookTag2 {
 
 }
 ",
-  "import { Cascade, Entity, ManyToOne } from '@mikro-orm/core';
+  "import { Entity, ManyToOne } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { BookTag2 } from './BookTag2';
 
 @Entity()
 export class BookToTagUnordered {
 
-  @ManyToOne({ entity: () => Book2, cascade: [Cascade.ALL], primary: true })
+  @ManyToOne({ entity: () => Book2, onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
   book2!: Book2;
 
-  @ManyToOne({ entity: () => BookTag2, cascade: [Cascade.ALL], primary: true })
+  @ManyToOne({ entity: () => BookTag2, onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
   bookTag2!: BookTag2;
 
 }
@@ -249,7 +249,7 @@ export class CarOwner2 {
   @Property({ length: 255 })
   name!: string;
 
-  @ManyToOne({ entity: () => Car2 })
+  @ManyToOne({ entity: () => Car2, onUpdateIntegrity: 'cascade' })
   car!: Car2;
 
 }
@@ -263,7 +263,7 @@ export class Configuration2 {
   @PrimaryKey({ length: 255 })
   property!: string;
 
-  @ManyToOne({ entity: () => Test2, primary: true })
+  @ManyToOne({ entity: () => Test2, onUpdateIntegrity: 'cascade', primary: true })
   test!: Test2;
 
   @Property({ length: 255 })
@@ -296,10 +296,10 @@ export class FooBar2 {
   @Property({ fieldName: 'name with space', length: 255, nullable: true })
   nameWithSpace?: string;
 
-  @OneToOne({ entity: () => FooBaz2, nullable: true })
+  @OneToOne({ entity: () => FooBaz2, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
   baz?: FooBaz2;
 
-  @OneToOne({ entity: () => FooBar2, nullable: true })
+  @OneToOne({ entity: () => FooBar2, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
   fooBar?: FooBar2;
 
   @Property({ defaultRaw: \`CURRENT_TIMESTAMP\` })
@@ -339,10 +339,10 @@ import { FooBaz2 } from './FooBaz2';
 @Entity()
 export class FooParam2 {
 
-  @ManyToOne({ entity: () => FooBar2, primary: true })
+  @ManyToOne({ entity: () => FooBar2, onUpdateIntegrity: 'cascade', primary: true })
   bar!: FooBar2;
 
-  @ManyToOne({ entity: () => FooBaz2, primary: true })
+  @ManyToOne({ entity: () => FooBaz2, onUpdateIntegrity: 'cascade', primary: true })
   baz!: FooBaz2;
 
   @Property({ length: 255 })
@@ -387,7 +387,7 @@ export class Publisher2 {
 
 }
 ",
-  "import { Cascade, Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
 
@@ -397,10 +397,10 @@ export class Publisher2Tests {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Publisher2, cascade: [Cascade.ALL] })
+  @ManyToOne({ entity: () => Publisher2, onUpdateIntegrity: 'cascade', onDelete: 'cascade' })
   publisher2!: Publisher2;
 
-  @ManyToOne({ entity: () => Test2, cascade: [Cascade.ALL] })
+  @ManyToOne({ entity: () => Test2, onUpdateIntegrity: 'cascade', onDelete: 'cascade' })
   test2!: Test2;
 
 }
@@ -421,7 +421,7 @@ export class Sandwich {
 
 }
 ",
-  "import { Cascade, Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
 
@@ -434,16 +434,16 @@ export class Test2 {
   @Property({ length: 255, nullable: true })
   name?: string;
 
-  @OneToOne({ entity: () => Book2, cascade: [], nullable: true })
+  @OneToOne({ entity: () => Book2, onDelete: 'set null', nullable: true })
   book?: Book2;
 
-  @ManyToOne({ entity: () => Test2, nullable: true })
+  @ManyToOne({ entity: () => Test2, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
   parent?: Test2;
 
   @Property()
   version: number = 1;
 
-  @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', nullable: true })
+  @OneToOne({ entity: () => FooBar2, fieldName: 'foo___bar', onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
   fooBar?: FooBar2;
 
   @Property({ fieldName: 'foo___baz', nullable: true })
@@ -451,17 +451,17 @@ export class Test2 {
 
 }
 ",
-  "import { Cascade, Entity, ManyToOne } from '@mikro-orm/core';
+  "import { Entity, ManyToOne } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { Test2 } from './Test2';
 
 @Entity({ collection: 'test2_bars' })
 export class Test2Bars {
 
-  @ManyToOne({ entity: () => Test2, cascade: [Cascade.ALL], primary: true })
+  @ManyToOne({ entity: () => Test2, onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
   test2!: Test2;
 
-  @ManyToOne({ entity: () => FooBar2, cascade: [Cascade.ALL], primary: true })
+  @ManyToOne({ entity: () => FooBar2, onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
   fooBar2!: FooBar2;
 
 }
@@ -481,37 +481,37 @@ export class User2 {
   @Property({ nullable: true })
   foo?: number;
 
-  @OneToOne({ entity: () => Car2, nullable: true })
+  @OneToOne({ entity: () => Car2, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
   favouriteCar?: Car2;
 
 }
 ",
-  "import { Cascade, Entity, ManyToOne } from '@mikro-orm/core';
+  "import { Entity, ManyToOne } from '@mikro-orm/core';
 import { Car2 } from './Car2';
 import { User2 } from './User2';
 
 @Entity({ collection: 'user2_cars' })
 export class User2Cars {
 
-  @ManyToOne({ entity: () => User2, cascade: [Cascade.ALL], primary: true })
+  @ManyToOne({ entity: () => User2, onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
   user2!: User2;
 
-  @ManyToOne({ entity: () => Car2, cascade: [Cascade.ALL], primary: true })
+  @ManyToOne({ entity: () => Car2, onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
   car2!: Car2;
 
 }
 ",
-  "import { Cascade, Entity, ManyToOne } from '@mikro-orm/core';
+  "import { Entity, ManyToOne } from '@mikro-orm/core';
 import { Sandwich } from './Sandwich';
 import { User2 } from './User2';
 
 @Entity({ collection: 'user2_sandwiches' })
 export class User2Sandwiches {
 
-  @ManyToOne({ entity: () => User2, cascade: [Cascade.ALL], primary: true })
+  @ManyToOne({ entity: () => User2, onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
   user2!: User2;
 
-  @ManyToOne({ entity: () => Sandwich, cascade: [Cascade.ALL], primary: true })
+  @ManyToOne({ entity: () => Sandwich, onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
   sandwich!: Sandwich;
 
 }
@@ -521,13 +521,13 @@ export class User2Sandwiches {
 
 exports[`EntityGenerator generate entities from schema [postgres]: postgres-entity-dump 1`] = `
 Array [
-  "import { Cascade, Entity, OneToOne, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
 @Entity()
 export class Address2 {
 
-  @OneToOne({ entity: () => Author2, cascade: [Cascade.ALL], primary: true })
+  @OneToOne({ entity: () => Author2, onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
   author!: Author2;
 
   @Property({ length: 255 })
@@ -535,7 +535,7 @@ export class Address2 {
 
 }
 ",
-  "import { Cascade, Entity, Index, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 @Entity()
@@ -582,43 +582,43 @@ export class Author2 {
   @Property({ columnType: 'time', nullable: true })
   bornTime?: string;
 
-  @ManyToOne({ entity: () => Book2, cascade: [Cascade.REMOVE], nullable: true })
+  @ManyToOne({ entity: () => Book2, onDelete: 'cascade', nullable: true })
   favouriteBook?: Book2;
 
-  @ManyToOne({ entity: () => Author2, nullable: true })
+  @ManyToOne({ entity: () => Author2, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
   favouriteAuthor?: Author2;
 
 }
 ",
-  "import { Cascade, Entity, ManyToOne } from '@mikro-orm/core';
+  "import { Entity, ManyToOne } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
 @Entity({ collection: 'author2_following' })
 export class Author2Following {
 
-  @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', cascade: [Cascade.ALL], primary: true })
+  @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
   author21!: Author2;
 
-  @ManyToOne({ entity: () => Author2, fieldName: 'author2_2_id', cascade: [Cascade.ALL], primary: true })
+  @ManyToOne({ entity: () => Author2, fieldName: 'author2_2_id', onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
   author22!: Author2;
 
 }
 ",
-  "import { Cascade, Entity, ManyToOne } from '@mikro-orm/core';
+  "import { Entity, ManyToOne } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
 @Entity()
 export class AuthorToFriend {
 
-  @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', cascade: [Cascade.ALL], primary: true })
+  @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
   author21!: Author2;
 
-  @ManyToOne({ entity: () => Author2, fieldName: 'author2_2_id', cascade: [Cascade.ALL], primary: true })
+  @ManyToOne({ entity: () => Author2, fieldName: 'author2_2_id', onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
   author22!: Author2;
 
 }
 ",
-  "import { Cascade, Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { Publisher2 } from './Publisher2';
 
@@ -646,10 +646,10 @@ export class Book2 {
   @Property({ columnType: 'jsonb', nullable: true })
   meta?: any;
 
-  @ManyToOne({ entity: () => Author2, cascade: [] })
+  @ManyToOne({ entity: () => Author2 })
   author!: Author2;
 
-  @ManyToOne({ entity: () => Publisher2, cascade: [Cascade.ALL], nullable: true })
+  @ManyToOne({ entity: () => Publisher2, onUpdateIntegrity: 'cascade', onDelete: 'cascade', nullable: true })
   publisher?: Publisher2;
 
   @Property({ length: 255, nullable: true, default: 'lol' })
@@ -657,7 +657,7 @@ export class Book2 {
 
 }
 ",
-  "import { Cascade, Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { BookTag2 } from './BookTag2';
 
@@ -667,10 +667,10 @@ export class Book2Tags {
   @PrimaryKey()
   order!: number;
 
-  @ManyToOne({ entity: () => Book2, cascade: [Cascade.ALL] })
+  @ManyToOne({ entity: () => Book2, onUpdateIntegrity: 'cascade', onDelete: 'cascade' })
   book2!: Book2;
 
-  @ManyToOne({ entity: () => BookTag2, cascade: [Cascade.ALL] })
+  @ManyToOne({ entity: () => BookTag2, onUpdateIntegrity: 'cascade', onDelete: 'cascade' })
   bookTag2!: BookTag2;
 
 }
@@ -688,17 +688,17 @@ export class BookTag2 {
 
 }
 ",
-  "import { Cascade, Entity, ManyToOne } from '@mikro-orm/core';
+  "import { Entity, ManyToOne } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { BookTag2 } from './BookTag2';
 
 @Entity()
 export class BookToTagUnordered {
 
-  @ManyToOne({ entity: () => Book2, cascade: [Cascade.ALL], primary: true })
+  @ManyToOne({ entity: () => Book2, onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
   book2!: Book2;
 
-  @ManyToOne({ entity: () => BookTag2, cascade: [Cascade.ALL], primary: true })
+  @ManyToOne({ entity: () => BookTag2, onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
   bookTag2!: BookTag2;
 
 }
@@ -712,7 +712,7 @@ export class Configuration2 {
   @PrimaryKey({ length: 255 })
   property!: string;
 
-  @ManyToOne({ entity: () => Test2, primary: true })
+  @ManyToOne({ entity: () => Test2, onUpdateIntegrity: 'cascade', primary: true })
   test!: Test2;
 
   @Property({ length: 255 })
@@ -735,10 +735,10 @@ export class FooBar2 {
   @Property({ fieldName: 'name with space', length: 255, nullable: true })
   nameWithSpace?: string;
 
-  @OneToOne({ entity: () => FooBaz2, nullable: true })
+  @OneToOne({ entity: () => FooBaz2, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
   baz?: FooBaz2;
 
-  @OneToOne({ entity: () => FooBar2, nullable: true })
+  @OneToOne({ entity: () => FooBar2, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
   fooBar?: FooBar2;
 
   @Property({ defaultRaw: \`current_timestamp(0)\` })
@@ -778,10 +778,10 @@ import { FooBaz2 } from './FooBaz2';
 @Entity()
 export class FooParam2 {
 
-  @ManyToOne({ entity: () => FooBar2, primary: true })
+  @ManyToOne({ entity: () => FooBar2, onUpdateIntegrity: 'cascade', primary: true })
   bar!: FooBar2;
 
-  @ManyToOne({ entity: () => FooBaz2, primary: true })
+  @ManyToOne({ entity: () => FooBaz2, onUpdateIntegrity: 'cascade', primary: true })
   baz!: FooBaz2;
 
   @Property({ length: 255 })
@@ -839,7 +839,7 @@ export class Publisher2 {
 
 }
 ",
-  "import { Cascade, Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
 
@@ -849,15 +849,15 @@ export class Publisher2Tests {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Publisher2, cascade: [Cascade.ALL] })
+  @ManyToOne({ entity: () => Publisher2, onUpdateIntegrity: 'cascade', onDelete: 'cascade' })
   publisher2!: Publisher2;
 
-  @ManyToOne({ entity: () => Test2, cascade: [Cascade.ALL] })
+  @ManyToOne({ entity: () => Test2, onUpdateIntegrity: 'cascade', onDelete: 'cascade' })
   test2!: Test2;
 
 }
 ",
-  "import { Cascade, Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 @Entity()
@@ -869,10 +869,10 @@ export class Test2 {
   @Property({ length: 255, nullable: true })
   name?: string;
 
-  @OneToOne({ entity: () => Book2, cascade: [], nullable: true })
+  @OneToOne({ entity: () => Book2, onDelete: 'set null', nullable: true })
   book?: Book2;
 
-  @ManyToOne({ entity: () => Test2, nullable: true })
+  @ManyToOne({ entity: () => Test2, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
   parent?: Test2;
 
   @Property()
@@ -883,17 +883,17 @@ export class Test2 {
 
 }
 ",
-  "import { Cascade, Entity, ManyToOne } from '@mikro-orm/core';
+  "import { Entity, ManyToOne } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { Test2 } from './Test2';
 
 @Entity({ collection: 'test2_bars' })
 export class Test2Bars {
 
-  @ManyToOne({ entity: () => Test2, cascade: [Cascade.ALL], primary: true })
+  @ManyToOne({ entity: () => Test2, onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
   test2!: Test2;
 
-  @ManyToOne({ entity: () => FooBar2, cascade: [Cascade.ALL], primary: true })
+  @ManyToOne({ entity: () => FooBar2, onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
   fooBar2!: FooBar2;
 
 }
@@ -941,7 +941,7 @@ export class Author3 {
   @Property({ columnType: 'time(3)', nullable: true })
   bornTime?: string;
 
-  @ManyToOne({ entity: () => Book3, nullable: true, index: 'author3_favourite_book_idx' })
+  @ManyToOne({ entity: () => Book3, onUpdateIntegrity: 'cascade', nullable: true, index: 'author3_favourite_book_idx' })
   favouriteBook?: Book3;
 
 }
@@ -965,15 +965,15 @@ export class Book3 {
   @Property({ default: '' })
   title!: string;
 
-  @ManyToOne({ entity: () => Author3 })
+  @ManyToOne({ entity: () => Author3, onUpdateIntegrity: 'cascade' })
   author!: Author3;
 
-  @ManyToOne({ entity: () => Publisher3 })
+  @ManyToOne({ entity: () => Publisher3, onUpdateIntegrity: 'cascade' })
   publisher!: Publisher3;
 
 }
 ",
-  "import { Cascade, Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
 import { Book3 } from './Book3';
 import { BookTag3 } from './BookTag3';
 
@@ -983,10 +983,10 @@ export class Book3Tags {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Book3, cascade: [Cascade.ALL] })
+  @ManyToOne({ entity: () => Book3, onUpdateIntegrity: 'cascade', onDelete: 'cascade' })
   book3!: Book3;
 
-  @ManyToOne({ entity: () => BookTag3, cascade: [Cascade.ALL] })
+  @ManyToOne({ entity: () => BookTag3, onUpdateIntegrity: 'cascade', onDelete: 'cascade' })
   bookTag3!: BookTag3;
 
 }
@@ -1023,7 +1023,7 @@ export class Publisher3 {
 
 }
 ",
-  "import { Cascade, Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
 import { Publisher3 } from './Publisher3';
 import { Test3 } from './Test3';
 
@@ -1033,10 +1033,10 @@ export class Publisher3Tests {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Publisher3, cascade: [Cascade.ALL] })
+  @ManyToOne({ entity: () => Publisher3, onUpdateIntegrity: 'cascade', onDelete: 'cascade' })
   publisher3!: Publisher3;
 
-  @ManyToOne({ entity: () => Test3, cascade: [Cascade.ALL] })
+  @ManyToOne({ entity: () => Test3, onUpdateIntegrity: 'cascade', onDelete: 'cascade' })
   test3!: Test3;
 
 }
