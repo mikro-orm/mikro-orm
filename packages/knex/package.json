@@ -64,6 +64,8 @@
   },
   "peerDependencies": {
     "@mikro-orm/core": "^4.0.0",
+    "@mikro-orm/entity-generator": "^4.0.0",
+    "@mikro-orm/migrations": "^4.0.0",
     "mssql": "^7.0.0",
     "mysql": "^2.18.1",
     "mysql2": "^2.1.0",
@@ -71,6 +73,12 @@
     "sqlite3": "^5.0.0"
   },
   "peerDependenciesMeta": {
+    "@mikro-orm/entity-generator": {
+      "optional": true
+    },
+    "@mikro-orm/migrations": {
+      "optional": true
+    },
     "mssql": {
       "optional": true
     },
