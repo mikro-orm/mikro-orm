@@ -51,7 +51,7 @@ export class MongoConnection extends Connection {
   getConnectionOptions(): MongoClientOptions & ConnectionConfig {
     const ret: MongoClientOptions = { useNewUrlParser: true, useUnifiedTopology: true };
     const user = this.config.get('user');
-    const password = this.config.get('password');
+    const password = this.config.get('password') as string;
 
     if (user && password) {
       ret.auth = { user, password };
