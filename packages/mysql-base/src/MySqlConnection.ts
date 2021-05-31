@@ -11,7 +11,7 @@ export class MySqlConnection extends AbstractSqlConnection {
   }
 
   getConnectionOptions(): Knex.MySqlConnectionConfig {
-    const ret: Knex.MySqlConnectionConfig = super.getConnectionOptions();
+    const ret = super.getConnectionOptions() as Knex.MySqlConnectionConfig;
 
     if (this.config.get('multipleStatements')) {
       ret.multipleStatements = this.config.get('multipleStatements');

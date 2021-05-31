@@ -144,11 +144,33 @@ export abstract class AbstractSqlConnection extends Connection {
   }
 
   protected getKnexOptions(type: string): Knex.Config {
-    return Utils.merge({
+    const config = Utils.merge({
       client: type,
       connection: this.getConnectionOptions(),
       pool: this.config.get('pool'),
     }, this.config.get('driverOptions'));
+    const options = config.connection as ConnectionOptions;
+    const password = options.password;
+
+    if (!(password instanceof Function)) {
+      return config;
+    }
+
+    config.connection = async () => {
+      const pw = await password();
+
+      if (typeof pw === 'string') {
+        return { ...options, password: pw };
+      }
+
+      return {
+        ...options,
+        password: pw.password,
+        expirationChecker: pw.expirationChecker,
+      };
+    };
+
+    return config;
   }
 
   private getSql(query: string, formatted: string): string {

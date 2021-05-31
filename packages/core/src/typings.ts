@@ -517,3 +517,5 @@ export interface Seeder {
 
 export abstract class PlainObject {
 }
+
+export type MaybePromise<T> = T | Promise<T>;

@@ -3,7 +3,7 @@ import { inspect } from 'util';
 import { NamingStrategy } from '../naming-strategy';
 import { CacheAdapter, FileCacheAdapter, NullCacheAdapter } from '../cache';
 import { EntityRepository } from '../entity';
-import { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, FilterDef, Highlighter, HydratorConstructor, IHydrator, IPrimaryKey, MigrationObject } from '../typings';
+import { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, FilterDef, Highlighter, HydratorConstructor, IHydrator, IPrimaryKey, MaybePromise, MigrationObject } from '../typings';
 import { ObjectHydrator } from '../hydration';
 import { NullHighlighter } from '../utils/NullHighlighter';
 import { Logger, LoggerNamespace } from '../utils/Logger';
@@ -287,6 +287,11 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
 }
 
+export interface DynamicPassword {
+  password: string;
+  expirationChecker?: () => boolean;
+}
+
 export interface ConnectionOptions {
   dbName?: string;
   schema?: string;
@@ -295,7 +300,7 @@ export interface ConnectionOptions {
   host?: string;
   port?: number;
   user?: string;
-  password?: string;
+  password?: string | (() => MaybePromise<string> | MaybePromise<DynamicPassword>);
   charset?: string;
   collate?: string;
   multipleStatements?: boolean; // for mysql driver

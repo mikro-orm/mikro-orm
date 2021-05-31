@@ -1,9 +1,9 @@
 import { URL } from 'url';
 import c from 'ansi-colors';
 
-import { Configuration, ConnectionOptions, Utils } from '../utils';
+import { Configuration, ConnectionOptions, DynamicPassword, Utils } from '../utils';
 import { MetadataStorage } from '../metadata';
-import { Dictionary } from '../typings';
+import { Dictionary, MaybePromise } from '../typings';
 import { Platform } from '../platforms/Platform';
 import { TransactionEventBroadcaster } from '../events/TransactionEventBroadcaster';
 import { IsolationLevel } from '../enums';
@@ -139,7 +139,7 @@ export interface ConnectionConfig {
   host?: string;
   port?: number;
   user?: string;
-  password?: string;
+  password?: string | (() => MaybePromise<string> | MaybePromise<DynamicPassword>);
   database?: string;
 }
 
