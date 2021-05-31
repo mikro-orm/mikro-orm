@@ -440,14 +440,14 @@
   dependencies:
     chalk "^4.0.0"
 
-"@es-joy/jsdoccomment@^0.7.2":
-  version "0.7.2"
-  resolved "https://registry.yarnpkg.com/@es-joy/jsdoccomment/-/jsdoccomment-0.7.2.tgz#5c0802982b28e7dcd381fbb1f52e6fd088525a31"
-  integrity sha512-i5p0VgxeCXbf5aPLPY9s9Fz6K5BkzYdbRCisw/vEY/FXAxUJ8SiAifPwkFUm0CJrmZ8tFBGW8bUtM7wiE4KTIA==
+"@es-joy/jsdoccomment@^0.8.0-alpha.2":
+  version "0.8.0-alpha.2"
+  resolved "https://registry.yarnpkg.com/@es-joy/jsdoccomment/-/jsdoccomment-0.8.0-alpha.2.tgz#78585147d8e6231270374dae528fe5b7b5587b5a"
+  integrity sha512-fjRY13Bh8sxDZkzO27U2R9L6xFqkh5fAbHuMGvGLXLfrTes8nTTMyOi6wIPt+CG0XPAxEUge8cDjhG+0aag6ew==
   dependencies:
     comment-parser "^1.1.5"
     esquery "^1.4.0"
-    jsdoctypeparser "^9.0.0"
+    jsdoc-type-pratt-parser "1.0.0-alpha.23"
 
 "@eslint/eslintrc@^0.4.1":
   version "0.4.1"
@@ -3384,18 +3384,18 @@ escodegen@^2.0.0:
   optionalDependencies:
     source-map "~0.6.1"
 
-eslint-plugin-jsdoc@35.0.0:
-  version "35.0.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-jsdoc/-/eslint-plugin-jsdoc-35.0.0.tgz#12634f12d1882a4f77b49aba2c4a17a7bc88cfcd"
-  integrity sha512-n92EO6g84qzjF4Lyvg+hDouMQTRHCKvW0hRobGRza0aqbG9fmmlS4p1x8cvPPAc0P87TmahMZnrP0F7hPOcAoQ==
+eslint-plugin-jsdoc@35.1.0:
+  version "35.1.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-jsdoc/-/eslint-plugin-jsdoc-35.1.0.tgz#7a28bd53b2dfec2ab0e6eb8ee59dfabf40449f04"
+  integrity sha512-XfLaI9kzXW1mihqmeTWH+fn5Zw+sbX48Jcmwp9dftwqegj6yT/3FNnuIxmM5VyLX3AdoBNDc8p4fje7/ZxVQyg==
   dependencies:
-    "@es-joy/jsdoccomment" "^0.7.2"
+    "@es-joy/jsdoccomment" "^0.8.0-alpha.2"
     comment-parser "1.1.5"
     debug "^4.3.1"
     esquery "^1.4.0"
-    jsdoctypeparser "^9.0.0"
+    jsdoc-type-pratt-parser "^1.0.0"
     lodash "^4.17.21"
-    regextras "^0.7.1"
+    regextras "^0.8.0"
     semver "^7.3.5"
     spdx-expression-parse "^3.0.1"
 
@@ -5204,10 +5204,15 @@ jsbn@~0.1.0:
   resolved "https://registry.yarnpkg.com/jsbn/-/jsbn-0.1.1.tgz#a5e654c2e5a2deb5f201d96cefbca80c0ef2f513"
   integrity sha1-peZUwuWi3rXyAdls77yoDA7y9RM=
 
-jsdoctypeparser@^9.0.0:
-  version "9.0.0"
-  resolved "https://registry.yarnpkg.com/jsdoctypeparser/-/jsdoctypeparser-9.0.0.tgz#8c97e2fb69315eb274b0f01377eaa5c940bd7b26"
-  integrity sha512-jrTA2jJIL6/DAEILBEh2/w9QxCuwmvNXIry39Ay/HVfhE3o2yVV0U44blYkqdHA/OKloJEqvJy0xU+GSdE2SIw==
+jsdoc-type-pratt-parser@1.0.0-alpha.23:
+  version "1.0.0-alpha.23"
+  resolved "https://registry.yarnpkg.com/jsdoc-type-pratt-parser/-/jsdoc-type-pratt-parser-1.0.0-alpha.23.tgz#01c232d92b99b7e7ef52235ab8c9115137426639"
+  integrity sha512-COtimMd97eo5W0h6R9ISFj9ufg/9EiAzVAeQpKBJ1xJs/x8znWE155HGBDR2rwOuZsCes1gBXGmFVfvRZxGrhg==
+
+jsdoc-type-pratt-parser@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/jsdoc-type-pratt-parser/-/jsdoc-type-pratt-parser-1.0.0.tgz#a35e76edcc70fd4c399d3e7cbcd570c8fadd4da1"
+  integrity sha512-aFubex6uQ7gdoU173Sqdw9Abm6EOCYDhXWhP7YlS201Z+e5Ik38AiDHlKMqoqd/WiiU3/aWz/NHV5X8GQipOTQ==
 
 jsdom@^16.4.0:
   version "16.5.3"
@@ -7326,10 +7331,10 @@ regexpp@^3.0.0, regexpp@^3.1.0:
   resolved "https://registry.yarnpkg.com/regexpp/-/regexpp-3.1.0.tgz#206d0ad0a5648cffbdb8ae46438f3dc51c9f78e2"
   integrity sha512-ZOIzd8yVsQQA7j8GCSlPGXwg5PfmA1mrq0JP4nGhh54LaKN3xdai/vHUDu74pKwV8OxseMS65u2NImosQcSD0Q==
 
-regextras@^0.7.1:
-  version "0.7.1"
-  resolved "https://registry.yarnpkg.com/regextras/-/regextras-0.7.1.tgz#be95719d5f43f9ef0b9fa07ad89b7c606995a3b2"
-  integrity sha512-9YXf6xtW+qzQ+hcMQXx95MOvfqXFgsKDZodX3qZB0x2n5Z94ioetIITsBtvJbiOyxa/6s9AtyweBLCdPmPko/w==
+regextras@^0.8.0:
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/regextras/-/regextras-0.8.0.tgz#ec0f99853d4912839321172f608b544814b02217"
+  integrity sha512-k519uI04Z3SaY0fLX843MRXnDeG2+vHOFsyhiPZvNLe7r8rD2YNRjq4BQLZZ0oAr2NrtvZlICsXysGNFPGa3CQ==
 
 remove-trailing-separator@^1.0.1:
   version "1.1.0"
