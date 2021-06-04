@@ -240,16 +240,11 @@ export class UnitOfWork {
       } else {
         await this.persistToDatabase(groups, this.em.getTransactionContext());
       }
-
+      this.resetTransaction(oldTx);
       await this.eventManager.dispatchEvent(EventType.afterFlush, { em: this.em, uow: this });
     } finally {
       this.postCommitCleanup();
-
-      if (oldTx) {
-        this.em.setTransactionContext(oldTx);
-      } else {
-        this.em.resetTransactionContext();
-      }
+      this.resetTransaction(oldTx);
     }
   }
 
@@ -724,6 +719,14 @@ export class UnitOfWork {
     }
 
     return calc.sort();
+  }
+
+  private resetTransaction(oldTx: Transaction): void {
+    if (oldTx) {
+      this.em.setTransactionContext(oldTx);
+    } else {
+      this.em.resetTransactionContext();
+    }
   }
 
 }
