@@ -292,12 +292,21 @@ export class EntityLoader {
 
   private async extractChildCondition<T>(options: Required<EntityLoaderOptions<T>>, prop: EntityProperty<T>, filters = false) {
     const subCond = Utils.isPlainObject(options.where[prop.name as string]) ? options.where[prop.name as string] : {};
+    const meta2 = this.metadata.find(prop.type)!;
+    const pk = Utils.getPrimaryKeyHash(meta2.primaryKeys);
 
     ['$and', '$or'].forEach(op => {
       if (options.where[op]) {
         const child = options.where[op]
           .map((cond: Dictionary) => cond[prop.name])
-          .filter((sub: unknown) => sub != null && !(Utils.isPlainObject(sub) && Object.keys(sub).every(key => Utils.isOperator(key, false))));
+          .filter((sub: unknown) => sub != null && !(Utils.isPlainObject(sub) && Object.keys(sub).every(key => Utils.isOperator(key, false))))
+          .map((cond: Dictionary) => {
+            if (Utils.isPrimaryKey(cond)) {
+              return { [pk]: cond };
+            }
+
+            return cond;
+          });
 
         if (child.length > 0) {
           subCond[op] = child;
@@ -306,11 +315,9 @@ export class EntityLoader {
     });
 
     const operators = Object.keys(subCond).filter(key => Utils.isOperator(key, false));
-    const meta2 = this.metadata.find(prop.type)!;
 
     if (operators.length > 0) {
       operators.forEach(op => {
-        const pk = Utils.getPrimaryKeyHash(meta2.primaryKeys);
         /* istanbul ignore next */
         subCond[pk] = subCond[pk] ?? {};
         subCond[pk][op] = subCond[op];
