@@ -295,9 +295,13 @@ export class EntityLoader {
 
     ['$and', '$or'].forEach(op => {
       if (options.where[op]) {
-        subCond[op] = options.where[op]
+        const child = options.where[op]
           .map((cond: Dictionary) => cond[prop.name])
           .filter((sub: unknown) => sub != null && !(Utils.isPlainObject(sub) && Object.keys(sub).every(key => Utils.isOperator(key, false))));
+
+        if (child.length > 0) {
+          subCond[op] = child;
+        }
       }
     });
 
