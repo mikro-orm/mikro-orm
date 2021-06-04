@@ -401,10 +401,15 @@ export class Utils {
   static getCompositeKeyHash<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>): string {
     const pks = meta.primaryKeys.map(pk => {
       const value = entity[pk];
+      const prop = meta.properties[pk];
 
       /* istanbul ignore next */
       if (Utils.isEntity<T>(value, true)) {
         return value.__helper!.getSerializedPrimaryKey();
+      }
+
+      if (prop.targetMeta && Utils.isPlainObject(value)) {
+        return this.getCompositeKeyHash(value, prop.targetMeta);
       }
 
       return value;
