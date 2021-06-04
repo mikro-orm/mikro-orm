@@ -15,6 +15,7 @@ import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { Author2Subscriber } from './subscribers/Author2Subscriber';
 import { EverythingSubscriber } from './subscribers/EverythingSubscriber';
 import { FlushSubscriber } from './subscribers/FlushSubscriber';
+import { Test2Subscriber } from './subscribers/Test2Subscriber';
 
 describe('EntityManagerMySql', () => {
 
@@ -22,6 +23,12 @@ describe('EntityManagerMySql', () => {
 
   beforeAll(async () => orm = await initORMMySql());
   beforeEach(async () => wipeDatabaseMySql(orm.em));
+  afterEach(() => {
+    Author2Subscriber.log.length = 0;
+    EverythingSubscriber.log.length = 0;
+    FlushSubscriber.log.length = 0;
+    Test2Subscriber.log.length = 0;
+  });
 
   test('isConnected()', async () => {
     expect(await orm.isConnected()).toBe(true);
@@ -605,6 +612,7 @@ describe('EntityManagerMySql', () => {
   });
 
   test('findOne supports optimistic locking [testMultipleFlushesDoIncrementalUpdates]', async () => {
+    expect(Test2Subscriber.log).toEqual([]);
     const test = new Test2();
 
     for (let i = 0; i < 5; i++) {
@@ -613,6 +621,19 @@ describe('EntityManagerMySql', () => {
       expect(typeof test.version).toBe('number');
       expect(test.version).toBe(i + 1);
     }
+
+    expect(Test2Subscriber.log.map(r => r[0])).toEqual([
+      'onFlush',
+      'afterFlush',
+      'onFlush',
+      'afterFlush',
+      'onFlush',
+      'afterFlush',
+      'onFlush',
+      'afterFlush',
+      'onFlush',
+      'afterFlush',
+    ]);
   });
 
   test('findOne supports optimistic locking [testStandardFailureThrowsException]', async () => {

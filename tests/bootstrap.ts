@@ -16,6 +16,7 @@ import { FooBaz } from './entities/FooBaz';
 import FooBar from './entities/FooBar';
 import { Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5 } from './entities-schema';
 import { Author2Subscriber } from './subscribers/Author2Subscriber';
+import { Test2Subscriber } from './subscribers/Test2Subscriber';
 import { EverythingSubscriber } from './subscribers/EverythingSubscriber';
 import { FlushSubscriber } from './subscribers/FlushSubscriber';
 
@@ -83,6 +84,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
   }
 
   Author2Subscriber.log.length = 0;
+  Test2Subscriber.log.length = 0;
   EverythingSubscriber.log.length = 0;
   FlushSubscriber.log.length = 0;
 
@@ -109,6 +111,7 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN) {
   const connection = orm.em.getConnection();
   await connection.loadFile(__dirname + '/postgre-schema.sql');
   Author2Subscriber.log.length = 0;
+  Test2Subscriber.log.length = 0;
   EverythingSubscriber.log.length = 0;
   FlushSubscriber.log.length = 0;
 
@@ -188,6 +191,7 @@ export async function wipeDatabaseMySql(em: SqlEntityManager) {
   em.clear();
   em.config.set('debug', false);
   Author2Subscriber.log.length = 0;
+  Test2Subscriber.log.length = 0;
   EverythingSubscriber.log.length = 0;
   FlushSubscriber.log.length = 0;
 }
@@ -208,6 +212,7 @@ export async function wipeDatabasePostgreSql(em: SqlEntityManager) {
   await em.getConnection().execute(`set session_replication_role = 'origin'`);
   em.clear();
   Author2Subscriber.log.length = 0;
+  Test2Subscriber.log.length = 0;
   EverythingSubscriber.log.length = 0;
   FlushSubscriber.log.length = 0;
 }
