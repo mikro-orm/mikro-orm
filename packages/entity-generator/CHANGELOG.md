@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.5.6](https://github.com/mikro-orm/mikro-orm/compare/v4.5.5...v4.5.6) (2021-06-06)
+
+
+### Bug Fixes
+
+* **entity-generator:** do not infer `cascade` value based on update/delete rules ([dca4f21](https://github.com/mikro-orm/mikro-orm/commit/dca4f21ca210ec34f60017860ddd1bb95b4dc333)), closes [#1857](https://github.com/mikro-orm/mikro-orm/issues/1857)
+
+
+
+
+
 ## [4.5.5](https://github.com/mikro-orm/mikro-orm/compare/v4.5.4...v4.5.5) (2021-05-17)
 
 **Note:** Version bump only for package @mikro-orm/entity-generator
