@@ -20,7 +20,7 @@ describe('GH issue 1910', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A],
-      dbName: 'InMemorySample;Mode=Memory;Cache=Shared',
+      dbName: 'file:memDb1?mode=memory&cache=shared',
       type: 'sqlite',
       autoJoinOneToOneOwner: false,
     });
@@ -65,6 +65,23 @@ describe('GH issue 1910', () => {
     expect(await rootEm.findOne(A, id2)).not.toBeNull();
     expect(await rootEm.findOne(A, id3)).toBeNull();
     expect(await rootEm.findOne(A, id4)).not.toBeNull();
+  });
+
+  test('transaction test', async () => {
+    const rootEm = orm.em.fork();
+
+    async function createA(em: EntityManager, id: number) {
+      const a = new A();
+      a.id = id;
+      a.name = 'my name is a';
+      await em.persistAndFlush(a);
+    }
+
+    await rootEm.transactional(async em => {
+      await createA(em, 2);
+    });
+
+    expect(await rootEm.findOne(A, 2)).not.toBeNull();
   });
 
 });

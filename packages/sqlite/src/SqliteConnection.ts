@@ -32,6 +32,7 @@ export class SqliteConnection extends AbstractSqlConnection {
       client: type,
       connection: {
         filename: this.config.get('dbName'),
+        flags: ['OPEN_URI', 'OPEN_SHAREDCACHE'],
       },
       useNullAsDefault: true,
     };
