@@ -74,7 +74,7 @@ export class ObjectHydrator extends Hydrator {
     const hydrateScalar = <T, U>(prop: EntityProperty<T>, object: boolean | undefined, path: string[], dataKey: string): string[] => {
       const entityKey = path.join('.');
       const preCond = preCondition(dataKey);
-      const convertorKey = path.join('_').replace(/\[idx_[\d+]]/g, '');
+      const convertorKey = path.join('_').replace(/\[idx_\d+]/g, '');
       const ret: string[] = [];
 
       if (prop.type.toLowerCase() === 'date') {
@@ -187,7 +187,7 @@ export class ObjectHydrator extends Hydrator {
 
     const hydrateEmbedded = (prop: EntityProperty, path: string[], dataKey: string): string[] => {
       const entityKey = path.join('.');
-      const convertorKey = path.join('_').replace(/\[idx_[\d+]]/g, '');
+      const convertorKey = path.join('_').replace(/\[idx_\d+]/g, '');
       const ret: string[] = [];
       const conds: string[] = [];
       context.set(`prototype_${convertorKey}`, prop.embeddable.prototype);
@@ -216,7 +216,7 @@ export class ObjectHydrator extends Hydrator {
 
     const hydrateEmbeddedArray = (prop: EntityProperty, path: string[], dataKey: string): string[] => {
       const entityKey = path.join('.');
-      const convertorKey = path.join('_').replace(/\[idx_[\d+]]/g, '');
+      const convertorKey = path.join('_').replace(/\[idx_\d+]/g, '');
       const ret: string[] = [];
       const idx = this.tmpIndex++;
 
