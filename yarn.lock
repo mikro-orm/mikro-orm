@@ -3902,10 +3902,10 @@ gauge@~2.7.3:
     strip-ansi "^3.0.1"
     wide-align "^1.1.0"
 
-gen-esm-wrapper@1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/gen-esm-wrapper/-/gen-esm-wrapper-1.1.1.tgz#1e4d508d0229284490f101d22ac33e09435f80fb"
-  integrity sha512-/ZMuX3itPtnjjWuIArzBi6mDnkGVcsx8guLCeH3WLB+iLeFr8TOKhIrNaYmPuRtQcpeBKrlswCPAY9oLRKIxKw==
+gen-esm-wrapper@1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/gen-esm-wrapper/-/gen-esm-wrapper-1.1.2.tgz#ea91a4f0dae497060bd9462d8a9bc5bc2dacc3d0"
+  integrity sha512-ZzqvusFKGZEWunpoz5Yg4+tdODUa7Swv1pvd83VF9nVJNCIu5i1KJ6pFjTFFkvk8deeSWLdMgc8FNRaTe5MTTA==
   dependencies:
     is-valid-identifier "^2.0.2"
 
