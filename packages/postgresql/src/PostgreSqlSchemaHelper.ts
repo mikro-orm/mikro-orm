@@ -28,7 +28,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
           where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment `
       + `from information_schema.tables `
       + `where table_schema not like 'pg_%' and table_schema != 'information_schema' `
-      + `and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name`;
+      + `and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' ${schemaName ? `AND table_schema = '${schemaName}'` : ``} order by table_name`;
   }
 
   async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName = 'public'): Promise<Column[]> {

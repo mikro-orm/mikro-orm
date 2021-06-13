@@ -40,7 +40,7 @@ export class Author3 {
   @Property({ columnType: 'time(3)', nullable: true })
   bornTime?: string;
 
-  @ManyToOne({ entity: () => Book3, nullable: true, index: 'author3_favourite_book_idx' })
+  @ManyToOne({ entity: () => Book3, onUpdateIntegrity: 'cascade', nullable: true, index: 'author3_favourite_book_idx' })
   favouriteBook?: Book3;
 
 }
@@ -64,15 +64,15 @@ export class Book3 {
   @Property({ default: '' })
   title!: string;
 
-  @ManyToOne({ entity: () => Author3 })
+  @ManyToOne({ entity: () => Author3, onUpdateIntegrity: 'cascade' })
   author!: Author3;
 
-  @ManyToOne({ entity: () => Publisher3 })
+  @ManyToOne({ entity: () => Publisher3, onUpdateIntegrity: 'cascade' })
   publisher!: Publisher3;
 
 }
 ",
-  "import { Cascade, Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
 import { Book3 } from './Book3';
 import { BookTag3 } from './BookTag3';
 
@@ -82,10 +82,10 @@ export class Book3Tags {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Book3, cascade: [Cascade.ALL] })
+  @ManyToOne({ entity: () => Book3, onUpdateIntegrity: 'cascade', onDelete: 'cascade' })
   book3!: Book3;
 
-  @ManyToOne({ entity: () => BookTag3, cascade: [Cascade.ALL] })
+  @ManyToOne({ entity: () => BookTag3, onUpdateIntegrity: 'cascade', onDelete: 'cascade' })
   bookTag3!: BookTag3;
 
 }
@@ -122,7 +122,7 @@ export class Publisher3 {
 
 }
 ",
-  "import { Cascade, Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
 import { Publisher3 } from './Publisher3';
 import { Test3 } from './Test3';
 
@@ -132,10 +132,10 @@ export class Publisher3Tests {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Publisher3, cascade: [Cascade.ALL] })
+  @ManyToOne({ entity: () => Publisher3, onUpdateIntegrity: 'cascade', onDelete: 'cascade' })
   publisher3!: Publisher3;
 
-  @ManyToOne({ entity: () => Test3, cascade: [Cascade.ALL] })
+  @ManyToOne({ entity: () => Test3, onUpdateIntegrity: 'cascade', onDelete: 'cascade' })
   test3!: Test3;
 
 }
@@ -173,10 +173,10 @@ export class FooBarSchema2 {
   @Property({ length: 255 })
   name!: string;
 
-  @OneToOne({ entity: () => FooBazSchema2, nullable: true, defaultRaw: \`NULL\` })
+  @OneToOne({ entity: () => FooBazSchema2, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true, defaultRaw: \`NULL\` })
   baz?: FooBazSchema2;
 
-  @OneToOne({ entity: () => FooBarSchema2, nullable: true, defaultRaw: \`NULL\` })
+  @OneToOne({ entity: () => FooBarSchema2, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true, defaultRaw: \`NULL\` })
   fooBar?: FooBarSchema2;
 
   @Property({ defaultRaw: \`current_timestamp()\` })
@@ -190,22 +190,6 @@ export class FooBarSchema2 {
 
   @Property({ columnType: 'longtext', length: 4294967295, nullable: true, defaultRaw: \`NULL\` })
   object?: unknown;
-
-}
-",
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
-
-@Entity({ schema: 'mikro_orm_test_multi_2' })
-export class FooBazSchema2 {
-
-  @PrimaryKey()
-  id!: number;
-
-  @Property({ length: 255 })
-  name!: string;
-
-  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
-  version!: Date;
 
 }
 ",
@@ -240,6 +224,22 @@ export class MikroOrmTestMulti2fooBarSchema2 {
 
 }
 ",
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity({ schema: 'mikro_orm_test_multi_2' })
+export class FooBazSchema2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255 })
+  name!: string;
+
+  @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
+  version!: Date;
+
+}
+",
 ]
 `;
 
@@ -257,10 +257,10 @@ export class FooBarSchema2 {
   @Property({ length: 255 })
   name!: string;
 
-  @OneToOne({ entity: () => FooBazSchema2, nullable: true })
+  @OneToOne({ entity: () => FooBazSchema2, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
   baz?: FooBazSchema2;
 
-  @OneToOne({ entity: () => FooBarSchema2, nullable: true })
+  @OneToOne({ entity: () => FooBarSchema2, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
   fooBar?: FooBarSchema2;
 
   @Property({ defaultRaw: \`CURRENT_TIMESTAMP\` })

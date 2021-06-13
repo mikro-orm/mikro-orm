@@ -402,6 +402,36 @@ export class Migration20191013214813 extends Migration {
 }
 `;
 
+exports[`Migrator (postgres) generate js schema migration with explicit name: migration-js-dump 1`] = `
+Object {
+  "code": "'use strict';
+Object.defineProperty(exports, '__esModule', { value: true });
+const Migration = require('@mikro-orm/migrations').Migration;
+
+class Migration20191013214813 extends Migration {
+
+  async up() {
+    this.addSql('alter table \\"book2\\" drop constraint if exists \\"book2_double_check\\";');
+    this.addSql('alter table \\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);');
+    this.addSql('alter table \\"book2\\" drop column \\"foo\\";');
+
+    this.addSql('alter table \\"test2\\" drop column \\"path\\";');
+  }
+
+}
+exports.Migration20191013214813 = Migration20191013214813;
+",
+  "diff": Array [
+    "alter table \\"book2\\" drop constraint if exists \\"book2_double_check\\";",
+    "alter table \\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);",
+    "alter table \\"book2\\" drop column \\"foo\\";",
+    "",
+    "alter table \\"test2\\" drop column \\"path\\";",
+  ],
+  "fileName": "Migration20191013214813.js",
+}
+`;
+
 exports[`Migrator (postgres) generate js schema migration: migration-js-dump 1`] = `
 Object {
   "code": "'use strict';

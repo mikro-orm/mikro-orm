@@ -200,6 +200,14 @@ export abstract class SchemaHelper {
     return `drop database if exists ${name}`;
   }
 
+  getCreateSchemaSQL(name: string): string {
+    return `create schema ${name}`;
+  }
+
+  getDropSchemaSQL(name: string): string {
+    return `drop schema if exists ${name} cascade`;
+  }
+
   getDatabaseExistsSQL(name: string): string {
     return `select 1 from information_schema.schemata where schema_name = '${name}'`;
   }

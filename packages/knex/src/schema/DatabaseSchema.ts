@@ -49,19 +49,20 @@ export class DatabaseSchema {
   }
 
   static async create(connection: AbstractSqlConnection, platform: AbstractSqlPlatform, config: Configuration, schemaName?: string): Promise<DatabaseSchema> {
-    const schema = new DatabaseSchema(platform, schemaName ? schemaName : config.get('schema'));
+    const defaultNamespace = platform.supportsSchemas() ? config.get('schema') : config.get('dbName');
+    const schema = new DatabaseSchema(platform, defaultNamespace!);
     const tables = await connection.execute<Table[]>(platform.getSchemaHelper()!.getListTablesSQL(schemaName));
 
     for (const t of tables) {
-      if (t.table_name === config.get('migrations').tableName) {
-        continue;
-      }
-      if (schemaName && t.schema_name !== schemaName) {
+      const isMigrationTable = t.table_name === config.get('migrations').tableName;
+
+      if (isMigrationTable) {
         continue;
       }
 
-      const table = schema.addTable(t.table_name, config.get('explicitSchemaName') ? t.schema_name : undefined);
+      const table = schema.addTable(t.table_name, t.schema_name);
       table.comment = t.table_comment;
+
       const cols = await platform.getSchemaHelper()!.getColumns(connection, table.name, table.schema);
       const indexes = await platform.getSchemaHelper()!.getIndexes(connection, table.name, table.schema);
       const pks = await platform.getSchemaHelper()!.getPrimaryKeys(connection, indexes, table.name, table.schema);
@@ -75,7 +76,14 @@ export class DatabaseSchema {
 
   static fromMetadata(metadata: EntityMetadata[], platform: AbstractSqlPlatform, config: Configuration): DatabaseSchema {
     // on any platform that doesn't natively supports schema's, the schema level is really db level.
-    const defaultSchemaName = platform.supportsSchemas() ? config.get('schema') : config.get('explicitSchemaName') ? config.get('dbName') : undefined;
+    let defaultSchemaName;
+    if (config.get('explicitSchemaName')) {
+      if (platform.supportsSchemas()) {
+        defaultSchemaName = config.get('schema');
+      } else {
+        defaultSchemaName = config.get('dbName');
+      }
+    }
 
     const schema = new DatabaseSchema(platform, config.get('schema'));
 

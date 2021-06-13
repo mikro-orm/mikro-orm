@@ -20,7 +20,7 @@ export class SchemaComparator {
    * operations to change the schema stored in fromSchema to the schema that is
    * stored in toSchema.
    */
-  compare(fromSchema: DatabaseSchema, toSchema: DatabaseSchema): SchemaDifference {
+  compare(fromSchema: DatabaseSchema, toSchema: DatabaseSchema, defaultNamespace?: string): SchemaDifference {
     const diff: SchemaDifference = { newTables: {}, removedTables: {}, changedTables: {}, orphanedForeignKeys: [], newNamespaces: new Set(), removedNamespaces: new Set(), fromSchema };
     const foreignKeysToTable: Dictionary<ForeignKey[]> = {};
 
@@ -41,12 +41,12 @@ export class SchemaComparator {
     }
 
     for (const table of toSchema.getTables()) {
-      const tableName = table.getShortestName(toSchema.name);
+      const tableName = table.getShortestName(defaultNamespace);
 
       if (!fromSchema.hasTable(tableName)) {
         diff.newTables[tableName] = toSchema.getTable(tableName)!;
       } else {
-        const tableDifferences = this.diffTable(fromSchema.getTable(tableName)!, toSchema.getTable(tableName)!);
+        const tableDifferences = this.diffTable(fromSchema.getTable(tableName)!, toSchema.getTable(tableName)!, defaultNamespace);
 
         if (tableDifferences !== false) {
           diff.changedTables[tableName] = tableDifferences;
@@ -56,7 +56,7 @@ export class SchemaComparator {
 
     // Check if there are tables removed
     for (let table of fromSchema.getTables()) {
-      const tableName = table.getShortestName(fromSchema.name);
+      const tableName = table.getShortestName(defaultNamespace);
       table = fromSchema.getTable(tableName)!;
 
       if (!toSchema.hasTable(tableName)) {
@@ -78,7 +78,14 @@ export class SchemaComparator {
         continue;
       }
 
-      diff.orphanedForeignKeys.push(...foreignKeysToTable[table.name]!);
+
+      diff.orphanedForeignKeys.push(...foreignKeysToTable[table.name]!.map(fk => {
+        // Need to remove the default namespace if defined
+        return {
+          ...fk,
+          localTableName: fromSchema.getTable(fk.localTableName)?.getShortestName(defaultNamespace) || '',
+        };
+      }));
 
       // Deleting duplicated foreign keys present both on the orphanedForeignKey and the removedForeignKeys from changedTables.
       for (const foreignKey of foreignKeysToTable[table.name]) {
@@ -106,10 +113,10 @@ export class SchemaComparator {
    * Returns the difference between the tables fromTable and toTable.
    * If there are no differences this method returns the boolean false.
    */
-  diffTable(fromTable: DatabaseTable, toTable: DatabaseTable): TableDifference | false {
+  diffTable(fromTable: DatabaseTable, toTable: DatabaseTable, defaultNamespace?: string): TableDifference | false {
     let changes = 0;
     const tableDifferences: TableDifference = {
-      name: fromTable.getShortestName(),
+      name: fromTable.getShortestName(defaultNamespace),
       addedColumns: {},
       addedForeignKeys: {},
       addedIndexes: {},

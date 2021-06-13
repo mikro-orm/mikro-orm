@@ -53,6 +53,20 @@ describe('Migrator (postgres)', () => {
     await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
   });
 
+  test('generate js schema migration with explicit name', async () => {
+    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
+    orm.config.set('explicitSchemaName', true);
+    const migrationsSettings = orm.config.get('migrations');
+    orm.config.set('migrations', { ...migrationsSettings, emit: 'js' }); // Set migration type to js
+    const migrator = orm.getMigrator();
+    const migration = await migrator.createMigration();
+    expect(migration).toMatchSnapshot('migration-js-dump');
+    orm.config.set('migrations', migrationsSettings); // Revert migration config changes
+    await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
+    orm.config.set('explicitSchemaName', false);
+  });
+
   test('generate migration with custom name', async () => {
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');

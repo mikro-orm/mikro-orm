@@ -126,7 +126,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     return this.options;
   }
 
-  getDbName(): string {
+  getSchemaName(): string {
     return this.get('dbName');
   }
 

@@ -24,7 +24,7 @@ describe('EntityGenerator', () => {
       type: 'mysql',
     });
 
-    orm.getSchemaGenerator().ensureDatabase();
+    await orm.getSchemaGenerator().ensureDatabase();
     const connection = orm.em.getConnection();
     await connection.loadFile(__dirname + '/mysql-multi-schema.sql');
     const generator = orm.getEntityGenerator();
@@ -50,7 +50,7 @@ describe('EntityGenerator', () => {
       type: 'mysql',
     });
 
-    orm.getSchemaGenerator().ensureDatabase();
+    await orm.getSchemaGenerator().ensureDatabase();
     const connection = orm.em.getConnection();
     await connection.loadFile(__dirname + '/mysql-multi-schema.sql');
     const generator = orm.getEntityGenerator();
@@ -75,7 +75,7 @@ describe('EntityGenerator', () => {
       cache: { enabled: true, pretty: true },
     });
 
-    orm.getSchemaGenerator().ensureDatabase();
+    await orm.getSchemaGenerator().ensureDatabase();
     const connection = orm.em.getConnection();
     await connection.loadFile(__dirname + '/sqlite-schema.sql');
     const generator = orm.getEntityGenerator();
@@ -101,11 +101,12 @@ describe('EntityGenerator', () => {
       type: 'postgresql',
     });
 
-    orm.getSchemaGenerator().ensureDatabase();
+    await orm.getSchemaGenerator().ensureDatabase();
     const connection = orm.em.getConnection();
     await connection.loadFile(__dirname + '/postgres-multi-schema.sql');
     const generator = orm.getEntityGenerator();
     const dump = await generator.generate({ save: true, baseDir: './temp/entities', schemas: ['mikro_orm_test_multi_1', 'mikro_orm_test_multi_2'] });
+    expect(dump).toHaveLength(3);
     expect(dump).toMatchSnapshot('postgresql-entity-dump-with-explicit-schema');
     await expect(pathExists('./temp/entities/FooBarSchema2.ts')).resolves.toBe(true);
     await remove('./temp/entities');

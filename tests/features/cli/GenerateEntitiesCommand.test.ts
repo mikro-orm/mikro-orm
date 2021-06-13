@@ -31,13 +31,15 @@ describe('GenerateEntitiesCommand', () => {
 
     const args = { option: jest.fn() };
     cmd.builder(args as any);
-    expect(args.option.mock.calls.length).toBe(3);
+    expect(args.option.mock.calls.length).toBe(4);
     expect(args.option.mock.calls[0][0]).toBe('s');
     expect(args.option.mock.calls[0][1]).toMatchObject({ alias: 'save', type: 'boolean' });
     expect(args.option.mock.calls[1][0]).toBe('d');
     expect(args.option.mock.calls[1][1]).toMatchObject({ alias: 'dump', type: 'boolean' });
     expect(args.option.mock.calls[2][0]).toBe('p');
     expect(args.option.mock.calls[2][1]).toMatchObject({ alias: 'path', type: 'string' });
+    expect(args.option.mock.calls[3][0]).toBe('schemas');
+    expect(args.option.mock.calls[3][1]).toMatchObject({ type: 'array' });
   });
 
   test('handler', async () => {

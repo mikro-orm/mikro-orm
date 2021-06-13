@@ -18,7 +18,7 @@ describe('SchemaGenerator', () => {
 
     const generator = new SchemaGenerator(orm.em as EntityManager);
     await generator.ensureDatabase();
-    await generator.dropAllDatabases();
+    await generator.dropAllSchemas();
     await orm.close(true);
 
     return true;
@@ -34,7 +34,7 @@ describe('SchemaGenerator', () => {
       migrations: { path: BASE_DIR + '/../temp/migrations' },
     });
     const generator = new SchemaGenerator(orm.em as EntityManager);
-    await generator.dropAllDatabases();
+    await generator.dropAllSchemas();
     const dump = await generator.generate();
     expect(dump).toMatchSnapshot('mysql-schema-dump');
 
@@ -60,7 +60,7 @@ describe('SchemaGenerator', () => {
       migrations: { path: BASE_DIR + '/../temp/migrations' },
     });
     const generator = new SchemaGenerator(orm.em as EntityManager);
-    await generator.dropAllDatabases();
+    await generator.dropAllSchemas();
     const dump = await generator.generate();
     expect(dump).toMatchSnapshot('mariadb-schema-dump');
 
@@ -79,14 +79,14 @@ describe('SchemaGenerator', () => {
   test('generate multi-schema database from metadata [postgresql]', async () => {
     const orm = await MikroORM.init({
       entities: [FooBarSchema2, FooBazSchema2],
-      dbName: 'mikro_orm_test',
+      dbName: 'postgres',
       port: 5432,
       baseDir: BASE_DIR,
       type: 'postgresql',
       migrations: { path: BASE_DIR + '/../temp/migrations' },
     });
     const generator = new SchemaGenerator(orm.em as EntityManager);
-    await generator.dropAllDatabases();
+    await generator.dropAllSchemas();
     const dump = await generator.generate();
     expect(dump).toMatchSnapshot('postgresql-schema-dump');
 

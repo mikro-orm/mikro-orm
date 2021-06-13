@@ -86,6 +86,17 @@ describe('Migrator', () => {
     await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
   });
 
+  test('generate schema migration with explicit names', async () => {
+    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
+    orm.config.set('explicitSchemaName', true);
+    const migrator = new Migrator(orm.em);
+    const migration = await migrator.createMigration();
+    expect(migration).toMatchSnapshot('migration-dump');
+    await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
+    orm.config.set('explicitSchemaName', false);
+  });
+
   test('initial migration cannot be created if migrations already exist', async () => {
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const getExecutedMigrationsMock = jest.spyOn<any, any>(Migrator.prototype, 'getExecutedMigrations');
