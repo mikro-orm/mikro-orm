@@ -25,7 +25,7 @@ export abstract class Platform {
     return true;
   }
 
-  supportsMultipleSchemas(): boolean {
+  supportsMultiSchema(): boolean {
     return false;
   }
 

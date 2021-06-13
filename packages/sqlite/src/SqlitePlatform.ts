@@ -14,7 +14,7 @@ export class SqlitePlatform extends AbstractSqlPlatform {
     return true;
   }
 
-  supportsMultipleSchemas(): boolean {
+  supportsMultiSchema(): boolean {
     return false;
   }
 

@@ -55,7 +55,7 @@ export class SchemaGenerator {
       }
     }
 
-    // reset back tot he original schema name
+    // reset back to the original schema name
     this.config.set('dbName', dbName);
   }
 
@@ -137,6 +137,7 @@ export class SchemaGenerator {
     const fromSchema = options.fromSchema ?? await DatabaseSchema.create(this.connection, this.platform, this.config);
     const comparator = new SchemaComparator(this.platform);
     const schemaDiff = comparator.compare(fromSchema, toSchema);
+
     let ret = '';
 
     if (this.platform.supportsSchemas()) {
@@ -177,7 +178,7 @@ export class SchemaGenerator {
       }
     }
 
-    if (options.dropTables && !options.safe) {
+    if (options.dropTables && !options.safe && this.platform.supportsSchemas()) {
       for (const removedNamespace of schemaDiff.removedNamespaces) {
         ret += await this.dump(this.knex.schema.dropSchema(removedNamespace));
       }

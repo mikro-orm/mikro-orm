@@ -56,11 +56,11 @@ export class DatabaseSchema {
       if (t.table_name === config.get('migrations').tableName) {
         continue;
       }
-      if (t.schema_name !== schemaName) {
+      if (schemaName && t.schema_name !== schemaName) {
         continue;
       }
 
-      const table = schema.addTable(t.table_name, t.schema_name);
+      const table = schema.addTable(t.table_name, config.get('explicitSchemaName') ? t.schema_name : undefined);
       table.comment = t.table_comment;
       const cols = await platform.getSchemaHelper()!.getColumns(connection, table.name, table.schema);
       const indexes = await platform.getSchemaHelper()!.getIndexes(connection, table.name, table.schema);
@@ -74,10 +74,13 @@ export class DatabaseSchema {
   }
 
   static fromMetadata(metadata: EntityMetadata[], platform: AbstractSqlPlatform, config: Configuration): DatabaseSchema {
+    // on any platform that doesn't natively supports schema's, the schema level is really db level.
+    const defaultSchemaName = platform.supportsSchemas() ? config.get('schema') : config.get('explicitSchemaName') ? config.get('dbName') : undefined;
+
     const schema = new DatabaseSchema(platform, config.get('schema'));
 
     for (const meta of metadata) {
-      const table = schema.addTable(meta.collection, meta.schema ?? config.get('schema'));
+      const table = schema.addTable(meta.collection, meta.schema ?? defaultSchemaName);
       table.comment = meta.comment;
       meta.props
         .filter(prop => this.shouldHaveColumn(meta, prop))

@@ -126,6 +126,10 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     return this.options;
   }
 
+  getDbName(): string {
+    return this.get('dbName');
+  }
+
   /**
    * Overrides specified configuration value.
    */

@@ -23,7 +23,7 @@ export class MongoPlatform extends Platform {
     return data as T;
   }
 
-  supportsMultipleSchemas(): boolean {
+  supportsMultiSchema(): boolean {
     return false;
   }
 

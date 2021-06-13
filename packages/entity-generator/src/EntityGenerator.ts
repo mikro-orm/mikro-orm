@@ -18,11 +18,11 @@ export class EntityGenerator {
   async generate(options: { baseDir?: string; save?: boolean; schemas?: string[] } = {}): Promise<string[]> {
     const baseDir = Utils.normalizePath(options.baseDir || this.config.get('baseDir') + '/generated-entities');
 
-    const schemas = options.schemas && this.platform.supportsMultipleSchemas() ? options.schemas : [this.config.get('dbName')];
+    const schemas = options.schemas && this.platform.supportsMultiSchema() ? options.schemas : [this.config.get('dbName')];
 
     const existingTables: string[] = [];
     for (const schemaName of schemas) {
-      const schemaNameIfSupported = this.platform.supportsMultipleSchemas() ? schemaName : undefined;
+      const schemaNameIfSupported = this.platform.supportsMultiSchema() ? schemaName : undefined;
 
       const schema = await await DatabaseSchema.create(this.connection, this.platform, this.config, schemaNameIfSupported);
 
@@ -42,7 +42,7 @@ export class EntityGenerator {
   }
 
   createEntity(table: DatabaseTable, includeSchemaName = false): void {
-    const meta = table.getEntityDeclaration(this.namingStrategy, this.helper, this.platform.supportsMultipleSchemas() && this.config.get('explicitSchemaName'), includeSchemaName);
+    const meta = table.getEntityDeclaration(this.namingStrategy, this.helper, this.platform.supportsMultiSchema() && this.config.get('explicitSchemaName'), includeSchemaName);
     this.sources.push(new SourceFile(meta, this.namingStrategy, this.platform, this.helper));
   }
 
