@@ -6,8 +6,9 @@ set foreign_key_checks = 0;
 
 create table \`parent_entity\` (\`id\` int unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;
 
-create table \`very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\` (\`id\` int unsigned not null auto_increment primary key, \`parent_id\` int unsigned not null) default character set utf8mb4 engine = InnoDB;
+create table \`very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\` (\`id\` int unsigned not null auto_increment primary key, \`parent_id\` int unsigned not null, \`key\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
 alter table \`very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\` add index \`very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxx_d90a7_index\`(\`parent_id\`);
+alter table \`very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\` add unique \`very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxx_9928a_unique\`(\`key\`);
 
 alter table \`very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\` add constraint \`very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxx_19cce_foreign\` foreign key (\`parent_id\`) references \`parent_entity\` (\`id\`) on update cascade;
 

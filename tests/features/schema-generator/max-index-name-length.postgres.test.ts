@@ -27,15 +27,14 @@ class ParentEntity {
 
 }
 
-describe('index and FK names should be a max of 64 chars in mysql (GH 1271)', () => {
+describe('index and FK names should be a max of 64 chars in mysql (GH 1915)', () => {
   let orm: MikroORM<AbstractSqlDriver>;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [ParentEntity, ChildEntity],
-      dbName: `mikro_orm_test_gh_1271`,
-      port: 3307,
-      type: 'mysql',
+      dbName: `mikro_orm_test_gh_1915`,
+      type: 'postgresql',
     });
     await orm.getSchemaGenerator().ensureDatabase();
     await orm.getSchemaGenerator().dropSchema();
