@@ -22,6 +22,7 @@ export class UnitOfWork {
   private readonly orphanRemoveStack = new Set<AnyEntity>();
   private readonly changeSets = new Map<AnyEntity, ChangeSet<AnyEntity>>();
   private readonly collectionUpdates = new Set<Collection<AnyEntity>>();
+  private readonly collectionDeletions = new Set<Collection<AnyEntity>>();
   private readonly extraUpdates = new Set<[AnyEntity, string | string[], AnyEntity | AnyEntity[] | Reference<any> | Collection<any>]>();
   private readonly metadata = this.em.getMetadata();
   private readonly platform = this.em.getPlatform();
@@ -227,7 +228,7 @@ export class UnitOfWork {
       await this.eventManager.dispatchEvent(EventType.onFlush, { em: this.em, uow: this });
 
       // nothing to do, do not start transaction
-      if (this.changeSets.size === 0 && this.collectionUpdates.size === 0 && this.extraUpdates.size === 0) {
+      if (this.changeSets.size === 0 && this.collectionUpdates.size === 0 && this.collectionDeletions.size === 0 && this.extraUpdates.size === 0) {
         return void await this.eventManager.dispatchEvent(EventType.afterFlush, { em: this.em, uow: this });
       }
 
@@ -324,6 +325,20 @@ export class UnitOfWork {
 
   cancelOrphanRemoval(entity: AnyEntity): void {
     this.orphanRemoveStack.delete(entity);
+  }
+
+  /**
+   * Schedules a complete collection for removal when this UnitOfWork commits.
+   */
+  scheduleCollectionDeletion(collection: Collection<AnyEntity>): void {
+    this.collectionDeletions.add(collection);
+  }
+
+  /**
+   * Gets the currently scheduled complete collection deletions
+   */
+  getScheduledCollectionDeletions() {
+    return [...this.collectionDeletions];
   }
 
   private findNewEntities<T extends AnyEntity<T>>(entity: T, visited = new WeakSet<AnyEntity>()): void {
@@ -451,6 +466,7 @@ export class UnitOfWork {
     this.orphanRemoveStack.clear();
     this.changeSets.clear();
     this.collectionUpdates.clear();
+    this.collectionDeletions.clear();
     this.extraUpdates.clear();
     this.working = false;
   }
@@ -573,17 +589,23 @@ export class UnitOfWork {
     const commitOrder = this.getCommitOrder();
     const commitOrderReversed = [...commitOrder].reverse();
 
-    // 1. create
+    // 1. whole collection deletions
+    for (const coll of this.collectionDeletions) {
+      await this.em.getDriver().clearCollection(coll, tx);
+      coll.takeSnapshot();
+    }
+
+    // 2. create
     for (const name of commitOrder) {
       await this.commitCreateChangeSets(groups[ChangeSetType.CREATE].get(name) ?? [], tx);
     }
 
-    // 2. update
+    // 3. update
     for (const name of commitOrder) {
       await this.commitUpdateChangeSets(groups[ChangeSetType.UPDATE].get(name) ?? [], tx);
     }
 
-    // 3. extra updates
+    // 4. extra updates
     const extraUpdates: ChangeSet<any>[] = [];
 
     for (const extraUpdate of this.extraUpdates) {
@@ -602,15 +624,20 @@ export class UnitOfWork {
 
     await this.commitUpdateChangeSets(extraUpdates, tx, false);
 
-    // 4. collection updates
+    // 5. collection updates
     for (const coll of this.collectionUpdates) {
       await this.em.getDriver().syncCollection(coll, tx);
       coll.takeSnapshot();
     }
 
-    // 5. delete - entity deletions need to be in reverse commit order
+    // 6. delete - entity deletions need to be in reverse commit order
     for (const name of commitOrderReversed) {
       await this.commitDeleteChangeSets(groups[ChangeSetType.DELETE].get(name) ?? [], tx);
+    }
+
+    // 7. take snapshots of all persisted collections
+    for (const changeSet of this.changeSets.values()) {
+      this.takeCollectionSnapshots(changeSet);
     }
   }
 
@@ -730,6 +757,19 @@ export class UnitOfWork {
     } else {
       this.em.resetTransactionContext();
     }
+  }
+
+  /**
+   * Takes snapshots of all processed collections
+   */
+  private takeCollectionSnapshots<T extends AnyEntity<T>>(changeSet: ChangeSet<T>) {
+    changeSet.entity.__meta!.relations.forEach(prop => {
+      const value = changeSet.entity[prop.name];
+
+      if (Utils.isCollection(value)) {
+        value.takeSnapshot();
+      }
+    });
   }
 
 }

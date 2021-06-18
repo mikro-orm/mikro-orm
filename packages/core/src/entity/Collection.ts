@@ -151,10 +151,22 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     this.takeSnapshot();
   }
 
+  removeAll(): void {
+    const em = this.getEntityManager([], false);
+
+    if (this.property.reference === ReferenceType.ONE_TO_MANY && this.property.orphanRemoval && em) {
+      em.getUnitOfWork().scheduleCollectionDeletion(this);
+      const unwrapped = this.getItems(false).map(i => Reference.unwrapReference(i));
+      this.modify('remove', unwrapped);
+    } else {
+      super.removeAll();
+    }
+  }
+
   remove(...items: (T | Reference<T>)[]): void {
     const unwrapped = items.map(i => Reference.unwrapReference(i));
     this.modify('remove', unwrapped);
-    const em = this.owner.__helper!.__em;
+    const em = this.getEntityManager(unwrapped, false);
 
     if (this.property.orphanRemoval && em) {
       for (const item of unwrapped) {
@@ -255,10 +267,15 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     return this.snapshot;
   }
 
-  private getEntityManager() {
-    const em = this.owner.__helper!.__em;
+  private getEntityManager(items: T[] = [], required = true) {
+    let em = this.owner.__helper!.__em;
 
     if (!em) {
+      const item = (items.concat(...this.items) as AnyEntity<T>[]).find(i => i?.__helper!.__em);
+      em = item?.__helper!.__em;
+    }
+
+    if (!em && required) {
       throw ValidationError.entityNotManaged(this.owner);
     }
 
@@ -342,7 +359,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   }
 
   private cancelOrphanRemoval(items: T[]): void {
-    const em = this.owner.__helper!.__em;
+    const em = this.getEntityManager(items, false);
 
     if (!em) {
       return;

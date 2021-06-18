@@ -60,6 +60,16 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     await this.nativeUpdate<T>(coll.owner.constructor.name, coll.owner.__helper!.getPrimaryKey() as FilterQuery<T>, data, ctx);
   }
 
+  async clearCollection<T extends AnyEntity<T>, O extends AnyEntity<O>>(coll: Collection<T, O>, ctx?: Transaction): Promise<void> {
+    // this currently serves only for 1:m collections with orphan removal, m:n ones are handled via `syncCollection` method
+    const snapshot = coll.getSnapshot();
+    /* istanbul ignore next */
+    const deleteDiff = snapshot ? snapshot.map(item => item.__helper!.__primaryKeyCond) : [];
+
+    const cond = { [Utils.getPrimaryKeyHash(coll.property.targetMeta!.primaryKeys)]: deleteDiff } as EntityData<T>;
+    await this.nativeDelete<T>(coll.property.type, cond, ctx);
+  }
+
   mapResult<T extends AnyEntity<T>>(result: EntityDictionary<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[] = []): EntityData<T> | null {
     if (!result || !meta) {
       return null;

@@ -1316,7 +1316,7 @@ describe('EntityManagerPostgre', () => {
     expect(wrap(a1).toJSON()).toMatchObject({ favouriteAuthor: a1.id });
 
     // check fired queries
-    expect(mock.mock.calls.length).toBe(6);
+    expect(mock.mock.calls).toHaveLength(6);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "email", "name", "terms_accepted", "updated_at") values ($1, $2, $3, $4, $5)');
     expect(mock.mock.calls[2][0]).toMatch('insert into "book2" ("uuid_pk", "created_at", "title", "author_id") values ($1, $2, $3, $4), ($5, $6, $7, $8), ($9, $10, $11, $12)');
