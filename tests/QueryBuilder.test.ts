@@ -1931,7 +1931,6 @@ describe('QueryBuilder', () => {
       ') as "b")';
     expect(qb.getQuery()).toEqual(sql);
     expect(qb.getParams()).toEqual(['tag name', 20, 1]);
-    await qb.execute();
 
     await pg.close(true);
   });
