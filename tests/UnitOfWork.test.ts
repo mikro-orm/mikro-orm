@@ -119,6 +119,7 @@ describe('UnitOfWork', () => {
     expect(uow.getRemoveStack().size).toBe(1);
     expect(uow.getCollectionUpdates().length).toBe(0);
     expect(uow.getExtraUpdates().size).toBe(0);
+    expect(uow.getScheduledCollectionDeletions().length).toBe(0);
   });
 
   test('getters', async () => {
