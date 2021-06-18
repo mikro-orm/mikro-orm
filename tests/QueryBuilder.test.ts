@@ -1910,6 +1910,29 @@ describe('QueryBuilder', () => {
       expect(qb5.getQuery()).toEqual('select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" left join "author2" as "a" on "e0"."author_id" = "a"."id" where "e0"."title" = $1 for update of "book2"');
     });
 
+    // join and select m:n relation with paginate flag (GH #1926)
+    const qb = pg.em.createQueryBuilder(Book2, 'b');
+    qb.select('*')
+      .leftJoinAndSelect('b.tags', 't')
+      .where({ 't.name': 'tag name' })
+      .setFlag(QueryFlag.PAGINATE)
+      .offset(1)
+      .limit(20);
+    const sql = 'select "b".*, "t"."id" as "t__id", "t"."name" as "t__name", "b".price * 1.19 as "price_taxed" ' +
+      'from "book2" as "b" ' +
+      'left join "book2_tags" as "e1" on "b"."uuid_pk" = "e1"."book2_uuid_pk" ' +
+      'left join "book_tag2" as "t" on "e1"."book_tag2_id" = "t"."id" where "b"."uuid_pk" in ' +
+      '(select "b"."uuid_pk" from ' +
+      '(select "b"."uuid_pk" from ' +
+      '(select "b"."uuid_pk" from "book2" as "b" ' +
+      'left join "book2_tags" as "e1" on "b"."uuid_pk" = "e1"."book2_uuid_pk" ' +
+      'left join "book_tag2" as "t" on "e1"."book_tag2_id" = "t"."id" where "t"."name" = $1' +
+      ') as "b" group by "b"."uuid_pk" limit $2 offset $3' +
+      ') as "b")';
+    expect(qb.getQuery()).toEqual(sql);
+    expect(qb.getParams()).toEqual(['tag name', 20, 1]);
+    await qb.execute();
+
     await pg.close(true);
   });
 
