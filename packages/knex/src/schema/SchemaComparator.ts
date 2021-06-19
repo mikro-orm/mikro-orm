@@ -1,4 +1,4 @@
-import { BooleanType, Dictionary, EntityProperty, Utils } from '@mikro-orm/core';
+import { BooleanType, Dictionary, EntityProperty } from '@mikro-orm/core';
 import { Column, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
 import { DatabaseSchema } from './DatabaseSchema';
 import { DatabaseTable } from './DatabaseTable';

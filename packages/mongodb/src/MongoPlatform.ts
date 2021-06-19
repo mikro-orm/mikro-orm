@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { IPrimaryKey, Primary, Platform, MongoNamingStrategy, NamingStrategy, Constructor, EntityRepository } from '@mikro-orm/core';
+import { IPrimaryKey, Primary, Platform, MongoNamingStrategy, NamingStrategy, Constructor, EntityRepository, Utils } from '@mikro-orm/core';
 import { MongoExceptionConverter } from './MongoExceptionConverter';
 import { MongoEntityRepository } from './MongoEntityRepository';
 
@@ -45,6 +45,13 @@ export class MongoPlatform extends Platform {
 
   marshallArray(values: string[]): string {
     return values as unknown as string;
+  }
+
+  cloneEmbeddable<T>(data: T): T {
+    const ret = super.cloneEmbeddable(data);
+    Utils.dropUndefinedProperties(ret);
+
+    return ret;
   }
 
 }

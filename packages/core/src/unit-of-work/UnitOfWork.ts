@@ -341,7 +341,7 @@ export class UnitOfWork {
     return [...this.collectionDeletions];
   }
 
-  private findNewEntities<T extends AnyEntity<T>>(entity: T, visited = new WeakSet<AnyEntity>()): void {
+  private findNewEntities<T extends AnyEntity<T>>(entity: T, visited = new WeakSet<AnyEntity>(), idx = 0): void {
     if (visited.has(entity)) {
       return;
     }
@@ -356,8 +356,11 @@ export class UnitOfWork {
     this.initIdentifier(entity);
 
     for (const prop of entity.__meta!.relations) {
-      const reference = Reference.unwrapReference(entity[prop.name]);
-      this.processReference(entity, prop, reference, visited);
+      const targets = Utils.unwrapProperty(entity, entity.__meta!, prop);
+      targets.forEach(([target, idx2]) => {
+        const reference = Reference.unwrapReference(target as AnyEntity);
+        this.processReference(entity, prop, reference, visited, idx);
+      });
     }
 
     const changeSet = this.changeSetComputer.computeChangeSet(entity);
@@ -406,11 +409,11 @@ export class UnitOfWork {
     wrapped.__identifier = new EntityIdentifier();
   }
 
-  private processReference<T extends AnyEntity<T>>(parent: T, prop: EntityProperty<T>, reference: any, visited: WeakSet<AnyEntity>): void {
+  private processReference<T extends AnyEntity<T>>(parent: T, prop: EntityProperty<T>, reference: any, visited: WeakSet<AnyEntity>, idx: number): void {
     const isToOne = prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE;
 
     if (isToOne && reference) {
-      return this.processToOneReference(reference, visited);
+      return this.processToOneReference(reference, visited, idx);
     }
 
     if (Utils.isCollection<any>(reference, prop, ReferenceType.MANY_TO_MANY) && reference.isDirty()) {
@@ -418,9 +421,9 @@ export class UnitOfWork {
     }
   }
 
-  private processToOneReference<T extends AnyEntity<T>>(reference: any, visited: WeakSet<AnyEntity>): void {
+  private processToOneReference<T extends AnyEntity<T>>(reference: any, visited: WeakSet<AnyEntity>, idx: number): void {
     if (!reference.__helper!.__managed) {
-      this.findNewEntities(reference, visited);
+      this.findNewEntities(reference, visited, idx);
     }
   }
 

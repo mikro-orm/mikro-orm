@@ -25,9 +25,9 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   __identifier?: EntityIdentifier;
 
   constructor(private readonly entity: T,
-              private readonly pkGetter: (e: T) => Primary<T>,
-              private readonly pkSerializer: (e: T) => string,
-              private readonly pkGetterConverted: (e: T) => Primary<T>) { }
+              private readonly pkGetter?: (e: T) => Primary<T>,
+              private readonly pkSerializer?: (e: T) => string,
+              private readonly pkGetterConverted?: (e: T) => Primary<T>) { }
 
   isInitialized(): boolean {
     return this.__initialized;
@@ -82,10 +82,10 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
 
   getPrimaryKey(convertCustomTypes = false): Primary<T> | null {
     if (convertCustomTypes) {
-      return this.pkGetterConverted(this.entity);
+      return this.pkGetterConverted!(this.entity);
     }
 
-    return this.pkGetter(this.entity);
+    return this.pkGetter!(this.entity);
   }
 
   getPrimaryKeys(convertCustomTypes = false): Primary<T>[] | null {
@@ -118,7 +118,7 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   }
 
   getSerializedPrimaryKey(): string {
-    return this.pkSerializer(this.entity);
+    return this.pkSerializer!(this.entity);
   }
 
   get __meta(): EntityMetadata<T> {

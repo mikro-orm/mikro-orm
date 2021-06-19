@@ -136,7 +136,7 @@ export class EntityLoader {
     const meta = this.metadata.find<T>(entityName)!;
     const prop = meta.properties[field as string];
 
-    if (prop.reference === ReferenceType.SCALAR && prop.lazy) {
+    if ((prop.reference === ReferenceType.SCALAR && prop.lazy) || prop.reference === ReferenceType.EMBEDDED) {
       return [];
     }
 
@@ -235,6 +235,7 @@ export class EntityLoader {
     }
 
     await this.populateMany<T>(entityName, entities, populate, options);
+    const prop = this.metadata.find(entityName)!.properties[populate.field];
     const children: T[] = [];
 
     for (const entity of entities) {
@@ -244,11 +245,12 @@ export class EntityLoader {
         children.push(entity[populate.field].unwrap());
       } else if (Utils.isCollection(entity[populate.field])) {
         children.push(...entity[populate.field].getItems());
+      } else if (entity[populate.field] && prop.reference === ReferenceType.EMBEDDED) {
+        children.push(...Utils.asArray(entity[populate.field]));
       }
     }
 
     const filtered = Utils.unique(children);
-    const prop = this.metadata.find(entityName)!.properties[populate.field];
     const fields = this.buildFields(prop, options);
     await this.populate<T>(prop.type, filtered, populate.children, {
       where: await this.extractChildCondition(options, prop, false) as FilterQuery<T>,
@@ -362,7 +364,7 @@ export class EntityLoader {
       children.push(...filtered.map(e => (e[prop.name] as unknown as Collection<T>).owner));
     } else if (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner) {
       children.push(...filtered.reduce((a, b) => [...a, ...(b[prop.name] as unknown as Collection<AnyEntity>).getItems()], [] as AnyEntity[]));
-    } else if (prop.reference === ReferenceType.MANY_TO_MANY) { // inversed side
+    } else if (prop.reference === ReferenceType.MANY_TO_MANY) { // inverse side
       children.push(...filtered);
     } else { // MANY_TO_ONE or ONE_TO_ONE
       children.push(...this.filterReferences(entities, prop.name, refresh));

@@ -5,17 +5,7 @@ import { extname, isAbsolute, join, normalize, relative, resolve } from 'path';
 import { pathExists } from 'fs-extra';
 import { createHash } from 'crypto';
 import { recovery } from 'escaya';
-
-import {
-  AnyEntity,
-  Dictionary,
-  EntityMetadata,
-  EntityName,
-  EntityProperty,
-  IMetadataStorage,
-  Primary,
-  PlainObject,
-} from '../typings';
+import { AnyEntity, Dictionary, EntityDictionary, EntityMetadata, EntityName, EntityProperty, IMetadataStorage, Primary, PlainObject } from '../typings';
 import { GroupOperator, QueryOperator, ReferenceType } from '../enums';
 import { Collection } from '../entity';
 import { Platform } from '../platforms';
@@ -146,6 +136,28 @@ export class Utils {
    */
   static isNotObject<T = Dictionary>(o: any, not: any[]): o is T {
     return this.isObject(o) && !not.some(cls => o instanceof cls);
+  }
+
+  /**
+   * Removes `undefined` properties (recursively) so they are not saved as nulls
+   */
+  static dropUndefinedProperties<T = Dictionary | unknown[]>(o: any): void {
+    if (Array.isArray(o)) {
+      return o.forEach((item: unknown) => Utils.dropUndefinedProperties(item));
+    }
+
+    if (!Utils.isObject(o)) {
+      return;
+    }
+
+    Object.keys(o).forEach(key => {
+      if (o[key] === undefined) {
+        delete o[key];
+        return;
+      }
+
+      Utils.dropUndefinedProperties(o[key]);
+    });
   }
 
   /**
@@ -782,6 +794,100 @@ export class Utils {
     if (process.env.BABEL_DECORATORS_COMPAT) {
       return {};
     }
+  }
+
+  static unwrapProperty<T>(entity: T, meta: EntityMetadata<T>, prop: EntityProperty<T>, payload = false): [unknown, number[]][] {
+    let p = prop;
+    const path: string[] = [];
+
+    function isObjectProperty(prop: EntityProperty): boolean {
+      return prop.embedded ? prop.object || prop.array || isObjectProperty(meta.properties[prop.embedded[0]]) : prop.object || !!prop.array;
+    }
+
+    if (!isObjectProperty(prop) && !prop.embedded) {
+      return entity[prop.name] != null ? [[entity[prop.name], []]] : [];
+    }
+
+    while (p.embedded) {
+      const child = meta.properties[p.embedded[0]];
+
+      if (payload && !child.object && !child.array) {
+        break;
+      }
+
+      path.shift();
+      path.unshift(p.embedded[0], p.embedded[1]);
+      p = child;
+    }
+
+    const ret: [unknown, number[]][] = [];
+    const follow = (t: Dictionary | Dictionary[], idx = 0, i: number[] = []): void => {
+      const k = path[idx];
+
+      if (Array.isArray(t)) {
+        return t.forEach((t, ii) => follow(t, idx, [...i, ii]));
+      }
+
+      if (t == null) {
+        return;
+      }
+
+      const target = t[k];
+
+      if (path[++idx]) {
+        follow(target, idx, i);
+      } else if (target != null) {
+        ret.push([target, i]);
+      }
+    };
+    follow(entity);
+
+    return ret;
+  }
+
+  static setPayloadProperty<T>(entity: EntityDictionary<T>, meta: EntityMetadata<T>, prop: EntityProperty<T>, value: unknown, idx: number[] = []): void {
+    function isObjectProperty(prop: EntityProperty): boolean {
+      return prop.embedded ? prop.object || prop.array || isObjectProperty(meta.properties[prop.embedded[0]]) : prop.object || !!prop.array;
+    }
+
+    if (!isObjectProperty(prop)) {
+      entity[prop.name] = value as T[keyof T & string];
+      return;
+    }
+
+    let target = entity as Dictionary;
+    let p = prop;
+    const path: string[] = [];
+
+    while (p.embedded) {
+      path.shift();
+      path.unshift(p.embedded[0], p.embedded[1]);
+      const prev = p;
+      p = meta!.properties[p.embedded[0]];
+
+      if (!p.object) {
+        path.shift();
+        path[0] = prev.name;
+        break;
+      }
+    }
+
+    let j = 0;
+    path.forEach((k, i) => {
+      if (i === path.length - 1) {
+        if (Array.isArray(target)) {
+          target[idx[j++]][k] = value;
+        } else {
+          target[k] = value;
+        }
+      } else {
+        if (Array.isArray(target)) {
+          target = target[idx[j++]][k];
+        } else {
+          target = target[k];
+        }
+      }
+    });
   }
 
 }

@@ -37,7 +37,7 @@ export class ObjectHydrator extends Hydrator {
   /**
    * @internal Highly performance-sensitive method.
    */
-  private getEntityHydrator<T extends AnyEntity<T>>(meta: EntityMetadata<T>, type: 'full' | 'returning' | 'reference'): EntityHydrator<T> {
+  getEntityHydrator<T extends AnyEntity<T>>(meta: EntityMetadata<T>, type: 'full' | 'returning' | 'reference'): EntityHydrator<T> {
     const exists = this.hydrators[type].get(meta.className);
 
     if (exists) {
@@ -107,31 +107,31 @@ export class ObjectHydrator extends Hydrator {
     };
 
     /* istanbul ignore next */
-    const propName = (name: string) => 'data' + (name.includes(' ') ? `['${name}']` : `.${name}`);
+    const propName = (name: string, property = 'data') => property + (name.match(/[ -]/) ? `['${name}']` : `.${name}`);
 
-    const hydrateToOne = (prop: EntityProperty) => {
+    const hydrateToOne = (prop: EntityProperty, dataKey: string, entityKey: string) => {
       const ret: string[] = [];
 
-      ret.push(`  if (${propName(prop.name)} === null) {\n    entity.${prop.name} = null;`);
-      ret.push(`  } else if (typeof ${propName(prop.name)} !== 'undefined') {`);
-      ret.push(`    if (isPrimaryKey(${propName(prop.name)}, true)) {`);
+      ret.push(`  if (${propName(dataKey)} === null) {\n    entity.${entityKey} = null;`);
+      ret.push(`  } else if (typeof ${propName(dataKey)} !== 'undefined') {`);
+      ret.push(`    if (isPrimaryKey(${propName(dataKey)}, true)) {`);
 
       if (prop.mapToPk) {
-        ret.push(`      entity.${prop.name} = ${propName(prop.name)};`);
+        ret.push(`      entity.${entityKey} = ${propName(dataKey)};`);
       } else if (prop.wrappedReference) {
-        ret.push(`      entity.${prop.name} = new Reference(factory.createReference('${prop.type}', ${propName(prop.name)}, { merge: true, convertCustomTypes }));`);
+        ret.push(`      entity.${entityKey} = new Reference(factory.createReference('${prop.type}', ${propName(dataKey)}, { merge: true, convertCustomTypes }));`);
       } else {
-        ret.push(`      entity.${prop.name} = factory.createReference('${prop.type}', ${propName(prop.name)}, { merge: true, convertCustomTypes });`);
+        ret.push(`      entity.${entityKey} = factory.createReference('${prop.type}', ${propName(dataKey)}, { merge: true, convertCustomTypes });`);
       }
 
-      ret.push(`    } else if (${propName(prop.name)} && typeof ${propName(prop.name)} === 'object') {`);
+      ret.push(`    } else if (${propName(dataKey)} && typeof ${propName(dataKey)} === 'object') {`);
 
       if (prop.mapToPk) {
-        ret.push(`      entity.${prop.name} = ${propName(prop.name)};`);
+        ret.push(`      entity.${entityKey} = ${propName(dataKey)};`);
       } else if (prop.wrappedReference) {
-        ret.push(`      entity.${prop.name} = new Reference(factory.create('${prop.type}', ${propName(prop.name)}, { initialized: true, merge: true, newEntity, convertCustomTypes }));`);
+        ret.push(`      entity.${entityKey} = new Reference(factory.create('${prop.type}', ${propName(dataKey)}, { initialized: true, merge: true, newEntity, convertCustomTypes }));`);
       } else {
-        ret.push(`      entity.${prop.name} = factory.create('${prop.type}', ${propName(prop.name)}, { initialized: true, merge: true, newEntity, convertCustomTypes });`);
+        ret.push(`      entity.${entityKey} = factory.create('${prop.type}', ${propName(dataKey)}, { initialized: true, merge: true, newEntity, convertCustomTypes });`);
       }
 
       ret.push(`    }`);
@@ -142,8 +142,8 @@ export class ObjectHydrator extends Hydrator {
         const prop2 = meta2.properties[prop.inversedBy || prop.mappedBy];
 
         if (prop2) {
-          ret.push(`  if (entity.${prop.name} && !entity.${prop.name}.${prop2.name}) {`);
-          ret.push(`    entity.${prop.name}.${prop.wrappedReference ? 'unwrap().' : ''}${prop2.name} = ${prop2.wrappedReference ? 'new Reference(entity)' : 'entity'};`);
+          ret.push(`  if (entity.${entityKey} && !entity.${entityKey}.${prop2.name}) {`);
+          ret.push(`    entity.${entityKey}.${prop.wrappedReference ? 'unwrap().' : ''}${prop2.name} = ${prop2.wrappedReference ? 'new Reference(entity)' : 'entity'};`);
           ret.push(`  }`);
         }
       }
@@ -151,34 +151,34 @@ export class ObjectHydrator extends Hydrator {
       if (prop.customType) {
         context.set(`convertToDatabaseValue_${prop.name}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform));
 
-        ret.push(`  if (${propName(prop.name)} != null && convertCustomTypes) {`);
-        ret.push(`    ${propName(prop.name)} = convertToDatabaseValue_${prop.name}(entity.${prop.name}.__helper.getPrimaryKey());`); // make sure the value is comparable
+        ret.push(`  if (${propName(dataKey)} != null && convertCustomTypes) {`);
+        ret.push(`    ${propName(dataKey)} = convertToDatabaseValue_${prop.name}(entity.${entityKey}.__helper.getPrimaryKey());`); // make sure the value is comparable
         ret.push(`  }`);
       }
 
       return ret;
     };
 
-    const hydrateToMany = (prop: EntityProperty) => {
+    const hydrateToMany = (prop: EntityProperty, dataKey: string, entityKey: string) => {
       const ret: string[] = [];
 
       ret.push(...this.createCollectionItemMapper(prop));
-      ret.push(`  if (${propName(prop.name)} && !Array.isArray(${propName(prop.name)}) && typeof ${propName(prop.name)} === 'object') {`);
-      ret.push(`    ${propName(prop.name)} = [${propName(prop.name)}];`);
+      ret.push(`  if (${propName(dataKey)} && !Array.isArray(${propName(dataKey)}) && typeof ${propName(dataKey)} === 'object') {`);
+      ret.push(`    ${propName(dataKey)} = [${propName(dataKey)}];`);
       ret.push(`  }`);
-      ret.push(`  if (Array.isArray(${propName(prop.name)})) {`);
-      ret.push(`     const items = ${propName(prop.name)}.map(value => createCollectionItem_${prop.name}(value));`);
+      ret.push(`  if (Array.isArray(${propName(dataKey)})) {`);
+      ret.push(`     const items = ${propName(dataKey)}.map(value => createCollectionItem_${prop.name}(value));`);
       ret.push(`     const coll = Collection.create(entity, '${prop.name}', items, newEntity);`);
       ret.push(`     if (newEntity) {`);
       ret.push(`       coll.setDirty();`);
       ret.push(`     } else {`);
       ret.push(`       coll.takeSnapshot();`);
       ret.push(`     }`);
-      ret.push(`  } else if (!entity.${prop.name} && ${propName(prop.name)} instanceof Collection) {`);
-      ret.push(`     entity.${prop.name} = ${propName(prop.name)};`);
-      ret.push(`  } else if (!entity.${prop.name}) {`);
+      ret.push(`  } else if (!entity.${entityKey} && ${propName(dataKey)} instanceof Collection) {`);
+      ret.push(`     entity.${entityKey} = ${propName(dataKey)};`);
+      ret.push(`  } else if (!entity.${entityKey}) {`);
       const items = this.platform.usesPivotTable() || !prop.owner ? 'undefined' : '[]';
-      ret.push(`    const coll = Collection.create(entity, '${prop.name}', ${items}, !!${propName(prop.name)} || newEntity);`);
+      ret.push(`    const coll = Collection.create(entity, '${prop.name}', ${items}, !!${propName(dataKey)} || newEntity);`);
       ret.push(`    coll.setDirty(false);`);
       ret.push(`  }`);
 
@@ -238,9 +238,9 @@ export class ObjectHydrator extends Hydrator {
       const ret: string[] = [];
 
       if (prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE) {
-        ret.push(...hydrateToOne(prop));
+        ret.push(...hydrateToOne(prop, dataKey, entityKey));
       } else if (prop.reference === ReferenceType.ONE_TO_MANY || prop.reference === ReferenceType.MANY_TO_MANY) {
-        ret.push(...hydrateToMany(prop));
+        ret.push(...hydrateToMany(prop, dataKey, entityKey));
       } else if (prop.reference === ReferenceType.EMBEDDED) {
         if (prop.array) {
           ret.push(...hydrateEmbeddedArray(prop, path, dataKey));
