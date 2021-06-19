@@ -2,7 +2,7 @@ import { EntityData, AnyEntity, EntityMetadata, Primary } from '../typings';
 
 export class ChangeSet<T extends AnyEntity<T>> {
 
-  private primaryKey?: Primary<T> | Primary<T>[];
+  private primaryKey?: Primary<T> | Primary<T>[] | null;
 
   constructor(public entity: T,
               public type: ChangeSetType,
@@ -13,7 +13,7 @@ export class ChangeSet<T extends AnyEntity<T>> {
     this.collection = meta.root.collection;
   }
 
-  getPrimaryKey(): Primary<T> | Primary<T>[] {
+  getPrimaryKey(): Primary<T> | Primary<T>[] | null {
     this.primaryKey = this.primaryKey ?? this.entity.__helper!.getPrimaryKey(true);
     return this.primaryKey;
   }

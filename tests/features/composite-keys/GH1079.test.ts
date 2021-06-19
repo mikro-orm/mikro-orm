@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, MikroORM, ManyToOne, Enum, PrimaryKeyType, Property, BigIntType, Logger } from '@mikro-orm/core';
+import { Entity, PrimaryKey, MikroORM, ManyToOne, Enum, PrimaryKeyType, Property, BigIntType, Logger, wrap } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
 
@@ -90,6 +90,7 @@ describe('GH issue 1079', () => {
     const user = new User();
     const wallet = new Wallet();
     const deposit = new Deposit();
+    expect(wrap(deposit, true).getPrimaryKeys()).toBeNull();
     user._id = '1';
     wallet.currencyRef = 'USD';
     wallet.owner = user;
@@ -98,6 +99,7 @@ describe('GH issue 1079', () => {
     deposit.amount = '123';
     deposit.txRef = '456';
     deposit.gatewayKey = '789';
+    expect(wrap(deposit, true).getPrimaryKeys()).toEqual(['456', 'USD', '1']);
 
     const mock = jest.fn();
     const logger = new Logger(mock, ['query']);

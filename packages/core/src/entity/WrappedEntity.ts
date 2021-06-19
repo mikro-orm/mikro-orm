@@ -88,6 +88,31 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
     return this.pkGetter(this.entity);
   }
 
+  getPrimaryKeys(convertCustomTypes = false): Primary<T>[] | null {
+    const pk = this.getPrimaryKey(convertCustomTypes);
+
+    if (!pk) {
+      return null;
+    }
+
+    if (this.__meta.compositePK) {
+      return this.__meta.primaryKeys.reduce((ret, pk) => {
+        const child = this.entity[pk] as AnyEntity<T> | Primary<unknown>;
+
+        if (Utils.isEntity(child, true)) {
+          const childPk = child.__helper!.getPrimaryKeys(convertCustomTypes);
+          ret.push(...childPk!);
+        } else {
+          ret.push(child as Primary<unknown>);
+        }
+
+        return ret;
+      }, [] as Primary<T>[]);
+    }
+
+    return [pk];
+  }
+
   setPrimaryKey(id: Primary<T> | null) {
     this.entity[this.entity.__meta!.primaryKeys[0] as string] = id;
   }
