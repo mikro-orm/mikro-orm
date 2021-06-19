@@ -63,7 +63,7 @@ export class SourceFile {
 
   private getPropertyDefinition(prop: EntityProperty, padLeft: number): string {
     // string defaults are usually things like SQL functions
-    const useDefault = prop.default && typeof prop.default !== 'string';
+    const useDefault = prop.default != null && typeof prop.default !== 'string';
     const optional = prop.nullable ? '?' : (useDefault ? '' : '!');
     const ret = `${prop.name}${optional}: ${prop.type}`;
     const padding = ' '.repeat(padLeft);

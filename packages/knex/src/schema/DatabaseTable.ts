@@ -292,8 +292,8 @@ export class DatabaseTable {
       return empty;
     }
 
-    if (propType === 'boolean') {
-      return !!column.default;
+    if (propType === 'boolean' && !raw) {
+      return !['0', 'false', 'f', 'n', 'no', 'off'].includes('' + column.default);
     }
 
     if (propType === 'number') {
