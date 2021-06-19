@@ -387,11 +387,11 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   async syncCollection<T extends AnyEntity<T>, O extends AnyEntity<O>>(coll: Collection<T, O>, ctx?: Transaction): Promise<void> {
     const wrapped = coll.owner.__helper!;
     const meta = wrapped.__meta;
-    const pks = wrapped.__primaryKeys;
+    const pks = wrapped.getPrimaryKeys(true);
     const snap = coll.getSnapshot();
     const includes = <T>(arr: T[], item: T) => !!arr.find(i => Utils.equals(i, item));
-    const snapshot = snap ? snap.map(item => item.__helper!.__primaryKeys) : [];
-    const current = coll.getItems(false).map(item => item.__helper!.__primaryKeys);
+    const snapshot = snap ? snap.map(item => item.__helper!.getPrimaryKeys(true)) : [];
+    const current = coll.getItems(false).map(item => item.__helper!.getPrimaryKeys(true));
     const deleteDiff = snap ? snapshot.filter(item => !includes(current, item)) : true;
     const insertDiff = current.filter(item => !includes(snapshot, item));
     const target = snapshot.filter(item => includes(current, item)).concat(...insertDiff);
@@ -414,7 +414,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       return this.rethrow(this.execute<any>(qb));
     }
 
-    return this.rethrow(this.updateCollectionDiff<T, O>(meta, coll.property, pks, deleteDiff, insertDiff, ctx));
+    return this.rethrow(this.updateCollectionDiff<T, O>(meta, coll.property, pks as any, deleteDiff as any, insertDiff as any, ctx));
   }
 
   async loadFromPivotTable<T extends AnyEntity<T>, O extends AnyEntity<O>>(prop: EntityProperty, owners: Primary<O>[][], where: FilterQuery<T> = {}, orderBy?: QueryOrderMap, ctx?: Transaction, options?: FindOptions<T>): Promise<Dictionary<T[]>> {
@@ -443,9 +443,20 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const items = owners.length ? await this.rethrow(qb.execute('all')) : [];
 
     const map: Dictionary<T[]> = {};
-    owners.forEach(owner => map['' + Utils.getPrimaryKeyHash(owner as string[])] = []);
+    const pkProps = ownerMeta.getPrimaryProps();
+    owners.forEach(owner => {
+      const key = Utils.getPrimaryKeyHash(prop.joinColumns.map((col, idx) => {
+        const pkProp = pkProps[idx];
+        return pkProp.customType ? pkProp.customType.convertToJSValue(owner[idx], this.platform) : owner[idx];
+      }));
+
+      return map[key] = [];
+    });
     items.forEach((item: any) => {
-      const key = Utils.getPrimaryKeyHash(prop.joinColumns.map(col => item[`fk__${col}`]));
+      const key = Utils.getPrimaryKeyHash(prop.joinColumns.map((col, idx) => {
+        const pkProp = pkProps[idx];
+        return pkProp.customType ? pkProp.customType.convertToJSValue(item[`fk__${col}`], this.platform) : item[`fk__${col}`];
+      }));
       map[key].push(item);
       prop.joinColumns.forEach(col => delete item[`fk__${col}`]);
       prop.inverseJoinColumns.forEach(col => delete item[`fk__${col}`]);
@@ -632,7 +643,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     /* istanbul ignore else */
     if (this.platform.allowsMultiInsert()) {
-      await this.nativeInsertMany<T>(prop.pivotTable, items as EntityData<T>[], ctx);
+      await this.nativeInsertMany<T>(prop.pivotTable, items as EntityData<T>[], ctx, false, false);
     } else {
       await Utils.runSerial(items, item => this.createQueryBuilder(prop.pivotTable, ctx, true).unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES).insert(item).execute('run', false));
     }
