@@ -168,7 +168,7 @@ export class DatabaseTable {
     }
 
     if (propType === 'boolean') {
-      return !!column.defaultValue;
+      return !['0', 'false', 'f', 'n', 'no', 'off'].includes('' + column.defaultValue);
     }
 
     if (propType === 'number') {

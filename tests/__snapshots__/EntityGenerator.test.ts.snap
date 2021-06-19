@@ -47,7 +47,7 @@ export class Author2 {
 
   @Index({ name: 'author2_terms_accepted_index' })
   @Property()
-  termsAccepted: boolean = true;
+  termsAccepted: boolean = false;
 
   @Property({ nullable: true })
   optional?: boolean;
@@ -560,7 +560,7 @@ export class Author2 {
 
   @Index({ name: 'author2_terms_accepted_index' })
   @Property()
-  termsAccepted: boolean = true;
+  termsAccepted: boolean = false;
 
   @Property({ nullable: true })
   optional?: boolean;
@@ -917,7 +917,7 @@ export class Author3 {
   age?: number;
 
   @Property()
-  termsAccepted!: number;
+  termsAccepted: number = 0;
 
   @Property({ columnType: 'text', nullable: true })
   identities?: string;
