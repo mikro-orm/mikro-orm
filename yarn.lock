@@ -5999,18 +5999,7 @@ mongodb-topology-manager@2.1.0:
     mongodb-core "^3.1.2"
     rimraf "^2.6.2"
 
-mongodb@3.3.x:
-  version "3.3.5"
-  resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-3.3.5.tgz#38d531013afede92b0dd282e3b9f3c08c9bdff3b"
-  integrity sha512-6NAv5gTFdwRyVfCz+O+KDszvjpyxmZw+VlmqmqKR2GmpkeKrKFRv/ZslgTtZba2dc9JYixIf99T5Gih7TIWv7Q==
-  dependencies:
-    bson "^1.1.1"
-    require_optional "^1.0.1"
-    safe-buffer "^5.1.2"
-  optionalDependencies:
-    saslprep "^1.0.0"
-
-mongodb@3.6.9:
+mongodb@3.6.9, mongodb@3.6.x:
   version "3.6.9"
   resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-3.6.9.tgz#4889cf529724267d393a18275d6cf19d71905b1d"
   integrity sha512-1nSCKgSunzn/CXwgOWgbPHUWOO5OfERcuOWISmqd610jn0s8BU9K4879iJVabqgpPPbA6hO7rG48eq+fGED3Mg==
@@ -7519,16 +7508,16 @@ run-parallel@^1.1.9:
   dependencies:
     queue-microtask "^1.2.2"
 
-run-rs@0.7.4:
-  version "0.7.4"
-  resolved "https://registry.yarnpkg.com/run-rs/-/run-rs-0.7.4.tgz#4267a7c7643b9d05415955747fdeac0dbbad9f3a"
-  integrity sha512-6VP6zOPvl6uiC+Qe+yXY0G5BbLcelO6lhkMlAuM+syOSUIsiI2mQB2NBhqv1g1I0k8bPQ2KgIa4qe6nTuXYU+g==
+run-rs@0.7.5:
+  version "0.7.5"
+  resolved "https://registry.yarnpkg.com/run-rs/-/run-rs-0.7.5.tgz#c07f625f6508f4969b061eed22f2ec069c9866cb"
+  integrity sha512-f9xNyJL75xA2TXGnAFA8/eVlHb31Ke+YejPQmRyRg1bgGkgEv6mXuZs4fvmFu/v2Ue/RRJ31F4D4zsEOeG+VVg==
   dependencies:
     chalk "2.4.1"
     co "4.6.0"
     commander "2.15.1"
     moment "2.22.2"
-    mongodb "3.3.x"
+    mongodb "3.6.x"
     mongodb-topology-manager "2.1.0"
     prettyjson "1.2.1"
 
