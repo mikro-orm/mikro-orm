@@ -1,6 +1,6 @@
 // @ts-ignore
 import { escape } from 'sqlstring-sqlite';
-import { EntityProperty, Utils } from '@mikro-orm/core';
+import { EntityProperty, JsonProperty, Utils } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { SqliteSchemaHelper } from './SqliteSchemaHelper';
 import { SqliteExceptionConverter } from './SqliteExceptionConverter';
@@ -91,7 +91,7 @@ export class SqlitePlatform extends AbstractSqlPlatform {
 
   quoteValue(value: any): string {
     /* istanbul ignore if */
-    if (Utils.isPlainObject(value)) {
+    if (Utils.isPlainObject(value) || value?.[JsonProperty]) {
       return escape(JSON.stringify(value), true, this.timezone);
     }
 

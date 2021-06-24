@@ -15,6 +15,7 @@ export class EntityHelper {
 
   static decorate<T extends AnyEntity<T>>(meta: EntityMetadata<T>, em: EntityManager): void {
     if (meta.embeddable) {
+      EntityHelper.defineBaseProperties(meta, meta.prototype, em);
       return;
     }
 
@@ -53,8 +54,9 @@ export class EntityHelper {
   }
 
   private static defineBaseProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>, prototype: T, em: EntityManager) {
+    const helperParams = meta.embeddable ? [] : [em.getComparator().getPkGetter(meta), em.getComparator().getPkSerializer(meta), em.getComparator().getPkGetterConverted(meta)];
     Object.defineProperties(prototype, {
-      __entity: { value: true },
+      __entity: { value: !meta.embeddable },
       __meta: { value: meta },
       __platform: { value: em.getPlatform() },
       [entityHelperSymbol]: { value: null, writable: true, enumerable: false },
@@ -62,7 +64,7 @@ export class EntityHelper {
         get(): WrappedEntity<T, keyof T> {
           if (!this[entityHelperSymbol]) {
             Object.defineProperty(this, entityHelperSymbol, {
-              value: new WrappedEntity(this, em.getComparator().getPkGetter(meta), em.getComparator().getPkSerializer(meta), em.getComparator().getPkGetterConverted(meta)),
+              value: new WrappedEntity(this, ...helperParams),
               enumerable: false,
             });
           }

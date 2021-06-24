@@ -243,11 +243,19 @@ export class ChangeSetPersister {
   }
 
   private processProperty<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {
-    const value = changeSet.payload[prop.name];
+    const meta = this.metadata.find(changeSet.name)!;
+    const values = Utils.unwrapProperty(changeSet.payload, meta, prop, true); // for object embeddables
+    const value = changeSet.payload[prop.name] as unknown; // for inline embeddables
 
-    if (value as unknown instanceof EntityIdentifier) {
-      changeSet.payload[prop.name] = value.getValue();
+    if (value instanceof EntityIdentifier) {
+      Utils.setPayloadProperty<T>(changeSet.payload, meta, prop, value.getValue());
     }
+
+    values.forEach(([value, indexes]) => {
+      if (value instanceof EntityIdentifier) {
+        Utils.setPayloadProperty<T>(changeSet.payload, meta, prop, value.getValue(), indexes);
+      }
+    });
 
     if (prop.onCreate && changeSet.type === ChangeSetType.CREATE) {
       changeSet.entity[prop.name] = prop.onCreate(changeSet.entity);

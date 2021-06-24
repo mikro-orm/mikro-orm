@@ -13,7 +13,9 @@ are the primary use case for this feature.
 > Embeddables needs to be discovered just like regular entities, don't forget to 
 > add them to the list of entities when initializing the ORM.
 
-Embeddables can only contain properties with basic `@Property()` mapping.
+Embeddables can contain properties with basic `@Property()` mapping, nested 
+`@Embedded()` properties or arrays of `@Embedded()` properties. From version
+5.0 we can also use `@ManyToOne()` properties.
 
 For the purposes of this tutorial, we will assume that you have a `User` class in 
 your application and you would like to store an address in the `User` class. We will 

@@ -9,6 +9,9 @@ import {
   TinyIntType, Type, UuidType, StringType, IntegerType, FloatType, DateTimeType, TextType, EnumType, UnknownType,
 } from '../types';
 import { Utils } from '../utils/Utils';
+import clone from 'clone';
+
+export const JsonProperty = Symbol('JsonProperty');
 
 export abstract class Platform {
 
@@ -316,7 +319,11 @@ export abstract class Platform {
   }
 
   cloneEmbeddable<T>(data: T): T {
-    return JSON.parse(JSON.stringify(data));
+    const copy = clone(data);
+    // tag the copy so we know it should be stringified when quoting (so we know how to treat JSON arrays)
+    Object.defineProperty(copy, JsonProperty, { enumerable: false, value: true });
+
+    return copy;
   }
 
   setConfig(config: Configuration): void {
