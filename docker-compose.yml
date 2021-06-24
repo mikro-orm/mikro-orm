@@ -15,7 +15,7 @@ services:
       - mysql:/var/lib/mysql
 
   mariadb:
-    image: mariadb:10.6.1
+    image: mariadb:10.6.2
     ports:
       - 3309:3306
     environment:
