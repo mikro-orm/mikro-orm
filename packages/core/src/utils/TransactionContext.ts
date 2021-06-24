@@ -15,9 +15,10 @@ export class TransactionContext {
    */
   static async createAsync<T>(em: EntityManager, next: (...args: any[]) => Promise<T>): Promise<T> {
     const context = new TransactionContext(em);
-    const old = (domain as Dictionary).active;
+    const old = (domain as Dictionary).active || {};
     const d = domain.create() as TXDomain;
-    Object.assign(d, old);
+    const ignore = ['_events', '_eventsCount', '_maxListeners', 'members'];
+    Object.keys(old).filter(k => !ignore.includes(k)).forEach(k => d[k] = old[k]);
     d.__mikro_orm_tx_context = context;
 
     return new Promise((resolve, reject) => {
