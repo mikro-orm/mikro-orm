@@ -13,8 +13,6 @@ export class TransactionContext {
    */
   static async createAsync<T>(em: EntityManager, next: (...args: any[]) => Promise<T>): Promise<T> {
     const context = new TransactionContext(em);
-    const old = this.currentTransactionContext();
-    Object.assign(context, old);
 
     return new Promise((resolve, reject) => {
       this.storage.run(context, () => next().then(resolve).catch(reject));

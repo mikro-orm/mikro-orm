@@ -1,7 +1,7 @@
 import { ensureDir, readFile } from 'fs-extra';
 import { dirname } from 'path';
 import { AbstractSqlConnection, Knex, MonkeyPatchable } from '@mikro-orm/knex';
-import { Dictionary } from '@mikro-orm/core';
+import { Dictionary, Utils } from '@mikro-orm/core';
 
 export class SqliteConnection extends AbstractSqlConnection {
 
@@ -28,13 +28,14 @@ export class SqliteConnection extends AbstractSqlConnection {
   }
 
   protected getKnexOptions(type: string): Knex.Config {
-    return {
+    return Utils.merge({
       client: type,
       connection: {
         filename: this.config.get('dbName'),
       },
+      pool: this.config.get('pool'),
       useNullAsDefault: true,
-    };
+    }, this.config.get('driverOptions'));
   }
 
   protected transformRawResult<T>(res: any, method: 'all' | 'get' | 'run'): T {
