@@ -64,11 +64,11 @@ export abstract class Connection {
   getConnectionOptions(): ConnectionConfig {
     const ret: ConnectionConfig = {};
     const url = new URL(this.options!.clientUrl || this.config.getClientUrl());
-    this.options!.host = ret.host = (this.options!.host || this.config.get('host', url.hostname));
-    this.options!.port = ret.port = (this.options!.port || this.config.get('port', +url.port));
-    this.options!.user = ret.user = (this.options!.user || this.config.get('user', url.username));
-    this.options!.password = ret.password = (this.options!.password || this.config.get('password', url.password));
-    this.options!.dbName = ret.database = (this.options!.dbName || this.config.get('dbName', url.pathname.replace(/^\//, '')));
+    this.options!.host = ret.host = (this.options!.host ?? this.config.get('host', url.hostname));
+    this.options!.port = ret.port = (this.options!.port ?? this.config.get('port', +url.port));
+    this.options!.user = ret.user = (this.options!.user ?? this.config.get('user', url.username));
+    this.options!.password = ret.password = (this.options!.password ?? this.config.get('password', url.password));
+    this.options!.dbName = ret.database = (this.options!.dbName ?? this.config.get('dbName', url.pathname.replace(/^\//, '')));
 
     return ret;
   }
