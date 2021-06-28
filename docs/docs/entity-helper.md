@@ -59,22 +59,77 @@ wrap(book).assign({ meta: { foo: 4 } });
 console.log(book.meta); // { foo: 4 }
 ```
 
-To get the same behavior as `mergeObjects` flag for m:1 and 1:1 references, enable the `updateNestedEntities` flag.
+### Updating deep entity graph
+
+Since v5, `assign` allows updating deep entity graph by default. To update existing
+entity, we need to provide its PK in the `data`, as well as to **load that entity first
+into current context**.
 
 ```typescript
-import { wrap } from '@mikro-orm/core';
+const book = await em.findOneOrFail(Book, 1, { populate: ['author'] });
 
-const authorEntity = new Author('Jon2 Snow', 'snow3@wall.st');
-book.author = authorEntity;
+// update existing book's author's name
+wrap(book).assign({
+  author: {
+    id: book.author.id,
+    name: 'New name...',
+  },
+});
+```
 
-wrap(book).assign({ author: { name: 'Jon Snow2' } }, { updateNestedEntities: true });
-console.log(book.author); // { ... name: 'Jon Snow2' ... }
-console.log(book.author === authorEntity) // true
+If we want to always update the entity, even without the entity PK being present 
+in `data`, we can use `updateByPrimaryKey: false`:
 
-//this will have no influence as author is an entity
-wrap(book).assign({ author: { name: 'Jon Snow2' } }, { mergeObjects: true });
-console.log(book.author); // { ... name: 'Jon Snow2' ... }
-console.log(book.author === authorEntity) // false
+```typescript
+const book = await em.findOneOrFail(Book, 1, { populate: ['author'] });
+
+// update existing book's author's name
+wrap(book).assign({
+  author: {
+    name: 'New name...',
+  },
+}, { updateByPrimaryKey: false });
+```
+
+Otherwise the entity data without PK are considered as new entity, and will trigger
+insert query:
+
+```typescript
+const book = await em.findOneOrFail(Book, 1, { populate: ['author'] });
+
+// creating new author for given book
+wrap(book).assign({
+  author: {
+    name: 'New name...',
+  },
+});
+```
+
+Same applies to the case when we do not load the child entity first into the context,
+e.g. when we try to assign to a relation that was not populated. Even if we provide
+its PK, it will be considered as new object and trigger an insert query.
+
+```typescript
+const book = await em.findOneOrFail(Book, 1); // author is not populated
+
+// creating new author for given book
+wrap(book).assign({
+  author: {
+    id: book.author.id,
+    name: 'New name...',
+  },
+});
+```
+
+When updating collections, we can either pass complete array of all items, or just
+a single item - in such case, the new item will be appended to the existing items.
+
+```ts
+// resets the addresses collection to a single item
+wrap(user).assign({ addresses: [new Address(...)] });
+
+// adds new address to the collection
+wrap(user).assign({ addresses: new Address(...) });
 ```
 
 ## `WrappedEntity` and `wrap()` helper

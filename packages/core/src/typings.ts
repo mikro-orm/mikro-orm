@@ -87,7 +87,7 @@ export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T | unk
   toObject(ignoreFields?: string[]): EntityDTO<T>;
   toJSON(...args: any[]): EntityDTO<T>;
   toPOJO(): EntityDTO<T>;
-  assign(data: any, options?: AssignOptions | boolean): T;
+  assign(data: EntityData<T> | Partial<EntityDTO<T>>, options?: AssignOptions | boolean): T;
 }
 
 export interface IWrappedEntityInternal<T, PK extends keyof T | unknown = PrimaryProperty<T>, P = keyof T> extends IWrappedEntity<T, PK, P> {
@@ -136,7 +136,9 @@ export type EntityDataProp<T> = T extends Scalar
     ? EntityDataNested<U>
     : T extends Collection<infer U>
         ? U | U[] | EntityDataNested<U> | EntityDataNested<U>[]
-        : EntityDataNested<T>;
+        : T extends readonly (infer U)[]
+            ? U | U[] | EntityDataNested<U> | EntityDataNested<U>[]
+            : EntityDataNested<T>;
 
 export type EntityDataNested<T> = T extends undefined
   ? never

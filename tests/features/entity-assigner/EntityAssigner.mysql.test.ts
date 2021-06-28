@@ -1,7 +1,7 @@
-import { EntityData, MikroORM, Reference, wrap } from '@mikro-orm/core';
+import { MikroORM, Reference, wrap } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
-import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
-import { Author2, Book2, BookTag2, FooBar2, Publisher2, PublisherType } from './entities-sql';
+import { initORMMySql, wipeDatabaseMySql } from '../../bootstrap';
+import { Author2, Book2, BookTag2, FooBar2, Publisher2, PublisherType } from '../../entities-sql';
 
 describe('EntityAssignerMySql', () => {
 
@@ -17,6 +17,7 @@ describe('EntityAssignerMySql', () => {
     await orm.em.persistAndFlush(book);
     expect(book.title).toBe('Book2');
     expect(book.author).toBe(jon);
+    // @ts-expect-error
     wrap(book).assign({ title: 'Better Book2 1', author: god, notExisting: true });
     expect(book.author).toBe(god);
     expect((book as any).notExisting).toBe(true);
@@ -30,22 +31,27 @@ describe('EntityAssignerMySql', () => {
 
   test('assign() should fix property types [mysql]', async () => {
     const god = new Author2('God', 'hello@heaven.god');
+    // @ts-expect-error
     wrap(god).assign({ createdAt: '2018-01-01', termsAccepted: 1 });
     expect(god.createdAt).toEqual(new Date('2018-01-01'));
     expect(god.termsAccepted).toBe(true);
 
     const d1 = +new Date('2018-01-01');
+    // @ts-expect-error
     wrap(god).assign({ createdAt: '' + d1, termsAccepted: 0 });
     expect(god.createdAt).toEqual(new Date('2018-01-01'));
     expect(god.termsAccepted).toBe(false);
 
+    // @ts-expect-error
     wrap(god).assign({ createdAt: d1, termsAccepted: 0 });
     expect(god.createdAt).toEqual(new Date('2018-01-01'));
 
     const d2 = +new Date('2018-01-01 00:00:00.123');
+    // @ts-expect-error
     wrap(god).assign({ createdAt: '' + d2 });
     expect(god.createdAt).toEqual(new Date('2018-01-01 00:00:00.123'));
 
+    // @ts-expect-error
     wrap(god).assign({ createdAt: d2 });
     expect(god.createdAt).toEqual(new Date('2018-01-01 00:00:00.123'));
   });
@@ -88,7 +94,7 @@ describe('EntityAssignerMySql', () => {
     expect(book1.author.email).toBeUndefined();
     expect(book1.author).not.toEqual(jon);
 
-    wrap(book2).assign({ author: { name: 'Jon Snow2' } }, { updateNestedEntities: true });
+    wrap(book2).assign({ author: { name: 'Jon Snow2' } }, { updateByPrimaryKey: false });
     expect(book2.author.name).toEqual('Jon Snow2');
     expect(book2.author.email).toEqual('snow3@wall.st');
     expect(book2.author).toEqual(jon2);
@@ -147,7 +153,7 @@ describe('EntityAssignerMySql', () => {
     const originalRef = book2.publisher!;
     expect(originalValue.name).toEqual('Good Books LLC');
 
-    wrap(book2).assign({ author: { name: 'Jon Snow2' }, publisher: { name: 'Better Books LLC' } }, { updateNestedEntities: true });
+    wrap(book2).assign({ author: { name: 'Jon Snow2' }, publisher: { name: 'Better Books LLC' } }, { updateByPrimaryKey: false });
 
     // this means that the original object has been replaced, something updateNestedEntities does not do
     expect(book2.publisher).toEqual(originalRef);

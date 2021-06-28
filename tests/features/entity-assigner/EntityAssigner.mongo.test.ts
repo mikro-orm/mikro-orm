@@ -1,7 +1,7 @@
 import { assign, EntityData, expr, MikroORM, wrap } from '@mikro-orm/core';
 import { MongoDriver, ObjectId } from '@mikro-orm/mongodb';
-import { Author, Book, BookTag } from './entities';
-import { initORMMongo, wipeDatabase } from './bootstrap';
+import { Author, Book, BookTag } from '../../entities';
+import { initORMMongo, wipeDatabase } from '../../bootstrap';
 
 describe('EntityAssignerMongo', () => {
 
@@ -71,9 +71,9 @@ describe('EntityAssignerMongo', () => {
 
   test('#assign() should merge collection items', async () => {
     const jon = new Author('Jon Snow', 'snow@wall.st');
-    orm.em.assign(jon, { books: [{ _id: ObjectId.createFromTime(1), title: 'b1' }] }, { merge: false });
+    orm.em.assign(jon, { books: [{ _id: ObjectId.createFromTime(1), title: 'b1' }] }, { merge: false, updateNestedEntities: false });
     expect(wrap(jon.books[0], true).__em).toBeUndefined();
-    orm.em.assign(jon, { books: [{ _id: ObjectId.createFromTime(2), title: 'b2' }] }, { merge: true });
+    orm.em.assign(jon, { books: [{ _id: ObjectId.createFromTime(2), title: 'b2' }] }, { merge: true, updateNestedEntities: false });
     expect(wrap(jon.books[0], true).__em).not.toBeUndefined();
   });
 
