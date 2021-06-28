@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { EntityManager, JavaScriptMetadataProvider, LoadStrategy, MikroORM, Options, Utils } from '@mikro-orm/core';
+import { EntityManager, JavaScriptMetadataProvider, LoadStrategy, Logger, LoggerNamespace, MikroORM, Options, Utils } from '@mikro-orm/core';
 import { AbstractSqlDriver, SchemaGenerator, SqlEntityManager, SqlEntityRepository } from '@mikro-orm/knex';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -242,4 +242,12 @@ export async function wipeDatabaseSqlite2(em: SqlEntityManager) {
   await em.nativeDelete('publisher4_tests', {});
   await em.execute('pragma foreign_keys = on');
   em.clear();
+}
+
+export function mockLogger(orm: MikroORM, debugMode: LoggerNamespace[] = ['query', 'query-params']) {
+  const mock = jest.fn();
+  const logger = new Logger(mock, debugMode);
+  Object.assign(orm.config, { logger });
+
+  return mock;
 }

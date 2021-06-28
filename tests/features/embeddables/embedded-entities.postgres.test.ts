@@ -298,7 +298,7 @@ describe('embedded entities in postgresql', () => {
     const user = new User();
     wrap(user).assign({
       address1: { street: 'Downing street 10', number: 3, postalCode: '123', city: 'London 1', country: 'UK 1' },
-      address2: { street: 'Downing street 11', number: 3, city: 'London 2', country: 'UK 2' },
+      address2: { street: 'Downing street 11', city: 'London 2', country: 'UK 2' },
       address3: { street: 'Downing street 12', number: 3, postalCode: '789', city: 'London 3', country: 'UK 3' },
       address4: { street: 'Downing street 10', number: 3, postalCode: '123', city: 'London 1', country: 'UK 1' },
     }, { em: orm.em });
