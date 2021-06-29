@@ -3,6 +3,7 @@ import {
   PrimaryKeyType, Property, ValidationError, wrap, LoadStrategy, Logger,
 } from '@mikro-orm/core';
 import { AbstractSqlConnection, SqliteDriver } from '@mikro-orm/sqlite';
+import { mockLogger } from '../../bootstrap';
 
 @Entity()
 export class FooBar2 {
@@ -470,6 +471,27 @@ describe('composite keys in sqlite', () => {
     await orm.em.remove(c2).flush();
     const c3 = await orm.em.findOne(Car2, car1);
     expect(c3).toBeNull();
+  });
+
+  test('removing composite entity in m:n relationship, one of entity is composite (GH #1961)', async () => {
+    const sandwich1 = new Sandwich('Fish Sandwich', 100);
+    const sandwich2 = new Sandwich('Fried Egg Sandwich', 200);
+    const sandwich3 = new Sandwich('Grilled Cheese Sandwich', 300);
+    const user1 = new User2('Henry', 'Doe 1');
+    const user2 = new User2('Henry', 'Doe 2');
+    const user3 = new User2('Henry', 'Doe 3');
+    user1.sandwiches.add(sandwich1, sandwich3);
+    user2.sandwiches.add(sandwich3);
+    user2.sandwiches.add(sandwich2, sandwich3);
+    await orm.em.persistAndFlush([user1, user2, user3]);
+
+    const mock = mockLogger(orm);
+    user2.sandwiches.removeAll();
+    await orm.em.flush();
+
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('delete from `user2_sandwiches` where (`sandwich_id`) in ( values (2), (3)) and `user2_first_name` = \'Henry\' and `user2_last_name` = \'Doe 2\'');
+    expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
   test('composite entity in m:n relationship, one of entity is composite', async () => {
