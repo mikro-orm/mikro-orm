@@ -66,15 +66,26 @@ export class ConfigurationLoader {
   static async registerTsNode(configPath = 'tsconfig.json'): Promise<void> {
     const tsConfigPath = isAbsolute(configPath) ? configPath : join(process.cwd(), configPath);
 
-    const { options: configOptions } = Utils.requireFrom('ts-node', tsConfigPath).register({
+    const tsNode = Utils.tryRequire({
+      module: 'ts-node',
+      from: tsConfigPath,
+      warning: 'ts-node not installed, support for working with TS files might not work',
+    });
+
+    /* istanbul ignore next */
+    if (!tsNode) {
+      return;
+    }
+
+    const { options } = tsNode.register({
       project: tsConfigPath,
       transpileOnly: true,
     }).config;
 
-    if (Object.entries(configOptions?.paths ?? {}).length > 0) {
+    if (Object.entries(options?.paths ?? {}).length > 0) {
       Utils.requireFrom('tsconfig-paths', tsConfigPath).register({
-        baseUrl: configOptions.baseUrl,
-        paths: configOptions.paths,
+        baseUrl: options.baseUrl,
+        paths: options.paths,
       });
     }
   }
