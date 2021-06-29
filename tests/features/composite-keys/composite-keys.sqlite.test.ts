@@ -485,7 +485,7 @@ describe('composite keys in sqlite', () => {
     await orm.em.persistAndFlush([user1, user2, user3]);
 
     const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
+    const logger = new Logger(mock, ['query', 'query-params']);
     Object.assign(orm.config, { logger });
 
     user2.sandwiches.removeAll();
