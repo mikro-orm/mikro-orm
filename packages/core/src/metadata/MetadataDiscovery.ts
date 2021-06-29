@@ -527,6 +527,7 @@ export class MetadataDiscovery {
     let order = this.defineBaseEntityProperties(base);
     const old = Object.values(meta.properties).map(x => x.name);
     meta.properties = { ...base.properties, ...meta.properties };
+    meta.filters = { ...base.filters, ...meta.filters };
 
     if (!meta.discriminatorValue) {
       Object.values(base.properties).filter(prop => !old.includes(prop.name)).forEach(prop => {
@@ -534,6 +535,7 @@ export class MetadataDiscovery {
         meta.propertyOrder.set(prop.name, (order += 0.01));
       });
     }
+
     meta.indexes = Utils.unique([...base.indexes, ...meta.indexes]);
     meta.uniques = Utils.unique([...base.uniques, ...meta.uniques]);
     const pks = Object.values(meta.properties).filter(p => p.primary).map(p => p.name);
