@@ -1,19 +1,26 @@
 import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property, Filter, Logger, ManyToOne } from '@mikro-orm/core';
 import { AbstractSqlDriver } from '@mikro-orm/knex';
 
-@Entity()
 @Filter({
   name: 'isActive',
   cond: { benefitStatus: 'A' },
   default: true,
 })
-class Benefit {
+class BaseBenefit {
 
   @PrimaryKey()
   id!: number;
 
   @Property()
   benefitStatus!: string;
+
+}
+
+@Entity()
+class Benefit extends BaseBenefit {
+
+  @Property({ nullable: true })
+  name?: string;
 
 }
 
