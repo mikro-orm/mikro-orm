@@ -69,7 +69,18 @@ export class ConfigurationLoader {
   static async registerTsNode(configPath = 'tsconfig.json'): Promise<void> {
     const tsConfigPath = isAbsolute(configPath) ? configPath : join(process.cwd(), configPath);
 
-    const { options } = Utils.requireFrom('ts-node', tsConfigPath).register({
+    const tsNode = Utils.tryRequire({
+      module: 'ts-node',
+      from: tsConfigPath,
+      warning: 'ts-node not installed, support for working with TS files might not work',
+    });
+
+    /* istanbul ignore next */
+    if (!tsNode) {
+      return;
+    }
+
+    const { options } = tsNode.register({
       project: tsConfigPath,
       transpileOnly: true,
     }).config;

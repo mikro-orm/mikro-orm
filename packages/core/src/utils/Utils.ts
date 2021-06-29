@@ -890,4 +890,22 @@ export class Utils {
     });
   }
 
+  static tryRequire<T = any>({ module, from, allowError, warning }: { module: string; warning: string; from?: string; allowError?: string }): T | undefined {
+    allowError = allowError ?? `Cannot find module '${module}'`;
+    from = from ?? process.cwd();
+
+    try {
+      return Utils.requireFrom(module, from);
+    } catch (err) {
+      if (err.message.includes(allowError)) {
+        // eslint-disable-next-line no-console
+        console.warn(warning);
+        return undefined;
+      }
+
+      throw err;
+    }
+
+  }
+
 }
