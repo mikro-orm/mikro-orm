@@ -3,7 +3,6 @@ import {
   PrimaryKeyType, Property, ValidationError, wrap, LoadStrategy, Logger,
 } from '@mikro-orm/core';
 import { AbstractSqlConnection, SqliteDriver } from '@mikro-orm/sqlite';
-import { mockLogger } from '../../bootstrap';
 
 @Entity()
 export class FooBar2 {
@@ -485,7 +484,10 @@ describe('composite keys in sqlite', () => {
     user2.sandwiches.add(sandwich2, sandwich3);
     await orm.em.persistAndFlush([user1, user2, user3]);
 
-    const mock = mockLogger(orm);
+    const mock = jest.fn();
+    const logger = new Logger(mock, ['query']);
+    Object.assign(orm.config, { logger });
+
     user2.sandwiches.removeAll();
     await orm.em.flush();
 
