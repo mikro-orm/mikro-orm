@@ -113,8 +113,8 @@ describe('GH issue 1979', () => {
     orm.em.clear();
   });
 
-  afterAll(() => {
-    orm.close(true);
+  afterAll(async () => {
+    await orm.close(true);
   });
 
   test('count with Filter (benefit)', async () => {
