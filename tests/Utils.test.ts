@@ -365,7 +365,7 @@ describe('Utils', () => {
     const requireFromSpy = jest.spyOn(Utils, 'requireFrom');
     requireFromSpy.mockImplementationOnce(() => { throw new Error('some other issue'); });
     expect(() => {
-      return Utils.tryRequire({ module: 'not-existing-dep', warning: 'not found' });
+      return Utils.tryRequire({ module: 'not-existing-dep', warning: 'not found', allowError: 'Cannot find module' });
     }).toThrowError('some other issue');
   });
 
