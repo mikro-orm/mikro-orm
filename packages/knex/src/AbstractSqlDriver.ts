@@ -611,8 +611,6 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   protected async updateCollectionDiff<T extends AnyEntity<T>, O extends AnyEntity<O>>(meta: EntityMetadata<O>, prop: EntityProperty<T>, pks: Primary<O>[], deleteDiff: Primary<T>[][] | boolean, insertDiff: Primary<T>[][], ctx?: Transaction): Promise<void> {
-    const meta2 = this.metadata.find<T>(prop.type)!;
-
     if (!deleteDiff) {
       deleteDiff = [];
     }
@@ -625,7 +623,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
         knex.whereIn(prop.inverseJoinColumns, deleteDiff as Knex.Value[][]);
       }
 
-      meta2.primaryKeys.forEach((pk, idx) => knex.andWhere(prop.joinColumns[idx], pks[idx] as Knex.Value[][]));
+      prop.joinColumns.forEach((joinColumn, idx) => knex.andWhere(joinColumn, pks[idx] as Knex.Value[][]));
       await this.execute(knex.delete());
     }
 
