@@ -276,6 +276,11 @@ export class ChangeSetPersister {
   private mapReturnedValues<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, res: QueryResult, meta: EntityMetadata<T>): void {
     if (this.platform.usesReturningStatement() && res.row && Utils.hasObjectKeys(res.row)) {
       const data = meta.props.reduce((ret, prop) => {
+        if (prop.primary && !changeSet.entity.__helper!.hasPrimaryKey()) {
+          this.mapPrimaryKey(meta, res.row![prop.fieldNames[0]], changeSet);
+          return ret;
+        }
+
         if (prop.fieldNames && Utils.isDefined(res.row![prop.fieldNames[0]], true) && !Utils.isDefined(changeSet.entity[prop.name], true)) {
           ret[prop.name] = changeSet.payload[prop.name] = res.row![prop.fieldNames[0]];
         }
