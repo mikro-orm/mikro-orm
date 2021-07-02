@@ -222,6 +222,8 @@ We can use the `@UseRequestContext()` decorator. It requires you to first inject
 for you. Under the hood, the decorator will register new request context for your 
 method and execute it inside the context. 
 
+Keep in mind, that all handlers that are decorated with @UseRequestContext(), should return void.
+
 ```ts
 @Injectable()
 export class MyService {
