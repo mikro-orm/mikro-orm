@@ -262,7 +262,7 @@ export class MyConsumber {
 }
 ```
 
-As in this case, the `@Process()` decorator expects to receive a executable function, but if we wrap add `@UseRequestContext()` as well, if `@UseRequestContext()` is executed before `@Process()`, the later will receive `void`.
+As in this case, the `@Process()` decorator expects to receive an executable function, but if we add `@UseRequestContext()` to the handler as well, if `@UseRequestContext()` is executed before `@Process()`, the later will receive `void`.
 
 ## Request scoping when using GraphQL
 
