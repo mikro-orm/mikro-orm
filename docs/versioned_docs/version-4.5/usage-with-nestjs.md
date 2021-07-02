@@ -265,6 +265,32 @@ And at the same time disabling the bodyparser in the GraphQL Module
 })
 ```
 
+Another thing to look out is how you combine them with other decorators.
+
+For example if you use it in combination with NestJS's "[BullJS queues module](https://docs.nestjs.com/techniques/queues)", a safe bet is to extract the part of the code that needs a clean [docs](identity-map.md),
+either in a new method or inject a separate service.
+
+```ts
+@Processor({
+  name: 'example-queue',
+})
+export class MyConsumber {
+  constructor(private readonly orm: MikroORM) { }
+
+  @Process()
+  async doSomething(job: Job<any>) {
+    await this.doSomethingWithMikro();
+  }
+
+  @UseRequestContext()
+  async doSomethingWithMikro() {
+    // this will be executed in a separate context
+  }
+}
+```
+
+As in this case, the `@Process()` decorator expects to receive a executable function, but if we wrap add `@UseRequestContext()` as well, if `@UseRequestContext()` is executed before `@Process()`, the later will receive `void`.
+
 ## Using `AsyncLocalStorage` for request context
 
 By default, the `domain` api is used in the `RequestContext` helper. Since `@mikro-orm/core@4.0.3`,
