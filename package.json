@@ -99,7 +99,9 @@
         "depTypeList": [
           "devDependencies"
         ],
-        "automerge": true
+        "matchUpdateTypes": ["patch", "minor"],
+        "automerge": true,
+        "automergeType": "branch"
       }
     ],
     "schedule": [
