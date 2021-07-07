@@ -116,7 +116,7 @@
     "@commitlint/config-conventional": "12.1.4",
     "@mikro-orm/mongo-highlighter": "1.0.0",
     "@mikro-orm/sql-highlighter": "1.0.1",
-    "@types/clone": "2.1.0",
+    "@types/clone": "2.1.1",
     "@types/fs-extra": "9.0.11",
     "@types/jest": "26.0.23",
     "@types/mysql2": "types/mysql2#d4ef3b2292f328049f7e4c545f6adab7d6a350a9",
