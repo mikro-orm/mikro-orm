@@ -95,12 +95,13 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
     const properties = cls.getInstanceProperties();
     const property = properties.find(v => v.getName() === prop.name) as PropertyDeclaration;
-    const tsType = property.getType();
 
     /* istanbul ignore next */
     if (!property) {
       return { type: prop.type, optional: prop.nullable };
     }
+
+    const tsType = property.getType();
 
     if (tsType.isEnum()) {
       prop.enum = true;
