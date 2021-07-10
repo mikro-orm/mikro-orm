@@ -52,4 +52,9 @@ export class Author extends BaseEntity {
     this.foo = 'bar';
   }
 
+  @Property({ name: 'code' })
+  getCode() {
+    return `${this.email} - ${this.name}`;
+  }
+
 }
