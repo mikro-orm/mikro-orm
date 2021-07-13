@@ -130,7 +130,7 @@
     "conditional-type-checks": "1.0.5",
     "coveralls": "3.1.1",
     "eslint": "7.30.0",
-    "eslint-plugin-jsdoc": "35.4.1",
+    "eslint-plugin-jsdoc": "35.4.3",
     "fs-extra": "10.0.0",
     "gen-esm-wrapper": "1.1.2",
     "guid-typescript": "1.0.9",
