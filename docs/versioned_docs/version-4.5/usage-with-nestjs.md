@@ -222,6 +222,8 @@ We can use the `@UseRequestContext()` decorator. It requires you to first inject
 for you. Under the hood, the decorator will register new request context for your 
 method and execute it inside the context. 
 
+Keep in mind, that all handlers that are decorated with @UseRequestContext(), should NOT return anything.
+
 ```ts
 @Injectable()
 export class MyService {
@@ -235,6 +237,32 @@ export class MyService {
 
 }
 ```
+
+Another thing to look out for how you combine them with other decorators.
+For example if you use it in combination with NestJS's "[BullJS queues module](https://docs.nestjs.com/techniques/queues)", a safe bet is to extract the part of the code that needs a clean [docs](identity-map.md),
+either in a new method or inject a separate service.
+
+```ts
+@Processor({
+  name: 'example-queue',
+})
+export class MyConsumer {
+  constructor(private readonly orm: MikroORM) { }
+
+  @Process()
+  async doSomething(job: Job<any>) {
+    await this.doSomethingWithMikro();
+  }
+
+  @UseRequestContext()
+  async doSomethingWithMikro() {
+    // this will be executed in a separate context
+  }
+}
+```
+
+As in this case, the `@Process()` decorator expects to receive an executable function, but if we add `@UseRequestContext()` to the handler as well, if `@UseRequestContext()` is executed before `@Process()`, the later will receive `void`.
+
 
 ## Request scoping when using GraphQL
 
