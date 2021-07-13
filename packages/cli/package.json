@@ -65,7 +65,7 @@
     "ansi-colors": "4.1.1",
     "cli-table3": "0.6.0",
     "fs-extra": "10.0.0",
-    "tsconfig-paths": "3.9.0",
+    "tsconfig-paths": "3.10.1",
     "yargonaut": "1.1.4",
     "yargs": "15.4.1"
   },
