@@ -9681,10 +9681,10 @@ typedoc-default-themes@^0.12.10:
   resolved "https://registry.yarnpkg.com/typedoc-default-themes/-/typedoc-default-themes-0.12.10.tgz#614c4222fe642657f37693ea62cad4dafeddf843"
   integrity sha512-fIS001cAYHkyQPidWXmHuhs8usjP5XVJjWB8oZGqkTowZaz3v7g3KDZeeqE82FBrmkAnIBOY3jgy7lnPnqATbA==
 
-typedoc-plugin-markdown@3.10.2:
-  version "3.10.2"
-  resolved "https://registry.yarnpkg.com/typedoc-plugin-markdown/-/typedoc-plugin-markdown-3.10.2.tgz#4b1400706d4c8c3924481808aba4efa684605174"
-  integrity sha512-eAV7fuCymdbUIk2P3jjehUWG0VE3YSr/qGGYAHUEBTrRZMuFxS/rYrooF0PPabBUdbprL4BKV8HaP7oed12T2Q==
+typedoc-plugin-markdown@3.10.3:
+  version "3.10.3"
+  resolved "https://registry.yarnpkg.com/typedoc-plugin-markdown/-/typedoc-plugin-markdown-3.10.3.tgz#8d7f3e8d44363143cd4d032bab5db0460b0434f8"
+  integrity sha512-CmNfHjiCc3ttJo3IYa7te+xOLJIn+jRVloSkM4j3It2rhJTeYp6OhZocnIHYIJIIqXuttoXAbFAbfJ2v7X+nbA==
   dependencies:
     handlebars "^4.7.7"
 
