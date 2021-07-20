@@ -129,7 +129,7 @@
     "@typescript-eslint/parser": "3.10.1",
     "conditional-type-checks": "1.0.5",
     "coveralls": "3.1.1",
-    "eslint": "7.30.0",
+    "eslint": "7.31.0",
     "eslint-plugin-jsdoc": "35.4.5",
     "fs-extra": "10.0.0",
     "gen-esm-wrapper": "1.1.2",
