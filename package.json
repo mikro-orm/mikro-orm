@@ -94,12 +94,12 @@
       "config:base"
     ],
     "semanticCommits": "enabled",
+    "separateMajorMinor": false,
     "packageRules": [
       {
-        "depTypeList": [
-          "devDependencies"
-        ],
         "matchUpdateTypes": ["patch", "minor"],
+        "groupName": "patch/minor dependencies",
+        "groupSlug": "all-non-major",
         "automerge": true,
         "automergeType": "branch"
       }

@@ -2,7 +2,7 @@ name: tests
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, renovate/** ]
   pull_request:
     branches: [ master ]
 
