@@ -55,8 +55,8 @@
     "access": "public"
   },
   "dependencies": {
-    "globby": "11.0.3",
-    "ts-morph": "11.0.0"
+    "globby": "11.0.4",
+    "ts-morph": "11.0.3"
   },
   "devDependencies": {
     "@mikro-orm/core": "^4.5.7"

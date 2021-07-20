@@ -4675,10 +4675,10 @@ dns-txt@^2.0.2:
   dependencies:
     buffer-indexof "^1.0.0"
 
-docusaurus-plugin-typedoc@0.15.0:
-  version "0.15.0"
-  resolved "https://registry.yarnpkg.com/docusaurus-plugin-typedoc/-/docusaurus-plugin-typedoc-0.15.0.tgz#9e3ff6b8d3389572d1e8a5bf77fc662f38653b97"
-  integrity sha512-ub1kKY6K/NzjvwBf2EuqzJ24e09LXUe034Cdp4SeNH8DREcWmsjTeeSquEw9aLypOoS6cbF67o3Nt6U+0n2dXg==
+docusaurus-plugin-typedoc@0.15.2:
+  version "0.15.2"
+  resolved "https://registry.yarnpkg.com/docusaurus-plugin-typedoc/-/docusaurus-plugin-typedoc-0.15.2.tgz#e3a917da64e2500589526a42a346534868355fbd"
+  integrity sha512-73tXj5kbjVwFbUWKzSVruS8THZ23U6oXbuyAK9fIBFjE9KkzUDH4mMevqGuG2V9H6jKmthtcxx6xNgc1bRJH2w==
 
 dom-converter@^0.2.0:
   version "0.2.0"
@@ -9681,21 +9681,20 @@ typedoc-default-themes@^0.12.10:
   resolved "https://registry.yarnpkg.com/typedoc-default-themes/-/typedoc-default-themes-0.12.10.tgz#614c4222fe642657f37693ea62cad4dafeddf843"
   integrity sha512-fIS001cAYHkyQPidWXmHuhs8usjP5XVJjWB8oZGqkTowZaz3v7g3KDZeeqE82FBrmkAnIBOY3jgy7lnPnqATbA==
 
-typedoc-plugin-markdown@3.10.2:
-  version "3.10.2"
-  resolved "https://registry.yarnpkg.com/typedoc-plugin-markdown/-/typedoc-plugin-markdown-3.10.2.tgz#4b1400706d4c8c3924481808aba4efa684605174"
-  integrity sha512-eAV7fuCymdbUIk2P3jjehUWG0VE3YSr/qGGYAHUEBTrRZMuFxS/rYrooF0PPabBUdbprL4BKV8HaP7oed12T2Q==
+typedoc-plugin-markdown@3.10.3:
+  version "3.10.3"
+  resolved "https://registry.yarnpkg.com/typedoc-plugin-markdown/-/typedoc-plugin-markdown-3.10.3.tgz#8d7f3e8d44363143cd4d032bab5db0460b0434f8"
+  integrity sha512-CmNfHjiCc3ttJo3IYa7te+xOLJIn+jRVloSkM4j3It2rhJTeYp6OhZocnIHYIJIIqXuttoXAbFAbfJ2v7X+nbA==
   dependencies:
     handlebars "^4.7.7"
 
-typedoc@0.21.2:
-  version "0.21.2"
-  resolved "https://registry.yarnpkg.com/typedoc/-/typedoc-0.21.2.tgz#cf5094314d3d63e95a8ef052ceff06a6cafd509d"
-  integrity sha512-SR1ByJB3USg+jxoxwzMRP07g/0f/cQUE5t7gOh1iTUyjTPyJohu9YSKRlK+MSXXqlhIq+m0jkEHEG5HoY7/Adg==
+typedoc@0.21.4:
+  version "0.21.4"
+  resolved "https://registry.yarnpkg.com/typedoc/-/typedoc-0.21.4.tgz#fced3cffdc30180db60a5dbfec9dbbb273cb5b31"
+  integrity sha512-slZQhvD9U0d9KacktYAyuNMMOXJRFNHy+Gd8xY2Qrqq3eTTTv3frv3N4au/cFnab9t3T5WA0Orb6QUjMc+1bDA==
   dependencies:
     glob "^7.1.7"
     handlebars "^4.7.7"
-    lodash "^4.17.21"
     lunr "^2.3.9"
     marked "^2.1.1"
     minimatch "^3.0.0"
