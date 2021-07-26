@@ -1748,10 +1748,10 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.41.tgz#d0b939d94c1d7bd53d04824af45f1139b8c45615"
   integrity sha512-dueRKfaJL4RTtSa7bWeTK1M+VH+Gns73oCgzvYfHZywRCoPSd8EkXBL0mZ9unPTveBn+D9phZBaxuzpwjWkW0g==
 
-"@types/node@14.17.5":
-  version "14.17.5"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.17.5.tgz#b59daf6a7ffa461b5648456ca59050ba8e40ed54"
-  integrity sha512-bjqH2cX/O33jXT/UmReo2pM7DIJREPMnarixbQ57DOOzzFaI6D2+IcwaJQaJpv0M1E9TIhPCYVxrkcityLjlqA==
+"@types/node@14.17.6":
+  version "14.17.6"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.17.6.tgz#cc61c8361c89e70c468cda464d1fa3dd7e5ebd62"
+  integrity sha512-iBxsxU7eswQDGhlr3AiamBxOssaYxbM+NKXVil8jg9yFXvrfEFbDumLD/2dMTB+zYyg7w+Xjt8yuxfdbUHAtcQ==
 
 "@types/normalize-package-data@^2.4.0":
   version "2.4.0"
@@ -5386,10 +5386,10 @@ kleur@^3.0.3:
   resolved "https://registry.yarnpkg.com/kleur/-/kleur-3.0.3.tgz#a79c9ecc86ee1ce3fa6206d1216c501f147fc07e"
   integrity sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==
 
-knex@0.95.7:
-  version "0.95.7"
-  resolved "https://registry.yarnpkg.com/knex/-/knex-0.95.7.tgz#9c55c60e3c63077013076b54b5b97376d5a70d41"
-  integrity sha512-J2X79td0NAcreTyWVmmHHretz5Ox705FHywddjkT3esTtmggphjcfDoaXym18xtsLdjzOvEb53WB/58lqcF14w==
+knex@0.95.8:
+  version "0.95.8"
+  resolved "https://registry.yarnpkg.com/knex/-/knex-0.95.8.tgz#aa464d0870eefc11f6dc8d017bd2b2c30748fdc2"
+  integrity sha512-fEeu8SWyJuW1NHLjnMA2ACEAsVuGuFxtNO5J8bcQdlybnkiNSWPXYX0LhKB17sgWl5UARJrsNpjVeT55ByP8gA==
   dependencies:
     colorette "1.2.1"
     commander "^7.1.0"
@@ -5400,7 +5400,7 @@ knex@0.95.7:
     interpret "^2.2.0"
     lodash "^4.17.21"
     pg-connection-string "2.5.0"
-    rechoir "^0.7.0"
+    rechoir "0.7.0"
     resolve-from "^5.0.0"
     tarn "^3.0.1"
     tildify "2.0.0"
@@ -5481,10 +5481,10 @@ lines-and-columns@^1.1.6:
   resolved "https://registry.yarnpkg.com/lines-and-columns/-/lines-and-columns-1.1.6.tgz#1c00c743b433cd0a4e80758f7b64a57440d9ff00"
   integrity sha1-HADHQ7QzzQpOgHWPe2SldEDZ/wA=
 
-lint-staged@11.1.0:
-  version "11.1.0"
-  resolved "https://registry.yarnpkg.com/lint-staged/-/lint-staged-11.1.0.tgz#a21d67ffe4516e907635adeaf6d6450d8cffb4e4"
-  integrity sha512-pzwEf+NKbTauAlk7gPPwTfulRXESEPZCSFXYfg20F220UOObebxu5uL5mkr9csQLNOM2Ydfrt3DJXakzAL7aaQ==
+lint-staged@11.1.1:
+  version "11.1.1"
+  resolved "https://registry.yarnpkg.com/lint-staged/-/lint-staged-11.1.1.tgz#9c2018b872654cf80b2b1ff5a10b6b74aef6e300"
+  integrity sha512-eTNGe6i78PSUUH2BZi1gZmGmNfb8IeN4z2OzMYxSZ1qnP1WXKn1E7D+OHwLbRDm/wQINnzIj0bsKJ6lLVSuZiQ==
   dependencies:
     chalk "^4.1.1"
     cli-truncate "^2.1.0"
@@ -7291,19 +7291,19 @@ readdir-scoped-modules@^1.0.0:
     graceful-fs "^4.1.2"
     once "^1.3.0"
 
+rechoir@0.7.0:
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/rechoir/-/rechoir-0.7.0.tgz#32650fd52c21ab252aa5d65b19310441c7e03aca"
+  integrity sha512-ADsDEH2bvbjltXEP+hTIAmeFekTFK0V2BTxMkok6qILyAJEXV0AFfoWcAq4yfll5VdIMd/RVXq0lR+wQi5ZU3Q==
+  dependencies:
+    resolve "^1.9.0"
+
 rechoir@^0.6.2:
   version "0.6.2"
   resolved "https://registry.yarnpkg.com/rechoir/-/rechoir-0.6.2.tgz#85204b54dba82d5742e28c96756ef43af50e3384"
   integrity sha1-hSBLVNuoLVdC4oyWdW70OvUOM4Q=
   dependencies:
     resolve "^1.1.6"
-
-rechoir@^0.7.0:
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/rechoir/-/rechoir-0.7.0.tgz#32650fd52c21ab252aa5d65b19310441c7e03aca"
-  integrity sha512-ADsDEH2bvbjltXEP+hTIAmeFekTFK0V2BTxMkok6qILyAJEXV0AFfoWcAq4yfll5VdIMd/RVXq0lR+wQi5ZU3Q==
-  dependencies:
-    resolve "^1.9.0"
 
 redent@^1.0.0:
   version "1.0.0"
