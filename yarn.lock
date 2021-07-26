@@ -1717,15 +1717,7 @@
   resolved "https://registry.yarnpkg.com/@types/minimist/-/minimist-1.2.1.tgz#283f669ff76d7b8260df8ab7a4262cc83d988256"
   integrity sha512-fZQQafSREFyuZcdWFAExYjBiCL7AUCdgsk80iO0q4yihYYdcIiH28CcuPTGFgLOCC8RlW49GSQxdHwZP+I7CNg==
 
-"@types/mongodb@*":
-  version "3.6.12"
-  resolved "https://registry.yarnpkg.com/@types/mongodb/-/mongodb-3.6.12.tgz#727960d34f35054d2f2ce68909e16094f742d935"
-  integrity sha512-49aEzQD5VdHPxyd5dRyQdqEveAg9LanwrH8RQipnMuulwzKmODXIZRp0umtxi1eBUfEusRkoy8AVOMr+kVuFog==
-  dependencies:
-    "@types/bson" "*"
-    "@types/node" "*"
-
-"@types/mongodb@3.6.20":
+"@types/mongodb@3.6.20", "@types/mongodb@^3.6.20":
   version "3.6.20"
   resolved "https://registry.yarnpkg.com/@types/mongodb/-/mongodb-3.6.20.tgz#b7c5c580644f6364002b649af1c06c3c0454e1d2"
   integrity sha512-WcdpPJCakFzcWWD9juKoZbRtQxKIMYF/JIAM4JrNHrMcnJL6/a2NWjXxW7fo9hxboxxkg+icff8d7+WIEvKgYQ==
@@ -1797,12 +1789,12 @@
   resolved "https://registry.yarnpkg.com/@types/stack-utils/-/stack-utils-2.0.0.tgz#7036640b4e21cc2f259ae826ce843d277dad8cff"
   integrity sha512-RJJrrySY7A8havqpGObOB4W92QXKJo63/jFLLgpvOtsGUqbQZ9Sbgl35KMm1DjC6j7AvmmU2bIno+3IyEaemaw==
 
-"@types/umzug@2.3.1":
-  version "2.3.1"
-  resolved "https://registry.yarnpkg.com/@types/umzug/-/umzug-2.3.1.tgz#6084941c0c1b93f853a4d351ded4258738b1b2c3"
-  integrity sha512-V+rQvK7N+7gB24NHZb4RFWCgeugC6xmjN2SqTKiIFUKQV1tFYQsxJIvT2H2Q0Cqd5smcpO04wB4PEKPccKBN8g==
+"@types/umzug@2.3.2":
+  version "2.3.2"
+  resolved "https://registry.yarnpkg.com/@types/umzug/-/umzug-2.3.2.tgz#acd75abc62a282f8cb8132e706fc4fef626f269b"
+  integrity sha512-ozfpVpUwzozBVVII2T1iUTByJ1n+xgi3xpjzUnZ50tnAhBCzQ+RiewGgjyzuK2RAb3cug0mqKTvMbvd336lkDw==
   dependencies:
-    "@types/mongodb" "*"
+    "@types/mongodb" "^3.6.20"
     "@types/sequelize" "*"
 
 "@types/uuid@8.3.1":
