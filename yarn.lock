@@ -6834,10 +6834,10 @@ pg-int8@1.0.1:
   resolved "https://registry.yarnpkg.com/pg-int8/-/pg-int8-1.0.1.tgz#943bd463bf5b71b4170115f80f8efc9a0c0eb78c"
   integrity sha512-WCtabS6t3c8SkpDBUlb1kjOs7l66xsGdKpIPZsg4wR+B3+u9UAum2odSsF9tnvxg80h4ZxLWMy4pRjOsFIqQpw==
 
-pg-pool@^3.4.0:
-  version "3.4.0"
-  resolved "https://registry.yarnpkg.com/pg-pool/-/pg-pool-3.4.0.tgz#7aba6da11c156605aafc5748d1fc2e4d84075e7f"
-  integrity sha512-ddOpyZ2C7ySddu9sQ2t+91LeWT2Lv186kntK4TfPcoV9qH5OOcZAIWrzkGzwhisfHv2pk913/VuT1dPOUXzDMQ==
+pg-pool@^3.4.1:
+  version "3.4.1"
+  resolved "https://registry.yarnpkg.com/pg-pool/-/pg-pool-3.4.1.tgz#0e71ce2c67b442a5e862a9c182172c37eda71e9c"
+  integrity sha512-TVHxR/gf3MeJRvchgNHxsYsTCHQ+4wm3VIHSS19z8NC0+gioEhq1okDY1sm/TYbfoP6JLFx01s0ShvZ3puP/iQ==
 
 pg-protocol@*, pg-protocol@^1.5.0:
   version "1.5.0"
@@ -6855,15 +6855,15 @@ pg-types@^2.1.0, pg-types@^2.2.0:
     postgres-date "~1.0.4"
     postgres-interval "^1.1.0"
 
-pg@8.7.0:
-  version "8.7.0"
-  resolved "https://registry.yarnpkg.com/pg/-/pg-8.7.0.tgz#f9a20516684b069a409cf03cae90d47bddc82065"
-  integrity sha512-nHB5WvuUC/LpBYebXTo5LyKYOXWPSVjGZatAV7YGimdmSOj5adGZmWXyOD/uAf2S4PyYAEv4rMW6k5HeneykXA==
+pg@8.7.1:
+  version "8.7.1"
+  resolved "https://registry.yarnpkg.com/pg/-/pg-8.7.1.tgz#9ea9d1ec225980c36f94e181d009ab9f4ce4c471"
+  integrity sha512-7bdYcv7V6U3KAtWjpQJJBww0UEsWuh4yQ/EjNf2HeO/NnvKjpvhEIe/A/TleP6wtmSKnUnghs5A9jUoK6iDdkA==
   dependencies:
     buffer-writer "2.0.0"
     packet-reader "1.0.0"
     pg-connection-string "^2.5.0"
-    pg-pool "^3.4.0"
+    pg-pool "^3.4.1"
     pg-protocol "^1.5.0"
     pg-types "^2.1.0"
     pgpass "1.x"
