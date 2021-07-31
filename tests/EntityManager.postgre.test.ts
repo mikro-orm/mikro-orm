@@ -65,6 +65,29 @@ describe('EntityManagerPostgre', () => {
     });
   });
 
+  test('getConnection() with replicas', async () => {
+    const config = new Configuration({
+      type: 'postgresql',
+      clientUrl: 'postgre://root@127.0.0.1:1234/db_name',
+      host: '127.0.0.10',
+      password: 'secret',
+      user: 'user',
+      logger: jest.fn(),
+      forceUtcTimezone: true,
+      replicas: [
+        { name: 'read-1', host: 'read_host_1', user: 'read_user' },
+      ],
+    } as any, false);
+    const driver = new PostgreSqlDriver(config);
+    expect(driver.getConnection('read').getConnectionOptions()).toEqual({
+      database: 'db_name',
+      host: 'read_host_1',
+      password: 'secret',
+      port: 1234,
+      user: 'read_user',
+    });
+  });
+
   test('raw query with array param', async () => {
     const q1 = await orm.em.getPlatform().formatQuery(`select * from author2 where id in (?) limit ?`, [[1, 2, 3], 3]);
     expect(q1).toBe('select * from author2 where id in (1, 2, 3) limit 3');

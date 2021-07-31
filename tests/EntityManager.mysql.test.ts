@@ -62,6 +62,32 @@ describe('EntityManagerMySql', () => {
     });
   });
 
+  test('getConnection() with replicas', async () => {
+    const config = new Configuration({
+      type: 'mysql',
+      clientUrl: 'mysql://root@127.0.0.1:3308/db_name',
+      host: '127.0.0.10',
+      password: 'secret',
+      user: 'user',
+      logger: jest.fn(),
+      forceUtcTimezone: true,
+      replicas: [
+        { name: 'read-1', host: 'read_host_1', user: 'read_user' },
+      ],
+    } as any, false);
+    const driver = new MySqlDriver(config);
+    expect(driver.getConnection('read').getConnectionOptions()).toEqual({
+      database: 'db_name',
+      host: 'read_host_1',
+      password: 'secret',
+      port: 3308,
+      user: 'read_user',
+      timezone: 'Z',
+      dateStrings: ['DATE'],
+      supportBigNumbers: true,
+    });
+  });
+
   test('raw query with array param', async () => {
     const q1 = await orm.em.getPlatform().formatQuery(`select * from author2 where id in (?) limit ?`, [[1, 2, 3], 3]);
     expect(q1).toBe('select * from author2 where id in (1, 2, 3) limit 3');

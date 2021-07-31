@@ -43,6 +43,33 @@ describe('EntityManagerMariaDb', () => {
     });
   });
 
+  test('getConnection() with replicas', async () => {
+    const config = new Configuration({
+      type: 'mysql',
+      clientUrl: 'mysql://root@127.0.0.1:3308/db_name',
+      host: '127.0.0.10',
+      password: 'secret',
+      user: 'user',
+      logger: jest.fn(),
+      forceUtcTimezone: true,
+      replicas: [
+        { name: 'read-1', host: 'read_host_1', user: 'read_user' },
+      ],
+    } as any, false);
+    const driver = new MariaDbDriver(config);
+    expect(driver.getConnection('read').getConnectionOptions()).toEqual({
+      database: 'db_name',
+      host: 'read_host_1',
+      password: 'secret',
+      port: 3308,
+      user: 'read_user',
+      timezone: 'Z',
+      supportBigNumbers: true,
+      bigNumberStrings: true,
+      dateStrings: ['DATE'],
+    });
+  });
+
   test('should return mariadb driver', async () => {
     const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(MariaDbDriver);
