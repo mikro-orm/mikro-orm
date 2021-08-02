@@ -160,9 +160,11 @@ export type EntityDTOProp<T> = T extends Scalar
       ? EntityDTO<U>[]
       : T extends { $: infer U }
         ? (U extends readonly (infer V)[] ? EntityDTO<V>[] : EntityDTO<U>)
-        : T extends Relation<T>
-          ? EntityDTO<T>
-          : T;
+        : T extends readonly (infer U)[]
+          ? U[]
+          : T extends Relation<T>
+            ? EntityDTO<T>
+            : T;
 export type EntityDTO<T> = { [K in keyof T as ExcludeFunctions<T, K>]: EntityDTOProp<T[K]> };
 
 export interface EntityProperty<T extends AnyEntity<T> = any> {
