@@ -18,7 +18,6 @@ module.exports = {
   },
   plugins: [
     '@typescript-eslint',
-    'jsdoc',
   ],
   rules: {
     '@typescript-eslint/prefer-optional-chain': 'error',
@@ -123,7 +122,6 @@ module.exports = {
     'dot-notation': 'error',
     'eol-last': 'error',
     'eqeqeq': ['error', 'always', {"null": "ignore"}],
-    'jsdoc/no-types': 'error',
     'no-console': 'error',
     'no-duplicate-imports': 'error',
     'no-multiple-empty-lines': 'error',
