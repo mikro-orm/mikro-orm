@@ -74,7 +74,7 @@ describe('check typings', () => {
   });
 
   test('EntityDTO', async () => {
-    const b = { author: { books: [{}] } } as EntityDTO<Book2>;
+    const b = { author: { books: [{}], identities: [''] } } as EntityDTO<Book2>;
     const b1 = b.author.name;
     const b2 = b.test?.name;
     const b3 = b.test?.book?.author.books2;
