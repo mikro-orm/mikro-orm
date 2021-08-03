@@ -79,7 +79,7 @@ export class ChangeSetComputer {
   private processToOne<T extends AnyEntity<T>>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
     const isToOneOwner = prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
 
-    if (!isToOneOwner) {
+    if (!isToOneOwner || prop.mapToPk) {
       return;
     }
 

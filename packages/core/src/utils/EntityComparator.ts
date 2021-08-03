@@ -380,8 +380,12 @@ export class EntityComparator {
     }
 
     if (prop.reference === ReferenceType.ONE_TO_ONE || prop.reference === ReferenceType.MANY_TO_ONE) {
-      context.set(`getPrimaryKeyValues_${prop.name}`, (val: any) => val && Utils.getPrimaryKeyValues(val, this.metadata.find(prop.type)!.primaryKeys, true));
-      ret += `    ret.${dataKey} = getPrimaryKeyValues_${prop.name}(entity.${entityKey});\n`;
+      if (prop.mapToPk) {
+        ret += `    ret.${dataKey} = entity.${entityKey};\n`;
+      } else {
+        context.set(`getPrimaryKeyValues_${prop.name}`, (val: any) => val && Utils.getPrimaryKeyValues(val, this.metadata.find(prop.type)!.primaryKeys, true));
+        ret += `    ret.${dataKey} = getPrimaryKeyValues_${prop.name}(entity.${entityKey});\n`;
+      }
 
       if (prop.customType) {
         context.set(`convertToDatabaseValue_${prop.name}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform));
