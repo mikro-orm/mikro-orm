@@ -406,7 +406,7 @@ export class UnitOfWork {
   private processReference<T extends AnyEntity<T>>(parent: T, prop: EntityProperty<T>, reference: any, visited: WeakSet<AnyEntity>): void {
     const isToOne = prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE;
 
-    if (isToOne && reference) {
+    if (isToOne && Utils.isEntity(reference)) {
       return this.processToOneReference(reference, visited);
     }
 
@@ -495,7 +495,7 @@ export class UnitOfWork {
 
     const reference = Reference.unwrapReference(entity[prop.name]) as unknown as T | Collection<AnyEntity>;
 
-    if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && reference) {
+    if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && Utils.isEntity(reference)) {
       return this.cascade(reference as T, type, visited, options);
     }
 
@@ -565,7 +565,7 @@ export class UnitOfWork {
   private fixMissingReference<T extends AnyEntity<T>>(entity: T, prop: EntityProperty<T>): void {
     const reference = Reference.unwrapReference(entity[prop.name]);
 
-    if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && reference && !Utils.isEntity(reference)) {
+    if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && reference && !Utils.isEntity(reference) && !prop.mapToPk) {
       entity[prop.name] = this.em.getReference(prop.type, reference as Primary<T[string & keyof T]>, !!prop.wrappedReference) as T[string & keyof T];
     }
 

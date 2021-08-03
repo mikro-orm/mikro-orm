@@ -74,7 +74,7 @@ export class ChangeSetComputer {
     const entity = changeSet.entity[prop.name] as unknown as T;
     const isToOneOwner = prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
 
-    if (isToOneOwner && !entity.__helper!.hasPrimaryKey()) {
+    if (isToOneOwner && !prop.mapToPk && !entity.__helper!.hasPrimaryKey()) {
       changeSet.payload[prop.name] = entity.__helper!.__identifier;
     }
   }
