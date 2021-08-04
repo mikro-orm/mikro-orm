@@ -10,6 +10,7 @@ import { OptimisticLockError } from '../errors';
 export class ChangeSetPersister {
 
   private readonly platform = this.driver.getPlatform();
+  private schema?: string;
 
   constructor(private readonly driver: IDatabaseDriver,
               private readonly metadata: MetadataStorage,
@@ -17,9 +18,11 @@ export class ChangeSetPersister {
               private readonly factory: EntityFactory,
               private readonly config: Configuration) { }
 
-  async executeInserts<T extends AnyEntity<T>>(changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
+  async executeInserts<T extends AnyEntity<T>>(changeSets: ChangeSet<T>[], ctx?: Transaction, options?: UoWInsertOptions): Promise<void> {
     const meta = this.metadata.find(changeSets[0].name)!;
     changeSets.forEach(changeSet => this.processProperties(changeSet));
+
+    this.schema = options?.schema;
 
     if (changeSets.length > 1 && this.config.get('useBatchInserts', this.platform.usesBatchInserts())) {
       return this.persistNewEntities(meta, changeSets, ctx);
@@ -51,7 +54,7 @@ export class ChangeSetPersister {
     for (let i = 0; i < changeSets.length; i += size) {
       const chunk = changeSets.slice(i, i + size);
       const pks = chunk.map(cs => cs.getPrimaryKey());
-      await this.driver.nativeDelete(meta.className, { [pk]: { $in: pks } }, ctx);
+      await this.driver.nativeDelete(meta.className, { [pk]: { $in: pks } }, ctx, { schema: this.schema });
     }
   }
 
@@ -65,7 +68,7 @@ export class ChangeSetPersister {
 
   private async persistNewEntity<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, ctx?: Transaction): Promise<void> {
     const wrapped = changeSet.entity.__helper!;
-    const res = await this.driver.nativeInsert(changeSet.name, changeSet.payload, ctx, false);
+    const res = await this.driver.nativeInsert(changeSet.name, changeSet.payload, ctx, false, { schema: this.schema });
 
     if (!wrapped.hasPrimaryKey()) {
       this.mapPrimaryKey(meta, res.insertId, changeSet);
@@ -97,7 +100,7 @@ export class ChangeSetPersister {
   }
 
   private async persistNewEntitiesBatch<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
-    const res = await this.driver.nativeInsertMany(meta.className, changeSets.map(cs => cs.payload), ctx, false, false);
+    const res = await this.driver.nativeInsertMany(meta.className, changeSets.map(cs => cs.payload), ctx, false, false, { schema: this.schema });
 
     for (let i = 0; i < changeSets.length; i++) {
       const changeSet = changeSets[i];
@@ -136,7 +139,7 @@ export class ChangeSetPersister {
 
   private async persistManagedEntitiesBatch<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
     await this.checkOptimisticLocks(meta, changeSets, ctx);
-    await this.driver.nativeUpdateMany(meta.className, changeSets.map(cs => cs.getPrimaryKey() as Dictionary), changeSets.map(cs => cs.payload), ctx, false, false);
+    await this.driver.nativeUpdateMany(meta.className, changeSets.map(cs => cs.getPrimaryKey() as Dictionary), changeSets.map(cs => cs.payload), ctx, false, false, { schema: this.schema });
     changeSets.forEach(cs => cs.persisted = true);
   }
 
@@ -179,7 +182,7 @@ export class ChangeSetPersister {
 
   private async updateEntity<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, ctx?: Transaction): Promise<QueryResult> {
     if (!meta.versionProperty || !changeSet.entity[meta.versionProperty]) {
-      return this.driver.nativeUpdate(changeSet.name, changeSet.getPrimaryKey() as Dictionary, changeSet.payload, ctx, false);
+      return this.driver.nativeUpdate(changeSet.name, changeSet.getPrimaryKey() as Dictionary, changeSet.payload, ctx, false, { schema: this.schema });
     }
 
     const cond = {
@@ -187,7 +190,7 @@ export class ChangeSetPersister {
       [meta.versionProperty]: this.platform.quoteVersionValue(changeSet.entity[meta.versionProperty] as unknown as Date, meta.properties[meta.versionProperty]),
     } as FilterQuery<T>;
 
-    return this.driver.nativeUpdate(changeSet.name, cond, changeSet.payload, ctx, false);
+    return this.driver.nativeUpdate(changeSet.name, cond, changeSet.payload, ctx, false, { schema: this.schema });
   }
 
   private async checkOptimisticLocks<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
@@ -303,3 +306,15 @@ export class ChangeSetPersister {
   }
 
 }
+
+type UoWInsertOptions = {
+  schema?: string;
+};
+
+type UoWUpdateOptions = {
+  schema?: string;
+};
+
+type UoWDeleteOptions = {
+  schema?: string;
+};

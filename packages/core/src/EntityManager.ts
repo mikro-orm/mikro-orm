@@ -3,7 +3,7 @@ import { inspect } from 'util';
 import { Configuration, QueryHelper, TransactionContext, Utils } from './utils';
 import { AssignOptions, EntityAssigner, EntityFactory, EntityLoader, EntityLoaderOptions, EntityRepository, EntityValidator, IdentifiedReference, Reference } from './entity';
 import { UnitOfWork } from './unit-of-work';
-import { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, UpdateOptions } from './drivers';
+import { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, InsertOptions, UpdateOptions } from './drivers';
 import { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityDTO, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, New, Populate, PopulateMap, PopulateOptions, Primary } from './typings';
 import { IsolationLevel, LoadStrategy, LockMode, QueryOrderMap, ReferenceType, SCALAR_TYPES } from './enums';
 import { MetadataStorage } from './metadata';
@@ -445,12 +445,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Fires native insert query. Calling this has no side effects on the context (identity map).
    */
-  async nativeInsert<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityData<T>): Promise<Primary<T>>;
+  async nativeInsert<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityData<T>, options?: InsertOptions<T>): Promise<Primary<T>>;
 
   /**
    * Fires native insert query. Calling this has no side effects on the context (identity map).
    */
-  async nativeInsert<T extends AnyEntity<T>>(entityNameOrEntity: EntityName<T> | T, data?: EntityData<T>): Promise<Primary<T>> {
+  async nativeInsert<T extends AnyEntity<T>>(entityNameOrEntity: EntityName<T> | T, data?: EntityData<T>, options?: InsertOptions<T>): Promise<Primary<T>> {
     let entityName;
 
     if (data === undefined) {
@@ -462,7 +462,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     data = QueryHelper.processObjectParams(data) as EntityData<T>;
     this.validator.validateParams(data, 'insert data');
-    const res = await this.driver.nativeInsert(entityName, data, this.transactionContext);
+    const res = await this.driver.nativeInsert(entityName, data, this.transactionContext, true, options);
 
     return res.insertId as Primary<T>;
   }
@@ -476,7 +476,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     where = await this.processWhere(entityName, where, options, 'update');
     this.validator.validateParams(data, 'update data');
     this.validator.validateParams(where, 'update condition');
-    const res = await this.driver.nativeUpdate(entityName, where, data, this.transactionContext);
+    const res = await this.driver.nativeUpdate(entityName, where, data, this.transactionContext, true, options);
 
     return res.affectedRows;
   }
@@ -488,7 +488,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     entityName = Utils.className(entityName);
     where = await this.processWhere(entityName, where, options, 'delete');
     this.validator.validateParams(where, 'delete condition');
-    const res = await this.driver.nativeDelete(entityName, where, this.transactionContext);
+    const res = await this.driver.nativeDelete(entityName, where, this.transactionContext, options);
 
     return res.affectedRows;
   }
@@ -714,7 +714,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Flushes all changes to objects that have been queued up to now to the database.
    * This effectively synchronizes the in-memory state of managed objects with the database.
    */
-  async flush(): Promise<void> {
+  async flush(options?: FlushOptions): Promise<void> {
     await this.getUnitOfWork().commit();
   }
 
@@ -995,3 +995,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
 }
+
+export type FlushOptions = {
+  schema?: string;
+};

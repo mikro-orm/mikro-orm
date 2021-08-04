@@ -1,4 +1,4 @@
-import { CountOptions, EntityManagerType, FindOneOptions, FindOptions, IDatabaseDriver } from './IDatabaseDriver';
+import { CountOptions, EntityManagerType, FindOneOptions, FindOptions, IDatabaseDriver, InsertOptions } from './IDatabaseDriver';
 import { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityProperty, FilterQuery, PopulateOptions, Primary } from '../typings';
 import { MetadataStorage } from '../metadata';
 import { Connection, QueryResult, Transaction } from '../connections';
@@ -9,6 +9,7 @@ import { Collection } from '../entity';
 import { EntityManager } from '../EntityManager';
 import { ValidationError } from '../errors';
 import { DriverException } from '../exceptions';
+import { DeleteOptions, UpdateOptions } from '.';
 
 export abstract class DatabaseDriver<C extends Connection> implements IDatabaseDriver<C> {
 
@@ -28,17 +29,17 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   abstract findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T>, ctx?: Transaction): Promise<EntityData<T> | null>;
 
-  abstract nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>, ctx?: Transaction, convertCustomTypes?: boolean): Promise<QueryResult>;
+  abstract nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>, ctx?: Transaction, convertCustomTypes?: boolean, options?: InsertOptions<T>): Promise<QueryResult>;
 
-  abstract nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], ctx?: Transaction, processCollections?: boolean, convertCustomTypes?: boolean): Promise<QueryResult>;
+  abstract nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], ctx?: Transaction, processCollections?: boolean, convertCustomTypes?: boolean, options?: InsertOptions<T>): Promise<QueryResult>;
 
-  abstract nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, ctx?: Transaction, convertCustomTypes?: boolean): Promise<QueryResult>;
+  abstract nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, ctx?: Transaction, convertCustomTypes?: boolean, options?: UpdateOptions<T>): Promise<QueryResult>;
 
-  async nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], ctx?: Transaction, processCollections?: boolean, convertCustomTypes?: boolean): Promise<QueryResult> {
+  async nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], ctx?: Transaction, processCollections?: boolean, convertCustomTypes?: boolean, options?: UpdateOptions<T>): Promise<QueryResult> {
     throw new Error(`Batch updates are not supported by ${this.constructor.name} driver`);
   }
 
-  abstract nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction): Promise<QueryResult>;
+  abstract nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction, options?: DeleteOptions<T>): Promise<QueryResult>;
 
   abstract count<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T>, ctx?: Transaction): Promise<number>;
 

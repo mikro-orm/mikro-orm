@@ -8,6 +8,7 @@ import { PostgreSqlDriver, PostgreSqlConnection } from '@mikro-orm/postgresql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2, Label2 } from './entities-sql';
 import { initORMPostgreSql, wipeDatabasePostgreSql } from './bootstrap';
 import { performance } from 'perf_hooks';
+import { Team2 } from './entities-sql/Team2';
 
 describe('EntityManagerPostgre', () => {
 
@@ -1275,9 +1276,16 @@ describe('EntityManagerPostgre', () => {
 
     const mock = jest.fn();
     const logger = new Logger(mock, ['query', 'query-params']);
+
     Object.assign(orm.config, { logger });
     await orm.em.nativeInsert(Author2, { name: 'native name 1', email: 'native1@email.com' });
     expect(mock.mock.calls[0][0]).toMatch('insert into "author2" ("email", "name") values (\'native1@email.com\', \'native name 1\') returning "id", "created_at", "updated_at"');
+
+    const res6 = await orm.em.nativeInsert(Team2, { name: 'native name 3' }, { schema: 'test123' });
+    expect(res6).toBe(1);
+
+    // expect(mock.mock.calls[1][0]).toMatch('insert into "test123"."team2" ("name") values (\'native name 3\') returning "id"');
+
     orm.config.set('debug', ['query']);
   });
 

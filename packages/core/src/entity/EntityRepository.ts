@@ -1,7 +1,7 @@
 import { EntityManager } from '../EntityManager';
 import { EntityData, EntityName, AnyEntity, Primary, Populate, Loaded, New, FilterQuery, EntityDictionary } from '../typings';
 import { QueryOrderMap } from '../enums';
-import { CountOptions, DeleteOptions, FindOneOptions, FindOneOrFailOptions, FindOptions, UpdateOptions } from '../drivers/IDatabaseDriver';
+import { CountOptions, DeleteOptions, FindOneOptions, FindOneOrFailOptions, FindOptions, InsertOptions, UpdateOptions } from '../drivers/IDatabaseDriver';
 import { IdentifiedReference, Reference } from './Reference';
 import { EntityLoaderOptions } from './EntityLoader';
 
@@ -171,8 +171,8 @@ export class EntityRepository<T extends AnyEntity<T>> {
   /**
    * Fires native insert query. Calling this has no side effects on the context (identity map).
    */
-  async nativeInsert(data: EntityData<T>): Promise<Primary<T>> {
-    return this.em.nativeInsert<T>(this.entityName, data);
+  async nativeInsert(data: EntityData<T>, options?: InsertOptions<T>): Promise<Primary<T>> {
+    return this.em.nativeInsert<T>(this.entityName, data, options);
   }
 
   /**

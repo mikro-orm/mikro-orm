@@ -5,7 +5,7 @@ import { ChangeSetComputer } from './ChangeSetComputer';
 import { ChangeSetPersister } from './ChangeSetPersister';
 import { CommitOrderCalculator } from './CommitOrderCalculator';
 import { Utils } from '../utils/Utils';
-import { EntityManager } from '../EntityManager';
+import { EntityManager, FlushOptions } from '../EntityManager';
 import { Cascade, EventType, LockMode, ReferenceType } from '../enums';
 import { OptimisticLockError, ValidationError } from '../errors';
 import { Transaction } from '../connections';
@@ -31,6 +31,7 @@ export class UnitOfWork {
   private readonly changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.collectionUpdates, this.removeStack, this.metadata, this.platform, this.em.config);
   private readonly changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.metadata, this.em.config.getHydrator(this.metadata), this.em.getEntityFactory(), this.em.config);
   private working = false;
+  private schema?: string;
 
   constructor(private readonly em: EntityManager) { }
 
@@ -214,9 +215,13 @@ export class UnitOfWork {
     this.cascade(entity, Cascade.REMOVE, visited);
   }
 
-  async commit(): Promise<void> {
+  async commit(options?: FlushOptions): Promise<void> {
     if (this.working) {
       throw ValidationError.cannotCommit();
+    }
+
+    if (options?.schema) {
+      this.schema = options.schema;
     }
 
     const oldTx = this.em.getTransactionContext();
@@ -659,7 +664,7 @@ export class UnitOfWork {
       await this.runHooks(EventType.beforeCreate, changeSet, true);
     }
 
-    await this.changeSetPersister.executeInserts(changeSets, ctx);
+    await this.changeSetPersister.executeInserts(changeSets, ctx, { schema: this.schema });
 
     for (const changeSet of changeSets) {
       this.registerManaged<T>(changeSet.entity, changeSet.payload, true);

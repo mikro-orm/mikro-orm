@@ -1268,6 +1268,11 @@ describe('QueryBuilder', () => {
     expect(qb1.getParams()).toEqual(['test 1', PublisherType.GLOBAL, 'test 2', PublisherType.LOCAL, 'test 3', PublisherType.GLOBAL]);
   });
 
+  test('insert with schema', async () => {
+    const sql = orm.em.createQueryBuilder(Publisher2).insert({ name: 'test 123', type: PublisherType.GLOBAL }).withSchema('test123').getQuery();
+    expect(sql).toEqual('insert into `test123`.`publisher2` (`name`, `type`) values (?, ?)');
+  });
+
   test('update query', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
     qb.update({ name: 'test 123', type: PublisherType.GLOBAL }).where({ id: 123, type: PublisherType.LOCAL });

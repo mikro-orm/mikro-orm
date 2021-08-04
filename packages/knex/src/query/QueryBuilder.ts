@@ -314,7 +314,9 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   }
 
   withSchema(schema?: string): this {
-    this._schema = schema;
+    if (schema) {
+      this._schema = schema;
+    }
 
     return this;
   }

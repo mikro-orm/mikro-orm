@@ -19,6 +19,7 @@ import { Author2Subscriber } from './subscribers/Author2Subscriber';
 import { Test2Subscriber } from './subscribers/Test2Subscriber';
 import { EverythingSubscriber } from './subscribers/EverythingSubscriber';
 import { FlushSubscriber } from './subscribers/FlushSubscriber';
+import { Team2 } from './entities-sql/Team2';
 
 const { BaseEntity4, Author3, Book3, BookTag3, Publisher3, Test3 } = require('./entities-js/index');
 
@@ -93,7 +94,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
 
 export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN) {
   const orm = await MikroORM.init<PostgreSqlDriver>({
-    entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Label2, Configuration2],
+    entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Label2, Configuration2, Team2],
     dbName: `mikro_orm_test`,
     baseDir: BASE_DIR,
     type: 'postgresql',
