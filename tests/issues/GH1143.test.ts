@@ -38,7 +38,7 @@ describe('GH issue 1143', () => {
 
   it('diffing schema with custom schema name', async () => {
     const generator = orm.getSchemaGenerator();
-    const sql = await generator.getUpdateSchemaSQL(false);
+    const sql = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(sql).toBe('');
   });
 

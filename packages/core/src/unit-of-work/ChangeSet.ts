@@ -1,6 +1,8 @@
-import { EntityData, AnyEntity, EntityMetadata, EntityDictionary } from '../typings';
+import { EntityData, AnyEntity, EntityMetadata, EntityDictionary, Primary } from '../typings';
 
 export class ChangeSet<T extends AnyEntity<T>> {
+
+  private primaryKey?: Primary<T> | Primary<T>[] | null;
 
   constructor(public entity: T,
               public type: ChangeSetType,
@@ -9,6 +11,11 @@ export class ChangeSet<T extends AnyEntity<T>> {
     this.name = meta.className;
     this.rootName = meta.root.className;
     this.collection = meta.root.collection;
+  }
+
+  getPrimaryKey(): Primary<T> | Primary<T>[] | null {
+    this.primaryKey = this.primaryKey ?? this.entity.__helper!.getPrimaryKey(true);
+    return this.primaryKey;
   }
 
 }

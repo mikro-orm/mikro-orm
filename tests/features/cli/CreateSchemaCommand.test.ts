@@ -1,3 +1,5 @@
+import { SeedManager } from '@mikro-orm/seeder';
+
 (global as any).process.env.FORCE_COLOR = 0;
 
 import { MikroORM } from '@mikro-orm/core';
@@ -14,6 +16,8 @@ const createSchema = jest.spyOn(SchemaGenerator.prototype, 'createSchema');
 createSchema.mockImplementation(async () => void 0);
 const getCreateSchemaSQL = jest.spyOn(SchemaGenerator.prototype, 'getCreateSchemaSQL');
 getCreateSchemaSQL.mockImplementation(async () => '');
+const seed = jest.spyOn(SeedManager.prototype, 'seedString');
+seed.mockImplementation(async () => void 0);
 const dumpMock = jest.spyOn(CLIHelper, 'dump');
 dumpMock.mockImplementation(() => void 0);
 
@@ -45,13 +49,28 @@ describe('CreateSchemaCommand', () => {
     expect(createSchema.mock.calls.length).toBe(0);
     expect(close.mock.calls.length).toBe(0);
     await expect(cmd.handler({ run: true } as any)).resolves.toBeUndefined();
+    expect(seed.mock.calls.length).toBe(0);
     expect(createSchema.mock.calls.length).toBe(1);
     expect(close.mock.calls.length).toBe(1);
 
     expect(getCreateSchemaSQL.mock.calls.length).toBe(0);
     await expect(cmd.handler({ dump: true } as any)).resolves.toBeUndefined();
     expect(getCreateSchemaSQL.mock.calls.length).toBe(1);
+    expect(seed.mock.calls.length).toBe(0);
     expect(close.mock.calls.length).toBe(2);
+
+    expect(seed.mock.calls.length).toBe(0);
+    await expect(cmd.handler({ run: true, seed: '' } as any)).resolves.toBeUndefined();
+    expect(createSchema.mock.calls.length).toBe(2);
+    expect(seed.mock.calls.length).toBe(1);
+    expect(seed).toBeCalledWith(orm.config.get('seeder').defaultSeeder);
+    expect(close.mock.calls.length).toBe(3);
+
+    await expect(cmd.handler({ run: true, seed: 'UsersSeeder' } as any)).resolves.toBeUndefined();
+    expect(createSchema.mock.calls.length).toBe(3);
+    expect(seed.mock.calls.length).toBe(2);
+    expect(seed).toBeCalledWith('UsersSeeder');
+    expect(close.mock.calls.length).toBe(4);
   });
 
 });

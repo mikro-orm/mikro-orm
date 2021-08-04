@@ -45,6 +45,8 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
   syncCollection<T, O>(collection: Collection<T, O>, ctx?: Transaction): Promise<void>;
 
+  clearCollection<T, O>(collection: Collection<T, O>, ctx?: Transaction): Promise<void>;
+
   count<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T>, ctx?: Transaction): Promise<number>;
 
   aggregate(entityName: string, pipeline: any[]): Promise<any[]>;
@@ -68,7 +70,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
    */
   getDependencies(): string[];
 
-  lockPessimistic<T extends AnyEntity<T>>(entity: T, mode: LockMode, ctx?: Transaction): Promise<void>;
+  lockPessimistic<T extends AnyEntity<T>>(entity: T, mode: LockMode, tables?: string[], ctx?: Transaction): Promise<void>;
 
   /**
    * Converts native db errors to standardized driver exceptions
@@ -95,9 +97,11 @@ export interface FindOptions<T, P extends Populate<T> = Populate<T>> {
   having?: QBFilterQuery<T>;
   strategy?: LoadStrategy;
   filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
+  lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
+  lockTableAliases?: string[];
 }
 
-export interface FindOneOptions<T, P extends Populate<T> = Populate<T>> extends Omit<FindOptions<T, P>, 'limit' | 'offset'> {
+export interface FindOneOptions<T, P extends Populate<T> = Populate<T>> extends Omit<FindOptions<T, P>, 'limit' | 'offset' | 'lockMode'> {
   lockMode?: LockMode;
   lockVersion?: number | Date;
 }

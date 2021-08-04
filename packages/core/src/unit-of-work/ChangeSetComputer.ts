@@ -60,23 +60,36 @@ export class ChangeSetComputer {
     return data;
   }
 
-  private processProperty<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {
-    const target = changeSet.entity[prop.name];
+  private processProperty<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>, target?: unknown): void {
+    if (!target) {
+      const targets = Utils.unwrapProperty(changeSet.entity, changeSet.entity.__meta!, prop);
+      targets.forEach(([t]) => this.processProperty(changeSet, prop, t));
+      return;
+    }
 
     if (Utils.isCollection(target)) { // m:n or 1:m
       this.processToMany(prop, changeSet);
-    } else if (prop.reference !== ReferenceType.SCALAR && target) { // m:1 or 1:1
+    }
+
+    if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference)) {
       this.processToOne(prop, changeSet);
     }
   }
 
   private processToOne<T extends AnyEntity<T>>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
-    const entity = changeSet.entity[prop.name] as unknown as T;
     const isToOneOwner = prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
 
-    if (isToOneOwner && !entity.__helper!.hasPrimaryKey()) {
-      changeSet.payload[prop.name] = entity.__helper!.__identifier;
+    if (!isToOneOwner || prop.mapToPk) {
+      return;
     }
+
+    const targets = Utils.unwrapProperty(changeSet.entity, changeSet.entity.__meta!, prop) as [AnyEntity, number[]][];
+
+    targets.forEach(([target, idx]) => {
+      if (!target.__helper!.hasPrimaryKey()) {
+        Utils.setPayloadProperty<T>(changeSet.payload, this.metadata.find(changeSet.name)!, prop, target.__helper!.__identifier, idx);
+      }
+    });
   }
 
   private processToMany<T extends AnyEntity<T>>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {

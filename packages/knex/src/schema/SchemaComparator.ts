@@ -1,4 +1,4 @@
-import { BooleanType, Dictionary, EntityProperty, Utils } from '@mikro-orm/core';
+import { BooleanType, Dictionary, EntityProperty } from '@mikro-orm/core';
 import { Column, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
 import { DatabaseSchema } from './DatabaseSchema';
 import { DatabaseTable } from './DatabaseTable';
@@ -420,8 +420,8 @@ export class SchemaComparator {
   }
 
   hasSameDefaultValue(from: Column, to: Column): boolean {
-    if (from.default === null || from.default?.toString().toLowerCase() === 'null' || from.default?.toString().startsWith('nextval(')) {
-      return !Utils.isDefined(to.default, true) || to.default!.toLowerCase() === 'null';
+    if (from.default == null || from.default.toString().toLowerCase() === 'null' || from.default.toString().startsWith('nextval(')) {
+      return to.default == null || to.default!.toLowerCase() === 'null';
     }
 
     if (to.mappedType instanceof BooleanType) {

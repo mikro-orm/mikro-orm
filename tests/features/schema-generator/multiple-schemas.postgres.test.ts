@@ -54,17 +54,17 @@ describe('multiple connected schemas in postgres', () => {
     await orm.getSchemaGenerator().execute('drop schema if exists n1 cascade');
     await orm.getSchemaGenerator().execute('drop schema if exists n2 cascade');
 
-    const diff0 = await orm.getSchemaGenerator().getUpdateSchemaSQL(false);
+    const diff0 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
     expect(diff0).toMatchSnapshot();
     await orm.getSchemaGenerator().execute(diff0);
 
     orm.getMetadata().reset('Book0');
     await orm.discoverEntity(Book1);
-    const diff1 = await orm.getSchemaGenerator().getUpdateSchemaSQL(false);
+    const diff1 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
     await orm.getSchemaGenerator().execute(diff1);
 
-    const diff2 = await orm.getSchemaGenerator().getUpdateSchemaSQL(false);
+    const diff2 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
     expect(diff2).toBe('');
 
     await orm.close(true);

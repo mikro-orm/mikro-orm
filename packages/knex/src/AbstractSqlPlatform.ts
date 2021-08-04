@@ -1,5 +1,5 @@
 import { escape } from 'sqlstring';
-import { Constructor, EntityManager, EntityRepository, Platform, Utils } from '@mikro-orm/core';
+import { Constructor, EntityManager, EntityRepository, JsonProperty, Platform, Utils } from '@mikro-orm/core';
 import { SqlEntityRepository } from './SqlEntityRepository';
 import { SchemaHelper, SchemaGenerator } from './schema';
 
@@ -27,9 +27,21 @@ export abstract class AbstractSqlPlatform extends Platform {
     return new SchemaGenerator(em as any); // cast as `any` to get around circular dependencies
   }
 
+  getEntityGenerator(em: EntityManager) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { EntityGenerator } = require('@mikro-orm/entity-generator');
+    return new EntityGenerator(em);
+  }
+
+  getMigrator(em: EntityManager) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { Migrator } = require('@mikro-orm/migrations');
+    return new Migrator(em);
+  }
+
   quoteValue(value: any): string {
     /* istanbul ignore if */
-    if (Utils.isPlainObject(value)) {
+    if (Utils.isPlainObject(value) || value?.[JsonProperty]) {
       return escape(JSON.stringify(value));
     }
 
@@ -72,10 +84,6 @@ export abstract class AbstractSqlPlatform extends Platform {
 
   getSearchJsonPropertySQL(path: string, type: string): string {
     return this.getSearchJsonPropertyKey(path.split('->'), type);
-  }
-
-  cloneEmbeddable<T>(data: T): T {
-    return JSON.stringify(data) as unknown as T; // keep string to ease escaping
   }
 
   isRaw(value: any): boolean {

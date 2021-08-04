@@ -355,6 +355,20 @@ describe('Utils', () => {
     expect(name).toEqual('@mikro-orm/core');
   });
 
+  test('tryRequire', () => {
+    const warnSpy = jest.spyOn(console, 'warn');
+    warnSpy.mockImplementationOnce(i => i);
+    const ret = Utils.tryRequire({ module: 'not-existing-dep', warning: 'not found' });
+    expect(ret).toBeUndefined();
+    expect(warnSpy).toBeCalledWith('not found');
+
+    const requireFromSpy = jest.spyOn(Utils, 'requireFrom');
+    requireFromSpy.mockImplementationOnce(() => { throw new Error('some other issue'); });
+    expect(() => {
+      return Utils.tryRequire({ module: 'not-existing-dep', warning: 'not found', allowError: 'Cannot find module' });
+    }).toThrowError('some other issue');
+  });
+
   test('getPrimaryKeyCond', () => {
     expect(Utils.getPrimaryKeyCond({ a: null }, ['a'])).toBe(null);
   });

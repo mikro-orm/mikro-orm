@@ -53,7 +53,7 @@ class D {
   @PrimaryKey({ type: UuidBinaryType })
   id: string = v4();
 
-  @ManyToOne()
+  @ManyToOne({ onDelete: 'cascade' })
   a!: A;
 
 }
@@ -76,6 +76,10 @@ describe('GH issue 446', () => {
 
   afterAll(async () => {
     await orm.close(true);
+  });
+
+  afterEach(async () => {
+    await orm.em.nativeDelete(A, {});
   });
 
   test(`chaining primary key column type`, async () => {
@@ -105,6 +109,29 @@ describe('GH issue 446', () => {
     expect(c2.b.a).toBeInstanceOf(A);
     expect(wrap(c2.b.a).isInitialized()).toBe(true);
     expect(c2.b.a.id).toBe(a.id);
+  });
+
+  test(`update entity with custom type PK (GH #1798)`, async () => {
+    const a1 = orm.em.create(A, { name: 'a1' });
+    const a2 = orm.em.create(A, { name: 'a2' });
+    await orm.em.persist([a1, a2]).flush();
+
+    a1.name = 'a1 v2';
+    await orm.em.flush();
+
+    a1.name = 'a1 v3';
+    a2.name = 'a2 v3';
+    await orm.em.flush();
+    orm.em.clear();
+
+    const as = await orm.em.find(A, {}, { orderBy: { name: 1 } });
+    expect(as.map(a => a.name)).toEqual(['a1 v3', 'a2 v3']);
+    as.forEach(a => orm.em.remove(a));
+    await orm.em.flush();
+    orm.em.clear();
+
+    const count = await orm.em.count(A, {});
+    expect(count).toBe(0);
   });
 
   test(`assign with custom types`, async () => {

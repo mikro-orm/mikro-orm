@@ -92,6 +92,18 @@ export enum LockMode {
   OPTIMISTIC = 1,
   PESSIMISTIC_READ = 2,
   PESSIMISTIC_WRITE = 3,
+  PESSIMISTIC_PARTIAL_WRITE = 4,
+  PESSIMISTIC_WRITE_OR_FAIL = 5,
+  PESSIMISTIC_PARTIAL_READ = 6,
+  PESSIMISTIC_READ_OR_FAIL = 7,
+}
+
+export enum IsolationLevel {
+  READ_UNCOMMITTED = 'read uncommitted',
+  READ_COMMITTED = 'read committed',
+  SNAPSHOT = 'snapshot',
+  REPEATABLE_READ = 'repeatable read',
+  SERIALIZABLE = 'serializable',
 }
 
 export enum EventType {

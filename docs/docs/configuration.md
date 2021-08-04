@@ -113,6 +113,11 @@ Each platform (driver) provides default connection string, you can override it a
 through `clientUrl`, or partially through one of following options:
 
 ```typescript
+export interface DynamicPassword {
+  password: string;
+  expirationChecker?: () => boolean;
+}
+
 export interface ConnectionOptions {
   dbName?: string;
   name?: string; // for logging only (when replicas are used)
@@ -120,7 +125,7 @@ export interface ConnectionOptions {
   host?: string;
   port?: number;
   user?: string;
-  password?: string;
+  password?: string | (() => string | Promise<string> | DynamicPassword | Promise<DynamicPassword>);
   charset?: string;
   multipleStatements?: boolean; // for mysql driver
   pool?: PoolConfig; // provided by `knex`
@@ -135,6 +140,8 @@ Following table shows default client connection strings:
 | `mysql` | `mysql://root@127.0.0.1:3306` |
 | `mariadb` | `mysql://root@127.0.0.1:3306` |
 | `postgresql` | `postgresql://postgres@127.0.0.1:5432` |
+
+### Read Replicas
 
 To set up read replicas, you can use `replicas` option. You can provide only those parts of the 
 `ConnectionOptions` interface, they will be used to override the `master` connection options.
@@ -155,6 +162,35 @@ MikroORM.init({
 ```
 
 Read more about this in [Installation](installation.md) and [Read Connections](read-connections.md) sections.
+
+### Using short-lived tokens
+
+Many cloud providers include alternative methods for connecting to database instances 
+using short-lived authentication tokens. MikroORM supports dynamic passwords via 
+a callback function, either synchronous or asynchronous. The callback function must 
+resolve to a string.
+
+```ts
+MikroORM.init({
+  type: 'mysql',
+  dbName: 'my_db_name',
+  password: async () => someCallToGetTheToken(),
+});
+```
+
+The password callback value will be cached, to invalidate this cache we can specify
+`expirationChecker` callback:
+
+```ts
+MikroORM.init({
+  type: 'mysql',
+  dbName: 'my_db_name',
+  password: async () => {
+    const { token, tokenExpiration } = await someCallToGetTheToken();
+    return { password: token, expirationChecker: () => tokenExpiration <= Date.now() }
+  },
+});
+```
 
 ## Naming Strategy
 

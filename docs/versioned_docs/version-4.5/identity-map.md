@@ -56,7 +56,7 @@ register the context after them.
 Later on you can then access the request scoped `EntityManager` via `RequestContext.getEntityManager()`.
 This method is used under the hood automatically, so you should not need it. 
 
-> `RequestContext.getEntityManager()` will return `undefinded` if the context was
+> `RequestContext.getEntityManager()` will return `undefined` if the context was
 > not started yet.
 
 ## Why is Request Context needed?

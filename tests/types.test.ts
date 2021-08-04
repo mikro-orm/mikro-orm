@@ -74,7 +74,7 @@ describe('check typings', () => {
   });
 
   test('EntityDTO', async () => {
-    const b = { author: { books: [{}] } } as EntityDTO<Book2>;
+    const b = { author: { books: [{}], identities: [''] } } as EntityDTO<Book2>;
     const b1 = b.author.name;
     const b2 = b.test?.name;
     const b3 = b.test?.book?.author.books2;
@@ -82,6 +82,9 @@ describe('check typings', () => {
     const b5 = b.publisher?.name;
     const b6 = b.publisher?.tests;
     const b7 = b.author.favouriteBook?.tags[0].name;
+    const b8: number = b.author.identities!.length;
+    const b9: string[] = b.author.identities!.slice();
+    const b10: string[] = b.author.identities!.filter(i => i);
 
     // @ts-expect-error
     b.author.afterDelete?.();

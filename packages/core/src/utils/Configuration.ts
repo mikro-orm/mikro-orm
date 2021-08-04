@@ -3,7 +3,7 @@ import { inspect } from 'util';
 import { NamingStrategy } from '../naming-strategy';
 import { CacheAdapter, FileCacheAdapter, NullCacheAdapter } from '../cache';
 import { EntityRepository } from '../entity';
-import { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, FilterDef, Highlighter, HydratorConstructor, IHydrator, IPrimaryKey, MigrationObject } from '../typings';
+import { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, FilterDef, Highlighter, HydratorConstructor, IHydrator, IPrimaryKey, MaybePromise, MigrationObject } from '../typings';
 import { ObjectHydrator } from '../hydration';
 import { NullHighlighter } from '../utils/NullHighlighter';
 import { Logger, LoggerNamespace } from '../utils/Logger';
@@ -66,6 +66,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       allOrNothing: true,
       dropTables: true,
       safe: false,
+      snapshot: true,
       emit: 'ts',
       fileName: (timestamp: string) => `Migration${timestamp}`,
     },
@@ -81,6 +82,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     },
     metadataProvider: ReflectMetadataProvider,
     highlighter: new NullHighlighter(),
+    seeder: { path: './database/seeder', defaultSeeder: 'DatabaseSeeder' },
   };
 
   static readonly PLATFORMS = {
@@ -285,6 +287,11 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
 }
 
+export interface DynamicPassword {
+  password: string;
+  expirationChecker?: () => boolean;
+}
+
 export interface ConnectionOptions {
   dbName?: string;
   schema?: string;
@@ -293,7 +300,7 @@ export interface ConnectionOptions {
   host?: string;
   port?: number;
   user?: string;
-  password?: string;
+  password?: string | (() => MaybePromise<string> | MaybePromise<DynamicPassword>);
   charset?: string;
   collate?: string;
   multipleStatements?: boolean; // for mysql driver
@@ -309,6 +316,7 @@ export type MigrationsOptions = {
   allOrNothing?: boolean;
   dropTables?: boolean;
   safe?: boolean;
+  snapshot?: boolean;
   emit?: 'js' | 'ts';
   fileName?: (timestamp: string) => string;
   migrationsList?: MigrationObject[];
@@ -350,9 +358,9 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
     disableDynamicFileAccess?: boolean;
   };
   type?: keyof typeof Configuration.PLATFORMS;
-  driver?: { new (config: Configuration): D };
+  driver?: { new(config: Configuration): D };
   driverOptions: Dictionary;
-  namingStrategy?: { new (): NamingStrategy };
+  namingStrategy?: { new(): NamingStrategy };
   implicitTransactions?: boolean;
   autoJoinOneToOneOwner: boolean;
   propagateToOneOwner: boolean;
@@ -383,15 +391,18 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   cache: {
     enabled?: boolean;
     pretty?: boolean;
-    adapter?: { new (...params: any[]): CacheAdapter };
+    adapter?: { new(...params: any[]): CacheAdapter };
     options?: Dictionary;
   };
   resultCache: {
     expiration?: number;
-    adapter?: { new (...params: any[]): CacheAdapter };
+    adapter?: { new(...params: any[]): CacheAdapter };
     options?: Dictionary;
   };
-  metadataProvider: { new (config: Configuration): MetadataProvider };
+  metadataProvider: { new(config: Configuration): MetadataProvider };
+  seeder: { path: string; defaultSeeder: string };
 }
 
-export type Options<D extends IDatabaseDriver = IDatabaseDriver> = Pick<MikroORMOptions<D>, Exclude<keyof MikroORMOptions<D>, keyof typeof Configuration.DEFAULTS>> & Partial<MikroORMOptions<D>>;
+export type Options<D extends IDatabaseDriver = IDatabaseDriver> =
+  Pick<MikroORMOptions<D>, Exclude<keyof MikroORMOptions<D>, keyof typeof Configuration.DEFAULTS>>
+  & Partial<MikroORMOptions<D>>;

@@ -7,7 +7,7 @@ import { ICriteriaNode, IQueryBuilder } from '../typings';
  * Auto-joins relations and converts payload from { books: { publisher: { name: '...' } } } to { 'publisher_alias.name': '...' }
  * @internal
  */
-export class CriteriaNode {
+export class CriteriaNode implements ICriteriaNode {
 
   payload: any;
   prop?: EntityProperty;
@@ -98,7 +98,7 @@ export class CriteriaNode {
       return this.getPivotPath(ret);
     }
 
-    return ret;
+    return ret ?? '';
   }
 
   private isPivotJoin(): boolean {

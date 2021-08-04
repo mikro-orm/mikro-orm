@@ -1,5 +1,5 @@
 import { Client } from 'pg';
-import { EntityProperty, Type, Utils } from '@mikro-orm/core';
+import { EntityProperty, JsonProperty, Type, Utils } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
 import { PostgreSqlExceptionConverter } from './PostgreSqlExceptionConverter';
@@ -126,7 +126,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
   quoteValue(value: any): string {
     /* istanbul ignore if */
-    if (Utils.isPlainObject(value)) {
+    if (Utils.isPlainObject(value) || value?.[JsonProperty]) {
       value = JSON.stringify(value);
     }
 
@@ -182,6 +182,19 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
   supportsSchemas(): boolean {
     return true;
+  }
+
+  /**
+   * Returns the default name of index for the given columns
+   * cannot go past 64 character length for identifiers in MySQL
+   */
+  getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
+    let indexName = super.getIndexName(tableName, columns, type);
+    if (indexName.length > 64) {
+      indexName = `${indexName.substr(0, 57 - type.length)}_${Utils.hash(indexName).substr(0, 5)}_${type}`;
+    }
+
+    return indexName;
   }
 
 }

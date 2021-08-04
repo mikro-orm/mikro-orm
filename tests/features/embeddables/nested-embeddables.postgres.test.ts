@@ -114,9 +114,9 @@ describe('embedded entities in postgres', () => {
   });
 
   test('schema', async () => {
-    await expect(orm.getSchemaGenerator().getCreateSchemaSQL(false)).resolves.toMatchSnapshot('nested embeddables 1');
-    await expect(orm.getSchemaGenerator().getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('nested embeddables 2');
-    await expect(orm.getSchemaGenerator().getDropSchemaSQL(false)).resolves.toMatchSnapshot('nested embeddables 3');
+    await expect(orm.getSchemaGenerator().getCreateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('nested embeddables 1');
+    await expect(orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('nested embeddables 2');
+    await expect(orm.getSchemaGenerator().getDropSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('nested embeddables 3');
   });
 
   test('diffing', async () => {

@@ -25,8 +25,9 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   __identifier?: EntityIdentifier;
 
   constructor(private readonly entity: T,
-              private readonly pkGetter: (e: T) => Primary<T>,
-              private readonly pkSerializer: (e: T) => string) { }
+              private readonly pkGetter?: (e: T) => Primary<T>,
+              private readonly pkSerializer?: (e: T) => string,
+              private readonly pkGetterConverted?: (e: T) => Primary<T>) { }
 
   isInitialized(): boolean {
     return this.__initialized;
@@ -79,8 +80,37 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
     return pk !== undefined && pk !== null;
   }
 
-  getPrimaryKey(): Primary<T> | null {
-    return this.pkGetter(this.entity);
+  getPrimaryKey(convertCustomTypes = false): Primary<T> | null {
+    if (convertCustomTypes) {
+      return this.pkGetterConverted!(this.entity);
+    }
+
+    return this.pkGetter!(this.entity);
+  }
+
+  getPrimaryKeys(convertCustomTypes = false): Primary<T>[] | null {
+    const pk = this.getPrimaryKey(convertCustomTypes);
+
+    if (!pk) {
+      return null;
+    }
+
+    if (this.__meta.compositePK) {
+      return this.__meta.primaryKeys.reduce((ret, pk) => {
+        const child = this.entity[pk] as AnyEntity<T> | Primary<unknown>;
+
+        if (Utils.isEntity(child, true)) {
+          const childPk = child.__helper!.getPrimaryKeys(convertCustomTypes);
+          ret.push(...childPk!);
+        } else {
+          ret.push(child as Primary<unknown>);
+        }
+
+        return ret;
+      }, [] as Primary<T>[]);
+    }
+
+    return [pk];
   }
 
   setPrimaryKey(id: Primary<T> | null) {
@@ -88,7 +118,7 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   }
 
   getSerializedPrimaryKey(): string {
-    return this.pkSerializer(this.entity);
+    return this.pkSerializer!(this.entity);
   }
 
   get __meta(): EntityMetadata<T> {
@@ -103,6 +133,7 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
     return Utils.getPrimaryKeyValues(this.entity, this.entity.__meta!.primaryKeys);
   }
 
+  // TODO used only at one place, probably replaceable
   get __primaryKeyCond(): Primary<T> | Primary<T>[] | null {
     if (this.entity.__meta!.compositePK) {
       return this.__primaryKeys;

@@ -63,7 +63,7 @@ export class SourceFile {
 
   private getPropertyDefinition(prop: EntityProperty, padLeft: number): string {
     // string defaults are usually things like SQL functions
-    const useDefault = prop.default && typeof prop.default !== 'string';
+    const useDefault = prop.default != null && typeof prop.default !== 'string';
     const optional = prop.nullable ? '?' : (useDefault ? '' : '!');
     const ret = `${prop.name}${optional}: ${prop.type}`;
     const padding = ' '.repeat(padLeft);
@@ -188,25 +188,12 @@ export class SourceFile {
       options.fieldName = `'${prop.fieldNames[0]}'`;
     }
 
-    const cascade = [];
-
-    if (prop.onUpdateIntegrity === 'cascade') {
-      cascade.push('Cascade.PERSIST');
+    if (!['no action', 'restrict'].includes(prop.onUpdateIntegrity!.toLowerCase())) {
+      options.onUpdateIntegrity = `'${prop.onUpdateIntegrity}'`;
     }
 
-    if (prop.onDelete === 'cascade') {
-      cascade.push('Cascade.REMOVE');
-    }
-
-    if (cascade.length === 2) {
-      cascade.length = 0;
-      cascade.push('Cascade.ALL');
-    }
-
-    // do not set cascade when it matches the defaults (persist)
-    if (!(cascade.length === 1 && cascade.includes('Cascade.PERSIST'))) {
-      this.coreImports.add('Cascade');
-      options.cascade = `[${cascade.sort().join(', ')}]`;
+    if (!['no action', 'restrict'].includes(prop.onDelete!.toLowerCase())) {
+      options.onDelete = `'${prop.onDelete}'`;
     }
 
     if (prop.primary) {

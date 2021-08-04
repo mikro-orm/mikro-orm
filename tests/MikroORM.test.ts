@@ -1,3 +1,11 @@
+const knex = jest.fn();
+const raw = jest.fn();
+const destroy = jest.fn();
+knex.mockReturnValue({
+  on: jest.fn(() => ({ raw, destroy })),
+});
+jest.mock('knex', () => ({ knex }));
+
 (global as any).process.env.FORCE_COLOR = 0;
 
 import { Configuration, EntityManager, MikroORM, NullCacheAdapter } from '@mikro-orm/core';
@@ -39,19 +47,6 @@ describe('MikroORM', () => {
     await expect(MikroORM.init({ type: 'mongo', dbName: 'test', baseDir: BASE_DIR, entities: ['entities-1', 'entities-2'] })).rejects.toThrowError('Duplicate entity names are not allowed: Dup1, Dup2');
   });
 
-  test('should report connection failure', async () => {
-    const logger = jest.fn();
-    await MikroORM.init({
-      dbName: 'not-found',
-      baseDir: BASE_DIR,
-      type: 'mysql',
-      entities: [Car2, CarOwner2, User2, Sandwich],
-      debug: ['info'],
-      logger,
-    });
-    expect(logger.mock.calls[0][0]).toEqual('[info] MikroORM failed to connect to database not-found on mysql://root@127.0.0.1:3306');
-  });
-
   test('should throw when only abstract entities were discovered', async () => {
     const err = 'Only abstract entities were discovered, maybe you forgot to use @Entity() decorator?';
     await expect(MikroORM.init({ type: 'mongo', dbName: 'test', baseDir: BASE_DIR, entities: [BaseEntity2] })).rejects.toThrowError(err);
@@ -71,29 +66,6 @@ describe('MikroORM', () => {
     const orm = await MikroORM.init({ type: 'mongo', dbName: 'test', baseDir: BASE_DIR, entities: ['entities'] }, false);
     expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['Author', 'Book', 'BookTag', 'Dummy', 'Foo1', 'Foo2',  'Foo3', 'FooBar', 'FooBaz', 'Publisher', 'Test']);
     await orm.close();
-  });
-
-  test('orm.close() calls CacheAdapter.close()', async () => {
-    let closed = 0;
-
-    class Adapter extends NullCacheAdapter {
-
-      async close() {
-        closed++;
-      }
-
-    }
-
-    const orm = await MikroORM.init({
-      type: 'sqlite',
-      dbName: ':memory:',
-      entities: [Car2, CarOwner2, User2, Sandwich],
-      cache: { adapter: Adapter, enabled: true },
-      resultCache: { adapter: Adapter },
-    }, true);
-    expect(closed).toBe(0);
-    await orm.close();
-    expect(closed).toBe(2);
   });
 
   test('should use CLI config', async () => {
@@ -145,6 +117,99 @@ describe('MikroORM', () => {
       migrations: { path: './dist/migrations', pattern: /^[\w-]+\d+\.js$/ },
     });
     expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['Author4', 'Book4', 'BookTag4', 'FooBar4', 'FooBaz4', 'Publisher4', 'Test4', 'User4', 'publisher4_tests', 'tags_ordered', 'tags_unordered']);
+  });
+
+  test('should work with dynamic passwords/tokens', async () => {
+    const options = {
+      entities: [Test],
+      type: 'postgresql' as const,
+      dbName: 'mikro-orm-test',
+    };
+
+    await MikroORM.init({
+      ...options,
+      password: () => 'pass1',
+    });
+    await expect(knex.mock.calls[0][0].connection()).resolves.toEqual({
+      host: '127.0.0.1',
+      port: 5432,
+      user: 'postgres',
+      password: 'pass1',
+      database: 'mikro-orm-test',
+    });
+
+    await MikroORM.init({
+      ...options,
+      password: async () => 'pass2',
+    });
+    await expect(knex.mock.calls[1][0].connection()).resolves.toEqual({
+      host: '127.0.0.1',
+      port: 5432,
+      user: 'postgres',
+      password: 'pass2',
+      database: 'mikro-orm-test',
+    });
+
+    await MikroORM.init({
+      ...options,
+      password: async () => ({ password: 'pass3' }),
+    });
+    await expect(knex.mock.calls[2][0].connection()).resolves.toEqual({
+      host: '127.0.0.1',
+      port: 5432,
+      user: 'postgres',
+      password: 'pass3',
+      database: 'mikro-orm-test',
+    });
+
+    await MikroORM.init({
+      ...options,
+      password: async () => ({ password: 'pass4', expirationChecker: () => true }),
+    });
+    await expect(knex.mock.calls[3][0].connection()).resolves.toMatchObject({
+      host: '127.0.0.1',
+      port: 5432,
+      user: 'postgres',
+      password: 'pass4',
+      database: 'mikro-orm-test',
+    });
+  });
+
+  test('should report connection failure', async () => {
+    const logger = jest.fn();
+    raw.mockImplementationOnce(() => { throw new Error(); });
+    await MikroORM.init({
+      dbName: 'not-found',
+      baseDir: BASE_DIR,
+      type: 'mysql',
+      entities: [Car2, CarOwner2, User2, Sandwich],
+      debug: ['info'],
+      logger,
+    });
+    expect(logger.mock.calls[0][0]).toEqual('[info] MikroORM failed to connect to database not-found on mysql://root@127.0.0.1:3306');
+  });
+
+  test('orm.close() calls CacheAdapter.close()', async () => {
+    let closed = 0;
+
+    class Adapter extends NullCacheAdapter {
+
+      async close() {
+        closed++;
+      }
+
+    }
+
+    const orm = await MikroORM.init({
+      type: 'sqlite',
+      dbName: ':memory:',
+      entities: [Car2, CarOwner2, User2, Sandwich],
+      cache: { adapter: Adapter, enabled: true },
+      resultCache: { adapter: Adapter },
+    }, true);
+    expect(closed).toBe(0);
+    await orm.close();
+    expect(closed).toBe(2);
   });
 
 });

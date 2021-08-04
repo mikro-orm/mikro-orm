@@ -1155,6 +1155,10 @@ describe('QueryBuilder', () => {
     expect(() => qb.setLockMode(LockMode.NONE)).toThrowError('An open transaction is required for this operation');
     expect(() => qb.setLockMode(LockMode.PESSIMISTIC_READ)).toThrowError('An open transaction is required for this operation');
     expect(() => qb.setLockMode(LockMode.PESSIMISTIC_WRITE)).toThrowError('An open transaction is required for this operation');
+    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_WRITE_OR_FAIL)).toThrowError('An open transaction is required for this operation');
+    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_PARTIAL_WRITE)).toThrowError('An open transaction is required for this operation');
+    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_READ_OR_FAIL)).toThrowError('An open transaction is required for this operation');
+    expect(() => qb.setLockMode(LockMode.PESSIMISTIC_PARTIAL_READ)).toThrowError('An open transaction is required for this operation');
     expect(() => qb.setLockMode(LockMode.OPTIMISTIC).getQuery()).toThrowError('The optimistic lock on entity Author2 failed');
   });
 
@@ -1180,7 +1184,7 @@ describe('QueryBuilder', () => {
     expect(qb3.getParams()).toEqual([123]);
   });
 
-  test('insert on conflict ignore/merge', async () => {
+  test('insert on conflict ignore/merge (GH #1774)', async () => {
     const qb0 = orm.em.createQueryBuilder(Author2);
     qb0.insert({ email: 'ignore@example.com', name: 'John Doe' }).onConflict('email').ignore();
     expect(qb0.getQuery()).toEqual('insert ignore into `author2` (`email`, `name`) values (?, ?)');
@@ -1202,6 +1206,55 @@ describe('QueryBuilder', () => {
 
     expect(qb1.getQuery()).toEqual('insert into `author2` (`created_at`, `email`, `name`, `updated_at`) values (?, ?, ?, ?) on duplicate key update `name` = ?,`updatedAt` = ?');
     expect(qb1.getParams()).toEqual([timestamp, 'ignore@example.com', 'John Doe', timestamp, 'John Doe', timestamp]);
+
+    const qb2 = orm.em.createQueryBuilder(Author2)
+      .insert({
+        createdAt: timestamp,
+        email: 'ignore@example.com',
+        name: 'John Doe',
+        updatedAt: timestamp,
+      })
+      .onConflict('email')
+      .merge();
+
+    expect(qb2.getQuery()).toEqual('insert into `author2` (`created_at`, `email`, `name`, `updated_at`) values (?, ?, ?, ?) on duplicate key update `created_at` = values(`created_at`), `email` = values(`email`), `name` = values(`name`), `updated_at` = values(`updated_at`)');
+    expect(qb2.getParams()).toEqual([timestamp, 'ignore@example.com', 'John Doe', timestamp]);
+
+    const qb3 = orm.em.createQueryBuilder(Author2)
+      .insert({
+        createdAt: timestamp,
+        email: 'ignore@example.com',
+        name: 'John Doe',
+        updatedAt: timestamp,
+      })
+      .onConflict('email')
+      .merge(['name']);
+
+    expect(qb3.getQuery()).toEqual('insert into `author2` (`created_at`, `email`, `name`, `updated_at`) values (?, ?, ?, ?) on duplicate key update `name` = values(`name`)');
+    expect(qb3.getParams()).toEqual([timestamp, 'ignore@example.com', 'John Doe', timestamp]);
+
+    const qb4 = orm.em.createQueryBuilder(Author2)
+      .insert({
+        createdAt: timestamp,
+        email: 'ignore@example.com',
+        name: 'John Doe',
+        updatedAt: timestamp,
+      })
+      .onConflict()
+      .ignore();
+
+    expect(qb4.getQuery()).toEqual('insert ignore into `author2` (`created_at`, `email`, `name`, `updated_at`) values (?, ?, ?, ?)');
+    expect(qb4.getParams()).toEqual([timestamp, 'ignore@example.com', 'John Doe', timestamp]);
+
+    const qb5 = orm.em.createQueryBuilder(Author2)
+      .insert({
+        createdAt: timestamp,
+        email: 'ignore@example.com',
+        name: 'John Doe',
+        updatedAt: timestamp,
+      });
+    expect(() => qb5.ignore()).toThrow('You need to call `qb.onConflict()` first to use `qb.ignore()`');
+    expect(() => qb5.merge()).toThrow('You need to call `qb.onConflict()` first to use `qb.merge()`');
   });
 
   test('insert many query', async () => {
@@ -1755,6 +1808,7 @@ describe('QueryBuilder', () => {
       dbName: `mikro_orm_test`,
       type: 'postgresql',
     });
+    await pg.getSchemaGenerator().ensureDatabase();
 
     const qb01 = pg.em.createQueryBuilder(FooBar2);
     qb01.insert({ array: [] });
@@ -1824,6 +1878,59 @@ describe('QueryBuilder', () => {
     expect(qb12.getFormattedQuery()).toBe(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where ("meta"->>'foo')::float8 = 123`);
     const qb13 = pg.em.createQueryBuilder(Book2).where({ meta: { foo: { $lte: 123 } } });
     expect(qb13.getFormattedQuery()).toBe(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where ("meta"->>'foo')::float8 <= 123`);
+
+    // order by json property
+    const qb14 = pg.em.createQueryBuilder(Book2).orderBy({ meta: { foo: 'asc' } });
+    expect(qb14.getFormattedQuery()).toBe(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" order by "meta"->>'foo' asc`);
+    const qb15 = pg.em.createQueryBuilder(Book2).orderBy({ meta: { bar: { str: 'asc' } } });
+    expect(qb15.getFormattedQuery()).toBe(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" order by "meta"->'bar'->>'str' asc`);
+    const qb16 = pg.em.createQueryBuilder(Book2).orderBy({ meta: { bar: { num: QueryOrder.DESC } } });
+    expect(qb16.getFormattedQuery()).toBe(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" order by "meta"->'bar'->>'num' desc`);
+
+    // pessimistic locking
+    await pg.em.transactional(async em => {
+      const qb1 = em.createQueryBuilder(Book2);
+      qb1.select('*').where({ title: 'test 123' }).setLockMode(LockMode.PESSIMISTIC_PARTIAL_READ);
+      expect(qb1.getQuery()).toEqual('select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where "e0"."title" = $1 for share skip locked');
+
+      const qb2 = em.createQueryBuilder(Book2);
+      qb2.select('*').where({ title: 'test 123' }).setLockMode(LockMode.PESSIMISTIC_PARTIAL_WRITE);
+      expect(qb2.getQuery()).toEqual('select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where "e0"."title" = $1 for update skip locked');
+
+      const qb3 = em.createQueryBuilder(Book2);
+      qb3.select('*').where({ title: 'test 123' }).setLockMode(LockMode.PESSIMISTIC_READ_OR_FAIL);
+      expect(qb3.getQuery()).toEqual('select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where "e0"."title" = $1 for share nowait');
+
+      const qb4 = em.createQueryBuilder(Book2);
+      qb4.select('*').where({ title: 'test 123' }).setLockMode(LockMode.PESSIMISTIC_WRITE_OR_FAIL);
+      expect(qb4.getQuery()).toEqual('select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where "e0"."title" = $1 for update nowait');
+
+      const qb5 = em.createQueryBuilder(Book2);
+      qb5.select('*').leftJoin('author', 'a').where({ title: 'test 123' }).setLockMode(LockMode.PESSIMISTIC_WRITE, ['book2']);
+      expect(qb5.getQuery()).toEqual('select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" left join "author2" as "a" on "e0"."author_id" = "a"."id" where "e0"."title" = $1 for update of "book2"');
+    });
+
+    // join and select m:n relation with paginate flag (GH #1926)
+    const qb = pg.em.createQueryBuilder(Book2, 'b');
+    qb.select('*')
+      .leftJoinAndSelect('b.tags', 't')
+      .where({ 't.name': 'tag name' })
+      .setFlag(QueryFlag.PAGINATE)
+      .offset(1)
+      .limit(20);
+    const sql = 'select "b".*, "t"."id" as "t__id", "t"."name" as "t__name", "b".price * 1.19 as "price_taxed" ' +
+      'from "book2" as "b" ' +
+      'left join "book2_tags" as "e1" on "b"."uuid_pk" = "e1"."book2_uuid_pk" ' +
+      'left join "book_tag2" as "t" on "e1"."book_tag2_id" = "t"."id" where "b"."uuid_pk" in ' +
+      '(select "b"."uuid_pk" from ' +
+      '(select "b"."uuid_pk" from ' +
+      '(select "b"."uuid_pk" from "book2" as "b" ' +
+      'left join "book2_tags" as "e1" on "b"."uuid_pk" = "e1"."book2_uuid_pk" ' +
+      'left join "book_tag2" as "t" on "e1"."book_tag2_id" = "t"."id" where "t"."name" = $1' +
+      ') as "b" group by "b"."uuid_pk" limit $2 offset $3' +
+      ') as "b")';
+    expect(qb.getQuery()).toEqual(sql);
+    expect(qb.getParams()).toEqual(['tag name', 20, 1]);
 
     await pg.close(true);
   });

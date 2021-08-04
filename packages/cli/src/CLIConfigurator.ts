@@ -2,12 +2,15 @@ import yargs, { Argv } from 'yargs';
 
 import { ConfigurationLoader, Utils } from '@mikro-orm/core';
 import { ClearCacheCommand } from './commands/ClearCacheCommand';
-import { GenerateEntitiesCommand } from './commands/GenerateEntitiesCommand';
-import { SchemaCommandFactory } from './commands/SchemaCommandFactory';
-import { MigrationCommandFactory } from './commands/MigrationCommandFactory';
+import { DatabaseSeedCommand } from './commands/DatabaseSeedCommand';
 import { DebugCommand } from './commands/DebugCommand';
 import { GenerateCacheCommand } from './commands/GenerateCacheCommand';
+import { GenerateEntitiesCommand } from './commands/GenerateEntitiesCommand';
 import { ImportCommand } from './commands/ImportCommand';
+import { MigrationCommandFactory } from './commands/MigrationCommandFactory';
+import { SchemaCommandFactory } from './commands/SchemaCommandFactory';
+import { CreateSeederCommand } from './commands/CreateSeederCommand';
+import { CreateDatabaseCommand } from './commands/CreateDatabaseCommand';
 
 /**
  * @internal
@@ -32,15 +35,20 @@ export class CLIConfigurator {
       .command(new ClearCacheCommand())
       .command(new GenerateCacheCommand())
       .command(new GenerateEntitiesCommand())
+      .command(new CreateDatabaseCommand())
       .command(new ImportCommand())
+      .command(new DatabaseSeedCommand())
+      .command(new CreateSeederCommand())
       .command(SchemaCommandFactory.create('create'))
       .command(SchemaCommandFactory.create('drop'))
       .command(SchemaCommandFactory.create('update'))
+      .command(SchemaCommandFactory.create('fresh'))
       .command(MigrationCommandFactory.create('create'))
       .command(MigrationCommandFactory.create('up'))
       .command(MigrationCommandFactory.create('down'))
       .command(MigrationCommandFactory.create('list'))
       .command(MigrationCommandFactory.create('pending'))
+      .command(MigrationCommandFactory.create('fresh'))
       .command(new DebugCommand())
       .recommendCommands()
       .strict();

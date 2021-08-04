@@ -22,6 +22,7 @@ export class UnitOfWork {
   private readonly orphanRemoveStack = new Set<AnyEntity>();
   private readonly changeSets = new Map<AnyEntity, ChangeSet<AnyEntity>>();
   private readonly collectionUpdates = new Set<Collection<AnyEntity>>();
+  private readonly collectionDeletions = new Set<Collection<AnyEntity>>();
   private readonly extraUpdates = new Set<[AnyEntity, string | string[], AnyEntity | AnyEntity[] | Reference<any> | Collection<any>]>();
   private readonly metadata = this.em.getMetadata();
   private readonly platform = this.em.getPlatform();
@@ -227,7 +228,7 @@ export class UnitOfWork {
       await this.eventManager.dispatchEvent(EventType.onFlush, { em: this.em, uow: this });
 
       // nothing to do, do not start transaction
-      if (this.changeSets.size === 0 && this.collectionUpdates.size === 0 && this.extraUpdates.size === 0) {
+      if (this.changeSets.size === 0 && this.collectionUpdates.size === 0 && this.collectionDeletions.size === 0 && this.extraUpdates.size === 0) {
         return void await this.eventManager.dispatchEvent(EventType.afterFlush, { em: this.em, uow: this });
       }
 
@@ -236,24 +237,22 @@ export class UnitOfWork {
       const runInTransaction = !this.em.isInTransaction() && platform.supportsTransactions() && this.em.config.get('implicitTransactions');
 
       if (runInTransaction) {
-        await this.em.getConnection('write').transactional(trx => this.persistToDatabase(groups, trx), oldTx, new TransactionEventBroadcaster(this.em, this));
+        await this.em.getConnection('write').transactional(trx => this.persistToDatabase(groups, trx), {
+          ctx: oldTx,
+          eventBroadcaster: new TransactionEventBroadcaster(this.em, this),
+        });
       } else {
         await this.persistToDatabase(groups, this.em.getTransactionContext());
       }
-
+      this.resetTransaction(oldTx);
       await this.eventManager.dispatchEvent(EventType.afterFlush, { em: this.em, uow: this });
     } finally {
       this.postCommitCleanup();
-
-      if (oldTx) {
-        this.em.setTransactionContext(oldTx);
-      } else {
-        this.em.resetTransactionContext();
-      }
+      this.resetTransaction(oldTx);
     }
   }
 
-  async lock<T extends AnyEntity<T>>(entity: T, mode: LockMode, version?: number | Date): Promise<void> {
+  async lock<T extends AnyEntity<T>>(entity: T, mode?: LockMode, version?: number | Date, tables?: string[]): Promise<void> {
     if (!this.getById(entity.constructor.name, entity.__helper!.__primaryKeys)) {
       throw ValidationError.entityNotManaged(entity);
     }
@@ -262,8 +261,8 @@ export class UnitOfWork {
 
     if (mode === LockMode.OPTIMISTIC) {
       await this.lockOptimistic(entity, meta, version!);
-    } else if ([LockMode.NONE, LockMode.PESSIMISTIC_READ, LockMode.PESSIMISTIC_WRITE].includes(mode)) {
-      await this.lockPessimistic(entity, mode);
+    } else if (mode != null) {
+      await this.lockPessimistic(entity, mode, tables);
     }
   }
 
@@ -328,7 +327,21 @@ export class UnitOfWork {
     this.orphanRemoveStack.delete(entity);
   }
 
-  private findNewEntities<T extends AnyEntity<T>>(entity: T, visited = new WeakSet<AnyEntity>()): void {
+  /**
+   * Schedules a complete collection for removal when this UnitOfWork commits.
+   */
+  scheduleCollectionDeletion(collection: Collection<AnyEntity>): void {
+    this.collectionDeletions.add(collection);
+  }
+
+  /**
+   * Gets the currently scheduled complete collection deletions
+   */
+  getScheduledCollectionDeletions() {
+    return [...this.collectionDeletions];
+  }
+
+  private findNewEntities<T extends AnyEntity<T>>(entity: T, visited = new WeakSet<AnyEntity>(), idx = 0): void {
     if (visited.has(entity)) {
       return;
     }
@@ -343,8 +356,11 @@ export class UnitOfWork {
     this.initIdentifier(entity);
 
     for (const prop of entity.__meta!.relations) {
-      const reference = Reference.unwrapReference(entity[prop.name]);
-      this.processReference(entity, prop, reference, visited);
+      const targets = Utils.unwrapProperty(entity, entity.__meta!, prop);
+      targets.forEach(([target]) => {
+        const reference = Reference.unwrapReference(target as AnyEntity);
+        this.processReference(entity, prop, reference, visited, idx);
+      });
     }
 
     const changeSet = this.changeSetComputer.computeChangeSet(entity);
@@ -393,11 +409,11 @@ export class UnitOfWork {
     wrapped.__identifier = new EntityIdentifier();
   }
 
-  private processReference<T extends AnyEntity<T>>(parent: T, prop: EntityProperty<T>, reference: any, visited: WeakSet<AnyEntity>): void {
+  private processReference<T extends AnyEntity<T>>(parent: T, prop: EntityProperty<T>, reference: any, visited: WeakSet<AnyEntity>, idx: number): void {
     const isToOne = prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE;
 
-    if (isToOne && reference) {
-      return this.processToOneReference(reference, visited);
+    if (isToOne && Utils.isEntity(reference)) {
+      return this.processToOneReference(reference, visited, idx);
     }
 
     if (Utils.isCollection<any>(reference, prop, ReferenceType.MANY_TO_MANY) && reference.isDirty()) {
@@ -405,9 +421,9 @@ export class UnitOfWork {
     }
   }
 
-  private processToOneReference<T extends AnyEntity<T>>(reference: any, visited: WeakSet<AnyEntity>): void {
+  private processToOneReference<T extends AnyEntity<T>>(reference: any, visited: WeakSet<AnyEntity>, idx: number): void {
     if (!reference.__helper!.__managed) {
-      this.findNewEntities(reference, visited);
+      this.findNewEntities(reference, visited, idx);
     }
   }
 
@@ -453,6 +469,7 @@ export class UnitOfWork {
     this.orphanRemoveStack.clear();
     this.changeSets.clear();
     this.collectionUpdates.clear();
+    this.collectionDeletions.clear();
     this.extraUpdates.clear();
     this.working = false;
   }
@@ -484,7 +501,7 @@ export class UnitOfWork {
 
     const reference = Reference.unwrapReference(entity[prop.name]) as unknown as T | Collection<AnyEntity>;
 
-    if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && reference) {
+    if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && Utils.isEntity(reference)) {
       return this.cascade(reference as T, type, visited, options);
     }
 
@@ -521,12 +538,12 @@ export class UnitOfWork {
     return prop.cascade && (prop.cascade.includes(type) || prop.cascade.includes(Cascade.ALL));
   }
 
-  private async lockPessimistic<T extends AnyEntity<T>>(entity: T, mode: LockMode): Promise<void> {
+  private async lockPessimistic<T extends AnyEntity<T>>(entity: T, mode: LockMode, tables?: string[]): Promise<void> {
     if (!this.em.isInTransaction()) {
       throw ValidationError.transactionRequired();
     }
 
-    await this.em.getDriver().lockPessimistic(entity, mode, this.em.getTransactionContext());
+    await this.em.getDriver().lockPessimistic(entity, mode, tables, this.em.getTransactionContext());
   }
 
   private async lockOptimistic<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, version: number | Date): Promise<void> {
@@ -554,7 +571,7 @@ export class UnitOfWork {
   private fixMissingReference<T extends AnyEntity<T>>(entity: T, prop: EntityProperty<T>): void {
     const reference = Reference.unwrapReference(entity[prop.name]);
 
-    if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && reference && !Utils.isEntity(reference)) {
+    if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && reference && !Utils.isEntity(reference) && !prop.mapToPk) {
       entity[prop.name] = this.em.getReference(prop.type, reference as Primary<T[string & keyof T]>, !!prop.wrappedReference) as T[string & keyof T];
     }
 
@@ -575,19 +592,20 @@ export class UnitOfWork {
     const commitOrder = this.getCommitOrder();
     const commitOrderReversed = [...commitOrder].reverse();
 
-    // 1. create
+    // 1. whole collection deletions
+    for (const coll of this.collectionDeletions) {
+      await this.em.getDriver().clearCollection(coll, tx);
+      coll.takeSnapshot();
+    }
+
+    // 2. create
     for (const name of commitOrder) {
       await this.commitCreateChangeSets(groups[ChangeSetType.CREATE].get(name) ?? [], tx);
     }
 
-    // 2. update
+    // 3. update
     for (const name of commitOrder) {
       await this.commitUpdateChangeSets(groups[ChangeSetType.UPDATE].get(name) ?? [], tx);
-    }
-
-    // 3. delete - entity deletions need to be in reverse commit order
-    for (const name of commitOrderReversed) {
-      await this.commitDeleteChangeSets(groups[ChangeSetType.DELETE].get(name) ?? [], tx);
     }
 
     // 4. extra updates
@@ -613,6 +631,16 @@ export class UnitOfWork {
     for (const coll of this.collectionUpdates) {
       await this.em.getDriver().syncCollection(coll, tx);
       coll.takeSnapshot();
+    }
+
+    // 6. delete - entity deletions need to be in reverse commit order
+    for (const name of commitOrderReversed) {
+      await this.commitDeleteChangeSets(groups[ChangeSetType.DELETE].get(name) ?? [], tx);
+    }
+
+    // 7. take snapshots of all persisted collections
+    for (const changeSet of this.changeSets.values()) {
+      this.takeCollectionSnapshots(changeSet);
     }
   }
 
@@ -724,6 +752,27 @@ export class UnitOfWork {
     }
 
     return calc.sort();
+  }
+
+  private resetTransaction(oldTx: Transaction): void {
+    if (oldTx) {
+      this.em.setTransactionContext(oldTx);
+    } else {
+      this.em.resetTransactionContext();
+    }
+  }
+
+  /**
+   * Takes snapshots of all processed collections
+   */
+  private takeCollectionSnapshots<T extends AnyEntity<T>>(changeSet: ChangeSet<T>) {
+    changeSet.entity.__meta!.relations.forEach(prop => {
+      const value = changeSet.entity[prop.name];
+
+      if (Utils.isCollection(value)) {
+        value.takeSnapshot();
+      }
+    });
   }
 
 }

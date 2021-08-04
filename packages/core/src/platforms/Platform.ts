@@ -1,6 +1,6 @@
 import { EntityRepository } from '../entity';
 import { NamingStrategy, UnderscoreNamingStrategy } from '../naming-strategy';
-import { Constructor, EntityProperty, IPrimaryKey, ISchemaGenerator, Primary } from '../typings';
+import { Constructor, EntityProperty, IEntityGenerator, IMigrator, IPrimaryKey, ISchemaGenerator, Primary } from '../typings';
 import { ExceptionConverter } from './ExceptionConverter';
 import { EntityManager } from '../EntityManager';
 import { Configuration } from '../utils/Configuration';
@@ -9,6 +9,9 @@ import {
   TinyIntType, Type, UuidType, StringType, IntegerType, FloatType, DateTimeType, TextType, EnumType, UnknownType,
 } from '../types';
 import { Utils } from '../utils/Utils';
+import clone from 'clone';
+
+export const JsonProperty = Symbol('JsonProperty');
 
 export abstract class Platform {
 
@@ -292,7 +295,15 @@ export abstract class Platform {
   }
 
   getSchemaGenerator(em: EntityManager): ISchemaGenerator {
-    throw new Error(`${this.constructor.name} does not use a schema generator`);
+    throw new Error(`${this.constructor.name} does not support SchemaGenerator`);
+  }
+
+  getEntityGenerator(em: EntityManager): IEntityGenerator {
+    throw new Error(`${this.constructor.name} does not support EntityGenerator`);
+  }
+
+  getMigrator(em: EntityManager): IMigrator {
+    throw new Error(`${this.constructor.name} does not support Migrator`);
   }
 
   processDateProperty(value: unknown): string | number | Date {
@@ -308,7 +319,11 @@ export abstract class Platform {
   }
 
   cloneEmbeddable<T>(data: T): T {
-    return JSON.parse(JSON.stringify(data));
+    const copy = clone(data);
+    // tag the copy so we know it should be stringified when quoting (so we know how to treat JSON arrays)
+    Object.defineProperty(copy, JsonProperty, { enumerable: false, value: true });
+
+    return copy;
   }
 
   setConfig(config: Configuration): void {

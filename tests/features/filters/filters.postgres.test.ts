@@ -1,19 +1,26 @@
-import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property, Filter, Logger } from '@mikro-orm/core';
+import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property, Filter, Logger, ManyToOne } from '@mikro-orm/core';
 import { AbstractSqlDriver } from '@mikro-orm/knex';
 
-@Entity()
 @Filter({
   name: 'isActive',
   cond: { benefitStatus: 'A' },
   default: true,
 })
-class Benefit {
+class BaseBenefit {
 
   @PrimaryKey()
   id!: number;
 
   @Property()
   benefitStatus!: string;
+
+}
+
+@Entity()
+class Benefit extends BaseBenefit {
+
+  @Property({ nullable: true })
+  name?: string;
 
 }
 
@@ -28,13 +35,54 @@ class Employee {
 
 }
 
+@Entity()
+@Filter({
+  name: 'age',
+  cond: { $or: [{ age: 18 }, { age: 21 }] },
+  default: true,
+})
+class User {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  firstName!: string;
+
+  @Property()
+  lastName!: string;
+
+  @Property()
+  age!: number;
+
+}
+
+@Entity()
+@Filter({
+  name: 'user',
+  cond: { user: { $or: [{ firstName: 'name' }, { lastName: 'name' }] } },
+  default: true,
+})
+class Membership {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne(() => User)
+  user!: User;
+
+  @Property()
+  role!: string;
+
+}
+
 describe('filters [postgres]', () => {
 
   let orm: MikroORM<AbstractSqlDriver>;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [Employee, Benefit],
+      entities: [Employee, Benefit, User, Membership],
       dbName: `mikro_orm_test_gh_1232`,
       type: 'postgresql',
     });
@@ -77,6 +125,31 @@ describe('filters [postgres]', () => {
     expect(mock.mock.calls[5][0]).toMatch(`select "e0".* from "benefit" as "e0" where "e0"."benefit_status" = $1`);
     expect(mock.mock.calls[6][0]).toMatch(`select "e0".* from "employee" as "e0" where "e0"."id" = $1 limit $2`);
     expect(mock.mock.calls[7][0]).toMatch(`select "e0".*, "e1"."benefit_id" as "fk__benefit_id", "e1"."employee_id" as "fk__employee_id" from "benefit" as "e0" left join "employee_benefits" as "e1" on "e0"."id" = "e1"."benefit_id" where "e0"."benefit_status" = $1 and "e1"."employee_id" in ($2)`);
+  });
+
+  test('merging $or conditions', async () => {
+    const mock = jest.fn();
+    const logger = new Logger(mock, ['query']);
+    Object.assign(orm.config, { logger });
+
+    await orm.em.find(User, { $or: [{ firstName: 'name' }, { lastName: 'name' }] });
+    await orm.em.find(Membership, { $or: [{ role: 'admin' }, { role: 'moderator' }] });
+    await orm.em.find(Membership, {
+      $or: [
+        { role: 'admin' },
+        { role: 'moderator' },
+      ],
+      user: {
+        $or: [
+          { firstName: 'John' },
+          { lastName: 'Doe' },
+        ],
+      },
+    }, { filters: false });
+
+    expect(mock.mock.calls[0][0]).toMatch(`select "e0".* from "user" as "e0" where ("e0"."age" = $1 or "e0"."age" = $2) and ("e0"."first_name" = $3 or "e0"."last_name" = $4)`);
+    expect(mock.mock.calls[1][0]).toMatch(`select "e0".* from "membership" as "e0" left join "user" as "e1" on "e0"."user_id" = "e1"."id" where ("e1"."first_name" = $1 or "e1"."last_name" = $2) and ("e0"."role" = $3 or "e0"."role" = $4)`);
+    expect(mock.mock.calls[2][0]).toMatch(`select "e0".* from "membership" as "e0" left join "user" as "e1" on "e0"."user_id" = "e1"."id" where ("e0"."role" = $1 or "e0"."role" = $2) and ("e1"."first_name" = $3 or "e1"."last_name" = $4)`);
   });
 
 });

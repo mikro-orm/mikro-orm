@@ -1,7 +1,6 @@
 import dotenv from 'dotenv';
-import { pathExists, readFile } from 'fs-extra';
+import { pathExists } from 'fs-extra';
 import { join, isAbsolute } from 'path';
-import stripJsonComments from 'strip-json-comments';
 import { IDatabaseDriver } from '../drivers';
 import { Configuration, Options } from './Configuration';
 import { Utils } from './Utils';
@@ -70,28 +69,28 @@ export class ConfigurationLoader {
   static async registerTsNode(configPath = 'tsconfig.json'): Promise<void> {
     const tsConfigPath = isAbsolute(configPath) ? configPath : join(process.cwd(), configPath);
 
-    Utils.requireFrom('ts-node', tsConfigPath).register({
-      project: tsConfigPath,
-      transpileOnly: true,
+    const tsNode = Utils.tryRequire({
+      module: 'ts-node',
+      from: tsConfigPath,
+      warning: 'ts-node not installed, support for working with TS files might not work',
     });
 
-    if (await pathExists(tsConfigPath)) {
-      const tsConfig = await this.getTsConfig(tsConfigPath);
-      /* istanbul ignore next */
-      const paths = tsConfig.compilerOptions?.paths;
-
-      if (paths) {
-        Utils.requireFrom('tsconfig-paths', tsConfigPath).register({
-          baseUrl: tsConfig.compilerOptions.baseUrl,
-          paths: tsConfig.compilerOptions.paths,
-        });
-      }
+    /* istanbul ignore next */
+    if (!tsNode) {
+      return;
     }
-  }
 
-  static async getTsConfig(tsConfigPath: string): Promise<Dictionary> {
-    const json = await readFile(tsConfigPath);
-    return JSON.parse(stripJsonComments(json.toString()));
+    const { options } = tsNode.register({
+      project: tsConfigPath,
+      transpileOnly: true,
+    }).config;
+
+    if (Object.entries(options?.paths ?? {}).length > 0) {
+      Utils.requireFrom('tsconfig-paths', tsConfigPath).register({
+        baseUrl: options.baseUrl,
+        paths: options.paths,
+      });
+    }
   }
 
   static loadEnvironmentVars<D extends IDatabaseDriver>(options?: Options<D> | Configuration<D>): Partial<Options<D>> {

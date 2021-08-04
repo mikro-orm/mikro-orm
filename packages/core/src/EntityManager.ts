@@ -5,7 +5,7 @@ import { AssignOptions, EntityAssigner, EntityFactory, EntityLoader, EntityLoade
 import { UnitOfWork } from './unit-of-work';
 import { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, UpdateOptions } from './drivers';
 import { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityDTO, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, New, Populate, PopulateMap, PopulateOptions, Primary } from './typings';
-import { LoadStrategy, LockMode, QueryOrderMap, ReferenceType, SCALAR_TYPES } from './enums';
+import { IsolationLevel, LoadStrategy, LockMode, QueryOrderMap, ReferenceType, SCALAR_TYPES } from './enums';
 import { MetadataStorage } from './metadata';
 import { Transaction } from './connections';
 import { EventManager, TransactionEventBroadcaster } from './events';
@@ -187,7 +187,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return this.getContext().filterParams[name] as T;
   }
 
-  protected async processWhere<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOptions<T>, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<T>> {
+  protected async processWhere<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOptions<T> | FindOneOptions<T>, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<T>> {
     where = QueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata, this.driver.getPlatform(), options.convertCustomTypes);
     where = await this.applyFilters(entityName, where, options.filters ?? {}, type);
     where = await this.applyDiscriminatorCondition(entityName, where);
@@ -223,15 +223,23 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async applyFilters<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: Dictionary<boolean | Dictionary> | string[] | boolean, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<T>> {
     const meta = this.metadata.find<T>(entityName);
     const filters: FilterDef<any>[] = [];
-    const ret = {};
+    const ret: Dictionary[] = [];
 
     if (!meta) {
       return where;
     }
 
-    filters.push(...QueryHelper.getActiveFilters(entityName, options, this.config.get('filters')));
-    filters.push(...QueryHelper.getActiveFilters(entityName, options, this.filters));
-    filters.push(...QueryHelper.getActiveFilters(entityName, options, meta.filters));
+    const active = new Set<string>();
+    const push = (source: Dictionary<FilterDef<any>>) => {
+      const activeFilters = QueryHelper
+        .getActiveFilters(entityName, options, source)
+        .filter(f => !active.has(f.name));
+      filters.push(...activeFilters);
+      activeFilters.forEach(f => active.add(f.name));
+    };
+    push(this.config.get('filters'));
+    push(this.filters);
+    push(meta.filters);
 
     if (filters.length === 0) {
       return where;
@@ -252,11 +260,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         cond = filter.cond;
       }
 
-      const cond2 = QueryHelper.processWhere(cond, entityName, this.metadata, this.driver.getPlatform());
-      Utils.merge(ret, cond2, where);
+      ret.push(QueryHelper.processWhere(cond, entityName, this.metadata, this.driver.getPlatform()));
     }
 
-    return Object.assign(where, ret);
+    const conds = [...ret, where as Dictionary].filter(c => Utils.hasObjectKeys(c));
+
+    return conds.length > 1 ? { $and: conds } as FilterQuery<T> : conds[0];
   }
 
   /**
@@ -380,8 +389,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Runs your callback wrapped inside a database transaction.
    */
-  async transactional<T>(cb: (em: D[typeof EntityManagerType]) => Promise<T>, ctx = this.transactionContext): Promise<T> {
+  async transactional<T>(cb: (em: D[typeof EntityManagerType]) => Promise<T>, options: { ctx?: Transaction; isolationLevel?: IsolationLevel } = {}): Promise<T> {
     const em = this.fork(false);
+    /* istanbul ignore next */
+    options.ctx = options.ctx ?? this.transactionContext;
 
     return TransactionContext.createAsync(em, async () => {
       return em.getConnection().transactional(async trx => {
@@ -390,15 +401,15 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         await em.flush();
 
         return ret;
-      }, ctx, new TransactionEventBroadcaster(em));
+      }, { ...options, eventBroadcaster: new TransactionEventBroadcaster(em) });
     });
   }
 
   /**
    * Starts new transaction bound to this EntityManager. Use `ctx` parameter to provide the parent when nesting transactions.
    */
-  async begin(ctx?: Transaction): Promise<void> {
-    this.transactionContext = await this.getConnection('write').begin(ctx, new TransactionEventBroadcaster(this));
+  async begin(options: { ctx?: Transaction; isolationLevel?: IsolationLevel } = {}): Promise<void> {
+    this.transactionContext = await this.getConnection('write').begin({ ...options, eventBroadcaster: new TransactionEventBroadcaster(this) });
   }
 
   /**
@@ -421,8 +432,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Runs your callback wrapped inside a database transaction.
    */
-  async lock(entity: AnyEntity, lockMode: LockMode, lockVersion?: number | Date): Promise<void> {
-    await this.getUnitOfWork().lock(entity, lockMode, lockVersion);
+  async lock(entity: AnyEntity, lockMode: LockMode, options: { lockVersion?: number | Date; lockTableAliases?: string[] } | number | Date = {}): Promise<void> {
+    options = Utils.isPlainObject(options) ? options as Dictionary : { lockVersion: options };
+    await this.getUnitOfWork().lock(entity, lockMode, options.lockVersion, options.lockTableAliases);
   }
 
   /**
@@ -602,6 +614,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async count<T extends AnyEntity<T>>(entityName: EntityName<T>, where: FilterQuery<T> = {}, options: CountOptions<T> = {}): Promise<number> {
     entityName = Utils.className(entityName);
     where = await this.processWhere(entityName, where, options, 'read');
+    options.populate = this.preparePopulate(entityName, options.populate) as Populate<T>;
     this.validator.validateParams(where);
 
     const cached = await this.tryCache<T, number>(entityName, options.cache, [entityName, 'em.count', options, where]);
@@ -877,7 +890,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
   private async lockAndPopulate<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: string, entity: T, where: FilterQuery<T>, options: FindOneOptions<T>): Promise<Loaded<T, P>> {
     if (options.lockMode === LockMode.OPTIMISTIC) {
-      await this.lock(entity, options.lockMode, options.lockVersion);
+      await this.lock(entity, options.lockMode, {
+        lockVersion: options.lockVersion,
+        lockTableAliases: options.lockTableAliases,
+      });
     }
 
     const preparedPopulate = this.preparePopulate(entityName, options.populate as string[], options.strategy);
@@ -887,11 +903,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   private preparePopulate<T extends AnyEntity<T>>(entityName: string, populate?: Populate<T>, strategy?: LoadStrategy): PopulateOptions<T>[] {
+    const meta = this.metadata.get(entityName);
+
     if (!populate) {
       return this.entityLoader.normalizePopulate<T>(entityName, [], strategy);
     }
-
-    const meta = this.metadata.get(entityName);
 
     if (Utils.isPlainObject(populate)) {
       return this.preparePopulateObject(meta, populate as true, strategy);

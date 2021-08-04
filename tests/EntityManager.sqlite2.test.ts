@@ -1117,9 +1117,8 @@ describe('EntityManagerSqlite2', () => {
     expect(await author.books.loadCount()).toEqual(0);
     expect(await author.books.loadCount(true)).toEqual(2);
 
-    // Code coverage ?
-    const arryCollection = new ArrayCollection(author);
-    expect(await arryCollection.loadCount()).toEqual(0);
+    const coll = new ArrayCollection(author);
+    expect(await coll.loadCount()).toEqual(0);
 
     // n:m relations
     let taggedBook = orm.em.create(Book4, { title: 'FullyTagged' });
@@ -1147,7 +1146,7 @@ describe('EntityManagerSqlite2', () => {
   });
 
   test('loadCount with unidirectional m:n (GH issue #1608)', async () => {
-    const publisher = orm.em.create(Publisher4, {});
+    const publisher = orm.em.create(Publisher4, { name: 'pub' });
     const t1 = orm.em.create(Test4, { name: 't1' });
     const t2 = orm.em.create(Test4, { name: 't2' });
     const t3 = orm.em.create(Test4, { name: 't3' });
@@ -1166,6 +1165,22 @@ describe('EntityManagerSqlite2', () => {
     await expect(ent.tests.loadCount()).resolves.toBe(3);
     await ent.tests.init();
     await expect(ent.tests.loadCount()).resolves.toBe(3);
+  });
+
+  test('findAndCount with populate (GH issue #1736)', async () => {
+    const publisher = orm.em.create(Publisher4, {
+      name: 'pub',
+      tests: [
+        { name: 't1' },
+        { name: 't2' },
+        { name: 't3' },
+      ],
+    });
+    await orm.em.fork().persistAndFlush(publisher);
+
+    const [res, count] = await orm.em.findAndCount(Publisher4, { name: 'pub' }, { populate: ['tests'] });
+    expect(count).toBe(1);
+    expect(res[0].tests).toHaveLength(3);
   });
 
   afterAll(async () => {

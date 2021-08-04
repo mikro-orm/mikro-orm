@@ -517,6 +517,15 @@ describe('EntityManagerMongo', () => {
     expect(driver.getConnection().getCollection(BookTag).collectionName).toBe('book-tag');
     expect(orm.em.getCollection(BookTag).collectionName).toBe('book-tag');
 
+    const conn = driver.getConnection();
+    const tx = await conn.begin();
+    const first = await driver.nativeInsert(Publisher.name, { name: 'test 123', type: 'GLOBAL' }, tx);
+    await conn.commit(tx);
+
+    await conn.transactional(async tx => {
+      await driver.nativeDelete(Publisher.name, first.insertId, tx);
+    });
+
     // multi inserts
     const res = await driver.nativeInsertMany(Publisher.name, [
       { name: 'test 1', type: 'GLOBAL' },
@@ -2157,6 +2166,57 @@ describe('EntityManagerMongo', () => {
 
     author = await orm.em.findOneOrFail(Author, author.id);
     await expect(author.books.loadCount()).resolves.toEqual(4);
+  });
+
+  test('extracting child condition when populating (GH #1891)', async () => {
+    const author = new Author('Jon Snow', 'snow@wall.st');
+    const book1 = new Book('My Life on The Wall, part 1', author);
+    const book2 = new Book('My Life on The Wall, part 2', author);
+    const book3 = new Book('My Life on The Wall, part 3', author);
+    author.favouriteBook = book3;
+    const tag1 = new BookTag('silly');
+    const tag2 = new BookTag('funny');
+    const tag3 = new BookTag('sick');
+    const tag4 = new BookTag('strange');
+    const tag5 = new BookTag('sexy');
+    book1.tags.add(tag1, tag3, tag3);
+    book2.tags.add(tag1, tag2, tag5);
+    book3.tags.add(tag2, tag4, tag5);
+
+    orm.em.persist(book1);
+    orm.em.persist(book2);
+    await orm.em.persistAndFlush(book3);
+    orm.em.clear();
+
+    const res1 = await orm.em.findOne(Author, {
+        $and: [
+          { id: author.id },
+        ],
+      },
+      { populate: ['books'] },
+    );
+    expect(res1).not.toBeNull();
+    orm.em.clear();
+
+    const res2 = await orm.em.findOne(Author, {
+        $and: [
+          { $or: [{ favouriteBook: book3.id }, { books: { tags: author.books[1].tags.getIdentifiers('id') } }] },
+        ],
+      },
+      { populate: ['books'] },
+    );
+    expect(res2).not.toBeNull();
+    orm.em.clear();
+
+    const res3 = await orm.em.findOne(Author, {
+        $and: [
+          { id: author.id },
+          { $or: [{ favouriteBook: book3.id }, { books: { tags: author.books[1].tags.getIdentifiers('id') } }] },
+        ],
+      },
+      { populate: ['books'] },
+    );
+    expect(res3).not.toBeNull();
   });
 
   afterAll(async () => orm.close(true));

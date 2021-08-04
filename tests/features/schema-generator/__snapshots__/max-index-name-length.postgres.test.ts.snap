@@ -1,0 +1,16 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`index and FK names should be a max of 64 chars in mysql (GH 1915) index and FK names should be a max of 64 chars in mysql 1`] = `
+"set names 'utf8';
+set session_replication_role = 'replica';
+
+create table \\"parent_entity\\" (\\"id\\" serial primary key);
+
+create table \\"very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\\" (\\"id\\" serial primary key, \\"parent_id\\" int not null, \\"key\\" varchar(255) not null);
+alter table \\"very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\\" add constraint \\"very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxx_9928a_unique\\" unique (\\"key\\");
+
+alter table \\"very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\\" add constraint \\"very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxx_19cce_foreign\\" foreign key (\\"parent_id\\") references \\"parent_entity\\" (\\"id\\") on update cascade;
+
+set session_replication_role = 'origin';
+"
+`;

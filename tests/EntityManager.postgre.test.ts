@@ -2,7 +2,7 @@ import { v4 } from 'uuid';
 import {
   Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, Logger, ValidationError, ChangeSetType, wrap, expr,
   UniqueConstraintViolationException, TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException,
-  NonUniqueFieldNameException, InvalidFieldNameException, EventSubscriber, ChangeSet, AnyEntity, FlushEventArgs, LoadStrategy,
+  NonUniqueFieldNameException, InvalidFieldNameException, EventSubscriber, ChangeSet, AnyEntity, FlushEventArgs, LoadStrategy, IsolationLevel,
 } from '@mikro-orm/core';
 import { PostgreSqlDriver, PostgreSqlConnection } from '@mikro-orm/postgresql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2, Label2 } from './entities-sql';
@@ -214,6 +214,24 @@ describe('EntityManagerPostgre', () => {
     }
   });
 
+  test('transactions with isolation levels', async () => {
+    const mock = jest.fn();
+    const logger = new Logger(mock, ['query']);
+    Object.assign(orm.config, { logger });
+
+    const god1 = new Author2('God1', 'hello@heaven1.god');
+    try {
+      await orm.em.transactional(async em => {
+        await em.persistAndFlush(god1);
+        throw new Error(); // rollback the transaction
+      }, { isolationLevel: IsolationLevel.READ_UNCOMMITTED });
+    } catch { }
+
+    expect(mock.mock.calls[0][0]).toMatch('begin isolation level read uncommitted');
+    expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "email", "name", "terms_accepted", "updated_at") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"');
+    expect(mock.mock.calls[2][0]).toMatch('rollback');
+  });
+
   test('nested transactions with save-points', async () => {
     await orm.em.transactional(async em => {
       const god1 = new Author2('God1', 'hello1@heaven.god');
@@ -420,6 +438,26 @@ describe('EntityManagerPostgre', () => {
     expect(b1).toBe(b7);
   });
 
+  test('order by json properties', async () => {
+    await orm.em.nativeDelete(Book2, {});
+    await orm.em.nativeDelete(Author2, {});
+    await orm.em.nativeInsert(Author2, { name: 'n', email: 'e', id: 1 });
+    await orm.em.getDriver().nativeInsertMany(Book2.name, [
+      { uuid: '123e4567-e89b-12d3-a456-426614174001', title: 't1', author: 1, meta: { foo: 3, bar: { str: 'c', num: 3 } } },
+      { uuid: '123e4567-e89b-12d3-a456-426614174002', title: 't2', author: 1, meta: { foo: 2, bar: { str: 'b', num: 1 } } },
+      { uuid: '123e4567-e89b-12d3-a456-426614174003', title: 't3', author: 1, meta: { foo: 1, bar: { str: 'a', num: 2 } } },
+    ]);
+
+    const res14 = await orm.em.fork().find(Book2, {}, { orderBy: { meta: { foo: 'asc' } } });
+    expect(res14.map(r => r.title)).toEqual(['t3', 't2', 't1']);
+
+    const res15 = await orm.em.fork().find(Book2, {}, { orderBy: { meta: { bar: { str: 'asc' } } } });
+    expect(res15.map(r => r.title)).toEqual(['t3', 't2', 't1']);
+
+    const res16 = await orm.em.fork().find(Book2, {}, { orderBy: { meta: { bar: { num: QueryOrder.DESC } } } });
+    expect(res16.map(r => r.title)).toEqual(['t1', 't3', 't2']);
+  });
+
   test('properties with spaces in column names', async () => {
     const bar = new FooBar2();
     bar.name = 'n';
@@ -434,6 +472,23 @@ describe('EntityManagerPostgre', () => {
 
     const b2 = await orm.em.findOneOrFail(FooBar2, bar);
     expect(b2.nameWithSpace).toBe('456');
+  });
+
+  test('unsetting 1:1 inverse (GH #1872)', async () => {
+    const author = orm.em.create(Author2, { name: 'a', email: 'e' });
+    const fb1 = orm.em.create(Test2, { name: 'fb 1' });
+    const fb2 = orm.em.create(Test2, { name: 'fb 2' });
+    const fz1 = orm.em.create(Book2, { title: 'fb 1', author });
+    const fz2 = orm.em.create(Book2, { title: 'fb 2', author });
+    fz1.test = fb1;
+    await orm.em.persistAndFlush([fb1, fb2, fz1, fz2]);
+
+    fz1.test = undefined;
+    await orm.em.flush();
+    orm.em.clear();
+
+    const fz11 = await orm.em.findOneOrFail(Book2, fz1, ['test']);
+    expect(fz11.test).toBeNull();
   });
 
   test('json properties respect field names', async () => {
@@ -648,10 +703,41 @@ describe('EntityManagerPostgre', () => {
     await orm.em.transactional(async em => {
       await em.lock(author, LockMode.PESSIMISTIC_READ);
     });
-
     expect(mock.mock.calls.length).toBe(3);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('select 1 from "author2" as "e0" where "e0"."id" = $1 for share');
+    expect(mock.mock.calls[2][0]).toMatch('commit');
+
+    mock.mock.calls.length = 0;
+    await orm.em.transactional(async em => {
+      await em.lock(author, LockMode.PESSIMISTIC_PARTIAL_WRITE);
+    });
+    expect(mock.mock.calls.length).toBe(3);
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('select 1 from "author2" as "e0" where "e0"."id" = $1 for update skip locked');
+    expect(mock.mock.calls[2][0]).toMatch('commit');
+
+    mock.mock.calls.length = 0;
+    await orm.em.transactional(async em => {
+      await em.lock(author, LockMode.PESSIMISTIC_PARTIAL_WRITE, { lockTableAliases: ['e0'] });
+    });
+    expect(mock.mock.calls.length).toBe(3);
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('select 1 from "author2" as "e0" where "e0"."id" = $1 for update of "e0" skip locked');
+    expect(mock.mock.calls[2][0]).toMatch('commit');
+
+    mock.mock.calls.length = 0;
+    await orm.em.transactional(async em => {
+      await em.find(Book2, {}, {
+        lockMode: LockMode.PESSIMISTIC_PARTIAL_WRITE,
+        lockTableAliases: ['e0'],
+        populate: ['author'],
+        strategy: LoadStrategy.JOINED,
+      });
+    });
+    expect(mock.mock.calls.length).toBe(3);
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('select "e0"."uuid_pk", "e0"."created_at", "e0"."title", "e0"."price", "e0".price * 1.19 as "price_taxed", "e0"."double", "e0"."meta", "e0"."author_id", "e0"."publisher_id", "a1"."id" as "a1__id", "a1"."created_at" as "a1__created_at", "a1"."updated_at" as "a1__updated_at", "a1"."name" as "a1__name", "a1"."email" as "a1__email", "a1"."age" as "a1__age", "a1"."terms_accepted" as "a1__terms_accepted", "a1"."optional" as "a1__optional", "a1"."identities" as "a1__identities", "a1"."born" as "a1__born", "a1"."born_time" as "a1__born_time", "a1"."favourite_book_uuid_pk" as "a1__favourite_book_uuid_pk", "a1"."favourite_author_id" as "a1__favourite_author_id", "e0".price * 1.19 as "price_taxed" from "book2" as "e0" left join "author2" as "a1" on "e0"."author_id" = "a1"."id" where "e0"."author_id" is not null for update of "e0" skip locked');
     expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
@@ -1230,7 +1316,7 @@ describe('EntityManagerPostgre', () => {
     expect(wrap(a1).toJSON()).toMatchObject({ favouriteAuthor: a1.id });
 
     // check fired queries
-    expect(mock.mock.calls.length).toBe(6);
+    expect(mock.mock.calls).toHaveLength(6);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "email", "name", "terms_accepted", "updated_at") values ($1, $2, $3, $4, $5)');
     expect(mock.mock.calls[2][0]).toMatch('insert into "book2" ("uuid_pk", "created_at", "title", "author_id") values ($1, $2, $3, $4), ($5, $6, $7, $8), ($9, $10, $11, $12)');
@@ -1285,14 +1371,14 @@ describe('EntityManagerPostgre', () => {
       [expr('upper(title)')]: ['B1', 'B2'],
     }, { populate: ['perex'] });
     expect(books1).toHaveLength(2);
-    expect(mock.mock.calls[0][0]).toMatch(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where upper(title) in ('B1', 'B2') and "e0"."author_id" is not null`);
+    expect(mock.mock.calls[0][0]).toMatch(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where "e0"."author_id" is not null and upper(title) in ('B1', 'B2')`);
     orm.em.clear();
 
     const books2 = await orm.em.find(Book2, {
       [expr('upper(title)')]: orm.em.getKnex().raw('upper(?)', ['b2']),
     }, { populate: ['perex'] });
     expect(books2).toHaveLength(1);
-    expect(mock.mock.calls[1][0]).toMatch(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where upper(title) = upper('b2') and "e0"."author_id" is not null`);
+    expect(mock.mock.calls[1][0]).toMatch(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where "e0"."author_id" is not null and upper(title) = upper('b2')`);
   });
 
   test('find by joined property', async () => {

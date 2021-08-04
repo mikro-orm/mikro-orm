@@ -130,7 +130,7 @@ describe('adding m:1 with composite PK (FK as PK + scalar PK) (GH 1687)', () => 
 
     orm.getMetadata().reset('User');
     await orm.discoverEntity(User1);
-    const diff1 = await orm.getSchemaGenerator().getUpdateSchemaSQL(false);
+    const diff1 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
     await orm.getSchemaGenerator().execute(diff1);
   });

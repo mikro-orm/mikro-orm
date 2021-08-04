@@ -350,10 +350,40 @@ console.log(qb.getQuery());
 
 ## Locking support
 
+We can set the `LockMode` via `qb.setLockMode()`.  
+
 ```typescript
 const qb = orm.em.createQueryBuilder(Test);
 qb.select('*').where({ name: 'Lol 321' }).setLockMode(LockMode.PESSIMISTIC_READ);
 
 console.log(qb.getQuery()); // for MySQL
 // select `e0`.* from `test` as `e0` where `e0`.`name` = ? lock in share mode
+```
+
+Available lock modes:
+
+| Mode | Postgres | MySQL |
+|------|----------|-------|
+| `LockMode.PESSIMISTIC_READ` | `for share` | `lock in share mode` |
+| `LockMode.PESSIMISTIC_WRITE` | `for update` | `for update` |
+| `LockMode.PESSIMISTIC_PARTIAL_WRITE` | `for update skip locked` | `for update skip locked` |
+| `LockMode.PESSIMISTIC_WRITE_OR_FAIL` | `for update nowait` | `for update nowait` |
+| `LockMode.PESSIMISTIC_PARTIAL_READ` | `for share skip locked` | `lock in share mode skip locked` |
+| `LockMode.PESSIMISTIC_READ_OR_FAIL` | `for share nowait` | `lock in share mode nowait` |
+
+Optionally we can also pass list of table aliases we want to lock via second parameter:
+
+```typescript
+const qb = orm.em.createQueryBuilder(User, 'u');
+qb.select('*')
+  .leftJoinAndSelect('u.identities', 'i')
+  .where({ name: 'Jon' })
+  .setLockMode(LockMode.PESSIMISTIC_READ, ['u']);
+
+console.log(qb.getQuery()); // for Postgres
+// select ... 
+//   from "user" as "u"
+//   left join "identity" as "i" on "u"."id" = "i"."user_id" 
+//   where "u"."name" = 'Jon' 
+//   for update of "u" skip locked
 ```

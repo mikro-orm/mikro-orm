@@ -50,7 +50,7 @@ export class ChangeSetPersister {
 
     for (let i = 0; i < changeSets.length; i += size) {
       const chunk = changeSets.slice(i, i + size);
-      const pks = chunk.map(cs => cs.entity.__helper!.__primaryKeyCond);
+      const pks = chunk.map(cs => cs.getPrimaryKey());
       await this.driver.nativeDelete(meta.className, { [pk]: { $in: pks } }, ctx);
     }
   }
@@ -136,7 +136,7 @@ export class ChangeSetPersister {
 
   private async persistManagedEntitiesBatch<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
     await this.checkOptimisticLocks(meta, changeSets, ctx);
-    await this.driver.nativeUpdateMany(meta.className, changeSets.map(cs => cs.entity.__helper!.getPrimaryKey() as Dictionary), changeSets.map(cs => cs.payload), ctx, false, false);
+    await this.driver.nativeUpdateMany(meta.className, changeSets.map(cs => cs.getPrimaryKey() as Dictionary), changeSets.map(cs => cs.payload), ctx, false, false);
     changeSets.forEach(cs => cs.persisted = true);
   }
 
@@ -179,7 +179,7 @@ export class ChangeSetPersister {
 
   private async updateEntity<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, ctx?: Transaction): Promise<QueryResult> {
     if (!meta.versionProperty || !changeSet.entity[meta.versionProperty]) {
-      return this.driver.nativeUpdate(changeSet.name, changeSet.entity.__helper!.getPrimaryKey() as Dictionary, changeSet.payload, ctx, false);
+      return this.driver.nativeUpdate(changeSet.name, changeSet.getPrimaryKey() as Dictionary, changeSet.payload, ctx, false);
     }
 
     const cond = {
@@ -221,7 +221,7 @@ export class ChangeSetPersister {
     }
 
     const pk = Utils.getPrimaryKeyHash(meta.primaryKeys);
-    const pks = changeSets.map(cs => cs.entity.__helper!.__primaryKeyCond);
+    const pks = changeSets.map(cs => cs.getPrimaryKey());
     const data = await this.driver.find<T>(meta.name!, { [pk]: { $in: pks } }, {
       fields: [meta.versionProperty],
     }, ctx);
@@ -243,14 +243,23 @@ export class ChangeSetPersister {
   }
 
   private processProperty<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {
-    const value = changeSet.payload[prop.name];
+    const meta = this.metadata.find(changeSet.name)!;
+    const values = Utils.unwrapProperty(changeSet.payload, meta, prop, true); // for object embeddables
+    const value = changeSet.payload[prop.name] as unknown; // for inline embeddables
 
-    if (value as unknown instanceof EntityIdentifier) {
-      changeSet.payload[prop.name] = value.getValue();
+    if (value instanceof EntityIdentifier) {
+      Utils.setPayloadProperty<T>(changeSet.payload, meta, prop, value.getValue());
     }
 
+    values.forEach(([value, indexes]) => {
+      if (value instanceof EntityIdentifier) {
+        Utils.setPayloadProperty<T>(changeSet.payload, meta, prop, value.getValue(), indexes);
+      }
+    });
+
     if (prop.onCreate && changeSet.type === ChangeSetType.CREATE) {
-      changeSet.entity[prop.name] = changeSet.payload[prop.name] = prop.onCreate(changeSet.entity);
+      changeSet.entity[prop.name] = prop.onCreate(changeSet.entity);
+      changeSet.payload[prop.name] = prop.customType ? prop.customType.convertToDatabaseValue(changeSet.entity[prop.name], this.platform) : changeSet.entity[prop.name];
 
       if (prop.primary) {
         this.mapPrimaryKey(changeSet.entity.__meta!, changeSet.entity[prop.name] as unknown as IPrimaryKey, changeSet);
@@ -258,7 +267,8 @@ export class ChangeSetPersister {
     }
 
     if (prop.onUpdate && changeSet.type === ChangeSetType.UPDATE) {
-      changeSet.entity[prop.name] = changeSet.payload[prop.name] = prop.onUpdate(changeSet.entity);
+      changeSet.entity[prop.name] = prop.onUpdate(changeSet.entity);
+      changeSet.payload[prop.name] = prop.customType ? prop.customType.convertToDatabaseValue(changeSet.entity[prop.name], this.platform) : changeSet.entity[prop.name];
     }
 
     if (changeSet.payload[prop.name] as unknown instanceof Date) {
@@ -274,6 +284,11 @@ export class ChangeSetPersister {
   private mapReturnedValues<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, res: QueryResult, meta: EntityMetadata<T>): void {
     if (this.platform.usesReturningStatement() && res.row && Utils.hasObjectKeys(res.row)) {
       const data = meta.props.reduce((ret, prop) => {
+        if (prop.primary && !changeSet.entity.__helper!.hasPrimaryKey()) {
+          this.mapPrimaryKey(meta, res.row![prop.fieldNames[0]], changeSet);
+          return ret;
+        }
+
         if (prop.fieldNames && Utils.isDefined(res.row![prop.fieldNames[0]], true) && !Utils.isDefined(changeSet.entity[prop.name], true)) {
           ret[prop.name] = changeSet.payload[prop.name] = res.row![prop.fieldNames[0]];
         }

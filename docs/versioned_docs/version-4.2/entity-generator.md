@@ -18,6 +18,10 @@ import { MikroORM } from '@mikro-orm/core';
 
 (async () => {
   const orm = await MikroORM.init({
+    discovery: {
+      // we need to disable validation for no entities 
+      warnWhenNoEntities: false,
+    },
     dbName: 'your-db-name',
     // ...
   });

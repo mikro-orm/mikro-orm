@@ -196,7 +196,7 @@ describe('EntityFactory', () => {
 
     await orm.em.persistAndFlush(a1);
 
-    expect(mock.mock.calls.length).toBe(6);
+    expect(mock.mock.calls).toHaveLength(6);
     expect(mock.mock.calls[0][0]).toMatch('db.begin()');
     expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('book-tag'\)\.insertOne\({ name: 't1' }, { session: '\[ClientSession]' }\);/);
     expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('author'\)\.insertOne\({ createdAt: ISODate\('.*'\), updatedAt: ISODate\('.*'\), foo: 'bar', name: 'Jon', email: 'jon@snow\.com', termsAccepted: false }, { session: '\[ClientSession]' }\);/);

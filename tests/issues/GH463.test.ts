@@ -45,7 +45,7 @@ describe('GH issue 463', () => {
     const sql = 'create table `b` (`id` integer not null primary key autoincrement, `foo` text not null, `bar` text not null, `name` text not null);\n' +
       'create index `b_foo_index` on `b` (`foo`);\n' +
       'create unique index `b_bar_unique` on `b` (`bar`);\n\n';
-    expect(await new SchemaGenerator(orm.em).getCreateSchemaSQL(false)).toBe(sql);
+    expect(await new SchemaGenerator(orm.em).getCreateSchemaSQL({ wrap: false })).toBe(sql);
   });
 
 });

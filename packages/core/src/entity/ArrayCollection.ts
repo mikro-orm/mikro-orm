@@ -82,7 +82,7 @@ export class ArrayCollection<T, O> {
   }
 
   set(items: (T | Reference<T>)[]): void {
-    this.removeAll();
+    this.remove(...this.items);
     this.add(...items);
   }
 

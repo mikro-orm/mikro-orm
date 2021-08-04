@@ -1,4 +1,4 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/core';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
 import { AbstractSqlDriver } from '@mikro-orm/knex';
 
 
@@ -10,6 +10,9 @@ class ChildEntity {
 
   @ManyToOne({ type: 'ParentEntity' })
   parent!: any;
+
+  @Property({ unique: true })
+  key!: string;
 
 }
 

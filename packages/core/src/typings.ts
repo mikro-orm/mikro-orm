@@ -4,6 +4,7 @@ import { EntitySchema, MetadataStorage } from './metadata';
 import { Type } from './types';
 import { Platform } from './platforms';
 import { Configuration, EntityComparator, Utils } from './utils';
+import { EntityManager } from './EntityManager';
 
 export type Constructor<T = unknown> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
@@ -86,12 +87,13 @@ export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T | unk
   toObject(ignoreFields?: string[]): EntityDTO<T>;
   toJSON(...args: any[]): EntityDTO<T>;
   toPOJO(): EntityDTO<T>;
-  assign(data: any, options?: AssignOptions | boolean): T;
+  assign(data: EntityData<T> | Partial<EntityDTO<T>>, options?: AssignOptions | boolean): T;
 }
 
 export interface IWrappedEntityInternal<T, PK extends keyof T | unknown = PrimaryProperty<T>, P = keyof T> extends IWrappedEntity<T, PK, P> {
   hasPrimaryKey(): boolean;
-  getPrimaryKey(): Primary<T>;
+  getPrimaryKey(convertCustomTypes?: boolean): Primary<T> | null;
+  getPrimaryKeys(convertCustomTypes?: boolean): Primary<T>[] | null;
   setPrimaryKey(val: Primary<T>): void;
   getSerializedPrimaryKey(): string & keyof T;
   __meta: EntityMetadata<T>;
@@ -134,7 +136,9 @@ export type EntityDataProp<T> = T extends Scalar
     ? EntityDataNested<U>
     : T extends Collection<infer U>
         ? U | U[] | EntityDataNested<U> | EntityDataNested<U>[]
-        : EntityDataNested<T>;
+        : T extends readonly (infer U)[]
+            ? U | U[] | EntityDataNested<U> | EntityDataNested<U>[]
+            : EntityDataNested<T>;
 
 export type EntityDataNested<T> = T extends undefined
   ? never
@@ -156,9 +160,11 @@ export type EntityDTOProp<T> = T extends Scalar
       ? EntityDTO<U>[]
       : T extends { $: infer U }
         ? (U extends readonly (infer V)[] ? EntityDTO<V>[] : EntityDTO<U>)
-        : T extends Relation<T>
-          ? EntityDTO<T>
-          : T;
+        : T extends readonly (infer U)[]
+          ? U[]
+          : T extends Relation<T>
+            ? EntityDTO<T>
+            : T;
 export type EntityDTO<T> = { [K in keyof T as ExcludeFunctions<T, K>]: EntityDTOProp<T[K]> };
 
 export interface EntityProperty<T extends AnyEntity<T> = any> {
@@ -358,16 +364,16 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
 
 export interface ISchemaGenerator {
   generate(): Promise<string>;
-  createSchema(wrap?: boolean): Promise<void>;
+  createSchema(options?: { wrap?: boolean }): Promise<void>;
   ensureDatabase(): Promise<void>;
-  getCreateSchemaSQL(wrap?: boolean): Promise<string>;
-  dropSchema(wrap?: boolean, dropMigrationsTable?: boolean, dropDb?: boolean): Promise<void>;
-  getDropSchemaSQL(wrap?: boolean, dropMigrationsTable?: boolean): Promise<string>;
-  updateSchema(wrap?: boolean, safe?: boolean, dropDb?: boolean, dropTables?: boolean): Promise<void>;
-  getUpdateSchemaSQL(wrap?: boolean, safe?: boolean, dropDb?: boolean, dropTables?: boolean): Promise<string>;
+  getCreateSchemaSQL(options?: { wrap?: boolean }): Promise<string>;
+  dropSchema(options?: { wrap?: boolean; dropMigrationsTable?: boolean; dropDb?: boolean }): Promise<void>;
+  getDropSchemaSQL(options?: { wrap?: boolean; dropMigrationsTable?: boolean }): Promise<string>;
+  updateSchema(options?: { wrap?: boolean; safe?: boolean; dropDb?: boolean; dropTables?: boolean }): Promise<void>;
+  getUpdateSchemaSQL(options?: { wrap?: boolean; safe?: boolean; dropDb?: boolean; dropTables?: boolean }): Promise<string>;
   createDatabase(name: string): Promise<void>;
   dropDatabase(name: string): Promise<void>;
-  execute(sql: string, wrap?: boolean): Promise<void>;
+  execute(sql: string, options?: { wrap?: boolean }): Promise<void>;
 }
 
 export interface IEntityGenerator {
@@ -502,3 +508,19 @@ export interface IHydrator {
 export interface HydratorConstructor {
   new (metadata: MetadataStorage, platform: Platform, config: Configuration): IHydrator;
 }
+
+export interface ISeedManager {
+  refreshDatabase(): Promise<void>;
+  seed(...seederClasses: { new(): Seeder }[]): Promise<void>;
+  seedString(...seederClasses: string[]): Promise<void>;
+  createSeeder(seederClass: string): Promise<void>;
+}
+
+export interface Seeder {
+  run(em: EntityManager): Promise<void>;
+}
+
+export abstract class PlainObject {
+}
+
+export type MaybePromise<T> = T | Promise<T>;

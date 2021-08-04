@@ -149,9 +149,9 @@ describe('embedded entities in mysql', () => {
   });
 
   test('schema', async () => {
-    await expect(orm.getSchemaGenerator().getCreateSchemaSQL(false)).resolves.toMatchSnapshot('embeddables 1');
-    await expect(orm.getSchemaGenerator().getUpdateSchemaSQL(false)).resolves.toMatchSnapshot('embeddables 2');
-    await expect(orm.getSchemaGenerator().getDropSchemaSQL(false)).resolves.toMatchSnapshot('embeddables 3');
+    await expect(orm.getSchemaGenerator().getCreateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('embeddables 1');
+    await expect(orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('embeddables 2');
+    await expect(orm.getSchemaGenerator().getDropSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('embeddables 3');
   });
 
   test('persist and load', async () => {

@@ -1,7 +1,7 @@
 import { knex, Knex } from 'knex';
 import { readFile } from 'fs-extra';
 import {
-  AnyEntity, Configuration, Connection, ConnectionOptions, EntityData, EventType, QueryResult,
+  AnyEntity, Configuration, Connection, ConnectionOptions, EntityData, EventType, IsolationLevel, QueryResult,
   Transaction, TransactionEventBroadcaster, Utils,
 } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from './AbstractSqlPlatform';
@@ -40,31 +40,31 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
-  async transactional<T>(cb: (trx: Transaction<Knex.Transaction>) => Promise<T>, ctx?: Transaction<Knex.Transaction>, eventBroadcaster?: TransactionEventBroadcaster): Promise<T> {
-    const trx = await this.begin(ctx, eventBroadcaster);
+  async transactional<T>(cb: (trx: Transaction<Knex.Transaction>) => Promise<T>, options: { isolationLevel?: IsolationLevel; ctx?: Knex.Transaction; eventBroadcaster?: TransactionEventBroadcaster } = {}): Promise<T> {
+    const trx = await this.begin(options);
 
     try {
       const ret = await cb(trx);
-      await this.commit(trx, eventBroadcaster);
+      await this.commit(trx, options.eventBroadcaster);
 
       return ret;
     } catch (error) {
-      await this.rollback(trx, eventBroadcaster);
+      await this.rollback(trx, options.eventBroadcaster);
       throw error;
     }
   }
 
-  async begin(ctx?: Knex.Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<Knex.Transaction> {
-    if (!ctx) {
-      await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionStart);
+  async begin(options: { isolationLevel?: IsolationLevel; ctx?: Knex.Transaction; eventBroadcaster?: TransactionEventBroadcaster } = {}): Promise<Knex.Transaction> {
+    if (!options.ctx) {
+      await options.eventBroadcaster?.dispatchEvent(EventType.beforeTransactionStart);
     }
 
-    const trx = await (ctx || this.client).transaction();
+    const trx = await (options.ctx || this.client).transaction(null, { isolationLevel: options.isolationLevel });
 
-    if (!ctx) {
-      await eventBroadcaster?.dispatchEvent(EventType.afterTransactionStart, trx);
+    if (!options.ctx) {
+      await options.eventBroadcaster?.dispatchEvent(EventType.afterTransactionStart, trx);
     } else {
-      trx[parentTransactionSymbol] = ctx;
+      trx[parentTransactionSymbol] = options.ctx;
     }
 
     return trx;
@@ -144,11 +144,33 @@ export abstract class AbstractSqlConnection extends Connection {
   }
 
   protected getKnexOptions(type: string): Knex.Config {
-    return Utils.merge({
+    const config = Utils.merge({
       client: type,
       connection: this.getConnectionOptions(),
       pool: this.config.get('pool'),
     }, this.config.get('driverOptions'));
+    const options = config.connection as ConnectionOptions;
+    const password = options.password;
+
+    if (!(password instanceof Function)) {
+      return config;
+    }
+
+    config.connection = async () => {
+      const pw = await password();
+
+      if (typeof pw === 'string') {
+        return { ...options, password: pw };
+      }
+
+      return {
+        ...options,
+        password: pw.password,
+        expirationChecker: pw.expirationChecker,
+      };
+    };
+
+    return config;
   }
 
   private getSql(query: string, formatted: string): string {

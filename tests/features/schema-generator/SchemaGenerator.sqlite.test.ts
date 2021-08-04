@@ -9,21 +9,21 @@ describe('SchemaGenerator [sqlite]', () => {
     const dump = await generator.generate();
     expect(dump).toMatchSnapshot('sqlite-schema-dump');
 
-    const dropDump = await generator.getDropSchemaSQL(false, true);
+    const dropDump = await generator.getDropSchemaSQL({ wrap: false, dropMigrationsTable: true });
     expect(dropDump).toMatchSnapshot('sqlite-drop-schema-dump-1');
-    await generator.execute(dropDump, true);
+    await generator.execute(dropDump, { wrap: true });
 
     const dropDump2 = await generator.getDropSchemaSQL();
     expect(dropDump2).toMatchSnapshot('sqlite-drop-schema-dump-2');
-    await generator.execute(dropDump, true);
+    await generator.execute(dropDump, { wrap: true });
 
     const createDump = await generator.getCreateSchemaSQL();
     expect(createDump).toMatchSnapshot('sqlite-create-schema-dump');
-    await generator.execute(createDump, true);
+    await generator.execute(createDump, { wrap: true });
 
     const updateDump = await generator.getUpdateSchemaSQL();
     expect(updateDump).toMatchSnapshot('sqlite-update-schema-dump');
-    await generator.execute(updateDump, true);
+    await generator.execute(updateDump, { wrap: true });
 
     await orm.close(true);
   });
@@ -35,7 +35,7 @@ describe('SchemaGenerator [sqlite]', () => {
 
     const updateDump = await generator.getUpdateSchemaSQL();
     expect(updateDump).toMatchSnapshot('sqlite-update-empty-schema-dump');
-    await generator.execute(updateDump, true);
+    await generator.execute(updateDump, { wrap: true });
 
     await orm.close(true);
   });

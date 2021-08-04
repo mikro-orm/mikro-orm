@@ -479,19 +479,20 @@ export class QueryBuilderHelper {
     return [fromAlias, fromField];
   }
 
-  getLockSQL(qb: Knex.QueryBuilder, lockMode?: LockMode): void {
-    if (lockMode === LockMode.PESSIMISTIC_READ) {
-      return void qb.forShare();
-    }
-
-    if (lockMode === LockMode.PESSIMISTIC_WRITE) {
-      return void qb.forUpdate();
-    }
-
+  getLockSQL(qb: Knex.QueryBuilder, lockMode: LockMode, lockTables: string[] = []): void {
     const meta = this.metadata.find(this.entityName);
 
     if (lockMode === LockMode.OPTIMISTIC && meta && !meta.versionProperty) {
       throw OptimisticLockError.lockFailed(this.entityName);
+    }
+
+    switch (lockMode) {
+      case LockMode.PESSIMISTIC_READ: return void qb.forShare(...lockTables);
+      case LockMode.PESSIMISTIC_WRITE: return void qb.forUpdate(...lockTables);
+      case LockMode.PESSIMISTIC_PARTIAL_WRITE: return void qb.forUpdate(...lockTables).skipLocked();
+      case LockMode.PESSIMISTIC_WRITE_OR_FAIL: return void qb.forUpdate(...lockTables).noWait();
+      case LockMode.PESSIMISTIC_PARTIAL_READ: return void qb.forShare(...lockTables).skipLocked();
+      case LockMode.PESSIMISTIC_READ_OR_FAIL: return void qb.forShare(...lockTables).noWait();
     }
   }
 

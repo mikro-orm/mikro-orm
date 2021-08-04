@@ -15,6 +15,7 @@ export class EntityHelper {
 
   static decorate<T extends AnyEntity<T>>(meta: EntityMetadata<T>, em: EntityManager): void {
     if (meta.embeddable) {
+      EntityHelper.defineBaseProperties(meta, meta.prototype, em);
       return;
     }
 
@@ -53,15 +54,19 @@ export class EntityHelper {
   }
 
   private static defineBaseProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>, prototype: T, em: EntityManager) {
+    const helperParams = meta.embeddable ? [] : [em.getComparator().getPkGetter(meta), em.getComparator().getPkSerializer(meta), em.getComparator().getPkGetterConverted(meta)];
     Object.defineProperties(prototype, {
-      __entity: { value: true },
+      __entity: { value: !meta.embeddable },
       __meta: { value: meta },
       __platform: { value: em.getPlatform() },
       [entityHelperSymbol]: { value: null, writable: true, enumerable: false },
       __helper: {
         get(): WrappedEntity<T, keyof T> {
           if (!this[entityHelperSymbol]) {
-            this[entityHelperSymbol] = new WrappedEntity(this, em.getComparator().getPkGetter(meta), em.getComparator().getPkSerializer(meta));
+            Object.defineProperty(this, entityHelperSymbol, {
+              value: new WrappedEntity(this, ...helperParams),
+              enumerable: false,
+            });
           }
 
           return this[entityHelperSymbol];
@@ -116,9 +121,9 @@ export class EntityHelper {
         return this.__data[prop.name];
       },
       set(val: AnyEntity | Reference<AnyEntity>) {
+        const entity = Reference.unwrapReference(val ?? this.__data[prop.name]);
         this.__data[prop.name] = Reference.wrapReference(val as T, prop);
-        const entity = Reference.unwrapReference(val as T);
-        EntityHelper.propagate(entity, this, prop);
+        EntityHelper.propagate(entity, this, prop, Reference.unwrapReference(val));
       },
       enumerable: true,
       configurable: true,
@@ -126,15 +131,19 @@ export class EntityHelper {
     ref[prop.name] = val as T[string & keyof T];
   }
 
-  private static propagate<T extends AnyEntity<T>, O extends AnyEntity<O>>(entity: T, owner: O, prop: EntityProperty<O>): void {
-    const inverse = entity && entity[prop.inversedBy || prop.mappedBy];
+  private static propagate<T extends AnyEntity<T>, O extends AnyEntity<O>>(entity: T, owner: O, prop: EntityProperty<O>, value?: O[keyof O]): void {
+    const inverse = value && value[prop.inversedBy || prop.mappedBy];
 
     if (prop.reference === ReferenceType.MANY_TO_ONE && Utils.isCollection<O, T>(inverse) && inverse.isInitialized()) {
       inverse.add(owner);
     }
 
-    if (prop.reference === ReferenceType.ONE_TO_ONE && entity && entity.__helper!.__initialized && Reference.unwrapReference(inverse) !== owner) {
+    if (prop.reference === ReferenceType.ONE_TO_ONE && entity && entity.__helper!.__initialized && Reference.unwrapReference(inverse) !== owner && value != null) {
       EntityHelper.propagateOneToOne(entity, owner, prop);
+    }
+
+    if (prop.reference === ReferenceType.ONE_TO_ONE && entity && entity.__helper!.__initialized && entity[prop.inversedBy || prop.mappedBy] != null && value == null) {
+      entity[prop.inversedBy || prop.mappedBy] = value;
     }
   }
 

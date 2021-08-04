@@ -1,7 +1,7 @@
 import { inspect } from 'util';
 import { Collection } from './Collection';
 import { EntityManager } from '../EntityManager';
-import { AnyEntity, EntityData, EntityDTO, EntityMetadata, EntityProperty } from '../typings';
+import { AnyEntity, EntityData, EntityDTO, EntityMetadata, EntityProperty, Primary } from '../typings';
 import { Utils } from '../utils/Utils';
 import { Reference } from './Reference';
 import { ReferenceType, SCALAR_TYPES } from '../enums';
@@ -12,10 +12,12 @@ const validator = new EntityValidator(false);
 
 export class EntityAssigner {
 
-  static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T> | Partial<EntityDTO<T>>, options?: AssignOptions): T;
-  static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T> | Partial<EntityDTO<T>>, onlyProperties?: boolean): T;
-  static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T> | Partial<EntityDTO<T>>, onlyProperties: AssignOptions | boolean = false): T {
-    const options = (typeof onlyProperties === 'boolean' ? { onlyProperties } : onlyProperties);
+  static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T> | Partial<EntityDTO<T>>, options: AssignOptions = {}): T {
+    options = {
+      updateNestedEntities: true,
+      updateByPrimaryKey: true,
+      ...options,
+    };
     const wrapped = entity.__helper!;
     const meta = entity.__meta!;
     const em = options.em || wrapped.__em;
@@ -45,8 +47,21 @@ export class EntityAssigner {
 
       if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(props[prop]?.reference) && Utils.isDefined(value, true) && EntityAssigner.validateEM(em)) {
         // eslint-disable-next-line no-prototype-builtins
-        if (options.updateNestedEntities && entity.hasOwnProperty(prop) && (Utils.isEntity(entity[prop]) || Reference.isReference(entity[prop])) && Utils.isPlainObject(value)) {
+        if (options.updateNestedEntities && entity.hasOwnProperty(prop) && Utils.isEntity(entity[prop], true) && Utils.isPlainObject(value)) {
           const unwrappedEntity = Reference.unwrapReference(entity[prop]);
+
+          if (options.updateByPrimaryKey) {
+            const pk = Utils.extractPK(value, props[prop].targetMeta);
+
+            if (pk) {
+              const ref = em.getReference(props[prop].type, pk as Primary<T>);
+              if (ref.__helper!.isInitialized()) {
+                return EntityAssigner.assign(ref, value, options);
+              }
+            }
+
+            return EntityAssigner.assignReference<T>(entity, value, props[prop], em!, options);
+          }
 
           if (wrap(unwrappedEntity).isInitialized()) {
             return EntityAssigner.assign(unwrappedEntity, value, options);
@@ -125,8 +140,23 @@ export class EntityAssigner {
   private static assignCollection<T extends AnyEntity<T>, U extends AnyEntity<U> = AnyEntity>(entity: T, collection: Collection<U>, value: any[], prop: EntityProperty, em: EntityManager, options: AssignOptions): void {
     const invalid: any[] = [];
     const items = value.map((item: any, idx) => {
+      if (options.updateNestedEntities && options.updateByPrimaryKey && Utils.isPlainObject(item)) {
+        const pk = Utils.extractPK(item, prop.targetMeta);
+
+        if (pk) {
+          const ref = em.getReference(prop.type, pk as Primary<U>);
+
+          /* istanbul ignore else */
+          if (ref.__helper!.isInitialized()) {
+            return EntityAssigner.assign(ref, item as U, options);
+          }
+        }
+
+        return this.createCollectionItem<U>(item, em, prop, invalid, options);
+      }
+
       /* istanbul ignore next */
-      if (options.updateNestedEntities && collection[idx]?.__helper!.isInitialized()) {
+      if (options.updateNestedEntities && !options.updateByPrimaryKey && collection[idx]?.__helper!.isInitialized()) {
         return EntityAssigner.assign(collection[idx], item, options);
       }
 
@@ -203,6 +233,7 @@ export const assign = EntityAssigner.assign;
 
 export interface AssignOptions {
   updateNestedEntities?: boolean;
+  updateByPrimaryKey?: boolean;
   onlyProperties?: boolean;
   convertCustomTypes?: boolean;
   mergeObjects?: boolean;

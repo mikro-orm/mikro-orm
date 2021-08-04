@@ -1,4 +1,4 @@
-import { Cascade, DecimalType, Dictionary, EntityMetadata, EntityProperty, EntitySchema, NamingStrategy, ReferenceType, Utils } from '@mikro-orm/core';
+import { Cascade, DecimalType, Dictionary, EntityMetadata, EntityProperty, EntitySchema, NamingStrategy, ReferenceType, t, Utils } from '@mikro-orm/core';
 import { SchemaHelper } from './SchemaHelper';
 import { Column, ForeignKey, Index } from '../typings';
 import { AbstractSqlPlatform } from '../AbstractSqlPlatform';
@@ -15,8 +15,7 @@ export class DatabaseTable {
 
   constructor(private readonly platform: AbstractSqlPlatform,
               readonly name: string,
-              readonly schema?: string,
-              readonly meta?: EntityMetadata) { }
+              readonly schema?: string) { }
 
   getColumns(): Column[] {
     return Object.values(this.columns);
@@ -46,6 +45,10 @@ export class DatabaseTable {
 
       return o;
     }, {} as Dictionary<Column>);
+  }
+
+  addColumn(column: Column) {
+    this.columns[column.name] = column;
   }
 
   addColumnFromProperty(prop: EntityProperty, meta: EntityMetadata) {
@@ -289,8 +292,8 @@ export class DatabaseTable {
       return empty;
     }
 
-    if (propType === 'boolean') {
-      return !!column.default;
+    if (propType === 'boolean' && !raw) {
+      return !['0', 'false', 'f', 'n', 'no', 'off'].includes('' + column.default);
     }
 
     if (propType === 'number') {
@@ -321,6 +324,19 @@ export class DatabaseTable {
 
   isInDefaultNamespace(defaultNamespaceName: string) {
     return this.schema === defaultNamespaceName || this.schema == null;
+  }
+
+  toJSON(): Dictionary {
+    const { platform, columns, ...rest } = this;
+    const columnsMapped = Object.keys(columns).reduce((o, col) => {
+      const { mappedType, ...restCol } = columns[col];
+      o[col] = restCol;
+      o[col].mappedType = Object.keys(t).find(k => t[k] === mappedType.constructor);
+
+      return o;
+    }, {} as Dictionary);
+
+    return { columns: columnsMapped, ...rest };
   }
 
 }

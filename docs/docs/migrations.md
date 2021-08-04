@@ -49,6 +49,17 @@ npx mikro-orm migration:create --initial
 This will create the initial migration, containing the schema dump from 
 `schema:create` command. The migration will be automatically marked as executed. 
 
+## Snapshots
+
+Creating new migration will automatically save the target schema snapshot into 
+migrations folder. This snapshot will be then used if you try to create new migration,
+instead of using current database schema. This means that if we try to create new 
+migration before we run the pending ones, we still get the right schema diff.
+
+> Snapshots should be versioned just like the regular migration files.
+
+Snapshotting can be disabled via `migrations.snapshot: false` in the ORM config.
+
 ## Configuration
 
 ```typescript
@@ -63,6 +74,7 @@ await MikroORM.init({
     allOrNothing: true, // wrap all migrations in master transaction
     dropTables: true, // allow to disable table dropping
     safe: false, // allow to disable table and column dropping
+    snapshot: true, // save snapshot when creating new migrations
     emit: 'ts', // migration generation mode
   },
 })
@@ -78,6 +90,7 @@ npx mikro-orm migration:up       # Migrate up to the latest version
 npx mikro-orm migration:down     # Migrate one step down
 npx mikro-orm migration:list     # List all executed migrations
 npx mikro-orm migration:pending  # List all pending migrations
+npx mikro-orm migration:fresh    # Drop the database and migrate up to the latest version
 ```
 
 For `migration:up` and `migration:down` commands you can specify `--from` (`-f`), `--to` (`-t`) 
@@ -86,11 +99,18 @@ and `--only` (`-o`) options to run only a subset of migrations:
 ```sh
 npx mikro-orm migration:up --from 2019101911 --to 2019102117  # the same as above
 npx mikro-orm migration:up --only 2019101923                  # apply a single migration
-npx mikro-orm migration:down --to 0                           # migratee down all migrations
+npx mikro-orm migration:down --to 0                           # migrate down all migrations
 ```
 
-> To run TS migration files, you will need to [enable `useTsNode` flag](installation.md) 
+> To run TS migration files, you will need to [enable `useTsNode` flag](installation.md)
 > in your `package.json`.
+
+For the `migration:fresh` command you can specify `--seed` to seed the database after migrating.
+```shell
+npx mikro-orm migration:fresh --seed              # seed the database with the default database seeder
+npx mikro-orm migration:fresh --seed=UsersSeeder  # seed the database with the UsersSeeder
+```
+> You can specify the default database seeder in the orm config with the key `config.seeder.defaultSeeder`
 
 ## Using the Migrator programmatically
 

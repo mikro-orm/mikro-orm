@@ -7,7 +7,7 @@ import chalk from 'chalk';
 import {
   Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, Logger, ValidationError, wrap,
   UniqueConstraintViolationException, TableNotFoundException, TableExistsException, SyntaxErrorException,
-  NonUniqueFieldNameException, InvalidFieldNameException, expr,
+  NonUniqueFieldNameException, InvalidFieldNameException, expr, IsolationLevel,
 } from '@mikro-orm/core';
 import { MySqlDriver, MySqlConnection } from '@mikro-orm/mysql';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
@@ -15,6 +15,7 @@ import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { Author2Subscriber } from './subscribers/Author2Subscriber';
 import { EverythingSubscriber } from './subscribers/EverythingSubscriber';
 import { FlushSubscriber } from './subscribers/FlushSubscriber';
+import { Test2Subscriber } from './subscribers/Test2Subscriber';
 import { ManualAuthor2Subscriber } from './subscribers/ManualAuthor2Subscriber';
 
 describe('EntityManagerMySql', () => {
@@ -23,6 +24,12 @@ describe('EntityManagerMySql', () => {
 
   beforeAll(async () => orm = await initORMMySql());
   beforeEach(async () => wipeDatabaseMySql(orm.em));
+  afterEach(() => {
+    Author2Subscriber.log.length = 0;
+    EverythingSubscriber.log.length = 0;
+    FlushSubscriber.log.length = 0;
+    Test2Subscriber.log.length = 0;
+  });
 
   test('isConnected()', async () => {
     expect(await orm.isConnected()).toBe(true);
@@ -97,11 +104,11 @@ describe('EntityManagerMySql', () => {
     await expect(driver.ensureIndexes()).rejects.toThrowError('MySqlDriver does not use ensureIndexes');
 
     const conn = driver.getConnection();
-    await conn.transactional(async tx => {
-      await conn.execute('select 1', [], 'all', tx);
-      await conn.execute(orm.em.getKnex().raw('select 1'), [], 'all', tx);
-      await conn.execute(orm.em.getRepository(Author2).getKnex().raw('select 1'), [], 'all', tx);
-    });
+    const tx = await conn.begin();
+    await conn.execute('select 1', [], 'all', tx);
+    await conn.execute(orm.em.getKnex().raw('select 1'), [], 'all', tx);
+    await conn.execute(orm.em.getRepository(Author2).getKnex().raw('select 1'), [], 'all', tx);
+    await conn.commit(tx);
 
     // multi inserts
     const res = await driver.nativeInsertMany(Publisher2.name, [
@@ -333,6 +340,25 @@ describe('EntityManagerMySql', () => {
       const res4 = await orm.em.findOne(Author2, { name: 'God4' });
       expect(res4).toBeNull();
     }
+  });
+
+  test('transactions with isolation levels', async () => {
+    const mock = jest.fn();
+    const logger = new Logger(mock, ['query']);
+    Object.assign(orm.config, { logger });
+
+    const god1 = new Author2('God1', 'hello@heaven1.god');
+    try {
+      await orm.em.transactional(async em => {
+        await em.persistAndFlush(god1);
+        throw new Error(); // rollback the transaction
+      }, { isolationLevel: IsolationLevel.READ_UNCOMMITTED });
+    } catch { }
+
+    expect(mock.mock.calls[0][0]).toMatch('set transaction isolation level read uncommitted');
+    expect(mock.mock.calls[1][0]).toMatch('begin');
+    expect(mock.mock.calls[2][0]).toMatch('insert into `author2` (`created_at`, `email`, `name`, `terms_accepted`, `updated_at`) values (?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[3][0]).toMatch('rollback');
   });
 
   test('nested transactions with save-points', async () => {
@@ -587,6 +613,7 @@ describe('EntityManagerMySql', () => {
   });
 
   test('findOne supports optimistic locking [testMultipleFlushesDoIncrementalUpdates]', async () => {
+    expect(Test2Subscriber.log).toEqual([]);
     const test = new Test2();
 
     for (let i = 0; i < 5; i++) {
@@ -595,6 +622,19 @@ describe('EntityManagerMySql', () => {
       expect(typeof test.version).toBe('number');
       expect(test.version).toBe(i + 1);
     }
+
+    expect(Test2Subscriber.log.map(r => r[0])).toEqual([
+      'onFlush',
+      'afterFlush',
+      'onFlush',
+      'afterFlush',
+      'onFlush',
+      'afterFlush',
+      'onFlush',
+      'afterFlush',
+      'onFlush',
+      'afterFlush',
+    ]);
   });
 
   test('findOne supports optimistic locking [testStandardFailureThrowsException]', async () => {
@@ -1559,7 +1599,7 @@ describe('EntityManagerMySql', () => {
       'left join `book_to_tag_unordered` as `e2` on `e0`.`uuid_pk` = `e2`.`book2_uuid_pk` ' +
       'left join `book_tag2` as `e1` on `e2`.`book_tag2_id` = `e1`.`id` ' +
       'left join `test2` as `e3` on `e0`.`uuid_pk` = `e3`.`book_uuid_pk` ' +
-      'where `e1`.`name` != ? and `e0`.`author_id` is not null ' +
+      'where `e0`.`author_id` is not null and `e1`.`name` != ? ' +
       'order by `e0`.`title` desc');
     await expect(books.length).toBe(3);
     await expect(books[0].title).toBe('My Life on The Wall, part 3');
@@ -1575,7 +1615,7 @@ describe('EntityManagerMySql', () => {
     expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e0`.price * 1.19 as `price_taxed`, `e1`.`book2_uuid_pk` as `fk__book2_uuid_pk`, `e1`.`book_tag2_id` as `fk__book_tag2_id`, `e2`.`id` as `test_id` from `book2` as `e0` ' +
       'left join `book_to_tag_unordered` as `e1` on `e0`.`uuid_pk` = `e1`.`book2_uuid_pk` ' +
       'left join `test2` as `e2` on `e0`.`uuid_pk` = `e2`.`book_uuid_pk` ' +
-      'where `e0`.`title` != ? and `e0`.`author_id` is not null and `e1`.`book_tag2_id` in (?, ?, ?, ?, ?, ?)');
+      'where `e0`.`author_id` is not null and `e0`.`title` != ? and `e1`.`book_tag2_id` in (?, ?, ?, ?, ?, ?)');
     await expect(tags.length).toBe(6);
     await expect(tags.map(tag => tag.name)).toEqual(['awkward', 'funny', 'sexy', 'sick', 'silly', 'zupa']);
     await expect(tags.map(tag => tag.booksUnordered.count())).toEqual([1, 1, 1, 1, 2, 2]);
@@ -2036,8 +2076,8 @@ describe('EntityManagerMySql', () => {
     });
 
     expect(mock.mock.calls[11][0]).toMatch(/begin.*via write connection '127\.0\.0\.1'/);
-    expect(mock.mock.calls[12][0]).toMatch(/select `e0`.*, `e1`\.`id` as `test_id` from `book2` as `e0` left join `test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` where `e0`.`title` = \?.*via write connection '127\.0\.0\.1'/);
-    expect(mock.mock.calls[13][0]).toMatch(/update `author2` set `name` = \?, `favourite_book_uuid_pk` = \?, `updated_at` = \? where `id` = \?.*via write connection '127\.0\.0\.1'/);
+    expect(mock.mock.calls[12][0]).toMatch(/select.*via write connection '127\.0\.0\.1'/);
+    expect(mock.mock.calls[13][0]).toMatch(/update.*via write connection '127\.0\.0\.1'/);
     expect(mock.mock.calls[14][0]).toMatch(/commit.*via write connection '127\.0\.0\.1'/);
   });
 
@@ -2103,8 +2143,8 @@ describe('EntityManagerMySql', () => {
 
     const res1 = await orm.em.find(Book2, { publisher: { $ne: null } }, { schema: 'mikro_orm_test_schema_2', populate: ['perex'] });
     const res2 = await orm.em.find(Book2, { publisher: { $ne: null } }, ['perex']);
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e0`.price * 1.19 as `price_taxed`, `e1`.`id` as `test_id` from `mikro_orm_test_schema_2`.`book2` as `e0` left join `mikro_orm_test_schema_2`.`test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` where `e0`.`publisher_id` is not null');
-    expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e0`.price * 1.19 as `price_taxed`, `e1`.`id` as `test_id` from `book2` as `e0` left join `test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` where `e0`.`publisher_id` is not null');
+    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e0`.price * 1.19 as `price_taxed`, `e1`.`id` as `test_id` from `mikro_orm_test_schema_2`.`book2` as `e0` left join `mikro_orm_test_schema_2`.`test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` where `e0`.`author_id` is not null and `e0`.`publisher_id` is not null');
+    expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e0`.price * 1.19 as `price_taxed`, `e1`.`id` as `test_id` from `book2` as `e0` left join `test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` where `e0`.`author_id` is not null and `e0`.`publisher_id` is not null');
     expect(res1.length).toBe(0);
     expect(res2.length).toBe(1);
   });

@@ -16,4 +16,4 @@ export { SqlEntityManager as EntityManager } from './SqlEntityManager';
 export { SqlEntityRepository as EntityRepository } from './SqlEntityRepository';
 
 /** @ignore */
-export { Knex } from 'knex';
+export { Knex, knex } from 'knex';

@@ -5,8 +5,7 @@ import { extname, isAbsolute, join, normalize, relative, resolve } from 'path';
 import { pathExists } from 'fs-extra';
 import { createHash } from 'crypto';
 import { recovery } from 'escaya';
-
-import { AnyEntity, Dictionary, EntityMetadata, EntityName, EntityProperty, IMetadataStorage, Primary } from '../typings';
+import { AnyEntity, Dictionary, EntityDictionary, EntityMetadata, EntityName, EntityProperty, IMetadataStorage, Primary, PlainObject } from '../typings';
 import { GroupOperator, QueryOperator, ReferenceType } from '../enums';
 import { Collection } from '../entity';
 import { Platform } from '../platforms';
@@ -137,6 +136,28 @@ export class Utils {
    */
   static isNotObject<T = Dictionary>(o: any, not: any[]): o is T {
     return this.isObject(o) && !not.some(cls => o instanceof cls);
+  }
+
+  /**
+   * Removes `undefined` properties (recursively) so they are not saved as nulls
+   */
+  static dropUndefinedProperties<T = Dictionary | unknown[]>(o: any): void {
+    if (Array.isArray(o)) {
+      return o.forEach((item: unknown) => Utils.dropUndefinedProperties(item));
+    }
+
+    if (!Utils.isObject(o)) {
+      return;
+    }
+
+    Object.keys(o).forEach(key => {
+      if (o[key] === undefined) {
+        delete o[key];
+        return;
+      }
+
+      Utils.dropUndefinedProperties(o[key]);
+    });
   }
 
   /**
@@ -392,10 +413,15 @@ export class Utils {
   static getCompositeKeyHash<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>): string {
     const pks = meta.primaryKeys.map(pk => {
       const value = entity[pk];
+      const prop = meta.properties[pk];
 
       /* istanbul ignore next */
       if (Utils.isEntity<T>(value, true)) {
         return value.__helper!.getSerializedPrimaryKey();
+      }
+
+      if (prop.targetMeta && Utils.isPlainObject(value)) {
+        return this.getCompositeKeyHash(value, prop.targetMeta);
       }
 
       return value;
@@ -412,10 +438,10 @@ export class Utils {
     return key.split(this.PK_SEPARATOR);
   }
 
-  static getPrimaryKeyValues<T extends AnyEntity<T>>(entity: T, primaryKeys: string[], allowScalar = false) {
+  static getPrimaryKeyValues<T extends AnyEntity<T>>(entity: T, primaryKeys: string[], allowScalar = false, convertCustomTypes = false) {
     if (allowScalar && primaryKeys.length === 1) {
       if (Utils.isEntity(entity[primaryKeys[0]], true)) {
-        return entity[primaryKeys[0]].__helper!.getPrimaryKey();
+        return entity[primaryKeys[0]].__helper!.getPrimaryKey(convertCustomTypes);
       }
 
       return entity[primaryKeys[0]];
@@ -423,7 +449,7 @@ export class Utils {
 
     return primaryKeys.reduce((ret, pk) => {
       if (Utils.isEntity(entity[pk], true)) {
-        const childPk = entity[pk].__helper!.getPrimaryKey();
+        const childPk = entity[pk].__helper!.getPrimaryKey(convertCustomTypes);
 
         if (entity[pk].__meta.compositePK) {
           ret.push(...Object.values(childPk) as Primary<T>[]);
@@ -575,7 +601,7 @@ export class Utils {
    */
   static isPlainObject(value: any): value is Dictionary {
     // eslint-disable-next-line no-prototype-builtins
-    return value !== null && typeof value === 'object' && typeof value.constructor === 'function' && value.constructor.prototype.hasOwnProperty('isPrototypeOf');
+    return (value !== null && typeof value === 'object' && typeof value.constructor === 'function' && value.constructor.prototype.hasOwnProperty('isPrototypeOf')) || value instanceof PlainObject;
   }
 
   /**
@@ -768,6 +794,118 @@ export class Utils {
     if (process.env.BABEL_DECORATORS_COMPAT) {
       return {};
     }
+  }
+
+  static unwrapProperty<T>(entity: T, meta: EntityMetadata<T>, prop: EntityProperty<T>, payload = false): [unknown, number[]][] {
+    let p = prop;
+    const path: string[] = [];
+
+    function isObjectProperty(prop: EntityProperty): boolean {
+      return prop.embedded ? prop.object || prop.array || isObjectProperty(meta.properties[prop.embedded[0]]) : prop.object || !!prop.array;
+    }
+
+    if (!isObjectProperty(prop) && !prop.embedded) {
+      return entity[prop.name] != null ? [[entity[prop.name], []]] : [];
+    }
+
+    while (p.embedded) {
+      const child = meta.properties[p.embedded[0]];
+
+      if (payload && !child.object && !child.array) {
+        break;
+      }
+
+      path.shift();
+      path.unshift(p.embedded[0], p.embedded[1]);
+      p = child;
+    }
+
+    const ret: [unknown, number[]][] = [];
+    const follow = (t: Dictionary | Dictionary[], idx = 0, i: number[] = []): void => {
+      const k = path[idx];
+
+      if (Array.isArray(t)) {
+        return t.forEach((t, ii) => follow(t, idx, [...i, ii]));
+      }
+
+      if (t == null) {
+        return;
+      }
+
+      const target = t[k];
+
+      if (path[++idx]) {
+        follow(target, idx, i);
+      } else if (target != null) {
+        ret.push([target, i]);
+      }
+    };
+    follow(entity);
+
+    return ret;
+  }
+
+  static setPayloadProperty<T>(entity: EntityDictionary<T>, meta: EntityMetadata<T>, prop: EntityProperty<T>, value: unknown, idx: number[] = []): void {
+    function isObjectProperty(prop: EntityProperty): boolean {
+      return prop.embedded ? prop.object || prop.array || isObjectProperty(meta.properties[prop.embedded[0]]) : prop.object || !!prop.array;
+    }
+
+    if (!isObjectProperty(prop)) {
+      entity[prop.name] = value as T[keyof T & string];
+      return;
+    }
+
+    let target = entity as Dictionary;
+    let p = prop;
+    const path: string[] = [];
+
+    while (p.embedded) {
+      path.shift();
+      path.unshift(p.embedded[0], p.embedded[1]);
+      const prev = p;
+      p = meta!.properties[p.embedded[0]];
+
+      if (!p.object) {
+        path.shift();
+        path[0] = prev.name;
+        break;
+      }
+    }
+
+    let j = 0;
+    path.forEach((k, i) => {
+      if (i === path.length - 1) {
+        if (Array.isArray(target)) {
+          target[idx[j++]][k] = value;
+        } else {
+          target[k] = value;
+        }
+      } else {
+        if (Array.isArray(target)) {
+          target = target[idx[j++]][k];
+        } else {
+          target = target[k];
+        }
+      }
+    });
+  }
+
+  static tryRequire<T = any>({ module, from, allowError, warning }: { module: string; warning: string; from?: string; allowError?: string }): T | undefined {
+    allowError = allowError ?? `Cannot find module '${module}'`;
+    from = from ?? process.cwd();
+
+    try {
+      return Utils.requireFrom(module, from);
+    } catch (err) {
+      if (err.message.includes(allowError)) {
+        // eslint-disable-next-line no-console
+        console.warn(warning);
+        return undefined;
+      }
+
+      throw err;
+    }
+
   }
 
 }

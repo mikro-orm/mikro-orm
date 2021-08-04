@@ -67,13 +67,14 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   private _orderBy: QueryOrderMap = {};
   private _groupBy: Field<T>[] = [];
   private _having: Dictionary = {};
-  private _onConflict?: { fields: string[]; ignore?: boolean; merge?: EntityData<T>; where?: QBFilterQuery<T> }[];
+  private _onConflict?: { fields: string[]; ignore?: boolean; merge?: EntityData<T> | Field<T>[]; where?: QBFilterQuery<T> }[];
   private _limit?: number;
   private _offset?: number;
   private _joinedProps = new Map<string, PopulateOptions<any>>();
   private _cache?: boolean | number | [string, number];
   private _indexHint?: string;
   private lockMode?: LockMode;
+  private lockTables?: string[];
   private subQueries: Dictionary<string> = {};
   private readonly platform = this.driver.getPlatform();
   private readonly knex = this.driver.getConnection(this.connectionType).getKnex();
@@ -231,8 +232,8 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   }
 
   orderBy(orderBy: QueryOrderMap): this {
-    QueryHelper.inlinePrimaryKeyObjects(orderBy, this.metadata.find(this.entityName)!, this.metadata);
-    this._orderBy = CriteriaNodeFactory.createNode(this.metadata, this.entityName, orderBy).process(this);
+    const processed = QueryHelper.processWhere(orderBy, this.entityName, this.metadata, this.platform, false)!;
+    this._orderBy = CriteriaNodeFactory.createNode(this.metadata, this.entityName, processed).process(this);
     return this;
   }
 
@@ -250,19 +251,27 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this;
   }
 
-  onConflict(fields: string | string[]): this {
+  onConflict(fields: string | string[] = []): this {
     this._onConflict = this._onConflict || [];
     this._onConflict.push({ fields: Utils.asArray(fields) });
     return this;
   }
 
   ignore(): this {
-    this._onConflict![this._onConflict!.length - 1].ignore = true;
+    if (!this._onConflict) {
+      throw new Error('You need to call `qb.onConflict()` first to use `qb.ignore()`');
+    }
+
+    this._onConflict[this._onConflict.length - 1].ignore = true;
     return this;
   }
 
-  merge(data?: EntityData<T>): this {
-    this._onConflict![this._onConflict!.length - 1].merge = data;
+  merge(data?: EntityData<T> | Field<T>[]): this {
+    if (!this._onConflict) {
+      throw new Error('You need to call `qb.onConflict()` first to use `qb.merge()`');
+    }
+
+    this._onConflict[this._onConflict.length - 1].merge = data;
     return this;
   }
 
@@ -310,12 +319,13 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this;
   }
 
-  setLockMode(mode?: LockMode): this {
-    if ([LockMode.NONE, LockMode.PESSIMISTIC_READ, LockMode.PESSIMISTIC_WRITE].includes(mode!) && !this.context) {
+  setLockMode(mode?: LockMode, tables?: string[]): this {
+    if (mode != null && mode !== LockMode.OPTIMISTIC && !this.context) {
       throw ValidationError.transactionRequired();
     }
 
     this.lockMode = mode;
+    this.lockTables = tables;
 
     return this;
   }
@@ -360,7 +370,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
         Utils.runIfNotEmpty(() => {
           const sub2 = sub.merge(item.merge);
           Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, item.where, sub2), item.where);
-        }, item.merge);
+        }, 'merge' in item);
       });
     }, this._onConflict);
 
@@ -368,7 +378,10 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       return this.knex.raw(qb.toSQL().toNative().sql + ' cascade') as any;
     }
 
-    this.helper.getLockSQL(qb, this.lockMode);
+    if (this.lockMode) {
+      this.helper.getLockSQL(qb, this.lockMode, this.lockTables);
+    }
+
     this.helper.finalize(this.type, qb, this.metadata.find(this.entityName));
 
     return qb;
@@ -506,7 +519,10 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     Object.assign(qb, this);
 
     // clone array/object properties
-    const properties = ['flags', '_populate', '_populateMap', '_joins', '_joinedProps', '_aliasMap', '_cond', '_data', '_orderBy', '_schema', '_indexHint', '_cache', 'subQueries'];
+    const properties = [
+      'flags', '_populate', '_populateMap', '_joins', '_joinedProps', '_aliasMap', '_cond', '_data', '_orderBy',
+      '_schema', '_indexHint', '_cache', 'subQueries', 'lockMode', 'lockTables',
+    ];
     properties.forEach(prop => (qb as any)[prop] = Utils.copy(this[prop as keyof this]));
 
     /* istanbul ignore else */
