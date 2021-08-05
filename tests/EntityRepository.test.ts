@@ -82,6 +82,13 @@ describe('EntityRepository', () => {
     expect(methods.nativeDelete.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, undefined]);
     await repoMongo.aggregate([{ name: 'bar' }]);
     expect(methods.aggregate.mock.calls[0]).toEqual([Publisher, [{ name: 'bar' }]]);
+
+    await repo.nativeInsert({ name: 'bar' }, { schema: 'test123' });
+    expect(methods.nativeInsert.mock.calls[1]).toEqual([Publisher, { name: 'bar' }, { schema: 'test123' }]);
+    await repo.nativeUpdate({ name: 'bar' }, { name: 'baz' }, { schema: 'test123' });
+    expect(methods.nativeUpdate.mock.calls[1]).toEqual([Publisher, { name: 'bar' }, { name: 'baz' }, { schema: 'test123' }]);
+    await repo.nativeDelete({ name: 'bar' }, { schema: 'test123' });
+    expect(methods.nativeDelete.mock.calls[1]).toEqual([Publisher, { name: 'bar' }, { schema: 'test123' }]);
   });
 
   test('find() supports calling with config object', async () => {

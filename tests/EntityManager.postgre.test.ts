@@ -1284,7 +1284,15 @@ describe('EntityManagerPostgre', () => {
     const res6 = await orm.em.nativeInsert(Team2, { name: 'native name 3' }, { schema: 'test123' });
     expect(res6).toBe(1);
 
-    // expect(mock.mock.calls[1][0]).toMatch('insert into "test123"."team2" ("name") values (\'native name 3\') returning "id"');
+    // expect(mock.mock.calls[1][0]).toMatch(`insert into "test123"."team2" ("name") values ('native name 3') returning "id"`);
+
+    const res7 = await orm.em.nativeUpdate(Team2, { name: 'native name 3' }, { name: 'new native name' }, { schema: 'test123' });
+    expect(res7).toBe(1);
+
+    // expect(mock.mock.calls[2][0]).toMatch('update "test123"."team2" set "name" = \'new native name\' where "name" = \'native name 3\'');
+
+    const res8 = await orm.em.nativeDelete(Team2, { name: 'new native name' }, { schema: 'test123' });
+    expect(res8).toBe(1);
 
     orm.config.set('debug', ['query']);
   });
@@ -1853,6 +1861,40 @@ describe('EntityManagerPostgre', () => {
 
     authors.forEach(a => a.termsAccepted = true);
     await orm.em.flush();
+  });
+
+  test('workaround with schema', async () => {
+    const team = new Team2('team1');
+
+    const options = { schema: 'test123' };
+
+    const mock = jest.fn();
+    const logger = new Logger(mock, ['query']);
+    Object.assign(orm.config, { logger });
+
+    await orm.em.persistAndFlush(team, options);
+
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('insert into "test123"."team" ("name") values ($1) returning "id"');
+    expect(mock.mock.calls[2][0]).toMatch('commit');
+
+    const teamFound = await orm.em.findOneOrFail(Team2, { name: 'team1' }, options);
+    expect(teamFound.id).toBeGreaterThan(0);
+
+    teamFound.name = 'name updated';
+    orm.em.persist(teamFound);
+
+    await orm.em.flush(options);
+
+    expect(mock.mock.calls[4][0]).toMatch('begin');
+    expect(mock.mock.calls[5][0]).toMatch('update "test123"."team" set "name" = $1 where "id" = $2');
+    expect(mock.mock.calls[6][0]).toMatch('commit');
+
+    await orm.em.removeAndFlush(teamFound, options);
+
+    expect(mock.mock.calls[7][0]).toMatch('begin');
+    expect(mock.mock.calls[8][0]).toMatch('delete from "test123"."team" where "id" in ($1)');
+    expect(mock.mock.calls[9][0]).toMatch('commit');
   });
 
   afterAll(async () => orm.close(true));

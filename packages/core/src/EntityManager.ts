@@ -658,8 +658,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Persists your entity immediately, flushing all not yet persisted changes to the database too.
    * Equivalent to `em.persist(e).flush()`.
    */
-  async persistAndFlush(entity: AnyEntity | Reference<AnyEntity> | (AnyEntity | Reference<AnyEntity>)[]): Promise<void> {
-    await this.persist(entity).flush();
+  async persistAndFlush(entity: AnyEntity | Reference<AnyEntity> | (AnyEntity | Reference<AnyEntity>)[], options?: FlushOptions): Promise<void> {
+    await this.persist(entity).flush(options);
   }
 
   /**
@@ -696,8 +696,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Removes an entity instance immediately, flushing all not yet persisted changes to the database too.
    * Equivalent to `em.remove(e).flush()`
    */
-  async removeAndFlush(entity: AnyEntity | Reference<AnyEntity>): Promise<void> {
-    await this.remove(entity).flush();
+  async removeAndFlush(entity: AnyEntity | Reference<AnyEntity>, options?: FlushOptions): Promise<void> {
+    await this.remove(entity).flush(options);
   }
 
   /**
@@ -715,7 +715,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * This effectively synchronizes the in-memory state of managed objects with the database.
    */
   async flush(options?: FlushOptions): Promise<void> {
-    await this.getUnitOfWork().commit();
+    await this.getUnitOfWork().commit(options);
   }
 
   /**
