@@ -121,17 +121,14 @@ export class B {
 }
 
 
-describe('GH issue 222', () => {
+describe('GH issue 2095', () => {
 
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [C, T, TC, B, A],
-      dbName: 'glx',
-      host: 'localhost',
-      user: 'glx',
-      password: 'glx',
+      dbName: 'mikro-orm-issue-2095',
       type: 'postgresql',
       // debug: true
     });
