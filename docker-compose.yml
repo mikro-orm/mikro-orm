@@ -24,7 +24,7 @@ services:
       - mariadb:/var/lib/mysql
 
   postgre:
-    image: postgres:13.3
+    image: postgres:13.4
     ports:
       - 5432:5432
     volumes:
