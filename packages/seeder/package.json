@@ -55,6 +55,6 @@
   },
   "devDependencies": {
     "@mikro-orm/core": "^4.0.0",
-    "@types/faker": "5.5.7"
+    "@types/faker": "5.5.8"
   }
 }
