@@ -67,7 +67,7 @@
     "fs-extra": "10.0.0",
     "tsconfig-paths": "3.10.1",
     "yargonaut": "1.1.4",
-    "yargs": "15.4.1"
+    "yargs": "17.1.1"
   },
   "peerDependencies": {
     "@mikro-orm/mariadb": "^4.0.0",
