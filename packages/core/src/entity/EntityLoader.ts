@@ -269,6 +269,8 @@ export class EntityLoader {
     const where = await this.extractChildCondition(options, prop, true);
     const fields = this.buildFields(prop, options);
     const options2 = { ...options } as FindOptions<T>;
+    delete options2.limit;
+    delete options2.offset;
     options2.fields = (fields.length > 0 ? fields : undefined) as string[];
     /* istanbul ignore next */
     options2.populate = (populate?.children ?? []) as unknown as string[];
