@@ -257,7 +257,7 @@ export class ChangeSetPersister {
       }
     });
 
-    if (prop.onCreate && changeSet.type === ChangeSetType.CREATE) {
+    if (prop.onCreate && changeSet.type === ChangeSetType.CREATE && changeSet.entity[prop.name] === undefined) {
       changeSet.entity[prop.name] = prop.onCreate(changeSet.entity);
       changeSet.payload[prop.name] = prop.customType ? prop.customType.convertToDatabaseValue(changeSet.entity[prop.name], this.platform) : changeSet.entity[prop.name];
 
