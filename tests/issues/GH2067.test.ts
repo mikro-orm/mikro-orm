@@ -52,11 +52,14 @@ describe('GH issue 2067', () => {
     await orm1.em.clear();
     await orm2.em.clear();
 
+    let a2: A;
+
     await orm1.em.transactional(async () => {
       await orm2.em.transactional(async () => {
-        const a2 = orm1.em.create(A, { id: '1', name: 'Z' });
+        a2 = orm1.em.create(A, { id: '1', name: 'Z' });
       });
     });
+    expect(a2!.id).toBe('1');
   });
 
 });
