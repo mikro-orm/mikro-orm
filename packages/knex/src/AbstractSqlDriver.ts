@@ -177,15 +177,13 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   async count<T extends AnyEntity<T>>(entityName: string, where: any, options: CountOptions<T> = {}, ctx?: Transaction<Knex.Transaction>): Promise<number> {
     const pks = this.metadata.find(entityName)!.primaryKeys;
     const qb = this.createQueryBuilder(entityName, ctx, !!ctx, false)
-      .count(pks, true)
       .groupBy(options.groupBy!)
       .having(options.having!)
       .populate(options.populate as PopulateOptions<T>[] ?? [])
       .withSchema(options.schema)
       .where(where);
-    const res = await this.rethrow(qb.execute('get', false));
 
-    return res ? +res.count : 0;
+    return this.rethrow(qb.getCount(pks, true));
   }
 
   async nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>, ctx?: Transaction<Knex.Transaction>, convertCustomTypes = true): Promise<QueryResult> {

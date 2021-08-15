@@ -1,6 +1,6 @@
 import { ArrayCollection, Collection, EntityManager, LockMode, Logger, MikroORM, QueryOrder, ValidationError, wrap } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
-import { initORMSqlite2, wipeDatabaseSqlite2 } from './bootstrap';
+import { initORMSqlite2, mockLogger, wipeDatabaseSqlite2 } from './bootstrap';
 import { Author4, Book4, BookTag4, FooBar4, IAuthor4, IPublisher4, ITest4, Publisher4, PublisherType, Test4 } from './entities-schema';
 
 describe('EntityManagerSqlite2', () => {
@@ -1039,6 +1039,34 @@ describe('EntityManagerSqlite2', () => {
     expect(e2.name).toBe(`?baz? uh \\? ? wut? \\\\ wut`);
     const res = await orm.em.getKnex().raw('select ? as count', [1]);
     expect(res[0].count).toBe(1);
+  });
+
+  test('qb.getCount()`', async () => {
+    for (let i = 1; i <= 50; i++) {
+      const author = orm.em.create(Author4, {
+        name: `a${i}`,
+        email: `e${i}`,
+        termsAccepted: !(i % 2),
+      });
+      orm.em.persist(author);
+    }
+
+    await orm.em.flush();
+    orm.em.clear();
+
+    const mock = mockLogger(orm);
+    const count1 = await orm.em.createQueryBuilder(Author4).limit(10, 20).getCount();
+    expect(count1).toBe(50);
+    const count2 = await orm.em.createQueryBuilder(Author4).getCount('termsAccepted');
+    expect(count2).toBe(50);
+    const count3 = await orm.em.createQueryBuilder(Author4).getCount('termsAccepted', true);
+    expect(count3).toBe(2);
+    const count4 = await orm.em.createQueryBuilder(Author4).where({ email: '123' }).getCount();
+    expect(count4).toBe(0);
+    expect(mock.mock.calls[0][0]).toMatch('select count(`e0`.`id`) as `count` from `author4` as `e0`');
+    expect(mock.mock.calls[1][0]).toMatch('select count(`e0`.`terms_accepted`) as `count` from `author4` as `e0`');
+    expect(mock.mock.calls[2][0]).toMatch('select count(distinct `e0`.`terms_accepted`) as `count` from `author4` as `e0`');
+    expect(mock.mock.calls[3][0]).toMatch('select count(`e0`.`id`) as `count` from `author4` as `e0` where `e0`.`email` = \'123\'');
   });
 
   test('using collection methods with null/undefined (GH issue #1408)', async () => {
