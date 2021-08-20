@@ -5367,10 +5367,10 @@ kleur@^3.0.3:
   resolved "https://registry.yarnpkg.com/kleur/-/kleur-3.0.3.tgz#a79c9ecc86ee1ce3fa6206d1216c501f147fc07e"
   integrity sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==
 
-knex@0.95.9:
-  version "0.95.9"
-  resolved "https://registry.yarnpkg.com/knex/-/knex-0.95.9.tgz#d72acbdbc7aa199a829cca3c53371b80e521adfe"
-  integrity sha512-iy8Wue3ofGBVZENgz32fx2uYSYhXCQEE7lemMIdm/FDtgwwmrzkYm9BdGZ4wb8Fg/oCgezMGWSdCflWicX4sdA==
+knex@0.95.10:
+  version "0.95.10"
+  resolved "https://registry.yarnpkg.com/knex/-/knex-0.95.10.tgz#9c41a4f69309bc437f79985cbc0a1e7a3208483e"
+  integrity sha512-I60A8TXcMdeJlE6h7DSgEYyY37S7kgLObz1qlJ7QvPMD6vnKO5dtuLEht5pMia9Qf5BomqVgkWCdVTqcC/ImOA==
   dependencies:
     colorette "1.2.1"
     commander "^7.1.0"
