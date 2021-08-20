@@ -968,8 +968,8 @@ export class Book3 {
   @ManyToOne({ entity: () => Author3, onUpdateIntegrity: 'cascade' })
   author!: Author3;
 
-  @ManyToOne({ entity: () => Publisher3, onUpdateIntegrity: 'cascade' })
-  publisher!: Publisher3;
+  @ManyToOne({ entity: () => Publisher3, onUpdateIntegrity: 'cascade', nullable: true })
+  publisher?: Publisher3;
 
 }
 ",

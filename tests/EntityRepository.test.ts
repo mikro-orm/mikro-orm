@@ -51,13 +51,13 @@ describe('EntityRepository', () => {
     repo.persistLater(e);
     expect(methods.persistLater.mock.calls[0]).toEqual([e]);
     await repo.find({ name: 'bar' });
-    expect(methods.find.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, undefined, {}, undefined, undefined]);
+    expect(methods.find.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, undefined]);
     await repo.findAndCount({ name: 'bar' });
-    expect(methods.findAndCount.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, undefined, {}, undefined, undefined]);
+    expect(methods.findAndCount.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, undefined]);
     await repo.findOne('bar');
-    expect(methods.findOne.mock.calls[0]).toEqual([Publisher, 'bar', undefined, undefined]);
+    expect(methods.findOne.mock.calls[0]).toEqual([Publisher, 'bar', undefined]);
     await repo.findOneOrFail('bar');
-    expect(methods.findOneOrFail.mock.calls[0]).toEqual([Publisher, 'bar', undefined, undefined]);
+    expect(methods.findOneOrFail.mock.calls[0]).toEqual([Publisher, 'bar', undefined]);
     await repo.createQueryBuilder();
     expect(methods.createQueryBuilder.mock.calls[0]).toEqual([Publisher, undefined]);
     repo.remove(e);
@@ -93,7 +93,7 @@ describe('EntityRepository', () => {
     };
     methods.find.mock.calls = [];
     await repo.find({ name: 'bar' }, options);
-    expect(methods.find.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, options, {}, undefined, undefined]);
+    expect(methods.find.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, options]);
   });
 
   test('findOne() supports calling with config object', async () => {
@@ -103,7 +103,7 @@ describe('EntityRepository', () => {
     };
     methods.findOne.mock.calls = [];
     await repo.findOne({ name: 'bar' }, options);
-    expect(methods.findOne.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, options, undefined]);
+    expect(methods.findOne.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, options]);
   });
 
   test('findOneOrFail() supports calling with config object', async () => {
@@ -114,7 +114,7 @@ describe('EntityRepository', () => {
     };
     methods.findOneOrFail.mock.calls = [];
     await repo.findOneOrFail({ name: 'bar' }, options);
-    expect(methods.findOneOrFail.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, options, undefined]);
+    expect(methods.findOneOrFail.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, options]);
   });
 
 });

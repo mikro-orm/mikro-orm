@@ -439,7 +439,10 @@ describe('Joined loading strategy', () => {
     expect(tags[0].books[0].publisher!.unwrap().tests[1].name).toBe('t22');
 
     orm.em.clear();
-    const books = await orm.em.find(Book2, {}, ['publisher.tests', 'author'], { title: QueryOrder.ASC });
+    const books = await orm.em.find(Book2, {}, {
+      populate: ['publisher.tests', 'author'],
+      orderBy: { title: QueryOrder.ASC },
+    });
     expect(books.length).toBe(3);
     expect(books[0]).toBeInstanceOf(Book2);
     expect(wrap(books[0]).isInitialized()).toBe(true);

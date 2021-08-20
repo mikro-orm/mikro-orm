@@ -25,7 +25,7 @@ create table `author3` (`id` integer not null primary key autoincrement, `create
 create unique index `author3_email_unique` on `author3` (`email`);
 create index `author3_favourite_book_idx` on `author3` (`favourite_book_id`);
 
-create table `book3` (`id` integer not null primary key autoincrement, `created_at` datetime null, `updated_at` datetime null, `title` text not null default '', `author_id` integer not null, `publisher_id` integer not null, constraint `book3_author_id_foreign` foreign key(`author_id`) references `author3`(`id`) on update cascade, constraint `book3_publisher_id_foreign` foreign key(`publisher_id`) references `publisher3`(`id`) on update cascade);
+create table `book3` (`id` integer not null primary key autoincrement, `created_at` datetime null, `updated_at` datetime null, `title` text not null default '', `author_id` integer not null, `publisher_id` integer null, constraint `book3_author_id_foreign` foreign key(`author_id`) references `author3`(`id`) on update cascade, constraint `book3_publisher_id_foreign` foreign key(`publisher_id`) references `publisher3`(`id`) on update cascade);
 create index `book3_author_id_index` on `book3` (`author_id`);
 create index `book3_publisher_id_index` on `book3` (`publisher_id`);
 

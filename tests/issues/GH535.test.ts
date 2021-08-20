@@ -64,7 +64,7 @@ describe('GH issue 535', () => {
 
     orm.em.clear();
 
-    const fetchedA = await orm.em.findOneOrFail(A, { id: a.id }, ['b']);
+    const fetchedA = await orm.em.findOneOrFail(A, { id: a.id }, { populate: ['b'] });
     expect(fetchedA.calcProp).toBe('foo');
   });
 });

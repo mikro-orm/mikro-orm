@@ -92,7 +92,10 @@ describe('GH issue 845', () => {
     expect(mock.mock.calls[3][0]).toMatch('insert into `child1specific` (`child1_id`) values (?), (?), (?)');
     expect(mock.mock.calls[4][0]).toMatch('commit');
 
-    const parents = await orm.em.find(Parent, {}, ['qaInfo.parent', 'rel'], { type: QueryOrder.ASC });
+    const parents = await orm.em.find(Parent, {}, {
+      populate: ['qaInfo.parent', 'rel'],
+      orderBy: { type: QueryOrder.ASC },
+    });
     expect(parents[0]).toBeInstanceOf(Child1);
     expect(parents[0].type).toBe('Child1');
     expect(parents[0].qaInfo.length).toBe(0);

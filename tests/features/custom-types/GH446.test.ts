@@ -93,7 +93,7 @@ describe('GH issue 446', () => {
     await orm.em.persistAndFlush([c, d]);
     orm.em.clear();
 
-    const c1 = await orm.em.findOneOrFail(C, c.b.a.id, ['b.a']);
+    const c1 = await orm.em.findOneOrFail(C, c.b.a.id, { populate: ['b.a'] });
     expect(c1).toBeInstanceOf(C);
     expect(c1.b).toBeInstanceOf(B);
     expect(wrap(c1.b).isInitialized()).toBe(true);

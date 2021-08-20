@@ -67,7 +67,7 @@ describe('GH issue 557', () => {
     await orm.em.persistAndFlush(a);
     orm.em.clear();
 
-    const res = await orm.em.findOneOrFail(Application, a, ['rate1', 'rate2', 'rate3', 'rate4']);
+    const res = await orm.em.findOneOrFail(Application, a, { populate: ['rate1', 'rate2', 'rate3', 'rate4'] });
     expect(res.rate1.name).toBe('r1');
     expect(res.rate2.name).toBe('r2');
     expect(res.rate3.name).toBe('r3');

@@ -114,7 +114,7 @@ describe('GH issue 1352', () => {
     await orm.em.persistAndFlush(project);
     orm.em.clear();
 
-    const queriedProject = await orm.em.findOneOrFail(Manager, manager1, ['project']);
+    const queriedProject = await orm.em.findOneOrFail(Manager, manager1, { populate: ['project'] });
     expect(queriedProject.project.unwrap().managers.isInitialized()).toBeTruthy();
     expect(queriedProject.project.unwrap().risks.isInitialized()).toBeTruthy();
   });

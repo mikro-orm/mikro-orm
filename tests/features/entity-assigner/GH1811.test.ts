@@ -92,7 +92,7 @@ describe('GH issue 1811', () => {
 
   test('assigning to 1:m with nested entities', async () => {
     const r = await createRecipe();
-    const recipe = await orm.em.findOneOrFail(Recipe, r, ['ingredients']);
+    const recipe = await orm.em.findOneOrFail(Recipe, r, { populate: ['ingredients'] });
 
     wrap(recipe).assign({
       ingredients: [
@@ -123,7 +123,7 @@ describe('GH issue 1811', () => {
 
   test('assigning to m:1 with nested entities', async () => {
     const r = await createRecipe();
-    const recipe = await orm.em.findOneOrFail(Recipe, r, ['ingredients']);
+    const recipe = await orm.em.findOneOrFail(Recipe, r, { populate: ['ingredients'] });
     const onion = wrap(recipe.ingredients[1]).assign({
       name: 'Onion',
       recipe: { name: 'Scrambled eggs' }, // should create new recipe entity
@@ -170,7 +170,7 @@ describe('GH issue 1811', () => {
 
   test('assigning to m:m with nested entities', async () => {
     const r = await createRecipe();
-    const recipe = await orm.em.findOneOrFail(Recipe, r, ['authors']);
+    const recipe = await orm.em.findOneOrFail(Recipe, r, { populate: ['authors'] });
 
     wrap(recipe).assign({
       authors: [

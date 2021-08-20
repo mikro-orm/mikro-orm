@@ -232,7 +232,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     const order = [...this.items]; // copy order of references
     const customOrder = !!options.orderBy;
     orderBy = this.createOrderBy(options.orderBy);
-    const items: T[] = await em.find(this.property.type, where, options.populate, orderBy);
+    const items: T[] = await em.find(this.property.type, where, { populate: options.populate, orderBy });
 
     if (!customOrder) {
       this.reorderItems(items, order);

@@ -1,6 +1,5 @@
 import { EntityManager } from '../EntityManager';
 import { EntityData, EntityName, AnyEntity, Primary, Populate, Loaded, New, FilterQuery, EntityDictionary } from '../typings';
-import { QueryOrderMap } from '../enums';
 import { CountOptions, DeleteOptions, FindOneOptions, FindOneOrFailOptions, FindOptions, UpdateOptions } from '../drivers/IDatabaseDriver';
 import { IdentifiedReference, Reference } from './Reference';
 import { EntityLoaderOptions } from './EntityLoader';
@@ -39,18 +38,8 @@ export class EntityRepository<T extends AnyEntity<T>> {
   /**
    * Finds first entity matching your `where` query.
    */
-  async findOne<P extends Populate<T> = any>(where: FilterQuery<T>, populate?: P, orderBy?: QueryOrderMap): Promise<Loaded<T, P> | null>;
-
-  /**
-   * Finds first entity matching your `where` query.
-   */
-  async findOne<P extends Populate<T> = any>(where: FilterQuery<T>, populate?: FindOneOptions<T, P>, orderBy?: QueryOrderMap): Promise<Loaded<T, P> | null>;
-
-  /**
-   * Finds first entity matching your `where` query.
-   */
-  async findOne<P extends Populate<T> = any>(where: FilterQuery<T>, populate?: P | FindOneOptions<T, P>, orderBy?: QueryOrderMap): Promise<Loaded<T, P> | null> {
-    return this.em.findOne<T, P>(this.entityName, where, populate as P, orderBy);
+  async findOne<P extends Populate<T> = any>(where: FilterQuery<T>, options?: FindOneOptions<T, P>): Promise<Loaded<T, P> | null> {
+    return this.em.findOne<T, P>(this.entityName, where, options);
   }
 
   /**
@@ -58,76 +47,30 @@ export class EntityRepository<T extends AnyEntity<T>> {
    * You can override the factory for creating this method via `options.failHandler` locally
    * or via `Configuration.findOneOrFailHandler` globally.
    */
-  async findOneOrFail<P extends Populate<T> = any>(where: FilterQuery<T>, populate?: P, orderBy?: QueryOrderMap): Promise<Loaded<T, P>>;
-
-  /**
-   * Finds first entity matching your `where` query. If nothing found, it will throw an error.
-   * You can override the factory for creating this method via `options.failHandler` locally
-   * or via `Configuration.findOneOrFailHandler` globally.
-   */
-  async findOneOrFail<P extends Populate<T> = any>(where: FilterQuery<T>, populate?: FindOneOrFailOptions<T, P>, orderBy?: QueryOrderMap): Promise<Loaded<T, P>>;
-
-  /**
-   * Finds first entity matching your `where` query. If nothing found, it will throw an error.
-   * You can override the factory for creating this method via `options.failHandler` locally
-   * or via `Configuration.findOneOrFailHandler` globally.
-   */
-  async findOneOrFail<P extends Populate<T> = any>(where: FilterQuery<T>, populate?: P | FindOneOrFailOptions<T, P>, orderBy?: QueryOrderMap): Promise<Loaded<T, P>> {
-    return this.em.findOneOrFail<T, P>(this.entityName, where, populate as P, orderBy);
+  async findOneOrFail<P extends Populate<T> = any>(where: FilterQuery<T>, options?: FindOneOrFailOptions<T, P>): Promise<Loaded<T, P>> {
+    return this.em.findOneOrFail<T, P>(this.entityName, where, options);
   }
 
   /**
    * Finds all entities matching your `where` query. You can pass additional options via the `options` parameter.
    */
-  async find<P extends Populate<T> = any>(where: FilterQuery<T>, options?: FindOptions<T, P>): Promise<Loaded<T, P>[]>;
-
-  /**
-   * Finds all entities matching your `where` query.
-   */
-  async find<P extends Populate<T> = any>(where: FilterQuery<T>, populate?: P, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<Loaded<T, P>[]>;
-
-  /**
-   * Finds all entities matching your `where` query.
-   */
-  async find<P extends Populate<T> = any>(where: FilterQuery<T>, populate?: P | FindOptions<T, P>, orderBy: QueryOrderMap = {}, limit?: number, offset?: number): Promise<Loaded<T, P>[]> {
-    return this.em.find<T, P>(this.entityName, where as FilterQuery<T>, populate as P, orderBy, limit, offset);
+  async find<P extends Populate<T> = any>(where: FilterQuery<T>, options?: FindOptions<T, P>): Promise<Loaded<T, P>[]> {
+    return this.em.find<T, P>(this.entityName, where as FilterQuery<T>, options);
   }
 
   /**
    * Calls `em.find()` and `em.count()` with the same arguments (where applicable) and returns the results as tuple
    * where first element is the array of entities and the second is the count.
    */
-  async findAndCount<P extends Populate<T> = any>(where: FilterQuery<T>, options?: FindOptions<T>): Promise<[Loaded<T, P>[], number]>;
-
-  /**
-   * Calls `em.find()` and `em.count()` with the same arguments (where applicable) and returns the results as tuple
-   * where first element is the array of entities and the second is the count.
-   */
-  async findAndCount<P extends Populate<T> = any>(where: FilterQuery<T>, populate?: P, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<[Loaded<T, P>[], number]>;
-
-  /**
-   * Calls `em.find()` and `em.count()` with the same arguments (where applicable) and returns the results as tuple
-   * where first element is the array of entities and the second is the count.
-   */
-  async findAndCount<P extends Populate<T> = any>(where: FilterQuery<T>, populate?: P | FindOptions<T>, orderBy: QueryOrderMap = {}, limit?: number, offset?: number): Promise<[Loaded<T, P>[], number]> {
-    return this.em.findAndCount<T, P>(this.entityName, where as FilterQuery<T>, populate as P, orderBy, limit, offset);
+  async findAndCount<P extends Populate<T> = any>(where: FilterQuery<T>, options?: FindOptions<T, P>): Promise<[Loaded<T, P>[], number]> {
+    return this.em.findAndCount<T, P>(this.entityName, where, options);
   }
 
   /**
    * Finds all entities of given type. You can pass additional options via the `options` parameter.
    */
-  async findAll<P extends Populate<T> = any>(options?: FindOptions<T, P>): Promise<Loaded<T, P>[]>;
-
-  /**
-   * Finds all entities of given type.
-   */
-  async findAll<P extends Populate<T> = any>(populate?: P, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<Loaded<T, P>[]>;
-
-  /**
-   * Finds all entities of given type.
-   */
-  async findAll<P extends Populate<T> = any>(populate?: P | FindOptions<T, P>, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<Loaded<T, P>[]> {
-    return this.em.find<T, P>(this.entityName, {}, populate as P, orderBy, limit, offset);
+  async findAll<P extends Populate<T> = any>(options?: FindOptions<T, P>): Promise<Loaded<T, P>[]> {
+    return this.em.find<T, P>(this.entityName, {}, options);
   }
 
   /**

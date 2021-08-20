@@ -48,7 +48,7 @@ describe('RequestContext', () => {
     await new Promise<void>(resolve => {
       RequestContext.create(orm.em, async () => {
         const em = RequestContext.getEntityManager()!;
-        const jon = await em.findOne(Author, author.id, ['favouriteBook']);
+        const jon = await em.findOne(Author, author.id, { populate: ['favouriteBook'] });
         expect(jon!.favouriteBook).toBeInstanceOf(Book);
         expect(wrap(jon!.favouriteBook).isInitialized()).toBe(true);
         expect(jon!.favouriteBook.title).toBe('Bible');

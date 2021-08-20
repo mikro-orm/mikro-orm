@@ -69,7 +69,7 @@ describe('GH issue 486', () => {
 
     // Clear the context and fetch the real DB state
     orm.em.clear();
-    const dbState = await orm.em.findOneOrFail(A, fixture.id, ['bs']);
+    const dbState = await orm.em.findOneOrFail(A, fixture.id, { populate: ['bs'] });
     expect(dbState.bs).toHaveLength(2);
     expect(dbState.prop).toBe('bar');
   });

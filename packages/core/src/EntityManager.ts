@@ -5,7 +5,7 @@ import { AssignOptions, EntityAssigner, EntityFactory, EntityLoader, EntityLoade
 import { UnitOfWork } from './unit-of-work';
 import { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, UpdateOptions } from './drivers';
 import { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityDTO, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, New, Populate, PopulateMap, PopulateOptions, Primary } from './typings';
-import { IsolationLevel, LoadStrategy, LockMode, QueryOrderMap, ReferenceType, SCALAR_TYPES } from './enums';
+import { IsolationLevel, LoadStrategy, LockMode, ReferenceType, SCALAR_TYPES } from './enums';
 import { MetadataStorage } from './metadata';
 import { Transaction } from './connections';
 import { EventManager, TransactionEventBroadcaster } from './events';
@@ -89,19 +89,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Finds all entities matching your `where` query. You can pass additional options via the `options` parameter.
    */
-  async find<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, where: FilterQuery<T>, options?: FindOptions<T, P>): Promise<Loaded<T, P>[]>;
-
-  /**
-   * Finds all entities matching your `where` query.
-   */
-  async find<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: P, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<Loaded<T, P>[]>;
-
-  /**
-   * Finds all entities matching your `where` query.
-   */
-  async find<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: P | FindOptions<T, P>, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<Loaded<T, P>[]> {
-    const options = Utils.isObject<FindOptions<T, P>>(populate) ? populate : { populate, orderBy, limit, offset } as FindOptions<T, P>;
-
+  async find<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, where: FilterQuery<T>, options: FindOptions<T, P> = {}): Promise<Loaded<T, P>[]> {
     if (options.disableIdentityMap) {
       const fork = this.fork(false);
       const ret = await fork.find<T, P>(entityName, where, { ...options, disableIdentityMap: false });
@@ -272,23 +260,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Calls `em.find()` and `em.count()` with the same arguments (where applicable) and returns the results as tuple
    * where first element is the array of entities and the second is the count.
    */
-  async findAndCount<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, where: FilterQuery<T>, options?: FindOptions<T, P>): Promise<[Loaded<T, P>[], number]>;
-
-  /**
-   * Calls `em.find()` and `em.count()` with the same arguments (where applicable) and returns the results as tuple
-   * where first element is the array of entities and the second is the count.
-   */
-  async findAndCount<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: P, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<[Loaded<T, P>[], number]>;
-
-  /**
-   * Calls `em.find()` and `em.count()` with the same arguments (where applicable) and returns the results as tuple
-   * where first element is the array of entities and the second is the count.
-   */
-  async findAndCount<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: P | FindOptions<T, P>, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<[Loaded<T, P>[], number]> {
-    const options = Utils.isObject<FindOptions<T, P>>(populate) ? populate : { populate, orderBy, limit, offset } as FindOptions<T, P>;
+  async findAndCount<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, where: FilterQuery<T>, options: FindOptions<T, P> = {}): Promise<[Loaded<T, P>[], number]> {
     const [entities, count] = await Promise.all([
-      this.find<T, P>(entityName, where, populate as P, orderBy, limit, offset),
-      this.count(entityName, where, options as CountOptions<T>),
+      this.find<T, P>(entityName, where, options),
+      this.count(entityName, where, options),
     ]);
 
     return [entities, count];
@@ -297,19 +272,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Finds first entity matching your `where` query.
    */
-  async findOne<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, where: FilterQuery<T>, options?: FindOneOptions<T, P>): Promise<Loaded<T, P> | null>;
-
-  /**
-   * Finds first entity matching your `where` query.
-   */
-  async findOne<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: P, orderBy?: QueryOrderMap): Promise<Loaded<T, P> | null>;
-
-  /**
-   * Finds first entity matching your `where` query.
-   */
-  async findOne<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: P | FindOneOptions<T, P>, orderBy?: QueryOrderMap): Promise<Loaded<T, P> | null> {
-    const options = Utils.isObject<FindOneOptions<T, P>>(populate) ? populate : { populate, orderBy } as FindOneOptions<T, P>;
-
+  async findOne<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, where: FilterQuery<T>, options: FindOneOptions<T, P> = {}): Promise<Loaded<T, P> | null> {
     if (options.disableIdentityMap) {
       const fork = this.fork(false);
       const ret = await fork.findOne<T, P>(entityName, where, { ...options, disableIdentityMap: false });
@@ -359,25 +322,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * You can override the factory for creating this method via `options.failHandler` locally
    * or via `Configuration.findOneOrFailHandler` globally.
    */
-  async findOneOrFail<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, where: FilterQuery<T>, options?: FindOneOrFailOptions<T, P>): Promise<Loaded<T, P>>;
-
-  /**
-   * Finds first entity matching your `where` query. If nothing found, it will throw an error.
-   * You can override the factory for creating this method via `options.failHandler` locally
-   * or via `Configuration.findOneOrFailHandler` globally.
-   */
-  async findOneOrFail<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: P, orderBy?: QueryOrderMap): Promise<Loaded<T, P>>;
-
-  /**
-   * Finds first entity matching your `where` query. If nothing found, it will throw an error.
-   * You can override the factory for creating this method via `options.failHandler` locally
-   * or via `Configuration.findOneOrFailHandler` globally.
-   */
-  async findOneOrFail<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, where: FilterQuery<T>, populate?: P | FindOneOrFailOptions<T, P>, orderBy?: QueryOrderMap): Promise<Loaded<T, P>> {
-    const entity = await this.findOne(entityName, where, populate as string[], orderBy);
+  async findOneOrFail<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, where: FilterQuery<T>, options: FindOneOrFailOptions<T, P> = {}): Promise<Loaded<T, P>> {
+    const entity = await this.findOne(entityName, where, options);
 
     if (!entity) {
-      const options = Utils.isObject<FindOneOrFailOptions<T>>(populate) ? populate : {};
       options.failHandler = options.failHandler || this.config.get('findOneOrFailHandler');
       entityName = Utils.className(entityName);
       throw options.failHandler!(entityName, where);
@@ -511,6 +459,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     return this.merge<T>(entityName, data as EntityData<T>, true, true);
   }
+
+  // TODO options parameter
 
   /**
    * Merges given entity to this EntityManager so it becomes managed. You can force refreshing of existing entities

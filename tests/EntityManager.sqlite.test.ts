@@ -242,7 +242,7 @@ describe('EntityManagerSqlite', () => {
 
     const authorRepository = orm.em.getRepository<any>(Author3);
     const booksRepository = orm.em.getRepository<any>(Book3);
-    const books = await booksRepository.findAll(['author']);
+    const books = await booksRepository.findAll({ populate: ['author'] });
     expect(books[0].author.isInitialized()).toBe(true);
     expect(await authorRepository.findOne({ favouriteBook: bible.id })).not.toBe(null);
     orm.em.clear();
@@ -251,8 +251,8 @@ describe('EntityManagerSqlite', () => {
     expect(noBooks.length).toBe(0);
     orm.em.clear();
 
-    const jon = (await authorRepository.findOne({ name: 'Jon Snow' }, ['books', 'favouriteBook']))!;
-    const authors = await authorRepository.findAll(['books', 'favouriteBook']);
+    const jon = (await authorRepository.findOne({ name: 'Jon Snow' }, { populate: ['books', 'favouriteBook'] }))!;
+    const authors = await authorRepository.findAll({ populate: ['books', 'favouriteBook'] });
     expect(await authorRepository.findOne({ email: 'not existing' })).toBeNull();
 
     // count test
@@ -299,22 +299,27 @@ describe('EntityManagerSqlite', () => {
       }
     }
 
-    const booksByTitleAsc = await booksRepository.find({ author: jon.id }, [], { title: QueryOrder.ASC });
+    const booksByTitleAsc = await booksRepository.find({ author: jon.id }, { orderBy: { title: QueryOrder.ASC } });
     expect(booksByTitleAsc[0].title).toBe('My Life on The Wall, part 1');
     expect(booksByTitleAsc[1].title).toBe('My Life on The Wall, part 2');
     expect(booksByTitleAsc[2].title).toBe('My Life on The Wall, part 3');
 
-    const booksByTitleDesc = await booksRepository.find({ author: jon.id }, [], { title: QueryOrder.DESC });
+    const booksByTitleDesc = await booksRepository.find({ author: jon.id }, { orderBy: { title: QueryOrder.DESC } });
     expect(booksByTitleDesc[0].title).toBe('My Life on The Wall, part 3');
     expect(booksByTitleDesc[1].title).toBe('My Life on The Wall, part 2');
     expect(booksByTitleDesc[2].title).toBe('My Life on The Wall, part 1');
 
-    const twoBooks = await booksRepository.find({ author: jon.id }, [], { title: QueryOrder.DESC }, 2);
+    const twoBooks = await booksRepository.find({ author: jon.id }, { orderBy: { title: QueryOrder.DESC }, limit: 2 });
     expect(twoBooks.length).toBe(2);
     expect(twoBooks[0].title).toBe('My Life on The Wall, part 3');
     expect(twoBooks[1].title).toBe('My Life on The Wall, part 2');
 
-    const lastBook = await booksRepository.find({ author: jon.id }, ['author'], { title: QueryOrder.DESC }, 2, 2);
+    const lastBook = await booksRepository.find({ author: jon.id }, {
+      populate: ['author'],
+      orderBy: { title: QueryOrder.DESC },
+      limit: 2,
+      offset: 2,
+    });
     expect(lastBook.length).toBe(1);
     expect(lastBook[0].title).toBe('My Life on The Wall, part 1');
     expect(lastBook[0].author).toBeInstanceOf(Author3);
@@ -528,7 +533,7 @@ describe('EntityManagerSqlite', () => {
     orm.em.clear();
 
     const newGod = orm.em.getReference<any>(Author3, god.id);
-    const publisher = (await orm.em.findOne(Publisher3, pub.id, ['books']))!;
+    const publisher = (await orm.em.findOne(Publisher3, pub.id, { populate: ['books'] }))!;
     await newGod.init();
 
     const json = publisher.toJSON().books;
@@ -637,7 +642,7 @@ describe('EntityManagerSqlite', () => {
     expect(tags[0].books.isInitialized()).toBe(true);
     const old = tags[0];
     expect(tags[1].books.isInitialized()).toBe(false);
-    tags = await tagRepository.findAll(['books']);
+    tags = await tagRepository.findAll({ populate: ['books'] });
     expect(tags[1].books.isInitialized()).toBe(true);
     expect(tags[0].id).toBe(old.id);
     expect(tags[0]).toBe(old);
@@ -660,14 +665,14 @@ describe('EntityManagerSqlite', () => {
     book.tags.remove(tagRepository.getReference(tag1.id));
     await orm.em.persist(book).flush();
     orm.em.clear();
-    book = (await orm.em.findOne(Book3, book.id, ['tags']))!;
+    book = (await orm.em.findOne(Book3, book.id, { populate: ['tags'] }))!;
     expect(book.tags.count()).toBe(1);
 
     // add
     book.tags.add(tagRepository.getReference(tag1.id)); // we need to get reference as tag1 is detached from current EM
     await orm.em.persist(book).flush();
     orm.em.clear();
-    book = (await orm.em.findOne(Book3, book.id, ['tags']))!;
+    book = (await orm.em.findOne(Book3, book.id, { populate: ['tags'] }))!;
     expect(book.tags.count()).toBe(2);
 
     // contains
@@ -681,7 +686,7 @@ describe('EntityManagerSqlite', () => {
     book.tags.removeAll();
     await orm.em.persist(book).flush();
     orm.em.clear();
-    book = (await orm.em.findOne(Book3, book.id, ['tags']))!;
+    book = (await orm.em.findOne(Book3, book.id, { populate: ['tags'] }))!;
     expect(book.tags.count()).toBe(0);
   });
 
@@ -697,7 +702,7 @@ describe('EntityManagerSqlite', () => {
     const repo = orm.em.getRepository<any>(Publisher3);
 
     orm.em.clear();
-    const publishers = await repo.findAll(['tests']);
+    const publishers = await repo.findAll({ populate: ['tests'] });
     expect(publishers).toBeInstanceOf(Array);
     expect(publishers.length).toBe(2);
     expect(publishers[0]).toBeInstanceOf(Publisher3);
@@ -726,7 +731,7 @@ describe('EntityManagerSqlite', () => {
     const repo = orm.em.getRepository<any>(BookTag3);
 
     orm.em.clear();
-    const tags = await repo.findAll(['books']);
+    const tags = await repo.findAll({ populate: ['books'] });
     expect(tags).toBeInstanceOf(Array);
     expect(tags.length).toBe(5);
     expect(tags[0]).toBeInstanceOf(BookTag3);
@@ -775,8 +780,8 @@ describe('EntityManagerSqlite', () => {
     await repo.persistAndFlush(author);
     orm.em.clear();
 
-    await expect(repo.findAll(['tests'])).rejects.toThrowError(`Entity 'Author3' does not have property 'tests'`);
-    await expect(repo.findOne(author.id, ['tests'])).rejects.toThrowError(`Entity 'Author3' does not have property 'tests'`);
+    await expect(repo.findAll({ populate: ['tests'] })).rejects.toThrowError(`Entity 'Author3' does not have property 'tests'`);
+    await expect(repo.findOne(author.id, { populate: ['tests'] })).rejects.toThrowError(`Entity 'Author3' does not have property 'tests'`);
   });
 
   test('many to many collection does have fixed order', async () => {
@@ -790,7 +795,7 @@ describe('EntityManagerSqlite', () => {
     await repo.persistAndFlush(publisher);
     orm.em.clear();
 
-    const ent = (await repo.findOne(publisher.id, ['tests']))!;
+    const ent = (await repo.findOne(publisher.id, { populate: ['tests'] }))!;
     await expect(ent.tests.count()).toBe(3);
     await expect(ent.tests.getIdentifiers()).toEqual([t2.id, t1.id, t3.id]);
 

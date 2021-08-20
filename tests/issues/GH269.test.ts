@@ -60,7 +60,7 @@ describe('GH issue 269', () => {
     await em.persistAndFlush([a, b]);
     em.clear();
 
-    const bb = await em.findOneOrFail(B, b.id, ['a']);
+    const bb = await em.findOneOrFail(B, b.id, { populate: ['a'] });
     expect(bb.name).toBe('my name is b');
     expect(bb.a).toBeInstanceOf(Reference);
     expect(bb.a!.isInitialized()).toBe(true);
@@ -94,7 +94,7 @@ describe('GH issue 269', () => {
 
     const bb0 = await em.findOneOrFail(B, b.id); // load first so it is already in IM
     expect(bb0.a).toBeUndefined();
-    const bb = await em.findOneOrFail(B, b.id, ['a']);
+    const bb = await em.findOneOrFail(B, b.id, { populate: ['a'] });
     expect(bb).toBe(bb0);
     expect(bb.name).toBe('my name is b');
     expect(bb.a).toBeInstanceOf(Reference);
@@ -117,7 +117,7 @@ describe('GH issue 269', () => {
     await em.persistAndFlush([a, b]);
     em.clear();
 
-    const aa = await em.findOneOrFail(A, a.id, ['b']);
+    const aa = await em.findOneOrFail(A, a.id, { populate: ['b'] });
     expect(aa.name).toBe('my name is a');
     expect(aa.b).toBeInstanceOf(Reference);
     expect(aa.b!.isInitialized()).toBe(true);

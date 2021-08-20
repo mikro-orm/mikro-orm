@@ -87,7 +87,7 @@ describe('GH issue 589', () => {
     await orm.em.persistAndFlush(chat1);
     orm.em.clear();
 
-    await orm.em.find(Chat, {}, ['User']);
+    await orm.em.find(Chat, {}, { populate: ['User'] });
   });
 
 });

@@ -71,7 +71,7 @@ describe('GH issue 1523', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const fetchedParent = await orm.em.findOneOrFail(Parent, { id: { $ne: null } }, ['children.params']);
+    const fetchedParent = await orm.em.findOneOrFail(Parent, { id: { $ne: null } }, { populate: ['children.params'] });
     const fetchedParams = await orm.em.createQueryBuilder(Param, 'param').where({ child: null }).getResult();
     const [child1, child2] = fetchedParent.children.getItems();
     const [param1, param2] = fetchedParams;

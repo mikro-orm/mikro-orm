@@ -82,7 +82,7 @@ describe('GH issue 1111', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const a2 = await orm.em.findOneOrFail(A, { name: 'test' }, ['bs']);
+    const a2 = await orm.em.findOneOrFail(A, { name: 'test' }, { populate: ['bs'] });
     expect(a2.bs.count()).toBe(1);
   });
 
@@ -105,7 +105,7 @@ describe('GH issue 1111', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const a2 = await orm.em.findOneOrFail(A, { name: 'test' }, ['bs']);
+    const a2 = await orm.em.findOneOrFail(A, { name: 'test' }, { populate: ['bs'] });
     expect(a2.bs.count()).toBe(2);
   });
 

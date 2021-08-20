@@ -72,7 +72,7 @@ describe('GH issue 560', () => {
     await expect(orm.em.flush()).resolves.not.toThrow();
     orm.em.clear();
 
-    const fetchedParent = await orm.em.findOneOrFail(A, { type: 'parent' }, true);
+    const fetchedParent = await orm.em.findOneOrFail(A, { type: 'parent' }, { populate: true });
     expect(fetchedParent.childrenA).toBeTruthy();
   });
 });

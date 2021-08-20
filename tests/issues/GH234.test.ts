@@ -62,14 +62,14 @@ describe('GH issue 234', () => {
     const mock = jest.fn();
     const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
-    const res1 = await orm.em.find<B>(B, { aCollection: [1, 2, 3] }, ['aCollection']);
+    const res1 = await orm.em.find<B>(B, { aCollection: [1, 2, 3] }, { populate: ['aCollection'] });
     expect(mock.mock.calls[0][0]).toMatch('select `e0`.* from `b` as `e0` left join `b_a_collection` as `e1` on `e0`.`id` = `e1`.`b_id` where `e1`.`a_id` in (?, ?, ?)');
     expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e1`.`a_id` as `fk__a_id`, `e1`.`b_id` as `fk__b_id` from `a` as `e0` left join `b_a_collection` as `e1` on `e0`.`id` = `e1`.`a_id` where `e0`.`id` in (?, ?, ?) and `e1`.`b_id` in (?) order by `e1`.`id` asc');
     expect(res1.map(b => b.id)).toEqual([b.id]);
 
     orm.em.clear();
     mock.mock.calls.length = 0;
-    const res2 = await orm.em.find<A>(A, { bCollection: [1, 2, 3] }, ['bCollection']);
+    const res2 = await orm.em.find<A>(A, { bCollection: [1, 2, 3] }, { populate: ['bCollection'] });
     expect(mock.mock.calls[0][0]).toMatch('select `e0`.* from `a` as `e0` left join `b_a_collection` as `e1` on `e0`.`id` = `e1`.`a_id` where `e1`.`b_id` in (?, ?, ?)');
     expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e1`.`b_id` as `fk__b_id`, `e1`.`a_id` as `fk__a_id` from `b` as `e0` left join `b_a_collection` as `e1` on `e0`.`id` = `e1`.`b_id` where `e0`.`id` in (?, ?, ?) and `e1`.`a_id` in (?, ?, ?) order by `e1`.`id` asc');
     expect(res2.map(a => a.id)).toEqual([a1.id, a2.id, a3.id]);

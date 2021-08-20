@@ -114,7 +114,7 @@ describe('filters [postgres]', () => {
     expect(b1).toHaveLength(0);
     orm.em.clear();
 
-    const e1 = await orm.em.findOneOrFail(Employee, employee.id, ['benefits']);
+    const e1 = await orm.em.findOneOrFail(Employee, employee.id, { populate: ['benefits'] });
     expect(e1.benefits).toHaveLength(0);
 
     expect(mock.mock.calls[0][0]).toMatch(`begin`);

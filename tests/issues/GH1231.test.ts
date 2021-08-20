@@ -94,7 +94,7 @@ describe('one to many relations read with query builder in postgresql (GH issue 
 
   test('load relations by populate', async () => {
     const repository = orm.em.getRepository(Teacher);
-    const teacher = await repository.findOneOrFail(1, ['students']);
+    const teacher = await repository.findOneOrFail(1, { populate: ['students'] });
     expect(teacher).toHaveProperty('students');
     expect(teacher.students).toHaveLength(2);
   });

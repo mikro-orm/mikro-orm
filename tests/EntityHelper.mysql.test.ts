@@ -23,7 +23,7 @@ describe('EntityHelperMySql', () => {
     orm.em.clear();
 
     const repo = orm.em.getRepository(FooBar2);
-    const a = await repo.findOneOrFail(bar.id, ['baz.bar']);
+    const a = await repo.findOneOrFail(bar.id, { populate: ['baz.bar'] });
     expect(wrap(a.baz).isInitialized()).toBe(true);
     expect(wrap(a.baz!.bar).isInitialized()).toBe(true);
     expect(wrap(a).toJSON()).toEqual({

@@ -178,7 +178,7 @@ describe('EntityAssignerMySql', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const book2 = await orm.em.findOneOrFail(Book2, book.uuid, ['tags']);
+    const book2 = await orm.em.findOneOrFail(Book2, book.uuid, { populate: ['tags'] });
     expect(book2.tags.getIdentifiers()).toMatchObject([tag1.id, other.id]);
   });
 

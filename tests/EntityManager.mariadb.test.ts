@@ -137,17 +137,17 @@ describe('EntityManagerMariaDb', () => {
 
     const authorRepository = orm.em.getRepository(Author2);
     const booksRepository = orm.em.getRepository(Book2);
-    const books = await booksRepository.findAll(['author']);
+    const books = await booksRepository.findAll({ populate: ['author'] });
     expect(wrap(books[0].author).isInitialized()).toBe(true);
     expect(await authorRepository.findOne({ favouriteBook: bible.uuid })).not.toBe(null);
     orm.em.clear();
 
-    const noBooks = await booksRepository.find({ title: 'not existing' }, ['author']);
+    const noBooks = await booksRepository.find({ title: 'not existing' }, { populate: ['author'] });
     expect(noBooks.length).toBe(0);
     orm.em.clear();
 
-    const jon = (await authorRepository.findOne({ name: 'Jon Snow' }, ['books', 'favouriteBook']))!;
-    const authors = await authorRepository.findAll(['books', 'favouriteBook']);
+    const jon = (await authorRepository.findOne({ name: 'Jon Snow' }, { populate: ['books', 'favouriteBook'] }))!;
+    const authors = await authorRepository.findAll({ populate: ['books', 'favouriteBook'] });
     expect(await authorRepository.findOne({ email: 'not existing' })).toBeNull();
 
     // count test
@@ -195,22 +195,27 @@ describe('EntityManagerMariaDb', () => {
       }
     }
 
-    const booksByTitleAsc = await booksRepository.find({ author: jon.id }, [], { title: QueryOrder.ASC });
+    const booksByTitleAsc = await booksRepository.find({ author: jon.id }, { orderBy: { title: QueryOrder.ASC } });
     expect(booksByTitleAsc[0].title).toBe('My Life on The Wall, part 1');
     expect(booksByTitleAsc[1].title).toBe('My Life on The Wall, part 2');
     expect(booksByTitleAsc[2].title).toBe('My Life on The Wall, part 3');
 
-    const booksByTitleDesc = await booksRepository.find({ author: jon.id }, [], { title: QueryOrder.DESC });
+    const booksByTitleDesc = await booksRepository.find({ author: jon.id }, { orderBy: { title: QueryOrder.DESC } });
     expect(booksByTitleDesc[0].title).toBe('My Life on The Wall, part 3');
     expect(booksByTitleDesc[1].title).toBe('My Life on The Wall, part 2');
     expect(booksByTitleDesc[2].title).toBe('My Life on The Wall, part 1');
 
-    const twoBooks = await booksRepository.find({ author: jon.id }, [], { title: QueryOrder.DESC }, 2);
+    const twoBooks = await booksRepository.find({ author: jon.id }, { orderBy: { title: QueryOrder.DESC }, limit: 2 });
     expect(twoBooks.length).toBe(2);
     expect(twoBooks[0].title).toBe('My Life on The Wall, part 3');
     expect(twoBooks[1].title).toBe('My Life on The Wall, part 2');
 
-    const lastBook = await booksRepository.find({ author: jon.id }, ['author'], { title: QueryOrder.DESC }, 2, 2);
+    const lastBook = await booksRepository.find({ author: jon.id }, {
+      populate: ['author'],
+      orderBy: { title: QueryOrder.DESC },
+      limit: 2,
+      offset: 2,
+    });
     expect(lastBook.length).toBe(1);
     expect(lastBook[0].title).toBe('My Life on The Wall, part 1');
     expect(lastBook[0].author).toBeInstanceOf(Author2);
