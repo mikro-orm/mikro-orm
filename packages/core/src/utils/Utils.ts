@@ -558,6 +558,7 @@ export class Utils {
   static detectTsNode(): boolean {
     return process.argv[0].endsWith('ts-node') // running via ts-node directly
       || !!process[Symbol.for('ts-node.register.instance')] // check if internal ts-node symbol exists
+      || !!process.env.TS_JEST // check if ts-jest is used (works only with v27.0.4+)
       || process.argv.slice(1).some(arg => arg.includes('ts-node')) // registering ts-node runner
       || (require.extensions && !!require.extensions['.ts']) // check if the extension is registered
       || !!new Error().stack!.split('\n').find(line => line.match(/\w\.ts:\d/)); // as a last resort, try to find a TS file in the stack trace
