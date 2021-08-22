@@ -77,7 +77,7 @@ export class DatabaseSchema {
       const table = schema.addTable(meta.collection, meta.schema ?? config.get('schema'));
       table.comment = meta.comment;
       meta.props
-        .filter(prop => this.shouldHaveColumn(meta, prop))
+        .filter(prop => this.shouldHaveColumn(meta, prop)) // TODO use platform?
         .forEach(prop => table.addColumnFromProperty(prop, meta));
       meta.indexes.forEach(index => table.addIndex(meta, index, 'index'));
       meta.uniques.forEach(index => table.addIndex(meta, index, 'unique'));

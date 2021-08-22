@@ -240,25 +240,6 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   }
 
   /**
-   * @internal
-   */
-  shouldHaveColumn<T extends AnyEntity<T>>(prop: EntityProperty<T>, populate: PopulateOptions<T>[], includeFormulas = true): boolean {
-    if (prop.formula) {
-      return includeFormulas && (!prop.lazy || populate.some(p => p.field === prop.name));
-    }
-
-    if (prop.persist === false) {
-      return false;
-    }
-
-    if (prop.lazy && !populate.some(p => p.field === prop.name)) {
-      return false;
-    }
-
-    return [ReferenceType.SCALAR, ReferenceType.MANY_TO_ONE].includes(prop.reference) || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
-  }
-
-  /**
    * @inheritDoc
    */
   convertException(exception: Error): DriverException {

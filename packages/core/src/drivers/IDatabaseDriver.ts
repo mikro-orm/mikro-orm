@@ -1,4 +1,7 @@
-import { EntityData, EntityMetadata, EntityProperty, AnyEntity, FilterQuery, Primary, Dictionary, QBFilterQuery, IPrimaryKey, PopulateOptions, EntityDictionary, AutoPath } from '../typings';
+import {
+  EntityData, EntityMetadata, EntityProperty, AnyEntity, FilterQuery, Primary, Dictionary, QBFilterQuery,
+  IPrimaryKey, PopulateOptions, EntityDictionary, ExpandProperty, AutoPath,
+} from '../typings';
 import { Connection, QueryResult, Transaction } from '../connections';
 import { LockMode, QueryOrderMap, QueryFlag, LoadStrategy } from '../enums';
 import { Platform } from '../platforms';
@@ -79,7 +82,8 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
 }
 
-export type FieldsMap = { [K: string]: (string | FieldsMap)[] };
+type FieldsMap<T, P extends string = never> = { [K in keyof T]?: EntityField<ExpandProperty<T[K]>>[] };
+export type EntityField<T, P extends string = never> = keyof T | AutoPath<T, P> | FieldsMap<T, P>;
 
 export interface FindOptions<T, P extends string = never> {
   populate?: readonly AutoPath<T, P>[] | boolean;
@@ -90,7 +94,7 @@ export interface FindOptions<T, P extends string = never> {
   refresh?: boolean;
   convertCustomTypes?: boolean;
   disableIdentityMap?: boolean;
-  fields?: readonly (string | FieldsMap)[];
+  fields?: readonly EntityField<T, P>[];
   schema?: string;
   flags?: QueryFlag[];
   groupBy?: string | string[];

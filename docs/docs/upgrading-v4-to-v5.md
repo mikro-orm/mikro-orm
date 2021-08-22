@@ -36,6 +36,10 @@ List of such methods:
 
 ## Type-safe populate parameter with dot notation
 
-Populate parameter is now strictly typed and supports only array of strings or a boolean.
+`FindOptions.populate` parameter is now strictly typed and supports only array of strings or a boolean.
 Object way is no longer supported. To set loading strategy, use `FindOptions.strategy`.
 The return type of all such methods now returns properly typed `Loaded` response. 
+
+## Type-safe fields parameter
+
+`FindOptions.fields` parameter is now strictly typed also for the dot notation.

@@ -1,6 +1,7 @@
+import clone from 'clone';
 import { EntityRepository } from '../entity';
 import { NamingStrategy, UnderscoreNamingStrategy } from '../naming-strategy';
-import { Constructor, EntityProperty, IEntityGenerator, IMigrator, IPrimaryKey, ISchemaGenerator, Primary } from '../typings';
+import { AnyEntity, Constructor, EntityProperty, IEntityGenerator, IMigrator, IPrimaryKey, ISchemaGenerator, PopulateOptions, Primary } from '../typings';
 import { ExceptionConverter } from './ExceptionConverter';
 import { EntityManager } from '../EntityManager';
 import { Configuration } from '../utils/Configuration';
@@ -9,7 +10,7 @@ import {
   TinyIntType, Type, UuidType, StringType, IntegerType, FloatType, DateTimeType, TextType, EnumType, UnknownType,
 } from '../types';
 import { Utils } from '../utils/Utils';
-import clone from 'clone';
+import { ReferenceType } from '../enums';
 
 export const JsonProperty = Symbol('JsonProperty');
 
@@ -350,6 +351,22 @@ export abstract class Platform {
    */
   getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
     return this.namingStrategy.indexName(tableName, columns, type);
+  }
+
+  shouldHaveColumn<T extends AnyEntity<T>>(prop: EntityProperty<T>, populate: PopulateOptions<T>[] | boolean, includeFormulas = true): boolean {
+    if (prop.formula) {
+      return includeFormulas && (!prop.lazy || populate === true || (populate !== false && populate.some(p => p.field === prop.name)));
+    }
+
+    if (prop.persist === false) {
+      return false;
+    }
+
+    if (prop.lazy && (populate === false || (populate !== true && !populate.some(p => p.field === prop.name)))) {
+      return false;
+    }
+
+    return [ReferenceType.SCALAR, ReferenceType.MANY_TO_ONE].includes(prop.reference) || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
   }
 
 }

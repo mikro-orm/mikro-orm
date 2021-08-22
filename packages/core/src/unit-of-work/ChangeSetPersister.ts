@@ -200,7 +200,7 @@ export class ChangeSetPersister {
       [meta.versionProperty]: this.platform.quoteVersionValue(cs.entity[meta.versionProperty] as unknown as Date, meta.properties[meta.versionProperty]),
     }));
 
-    const res = await this.driver.find(meta.className, { $or }, { fields: meta.primaryKeys }, ctx);
+    const res = await this.driver.find<T>(meta.className, { $or } as FilterQuery<T>, { fields: meta.primaryKeys }, ctx);
 
     if (res.length !== changeSets.length) {
       const compare = (a: Dictionary, b: Dictionary, keys: string[]) => keys.every(k => a[k] === b[k]);

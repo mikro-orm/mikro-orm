@@ -1,7 +1,7 @@
 import { ClientSession, ObjectId } from 'mongodb';
 import {
   DatabaseDriver, EntityData, AnyEntity, FilterQuery, EntityMetadata, EntityProperty, Configuration, Utils, ReferenceType, FindOneOptions, FindOptions,
-  QueryResult, Transaction, IDatabaseDriver, EntityManager, EntityManagerType, Dictionary, PopulateOptions, CountOptions, FieldsMap, EntityDictionary,
+  QueryResult, Transaction, IDatabaseDriver, EntityManager, EntityManagerType, Dictionary, PopulateOptions, CountOptions, EntityDictionary, EntityField,
 } from '@mikro-orm/core';
 import { MongoConnection } from './MongoConnection';
 import { MongoPlatform } from './MongoPlatform';
@@ -269,8 +269,8 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return { _id: id } as FilterQuery<T>;
   }
 
-  protected buildFields<T extends AnyEntity<T>>(entityName: string, populate: PopulateOptions<T>[], fields?: readonly (string | FieldsMap)[]): string[] | undefined {
-    const meta = this.metadata.find(entityName)!;
+  protected buildFields<T extends AnyEntity<T>, P extends string = never>(entityName: string, populate: PopulateOptions<T>[], fields?: readonly EntityField<T, P>[]): string[] | undefined {
+    const meta = this.metadata.find<T>(entityName)!;
     const lazyProps = meta.props.filter(prop => prop.lazy && !populate.some(p => p.field === prop.name || p.all));
     const ret: string[] = [];
 
@@ -280,32 +280,24 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
           continue;
         }
 
-        let prop = meta.properties[field];
+        let prop = meta.properties[field as keyof T & string];
 
         /* istanbul ignore else */
         if (prop) {
           prop = prop.serializedPrimaryKey ? meta.getPrimaryProps()[0] : prop;
           ret.push(prop.fieldNames[0]);
         } else {
-          ret.push(field);
+          ret.push(field as keyof T & string);
         }
       }
 
       ret.unshift(...meta.primaryKeys.filter(pk => !fields.includes(pk)));
     } else if (lazyProps.filter(p => !p.formula).length > 0) {
-      const props = meta.props.filter(prop => this.shouldHaveColumn(prop, populate));
+      const props = meta.props.filter(prop => this.platform.shouldHaveColumn(prop, populate));
       ret.push(...Utils.flatten(props.filter(p => !lazyProps.includes(p)).map(p => p.fieldNames)));
     }
 
     return ret.length > 0 ? ret : undefined;
-  }
-
-  shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[]): boolean {
-    if (super.shouldHaveColumn(prop, populate)) {
-      return true;
-    }
-
-    return prop.reference === ReferenceType.MANY_TO_MANY && prop.owner;
   }
 
 }

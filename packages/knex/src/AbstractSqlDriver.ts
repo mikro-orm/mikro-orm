@@ -2,7 +2,7 @@ import { Knex } from 'knex';
 import {
   AnyEntity, Collection, Configuration, Constructor, DatabaseDriver, Dictionary, EntityData, EntityManager, EntityManagerType,
   EntityMetadata, EntityProperty, QueryFlag, FilterQuery, FindOneOptions, FindOptions, IDatabaseDriver, LockMode, Primary,
-  QueryOrderMap, QueryResult, ReferenceType, Transaction, Utils, PopulateOptions, LoadStrategy, CountOptions, FieldsMap, EntityDictionary,
+  QueryOrderMap, QueryResult, ReferenceType, Transaction, Utils, PopulateOptions, LoadStrategy, CountOptions, EntityDictionary, EntityField,
 } from '@mikro-orm/core';
 import { AbstractSqlConnection } from './AbstractSqlConnection';
 import { AbstractSqlPlatform } from './AbstractSqlPlatform';
@@ -128,7 +128,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       }
 
       meta2.props
-        .filter(prop => this.shouldHaveColumn(prop, p.children || []))
+        .filter(prop => this.platform.shouldHaveColumn(prop, p.children || []))
         .forEach(prop => {
           if (prop.fieldNames.length > 1) { // composite keys
             relationPojo[prop.name] = prop.fieldNames.map(name => root![`${relationAlias}__${name}`]);
@@ -470,7 +470,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   /**
    * 1:1 owner side needs to be marked for population so QB auto-joins the owner id
    */
-  protected autoJoinOneToOneOwner<T>(meta: EntityMetadata, populate: PopulateOptions<T>[], fields: readonly (string | FieldsMap)[] = []): PopulateOptions<T>[] {
+  protected autoJoinOneToOneOwner<T>(meta: EntityMetadata, populate: PopulateOptions<T>[], fields: readonly EntityField<T>[] = []): PopulateOptions<T>[] {
     if (!this.config.get('autoJoinOneToOneOwner') || fields.length > 0) {
       return populate;
     }
@@ -516,7 +516,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const joinedProps = this.joinedProps(meta, populate);
 
     const shouldHaveColumn = <U>(prop: EntityProperty<U>, populate: PopulateOptions<U>[], fields?: Field<U>[]) => {
-      if (!this.shouldHaveColumn(prop, populate)) {
+      if (!this.platform.shouldHaveColumn(prop, populate)) {
         return false;
       }
 
@@ -704,7 +704,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
       ret.unshift(...meta.primaryKeys.filter(pk => !fields.includes(pk)));
     } else if (lazyProps.filter(p => !p.formula).length > 0) {
-      const props = meta.props.filter(prop => this.shouldHaveColumn(prop, populate, false));
+      const props = meta.props.filter(prop => this.platform.shouldHaveColumn(prop, populate, false));
       ret.push(...Utils.flatten(props.filter(p => !lazyProps.includes(p)).map(p => p.fieldNames)));
     } else if (hasLazyFormulas || requiresSQLConversion) {
       ret.push('*');

@@ -6,11 +6,11 @@ import { ValidationError } from '../errors';
 import { Collection } from './Collection';
 import { LoadStrategy, QueryOrder, QueryOrderMap, ReferenceType } from '../enums';
 import { Reference } from './Reference';
-import { FieldsMap, FindOptions } from '../drivers/IDatabaseDriver';
+import { EntityField, FindOptions } from '../drivers/IDatabaseDriver';
 
-export type EntityLoaderOptions<T> = {
+export type EntityLoaderOptions<T, P extends string = never> = {
   where?: FilterQuery<T>;
-  fields?: readonly (string | FieldsMap)[];
+  fields?: readonly EntityField<T, P>[];
   orderBy?: QueryOrderMap;
   refresh?: boolean;
   validate?: boolean;
@@ -30,7 +30,7 @@ export class EntityLoader {
   /**
    * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
    */
-  async populate<T extends AnyEntity<T>>(entityName: string, entities: T[], populate: PopulateOptions<T>[] | boolean, options: EntityLoaderOptions<T>): Promise<void> {
+  async populate<T extends AnyEntity<T>, P extends string = never>(entityName: string, entities: T[], populate: PopulateOptions<T>[] | boolean, options: EntityLoaderOptions<T, P>): Promise<void> {
     if (entities.length === 0 || populate === false) {
       return;
     }
@@ -217,7 +217,7 @@ export class EntityLoader {
 
     const ids = Utils.unique(children.map(e => Utils.getPrimaryKeyValues(e, e.__meta!.primaryKeys, true)));
     const where = { ...QueryHelper.processWhere({ [fk]: { $in: ids } }, meta.name!, this.metadata, this.driver.getPlatform(), !options.convertCustomTypes), ...(options.where as Dictionary) } as FilterQuery<T>;
-    const fields = this.buildFields(prop, options);
+    const fields = this.buildFields<T>(prop, options);
 
     return this.em.find<T>(prop.type, where, {
       orderBy: options.orderBy || prop.orderBy || { [fk]: QueryOrder.ASC },
@@ -251,7 +251,7 @@ export class EntityLoader {
     }
 
     const filtered = Utils.unique(children);
-    const fields = this.buildFields(prop, options);
+    const fields = this.buildFields<T>(prop, options);
     await this.populate<T>(prop.type, filtered, populate.children, {
       where: await this.extractChildCondition(options, prop, false) as FilterQuery<T>,
       orderBy: options.orderBy[prop.name] as QueryOrderMap,
@@ -271,7 +271,7 @@ export class EntityLoader {
     const options2 = { ...options } as FindOptions<T>;
     delete options2.limit;
     delete options2.offset;
-    options2.fields = (fields.length > 0 ? fields : undefined) as string[];
+    options2.fields = (fields.length > 0 ? fields : undefined) as EntityField<T>[];
     /* istanbul ignore next */
     options2.populate = (populate?.children ?? []) as never;
 
@@ -337,16 +337,16 @@ export class EntityLoader {
     return subCond;
   }
 
-  private buildFields<T>(prop: EntityProperty<T>, options: Required<EntityLoaderOptions<T>>) {
+  private buildFields<T>(prop: EntityProperty<T>, options: Required<EntityLoaderOptions<T>>): EntityField<T>[] {
     return (options.fields || []).reduce((ret, f) => {
       if (Utils.isPlainObject(f)) {
         Object.keys(f)
           .filter(ff => ff === prop.name)
-          .forEach(ff => ret.push(...f[ff] as string[]));
+          .forEach(ff => ret.push(...f[ff] as EntityField<T>[]));
       } else if (f.toString().includes('.')) {
         const parts = f.toString().split('.');
         const propName = parts.shift();
-        const childPropName = parts.join('.');
+        const childPropName = parts.join('.') as EntityField<T>;
 
         /* istanbul ignore else */
         if (propName === prop.name) {
@@ -355,7 +355,7 @@ export class EntityLoader {
       }
 
       return ret;
-    }, [] as string[]);
+    }, [] as EntityField<T>[]);
   }
 
   private getChildReferences<T extends AnyEntity<T>>(entities: T[], prop: EntityProperty<T>, refresh: boolean): AnyEntity[] {

@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { IPrimaryKey, Primary, Platform, MongoNamingStrategy, NamingStrategy, Constructor, EntityRepository, Utils } from '@mikro-orm/core';
+import { IPrimaryKey, Primary, Platform, MongoNamingStrategy, NamingStrategy, Constructor, EntityRepository, Utils, EntityProperty, PopulateOptions, ReferenceType } from '@mikro-orm/core';
 import { MongoExceptionConverter } from './MongoExceptionConverter';
 import { MongoEntityRepository } from './MongoEntityRepository';
 
@@ -52,6 +52,14 @@ export class MongoPlatform extends Platform {
     Utils.dropUndefinedProperties(ret);
 
     return ret;
+  }
+
+  shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[]): boolean {
+    if (super.shouldHaveColumn(prop, populate)) {
+      return true;
+    }
+
+    return prop.reference === ReferenceType.MANY_TO_MANY && prop.owner;
   }
 
 }

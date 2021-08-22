@@ -106,7 +106,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const cached = await this.tryCache<T, Loaded<T, P>[]>(entityName, options.cache, [entityName, 'em.find', options, where], options.refresh, true);
 
     if (cached?.data) {
-      await this.entityLoader.populate<T>(entityName, cached.data as T[], options.populate as unknown as PopulateOptions<T>[], { ...options, where, convertCustomTypes: false, lookup: false });
+      await this.entityLoader.populate<T, P>(entityName, cached.data as T[], options.populate as unknown as PopulateOptions<T>[], { ...options, where, convertCustomTypes: false, lookup: false });
       return cached.data;
     }
 
@@ -126,7 +126,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const unique = Utils.unique(ret);
-    await this.entityLoader.populate<T>(entityName, unique, options.populate as unknown as PopulateOptions<T>[], { ...options, where, convertCustomTypes: false, lookup: false });
+    await this.entityLoader.populate<T, P>(entityName, unique, options.populate as unknown as PopulateOptions<T>[], { ...options, where, convertCustomTypes: false, lookup: false });
     await this.storeCache(options.cache, cached!, () => unique.map(e => e.__helper!.toPOJO()));
 
     return unique as Loaded<T, P>[];
@@ -298,7 +298,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const cached = await this.tryCache<T, Loaded<T, P>>(entityName, options.cache, [entityName, 'em.findOne', options, where], options.refresh, true);
 
     if (cached?.data) {
-      await this.entityLoader.populate<T>(entityName, [cached.data as T], options.populate as unknown as PopulateOptions<T>[], { ...options, where, convertCustomTypes: false, lookup: false });
+      await this.entityLoader.populate<T, P>(entityName, [cached.data as T], options.populate as unknown as PopulateOptions<T>[], { ...options, where, convertCustomTypes: false, lookup: false });
       return cached.data;
     }
 
