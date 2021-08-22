@@ -469,7 +469,7 @@ describe('EntityManagerMySql', () => {
     const authors = await authorRepository.findAll();
     await orm.em.populate(authors, ['books', 'favouriteBook'], { where: { books: '123' } });
     expect(await authorRepository.findOne({ email: 'not existing' })).toBeNull();
-    await expect(orm.em.populate([], ['books', 'favouriteBook'])).resolves.toEqual([]);
+    await expect(orm.em.populate([] as Author2[], ['books', 'favouriteBook'])).resolves.toEqual([]);
 
     // count test
     const count = await authorRepository.count();
@@ -1443,8 +1443,8 @@ describe('EntityManagerMySql', () => {
     await repo.persistAndFlush(author);
     orm.em.clear();
 
-    await expect(repo.findAll({ populate: ['tests'] })).rejects.toThrowError(`Entity 'Author2' does not have property 'tests'`);
-    await expect(repo.findOne(author.id, { populate: ['tests'] })).rejects.toThrowError(`Entity 'Author2' does not have property 'tests'`);
+    await expect(repo.findAll({ populate: ['tests'] as never })).rejects.toThrowError(`Entity 'Author2' does not have property 'tests'`);
+    await expect(repo.findOne(author.id, { populate: ['tests'] as never })).rejects.toThrowError(`Entity 'Author2' does not have property 'tests'`);
   });
 
   test('many to many collection does have fixed order', async () => {
@@ -2463,7 +2463,7 @@ describe('EntityManagerMySql', () => {
     const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
 
-    const r1 = await orm.em.find(Author2, {}, { populate: { books: true } });
+    const r1 = await orm.em.find(Author2, {}, { populate: ['books'] });
     expect(r1[0].books[0].perex).not.toBe('123');
     expect(mock.mock.calls.length).toBe(2);
     expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e1`.`author_id` as `address_author_id` from `author2` as `e0` left join `address2` as `e1` on `e0`.`id` = `e1`.`author_id`');
@@ -2475,7 +2475,7 @@ describe('EntityManagerMySql', () => {
 
     orm.em.clear();
     mock.mock.calls.length = 0;
-    const r2 = await orm.em.find(Author2, {}, { populate: { books: { perex: true } } });
+    const r2 = await orm.em.find(Author2, {}, { populate: ['books.perex'] });
     expect(r2[0].books[0].perex).toBe('123');
     expect(mock.mock.calls.length).toBe(2);
     expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e1`.`author_id` as `address_author_id` from `author2` as `e0` left join `address2` as `e1` on `e0`.`id` = `e1`.`author_id`');
@@ -2487,7 +2487,7 @@ describe('EntityManagerMySql', () => {
 
     orm.em.clear();
     mock.mock.calls.length = 0;
-    const r3 = await orm.em.findOne(Author2, book.author, { populate: { books: true } });
+    const r3 = await orm.em.findOne(Author2, book.author, { populate: ['books'] });
     expect(r3!.books[0].perex).not.toBe('123');
     expect(mock.mock.calls.length).toBe(2);
     expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e1`.`author_id` as `address_author_id` from `author2` as `e0` left join `address2` as `e1` on `e0`.`id` = `e1`.`author_id`');
@@ -2499,7 +2499,7 @@ describe('EntityManagerMySql', () => {
 
     orm.em.clear();
     mock.mock.calls.length = 0;
-    const r4 = await orm.em.findOne(Author2, book.author, { populate: { books: { perex: true } } });
+    const r4 = await orm.em.findOne(Author2, book.author, { populate: ['books.perex'] });
     expect(r4!.books[0].perex).toBe('123');
     expect(mock.mock.calls.length).toBe(2);
     expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e1`.`author_id` as `address_author_id` from `author2` as `e0` left join `address2` as `e1` on `e0`.`id` = `e1`.`author_id`');

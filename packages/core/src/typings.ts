@@ -79,18 +79,18 @@ export type Query<T> = T extends Scalar
 export type FilterQuery<T> = NonNullable<Query<T>> | { [PrimaryKeyType]?: any };
 export type QBFilterQuery<T = any> = FilterQuery<T> & Dictionary | FilterQuery<T>;
 
-export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T | unknown = PrimaryProperty<T>, P extends Populate<T> | unknown = unknown> {
+export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T | unknown = PrimaryProperty<T>, P extends string = string> {
   isInitialized(): boolean;
   populated(populated?: boolean): void;
   init<P extends Populate<T> = Populate<T>>(populated?: boolean, populate?: P, lockMode?: LockMode): Promise<T>;
-  toReference<PK2 extends PK | unknown = PrimaryProperty<T>, P2 extends P | unknown = unknown>(): IdentifiedReference<T, PK2> & LoadedReference<T, P2>;
+  toReference<PK2 extends PK | unknown = PrimaryProperty<T>, P2 extends string = string>(): IdentifiedReference<T, PK2> & LoadedReference<T>;
   toObject(ignoreFields?: string[]): EntityDTO<T>;
   toJSON(...args: any[]): EntityDTO<T>;
   toPOJO(): EntityDTO<T>;
   assign(data: EntityData<T> | Partial<EntityDTO<T>>, options?: AssignOptions | boolean): T;
 }
 
-export interface IWrappedEntityInternal<T, PK extends keyof T | unknown = PrimaryProperty<T>, P = keyof T> extends IWrappedEntity<T, PK, P> {
+export interface IWrappedEntityInternal<T, PK extends keyof T | unknown = PrimaryProperty<T>, P extends string = string> extends IWrappedEntity<T, PK, P> {
   hasPrimaryKey(): boolean;
   getPrimaryKey(convertCustomTypes?: boolean): Primary<T> | null;
   getPrimaryKeys(convertCustomTypes?: boolean): Primary<T>[] | null;
@@ -412,16 +412,7 @@ export type FilterDef<T extends AnyEntity<T>> = {
   args?: boolean;
 };
 
-export type ExpandProperty<T> = T extends Reference<infer U>
-  ? NonNullable<U>
-  : T extends Collection<infer U>
-    ? NonNullable<U>
-    : T extends (infer U)[]
-      ? NonNullable<U>
-      : NonNullable<T>;
-export type PopulateChildren<T> = { [K in keyof T]?: PopulateMap<ExpandProperty<T[K]>> };
-export type PopulateMap<T> = boolean | LoadStrategy | PopulateChildren<T>;
-export type Populate<T> = readonly (keyof T)[] | readonly string[] | boolean | PopulateMap<T>;
+export type Populate<T, P extends string = never> = readonly AutoPath<T, P>[] | boolean;
 
 export type PopulateOptions<T> = {
   field: string;
@@ -430,44 +421,68 @@ export type PopulateOptions<T> = {
   children?: PopulateOptions<T[keyof T]>[];
 };
 
-export interface LoadedReference<T extends AnyEntity<T>, P = never> extends Reference<T> {
-  $: T & P;
-  get(): T & P;
-}
+type Loadable<T> = Collection<T> | Reference<T> | readonly T[]; // we need to support raw arrays in embeddables too to allow population
+type ExtractType<T> = T extends Loadable<infer U> ? U : T;
 
-export interface LoadedCollection<T extends AnyEntity<T>, P = never> extends Collection<T> {
-  $: readonly (T & P)[];
-  get(): readonly (T & P)[];
-}
+type StringKeys<T> = T extends Collection<any>
+  ? `${Exclude<keyof ExtractType<T>, symbol>}`
+  : T extends Reference<any>
+    ? `${Exclude<keyof ExtractType<T>, symbol>}`
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    : T extends object
+      ? `${Exclude<keyof ExtractType<T>, symbol>}`
+      : never;
+type GetStringKey<T, K extends StringKeys<T>> = K extends keyof T ? ExtractType<T[K]> : never;
 
-type MarkLoaded<T extends AnyEntity<T>, P, H = unknown> = P extends Reference<infer U>
-  ? LoadedReference<U, Loaded<U, H>>
-  : P extends Collection<infer U>
-    ? LoadedCollection<U, Loaded<U, H>>
-    : P;
+export type AutoPath<O, P extends string> =
+  P extends any ?
+    (P & `${string}.` extends never ? P : P & `${string}.`) extends infer Q
+      ? Q extends `${infer A}.${infer B}`
+        ? A extends StringKeys<O>
+          ? `${A}.${AutoPath<Defined<GetStringKey<O, A>>, B>}`
+          : never
+        : Q extends StringKeys<O>
+          ? (Defined<GetStringKey<O, Q>> extends unknown ? Exclude<P, `${string}.`> : never) | (StringKeys<Defined<GetStringKey<O, Q>>> extends never ? never : `${Q}.`)
+          : StringKeys<O>
+      : never
+    : never;
 
-type LoadedIfInKeyHint<T extends AnyEntity<T>, K extends keyof T, H> = K extends H ? MarkLoaded<T, T[K]> : T[K];
+export type ExpandProperty<T> = T extends Reference<infer U>
+  ? NonNullable<U>
+  : T extends Collection<infer U>
+    ? NonNullable<U>
+    : T extends (infer U)[]
+      ? NonNullable<U>
+      : NonNullable<T>;
 
-type LoadedIfInNestedHint<T extends AnyEntity<T>, K extends keyof T, H> = K extends keyof H ? MarkLoaded<T, T[K], H[K]> : T[K];
+type LoadedLoadable<T, E> = T extends Collection<any>
+  ? T & LoadedCollection<E>
+  : (T extends Reference<any> ? T & LoadedReference<E> : T & E);
 
-// https://medium.com/dailyjs/typescript-create-a-condition-based-subset-types-9d902cea5b8c
-type SubType<T, C> = Pick<T, { [K in keyof T]: T[K] extends C ? K : never }[keyof T]>;
+type Prefix<K> = K extends `${infer S}.${string}` ? S : K;
+type Suffix<K> = K extends `${string}.${infer S}` ? S : never;
+type Defined<T> = Exclude<T, undefined>;
 
-type RelationsIn<T> = SubType<T, Collection<any> | Reference<any> | undefined>;
-
-type NestedLoadHint<T> = {
-  [K in keyof RelationsIn<T>]?: true | LoadStrategy | PopulateMap<ExpandProperty<T[K]>>;
+// For each property on T check if it is included in prefix of keys to load L:
+//   1. It yes, mark the collection or reference loaded and resolve its inner type recursively (passing suffix).
+//   2. If no, just return it as-is (scalars will be included, loadables too but not loaded).
+export type Loaded<T, L extends string = never> = {
+  [K in keyof T]: K extends Prefix<L>
+    ? LoadedLoadable<Defined<T[K]>, Loaded<ExtractType<Defined<T[K]>>, Suffix<L>>>
+    : T[K]
 };
 
-export type Loaded<T extends AnyEntity<T>, P = unknown> = unknown extends P ? T : T & {
-  [K in keyof RelationsIn<T>]: P extends readonly (infer U)[]
-    ? LoadedIfInKeyHint<T, K, U>
-    : P extends NestedLoadHint<T>
-      ? LoadedIfInNestedHint<T, K, P>
-      : LoadedIfInKeyHint<T, K, P>;
-};
+export interface LoadedReference<T> extends Reference<T> {
+  $: T;
+  get(): T;
+}
 
-export type New<T extends AnyEntity<T>, P = string[]> = Loaded<T, P>;
+export interface LoadedCollection<T> extends Collection<T> {
+  $: readonly T[];
+  get(): readonly T[];
+}
+
+export type New<T extends AnyEntity<T>, P extends string = string> = Loaded<T, P>;
 
 export interface Highlighter {
   highlight(text: string): string;

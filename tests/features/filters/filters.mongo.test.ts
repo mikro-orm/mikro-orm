@@ -47,7 +47,7 @@ describe('filters [mongo]', () => {
     const logger = new Logger(mock, true);
     Object.assign(em.config, { logger });
 
-    await em.find(Author, {}, { populate: { books: { perex: true } } });
+    await em.find(Author, {}, { populate: ['books.perex'] });
     expect(mock.mock.calls.length).toBe(2);
     expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('author').find({ tenant: 123 }, { session: undefined }).toArray()`);
     expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ '\$and': \[ { tenant: 123 }, { author: { '\$in': \[ ObjectId\('.*'\) ] } } ] }, { session: undefined }\)/);

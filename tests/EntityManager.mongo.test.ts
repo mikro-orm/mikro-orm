@@ -1315,8 +1315,8 @@ describe('EntityManagerMongo', () => {
     await repo.persistAndFlush(author);
     orm.em.clear();
 
-    await expect(repo.findAll({ populate: ['tests'] })).rejects.toThrowError(`Entity 'Author' does not have property 'tests'`);
-    await expect(repo.findOne(author.id, { populate: ['tests'] })).rejects.toThrowError(`Entity 'Author' does not have property 'tests'`);
+    await expect(repo.findAll({ populate: ['tests'] as never })).rejects.toThrowError(`Entity 'Author' does not have property 'tests'`);
+    await expect(repo.findOne(author.id, { populate: ['tests'] as never })).rejects.toThrowError(`Entity 'Author' does not have property 'tests'`);
   });
 
   test('many to many collection does have fixed order', async () => {
@@ -2070,7 +2070,7 @@ describe('EntityManagerMongo', () => {
     const logger = new Logger(mock, true);
     Object.assign(orm.config, { logger });
 
-    const r1 = await orm.em.find(Author, {}, { populate: { books: true } });
+    const r1 = await orm.em.find(Author, {}, { populate: ['books'] });
     expect(r1[0].books[0].perex).not.toBe('123');
     expect(mock.mock.calls.length).toBe(2);
     expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('author').find({}, { session: undefined }).toArray()`);
@@ -2078,7 +2078,7 @@ describe('EntityManagerMongo', () => {
 
     orm.em.clear();
     mock.mock.calls.length = 0;
-    const r2 = await orm.em.find(Author, {}, { populate: { books: { perex: true } } });
+    const r2 = await orm.em.find(Author, {}, { populate: ['books.perex'] });
     expect(r2[0].books[0].perex).toBe('123');
     expect(mock.mock.calls.length).toBe(2);
     expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('author').find({}, { session: undefined }).toArray()`);
@@ -2086,7 +2086,7 @@ describe('EntityManagerMongo', () => {
 
     orm.em.clear();
     mock.mock.calls.length = 0;
-    const r3 = await orm.em.findOne(Author, book.author, { populate: { books: true } });
+    const r3 = await orm.em.findOne(Author, book.author, { populate: ['books'] });
     expect(r3!.books[0].perex).not.toBe('123');
     expect(mock.mock.calls.length).toBe(2);
     expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.find\({ .* }, { session: undefined }\)/);
@@ -2094,7 +2094,7 @@ describe('EntityManagerMongo', () => {
 
     orm.em.clear();
     mock.mock.calls.length = 0;
-    const r4 = await orm.em.findOne(Author, book.author, { populate: { books: { perex: true } } });
+    const r4 = await orm.em.findOne(Author, book.author, { populate: ['books.perex'] });
     expect(r4!.books[0].perex).toBe('123');
     expect(mock.mock.calls.length).toBe(2);
     expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.find\({ .* }, { session: undefined }\)/);

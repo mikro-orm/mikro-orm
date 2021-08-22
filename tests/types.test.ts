@@ -95,7 +95,7 @@ describe('check typings', () => {
     // @ts-expect-error
     b.test?.getConfiguration?.();
 
-    const a = { books: [{ tags: [{}] }] } as EntityDTO<Loaded<Author2, { books: { tags: true; publisher: true } }>>;
+    const a = { books: [{ tags: [{}] }] } as EntityDTO<Loaded<Author2, 'books.tags' | 'books.publisher'>>;
     const a11 = a.books;
     const a12 = a.books[0];
     const a1 = a.books[0].tags;

@@ -1,5 +1,5 @@
 import { Utils } from '../utils/Utils';
-import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityName, EntityProperty, New, Populate, Primary } from '../typings';
+import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityName, EntityProperty, New, Primary } from '../typings';
 import { UnitOfWork } from '../unit-of-work';
 import { EntityManager } from '../EntityManager';
 import { EventType, ReferenceType } from '../enums';
@@ -24,7 +24,7 @@ export class EntityFactory {
   constructor(private readonly unitOfWork: UnitOfWork,
               private readonly em: EntityManager) { }
 
-  create<T extends AnyEntity<T>, P extends Populate<T> = any>(entityName: EntityName<T>, data: EntityData<T>, options: FactoryOptions = {}): New<T, P> {
+  create<T extends AnyEntity<T>, P extends string = string>(entityName: EntityName<T>, data: EntityData<T>, options: FactoryOptions = {}): New<T, P> {
     options.initialized = options.initialized ?? true;
 
     if ((data as Dictionary).__entity) {
@@ -82,7 +82,7 @@ export class EntityFactory {
       return exists;
     }
 
-    return this.create<T>(entityName, id as EntityData<T>, { ...options, initialized: false });
+    return this.create<T>(entityName, id as EntityData<T>, { ...options, initialized: false }) as T;
   }
 
   private createEntity<T extends AnyEntity<T>>(data: EntityData<T>, meta: EntityMetadata<T>, options: FactoryOptions): T {

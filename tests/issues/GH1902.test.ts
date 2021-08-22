@@ -99,9 +99,7 @@ describe('GH issue 1902', () => {
       filters: {
         byUser: { id: 1 },
       },
-      populate: {
-        tenant: true,
-      },
+      populate: ['tenant'] as const,
     };
     const f1 = await repoUserTenant.findAll(findOpts);
     expect(f1.length).toBe(2);	// succeeds

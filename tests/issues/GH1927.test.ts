@@ -59,7 +59,7 @@ describe('GH issue 1927', () => {
   test(`GH issue 1927`, async () => {
     const result = await orm.em.getConnection().execute('SELECT * FROM "book"');
     const books = result.map(data => orm.em.map(Book, data));
-    await orm.em.populate(books, 'author');
+    await orm.em.populate(books, ['author']);
 
     const mock = mockLogger(orm);
     await orm.em.flush();

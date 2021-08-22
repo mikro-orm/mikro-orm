@@ -36,7 +36,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOptions<T> = {}, ctx?: Transaction<Knex.Transaction>): Promise<EntityData<T>[]> {
     options = { populate: [], orderBy: {}, ...options };
     const meta = this.metadata.find<T>(entityName)!;
-    const populate = this.autoJoinOneToOneOwner(meta, options.populate as PopulateOptions<T>[], options.fields);
+    const populate = this.autoJoinOneToOneOwner(meta, options.populate as unknown as PopulateOptions<T>[], options.fields);
     const joinedProps = this.joinedProps(meta, populate);
     const qb = this.createQueryBuilder<T>(entityName, ctx, !!ctx, false);
     const fields = this.buildFields(meta, populate, joinedProps, qb, options.fields as Field<T>[]);
@@ -75,7 +75,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T>, ctx?: Transaction<Knex.Transaction>): Promise<EntityData<T> | null> {
     const opts = { populate: [], ...(options || {}) } as FindOptions<T>;
     const meta = this.metadata.find(entityName)!;
-    const populate = this.autoJoinOneToOneOwner(meta, opts.populate as PopulateOptions<T>[], opts.fields);
+    const populate = this.autoJoinOneToOneOwner(meta, opts.populate as unknown as PopulateOptions<T>[], opts.fields);
     const joinedProps = this.joinedProps(meta, populate);
 
     if (joinedProps.length === 0) {
@@ -179,7 +179,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const qb = this.createQueryBuilder(entityName, ctx, !!ctx, false)
       .groupBy(options.groupBy!)
       .having(options.having!)
-      .populate(options.populate as PopulateOptions<T>[] ?? [])
+      .populate(options.populate as unknown as PopulateOptions<T>[] ?? [])
       .withSchema(options.schema)
       .where(where);
 
@@ -431,7 +431,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     orderBy = this.getPivotOrderBy(prop, orderBy);
     const qb = this.createQueryBuilder<T>(prop.type, ctx, !!ctx).unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);
     const populate = this.autoJoinOneToOneOwner(targetMeta, [{ field: prop.pivotTable }]);
-    const fields = this.buildFields(targetMeta, (options?.populate ?? []) as PopulateOptions<T>[], [], qb, options?.fields as Field<T>[]);
+    const fields = this.buildFields(targetMeta, (options?.populate ?? []) as unknown as PopulateOptions<T>[], [], qb, options?.fields as Field<T>[]);
     qb.select(fields).populate(populate).where(where).orderBy(orderBy!);
 
     if (owners.length === 1 && (options?.offset != null || options?.limit != null)) {
@@ -470,7 +470,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   /**
    * 1:1 owner side needs to be marked for population so QB auto-joins the owner id
    */
-  protected autoJoinOneToOneOwner<T>(meta: EntityMetadata, populate: PopulateOptions<T>[], fields: (string | FieldsMap)[] = []): PopulateOptions<T>[] {
+  protected autoJoinOneToOneOwner<T>(meta: EntityMetadata, populate: PopulateOptions<T>[], fields: readonly (string | FieldsMap)[] = []): PopulateOptions<T>[] {
     if (!this.config.get('autoJoinOneToOneOwner') || fields.length > 0) {
       return populate;
     }
@@ -486,7 +486,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   protected joinedProps<T>(meta: EntityMetadata, populate: PopulateOptions<T>[]): PopulateOptions<T>[] {
     return populate.filter(p => {
       const prop = meta.properties[p.field] || {};
-      return (p.strategy || prop.strategy) === LoadStrategy.JOINED && prop.reference !== ReferenceType.SCALAR;
+      return (p.strategy || prop.strategy || this.config.get('loadStrategy')) === LoadStrategy.JOINED && prop.reference !== ReferenceType.SCALAR;
     });
   }
 
@@ -539,8 +539,15 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       const field = parentTableAlias ? `${parentTableAlias}.${prop.name}` : prop.name;
       const path = parentJoinPath ? `${parentJoinPath}.${prop.name}` : `${meta.name}.${prop.name}`;
       qb.join(field, tableAlias, {}, 'leftJoin', path);
-      const childExplicitFields = explicitFields?.filter(f => Utils.isPlainObject(f)).map(o => o[prop.name])[0];
-      fields.push(...this.getFieldsForJoinedLoad(qb, meta2, childExplicitFields, relation.children, tableAlias, path));
+      const childExplicitFields = explicitFields?.filter(f => Utils.isPlainObject(f)).map(o => o[prop.name])[0] || [];
+
+      explicitFields?.forEach(f => {
+        if (typeof f === 'string' && f.startsWith(`${prop.name}.`)) {
+          childExplicitFields.push(f.substr(prop.name.length + 1));
+        }
+      });
+
+      fields.push(...this.getFieldsForJoinedLoad(qb, meta2, childExplicitFields.length === 0 ? undefined : childExplicitFields, relation.children, tableAlias, path));
     });
 
     return fields;

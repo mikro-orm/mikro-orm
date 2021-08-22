@@ -93,7 +93,7 @@ describe('GH issue 845', () => {
     expect(mock.mock.calls[4][0]).toMatch('commit');
 
     const parents = await orm.em.find(Parent, {}, {
-      populate: ['qaInfo.parent', 'rel'],
+      populate: ['qaInfo.parent', 'rel'] as never,
       orderBy: { type: QueryOrder.ASC },
     });
     expect(parents[0]).toBeInstanceOf(Child1);

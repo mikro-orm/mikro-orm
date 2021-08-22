@@ -23,7 +23,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   }
 
   async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOptions<T> = {}, ctx?: Transaction<ClientSession>): Promise<EntityData<T>[]> {
-    const fields = this.buildFields(entityName, options.populate as PopulateOptions<T>[] || [], options.fields);
+    const fields = this.buildFields(entityName, options.populate as unknown as PopulateOptions<T>[] || [], options.fields);
     where = this.renameFields(entityName, where, true);
     const res = await this.rethrow(this.getConnection('read').find<T>(entityName, where, options.orderBy, options.limit, options.offset, fields, ctx));
 
@@ -35,7 +35,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       where = this.buildFilterById(entityName, where as string);
     }
 
-    const fields = this.buildFields(entityName, options.populate as PopulateOptions<T>[] || [], options.fields);
+    const fields = this.buildFields(entityName, options.populate as unknown as PopulateOptions<T>[] || [], options.fields);
     where = this.renameFields(entityName, where, true);
     const res = await this.rethrow(this.getConnection('read').find<T>(entityName, where, options.orderBy, 1, undefined, fields, ctx));
 
@@ -269,7 +269,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return { _id: id } as FilterQuery<T>;
   }
 
-  protected buildFields<T extends AnyEntity<T>>(entityName: string, populate: PopulateOptions<T>[], fields?: (string | FieldsMap)[]): string[] | undefined {
+  protected buildFields<T extends AnyEntity<T>>(entityName: string, populate: PopulateOptions<T>[], fields?: readonly (string | FieldsMap)[]): string[] | undefined {
     const meta = this.metadata.find(entityName)!;
     const lazyProps = meta.props.filter(prop => prop.lazy && !populate.some(p => p.field === prop.name || p.all));
     const ret: string[] = [];

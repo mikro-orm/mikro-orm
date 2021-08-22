@@ -237,7 +237,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this;
   }
 
-  groupBy(fields: (string | keyof T) | (string | keyof T)[]): this {
+  groupBy(fields: (string | keyof T) | readonly (string | keyof T)[]): this {
     this._groupBy = Utils.asArray(fields);
     return this;
   }

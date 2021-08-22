@@ -7,7 +7,7 @@ import { Reference } from './Reference';
 import { Transaction } from '../connections/Connection';
 import { FindOptions } from '../drivers/IDatabaseDriver';
 
-export interface MatchingOptions<T, P extends Populate<T> = Populate<T>> extends FindOptions<T, P> {
+export interface MatchingOptions<T, P extends string = never> extends FindOptions<T, P> {
   where?: FilterQuery<T>;
   store?: boolean;
   ctx?: Transaction;

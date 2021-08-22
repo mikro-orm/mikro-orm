@@ -780,8 +780,8 @@ describe('EntityManagerSqlite', () => {
     await repo.persistAndFlush(author);
     orm.em.clear();
 
-    await expect(repo.findAll({ populate: ['tests'] })).rejects.toThrowError(`Entity 'Author3' does not have property 'tests'`);
-    await expect(repo.findOne(author.id, { populate: ['tests'] })).rejects.toThrowError(`Entity 'Author3' does not have property 'tests'`);
+    await expect(repo.findAll({ populate: ['tests'] as never })).rejects.toThrowError(`Entity 'Author3' does not have property 'tests'`);
+    await expect(repo.findOne(author.id, { populate: ['tests'] as never })).rejects.toThrowError(`Entity 'Author3' does not have property 'tests'`);
   });
 
   test('many to many collection does have fixed order', async () => {

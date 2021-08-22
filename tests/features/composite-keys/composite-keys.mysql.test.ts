@@ -99,7 +99,7 @@ describe('composite keys in mysql', () => {
     await orm.em.persistAndFlush(owner);
     orm.em.clear();
 
-    const o1 = await orm.em.findOneOrFail(CarOwner2, owner.id, { populate: { car: LoadStrategy.JOINED } });
+    const o1 = await orm.em.findOneOrFail(CarOwner2, owner.id, { populate: ['car'], strategy: LoadStrategy.JOINED });
     expect(o1.car.price).toBe(200_000);
     expect(wrap(o1).toJSON()).toEqual({
       id: 1,
@@ -146,7 +146,7 @@ describe('composite keys in mysql', () => {
     orm.em.clear();
 
     const connMock = jest.spyOn(AbstractSqlConnection.prototype, 'execute');
-    const cc = await orm.em.findOneOrFail(Car2, car11, { populate: { users: LoadStrategy.JOINED } });
+    const cc = await orm.em.findOneOrFail(Car2, car11, { populate: ['users'], strategy: LoadStrategy.JOINED });
     expect(cc.users[0].foo).toBe(42);
     expect(connMock).toBeCalledTimes(1);
   });
@@ -184,7 +184,7 @@ describe('composite keys in mysql', () => {
     await orm.em.persistAndFlush([user1, user2, user3]);
     orm.em.clear();
 
-    const u1 = await orm.em.findOneOrFail(User2, user1, { populate: { cars: LoadStrategy.JOINED } });
+    const u1 = await orm.em.findOneOrFail(User2, user1, { populate: ['cars'], strategy: LoadStrategy.JOINED });
     expect(u1.cars.isDirty()).toBe(false);
     expect(u1.cars.getItems()).toMatchObject([
       { name: 'Audi A8', price: 100_000, year: 2011 },

@@ -10,7 +10,7 @@ import { FieldsMap, FindOptions } from '../drivers/IDatabaseDriver';
 
 export type EntityLoaderOptions<T> = {
   where?: FilterQuery<T>;
-  fields?: (string | FieldsMap)[];
+  fields?: readonly (string | FieldsMap)[];
   orderBy?: QueryOrderMap;
   refresh?: boolean;
   validate?: boolean;
@@ -224,9 +224,9 @@ export class EntityLoader {
       refresh: options.refresh,
       filters: options.filters,
       convertCustomTypes: options.convertCustomTypes,
-      populate: populate.children,
+      populate: populate.children as never,
       fields: fields.length > 0 ? fields : undefined,
-    });
+    }) as Promise<T[]>;
   }
 
   private async populateField<T extends AnyEntity<T>>(entityName: string, entities: T[], populate: PopulateOptions<T>, options: Required<EntityLoaderOptions<T>>): Promise<void> {
@@ -273,7 +273,7 @@ export class EntityLoader {
     delete options2.offset;
     options2.fields = (fields.length > 0 ? fields : undefined) as string[];
     /* istanbul ignore next */
-    options2.populate = (populate?.children ?? []) as unknown as string[];
+    options2.populate = (populate?.children ?? []) as never;
 
     if (prop.customType) {
       ids.forEach((id, idx) => ids[idx] = QueryHelper.processCustomType(prop, id as FilterQuery<T>, this.driver.getPlatform()) as Primary<T>[]);
@@ -285,7 +285,7 @@ export class EntityLoader {
     for (const entity of filtered) {
       const items = map[entity.__helper!.getSerializedPrimaryKey()].map(item => {
         const entity = this.em.getEntityFactory().create<T>(prop.type, item, { refresh, merge: true, convertCustomTypes: true });
-        return this.em.getUnitOfWork().registerManaged(entity, item, refresh);
+        return this.em.getUnitOfWork().registerManaged<T>(entity, item, refresh);
       });
       (entity[prop.name] as unknown as Collection<AnyEntity>).hydrate(items);
       children.push(...items);

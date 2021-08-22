@@ -290,7 +290,7 @@ export class Utils {
   /**
    * Normalize the argument to always be an array.
    */
-  static asArray<T>(data?: T | T[], strict = false): T[] {
+  static asArray<T>(data?: T | readonly T[], strict = false): T[] {
     if (typeof data === 'undefined' && !strict) {
       return [];
     }

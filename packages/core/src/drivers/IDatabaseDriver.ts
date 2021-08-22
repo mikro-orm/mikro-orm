@@ -1,4 +1,4 @@
-import { EntityData, EntityMetadata, EntityProperty, AnyEntity, FilterQuery, Primary, Dictionary, QBFilterQuery, IPrimaryKey, Populate, PopulateOptions, EntityDictionary } from '../typings';
+import { EntityData, EntityMetadata, EntityProperty, AnyEntity, FilterQuery, Primary, Dictionary, QBFilterQuery, IPrimaryKey, PopulateOptions, EntityDictionary, AutoPath } from '../typings';
 import { Connection, QueryResult, Transaction } from '../connections';
 import { LockMode, QueryOrderMap, QueryFlag, LoadStrategy } from '../enums';
 import { Platform } from '../platforms';
@@ -47,7 +47,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
   clearCollection<T, O>(collection: Collection<T, O>, ctx?: Transaction): Promise<void>;
 
-  count<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T>, ctx?: Transaction): Promise<number>;
+  count<T extends AnyEntity<T>, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T, P>, ctx?: Transaction): Promise<number>;
 
   aggregate(entityName: string, pipeline: any[]): Promise<any[]>;
 
@@ -81,8 +81,8 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
 export type FieldsMap = { [K: string]: (string | FieldsMap)[] };
 
-export interface FindOptions<T, P extends Populate<T> = Populate<T>> {
-  populate?: P;
+export interface FindOptions<T, P extends string = never> {
+  populate?: readonly AutoPath<T, P>[] | boolean;
   orderBy?: QueryOrderMap;
   cache?: boolean | number | [string, number];
   limit?: number;
@@ -90,7 +90,7 @@ export interface FindOptions<T, P extends Populate<T> = Populate<T>> {
   refresh?: boolean;
   convertCustomTypes?: boolean;
   disableIdentityMap?: boolean;
-  fields?: (string | FieldsMap)[];
+  fields?: readonly (string | FieldsMap)[];
   schema?: string;
   flags?: QueryFlag[];
   groupBy?: string | string[];
@@ -101,22 +101,22 @@ export interface FindOptions<T, P extends Populate<T> = Populate<T>> {
   lockTableAliases?: string[];
 }
 
-export interface FindOneOptions<T, P extends Populate<T> = Populate<T>> extends Omit<FindOptions<T, P>, 'limit' | 'offset' | 'lockMode'> {
+export interface FindOneOptions<T, P extends string = never> extends Omit<FindOptions<T, P>, 'limit' | 'offset' | 'lockMode'> {
   lockMode?: LockMode;
   lockVersion?: number | Date;
 }
 
-export interface FindOneOrFailOptions<T, P extends Populate<T> = Populate<T>> extends FindOneOptions<T, P> {
+export interface FindOneOrFailOptions<T, P extends string = never> extends FindOneOptions<T, P> {
   failHandler?: (entityName: string, where: Dictionary | IPrimaryKey | any) => Error;
 }
 
-export interface CountOptions<T>  {
+export interface CountOptions<T, P extends string = never>  {
   filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
   schema?: string;
-  groupBy?: string | string[];
+  groupBy?: string | readonly string[];
   having?: QBFilterQuery<T>;
   cache?: boolean | number | [string, number];
-  populate?: Populate<T>;
+  populate?: readonly AutoPath<T, P>[] | boolean;
 }
 
 export interface UpdateOptions<T>  {

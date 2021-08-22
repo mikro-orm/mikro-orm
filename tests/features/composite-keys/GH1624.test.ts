@@ -217,7 +217,7 @@ describe('GH issue 1624, 1658', () => {
     const b = await orm.em.findOneOrFail(
       User,
       { id: { $eq: userId }, organization: { $eq: orgId } },
-      { populate: { userRoles: LoadStrategy.JOINED } },
+      { populate: ['userRoles'], strategy: LoadStrategy.JOINED },
     );
     expect(b.organization).toBeInstanceOf(Reference);
     expect(b.organization.id).toBe(orgId);

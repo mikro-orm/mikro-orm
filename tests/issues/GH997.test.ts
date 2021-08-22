@@ -81,7 +81,7 @@ describe('GH issue 997', () => {
     orm.em.clear();
 
     const [ci1, ci2]: [Child1, Child2] = await orm.em.find(Parent, {}, {
-      populate: ['qaInfo.parent', 'rel'],
+      populate: ['qaInfo.parent', 'rel'] as never,
       orderBy: { type: QueryOrder.ASC },
     }) as any;
 
@@ -101,7 +101,7 @@ describe('GH issue 997', () => {
       .orderBy({ type: QueryOrder.ASC })
       .getResult();
 
-    const parents = await orm.em.populate(results, ['qaInfo.parent', 'rel']);
+    const parents = await orm.em.populate(results as Child1[], ['qaInfo.parent', 'rel']);
 
     expect(parents[0]).toBeInstanceOf(Child1);
     expect(parents[0].type).toBe('Child1');

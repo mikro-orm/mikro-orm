@@ -71,8 +71,8 @@ describe('EntityRepository', () => {
     expect(methods.create.mock.calls[0]).toEqual([Publisher, { name: 'bar' }]);
     await repo.assign(e, { name: 'bar' });
     expect(methods.assign.mock.calls[0]).toEqual([e, { name: 'bar' }]);
-    await repo.populate([], 'bar');
-    expect(methods.populate.mock.calls[0]).toEqual([[], 'bar', undefined]);
+    await repo.populate([] as Publisher[], ['books']);
+    expect(methods.populate.mock.calls[0]).toEqual([[], ['books'], undefined]);
 
     await repo.nativeInsert({ name: 'bar' });
     expect(methods.nativeInsert.mock.calls[0]).toEqual([Publisher, { name: 'bar' }]);
@@ -86,8 +86,8 @@ describe('EntityRepository', () => {
 
   test('find() supports calling with config object', async () => {
     const options = {
-      populate: ['test'],
-      orderBy: { test: QueryOrder.DESC },
+      populate: ['tests'] as const,
+      orderBy: { tests: QueryOrder.DESC },
       limit: 123,
       offset: 321,
     };
@@ -98,8 +98,8 @@ describe('EntityRepository', () => {
 
   test('findOne() supports calling with config object', async () => {
     const options = {
-      populate: ['test'],
-      orderBy: { test: QueryOrder.DESC },
+      populate: ['tests'] as const,
+      orderBy: { tests: QueryOrder.DESC },
     };
     methods.findOne.mock.calls = [];
     await repo.findOne({ name: 'bar' }, options);
@@ -108,8 +108,8 @@ describe('EntityRepository', () => {
 
   test('findOneOrFail() supports calling with config object', async () => {
     const options = {
-      populate: ['test'],
-      orderBy: { test: QueryOrder.DESC },
+      populate: ['tests'] as const,
+      orderBy: { tests: QueryOrder.DESC },
       handler: () => new Error('Test'),
     };
     methods.findOneOrFail.mock.calls = [];

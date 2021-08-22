@@ -1,4 +1,4 @@
-import { ArrayCollection, Collection, EntityManager, LockMode, Logger, MikroORM, QueryOrder, ValidationError, wrap } from '@mikro-orm/core';
+import { ArrayCollection, Collection, EntityManager, EntityName, LockMode, Logger, MikroORM, QueryOrder, ValidationError, wrap } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { initORMSqlite2, mockLogger, wipeDatabaseSqlite2 } from './bootstrap';
 import { Author4, Book4, BookTag4, FooBar4, IAuthor4, IPublisher4, ITest4, Publisher4, PublisherType, Test4 } from './entities-schema';
@@ -494,7 +494,7 @@ describe('EntityManagerSqlite2', () => {
     orm.em.clear();
 
     const newGod = orm.em.getReference(Author4, god.id);
-    const publisher = await orm.em.findOneOrFail<IPublisher4>('Publisher4', pub.id, { populate: ['books'] });
+    const publisher = await orm.em.findOneOrFail('Publisher4' as EntityName<IPublisher4>, pub.id, { populate: ['books'] });
     await wrap(newGod).init();
 
     const json = wrap(publisher).toJSON().books!;
@@ -732,7 +732,7 @@ describe('EntityManagerSqlite2', () => {
     orm.em.clear();
 
     const authors = await orm.em.find(Author4, {}, {
-      populate: { books: { tags: true } },
+      populate: ['books.tags'],
       disableIdentityMap: true,
     });
 
@@ -745,7 +745,7 @@ describe('EntityManagerSqlite2', () => {
     expect(orm.em.getUnitOfWork().getIdentityMap().values().length).toBe(0);
 
     const a1 = await orm.em.findOneOrFail(Author4, author.id, {
-      populate: { books: { tags: true } },
+      populate: ['books.tags'],
       disableIdentityMap: true,
     });
     expect(a1.id).toBe(author.id);
@@ -817,8 +817,8 @@ describe('EntityManagerSqlite2', () => {
     await repo.persistAndFlush(author);
     orm.em.clear();
 
-    await expect(repo.findAll({ populate: ['tests'] })).rejects.toThrowError(`Entity 'Author4' does not have property 'tests'`);
-    await expect(repo.findOne(author.id, { populate: ['tests'] })).rejects.toThrowError(`Entity 'Author4' does not have property 'tests'`);
+    await expect(repo.findAll({ populate: ['tests'] as never })).rejects.toThrowError(`Entity 'Author4' does not have property 'tests'`);
+    await expect(repo.findOne(author.id, { populate: ['tests'] as never })).rejects.toThrowError(`Entity 'Author4' does not have property 'tests'`);
   });
 
   test('many to many collection does have fixed order', async () => {
