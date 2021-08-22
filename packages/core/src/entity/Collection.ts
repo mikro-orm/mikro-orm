@@ -87,7 +87,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
 
     if (this.property.reference === ReferenceType.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
       const map = await em.getDriver().loadFromPivotTable(this.property, [this.owner.__helper!.__primaryKeys], where, opts.orderBy, ctx, options);
-      items = map[this.owner.__helper!.getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, false, true));
+      items = map[this.owner.__helper!.getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, { convertCustomTypes: true }));
     } else {
       items = await em.find(this.property.type, this.createCondition(where), opts);
     }
@@ -213,7 +213,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
 
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
       const map = await em.getDriver().loadFromPivotTable(this.property, [this.owner.__helper!.__primaryKeys], options.where, options.orderBy);
-      this.hydrate(map[this.owner.__helper!.getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, false, true)));
+      this.hydrate(map[this.owner.__helper!.getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, { convertCustomTypes: true })));
       this._lazyInitialized = true;
 
       return this;

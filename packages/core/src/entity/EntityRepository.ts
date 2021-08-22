@@ -1,4 +1,4 @@
-import { EntityManager } from '../EntityManager';
+import { EntityManager, MergeOptions } from '../EntityManager';
 import { EntityData, EntityName, AnyEntity, Primary, Loaded, New, FilterQuery, EntityDictionary, AutoPath } from '../typings';
 import { CountOptions, DeleteOptions, FindOneOptions, FindOneOrFailOptions, FindOptions, UpdateOptions } from '../drivers/IDatabaseDriver';
 import { IdentifiedReference, Reference } from './Reference';
@@ -203,8 +203,8 @@ export class EntityRepository<T extends AnyEntity<T>> {
    * Merges given entity to this EntityManager so it becomes managed. You can force refreshing of existing entities
    * via second parameter. By default it will return already loaded entities without modifying them.
    */
-  merge(data: T | EntityData<T>, refresh?: boolean, convertCustomTypes?: boolean): T {
-    return this.em.merge<T>(this.entityName, data, refresh, convertCustomTypes);
+  merge(data: T | EntityData<T>, options?: MergeOptions): T {
+    return this.em.merge<T>(this.entityName, data, options);
   }
 
   /**

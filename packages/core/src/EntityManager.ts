@@ -110,7 +110,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return cached.data;
     }
 
-    const results = await this.driver.find<T>(entityName, where, options as any, this.transactionContext); // FIXME
+    const results = await this.driver.find<T>(entityName, where, options, this.transactionContext);
 
     if (results.length === 0) {
       await this.storeCache(options.cache, cached!, []);
@@ -457,44 +457,42 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }
     });
 
-    return this.merge<T>(entityName, data as EntityData<T>, true, true);
+    return this.merge<T>(entityName, data as EntityData<T>, { convertCustomTypes: true, refresh: true });
   }
 
-  // TODO options parameter
+  /**
+   * Merges given entity to this EntityManager so it becomes managed. You can force refreshing of existing entities
+   * via second parameter. By default it will return already loaded entities without modifying them.
+   */
+  merge<T extends AnyEntity<T>>(entity: T, options?: MergeOptions): T;
 
   /**
    * Merges given entity to this EntityManager so it becomes managed. You can force refreshing of existing entities
    * via second parameter. By default it will return already loaded entities without modifying them.
    */
-  merge<T extends AnyEntity<T>>(entity: T, refresh?: boolean): T;
+  merge<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityData<T> | EntityDTO<T>, options?: MergeOptions): T;
 
   /**
    * Merges given entity to this EntityManager so it becomes managed. You can force refreshing of existing entities
    * via second parameter. By default it will return already loaded entities without modifying them.
    */
-  merge<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityData<T> | EntityDTO<T>, refresh?: boolean, convertCustomTypes?: boolean): T;
-
-  /**
-   * Merges given entity to this EntityManager so it becomes managed. You can force refreshing of existing entities
-   * via second parameter. By default it will return already loaded entities without modifying them.
-   */
-  merge<T extends AnyEntity<T>>(entityName: EntityName<T> | T, data?: EntityData<T> | EntityDTO<T> | boolean, refresh?: boolean, convertCustomTypes?: boolean): T {
+  merge<T extends AnyEntity<T>>(entityName: EntityName<T> | T, data?: EntityData<T> | EntityDTO<T> | MergeOptions, options: MergeOptions = {}): T {
     if (Utils.isEntity(entityName)) {
-      return this.merge(entityName.constructor.name, entityName as unknown as EntityData<T>, data as boolean);
+      return this.merge(entityName.constructor.name, entityName as unknown as EntityData<T>, data as MergeOptions);
     }
 
     entityName = Utils.className(entityName as string);
     this.validator.validatePrimaryKey(data as EntityData<T>, this.metadata.get(entityName));
     let entity = this.getUnitOfWork().tryGetById<T>(entityName, data as FilterQuery<T>, false);
 
-    if (entity && entity.__helper!.__initialized && !refresh) {
+    if (entity && entity.__helper!.__initialized && !options.refresh) {
       return entity;
     }
 
     const meta = this.metadata.find(entityName)!;
     const childMeta = this.metadata.getByDiscriminatorColumn(meta, data as EntityData<T>);
 
-    entity = Utils.isEntity<T>(data) ? data : this.getEntityFactory().create<T>(entityName, data as EntityData<T>, { merge: true, refresh, convertCustomTypes });
+    entity = Utils.isEntity<T>(data) ? data : this.getEntityFactory().create<T>(entityName, data as EntityData<T>, { merge: true, ...options });
     this.validator.validate(entity, data, childMeta ?? meta);
     this.getUnitOfWork().merge(entity);
 
@@ -913,4 +911,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return `[EntityManager<${this.id}>]`;
   }
 
+}
+
+export interface MergeOptions {
+  refresh?: boolean;
+  convertCustomTypes?: boolean;
 }
