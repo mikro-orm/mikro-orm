@@ -49,7 +49,7 @@ export class Migrator {
     await this.ensureMigrationsDirExists();
     const diff = await this.getSchemaDiff(blank, initial);
 
-    if (diff.length === 0) {
+    if (diff.up.length === 0) {
       return { fileName: '', code: '', diff };
     }
 
@@ -200,33 +200,39 @@ export class Migrator {
     };
   }
 
-  private async getSchemaDiff(blank: boolean, initial: boolean): Promise<string[]> {
-    const lines: string[] = [];
+  private async getSchemaDiff(blank: boolean, initial: boolean): Promise<{ up: string[]; down: string[] }> {
+    const up: string[] = [];
+    const down: string[] = [];
 
     if (blank) {
-      lines.push('select 1');
+      up.push('select 1');
     } else if (initial) {
       const dump = await this.schemaGenerator.getCreateSchemaSQL({ wrap: false });
-      lines.push(...dump.split('\n'));
+      up.push(...dump.split('\n'));
     } else {
-      const dump = await this.schemaGenerator.getUpdateSchemaSQL({
+      const diff = await this.schemaGenerator.getUpdateSchemaMigrationSQL({
         wrap: false,
         safe: this.options.safe,
         dropTables: this.options.dropTables,
         fromSchema: await this.getCurrentSchema(),
       });
-      lines.push(...dump.split('\n'));
+      up.push(...diff.up.split('\n'));
+      down.push(...diff.down.split('\n'));
     }
 
-    for (let i = lines.length - 1; i >= 0; i--) {
-      if (lines[i]) {
-        break;
+    const cleanUp = (diff: string[]) => {
+      for (let i = diff.length - 1; i >= 0; i--) {
+        if (diff[i]) {
+          break;
+        }
+
+        diff.splice(i, 1);
       }
+    };
+    cleanUp(up);
+    cleanUp(down);
 
-      lines.splice(i, 1);
-    }
-
-    return lines;
+    return { up, down };
   }
 
   private prefix<T extends string | string[] | { from?: string; to?: string; migrations?: string[]; transaction?: Transaction }>(options?: T): T {

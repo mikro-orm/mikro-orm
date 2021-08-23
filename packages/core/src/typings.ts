@@ -371,6 +371,7 @@ export interface ISchemaGenerator {
   getDropSchemaSQL(options?: { wrap?: boolean; dropMigrationsTable?: boolean }): Promise<string>;
   updateSchema(options?: { wrap?: boolean; safe?: boolean; dropDb?: boolean; dropTables?: boolean }): Promise<void>;
   getUpdateSchemaSQL(options?: { wrap?: boolean; safe?: boolean; dropDb?: boolean; dropTables?: boolean }): Promise<string>;
+  getUpdateSchemaMigrationSQL(options?: { wrap?: boolean; safe?: boolean; dropDb?: boolean; dropTables?: boolean }): Promise<{ up: string; down: string }>;
   createDatabase(name: string): Promise<void>;
   dropDatabase(name: string): Promise<void>;
   execute(sql: string, options?: { wrap?: boolean }): Promise<void>;

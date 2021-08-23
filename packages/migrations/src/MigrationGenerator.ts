@@ -8,7 +8,7 @@ export class MigrationGenerator {
               protected readonly namingStrategy: NamingStrategy,
               protected readonly options: MigrationsOptions) { }
 
-  async generate(diff: string[], path?: string): Promise<[string, string]> {
+  async generate(diff: { up: string[]; down: string[] }, path?: string): Promise<[string, string]> {
     path = Utils.normalizePath(path || this.options.path!);
     await ensureDir(path);
     const timestamp = new Date().toISOString().replace(/[-T:]|\.\d{3}z$/ig, '');
@@ -36,26 +36,41 @@ export class MigrationGenerator {
     return '\n';
   }
 
-  generateJSMigrationFile(className: string, diff: string[]): string {
+  generateJSMigrationFile(className: string, diff: { up: string[]; down: string[] }): string {
     let ret = `'use strict';\n`;
     ret += `Object.defineProperty(exports, '__esModule', { value: true });\n`;
     ret += `const Migration = require('@mikro-orm/migrations').Migration;\n\n`;
     ret += `class ${className} extends Migration {\n\n`;
     ret += `  async up() {\n`;
-    diff.forEach(sql => ret += this.createStatement(sql, 4));
+    diff.up.forEach(sql => ret += this.createStatement(sql, 4));
     ret += `  }\n\n`;
+
+    /* istanbul ignore else */
+    if (diff.down.length > 0) {
+      ret += `  async down() {\n`;
+      diff.down.forEach(sql => ret += this.createStatement(sql, 4));
+      ret += `  }\n\n`;
+    }
+
     ret += `}\n`;
     ret += `exports.${className} = ${className};\n`;
 
     return ret;
   }
 
-  generateTSMigrationFile(className: string, diff: string[]): string {
+  generateTSMigrationFile(className: string, diff: { up: string[]; down: string[] }): string {
     let ret = `import { Migration } from '@mikro-orm/migrations';\n\n`;
     ret += `export class ${className} extends Migration {\n\n`;
     ret += `  async up(): Promise<void> {\n`;
-    diff.forEach(sql => ret += this.createStatement(sql, 4));
+    diff.up.forEach(sql => ret += this.createStatement(sql, 4));
     ret += `  }\n\n`;
+
+    if (diff.down.length > 0) {
+      ret += `  async down(): Promise<void> {\n`;
+      diff.down.forEach(sql => ret += this.createStatement(sql, 4));
+      ret += `  }\n\n`;
+    }
+
     ret += `}\n`;
 
     return ret;

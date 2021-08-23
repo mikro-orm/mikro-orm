@@ -11,7 +11,7 @@ const close = jest.fn();
 jest.spyOn(MikroORM.prototype, 'close').mockImplementation(close);
 jest.spyOn(require('yargs'), 'showHelp').mockReturnValue('');
 const createMigrationMock = jest.spyOn(Migrator.prototype, 'createMigration');
-createMigrationMock.mockResolvedValue({ fileName: '1', code: '2', diff: ['3'] });
+createMigrationMock.mockResolvedValue({ fileName: '1', code: '2', diff: { up: ['3'], down: [] } });
 const dumpMock = jest.spyOn(CLIHelper, 'dump');
 dumpMock.mockImplementation(() => void 0);
 
@@ -45,7 +45,7 @@ describe('CreateMigrationCommand', () => {
     expect(close.mock.calls.length).toBe(2);
     expect(dumpMock).toHaveBeenLastCalledWith('1 successfully created');
 
-    createMigrationMock.mockImplementationOnce(async () => ({ fileName: '', code: '', diff: [] }));
+    createMigrationMock.mockImplementationOnce(async () => ({ fileName: '', code: '', diff: { up: [], down: [] } }));
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
     expect(createMigrationMock.mock.calls.length).toBe(3);
     expect(close.mock.calls.length).toBe(3);

@@ -119,4 +119,8 @@ export class SqlitePlatform extends AbstractSqlPlatform {
     return super.getIndexName(tableName, columns, type);
   }
 
+  supportsDownMigrations(): boolean {
+    return false;
+  }
+
 }
