@@ -4,7 +4,7 @@
  */
 /* istanbul ignore file */
 export {
-  Constructor, Dictionary, PrimaryKeyType, PrimaryKeyProp, Primary, IPrimaryKey, FilterQuery, IWrappedEntity, EntityName, EntityData, Highlighter,
+  Constructor, Dictionary, PrimaryKeyType, PrimaryKeyProp, Primary, IPrimaryKey, ObjectQuery, FilterQuery, IWrappedEntity, EntityName, EntityData, Highlighter,
   AnyEntity, EntityProperty, EntityMetadata, QBFilterQuery, PopulateOptions, Populate, Loaded, New, LoadedReference, LoadedCollection,
   GetRepository, EntityRepositoryType, MigrationObject, DeepPartial, PrimaryProperty, Cast, IsUnknown, EntityDictionary, EntityDTO, PlainObject,
 } from './typings';

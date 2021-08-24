@@ -1516,7 +1516,7 @@ describe('EntityManagerMongo', () => {
     expect(a3).not.toBeNull();
     expect(a3.id).toBe(author.id);
 
-    const a4 = (await orm.em.findOne(Author, { id: { $not: { $gt: author.id } } }))!;
+    const a4 = await orm.em.findOneOrFail(Author, { id: { $not: { $gt: author.id } } });
     expect(a4).not.toBeNull();
     expect(a4.id).toBe(author.id);
   });

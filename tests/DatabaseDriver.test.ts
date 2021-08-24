@@ -6,11 +6,11 @@ import {
   EntityData,
   EntityManager,
   EntityRepository,
-  FilterQuery,
+  ObjectQuery,
   FindOneOptions,
   FindOptions,
   LockMode,
-  Platform,
+  Platform, Primary,
   QueryResult,
   Transaction,
 } from '@mikro-orm/core';
@@ -26,32 +26,32 @@ class Driver extends DatabaseDriver<Connection> {
     super(config, dependencies);
   }
 
-  async count<T>(entityName: string, where: FilterQuery<T>, options: CountOptions<T>, ctx: Transaction | undefined): Promise<number> {
+  async count<T>(entityName: string, where: ObjectQuery<T>, options: CountOptions<T>, ctx: Transaction | undefined): Promise<number> {
     return Promise.resolve(0);
   }
 
-  async find<T>(entityName: string, where: FilterQuery<T>, options: FindOptions<T> | undefined, ctx: Transaction | undefined): Promise<EntityData<T>[]> {
+  async find<T>(entityName: string, where: ObjectQuery<T>, options: FindOptions<T> | undefined, ctx: Transaction | undefined): Promise<EntityData<T>[]> {
     return Promise.resolve([]);
   }
 
-  async findOne<T>(entityName: string, where: FilterQuery<T>, options: FindOneOptions<T> | undefined, ctx: Transaction | undefined): Promise<EntityData<T> | null> {
+  async findOne<T>(entityName: string, where: ObjectQuery<T>, options: FindOneOptions<T> | undefined, ctx: Transaction | undefined): Promise<EntityData<T> | null> {
     return null;
   }
 
-  async nativeDelete<T>(entityName: string, where: FilterQuery<T>, ctx: Transaction | undefined): Promise<QueryResult> {
-    return { affectedRows: 0, insertId: 0 };
+  async nativeDelete<T>(entityName: string, where: ObjectQuery<T>, ctx: Transaction | undefined): Promise<QueryResult<T>> {
+    return { affectedRows: 0, insertId: 0 as Primary<T> };
   }
 
-  async nativeInsert<T>(entityName: string, data: EntityData<T>, ctx: Transaction | undefined): Promise<QueryResult> {
-    return { affectedRows: 0, insertId: 0 };
+  async nativeInsert<T>(entityName: string, data: EntityData<T>, ctx: Transaction | undefined): Promise<QueryResult<T>> {
+    return { affectedRows: 0, insertId: 0 as Primary<T> };
   }
 
-  async nativeInsertMany<T>(entityName: string, data: EntityData<T>[], ctx: Transaction | undefined): Promise<QueryResult> {
-    return { affectedRows: 0, insertId: 0 };
+  async nativeInsertMany<T>(entityName: string, data: EntityData<T>[], ctx: Transaction | undefined): Promise<QueryResult<T>> {
+    return { affectedRows: 0, insertId: 0 as Primary<T> };
   }
 
-  async nativeUpdate<T>(entityName: string, where: FilterQuery<T>, data: EntityData<T>, ctx: Transaction | undefined): Promise<QueryResult> {
-    return { affectedRows: 0, insertId: 0 };
+  async nativeUpdate<T>(entityName: string, where: ObjectQuery<T>, data: EntityData<T>, ctx: Transaction | undefined): Promise<QueryResult<T>> {
+    return { affectedRows: 0, insertId: 0 as Primary<T> };
   }
 
 }

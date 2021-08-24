@@ -3,7 +3,7 @@ import c from 'ansi-colors';
 
 import { Configuration, ConnectionOptions, DynamicPassword, Utils } from '../utils';
 import { MetadataStorage } from '../metadata';
-import { Dictionary, MaybePromise } from '../typings';
+import { AnyEntity, Dictionary, MaybePromise, Primary } from '../typings';
 import { Platform } from '../platforms/Platform';
 import { TransactionEventBroadcaster } from '../events/TransactionEventBroadcaster';
 import { IsolationLevel } from '../enums';
@@ -59,7 +59,7 @@ export abstract class Connection {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
-  abstract execute(query: string, params?: any[], method?: 'all' | 'get' | 'run', ctx?: Transaction): Promise<QueryResult | any | any[]>;
+  abstract execute<T>(query: string, params?: any[], method?: 'all' | 'get' | 'run', ctx?: Transaction): Promise<QueryResult<T> | any | any[]>;
 
   getConnectionOptions(): ConnectionConfig {
     const ret: ConnectionConfig = {};
@@ -128,9 +128,9 @@ export abstract class Connection {
 
 }
 
-export interface QueryResult {
+export interface QueryResult<T extends AnyEntity<T> = { id: number }> {
   affectedRows: number;
-  insertId: number;
+  insertId: Primary<T>;
   row?: Dictionary;
   rows?: Dictionary[];
 }

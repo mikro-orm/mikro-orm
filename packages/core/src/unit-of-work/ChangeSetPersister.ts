@@ -68,7 +68,7 @@ export class ChangeSetPersister {
     const res = await this.driver.nativeInsert(changeSet.name, changeSet.payload, ctx, false);
 
     if (!wrapped.hasPrimaryKey()) {
-      this.mapPrimaryKey(meta, res.insertId, changeSet);
+      this.mapPrimaryKey(meta, res.insertId as number, changeSet);
     }
 
     this.mapReturnedValues(changeSet, res, meta);
@@ -177,7 +177,7 @@ export class ChangeSetPersister {
     });
   }
 
-  private async updateEntity<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, ctx?: Transaction): Promise<QueryResult> {
+  private async updateEntity<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, ctx?: Transaction): Promise<QueryResult<T>> {
     if (!meta.versionProperty || !changeSet.entity[meta.versionProperty]) {
       return this.driver.nativeUpdate(changeSet.name, changeSet.getPrimaryKey() as Dictionary, changeSet.payload, ctx, false);
     }
@@ -187,7 +187,7 @@ export class ChangeSetPersister {
       [meta.versionProperty]: this.platform.quoteVersionValue(changeSet.entity[meta.versionProperty] as unknown as Date, meta.properties[meta.versionProperty]),
     } as FilterQuery<T>;
 
-    return this.driver.nativeUpdate(changeSet.name, cond, changeSet.payload, ctx, false);
+    return this.driver.nativeUpdate<T>(changeSet.name, cond, changeSet.payload, ctx, false);
   }
 
   private async checkOptimisticLocks<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
@@ -222,7 +222,7 @@ export class ChangeSetPersister {
 
     const pk = Utils.getPrimaryKeyHash(meta.primaryKeys);
     const pks = changeSets.map(cs => cs.getPrimaryKey());
-    const data = await this.driver.find<T>(meta.name!, { [pk]: { $in: pks } }, {
+    const data = await this.driver.find<T>(meta.name!, { [pk]: { $in: pks } } as FilterQuery<T>, {
       fields: [meta.versionProperty],
     }, ctx);
     const map = new Map<string, Date>();
@@ -281,7 +281,7 @@ export class ChangeSetPersister {
    * No need to handle composite keys here as they need to be set upfront.
    * We do need to map to the change set payload too, as it will be used in the originalEntityData for new entities.
    */
-  private mapReturnedValues<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, res: QueryResult, meta: EntityMetadata<T>): void {
+  private mapReturnedValues<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, res: QueryResult<T>, meta: EntityMetadata<T>): void {
     if (this.platform.usesReturningStatement() && res.row && Utils.hasObjectKeys(res.row)) {
       const data = meta.props.reduce((ret, prop) => {
         if (prop.primary && !changeSet.entity.__helper!.hasPrimaryKey()) {

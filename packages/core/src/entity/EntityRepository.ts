@@ -70,7 +70,7 @@ export class EntityRepository<T extends AnyEntity<T>> {
    * Finds all entities of given type. You can pass additional options via the `options` parameter.
    */
   async findAll<P extends string = never>(options?: FindOptions<T, P>): Promise<Loaded<T, P>[]> {
-    return this.em.find<T, P>(this.entityName, {}, options);
+    return this.em.find<T, P>(this.entityName, {} as FilterQuery<T>, options);
   }
 
   /**
@@ -210,7 +210,7 @@ export class EntityRepository<T extends AnyEntity<T>> {
   /**
    * Returns total number of entities matching your `where` query.
    */
-  async count<P extends string = never>(where: FilterQuery<T> = {}, options: CountOptions<T, P> = {}): Promise<number> {
+  async count<P extends string = never>(where: FilterQuery<T> = {} as FilterQuery<T>, options: CountOptions<T, P> = {}): Promise<number> {
     return this.em.count<T>(this.entityName, where, options);
   }
 

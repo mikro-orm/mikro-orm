@@ -36,15 +36,15 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
    */
   findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T>, ctx?: Transaction): Promise<EntityData<T> | null>;
 
-  nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>, ctx?: Transaction, convertCustomTypes?: boolean): Promise<QueryResult>;
+  nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>, ctx?: Transaction, convertCustomTypes?: boolean): Promise<QueryResult<T>>;
 
-  nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], ctx?: Transaction, processCollections?: boolean, convertCustomTypes?: boolean): Promise<QueryResult>;
+  nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], ctx?: Transaction, processCollections?: boolean, convertCustomTypes?: boolean): Promise<QueryResult<T>>;
 
-  nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, ctx?: Transaction, convertCustomTypes?: boolean): Promise<QueryResult>;
+  nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, ctx?: Transaction, convertCustomTypes?: boolean): Promise<QueryResult<T>>;
 
-  nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], ctx?: Transaction, processCollections?: boolean, convertCustomTypes?: boolean): Promise<QueryResult>;
+  nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], ctx?: Transaction, processCollections?: boolean, convertCustomTypes?: boolean): Promise<QueryResult<T>>;
 
-  nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction): Promise<QueryResult>;
+  nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction): Promise<QueryResult<T>>;
 
   syncCollection<T, O>(collection: Collection<T, O>, ctx?: Transaction): Promise<void>;
 

@@ -69,15 +69,23 @@ export type OperatorMap<T> = {
 
 export type FilterValue2<T> = T | ExpandScalar<T> | Primary<T>;
 export type FilterValue<T> = OperatorMap<FilterValue2<T>> | FilterValue2<T> | FilterValue2<T>[] | null;
-type ExpandObject<T> = { [K in keyof T as ExcludeFunctions<T, K>]?: Query<ExpandProperty<T[K]>> | FilterValue<ExpandProperty<T[K]>> | null } | FilterValue<ExpandProperty<T>>;
+// eslint-disable-next-line @typescript-eslint/ban-types
+type ExpandObject<T> = T extends object
+  ? T extends Scalar
+    ? never
+    : { [K in keyof T]?: Query<ExpandProperty<T[K]>> | FilterValue<ExpandProperty<T[K]>> | null }
+  : never;
 
-export type Query<T> = T extends Scalar
-  ? FilterValue<T>
-  : T extends Collection<infer U>
-    ? ExpandObject<U>
-    : ExpandObject<T>;
-export type FilterQuery<T> = NonNullable<Query<T>> | { [PrimaryKeyType]?: any };
-export type QBFilterQuery<T = any> = FilterQuery<T> & Dictionary | FilterQuery<T>;
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type Query<T> = T extends object
+  ? T extends Scalar
+    ? never
+    : FilterQuery<T>
+  : FilterValue<T>;
+
+export type ObjectQuery<T> = ExpandObject<T> & OperatorMap<T>;
+export type FilterQuery<T> = ObjectQuery<T> | NonNullable<ExpandScalar<Primary<T>>> | T | FilterQuery<T>[];
+export type QBFilterQuery<T = any> = FilterQuery<T> | Dictionary;
 
 export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T | unknown = PrimaryProperty<T>, P extends string = string> {
   isInitialized(): boolean;

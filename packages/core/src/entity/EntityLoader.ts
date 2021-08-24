@@ -35,7 +35,7 @@ export class EntityLoader {
       return;
     }
 
-    options.where = options.where ?? {};
+    options.where = options.where ?? {} as FilterQuery<T>;
     options.orderBy = options.orderBy ?? {};
     options.filters = options.filters ?? {};
     options.lookup = options.lookup ?? true;
@@ -276,7 +276,7 @@ export class EntityLoader {
     options2.populate = (populate?.children ?? []) as never;
 
     if (prop.customType) {
-      ids.forEach((id, idx) => ids[idx] = QueryHelper.processCustomType(prop, id as FilterQuery<T>, this.driver.getPlatform()) as Primary<T>[]);
+      ids.forEach((id, idx) => ids[idx] = QueryHelper.processCustomType<T>(prop, id as FilterQuery<T>, this.driver.getPlatform()) as Primary<T>[]);
     }
 
     const map = await this.driver.loadFromPivotTable(prop, ids, where, orderBy, this.em.getTransactionContext(), options2);

@@ -1,5 +1,5 @@
 import { CountOptions, EntityManagerType, FindOneOptions, FindOptions, IDatabaseDriver } from './IDatabaseDriver';
-import { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityProperty, FilterQuery, PopulateOptions, Primary } from '../typings';
+import { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityProperty, ObjectQuery, FilterQuery, PopulateOptions, Primary } from '../typings';
 import { MetadataStorage } from '../metadata';
 import { Connection, QueryResult, Transaction } from '../connections';
 import { Configuration, ConnectionOptions, EntityComparator, Utils } from '../utils';
@@ -24,23 +24,23 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   protected constructor(protected readonly config: Configuration,
                         protected readonly dependencies: string[]) { }
 
-  abstract find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T>, ctx?: Transaction): Promise<EntityData<T>[]>;
+  abstract find<T>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T>, ctx?: Transaction): Promise<EntityData<T>[]>;
 
-  abstract findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T>, ctx?: Transaction): Promise<EntityData<T> | null>;
+  abstract findOne<T>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T>, ctx?: Transaction): Promise<EntityData<T> | null>;
 
-  abstract nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>, ctx?: Transaction, convertCustomTypes?: boolean): Promise<QueryResult>;
+  abstract nativeInsert<T>(entityName: string, data: EntityDictionary<T>, ctx?: Transaction, convertCustomTypes?: boolean): Promise<QueryResult<T>>;
 
-  abstract nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], ctx?: Transaction, processCollections?: boolean, convertCustomTypes?: boolean): Promise<QueryResult>;
+  abstract nativeInsertMany<T>(entityName: string, data: EntityDictionary<T>[], ctx?: Transaction, processCollections?: boolean, convertCustomTypes?: boolean): Promise<QueryResult<T>>;
 
-  abstract nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, ctx?: Transaction, convertCustomTypes?: boolean): Promise<QueryResult>;
+  abstract nativeUpdate<T>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, ctx?: Transaction, convertCustomTypes?: boolean): Promise<QueryResult<T>>;
 
-  async nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], ctx?: Transaction, processCollections?: boolean, convertCustomTypes?: boolean): Promise<QueryResult> {
+  async nativeUpdateMany<T>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], ctx?: Transaction, processCollections?: boolean, convertCustomTypes?: boolean): Promise<QueryResult<T>> {
     throw new Error(`Batch updates are not supported by ${this.constructor.name} driver`);
   }
 
-  abstract nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction): Promise<QueryResult>;
+  abstract nativeDelete<T>(entityName: string, where: FilterQuery<T>, ctx?: Transaction): Promise<QueryResult<T>>;
 
-  abstract count<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T>, ctx?: Transaction): Promise<number>;
+  abstract count<T>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T>, ctx?: Transaction): Promise<number>;
 
   createEntityManager<D extends IDatabaseDriver = IDatabaseDriver>(useContext?: boolean): D[typeof EntityManagerType] {
     return new EntityManager(this.config, this, this.metadata, useContext) as unknown as EntityManager<D>;
@@ -50,27 +50,27 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     throw new Error(`Aggregations are not supported by ${this.constructor.name} driver`);
   }
 
-  async loadFromPivotTable<T extends AnyEntity<T>, O extends AnyEntity<O>>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<T>, orderBy?: QueryOrderMap, ctx?: Transaction, options?: FindOptions<T>): Promise<Dictionary<T[]>> {
+  async loadFromPivotTable<T, O>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<T>, orderBy?: QueryOrderMap, ctx?: Transaction, options?: FindOptions<T>): Promise<Dictionary<T[]>> {
     throw new Error(`${this.constructor.name} does not use pivot tables`);
   }
 
-  async syncCollection<T extends AnyEntity<T>, O extends AnyEntity<O>>(coll: Collection<T, O>, ctx?: Transaction): Promise<void> {
+  async syncCollection<T, O>(coll: Collection<T, O>, ctx?: Transaction): Promise<void> {
     const pk = this.metadata.find(coll.property.type)!.primaryKeys[0];
     const data = { [coll.property.name]: coll.getIdentifiers(pk) } as EntityData<T>;
     await this.nativeUpdate<T>(coll.owner.constructor.name, coll.owner.__helper!.getPrimaryKey() as FilterQuery<T>, data, ctx);
   }
 
-  async clearCollection<T extends AnyEntity<T>, O extends AnyEntity<O>>(coll: Collection<T, O>, ctx?: Transaction): Promise<void> {
+  async clearCollection<T, O>(coll: Collection<T, O>, ctx?: Transaction): Promise<void> {
     // this currently serves only for 1:m collections with orphan removal, m:n ones are handled via `syncCollection` method
     const snapshot = coll.getSnapshot();
     /* istanbul ignore next */
-    const deleteDiff = snapshot ? snapshot.map(item => item.__helper!.__primaryKeyCond) : [];
+    const deleteDiff = snapshot ? snapshot.map(item => (item as AnyEntity<T>).__helper!.__primaryKeyCond) : [];
 
-    const cond = { [Utils.getPrimaryKeyHash(coll.property.targetMeta!.primaryKeys)]: deleteDiff } as EntityData<T>;
+    const cond = { [Utils.getPrimaryKeyHash(coll.property.targetMeta!.primaryKeys)]: deleteDiff } as ObjectQuery<T>;
     await this.nativeDelete<T>(coll.property.type, cond, ctx);
   }
 
-  mapResult<T extends AnyEntity<T>>(result: EntityDictionary<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[] = []): EntityData<T> | null {
+  mapResult<T>(result: EntityDictionary<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[] = []): EntityData<T> | null {
     if (!result || !meta) {
       return null;
     }
@@ -235,7 +235,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return ret;
   }
 
-  async lockPessimistic<T extends AnyEntity<T>>(entity: T, mode: LockMode, tables?: string[], ctx?: Transaction): Promise<void> {
+  async lockPessimistic<T>(entity: T, mode: LockMode, tables?: string[], ctx?: Transaction): Promise<void> {
     throw new Error(`Pessimistic locks are not supported by ${this.constructor.name} driver`);
   }
 

@@ -71,9 +71,9 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     if (!em.getPlatform().usesPivotTable() && this.property.reference === ReferenceType.MANY_TO_MANY) {
       this._count = this.length;
     } else if (this.property.pivotTable && !(this.property.inversedBy || this.property.mappedBy)) {
-      this._count = await em.count(this.property.type, this.createLoadCountCondition({}, pivotMeta), { populate: [{ field: this.property.pivotTable }] });
+      this._count = await em.count(this.property.type, this.createLoadCountCondition({} as FilterQuery<T>, pivotMeta), { populate: [{ field: this.property.pivotTable }] });
     } else {
-      this._count = await em.count(this.property.type, this.createLoadCountCondition({}, pivotMeta));
+      this._count = await em.count(this.property.type, this.createLoadCountCondition({} as FilterQuery<T>, pivotMeta));
     }
 
     return this._count!;
@@ -282,7 +282,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     return em;
   }
 
-  private createCondition(cond: FilterQuery<T> = {}): FilterQuery<T> {
+  private createCondition(cond: FilterQuery<T> = {} as FilterQuery<T>): FilterQuery<T> {
     if (this.property.reference === ReferenceType.ONE_TO_MANY) {
       cond[this.property.mappedBy] = this.owner.__helper!.getPrimaryKey();
     } else { // MANY_TO_MANY

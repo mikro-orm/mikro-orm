@@ -186,7 +186,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return this.rethrow(qb.getCount(pks, true));
   }
 
-  async nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>, ctx?: Transaction<Knex.Transaction>, convertCustomTypes = true): Promise<QueryResult> {
+  async nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>, ctx?: Transaction<Knex.Transaction>, convertCustomTypes = true): Promise<QueryResult<T>> {
     const meta = this.metadata.find<T>(entityName);
     const collections = this.extractManyToMany(entityName, data);
     const pks = this.getPrimaryKeyFields(entityName);
@@ -205,10 +205,10 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     await this.processManyToMany<T>(meta, pk, collections, false, ctx);
 
-    return res;
+    return res as unknown as QueryResult<T>;
   }
 
-  async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], ctx?: Transaction<Knex.Transaction>, processCollections = true, convertCustomTypes = true): Promise<QueryResult> {
+  async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], ctx?: Transaction<Knex.Transaction>, processCollections = true, convertCustomTypes = true): Promise<QueryResult<T>> {
     const meta = this.metadata.get<T>(entityName);
     const collections = processCollections ? data.map(d => this.extractManyToMany(entityName, d)) : [];
     const pks = this.getPrimaryKeyFields(entityName);
@@ -271,10 +271,10 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       await this.processManyToMany<T>(meta, pk[i], collections[i], false, ctx);
     }
 
-    return res;
+    return res as unknown as QueryResult<T>;
   }
 
-  async nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, ctx?: Transaction<Knex.Transaction>, convertCustomTypes = true): Promise<QueryResult> {
+  async nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, ctx?: Transaction<Knex.Transaction>, convertCustomTypes = true): Promise<QueryResult<T>> {
     const meta = this.metadata.find<T>(entityName);
     const pks = this.getPrimaryKeyFields(entityName);
     const collections = this.extractManyToMany(entityName, data);
@@ -295,10 +295,10 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const pk = pks.map(pk => Utils.extractPK<T>(data[pk] || where, meta)!) as Primary<T>[];
     await this.processManyToMany<T>(meta, pk, collections, true, ctx);
 
-    return res;
+    return res as unknown as QueryResult<T>;
   }
 
-  async nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], ctx?: Transaction<Knex.Transaction>, processCollections = true, convertCustomTypes = true): Promise<QueryResult> {
+  async nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], ctx?: Transaction<Knex.Transaction>, processCollections = true, convertCustomTypes = true): Promise<QueryResult<T>> {
     const meta = this.metadata.get<T>(entityName);
     const collections = processCollections ? data.map(d => this.extractManyToMany(entityName, d)) : [];
     const keys = new Set<string>();
@@ -352,7 +352,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     const conds = where.map(cond => {
       if (pks.length > 1) {
-        meta.primaryKeys.forEach(pk => params.push(cond[pk as string]));
+        meta.primaryKeys.forEach(pk => params.push(cond![pk as string]));
         return `(${new Array(pks.length).fill('?').join(', ')})`;
       }
 
@@ -367,10 +367,10 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       await this.processManyToMany<T>(meta, where[i] as Primary<T>[], collections[i], false, ctx);
     }
 
-    return res;
+    return res as unknown as QueryResult<T>;
   }
 
-  async nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T> | string | any, ctx?: Transaction<Knex.Transaction>): Promise<QueryResult> {
+  async nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T> | string | any, ctx?: Transaction<Knex.Transaction>): Promise<QueryResult<T>> {
     const pks = this.getPrimaryKeyFields(entityName);
 
     if (Utils.isPrimaryKey(where) && pks.length === 1) {
@@ -415,7 +415,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return this.rethrow(this.updateCollectionDiff<T, O>(meta, coll.property, pks as any, deleteDiff as any, insertDiff as any, ctx));
   }
 
-  async loadFromPivotTable<T extends AnyEntity<T>, O extends AnyEntity<O>>(prop: EntityProperty, owners: Primary<O>[][], where: FilterQuery<T> = {}, orderBy?: QueryOrderMap, ctx?: Transaction, options?: FindOptions<T>): Promise<Dictionary<T[]>> {
+  async loadFromPivotTable<T, O>(prop: EntityProperty, owners: Primary<O>[][], where: FilterQuery<T> = {} as FilterQuery<T>, orderBy?: QueryOrderMap, ctx?: Transaction, options?: FindOptions<T>): Promise<Dictionary<T[]>> {
     const pivotProp2 = this.getPivotInverseProperty(prop);
     const ownerMeta = this.metadata.find(pivotProp2.type)!;
     const targetMeta = this.metadata.find(prop.type)!;
@@ -423,9 +423,9 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     /* istanbul ignore next */
     if (!Utils.isEmpty(where) && Object.keys(where as Dictionary).every(k => Utils.isOperator(k, false))) {
-      where = cond;
+      where = cond as FilterQuery<T>;
     } else {
-      where = { ...(where as Dictionary), ...cond };
+      where = { ...(where as Dictionary), ...cond } as FilterQuery<T>;
     }
 
     orderBy = this.getPivotOrderBy(prop, orderBy);

@@ -200,7 +200,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return children;
     };
     lookUpChildren(children, meta.className);
-    where[meta.root.discriminatorColumn!] = children.length > 0 ? { $in: [meta.discriminatorValue, ...children.map(c => c.discriminatorValue)] } : meta.discriminatorValue;
+    where![meta.root.discriminatorColumn!] = children.length > 0 ? { $in: [meta.discriminatorValue, ...children.map(c => c.discriminatorValue)] } : meta.discriminatorValue;
 
     return where;
   }
@@ -251,7 +251,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       ret.push(QueryHelper.processWhere(cond, entityName, this.metadata, this.driver.getPlatform()));
     }
 
-    const conds = [...ret, where as Dictionary].filter(c => Utils.hasObjectKeys(c));
+    const conds = [...ret, where as Dictionary].filter(c => Utils.hasObjectKeys(c)) as FilterQuery<T>[];
 
     return conds.length > 1 ? { $and: conds } as FilterQuery<T> : conds[0];
   }
@@ -559,7 +559,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Returns total number of entities matching your `where` query.
    */
-  async count<T extends AnyEntity<T>, P extends string = never>(entityName: EntityName<T>, where: FilterQuery<T> = {}, options: CountOptions<T, P> = {}): Promise<number> {
+  async count<T, P extends string = never>(entityName: EntityName<T>, where: FilterQuery<T> = {} as FilterQuery<T>, options: CountOptions<T, P> = {}): Promise<number> {
     entityName = Utils.className(entityName);
     where = await this.processWhere<T, P>(entityName, where, options as FindOptions<T, P>, 'read');
     options.populate = this.preparePopulate(entityName, options.populate) as unknown as Populate<T>;
