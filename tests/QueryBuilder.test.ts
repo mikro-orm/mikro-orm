@@ -1370,6 +1370,20 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL]);
   });
 
+  test('delete all query', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2);
+    qb.delete();
+    expect(qb.getQuery()).toEqual('delete from `publisher2`');
+    expect(qb.getParams()).toEqual([]);
+  });
+
+  test('lazy delete query', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2);
+    qb.where({ name: 'test 123', type: PublisherType.GLOBAL }).delete();
+    expect(qb.getQuery()).toEqual('delete from `publisher2` where `name` = ? and `type` = ?');
+    expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL]);
+  });
+
   test('clone QB', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2, 'p')
       .select(['p.*', 'b.*', 'a.*', 't.*'])

@@ -119,7 +119,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.init(QueryType.UPDATE, data);
   }
 
-  delete(cond: QBFilterQuery = {}): this {
+  delete(cond?: QBFilterQuery): this {
     return this.init(QueryType.DELETE, undefined, cond);
   }
 
