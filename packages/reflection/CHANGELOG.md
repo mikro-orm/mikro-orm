@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.5.8](https://github.com/mikro-orm/mikro-orm/compare/v4.5.7...v4.5.8) (2021-08-24)
+
+
+### Bug Fixes
+
+* **reflection:** support virtual method properties ([3a8c344](https://github.com/mikro-orm/mikro-orm/commit/3a8c3445c6ab14ed61e25d204e13bb69a2431b1b))
+
+
+
+
+
 ## [4.5.7](https://github.com/mikro-orm/mikro-orm/compare/v4.5.6...v4.5.7) (2021-06-30)
 
 **Note:** Version bump only for package @mikro-orm/reflection
