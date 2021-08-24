@@ -369,4 +369,11 @@ export abstract class Platform {
     return [ReferenceType.SCALAR, ReferenceType.MANY_TO_ONE].includes(prop.reference) || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
   }
 
+  /**
+   * Currently not supported due to how knex does complex sqlite diffing (always based on current schema)
+   */
+  supportsDownMigrations(): boolean {
+    return true;
+  }
+
 }

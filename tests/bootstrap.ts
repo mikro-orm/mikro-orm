@@ -148,6 +148,7 @@ export async function initORMSqlite2() {
     forceUndefined: true,
     logger: i => i,
     cache: { pretty: true },
+    migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
   });
   const schemaGenerator = new SchemaGenerator(orm.em);
   await schemaGenerator.dropSchema();

@@ -80,19 +80,26 @@ describe('changing PK column type [mysql] (GH 1480)', () => {
         orm.getMetadata().reset(e1.name);
       }
 
-      const diff = await generator.getUpdateSchemaSQL({ wrap: false });
+      const diff = await generator.getUpdateSchemaMigrationSQL({ wrap: false });
       expect(diff).toMatchSnapshot(snap);
-      await generator.execute(diff);
+      await generator.execute(diff.up);
+
+      return diff.down;
     };
 
-    await testMigration(User0, undefined, '0. create schema with text PK');
-    await testMigration(User0, User1, '1. change PK type from text to int');
-    await testMigration(User1, User2, '2. add new PK (make it composite PK)');
-    await testMigration(User2, User3, '3. remove old PK (make it single PK again)');
-    await testMigration(User3, User4, '4. change PK type from int to serial');
+    const down: string[] = [];
+    down.push(await testMigration(User0, undefined, '0. create schema with text PK'));
+    down.push(await testMigration(User0, User1, '1. change PK type from text to int'));
+    down.push(await testMigration(User1, User2, '2. add new PK (make it composite PK)'));
+    down.push(await testMigration(User2, User3, '3. remove old PK (make it single PK again)'));
+    down.push(await testMigration(User3, User4, '4. change PK type from int to serial'));
     await expect(generator.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
-    await testMigration(User4, User5, '5. change PK type from AI int to text');
+    down.push(await testMigration(User4, User5, '5. change PK type from AI int to text'));
     await expect(generator.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+
+    for (const sql of down.reverse()) {
+      await generator.execute(sql);
+    }
   });
 
 });

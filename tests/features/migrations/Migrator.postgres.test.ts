@@ -99,7 +99,7 @@ describe('Migrator (postgres)', () => {
 
     // will use the snapshot, so should be empty
     const migration2 = await migrator.createMigration();
-    expect(migration2.diff).toEqual([]);
+    expect(migration2.diff).toEqual({ down: [], up: [] });
     expect(migration2).toMatchSnapshot('migration-snapshot-dump-2');
 
     migrations.snapshot = false;
@@ -153,9 +153,9 @@ describe('Migrator (postgres)', () => {
   test('migration is skipped when no diff', async () => {
     const migrator = new Migrator(orm.em);
     const getSchemaDiffMock = jest.spyOn<any, any>(Migrator.prototype, 'getSchemaDiff');
-    getSchemaDiffMock.mockResolvedValueOnce([]);
+    getSchemaDiffMock.mockResolvedValueOnce({ up: [], down: [] });
     const migration = await migrator.createMigration();
-    expect(migration).toEqual({ fileName: '', code: '', diff: [] });
+    expect(migration).toEqual({ fileName: '', code: '', diff: { up: [], down: [] } });
   });
 
   test('run schema migration', async () => {

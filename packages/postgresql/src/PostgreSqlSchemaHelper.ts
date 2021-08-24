@@ -1,5 +1,5 @@
 import { BigIntType, Dictionary, EnumType, Utils } from '@mikro-orm/core';
-import { AbstractSqlConnection, SchemaHelper, Column, Index, DatabaseTable } from '@mikro-orm/knex';
+import { AbstractSqlConnection, SchemaHelper, Column, Index, DatabaseTable, TableDifference } from '@mikro-orm/knex';
 import { Knex } from 'knex';
 
 export class PostgreSqlSchemaHelper extends SchemaHelper {
@@ -157,6 +157,17 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     this.configureColumnDefault(column, col, knex, changedProperties);
 
     return col;
+  }
+
+  getPreAlterTable(tableDiff: TableDifference, safe: boolean): string {
+    // changing uuid column type requires to cast it to text first
+    const uuid = Object.values(tableDiff.changedColumns).find(col => col.changedProperties.has('type') && col.fromColumn.type === 'uuid');
+
+    if (!uuid) {
+      return '';
+    }
+
+    return `alter table "${tableDiff.name}" alter column "${uuid.column.name}" type text using ("${uuid.column.name}"::text)`;
   }
 
   getAlterColumnAutoincrement(tableName: string, column: Column): string {

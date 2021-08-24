@@ -1,6 +1,6 @@
 import { Knex } from 'knex';
 import { CommitOrderCalculator, Dictionary, EntityMetadata } from '@mikro-orm/core';
-import { Column, ForeignKey, Index, TableDifference } from '../typings';
+import { Column, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
 import { DatabaseSchema } from './DatabaseSchema';
 import { DatabaseTable } from './DatabaseTable';
 import { SqlEntityManager } from '../SqlEntityManager';
@@ -87,11 +87,11 @@ export class SchemaGenerator {
     let ret = '';
 
     for (const meta of metadata) {
-      ret += await this.dump(this.dropTable(meta.collection), '\n');
+      ret += await this.dump(this.dropTable(meta.collection, meta.schema), '\n');
     }
 
     if (options.dropMigrationsTable) {
-      ret += await this.dump(this.dropTable(this.config.get('migrations').tableName!), '\n');
+      ret += await this.dump(this.dropTable(this.config.get('migrations').tableName!, this.config.get('schema')), '\n');
     }
 
     return this.wrapSchema(ret + '\n', { wrap });
@@ -103,13 +103,35 @@ export class SchemaGenerator {
   }
 
   async getUpdateSchemaSQL(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema } = {}): Promise<string> {
-    const wrap = options.wrap ?? true;
+    options.wrap = options.wrap ?? true;
+    options.safe = options.safe ?? false;
+    options.dropTables = options.dropTables ?? true;
+    const toSchema = this.getTargetSchema();
+    /* istanbul ignore next */
+    const fromSchema = options.fromSchema ?? await DatabaseSchema.create(this.connection, this.platform, this.config);
+    const comparator = new SchemaComparator(this.platform);
+    const diffUp = comparator.compare(fromSchema, toSchema);
+
+    return this.diffToSQL(diffUp, options);
+  }
+
+  async getUpdateSchemaMigrationSQL(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema } = {}): Promise<{ up: string; down: string }> {
+    options.wrap = options.wrap ?? true;
     options.safe = options.safe ?? false;
     options.dropTables = options.dropTables ?? true;
     const toSchema = this.getTargetSchema();
     const fromSchema = options.fromSchema ?? await DatabaseSchema.create(this.connection, this.platform, this.config);
     const comparator = new SchemaComparator(this.platform);
-    const schemaDiff = comparator.compare(fromSchema, toSchema);
+    const diffUp = comparator.compare(fromSchema, toSchema);
+    const diffDown = comparator.compare(toSchema, fromSchema);
+
+    return {
+      up: await this.diffToSQL(diffUp, options),
+      down: this.platform.supportsDownMigrations() ? await this.diffToSQL(diffDown, options) : '',
+    };
+  }
+
+  async diffToSQL(schemaDiff: SchemaDifference, options: { wrap?: boolean; safe?: boolean; dropTables?: boolean }): Promise<string> {
     let ret = '';
 
     if (this.platform.supportsSchemas()) {
@@ -139,13 +161,13 @@ export class SchemaGenerator {
     }
 
     for (const changedTable of Object.values(schemaDiff.changedTables)) {
-      for (const builder of this.preAlterTable(changedTable, options.safe)) {
+      for (const builder of this.preAlterTable(changedTable, options.safe!)) {
         ret += await this.dump(builder);
       }
     }
 
     for (const changedTable of Object.values(schemaDiff.changedTables)) {
-      for (const builder of this.alterTable(changedTable, options.safe)) {
+      for (const builder of this.alterTable(changedTable, options.safe!)) {
         ret += await this.dump(builder);
       }
     }
@@ -156,7 +178,7 @@ export class SchemaGenerator {
       }
     }
 
-    return this.wrapSchema(ret, { wrap });
+    return this.wrapSchema(ret, options);
   }
 
   private createForeignKey(table: Knex.CreateTableBuilder, foreignKey: ForeignKey) {

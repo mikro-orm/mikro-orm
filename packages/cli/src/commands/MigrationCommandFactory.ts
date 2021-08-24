@@ -144,13 +144,22 @@ export class MigrationCommandFactory {
   private static async handleCreateCommand(migrator: Migrator, args: Arguments<Options>, config: Configuration): Promise<void> {
     const ret = await migrator.createMigration(args.path, args.blank, args.initial);
 
-    if (ret.diff.length === 0) {
+    if (ret.diff.up.length === 0) {
       return CLIHelper.dump(c.green(`No changes required, schema is up-to-date`));
     }
 
     if (args.dump) {
       CLIHelper.dump(c.green('Creating migration with following queries:'));
-      CLIHelper.dump(ret.diff.map(sql => '  ' + sql).join('\n'), config);
+      CLIHelper.dump(c.green('up:'));
+      CLIHelper.dump(ret.diff.up.map(sql => '  ' + sql).join('\n'), config);
+
+      /* istanbul ignore next */
+      if (config.getDriver().getPlatform().supportsDownMigrations()) {
+        CLIHelper.dump(c.green('down:'));
+        CLIHelper.dump(ret.diff.down.map(sql => '  ' + sql).join('\n'), config);
+      } else {
+        CLIHelper.dump(c.yellow(`(${config.getDriver().constructor.name} does not support automatic down migrations)`));
+      }
     }
 
     CLIHelper.dump(c.green(`${ret.fileName} successfully created`));

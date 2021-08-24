@@ -1,0 +1,349 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Migrator (sqlite) generate initial migration: initial-migration-dump 1`] = `
+Object {
+  "code": "import { Migration } from '@mikro-orm/migrations';
+
+export class Migration20191013214813 extends Migration {
+
+  async up(): Promise<void> {
+    this.addSql('create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);');
+
+    this.addSql('create table \`foo_bar4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null default \\\\'asd\\\\', \`baz_id\` integer null, \`foo_bar_id\` integer null, \`version\` integer not null default 1, \`blob\` blob null, \`array\` text null, \`object\` json null, constraint \`foo_bar4_baz_id_foreign\` foreign key(\`baz_id\`) references \`foo_baz4\`(\`id\`) on delete set null on update cascade, constraint \`foo_bar4_foo_bar_id_foreign\` foreign key(\`foo_bar_id\`) references \`foo_bar4\`(\`id\`) on delete set null on update cascade);');
+    this.addSql('create index \`foo_bar4_baz_id_index\` on \`foo_bar4\` (\`baz_id\`);');
+    this.addSql('create unique index \`foo_bar4_baz_id_unique\` on \`foo_bar4\` (\`baz_id\`);');
+    this.addSql('create index \`foo_bar4_foo_bar_id_index\` on \`foo_bar4\` (\`foo_bar_id\`);');
+    this.addSql('create unique index \`foo_bar4_foo_bar_id_unique\` on \`foo_bar4\` (\`foo_bar_id\`);');
+
+    this.addSql('create table \`test4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text null, \`version\` integer not null default 1);');
+
+    this.addSql('create table \`publisher4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null default \\\\'asd\\\\', \`type\` text check (\`type\` in (\\\\'local\\\\', \\\\'global\\\\')) not null default \\\\'local\\\\', \`enum3\` integer null);');
+
+    this.addSql('create table \`publisher4_tests\` (\`id\` integer not null primary key autoincrement, \`publisher4_id\` integer not null, \`test4_id\` integer not null, constraint \`publisher4_tests_publisher4_id_foreign\` foreign key(\`publisher4_id\`) references \`publisher4\`(\`id\`) on delete cascade on update cascade, constraint \`publisher4_tests_test4_id_foreign\` foreign key(\`test4_id\`) references \`test4\`(\`id\`) on delete cascade on update cascade);');
+    this.addSql('create index \`publisher4_tests_publisher4_id_index\` on \`publisher4_tests\` (\`publisher4_id\`);');
+    this.addSql('create index \`publisher4_tests_test4_id_index\` on \`publisher4_tests\` (\`test4_id\`);');
+
+    this.addSql('create table \`book_tag4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);');
+
+    this.addSql('create table \`author4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`email\` text not null, \`age\` integer null, \`terms_accepted\` integer not null default 0, \`identities\` text null, \`born\` date(3) null, \`born_time\` time(3) null, \`favourite_book_id\` integer null, constraint \`author4_favourite_book_id_foreign\` foreign key(\`favourite_book_id\`) references \`book4\`(\`id\`) on delete set null on update cascade);');
+    this.addSql('create unique index \`author4_email_unique\` on \`author4\` (\`email\`);');
+    this.addSql('create index \`author4_favourite_book_id_index\` on \`author4\` (\`favourite_book_id\`);');
+
+    this.addSql('create table \`book4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`title\` text not null, \`price\` real null, \`author_id\` integer null, \`publisher_id\` integer null, \`meta\` json null, constraint \`book4_author_id_foreign\` foreign key(\`author_id\`) references \`author4\`(\`id\`) on delete set null on update cascade, constraint \`book4_publisher_id_foreign\` foreign key(\`publisher_id\`) references \`publisher4\`(\`id\`) on delete set null on update cascade);');
+    this.addSql('create index \`book4_author_id_index\` on \`book4\` (\`author_id\`);');
+    this.addSql('create index \`book4_publisher_id_index\` on \`book4\` (\`publisher_id\`);');
+
+    this.addSql('create table \`tags_ordered\` (\`id\` integer not null primary key autoincrement, \`book4_id\` integer not null, \`book_tag4_id\` integer not null, constraint \`tags_ordered_book4_id_foreign\` foreign key(\`book4_id\`) references \`book4\`(\`id\`) on delete cascade on update cascade, constraint \`tags_ordered_book_tag4_id_foreign\` foreign key(\`book_tag4_id\`) references \`book_tag4\`(\`id\`) on delete cascade on update cascade);');
+    this.addSql('create index \`tags_ordered_book4_id_index\` on \`tags_ordered\` (\`book4_id\`);');
+    this.addSql('create index \`tags_ordered_book_tag4_id_index\` on \`tags_ordered\` (\`book_tag4_id\`);');
+
+    this.addSql('create table \`tags_unordered\` (\`book4_id\` integer not null, \`book_tag4_id\` integer not null, constraint \`tags_unordered_book4_id_foreign\` foreign key(\`book4_id\`) references \`book4\`(\`id\`) on delete cascade on update cascade, constraint \`tags_unordered_book_tag4_id_foreign\` foreign key(\`book_tag4_id\`) references \`book_tag4\`(\`id\`) on delete cascade on update cascade, primary key (\`book4_id\`, \`book_tag4_id\`));');
+    this.addSql('create index \`tags_unordered_book4_id_index\` on \`tags_unordered\` (\`book4_id\`);');
+    this.addSql('create index \`tags_unordered_book_tag4_id_index\` on \`tags_unordered\` (\`book_tag4_id\`);');
+  }
+
+}
+",
+  "diff": Object {
+    "down": Array [],
+    "up": Array [
+      "create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);",
+      "",
+      "create table \`foo_bar4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null default 'asd', \`baz_id\` integer null, \`foo_bar_id\` integer null, \`version\` integer not null default 1, \`blob\` blob null, \`array\` text null, \`object\` json null, constraint \`foo_bar4_baz_id_foreign\` foreign key(\`baz_id\`) references \`foo_baz4\`(\`id\`) on delete set null on update cascade, constraint \`foo_bar4_foo_bar_id_foreign\` foreign key(\`foo_bar_id\`) references \`foo_bar4\`(\`id\`) on delete set null on update cascade);",
+      "create index \`foo_bar4_baz_id_index\` on \`foo_bar4\` (\`baz_id\`);",
+      "create unique index \`foo_bar4_baz_id_unique\` on \`foo_bar4\` (\`baz_id\`);",
+      "create index \`foo_bar4_foo_bar_id_index\` on \`foo_bar4\` (\`foo_bar_id\`);",
+      "create unique index \`foo_bar4_foo_bar_id_unique\` on \`foo_bar4\` (\`foo_bar_id\`);",
+      "",
+      "create table \`test4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text null, \`version\` integer not null default 1);",
+      "",
+      "create table \`publisher4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null default 'asd', \`type\` text check (\`type\` in ('local', 'global')) not null default 'local', \`enum3\` integer null);",
+      "",
+      "create table \`publisher4_tests\` (\`id\` integer not null primary key autoincrement, \`publisher4_id\` integer not null, \`test4_id\` integer not null, constraint \`publisher4_tests_publisher4_id_foreign\` foreign key(\`publisher4_id\`) references \`publisher4\`(\`id\`) on delete cascade on update cascade, constraint \`publisher4_tests_test4_id_foreign\` foreign key(\`test4_id\`) references \`test4\`(\`id\`) on delete cascade on update cascade);",
+      "create index \`publisher4_tests_publisher4_id_index\` on \`publisher4_tests\` (\`publisher4_id\`);",
+      "create index \`publisher4_tests_test4_id_index\` on \`publisher4_tests\` (\`test4_id\`);",
+      "",
+      "create table \`book_tag4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);",
+      "",
+      "create table \`author4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`email\` text not null, \`age\` integer null, \`terms_accepted\` integer not null default 0, \`identities\` text null, \`born\` date(3) null, \`born_time\` time(3) null, \`favourite_book_id\` integer null, constraint \`author4_favourite_book_id_foreign\` foreign key(\`favourite_book_id\`) references \`book4\`(\`id\`) on delete set null on update cascade);",
+      "create unique index \`author4_email_unique\` on \`author4\` (\`email\`);",
+      "create index \`author4_favourite_book_id_index\` on \`author4\` (\`favourite_book_id\`);",
+      "",
+      "create table \`book4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`title\` text not null, \`price\` real null, \`author_id\` integer null, \`publisher_id\` integer null, \`meta\` json null, constraint \`book4_author_id_foreign\` foreign key(\`author_id\`) references \`author4\`(\`id\`) on delete set null on update cascade, constraint \`book4_publisher_id_foreign\` foreign key(\`publisher_id\`) references \`publisher4\`(\`id\`) on delete set null on update cascade);",
+      "create index \`book4_author_id_index\` on \`book4\` (\`author_id\`);",
+      "create index \`book4_publisher_id_index\` on \`book4\` (\`publisher_id\`);",
+      "",
+      "create table \`tags_ordered\` (\`id\` integer not null primary key autoincrement, \`book4_id\` integer not null, \`book_tag4_id\` integer not null, constraint \`tags_ordered_book4_id_foreign\` foreign key(\`book4_id\`) references \`book4\`(\`id\`) on delete cascade on update cascade, constraint \`tags_ordered_book_tag4_id_foreign\` foreign key(\`book_tag4_id\`) references \`book_tag4\`(\`id\`) on delete cascade on update cascade);",
+      "create index \`tags_ordered_book4_id_index\` on \`tags_ordered\` (\`book4_id\`);",
+      "create index \`tags_ordered_book_tag4_id_index\` on \`tags_ordered\` (\`book_tag4_id\`);",
+      "",
+      "create table \`tags_unordered\` (\`book4_id\` integer not null, \`book_tag4_id\` integer not null, constraint \`tags_unordered_book4_id_foreign\` foreign key(\`book4_id\`) references \`book4\`(\`id\`) on delete cascade on update cascade, constraint \`tags_unordered_book_tag4_id_foreign\` foreign key(\`book_tag4_id\`) references \`book_tag4\`(\`id\`) on delete cascade on update cascade, primary key (\`book4_id\`, \`book_tag4_id\`));",
+      "create index \`tags_unordered_book4_id_index\` on \`tags_unordered\` (\`book4_id\`);",
+      "create index \`tags_unordered_book_tag4_id_index\` on \`tags_unordered\` (\`book_tag4_id\`);",
+    ],
+  },
+  "fileName": "Migration20191013214813.ts",
+}
+`;
+
+exports[`Migrator (sqlite) generate initial migration: initial-migration-dump 2`] = `
+Object {
+  "code": "import { Migration } from '@mikro-orm/migrations';
+
+export class Migration20191013214813 extends Migration {
+
+  async up(): Promise<void> {
+    this.addSql('create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);');
+
+    this.addSql('create table \`foo_bar4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null default \\\\'asd\\\\', \`baz_id\` integer null, \`foo_bar_id\` integer null, \`version\` integer not null default 1, \`blob\` blob null, \`array\` text null, \`object\` json null, constraint \`foo_bar4_baz_id_foreign\` foreign key(\`baz_id\`) references \`foo_baz4\`(\`id\`) on delete set null on update cascade, constraint \`foo_bar4_foo_bar_id_foreign\` foreign key(\`foo_bar_id\`) references \`foo_bar4\`(\`id\`) on delete set null on update cascade);');
+    this.addSql('create index \`foo_bar4_baz_id_index\` on \`foo_bar4\` (\`baz_id\`);');
+    this.addSql('create unique index \`foo_bar4_baz_id_unique\` on \`foo_bar4\` (\`baz_id\`);');
+    this.addSql('create index \`foo_bar4_foo_bar_id_index\` on \`foo_bar4\` (\`foo_bar_id\`);');
+    this.addSql('create unique index \`foo_bar4_foo_bar_id_unique\` on \`foo_bar4\` (\`foo_bar_id\`);');
+
+    this.addSql('create table \`test4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text null, \`version\` integer not null default 1);');
+
+    this.addSql('create table \`publisher4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null default \\\\'asd\\\\', \`type\` text check (\`type\` in (\\\\'local\\\\', \\\\'global\\\\')) not null default \\\\'local\\\\', \`enum3\` integer null);');
+
+    this.addSql('create table \`publisher4_tests\` (\`id\` integer not null primary key autoincrement, \`publisher4_id\` integer not null, \`test4_id\` integer not null, constraint \`publisher4_tests_publisher4_id_foreign\` foreign key(\`publisher4_id\`) references \`publisher4\`(\`id\`) on delete cascade on update cascade, constraint \`publisher4_tests_test4_id_foreign\` foreign key(\`test4_id\`) references \`test4\`(\`id\`) on delete cascade on update cascade);');
+    this.addSql('create index \`publisher4_tests_publisher4_id_index\` on \`publisher4_tests\` (\`publisher4_id\`);');
+    this.addSql('create index \`publisher4_tests_test4_id_index\` on \`publisher4_tests\` (\`test4_id\`);');
+
+    this.addSql('create table \`book_tag4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);');
+
+    this.addSql('create table \`author4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`email\` text not null, \`age\` integer null, \`terms_accepted\` integer not null default 0, \`identities\` text null, \`born\` date(3) null, \`born_time\` time(3) null, \`favourite_book_id\` integer null, constraint \`author4_favourite_book_id_foreign\` foreign key(\`favourite_book_id\`) references \`book4\`(\`id\`) on delete set null on update cascade);');
+    this.addSql('create unique index \`author4_email_unique\` on \`author4\` (\`email\`);');
+    this.addSql('create index \`author4_favourite_book_id_index\` on \`author4\` (\`favourite_book_id\`);');
+
+    this.addSql('create table \`book4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`title\` text not null, \`price\` real null, \`author_id\` integer null, \`publisher_id\` integer null, \`meta\` json null, constraint \`book4_author_id_foreign\` foreign key(\`author_id\`) references \`author4\`(\`id\`) on delete set null on update cascade, constraint \`book4_publisher_id_foreign\` foreign key(\`publisher_id\`) references \`publisher4\`(\`id\`) on delete set null on update cascade);');
+    this.addSql('create index \`book4_author_id_index\` on \`book4\` (\`author_id\`);');
+    this.addSql('create index \`book4_publisher_id_index\` on \`book4\` (\`publisher_id\`);');
+
+    this.addSql('create table \`tags_ordered\` (\`id\` integer not null primary key autoincrement, \`book4_id\` integer not null, \`book_tag4_id\` integer not null, constraint \`tags_ordered_book4_id_foreign\` foreign key(\`book4_id\`) references \`book4\`(\`id\`) on delete cascade on update cascade, constraint \`tags_ordered_book_tag4_id_foreign\` foreign key(\`book_tag4_id\`) references \`book_tag4\`(\`id\`) on delete cascade on update cascade);');
+    this.addSql('create index \`tags_ordered_book4_id_index\` on \`tags_ordered\` (\`book4_id\`);');
+    this.addSql('create index \`tags_ordered_book_tag4_id_index\` on \`tags_ordered\` (\`book_tag4_id\`);');
+
+    this.addSql('create table \`tags_unordered\` (\`book4_id\` integer not null, \`book_tag4_id\` integer not null, constraint \`tags_unordered_book4_id_foreign\` foreign key(\`book4_id\`) references \`book4\`(\`id\`) on delete cascade on update cascade, constraint \`tags_unordered_book_tag4_id_foreign\` foreign key(\`book_tag4_id\`) references \`book_tag4\`(\`id\`) on delete cascade on update cascade, primary key (\`book4_id\`, \`book_tag4_id\`));');
+    this.addSql('create index \`tags_unordered_book4_id_index\` on \`tags_unordered\` (\`book4_id\`);');
+    this.addSql('create index \`tags_unordered_book_tag4_id_index\` on \`tags_unordered\` (\`book_tag4_id\`);');
+  }
+
+}
+",
+  "diff": Object {
+    "down": Array [],
+    "up": Array [
+      "create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);",
+      "",
+      "create table \`foo_bar4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null default 'asd', \`baz_id\` integer null, \`foo_bar_id\` integer null, \`version\` integer not null default 1, \`blob\` blob null, \`array\` text null, \`object\` json null, constraint \`foo_bar4_baz_id_foreign\` foreign key(\`baz_id\`) references \`foo_baz4\`(\`id\`) on delete set null on update cascade, constraint \`foo_bar4_foo_bar_id_foreign\` foreign key(\`foo_bar_id\`) references \`foo_bar4\`(\`id\`) on delete set null on update cascade);",
+      "create index \`foo_bar4_baz_id_index\` on \`foo_bar4\` (\`baz_id\`);",
+      "create unique index \`foo_bar4_baz_id_unique\` on \`foo_bar4\` (\`baz_id\`);",
+      "create index \`foo_bar4_foo_bar_id_index\` on \`foo_bar4\` (\`foo_bar_id\`);",
+      "create unique index \`foo_bar4_foo_bar_id_unique\` on \`foo_bar4\` (\`foo_bar_id\`);",
+      "",
+      "create table \`test4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text null, \`version\` integer not null default 1);",
+      "",
+      "create table \`publisher4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null default 'asd', \`type\` text check (\`type\` in ('local', 'global')) not null default 'local', \`enum3\` integer null);",
+      "",
+      "create table \`publisher4_tests\` (\`id\` integer not null primary key autoincrement, \`publisher4_id\` integer not null, \`test4_id\` integer not null, constraint \`publisher4_tests_publisher4_id_foreign\` foreign key(\`publisher4_id\`) references \`publisher4\`(\`id\`) on delete cascade on update cascade, constraint \`publisher4_tests_test4_id_foreign\` foreign key(\`test4_id\`) references \`test4\`(\`id\`) on delete cascade on update cascade);",
+      "create index \`publisher4_tests_publisher4_id_index\` on \`publisher4_tests\` (\`publisher4_id\`);",
+      "create index \`publisher4_tests_test4_id_index\` on \`publisher4_tests\` (\`test4_id\`);",
+      "",
+      "create table \`book_tag4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);",
+      "",
+      "create table \`author4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`email\` text not null, \`age\` integer null, \`terms_accepted\` integer not null default 0, \`identities\` text null, \`born\` date(3) null, \`born_time\` time(3) null, \`favourite_book_id\` integer null, constraint \`author4_favourite_book_id_foreign\` foreign key(\`favourite_book_id\`) references \`book4\`(\`id\`) on delete set null on update cascade);",
+      "create unique index \`author4_email_unique\` on \`author4\` (\`email\`);",
+      "create index \`author4_favourite_book_id_index\` on \`author4\` (\`favourite_book_id\`);",
+      "",
+      "create table \`book4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`title\` text not null, \`price\` real null, \`author_id\` integer null, \`publisher_id\` integer null, \`meta\` json null, constraint \`book4_author_id_foreign\` foreign key(\`author_id\`) references \`author4\`(\`id\`) on delete set null on update cascade, constraint \`book4_publisher_id_foreign\` foreign key(\`publisher_id\`) references \`publisher4\`(\`id\`) on delete set null on update cascade);",
+      "create index \`book4_author_id_index\` on \`book4\` (\`author_id\`);",
+      "create index \`book4_publisher_id_index\` on \`book4\` (\`publisher_id\`);",
+      "",
+      "create table \`tags_ordered\` (\`id\` integer not null primary key autoincrement, \`book4_id\` integer not null, \`book_tag4_id\` integer not null, constraint \`tags_ordered_book4_id_foreign\` foreign key(\`book4_id\`) references \`book4\`(\`id\`) on delete cascade on update cascade, constraint \`tags_ordered_book_tag4_id_foreign\` foreign key(\`book_tag4_id\`) references \`book_tag4\`(\`id\`) on delete cascade on update cascade);",
+      "create index \`tags_ordered_book4_id_index\` on \`tags_ordered\` (\`book4_id\`);",
+      "create index \`tags_ordered_book_tag4_id_index\` on \`tags_ordered\` (\`book_tag4_id\`);",
+      "",
+      "create table \`tags_unordered\` (\`book4_id\` integer not null, \`book_tag4_id\` integer not null, constraint \`tags_unordered_book4_id_foreign\` foreign key(\`book4_id\`) references \`book4\`(\`id\`) on delete cascade on update cascade, constraint \`tags_unordered_book_tag4_id_foreign\` foreign key(\`book_tag4_id\`) references \`book_tag4\`(\`id\`) on delete cascade on update cascade, primary key (\`book4_id\`, \`book_tag4_id\`));",
+      "create index \`tags_unordered_book4_id_index\` on \`tags_unordered\` (\`book4_id\`);",
+      "create index \`tags_unordered_book_tag4_id_index\` on \`tags_unordered\` (\`book_tag4_id\`);",
+    ],
+  },
+  "fileName": "Migration20191013214813.ts",
+}
+`;
+
+exports[`Migrator (sqlite) generate js schema migration: migration-js-dump 1`] = `
+Object {
+  "code": "",
+  "diff": Object {
+    "down": Array [],
+    "up": Array [],
+  },
+  "fileName": "",
+}
+`;
+
+exports[`Migrator (sqlite) generate js schema migration: migration-js-dump 2`] = `
+Object {
+  "code": "",
+  "diff": Object {
+    "down": Array [],
+    "up": Array [],
+  },
+  "fileName": "",
+}
+`;
+
+exports[`Migrator (sqlite) generate migration with custom name: migration-dump 1`] = `
+Object {
+  "code": "",
+  "diff": Object {
+    "down": Array [],
+    "up": Array [],
+  },
+  "fileName": "",
+}
+`;
+
+exports[`Migrator (sqlite) generate migration with snapshot: migration-snapshot-dump-1 1`] = `
+Object {
+  "code": "",
+  "diff": Object {
+    "down": Array [],
+    "up": Array [],
+  },
+  "fileName": "",
+}
+`;
+
+exports[`Migrator (sqlite) generate migration with snapshot: migration-snapshot-dump-2 1`] = `
+Object {
+  "code": "",
+  "diff": Object {
+    "down": Array [],
+    "up": Array [],
+  },
+  "fileName": "",
+}
+`;
+
+exports[`Migrator (sqlite) generate schema migration: migration-dump 1`] = `
+Object {
+  "code": "",
+  "diff": Object {
+    "down": Array [],
+    "up": Array [],
+  },
+  "fileName": "",
+}
+`;
+
+exports[`Migrator (sqlite) up/down params [all or nothing disabled]: all-or-nothing-disabled 1`] = `
+Array [
+  "select name as table_name from sqlite_master where type = 'table' and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' union all select name as table_name from sqlite_temp_master where type = 'table' order by name",
+  "create table \`mikro_orm_migrations\` (\`id\` integer not null primary key autoincrement, \`name\` varchar(255), \`executed_at\` datetime default current_timestamp)",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc",
+  "begin",
+  "select 1",
+  "commit",
+  "insert into \`mikro_orm_migrations\` (\`name\`) values (?)",
+  "select name as table_name from sqlite_master where type = 'table' and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' union all select name as table_name from sqlite_temp_master where type = 'table' order by name",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc",
+  "begin",
+  "commit",
+  "delete from \`mikro_orm_migrations\` where \`name\` = ?",
+  "select name as table_name from sqlite_master where type = 'table' and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' union all select name as table_name from sqlite_temp_master where type = 'table' order by name",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc",
+  "begin",
+  "select 1",
+  "commit",
+  "insert into \`mikro_orm_migrations\` (\`name\`) values (?)",
+  "select name as table_name from sqlite_master where type = 'table' and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' union all select name as table_name from sqlite_temp_master where type = 'table' order by name",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc",
+  "begin",
+  "commit",
+  "delete from \`mikro_orm_migrations\` where \`name\` = ?",
+  "select name as table_name from sqlite_master where type = 'table' and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' union all select name as table_name from sqlite_temp_master where type = 'table' order by name",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc",
+  "begin",
+  "select 1",
+  "commit",
+  "insert into \`mikro_orm_migrations\` (\`name\`) values (?)",
+  "select name as table_name from sqlite_master where type = 'table' and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' union all select name as table_name from sqlite_temp_master where type = 'table' order by name",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc",
+  "select name as table_name from sqlite_master where type = 'table' and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' union all select name as table_name from sqlite_temp_master where type = 'table' order by name",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc",
+  "begin",
+  "commit",
+  "delete from \`mikro_orm_migrations\` where \`name\` = ?",
+]
+`;
+
+exports[`Migrator (sqlite) up/down params [all or nothing enabled]: all-or-nothing 1`] = `
+Array [
+  "select name as table_name from sqlite_master where type = 'table' and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' union all select name as table_name from sqlite_temp_master where type = 'table' order by name",
+  "create table \`mikro_orm_migrations\` (\`id\` integer not null primary key autoincrement, \`name\` varchar(255), \`executed_at\` datetime default current_timestamp)",
+  "begin",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc",
+  "savepointtrx\\\\d+",
+  "select 1",
+  "release savepointtrx\\\\d+",
+  "insert into \`mikro_orm_migrations\` (\`name\`) values (?)",
+  "commit",
+  "select name as table_name from sqlite_master where type = 'table' and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' union all select name as table_name from sqlite_temp_master where type = 'table' order by name",
+  "begin",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc",
+  "savepointtrx\\\\d+",
+  "release savepointtrx\\\\d+",
+  "delete from \`mikro_orm_migrations\` where \`name\` = ?",
+  "commit",
+  "select name as table_name from sqlite_master where type = 'table' and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' union all select name as table_name from sqlite_temp_master where type = 'table' order by name",
+  "begin",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc",
+  "savepointtrx\\\\d+",
+  "select 1",
+  "release savepointtrx\\\\d+",
+  "insert into \`mikro_orm_migrations\` (\`name\`) values (?)",
+  "commit",
+  "select name as table_name from sqlite_master where type = 'table' and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' union all select name as table_name from sqlite_temp_master where type = 'table' order by name",
+  "begin",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc",
+  "savepointtrx\\\\d+",
+  "release savepointtrx\\\\d+",
+  "delete from \`mikro_orm_migrations\` where \`name\` = ?",
+  "commit",
+  "select name as table_name from sqlite_master where type = 'table' and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' union all select name as table_name from sqlite_temp_master where type = 'table' order by name",
+  "begin",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc",
+  "savepointtrx\\\\d+",
+  "select 1",
+  "release savepointtrx\\\\d+",
+  "insert into \`mikro_orm_migrations\` (\`name\`) values (?)",
+  "commit",
+  "select name as table_name from sqlite_master where type = 'table' and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' union all select name as table_name from sqlite_temp_master where type = 'table' order by name",
+  "begin",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc",
+  "commit",
+  "select name as table_name from sqlite_master where type = 'table' and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' union all select name as table_name from sqlite_temp_master where type = 'table' order by name",
+  "begin",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc",
+  "select * from \`mikro_orm_migrations\` order by \`id\` asc",
+  "savepointtrx\\\\d+",
+  "release savepointtrx\\\\d+",
+  "delete from \`mikro_orm_migrations\` where \`name\` = ?",
+  "commit",
+]
+`;

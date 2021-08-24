@@ -425,8 +425,10 @@ export class SchemaComparator {
     }
 
     if (to.mappedType instanceof BooleanType) {
-      const defaultValue = !['0', 'false', 'f', 'n', 'no', 'off'].includes(from.default!);
-      return '' + defaultValue === to.default;
+      const defaultValueFrom = !['0', 'false', 'f', 'n', 'no', 'off'].includes('' + from.default!);
+      const defaultValueTo = !['0', 'false', 'f', 'n', 'no', 'off'].includes('' + to.default!);
+
+      return defaultValueFrom === defaultValueTo;
     }
 
     if (from.default && to.default) {

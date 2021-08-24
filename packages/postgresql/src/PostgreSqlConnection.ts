@@ -68,15 +68,20 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
     const colName = this.client.wrapIdentifier(col.getColumnName(), col.columnBuilder.queryContext());
     const constraintName = `${this.tableNameRaw}_${col.getColumnName()}_check`;
     this.pushQuery({ sql: `alter table ${quotedTableName} drop constraint if exists "${constraintName}"`, bindings: [] });
+    that.dropColumnDefault.call(this, col, colName);
 
     if (col.type === 'enu') {
       this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} type text using (${colName}::text)`, bindings: [] });
       this.pushQuery({ sql: `alter table ${quotedTableName} add constraint "${constraintName}" ${type.replace(/^text /, '')}`, bindings: [] });
+    } else if (type === 'uuid') {
+      // we need to drop the default as it would be invalid
+      this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} drop default`, bindings: [] });
+      this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} type ${type} using (${colName}::text::uuid)`, bindings: [] });
     } else {
       this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} type ${type} using (${colName}::${type})`, bindings: [] });
     }
 
-    that.alterColumnDefault.call(this, col, colName);
+    that.addColumnDefault.call(this, col, colName);
     that.alterColumnNullable.call(this, col, colName);
   }
 
@@ -95,7 +100,21 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
     }
   }
 
-  private alterColumnDefault(this: any, col: Dictionary, colName: string): void {
+  private addColumnDefault(this: any, col: Dictionary, colName: string): void {
+    const quotedTableName = this.tableName();
+    const defaultTo = col.modified.defaultTo;
+
+    if (!defaultTo) {
+      return;
+    }
+
+    if (defaultTo[0] !== null) {
+      const modifier = col.defaultTo(...defaultTo);
+      this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} set ${modifier}`, bindings: [] });
+    }
+  }
+
+  private dropColumnDefault(this: any, col: Dictionary, colName: string): void {
     const quotedTableName = this.tableName();
     const defaultTo = col.modified.defaultTo;
 
@@ -105,9 +124,6 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
 
     if (defaultTo[0] === null) {
       this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} drop default`, bindings: [] });
-    } else {
-      const modifier = col.defaultTo(...defaultTo);
-      this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} set ${modifier}`, bindings: [] });
     }
   }
 
