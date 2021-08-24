@@ -6,8 +6,6 @@ import { Utils } from '../utils/Utils';
 
 export class ArrayCollection<T, O> {
 
-  [k: number]: T;
-
   protected readonly items = new Set<T>();
   protected initialized = true;
   protected _count?: number;
@@ -205,4 +203,8 @@ export class ArrayCollection<T, O> {
     }
   }
 
+}
+
+export interface ArrayCollection<T, O> {
+  [k: number]: T;
 }

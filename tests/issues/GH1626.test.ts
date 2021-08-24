@@ -14,7 +14,6 @@ export class NativeBigIntType extends BigIntType {
       return value;
     }
 
-    /* eslint-env es2020 */
     return BigInt(value);
   }
 

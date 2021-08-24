@@ -2,7 +2,7 @@ module.exports = {
   root: true,
   env: {
     'browser': true,
-    'es6': true,
+    'es2020': true,
     'node': true,
   },
   extends: [
@@ -52,6 +52,7 @@ module.exports = {
     '@typescript-eslint/quotes': ['error', 'single', { avoidEscape: true, allowTemplateLiterals: true }],
     '@typescript-eslint/semi': ['error', 'always'],
     '@typescript-eslint/no-useless-constructor': 'error',
+    "@typescript-eslint/no-redeclare": ["error"],
     '@typescript-eslint/member-delimiter-style': ['error', {
       multiline: { delimiter: 'semi', requireLast: true },
       singleline: { delimiter: 'semi', requireLast: false },
@@ -100,7 +101,7 @@ module.exports = {
     'no-obj-calls': 'error',
     'no-octal': 'error',
     'no-prototype-builtins': 'error',
-    'no-redeclare': 'error',
+    'no-redeclare': 'off',
     'no-regex-spaces': 'error',
     'no-self-assign': 'error',
     'no-shadow-restricted-names': 'error',
