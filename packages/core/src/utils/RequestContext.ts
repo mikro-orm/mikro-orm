@@ -57,9 +57,9 @@ export class RequestContext {
     const forks = new Map<string, EntityManager>();
 
     if (Array.isArray(em)) {
-      em.forEach(em => forks.set(em.name, em.fork(true, true)));
+      em.forEach(em => forks.set(em.name, em.fork({ clear: true, useContext: true })));
     } else {
-      forks.set(em.name, em.fork(true, true));
+      forks.set(em.name, em.fork({ clear: true, useContext: true }));
     }
 
     return new RequestContext(forks);

@@ -27,6 +27,7 @@ List of such methods:
 - `em.findOneOrFail()`
 - `em.findAndCount()`
 - `em.merge()`
+- `em.fork()`
 - `repo.find()`
 - `repo.findOne()`
 - `repo.findOneOrFail()`

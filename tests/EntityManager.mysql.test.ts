@@ -16,6 +16,7 @@ import { Author2Subscriber } from './subscribers/Author2Subscriber';
 import { EverythingSubscriber } from './subscribers/EverythingSubscriber';
 import { FlushSubscriber } from './subscribers/FlushSubscriber';
 import { Test2Subscriber } from './subscribers/Test2Subscriber';
+import { ManualAuthor2Subscriber } from './subscribers/ManualAuthor2Subscriber';
 
 describe('EntityManagerMySql', () => {
 
@@ -1434,6 +1435,60 @@ describe('EntityManagerMySql', () => {
       ['beforeFlush', ['em', 'uow']],
       ['onFlush', ['em', 'uow']],
       ['afterFlush', ['em', 'uow']],
+    ]);
+  });
+
+  test('subscribers in forked entity managers', async () => {
+    expect(Author2Subscriber.log).toEqual([]);
+    expect(ManualAuthor2Subscriber.log).toEqual([]);
+
+    const pub = new Publisher2('Publisher2');
+    await orm.em.persistAndFlush(pub);
+    const god = new Author2('God', 'hello@heaven.god');
+    const bible = new Book2('Bible', god);
+    bible.publisher = wrap(pub).toReference();
+    const bible2 = new Book2('Bible pt. 2', god);
+    bible2.publisher = wrap(pub).toReference();
+    const bible3 = new Book2('Bible pt. 3', new Author2('Lol', 'lol@lol.lol'));
+    bible3.publisher = wrap(pub).toReference();
+    await orm.em.persistAndFlush([bible, bible2, bible3]);
+
+    const forkedEm = orm.em.fork({ freshEventManager: true });
+    forkedEm.getEventManager().registerSubscriber(new ManualAuthor2Subscriber());
+
+    const repoAuthor = forkedEm.getRepository(Author2);
+    const repoBook = forkedEm.getRepository(Book2);
+    const forkedGod = await repoAuthor.findOneOrFail(god.id);
+    const forkedBible = await repoBook.findOneOrFail(bible.uuid);
+    const forkedBible2 = await repoBook.findOneOrFail(bible2.uuid);
+
+    forkedGod.name = 'Thor';
+    forkedBible2.title = '123';
+    await forkedEm.flush();
+
+    forkedEm.remove(forkedBible);
+    forkedEm.remove(forkedBible2);
+    forkedEm.remove(forkedGod);
+    await forkedEm.flush();
+
+    expect(Author2Subscriber.log.map(l => [l[0], l[1].entity.constructor.name])).toEqual([
+      ['beforeCreate', 'Author2'],
+      ['beforeCreate', 'Author2'],
+      ['afterCreate', 'Author2'],
+      ['afterCreate', 'Author2'],
+      ['onInit', 'Author2'],
+      ['beforeUpdate', 'Author2'],
+      ['afterUpdate', 'Author2'],
+      ['beforeDelete', 'Author2'],
+      ['afterDelete', 'Author2'],
+    ]);
+
+    expect(ManualAuthor2Subscriber.log.map(l => [l[0], l[1].entity.constructor.name])).toEqual([
+      ['onInit', 'Author2'],
+      ['beforeUpdate', 'Author2'],
+      ['afterUpdate', 'Author2'],
+      ['beforeDelete', 'Author2'],
+      ['afterDelete', 'Author2'],
     ]);
   });
 

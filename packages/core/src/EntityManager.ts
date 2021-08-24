@@ -91,7 +91,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async find<T extends AnyEntity<T>, P extends string = never>(entityName: EntityName<T>, where: FilterQuery<T>, options: FindOptions<T, P> = {}): Promise<Loaded<T, P>[]> {
     if (options.disableIdentityMap) {
-      const fork = this.fork(false);
+      const fork = this.fork({ clear: false });
       const ret = await fork.find<T, P>(entityName, where, { ...options, disableIdentityMap: false });
       fork.clear();
 
@@ -274,7 +274,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async findOne<T extends AnyEntity<T>, P extends string = never>(entityName: EntityName<T>, where: FilterQuery<T>, options: FindOneOptions<T, P> = {}): Promise<Loaded<T, P> | null> {
     if (options.disableIdentityMap) {
-      const fork = this.fork(false);
+      const fork = this.fork({ clear: false });
       const ret = await fork.findOne<T, P>(entityName, where, { ...options, disableIdentityMap: false });
       fork.clear();
 
@@ -338,7 +338,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Runs your callback wrapped inside a database transaction.
    */
   async transactional<T>(cb: (em: D[typeof EntityManagerType]) => Promise<T>, options: { ctx?: Transaction; isolationLevel?: IsolationLevel } = {}): Promise<T> {
-    const em = this.fork(false);
+    const em = this.fork({ clear: false });
     /* istanbul ignore next */
     options.ctx = options.ctx ?? this.transactionContext;
 
@@ -722,16 +722,18 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
   /**
    * Returns new EntityManager instance with its own identity map
-   *
-   * @param clear do we want clear identity map? defaults to true
-   * @param useContext use request context? should be used only for top level request scope EM, defaults to false
    */
-  fork(clear = true, useContext = false): D[typeof EntityManagerType] {
-    const em = new (this.constructor as typeof EntityManager)(this.config, this.driver, this.metadata, useContext, this.eventManager);
+  fork(options: ForkOptions = {}): D[typeof EntityManagerType] {
+    options.clear = options.clear ?? true;
+    options.useContext = options.useContext ?? false;
+    options.freshEventManager = options.freshEventManager ?? false;
+
+    const eventManager = options.freshEventManager ? new EventManager(this.config.get('subscribers')) : this.eventManager;
+    const em = new (this.constructor as typeof EntityManager)(this.config, this.driver, this.metadata, options.useContext, eventManager);
     em.filters = { ...this.filters };
     em.filterParams = Utils.copy(this.filterParams);
 
-    if (!clear) {
+    if (!options.clear) {
       for (const entity of this.getUnitOfWork().getIdentityMap()) {
         em.getUnitOfWork().registerManaged(entity);
       }
@@ -916,4 +918,13 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 export interface MergeOptions {
   refresh?: boolean;
   convertCustomTypes?: boolean;
+}
+
+interface ForkOptions {
+  /** do we want clear identity map? defaults to true */
+  clear?: boolean;
+  /** use request context? should be used only for top level request scope EM, defaults to false */
+  useContext?: boolean;
+  /** do we want to use fresh EventManager instance? defaults to false (global instance) */
+  freshEventManager?: boolean;
 }
