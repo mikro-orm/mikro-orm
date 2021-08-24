@@ -44,3 +44,12 @@ The return type of all such methods now returns properly typed `Loaded` response
 ## Type-safe fields parameter
 
 `FindOptions.fields` parameter is now strictly typed also for the dot notation.
+
+## Removed `@Repository()` decorator
+
+The decorator was problematic as it could only work properly it the file was required
+soon enough - before the ORM initialization, otherwise the repository would not be 
+registered at all.
+
+Use `@Entity({ customRepository: () => CustomRepository })` in the entity definition
+instead.
