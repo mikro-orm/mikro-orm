@@ -222,7 +222,7 @@ const book = await orm.em.findOne(Book, 1);
 console.log(book.author.myPrimaryKey); // ok, returns the PK
 ```
 
-For MongoDB, defined the PK generic type argument as `'id' | '_id'` to access both `string`
+For MongoDB, define the PK generic type argument as `'id' | '_id'` to access both `string`
 and `ObjectId` PK values:
 
 <Tabs
