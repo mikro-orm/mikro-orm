@@ -112,7 +112,6 @@ export class MigrationCommandFactory {
     args.option('seed', {
       type: 'string',
       desc: 'Allows to seed the database after dropping it and rerunning all migrations',
-      default: '',
     });
   }
 
