@@ -11,7 +11,7 @@ export class ClearCacheCommand implements CommandModule {
    * @inheritdoc
    */
   async handler(args: Arguments) {
-    const config = await CLIHelper.getConfiguration(false);
+    const config = await CLIHelper.getConfiguration();
 
     if (!config.get('cache').enabled) {
       CLIHelper.dump(c.red('Metadata cache is disabled in your configuration. Set cache.enabled to true to use this command.'));
