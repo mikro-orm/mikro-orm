@@ -59,15 +59,18 @@
   },
   "dependencies": {
     "@mikro-orm/core": "^4.5.9",
-    "@mikro-orm/entity-generator": "^4.5.9",
     "@mikro-orm/knex": "^4.5.9",
-    "@mikro-orm/migrations": "^4.5.9",
     "ansi-colors": "4.1.1",
     "cli-table3": "0.6.0",
     "fs-extra": "10.0.0",
     "tsconfig-paths": "3.11.0",
     "yargonaut": "1.1.4",
     "yargs": "15.4.1"
+  },
+  "devDependencies": {
+    "@mikro-orm/entity-generator": "^4.0.0",
+    "@mikro-orm/migrations": "^4.0.0",
+    "@mikro-orm/seeder": "^4.0.0"
   },
   "peerDependencies": {
     "@mikro-orm/entity-generator": "^4.0.0",
