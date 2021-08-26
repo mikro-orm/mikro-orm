@@ -41,6 +41,8 @@ export class SchemaGenerator {
       this.config.set('dbName', this.helper.getManagementDbName());
       await this.driver.reconnect();
       await this.createDatabase(dbName);
+      this.config.set('dbName', dbName);
+      await this.driver.reconnect();
     }
   }
 
