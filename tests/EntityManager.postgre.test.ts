@@ -1824,6 +1824,36 @@ describe('EntityManagerPostgre', () => {
     expect(updates).toHaveLength(0);
   });
 
+  test('getConnection() with replicas (GH issue #1963)', async () => {
+    const config = new Configuration({
+      type: 'postgresql',
+      clientUrl: 'postgre://root@127.0.0.1:1234/db_name',
+      host: '127.0.0.10',
+      password: 'secret',
+      user: 'user',
+      logger: jest.fn(),
+      forceUtcTimezone: true,
+      replicas: [
+        { name: 'read-1', host: 'read_host_1', user: 'read_user' },
+      ],
+    } as any, false);
+    const driver = new PostgreSqlDriver(config);
+    expect(driver.getConnection('write').getConnectionOptions()).toEqual({
+      database: 'db_name',
+      host: '127.0.0.10',
+      password: 'secret',
+      user: 'user',
+      port: 1234,
+    });
+    expect(driver.getConnection('read').getConnectionOptions()).toEqual({
+      database: 'db_name',
+      host: 'read_host_1',
+      password: 'secret',
+      user: 'read_user',
+      port: 1234,
+    });
+  });
+
   // this should run in ~600ms (when running single test locally)
   test('perf: one to many', async () => {
     const author = new Author2('Jon Snow', 'snow@wall.st');

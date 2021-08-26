@@ -28,6 +28,7 @@ export abstract class AbstractSqlConnection extends Connection {
   }
 
   async close(force?: boolean): Promise<void> {
+    await super.close(force);
     await this.client.destroy();
   }
 
