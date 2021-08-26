@@ -62,10 +62,26 @@
   },
   "peerDependencies": {
     "@mikro-orm/core": "^4.0.0",
-    "mysql2": "^2.1.0"
+    "@mikro-orm/entity-generator": "^4.0.0",
+    "@mikro-orm/migrations": "^4.0.0",
+    "@mikro-orm/seeder": "^4.0.0",
+    "mysql2": "^2.0.0",
+    "mariadb": "^2.0.0"
   },
   "peerDependenciesMeta": {
+    "@mikro-orm/entity-generator": {
+      "optional": true
+    },
+    "@mikro-orm/migrations": {
+      "optional": true
+    },
+    "@mikro-orm/seeder": {
+      "optional": true
+    },
     "mysql2": {
+      "optional": true
+    },
+    "mariadb": {
       "optional": true
     }
   }
