@@ -1,15 +1,16 @@
 import umzug, { migrationsList, Umzug } from 'umzug';
 import { join } from 'path';
 import { ensureDir, pathExists, writeJSON } from 'fs-extra';
-import { Constructor, Dictionary, Transaction, Utils, t, Type } from '@mikro-orm/core';
+import { Constructor, Dictionary, Transaction, Utils, t, Type, IMigrator, IMigrationGenerator } from '@mikro-orm/core';
 import { DatabaseSchema, DatabaseTable, EntityManager, SchemaGenerator } from '@mikro-orm/knex';
 import { Migration } from './Migration';
 import { MigrationRunner } from './MigrationRunner';
-import { MigrationGenerator } from './MigrationGenerator';
 import { MigrationStorage } from './MigrationStorage';
 import { MigrateOptions, MigrationResult, MigrationRow, UmzugMigration } from './typings';
+import { TSMigrationGenerator } from './TSMigrationGenerator';
+import { JSMigrationGenerator } from './JSMigrationGenerator';
 
-export class Migrator {
+export class Migrator implements IMigrator {
 
   private readonly umzug: Umzug;
   private readonly driver = this.em.getDriver();
@@ -17,7 +18,7 @@ export class Migrator {
   private readonly config = this.em.config;
   private readonly options = this.config.get('migrations');
   private readonly runner = new MigrationRunner(this.driver, this.options, this.config);
-  private readonly generator = new MigrationGenerator(this.driver, this.config.getNamingStrategy(), this.options);
+  private readonly generator: IMigrationGenerator;
   private readonly storage = new MigrationStorage(this.driver, this.options);
   private readonly absolutePath = Utils.absolutePath(this.options.path!, this.config.get('baseDir'));
   private readonly snapshotPath = join(this.absolutePath, `.snapshot-${this.config.get('dbName')}.json`);
@@ -39,8 +40,19 @@ export class Migrator {
       logging: this.config.get('logger'),
       migrations,
     });
+
+    if (this.options.generator) {
+      this.generator = new this.options.generator(this.driver, this.config.getNamingStrategy(), this.options);
+    } else if (this.options.emit === 'js') {
+      this.generator = new JSMigrationGenerator(this.driver, this.config.getNamingStrategy(), this.options);
+    } else {
+      this.generator = new TSMigrationGenerator(this.driver, this.config.getNamingStrategy(), this.options);
+    }
   }
 
+  /**
+   * @inheritDoc
+   */
   async createMigration(path?: string, blank = false, initial = false): Promise<MigrationResult> {
     if (initial) {
       return this.createInitialMigration(path);
@@ -63,6 +75,9 @@ export class Migrator {
     };
   }
 
+  /**
+   * @inheritDoc
+   */
   async createInitialMigration(path?: string): Promise<MigrationResult> {
     await this.ensureMigrationsDirExists();
     const schemaExists = await this.validateInitialMigration();
@@ -124,6 +139,9 @@ export class Migrator {
     return expected.size === exists.size;
   }
 
+  /**
+   * @inheritDoc
+   */
   async getExecutedMigrations(): Promise<MigrationRow[]> {
     await this.ensureMigrationsDirExists();
     await this.schemaGenerator.ensureDatabase();
@@ -131,6 +149,9 @@ export class Migrator {
     return this.storage.getExecutedMigrations();
   }
 
+  /**
+   * @inheritDoc
+   */
   async getPendingMigrations(): Promise<UmzugMigration[]> {
     await this.ensureMigrationsDirExists();
     await this.schemaGenerator.ensureDatabase();
@@ -138,10 +159,16 @@ export class Migrator {
     return this.umzug.pending();
   }
 
+  /**
+   * @inheritDoc
+   */
   async up(options?: string | string[] | MigrateOptions): Promise<UmzugMigration[]> {
     return this.runMigrations('up', options);
   }
 
+  /**
+   * @inheritDoc
+   */
   async down(options?: string | string[] | MigrateOptions): Promise<UmzugMigration[]> {
     return this.runMigrations('down', options);
   }

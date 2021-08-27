@@ -455,6 +455,68 @@ exports.Migration20191013214813 = Migration20191013214813;
 }
 `;
 
+exports[`Migrator (postgres) generate migration with custom migrator: migration-ts-dump 1`] = `
+Object {
+  "code": "// this file was generated via custom migration generator
+
+import { Migration } from '@mikro-orm/migrations';
+
+export class Migration20191013214813 extends Migration {
+
+  async up(): Promise<void> {
+    this.addSql('alter table
+                   \\"book2\\" drop constraint if exists \\"book2_double_check\\";');
+    this.addSql('alter table
+                   \\"book2\\"
+                 alter column
+                   \\"double\\" type double precision using (\\"double\\" :: double precision);');
+    this.addSql('alter table
+                   \\"book2\\" drop column \\"foo\\";');
+
+    this.addSql('alter table
+                   \\"test2\\" drop column \\"path\\";');
+  }
+
+  async down(): Promise<void> {
+    this.addSql('alter table
+                   \\"book2\\"
+                 add
+                   column \\"foo\\" varchar null default \\\\'lol\\\\';');
+    this.addSql('alter table
+                   \\"book2\\" drop constraint if exists \\"book2_double_check\\";');
+    this.addSql('alter table
+                   \\"book2\\"
+                 alter column
+                   \\"double\\" type numeric using (\\"double\\" :: numeric);');
+
+    this.addSql('alter table
+                   \\"test2\\"
+                 add
+                   column \\"path\\" polygon null default null;');
+  }
+
+}
+",
+  "diff": Object {
+    "down": Array [
+      "alter table \\"book2\\" add column \\"foo\\" varchar null default 'lol';",
+      "alter table \\"book2\\" drop constraint if exists \\"book2_double_check\\";",
+      "alter table \\"book2\\" alter column \\"double\\" type numeric using (\\"double\\"::numeric);",
+      "",
+      "alter table \\"test2\\" add column \\"path\\" polygon null default null;",
+    ],
+    "up": Array [
+      "alter table \\"book2\\" drop constraint if exists \\"book2_double_check\\";",
+      "alter table \\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);",
+      "alter table \\"book2\\" drop column \\"foo\\";",
+      "",
+      "alter table \\"test2\\" drop column \\"path\\";",
+    ],
+  },
+  "fileName": "Migration20191013214813.ts",
+}
+`;
+
 exports[`Migrator (postgres) generate migration with custom name: migration-dump 1`] = `
 Object {
   "code": "import { Migration } from '@mikro-orm/migrations';

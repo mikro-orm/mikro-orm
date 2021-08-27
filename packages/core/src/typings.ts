@@ -391,16 +391,64 @@ export interface IEntityGenerator {
 
 type UmzugMigration = { path?: string; file: string };
 type MigrateOptions = { from?: string | number; to?: string | number; migrations?: string[] };
-type MigrationResult = { fileName: string; code: string; diff: string[] };
+type MigrationResult = { fileName: string; code: string; diff: MigrationDiff };
 type MigrationRow = { name: string; executed_at: Date };
 
 export interface IMigrator {
+  /**
+   * Checks current schema for changes, generates new migration if there are any.
+   */
   createMigration(path?: string, blank?: boolean, initial?: boolean): Promise<MigrationResult>;
+
+  /**
+   * Creates initial migration. This generates the schema based on metadata, and checks whether all the tables
+   * are already present. If yes, it will also automatically log the migration as executed.
+   * Initial migration can be created only if the schema is already aligned with the metadata, or when no schema
+   * is present - in such case regular migration would have the same effect.
+   */
   createInitialMigration(path?: string): Promise<MigrationResult>;
+
+  /**
+   * Returns list of already executed migrations.
+   */
   getExecutedMigrations(): Promise<MigrationRow[]>;
+
+  /**
+   * Returns list of pending (not yet executed) migrations found in the migration directory.
+   */
   getPendingMigrations(): Promise<UmzugMigration[]>;
+
+  /**
+   * Executes specified migrations. Without parameter it will migrate up to the latest version.
+   */
   up(options?: string | string[] | MigrateOptions): Promise<UmzugMigration[]>;
+
+  /**
+   * Executes down migrations to the given point. Without parameter it will migrate one version down.
+   */
   down(options?: string | string[] | MigrateOptions): Promise<UmzugMigration[]>;
+}
+
+export interface MigrationDiff {
+  up: string[];
+  down: string[];
+}
+
+export interface IMigrationGenerator {
+  /**
+   * Generates the full contents of migration file. Uses `generateMigrationFile` to get the file contents.
+   */
+  generate(diff: MigrationDiff, path?: string): Promise<[string, string]>;
+
+  /**
+   * Creates single migration statement. By default adds `this.addSql(sql);` to the code.
+   */
+  createStatement(sql: string, padLeft: number): string;
+
+  /**
+   * Returns the file contents of given migration.
+   */
+  generateMigrationFile(className: string, diff: MigrationDiff): string;
 }
 
 export interface Migration {

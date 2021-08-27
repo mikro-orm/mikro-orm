@@ -3,7 +3,21 @@ import { inspect } from 'util';
 import { NamingStrategy } from '../naming-strategy';
 import { CacheAdapter, FileCacheAdapter, NullCacheAdapter } from '../cache';
 import { EntityRepository } from '../entity';
-import { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, FilterDef, Highlighter, HydratorConstructor, IHydrator, IPrimaryKey, MaybePromise, MigrationObject } from '../typings';
+import {
+  AnyEntity,
+  Constructor,
+  Dictionary,
+  EntityClass,
+  EntityClassGroup,
+  FilterDef,
+  Highlighter,
+  HydratorConstructor,
+  IHydrator,
+  IMigrationGenerator,
+  IPrimaryKey,
+  MaybePromise,
+  MigrationObject,
+} from '../typings';
 import { ObjectHydrator } from '../hydration';
 import { NullHighlighter } from '../utils/NullHighlighter';
 import { Logger, LoggerNamespace } from '../utils/Logger';
@@ -318,6 +332,7 @@ export type MigrationsOptions = {
   safe?: boolean;
   snapshot?: boolean;
   emit?: 'js' | 'ts';
+  generator?: Constructor<IMigrationGenerator>;
   fileName?: (timestamp: string) => string;
   migrationsList?: MigrationObject[];
 };

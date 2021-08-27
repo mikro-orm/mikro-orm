@@ -1,7 +1,8 @@
 (global as any).process.env.FORCE_COLOR = 0;
 import umzug from 'umzug';
+import { format } from 'sql-formatter';
 import { Logger, MetadataStorage, MikroORM } from '@mikro-orm/core';
-import { Migration, MigrationStorage, Migrator } from '@mikro-orm/migrations';
+import { Migration, MigrationStorage, Migrator, TSMigrationGenerator } from '@mikro-orm/migrations';
 import { DatabaseSchema, DatabaseTable, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { remove } from 'fs-extra';
 import { initORMPostgreSql } from '../../bootstrap';
@@ -49,6 +50,32 @@ describe('Migrator (postgres)', () => {
     const migrator = orm.getMigrator();
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-js-dump');
+    orm.config.set('migrations', migrationsSettings); // Revert migration config changes
+    await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
+  });
+
+  test('generate migration with custom migrator', async () => {
+    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
+    const migrationsSettings = orm.config.get('migrations');
+    orm.config.set('migrations', { ...migrationsSettings, generator: class extends TSMigrationGenerator {
+
+      generateMigrationFile(className: string, diff: { up: string[]; down: string[] }): string {
+        const comment = '// this file was generated via custom migration generator\n\n';
+        return comment + super.generateMigrationFile(className, diff);
+      }
+
+      createStatement(sql: string, padLeft: number): string {
+        sql = format(sql, { language: 'postgresql' });
+        sql = sql.split('\n').map((l, i) => i === 0 ? l : `${' '.repeat(padLeft + 13)}${l}`).join('\n');
+
+        return super.createStatement(sql, padLeft);
+      }
+
+    } });
+    const migrator = orm.getMigrator();
+    const migration = await migrator.createMigration();
+    expect(migration).toMatchSnapshot('migration-ts-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
     await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
   });

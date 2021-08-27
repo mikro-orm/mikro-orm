@@ -183,17 +183,6 @@ Object {
 }
 `;
 
-exports[`Migrator (sqlite) generate js schema migration: migration-js-dump 2`] = `
-Object {
-  "code": "",
-  "diff": Object {
-    "down": Array [],
-    "up": Array [],
-  },
-  "fileName": "",
-}
-`;
-
 exports[`Migrator (sqlite) generate migration with custom name: migration-dump 1`] = `
 Object {
   "code": "",

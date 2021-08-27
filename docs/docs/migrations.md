@@ -76,8 +76,44 @@ await MikroORM.init({
     safe: false, // allow to disable table and column dropping
     snapshot: true, // save snapshot when creating new migrations
     emit: 'ts', // migration generation mode
+    generator: TSMigrationGenerator, // migration generator, e.g. to allow custom formatting
   },
 })
+```
+
+## Using custom `MigrationGenerator`
+
+When we generate new migrations, `MigrationGenerator` class is responsible for 
+generating the file contents. We can provide our own implementation to do things 
+like formatting the SQL statement. 
+
+```ts
+import { TSMigrationGenerator } from '@mikro-orm/migrations';
+import { format } from 'sql-formatter';
+
+class CustomMigrationGenerator extends TSMigrationGenerator {
+
+  generateMigrationFile(className: string, diff: { up: string[]; down: string[] }): string {
+    const comment = '// this file was generated via custom migration generator\n\n';
+    return comment + super.generateMigrationFile(className, diff);
+  }
+
+  createStatement(sql: string, padLeft: number): string {
+    sql = format(sql, { language: 'postgresql' });
+    // a bit of indenting magic
+    sql = sql.split('\n').map((l, i) => i === 0 ? l : `${' '.repeat(padLeft + 13)}${l}`).join('\n');
+
+    return super.createStatement(sql, padLeft);
+  }
+
+}
+
+await MikroORM.init({
+  // ...
+  migrations: {
+    generator: CustomMigrationGenerator,
+  },
+});
 ```
 
 ## Using via CLI
