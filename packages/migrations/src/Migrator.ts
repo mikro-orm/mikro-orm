@@ -126,12 +126,14 @@ export class Migrator {
 
   async getExecutedMigrations(): Promise<MigrationRow[]> {
     await this.ensureMigrationsDirExists();
+    await this.schemaGenerator.ensureDatabase();
     await this.storage.ensureTable();
     return this.storage.getExecutedMigrations();
   }
 
   async getPendingMigrations(): Promise<UmzugMigration[]> {
     await this.ensureMigrationsDirExists();
+    await this.schemaGenerator.ensureDatabase();
     await this.storage.ensureTable();
     return this.umzug.pending();
   }
@@ -262,6 +264,7 @@ export class Migrator {
 
   private async runMigrations(method: 'up' | 'down', options?: string | string[] | MigrateOptions) {
     await this.ensureMigrationsDirExists();
+    await this.schemaGenerator.ensureDatabase();
     await this.storage.ensureTable();
 
     if (!this.options.transactional || !this.options.allOrNothing) {
