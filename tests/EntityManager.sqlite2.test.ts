@@ -342,7 +342,7 @@ describe('EntityManagerSqlite2', () => {
     try {
       await orm.em.flush();
       expect(1).toBe('should be unreachable');
-    } catch (e) {
+    } catch (e: any) {
       expect(e).toBeInstanceOf(ValidationError);
       expect(e.message).toBe(`The optimistic lock on entity Test4 failed`);
       expect((e as ValidationError).getEntity()).toBe(test2);

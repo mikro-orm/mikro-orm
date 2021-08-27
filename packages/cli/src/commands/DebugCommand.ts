@@ -62,7 +62,7 @@ export class DebugCommand implements CommandModule {
           await DebugCommand.checkPaths(paths, 'red', config.get('baseDir'));
         }
       }
-    } catch (e) {
+    } catch (e: any) {
       CLIHelper.dump(`- configuration ${c.red('not found')} ${c.red(`(${e.message})`)}`);
     }
   }
