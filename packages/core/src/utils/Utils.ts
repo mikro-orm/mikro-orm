@@ -1,4 +1,4 @@
-import { createRequire, createRequireFromPath } from 'module';
+import { createRequire } from 'module';
 import clone from 'clone';
 import globby, { GlobbyOptions } from 'globby';
 import { extname, isAbsolute, join, normalize, relative, resolve } from 'path';
@@ -746,8 +746,7 @@ export class Utils {
       from = join(from, '__fake.js');
     }
 
-    /* istanbul ignore next */
-    return (createRequire || createRequireFromPath)(resolve(from))(id);
+    return createRequire(resolve(from))(id);
   }
 
   static getORMVersion(): string {
