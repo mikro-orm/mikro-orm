@@ -897,8 +897,8 @@ export class Utils {
 
     try {
       return Utils.requireFrom(module, from);
-    } catch (err) {
-      if (err instanceof Error && err.message.includes(allowError)) {
+    } catch (err: any) {
+      if (err.message.includes(allowError)) {
         // eslint-disable-next-line no-console
         console.warn(warning);
         return undefined;
