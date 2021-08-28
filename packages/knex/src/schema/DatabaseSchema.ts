@@ -32,7 +32,6 @@ export class DatabaseSchema {
   }
 
   getTable(name: string): DatabaseTable | undefined {
-    // console.log(name, this.tables.map(t => [t.schema, t.name]), !!this.tables.find(t => t.name === name || `${t.schema}.${t.name}` === name));
     return this.tables.find(t => t.name === name || `${t.schema}.${t.name}` === name);
   }
 

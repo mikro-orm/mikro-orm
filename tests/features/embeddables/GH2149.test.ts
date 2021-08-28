@@ -4,10 +4,10 @@ import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property } from '@m
 export class LoopOptions {
 
   @Property()
-  enabled = false;
+  enabled: boolean = false;
 
   @Property()
-  type = 'a';
+  type: string = 'a';
 
 }
 
@@ -37,17 +37,26 @@ describe('GH issue 2149', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [PlayerEntity, Options, LoopOptions],
-      dbName: 'test',
-      type: 'mongo',
-    }, false);
+      dbName: ':memory:',
+      type: 'sqlite',
+    });
+    await orm.getSchemaGenerator().createSchema();
   });
 
   afterAll(async () => {
     await orm.close();
   });
 
-  test(`GH issue 1912`, async () => {
-    const e = new PlayerEntity();
+  test(`GH issue 2149`, async () => {
+    const ent = new PlayerEntity();
+    expect(ent.options).toBeInstanceOf(Options);
+    expect(ent.options.loop).toBeInstanceOf(LoopOptions);
+    expect(ent.options.loop.enabled).toBe(false);
+    expect(ent.options.loop.type).toBe('a');
+    await orm.em.persistAndFlush(ent);
+    orm.em.clear();
+
+    const e = await orm.em.findOneOrFail(PlayerEntity, ent);
     expect(e.options).toBeInstanceOf(Options);
     expect(e.options.loop).toBeInstanceOf(LoopOptions);
     expect(e.options.loop.enabled).toBe(false);

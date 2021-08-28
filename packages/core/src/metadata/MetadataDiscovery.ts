@@ -756,7 +756,7 @@ export class MetadataDiscovery {
 
     // `string[]` can be returned via ts-morph, while reflect metadata will give us just `array`
     if (!prop.customType && !prop.columnTypes && ['string[]', 'array'].includes(prop.type)) {
-      prop.customType = new ArrayType();
+      prop.customType = Type.getType(ArrayType);
     }
 
     // for number arrays we make sure to convert the items to numbers
@@ -765,11 +765,11 @@ export class MetadataDiscovery {
     }
 
     if (!prop.customType && !prop.columnTypes && prop.type === 'Buffer') {
-      prop.customType = new BlobType();
+      prop.customType = Type.getType(BlobType);
     }
 
     if (!prop.customType && !prop.columnTypes && prop.type === 'json') {
-      prop.customType = new JsonType();
+      prop.customType = Type.getType(JsonType);
     }
 
     if (prop.type as unknown instanceof Type) {

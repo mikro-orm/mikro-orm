@@ -203,13 +203,13 @@ exports[`embedded entities in postgres diffing 2`] = `
         data.profile1_identity_links.forEach((_, idx_0) => {
           if (data.profile1_identity_links[idx_0] != null) {
             entity.profile1.identity.links[idx_0] = Object.create(prototype_profile1_identity_links);
-            if (data.profile1_identity_links[idx_0] && typeof data.profile1_identity_links[idx_0].url !== 'undefined') entity.profile1.identity.links[idx_0].url = data.profile1_identity_links[idx_0].url;
-            if (data.profile1_identity_links[idx_0] && data.profile1_identity_links[idx_0].createdAt) entity.profile1.identity.links[idx_0].createdAt = new Date(data.profile1_identity_links[idx_0].createdAt);
-            else if (data.profile1_identity_links[idx_0] && data.profile1_identity_links[idx_0].createdAt === null) entity.profile1.identity.links[idx_0].createdAt = null;
+            if (data.profile1_identity_links && data.profile1_identity_links[idx_0] && typeof data.profile1_identity_links[idx_0].url !== 'undefined') entity.profile1.identity.links[idx_0].url = data.profile1_identity_links[idx_0].url;
+            if (data.profile1_identity_links && data.profile1_identity_links[idx_0] && data.profile1_identity_links[idx_0].createdAt) entity.profile1.identity.links[idx_0].createdAt = new Date(data.profile1_identity_links[idx_0].createdAt);
+            else if (data.profile1_identity_links && data.profile1_identity_links[idx_0] && data.profile1_identity_links[idx_0].createdAt === null) entity.profile1.identity.links[idx_0].createdAt = null;
             if (data.profile1_identity_links[idx_0].meta != null) {
               entity.profile1.identity.links[idx_0].meta = Object.create(prototype_profile1_identity_links_meta);
-              if (data.profile1_identity_links[idx_0] && data.profile1_identity_links[idx_0].meta && typeof data.profile1_identity_links[idx_0].meta.foo !== 'undefined') entity.profile1.identity.links[idx_0].meta.foo = data.profile1_identity_links[idx_0].meta.foo;
-              if (data.profile1_identity_links[idx_0] && data.profile1_identity_links[idx_0].meta && typeof data.profile1_identity_links[idx_0].meta.bar !== 'undefined') entity.profile1.identity.links[idx_0].meta.bar = data.profile1_identity_links[idx_0].meta.bar;
+              if (data.profile1_identity_links && data.profile1_identity_links[idx_0] && data.profile1_identity_links[idx_0].meta && typeof data.profile1_identity_links[idx_0].meta.foo !== 'undefined') entity.profile1.identity.links[idx_0].meta.foo = data.profile1_identity_links[idx_0].meta.foo;
+              if (data.profile1_identity_links && data.profile1_identity_links[idx_0] && data.profile1_identity_links[idx_0].meta && typeof data.profile1_identity_links[idx_0].meta.bar !== 'undefined') entity.profile1.identity.links[idx_0].meta.bar = data.profile1_identity_links[idx_0].meta.bar;
               if (data.profile1_identity_links[idx_0].meta.source === null) {
     entity.profile1.identity.links[idx_0].meta.source = null;
               } else if (typeof data.profile1_identity_links[idx_0].meta.source !== 'undefined') {
@@ -225,8 +225,8 @@ exports[`embedded entities in postgres diffing 2`] = `
               data.profile1_identity_links[idx_0].metas.forEach((_, idx_1) => {
                 if (data.profile1_identity_links[idx_0].metas[idx_1] != null) {
                   entity.profile1.identity.links[idx_0].metas[idx_1] = Object.create(prototype_profile1_identity_links_metas);
-                  if (data.profile1_identity_links[idx_0] && data.profile1_identity_links[idx_0].metas[idx_1] && typeof data.profile1_identity_links[idx_0].metas[idx_1].foo !== 'undefined') entity.profile1.identity.links[idx_0].metas[idx_1].foo = data.profile1_identity_links[idx_0].metas[idx_1].foo;
-                  if (data.profile1_identity_links[idx_0] && data.profile1_identity_links[idx_0].metas[idx_1] && typeof data.profile1_identity_links[idx_0].metas[idx_1].bar !== 'undefined') entity.profile1.identity.links[idx_0].metas[idx_1].bar = data.profile1_identity_links[idx_0].metas[idx_1].bar;
+                  if (data.profile1_identity_links && data.profile1_identity_links[idx_0] && data.profile1_identity_links[idx_0].metas && data.profile1_identity_links[idx_0].metas[idx_1] && typeof data.profile1_identity_links[idx_0].metas[idx_1].foo !== 'undefined') entity.profile1.identity.links[idx_0].metas[idx_1].foo = data.profile1_identity_links[idx_0].metas[idx_1].foo;
+                  if (data.profile1_identity_links && data.profile1_identity_links[idx_0] && data.profile1_identity_links[idx_0].metas && data.profile1_identity_links[idx_0].metas[idx_1] && typeof data.profile1_identity_links[idx_0].metas[idx_1].bar !== 'undefined') entity.profile1.identity.links[idx_0].metas[idx_1].bar = data.profile1_identity_links[idx_0].metas[idx_1].bar;
                   if (data.profile1_identity_links[idx_0].metas[idx_1].source === null) {
     entity.profile1.identity.links[idx_0].metas[idx_1].source = null;
                   } else if (typeof data.profile1_identity_links[idx_0].metas[idx_1].source !== 'undefined') {
@@ -297,13 +297,13 @@ exports[`embedded entities in postgres diffing 2`] = `
         data.profile1_identity.links.forEach((_, idx_2) => {
           if (data.profile1_identity.links[idx_2] != null) {
             entity.profile1.identity.links[idx_2] = Object.create(prototype_profile1_identity_links);
-            if (data.profile1_identity && data.profile1_identity.links[idx_2] && typeof data.profile1_identity.links[idx_2].url !== 'undefined') entity.profile1.identity.links[idx_2].url = data.profile1_identity.links[idx_2].url;
-            if (data.profile1_identity && data.profile1_identity.links[idx_2] && data.profile1_identity.links[idx_2].createdAt) entity.profile1.identity.links[idx_2].createdAt = new Date(data.profile1_identity.links[idx_2].createdAt);
-            else if (data.profile1_identity && data.profile1_identity.links[idx_2] && data.profile1_identity.links[idx_2].createdAt === null) entity.profile1.identity.links[idx_2].createdAt = null;
+            if (data.profile1_identity && data.profile1_identity.links && data.profile1_identity.links[idx_2] && typeof data.profile1_identity.links[idx_2].url !== 'undefined') entity.profile1.identity.links[idx_2].url = data.profile1_identity.links[idx_2].url;
+            if (data.profile1_identity && data.profile1_identity.links && data.profile1_identity.links[idx_2] && data.profile1_identity.links[idx_2].createdAt) entity.profile1.identity.links[idx_2].createdAt = new Date(data.profile1_identity.links[idx_2].createdAt);
+            else if (data.profile1_identity && data.profile1_identity.links && data.profile1_identity.links[idx_2] && data.profile1_identity.links[idx_2].createdAt === null) entity.profile1.identity.links[idx_2].createdAt = null;
             if (data.profile1_identity.links[idx_2].meta != null) {
               entity.profile1.identity.links[idx_2].meta = Object.create(prototype_profile1_identity_links_meta);
-              if (data.profile1_identity && data.profile1_identity.links[idx_2] && data.profile1_identity.links[idx_2].meta && typeof data.profile1_identity.links[idx_2].meta.foo !== 'undefined') entity.profile1.identity.links[idx_2].meta.foo = data.profile1_identity.links[idx_2].meta.foo;
-              if (data.profile1_identity && data.profile1_identity.links[idx_2] && data.profile1_identity.links[idx_2].meta && typeof data.profile1_identity.links[idx_2].meta.bar !== 'undefined') entity.profile1.identity.links[idx_2].meta.bar = data.profile1_identity.links[idx_2].meta.bar;
+              if (data.profile1_identity && data.profile1_identity.links && data.profile1_identity.links[idx_2] && data.profile1_identity.links[idx_2].meta && typeof data.profile1_identity.links[idx_2].meta.foo !== 'undefined') entity.profile1.identity.links[idx_2].meta.foo = data.profile1_identity.links[idx_2].meta.foo;
+              if (data.profile1_identity && data.profile1_identity.links && data.profile1_identity.links[idx_2] && data.profile1_identity.links[idx_2].meta && typeof data.profile1_identity.links[idx_2].meta.bar !== 'undefined') entity.profile1.identity.links[idx_2].meta.bar = data.profile1_identity.links[idx_2].meta.bar;
               if (data.profile1_identity.links[idx_2].meta.source === null) {
     entity.profile1.identity.links[idx_2].meta.source = null;
               } else if (typeof data.profile1_identity.links[idx_2].meta.source !== 'undefined') {
@@ -319,8 +319,8 @@ exports[`embedded entities in postgres diffing 2`] = `
               data.profile1_identity.links[idx_2].metas.forEach((_, idx_3) => {
                 if (data.profile1_identity.links[idx_2].metas[idx_3] != null) {
                   entity.profile1.identity.links[idx_2].metas[idx_3] = Object.create(prototype_profile1_identity_links_metas);
-                  if (data.profile1_identity && data.profile1_identity.links[idx_2] && data.profile1_identity.links[idx_2].metas[idx_3] && typeof data.profile1_identity.links[idx_2].metas[idx_3].foo !== 'undefined') entity.profile1.identity.links[idx_2].metas[idx_3].foo = data.profile1_identity.links[idx_2].metas[idx_3].foo;
-                  if (data.profile1_identity && data.profile1_identity.links[idx_2] && data.profile1_identity.links[idx_2].metas[idx_3] && typeof data.profile1_identity.links[idx_2].metas[idx_3].bar !== 'undefined') entity.profile1.identity.links[idx_2].metas[idx_3].bar = data.profile1_identity.links[idx_2].metas[idx_3].bar;
+                  if (data.profile1_identity && data.profile1_identity.links && data.profile1_identity.links[idx_2] && data.profile1_identity.links[idx_2].metas && data.profile1_identity.links[idx_2].metas[idx_3] && typeof data.profile1_identity.links[idx_2].metas[idx_3].foo !== 'undefined') entity.profile1.identity.links[idx_2].metas[idx_3].foo = data.profile1_identity.links[idx_2].metas[idx_3].foo;
+                  if (data.profile1_identity && data.profile1_identity.links && data.profile1_identity.links[idx_2] && data.profile1_identity.links[idx_2].metas && data.profile1_identity.links[idx_2].metas[idx_3] && typeof data.profile1_identity.links[idx_2].metas[idx_3].bar !== 'undefined') entity.profile1.identity.links[idx_2].metas[idx_3].bar = data.profile1_identity.links[idx_2].metas[idx_3].bar;
                   if (data.profile1_identity.links[idx_2].metas[idx_3].source === null) {
     entity.profile1.identity.links[idx_2].metas[idx_3].source = null;
                   } else if (typeof data.profile1_identity.links[idx_2].metas[idx_3].source !== 'undefined') {
@@ -404,13 +404,13 @@ exports[`embedded entities in postgres diffing 2`] = `
         data.profile1_identity_links.forEach((_, idx_4) => {
           if (data.profile1_identity_links[idx_4] != null) {
             entity.profile1.identity.links[idx_4] = Object.create(prototype_profile1_identity_links);
-            if (data.profile1_identity_links[idx_4] && typeof data.profile1_identity_links[idx_4].url !== 'undefined') entity.profile1.identity.links[idx_4].url = data.profile1_identity_links[idx_4].url;
-            if (data.profile1_identity_links[idx_4] && data.profile1_identity_links[idx_4].createdAt) entity.profile1.identity.links[idx_4].createdAt = new Date(data.profile1_identity_links[idx_4].createdAt);
-            else if (data.profile1_identity_links[idx_4] && data.profile1_identity_links[idx_4].createdAt === null) entity.profile1.identity.links[idx_4].createdAt = null;
+            if (data.profile1_identity_links && data.profile1_identity_links[idx_4] && typeof data.profile1_identity_links[idx_4].url !== 'undefined') entity.profile1.identity.links[idx_4].url = data.profile1_identity_links[idx_4].url;
+            if (data.profile1_identity_links && data.profile1_identity_links[idx_4] && data.profile1_identity_links[idx_4].createdAt) entity.profile1.identity.links[idx_4].createdAt = new Date(data.profile1_identity_links[idx_4].createdAt);
+            else if (data.profile1_identity_links && data.profile1_identity_links[idx_4] && data.profile1_identity_links[idx_4].createdAt === null) entity.profile1.identity.links[idx_4].createdAt = null;
             if (data.profile1_identity_links[idx_4].meta != null) {
               entity.profile1.identity.links[idx_4].meta = Object.create(prototype_profile1_identity_links_meta);
-              if (data.profile1_identity_links[idx_4] && data.profile1_identity_links[idx_4].meta && typeof data.profile1_identity_links[idx_4].meta.foo !== 'undefined') entity.profile1.identity.links[idx_4].meta.foo = data.profile1_identity_links[idx_4].meta.foo;
-              if (data.profile1_identity_links[idx_4] && data.profile1_identity_links[idx_4].meta && typeof data.profile1_identity_links[idx_4].meta.bar !== 'undefined') entity.profile1.identity.links[idx_4].meta.bar = data.profile1_identity_links[idx_4].meta.bar;
+              if (data.profile1_identity_links && data.profile1_identity_links[idx_4] && data.profile1_identity_links[idx_4].meta && typeof data.profile1_identity_links[idx_4].meta.foo !== 'undefined') entity.profile1.identity.links[idx_4].meta.foo = data.profile1_identity_links[idx_4].meta.foo;
+              if (data.profile1_identity_links && data.profile1_identity_links[idx_4] && data.profile1_identity_links[idx_4].meta && typeof data.profile1_identity_links[idx_4].meta.bar !== 'undefined') entity.profile1.identity.links[idx_4].meta.bar = data.profile1_identity_links[idx_4].meta.bar;
               if (data.profile1_identity_links[idx_4].meta.source === null) {
     entity.profile1.identity.links[idx_4].meta.source = null;
               } else if (typeof data.profile1_identity_links[idx_4].meta.source !== 'undefined') {
@@ -426,8 +426,8 @@ exports[`embedded entities in postgres diffing 2`] = `
               data.profile1_identity_links[idx_4].metas.forEach((_, idx_5) => {
                 if (data.profile1_identity_links[idx_4].metas[idx_5] != null) {
                   entity.profile1.identity.links[idx_4].metas[idx_5] = Object.create(prototype_profile1_identity_links_metas);
-                  if (data.profile1_identity_links[idx_4] && data.profile1_identity_links[idx_4].metas[idx_5] && typeof data.profile1_identity_links[idx_4].metas[idx_5].foo !== 'undefined') entity.profile1.identity.links[idx_4].metas[idx_5].foo = data.profile1_identity_links[idx_4].metas[idx_5].foo;
-                  if (data.profile1_identity_links[idx_4] && data.profile1_identity_links[idx_4].metas[idx_5] && typeof data.profile1_identity_links[idx_4].metas[idx_5].bar !== 'undefined') entity.profile1.identity.links[idx_4].metas[idx_5].bar = data.profile1_identity_links[idx_4].metas[idx_5].bar;
+                  if (data.profile1_identity_links && data.profile1_identity_links[idx_4] && data.profile1_identity_links[idx_4].metas && data.profile1_identity_links[idx_4].metas[idx_5] && typeof data.profile1_identity_links[idx_4].metas[idx_5].foo !== 'undefined') entity.profile1.identity.links[idx_4].metas[idx_5].foo = data.profile1_identity_links[idx_4].metas[idx_5].foo;
+                  if (data.profile1_identity_links && data.profile1_identity_links[idx_4] && data.profile1_identity_links[idx_4].metas && data.profile1_identity_links[idx_4].metas[idx_5] && typeof data.profile1_identity_links[idx_4].metas[idx_5].bar !== 'undefined') entity.profile1.identity.links[idx_4].metas[idx_5].bar = data.profile1_identity_links[idx_4].metas[idx_5].bar;
                   if (data.profile1_identity_links[idx_4].metas[idx_5].source === null) {
     entity.profile1.identity.links[idx_4].metas[idx_5].source = null;
                   } else if (typeof data.profile1_identity_links[idx_4].metas[idx_5].source !== 'undefined') {
@@ -498,13 +498,13 @@ exports[`embedded entities in postgres diffing 2`] = `
         data.profile1.identity.links.forEach((_, idx_6) => {
           if (data.profile1.identity.links[idx_6] != null) {
             entity.profile1.identity.links[idx_6] = Object.create(prototype_profile1_identity_links);
-            if (data.profile1 && data.profile1.identity && data.profile1.identity.links[idx_6] && typeof data.profile1.identity.links[idx_6].url !== 'undefined') entity.profile1.identity.links[idx_6].url = data.profile1.identity.links[idx_6].url;
-            if (data.profile1 && data.profile1.identity && data.profile1.identity.links[idx_6] && data.profile1.identity.links[idx_6].createdAt) entity.profile1.identity.links[idx_6].createdAt = new Date(data.profile1.identity.links[idx_6].createdAt);
-            else if (data.profile1 && data.profile1.identity && data.profile1.identity.links[idx_6] && data.profile1.identity.links[idx_6].createdAt === null) entity.profile1.identity.links[idx_6].createdAt = null;
+            if (data.profile1 && data.profile1.identity && data.profile1.identity.links && data.profile1.identity.links[idx_6] && typeof data.profile1.identity.links[idx_6].url !== 'undefined') entity.profile1.identity.links[idx_6].url = data.profile1.identity.links[idx_6].url;
+            if (data.profile1 && data.profile1.identity && data.profile1.identity.links && data.profile1.identity.links[idx_6] && data.profile1.identity.links[idx_6].createdAt) entity.profile1.identity.links[idx_6].createdAt = new Date(data.profile1.identity.links[idx_6].createdAt);
+            else if (data.profile1 && data.profile1.identity && data.profile1.identity.links && data.profile1.identity.links[idx_6] && data.profile1.identity.links[idx_6].createdAt === null) entity.profile1.identity.links[idx_6].createdAt = null;
             if (data.profile1.identity.links[idx_6].meta != null) {
               entity.profile1.identity.links[idx_6].meta = Object.create(prototype_profile1_identity_links_meta);
-              if (data.profile1 && data.profile1.identity && data.profile1.identity.links[idx_6] && data.profile1.identity.links[idx_6].meta && typeof data.profile1.identity.links[idx_6].meta.foo !== 'undefined') entity.profile1.identity.links[idx_6].meta.foo = data.profile1.identity.links[idx_6].meta.foo;
-              if (data.profile1 && data.profile1.identity && data.profile1.identity.links[idx_6] && data.profile1.identity.links[idx_6].meta && typeof data.profile1.identity.links[idx_6].meta.bar !== 'undefined') entity.profile1.identity.links[idx_6].meta.bar = data.profile1.identity.links[idx_6].meta.bar;
+              if (data.profile1 && data.profile1.identity && data.profile1.identity.links && data.profile1.identity.links[idx_6] && data.profile1.identity.links[idx_6].meta && typeof data.profile1.identity.links[idx_6].meta.foo !== 'undefined') entity.profile1.identity.links[idx_6].meta.foo = data.profile1.identity.links[idx_6].meta.foo;
+              if (data.profile1 && data.profile1.identity && data.profile1.identity.links && data.profile1.identity.links[idx_6] && data.profile1.identity.links[idx_6].meta && typeof data.profile1.identity.links[idx_6].meta.bar !== 'undefined') entity.profile1.identity.links[idx_6].meta.bar = data.profile1.identity.links[idx_6].meta.bar;
               if (data.profile1.identity.links[idx_6].meta.source === null) {
     entity.profile1.identity.links[idx_6].meta.source = null;
               } else if (typeof data.profile1.identity.links[idx_6].meta.source !== 'undefined') {
@@ -520,8 +520,8 @@ exports[`embedded entities in postgres diffing 2`] = `
               data.profile1.identity.links[idx_6].metas.forEach((_, idx_7) => {
                 if (data.profile1.identity.links[idx_6].metas[idx_7] != null) {
                   entity.profile1.identity.links[idx_6].metas[idx_7] = Object.create(prototype_profile1_identity_links_metas);
-                  if (data.profile1 && data.profile1.identity && data.profile1.identity.links[idx_6] && data.profile1.identity.links[idx_6].metas[idx_7] && typeof data.profile1.identity.links[idx_6].metas[idx_7].foo !== 'undefined') entity.profile1.identity.links[idx_6].metas[idx_7].foo = data.profile1.identity.links[idx_6].metas[idx_7].foo;
-                  if (data.profile1 && data.profile1.identity && data.profile1.identity.links[idx_6] && data.profile1.identity.links[idx_6].metas[idx_7] && typeof data.profile1.identity.links[idx_6].metas[idx_7].bar !== 'undefined') entity.profile1.identity.links[idx_6].metas[idx_7].bar = data.profile1.identity.links[idx_6].metas[idx_7].bar;
+                  if (data.profile1 && data.profile1.identity && data.profile1.identity.links && data.profile1.identity.links[idx_6] && data.profile1.identity.links[idx_6].metas && data.profile1.identity.links[idx_6].metas[idx_7] && typeof data.profile1.identity.links[idx_6].metas[idx_7].foo !== 'undefined') entity.profile1.identity.links[idx_6].metas[idx_7].foo = data.profile1.identity.links[idx_6].metas[idx_7].foo;
+                  if (data.profile1 && data.profile1.identity && data.profile1.identity.links && data.profile1.identity.links[idx_6] && data.profile1.identity.links[idx_6].metas && data.profile1.identity.links[idx_6].metas[idx_7] && typeof data.profile1.identity.links[idx_6].metas[idx_7].bar !== 'undefined') entity.profile1.identity.links[idx_6].metas[idx_7].bar = data.profile1.identity.links[idx_6].metas[idx_7].bar;
                   if (data.profile1.identity.links[idx_6].metas[idx_7].source === null) {
     entity.profile1.identity.links[idx_6].metas[idx_7].source = null;
                   } else if (typeof data.profile1.identity.links[idx_6].metas[idx_7].source !== 'undefined') {
@@ -591,13 +591,13 @@ exports[`embedded entities in postgres diffing 2`] = `
         data.profile2.identity.links.forEach((_, idx_8) => {
           if (data.profile2.identity.links[idx_8] != null) {
             entity.profile2.identity.links[idx_8] = Object.create(prototype_profile2_identity_links);
-            if (data.profile2 && data.profile2.identity && data.profile2.identity.links[idx_8] && typeof data.profile2.identity.links[idx_8].url !== 'undefined') entity.profile2.identity.links[idx_8].url = data.profile2.identity.links[idx_8].url;
-            if (data.profile2 && data.profile2.identity && data.profile2.identity.links[idx_8] && data.profile2.identity.links[idx_8].createdAt) entity.profile2.identity.links[idx_8].createdAt = new Date(data.profile2.identity.links[idx_8].createdAt);
-            else if (data.profile2 && data.profile2.identity && data.profile2.identity.links[idx_8] && data.profile2.identity.links[idx_8].createdAt === null) entity.profile2.identity.links[idx_8].createdAt = null;
+            if (data.profile2 && data.profile2.identity && data.profile2.identity.links && data.profile2.identity.links[idx_8] && typeof data.profile2.identity.links[idx_8].url !== 'undefined') entity.profile2.identity.links[idx_8].url = data.profile2.identity.links[idx_8].url;
+            if (data.profile2 && data.profile2.identity && data.profile2.identity.links && data.profile2.identity.links[idx_8] && data.profile2.identity.links[idx_8].createdAt) entity.profile2.identity.links[idx_8].createdAt = new Date(data.profile2.identity.links[idx_8].createdAt);
+            else if (data.profile2 && data.profile2.identity && data.profile2.identity.links && data.profile2.identity.links[idx_8] && data.profile2.identity.links[idx_8].createdAt === null) entity.profile2.identity.links[idx_8].createdAt = null;
             if (data.profile2.identity.links[idx_8].meta != null) {
               entity.profile2.identity.links[idx_8].meta = Object.create(prototype_profile2_identity_links_meta);
-              if (data.profile2 && data.profile2.identity && data.profile2.identity.links[idx_8] && data.profile2.identity.links[idx_8].meta && typeof data.profile2.identity.links[idx_8].meta.foo !== 'undefined') entity.profile2.identity.links[idx_8].meta.foo = data.profile2.identity.links[idx_8].meta.foo;
-              if (data.profile2 && data.profile2.identity && data.profile2.identity.links[idx_8] && data.profile2.identity.links[idx_8].meta && typeof data.profile2.identity.links[idx_8].meta.bar !== 'undefined') entity.profile2.identity.links[idx_8].meta.bar = data.profile2.identity.links[idx_8].meta.bar;
+              if (data.profile2 && data.profile2.identity && data.profile2.identity.links && data.profile2.identity.links[idx_8] && data.profile2.identity.links[idx_8].meta && typeof data.profile2.identity.links[idx_8].meta.foo !== 'undefined') entity.profile2.identity.links[idx_8].meta.foo = data.profile2.identity.links[idx_8].meta.foo;
+              if (data.profile2 && data.profile2.identity && data.profile2.identity.links && data.profile2.identity.links[idx_8] && data.profile2.identity.links[idx_8].meta && typeof data.profile2.identity.links[idx_8].meta.bar !== 'undefined') entity.profile2.identity.links[idx_8].meta.bar = data.profile2.identity.links[idx_8].meta.bar;
               if (data.profile2.identity.links[idx_8].meta.source === null) {
     entity.profile2.identity.links[idx_8].meta.source = null;
               } else if (typeof data.profile2.identity.links[idx_8].meta.source !== 'undefined') {
@@ -613,8 +613,8 @@ exports[`embedded entities in postgres diffing 2`] = `
               data.profile2.identity.links[idx_8].metas.forEach((_, idx_9) => {
                 if (data.profile2.identity.links[idx_8].metas[idx_9] != null) {
                   entity.profile2.identity.links[idx_8].metas[idx_9] = Object.create(prototype_profile2_identity_links_metas);
-                  if (data.profile2 && data.profile2.identity && data.profile2.identity.links[idx_8] && data.profile2.identity.links[idx_8].metas[idx_9] && typeof data.profile2.identity.links[idx_8].metas[idx_9].foo !== 'undefined') entity.profile2.identity.links[idx_8].metas[idx_9].foo = data.profile2.identity.links[idx_8].metas[idx_9].foo;
-                  if (data.profile2 && data.profile2.identity && data.profile2.identity.links[idx_8] && data.profile2.identity.links[idx_8].metas[idx_9] && typeof data.profile2.identity.links[idx_8].metas[idx_9].bar !== 'undefined') entity.profile2.identity.links[idx_8].metas[idx_9].bar = data.profile2.identity.links[idx_8].metas[idx_9].bar;
+                  if (data.profile2 && data.profile2.identity && data.profile2.identity.links && data.profile2.identity.links[idx_8] && data.profile2.identity.links[idx_8].metas && data.profile2.identity.links[idx_8].metas[idx_9] && typeof data.profile2.identity.links[idx_8].metas[idx_9].foo !== 'undefined') entity.profile2.identity.links[idx_8].metas[idx_9].foo = data.profile2.identity.links[idx_8].metas[idx_9].foo;
+                  if (data.profile2 && data.profile2.identity && data.profile2.identity.links && data.profile2.identity.links[idx_8] && data.profile2.identity.links[idx_8].metas && data.profile2.identity.links[idx_8].metas[idx_9] && typeof data.profile2.identity.links[idx_8].metas[idx_9].bar !== 'undefined') entity.profile2.identity.links[idx_8].metas[idx_9].bar = data.profile2.identity.links[idx_8].metas[idx_9].bar;
                   if (data.profile2.identity.links[idx_8].metas[idx_9].source === null) {
     entity.profile2.identity.links[idx_8].metas[idx_9].source = null;
                   } else if (typeof data.profile2.identity.links[idx_8].metas[idx_9].source !== 'undefined') {
