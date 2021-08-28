@@ -31,9 +31,9 @@ export class RequestContext {
    * Creates new RequestContext instance and runs the code inside its domain.
    * Async variant, when the `next` handler needs to be awaited (like in Koa).
    */
-  static async createAsync(em: EntityManager | EntityManager[], next: (...args: any[]) => Promise<void>): Promise<void> {
+  static async createAsync<T>(em: EntityManager | EntityManager[], next: (...args: any[]) => Promise<T>): Promise<T> {
     const ctx = this.createContext(em);
-    await new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       this.storage.run(ctx, () => next().then(resolve).catch(reject));
     });
   }
