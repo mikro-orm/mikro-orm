@@ -7,9 +7,8 @@ import { CLIHelper } from '@mikro-orm/cli';
 import { MigrationCommandFactory } from '../../../packages/cli/src/commands/MigrationCommandFactory';
 import { initORMSqlite } from '../../bootstrap';
 
-const close = jest.fn();
-jest.spyOn(MikroORM.prototype, 'close').mockImplementation(close);
-jest.spyOn(require('yargs'), 'showHelp').mockReturnValue('');
+const closeSpy = jest.spyOn(MikroORM.prototype, 'close');
+jest.spyOn(CLIHelper, 'showHelp').mockImplementation(() => void 0);
 const getExecutedMigrations = jest.spyOn(Migrator.prototype, 'getExecutedMigrations');
 getExecutedMigrations.mockResolvedValue([{ name: '1', executed_at: new Date() }]);
 const dumpMock = jest.spyOn(CLIHelper, 'dump');
@@ -39,7 +38,7 @@ describe('ListMigrationsCommand', () => {
 
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
     expect(getExecutedMigrations.mock.calls.length).toBe(1);
-    expect(close.mock.calls.length).toBe(1);
+    expect(closeSpy).toBeCalledTimes(1);
   });
 
 });

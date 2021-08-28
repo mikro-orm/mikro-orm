@@ -237,6 +237,7 @@ describe('single table inheritance in mysql', () => {
     });
     const sql = await orm.getSchemaGenerator().getCreateSchemaSQL({ wrap: false });
     expect(sql).toMatchSnapshot();
+    await orm.close(true);
   });
 
   afterAll(async () => orm.close(true));

@@ -8,9 +8,8 @@ import { CLIHelper } from '@mikro-orm/cli';
 import { MigrationCommandFactory } from '../../../packages/cli/src/commands/MigrationCommandFactory';
 import { initORMSqlite } from '../../bootstrap';
 
-const close = jest.fn();
-jest.spyOn(MikroORM.prototype, 'close').mockImplementation(close);
-jest.spyOn(require('yargs'), 'showHelp').mockReturnValue('');
+const closeSpy = jest.spyOn(MikroORM.prototype, 'close');
+jest.spyOn(CLIHelper, 'showHelp').mockImplementation(() => void 0);
 const up = jest.spyOn(Migrator.prototype, 'up');
 up.mockResolvedValue([]);
 const dumpMock = jest.spyOn(CLIHelper, 'dump');
@@ -46,21 +45,21 @@ describe('MigrateUpCommand', () => {
     expect(dropSchema).toBeCalledTimes(1);
     expect(up).toBeCalledTimes(1);
     expect(seed).toBeCalledTimes(0);
-    expect(close).toBeCalledTimes(1);
+    expect(closeSpy).toBeCalledTimes(1);
 
     await expect(cmd.handler({ seed: '' } as any)).resolves.toBeUndefined();
     expect(dropSchema).toBeCalledTimes(2);
     expect(up).toBeCalledTimes(2);
     expect(seed).toBeCalledTimes(1);
     expect(seed).toBeCalledWith(orm.config.get('seeder').defaultSeeder);
-    expect(close).toBeCalledTimes(2);
+    expect(closeSpy).toBeCalledTimes(2);
 
     await expect(cmd.handler({ seed: 'UsersSeeder' } as any)).resolves.toBeUndefined();
     expect(dropSchema).toBeCalledTimes(3);
     expect(up).toBeCalledTimes(3);
     expect(seed).toBeCalledTimes(2);
     expect(seed).toBeCalledWith('UsersSeeder');
-    expect(close).toBeCalledTimes(3);
+    expect(closeSpy).toBeCalledTimes(3);
   });
 
 });

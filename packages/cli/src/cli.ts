@@ -7,13 +7,13 @@ require('yargonaut')
   .helpStyle('green')
   .errorsStyle('red');
 
-import yargs from 'yargs';
+import { CLIHelper } from './CLIHelper';
 import { CLIConfigurator } from './CLIConfigurator';
 
 (async () => {
   const args = (await CLIConfigurator.configure()).parse(process.argv.slice(2)) as { _: string[] };
 
   if (args._.length === 0) {
-    yargs.showHelp();
+    CLIHelper.showHelp();
   }
 })();

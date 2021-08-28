@@ -5,10 +5,9 @@ import { CLIHelper } from '@mikro-orm/cli';
 import { GenerateEntitiesCommand } from '../../../packages/cli/src/commands/GenerateEntitiesCommand';
 import { initORMSqlite } from '../../bootstrap';
 
-const close = jest.fn();
-jest.spyOn(MikroORM.prototype, 'close').mockImplementation(close);
-const showHelpMock = jest.spyOn(require('yargs'), 'showHelp');
-showHelpMock.mockReturnValue('');
+const closeSpy = jest.spyOn(MikroORM.prototype, 'close');
+const showHelpMock = jest.spyOn(CLIHelper, 'showHelp');
+showHelpMock.mockImplementation(() => void 0);
 const generate = jest.spyOn(EntityGenerator.prototype, 'generate');
 generate.mockImplementation(async () => []);
 const dumpMock = jest.spyOn(CLIHelper, 'dump');
@@ -48,14 +47,14 @@ describe('GenerateEntitiesCommand', () => {
     expect(showHelpMock.mock.calls.length).toBe(1);
 
     expect(generate.mock.calls.length).toBe(0);
-    expect(close.mock.calls.length).toBe(0);
+    expect(closeSpy).toBeCalledTimes(0);
     await expect(cmd.handler({ save: true } as any)).resolves.toBeUndefined();
     expect(generate.mock.calls.length).toBe(1);
-    expect(close.mock.calls.length).toBe(1);
+    expect(closeSpy).toBeCalledTimes(1);
 
     await expect(cmd.handler({ dump: true } as any)).resolves.toBeUndefined();
     expect(generate.mock.calls.length).toBe(2);
-    expect(close.mock.calls.length).toBe(2);
+    expect(closeSpy).toBeCalledTimes(2);
   });
 
 });

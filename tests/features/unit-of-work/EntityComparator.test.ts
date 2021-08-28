@@ -264,7 +264,7 @@ describe('EntityComparator', () => {
     type: 'sqlite',
     dbName: ':memory:',
     entities: [Author2, Book2, BookTag2, Publisher2, Address2, Test2, Configuration2, FooBar2, FooBaz2, BaseEntity2, BaseEntity22, User],
-  }, false));
+  }));
 
   test('prepareEntity changes entity to number id', async () => {
     const author1 = new Author2('Name 1', 'e-mail1');

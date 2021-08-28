@@ -556,6 +556,7 @@ export class Utils {
    * Tries to detect `ts-node` runtime.
    */
   static detectTsNode(): boolean {
+    /* istanbul ignore next */
     return process.argv[0].endsWith('ts-node') // running via ts-node directly
       || !!process[Symbol.for('ts-node.register.instance')] // check if internal ts-node symbol exists
       || !!process.env.TS_JEST // check if ts-jest is used (works only with v27.0.4+)

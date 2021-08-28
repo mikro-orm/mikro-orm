@@ -2,10 +2,9 @@ import { SeedManager } from '@mikro-orm/seeder';
 import { Configuration, CLIHelper, MikroORM } from '../../../packages/mikro-orm/src';
 
 const config = new Configuration({ type: 'mongo' } as any, false);
-const showHelpMock = jest.spyOn(require('yargs'), 'showHelp');
-showHelpMock.mockReturnValue('');
-const close = jest.fn();
-jest.spyOn(MikroORM.prototype, 'close').mockImplementation(close);
+const showHelpMock = jest.spyOn(CLIHelper, 'showHelp');
+showHelpMock.mockImplementation(() => void 0);
+const closeSpy = jest.spyOn(MikroORM.prototype, 'close');
 const getConfigMock = jest.spyOn(CLIHelper, 'getConfiguration');
 getConfigMock.mockResolvedValue(config as any);
 const dumpMock = jest.spyOn(CLIHelper, 'dump');
@@ -45,12 +44,12 @@ describe('DatabaseSeedCommand', () => {
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
     expect(seed).toBeCalledTimes(1);
     expect(seed).toBeCalledWith((orm.config.get('seeder').defaultSeeder));
-    expect(close).toBeCalledTimes(1);
+    expect(closeSpy).toBeCalledTimes(1);
 
     await expect(cmd.handler({ class: 'TestSeeder' } as any)).resolves.toBeUndefined();
     expect(seed).toBeCalledTimes(2);
     expect(seed).toBeCalledWith(('TestSeeder'));
-    expect(close).toBeCalledTimes(2);
+    expect(closeSpy).toBeCalledTimes(2);
   });
 
 });
