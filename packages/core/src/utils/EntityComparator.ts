@@ -256,7 +256,7 @@ export class EntityComparator {
     lines.push(`  for (let k in result) { if (result.hasOwnProperty(k) && !mapped[k]) ret[k] = result[k]; }`);
 
     const code = `// compiled mapper for entity ${meta.className}\n`
-     + `return function(result) {\n  const ret = {};\n${lines.join('\n')}\n  return ret;\n}`;
+      + `return function(result) {\n  const ret = {};\n${lines.join('\n')}\n  return ret;\n}`;
     const snapshotGenerator = Utils.createFunction(context, code);
     this.mappers.set(entityName, snapshotGenerator);
 
