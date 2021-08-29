@@ -590,7 +590,7 @@ export class MetadataDiscovery {
     let order = meta.propertyOrder.get(embeddedProp.name)!;
     const getRootProperty: (prop: EntityProperty) => EntityProperty = (prop: EntityProperty) => prop.embedded ? getRootProperty(meta.properties[prop.embedded[0]]) : prop;
 
-    for (const prop of Object.values(embeddable!.properties)) {
+    for (const prop of Object.values(embeddable!.properties).filter(p => p.persist !== false)) {
       const prefix = embeddedProp.prefix === false ? '' : embeddedProp.prefix === true ? embeddedProp.name + '_' : embeddedProp.prefix;
       const name = prefix + prop.name;
 
