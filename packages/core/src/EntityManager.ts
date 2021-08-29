@@ -1,13 +1,16 @@
 import { inspect } from 'util';
 
-import { Configuration, QueryHelper, TransactionContext, Utils } from './utils';
-import { AssignOptions, EntityAssigner, EntityFactory, EntityLoader, EntityLoaderOptions, EntityRepository, EntityValidator, IdentifiedReference, Reference } from './entity';
+import type { Configuration } from './utils';
+import { QueryHelper, TransactionContext, Utils } from './utils';
+import type { AssignOptions, EntityLoaderOptions, EntityRepository, IdentifiedReference } from './entity';
+import { EntityAssigner, EntityFactory, EntityLoader, EntityValidator, Reference } from './entity';
 import { UnitOfWork } from './unit-of-work';
-import { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, UpdateOptions } from './drivers';
-import { AnyEntity, AutoPath, Dictionary, EntityData, EntityDictionary, EntityDTO, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, New, Populate, PopulateOptions, Primary } from './typings';
-import { IsolationLevel, LoadStrategy, LockMode, ReferenceType, SCALAR_TYPES } from './enums';
-import { MetadataStorage } from './metadata';
-import { Transaction } from './connections';
+import type { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, UpdateOptions } from './drivers';
+import type { AnyEntity, AutoPath, Dictionary, EntityData, EntityDictionary, EntityDTO, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, New, Populate, PopulateOptions, Primary } from './typings';
+import type { IsolationLevel, LoadStrategy } from './enums';
+import { LockMode, ReferenceType, SCALAR_TYPES } from './enums';
+import type { MetadataStorage } from './metadata';
+import type { Transaction } from './connections';
 import { EventManager, TransactionEventBroadcaster } from './events';
 import { EntityComparator } from './utils/EntityComparator';
 import { OptimisticLockError, ValidationError } from './errors';

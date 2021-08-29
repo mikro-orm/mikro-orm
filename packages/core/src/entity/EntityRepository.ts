@@ -1,8 +1,8 @@
-import { EntityManager, MergeOptions } from '../EntityManager';
-import { EntityData, EntityName, AnyEntity, Primary, Loaded, New, FilterQuery, EntityDictionary, AutoPath } from '../typings';
-import { CountOptions, DeleteOptions, FindOneOptions, FindOneOrFailOptions, FindOptions, UpdateOptions } from '../drivers/IDatabaseDriver';
-import { IdentifiedReference, Reference } from './Reference';
-import { EntityLoaderOptions } from './EntityLoader';
+import type { EntityManager, MergeOptions } from '../EntityManager';
+import type { EntityData, EntityName, AnyEntity, Primary, Loaded, New, FilterQuery, EntityDictionary, AutoPath } from '../typings';
+import type { CountOptions, DeleteOptions, FindOneOptions, FindOneOrFailOptions, FindOptions, UpdateOptions } from '../drivers/IDatabaseDriver';
+import type { IdentifiedReference, Reference } from './Reference';
+import type { EntityLoaderOptions } from './EntityLoader';
 
 export class EntityRepository<T extends AnyEntity<T>> {
 

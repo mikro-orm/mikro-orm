@@ -1,5 +1,5 @@
 import { AsyncLocalStorage } from 'async_hooks';
-import { EntityManager } from '../EntityManager';
+import type { EntityManager } from '../EntityManager';
 
 /**
  * Uses `AsyncLocalStorage` to create async context that holds current EM fork.

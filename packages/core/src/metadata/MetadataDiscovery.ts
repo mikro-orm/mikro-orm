@@ -2,15 +2,16 @@ import { basename, extname, isAbsolute } from 'path';
 import globby from 'globby';
 import c from 'ansi-colors';
 
-import { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, EntityMetadata, EntityProperty } from '../typings';
+import type { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, EntityProperty } from '../typings';
+import { EntityMetadata } from '../typings';
 import { Utils } from '../utils/Utils';
-import { Configuration } from '../utils/Configuration';
+import type { Configuration } from '../utils/Configuration';
 import { MetadataValidator } from './MetadataValidator';
 import { MetadataStorage } from './MetadataStorage';
 import { EntitySchema } from './EntitySchema';
 import { Cascade, ReferenceType } from '../enums';
 import { MetadataError } from '../errors';
-import { Platform } from '../platforms';
+import type { Platform } from '../platforms';
 import { ArrayType, BlobType, EnumArrayType, JsonType, Type } from '../types';
 
 export class MetadataDiscovery {

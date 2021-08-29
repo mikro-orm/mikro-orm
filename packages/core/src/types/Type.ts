@@ -1,5 +1,5 @@
-import { Platform } from '../platforms';
-import { Constructor, EntityProperty } from '../typings';
+import type { Platform } from '../platforms';
+import type { Constructor, EntityProperty } from '../typings';
 
 export abstract class Type<JSType = string, DBType = JSType> {
 

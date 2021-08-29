@@ -1,9 +1,10 @@
-import { Knex } from 'knex';
-import { BigIntType, Connection, Dictionary, EnumType, Utils } from '@mikro-orm/core';
-import { AbstractSqlConnection } from '../AbstractSqlConnection';
-import { AbstractSqlPlatform } from '../AbstractSqlPlatform';
-import { Column, Index, TableDifference } from '../typings';
-import { DatabaseTable } from './DatabaseTable';
+import type { Knex } from 'knex';
+import type { Connection, Dictionary } from '@mikro-orm/core';
+import { BigIntType, EnumType, Utils } from '@mikro-orm/core';
+import type { AbstractSqlConnection } from '../AbstractSqlConnection';
+import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
+import type { Column, Index, TableDifference } from '../typings';
+import type { DatabaseTable } from './DatabaseTable';
 
 export abstract class SchemaHelper {
 

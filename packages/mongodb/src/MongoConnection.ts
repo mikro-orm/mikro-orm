@@ -1,11 +1,13 @@
-import {
-  Collection, Db, DeleteWriteOpResultObject, InsertOneWriteOpResult, MongoClient, MongoClientOptions,
-  ObjectId, UpdateWriteOpResult, FilterQuery as MongoFilterQueryOrPrimary, ClientSession, SortOptionObject, BulkWriteResult,
+import type {
+  Collection, Db, DeleteWriteOpResultObject, InsertOneWriteOpResult, MongoClientOptions, UpdateWriteOpResult, FilterQuery as MongoFilterQueryOrPrimary, ClientSession, SortOptionObject, BulkWriteResult } from 'mongodb';
+import { MongoClient,
+  ObjectId,
 } from 'mongodb';
 import { inspect } from 'util';
+import type { ConnectionConfig, QueryResult, Transaction, QueryOrderMap,
+  FilterQuery, AnyEntity, EntityName, Dictionary, EntityData, TransactionEventBroadcaster, IsolationLevel } from '@mikro-orm/core';
 import {
-  Connection, ConnectionConfig, QueryResult, Transaction, Utils, QueryOrder, QueryOrderMap,
-  FilterQuery, AnyEntity, EntityName, Dictionary, EntityData, TransactionEventBroadcaster, EventType, IsolationLevel,
+  Connection, Utils, QueryOrder, EventType,
 } from '@mikro-orm/core';
 
 export class MongoConnection extends Connection {

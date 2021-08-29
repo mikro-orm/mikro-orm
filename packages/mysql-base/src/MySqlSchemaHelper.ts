@@ -1,5 +1,6 @@
-import { AbstractSqlConnection, SchemaHelper, Column, Index, Knex, TableDifference } from '@mikro-orm/knex';
-import { Dictionary } from '@mikro-orm/core';
+import type { AbstractSqlConnection, Column, Index, Knex, TableDifference } from '@mikro-orm/knex';
+import { SchemaHelper } from '@mikro-orm/knex';
+import type { Dictionary } from '@mikro-orm/core';
 
 export class MySqlSchemaHelper extends SchemaHelper {
 

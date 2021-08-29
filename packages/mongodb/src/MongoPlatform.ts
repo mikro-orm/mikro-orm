@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb';
-import { IPrimaryKey, Primary, Platform, MongoNamingStrategy, NamingStrategy, Constructor, EntityRepository, Utils, EntityProperty, PopulateOptions, ReferenceType } from '@mikro-orm/core';
+import type { IPrimaryKey, Primary, NamingStrategy, Constructor, EntityRepository, EntityProperty, PopulateOptions } from '@mikro-orm/core';
+import { Platform, MongoNamingStrategy, Utils, ReferenceType } from '@mikro-orm/core';
 import { MongoExceptionConverter } from './MongoExceptionConverter';
 import { MongoEntityRepository } from './MongoEntityRepository';
 

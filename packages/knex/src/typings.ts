@@ -1,7 +1,7 @@
-import { Knex } from 'knex';
-import { Dictionary, EntityProperty, GroupOperator, QBFilterQuery, QueryOrderMap, Type } from '@mikro-orm/core';
-import { QueryType } from './query/enums';
-import { DatabaseSchema, DatabaseTable } from './schema';
+import type { Knex } from 'knex';
+import type { Dictionary, EntityProperty, GroupOperator, QBFilterQuery, QueryOrderMap, Type } from '@mikro-orm/core';
+import type { QueryType } from './query/enums';
+import type { DatabaseSchema, DatabaseTable } from './schema';
 
 export interface Table {
   table_name: string;

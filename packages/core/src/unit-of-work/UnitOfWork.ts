@@ -1,14 +1,14 @@
-import { AnyEntity, EntityData, EntityMetadata, EntityProperty, FilterQuery, IPrimaryKeyValue, Primary } from '../typings';
+import type { AnyEntity, EntityData, EntityMetadata, EntityProperty, FilterQuery, IPrimaryKeyValue, Primary } from '../typings';
 import { Collection, EntityIdentifier, Reference } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { ChangeSetComputer } from './ChangeSetComputer';
 import { ChangeSetPersister } from './ChangeSetPersister';
 import { CommitOrderCalculator } from './CommitOrderCalculator';
 import { Utils } from '../utils/Utils';
-import { EntityManager } from '../EntityManager';
+import type { EntityManager } from '../EntityManager';
 import { Cascade, EventType, LockMode, ReferenceType } from '../enums';
 import { OptimisticLockError, ValidationError } from '../errors';
-import { Transaction } from '../connections';
+import type { Transaction } from '../connections';
 import { TransactionEventBroadcaster } from '../events';
 import { IdentityMap } from './IdentityMap';
 

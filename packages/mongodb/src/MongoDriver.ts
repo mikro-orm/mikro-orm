@@ -1,7 +1,9 @@
-import { ClientSession, ObjectId } from 'mongodb';
+import type { ClientSession } from 'mongodb';
+import { ObjectId } from 'mongodb';
+import type { EntityData, AnyEntity, FilterQuery, EntityMetadata, EntityProperty, Configuration, FindOneOptions, FindOptions,
+  QueryResult, Transaction, IDatabaseDriver, EntityManager, Dictionary, PopulateOptions, CountOptions, EntityDictionary, EntityField } from '@mikro-orm/core';
 import {
-  DatabaseDriver, EntityData, AnyEntity, FilterQuery, EntityMetadata, EntityProperty, Configuration, Utils, ReferenceType, FindOneOptions, FindOptions,
-  QueryResult, Transaction, IDatabaseDriver, EntityManager, EntityManagerType, Dictionary, PopulateOptions, CountOptions, EntityDictionary, EntityField,
+  DatabaseDriver, Utils, ReferenceType, EntityManagerType,
 } from '@mikro-orm/core';
 import { MongoConnection } from './MongoConnection';
 import { MongoPlatform } from './MongoPlatform';

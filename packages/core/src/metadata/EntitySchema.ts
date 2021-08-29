@@ -1,9 +1,11 @@
-import { AnyEntity, Constructor, DeepPartial, Dictionary, EntityMetadata, EntityName, EntityProperty, ExcludeFunctions, ExpandProperty } from '../typings';
-import {
+import type { AnyEntity, Constructor, DeepPartial, Dictionary, EntityName, EntityProperty, ExcludeFunctions, ExpandProperty } from '../typings';
+import { EntityMetadata } from '../typings';
+import type {
   EmbeddedOptions, EnumOptions, IndexOptions, ManyToManyOptions, ManyToOneOptions, OneToManyOptions, OneToOneOptions, PrimaryKeyOptions, PropertyOptions,
   SerializedPrimaryKeyOptions, UniqueOptions,
 } from '../decorators';
-import { BaseEntity, EntityRepository } from '../entity';
+import type { EntityRepository } from '../entity';
+import { BaseEntity } from '../entity';
 import { Cascade, ReferenceType } from '../enums';
 import { Type } from '../types';
 import { Utils } from '../utils';

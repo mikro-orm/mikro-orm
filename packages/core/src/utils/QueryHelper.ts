@@ -1,9 +1,9 @@
 import { Reference } from '../entity/Reference';
 import { Utils } from './Utils';
-import { AnyEntity, Dictionary, EntityMetadata, EntityProperty, FilterDef, ObjectQuery, FilterQuery } from '../typings';
+import type { AnyEntity, Dictionary, EntityMetadata, EntityProperty, FilterDef, ObjectQuery, FilterQuery } from '../typings';
 import { ARRAY_OPERATORS, GroupOperator } from '../enums';
-import { Platform } from '../platforms';
-import { MetadataStorage } from '../metadata/MetadataStorage';
+import type { Platform } from '../platforms';
+import type { MetadataStorage } from '../metadata/MetadataStorage';
 import { JsonType } from '../types';
 
 export class QueryHelper {

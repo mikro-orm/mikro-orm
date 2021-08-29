@@ -1,9 +1,10 @@
-import { Configuration, Utils } from '../utils';
-import { MetadataStorage } from '../metadata';
-import { AnyEntity, EntityData, EntityProperty } from '../typings';
+import type { Configuration } from '../utils';
+import { Utils } from '../utils';
+import type { MetadataStorage } from '../metadata';
+import type { AnyEntity, EntityData, EntityProperty } from '../typings';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
-import { Collection, EntityValidator } from '../entity';
-import { Platform } from '../platforms';
+import type { Collection, EntityValidator } from '../entity';
+import type { Platform } from '../platforms';
 import { ReferenceType } from '../enums';
 import { EntityComparator } from '../utils/EntityComparator';
 

@@ -1,14 +1,14 @@
-import {
+import type {
   EntityData, EntityMetadata, EntityProperty, AnyEntity, FilterQuery, Primary, Dictionary, QBFilterQuery,
   IPrimaryKey, PopulateOptions, EntityDictionary, ExpandProperty, AutoPath,
 } from '../typings';
-import { Connection, QueryResult, Transaction } from '../connections';
-import { LockMode, QueryOrderMap, QueryFlag, LoadStrategy } from '../enums';
-import { Platform } from '../platforms';
-import { MetadataStorage } from '../metadata';
-import { Collection } from '../entity';
-import { EntityManager } from '../EntityManager';
-import { DriverException } from '../exceptions';
+import type { Connection, QueryResult, Transaction } from '../connections';
+import type { LockMode, QueryOrderMap, QueryFlag, LoadStrategy } from '../enums';
+import type { Platform } from '../platforms';
+import type { MetadataStorage } from '../metadata';
+import type { Collection } from '../entity';
+import type { EntityManager } from '../EntityManager';
+import type { DriverException } from '../exceptions';
 
 export const EntityManagerType = Symbol('EntityManagerType');
 

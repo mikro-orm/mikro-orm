@@ -1,12 +1,13 @@
 import { URL } from 'url';
 import c from 'ansi-colors';
 
-import { Configuration, ConnectionOptions, DynamicPassword, Utils } from '../utils';
-import { MetadataStorage } from '../metadata';
-import { AnyEntity, Dictionary, MaybePromise, Primary } from '../typings';
-import { Platform } from '../platforms/Platform';
-import { TransactionEventBroadcaster } from '../events/TransactionEventBroadcaster';
-import { IsolationLevel } from '../enums';
+import type { Configuration, ConnectionOptions, DynamicPassword } from '../utils';
+import { Utils } from '../utils';
+import type { MetadataStorage } from '../metadata';
+import type { AnyEntity, Dictionary, MaybePromise, Primary } from '../typings';
+import type { Platform } from '../platforms/Platform';
+import type { TransactionEventBroadcaster } from '../events/TransactionEventBroadcaster';
+import type { IsolationLevel } from '../enums';
 
 export abstract class Connection {
 

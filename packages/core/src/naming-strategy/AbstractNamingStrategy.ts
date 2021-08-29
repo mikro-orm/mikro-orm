@@ -1,4 +1,4 @@
-import { NamingStrategy } from './NamingStrategy';
+import type { NamingStrategy } from './NamingStrategy';
 
 export abstract class AbstractNamingStrategy implements NamingStrategy {
 

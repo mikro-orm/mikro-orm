@@ -1,14 +1,16 @@
 import { createRequire } from 'module';
 import clone from 'clone';
-import globby, { GlobbyOptions } from 'globby';
+import type { GlobbyOptions } from 'globby';
+import globby from 'globby';
 import { extname, isAbsolute, join, normalize, relative, resolve } from 'path';
 import { pathExists } from 'fs-extra';
 import { createHash } from 'crypto';
 import { recovery } from 'escaya';
-import { AnyEntity, Dictionary, EntityDictionary, EntityMetadata, EntityName, EntityProperty, IMetadataStorage, Primary, PlainObject } from '../typings';
+import type { AnyEntity, Dictionary, EntityDictionary, EntityMetadata, EntityName, EntityProperty, IMetadataStorage, Primary } from '../typings';
+import { PlainObject } from '../typings';
 import { GroupOperator, QueryOperator, ReferenceType } from '../enums';
-import { Collection } from '../entity';
-import { Platform } from '../platforms';
+import type { Collection } from '../entity';
+import type { Platform } from '../platforms';
 
 export const ObjectBindingPattern = Symbol('ObjectBindingPattern');
 

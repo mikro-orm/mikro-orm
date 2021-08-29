@@ -1,14 +1,15 @@
-import { Knex } from 'knex';
-import {
-  AnyEntity, Collection, Configuration, Constructor, DatabaseDriver, Dictionary, EntityData, EntityManager, EntityManagerType,
-  EntityMetadata, EntityProperty, QueryFlag, FilterQuery, FindOneOptions, FindOptions, IDatabaseDriver, LockMode, Primary,
-  QueryOrderMap, QueryResult, ReferenceType, Transaction, Utils, PopulateOptions, LoadStrategy, CountOptions, EntityDictionary, EntityField,
+import type { Knex } from 'knex';
+import type {
+  AnyEntity, Collection, Configuration, Constructor, Dictionary, EntityData, EntityManager,
+  EntityMetadata, EntityProperty, FilterQuery, FindOneOptions, FindOptions, IDatabaseDriver, LockMode, Primary,
+  QueryOrderMap, QueryResult, Transaction, PopulateOptions, CountOptions, EntityDictionary, EntityField } from '@mikro-orm/core';
+import { DatabaseDriver, EntityManagerType, QueryFlag, ReferenceType, Utils, LoadStrategy,
 } from '@mikro-orm/core';
-import { AbstractSqlConnection } from './AbstractSqlConnection';
-import { AbstractSqlPlatform } from './AbstractSqlPlatform';
+import type { AbstractSqlConnection } from './AbstractSqlConnection';
+import type { AbstractSqlPlatform } from './AbstractSqlPlatform';
 import { QueryBuilder } from './query/QueryBuilder';
 import { SqlEntityManager } from './SqlEntityManager';
-import { Field } from './typings';
+import type { Field } from './typings';
 
 export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = AbstractSqlConnection> extends DatabaseDriver<C> {
 

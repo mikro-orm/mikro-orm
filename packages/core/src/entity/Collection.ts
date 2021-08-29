@@ -1,11 +1,12 @@
-import { AnyEntity, Dictionary, EntityData, EntityMetadata, FilterQuery, Populate, Primary } from '../typings';
+import type { AnyEntity, Dictionary, EntityData, EntityMetadata, FilterQuery, Populate, Primary } from '../typings';
 import { ArrayCollection } from './ArrayCollection';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
-import { QueryOrder, QueryOrderMap, ReferenceType } from '../enums';
+import type { QueryOrderMap } from '../enums';
+import { QueryOrder, ReferenceType } from '../enums';
 import { Reference } from './Reference';
-import { Transaction } from '../connections/Connection';
-import { FindOptions } from '../drivers/IDatabaseDriver';
+import type { Transaction } from '../connections/Connection';
+import type { FindOptions } from '../drivers/IDatabaseDriver';
 
 export interface MatchingOptions<T, P extends string = never> extends FindOptions<T, P> {
   where?: FilterQuery<T>;

@@ -1,8 +1,11 @@
 import c from 'ansi-colors';
-import { Arguments, Argv, CommandModule } from 'yargs';
-import { Configuration, MikroORM, MikroORMOptions, Utils } from '@mikro-orm/core';
-import { AbstractSqlDriver, SchemaGenerator } from '@mikro-orm/knex';
-import { MigrateOptions, Migrator } from '@mikro-orm/migrations';
+import type { Arguments, Argv, CommandModule } from 'yargs';
+import type { Configuration, MikroORM, MikroORMOptions } from '@mikro-orm/core';
+import { Utils } from '@mikro-orm/core';
+import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import { SchemaGenerator } from '@mikro-orm/knex';
+import type { MigrateOptions } from '@mikro-orm/migrations';
+import { Migrator } from '@mikro-orm/migrations';
 import { CLIHelper } from '../CLIHelper';
 
 export class MigrationCommandFactory {

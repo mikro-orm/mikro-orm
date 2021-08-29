@@ -1,8 +1,8 @@
-import { Collection } from './Collection';
-import { AnyEntity, EntityData, EntityMetadata, IPrimaryKey, PopulateOptions } from '../typings';
-import { Reference } from './Reference';
+import type { Collection } from './Collection';
+import type { AnyEntity, EntityData, EntityMetadata, IPrimaryKey, PopulateOptions } from '../typings';
+import type { Reference } from './Reference';
 import { wrap } from './wrap';
-import { Platform } from '../platforms';
+import type { Platform } from '../platforms';
 import { Utils } from '../utils/Utils';
 
 /**

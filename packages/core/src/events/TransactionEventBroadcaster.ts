@@ -1,7 +1,7 @@
-import { Transaction } from '../connections';
-import { EntityManager } from '../EntityManager';
-import { TransactionEventType } from '../enums';
-import { UnitOfWork } from '../unit-of-work';
+import type { Transaction } from '../connections';
+import type { EntityManager } from '../EntityManager';
+import type { TransactionEventType } from '../enums';
+import type { UnitOfWork } from '../unit-of-work';
 
 export class TransactionEventBroadcaster {
 

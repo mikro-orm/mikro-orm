@@ -1,4 +1,4 @@
-import { AnyEntity, Dictionary, EntityProperty, IPrimaryKey, Primary } from '../typings';
+import type { AnyEntity, Dictionary, EntityProperty, IPrimaryKey, Primary } from '../typings';
 import { Reference } from './Reference';
 import { wrap } from './wrap';
 import { ReferenceType } from '../enums';

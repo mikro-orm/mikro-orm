@@ -1,10 +1,12 @@
-import { Cascade, EventType, LoadStrategy, LockMode, QueryOrder, ReferenceType } from './enums';
-import { AssignOptions, Collection, EntityFactory, EntityIdentifier, EntityRepository, IdentifiedReference, Reference, SerializationContext } from './entity';
-import { EntitySchema, MetadataStorage } from './metadata';
-import { Type } from './types';
-import { Platform } from './platforms';
-import { Configuration, EntityComparator, Utils } from './utils';
-import { EntityManager } from './EntityManager';
+import type { Cascade, EventType, LoadStrategy, LockMode, QueryOrder } from './enums';
+import { ReferenceType } from './enums';
+import type { AssignOptions, Collection, EntityFactory, EntityIdentifier, EntityRepository, IdentifiedReference, Reference, SerializationContext } from './entity';
+import type { EntitySchema, MetadataStorage } from './metadata';
+import type { Type } from './types';
+import type { Platform } from './platforms';
+import type { Configuration } from './utils';
+import { EntityComparator, Utils } from './utils';
+import type { EntityManager } from './EntityManager';
 
 export type Constructor<T = unknown> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };

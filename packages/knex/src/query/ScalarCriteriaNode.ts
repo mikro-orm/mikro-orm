@@ -1,6 +1,6 @@
 import { ReferenceType } from '@mikro-orm/core';
 import { CriteriaNode } from './CriteriaNode';
-import { IQueryBuilder } from '../typings';
+import type { IQueryBuilder } from '../typings';
 
 /**
  * @internal

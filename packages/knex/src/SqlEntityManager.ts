@@ -1,8 +1,9 @@
-import { Knex } from 'knex';
-import { AnyEntity, EntityData, EntityManager, EntityName, EntityRepository, GetRepository, QueryResult, Utils } from '@mikro-orm/core';
-import { AbstractSqlDriver } from './AbstractSqlDriver';
+import type { Knex } from 'knex';
+import type { AnyEntity, EntityData, EntityName, EntityRepository, GetRepository, QueryResult } from '@mikro-orm/core';
+import { EntityManager, Utils } from '@mikro-orm/core';
+import type { AbstractSqlDriver } from './AbstractSqlDriver';
 import { QueryBuilder } from './query';
-import { SqlEntityRepository } from './SqlEntityRepository';
+import type { SqlEntityRepository } from './SqlEntityRepository';
 
 /**
  * @inheritDoc

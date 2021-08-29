@@ -1,8 +1,8 @@
-import { ReferenceOptions } from './Property';
+import type { ReferenceOptions } from './Property';
 import { MetadataStorage, MetadataValidator } from '../metadata';
 import { Utils } from '../utils';
 import { ReferenceType } from '../enums';
-import { AnyEntity, EntityName, EntityProperty } from '../typings';
+import type { AnyEntity, EntityName, EntityProperty } from '../typings';
 
 export function ManyToOne<T, O>(
   entity: ManyToOneOptions<T, O> | string | ((e?: any) => EntityName<T>) = {},

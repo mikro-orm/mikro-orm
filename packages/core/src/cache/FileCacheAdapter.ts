@@ -1,7 +1,7 @@
 import globby from 'globby';
 import { ensureDir, pathExists, readFile, readJSON, unlink, writeJSON } from 'fs-extra';
 
-import { CacheAdapter } from './CacheAdapter';
+import type { CacheAdapter } from './CacheAdapter';
 import { Utils } from '../utils/Utils';
 
 export class FileCacheAdapter implements CacheAdapter {

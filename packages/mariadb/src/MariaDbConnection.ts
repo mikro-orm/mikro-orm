@@ -1,5 +1,6 @@
-import { Connection } from 'mariadb';
-import { MySqlConnection, Knex, MonkeyPatchable } from '@mikro-orm/mysql-base';
+import type { Connection } from 'mariadb';
+import type { Knex } from '@mikro-orm/mysql-base';
+import { MySqlConnection, MonkeyPatchable } from '@mikro-orm/mysql-base';
 
 export class MariaDbConnection extends MySqlConnection {
 

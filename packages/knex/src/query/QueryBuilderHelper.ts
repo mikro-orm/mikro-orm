@@ -1,21 +1,22 @@
-import { Knex } from 'knex';
+import type { Knex } from 'knex';
 import { inspect } from 'util';
-import {
+import type {
   Dictionary,
   EntityMetadata,
   EntityProperty,
   FlatQueryOrderMap,
-  LockMode,
   MetadataStorage,
+  Platform } from '@mikro-orm/core';
+import {
+  LockMode,
   OptimisticLockError,
-  Platform,
   QueryOperator,
   QueryOrderNumeric,
   ReferenceType,
   Utils,
 } from '@mikro-orm/core';
 import { QueryType } from './enums';
-import { JoinOptions } from '../typings';
+import type { JoinOptions } from '../typings';
 
 /**
  * @internal

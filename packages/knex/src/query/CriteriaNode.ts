@@ -1,6 +1,7 @@
 import { inspect } from 'util';
-import { EntityProperty, MetadataStorage, ReferenceType, Utils } from '@mikro-orm/core';
-import { ICriteriaNode, IQueryBuilder } from '../typings';
+import type { EntityProperty, MetadataStorage } from '@mikro-orm/core';
+import { ReferenceType, Utils } from '@mikro-orm/core';
+import type { ICriteriaNode, IQueryBuilder } from '../typings';
 
 /**
  * Helper for working with deeply nested where/orderBy/having criteria. Uses composite pattern to build tree from the payload.

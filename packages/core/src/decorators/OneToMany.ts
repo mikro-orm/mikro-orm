@@ -1,8 +1,9 @@
-import { ReferenceOptions } from './Property';
+import type { ReferenceOptions } from './Property';
 import { MetadataStorage, MetadataValidator } from '../metadata';
 import { Utils } from '../utils';
-import { ReferenceType, QueryOrder } from '../enums';
-import { EntityName, EntityProperty, AnyEntity } from '../typings';
+import type { QueryOrder } from '../enums';
+import { ReferenceType } from '../enums';
+import type { EntityName, EntityProperty, AnyEntity } from '../typings';
 
 export function createOneToDecorator<T, O>(
   entity: OneToManyOptions<T, O> | string | ((e?: any) => EntityName<T>),

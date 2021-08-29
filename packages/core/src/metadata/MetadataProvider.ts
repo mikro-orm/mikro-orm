@@ -1,4 +1,4 @@
-import { EntityMetadata, EntityProperty } from '../typings';
+import type { EntityMetadata, EntityProperty } from '../typings';
 import { Utils } from '../utils/Utils';
 
 // to get around circular dependencies

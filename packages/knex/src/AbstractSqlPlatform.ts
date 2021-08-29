@@ -1,7 +1,9 @@
 import { escape } from 'sqlstring';
-import { Constructor, EntityManager, EntityRepository, JsonProperty, Platform, Utils } from '@mikro-orm/core';
+import type { Constructor, EntityManager, EntityRepository } from '@mikro-orm/core';
+import { JsonProperty, Platform, Utils } from '@mikro-orm/core';
 import { SqlEntityRepository } from './SqlEntityRepository';
-import { SchemaHelper, SchemaGenerator } from './schema';
+import type { SchemaHelper } from './schema';
+import { SchemaGenerator } from './schema';
 
 export abstract class AbstractSqlPlatform extends Platform {
 

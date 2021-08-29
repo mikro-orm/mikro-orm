@@ -1,7 +1,7 @@
 import { inspect } from 'util';
-import { Collection } from './Collection';
-import { EntityManager } from '../EntityManager';
-import { AnyEntity, EntityData, EntityDTO, EntityMetadata, EntityProperty, Primary } from '../typings';
+import type { Collection } from './Collection';
+import type { EntityManager } from '../EntityManager';
+import type { AnyEntity, EntityData, EntityDTO, EntityMetadata, EntityProperty, Primary } from '../typings';
 import { Utils } from '../utils/Utils';
 import { Reference } from './Reference';
 import { ReferenceType, SCALAR_TYPES } from '../enums';

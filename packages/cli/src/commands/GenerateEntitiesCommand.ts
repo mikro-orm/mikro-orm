@@ -1,6 +1,6 @@
-import { Arguments, Argv, CommandModule } from 'yargs';
+import type { Arguments, Argv, CommandModule } from 'yargs';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
-import { EntityManager } from '@mikro-orm/knex';
+import type { EntityManager } from '@mikro-orm/knex';
 import { CLIHelper } from '../CLIHelper';
 
 export type Options = { dump: boolean; save: boolean; path: string };

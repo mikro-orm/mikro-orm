@@ -1,4 +1,4 @@
-import { Dictionary, EntityProperty } from '../typings';
+import type { Dictionary, EntityProperty } from '../typings';
 import { ReferenceType } from '../enums';
 
 export const enum NodeState {

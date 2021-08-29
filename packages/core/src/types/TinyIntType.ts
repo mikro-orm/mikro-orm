@@ -1,6 +1,6 @@
 import { Type } from './Type';
-import { Platform } from '../platforms';
-import { EntityProperty } from '../typings';
+import type { Platform } from '../platforms';
+import type { EntityProperty } from '../typings';
 
 export class TinyIntType extends Type<number | null | undefined, number | null | undefined> {
 

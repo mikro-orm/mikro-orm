@@ -1,6 +1,6 @@
 import { Type } from './Type';
-import { Platform } from '../platforms';
-import { EntityProperty } from '../typings';
+import type { Platform } from '../platforms';
+import type { EntityProperty } from '../typings';
 
 export class DoubleType extends Type<string | null | undefined, string | null | undefined> {
 

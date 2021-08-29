@@ -1,10 +1,13 @@
-import { MetadataStorage } from '../metadata';
-import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, IHydrator, IPrimaryKey } from '../typings';
-import { EntityFactory, EntityIdentifier } from '../entity';
-import { ChangeSet, ChangeSetType } from './ChangeSet';
-import { QueryResult, Transaction } from '../connections';
-import { Configuration, Utils } from '../utils';
-import { IDatabaseDriver } from '../drivers';
+import type { MetadataStorage } from '../metadata';
+import type { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, IHydrator, IPrimaryKey } from '../typings';
+import type { EntityFactory } from '../entity';
+import { EntityIdentifier } from '../entity';
+import type { ChangeSet } from './ChangeSet';
+import { ChangeSetType } from './ChangeSet';
+import type { QueryResult, Transaction } from '../connections';
+import type { Configuration } from '../utils';
+import { Utils } from '../utils';
+import type { IDatabaseDriver } from '../drivers';
 import { OptimisticLockError } from '../errors';
 
 export class ChangeSetPersister {

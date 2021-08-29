@@ -1,5 +1,5 @@
-import { Knex } from 'knex';
-import {
+import type { Knex } from 'knex';
+import type {
   AnyEntity,
   Dictionary,
   EntityData,
@@ -7,24 +7,25 @@ import {
   EntityProperty,
   FlatQueryOrderMap,
   GroupOperator,
-  LoadStrategy,
-  LockMode,
   MetadataStorage,
   PopulateOptions,
   QBFilterQuery,
+  QueryOrderMap } from '@mikro-orm/core';
+import {
+  LoadStrategy,
+  LockMode,
   QueryFlag,
   QueryHelper,
-  QueryOrderMap,
   ReferenceType,
   Utils,
   ValidationError,
 } from '@mikro-orm/core';
 import { QueryType } from './enums';
-import { AbstractSqlDriver } from '../AbstractSqlDriver';
+import type { AbstractSqlDriver } from '../AbstractSqlDriver';
 import { QueryBuilderHelper } from './QueryBuilderHelper';
-import { SqlEntityManager } from '../SqlEntityManager';
+import type { SqlEntityManager } from '../SqlEntityManager';
 import { CriteriaNodeFactory } from './CriteriaNodeFactory';
-import { Field, JoinOptions } from '../typings';
+import type { Field, JoinOptions } from '../typings';
 
 /**
  * SQL query builder with fluent interface.

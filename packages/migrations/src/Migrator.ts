@@ -1,12 +1,15 @@
-import umzug, { migrationsList, Umzug } from 'umzug';
+import type { Umzug } from 'umzug';
+import umzug, { migrationsList } from 'umzug';
 import { join } from 'path';
 import { ensureDir, pathExists, writeJSON } from 'fs-extra';
-import { Constructor, Dictionary, Transaction, Utils, t, Type, IMigrator, IMigrationGenerator } from '@mikro-orm/core';
-import { DatabaseSchema, DatabaseTable, EntityManager, SchemaGenerator } from '@mikro-orm/knex';
-import { Migration } from './Migration';
+import type { Constructor, Dictionary, Transaction, IMigrator, IMigrationGenerator } from '@mikro-orm/core';
+import { Utils, t, Type } from '@mikro-orm/core';
+import type { EntityManager } from '@mikro-orm/knex';
+import { DatabaseSchema, DatabaseTable, SchemaGenerator } from '@mikro-orm/knex';
+import type { Migration } from './Migration';
 import { MigrationRunner } from './MigrationRunner';
 import { MigrationStorage } from './MigrationStorage';
-import { MigrateOptions, MigrationResult, MigrationRow, UmzugMigration } from './typings';
+import type { MigrateOptions, MigrationResult, MigrationRow, UmzugMigration } from './typings';
 import { TSMigrationGenerator } from './TSMigrationGenerator';
 import { JSMigrationGenerator } from './JSMigrationGenerator';
 

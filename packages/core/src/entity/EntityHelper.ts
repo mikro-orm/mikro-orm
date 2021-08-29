@@ -1,10 +1,10 @@
 import { inspect } from 'util';
 
-import { EntityManager } from '../EntityManager';
-import { AnyEntity, Dictionary, EntityMetadata, EntityProperty } from '../typings';
+import type { EntityManager } from '../EntityManager';
+import type { AnyEntity, Dictionary, EntityMetadata, EntityProperty } from '../typings';
 import { EntityTransformer } from './EntityTransformer';
 import { Reference } from './Reference';
-import { Platform } from '../platforms';
+import type { Platform } from '../platforms';
 import { Utils } from '../utils/Utils';
 import { WrappedEntity } from './WrappedEntity';
 import { ReferenceType } from '../enums';

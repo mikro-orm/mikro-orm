@@ -20,6 +20,8 @@ module.exports = {
     '@typescript-eslint',
   ],
   rules: {
+    '@typescript-eslint/consistent-type-imports': 'error',
+    '@typescript-eslint/no-duplicate-imports': 'error',
     '@typescript-eslint/prefer-optional-chain': 'error',
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
@@ -124,7 +126,7 @@ module.exports = {
     'eol-last': 'error',
     'eqeqeq': ['error', 'always', {"null": "ignore"}],
     'no-console': 'error',
-    'no-duplicate-imports': 'error',
+    'no-duplicate-imports': 'off',
     'no-multiple-empty-lines': 'error',
     'no-throw-literal': 'error',
     'no-trailing-spaces': 'error',

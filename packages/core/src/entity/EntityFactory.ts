@@ -1,7 +1,7 @@
 import { Utils } from '../utils/Utils';
-import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityName, EntityProperty, New, Primary } from '../typings';
-import { UnitOfWork } from '../unit-of-work';
-import { EntityManager } from '../EntityManager';
+import type { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityName, EntityProperty, New, Primary } from '../typings';
+import type { UnitOfWork } from '../unit-of-work';
+import type { EntityManager } from '../EntityManager';
 import { EventType, ReferenceType } from '../enums';
 
 export interface FactoryOptions {

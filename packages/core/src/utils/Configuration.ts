@@ -1,9 +1,10 @@
 import { inspect } from 'util';
 
-import { NamingStrategy } from '../naming-strategy';
-import { CacheAdapter, FileCacheAdapter, NullCacheAdapter } from '../cache';
-import { EntityRepository } from '../entity';
-import {
+import type { NamingStrategy } from '../naming-strategy';
+import type { CacheAdapter } from '../cache';
+import { FileCacheAdapter, NullCacheAdapter } from '../cache';
+import type { EntityRepository } from '../entity';
+import type {
   AnyEntity,
   Constructor,
   Dictionary,
@@ -20,17 +21,18 @@ import {
 } from '../typings';
 import { ObjectHydrator } from '../hydration';
 import { NullHighlighter } from '../utils/NullHighlighter';
-import { Logger, LoggerNamespace } from '../utils/Logger';
+import type { LoggerNamespace } from '../utils/Logger';
+import { Logger } from '../utils/Logger';
 import { Utils } from '../utils/Utils';
-import { EntityManager } from '../EntityManager';
-import { Platform } from '../platforms';
-import { EntitySchema } from '../metadata/EntitySchema';
-import { MetadataProvider } from '../metadata/MetadataProvider';
+import type { EntityManager } from '../EntityManager';
+import type { Platform } from '../platforms';
+import type { EntitySchema } from '../metadata/EntitySchema';
+import type { MetadataProvider } from '../metadata/MetadataProvider';
 import { MetadataStorage } from '../metadata/MetadataStorage';
 import { ReflectMetadataProvider } from '../metadata/ReflectMetadataProvider';
-import { EventSubscriber } from '../events';
-import { IDatabaseDriver } from '../drivers/IDatabaseDriver';
-import { EntityOptions } from '../decorators';
+import type { EventSubscriber } from '../events';
+import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
+import type { EntityOptions } from '../decorators';
 import { NotFoundError } from '../errors';
 import { RequestContext } from './RequestContext';
 import { LoadStrategy } from '../enums';

@@ -1,7 +1,8 @@
-import { AnyEntity, EntityMetadata } from '../typings';
-import { EventArgs, EventSubscriber, FlushEventArgs, TransactionEventArgs } from './EventSubscriber';
+import type { AnyEntity, EntityMetadata } from '../typings';
+import type { EventArgs, EventSubscriber, FlushEventArgs, TransactionEventArgs } from './EventSubscriber';
 import { Utils } from '../utils';
-import { EventType, TransactionEventType } from '../enums';
+import type { TransactionEventType } from '../enums';
+import { EventType } from '../enums';
 
 export class EventManager {
 

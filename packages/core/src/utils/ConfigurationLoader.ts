@@ -1,10 +1,11 @@
 import dotenv from 'dotenv';
 import { pathExists } from 'fs-extra';
 import { join, isAbsolute } from 'path';
-import { IDatabaseDriver } from '../drivers';
-import { Configuration, Options } from './Configuration';
+import type { IDatabaseDriver } from '../drivers';
+import type { Options } from './Configuration';
+import { Configuration } from './Configuration';
 import { Utils } from './Utils';
-import { Dictionary } from '../typings';
+import type { Dictionary } from '../typings';
 
 /**
  * @internal

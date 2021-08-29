@@ -1,6 +1,6 @@
 import { Type } from './Type';
-import { Platform } from '../platforms';
-import { EntityProperty } from '../typings';
+import type { Platform } from '../platforms';
+import type { EntityProperty } from '../typings';
 import { ValidationError } from '../errors';
 
 export class DateType extends Type<Date, string> {

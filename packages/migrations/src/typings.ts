@@ -1,4 +1,4 @@
-import { Transaction, MigrationDiff } from '@mikro-orm/core';
+import type { Transaction, MigrationDiff } from '@mikro-orm/core';
 
 export type UmzugMigration = { name?: string; path?: string; file: string };
 export type MigrateOptions = { from?: string | number; to?: string | number; migrations?: string[]; transaction?: Transaction };

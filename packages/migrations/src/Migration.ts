@@ -1,5 +1,5 @@
-import { Configuration, Transaction } from '@mikro-orm/core';
-import { AbstractSqlDriver, Knex } from '@mikro-orm/knex';
+import type { Configuration, Transaction } from '@mikro-orm/core';
+import type { AbstractSqlDriver, Knex } from '@mikro-orm/knex';
 
 export type Query = string | Knex.QueryBuilder | Knex.Raw;
 

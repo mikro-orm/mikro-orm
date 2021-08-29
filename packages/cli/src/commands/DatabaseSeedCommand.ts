@@ -1,8 +1,8 @@
 import c from 'ansi-colors';
-import { Arguments, Argv, CommandModule } from 'yargs';
+import type { Arguments, Argv, CommandModule } from 'yargs';
 import { CLIHelper } from '../CLIHelper';
-import { MikroORM } from '@mikro-orm/core';
-import { AbstractSqlDriver } from '@mikro-orm/knex';
+import type { MikroORM } from '@mikro-orm/core';
+import type { AbstractSqlDriver } from '@mikro-orm/knex';
 
 export class DatabaseSeedCommand<T> implements CommandModule<T, { class: string }> {
 

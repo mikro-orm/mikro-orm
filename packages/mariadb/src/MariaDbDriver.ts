@@ -1,5 +1,6 @@
-import { AnyEntity, Configuration, EntityDictionary, QueryResult, Transaction } from '@mikro-orm/core';
-import { AbstractSqlDriver, MySqlPlatform, Knex } from '@mikro-orm/mysql-base';
+import type { AnyEntity, Configuration, EntityDictionary, QueryResult, Transaction } from '@mikro-orm/core';
+import type { Knex } from '@mikro-orm/mysql-base';
+import { AbstractSqlDriver, MySqlPlatform } from '@mikro-orm/mysql-base';
 import { MariaDbConnection } from './MariaDbConnection';
 
 export class MariaDbDriver extends AbstractSqlDriver<MariaDbConnection> {

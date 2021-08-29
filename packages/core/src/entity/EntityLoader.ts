@@ -1,12 +1,13 @@
-import { AnyEntity, Dictionary, EntityProperty, FilterQuery, PopulateOptions, Primary } from '../typings';
-import { EntityManager } from '../EntityManager';
+import type { AnyEntity, Dictionary, EntityProperty, FilterQuery, PopulateOptions, Primary } from '../typings';
+import type { EntityManager } from '../EntityManager';
 import { QueryHelper } from '../utils/QueryHelper';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
-import { Collection } from './Collection';
-import { LoadStrategy, QueryOrder, QueryOrderMap, ReferenceType } from '../enums';
+import type { Collection } from './Collection';
+import type { QueryOrderMap } from '../enums';
+import { LoadStrategy, QueryOrder, ReferenceType } from '../enums';
 import { Reference } from './Reference';
-import { EntityField, FindOptions } from '../drivers/IDatabaseDriver';
+import type { EntityField, FindOptions } from '../drivers/IDatabaseDriver';
 
 export type EntityLoaderOptions<T, P extends string = never> = {
   where?: FilterQuery<T>;

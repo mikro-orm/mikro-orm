@@ -1,5 +1,5 @@
 import { MetadataProvider } from './MetadataProvider';
-import { EntityMetadata, EntityProperty } from '../typings';
+import type { EntityMetadata, EntityProperty } from '../typings';
 import { Utils } from '../utils';
 import { Cascade, ReferenceType } from '../enums';
 

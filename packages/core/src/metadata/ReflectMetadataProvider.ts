@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { EntityMetadata, EntityProperty } from '../typings';
+import type { EntityMetadata, EntityProperty } from '../typings';
 import { MetadataProvider } from './MetadataProvider';
 import { ReferenceType } from '../enums';
 

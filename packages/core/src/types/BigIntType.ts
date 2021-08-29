@@ -1,6 +1,6 @@
 import { Type } from './Type';
-import { Platform } from '../platforms';
-import { EntityProperty } from '../typings';
+import type { Platform } from '../platforms';
+import type { EntityProperty } from '../typings';
 
 /**
  * This type will automatically convert string values returned from the database to native JS bigints.

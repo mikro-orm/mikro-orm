@@ -1,8 +1,9 @@
-import { BooleanType, Dictionary, EntityProperty } from '@mikro-orm/core';
-import { Column, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
-import { DatabaseSchema } from './DatabaseSchema';
-import { DatabaseTable } from './DatabaseTable';
-import { AbstractSqlPlatform } from '../AbstractSqlPlatform';
+import type { Dictionary, EntityProperty } from '@mikro-orm/core';
+import { BooleanType } from '@mikro-orm/core';
+import type { Column, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
+import type { DatabaseSchema } from './DatabaseSchema';
+import type { DatabaseTable } from './DatabaseTable';
+import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
 
 /**
  * Compares two Schemas and return an instance of SchemaDifference.

@@ -1,4 +1,4 @@
-import { Arguments, CommandModule } from 'yargs';
+import type { Arguments, CommandModule } from 'yargs';
 import c from 'ansi-colors';
 import { CLIHelper } from '../CLIHelper';
 

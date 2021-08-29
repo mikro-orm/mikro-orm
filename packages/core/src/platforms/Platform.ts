@@ -1,10 +1,11 @@
 import clone from 'clone';
 import { EntityRepository } from '../entity';
-import { NamingStrategy, UnderscoreNamingStrategy } from '../naming-strategy';
-import { AnyEntity, Constructor, EntityProperty, IEntityGenerator, IMigrator, IPrimaryKey, ISchemaGenerator, PopulateOptions, Primary } from '../typings';
+import type { NamingStrategy } from '../naming-strategy';
+import { UnderscoreNamingStrategy } from '../naming-strategy';
+import type { AnyEntity, Constructor, EntityProperty, IEntityGenerator, IMigrator, IPrimaryKey, ISchemaGenerator, PopulateOptions, Primary } from '../typings';
 import { ExceptionConverter } from './ExceptionConverter';
-import { EntityManager } from '../EntityManager';
-import { Configuration } from '../utils/Configuration';
+import type { EntityManager } from '../EntityManager';
+import type { Configuration } from '../utils/Configuration';
 import {
   ArrayType, BigIntType, BlobType, BooleanType, DateType, DecimalType, DoubleType, JsonType, SmallIntType, TimeType,
   TinyIntType, Type, UuidType, StringType, IntegerType, FloatType, DateTimeType, TextType, EnumType, UnknownType,

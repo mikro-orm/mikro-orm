@@ -1,5 +1,6 @@
-import { AnyEntity, Configuration, EntityDictionary, QueryResult, Transaction } from '@mikro-orm/core';
-import { AbstractSqlDriver, Knex } from '@mikro-orm/knex';
+import type { AnyEntity, Configuration, EntityDictionary, QueryResult, Transaction } from '@mikro-orm/core';
+import type { Knex } from '@mikro-orm/knex';
+import { AbstractSqlDriver } from '@mikro-orm/knex';
 import { MySqlConnection } from './MySqlConnection';
 import { MySqlPlatform } from './MySqlPlatform';
 

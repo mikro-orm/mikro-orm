@@ -1,9 +1,10 @@
-import { Knex } from 'knex';
-import { CommitOrderCalculator, Dictionary, EntityMetadata } from '@mikro-orm/core';
-import { Column, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
+import type { Knex } from 'knex';
+import type { Dictionary, EntityMetadata } from '@mikro-orm/core';
+import { CommitOrderCalculator } from '@mikro-orm/core';
+import type { Column, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
 import { DatabaseSchema } from './DatabaseSchema';
-import { DatabaseTable } from './DatabaseTable';
-import { SqlEntityManager } from '../SqlEntityManager';
+import type { DatabaseTable } from './DatabaseTable';
+import type { SqlEntityManager } from '../SqlEntityManager';
 import { SchemaComparator } from './SchemaComparator';
 
 export class SchemaGenerator {

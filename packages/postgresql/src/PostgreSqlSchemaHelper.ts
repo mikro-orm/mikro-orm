@@ -1,6 +1,8 @@
-import { BigIntType, Dictionary, EnumType, Utils } from '@mikro-orm/core';
-import { AbstractSqlConnection, SchemaHelper, Column, Index, DatabaseTable, TableDifference } from '@mikro-orm/knex';
-import { Knex } from 'knex';
+import type { Dictionary } from '@mikro-orm/core';
+import { BigIntType, EnumType, Utils } from '@mikro-orm/core';
+import type { AbstractSqlConnection, Column, Index, DatabaseTable, TableDifference } from '@mikro-orm/knex';
+import { SchemaHelper } from '@mikro-orm/knex';
+import type { Knex } from 'knex';
 
 export class PostgreSqlSchemaHelper extends SchemaHelper {
 

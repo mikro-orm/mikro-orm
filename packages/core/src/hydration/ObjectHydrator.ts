@@ -1,10 +1,10 @@
-import { AnyEntity, EntityData, EntityMetadata, EntityProperty } from '../typings';
+import type { AnyEntity, EntityData, EntityMetadata, EntityProperty } from '../typings';
 import { Hydrator } from './Hydrator';
 import { Collection } from '../entity/Collection';
 import { Reference } from '../entity/Reference';
 import { Utils } from '../utils/Utils';
 import { ReferenceType } from '../enums';
-import { EntityFactory } from '../entity/EntityFactory';
+import type { EntityFactory } from '../entity/EntityFactory';
 
 type EntityHydrator<T> = (entity: T, data: EntityData<T>, factory: EntityFactory, newEntity: boolean, convertCustomTypes: boolean) => void;
 

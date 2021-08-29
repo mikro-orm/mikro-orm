@@ -1,5 +1,7 @@
-import { Project, PropertyDeclaration, SourceFile } from 'ts-morph';
-import { EntityMetadata, EntityProperty, MetadataError, MetadataProvider, MetadataStorage, Utils } from '@mikro-orm/core';
+import type { PropertyDeclaration, SourceFile } from 'ts-morph';
+import { Project } from 'ts-morph';
+import type { EntityMetadata, EntityProperty } from '@mikro-orm/core';
+import { MetadataError, MetadataProvider, MetadataStorage, Utils } from '@mikro-orm/core';
 
 export class TsMorphMetadataProvider extends MetadataProvider {
 

@@ -1,4 +1,4 @@
-import { Arguments, CommandModule } from 'yargs';
+import type { Arguments, CommandModule } from 'yargs';
 import c from 'ansi-colors';
 import { MetadataDiscovery, MetadataStorage } from '@mikro-orm/core';
 import { CLIHelper } from '../CLIHelper';

@@ -1,7 +1,8 @@
-import { AnyEntity, EntityManager, EntityName, EntityRepository, GetRepository, Utils } from '@mikro-orm/core';
-import { MongoDriver } from './MongoDriver';
-import { MongoEntityRepository } from './MongoEntityRepository';
-import { Collection } from 'mongodb';
+import type { AnyEntity, EntityName, EntityRepository, GetRepository } from '@mikro-orm/core';
+import { EntityManager, Utils } from '@mikro-orm/core';
+import type { MongoDriver } from './MongoDriver';
+import type { MongoEntityRepository } from './MongoEntityRepository';
+import type { Collection } from 'mongodb';
 
 /**
  * @inheritDoc

@@ -1,6 +1,7 @@
 import { ensureDir, writeFile } from 'fs-extra';
-import { IMigrationGenerator, MigrationsOptions, NamingStrategy, Utils } from '@mikro-orm/core';
-import { AbstractSqlDriver } from '@mikro-orm/knex';
+import type { IMigrationGenerator, MigrationsOptions, NamingStrategy } from '@mikro-orm/core';
+import { Utils } from '@mikro-orm/core';
+import type { AbstractSqlDriver } from '@mikro-orm/knex';
 
 export abstract class MigrationGenerator implements IMigrationGenerator {
 

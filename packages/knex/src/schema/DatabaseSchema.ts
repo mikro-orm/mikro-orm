@@ -1,8 +1,9 @@
-import { Configuration, Dictionary, EntityMetadata, EntityProperty, ReferenceType } from '@mikro-orm/core';
+import type { Configuration, Dictionary, EntityMetadata, EntityProperty } from '@mikro-orm/core';
+import { ReferenceType } from '@mikro-orm/core';
 import { DatabaseTable } from './DatabaseTable';
-import { AbstractSqlConnection } from '../AbstractSqlConnection';
-import { Table } from '../typings';
-import { AbstractSqlPlatform } from '../AbstractSqlPlatform';
+import type { AbstractSqlConnection } from '../AbstractSqlConnection';
+import type { Table } from '../typings';
+import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
 
 /**
  * @internal

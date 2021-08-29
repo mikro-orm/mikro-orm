@@ -1,6 +1,6 @@
-import { Arguments, CommandModule } from 'yargs';
-import { MikroORM } from '@mikro-orm/core';
-import { AbstractSqlDriver } from '@mikro-orm/knex';
+import type { Arguments, CommandModule } from 'yargs';
+import type { MikroORM } from '@mikro-orm/core';
+import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { CLIHelper } from '../CLIHelper';
 
 export class CreateDatabaseCommand implements CommandModule {

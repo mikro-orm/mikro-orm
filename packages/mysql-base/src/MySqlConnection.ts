@@ -1,4 +1,5 @@
-import { AbstractSqlConnection, Knex } from '@mikro-orm/knex';
+import type { Knex } from '@mikro-orm/knex';
+import { AbstractSqlConnection } from '@mikro-orm/knex';
 
 export class MySqlConnection extends AbstractSqlConnection {
 

@@ -1,7 +1,7 @@
 import clone from 'clone';
-import { AnyEntity, EntityData, EntityDictionary, EntityMetadata, EntityProperty, IMetadataStorage, Primary } from '../typings';
+import type { AnyEntity, EntityData, EntityDictionary, EntityMetadata, EntityProperty, IMetadataStorage, Primary } from '../typings';
 import { ReferenceType } from '../enums';
-import { Platform } from '../platforms';
+import type { Platform } from '../platforms';
 import { compareArrays, compareBuffers, compareObjects, equals, Utils } from './Utils';
 
 type Comparator<T> = (a: T, b: T) => EntityData<T>;

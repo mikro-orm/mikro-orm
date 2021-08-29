@@ -1,6 +1,7 @@
 import { types, defaults } from 'pg';
-import { Dictionary } from '@mikro-orm/core';
-import { AbstractSqlConnection, Knex, MonkeyPatchable } from '@mikro-orm/knex';
+import type { Dictionary } from '@mikro-orm/core';
+import type { Knex } from '@mikro-orm/knex';
+import { AbstractSqlConnection, MonkeyPatchable } from '@mikro-orm/knex';
 
 export class PostgreSqlConnection extends AbstractSqlConnection {
 
