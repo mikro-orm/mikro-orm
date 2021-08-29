@@ -1,5 +1,6 @@
 import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { AbstractSqlDriver, SchemaGenerator } from '@mikro-orm/knex';
+import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import { SchemaGenerator } from '@mikro-orm/knex';
 
 @Entity({ tableName: 'name' })
 class Name {

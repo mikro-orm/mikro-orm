@@ -1,5 +1,5 @@
 import { Cascade, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 export class Country {

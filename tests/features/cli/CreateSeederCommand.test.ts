@@ -2,7 +2,7 @@
 (global as any).console.log = jest.fn();
 
 import { MikroORM } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { CLIHelper } from '@mikro-orm/cli';
 import { SeedManager } from '@mikro-orm/seeder';
 import { CreateSeederCommand } from '../../../packages/cli/src/commands/CreateSeederCommand';

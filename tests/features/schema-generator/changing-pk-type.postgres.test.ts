@@ -1,6 +1,7 @@
 import 'reflect-metadata';
-import { Constructor, Entity, MikroORM, PrimaryKey, t } from '@mikro-orm/core';
-import { PostgreSqlDriver, SchemaGenerator } from '@mikro-orm/postgresql';
+import type { Constructor } from '@mikro-orm/core';
+import { Entity, MikroORM, PrimaryKey, t } from '@mikro-orm/core';
+import type { PostgreSqlDriver, SchemaGenerator } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'user' })
 class User0 {

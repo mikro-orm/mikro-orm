@@ -1,5 +1,5 @@
 import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Embeddable()
 export class Metadata {

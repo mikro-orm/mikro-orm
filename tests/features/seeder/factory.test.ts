@@ -1,7 +1,7 @@
 import { MikroORM } from '@mikro-orm/core';
 import { Factory } from '@mikro-orm/seeder';
-import { SqliteDriver } from '@mikro-orm/sqlite';
-import * as Faker from 'faker';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
+import type * as Faker from 'faker';
 import { House } from './entities/house.entity';
 import { Project } from './entities/project.entity';
 

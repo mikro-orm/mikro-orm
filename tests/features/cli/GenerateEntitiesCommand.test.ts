@@ -1,5 +1,5 @@
 import { MikroORM } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { EntityGenerator } from '@mikro-orm/entity-generator';
 import { CLIHelper } from '@mikro-orm/cli';
 import { GenerateEntitiesCommand } from '../../../packages/cli/src/commands/GenerateEntitiesCommand';

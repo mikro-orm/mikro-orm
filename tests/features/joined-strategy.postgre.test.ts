@@ -1,5 +1,7 @@
-import { LoadStrategy, Logger, MikroORM, QueryFlag, QueryOrder, Reference, wrap } from '@mikro-orm/core';
-import { AbstractSqlConnection, PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { MikroORM } from '@mikro-orm/core';
+import { LoadStrategy, Logger, QueryFlag, QueryOrder, Reference, wrap } from '@mikro-orm/core';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { AbstractSqlConnection } from '@mikro-orm/postgresql';
 import { initORMPostgreSql, wipeDatabasePostgreSql } from '../bootstrap';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2 } from '../entities-sql';
 

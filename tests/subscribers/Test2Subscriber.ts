@@ -1,6 +1,7 @@
-import { EntityName, EventSubscriber, FlushEventArgs, Subscriber } from '@mikro-orm/core';
+import type { EntityName, EventSubscriber, FlushEventArgs } from '@mikro-orm/core';
+import { Subscriber } from '@mikro-orm/core';
 import { Test2 } from '../entities-sql';
-import { SqlEntityManager } from '@mikro-orm/knex';
+import type { SqlEntityManager } from '@mikro-orm/knex';
 
 @Subscriber()
 export class Test2Subscriber implements EventSubscriber<Test2> {

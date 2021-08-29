@@ -1,5 +1,5 @@
 import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property, Filter, Logger, ManyToOne } from '@mikro-orm/core';
-import { AbstractSqlDriver } from '@mikro-orm/knex';
+import type { AbstractSqlDriver } from '@mikro-orm/knex';
 
 @Filter({
   name: 'isActive',

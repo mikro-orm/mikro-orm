@@ -1,4 +1,5 @@
-import { Cascade, Collection, Entity, Logger, ManyToOne, MikroORM, OneToMany, Platform, PrimaryKey, PrimaryKeyType, Property, Type } from '@mikro-orm/core';
+import type { Platform } from '@mikro-orm/core';
+import { Cascade, Collection, Entity, Logger, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType, Property, Type } from '@mikro-orm/core';
 
 export class Sku {
 

@@ -1,5 +1,5 @@
 import { Entity, PrimaryKey, Property, MikroORM } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { SchemaGenerator } from '@mikro-orm/knex';
 
 @Entity()

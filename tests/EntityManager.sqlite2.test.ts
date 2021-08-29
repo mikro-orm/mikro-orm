@@ -1,7 +1,9 @@
-import { ArrayCollection, Collection, EntityManager, EntityName, LockMode, Logger, MikroORM, QueryOrder, ValidationError, wrap } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { EntityName } from '@mikro-orm/core';
+import { ArrayCollection, Collection, EntityManager, LockMode, Logger, MikroORM, QueryOrder, ValidationError, wrap } from '@mikro-orm/core';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { initORMSqlite2, mockLogger, wipeDatabaseSqlite2 } from './bootstrap';
-import { Author4, Book4, BookTag4, FooBar4, IAuthor4, IPublisher4, ITest4, Publisher4, PublisherType, Test4 } from './entities-schema';
+import type { IAuthor4, IPublisher4, ITest4 } from './entities-schema';
+import { Author4, Book4, BookTag4, FooBar4, Publisher4, PublisherType, Test4 } from './entities-schema';
 
 describe('EntityManagerSqlite2', () => {
 

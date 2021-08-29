@@ -16,7 +16,7 @@ seed.mockImplementation(async () => void 0);
 
 import { DatabaseSeedCommand } from '../../../packages/cli/src/commands/DatabaseSeedCommand';
 import { initORMSqlite } from '../../bootstrap';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 describe('DatabaseSeedCommand', () => {
 

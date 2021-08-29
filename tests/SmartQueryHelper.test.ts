@@ -1,4 +1,5 @@
-import { MikroORM, Reference, QueryHelper } from '@mikro-orm/core';
+import type { MikroORM } from '@mikro-orm/core';
+import { Reference, QueryHelper } from '@mikro-orm/core';
 import { initORMMySql } from './bootstrap';
 import { Author2, Book2, FooBar2, FooBaz2, Test2 } from './entities-sql';
 import { FooParam2 } from './entities-sql/FooParam2';

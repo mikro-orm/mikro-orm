@@ -1,5 +1,6 @@
 import { Entity, ManyToOne, MikroORM, PrimaryKey, Property, Logger } from '@mikro-orm/core';
-import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SchemaGenerator } from '@mikro-orm/sqlite';
 
 @Entity()
 export class B {

@@ -1,5 +1,5 @@
 import { assign, Embeddable, Embedded, Entity, expr, Logger, MikroORM, PrimaryKey, Property, ReferenceType, t, wrap } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Embeddable()
 class Address1 {

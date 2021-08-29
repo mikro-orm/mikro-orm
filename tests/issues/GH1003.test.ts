@@ -1,5 +1,5 @@
 import { BaseEntity, Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Parent extends BaseEntity<Parent, 'id'> {

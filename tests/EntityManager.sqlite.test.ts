@@ -1,5 +1,6 @@
+import type { EntityMetadata } from '@mikro-orm/core';
 import {
-  Collection, EntityManager, EntityMetadata, JavaScriptMetadataProvider, LockMode, MikroORM, QueryOrder, Logger, ValidationError, wrap,
+  Collection, EntityManager, JavaScriptMetadataProvider, LockMode, MikroORM, QueryOrder, Logger, ValidationError, wrap,
   UniqueConstraintViolationException, TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException,
   NonUniqueFieldNameException, InvalidFieldNameException,
 } from '@mikro-orm/core';

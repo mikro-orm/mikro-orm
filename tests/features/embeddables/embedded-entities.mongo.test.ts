@@ -1,5 +1,7 @@
-import { assign, Embeddable, Embedded, Entity, EntitySchema, Logger, MikroORM, Platform, PrimaryKey, Property, ReferenceType, SerializedPrimaryKey, Type } from '@mikro-orm/core';
-import { ObjectId, MongoDriver, MongoConnection, MongoPlatform } from '@mikro-orm/mongodb';
+import type { Platform } from '@mikro-orm/core';
+import { assign, Embeddable, Embedded, Entity, EntitySchema, Logger, MikroORM, PrimaryKey, Property, ReferenceType, SerializedPrimaryKey, Type } from '@mikro-orm/core';
+import type { MongoDriver } from '@mikro-orm/mongodb';
+import { ObjectId, MongoConnection, MongoPlatform } from '@mikro-orm/mongodb';
 
 @Embeddable()
 class Address1Base {

@@ -1,6 +1,7 @@
-import { EntitySchema, Collection, DateType, TimeType, BooleanType, t } from '@mikro-orm/core';
-import { IBaseEntity5 } from './BaseEntity5';
-import { IBook4 } from './Book4';
+import type { Collection } from '@mikro-orm/core';
+import { EntitySchema, DateType, TimeType, BooleanType, t } from '@mikro-orm/core';
+import type { IBaseEntity5 } from './BaseEntity5';
+import type { IBook4 } from './Book4';
 
 export interface IAuthor4 extends IBaseEntity5 {
   name: string;

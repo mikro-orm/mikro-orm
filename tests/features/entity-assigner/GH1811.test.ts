@@ -1,5 +1,5 @@
 import { Collection, Entity, ManyToMany, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, t, wrap } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { v4 } from 'uuid';
 import { mockLogger } from '../../bootstrap';
 

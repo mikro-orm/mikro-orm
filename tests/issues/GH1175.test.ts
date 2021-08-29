@@ -1,18 +1,20 @@
-import {
+import type {
   EntityManager,
+  EventSubscriber,
+  EventArgs,
+  TransactionEventArgs,
+  Transaction } from '@mikro-orm/core';
+import {
   Entity,
   MikroORM,
   PrimaryKey,
   Property,
-  EventSubscriber,
-  EventArgs,
-  TransactionEventArgs,
-  Transaction,
   UnitOfWork,
   Unique,
 } from '@mikro-orm/core';
-import { MongoDriver, ObjectId } from '@mikro-orm/mongodb';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { MongoDriver } from '@mikro-orm/mongodb';
+import { ObjectId } from '@mikro-orm/mongodb';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 as uuid } from 'uuid';
 
 class UserSubscriber implements EventSubscriber {
@@ -129,7 +131,7 @@ describe('GH issue 1175', () => {
               id serial primary key,
               username varchar(50) not null unique deferrable initially immediate
             );
-            `
+            `,
         );
         await orm.close();
       });
@@ -153,7 +155,7 @@ describe('GH issue 1175', () => {
           em.persist(user);
 
           await expect(em.flush()).rejects.toThrowError(
-            /^insert.+duplicate key value/
+            /^insert.+duplicate key value/,
           );
           expect(afterCreate).toHaveBeenCalledTimes(0);
           expect(afterTransactionCommit).toHaveBeenCalledTimes(0);
@@ -354,7 +356,7 @@ describe('GH issue 1175', () => {
             id serial primary key,
             username varchar(50) not null unique deferrable initially deferred
           );
-            `
+            `,
         );
         await orm.close();
       });
@@ -379,7 +381,7 @@ describe('GH issue 1175', () => {
           em.persist(user);
 
           await expect(em.flush()).rejects.toThrowError(
-            /^COMMIT.+duplicate key value/
+            /^COMMIT.+duplicate key value/,
           );
           expect(afterCreate).toHaveBeenCalledTimes(1);
           expect(afterTransactionCommit).toHaveBeenCalledTimes(0);
@@ -633,7 +635,7 @@ describe('GH issue 1175', () => {
         em.persist(user);
 
         await expect(em.flush()).rejects.toThrowError(
-          /^E11000 duplicate key error/
+          /^E11000 duplicate key error/,
         );
         expect(afterCreate).toHaveBeenCalledTimes(0);
         expect(afterTransactionCommit).toHaveBeenCalledTimes(0);

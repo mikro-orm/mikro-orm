@@ -1,9 +1,11 @@
 (global as any).process.env.FORCE_COLOR = 0;
 import umzug from 'umzug';
 import { format } from 'sql-formatter';
-import { Logger, MetadataStorage, MikroORM } from '@mikro-orm/core';
+import type { MikroORM } from '@mikro-orm/core';
+import { Logger, MetadataStorage } from '@mikro-orm/core';
 import { Migration, MigrationStorage, Migrator, TSMigrationGenerator } from '@mikro-orm/migrations';
-import { DatabaseSchema, DatabaseTable, PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { DatabaseTable, PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { DatabaseSchema } from '@mikro-orm/postgresql';
 import { remove } from 'fs-extra';
 import { initORMPostgreSql } from '../../bootstrap';
 

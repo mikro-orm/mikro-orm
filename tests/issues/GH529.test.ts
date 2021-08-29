@@ -1,5 +1,5 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType, Property } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 export class Customer {

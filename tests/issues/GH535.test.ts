@@ -1,5 +1,5 @@
 import { Entity, PrimaryKey, Property, MikroORM, wrap, IdentifiedReference, OneToOne } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 class A {

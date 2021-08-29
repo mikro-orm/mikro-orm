@@ -1,7 +1,10 @@
-import { Configuration, QueryOrder, AnyEntity } from '@mikro-orm/core';
-import { EntityManager, EntityRepository } from '@mikro-orm/knex';
+import type { AnyEntity } from '@mikro-orm/core';
+import { Configuration, QueryOrder } from '@mikro-orm/core';
+import type { EntityManager } from '@mikro-orm/knex';
+import { EntityRepository } from '@mikro-orm/knex';
 import { Publisher } from './entities';
-import { MongoEntityManager, MongoEntityRepository } from '@mikro-orm/mongodb';
+import type { MongoEntityManager } from '@mikro-orm/mongodb';
+import { MongoEntityRepository } from '@mikro-orm/mongodb';
 
 const methods = {
   getReference: jest.fn(),

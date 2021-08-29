@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { BeforeCreate, Entity, Enum, ManyToMany, OneToMany, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
-import { Book } from './Book';
-import { Test } from './Test';
+import type { Book } from './Book';
+import type { Test } from './Test';
 import { Collection } from '../TsMorphMetadataProvider.test';
 import { PublisherType } from './PublisherType';
 

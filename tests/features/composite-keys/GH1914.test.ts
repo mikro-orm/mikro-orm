@@ -1,5 +1,5 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType } from '@mikro-orm/core';
-import { AbstractSqlDriver } from '@mikro-orm/sqlite';
+import type { AbstractSqlDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Category {

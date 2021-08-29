@@ -1,5 +1,5 @@
 import { MikroORM, Entity, PrimaryKey, PrimaryKeyType, Unique, Collection, ManyToOne, OneToMany, Property, Filter, LoadStrategy } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity({ tableName: 'users' })
 export class UserEntity {

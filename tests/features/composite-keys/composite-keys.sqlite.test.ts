@@ -2,7 +2,8 @@ import {
   Cascade, Collection, Entity, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey,
   PrimaryKeyType, Property, ValidationError, wrap, LoadStrategy, Logger,
 } from '@mikro-orm/core';
-import { AbstractSqlConnection, SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { AbstractSqlConnection } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../bootstrap';
 
 @Entity()

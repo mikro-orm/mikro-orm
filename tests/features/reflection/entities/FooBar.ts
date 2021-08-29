@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
 import { Entity, OneToOne, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
-import { FooBaz } from './FooBaz';
+import type { FooBaz } from './FooBaz';
 
 @Entity()
 export default class FooBar {

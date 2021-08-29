@@ -1,5 +1,6 @@
-import { Embeddable, Embedded, Entity, EntityProperty, Logger, MikroORM, Platform, PrimaryKey, Property, Type } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { EntityProperty, Platform } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, Logger, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 export class AlwaysConvertsToAbc extends Type<string, string> {
 

@@ -1,5 +1,6 @@
-import { MikroORM, Logger } from '@mikro-orm/core';
-import { MongoDriver } from '@mikro-orm/mongodb';
+import type { MikroORM } from '@mikro-orm/core';
+import { Logger } from '@mikro-orm/core';
+import type { MongoDriver } from '@mikro-orm/mongodb';
 import { Author, Book, BookTag } from '../../entities';
 import { initORMMongo, wipeDatabase } from '../../bootstrap';
 

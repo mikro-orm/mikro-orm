@@ -1,5 +1,5 @@
 import { Entity, IdentifiedReference, Index, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 export class Author {

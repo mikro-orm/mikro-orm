@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { Entity, MikroORM, OneToOne, PrimaryKey } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 class Profile {

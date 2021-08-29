@@ -9,7 +9,7 @@ import {
   Property,
   PlainObject,
 } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class FilterValue {

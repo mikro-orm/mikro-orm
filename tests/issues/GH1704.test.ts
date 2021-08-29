@@ -1,5 +1,5 @@
 import { Entity, PrimaryKey, Property, OneToOne, MikroORM, Logger } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Profile {

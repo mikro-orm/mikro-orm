@@ -1,7 +1,7 @@
 import { MikroORM, Logger } from '@mikro-orm/core';
 import { Author, Book } from '../../entities';
 import FooBar from '../../entities/FooBar';
-import { MongoDriver } from '@mikro-orm/mongodb';
+import type { MongoDriver } from '@mikro-orm/mongodb';
 import { BASE_DIR, initORMMongo, wipeDatabase } from '../../bootstrap';
 
 describe('filters [mongo]', () => {

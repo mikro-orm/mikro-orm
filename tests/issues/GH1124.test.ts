@@ -1,5 +1,5 @@
 import { Entity, MikroORM, OneToOne, PrimaryKey } from '@mikro-orm/core';
-import { AbstractSqlDriver } from '@mikro-orm/knex';
+import type { AbstractSqlDriver } from '@mikro-orm/knex';
 
 @Entity()
 export class B {

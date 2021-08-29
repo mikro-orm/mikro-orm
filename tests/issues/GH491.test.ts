@@ -1,5 +1,5 @@
 import { Entity, PrimaryKey, Property, MikroORM } from '@mikro-orm/core';
-import { MariaDbDriver } from '@mikro-orm/mariadb';
+import type { MariaDbDriver } from '@mikro-orm/mariadb';
 
 @Entity()
 export class FooEntity {

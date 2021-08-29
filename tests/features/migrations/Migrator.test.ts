@@ -1,8 +1,10 @@
 (global as any).process.env.FORCE_COLOR = 0;
 import umzug from 'umzug';
-import { Logger, MetadataStorage, MikroORM } from '@mikro-orm/core';
+import type { MikroORM } from '@mikro-orm/core';
+import { Logger, MetadataStorage } from '@mikro-orm/core';
 import { Migration, MigrationStorage, Migrator } from '@mikro-orm/migrations';
-import { DatabaseSchema, DatabaseTable, MySqlDriver, SchemaGenerator } from '@mikro-orm/mysql';
+import type { DatabaseTable, MySqlDriver } from '@mikro-orm/mysql';
+import { DatabaseSchema, SchemaGenerator } from '@mikro-orm/mysql';
 import { remove } from 'fs-extra';
 import { initORMMySql } from '../../bootstrap';
 

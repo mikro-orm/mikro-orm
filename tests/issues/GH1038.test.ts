@@ -1,5 +1,5 @@
 import { BigIntType, Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity({ abstract: true })
 abstract class BaseEntity {

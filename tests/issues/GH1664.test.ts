@@ -1,5 +1,5 @@
 import { Entity, Logger, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql/src';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql/src';
 
 @Entity()
 class MultipleUniqueNullableProperties {

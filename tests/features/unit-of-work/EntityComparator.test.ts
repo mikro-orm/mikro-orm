@@ -1,13 +1,14 @@
-import {
+import type {
   AnyEntity,
-  Collection,
   Dictionary,
-  Entity, EntityAssigner,
   EntityData, EntityFactory, EntityMetadata,
   EntityProperty,
   MetadataStorage,
+  Platform, Primary } from '@mikro-orm/core';
+import {
+  Collection,
+  Entity, EntityAssigner,
   MikroORM,
-  Platform, Primary,
   PrimaryKey,
   Property, Reference,
   ReferenceType,

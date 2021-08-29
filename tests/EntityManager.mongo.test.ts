@@ -1,7 +1,8 @@
 import { ObjectId } from 'mongodb';
 import c from 'ansi-colors';
 import chalk from 'chalk';
-import { Collection, Configuration, EntityProperty, MikroORM, QueryOrder, Reference, wrap, Logger, UniqueConstraintViolationException, IdentityMap } from '@mikro-orm/core';
+import type { EntityProperty } from '@mikro-orm/core';
+import { Collection, Configuration, MikroORM, QueryOrder, Reference, wrap, Logger, UniqueConstraintViolationException, IdentityMap } from '@mikro-orm/core';
 import { EntityManager, MongoConnection, MongoDriver } from '@mikro-orm/mongodb';
 import { MongoHighlighter } from '@mikro-orm/mongo-highlighter';
 

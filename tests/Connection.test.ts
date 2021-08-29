@@ -1,4 +1,5 @@
-import { Configuration, Connection, QueryResult } from '@mikro-orm/core';
+import type { QueryResult } from '@mikro-orm/core';
+import { Configuration, Connection } from '@mikro-orm/core';
 
 class CustomConnection extends Connection {
 

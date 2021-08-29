@@ -1,4 +1,5 @@
-import { AnyEntity, Collection, ReferenceType, wrap } from '@mikro-orm/core';
+import type { AnyEntity } from '@mikro-orm/core';
+import { Collection, ReferenceType, wrap } from '@mikro-orm/core';
 
 export abstract class BaseEntity22 {
 

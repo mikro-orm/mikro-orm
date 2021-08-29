@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { Collection, Entity, ManyToMany, ManyToOne, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/core';
 import { SchemaGenerator } from '@mikro-orm/knex';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'auth.users' })
 class TaskAssignee {

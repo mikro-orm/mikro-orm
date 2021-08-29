@@ -1,5 +1,5 @@
 import { Seeder } from '@mikro-orm/seeder';
-import { EntityManager } from '@mikro-orm/core';
+import type { EntityManager } from '@mikro-orm/core';
 import { Project } from '../../features/seeder/entities/project.entity';
 
 export class ProjectSeeder extends Seeder {

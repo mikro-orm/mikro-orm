@@ -1,5 +1,6 @@
 import { EntitySchema, MikroORM, Type, ValidationError } from '@mikro-orm/core';
-import { AbstractSqlDriver, SchemaGenerator } from '@mikro-orm/knex';
+import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import { SchemaGenerator } from '@mikro-orm/knex';
 
 export class DateTime {
 

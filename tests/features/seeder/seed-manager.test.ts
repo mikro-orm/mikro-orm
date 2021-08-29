@@ -2,7 +2,8 @@ import SpyInstance = jest.SpyInstance;
 
 import { MikroORM } from '@mikro-orm/core';
 import { SeedManager } from '@mikro-orm/seeder';
-import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SchemaGenerator } from '@mikro-orm/sqlite';
 // noinspection ES6PreferShortImport
 import { initORMSqlite } from '../../bootstrap';
 import { Book3Seeder } from '../../database/seeder/book3.seeder';

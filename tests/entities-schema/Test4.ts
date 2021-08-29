@@ -1,5 +1,5 @@
 import { EntitySchema } from '@mikro-orm/core';
-import { IBaseEntity5 } from './BaseEntity5';
+import type { IBaseEntity5 } from './BaseEntity5';
 
 export interface ITest4 extends IBaseEntity5 {
   name?: string;

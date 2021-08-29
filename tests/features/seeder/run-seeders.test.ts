@@ -1,5 +1,5 @@
 import { MikroORM } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { House } from './entities/house.entity';
 import { Project } from './entities/project.entity';
 import { User } from './entities/user.entity';

@@ -1,5 +1,5 @@
 import { Entity, PrimaryKey, Property, MikroORM, Index, Unique } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { SchemaGenerator } from '@mikro-orm/knex';
 
 abstract class A {

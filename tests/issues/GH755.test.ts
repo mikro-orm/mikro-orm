@@ -1,4 +1,5 @@
-import { EntitySchema, MikroORM, Options } from '@mikro-orm/core';
+import type { Options } from '@mikro-orm/core';
+import { EntitySchema, MikroORM } from '@mikro-orm/core';
 
 export class Test {
 

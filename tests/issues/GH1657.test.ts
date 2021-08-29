@@ -1,5 +1,5 @@
 import { Collection, Entity, LoadStrategy, Logger, ManyToOne, MikroORM, OneToMany, PrimaryKey, wrap } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 class Order {

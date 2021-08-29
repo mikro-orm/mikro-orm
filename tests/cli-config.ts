@@ -1,4 +1,5 @@
-import { JavaScriptMetadataProvider, Options } from '@mikro-orm/core';
+import type { Options } from '@mikro-orm/core';
+import { JavaScriptMetadataProvider } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { BASE_DIR } from './bootstrap';
 

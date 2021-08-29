@@ -1,8 +1,9 @@
 import { ObjectId } from 'mongodb';
 import { inspect } from 'util';
 
-import { AnyEntity, MikroORM, Reference, wrap } from '@mikro-orm/core';
-import { MongoDriver } from '@mikro-orm/mongodb';
+import type { AnyEntity, MikroORM } from '@mikro-orm/core';
+import { Reference, wrap } from '@mikro-orm/core';
+import type { MongoDriver } from '@mikro-orm/mongodb';
 import { Author, Book, Publisher, Test } from './entities';
 import { initORMMongo, wipeDatabase } from './bootstrap';
 import FooBar from './entities/FooBar';

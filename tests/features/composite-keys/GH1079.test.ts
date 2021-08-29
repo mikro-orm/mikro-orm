@@ -1,5 +1,5 @@
 import { Entity, PrimaryKey, MikroORM, ManyToOne, Enum, PrimaryKeyType, Property, BigIntType, Logger, wrap } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
 
 @Entity()

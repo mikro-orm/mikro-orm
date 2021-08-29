@@ -1,4 +1,5 @@
-import { SchemaGenerator, EntityManager } from '@mikro-orm/knex';
+import type { EntityManager } from '@mikro-orm/knex';
+import { SchemaGenerator } from '@mikro-orm/knex';
 import { initORMSqlite } from '../../bootstrap';
 
 describe('SchemaGenerator [sqlite]', () => {

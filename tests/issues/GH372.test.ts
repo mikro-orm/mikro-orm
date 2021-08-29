@@ -1,9 +1,10 @@
 (global as any).process.env.FORCE_COLOR = 0;
 
-import { knex, Knex } from 'knex';
+import type { Knex } from 'knex';
+import { knex } from 'knex';
 import { SchemaGenerator } from '@mikro-orm/knex';
 import { Entity, Logger, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 type Point = { x: number; y: number };
 

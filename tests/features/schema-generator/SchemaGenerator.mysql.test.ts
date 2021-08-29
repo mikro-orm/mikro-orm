@@ -1,5 +1,6 @@
 import { EntitySchema, EnumType, MikroORM, ReferenceType, Type, Utils } from '@mikro-orm/core';
-import { EntityManager, SchemaGenerator } from '@mikro-orm/knex';
+import type { EntityManager } from '@mikro-orm/knex';
+import { SchemaGenerator } from '@mikro-orm/knex';
 import { BASE_DIR, initORMMySql } from '../../bootstrap';
 import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from '../../entities-sql';
 import { BaseEntity22 } from '../../entities-sql/BaseEntity22';

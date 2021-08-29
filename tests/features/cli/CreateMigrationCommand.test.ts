@@ -2,7 +2,7 @@
 
 import { Migrator } from '@mikro-orm/migrations';
 import { MikroORM } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { CLIHelper } from '@mikro-orm/cli';
 import { MigrationCommandFactory } from '../../../packages/cli/src/commands/MigrationCommandFactory';
 import { initORMSqlite } from '../../bootstrap';

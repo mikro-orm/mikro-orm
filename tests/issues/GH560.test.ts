@@ -1,5 +1,5 @@
 import { EntitySchema, MikroORM } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
 
 class Base {

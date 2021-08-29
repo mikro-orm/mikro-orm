@@ -1,5 +1,5 @@
 import { Collection, Entity, PrimaryKey, ManyToOne, OneToMany, MikroORM, IdentifiedReference } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 class A {

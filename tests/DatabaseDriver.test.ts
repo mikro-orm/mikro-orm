@@ -1,18 +1,19 @@
-import {
-  Configuration,
+import type {
   Connection,
   CountOptions,
-  DatabaseDriver,
   EntityData,
-  EntityManager,
-  EntityRepository,
   ObjectQuery,
   FindOneOptions,
-  FindOptions,
-  LockMode,
-  Platform, Primary,
+  FindOptions, Primary,
   QueryResult,
-  Transaction,
+  Transaction } from '@mikro-orm/core';
+import {
+  Configuration,
+  DatabaseDriver,
+  EntityManager,
+  EntityRepository,
+  LockMode,
+  Platform,
 } from '@mikro-orm/core';
 
 class Platform1 extends Platform { }

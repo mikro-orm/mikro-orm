@@ -1,5 +1,7 @@
-import { assign, Embeddable, Embedded, Entity, Logger, ManyToOne, MikroORM, ObjectHydrator, PrimaryKey, Property, wrap } from '@mikro-orm/core';
-import { ObjectId, MongoDriver } from '@mikro-orm/mongodb';
+import type { ObjectHydrator } from '@mikro-orm/core';
+import { assign, Embeddable, Embedded, Entity, Logger, ManyToOne, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/core';
+import type { MongoDriver } from '@mikro-orm/mongodb';
+import { ObjectId } from '@mikro-orm/mongodb';
 
 @Entity()
 class Source {

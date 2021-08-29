@@ -2,7 +2,8 @@
 
 import { MikroORM } from '@mikro-orm/core';
 import { SeedManager } from '@mikro-orm/seeder';
-import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SchemaGenerator } from '@mikro-orm/sqlite';
 import { CLIHelper } from '@mikro-orm/cli';
 import { SchemaCommandFactory } from '../../../packages/cli/src/commands/SchemaCommandFactory';
 import { initORMSqlite } from '../../bootstrap';

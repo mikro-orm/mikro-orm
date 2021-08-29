@@ -1,5 +1,6 @@
-import { assign, Embeddable, Embedded, Entity, Logger, ManyToOne, MikroORM, ObjectHydrator, PrimaryKey, Property, wrap } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { ObjectHydrator } from '@mikro-orm/core';
+import { assign, Embeddable, Embedded, Entity, Logger, ManyToOne, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/core';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 class Source {

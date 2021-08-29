@@ -1,5 +1,6 @@
 import { Collection, Entity, IdentifiedReference, Logger, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, PrimaryKeyType, Property, Reference } from '@mikro-orm/core';
-import { AbstractSqlDriver, SchemaGenerator } from '@mikro-orm/knex';
+import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import { SchemaGenerator } from '@mikro-orm/knex';
 
 @Entity()
 class Node {

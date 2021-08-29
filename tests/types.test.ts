@@ -1,9 +1,11 @@
-import { assert, Has, IsExact } from 'conditional-type-checks';
-import { ObjectId } from 'mongodb';
-import { EntityData, EntityDTO, FilterQuery, FilterValue, Loaded, OperatorMap, Primary, PrimaryKeyType, Query } from '../packages/core/src/typings';
-import { Author2, Book2, BookTag2, Car2, FooBar2, FooParam2, Publisher2, User2 } from './entities-sql';
-import { Author } from './entities';
-import { IdentifiedReference, Reference, wrap } from '@mikro-orm/core';
+import type { Has, IsExact } from 'conditional-type-checks';
+import { assert } from 'conditional-type-checks';
+import type { ObjectId } from 'mongodb';
+import type { EntityData, EntityDTO, FilterQuery, FilterValue, Loaded, OperatorMap, Primary, PrimaryKeyType, Query } from '../packages/core/src/typings';
+import type { Author2, Book2, BookTag2, Car2, FooBar2, FooParam2, Publisher2, User2 } from './entities-sql';
+import type { Author } from './entities';
+import type { IdentifiedReference, Reference } from '@mikro-orm/core';
+import { wrap } from '@mikro-orm/core';
 
 type IsAssignable<T, Expected> = Expected extends T ? true : false;
 

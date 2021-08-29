@@ -1,5 +1,6 @@
-import { MikroORM, Reference, wrap } from '@mikro-orm/core';
-import { MySqlDriver } from '@mikro-orm/mysql';
+import type { MikroORM } from '@mikro-orm/core';
+import { Reference, wrap } from '@mikro-orm/core';
+import type { MySqlDriver } from '@mikro-orm/mysql';
 import { initORMMySql, wipeDatabaseMySql } from '../../bootstrap';
 import { Author2, Book2, BookTag2, FooBar2, Publisher2, PublisherType } from '../../entities-sql';
 

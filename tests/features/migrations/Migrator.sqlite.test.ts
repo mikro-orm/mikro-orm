@@ -1,8 +1,10 @@
 (global as any).process.env.FORCE_COLOR = 0;
 import umzug from 'umzug';
-import { Logger, MetadataStorage, MikroORM } from '@mikro-orm/core';
+import type { MikroORM } from '@mikro-orm/core';
+import { Logger, MetadataStorage } from '@mikro-orm/core';
 import { Migration, MigrationStorage, Migrator, TSMigrationGenerator } from '@mikro-orm/migrations';
-import { DatabaseSchema, DatabaseTable, SqliteDriver } from '@mikro-orm/sqlite';
+import type { DatabaseTable, SqliteDriver } from '@mikro-orm/sqlite';
+import { DatabaseSchema } from '@mikro-orm/sqlite';
 import { remove } from 'fs-extra';
 import { initORMSqlite2 } from '../../bootstrap';
 

@@ -1,7 +1,8 @@
 (global as any).process.env.FORCE_COLOR = 0;
 
 import { MikroORM } from '@mikro-orm/core';
-import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SchemaGenerator } from '@mikro-orm/sqlite';
 import { CLIHelper } from '@mikro-orm/cli';
 import { CreateDatabaseCommand } from '../../../packages/cli/src/commands/CreateDatabaseCommand';
 import { initORMSqlite } from '../../bootstrap';

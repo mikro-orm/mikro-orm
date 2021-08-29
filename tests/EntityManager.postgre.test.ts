@@ -1,8 +1,9 @@
 import { v4 } from 'uuid';
+import type { EventSubscriber, ChangeSet, AnyEntity, FlushEventArgs } from '@mikro-orm/core';
 import {
   Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, Logger, ValidationError, ChangeSetType, wrap, expr,
   UniqueConstraintViolationException, TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException,
-  NonUniqueFieldNameException, InvalidFieldNameException, EventSubscriber, ChangeSet, AnyEntity, FlushEventArgs, LoadStrategy, IsolationLevel,
+  NonUniqueFieldNameException, InvalidFieldNameException, LoadStrategy, IsolationLevel,
 } from '@mikro-orm/core';
 import { PostgreSqlDriver, PostgreSqlConnection } from '@mikro-orm/postgresql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2, Label2 } from './entities-sql';

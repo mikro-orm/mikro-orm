@@ -1,5 +1,5 @@
 import { Entity, LoadStrategy, Logger, ManyToOne, MikroORM, PrimaryKey, Property, t, Type } from '@mikro-orm/core';
-import { MySqlDriver } from '@mikro-orm/mysql';
+import type { MySqlDriver } from '@mikro-orm/mysql';
 
 export class Point {
 

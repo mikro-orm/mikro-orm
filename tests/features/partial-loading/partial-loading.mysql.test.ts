@@ -1,5 +1,6 @@
-import { MikroORM, Logger, LoadStrategy } from '@mikro-orm/core';
-import { MySqlDriver } from '@mikro-orm/mysql';
+import type { MikroORM } from '@mikro-orm/core';
+import { Logger, LoadStrategy } from '@mikro-orm/core';
+import type { MySqlDriver } from '@mikro-orm/mysql';
 import { Author2, Book2, BookTag2 } from '../../entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from '../../bootstrap';
 

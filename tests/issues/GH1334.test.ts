@@ -1,5 +1,5 @@
 import { Collection, Entity, IdentifiedReference, LoadStrategy, Logger, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, QueryOrder } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class RadioOption {

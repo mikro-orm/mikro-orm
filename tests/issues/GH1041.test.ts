@@ -1,5 +1,5 @@
 import { Collection, Entity, LoadStrategy, Logger, ManyToMany, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { AbstractSqlDriver } from '@mikro-orm/knex';
+import type { AbstractSqlDriver } from '@mikro-orm/knex';
 
 @Entity()
 export class App {

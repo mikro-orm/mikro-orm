@@ -1,6 +1,6 @@
 import { inspect } from 'util';
 import { LockMode, MikroORM, QueryFlag, QueryOrder } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { CriteriaNode } from '@mikro-orm/knex';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { Address2, Author2, Book2, BookTag2, Car2, CarOwner2, Configuration2, FooBar2, FooBaz2, FooParam2, Publisher2, PublisherType, Test2, User2 } from './entities-sql';

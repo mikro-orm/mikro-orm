@@ -1,6 +1,7 @@
-import { MikroORM, Logger, QueryOrder } from '@mikro-orm/core';
+import type { MikroORM } from '@mikro-orm/core';
+import { Logger, QueryOrder } from '@mikro-orm/core';
 import { Author2, Book2 } from '../../entities-sql';
-import { MySqlDriver } from '@mikro-orm/mysql-base';
+import type { MySqlDriver } from '@mikro-orm/mysql-base';
 import { initORMMySql, wipeDatabaseMySql } from '../../bootstrap';
 
 describe('filters [mysql]', () => {

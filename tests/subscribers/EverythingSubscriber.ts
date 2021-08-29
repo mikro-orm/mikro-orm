@@ -1,4 +1,5 @@
-import { EventArgs, EventSubscriber, Subscriber } from '@mikro-orm/core';
+import type { EventArgs, EventSubscriber } from '@mikro-orm/core';
+import { Subscriber } from '@mikro-orm/core';
 
 @Subscriber()
 export class EverythingSubscriber implements EventSubscriber {

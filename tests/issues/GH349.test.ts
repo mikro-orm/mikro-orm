@@ -1,6 +1,6 @@
 import { Entity, PrimaryKey, Property, MikroORM, SerializedPrimaryKey } from '@mikro-orm/core';
 import { ObjectId } from 'mongodb';
-import { MongoDriver } from '@mikro-orm/mongodb';
+import type { MongoDriver } from '@mikro-orm/mongodb';
 
 @Entity()
 class A {

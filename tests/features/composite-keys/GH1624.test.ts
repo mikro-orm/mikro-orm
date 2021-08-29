@@ -1,6 +1,6 @@
 import { Collection, Entity, IdentifiedReference, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType, Property, Reference, Unique, wrap } from '@mikro-orm/core';
 import { v4 } from 'uuid';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Organization {

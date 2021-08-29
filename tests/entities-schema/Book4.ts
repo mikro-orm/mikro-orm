@@ -1,8 +1,9 @@
-import { Collection, EntitySchema, Reference, t } from '@mikro-orm/core';
-import { IBaseEntity5 } from './BaseEntity5';
-import { IAuthor4 } from './Author4';
-import { IPublisher4 } from './Publisher4';
-import { IBookTag4 } from './BookTag4';
+import type { Collection, Reference } from '@mikro-orm/core';
+import { EntitySchema, t } from '@mikro-orm/core';
+import type { IBaseEntity5 } from './BaseEntity5';
+import type { IAuthor4 } from './Author4';
+import type { IPublisher4 } from './Publisher4';
+import type { IBookTag4 } from './BookTag4';
 
 export interface Book4Meta {
   category: string;

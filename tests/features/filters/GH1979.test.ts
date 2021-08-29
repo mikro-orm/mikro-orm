@@ -1,5 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property, Filter, Index } from '@mikro-orm/core';
-import { AbstractSqlDriver, EntityManager } from '@mikro-orm/knex';
+import type { AbstractSqlDriver, EntityManager } from '@mikro-orm/knex';
 
 @Entity({ discriminatorColumn: 'type', abstract: true })
 @Filter({
