@@ -1,7 +1,6 @@
 import { Entity, IdentifiedReference, ManyToOne, MikroORM, PrimaryKey, Reference } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 
-
 @Entity()
 export class First {
 
@@ -21,10 +20,10 @@ export class Second {
 @Entity()
 export class Third {
 
-  @ManyToOne({ primary: true, entity: () => First })
+  @ManyToOne({ primary: true, entity: () => First, wrappedReference: true })
   first: IdentifiedReference<First>;
 
-  @ManyToOne({ primary: true, entity: () => Second })
+  @ManyToOne({ primary: true, entity: () => Second, wrappedReference: true })
   second: IdentifiedReference<Second>;
 
   constructor(first: First, second: Second) {
