@@ -1722,7 +1722,8 @@ describe('EntityManagerMongo', () => {
     Object.assign(book, { tags: ['0000007b5c9c61c332380f78', tag] });
     expect(book.tags).not.toBeInstanceOf(Collection);
     expect(book.tags).toEqual(['0000007b5c9c61c332380f78', tag]);
-    expect(() => orm.em.persist(book)).toThrowError(`Entity of type BookTag expected for property Book.tags, '0000007b5c9c61c332380f78' of type string given. If you are using Object.assign(entity, data), use em.assign(entity, data) instead.`);
+    orm.em.persist(book);
+    await expect(orm.em.flush()).rejects.toThrowError(`Entity of type BookTag expected for property Book.tags, '0000007b5c9c61c332380f78' of type string given. If you are using Object.assign(entity, data), use em.assign(entity, data) instead.`);
 
     wrap(book).assign({ tags: ['0000007b5c9c61c332380f78', tag] }, { em: orm.em });
     expect(book.tags).toBeInstanceOf(Collection);

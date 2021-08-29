@@ -283,6 +283,10 @@ export class UnitOfWork {
   computeChangeSets(): void {
     this.changeSets.clear();
 
+    for (const entity of this.persistStack) {
+      this.cascade(entity, Cascade.PERSIST, new WeakSet<AnyEntity>(), { checkRemoveStack: true });
+    }
+
     for (const entity of this.identityMap) {
       if (!this.removeStack.has(entity) && !this.orphanRemoveStack.has(entity)) {
         this.persistStack.add(entity);
