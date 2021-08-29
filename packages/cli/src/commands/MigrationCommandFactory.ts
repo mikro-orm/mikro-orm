@@ -1,11 +1,10 @@
 import c from 'ansi-colors';
 import type { Arguments, Argv, CommandModule } from 'yargs';
-import type { Configuration, MikroORM, MikroORMOptions } from '@mikro-orm/core';
+import type { Configuration, MikroORM, MikroORMOptions, IMigrator } from '@mikro-orm/core';
 import { Utils } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { SchemaGenerator } from '@mikro-orm/knex';
 import type { MigrateOptions } from '@mikro-orm/migrations';
-import { Migrator } from '@mikro-orm/migrations';
 import { CLIHelper } from '../CLIHelper';
 
 export class MigrationCommandFactory {
@@ -88,6 +87,7 @@ export class MigrationCommandFactory {
   static async handleMigrationCommand(args: Arguments<Options>, method: MigratorMethod): Promise<void> {
     const options = { pool: { min: 1, max: 1 } } as Partial<MikroORMOptions>;
     const orm = await CLIHelper.getORM(undefined, options) as MikroORM<AbstractSqlDriver>;
+    const { Migrator } = await import('@mikro-orm/migrations');
     const migrator = new Migrator(orm.em);
 
     switch (method) {
@@ -118,14 +118,14 @@ export class MigrationCommandFactory {
     });
   }
 
-  private static async handleUpDownCommand(args: Arguments<Options>, migrator: Migrator, method: MigratorMethod) {
+  private static async handleUpDownCommand(args: Arguments<Options>, migrator: IMigrator, method: MigratorMethod) {
     const opts = MigrationCommandFactory.getUpDownOptions(args);
     await migrator[method](opts as string[]);
     const message = this.getUpDownSuccessMessage(method as 'up' | 'down', opts);
     CLIHelper.dump(c.green(message));
   }
 
-  private static async handlePendingCommand(migrator: Migrator) {
+  private static async handlePendingCommand(migrator: IMigrator) {
     const pending = await migrator.getPendingMigrations();
     CLIHelper.dumpTable({
       columns: ['Name'],
@@ -134,7 +134,7 @@ export class MigrationCommandFactory {
     });
   }
 
-  private static async handleListCommand(migrator: Migrator) {
+  private static async handleListCommand(migrator: IMigrator) {
     const executed = await migrator.getExecutedMigrations();
 
     CLIHelper.dumpTable({
@@ -144,7 +144,7 @@ export class MigrationCommandFactory {
     });
   }
 
-  private static async handleCreateCommand(migrator: Migrator, args: Arguments<Options>, config: Configuration): Promise<void> {
+  private static async handleCreateCommand(migrator: IMigrator, args: Arguments<Options>, config: Configuration): Promise<void> {
     const ret = await migrator.createMigration(args.path, args.blank, args.initial);
 
     if (ret.diff.up.length === 0) {
@@ -168,7 +168,7 @@ export class MigrationCommandFactory {
     CLIHelper.dump(c.green(`${ret.fileName} successfully created`));
   }
 
-  private static async handleFreshCommand(args: Arguments<Options>, migrator: Migrator, orm: MikroORM<AbstractSqlDriver>) {
+  private static async handleFreshCommand(args: Arguments<Options>, migrator: IMigrator, orm: MikroORM<AbstractSqlDriver>) {
     const generator = new SchemaGenerator(orm.em);
     await generator.dropSchema();
     CLIHelper.dump(c.green('Dropped schema successfully'));

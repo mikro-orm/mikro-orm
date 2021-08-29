@@ -1,8 +1,8 @@
 import c from 'ansi-colors';
 import type { Arguments, Argv, CommandModule } from 'yargs';
-import { CLIHelper } from '../CLIHelper';
 import type { MikroORM } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import { CLIHelper } from '../CLIHelper';
 
 export class CreateSeederCommand<T> implements CommandModule<T, { seeder: string }> {
 

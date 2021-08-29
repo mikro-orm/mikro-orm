@@ -1,8 +1,8 @@
 import type { CommandModule } from 'yargs';
 import c from 'ansi-colors';
+import { ConfigurationLoader, Utils } from '@mikro-orm/core';
 
 import { CLIHelper } from '../CLIHelper';
-import { ConfigurationLoader, Utils } from '@mikro-orm/core';
 
 export class DebugCommand implements CommandModule {
 

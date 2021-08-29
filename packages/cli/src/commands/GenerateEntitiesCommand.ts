@@ -1,5 +1,4 @@
 import type { Arguments, Argv, CommandModule } from 'yargs';
-import { EntityGenerator } from '@mikro-orm/entity-generator';
 import type { EntityManager } from '@mikro-orm/knex';
 import { CLIHelper } from '../CLIHelper';
 
@@ -42,6 +41,7 @@ export class GenerateEntitiesCommand<U extends Options = Options> implements Com
     }
 
     const orm = await CLIHelper.getORM(false);
+    const { EntityGenerator } = await import('@mikro-orm/entity-generator');
     const generator = new EntityGenerator(orm.em as EntityManager);
     const dump = await generator.generate({ save: args.save, baseDir: args.path });
 
