@@ -3,7 +3,7 @@ import umzug, { migrationsList } from 'umzug';
 import { join } from 'path';
 import { ensureDir, pathExists, writeJSON } from 'fs-extra';
 import type { Constructor, Dictionary, Transaction, IMigrator, IMigrationGenerator } from '@mikro-orm/core';
-import { Utils, t, Type } from '@mikro-orm/core';
+import { Utils, t, Type, UnknownType } from '@mikro-orm/core';
 import type { EntityManager } from '@mikro-orm/knex';
 import { DatabaseSchema, DatabaseTable, SchemaGenerator } from '@mikro-orm/knex';
 import type { Migration } from './Migration';
@@ -202,7 +202,8 @@ export class Migrator implements IMigrator {
       Object.assign(table, restTable);
       Object.keys(columns).forEach(col => {
         const column = { ...columns[col] };
-        column.mappedType = Type.getType(t[columns[col].mappedType]);
+        /* istanbul ignore next */
+        column.mappedType = Type.getType(t[columns[col].mappedType] ?? UnknownType);
         table.addColumn(column);
       });
 
