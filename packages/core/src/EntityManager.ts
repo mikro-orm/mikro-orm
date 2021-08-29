@@ -583,7 +583,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   persist(entity: AnyEntity | Reference<AnyEntity> | (AnyEntity | Reference<AnyEntity>)[]): this {
     if (Utils.isEntity(entity)) {
-      this.getUnitOfWork().persist(entity);
+      // do not cascade just yet, cascading of entities in persist stack is done when flushing
+      this.getUnitOfWork().persist(entity, new WeakSet([entity]));
       return this;
     }
 
@@ -596,7 +597,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         throw ValidationError.notDiscoveredEntity(ent, meta);
       }
 
-      this.getUnitOfWork().persist(Reference.unwrapReference(ent));
+      // do not cascade just yet, cascading of entities in persist stack is done when flushing
+      this.getUnitOfWork().persist(Reference.unwrapReference(ent), new WeakSet([entity]));
     }
 
     return this;
