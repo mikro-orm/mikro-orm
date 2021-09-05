@@ -453,8 +453,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const data = this.driver.mapResult(result, meta) as Dictionary;
 
     Object.keys(data).forEach(k => {
-
       const prop = meta.properties[k];
+
       if (prop && prop.reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(prop.type) && (prop.setter || !prop.getter)) {
         data[k] = this.validator.validateProperty(prop, data[k], data);
       }
