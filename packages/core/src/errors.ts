@@ -32,8 +32,8 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError(msg);
   }
 
-  static fromMergeWithoutPK(meta: EntityMetadata): void {
-    throw new ValidationError(`You cannot merge entity '${meta.className}' without identifier!`);
+  static fromMergeWithoutPK(meta: EntityMetadata): ValidationError {
+    return new ValidationError(`You cannot merge entity '${meta.className}' without identifier!`);
   }
 
   static transactionRequired(): ValidationError {

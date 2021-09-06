@@ -81,10 +81,10 @@ export abstract class SchemaHelper {
 
     if (column.autoincrement && !compositePK && (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type'))) {
       if (column.mappedType instanceof BigIntType) {
-        return (table.bigIncrements as any)(column.name, { primaryKey: !changedProperties });
+        return table.bigIncrements(column.name, { primaryKey: !changedProperties });
       }
 
-      return (table.increments as any)(column.name, { primaryKey: !changedProperties });
+      return table.increments(column.name, { primaryKey: !changedProperties });
     }
 
     if (column.mappedType instanceof EnumType && column.enumItems?.every(item => Utils.isString(item))) {
