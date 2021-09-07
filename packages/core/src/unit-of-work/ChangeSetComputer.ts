@@ -19,8 +19,12 @@ export class ChangeSetComputer {
               private readonly platform: Platform,
               private readonly config: Configuration) { }
 
-  computeChangeSet<T extends AnyEntity<T>>(entity: T): ChangeSet<T> | null {
-    const meta = this.metadata.find(entity.constructor.name)!;
+  public computeChangeSet<T extends AnyEntity<T>>(entity: T): ChangeSet<T> | null {
+    const meta = this.metadata.find(entity.constructor.name);
+    
+    if (!meta) {
+        throw new Error(`No metadata found while computing changeset for ${entity.constructor.name}`)
+    }
 
     if (meta.readonly) {
       return null;
