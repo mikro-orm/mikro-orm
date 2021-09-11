@@ -1,4 +1,5 @@
-import { Configuration, CLIHelper } from '@mikro-orm/mikro-orm';
+import { Configuration } from '@mikro-orm/core';
+import { CLIHelper } from '@mikro-orm/cli';
 
 const close = jest.fn();
 const config = new Configuration({ type: 'mongo' } as any, false);

@@ -1,5 +1,7 @@
 import { SeedManager } from '@mikro-orm/seeder';
-import { Configuration, CLIHelper, MikroORM } from '../../../packages/mikro-orm/src';
+import { Configuration, MikroORM } from '@mikro-orm/core';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { CLIHelper } from '@mikro-orm/cli';
 
 const config = new Configuration({ type: 'mongo' } as any, false);
 const showHelpMock = jest.spyOn(CLIHelper, 'showHelp');
@@ -16,7 +18,6 @@ seed.mockImplementation(async () => void 0);
 
 import { DatabaseSeedCommand } from '../../../packages/cli/src/commands/DatabaseSeedCommand';
 import { initORMSqlite } from '../../bootstrap';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 describe('DatabaseSeedCommand', () => {
 
