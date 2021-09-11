@@ -61,7 +61,8 @@
     "escaya": "0.0.61",
     "fs-extra": "10.0.0",
     "globby": "11.0.4",
-    "reflect-metadata": "0.1.13"
+    "reflect-metadata": "0.1.13",
+    "mikro-orm": "^4.5.9"
   },
   "peerDependencies": {
     "@mikro-orm/entity-generator": "^4.0.0",
