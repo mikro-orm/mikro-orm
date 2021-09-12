@@ -13,4 +13,4 @@ const config: Options = {
   metadataProvider: JavaScriptMetadataProvider,
 };
 
-export default config;
+export default async () => config;

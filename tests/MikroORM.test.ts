@@ -95,6 +95,18 @@ describe('MikroORM', () => {
     expect(await orm.isConnected()).toBe(false);
   });
 
+  test('CLI config can export async function', async () => {
+    process.env.MIKRO_ORM_CLI = __dirname + '/cli-config.ts';
+    const orm = await MikroORM.init(undefined, false);
+
+    expect(orm).toBeInstanceOf(MikroORM);
+    expect(orm.em).toBeInstanceOf(EntityManager);
+    expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['Test3']);
+    expect(await orm.isConnected()).toBe(false);
+
+    delete process.env.MIKRO_ORM_CLI;
+  });
+
   test('should prefer environment variables', async () => {
     process.env.MIKRO_ORM_ENV = __dirname + '/mikro-orm.env';
     const orm = await MikroORM.init({ type: 'mongo' }, false);

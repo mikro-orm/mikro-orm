@@ -22,7 +22,18 @@ export class ConfigurationLoader {
 
       if (await pathExists(path)) {
         const config = await import(path);
-        return new Configuration({ ...(await (config.default || config)), ...options, ...env }, validate);
+        /* istanbul ignore next */
+        let tmp = config.default || config;
+
+        if (tmp instanceof Function) {
+          tmp = tmp();
+        }
+
+        if (tmp instanceof Promise) {
+          tmp = await tmp;
+        }
+
+        return new Configuration({ ...tmp, ...options, ...env }, validate);
       }
     }
 
