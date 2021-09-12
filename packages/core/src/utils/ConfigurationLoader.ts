@@ -21,8 +21,7 @@ export class ConfigurationLoader {
       path = Utils.normalizePath(path);
 
       if (await pathExists(path)) {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const config = require(path);
+        const config = await import(path);
         return new Configuration({ ...(await (config.default || config)), ...options, ...env }, validate);
       }
     }
@@ -36,7 +35,7 @@ export class ConfigurationLoader {
 
   static async getPackageConfig(): Promise<Dictionary> {
     if (await pathExists(process.cwd() + '/package.json')) {
-      return require(process.cwd() + '/package.json');
+      return import(process.cwd() + '/package.json');
     }
 
     return {};
