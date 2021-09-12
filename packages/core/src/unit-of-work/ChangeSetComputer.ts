@@ -20,7 +20,7 @@ export class ChangeSetComputer {
               private readonly config: Configuration) { }
 
   computeChangeSet<T extends AnyEntity<T>>(entity: T): ChangeSet<T> | null {
-    const meta = this.metadata.find(entity.constructor.name)!;
+    const meta = this.metadata.get(entity.constructor.name);
 
     if (meta.readonly) {
       return null;
