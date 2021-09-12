@@ -364,16 +364,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     Utils.runIfNotEmpty(() => qb.orderByRaw(this.helper.getQueryOrder(this.type, this._orderBy as FlatQueryOrderMap, this._populateMap)), this._orderBy);
     Utils.runIfNotEmpty(() => qb.limit(this._limit!), this._limit);
     Utils.runIfNotEmpty(() => qb.offset(this._offset!), this._offset);
-    Utils.runIfNotEmpty(() => {
-      this._onConflict!.forEach(item => {
-        const sub = qb.onConflict(item.fields);
-        Utils.runIfNotEmpty(() => sub.ignore(), item.ignore);
-        Utils.runIfNotEmpty(() => {
-          const sub2 = sub.merge(item.merge);
-          Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, item.where, sub2), item.where);
-        }, 'merge' in item);
-      });
-    }, this._onConflict);
+    Utils.runIfNotEmpty(() => this.helper.appendOnConflictClause(this.type, this._onConflict!, qb), this._onConflict);
 
     if (this.type === QueryType.TRUNCATE && this.platform.usesCascadeStatement()) {
       return this.knex.raw(qb.toSQL().toNative().sql + ' cascade') as any;
