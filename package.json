@@ -139,7 +139,7 @@
     "gen-esm-wrapper": "1.1.2",
     "guid-typescript": "1.0.9",
     "husky": "7.0.2",
-    "jest": "27.1.1",
+    "jest": "27.2.0",
     "lerna": "4.0.0",
     "lint-staged": "11.1.2",
     "rimraf": "3.0.2",
