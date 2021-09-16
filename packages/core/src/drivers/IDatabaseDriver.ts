@@ -29,28 +29,28 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   /**
    * Finds selection of entities
    */
-  find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T>, ctx?: Transaction): Promise<EntityData<T>[]>;
+  find<T extends AnyEntity<T>, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T, P>): Promise<EntityData<T>[]>;
 
   /**
    * Finds single entity (table row, document)
    */
-  findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T>, ctx?: Transaction): Promise<EntityData<T> | null>;
+  findOne<T extends AnyEntity<T>, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P>): Promise<EntityData<T> | null>;
 
-  nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>, ctx?: Transaction, convertCustomTypes?: boolean): Promise<QueryResult<T>>;
+  nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
 
-  nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], ctx?: Transaction, processCollections?: boolean, convertCustomTypes?: boolean): Promise<QueryResult<T>>;
+  nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>): Promise<QueryResult<T>>;
 
-  nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, ctx?: Transaction, convertCustomTypes?: boolean): Promise<QueryResult<T>>;
+  nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
 
-  nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], ctx?: Transaction, processCollections?: boolean, convertCustomTypes?: boolean): Promise<QueryResult<T>>;
+  nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>): Promise<QueryResult<T>>;
 
-  nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction): Promise<QueryResult<T>>;
+  nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: { ctx?: Transaction }): Promise<QueryResult<T>>;
 
-  syncCollection<T, O>(collection: Collection<T, O>, ctx?: Transaction): Promise<void>;
+  syncCollection<T, O>(collection: Collection<T, O>, options?: { ctx?: Transaction }): Promise<void>;
 
-  clearCollection<T, O>(collection: Collection<T, O>, ctx?: Transaction): Promise<void>;
+  clearCollection<T, O>(collection: Collection<T, O>, options?: { ctx?: Transaction }): Promise<void>;
 
-  count<T extends AnyEntity<T>, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T, P>, ctx?: Transaction): Promise<number>;
+  count<T extends AnyEntity<T>, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T, P>): Promise<number>;
 
   aggregate(entityName: string, pipeline: any[]): Promise<any[]>;
 
@@ -103,6 +103,7 @@ export interface FindOptions<T, P extends string = never> {
   filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
   lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
   lockTableAliases?: string[];
+  ctx?: Transaction;
 }
 
 export interface FindOneOptions<T, P extends string = never> extends Omit<FindOptions<T, P>, 'limit' | 'offset' | 'lockMode'> {
@@ -114,6 +115,15 @@ export interface FindOneOrFailOptions<T, P extends string = never> extends FindO
   failHandler?: (entityName: string, where: Dictionary | IPrimaryKey | any) => Error;
 }
 
+export interface NativeInsertUpdateOptions<T> {
+  convertCustomTypes?: boolean;
+  ctx?: Transaction;
+}
+
+export interface NativeInsertUpdateManyOptions<T> extends NativeInsertUpdateOptions<T> {
+  processCollections?: boolean;
+}
+
 export interface CountOptions<T, P extends string = never>  {
   filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
   schema?: string;
@@ -121,6 +131,7 @@ export interface CountOptions<T, P extends string = never>  {
   having?: QBFilterQuery<T>;
   cache?: boolean | number | [string, number];
   populate?: readonly AutoPath<T, P>[] | boolean;
+  ctx?: Transaction;
 }
 
 export interface UpdateOptions<T>  {

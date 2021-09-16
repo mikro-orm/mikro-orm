@@ -28,12 +28,15 @@ List of such methods:
 - `em.findAndCount()`
 - `em.merge()`
 - `em.fork()`
+- `em.begin()`
 - `repo.find()`
 - `repo.findOne()`
 - `repo.findOneOrFail()`
 - `repo.findAndCount()`
 - `repo.findAll()`
 - `repo.merge()`
+
+This also applies to the methods on `IDatabaseDriver` interface.
 
 ## Type-safe populate parameter with dot notation
 

@@ -1,4 +1,4 @@
-import type { CountOptions, FindOneOptions, FindOptions, IDatabaseDriver } from './IDatabaseDriver';
+import type { CountOptions, FindOneOptions, FindOptions, IDatabaseDriver, NativeInsertUpdateManyOptions, NativeInsertUpdateOptions } from './IDatabaseDriver';
 import { EntityManagerType } from './IDatabaseDriver';
 import type { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityProperty, ObjectQuery, FilterQuery, PopulateOptions, Primary } from '../typings';
 import type { MetadataStorage } from '../metadata';
@@ -27,23 +27,23 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   protected constructor(protected readonly config: Configuration,
                         protected readonly dependencies: string[]) { }
 
-  abstract find<T>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T>, ctx?: Transaction): Promise<EntityData<T>[]>;
+  abstract find<T>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T>): Promise<EntityData<T>[]>;
 
-  abstract findOne<T>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T>, ctx?: Transaction): Promise<EntityData<T> | null>;
+  abstract findOne<T>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T>): Promise<EntityData<T> | null>;
 
-  abstract nativeInsert<T>(entityName: string, data: EntityDictionary<T>, ctx?: Transaction, convertCustomTypes?: boolean): Promise<QueryResult<T>>;
+  abstract nativeInsert<T>(entityName: string, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
 
-  abstract nativeInsertMany<T>(entityName: string, data: EntityDictionary<T>[], ctx?: Transaction, processCollections?: boolean, convertCustomTypes?: boolean): Promise<QueryResult<T>>;
+  abstract nativeInsertMany<T>(entityName: string, data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>): Promise<QueryResult<T>>;
 
-  abstract nativeUpdate<T>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, ctx?: Transaction, convertCustomTypes?: boolean): Promise<QueryResult<T>>;
+  abstract nativeUpdate<T>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
 
-  async nativeUpdateMany<T>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], ctx?: Transaction, processCollections?: boolean, convertCustomTypes?: boolean): Promise<QueryResult<T>> {
+  async nativeUpdateMany<T>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>): Promise<QueryResult<T>> {
     throw new Error(`Batch updates are not supported by ${this.constructor.name} driver`);
   }
 
-  abstract nativeDelete<T>(entityName: string, where: FilterQuery<T>, ctx?: Transaction): Promise<QueryResult<T>>;
+  abstract nativeDelete<T>(entityName: string, where: FilterQuery<T>, options?: { ctx?: Transaction }): Promise<QueryResult<T>>;
 
-  abstract count<T>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T>, ctx?: Transaction): Promise<number>;
+  abstract count<T>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T>): Promise<number>;
 
   createEntityManager<D extends IDatabaseDriver = IDatabaseDriver>(useContext?: boolean): D[typeof EntityManagerType] {
     return new EntityManager(this.config, this, this.metadata, useContext) as unknown as EntityManager<D>;
@@ -57,20 +57,20 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     throw new Error(`${this.constructor.name} does not use pivot tables`);
   }
 
-  async syncCollection<T, O>(coll: Collection<T, O>, ctx?: Transaction): Promise<void> {
+  async syncCollection<T, O>(coll: Collection<T, O>, options?: { ctx?: Transaction }): Promise<void> {
     const pk = this.metadata.find(coll.property.type)!.primaryKeys[0];
     const data = { [coll.property.name]: coll.getIdentifiers(pk) } as EntityData<T>;
-    await this.nativeUpdate<T>(coll.owner.constructor.name, coll.owner.__helper!.getPrimaryKey() as FilterQuery<T>, data, ctx);
+    await this.nativeUpdate<T>(coll.owner.constructor.name, coll.owner.__helper!.getPrimaryKey() as FilterQuery<T>, data, options);
   }
 
-  async clearCollection<T, O>(coll: Collection<T, O>, ctx?: Transaction): Promise<void> {
+  async clearCollection<T, O>(coll: Collection<T, O>, options?: { ctx?: Transaction }): Promise<void> {
     // this currently serves only for 1:m collections with orphan removal, m:n ones are handled via `syncCollection` method
     const snapshot = coll.getSnapshot();
     /* istanbul ignore next */
     const deleteDiff = snapshot ? snapshot.map(item => (item as AnyEntity<T>).__helper!.__primaryKeyCond) : [];
 
     const cond = { [Utils.getPrimaryKeyHash(coll.property.targetMeta!.primaryKeys)]: deleteDiff } as ObjectQuery<T>;
-    await this.nativeDelete<T>(coll.property.type, cond, ctx);
+    await this.nativeDelete<T>(coll.property.type, cond, options);
   }
 
   mapResult<T>(result: EntityDictionary<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[] = []): EntityData<T> | null {

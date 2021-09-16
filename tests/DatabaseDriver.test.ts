@@ -27,15 +27,15 @@ class Driver extends DatabaseDriver<Connection> {
     super(config, dependencies);
   }
 
-  async count<T>(entityName: string, where: ObjectQuery<T>, options: CountOptions<T>, ctx: Transaction | undefined): Promise<number> {
-    return Promise.resolve(0);
+  async count<T>(entityName: string, where: ObjectQuery<T>, options: CountOptions<T>): Promise<number> {
+    return 0;
   }
 
-  async find<T>(entityName: string, where: ObjectQuery<T>, options: FindOptions<T> | undefined, ctx: Transaction | undefined): Promise<EntityData<T>[]> {
-    return Promise.resolve([]);
+  async find<T>(entityName: string, where: ObjectQuery<T>, options: FindOptions<T> | undefined): Promise<EntityData<T>[]> {
+    return [];
   }
 
-  async findOne<T>(entityName: string, where: ObjectQuery<T>, options: FindOneOptions<T> | undefined, ctx: Transaction | undefined): Promise<EntityData<T> | null> {
+  async findOne<T>(entityName: string, where: ObjectQuery<T>, options: FindOneOptions<T> | undefined): Promise<EntityData<T> | null> {
     return null;
   }
 
