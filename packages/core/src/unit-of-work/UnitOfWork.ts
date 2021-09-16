@@ -588,9 +588,9 @@ export class UnitOfWork {
     }
   }
 
-  private async persistToDatabase(groups: { [K in ChangeSetType]: Map<string, ChangeSet<any>[]> }, tx?: Transaction): Promise<void> {
-    if (tx) {
-      this.em.setTransactionContext(tx);
+  private async persistToDatabase(groups: { [K in ChangeSetType]: Map<string, ChangeSet<any>[]> }, ctx?: Transaction): Promise<void> {
+    if (ctx) {
+      this.em.setTransactionContext(ctx);
     }
 
     const commitOrder = this.getCommitOrder();
@@ -598,18 +598,18 @@ export class UnitOfWork {
 
     // 1. whole collection deletions
     for (const coll of this.collectionDeletions) {
-      await this.em.getDriver().clearCollection(coll, tx);
+      await this.em.getDriver().clearCollection(coll, { ctx });
       coll.takeSnapshot();
     }
 
     // 2. create
     for (const name of commitOrder) {
-      await this.commitCreateChangeSets(groups[ChangeSetType.CREATE].get(name) ?? [], tx);
+      await this.commitCreateChangeSets(groups[ChangeSetType.CREATE].get(name) ?? [], ctx);
     }
 
     // 3. update
     for (const name of commitOrder) {
-      await this.commitUpdateChangeSets(groups[ChangeSetType.UPDATE].get(name) ?? [], tx);
+      await this.commitUpdateChangeSets(groups[ChangeSetType.UPDATE].get(name) ?? [], ctx);
     }
 
     // 4. extra updates
@@ -629,17 +629,17 @@ export class UnitOfWork {
       }
     }
 
-    await this.commitUpdateChangeSets(extraUpdates, tx, false);
+    await this.commitUpdateChangeSets(extraUpdates, ctx, false);
 
     // 5. collection updates
     for (const coll of this.collectionUpdates) {
-      await this.em.getDriver().syncCollection(coll, tx);
+      await this.em.getDriver().syncCollection(coll, { ctx });
       coll.takeSnapshot();
     }
 
     // 6. delete - entity deletions need to be in reverse commit order
     for (const name of commitOrderReversed) {
-      await this.commitDeleteChangeSets(groups[ChangeSetType.DELETE].get(name) ?? [], tx);
+      await this.commitDeleteChangeSets(groups[ChangeSetType.DELETE].get(name) ?? [], ctx);
     }
 
     // 7. take snapshots of all persisted collections

@@ -519,12 +519,14 @@ describe('EntityManagerMongo', () => {
     expect(orm.em.getCollection(BookTag).collectionName).toBe('book-tag');
 
     const conn = driver.getConnection();
-    const tx = await conn.begin();
-    const first = await driver.nativeInsert(Publisher.name, { name: 'test 123', type: 'GLOBAL' }, tx);
-    await conn.commit(tx);
+    const ctx = await conn.begin();
+    const first = await driver.nativeInsert(Publisher.name, { name: 'test 123', type: 'GLOBAL' }, { ctx });
+    await conn.commit(ctx);
+    await driver.nativeUpdate<Publisher>(Publisher.name, first.insertId, { name: 'test 456' });
+    await driver.nativeUpdateMany<Publisher>(Publisher.name, [first.insertId], [{ name: 'test 789' }]);
 
-    await conn.transactional(async tx => {
-      await driver.nativeDelete(Publisher.name, first.insertId, tx);
+    await conn.transactional(async ctx => {
+      await driver.nativeDelete(Publisher.name, first.insertId, { ctx });
     });
 
     // multi inserts

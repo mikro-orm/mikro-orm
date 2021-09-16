@@ -113,7 +113,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return cached.data;
     }
 
-    const results = await this.driver.find<T>(entityName, where, options, this.transactionContext);
+    const results = await this.driver.find<T, P>(entityName, where, { ctx: this.transactionContext, ...options });
 
     if (results.length === 0) {
       await this.storeCache(options.cache, cached!, []);
@@ -305,7 +305,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return cached.data;
     }
 
-    const data = await this.driver.findOne(entityName, where, options, this.transactionContext);
+    const data = await this.driver.findOne<T, P>(entityName, where, { ctx: this.transactionContext, ...options });
 
     if (!data) {
       await this.storeCache(options.cache, cached!, null);
@@ -413,7 +413,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     data = QueryHelper.processObjectParams(data) as EntityData<T>;
     this.validator.validateParams(data, 'insert data');
-    const res = await this.driver.nativeInsert(entityName, data, this.transactionContext);
+    const res = await this.driver.nativeInsert(entityName, data, { ctx: this.transactionContext });
 
     return res.insertId as Primary<T>;
   }
@@ -427,7 +427,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     where = await this.processWhere(entityName, where, options, 'update');
     this.validator.validateParams(data, 'update data');
     this.validator.validateParams(where, 'update condition');
-    const res = await this.driver.nativeUpdate(entityName, where, data, this.transactionContext);
+    const res = await this.driver.nativeUpdate(entityName, where, data, { ctx: this.transactionContext });
 
     return res.affectedRows;
   }
@@ -439,7 +439,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     entityName = Utils.className(entityName);
     where = await this.processWhere(entityName, where, options, 'delete');
     this.validator.validateParams(where, 'delete condition');
-    const res = await this.driver.nativeDelete(entityName, where, this.transactionContext);
+    const res = await this.driver.nativeDelete(entityName, where, { ctx: this.transactionContext });
 
     return res.affectedRows;
   }
@@ -574,7 +574,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return cached.data as number;
     }
 
-    const count = await this.driver.count<T>(entityName, where, options, this.transactionContext);
+    const count = await this.driver.count<T, P>(entityName, where, { ctx: this.transactionContext, ...options });
     await this.storeCache(options.cache, cached!, () => count);
 
     return count;

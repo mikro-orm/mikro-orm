@@ -18,11 +18,11 @@ export class MigrationStorage {
   }
 
   async logMigration(name: string): Promise<void> {
-    await this.driver.nativeInsert(this.options.tableName!, { name }, this.masterTransaction);
+    await this.driver.nativeInsert(this.options.tableName!, { name }, { ctx: this.masterTransaction });
   }
 
   async unlogMigration(name: string): Promise<void> {
-    await this.driver.nativeDelete(this.options.tableName!, { name }, this.masterTransaction);
+    await this.driver.nativeDelete(this.options.tableName!, { name }, { ctx: this.masterTransaction });
   }
 
   async getExecutedMigrations(): Promise<MigrationRow[]> {
