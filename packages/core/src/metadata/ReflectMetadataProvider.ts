@@ -18,7 +18,7 @@ export class ReflectMetadataProvider extends MetadataProvider {
 
     prop.type = type.name;
 
-    if (['string', 'number', 'boolean', 'array', 'object'].includes(prop.type.toLowerCase())) {
+    if (prop.type && ['string', 'number', 'boolean', 'array', 'object'].includes(prop.type.toLowerCase())) {
       prop.type = prop.type.toLowerCase();
     }
   }
