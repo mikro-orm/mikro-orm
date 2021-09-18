@@ -49,7 +49,6 @@
     "test": "jest --runInBand",
     "tsc-check-tests": "tsc --noEmit --project tests/tsconfig.json",
     "coverage": "rimraf temp tests/generated-entities && yarn test --coverage",
-    "coveralls": "cat ./coverage/lcov.info | coveralls",
     "run-rs": "run-rs -v 4.2.3 -l ubuntu1804",
     "run-rs-in-background": "yarn run-rs > /dev/null 2>&1 &",
     "lint": "eslint packages/**/*.ts"
@@ -133,7 +132,6 @@
     "@typescript-eslint/eslint-plugin": "4.31.1",
     "@typescript-eslint/parser": "4.31.1",
     "conditional-type-checks": "1.0.5",
-    "coveralls": "3.1.1",
     "eslint": "7.32.0",
     "fs-extra": "10.0.0",
     "gen-esm-wrapper": "1.1.2",
