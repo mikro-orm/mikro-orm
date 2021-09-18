@@ -136,11 +136,9 @@ jobs:
           echo "$(cat COVERAGE_RESULT)"
           git status && git diff
 
-      - name: Coveralls
+      - name: Codecov
         if: steps.changed_packages.outputs.changed_packages != '0'
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+        uses: codecov/codecov-action@master
 
       - name: Codeclimate
         if: steps.changed_packages.outputs.changed_packages != '0'
