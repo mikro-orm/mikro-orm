@@ -36,7 +36,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOptions<T> = {}): Promise<EntityData<T>[]> {
-    options = { populate: [], orderBy: {}, ...options };
+    options = { populate: [], orderBy: [], ...options };
     const meta = this.metadata.find<T>(entityName)!;
     const populate = this.autoJoinOneToOneOwner(meta, options.populate as unknown as PopulateOptions<T>[], options.fields);
     const joinedProps = this.joinedProps(meta, populate);
@@ -51,7 +51,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     qb.select(fields)
       .populate(populate)
       .where(where)
-      .orderBy({ ...options.orderBy!, ...joinedPropsOrderBy })
+      .orderBy([ ...Utils.asArray(options.orderBy), ...joinedPropsOrderBy ])
       .groupBy(options.groupBy!)
       .having(options.having!)
       .withSchema(options.schema);
@@ -425,7 +425,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return this.rethrow(this.updateCollectionDiff<T, O>(meta, coll.property, pks as any, deleteDiff as any, insertDiff as any, ctx));
   }
 
-  async loadFromPivotTable<T, O>(prop: EntityProperty, owners: Primary<O>[][], where: FilterQuery<T> = {} as FilterQuery<T>, orderBy?: QueryOrderMap, ctx?: Transaction, options?: FindOptions<T>): Promise<Dictionary<T[]>> {
+  async loadFromPivotTable<T, O>(prop: EntityProperty, owners: Primary<O>[][], where: FilterQuery<T> = {} as FilterQuery<T>, orderBy?: QueryOrderMap<T>[], ctx?: Transaction, options?: FindOptions<T>): Promise<Dictionary<T[]>> {
     const pivotProp2 = this.getPivotInverseProperty(prop);
     const ownerMeta = this.metadata.find(pivotProp2.type)!;
     const targetMeta = this.metadata.find(prop.type)!;
@@ -670,27 +670,28 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     await this.rethrow(qb.execute());
   }
 
-  protected buildJoinedPropsOrderBy<T extends AnyEntity<T>>(entityName: string, qb: QueryBuilder<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[], parentPath?: string): QueryOrderMap {
-    const orderBy: QueryOrderMap = {};
+  protected buildJoinedPropsOrderBy<T extends AnyEntity<T>>(entityName: string, qb: QueryBuilder<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[], parentPath?: string): QueryOrderMap<T>[] {
+    const orderBy: QueryOrderMap<T>[] = [];
     const joinedProps = this.joinedProps(meta, populate);
 
     joinedProps.forEach(relation => {
       const prop = meta.properties[relation.field];
       const propOrderBy = prop.orderBy;
-
       const path = `${parentPath ? parentPath : entityName}.${relation.field}`;
       const propAlias = qb.getAliasForJoinPath(path);
+
       if (propOrderBy) {
         Object.keys(propOrderBy).forEach(field => {
-          Object.assign(orderBy, { [`${propAlias}.${field}`]: propOrderBy[field] });
+          orderBy.push({ [`${propAlias}.${field}`]: propOrderBy[field] } as QueryOrderMap<T>);
         });
       }
 
       if (relation.children) {
         const meta2 = this.metadata.find<T>(prop.type)!;
-        Object.assign(orderBy, { ...this.buildJoinedPropsOrderBy(prop.name, qb, meta2, relation.children, path) });
+        orderBy.push(...this.buildJoinedPropsOrderBy(prop.name, qb, meta2, relation.children, path));
       }
     });
+
     return orderBy;
   }
 

@@ -78,7 +78,7 @@ export class MongoConnection extends Connection {
     throw new Error(`${this.constructor.name} does not support generic execute method`);
   }
 
-  async find<T extends AnyEntity<T>>(collection: string, where: FilterQuery<T>, orderBy?: QueryOrderMap, limit?: number, offset?: number, fields?: string[], ctx?: Transaction<ClientSession>): Promise<EntityData<T>[]> {
+  async find<T extends AnyEntity<T>>(collection: string, where: FilterQuery<T>, orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[], limit?: number, offset?: number, fields?: string[], ctx?: Transaction<ClientSession>): Promise<EntityData<T>[]> {
     collection = this.getCollectionName(collection);
     const options: Dictionary = { session: ctx };
 
@@ -88,14 +88,20 @@ export class MongoConnection extends Connection {
 
     const resultSet = this.getCollection(collection).find<T>(where as Dictionary, options);
     let query = `db.getCollection('${collection}').find(${this.logObject(where)}, ${this.logObject(options)})`;
+    orderBy = Utils.asArray(orderBy);
 
-    if (orderBy && Utils.hasObjectKeys(orderBy)) {
-      orderBy = Object.keys(orderBy).reduce((p, c) => {
-        const direction = orderBy![c];
-        return { ...p, [c]: Utils.isString(direction) ? direction.toUpperCase() === QueryOrder.ASC ? 1 : -1 : direction };
-      }, {});
-      query += `.sort(${this.logObject(orderBy)})`;
-      resultSet.sort(orderBy as SortOptionObject<T>);
+    if (orderBy.length > 0) {
+      const orderByTuples: [string, number][] = [];
+      orderBy.forEach(o => {
+        Object.keys(o).forEach(k => {
+          const direction = o[k];
+          orderByTuples.push([k, Utils.isString(direction) ? direction.toUpperCase() === QueryOrder.ASC ? 1 : -1 : direction]);
+        });
+      });
+      if (orderByTuples.length > 0) {
+        query += `.sort(${this.logObject(orderByTuples)})`;
+        resultSet.sort(orderByTuples);
+      }
     }
 
     if (limit !== undefined) {

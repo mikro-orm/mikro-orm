@@ -1016,7 +1016,7 @@ describe('EntityManagerMySql', () => {
 
     const a2 = await orm.em.findOneOrFail(Author2, author, {
       populate: ['books'],
-      orderBy: { books: { title: QueryOrder.DESC } },
+      orderBy: [{ books: { title: QueryOrder.DESC } }],
     });
     expect(a2.books.getItems().map(b => b.title)).toEqual(['b5', 'b4', 'b3', 'b2', 'b1']);
     orm.em.clear();
@@ -1026,6 +1026,16 @@ describe('EntityManagerMySql', () => {
       orderBy: { books: { tags: { name: QueryOrder.DESC }, title: QueryOrder.ASC } },
     });
     expect(a3.books.getItems().map(b => b.title)).toEqual(['b4', 'b1', 'b2']); // first strange tag (desc), then silly by name (asc)
+    orm.em.clear();
+
+    const a4 = await orm.em.findOneOrFail(Author2, { books: { tags: { name: { $in: ['silly', 'strange'] } } } }, {
+      populate: ['books.tags'],
+      orderBy: [
+        { books: { tags: { name: QueryOrder.DESC } } },
+        { books: { title: QueryOrder.ASC } },
+      ],
+    });
+    expect(a4.books.getItems().map(b => b.title)).toEqual(['b4', 'b1', 'b2']); // first strange tag (desc), then silly by name (asc)
   });
 
   test('many to many relation', async () => {

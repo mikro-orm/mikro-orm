@@ -450,18 +450,18 @@ describe('EntityManagerPostgre', () => {
     await orm.em.nativeDelete(Author2, {});
     await orm.em.nativeInsert(Author2, { name: 'n', email: 'e', id: 1 });
     await orm.em.getDriver().nativeInsertMany(Book2.name, [
-      { uuid: '123e4567-e89b-12d3-a456-426614174001', title: 't1', author: 1, meta: { foo: 3, bar: { str: 'c', num: 3 } } },
-      { uuid: '123e4567-e89b-12d3-a456-426614174002', title: 't2', author: 1, meta: { foo: 2, bar: { str: 'b', num: 1 } } },
-      { uuid: '123e4567-e89b-12d3-a456-426614174003', title: 't3', author: 1, meta: { foo: 1, bar: { str: 'a', num: 2 } } },
+      { uuid: '123e4567-e89b-12d3-a456-426614174001', title: 't1', author: 1, meta: { nested: { foo: 3, deep: { str: 'c', baz: 3 } } } },
+      { uuid: '123e4567-e89b-12d3-a456-426614174002', title: 't2', author: 1, meta: { nested: { foo: 2, deep: { str: 'b', baz: 1 } } } },
+      { uuid: '123e4567-e89b-12d3-a456-426614174003', title: 't3', author: 1, meta: { nested: { foo: 1, deep: { str: 'a', baz: 2 } } } },
     ]);
 
-    const res14 = await orm.em.fork().find(Book2, {}, { orderBy: { meta: { foo: 'asc' } } });
+    const res14 = await orm.em.fork().find(Book2, {}, { orderBy: { meta: { nested: { foo: 'asc' } } } });
     expect(res14.map(r => r.title)).toEqual(['t3', 't2', 't1']);
 
-    const res15 = await orm.em.fork().find(Book2, {}, { orderBy: { meta: { bar: { str: 'asc' } } } });
+    const res15 = await orm.em.fork().find(Book2, {}, { orderBy: { meta: { nested: { deep: { str: 'asc' } } } } });
     expect(res15.map(r => r.title)).toEqual(['t3', 't2', 't1']);
 
-    const res16 = await orm.em.fork().find(Book2, {}, { orderBy: { meta: { bar: { num: QueryOrder.DESC } } } });
+    const res16 = await orm.em.fork().find(Book2, {}, { orderBy: { meta: { nested: { deep: { baz: QueryOrder.DESC } } } } });
     expect(res16.map(r => r.title)).toEqual(['t1', 't3', 't2']);
   });
 

@@ -12,7 +12,7 @@ import type { EntityField, FindOptions } from '../drivers/IDatabaseDriver';
 export type EntityLoaderOptions<T, P extends string = never> = {
   where?: FilterQuery<T>;
   fields?: readonly EntityField<T, P>[];
-  orderBy?: QueryOrderMap;
+  orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[];
   refresh?: boolean;
   validate?: boolean;
   lookup?: boolean;
@@ -153,7 +153,9 @@ export class EntityLoader {
     });
 
     const filtered = this.filterCollections<T>(entities, field, options.refresh);
-    const innerOrderBy = Utils.isObject(options.orderBy[prop.name]) ? options.orderBy[prop.name] as QueryOrderMap : undefined;
+    const innerOrderBy = Utils.asArray(options.orderBy)
+      .filter(orderBy => Utils.isObject(orderBy[prop.name]))
+      .map(orderBy => orderBy[prop.name]);
 
     if (prop.reference === ReferenceType.MANY_TO_MANY && this.driver.getPlatform().usesPivotTable()) {
       return this.findChildrenFromPivotTable<T>(filtered, prop, options, innerOrderBy, populate);
@@ -197,7 +199,7 @@ export class EntityLoader {
     }
   }
 
-  private async findChildren<T extends AnyEntity<T>>(entities: T[], prop: EntityProperty, populate: PopulateOptions<T>, options: Required<EntityLoaderOptions<T>>): Promise<AnyEntity[]> {
+  private async findChildren<T extends AnyEntity<T>>(entities: T[], prop: EntityProperty<T>, populate: PopulateOptions<T>, options: Required<EntityLoaderOptions<T>>): Promise<AnyEntity[]> {
     const children = this.getChildReferences<T>(entities, prop, options.refresh);
     const meta = this.metadata.find(prop.type)!;
     let fk = Utils.getPrimaryKeyHash(meta.primaryKeys);
@@ -221,7 +223,7 @@ export class EntityLoader {
     const fields = this.buildFields<T>(prop, options);
 
     return this.em.find<T>(prop.type, where, {
-      orderBy: options.orderBy || prop.orderBy || { [fk]: QueryOrder.ASC },
+      orderBy: [...Utils.asArray(options.orderBy), ...Utils.asArray(prop.orderBy), { [fk]: QueryOrder.ASC }] as QueryOrderMap<T>[],
       refresh: options.refresh,
       filters: options.filters,
       convertCustomTypes: options.convertCustomTypes,
@@ -253,9 +255,13 @@ export class EntityLoader {
 
     const filtered = Utils.unique(children);
     const fields = this.buildFields<T>(prop, options);
+    const innerOrderBy = Utils.asArray(options.orderBy)
+      .filter(orderBy => Utils.isObject(orderBy[prop.name]))
+      .map(orderBy => orderBy[prop.name]);
+
     await this.populate<T>(prop.type, filtered, populate.children, {
       where: await this.extractChildCondition(options, prop, false) as FilterQuery<T>,
-      orderBy: options.orderBy[prop.name] as QueryOrderMap,
+      orderBy: innerOrderBy,
       refresh: options.refresh,
       fields: fields.length > 0 ? fields : undefined,
       filters: options.filters,
@@ -264,7 +270,7 @@ export class EntityLoader {
     });
   }
 
-  private async findChildrenFromPivotTable<T extends AnyEntity<T>>(filtered: T[], prop: EntityProperty<T>, options: Required<EntityLoaderOptions<T>>, orderBy?: QueryOrderMap, populate?: PopulateOptions<T>): Promise<AnyEntity[]> {
+  private async findChildrenFromPivotTable<T extends AnyEntity<T>>(filtered: T[], prop: EntityProperty<T>, options: Required<EntityLoaderOptions<T>>, orderBy?: QueryOrderMap<T>[], populate?: PopulateOptions<T>): Promise<AnyEntity[]> {
     const ids = filtered.map((e: AnyEntity<T>) => e.__helper!.__primaryKeys);
     const refresh = options.refresh;
     const where = await this.extractChildCondition(options, prop, true);

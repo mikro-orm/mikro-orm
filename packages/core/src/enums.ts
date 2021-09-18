@@ -1,3 +1,5 @@
+import type { ExpandProperty } from './typings';
+
 export enum GroupOperator {
   $and = 'and',
   $or = 'or',
@@ -44,11 +46,11 @@ export enum QueryOrderNumeric {
 }
 
 export type QueryOrderKeysFlat = QueryOrder | QueryOrderNumeric | keyof typeof QueryOrder;
-export type QueryOrderKeys = QueryOrderKeysFlat | QueryOrderMap;
+export type QueryOrderKeys<T> = QueryOrderKeysFlat | QueryOrderMap<T>;
 
-export interface QueryOrderMap {
-  [x: string]: QueryOrderKeys;
-}
+export type QueryOrderMap<T> = {
+  [K in keyof T]?: QueryOrderKeys<ExpandProperty<T[K]>>;
+};
 
 export interface FlatQueryOrderMap {
   [x: string]: QueryOrderKeysFlat;

@@ -1,4 +1,4 @@
-import type { Cascade, EventType, LoadStrategy, LockMode, QueryOrder } from './enums';
+import type { Cascade, EventType, LoadStrategy, LockMode, QueryOrderMap } from './enums';
 import { ReferenceType } from './enums';
 import type { AssignOptions, Collection, EntityFactory, EntityIdentifier, EntityRepository, IdentifiedReference, Reference, SerializationContext } from './entity';
 import type { EntitySchema, MetadataStorage } from './metadata';
@@ -229,7 +229,7 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   owner: boolean;
   inversedBy: string;
   mappedBy: string;
-  orderBy?: { [field: string]: QueryOrder };
+  orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[];
   fixedOrder?: boolean;
   fixedOrderColumn?: string;
   pivotTable: string;

@@ -67,6 +67,21 @@ describe('QueryBuilder', () => {
     qb2.select('*').where({ name: 'test 123' }).orderBy({ name: 'desc', type: -1 }).limit(2, 1);
     expect(qb2.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` = ? order by `e0`.`name` desc, `e0`.`type` desc limit ? offset ?');
     expect(qb2.getParams()).toEqual(['test 123', 2, 1]);
+
+    const qb3 = orm.em.createQueryBuilder(Publisher2);
+    qb3.select('*').where({ name: 'test 123' }).orderBy([{ name: 'desc' }, { type: -1 }]).limit(2, 1);
+    expect(qb3.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` = ? order by `e0`.`name` desc, `e0`.`type` desc limit ? offset ?');
+    expect(qb3.getParams()).toEqual(['test 123', 2, 1]);
+
+    const qb4 = orm.em.createQueryBuilder(Publisher2);
+    qb4.select('*').where({ name: 'test 123' }).orderBy([{ name: 'desc', type: -1 }]).limit(2, 1);
+    expect(qb4.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` = ? order by `e0`.`name` desc, `e0`.`type` desc limit ? offset ?');
+    expect(qb4.getParams()).toEqual(['test 123', 2, 1]);
+
+    const qb5 = orm.em.createQueryBuilder(Publisher2);
+    qb5.select('*').where({ name: 'test 123' }).orderBy([{ name: 'desc' }, { type: -1 }, { name: 'asc' }]).limit(2, 1);
+    expect(qb5.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` = ? order by `e0`.`name` desc, `e0`.`type` desc, `e0`.`name` asc limit ? offset ?');
+    expect(qb5.getParams()).toEqual(['test 123', 2, 1]);
   });
 
   test('select constant expression', async () => {

@@ -53,7 +53,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     throw new Error(`Aggregations are not supported by ${this.constructor.name} driver`);
   }
 
-  async loadFromPivotTable<T, O>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<T>, orderBy?: QueryOrderMap, ctx?: Transaction, options?: FindOptions<T>): Promise<Dictionary<T[]>> {
+  async loadFromPivotTable<T, O>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<T>, orderBy?: QueryOrderMap<T>[], ctx?: Transaction, options?: FindOptions<T>): Promise<Dictionary<T[]>> {
     throw new Error(`${this.constructor.name} does not use pivot tables`);
   }
 
@@ -189,20 +189,20 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     });
   }
 
-  protected getPivotOrderBy(prop: EntityProperty, orderBy?: QueryOrderMap): QueryOrderMap {
-    if (orderBy) {
-      return orderBy;
+  protected getPivotOrderBy<T>(prop: EntityProperty<T>, orderBy?: QueryOrderMap<T>[]): QueryOrderMap<T>[] {
+    if (!Utils.isEmpty(orderBy)) {
+      return orderBy!;
     }
 
-    if (prop.orderBy) {
-      return prop.orderBy;
+    if (!Utils.isEmpty(prop.orderBy)) {
+      return Utils.asArray(prop.orderBy);
     }
 
     if (prop.fixedOrder) {
-      return { [`${prop.pivotTable}.${prop.fixedOrderColumn}`]: QueryOrder.ASC };
+      return [{ [`${prop.pivotTable}.${prop.fixedOrderColumn}`]: QueryOrder.ASC } as QueryOrderMap<T>];
     }
 
-    return {};
+    return [];
   }
 
   protected getPrimaryKeyFields(entityName: string): string[] {

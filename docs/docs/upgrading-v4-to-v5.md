@@ -40,13 +40,28 @@ This also applies to the methods on `IDatabaseDriver` interface.
 
 ## Type-safe populate parameter with dot notation
 
-`FindOptions.populate` parameter is now strictly typed and supports only array of strings or a boolean.
+`FindOptions.populate` parameter is now strictly typed and supports only array of 
+strings or a boolean.
 Object way is no longer supported. To set loading strategy, use `FindOptions.strategy`.
 The return type of all such methods now returns properly typed `Loaded` response. 
 
 ## Type-safe fields parameter
 
 `FindOptions.fields` parameter is now strictly typed also for the dot notation.
+
+## Type-safe orderBy parameter
+
+`FindOptions.orderBy` parameter is now strictly typed. It also allows passing an 
+array of objects instead of just a single object.
+
+```ts
+const books = await em.find(Book, {}, {
+  orderBy: [
+    { title: 1 },
+    { author: { name: -1 } },
+  ],
+});
+```
 
 ## Removed `@Repository()` decorator
 
