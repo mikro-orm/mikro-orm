@@ -122,7 +122,7 @@ export interface IQueryBuilder<T> {
   andWhere(cond: string, params?: any[]): this;
   orWhere(cond: QBFilterQuery<T>): this;
   orWhere(cond: string, params?: any[]): this;
-  orderBy(orderBy: QueryOrderMap): this;
+  orderBy(orderBy: QueryOrderMap<T>): this;
   groupBy(fields: (string | keyof T) | (string | keyof T)[]): this;
   having(cond?: QBFilterQuery | string, params?: any[]): this;
   getAliasForJoinPath(path: string): string | undefined;

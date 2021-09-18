@@ -65,7 +65,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   private _schema?: string;
   private _cond: Dictionary = {};
   private _data!: Dictionary;
-  private _orderBy: QueryOrderMap = {};
+  private _orderBy: QueryOrderMap<T>[] = [];
   private _groupBy: Field<T>[] = [];
   private _having: Dictionary = {};
   private _onConflict?: { fields: string[]; ignore?: boolean; merge?: EntityData<T> | Field<T>[]; where?: QBFilterQuery<T> }[];
@@ -232,9 +232,13 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.where(cond as string, params, '$or');
   }
 
-  orderBy(orderBy: QueryOrderMap): this {
-    const processed = QueryHelper.processWhere(orderBy, this.entityName, this.metadata, this.platform, false)!;
-    this._orderBy = CriteriaNodeFactory.createNode(this.metadata, this.entityName, processed).process(this);
+  orderBy(orderBy: QueryOrderMap<unknown> | QueryOrderMap<unknown>[]): this {
+    this._orderBy = [];
+    Utils.asArray(orderBy).forEach(o => {
+      const processed = QueryHelper.processWhere(o as Dictionary, this.entityName, this.metadata, this.platform, false)!;
+      this._orderBy.push(CriteriaNodeFactory.createNode(this.metadata, this.entityName, processed).process(this));
+    });
+
     return this;
   }
 
@@ -361,7 +365,13 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, this._cond, qb), this._cond && !this._onConflict);
     Utils.runIfNotEmpty(() => qb.groupBy(this.prepareFields(this._groupBy, 'groupBy')), this._groupBy);
     Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, this._having, qb, undefined, 'having'), this._having);
-    Utils.runIfNotEmpty(() => qb.orderByRaw(this.helper.getQueryOrder(this.type, this._orderBy as FlatQueryOrderMap, this._populateMap)), this._orderBy);
+    Utils.runIfNotEmpty(() => {
+      const queryOrder = this.helper.getQueryOrder(this.type, this._orderBy as FlatQueryOrderMap[], this._populateMap);
+
+      if (queryOrder) {
+        return qb.orderByRaw(queryOrder);
+      }
+    }, this._orderBy);
     Utils.runIfNotEmpty(() => qb.limit(this._limit!), this._limit);
     Utils.runIfNotEmpty(() => qb.offset(this._offset!), this._offset);
     Utils.runIfNotEmpty(() => this.helper.appendOnConflictClause(this.type, this._onConflict!, qb), this._onConflict);

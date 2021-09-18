@@ -454,7 +454,18 @@ export class QueryBuilderHelper {
     }
   }
 
-  getQueryOrder(type: QueryType, orderBy: FlatQueryOrderMap, populate: Dictionary<string>): string {
+  getQueryOrder(type: QueryType, orderBy: FlatQueryOrderMap | FlatQueryOrderMap[], populate: Dictionary<string>): string {
+    if (Array.isArray(orderBy)) {
+      return orderBy
+        .map(o => this.getQueryOrder(type, o, populate))
+        .filter(o => o)
+        .join(', ');
+    }
+
+    return this.getQueryOrderFromObject(type, orderBy, populate);
+  }
+
+  getQueryOrderFromObject(type: QueryType, orderBy: FlatQueryOrderMap, populate: Dictionary<string>): string {
     const ret: string[] = [];
     Object.keys(orderBy).forEach(k => {
       const direction = orderBy[k];

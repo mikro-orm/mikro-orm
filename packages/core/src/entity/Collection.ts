@@ -207,8 +207,8 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   }
 
   async init(options?: InitOptions<T>): Promise<this>;
-  async init(populate?: string[], where?: FilterQuery<T>, orderBy?: QueryOrderMap): Promise<this>;
-  async init(populate: string[] | InitOptions<T> = [], where?: FilterQuery<T>, orderBy?: QueryOrderMap): Promise<this> {
+  async init(populate?: string[], where?: FilterQuery<T>, orderBy?: QueryOrderMap<T>): Promise<this>;
+  async init(populate: string[] | InitOptions<T> = [], where?: FilterQuery<T>, orderBy?: QueryOrderMap<T>): Promise<this> {
     const options = Utils.isObject<InitOptions<T>>(populate) ? populate : { populate, where, orderBy };
     const em = this.getEntityManager();
 
@@ -293,16 +293,15 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     return cond;
   }
 
-  private createOrderBy(orderBy: QueryOrderMap = {}): QueryOrderMap {
+  private createOrderBy(orderBy: QueryOrderMap<T> | QueryOrderMap<T>[] = []): QueryOrderMap<T>[] {
     if (Utils.isEmpty(orderBy) && this.property.reference === ReferenceType.ONE_TO_MANY) {
-      const defaultOrder = this.property.referencedColumnNames.reduce((o, name) => {
-        o[name] = QueryOrder.ASC;
-        return o;
-      }, {} as QueryOrderMap);
+      const defaultOrder = this.property.referencedColumnNames.map(name => {
+        return { [name]: QueryOrder.ASC };
+      });
       orderBy = this.property.orderBy || defaultOrder;
     }
 
-    return orderBy;
+    return Utils.asArray(orderBy);
   }
 
   private createManyToManyCondition(cond: FilterQuery<T>) {
@@ -405,6 +404,6 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
 
 export interface InitOptions<T> {
   populate?: Populate<T>;
-  orderBy?: QueryOrderMap;
+  orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[];
   where?: FilterQuery<T>;
 }
