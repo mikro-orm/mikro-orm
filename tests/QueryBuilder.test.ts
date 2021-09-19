@@ -1297,6 +1297,13 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['123']);
   });
 
+  test('update query with column reference via static raw helper', async () => {
+    const qb = orm.em.createQueryBuilder(Book2);
+    qb.update({ price: orm.em.raw('price + 1') }).where({ uuid: '123' });
+    expect(qb.getQuery()).toEqual('update `book2` set `price` = price + 1 where `uuid_pk` = ?');
+    expect(qb.getParams()).toEqual(['123']);
+  });
+
   test('update query with JSON type and raw value', async () => {
     const qb = orm.em.createQueryBuilder(Book2);
     const raw = qb.raw<any>(`jsonb_set(payload, '$.{consumed}', ?)`, [123]);

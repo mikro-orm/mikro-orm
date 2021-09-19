@@ -1,5 +1,5 @@
 import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property, Filter, Logger, ManyToOne } from '@mikro-orm/core';
-import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import type { AbstractSqlDriver, EntityManager } from '@mikro-orm/knex';
 
 @Filter({
   name: 'isActive',
@@ -60,8 +60,9 @@ class User {
 @Entity()
 @Filter({
   name: 'user',
-  cond: { user: { $or: [{ firstName: 'name' }, { lastName: 'name' }] } },
+  cond: (_args, _type, em: EntityManager) => ({ user: { $or: [{ firstName: 'name' }, { lastName: 'name' }, { age: em.raw('(select 1 + 1)') }] } }),
   default: true,
+  args: false,
 })
 class Membership {
 
@@ -148,7 +149,7 @@ describe('filters [postgres]', () => {
     }, { filters: false });
 
     expect(mock.mock.calls[0][0]).toMatch(`select "e0".* from "user" as "e0" where ("e0"."age" = $1 or "e0"."age" = $2) and ("e0"."first_name" = $3 or "e0"."last_name" = $4)`);
-    expect(mock.mock.calls[1][0]).toMatch(`select "e0".* from "membership" as "e0" left join "user" as "e1" on "e0"."user_id" = "e1"."id" where ("e1"."first_name" = $1 or "e1"."last_name" = $2) and ("e0"."role" = $3 or "e0"."role" = $4)`);
+    expect(mock.mock.calls[1][0]).toMatch(`select "e0".* from "membership" as "e0" left join "user" as "e1" on "e0"."user_id" = "e1"."id" where ("e1"."first_name" = $1 or "e1"."last_name" = $2 or "e1"."age" = (select 1 + 1)) and ("e0"."role" = $3 or "e0"."role" = $4)`);
     expect(mock.mock.calls[2][0]).toMatch(`select "e0".* from "membership" as "e0" left join "user" as "e1" on "e0"."user_id" = "e1"."id" where ("e0"."role" = $1 or "e0"."role" = $2) and ("e1"."first_name" = $3 or "e1"."last_name" = $4)`);
   });
 
