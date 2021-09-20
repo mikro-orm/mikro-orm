@@ -13,10 +13,10 @@
     "@docusaurus/plugin-client-redirects": "2.0.0-beta.6",
     "@docusaurus/preset-classic": "2.0.0-beta.6",
     "classnames": "2.3.1",
-    "docusaurus-plugin-typedoc": "0.16.1",
+    "docusaurus-plugin-typedoc": "0.16.2",
     "react": "17.0.2",
     "react-dom": "17.0.2",
-    "typedoc": "0.22.3",
+    "typedoc": "0.22.4",
     "typedoc-plugin-markdown": "3.11.0",
     "typescript": "4.4.3"
   },
