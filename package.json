@@ -122,7 +122,7 @@
     "@mikro-orm/sql-highlighter": "1.0.1",
     "@types/clone": "2.1.1",
     "@types/fs-extra": "9.0.12",
-    "@types/jest": "27.0.1",
+    "@types/jest": "27.0.2",
     "@types/mysql2": "types/mysql2#d4ef3b2292f328049f7e4c545f6adab7d6a350a9",
     "@types/node": "16.7.2",
     "@types/pg": "8.6.1",
