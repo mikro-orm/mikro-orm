@@ -52,11 +52,20 @@ export class MongoConnection extends Connection {
 
   getConnectionOptions(): MongoClientOptions & ConnectionConfig {
     const ret: MongoClientOptions = { useNewUrlParser: true, useUnifiedTopology: true };
+    const pool = this.config.get('pool')!;
     const user = this.config.get('user');
     const password = this.config.get('password') as string;
 
     if (user && password) {
       ret.auth = { user, password };
+    }
+
+    if (pool.min) {
+      ret.minPoolSize = ret.minSize = pool.min;
+    }
+
+    if (pool.max) {
+      ret.maxPoolSize = ret.poolSize = pool.max;
     }
 
     return Utils.merge(ret, this.config.get('driverOptions'));
