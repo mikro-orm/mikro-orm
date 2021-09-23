@@ -24,7 +24,8 @@ export class CriteriaNode implements ICriteriaNode {
       Utils.splitPrimaryKeys(key).forEach(k => {
         this.prop = meta.props.find(prop => prop.name === k || (prop.fieldNames || []).includes(k));
 
-        if (validate && !this.prop && !k.includes('.') && !Utils.isOperator(k) && !CriteriaNode.isCustomExpression(k)) {
+        // do not validate if the key is prefixed or type casted (e.g. `k::text`)
+        if (validate && !this.prop && !k.includes('.') && !k.includes('::') && !Utils.isOperator(k) && !CriteriaNode.isCustomExpression(k)) {
           throw new Error(`Trying to query by not existing property ${entityName}.${k}`);
         }
       });

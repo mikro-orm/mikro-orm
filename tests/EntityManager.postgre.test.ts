@@ -1367,6 +1367,7 @@ describe('EntityManagerPostgre', () => {
 
   test('find with custom function', async () => {
     const author = new Author2('name', 'email');
+    author.age = 123;
     const b1 = new Book2('b1', author);
     const b2 = new Book2('b2', author);
     const b3 = new Book2('b3', author);
@@ -1379,9 +1380,12 @@ describe('EntityManagerPostgre', () => {
 
     const books1 = await orm.em.find(Book2, {
       [expr('upper(title)')]: ['B1', 'B2'],
+      author: {
+        [expr('age::text')]: { $ilike: '%2%' },
+      },
     }, { populate: ['perex'] });
     expect(books1).toHaveLength(2);
-    expect(mock.mock.calls[0][0]).toMatch(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where "e0"."author_id" is not null and upper(title) in ('B1', 'B2')`);
+    expect(mock.mock.calls[0][0]).toMatch(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" left join "author2" as "e1" on "e0"."author_id" = "e1"."id" where "e0"."author_id" is not null and upper(title) in ('B1', 'B2') and e1.age::text ilike '%2%'`);
     orm.em.clear();
 
     const books2 = await orm.em.find(Book2, {

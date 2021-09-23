@@ -545,7 +545,9 @@ export class QueryBuilderHelper {
   }
 
   static isCustomExpression(field: string, hasAlias = false): boolean {
-    const re = hasAlias ? /[ ?<>=()'"`]|^\d/ : /[?<>=()'"`]|^\d/; // if we do not have alias, we don't consider spaces as custom expressions
+    // if we do not have alias, we don't consider spaces as custom expressions
+    const re = hasAlias ? /[ ?<>=()'"`:]|^\d/ : /[?<>=()'"`:]|^\d/;
+
     return !!field.match(re);
   }
 
