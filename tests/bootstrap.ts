@@ -41,6 +41,7 @@ export async function initORMMongo() {
     populateAfterFlush: true,
     validate: true,
     filters: { allowedFooBars: { cond: args => ({ id: { $in: args.allowed } }), entity: ['FooBar'], default: false } },
+    pool: { min: 1, max: 3 },
   });
 
   ensureIndexes = false;
