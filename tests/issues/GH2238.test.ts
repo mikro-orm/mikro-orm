@@ -22,7 +22,7 @@ export class Second {
   @OneToOne({
     entity: () => First,
     inversedBy: 'second',
-    orphanRemoval: true,
+    // orphanRemoval: true,
   })
   first!: First;
 
@@ -51,7 +51,8 @@ describe('GH issue 2238', () => {
   test('flush after removeAndFlush', async () => {
     const a = new First();
     const b = new Second(a);
-    await orm.em.persistAndFlush(b);
+    orm.em.persist([a, b]);
+    await orm.em.flush();
     orm.em.clear();
 
     const seconds = await orm.em.find(Second, {});
@@ -61,5 +62,7 @@ describe('GH issue 2238', () => {
     await orm.em.flush();
     const result2 = await orm.em.find(Second, {});
     expect(result2.length).toBe(0);
+    const result3 = await orm.em.find(First, {});
+    expect(result3.length).toBe(1);
   });
 });
