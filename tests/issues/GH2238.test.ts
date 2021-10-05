@@ -22,6 +22,7 @@ export class Second {
   @OneToOne({
     entity: () => First,
     inversedBy: 'second',
+    orphanRemoval: true,
   })
   first!: First;
 
