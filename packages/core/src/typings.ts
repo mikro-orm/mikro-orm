@@ -1,3 +1,4 @@
+import type { Transaction } from './connections';
 import type { Cascade, EventType, LoadStrategy, LockMode, QueryOrderMap } from './enums';
 import { ReferenceType } from './enums';
 import type { AssignOptions, Collection, EntityFactory, EntityIdentifier, EntityRepository, IdentifiedReference, Reference, SerializationContext } from './entity';
