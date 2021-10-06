@@ -1,3 +1,4 @@
+import type { Transaction } from './connections';
 import type { Cascade, EventType, LoadStrategy, LockMode, QueryOrderMap } from './enums';
 import { ReferenceType } from './enums';
 import type { AssignOptions, Collection, EntityFactory, EntityIdentifier, EntityRepository, IdentifiedReference, Reference, SerializationContext } from './entity';
@@ -392,7 +393,7 @@ export interface IEntityGenerator {
 }
 
 type UmzugMigration = { path?: string; file: string };
-type MigrateOptions = { from?: string | number; to?: string | number; migrations?: string[] };
+type MigrateOptions = { from?: string | number; to?: string | number; migrations?: string[]; transaction?: Transaction };
 type MigrationResult = { fileName: string; code: string; diff: MigrationDiff };
 type MigrationRow = { name: string; executed_at: Date };
 
