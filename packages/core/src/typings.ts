@@ -392,7 +392,7 @@ export interface IEntityGenerator {
 }
 
 type UmzugMigration = { path?: string; file: string };
-type MigrateOptions = { from?: string | number; to?: string | number; migrations?: string[] };
+type MigrateOptions = { from?: string | number; to?: string | number; migrations?: string[]; transaction?: Transaction };
 type MigrationResult = { fileName: string; code: string; diff: MigrationDiff };
 type MigrationRow = { name: string; executed_at: Date };
 
