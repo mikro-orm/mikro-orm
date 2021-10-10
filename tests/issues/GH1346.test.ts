@@ -59,7 +59,7 @@ describe('GH issue 1346', () => {
     await orm.em.persistAndFlush([user, name]);
     orm.em.clear();
 
-    const entity = await orm.em.findOneOrFail(User, user, { populate: ['names'], refresh: true });
+    const entity = await orm.em.findOneOrFail(User, user, { populate: ['names'] });
     expect(entity.names[0].name).toEqual('this is my name');
   });
 
