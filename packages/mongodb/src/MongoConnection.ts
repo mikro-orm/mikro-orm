@@ -1,14 +1,14 @@
 import type {
-  Collection, Db, DeleteWriteOpResultObject, InsertOneWriteOpResult, MongoClientOptions, UpdateWriteOpResult, FilterQuery as MongoFilterQueryOrPrimary, ClientSession, SortOptionObject, BulkWriteResult } from 'mongodb';
-import { MongoClient,
-  ObjectId,
+  Collection, Db, DeleteWriteOpResultObject, InsertOneWriteOpResult, MongoClientOptions, UpdateWriteOpResult,
+  FilterQuery as MongoFilterQueryOrPrimary, ClientSession, BulkWriteResult,
 } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 import { inspect } from 'util';
-import type { ConnectionConfig, QueryResult, Transaction, QueryOrderMap,
-  FilterQuery, AnyEntity, EntityName, Dictionary, EntityData, TransactionEventBroadcaster, IsolationLevel } from '@mikro-orm/core';
-import {
-  Connection, Utils, QueryOrder, EventType,
+import type {
+  ConnectionConfig, QueryResult, Transaction, QueryOrderMap, FilterQuery, AnyEntity, EntityName, Dictionary,
+  EntityData, TransactionEventBroadcaster, IsolationLevel,
 } from '@mikro-orm/core';
+import { Connection, Utils, QueryOrder, EventType, ValidationError } from '@mikro-orm/core';
 
 export class MongoConnection extends Connection {
 
@@ -55,6 +55,10 @@ export class MongoConnection extends Connection {
     const pool = this.config.get('pool')!;
     const user = this.config.get('user');
     const password = this.config.get('password') as string;
+
+    if (this.config.get('host')) {
+      throw new ValidationError('Mongo driver does not support `host` options, use `clientUrl` instead!');
+    }
 
     if (user && password) {
       ret.auth = { user, password };

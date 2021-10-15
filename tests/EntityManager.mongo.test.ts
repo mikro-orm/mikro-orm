@@ -2172,6 +2172,15 @@ describe('EntityManagerMongo', () => {
     await expect(author.books.loadCount()).resolves.toEqual(4);
   });
 
+  test('validation for `host` option', async () => {
+    await expect(MikroORM.init({
+      entities: [Author, Book, Publisher, BookTag, Test],
+      host: 'foo',
+      dbName: 'bar',
+      type: 'mongo',
+    })).rejects.toThrowError('Mongo driver does not support `host` options, use `clientUrl` instead!');
+  });
+
   test('extracting child condition when populating (GH #1891)', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
     const book1 = new Book('My Life on The Wall, part 1', author);

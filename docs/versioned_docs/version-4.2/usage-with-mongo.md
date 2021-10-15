@@ -2,10 +2,10 @@
 title: Usage with MongoDB
 ---
 
-To use `mikro-orm` with mongo database, do not forget to install `mongodb` dependency. As `MongoDriver`
-is the default one, you do not need to provide it.
+To use MikroORM with mongo database, do not forget to install `@mikro-orm/mongodb`
+dependency. Then call `MikroORM.init()` as part of bootstrapping your app:
 
-Then call `MikroORM.init` as part of bootstrapping your app:
+> We need to use `clientUrl` to setup hosts, using `host` or `port` is not supported.
 
 ```typescript
 const orm = await MikroORM.init({
