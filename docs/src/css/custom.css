@@ -74,7 +74,6 @@ html[data-theme="light"] .admonition-info {
 
 .navbar .navbar__logo {
   max-height: 100%;
-  height: auto;
 }
 
 .navbar .navbar__link[href*=github],
