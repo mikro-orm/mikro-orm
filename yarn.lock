@@ -5676,10 +5676,10 @@ map-obj@^4.0.0:
   resolved "https://registry.yarnpkg.com/map-obj/-/map-obj-4.2.1.tgz#e4ea399dbc979ae735c83c863dd31bdf364277b7"
   integrity sha512-+WA2/1sPmDj1dlvvJmB5G6JKfY9dpn7EVBUL06+y6PoljPkh+6V1QihwxNkbcGxCRjt2b0F9K0taiCuo7MbdFQ==
 
-mariadb@2.5.4:
-  version "2.5.4"
-  resolved "https://registry.yarnpkg.com/mariadb/-/mariadb-2.5.4.tgz#c66daa35e2768b8c714c758453531c06ae4927f4"
-  integrity sha512-4vQgMRyBIN9EwSQG0vzjR9D8bscPH0dGPJt67qVlOkHSiSm0xUatg1Pft4o1LzORgeOW4PheiY/HBE9bYYmNCA==
+mariadb@2.5.5:
+  version "2.5.5"
+  resolved "https://registry.yarnpkg.com/mariadb/-/mariadb-2.5.5.tgz#a9aff9f1e57231a415a21254489439beb501c803"
+  integrity sha512-6dklvcKWuuaV1JjAwnE2ezR+jTt7JrZHftgeHHBmjB0wgfaUpdxol1DPWclwMcCrsO9yoM0FuCOiCcCgXc//9Q==
   dependencies:
     "@types/geojson" "^7946.0.7"
     "@types/node" "^14.14.28"
