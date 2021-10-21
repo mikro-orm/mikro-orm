@@ -113,6 +113,7 @@ export interface IWrappedEntityInternal<T, PK extends keyof T | unknown = Primar
   __platform: Platform;
   __initialized: boolean;
   __originalEntityData?: EntityData<T>;
+  __loadedProperties: Set<string>;
   __identifier?: EntityIdentifier;
   __managed: boolean;
   __populated: boolean;

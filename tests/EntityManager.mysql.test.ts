@@ -11,7 +11,7 @@ import {
 } from '@mikro-orm/core';
 import { MySqlDriver, MySqlConnection } from '@mikro-orm/mysql';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
-import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
+import { initORMMySql, mockLogger, wipeDatabaseMySql } from './bootstrap';
 import { Author2Subscriber } from './subscribers/Author2Subscriber';
 import { EverythingSubscriber } from './subscribers/EverythingSubscriber';
 import { FlushSubscriber } from './subscribers/FlushSubscriber';
@@ -2407,10 +2407,10 @@ describe('EntityManagerMySql', () => {
   });
 
   test('refreshing already loaded entity', async () => {
-    const god = new Author2(`God `, `hello@heaven.god`);
-    new Book2(`Bible 1`, god);
-    new Book2(`Bible 2`, god);
-    new Book2(`Bible 3`, god);
+    const god = new Author2('God', 'hello@heaven.god');
+    new Book2('Bible 1', god);
+    new Book2('Bible 2', god);
+    new Book2('Bible 3', god);
     await orm.em.persistAndFlush(god);
     orm.em.clear();
 
@@ -2422,6 +2422,7 @@ describe('EntityManagerMySql', () => {
     expect(r2).toHaveLength(1);
     expect(r2[0].id).toBe(god.id);
     expect(r2[0].name).toBe(god.name);
+    expect(r1[0]).toBe(r2[0]);
   });
 
   test('batch update with changing OneToOne relation (GH issue #1025)', async () => {

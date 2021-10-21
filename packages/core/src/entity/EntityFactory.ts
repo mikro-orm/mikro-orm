@@ -20,6 +20,7 @@ export class EntityFactory {
   private readonly metadata = this.em.getMetadata();
   private readonly hydrator = this.config.getHydrator(this.metadata);
   private readonly eventManager = this.em.getEventManager();
+  private readonly comparator = this.em.getComparator();
 
   constructor(private readonly unitOfWork: UnitOfWork,
               private readonly em: EntityManager) { }
@@ -42,6 +43,9 @@ export class EntityFactory {
     const exists = this.findEntity<T>(data, meta2, options.convertCustomTypes);
 
     if (exists && exists.__helper!.__initialized && !options.refresh) {
+      exists.__helper!.__initialized = options.initialized;
+      this.mergeData(meta2, exists, data, options);
+
       return exists as New<T, P>;
     }
 
@@ -59,6 +63,54 @@ export class EntityFactory {
     }
 
     return entity as New<T, P>;
+  }
+
+  mergeData<T extends AnyEntity<T>>(meta: EntityMetadata<T>, entity: T, data: EntityData<T>, options: FactoryOptions): void {
+    // merge unchanged properties automatically
+    data = { ...data };
+    const existsData = this.comparator.prepareEntity(entity);
+    const originalEntityData = entity.__helper!.__originalEntityData ?? {} as EntityData<T>;
+    const diff = this.comparator.diffEntities(meta.className, originalEntityData, existsData);
+
+    // version properties are not part of entity snapshots
+    if (meta.versionProperty && data[meta.versionProperty] && data[meta.versionProperty] !== originalEntityData[meta.versionProperty]) {
+      diff[meta.versionProperty] = data[meta.versionProperty];
+    }
+
+    const diff2 = this.comparator.diffEntities(meta.className, existsData, data);
+
+    // do not override values changed by user
+    Object.keys(diff).forEach(key => delete diff2[key]);
+    this.hydrate<T>(entity, meta, diff2, options);
+
+    // we need to update the entity data only with keys that were not present before
+    Object.keys(diff2).forEach(key => {
+      const prop = meta.properties[key];
+
+      if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && Utils.isPlainObject(data[prop.name])) {
+        diff2[key] = (entity[prop.name] as AnyEntity).__helper!.getPrimaryKey(options.convertCustomTypes);
+      }
+
+      originalEntityData[key] = diff2[key];
+      entity.__helper!.__loadedProperties.add(key);
+    });
+
+    // in case of joined loading strategy, we need to cascade the merging to possibly loaded relations manually
+    meta.relations.forEach(prop => {
+      if ([ReferenceType.MANY_TO_MANY, ReferenceType.ONE_TO_MANY].includes(prop.reference) && Array.isArray(data[prop.name])) {
+        // instead of trying to match the collection items (which could easily fail if the collection was loaded with different ordering),
+        // we just create the entity from scratch, which will automatically pick the right one from the identity map and call `mergeData` on it
+        (data[prop.name] as EntityData<T>[])
+          .filter(child => Utils.isPlainObject(child)) // objects with prototype can be PKs (e.g. `ObjectId`)
+          .forEach(child => this.create(prop.type, child, options)); // we can ignore the value, we just care about the `mergeData` call
+
+        return;
+      }
+
+      if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && Utils.isPlainObject(data[prop.name]) && entity[prop.name] && (entity[prop.name] as AnyEntity).__helper!.__initialized) {
+        this.create(prop.type, data[prop.name] as EntityData<T>, options); // we can ignore the value, we just care about the `mergeData` call
+      }
+    });
   }
 
   createReference<T>(entityName: EntityName<T>, id: Primary<T> | Primary<T>[] | Record<string, Primary<T>>, options: Pick<FactoryOptions, 'merge' | 'convertCustomTypes'> = {}): T {
@@ -107,12 +159,13 @@ export class EntityFactory {
     return entity;
   }
 
-  private hydrate<T>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, options: FactoryOptions): void {
+  private hydrate<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, options: FactoryOptions): void {
     if (options.initialized) {
       this.hydrator.hydrate(entity, meta, data, this, 'full', options.newEntity, options.convertCustomTypes);
     } else {
       this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes);
     }
+    Object.keys(data).forEach(key => entity.__helper!.__loadedProperties.add(key));
   }
 
   private findEntity<T>(data: EntityData<T>, meta: EntityMetadata<T>, convertCustomTypes?: boolean): T | undefined {

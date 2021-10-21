@@ -125,7 +125,7 @@ describe('partial loading (mongo)', () => {
     const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
 
-    const r1 = await orm.em.find(BookTag, {}, { fields: ['name', 'books.title', 'books.tags'], populate: ['books'], filters: false, refresh: true });
+    const r1 = await orm.em.find(BookTag, {}, { fields: ['name', 'books.title', 'books.tags'], populate: ['books'], filters: false });
     expect(r1).toHaveLength(6);
     expect(r1[0].name).toBe('t1');
     expect(r1[0].books[0].title).toBe('Bible 1');
