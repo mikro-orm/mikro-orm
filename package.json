@@ -136,7 +136,7 @@
     "fs-extra": "10.0.0",
     "gen-esm-wrapper": "1.1.3",
     "guid-typescript": "1.0.9",
-    "husky": "7.0.2",
+    "husky": "7.0.4",
     "jest": "27.3.1",
     "lerna": "4.0.0",
     "lint-staged": "11.2.3",
