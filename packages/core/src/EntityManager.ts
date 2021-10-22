@@ -503,7 +503,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
-   * Creates new instance of given entity and populates it with given data
+   * Creates new instance of given entity and populates it with given data.
+   * The entity constructor will be used unless you provide `{ managed: true }` in the options parameter.
+   * The constructor will be given parameters based on the defined constructor of the entity. If the constructor
+   * parameter matches a property name, its value will be extracted from `data`. If no matching property exists,
+   * the whole `data` parameter will be passed. This means we can also define `constructor(data: Partial<T>)` and
+   * `em.create()` will pass the data into it (unless we have a property named `data` too).
    */
   create<T extends AnyEntity<T>, P extends string = never>(entityName: EntityName<T>, data: EntityData<T>, options: { managed?: boolean } = {}): New<T, P> {
     return this.getEntityFactory().create<T, P>(entityName, data, { ...options, newEntity: !options.managed });

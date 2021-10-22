@@ -186,7 +186,12 @@ export class EntityRepository<T extends AnyEntity<T>> {
   }
 
   /**
-   * Creates new instance of given entity and populates it with given data
+   * Creates new instance of given entity and populates it with given data.
+   * The entity constructor will be used unless you provide `{ managed: true }` in the options parameter.
+   * The constructor will be given parameters based on the defined constructor of the entity. If the constructor
+   * parameter matches a property name, its value will be extracted from `data`. If no matching property exists,
+   * the whole `data` parameter will be passed. This means we can also define `constructor(data: Partial<T>)` and
+   * `em.create()` will pass the data into it (unless we have a property named `data` too).
    */
   create<P extends string = any>(data: EntityData<T>): New<T, P> {
     return this.em.create<T, P>(this.entityName, data);
