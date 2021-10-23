@@ -242,3 +242,8 @@ html[data-theme="dark"] code {
 html a code {
   color: inherit
 }
+
+.navbar svg[class*=iconExternalLink],
+aside svg[class*=iconExternalLink] {
+  display: none;
+}
