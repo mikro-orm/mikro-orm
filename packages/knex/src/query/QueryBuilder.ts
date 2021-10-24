@@ -488,7 +488,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       res = this.driver.mergeJoinedResult(res, this.metadata.find(this.entityName)!);
     }
 
-    return res.map(r => this.em!.map<T>(this.entityName, r));
+    return res.map(r => this.em!.map<T>(this.entityName, r, { schema: this._schema }));
   }
 
   /**

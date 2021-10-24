@@ -203,9 +203,9 @@ Shortcut for `wrap(entity).assign(data, { em })`
 
 ----
 
-#### `getReference(entityName: EntityName<T>, id: Primary<T>, wrapped?: boolean, convertCustomTypes?: boolean): T | Reference<T>`
+#### `getReference(entityName: EntityName<T>, id: Primary<T>, options?: GetReferenceOptions): T | Reference<T>`
 
-Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
+Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded.
 
 ----
 

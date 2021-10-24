@@ -11,6 +11,7 @@ import { OptimisticLockError, ValidationError } from '../errors';
 import type { Transaction } from '../connections';
 import { TransactionEventBroadcaster } from '../events';
 import { IdentityMap } from './IdentityMap';
+import type { LockOptions } from '../drivers/IDatabaseDriver';
 
 export class UnitOfWork {
 
@@ -86,25 +87,30 @@ export class UnitOfWork {
   /**
    * Returns entity from the identity map. For composite keys, you need to pass an array of PKs in the same order as they are defined in `meta.primaryKeys`.
    */
-  getById<T extends AnyEntity<T>>(entityName: string, id: Primary<T> | Primary<T>[]): T | undefined {
+  getById<T extends AnyEntity<T>>(entityName: string, id: Primary<T> | Primary<T>[], schema?: string): T | undefined {
     if (!id || (Array.isArray(id) && id.length === 0)) {
       return undefined;
     }
 
-    const root = this.metadata.find(entityName)!.root;
-    const hash = Array.isArray(id) ? Utils.getPrimaryKeyHash(id as string[]) : '' + id;
+    const meta = this.metadata.find(entityName)!.root;
+    let hash = Array.isArray(id) ? Utils.getPrimaryKeyHash(id as string[]) : '' + id;
+    schema = schema ?? meta.schema;
 
-    return this.identityMap.getByHash(root, hash);
+    if (schema) {
+      hash = `${schema}:${hash}`;
+    }
+
+    return this.identityMap.getByHash(meta, hash);
   }
 
-  tryGetById<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, strict = true): T | null {
+  tryGetById<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, schema?: string, strict = true): T | null {
     const pk = Utils.extractPK(where, this.metadata.find<T>(entityName)!, strict);
 
     if (!pk) {
       return null;
     }
 
-    return this.getById<T>(entityName, pk as Primary<T>)!;
+    return this.getById<T>(entityName, pk as Primary<T>, schema)!;
   }
 
   /**
@@ -253,17 +259,17 @@ export class UnitOfWork {
     }
   }
 
-  async lock<T extends AnyEntity<T>>(entity: T, mode?: LockMode, version?: number | Date, tables?: string[]): Promise<void> {
-    if (!this.getById(entity.constructor.name, entity.__helper!.__primaryKeys)) {
+  async lock<T extends AnyEntity<T>>(entity: T, options: LockOptions): Promise<void> {
+    if (!this.getById(entity.constructor.name, entity.__helper!.__primaryKeys, entity.__helper!.__schema)) {
       throw ValidationError.entityNotManaged(entity);
     }
 
     const meta = this.metadata.find<T>(entity.constructor.name)!;
 
-    if (mode === LockMode.OPTIMISTIC) {
-      await this.lockOptimistic(entity, meta, version!);
-    } else if (mode != null) {
-      await this.lockPessimistic(entity, mode, tables);
+    if (options.lockMode === LockMode.OPTIMISTIC) {
+      await this.lockOptimistic(entity, meta, options.lockVersion!);
+    } else if (options.lockMode != null) {
+      await this.lockPessimistic(entity, options);
     }
   }
 
@@ -395,10 +401,11 @@ export class UnitOfWork {
 
     for (const prop of props) {
       // check diff, if we had a value on 1:1 before and now it changed (nulled or replaced), we need to trigger orphan removal
-      const data = changeSet.entity.__helper!.__originalEntityData;
+      const wrapped = changeSet.entity.__helper!;
+      const data = wrapped.__originalEntityData;
 
       if (prop.orphanRemoval && data && data[prop.name] && prop.name in changeSet.payload) {
-        const orphan = this.getById(prop.type, data[prop.name]);
+        const orphan = this.getById(prop.type, data[prop.name], wrapped.__schema);
         this.scheduleOrphanRemoval(orphan);
       }
     }
@@ -543,12 +550,12 @@ export class UnitOfWork {
     return prop.cascade && (prop.cascade.includes(type) || prop.cascade.includes(Cascade.ALL));
   }
 
-  private async lockPessimistic<T extends AnyEntity<T>>(entity: T, mode: LockMode, tables?: string[]): Promise<void> {
+  private async lockPessimistic<T extends AnyEntity<T>>(entity: T, options: LockOptions): Promise<void> {
     if (!this.em.isInTransaction()) {
       throw ValidationError.transactionRequired();
     }
 
-    await this.em.getDriver().lockPessimistic(entity, mode, tables, this.em.getTransactionContext());
+    await this.em.getDriver().lockPessimistic(entity, { ctx: this.em.getTransactionContext(), ...options });
   }
 
   private async lockOptimistic<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, version: number | Date): Promise<void> {
@@ -577,7 +584,7 @@ export class UnitOfWork {
     const reference = Reference.unwrapReference(entity[prop.name]);
 
     if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && reference && !Utils.isEntity(reference) && !prop.mapToPk) {
-      entity[prop.name] = this.em.getReference(prop.type, reference as Primary<T[string & keyof T]>, !!prop.wrappedReference) as T[string & keyof T];
+      entity[prop.name] = this.em.getReference(prop.type, reference as Primary<T[string & keyof T]>, { wrapped: !!prop.wrappedReference }) as T[string & keyof T];
     }
 
     const isCollection = [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference);
@@ -664,7 +671,7 @@ export class UnitOfWork {
       await this.runHooks(EventType.beforeCreate, changeSet, true);
     }
 
-    await this.changeSetPersister.executeInserts(changeSets, ctx);
+    await this.changeSetPersister.executeInserts(changeSets, { ctx });
 
     for (const changeSet of changeSets) {
       this.registerManaged<T>(changeSet.entity, changeSet.payload, true);
@@ -696,7 +703,7 @@ export class UnitOfWork {
       await this.runHooks(EventType.beforeUpdate, changeSet, true);
     }
 
-    await this.changeSetPersister.executeUpdates(changeSets, batched, ctx);
+    await this.changeSetPersister.executeUpdates(changeSets, batched, { ctx });
 
     for (const changeSet of changeSets) {
       changeSet.entity.__helper!.__originalEntityData = this.comparator.prepareEntity(changeSet.entity);
@@ -713,7 +720,7 @@ export class UnitOfWork {
       await this.runHooks(EventType.beforeDelete, changeSet, true);
     }
 
-    await this.changeSetPersister.executeDeletes(changeSets, ctx);
+    await this.changeSetPersister.executeDeletes(changeSets, { ctx });
 
     for (const changeSet of changeSets) {
       this.unsetIdentity(changeSet.entity);

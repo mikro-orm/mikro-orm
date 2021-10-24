@@ -13,12 +13,13 @@ const validator = new EntityValidator(false);
 export class EntityAssigner {
 
   static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T> | Partial<EntityDTO<T>>, options: AssignOptions = {}): T {
+    const wrapped = entity.__helper!;
     options = {
       updateNestedEntities: true,
       updateByPrimaryKey: true,
-      ...options,
+      schema: wrapped.__schema,
+      ...options, // allow overriding the defaults
     };
-    const wrapped = entity.__helper!;
     const meta = entity.__meta!;
     const em = options.em || wrapped.__em;
     const props = meta.properties;
@@ -54,7 +55,7 @@ export class EntityAssigner {
             const pk = Utils.extractPK(value, props[prop].targetMeta);
 
             if (pk) {
-              const ref = em.getReference(props[prop].type, pk as Primary<T>);
+              const ref = em.getReference(props[prop].type, pk as Primary<T>, options);
               if (ref.__helper!.isInitialized()) {
                 return EntityAssigner.assign(ref, value, options);
               }
@@ -124,11 +125,11 @@ export class EntityAssigner {
     if (Utils.isEntity(value, true)) {
       entity[prop.name] = value;
     } else if (Utils.isPrimaryKey(value, true)) {
-      entity[prop.name] = Reference.wrapReference(em.getReference<T>(prop.type, value, false, options.convertCustomTypes), prop);
+      entity[prop.name] = Reference.wrapReference(em.getReference<T>(prop.type, value, options), prop);
     } else if (Utils.isPlainObject(value) && options.merge) {
-      entity[prop.name] = Reference.wrapReference(em.merge(prop.type, value), prop);
+      entity[prop.name] = Reference.wrapReference(em.merge(prop.type, value, options), prop);
     } else if (Utils.isPlainObject(value)) {
-      entity[prop.name] = Reference.wrapReference(em.create(prop.type, value), prop);
+      entity[prop.name] = Reference.wrapReference(em.create(prop.type, value, options), prop);
     } else {
       const name = entity.constructor.name;
       throw new Error(`Invalid reference value provided for '${name}.${prop.name}' in ${name}.assign(): ${JSON.stringify(value)}`);
@@ -144,7 +145,7 @@ export class EntityAssigner {
         const pk = Utils.extractPK(item, prop.targetMeta);
 
         if (pk) {
-          const ref = em.getReference(prop.type, pk as Primary<U>);
+          const ref = em.getReference(prop.type, pk as Primary<U>, options) as U;
 
           /* istanbul ignore else */
           if (ref.__helper!.isInitialized()) {
@@ -211,15 +212,15 @@ export class EntityAssigner {
     }
 
     if (Utils.isPrimaryKey(item)) {
-      return em.getReference(prop.type, item);
+      return em.getReference(prop.type, item, options) as T;
     }
 
     if (Utils.isPlainObject(item) && options.merge) {
-      return em.merge<T>(prop.type, item as EntityData<T>);
+      return em.merge<T>(prop.type, item as EntityData<T>, options);
     }
 
     if (Utils.isPlainObject(item)) {
-      return em.create<T>(prop.type, item as EntityData<T>);
+      return em.create<T>(prop.type, item as EntityData<T>, options);
     }
 
     invalid.push(item);
@@ -238,5 +239,6 @@ export interface AssignOptions {
   convertCustomTypes?: boolean;
   mergeObjects?: boolean;
   merge?: boolean;
+  schema?: string;
   em?: EntityManager;
 }

@@ -41,4 +41,12 @@ export abstract class BaseEntity<T, PK extends keyof T, P extends string = never
     return (this as unknown as AnyEntity<T>).__helper!.init(populated);
   }
 
+  getSchema(): string | undefined {
+    return (this as unknown as AnyEntity<T>).__helper!.getSchema();
+  }
+
+  setSchema(schema?: string): void {
+    (this as unknown as AnyEntity<T>).__helper!.setSchema(schema);
+  }
+
 }

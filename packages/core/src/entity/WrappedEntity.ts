@@ -18,6 +18,7 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   __populated?: boolean;
   __lazyInitialized?: boolean;
   __managed?: boolean;
+  __schema?: string;
   __em?: EntityManager;
   __serializationContext: { root?: SerializationContext<T>; populate?: PopulateOptions<T>[] } = {};
   __loadedProperties = new Set<string>();
@@ -115,6 +116,14 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
     }
 
     return [pk];
+  }
+
+  getSchema(): string | undefined {
+    return this.__schema;
+  }
+
+  setSchema(schema?: string): void {
+    this.__schema = schema;
   }
 
   setPrimaryKey(id: Primary<T> | null) {

@@ -11,6 +11,7 @@ export class ChangeSet<T extends AnyEntity<T>> {
     this.name = meta.className;
     this.rootName = meta.root.className;
     this.collection = meta.root.collection;
+    this.schema = entity.__helper!.__schema ?? meta.root.schema;
   }
 
   getPrimaryKey(): Primary<T> | Primary<T>[] | null {
@@ -24,6 +25,7 @@ export interface ChangeSet<T extends AnyEntity<T>> {
   name: string;
   rootName: string;
   collection: string;
+  schema?: string;
   type: ChangeSetType;
   entity: T;
   payload: EntityDictionary<T>;

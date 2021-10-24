@@ -5,11 +5,11 @@ export class IdentityMap {
   private readonly registry = new Map<Constructor<AnyEntity>, Map<string, AnyEntity>>();
 
   store<T extends AnyEntity<T>>(item: T) {
-    this.getStore(item.__meta!.root).set(item.__helper!.getSerializedPrimaryKey(), item);
+    this.getStore(item.__meta!.root).set(this.getPkHash(item), item);
   }
 
   delete<T extends AnyEntity<T>>(item: T) {
-    this.getStore(item.__meta!.root).delete(item.__helper!.getSerializedPrimaryKey());
+    this.getStore(item.__meta!.root).delete(this.getPkHash(item));
   }
 
   getByHash<T>(meta: EntityMetadata<T>, hash: string): T | undefined {
@@ -75,6 +75,17 @@ export class IdentityMap {
 
     const store = this.registry.get(cls) as Map<string, T>;
     return store.has(id) ? store.get(id) : undefined;
+  }
+
+  private getPkHash<T extends AnyEntity<T>>(item: T): string {
+    const pkHash = item.__helper!.getSerializedPrimaryKey();
+    const schema = item.__helper!.__schema || item.__meta!.root.schema;
+
+    if (schema) {
+      return schema + ':' + pkHash;
+    }
+
+    return pkHash;
   }
 
 }

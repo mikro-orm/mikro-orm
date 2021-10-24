@@ -99,6 +99,8 @@ export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T | unk
   toJSON(...args: any[]): EntityDTO<T>;
   toPOJO(): EntityDTO<T>;
   assign(data: EntityData<T> | Partial<EntityDTO<T>>, options?: AssignOptions | boolean): T;
+  getSchema(): string | undefined;
+  setSchema(schema?: string): void;
 }
 
 export interface IWrappedEntityInternal<T, PK extends keyof T | unknown = PrimaryProperty<T>, P extends string = string> extends IWrappedEntity<T, PK, P> {
@@ -116,6 +118,7 @@ export interface IWrappedEntityInternal<T, PK extends keyof T | unknown = Primar
   __loadedProperties: Set<string>;
   __identifier?: EntityIdentifier;
   __managed: boolean;
+  __schema?: string;
   __populated: boolean;
   __lazyInitialized: boolean;
   __primaryKeys: Primary<T>[];
