@@ -146,7 +146,7 @@ export class EntityFactory {
 
       // creates new instance via constructor as this is the new entity
       const entity = new Entity(...params);
-      entity.__helper!.__schema = options.schema;
+      entity.__helper!.__schema = this.getSchemaName(options);
 
       return entity;
     }
@@ -154,7 +154,7 @@ export class EntityFactory {
     // creates new entity instance, bypassing constructor call as its already persisted entity
     const entity = Object.create(meta.class.prototype) as T;
     entity.__helper!.__managed = true;
-    entity.__helper!.__schema = options.schema;
+    entity.__helper!.__schema = this.getSchemaName(options);
 
     if (meta.selfReferencing && !options.newEntity) {
       this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes);
@@ -162,6 +162,10 @@ export class EntityFactory {
     }
 
     return entity;
+  }
+
+  private getSchemaName(options: { schema?: string }): string | undefined {
+    return options.schema === '*' ? this.config.get('schema') : options.schema;
   }
 
   private hydrate<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, options: FactoryOptions): void {

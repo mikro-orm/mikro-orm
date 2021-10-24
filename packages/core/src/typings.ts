@@ -379,13 +379,13 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
 
 export interface ISchemaGenerator {
   generate(): Promise<string>;
-  createSchema(options?: { wrap?: boolean }): Promise<void>;
+  createSchema(options?: { wrap?: boolean; schema?: string }): Promise<void>;
   ensureDatabase(): Promise<void>;
-  getCreateSchemaSQL(options?: { wrap?: boolean }): Promise<string>;
-  dropSchema(options?: { wrap?: boolean; dropMigrationsTable?: boolean; dropDb?: boolean }): Promise<void>;
-  getDropSchemaSQL(options?: { wrap?: boolean; dropMigrationsTable?: boolean }): Promise<string>;
-  updateSchema(options?: { wrap?: boolean; safe?: boolean; dropDb?: boolean; dropTables?: boolean }): Promise<void>;
-  getUpdateSchemaSQL(options?: { wrap?: boolean; safe?: boolean; dropDb?: boolean; dropTables?: boolean }): Promise<string>;
+  getCreateSchemaSQL(options?: { wrap?: boolean; schema?: string }): Promise<string>;
+  dropSchema(options?: { wrap?: boolean; dropMigrationsTable?: boolean; dropDb?: boolean; schema?: string }): Promise<void>;
+  getDropSchemaSQL(options?: { wrap?: boolean; dropMigrationsTable?: boolean; schema?: string }): Promise<string>;
+  updateSchema(options?: { wrap?: boolean; safe?: boolean; dropDb?: boolean; dropTables?: boolean; schema?: string }): Promise<void>;
+  getUpdateSchemaSQL(options?: { wrap?: boolean; safe?: boolean; dropDb?: boolean; dropTables?: boolean; schema?: string }): Promise<string>;
   getUpdateSchemaMigrationSQL(options?: { wrap?: boolean; safe?: boolean; dropDb?: boolean; dropTables?: boolean }): Promise<{ up: string; down: string }>;
   createDatabase(name: string): Promise<void>;
   dropDatabase(name: string): Promise<void>;

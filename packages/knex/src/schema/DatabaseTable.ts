@@ -323,8 +323,9 @@ export class DatabaseTable {
     });
   }
 
+  // TODO remove param?
   isInDefaultNamespace(defaultNamespaceName: string) {
-    return this.schema === defaultNamespaceName || this.schema == null;
+    return this.schema == null;
   }
 
   toJSON(): Dictionary {

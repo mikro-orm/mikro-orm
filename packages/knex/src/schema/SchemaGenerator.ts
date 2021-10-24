@@ -28,7 +28,7 @@ export class SchemaGenerator {
     return this.wrapSchema(dropSchema + createSchema);
   }
 
-  async createSchema(options?: { wrap?: boolean }): Promise<void> {
+  async createSchema(options?: { wrap?: boolean; schema?: string }): Promise<void> {
     await this.ensureDatabase();
     const sql = await this.getCreateSchemaSQL(options);
     await this.execute(sql);
@@ -47,14 +47,14 @@ export class SchemaGenerator {
     }
   }
 
-  getTargetSchema(): DatabaseSchema {
-    const metadata = this.getOrderedMetadata();
-    return DatabaseSchema.fromMetadata(metadata, this.platform, this.config);
+  getTargetSchema(schema?: string): DatabaseSchema {
+    const metadata = this.getOrderedMetadata(schema);
+    return DatabaseSchema.fromMetadata(metadata, this.platform, this.config, schema);
   }
 
-  async getCreateSchemaSQL(options: { wrap?: boolean } = {}): Promise<string> {
+  async getCreateSchemaSQL(options: { wrap?: boolean; schema?: string } = {}): Promise<string> {
     const wrap = options.wrap ?? true;
-    const toSchema = this.getTargetSchema();
+    const toSchema = this.getTargetSchema(options.schema);
     let ret = '';
 
     for (const namespace of toSchema.getNamespaces()) {
@@ -66,14 +66,14 @@ export class SchemaGenerator {
     }
 
     for (const tableDef of toSchema.getTables()) {
-      ret += await this.dump(this.knex.schema.alterTable(tableDef.getShortestName(), table => this.createForeignKeys(table, tableDef)));
+      ret += await this.dump(this.knex.schema.alterTable(tableDef.getShortestName(), table => this.createForeignKeys(table, tableDef, options.schema)));
     }
 
     return this.wrapSchema(ret, { wrap });
   }
 
-  async dropSchema(options: { wrap?: boolean; dropMigrationsTable?: boolean; dropDb?: boolean } = {}): Promise<void> {
-    options.wrap = options.wrap ?? true;
+  async dropSchema(options: { wrap?: boolean; dropMigrationsTable?: boolean; dropDb?: boolean; schema?: string } = {}): Promise<void> {
+    options.wrap ??= true;
 
     if (options.dropDb) {
       const name = this.config.get('dbName')!;
@@ -84,13 +84,13 @@ export class SchemaGenerator {
     await this.execute(sql);
   }
 
-  async getDropSchemaSQL(options: { wrap?: boolean; dropMigrationsTable?: boolean } = {}): Promise<string> {
+  async getDropSchemaSQL(options: { wrap?: boolean; dropMigrationsTable?: boolean; schema?: string } = {}): Promise<string> {
     const wrap = options.wrap ?? true;
-    const metadata = this.getOrderedMetadata().reverse();
+    const metadata = this.getOrderedMetadata(options.schema).reverse();
     let ret = '';
 
     for (const meta of metadata) {
-      ret += await this.dump(this.dropTable(meta.collection, meta.schema), '\n');
+      ret += await this.dump(this.dropTable(meta.collection, this.getSchemaName(meta, options)), '\n');
     }
 
     if (options.dropMigrationsTable) {
@@ -100,30 +100,34 @@ export class SchemaGenerator {
     return this.wrapSchema(ret + '\n', { wrap });
   }
 
-  async updateSchema(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema } = {}): Promise<void> {
+  private getSchemaName(meta: EntityMetadata, options: { schema?: string }): string | undefined {
+    return meta.schema === '*' ? options.schema : meta.schema;
+  }
+
+  async updateSchema(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema; schema?: string } = {}): Promise<void> {
     const sql = await this.getUpdateSchemaSQL(options);
     await this.execute(sql);
   }
 
-  async getUpdateSchemaSQL(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema } = {}): Promise<string> {
-    options.wrap = options.wrap ?? true;
-    options.safe = options.safe ?? false;
-    options.dropTables = options.dropTables ?? true;
-    const toSchema = this.getTargetSchema();
+  async getUpdateSchemaSQL(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema; schema?: string } = {}): Promise<string> {
+    options.wrap ??= true;
+    options.safe ??= false;
+    options.dropTables ??= true;
+    const toSchema = this.getTargetSchema(options.schema);
     /* istanbul ignore next */
-    const fromSchema = options.fromSchema ?? await DatabaseSchema.create(this.connection, this.platform, this.config);
+    const fromSchema = options.fromSchema ?? await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema);
     const comparator = new SchemaComparator(this.platform);
     const diffUp = comparator.compare(fromSchema, toSchema);
 
     return this.diffToSQL(diffUp, options);
   }
 
-  async getUpdateSchemaMigrationSQL(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema } = {}): Promise<{ up: string; down: string }> {
-    options.wrap = options.wrap ?? true;
-    options.safe = options.safe ?? false;
-    options.dropTables = options.dropTables ?? true;
-    const toSchema = this.getTargetSchema();
-    const fromSchema = options.fromSchema ?? await DatabaseSchema.create(this.connection, this.platform, this.config);
+  async getUpdateSchemaMigrationSQL(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema; schema?: string } = {}): Promise<{ up: string; down: string }> {
+    options.wrap ??= true;
+    options.safe ??= false;
+    options.dropTables ??= true;
+    const toSchema = this.getTargetSchema(options.schema);
+    const fromSchema = options.fromSchema ?? await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema);
     const comparator = new SchemaComparator(this.platform);
     const diffUp = comparator.compare(fromSchema, toSchema);
     const diffDown = comparator.compare(toSchema, fromSchema);
@@ -134,7 +138,7 @@ export class SchemaGenerator {
     };
   }
 
-  async diffToSQL(schemaDiff: SchemaDifference, options: { wrap?: boolean; safe?: boolean; dropTables?: boolean }): Promise<string> {
+  async diffToSQL(schemaDiff: SchemaDifference, options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; schema?: string }): Promise<string> {
     let ret = '';
 
     if (this.platform.supportsSchemas()) {
@@ -154,7 +158,7 @@ export class SchemaGenerator {
     }
 
     for (const newTable of Object.values(schemaDiff.newTables)) {
-      ret += await this.dump(this.knex.schema.alterTable(newTable.getShortestName(), table => this.createForeignKeys(table, newTable)));
+      ret += await this.dump(this.knex.schema.alterTable(newTable.getShortestName(), table => this.createForeignKeys(table, newTable, options.schema)));
     }
 
     if (options.dropTables && !options.safe) {
@@ -184,11 +188,21 @@ export class SchemaGenerator {
     return this.wrapSchema(ret, options);
   }
 
-  private createForeignKey(table: Knex.CreateTableBuilder, foreignKey: ForeignKey) {
+  private getReferencedTableName(referencedTableName: string, schema?: string) {
+    schema ??= this.config.get('schema');
+
+    if (schema && referencedTableName.startsWith('*.')) {
+      return `${schema}.${referencedTableName.replace(/^\*\./, '')}`;
+    }
+
+    return referencedTableName;
+  }
+
+  private createForeignKey(table: Knex.CreateTableBuilder, foreignKey: ForeignKey, schema?: string) {
     const builder = table
       .foreign(foreignKey.columnNames, foreignKey.constraintName)
       .references(foreignKey.referencedColumnNames)
-      .inTable(foreignKey.referencedTableName)
+      .inTable(this.getReferencedTableName(foreignKey.referencedTableName, schema))
       .withKeyName(foreignKey.constraintName);
 
     if (foreignKey.updateRule) {
@@ -241,7 +255,7 @@ export class SchemaGenerator {
         if (foreignKey) {
           delete diff.addedForeignKeys[foreignKey.constraintName];
           col.references(foreignKey.referencedColumnNames[0])
-            .inTable(foreignKey.referencedTableName)
+            .inTable(this.getReferencedTableName(foreignKey.referencedTableName))
             .withKeyName(foreignKey.constraintName)
             .onUpdate(foreignKey.updateRule!)
             .onDelete(foreignKey.deleteRule!);
@@ -417,17 +431,17 @@ export class SchemaGenerator {
     return this.helper.configureColumn(column, col, this.knex, changedProperties);
   }
 
-  private createForeignKeys(table: Knex.CreateTableBuilder, tableDef: DatabaseTable): void {
+  private createForeignKeys(table: Knex.CreateTableBuilder, tableDef: DatabaseTable, schema?: string): void {
     if (!this.helper.supportsSchemaConstraints()) {
       return;
     }
 
     for (const fk of Object.values(tableDef.getForeignKeys())) {
-      this.createForeignKey(table, fk);
+      this.createForeignKey(table, fk, schema);
     }
   }
 
-  private getOrderedMetadata(): EntityMetadata[] {
+  private getOrderedMetadata(schema?: string): EntityMetadata[] {
     const metadata = Object.values(this.metadata.getAll()).filter(meta => {
       const isRootEntity = meta.root.className === meta.className;
       return isRootEntity && !meta.embeddable;
@@ -444,7 +458,9 @@ export class SchemaGenerator {
       meta = metadata.pop();
     }
 
-    return calc.sort().map(cls => this.metadata.find(cls)!);
+    return calc.sort()
+      .map(cls => this.metadata.find(cls)!)
+      .filter(meta => schema ? [schema, '*'].includes(meta.schema!) : meta.schema !== '*');
   }
 
   private async dump(builder: Knex.SchemaBuilder, append = '\n\n'): Promise<string> {

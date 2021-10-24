@@ -54,6 +54,8 @@ describe('multiple connected schemas in postgres', () => {
       type: 'postgresql',
     });
     await orm.getSchemaGenerator().ensureDatabase();
+    await orm.getSchemaGenerator().execute('drop schema if exists n1 cascade');
+    await orm.getSchemaGenerator().execute('drop schema if exists n2 cascade');
   });
 
   afterAll(async () => {
@@ -61,9 +63,6 @@ describe('multiple connected schemas in postgres', () => {
   });
 
   test('schema generator allows creating FKs across different schemas', async () => {
-    await orm.getSchemaGenerator().execute('drop schema if exists n1 cascade');
-    await orm.getSchemaGenerator().execute('drop schema if exists n2 cascade');
-
     const diff0 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
     expect(diff0).toMatchSnapshot();
     await orm.getSchemaGenerator().execute(diff0);

@@ -48,8 +48,8 @@ export class DatabaseSchema {
     return this.namespaces;
   }
 
-  static async create(connection: AbstractSqlConnection, platform: AbstractSqlPlatform, config: Configuration): Promise<DatabaseSchema> {
-    const schema = new DatabaseSchema(platform, config.get('schema'));
+  static async create(connection: AbstractSqlConnection, platform: AbstractSqlPlatform, config: Configuration, schemaName?: string): Promise<DatabaseSchema> {
+    const schema = new DatabaseSchema(platform, schemaName ?? config.get('schema'));
     const tables = await connection.execute<Table[]>(platform.getSchemaHelper()!.getListTablesSQL());
 
     for (const t of tables) {
@@ -70,11 +70,11 @@ export class DatabaseSchema {
     return schema;
   }
 
-  static fromMetadata(metadata: EntityMetadata[], platform: AbstractSqlPlatform, config: Configuration): DatabaseSchema {
-    const schema = new DatabaseSchema(platform, config.get('schema'));
+  static fromMetadata(metadata: EntityMetadata[], platform: AbstractSqlPlatform, config: Configuration, schemaName?: string): DatabaseSchema {
+    const schema = new DatabaseSchema(platform, schemaName ?? config.get('schema'));
 
     for (const meta of metadata) {
-      const table = schema.addTable(meta.collection, meta.schema ?? config.get('schema'));
+      const table = schema.addTable(meta.collection, this.getSchemaName(meta, config, schemaName));
       table.comment = meta.comment;
       meta.props
         .filter(prop => this.shouldHaveColumn(meta, prop)) // TODO use platform?
@@ -85,6 +85,10 @@ export class DatabaseSchema {
     }
 
     return schema;
+  }
+
+  private static getSchemaName(meta: EntityMetadata, config: Configuration, schema?: string): string | undefined {
+    return (meta.schema === '*' ? schema : meta.schema) ?? config.get('schema');
   }
 
   private static shouldHaveColumn(meta: EntityMetadata, prop: EntityProperty): boolean {
