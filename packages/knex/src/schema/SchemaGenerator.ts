@@ -66,7 +66,7 @@ export class SchemaGenerator {
     }
 
     for (const tableDef of toSchema.getTables()) {
-      ret += await this.dump(this.knex.schema.alterTable(tableDef.getShortestName(), table => this.createForeignKeys(table, tableDef, options.schema)));
+      ret += await this.dump(this.knex.schema.withSchema(tableDef.schema!).alterTable(tableDef.name, table => this.createForeignKeys(table, tableDef, options.schema)));
     }
 
     return this.wrapSchema(ret, { wrap });
@@ -158,7 +158,7 @@ export class SchemaGenerator {
     }
 
     for (const newTable of Object.values(schemaDiff.newTables)) {
-      ret += await this.dump(this.knex.schema.alterTable(newTable.getShortestName(), table => this.createForeignKeys(table, newTable, options.schema)));
+      ret += await this.dump(this.knex.schema.withSchema(newTable.schema!).alterTable(newTable.name, table => this.createForeignKeys(table, newTable, options.schema)));
     }
 
     if (options.dropTables && !options.safe) {
@@ -362,7 +362,7 @@ export class SchemaGenerator {
   }
 
   private createTable(tableDef: DatabaseTable): Knex.SchemaBuilder {
-    return this.knex.schema.createTable(tableDef.getShortestName(), table => {
+    return this.knex.schema.withSchema(tableDef.schema!).createTable(tableDef.name, table => {
       tableDef.getColumns().forEach(column => {
         const col = this.helper.createTableColumn(table, column, tableDef);
         this.configureColumn(column, col);

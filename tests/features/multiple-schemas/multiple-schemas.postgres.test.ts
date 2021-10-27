@@ -70,9 +70,8 @@ describe('multiple connected schemas in postgres', () => {
   });
 
   beforeEach(async () => {
-    // TODO withSchema should not be needed for author (use default from metadata)
-    await orm.em.createQueryBuilder(Author).withSchema('n1').truncate().execute();
-    await orm.em.createQueryBuilder(Book).withSchema('n2').truncate().execute();
+    await orm.em.createQueryBuilder(Author).truncate().execute(); // schema from metadata
+    await orm.em.createQueryBuilder(Book).truncate().execute(); // current schema from config
     await orm.em.createQueryBuilder(Book).withSchema('n3').truncate().execute();
     await orm.em.createQueryBuilder(Book).withSchema('n4').truncate().execute();
     await orm.em.createQueryBuilder(Book).withSchema('n5').truncate().execute();
@@ -106,7 +105,9 @@ describe('multiple connected schemas in postgres', () => {
     author.name = 'a1';
 
     // each book has different schema, such collection can be used for persisting, but it can't be loaded (as we can load only from single schema at a time)
-    author.books.add(orm.em.create(Book, {}, { schema: 'n3' }), orm.em.create(Book, {}, { schema: 'n4' }), orm.em.create(Book, {}, { schema: 'n5' }));
+    const book4 = orm.em.create(Book, {});
+    wrap(book4).setSchema('n5');
+    author.books.add(orm.em.create(Book, {}, { schema: 'n3' }), orm.em.create(Book, {}, { schema: 'n4' }), book4);
     author.books[1].basedOn = author.books[0];
     author.books[2].basedOn = author.books[0];
 

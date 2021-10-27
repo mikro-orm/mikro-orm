@@ -14,6 +14,7 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
   }
 
   indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence'): string {
+    /* istanbul ignore next */
     if (tableName.includes('.')) {
       tableName = tableName.substr(tableName.indexOf('.') + 1);
     }

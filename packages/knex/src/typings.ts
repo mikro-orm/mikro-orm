@@ -17,6 +17,7 @@ export type Field<T> = string | keyof T | KnexStringRef | Knex.QueryBuilder;
 
 export interface JoinOptions {
   table: string;
+  schema?: string;
   type: 'leftJoin' | 'innerJoin' | 'pivotJoin';
   alias: string;
   ownerAlias: string;
