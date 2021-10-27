@@ -80,7 +80,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     return this._count!;
   }
 
-  async matching(options: MatchingOptions<T>): Promise<T[]> {
+  async matching<P extends string = never>(options: MatchingOptions<T, P>): Promise<T[]> {
     const em = this.getEntityManager();
     const { where, ctx, ...opts } = options;
     opts.orderBy = this.createOrderBy(opts.orderBy);
