@@ -1,4 +1,4 @@
-import type { AnyEntity, Dictionary, EntityData, EntityMetadata, FilterQuery, Populate, Primary } from '../typings';
+import type { AnyEntity, Dictionary, EntityData, EntityMetadata, FilterQuery, Loaded, Populate, Primary } from '../typings';
 import { ArrayCollection } from './ArrayCollection';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
@@ -80,11 +80,11 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     return this._count!;
   }
 
-  async matching(options: MatchingOptions<T>): Promise<T[]> {
+  async matching<P extends string = never>(options: MatchingOptions<T, P>): Promise<Loaded<T, P>[]> {
     const em = this.getEntityManager();
     const { where, ctx, ...opts } = options;
     opts.orderBy = this.createOrderBy(opts.orderBy);
-    let items: T[];
+    let items: Loaded<T, P>[];
 
     if (this.property.reference === ReferenceType.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
       const map = await em.getDriver().loadFromPivotTable(this.property, [this.owner.__helper!.__primaryKeys], where, opts.orderBy, ctx, options);
