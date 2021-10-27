@@ -329,6 +329,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   private getSchemaName(meta: EntityMetadata | undefined, options: { schema?: string }): string | undefined {
+    /* istanbul ignore next */
     return options.schema === '*' ? this.config.get('schema') : options.schema ?? (meta?.schema === '*' ? this.config.get('schema') : meta?.schema);
   }
 
@@ -668,6 +669,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
   }
 
+  /* istanbul ignore next */
   protected async updateCollectionDiff<T extends AnyEntity<T>, O extends AnyEntity<O>>(meta: EntityMetadata<O>, prop: EntityProperty<T>, pks: Primary<O>[], deleteDiff: Primary<T>[][] | boolean, insertDiff: Primary<T>[][], options: DriverMethodOptions = {}): Promise<void> {
     if (!deleteDiff) {
       deleteDiff = [];

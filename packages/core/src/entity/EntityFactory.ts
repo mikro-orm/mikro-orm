@@ -165,6 +165,7 @@ export class EntityFactory {
   }
 
   private getSchemaName(options: { schema?: string }): string | undefined {
+    /* istanbul ignore next */
     return options.schema === '*' ? this.config.get('schema') : options.schema;
   }
 

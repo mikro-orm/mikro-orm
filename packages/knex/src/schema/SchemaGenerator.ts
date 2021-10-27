@@ -101,6 +101,7 @@ export class SchemaGenerator {
   }
 
   private getSchemaName(meta: EntityMetadata, options: { schema?: string }): string | undefined {
+    /* istanbul ignore next */
     return meta.schema === '*' ? options.schema : meta.schema;
   }
 
@@ -392,6 +393,7 @@ export class SchemaGenerator {
     }
 
     if (index.primary) {
+      /* istanbul ignore next */
       const keyName = tableName.includes('.') ? tableName.split('.').pop()! + '_pkey' : undefined;
       table.primary(index.columnNames, keyName);
     } else if (index.unique) {
