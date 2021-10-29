@@ -237,6 +237,10 @@
         },
         {
           "type": "doc",
+          "id": "version-4.5/usage-with-adminjs"
+        },
+        {
+          "type": "doc",
           "id": "version-4.5/entity-constructors"
         },
         {

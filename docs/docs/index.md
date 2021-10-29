@@ -45,6 +45,7 @@ hide_title: true
 - Recipes
   - [Usage with NestJS](usage-with-nestjs.md)
   - [Usage with Vanilla JS](usage-with-js.md)
+  - [Usage with AdminJS](usage-with-adminjs.md)
   - [Creating Custom Driver](custom-driver.md)
   - [Using Multiple Schemas](multiple-schemas.md)
 - Example Integrations
