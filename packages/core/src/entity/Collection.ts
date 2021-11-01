@@ -206,11 +206,11 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     this.dirty = dirty;
   }
 
-  async init<P extends string = never>(options?: InitOptions<T, P>): Promise<this> {
+  async init<P extends string = never>(options: InitOptions<T, P> = {}): Promise<this> {
     const em = this.getEntityManager();
 
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
-      const map = await em.getDriver().loadFromPivotTable(this.property, [this.owner.__helper!.__primaryKeys], options?.where, options?.orderBy);
+      const map = await em.getDriver().loadFromPivotTable(this.property, [this.owner.__helper!.__primaryKeys], options.where, options.orderBy);
       this.hydrate(map[this.owner.__helper!.getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, { convertCustomTypes: true })));
       this._lazyInitialized = true;
 
@@ -226,11 +226,11 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
       return this;
     }
 
-    const where = this.createCondition(options?.where);
+    const where = this.createCondition(options.where);
     const order = [...this.items]; // copy order of references
-    const customOrder = !!options?.orderBy;
-    const orderBy = this.createOrderBy(options?.orderBy);
-    const items: T[] = await em.find(this.property.type, where, { populate: options?.populate, orderBy });
+    const customOrder = !!options.orderBy;
+    const orderBy = this.createOrderBy(options.orderBy);
+    const items: T[] = await em.find(this.property.type, where, { populate: options.populate, orderBy });
 
     if (!customOrder) {
       this.reorderItems(items, order);
