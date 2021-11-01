@@ -206,14 +206,11 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     this.dirty = dirty;
   }
 
-  async init(options?: InitOptions<T>): Promise<this>;
-  async init(populate?: string[], where?: FilterQuery<T>, orderBy?: QueryOrderMap<T>): Promise<this>;
-  async init(populate: string[] | InitOptions<T> = [], where?: FilterQuery<T>, orderBy?: QueryOrderMap<T>): Promise<this> {
-    const options = Utils.isObject<InitOptions<T>>(populate) ? populate : { populate, where, orderBy };
+  async init<P extends string = never>(options?: InitOptions<T, P>): Promise<this> {
     const em = this.getEntityManager();
 
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
-      const map = await em.getDriver().loadFromPivotTable(this.property, [this.owner.__helper!.__primaryKeys], options.where, options.orderBy);
+      const map = await em.getDriver().loadFromPivotTable(this.property, [this.owner.__helper!.__primaryKeys], options?.where, options?.orderBy);
       this.hydrate(map[this.owner.__helper!.getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, { convertCustomTypes: true })));
       this._lazyInitialized = true;
 
@@ -229,11 +226,11 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
       return this;
     }
 
-    where = this.createCondition(options.where);
+    const where = this.createCondition(options?.where);
     const order = [...this.items]; // copy order of references
-    const customOrder = !!options.orderBy;
-    orderBy = this.createOrderBy(options.orderBy);
-    const items: T[] = await em.find(this.property.type, where, { populate: options.populate, orderBy });
+    const customOrder = !!options?.orderBy;
+    const orderBy = this.createOrderBy(options?.orderBy);
+    const items: T[] = await em.find(this.property.type, where, { populate: options?.populate, orderBy });
 
     if (!customOrder) {
       this.reorderItems(items, order);
@@ -402,8 +399,8 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
 
 }
 
-export interface InitOptions<T> {
-  populate?: Populate<T>;
+export interface InitOptions<T, P extends string = never> {
+  populate?: Populate<T, P>;
   orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[];
   where?: FilterQuery<T>;
 }
