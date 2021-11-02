@@ -8067,10 +8067,10 @@ ts-jest@27.0.7:
     semver "7.x"
     yargs-parser "20.x"
 
-ts-morph@12.1.0:
-  version "12.1.0"
-  resolved "https://registry.yarnpkg.com/ts-morph/-/ts-morph-12.1.0.tgz#80a80703b30f94354e7bb0c490344be1031125a7"
-  integrity sha512-xsJt70NePtztxDZ99bXkOwoi3p82JDUiPa0pSgfvxDj87mb4zUwzv1LHOue3Lq7iJlh5fLzvWshOMDEUfKTVtg==
+ts-morph@12.2.0:
+  version "12.2.0"
+  resolved "https://registry.yarnpkg.com/ts-morph/-/ts-morph-12.2.0.tgz#3332319cecd44aff0b7b410f1fe39637499b1a1b"
+  integrity sha512-WHXLtFDcIRwoqaiu0elAoZ/AmI+SwwDafnPKjgJmdwJ2gRVO0jMKBt88rV2liT/c6MTsXyuWbGFiHe9MRddWJw==
   dependencies:
     "@ts-morph/common" "~0.11.1"
     code-block-writer "^10.1.1"
