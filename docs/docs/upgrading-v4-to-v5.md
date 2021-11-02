@@ -35,6 +35,7 @@ List of such methods:
 - `repo.findAndCount()`
 - `repo.findAll()`
 - `repo.merge()`
+- `collection.init()`
 
 This also applies to the methods on `IDatabaseDriver` interface.
 

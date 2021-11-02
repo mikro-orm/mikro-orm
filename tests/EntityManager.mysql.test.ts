@@ -1540,7 +1540,7 @@ describe('EntityManagerMySql', () => {
     await expect(ent1.tests.getIdentifiers()).toEqual([t3.id, t2.id, t1.id]);
   });
 
-  test('collection allows custom where and orderBy', async () => {
+  test('collection allows populate, custom where and orderBy', async () => {
     const book = new Book2('My Life on The Wall, part 1', new Author2('name', 'email'));
     const tag1 = new BookTag2('silly');
     const tag2 = new BookTag2('funny');
@@ -1548,7 +1548,11 @@ describe('EntityManagerMySql', () => {
     const tag4 = new BookTag2('strange');
     const tag5 = new BookTag2('sexy');
     book.tags.add(tag1, tag2, tag3, tag4, tag5);
-    await orm.em.persistAndFlush(book);
+
+    const author = new Author2('Bartleby', 'bartelby@writer.org');
+    author.books.add(book);
+
+    await orm.em.persistAndFlush(author);
 
     orm.em.clear();
     const ent1 = await orm.em.findOneOrFail(Book2, book.uuid);
@@ -1557,13 +1561,20 @@ describe('EntityManagerMySql', () => {
 
     orm.em.clear();
     const ent2 = await orm.em.findOneOrFail(Book2, book.uuid);
-    await ent2.tags.init([], {}, { name: QueryOrder.DESC });
+    await ent2.tags.init({ orderBy: { name: QueryOrder.DESC } });
     expect(ent2.tags.getItems().map(t => t.name)).toEqual([tag4.name, tag1.name, tag3.name, tag5.name, tag2.name]);
 
     orm.em.clear();
     const ent3 = await orm.em.findOneOrFail(Book2, book.uuid);
     await ent3.tags.init({ where: { name: { $ne: 'funny' } }, orderBy: { name: QueryOrder.DESC } });
     expect(ent3.tags.getItems().map(t => t.name)).toEqual([tag4.name, tag1.name, tag3.name, tag5.name]);
+
+    orm.em.clear();
+    const ent4 = await orm.em.findOneOrFail(Author2, author.id);
+    await ent4.books.init({
+      populate: ['tags'],
+    });
+    expect(ent4.books[0].tags.count()).toBe(5);
   });
 
   test('many to many collection allows custom orderBy', async () => {
