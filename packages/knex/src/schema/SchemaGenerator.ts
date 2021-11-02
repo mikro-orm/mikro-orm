@@ -385,7 +385,7 @@ export class SchemaGenerator {
     } else if (index.expression) {
       this.helper.pushTableQuery(table, index.expression);
     } else {
-      table.index(index.columnNames, index.keyName, index.type);
+      table.index(index.columnNames, index.keyName, index.type as Dictionary);
     }
   }
 

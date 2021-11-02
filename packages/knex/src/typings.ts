@@ -63,7 +63,7 @@ export interface Index {
   primary: boolean;
   composite?: boolean;
   expression?: string; // allows using custom sql expressions
-  type?: string; // for back compatibility mainly, to allow using knex's `index.type` option (e.g. gin index)
+  type?: string | Readonly<{ indexType?: string; storageEngineIndexType?: 'hash' | 'btree'; predicate?: Knex.QueryBuilder }>; // for back compatibility mainly, to allow using knex's `index.type` option (e.g. gin index)
 }
 
 export interface ColumnDifference {
