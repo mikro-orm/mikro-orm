@@ -5,6 +5,8 @@ import type { DatabaseSchema } from './DatabaseSchema';
 import type { DatabaseTable } from './DatabaseTable';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
 
+const empty: readonly string[] = [];
+
 /**
  * Compares two Schemas and return an instance of SchemaDifference.
  */
@@ -366,7 +368,15 @@ export class SchemaComparator {
       changedProperties.add('comment');
     }
 
+    if (this.diffEnumItems(column1.enumItems, column2.enumItems)) {
+      changedProperties.add('enumItems');
+    }
+
     return changedProperties;
+  }
+
+  diffEnumItems(items1: readonly string[] = empty, items2: readonly string[] = empty): boolean {
+    return items1.length !== items2.length || items1.some((v, i) => v !== items2[i]);
   }
 
   diffComment(comment1?: string, comment2?: string): boolean {
