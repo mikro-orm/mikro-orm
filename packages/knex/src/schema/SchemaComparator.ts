@@ -366,7 +366,23 @@ export class SchemaComparator {
       changedProperties.add('comment');
     }
 
+    if (this.diffEnumItems(column1.enumItems, column2.enumItems)) {
+      changedProperties.add('enumItems');
+    }
+
     return changedProperties;
+  }
+
+  diffEnumItems(items1?: readonly string[], items2?: readonly string[]): boolean {
+    if (!items1 && !items2) {
+      return false;
+    }
+
+    if (items1 && items2) {
+      return items1.length !== items2.length || items1.some((v, i) => v !== items2[i]);
+    }
+
+    return false;
   }
 
   diffComment(comment1?: string, comment2?: string): boolean {
