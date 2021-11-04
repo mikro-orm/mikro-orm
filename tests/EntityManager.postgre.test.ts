@@ -288,6 +288,42 @@ describe('EntityManagerPostgre', () => {
     await expect(orm.em.findOne(Author2, { name: 'God Persisted!' })).resolves.not.toBeNull();
   });
 
+  test('collection loads items after savepoint should not fail', async () => {
+    const mock = jest.fn();
+    const logger = new Logger(mock, ['query']);
+    Object.assign(orm.config, { logger });
+
+    const publisher = new Publisher2('7K publisher', PublisherType.GLOBAL);
+    const book = new Book2('My Life on The Wall, part 1', new Author2('name', 'email'));
+    book.publisher = wrap(publisher).toReference();
+
+    const author = new Author2('Bartleby', 'bartelby@writer.org');
+    author.books.add(book);
+
+    await orm.em.persistAndFlush(author);
+
+    orm.em.clear();
+
+    const em = orm.em.fork();
+    await em.begin();
+
+    const book2 = await em.findOneOrFail(Book2, book.uuid);
+    const publisher2: Publisher2 = await book2.publisher!.load();
+
+    await em.transactional(async em2 => { return null; });
+
+    let error: Error | undefined;
+    try {
+      const books = await publisher2.books.loadItems();
+    } catch (e) {
+      error = e;
+    }
+
+    await em.commit();
+
+    expect(error).toBeUndefined();
+  });
+
   test('should load entities', async () => {
     expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.em).toBeInstanceOf(EntityManager);
