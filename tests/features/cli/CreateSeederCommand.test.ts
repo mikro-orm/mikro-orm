@@ -32,7 +32,7 @@ describe('CreateSeederCommand', () => {
     const args = { positional: mockPositional, demandOption: mockDemand };
     cmd.builder(args as any);
     expect(mockPositional).toBeCalledWith('seeder', {
-      describe: 'Seeder class to create (use PascalCase and end with `Seeder` e.g. DatabaseSeeder)',
+      describe: 'Name for the seeder class. (e.g. "test" will generate "TestSeeder" or "TestSeeder" will generate "TestSeeder")',
     });
     expect(mockDemand).toBeCalledWith('seeder');
 
@@ -41,4 +41,22 @@ describe('CreateSeederCommand', () => {
     expect(closeSpy).toBeCalledTimes(1);
   });
 
+  test('should generate seeder class with all kind of names', async () => {
+    const cmd = new CreateSeederCommand();
+    const spy = jest.spyOn(CreateSeederCommand, 'getSeederClassName');
+    await cmd.handler({ seeder: 'DatabaseSeeder' } as any);
+    expect(spy).toHaveLastReturnedWith('DatabaseSeeder');
+
+    await cmd.handler({ seeder: 'database' } as any);
+    expect(spy).toHaveLastReturnedWith('DatabaseSeeder');
+
+    await cmd.handler({ seeder: 'Test' } as any);
+    expect(spy).toHaveLastReturnedWith('TestSeeder');
+
+    await cmd.handler({ seeder: 'project-names' } as any);
+    expect(spy).toHaveLastReturnedWith('ProjectNamesSeeder');
+
+    await cmd.handler({ seeder: 'project-names-seeder' } as any);
+    expect(spy).toHaveLastReturnedWith('ProjectNamesSeeder');
+  });
 });
