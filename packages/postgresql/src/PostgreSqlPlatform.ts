@@ -86,7 +86,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
   getEnumTypeDeclarationSQL(column: { fieldNames: string[]; items?: unknown[] }): string {
     if (column.items?.every(item => Utils.isString(item))) {
-      return `text check (${this.quoteIdentifier(column.fieldNames[0])} in ('${column.items.join("', '")}'))`;
+      return 'text';
     }
 
     return `smallint`;

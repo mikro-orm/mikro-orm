@@ -1,0 +1,12 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`using enum as a foreign key value schema generator creates the correct type 1`] = `
+"create table \\"brand\\" (\\"id\\" text check (\\"id\\" in ('foo', 'bar', 'baz')) not null);
+alter table \\"brand\\" add constraint \\"brand_pkey\\" primary key (\\"id\\");
+
+create table \\"product\\" (\\"id\\" serial primary key, \\"brand_id\\" text not null);
+
+alter table \\"product\\" add constraint \\"product_brand_id_foreign\\" foreign key (\\"brand_id\\") references \\"brand\\" (\\"id\\") on update cascade;
+
+"
+`;

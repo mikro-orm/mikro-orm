@@ -81,7 +81,7 @@ export class DatabaseTable {
         precision: prop.precision,
         scale: prop.scale,
         default: prop.defaultRaw,
-        enumItems: prop.items as string[],
+        enumItems: prop.items?.every(Utils.isString) ? prop.items as string[] : undefined,
         comment: prop.comment,
       };
       this.columns[field].unsigned ||= this.columns[field].autoincrement;
