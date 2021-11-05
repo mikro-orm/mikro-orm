@@ -246,9 +246,8 @@ describe('QueryBuilder', () => {
       'select `fb1`.`id` from `foo_bar2` as `fb1` ' +
       'inner join `foo_baz2` as `fz` on `fb1`.`baz_id` = `fz`.`id` ' +
       'left join `foo_bar2` as `fb2` on `fz`.`id` = `fb2`.`baz_id` ' +
-      'where `fz`.`name` = ?) as `fb1` ' +
-      'group by `fb1`.`id` ' +
-      'limit ?) as `fb1`)';
+      'where `fz`.`name` = ? group by `fb1`.`id` limit ?) ' +
+      'as `fb1`) as `fb1`)';
     expect(qb.getQuery()).toEqual(sql);
     expect(qb.getParams()).toEqual(['baz', 1]);
     await qb.execute();
@@ -1926,8 +1925,8 @@ describe('QueryBuilder', () => {
       '(select "b"."uuid_pk" from ' +
       '(select "b"."uuid_pk" from "book2" as "b" ' +
       'left join "book2_tags" as "e1" on "b"."uuid_pk" = "e1"."book2_uuid_pk" ' +
-      'left join "book_tag2" as "t" on "e1"."book_tag2_id" = "t"."id" where "t"."name" = $1' +
-      ') as "b" group by "b"."uuid_pk" limit $2 offset $3' +
+      'left join "book_tag2" as "t" on "e1"."book_tag2_id" = "t"."id" where "t"."name" = $1 group by "b"."uuid_pk" limit $2 offset $3' +
+      ') as "b"' +
       ') as "b")';
     expect(qb.getQuery()).toEqual(sql);
     expect(qb.getParams()).toEqual(['tag name', 20, 1]);

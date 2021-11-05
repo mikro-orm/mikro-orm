@@ -1,6 +1,43 @@
-import { Collection, ConstraintViolationException, Entity, Enum, Filter, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property, QueryFlag, wrap } from '@mikro-orm/core';
+import { Collection, ConstraintViolationException, Entity, Enum, Filter, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property, QueryFlag, wrap } from '@mikro-orm/core';
 import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';
 import { PostgreSqlDriver } from '../../packages/postgresql/src';
+
+
+@Entity()
+export class Group {
+
+  @PrimaryKey()
+  id: string;
+
+  @Property()
+  name: string;
+
+  constructor(id: string, name: string) {
+    this.id = id;
+    this.name = name;
+  }
+
+}
+
+@Entity()
+export class User {
+
+  @PrimaryKey()
+  id: string;
+
+  @Property({ length: 255 })
+  name: string;
+
+  @ManyToMany({ entity: () => Group, pivotTable: 'm2m_user_groups' })
+  groups = new Collection<Group>(this);
+
+  constructor(id: string, name: string, groups: Group[]) {
+    this.id = id;
+    this.name = name;
+    this.groups.add(...groups);
+  }
+
+}
 
 enum Status {
   LIVE = 'LIVE',
@@ -120,20 +157,36 @@ export class B {
 
 }
 
-
 describe('GH issue 2095', () => {
 
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [C, T, TC, B, A],
-      dbName: 'mikro-orm-issue-2095',
+      entities: [C, T, TC, B, A, User, Group],
+      dbName: 'mikro_orm_issue_2095',
       type: 'postgresql',
-      // debug: true
+      // debug: true,
     });
+
+    await new SchemaGenerator(orm.em).ensureDatabase();
     await new SchemaGenerator(orm.em).dropSchema();
     await new SchemaGenerator(orm.em).createSchema();
+
+
+    const group1 = new Group('id-group-01', 'Group #1'); // RF
+    const group2 = new Group('id-group-02', 'Group #2'); // admin
+    const group3 = new Group('id-group-03', 'Group #3'); // everyone
+
+    const user1 = new User('id-user-01', 'User #1', [group2]); // admin
+    const user2 = new User('id-user-02', 'User #2', [group1, group3]);
+    const user3 = new User('id-user-03', 'User #3', [group3]);
+
+    await orm.em.persistAndFlush(user1);
+    await orm.em.persistAndFlush(user2);
+    await orm.em.persistAndFlush(user3);
+
+    orm.em.clear();
   });
 
   afterAll(() => orm.close(true));
@@ -202,6 +255,55 @@ describe('GH issue 2095', () => {
     expect(firstResults.length).toBe(20);
     expect(secondResults.length).toBe(20);
     expect(firstMaxDate.getTime()).toBeLessThan(secondMinDate.getTime());
+  });
+
+
+  test('getting users with limit 3. must be: [id-user-03, id-user-02, id-user-01]', async () => {
+    const [ users, total ] = await orm.em.findAndCount(
+      User,
+      { groups: { $in: ['id-group-01', 'id-group-02', 'id-group-03'] } },
+      { limit: 3, offset: 0, orderBy: { id: 'desc' }, flags: [QueryFlag.PAGINATE] },
+    );
+    expect(users).toHaveLength(3);
+    expect(total).toBe(3);
+    expect(users[0].id).toBe('id-user-03');
+    expect(users[1].id).toBe('id-user-02');
+    expect(users[2].id).toBe('id-user-01');
+  });
+
+  test('getting users with limit 2, offset 1. must be: [id-user-02, id-user-01]', async () => {
+    const [ users, total ] = await orm.em.findAndCount(
+      User,
+      { groups: { $in: ['id-group-01', 'id-group-02', 'id-group-03'] } },
+      { limit: 2, offset: 1, orderBy: { id: 'desc' }, flags: [QueryFlag.PAGINATE] },
+    );
+    expect(users).toHaveLength(2);
+    expect(total).toBe(3);
+    expect(users[0].id).toBe('id-user-02');
+    expect(users[1].id).toBe('id-user-01');
+  });
+
+  test('getting users with limit 2, offset 0. must be: [id-user-03, id-user-02]', async () => {
+    const [ users, total ] = await orm.em.findAndCount(
+      User,
+      { groups: { $in: ['id-group-01', 'id-group-02', 'id-group-03'] } },
+      { limit: 2, offset: 0, orderBy: { id: 'desc' }, flags: [QueryFlag.PAGINATE] },
+    );
+    expect(users).toHaveLength(2);
+    expect(total).toBe(3);
+    expect(users[0].id).toBe('id-user-03');
+    expect(users[1].id).toBe('id-user-02');
+  });
+
+  test('getting users with limit 2, offset 2. must be: [id-user-01]', async () => {
+    const [ users, total ] = await orm.em.findAndCount(
+      User,
+      { groups: { $in: ['id-group-01', 'id-group-02', 'id-group-03'] } },
+      { limit: 2, offset: 2, orderBy: { id: 'desc' }, flags: [QueryFlag.PAGINATE] },
+    );
+    expect(users).toHaveLength(1);
+    expect(total).toBe(3);
+    expect(users[0].id).toBe('id-user-01');
   });
 
 });

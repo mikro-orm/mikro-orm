@@ -365,9 +365,8 @@ describe('Joined loading strategy', () => {
       'select "e0"."id" from (' +
       'select "e0"."id" from "foo_baz2" as "e0" ' +
       'left join "foo_bar2" as "b1" on "e0"."id" = "b1"."baz_id" ' +
-      'where "e0"."id" = $1) as "e0" ' +
-      'group by "e0"."id" ' +
-      'limit $2 offset $3) as "e0")');
+      'where "e0"."id" = $1 group by "e0"."id" limit $2 offset $3) as "e0"' +
+      ') as "e0")');
   });
 
   test('nested populating', async () => {
