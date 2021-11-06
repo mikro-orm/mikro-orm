@@ -163,7 +163,6 @@ export class QueryBuilderHelper {
       } as JoinOptions,
     };
 
-
     if (type === 'pivotJoin') {
       return ret;
     }
@@ -181,18 +180,24 @@ export class QueryBuilderHelper {
     return {
       prop, type, cond, ownerAlias, alias,
       table: this.metadata.find(field)!.collection,
+      schema: prop2.targetMeta!.schema,
       joinColumns: prop.joinColumns,
       inverseJoinColumns: prop2.joinColumns,
       primaryKeys: prop.referencedColumnNames,
     };
   }
 
-  processJoins(qb: Knex.QueryBuilder, joins: Dictionary<JoinOptions>): void {
+  processJoins(qb: Knex.QueryBuilder, joins: Dictionary<JoinOptions>, schema?: string): void {
     Object.values(joins).forEach(join => {
-      const table = `${join.table} as ${join.alias}`;
+      let table = `${join.table} as ${join.alias}`;
       const method = join.type === 'pivotJoin' ? 'leftJoin' : join.type;
+      schema = join.schema ?? schema;
 
-      return qb[method](table, inner => {
+      if (schema) {
+        table = `${schema}.${table}`;
+      }
+
+      return qb[method](this.knex.ref(table), inner => {
         join.primaryKeys!.forEach((primaryKey, idx) => {
           const left = `${join.ownerAlias}.${primaryKey}`;
           const right = `${join.alias}.${join.joinColumns![idx]}`;

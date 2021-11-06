@@ -1,11 +1,21 @@
-import type { CountOptions, FindOneOptions, FindOptions, IDatabaseDriver, NativeInsertUpdateManyOptions, NativeInsertUpdateOptions } from './IDatabaseDriver';
+import type {
+  CountOptions,
+  LockOptions,
+  DeleteOptions,
+  FindOneOptions,
+  FindOptions,
+  IDatabaseDriver,
+  NativeInsertUpdateManyOptions,
+  NativeInsertUpdateOptions,
+  DriverMethodOptions,
+} from './IDatabaseDriver';
 import { EntityManagerType } from './IDatabaseDriver';
 import type { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityProperty, ObjectQuery, FilterQuery, PopulateOptions, Primary } from '../typings';
 import type { MetadataStorage } from '../metadata';
 import type { Connection, QueryResult, Transaction } from '../connections';
 import type { Configuration, ConnectionOptions } from '../utils';
 import { EntityComparator, Utils } from '../utils';
-import type { LockMode, QueryOrderMap } from '../enums';
+import type { QueryOrderMap } from '../enums';
 import { QueryOrder, ReferenceType } from '../enums';
 import type { Platform } from '../platforms';
 import type { Collection } from '../entity';
@@ -41,7 +51,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     throw new Error(`Batch updates are not supported by ${this.constructor.name} driver`);
   }
 
-  abstract nativeDelete<T>(entityName: string, where: FilterQuery<T>, options?: { ctx?: Transaction }): Promise<QueryResult<T>>;
+  abstract nativeDelete<T>(entityName: string, where: FilterQuery<T>, options?: DeleteOptions<T>): Promise<QueryResult<T>>;
 
   abstract count<T>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T>): Promise<number>;
 
@@ -57,13 +67,13 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     throw new Error(`${this.constructor.name} does not use pivot tables`);
   }
 
-  async syncCollection<T, O>(coll: Collection<T, O>, options?: { ctx?: Transaction }): Promise<void> {
+  async syncCollection<T, O>(coll: Collection<T, O>, options?: DriverMethodOptions): Promise<void> {
     const pk = this.metadata.find(coll.property.type)!.primaryKeys[0];
     const data = { [coll.property.name]: coll.getIdentifiers(pk) } as EntityData<T>;
     await this.nativeUpdate<T>(coll.owner.constructor.name, coll.owner.__helper!.getPrimaryKey() as FilterQuery<T>, data, options);
   }
 
-  async clearCollection<T, O>(coll: Collection<T, O>, options?: { ctx?: Transaction }): Promise<void> {
+  async clearCollection<T, O>(coll: Collection<T, O>, options?: DriverMethodOptions): Promise<void> {
     // this currently serves only for 1:m collections with orphan removal, m:n ones are handled via `syncCollection` method
     const snapshot = coll.getSnapshot();
     /* istanbul ignore next */
@@ -238,7 +248,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return ret;
   }
 
-  async lockPessimistic<T>(entity: T, mode: LockMode, tables?: string[], ctx?: Transaction): Promise<void> {
+  async lockPessimistic<T extends AnyEntity<T>>(entity: T, options: LockOptions): Promise<void> {
     throw new Error(`Pessimistic locks are not supported by ${this.constructor.name} driver`);
   }
 

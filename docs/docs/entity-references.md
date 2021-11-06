@@ -170,13 +170,13 @@ author!: IdentifiedReference<Author>;
 
 When you define the property as `Reference` wrapper, you will need to assign the `Reference`
 to it instead of the entity. You can create it via `Reference.create()` factory, or use `wrapped`
-parameter of `em.getReference()`:
+option of `em.getReference()`:
 
 ```typescript
 const book = await orm.em.findOne(Book, 1);
 const repo = orm.em.getRepository(Author);
 
-book.author = repo.getReference(2, true);
+book.author = repo.getReference(2, { wrapped: true });
 
 // same as:
 book.author = Reference.create(repo.getReference(2));

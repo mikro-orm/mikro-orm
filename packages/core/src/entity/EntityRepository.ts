@@ -1,6 +1,6 @@
 import type { EntityManager, MergeOptions } from '../EntityManager';
 import type { EntityData, EntityName, AnyEntity, Primary, Loaded, New, FilterQuery, EntityDictionary, AutoPath } from '../typings';
-import type { CountOptions, DeleteOptions, FindOneOptions, FindOneOrFailOptions, FindOptions, UpdateOptions } from '../drivers/IDatabaseDriver';
+import type { CountOptions, DeleteOptions, FindOneOptions, FindOneOrFailOptions, FindOptions, GetReferenceOptions, UpdateOptions } from '../drivers/IDatabaseDriver';
 import type { IdentifiedReference, Reference } from './Reference';
 import type { EntityLoaderOptions } from './EntityLoader';
 
@@ -135,30 +135,30 @@ export class EntityRepository<T extends AnyEntity<T>> {
   /**
    * Maps raw database result to an entity and merges it to this EntityManager.
    */
-  map(result: EntityDictionary<T>): T {
-    return this.em.map(this.entityName, result);
+  map(result: EntityDictionary<T>, options?: { schema?: string }): T {
+    return this.em.map(this.entityName, result, options);
   }
 
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<PK extends keyof T>(id: Primary<T>, wrapped: true): IdentifiedReference<T, PK>;
+  getReference<PK extends keyof T>(id: Primary<T>, options: Omit<GetReferenceOptions, 'wrapped'> & { wrapped: true }): IdentifiedReference<T, PK>;
 
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<PK extends keyof T = keyof T>(id: Primary<T>): T;
+  getReference(id: Primary<T> | Primary<T>[]): T;
 
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<PK extends keyof T = keyof T>(id: Primary<T>, wrapped: false): T;
+  getReference(id: Primary<T>, options: Omit<GetReferenceOptions, 'wrapped'> & { wrapped: false }): T;
 
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<PK extends keyof T = keyof T>(id: Primary<T>, wrapped = false): T | Reference<T> {
-    return this.em.getReference<T>(this.entityName, id, wrapped);
+  getReference<PK extends keyof T = keyof T>(id: Primary<T>, options?: GetReferenceOptions): T | Reference<T> {
+    return this.em.getReference<T>(this.entityName, id, options);
   }
 
   /**

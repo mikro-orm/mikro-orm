@@ -10,19 +10,19 @@ import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
  */
 export class DatabaseSchema {
 
-  private readonly tables: DatabaseTable[] = [];
-  private readonly namespaces: string[] = [];
+  private tables: DatabaseTable[] = [];
+  private namespaces = new Set<string>();
 
   constructor(private readonly platform: AbstractSqlPlatform,
               readonly name: string) { }
 
   addTable(name: string, schema: string | undefined | null): DatabaseTable {
-    const namespaceName = schema ?? undefined;
+    const namespaceName = schema ?? this.name;
     const table = new DatabaseTable(this.platform, name, namespaceName);
     this.tables.push(table);
 
-    if (namespaceName != null && !table.isInDefaultNamespace(this.name) && !this.hasNamespace(namespaceName)) {
-      this.namespaces.push(namespaceName);
+    if (namespaceName != null) {
+      this.namespaces.add(namespaceName);
     }
 
     return table;
@@ -41,15 +41,16 @@ export class DatabaseSchema {
   }
 
   hasNamespace(namespace: string) {
-    return this.namespaces.includes(namespace);
+    return this.namespaces.has(namespace);
   }
 
   getNamespaces(): string[] {
-    return this.namespaces;
+    return [...this.namespaces];
   }
 
-  static async create(connection: AbstractSqlConnection, platform: AbstractSqlPlatform, config: Configuration): Promise<DatabaseSchema> {
-    const schema = new DatabaseSchema(platform, config.get('schema'));
+  static async create(connection: AbstractSqlConnection, platform: AbstractSqlPlatform, config: Configuration, schemaName?: string): Promise<DatabaseSchema> {
+    /* istanbul ignore next */
+    const schema = new DatabaseSchema(platform, schemaName ?? config.get('schema'));
     const tables = await connection.execute<Table[]>(platform.getSchemaHelper()!.getListTablesSQL());
 
     for (const t of tables) {
@@ -70,14 +71,14 @@ export class DatabaseSchema {
     return schema;
   }
 
-  static fromMetadata(metadata: EntityMetadata[], platform: AbstractSqlPlatform, config: Configuration): DatabaseSchema {
-    const schema = new DatabaseSchema(platform, config.get('schema'));
+  static fromMetadata(metadata: EntityMetadata[], platform: AbstractSqlPlatform, config: Configuration, schemaName?: string): DatabaseSchema {
+    const schema = new DatabaseSchema(platform, schemaName ?? config.get('schema'));
 
     for (const meta of metadata) {
-      const table = schema.addTable(meta.collection, meta.schema ?? config.get('schema'));
+      const table = schema.addTable(meta.collection, this.getSchemaName(meta, config, schemaName));
       table.comment = meta.comment;
       meta.props
-        .filter(prop => this.shouldHaveColumn(meta, prop)) // TODO use platform?
+        .filter(prop => this.shouldHaveColumn(meta, prop))
         .forEach(prop => table.addColumnFromProperty(prop, meta));
       meta.indexes.forEach(index => table.addIndex(meta, index, 'index'));
       meta.uniques.forEach(index => table.addIndex(meta, index, 'unique'));
@@ -85,6 +86,10 @@ export class DatabaseSchema {
     }
 
     return schema;
+  }
+
+  private static getSchemaName(meta: EntityMetadata, config: Configuration, schema?: string): string | undefined {
+    return (meta.schema === '*' ? schema : meta.schema) ?? config.get('schema');
   }
 
   private static shouldHaveColumn(meta: EntityMetadata, prop: EntityProperty): boolean {
@@ -107,8 +112,19 @@ export class DatabaseSchema {
   }
 
   toJSON(): Dictionary {
-    const { platform, ...rest } = this;
-    return rest;
+    const { platform, namespaces, ...rest } = this;
+    return { namespaces: [...namespaces], ...rest };
+  }
+
+  prune(schema: string | undefined, wildcardSchemaTables: string[]): void {
+    const hasWildcardSchema = wildcardSchemaTables.length > 0;
+    this.tables = this.tables.filter(table => {
+      return (!schema && !hasWildcardSchema)                        // no schema specified and we don't have any multi-schema entity
+        || table.schema === schema                                  // specified schema matches the table's one
+        || (!schema && !wildcardSchemaTables.includes(table.name)); // no schema specified and the table has fixed one provided
+    });
+    // remove namespaces of ignored tables
+    this.namespaces.forEach(ns => !this.tables.find(t => t.schema === ns) && this.namespaces.delete(ns));
   }
 
 }

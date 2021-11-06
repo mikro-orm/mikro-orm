@@ -10,6 +10,7 @@ export interface FactoryOptions {
   merge?: boolean;
   refresh?: boolean;
   convertCustomTypes?: boolean;
+  schema?: string;
 }
 
 export class EntityFactory {
@@ -40,7 +41,7 @@ export class EntityFactory {
     }
 
     const meta2 = this.processDiscriminatorColumn<T>(meta, data);
-    const exists = this.findEntity<T>(data, meta2, options.convertCustomTypes);
+    const exists = this.findEntity<T>(data, meta2, options);
 
     if (exists && exists.__helper!.__initialized && !options.refresh) {
       exists.__helper!.__initialized = options.initialized;
@@ -113,8 +114,8 @@ export class EntityFactory {
     });
   }
 
-  createReference<T>(entityName: EntityName<T>, id: Primary<T> | Primary<T>[] | Record<string, Primary<T>>, options: Pick<FactoryOptions, 'merge' | 'convertCustomTypes'> = {}): T {
-    options.convertCustomTypes = options.convertCustomTypes ?? true;
+  createReference<T>(entityName: EntityName<T>, id: Primary<T> | Primary<T>[] | Record<string, Primary<T>>, options: Pick<FactoryOptions, 'merge' | 'convertCustomTypes' | 'schema'> = {}): T {
+    options.convertCustomTypes ??= true;
     entityName = Utils.className(entityName);
     const meta = this.metadata.get(entityName);
 
@@ -128,7 +129,7 @@ export class EntityFactory {
       id = { [meta.primaryKeys[0]]: id as Primary<T> };
     }
 
-    const exists = this.unitOfWork.getById<T>(entityName, pks);
+    const exists = this.unitOfWork.getById<T>(entityName, pks, options.schema);
 
     if (exists) {
       return exists;
@@ -139,17 +140,21 @@ export class EntityFactory {
 
   private createEntity<T extends AnyEntity<T>>(data: EntityData<T>, meta: EntityMetadata<T>, options: FactoryOptions): T {
     if (options.newEntity || meta.forceConstructor) {
-      const params = this.extractConstructorParams<T>(meta, data);
+      const params = this.extractConstructorParams<T>(meta, data, options);
       const Entity = meta.class;
       meta.constructorParams.forEach(prop => delete data[prop]);
 
       // creates new instance via constructor as this is the new entity
-      return new Entity(...params);
+      const entity = new Entity(...params);
+      entity.__helper!.__schema = this.getSchemaName(options);
+
+      return entity;
     }
 
     // creates new entity instance, bypassing constructor call as its already persisted entity
     const entity = Object.create(meta.class.prototype) as T;
     entity.__helper!.__managed = true;
+    entity.__helper!.__schema = this.getSchemaName(options);
 
     if (meta.selfReferencing && !options.newEntity) {
       this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes);
@@ -157,6 +162,11 @@ export class EntityFactory {
     }
 
     return entity;
+  }
+
+  private getSchemaName(options: { schema?: string }): string | undefined {
+    /* istanbul ignore next */
+    return options.schema === '*' ? this.config.get('schema') : options.schema;
   }
 
   private hydrate<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, options: FactoryOptions): void {
@@ -168,18 +178,18 @@ export class EntityFactory {
     Object.keys(data).forEach(key => entity.__helper!.__loadedProperties.add(key));
   }
 
-  private findEntity<T>(data: EntityData<T>, meta: EntityMetadata<T>, convertCustomTypes?: boolean): T | undefined {
+  private findEntity<T>(data: EntityData<T>, meta: EntityMetadata<T>, options: FactoryOptions): T | undefined {
     if (!meta.compositePK && !meta.properties[meta.primaryKeys[0]].customType) {
-      return this.unitOfWork.getById<T>(meta.name!, data[meta.primaryKeys[0]] as Primary<T>);
+      return this.unitOfWork.getById<T>(meta.name!, data[meta.primaryKeys[0]] as Primary<T>, options.schema);
     }
 
     if (meta.primaryKeys.some(pk => !Utils.isDefined(data[pk as keyof T], true))) {
       return undefined;
     }
 
-    const pks = Utils.getOrderedPrimaryKeys<T>(data as Dictionary, meta, this.platform, convertCustomTypes);
+    const pks = Utils.getOrderedPrimaryKeys<T>(data as Dictionary, meta, this.platform, options.convertCustomTypes);
 
-    return this.unitOfWork.getById<T>(meta.name!, pks);
+    return this.unitOfWork.getById<T>(meta.name!, pks, options.schema);
   }
 
   private processDiscriminatorColumn<T>(meta: EntityMetadata<T>, data: EntityData<T>): EntityMetadata<T> {
@@ -221,10 +231,10 @@ export class EntityFactory {
   /**
    * returns parameters for entity constructor, creating references from plain ids
    */
-  private extractConstructorParams<T>(meta: EntityMetadata<T>, data: EntityData<T>): T[keyof T][] {
+  private extractConstructorParams<T>(meta: EntityMetadata<T>, data: EntityData<T>, options: FactoryOptions): T[keyof T][] {
     return meta.constructorParams.map(k => {
       if (meta.properties[k] && [ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(meta.properties[k].reference) && data[k]) {
-        const entity = this.unitOfWork.getById(meta.properties[k].type, data[k]) as T[keyof T];
+        const entity = this.unitOfWork.getById(meta.properties[k].type, data[k], options.schema) as T[keyof T];
 
         if (entity) {
           return entity;
@@ -234,7 +244,7 @@ export class EntityFactory {
           return data[k];
         }
 
-        return this.createReference(meta.properties[k].type, data[k]);
+        return this.createReference(meta.properties[k].type, data[k], options);
       }
 
       if (!meta.properties[k]) {

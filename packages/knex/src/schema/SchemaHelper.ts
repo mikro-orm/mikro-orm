@@ -48,7 +48,7 @@ export abstract class SchemaHelper {
     return {};
   }
 
-  getListTablesSQL(): string {
+  getListTablesSQL(schemaName?: string): string {
     throw new Error('Not supported by given driver');
   }
 

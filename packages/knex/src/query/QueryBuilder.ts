@@ -488,7 +488,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       res = this.driver.mergeJoinedResult(res, this.metadata.find(this.entityName)!);
     }
 
-    return res.map(r => this.em!.map<T>(this.entityName, r));
+    return res.map(r => this.em!.map<T>(this.entityName, r, { schema: this._schema }));
   }
 
   /**
@@ -659,15 +659,18 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
   private getQueryBase(): Knex.QueryBuilder {
     const qb = this.getKnex();
+    const meta = this.metadata.find(this.entityName);
+    const metaSchema = meta?.schema && meta.schema !== '*' ? meta.schema : undefined;
+    const schema = this._schema ?? metaSchema ?? this.em?.config.get('schema');
 
-    if (this._schema) {
-      qb.withSchema(this._schema);
+    if (schema) {
+      qb.withSchema(schema);
     }
 
     if (this._indexHint) {
       const alias = this.helper.isTableNameAliasRequired(this.type) ? ` as ${this.platform.quoteIdentifier(this.alias)}` : '';
-      const schema = this._schema ? this.platform.quoteIdentifier(this._schema) + '.' : '';
-      const tableName = schema + this.platform.quoteIdentifier(this.helper.getTableName(this.entityName)) + alias;
+      const schemaQuoted = schema ? this.platform.quoteIdentifier(schema) + '.' : '';
+      const tableName = schemaQuoted + this.platform.quoteIdentifier(this.helper.getTableName(this.entityName)) + alias;
       qb.from(this.knex.raw(`${tableName} ${this._indexHint}`));
     }
 
@@ -679,12 +682,12 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
           qb.distinct();
         }
 
-        this.helper.processJoins(qb, this._joins);
+        this.helper.processJoins(qb, this._joins, schema);
         break;
       case QueryType.COUNT: {
         const m = this.flags.has(QueryFlag.DISTINCT) ? 'countDistinct' : 'count';
         qb[m]({ count: this._fields!.map(f => this.helper.mapper(f as string, this.type)) });
-        this.helper.processJoins(qb, this._joins);
+        this.helper.processJoins(qb, this._joins, schema);
         break;
       }
       case QueryType.INSERT:
@@ -775,7 +778,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       subQuery.offset(this._offset);
     }
 
-    if (this._orderBy) {
+    if (this._orderBy.length > 0) {
       const orderBy = [];
       for (const orderMap of this._orderBy) {
         for (const [field, direction] of Object.entries(orderMap)) {

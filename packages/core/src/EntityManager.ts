@@ -5,7 +5,7 @@ import { QueryHelper, TransactionContext, Utils } from './utils';
 import type { AssignOptions, EntityLoaderOptions, EntityRepository, IdentifiedReference } from './entity';
 import { EntityAssigner, EntityFactory, EntityLoader, EntityValidator, Reference } from './entity';
 import { UnitOfWork } from './unit-of-work';
-import type { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, UpdateOptions } from './drivers';
+import type { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, InsertOptions, LockOptions, UpdateOptions, GetReferenceOptions } from './drivers';
 import type { AnyEntity, AutoPath, Dictionary, EntityData, EntityDictionary, EntityDTO, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, New, Populate, PopulateOptions, Primary } from './typings';
 import type { IsolationLevel, LoadStrategy } from './enums';
 import { LockMode, ReferenceType, SCALAR_TYPES } from './enums';
@@ -289,7 +289,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     where = await this.processWhere(entityName, where, options, 'read');
     this.validator.validateEmptyWhere(where);
     this.checkLockRequirements(options.lockMode, meta);
-    let entity = this.getUnitOfWork().tryGetById<T>(entityName, where);
+    let entity = this.getUnitOfWork().tryGetById<T>(entityName, where, options.schema);
     const isOptimisticLocking = !Utils.isDefined(options.lockMode) || options.lockMode === LockMode.OPTIMISTIC;
 
     if (entity && !this.shouldRefresh<T>(meta, entity, options) && isOptimisticLocking) {
@@ -383,9 +383,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Runs your callback wrapped inside a database transaction.
    */
-  async lock(entity: AnyEntity, lockMode: LockMode, options: { lockVersion?: number | Date; lockTableAliases?: string[] } | number | Date = {}): Promise<void> {
-    options = Utils.isPlainObject(options) ? options as Dictionary : { lockVersion: options };
-    await this.getUnitOfWork().lock(entity, lockMode, options.lockVersion, options.lockTableAliases);
+  async lock<T>(entity: T, lockMode: LockMode, options: LockOptions | number | Date = {}): Promise<void> {
+    options = Utils.isPlainObject(options) ? options as LockOptions : { lockVersion: options };
+    await this.getUnitOfWork().lock(entity, { lockMode, ...options });
   }
 
   /**
@@ -401,7 +401,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Fires native insert query. Calling this has no side effects on the context (identity map).
    */
-  async nativeInsert<T extends AnyEntity<T>>(entityNameOrEntity: EntityName<T> | T, data?: EntityData<T>): Promise<Primary<T>> {
+  async nativeInsert<T extends AnyEntity<T>>(entityNameOrEntity: EntityName<T> | T, data?: EntityData<T>, options: InsertOptions<T> = {}): Promise<Primary<T>> {
     let entityName;
 
     if (data === undefined) {
@@ -413,7 +413,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     data = QueryHelper.processObjectParams(data) as EntityData<T>;
     this.validator.validateParams(data, 'insert data');
-    const res = await this.driver.nativeInsert(entityName, data, { ctx: this.transactionContext });
+    const res = await this.driver.nativeInsert(entityName, data, { ctx: this.transactionContext, ...options });
 
     return res.insertId as Primary<T>;
   }
@@ -427,7 +427,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     where = await this.processWhere(entityName, where, options, 'update');
     this.validator.validateParams(data, 'update data');
     this.validator.validateParams(where, 'update condition');
-    const res = await this.driver.nativeUpdate(entityName, where, data, { ctx: this.transactionContext });
+    const res = await this.driver.nativeUpdate(entityName, where, data, { ctx: this.transactionContext, ...options });
 
     return res.affectedRows;
   }
@@ -439,7 +439,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     entityName = Utils.className(entityName);
     where = await this.processWhere(entityName, where, options, 'delete');
     this.validator.validateParams(where, 'delete condition');
-    const res = await this.driver.nativeDelete(entityName, where, { ctx: this.transactionContext });
+    const res = await this.driver.nativeDelete(entityName, where, { ctx: this.transactionContext, ...options });
 
     return res.affectedRows;
   }
@@ -447,7 +447,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Maps raw database result to an entity and merges it to this EntityManager.
    */
-  map<T extends AnyEntity<T>>(entityName: EntityName<T>, result: EntityDictionary<T>): T {
+  map<T extends AnyEntity<T>>(entityName: EntityName<T>, result: EntityDictionary<T>, options: { schema?: string } = {}): T {
     entityName = Utils.className(entityName);
     const meta = this.metadata.get(entityName);
     const data = this.driver.mapResult(result, meta) as Dictionary;
@@ -460,7 +460,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }
     });
 
-    return this.merge<T>(entityName, data as EntityData<T>, { convertCustomTypes: true, refresh: true });
+    return this.merge<T>(entityName, data as EntityData<T>, { convertCustomTypes: true, refresh: true, ...options });
   }
 
   /**
@@ -486,7 +486,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     entityName = Utils.className(entityName as string);
     this.validator.validatePrimaryKey(data as EntityData<T>, this.metadata.get(entityName));
-    let entity = this.getUnitOfWork().tryGetById<T>(entityName, data as FilterQuery<T>, false);
+    let entity = this.getUnitOfWork().tryGetById<T>(entityName, data as FilterQuery<T>, options.schema, false);
 
     if (entity && entity.__helper!.__initialized && !options.refresh) {
       return entity;
@@ -510,7 +510,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * the whole `data` parameter will be passed. This means we can also define `constructor(data: Partial<T>)` and
    * `em.create()` will pass the data into it (unless we have a property named `data` too).
    */
-  create<T extends AnyEntity<T>, P extends string = never>(entityName: EntityName<T>, data: EntityData<T>, options: { managed?: boolean } = {}): New<T, P> {
+  create<T extends AnyEntity<T>, P extends string = never>(entityName: EntityName<T>, data: EntityData<T>, options: { managed?: boolean; schema?: string } = {}): New<T, P> {
     return this.getEntityFactory().create<T, P>(entityName, data, { ...options, newEntity: !options.managed });
   }
 
@@ -524,7 +524,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<T extends AnyEntity<T>, PK extends keyof T>(entityName: EntityName<T>, id: Primary<T>, wrapped: true, convertCustomTypes?: boolean): IdentifiedReference<T, PK>;
+  getReference<T extends AnyEntity<T>, PK extends keyof T>(entityName: EntityName<T>, id: Primary<T>, options: Omit<GetReferenceOptions, 'wrapped'> & { wrapped: true }): IdentifiedReference<T, PK>;
 
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
@@ -534,17 +534,18 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<T extends AnyEntity<T>>(entityName: EntityName<T>, id: Primary<T>, wrapped: false, convertCustomTypes?: boolean): T;
+  getReference<T extends AnyEntity<T>>(entityName: EntityName<T>, id: Primary<T>, options: Omit<GetReferenceOptions, 'wrapped'> & { wrapped: false }): T;
 
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<T extends AnyEntity<T>>(entityName: EntityName<T>, id: Primary<T>, wrapped?: boolean, convertCustomTypes?: boolean): T | Reference<T>;
+  getReference<T extends AnyEntity<T>>(entityName: EntityName<T>, id: Primary<T>, options?: GetReferenceOptions): T | Reference<T>;
 
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<T extends AnyEntity<T>>(entityName: EntityName<T>, id: Primary<T>, wrapped = false, convertCustomTypes = false): T | Reference<T> {
+  getReference<T extends AnyEntity<T>>(entityName: EntityName<T>, id: Primary<T>, options: GetReferenceOptions = {}): T | Reference<T> {
+    options.convertCustomTypes ??= false;
     const meta = this.metadata.get(Utils.className(entityName));
 
     if (Utils.isPrimaryKey(id)) {
@@ -555,9 +556,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       id = [id] as Primary<T>;
     }
 
-    const entity = this.getEntityFactory().createReference<T>(entityName, id, { merge: true, convertCustomTypes });
+    const entity = this.getEntityFactory().createReference<T>(entityName, id, { merge: true, ...options });
 
-    if (wrapped) {
+    if (options.wrapped) {
       return Reference.create(entity);
     }
 
@@ -956,6 +957,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 export interface MergeOptions {
   refresh?: boolean;
   convertCustomTypes?: boolean;
+  schema?: string;
 }
 
 interface ForkOptions {

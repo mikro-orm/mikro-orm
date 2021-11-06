@@ -1801,8 +1801,8 @@ describe('EntityManagerMongo', () => {
     await orm.em.persistAndFlush([author, author2]);
     orm.em.clear();
 
-    const ref = orm.em.getReference<Author, 'id' | '_id'>(Author, author.id, true);
-    const ref1 = orm.em.getRepository(Author).getReference<'id' | '_id'>(author.id, true);
+    const ref = orm.em.getReference<Author, 'id' | '_id'>(Author, author.id, { wrapped: true });
+    const ref1 = orm.em.getRepository(Author).getReference<'id' | '_id'>(author.id, { wrapped: true });
     expect(ref).not.toBe(ref1);
     expect(ref.unwrap()).toBe(ref1.unwrap());
     expect(ref.isInitialized()).toBe(false);
@@ -1829,7 +1829,7 @@ describe('EntityManagerMongo', () => {
     expect(wrap(ent).isInitialized()).toBe(true);
     orm.em.clear();
 
-    const ref4 = orm.em.getReference<Author, 'id' | '_id'>(Author, author.id, true);
+    const ref4 = orm.em.getReference<Author, 'id' | '_id'>(Author, author.id, { wrapped: true });
     expect(ref4.isInitialized()).toBe(false);
     await expect(ref4.load('name')).resolves.toBe('God');
     expect(ref4.isInitialized()).toBe(true);

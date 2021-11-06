@@ -67,7 +67,7 @@ describe('DatabaseDriver', () => {
     expect(driver.getPlatform().quoteValue('a')).toBe('a');
     await expect(driver.aggregate('', [])).rejects.toThrowError('Aggregations are not supported by Driver driver');
     await expect(driver.nativeUpdateMany('', [], [])).rejects.toThrowError('Batch updates are not supported by Driver driver');
-    await expect(driver.lockPessimistic({}, LockMode.NONE)).rejects.toThrowError('Pessimistic locks are not supported by Driver driver');
+    await expect(driver.lockPessimistic({}, { lockMode: LockMode.NONE })).rejects.toThrowError('Pessimistic locks are not supported by Driver driver');
     const e1 = driver.convertException(new Error('test'));
     const e2 = driver.convertException(e1);
     expect(e1).toBe(e2);

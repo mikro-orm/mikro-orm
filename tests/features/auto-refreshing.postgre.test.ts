@@ -131,11 +131,7 @@ describe('automatic refreshing of already loaded entities', () => {
     expect(r1[0].favouriteAuthor!.name).toBeDefined();
     expect(r1[0].favouriteAuthor!.age).toBeUndefined();
     r1[0].favouriteAuthor!.name = 'lol';
-    console.log(r1[0]);
-    console.log((r1[0] as any).__helper.__originalEntityData);
     const r2 = await orm.em.find(Author2, god, { populate: ['favouriteAuthor'], strategy: LoadStrategy.JOINED });
-    console.log(r2[0]);
-    console.log((r2[0] as any).__helper.__originalEntityData);
     expect(r2).toHaveLength(1);
     expect(r2[0].id).toBe(god.id);
     expect(r2[0].name).toBe(god.name);

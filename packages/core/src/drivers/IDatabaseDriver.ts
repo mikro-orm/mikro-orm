@@ -44,7 +44,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
   nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>): Promise<QueryResult<T>>;
 
-  nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: { ctx?: Transaction }): Promise<QueryResult<T>>;
+  nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: NativeDeleteOptions<T>): Promise<QueryResult<T>>;
 
   syncCollection<T, O>(collection: Collection<T, O>, options?: { ctx?: Transaction }): Promise<void>;
 
@@ -73,7 +73,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
    */
   getDependencies(): string[];
 
-  lockPessimistic<T extends AnyEntity<T>>(entity: T, mode: LockMode, tables?: string[], ctx?: Transaction): Promise<void>;
+  lockPessimistic<T extends AnyEntity<T>>(entity: T, options: LockOptions): Promise<void>;
 
   /**
    * Converts native db errors to standardized driver exceptions
@@ -118,6 +118,7 @@ export interface FindOneOrFailOptions<T, P extends string = never> extends FindO
 export interface NativeInsertUpdateOptions<T> {
   convertCustomTypes?: boolean;
   ctx?: Transaction;
+  schema?: string;
 }
 
 export interface NativeInsertUpdateManyOptions<T> extends NativeInsertUpdateOptions<T> {
@@ -134,10 +135,38 @@ export interface CountOptions<T, P extends string = never>  {
   ctx?: Transaction;
 }
 
+export interface InsertOptions<T>  {
+  schema?: string;
+  ctx?: Transaction;
+}
+
 export interface UpdateOptions<T>  {
+  filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
+  schema?: string;
+  ctx?: Transaction;
+}
+
+export interface DeleteOptions<T> extends DriverMethodOptions {
   filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
 }
 
-export interface DeleteOptions<T>  {
+export interface NativeDeleteOptions<T> extends DriverMethodOptions {
   filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
+}
+
+export interface LockOptions extends DriverMethodOptions {
+  lockMode?: LockMode;
+  lockVersion?: number | Date;
+  lockTableAliases?: string[];
+}
+
+export interface DriverMethodOptions {
+  ctx?: Transaction;
+  schema?: string;
+}
+
+export interface GetReferenceOptions {
+  wrapped?: boolean;
+  convertCustomTypes?: boolean;
+  schema?: string;
 }

@@ -425,10 +425,18 @@ export class MetadataDiscovery {
   }
 
   private async definePivotTableEntity(meta: EntityMetadata, prop: EntityProperty): Promise<EntityMetadata> {
+    let tableName = prop.pivotTable;
+    let schemaName: string | undefined;
+
+    if (prop.pivotTable.includes('.')) {
+      [schemaName, tableName] = prop.pivotTable.split('.');
+    }
+
     const data = new EntityMetadata({
       name: prop.pivotTable,
       className: prop.pivotTable,
-      collection: prop.pivotTable,
+      collection: tableName,
+      schema: schemaName,
       pivotTable: true,
     });
 

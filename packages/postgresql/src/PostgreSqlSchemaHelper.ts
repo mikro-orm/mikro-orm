@@ -24,8 +24,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return `${this.enableForeignKeysSQL()}\n`;
   }
 
-  getListTablesSQL(): string {
-    return `select table_name, nullif(table_schema, 'public') as schema_name, `
+  getListTablesSQL(schemaName = 'public'): string {
+    return `select table_name, nullif(table_schema, '${schemaName}') as schema_name, `
       + `(select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c
           where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment `
       + `from information_schema.tables `
