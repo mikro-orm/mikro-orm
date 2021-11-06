@@ -797,10 +797,12 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     subQuery.finalized = true;
     const knexQuery = subQuery.as(this.alias).clearSelect().select(pks);
 
-    const subSubSubQuery = this.getKnex().select(pks).from(knexQuery);
+    // multiple sub-queries are needed to get around mysql limitations with order by + limit + where in + group by (o.O)
+    // https://stackoverflow.com/questions/17892762/mysql-this-version-of-mysql-doesnt-yet-support-limit-in-all-any-some-subqu
+    const subSubQuery = this.getKnex().select(pks).from(knexQuery);
     this._limit = undefined;
     this._offset = undefined;
-    this.select(this._fields!).where({ [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubSubQuery } });
+    this.select(this._fields!).where({ [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubQuery } });
   }
 
   private wrapModifySubQuery(meta: EntityMetadata): void {
