@@ -768,7 +768,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   }
 
   private wrapPaginateSubQuery(meta: EntityMetadata): void {
-    const pks = this.prepareFields(meta.primaryKeys, 'sub-query') as any;
+    const pks = this.prepareFields(meta.primaryKeys, 'sub-query') as string[];
     const subQuery = this.clone().select(pks).groupBy(pks).limit(this._limit!);
 
     if (this._offset) {
