@@ -118,6 +118,9 @@ export class SchemaGenerator {
     /* istanbul ignore next */
     const fromSchema = options.fromSchema ?? await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema);
     const comparator = new SchemaComparator(this.platform);
+    const wildcardSchemaTables = Object.values(this.metadata.getAll()).filter(meta => meta.schema === '*').map(meta => meta.tableName);
+    fromSchema.prune(options.schema, wildcardSchemaTables);
+    toSchema.prune(options.schema, wildcardSchemaTables);
     const diffUp = comparator.compare(fromSchema, toSchema);
 
     return this.diffToSQL(diffUp, options);
@@ -130,6 +133,9 @@ export class SchemaGenerator {
     const toSchema = this.getTargetSchema(options.schema);
     const fromSchema = options.fromSchema ?? await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema);
     const comparator = new SchemaComparator(this.platform);
+    const wildcardSchemaTables = Object.values(this.metadata.getAll()).filter(meta => meta.schema === '*').map(meta => meta.tableName);
+    fromSchema.prune(options.schema, wildcardSchemaTables);
+    toSchema.prune(options.schema, wildcardSchemaTables);
     const diffUp = comparator.compare(fromSchema, toSchema);
     const diffDown = comparator.compare(toSchema, fromSchema);
 
@@ -192,6 +198,7 @@ export class SchemaGenerator {
   private getReferencedTableName(referencedTableName: string, schema?: string) {
     schema ??= this.config.get('schema');
 
+    /* istanbul ignore next */
     if (schema && referencedTableName.startsWith('*.')) {
       return `${schema}.${referencedTableName.replace(/^\*\./, '')}`;
     }

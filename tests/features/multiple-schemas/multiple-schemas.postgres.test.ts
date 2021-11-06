@@ -54,19 +54,14 @@ describe('multiple connected schemas in postgres', () => {
     }
 
     // `*` schema will be ignored
-    await orm.getSchemaGenerator().createSchema();
-    // TODO this is not working, tries to remove FKs from table that does not exist yet
-    // TODO looks like updateSchema() is removing all the other schemas just created by previous runs,
-    //   we need to ignore the other namespaces somehow? maybe when the schema option is specified, let's not remove any other namespaces?
-    // await orm.getSchemaGenerator().updateSchema(); // `*` schema will be ignored
+    await orm.getSchemaGenerator().updateSchema(); // `*` schema will be ignored
 
     // we need to pass schema for book
-    await orm.getSchemaGenerator().createSchema({ schema: 'n2' });
-    await orm.getSchemaGenerator().createSchema({ schema: 'n3' });
-    await orm.getSchemaGenerator().createSchema({ schema: 'n4' });
-    await orm.getSchemaGenerator().createSchema({ schema: 'n5' });
+    await orm.getSchemaGenerator().updateSchema({ schema: 'n2' });
+    await orm.getSchemaGenerator().updateSchema({ schema: 'n3' });
+    await orm.getSchemaGenerator().updateSchema({ schema: 'n4' });
+    await orm.getSchemaGenerator().updateSchema({ schema: 'n5' });
     orm.config.set('schema', 'n2'); // set the schema so we can work with book entities without options param
-    // TODO we should probably validate usage of `*` when creating queries (if no schema is provided in config nor options)
   });
 
   afterAll(async () => {
@@ -182,6 +177,22 @@ describe('multiple connected schemas in postgres', () => {
     expect(n3).toHaveLength(0);
     expect(n4).toHaveLength(0);
     expect(n5).toHaveLength(0);
+  });
+
+  test(`schema diffing won't remove other schemas or tables`, async () => {
+    // `*` schema is found in metadata, so no schema deletes should be triggered
+    const diff1 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    expect(diff1).toBe('');
+
+    // should update only single schema, ignoring the rest
+    const diff2 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ schema: 'n2', wrap: false });
+    expect(diff2).toBe('');
+    const diff3 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ schema: 'n3', wrap: false });
+    expect(diff3).toBe('');
+    const diff4 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ schema: 'n4', wrap: false });
+    expect(diff4).toBe('');
+    const diff5 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ schema: 'n5', wrap: false });
+    expect(diff5).toBe('');
   });
 
   test('pessimistic locking', async () => {

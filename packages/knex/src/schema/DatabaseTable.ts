@@ -91,12 +91,13 @@ export class DatabaseTable {
 
     if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference)) {
       const constraintName = this.getIndexName(true, prop.fieldNames, 'foreign');
+      const schema = prop.targetMeta!.schema === '*' ? this.schema : prop.targetMeta!.schema;
       this.foreignKeys[constraintName] = {
         constraintName,
         columnNames: prop.fieldNames,
         localTableName: this.getShortestName(),
         referencedColumnNames: prop.referencedColumnNames,
-        referencedTableName: prop.targetMeta!.schema ? `${prop.targetMeta!.schema}.${prop.referencedTableName}` : prop.referencedTableName,
+        referencedTableName: schema ? `${schema}.${prop.referencedTableName}` : prop.referencedTableName,
       };
 
       const cascade = prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL);
@@ -321,11 +322,6 @@ export class DatabaseTable {
       type: index.type,
       expression: index.expression,
     });
-  }
-
-  // TODO remove param?
-  isInDefaultNamespace(defaultNamespaceName: string) {
-    return this.schema == null;
   }
 
   toJSON(): Dictionary {
