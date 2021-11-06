@@ -768,23 +768,35 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   }
 
   private wrapPaginateSubQuery(meta: EntityMetadata): void {
-    const pks = this.prepareFields(meta.primaryKeys, 'sub-query');
-    const subQuery = this.clone().limit(undefined).offset(undefined);
+    const pks = this.prepareFields(meta.primaryKeys, 'sub-query') as string[];
+    const subQuery = this.clone().select(pks).groupBy(pks).limit(this._limit!);
+
+    if (this._offset) {
+      subQuery.offset(this._offset);
+    }
+
+    if (this._orderBy) {
+      const orderBy = [];
+      for (const orderMap of this._orderBy) {
+        for (const [field, direction] of Object.entries(orderMap)) {
+          orderBy.push({
+            [`min(${this.ref(field)})`]: direction,
+          });
+        }
+      }
+
+      subQuery.orderBy(orderBy);
+    }
+
     subQuery.finalized = true;
     const knexQuery = subQuery.as(this.alias).clearSelect().select(pks);
 
-    // 3 sub-queries are needed to get around mysql limitations with order by + limit + where in + group by (o.O)
+    // multiple sub-queries are needed to get around mysql limitations with order by + limit + where in + group by (o.O)
     // https://stackoverflow.com/questions/17892762/mysql-this-version-of-mysql-doesnt-yet-support-limit-in-all-any-some-subqu
-    const subSubQuery = this.getKnex().select(pks).from(knexQuery).groupBy(pks).limit(this._limit!);
-
-    if (this._offset) {
-      subSubQuery.offset(this._offset);
-    }
-
-    const subSubSubQuery = this.getKnex().select(pks).from(subSubQuery.as(this.alias));
+    const subSubQuery = this.getKnex().select(pks).from(knexQuery);
     this._limit = undefined;
     this._offset = undefined;
-    this.select(this._fields!).where({ [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubSubQuery } });
+    this.select(this._fields!).where({ [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubQuery } });
   }
 
   private wrapModifySubQuery(meta: EntityMetadata): void {
