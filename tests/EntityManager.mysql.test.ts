@@ -2355,12 +2355,10 @@ describe('EntityManagerMySql', () => {
       'left join `book2` as `e1` on `e0`.`id` = `e1`.`author_id` ' +
       'left join `address2` as `e2` on `e0`.`id` = `e2`.`author_id` where `e0`.`id` in (select `e0`.`id` ' +
       'from (select `e0`.`id` ' +
-      'from (select `e0`.`id` ' +
       'from `author2` as `e0` ' +
       'left join `book2` as `e1` on `e0`.`id` = `e1`.`author_id` ' +
       'left join `address2` as `e2` on `e0`.`id` = `e2`.`author_id` ' +
       'where `e1`.`title` like ? group by `e0`.`id` order by min(`e0`.`name`) asc, min(`e1`.`title`) asc limit ? offset ?' +
-      ') as `e0`' +
       ') as `e0`' +
       ') order by `e0`.`name` asc, `e1`.`title` asc');
 
