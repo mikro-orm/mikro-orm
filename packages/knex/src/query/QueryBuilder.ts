@@ -778,7 +778,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       subQuery.offset(this._offset);
     }
 
-    if (this._orderBy) {
+    if (this._orderBy.length > 0) {
       const orderBy = [];
       for (const orderMap of this._orderBy) {
         for (const [field, direction] of Object.entries(orderMap)) {
