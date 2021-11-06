@@ -1,5 +1,5 @@
 import { ArrayType, BlobType, EntitySchema, JsonType } from '@mikro-orm/core';
-import { IFooBaz4, IBaseEntity5 } from './index';
+import type { IFooBaz4, IBaseEntity5 } from './index';
 
 export interface IFooBar4 extends IBaseEntity5 {
   name: string;

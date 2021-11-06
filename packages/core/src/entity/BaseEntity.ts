@@ -1,8 +1,9 @@
 import { Reference } from './Reference';
-import { AnyEntity, EntityData, EntityDTO, IWrappedEntity, Populate } from '../typings';
-import { AssignOptions, EntityAssigner } from './EntityAssigner';
+import type { AnyEntity, EntityData, EntityDTO, IWrappedEntity } from '../typings';
+import type { AssignOptions } from './EntityAssigner';
+import { EntityAssigner } from './EntityAssigner';
 
-export abstract class BaseEntity<T, PK extends keyof T, P extends Populate<T> | unknown = unknown> implements IWrappedEntity<T, PK, P> {
+export abstract class BaseEntity<T, PK extends keyof T, P extends string = never> implements IWrappedEntity<T, PK, P> {
 
   constructor() {
     Object.defineProperty(this, '__baseEntity', { value: true });

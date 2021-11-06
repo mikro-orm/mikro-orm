@@ -1,7 +1,8 @@
-import { Cascade, DecimalType, Dictionary, EntityMetadata, EntityProperty, EntitySchema, NamingStrategy, ReferenceType, t, Utils } from '@mikro-orm/core';
-import { SchemaHelper } from './SchemaHelper';
-import { Column, ForeignKey, Index } from '../typings';
-import { AbstractSqlPlatform } from '../AbstractSqlPlatform';
+import type { Dictionary, EntityMetadata, EntityProperty, NamingStrategy } from '@mikro-orm/core';
+import { Cascade, DecimalType, EntitySchema, ReferenceType, t, Utils } from '@mikro-orm/core';
+import type { SchemaHelper } from './SchemaHelper';
+import type { Column, ForeignKey, Index } from '../typings';
+import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
 
 /**
  * @internal
@@ -80,7 +81,7 @@ export class DatabaseTable {
         precision: prop.precision,
         scale: prop.scale,
         default: prop.defaultRaw,
-        enumItems: prop.items as string[],
+        enumItems: prop.items?.every(Utils.isString) ? prop.items as string[] : undefined,
         comment: prop.comment,
       };
       this.columns[field].unsigned ||= this.columns[field].autoincrement;

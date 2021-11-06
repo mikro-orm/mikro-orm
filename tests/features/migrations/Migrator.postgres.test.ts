@@ -1,8 +1,11 @@
 (global as any).process.env.FORCE_COLOR = 0;
 import umzug from 'umzug';
-import { Logger, MetadataStorage, MikroORM } from '@mikro-orm/core';
-import { Migration, MigrationStorage, Migrator } from '@mikro-orm/migrations';
-import { DatabaseSchema, DatabaseTable, PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { format } from 'sql-formatter';
+import type { MikroORM } from '@mikro-orm/core';
+import { Logger, MetadataStorage } from '@mikro-orm/core';
+import { Migration, MigrationStorage, Migrator, TSMigrationGenerator } from '@mikro-orm/migrations';
+import type { DatabaseTable, PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { DatabaseSchema } from '@mikro-orm/postgresql';
 import { remove } from 'fs-extra';
 import { initORMPostgreSql } from '../../bootstrap';
 
@@ -53,6 +56,32 @@ describe('Migrator (postgres)', () => {
     await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
   });
 
+  test('generate migration with custom migrator', async () => {
+    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
+    const migrationsSettings = orm.config.get('migrations');
+    orm.config.set('migrations', { ...migrationsSettings, generator: class extends TSMigrationGenerator {
+
+      generateMigrationFile(className: string, diff: { up: string[]; down: string[] }): string {
+        const comment = '// this file was generated via custom migration generator\n\n';
+        return comment + super.generateMigrationFile(className, diff);
+      }
+
+      createStatement(sql: string, padLeft: number): string {
+        sql = format(sql, { language: 'postgresql' });
+        sql = sql.split('\n').map((l, i) => i === 0 ? l : `${' '.repeat(padLeft + 13)}${l}`).join('\n');
+
+        return super.createStatement(sql, padLeft);
+      }
+
+    } });
+    const migrator = orm.getMigrator();
+    const migration = await migrator.createMigration();
+    expect(migration).toMatchSnapshot('migration-ts-dump');
+    orm.config.set('migrations', migrationsSettings); // Revert migration config changes
+    await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
+  });
+
   test('generate migration with custom name', async () => {
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
@@ -99,7 +128,7 @@ describe('Migrator (postgres)', () => {
 
     // will use the snapshot, so should be empty
     const migration2 = await migrator.createMigration();
-    expect(migration2.diff).toEqual([]);
+    expect(migration2.diff).toEqual({ down: [], up: [] });
     expect(migration2).toMatchSnapshot('migration-snapshot-dump-2');
 
     migrations.snapshot = false;
@@ -153,9 +182,9 @@ describe('Migrator (postgres)', () => {
   test('migration is skipped when no diff', async () => {
     const migrator = new Migrator(orm.em);
     const getSchemaDiffMock = jest.spyOn<any, any>(Migrator.prototype, 'getSchemaDiff');
-    getSchemaDiffMock.mockResolvedValueOnce([]);
+    getSchemaDiffMock.mockResolvedValueOnce({ up: [], down: [] });
     const migration = await migrator.createMigration();
-    expect(migration).toEqual({ fileName: '', code: '', diff: [] });
+    expect(migration).toEqual({ fileName: '', code: '', diff: { up: [], down: [] } });
   });
 
   test('run schema migration', async () => {

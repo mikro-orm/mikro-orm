@@ -2,15 +2,16 @@ import { basename, extname, isAbsolute } from 'path';
 import globby from 'globby';
 import c from 'ansi-colors';
 
-import { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, EntityMetadata, EntityProperty } from '../typings';
+import type { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, EntityProperty } from '../typings';
+import { EntityMetadata } from '../typings';
 import { Utils } from '../utils/Utils';
-import { Configuration } from '../utils/Configuration';
+import type { Configuration } from '../utils/Configuration';
 import { MetadataValidator } from './MetadataValidator';
 import { MetadataStorage } from './MetadataStorage';
 import { EntitySchema } from './EntitySchema';
 import { Cascade, ReferenceType } from '../enums';
 import { MetadataError } from '../errors';
-import { Platform } from '../platforms';
+import type { Platform } from '../platforms';
 import { ArrayType, BlobType, EnumArrayType, JsonType, Type } from '../types';
 
 export class MetadataDiscovery {
@@ -31,7 +32,7 @@ export class MetadataDiscovery {
     const startTime = Date.now();
     this.logger.log('discovery', `ORM entity discovery started, using ${c.cyan(this.metadataProvider.constructor.name)}`);
     await this.findEntities(preferTsNode);
-    this.processDiscoveredEntities(this.discovered);
+    await this.processDiscoveredEntities(this.discovered);
 
     const diff = Date.now() - startTime;
     this.logger.log('discovery', `- entity discovery finished, found ${c.green('' + this.discovered.length)} entities, took ${c.green(`${diff} ms`)}`);
@@ -45,7 +46,7 @@ export class MetadataDiscovery {
     return discovered;
   }
 
-  processDiscoveredEntities(discovered: EntityMetadata[]): EntityMetadata[] {
+  async processDiscoveredEntities(discovered: EntityMetadata[]): Promise<EntityMetadata[]> {
     for (const meta of discovered) {
       let i = 1;
       Object.values(meta.properties).forEach(prop => meta.propertyOrder.set(prop.name, i++));
@@ -62,10 +63,20 @@ export class MetadataDiscovery {
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initFieldName(prop)));
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initVersionProperty(meta, prop)));
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initCustomType(meta, prop)));
-    filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initColumnType(prop, meta.path)));
+
+    for (const meta of filtered) {
+      for (const prop of Object.values(meta.properties)) {
+        await this.initColumnType(prop, meta.path);
+      }
+    }
+
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initIndexes(prop)));
     filtered.forEach(meta => this.autoWireBidirectionalProperties(meta));
-    filtered.forEach(meta => discovered.push(...this.processEntity(meta)));
+
+    for (const meta of filtered) {
+      discovered.push(...(await this.processEntity(meta)));
+    }
+
     discovered.forEach(meta => meta.sync(true));
 
     return discovered.map(meta => this.metadata.get(meta.className));
@@ -115,7 +126,7 @@ export class MetadataDiscovery {
 
       const name = this.namingStrategy.getClassName(filename);
       const path = Utils.normalizePath(...(isAbsolute(filepath) ? [filepath] : [this.config.get('baseDir'), filepath]));
-      const targets = this.getEntityClassOrSchema(path, name);
+      const targets = await this.getEntityClassOrSchema(path, name);
 
       for (const target of targets) {
         if (!(target instanceof Function) && !(target instanceof EntitySchema)) {
@@ -366,21 +377,22 @@ export class MetadataDiscovery {
     }
   }
 
-  private processEntity(meta: EntityMetadata): EntityMetadata[] {
+  private async processEntity(meta: EntityMetadata): Promise<EntityMetadata[]> {
     const pks = Object.values(meta.properties).filter(prop => prop.primary);
     meta.primaryKeys = pks.map(prop => prop.name);
     meta.compositePK = pks.length > 1;
     meta.forceConstructor = this.shouldForceConstructorUsage(meta);
     this.validator.validateEntityDefinition(this.metadata, meta.name!);
 
-    Object.values(meta.properties).forEach(prop => {
+    for (const prop of Object.values(meta.properties)) {
       this.applyNamingStrategy(meta, prop);
       this.initDefaultValue(prop);
       this.initVersionProperty(meta, prop);
       this.initCustomType(meta, prop);
-      this.initColumnType(prop, meta.path);
+      await this.initColumnType(prop, meta.path);
       this.initRelation(prop);
-    });
+    }
+
     meta.serializedPrimaryKey = this.platform.getSerializedPrimaryKeyField(meta.primaryKeys[0]);
     const serializedPKProp = meta.properties[meta.serializedPrimaryKey];
 
@@ -391,11 +403,11 @@ export class MetadataDiscovery {
     const ret: EntityMetadata[] = [];
 
     if (this.platform.usesPivotTable()) {
-      Object
+      const promises = Object
         .values(meta.properties)
         .filter(prop => prop.reference === ReferenceType.MANY_TO_MANY && prop.owner && prop.pivotTable)
-        .map(prop => this.definePivotTableEntity(meta, prop))
-        .forEach(meta => ret.push(meta));
+        .map(prop => this.definePivotTableEntity(meta, prop));
+      (await Promise.all(promises)).forEach(meta => ret.push(meta));
     }
 
     return ret;
@@ -412,7 +424,7 @@ export class MetadataDiscovery {
     });
   }
 
-  private definePivotTableEntity(meta: EntityMetadata, prop: EntityProperty): EntityMetadata {
+  private async definePivotTableEntity(meta: EntityMetadata, prop: EntityProperty): Promise<EntityMetadata> {
     const data = new EntityMetadata({
       name: prop.pivotTable,
       className: prop.pivotTable,
@@ -421,7 +433,7 @@ export class MetadataDiscovery {
     });
 
     if (prop.fixedOrder) {
-      const primaryProp = this.defineFixedOrderProperty(prop);
+      const primaryProp = await this.defineFixedOrderProperty(prop);
       data.properties[primaryProp.name] = primaryProp;
       data.primaryKeys = [primaryProp.name];
     } else {
@@ -441,13 +453,13 @@ export class MetadataDiscovery {
       }
     }
 
-    data.properties[meta.name + '_owner'] = this.definePivotProperty(prop, meta.name + '_owner', meta.name!, prop.type + '_inverse', true);
-    data.properties[prop.type + '_inverse'] = this.definePivotProperty(prop, prop.type + '_inverse', prop.type, meta.name + '_owner', false);
+    data.properties[meta.name + '_owner'] = await this.definePivotProperty(prop, meta.name + '_owner', meta.name!, prop.type + '_inverse', true);
+    data.properties[prop.type + '_inverse'] = await this.definePivotProperty(prop, prop.type + '_inverse', prop.type, meta.name + '_owner', false);
 
     return this.metadata.set(prop.pivotTable, data);
   }
 
-  private defineFixedOrderProperty(prop: EntityProperty): EntityProperty {
+  private async defineFixedOrderProperty(prop: EntityProperty): Promise<EntityProperty> {
     const pk = prop.fixedOrderColumn || this.namingStrategy.referenceColumnName();
     const primaryProp = {
       name: pk,
@@ -458,7 +470,7 @@ export class MetadataDiscovery {
       unsigned: this.platform.supportsUnsigned(),
     } as EntityProperty;
     this.initFieldName(primaryProp);
-    this.initColumnType(primaryProp);
+    await this.initColumnType(primaryProp);
     prop.fixedOrderColumn = pk;
 
     if (prop.inversedBy) {
@@ -470,7 +482,7 @@ export class MetadataDiscovery {
     return primaryProp;
   }
 
-  private definePivotProperty(prop: EntityProperty, name: string, type: string, inverse: string, owner: boolean): EntityProperty {
+  private async definePivotProperty(prop: EntityProperty, name: string, type: string, inverse: string, owner: boolean): Promise<EntityProperty> {
     const ret = {
       name,
       type,
@@ -518,7 +530,7 @@ export class MetadataDiscovery {
       });
     }
 
-    this.initColumnType(ret);
+    await this.initColumnType(ret);
 
     return ret;
   }
@@ -590,7 +602,7 @@ export class MetadataDiscovery {
     let order = meta.propertyOrder.get(embeddedProp.name)!;
     const getRootProperty: (prop: EntityProperty) => EntityProperty = (prop: EntityProperty) => prop.embedded ? getRootProperty(meta.properties[prop.embedded[0]]) : prop;
 
-    for (const prop of Object.values(embeddable!.properties)) {
+    for (const prop of Object.values(embeddable!.properties).filter(p => p.persist !== false)) {
       const prefix = embeddedProp.prefix === false ? '' : embeddedProp.prefix === true ? embeddedProp.name + '_' : embeddedProp.prefix;
       const name = prefix + prop.name;
 
@@ -756,7 +768,7 @@ export class MetadataDiscovery {
 
     // `string[]` can be returned via ts-morph, while reflect metadata will give us just `array`
     if (!prop.customType && !prop.columnTypes && ['string[]', 'array'].includes(prop.type)) {
-      prop.customType = new ArrayType();
+      prop.customType = Type.getType(ArrayType);
     }
 
     // for number arrays we make sure to convert the items to numbers
@@ -765,11 +777,11 @@ export class MetadataDiscovery {
     }
 
     if (!prop.customType && !prop.columnTypes && prop.type === 'Buffer') {
-      prop.customType = new BlobType();
+      prop.customType = Type.getType(BlobType);
     }
 
     if (!prop.customType && !prop.columnTypes && prop.type === 'json') {
-      prop.customType = new JsonType();
+      prop.customType = Type.getType(JsonType);
     }
 
     if (prop.type as unknown instanceof Type) {
@@ -800,7 +812,7 @@ export class MetadataDiscovery {
     prop.targetMeta = meta2;
   }
 
-  private initColumnType(prop: EntityProperty, path?: string): void {
+  private async initColumnType(prop: EntityProperty, path?: string): Promise<void> {
     this.initUnsigned(prop);
     this.metadata.find(prop.type)?.getPrimaryProps().map(pk => {
       prop.length = prop.length ?? pk.length;
@@ -815,7 +827,7 @@ export class MetadataDiscovery {
     }
 
     if (prop.enum && !prop.items && prop.type && path) {
-      this.initEnumValues(prop, path);
+      await this.initEnumValues(prop, path);
     }
 
     if (prop.reference === ReferenceType.SCALAR) {
@@ -831,9 +843,10 @@ export class MetadataDiscovery {
 
     const meta = this.metadata.get(prop.type);
     prop.columnTypes = [];
-    meta.getPrimaryProps().forEach(pk => {
+
+    for (const pk of meta.getPrimaryProps()) {
       this.initCustomType(meta, pk);
-      this.initColumnType(pk);
+      await this.initColumnType(pk);
 
       const mappedType = this.getMappedType(pk);
       let columnTypes = pk.columnTypes;
@@ -847,7 +860,7 @@ export class MetadataDiscovery {
       if (!meta.compositePK) {
         prop.customType = pk.customType;
       }
-    });
+    }
   }
 
   private getMappedType(prop: EntityProperty): Type<unknown> {
@@ -864,10 +877,9 @@ export class MetadataDiscovery {
     return prop.customType ?? this.platform.getMappedType(t);
   }
 
-  private initEnumValues(prop: EntityProperty, path: string): void {
+  private async initEnumValues(prop: EntityProperty, path: string): Promise<void> {
     path = Utils.normalizePath(this.config.get('baseDir'), path);
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const exports = require(path);
+    const exports = await import(path);
     const target = exports[prop.type] || exports.default;
 
     if (target) {
@@ -901,9 +913,8 @@ export class MetadataDiscovery {
     return prop.type === 'number' || this.platform.isBigIntProperty(prop);
   }
 
-  private getEntityClassOrSchema(path: string, name: string) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const exports = require(path);
+  private async getEntityClassOrSchema(path: string, name: string) {
+    const exports = await import(path);
     const targets = Object.values<Dictionary>(exports)
       .filter(item => item instanceof EntitySchema || (item instanceof Function && MetadataStorage.isKnownEntity(item.name)));
 

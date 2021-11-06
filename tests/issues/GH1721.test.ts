@@ -1,5 +1,5 @@
 import { Entity, Logger, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { Guid } from 'guid-typescript';
 
 export class GuidType extends Type<Guid | undefined, string | undefined> {

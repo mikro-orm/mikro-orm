@@ -1,5 +1,5 @@
 import { AsyncLocalStorage } from 'async_hooks';
-import { EntityManager } from '../EntityManager';
+import type { EntityManager } from '../EntityManager';
 
 export class TransactionContext {
 

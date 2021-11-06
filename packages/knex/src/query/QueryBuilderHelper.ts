@@ -1,21 +1,16 @@
-import { Knex } from 'knex';
+import type { Knex } from 'knex';
 import { inspect } from 'util';
+import type { Dictionary, EntityMetadata, EntityProperty, FlatQueryOrderMap, MetadataStorage, Platform, EntityData, QBFilterQuery } from '@mikro-orm/core';
 import {
-  Dictionary,
-  EntityMetadata,
-  EntityProperty,
-  FlatQueryOrderMap,
   LockMode,
-  MetadataStorage,
   OptimisticLockError,
-  Platform,
   QueryOperator,
   QueryOrderNumeric,
   ReferenceType,
   Utils,
 } from '@mikro-orm/core';
 import { QueryType } from './enums';
-import { JoinOptions } from '../typings';
+import type { Field, JoinOptions } from '../typings';
 
 /**
  * @internal
@@ -268,6 +263,31 @@ export class QueryBuilderHelper {
     return `%${value}%`;
   }
 
+  appendOnConflictClause<T>(type: QueryType, onConflict: { fields: string[]; ignore?: boolean; merge?: EntityData<T> | Field<T>[]; where?: QBFilterQuery<T> }[], qb: Knex.QueryBuilder): void {
+    onConflict.forEach(item => {
+      const sub = qb.onConflict(item.fields);
+      Utils.runIfNotEmpty(() => sub.ignore(), item.ignore);
+      Utils.runIfNotEmpty(() => {
+        let mergeParam: Dictionary | string[] = item.merge!;
+
+        if (Utils.isObject(item.merge)) {
+          mergeParam = {};
+          Object.keys(item.merge).forEach(key => {
+            const k = this.mapper(key, type) as string;
+            mergeParam[k] = item.merge![key];
+          });
+        }
+
+        if (Array.isArray(item.merge)) {
+          mergeParam = (item.merge as string[]).map(key => this.mapper(key, type));
+        }
+
+        const sub2 = sub.merge(mergeParam);
+        Utils.runIfNotEmpty(() => this.appendQueryCondition(type, item.where, sub2), item.where);
+      }, 'merge' in item);
+    });
+  }
+
   appendQueryCondition(type: QueryType, cond: any, qb: Knex.QueryBuilder, operator?: '$and' | '$or', method: 'where' | 'having' = 'where'): void {
     const m = operator === '$or' ? 'orWhere' : 'andWhere';
 
@@ -434,7 +454,18 @@ export class QueryBuilderHelper {
     }
   }
 
-  getQueryOrder(type: QueryType, orderBy: FlatQueryOrderMap, populate: Dictionary<string>): string {
+  getQueryOrder(type: QueryType, orderBy: FlatQueryOrderMap | FlatQueryOrderMap[], populate: Dictionary<string>): string {
+    if (Array.isArray(orderBy)) {
+      return orderBy
+        .map(o => this.getQueryOrder(type, o, populate))
+        .filter(o => o)
+        .join(', ');
+    }
+
+    return this.getQueryOrderFromObject(type, orderBy, populate);
+  }
+
+  getQueryOrderFromObject(type: QueryType, orderBy: FlatQueryOrderMap, populate: Dictionary<string>): string {
     const ret: string[] = [];
     Object.keys(orderBy).forEach(k => {
       const direction = orderBy[k];
@@ -514,7 +545,9 @@ export class QueryBuilderHelper {
   }
 
   static isCustomExpression(field: string, hasAlias = false): boolean {
-    const re = hasAlias ? /[ ?<>=()'"`]|^\d/ : /[?<>=()'"`]|^\d/; // if we do not have alias, we don't consider spaces as custom expressions
+    // if we do not have alias, we don't consider spaces as custom expressions
+    const re = hasAlias ? /[ ?<>=()'"`:]|^\d/ : /[?<>=()'"`:]|^\d/;
+
     return !!field.match(re);
   }
 

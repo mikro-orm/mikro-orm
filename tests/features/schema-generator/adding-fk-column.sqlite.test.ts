@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { Entity, MikroORM, OneToOne, PrimaryKey } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 class Profile {
@@ -47,9 +47,13 @@ describe('adding FK column (GH 942)', () => {
   test('schema: adding 1:1 relation', async () => {
     await orm.discoverEntity(User2);
     orm.getMetadata().reset('User');
-    const diff1 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    const diff1 = await orm.getSchemaGenerator().getUpdateSchemaSQL();
     expect(diff1).toMatchSnapshot();
     await orm.getSchemaGenerator().execute(diff1);
+
+    // sqlite does not support automatic down migrations
+    const diff2 = await orm.getSchemaGenerator().getUpdateSchemaMigrationSQL();
+    expect(diff2.down).toBe('');
   });
 
 });

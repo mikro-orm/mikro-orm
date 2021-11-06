@@ -20,14 +20,20 @@ export class B {
 
 describe('GH issue 915', () => {
 
-  test(`removing entity with FK primary do not remove the referenced entity`, async () => {
-    const orm = await MikroORM.init({
+  let orm: MikroORM;
+
+  beforeAll(async () => {
+    orm = await MikroORM.init({
       entities: [A, B],
       type: 'sqlite',
       dbName: ':memory:',
     });
     await orm.getSchemaGenerator().createSchema();
+  });
 
+  afterAll(() => orm.close(true));
+
+  test(`removing entity with FK primary do not remove the referenced entity`, async () => {
     const a = new A();
     const b = new B();
     b.object = a;

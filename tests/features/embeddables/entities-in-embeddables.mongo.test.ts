@@ -1,5 +1,7 @@
-import { assign, Embeddable, Embedded, Entity, Logger, ManyToOne, MikroORM, ObjectHydrator, PrimaryKey, Property, wrap } from '@mikro-orm/core';
-import { ObjectId, MongoDriver } from '@mikro-orm/mongodb';
+import type { ObjectHydrator } from '@mikro-orm/core';
+import { assign, Embeddable, Embedded, Entity, Logger, ManyToOne, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/core';
+import type { MongoDriver } from '@mikro-orm/mongodb';
+import { ObjectId } from '@mikro-orm/mongodb';
 
 @Entity()
 class Source {
@@ -401,12 +403,12 @@ describe('embedded entities in mongo', () => {
       orderBy: { name: 'desc' },
     });
 
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('user').find({}, { session: undefined }).sort({ name: -1 }).toArray();`);
-    expect(mock.mock.calls[1][0]).toMatch(`db.getCollection('source').find({ _id: { '$in': [ ObjectId('600000000000000000000004'), ObjectId('600000000000000000000012') ] } }, { session: undefined }).sort({ _id: 1 }).toArray();`);
-    expect(mock.mock.calls[2][0]).toMatch(`db.getCollection('source').find({ _id: { '$in': [ ObjectId('600000000000000000000003'), ObjectId('600000000000000000000013') ] } }, { session: undefined }).sort({ _id: 1 }).toArray();`);
-    expect(mock.mock.calls[3][0]).toMatch(`db.getCollection('source').find({ _id: { '$in': [ ObjectId('600000000000000000000002') ] } }, { session: undefined }).sort({ _id: 1 }).toArray();`);
-    expect(mock.mock.calls[4][0]).toMatch(`db.getCollection('source').find({ _id: { '$in': [ ObjectId('600000000000000000000014'), ObjectId('600000000000000000000015') ] } }, { session: undefined }).sort({ _id: 1 }).toArray();`);
-    expect(mock.mock.calls[5][0]).toMatch(`db.getCollection('source').find({ _id: { '$in': [ ObjectId('600000000000000000000016'), ObjectId('600000000000000000000017'), ObjectId('600000000000000000000018'), ObjectId('600000000000000000000019'), ObjectId('60000000000000000000001a'), ObjectId('60000000000000000000001b') ] } }, { session: undefined }).sort({ _id: 1 }).toArray();`);
+    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('user').find({}, { session: undefined }).sort([ [ 'name', -1 ] ]).toArray();`);
+    expect(mock.mock.calls[1][0]).toMatch(`db.getCollection('source').find({ _id: { '$in': [ ObjectId('600000000000000000000004'), ObjectId('600000000000000000000012') ] } }, { session: undefined }).sort([ [ '_id', 1 ] ]).toArray();`);
+    expect(mock.mock.calls[2][0]).toMatch(`db.getCollection('source').find({ _id: { '$in': [ ObjectId('600000000000000000000003'), ObjectId('600000000000000000000013') ] } }, { session: undefined }).sort([ [ '_id', 1 ] ]).toArray();`);
+    expect(mock.mock.calls[3][0]).toMatch(`db.getCollection('source').find({ _id: { '$in': [ ObjectId('600000000000000000000002') ] } }, { session: undefined }).sort([ [ '_id', 1 ] ]).toArray();`);
+    expect(mock.mock.calls[4][0]).toMatch(`db.getCollection('source').find({ _id: { '$in': [ ObjectId('600000000000000000000014'), ObjectId('600000000000000000000015') ] } }, { session: undefined }).sort([ [ '_id', 1 ] ]).toArray();`);
+    expect(mock.mock.calls[5][0]).toMatch(`db.getCollection('source').find({ _id: { '$in': [ ObjectId('600000000000000000000016'), ObjectId('600000000000000000000017'), ObjectId('600000000000000000000018'), ObjectId('600000000000000000000019'), ObjectId('60000000000000000000001a'), ObjectId('60000000000000000000001b') ] } }, { session: undefined }).sort([ [ '_id', 1 ] ]).toArray();`);
     expect(wrap(users[0].profile1.source).isInitialized()).toBe(true);
     expect(users[0].profile1.source!.name).toBe('s1');
     expect(wrap(users[1].profile1.identity.links[1].source).isInitialized()).toBe(true);

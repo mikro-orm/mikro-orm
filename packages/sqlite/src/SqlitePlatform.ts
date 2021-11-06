@@ -1,6 +1,7 @@
 // @ts-ignore
 import { escape } from 'sqlstring-sqlite';
-import { EntityProperty, JsonProperty, Utils } from '@mikro-orm/core';
+import type { EntityProperty } from '@mikro-orm/core';
+import { JsonProperty, Utils } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { SqliteSchemaHelper } from './SqliteSchemaHelper';
 import { SqliteExceptionConverter } from './SqliteExceptionConverter';
@@ -25,7 +26,7 @@ export class SqlitePlatform extends AbstractSqlPlatform {
   getEnumTypeDeclarationSQL(column: { items?: unknown[]; fieldNames: string[]; length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
     /* istanbul ignore next */
     if (column.items?.every(item => Utils.isString(item))) {
-      return `text check (${this.quoteIdentifier(column.fieldNames[0])} in ('${column.items.join("', '")}')`;
+      return 'text';
     }
 
     return this.getTinyIntTypeDeclarationSQL(column);
@@ -117,6 +118,10 @@ export class SqlitePlatform extends AbstractSqlPlatform {
     }
 
     return super.getIndexName(tableName, columns, type);
+  }
+
+  supportsDownMigrations(): boolean {
+    return false;
   }
 
 }

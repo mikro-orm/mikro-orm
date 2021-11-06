@@ -1,4 +1,4 @@
-import { Arguments, CommandModule } from 'yargs';
+import type { Arguments, CommandModule } from 'yargs';
 import c from 'ansi-colors';
 import { MetadataDiscovery, MetadataStorage } from '@mikro-orm/core';
 import { CLIHelper } from '../CLIHelper';
@@ -12,7 +12,7 @@ export class GenerateCacheCommand implements CommandModule {
    * @inheritDoc
    */
   async handler(args: Arguments) {
-    const config = await CLIHelper.getConfiguration(false);
+    const config = await CLIHelper.getConfiguration();
 
     if (!config.get('cache').enabled) {
       return CLIHelper.dump(c.red('Metadata cache is disabled in your configuration. Set cache.enabled to true to use this command.'));

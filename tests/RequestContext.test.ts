@@ -27,15 +27,18 @@ describe('RequestContext', () => {
 
   test('create new context (async)', async () => {
     expect(RequestContext.getEntityManager()).toBeUndefined();
-    await RequestContext.createAsync(orm.em, async () => {
+    const ret = await RequestContext.createAsync(orm.em, async () => {
       const em = RequestContext.getEntityManager()!;
       expect(em).not.toBe(orm.em);
       // access UoW via property so we do not get the one from request context automatically
       // @ts-ignore
       expect(em.unitOfWork.getIdentityMap()).not.toBe(orm.em.unitOfWork.getIdentityMap());
       expect(RequestContext.currentRequestContext()).not.toBeUndefined();
+
+      return 123;
     });
     expect(RequestContext.currentRequestContext()).toBeUndefined();
+    expect(ret).toBe(123);
   });
 
   test('request context does not break population', async () => {
@@ -48,7 +51,7 @@ describe('RequestContext', () => {
     await new Promise<void>(resolve => {
       RequestContext.create(orm.em, async () => {
         const em = RequestContext.getEntityManager()!;
-        const jon = await em.findOne(Author, author.id, ['favouriteBook']);
+        const jon = await em.findOne(Author, author.id, { populate: ['favouriteBook'] });
         expect(jon!.favouriteBook).toBeInstanceOf(Book);
         expect(wrap(jon!.favouriteBook).isInitialized()).toBe(true);
         expect(jon!.favouriteBook.title).toBe('Bible');

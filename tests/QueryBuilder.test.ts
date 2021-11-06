@@ -1,6 +1,6 @@
 import { inspect } from 'util';
 import { LockMode, MikroORM, QueryFlag, QueryOrder } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { CriteriaNode } from '@mikro-orm/knex';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { Address2, Author2, Book2, BookTag2, Car2, CarOwner2, Configuration2, FooBar2, FooBaz2, FooParam2, Publisher2, PublisherType, Test2, User2 } from './entities-sql';
@@ -67,6 +67,21 @@ describe('QueryBuilder', () => {
     qb2.select('*').where({ name: 'test 123' }).orderBy({ name: 'desc', type: -1 }).limit(2, 1);
     expect(qb2.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` = ? order by `e0`.`name` desc, `e0`.`type` desc limit ? offset ?');
     expect(qb2.getParams()).toEqual(['test 123', 2, 1]);
+
+    const qb3 = orm.em.createQueryBuilder(Publisher2);
+    qb3.select('*').where({ name: 'test 123' }).orderBy([{ name: 'desc' }, { type: -1 }]).limit(2, 1);
+    expect(qb3.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` = ? order by `e0`.`name` desc, `e0`.`type` desc limit ? offset ?');
+    expect(qb3.getParams()).toEqual(['test 123', 2, 1]);
+
+    const qb4 = orm.em.createQueryBuilder(Publisher2);
+    qb4.select('*').where({ name: 'test 123' }).orderBy([{ name: 'desc', type: -1 }]).limit(2, 1);
+    expect(qb4.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` = ? order by `e0`.`name` desc, `e0`.`type` desc limit ? offset ?');
+    expect(qb4.getParams()).toEqual(['test 123', 2, 1]);
+
+    const qb5 = orm.em.createQueryBuilder(Publisher2);
+    qb5.select('*').where({ name: 'test 123' }).orderBy([{ name: 'desc' }, { type: -1 }, { name: 'asc' }]).limit(2, 1);
+    expect(qb5.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` = ? order by `e0`.`name` desc, `e0`.`type` desc, `e0`.`name` asc limit ? offset ?');
+    expect(qb5.getParams()).toEqual(['test 123', 2, 1]);
   });
 
   test('select constant expression', async () => {
@@ -1203,7 +1218,7 @@ describe('QueryBuilder', () => {
         updatedAt: timestamp,
       });
 
-    expect(qb1.getQuery()).toEqual('insert into `author2` (`created_at`, `email`, `name`, `updated_at`) values (?, ?, ?, ?) on duplicate key update `name` = ?,`updatedAt` = ?');
+    expect(qb1.getQuery()).toEqual('insert into `author2` (`created_at`, `email`, `name`, `updated_at`) values (?, ?, ?, ?) on duplicate key update `name` = ?,`updated_at` = ?');
     expect(qb1.getParams()).toEqual([timestamp, 'ignore@example.com', 'John Doe', timestamp, 'John Doe', timestamp]);
 
     const qb2 = orm.em.createQueryBuilder(Author2)
@@ -1227,9 +1242,9 @@ describe('QueryBuilder', () => {
         updatedAt: timestamp,
       })
       .onConflict('email')
-      .merge(['name']);
+      .merge(['name', 'updatedAt']);
 
-    expect(qb3.getQuery()).toEqual('insert into `author2` (`created_at`, `email`, `name`, `updated_at`) values (?, ?, ?, ?) on duplicate key update `name` = values(`name`)');
+    expect(qb3.getQuery()).toEqual('insert into `author2` (`created_at`, `email`, `name`, `updated_at`) values (?, ?, ?, ?) on duplicate key update `name` = values(`name`), `updated_at` = values(`updated_at`)');
     expect(qb3.getParams()).toEqual([timestamp, 'ignore@example.com', 'John Doe', timestamp]);
 
     const qb4 = orm.em.createQueryBuilder(Author2)
@@ -1277,6 +1292,13 @@ describe('QueryBuilder', () => {
   test('update query with column reference', async () => {
     const qb = orm.em.createQueryBuilder(Book2);
     qb.update({ price: qb.raw('price + 1') }).where({ uuid: '123' });
+    expect(qb.getQuery()).toEqual('update `book2` set `price` = price + 1 where `uuid_pk` = ?');
+    expect(qb.getParams()).toEqual(['123']);
+  });
+
+  test('update query with column reference via static raw helper', async () => {
+    const qb = orm.em.createQueryBuilder(Book2);
+    qb.update({ price: orm.em.raw('price + 1') }).where({ uuid: '123' });
     expect(qb.getQuery()).toEqual('update `book2` set `price` = price + 1 where `uuid_pk` = ?');
     expect(qb.getParams()).toEqual(['123']);
   });
@@ -1365,6 +1387,20 @@ describe('QueryBuilder', () => {
   test('delete query', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
     qb.delete({ name: 'test 123', type: PublisherType.GLOBAL });
+    expect(qb.getQuery()).toEqual('delete from `publisher2` where `name` = ? and `type` = ?');
+    expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL]);
+  });
+
+  test('delete all query', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2);
+    qb.delete();
+    expect(qb.getQuery()).toEqual('delete from `publisher2`');
+    expect(qb.getParams()).toEqual([]);
+  });
+
+  test('lazy delete query', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2);
+    qb.where({ name: 'test 123', type: PublisherType.GLOBAL }).delete();
     expect(qb.getQuery()).toEqual('delete from `publisher2` where `name` = ? and `type` = ?');
     expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL]);
   });
@@ -1868,7 +1904,7 @@ describe('QueryBuilder', () => {
       })
       .where({ updatedAt: { $lt: timestamp } });
 
-    expect(qb10.getQuery()).toEqual('insert into "author2" ("created_at", "email", "name", "updated_at") values ($1, $2, $3, $4) on conflict ("email") do update set "name" = $5,"updatedAt" = $6 where "updated_at" < $7 returning "id", "created_at", "updated_at", "age", "terms_accepted"');
+    expect(qb10.getQuery()).toEqual('insert into "author2" ("created_at", "email", "name", "updated_at") values ($1, $2, $3, $4) on conflict ("email") do update set "name" = $5,"updated_at" = $6 where "updated_at" < $7 returning "id", "created_at", "updated_at", "age", "terms_accepted"');
     expect(qb10.getParams()).toEqual([timestamp, 'ignore@example.com', 'John Doe', timestamp, 'John Doe', timestamp, timestamp]);
 
     const qb11 = pg.em.createQueryBuilder(Book2).where({ meta: { foo: 123 } });
@@ -1984,17 +2020,17 @@ describe('QueryBuilder', () => {
     const sql0 = orm.em.createQueryBuilder(Author2).select('*').where({ books: '123' }).getQuery();
     expect(sql0).toBe('select `e0`.* from `author2` as `e0` left join `book2` as `e1` on `e0`.`id` = `e1`.`author_id` where `e1`.`uuid_pk` = ?');
     const expected = 'select `e0`.* from `author2` as `e0` left join `book2` as `e1` on `e0`.`id` = `e1`.`author_id` where `e1`.`uuid_pk` in (?)';
-    const sql1 = orm.em.createQueryBuilder(Author2).where({ books: [123] }).getQuery();
+    const sql1 = orm.em.createQueryBuilder(Author2).where({ books: ['123'] }).getQuery();
     expect(sql1).toBe(expected);
-    const sql2 = orm.em.createQueryBuilder(Author2).where({ books: { uuid: [123] } }).getQuery();
+    const sql2 = orm.em.createQueryBuilder(Author2).where({ books: { uuid: ['123'] } }).getQuery();
     expect(sql2).toBe(expected);
-    const sql3 = orm.em.createQueryBuilder(Author2).where({ books: { uuid: { $in: [123] } } }).getQuery();
+    const sql3 = orm.em.createQueryBuilder(Author2).where({ books: { uuid: { $in: ['123'] } } }).getQuery();
     expect(sql3).toBe(expected);
-    const sql4 = orm.em.createQueryBuilder(Author2).where({ $and: [{ books: { uuid: { $in: [123] } } }] }).getQuery();
+    const sql4 = orm.em.createQueryBuilder(Author2).where({ $and: [{ books: { uuid: { $in: ['123'] } } }] }).getQuery();
     expect(sql4).toBe(expected);
-    const sql5 = orm.em.createQueryBuilder(Author2).where({ $and: [{ books: [123] }] }).getQuery();
+    const sql5 = orm.em.createQueryBuilder(Author2).where({ $and: [{ books: ['123'] }] }).getQuery();
     expect(sql5).toBe(expected);
-    const sql6 = orm.em.createQueryBuilder(Author2).where({ $and: [{ books: { uuid: [123] } }] }).getQuery();
+    const sql6 = orm.em.createQueryBuilder(Author2).where({ $and: [{ books: { uuid: ['123'] } }] }).getQuery();
     expect(sql6).toBe(expected);
   });
 

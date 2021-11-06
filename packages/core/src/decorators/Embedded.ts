@@ -1,4 +1,4 @@
-import { AnyEntity, EntityProperty } from '../typings';
+import type { AnyEntity, EntityProperty } from '../typings';
 import { MetadataStorage, MetadataValidator } from '../metadata';
 import { Utils } from '../utils';
 import { ReferenceType } from '../enums';

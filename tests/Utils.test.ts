@@ -1,6 +1,7 @@
 import path from 'path';
 import { ObjectId } from 'mongodb';
-import { compareObjects, EntityMetadata, MikroORM, Utils } from '@mikro-orm/core';
+import type { EntityMetadata, MikroORM } from '@mikro-orm/core';
+import { compareObjects, Utils } from '@mikro-orm/core';
 import { Author } from './entities';
 import { initORMMongo, wipeDatabase, BASE_DIR } from './bootstrap';
 import FooBar from './entities/FooBar';

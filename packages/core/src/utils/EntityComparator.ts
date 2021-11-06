@@ -1,7 +1,7 @@
 import clone from 'clone';
-import { AnyEntity, EntityData, EntityDictionary, EntityMetadata, EntityProperty, IMetadataStorage, Primary } from '../typings';
+import type { AnyEntity, EntityData, EntityDictionary, EntityMetadata, EntityProperty, IMetadataStorage, Primary } from '../typings';
 import { ReferenceType } from '../enums';
-import { Platform } from '../platforms';
+import type { Platform } from '../platforms';
 import { compareArrays, compareBuffers, compareObjects, equals, Utils } from './Utils';
 
 type Comparator<T> = (a: T, b: T) => EntityData<T>;
@@ -66,9 +66,9 @@ export class EntityComparator {
       lines.push(`  const cond = {`);
       meta.primaryKeys.forEach(pk => {
         if (meta.properties[pk].reference !== ReferenceType.SCALAR) {
-          lines.push(`    ${pk}: (entity.${pk} != null && (entity.${pk}.__entity || entity.${pk}.__reference)) ? entity.${pk}.__helper.getPrimaryKey() : entity.${pk},`);
+          lines.push(`    ${pk}: (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) ? entity${this.wrap(pk)}.__helper.getPrimaryKey() : entity${this.wrap(pk)},`);
         } else {
-          lines.push(`    ${pk}: entity.${pk},`);
+          lines.push(`    ${pk}: entity${this.wrap(pk)},`);
         }
       });
       lines.push(`  };`);
@@ -78,13 +78,14 @@ export class EntityComparator {
       const pk = meta.primaryKeys[0];
 
       if (meta.properties[pk].reference !== ReferenceType.SCALAR) {
-        lines.push(`  if (entity.${pk} != null && (entity.${pk}.__entity || entity.${pk}.__reference)) return entity.${pk}.__helper.getPrimaryKey();`);
+        lines.push(`  if (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) return entity${this.wrap(pk)}.__helper.getPrimaryKey();`);
       }
 
-      lines.push(`  return entity.${pk};`);
+      lines.push(`  return entity${this.wrap(pk)};`);
     }
 
-    const code = `return function(entity) {\n${lines.join('\n')}\n}`;
+    const code = `// compiled pk serializer for entity ${meta.className}\n`
+      + `return function(entity) {\n${lines.join('\n')}\n}`;
     const pkSerializer = Utils.createFunction(context, code);
     this.pkGetters.set(meta.className, pkSerializer);
 
@@ -109,9 +110,9 @@ export class EntityComparator {
       lines.push(`  const cond = {`);
       meta.primaryKeys.forEach(pk => {
         if (meta.properties[pk].reference !== ReferenceType.SCALAR) {
-          lines.push(`    ${pk}: (entity.${pk} != null && (entity.${pk}.__entity || entity.${pk}.__reference)) ? entity.${pk}.__helper.getPrimaryKey(true) : entity.${pk},`);
+          lines.push(`    ${pk}: (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) ? entity${this.wrap(pk)}.__helper.getPrimaryKey(true) : entity${this.wrap(pk)},`);
         } else {
-          lines.push(`    ${pk}: entity.${pk},`);
+          lines.push(`    ${pk}: entity${this.wrap(pk)},`);
         }
       });
       lines.push(`  };`);
@@ -121,18 +122,19 @@ export class EntityComparator {
       const pk = meta.primaryKeys[0];
 
       if (meta.properties[pk].reference !== ReferenceType.SCALAR) {
-        lines.push(`  if (entity.${pk} != null && (entity.${pk}.__entity || entity.${pk}.__reference)) return entity.${pk}.__helper.getPrimaryKey(true);`);
+        lines.push(`  if (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) return entity${this.wrap(pk)}.__helper.getPrimaryKey(true);`);
       }
 
       if (meta.properties[pk].customType) {
         context.set(`convertToDatabaseValue_${pk}`, (val: any) => meta.properties[pk].customType.convertToDatabaseValue(val, this.platform));
-        lines.push(`  return convertToDatabaseValue_${pk}(entity.${pk});`);
+        lines.push(`  return convertToDatabaseValue_${pk}(entity${this.wrap(pk)});`);
       } else {
-        lines.push(`  return entity.${pk};`);
+        lines.push(`  return entity${this.wrap(pk)};`);
       }
     }
 
-    const code = `return function(entity) {\n${lines.join('\n')}\n}`;
+    const code = `// compiled pk getter (with converted custom types) for entity ${meta.className}\n`
+      + `return function(entity) {\n${lines.join('\n')}\n}`;
     const pkSerializer = Utils.createFunction(context, code);
     this.pkGettersConverted.set(meta.className, pkSerializer);
 
@@ -157,9 +159,9 @@ export class EntityComparator {
       lines.push(`  const pks = [`);
       meta.primaryKeys.forEach(pk => {
         if (meta.properties[pk].reference !== ReferenceType.SCALAR) {
-          lines.push(`    (entity.${pk} != null && (entity.${pk}.__entity || entity.${pk}.__reference)) ? entity.${pk}.__helper.getSerializedPrimaryKey() : entity.${pk},`);
+          lines.push(`    (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) ? entity${this.wrap(pk)}.__helper.getSerializedPrimaryKey() : entity${this.wrap(pk)},`);
         } else {
-          lines.push(`    entity.${pk},`);
+          lines.push(`    entity${this.wrap(pk)},`);
         }
       });
       lines.push(`  ];`);
@@ -168,13 +170,14 @@ export class EntityComparator {
       const pk = meta.primaryKeys[0];
 
       if (meta.properties[pk].reference !== ReferenceType.SCALAR) {
-        lines.push(`  if (entity.${pk} != null && (entity.${pk}.__entity || entity.${pk}.__reference)) return entity.${pk}.__helper.getSerializedPrimaryKey();`);
+        lines.push(`  if (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) return entity${this.wrap(pk)}.__helper.getSerializedPrimaryKey();`);
       }
 
       lines.push(`  return '' + entity.${meta.serializedPrimaryKey};`);
     }
 
-    const code = `return function(entity) {\n${lines.join('\n')}\n}`;
+    const code = `// compiled pk serializer for entity ${meta.className}\n`
+      + `return function(entity) {\n${lines.join('\n')}\n}`;
     const pkSerializer = Utils.createFunction(context, code);
     this.pkSerializers.set(meta.className, pkSerializer);
 
@@ -198,7 +201,7 @@ export class EntityComparator {
     context.set('cloneEmbeddable', (o: any) => this.platform.cloneEmbeddable(o)); // do not clone prototypes
 
     if (meta.discriminatorValue) {
-      lines.push(`  ret.${meta.root.discriminatorColumn} = '${meta.discriminatorValue}'`);
+      lines.push(`  ret${this.wrap(meta.root.discriminatorColumn!)} = '${meta.discriminatorValue}'`);
     }
 
     const getRootProperty: (prop: EntityProperty) => EntityProperty = (prop: EntityProperty) => prop.embedded ? getRootProperty(meta.properties[prop.embedded[0]]) : prop;
@@ -209,7 +212,7 @@ export class EntityComparator {
         const root = getRootProperty(prop);
         return prop === root || root.reference !== ReferenceType.EMBEDDED;
       })
-      .forEach(prop => lines.push(this.getPropertySnapshot(meta, prop, context, prop.name, prop.name, [prop.name])));
+      .forEach(prop => lines.push(this.getPropertySnapshot(meta, prop, context, this.wrap(prop.name), this.wrap(prop.name), [prop.name])));
 
     const code = `return function(entity) {\n  const ret = {};\n${lines.join('\n')}\n  return ret;\n}`;
     const snapshotGenerator = Utils.createFunction(context, code);
@@ -231,77 +234,85 @@ export class EntityComparator {
     const meta = this.metadata.get<T>(entityName)!;
     const lines: string[] = [];
     const context = new Map<string, any>();
-    const propName = (name: string, parent = 'result') => parent + (name.includes(' ') ? `['${name}']` : `.${name}`);
+    const propName = (name: string, parent = 'result') => parent + this.wrap(name);
 
     lines.push(`  const mapped = {};`);
     meta.props.forEach(prop => {
       if (prop.fieldNames) {
         if (prop.fieldNames.length > 1) {
-          lines.push(`  if (${prop.fieldNames.map(field => `${propName(field)} != null`).join(' && ')}) {\n    ret.${prop.name} = [${prop.fieldNames.map(field => `${propName(field)}`).join(', ')}];`);
+          lines.push(`  if (${prop.fieldNames.map(field => `${propName(field)} != null`).join(' && ')}) {\n    ret${this.wrap(prop.name)} = [${prop.fieldNames.map(field => `${propName(field)}`).join(', ')}];`);
           lines.push(...prop.fieldNames.map(field => `    ${propName(field, 'mapped')} = true;`));
-          lines.push(`  } else if (${prop.fieldNames.map(field => `${propName(field)} == null`).join(' && ')}) {\n    ret.${prop.name} = null;`);
+          lines.push(`  } else if (${prop.fieldNames.map(field => `${propName(field)} == null`).join(' && ')}) {\n    ret${this.wrap(prop.name)} = null;`);
           lines.push(...prop.fieldNames.map(field => `    ${propName(field, 'mapped')} = true;`), '  }');
         } else {
           if (prop.type === 'boolean') {
-            lines.push(`  if ('${prop.fieldNames[0]}' in result) { ret.${prop.name} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : !!${propName(prop.fieldNames[0])}; mapped.${prop.fieldNames[0]} = true; }`);
+            lines.push(`  if ('${prop.fieldNames[0]}' in result) { ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : !!${propName(prop.fieldNames[0])}; mapped.${prop.fieldNames[0]} = true; }`);
           } else {
-            lines.push(`  if ('${prop.fieldNames[0]}' in result) { ret.${prop.name} = ${propName(prop.fieldNames[0])}; ${propName(prop.fieldNames[0], 'mapped')} = true; }`);
+            lines.push(`  if ('${prop.fieldNames[0]}' in result) { ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])}; ${propName(prop.fieldNames[0], 'mapped')} = true; }`);
           }
         }
       }
     });
     lines.push(`  for (let k in result) { if (result.hasOwnProperty(k) && !mapped[k]) ret[k] = result[k]; }`);
 
-    const code = `return function(result) {\n  const ret = {};\n${lines.join('\n')}\n  return ret;\n}`;
+    const code = `// compiled mapper for entity ${meta.className}\n`
+      + `return function(result) {\n  const ret = {};\n${lines.join('\n')}\n  return ret;\n}`;
     const snapshotGenerator = Utils.createFunction(context, code);
     this.mappers.set(entityName, snapshotGenerator);
 
     return snapshotGenerator;
   }
 
-  private getPropertyCondition<T>(prop: EntityProperty<T>, entityKey: string): string {
-    const parts = entityKey.split('.');
+  private getPropertyCondition<T>(prop: EntityProperty<T>, entityKey: string, path: string[]): string {
+    const parts = path.slice(); // copy first
 
     if (parts.length > 1) {
       parts.pop();
     }
 
     let tail = '';
-    let ret = parts.map(k => {
-      const mapped = `'${k.replace(/\[idx_\d+]/g, '')}' in entity${tail ? '.' + tail : ''}`;
-      tail += tail ? ('.' + k) : k;
+    let ret = parts
+      .map(k => {
+        if (k.match(/^\[idx_\d+]$/)) {
+          tail += k;
+          return '';
+        }
 
-      return mapped;
-    }).join(' && ');
+        const mapped = `'${k}' in entity${tail ? '.' + tail : ''}`;
+        tail += tail ? ('.' + k) : k;
+
+        return mapped;
+      })
+      .filter(k => k)
+      .join(' && ');
     const isRef = [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && !prop.mapToPk;
     const isSetter = isRef && !!(prop.inversedBy || prop.mappedBy);
 
     if (prop.primary || isSetter) {
-      ret += ` && entity.${entityKey} != null`;
+      ret += ` && entity${entityKey} != null`;
     }
 
     if (isRef) {
-      ret += ` && (entity.${entityKey} == null || entity.${entityKey}.__helper.hasPrimaryKey())`;
+      ret += ` && (entity${entityKey} == null || entity${entityKey}.__helper.hasPrimaryKey())`;
     }
 
     return ret;
   }
 
   private getEmbeddedArrayPropertySnapshot<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, context: Map<string, any>, level: number, path: string[], dataKey: string): string {
-    const entityKey = path.join('.');
+    const entityKey = path.map(k => this.wrap(k)).join('');
     const ret: string[] = [];
     const padding = ' '.repeat(level * 2);
     const idx = this.tmpIndex++;
 
-    ret.push(`${padding}if (Array.isArray(entity.${entityKey})) {`);
-    ret.push(`${padding}  ret.${dataKey} = [];`);
-    ret.push(`${padding}  entity.${entityKey}.forEach((_, idx_${idx}) => {`);
-    const last = path.pop();
-    ret.push(this.getEmbeddedPropertySnapshot(meta, prop, context, level + 2, [...path, `${last}[idx_${idx}]`], `${dataKey}[idx_${idx}]`, true));
+    ret.push(`${padding}if (Array.isArray(entity${entityKey})) {`);
+    ret.push(`${padding}  ret${dataKey} = [];`);
+    ret.push(`${padding}  entity${entityKey}.forEach((_, idx_${idx}) => {`);
+    ret.push(this.getEmbeddedPropertySnapshot(meta, prop, context, level + 2, [...path, `[idx_${idx}]`], `${dataKey}[idx_${idx}]`, true));
     ret.push(`${padding}  });`);
 
     if (this.shouldSerialize(prop, dataKey)) {
-      ret.push(`${padding}  ret.${dataKey} = cloneEmbeddable(ret.${dataKey});`);
+      ret.push(`${padding}  ret${dataKey} = cloneEmbeddable(ret${dataKey});`);
     }
 
     ret.push(`${padding}}`);
@@ -314,6 +325,7 @@ export class EntityComparator {
    * properties and first child nested object embeddables with inlined parent
    */
   private shouldSerialize(prop: EntityProperty, dataKey: string): boolean {
+    dataKey = dataKey.replace(/^\./, '');
     const contains = (str: string, re: RegExp) => (str.match(re) || []).length > 0;
     const a = contains(dataKey, /\./g);
     const b = contains(dataKey, /\[/g);
@@ -323,16 +335,16 @@ export class EntityComparator {
 
   private getEmbeddedPropertySnapshot<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, context: Map<string, any>, level: number, path: string[], dataKey: string, object = prop.object): string {
     const padding = ' '.repeat(level * 2);
-    const cond = `entity.${path.join('.')} != null`;
+    const cond = `entity${path.map(k => this.wrap(k)).join('')} != null`;
     let ret = `${level === 1 ? '' : '\n'}${padding}if (${cond}) {\n`;
 
     if (object) {
-      ret += `${padding}  ret.${dataKey} = {};\n`;
+      ret += `${padding}  ret${dataKey} = {};\n`;
     }
 
     ret += meta.props.filter(p => p.embedded?.[0] === prop.name).map(childProp => {
-      const childDataKey = prop.object ? dataKey + '.' + childProp.embedded![1] : childProp.name;
-      const childEntityKey = `${path.join('.')}.${childProp.embedded![1]}`;
+      const childDataKey = prop.object ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
+      const childEntityKey = [...path, childProp.embedded![1]].map(k => this.wrap(k)).join('');
 
       if (childProp.reference === ReferenceType.EMBEDDED) {
         return this.getPropertySnapshot(meta, childProp, context, childDataKey, childEntityKey, [...path, childProp.embedded![1]], level + 1, prop.object);
@@ -348,27 +360,27 @@ export class EntityComparator {
 
         /* istanbul ignore next */
         if (['number', 'string', 'boolean'].includes(childProp.customType.compareAsType().toLowerCase())) {
-          return `${padding}  ret.${childDataKey} = convertToDatabaseValue_${childProp.name}(entity.${childEntityKey});`;
+          return `${padding}  ret${childDataKey} = convertToDatabaseValue_${childProp.name}(entity${childEntityKey});`;
         }
 
-        return `${padding}  ret.${childDataKey} = clone(convertToDatabaseValue_${childProp.name}(entity.${childEntityKey}));`;
+        return `${padding}  ret${childDataKey} = clone(convertToDatabaseValue_${childProp.name}(entity${childEntityKey}));`;
       }
 
-      return `${padding}  ret.${childDataKey} = clone(entity.${childEntityKey});`;
+      return `${padding}  ret${childDataKey} = clone(entity${childEntityKey});`;
     }).join('\n') + `\n`;
 
     if (this.shouldSerialize(prop, dataKey)) {
-      return `${ret + padding}  ret.${dataKey} = cloneEmbeddable(ret.${dataKey});\n${padding}}`;
+      return `${ret + padding}  ret${dataKey} = cloneEmbeddable(ret${dataKey});\n${padding}}`;
     }
 
     return `${ret}${padding}}`;
   }
 
   private getPropertySnapshot<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, context: Map<string, any>, dataKey: string, entityKey: string, path: string[], level = 1, object?: boolean): string {
-    let ret = `  if (${this.getPropertyCondition(prop, entityKey)}) {\n`;
+    let ret = `  if (${this.getPropertyCondition(prop, entityKey, path)}) {\n`;
 
     if (['number', 'string', 'boolean'].includes(prop.type.toLowerCase())) {
-      return ret + `    ret.${dataKey} = entity.${entityKey};\n  }\n`;
+      return ret + `    ret${dataKey} = entity${entityKey};\n  }\n`;
     }
 
     if (prop.reference === ReferenceType.EMBEDDED) {
@@ -381,10 +393,10 @@ export class EntityComparator {
 
     if (prop.reference === ReferenceType.ONE_TO_ONE || prop.reference === ReferenceType.MANY_TO_ONE) {
       if (prop.mapToPk) {
-        ret += `    ret.${dataKey} = entity.${entityKey};\n`;
+        ret += `    ret${dataKey} = entity${entityKey};\n`;
       } else {
         context.set(`getPrimaryKeyValues_${prop.name}`, (val: any) => val && Utils.getPrimaryKeyValues(val, this.metadata.find(prop.type)!.primaryKeys, true));
-        ret += `    ret.${dataKey} = getPrimaryKeyValues_${prop.name}(entity.${entityKey});\n`;
+        ret += `    ret${dataKey} = getPrimaryKeyValues_${prop.name}(entity${entityKey});\n`;
       }
 
       if (prop.customType) {
@@ -392,10 +404,10 @@ export class EntityComparator {
 
         /* istanbul ignore next */
         if (['number', 'string', 'boolean'].includes(prop.customType.compareAsType().toLowerCase())) {
-          return ret + `    ret.${dataKey} = convertToDatabaseValue_${prop.name}(ret.${dataKey});\n  }\n`;
+          return ret + `    ret${dataKey} = convertToDatabaseValue_${prop.name}(ret${dataKey});\n  }\n`;
         }
 
-        return ret + `    ret.${dataKey} = clone(convertToDatabaseValue_${prop.name}(ret.${dataKey}));\n  }\n`;
+        return ret + `    ret${dataKey} = clone(convertToDatabaseValue_${prop.name}(ret${dataKey}));\n  }\n`;
       }
 
       return ret + '  }\n';
@@ -405,18 +417,18 @@ export class EntityComparator {
       context.set(`convertToDatabaseValue_${prop.name}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform));
 
       if (['number', 'string', 'boolean'].includes(prop.customType.compareAsType().toLowerCase())) {
-        return ret + `    ret.${dataKey} = convertToDatabaseValue_${prop.name}(entity.${entityKey});\n  }\n`;
+        return ret + `    ret${dataKey} = convertToDatabaseValue_${prop.name}(entity${entityKey});\n  }\n`;
       }
 
-      return ret + `    ret.${dataKey} = clone(convertToDatabaseValue_${prop.name}(entity.${entityKey}));\n  }\n`;
+      return ret + `    ret${dataKey} = clone(convertToDatabaseValue_${prop.name}(entity${entityKey}));\n  }\n`;
     }
 
     if (prop.type.toLowerCase() === 'date') {
       context.set('processDateProperty', this.platform.processDateProperty.bind(this.platform));
-      return ret + `    ret.${dataKey} = clone(processDateProperty(entity.${entityKey}));\n  }\n`;
+      return ret + `    ret${dataKey} = clone(processDateProperty(entity${entityKey}));\n  }\n`;
     }
 
-    return ret + `    ret.${dataKey} = clone(entity.${entityKey});\n  }\n`;
+    return ret + `    ret${dataKey} = clone(entity${entityKey});\n  }\n`;
   }
 
   /**
@@ -441,7 +453,8 @@ export class EntityComparator {
       lines.push(this.getPropertyComparator(prop));
     });
 
-    const code = `return function(last, current) {\n  const diff = {};\n${lines.join('\n')}\n  return diff;\n}`;
+    const code = `// compiled comparator for entity ${meta.className}\n`
+      + `return function(last, current) {\n  const diff = {};\n${lines.join('\n')}\n  return diff;\n}`;
     const comparator = Utils.createFunction(context, code);
     this.comparators.set(entityName, comparator);
 
@@ -449,11 +462,11 @@ export class EntityComparator {
   }
 
   private getGenericComparator(prop: string, cond: string): string {
-    return `  if (current.${prop} == null && last.${prop} == null) {\n\n` +
-      `  } else if ((current.${prop} && last.${prop} == null) || (current.${prop} == null && last.${prop})) {\n` +
-      `    diff.${prop} = current.${prop};\n` +
+    return `  if (current${prop} == null && last${prop} == null) {\n\n` +
+      `  } else if ((current${prop} && last${prop} == null) || (current${prop} == null && last${prop})) {\n` +
+      `    diff${prop} = current${prop};\n` +
       `  } else if (${cond}) {\n` +
-      `    diff.${prop} = current.${prop};\n` +
+      `    diff${prop} = current${prop};\n` +
       `  }\n`;
   }
 
@@ -479,27 +492,35 @@ export class EntityComparator {
     }
 
     if (['string', 'number', 'boolean'].includes(type)) {
-      return this.getGenericComparator(prop.name, `last.${prop.name} !== current.${prop.name}`);
+      return this.getGenericComparator(this.wrap(prop.name), `last${this.wrap(prop.name)} !== current${this.wrap(prop.name)}`);
     }
 
     if (['array'].includes(type) || type.endsWith('[]')) {
-      return this.getGenericComparator(prop.name, `!compareArrays(last.${prop.name}, current.${prop.name})`);
+      return this.getGenericComparator(this.wrap(prop.name), `!compareArrays(last${this.wrap(prop.name)}, current${this.wrap(prop.name)})`);
     }
 
     if (['buffer', 'uint8array'].includes(type)) {
-      return this.getGenericComparator(prop.name, `!compareBuffers(last.${prop.name}, current.${prop.name})`);
+      return this.getGenericComparator(this.wrap(prop.name), `!compareBuffers(last${this.wrap(prop.name)}, current${this.wrap(prop.name)})`);
     }
 
     if (['date'].includes(type)) {
-      return this.getGenericComparator(prop.name, `last.${prop.name}.valueOf() !== current.${prop.name}.valueOf()`);
+      return this.getGenericComparator(this.wrap(prop.name), `last${this.wrap(prop.name)}.valueOf() !== current${this.wrap(prop.name)}.valueOf()`);
     }
 
     if (['objectid'].includes(type)) {
-      const cond = `last.${prop.name}.toHexString() !== current.${prop.name}.toHexString()`;
-      return this.getGenericComparator(prop.name, cond);
+      const cond = `last${this.wrap(prop.name)}.toHexString() !== current${this.wrap(prop.name)}.toHexString()`;
+      return this.getGenericComparator(this.wrap(prop.name), cond);
     }
 
-    return `  if (!equals(last.${prop.name}, current.${prop.name})) diff.${prop.name} = current.${prop.name};`;
+    return `  if (!equals(last${this.wrap(prop.name)}, current${this.wrap(prop.name)})) diff${this.wrap(prop.name)} = current${this.wrap(prop.name)};`;
+  }
+
+  private wrap(key: string): string {
+    if (key.match(/^\[.*]$/)) {
+      return key;
+    }
+
+    return key.match(/^\w+$/) ? `.${key}` : `['${key}']`;
   }
 
   /**

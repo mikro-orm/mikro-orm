@@ -1,5 +1,6 @@
-import { MongoDriver } from '@mikro-orm/mongodb';
-import { AnyEntity, Collection as Collection_, MikroORM, Options, PrimaryProperty, Reference as Reference_, ReferenceType, Cast, IsUnknown, EntityMetadata, EnumArrayType } from '@mikro-orm/core';
+import type { MongoDriver } from '@mikro-orm/mongodb';
+import type { AnyEntity, Options, PrimaryProperty, Cast, IsUnknown, EntityMetadata } from '@mikro-orm/core';
+import { Collection as Collection_, MikroORM, Reference as Reference_, ReferenceType, EnumArrayType } from '@mikro-orm/core';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { Author, Book, Publisher, BaseEntity, BaseEntity3, BookTagSchema, Test, FooBaz } from './entities';
 import FooBar from './entities/FooBar';

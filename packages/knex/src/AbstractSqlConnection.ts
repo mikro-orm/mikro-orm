@@ -1,10 +1,12 @@
-import { knex, Knex } from 'knex';
+import type { Knex } from 'knex';
+import { knex } from 'knex';
 import { readFile } from 'fs-extra';
-import {
-  AnyEntity, Configuration, Connection, ConnectionOptions, EntityData, EventType, IsolationLevel, QueryResult,
-  Transaction, TransactionEventBroadcaster, Utils,
+import type {
+  AnyEntity, Configuration, ConnectionOptions, EntityData, IsolationLevel, QueryResult,
+  Transaction, TransactionEventBroadcaster } from '@mikro-orm/core';
+import { Connection, EventType, Utils,
 } from '@mikro-orm/core';
-import { AbstractSqlPlatform } from './AbstractSqlPlatform';
+import type { AbstractSqlPlatform } from './AbstractSqlPlatform';
 import { MonkeyPatchable } from './MonkeyPatchable';
 
 const parentTransactionSymbol = Symbol('parentTransaction');
@@ -28,6 +30,7 @@ export abstract class AbstractSqlConnection extends Connection {
   }
 
   async close(force?: boolean): Promise<void> {
+    await super.close(force);
     await this.client.destroy();
   }
 

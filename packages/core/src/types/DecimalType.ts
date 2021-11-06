@@ -1,6 +1,6 @@
 import { Type } from './Type';
-import { Platform } from '../platforms';
-import { EntityProperty } from '../typings';
+import type { Platform } from '../platforms';
+import type { EntityProperty } from '../typings';
 
 /**
  * Type that maps an SQL DECIMAL to a JS string.

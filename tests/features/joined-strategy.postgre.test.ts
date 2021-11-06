@@ -1,5 +1,7 @@
-import { LoadStrategy, Logger, MikroORM, QueryFlag, QueryOrder, Reference, wrap } from '@mikro-orm/core';
-import { AbstractSqlConnection, PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { MikroORM } from '@mikro-orm/core';
+import { LoadStrategy, Logger, QueryFlag, QueryOrder, Reference, wrap } from '@mikro-orm/core';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { AbstractSqlConnection } from '@mikro-orm/postgresql';
 import { initORMPostgreSql, wipeDatabasePostgreSql } from '../bootstrap';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2 } from '../entities-sql';
 
@@ -67,7 +69,7 @@ describe('Joined loading strategy', () => {
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 
-    const b1 = await orm.em.findOneOrFail(Book2, stranger, { populate: { author: true } });
+    const b1 = await orm.em.findOneOrFail(Book2, stranger, { populate: ['author'] });
     expect(b1.title).toEqual('The Stranger');
     expect(b1.author.name).toEqual('Albert Camus');
   });
@@ -82,7 +84,7 @@ describe('Joined loading strategy', () => {
     await orm.em.persistAndFlush([a1, a2, a3]);
     orm.em.clear();
 
-    const books = await orm.em.find(Book2, {}, { populate: { author: true } });
+    const books = await orm.em.find(Book2, {}, { populate: ['author'] });
     expect(books).toHaveLength(6);
     expect(books[0].title).toBe('The Stranger 1');
     expect(books[0].author.name).toBe('Albert Camus 1');
@@ -104,7 +106,7 @@ describe('Joined loading strategy', () => {
     const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
 
-    await orm.em.findOneOrFail(Author2, { id: author2.id }, { populate: { books2: { perex: true } } });
+    await orm.em.findOneOrFail(Author2, { id: author2.id }, { populate: ['books2.perex'] });
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select "e0"."id", "e0"."created_at", "e0"."updated_at", "e0"."name", "e0"."email", "e0"."age", "e0"."terms_accepted", "e0"."optional", "e0"."identities", "e0"."born", "e0"."born_time", "e0"."favourite_book_uuid_pk", "e0"."favourite_author_id", ' +
       '"b1"."uuid_pk" as "b1__uuid_pk", "b1"."created_at" as "b1__created_at", "b1"."title" as "b1__title", "b1"."perex" as "b1__perex", "b1"."price" as "b1__price", "b1".price * 1.19 as "b1__price_taxed", "b1"."double" as "b1__double", "b1"."meta" as "b1__meta", "b1"."author_id" as "b1__author_id", "b1"."publisher_id" as "b1__publisher_id" ' +
@@ -114,7 +116,7 @@ describe('Joined loading strategy', () => {
 
     orm.em.clear();
     mock.mock.calls.length = 0;
-    await orm.em.findOneOrFail(Author2, { id: author2.id }, { populate: { books2: true } });
+    await orm.em.findOneOrFail(Author2, { id: author2.id }, { populate: ['books2'] });
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select "e0"."id", "e0"."created_at", "e0"."updated_at", "e0"."name", "e0"."email", "e0"."age", "e0"."terms_accepted", "e0"."optional", "e0"."identities", "e0"."born", "e0"."born_time", "e0"."favourite_book_uuid_pk", "e0"."favourite_author_id", ' +
       '"b1"."uuid_pk" as "b1__uuid_pk", "b1"."created_at" as "b1__created_at", "b1"."title" as "b1__title", "b1"."price" as "b1__price", "b1".price * 1.19 as "b1__price_taxed", "b1"."double" as "b1__double", "b1"."meta" as "b1__meta", "b1"."author_id" as "b1__author_id", "b1"."publisher_id" as "b1__publisher_id" ' +
@@ -124,7 +126,7 @@ describe('Joined loading strategy', () => {
 
     orm.em.clear();
     mock.mock.calls.length = 0;
-    await orm.em.findOneOrFail(Author2, { id: author2.id }, { populate: { books: true } });
+    await orm.em.findOneOrFail(Author2, { id: author2.id }, { populate: ['books'] });
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select "e0"."id", "e0"."created_at", "e0"."updated_at", "e0"."name", "e0"."email", "e0"."age", "e0"."terms_accepted", "e0"."optional", "e0"."identities", "e0"."born", "e0"."born_time", "e0"."favourite_book_uuid_pk", "e0"."favourite_author_id", ' +
       '"b1"."uuid_pk" as "b1__uuid_pk", "b1"."created_at" as "b1__created_at", "b1"."title" as "b1__title", "b1"."price" as "b1__price", "b1".price * 1.19 as "b1__price_taxed", "b1"."double" as "b1__double", "b1"."meta" as "b1__meta", "b1"."author_id" as "b1__author_id", "b1"."publisher_id" as "b1__publisher_id" ' +
@@ -134,7 +136,7 @@ describe('Joined loading strategy', () => {
 
     orm.em.clear();
     mock.mock.calls.length = 0;
-    await orm.em.findOneOrFail(Author2, { id: author2.id }, { populate: { books: { perex: true } } });
+    await orm.em.findOneOrFail(Author2, { id: author2.id }, { populate: ['books.perex'] });
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select "e0"."id", "e0"."created_at", "e0"."updated_at", "e0"."name", "e0"."email", "e0"."age", "e0"."terms_accepted", "e0"."optional", "e0"."identities", "e0"."born", "e0"."born_time", "e0"."favourite_book_uuid_pk", "e0"."favourite_author_id", ' +
       '"b1"."uuid_pk" as "b1__uuid_pk", "b1"."created_at" as "b1__created_at", "b1"."title" as "b1__title", "b1"."perex" as "b1__perex", "b1"."price" as "b1__price", "b1".price * 1.19 as "b1__price_taxed", "b1"."double" as "b1__double", "b1"."meta" as "b1__meta", "b1"."author_id" as "b1__author_id", "b1"."publisher_id" as "b1__publisher_id" ' +
@@ -155,7 +157,7 @@ describe('Joined loading strategy', () => {
     const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
 
-    await orm.em.find(Author2, { id: author2.id }, { populate: { books2: { perex: true } } });
+    await orm.em.find(Author2, { id: author2.id }, { populate: ['books2.perex'] });
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select "e0"."id", "e0"."created_at", "e0"."updated_at", "e0"."name", "e0"."email", "e0"."age", "e0"."terms_accepted", "e0"."optional", "e0"."identities", "e0"."born", "e0"."born_time", "e0"."favourite_book_uuid_pk", "e0"."favourite_author_id", ' +
       '"b1"."uuid_pk" as "b1__uuid_pk", "b1"."created_at" as "b1__created_at", "b1"."title" as "b1__title", "b1"."perex" as "b1__perex", "b1"."price" as "b1__price", "b1".price * 1.19 as "b1__price_taxed", "b1"."double" as "b1__double", "b1"."meta" as "b1__meta", "b1"."author_id" as "b1__author_id", "b1"."publisher_id" as "b1__publisher_id" ' +
@@ -165,7 +167,7 @@ describe('Joined loading strategy', () => {
 
     orm.em.clear();
     mock.mock.calls.length = 0;
-    await orm.em.find(Author2, { id: author2.id }, { populate: { books2: true } });
+    await orm.em.find(Author2, { id: author2.id }, { populate: ['books2'] });
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select "e0"."id", "e0"."created_at", "e0"."updated_at", "e0"."name", "e0"."email", "e0"."age", "e0"."terms_accepted", "e0"."optional", "e0"."identities", "e0"."born", "e0"."born_time", "e0"."favourite_book_uuid_pk", "e0"."favourite_author_id", ' +
       '"b1"."uuid_pk" as "b1__uuid_pk", "b1"."created_at" as "b1__created_at", "b1"."title" as "b1__title", "b1"."price" as "b1__price", "b1".price * 1.19 as "b1__price_taxed", "b1"."double" as "b1__double", "b1"."meta" as "b1__meta", "b1"."author_id" as "b1__author_id", "b1"."publisher_id" as "b1__publisher_id" ' +
@@ -175,7 +177,7 @@ describe('Joined loading strategy', () => {
 
     orm.em.clear();
     mock.mock.calls.length = 0;
-    await orm.em.find(Author2, { id: author2.id }, { populate: { books: LoadStrategy.JOINED } });
+    await orm.em.find(Author2, { id: author2.id }, { populate: ['books'], strategy: LoadStrategy.JOINED });
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select "e0"."id", "e0"."created_at", "e0"."updated_at", "e0"."name", "e0"."email", "e0"."age", "e0"."terms_accepted", "e0"."optional", "e0"."identities", "e0"."born", "e0"."born_time", "e0"."favourite_book_uuid_pk", "e0"."favourite_author_id", ' +
       '"b1"."uuid_pk" as "b1__uuid_pk", "b1"."created_at" as "b1__created_at", "b1"."title" as "b1__title", "b1"."price" as "b1__price", "b1".price * 1.19 as "b1__price_taxed", "b1"."double" as "b1__double", "b1"."meta" as "b1__meta", "b1"."author_id" as "b1__author_id", "b1"."publisher_id" as "b1__publisher_id" ' +
@@ -185,7 +187,7 @@ describe('Joined loading strategy', () => {
 
     orm.em.clear();
     mock.mock.calls.length = 0;
-    await orm.em.find(Author2, { id: author2.id }, { populate: { books: { perex: true } } });
+    await orm.em.find(Author2, { id: author2.id }, { populate: ['books.perex'] });
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select "e0"."id", "e0"."created_at", "e0"."updated_at", "e0"."name", "e0"."email", "e0"."age", "e0"."terms_accepted", "e0"."optional", "e0"."identities", "e0"."born", "e0"."born_time", "e0"."favourite_book_uuid_pk", "e0"."favourite_author_id", ' +
       '"b1"."uuid_pk" as "b1__uuid_pk", "b1"."created_at" as "b1__created_at", "b1"."title" as "b1__title", "b1"."perex" as "b1__perex", "b1"."price" as "b1__price", "b1".price * 1.19 as "b1__price_taxed", "b1"."double" as "b1__double", "b1"."meta" as "b1__meta", "b1"."author_id" as "b1__author_id", "b1"."publisher_id" as "b1__publisher_id" ' +
@@ -220,7 +222,7 @@ describe('Joined loading strategy', () => {
     const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
     mock.mock.calls.length = 0;
-    const books = await orm.em.find(Book2, {}, { populate: { tags: LoadStrategy.JOINED }, orderBy: { tags: { name: 'desc' } } });
+    const books = await orm.em.find(Book2, {}, { populate: ['tags'], strategy: LoadStrategy.JOINED, orderBy: { tags: { name: 'desc' } } });
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select "e0"."uuid_pk", "e0"."created_at", "e0"."title", "e0"."price", "e0".price * 1.19 as "price_taxed", "e0"."double", "e0"."meta", "e0"."author_id", "e0"."publisher_id", ' +
       '"t1"."id" as "t1__id", "t1"."name" as "t1__name", "e0".price * 1.19 as "price_taxed" ' +
@@ -275,7 +277,7 @@ describe('Joined loading strategy', () => {
     orm.em.clear();
 
     const a2 = await orm.em.findOneOrFail(Author2, 1);
-    await orm.em.populate(a2, 'books2');
+    await orm.em.populate(a2, ['books2']);
     expect(a2.books2).toHaveLength(2);
   });
 
@@ -287,7 +289,7 @@ describe('Joined loading strategy', () => {
     orm.em.clear();
 
     const connMock = jest.spyOn(AbstractSqlConnection.prototype, 'execute');
-    const b1 = (await orm.em.findOne(FooBar2, { id: bar.id }, { populate: { baz: true } }))!;
+    const b1 = await orm.em.findOneOrFail(FooBar2, { id: bar.id }, { populate: ['baz'] });
     expect(connMock).toBeCalledTimes(1);
     expect(b1.baz).toBeInstanceOf(FooBaz2);
     expect(b1.baz!.id).toBe(baz.id);
@@ -326,7 +328,7 @@ describe('Joined loading strategy', () => {
     expect(wrap(b1).toJSON()).toMatchObject({ bar: { id: bar.id, baz: baz.id, name: 'bar' } });
     orm.em.clear();
 
-    const b2 = (await orm.em.findOne(FooBaz2, { bar: bar.id }, { populate: { bar: true } }))!;
+    const b2 = await orm.em.findOneOrFail(FooBaz2, { bar: bar.id }, { populate: ['bar'] });
     expect(mock.mock.calls).toHaveLength(3);
     expect(mock.mock.calls[2][0]).toMatch('select "e0"."id", "e0"."name", "e0"."version", ' +
       '"b1"."id" as "b1__id", "b1"."name" as "b1__name", "b1"."name with space" as "b1__name with space", "b1"."baz_id" as "b1__baz_id", "b1"."foo_bar_id" as "b1__foo_bar_id", "b1"."version" as "b1__version", "b1"."blob" as "b1__blob", "b1"."array" as "b1__array", "b1"."object_property" as "b1__object_property", (select 123) as "b1__random", "b1"."id" as "bar_id" ' +
@@ -340,7 +342,7 @@ describe('Joined loading strategy', () => {
     expect(wrap(b2).toJSON()).toMatchObject({ bar: { id: bar.id, baz: baz.id, name: 'bar' } });
     orm.em.clear();
 
-    const b3 = (await orm.em.findOne(FooBaz2, { bar: bar.id }, { populate: { bar: { lazyRandom: true } } }))!;
+    const b3 = await orm.em.findOneOrFail(FooBaz2, { bar: bar.id }, { populate: ['bar.lazyRandom'] });
     expect(mock.mock.calls).toHaveLength(4);
     expect(mock.mock.calls[3][0]).toMatch('select "e0"."id", "e0"."name", "e0"."version", ' +
       '"b1"."id" as "b1__id", "b1"."name" as "b1__name", "b1"."name with space" as "b1__name with space", "b1"."baz_id" as "b1__baz_id", "b1"."foo_bar_id" as "b1__foo_bar_id", "b1"."version" as "b1__version", "b1"."blob" as "b1__blob", "b1"."array" as "b1__array", "b1"."object_property" as "b1__object_property", (select 123) as "b1__random", (select 456) as "b1__lazy_random", "b1"."id" as "bar_id" ' +
@@ -397,12 +399,7 @@ describe('Joined loading strategy', () => {
     Object.assign(orm.config, { logger });
 
     const tags = await repo.findAll({
-      populate: {
-        books: {
-          author: true,
-          publisher: { tests: true },
-        },
-      },
+      populate: ['books.author', 'books.publisher.tests'],
       orderBy: { name: 'asc', books: { publisher: { tests: { name: 'asc' } } } }, // TODO should be implicit as we have fixed order there
       strategy: LoadStrategy.JOINED,
     });
@@ -438,7 +435,10 @@ describe('Joined loading strategy', () => {
     expect(tags[0].books[0].publisher!.unwrap().tests[1].name).toBe('t22');
 
     orm.em.clear();
-    const books = await orm.em.find(Book2, {}, ['publisher.tests', 'author'], { title: QueryOrder.ASC });
+    const books = await orm.em.find(Book2, {}, {
+      populate: ['publisher.tests', 'author'],
+      orderBy: { title: QueryOrder.ASC },
+    });
     expect(books.length).toBe(3);
     expect(books[0]).toBeInstanceOf(Book2);
     expect(wrap(books[0]).isInitialized()).toBe(true);
@@ -474,7 +474,7 @@ describe('Joined loading strategy', () => {
     const mock = jest.fn();
     const logger = new Logger(mock, ['query']);
     Object.assign(orm.config, { logger });
-    const res1 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: { perex: true, author: true } });
+    const res1 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['perex', 'author'] });
     expect(res1).toHaveLength(3);
     expect(res1[0].test).toBeUndefined();
     expect(mock.mock.calls.length).toBe(1);
@@ -486,7 +486,7 @@ describe('Joined loading strategy', () => {
 
     orm.em.clear();
     mock.mock.calls.length = 0;
-    const res2 = await orm.em.find(Book2, { author: { favouriteBook: { author: { name: 'Jon Snow' } } } }, { populate: { perex: true, author: { favouriteBook: { author: true } } } });
+    const res2 = await orm.em.find(Book2, { author: { favouriteBook: { author: { name: 'Jon Snow' } } } }, { populate: ['perex', 'author.favouriteBook.author'] });
     expect(res2).toHaveLength(3);
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select "e0"."uuid_pk", "e0"."created_at", "e0"."title", "e0"."perex", "e0"."price", "e0".price * 1.19 as "price_taxed", "e0"."double", "e0"."meta", "e0"."author_id", "e0"."publisher_id", ' +
@@ -515,12 +515,14 @@ describe('Joined loading strategy', () => {
     expect(res4).toHaveLength(3);
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select "e0"."uuid_pk", "e0"."created_at", "e0"."title", "e0"."perex", "e0"."price", "e0".price * 1.19 as "price_taxed", "e0"."double", "e0"."meta", "e0"."author_id", "e0"."publisher_id", ' +
-      '"a1"."id" as "a1__id", "a1"."created_at" as "a1__created_at", "a1"."updated_at" as "a1__updated_at", "a1"."name" as "a1__name", "a1"."email" as "a1__email", "a1"."age" as "a1__age", "a1"."terms_accepted" as "a1__terms_accepted", "a1"."optional" as "a1__optional", "a1"."identities" as "a1__identities", "a1"."born" as "a1__born", "a1"."born_time" as "a1__born_time", "a1"."favourite_book_uuid_pk" as "a1__favourite_book_uuid_pk", "a1"."favourite_author_id" as "a1__favourite_author_id", "e0".price * 1.19 as "price_taxed" ' +
-      'from "book2" as "e0" ' +
-      'left join "author2" as "a1" on "e0"."author_id" = "a1"."id" ' +
-      'left join "book2" as "e2" on "a1"."favourite_book_uuid_pk" = "e2"."uuid_pk" ' +
-      'left join "author2" as "e3" on "e2"."author_id" = "e3"."id" ' +
-      'where "e0"."author_id" is not null and "e3"."name" = $1');
+      '"a1"."id" as "a1__id", "a1"."created_at" as "a1__created_at", "a1"."updated_at" as "a1__updated_at", "a1"."name" as "a1__name", "a1"."email" as "a1__email", "a1"."age" as "a1__age", "a1"."terms_accepted" as "a1__terms_accepted", "a1"."optional" as "a1__optional", "a1"."identities" as "a1__identities", "a1"."born" as "a1__born", "a1"."born_time" as "a1__born_time", "a1"."favourite_book_uuid_pk" as "a1__favourite_book_uuid_pk", "a1"."favourite_author_id" as "a1__favourite_author_id", ' +
+      '"f2"."uuid_pk" as "f2__uuid_pk", "f2"."created_at" as "f2__created_at", "f2"."title" as "f2__title", "f2"."price" as "f2__price", "f2".price * 1.19 as "f2__price_taxed", "f2"."double" as "f2__double", "f2"."meta" as "f2__meta", "f2"."author_id" as "f2__author_id", "f2"."publisher_id" as "f2__publisher_id", ' +
+      '"a3"."id" as "a3__id", "a3"."created_at" as "a3__created_at", "a3"."updated_at" as "a3__updated_at", "a3"."name" as "a3__name", "a3"."email" as "a3__email", "a3"."age" as "a3__age", "a3"."terms_accepted" as "a3__terms_accepted", "a3"."optional" as "a3__optional", "a3"."identities" as "a3__identities", "a3"."born" as "a3__born", "a3"."born_time" as "a3__born_time", "a3"."favourite_book_uuid_pk" as "a3__favourite_book_uuid_pk", "a3"."favourite_author_id" as "a3__favourite_author_id", ' +
+      '"e0".price * 1.19 as "price_taxed" ' +
+      'from "book2" as "e0" left join "author2" as "a1" on "e0"."author_id" = "a1"."id" ' +
+      'left join "book2" as "f2" on "a1"."favourite_book_uuid_pk" = "f2"."uuid_pk" ' +
+      'left join "author2" as "a3" on "f2"."author_id" = "a3"."id" ' +
+      'where "e0"."author_id" is not null and "a3"."name" = $1');
   });
 
 });

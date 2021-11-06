@@ -1,5 +1,7 @@
-import { LoadStrategy, Logger, MikroORM, ValidationError, wrap } from '@mikro-orm/core';
-import { AbstractSqlConnection, MySqlDriver } from '@mikro-orm/mysql';
+import type { MikroORM, ValidationError } from '@mikro-orm/core';
+import { LoadStrategy, Logger, wrap } from '@mikro-orm/core';
+import type { MySqlDriver } from '@mikro-orm/mysql';
+import { AbstractSqlConnection } from '@mikro-orm/mysql';
 import { Author2, Configuration2, FooBar2, FooBaz2, FooParam2, Test2, Address2, Car2, CarOwner2, User2, Sandwich } from '../../entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from '../../bootstrap';
 
@@ -18,7 +20,7 @@ describe('composite keys in mysql', () => {
     await orm.em.persistAndFlush(test);
     orm.em.clear();
 
-    const t = await orm.em.findOneOrFail(Test2, test.id, ['config']);
+    const t = await orm.em.findOneOrFail(Test2, test.id, { populate: ['config'] });
     expect(t.getConfiguration()).toEqual({
       foo: '1',
       bar: '2',
@@ -36,7 +38,7 @@ describe('composite keys in mysql', () => {
     orm.em.clear();
 
     // test populating a PK
-    const p1 = await orm.em.findOneOrFail(FooParam2, [param.bar.id, param.baz.id], ['bar']);
+    const p1 = await orm.em.findOneOrFail(FooParam2, [param.bar.id, param.baz.id], { populate: ['bar'] });
     expect(wrap(p1).toJSON().bar).toMatchObject(wrap(p1.bar).toJSON());
     expect(wrap(p1).toJSON().baz).toBe(p1.baz.id);
 
@@ -69,7 +71,7 @@ describe('composite keys in mysql', () => {
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 
-    const a1 = await orm.em.findOneOrFail(Author2, author.id, ['address']);
+    const a1 = await orm.em.findOneOrFail(Author2, author.id, { populate: ['address'] });
     expect(a1.address!.value).toBe('v1');
     expect(a1.address!.author).toBe(a1);
 
@@ -77,7 +79,7 @@ describe('composite keys in mysql', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const a2 = await orm.em.findOneOrFail(Author2, author.id, ['address']);
+    const a2 = await orm.em.findOneOrFail(Author2, author.id, { populate: ['address'] });
     expect(a2.address!.value).toBe('v2');
     expect(a2.address!.author).toBe(a2);
 
@@ -99,7 +101,7 @@ describe('composite keys in mysql', () => {
     await orm.em.persistAndFlush(owner);
     orm.em.clear();
 
-    const o1 = await orm.em.findOneOrFail(CarOwner2, owner.id, { populate: { car: LoadStrategy.JOINED } });
+    const o1 = await orm.em.findOneOrFail(CarOwner2, owner.id, { populate: ['car'], strategy: LoadStrategy.JOINED });
     expect(o1.car.price).toBe(200_000);
     expect(wrap(o1).toJSON()).toEqual({
       id: 1,
@@ -146,7 +148,7 @@ describe('composite keys in mysql', () => {
     orm.em.clear();
 
     const connMock = jest.spyOn(AbstractSqlConnection.prototype, 'execute');
-    const cc = await orm.em.findOneOrFail(Car2, car11, { populate: { users: LoadStrategy.JOINED } });
+    const cc = await orm.em.findOneOrFail(Car2, car11, { populate: ['users'], strategy: LoadStrategy.JOINED });
     expect(cc.users[0].foo).toBe(42);
     expect(connMock).toBeCalledTimes(1);
   });
@@ -184,7 +186,7 @@ describe('composite keys in mysql', () => {
     await orm.em.persistAndFlush([user1, user2, user3]);
     orm.em.clear();
 
-    const u1 = await orm.em.findOneOrFail(User2, user1, { populate: { cars: LoadStrategy.JOINED } });
+    const u1 = await orm.em.findOneOrFail(User2, user1, { populate: ['cars'], strategy: LoadStrategy.JOINED });
     expect(u1.cars.isDirty()).toBe(false);
     expect(u1.cars.getItems()).toMatchObject([
       { name: 'Audi A8', price: 100_000, year: 2011 },
@@ -207,7 +209,7 @@ describe('composite keys in mysql', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const u2 = await orm.em.findOneOrFail(User2, u1, ['cars']);
+    const u2 = await orm.em.findOneOrFail(User2, u1, { populate: ['cars'] });
     expect(u2.cars[0].price).toBe(350_000);
 
     const c1 = await orm.em.findOneOrFail(Car2, { name: car1.name, year: car1.year });
@@ -236,7 +238,7 @@ describe('composite keys in mysql', () => {
     await orm.em.persistAndFlush([user1, user2, user3]);
     orm.em.clear();
 
-    const u1 = await orm.em.findOneOrFail(User2, user1, ['sandwiches']);
+    const u1 = await orm.em.findOneOrFail(User2, user1, { populate: ['sandwiches'] });
     expect(u1.sandwiches.getItems()).toMatchObject([
       { name: 'Fish Sandwich', price: 100 },
       { name: 'Grilled Cheese Sandwich', price: 300 },
@@ -256,7 +258,7 @@ describe('composite keys in mysql', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const u2 = await orm.em.findOneOrFail(User2, u1, ['sandwiches']);
+    const u2 = await orm.em.findOneOrFail(User2, u1, { populate: ['sandwiches'] });
     expect(u2.sandwiches[0].price).toBe(200);
 
     const c1 = await orm.em.findOneOrFail(Sandwich, { id: sandwich1.id });
@@ -265,7 +267,7 @@ describe('composite keys in mysql', () => {
     await orm.em.remove(u2).flush();
     const o3 = await orm.em.findOne(User2, u1);
     expect(o3).toBeNull();
-    const c2 = await orm.em.findOneOrFail(Sandwich, sandwich1, ['users']);
+    const c2 = await orm.em.findOneOrFail(Sandwich, sandwich1, { populate: ['users'] });
     expect(c2).toBe(u2.sandwiches[0]);
     await orm.em.remove(c2).flush();
     const c3 = await orm.em.findOne(Sandwich, sandwich1);

@@ -1,8 +1,9 @@
-import { BooleanType, Dictionary, EntityProperty } from '@mikro-orm/core';
-import { Column, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
-import { DatabaseSchema } from './DatabaseSchema';
-import { DatabaseTable } from './DatabaseTable';
-import { AbstractSqlPlatform } from '../AbstractSqlPlatform';
+import type { Dictionary, EntityProperty } from '@mikro-orm/core';
+import { BooleanType } from '@mikro-orm/core';
+import type { Column, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
+import type { DatabaseSchema } from './DatabaseSchema';
+import type { DatabaseTable } from './DatabaseTable';
+import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
 
 /**
  * Compares two Schemas and return an instance of SchemaDifference.
@@ -365,7 +366,15 @@ export class SchemaComparator {
       changedProperties.add('comment');
     }
 
+    if (this.diffEnumItems(column1.enumItems, column2.enumItems)) {
+      changedProperties.add('enumItems');
+    }
+
     return changedProperties;
+  }
+
+  diffEnumItems(items1: string[] = [], items2: string[] = []): boolean {
+    return items1.length !== items2.length || items1.some((v, i) => v !== items2[i]);
   }
 
   diffComment(comment1?: string, comment2?: string): boolean {
@@ -425,8 +434,10 @@ export class SchemaComparator {
     }
 
     if (to.mappedType instanceof BooleanType) {
-      const defaultValue = !['0', 'false', 'f', 'n', 'no', 'off'].includes(from.default!);
-      return '' + defaultValue === to.default;
+      const defaultValueFrom = !['0', 'false', 'f', 'n', 'no', 'off'].includes('' + from.default!);
+      const defaultValueTo = !['0', 'false', 'f', 'n', 'no', 'off'].includes('' + to.default!);
+
+      return defaultValueFrom === defaultValueTo;
     }
 
     if (from.default && to.default) {

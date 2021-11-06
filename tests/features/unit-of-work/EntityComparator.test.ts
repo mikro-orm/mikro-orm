@@ -1,18 +1,20 @@
-import {
+import type {
   AnyEntity,
-  Collection,
   Dictionary,
-  Entity, EntityAssigner,
   EntityData, EntityFactory, EntityMetadata,
   EntityProperty,
   MetadataStorage,
+  Platform, Primary } from '@mikro-orm/core';
+import {
+  Collection,
+  Entity, EntityAssigner,
   MikroORM,
-  Platform, Primary,
   PrimaryKey,
   Property, Reference,
   ReferenceType,
   Utils,
 } from '@mikro-orm/core';
+import { performance } from 'perf_hooks';
 import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from '../../entities-sql';
 import { BaseEntity2 } from '../../entities-sql/BaseEntity2';
 import { BaseEntity22 } from '../../entities-sql/BaseEntity22';
@@ -263,7 +265,7 @@ describe('EntityComparator', () => {
     type: 'sqlite',
     dbName: ':memory:',
     entities: [Author2, Book2, BookTag2, Publisher2, Address2, Test2, Configuration2, FooBar2, FooBaz2, BaseEntity2, BaseEntity22, User],
-  }, false));
+  }));
 
   test('prepareEntity changes entity to number id', async () => {
     const author1 = new Author2('Name 1', 'e-mail1');

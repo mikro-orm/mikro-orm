@@ -275,6 +275,35 @@ console.log(qb.getQuery());
 // select `e0`.* from `test` as `e0` where (`e0`.`id` not in (?, ?) and `e0`.`id` > ?)
 ```
 
+## Count queries
+
+To create a count query, we can ue `qb.count()`, which will intialize a select clause
+with `count()` function. By default, it will use the primary key. 
+
+```typescript
+const qb = orm.em.createQueryBuilder(Test);
+qb.count().where({ $and: [{ id: { $nin: [3, 4] } }, { id: { $gt: 2 } }] });
+
+console.log(qb.getQuery());
+// select count(`e0`.`id`) from `test` as `e0` where (`e0`.`id` not in (?, ?) and `e0`.`id` > ?)
+
+// to get the count, we can use `qb.execute()`
+const res = await qb.execute('get');
+const count = res ? +res.count : 0;
+```
+
+To simplify this process, we can use `qb.getCount()` method. Following code is equivalent:
+
+```typescript
+const qb = orm.em.createQueryBuilder(Test);
+qb.select('*').limit(10, 20).where({ $and: [{ id: { $nin: [3, 4] } }, { id: { $gt: 2 } }] });
+
+const count = await qb.getCount();
+```
+
+This will also remove any existing limit and offset from the query (the QB will be
+cloned under the hood, so calling `getCount()` does not mutate the original QB state).
+
 ## Using sub-queries
 
 You can filter using sub-queries in where conditions:

@@ -1,5 +1,5 @@
 import { Collection, Entity, IdentifiedReference, LoadStrategy, Logger, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, QueryOrder } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class RadioOption {
@@ -105,7 +105,7 @@ describe('GH issue 1334', () => {
     await orm.em.persistAndFlush(project);
     orm.em.clear();
 
-    await orm.em.findOneOrFail(Radio, radio1.id, ['project']);
+    await orm.em.findOneOrFail(Radio, radio1.id, { populate: ['project'] });
     mock.mock.calls.length = 0;
     await orm.em.flush();
     expect(mock.mock.calls).toHaveLength(0);

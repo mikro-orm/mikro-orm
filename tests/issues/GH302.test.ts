@@ -1,5 +1,6 @@
 import { Entity, IdentifiedReference, MikroORM, PrimaryKey, Property, Reference, ManyToOne, OneToMany, Collection } from '@mikro-orm/core';
-import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SchemaGenerator } from '@mikro-orm/sqlite';
 
 @Entity()
 export class A {
@@ -60,7 +61,7 @@ describe('GH issue 302', () => {
     await em.persistAndFlush(b);
     em.clear();
 
-    const bb = await em.findOneOrFail(B, b.id, ['a']);
+    const bb = await em.findOneOrFail(B, b.id, { populate: ['a'] });
     expect(bb.name).toBe('my name is b');
     expect(bb.a!.isInitialized(true)).toBe(true);
     expect(bb.a.count()).toBe(3);

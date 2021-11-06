@@ -1,10 +1,13 @@
-import { MetadataStorage } from '../metadata';
-import { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, IHydrator, IPrimaryKey } from '../typings';
-import { EntityFactory, EntityIdentifier } from '../entity';
-import { ChangeSet, ChangeSetType } from './ChangeSet';
-import { QueryResult, Transaction } from '../connections';
-import { Configuration, Utils } from '../utils';
-import { IDatabaseDriver } from '../drivers';
+import type { MetadataStorage } from '../metadata';
+import type { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, IHydrator, IPrimaryKey } from '../typings';
+import type { EntityFactory } from '../entity';
+import { EntityIdentifier } from '../entity';
+import type { ChangeSet } from './ChangeSet';
+import { ChangeSetType } from './ChangeSet';
+import type { QueryResult, Transaction } from '../connections';
+import type { Configuration } from '../utils';
+import { Utils } from '../utils';
+import type { IDatabaseDriver } from '../drivers';
 import { OptimisticLockError } from '../errors';
 
 export class ChangeSetPersister {
@@ -51,7 +54,7 @@ export class ChangeSetPersister {
     for (let i = 0; i < changeSets.length; i += size) {
       const chunk = changeSets.slice(i, i + size);
       const pks = chunk.map(cs => cs.getPrimaryKey());
-      await this.driver.nativeDelete(meta.className, { [pk]: { $in: pks } }, ctx);
+      await this.driver.nativeDelete(meta.className, { [pk]: { $in: pks } }, { ctx });
     }
   }
 
@@ -65,10 +68,13 @@ export class ChangeSetPersister {
 
   private async persistNewEntity<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, ctx?: Transaction): Promise<void> {
     const wrapped = changeSet.entity.__helper!;
-    const res = await this.driver.nativeInsert(changeSet.name, changeSet.payload, ctx, false);
+    const res = await this.driver.nativeInsert(changeSet.name, changeSet.payload, {
+      convertCustomTypes: false,
+      ctx,
+    });
 
     if (!wrapped.hasPrimaryKey()) {
-      this.mapPrimaryKey(meta, res.insertId, changeSet);
+      this.mapPrimaryKey(meta, res.insertId as number, changeSet);
     }
 
     this.mapReturnedValues(changeSet, res, meta);
@@ -97,7 +103,11 @@ export class ChangeSetPersister {
   }
 
   private async persistNewEntitiesBatch<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
-    const res = await this.driver.nativeInsertMany(meta.className, changeSets.map(cs => cs.payload), ctx, false, false);
+    const res = await this.driver.nativeInsertMany(meta.className, changeSets.map(cs => cs.payload), {
+      convertCustomTypes: false,
+      processCollections: false,
+      ctx,
+    });
 
     for (let i = 0; i < changeSets.length; i++) {
       const changeSet = changeSets[i];
@@ -136,7 +146,11 @@ export class ChangeSetPersister {
 
   private async persistManagedEntitiesBatch<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
     await this.checkOptimisticLocks(meta, changeSets, ctx);
-    await this.driver.nativeUpdateMany(meta.className, changeSets.map(cs => cs.getPrimaryKey() as Dictionary), changeSets.map(cs => cs.payload), ctx, false, false);
+    await this.driver.nativeUpdateMany(meta.className, changeSets.map(cs => cs.getPrimaryKey() as Dictionary), changeSets.map(cs => cs.payload), {
+      convertCustomTypes: false,
+      processCollections: false,
+      ctx,
+    });
     changeSets.forEach(cs => cs.persisted = true);
   }
 
@@ -177,9 +191,9 @@ export class ChangeSetPersister {
     });
   }
 
-  private async updateEntity<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, ctx?: Transaction): Promise<QueryResult> {
+  private async updateEntity<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, ctx?: Transaction): Promise<QueryResult<T>> {
     if (!meta.versionProperty || !changeSet.entity[meta.versionProperty]) {
-      return this.driver.nativeUpdate(changeSet.name, changeSet.getPrimaryKey() as Dictionary, changeSet.payload, ctx, false);
+      return this.driver.nativeUpdate(changeSet.name, changeSet.getPrimaryKey() as Dictionary, changeSet.payload, { ctx, convertCustomTypes: false });
     }
 
     const cond = {
@@ -187,7 +201,7 @@ export class ChangeSetPersister {
       [meta.versionProperty]: this.platform.quoteVersionValue(changeSet.entity[meta.versionProperty] as unknown as Date, meta.properties[meta.versionProperty]),
     } as FilterQuery<T>;
 
-    return this.driver.nativeUpdate(changeSet.name, cond, changeSet.payload, ctx, false);
+    return this.driver.nativeUpdate<T>(changeSet.name, cond, changeSet.payload, { ctx, convertCustomTypes: false });
   }
 
   private async checkOptimisticLocks<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
@@ -200,7 +214,7 @@ export class ChangeSetPersister {
       [meta.versionProperty]: this.platform.quoteVersionValue(cs.entity[meta.versionProperty] as unknown as Date, meta.properties[meta.versionProperty]),
     }));
 
-    const res = await this.driver.find(meta.className, { $or }, { fields: meta.primaryKeys }, ctx);
+    const res = await this.driver.find<T>(meta.className, { $or } as FilterQuery<T>, { fields: meta.primaryKeys, ctx });
 
     if (res.length !== changeSets.length) {
       const compare = (a: Dictionary, b: Dictionary, keys: string[]) => keys.every(k => a[k] === b[k]);
@@ -222,9 +236,10 @@ export class ChangeSetPersister {
 
     const pk = Utils.getPrimaryKeyHash(meta.primaryKeys);
     const pks = changeSets.map(cs => cs.getPrimaryKey());
-    const data = await this.driver.find<T>(meta.name!, { [pk]: { $in: pks } }, {
+    const data = await this.driver.find<T>(meta.name!, { [pk]: { $in: pks } } as FilterQuery<T>, {
       fields: [meta.versionProperty],
-    }, ctx);
+      ctx,
+    });
     const map = new Map<string, Date>();
     data.forEach(e => map.set(Utils.getCompositeKeyHash<T>(e as T, meta), e[meta.versionProperty] as Date));
 
@@ -257,7 +272,7 @@ export class ChangeSetPersister {
       }
     });
 
-    if (prop.onCreate && changeSet.type === ChangeSetType.CREATE) {
+    if (prop.onCreate && changeSet.type === ChangeSetType.CREATE && changeSet.entity[prop.name] === undefined) {
       changeSet.entity[prop.name] = prop.onCreate(changeSet.entity);
       changeSet.payload[prop.name] = prop.customType ? prop.customType.convertToDatabaseValue(changeSet.entity[prop.name], this.platform) : changeSet.entity[prop.name];
 
@@ -281,7 +296,7 @@ export class ChangeSetPersister {
    * No need to handle composite keys here as they need to be set upfront.
    * We do need to map to the change set payload too, as it will be used in the originalEntityData for new entities.
    */
-  private mapReturnedValues<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, res: QueryResult, meta: EntityMetadata<T>): void {
+  private mapReturnedValues<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, res: QueryResult<T>, meta: EntityMetadata<T>): void {
     if (this.platform.usesReturningStatement() && res.row && Utils.hasObjectKeys(res.row)) {
       const data = meta.props.reduce((ret, prop) => {
         if (prop.primary && !changeSet.entity.__helper!.hasPrimaryKey()) {

@@ -316,10 +316,34 @@ describe('CLIHelper', () => {
     const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
     pathExistsMock.mockResolvedValue(true);
     pkg['mikro-orm'] = undefined;
-    pathExistsMock.mockResolvedValue(true);
+
     await expect(ConfigurationLoader.getSettings()).resolves.toEqual({});
     await expect(ConfigurationLoader.getConfiguration()).resolves.toBeInstanceOf(Configuration);
+
+    process.env.MIKRO_ORM_CLI_USE_TS_NODE = '1';
+    process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH = 'foo/tsconfig.json';
+    await expect(ConfigurationLoader.getSettings()).resolves.toEqual({
+      useTsNode: true,
+      tsConfigPath: 'foo/tsconfig.json',
+    });
+    delete process.env.MIKRO_ORM_CLI_USE_TS_NODE;
+    delete process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH;
+
     pathExistsMock.mockRestore();
+  });
+
+  test('getPackageConfig checks parent folders for package.json', async () => {
+    pkg['mikro-orm'] = { useTsNode: true };
+
+    // lookup the root package.json in CWD
+    const ret1 = await ConfigurationLoader.getPackageConfig(__dirname);
+    expect(ret1['mikro-orm'].useTsNode).toBe(true);
+
+    // check we fallback to `{}` if we reach root folder
+    const ret2 = await ConfigurationLoader.getPackageConfig(process.cwd() + '/../..');
+    expect(ret2).toEqual({});
+
+    pkg['mikro-orm'] = undefined;
   });
 
   test('getConfigPaths', async () => {

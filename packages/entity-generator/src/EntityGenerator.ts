@@ -1,6 +1,7 @@
 import { ensureDir, writeFile } from 'fs-extra';
 import { Utils } from '@mikro-orm/core';
-import { DatabaseSchema, DatabaseTable, EntityManager } from '@mikro-orm/knex';
+import type { DatabaseTable, EntityManager } from '@mikro-orm/knex';
+import { DatabaseSchema } from '@mikro-orm/knex';
 import { SourceFile } from './SourceFile';
 
 export class EntityGenerator {

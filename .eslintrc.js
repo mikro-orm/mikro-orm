@@ -2,7 +2,7 @@ module.exports = {
   root: true,
   env: {
     'browser': true,
-    'es6': true,
+    'es2020': true,
     'node': true,
   },
   extends: [
@@ -20,6 +20,8 @@ module.exports = {
     '@typescript-eslint',
   ],
   rules: {
+    '@typescript-eslint/consistent-type-imports': 'error',
+    '@typescript-eslint/no-duplicate-imports': 'error',
     '@typescript-eslint/prefer-optional-chain': 'error',
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
@@ -52,6 +54,7 @@ module.exports = {
     '@typescript-eslint/quotes': ['error', 'single', { avoidEscape: true, allowTemplateLiterals: true }],
     '@typescript-eslint/semi': ['error', 'always'],
     '@typescript-eslint/no-useless-constructor': 'error',
+    "@typescript-eslint/no-redeclare": ["error"],
     '@typescript-eslint/member-delimiter-style': ['error', {
       multiline: { delimiter: 'semi', requireLast: true },
       singleline: { delimiter: 'semi', requireLast: false },
@@ -100,7 +103,7 @@ module.exports = {
     'no-obj-calls': 'error',
     'no-octal': 'error',
     'no-prototype-builtins': 'error',
-    'no-redeclare': 'error',
+    'no-redeclare': 'off',
     'no-regex-spaces': 'error',
     'no-self-assign': 'error',
     'no-shadow-restricted-names': 'error',
@@ -123,7 +126,7 @@ module.exports = {
     'eol-last': 'error',
     'eqeqeq': ['error', 'always', {"null": "ignore"}],
     'no-console': 'error',
-    'no-duplicate-imports': 'error',
+    'no-duplicate-imports': 'off',
     'no-multiple-empty-lines': 'error',
     'no-throw-literal': 'error',
     'no-trailing-spaces': 'error',

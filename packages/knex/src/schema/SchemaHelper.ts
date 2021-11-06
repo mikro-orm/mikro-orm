@@ -1,9 +1,10 @@
-import { Knex } from 'knex';
-import { BigIntType, Connection, Dictionary, EnumType, Utils } from '@mikro-orm/core';
-import { AbstractSqlConnection } from '../AbstractSqlConnection';
-import { AbstractSqlPlatform } from '../AbstractSqlPlatform';
-import { Column, Index, TableDifference } from '../typings';
-import { DatabaseTable } from './DatabaseTable';
+import type { Knex } from 'knex';
+import type { Connection, Dictionary } from '@mikro-orm/core';
+import { BigIntType, EnumType, Utils } from '@mikro-orm/core';
+import type { AbstractSqlConnection } from '../AbstractSqlConnection';
+import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
+import type { Column, Index, TableDifference } from '../typings';
+import type { DatabaseTable } from './DatabaseTable';
 
 export abstract class SchemaHelper {
 
@@ -80,10 +81,10 @@ export abstract class SchemaHelper {
 
     if (column.autoincrement && !compositePK && (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type'))) {
       if (column.mappedType instanceof BigIntType) {
-        return (table.bigIncrements as any)(column.name, { primaryKey: !changedProperties });
+        return table.bigIncrements(column.name, { primaryKey: !changedProperties });
       }
 
-      return (table.increments as any)(column.name, { primaryKey: !changedProperties });
+      return table.increments(column.name, { primaryKey: !changedProperties });
     }
 
     if (column.mappedType instanceof EnumType && column.enumItems?.every(item => Utils.isString(item))) {
@@ -109,9 +110,9 @@ export abstract class SchemaHelper {
     const guard = (key: string) => !changedProperties || changedProperties.has(key);
 
     if (changedProperties) {
-      Utils.runIfNotEmpty(() => col.defaultTo(column.default === undefined ? null : knex.raw(column.default)), guard('default'));
+      Utils.runIfNotEmpty(() => col.defaultTo(column.default == null ? null : knex.raw(column.default)), guard('default'));
     } else {
-      Utils.runIfNotEmpty(() => col.defaultTo(knex.raw(column.default!)), column.default !== undefined);
+      Utils.runIfNotEmpty(() => col.defaultTo(column.default == null ? null : knex.raw(column.default)), column.default !== undefined);
     }
 
     return col;
@@ -221,7 +222,7 @@ export abstract class SchemaHelper {
       const res = await connection.execute(this.getDatabaseExistsSQL(name));
       return res.length > 0;
     } catch (e) {
-      if (e.message.includes(this.getDatabaseNotExistsError(name))) {
+      if (e instanceof Error && e.message.includes(this.getDatabaseNotExistsError(name))) {
         return false;
       }
 

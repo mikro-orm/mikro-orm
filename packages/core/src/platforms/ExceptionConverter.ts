@@ -1,4 +1,4 @@
-import { Dictionary } from '../typings';
+import type { Dictionary } from '../typings';
 import { DriverException } from '../exceptions';
 
 export class ExceptionConverter {

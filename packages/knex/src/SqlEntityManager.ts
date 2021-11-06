@@ -1,8 +1,9 @@
-import { Knex } from 'knex';
-import { AnyEntity, EntityData, EntityManager, EntityName, EntityRepository, GetRepository, QueryResult, Utils } from '@mikro-orm/core';
-import { AbstractSqlDriver } from './AbstractSqlDriver';
+import type { Knex } from 'knex';
+import type { AnyEntity, Dictionary, EntityData, EntityName, EntityRepository, GetRepository, QueryResult } from '@mikro-orm/core';
+import { EntityManager, Utils } from '@mikro-orm/core';
+import type { AbstractSqlDriver } from './AbstractSqlDriver';
 import { QueryBuilder } from './query';
-import { SqlEntityRepository } from './SqlEntityRepository';
+import type { SqlEntityRepository } from './SqlEntityRepository';
 
 /**
  * @inheritDoc
@@ -15,6 +16,16 @@ export class SqlEntityManager<D extends AbstractSqlDriver = AbstractSqlDriver> e
   createQueryBuilder<T>(entityName: EntityName<T>, alias?: string, type?: 'read' | 'write'): QueryBuilder<T> {
     entityName = Utils.className(entityName);
     return new QueryBuilder<T>(entityName, this.getMetadata(), this.getDriver(), this.getTransactionContext(), alias, type, this);
+  }
+
+  /**
+   * Creates raw SQL query that won't be escaped when used as a parameter.
+   */
+  raw<R = Knex.Raw>(sql: string, bindings: Knex.RawBinding[] | Knex.ValueDict = []): R {
+    const raw = this.getKnex().raw(sql, bindings);
+    (raw as Dictionary).__raw = true; // tag it as there is now way to check via `instanceof`
+
+    return raw as unknown as R;
   }
 
   /**

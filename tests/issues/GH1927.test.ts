@@ -1,5 +1,5 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../bootstrap';
 
 @Entity()
@@ -57,9 +57,13 @@ describe('GH issue 1927', () => {
   });
 
   test(`GH issue 1927`, async () => {
-    const result = await orm.em.getConnection().execute('SELECT * FROM "book"');
+    await orm.em.nativeInsert(Author, { name: 'a1' });
+    await orm.em.nativeInsert(Book, { name: 'b1', author: 1 });
+    await orm.em.nativeInsert(Book, { name: 'b2', author: 1 });
+    await orm.em.nativeInsert(Book, { name: 'b3', author: 1 });
+    const result = await orm.em.execute('SELECT * FROM "book"');
     const books = result.map(data => orm.em.map(Book, data));
-    await orm.em.populate(books, 'author');
+    await orm.em.populate(books, ['author']);
 
     const mock = mockLogger(orm);
     await orm.em.flush();

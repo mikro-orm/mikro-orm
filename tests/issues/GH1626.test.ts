@@ -6,7 +6,7 @@ import {
   PrimaryKey,
   Property,
 } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 export class NativeBigIntType extends BigIntType {
 
   convertToJSValue(value: any): any {
@@ -14,7 +14,6 @@ export class NativeBigIntType extends BigIntType {
       return value;
     }
 
-    /* eslint-env es2020 */
     return BigInt(value);
   }
 

@@ -4,9 +4,10 @@
  */
 /* istanbul ignore file */
 export {
-  Constructor, Dictionary, PrimaryKeyType, PrimaryKeyProp, Primary, IPrimaryKey, FilterQuery, IWrappedEntity, EntityName, EntityData, Highlighter,
-  AnyEntity, EntityProperty, EntityMetadata, QBFilterQuery, PopulateOptions, Populate, Loaded, New, LoadedReference, LoadedCollection,
-  GetRepository, EntityRepositoryType, MigrationObject, DeepPartial, PrimaryProperty, Cast, IsUnknown, EntityDictionary, EntityDTO, PlainObject,
+  Constructor, Dictionary, PrimaryKeyType, PrimaryKeyProp, Primary, IPrimaryKey, ObjectQuery, FilterQuery, IWrappedEntity, EntityName, EntityData, Highlighter,
+  AnyEntity, EntityClass, EntityProperty, EntityMetadata, QBFilterQuery, PopulateOptions, Populate, Loaded, New, LoadedReference, LoadedCollection, IMigrator, IMigrationGenerator,
+  GetRepository, EntityRepositoryType, MigrationObject, DeepPartial, PrimaryProperty, Cast, IsUnknown, EntityDictionary, EntityDTO, PlainObject, MigrationDiff,
+  IEntityGenerator, ISeedManager,
 } from './typings';
 export * from './enums';
 export * from './errors';

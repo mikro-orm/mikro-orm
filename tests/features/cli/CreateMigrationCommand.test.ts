@@ -2,16 +2,15 @@
 
 import { Migrator } from '@mikro-orm/migrations';
 import { MikroORM } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { CLIHelper } from '@mikro-orm/cli';
 import { MigrationCommandFactory } from '../../../packages/cli/src/commands/MigrationCommandFactory';
 import { initORMSqlite } from '../../bootstrap';
 
-const close = jest.fn();
-jest.spyOn(MikroORM.prototype, 'close').mockImplementation(close);
-jest.spyOn(require('yargs'), 'showHelp').mockReturnValue('');
+const closeSpy = jest.spyOn(MikroORM.prototype, 'close');
+jest.spyOn(CLIHelper, 'showHelp').mockImplementation(() => void 0);
 const createMigrationMock = jest.spyOn(Migrator.prototype, 'createMigration');
-createMigrationMock.mockResolvedValue({ fileName: '1', code: '2', diff: ['3'] });
+createMigrationMock.mockResolvedValue({ fileName: '1', code: '2', diff: { up: ['3'], down: [] } });
 const dumpMock = jest.spyOn(CLIHelper, 'dump');
 dumpMock.mockImplementation(() => void 0);
 
@@ -38,17 +37,17 @@ describe('CreateMigrationCommand', () => {
 
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
     expect(createMigrationMock.mock.calls.length).toBe(1);
-    expect(close.mock.calls.length).toBe(1);
+    expect(closeSpy).toBeCalledTimes(1);
 
     await expect(cmd.handler({ blank: true, dump: true } as any)).resolves.toBeUndefined();
     expect(createMigrationMock.mock.calls.length).toBe(2);
-    expect(close.mock.calls.length).toBe(2);
+    expect(closeSpy).toBeCalledTimes(2);
     expect(dumpMock).toHaveBeenLastCalledWith('1 successfully created');
 
-    createMigrationMock.mockImplementationOnce(async () => ({ fileName: '', code: '', diff: [] }));
+    createMigrationMock.mockImplementationOnce(async () => ({ fileName: '', code: '', diff: { up: [], down: [] } }));
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
     expect(createMigrationMock.mock.calls.length).toBe(3);
-    expect(close.mock.calls.length).toBe(3);
+    expect(closeSpy).toBeCalledTimes(3);
     expect(dumpMock).toHaveBeenLastCalledWith('No changes required, schema is up-to-date');
   });
 

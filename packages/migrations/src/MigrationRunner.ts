@@ -1,6 +1,7 @@
-import { Configuration, MigrationsOptions, Transaction, Utils } from '@mikro-orm/core';
-import { AbstractSqlDriver } from '@mikro-orm/knex';
-import { Migration } from './Migration';
+import type { Configuration, MigrationsOptions, Transaction } from '@mikro-orm/core';
+import { Utils } from '@mikro-orm/core';
+import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import type { Migration } from './Migration';
 
 export class MigrationRunner {
 

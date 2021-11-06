@@ -1,14 +1,14 @@
-import { AnyEntity, EntityData, EntityMetadata, EntityProperty, FilterQuery, IPrimaryKeyValue, Primary } from '../typings';
+import type { AnyEntity, EntityData, EntityMetadata, EntityProperty, FilterQuery, IPrimaryKeyValue, Primary } from '../typings';
 import { Collection, EntityIdentifier, Reference } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { ChangeSetComputer } from './ChangeSetComputer';
 import { ChangeSetPersister } from './ChangeSetPersister';
 import { CommitOrderCalculator } from './CommitOrderCalculator';
 import { Utils } from '../utils/Utils';
-import { EntityManager } from '../EntityManager';
+import type { EntityManager } from '../EntityManager';
 import { Cascade, EventType, LockMode, ReferenceType } from '../enums';
 import { OptimisticLockError, ValidationError } from '../errors';
-import { Transaction } from '../connections';
+import type { Transaction } from '../connections';
 import { TransactionEventBroadcaster } from '../events';
 import { IdentityMap } from './IdentityMap';
 
@@ -54,7 +54,7 @@ export class UnitOfWork {
 
     // if visited is available, we are cascading, and need to be careful when resetting the entity data
     // as there can be some entity with already changed state that is not yet flushed
-    if (!visited || !wrapped.__originalEntityData) {
+    if (wrapped.__initialized && (!visited || !wrapped.__originalEntityData)) {
       wrapped.__originalEntityData = this.comparator.prepareEntity(entity);
     }
 
@@ -77,6 +77,7 @@ export class UnitOfWork {
     if (data && helper!.__initialized && (refresh || !helper!.__originalEntityData)) {
       // we can't use the `data` directly here as it can contain fetch joined data, that can't be used for diffing the state
       helper!.__originalEntityData = this.comparator.prepareEntity(entity);
+      Object.keys(data).forEach(key => entity.__helper!.__loadedProperties.add(key));
     }
 
     return entity;
@@ -285,6 +286,10 @@ export class UnitOfWork {
 
   computeChangeSets(): void {
     this.changeSets.clear();
+
+    for (const entity of this.persistStack) {
+      this.cascade(entity, Cascade.PERSIST, new WeakSet<AnyEntity>(), { checkRemoveStack: true });
+    }
 
     for (const entity of this.identityMap) {
       if (!this.removeStack.has(entity) && !this.orphanRemoveStack.has(entity)) {
@@ -584,9 +589,9 @@ export class UnitOfWork {
     }
   }
 
-  private async persistToDatabase(groups: { [K in ChangeSetType]: Map<string, ChangeSet<any>[]> }, tx?: Transaction): Promise<void> {
-    if (tx) {
-      this.em.setTransactionContext(tx);
+  private async persistToDatabase(groups: { [K in ChangeSetType]: Map<string, ChangeSet<any>[]> }, ctx?: Transaction): Promise<void> {
+    if (ctx) {
+      this.em.setTransactionContext(ctx);
     }
 
     const commitOrder = this.getCommitOrder();
@@ -594,18 +599,18 @@ export class UnitOfWork {
 
     // 1. whole collection deletions
     for (const coll of this.collectionDeletions) {
-      await this.em.getDriver().clearCollection(coll, tx);
+      await this.em.getDriver().clearCollection(coll, { ctx });
       coll.takeSnapshot();
     }
 
     // 2. create
     for (const name of commitOrder) {
-      await this.commitCreateChangeSets(groups[ChangeSetType.CREATE].get(name) ?? [], tx);
+      await this.commitCreateChangeSets(groups[ChangeSetType.CREATE].get(name) ?? [], ctx);
     }
 
     // 3. update
     for (const name of commitOrder) {
-      await this.commitUpdateChangeSets(groups[ChangeSetType.UPDATE].get(name) ?? [], tx);
+      await this.commitUpdateChangeSets(groups[ChangeSetType.UPDATE].get(name) ?? [], ctx);
     }
 
     // 4. extra updates
@@ -625,17 +630,17 @@ export class UnitOfWork {
       }
     }
 
-    await this.commitUpdateChangeSets(extraUpdates, tx, false);
+    await this.commitUpdateChangeSets(extraUpdates, ctx, false);
 
     // 5. collection updates
     for (const coll of this.collectionUpdates) {
-      await this.em.getDriver().syncCollection(coll, tx);
+      await this.em.getDriver().syncCollection(coll, { ctx });
       coll.takeSnapshot();
     }
 
     // 6. delete - entity deletions need to be in reverse commit order
     for (const name of commitOrderReversed) {
-      await this.commitDeleteChangeSets(groups[ChangeSetType.DELETE].get(name) ?? [], tx);
+      await this.commitDeleteChangeSets(groups[ChangeSetType.DELETE].get(name) ?? [], ctx);
     }
 
     // 7. take snapshots of all persisted collections

@@ -152,7 +152,7 @@ module.exports = {
         excludeProtected: true,
         excludeInternal: true,
         externalPattern: '**/node_modules/*',
-        disableOutputCheck: true,
+        cleanOutputDir: true,
       },
     ],
   ],

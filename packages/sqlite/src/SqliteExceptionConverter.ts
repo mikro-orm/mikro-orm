@@ -1,5 +1,6 @@
+import type { Dictionary, DriverException } from '@mikro-orm/core';
 import {
-  ConnectionException, Dictionary, DriverException, ExceptionConverter, InvalidFieldNameException, LockWaitTimeoutException, NonUniqueFieldNameException,
+  ConnectionException, ExceptionConverter, InvalidFieldNameException, LockWaitTimeoutException, NonUniqueFieldNameException,
   NotNullConstraintViolationException, ReadOnlyException, SyntaxErrorException, TableExistsException, TableNotFoundException, UniqueConstraintViolationException,
 } from '@mikro-orm/core';
 

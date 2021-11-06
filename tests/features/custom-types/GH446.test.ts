@@ -1,6 +1,7 @@
 import { v4, parse, stringify } from 'uuid';
 import { Entity, LoadStrategy, ManyToOne, MikroORM, OneToOne, PrimaryKey, PrimaryKeyType, Property, Type, wrap } from '@mikro-orm/core';
-import { MySqlDriver, SchemaGenerator } from '@mikro-orm/mysql';
+import type { MySqlDriver } from '@mikro-orm/mysql';
+import { SchemaGenerator } from '@mikro-orm/mysql';
 
 export class UuidBinaryType extends Type<string, Buffer> {
 
@@ -93,7 +94,7 @@ describe('GH issue 446', () => {
     await orm.em.persistAndFlush([c, d]);
     orm.em.clear();
 
-    const c1 = await orm.em.findOneOrFail(C, c.b.a.id, ['b.a']);
+    const c1 = await orm.em.findOneOrFail(C, c.b.a.id, { populate: ['b.a'] });
     expect(c1).toBeInstanceOf(C);
     expect(c1.b).toBeInstanceOf(B);
     expect(wrap(c1.b).isInitialized()).toBe(true);

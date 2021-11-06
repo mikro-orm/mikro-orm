@@ -1,5 +1,5 @@
 import { AsyncLocalStorage } from 'async_hooks';
-import { EntityManager } from '../EntityManager';
+import type { EntityManager } from '../EntityManager';
 
 /**
  * Uses `AsyncLocalStorage` to create async context that holds current EM fork.
@@ -31,9 +31,9 @@ export class RequestContext {
    * Creates new RequestContext instance and runs the code inside its domain.
    * Async variant, when the `next` handler needs to be awaited (like in Koa).
    */
-  static async createAsync(em: EntityManager | EntityManager[], next: (...args: any[]) => Promise<void>): Promise<void> {
+  static async createAsync<T>(em: EntityManager | EntityManager[], next: (...args: any[]) => Promise<T>): Promise<T> {
     const ctx = this.createContext(em);
-    await new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       this.storage.run(ctx, () => next().then(resolve).catch(reject));
     });
   }
@@ -57,9 +57,9 @@ export class RequestContext {
     const forks = new Map<string, EntityManager>();
 
     if (Array.isArray(em)) {
-      em.forEach(em => forks.set(em.name, em.fork(true, true)));
+      em.forEach(em => forks.set(em.name, em.fork({ clear: true, useContext: true })));
     } else {
-      forks.set(em.name, em.fork(true, true));
+      forks.set(em.name, em.fork({ clear: true, useContext: true }));
     }
 
     return new RequestContext(forks);

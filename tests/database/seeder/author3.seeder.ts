@@ -1,5 +1,5 @@
 import { Seeder } from '@mikro-orm/seeder';
-import { EntityManager } from '@mikro-orm/core';
+import type { EntityManager } from '@mikro-orm/core';
 
 export class Author3Seeder extends Seeder {
 

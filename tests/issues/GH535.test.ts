@@ -1,5 +1,5 @@
 import { Entity, PrimaryKey, Property, MikroORM, wrap, IdentifiedReference, OneToOne } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 class A {
@@ -64,7 +64,7 @@ describe('GH issue 535', () => {
 
     orm.em.clear();
 
-    const fetchedA = await orm.em.findOneOrFail(A, { id: a.id }, ['b']);
+    const fetchedA = await orm.em.findOneOrFail(A, { id: a.id }, { populate: ['b'] });
     expect(fetchedA.calcProp).toBe('foo');
   });
 });

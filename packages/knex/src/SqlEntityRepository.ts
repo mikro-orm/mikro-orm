@@ -1,7 +1,8 @@
-import { Knex } from 'knex';
-import { EntityRepository, EntityName } from '@mikro-orm/core';
-import { SqlEntityManager } from './SqlEntityManager';
-import { QueryBuilder } from './query';
+import type { Knex } from 'knex';
+import type { EntityName } from '@mikro-orm/core';
+import { EntityRepository } from '@mikro-orm/core';
+import type { SqlEntityManager } from './SqlEntityManager';
+import type { QueryBuilder } from './query';
 
 export class SqlEntityRepository<T> extends EntityRepository<T> {
 

@@ -1,5 +1,5 @@
 import { Entity, LoadStrategy, Logger, ManyToOne, MikroORM, PrimaryKey, Property, t, Type } from '@mikro-orm/core';
-import { MySqlDriver } from '@mikro-orm/mysql';
+import type { MySqlDriver } from '@mikro-orm/mysql';
 
 export class Point {
 
@@ -146,7 +146,7 @@ describe('custom types [mysql]', () => {
     orm.em.clear();
 
     // custom types with SQL fragments with joined strategy (GH #1594)
-    const a2 = await orm.em.findOneOrFail(Address, addr, { populate: { location: LoadStrategy.JOINED } });
+    const a2 = await orm.em.findOneOrFail(Address, addr, { populate: ['location'], strategy: LoadStrategy.JOINED });
     expect(mock.mock.calls[0][0]).toMatch('select `e0`.`id`, `e0`.`location_id`, `l1`.`id` as `l1__id`, `l1`.`rank` as `l1__rank`, ST_AsText(`l1`.`point`) as `l1__point`, ST_AsText(`l1`.`extended_point`) as `l1__extended_point` from `address` as `e0` left join `location` as `l1` on `e0`.`location_id` = `l1`.`id` where `e0`.`id` = ?');
     expect(a2.location.point).toBeInstanceOf(Point);
     expect(a2.location.point).toMatchObject({ latitude: 2.34, longitude: 9.87 });

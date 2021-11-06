@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { Collection, Entity, ManyToMany, ManyToOne, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/core';
 import { SchemaGenerator } from '@mikro-orm/knex';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'auth.users' })
 class TaskAssignee {
@@ -74,7 +74,7 @@ describe('GH issue 450', () => {
     await orm.em.persistAndFlush(t);
     orm.em.clear();
 
-    const t1 = await orm.em.findOneOrFail(Task, t.id, ['assignees']);
+    const t1 = await orm.em.findOneOrFail(Task, t.id, { populate: ['assignees'] });
     expect(t1.assignees.count()).toBe(1);
     expect(t1.assignees[0]).toBeInstanceOf(TaskAssignee);
     expect(wrap(t1.assignees[0]).isInitialized()).toBe(true);
@@ -83,7 +83,7 @@ describe('GH issue 450', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const t2 = await orm.em.findOneOrFail(Task, t.id, ['assignee']);
+    const t2 = await orm.em.findOneOrFail(Task, t.id, { populate: ['assignee'] });
     expect(t2.assignee).toBeInstanceOf(TaskAssignee);
     expect(wrap(t2.assignee).isInitialized()).toBe(true);
   });

@@ -1,12 +1,10 @@
-import { AnyEntity, Dictionary, EntityProperty, IPrimaryKey, Primary } from '../typings';
+import type { AnyEntity, Dictionary, EntityProperty, IPrimaryKey, Primary } from '../typings';
 import { Reference } from './Reference';
 import { wrap } from './wrap';
 import { ReferenceType } from '../enums';
 import { Utils } from '../utils/Utils';
 
 export class ArrayCollection<T, O> {
-
-  [k: number]: T;
 
   protected readonly items = new Set<T>();
   protected initialized = true;
@@ -205,4 +203,8 @@ export class ArrayCollection<T, O> {
     }
   }
 
+}
+
+export interface ArrayCollection<T, O> {
+  [k: number]: T;
 }

@@ -1,7 +1,7 @@
-import { MikroORM } from '@mikro-orm/core';
-import { AbstractSqlDriver } from '@mikro-orm/knex';
+import type { MikroORM } from '@mikro-orm/core';
+import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import c from 'ansi-colors';
-import { Arguments, CommandModule } from 'yargs';
+import type { Arguments, CommandModule } from 'yargs';
 import { CLIHelper } from '../CLIHelper';
 
 export class ImportCommand implements CommandModule {

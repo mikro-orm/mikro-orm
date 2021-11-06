@@ -15,7 +15,7 @@ services:
       - mysql:/var/lib/mysql
 
   mariadb:
-    image: mariadb:10.6.3
+    image: mariadb:10.6.4
     ports:
       - 3309:3306
     environment:
@@ -24,7 +24,7 @@ services:
       - mariadb:/var/lib/mysql
 
   postgre:
-    image: postgres:13.3
+    image: postgres:14.0
     ports:
       - 5432:5432
     volumes:

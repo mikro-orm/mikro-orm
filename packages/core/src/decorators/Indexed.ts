@@ -1,5 +1,5 @@
 import { MetadataStorage } from '../metadata';
-import { AnyEntity, Dictionary } from '../typings';
+import type { AnyEntity, Dictionary } from '../typings';
 import { Utils } from '../utils/Utils';
 
 function createDecorator<T extends AnyEntity<T>>(options: IndexOptions<T> | UniqueOptions<T>, unique: boolean) {

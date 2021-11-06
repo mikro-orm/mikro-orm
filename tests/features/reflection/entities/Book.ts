@@ -1,7 +1,7 @@
 import { Cascade, Entity, ManyToMany, ManyToOne, Property } from '@mikro-orm/core';
-import { Publisher } from './Publisher';
+import type { Publisher } from './Publisher';
 import { Author } from './Author';
-import { BookTag } from './BookTag';
+import type { BookTag } from './BookTag';
 import { Collection, IdentifiedReference } from '../TsMorphMetadataProvider.test';
 import { BaseEntity3 } from './BaseEntity3';
 

@@ -1,5 +1,6 @@
 import { Collection, Entity, IdentifiedReference, Logger, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, PrimaryKeyType, Property, Reference } from '@mikro-orm/core';
-import { AbstractSqlDriver, SchemaGenerator } from '@mikro-orm/knex';
+import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import { SchemaGenerator } from '@mikro-orm/knex';
 
 @Entity()
 class Node {
@@ -82,7 +83,7 @@ describe('GH issue 1111', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const a2 = await orm.em.findOneOrFail(A, { name: 'test' }, ['bs']);
+    const a2 = await orm.em.findOneOrFail(A, { name: 'test' }, { populate: ['bs'] });
     expect(a2.bs.count()).toBe(1);
   });
 
@@ -105,7 +106,7 @@ describe('GH issue 1111', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const a2 = await orm.em.findOneOrFail(A, { name: 'test' }, ['bs']);
+    const a2 = await orm.em.findOneOrFail(A, { name: 'test' }, { populate: ['bs'] });
     expect(a2.bs.count()).toBe(2);
   });
 

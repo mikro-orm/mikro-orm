@@ -1,4 +1,4 @@
-import { AnyEntity, Constructor, EntityMetadata } from '../typings';
+import type { AnyEntity, Constructor, EntityMetadata } from '../typings';
 
 export class IdentityMap {
 

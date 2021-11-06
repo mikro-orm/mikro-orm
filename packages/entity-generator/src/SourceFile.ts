@@ -1,5 +1,6 @@
-import { Dictionary, EntityMetadata, EntityProperty, NamingStrategy, Platform, ReferenceType, UnknownType, Utils } from '@mikro-orm/core';
-import { SchemaHelper } from '@mikro-orm/knex';
+import type { Dictionary, EntityMetadata, EntityProperty, NamingStrategy, Platform } from '@mikro-orm/core';
+import { ReferenceType, UnknownType, Utils } from '@mikro-orm/core';
+import type { SchemaHelper } from '@mikro-orm/knex';
 
 export class SourceFile {
 

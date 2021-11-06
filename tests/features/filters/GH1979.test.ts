@@ -1,5 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property, Filter, Index } from '@mikro-orm/core';
-import { AbstractSqlDriver, EntityManager } from '@mikro-orm/knex';
+import type { AbstractSqlDriver, EntityManager } from '@mikro-orm/knex';
 
 @Entity({ discriminatorColumn: 'type', abstract: true })
 @Filter({
@@ -59,7 +59,7 @@ describe('GH issue 1979', () => {
   let orm: MikroORM<AbstractSqlDriver>;
   let em: EntityManager;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Benefit, Profit, Lost],
       dbName: `:memory:`,
@@ -67,6 +67,12 @@ describe('GH issue 1979', () => {
     });
 
     await orm.getSchemaGenerator().createSchema();
+  });
+
+  beforeEach(async () => {
+    await orm.em.createQueryBuilder(Benefit).truncate().execute();
+    await orm.em.createQueryBuilder(Profit).truncate().execute();
+    await orm.em.createQueryBuilder(Lost).truncate().execute();
     em = orm.em.fork();
 
     const now = Date.now();

@@ -1,8 +1,10 @@
 import c from 'ansi-colors';
-import { Arguments, Argv, CommandModule } from 'yargs';
-import { Configuration, MikroORM, MikroORMOptions, Utils } from '@mikro-orm/core';
-import { AbstractSqlDriver, SchemaGenerator } from '@mikro-orm/knex';
-import { MigrateOptions, Migrator } from '@mikro-orm/migrations';
+import type { Arguments, Argv, CommandModule } from 'yargs';
+import type { Configuration, MikroORM, MikroORMOptions, IMigrator } from '@mikro-orm/core';
+import { Utils } from '@mikro-orm/core';
+import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import { SchemaGenerator } from '@mikro-orm/knex';
+import type { MigrateOptions } from '@mikro-orm/migrations';
 import { CLIHelper } from '../CLIHelper';
 
 export class MigrationCommandFactory {
@@ -85,6 +87,7 @@ export class MigrationCommandFactory {
   static async handleMigrationCommand(args: Arguments<Options>, method: MigratorMethod): Promise<void> {
     const options = { pool: { min: 1, max: 1 } } as Partial<MikroORMOptions>;
     const orm = await CLIHelper.getORM(undefined, options) as MikroORM<AbstractSqlDriver>;
+    const { Migrator } = await import('@mikro-orm/migrations');
     const migrator = new Migrator(orm.em);
 
     switch (method) {
@@ -112,18 +115,17 @@ export class MigrationCommandFactory {
     args.option('seed', {
       type: 'string',
       desc: 'Allows to seed the database after dropping it and rerunning all migrations',
-      default: '',
     });
   }
 
-  private static async handleUpDownCommand(args: Arguments<Options>, migrator: Migrator, method: MigratorMethod) {
+  private static async handleUpDownCommand(args: Arguments<Options>, migrator: IMigrator, method: MigratorMethod) {
     const opts = MigrationCommandFactory.getUpDownOptions(args);
     await migrator[method](opts as string[]);
     const message = this.getUpDownSuccessMessage(method as 'up' | 'down', opts);
     CLIHelper.dump(c.green(message));
   }
 
-  private static async handlePendingCommand(migrator: Migrator) {
+  private static async handlePendingCommand(migrator: IMigrator) {
     const pending = await migrator.getPendingMigrations();
     CLIHelper.dumpTable({
       columns: ['Name'],
@@ -132,7 +134,7 @@ export class MigrationCommandFactory {
     });
   }
 
-  private static async handleListCommand(migrator: Migrator) {
+  private static async handleListCommand(migrator: IMigrator) {
     const executed = await migrator.getExecutedMigrations();
 
     CLIHelper.dumpTable({
@@ -142,22 +144,31 @@ export class MigrationCommandFactory {
     });
   }
 
-  private static async handleCreateCommand(migrator: Migrator, args: Arguments<Options>, config: Configuration): Promise<void> {
+  private static async handleCreateCommand(migrator: IMigrator, args: Arguments<Options>, config: Configuration): Promise<void> {
     const ret = await migrator.createMigration(args.path, args.blank, args.initial);
 
-    if (ret.diff.length === 0) {
+    if (ret.diff.up.length === 0) {
       return CLIHelper.dump(c.green(`No changes required, schema is up-to-date`));
     }
 
     if (args.dump) {
       CLIHelper.dump(c.green('Creating migration with following queries:'));
-      CLIHelper.dump(ret.diff.map(sql => '  ' + sql).join('\n'), config);
+      CLIHelper.dump(c.green('up:'));
+      CLIHelper.dump(ret.diff.up.map(sql => '  ' + sql).join('\n'), config);
+
+      /* istanbul ignore next */
+      if (config.getDriver().getPlatform().supportsDownMigrations()) {
+        CLIHelper.dump(c.green('down:'));
+        CLIHelper.dump(ret.diff.down.map(sql => '  ' + sql).join('\n'), config);
+      } else {
+        CLIHelper.dump(c.yellow(`(${config.getDriver().constructor.name} does not support automatic down migrations)`));
+      }
     }
 
     CLIHelper.dump(c.green(`${ret.fileName} successfully created`));
   }
 
-  private static async handleFreshCommand(args: Arguments<Options>, migrator: Migrator, orm: MikroORM<AbstractSqlDriver>) {
+  private static async handleFreshCommand(args: Arguments<Options>, migrator: IMigrator, orm: MikroORM<AbstractSqlDriver>) {
     const generator = new SchemaGenerator(orm.em);
     await generator.dropSchema();
     CLIHelper.dump(c.green('Dropped schema successfully'));

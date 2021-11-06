@@ -1,7 +1,6 @@
-import { EntityRepository, Repository } from '@mikro-orm/core';
-import { Book } from '../entities';
+import { EntityRepository } from '@mikro-orm/core';
+import type { Book } from '../entities';
 
-@Repository(Book)
 export class BookRepository extends EntityRepository<Book> {
 
   magic(data: string): string {

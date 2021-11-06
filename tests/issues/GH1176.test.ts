@@ -1,11 +1,12 @@
+import type {
+  EntityManager } from '@mikro-orm/core';
 import {
-  EntityManager,
   Entity,
   MikroORM,
   PrimaryKey,
   Property,
 } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 as uuid } from 'uuid';
 
 @Entity({ tableName: 'users' })
@@ -61,7 +62,7 @@ describe('GH issue 1176', () => {
             id serial primary key,
             username varchar(50) not null unique deferrable initially immediate
           );
-          `
+          `,
       );
       await orm.close();
     });
@@ -79,7 +80,7 @@ describe('GH issue 1176', () => {
         em.persist(user);
 
         await expect(em.flush()).rejects.toThrowError(
-          /^insert.+duplicate key value/
+          /^insert.+duplicate key value/,
         );
       });
     });
@@ -143,7 +144,7 @@ describe('GH issue 1176', () => {
           id serial primary key,
           username varchar(50) not null unique deferrable initially deferred
         );
-          `
+          `,
       );
       await orm.close();
     });
@@ -162,7 +163,7 @@ describe('GH issue 1176', () => {
         em.persist(user);
 
         await expect(em.flush()).rejects.toThrowError(
-          /^COMMIT.+duplicate key value/
+          /^COMMIT.+duplicate key value/,
         );
       });
     });

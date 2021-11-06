@@ -1,11 +1,12 @@
 import c from 'ansi-colors';
 
-import { EntityManagerType, IDatabaseDriver } from './drivers';
+import type { EntityManagerType, IDatabaseDriver } from './drivers';
 import { MetadataDiscovery, MetadataStorage, MetadataValidator, ReflectMetadataProvider } from './metadata';
-import { Configuration, ConfigurationLoader, Logger, Options, Utils } from './utils';
+import type { Logger, Options } from './utils';
+import { Configuration, ConfigurationLoader, Utils } from './utils';
 import { NullCacheAdapter } from './cache';
-import { EntityManager } from './EntityManager';
-import { AnyEntity, Constructor, IEntityGenerator, IMigrator, ISchemaGenerator, ISeedManager } from './typings';
+import type { EntityManager } from './EntityManager';
+import type { AnyEntity, Constructor, IEntityGenerator, IMigrator, ISchemaGenerator, ISeedManager } from './typings';
 
 /**
  * Helper class for bootstrapping the MikroORM.
@@ -117,7 +118,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     entities = Utils.asArray(entities);
     const tmp = await this.discovery.discoverReferences(entities);
     new MetadataValidator().validateDiscovered([...Object.values(this.metadata.getAll()), ...tmp], this.config.get('discovery').warnWhenNoEntities!);
-    const metadata = this.discovery.processDiscoveredEntities(tmp);
+    const metadata = await this.discovery.processDiscoveredEntities(tmp);
     metadata.forEach(meta => this.metadata.set(meta.className, meta));
     this.metadata.decorate(this.em);
   }

@@ -1,5 +1,5 @@
 import { BeforeDelete, BeforeUpdate, Entity, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 export class A {

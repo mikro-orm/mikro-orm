@@ -43,19 +43,25 @@ There are three parameters you can use:
 ## Parameters
 
 You can define the `cond` dynamically as a callback. This callback can be also 
-asynchronous. It will get two arguments:
+asynchronous. It will get three arguments:
 
 - `args` - dictionary of parameters provided by user
 - `type` - type of operation that is being filtered, one of `'read'`, `'update'`, `'delete'`
+- `em` - current instance of `EntityManager`
 
 ```typescript
+import type { EntityManager } from '@mikro-orm/mysql';
+
 @Entity()
-@Filter({ name: 'writtenBy', cond: async (args, type) => {
+@Filter({ name: 'writtenBy', cond: async (args, type, em: EntityManager) => {
   if (type === 'update') {
     return {}; // do not apply when updating
   }
 
-  return { author: { name: args.name } };
+  return { 
+    author: { name: args.name }, 
+    publishedAt: { $lte: em.raw('now()') },
+  };
 } })
 export class Book {
   ...

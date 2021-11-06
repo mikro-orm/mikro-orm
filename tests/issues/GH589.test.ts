@@ -1,5 +1,5 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType, Reference, IdentifiedReference } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 export class User {
@@ -87,7 +87,7 @@ describe('GH issue 589', () => {
     await orm.em.persistAndFlush(chat1);
     orm.em.clear();
 
-    await orm.em.find(Chat, {}, ['User']);
+    await orm.em.find(Chat, {}, { populate: ['User'] });
   });
 
 });

@@ -1,7 +1,8 @@
-import {
-  Dictionary, DeadlockException, LockWaitTimeoutException, TableExistsException, TableNotFoundException,
+import type {
+  Dictionary, DriverException } from '@mikro-orm/core';
+import { DeadlockException, LockWaitTimeoutException, TableExistsException, TableNotFoundException,
   ForeignKeyConstraintViolationException, UniqueConstraintViolationException, InvalidFieldNameException, NonUniqueFieldNameException,
-  SyntaxErrorException, ConnectionException, NotNullConstraintViolationException, DriverException, ExceptionConverter,
+  SyntaxErrorException, ConnectionException, NotNullConstraintViolationException, ExceptionConverter,
 } from '@mikro-orm/core';
 
 export class MySqlExceptionConverter extends ExceptionConverter {

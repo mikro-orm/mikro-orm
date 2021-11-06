@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb';
+import type { ObjectId } from 'mongodb';
 import { Collection, EntitySchema } from '@mikro-orm/core';
 import { Book } from './Book';
 

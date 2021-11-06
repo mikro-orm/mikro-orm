@@ -1,9 +1,8 @@
-import { EntityManager } from '../EntityManager';
-import { EntityData, EntityName, AnyEntity, Primary, Populate, Loaded, New, FilterQuery, EntityDictionary } from '../typings';
-import { QueryOrderMap } from '../enums';
-import { CountOptions, DeleteOptions, FindOneOptions, FindOneOrFailOptions, FindOptions, UpdateOptions } from '../drivers/IDatabaseDriver';
-import { IdentifiedReference, Reference } from './Reference';
-import { EntityLoaderOptions } from './EntityLoader';
+import type { EntityManager, MergeOptions } from '../EntityManager';
+import type { EntityData, EntityName, AnyEntity, Primary, Loaded, New, FilterQuery, EntityDictionary, AutoPath } from '../typings';
+import type { CountOptions, DeleteOptions, FindOneOptions, FindOneOrFailOptions, FindOptions, UpdateOptions } from '../drivers/IDatabaseDriver';
+import type { IdentifiedReference, Reference } from './Reference';
+import type { EntityLoaderOptions } from './EntityLoader';
 
 export class EntityRepository<T extends AnyEntity<T>> {
 
@@ -39,18 +38,8 @@ export class EntityRepository<T extends AnyEntity<T>> {
   /**
    * Finds first entity matching your `where` query.
    */
-  async findOne<P extends Populate<T> = any>(where: FilterQuery<T>, populate?: P, orderBy?: QueryOrderMap): Promise<Loaded<T, P> | null>;
-
-  /**
-   * Finds first entity matching your `where` query.
-   */
-  async findOne<P extends Populate<T> = any>(where: FilterQuery<T>, populate?: FindOneOptions<T, P>, orderBy?: QueryOrderMap): Promise<Loaded<T, P> | null>;
-
-  /**
-   * Finds first entity matching your `where` query.
-   */
-  async findOne<P extends Populate<T> = any>(where: FilterQuery<T>, populate?: P | FindOneOptions<T, P>, orderBy?: QueryOrderMap): Promise<Loaded<T, P> | null> {
-    return this.em.findOne<T, P>(this.entityName, where, populate as P, orderBy);
+  async findOne<P extends string = never>(where: FilterQuery<T>, options?: FindOneOptions<T, P>): Promise<Loaded<T, P> | null> {
+    return this.em.findOne<T, P>(this.entityName, where, options);
   }
 
   /**
@@ -58,76 +47,30 @@ export class EntityRepository<T extends AnyEntity<T>> {
    * You can override the factory for creating this method via `options.failHandler` locally
    * or via `Configuration.findOneOrFailHandler` globally.
    */
-  async findOneOrFail<P extends Populate<T> = any>(where: FilterQuery<T>, populate?: P, orderBy?: QueryOrderMap): Promise<Loaded<T, P>>;
-
-  /**
-   * Finds first entity matching your `where` query. If nothing found, it will throw an error.
-   * You can override the factory for creating this method via `options.failHandler` locally
-   * or via `Configuration.findOneOrFailHandler` globally.
-   */
-  async findOneOrFail<P extends Populate<T> = any>(where: FilterQuery<T>, populate?: FindOneOrFailOptions<T, P>, orderBy?: QueryOrderMap): Promise<Loaded<T, P>>;
-
-  /**
-   * Finds first entity matching your `where` query. If nothing found, it will throw an error.
-   * You can override the factory for creating this method via `options.failHandler` locally
-   * or via `Configuration.findOneOrFailHandler` globally.
-   */
-  async findOneOrFail<P extends Populate<T> = any>(where: FilterQuery<T>, populate?: P | FindOneOrFailOptions<T, P>, orderBy?: QueryOrderMap): Promise<Loaded<T, P>> {
-    return this.em.findOneOrFail<T, P>(this.entityName, where, populate as P, orderBy);
+  async findOneOrFail<P extends string = never>(where: FilterQuery<T>, options?: FindOneOrFailOptions<T, P>): Promise<Loaded<T, P>> {
+    return this.em.findOneOrFail<T, P>(this.entityName, where, options);
   }
 
   /**
    * Finds all entities matching your `where` query. You can pass additional options via the `options` parameter.
    */
-  async find<P extends Populate<T> = any>(where: FilterQuery<T>, options?: FindOptions<T, P>): Promise<Loaded<T, P>[]>;
-
-  /**
-   * Finds all entities matching your `where` query.
-   */
-  async find<P extends Populate<T> = any>(where: FilterQuery<T>, populate?: P, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<Loaded<T, P>[]>;
-
-  /**
-   * Finds all entities matching your `where` query.
-   */
-  async find<P extends Populate<T> = any>(where: FilterQuery<T>, populate?: P | FindOptions<T, P>, orderBy: QueryOrderMap = {}, limit?: number, offset?: number): Promise<Loaded<T, P>[]> {
-    return this.em.find<T, P>(this.entityName, where as FilterQuery<T>, populate as P, orderBy, limit, offset);
+  async find<P extends string = never>(where: FilterQuery<T>, options?: FindOptions<T, P>): Promise<Loaded<T, P>[]> {
+    return this.em.find<T, P>(this.entityName, where as FilterQuery<T>, options);
   }
 
   /**
    * Calls `em.find()` and `em.count()` with the same arguments (where applicable) and returns the results as tuple
    * where first element is the array of entities and the second is the count.
    */
-  async findAndCount<P extends Populate<T> = any>(where: FilterQuery<T>, options?: FindOptions<T>): Promise<[Loaded<T, P>[], number]>;
-
-  /**
-   * Calls `em.find()` and `em.count()` with the same arguments (where applicable) and returns the results as tuple
-   * where first element is the array of entities and the second is the count.
-   */
-  async findAndCount<P extends Populate<T> = any>(where: FilterQuery<T>, populate?: P, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<[Loaded<T, P>[], number]>;
-
-  /**
-   * Calls `em.find()` and `em.count()` with the same arguments (where applicable) and returns the results as tuple
-   * where first element is the array of entities and the second is the count.
-   */
-  async findAndCount<P extends Populate<T> = any>(where: FilterQuery<T>, populate?: P | FindOptions<T>, orderBy: QueryOrderMap = {}, limit?: number, offset?: number): Promise<[Loaded<T, P>[], number]> {
-    return this.em.findAndCount<T, P>(this.entityName, where as FilterQuery<T>, populate as P, orderBy, limit, offset);
+  async findAndCount<P extends string = never>(where: FilterQuery<T>, options?: FindOptions<T, P>): Promise<[Loaded<T, P>[], number]> {
+    return this.em.findAndCount<T, P>(this.entityName, where, options);
   }
 
   /**
    * Finds all entities of given type. You can pass additional options via the `options` parameter.
    */
-  async findAll<P extends Populate<T> = any>(options?: FindOptions<T, P>): Promise<Loaded<T, P>[]>;
-
-  /**
-   * Finds all entities of given type.
-   */
-  async findAll<P extends Populate<T> = any>(populate?: P, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<Loaded<T, P>[]>;
-
-  /**
-   * Finds all entities of given type.
-   */
-  async findAll<P extends Populate<T> = any>(populate?: P | FindOptions<T, P>, orderBy?: QueryOrderMap, limit?: number, offset?: number): Promise<Loaded<T, P>[]> {
-    return this.em.find<T, P>(this.entityName, {}, populate as P, orderBy, limit, offset);
+  async findAll<P extends string = never>(options?: FindOptions<T, P>): Promise<Loaded<T, P>[]> {
+    return this.em.find<T, P>(this.entityName, {} as FilterQuery<T>, options);
   }
 
   /**
@@ -228,29 +171,29 @@ export class EntityRepository<T extends AnyEntity<T>> {
   /**
    * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
    */
-  async populate<P extends string | keyof T | Populate<T>>(entities: T, populate: P, options?: EntityLoaderOptions<T>): Promise<Loaded<T, P>>;
+  async populate<P extends string = never>(entities: T, populate: AutoPath<T, P>[] | boolean, options?: EntityLoaderOptions<T>): Promise<Loaded<T, P>>;
 
   /**
    * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
    */
-  async populate<P extends string | keyof T | Populate<T>>(entities: T[], populate: P, options?: EntityLoaderOptions<T>): Promise<Loaded<T, P>[]>;
+  async populate<P extends string = never>(entities: T[], populate: AutoPath<T, P>[] | boolean, options?: EntityLoaderOptions<T>): Promise<Loaded<T, P>[]>;
 
   /**
    * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
    */
-  async populate<P extends string | keyof T | Populate<T>>(entities: T | T[], populate: P, options?: EntityLoaderOptions<T>): Promise<Loaded<T, P> | Loaded<T, P>[]>;
-
-  /**
-   * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
-   */
-  async populate<P extends string | keyof T | Populate<T>>(entities: T | T[], populate: P, options?: EntityLoaderOptions<T>): Promise<Loaded<T, P> | Loaded<T, P>[]> {
-    return this.em.populate<T, P>(entities, populate, options);
+  async populate<P extends string = never>(entities: T | T[], populate: AutoPath<T, P>[] | boolean, options?: EntityLoaderOptions<T>): Promise<Loaded<T, P> | Loaded<T, P>[]> {
+    return this.em.populate(entities as T, populate, options);
   }
 
   /**
-   * Creates new instance of given entity and populates it with given data
+   * Creates new instance of given entity and populates it with given data.
+   * The entity constructor will be used unless you provide `{ managed: true }` in the options parameter.
+   * The constructor will be given parameters based on the defined constructor of the entity. If the constructor
+   * parameter matches a property name, its value will be extracted from `data`. If no matching property exists,
+   * the whole `data` parameter will be passed. This means we can also define `constructor(data: Partial<T>)` and
+   * `em.create()` will pass the data into it (unless we have a property named `data` too).
    */
-  create<P extends Populate<T> = string[]>(data: EntityData<T>): New<T, P> {
+  create<P extends string = any>(data: EntityData<T>): New<T, P> {
     return this.em.create<T, P>(this.entityName, data);
   }
 
@@ -265,14 +208,14 @@ export class EntityRepository<T extends AnyEntity<T>> {
    * Merges given entity to this EntityManager so it becomes managed. You can force refreshing of existing entities
    * via second parameter. By default it will return already loaded entities without modifying them.
    */
-  merge(data: T | EntityData<T>, refresh?: boolean, convertCustomTypes?: boolean): T {
-    return this.em.merge<T>(this.entityName, data, refresh, convertCustomTypes);
+  merge(data: T | EntityData<T>, options?: MergeOptions): T {
+    return this.em.merge<T>(this.entityName, data, options);
   }
 
   /**
    * Returns total number of entities matching your `where` query.
    */
-  async count(where: FilterQuery<T> = {}, options: CountOptions<T> = {}): Promise<number> {
+  async count<P extends string = never>(where: FilterQuery<T> = {} as FilterQuery<T>, options: CountOptions<T, P> = {}): Promise<number> {
     return this.em.count<T>(this.entityName, where, options);
   }
 

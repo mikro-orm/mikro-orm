@@ -1,8 +1,10 @@
 (global as any).process.env.FORCE_COLOR = 0;
 import umzug from 'umzug';
-import { Logger, MetadataStorage, MikroORM } from '@mikro-orm/core';
+import type { MikroORM } from '@mikro-orm/core';
+import { Logger, MetadataStorage } from '@mikro-orm/core';
 import { Migration, MigrationStorage, Migrator } from '@mikro-orm/migrations';
-import { DatabaseSchema, DatabaseTable, MySqlDriver, SchemaGenerator } from '@mikro-orm/mysql';
+import type { DatabaseTable, MySqlDriver } from '@mikro-orm/mysql';
+import { DatabaseSchema, SchemaGenerator } from '@mikro-orm/mysql';
 import { remove } from 'fs-extra';
 import { initORMMySql } from '../../bootstrap';
 
@@ -159,11 +161,12 @@ describe('Migrator', () => {
   });
 
   test('migration is skipped when no diff', async () => {
+    await orm.getSchemaGenerator().updateSchema();
     const migrator = new Migrator(orm.em);
     const schemaGeneratorMock = jest.spyOn<any, any>(SchemaGenerator.prototype, 'getUpdateSchemaSQL');
-    schemaGeneratorMock.mockResolvedValue('');
+    schemaGeneratorMock.mockResolvedValueOnce({ up: [], down: [] });
     const migration = await migrator.createMigration();
-    expect(migration).toEqual({ fileName: '', code: '', diff: [] });
+    expect(migration).toEqual({ fileName: '', code: '', diff: { up: [], down: [] } });
   });
 
   test('run schema migration', async () => {

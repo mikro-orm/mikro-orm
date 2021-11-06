@@ -1,15 +1,19 @@
-import umzug, { migrationsList, Umzug } from 'umzug';
+import type { Umzug } from 'umzug';
+import umzug, { migrationsList } from 'umzug';
 import { join } from 'path';
 import { ensureDir, pathExists, writeJSON } from 'fs-extra';
-import { Constructor, Dictionary, Transaction, Utils, t, Type } from '@mikro-orm/core';
-import { DatabaseSchema, DatabaseTable, EntityManager, SchemaGenerator } from '@mikro-orm/knex';
-import { Migration } from './Migration';
+import type { Constructor, Dictionary, Transaction, IMigrator, IMigrationGenerator } from '@mikro-orm/core';
+import { Utils, t, Type, UnknownType } from '@mikro-orm/core';
+import type { EntityManager } from '@mikro-orm/knex';
+import { DatabaseSchema, DatabaseTable, SchemaGenerator } from '@mikro-orm/knex';
+import type { Migration } from './Migration';
 import { MigrationRunner } from './MigrationRunner';
-import { MigrationGenerator } from './MigrationGenerator';
 import { MigrationStorage } from './MigrationStorage';
-import { MigrateOptions, MigrationResult, MigrationRow, UmzugMigration } from './typings';
+import type { MigrateOptions, MigrationResult, MigrationRow, UmzugMigration } from './typings';
+import { TSMigrationGenerator } from './TSMigrationGenerator';
+import { JSMigrationGenerator } from './JSMigrationGenerator';
 
-export class Migrator {
+export class Migrator implements IMigrator {
 
   private readonly umzug: Umzug;
   private readonly driver = this.em.getDriver();
@@ -17,7 +21,7 @@ export class Migrator {
   private readonly config = this.em.config;
   private readonly options = this.config.get('migrations');
   private readonly runner = new MigrationRunner(this.driver, this.options, this.config);
-  private readonly generator = new MigrationGenerator(this.driver, this.config.getNamingStrategy(), this.options);
+  private readonly generator: IMigrationGenerator;
   private readonly storage = new MigrationStorage(this.driver, this.options);
   private readonly absolutePath = Utils.absolutePath(this.options.path!, this.config.get('baseDir'));
   private readonly snapshotPath = join(this.absolutePath, `.snapshot-${this.config.get('dbName')}.json`);
@@ -39,8 +43,19 @@ export class Migrator {
       logging: this.config.get('logger'),
       migrations,
     });
+
+    if (this.options.generator) {
+      this.generator = new this.options.generator(this.driver, this.config.getNamingStrategy(), this.options);
+    } else if (this.options.emit === 'js') {
+      this.generator = new JSMigrationGenerator(this.driver, this.config.getNamingStrategy(), this.options);
+    } else {
+      this.generator = new TSMigrationGenerator(this.driver, this.config.getNamingStrategy(), this.options);
+    }
   }
 
+  /**
+   * @inheritDoc
+   */
   async createMigration(path?: string, blank = false, initial = false): Promise<MigrationResult> {
     if (initial) {
       return this.createInitialMigration(path);
@@ -49,7 +64,7 @@ export class Migrator {
     await this.ensureMigrationsDirExists();
     const diff = await this.getSchemaDiff(blank, initial);
 
-    if (diff.length === 0) {
+    if (diff.up.length === 0) {
       return { fileName: '', code: '', diff };
     }
 
@@ -63,6 +78,9 @@ export class Migrator {
     };
   }
 
+  /**
+   * @inheritDoc
+   */
   async createInitialMigration(path?: string): Promise<MigrationResult> {
     await this.ensureMigrationsDirExists();
     const schemaExists = await this.validateInitialMigration();
@@ -124,22 +142,36 @@ export class Migrator {
     return expected.size === exists.size;
   }
 
+  /**
+   * @inheritDoc
+   */
   async getExecutedMigrations(): Promise<MigrationRow[]> {
     await this.ensureMigrationsDirExists();
+    await this.schemaGenerator.ensureDatabase();
     await this.storage.ensureTable();
     return this.storage.getExecutedMigrations();
   }
 
+  /**
+   * @inheritDoc
+   */
   async getPendingMigrations(): Promise<UmzugMigration[]> {
     await this.ensureMigrationsDirExists();
+    await this.schemaGenerator.ensureDatabase();
     await this.storage.ensureTable();
     return this.umzug.pending();
   }
 
+  /**
+   * @inheritDoc
+   */
   async up(options?: string | string[] | MigrateOptions): Promise<UmzugMigration[]> {
     return this.runMigrations('up', options);
   }
 
+  /**
+   * @inheritDoc
+   */
   async down(options?: string | string[] | MigrateOptions): Promise<UmzugMigration[]> {
     return this.runMigrations('down', options);
   }
@@ -170,7 +202,8 @@ export class Migrator {
       Object.assign(table, restTable);
       Object.keys(columns).forEach(col => {
         const column = { ...columns[col] };
-        column.mappedType = Type.getType(t[columns[col].mappedType]);
+        /* istanbul ignore next */
+        column.mappedType = Type.getType(t[columns[col].mappedType] ?? UnknownType);
         table.addColumn(column);
       });
 
@@ -200,33 +233,39 @@ export class Migrator {
     };
   }
 
-  private async getSchemaDiff(blank: boolean, initial: boolean): Promise<string[]> {
-    const lines: string[] = [];
+  private async getSchemaDiff(blank: boolean, initial: boolean): Promise<{ up: string[]; down: string[] }> {
+    const up: string[] = [];
+    const down: string[] = [];
 
     if (blank) {
-      lines.push('select 1');
+      up.push('select 1');
     } else if (initial) {
       const dump = await this.schemaGenerator.getCreateSchemaSQL({ wrap: false });
-      lines.push(...dump.split('\n'));
+      up.push(...dump.split('\n'));
     } else {
-      const dump = await this.schemaGenerator.getUpdateSchemaSQL({
+      const diff = await this.schemaGenerator.getUpdateSchemaMigrationSQL({
         wrap: false,
         safe: this.options.safe,
         dropTables: this.options.dropTables,
         fromSchema: await this.getCurrentSchema(),
       });
-      lines.push(...dump.split('\n'));
+      up.push(...diff.up.split('\n'));
+      down.push(...diff.down.split('\n'));
     }
 
-    for (let i = lines.length - 1; i >= 0; i--) {
-      if (lines[i]) {
-        break;
+    const cleanUp = (diff: string[]) => {
+      for (let i = diff.length - 1; i >= 0; i--) {
+        if (diff[i]) {
+          break;
+        }
+
+        diff.splice(i, 1);
       }
+    };
+    cleanUp(up);
+    cleanUp(down);
 
-      lines.splice(i, 1);
-    }
-
-    return lines;
+    return { up, down };
   }
 
   private prefix<T extends string | string[] | { from?: string; to?: string; migrations?: string[]; transaction?: Transaction }>(options?: T): T {
@@ -256,6 +295,7 @@ export class Migrator {
 
   private async runMigrations(method: 'up' | 'down', options?: string | string[] | MigrateOptions) {
     await this.ensureMigrationsDirExists();
+    await this.schemaGenerator.ensureDatabase();
     await this.storage.ensureTable();
 
     if (!this.options.transactional || !this.options.allOrNothing) {

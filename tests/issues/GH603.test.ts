@@ -1,5 +1,5 @@
 import { Collection, EntitySchema, MikroORM } from '@mikro-orm/core';
-import { AbstractSqlDriver } from '@mikro-orm/knex';
+import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { v4 } from 'uuid';
 
 class TaskProps {

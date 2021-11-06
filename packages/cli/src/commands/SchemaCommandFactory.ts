@@ -1,7 +1,8 @@
-import yargs, { Arguments, Argv, CommandModule } from 'yargs';
+import type { Arguments, Argv, CommandModule } from 'yargs';
 import c from 'ansi-colors';
-import { Dictionary, MikroORM } from '@mikro-orm/core';
-import { AbstractSqlDriver, SchemaGenerator } from '@mikro-orm/knex';
+import type { Dictionary, MikroORM } from '@mikro-orm/core';
+import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import { SchemaGenerator } from '@mikro-orm/knex';
 import { CLIHelper } from '../CLIHelper';
 
 export class SchemaCommandFactory {
@@ -85,8 +86,7 @@ export class SchemaCommandFactory {
 
   static async handleSchemaCommand(args: Arguments<Options>, method: SchemaMethod, successMessage: string) {
     if (!args.run && !args.dump) {
-      yargs.showHelp();
-      return;
+      return CLIHelper.showHelp();
     }
 
     const orm = await CLIHelper.getORM() as MikroORM<AbstractSqlDriver>;

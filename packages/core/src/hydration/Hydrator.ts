@@ -1,8 +1,8 @@
-import { AnyEntity, EntityData, EntityMetadata, EntityProperty, IHydrator } from '../typings';
-import { EntityFactory } from '../entity';
-import { Platform } from '../platforms/Platform';
-import { MetadataStorage } from '../metadata/MetadataStorage';
-import { Configuration } from '../utils/Configuration';
+import type { AnyEntity, EntityData, EntityMetadata, EntityProperty, IHydrator } from '../typings';
+import type { EntityFactory } from '../entity';
+import type { Platform } from '../platforms/Platform';
+import type { MetadataStorage } from '../metadata/MetadataStorage';
+import type { Configuration } from '../utils/Configuration';
 
 /* istanbul ignore next */
 export abstract class Hydrator implements IHydrator {

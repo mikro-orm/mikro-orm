@@ -74,7 +74,6 @@ html[data-theme="light"] .admonition-info {
 
 .navbar .navbar__logo {
   max-height: 100%;
-  height: auto;
 }
 
 .navbar .navbar__link[href*=github],
@@ -242,4 +241,9 @@ html[data-theme="dark"] code {
 
 html a code {
   color: inherit
+}
+
+.navbar svg[class*=iconExternalLink],
+aside svg[class*=iconExternalLink] {
+  display: none;
 }

@@ -40,8 +40,8 @@ describe('GH issue 1429', () => {
     await orm.em.persistAndFlush(fixture1);
     orm.em.clear();
 
-    const found1 = await orm.em.findOneOrFail(A, fixture1.id, ['as', 'bs']);
-    const found2 = await orm.em.findOneOrFail(A, fixture2.id, ['as', 'bs']);
+    const found1 = await orm.em.findOneOrFail(A, fixture1.id, { populate: ['as', 'bs'] });
+    const found2 = await orm.em.findOneOrFail(A, fixture2.id, { populate: ['as', 'bs'] });
 
     expect(found1.as.isInitialized()).toBe(true);
     expect(found1.bs.isInitialized()).toBe(true);

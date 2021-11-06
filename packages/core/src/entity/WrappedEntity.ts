@@ -1,13 +1,16 @@
 import { inspect } from 'util';
-import { EntityManager } from '../EntityManager';
-import { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, Populate, PopulateOptions, Primary } from '../typings';
-import { IdentifiedReference, Reference } from './Reference';
-import { EntityTransformer, SerializationContext } from './EntityTransformer';
-import { AssignOptions, EntityAssigner } from './EntityAssigner';
+import type { EntityManager } from '../EntityManager';
+import type { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, Populate, PopulateOptions, Primary } from '../typings';
+import type { IdentifiedReference } from './Reference';
+import { Reference } from './Reference';
+import type { SerializationContext } from './EntityTransformer';
+import { EntityTransformer } from './EntityTransformer';
+import type { AssignOptions } from './EntityAssigner';
+import { EntityAssigner } from './EntityAssigner';
 import { Utils } from '../utils/Utils';
-import { LockMode } from '../enums';
+import type { LockMode } from '../enums';
 import { ValidationError } from '../errors';
-import { EntityIdentifier } from './EntityIdentifier';
+import type { EntityIdentifier } from './EntityIdentifier';
 
 export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
 
@@ -17,6 +20,7 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   __managed?: boolean;
   __em?: EntityManager;
   __serializationContext: { root?: SerializationContext<T>; populate?: PopulateOptions<T>[] } = {};
+  __loadedProperties = new Set<string>();
 
   /** holds last entity data snapshot so we can compute changes when persisting managed entities */
   __originalEntityData?: EntityData<T>;

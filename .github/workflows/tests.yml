@@ -12,19 +12,24 @@ jobs:
     if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
     runs-on: ubuntu-latest
     steps:
+      - name: Cancel Workflow Action
+        uses: styfle/cancel-workflow-action@0.9.1
+        with:
+          access_token: ${{ github.token }}
+
       - name: Checkout Source code
         uses: actions/checkout@v2
 
-      - name: Use Node.js 15
+      - name: Use Node.js 16
         uses: actions/setup-node@v2
         with:
-          node-version: 15
+          node-version: 16
 
       - name: Cache node_modules
         uses: actions/cache@v2
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-15-modules-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-16-modules-${{ hashFiles('**/yarn.lock') }}
 
       - name: Install libkrb5-dev (for run-rs)
         run: |
@@ -47,16 +52,16 @@ jobs:
       - name: Checkout Source code
         uses: actions/checkout@v2
 
-      - name: Use Node.js 15
+      - name: Use Node.js 16
         uses: actions/setup-node@v2
         with:
-          node-version: 15
+          node-version: 16
 
       - name: Cache node_modules
         uses: actions/cache@v2
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-15-modules-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-16-modules-${{ hashFiles('**/yarn.lock') }}
 
       - name: EditorConfig Lint
         uses: docker://mstruebing/editorconfig-checker:2.3.5@sha256:b78daacf0049058ca85afddbbed6c53bd3bc2a24d3dd0b2363e34ebb4463dee1
@@ -81,7 +86,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [ 12, 14, 15, 16.1 ]
+        node-version: [ 12, 14, 15, 16 ]
     steps:
       - name: Checkout Source code
         uses: actions/checkout@v2
@@ -131,15 +136,13 @@ jobs:
           echo "$(cat COVERAGE_RESULT)"
           git status && git diff
 
-      - name: Coveralls
+      - name: Codecov
         if: steps.changed_packages.outputs.changed_packages != '0'
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+        uses: codecov/codecov-action@master
 
       - name: Codeclimate
         if: steps.changed_packages.outputs.changed_packages != '0'
-        uses: paambaati/codeclimate-action@v2.7.5
+        uses: paambaati/codeclimate-action@v3.0.0
         env:
           CC_TEST_REPORTER_ID: e2a39c5dc1a13674e97e94a467bacfaec953814982c7de89e9f0b55031e43bd8
         with:
@@ -160,16 +163,16 @@ jobs:
           fetch-depth: 0 # we need to pull everything to have correct dev version suffix
           ref: master
 
-      - name: Use Node.js 15
+      - name: Use Node.js 16
         uses: actions/setup-node@v2
         with:
-          node-version: 15
+          node-version: 16
 
       - name: Cache node_modules
         uses: actions/cache@v2
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-15-modules-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-16-modules-${{ hashFiles('**/yarn.lock') }}
 
       - name: Install libkrb5-dev (for run-rs)
         run: |

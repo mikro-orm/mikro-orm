@@ -1,6 +1,7 @@
-import { Dictionary, ReferenceType, Utils } from '@mikro-orm/core';
+import type { Dictionary } from '@mikro-orm/core';
+import { ReferenceType, Utils } from '@mikro-orm/core';
 import { CriteriaNode } from './CriteriaNode';
-import { IQueryBuilder } from '../typings';
+import type { IQueryBuilder } from '../typings';
 import { QueryType } from './enums';
 
 /**

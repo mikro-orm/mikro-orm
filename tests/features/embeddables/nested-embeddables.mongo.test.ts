@@ -1,5 +1,6 @@
 import { assign, Embeddable, Embedded, Entity, Logger, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { ObjectId, MongoDriver, MongoConnection } from '@mikro-orm/mongodb';
+import type { MongoDriver } from '@mikro-orm/mongodb';
+import { ObjectId, MongoConnection } from '@mikro-orm/mongodb';
 
 @Embeddable()
 class IdentityMeta {

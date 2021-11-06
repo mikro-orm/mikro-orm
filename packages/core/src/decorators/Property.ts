@@ -1,8 +1,9 @@
 import { MetadataStorage, MetadataValidator } from '../metadata';
 import { Utils } from '../utils';
-import { Cascade, ReferenceType, LoadStrategy } from '../enums';
-import { EntityName, EntityProperty, AnyEntity, Constructor } from '../typings';
-import { Type } from '../types';
+import type { Cascade, LoadStrategy } from '../enums';
+import { ReferenceType } from '../enums';
+import type { EntityName, EntityProperty, AnyEntity, Constructor } from '../typings';
+import type { Type } from '../types';
 
 export function Property<T>(options: PropertyOptions<T> = {}) {
   return function (target: AnyEntity, propertyName: string) {

@@ -1,5 +1,5 @@
 import { assign, Embeddable, Embedded, Entity, Logger, MikroORM, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
-import { MySqlDriver } from '@mikro-orm/mysql';
+import type { MySqlDriver } from '@mikro-orm/mysql';
 
 @Embeddable()
 class Address1 {

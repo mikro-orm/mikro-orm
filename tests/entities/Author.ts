@@ -1,6 +1,7 @@
+import type { EntityDTO, Dictionary } from '@mikro-orm/core';
 import {
-  AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate, DateType, Collection, Filter, EntityDTO,
-  Cascade, Entity, ManyToMany, ManyToOne, OneToMany, Property, Index, Unique, EntityAssigner, EntityRepositoryType, Dictionary,
+  AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate, DateType, Collection, Filter,
+  Cascade, Entity, ManyToMany, ManyToOne, OneToMany, Property, Index, Unique, EntityAssigner, EntityRepositoryType,
 } from '@mikro-orm/core';
 
 import { Book } from './Book';

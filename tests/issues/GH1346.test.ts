@@ -1,5 +1,6 @@
 import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { AbstractSqlDriver, SchemaGenerator } from '@mikro-orm/knex';
+import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import { SchemaGenerator } from '@mikro-orm/knex';
 
 @Entity({ tableName: 'name' })
 class Name {
@@ -52,13 +53,13 @@ describe('GH issue 1346', () => {
   afterAll(() => orm.close(true));
 
   test('preserve data fields that match pivot field', async () => {
-    const user = orm.em.create<User>(User, {});
-    const name = orm.em.create<Name>(Name, { name: 'this is my name' });
+    const user = orm.em.create(User, {});
+    const name = orm.em.create(Name, { name: 'this is my name' });
     user.names.add(name);
     await orm.em.persistAndFlush([user, name]);
     orm.em.clear();
 
-    const entity = await orm.em.findOneOrFail<User>(User, user, { populate: ['names'], refresh: true });
+    const entity = await orm.em.findOneOrFail(User, user, { populate: ['names'] });
     expect(entity.names[0].name).toEqual('this is my name');
   });
 

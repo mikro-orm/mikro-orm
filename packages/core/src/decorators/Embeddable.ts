@@ -1,4 +1,4 @@
-import { Constructor, Dictionary } from '../typings';
+import type { Constructor, Dictionary } from '../typings';
 import { MetadataStorage } from '../metadata';
 
 export function Embeddable() {

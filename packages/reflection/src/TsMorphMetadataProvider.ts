@@ -1,5 +1,7 @@
-import { Project, PropertyDeclaration, SourceFile } from 'ts-morph';
-import { EntityMetadata, EntityProperty, MetadataError, MetadataProvider, MetadataStorage, Utils } from '@mikro-orm/core';
+import type { PropertyDeclaration, SourceFile } from 'ts-morph';
+import { Project } from 'ts-morph';
+import type { EntityMetadata, EntityProperty } from '@mikro-orm/core';
+import { MetadataError, MetadataProvider, MetadataStorage, Utils } from '@mikro-orm/core';
 
 export class TsMorphMetadataProvider extends MetadataProvider {
 
@@ -140,7 +142,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
       await this.initSourceFiles();
     }
 
-    const source = this.sources.find(s => s.getFilePath().endsWith(tsPath.replace(/^\./, '')));
+    const source = this.sources.find(s => s.getFilePath().endsWith(tsPath.replace(/^\.+/, '')));
 
     if (!source && validate) {
       throw new MetadataError(`Source file '${tsPath}' not found. Check your 'entitiesTs' option and verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`);

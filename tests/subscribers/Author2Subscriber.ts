@@ -1,4 +1,5 @@
-import { EntityName, EventArgs, EventSubscriber, Subscriber } from '@mikro-orm/core';
+import type { EntityName, EventArgs, EventSubscriber } from '@mikro-orm/core';
+import { Subscriber } from '@mikro-orm/core';
 import { Author2 } from '../entities-sql';
 
 @Subscriber()

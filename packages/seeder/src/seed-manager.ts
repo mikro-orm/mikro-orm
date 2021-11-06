@@ -1,5 +1,6 @@
-import { MikroORM, Utils } from '@mikro-orm/core';
-import { Seeder } from './seeder';
+import type { MikroORM } from '@mikro-orm/core';
+import { Utils } from '@mikro-orm/core';
+import type { Seeder } from './seeder';
 import { ensureDir, writeFile } from 'fs-extra';
 
 export class SeedManager {

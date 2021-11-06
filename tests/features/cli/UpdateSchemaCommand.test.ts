@@ -1,15 +1,15 @@
 (global as any).process.env.FORCE_COLOR = 0;
 
 import { MikroORM } from '@mikro-orm/core';
-import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SchemaGenerator } from '@mikro-orm/sqlite';
 import { CLIHelper } from '@mikro-orm/cli';
 import { SchemaCommandFactory } from '../../../packages/cli/src/commands/SchemaCommandFactory';
 import { initORMSqlite } from '../../bootstrap';
 
-const close = jest.fn();
-jest.spyOn(MikroORM.prototype, 'close').mockImplementation(close);
-const showHelpMock = jest.spyOn(require('yargs'), 'showHelp');
-showHelpMock.mockReturnValue('');
+const closeSpy = jest.spyOn(MikroORM.prototype, 'close');
+const showHelpMock = jest.spyOn(CLIHelper, 'showHelp');
+showHelpMock.mockImplementation(() => void 0);
 const updateSchema = jest.spyOn(SchemaGenerator.prototype, 'updateSchema');
 updateSchema.mockImplementation(async () => void 0);
 const getUpdateSchemaSQL = jest.spyOn(SchemaGenerator.prototype, 'getUpdateSchemaSQL');
@@ -37,15 +37,15 @@ describe('UpdateSchemaCommand', () => {
     expect(showHelpMock.mock.calls.length).toBe(1);
 
     expect(updateSchema.mock.calls.length).toBe(0);
-    expect(close.mock.calls.length).toBe(0);
+    expect(closeSpy).toBeCalledTimes(0);
     await expect(cmd.handler({ run: true } as any)).resolves.toBeUndefined();
     expect(updateSchema.mock.calls.length).toBe(1);
-    expect(close.mock.calls.length).toBe(1);
+    expect(closeSpy).toBeCalledTimes(1);
 
     expect(getUpdateSchemaSQL.mock.calls.length).toBe(0);
     await expect(cmd.handler({ dump: true } as any)).resolves.toBeUndefined();
     expect(getUpdateSchemaSQL.mock.calls.length).toBe(1);
-    expect(close.mock.calls.length).toBe(2);
+    expect(closeSpy).toBeCalledTimes(2);
   });
 
 });

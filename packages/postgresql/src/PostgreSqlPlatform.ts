@@ -1,5 +1,6 @@
 import { Client } from 'pg';
-import { EntityProperty, JsonProperty, Type, Utils } from '@mikro-orm/core';
+import type { EntityProperty, Type } from '@mikro-orm/core';
+import { JsonProperty, Utils } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
 import { PostgreSqlExceptionConverter } from './PostgreSqlExceptionConverter';
@@ -85,7 +86,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
   getEnumTypeDeclarationSQL(column: { fieldNames: string[]; items?: unknown[] }): string {
     if (column.items?.every(item => Utils.isString(item))) {
-      return `text check (${this.quoteIdentifier(column.fieldNames[0])} in ('${column.items.join("', '")}'))`;
+      return 'text';
     }
 
     return `smallint`;

@@ -1,5 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property, OneToMany, ManyToOne, Collection, QueryOrder } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 abstract class Base {
 
@@ -10,13 +10,14 @@ abstract class Base {
 
 @Entity({
   discriminatorColumn: 'type',
-  abstract: true
+  abstract: true,
 })
 class Parent extends Base {
 
   @Property()
   type!: string;
 
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => Relation1, e => e.parent)
   qaInfo = new Collection<Relation1>(this);
 
@@ -30,9 +31,10 @@ class Relation1 extends Base {
 
 }
 
-@Entity({discriminatorValue: 'Child1'})
+@Entity({ discriminatorValue: 'Child1' })
 class Child1 extends Parent {
 
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => Child1Specific, e => e.child1)
   rel = new Collection<Child1Specific>(this);
 
@@ -46,8 +48,9 @@ class Child1Specific extends Base {
 
 }
 
-@Entity({discriminatorValue: 'Child2'})
-class Child2 extends Parent {}
+@Entity({ discriminatorValue: 'Child2' })
+class Child2 extends Parent {
+}
 
 describe('GH issue 997', () => {
 
@@ -77,7 +80,10 @@ describe('GH issue 997', () => {
     await orm.em.persistAndFlush([c1, c2]);
     orm.em.clear();
 
-    const [ci1, ci2]: [Child1, Child2] = await orm.em.find(Parent, {}, ['qaInfo.parent', 'rel'], { type: QueryOrder.ASC }) as any;
+    const [ci1, ci2]: [Child1, Child2] = await orm.em.find(Parent, {}, {
+      populate: ['qaInfo.parent', 'rel'] as never,
+      orderBy: { type: QueryOrder.ASC },
+    }) as any;
 
     ci1.rel.add(new Child1Specific());
     ci1.rel.add(new Child1Specific());
@@ -92,10 +98,10 @@ describe('GH issue 997', () => {
     const results = await orm.em.createQueryBuilder(Parent)
       .offset(0)
       .limit(10)
-      .orderBy({type: QueryOrder.ASC})
+      .orderBy({ type: QueryOrder.ASC })
       .getResult();
 
-    const parents = await orm.em.populate(results, ['qaInfo.parent', 'rel']);
+    const parents = await orm.em.populate(results as Child1[], ['qaInfo.parent', 'rel']);
 
     expect(parents[0]).toBeInstanceOf(Child1);
     expect(parents[0].type).toBe('Child1');

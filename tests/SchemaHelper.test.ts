@@ -1,4 +1,5 @@
-import { Column, SchemaHelper, SqlitePlatform } from '@mikro-orm/sqlite';
+import type { Column } from '@mikro-orm/sqlite';
+import { SchemaHelper, SqlitePlatform } from '@mikro-orm/sqlite';
 import { MySqlPlatform } from '@mikro-orm/mysql';
 
 class SchemaHelperTest extends SchemaHelper { }

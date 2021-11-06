@@ -203,7 +203,14 @@ exports your ORM configuration.
 
 TypeScript is also supported, just enable `useTsNode` flag in your
 `package.json` file. There you can also set up array of possible paths to `mikro-orm.config` file,
-as well as use different file name:
+as well as use different file name. The `package.json` file can be located in 
+the current working directory, or in one of its parent folders.
+
+We can use these environment variables to override CLI settings:
+
+- `MIKRO_ORM_CLI`: the path to ORM config file
+- `MIKRO_ORM_CLI_USE_TS_NODE`: register ts-node
+- `MIKRO_ORM_CLI_TS_CONFIG_PATH`: path to the tsconfig.json (for ts-node)
 
 > Do not forget to install `ts-node` when enabling `useTsNode` flag.
 

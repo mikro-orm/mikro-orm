@@ -1,5 +1,6 @@
 import { Cascade, Collection, Entity, EntityRepositoryType, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import { EntityRepository, PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { EntityRepository } from '@mikro-orm/postgresql';
 
 // eslint-disable-next-line @typescript-eslint/no-use-before-define
 @Entity({ tableName: 'teachers', customRepository: () => TeacherRepository })
@@ -94,7 +95,7 @@ describe('one to many relations read with query builder in postgresql (GH issue 
 
   test('load relations by populate', async () => {
     const repository = orm.em.getRepository(Teacher);
-    const teacher = await repository.findOneOrFail(1, ['students']);
+    const teacher = await repository.findOneOrFail(1, { populate: ['students'] });
     expect(teacher).toHaveProperty('students');
     expect(teacher.students).toHaveLength(2);
   });

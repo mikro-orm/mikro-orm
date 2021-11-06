@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/reflection",
-  "version": "4.5.7",
+  "version": "4.5.9",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -56,12 +56,12 @@
   },
   "dependencies": {
     "globby": "11.0.4",
-    "ts-morph": "11.0.3"
+    "ts-morph": "12.2.0"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^4.5.7"
+    "@mikro-orm/core": "^4.5.9"
   },
   "peerDependencies": {
-    "@mikro-orm/core": "^4.0.0"
+    "@mikro-orm/core": "^4.0.0||^5.0.0-dev.0"
   }
 }

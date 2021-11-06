@@ -1,5 +1,6 @@
-import { Embeddable, Embedded, Entity, EntityProperty, Logger, MikroORM, Platform, PrimaryKey, Property, Type } from '@mikro-orm/core';
-import { PostgreSqlDriver, PostgreSqlPlatform } from '@mikro-orm/postgresql';
+import type { EntityProperty, Platform } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, Logger, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 export class AlwaysConvertsToAbc extends Type<string, string> {
 
@@ -181,9 +182,7 @@ describe('embedded entities with custom types', () => {
     expect(mock.mock.calls[2][0]).toMatch('commit');
 
     const u = await orm.em.findOneOrFail(User, user.id);
-    expect(mock.mock.calls[3][0]).toMatch(
-      'select "e0".* from "user" as "e0" where "e0"."id" = $1 limit $2'
-    );
+    expect(mock.mock.calls[3][0]).toMatch('select "e0".* from "user" as "e0" where "e0"."id" = $1 limit $2');
     expect(u.savings).toBeInstanceOf(Savings);
     expect(u.savings).toEqual({
       amount: 15200.23,
@@ -197,9 +196,7 @@ describe('embedded entities with custom types', () => {
     const u1 = await orm.em.findOneOrFail(User, {
       savings: { amount: 15200.23 },
     });
-    expect(mock.mock.calls[0][0]).toMatch(
-      'select "e0".* from "user" as "e0" where "e0"."savings_amount" = $1 limit $2'
-    );
+    expect(mock.mock.calls[0][0]).toMatch('select "e0".* from "user" as "e0" where "e0"."savings_amount" = $1 limit $2');
     expect(u1.savings.amount).toBe(15200.23);
   });
 

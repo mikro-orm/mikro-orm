@@ -1,9 +1,10 @@
-import { Configuration, Utils } from '../utils';
-import { MetadataStorage } from '../metadata';
-import { AnyEntity, EntityData, EntityProperty } from '../typings';
+import type { Configuration } from '../utils';
+import { Utils } from '../utils';
+import type { MetadataStorage } from '../metadata';
+import type { AnyEntity, EntityData, EntityProperty } from '../typings';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
-import { Collection, EntityValidator } from '../entity';
-import { Platform } from '../platforms';
+import type { Collection, EntityValidator } from '../entity';
+import type { Platform } from '../platforms';
 import { ReferenceType } from '../enums';
 import { EntityComparator } from '../utils/EntityComparator';
 
@@ -19,7 +20,7 @@ export class ChangeSetComputer {
               private readonly config: Configuration) { }
 
   computeChangeSet<T extends AnyEntity<T>>(entity: T): ChangeSet<T> | null {
-    const meta = this.metadata.find(entity.constructor.name)!;
+    const meta = this.metadata.get(entity.constructor.name);
 
     if (meta.readonly) {
       return null;

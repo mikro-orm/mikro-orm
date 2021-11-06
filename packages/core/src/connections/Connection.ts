@@ -1,25 +1,32 @@
 import { URL } from 'url';
 import c from 'ansi-colors';
 
-import { Configuration, ConnectionOptions, DynamicPassword, Utils } from '../utils';
-import { MetadataStorage } from '../metadata';
-import { Dictionary, MaybePromise } from '../typings';
-import { Platform } from '../platforms/Platform';
-import { TransactionEventBroadcaster } from '../events/TransactionEventBroadcaster';
-import { IsolationLevel } from '../enums';
+import type { Configuration, ConnectionOptions, DynamicPassword } from '../utils';
+import { Utils } from '../utils';
+import type { MetadataStorage } from '../metadata';
+import type { AnyEntity, Dictionary, MaybePromise, Primary } from '../typings';
+import type { Platform } from '../platforms/Platform';
+import type { TransactionEventBroadcaster } from '../events/TransactionEventBroadcaster';
+import type { IsolationLevel } from '../enums';
 
 export abstract class Connection {
 
   protected metadata!: MetadataStorage;
   protected platform!: Platform;
+  protected readonly options: ConnectionOptions;
   protected abstract client: any;
 
   constructor(protected readonly config: Configuration,
-              protected readonly options?: ConnectionOptions,
+              options?: ConnectionOptions,
               protected readonly type: 'read' | 'write' = 'write') {
-    if (!this.options) {
+    if (options) {
+      this.options = options;
+    } else {
       const props = ['dbName', 'clientUrl', 'host', 'port', 'user', 'password', 'multipleStatements', 'pool'] as const;
-      this.options = props.reduce((o, i) => { (o[i] as any) = this.config.get(i); return o; }, {} as ConnectionOptions);
+      this.options = props.reduce((o, i) => {
+        (o[i] as any) = this.config.get(i);
+        return o;
+      }, {} as ConnectionOptions);
     }
   }
 
@@ -36,7 +43,11 @@ export abstract class Connection {
   /**
    * Closes the database connection (aka disconnect)
    */
-  abstract close(force?: boolean): Promise<void>;
+  async close(force?: boolean): Promise<void> {
+    Object.keys(this.options)
+      .filter(k => k !== 'name')
+      .forEach(k => delete this.options[k]);
+  }
 
   /**
    * Returns default client url for given driver (e.g. mongodb://127.0.0.1:27017 for mongodb)
@@ -59,16 +70,16 @@ export abstract class Connection {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
-  abstract execute(query: string, params?: any[], method?: 'all' | 'get' | 'run', ctx?: Transaction): Promise<QueryResult | any | any[]>;
+  abstract execute<T>(query: string, params?: any[], method?: 'all' | 'get' | 'run', ctx?: Transaction): Promise<QueryResult<T> | any | any[]>;
 
   getConnectionOptions(): ConnectionConfig {
     const ret: ConnectionConfig = {};
-    const url = new URL(this.options!.clientUrl || this.config.getClientUrl());
-    this.options!.host = ret.host = this.config.get('host', url.hostname);
-    this.options!.port = ret.port = this.config.get('port', +url.port);
-    this.options!.user = ret.user = this.config.get('user', url.username);
-    this.options!.password = ret.password = this.config.get('password', url.password);
-    this.options!.dbName = ret.database = this.config.get('dbName', url.pathname.replace(/^\//, ''));
+    const url = new URL(this.options.clientUrl ?? this.config.getClientUrl());
+    this.options.host = ret.host = this.options.host ?? this.config.get('host', url.hostname);
+    this.options.port = ret.port = this.options.port ?? this.config.get('port', +url.port);
+    this.options.user = ret.user = this.options.user ?? this.config.get('user', url.username);
+    this.options.password = ret.password = this.options.password ?? this.config.get('password', url.password);
+    this.options.dbName = ret.database = this.options.dbName ?? this.config.get('dbName', url.pathname.replace(/^\//, ''));
 
     return ret;
   }
@@ -120,7 +131,7 @@ export abstract class Connection {
     let msg = query + (Utils.isDefined(took) ? c.grey(` [took ${took} ms]`) : '');
 
     if (this.config.get('replicas', []).length > 0) {
-      msg += c.cyan(` (via ${this.type} connection '${this.options!.name || this.config.get('name') || this.options!.host}')`);
+      msg += c.cyan(` (via ${this.type} connection '${this.options.name || this.config.get('name') || this.options.host}')`);
     }
 
     logger.log('query', msg);
@@ -128,9 +139,9 @@ export abstract class Connection {
 
 }
 
-export interface QueryResult {
+export interface QueryResult<T extends AnyEntity<T> = { id: number }> {
   affectedRows: number;
-  insertId: number;
+  insertId: Primary<T>;
   row?: Dictionary;
   rows?: Dictionary[];
 }

@@ -1,17 +1,15 @@
 import SpyInstance = jest.SpyInstance;
 
-import { Configuration, MikroORM } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/core';
 import { SeedManager } from '@mikro-orm/seeder';
-import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SchemaGenerator } from '@mikro-orm/sqlite';
 // noinspection ES6PreferShortImport
 import { initORMSqlite } from '../../bootstrap';
 import { Book3Seeder } from '../../database/seeder/book3.seeder';
 import { remove, readFile } from 'fs-extra';
 import { Author3Seeder } from '../../database/seeder/author3.seeder';
 
-const configuration = new Configuration({ type: 'mongo', dbName: 'test', entities: ['entities'], clientUrl: 'test' });
-const close = jest.fn();
-jest.spyOn(MikroORM.prototype, 'close').mockImplementation(close);
 const createSchema = jest.spyOn(SchemaGenerator.prototype, 'createSchema');
 createSchema.mockImplementation(async () => void 0);
 const dropSchema = jest.spyOn(SchemaGenerator.prototype, 'dropSchema');

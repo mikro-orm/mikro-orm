@@ -1,7 +1,11 @@
-import { ClientSession, ObjectId } from 'mongodb';
+import type { ClientSession } from 'mongodb';
+import { ObjectId } from 'mongodb';
+import type {
+  EntityData, AnyEntity, FilterQuery, EntityMetadata, EntityProperty, Configuration, FindOneOptions, FindOptions,
+  QueryResult, Transaction, IDatabaseDriver, EntityManager, Dictionary, PopulateOptions, CountOptions, EntityDictionary, EntityField, NativeInsertUpdateOptions, NativeInsertUpdateManyOptions,
+} from '@mikro-orm/core';
 import {
-  DatabaseDriver, EntityData, AnyEntity, FilterQuery, EntityMetadata, EntityProperty, Configuration, Utils, ReferenceType, FindOneOptions, FindOptions,
-  QueryResult, Transaction, IDatabaseDriver, EntityManager, EntityManagerType, Dictionary, PopulateOptions, CountOptions, FieldsMap, EntityDictionary,
+  DatabaseDriver, Utils, ReferenceType, EntityManagerType,
 } from '@mikro-orm/core';
 import { MongoConnection } from './MongoConnection';
 import { MongoPlatform } from './MongoPlatform';
@@ -22,22 +26,22 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return new MongoEntityManager(this.config, this, this.metadata, useContext) as unknown as EntityManager<D>;
   }
 
-  async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOptions<T> = {}, ctx?: Transaction<ClientSession>): Promise<EntityData<T>[]> {
-    const fields = this.buildFields(entityName, options.populate as PopulateOptions<T>[] || [], options.fields);
+  async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOptions<T> = {}): Promise<EntityData<T>[]> {
+    const fields = this.buildFields(entityName, options.populate as unknown as PopulateOptions<T>[] || [], options.fields);
     where = this.renameFields(entityName, where, true);
-    const res = await this.rethrow(this.getConnection('read').find<T>(entityName, where, options.orderBy, options.limit, options.offset, fields, ctx));
+    const res = await this.rethrow(this.getConnection('read').find<T>(entityName, where, options.orderBy, options.limit, options.offset, fields, options.ctx));
 
     return res.map(r => this.mapResult<T>(r, this.metadata.find(entityName)!)!);
   }
 
-  async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOneOptions<T> = { populate: [], orderBy: {} }, ctx?: Transaction<ClientSession>): Promise<EntityData<T> | null> {
+  async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOneOptions<T> = { populate: [], orderBy: {} }): Promise<EntityData<T> | null> {
     if (Utils.isPrimaryKey(where)) {
       where = this.buildFilterById(entityName, where as string);
     }
 
-    const fields = this.buildFields(entityName, options.populate as PopulateOptions<T>[] || [], options.fields);
+    const fields = this.buildFields(entityName, options.populate as unknown as PopulateOptions<T>[] || [], options.fields);
     where = this.renameFields(entityName, where, true);
-    const res = await this.rethrow(this.getConnection('read').find<T>(entityName, where, options.orderBy, 1, undefined, fields, ctx));
+    const res = await this.rethrow(this.getConnection('read').find<T>(entityName, where, options.orderBy, 1, undefined, fields, options.ctx));
 
     return this.mapResult<T>(res[0], this.metadata.find(entityName)!);
   }
@@ -47,17 +51,17 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return this.rethrow(this.getConnection('read').countDocuments(entityName, where, ctx));
   }
 
-  async nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult> {
+  async nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T> = {}): Promise<QueryResult<T>> {
     data = this.renameFields(entityName, data);
-    return this.rethrow(this.getConnection('write').insertOne(entityName, data as { _id: any }, ctx));
+    return this.rethrow(this.getConnection('write').insertOne<T>(entityName, data as T, options.ctx));
   }
 
-  async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], ctx?: Transaction<ClientSession>, processCollections = true): Promise<QueryResult> {
+  async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
     data = data.map(d => this.renameFields(entityName, d));
-    return this.rethrow(this.getConnection('write').insertMany(entityName, data as any[], ctx));
+    return this.rethrow(this.getConnection('write').insertMany<T>(entityName, data as any[], options.ctx));
   }
 
-  async nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult> {
+  async nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T> = {}): Promise<QueryResult<T>> {
     if (Utils.isPrimaryKey(where)) {
       where = this.buildFilterById(entityName, where as string);
     }
@@ -65,22 +69,22 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     where = this.renameFields(entityName, where, true);
     data = this.renameFields(entityName, data);
 
-    return this.rethrow(this.getConnection('write').updateMany(entityName, where as FilterQuery<T>, data as { _id: any }, ctx));
+    return this.rethrow(this.getConnection('write').updateMany(entityName, where as FilterQuery<T>, data as T, options.ctx));
   }
 
-  async nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], ctx?: Transaction<ClientSession>, processCollections?: boolean): Promise<QueryResult> {
+  async nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateOptions<T> = {}): Promise<QueryResult<T>> {
     data = data.map(row => this.renameFields(entityName, row));
-    return this.rethrow(this.getConnection('write').bulkUpdateMany(entityName, where, data as { _id: any }[], ctx));
+    return this.rethrow(this.getConnection('write').bulkUpdateMany(entityName, where, data as T[], options.ctx));
   }
 
-  async nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult> {
+  async nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: { ctx?: Transaction<ClientSession> } = {}): Promise<QueryResult<T>> {
     if (Utils.isPrimaryKey(where)) {
       where = this.buildFilterById(entityName, where as string);
     }
 
     where = this.renameFields(entityName, where, true);
 
-    return this.rethrow(this.getConnection('write').deleteMany(entityName, where, ctx));
+    return this.rethrow(this.getConnection('write').deleteMany(entityName, where, options.ctx));
   }
 
   async aggregate(entityName: string, pipeline: any[], ctx?: Transaction<ClientSession>): Promise<any[]> {
@@ -269,8 +273,8 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return { _id: id } as FilterQuery<T>;
   }
 
-  protected buildFields<T extends AnyEntity<T>>(entityName: string, populate: PopulateOptions<T>[], fields?: (string | FieldsMap)[]): string[] | undefined {
-    const meta = this.metadata.find(entityName)!;
+  protected buildFields<T extends AnyEntity<T>, P extends string = never>(entityName: string, populate: PopulateOptions<T>[], fields?: readonly EntityField<T, P>[]): string[] | undefined {
+    const meta = this.metadata.find<T>(entityName)!;
     const lazyProps = meta.props.filter(prop => prop.lazy && !populate.some(p => p.field === prop.name || p.all));
     const ret: string[] = [];
 
@@ -280,32 +284,24 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
           continue;
         }
 
-        let prop = meta.properties[field];
+        let prop = meta.properties[field as keyof T & string];
 
         /* istanbul ignore else */
         if (prop) {
           prop = prop.serializedPrimaryKey ? meta.getPrimaryProps()[0] : prop;
           ret.push(prop.fieldNames[0]);
         } else {
-          ret.push(field);
+          ret.push(field as keyof T & string);
         }
       }
 
       ret.unshift(...meta.primaryKeys.filter(pk => !fields.includes(pk)));
     } else if (lazyProps.filter(p => !p.formula).length > 0) {
-      const props = meta.props.filter(prop => this.shouldHaveColumn(prop, populate));
+      const props = meta.props.filter(prop => this.platform.shouldHaveColumn(prop, populate));
       ret.push(...Utils.flatten(props.filter(p => !lazyProps.includes(p)).map(p => p.fieldNames)));
     }
 
     return ret.length > 0 ? ret : undefined;
-  }
-
-  shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[]): boolean {
-    if (super.shouldHaveColumn(prop, populate)) {
-      return true;
-    }
-
-    return prop.reference === ReferenceType.MANY_TO_MANY && prop.owner;
   }
 
 }

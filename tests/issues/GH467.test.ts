@@ -1,5 +1,5 @@
 import { Collection, Entity, PrimaryKey, ManyToOne, OneToMany, MikroORM, IdentifiedReference } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 class A {
@@ -51,7 +51,7 @@ describe('GH issue 467', () => {
     await orm.em.persistAndFlush(b);
     orm.em.clear();
 
-    const b1 = await orm.em.findOneOrFail(B, 'b1', ['as']);
+    const b1 = await orm.em.findOneOrFail(B, 'b1', { populate: ['as'] });
     expect(b1.as.getIdentifiers()).toEqual(['a1']);
   });
 
@@ -66,7 +66,7 @@ describe('GH issue 467', () => {
     await orm.em.persistAndFlush(b);
     orm.em.clear();
 
-    const b1 = await orm.em.findOneOrFail(B, 'b2', ['as']);
+    const b1 = await orm.em.findOneOrFail(B, 'b2', { populate: ['as'] });
     expect(b1.as.getIdentifiers()).toEqual(['a2']);
   });
 
@@ -80,12 +80,12 @@ describe('GH issue 467', () => {
     await orm.em.persistAndFlush(b);
     orm.em.clear();
 
-    const b1 = await orm.em.findOneOrFail(B, 'b3', ['as']);
+    const b1 = await orm.em.findOneOrFail(B, 'b3', { populate: ['as'] });
     b1.as.set([orm.em.getReference(A, 'a3')]);
     await orm.em.flush();
     orm.em.clear();
 
-    const b2 = await orm.em.findOneOrFail(B, 'b3', ['as']);
+    const b2 = await orm.em.findOneOrFail(B, 'b3', { populate: ['as'] });
     expect(b2.as.getIdentifiers()).toEqual(['a3']);
   });
 

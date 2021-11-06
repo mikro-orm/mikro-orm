@@ -1,6 +1,7 @@
 import { inspect } from 'util';
-import { EntityProperty, MetadataStorage, ReferenceType, Utils } from '@mikro-orm/core';
-import { ICriteriaNode, IQueryBuilder } from '../typings';
+import type { EntityProperty, MetadataStorage } from '@mikro-orm/core';
+import { ReferenceType, Utils } from '@mikro-orm/core';
+import type { ICriteriaNode, IQueryBuilder } from '../typings';
 
 /**
  * Helper for working with deeply nested where/orderBy/having criteria. Uses composite pattern to build tree from the payload.
@@ -23,7 +24,8 @@ export class CriteriaNode implements ICriteriaNode {
       Utils.splitPrimaryKeys(key).forEach(k => {
         this.prop = meta.props.find(prop => prop.name === k || (prop.fieldNames || []).includes(k));
 
-        if (validate && !this.prop && !k.includes('.') && !Utils.isOperator(k) && !CriteriaNode.isCustomExpression(k)) {
+        // do not validate if the key is prefixed or type casted (e.g. `k::text`)
+        if (validate && !this.prop && !k.includes('.') && !k.includes('::') && !Utils.isOperator(k) && !CriteriaNode.isCustomExpression(k)) {
           throw new Error(`Trying to query by not existing property ${entityName}.${k}`);
         }
       });

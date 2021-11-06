@@ -1,6 +1,5 @@
-import yargs, { Arguments, Argv, CommandModule } from 'yargs';
-import { EntityGenerator } from '@mikro-orm/entity-generator';
-import { EntityManager } from '@mikro-orm/knex';
+import type { Arguments, Argv, CommandModule } from 'yargs';
+import type { EntityManager } from '@mikro-orm/knex';
 import { CLIHelper } from '../CLIHelper';
 
 export type Options = { dump: boolean; save: boolean; path: string };
@@ -38,10 +37,11 @@ export class GenerateEntitiesCommand<U extends Options = Options> implements Com
    */
   async handler(args: Arguments<U>): Promise<void> {
     if (!args.save && !args.dump) {
-      return void yargs.showHelp();
+      return CLIHelper.showHelp();
     }
 
     const orm = await CLIHelper.getORM(false);
+    const { EntityGenerator } = await import('@mikro-orm/entity-generator');
     const generator = new EntityGenerator(orm.em as EntityManager);
     const dump = await generator.generate({ save: args.save, baseDir: args.path });
 

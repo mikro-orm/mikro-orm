@@ -1,5 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, OneToMany, ManyToOne, Collection, BeforeCreate } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { v4 } from 'uuid';
 
 abstract class Base {

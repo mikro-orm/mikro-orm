@@ -60,6 +60,7 @@ module.exports = {
       'usage-with-nestjs',
       'usage-with-js',
       'usage-with-babel',
+      'usage-with-adminjs',
       'entity-constructors',
       'multiple-schemas',
       'using-bigint-pks',

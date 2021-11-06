@@ -1,5 +1,5 @@
 import { EntitySchema, MikroORM } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
 
 class Base {
@@ -72,7 +72,7 @@ describe('GH issue 560', () => {
     await expect(orm.em.flush()).resolves.not.toThrow();
     orm.em.clear();
 
-    const fetchedParent = await orm.em.findOneOrFail(A, { type: 'parent' }, true);
+    const fetchedParent = await orm.em.findOneOrFail(A, { type: 'parent' }, { populate: true });
     expect(fetchedParent.childrenA).toBeTruthy();
   });
 });

@@ -1,5 +1,5 @@
 import { MikroORM, Entity, PrimaryKey, PrimaryKeyType, Unique, Collection, ManyToOne, OneToMany, Property, Filter, LoadStrategy } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity({ tableName: 'users' })
 export class UserEntity {
@@ -99,9 +99,7 @@ describe('GH issue 1902', () => {
       filters: {
         byUser: { id: 1 },
       },
-      populate: {
-        tenant: true,
-      },
+      populate: ['tenant'] as const,
     };
     const f1 = await repoUserTenant.findAll(findOpts);
     expect(f1.length).toBe(2);	// succeeds

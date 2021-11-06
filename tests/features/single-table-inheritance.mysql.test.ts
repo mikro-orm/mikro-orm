@@ -1,5 +1,6 @@
-import { Dictionary, Entity, Logger, MetadataDiscovery, MetadataStorage, MikroORM, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
-import { MySqlDriver } from '@mikro-orm/mysql';
+import type { Dictionary } from '@mikro-orm/core';
+import { Entity, Logger, MetadataDiscovery, MetadataStorage, MikroORM, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
+import type { MySqlDriver } from '@mikro-orm/mysql';
 import { BaseUser2, CompanyOwner2, Employee2, Manager2, Type } from '../entities-sql';
 import { initORMMySql, wipeDatabaseMySql } from '../bootstrap';
 
@@ -237,6 +238,7 @@ describe('single table inheritance in mysql', () => {
     });
     const sql = await orm.getSchemaGenerator().getCreateSchemaSQL({ wrap: false });
     expect(sql).toMatchSnapshot();
+    await orm.close(true);
   });
 
   afterAll(async () => orm.close(true));

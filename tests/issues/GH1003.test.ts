@@ -1,5 +1,5 @@
 import { BaseEntity, Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Parent extends BaseEntity<Parent, 'id'> {
@@ -54,7 +54,7 @@ describe('GH issue 1003', () => {
     orm.em.clear();
 
     const removeStack = orm.em.getUnitOfWork().getRemoveStack();
-    const storedParent = await orm.em.findOneOrFail(Parent, 'parentId', ['children']);
+    const storedParent = await orm.em.findOneOrFail(Parent, 'parentId', { populate: ['children'] });
     const removeChild = storedParent.children[0];
     expect(removeStack.size).toBe(0);
     orm.em.remove(removeChild); // Remove child

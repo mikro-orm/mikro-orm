@@ -1,5 +1,5 @@
 import { assign, Embeddable, Embedded, Entity, Logger, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Embeddable()
 class IdentityMeta {

@@ -1,5 +1,5 @@
 import { Entity, PrimaryKey, Property, MikroORM, wrap, ManyToOne } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 class A {
@@ -69,7 +69,7 @@ describe('GH issue 533', () => {
     orm.em.clear();
 
     // we need to get around TS compiler here via `any`
-    const c1 = await orm.em.findOneOrFail(C, { a: '' + a.id } as any, ['a']);
+    const c1 = await orm.em.findOneOrFail(C, { a: '' + a.id } as any, { populate: ['a'] });
     expect(wrap(c1.a).isInitialized()).toBe(true);
     expect(wrap(c1.b).isInitialized()).toBe(false);
   });

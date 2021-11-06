@@ -9,7 +9,8 @@ import {
   Collection,
   LoadStrategy,
 } from '@mikro-orm/core';
-import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SchemaGenerator } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Owner {
@@ -110,7 +111,7 @@ describe('GH issue 1553', () => {
     expect(fetchedRadio1.options.getItems()[0].enabled).toBe(true);
     orm.em.clear();
 
-    const fetchedRadio2 = await orm.em.findOneOrFail(Radio, radio.id, ['owners']);
+    const fetchedRadio2 = await orm.em.findOneOrFail(Radio, radio.id, { populate: ['owners'] });
     expect(fetchedRadio2.options.getItems()[0].enabled).toBe(true);
   });
 

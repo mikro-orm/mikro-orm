@@ -1,5 +1,5 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType, Property } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 export class Customer {
@@ -108,7 +108,7 @@ describe('GH issue 529', () => {
     await orm.em.persistAndFlush(order);
     orm.em.clear();
 
-    const orders = await orm.em.find(Order, {}, ['items']);
+    const orders = await orm.em.find(Order, {}, { populate: ['items'] });
     expect(orders).toHaveLength(1);
     expect(orders[0].items.getItems()).toHaveLength(3);
     orm.em.clear();

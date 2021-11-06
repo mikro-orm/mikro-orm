@@ -1,7 +1,7 @@
 import { MetadataStorage } from '../metadata';
-import { EntityRepository } from '../entity';
+import type { EntityRepository } from '../entity';
 import { Utils } from '../utils';
-import { Constructor, Dictionary } from '../typings';
+import type { Constructor, Dictionary } from '../typings';
 
 export function Entity(options: EntityOptions<any> = {}) {
   return function <T>(target: T & Dictionary) {

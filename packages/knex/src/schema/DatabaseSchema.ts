@@ -1,8 +1,9 @@
-import { Configuration, Dictionary, EntityMetadata, EntityProperty, ReferenceType } from '@mikro-orm/core';
+import type { Configuration, Dictionary, EntityMetadata, EntityProperty } from '@mikro-orm/core';
+import { ReferenceType } from '@mikro-orm/core';
 import { DatabaseTable } from './DatabaseTable';
-import { AbstractSqlConnection } from '../AbstractSqlConnection';
-import { Table } from '../typings';
-import { AbstractSqlPlatform } from '../AbstractSqlPlatform';
+import type { AbstractSqlConnection } from '../AbstractSqlConnection';
+import type { Table } from '../typings';
+import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
 
 /**
  * @internal
@@ -32,7 +33,6 @@ export class DatabaseSchema {
   }
 
   getTable(name: string): DatabaseTable | undefined {
-    // console.log(name, this.tables.map(t => [t.schema, t.name]), !!this.tables.find(t => t.name === name || `${t.schema}.${t.name}` === name));
     return this.tables.find(t => t.name === name || `${t.schema}.${t.name}` === name);
   }
 
@@ -77,7 +77,7 @@ export class DatabaseSchema {
       const table = schema.addTable(meta.collection, meta.schema ?? config.get('schema'));
       table.comment = meta.comment;
       meta.props
-        .filter(prop => this.shouldHaveColumn(meta, prop))
+        .filter(prop => this.shouldHaveColumn(meta, prop)) // TODO use platform?
         .forEach(prop => table.addColumnFromProperty(prop, meta));
       meta.indexes.forEach(index => table.addIndex(meta, index, 'index'));
       meta.uniques.forEach(index => table.addIndex(meta, index, 'unique'));

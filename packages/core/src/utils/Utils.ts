@@ -1,14 +1,16 @@
-import { createRequire, createRequireFromPath } from 'module';
+import { createRequire } from 'module';
 import clone from 'clone';
-import globby, { GlobbyOptions } from 'globby';
+import type { GlobbyOptions } from 'globby';
+import globby from 'globby';
 import { extname, isAbsolute, join, normalize, relative, resolve } from 'path';
 import { pathExists } from 'fs-extra';
 import { createHash } from 'crypto';
 import { recovery } from 'escaya';
-import { AnyEntity, Dictionary, EntityDictionary, EntityMetadata, EntityName, EntityProperty, IMetadataStorage, Primary, PlainObject } from '../typings';
+import type { AnyEntity, Dictionary, EntityDictionary, EntityMetadata, EntityName, EntityProperty, IMetadataStorage, Primary } from '../typings';
+import { PlainObject } from '../typings';
 import { GroupOperator, QueryOperator, ReferenceType } from '../enums';
-import { Collection } from '../entity';
-import { Platform } from '../platforms';
+import type { Collection } from '../entity';
+import type { Platform } from '../platforms';
 
 export const ObjectBindingPattern = Symbol('ObjectBindingPattern');
 
@@ -290,7 +292,7 @@ export class Utils {
   /**
    * Normalize the argument to always be an array.
    */
-  static asArray<T>(data?: T | T[], strict = false): T[] {
+  static asArray<T>(data?: T | readonly T[], strict = false): T[] {
     if (typeof data === 'undefined' && !strict) {
       return [];
     }
@@ -556,8 +558,10 @@ export class Utils {
    * Tries to detect `ts-node` runtime.
    */
   static detectTsNode(): boolean {
+    /* istanbul ignore next */
     return process.argv[0].endsWith('ts-node') // running via ts-node directly
       || !!process[Symbol.for('ts-node.register.instance')] // check if internal ts-node symbol exists
+      || !!process.env.TS_JEST // check if ts-jest is used (works only with v27.0.4+)
       || process.argv.slice(1).some(arg => arg.includes('ts-node')) // registering ts-node runner
       || (require.extensions && !!require.extensions['.ts']) // check if the extension is registered
       || !!new Error().stack!.split('\n').find(line => line.match(/\w\.ts:\d/)); // as a last resort, try to find a TS file in the stack trace
@@ -745,8 +749,7 @@ export class Utils {
       from = join(from, '__fake.js');
     }
 
-    /* istanbul ignore next */
-    return (createRequire || createRequireFromPath)(resolve(from))(id);
+    return createRequire(resolve(from))(id);
   }
 
   static getORMVersion(): string {
@@ -777,7 +780,7 @@ export class Utils {
   static callCompiledFunction<T extends unknown[], R>(fn: (...args: T) => R, ...args: T) {
     try {
       return fn(...args);
-    } catch (e) {
+    } catch (e: any) {
       if ([SyntaxError, TypeError, EvalError, ReferenceError].some(t => e instanceof t)) {
         // eslint-disable-next-line no-console
         console.error(`JIT runtime error: ${e.message}\n\n${fn.toString()}`);
@@ -896,7 +899,7 @@ export class Utils {
 
     try {
       return Utils.requireFrom(module, from);
-    } catch (err) {
+    } catch (err: any) {
       if (err.message.includes(allowError)) {
         // eslint-disable-next-line no-console
         console.warn(warning);

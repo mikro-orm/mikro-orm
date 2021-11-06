@@ -1,12 +1,14 @@
-import {
-  Collection, Db, DeleteWriteOpResultObject, InsertOneWriteOpResult, MongoClient, MongoClientOptions,
-  ObjectId, UpdateWriteOpResult, FilterQuery as MongoFilterQuery, ClientSession, SortOptionObject, BulkWriteResult,
+import type {
+  Collection, Db, DeleteWriteOpResultObject, InsertOneWriteOpResult, MongoClientOptions, UpdateWriteOpResult,
+  FilterQuery as MongoFilterQueryOrPrimary, ClientSession, BulkWriteResult,
 } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 import { inspect } from 'util';
-import {
-  Connection, ConnectionConfig, QueryResult, Transaction, Utils, QueryOrder, QueryOrderMap,
-  FilterQuery, AnyEntity, EntityName, Dictionary, EntityData, TransactionEventBroadcaster, EventType, IsolationLevel,
+import type {
+  ConnectionConfig, QueryResult, Transaction, QueryOrderMap, FilterQuery, AnyEntity, EntityName, Dictionary,
+  EntityData, TransactionEventBroadcaster, IsolationLevel,
 } from '@mikro-orm/core';
+import { Connection, Utils, QueryOrder, EventType, ValidationError } from '@mikro-orm/core';
 
 export class MongoConnection extends Connection {
 
@@ -50,11 +52,24 @@ export class MongoConnection extends Connection {
 
   getConnectionOptions(): MongoClientOptions & ConnectionConfig {
     const ret: MongoClientOptions = { useNewUrlParser: true, useUnifiedTopology: true };
+    const pool = this.config.get('pool')!;
     const user = this.config.get('user');
     const password = this.config.get('password') as string;
 
+    if (this.config.get('host')) {
+      throw new ValidationError('Mongo driver does not support `host` options, use `clientUrl` instead!');
+    }
+
     if (user && password) {
       ret.auth = { user, password };
+    }
+
+    if (pool.min) {
+      ret.minPoolSize = ret.minSize = pool.min;
+    }
+
+    if (pool.max) {
+      ret.maxPoolSize = ret.poolSize = pool.max;
     }
 
     return Utils.merge(ret, this.config.get('driverOptions'));
@@ -76,7 +91,7 @@ export class MongoConnection extends Connection {
     throw new Error(`${this.constructor.name} does not support generic execute method`);
   }
 
-  async find<T extends AnyEntity<T>>(collection: string, where: FilterQuery<T>, orderBy?: QueryOrderMap, limit?: number, offset?: number, fields?: string[], ctx?: Transaction<ClientSession>): Promise<EntityData<T>[]> {
+  async find<T extends AnyEntity<T>>(collection: string, where: FilterQuery<T>, orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[], limit?: number, offset?: number, fields?: string[], ctx?: Transaction<ClientSession>): Promise<EntityData<T>[]> {
     collection = this.getCollectionName(collection);
     const options: Dictionary = { session: ctx };
 
@@ -86,14 +101,20 @@ export class MongoConnection extends Connection {
 
     const resultSet = this.getCollection(collection).find<T>(where as Dictionary, options);
     let query = `db.getCollection('${collection}').find(${this.logObject(where)}, ${this.logObject(options)})`;
+    orderBy = Utils.asArray(orderBy);
 
-    if (orderBy && Utils.hasObjectKeys(orderBy)) {
-      orderBy = Object.keys(orderBy).reduce((p, c) => {
-        const direction = orderBy![c];
-        return { ...p, [c]: Utils.isString(direction) ? direction.toUpperCase() === QueryOrder.ASC ? 1 : -1 : direction };
-      }, {});
-      query += `.sort(${this.logObject(orderBy)})`;
-      resultSet.sort(orderBy as SortOptionObject<T>);
+    if (orderBy.length > 0) {
+      const orderByTuples: [string, number][] = [];
+      orderBy.forEach(o => {
+        Object.keys(o).forEach(k => {
+          const direction = o[k];
+          orderByTuples.push([k, Utils.isString(direction) ? direction.toUpperCase() === QueryOrder.ASC ? 1 : -1 : direction]);
+        });
+      });
+      if (orderByTuples.length > 0) {
+        query += `.sort(${this.logObject(orderByTuples)})`;
+        resultSet.sort(orderByTuples);
+      }
     }
 
     if (limit !== undefined) {
@@ -113,23 +134,23 @@ export class MongoConnection extends Connection {
     return res as EntityData<T>[];
   }
 
-  async insertOne<T extends { _id: any }>(collection: string, data: Partial<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult> {
+  async insertOne<T>(collection: string, data: Partial<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult<T>> {
     return this.runQuery<T>('insertOne', collection, data, undefined, ctx);
   }
 
-  async insertMany<T extends { _id: any }>(collection: string, data: Partial<T>[], ctx?: Transaction<ClientSession>): Promise<QueryResult> {
+  async insertMany<T>(collection: string, data: Partial<T>[], ctx?: Transaction<ClientSession>): Promise<QueryResult<T>> {
     return this.runQuery<T>('insertMany', collection, data, undefined, ctx);
   }
 
-  async updateMany<T extends { _id: any }>(collection: string, where: FilterQuery<T>, data: Partial<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult> {
+  async updateMany<T>(collection: string, where: FilterQuery<T>, data: Partial<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult<T>> {
     return this.runQuery<T>('updateMany', collection, data, where, ctx);
   }
 
-  async bulkUpdateMany<T extends { _id: any }>(collection: string, where: FilterQuery<T>[], data: Partial<T>[], ctx?: Transaction<ClientSession>): Promise<QueryResult> {
+  async bulkUpdateMany<T>(collection: string, where: FilterQuery<T>[], data: Partial<T>[], ctx?: Transaction<ClientSession>): Promise<QueryResult<T>> {
     return this.runQuery<T>('bulkUpdateMany', collection, data, where, ctx);
   }
 
-  async deleteMany<T extends { _id: any }>(collection: string, where: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult> {
+  async deleteMany<T>(collection: string, where: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult<T>> {
     return this.runQuery<T>('deleteMany', collection, undefined, where, ctx);
   }
 
@@ -144,7 +165,7 @@ export class MongoConnection extends Connection {
     return res;
   }
 
-  async countDocuments<T extends { _id: any }>(collection: string, where: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<number> {
+  async countDocuments<T>(collection: string, where: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<number> {
     return this.runQuery<T, number>('countDocuments', collection, undefined, where, ctx);
   }
 
@@ -201,12 +222,12 @@ export class MongoConnection extends Connection {
     super.logQuery(query, took);
   }
 
-  private async runQuery<T extends { _id: any }, U extends QueryResult | number = QueryResult>(method: 'insertOne' | 'insertMany' | 'updateMany' | 'bulkUpdateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T> | Partial<T>[], where?: FilterQuery<T> | FilterQuery<T>[], ctx?: Transaction<ClientSession>): Promise<U> {
+  private async runQuery<T, U extends QueryResult<T> | number = QueryResult<T>>(method: 'insertOne' | 'insertMany' | 'updateMany' | 'bulkUpdateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T> | Partial<T>[], where?: FilterQuery<T> | FilterQuery<T>[], ctx?: Transaction<ClientSession>): Promise<U> {
     collection = this.getCollectionName(collection);
     const logger = this.config.getLogger();
     const options: Dictionary = { session: ctx };
     const now = Date.now();
-    let res: InsertOneWriteOpResult<T> | UpdateWriteOpResult | DeleteWriteOpResultObject | BulkWriteResult | number;
+    let res: InsertOneWriteOpResult<T & { _id: any }> | UpdateWriteOpResult | DeleteWriteOpResultObject | BulkWriteResult | number;
     let query: string;
     const log = (msg: () => string) => logger.isEnabled('query') ? msg() : '';
 
@@ -222,7 +243,7 @@ export class MongoConnection extends Connection {
       case 'updateMany': {
         const payload = Object.keys(data!).some(k => k.startsWith('$')) ? data : { $set: data };
         query = log(() => `db.getCollection('${collection}').updateMany(${this.logObject(where)}, ${this.logObject(payload)}, ${this.logObject(options)});`);
-        res = await this.getCollection(collection).updateMany(where as MongoFilterQuery<T>, payload!, options);
+        res = await this.getCollection(collection).updateMany(where as MongoFilterQueryOrPrimary<T>, payload!, options);
         break;
       }
       case 'bulkUpdateMany': {
@@ -243,7 +264,7 @@ export class MongoConnection extends Connection {
       case 'deleteMany':
       case 'countDocuments':
         query = log(() => `db.getCollection('${collection}').${method}(${this.logObject(where)}, ${this.logObject(options)});`);
-        res = await this.getCollection(collection)[method as 'deleteMany'](where as MongoFilterQuery<T>, options); // cast to deleteMany to fix some typing weirdness
+        res = await this.getCollection(collection)[method as 'deleteMany'](where as MongoFilterQueryOrPrimary<T>, options); // cast to deleteMany to fix some typing weirdness
         break;
     }
 
@@ -253,10 +274,10 @@ export class MongoConnection extends Connection {
       return res! as unknown as U;
     }
 
-    return this.transformResult(res!) as U;
+    return this.transformResult<T>(res!) as U;
   }
 
-  private transformResult(res: any): QueryResult {
+  private transformResult<T>(res: any): QueryResult<T> {
     return {
       affectedRows: res.modifiedCount || res.deletedCount || res.insertedCount || 0,
       insertId: res.insertedId ?? res.insertedIds?.[0],

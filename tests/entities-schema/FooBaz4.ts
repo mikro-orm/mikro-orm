@@ -1,5 +1,5 @@
 import { EntitySchema } from '@mikro-orm/core';
-import { IFooBar4, IBaseEntity5 } from './index';
+import type { IFooBar4, IBaseEntity5 } from './index';
 
 export interface IFooBaz4 extends IBaseEntity5 {
   name: string;

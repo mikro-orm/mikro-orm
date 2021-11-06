@@ -1,5 +1,6 @@
 import { Entity, PrimaryKey, ManyToOne, IdentifiedReference, Property, MikroORM, wrap, Logger, ObjectBindingPattern } from '@mikro-orm/core';
-import { AbstractSqlDriver, SchemaGenerator } from '@mikro-orm/knex';
+import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import { SchemaGenerator } from '@mikro-orm/knex';
 
 @Entity()
 export class Test {

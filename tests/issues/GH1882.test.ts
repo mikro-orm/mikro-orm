@@ -1,5 +1,5 @@
 import { Entity, PrimaryKey, Property, MikroORM, ManyToOne, OneToMany, Collection, Logger, BigIntType } from '@mikro-orm/core';
-import { MySqlDriver } from '@mikro-orm/mysql';
+import type { MySqlDriver } from '@mikro-orm/mysql';
 
 @Entity()
 export class Foo {

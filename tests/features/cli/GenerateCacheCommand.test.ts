@@ -1,4 +1,5 @@
-import { Configuration, MetadataDiscovery, MetadataStorage } from '@mikro-orm/core';
+import type { MetadataStorage } from '@mikro-orm/core';
+import { Configuration, MetadataDiscovery } from '@mikro-orm/core';
 import { CLIHelper } from '@mikro-orm/cli';
 import { GenerateCacheCommand } from '../../../packages/cli/src/commands/GenerateCacheCommand';
 

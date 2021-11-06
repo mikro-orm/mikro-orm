@@ -1,5 +1,5 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, wrap } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 abstract class Base {
 
@@ -71,7 +71,7 @@ describe('GH issue 1523', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const fetchedParent = await orm.em.findOneOrFail(Parent, { id: { $ne: null } }, ['children.params']);
+    const fetchedParent = await orm.em.findOneOrFail(Parent, { id: { $ne: null } }, { populate: ['children.params'] });
     const fetchedParams = await orm.em.createQueryBuilder(Param, 'param').where({ child: null }).getResult();
     const [child1, child2] = fetchedParent.children.getItems();
     const [param1, param2] = fetchedParams;

@@ -1,4 +1,4 @@
-import { EntityData, AnyEntity, EntityMetadata, EntityDictionary, Primary } from '../typings';
+import type { EntityData, AnyEntity, EntityMetadata, EntityDictionary, Primary } from '../typings';
 
 export class ChangeSet<T extends AnyEntity<T>> {
 

@@ -1,8 +1,8 @@
-import { CommandModule } from 'yargs';
+import type { CommandModule } from 'yargs';
 import c from 'ansi-colors';
+import { ConfigurationLoader, Utils } from '@mikro-orm/core';
 
 import { CLIHelper } from '../CLIHelper';
-import { ConfigurationLoader, Utils } from '@mikro-orm/core';
 
 export class DebugCommand implements CommandModule {
 
@@ -62,7 +62,7 @@ export class DebugCommand implements CommandModule {
           await DebugCommand.checkPaths(paths, 'red', config.get('baseDir'));
         }
       }
-    } catch (e) {
+    } catch (e: any) {
       CLIHelper.dump(`- configuration ${c.red('not found')} ${c.red(`(${e.message})`)}`);
     }
   }

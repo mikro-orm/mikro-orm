@@ -1,11 +1,13 @@
 import 'reflect-metadata';
-import { EntityManager, JavaScriptMetadataProvider, LoadStrategy, Logger, LoggerNamespace, MikroORM, Options, Utils } from '@mikro-orm/core';
-import { AbstractSqlDriver, SchemaGenerator, SqlEntityManager, SqlEntityRepository } from '@mikro-orm/knex';
+import type { EntityManager, LoggerNamespace, Options } from '@mikro-orm/core';
+import { JavaScriptMetadataProvider, LoadStrategy, Logger, MikroORM, Utils } from '@mikro-orm/core';
+import type { AbstractSqlDriver, SqlEntityManager } from '@mikro-orm/knex';
+import { SchemaGenerator, SqlEntityRepository } from '@mikro-orm/knex';
 import { SqliteDriver } from '@mikro-orm/sqlite';
-import { MongoDriver } from '@mikro-orm/mongodb';
-import { MySqlDriver } from '@mikro-orm/mysql';
-import { MariaDbDriver } from '@mikro-orm/mariadb';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { MongoDriver } from '@mikro-orm/mongodb';
+import type { MySqlDriver } from '@mikro-orm/mysql';
+import type { MariaDbDriver } from '@mikro-orm/mariadb';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 import { Author, Book, BookTag, Publisher, Test } from './entities';
 import {
@@ -41,6 +43,7 @@ export async function initORMMongo() {
     populateAfterFlush: true,
     validate: true,
     filters: { allowedFooBars: { cond: args => ({ id: { $in: args.allowed } }), entity: ['FooBar'], default: false } },
+    pool: { min: 1, max: 3 },
   });
 
   ensureIndexes = false;
@@ -148,6 +151,7 @@ export async function initORMSqlite2() {
     forceUndefined: true,
     logger: i => i,
     cache: { pretty: true },
+    migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
   });
   const schemaGenerator = new SchemaGenerator(orm.em);
   await schemaGenerator.dropSchema();

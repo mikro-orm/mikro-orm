@@ -1,13 +1,14 @@
-import { AnyEntity, Dictionary, EntityData, EntityMetadata, FilterQuery, Populate, Primary } from '../typings';
+import type { AnyEntity, Dictionary, EntityData, EntityMetadata, FilterQuery, Loaded, Populate, Primary } from '../typings';
 import { ArrayCollection } from './ArrayCollection';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
-import { QueryOrder, QueryOrderMap, ReferenceType } from '../enums';
+import type { QueryOrderMap } from '../enums';
+import { QueryOrder, ReferenceType } from '../enums';
 import { Reference } from './Reference';
-import { Transaction } from '../connections/Connection';
-import { FindOptions } from '../drivers/IDatabaseDriver';
+import type { Transaction } from '../connections/Connection';
+import type { FindOptions } from '../drivers/IDatabaseDriver';
 
-export interface MatchingOptions<T, P extends Populate<T> = Populate<T>> extends FindOptions<T, P> {
+export interface MatchingOptions<T, P extends string = never> extends FindOptions<T, P> {
   where?: FilterQuery<T>;
   store?: boolean;
   ctx?: Transaction;
@@ -71,23 +72,23 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     if (!em.getPlatform().usesPivotTable() && this.property.reference === ReferenceType.MANY_TO_MANY) {
       this._count = this.length;
     } else if (this.property.pivotTable && !(this.property.inversedBy || this.property.mappedBy)) {
-      this._count = await em.count(this.property.type, this.createLoadCountCondition({}, pivotMeta), { populate: [{ field: this.property.pivotTable }] });
+      this._count = await em.count(this.property.type, this.createLoadCountCondition({} as FilterQuery<T>, pivotMeta), { populate: [{ field: this.property.pivotTable }] });
     } else {
-      this._count = await em.count(this.property.type, this.createLoadCountCondition({}, pivotMeta));
+      this._count = await em.count(this.property.type, this.createLoadCountCondition({} as FilterQuery<T>, pivotMeta));
     }
 
     return this._count!;
   }
 
-  async matching(options: MatchingOptions<T>): Promise<T[]> {
+  async matching<P extends string = never>(options: MatchingOptions<T, P>): Promise<Loaded<T, P>[]> {
     const em = this.getEntityManager();
     const { where, ctx, ...opts } = options;
     opts.orderBy = this.createOrderBy(opts.orderBy);
-    let items: T[];
+    let items: Loaded<T, P>[];
 
     if (this.property.reference === ReferenceType.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
       const map = await em.getDriver().loadFromPivotTable(this.property, [this.owner.__helper!.__primaryKeys], where, opts.orderBy, ctx, options);
-      items = map[this.owner.__helper!.getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, false, true));
+      items = map[this.owner.__helper!.getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, { convertCustomTypes: true }));
     } else {
       items = await em.find(this.property.type, this.createCondition(where), opts);
     }
@@ -205,15 +206,12 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     this.dirty = dirty;
   }
 
-  async init(options?: InitOptions<T>): Promise<this>;
-  async init(populate?: string[], where?: FilterQuery<T>, orderBy?: QueryOrderMap): Promise<this>;
-  async init(populate: string[] | InitOptions<T> = [], where?: FilterQuery<T>, orderBy?: QueryOrderMap): Promise<this> {
-    const options = Utils.isObject<InitOptions<T>>(populate) ? populate : { populate, where, orderBy };
+  async init<P extends string = never>(options: InitOptions<T, P> = {}): Promise<this> {
     const em = this.getEntityManager();
 
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
       const map = await em.getDriver().loadFromPivotTable(this.property, [this.owner.__helper!.__primaryKeys], options.where, options.orderBy);
-      this.hydrate(map[this.owner.__helper!.getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, false, true)));
+      this.hydrate(map[this.owner.__helper!.getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, { convertCustomTypes: true })));
       this._lazyInitialized = true;
 
       return this;
@@ -228,11 +226,11 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
       return this;
     }
 
-    where = this.createCondition(options.where);
+    const where = this.createCondition(options.where);
     const order = [...this.items]; // copy order of references
     const customOrder = !!options.orderBy;
-    orderBy = this.createOrderBy(options.orderBy);
-    const items: T[] = await em.find(this.property.type, where, options.populate, orderBy);
+    const orderBy = this.createOrderBy(options.orderBy);
+    const items: T[] = await em.find(this.property.type, where, { populate: options.populate, orderBy });
 
     if (!customOrder) {
       this.reorderItems(items, order);
@@ -282,7 +280,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     return em;
   }
 
-  private createCondition(cond: FilterQuery<T> = {}): FilterQuery<T> {
+  private createCondition(cond: FilterQuery<T> = {} as FilterQuery<T>): FilterQuery<T> {
     if (this.property.reference === ReferenceType.ONE_TO_MANY) {
       cond[this.property.mappedBy] = this.owner.__helper!.getPrimaryKey();
     } else { // MANY_TO_MANY
@@ -292,16 +290,15 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     return cond;
   }
 
-  private createOrderBy(orderBy: QueryOrderMap = {}): QueryOrderMap {
+  private createOrderBy(orderBy: QueryOrderMap<T> | QueryOrderMap<T>[] = []): QueryOrderMap<T>[] {
     if (Utils.isEmpty(orderBy) && this.property.reference === ReferenceType.ONE_TO_MANY) {
-      const defaultOrder = this.property.referencedColumnNames.reduce((o, name) => {
-        o[name] = QueryOrder.ASC;
-        return o;
-      }, {} as QueryOrderMap);
+      const defaultOrder = this.property.referencedColumnNames.map(name => {
+        return { [name]: QueryOrder.ASC };
+      });
       orderBy = this.property.orderBy || defaultOrder;
     }
 
-    return orderBy;
+    return Utils.asArray(orderBy);
   }
 
   private createManyToManyCondition(cond: FilterQuery<T>) {
@@ -402,8 +399,8 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
 
 }
 
-export interface InitOptions<T> {
-  populate?: Populate<T>;
-  orderBy?: QueryOrderMap;
+export interface InitOptions<T, P extends string = never> {
+  populate?: Populate<T, P>;
+  orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[];
   where?: FilterQuery<T>;
 }

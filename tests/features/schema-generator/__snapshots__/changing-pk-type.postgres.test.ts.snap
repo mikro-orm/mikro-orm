@@ -1,49 +1,93 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`changing PK column type [postgres] (GH 1480) change PK type from json to serial: 0. create schema with text PK 1`] = `
-"create table \\"user\\" (\\"id\\" text not null);
+exports[`changing PK column type [postgres] (GH 1480) changing PK type: 0. create schema with text PK 1`] = `
+Object {
+  "down": "drop table if exists \\"user\\" cascade;
+
+",
+  "up": "create table \\"user\\" (\\"id\\" varchar(255) not null);
 alter table \\"user\\" add constraint \\"user_pkey\\" primary key (\\"id\\");
 
-"
+",
+}
 `;
 
-exports[`changing PK column type [postgres] (GH 1480) change PK type from json to serial: 1. change PK type from text to int 1`] = `
-"alter table \\"user\\" drop constraint if exists \\"user_id_check\\";
+exports[`changing PK column type [postgres] (GH 1480) changing PK type: 1. change PK type from text to int 1`] = `
+Object {
+  "down": "alter table \\"user\\" drop constraint if exists \\"user_id_check\\";
+alter table \\"user\\" alter column \\"id\\" type varchar using (\\"id\\"::varchar);
+
+",
+  "up": "alter table \\"user\\" drop constraint if exists \\"user_id_check\\";
 alter table \\"user\\" alter column \\"id\\" type int using (\\"id\\"::int);
 
-"
+",
+}
 `;
 
-exports[`changing PK column type [postgres] (GH 1480) change PK type from json to serial: 2. add new PK (make it composite PK) 1`] = `
-"alter table \\"user\\" add column \\"id2\\" int not null;
-alter table \\"user\\" drop constraint \\"user_pkey\\";
-alter table \\"user\\" add constraint \\"user_pkey\\" primary key (\\"id\\", \\"id2\\");
-
-"
-`;
-
-exports[`changing PK column type [postgres] (GH 1480) change PK type from json to serial: 3. remove old PK (make it single PK again) 1`] = `
-"alter table \\"user\\" drop constraint \\"user_pkey\\";
+exports[`changing PK column type [postgres] (GH 1480) changing PK type: 2. add new PK (make it composite PK) 1`] = `
+Object {
+  "down": "alter table \\"user\\" drop constraint \\"user_pkey\\";
 alter table \\"user\\" drop column \\"id2\\";
 alter table \\"user\\" add constraint \\"user_pkey\\" primary key (\\"id\\");
 
-"
+",
+  "up": "alter table \\"user\\" add column \\"id2\\" int not null;
+alter table \\"user\\" drop constraint \\"user_pkey\\";
+alter table \\"user\\" add constraint \\"user_pkey\\" primary key (\\"id\\", \\"id2\\");
+
+",
+}
 `;
 
-exports[`changing PK column type [postgres] (GH 1480) change PK type from json to serial: 4. change PK type from int to serial 1`] = `
-"alter table \\"user\\" drop constraint if exists \\"user_id_check\\";
+exports[`changing PK column type [postgres] (GH 1480) changing PK type: 3. remove old PK (make it single PK again) 1`] = `
+Object {
+  "down": "alter table \\"user\\" add column \\"id2\\" int4 not null default null;
+alter table \\"user\\" drop constraint \\"user_pkey\\";
+alter table \\"user\\" add constraint \\"user_pkey\\" primary key (\\"id\\", \\"id2\\");
+
+",
+  "up": "alter table \\"user\\" drop constraint \\"user_pkey\\";
+alter table \\"user\\" drop column \\"id2\\";
+alter table \\"user\\" add constraint \\"user_pkey\\" primary key (\\"id\\");
+
+",
+}
+`;
+
+exports[`changing PK column type [postgres] (GH 1480) changing PK type: 4. change PK type from int to serial 1`] = `
+Object {
+  "down": "alter table \\"user\\" drop constraint if exists \\"user_id_check\\";
+alter table \\"user\\" alter column \\"id\\" type int4 using (\\"id\\"::int4);
+alter table \\"user\\" alter column \\"id\\" drop default;
+
+",
+  "up": "alter table \\"user\\" drop constraint if exists \\"user_id_check\\";
 alter table \\"user\\" alter column \\"id\\" type int using (\\"id\\"::int);
 create sequence if not exists \\"user_id_seq\\";
 select setval('user_id_seq', (select max(\\"id\\") from \\"user\\"));
 alter table \\"user\\" alter column \\"id\\" set default nextval('user_id_seq');
 
-"
+",
+}
 `;
 
-exports[`changing PK column type [postgres] (GH 1480) change PK type from json to serial: 5. change PK type from serial to text 1`] = `
-"alter table \\"user\\" drop constraint if exists \\"user_id_check\\";
-alter table \\"user\\" alter column \\"id\\" type text using (\\"id\\"::text);
+exports[`changing PK column type [postgres] (GH 1480) changing PK type: 5. change PK type from serial to text 1`] = `
+Object {
+  "down": "alter table \\"user\\" alter column \\"id\\" type text using (\\"id\\"::text);
+
+alter table \\"user\\" drop constraint if exists \\"user_id_check\\";
+alter table \\"user\\" alter column \\"id\\" type int4 using (\\"id\\"::int4);
+create sequence if not exists \\"user_id_seq\\";
+select setval('user_id_seq', (select max(\\"id\\") from \\"user\\"));
+alter table \\"user\\" alter column \\"id\\" set default nextval('user_id_seq');
+
+",
+  "up": "alter table \\"user\\" drop constraint if exists \\"user_id_check\\";
+alter table \\"user\\" alter column \\"id\\" drop default;
+alter table \\"user\\" alter column \\"id\\" type uuid using (\\"id\\"::text::uuid);
 alter table \\"user\\" alter column \\"id\\" drop default;
 
-"
+",
+}
 `;

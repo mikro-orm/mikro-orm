@@ -1,5 +1,6 @@
-import { MikroORM, wrap } from '@mikro-orm/core';
-import { MongoDriver } from '@mikro-orm/mongodb';
+import type { MikroORM } from '@mikro-orm/core';
+import { wrap } from '@mikro-orm/core';
+import type { MongoDriver } from '@mikro-orm/mongodb';
 
 import { Author, Book, BookTag, Publisher } from './entities';
 import { initORMMongo, wipeDatabase } from './bootstrap';
@@ -30,10 +31,10 @@ describe('EntityManagerMongo2', () => {
     expect(book1.tags.$[2].name).toBe('t3');
     orm.em.clear();
 
-    const books = await orm.em.find(Book, { id: bible.id }, { populate: { publisher: { books: { publisher: true } } } });
+    const books = await orm.em.find(Book, { id: bible.id }, { populate: ['publisher.books.publisher'] });
     expect(books[0].publisher!.get().books.get()[0].publisher!.$.name).toBe('Publisher 123');
 
-    const book5 = await orm.em.findOneOrFail(Book, bible, { populate: { publisher: true, tags: true, perex: true } });
+    const book5 = await orm.em.findOneOrFail(Book, bible, { populate: ['publisher', 'tags', 'perex'] });
     expect(book5.publisher!.$.name).toBe('Publisher 123');
     expect(book5.tags.$[0].name).toBe('t1');
 

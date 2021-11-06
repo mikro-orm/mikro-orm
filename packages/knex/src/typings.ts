@@ -1,7 +1,7 @@
-import { Knex } from 'knex';
-import { Dictionary, EntityProperty, GroupOperator, QBFilterQuery, QueryOrderMap, Type } from '@mikro-orm/core';
-import { QueryType } from './query/enums';
-import { DatabaseSchema, DatabaseTable } from './schema';
+import type { Knex } from 'knex';
+import type { Dictionary, EntityProperty, GroupOperator, QBFilterQuery, QueryOrderMap, Type } from '@mikro-orm/core';
+import type { QueryType } from './query/enums';
+import type { DatabaseSchema, DatabaseTable } from './schema';
 
 export interface Table {
   table_name: string;
@@ -63,7 +63,7 @@ export interface Index {
   primary: boolean;
   composite?: boolean;
   expression?: string; // allows using custom sql expressions
-  type?: string; // for back compatibility mainly, to allow using knex's `index.type` option (e.g. gin index)
+  type?: string | Readonly<{ indexType?: string; storageEngineIndexType?: 'hash' | 'btree'; predicate?: Knex.QueryBuilder }>; // for back compatibility mainly, to allow using knex's `index.type` option (e.g. gin index)
 }
 
 export interface ColumnDifference {
@@ -122,7 +122,7 @@ export interface IQueryBuilder<T> {
   andWhere(cond: string, params?: any[]): this;
   orWhere(cond: QBFilterQuery<T>): this;
   orWhere(cond: string, params?: any[]): this;
-  orderBy(orderBy: QueryOrderMap): this;
+  orderBy(orderBy: QueryOrderMap<T>): this;
   groupBy(fields: (string | keyof T) | (string | keyof T)[]): this;
   having(cond?: QBFilterQuery | string, params?: any[]): this;
   getAliasForJoinPath(path: string): string | undefined;

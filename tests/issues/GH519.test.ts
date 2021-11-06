@@ -1,5 +1,5 @@
 import { Entity, PrimaryKey, MikroORM, ManyToOne, Collection, OneToMany, Logger } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 class Competition {

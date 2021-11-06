@@ -1,8 +1,8 @@
-import { EntityMetadata, EntityProperty } from '../typings';
+import type { EntityMetadata, EntityProperty } from '../typings';
 import { Utils } from '../utils';
 import { MetadataError } from '../errors';
 import { ReferenceType } from '../enums';
-import { MetadataStorage } from './MetadataStorage';
+import type { MetadataStorage } from './MetadataStorage';
 
 /**
  * @internal

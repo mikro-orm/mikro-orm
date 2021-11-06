@@ -1,5 +1,6 @@
-import { MikroORM, wrap } from '@mikro-orm/core';
-import { MySqlDriver } from '@mikro-orm/mysql';
+import type { MikroORM } from '@mikro-orm/core';
+import { wrap } from '@mikro-orm/core';
+import type { MySqlDriver } from '@mikro-orm/mysql';
 import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
 import { FooBar2, FooBaz2 } from './entities-sql';
 
@@ -23,7 +24,7 @@ describe('EntityHelperMySql', () => {
     orm.em.clear();
 
     const repo = orm.em.getRepository(FooBar2);
-    const a = await repo.findOneOrFail(bar.id, ['baz.bar']);
+    const a = await repo.findOneOrFail(bar.id, { populate: ['baz.bar'] });
     expect(wrap(a.baz).isInitialized()).toBe(true);
     expect(wrap(a.baz!.bar).isInitialized()).toBe(true);
     expect(wrap(a).toJSON()).toEqual({

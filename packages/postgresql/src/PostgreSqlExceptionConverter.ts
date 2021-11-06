@@ -1,5 +1,6 @@
+import type { Dictionary, DriverException } from '@mikro-orm/core';
 import {
-  DeadlockException, Dictionary, DriverException, ExceptionConverter, ForeignKeyConstraintViolationException, InvalidFieldNameException,
+  DeadlockException, ExceptionConverter, ForeignKeyConstraintViolationException, InvalidFieldNameException,
   NonUniqueFieldNameException, NotNullConstraintViolationException, SyntaxErrorException, TableExistsException,
   TableNotFoundException, UniqueConstraintViolationException,
 } from '@mikro-orm/core';

@@ -1,10 +1,11 @@
 import dotenv from 'dotenv';
-import { pathExists } from 'fs-extra';
+import { pathExists, realpath } from 'fs-extra';
 import { join, isAbsolute } from 'path';
-import { IDatabaseDriver } from '../drivers';
-import { Configuration, Options } from './Configuration';
+import type { IDatabaseDriver } from '../drivers';
+import type { Options } from './Configuration';
+import { Configuration } from './Configuration';
 import { Utils } from './Utils';
-import { Dictionary } from '../typings';
+import type { Dictionary } from '../typings';
 
 /**
  * @internal
@@ -20,9 +21,19 @@ export class ConfigurationLoader {
       path = Utils.normalizePath(path);
 
       if (await pathExists(path)) {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const config = require(path);
-        return new Configuration({ ...(await (config.default || config)), ...options, ...env }, validate);
+        const config = await import(path);
+        /* istanbul ignore next */
+        let tmp = config.default || config;
+
+        if (tmp instanceof Function) {
+          tmp = tmp();
+        }
+
+        if (tmp instanceof Promise) {
+          tmp = await tmp;
+        }
+
+        return new Configuration({ ...tmp, ...options, ...env }, validate);
       }
     }
 
@@ -33,17 +44,29 @@ export class ConfigurationLoader {
     throw new Error(`MikroORM config file not found in ['${paths.join(`', '`)}']`);
   }
 
-  static async getPackageConfig(): Promise<Dictionary> {
-    if (await pathExists(process.cwd() + '/package.json')) {
-      return require(process.cwd() + '/package.json');
+  static async getPackageConfig(basePath = process.cwd()): Promise<Dictionary> {
+    if (await pathExists(`${basePath}/package.json`)) {
+      return import(`${basePath}/package.json`);
     }
 
-    return {};
+    const parentFolder = await realpath(`${basePath}/..`);
+
+    // we reached the root folder
+    if (basePath === parentFolder) {
+      return {};
+    }
+
+    return this.getPackageConfig(parentFolder);
   }
 
   static async getSettings(): Promise<Settings> {
     const config = await ConfigurationLoader.getPackageConfig();
-    return config['mikro-orm'] || {};
+    const settings = config['mikro-orm'] || {};
+    const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
+    settings.useTsNode = process.env.MIKRO_ORM_CLI_USE_TS_NODE ? bool(process.env.MIKRO_ORM_CLI_USE_TS_NODE) : settings.useTsNode;
+    settings.tsConfigPath = process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH ?? settings.tsConfigPath;
+
+    return settings;
   }
 
   static async getConfigPaths(): Promise<string[]> {
@@ -83,6 +106,9 @@ export class ConfigurationLoader {
     const { options } = tsNode.register({
       project: tsConfigPath,
       transpileOnly: true,
+      compilerOptions: {
+        module: 'commonjs',
+      },
     }).config;
 
     if (Object.entries(options?.paths ?? {}).length > 0) {

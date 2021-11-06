@@ -1,5 +1,5 @@
-import { Knex } from 'knex';
-import {
+import type { Knex } from 'knex';
+import type {
   AnyEntity,
   Dictionary,
   EntityData,
@@ -7,24 +7,25 @@ import {
   EntityProperty,
   FlatQueryOrderMap,
   GroupOperator,
-  LoadStrategy,
-  LockMode,
   MetadataStorage,
   PopulateOptions,
   QBFilterQuery,
+  QueryOrderMap } from '@mikro-orm/core';
+import {
+  LoadStrategy,
+  LockMode,
   QueryFlag,
   QueryHelper,
-  QueryOrderMap,
   ReferenceType,
   Utils,
   ValidationError,
 } from '@mikro-orm/core';
 import { QueryType } from './enums';
-import { AbstractSqlDriver } from '../AbstractSqlDriver';
+import type { AbstractSqlDriver } from '../AbstractSqlDriver';
 import { QueryBuilderHelper } from './QueryBuilderHelper';
-import { SqlEntityManager } from '../SqlEntityManager';
+import type { SqlEntityManager } from '../SqlEntityManager';
 import { CriteriaNodeFactory } from './CriteriaNodeFactory';
-import { Field, JoinOptions } from '../typings';
+import type { Field, JoinOptions } from '../typings';
 
 /**
  * SQL query builder with fluent interface.
@@ -64,7 +65,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   private _schema?: string;
   private _cond: Dictionary = {};
   private _data!: Dictionary;
-  private _orderBy: QueryOrderMap = {};
+  private _orderBy: QueryOrderMap<T>[] = [];
   private _groupBy: Field<T>[] = [];
   private _having: Dictionary = {};
   private _onConflict?: { fields: string[]; ignore?: boolean; merge?: EntityData<T> | Field<T>[]; where?: QBFilterQuery<T> }[];
@@ -119,7 +120,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.init(QueryType.UPDATE, data);
   }
 
-  delete(cond: QBFilterQuery = {}): this {
+  delete(cond?: QBFilterQuery): this {
     return this.init(QueryType.DELETE, undefined, cond);
   }
 
@@ -171,7 +172,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   protected getFieldsForJoinedLoad<U extends AnyEntity<U>>(prop: EntityProperty<U>, alias: string): Field<U>[] {
     const fields: Field<U>[] = [];
     prop.targetMeta!.props
-      .filter(prop => this.driver.shouldHaveColumn(prop, this._populate))
+      .filter(prop => this.platform.shouldHaveColumn(prop, this._populate))
       .forEach(prop => fields.push(...this.driver.mapPropToFieldNames<U>(this as unknown as QueryBuilder<U>, prop, alias)));
 
     return fields;
@@ -231,13 +232,17 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.where(cond as string, params, '$or');
   }
 
-  orderBy(orderBy: QueryOrderMap): this {
-    const processed = QueryHelper.processWhere(orderBy, this.entityName, this.metadata, this.platform, false)!;
-    this._orderBy = CriteriaNodeFactory.createNode(this.metadata, this.entityName, processed).process(this);
+  orderBy(orderBy: QueryOrderMap<unknown> | QueryOrderMap<unknown>[]): this {
+    this._orderBy = [];
+    Utils.asArray(orderBy).forEach(o => {
+      const processed = QueryHelper.processWhere(o as Dictionary, this.entityName, this.metadata, this.platform, false)!;
+      this._orderBy.push(CriteriaNodeFactory.createNode(this.metadata, this.entityName, processed).process(this));
+    });
+
     return this;
   }
 
-  groupBy(fields: (string | keyof T) | (string | keyof T)[]): this {
+  groupBy(fields: (string | keyof T) | readonly (string | keyof T)[]): this {
     this._groupBy = Utils.asArray(fields);
     return this;
   }
@@ -360,19 +365,16 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, this._cond, qb), this._cond && !this._onConflict);
     Utils.runIfNotEmpty(() => qb.groupBy(this.prepareFields(this._groupBy, 'groupBy')), this._groupBy);
     Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, this._having, qb, undefined, 'having'), this._having);
-    Utils.runIfNotEmpty(() => qb.orderByRaw(this.helper.getQueryOrder(this.type, this._orderBy as FlatQueryOrderMap, this._populateMap)), this._orderBy);
+    Utils.runIfNotEmpty(() => {
+      const queryOrder = this.helper.getQueryOrder(this.type, this._orderBy as FlatQueryOrderMap[], this._populateMap);
+
+      if (queryOrder) {
+        return qb.orderByRaw(queryOrder);
+      }
+    }, this._orderBy);
     Utils.runIfNotEmpty(() => qb.limit(this._limit!), this._limit);
     Utils.runIfNotEmpty(() => qb.offset(this._offset!), this._offset);
-    Utils.runIfNotEmpty(() => {
-      this._onConflict!.forEach(item => {
-        const sub = qb.onConflict(item.fields);
-        Utils.runIfNotEmpty(() => sub.ignore(), item.ignore);
-        Utils.runIfNotEmpty(() => {
-          const sub2 = sub.merge(item.merge);
-          Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, item.where, sub2), item.where);
-        }, 'merge' in item);
-      });
-    }, this._onConflict);
+    Utils.runIfNotEmpty(() => this.helper.appendOnConflictClause(this.type, this._onConflict!, qb), this._onConflict);
 
     if (this.type === QueryType.TRUNCATE && this.platform.usesCascadeStatement()) {
       return this.knex.raw(qb.toSQL().toNative().sql + ' cascade') as any;
@@ -495,6 +497,17 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   async getSingleResult(): Promise<T | null> {
     const res = await this.getResultList();
     return res[0] || null;
+  }
+
+  /**
+   * Executes count query (without offset and limit), returning total count of results
+   */
+  async getCount(field?: string | string[], distinct = false): Promise<number> {
+    const qb = this.clone();
+    qb.count(field, distinct).limit(undefined).offset(undefined);
+    const res = await qb.execute<{ count: number }>('get', false);
+
+    return res ? +res.count : 0;
   }
 
   /**

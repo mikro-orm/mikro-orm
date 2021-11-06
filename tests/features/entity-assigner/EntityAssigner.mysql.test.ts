@@ -1,5 +1,6 @@
-import { MikroORM, Reference, wrap } from '@mikro-orm/core';
-import { MySqlDriver } from '@mikro-orm/mysql';
+import type { MikroORM } from '@mikro-orm/core';
+import { Reference, wrap } from '@mikro-orm/core';
+import type { MySqlDriver } from '@mikro-orm/mysql';
 import { initORMMySql, wipeDatabaseMySql } from '../../bootstrap';
 import { Author2, Book2, BookTag2, FooBar2, Publisher2, PublisherType } from '../../entities-sql';
 
@@ -178,7 +179,7 @@ describe('EntityAssignerMySql', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const book2 = await orm.em.findOneOrFail(Book2, book.uuid, ['tags']);
+    const book2 = await orm.em.findOneOrFail(Book2, book.uuid, { populate: ['tags'] });
     expect(book2.tags.getIdentifiers()).toMatchObject([tag1.id, other.id]);
   });
 

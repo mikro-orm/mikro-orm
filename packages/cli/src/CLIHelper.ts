@@ -1,8 +1,11 @@
 import { pathExists } from 'fs-extra';
-import CliTable3, { Table } from 'cli-table3';
+import type { Table } from 'cli-table3';
+import CliTable3 from 'cli-table3';
 import c from 'ansi-colors';
+import yargs from 'yargs';
 
-import { Configuration, ConfigurationLoader, IDatabaseDriver, MikroORM, Options, Utils } from '@mikro-orm/core';
+import type { Configuration, IDatabaseDriver, Options } from '@mikro-orm/core';
+import { ConfigurationLoader, MikroORM, Utils } from '@mikro-orm/core';
 
 /**
  * @internal
@@ -91,6 +94,11 @@ export class CLIHelper {
     const table = new CliTable3({ head: options.columns, style: { compact: true } }) as Table;
     table.push(...options.rows);
     CLIHelper.dump(table.toString());
+  }
+
+  /* istanbul ignore next */
+  static showHelp() {
+    yargs.showHelp();
   }
 
 }
