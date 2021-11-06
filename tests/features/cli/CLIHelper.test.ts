@@ -134,6 +134,7 @@ describe('CLIHelper', () => {
     register.mockReturnValue({ config: {} });
     await expect(ConfigurationLoader.registerTsNode(__dirname + '/../tsconfig.json')).resolves.toBeUndefined();
     await expect(ConfigurationLoader.registerTsNode('./tests/tsconfig.json')).resolves.toBeUndefined();
+    register.mockRestore();
     requireFromMock.mockRestore();
   });
 
@@ -207,43 +208,49 @@ describe('CLIHelper', () => {
   test('builder (schema drop)', async () => {
     const args = { option: jest.fn() };
     SchemaCommandFactory.configureSchemaCommand(args as any, 'drop');
-    expect(args.option.mock.calls.length).toBe(5);
+    expect(args.option.mock.calls).toHaveLength(6);
     expect(args.option.mock.calls[0][0]).toBe('r');
     expect(args.option.mock.calls[0][1]).toMatchObject({ alias: 'run', type: 'boolean' });
     expect(args.option.mock.calls[1][0]).toBe('d');
     expect(args.option.mock.calls[1][1]).toMatchObject({ alias: 'dump', type: 'boolean' });
     expect(args.option.mock.calls[2][0]).toBe('fk-checks');
     expect(args.option.mock.calls[2][1]).toMatchObject({ type: 'boolean' });
-    expect(args.option.mock.calls[3][0]).toBe('drop-migrations-table');
-    expect(args.option.mock.calls[3][1]).toMatchObject({ type: 'boolean' });
-    expect(args.option.mock.calls[4][0]).toBe('drop-db');
+    expect(args.option.mock.calls[3][0]).toBe('schema');
+    expect(args.option.mock.calls[3][1]).toMatchObject({ type: 'string' });
+    expect(args.option.mock.calls[4][0]).toBe('drop-migrations-table');
     expect(args.option.mock.calls[4][1]).toMatchObject({ type: 'boolean' });
+    expect(args.option.mock.calls[5][0]).toBe('drop-db');
+    expect(args.option.mock.calls[5][1]).toMatchObject({ type: 'boolean' });
   });
 
   test('builder (schema update)', async () => {
     const args = { option: jest.fn() };
     SchemaCommandFactory.configureSchemaCommand(args as any, 'update');
-    expect(args.option.mock.calls.length).toBe(5);
+    expect(args.option.mock.calls).toHaveLength(6);
     expect(args.option.mock.calls[0][0]).toBe('r');
     expect(args.option.mock.calls[0][1]).toMatchObject({ alias: 'run', type: 'boolean' });
     expect(args.option.mock.calls[1][0]).toBe('d');
     expect(args.option.mock.calls[1][1]).toMatchObject({ alias: 'dump', type: 'boolean' });
     expect(args.option.mock.calls[2][0]).toBe('fk-checks');
     expect(args.option.mock.calls[2][1]).toMatchObject({ type: 'boolean' });
-    expect(args.option.mock.calls[3][0]).toBe('safe');
-    expect(args.option.mock.calls[3][1]).toMatchObject({ type: 'boolean' });
-    expect(args.option.mock.calls[4][0]).toBe('drop-tables');
+    expect(args.option.mock.calls[3][0]).toBe('schema');
+    expect(args.option.mock.calls[3][1]).toMatchObject({ type: 'string' });
+    expect(args.option.mock.calls[4][0]).toBe('safe');
     expect(args.option.mock.calls[4][1]).toMatchObject({ type: 'boolean' });
+    expect(args.option.mock.calls[5][0]).toBe('drop-tables');
+    expect(args.option.mock.calls[5][1]).toMatchObject({ type: 'boolean' });
   });
 
   test('builder (schema fresh)', async () => {
     const args = { option: jest.fn() };
     SchemaCommandFactory.configureSchemaCommand(args as any, 'fresh');
-    expect(args.option.mock.calls.length).toBe(2);
+    expect(args.option.mock.calls).toHaveLength(3);
     expect(args.option.mock.calls[0][0]).toBe('r');
     expect(args.option.mock.calls[0][1]).toMatchObject({ alias: 'run', type: 'boolean' });
-    expect(args.option.mock.calls[1][0]).toBe('seed');
+    expect(args.option.mock.calls[1][0]).toBe('schema');
     expect(args.option.mock.calls[1][1]).toMatchObject({ type: 'string' });
+    expect(args.option.mock.calls[2][0]).toBe('seed');
+    expect(args.option.mock.calls[2][1]).toMatchObject({ type: 'string' });
   });
 
   test('dump', async () => {

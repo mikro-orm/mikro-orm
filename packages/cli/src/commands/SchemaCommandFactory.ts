@@ -1,6 +1,6 @@
 import type { Arguments, Argv, CommandModule } from 'yargs';
 import c from 'ansi-colors';
-import type { Dictionary, MikroORM } from '@mikro-orm/core';
+import type { MikroORM } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { SchemaGenerator } from '@mikro-orm/knex';
 import { CLIHelper } from '../CLIHelper';
@@ -38,6 +38,7 @@ export class SchemaCommandFactory {
       type: 'boolean',
       desc: 'Runs queries',
     });
+
     if (command !== 'fresh') {
       args.option('d', {
         alias: 'dump',
@@ -49,6 +50,11 @@ export class SchemaCommandFactory {
         desc: 'Do not skip foreign key checks',
       });
     }
+
+    args.option('schema', {
+      type: 'string',
+      desc: 'Set the current schema for wildcard schema entities',
+    });
 
     if (command === 'create' || command === 'fresh') {
       args.option('seed', {
@@ -91,15 +97,15 @@ export class SchemaCommandFactory {
 
     const orm = await CLIHelper.getORM() as MikroORM<AbstractSqlDriver>;
     const generator = new SchemaGenerator(orm.em);
-    const params = SchemaCommandFactory.getOrderedParams(args, method);
+    const params = { wrap: !args.fkChecks, ...args };
 
     if (args.dump) {
       const m = `get${method.substr(0, 1).toUpperCase()}${method.substr(1)}SchemaSQL` as 'getCreateSchemaSQL' | 'getUpdateSchemaSQL' | 'getDropSchemaSQL';
       const dump = await generator[m](params);
       CLIHelper.dump(dump, orm.config);
     } else if (method === 'fresh') {
-      await generator.dropSchema(SchemaCommandFactory.getOrderedParams(args, 'drop'));
-      await generator.createSchema(SchemaCommandFactory.getOrderedParams(args, 'create'));
+      await generator.dropSchema(params);
+      await generator.createSchema(params);
     } else {
       const m = method + 'Schema';
       await generator[m](params);
@@ -114,26 +120,18 @@ export class SchemaCommandFactory {
     await orm.close(true);
   }
 
-  private static getOrderedParams(args: Arguments<Options>, method: SchemaMethod): Dictionary {
-    const ret: Dictionary = { wrap: !args.fkChecks };
-
-    if (method === 'update') {
-      ret.safe = args.safe;
-      ret.dropTables = args.dropTables;
-    }
-
-    if (method === 'drop') {
-      ret.dropMigrationsTable = args.dropMigrationsTable;
-
-      if (!args.dump) {
-        ret.dropDb = args.dropDb;
-      }
-    }
-
-    return ret;
-  }
-
 }
 
 type SchemaMethod = 'create' | 'update' | 'drop' | 'fresh';
-export type Options = { dump: boolean; run: boolean; fkChecks: boolean; dropMigrationsTable: boolean; dropDb: boolean; dropTables: boolean; safe: boolean; seed: string };
+
+export type Options = {
+  dump: boolean;
+  run: boolean;
+  fkChecks: boolean;
+  dropMigrationsTable: boolean;
+  dropDb: boolean;
+  dropTables: boolean;
+  safe: boolean;
+  seed: string;
+  schema: string;
+};
