@@ -776,12 +776,18 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     }
 
     if (this._orderBy) {
-      const orderBy = {};
-      for (const [field, direction] of Object.entries(this._orderBy)) {
-        if (!pks.includes(field)) {
-          orderBy[`min(${this.ref(field)})`] = direction;
-        } else {
-          orderBy[field] = direction;
+      const orderBy = [];
+      for (const orderMap of this._orderBy) {
+        for (const [field, direction] of Object.entries(orderMap)) {
+          if (!pks.includes(field)) {
+            orderBy.push({
+              [`min(${this.ref(field)})`]: direction,
+            });
+          } else {
+            orderBy.push({
+                [field]: direction,
+            });
+          }
         }
       }
 

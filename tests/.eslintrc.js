@@ -9,6 +9,6 @@ module.exports = {
     '@typescript-eslint/no-inferrable-types': 'off',
     '@typescript-eslint/no-var-requires': 'off',
     'no-control-regex': 'off',
-    'no-empty': 'off'
+    'no-empty': 'off',
   },
 };

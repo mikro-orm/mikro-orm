@@ -1,6 +1,8 @@
-import { Collection, ConstraintViolationException, Entity, Enum, Filter, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property, QueryFlag, wrap } from '@mikro-orm/core';
-import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';
-import { PostgreSqlDriver } from '../../packages/postgresql/src';
+/* eslint-disable @typescript-eslint/no-use-before-define */
+
+import { Collection, Entity, Enum, Filter, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property, QueryFlag, wrap } from '@mikro-orm/core';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { SchemaGenerator } from '@mikro-orm/postgresql';
 
 
 @Entity()
@@ -198,7 +200,7 @@ describe('GH issue 2095', () => {
 
     const start = new Date(2020,0,1);
     const end = new Date(2021,0, 1);
-    for (let i = 0; i < 200; i++) {
+    for (let i = 0; i < 50; i++) {
       const tc = orm.em.create(TC, { c: cp });
       const t = orm.em.create(T, {
         end: new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime())),
