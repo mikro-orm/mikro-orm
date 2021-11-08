@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 
-import { Collection, Entity, Enum, Filter, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property, QueryFlag, wrap } from '@mikro-orm/core';
+import { Collection, Entity, Enum, Filter, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property, QueryFlag } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { SchemaGenerator } from '@mikro-orm/postgresql';
-
 
 @Entity()
 export class Group {
@@ -168,13 +167,11 @@ describe('GH issue 2095', () => {
       entities: [C, T, TC, B, A, User, Group],
       dbName: 'mikro_orm_issue_2095',
       type: 'postgresql',
-      // debug: true,
     });
 
     await new SchemaGenerator(orm.em).ensureDatabase();
     await new SchemaGenerator(orm.em).dropSchema();
     await new SchemaGenerator(orm.em).createSchema();
-
 
     const group1 = new Group('id-group-01', 'Group #1'); // RF
     const group2 = new Group('id-group-02', 'Group #2'); // admin
@@ -200,6 +197,7 @@ describe('GH issue 2095', () => {
 
     const start = new Date(2020,0,1);
     const end = new Date(2021,0, 1);
+
     for (let i = 0; i < 50; i++) {
       const tc = orm.em.create(TC, { c: cp });
       const t = orm.em.create(T, {
@@ -242,8 +240,7 @@ describe('GH issue 2095', () => {
 
     orm.em.clear();
 
-    const secondResults = await orm.em.find(T, {
-    }, {
+    const secondResults = await orm.em.find(T, {}, {
       limit: 20,
       offset: 20,
       orderBy: { end: 'ASC' },
