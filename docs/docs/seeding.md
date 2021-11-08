@@ -13,7 +13,7 @@ npx mikro-orm seeder:create DatabaseSeeder  # generates the class DatabaseSeeder
 npx mikro-orm seeder:create test            # generates the class TestSeeder
 npx mikro-orm seeder:create project-names   # generates the class ProjectNamesSeeder
 ```
-This creates a new seeder class. By default, it will be generated in the `./database/seeder/` directory. You can configure the directory in the config with the key `seeder.path` or using the [environment variable](/configuration/#using-environment-variables) `MIKRO_ORM_SEEDER_PATH`. You are allowed to call the `seeder:create` command with a name, class name or hyphenated name.
+This creates a new seeder class. By default, it will be generated in the `./database/seeder/` directory. You can configure the directory in the config with the key `seeder.path` or using the [environment variable](/configuration#using-environment-variables) `MIKRO_ORM_SEEDER_PATH`. You are allowed to call the `seeder:create` command with a name, class name or hyphenated name.
 
 As an example we will look at a very basic seeder.
 ```typescript
