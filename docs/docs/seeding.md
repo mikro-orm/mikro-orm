@@ -13,7 +13,7 @@ npx mikro-orm seeder:create DatabaseSeeder  # generates the class DatabaseSeeder
 npx mikro-orm seeder:create test            # generates the class TestSeeder
 npx mikro-orm seeder:create project-names   # generates the class ProjectNamesSeeder
 ```
-This creates a new seeder class. By default, it will be generated in the `./database/seeder/` directory. You can configure the directory in the config with the key `seeder.path` or using the [environment variable](/configuration#using-environment-variables) `MIKRO_ORM_SEEDER_PATH`. You are allowed to call the `seeder:create` command with a name, class name or hyphenated name.
+This creates a new seeder class. By default, it will be generated in the `./database/seeder/` directory. You can configure the directory in the config with the key `seeder.path` or using the [environment variable](configuration.md#using-environment-variables) `MIKRO_ORM_SEEDER_PATH`. You are allowed to call the `seeder:create` command with a name, class name or hyphenated name.
 
 As an example we will look at a very basic seeder.
 ```typescript
@@ -165,10 +165,10 @@ MikroORM.init({
 });
 ```
 
-You can also override these default using the [environment variables](/configuration/#using-environment-variables) `MIKRO_ORM_SEEDER_PATH` and `MIKRO_ORM_SEEDER_DEFAULT_SEEDER`.
+You can also override these default using the [environment variables](configuration.md#using-environment-variables) `MIKRO_ORM_SEEDER_PATH` and `MIKRO_ORM_SEEDER_DEFAULT_SEEDER`.
 
 ## Use with CLI
-You may execute the `seeder:run` MikroORM CLI command to seed your database. By default, the `seeder:run` command runs the `DatabaseSeeder` class, which may in turn invoke other seed classes. You can configure the default seeder using the key `seeder.defaultSeeder` or using the [environment variable](/configuration/#using-environment-variables) `MIKRO_ORM_SEEDER_DEFAULT_SEEDER`. You can also use the `--class` option to specify a seeder class:
+You may execute the `seeder:run` MikroORM CLI command to seed your database. By default, the `seeder:run` command runs the `DatabaseSeeder` class, which may in turn invoke other seed classes. You can configure the default seeder using the key `seeder.defaultSeeder` or using the [environment variable](configuration.md#using-environment-variables) `MIKRO_ORM_SEEDER_DEFAULT_SEEDER`. You can also use the `--class` option to specify a seeder class:
 ```shell script
 npx mikro-orm seeder:run
 
