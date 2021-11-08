@@ -405,9 +405,24 @@ constructors, we can use `forceEntityConstructor` toggle:
 
 ```ts
 MikroORM.init({
-  ...
   forceEntityConstructor: true, // or specify just some entities via `[Author, 'Book', ...]` 
-  ...
+});
+```
+
+## Using global Identity Map
+
+In v5, it is no longer possible to use the global identity map. This was a
+common issue that led to weird bugs, as using the global EM without request
+context is almost always wrong, we always need to have a dedicated context for
+each request, so they do not interfere.
+
+We still can disable this check via `allowGlobalContext` configuration, or
+a connected environment variable `MIKRO_ORM_ALLOW_GLOBAL_CONTEXT` - this can
+be handy especially in unit tests.
+
+```ts
+MikroORM.init({
+  allowGlobalContext: true, 
 });
 ```
 

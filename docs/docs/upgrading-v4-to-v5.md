@@ -78,3 +78,15 @@ registered at all.
 
 Use `@Entity({ customRepository: () => CustomRepository })` in the entity definition
 instead.
+
+## Disallowed global identity map
+
+In v5, it is no longer possible to use the global identity map. This was a 
+common issue that led to weird bugs, as using the global EM without request
+context is wrong, we always need to have a dedicated context for each request,
+so they do not interfere.
+
+Now we get a validation error if we try to use the global context. We still can
+disable this check via `allowGlobalContext` configuration, or a connected 
+environment variable `MIKRO_ORM_ALLOW_GLOBAL_CONTEXT` - this can be handy 
+especially in unit tests.

@@ -118,6 +118,7 @@ describe('CLIHelper', () => {
   });
 
   test('gets ORM configuration [no mikro-orm.config]', async () => {
+    delete process.env.MIKRO_ORM_ALLOW_GLOBAL_CONTEXT;
     await expect(CLIHelper.getConfiguration()).rejects.toThrowError(`MikroORM config file not found in ['./mikro-orm.config.js']`);
 
     process.env.MIKRO_ORM_ENV = __dirname + '/../../mikro-orm.env';

@@ -56,6 +56,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     validate: false,
     context: (name: string) => RequestContext.getEntityManager(name),
     contextName: 'default',
+    allowGlobalContext: false,
     // eslint-disable-next-line no-console
     logger: console.log.bind(console),
     findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => NotFoundError.findOneFailed(entityName, where),
@@ -398,6 +399,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   validate: boolean;
   context: (name: string) => EntityManager | undefined;
   contextName: string;
+  allowGlobalContext: boolean;
   logger: (message: string) => void;
   findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
   debug: boolean | LoggerNamespace[];

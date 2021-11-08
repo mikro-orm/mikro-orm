@@ -778,6 +778,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       em = this.useContext ? (this.config.get('context')(this.name) || this) : this;
     }
 
+    if (this.useContext && em === this && !this.config.get('allowGlobalContext')) {
+      throw ValidationError.cannotUseGlobalContext();
+    }
+
     return em;
   }
 

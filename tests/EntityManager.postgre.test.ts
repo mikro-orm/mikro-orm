@@ -1889,6 +1889,27 @@ describe('EntityManagerPostgre', () => {
     await orm.em.flush();
   });
 
+  test('working with global identity map will throw', async () => {
+    orm.config.set('allowGlobalContext', false);
+
+    const err = 'Using global EntityManager instance methods for context specific actions is disallowed. If you need to work with the global instance\'s identity map, use `allowGlobalContext` configuration option or `fork()` instead.';
+    expect(() => orm.em.create(Author2, { name: 'a1', email: 'e1' })).toThrowError(err);
+    const author = new Author2('a', 'e');
+    expect(() => orm.em.persist(author)).toThrowError(err);
+    expect(() => orm.em.assign(author, { name: 'b' })).not.toThrowError(err);
+    expect(() => orm.em.assign(author, { books: ['1', '2', '3'] })).toThrowError(err);
+    await expect(orm.em.flush()).rejects.toThrowError(err);
+
+    const fork = orm.em.fork();
+    await expect(fork.flush()).resolves.not.toThrowError();
+    expect(() => fork.create(Author2, { name: 'a1', email: 'e1' })).not.toThrowError();
+    expect(() => fork.persist(author)).not.toThrowError();
+    expect(() => fork.assign(author, { name: 'b' })).not.toThrowError();
+    expect(() => fork.assign(author, { books: ['1', '2', '3'] })).not.toThrowError();
+
+    orm.config.set('allowGlobalContext', true);
+  });
+
   afterAll(async () => orm.close(true));
 
 });
