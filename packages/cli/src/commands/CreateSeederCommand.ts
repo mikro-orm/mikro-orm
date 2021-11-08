@@ -23,7 +23,7 @@ export class CreateSeederCommand<T> implements CommandModule<T, { seeder: string
     const seederName = CreateSeederCommand.getSeederClassName(args.seeder);
     const orm = await CLIHelper.getORM(undefined) as MikroORM<AbstractSqlDriver>;
     const seeder = orm.getSeeder();
-    const path = await seeder.createSeeder(args.seeder);
+    const path = await seeder.createSeeder(seederName);
     CLIHelper.dump(c.green(`Seeder ${args.seeder} successfully created at ${path}`));
     await orm.close(true);
   }

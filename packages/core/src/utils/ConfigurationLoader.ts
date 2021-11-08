@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import { pathExists, realpath } from 'fs-extra';
-import { join, isAbsolute } from 'path';
+import { isAbsolute, join } from 'path';
 import type { IDatabaseDriver } from '../drivers';
 import type { Options } from './Configuration';
 import { Configuration } from './Configuration';
@@ -184,6 +184,11 @@ export class ConfigurationLoader {
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_SAFE', 'safe', bool);
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_EMIT', 'emit');
     cleanup(ret, 'migrations');
+
+    ret.seeder = {};
+    read(ret.migrations, 'MIKRO_ORM_SEEDER_PATH', 'path');
+    read(ret.migrations, 'MIKRO_ORM_SEEDER_DEFAULT_SEEDER', 'defaultSeeder');
+    cleanup(ret, 'seeder');
 
     return ret;
   }

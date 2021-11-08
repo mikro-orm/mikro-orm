@@ -477,3 +477,5 @@ Full list of supported options:
 | `MIKRO_ORM_MIGRATIONS_DROP_TABLES` | `migrations.dropTables` |
 | `MIKRO_ORM_MIGRATIONS_SAFE` | `migrations.safe` |
 | `MIKRO_ORM_MIGRATIONS_EMIT` | `migrations.emit` |
+| `MIKRO_ORM_SEEDER_PATH` | `seeder.path` |
+| `MIKRO_ORM_SEEDER_DEFAULT_SEEDER` | `seeder.defaultSeeder` |
