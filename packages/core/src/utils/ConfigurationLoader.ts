@@ -154,6 +154,7 @@ export class ConfigurationLoader {
     read(ret, 'MIKRO_ORM_USE_BATCH_UPDATES', 'useBatchUpdates', bool);
     read(ret, 'MIKRO_ORM_STRICT', 'strict', bool);
     read(ret, 'MIKRO_ORM_VALIDATE', 'validate', bool);
+    read(ret, 'MIKRO_ORM_ALLOW_GLOBAL_CONTEXT', 'allowGlobalContext', bool);
     read(ret, 'MIKRO_ORM_AUTO_JOIN_ONE_TO_ONE_OWNER', 'autoJoinOneToOneOwner', bool);
     read(ret, 'MIKRO_ORM_PROPAGATE_TO_ONE_OWNER', 'propagateToOneOwner', bool);
     read(ret, 'MIKRO_ORM_POPULATE_AFTER_FLUSH', 'populateAfterFlush', bool);

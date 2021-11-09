@@ -13,6 +13,7 @@ import type { AnyEntity, Constructor, IEntityGenerator, IMigrator, ISchemaGenera
  */
 export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
 
+  /** The global EntityManager instance. If you are using `RequestContext` helper, it will automatically pick the request specific context under the hood */
   em!: D[typeof EntityManagerType] & EntityManager;
   readonly config: Configuration<D>;
   private metadata!: MetadataStorage;
@@ -33,7 +34,12 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
 
     options = options instanceof Configuration ? options.getAll() : options;
     const orm = new MikroORM<D>(Utils.merge(options, env));
+
+    // we need to allow global context here as we are not in a scope of requests yet
+    const allowGlobalContext = orm.config.get('allowGlobalContext');
+    orm.config.set('allowGlobalContext', true);
     await orm.discoverEntities();
+    orm.config.set('allowGlobalContext', allowGlobalContext);
 
     if (connect) {
       await orm.connect();

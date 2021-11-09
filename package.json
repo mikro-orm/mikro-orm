@@ -72,6 +72,9 @@
     "coveragePathIgnorePatterns": [
       "<rootDir>/packages/cli/src/cli.ts"
     ],
+    "setupFiles": [
+      "<rootDir>/tests/setup.ts"
+    ],
     "globals": {
       "ts-jest": {
         "tsconfig": "tests/tsconfig.json"

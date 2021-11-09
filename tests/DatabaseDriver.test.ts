@@ -60,7 +60,7 @@ class Driver extends DatabaseDriver<Connection> {
 describe('DatabaseDriver', () => {
 
   test('should load entities', async () => {
-    const config = new Configuration({ type: 'mongo' } as any, false);
+    const config = new Configuration({ type: 'mongo', allowGlobalContext: true } as any, false);
     const driver = new Driver(config, []);
     expect(driver.createEntityManager()).toBeInstanceOf(EntityManager);
     expect(driver.getPlatform().getRepositoryClass()).toBe(EntityRepository);
