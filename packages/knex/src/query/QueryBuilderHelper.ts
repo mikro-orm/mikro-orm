@@ -540,7 +540,7 @@ export class QueryBuilderHelper {
     }
 
     const versionProperty = meta.properties[meta.versionProperty];
-    let sql = versionProperty.fieldNames[0] + ' + 1';
+    let sql = this.platform.quoteIdentifier(versionProperty.fieldNames[0]) + ' + 1';
 
     if (versionProperty.type.toLowerCase() === 'date') {
       sql = this.platform.getCurrentTimestampSQL(versionProperty.length);
