@@ -738,9 +738,14 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     options.clear = options.clear ?? true;
     options.useContext = options.useContext ?? false;
     options.freshEventManager = options.freshEventManager ?? false;
-
     const eventManager = options.freshEventManager ? new EventManager(this.config.get('subscribers')) : this.eventManager;
+
+    // we need to allow global context here as forking from global EM is fine
+    const allowGlobalContext = this.config.get('allowGlobalContext');
+    this.config.set('allowGlobalContext', true);
     const em = new (this.constructor as typeof EntityManager)(this.config, this.driver, this.metadata, options.useContext, eventManager);
+    this.config.set('allowGlobalContext', allowGlobalContext);
+
     em.filters = { ...this.filters };
     em.filterParams = Utils.copy(this.filterParams);
 
@@ -778,7 +783,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       em = this.useContext ? (this.config.get('context')(this.name) || this) : this;
     }
 
-    if (this.useContext && em === this && !this.config.get('allowGlobalContext')) {
+    if (this.useContext && em.id === 1 && !this.config.get('allowGlobalContext')) {
       throw ValidationError.cannotUseGlobalContext();
     }
 
