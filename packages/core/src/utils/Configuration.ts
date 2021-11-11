@@ -32,7 +32,6 @@ import { MetadataStorage } from '../metadata/MetadataStorage';
 import { ReflectMetadataProvider } from '../metadata/ReflectMetadataProvider';
 import type { EventSubscriber } from '../events';
 import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
-import type { EntityOptions } from '../decorators';
 import { NotFoundError } from '../errors';
 import { RequestContext } from './RequestContext';
 import { LoadStrategy } from '../enums';
@@ -219,7 +218,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Gets EntityRepository class to be instantiated.
    */
-  getRepositoryClass(customRepository: EntityOptions<any>['customRepository']): MikroORMOptions<D>['entityRepository'] {
+  getRepositoryClass(customRepository: () => Constructor<EntityRepository<AnyEntity>>): MikroORMOptions<D>['entityRepository'] {
     if (customRepository) {
       return customRepository();
     }

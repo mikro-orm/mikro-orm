@@ -1,5 +1,4 @@
 import { MetadataStorage } from '../metadata';
-import type { EntityRepository } from '../entity';
 import { Utils } from '../utils';
 import type { Constructor, Dictionary } from '../typings';
 
@@ -27,5 +26,5 @@ export type EntityOptions<T> = {
   comment?: string;
   abstract?: boolean;
   readonly?: boolean;
-  customRepository?: () => Constructor<EntityRepository<T>>;
+  customRepository?: () => Constructor;
 };
