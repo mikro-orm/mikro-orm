@@ -24,7 +24,7 @@ export class Child {
 }
 
 
-describe('GH issue 2400', () => {
+describe('GH issue 2395', () => {
 
   let orm: MikroORM<SqliteDriver>;
 
