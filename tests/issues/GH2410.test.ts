@@ -29,6 +29,9 @@ class MemberMikro {
   @OneToMany(() => UserMikro, user => user.ownerMember, { cascade: [Cascade.ALL] })
   ownedUsers = new Collection<UserMikro>(this);
 
+  @OneToMany('MemberUserMikro', 'member', { orphanRemoval: true })
+  users = new Collection<MemberUserMikro>(this);
+
 }
 
 @Entity({ tableName: 'member_user' })
@@ -63,21 +66,33 @@ describe('GH issue 2410', () => {
   afterAll(() => orm.close(true));
 
   test('should properly cascade delete inside transaction', async () => {
+    const user = orm.em.create(UserMikro, {});
+    orm.em.persist(user);
+
+    await orm.em.flush();
+
+    const createdMember = orm.em.create(MemberMikro, {});
+    orm.em.persist(createdMember);
+
+    await orm.em.persistAndFlush(createdMember);
+
     const mu = orm.em.create(MemberUserMikro, {
-      member: new MemberMikro(),
-      user:  new UserMikro(),
+      member: createdMember.id,
+      user: user.id,
     });
 
     await orm.em.persistAndFlush(mu);
 
-    await orm.em.transactional(async em => {
-      const member = await em.findOneOrFail(MemberMikro, mu.member.id, {
+    await orm.em.transactional(async tx => {
+      const member = await tx.findOne(MemberMikro, createdMember.id, {
         populate: ['ownedUsers'],
       });
 
-      member.ownedUsers.removeAll();
+      if (member) {
+        member.users.removeAll();
 
-      em.remove(member);
+        tx.remove(member);
+      }
     });
   });
 
