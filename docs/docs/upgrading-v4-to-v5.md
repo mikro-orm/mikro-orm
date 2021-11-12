@@ -90,3 +90,10 @@ Now we get a validation error if we try to use the global context. We still can
 disable this check via `allowGlobalContext` configuration, or a connected 
 environment variable `MIKRO_ORM_ALLOW_GLOBAL_CONTEXT` - this can be handy 
 especially in unit tests.
+
+## `LoadedCollection.get()` and `$` now return the `Collection` instance
+
+Previously those dynamically added getters returned the array copy of collection
+items. In v5, we return the collection instance, which is also iterable and has
+a `length` getter and indexed access support, so it mimics the array. To get the
+array copy as before, call `getItems()` as with a regular collection.

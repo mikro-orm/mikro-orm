@@ -171,8 +171,8 @@ export type EntityDTOProp<T> = T extends Scalar
   ? T
   : T extends Reference<infer U>
     ? EntityDTO<U>
-    : T extends Collection<infer U>
-      ? EntityDTO<U>[]
+    : T extends { getItems(check?: boolean): infer U }
+      ? (U extends readonly (infer V)[] ? EntityDTO<V>[] : EntityDTO<U>)
       : T extends { $: infer U }
         ? (U extends readonly (infer V)[] ? EntityDTO<V>[] : EntityDTO<U>)
         : T extends readonly (infer U)[]
@@ -542,8 +542,9 @@ export interface LoadedReference<T> extends Reference<T> {
 }
 
 export interface LoadedCollection<T> extends Collection<T> {
-  $: readonly T[];
-  get(): readonly T[];
+  $: Collection<T>;
+  get(): Collection<T>;
+  getItems(check?: boolean): T[];
 }
 
 export type New<T extends AnyEntity<T>, P extends string = string> = Loaded<T, P>;

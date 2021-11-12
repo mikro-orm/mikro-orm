@@ -28,8 +28,8 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     Object.defineProperty(this, 'snapshot', { enumerable: false });
     Object.defineProperty(this, '_populated', { enumerable: false });
     Object.defineProperty(this, '_lazyInitialized', { enumerable: false });
-    Object.defineProperty(this, '$', { get: () => super.getItems() });
-    Object.defineProperty(this, 'get', { value: () => super.getItems() });
+    Object.defineProperty(this, '$', { get: () => this });
+    Object.defineProperty(this, 'get', { value: () => this });
   }
 
   /**
