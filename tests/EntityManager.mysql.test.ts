@@ -796,6 +796,7 @@ describe('EntityManagerMySql', () => {
   test('custom query expressions via query builder', async () => {
     const god = new Author2('God', 'hello@heaven.god');
     const bible = new Book2('Bible', god);
+    bible.price = 100;
     bible.meta = { category: 'foo', items: 1 };
     await orm.em.persistAndFlush(bible);
     orm.em.clear();
@@ -816,6 +817,23 @@ describe('EntityManagerMySql', () => {
     expect(res3).toBeInstanceOf(Book2);
     expect(res3.createdAt).toBeDefined();
     expect(res3.meta).toEqual({ category: 'foo', items: 1 });
+  });
+
+  test('tuple comparison', async () => {
+    const god = new Author2('God', 'hello@heaven.god');
+    const bible = new Book2('Bible', god);
+    bible.price = 100;
+    bible.meta = { category: 'foo', items: 1 };
+    await orm.em.persistAndFlush(bible);
+    orm.em.clear();
+
+    const mock = mockLogger(orm, ['query']);
+    const res4 = await orm.em.findOneOrFail(Book2, { [expr<Book2>(['price', 'createdAt'])]: { $lte: [100, new Date()] } });
+    expect(res4).toBeInstanceOf(Book2);
+    expect(res4.createdAt).toBeDefined();
+    expect(res4.price).toBe('100.00');
+    expect(res4.meta).toEqual({ category: 'foo', items: 1 });
+    expect(mock.mock.calls[0][0]).toMatch('where `e0`.`author_id` is not null and (`e0`.`price`, `e0`.`created_at`) <= (?, ?) limit ?');
   });
 
   test('query builder getResult() and getSingleResult() return entities', async () => {

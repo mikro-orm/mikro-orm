@@ -250,4 +250,14 @@ export class QueryHelper {
 
 }
 
-export const expr = (sql: string) => sql;
+/**
+ * Helper for escaping string types, e.g. `keyof T -> string`.
+ * We can also pass array of strings to allow tuple comparison in SQL drivers.
+ */
+export function expr<T = unknown>(sql: (keyof T & string) | (keyof T & string)[]): string {
+  if (Array.isArray(sql)) {
+    return Utils.getPrimaryKeyHash(sql);
+  }
+
+  return sql;
+}
