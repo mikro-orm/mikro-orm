@@ -1,5 +1,5 @@
 import type { Dictionary, EntityProperty } from '@mikro-orm/core';
-import { BooleanType } from '@mikro-orm/core';
+import { BooleanType, DateTimeType } from '@mikro-orm/core';
 import type { Column, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
 import type { DatabaseSchema } from './DatabaseSchema';
 import type { DatabaseTable } from './DatabaseTable';
@@ -436,6 +436,14 @@ export class SchemaComparator {
     if (to.mappedType instanceof BooleanType) {
       const defaultValueFrom = !['0', 'false', 'f', 'n', 'no', 'off'].includes('' + from.default!);
       const defaultValueTo = !['0', 'false', 'f', 'n', 'no', 'off'].includes('' + to.default!);
+
+      return defaultValueFrom === defaultValueTo;
+    }
+
+    if (to.mappedType instanceof DateTimeType && from.default && to.default) {
+      // normalize now/current_timestamp defaults, also remove `()` from the end of default expression
+      const defaultValueFrom = from.default.toLowerCase().replace('current_timestamp', 'now').replace(/\(\)$/, '');
+      const defaultValueTo = to.default.toLowerCase().replace('current_timestamp', 'now').replace(/\(\)$/, '');
 
       return defaultValueFrom === defaultValueTo;
     }

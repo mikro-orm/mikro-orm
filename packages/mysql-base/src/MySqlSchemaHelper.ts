@@ -1,6 +1,7 @@
 import type { AbstractSqlConnection, Column, Index, Knex, TableDifference } from '@mikro-orm/knex';
 import { SchemaHelper } from '@mikro-orm/knex';
-import type { Dictionary } from '@mikro-orm/core';
+import type { Dictionary , Type } from '@mikro-orm/core';
+import { StringType, TextType } from '@mikro-orm/core';
 
 export class MySqlSchemaHelper extends SchemaHelper {
 
@@ -115,17 +116,19 @@ export class MySqlSchemaHelper extends SchemaHelper {
       ifnull(datetime_precision, character_maximum_length) length
       from information_schema.columns where table_schema = database() and table_name = '${tableName}'`;
     const columns = await connection.execute<any[]>(sql);
+    const str = (val: string | number | undefined) => val != null ? '' + val : val;
 
     return columns.map(col => {
       const platform = connection.getPlatform();
       const mappedType = platform.getMappedType(col.column_type);
+      const defaultValue = str(this.normalizeDefaultValue(col.column_default, col.length));
       return ({
         name: col.column_name,
         type: platform.isNumericColumn(mappedType) ? col.column_type.replace(/ unsigned$/, '').replace(/\(\d+\)$/, '') : col.column_type,
         mappedType,
         unsigned: col.column_type.endsWith(' unsigned'),
         length: col.length,
-        default: col.column_default,
+        default: this.wrap(defaultValue, mappedType),
         nullable: col.is_nullable === 'YES',
         primary: col.column_key === 'PRI',
         unique: col.column_key === 'UNI',
@@ -151,6 +154,10 @@ export class MySqlSchemaHelper extends SchemaHelper {
 
   normalizeDefaultValue(defaultValue: string, length: number) {
     return super.normalizeDefaultValue(defaultValue, length, MySqlSchemaHelper.DEFAULT_VALUES);
+  }
+
+  protected wrap(val: string | undefined, type: Type<unknown>): string | undefined {
+    return typeof val === 'string' && val.length > 0 && (type instanceof StringType || type instanceof TextType) ? this.platform.quoteValue(val) : val;
   }
 
 }

@@ -19,8 +19,8 @@ export class SqlitePlatform extends AbstractSqlPlatform {
     return super.getCurrentTimestampSQL(0);
   }
 
-  getDateTimeTypeDeclarationSQL(column: { length?: number }): string {
-    return super.getDateTimeTypeDeclarationSQL({ length: 0 });
+  getDateTimeTypeDeclarationSQL(column: { length: number }): string {
+    return 'datetime';
   }
 
   getEnumTypeDeclarationSQL(column: { items?: unknown[]; fieldNames: string[]; length?: number; unsigned?: boolean; autoincrement?: boolean }): string {

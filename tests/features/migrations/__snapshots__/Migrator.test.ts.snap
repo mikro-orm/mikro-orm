@@ -372,7 +372,7 @@ class Migration20191013214813 extends Migration {
   }
 
   async down() {
-    this.addSql('alter table \`book2\` add \`foo\` varchar(255) null default lol;');
+    this.addSql('alter table \`book2\` add \`foo\` varchar(255) null default \\\\'lol\\\\';');
 
     this.addSql('alter table \`test2\` add \`foo___bar\` int unsigned null, add \`foo___baz\` int unsigned null;');
     this.addSql('alter table \`test2\` add constraint \`test2_foo___bar_foreign\` foreign key (\`foo___bar\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;');
@@ -385,7 +385,7 @@ exports.Migration20191013214813 = Migration20191013214813;
 ",
   "diff": Object {
     "down": Array [
-      "alter table \`book2\` add \`foo\` varchar(255) null default lol;",
+      "alter table \`book2\` add \`foo\` varchar(255) null default 'lol';",
       "",
       "alter table \`test2\` add \`foo___bar\` int unsigned null, add \`foo___baz\` int unsigned null;",
       "alter table \`test2\` add constraint \`test2_foo___bar_foreign\` foreign key (\`foo___bar\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;",
@@ -425,7 +425,7 @@ export class Migration20191013214813 extends Migration {
   }
 
   async down(): Promise<void> {
-    this.addSql('alter table \`book2\` add \`foo\` varchar(255) null default lol;');
+    this.addSql('alter table \`book2\` add \`foo\` varchar(255) null default \\\\'lol\\\\';');
 
     this.addSql('alter table \`test2\` add \`foo___bar\` int unsigned null, add \`foo___baz\` int unsigned null;');
     this.addSql('alter table \`test2\` add constraint \`test2_foo___bar_foreign\` foreign key (\`foo___bar\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;');
@@ -437,7 +437,7 @@ export class Migration20191013214813 extends Migration {
 ",
   "diff": Object {
     "down": Array [
-      "alter table \`book2\` add \`foo\` varchar(255) null default lol;",
+      "alter table \`book2\` add \`foo\` varchar(255) null default 'lol';",
       "",
       "alter table \`test2\` add \`foo___bar\` int unsigned null, add \`foo___baz\` int unsigned null;",
       "alter table \`test2\` add constraint \`test2_foo___bar_foreign\` foreign key (\`foo___bar\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;",
@@ -477,7 +477,7 @@ export class Migration20191013214813 extends Migration {
   }
 
   async down(): Promise<void> {
-    this.addSql('alter table \`book2\` add \`foo\` varchar(255) null default lol;');
+    this.addSql('alter table \`book2\` add \`foo\` varchar(255) null default \\\\'lol\\\\';');
 
     this.addSql('alter table \`test2\` add \`foo___bar\` int unsigned null, add \`foo___baz\` int unsigned null;');
     this.addSql('alter table \`test2\` add constraint \`test2_foo___bar_foreign\` foreign key (\`foo___bar\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;');
@@ -489,7 +489,7 @@ export class Migration20191013214813 extends Migration {
 ",
   "diff": Object {
     "down": Array [
-      "alter table \`book2\` add \`foo\` varchar(255) null default lol;",
+      "alter table \`book2\` add \`foo\` varchar(255) null default 'lol';",
       "",
       "alter table \`test2\` add \`foo___bar\` int unsigned null, add \`foo___baz\` int unsigned null;",
       "alter table \`test2\` add constraint \`test2_foo___bar_foreign\` foreign key (\`foo___bar\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;",

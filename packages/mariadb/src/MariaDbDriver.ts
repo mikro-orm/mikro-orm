@@ -1,11 +1,12 @@
-import type { AnyEntity, Configuration, EntityDictionary, NativeInsertUpdateManyOptions, QueryResult, Transaction } from '@mikro-orm/core';
-import { AbstractSqlDriver, MySqlPlatform } from '@mikro-orm/mysql-base';
+import type { AnyEntity, Configuration, EntityDictionary, NativeInsertUpdateManyOptions, QueryResult } from '@mikro-orm/core';
+import { AbstractSqlDriver } from '@mikro-orm/mysql-base';
 import { MariaDbConnection } from './MariaDbConnection';
+import { MariaDbPlatform } from './MariaDbPlatform';
 
 export class MariaDbDriver extends AbstractSqlDriver<MariaDbConnection> {
 
   constructor(config: Configuration) {
-    super(config, new MySqlPlatform(), MariaDbConnection, ['knex', 'mariadb']);
+    super(config, new MariaDbPlatform(), MariaDbConnection, ['knex', 'mariadb']);
   }
 
   async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {

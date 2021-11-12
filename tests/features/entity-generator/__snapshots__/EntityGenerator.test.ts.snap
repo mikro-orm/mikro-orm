@@ -168,7 +168,7 @@ export class Book2 {
   @ManyToOne({ entity: () => Publisher2, onUpdateIntegrity: 'cascade', onDelete: 'cascade', nullable: true })
   publisher?: Publisher2;
 
-  @Property({ length: 255, nullable: true, defaultRaw: \`lol\` })
+  @Property({ length: 255, nullable: true, default: 'lol' })
   foo?: string;
 
 }

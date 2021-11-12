@@ -31,8 +31,8 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return `current_timestamp(${length})`;
   }
 
-  getDateTimeTypeDeclarationSQL(column: { length?: number }): string {
-    return 'timestamptz' + (column.length != null ? `(${column.length})` : '');
+  getDateTimeTypeDeclarationSQL(column: { length: number }): string {
+    return `timestamptz(${column.length})`;
   }
 
   getTimeTypeDeclarationSQL(): string {
