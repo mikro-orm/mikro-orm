@@ -111,31 +111,16 @@ export class SchemaGenerator {
   }
 
   async getUpdateSchemaSQL(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema; schema?: string } = {}): Promise<string> {
-    options.wrap ??= true;
-    options.safe ??= false;
-    options.dropTables ??= true;
-    const toSchema = this.getTargetSchema(options.schema);
-    /* istanbul ignore next */
-    const fromSchema = options.fromSchema ?? await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema);
+    const { fromSchema, toSchema } = await this.prepareSchemaForComparison(options);
     const comparator = new SchemaComparator(this.platform);
-    const wildcardSchemaTables = Object.values(this.metadata.getAll()).filter(meta => meta.schema === '*').map(meta => meta.tableName);
-    fromSchema.prune(options.schema, wildcardSchemaTables);
-    toSchema.prune(options.schema, wildcardSchemaTables);
     const diffUp = comparator.compare(fromSchema, toSchema);
 
     return this.diffToSQL(diffUp, options);
   }
 
   async getUpdateSchemaMigrationSQL(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema; schema?: string } = {}): Promise<{ up: string; down: string }> {
-    options.wrap ??= true;
-    options.safe ??= false;
-    options.dropTables ??= true;
-    const toSchema = this.getTargetSchema(options.schema);
-    const fromSchema = options.fromSchema ?? await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema);
+    const { fromSchema, toSchema } = await this.prepareSchemaForComparison(options);
     const comparator = new SchemaComparator(this.platform);
-    const wildcardSchemaTables = Object.values(this.metadata.getAll()).filter(meta => meta.schema === '*').map(meta => meta.tableName);
-    fromSchema.prune(options.schema, wildcardSchemaTables);
-    toSchema.prune(options.schema, wildcardSchemaTables);
     const diffUp = comparator.compare(fromSchema, toSchema);
     const diffDown = comparator.compare(toSchema, fromSchema);
 
@@ -143,6 +128,20 @@ export class SchemaGenerator {
       up: await this.diffToSQL(diffUp, options),
       down: this.platform.supportsDownMigrations() ? await this.diffToSQL(diffDown, options) : '',
     };
+  }
+
+  private async prepareSchemaForComparison(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema; schema?: string }) {
+    options.wrap ??= true;
+    options.safe ??= false;
+    options.dropTables ??= true;
+    const toSchema = this.getTargetSchema(options.schema);
+    /* istanbul ignore next */
+    const fromSchema = options.fromSchema ?? await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema);
+    const wildcardSchemaTables = Object.values(this.metadata.getAll()).filter(meta => meta.schema === '*').map(meta => meta.tableName);
+    fromSchema.prune(options.schema, wildcardSchemaTables);
+    toSchema.prune(options.schema, wildcardSchemaTables);
+
+    return { fromSchema, toSchema };
   }
 
   async diffToSQL(schemaDiff: SchemaDifference, options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; schema?: string }): Promise<string> {
