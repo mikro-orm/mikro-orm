@@ -7,7 +7,7 @@ import {
 } from '@mikro-orm/core';
 import { PostgreSqlDriver, PostgreSqlConnection } from '@mikro-orm/postgresql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2, Label2 } from './entities-sql';
-import { initORMPostgreSql, wipeDatabasePostgreSql } from './bootstrap';
+import { initORMPostgreSql, mockLogger, wipeDatabasePostgreSql } from './bootstrap';
 import { performance } from 'perf_hooks';
 
 describe('EntityManagerPostgre', () => {
@@ -1094,6 +1094,33 @@ describe('EntityManagerPostgre', () => {
     expect(tags[0].books.isDirty()).toBe(false);
     expect(tags[0].books.count()).toBe(2);
     expect(wrap(tags[0].books.getItems()[0]).isInitialized()).toBe(true);
+  });
+
+  test('populating dirty collections will merge the items and keep it dirty', async () => {
+    await createBooksWithTags();
+
+    const a = await orm.em.findOneOrFail(Author2, { email: 'snow@wall.st' });
+    expect(a.books.isDirty()).toBe(false);
+    a.books.add(new Book2('new book', a, 123));
+    expect(a.books.isDirty()).toBe(true);
+
+    const mock = mockLogger(orm, ['query']);
+    const books = await a.books.loadItems();
+    expect(a.books.isDirty()).toBe(true);
+    await orm.em.flush();
+    expect(a.books.isDirty()).toBe(false);
+    expect(books).toHaveLength(4);
+    expect(books.map(b => b.title)).toEqual([
+      'My Life on The Wall, part 1',
+      'My Life on The Wall, part 2',
+      'My Life on The Wall, part 3',
+      'new book',
+    ]);
+
+    expect(mock.mock.calls[0][0]).toMatch(`select "e0"."uuid_pk", "e0"."created_at", "e0"."title", "e0"."price", "e0"."double", "e0"."meta", "e0"."author_id", "e0"."publisher_id", "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where "e0"."author_id" is not null and "e0"."author_id" = $1 order by "e0"."title" asc`);
+    expect(mock.mock.calls[1][0]).toMatch(`begin`);
+    expect(mock.mock.calls[2][0]).toMatch(`insert into "book2" ("author_id", "created_at", "price", "title", "uuid_pk") values ($1, $2, $3, $4, $5) returning "uuid_pk", "created_at", "title"`);
+    expect(mock.mock.calls[3][0]).toMatch(`commit`);
   });
 
   test('nested populating', async () => {

@@ -217,6 +217,18 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   }
 
   async init<P extends string = never>(options: InitOptions<T, P> = {}): Promise<this> {
+    if (this.dirty) {
+      const items = [...this.items];
+      this.dirty = false;
+      await this.init(options);
+
+      if (items.length) {
+        items.forEach(i => this.add(i));
+      }
+
+      return this;
+    }
+
     const em = this.getEntityManager();
 
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
