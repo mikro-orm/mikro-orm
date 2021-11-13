@@ -425,6 +425,15 @@ describe('QueryBuilder', () => {
     expect(qb2.getParams()).toEqual(['{"foo":"baz"}', false]);
   });
 
+  test('select with prototype-less object', async () => {
+    const qb1 = orm.em.createQueryBuilder(Book2);
+    const filter = Object.create(null);
+    filter.meta = { foo: 'bar' };
+    qb1.select('*').where(filter);
+    expect(qb1.getQuery()).toEqual('select `e0`.*, `e0`.price * 1.19 as `price_taxed` from `book2` as `e0` where `meta`->\'$.foo\' = ?');
+    expect(qb1.getParams()).toEqual('bar');
+  });
+
   test('select by regexp', async () => {
     let qb = orm.em.createQueryBuilder(Publisher2);
     qb.select('*').where({ name: /test/ });

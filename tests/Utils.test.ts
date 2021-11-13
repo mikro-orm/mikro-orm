@@ -209,7 +209,7 @@ describe('Utils', () => {
     expect(Utils.isPlainObject({ foo: 'bar' })).toBe(true);
     class Foo { }
     expect(Utils.isPlainObject(new Foo())).toBe(false);
-    expect(Utils.isPlainObject(Object.create(null))).toBe(false);
+    expect(Utils.isPlainObject(Object.create(null))).toBe(true);
   });
 
   test('extractEnumKeys', async () => {

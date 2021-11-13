@@ -525,7 +525,7 @@ export class Utils {
    * Checks whether the argument is ObjectId instance
    */
   static isObjectID(key: any) {
-    return Utils.isObject(key) && key.constructor.name.toLowerCase() === 'objectid';
+    return Utils.isObject(key) && key.constructor && key.constructor.name.toLowerCase() === 'objectid';
   }
 
   /**
@@ -604,8 +604,15 @@ export class Utils {
    * Checks whether the value is POJO (e.g. `{ foo: 'bar' }`, and not instance of `Foo`)
    */
   static isPlainObject(value: any): value is Dictionary {
-    // eslint-disable-next-line no-prototype-builtins
-    return (value !== null && typeof value === 'object' && typeof value.constructor === 'function' && value.constructor.prototype.hasOwnProperty('isPrototypeOf')) || value instanceof PlainObject;
+    return (
+      value !== null
+      && typeof value === 'object'
+      && typeof value.constructor === 'function'
+      // eslint-disable-next-line no-prototype-builtins
+      && (value.constructor.prototype.hasOwnProperty('isPrototypeOf') || Object.getPrototypeOf(value.constructor.prototype) === null)
+    )
+    || (value && Object.getPrototypeOf(value) === null)
+    || value instanceof PlainObject;
   }
 
   /**
