@@ -37,6 +37,10 @@ the identity map.
 
 > `@OnInit` is not fired when you create the entity manually via its constructor (`new MyEntity()`)
 
+> `@OnInit` can be sometimes fired twice, once when the entity reference is
+> created, and once after its populated. To distinguish between those we can
+> use `wrap(this).isInitialized()`.
+
 ## Limitations of lifecycle hooks
 
 Hooks are executed inside the commit action of unit of work, after all change 
