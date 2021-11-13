@@ -253,8 +253,13 @@ export class QueryHelper {
 /**
  * Helper for escaping string types, e.g. `keyof T -> string`.
  * We can also pass array of strings to allow tuple comparison in SQL drivers.
+ * Another alternative is to use callback signature, which will give us the current alias in its parameter.
  */
-export function expr<T = unknown>(sql: (keyof T & string) | (keyof T & string)[]): string {
+export function expr<T = unknown>(sql: (keyof T & string) | (keyof T & string)[] | ((alias: string) => string)): string {
+  if (sql instanceof Function) {
+    return sql('[::alias::]');
+  }
+
   if (Array.isArray(sql)) {
     return Utils.getPrimaryKeyHash(sql);
   }

@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import { LockMode, MikroORM, QueryFlag, QueryOrder } from '@mikro-orm/core';
+import { expr, LockMode, MikroORM, QueryFlag, QueryOrder } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { CriteriaNode } from '@mikro-orm/knex';
 import { MySqlDriver } from '@mikro-orm/mysql';
@@ -420,7 +420,7 @@ describe('QueryBuilder', () => {
     expect(qb1.getParams()).toEqual(['{"foo":"bar"}']);
 
     const qb2 = orm.em.createQueryBuilder(Book2);
-    qb2.select('*').where({ 'json_contains(`e0`.`meta`, ?) = ?': [{ foo: 'baz' }, false] });
+    qb2.select('*').where({ [expr(a => `json_contains(\`${a}\`.\`meta\`, ?) = ?`)]: [{ foo: 'baz' }, false] });
     expect(qb2.getQuery()).toEqual('select `e0`.*, `e0`.price * 1.19 as `price_taxed` from `book2` as `e0` where json_contains(`e0`.`meta`, ?) = ?');
     expect(qb2.getParams()).toEqual(['{"foo":"baz"}', false]);
   });
@@ -1642,6 +1642,20 @@ describe('QueryBuilder', () => {
       'from `book2` as `a` ' +
       'left join `author2` as `e1` on `a`.`author_id` = `e1`.`id` ' +
       'where (`e1`.`name` = ? or not (`e1`.`name` = ?))');
+  });
+
+  test('select with auto-joining and alias replacement via expr()', async () => {
+    const qb1 = orm.em.createQueryBuilder(Book2, 'a');
+    qb1.select('*').where({
+      $or: [
+        { author: { name: 'test' } },
+        { author: { [expr(a => `lower(${a}.name)`)]: 'wut' } },
+      ],
+    });
+    expect(qb1.getQuery()).toEqual('select `a`.*, `a`.price * 1.19 as `price_taxed` ' +
+      'from `book2` as `a` ' +
+      'left join `author2` as `e1` on `a`.`author_id` = `e1`.`id` ' +
+      'where (`e1`.`name` = ? or lower(e1.name) = ?)');
   });
 
   test('select by PK via operator', async () => {

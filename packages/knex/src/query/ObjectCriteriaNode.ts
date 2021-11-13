@@ -36,7 +36,7 @@ export class ObjectCriteriaNode extends CriteriaNode {
       } else if (childNode.shouldRename(payload)) {
         o[childNode.renameFieldToPK(qb)] = payload;
       } else if (primaryKey || virtual || operator || customExpression || field.includes('.') || ![QueryType.SELECT, QueryType.COUNT].includes(qb.type ?? QueryType.SELECT)) {
-        o[field] = payload;
+        o[field.replace(/\[::alias::]/g, alias!)] = payload;
       } else {
         o[`${alias}.${field}`] = payload;
       }
