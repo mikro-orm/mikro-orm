@@ -431,7 +431,7 @@ describe('QueryBuilder', () => {
     filter.meta = { foo: 'bar' };
     qb1.select('*').where(filter);
     expect(qb1.getQuery()).toEqual('select `e0`.*, `e0`.price * 1.19 as `price_taxed` from `book2` as `e0` where `meta`->\'$.foo\' = ?');
-    expect(qb1.getParams()).toEqual('bar');
+    expect(qb1.getParams()).toEqual(['bar']);
   });
 
   test('select by regexp', async () => {
