@@ -96,7 +96,7 @@ export class EntityAssigner {
    * @internal
    */
   static autoWireOneToOne<T extends AnyEntity<T>>(prop: EntityProperty, entity: T): void {
-    if (prop.reference !== ReferenceType.ONE_TO_ONE) {
+    if (prop.reference !== ReferenceType.ONE_TO_ONE || !Utils.isEntity(entity[prop.name])) {
       return;
     }
 
@@ -125,7 +125,7 @@ export class EntityAssigner {
     if (Utils.isEntity(value, true)) {
       entity[prop.name] = value;
     } else if (Utils.isPrimaryKey(value, true)) {
-      entity[prop.name] = Reference.wrapReference(em.getReference<T>(prop.type, value, options), prop);
+      entity[prop.name] = prop.mapToPk ? value : Reference.wrapReference(em.getReference<T>(prop.type, value, options), prop);
     } else if (Utils.isPlainObject(value) && options.merge) {
       entity[prop.name] = Reference.wrapReference(em.merge(prop.type, value, options), prop);
     } else if (Utils.isPlainObject(value)) {

@@ -60,9 +60,12 @@ describe('mapToPk works with flushing and cascades', () => {
 
     await orm.em.persistAndFlush(o1);
     const t3 = new Team();
-    t3.id = 'team1';
-    t3.status = 'status1';
-    t3.currentOrder = o1.id;
+    orm.em.assign(t3, {
+      id: 'team1',
+      status: 'status1',
+      currentOrder: o1.id,
+    });
+    expect(t3.currentOrder).toBe(o1.id);
     await orm.em.persistAndFlush(t3);
     orm.em.clear();
 
