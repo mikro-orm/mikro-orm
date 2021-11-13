@@ -1018,7 +1018,7 @@ describe('EntityManagerPostgre', () => {
     // test collection CRUD
     // remove
     expect(book.tags.count()).toBe(2);
-    book.tags.remove(orm.em.getReference(BookTag2, tag1.id)); // we need to get reference as tag1 is detached from current EM
+    book.tags.remove(t => t.id === tag1.id); // we need to get reference as tag1 is detached from current EM
     await orm.em.persistAndFlush(book);
     orm.em.clear();
     book = (await orm.em.findOne(Book2, book.uuid, { populate: ['tags'] }))!;

@@ -59,7 +59,7 @@ describe('GH issue 949', () => {
 
     // Force refresh
     expect(await aEntity.bItems.loadCount(true)).toEqual(1);
-    // Testing array collection implemntation
+    // Testing array collection implementation
     await orm.em.flush();
     orm.em.clear();
 

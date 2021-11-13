@@ -164,8 +164,18 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     }
   }
 
-  remove(...items: (T | Reference<T>)[]): void {
-    const unwrapped = items.map(i => Reference.unwrapReference(i));
+  remove(...items: (T | Reference<T> | ((item: T) => boolean))[]): void {
+    if (items[0] instanceof Function) {
+      for (const item of this.items) {
+        if (items[0](item)) {
+          this.remove(item);
+        }
+      }
+
+      return;
+    }
+
+    const unwrapped = items.map(i => Reference.unwrapReference(i as T));
     this.modify('remove', unwrapped);
     const em = this.getEntityManager(unwrapped, false);
 
