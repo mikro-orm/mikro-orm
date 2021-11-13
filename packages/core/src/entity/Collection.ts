@@ -221,10 +221,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
       const items = [...this.items];
       this.dirty = false;
       await this.init(options);
-
-      if (items.length) {
-        items.forEach(i => this.add(i));
-      }
+      items.forEach(i => this.add(i));
 
       return this;
     }
