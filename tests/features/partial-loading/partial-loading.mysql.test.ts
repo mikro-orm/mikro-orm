@@ -47,8 +47,8 @@ describe('partial loading (mysql)', () => {
     expect(r1[0].books[0].title).toBe('Bible 1');
     expect(r1[0].books[0].price).toBeUndefined();
     expect(r1[0].books[0].author).toBeDefined();
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.`id` from `author2` as `e0` where `e0`.`id` = ?');
-    expect(mock.mock.calls[1][0]).toMatch('select `e0`.`uuid_pk`, `e0`.`author_id`, `e0`.`title` from `book2` as `e0` where `e0`.`author_id` is not null and `e0`.`author_id` in (?) order by `e0`.`title` asc');
+    expect(mock.mock.calls[0][0]).toMatch('select `a0`.`id` from `author2` as `a0` where `a0`.`id` = ?');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`author_id`, `b0`.`title` from `book2` as `b0` where `b0`.`author_id` is not null and `b0`.`author_id` in (?) order by `b0`.`title` asc');
     orm.em.clear();
     mock.mock.calls.length = 0;
 
@@ -60,8 +60,8 @@ describe('partial loading (mysql)', () => {
     expect(r2[0].books[0].title).toBe('Bible 1');
     expect(r2[0].books[0].price).toBeUndefined();
     expect(r2[0].books[0].author).toBeDefined();
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.`id` from `author2` as `e0` where `e0`.`id` = ?');
-    expect(mock.mock.calls[1][0]).toMatch('select `e0`.`uuid_pk`, `e0`.`author_id`, `e0`.`title` from `book2` as `e0` where `e0`.`author_id` is not null and `e0`.`author_id` in (?) order by `e0`.`title` asc');
+    expect(mock.mock.calls[0][0]).toMatch('select `a0`.`id` from `author2` as `a0` where `a0`.`id` = ?');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`author_id`, `b0`.`title` from `book2` as `b0` where `b0`.`author_id` is not null and `b0`.`author_id` in (?) order by `b0`.`title` asc');
   });
 
   test('partial nested loading (m:1)', async () => {
@@ -88,8 +88,8 @@ describe('partial loading (mysql)', () => {
     expect(r1[0].author.id).toBe(god.id);
     expect(r1[0].author.name).toBeUndefined();
     expect(r1[0].author.email).toBeDefined();
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.`uuid_pk`, `e0`.`title`, `e0`.`author_id` from `book2` as `e0` where `e0`.`uuid_pk` = ?');
-    expect(mock.mock.calls[1][0]).toMatch('select `e0`.`id`, `e0`.`email` from `author2` as `e0` where `e0`.`id` in (?) order by `e0`.`id` asc');
+    expect(mock.mock.calls[0][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`title`, `b0`.`author_id` from `book2` as `b0` where `b0`.`uuid_pk` = ?');
+    expect(mock.mock.calls[1][0]).toMatch('select `a0`.`id`, `a0`.`email` from `author2` as `a0` where `a0`.`id` in (?) order by `a0`.`id` asc');
     orm.em.clear();
     mock.mock.calls.length = 0;
 
@@ -102,8 +102,8 @@ describe('partial loading (mysql)', () => {
     expect(r2[0].author.id).toBe(god.id);
     expect(r2[0].author.name).toBeUndefined();
     expect(r2[0].author.email).toBeDefined();
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.`uuid_pk`, `e0`.`title`, `e0`.`author_id` from `book2` as `e0` where `e0`.`uuid_pk` = ?');
-    expect(mock.mock.calls[1][0]).toMatch('select `e0`.`id`, `e0`.`email` from `author2` as `e0` where `e0`.`id` in (?) order by `e0`.`id` asc');
+    expect(mock.mock.calls[0][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`title`, `b0`.`author_id` from `book2` as `b0` where `b0`.`uuid_pk` = ?');
+    expect(mock.mock.calls[1][0]).toMatch('select `a0`.`id`, `a0`.`email` from `author2` as `a0` where `a0`.`id` in (?) order by `a0`.`id` asc');
   });
 
   test('partial nested loading (m:n)', async () => {
@@ -130,8 +130,8 @@ describe('partial loading (mysql)', () => {
     expect(r1[0].books[0].title).toBe('Bible 1');
     expect(r1[0].books[0].price).toBeUndefined();
     expect(r1[0].books[0].author).toBeUndefined();
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.`id`, `e0`.`name` from `book_tag2` as `e0`');
-    expect(mock.mock.calls[1][0]).toMatch('select `e0`.`uuid_pk`, `e0`.`title`, `e1`.`book2_uuid_pk` as `fk__book2_uuid_pk`, `e1`.`book_tag2_id` as `fk__book_tag2_id`, `e2`.`id` as `test_id` from `book2` as `e0` left join `book2_tags` as `e1` on `e0`.`uuid_pk` = `e1`.`book2_uuid_pk` left join `test2` as `e2` on `e0`.`uuid_pk` = `e2`.`book_uuid_pk` where `e1`.`book_tag2_id` in (?, ?, ?, ?, ?, ?) order by `e1`.`order` asc');
+    expect(mock.mock.calls[0][0]).toMatch('select `b0`.`id`, `b0`.`name` from `book_tag2` as `b0`');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`title`, `b1`.`book2_uuid_pk` as `fk__book2_uuid_pk`, `b1`.`book_tag2_id` as `fk__book_tag2_id`, `t2`.`id` as `test_id` from `book2` as `b0` left join `book2_tags` as `b1` on `b0`.`uuid_pk` = `b1`.`book2_uuid_pk` left join `test2` as `t2` on `b0`.`uuid_pk` = `t2`.`book_uuid_pk` where `b1`.`book_tag2_id` in (?, ?, ?, ?, ?, ?) order by `b1`.`order` asc');
     orm.em.clear();
     mock.mock.calls.length = 0;
 
@@ -141,8 +141,8 @@ describe('partial loading (mysql)', () => {
     expect(r2[0].books[0].title).toBe('Bible 1');
     expect(r2[0].books[0].price).toBeUndefined();
     expect(r2[0].books[0].author).toBeUndefined();
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.`id`, `e0`.`name` from `book_tag2` as `e0` where `e0`.`name` = ?');
-    expect(mock.mock.calls[1][0]).toMatch('select `e0`.`uuid_pk`, `e0`.`title`, `e1`.`book2_uuid_pk` as `fk__book2_uuid_pk`, `e1`.`book_tag2_id` as `fk__book_tag2_id`, `e2`.`id` as `test_id` from `book2` as `e0` left join `book2_tags` as `e1` on `e0`.`uuid_pk` = `e1`.`book2_uuid_pk` left join `test2` as `e2` on `e0`.`uuid_pk` = `e2`.`book_uuid_pk` where `e1`.`book_tag2_id` in (?) order by `e1`.`order` asc');
+    expect(mock.mock.calls[0][0]).toMatch('select `b0`.`id`, `b0`.`name` from `book_tag2` as `b0` where `b0`.`name` = ?');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`title`, `b1`.`book2_uuid_pk` as `fk__book2_uuid_pk`, `b1`.`book_tag2_id` as `fk__book_tag2_id`, `t2`.`id` as `test_id` from `book2` as `b0` left join `book2_tags` as `b1` on `b0`.`uuid_pk` = `b1`.`book2_uuid_pk` left join `test2` as `t2` on `b0`.`uuid_pk` = `t2`.`book_uuid_pk` where `b1`.`book_tag2_id` in (?) order by `b1`.`order` asc');
   });
 
   async function createEntities() {
@@ -176,9 +176,9 @@ describe('partial loading (mysql)', () => {
     expect(r1[0].books[0].author.id).toBeDefined();
     expect(r1[0].books[0].author.name).toBeUndefined();
     expect(r1[0].books[0].author.email).toBe(god.email);
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.`id`, `e0`.`name` from `book_tag2` as `e0`');
-    expect(mock.mock.calls[1][0]).toMatch('select `e0`.`uuid_pk`, `e0`.`title`, `e0`.`author_id`, `e1`.`book2_uuid_pk` as `fk__book2_uuid_pk`, `e1`.`book_tag2_id` as `fk__book_tag2_id`, `e2`.`id` as `test_id` from `book2` as `e0` left join `book2_tags` as `e1` on `e0`.`uuid_pk` = `e1`.`book2_uuid_pk` left join `test2` as `e2` on `e0`.`uuid_pk` = `e2`.`book_uuid_pk` where `e1`.`book_tag2_id` in (?, ?, ?, ?, ?, ?) order by `e1`.`order` asc');
-    expect(mock.mock.calls[2][0]).toMatch('select `e0`.`id`, `e0`.`email` from `author2` as `e0` where `e0`.`id` in (?) order by `e0`.`id` asc');
+    expect(mock.mock.calls[0][0]).toMatch('select `b0`.`id`, `b0`.`name` from `book_tag2` as `b0`');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`title`, `b0`.`author_id`, `b1`.`book2_uuid_pk` as `fk__book2_uuid_pk`, `b1`.`book_tag2_id` as `fk__book_tag2_id`, `t2`.`id` as `test_id` from `book2` as `b0` left join `book2_tags` as `b1` on `b0`.`uuid_pk` = `b1`.`book2_uuid_pk` left join `test2` as `t2` on `b0`.`uuid_pk` = `t2`.`book_uuid_pk` where `b1`.`book_tag2_id` in (?, ?, ?, ?, ?, ?) order by `b1`.`order` asc');
+    expect(mock.mock.calls[2][0]).toMatch('select `a0`.`id`, `a0`.`email` from `author2` as `a0` where `a0`.`id` in (?) order by `a0`.`id` asc');
   });
 
   test('partial nested loading (with joined strategy and dot notation)', async () => {
@@ -202,12 +202,12 @@ describe('partial loading (mysql)', () => {
     expect(r3[0].books[0].author.name).toBeUndefined();
     expect(r3[0].books[0].author.email).toBe(god.email);
     expect(mock.mock.calls).toHaveLength(1);
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.`id`, `e0`.`name`, ' +
+    expect(mock.mock.calls[0][0]).toMatch('select `b0`.`id`, `b0`.`name`, ' +
       '`b1`.`uuid_pk` as `b1__uuid_pk`, `b1`.`title` as `b1__title`, `b1`.`author_id` as `b1__author_id`, ' +
       '`a3`.`id` as `a3__id`, `a3`.`email` as `a3__email` ' +
-      'from `book_tag2` as `e0` ' +
-      'left join `book2_tags` as `e2` on `e0`.`id` = `e2`.`book_tag2_id` ' +
-      'left join `book2` as `b1` on `e2`.`book2_uuid_pk` = `b1`.`uuid_pk` ' +
+      'from `book_tag2` as `b0` ' +
+      'left join `book2_tags` as `b2` on `b0`.`id` = `b2`.`book_tag2_id` ' +
+      'left join `book2` as `b1` on `b2`.`book2_uuid_pk` = `b1`.`uuid_pk` ' +
       'left join `author2` as `a3` on `b1`.`author_id` = `a3`.`id`');
   });
 
@@ -226,9 +226,9 @@ describe('partial loading (mysql)', () => {
     expect(r2[0].books[0].author.id).toBeDefined();
     expect(r2[0].books[0].author.name).toBeUndefined();
     expect(r2[0].books[0].author.email).toBe(god.email);
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.`id`, `e0`.`name` from `book_tag2` as `e0`');
-    expect(mock.mock.calls[1][0]).toMatch('select `e0`.`uuid_pk`, `e0`.`title`, `e0`.`author_id`, `e1`.`book2_uuid_pk` as `fk__book2_uuid_pk`, `e1`.`book_tag2_id` as `fk__book_tag2_id`, `e2`.`id` as `test_id` from `book2` as `e0` left join `book2_tags` as `e1` on `e0`.`uuid_pk` = `e1`.`book2_uuid_pk` left join `test2` as `e2` on `e0`.`uuid_pk` = `e2`.`book_uuid_pk` where `e1`.`book_tag2_id` in (?, ?, ?, ?, ?, ?) order by `e1`.`order` asc');
-    expect(mock.mock.calls[2][0]).toMatch('select `e0`.`id`, `e0`.`email` from `author2` as `e0` where `e0`.`id` in (?) order by `e0`.`id` asc');
+    expect(mock.mock.calls[0][0]).toMatch('select `b0`.`id`, `b0`.`name` from `book_tag2` as `b0`');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`title`, `b0`.`author_id`, `b1`.`book2_uuid_pk` as `fk__book2_uuid_pk`, `b1`.`book_tag2_id` as `fk__book_tag2_id`, `t2`.`id` as `test_id` from `book2` as `b0` left join `book2_tags` as `b1` on `b0`.`uuid_pk` = `b1`.`book2_uuid_pk` left join `test2` as `t2` on `b0`.`uuid_pk` = `t2`.`book_uuid_pk` where `b1`.`book_tag2_id` in (?, ?, ?, ?, ?, ?) order by `b1`.`order` asc');
+    expect(mock.mock.calls[2][0]).toMatch('select `a0`.`id`, `a0`.`email` from `author2` as `a0` where `a0`.`id` in (?) order by `a0`.`id` asc');
   });
 
   test('partial nested loading (with joined strategy)', async () => {
@@ -252,12 +252,12 @@ describe('partial loading (mysql)', () => {
     expect(r3[0].books[0].author.name).toBeUndefined();
     expect(r3[0].books[0].author.email).toBe(god.email);
     expect(mock.mock.calls).toHaveLength(1);
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.`id`, `e0`.`name`, ' +
+    expect(mock.mock.calls[0][0]).toMatch('select `b0`.`id`, `b0`.`name`, ' +
       '`b1`.`uuid_pk` as `b1__uuid_pk`, `b1`.`title` as `b1__title`, `b1`.`author_id` as `b1__author_id`, ' +
       '`a3`.`id` as `a3__id`, `a3`.`email` as `a3__email` ' +
-      'from `book_tag2` as `e0` ' +
-      'left join `book2_tags` as `e2` on `e0`.`id` = `e2`.`book_tag2_id` ' +
-      'left join `book2` as `b1` on `e2`.`book2_uuid_pk` = `b1`.`uuid_pk` ' +
+      'from `book_tag2` as `b0` ' +
+      'left join `book2_tags` as `b2` on `b0`.`id` = `b2`.`book_tag2_id` ' +
+      'left join `book2` as `b1` on `b2`.`book2_uuid_pk` = `b1`.`uuid_pk` ' +
       'left join `author2` as `a3` on `b1`.`author_id` = `a3`.`id`');
   });
 

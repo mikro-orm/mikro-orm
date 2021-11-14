@@ -34,7 +34,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   protected comparator!: EntityComparator;
   protected metadata!: MetadataStorage;
 
-  protected constructor(protected readonly config: Configuration,
+  protected constructor(readonly config: Configuration,
                         protected readonly dependencies: string[]) { }
 
   abstract find<T>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T>): Promise<EntityData<T>[]>;

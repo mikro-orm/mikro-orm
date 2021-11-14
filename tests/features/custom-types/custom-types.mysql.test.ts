@@ -119,7 +119,7 @@ describe('custom types [mysql]', () => {
     expect(mock.mock.calls[1][0]).toMatch('insert into `location` (`extended_point`, `point`) values (ST_PointFromText(\'point(5.23 9.56)\'), ST_PointFromText(\'point(1.23 4.56)\'))');
     expect(mock.mock.calls[2][0]).toMatch('insert into `address` (`location_id`) values (?)');
     expect(mock.mock.calls[3][0]).toMatch('commit');
-    expect(mock.mock.calls[4][0]).toMatch('select `e0`.*, ST_AsText(`e0`.`point`) as `point`, ST_AsText(`e0`.`extended_point`) as `extended_point` from `location` as `e0` where `e0`.`id` = ? limit ?');
+    expect(mock.mock.calls[4][0]).toMatch('select `l0`.*, ST_AsText(`l0`.`point`) as `point`, ST_AsText(`l0`.`extended_point`) as `extended_point` from `location` as `l0` where `l0`.`id` = ? limit ?');
     expect(mock.mock.calls).toHaveLength(5);
     await orm.em.flush(); // ensure we do not fire queries when nothing changed
     expect(mock.mock.calls).toHaveLength(5);
@@ -139,15 +139,15 @@ describe('custom types [mysql]', () => {
     orm.em.clear();
 
     const qb2 = orm.em.createQueryBuilder(Location);
-    const res2 = await qb2.select(['e0.*']).where({ id: loc.id }).getSingleResult();
-    expect(mock.mock.calls[9][0]).toMatch('select `e0`.*, ST_AsText(`e0`.`point`) as `point`, ST_AsText(`e0`.`extended_point`) as `extended_point` from `location` as `e0` where `e0`.`id` = ?');
+    const res2 = await qb2.select(['l0.*']).where({ id: loc.id }).getSingleResult();
+    expect(mock.mock.calls[9][0]).toMatch('select `l0`.*, ST_AsText(`l0`.`point`) as `point`, ST_AsText(`l0`.`extended_point`) as `extended_point` from `location` as `l0` where `l0`.`id` = ?');
     expect(res2).toMatchObject(l1);
     mock.mock.calls.length = 0;
     orm.em.clear();
 
     // custom types with SQL fragments with joined strategy (GH #1594)
     const a2 = await orm.em.findOneOrFail(Address, addr, { populate: ['location'], strategy: LoadStrategy.JOINED });
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.`id`, `e0`.`location_id`, `l1`.`id` as `l1__id`, `l1`.`rank` as `l1__rank`, ST_AsText(`l1`.`point`) as `l1__point`, ST_AsText(`l1`.`extended_point`) as `l1__extended_point` from `address` as `e0` left join `location` as `l1` on `e0`.`location_id` = `l1`.`id` where `e0`.`id` = ?');
+    expect(mock.mock.calls[0][0]).toMatch('select `a0`.`id`, `a0`.`location_id`, `l1`.`id` as `l1__id`, `l1`.`rank` as `l1__rank`, ST_AsText(`l1`.`point`) as `l1__point`, ST_AsText(`l1`.`extended_point`) as `l1__extended_point` from `address` as `a0` left join `location` as `l1` on `a0`.`location_id` = `l1`.`id` where `a0`.`id` = ?');
     expect(a2.location.point).toBeInstanceOf(Point);
     expect(a2.location.point).toMatchObject({ latitude: 2.34, longitude: 9.87 });
     expect(a2.location.extendedPoint).toBeInstanceOf(Point);
@@ -202,7 +202,7 @@ describe('custom types [mysql]', () => {
       extendedPoint: null,
     });
 
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, ST_AsText(`e0`.`point`) as `point`, ST_AsText(`e0`.`extended_point`) as `extended_point` from `location` as `e0` where ST_AsText(`e0`.`point`) = \'point(1 1)\' and ST_AsText(`e0`.`extended_point`) is null limit 1');
+    expect(mock.mock.calls[0][0]).toMatch('select `l0`.*, ST_AsText(`l0`.`point`) as `point`, ST_AsText(`l0`.`extended_point`) as `extended_point` from `location` as `l0` where ST_AsText(`l0`.`point`) = \'point(1 1)\' and ST_AsText(`l0`.`extended_point`) is null limit 1');
     expect(mock.mock.calls).toHaveLength(1);
 
     expect(foundLocation).toBeInstanceOf(Location);
@@ -225,7 +225,7 @@ describe('custom types [mysql]', () => {
       extendedPoint: { $ne: null },
     });
 
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, ST_AsText(`e0`.`point`) as `point`, ST_AsText(`e0`.`extended_point`) as `extended_point` from `location` as `e0` where ST_AsText(`e0`.`point`) = \'point(1 1)\' and ST_AsText(`e0`.`extended_point`) is not null limit 1');
+    expect(mock.mock.calls[0][0]).toMatch('select `l0`.*, ST_AsText(`l0`.`point`) as `point`, ST_AsText(`l0`.`extended_point`) as `extended_point` from `location` as `l0` where ST_AsText(`l0`.`point`) = \'point(1 1)\' and ST_AsText(`l0`.`extended_point`) is not null limit 1');
     expect(mock.mock.calls).toHaveLength(1);
 
     expect(foundLocation).toBeInstanceOf(Location);

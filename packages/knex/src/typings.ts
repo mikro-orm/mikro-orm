@@ -127,7 +127,7 @@ export interface IQueryBuilder<T> {
   groupBy(fields: (string | keyof T) | (string | keyof T)[]): this;
   having(cond?: QBFilterQuery | string, params?: any[]): this;
   getAliasForJoinPath(path: string): string | undefined;
-  getNextAlias(prefix?: string): string;
+  getNextAlias(entityName?: string): string;
 }
 
 export interface ICriteriaNode {

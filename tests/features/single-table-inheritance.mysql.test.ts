@@ -62,12 +62,12 @@ describe('single table inheritance in mysql', () => {
     Object.assign(orm.config, { logger });
 
     const managers = await orm.em.find(Manager2, {});
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.* from `base_user2` as `e0` where `e0`.`type` in (\'manager\', \'owner\')');
+    expect(mock.mock.calls[0][0]).toMatch('select `m0`.* from `base_user2` as `m0` where `m0`.`type` in (\'manager\', \'owner\')');
     expect(managers.length).toBe(2);
     expect(managers.map(u => u.constructor.name)).toEqual(['Manager2', 'CompanyOwner2']);
 
     const owners = await orm.em.find(CompanyOwner2, {});
-    expect(mock.mock.calls[1][0]).toMatch('select `e0`.* from `base_user2` as `e0` where `e0`.`type` = \'owner\'');
+    expect(mock.mock.calls[1][0]).toMatch('select `c0`.* from `base_user2` as `c0` where `c0`.`type` = \'owner\'');
     expect(owners.length).toBe(1);
     expect(owners.map(u => u.constructor.name)).toEqual(['CompanyOwner2']);
 
@@ -77,7 +77,7 @@ describe('single table inheritance in mysql', () => {
     expect(employees.map(u => u.constructor.name)).toEqual(['Employee2', 'Employee2']);
 
     const users = await orm.em.find(BaseUser2, {});
-    expect(mock.mock.calls[3][0]).toMatch('select `e0`.* from `base_user2` as `e0`');
+    expect(mock.mock.calls[3][0]).toMatch('select `b0`.* from `base_user2` as `b0`');
     expect(users.length).toBe(4);
     expect(users.map(u => u.constructor.name).sort()).toEqual(['CompanyOwner2', 'Employee2', 'Employee2', 'Manager2']);
   });

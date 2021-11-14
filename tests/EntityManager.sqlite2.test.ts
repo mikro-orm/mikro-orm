@@ -441,7 +441,7 @@ describe('EntityManagerSqlite2', () => {
 
     expect(mock.mock.calls.length).toBe(3);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('select 1 from `author4` as `e0` where `e0`.`id` = ?');
+    expect(mock.mock.calls[1][0]).toMatch('select 1 from `author4` as `a0` where `a0`.`id` = ?');
     expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
@@ -459,7 +459,7 @@ describe('EntityManagerSqlite2', () => {
 
     expect(mock.mock.calls.length).toBe(3);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('select 1 from `author4` as `e0` where `e0`.`id` = ?');
+    expect(mock.mock.calls[1][0]).toMatch('select 1 from `author4` as `a0` where `a0`.`id` = ?');
     expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
@@ -948,9 +948,9 @@ describe('EntityManagerSqlite2', () => {
 
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('select `e0`.`id` from `foo_bar4` as `e0` where ((`e0`.`id` = ? and `e0`.`version` = ?) or (`e0`.`id` = ? and `e0`.`version` = ?))');
+    expect(mock.mock.calls[1][0]).toMatch('select `f0`.`id` from `foo_bar4` as `f0` where ((`f0`.`id` = ? and `f0`.`version` = ?) or (`f0`.`id` = ? and `f0`.`version` = ?))');
     expect(mock.mock.calls[2][0]).toMatch('update `foo_bar4` set `foo_bar_id` = case when (`id` = ?) then ? when (`id` = ?) then ? else `foo_bar_id` end, `updated_at` = case when (`id` = ?) then ? when (`id` = ?) then ? else `updated_at` end, `version` = `version` + 1 where `id` in (?, ?)');
-    expect(mock.mock.calls[3][0]).toMatch('select `e0`.`id`, `e0`.`version` from `foo_bar4` as `e0` where `e0`.`id` in (?, ?)');
+    expect(mock.mock.calls[3][0]).toMatch('select `f0`.`id`, `f0`.`version` from `foo_bar4` as `f0` where `f0`.`id` in (?, ?)');
     expect(mock.mock.calls[4][0]).toMatch('commit');
   });
 
@@ -1028,8 +1028,8 @@ describe('EntityManagerSqlite2', () => {
       '`t`.`id` as `t__id`, `t`.`created_at` as `t__created_at`, `t`.`updated_at` as `t__updated_at`, `t`.`name` as `t__name`, `t`.`version` as `t__version` ' +
       'from `author4` as `a` ' +
       'left join `book4` as `b` on `a`.`id` = `b`.`author_id` ' +
-      'left join `tags_ordered` as `e1` on `b`.`id` = `e1`.`book4_id` ' +
-      'left join `book_tag4` as `t` on `e1`.`book_tag4_id` = `t`.`id` ' +
+      'left join `tags_ordered` as `t1` on `b`.`id` = `t1`.`book4_id` ' +
+      'left join `book_tag4` as `t` on `t1`.`book_tag4_id` = `t`.`id` ' +
       'where `t`.`name` in (\'sick\', \'sexy\')';
     expect(qb.getFormattedQuery()).toEqual(sql);
     const res = await qb.getSingleResult();
@@ -1070,10 +1070,10 @@ describe('EntityManagerSqlite2', () => {
     expect(count3).toBe(2);
     const count4 = await orm.em.createQueryBuilder(Author4).where({ email: '123' }).getCount();
     expect(count4).toBe(0);
-    expect(mock.mock.calls[0][0]).toMatch('select count(`e0`.`id`) as `count` from `author4` as `e0`');
-    expect(mock.mock.calls[1][0]).toMatch('select count(`e0`.`terms_accepted`) as `count` from `author4` as `e0`');
-    expect(mock.mock.calls[2][0]).toMatch('select count(distinct `e0`.`terms_accepted`) as `count` from `author4` as `e0`');
-    expect(mock.mock.calls[3][0]).toMatch('select count(`e0`.`id`) as `count` from `author4` as `e0` where `e0`.`email` = \'123\'');
+    expect(mock.mock.calls[0][0]).toMatch('select count(`a0`.`id`) as `count` from `author4` as `a0`');
+    expect(mock.mock.calls[1][0]).toMatch('select count(`a0`.`terms_accepted`) as `count` from `author4` as `a0`');
+    expect(mock.mock.calls[2][0]).toMatch('select count(distinct `a0`.`terms_accepted`) as `count` from `author4` as `a0`');
+    expect(mock.mock.calls[3][0]).toMatch('select count(`a0`.`id`) as `count` from `author4` as `a0` where `a0`.`email` = \'123\'');
   });
 
   test('using collection methods with null/undefined (GH issue #1408)', async () => {

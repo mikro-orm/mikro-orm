@@ -70,8 +70,8 @@ describe('GH issue 1882', () => {
     );
 
     const queries = mock.mock.calls;
-    expect(queries[0][0]).toMatch('select `e0`.* from `foo` as `e0` left join `bar` as `e1` on `e0`.`id` = `e1`.`foo_id` where (`e1`.`id` = ? or `e0`.`name` = ?)');
-    expect(queries[1][0]).toMatch('select `e0`.* from `bar` as `e0` where `e0`.`foo_id` in (?) and `e0`.`id` = ? order by `e0`.`foo_id` asc');
+    expect(queries[0][0]).toMatch('select `f0`.* from `foo` as `f0` left join `bar` as `b1` on `f0`.`id` = `b1`.`foo_id` where (`b1`.`id` = ? or `f0`.`name` = ?)');
+    expect(queries[1][0]).toMatch('select `b0`.* from `bar` as `b0` where `b0`.`foo_id` in (?) and `b0`.`id` = ? order by `b0`.`foo_id` asc');
   });
 
   test(`GH issue 1882-2`, async () => {
@@ -100,8 +100,8 @@ describe('GH issue 1882', () => {
     orm.em.clear();
 
     const queries = mock.mock.calls;
-    expect(queries[0][0]).toMatch('select `e0`.* from `foo` as `e0` left join `bar` as `e1` on `e0`.`id` = `e1`.`foo_id` where `e1`.`id` = ?');
-    expect(queries[1][0]).toMatch('select `e0`.* from `bar` as `e0` where `e0`.`foo_id` in (?) and `e0`.`id` = ? order by `e0`.`foo_id` asc');
+    expect(queries[0][0]).toMatch('select `f0`.* from `foo` as `f0` left join `bar` as `b1` on `f0`.`id` = `b1`.`foo_id` where `b1`.`id` = ?');
+    expect(queries[1][0]).toMatch('select `b0`.* from `bar` as `b0` where `b0`.`foo_id` in (?) and `b0`.`id` = ? order by `b0`.`foo_id` asc');
   });
 
 });

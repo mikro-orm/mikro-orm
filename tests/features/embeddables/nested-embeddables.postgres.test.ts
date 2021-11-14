@@ -147,7 +147,7 @@ describe('embedded entities in postgres', () => {
 
     const u1 = await orm.em.findOneOrFail(User, user1.id);
     const u2 = await orm.em.findOneOrFail(User, user2.id);
-    expect(mock.mock.calls[3][0]).toMatch(`select "e0".* from "user" as "e0" where "e0"."id" = 1 limit 1`);
+    expect(mock.mock.calls[3][0]).toMatch(`select "u0".* from "user" as "u0" where "u0"."id" = 1 limit 1`);
     expect(u1.profile1).toBeInstanceOf(Profile);
     expect(u1.profile1.identity).toBeInstanceOf(Identity);
     expect(u1.profile1.identity.meta).toBeInstanceOf(IdentityMeta);
@@ -242,7 +242,7 @@ describe('embedded entities in postgres', () => {
       profile1: { identity: { email: 'e123', meta: { foo: 'foooooooo' } } },
       profile2: { identity: { email: 'e2', meta: { foo: 'f2', bar: 'bababar' } } },
     });
-    expect(mock.mock.calls[0][0]).toMatch(`select "e0".* from "user" as "e0" where "e0"."profile1_identity_email" = 'e123' and "e0"."profile1_identity_meta_foo" = 'foooooooo' and "e0"."profile2"->'identity'->>'email' = 'e2' and "e0"."profile2"->'identity'->'meta'->>'foo' = 'f2' and "e0"."profile2"->'identity'->'meta'->>'bar' = 'bababar' limit 1`);
+    expect(mock.mock.calls[0][0]).toMatch(`select "u0".* from "user" as "u0" where "u0"."profile1_identity_email" = 'e123' and "u0"."profile1_identity_meta_foo" = 'foooooooo' and "u0"."profile2"->'identity'->>'email' = 'e2' and "u0"."profile2"->'identity'->'meta'->>'foo' = 'f2' and "u0"."profile2"->'identity'->'meta'->>'bar' = 'bababar' limit 1`);
     expect(u3.id).toEqual(u1.id);
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -252,12 +252,12 @@ describe('embedded entities in postgres', () => {
       profile2: { identity: { email: 'e2', meta: { foo: 'f2', bar: { $re: '(ba)+r' } } } },
     });
     expect(u4.id).toEqual(u1.id);
-    expect(mock.mock.calls[0][0]).toMatch(`select "e0".* from "user" as "e0" where "e0"."profile1_identity_email" = 'e123' and "e0"."profile1_identity_meta_foo" ~ 'fo+' and "e0"."profile2"->'identity'->>'email' = 'e2' and "e0"."profile2"->'identity'->'meta'->>'foo' = 'f2' and "e0"."profile2"->'identity'->'meta'->>'bar' ~ '(ba)+r' limit 1`);
+    expect(mock.mock.calls[0][0]).toMatch(`select "u0".* from "user" as "u0" where "u0"."profile1_identity_email" = 'e123' and "u0"."profile1_identity_meta_foo" ~ 'fo+' and "u0"."profile2"->'identity'->>'email' = 'e2' and "u0"."profile2"->'identity'->'meta'->>'foo' = 'f2' and "u0"."profile2"->'identity'->'meta'->>'bar' ~ '(ba)+r' limit 1`);
     orm.em.clear();
     mock.mock.calls.length = 0;
 
     const u5 = await orm.em.findOneOrFail(User, { $or: [{ profile1: { identity: { meta: { foo: 'foooooooo' } } } }, { profile2: { identity: { meta: { bar: 'bababar' } } } }] });
-    expect(mock.mock.calls[0][0]).toMatch(`select "e0".* from "user" as "e0" where ("e0"."profile1_identity_meta_foo" = 'foooooooo' or "e0"."profile2"->'identity'->'meta'->>'bar' = 'bababar') limit 1`);
+    expect(mock.mock.calls[0][0]).toMatch(`select "u0".* from "user" as "u0" where ("u0"."profile1_identity_meta_foo" = 'foooooooo' or "u0"."profile2"->'identity'->'meta'->>'bar' = 'bababar') limit 1`);
     expect(u5.id).toEqual(u1.id);
 
     const err1 = `Invalid query for entity 'User', property 'city' does not exist in embeddable 'Identity'`;

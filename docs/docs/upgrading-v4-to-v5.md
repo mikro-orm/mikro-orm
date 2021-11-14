@@ -97,3 +97,27 @@ Previously those dynamically added getters returned the array copy of collection
 items. In v5, we return the collection instance, which is also iterable and has
 a `length` getter and indexed access support, so it mimics the array. To get the
 array copy as before, call `getItems()` as with a regular collection.
+
+## Different table aliasing for select-in loading strategy and for QueryBuilder
+
+Previously with select-in strategy as well as with QueryBuilder, table aliases
+were always the letter `e` followed by unique index. In v5, we use the same 
+method as with joined strategy - the letter is inferred from the entity name.
+
+This can be breaking if you used the aliases somewhere, e.g. in custom SQL 
+fragments. We can restore to the old behaviour by implementing custom naming
+strategy, overriding the `aliasName` method:
+
+```ts
+import { AbstractNamingStrategy } from '@mikro-orm/core';
+
+class CustomNamingStrategy extends AbstractNamingStrategy {
+  aliasName(entityName: string, index: number) {
+    return 'e' + index;
+  }
+}
+```
+
+Note that in v5 it is possible to use `expr()` helper to access the alias name
+dynamically, e.g. ``expr(alias => `lower('${alias}.name')`)``, which should be 
+now preferred way instead of hardcoding the aliases.

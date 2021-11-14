@@ -11,7 +11,7 @@ export class ScalarCriteriaNode extends CriteriaNode {
     if (this.shouldJoin()) {
       const path = this.getPath();
       const parentPath = this.parent!.getPath(); // the parent is always there, otherwise `shouldJoin` would return `false`
-      const nestedAlias = qb.getAliasForJoinPath(path) || qb.getNextAlias();
+      const nestedAlias = qb.getAliasForJoinPath(path) || qb.getNextAlias(this.prop?.pivotTable ?? this.entityName);
       const field = `${alias}.${this.prop!.name}`;
       const type = this.prop!.reference === ReferenceType.MANY_TO_MANY ? 'pivotJoin' : 'leftJoin';
       qb.join(field, nestedAlias, undefined, type, path);
