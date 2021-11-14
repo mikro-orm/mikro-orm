@@ -1937,6 +1937,13 @@ describe('EntityManagerPostgre', () => {
     orm.config.set('allowGlobalContext', true);
   });
 
+  test('Collection.init() returns Loaded type', async () => {
+    await createBooksWithTags();
+    const a = await orm.em.findOneOrFail(Author2, { email: 'snow@wall.st' });
+    const b = await a.books.init({ populate: ['publisher', 'tags'] });
+    expect(b.$[0].publisher?.$.id).toBe(1);
+  });
+
   afterAll(async () => orm.close(true));
 
 });

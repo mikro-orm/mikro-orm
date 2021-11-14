@@ -1,4 +1,4 @@
-import type { AnyEntity, Dictionary, EntityData, EntityMetadata, FilterQuery, Loaded, Populate, Primary } from '../typings';
+import type { AnyEntity, Dictionary, EntityData, EntityMetadata, FilterQuery, Loaded, LoadedCollection, Populate, Primary } from '../typings';
 import { ArrayCollection } from './ArrayCollection';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
@@ -216,14 +216,14 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     this.dirty = dirty;
   }
 
-  async init<P extends string = never>(options: InitOptions<T, P> = {}): Promise<this> {
+  async init<P extends string = never>(options: InitOptions<T, P> = {}): Promise<LoadedCollection<Loaded<T, P>>> {
     if (this.dirty) {
       const items = [...this.items];
       this.dirty = false;
       await this.init(options);
       items.forEach(i => this.add(i));
 
-      return this;
+      return this as unknown as LoadedCollection<Loaded<T, P>>;
     }
 
     const em = this.getEntityManager();
@@ -233,7 +233,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
       this.hydrate(map[this.owner.__helper!.getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, { convertCustomTypes: true })));
       this._lazyInitialized = true;
 
-      return this;
+      return this as unknown as LoadedCollection<Loaded<T, P>>;
     }
 
     // do not make db call if we know we will get no results
@@ -242,7 +242,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
       this.dirty = false;
       this._lazyInitialized = true;
 
-      return this;
+      return this as unknown as LoadedCollection<Loaded<T, P>>;
     }
 
     const where = this.createCondition(options.where);
@@ -266,7 +266,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     this.dirty = false;
     this._lazyInitialized = true;
 
-    return this;
+    return this as unknown as LoadedCollection<Loaded<T, P>>;
   }
 
   /**
