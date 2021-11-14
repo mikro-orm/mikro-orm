@@ -11,6 +11,7 @@ import type {
   PopulateOptions,
   QBFilterQuery,
   QueryOrderMap,
+  QueryResult,
 } from '@mikro-orm/core';
 import {
   LoadStrategy,
@@ -103,7 +104,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     this.helper = new QueryBuilderHelper(this.entityName, this.alias, this._aliasMap, this.subQueries, this.metadata, this.knex, this.platform);
   }
 
-  select(fields: Field<T> | Field<T>[], distinct = false): this {
+  select(fields: Field<T> | Field<T>[], distinct = false): SelectQueryBuilder<T> {
     this._fields = Utils.asArray(fields);
 
     if (distinct) {
@@ -113,7 +114,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.init(QueryType.SELECT);
   }
 
-  addSelect(fields: Field<T> | Field<T>[]): this {
+  addSelect(fields: Field<T> | Field<T>[]): SelectQueryBuilder<T> {
     if (this.type && this.type !== QueryType.SELECT) {
       return this;
     }
@@ -121,23 +122,23 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.select([...Utils.asArray(this._fields), ...Utils.asArray(fields)]);
   }
 
-  insert(data: EntityData<T> | EntityData<T>[]): this {
+  insert(data: EntityData<T> | EntityData<T>[]): InsertQueryBuilder<T> {
     return this.init(QueryType.INSERT, data);
   }
 
-  update(data: EntityData<T>): this {
+  update(data: EntityData<T>): UpdateQueryBuilder<T> {
     return this.init(QueryType.UPDATE, data);
   }
 
-  delete(cond?: QBFilterQuery): this {
+  delete(cond?: QBFilterQuery): DeleteQueryBuilder<T> {
     return this.init(QueryType.DELETE, undefined, cond);
   }
 
-  truncate(): this {
+  truncate(): TruncateQueryBuilder<T> {
     return this.init(QueryType.TRUNCATE);
   }
 
-  count(field?: string | string[], distinct = false): this {
+  count(field?: string | string[], distinct = false): CountQueryBuilder<T> {
     this._fields = [...(field ? Utils.asArray(field) : this.metadata.find(this.entityName)!.primaryKeys)];
 
     if (distinct) {
@@ -838,3 +839,24 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   }
 
 }
+
+export interface RunQueryBuilder<T> extends Omit<QueryBuilder<T>, 'getResult' | 'getSingleResult' | 'getResultList'> {
+  execute<U = QueryResult<T>>(method?: 'all' | 'get' | 'run', mapResults?: boolean): Promise<U>;
+}
+
+export interface SelectQueryBuilder<T> extends QueryBuilder<T> {
+  execute<U = T[]>(method?: 'all' | 'get' | 'run', mapResults?: boolean): Promise<U>;
+  execute<U = T[]>(method: 'all', mapResults?: boolean): Promise<U>;
+  execute<U = T>(method: 'get', mapResults?: boolean): Promise<U>;
+  execute<U = QueryResult<T>>(method: 'run', mapResults?: boolean): Promise<U>;
+}
+
+export interface CountQueryBuilder<T> extends SelectQueryBuilder<T> {}
+
+export interface InsertQueryBuilder<T> extends RunQueryBuilder<T> {}
+
+export interface UpdateQueryBuilder<T> extends RunQueryBuilder<T> {}
+
+export interface DeleteQueryBuilder<T> extends RunQueryBuilder<T> {}
+
+export interface TruncateQueryBuilder<T> extends RunQueryBuilder<T> {}

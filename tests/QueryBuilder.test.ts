@@ -8,6 +8,7 @@ import { initORMMySql } from './bootstrap';
 import { BaseEntity2 } from './entities-sql/BaseEntity2';
 import { performance } from 'perf_hooks';
 import { BaseEntity22 } from './entities-sql/BaseEntity22';
+import { QueryBuilder } from '@mikro-orm/postgresql';
 
 describe('QueryBuilder', () => {
 
@@ -2141,6 +2142,34 @@ describe('QueryBuilder', () => {
     expect(sql1).toBe(expected);
     const sql2 = orm.em.createQueryBuilder(Book2).where(query).getFormattedQuery();
     expect(sql2).toBe(expected);
+  });
+
+  test('execute return type works based on qb.select/insert/update/delete() being used', async () => {
+    const spy = jest.spyOn(QueryBuilder.prototype, 'execute');
+
+    spy.mockResolvedValueOnce([]);
+    const res1 = await orm.em.createQueryBuilder(Book2).select('*').execute();
+    expect(res1).toEqual([]);
+
+    spy.mockResolvedValue({ insertId: 123 });
+    const res2 = await orm.em.createQueryBuilder(Book2).insert({}).execute();
+    expect(res2.insertId).toBe(123);
+    const res3 = await orm.em.createQueryBuilder(Book2).update({}).execute();
+    expect(res3.insertId).toBe(123);
+    const res4 = await orm.em.createQueryBuilder(Book2).delete().execute();
+    expect(res4.insertId).toBe(123);
+
+    spy.mockResolvedValue([]);
+    // @ts-expect-error
+    await orm.em.createQueryBuilder(Book2).insert({}).getResultList();
+    // @ts-expect-error
+    await orm.em.createQueryBuilder(Book2).update({}).getResultList();
+    // @ts-expect-error
+    await orm.em.createQueryBuilder(Book2).delete().getResultList();
+    // @ts-expect-error
+    await orm.em.createQueryBuilder(Book2).truncate().getResultList();
+
+    spy.mockRestore();
   });
 
   afterAll(async () => orm.close(true));
