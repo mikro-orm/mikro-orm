@@ -804,12 +804,14 @@ describe('EntityManagerMySql', () => {
     const qb1 = orm.em.createQueryBuilder(Book2);
     const res1 = await qb1.select('*').where({ 'JSON_CONTAINS(`b0`.`meta`, ?)': [{ foo: 'bar' }, false] }).execute('get');
     expect(res1.createdAt).toBeDefined();
+    // @ts-expect-error
     expect(res1.created_at).not.toBeDefined();
     expect(res1.meta).toEqual({ category: 'foo', items: 1 });
 
     const qb2 = orm.em.createQueryBuilder(Book2);
     const res2 = await qb2.select('*').where({ 'JSON_CONTAINS(meta, ?)': [{ category: 'foo' }, true] }).execute('get', false);
     expect(res2.createdAt).not.toBeDefined();
+    // @ts-expect-error
     expect(res2.created_at).toBeDefined();
     expect(res2.meta).toEqual({ category: 'foo', items: 1 });
 
