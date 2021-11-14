@@ -759,7 +759,7 @@ describe('EntityManagerMySql', () => {
 
     expect(mock.mock.calls.length).toBe(3);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('select 1 from `author2` as `e0` where `e0`.`id` = ? for update');
+    expect(mock.mock.calls[1][0]).toMatch('select 1 from `author2` as `a0` where `a0`.`id` = ? for update');
     expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
@@ -777,7 +777,7 @@ describe('EntityManagerMySql', () => {
 
     expect(mock.mock.calls.length).toBe(3);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('select 1 from `author2` as `e0` where `e0`.`id` = ? lock in share mode');
+    expect(mock.mock.calls[1][0]).toMatch('select 1 from `author2` as `a0` where `a0`.`id` = ? lock in share mode');
     expect(mock.mock.calls[2][0]).toMatch('commit');
 
     orm.em.clear();
@@ -789,7 +789,7 @@ describe('EntityManagerMySql', () => {
 
     expect(mock.mock.calls.length).toBe(3);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e1`.`author_id` as `address_author_id` from `author2` as `e0` left join `address2` as `e1` on `e0`.`id` = `e1`.`author_id` where `e0`.`email` = ? limit ? lock in share mode');
+    expect(mock.mock.calls[1][0]).toMatch('select `a0`.*, `a1`.`author_id` as `address_author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`.`id` = `a1`.`author_id` where `a0`.`email` = ? limit ? lock in share mode');
     expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
@@ -802,7 +802,7 @@ describe('EntityManagerMySql', () => {
     orm.em.clear();
 
     const qb1 = orm.em.createQueryBuilder(Book2);
-    const res1 = await qb1.select('*').where({ 'JSON_CONTAINS(`e0`.`meta`, ?)': [{ foo: 'bar' }, false] }).execute('get');
+    const res1 = await qb1.select('*').where({ 'JSON_CONTAINS(`b0`.`meta`, ?)': [{ foo: 'bar' }, false] }).execute('get');
     expect(res1.createdAt).toBeDefined();
     expect(res1.created_at).not.toBeDefined();
     expect(res1.meta).toEqual({ category: 'foo', items: 1 });
@@ -833,7 +833,7 @@ describe('EntityManagerMySql', () => {
     expect(res4.createdAt).toBeDefined();
     expect(res4.price).toBe('100.00');
     expect(res4.meta).toEqual({ category: 'foo', items: 1 });
-    expect(mock.mock.calls[0][0]).toMatch('where `e0`.`author_id` is not null and (`e0`.`price`, `e0`.`created_at`) <= (?, ?) limit ?');
+    expect(mock.mock.calls[0][0]).toMatch('where `b0`.`author_id` is not null and (`b0`.`price`, `b0`.`created_at`) <= (?, ?) limit ?');
   });
 
   test('query builder getResult() and getSingleResult() return entities', async () => {
@@ -969,23 +969,23 @@ describe('EntityManagerMySql', () => {
     Object.assign(orm.config, { logger });
 
     const b0 = (await orm.em.findOne(FooBaz2, { id: baz.id }))!;
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e1`.`id` as `bar_id` from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e0`.`id` = ? limit ?');
+    expect(mock.mock.calls[0][0]).toMatch('select `f0`.*, `f1`.`id` as `bar_id` from `foo_baz2` as `f0` left join `foo_bar2` as `f1` on `f0`.`id` = `f1`.`baz_id` where `f0`.`id` = ? limit ?');
     expect(b0.bar).toBeDefined();
     expect(b0.bar).toBeInstanceOf(FooBar2);
     expect(wrap(b0.bar).isInitialized()).toBe(false);
     orm.em.clear();
 
     const b1 = (await orm.em.findOne(FooBaz2, { id: baz.id }, { populate: ['bar'] }))!;
-    expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e1`.`id` as `bar_id` from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e0`.`id` = ? limit ?');
-    expect(mock.mock.calls[2][0]).toMatch('select `e0`.*, (select 123) as `random` from `foo_bar2` as `e0` where `e0`.`id` in (?) order by `e0`.`id` asc');
+    expect(mock.mock.calls[1][0]).toMatch('select `f0`.*, `f1`.`id` as `bar_id` from `foo_baz2` as `f0` left join `foo_bar2` as `f1` on `f0`.`id` = `f1`.`baz_id` where `f0`.`id` = ? limit ?');
+    expect(mock.mock.calls[2][0]).toMatch('select `f0`.*, (select 123) as `random` from `foo_bar2` as `f0` where `f0`.`id` in (?) order by `f0`.`id` asc');
     expect(b1.bar).toBeInstanceOf(FooBar2);
     expect(b1.bar!.id).toBe(bar.id);
     expect(wrap(b1).toJSON()).toMatchObject({ bar: { id: bar.id, baz: baz.id, name: 'bar' } });
     orm.em.clear();
 
     const b2 = (await orm.em.findOne(FooBaz2, { bar: bar.id }, { populate: ['bar'] }))!;
-    expect(mock.mock.calls[3][0]).toMatch('select `e0`.*, `e1`.`id` as `bar_id` from `foo_baz2` as `e0` left join `foo_bar2` as `e1` on `e0`.`id` = `e1`.`baz_id` where `e1`.`id` = ? limit ?');
-    expect(mock.mock.calls[4][0]).toMatch('select `e0`.*, (select 123) as `random` from `foo_bar2` as `e0` where `e0`.`id` in (?) order by `e0`.`id` asc');
+    expect(mock.mock.calls[3][0]).toMatch('select `f0`.*, `f1`.`id` as `bar_id` from `foo_baz2` as `f0` left join `foo_bar2` as `f1` on `f0`.`id` = `f1`.`baz_id` where `f1`.`id` = ? limit ?');
+    expect(mock.mock.calls[4][0]).toMatch('select `f0`.*, (select 123) as `random` from `foo_bar2` as `f0` where `f0`.`id` in (?) order by `f0`.`id` asc');
     expect(b2.bar).toBeInstanceOf(FooBar2);
     expect(b2.bar!.id).toBe(bar.id);
     expect(wrap(b2).toJSON()).toMatchObject({ bar: { id: bar.id, baz: baz.id, name: 'bar' } });
@@ -1657,12 +1657,12 @@ describe('EntityManagerMySql', () => {
       populate: ['tagsUnordered', 'perex'],
       orderBy: { title: QueryOrder.DESC },
     });
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e0`.price * 1.19 as `price_taxed`, `e3`.`id` as `test_id` from `book2` as `e0` ' +
-      'left join `book_to_tag_unordered` as `e2` on `e0`.`uuid_pk` = `e2`.`book2_uuid_pk` ' +
-      'left join `book_tag2` as `e1` on `e2`.`book_tag2_id` = `e1`.`id` ' +
-      'left join `test2` as `e3` on `e0`.`uuid_pk` = `e3`.`book_uuid_pk` ' +
-      'where `e0`.`author_id` is not null and `e1`.`name` != ? ' +
-      'order by `e0`.`title` desc');
+    expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t3`.`id` as `test_id` from `book2` as `b0` ' +
+      'left join `book_to_tag_unordered` as `b2` on `b0`.`uuid_pk` = `b2`.`book2_uuid_pk` ' +
+      'left join `book_tag2` as `b1` on `b2`.`book_tag2_id` = `b1`.`id` ' +
+      'left join `test2` as `t3` on `b0`.`uuid_pk` = `t3`.`book_uuid_pk` ' +
+      'where `b0`.`author_id` is not null and `b1`.`name` != ? ' +
+      'order by `b0`.`title` desc');
     await expect(books.length).toBe(3);
     await expect(books[0].title).toBe('My Life on The Wall, part 3');
     await expect(books[0].tagsUnordered.getItems().map(t => t.name)).toEqual(['awkward', 'sexy', 'strange']);
@@ -1677,10 +1677,10 @@ describe('EntityManagerMySql', () => {
       populate: ['booksUnordered.perex'],
       orderBy: { name: QueryOrder.ASC },
     });
-    expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e0`.price * 1.19 as `price_taxed`, `e1`.`book2_uuid_pk` as `fk__book2_uuid_pk`, `e1`.`book_tag2_id` as `fk__book_tag2_id`, `e2`.`id` as `test_id` from `book2` as `e0` ' +
-      'left join `book_to_tag_unordered` as `e1` on `e0`.`uuid_pk` = `e1`.`book2_uuid_pk` ' +
-      'left join `test2` as `e2` on `e0`.`uuid_pk` = `e2`.`book_uuid_pk` ' +
-      'where `e0`.`author_id` is not null and `e0`.`title` != ? and `e1`.`book_tag2_id` in (?, ?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `b1`.`book2_uuid_pk` as `fk__book2_uuid_pk`, `b1`.`book_tag2_id` as `fk__book_tag2_id`, `t2`.`id` as `test_id` from `book2` as `b0` ' +
+      'left join `book_to_tag_unordered` as `b1` on `b0`.`uuid_pk` = `b1`.`book2_uuid_pk` ' +
+      'left join `test2` as `t2` on `b0`.`uuid_pk` = `t2`.`book_uuid_pk` ' +
+      'where `b0`.`author_id` is not null and `b0`.`title` != ? and `b1`.`book_tag2_id` in (?, ?, ?, ?, ?, ?)');
     await expect(tags.length).toBe(6);
     await expect(tags.map(tag => tag.name)).toEqual(['awkward', 'funny', 'sexy', 'sick', 'silly', 'zupa']);
     await expect(tags.map(tag => tag.booksUnordered.count())).toEqual([1, 1, 1, 1, 2, 2]);
@@ -1705,40 +1705,40 @@ describe('EntityManagerMySql', () => {
     });
     expect(jon.friends.isInitialized(true)).toBe(true);
     expect(jon.friends.getIdentifiers()).toEqual([a1.id, a2.id, a3.id, author.id]);
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e3`.`author_id` as `address_author_id` ' +
-      'from `author2` as `e0` ' +
-      'left join `author_to_friend` as `e2` on `e0`.`id` = `e2`.`author2_1_id` ' +
-      'left join `author2` as `e1` on `e2`.`author2_2_id` = `e1`.`id` ' +
-      'left join `address2` as `e3` on `e0`.`id` = `e3`.`author_id` ' +
-      'where `e0`.`id` = ? ' +
-      'order by `e1`.`name` asc ' +
+    expect(mock.mock.calls[0][0]).toMatch('select `a0`.*, `a3`.`author_id` as `address_author_id` ' +
+      'from `author2` as `a0` ' +
+      'left join `author_to_friend` as `a2` on `a0`.`id` = `a2`.`author2_1_id` ' +
+      'left join `author2` as `a1` on `a2`.`author2_2_id` = `a1`.`id` ' +
+      'left join `address2` as `a3` on `a0`.`id` = `a3`.`author_id` ' +
+      'where `a0`.`id` = ? ' +
+      'order by `a1`.`name` asc ' +
       'limit ?');
-    expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e1`.`author2_2_id` as `fk__author2_2_id`, `e1`.`author2_1_id` as `fk__author2_1_id`, `e2`.`author_id` as `address_author_id` ' +
-      'from `author2` as `e0` ' +
-      'left join `author_to_friend` as `e1` on `e0`.`id` = `e1`.`author2_2_id` ' +
-      'left join `address2` as `e2` on `e0`.`id` = `e2`.`author_id` ' +
-      'where `e1`.`author2_1_id` in (?) ' +
-      'order by `e0`.`name` asc');
+    expect(mock.mock.calls[1][0]).toMatch('select `a0`.*, `a1`.`author2_2_id` as `fk__author2_2_id`, `a1`.`author2_1_id` as `fk__author2_1_id`, `a2`.`author_id` as `address_author_id` ' +
+      'from `author2` as `a0` ' +
+      'left join `author_to_friend` as `a1` on `a0`.`id` = `a1`.`author2_2_id` ' +
+      'left join `address2` as `a2` on `a0`.`id` = `a2`.`author_id` ' +
+      'where `a1`.`author2_1_id` in (?) ' +
+      'order by `a0`.`name` asc');
     orm.em.clear();
 
     const jon2 = await orm.em.findOneOrFail(Author2, { friends: a2.id }, {
       populate: ['friends'],
       orderBy: { friends: { name: QueryOrder.ASC } },
     });
-    expect(mock.mock.calls[2][0]).toMatch('select `e0`.*, `e3`.`author_id` as `address_author_id` ' +
-      'from `author2` as `e0` ' +
-      'left join `author_to_friend` as `e1` on `e0`.`id` = `e1`.`author2_1_id` ' +
-      'left join `author2` as `e2` on `e1`.`author2_2_id` = `e2`.`id` ' +
-      'left join `address2` as `e3` on `e0`.`id` = `e3`.`author_id` ' +
-      'where `e1`.`author2_2_id` = ? ' +
-      'order by `e2`.`name` asc ' +
+    expect(mock.mock.calls[2][0]).toMatch('select `a0`.*, `a3`.`author_id` as `address_author_id` ' +
+      'from `author2` as `a0` ' +
+      'left join `author_to_friend` as `a1` on `a0`.`id` = `a1`.`author2_1_id` ' +
+      'left join `author2` as `a2` on `a1`.`author2_2_id` = `a2`.`id` ' +
+      'left join `address2` as `a3` on `a0`.`id` = `a3`.`author_id` ' +
+      'where `a1`.`author2_2_id` = ? ' +
+      'order by `a2`.`name` asc ' +
       'limit ?');
-    expect(mock.mock.calls[3][0]).toMatch('select `e0`.*, `e1`.`author2_2_id` as `fk__author2_2_id`, `e1`.`author2_1_id` as `fk__author2_1_id`, `e2`.`author_id` as `address_author_id` ' +
-      'from `author2` as `e0` ' +
-      'left join `author_to_friend` as `e1` on `e0`.`id` = `e1`.`author2_2_id` ' +
-      'left join `address2` as `e2` on `e0`.`id` = `e2`.`author_id` ' +
-      'where `e1`.`author2_1_id` in (?) ' +
-      'order by `e0`.`name` asc');
+    expect(mock.mock.calls[3][0]).toMatch('select `a0`.*, `a1`.`author2_2_id` as `fk__author2_2_id`, `a1`.`author2_1_id` as `fk__author2_1_id`, `a2`.`author_id` as `address_author_id` ' +
+      'from `author2` as `a0` ' +
+      'left join `author_to_friend` as `a1` on `a0`.`id` = `a1`.`author2_2_id` ' +
+      'left join `address2` as `a2` on `a0`.`id` = `a2`.`author_id` ' +
+      'where `a1`.`author2_1_id` in (?) ' +
+      'order by `a0`.`name` asc');
     expect(jon2.id).toBe(author.id);
     expect(jon2.friends.isInitialized(true)).toBe(true);
     expect(jon2.friends.getIdentifiers()).toEqual([a1.id, a2.id, a3.id, author.id]);
@@ -1895,7 +1895,7 @@ describe('EntityManagerMySql', () => {
     expect(mock.mock.calls[2][0]).toMatch('insert into `book2` (`uuid_pk`, `created_at`, `title`, `author_id`) values (?, ?, ?, ?), (?, ?, ?, ?), (?, ?, ?, ?)');
     expect(mock.mock.calls[3][0]).toMatch('update `author2` set `favourite_author_id` = ?, `updated_at` = ? where `id` = ?');
     expect(mock.mock.calls[4][0]).toMatch('commit');
-    expect(mock.mock.calls[5][0]).toMatch('select `e0`.*, `e1`.`author_id` as `address_author_id` from `author2` as `e0` left join `address2` as `e1` on `e0`.`id` = `e1`.`author_id` where `e0`.`id` = ? limit ?');
+    expect(mock.mock.calls[5][0]).toMatch('select `a0`.*, `a1`.`author_id` as `address_author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`.`id` = `a1`.`author_id` where `a0`.`id` = ? limit ?');
   });
 
   test('self referencing 1:1 (1 step)', async () => {
@@ -1999,11 +1999,11 @@ describe('EntityManagerMySql', () => {
     expect(res1[0].test).toBeInstanceOf(Test2);
     expect(wrap(res1[0].test).isInitialized()).toBe(false);
     expect(mock.mock.calls.length).toBe(1);
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e0`.price * 1.19 as `price_taxed`, `e2`.`id` as `test_id` ' +
-      'from `book2` as `e0` ' +
-      'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
-      'left join `test2` as `e2` on `e0`.`uuid_pk` = `e2`.`book_uuid_pk` ' + // auto-joined 1:1 to get test id as book is inverse side
-      'where `e0`.`author_id` is not null and `e1`.`name` = ?');
+    expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t2`.`id` as `test_id` ' +
+      'from `book2` as `b0` ' +
+      'left join `author2` as `a1` on `b0`.`author_id` = `a1`.`id` ' +
+      'left join `test2` as `t2` on `b0`.`uuid_pk` = `t2`.`book_uuid_pk` ' + // auto-joined 1:1 to get test id as book is inverse side
+      'where `b0`.`author_id` is not null and `a1`.`name` = ?');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -2012,13 +2012,13 @@ describe('EntityManagerMySql', () => {
     expect(res2[0].test).toBeInstanceOf(Test2);
     expect(wrap(res2[0].test).isInitialized()).toBe(false);
     expect(mock.mock.calls.length).toBe(1);
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e0`.price * 1.19 as `price_taxed`, `e4`.`id` as `test_id` ' +
-      'from `book2` as `e0` ' +
-      'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
-      'left join `book2` as `e2` on `e1`.`favourite_book_uuid_pk` = `e2`.`uuid_pk` ' +
-      'left join `author2` as `e3` on `e2`.`author_id` = `e3`.`id` ' +
-      'left join `test2` as `e4` on `e0`.`uuid_pk` = `e4`.`book_uuid_pk` ' +
-      'where `e0`.`author_id` is not null and `e3`.`name` = ?');
+    expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t4`.`id` as `test_id` ' +
+      'from `book2` as `b0` ' +
+      'left join `author2` as `a1` on `b0`.`author_id` = `a1`.`id` ' +
+      'left join `book2` as `b2` on `a1`.`favourite_book_uuid_pk` = `b2`.`uuid_pk` ' +
+      'left join `author2` as `a3` on `b2`.`author_id` = `a3`.`id` ' +
+      'left join `test2` as `t4` on `b0`.`uuid_pk` = `t4`.`book_uuid_pk` ' +
+      'where `b0`.`author_id` is not null and `a3`.`name` = ?');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -2027,11 +2027,11 @@ describe('EntityManagerMySql', () => {
     expect(res3[0].test).toBeInstanceOf(Test2);
     expect(wrap(res3[0].test).isInitialized()).toBe(false);
     expect(mock.mock.calls.length).toBe(1);
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e0`.price * 1.19 as `price_taxed`, `e2`.`id` as `test_id` ' +
-      'from `book2` as `e0` ' +
-      'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
-      'left join `test2` as `e2` on `e0`.`uuid_pk` = `e2`.`book_uuid_pk` ' +
-      'where `e0`.`author_id` is not null and `e1`.`favourite_book_uuid_pk` = ?');
+    expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t2`.`id` as `test_id` ' +
+      'from `book2` as `b0` ' +
+      'left join `author2` as `a1` on `b0`.`author_id` = `a1`.`id` ' +
+      'left join `test2` as `t2` on `b0`.`uuid_pk` = `t2`.`book_uuid_pk` ' +
+      'where `b0`.`author_id` is not null and `a1`.`favourite_book_uuid_pk` = ?');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -2040,13 +2040,13 @@ describe('EntityManagerMySql', () => {
     expect(res4[0].test).toBeInstanceOf(Test2);
     expect(wrap(res4[0].test).isInitialized()).toBe(false);
     expect(mock.mock.calls.length).toBe(1);
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e0`.price * 1.19 as `price_taxed`, `e4`.`id` as `test_id` ' +
-      'from `book2` as `e0` ' +
-      'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
-      'left join `book2` as `e2` on `e1`.`favourite_book_uuid_pk` = `e2`.`uuid_pk` ' +
-      'left join `author2` as `e3` on `e2`.`author_id` = `e3`.`id` ' +
-      'left join `test2` as `e4` on `e0`.`uuid_pk` = `e4`.`book_uuid_pk` ' +
-      'where `e0`.`author_id` is not null and `e3`.`name` = ?');
+    expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t4`.`id` as `test_id` ' +
+      'from `book2` as `b0` ' +
+      'left join `author2` as `a1` on `b0`.`author_id` = `a1`.`id` ' +
+      'left join `book2` as `b2` on `a1`.`favourite_book_uuid_pk` = `b2`.`uuid_pk` ' +
+      'left join `author2` as `a3` on `b2`.`author_id` = `a3`.`id` ' +
+      'left join `test2` as `t4` on `b0`.`uuid_pk` = `t4`.`book_uuid_pk` ' +
+      'where `b0`.`author_id` is not null and `a3`.`name` = ?');
   });
 
   test('question marks and parameter interpolation (GH issue #920)', async () => {
@@ -2137,9 +2137,9 @@ describe('EntityManagerMySql', () => {
     author = (await orm.em.findOne(Author2, author))!;
     await orm.em.findOne(Author2, author, { refresh: true });
     await orm.em.findOne(Author2, author, { refresh: true });
-    expect(mock.mock.calls[4][0]).toMatch(/select `e0`\.\*, `e1`\.`author_id` as `address_author_id` from `author2` as `e0` left join `address2` as `e1` on `e0`\.`id` = `e1`\.`author_id` where `e0`.`id` = \? limit \?.*via read connection 'read-\d'/);
-    expect(mock.mock.calls[5][0]).toMatch(/select `e0`\.\*, `e1`\.`author_id` as `address_author_id` from `author2` as `e0` left join `address2` as `e1` on `e0`\.`id` = `e1`\.`author_id` where `e0`.`id` = \? limit \?.*via read connection 'read-\d'/);
-    expect(mock.mock.calls[6][0]).toMatch(/select `e0`\.\*, `e1`\.`author_id` as `address_author_id` from `author2` as `e0` left join `address2` as `e1` on `e0`\.`id` = `e1`\.`author_id` where `e0`.`id` = \? limit \?.*via read connection 'read-\d'/);
+    expect(mock.mock.calls[4][0]).toMatch(/select `a0`\.\*, `a1`\.`author_id` as `address_author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`\.`id` = `a1`\.`author_id` where `a0`.`id` = \? limit \?.*via read connection 'read-\d'/);
+    expect(mock.mock.calls[5][0]).toMatch(/select `a0`\.\*, `a1`\.`author_id` as `address_author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`\.`id` = `a1`\.`author_id` where `a0`.`id` = \? limit \?.*via read connection 'read-\d'/);
+    expect(mock.mock.calls[6][0]).toMatch(/select `a0`\.\*, `a1`\.`author_id` as `address_author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`\.`id` = `a1`\.`author_id` where `a0`.`id` = \? limit \?.*via read connection 'read-\d'/);
 
     author.name = 'Jon Blow';
     await orm.em.flush();
@@ -2226,8 +2226,8 @@ describe('EntityManagerMySql', () => {
 
     const res1 = await orm.em.find(Book2, { publisher: { $ne: null } }, { schema: 'mikro_orm_test_schema_2', populate: ['perex'] });
     const res2 = await orm.em.find(Book2, { publisher: { $ne: null } }, { populate: ['perex'] });
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e0`.price * 1.19 as `price_taxed`, `e1`.`id` as `test_id` from `mikro_orm_test_schema_2`.`book2` as `e0` left join `mikro_orm_test_schema_2`.`test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` where `e0`.`author_id` is not null and `e0`.`publisher_id` is not null');
-    expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e0`.price * 1.19 as `price_taxed`, `e1`.`id` as `test_id` from `book2` as `e0` left join `test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` where `e0`.`author_id` is not null and `e0`.`publisher_id` is not null');
+    expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `test_id` from `mikro_orm_test_schema_2`.`book2` as `b0` left join `mikro_orm_test_schema_2`.`test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` where `b0`.`author_id` is not null and `b0`.`publisher_id` is not null');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `test_id` from `book2` as `b0` left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` where `b0`.`author_id` is not null and `b0`.`publisher_id` is not null');
     expect(res1.length).toBe(0);
     expect(res2.length).toBe(1);
   });
@@ -2343,20 +2343,20 @@ describe('EntityManagerMySql', () => {
     const res1 = await orm.em.find(Author2, { books: { title: /^Bible/ } }, {
       orderBy: { name: QueryOrder.ASC, books: { title: QueryOrder.ASC } },
       limit: 5,
-      groupBy: ['id', 'name', 'e1.title'],
+      groupBy: ['id', 'name', 'b1.title'],
       having: { $or: [{ age: { $gt: 0 } }, { age: { $lte: 0 } }, { age: null }] }, // no-op just for testing purposes
     });
 
     expect(res1).toHaveLength(2);
     expect(res1.map(a => a.name)).toEqual(['God 01', 'God 02']);
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e2`.`author_id` as `address_author_id` ' +
-      'from `author2` as `e0` ' +
-      'left join `book2` as `e1` on `e0`.`id` = `e1`.`author_id` ' +
-      'left join `address2` as `e2` on `e0`.`id` = `e2`.`author_id` ' +
-      'where `e1`.`title` like ? ' +
-      'group by `e0`.`id`, `e0`.`name`, `e1`.`title` ' +
-      'having (`e0`.`age` > ? or `e0`.`age` <= ? or `e0`.`age` is null) ' +
-      'order by `e0`.`name` asc, `e1`.`title` asc limit ?');
+    expect(mock.mock.calls[0][0]).toMatch('select `a0`.*, `a2`.`author_id` as `address_author_id` ' +
+      'from `author2` as `a0` ' +
+      'left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` ' +
+      'left join `address2` as `a2` on `a0`.`id` = `a2`.`author_id` ' +
+      'where `b1`.`title` like ? ' +
+      'group by `a0`.`id`, `a0`.`name`, `b1`.`title` ' +
+      'having (`a0`.`age` > ? or `a0`.`age` <= ? or `a0`.`age` is null) ' +
+      'order by `a0`.`name` asc, `b1`.`title` asc limit ?');
 
     // with paginate flag (and a bit of dark sql magic) we get what we want
     const res2 = await orm.em.find(Author2, { books: { title: /^Bible/ } }, {
@@ -2368,17 +2368,17 @@ describe('EntityManagerMySql', () => {
 
     expect(res2).toHaveLength(5);
     expect(res2.map(a => a.name)).toEqual(['God 04', 'God 05', 'God 06', 'God 07', 'God 08']);
-    expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e2`.`author_id` as `address_author_id` ' +
-      'from `author2` as `e0` ' +
-      'left join `book2` as `e1` on `e0`.`id` = `e1`.`author_id` ' +
-      'left join `address2` as `e2` on `e0`.`id` = `e2`.`author_id` where `e0`.`id` in (select `e0`.`id` ' +
-      'from (select `e0`.`id` ' +
-      'from `author2` as `e0` ' +
-      'left join `book2` as `e1` on `e0`.`id` = `e1`.`author_id` ' +
-      'left join `address2` as `e2` on `e0`.`id` = `e2`.`author_id` ' +
-      'where `e1`.`title` like ? group by `e0`.`id` order by min(`e0`.`name`) asc, min(`e1`.`title`) asc limit ? offset ?' +
-      ') as `e0`' +
-      ') order by `e0`.`name` asc, `e1`.`title` asc');
+    expect(mock.mock.calls[1][0]).toMatch('select `a0`.*, `a2`.`author_id` as `address_author_id` ' +
+      'from `author2` as `a0` ' +
+      'left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` ' +
+      'left join `address2` as `a2` on `a0`.`id` = `a2`.`author_id` where `a0`.`id` in (select `a0`.`id` ' +
+      'from (select `a0`.`id` ' +
+      'from `author2` as `a0` ' +
+      'left join `book2` as `b1` on `a0`.`id` = `b1`.`author_id` ' +
+      'left join `address2` as `a2` on `a0`.`id` = `a2`.`author_id` ' +
+      'where `b1`.`title` like ? group by `a0`.`id` order by min(`a0`.`name`) asc, min(`b1`.`title`) asc limit ? offset ?' +
+      ') as `a0`' +
+      ') order by `a0`.`name` asc, `b1`.`title` asc');
 
     // with paginate flag without offset
     const res3 = await orm.em.find(Author2, { books: { title: /^Bible/ } }, {
@@ -2405,11 +2405,11 @@ describe('EntityManagerMySql', () => {
     const b = await orm.em.findOneOrFail(Book2, { author: { name: 'God' } });
     expect(b.price).toBe('1000.00');
     expect(b.priceTaxed).toBe('1190.0000');
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.`uuid_pk`, `e0`.`created_at`, `e0`.`title`, `e0`.`price`, `e0`.`double`, `e0`.`meta`, `e0`.`author_id`, `e0`.`publisher_id`, `e0`.price * 1.19 as `price_taxed`, `e2`.`id` as `test_id` ' +
-      'from `book2` as `e0` ' +
-      'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
-      'left join `test2` as `e2` on `e0`.`uuid_pk` = `e2`.`book_uuid_pk` ' +
-      'where `e0`.`author_id` is not null and `e1`.`name` = ? limit ?');
+    expect(mock.mock.calls[0][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.price * 1.19 as `price_taxed`, `t2`.`id` as `test_id` ' +
+      'from `book2` as `b0` ' +
+      'left join `author2` as `a1` on `b0`.`author_id` = `a1`.`id` ' +
+      'left join `test2` as `t2` on `b0`.`uuid_pk` = `t2`.`book_uuid_pk` ' +
+      'where `b0`.`author_id` is not null and `a1`.`name` = ? limit ?');
   });
 
   test('lazy formulas (gh #1229)', async () => {
@@ -2424,13 +2424,13 @@ describe('EntityManagerMySql', () => {
     const b1 = await orm.em.findOneOrFail(FooBar2, b.id);
     expect(b1.random).toBe(123);
     expect(b1.lazyRandom).toBeUndefined();
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, (select 123) as `random` from `foo_bar2` as `e0` where `e0`.`id` = ? limit ?');
+    expect(mock.mock.calls[0][0]).toMatch('select `f0`.*, (select 123) as `random` from `foo_bar2` as `f0` where `f0`.`id` = ? limit ?');
     orm.em.clear();
 
     const b2 = await orm.em.findOneOrFail(FooBar2, b.id, { populate: ['lazyRandom'] });
     expect(b2.random).toBe(123);
     expect(b2.lazyRandom).toBe(456);
-    expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, (select 123) as `random`, (select 456) as `lazy_random` from `foo_bar2` as `e0` where `e0`.`id` = ? limit ?');
+    expect(mock.mock.calls[1][0]).toMatch('select `f0`.*, (select 123) as `random`, (select 456) as `lazy_random` from `foo_bar2` as `f0` where `f0`.`id` = ? limit ?');
   });
 
   test('refreshing already loaded entity', async () => {
@@ -2467,9 +2467,9 @@ describe('EntityManagerMySql', () => {
 
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('select `e0`.`id` from `foo_bar2` as `e0` where ((`e0`.`id` = ? and `e0`.`version` = ?) or (`e0`.`id` = ? and `e0`.`version` = ?))');
+    expect(mock.mock.calls[1][0]).toMatch('select `f0`.`id` from `foo_bar2` as `f0` where ((`f0`.`id` = ? and `f0`.`version` = ?) or (`f0`.`id` = ? and `f0`.`version` = ?))');
     expect(mock.mock.calls[2][0]).toMatch('update `foo_bar2` set `foo_bar_id` = case when (`id` = ?) then ? when (`id` = ?) then ? else `foo_bar_id` end, `version` = current_timestamp where `id` in (?, ?)');
-    expect(mock.mock.calls[3][0]).toMatch('select `e0`.`id`, `e0`.`version` from `foo_bar2` as `e0` where `e0`.`id` in (?, ?)');
+    expect(mock.mock.calls[3][0]).toMatch('select `f0`.`id`, `f0`.`version` from `foo_bar2` as `f0` where `f0`.`id` in (?, ?)');
     expect(mock.mock.calls[4][0]).toMatch('commit');
   });
 
@@ -2559,48 +2559,48 @@ describe('EntityManagerMySql', () => {
     const r1 = await orm.em.find(Author2, {}, { populate: ['books'] });
     expect(r1[0].books[0].perex).not.toBe('123');
     expect(mock.mock.calls.length).toBe(2);
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e1`.`author_id` as `address_author_id` from `author2` as `e0` left join `address2` as `e1` on `e0`.`id` = `e1`.`author_id`');
-    expect(mock.mock.calls[1][0]).toMatch('select `e0`.`uuid_pk`, `e0`.`created_at`, `e0`.`title`, `e0`.`price`, `e0`.`double`, `e0`.`meta`, `e0`.`author_id`, `e0`.`publisher_id`, `e0`.price * 1.19 as `price_taxed`, `e1`.`id` as `test_id` ' +
-      'from `book2` as `e0` ' +
-      'left join `test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` ' +
-      'where `e0`.`author_id` is not null and `e0`.`author_id` in (?) ' +
-      'order by `e0`.`title` asc');
+    expect(mock.mock.calls[0][0]).toMatch('select `a0`.*, `a1`.`author_id` as `address_author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`.`id` = `a1`.`author_id`');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `test_id` ' +
+      'from `book2` as `b0` ' +
+      'left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` ' +
+      'where `b0`.`author_id` is not null and `b0`.`author_id` in (?) ' +
+      'order by `b0`.`title` asc');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
     const r2 = await orm.em.find(Author2, {}, { populate: ['books.perex'] });
     expect(r2[0].books[0].perex).toBe('123');
     expect(mock.mock.calls.length).toBe(2);
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e1`.`author_id` as `address_author_id` from `author2` as `e0` left join `address2` as `e1` on `e0`.`id` = `e1`.`author_id`');
-    expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e0`.price * 1.19 as `price_taxed`, `e1`.`id` as `test_id` ' +
-      'from `book2` as `e0` ' +
-      'left join `test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` ' +
-      'where `e0`.`author_id` is not null and `e0`.`author_id` in (?) ' +
-      'order by `e0`.`title` asc');
+    expect(mock.mock.calls[0][0]).toMatch('select `a0`.*, `a1`.`author_id` as `address_author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`.`id` = `a1`.`author_id`');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `test_id` ' +
+      'from `book2` as `b0` ' +
+      'left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` ' +
+      'where `b0`.`author_id` is not null and `b0`.`author_id` in (?) ' +
+      'order by `b0`.`title` asc');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
     const r3 = await orm.em.findOne(Author2, book.author, { populate: ['books'] });
     expect(r3!.books[0].perex).not.toBe('123');
     expect(mock.mock.calls.length).toBe(2);
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e1`.`author_id` as `address_author_id` from `author2` as `e0` left join `address2` as `e1` on `e0`.`id` = `e1`.`author_id`');
-    expect(mock.mock.calls[1][0]).toMatch('select `e0`.`uuid_pk`, `e0`.`created_at`, `e0`.`title`, `e0`.`price`, `e0`.`double`, `e0`.`meta`, `e0`.`author_id`, `e0`.`publisher_id`, `e0`.price * 1.19 as `price_taxed`, `e1`.`id` as `test_id` ' +
-      'from `book2` as `e0` ' +
-      'left join `test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` ' +
-      'where `e0`.`author_id` is not null and `e0`.`author_id` in (?) ' +
-      'order by `e0`.`title` asc');
+    expect(mock.mock.calls[0][0]).toMatch('select `a0`.*, `a1`.`author_id` as `address_author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`.`id` = `a1`.`author_id`');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`created_at`, `b0`.`title`, `b0`.`price`, `b0`.`double`, `b0`.`meta`, `b0`.`author_id`, `b0`.`publisher_id`, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `test_id` ' +
+      'from `book2` as `b0` ' +
+      'left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` ' +
+      'where `b0`.`author_id` is not null and `b0`.`author_id` in (?) ' +
+      'order by `b0`.`title` asc');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
     const r4 = await orm.em.findOne(Author2, book.author, { populate: ['books.perex'] });
     expect(r4!.books[0].perex).toBe('123');
     expect(mock.mock.calls.length).toBe(2);
-    expect(mock.mock.calls[0][0]).toMatch('select `e0`.*, `e1`.`author_id` as `address_author_id` from `author2` as `e0` left join `address2` as `e1` on `e0`.`id` = `e1`.`author_id`');
-    expect(mock.mock.calls[1][0]).toMatch('select `e0`.*, `e0`.price * 1.19 as `price_taxed`, `e1`.`id` as `test_id` ' +
-      'from `book2` as `e0` ' +
-      'left join `test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` ' +
-      'where `e0`.`author_id` is not null and `e0`.`author_id` in (?) ' +
-      'order by `e0`.`title` asc');
+    expect(mock.mock.calls[0][0]).toMatch('select `a0`.*, `a1`.`author_id` as `address_author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`.`id` = `a1`.`author_id`');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t1`.`id` as `test_id` ' +
+      'from `book2` as `b0` ' +
+      'left join `test2` as `t1` on `b0`.`uuid_pk` = `t1`.`book_uuid_pk` ' +
+      'where `b0`.`author_id` is not null and `b0`.`author_id` in (?) ' +
+      'order by `b0`.`title` asc');
   });
 
   // this should run in ~800ms (when running single test locally)

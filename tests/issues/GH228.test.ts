@@ -61,8 +61,8 @@ describe('GH issue 228', () => {
 
     const queries: string[] = mock.mock.calls.map(c => c[0]).sort();
     expect(queries).toHaveLength(3);
-    expect(queries[0]).toMatch('select `e0`.* from `a` as `e0` order by `e0`.`type_id` asc');
-    expect(queries[1]).toMatch('select `e0`.* from `b` as `e0` where `e0`.`id` in (?)');
+    expect(queries[0]).toMatch('select `a0`.* from `a` as `a0` order by `a0`.`type_id` asc');
+    expect(queries[1]).toMatch('select `b0`.* from `b` as `b0` where `b0`.`id` in (?)');
   });
 
 });

@@ -22,7 +22,7 @@ class Driver extends DatabaseDriver<Connection> {
 
   protected readonly platform = new Platform1();
 
-  constructor(protected readonly config: Configuration,
+  constructor(readonly config: Configuration,
               protected readonly dependencies: string[]) {
     super(config, dependencies);
   }

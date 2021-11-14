@@ -50,4 +50,10 @@ export interface NamingStrategy {
    */
   indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence'): string;
 
+  /**
+   * Returns alias name for given entity. The alias needs to be unique across the query, which is by default
+   * ensured via appended index parameter. It is optional to use it as long as you ensure it will be unique.
+   */
+  aliasName(entityName: string, index: number): string;
+
 }

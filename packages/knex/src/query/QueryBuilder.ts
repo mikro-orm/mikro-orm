@@ -10,7 +10,8 @@ import type {
   MetadataStorage,
   PopulateOptions,
   QBFilterQuery,
-  QueryOrderMap } from '@mikro-orm/core';
+  QueryOrderMap,
+} from '@mikro-orm/core';
 import {
   LoadStrategy,
   LockMode,
@@ -48,6 +49,8 @@ import type { Field, JoinOptions } from '../typings';
  */
 export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
+  readonly alias: string;
+
   /** @internal */
   type!: QueryType;
   /** @internal */
@@ -57,7 +60,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   /** @internal */
   _populateMap: Dictionary<string> = {};
 
-  private aliasCounter = 1;
+  private aliasCounter = 0;
   private flags: Set<QueryFlag> = new Set([QueryFlag.CONVERT_CUSTOM_TYPES]);
   private finalized = false;
   private _joins: Dictionary<JoinOptions> = {};
@@ -79,7 +82,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   private subQueries: Dictionary<string> = {};
   private readonly platform = this.driver.getPlatform();
   private readonly knex = this.driver.getConnection(this.connectionType).getKnex();
-  private readonly helper = new QueryBuilderHelper(this.entityName, this.alias, this._aliasMap, this.subQueries, this.metadata, this.knex, this.platform);
+  private readonly helper: QueryBuilderHelper;
 
   /**
    * @internal
@@ -88,10 +91,16 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
               private readonly metadata: MetadataStorage,
               private readonly driver: AbstractSqlDriver,
               private readonly context?: Knex.Transaction,
-              readonly alias = `e0`,
+              alias?: string,
               private connectionType?: 'read' | 'write',
               private readonly em?: SqlEntityManager) {
+    if (alias) {
+      this.aliasCounter++;
+    }
+
+    this.alias = alias ?? this.getNextAlias(this.entityName);
     this._aliasMap[this.alias] = this.entityName;
+    this.helper = new QueryBuilderHelper(this.entityName, this.alias, this._aliasMap, this.subQueries, this.metadata, this.knex, this.platform);
   }
 
   select(fields: Field<T> | Field<T>[], distinct = false): this {
@@ -426,9 +435,8 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return join?.inverseAlias || join?.alias;
   }
 
-  getNextAlias(prefix = 'e'): string {
-    // Take only the first letter of the prefix to keep character counts down since some engines have character limits
-    return `${prefix.charAt(0).toLowerCase()}${this.aliasCounter++}`;
+  getNextAlias(entityName = 'e'): string {
+    return this.driver.config.getNamingStrategy().aliasName(entityName, this.aliasCounter++);
   }
 
   /**
@@ -581,7 +589,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
       if (type !== 'pivotJoin') {
         const oldPivotAlias = this.getAliasForJoinPath(path + '[pivot]');
-        pivotAlias = oldPivotAlias ?? `e${this.aliasCounter++}`;
+        pivotAlias = oldPivotAlias ?? this.getNextAlias(prop.pivotTable);
       }
 
       const joins = this.helper.joinManyToManyReference(prop, fromAlias, alias, pivotAlias, type, cond, path);
@@ -739,7 +747,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
         this.autoJoinPivotTable(field);
       } else if (meta && this.helper.isOneToOneInverse(field)) {
         const prop = meta.properties[field];
-        this._joins[prop.name] = this.helper.joinOneToReference(prop, this.alias, `e${this.aliasCounter++}`, 'leftJoin');
+        this._joins[prop.name] = this.helper.joinOneToReference(prop, this.alias, this.getNextAlias(prop.pivotTable ?? prop.type), 'leftJoin');
         this._populateMap[field] = this._joins[field].alias;
       }
     });
@@ -821,7 +829,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     const owner = pivotMeta.props.find(prop => prop.reference === ReferenceType.MANY_TO_ONE && prop.owner)!;
     const inverse = pivotMeta.props.find(prop => prop.reference === ReferenceType.MANY_TO_ONE && !prop.owner)!;
     const prop = this._cond[pivotMeta.name + '.' + owner.name] || this._orderBy[pivotMeta.name + '.' + owner.name] ? inverse : owner;
-    const pivotAlias = this.getNextAlias();
+    const pivotAlias = this.getNextAlias(pivotMeta.name!);
 
     this._joins[field] = this.helper.joinPivotTable(field, prop, this.alias, pivotAlias, 'leftJoin');
     Utils.renameKey(this._cond, `${field}.${owner.name}`, Utils.getPrimaryKeyHash(owner.fieldNames.map(fieldName => `${pivotAlias}.${fieldName}`)));

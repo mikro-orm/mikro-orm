@@ -123,9 +123,9 @@ describe('filters [postgres]', () => {
     expect(mock.mock.calls[2][0]).toMatch(`insert into "benefit" ("benefit_status") values ($1) returning "id"`);
     expect(mock.mock.calls[3][0]).toMatch(`insert into "employee_benefits" ("employee_id", "benefit_id") values ($1, $2)`);
     expect(mock.mock.calls[4][0]).toMatch(`commit`);
-    expect(mock.mock.calls[5][0]).toMatch(`select "e0".* from "benefit" as "e0" where "e0"."benefit_status" = $1`);
+    expect(mock.mock.calls[5][0]).toMatch(`select "b0".* from "benefit" as "b0" where "b0"."benefit_status" = $1`);
     expect(mock.mock.calls[6][0]).toMatch(`select "e0".* from "employee" as "e0" where "e0"."id" = $1 limit $2`);
-    expect(mock.mock.calls[7][0]).toMatch(`select "e0".*, "e1"."benefit_id" as "fk__benefit_id", "e1"."employee_id" as "fk__employee_id" from "benefit" as "e0" left join "employee_benefits" as "e1" on "e0"."id" = "e1"."benefit_id" where "e0"."benefit_status" = $1 and "e1"."employee_id" in ($2)`);
+    expect(mock.mock.calls[7][0]).toMatch(`select "b0".*, "e1"."benefit_id" as "fk__benefit_id", "e1"."employee_id" as "fk__employee_id" from "benefit" as "b0" left join "employee_benefits" as "e1" on "b0"."id" = "e1"."benefit_id" where "b0"."benefit_status" = $1 and "e1"."employee_id" in ($2)`);
   });
 
   test('merging $or conditions', async () => {
@@ -148,9 +148,9 @@ describe('filters [postgres]', () => {
       },
     }, { filters: false });
 
-    expect(mock.mock.calls[0][0]).toMatch(`select "e0".* from "user" as "e0" where ("e0"."age" = $1 or "e0"."age" = $2) and ("e0"."first_name" = $3 or "e0"."last_name" = $4)`);
-    expect(mock.mock.calls[1][0]).toMatch(`select "e0".* from "membership" as "e0" left join "user" as "e1" on "e0"."user_id" = "e1"."id" where ("e1"."first_name" = $1 or "e1"."last_name" = $2 or "e1"."age" = (select 1 + 1)) and ("e0"."role" = $3 or "e0"."role" = $4)`);
-    expect(mock.mock.calls[2][0]).toMatch(`select "e0".* from "membership" as "e0" left join "user" as "e1" on "e0"."user_id" = "e1"."id" where ("e0"."role" = $1 or "e0"."role" = $2) and ("e1"."first_name" = $3 or "e1"."last_name" = $4)`);
+    expect(mock.mock.calls[0][0]).toMatch(`select "u0".* from "user" as "u0" where ("u0"."age" = $1 or "u0"."age" = $2) and ("u0"."first_name" = $3 or "u0"."last_name" = $4)`);
+    expect(mock.mock.calls[1][0]).toMatch(`select "m0".* from "membership" as "m0" left join "user" as "u1" on "m0"."user_id" = "u1"."id" where ("u1"."first_name" = $1 or "u1"."last_name" = $2 or "u1"."age" = (select 1 + 1)) and ("m0"."role" = $3 or "m0"."role" = $4)`);
+    expect(mock.mock.calls[2][0]).toMatch(`select "m0".* from "membership" as "m0" left join "user" as "u1" on "m0"."user_id" = "u1"."id" where ("m0"."role" = $1 or "m0"."role" = $2) and ("u1"."first_name" = $3 or "u1"."last_name" = $4)`);
   });
 
 });

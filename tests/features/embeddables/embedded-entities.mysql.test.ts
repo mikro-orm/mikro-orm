@@ -171,7 +171,7 @@ describe('embedded entities in mysql', () => {
     expect(mock.mock.calls[2][0]).toMatch('commit');
 
     const u = await orm.em.findOneOrFail(User, user.id);
-    expect(mock.mock.calls[3][0]).toMatch('select `e0`.* from `user` as `e0` where `e0`.`id` = ? limit ?');
+    expect(mock.mock.calls[3][0]).toMatch('select `u0`.* from `user` as `u0` where `u0`.`id` = ? limit ?');
     expect(u.address1).toBeInstanceOf(Address1);
     expect(u.address1).toEqual({
       street: 'Downing street 10',
@@ -210,16 +210,16 @@ describe('embedded entities in mysql', () => {
     orm.em.clear();
 
     const u1 = await orm.em.findOneOrFail(User, { address1: { city: 'London 1', postalCode: '123' } });
-    expect(mock.mock.calls[7][0]).toMatch('select `e0`.* from `user` as `e0` where `e0`.`address1_city` = ? and `e0`.`address1_postal_code` = ? limit ?');
+    expect(mock.mock.calls[7][0]).toMatch('select `u0`.* from `user` as `u0` where `u0`.`address1_city` = ? and `u0`.`address1_postal_code` = ? limit ?');
     expect(u1.address1.city).toBe('London 1');
     expect(u1.address1.postalCode).toBe('123');
     const u2 = await orm.em.findOneOrFail(User, { address1: { city: /^London/ } });
-    expect(mock.mock.calls[8][0]).toMatch('select `e0`.* from `user` as `e0` where `e0`.`address1_city` like ? limit ?');
+    expect(mock.mock.calls[8][0]).toMatch('select `u0`.* from `user` as `u0` where `u0`.`address1_city` like ? limit ?');
     expect(u2.address1.city).toBe('London 1');
     expect(u2.address1.postalCode).toBe('123');
     expect(u2).toBe(u1);
     const u3 = await orm.em.findOneOrFail(User, { $or: [{ address1: { city: 'London 1' } }, { address1: { city: 'Berlin' } }] });
-    expect(mock.mock.calls[9][0]).toMatch('select `e0`.* from `user` as `e0` where (`e0`.`address1_city` = ? or `e0`.`address1_city` = ?) limit ?');
+    expect(mock.mock.calls[9][0]).toMatch('select `u0`.* from `user` as `u0` where (`u0`.`address1_city` = ? or `u0`.`address1_city` = ?) limit ?');
     expect(u3.address1.city).toBe('London 1');
     expect(u3.address1.postalCode).toBe('123');
     expect(u3).toBe(u1);
@@ -227,7 +227,7 @@ describe('embedded entities in mysql', () => {
     await expect(orm.em.findOneOrFail(User, { address1: { $or: [{ city: 'London 1' }, { city: 'Berlin' }] } })).rejects.toThrowError(err);
     const u4 = await orm.em.findOneOrFail(User, { address4: { postalCode: '999' } });
     expect(u4).toBe(u1);
-    expect(mock.mock.calls[10][0]).toMatch('select `e0`.* from `user` as `e0` where `e0`.`address4`->\'$.postalCode\' = ? limit ?');
+    expect(mock.mock.calls[10][0]).toMatch('select `u0`.* from `user` as `u0` where `u0`.`address4`->\'$.postalCode\' = ? limit ?');
   });
 
   test('assign', async () => {

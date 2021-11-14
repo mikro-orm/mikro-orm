@@ -126,7 +126,7 @@ describe('GH issue 1079', () => {
     expect(queries[2]).toMatch(`insert into "wallet" ("currency_ref", "main_balance", "owner__id") values ($1, $2, $3)`);
     expect(queries[3]).toMatch(`insert into "deposit" ("amount", "created_at", "gateway_key", "status", "tx_ref", "updated_at", "wallet_currency_ref", "wallet_owner__id") values ($1, $2, $3, $4, $5, $6, $7, $8)`);
     expect(queries[4]).toMatch(`commit`);
-    expect(queries[5]).toMatch(`select "e0".* from "wallet" as "e0" where "e0"."currency_ref" = $1 and "e0"."owner__id" = $2 limit $3`);
+    expect(queries[5]).toMatch(`select "w0".* from "wallet" as "w0" where "w0"."currency_ref" = $1 and "w0"."owner__id" = $2 limit $3`);
     expect(queries[6]).toMatch(`begin`);
     expect(queries[7]).toMatch(`insert into "deposit" ("amount", "created_at", "gateway_key", "status", "tx_ref", "updated_at", "wallet_currency_ref", "wallet_owner__id") values ($1, $2, $3, $4, $5, $6, $7, $8)`);
     expect(queries[8]).toMatch(`commit`);

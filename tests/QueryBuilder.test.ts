@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import { expr, LockMode, MikroORM, QueryFlag, QueryOrder } from '@mikro-orm/core';
+import { expr, LockMode, MikroORM, QueryFlag, QueryOrder, UnderscoreNamingStrategy } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { CriteriaNode } from '@mikro-orm/knex';
 import { MySqlDriver } from '@mikro-orm/mysql';
@@ -13,7 +13,17 @@ describe('QueryBuilder', () => {
 
   let orm: MikroORM<MySqlDriver>;
 
-  beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
+  beforeAll(async () => {
+    orm = await initORMMySql('mysql', {
+      namingStrategy: class NS extends UnderscoreNamingStrategy {
+
+        aliasName(entityName: string, index: number): string {
+          return 'e' + index;
+        }
+
+      },
+    }, true);
+  });
 
   test('select query', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
@@ -1877,23 +1887,23 @@ describe('QueryBuilder', () => {
 
     const qb1 = pg.em.createQueryBuilder(Publisher2);
     qb1.select('*').where({ name: { $contains: 'test' } });
-    expect(qb1.getQuery()).toEqual('select "e0".* from "publisher2" as "e0" where "e0"."name" @> $1');
-    expect(qb1.getFormattedQuery()).toEqual(`select "e0".* from "publisher2" as "e0" where "e0"."name" @> 'test'`);
+    expect(qb1.getQuery()).toEqual('select "p0".* from "publisher2" as "p0" where "p0"."name" @> $1');
+    expect(qb1.getFormattedQuery()).toEqual(`select "p0".* from "publisher2" as "p0" where "p0"."name" @> 'test'`);
     expect(qb1.getParams()).toEqual(['test']);
 
     const qb2 = pg.em.createQueryBuilder(Publisher2);
     qb2.select('*').where({ name: { $contained: 'test' } });
-    expect(qb2.getQuery()).toEqual('select "e0".* from "publisher2" as "e0" where "e0"."name" <@ $1');
+    expect(qb2.getQuery()).toEqual('select "p0".* from "publisher2" as "p0" where "p0"."name" <@ $1');
     expect(qb2.getParams()).toEqual(['test']);
 
     const qb3 = pg.em.createQueryBuilder(Publisher2);
     qb3.select('*').where({ name: { $overlap: 'test' } });
-    expect(qb3.getQuery()).toEqual('select "e0".* from "publisher2" as "e0" where "e0"."name" && $1');
+    expect(qb3.getQuery()).toEqual('select "p0".* from "publisher2" as "p0" where "p0"."name" && $1');
     expect(qb3.getParams()).toEqual(['test']);
 
     const qb4 = pg.em.createQueryBuilder(Publisher2);
     qb4.select('*').where({ name: { $ilike: 'test' } });
-    expect(qb4.getQuery()).toEqual('select "e0".* from "publisher2" as "e0" where "e0"."name" ilike $1');
+    expect(qb4.getQuery()).toEqual('select "p0".* from "publisher2" as "p0" where "p0"."name" ilike $1');
     expect(qb4.getParams()).toEqual(['test']);
 
     const qb5 = pg.em.createQueryBuilder(Book2, 'b').select('b.author').where({ price: { $gt: 100 } });
@@ -1930,41 +1940,41 @@ describe('QueryBuilder', () => {
     expect(qb10.getParams()).toEqual([timestamp, 'ignore@example.com', 'John Doe', timestamp, 'John Doe', timestamp, timestamp]);
 
     const qb11 = pg.em.createQueryBuilder(Book2).where({ meta: { foo: 123 } });
-    expect(qb11.getFormattedQuery()).toBe(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where ("meta"->>'foo')::float8 = 123`);
+    expect(qb11.getFormattedQuery()).toBe(`select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where ("meta"->>'foo')::float8 = 123`);
     const qb12 = pg.em.createQueryBuilder(Book2).where({ meta: { foo: { $eq: 123 } } });
-    expect(qb12.getFormattedQuery()).toBe(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where ("meta"->>'foo')::float8 = 123`);
+    expect(qb12.getFormattedQuery()).toBe(`select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where ("meta"->>'foo')::float8 = 123`);
     const qb13 = pg.em.createQueryBuilder(Book2).where({ meta: { foo: { $lte: 123 } } });
-    expect(qb13.getFormattedQuery()).toBe(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where ("meta"->>'foo')::float8 <= 123`);
+    expect(qb13.getFormattedQuery()).toBe(`select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where ("meta"->>'foo')::float8 <= 123`);
 
     // order by json property
     const qb14 = pg.em.createQueryBuilder(Book2).orderBy({ meta: { foo: 'asc' } });
-    expect(qb14.getFormattedQuery()).toBe(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" order by "meta"->>'foo' asc`);
+    expect(qb14.getFormattedQuery()).toBe(`select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" order by "meta"->>'foo' asc`);
     const qb15 = pg.em.createQueryBuilder(Book2).orderBy({ meta: { bar: { str: 'asc' } } });
-    expect(qb15.getFormattedQuery()).toBe(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" order by "meta"->'bar'->>'str' asc`);
+    expect(qb15.getFormattedQuery()).toBe(`select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" order by "meta"->'bar'->>'str' asc`);
     const qb16 = pg.em.createQueryBuilder(Book2).orderBy({ meta: { bar: { num: QueryOrder.DESC } } });
-    expect(qb16.getFormattedQuery()).toBe(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" order by "meta"->'bar'->>'num' desc`);
+    expect(qb16.getFormattedQuery()).toBe(`select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" order by "meta"->'bar'->>'num' desc`);
 
     // pessimistic locking
     await pg.em.transactional(async em => {
       const qb1 = em.createQueryBuilder(Book2);
       qb1.select('*').where({ title: 'test 123' }).setLockMode(LockMode.PESSIMISTIC_PARTIAL_READ);
-      expect(qb1.getQuery()).toEqual('select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where "e0"."title" = $1 for share skip locked');
+      expect(qb1.getQuery()).toEqual('select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."title" = $1 for share skip locked');
 
       const qb2 = em.createQueryBuilder(Book2);
       qb2.select('*').where({ title: 'test 123' }).setLockMode(LockMode.PESSIMISTIC_PARTIAL_WRITE);
-      expect(qb2.getQuery()).toEqual('select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where "e0"."title" = $1 for update skip locked');
+      expect(qb2.getQuery()).toEqual('select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."title" = $1 for update skip locked');
 
       const qb3 = em.createQueryBuilder(Book2);
       qb3.select('*').where({ title: 'test 123' }).setLockMode(LockMode.PESSIMISTIC_READ_OR_FAIL);
-      expect(qb3.getQuery()).toEqual('select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where "e0"."title" = $1 for share nowait');
+      expect(qb3.getQuery()).toEqual('select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."title" = $1 for share nowait');
 
       const qb4 = em.createQueryBuilder(Book2);
       qb4.select('*').where({ title: 'test 123' }).setLockMode(LockMode.PESSIMISTIC_WRITE_OR_FAIL);
-      expect(qb4.getQuery()).toEqual('select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" where "e0"."title" = $1 for update nowait');
+      expect(qb4.getQuery()).toEqual('select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."title" = $1 for update nowait');
 
       const qb5 = em.createQueryBuilder(Book2);
       qb5.select('*').leftJoin('author', 'a').where({ title: 'test 123' }).setLockMode(LockMode.PESSIMISTIC_WRITE, ['book2']);
-      expect(qb5.getQuery()).toEqual('select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" left join "author2" as "a" on "e0"."author_id" = "a"."id" where "e0"."title" = $1 for update of "book2"');
+      expect(qb5.getQuery()).toEqual('select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" left join "author2" as "a" on "b0"."author_id" = "a"."id" where "b0"."title" = $1 for update of "book2"');
     });
 
     // join and select m:n relation with paginate flag (GH #1926)
@@ -1977,12 +1987,12 @@ describe('QueryBuilder', () => {
       .limit(20);
     const sql = 'select "b".*, "t"."id" as "t__id", "t"."name" as "t__name", "b".price * 1.19 as "price_taxed" ' +
       'from "book2" as "b" ' +
-      'left join "book2_tags" as "e1" on "b"."uuid_pk" = "e1"."book2_uuid_pk" ' +
-      'left join "book_tag2" as "t" on "e1"."book_tag2_id" = "t"."id" where "b"."uuid_pk" in ' +
+      'left join "book2_tags" as "b1" on "b"."uuid_pk" = "b1"."book2_uuid_pk" ' +
+      'left join "book_tag2" as "t" on "b1"."book_tag2_id" = "t"."id" where "b"."uuid_pk" in ' +
       '(select "b"."uuid_pk" from ' +
       '(select "b"."uuid_pk" from "book2" as "b" ' +
-      'left join "book2_tags" as "e1" on "b"."uuid_pk" = "e1"."book2_uuid_pk" ' +
-      'left join "book_tag2" as "t" on "e1"."book_tag2_id" = "t"."id" where "t"."name" = $1 group by "b"."uuid_pk" limit $2 offset $3' +
+      'left join "book2_tags" as "b1" on "b"."uuid_pk" = "b1"."book2_uuid_pk" ' +
+      'left join "book_tag2" as "t" on "b1"."book_tag2_id" = "t"."id" where "t"."name" = $1 group by "b"."uuid_pk" limit $2 offset $3' +
       ') as "b")';
     expect(qb.getQuery()).toEqual(sql);
     expect(qb.getParams()).toEqual(['tag name', 20, 1]);

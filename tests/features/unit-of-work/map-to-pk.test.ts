@@ -83,7 +83,7 @@ describe('mapToPk works with flushing and cascades', () => {
     expect(mock.mock.calls[3][0]).toMatch('begin');
     expect(mock.mock.calls[4][0]).toMatch("insert into `team` (`current_order_id`, `id`, `status`) values ('order1', 'team1', 'status1')");
     expect(mock.mock.calls[5][0]).toMatch('commit');
-    expect(mock.mock.calls[6][0]).toMatch("select `e0`.* from `team` as `e0` where `e0`.`id` = 'team1' limit 1");
+    expect(mock.mock.calls[6][0]).toMatch("select `t0`.* from `team` as `t0` where `t0`.`id` = 'team1' limit 1");
     expect(mock.mock.calls[7][0]).toMatch('begin');
     expect(mock.mock.calls[8][0]).toMatch("update `team` set `current_order_id` = NULL where `id` = 'team1'");
     expect(mock.mock.calls[9][0]).toMatch('commit');
