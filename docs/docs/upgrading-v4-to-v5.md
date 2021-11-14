@@ -121,3 +121,10 @@ class CustomNamingStrategy extends AbstractNamingStrategy {
 Note that in v5 it is possible to use `expr()` helper to access the alias name
 dynamically, e.g. ``expr(alias => `lower('${alias}.name')`)``, which should be 
 now preferred way instead of hardcoding the aliases.
+
+## Migrations are now stored without extensions
+
+Running migrations in production via node and ts-node is now handled the same.
+This should actually not be breaking, as old format with extension is still 
+supported (e.g. they still can be rolled back), but newly logged migrations
+will not contain the extension.

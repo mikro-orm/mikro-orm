@@ -1,4 +1,5 @@
 import type { MigrationsOptions, Transaction } from '@mikro-orm/core';
+import { Utils } from '@mikro-orm/core';
 import type { AbstractSqlDriver, Table } from '@mikro-orm/knex';
 import type { MigrationRow } from './typings';
 
@@ -14,15 +15,25 @@ export class MigrationStorage {
 
   async executed(): Promise<string[]> {
     const migrations = await this.getExecutedMigrations();
-    return migrations.map(row => row.name);
+    const ext = this.options.emit === 'js' || !Utils.detectTsNode() ? 'js' : 'ts';
+
+    return migrations.map(({ name }) => `${this.getMigrationName(name)}.${ext}`);
   }
 
   async logMigration(name: string): Promise<void> {
+    name = this.getMigrationName(name);
     await this.driver.nativeInsert(this.options.tableName!, { name }, { ctx: this.masterTransaction });
   }
 
   async unlogMigration(name: string): Promise<void> {
-    await this.driver.nativeDelete(this.options.tableName!, { name }, { ctx: this.masterTransaction });
+    const withoutExt = this.getMigrationName(name);
+    const qb = this.knex.delete().from(this.options.tableName!).where('name', 'in', [name, withoutExt]);
+
+    if (this.masterTransaction) {
+      qb.transacting(this.masterTransaction);
+    }
+
+    await this.connection.execute(qb);
   }
 
   async getExecutedMigrations(): Promise<MigrationRow[]> {
@@ -55,6 +66,11 @@ export class MigrationStorage {
 
   unsetMasterMigration() {
     delete this.masterTransaction;
+  }
+
+  protected getMigrationName(name: string) {
+    // strip extension
+    return name.replace(/\.\w+$/, '');
   }
 
 }

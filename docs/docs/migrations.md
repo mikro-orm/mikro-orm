@@ -7,6 +7,8 @@ title: Migrations
 MikroORM has integrated support for migrations via [umzug](https://github.com/sequelize/umzug).
 It allows you to generate migrations with current schema differences.
 
+> Since v5, migrations are stored without extension.
+
 By default, each migration will be all executed inside a transaction, and all of them will 
 be wrapped in one master transaction, so if one of them fails, everything will be rolled back. 
 
@@ -72,7 +74,7 @@ await MikroORM.init({
   migrations: {
     tableName: 'mikro_orm_migrations', // name of database table with log of executed transactions
     path: './migrations', // path to the folder with migrations
-    pattern: /^[\w-]+\d+\.ts$/, // regex pattern for the migration files
+    pattern: /^[\w-]+\d+\.[jt]s$/, // regex pattern for the migration files
     transactional: true, // wrap each migration in a transaction
     disableForeignKeys: true, // wrap statements with `set foreign_key_checks = 0` or equivalent
     allOrNothing: true, // wrap all migrations in master transaction
