@@ -2,6 +2,8 @@
 title: Migrations
 ---
 
+> To use migrations we need to first install `@mikro-orm/migrations` package.
+
 MikroORM has integrated support for migrations via [umzug](https://github.com/sequelize/umzug).
 It allows you to generate migrations with current schema differences.
 
@@ -13,6 +15,8 @@ be wrapped in one master transaction, so if one of them fails, everything will b
 Migrations are classes that extend Migration abstract class:
 
 ```typescript
+import { Migration } from '@mikro-orm/migrations';
+
 export class Migration20191019195930 extends Migration {
 
   async up(): Promise<void> {
@@ -129,6 +133,9 @@ npx mikro-orm migration:pending  # List all pending migrations
 npx mikro-orm migration:fresh    # Drop the database and migrate up to the latest version
 ```
 
+> To create blank migration file, we can use 
+> `npx mikro-orm migration:create --blank`.
+
 For `migration:up` and `migration:down` commands you can specify `--from` (`-f`), `--to` (`-t`) 
 and `--only` (`-o`) options to run only a subset of migrations:
 
@@ -197,6 +204,7 @@ If you do not want to dynamically import a folder (e.g. when bundling your code 
 directly.
 
 ```typescript
+import { MikroORM } from '@mikro-orm/core';
 import { Migration20191019195930 } from '../migrations/Migration20191019195930.ts';
 
 await MikroORM.init({
@@ -215,6 +223,7 @@ With the help of (webpacks context module api)[https://webpack.js.org/guides/dep
 we can dynamically import the migrations making it possible to import all files in a folder.
 
 ```typescript
+import { MikroORM } from '@mikro-orm/core';
 import { basename } from 'path';
 
 const migrations = {};
