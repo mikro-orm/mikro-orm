@@ -1,7 +1,7 @@
 import type { Transaction } from './connections';
 import type { Cascade, EventType, LoadStrategy, LockMode, QueryOrderMap } from './enums';
 import { ReferenceType } from './enums';
-import type { AssignOptions, Collection, EntityFactory, EntityIdentifier, EntityRepository, IdentifiedReference, Reference, SerializationContext } from './entity';
+import type { AssignOptions, BaseEntity, Collection, EntityFactory, EntityIdentifier, EntityRepository, IdentifiedReference, Reference, SerializationContext } from './entity';
 import type { EntitySchema, MetadataStorage } from './metadata';
 import type { Type } from './types';
 import type { Platform } from './platforms';
@@ -169,17 +169,19 @@ type Relation<T> = {
 };
 export type EntityDTOProp<T> = T extends Scalar
   ? T
-  : T extends Reference<infer U>
+  : T extends LoadedReference<infer U>
     ? EntityDTO<U>
-    : T extends { getItems(check?: boolean): infer U }
-      ? (U extends readonly (infer V)[] ? EntityDTO<V>[] : EntityDTO<U>)
-      : T extends { $: infer U }
+    : T extends Reference<infer U>
+      ? Primary<U>
+      : T extends { getItems(check?: boolean): infer U }
         ? (U extends readonly (infer V)[] ? EntityDTO<V>[] : EntityDTO<U>)
-        : T extends readonly (infer U)[]
-          ? U[]
-          : T extends Relation<T>
-            ? EntityDTO<T>
-            : T;
+        : T extends { $: infer U }
+          ? (U extends readonly (infer V)[] ? EntityDTO<V>[] : EntityDTO<U>)
+          : T extends readonly (infer U)[]
+            ? U[]
+            : T extends Relation<T>
+              ? EntityDTO<T>
+              : T;
 export type EntityDTO<T> = { [K in keyof T as ExcludeFunctions<T, K>]: EntityDTOProp<T[K]> };
 
 export interface EntityProperty<T extends AnyEntity<T> = any> {
@@ -530,11 +532,22 @@ type Defined<T> = Exclude<T, undefined>;
 // For each property on T check if it is included in prefix of keys to load L:
 //   1. It yes, mark the collection or reference loaded and resolve its inner type recursively (passing suffix).
 //   2. If no, just return it as-is (scalars will be included, loadables too but not loaded).
-export type Loaded<T, L extends string = never> = {
-  [K in keyof T]: K extends Prefix<L>
-    ? LoadedLoadable<Defined<T[K]>, Loaded<ExtractType<Defined<T[K]>>, Suffix<L>>>
-    : T[K]
-};
+export type Loaded<T, P extends string = never> = {
+  [K in keyof T]: K extends Prefix<P>
+    ? LoadedLoadable<Defined<T[K]>, Loaded<ExtractType<Defined<T[K]>>, Suffix<P>>>
+    : K extends 'toObject' | 'toJSON' | 'toPOJO'
+      ? unknown // will be replaced with definitions from LoadedDTOMethods that respect Loaded type
+      : T[K]
+} & LoadedDTOMethods<T, P>;
+
+// We need to redefine those base entity methods here, so we can propagate the Loaded type and have properly typed DTOs,
+// namely to be able to tell whether a reference is loaded or it should serialize to the PK.
+type LoadedDTOMethods<T, P extends string = never> = T extends BaseEntity<T, any> ? {
+  // we need to redefine those base entity methods here, so we can propagate the Loaded and have properly typed DTOs
+  toObject(ignoreFields?: string[]): EntityDTO<Loaded<T, P>>;
+  toJSON(...args: any[]): EntityDTO<Loaded<T, P>>;
+  toPOJO(): EntityDTO<Loaded<T, P>>;
+} : T;
 
 export interface LoadedReference<T> extends Reference<T> {
   $: T;
