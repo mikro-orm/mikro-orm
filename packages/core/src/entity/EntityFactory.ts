@@ -92,7 +92,15 @@ export class EntityFactory {
       meta.constructorParams.forEach(prop => delete data[prop]);
 
       // creates new instance via constructor as this is the new entity
-      return new Entity(...params);
+      const entity = new Entity(...params);
+
+      if (!options.newEntity) {
+        meta.relations
+          .filter(prop => [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference))
+          .forEach(prop => delete entity[prop.name]);
+      }
+
+      return entity;
     }
 
     // creates new entity instance, bypassing constructor call as its already persisted entity

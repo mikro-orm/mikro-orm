@@ -104,6 +104,7 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN) {
     logger: i => i,
     cache: { enabled: true },
     migrations: { path: BASE_DIR + '/../temp/migrations' },
+    forceEntityConstructor: [FooBar2],
     loadStrategy,
   });
 
