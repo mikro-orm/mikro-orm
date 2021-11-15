@@ -148,6 +148,12 @@ export class EntityFactory {
       const entity = new Entity(...params);
       entity.__helper!.__schema = this.getSchemaName(options);
 
+      if (!options.newEntity) {
+        meta.relations
+          .filter(prop => [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference))
+          .forEach(prop => delete entity[prop.name]);
+      }
+
       return entity;
     }
 
