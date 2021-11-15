@@ -40,7 +40,7 @@ export class MetadataDiscovery {
     // ignore base entities (not annotated with @Entity)
     const filtered = this.discovered.filter(meta => meta.name);
     // sort so we discover entities first to get around issues with nested embeddables
-    filtered.sort((a, b) => !a.embeddable === !b.embeddable ? 0 : (a.embeddable ? 1 : -1));
+    filtered.sort((a, b) => !a.embeddable === !b.embeddable ? (filtered.indexOf(a) - filtered.indexOf(b)) : (a.embeddable ? 1 : -1));
     filtered.forEach(meta => this.initSingleTableInheritance(meta, filtered));
     filtered.forEach(meta => this.defineBaseEntityProperties(meta));
     filtered.forEach(meta => this.metadata.set(meta.className, EntitySchema.fromMetadata(meta).init().meta));
