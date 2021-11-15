@@ -91,7 +91,7 @@ export class EntityValidator {
 
   private getValue(o: Dictionary, prop: EntityProperty) {
     if (prop.embedded && prop.embedded[0] in o) {
-      return o[prop.embedded[0]][prop.embedded[1]];
+      return o[prop.embedded[0]]?.[prop.embedded[1]];
     }
 
     return o[prop.name];
