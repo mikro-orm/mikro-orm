@@ -710,6 +710,7 @@ export class MetadataDiscovery {
       meta.root.addProperty(prop);
     });
 
+    meta.collection = meta.root.collection;
     meta.root.indexes = Utils.unique([...meta.root.indexes, ...meta.indexes]);
     meta.root.uniques = Utils.unique([...meta.root.uniques, ...meta.uniques]);
   }

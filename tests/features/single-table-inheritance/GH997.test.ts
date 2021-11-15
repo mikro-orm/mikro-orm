@@ -11,6 +11,7 @@ abstract class Base {
 @Entity({
   discriminatorColumn: 'type',
   abstract: true,
+  tableName: 'parent_table',
 })
 class Parent extends Base {
 
@@ -123,6 +124,10 @@ describe('GH issue 997', () => {
     expect(parents[1].qaInfo[2]).toBeInstanceOf(Relation1);
     expect(parents[1].qaInfo[2].parent).toBeInstanceOf(Child2);
     expect((parents[1] as Child1).rel).toBeUndefined();
+  });
+
+  test(`GH issue 2356`, async () => {
+    await expect(orm.getSchemaGenerator().getCreateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot();
   });
 
 });

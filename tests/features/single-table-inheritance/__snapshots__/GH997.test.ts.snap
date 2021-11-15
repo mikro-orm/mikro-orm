@@ -1,0 +1,14 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`GH issue 997 GH issue 2356 1`] = `
+"create table \`parent_table\` (\`id\` integer not null primary key autoincrement, \`type\` text not null);
+create index \`parent_table_type_index\` on \`parent_table\` (\`type\`);
+
+create table \`child1specific\` (\`id\` integer not null primary key autoincrement, \`child1_id\` integer not null, constraint \`child1specific_child1_id_foreign\` foreign key(\`child1_id\`) references \`parent_table\`(\`id\`) on update cascade);
+create index \`child1specific_child1_id_index\` on \`child1specific\` (\`child1_id\`);
+
+create table \`relation1\` (\`id\` integer not null primary key autoincrement, \`parent_id\` integer not null, constraint \`relation1_parent_id_foreign\` foreign key(\`parent_id\`) references \`parent_table\`(\`id\`) on update cascade);
+create index \`relation1_parent_id_index\` on \`relation1\` (\`parent_id\`);
+
+"
+`;
