@@ -10,7 +10,8 @@ abstract class Base {
 
 @Entity({
   discriminatorColumn: 'type',
-  abstract: true
+  abstract: true,
+  tableName: 'parent_table',
 })
 class Parent extends Base {
 
