@@ -45,7 +45,7 @@ export class MetadataDiscovery {
     filtered.forEach(meta => this.defineBaseEntityProperties(meta));
     filtered.forEach(meta => this.metadata.set(meta.className, EntitySchema.fromMetadata(meta).init().meta));
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initEmbeddables(meta, prop)));
-    filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initFactoryField(prop)));
+    filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initFactoryField(meta, prop)));
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initFieldName(prop)));
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initVersionProperty(meta, prop)));
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initCustomType(meta, prop)));
@@ -395,13 +395,17 @@ export class MetadataDiscovery {
     return ret;
   }
 
-  private initFactoryField<T>(prop: EntityProperty<T>): void {
+  private initFactoryField<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>): void {
     ['mappedBy', 'inversedBy'].forEach(type => {
       const value = prop[type];
 
       if (value instanceof Function) {
         const meta2 = this.metadata.get(prop.type);
         prop[type] = value(meta2.properties).name;
+
+        if (prop[type] == null) {
+          throw MetadataError.fromWrongReference(meta, prop, type as 'mappedBy' | 'inversedBy');
+        }
       }
     });
   }
