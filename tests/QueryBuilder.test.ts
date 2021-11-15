@@ -2159,6 +2159,12 @@ describe('QueryBuilder', () => {
     const res4 = await orm.em.createQueryBuilder(Book2).delete().execute();
     expect(res4.insertId).toBe(123);
 
+    spy.mockResolvedValue({ count: 123 });
+    const res5 = await orm.em.createQueryBuilder(Book2).count().execute('get');
+    expect(res5.count).toBe(123);
+    const res6 = await orm.em.createQueryBuilder(Book2).count().getCount();
+    expect(res6).toBe(123);
+
     spy.mockResolvedValue([]);
     // @ts-expect-error
     await orm.em.createQueryBuilder(Book2).insert({}).getResultList();

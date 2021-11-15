@@ -851,7 +851,12 @@ export interface SelectQueryBuilder<T> extends QueryBuilder<T> {
   execute<U = QueryResult<T>>(method: 'run', mapResults?: boolean): Promise<U>;
 }
 
-export interface CountQueryBuilder<T> extends SelectQueryBuilder<T> {}
+export interface CountQueryBuilder<T> extends SelectQueryBuilder<T> {
+  execute<U = { count: number }[]>(method?: 'all' | 'get' | 'run', mapResults?: boolean): Promise<U>;
+  execute<U = { count: number }[]>(method: 'all', mapResults?: boolean): Promise<U>;
+  execute<U = { count: number }>(method: 'get', mapResults?: boolean): Promise<U>;
+  execute<U = QueryResult<{ count: number }>>(method: 'run', mapResults?: boolean): Promise<U>;
+}
 
 export interface InsertQueryBuilder<T> extends RunQueryBuilder<T> {}
 
