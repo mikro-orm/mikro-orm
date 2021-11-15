@@ -4809,10 +4809,10 @@ dns-txt@^2.0.2:
   dependencies:
     buffer-indexof "^1.0.0"
 
-docusaurus-plugin-typedoc@0.16.3:
-  version "0.16.3"
-  resolved "https://registry.yarnpkg.com/docusaurus-plugin-typedoc/-/docusaurus-plugin-typedoc-0.16.3.tgz#94d57d8afc42ad5268669a568f37c83994cc1d4b"
-  integrity sha512-feVKPyAcH98KuZ3wtrVkEnutEUo3zbKvVB/9crbo4W9CjZ0QczSdBtKWuasHWuPxWbThZ6gbBZp/5oeFnSVWbg==
+docusaurus-plugin-typedoc@0.16.4:
+  version "0.16.4"
+  resolved "https://registry.yarnpkg.com/docusaurus-plugin-typedoc/-/docusaurus-plugin-typedoc-0.16.4.tgz#ebf6cdb59e93d18762a98cf96f11e5f40ce95b9b"
+  integrity sha512-fDlmjzlCimIbxBqi7N5FFd77RiidD/zpjfeVFA/8btjL3L6RFebBpNjZ0wih6pakKbqWqE86yja+ApPeM24Kjg==
 
 dom-converter@^0.2.0:
   version "0.2.0"
@@ -9306,17 +9306,17 @@ typedarray-to-buffer@^3.1.5:
   dependencies:
     is-typedarray "^1.0.0"
 
-typedoc-plugin-markdown@3.11.3:
-  version "3.11.3"
-  resolved "https://registry.yarnpkg.com/typedoc-plugin-markdown/-/typedoc-plugin-markdown-3.11.3.tgz#be340b905903f1ce552fa2fa7d677db408ab1041"
-  integrity sha512-rWiHbEIe0oZetDIsBR24XJVxGOJ91kDcHoj2KhFKxCLoJGX659EKBQkHne9QJ4W2stGhu1fRgFyQaouSBnxukA==
+typedoc-plugin-markdown@3.11.6:
+  version "3.11.6"
+  resolved "https://registry.yarnpkg.com/typedoc-plugin-markdown/-/typedoc-plugin-markdown-3.11.6.tgz#6690e8f25fa9c031c0615ee912744fc151a997b8"
+  integrity sha512-CV1BuxL7HR/EE1ctnPXOWzf4/Exl0FzkwtFVYaKTVWTnD/dkFLgABOfWuOL4lPmzLUOsAL85pmq+/PB6cdRppw==
   dependencies:
     handlebars "^4.7.7"
 
-typedoc@0.22.8:
-  version "0.22.8"
-  resolved "https://registry.yarnpkg.com/typedoc/-/typedoc-0.22.8.tgz#cd488290bd31d2cd4099004e1104807895d4eb17"
-  integrity sha512-92S+YzyhospdXN5rnkYUTgirdTYqNWY7NP9vco+IqQQoiSXzVSUsawVro+tMyEEsWUS7EMaJ2YOjB9uE0CBi6A==
+typedoc@0.22.9:
+  version "0.22.9"
+  resolved "https://registry.yarnpkg.com/typedoc/-/typedoc-0.22.9.tgz#7e3f4f72586bbef4c2382f0afcea8e0f9270b712"
+  integrity sha512-84PjudoXVcap6bwdZFbYIUWlgdz/iLV09ZHwrCzhtHWXaDQG6mlosJ8te6DSThuRkRvQjp46HO+qY/P7Gpm78g==
   dependencies:
     glob "^7.2.0"
     lunr "^2.3.9"
