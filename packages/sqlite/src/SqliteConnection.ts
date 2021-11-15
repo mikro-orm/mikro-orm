@@ -60,7 +60,13 @@ export class SqliteConnection extends AbstractSqlConnection {
    */
   private getPatchedDialect() {
     const { Sqlite3Dialect, Sqlite3DialectTableCompiler } = MonkeyPatchable;
+
+    if (Sqlite3Dialect.prototype.__patched) {
+      return Sqlite3Dialect;
+    }
+
     const processResponse = Sqlite3Dialect.prototype.processResponse;
+    Sqlite3Dialect.prototype.__patched = true;
     Sqlite3Dialect.prototype.processResponse = (obj: any, runner: any) => {
       if (obj.method === 'raw' && obj.sql.trim().match(SqliteConnection.RUN_QUERY_RE)) {
         return obj.context;
