@@ -80,7 +80,6 @@ export class MySqlSchemaHelper extends SchemaHelper {
   }
 
   private getColumnDeclarationSQL(col: Column): string {
-    /* istanbul ignore next */
     return `${col.type}${col.unsigned ? ' unsigned' : ''}${col.autoincrement ? ' auto_increment' : ''} ${col.nullable ? 'null' : 'not null'}${col.default ? ' default ' + col.default : ''}${col.comment ? ` comment '${col.comment}'` : ''}`;
   }
 

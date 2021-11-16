@@ -55,7 +55,7 @@ export class ArrayCollection<T, O> {
       return [];
     }
 
-    field = field ?? this.property.targetMeta!.serializedPrimaryKey;
+    field ??= this.property.targetMeta!.serializedPrimaryKey;
 
     return items.map(i => {
       if (Utils.isEntity(i[field as keyof T], true)) {

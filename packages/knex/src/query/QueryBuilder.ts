@@ -432,7 +432,6 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       return join.alias;
     }
 
-    /* istanbul ignore next */
     return join?.inverseAlias || join?.alias;
   }
 
@@ -474,7 +473,6 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     }
 
     const mapped = this.driver.mapResult(res as unknown as T, meta, this._populate, this) as unknown as U;
-    /* istanbul ignore next */
     await this.em?.storeCache(this._cache, cached!, mapped);
 
     return mapped;
@@ -529,8 +527,8 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     if (alias.includes('.')) {
       const [a, f] = alias.split('.');
       const meta = this.metadata.find(a);
-      /* istanbul ignore next */
-      alias = meta?.properties[f]?.fieldNames[0] || alias;
+      /* istanbul ignore else */
+      alias = meta?.properties[f]?.fieldNames[0] ?? alias;
     }
 
     return qb.as(alias);
@@ -581,7 +579,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     this._aliasMap[alias] = prop.type;
     cond = QueryHelper.processWhere(cond, this.entityName, this.metadata, this.platform)!;
     const aliasedName = `${fromAlias}.${prop.name}`;
-    path = path ?? `${(Object.values(this._joins).find(j => j.alias === fromAlias)?.path ?? entityName)}.${prop.name}`;
+    path ??= `${(Object.values(this._joins).find(j => j.alias === fromAlias)?.path ?? entityName)}.${prop.name}`;
 
     if (prop.reference === ReferenceType.ONE_TO_MANY) {
       this._joins[aliasedName] = this.helper.joinOneToReference(prop, fromAlias, alias, type, cond);
@@ -625,8 +623,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     });
 
     const meta = this.metadata.find(this.entityName);
-    /* istanbul ignore next */
-    const requiresSQLConversion = (meta?.props || []).filter(p => p.customType?.convertToJSValueSQL);
+    const requiresSQLConversion = meta?.props.filter(p => p.customType?.convertToJSValueSQL) ?? [];
 
     if (this.flags.has(QueryFlag.CONVERT_CUSTOM_TYPES) && (fields.includes('*') || fields.includes(`${this.alias}.*`)) && requiresSQLConversion.length > 0) {
       requiresSQLConversion.forEach(p => ret.push(this.helper.mapper(p.name, this.type)));

@@ -6,7 +6,7 @@ title: Upgrading from v4 to v5
 > for you, like if you do not use custom `NamingStrategy` implementation, you do not care about
 > the interface being changed.
 
-## Node 12.17.0+ (or 13.10.0+) required
+## Node 14+ required
 
 Support for older node versions was dropped. 
 

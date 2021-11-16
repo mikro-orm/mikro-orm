@@ -39,7 +39,6 @@ export class EntityAssigner {
         return EntityAssigner.assignCollection<T>(entity, entity[prop as keyof T] as unknown as Collection<AnyEntity>, value, props[prop], em!, options);
       }
 
-      /* istanbul ignore next */
       const customType = props[prop]?.customType;
 
       if (options.convertCustomTypes && customType && props[prop].reference === ReferenceType.SCALAR && !Utils.isEntity(data)) {

@@ -164,7 +164,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
           }
         });
 
-      const key = `${meta.name}-${(Utils.getCompositeKeyHash(result as T, meta))}`;
+      const key = `${meta.name}-${(Utils.getCompositeKeyHash(result, meta))}`;
 
       if (map[key]) {
         result[relation.name] = map[key][relation.name];
@@ -190,8 +190,8 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
 
     const last = collection[collection.length - 1];
-    const pk1 = Utils.getCompositeKeyHash(last as T, meta);
-    const pk2 = Utils.getCompositeKeyHash(relationPojo as T, meta);
+    const pk1 = Utils.getCompositeKeyHash(last, meta);
+    const pk2 = Utils.getCompositeKeyHash(relationPojo, meta);
 
     if (pk1 !== pk2) {
       collection.push(relationPojo);
@@ -212,7 +212,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   async nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T> = {}): Promise<QueryResult<T>> {
-    options.convertCustomTypes = options.convertCustomTypes ?? true;
+    options.convertCustomTypes ??= true;
     const meta = this.metadata.find<T>(entityName)!;
     const collections = this.extractManyToMany(entityName, data);
     const pks = this.getPrimaryKeyFields(entityName);
@@ -224,7 +224,6 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     if (pks.length > 1) { // owner has composite pk
       pk = Utils.getPrimaryKeyCond(data as T, pks);
     } else {
-      /* istanbul ignore next */
       res.insertId = data[pks[0]] || res.insertId || res.row[pks[0]];
       pk = [res.insertId];
     }
@@ -235,8 +234,8 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
-    options.processCollections = options.processCollections ?? true;
-    options.convertCustomTypes = options.convertCustomTypes ?? true;
+    options.processCollections ??= true;
+    options.convertCustomTypes ??= true;
     const meta = this.metadata.get<T>(entityName);
     const collections = options.processCollections ? data.map(d => this.extractManyToMany(entityName, d)) : [];
     const pks = this.getPrimaryKeyFields(entityName);
@@ -251,7 +250,6 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       res = await this.rethrow(qb.insert(data).execute('run', false));
     } else {
       let sql = `insert into ${(this.getTableName(meta, options))} `;
-      /* istanbul ignore next */
       sql += fields.length > 0 ? '(' + fields.map(k => this.platform.quoteIdentifier(k)).join(', ') + ')' : 'default';
       sql += ` values `;
       const params: any[] = [];
@@ -276,7 +274,6 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       if (this.platform.usesReturningStatement()) {
         const returningProps = meta!.props.filter(prop => prop.primary || prop.defaultRaw);
         const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
-        /* istanbul ignore next */
         sql += returningFields.length > 0 ? ` returning ${returningFields.map(field => this.platform.quoteIdentifier(field)).join(', ')}` : '';
       }
 
@@ -289,8 +286,8 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     if (pks.length > 1) { // owner has composite pk
       pk = data.map(d => Utils.getPrimaryKeyCond(d as T, pks));
     } else {
-      res.row = res.row ?? {};
-      res.rows = res.rows ?? [];
+      res.row ??= {};
+      res.rows ??= [];
       pk = data.map((d, i) => d[pks[0]] ?? res.rows![i]?.[pks[0]]).map(d => [d]);
       res.insertId = res.insertId || res.row![pks[0]];
     }
@@ -303,7 +300,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   async nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T> = {}): Promise<QueryResult<T>> {
-    options.convertCustomTypes = options.convertCustomTypes ?? true;
+    options.convertCustomTypes ??= true;
     const meta = this.metadata.find<T>(entityName);
     const pks = this.getPrimaryKeyFields(entityName);
     const collections = this.extractManyToMany(entityName, data);
@@ -329,13 +326,12 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   private getSchemaName(meta: EntityMetadata | undefined, options: { schema?: string }): string | undefined {
-    /* istanbul ignore next */
     return options.schema === '*' ? this.config.get('schema') : options.schema ?? (meta?.schema === '*' ? this.config.get('schema') : meta?.schema);
   }
 
   async nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
-    options.processCollections = options.processCollections ?? true;
-    options.convertCustomTypes = options.convertCustomTypes ?? true;
+    options.processCollections ??= true;
+    options.convertCustomTypes ??= true;
     const meta = this.metadata.get<T>(entityName);
     const collections = options.processCollections ? data.map(d => this.extractManyToMany(entityName, d)) : [];
     const keys = new Set<string>();
@@ -432,7 +428,6 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const insertDiff = current.filter(item => !includes(snapshot, item));
     const target = snapshot.filter(item => includes(current, item)).concat(...insertDiff);
     const equals = Utils.equals(current, target);
-    /* istanbul ignore next */
     const ctx = options?.ctx;
 
     // wrong order if we just delete and insert to the end (only owning sides can have fixed order)
@@ -461,7 +456,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const targetMeta = this.metadata.find(prop.type)!;
     const cond = { [`${prop.pivotTable}.${pivotProp2.name}`]: { $in: ownerMeta.compositePK ? owners : owners.map(o => o[0]) } };
 
-    /* istanbul ignore next */
+    /* istanbul ignore if */
     if (!Utils.isEmpty(where) && Object.keys(where as Dictionary).every(k => Utils.isOperator(k, false))) {
       where = cond as FilterQuery<T>;
     } else {
@@ -552,7 +547,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const map: Dictionary = {};
     const res: EntityData<T>[] = [];
     rawResults.forEach(item => {
-      const pk = Utils.getCompositeKeyHash<T>(item as T, meta);
+      const pk = Utils.getCompositeKeyHash(item, meta);
 
       if (map[pk]) {
         map[pk].push(item);
@@ -669,7 +664,6 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
   }
 
-  /* istanbul ignore next */
   protected async updateCollectionDiff<T extends AnyEntity<T>, O extends AnyEntity<O>>(meta: EntityMetadata<O>, prop: EntityProperty<T>, pks: Primary<O>[], deleteDiff: Primary<T>[][] | boolean, insertDiff: Primary<T>[][], options: DriverMethodOptions = {}): Promise<void> {
     if (!deleteDiff) {
       deleteDiff = [];
@@ -715,7 +709,6 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
   async lockPessimistic<T extends AnyEntity<T>>(entity: T, options: LockOptions): Promise<void> {
     const meta = entity.__helper!.__meta;
-    /* istanbul ignore next */
     const qb = this.createQueryBuilder(entity.constructor.name, options.ctx).unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES).withSchema(options.schema ?? meta.schema);
     const cond = Utils.getPrimaryKeyCond(entity, meta.primaryKeys);
     qb.select('1').where(cond!).setLockMode(options.lockMode, options.lockTableAliases);

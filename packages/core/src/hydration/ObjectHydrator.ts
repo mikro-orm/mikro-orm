@@ -190,7 +190,6 @@ export class ObjectHydrator extends Hydrator {
       const conds: string[] = [];
       context.set(`prototype_${convertorKey}`, prop.embeddable.prototype);
 
-      /* istanbul ignore next */
       if (!this.platform.convertsJsonAutomatically() && (prop.object || prop.array)) {
         context.set(`convertToJSValue_${convertorKey}`, (val: any) => prop.customType.convertToJSValue(val, this.platform));
 

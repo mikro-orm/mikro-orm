@@ -6,7 +6,7 @@ import { extname, isAbsolute, join, normalize, relative, resolve } from 'path';
 import { pathExists } from 'fs-extra';
 import { createHash } from 'crypto';
 import { recovery } from 'escaya';
-import type { AnyEntity, Dictionary, EntityDictionary, EntityMetadata, EntityName, EntityProperty, IMetadataStorage, Primary } from '../typings';
+import type { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityName, EntityProperty, IMetadataStorage, Primary } from '../typings';
 import { PlainObject } from '../typings';
 import { GroupOperator, QueryOperator, ReferenceType } from '../enums';
 import type { Collection } from '../entity';
@@ -325,7 +325,6 @@ export class Utils {
     const parsed = recovery(func.toString(), 'entity.js', { next: true, module: true });
 
     const checkNode = (node: Dictionary) => {
-      /* istanbul ignore next */
       if (methodName && node.name?.name !== methodName) {
         return;
       }
@@ -403,7 +402,7 @@ export class Utils {
 
     if (Utils.isPlainObject(data) && meta) {
       if (meta.compositePK) {
-        return Utils.getCompositeKeyHash<T>(data as T, meta);
+        return Utils.getCompositeKeyHash(data as T, meta);
       }
 
       return data[meta.primaryKeys[0]] || data[meta.serializedPrimaryKey] || null;
@@ -412,15 +411,10 @@ export class Utils {
     return null;
   }
 
-  static getCompositeKeyHash<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>): string {
+  static getCompositeKeyHash<T extends AnyEntity<T>>(data: EntityData<T>, meta: EntityMetadata<T>): string {
     const pks = meta.primaryKeys.map(pk => {
-      const value = entity[pk];
+      const value = data[pk];
       const prop = meta.properties[pk];
-
-      /* istanbul ignore next */
-      if (Utils.isEntity<T>(value, true)) {
-        return value.__helper!.getSerializedPrimaryKey();
-      }
 
       if (prop.targetMeta && Utils.isPlainObject(value)) {
         return this.getCompositeKeyHash(value, prop.targetMeta);
@@ -901,8 +895,8 @@ export class Utils {
   }
 
   static tryRequire<T = any>({ module, from, allowError, warning }: { module: string; warning: string; from?: string; allowError?: string }): T | undefined {
-    allowError = allowError ?? `Cannot find module '${module}'`;
-    from = from ?? process.cwd();
+    allowError ??= `Cannot find module '${module}'`;
+    from ??= process.cwd();
 
     try {
       return Utils.requireFrom(module, from);

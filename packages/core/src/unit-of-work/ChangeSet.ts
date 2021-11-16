@@ -15,7 +15,7 @@ export class ChangeSet<T extends AnyEntity<T>> {
   }
 
   getPrimaryKey(): Primary<T> | Primary<T>[] | null {
-    this.primaryKey = this.primaryKey ?? this.entity.__helper!.getPrimaryKey(true);
+    this.primaryKey ??= this.entity.__helper!.getPrimaryKey(true);
     return this.primaryKey;
   }
 

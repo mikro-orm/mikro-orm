@@ -77,7 +77,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     // this currently serves only for 1:m collections with orphan removal, m:n ones are handled via `syncCollection` method
     const snapshot = coll.getSnapshot();
     /* istanbul ignore next */
-    const deleteDiff = snapshot ? snapshot.map(item => (item as AnyEntity<T>).__helper!.__primaryKeyCond) : [];
+    const deleteDiff = snapshot?.map(item => (item as AnyEntity<T>).__helper!.__primaryKeyCond) ?? [];
 
     const cond = { [Utils.getPrimaryKeyHash(coll.property.targetMeta!.primaryKeys)]: deleteDiff } as ObjectQuery<T>;
     await this.nativeDelete<T>(coll.property.type, cond, options);
@@ -117,12 +117,10 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     await Promise.all(this.replicas.map(replica => replica.close(force)));
     await this.connection.close(force);
 
-    /* istanbul ignore next */
     if (this.config.getCacheAdapter()?.close) {
       await this.config.getCacheAdapter().close!();
     }
 
-    /* istanbul ignore next */
     if (this.config.getResultCacheAdapter()?.close) {
       await this.config.getResultCacheAdapter().close!();
     }

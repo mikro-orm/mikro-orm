@@ -342,8 +342,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async transactional<T>(cb: (em: D[typeof EntityManagerType]) => Promise<T>, options: { ctx?: Transaction; isolationLevel?: IsolationLevel } = {}): Promise<T> {
     const em = this.fork({ clear: false });
-    /* istanbul ignore next */
-    options.ctx = options.ctx ?? this.transactionContext;
+    options.ctx ??= this.transactionContext;
 
     return TransactionContext.createAsync(em, async () => {
       return em.getConnection().transactional(async trx => {
@@ -735,9 +734,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Returns new EntityManager instance with its own identity map
    */
   fork(options: ForkOptions = {}): D[typeof EntityManagerType] {
-    options.clear = options.clear ?? true;
-    options.useContext = options.useContext ?? false;
-    options.freshEventManager = options.freshEventManager ?? false;
+    options.clear ??= true;
+    options.useContext ??= false;
+    options.freshEventManager ??= false;
     const eventManager = options.freshEventManager ? new EventManager(this.config.get('subscribers')) : this.eventManager;
 
     // we need to allow global context here as forking from global EM is fine
@@ -948,7 +947,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async storeCache(config: boolean | number | [string, number] | undefined, key: { key: string }, data: unknown | (() => unknown)) {
     if (config) {
-      /* istanbul ignore next */
       const expiration = Array.isArray(config) ? config[1] : (Utils.isNumber(config) ? config : undefined);
       await this.resultCache.set(key.key, data instanceof Function ? data() : data, '', expiration);
     }

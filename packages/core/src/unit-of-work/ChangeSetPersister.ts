@@ -130,7 +130,6 @@ export class ChangeSetPersister {
   }
 
   private propagateSchemaFromMetadata<T>(meta: EntityMetadata<T>, options?: DriverMethodOptions, additionalOptions?: Dictionary): DriverMethodOptions {
-    /* istanbul ignore next */
     return {
       ...options,
       ...additionalOptions,
@@ -288,7 +287,7 @@ export class ChangeSetPersister {
     });
     const data = await this.driver.find<T>(meta.name!, { [pk]: { $in: pks } } as FilterQuery<T>, options);
     const map = new Map<string, Date>();
-    data.forEach(e => map.set(Utils.getCompositeKeyHash<T>(e as T, meta), e[meta.versionProperty] as Date));
+    data.forEach(e => map.set(Utils.getCompositeKeyHash(e, meta), e[meta.versionProperty] as Date));
 
     for (const changeSet of changeSets) {
       const version = map.get(changeSet.entity.__helper!.getSerializedPrimaryKey());

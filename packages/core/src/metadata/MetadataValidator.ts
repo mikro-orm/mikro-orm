@@ -91,7 +91,6 @@ export class MetadataValidator {
       throw MetadataError.fromWrongReference(meta, prop, 'inversedBy');
     }
 
-    /* istanbul ignore next */
     const targetClassName = metadata.find(inverse.type)?.root.className;
 
     // has correct `inversedBy` reference type

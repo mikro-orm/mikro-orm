@@ -43,7 +43,6 @@ export abstract class Hydrator implements IHydrator {
     return meta.hydrateProps;
   }
 
-  /* istanbul ignore next */
   protected hydrateProperty<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, data: EntityData<T>, factory: EntityFactory, newEntity?: boolean, convertCustomTypes?: boolean): void {
     entity[prop.name] = data[prop.name];
   }

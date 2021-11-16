@@ -45,7 +45,7 @@
     "mikro-orm": "./dist/cli.js"
   },
   "engines": {
-    "node": ">= 12.17.0 || >= 13.10.0"
+    "node": ">= 14.0.0"
   },
   "scripts": {
     "build": "yarn clean && yarn compile && yarn copy",

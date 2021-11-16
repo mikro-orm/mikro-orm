@@ -15,6 +15,7 @@ export class MigrationStorage {
 
   async executed(): Promise<string[]> {
     const migrations = await this.getExecutedMigrations();
+    /* istanbul ignore next */
     const ext = this.options.emit === 'js' || !Utils.detectTsNode() ? 'js' : 'ts';
 
     return migrations.map(({ name }) => `${this.getMigrationName(name)}.${ext}`);

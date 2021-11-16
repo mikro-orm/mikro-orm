@@ -10,11 +10,11 @@ export class SqliteDriver extends AbstractSqlDriver<SqliteConnection> {
   }
 
   async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
-    options.processCollections = options.processCollections ?? true;
+    options.processCollections ??= true;
     const res = await super.nativeInsertMany(entityName, data, options);
     const pks = this.getPrimaryKeyFields(entityName);
     const first = res.insertId as number - data.length + 1;
-    res.rows = res.rows ?? [];
+    res.rows ??= [];
     data.forEach((item, idx) => res.rows![idx] = { [pks[0]]: item[pks[0]] ?? first + idx });
     res.row = res.rows![0];
 

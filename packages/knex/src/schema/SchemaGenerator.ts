@@ -135,7 +135,6 @@ export class SchemaGenerator {
     options.safe ??= false;
     options.dropTables ??= true;
     const toSchema = this.getTargetSchema(options.schema);
-    /* istanbul ignore next */
     const fromSchema = options.fromSchema ?? await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema);
     const wildcardSchemaTables = Object.values(this.metadata.getAll()).filter(meta => meta.schema === '*').map(meta => meta.tableName);
     fromSchema.prune(options.schema, wildcardSchemaTables);
@@ -346,7 +345,7 @@ export class SchemaGenerator {
   }
 
   async execute(sql: string, options: { wrap?: boolean } = {}) {
-    options.wrap = options.wrap ?? false;
+    options.wrap ??= false;
     const lines = this.wrapSchema(sql, options).split('\n').filter(i => i.trim());
 
     for (const line of lines) {
@@ -355,7 +354,7 @@ export class SchemaGenerator {
   }
 
   private wrapSchema(sql: string, options: { wrap?: boolean } = {}): string {
-    options.wrap = options.wrap ?? true;
+    options.wrap ??= true;
 
     if (!options.wrap) {
       return sql;
