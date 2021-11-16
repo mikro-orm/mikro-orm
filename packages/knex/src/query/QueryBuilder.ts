@@ -527,7 +527,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     if (alias.includes('.')) {
       const [a, f] = alias.split('.');
       const meta = this.metadata.find(a);
-      /* istanbul ignore else */
+      /* istanbul ignore next */
       alias = meta?.properties[f]?.fieldNames[0] ?? alias;
     }
 
@@ -623,6 +623,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     });
 
     const meta = this.metadata.find(this.entityName);
+    /* istanbul ignore next */
     const requiresSQLConversion = meta?.props.filter(p => p.customType?.convertToJSValueSQL) ?? [];
 
     if (this.flags.has(QueryFlag.CONVERT_CUSTOM_TYPES) && (fields.includes('*') || fields.includes(`${this.alias}.*`)) && requiresSQLConversion.length > 0) {

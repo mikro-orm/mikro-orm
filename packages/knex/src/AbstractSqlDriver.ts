@@ -250,6 +250,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       res = await this.rethrow(qb.insert(data).execute('run', false));
     } else {
       let sql = `insert into ${(this.getTableName(meta, options))} `;
+      /* istanbul ignore next */
       sql += fields.length > 0 ? '(' + fields.map(k => this.platform.quoteIdentifier(k)).join(', ') + ')' : 'default';
       sql += ` values `;
       const params: any[] = [];
@@ -272,8 +273,10 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       }).join(', ');
 
       if (this.platform.usesReturningStatement()) {
+        /* istanbul ignore next */
         const returningProps = meta!.props.filter(prop => prop.primary || prop.defaultRaw);
         const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
+        /* istanbul ignore next */
         sql += returningFields.length > 0 ? ` returning ${returningFields.map(field => this.platform.quoteIdentifier(field)).join(', ')}` : '';
       }
 
@@ -282,7 +285,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     let pk: any[];
 
-    /* istanbul ignore next  */
+    /* istanbul ignore next */
     if (pks.length > 1) { // owner has composite pk
       pk = data.map(d => Utils.getPrimaryKeyCond(d as T, pks));
     } else {
@@ -319,14 +322,16 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       res = await this.rethrow(qb.execute('run', false));
     }
 
+    /* istanbul ignore next */
     const pk = pks.map(pk => Utils.extractPK<T>(data[pk] || where, meta)!) as Primary<T>[];
     await this.processManyToMany<T>(meta, pk, collections, true, options);
 
     return res as unknown as QueryResult<T>;
   }
 
-  private getSchemaName(meta: EntityMetadata | undefined, options: { schema?: string }): string | undefined {
-    return options.schema === '*' ? this.config.get('schema') : options.schema ?? (meta?.schema === '*' ? this.config.get('schema') : meta?.schema);
+  private getSchemaName(meta: EntityMetadata | undefined, options?: { schema?: string }): string | undefined {
+    /* istanbul ignore next */
+    return options?.schema === '*' ? this.config.get('schema') : options?.schema ?? (meta?.schema === '*' ? this.config.get('schema') : meta?.schema);
   }
 
   async nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
@@ -664,13 +669,13 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
   }
 
-  protected async updateCollectionDiff<T extends AnyEntity<T>, O extends AnyEntity<O>>(meta: EntityMetadata<O>, prop: EntityProperty<T>, pks: Primary<O>[], deleteDiff: Primary<T>[][] | boolean, insertDiff: Primary<T>[][], options: DriverMethodOptions = {}): Promise<void> {
+  protected async updateCollectionDiff<T extends AnyEntity<T>, O extends AnyEntity<O>>(meta: EntityMetadata<O>, prop: EntityProperty<T>, pks: Primary<O>[], deleteDiff: Primary<T>[][] | boolean, insertDiff: Primary<T>[][], options?: DriverMethodOptions): Promise<void> {
     if (!deleteDiff) {
       deleteDiff = [];
     }
 
     if (deleteDiff === true || deleteDiff.length > 0) {
-      const qb1 = this.createQueryBuilder(prop.pivotTable, options.ctx, true).withSchema(this.getSchemaName(meta, options)).unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);
+      const qb1 = this.createQueryBuilder(prop.pivotTable, options?.ctx, true).withSchema(this.getSchemaName(meta, options)).unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);
       const knex = qb1.getKnex();
 
       if (Array.isArray(deleteDiff)) {
@@ -698,7 +703,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       await this.nativeInsertMany<T>(prop.pivotTable, items as EntityData<T>[], { ...options, convertCustomTypes: false, processCollections: false });
     } else {
       await Utils.runSerial(items, item => {
-        return this.createQueryBuilder(prop.pivotTable, options.ctx, true)
+        return this.createQueryBuilder(prop.pivotTable, options?.ctx, true)
           .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES)
           .withSchema(this.getSchemaName(meta, options))
           .insert(item)

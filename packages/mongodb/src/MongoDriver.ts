@@ -59,6 +59,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
     data = data.map(d => this.renameFields(entityName, d));
     const meta = this.metadata.find(entityName);
+    /* istanbul ignore next */
     const pk = meta?.getPrimaryProps()[0].fieldNames[0] ?? '_id';
     const res = await this.rethrow(this.getConnection('write').insertMany<T>(entityName, data as any[], options.ctx));
     res.rows = res.insertedIds!.map(id => ({ [pk]: id }));

@@ -116,7 +116,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       const m1 = item.enum_def.match(/check \(\(\((\w+)\)::/i) || item.enum_def.match(/check \(\((\w+) = /i);
       const m2 = item.enum_def.match(/\(array\[(.*)]\)/i) || item.enum_def.match(/ = (.*)\)/i);
 
-      /* istanbul ignore else  */
+      /* istanbul ignore else */
       if (m1 && m2) {
         o[m1[1]] = m2[1].split(',').map((item: string) => item.trim().match(/^\(?'(.*)'/)![1]);
       }

@@ -486,6 +486,7 @@ export class QueryBuilderHelper {
         const prop = this.getProperty(f, alias);
         const noPrefix = (prop && prop.persist === false) || QueryBuilderHelper.isCustomExpression(f);
         const column = this.mapper(noPrefix ? f : `${alias}.${f}`, type);
+        /* istanbul ignore next */
         const rawColumn = Utils.isString(column) ? column.split('.').map(e => this.knex.ref(e)).join('.') : column;
 
         ret.push(`${rawColumn} ${order.toLowerCase()}`);
@@ -611,6 +612,7 @@ export class QueryBuilderHelper {
       return prop.fieldNameRaw;
     }
 
+    /* istanbul ignore next */
     return prop.fieldNames[0] ?? field;
   }
 

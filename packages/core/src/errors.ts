@@ -50,6 +50,7 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
   }
 
   static notDiscoveredEntity(data: any, meta?: EntityMetadata): ValidationError {
+    /* istanbul ignore next */
     const type = meta?.className ?? Object.prototype.toString.call(data).match(/\[object (\w+)]/)![1].toLowerCase();
     let err = `Trying to persist not discovered entity of type ${type}.`;
 

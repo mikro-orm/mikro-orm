@@ -735,6 +735,7 @@ export class MetadataDiscovery {
     const pks = meta.getPrimaryProps();
 
     if (pks.length === 1 && this.isNumericProperty(pks[0])) {
+      /* istanbul ignore next */
       pks[0].autoincrement ??= true;
     }
   }
