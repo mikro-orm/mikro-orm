@@ -1,4 +1,4 @@
-import type { AnyEntity, Configuration, EntityDictionary, NativeInsertUpdateManyOptions, QueryResult, Transaction } from '@mikro-orm/core';
+import type { AnyEntity, Configuration, EntityDictionary, NativeInsertUpdateManyOptions, QueryResult } from '@mikro-orm/core';
 import { AbstractSqlDriver } from '@mikro-orm/knex';
 import { SqliteConnection } from './SqliteConnection';
 import { SqlitePlatform } from './SqlitePlatform';

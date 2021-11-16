@@ -17,6 +17,7 @@ function isRootTransaction<T>(trx: Transaction<T>) {
 
 export abstract class AbstractSqlConnection extends Connection {
 
+  private static __patched = false;
   protected platform!: AbstractSqlPlatform;
   protected client!: Knex;
 
@@ -196,9 +197,16 @@ export abstract class AbstractSqlConnection extends Connection {
    * support edge cases like `\\?` strings (as `positionBindings` was removing the `\\`)
    */
   private patchKnexClient(): void {
-    const query = MonkeyPatchable.Client.prototype.query;
+    const { Client, TableCompiler } = MonkeyPatchable;
+    const query = Client.prototype.query;
 
-    MonkeyPatchable.Client.prototype.query = function (this: any, connection: any, obj: any) {
+    if (AbstractSqlConnection.__patched) {
+      return;
+    }
+
+    AbstractSqlConnection.__patched = true;
+
+    Client.prototype.query = function (this: any, connection: any, obj: any) {
       if (typeof obj === 'string') {
         obj = { sql: obj };
       }
@@ -214,7 +222,7 @@ export abstract class AbstractSqlConnection extends Connection {
       return MonkeyPatchable.QueryExecutioner.executeQuery(connection, obj, this);
     };
 
-    MonkeyPatchable.TableCompiler.prototype.raw = function (this: any, query: string) {
+    TableCompiler.prototype.raw = function (this: any, query: string) {
       this.pushQuery(query);
     };
   }
