@@ -1,6 +1,6 @@
 import type {
-  Collection, Db, DeleteWriteOpResultObject, InsertOneWriteOpResult, MongoClientOptions, UpdateWriteOpResult,
-  FilterQuery as MongoFilterQueryOrPrimary, ClientSession, BulkWriteResult,
+  Collection, Db, MongoClientOptions, ClientSession, BulkWriteResult, Filter, UpdateFilter, OptionalId, UpdateResult,
+  DeleteResult, InsertManyResult, InsertOneResult,
 } from 'mongodb';
 import { MongoClient, ObjectId } from 'mongodb';
 import { inspect } from 'util';
@@ -14,26 +14,30 @@ export class MongoConnection extends Connection {
 
   protected client!: MongoClient;
   protected db!: Db;
+  private connected = false;
 
   async connect(): Promise<void> {
-    this.client = await MongoClient.connect(this.config.getClientUrl(), this.getConnectionOptions());
+    this.client = new MongoClient(this.config.getClientUrl(), this.getConnectionOptions());
+
+    await this.client.connect();
     this.db = this.client.db(this.config.get('dbName'));
+    this.connected = true;
   }
 
   async close(force?: boolean): Promise<void> {
-    return this.client?.close(force);
+    await this.client?.close(!!force);
+    this.connected = false;
   }
 
   async isConnected(): Promise<boolean> {
-    const ret = this.client?.isConnected();
-    return !!ret;
+    return this.connected;
   }
 
-  getCollection(name: EntityName<AnyEntity>): Collection {
-    return this.db.collection(this.getCollectionName(name));
+  getCollection<T>(name: EntityName<T>): Collection<T> {
+    return this.db.collection<T>(this.getCollectionName(name));
   }
 
-  async createCollection(name: EntityName<AnyEntity>): Promise<Collection> {
+  async createCollection<T>(name: EntityName<T>): Promise<Collection<T>> {
     return this.db.createCollection(this.getCollectionName(name));
   }
 
@@ -51,25 +55,25 @@ export class MongoConnection extends Connection {
   }
 
   getConnectionOptions(): MongoClientOptions & ConnectionConfig {
-    const ret: MongoClientOptions = { useNewUrlParser: true, useUnifiedTopology: true };
+    const ret: MongoClientOptions = {};
     const pool = this.config.get('pool')!;
-    const user = this.config.get('user');
+    const username = this.config.get('user');
     const password = this.config.get('password') as string;
 
     if (this.config.get('host')) {
       throw new ValidationError('Mongo driver does not support `host` options, use `clientUrl` instead!');
     }
 
-    if (user && password) {
-      ret.auth = { user, password };
+    if (username && password) {
+      ret.auth = { username, password };
     }
 
     if (pool.min) {
-      ret.minPoolSize = ret.minSize = pool.min;
+      ret.minPoolSize = pool.min;
     }
 
     if (pool.max) {
-      ret.maxPoolSize = ret.poolSize = pool.max;
+      ret.maxPoolSize = pool.max;
     }
 
     return Utils.merge(ret, this.config.get('driverOptions'));
@@ -80,7 +84,7 @@ export class MongoConnection extends Connection {
     const clientUrl = this.config.getClientUrl(true);
     const match = clientUrl.match(/^(\w+):\/\/((.*@.+)|.+)$/);
 
-    return match ? `${match[1]}://${options.auth ? options.auth.user + ':*****@' : ''}${match[2]}` : clientUrl;
+    return match ? `${match[1]}://${options.auth ? options.auth.username + ':*****@' : ''}${match[2]}` : clientUrl;
   }
 
   getDb(): Db {
@@ -99,7 +103,7 @@ export class MongoConnection extends Connection {
       options.projection = fields.reduce((o, k) => ({ ...o, [k]: 1 }), {});
     }
 
-    const resultSet = this.getCollection(collection).find<T>(where as Dictionary, options);
+    const resultSet = this.getCollection<T>(collection).find(where as Filter<T>, options);
     let query = `db.getCollection('${collection}').find(${this.logObject(where)}, ${this.logObject(options)})`;
     orderBy = Utils.asArray(orderBy);
 
@@ -113,6 +117,7 @@ export class MongoConnection extends Connection {
       });
       if (orderByTuples.length > 0) {
         query += `.sort(${this.logObject(orderByTuples)})`;
+        // @ts-expect-error ??
         resultSet.sort(orderByTuples);
       }
     }
@@ -154,12 +159,12 @@ export class MongoConnection extends Connection {
     return this.runQuery<T>('deleteMany', collection, undefined, where, ctx);
   }
 
-  async aggregate(collection: string, pipeline: any[], ctx?: Transaction<ClientSession>): Promise<any[]> {
+  async aggregate<T = any>(collection: string, pipeline: any[], ctx?: Transaction<ClientSession>): Promise<T[]> {
     collection = this.getCollectionName(collection);
     const options: Dictionary = { session: ctx };
     const query = `db.getCollection('${collection}').aggregate(${this.logObject(pipeline)}, ${this.logObject(options)}).toArray();`;
     const now = Date.now();
-    const res = this.getCollection(collection).aggregate(pipeline, options).toArray();
+    const res = this.getCollection(collection).aggregate<T>(pipeline, options).toArray();
     this.logQuery(query, Date.now() - now);
 
     return res;
@@ -181,7 +186,7 @@ export class MongoConnection extends Connection {
       await this.rollback(session, options.eventBroadcaster);
       throw error;
     } finally {
-      session.endSession();
+      await session.endSession();
     }
   }
 
@@ -221,28 +226,28 @@ export class MongoConnection extends Connection {
     const logger = this.config.getLogger();
     const options: Dictionary = { session: ctx };
     const now = Date.now();
-    let res: InsertOneWriteOpResult<T & { _id: any }> | UpdateWriteOpResult | DeleteWriteOpResultObject | BulkWriteResult | number;
+    let res: InsertOneResult<T> | InsertManyResult<T> | UpdateResult | DeleteResult | BulkWriteResult | number;
     let query: string;
     const log = (msg: () => string) => logger.isEnabled('query') ? msg() : '';
 
     switch (method) {
       case 'insertOne':
         query = log(() => `db.getCollection('${collection}').insertOne(${this.logObject(data)}, ${this.logObject(options)});`);
-        res = await this.getCollection(collection).insertOne(data, options);
+        res = await this.getCollection<T>(collection).insertOne(data as OptionalId<T>, options);
         break;
       case 'insertMany':
         query = log(() => `db.getCollection('${collection}').insertMany(${this.logObject(data)}, ${this.logObject(options)});`);
-        res = await this.getCollection(collection).insertMany(data as Partial<T>[], options);
+        res = await this.getCollection<T>(collection).insertMany(data as OptionalId<T>[], options);
         break;
       case 'updateMany': {
         const payload = Object.keys(data!).some(k => k.startsWith('$')) ? data : { $set: data };
         query = log(() => `db.getCollection('${collection}').updateMany(${this.logObject(where)}, ${this.logObject(payload)}, ${this.logObject(options)});`);
-        res = await this.getCollection(collection).updateMany(where as MongoFilterQueryOrPrimary<T>, payload!, options);
+        res = await this.getCollection<T>(collection).updateMany(where as Filter<T>, payload as UpdateFilter<T>, options) as UpdateResult;
         break;
       }
       case 'bulkUpdateMany': {
         query = log(() => `bulk = db.getCollection('${collection}').initializeUnorderedBulkOp(${this.logObject(options)});\n`);
-        const bulk = this.getCollection(collection).initializeUnorderedBulkOp(options);
+        const bulk = this.getCollection<T>(collection).initializeUnorderedBulkOp(options);
 
         (data as T[]).forEach((row, idx) => {
           const cond = { _id: (where as Dictionary[])[idx] };
@@ -252,13 +257,13 @@ export class MongoConnection extends Connection {
         });
 
         query += log(() => `bulk.execute()`);
-        res = await bulk.execute();
+        res = await bulk.execute()!;
         break;
       }
       case 'deleteMany':
       case 'countDocuments':
         query = log(() => `db.getCollection('${collection}').${method}(${this.logObject(where)}, ${this.logObject(options)});`);
-        res = await this.getCollection(collection)[method as 'deleteMany'](where as MongoFilterQueryOrPrimary<T>, options); // cast to deleteMany to fix some typing weirdness
+        res = await this.getCollection<T>(collection)[method as 'deleteMany'](where as Filter<T>, options); // cast to deleteMany to fix some typing weirdness
         break;
     }
 
@@ -275,12 +280,11 @@ export class MongoConnection extends Connection {
     return {
       affectedRows: res.modifiedCount || res.deletedCount || res.insertedCount || 0,
       insertId: res.insertedId ?? res.insertedIds?.[0],
-      row: res.ops?.[0],
-      rows: res.ops,
+      insertedIds: res.insertedIds ? Object.values(res.insertedIds) : undefined,
     };
   }
 
-  private getCollectionName(name: EntityName<AnyEntity>): string {
+  private getCollectionName<T>(name: EntityName<T>): string {
     name = Utils.className(name);
     const meta = this.metadata.find(name);
 

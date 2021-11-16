@@ -597,7 +597,7 @@ describe('GH issue 1175', () => {
     beforeAll(async () => {
       orm = await MikroORM.init({
         entities: [Entity1175],
-        clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/mikro-orm-test?replicaSet=rs0',
+        clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/mikro-orm-test?replicaSet=rs',
         type: 'mongo',
         implicitTransactions: true,
         subscribers: [testSubscriber],

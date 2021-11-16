@@ -539,15 +539,14 @@ describe('EntityManagerMongo', () => {
     // mongo returns the persisted objects
     expect(res).toMatchObject({ affectedRows: 3 });
     expect(res.insertId).toBeInstanceOf(ObjectId);
-    expect(res.row?._id).toBeInstanceOf(ObjectId);
-    expect(res.rows?.[0]._id).toBeInstanceOf(ObjectId);
-    expect(res.rows?.[1]._id).toBeInstanceOf(ObjectId);
-    expect(res.rows?.[2]._id).toBeInstanceOf(ObjectId);
+    expect(res.insertedIds![0]).toBeInstanceOf(ObjectId);
+    expect(res.insertedIds![1]).toBeInstanceOf(ObjectId);
+    expect(res.insertedIds![2]).toBeInstanceOf(ObjectId);
     const res2 = await driver.find(Publisher.name, {});
     expect(res2).toEqual([
-      { _id: res.rows?.[0]._id, name: 'test 1', type: 'GLOBAL' },
-      { _id: res.rows?.[1]._id, name: 'test 2', type: 'LOCAL' },
-      { _id: res.rows?.[2]._id, name: 'test 3', type: 'GLOBAL' },
+      { _id: res.insertedIds![0], name: 'test 1', type: 'GLOBAL' },
+      { _id: res.insertedIds![1], name: 'test 2', type: 'LOCAL' },
+      { _id: res.insertedIds![2], name: 'test 3', type: 'GLOBAL' },
     ]);
     await driver.nativeDelete(Publisher.name, res.rows?.[0]._id);
     const count = await driver.count(Publisher.name, {});
@@ -581,9 +580,7 @@ describe('EntityManagerMongo', () => {
     const config = new Configuration({ type: 'mongo', user: 'usr', password: 'pw' } as any, false);
     const connection = new MongoConnection(config);
     await expect(connection.getConnectionOptions()).toEqual({
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      auth: { user: 'usr', password: 'pw' },
+      auth: { username: 'usr', password: 'pw' },
     });
   });
 
