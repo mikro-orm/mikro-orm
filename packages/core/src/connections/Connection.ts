@@ -144,6 +144,7 @@ export interface QueryResult<T extends AnyEntity<T> = { id: number }> {
   insertId: Primary<T>;
   row?: Dictionary;
   rows?: Dictionary[];
+  insertedIds?: Primary<T>[];
 }
 
 export interface ConnectionConfig {

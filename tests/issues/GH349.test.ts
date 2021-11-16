@@ -1,5 +1,5 @@
 import { Entity, PrimaryKey, Property, MikroORM, SerializedPrimaryKey } from '@mikro-orm/core';
-import { ObjectId } from 'mongodb';
+import { Decimal128, ObjectId } from 'mongodb';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 
 @Entity()
@@ -42,7 +42,7 @@ class B {
 class C {
 
   @PrimaryKey()
-  _id!: number;
+  _id!: Decimal128;
 
   @SerializedPrimaryKey()
   id!: string;
@@ -64,7 +64,7 @@ describe('GH issue 349', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A, B, C],
-      clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/mikro-orm-test?replicaSet=rs0',
+      clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/mikro-orm-test?replicaSet=rs',
       type: 'mongo',
       debug: ['discovery'],
       logger: i => i,
@@ -137,7 +137,7 @@ describe('GH issue 349', () => {
 
   test(`should work with number id`, async () => {
     const c = new C('test1');
-    const nrId = 234123412458902579342356;
+    const nrId = new Decimal128('234123412458902579342356');
     c._id = nrId;
     await orm.em.persistAndFlush(c);
     expect(c._id).not.toBeInstanceOf(ObjectId);
