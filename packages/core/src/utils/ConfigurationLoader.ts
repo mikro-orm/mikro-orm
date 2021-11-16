@@ -23,7 +23,7 @@ export class ConfigurationLoader {
       if (await pathExists(path)) {
         const config = await import(path);
         /* istanbul ignore next */
-        let tmp = config.default || config;
+        let tmp = config.default ?? config;
 
         if (tmp instanceof Function) {
           tmp = tmp();

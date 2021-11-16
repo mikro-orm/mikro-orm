@@ -289,7 +289,7 @@ export class EntityMetadata<T extends AnyEntity<T> = any> {
   }
 
   sync(initIndexes = false) {
-    this.root = this.root ?? this;
+    this.root ??= this;
     const props = Object.values(this.properties).sort((a, b) => this.propertyOrder.get(a.name)! - this.propertyOrder.get(b.name)!);
     this.props = [...props.filter(p => p.primary), ...props.filter(p => !p.primary)];
     this.relations = this.props.filter(prop => prop.reference !== ReferenceType.SCALAR && prop.reference !== ReferenceType.EMBEDDED);

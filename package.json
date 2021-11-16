@@ -116,7 +116,7 @@
     ]
   },
   "engines": {
-    "node": ">= 12.17.0 || >= 13.10.0"
+    "node": ">= 14.0.0"
   },
   "devDependencies": {
     "@commitlint/cli": "14.1.0",

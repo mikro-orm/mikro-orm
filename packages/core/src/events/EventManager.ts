@@ -50,7 +50,6 @@ export class EventManager {
   }
 
   hasListeners<T extends AnyEntity<T>>(event: EventType, meta: EntityMetadata<T>): boolean {
-    /* istanbul ignore next */
     const hasHooks = meta.hooks[event]?.length;
 
     if (hasHooks) {

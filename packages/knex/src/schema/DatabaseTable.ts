@@ -226,9 +226,7 @@ export class DatabaseTable {
       fkOptions.fieldNames = fk.columnNames;
       fkOptions.referencedTableName = fk.referencedTableName;
       fkOptions.referencedColumnNames = fk.referencedColumnNames;
-      /* istanbul ignore next */
       fkOptions.onUpdateIntegrity = fk.updateRule?.toLowerCase();
-      /* istanbul ignore next */
       fkOptions.onDelete = fk.deleteRule?.toLowerCase();
     }
 

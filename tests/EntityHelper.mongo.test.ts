@@ -169,30 +169,24 @@ describe('EntityHelperMongo', () => {
     bar.baz = FooBaz.create('baz');
     let actual = inspect(bar);
 
-    // util.inspect was buggy in node < 12 so we cannot compare the same snapshot
-    if (+process.version.match(/^v(\d+\.\d+)/)![1] >= 12) {
-      expect(actual).toBe('FooBar {\n' +
-        '  meta: { onCreateCalled: false, onUpdateCalled: false },\n' +
-        "  name: 'bar',\n" +
-        '  baz: FooBaz {\n' +
-        "    name: 'baz',\n" +
-        "    bar: FooBar { meta: [Object], name: 'bar', baz: [FooBaz] }\n" +
-        '  }\n' +
-        '}');
-    }
+    expect(actual).toBe('FooBar {\n' +
+      '  meta: { onCreateCalled: false, onUpdateCalled: false },\n' +
+      "  name: 'bar',\n" +
+      '  baz: FooBaz {\n' +
+      "    name: 'baz',\n" +
+      "    bar: FooBar { meta: [Object], name: 'bar', baz: [FooBaz] }\n" +
+      '  }\n' +
+      '}');
 
     expect(inspect((bar as AnyEntity).__helper)).toBe('[WrappedEntity<FooBar>]');
     bar.baz = orm.em.getReference(FooBaz, '5b0ff0619fbec620008d2414');
     actual = inspect(bar);
 
-    // util.inspect was buggy in node < 12 so we cannot compare the same snapshot
-    if (+process.version.match(/^v(\d+\.\d+)/)![1] >= 12) {
-      expect(actual).toBe('FooBar {\n' +
-        '  meta: { onCreateCalled: false, onUpdateCalled: false },\n' +
-        "  name: 'bar',\n" +
-        "  baz: Ref<FooBaz> { _id: ObjectId('5b0ff0619fbec620008d2414') }\n" +
-        '}');
-    }
+    expect(actual).toBe('FooBar {\n' +
+      '  meta: { onCreateCalled: false, onUpdateCalled: false },\n' +
+      "  name: 'bar',\n" +
+      "  baz: Ref<FooBaz> { _id: ObjectId('5b0ff0619fbec620008d2414') }\n" +
+      '}');
 
     const god = new Author('God', 'hello@heaven.god');
     const bible = new Book('Bible', god);
@@ -203,47 +197,44 @@ describe('EntityHelperMongo', () => {
     bible.publisher = Reference.create(new Publisher('Publisher 1'));
     actual = inspect(god);
 
-    // util.inspect was buggy in node < 12 so we cannot compare the same snapshot
-    if (+process.version.match(/^v(\d+\.\d+)/)![1] >= 12) {
-      expect(actual).toBe('Author {\n' +
-        '  hookTest: false,\n' +
-        '  termsAccepted: false,\n' +
-        '  books: Collection {\n' +
-        "    '0': Book {\n" +
-        '      createdAt: ISODate(\'2020-07-18T17:31:08.535Z\'),\n' +
-        '      tags: [Collection],\n' +
-        "      title: 'Bible',\n" +
-        '      author: [Author],\n' +
-        '      publisher: [Reference]\n' +
-        '    },\n' +
-        '    initialized: true,\n' +
-        '    dirty: true\n' +
-        '  },\n' +
-        '  friends: Collection { initialized: true, dirty: false },\n' +
-        "  name: 'God',\n" +
-        "  email: 'hello@heaven.god',\n" +
-        "  foo: 'bar',\n" +
-        '  favouriteAuthor: Author {\n' +
-        '    hookTest: false,\n' +
-        '    termsAccepted: false,\n' +
-        "    books: Collection { '0': [Book], initialized: true, dirty: true },\n" +
-        '    friends: Collection { initialized: true, dirty: false },\n' +
-        "    name: 'God',\n" +
-        "    email: 'hello@heaven.god',\n" +
-        "    foo: 'bar',\n" +
-        '    favouriteAuthor: Author {\n' +
-        '      hookTest: false,\n' +
-        '      termsAccepted: false,\n' +
-        '      books: [Collection],\n' +
-        '      friends: [Collection],\n' +
-        "      name: 'God',\n" +
-        "      email: 'hello@heaven.god',\n" +
-        "      foo: 'bar',\n" +
-        '      favouriteAuthor: [Author]\n' +
-        '    }\n' +
-        '  }\n' +
-        '}');
-    }
+    expect(actual).toBe('Author {\n' +
+      '  hookTest: false,\n' +
+      '  termsAccepted: false,\n' +
+      '  books: Collection {\n' +
+      "    '0': Book {\n" +
+      '      createdAt: ISODate(\'2020-07-18T17:31:08.535Z\'),\n' +
+      '      tags: [Collection],\n' +
+      "      title: 'Bible',\n" +
+      '      author: [Author],\n' +
+      '      publisher: [Reference]\n' +
+      '    },\n' +
+      '    initialized: true,\n' +
+      '    dirty: true\n' +
+      '  },\n' +
+      '  friends: Collection { initialized: true, dirty: false },\n' +
+      "  name: 'God',\n" +
+      "  email: 'hello@heaven.god',\n" +
+      "  foo: 'bar',\n" +
+      '  favouriteAuthor: Author {\n' +
+      '    hookTest: false,\n' +
+      '    termsAccepted: false,\n' +
+      "    books: Collection { '0': [Book], initialized: true, dirty: true },\n" +
+      '    friends: Collection { initialized: true, dirty: false },\n' +
+      "    name: 'God',\n" +
+      "    email: 'hello@heaven.god',\n" +
+      "    foo: 'bar',\n" +
+      '    favouriteAuthor: Author {\n' +
+      '      hookTest: false,\n' +
+      '      termsAccepted: false,\n' +
+      '      books: [Collection],\n' +
+      '      friends: [Collection],\n' +
+      "      name: 'God',\n" +
+      "      email: 'hello@heaven.god',\n" +
+      "      foo: 'bar',\n" +
+      '      favouriteAuthor: [Author]\n' +
+      '    }\n' +
+      '  }\n' +
+      '}');
   });
 
   afterAll(async () => orm.close(true));

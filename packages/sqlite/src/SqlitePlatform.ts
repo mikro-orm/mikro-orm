@@ -24,7 +24,6 @@ export class SqlitePlatform extends AbstractSqlPlatform {
   }
 
   getEnumTypeDeclarationSQL(column: { items?: unknown[]; fieldNames: string[]; length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
-    /* istanbul ignore next */
     if (column.items?.every(item => Utils.isString(item))) {
       return 'text';
     }

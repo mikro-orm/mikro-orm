@@ -46,7 +46,7 @@ export class CriteriaNode implements ICriteriaNode {
 
   shouldRename(payload: any): boolean {
     const type = this.prop ? this.prop.reference : null;
-    const composite = /* istanbul ignore next */ this.prop?.joinColumns ? this.prop.joinColumns.length > 1 : false;
+    const composite = this.prop?.joinColumns ? this.prop.joinColumns.length > 1 : false;
     const customExpression = CriteriaNode.isCustomExpression(this.key!);
     const scalar = payload === null || Utils.isPrimaryKey(payload) || payload instanceof RegExp || payload instanceof Date || customExpression;
     const operator = Utils.isPlainObject(payload) && Object.keys(payload).every(k => Utils.isOperator(k, false));

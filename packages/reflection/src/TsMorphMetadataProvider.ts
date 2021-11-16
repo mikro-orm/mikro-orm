@@ -98,7 +98,6 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     const properties = cls.getInstanceProperties();
     const property = properties.find(v => v.getName() === prop.name) as PropertyDeclaration;
 
-    /* istanbul ignore next */
     if (!property) {
       return { type: prop.type, optional: prop.nullable };
     }
@@ -130,7 +129,6 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
     let type = typeName;
     const union = type.split(' | ');
-    /* istanbul ignore next */
     const optional = property.hasQuestionToken?.() || union.includes('null') || union.includes('undefined');
     type = union.filter(t => !['null', 'undefined'].includes(t)).join(' | ');
 

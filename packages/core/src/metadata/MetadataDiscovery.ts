@@ -212,7 +212,7 @@ export class MetadataDiscovery {
 
     const exists = this.metadata.has(entity.name);
     const meta = this.metadata.get<T>(entity.name, true);
-    meta.abstract = meta.abstract ?? !(exists && meta.name);
+    meta.abstract ??= !(exists && meta.name);
     const schema = EntitySchema.fromMetadata<T>(meta);
     schema.setClass(entity);
     schema.meta.useCache = this.metadataProvider.useCache();
@@ -735,8 +735,7 @@ export class MetadataDiscovery {
     const pks = meta.getPrimaryProps();
 
     if (pks.length === 1 && this.isNumericProperty(pks[0])) {
-      /* istanbul ignore next */
-      pks[0].autoincrement = pks[0].autoincrement ?? true;
+      pks[0].autoincrement ??= true;
     }
   }
 
@@ -746,7 +745,7 @@ export class MetadataDiscovery {
     }
 
     if (prop.type.toLowerCase() === 'date') {
-      prop.length = prop.length ?? this.platform.getDefaultVersionLength();
+      prop.length ??= this.platform.getDefaultVersionLength();
       return this.platform.getCurrentTimestampSQL(prop.length);
     }
 
@@ -830,11 +829,9 @@ export class MetadataDiscovery {
   private async initColumnType(prop: EntityProperty, path?: string): Promise<void> {
     this.initUnsigned(prop);
     this.metadata.find(prop.type)?.getPrimaryProps().map(pk => {
-      prop.length = prop.length ?? pk.length;
-      /* istanbul ignore next */
-      prop.precision = prop.precision ?? pk.precision;
-      /* istanbul ignore next */
-      prop.scale = prop.scale ?? pk.scale;
+      prop.length ??= pk.length;
+      prop.precision ??= pk.precision;
+      prop.scale ??= pk.scale;
     });
 
     if (prop.columnTypes || !this.schemaHelper) {
@@ -920,7 +917,7 @@ export class MetadataDiscovery {
 
   private initIndexes(prop: EntityProperty): void {
     if ((prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner)) && this.platform.indexForeignKeys()) {
-      prop.index = prop.index ?? true;
+      prop.index ??= true;
     }
   }
 
@@ -948,7 +945,7 @@ export class MetadataDiscovery {
       return targets;
     }
 
-    const target = exports.default || exports[name];
+    const target = exports.default ?? exports[name];
 
     /* istanbul ignore next */
     if (!target) {

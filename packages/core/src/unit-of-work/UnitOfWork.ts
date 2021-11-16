@@ -94,7 +94,7 @@ export class UnitOfWork {
 
     const meta = this.metadata.find(entityName)!.root;
     let hash = Array.isArray(id) ? Utils.getPrimaryKeyHash(id as string[]) : '' + id;
-    schema = schema ?? meta.schema;
+    schema ??= meta.schema;
 
     if (schema) {
       hash = `${schema}:${hash}`;

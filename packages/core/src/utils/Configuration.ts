@@ -258,7 +258,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     Object.keys(this.options.filters).forEach(key => {
-      this.options.filters[key].default = this.options.filters[key].default ?? true;
+      this.options.filters[key].default ??= true;
     });
 
     const subscribers = Object.values(MetadataStorage.getSubscriberMetadata());

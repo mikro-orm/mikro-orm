@@ -36,13 +36,13 @@ export class EntityLoader {
       return;
     }
 
-    options.where = options.where ?? {} as FilterQuery<T>;
-    options.orderBy = options.orderBy ?? {};
-    options.filters = options.filters ?? {};
-    options.lookup = options.lookup ?? true;
-    options.validate = options.validate ?? true;
-    options.refresh = options.refresh ?? false;
-    options.convertCustomTypes = options.convertCustomTypes ?? true;
+    options.where ??= {} as FilterQuery<T>;
+    options.orderBy ??= {};
+    options.filters ??= {};
+    options.lookup ??= true;
+    options.validate ??= true;
+    options.refresh ??= false;
+    options.convertCustomTypes ??= true;
     populate = this.normalizePopulate<T>(entityName, populate, options.strategy, options.lookup);
     const invalid = populate.find(({ field }) => !this.em.canPopulate(entityName, field));
 
@@ -279,7 +279,6 @@ export class EntityLoader {
     delete options2.limit;
     delete options2.offset;
     options2.fields = (fields.length > 0 ? fields : undefined) as EntityField<T>[];
-    /* istanbul ignore next */
     options2.populate = (populate?.children ?? []) as never;
 
     if (prop.customType) {
@@ -329,8 +328,7 @@ export class EntityLoader {
 
     if (operators.length > 0) {
       operators.forEach(op => {
-        /* istanbul ignore next */
-        subCond[pk] = subCond[pk] ?? {};
+        subCond[pk] ??= {};
         subCond[pk][op] = subCond[op];
         delete subCond[op];
       });
@@ -439,7 +437,6 @@ export class EntityLoader {
       .filter(prop => prop.eager || populate.some(p => p.field === prop.name))
       .forEach(prop => {
         const prefixed = prefix ? `${prefix}.${prop.name}` : prop.name;
-        /* istanbul ignore next */
         const nestedPopulate = populate.find(p => p.field === prop.name)?.children ?? [];
         const nested = this.lookupEagerLoadedRelationships(prop.type, nestedPopulate, strategy, prefixed, visited);
 

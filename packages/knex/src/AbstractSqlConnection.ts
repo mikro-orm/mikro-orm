@@ -104,7 +104,7 @@ export abstract class AbstractSqlConnection extends Connection {
 
   async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | Knex.QueryBuilder | Knex.Raw, params: any[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction): Promise<T> {
     if (Utils.isObject<Knex.QueryBuilder | Knex.Raw>(queryOrKnex)) {
-      ctx = ctx ?? ((queryOrKnex as any).client.transacting ? queryOrKnex : null);
+      ctx ??= ((queryOrKnex as any).client.transacting ? queryOrKnex : null);
       const q = queryOrKnex.toSQL();
       queryOrKnex = q.sql;
       params = q.bindings as any[];
@@ -198,7 +198,6 @@ export abstract class AbstractSqlConnection extends Connection {
   private patchKnexClient(): void {
     const query = MonkeyPatchable.Client.prototype.query;
 
-    /* istanbul ignore next */
     MonkeyPatchable.Client.prototype.query = function (this: any, connection: any, obj: any) {
       if (typeof obj === 'string') {
         obj = { sql: obj };

@@ -53,7 +53,6 @@ export class QueryBuilderHelper {
         return this.knex.raw(valueSQL);
       }
 
-      /* istanbul ignore next */
       return this.knex.raw(valueSQL + ' as ' + this.platform.quoteIdentifier(alias ?? prop.fieldNames[0]));
     }
 
@@ -109,7 +108,6 @@ export class QueryBuilderHelper {
         data[k] = this.knex.raw(prop.customType.convertToDatabaseValueSQL!(quoted, this.platform));
       }
 
-      /* istanbul ignore next */
       if (!prop.customType && (Array.isArray(data[k]) || Utils.isPlainObject(data[k]))) {
         data[k] = JSON.stringify(data[k]);
       }
@@ -488,7 +486,6 @@ export class QueryBuilderHelper {
         const prop = this.getProperty(f, alias);
         const noPrefix = (prop && prop.persist === false) || QueryBuilderHelper.isCustomExpression(f);
         const column = this.mapper(noPrefix ? f : `${alias}.${f}`, type);
-        /* istanbul ignore next */
         const rawColumn = Utils.isString(column) ? column.split('.').map(e => this.knex.ref(e)).join('.') : column;
 
         ret.push(`${rawColumn} ${order.toLowerCase()}`);
@@ -614,7 +611,6 @@ export class QueryBuilderHelper {
       return prop.fieldNameRaw;
     }
 
-    /* istanbul ignore next */
     return prop.fieldNames[0] ?? field;
   }
 

@@ -10,7 +10,7 @@ export class MySqlDriver extends AbstractSqlDriver<MySqlConnection> {
   }
 
   async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
-    options.processCollections = options.processCollections ?? true;
+    options.processCollections ??= true;
     const res = await super.nativeInsertMany(entityName, data, options);
     const pks = this.getPrimaryKeyFields(entityName);
     data.forEach((item, idx) => res.rows![idx] = { [pks[0]]: item[pks[0]] ?? res.insertId as number + idx });

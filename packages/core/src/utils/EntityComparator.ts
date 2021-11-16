@@ -358,7 +358,6 @@ export class EntityComparator {
       if (childProp.customType) {
         context.set(`convertToDatabaseValue_${childProp.name}`, (val: any) => childProp.customType.convertToDatabaseValue(val, this.platform));
 
-        /* istanbul ignore next */
         if (['number', 'string', 'boolean'].includes(childProp.customType.compareAsType().toLowerCase())) {
           return `${padding}  ret${childDataKey} = convertToDatabaseValue_${childProp.name}(entity${childEntityKey});`;
         }
@@ -402,7 +401,6 @@ export class EntityComparator {
       if (prop.customType) {
         context.set(`convertToDatabaseValue_${prop.name}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform));
 
-        /* istanbul ignore next */
         if (['number', 'string', 'boolean'].includes(prop.customType.compareAsType().toLowerCase())) {
           return ret + `    ret${dataKey} = convertToDatabaseValue_${prop.name}(ret${dataKey});\n  }\n`;
         }

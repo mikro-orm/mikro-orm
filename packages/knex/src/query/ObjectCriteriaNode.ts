@@ -84,7 +84,6 @@ export class ObjectCriteriaNode extends CriteriaNode {
         const key = idx !== -1 && !childAlias ? prop.joinColumns[idx] : k;
 
         if (key in o) {
-          /* istanbul ignore next */
           const $and = o.$and ?? [];
           $and.push({ [key]: o[key] }, { [key]: payload[k] });
           delete o[key];

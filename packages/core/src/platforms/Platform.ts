@@ -204,7 +204,7 @@ export abstract class Platform {
   }
 
   getUuidTypeDeclarationSQL(column: { length?: number }): string {
-    column.length = column.length ?? 36;
+    column.length ??= 36;
     return this.getVarcharTypeDeclarationSQL(column);
   }
 

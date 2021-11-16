@@ -27,7 +27,7 @@ export class EntityFactory {
               private readonly em: EntityManager) { }
 
   create<T extends AnyEntity<T>, P extends string = string>(entityName: EntityName<T>, data: EntityData<T>, options: FactoryOptions = {}): New<T, P> {
-    options.initialized = options.initialized ?? true;
+    options.initialized ??= true;
 
     if ((data as Dictionary).__entity) {
       return data as New<T, P>;

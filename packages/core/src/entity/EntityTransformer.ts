@@ -168,7 +168,6 @@ export class EntityTransformer {
   private static processProperty<T extends AnyEntity<T>>(prop: keyof T & string, entity: T, raw: boolean): T[keyof T] | undefined {
     const property = entity.__meta!.properties[prop];
 
-    /* istanbul ignore next */
     const serializer = property?.serializer;
 
     if (serializer) {
@@ -183,7 +182,6 @@ export class EntityTransformer {
       return EntityTransformer.processEntity(prop, entity, entity.__platform!, raw);
     }
 
-    /* istanbul ignore next */
     const customType = property?.customType;
 
     if (customType) {
