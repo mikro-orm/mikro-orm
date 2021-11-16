@@ -191,8 +191,6 @@ export class ObjectHydrator extends Hydrator {
       context.set(`prototype_${convertorKey}`, prop.embeddable.prototype);
 
       if (!this.platform.convertsJsonAutomatically() && (prop.object || prop.array)) {
-        context.set(`convertToJSValue_${convertorKey}`, (val: any) => prop.customType.convertToJSValue(val, this.platform));
-
         ret.push(
           `  if (typeof data${dataKey} === 'string') {`,
           `    data${dataKey} = JSON.parse(data${dataKey});`,
