@@ -783,8 +783,23 @@ export class Utils {
       return fn(...args);
     } catch (e: any) {
       if ([SyntaxError, TypeError, EvalError, ReferenceError].some(t => e instanceof t)) {
+        const position = e.stack.match(/<anonymous>:(\d+):(\d+)/);
+        let code = fn.toString();
+
+        if (position) {
+          const lines = code.split('\n').map((line, idx) => {
+            if (idx === +position[1] - 4) {
+              return '> ' + line;
+            }
+
+            return '  ' + line;
+          });
+          lines.splice(+position[1] - 3, 0, ' '.repeat(+position[2] - 4) + '^');
+          code = lines.join('\n');
+        }
+
         // eslint-disable-next-line no-console
-        console.error(`JIT runtime error: ${e.message}\n\n${fn.toString()}`);
+        console.error(`JIT runtime error: ${e.message}\n\n${code}`);
       }
 
       throw e;
