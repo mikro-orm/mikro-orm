@@ -26,7 +26,8 @@ export abstract class MetadataProvider {
       if (Utils.isString(prop.entity)) {
         prop.type = prop.entity;
       } else if (prop.entity) {
-        prop.type = Utils.className(prop.entity());
+        const tmp = prop.entity();
+        prop.type = Array.isArray(tmp) ? tmp.map(t => Utils.className(t)).sort().join(' | ') : Utils.className(tmp);
       } else if (!prop.type) {
         await fallback(prop);
       }

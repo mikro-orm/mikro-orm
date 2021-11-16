@@ -324,7 +324,8 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
       if (Utils.isString(options.entity)) {
         type = options.type = options.entity;
       } else if (options.entity) {
-        type = options.type = Utils.className(options.entity());
+        const tmp = options.entity();
+        type = options.type = Array.isArray(tmp) ? tmp.map(t => Utils.className(t)).sort().join(' | ') : Utils.className(tmp);
       }
     }
 

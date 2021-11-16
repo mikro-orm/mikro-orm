@@ -1,0 +1,44 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`polymorphic embeddables schema 1`] = `
+"create table \`owner\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`pet_can_bark\` integer null, \`pet_type\` integer not null, \`pet_name\` text not null, \`pet_can_meow\` integer null);
+create index \`owner_pet_type_index\` on \`owner\` (\`pet_type\`);
+
+"
+`;
+
+exports[`polymorphic embeddables schema 2`] = `""`;
+
+exports[`polymorphic embeddables schema 3`] = `
+"function(entity, data, factory, newEntity, convertCustomTypes) {
+  if (typeof data.id !== 'undefined') entity.id = data.id;
+  if (typeof data.name !== 'undefined') entity.name = data.name;
+  if (data.pet_canBark != null || data.pet_type != null || data.pet_name != null || data.pet_canMeow != null) {
+    if (data.pet_type == '1') {
+      entity.pet = factory.create('Dog', data, { newEntity, convertCustomTypes });
+    }
+    if (data.pet_type == '0') {
+      entity.pet = factory.create('Cat', data, { newEntity, convertCustomTypes });
+    }
+    if (typeof data.pet_canBark !== 'undefined') entity.pet.canBark = data.pet_canBark === null ? null : !!data.pet_canBark;
+    if (typeof data.pet_type !== 'undefined') entity.pet.type = data.pet_type;
+    if (typeof data.pet_name !== 'undefined') entity.pet.name = data.pet_name;
+    if (typeof data.pet_canMeow !== 'undefined') entity.pet.canMeow = data.pet_canMeow === null ? null : !!data.pet_canMeow;
+  }
+  if (typeof data.pet === 'string') {
+    data.pet = JSON.parse(data.pet);
+  }
+  if (data.pet != null) {
+    if (data.pet.type == '1') {
+      entity.pet = factory.create('Dog', data.pet, { newEntity, convertCustomTypes });
+    }
+    if (data.pet.type == '0') {
+      entity.pet = factory.create('Cat', data.pet, { newEntity, convertCustomTypes });
+    }
+    if (data.pet && typeof data.pet.canBark !== 'undefined') entity.pet.canBark = data.pet.canBark === null ? null : !!data.pet.canBark;
+    if (data.pet && typeof data.pet.type !== 'undefined') entity.pet.type = data.pet.type;
+    if (data.pet && typeof data.pet.name !== 'undefined') entity.pet.name = data.pet.name;
+    if (data.pet && typeof data.pet.canMeow !== 'undefined') entity.pet.canMeow = data.pet.canMeow === null ? null : !!data.pet.canMeow;
+  }
+}"
+`;

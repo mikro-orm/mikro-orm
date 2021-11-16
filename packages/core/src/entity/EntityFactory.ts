@@ -185,7 +185,7 @@ export class EntityFactory {
   }
 
   private findEntity<T>(data: EntityData<T>, meta: EntityMetadata<T>, options: FactoryOptions): T | undefined {
-    if (!meta.compositePK && !meta.properties[meta.primaryKeys[0]].customType) {
+    if (!meta.compositePK && !meta.properties[meta.primaryKeys[0]]?.customType) {
       return this.unitOfWork.getById<T>(meta.name!, data[meta.primaryKeys[0]] as Primary<T>, options.schema);
     }
 

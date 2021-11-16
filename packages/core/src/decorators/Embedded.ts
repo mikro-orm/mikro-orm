@@ -17,7 +17,7 @@ export function Embedded(type: EmbeddedOptions | (() => AnyEntity) = {}, options
 }
 
 export type EmbeddedOptions = {
-  entity?: string | (() => AnyEntity);
+  entity?: string | (() => AnyEntity | AnyEntity[]);
   type?: string;
   prefix?: string | boolean;
   nullable?: boolean;
