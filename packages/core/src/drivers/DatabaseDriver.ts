@@ -79,6 +79,11 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     /* istanbul ignore next */
     const deleteDiff = snapshot?.map(item => (item as AnyEntity<T>).__helper!.__primaryKeyCond) ?? [];
 
+    /* istanbul ignore next */
+    if (deleteDiff.length === 0) {
+      return;
+    }
+
     const cond = { [Utils.getPrimaryKeyHash(coll.property.targetMeta!.primaryKeys)]: deleteDiff } as ObjectQuery<T>;
     await this.nativeDelete<T>(coll.property.type, cond, options);
   }

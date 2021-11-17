@@ -651,8 +651,9 @@ export class UnitOfWork {
     }
 
     // 7. take snapshots of all persisted collections
+    const visited = new Set<object>();
     for (const changeSet of this.changeSets.values()) {
-      this.takeCollectionSnapshots(changeSet);
+      this.takeCollectionSnapshots(changeSet.entity, visited);
     }
   }
 
@@ -777,12 +778,22 @@ export class UnitOfWork {
   /**
    * Takes snapshots of all processed collections
    */
-  private takeCollectionSnapshots<T extends AnyEntity<T>>(changeSet: ChangeSet<T>) {
-    changeSet.entity.__meta!.relations.forEach(prop => {
-      const value = changeSet.entity[prop.name];
+  private takeCollectionSnapshots<T extends AnyEntity<T>>(entity: T, visited: Set<object>) {
+    if (visited.has(entity)) {
+      return;
+    }
+
+    visited.add(entity);
+    entity.__meta?.relations.forEach(prop => {
+      const value = entity[prop.name];
 
       if (Utils.isCollection(value)) {
         value.takeSnapshot();
+      }
+
+      // cascade to m:1 relations as we need to snapshot the 1:m inverse side (for `removeAll()` with orphan removal)
+      if (prop.reference === ReferenceType.MANY_TO_ONE && value) {
+        this.takeCollectionSnapshots(Reference.unwrapReference(value), visited);
       }
     });
   }
