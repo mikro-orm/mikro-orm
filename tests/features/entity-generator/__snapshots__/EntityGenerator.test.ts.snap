@@ -1059,3 +1059,18 @@ export class Test3 {
 ",
 ]
 `;
+
+exports[`EntityGenerator table name starting with number [mysql]: mysql-entity-dump-number 1`] = `
+Array [
+  "import { Entity, PrimaryKey } from '@mikro-orm/core';
+
+@Entity({ collection: '123_table_name' })
+export class E123TableName {
+
+  @PrimaryKey()
+  id!: number;
+
+}
+",
+]
+`;

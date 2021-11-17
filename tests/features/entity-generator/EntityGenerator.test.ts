@@ -74,4 +74,19 @@ describe('EntityGenerator', () => {
     expect(() => orm.getEntityGenerator()).toThrowError('MongoPlatform does not support EntityGenerator');
   });
 
+  test('table name starting with number [mysql]', async () => {
+    const orm = await initORMMySql('mysql', {}, true);
+    await orm.getSchemaGenerator().dropSchema();
+    await orm.getSchemaGenerator().execute(`
+      create table if not exists \`123_table_name\` (\`id\` int(10) unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;
+    `);
+    const generator = orm.getEntityGenerator();
+    const dump = await generator.generate({ save: false, baseDir: './temp/entities' });
+    expect(dump).toMatchSnapshot('mysql-entity-dump-number');
+    await orm.getSchemaGenerator().execute(`
+      drop table if exists \`123_table_name\`;
+    `);
+    await orm.close(true);
+  });
+
 });

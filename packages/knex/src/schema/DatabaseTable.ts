@@ -141,7 +141,8 @@ export class DatabaseTable {
   }
 
   getEntityDeclaration(namingStrategy: NamingStrategy, schemaHelper: SchemaHelper): EntityMetadata {
-    const name = namingStrategy.getClassName(this.name, '_');
+    let name = namingStrategy.getClassName(this.name, '_');
+    name = name.match(/^\d/) ? 'E' + name : name;
     const schema = new EntitySchema({ name, collection: this.name });
     const compositeFkIndexes: Dictionary<{ keyName: string }> = {};
     const compositeFkUniques: Dictionary<{ keyName: string }> = {};
