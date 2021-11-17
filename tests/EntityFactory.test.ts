@@ -58,6 +58,28 @@ describe('EntityFactory', () => {
     expect(entity.books[0].title).toBe('asd');
   });
 
+  test('should return embeddable', async () => {
+    // we are testing this on Author entity as it does not really matter whether it is an embeddable type or not
+    const data = { id: '5b0d19b28b21c648c2c8a600', name: 'test', email: 'mail@test.com', books: { title: 'asd' } };
+    const managedEntity = factory.createEmbeddable(Author, data);
+    expect(managedEntity).toBeInstanceOf(Author);
+    expect(managedEntity._id).toBeUndefined();
+    expect(managedEntity.name).toBeUndefined();
+    expect(managedEntity.email).toBeUndefined();
+    expect(managedEntity.books).toBeUndefined();
+    expect(managedEntity.books).toBeUndefined();
+
+    const newEntity = factory.createEmbeddable(Author, data, { newEntity: true });
+    expect(newEntity).toBeInstanceOf(Author);
+    // not available, as we are not hydrating here, just filling constructor parameters
+    expect(newEntity._id).toBeUndefined();
+    expect(newEntity.name).toBe('test');
+    expect(newEntity.email).toBe('mail@test.com');
+    expect(newEntity.books.isInitialized()).toBe(true);
+    // books are not assigned either, again we just care about creating the instance, while filling the constructor parameters
+    expect(newEntity.books).toHaveLength(0);
+  });
+
   test('entity ctor can have different params than props', async () => {
     const entity = factory.create(Test, { name: 'test' });
     expect(entity).toBeInstanceOf(Test);
