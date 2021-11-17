@@ -220,13 +220,14 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   protected getPivotInverseProperty(prop: EntityProperty): EntityProperty {
     const pivotMeta = this.metadata.find(prop.pivotTable)!;
+    const targetType = prop.targetMeta?.root.className;
     let inverse: string;
 
     if (prop.owner) {
-      const pivotProp1 = pivotMeta.properties[prop.type + '_inverse'];
+      const pivotProp1 = pivotMeta.properties[targetType + '_inverse'];
       inverse = pivotProp1.mappedBy;
     } else {
-      const pivotProp1 = pivotMeta.properties[prop.type + '_owner'];
+      const pivotProp1 = pivotMeta.properties[targetType + '_owner'];
       inverse = pivotProp1.inversedBy;
     }
 

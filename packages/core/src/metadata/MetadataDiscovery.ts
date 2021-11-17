@@ -442,6 +442,7 @@ export class MetadataDiscovery {
       [schemaName, tableName] = prop.pivotTable.split('.');
     }
 
+    const targetType = prop.targetMeta!.root.className;
     const data = new EntityMetadata({
       name: prop.pivotTable,
       className: prop.pivotTable,
@@ -451,33 +452,33 @@ export class MetadataDiscovery {
     });
 
     if (prop.fixedOrder) {
-      const primaryProp = await this.defineFixedOrderProperty(prop);
+      const primaryProp = await this.defineFixedOrderProperty(prop, targetType);
       data.properties[primaryProp.name] = primaryProp;
       data.primaryKeys = [primaryProp.name];
     } else {
-      data.primaryKeys = [meta.name + '_owner', prop.type + '_inverse'];
+      data.primaryKeys = [meta.root.name + '_owner', targetType + '_inverse'];
       data.compositePK = true;
     }
 
     // handle self-referenced m:n with same default field names
-    if (meta.name === prop.type && prop.joinColumns.every((joinColumn, idx) => joinColumn === prop.inverseJoinColumns[idx])) {
+    if (meta.root.name === targetType && prop.joinColumns.every((joinColumn, idx) => joinColumn === prop.inverseJoinColumns[idx])) {
       prop.joinColumns = prop.referencedColumnNames.map(name => this.namingStrategy.joinKeyColumnName(meta.root.className + '_1', name, meta.compositePK));
       prop.inverseJoinColumns = prop.referencedColumnNames.map(name => this.namingStrategy.joinKeyColumnName(meta.root.className + '_2', name, meta.compositePK));
 
       if (prop.inversedBy) {
-        const prop2 = this.metadata.get(prop.type).properties[prop.inversedBy];
+        const prop2 = this.metadata.get(targetType).properties[prop.inversedBy];
         prop2.inverseJoinColumns = prop.joinColumns;
         prop2.joinColumns = prop.inverseJoinColumns;
       }
     }
 
-    data.properties[meta.name + '_owner'] = await this.definePivotProperty(prop, meta.name + '_owner', meta.name!, prop.type + '_inverse', true);
-    data.properties[prop.type + '_inverse'] = await this.definePivotProperty(prop, prop.type + '_inverse', prop.type, meta.name + '_owner', false);
+    data.properties[meta.root.name + '_owner'] = await this.definePivotProperty(prop, meta.root.name + '_owner', meta.root.name!, targetType + '_inverse', true);
+    data.properties[targetType + '_inverse'] = await this.definePivotProperty(prop, targetType + '_inverse', targetType, meta.root.name + '_owner', false);
 
     return this.metadata.set(prop.pivotTable, data);
   }
 
-  private async defineFixedOrderProperty(prop: EntityProperty): Promise<EntityProperty> {
+  private async defineFixedOrderProperty(prop: EntityProperty, targetType: string): Promise<EntityProperty> {
     const pk = prop.fixedOrderColumn || this.namingStrategy.referenceColumnName();
     const primaryProp = {
       name: pk,
@@ -492,7 +493,7 @@ export class MetadataDiscovery {
     prop.fixedOrderColumn = pk;
 
     if (prop.inversedBy) {
-      const prop2 = this.metadata.get(prop.type).properties[prop.inversedBy];
+      const prop2 = this.metadata.get(targetType).properties[prop.inversedBy];
       prop2.fixedOrder = true;
       prop2.fixedOrderColumn = pk;
     }
