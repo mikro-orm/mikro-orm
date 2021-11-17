@@ -57,7 +57,7 @@ export class MetadataValidator {
 
     // check for not discovered entities
     discovered.forEach(meta => Object.values(meta.properties).forEach(prop => {
-      if (prop.reference !== ReferenceType.SCALAR && !discovered.find(m => m.className === prop.type)) {
+      if (prop.reference !== ReferenceType.SCALAR && !prop.type.split(/ ?\| ?/).every(type => discovered.find(m => m.className === type))) {
         throw MetadataError.fromUnknownEntity(prop.type, `${meta.className}.${prop.name}`);
       }
     }));

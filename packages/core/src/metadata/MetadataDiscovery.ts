@@ -41,7 +41,10 @@ export class MetadataDiscovery {
 
     this.discovered
       .filter(meta => meta.name)
-      .forEach(meta => discovered.set(meta.name!, meta));
+      .forEach(meta => {
+        this.platform.validateMetadata(meta);
+        discovered.set(meta.name!, meta);
+      });
 
     return discovered;
   }
@@ -50,6 +53,7 @@ export class MetadataDiscovery {
     for (const meta of discovered) {
       let i = 1;
       Object.values(meta.properties).forEach(prop => meta.propertyOrder.set(prop.name, i++));
+      Object.values(meta.properties).forEach(prop => this.initPolyEmbeddables(prop, discovered));
     }
 
     // ignore base entities (not annotated with @Entity)
@@ -604,6 +608,53 @@ export class MetadataDiscovery {
     return order;
   }
 
+  private initPolyEmbeddables(embeddedProp: EntityProperty, discovered: EntityMetadata[], visited = new WeakSet<EntityProperty>()): void {
+    if (embeddedProp.reference !== ReferenceType.EMBEDDED || visited.has(embeddedProp)) {
+      return;
+    }
+
+    visited.add(embeddedProp);
+    const types = embeddedProp.type.split(/ ?\| ?/);
+    let embeddable = this.discovered.find(m => m.name === embeddedProp.type);
+    const polymorphs = this.discovered.filter(m => types.includes(m.name!));
+
+    // create virtual polymorphic entity
+    if (!embeddable && polymorphs.length > 0) {
+      const properties: Dictionary<EntityProperty> = {};
+      let discriminatorColumn: string | undefined;
+
+      const processExtensions = (meta: EntityMetadata) => {
+        const parent = this.discovered.find(m => meta.extends === m.className);
+
+        if (!parent) {
+          return;
+        }
+
+        discriminatorColumn ??= parent.discriminatorColumn;
+        Object.values(parent.properties).forEach(prop => properties[prop.name] = prop);
+        processExtensions(parent);
+      };
+
+      polymorphs.forEach(meta => {
+        Object.values(meta.properties).forEach(prop => properties[prop.name] = prop);
+        processExtensions(meta);
+      });
+      const name = polymorphs.map(t => t.className).sort().join(' | ');
+      embeddable = new EntityMetadata({
+        name,
+        className: name,
+        embeddable: true,
+        abstract: true,
+        properties,
+        polymorphs,
+        discriminatorColumn,
+      });
+      embeddable.sync();
+      discovered.push(embeddable);
+      polymorphs.forEach(meta => meta.root = embeddable!);
+    }
+  }
+
   private initEmbeddables(meta: EntityMetadata, embeddedProp: EntityProperty, visited = new WeakSet<EntityProperty>()): void {
     if (embeddedProp.reference !== ReferenceType.EMBEDDED || visited.has(embeddedProp)) {
       return;
@@ -686,7 +737,7 @@ export class MetadataDiscovery {
       meta.root.discriminatorMap = {} as Dictionary<string>;
       const children = metadata.filter(m => m.root.className === meta.root.className && !m.abstract);
       children.forEach(m => {
-        const name = m.discriminatorValue || this.namingStrategy.classToTableName(m.className);
+        const name = m.discriminatorValue ?? this.namingStrategy.classToTableName(m.className);
         meta.root.discriminatorMap![name] = m.className;
       });
     }

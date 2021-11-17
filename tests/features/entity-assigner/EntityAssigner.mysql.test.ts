@@ -189,12 +189,14 @@ describe('EntityAssignerMySql', () => {
     book.meta = { items: 5, category: 'test' };
     wrap(book).assign({ meta: { items: 3, category: 'foo' } });
     expect(book.meta).toEqual({ items: 3, category: 'foo' });
-    wrap(book).assign({ meta: { category: 'bar' } }, { mergeObjects: true });
-    expect(book.meta).toEqual({ items: 3, category: 'bar' });
     wrap(book).assign({ meta: { category: 'bar' } });
-    expect(book.meta).toEqual({ category: 'bar' });
+    expect(book.meta).toEqual({ items: 3, category: 'bar' });
+    wrap(book).assign({ meta: { category: 'bar 1' } });
+    expect(book.meta).toEqual({ items: 3, category: 'bar 1' });
+    wrap(book).assign({ meta: { category: 'bar 2' } }, { mergeObjects: false });
+    expect(book.meta).toEqual({ category: 'bar 2' });
     jon.identities = ['1', '2'];
-    wrap(jon).assign({ identities: ['3', '4'] }, { mergeObjects: true });
+    wrap(jon).assign({ identities: ['3', '4'] });
     expect(jon.identities).toEqual(['3', '4']);
   });
 
@@ -208,7 +210,7 @@ describe('EntityAssignerMySql', () => {
     em.assign(existing, {
       name: 'updated name',
       blob: Buffer.from('123456'),
-    }, { mergeObjects: true });
+    });
     await em.flush();
 
     const bar1 = await orm.em.fork().findOneOrFail(FooBar2, 1);
@@ -227,7 +229,7 @@ describe('EntityAssignerMySql', () => {
     entity.books.populated();
     const updated = wrap(entity).toObject();
     updated.books[0].title = 'updated name';
-    orm.em.assign(entity, updated, { updateNestedEntities: true });
+    orm.em.assign(entity, updated); // `updateNestedEntities` defaults to true since v5
     expect(entity.books[0].title).toBe('updated name');
   });
 

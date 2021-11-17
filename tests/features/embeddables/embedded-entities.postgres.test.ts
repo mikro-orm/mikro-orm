@@ -1,4 +1,4 @@
-import { assign, Embeddable, Embedded, Entity, expr, Logger, MikroORM, PrimaryKey, Property, ReferenceType, t, wrap } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, expr, Logger, MikroORM, PrimaryKey, Property, ReferenceType, t } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Embeddable()
@@ -152,19 +152,19 @@ describe('embedded entities in postgresql', () => {
     const address1 = new Address1('Downing street 13A', 10, '10A', 'London 4A', 'UK 4A');
     const address2 = { street: 'Downing street 23A', number: 20, postalCode: '20A', city: 'London 24A', country: 'UK 24A' };
 
-    wrap(user).assign({ addresses: [address1] }, { mergeObjects: true });
+    orm.em.assign(user, { addresses: [address1] });
     expect(user.addresses).toEqual([address1]);
     expect(user.addresses[0]).toBeInstanceOf(Address1);
 
-    wrap(user).assign({ addresses: [address1] }, { mergeObjects: true, updateNestedEntities: true });
+    orm.em.assign(user, { addresses: [address1] });
     expect(user.addresses).toEqual([address1]);
     expect(user.addresses[0]).toBeInstanceOf(Address1);
 
-    wrap(user).assign({ addresses: [address2] });
+    orm.em.assign(user, { addresses: [address2] });
     expect(user.addresses).toEqual([address2]);
     expect(user.addresses[0]).toBeInstanceOf(Address1);
 
-    wrap(user).assign({ addresses: address1 }); // push to existing array
+    orm.em.assign(user, { addresses: address1 }); // push to existing array
     expect(user.addresses).toEqual([address2, address1]);
     expect(user.addresses[0]).toBeInstanceOf(Address1);
     expect(user.addresses[1]).toBeInstanceOf(Address1);
@@ -263,12 +263,12 @@ describe('embedded entities in postgresql', () => {
 
   test('assign', async () => {
     const user = new User();
-    wrap(user).assign({
+    orm.em.assign(user, {
       address1: { street: 'Downing street 10', postalCode: '123', city: 'London 1', country: 'UK 1' },
       address2: { street: 'Downing street 11', city: 'London 2', country: 'UK 2' },
       address3: { street: 'Downing street 12', postalCode: '789', city: 'London 3', country: 'UK 3' },
     }, { em: orm.em });
-    assign(user, { address4: { city: '41', country: '42', postalCode: '43', street: '44' } });
+    orm.em.assign(user, { address4: { city: '41', country: '42', postalCode: '43', street: '44' } });
     expect(user.address4).toMatchObject({ city: '41', country: '42', postalCode: '43', street: '44' });
 
     expect(user.address1).toBeInstanceOf(Address1);
@@ -293,10 +293,9 @@ describe('embedded entities in postgresql', () => {
     });
   });
 
-
   test('native update entity', async () => {
     const user = new User();
-    wrap(user).assign({
+    orm.em.assign(user, {
       address1: { street: 'Downing street 10', number: 3, postalCode: '123', city: 'London 1', country: 'UK 1' },
       address2: { street: 'Downing street 11', city: 'London 2', country: 'UK 2' },
       address3: { street: 'Downing street 12', number: 3, postalCode: '789', city: 'London 3', country: 'UK 3' },

@@ -2,7 +2,7 @@ import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { MySqlSchemaHelper } from './MySqlSchemaHelper';
 import { MySqlExceptionConverter } from './MySqlExceptionConverter';
 import type { Type } from '@mikro-orm/core';
-import { Utils } from '@mikro-orm/core';
+import { expr, Utils } from '@mikro-orm/core';
 
 export class MySqlPlatform extends AbstractSqlPlatform {
 
@@ -15,7 +15,7 @@ export class MySqlPlatform extends AbstractSqlPlatform {
 
   getSearchJsonPropertyKey(path: string[], type: string): string {
     const [a, ...b] = path;
-    return `${this.quoteIdentifier(a)}->'$.${b.join('.')}'`;
+    return expr(alias => `${this.quoteIdentifier(`${alias}.${a}`)}->'$.${b.join('.')}'`);
   }
 
   getBooleanTypeDeclarationSQL(): string {

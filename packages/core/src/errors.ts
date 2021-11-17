@@ -212,6 +212,10 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return new MetadataError(`Property ${className}:${name} is being overwritten by its child property ${embeddedName}:${name}. Consider using a prefix to overcome this issue.`);
   }
 
+  static invalidPrimaryKey(meta: EntityMetadata, prop: EntityProperty, requiredName: string) {
+    return this.fromMessage(meta, prop, `has wrong field name, '${requiredName}' is required in current driver`);
+  }
+
   private static fromMessage(meta: EntityMetadata, prop: EntityProperty, message: string): MetadataError {
     return new MetadataError(`${meta.className}.${prop.name} ${message}`);
   }

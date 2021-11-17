@@ -2,7 +2,7 @@ import clone from 'clone';
 import { EntityRepository } from '../entity';
 import type { NamingStrategy } from '../naming-strategy';
 import { UnderscoreNamingStrategy } from '../naming-strategy';
-import type { AnyEntity, Constructor, EntityProperty, IEntityGenerator, IMigrator, IPrimaryKey, ISchemaGenerator, PopulateOptions, Primary } from '../typings';
+import type { AnyEntity, Constructor, EntityProperty, IEntityGenerator, IMigrator, IPrimaryKey, ISchemaGenerator, PopulateOptions, Primary, EntityMetadata } from '../typings';
 import { ExceptionConverter } from './ExceptionConverter';
 import type { EntityManager } from '../EntityManager';
 import type { Configuration } from '../utils/Configuration';
@@ -375,6 +375,10 @@ export abstract class Platform {
    */
   supportsDownMigrations(): boolean {
     return true;
+  }
+
+  validateMetadata(meta: EntityMetadata): void {
+    return;
   }
 
 }

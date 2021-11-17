@@ -180,3 +180,72 @@ class Identity {
 
 }
 ```
+
+## Polymorphic embeddables
+
+Since v5, it is also possible to use polymorphic embeddables. This means we
+can define multiple classes for a single embedded property and the right one
+will be used based on the discriminator column, similar to how single table 
+inheritance work.
+
+```ts
+import { Embeddable, Embedded, Entity, Enum, PrimaryKey, Property } from '@mikro-orm/core';
+
+enum AnimalType {
+  CAT,
+  DOG,
+}
+
+@Embeddable({ abstract: true, discriminatorColumn: 'type' })
+abstract class Animal {
+
+  @Enum(() => AnimalType)
+  type!: AnimalType;
+
+  @Property()
+  name!: string;
+
+}
+
+@Embeddable({ discriminatorValue: AnimalType.CAT })
+class Cat extends Animal {
+
+  @Property({ nullable: true })
+  canMeow?: boolean = true;
+
+  constructor(name: string) {
+    super();
+    this.type = AnimalType.CAT;
+    this.name = name;
+  }
+
+}
+
+@Embeddable({ discriminatorValue: AnimalType.DOG })
+class Dog extends Animal {
+
+  @Property({ nullable: true })
+  canBark?: boolean = true;
+
+  constructor(name: string) {
+    super();
+    this.type = AnimalType.DOG;
+    this.name = name;
+  }
+
+}
+
+@Entity()
+class Owner {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name!: string;
+
+  @Embedded(() => [Cat, Dog])
+  pet!: Cat | Dog;
+
+}
+```

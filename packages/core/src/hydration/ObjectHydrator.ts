@@ -188,7 +188,14 @@ export class ObjectHydrator extends Hydrator {
       const convertorKey = path.filter(k => !k.match(/\[idx_\d+]/)).map(k => this.safeKey(k)).join('_');
       const ret: string[] = [];
       const conds: string[] = [];
-      context.set(`prototype_${convertorKey}`, prop.embeddable.prototype);
+
+      if (prop.targetMeta?.polymorphs) {
+        prop.targetMeta.polymorphs.forEach(meta => {
+          context.set(`prototype_${convertorKey}_${meta.className}`, meta.prototype);
+        });
+      } else {
+        context.set(`prototype_${convertorKey}`, prop.embeddable.prototype);
+      }
 
       if (!this.platform.convertsJsonAutomatically() && (prop.object || prop.array)) {
         ret.push(
@@ -207,7 +214,21 @@ export class ObjectHydrator extends Hydrator {
       }
 
       ret.push(`  if (${conds.join(' || ')}) {`);
-      ret.push(`    entity${entityKey} = Object.create(prototype_${convertorKey});`);
+
+      if (prop.targetMeta?.polymorphs) {
+        const targetMeta = prop.targetMeta;
+        targetMeta.polymorphs!.forEach(meta => {
+          const childProp = prop.embeddedProps[targetMeta.discriminatorColumn!];
+          const childDataKey = prop.object ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
+          // weak comparison as we can have numbers that might have been converted to strings due to being object keys
+          ret.push(`    if (data${childDataKey} == '${meta.discriminatorValue}') {`);
+          ret.push(`      entity${entityKey} = factory.createEmbeddable('${meta.className}', data${prop.object ? dataKey : ''}, { newEntity, convertCustomTypes });`);
+          ret.push(`    }`);
+        });
+      } else {
+        ret.push(`    entity${entityKey} = factory.createEmbeddable('${prop.targetMeta!.className}', data${prop.object ? dataKey : ''}, { newEntity, convertCustomTypes });`);
+      }
+
       meta.props
         .filter(p => p.embedded?.[0] === prop.name)
         .forEach(childProp => {

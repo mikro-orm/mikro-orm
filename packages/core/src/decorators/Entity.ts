@@ -22,7 +22,7 @@ export type EntityOptions<T> = {
   collection?: string;
   discriminatorColumn?: string;
   discriminatorMap?: Dictionary<string>;
-  discriminatorValue?: string;
+  discriminatorValue?: number | string;
   comment?: string;
   abstract?: boolean;
   readonly?: boolean;

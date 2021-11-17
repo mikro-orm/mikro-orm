@@ -128,3 +128,16 @@ Running migrations in production via node and ts-node is now handled the same.
 This should actually not be breaking, as old format with extension is still 
 supported (e.g. they still can be rolled back), but newly logged migrations
 will not contain the extension.
+
+## Changes in `assign()` helper
+
+Embeddable instances are now created via `EntityFactory` and they respect the
+`forceEntityConstructor` configuration. Due to this we need to have EM instance
+when assigning to embedded properties. 
+
+Using `em.assign()` should be preferred to get around this.
+
+Deep assigning of child entities now works by default based on the presence of PKs in the payload.
+This behaviour can be disable via updateByPrimaryKey: false in the assign options.
+
+`mergeObjects` option is now enabled by default.

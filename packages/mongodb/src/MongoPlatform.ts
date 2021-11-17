@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
-import type { IPrimaryKey, Primary, NamingStrategy, Constructor, EntityRepository, EntityProperty, PopulateOptions } from '@mikro-orm/core';
-import { Platform, MongoNamingStrategy, Utils, ReferenceType } from '@mikro-orm/core';
+import type { IPrimaryKey, Primary, NamingStrategy, Constructor, EntityRepository, EntityProperty, PopulateOptions, EntityMetadata } from '@mikro-orm/core';
+import { Platform, MongoNamingStrategy, Utils, ReferenceType, MetadataError } from '@mikro-orm/core';
 import { MongoExceptionConverter } from './MongoExceptionConverter';
 import { MongoEntityRepository } from './MongoEntityRepository';
 
@@ -61,6 +61,14 @@ export class MongoPlatform extends Platform {
     }
 
     return prop.reference === ReferenceType.MANY_TO_MANY && prop.owner;
+  }
+
+  validateMetadata(meta: EntityMetadata): void {
+    const pk = meta.getPrimaryProps()[0];
+
+    if (pk && pk.fieldNames?.[0] !== '_id') {
+      throw MetadataError.invalidPrimaryKey(meta, pk, '_id');
+    }
   }
 
 }

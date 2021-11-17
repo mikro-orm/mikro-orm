@@ -208,6 +208,7 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   embedded?: [string, string];
   embeddable: Constructor<T>;
   embeddedProps: Dictionary<EntityProperty>;
+  discriminatorColumn?: string; // only for poly embeddables currently
   object?: boolean;
   index?: boolean | string;
   unique?: boolean | string;
@@ -344,7 +345,7 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   schema?: string;
   pivotTable: boolean;
   discriminatorColumn?: string;
-  discriminatorValue?: string;
+  discriminatorValue?: number | string;
   discriminatorMap?: Dictionary<string>;
   embeddable: boolean;
   constructorParams: string[];
@@ -374,6 +375,7 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   comment?: string;
   selfReferencing?: boolean;
   readonly?: boolean;
+  polymorphs?: EntityMetadata[];
   root: EntityMetadata<T>;
 }
 
