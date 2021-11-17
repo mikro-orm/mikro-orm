@@ -662,12 +662,17 @@ export class MetadataDiscovery {
 
     visited.add(embeddedProp);
     const embeddable = this.discovered.find(m => m.name === embeddedProp.type);
-    embeddedProp.embeddable = embeddable!.class;
+
+    if (!embeddable) {
+      throw MetadataError.fromUnknownEntity(embeddedProp.type, `${meta.className}.${embeddedProp.name}`);
+    }
+
+    embeddedProp.embeddable = embeddable.class;
     embeddedProp.embeddedProps = {};
     let order = meta.propertyOrder.get(embeddedProp.name)!;
     const getRootProperty: (prop: EntityProperty) => EntityProperty = (prop: EntityProperty) => prop.embedded ? getRootProperty(meta.properties[prop.embedded[0]]) : prop;
 
-    for (const prop of Object.values(embeddable!.properties).filter(p => p.persist !== false)) {
+    for (const prop of Object.values(embeddable.properties).filter(p => p.persist !== false)) {
       const prefix = embeddedProp.prefix === false ? '' : embeddedProp.prefix === true ? embeddedProp.name + '_' : embeddedProp.prefix;
       const name = prefix + prop.name;
 
