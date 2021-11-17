@@ -1,0 +1,96 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`polymorphic embeddables in sqlite diffing 1`] = `
+"function(entity, data, factory, newEntity, convertCustomTypes) {
+  if (typeof data.id !== 'undefined') entity.id = data.id;
+  if (typeof data.name !== 'undefined') entity.name = data.name;
+  if (data.pet_canBark != null || data.pet_type != null || data.pet_name != null || data.pet_canMeow != null) {
+    if (data.pet_type == '1') {
+      entity.pet = factory.createEmbeddable('Dog', data, { newEntity, convertCustomTypes });
+    }
+    if (data.pet_type == '0') {
+      entity.pet = factory.createEmbeddable('Cat', data, { newEntity, convertCustomTypes });
+    }
+    if (typeof data.pet_canBark !== 'undefined') entity.pet.canBark = data.pet_canBark === null ? null : !!data.pet_canBark;
+    if (typeof data.pet_type !== 'undefined') entity.pet.type = data.pet_type;
+    if (typeof data.pet_name !== 'undefined') entity.pet.name = data.pet_name;
+    if (typeof data.pet_canMeow !== 'undefined') entity.pet.canMeow = data.pet_canMeow === null ? null : !!data.pet_canMeow;
+  }
+  if (typeof data.pet === 'string') {
+    data.pet = JSON.parse(data.pet);
+  }
+  if (data.pet != null) {
+    if (data.pet.type == '1') {
+      entity.pet = factory.createEmbeddable('Dog', data.pet, { newEntity, convertCustomTypes });
+    }
+    if (data.pet.type == '0') {
+      entity.pet = factory.createEmbeddable('Cat', data.pet, { newEntity, convertCustomTypes });
+    }
+    if (data.pet && typeof data.pet.canBark !== 'undefined') entity.pet.canBark = data.pet.canBark === null ? null : !!data.pet.canBark;
+    if (data.pet && typeof data.pet.type !== 'undefined') entity.pet.type = data.pet.type;
+    if (data.pet && typeof data.pet.name !== 'undefined') entity.pet.name = data.pet.name;
+    if (data.pet && typeof data.pet.canMeow !== 'undefined') entity.pet.canMeow = data.pet.canMeow === null ? null : !!data.pet.canMeow;
+  }
+  if (typeof data.pet2 === 'string') {
+    data.pet2 = JSON.parse(data.pet2);
+  }
+  if (data.pet2 != null) {
+    if (data.pet2.type == '1') {
+      entity.pet2 = factory.createEmbeddable('Dog', data.pet2, { newEntity, convertCustomTypes });
+    }
+    if (data.pet2.type == '0') {
+      entity.pet2 = factory.createEmbeddable('Cat', data.pet2, { newEntity, convertCustomTypes });
+    }
+    if (data.pet2 && typeof data.pet2.canBark !== 'undefined') entity.pet2.canBark = data.pet2.canBark === null ? null : !!data.pet2.canBark;
+    if (data.pet2 && typeof data.pet2.type !== 'undefined') entity.pet2.type = data.pet2.type;
+    if (data.pet2 && typeof data.pet2.name !== 'undefined') entity.pet2.name = data.pet2.name;
+    if (data.pet2 && typeof data.pet2.canMeow !== 'undefined') entity.pet2.canMeow = data.pet2.canMeow === null ? null : !!data.pet2.canMeow;
+  }
+}"
+`;
+
+exports[`polymorphic embeddables in sqlite diffing 2`] = `
+"function(entity) {
+  const ret = {};
+  if ('id' in entity && entity.id != null) {
+    ret.id = entity.id;
+  }
+
+  if ('name' in entity) {
+    ret.name = entity.name;
+  }
+
+  if (entity.pet != null) {
+    ret.pet_canBark = clone(entity.pet.canBark);
+    ret.pet_type = clone(entity.pet.type);
+    ret.pet_name = clone(entity.pet.name);
+    ret.pet_canMeow = clone(entity.pet.canMeow);
+  }
+
+  if (entity.pet2 != null) {
+    ret.pet2 = {};
+    ret.pet2.canBark = clone(entity.pet2.canBark);
+    ret.pet2.type = clone(entity.pet2.type);
+    ret.pet2.name = clone(entity.pet2.name);
+    ret.pet2.canMeow = clone(entity.pet2.canMeow);
+    ret.pet2 = cloneEmbeddable(ret.pet2);
+  }
+
+  return ret;
+}"
+`;
+
+exports[`polymorphic embeddables in sqlite schema 1`] = `
+"create table \`owner\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`pet_can_bark\` integer null, \`pet_type\` integer not null, \`pet_name\` text not null, \`pet_can_meow\` integer null, \`pet2\` json not null);
+create index \`owner_pet_type_index\` on \`owner\` (\`pet_type\`);
+
+"
+`;
+
+exports[`polymorphic embeddables in sqlite schema 2`] = `""`;
+
+exports[`polymorphic embeddables in sqlite schema 3`] = `
+"drop table if exists \`owner\`;
+
+"
+`;

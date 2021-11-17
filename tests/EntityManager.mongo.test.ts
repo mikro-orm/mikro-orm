@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb';
 import c from 'ansi-colors';
 import chalk from 'chalk';
 import type { EntityProperty } from '@mikro-orm/core';
-import { Collection, Configuration, MikroORM, QueryOrder, Reference, wrap, Logger, UniqueConstraintViolationException, IdentityMap } from '@mikro-orm/core';
+import { Collection, Configuration, MikroORM, QueryOrder, Reference, wrap, Logger, UniqueConstraintViolationException, IdentityMap, EntitySchema } from '@mikro-orm/core';
 import { EntityManager, MongoConnection, MongoDriver } from '@mikro-orm/mongodb';
 import { MongoHighlighter } from '@mikro-orm/mongo-highlighter';
 
@@ -2187,6 +2187,15 @@ describe('EntityManagerMongo', () => {
       dbName: 'bar',
       type: 'mongo',
     })).rejects.toThrowError('Mongo driver does not support `host` options, use `clientUrl` instead!');
+  });
+
+  test('validation for `_id` PK field name', async () => {
+    const schema = new EntitySchema({ name: 'WrongPrimaryKeyEntity', properties: { id: { type: 'number', primary: true } } });
+    await expect(MikroORM.init({
+      entities: [schema],
+      dbName: 'bar',
+      type: 'mongo',
+    })).rejects.toThrowError(`WrongPrimaryKeyEntity.id has wrong field name, '_id' is required in current driver`);
   });
 
   test('extracting child condition when populating (GH #1891)', async () => {

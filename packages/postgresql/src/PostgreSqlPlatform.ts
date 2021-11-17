@@ -1,6 +1,6 @@
 import { Client } from 'pg';
 import type { EntityProperty, Type } from '@mikro-orm/core';
-import { JsonProperty, Utils } from '@mikro-orm/core';
+import { expr, JsonProperty, Utils } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
 import { PostgreSqlExceptionConverter } from './PostgreSqlExceptionConverter';
@@ -107,7 +107,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   getSearchJsonPropertyKey(path: string[], type: string): string {
     const first = path.shift();
     const last = path.pop();
-    const root = this.quoteIdentifier(first!);
+    const root = expr(alias => this.quoteIdentifier(`${alias}.${first}`));
     const types = {
       number: 'float8',
       boolean: 'bool',

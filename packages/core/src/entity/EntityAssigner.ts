@@ -17,6 +17,7 @@ export class EntityAssigner {
     options = {
       updateNestedEntities: true,
       updateByPrimaryKey: true,
+      mergeObjects: true,
       schema: wrapped.__schema,
       ...options, // allow overriding the defaults
     };
@@ -75,7 +76,7 @@ export class EntityAssigner {
         return entity[prop as keyof T] = validator.validateProperty(props[prop], value, entity);
       }
 
-      if (props[prop]?.reference === ReferenceType.EMBEDDED) {
+      if (props[prop]?.reference === ReferenceType.EMBEDDED && EntityAssigner.validateEM(em)) {
         return EntityAssigner.assignEmbeddable(entity, value, props[prop], em, options);
       }
 
@@ -171,10 +172,8 @@ export class EntityAssigner {
     collection.set(items);
   }
 
-  private static assignEmbeddable<T extends AnyEntity<T>>(entity: T, value: any, prop: EntityProperty, em: EntityManager, options: AssignOptions): void {
-    const Embeddable = prop.embeddable;
+  private static assignEmbeddable<T extends AnyEntity<T>>(entity: T, value: any, prop: EntityProperty, em: EntityManager | undefined, options: AssignOptions): void {
     const propName = prop.embedded ? prop.embedded[1] : prop.name;
-    entity[propName] = prop.array || options.mergeObjects ? (entity[propName] || Object.create(Embeddable.prototype)) : Object.create(Embeddable.prototype);
 
     if (!value) {
       entity[propName] = value;
@@ -193,6 +192,12 @@ export class EntityAssigner {
         entity[propName].push(...Object.values(tmp));
       });
     }
+
+    const create = () => EntityAssigner.validateEM(em) && em!.getEntityFactory().createEmbeddable<T>(prop.type, value, {
+      convertCustomTypes: options.convertCustomTypes,
+      newEntity: options.mergeObjects ? !entity[propName] : true,
+    });
+    entity[propName] = options.mergeObjects ? (entity[propName] || create()) : create();
 
     Object.keys(value).forEach(key => {
       const childProp = prop.embeddedProps[key];

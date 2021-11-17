@@ -1,5 +1,5 @@
 import type { Platform } from '@mikro-orm/core';
-import { assign, Embeddable, Embedded, Entity, EntitySchema, Logger, MikroORM, PrimaryKey, Property, ReferenceType, SerializedPrimaryKey, Type } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, EntitySchema, Logger, MikroORM, PrimaryKey, Property, ReferenceType, SerializedPrimaryKey, Type } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 import { ObjectId, MongoConnection, MongoPlatform } from '@mikro-orm/mongodb';
 
@@ -324,9 +324,9 @@ describe('embedded entities in mongo', () => {
 
   test('#assign() works with embeddables', async () => {
     const jon = new User();
-    assign(jon, { address1: { city: '1', country: '2', postalCode: '3', street: '4' } });
+    orm.em.assign(jon, { address1: { city: '1', country: '2', postalCode: '3', street: '4' } });
     expect(jon.address1).toMatchObject({ city: '1', country: '2', postalCode: '3', street: '4' });
-    assign(jon, { address4: { city: '41', country: '42', postalCode: '43', street: '44' } });
+    orm.em.assign(jon, { address4: { city: '41', country: '42', postalCode: '43', street: '44' } });
     expect(jon.address4).toMatchObject({ city: '41', country: '42', postalCode: '43', street: '44' });
   });
 

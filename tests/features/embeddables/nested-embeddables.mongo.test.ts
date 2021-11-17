@@ -1,4 +1,4 @@
-import { assign, Embeddable, Embedded, Entity, Logger, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, Logger, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 import { ObjectId, MongoConnection } from '@mikro-orm/mongodb';
 
@@ -201,7 +201,7 @@ describe('embedded entities in mongo', () => {
   test('#assign() works with nested embeddables', async () => {
     const jon = new User();
 
-    assign(jon, {
+    orm.em.assign(jon, {
       profile1: { username: 'u1', identity: { email: 'e1', meta: { bar: 'b1', foo: 'f1' } } },
       profile2: { username: 'u2', identity: { email: 'e2', meta: { bar: 'b2', foo: 'f2' } } },
     });
@@ -214,17 +214,17 @@ describe('embedded entities in mongo', () => {
     expect(jon.profile2.identity).toBeInstanceOf(Identity);
     expect(jon.profile2.identity.meta).toBeInstanceOf(IdentityMeta);
 
-    assign(jon, { profile1: { identity: { email: 'e3' } } }, { mergeObjects: true });
+    orm.em.assign(jon, { profile1: { identity: { email: 'e3' } } });
     expect(jon.profile1.username).toBe('u1');
     expect(jon.profile1.identity.email).toBe('e3');
     expect(jon.profile1.identity.meta).not.toBeUndefined();
     delete jon.profile1.identity.meta;
 
-    assign(jon, { profile1: { identity: { meta: { foo: 'f' } } } }, { mergeObjects: true });
+    orm.em.assign(jon, { profile1: { identity: { meta: { foo: 'f' } } } });
     expect(jon.profile1.identity.meta!.foo).toBe('f');
     expect(jon.profile1.identity.meta).toBeInstanceOf(IdentityMeta);
 
-    assign(jon, { profile1: { identity: { email: 'e4' } } });
+    orm.em.assign(jon, { profile1: { identity: { email: 'e4' } } }, { mergeObjects: false });
     expect(jon.profile1.username).toBeUndefined();
     expect(jon.profile1.identity.email).toBe('e4');
     expect(jon.profile1.identity.meta).toBeUndefined();

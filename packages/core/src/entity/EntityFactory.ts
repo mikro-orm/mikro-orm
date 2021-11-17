@@ -138,6 +138,15 @@ export class EntityFactory {
     return this.create<T>(entityName, id as EntityData<T>, { ...options, initialized: false }) as T;
   }
 
+  createEmbeddable<T>(entityName: EntityName<T>, data: EntityData<T>, options: Pick<FactoryOptions, 'newEntity' | 'convertCustomTypes'> = {}): T {
+    entityName = Utils.className(entityName);
+    data = { ...data };
+    const meta = this.metadata.get(entityName);
+    const meta2 = this.processDiscriminatorColumn<T>(meta, data);
+
+    return this.createEntity(data, meta2, options);
+  }
+
   private createEntity<T extends AnyEntity<T>>(data: EntityData<T>, meta: EntityMetadata<T>, options: FactoryOptions): T {
     if (options.newEntity || meta.forceConstructor) {
       const params = this.extractConstructorParams<T>(meta, data, options);
@@ -251,6 +260,15 @@ export class EntityFactory {
         }
 
         return this.createReference(meta.properties[k].type, data[k], options);
+      }
+
+      if (meta.properties[k]?.reference === ReferenceType.EMBEDDED && data[k]) {
+        /* istanbul ignore next */
+        if (Utils.isEntity<T>(data[k])) {
+          return data[k];
+        }
+
+        return this.createEmbeddable(meta.properties[k].type, data[k], options);
       }
 
       if (!meta.properties[k]) {

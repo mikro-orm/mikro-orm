@@ -1,7 +1,7 @@
 // @ts-ignore
 import { escape } from 'sqlstring-sqlite';
 import type { EntityProperty } from '@mikro-orm/core';
-import { JsonProperty, Utils } from '@mikro-orm/core';
+import { expr, JsonProperty, Utils } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { SqliteSchemaHelper } from './SqliteSchemaHelper';
 import { SqliteExceptionConverter } from './SqliteExceptionConverter';
@@ -104,7 +104,7 @@ export class SqlitePlatform extends AbstractSqlPlatform {
 
   getSearchJsonPropertyKey(path: string[], type: string): string {
     const [a, ...b] = path;
-    return `json_extract(${this.quoteIdentifier(a)}, '$.${b.join('.')}')`;
+    return expr(alias => `json_extract(${this.quoteIdentifier(`${alias}.${a}`)}, '$.${b.join('.')}')`);
   }
 
   getDefaultIntegrityRule(): string {

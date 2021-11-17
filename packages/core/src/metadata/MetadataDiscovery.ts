@@ -41,7 +41,10 @@ export class MetadataDiscovery {
 
     this.discovered
       .filter(meta => meta.name)
-      .forEach(meta => discovered.set(meta.name!, meta));
+      .forEach(meta => {
+        this.platform.validateMetadata(meta);
+        discovered.set(meta.name!, meta);
+      });
 
     return discovered;
   }
