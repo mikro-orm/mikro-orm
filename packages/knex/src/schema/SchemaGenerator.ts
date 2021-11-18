@@ -288,7 +288,11 @@ export class SchemaGenerator {
         this.helper.pushTableQuery(table, this.helper.getAlterColumnAutoincrement(diff.name, column));
       }
 
-      for (const { column } of Object.values(diff.changedColumns).filter(diff => diff.changedProperties.has('comment'))) {
+      for (const { column, changedProperties } of Object.values(diff.changedColumns).filter(diff => diff.changedProperties.has('comment'))) {
+        if (['type', 'nullable', 'autoincrement', 'unsigned', 'default', 'enumItems'].some(t => changedProperties.has(t))) {
+          continue; // will be handled via knex
+        }
+
         this.helper.pushTableQuery(table, this.helper.getChangeColumnCommentSQL(diff.name, column));
       }
 

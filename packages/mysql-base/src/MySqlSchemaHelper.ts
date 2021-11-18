@@ -56,6 +56,16 @@ export class MySqlSchemaHelper extends SchemaHelper {
       .join(';\n');
   }
 
+  configureColumnDefault(column: Column, col: Knex.ColumnBuilder, knex: Knex, changedProperties?: Set<string>) {
+    if (changedProperties) {
+      col.defaultTo(column.default == null ? null : knex.raw(column.default));
+    } else if (column.default !== undefined) {
+      col.defaultTo(column.default == null ? null : knex.raw(column.default));
+    }
+
+    return col;
+  }
+
   getRenameColumnSQL(tableName: string, oldColumnName: string, to: Column): string {
     tableName = this.platform.quoteIdentifier(tableName);
     oldColumnName = this.platform.quoteIdentifier(oldColumnName);

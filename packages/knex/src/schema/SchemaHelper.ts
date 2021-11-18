@@ -100,7 +100,7 @@ export abstract class SchemaHelper {
     Utils.runIfNotEmpty(() => col.nullable(), column.nullable && guard('nullable'));
     Utils.runIfNotEmpty(() => col.notNullable(), !column.nullable);
     Utils.runIfNotEmpty(() => col.unsigned(), column.unsigned);
-    Utils.runIfNotEmpty(() => col.comment(column.comment!), column.comment && !changedProperties);
+    Utils.runIfNotEmpty(() => col.comment(column.comment!), column.comment);
     this.configureColumnDefault(column, col, knex, changedProperties);
 
     return col;
