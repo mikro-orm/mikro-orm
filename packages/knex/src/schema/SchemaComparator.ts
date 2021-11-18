@@ -370,6 +370,10 @@ export class SchemaComparator {
       changedProperties.add('enumItems');
     }
 
+    if ((column1.extra || '').toLowerCase() !== (column2.extra || '').toLowerCase()) {
+      changedProperties.add('extra');
+    }
+
     return changedProperties;
   }
 

@@ -30,6 +30,7 @@ export class MySqlPlatform extends AbstractSqlPlatform {
     const normalizedType = this.extractSimpleType(type);
     const map = {
       int: 'integer',
+      timestamp: 'datetime',
     };
 
     return super.getMappedType(map[normalizedType] ?? type);

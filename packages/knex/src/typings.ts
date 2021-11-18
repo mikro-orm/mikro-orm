@@ -45,6 +45,8 @@ export interface Column {
   enumItems?: string[];
   primary?: boolean;
   unique?: boolean;
+  /** mysql only */
+  extra?: string;
 }
 
 export interface ForeignKey {

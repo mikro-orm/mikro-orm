@@ -57,10 +57,12 @@ export class MySqlSchemaHelper extends SchemaHelper {
   }
 
   configureColumnDefault(column: Column, col: Knex.ColumnBuilder, knex: Knex, changedProperties?: Set<string>) {
-    if (changedProperties) {
-      col.defaultTo(column.default == null ? null : knex.raw(column.default));
-    } else if (column.default !== undefined) {
-      col.defaultTo(column.default == null ? null : knex.raw(column.default));
+    if (changedProperties || column.default !== undefined) {
+      if (column.default == null) {
+        col.defaultTo(null);
+      } else {
+        col.defaultTo(knex.raw(column.default + (column.extra ? ' ' + column.extra : '')));
+      }
     }
 
     return col;
@@ -145,6 +147,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
         precision: col.numeric_precision,
         scale: col.numeric_scale,
         comment: col.column_comment,
+        extra: col.extra.replace('auto_increment', ''),
       });
     });
   }

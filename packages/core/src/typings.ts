@@ -247,6 +247,8 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   serializer?: (value: any) => any;
   serializedName?: string;
   comment?: string;
+  /** mysql only */
+  extra?: string;
   userDefined?: boolean;
 }
 

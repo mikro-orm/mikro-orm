@@ -246,8 +246,8 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     const tableName = this._meta.collection ?? this._meta.tableName;
 
     if (tableName?.includes('.') && !this._meta.schema) {
-      this._meta.schema = tableName.substr(0, tableName.indexOf('.'));
-      this._meta.collection = tableName.substr(tableName.indexOf('.') + 1);
+      this._meta.schema = tableName.substring(0, tableName.indexOf('.'));
+      this._meta.collection = tableName.substring(tableName.indexOf('.') + 1);
     }
 
     this.initProperties();
