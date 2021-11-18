@@ -1827,10 +1827,10 @@
     "@types/mongodb" "^3.6.20"
     "@types/sequelize" "*"
 
-"@types/uuid@8.3.1":
-  version "8.3.1"
-  resolved "https://registry.yarnpkg.com/@types/uuid/-/uuid-8.3.1.tgz#1a32969cf8f0364b3d8c8af9cc3555b7805df14f"
-  integrity sha512-Y2mHTRAbqfFkpjldbkHGY8JIzRN6XqYRliG8/24FcHm2D2PwW24fl5xMRTVGdrb7iMrwCaIEbLWerGIkXuFWVg==
+"@types/uuid@8.3.3":
+  version "8.3.3"
+  resolved "https://registry.yarnpkg.com/@types/uuid/-/uuid-8.3.3.tgz#c6a60686d953dbd1b1d45e66f4ecdbd5d471b4d0"
+  integrity sha512-0LbEEx1zxrYB3pgpd1M5lEhLcXjKJnYghvhTRgaBeUivLHMDM1TzF3IJ6hXU2+8uA4Xz+5BA63mtZo5DjVT8iA==
 
 "@types/validator@*":
   version "13.7.0"
@@ -5562,7 +5562,7 @@ moment@2.22.2:
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.29.1.tgz#b2be769fa31940be9eeea6469c075e35006fa3d3"
   integrity sha512-kHmoybcPV8Sqy59DwNDY3Jefr64lK/by/da0ViFcuA4DH0vQg5Q6Ze5VimxkfQNSC+Mls/Kx53s7TjP1RhFEDQ==
 
-mongodb-connection-string-url@^2.1.0:
+mongodb-connection-string-url@^2.2.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/mongodb-connection-string-url/-/mongodb-connection-string-url-2.2.0.tgz#e2422bae91a953dc4ae5882e401301f5be39a227"
   integrity sha512-U0cDxLUrQrl7DZA828CA+o69EuWPWEJTwdMPozyd7cy/dbtncUZczMw7wRHcwMD7oKOn0NM2tF9jdf5FFVW9CA==
@@ -5606,14 +5606,14 @@ mongodb@3.6.x:
   optionalDependencies:
     saslprep "^1.0.0"
 
-mongodb@4.1.4:
-  version "4.1.4"
-  resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-4.1.4.tgz#ba8062c7c67e7a22db5a059dbac1e3044b48453b"
-  integrity sha512-Cv/sk8on/tpvvqbEvR1h03mdyNdyvvO+WhtFlL4jrZ+DSsN/oSQHVqmJQI/sBCqqbOArFcYCAYDfyzqFwV4GSQ==
+mongodb@4.2.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-4.2.0.tgz#7ef94ab0613a2fd890763260fdac20cd099d0d7f"
+  integrity sha512-lg3MJ9dAKxhogRnIB6/j63gfD7JryZwRC0nNzZ82RhENw4nCmscZVqRfOmNzTvSNndJx9ZhxZpm9JvnKuH/GTA==
   dependencies:
     bson "^4.5.4"
     denque "^2.0.1"
-    mongodb-connection-string-url "^2.1.0"
+    mongodb-connection-string-url "^2.2.0"
   optionalDependencies:
     saslprep "^1.0.3"
 
