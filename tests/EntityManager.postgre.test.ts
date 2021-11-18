@@ -998,7 +998,7 @@ describe('EntityManagerPostgre', () => {
     expect(tags[0].books.isInitialized()).toBe(true);
     const old = tags[0];
     expect(tags[1].books.isInitialized()).toBe(false);
-    tags = await tagRepository.findAll({ populate: ['books'] });
+    tags = await tagRepository.findAll({ populate: ['books'] as const });
     expect(tags[1].books.isInitialized()).toBe(true);
     expect(tags[0].id).toBe(old.id);
     expect(tags[0]).toBe(old);
@@ -1021,7 +1021,7 @@ describe('EntityManagerPostgre', () => {
     book.tags.remove(t => t.id === tag1.id); // we need to get reference as tag1 is detached from current EM
     await orm.em.persistAndFlush(book);
     orm.em.clear();
-    book = (await orm.em.findOne(Book2, book.uuid, { populate: ['tags'] }))!;
+    book = (await orm.em.findOne(Book2, book.uuid, { populate: ['tags'] as const }))!;
     expect(book.tags.count()).toBe(1);
 
     // add
@@ -1029,7 +1029,7 @@ describe('EntityManagerPostgre', () => {
     book.tags.add(new BookTag2('fresh'));
     await orm.em.persistAndFlush(book);
     orm.em.clear();
-    book = (await orm.em.findOne(Book2, book.uuid, { populate: ['tags'] }))!;
+    book = (await orm.em.findOne(Book2, book.uuid, { populate: ['tags'] as const }))!;
     expect(book.tags.count()).toBe(3);
 
     // contains
@@ -1043,7 +1043,7 @@ describe('EntityManagerPostgre', () => {
     book.tags.removeAll();
     await orm.em.persistAndFlush(book);
     orm.em.clear();
-    book = (await orm.em.findOne(Book2, book.uuid, { populate: ['tags'] }))!;
+    book = (await orm.em.findOne(Book2, book.uuid, { populate: ['tags'] as const }))!;
     expect(book.tags.count()).toBe(0);
   });
 

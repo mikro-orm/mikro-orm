@@ -634,7 +634,7 @@ describe('EntityManagerSqlite2', () => {
     expect(tags[0].books.isInitialized()).toBe(true);
     const old = tags[0];
     expect(tags[1].books.isInitialized()).toBe(false);
-    tags = await tagRepository.findAll({ populate: ['books'] });
+    tags = await tagRepository.findAll({ populate: ['books'] as const });
     expect(tags[1].books.isInitialized()).toBe(true);
     expect(tags[0].id).toBe(old.id);
     expect(tags[0]).toBe(old);
@@ -657,14 +657,14 @@ describe('EntityManagerSqlite2', () => {
     book.tags.remove(tagRepository.getReference(tag1.id));
     await orm.em.persist(book).flush();
     orm.em.clear();
-    book = (await orm.em.findOne(Book4, book.id, { populate: ['tags'] }))!;
+    book = (await orm.em.findOne(Book4, book.id, { populate: ['tags'] as const }))!;
     expect(book.tags.count()).toBe(1);
 
     // add
     book.tags.add(tagRepository.getReference(tag1.id)); // we need to get reference as tag1 is detached from current EM
     await orm.em.persist(book).flush();
     orm.em.clear();
-    book = (await orm.em.findOne(Book4, book.id, { populate: ['tags'] }))!;
+    book = (await orm.em.findOne(Book4, book.id, { populate: ['tags'] as const }))!;
     expect(book.tags.count()).toBe(2);
 
     // contains
@@ -678,7 +678,7 @@ describe('EntityManagerSqlite2', () => {
     book.tags.removeAll();
     await orm.em.persist(book).flush();
     orm.em.clear();
-    book = (await orm.em.findOne(Book4, book.id, { populate: ['tags'] }))!;
+    book = (await orm.em.findOne(Book4, book.id, { populate: ['tags'] as const }))!;
     expect(book.tags.count()).toBe(0);
   });
 
@@ -1196,7 +1196,7 @@ describe('EntityManagerSqlite2', () => {
     await expect(ent.tests.loadCount()).resolves.toBe(3);
     orm.em.clear();
 
-    ent = await orm.em.findOneOrFail(Publisher4, publisher.id, { populate: ['tests'] });
+    ent = await orm.em.findOneOrFail(Publisher4, publisher.id, { populate: ['tests'] as const });
     await expect(ent.tests.loadCount()).resolves.toBe(3);
     await ent.tests.init();
     await expect(ent.tests.loadCount()).resolves.toBe(3);

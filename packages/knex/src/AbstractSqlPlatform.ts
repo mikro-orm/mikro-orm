@@ -18,7 +18,7 @@ export abstract class AbstractSqlPlatform extends Platform {
   }
 
   getRepositoryClass<T>(): Constructor<EntityRepository<T>> {
-    return SqlEntityRepository as Constructor<EntityRepository<T>>;
+    return SqlEntityRepository;
   }
 
   getSchemaHelper(): SchemaHelper | undefined {

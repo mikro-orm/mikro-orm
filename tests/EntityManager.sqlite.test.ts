@@ -666,14 +666,14 @@ describe('EntityManagerSqlite', () => {
     book.tags.remove(tagRepository.getReference(tag1.id));
     await orm.em.persist(book).flush();
     orm.em.clear();
-    book = (await orm.em.findOne(Book3, book.id, { populate: ['tags'] }))!;
+    book = (await orm.em.findOne(Book3, book.id, { populate: ['tags'] as const }))!;
     expect(book.tags.count()).toBe(1);
 
     // add
     book.tags.add(tagRepository.getReference(tag1.id)); // we need to get reference as tag1 is detached from current EM
     await orm.em.persist(book).flush();
     orm.em.clear();
-    book = (await orm.em.findOne(Book3, book.id, { populate: ['tags'] }))!;
+    book = (await orm.em.findOne(Book3, book.id, { populate: ['tags'] as const }))!;
     expect(book.tags.count()).toBe(2);
 
     // contains
@@ -687,7 +687,7 @@ describe('EntityManagerSqlite', () => {
     book.tags.removeAll();
     await orm.em.persist(book).flush();
     orm.em.clear();
-    book = (await orm.em.findOne(Book3, book.id, { populate: ['tags'] }))!;
+    book = (await orm.em.findOne(Book3, book.id, { populate: ['tags'] as const }))!;
     expect(book.tags.count()).toBe(0);
   });
 

@@ -138,7 +138,7 @@ export type AnyEntity<T = any> = Partial<T> & {
 export type EntityClass<T extends AnyEntity<T>> = Function & { prototype: T };
 export type EntityClassGroup<T extends AnyEntity<T>> = { entity: EntityClass<T>; schema: EntityMetadata<T> | EntitySchema<T> };
 export type EntityName<T extends AnyEntity<T>> = string | EntityClass<T> | EntitySchema<T, any>;
-export type GetRepository<T extends AnyEntity<T>, U> = T[typeof EntityRepositoryType] extends EntityRepository<any> | undefined ? NonNullable<T[typeof EntityRepositoryType]> : U;
+export type GetRepository<T extends AnyEntity<T>, U> = T[typeof EntityRepositoryType] extends EntityRepository<T> | undefined ? NonNullable<T[typeof EntityRepositoryType]> : U;
 
 export type EntityDataPropValue<T> = T | Primary<T>;
 type ExpandEntityProp<T> = T extends Record<string, any>

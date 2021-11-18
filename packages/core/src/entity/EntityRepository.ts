@@ -216,7 +216,7 @@ export class EntityRepository<T extends AnyEntity<T>> {
    * Returns total number of entities matching your `where` query.
    */
   async count<P extends string = never>(where: FilterQuery<T> = {} as FilterQuery<T>, options: CountOptions<T, P> = {}): Promise<number> {
-    return this.em.count<T>(this.entityName, where, options);
+    return this.em.count(this.entityName, where, options);
   }
 
   protected get em(): EntityManager {

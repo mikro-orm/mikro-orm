@@ -31,11 +31,11 @@ class Driver extends DatabaseDriver<Connection> {
     return 0;
   }
 
-  async find<T>(entityName: string, where: ObjectQuery<T>, options: FindOptions<T> | undefined): Promise<EntityData<T>[]> {
+  async find<T, P extends string = never>(entityName: string, where: ObjectQuery<T>, options: FindOptions<T, P> | undefined): Promise<EntityData<T>[]> {
     return [];
   }
 
-  async findOne<T>(entityName: string, where: ObjectQuery<T>, options: FindOneOptions<T> | undefined): Promise<EntityData<T> | null> {
+  async findOne<T, P extends string = never>(entityName: string, where: ObjectQuery<T>, options: FindOneOptions<T, P> | undefined): Promise<EntityData<T> | null> {
     return null;
   }
 

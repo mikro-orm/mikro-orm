@@ -292,8 +292,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     let entity = this.getUnitOfWork().tryGetById<T>(entityName, where, options.schema);
     const isOptimisticLocking = !Utils.isDefined(options.lockMode) || options.lockMode === LockMode.OPTIMISTIC;
 
-    if (entity && !this.shouldRefresh<T>(meta, entity, options) && isOptimisticLocking) {
-      return this.lockAndPopulate<T, P>(entityName, entity, where, options);
+    if (entity && !this.shouldRefresh(meta, entity, options) && isOptimisticLocking) {
+      return this.lockAndPopulate(entityName, entity, where, options);
     }
 
     this.validator.validateParams(where);
@@ -334,7 +334,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       throw options.failHandler!(entityName, where);
     }
 
-    return entity as Loaded<T, P>;
+    return entity;
   }
 
   /**
@@ -706,26 +706,16 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
    */
-  async populate<T extends AnyEntity<T>, P extends string = never>(entities: T, populate: AutoPath<T, P>[] | boolean, options?: EntityLoaderOptions<T>): Promise<Loaded<T, P>>;
+  async populate<T extends AnyEntity<T>, P extends string = never>(entities: T | T[], populate: AutoPath<T, P>[] | boolean, options: EntityLoaderOptions<T, P> = {}): Promise<Loaded<T, P>[]> {
+    entities = Utils.asArray(entities);
 
-  /**
-   * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
-   */
-  async populate<T extends AnyEntity<T>, P extends string = never>(entities: T[], populate: AutoPath<T, P>[] | boolean, options?: EntityLoaderOptions<T>): Promise<Loaded<T, P>[]>;
-
-  /**
-   * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
-   */
-  async populate<T extends AnyEntity<T>, P extends string = never>(entities: T | T[], populate: AutoPath<T, P>[] | boolean, options: EntityLoaderOptions<T> = {}): Promise<Loaded<T, P> | Loaded<T, P>[]> {
-    const entitiesArray = Utils.asArray(entities);
-
-    if (entitiesArray.length === 0) {
+    if (entities.length === 0) {
       return entities as Loaded<T, P>[];
     }
 
-    const entityName = entitiesArray[0].constructor.name;
+    const entityName = entities[0].constructor.name;
     const preparedPopulate = this.preparePopulate<T>(entityName, populate as true);
-    await this.entityLoader.populate(entityName, entitiesArray, preparedPopulate, options);
+    await this.entityLoader.populate(entityName, entities, preparedPopulate, options);
 
     return entities as Loaded<T, P>[];
   }
@@ -849,7 +839,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
   }
 
-  private async lockAndPopulate<T extends AnyEntity<T>, P extends string = never>(entityName: string, entity: T, where: FilterQuery<T>, options: FindOneOptions<T>): Promise<Loaded<T, P>> {
+  private async lockAndPopulate<T extends AnyEntity<T>, P extends string = never>(entityName: string, entity: T, where: FilterQuery<T>, options: FindOneOptions<T, P>): Promise<Loaded<T, P>> {
     if (options.lockMode === LockMode.OPTIMISTIC) {
       await this.lock(entity, options.lockMode, {
         lockVersion: options.lockVersion,
@@ -858,7 +848,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const preparedPopulate = this.preparePopulate<T>(entityName, options.populate, options.strategy);
-    await this.entityLoader.populate<T>(entityName, [entity], preparedPopulate, { ...options, where, convertCustomTypes: false, lookup: false });
+    await this.entityLoader.populate(entityName, [entity], preparedPopulate, { ...options, where, convertCustomTypes: false, lookup: false });
 
     return entity as Loaded<T, P>;
   }
@@ -890,7 +880,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * when the entity is found in identity map, we check if it was partially loaded or we are trying to populate
    * some additional lazy properties, if so, we reload and merge the data from database
    */
-  protected shouldRefresh<T extends AnyEntity<T>>(meta: EntityMetadata<T>, entity: T, options: FindOneOptions<T>) {
+  protected shouldRefresh<T extends AnyEntity<T>, P extends string = never>(meta: EntityMetadata<T>, entity: T, options: FindOneOptions<T, P>) {
     if (!entity.__helper!.__initialized || options.refresh) {
       return true;
     }

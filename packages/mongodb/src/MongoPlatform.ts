@@ -13,7 +13,7 @@ export class MongoPlatform extends Platform {
   }
 
   getRepositoryClass<T>(): Constructor<EntityRepository<T>> {
-    return MongoEntityRepository as Constructor<EntityRepository<T>>;
+    return MongoEntityRepository;
   }
 
   normalizePrimaryKey<T extends number | string = number | string>(data: Primary<T> | IPrimaryKey | ObjectId): T {

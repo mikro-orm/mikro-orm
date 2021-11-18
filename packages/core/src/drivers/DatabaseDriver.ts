@@ -37,9 +37,9 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   protected constructor(readonly config: Configuration,
                         protected readonly dependencies: string[]) { }
 
-  abstract find<T>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T>): Promise<EntityData<T>[]>;
+  abstract find<T, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T, P>): Promise<EntityData<T>[]>;
 
-  abstract findOne<T>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T>): Promise<EntityData<T> | null>;
+  abstract findOne<T, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P>): Promise<EntityData<T> | null>;
 
   abstract nativeInsert<T>(entityName: string, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
 

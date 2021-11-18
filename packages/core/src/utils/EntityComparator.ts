@@ -26,8 +26,8 @@ export class EntityComparator {
   /**
    * Computes difference between two entities.
    */
-  diffEntities<T extends EntityData<T>>(entityName: string, a: T, b: T): EntityData<T> {
-    const comparator = this.getEntityComparator<T>(entityName);
+  diffEntities<T>(entityName: string, a: EntityData<T>, b: EntityData<T>): EntityData<T> {
+    const comparator = this.getEntityComparator(entityName);
     return Utils.callCompiledFunction(comparator, a, b);
   }
 

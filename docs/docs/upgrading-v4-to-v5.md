@@ -141,3 +141,15 @@ Deep assigning of child entities now works by default based on the presence of P
 This behaviour can be disable via updateByPrimaryKey: false in the assign options.
 
 `mergeObjects` option is now enabled by default.
+
+## `em.populate()` always return array of entities
+
+Previously it was possible to call `em.populate()` with a single entity input,
+and the output would be again just a single entity.
+
+Due to issues with TS 4.5, this method now always return array of entities.
+You can use destructing if you want to have a single entity return type:
+
+```ts
+const [loadedAuthor] = await em.populate(author, ...);
+```

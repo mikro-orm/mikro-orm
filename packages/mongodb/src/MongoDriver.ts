@@ -26,7 +26,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return new MongoEntityManager(this.config, this, this.metadata, useContext) as unknown as EntityManager<D>;
   }
 
-  async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOptions<T> = {}): Promise<EntityData<T>[]> {
+  async find<T extends AnyEntity<T>, P extends string = never>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, P> = {}): Promise<EntityData<T>[]> {
     const fields = this.buildFields(entityName, options.populate as unknown as PopulateOptions<T>[] || [], options.fields);
     where = this.renameFields(entityName, where, true);
     const res = await this.rethrow(this.getConnection('read').find<T>(entityName, where, options.orderBy, options.limit, options.offset, fields, options.ctx));
@@ -34,7 +34,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return res.map(r => this.mapResult<T>(r, this.metadata.find(entityName)!)!);
   }
 
-  async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOneOptions<T> = { populate: [], orderBy: {} }): Promise<EntityData<T> | null> {
+  async findOne<T extends AnyEntity<T>, P extends string = never>(entityName: string, where: FilterQuery<T>, options: FindOneOptions<T, P> = { populate: [], orderBy: {} }): Promise<EntityData<T> | null> {
     if (Utils.isPrimaryKey(where)) {
       where = this.buildFilterById(entityName, where as string);
     }

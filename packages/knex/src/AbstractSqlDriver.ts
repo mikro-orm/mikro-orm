@@ -57,7 +57,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return new SqlEntityManager(this.config, this, this.metadata, useContext) as unknown as EntityManager<D>;
   }
 
-  async find<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: FindOptions<T> = {}): Promise<EntityData<T>[]> {
+  async find<T, P extends string = never>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, P> = {}): Promise<EntityData<T>[]> {
     options = { populate: [], orderBy: [], ...options };
     const meta = this.metadata.find<T>(entityName)!;
     const populate = this.autoJoinOneToOneOwner(meta, options.populate as unknown as PopulateOptions<T>[], options.fields);
@@ -96,7 +96,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return result;
   }
 
-  async findOne<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T>): Promise<EntityData<T> | null> {
+  async findOne<T, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P>): Promise<EntityData<T> | null> {
     const opts = { populate: [], ...(options || {}) } as FindOptions<T>;
     const meta = this.metadata.find(entityName)!;
     const populate = this.autoJoinOneToOneOwner(meta, opts.populate as unknown as PopulateOptions<T>[], opts.fields);
@@ -524,7 +524,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   /**
    * 1:1 owner side needs to be marked for population so QB auto-joins the owner id
    */
-  protected autoJoinOneToOneOwner<T>(meta: EntityMetadata, populate: PopulateOptions<T>[], fields: readonly EntityField<T>[] = []): PopulateOptions<T>[] {
+  protected autoJoinOneToOneOwner<T, P extends string = never>(meta: EntityMetadata, populate: PopulateOptions<T>[], fields: readonly EntityField<T, P>[] = []): PopulateOptions<T>[] {
     if (!this.config.get('autoJoinOneToOneOwner') || fields.length > 0) {
       return populate;
     }

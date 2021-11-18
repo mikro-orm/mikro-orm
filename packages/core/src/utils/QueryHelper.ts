@@ -85,7 +85,7 @@ export class QueryHelper {
     }
 
     if (meta && Utils.isPrimaryKey(where, meta.compositePK)) {
-      where = { [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where } as ObjectQuery<T>;
+      where = { [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where } as FilterQuery<T>;
     }
 
     if (Array.isArray(where) && root) {
