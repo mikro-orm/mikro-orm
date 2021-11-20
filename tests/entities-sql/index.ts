@@ -17,3 +17,5 @@ export * from './Employee2';
 export * from './Manager2';
 export * from './CompanyOwner2';
 export * from './sandwich';
+export * from './Task';
+export * from './TaskUser';

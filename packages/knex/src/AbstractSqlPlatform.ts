@@ -96,4 +96,14 @@ export abstract class AbstractSqlPlatform extends Platform {
     return false;
   }
 
+  generateCustomOrder(escapedColumn: string, values: unknown[]): string {
+    return (
+      values.reduce(
+        (acc, v, i) =>
+          acc + `when ${escapedColumn} = ${this.quoteValue(v)} then ${i} `,
+        '(case ',
+      ) + 'else null end)'
+    );
+  }
+
 }

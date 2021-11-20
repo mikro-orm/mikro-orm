@@ -8,6 +8,7 @@ import type { Platform } from './platforms';
 import type { Configuration } from './utils';
 import { EntityComparator, Utils } from './utils';
 import type { EntityManager } from './EntityManager';
+import type { PropertyOptions } from '.';
 
 export type Constructor<T = unknown> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
@@ -236,6 +237,7 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   inversedBy: string;
   mappedBy: string;
   orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[];
+  customOrder?: PropertyOptions<T>['customOrder'];
   fixedOrder?: boolean;
   fixedOrderColumn?: string;
   pivotTable: string;

@@ -3,7 +3,7 @@ import { expr, LockMode, MikroORM, QueryFlag, QueryOrder, UnderscoreNamingStrate
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { CriteriaNode } from '@mikro-orm/knex';
 import { MySqlDriver } from '@mikro-orm/mysql';
-import { Address2, Author2, Book2, BookTag2, Car2, CarOwner2, Configuration2, FooBar2, FooBaz2, FooParam2, Publisher2, PublisherType, Test2, User2 } from './entities-sql';
+import { Address2, Author2, Book2, BookTag2, Car2, CarOwner2, Configuration2, FooBar2, FooBaz2, FooParam2, Publisher2, PublisherType, Task, TaskUser, Test2, User2 } from './entities-sql';
 import { initORMMySql } from './bootstrap';
 import { BaseEntity2 } from './entities-sql/BaseEntity2';
 import { performance } from 'perf_hooks';
@@ -1841,6 +1841,36 @@ describe('QueryBuilder', () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
     qb.select('*').orderBy({ 'length(name)': QueryOrder.DESC, 'type': QueryOrder.ASC });
     expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` order by length(name) desc, `e0`.`type` asc');
+  });
+
+  test('order by customOrder enum ASC', async () => {
+    const qb = orm.em.createQueryBuilder(Task);
+    qb.select('*').orderBy({ priority: QueryOrder.ASC });
+    expect(qb.getQuery()).toEqual('select `e0`.* from `task` as `e0` order by (case when `e0`.`priority` = \'low\' then 0 when `e0`.`priority` = \'medium\' then 1 when `e0`.`priority` = \'high\' then 2 else null end) asc');
+  });
+
+  test('order by customOrder enum DESC', async () => {
+    const qb = orm.em.createQueryBuilder(Task);
+    qb.select('*').orderBy({ priority: QueryOrder.DESC });
+    expect(qb.getQuery()).toEqual('select `e0`.* from `task` as `e0` order by (case when `e0`.`priority` = \'low\' then 0 when `e0`.`priority` = \'medium\' then 1 when `e0`.`priority` = \'high\' then 2 else null end) desc');
+  });
+
+  test('order by customOrder string ASC', async () => {
+    const qb = orm.em.createQueryBuilder(Task);
+    qb.select('*').orderBy({ state: QueryOrder.ASC });
+    expect(qb.getQuery()).toEqual('select `e0`.* from `task` as `e0` order by (case when `e0`.`state` = \'pending\' then 0 when `e0`.`state` = \'progress\' then 1 when `e0`.`state` = \'done\' then 2 else null end) asc');
+  });
+
+  test('order by customOrder string DESC', async () => {
+    const qb = orm.em.createQueryBuilder(Task);
+    qb.select('*').orderBy({ state: QueryOrder.DESC });
+    expect(qb.getQuery()).toEqual('select `e0`.* from `task` as `e0` order by (case when `e0`.`state` = \'pending\' then 0 when `e0`.`state` = \'progress\' then 1 when `e0`.`state` = \'done\' then 2 else null end) desc');
+  });
+
+  test('order by customOrder nested', async () => {
+    const qb = orm.em.createQueryBuilder(TaskUser);
+    qb.select('*').orderBy({ tasks: { priority: QueryOrder.ASC } });
+    expect(qb.getQuery()).toEqual('select `e0`.* from `task_user` as `e0` left join `task` as `e1` on `e0`.`id` = `e1`.`owner_id` order by (case when `e1`.`priority` = \'low\' then 0 when `e1`.`priority` = \'medium\' then 1 when `e1`.`priority` = \'high\' then 2 else null end) asc');
   });
 
   test('GH issue 786', async () => {

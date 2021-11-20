@@ -381,4 +381,8 @@ export abstract class Platform {
     return;
   }
 
+  generateCustomOrder(escapedColumn: string, values: unknown[]) {
+    throw new Error('Not supported');
+  }
+
 }
