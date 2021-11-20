@@ -1,7 +1,6 @@
-import c from 'ansi-colors';
 import type { Arguments, Argv, CommandModule } from 'yargs';
 import type { Configuration, MikroORM, MikroORMOptions, IMigrator } from '@mikro-orm/core';
-import { Utils } from '@mikro-orm/core';
+import { Utils, colors } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { SchemaGenerator } from '@mikro-orm/knex';
 import type { MigrateOptions } from '@mikro-orm/migrations';
@@ -122,7 +121,7 @@ export class MigrationCommandFactory {
     const opts = MigrationCommandFactory.getUpDownOptions(args);
     await migrator[method](opts as string[]);
     const message = this.getUpDownSuccessMessage(method as 'up' | 'down', opts);
-    CLIHelper.dump(c.green(message));
+    CLIHelper.dump(colors.green(message));
   }
 
   private static async handlePendingCommand(migrator: IMigrator) {
@@ -148,39 +147,39 @@ export class MigrationCommandFactory {
     const ret = await migrator.createMigration(args.path, args.blank, args.initial);
 
     if (ret.diff.up.length === 0) {
-      return CLIHelper.dump(c.green(`No changes required, schema is up-to-date`));
+      return CLIHelper.dump(colors.green(`No changes required, schema is up-to-date`));
     }
 
     if (args.dump) {
-      CLIHelper.dump(c.green('Creating migration with following queries:'));
-      CLIHelper.dump(c.green('up:'));
+      CLIHelper.dump(colors.green('Creating migration with following queries:'));
+      CLIHelper.dump(colors.green('up:'));
       CLIHelper.dump(ret.diff.up.map(sql => '  ' + sql).join('\n'), config);
 
       /* istanbul ignore next */
       if (config.getDriver().getPlatform().supportsDownMigrations()) {
-        CLIHelper.dump(c.green('down:'));
+        CLIHelper.dump(colors.green('down:'));
         CLIHelper.dump(ret.diff.down.map(sql => '  ' + sql).join('\n'), config);
       } else {
-        CLIHelper.dump(c.yellow(`(${config.getDriver().constructor.name} does not support automatic down migrations)`));
+        CLIHelper.dump(colors.yellow(`(${config.getDriver().constructor.name} does not support automatic down migrations)`));
       }
     }
 
-    CLIHelper.dump(c.green(`${ret.fileName} successfully created`));
+    CLIHelper.dump(colors.green(`${ret.fileName} successfully created`));
   }
 
   private static async handleFreshCommand(args: Arguments<Options>, migrator: IMigrator, orm: MikroORM<AbstractSqlDriver>) {
     const generator = new SchemaGenerator(orm.em);
     await generator.dropSchema();
-    CLIHelper.dump(c.green('Dropped schema successfully'));
+    CLIHelper.dump(colors.green('Dropped schema successfully'));
     const opts = MigrationCommandFactory.getUpDownOptions(args);
     await migrator.up(opts as string[]);
     const message = this.getUpDownSuccessMessage('up', opts);
-    CLIHelper.dump(c.green(message));
+    CLIHelper.dump(colors.green(message));
     if (args.seed !== undefined) {
       const seeder = orm.getSeeder();
       const seederClass = args.seed || orm.config.get('seeder').defaultSeeder;
       await seeder.seedString(seederClass);
-      CLIHelper.dump(c.green(`Database seeded successfully with seeder class ${seederClass}`));
+      CLIHelper.dump(colors.green(`Database seeded successfully with seeder class ${seederClass}`));
     }
   }
 

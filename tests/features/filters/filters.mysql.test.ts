@@ -1,8 +1,8 @@
 import type { MikroORM } from '@mikro-orm/core';
-import { Logger, QueryOrder } from '@mikro-orm/core';
+import { QueryOrder } from '@mikro-orm/core';
 import { Author2, Book2 } from '../../entities-sql';
 import type { MySqlDriver } from '@mikro-orm/mysql-base';
-import { initORMMySql, wipeDatabaseMySql } from '../../bootstrap';
+import { initORMMySql, mockLogger, wipeDatabaseMySql } from '../../bootstrap';
 
 describe('filters [mysql]', () => {
 
@@ -24,12 +24,9 @@ describe('filters [mysql]', () => {
     const bible3 = new Book2('Bible pt. 3', new Author2('Lol', 'lol@lol.lol'));
     god.books.add(bible1, bible2, bible3);
     await orm.em.persistAndFlush([author, god]);
-
-    const mock = jest.fn();
-    const logger = new Logger(mock, true);
-    Object.assign(orm.config, { logger });
-
     orm.em.clear();
+
+    const mock = mockLogger(orm);
     const books1 = await orm.em.find(Book2, { title: '123' }, {
       populate: ['perex'],
       orderBy: { title: QueryOrder.DESC },

@@ -1,8 +1,6 @@
 import { URL } from 'url';
-import c from 'ansi-colors';
-
 import type { Configuration, ConnectionOptions, DynamicPassword } from '../utils';
-import { Utils } from '../utils';
+import type { LogContext } from '../logging';
 import type { MetadataStorage } from '../metadata';
 import type { AnyEntity, Dictionary, MaybePromise, Primary } from '../typings';
 import type { Platform } from '../platforms/Platform';
@@ -14,7 +12,8 @@ export abstract class Connection {
   protected metadata!: MetadataStorage;
   protected platform!: Platform;
   protected readonly options: ConnectionOptions;
-  protected abstract client: any;
+  protected abstract client: unknown;
+  protected readonly logger = this.config.getLogger();
 
   constructor(protected readonly config: Configuration,
               options?: ConnectionOptions,
@@ -103,38 +102,30 @@ export abstract class Connection {
     return this.platform;
   }
 
-  protected async executeQuery<T>(query: string, cb: () => Promise<T>): Promise<T> {
+  protected async executeQuery<T>(query: string, cb: () => Promise<T>, context?: LogContext): Promise<T> {
     const now = Date.now();
 
     try {
       const res = await cb();
-      this.logQuery(query, Date.now() - now);
+      this.logQuery(query, { ...context, took: Date.now() - now });
 
       return res;
     } catch (e) {
-      this.logQuery(c.red(query), Date.now() - now);
+      this.logQuery(query, { ...context, took: Date.now() - now, level: 'error' });
       throw e;
     }
   }
 
-  protected logQuery(query: string, took?: number): void {
-    const logger = this.config.getLogger();
-
-    // We only actually log something when debugMode is enabled. If it's not enabled,
-    // we can jump out here as a performance optimization and save ourselves some cycles
-    // preparing a message that won't get used.
-    if (!logger.isEnabled('query')) {
-      return;
-    }
-
-    query = this.config.get('highlighter').highlight(query);
-    let msg = query + (Utils.isDefined(took) ? c.grey(` [took ${took} ms]`) : '');
-
-    if (this.config.get('replicas', []).length > 0) {
-      msg += c.cyan(` (via ${this.type} connection '${this.options.name || this.config.get('name') || this.options.host}')`);
-    }
-
-    logger.log('query', msg);
+  protected logQuery(query: string, context: LogContext = {}): void {
+    this.logger.logQuery({
+      level: 'info',
+      connection: {
+        type: this.type,
+        name: this.options.name || this.config.get('name') || this.options.host,
+      },
+      ...context,
+      query,
+    });
   }
 
 }

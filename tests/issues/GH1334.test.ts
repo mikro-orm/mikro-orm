@@ -1,5 +1,6 @@
-import { Collection, Entity, IdentifiedReference, LoadStrategy, Logger, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, QueryOrder } from '@mikro-orm/core';
+import { Collection, Entity, IdentifiedReference, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, QueryOrder } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { mockLogger } from '../bootstrap';
 
 @Entity()
 export class RadioOption {
@@ -93,9 +94,7 @@ describe('GH issue 1334', () => {
   });
 
   test(`GH issue 1334`, async () => {
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const project = new Project('p1');
     const radio1 = new Radio(0);

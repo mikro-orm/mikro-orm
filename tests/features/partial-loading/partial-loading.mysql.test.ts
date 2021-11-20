@@ -1,8 +1,8 @@
 import type { MikroORM } from '@mikro-orm/core';
-import { Logger, LoadStrategy } from '@mikro-orm/core';
+import { LoadStrategy } from '@mikro-orm/core';
 import type { MySqlDriver } from '@mikro-orm/mysql';
 import { Author2, Book2, BookTag2 } from '../../entities-sql';
-import { initORMMySql, wipeDatabaseMySql } from '../../bootstrap';
+import { initORMMySql, mockLogger, wipeDatabaseMySql } from '../../bootstrap';
 
 describe('partial loading (mysql)', () => {
 
@@ -35,9 +35,7 @@ describe('partial loading (mysql)', () => {
     await orm.em.persistAndFlush(god);
     orm.em.clear();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const r1 = await orm.em.find(Author2, god, { fields: ['id', 'books.author', 'books.title'], populate: ['books'] });
     expect(r1).toHaveLength(1);
@@ -75,9 +73,7 @@ describe('partial loading (mysql)', () => {
     await orm.em.persistAndFlush(god);
     orm.em.clear();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const r1 = await orm.em.find(Book2, b1, { fields: ['uuid', 'title', 'author', 'author.email'], populate: ['author'], filters: false });
     expect(r1).toHaveLength(1);
@@ -120,9 +116,7 @@ describe('partial loading (mysql)', () => {
     await orm.em.persistAndFlush(god);
     orm.em.clear();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const r1 = await orm.em.find(BookTag2, {}, { fields: ['name', 'books.title'], populate: ['books'], filters: false });
     expect(r1).toHaveLength(6);
@@ -163,9 +157,7 @@ describe('partial loading (mysql)', () => {
 
   test('partial nested loading (dot notation)', async () => {
     const god = await createEntities();
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const r1 = await orm.em.find(BookTag2, {}, { fields: ['name', 'books.title', 'books.author', 'books.author.email'], populate: ['books.author'], filters: false });
     expect(r1).toHaveLength(6);
@@ -183,9 +175,7 @@ describe('partial loading (mysql)', () => {
 
   test('partial nested loading (with joined strategy and dot notation)', async () => {
     const god = await createEntities();
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const r3 = await orm.em.find(BookTag2, {}, {
       fields: ['name', 'books.title', 'books.author', 'books.author.email'],
@@ -213,9 +203,7 @@ describe('partial loading (mysql)', () => {
 
   test('partial nested loading (object notation)', async () => {
     const god = await createEntities();
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const r2 = await orm.em.find(BookTag2, {}, { fields: ['name', { books: ['title', 'author', { author: ['email'] }] } ], populate: ['books.author'], filters: false });
     expect(r2).toHaveLength(6);
@@ -233,9 +221,7 @@ describe('partial loading (mysql)', () => {
 
   test('partial nested loading (with joined strategy)', async () => {
     const god = await createEntities();
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const r3 = await orm.em.find(BookTag2, {}, {
       fields: ['name', { books: ['title', 'author', { author: ['email'] }] } ],

@@ -18,6 +18,7 @@ export * from './events';
 export * from './EntityManager';
 export * from './unit-of-work';
 export * from './utils';
+export * from './logging';
 export * from './hydration';
 export * from './drivers';
 export * from './connections';

@@ -1,5 +1,6 @@
-import { Entity, IdentifiedReference, Logger, MikroORM, OneToOne, PrimaryKey, Property, QueryOrder } from '@mikro-orm/core';
+import { Entity, IdentifiedReference, MikroORM, OneToOne, PrimaryKey, Property, QueryOrder } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { mockLogger } from '../bootstrap';
 
 @Entity()
 export class A {
@@ -43,9 +44,7 @@ describe('GH issue 572', () => {
   afterAll(() => orm.close(true));
 
   test(`GH issue 572`, async () => {
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
     const res1 = await orm.em.find(A, {}, {
       orderBy: { b: { camelCaseField: QueryOrder.ASC } },
       populate: ['b'],

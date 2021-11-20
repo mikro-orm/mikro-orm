@@ -1,6 +1,7 @@
-import { BigIntType, Collection, Entity, Logger, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { BigIntType, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { SchemaGenerator } from '@mikro-orm/sqlite';
+import { mockLogger } from '../bootstrap';
 
 @Entity()
 class User {
@@ -76,9 +77,7 @@ describe('GH issue 940, 1117', () => {
     orm.em.clear();
 
     const orgs = await orm.em.find(UserOrganization, {});
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query', 'query-params']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query', 'query-params']);
     await orm.em.flush();
     expect(mock.mock.calls).toHaveLength(0);
   });

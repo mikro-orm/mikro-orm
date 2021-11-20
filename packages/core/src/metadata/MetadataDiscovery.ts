@@ -1,6 +1,5 @@
 import { basename, extname, isAbsolute } from 'path';
 import globby from 'globby';
-import c from 'ansi-colors';
 
 import type { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, EntityProperty } from '../typings';
 import { EntityMetadata } from '../typings';
@@ -13,6 +12,7 @@ import { Cascade, ReferenceType } from '../enums';
 import { MetadataError } from '../errors';
 import type { Platform } from '../platforms';
 import { ArrayType, BlobType, EnumArrayType, JsonType, Type } from '../types';
+import { colors } from '../logging/colors';
 
 export class MetadataDiscovery {
 
@@ -30,12 +30,12 @@ export class MetadataDiscovery {
 
   async discover(preferTsNode = true): Promise<MetadataStorage> {
     const startTime = Date.now();
-    this.logger.log('discovery', `ORM entity discovery started, using ${c.cyan(this.metadataProvider.constructor.name)}`);
+    this.logger.log('discovery', `ORM entity discovery started, using ${colors.cyan(this.metadataProvider.constructor.name)}`);
     await this.findEntities(preferTsNode);
     await this.processDiscoveredEntities(this.discovered);
 
     const diff = Date.now() - startTime;
-    this.logger.log('discovery', `- entity discovery finished, found ${c.green('' + this.discovered.length)} entities, took ${c.green(`${diff} ms`)}`);
+    this.logger.log('discovery', `- entity discovery finished, found ${colors.green('' + this.discovered.length)} entities, took ${colors.green(`${diff} ms`)}`);
 
     const discovered = new MetadataStorage();
 
@@ -113,7 +113,7 @@ export class MetadataDiscovery {
 
     paths = paths.map(path => Utils.normalizePath(path));
     const files = await globby(paths, { cwd: Utils.normalizePath(this.config.get('baseDir')) });
-    this.logger.log('discovery', `- processing ${c.cyan('' + files.length)} files`);
+    this.logger.log('discovery', `- processing ${colors.cyan('' + files.length)} files`);
     const found: [Constructor<AnyEntity>, string][] = [];
 
     for (const filepath of files) {
@@ -226,7 +226,7 @@ export class MetadataDiscovery {
 
   private async discoverEntity<T extends AnyEntity<T>>(entity: EntityClass<T> | EntityClassGroup<T> | EntitySchema<T>, path?: string): Promise<void> {
     entity = this.prepare(entity);
-    this.logger.log('discovery', `- processing entity ${c.cyan((entity as EntityClass<T>).name)}${c.grey(path ? ` (${path})` : '')}`);
+    this.logger.log('discovery', `- processing entity ${colors.cyan((entity as EntityClass<T>).name)}${colors.grey(path ? ` (${path})` : '')}`);
     const schema = this.getSchema(entity as Constructor<T>);
     const meta = schema.init().meta;
     const root = Utils.getRootEntity(this.metadata, meta);
@@ -235,7 +235,7 @@ export class MetadataDiscovery {
     const cache = meta.useCache && meta.path && await this.cache.get(meta.className + extname(meta.path));
 
     if (cache) {
-      this.logger.log('discovery', `- using cached metadata for entity ${c.cyan(meta.className)}`);
+      this.logger.log('discovery', `- using cached metadata for entity ${colors.cyan(meta.className)}`);
       this.metadataProvider.loadFromCache(meta, cache);
       meta.root = root;
       this.discovered.push(meta);

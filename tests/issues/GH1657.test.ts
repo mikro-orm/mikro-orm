@@ -1,5 +1,6 @@
-import { Collection, Entity, LoadStrategy, Logger, ManyToOne, MikroORM, OneToMany, PrimaryKey, wrap } from '@mikro-orm/core';
+import { Collection, Entity, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, wrap } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { mockLogger } from '../bootstrap';
 
 @Entity()
 class Order {
@@ -71,9 +72,7 @@ describe('GH issue 1657', () => {
     await orm.em.persistAndFlush([order1, order2]);
     orm.em.clear();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query', 'query-params']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query', 'query-params']);
     const res1 = await orm.em.find(OrderItem, { id: { $lte: 100 } });
     expect(res1).toHaveLength(2);
     expect(wrap(res1[0].order1).isInitialized()).toBe(true);

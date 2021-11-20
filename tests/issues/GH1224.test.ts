@@ -1,6 +1,7 @@
-import { Collection, Entity, IdentifiedReference, Logger, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, PrimaryKeyType, Property, Reference } from '@mikro-orm/core';
+import { Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, PrimaryKeyType, Property, Reference } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { SchemaGenerator } from '@mikro-orm/knex';
+import { mockLogger } from '../bootstrap';
 
 @Entity()
 class Node {
@@ -50,9 +51,7 @@ describe('GH issue 1224', () => {
       type: 'postgresql',
       cache: { enabled: false },
     });
-    const logger = new Logger(log, ['query', 'query-params']);
-    Object.assign(orm.config, { logger });
-
+    mockLogger(orm, ['query', 'query-params'], log);
     await new SchemaGenerator(orm.em).ensureDatabase();
   });
 

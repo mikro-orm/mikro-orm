@@ -1,7 +1,7 @@
 import { Author } from '../../entities';
 import type { ChangeSet, ChangeSetComputer, EventSubscriber, FlushEventArgs, MikroORM } from '@mikro-orm/core';
-import { ChangeSetType, EntityValidator, IdentityMap, Logger, UnitOfWork } from '@mikro-orm/core';
-import { initORMMongo, wipeDatabase } from '../../bootstrap';
+import { ChangeSetType, EntityValidator, IdentityMap, UnitOfWork } from '@mikro-orm/core';
+import { initORMMongo, mockLogger, wipeDatabase } from '../../bootstrap';
 import FooBar from '../../entities/FooBar';
 import { FooBaz } from '../../entities/FooBaz';
 import { Dummy } from '../../entities/Dummy';
@@ -169,9 +169,7 @@ describe('UnitOfWork', () => {
     const bar = new FooBar();
     bar.name = 'bar';
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, true);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm);
     await em.persistAndFlush(bar);
     expect(mock.mock.calls[0][0]).toMatch('db.begin()');
     expect(mock.mock.calls[1][0]).toMatch(`db.getCollection('foo-baz').insertOne({ name: 'dynamic' }, { session: '[ClientSession]' })`);

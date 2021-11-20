@@ -1,5 +1,6 @@
-import { Entity, Logger, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { mockLogger } from '../bootstrap';
 
 @Entity()
 export class GroupCode {
@@ -44,9 +45,7 @@ describe('GH issue 1278', () => {
   });
 
   test(`GH issue 1278`, async () => {
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const group = new Group();
     const groupCode = new GroupCode();

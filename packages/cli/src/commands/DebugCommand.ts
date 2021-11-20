@@ -1,6 +1,5 @@
 import type { CommandModule } from 'yargs';
-import c from 'ansi-colors';
-import { ConfigurationLoader, Utils } from '@mikro-orm/core';
+import { ConfigurationLoader, Utils, colors } from '@mikro-orm/core';
 
 import { CLIHelper } from '../CLIHelper';
 
@@ -13,12 +12,12 @@ export class DebugCommand implements CommandModule {
    * @inheritdoc
    */
   async handler() {
-    CLIHelper.dump(`Current ${c.cyan('MikroORM')} CLI configuration`);
+    CLIHelper.dump(`Current ${colors.cyan('MikroORM')} CLI configuration`);
     await CLIHelper.dumpDependencies();
     const settings = await ConfigurationLoader.getSettings();
 
     if (settings.useTsNode) {
-      CLIHelper.dump(' - ts-node ' + c.green('enabled'));
+      CLIHelper.dump(' - ts-node ' + colors.green('enabled'));
     }
 
     const configPaths = await CLIHelper.getConfigPaths();
@@ -27,7 +26,7 @@ export class DebugCommand implements CommandModule {
 
     try {
       const config = await CLIHelper.getConfiguration();
-      CLIHelper.dump(` - configuration ${c.green('found')}`);
+      CLIHelper.dump(` - configuration ${colors.green('found')}`);
       const tsNode = config.get('tsNode');
 
       if ([true, false].includes(tsNode as boolean)) {
@@ -63,7 +62,7 @@ export class DebugCommand implements CommandModule {
         }
       }
     } catch (e: any) {
-      CLIHelper.dump(`- configuration ${c.red('not found')} ${c.red(`(${e.message})`)}`);
+      CLIHelper.dump(`- configuration ${colors.red('not found')} ${colors.red(`(${e.message})`)}`);
     }
   }
 
@@ -74,9 +73,9 @@ export class DebugCommand implements CommandModule {
       const found = await Utils.pathExists(path);
 
       if (found) {
-        CLIHelper.dump(`   - ${path} (${c.green('found')})`);
+        CLIHelper.dump(`   - ${path} (${colors.green('found')})`);
       } else {
-        CLIHelper.dump(`   - ${path} (${c[failedColor]('not found')})`);
+        CLIHelper.dump(`   - ${path} (${colors[failedColor]('not found')})`);
       }
     }
   }

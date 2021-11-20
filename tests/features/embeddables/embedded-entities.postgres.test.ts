@@ -1,5 +1,6 @@
-import { Embeddable, Embedded, Entity, expr, Logger, MikroORM, PrimaryKey, Property, ReferenceType, t } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, expr, MikroORM, PrimaryKey, Property, ReferenceType, t } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { mockLogger } from '../../bootstrap';
 
 @Embeddable()
 class Address1 {
@@ -183,9 +184,7 @@ describe('embedded entities in postgresql', () => {
       ],
     });
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
     await orm.em.persistAndFlush(user);
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch('begin');
@@ -327,9 +326,8 @@ describe('embedded entities in postgresql', () => {
     await orm.em.persistAndFlush(user);
     orm.em.clear();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, true);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm);
+
     const r = await orm.em.find(User, {
       [expr('(address4->>\'street\')::text != \'\'')]: [],
       [expr('lower((address4->>\'city\')::text) = ?')]: ['prague'],

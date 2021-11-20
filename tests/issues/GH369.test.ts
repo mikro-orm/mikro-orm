@@ -1,6 +1,7 @@
-import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, Collection, MikroORM, Logger } from '@mikro-orm/core';
+import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, Collection, MikroORM } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { SchemaGenerator } from '@mikro-orm/sqlite';
+import { mockLogger } from '../bootstrap';
 
 @Entity()
 class A {
@@ -44,9 +45,7 @@ describe('GH issue 369', () => {
   afterAll(() => orm.close(true));
 
   test(`removing entity that is inside a 1:m collection`, async () => {
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const a = new A();
     const b = new B();

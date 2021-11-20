@@ -1,11 +1,10 @@
 import { pathExists } from 'fs-extra';
 import type { Table } from 'cli-table3';
 import CliTable3 from 'cli-table3';
-import c from 'ansi-colors';
 import yargs from 'yargs';
 
 import type { Configuration, IDatabaseDriver, Options } from '@mikro-orm/core';
-import { ConfigurationLoader, MikroORM, Utils } from '@mikro-orm/core';
+import { colors, ConfigurationLoader, MikroORM, Utils } from '@mikro-orm/core';
 
 /**
  * @internal
@@ -60,8 +59,8 @@ export class CLIHelper {
 
   static async dumpDependencies() {
     CLIHelper.dump(' - dependencies:');
-    CLIHelper.dump(`   - mikro-orm ${c.green(Utils.getORMVersion())}`);
-    CLIHelper.dump(`   - node ${c.green(CLIHelper.getNodeVersion())}`);
+    CLIHelper.dump(`   - mikro-orm ${colors.green(Utils.getORMVersion())}`);
+    CLIHelper.dump(`   - node ${colors.green(CLIHelper.getNodeVersion())}`);
 
     if (await pathExists(process.cwd() + '/package.json')) {
       const drivers = await CLIHelper.getDriverDependencies();
@@ -71,18 +70,18 @@ export class CLIHelper {
       }
 
       CLIHelper.dump(`   - typescript ${await CLIHelper.getModuleVersion('typescript')}`);
-      CLIHelper.dump(' - package.json ' + c.green('found'));
+      CLIHelper.dump(' - package.json ' + colors.green('found'));
     } else {
-      CLIHelper.dump(' - package.json ' + c.red('not found'));
+      CLIHelper.dump(' - package.json ' + colors.red('not found'));
     }
   }
 
   static async getModuleVersion(name: string): Promise<string> {
     try {
       const pkg = Utils.requireFrom(`${name}/package.json`, process.cwd());
-      return c.green(pkg.version);
+      return colors.green(pkg.version);
     } catch {
-      return c.red('not-found');
+      return colors.red('not-found');
     }
   }
 

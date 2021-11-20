@@ -1,5 +1,6 @@
-import { Embeddable, Embedded, Entity, Logger, MikroORM, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
 import type { MySqlDriver } from '@mikro-orm/mysql';
+import { mockLogger } from '../../bootstrap';
 
 @Embeddable()
 class Address1 {
@@ -161,9 +162,7 @@ describe('embedded entities in mysql', () => {
     user.address3 = new Address1('Downing street 12', '789', 'London 3', 'UK 3');
     user.address4 = new Address1('Downing street 13', '10', 'London 4', 'UK 4');
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
     await orm.em.persistAndFlush(user);
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch('begin');

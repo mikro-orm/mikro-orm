@@ -1,5 +1,6 @@
 import type { Platform } from '@mikro-orm/core';
-import { Cascade, Collection, Entity, Logger, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType, Property, Type } from '@mikro-orm/core';
+import { Cascade, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType, Property, Type } from '@mikro-orm/core';
+import { mockLogger } from '../bootstrap';
 
 export class Sku {
 
@@ -90,9 +91,7 @@ describe('GH issue 910', () => {
     });
     await orm.getSchemaGenerator().createSchema();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query', 'query-params']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query', 'query-params']);
 
     const id = '123';
     const item1 = new CartItem(Sku.create('sku1'), 10);

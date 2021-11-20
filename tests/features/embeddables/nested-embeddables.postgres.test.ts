@@ -1,5 +1,6 @@
-import { Embeddable, Embedded, Entity, Logger, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { mockLogger } from '../../bootstrap';
 
 @Embeddable()
 class IdentityMeta {
@@ -136,9 +137,7 @@ describe('embedded entities in postgres', () => {
     user2.profile2 = new Profile('u4', new Identity('e4', new IdentityMeta('f4')));
     user2.profile2.identity.links.push(new IdentityLink('l3'), new IdentityLink('l4'));
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, true);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm);
     await orm.em.persistAndFlush([user1, user2]);
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch(`begin`);

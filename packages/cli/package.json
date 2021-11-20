@@ -60,7 +60,6 @@
   "dependencies": {
     "@mikro-orm/core": "^4.5.9",
     "@mikro-orm/knex": "^4.5.9",
-    "ansi-colors": "4.1.1",
     "cli-table3": "0.6.0",
     "fs-extra": "10.0.0",
     "tsconfig-paths": "3.11.0",

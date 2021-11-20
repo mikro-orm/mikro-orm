@@ -1,5 +1,6 @@
-import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property, Filter, Logger, ManyToOne } from '@mikro-orm/core';
+import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property, Filter, ManyToOne } from '@mikro-orm/core';
 import type { AbstractSqlDriver, EntityManager } from '@mikro-orm/knex';
+import { mockLogger } from '../../bootstrap';
 
 @Filter({
   name: 'isActive',
@@ -100,9 +101,7 @@ describe('filters [postgres]', () => {
   afterAll(() => orm.close(true));
 
   test('get one employee with benefit status = A', async () => {
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const benefit = new Benefit();
     benefit.benefitStatus = 'IA';
@@ -129,9 +128,7 @@ describe('filters [postgres]', () => {
   });
 
   test('merging $or conditions', async () => {
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     await orm.em.find(User, { $or: [{ firstName: 'name' }, { lastName: 'name' }] });
     await orm.em.find(Membership, { $or: [{ role: 'admin' }, { role: 'moderator' }] });

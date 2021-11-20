@@ -1,12 +1,13 @@
 import {
   BigIntType,
   Entity,
-  Logger,
+  DefaultLogger,
   MikroORM,
   PrimaryKey,
   Property,
 } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { mockLogger } from '../bootstrap';
 export class NativeBigIntType extends BigIntType {
 
   convertToJSValue(value: any): any {
@@ -45,9 +46,7 @@ describe('GH issue 1626', () => {
   afterAll(() => orm.close(true));
 
   test(`queries with custom type PK (native bigint)`, async () => {
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const author = new Author();
     await orm.em.persistAndFlush(author);
@@ -76,9 +75,7 @@ describe('GH issue 1626', () => {
   });
 
   test(`queries for multiple entities with custom type PK (native bigint)`, async () => {
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const authors = [new Author(), new Author()];
     authors[0].name = 'A';

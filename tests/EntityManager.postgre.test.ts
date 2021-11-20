@@ -1,7 +1,7 @@
 import { v4 } from 'uuid';
 import type { EventSubscriber, ChangeSet, AnyEntity, FlushEventArgs } from '@mikro-orm/core';
 import {
-  Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, Logger, ValidationError, ChangeSetType, wrap, expr,
+  Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, ValidationError, ChangeSetType, wrap, expr,
   UniqueConstraintViolationException, TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException,
   NonUniqueFieldNameException, InvalidFieldNameException, LoadStrategy, IsolationLevel,
 } from '@mikro-orm/core';
@@ -120,9 +120,7 @@ describe('EntityManagerPostgre', () => {
     await driver.nativeInsert(Test2.name, { id: 4, name: 't4' });
     await driver.nativeInsert(Test2.name, { id: 5, name: 't5' });
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const res = await driver.nativeInsertMany(Publisher2.name, [
       { name: 'test 1', tests: [1, 3, 4], type: PublisherType.GLOBAL, type2: PublisherType2.LOCAL },
@@ -217,9 +215,7 @@ describe('EntityManagerPostgre', () => {
   });
 
   test('transactions with isolation levels', async () => {
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const god1 = new Author2('God1', 'hello@heaven1.god');
     try {
@@ -259,9 +255,7 @@ describe('EntityManagerPostgre', () => {
   });
 
   test('nested transaction rollback with save-points will commit the outer one', async () => {
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     // start outer transaction
     const transaction = orm.em.transactional(async em => {
@@ -504,9 +498,7 @@ describe('EntityManagerPostgre', () => {
     bar.objectProperty = { myPropName: { nestedProperty: 123, somethingElse: null } };
     await orm.em.fork().persistAndFlush(bar);
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query', 'query-params']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query', 'query-params']);
 
     const b0 = await orm.em.findOneOrFail(FooBar2, bar);
     expect(b0.objectProperty).toEqual({ myPropName: { nestedProperty: 123, somethingElse: null } });
@@ -685,9 +677,7 @@ describe('EntityManagerPostgre', () => {
     const author = new Author2('name', 'email');
     await orm.em.persistAndFlush(author);
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     await orm.em.transactional(async em => {
       await em.lock(author, LockMode.PESSIMISTIC_WRITE);
@@ -703,9 +693,7 @@ describe('EntityManagerPostgre', () => {
     const author = new Author2('name', 'email');
     await orm.em.persistAndFlush(author);
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     await orm.em.transactional(async em => {
       await em.lock(author, LockMode.PESSIMISTIC_READ);
@@ -865,9 +853,7 @@ describe('EntityManagerPostgre', () => {
     expect(b1.baz!.id).toBe(baz.id);
     expect(wrap(b1).toJSON()).toMatchObject({ baz: { id: baz.id, bar: bar.id, name: 'baz' } });
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     await orm.em.flush();
     expect(mock.mock.calls.length).toBe(0);
@@ -880,9 +866,7 @@ describe('EntityManagerPostgre', () => {
     await orm.em.persistAndFlush(bar);
     orm.em.clear();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     // autoJoinOneToOneOwner: false
     const b0 = await orm.em.findOneOrFail(FooBaz2, { id: baz.id });
@@ -928,9 +912,7 @@ describe('EntityManagerPostgre', () => {
     bar1.fooBar = undefined;
     bar3.fooBar = bar2;
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
@@ -1224,9 +1206,7 @@ describe('EntityManagerPostgre', () => {
     await orm.em.persistAndFlush([b1, b2, b3]);
     orm.em.clear();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
     const res = await orm.em.find(Author2, { books: { title: { $in: ['b1', 'b2'] } } }, { populate: ['books.perex'] });
     expect(res).toHaveLength(1);
     expect(res[0].books.length).toBe(2);
@@ -1310,9 +1290,7 @@ describe('EntityManagerPostgre', () => {
     expect(b.createdAt).toBeDefined();
     expect(b.createdAt).toBeInstanceOf(Date);
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query', 'query-params']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query', 'query-params']);
     await orm.em.nativeInsert(Author2, { name: 'native name 1', email: 'native1@email.com' });
     expect(mock.mock.calls[0][0]).toMatch('insert into "author2" ("email", "name") values (\'native1@email.com\', \'native name 1\') returning "id", "created_at", "updated_at"');
     orm.config.set('debug', ['query']);
@@ -1335,9 +1313,7 @@ describe('EntityManagerPostgre', () => {
   });
 
   test('self referencing (1 step)', async () => {
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const author = new Author2('name', 'email');
     author.favouriteAuthor = author;
@@ -1401,9 +1377,7 @@ describe('EntityManagerPostgre', () => {
     await orm.em.persistAndFlush([b1, b2, b3]);
     orm.em.clear();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query', 'query-params']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query', 'query-params']);
 
     const books1 = await orm.em.find(Book2, {
       [expr('upper(title)')]: ['B1', 'B2'],
@@ -1439,9 +1413,7 @@ describe('EntityManagerPostgre', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
     const res1 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['perex'] });
     expect(res1).toHaveLength(3);
     expect(res1[0].test).toBeUndefined();
@@ -1489,9 +1461,7 @@ describe('EntityManagerPostgre', () => {
   test('result caching (find)', async () => {
     await createBooksWithTags();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const res1 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags', 'publisher'], cache: 50, strategy: LoadStrategy.JOINED });
     expect(mock.mock.calls).toHaveLength(1);
@@ -1516,9 +1486,7 @@ describe('EntityManagerPostgre', () => {
   test('result caching (findOne)', async () => {
     await createBooksWithTags();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const res1 = await orm.em.findOneOrFail(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags'], cache: ['abc', 50], strategy: LoadStrategy.JOINED });
     expect(mock.mock.calls).toHaveLength(1);
@@ -1543,9 +1511,7 @@ describe('EntityManagerPostgre', () => {
   test('result caching (count)', async () => {
     await createBooksWithTags();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const res1 = await orm.em.count(Book2, { author: { name: 'Jon Snow' } }, { cache: 50 });
     expect(mock.mock.calls).toHaveLength(1);
@@ -1570,9 +1536,7 @@ describe('EntityManagerPostgre', () => {
   test('result caching (query builder)', async () => {
     await createBooksWithTags();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const res1 = await orm.em.createQueryBuilder(Book2).where({ author: { name: 'Jon Snow' } }).cache(50).getResultList();
     expect(mock.mock.calls).toHaveLength(1);
@@ -1664,9 +1628,7 @@ describe('EntityManagerPostgre', () => {
     expect(res1).toHaveLength(2);
     expect(res1.map(a => a.name)).toEqual(['God 02', 'God 03']);
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     // with paginate flag (and a bit of dark sql magic) we get what we want
     const res2 = await orm.em.find(Author2, { books: { title: /^Bible/ } }, {

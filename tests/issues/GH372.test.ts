@@ -1,9 +1,11 @@
+import { mockLogger } from '../bootstrap';
+
 (global as any).process.env.FORCE_COLOR = 0;
 
 import type { Knex } from 'knex';
 import { knex } from 'knex';
 import { SchemaGenerator } from '@mikro-orm/knex';
-import { Entity, Logger, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
+import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 type Point = { x: number; y: number };
@@ -60,9 +62,7 @@ describe('GH issue 372', () => {
   });
 
   test(`schema updates respect default values`, async () => {
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const a1 = new A();
     a1.prop = { x: 5, y: 9 };

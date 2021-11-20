@@ -33,7 +33,7 @@ about every processed entity:
 
 ## Custom Logger
 
-You can also provide your own logger via `logger` option. 
+We can also provide our own logger function via `logger` option. 
 
 ```typescript
 return MikroORM.init({
@@ -41,6 +41,57 @@ return MikroORM.init({
   logger: msg => myCustomLogger.log(msg),
 });
 ```
+
+If we want to have more control over logging, we can use `loggerFactory`
+and use our own implementation of the `Logger` interface:
+
+```ts
+import { Logger, LoggerOptions, MikroORM, Configuration } from '@mikro-orm/core';
+
+class MyLogger implements Logger { ... }
+
+const orm = await MikroORM.init({
+  debug: true,
+  loggerFactory: (options: LoggerOptions) => new MyLogger(config),
+});
+```
+
+We can also extend the `DefaultLogger` instead of implementing everything from 
+scratch. It is also exported from the `@mikro-orm/core` package.
+
+The `Logger` interface is defined as follows:
+
+```ts
+interface Logger {
+  log(namespace: LoggerNamespace, message: string, context?: LogContext): void;
+  error(namespace: LoggerNamespace, message: string, context?: LogContext): void;
+  warn(namespace: LoggerNamespace, message: string, context?: LogContext): void;
+  logQuery(context: LogContext): void;
+  setDebugMode(debugMode: boolean | LoggerNamespace[]): void;
+  isEnabled(namespace: LoggerNamespace): boolean;
+}
+
+type LoggerNamespace = 'query' | 'query-params' | 'discovery' | 'info';
+
+interface LogContext {
+  query?: string;
+  params?: unknown[];
+  took?: number;
+  level?: 'info' | 'warning' | 'error';
+  connection?: {
+    type?: string;
+    name?: string;
+  };
+}
+```
+
+## Disabling colored output
+
+To disable colored output, we can use multiple environment variables:
+
+- `NO_COLOR`
+- `MIKRO_ORM_NO_COLOR`
+- `FORCE_COLOR`
 
 ## Logger Namespaces
 

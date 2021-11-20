@@ -1,5 +1,6 @@
-import { Entity, LoadStrategy, Logger, ManyToOne, MikroORM, PrimaryKey, Property, t, Type } from '@mikro-orm/core';
+import { Entity, LoadStrategy, ManyToOne, MikroORM, PrimaryKey, Property, t, Type } from '@mikro-orm/core';
 import type { MySqlDriver } from '@mikro-orm/mysql';
+import { mockLogger } from '../../bootstrap';
 
 export class Point {
 
@@ -99,9 +100,7 @@ describe('custom types [mysql]', () => {
   afterAll(async () => orm.close(true));
 
   test('advanced custom types', async () => {
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const loc = new Location();
     const addr = new Address(loc);
@@ -164,9 +163,7 @@ describe('custom types [mysql]', () => {
   });
 
   test('create and update many records with custom types (gh issue 1625)', async () => {
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query', 'query-params']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query', 'query-params']);
 
     const locations = [new Location(), new Location()];
     locations[0].point = new Point(-1.23, -4.56);
@@ -187,15 +184,12 @@ describe('custom types [mysql]', () => {
   });
 
   test('find entity by custom types (gh issue 1630)', async () => {
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query', 'query-params']);
-
     const location = new Location();
     location.point = new Point(1, 1);
     await orm.em.persistAndFlush(location);
     orm.em.clear();
 
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query', 'query-params']);
 
     const foundLocation = await orm.em.findOne(Location, {
       point: new Point(1, 1),
@@ -209,16 +203,13 @@ describe('custom types [mysql]', () => {
   });
 
   test('find entity by custom types with object subconditions', async () => {
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query', 'query-params']);
-
     const location = new Location();
     location.point = new Point(1, 1);
     location.extendedPoint = new Point(1, 1);
     await orm.em.persistAndFlush(location);
     orm.em.clear();
 
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query', 'query-params']);
 
     const foundLocation = await orm.em.findOne(Location, {
       point: new Point(1, 1),

@@ -1,5 +1,6 @@
-import { Entity, PrimaryKey, Property, MikroORM, ManyToOne, OneToMany, Collection, Logger, BigIntType } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, MikroORM, ManyToOne, OneToMany, Collection, BigIntType } from '@mikro-orm/core';
 import type { MySqlDriver } from '@mikro-orm/mysql';
+import { mockLogger } from '../bootstrap';
 
 @Entity()
 export class Foo {
@@ -58,9 +59,7 @@ describe('GH issue 1882', () => {
     await orm.em.persistAndFlush([barItem]);
     orm.em.clear();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
     const cond =  { $or: [{ barItems: '5678' }, { name: 'fooName' }] };
 
     const res = await orm.em.find(
@@ -87,9 +86,7 @@ describe('GH issue 1882', () => {
     await orm.em.persistAndFlush([barItem]);
     orm.em.clear();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
     const cond =  { $and: [{ barItems: '3456' }] };
 
     const res = await orm.em.find(

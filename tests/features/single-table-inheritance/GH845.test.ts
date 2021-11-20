@@ -1,5 +1,6 @@
-import { Entity, MikroORM, PrimaryKey, Property, OneToMany, ManyToOne, Collection, QueryOrder, Logger } from '@mikro-orm/core';
+import { Entity, MikroORM, PrimaryKey, Property, OneToMany, ManyToOne, Collection, QueryOrder } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { mockLogger } from '../../bootstrap';
 
 abstract class Base {
 
@@ -70,9 +71,7 @@ describe('GH issue 845', () => {
   });
 
   test(`GH issue 845`, async () => {
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     expect(true).toBe(true);
     const c1 = new Child1();

@@ -1,9 +1,9 @@
 import type { MikroORM, ValidationError } from '@mikro-orm/core';
-import { LoadStrategy, Logger, wrap } from '@mikro-orm/core';
+import { LoadStrategy, wrap } from '@mikro-orm/core';
 import type { MySqlDriver } from '@mikro-orm/mysql';
 import { AbstractSqlConnection } from '@mikro-orm/mysql';
 import { Author2, Configuration2, FooBar2, FooBaz2, FooParam2, Test2, Address2, Car2, CarOwner2, User2, Sandwich } from '../../entities-sql';
-import { initORMMySql, wipeDatabaseMySql } from '../../bootstrap';
+import { initORMMySql, mockLogger, wipeDatabaseMySql } from '../../bootstrap';
 
 describe('composite keys in mysql', () => {
 
@@ -297,9 +297,7 @@ describe('composite keys in mysql', () => {
     expect(wrap(u1.cars[1], true).__em).toBeUndefined();
     expect(wrap(u1.cars[2], true).__em).not.toBeUndefined(); // PK only, so will be merged automatically
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
     await orm.em.persistAndFlush(u1);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into `car2` (`name`, `year`, `price`) values (?, ?, ?), (?, ?, ?)'); // c1, c2

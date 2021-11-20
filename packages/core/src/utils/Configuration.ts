@@ -21,8 +21,8 @@ import type {
 } from '../typings';
 import { ObjectHydrator } from '../hydration';
 import { NullHighlighter } from '../utils/NullHighlighter';
-import type { LoggerNamespace } from '../utils/Logger';
-import { Logger } from '../utils/Logger';
+import type { Logger, LoggerNamespace, LoggerOptions } from '../logging';
+import { DefaultLogger, colors } from '../logging';
 import { Utils } from '../utils/Utils';
 import type { EntityManager } from '../EntityManager';
 import type { Platform } from '../platforms';
@@ -123,7 +123,13 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       this.validateOptions();
     }
 
-    this.logger = new Logger(this.options.logger, this.options.debug);
+    this.options.loggerFactory ??= (options: LoggerOptions) => new DefaultLogger(options);
+    this.logger = this.options.loggerFactory({
+      debugMode: this.options.debug,
+      usesReplicas: (this.options.replicas?.length ?? 0) > 0,
+      highlighter: this.options.highlighter,
+      writer: this.options.logger,
+    });
     this.driver = this.initDriver();
     this.platform = this.driver.getPlatform();
     this.platform.setConfig(this);
@@ -263,6 +269,10 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
     const subscribers = Object.values(MetadataStorage.getSubscriberMetadata());
     this.options.subscribers = [...new Set([...this.options.subscribers, ...subscribers])];
+
+    if (!colors.enabled()) {
+      this.options.highlighter = new NullHighlighter();
+    }
   }
 
   private validateOptions(): void {
@@ -400,6 +410,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   contextName: string;
   allowGlobalContext: boolean;
   logger: (message: string) => void;
+  loggerFactory?: (options: LoggerOptions) => Logger;
   findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
   debug: boolean | LoggerNamespace[];
   highlighter: Highlighter;

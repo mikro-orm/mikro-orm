@@ -1,4 +1,5 @@
-import { Entity, Logger, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { mockLogger } from '../bootstrap';
 
 @Entity()
 export class A {
@@ -33,9 +34,7 @@ describe('GH issue 1595', () => {
   afterAll(() => orm.close(true));
 
   test('mapping PKs from batch insert with custom field name', async () => {
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const items: A[] = [];
 

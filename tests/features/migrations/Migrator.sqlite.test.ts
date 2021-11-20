@@ -1,12 +1,12 @@
 (global as any).process.env.FORCE_COLOR = 0;
 import umzug from 'umzug';
 import type { MikroORM } from '@mikro-orm/core';
-import { Logger, MetadataStorage } from '@mikro-orm/core';
-import { Migration, MigrationStorage, Migrator, TSMigrationGenerator } from '@mikro-orm/migrations';
+import { MetadataStorage } from '@mikro-orm/core';
+import { Migration, MigrationStorage, Migrator } from '@mikro-orm/migrations';
 import type { DatabaseTable, SqliteDriver } from '@mikro-orm/sqlite';
 import { DatabaseSchema } from '@mikro-orm/sqlite';
 import { remove } from 'fs-extra';
-import { initORMSqlite2 } from '../../bootstrap';
+import { initORMSqlite2, mockLogger } from '../../bootstrap';
 
 class MigrationTest1 extends Migration {
 
@@ -208,10 +208,7 @@ describe('Migrator (sqlite)', () => {
     // @ts-ignore
     const runner = migrator.runner;
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
-
+    const mock = mockLogger(orm, ['query']);
     const migration1 = new MigrationTest1(orm.em.getDriver(), orm.config);
     const spy1 = jest.spyOn(Migration.prototype, 'addSql');
     mock.mock.calls.length = 0;
@@ -252,9 +249,7 @@ describe('Migrator (sqlite)', () => {
     const migratorMock = jest.spyOn(Migration.prototype, 'down');
     migratorMock.mockImplementation(async () => void 0);
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     await migrator.up(migration.fileName);
     await migrator.down(migration.fileName.replace('Migration', '').replace('.ts', ''));
@@ -287,9 +282,7 @@ describe('Migrator (sqlite)', () => {
     const migratorMock = jest.spyOn(Migration.prototype, 'down');
     migratorMock.mockImplementation(async () => void 0);
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     await migrator.up(migration.fileName);
     await migrator.down(migration.fileName.replace('Migration', ''));

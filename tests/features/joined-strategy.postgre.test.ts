@@ -1,8 +1,8 @@
 import type { MikroORM } from '@mikro-orm/core';
-import { LoadStrategy, Logger, QueryFlag, QueryOrder, Reference, wrap } from '@mikro-orm/core';
+import { LoadStrategy, QueryFlag, QueryOrder, Reference, wrap } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { AbstractSqlConnection } from '@mikro-orm/postgresql';
-import { initORMPostgreSql, wipeDatabasePostgreSql } from '../bootstrap';
+import { initORMPostgreSql, mockLogger, wipeDatabasePostgreSql } from '../bootstrap';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2 } from '../entities-sql';
 
 describe('Joined loading strategy', () => {
@@ -102,9 +102,7 @@ describe('Joined loading strategy', () => {
     await orm.em.persistAndFlush(author2);
     orm.em.clear();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     await orm.em.findOneOrFail(Author2, { id: author2.id }, { populate: ['books2.perex'] });
     expect(mock.mock.calls.length).toBe(1);
@@ -153,9 +151,7 @@ describe('Joined loading strategy', () => {
     await orm.em.persistAndFlush(author2);
     orm.em.clear();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     await orm.em.find(Author2, { id: author2.id }, { populate: ['books2.perex'] });
     expect(mock.mock.calls.length).toBe(1);
@@ -218,9 +214,7 @@ describe('Joined loading strategy', () => {
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
     mock.mock.calls.length = 0;
     const books = await orm.em.find(Book2, {}, { populate: ['tags'], strategy: LoadStrategy.JOINED, orderBy: { tags: { name: 'desc' } } });
     expect(mock.mock.calls.length).toBe(1);
@@ -303,9 +297,7 @@ describe('Joined loading strategy', () => {
     await orm.em.persistAndFlush(bar);
     orm.em.clear();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     // autoJoinOneToOneOwner: false
     const b0 = await orm.em.findOneOrFail(FooBaz2, { id: baz.id });
@@ -392,9 +384,7 @@ describe('Joined loading strategy', () => {
     const repo = orm.em.getRepository(BookTag2);
 
     orm.em.clear();
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const tags = await repo.findAll({
       populate: ['books.author', 'books.publisher.tests'],
@@ -469,9 +459,7 @@ describe('Joined loading strategy', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
     const res1 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['perex', 'author'] });
     expect(res1).toHaveLength(3);
     expect(res1[0].test).toBeUndefined();

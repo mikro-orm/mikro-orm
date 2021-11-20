@@ -1,8 +1,8 @@
 import { ObjectId } from 'mongodb';
 import type { MikroORM, EntityFactory } from '@mikro-orm/core';
-import { Collection, ReferenceType, wrap, Logger } from '@mikro-orm/core';
+import { Collection, ReferenceType, wrap } from '@mikro-orm/core';
 import { Book, Author, Publisher, Test, BookTag } from './entities';
-import { initORMMongo, wipeDatabase } from './bootstrap';
+import { initORMMongo, mockLogger, wipeDatabase } from './bootstrap';
 import { AuthorRepository } from './repositories/AuthorRepository';
 import { BookRepository } from './repositories/BookRepository';
 
@@ -213,9 +213,7 @@ describe('EntityFactory', () => {
     expect(a1.books[0].tags[0].id).toBe(null);
     expect(a1.books[0].tags[1].id).toBe('5b0d19b28b21c648c2c8a601');
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, true);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm);
 
     await orm.em.persistAndFlush(a1);
 

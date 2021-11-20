@@ -1,6 +1,7 @@
-import { Entity, PrimaryKey, MikroORM, ManyToOne, Enum, PrimaryKeyType, Property, BigIntType, Logger, wrap } from '@mikro-orm/core';
+import { Entity, PrimaryKey, MikroORM, ManyToOne, Enum, PrimaryKeyType, Property, BigIntType, wrap } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
+import { mockLogger } from '../../bootstrap';
 
 @Entity()
 class User {
@@ -101,9 +102,7 @@ describe('GH issue 1079', () => {
     deposit.gatewayKey = '789';
     expect(wrap(deposit, true).getPrimaryKeys()).toEqual(['456', 'USD', '1']);
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     await orm.em.fork().persistAndFlush(deposit);
 

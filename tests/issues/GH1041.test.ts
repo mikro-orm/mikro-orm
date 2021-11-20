@@ -1,5 +1,6 @@
-import { Collection, Entity, LoadStrategy, Logger, ManyToMany, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { Collection, Entity, LoadStrategy, ManyToMany, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import { mockLogger } from '../bootstrap';
 
 @Entity()
 export class App {
@@ -40,9 +41,7 @@ describe('GH issue 1041, 1043', () => {
       dbName: ':memory:',
       type: 'sqlite',
     });
-    const logger = new Logger(log, ['query', 'query-params']);
-    Object.assign(orm.config, { logger });
-
+    mockLogger(orm, ['query', 'query-params'], log);
     await orm.getSchemaGenerator().createSchema();
 
     const user = orm.em.create(User, { id: 123, name: 'user' });
@@ -51,7 +50,6 @@ describe('GH issue 1041, 1043', () => {
     const app3 = orm.em.create(App, { id: 3, name: 'app 3' });
     user.apps.add(app1, app2, app3);
     await orm.em.persistAndFlush(user);
-    orm.em.clear();
   });
 
   beforeEach(() => {
