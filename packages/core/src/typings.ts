@@ -237,6 +237,7 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   inversedBy: string;
   mappedBy: string;
   orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[];
+  customOrder?: string[] | number[] | boolean[];
   fixedOrder?: boolean;
   fixedOrderColumn?: string;
   pivotTable: string;

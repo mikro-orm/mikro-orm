@@ -66,6 +66,7 @@ export type PropertyOptions<T> = {
   serializedPrimaryKey?: boolean;
   serializer?: (value: any) => any;
   serializedName?: string;
+  customOrder?: string[] | number[] | boolean[];
   comment?: string;
   /** mysql only */
   extra?: string;

@@ -341,3 +341,39 @@ so you do not need to get them from `EntityManager` each time.
 For more examples, take a look at
 [`tests/EntityManager.mongo.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts)
 or [`tests/EntityManager.mysql.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/EntityManager.mysql.test.ts).
+
+## Custom Property Ordering
+Entity properties provide some support for custom ordering via the `customOrder` attribute. This is
+useful for values that have a natural order that doesn't align with their underlying data representation. Consider the code below, the natural sorting order would be `high`, `low`, `medium`. However we can provide the `customOrder` to indicate how the enum values should be sorted.
+
+```typescript
+enum Priority { Low = 'low', Medium = 'medium', High = 'high' }
+@Entity()
+class Task {
+  @PrimaryKey()
+  id!: number
+
+  @Property()
+  label!: string
+
+  @Enum({ 
+    items: () => Priority, 
+    customOrder: [Priority.Low, Priority.Medium, Priority.High] 
+  })
+  priority!: Priority
+}
+
+// ...
+
+await orm.em.persistAndFlush([
+  orm.em.create(Task, { label: 'A', priority: Priority.Low }),
+  orm.em.create(Task, { label: 'B', priority: Priority.Medium }),
+  orm.em.create(Task, { label: 'C', priority: Priority.High })
+]);
+
+const tasks = await orm.em.find(Task, {}, { orderBy: { priority: QueryOrder.ASC } });
+for (const t of tasks) {
+  console.log(t.label);
+}
+// Logs A, B, C
+```
