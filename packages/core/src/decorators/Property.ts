@@ -56,6 +56,7 @@ export type PropertyOptions<T> = {
   persist?: boolean;
   hidden?: boolean;
   version?: boolean;
+  concurrencyCheck?: boolean;
   index?: boolean | string;
   unique?: boolean | string;
   lazy?: boolean;
