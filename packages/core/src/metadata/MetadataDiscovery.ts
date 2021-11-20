@@ -825,12 +825,14 @@ export class MetadataDiscovery {
   }
 
   private initVersionProperty(meta: EntityMetadata, prop: EntityProperty): void {
-    if (!prop.version) {
-      return;
+    if (prop.version) {
+      meta.versionProperty = prop.name;
+      prop.defaultRaw = this.getDefaultVersionValue(prop);
     }
 
-    meta.versionProperty = prop.name;
-    prop.defaultRaw = this.getDefaultVersionValue(prop);
+    if (prop.concurrencyCheck && !prop.primary) {
+      meta.concurrencyCheckKeys.add(prop.name);
+    }
   }
 
   private initCustomType(meta: EntityMetadata, prop: EntityProperty): void {

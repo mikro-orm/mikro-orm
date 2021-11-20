@@ -384,13 +384,14 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       sql += `, `;
     }
 
-    sql = sql.substr(0, sql.length - 2) + ' where ';
-    const pks = Utils.flatten(meta.primaryKeys.map(pk => meta.properties[pk].fieldNames));
+    sql = sql.substring(0, sql.length - 2) + ' where ';
+    const pkProps = meta.primaryKeys.concat(...meta.concurrencyCheckKeys);
+    const pks = Utils.flatten(pkProps.map(pk => meta.properties[pk].fieldNames));
     sql += pks.length > 1 ? `(${pks.map(pk => `${this.platform.quoteIdentifier(pk)}`).join(', ')})` : this.platform.quoteIdentifier(pks[0]);
 
     const conds = where.map(cond => {
       if (pks.length > 1) {
-        meta.primaryKeys.forEach(pk => params.push(cond![pk as string]));
+        pkProps.forEach(pk => params.push(cond![pk as string]));
         return `(${new Array(pks.length).fill('?').join(', ')})`;
       }
 
@@ -597,7 +598,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
       explicitFields?.forEach(f => {
         if (typeof f === 'string' && f.startsWith(`${prop.name}.`)) {
-          childExplicitFields.push(f.substr(prop.name.length + 1));
+          childExplicitFields.push(f.substring(prop.name.length + 1));
         }
       });
 

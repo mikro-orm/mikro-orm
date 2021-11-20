@@ -134,7 +134,7 @@ this approach any entity that should be protected against concurrent modificatio
 long-running business transactions gets a version field that is either a simple number 
 (mapping type: integer) or a timestamp (mapping type: datetime). When changes to such an 
 entity are persisted at the end of a long-running conversation the version of the entity 
-is compared to the version in the database and if they don't match, a `ValidationError` 
+is compared to the version in the database and if they don't match, a `OptimisticLockError` 
 is thrown, indicating that the entity has been modified by someone else already.
 
 You designate a version field in an entity as follows. In this example we'll use an integer.
@@ -163,14 +163,14 @@ Version numbers (not timestamps) should however be preferred as they can not pot
 conflict in a highly concurrent environment, unlike timestamps where this is a possibility, 
 depending on the resolution of the timestamp on the particular database platform.
 
-When a version conflict is encountered during `em.flush()`, a `ValidationError` 
+When a version conflict is encountered during `em.flush()`, a `OptimisticLockError` 
 is thrown and the active transaction rolled back (or marked for rollback). This exception 
-can be caught and handled. Potential responses to a `ValidationError` are to present the 
+can be caught and handled. Potential responses to a `OptimisticLockError` are to present the 
 conflict to the user or to refresh or reload objects in a new transaction and then retrying 
 the transaction.
 
 The time between showing an update form and actually modifying the entity can in the worst 
-scenario be as long as your applications session timeout. If changes happen to the entity 
+scenario be as long as your application's session timeout. If changes happen to the entity 
 in that time frame you want to know directly when retrieving the entity that you will hit 
 an optimistic locking exception:
 
@@ -204,6 +204,38 @@ try {
     await orm.em.lock(entity, LockMode.OPTIMISTIC, expectedVersion);
 } catch (e) {
     console.log('Sorry, but someone else has already changed this entity. Please apply the changes again!');
+}
+```
+
+### Concurrency Checks
+
+As opposed to version fields that are handled automatically, we can use 
+concurrency checks. They allow us to mark specific properties to be included
+in the concurrency check, just like the version field was. But this time, we
+will be responsible for updating the fields explicitly.
+
+When we try to update such entity without changing one of the concurrency fields,
+`OptimisticLockError` will be thrown. Same mechanism is then used to check whether
+the update succeeded, and throw the same type of error when not.
+
+```ts
+@Entity()
+export class ConcurrencyCheckUser {
+
+  // all primary keys are by default part of the concurrency check
+  @PrimaryKey({ length: 100 })
+  firstName: string;
+
+  // all primary keys are by default part of the concurrency check
+  @PrimaryKey({ length: 100 })
+  lastName: string;
+
+  @Property({ concurrencyCheck: true })
+  age: number;
+
+  @Property({ nullable: true })
+  other?: string;
+
 }
 ```
 

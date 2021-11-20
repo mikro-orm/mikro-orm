@@ -179,13 +179,36 @@ export class ChangeSetPersister {
     }
   }
 
+  private checkConcurrencyKeys<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, cond: Dictionary): void {
+    const tmp: string[] = [];
+    cond = Utils.isPlainObject(cond) ? cond : { [meta.primaryKeys[0]]: cond };
+
+    for (const key of meta.concurrencyCheckKeys) {
+      cond[key as string] = changeSet.originalEntity![key];
+
+      if (changeSet.payload[key]) {
+        tmp.push(key);
+      }
+    }
+
+    if (tmp.length === 0 && meta.concurrencyCheckKeys.size > 0) {
+      throw OptimisticLockError.lockFailed(changeSet.entity);
+    }
+  }
+
   private async persistManagedEntitiesBatch<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], options?: DriverMethodOptions): Promise<void> {
     await this.checkOptimisticLocks(meta, changeSets, options);
     options = this.propagateSchemaFromMetadata(meta, options, {
       convertCustomTypes: false,
       processCollections: false,
     });
-    await this.driver.nativeUpdateMany(meta.className, changeSets.map(cs => cs.getPrimaryKey() as Dictionary), changeSets.map(cs => cs.payload), options);
+    const cond = changeSets.map(cs => cs.getPrimaryKey() as Dictionary);
+
+    changeSets.forEach((changeSet, idx) => {
+      this.checkConcurrencyKeys(meta, changeSet, cond[idx]);
+    });
+
+    await this.driver.nativeUpdateMany(meta.className, cond, changeSets.map(cs => cs.payload), options);
     changeSets.forEach(cs => cs.persisted = true);
   }
 
@@ -229,48 +252,57 @@ export class ChangeSetPersister {
   }
 
   private async updateEntity<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, options?: DriverMethodOptions): Promise<QueryResult<T>> {
-    if (!meta.versionProperty || !changeSet.entity[meta.versionProperty]) {
-      options = this.propagateSchemaFromMetadata(meta, options, {
-        convertCustomTypes: false,
-      });
-      return this.driver.nativeUpdate(changeSet.name, changeSet.getPrimaryKey() as Dictionary, changeSet.payload, options);
-    }
-
-    const cond = {
-      ...Utils.getPrimaryKeyCond<T>(changeSet.entity, meta.primaryKeys),
-      [meta.versionProperty]: this.platform.quoteVersionValue(changeSet.entity[meta.versionProperty] as unknown as Date, meta.properties[meta.versionProperty]),
-    } as FilterQuery<T>;
     options = this.propagateSchemaFromMetadata(meta, options, {
       convertCustomTypes: false,
     });
 
-    return this.driver.nativeUpdate<T>(changeSet.name, cond, changeSet.payload, options);
+    if (meta.concurrencyCheckKeys.size === 0 && (!meta.versionProperty || !changeSet.entity[meta.versionProperty])) {
+      return this.driver.nativeUpdate(changeSet.name, changeSet.getPrimaryKey() as Dictionary, changeSet.payload, options);
+    }
+
+    const cond = Utils.getPrimaryKeyCond<T>(changeSet.entity, meta.primaryKeys) as Dictionary;
+
+    if (meta.versionProperty) {
+      cond[meta.versionProperty] = this.platform.quoteVersionValue(changeSet.entity[meta.versionProperty] as unknown as Date, meta.properties[meta.versionProperty]);
+    }
+
+    this.checkConcurrencyKeys(meta, changeSet, cond);
+
+    return this.driver.nativeUpdate<T>(changeSet.name, cond as FilterQuery<T>, changeSet.payload, options);
   }
 
   private async checkOptimisticLocks<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], options?: DriverMethodOptions): Promise<void> {
-    if (!meta.versionProperty || changeSets.every(cs => !cs.entity[meta.versionProperty])) {
+    if (meta.concurrencyCheckKeys.size === 0 && (!meta.versionProperty || changeSets.every(cs => !cs.entity[meta.versionProperty]))) {
       return;
     }
 
-    const $or = changeSets.map(cs => ({
-      ...Utils.getPrimaryKeyCond<T>(cs.entity, meta.primaryKeys),
-      [meta.versionProperty]: this.platform.quoteVersionValue(cs.entity[meta.versionProperty] as unknown as Date, meta.properties[meta.versionProperty]),
-    }));
+    const $or = changeSets.map(cs => {
+      const cond = Utils.getPrimaryKeyCond<T>(cs.originalEntity as T, meta.primaryKeys.concat(...meta.concurrencyCheckKeys)) as FilterQuery<T>;
 
+      if (meta.versionProperty) {
+        cond[meta.versionProperty as string] = this.platform.quoteVersionValue(cs.entity[meta.versionProperty] as unknown as Date, meta.properties[meta.versionProperty]);
+      }
+
+      return cond;
+    });
+
+    const primaryKeys = meta.primaryKeys.concat(...meta.concurrencyCheckKeys);
     options = this.propagateSchemaFromMetadata(meta, options, {
-      fields: meta.primaryKeys,
+      fields: primaryKeys,
     });
     const res = await this.driver.find<T>(meta.className, { $or } as FilterQuery<T>, options);
 
     if (res.length !== changeSets.length) {
       const compare = (a: Dictionary, b: Dictionary, keys: string[]) => keys.every(k => a[k] === b[k]);
-      const entity = changeSets.find(cs => !res.some(row => compare(Utils.getPrimaryKeyCond(cs.entity, meta.primaryKeys)!, row, meta.primaryKeys)))!.entity;
+      const entity = changeSets.find(cs => {
+        return !res.some(row => compare(Utils.getPrimaryKeyCond(cs.entity, primaryKeys)!, row, primaryKeys));
+      })!.entity;
       throw OptimisticLockError.lockFailed(entity);
     }
   }
 
   private checkOptimisticLock<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSet: ChangeSet<T>, res?: QueryResult) {
-    if (meta.versionProperty && res && !res.affectedRows) {
+    if ((meta.versionProperty || meta.concurrencyCheckKeys.size > 0) && res && !res.affectedRows) {
       throw OptimisticLockError.lockFailed(changeSet.entity);
     }
   }
