@@ -5,14 +5,12 @@ title: Defining Entities
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-Entities are simple javascript objects (so called POJO). No real restrictions are made, 
-no need to extend any base class, [using entity constructors](entity-constructors.md)
-is working as well - they are never executed for managed entities (loaded from database). 
+Entities are simple javascript objects (so called POJO) without restrictions and without the need to extend base classes. Using [entity constructors](entity-constructors.md) works as well - they are never executed for managed entities (loaded from database). 
 Every entity is required to have a primary key.
 
-There are two ways how you can define your entities:
+Entities can be defined in two ways:
 
-- Decorated classes - the attributes of the entity as well as each property are provided
+- Decorated classes - the attributes of the entity, as well as each property are provided
   via decorators. We use `@Entity()` decorator on the class. Entity properties are decorated 
   either with `@Property` decorator, or with one of reference decorators: 
   `@ManyToOne`, `@OneToMany`, `@OneToOne` and `@ManyToMany`.
