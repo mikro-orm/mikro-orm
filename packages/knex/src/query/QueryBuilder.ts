@@ -13,15 +13,7 @@ import type {
   QueryOrderMap,
   QueryResult,
 } from '@mikro-orm/core';
-import {
-  LoadStrategy,
-  LockMode,
-  QueryFlag,
-  QueryHelper,
-  ReferenceType,
-  Utils,
-  ValidationError,
-} from '@mikro-orm/core';
+import { LoadStrategy, LockMode, QueryFlag, QueryHelper, ReferenceType, Utils, ValidationError } from '@mikro-orm/core';
 import { QueryType } from './enums';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
 import { QueryBuilderHelper } from './QueryBuilderHelper';
@@ -677,6 +669,10 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     this.type = type;
     this._aliasMap[this.alias] = this.entityName;
 
+    if ([QueryType.UPDATE, QueryType.DELETE].includes(type) && Utils.hasObjectKeys(this._cond)) {
+      throw new Error(`You are trying to call \`qb.where().${type.toLowerCase()}()\`. Calling \`qb.${type.toLowerCase()}()\` before \`qb.where()\` is required.`);
+    }
+
     if (!this.helper.isTableNameAliasRequired(type)) {
       delete this._fields;
     }
@@ -845,6 +841,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     // https://stackoverflow.com/questions/45494/mysql-error-1093-cant-specify-target-table-for-update-in-from-clause
     const subSubQuery = this.getKnex().select(this.prepareFields(meta.primaryKeys)).from(subQuery.as(this.alias));
     const method = this.flags.has(QueryFlag.UPDATE_SUB_QUERY) ? 'update' : 'delete';
+    this._cond = {}; // otherwise we would trigger validation error
 
     this[method](this._data as EntityData<T>).where({
       [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubQuery },

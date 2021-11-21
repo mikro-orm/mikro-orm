@@ -1384,6 +1384,24 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['test 123', 123]);
   });
 
+  test('trying to call qb.update/delete() after qb.where() will throw', async () => {
+    const err1 ='You are trying to call `qb.where().update()`. Calling `qb.update()` before `qb.where()` is required.';
+    expect(() => orm.em.qb(Publisher2).where({ id: 123, type: PublisherType.LOCAL }).update({ name: 'test 123', type: PublisherType.GLOBAL })).toThrowError(err1);
+    expect(() => orm.em.qb(Book2).where({ uuid: { $in: ['1', '2', '3'] }, author: 123 }).update({ author: 321 })).toThrowError(err1);
+    expect(() => orm.em.qb(FooParam2).where({ bar: { baz: 123 } }).update({ value: 'test 123' })).toThrowError(err1);
+
+    expect(() => orm.em.qb(Author2).where({
+      $or: [
+        { email: 'value1' },
+        { name: { $in: ['value2'], $ne: 'value3' } },
+      ],
+    }).update({ name: '123' })).toThrowError(err1);
+
+    const qb2 = orm.em.createQueryBuilder(FooParam2);
+    const err2 ='You are trying to call `qb.where().delete()`. Calling `qb.delete()` before `qb.where()` is required.';
+    expect(() => qb2.where({ bar: { baz: 123 } }).delete()).toThrowError(err2);
+  });
+
   test('update query with or condition and auto-joining', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
     qb.update({ name: 'test 123', type: PublisherType.GLOBAL }).where({ $or: [{ books: { author: 123 } }, { books: { title: 'book' } }] });
@@ -1443,14 +1461,6 @@ describe('QueryBuilder', () => {
     qb.delete();
     expect(qb.getQuery()).toEqual('delete from `publisher2`');
     expect(qb.getParams()).toEqual([]);
-  });
-
-  test('lazy delete query', async () => {
-    const qb = orm.em.createQueryBuilder(Publisher2);
-    qb.where({ name: 'test 123', type: PublisherType.GLOBAL }).delete();
-    expect(qb.getQuery()).toEqual('delete from `publisher2` where `name` = ? and `type` = ?');
-    expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL]);
-    expect(qb.getNextAlias()).toBe('e1');
   });
 
   test('clone QB', async () => {
