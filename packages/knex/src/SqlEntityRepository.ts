@@ -19,6 +19,13 @@ export class SqlEntityRepository<T> extends EntityRepository<T> {
   }
 
   /**
+   * Shortcut for `createQueryBuilder()`
+   */
+  qb(alias?: string): QueryBuilder<T> {
+    return this.createQueryBuilder(alias);
+  }
+
+  /**
    * Returns configured knex instance.
    */
   getKnex(type?: 'read' | 'write'): Knex {
