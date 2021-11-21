@@ -1,10 +1,10 @@
 import {
   Cascade, Collection, Entity, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey,
-  PrimaryKeyType, Property, ValidationError, wrap, LoadStrategy, Logger,
+  PrimaryKeyType, Property, ValidationError, wrap, LoadStrategy,
 } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { AbstractSqlConnection } from '@mikro-orm/sqlite';
-import { mockLogger } from '../../bootstrap';
+import { mockLogger } from '../../helpers';
 
 @Entity()
 export class FooBar2 {
@@ -571,9 +571,7 @@ describe('composite keys in sqlite', () => {
     expect(wrap(u1.cars[1], true).__em).toBeUndefined();
     expect(wrap(u1.cars[2], true).__em).not.toBeUndefined(); // PK only, so will be merged automatically
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
     await orm.em.persistAndFlush(u1);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into `car2` (`name`, `year`, `price`) values (?, ?, ?), (?, ?, ?)'); // c1, c2

@@ -1,6 +1,7 @@
-import { Collection, Entity, Logger, ManyToMany, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { SchemaGenerator } from '@mikro-orm/sqlite';
+import { mockLogger } from '../helpers';
 
 @Entity()
 export class A {
@@ -60,9 +61,7 @@ describe('GH issue 234', () => {
     await orm.em.persistAndFlush(b);
     orm.em.clear();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
     const res1 = await orm.em.find(B, { aCollection: [1, 2, 3] }, { populate: ['aCollection'] });
     expect(mock.mock.calls[0][0]).toMatch('select `b0`.* from `b` as `b0` left join `b_a_collection` as `b1` on `b0`.`id` = `b1`.`b_id` where `b1`.`a_id` in (?, ?, ?)');
     expect(mock.mock.calls[1][0]).toMatch('select `a0`.*, `b1`.`a_id` as `fk__a_id`, `b1`.`b_id` as `fk__b_id` from `a` as `a0` left join `b_a_collection` as `b1` on `a0`.`id` = `b1`.`a_id` where `a0`.`id` in (?, ?, ?) and `b1`.`b_id` in (?) order by `b1`.`id` asc');

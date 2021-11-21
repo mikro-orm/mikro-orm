@@ -1,7 +1,8 @@
 import type { ObjectHydrator } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, Logger, ManyToOne, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, ManyToOne, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 import { ObjectId } from '@mikro-orm/mongodb';
+import { mockLogger } from '../../helpers';
 
 @Entity()
 class Source {
@@ -229,10 +230,7 @@ describe('embedded entities in mongo', () => {
   }
 
   test('persist and load', async () => {
-    const mock = jest.fn();
-    const logger = new Logger(mock, true);
-    Object.assign(orm.config, { logger });
-
+    const mock = mockLogger(orm);
     const { user1, user2 } = await createUsers();
     expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('source').insertMany([ { _id: ObjectId('600000000000000000000004'), name: 's1' }, { _id: ObjectId('600000000000000000000003'), name: 'is1' }, { _id: ObjectId('600000000000000000000002'), name: 'ims1' }, { _id: ObjectId('600000000000000000000007'), name: 's2' }, { _id: ObjectId('600000000000000000000006'), name: 'is2' }, { _id: ObjectId('600000000000000000000005'), name: 'ims2' }, { _id: ObjectId('600000000000000000000012'), name: 's3' }, { _id: ObjectId('600000000000000000000013'), name: 'is3' }, { _id: ObjectId('600000000000000000000014'), name: 'ils31' }, { _id: ObjectId('600000000000000000000015'), name: 'ils32' }, { _id: ObjectId('600000000000000000000016'), name: 'ilms311' }, { _id: ObjectId('600000000000000000000017'), name: 'ilms312' }, { _id: ObjectId('600000000000000000000018'), name: 'ilms313' }, { _id: ObjectId('600000000000000000000019'), name: 'ilms321' }, { _id: ObjectId('60000000000000000000001a'), name: 'ilms322' }, { _id: ObjectId('60000000000000000000001b'), name: 'ilms323' }, { _id: ObjectId('60000000000000000000001c'), name: 's4' }, { _id: ObjectId('60000000000000000000001d'), name: 'is4' }, { _id: ObjectId('60000000000000000000001e'), name: 'ils41' }, { _id: ObjectId('60000000000000000000001f'), name: 'ils42' } ], { session: undefined });`);
     expect(mock.mock.calls[1][0]).toMatch(`db.getCollection('user').insertMany([ { _id: ObjectId('600000000000000000000001'), name: 'Uwe', profile1_username: 'u1', profile1_identity_email: 'e1', profile1_identity_meta_foo: 'f1', profile1_identity_meta_bar: 'b1', profile1_identity_meta_source: ObjectId('600000000000000000000002'), profile1_identity_links: [], profile1_identity_source: ObjectId('600000000000000000000003'), profile1_source: ObjectId('600000000000000000000004'), profile2: { username: 'u2', identity: { email: 'e2', meta: { foo: 'f2', bar: 'b2', source: ObjectId('600000000000000000000005') }, links: [], source: ObjectId('600000000000000000000006') }, source: ObjectId('600000000000000000000007') } }, { _id: ObjectId('600000000000000000000011'), name: 'Uschi', profile1_username: 'u3', profile1_identity_email: 'e3', profile1_identity_links: [ { url: 'l1', meta: { foo: 'f1', bar: 'b1' }, metas: [ { foo: 'f2', bar: 'b2', source: ObjectId('600000000000000000000016') }, { foo: 'f3', bar: 'b3', source: ObjectId('600000000000000000000017') }, { foo: 'f4', bar: 'b4', source: ObjectId('600000000000000000000018') } ], source: ObjectId('600000000000000000000014') }, { url: 'l2', meta: { foo: 'f1', bar: 'b1' }, metas: [ { foo: 'f2', bar: 'b2', source: ObjectId('600000000000000000000019') }, { foo: 'f3', bar: 'b3', source: ObjectId('60000000000000000000001a') }, { foo: 'f4', bar: 'b4', source: ObjectId('60000000000000000000001b') } ], source: ObjectId('600000000000000000000015') } ], profile1_identity_source: ObjectId('600000000000000000000013'), profile1_source: ObjectId('600000000000000000000012'), profile2: { username: 'u4', identity: { email: 'e4', meta: { foo: 'f4' }, links: [ { url: 'l3', meta: [Object], metas: [Array], source: ObjectId('60000000000000000000001e') }, { url: 'l4', meta: [Object], metas: [Array], source: ObjectId('60000000000000000000001f') } ], source: ObjectId('60000000000000000000001d') }, source: ObjectId('60000000000000000000001c') } } ], { session: undefined });`);
@@ -388,9 +386,8 @@ describe('embedded entities in mongo', () => {
   test('populating entities in embeddables', async () => {
     await createUsers();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, true);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm);
+
 
     const users = await orm.em.find(User, {}, {
       populate: [

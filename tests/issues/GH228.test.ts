@@ -1,6 +1,7 @@
-import { Entity, ManyToOne, MikroORM, PrimaryKey, Property, Logger } from '@mikro-orm/core';
+import { Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { SchemaGenerator } from '@mikro-orm/sqlite';
+import { mockLogger } from '../helpers';
 
 @Entity()
 export class B {
@@ -51,9 +52,7 @@ describe('GH issue 228', () => {
     await orm.em.persistAndFlush(a);
     orm.em.clear();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
     await orm.em.findAndCount(A, {}, {
       orderBy: { type: 'asc' },
       populate: true,

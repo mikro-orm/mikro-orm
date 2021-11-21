@@ -19,13 +19,11 @@ jest.mock(process.cwd() + '/tsconfig.extended.json', () => tscExtended, { virtua
 const tsc = { compilerOptions: { } } as any;
 jest.mock(process.cwd() + '/tsconfig.json', () => tsc, { virtual: true });
 
-import c from 'ansi-colors';
-import chalk from 'chalk';
 import { ConfigurationLoader, Configuration, Utils, MikroORM } from '@mikro-orm/core';
 import { CLIConfigurator, CLIHelper } from '@mikro-orm/cli';
 import { SchemaCommandFactory } from '../../../packages/cli/src/commands/SchemaCommandFactory';
 
-c.enabled = false;
+process.env.FORCE_COLOR = '0';
 
 describe('CLIHelper', () => {
 
@@ -124,6 +122,7 @@ describe('CLIHelper', () => {
     process.env.MIKRO_ORM_ENV = __dirname + '/../../mikro-orm.env';
     await expect(CLIHelper.getConfiguration()).resolves.toBeInstanceOf(Configuration);
     Object.keys(process.env).filter(k => k.startsWith('MIKRO_ORM_')).forEach(k => delete process.env[k]);
+    process.env.MIKRO_ORM_ALLOW_GLOBAL_CONTEXT = '1';
   });
 
   test('registerTsNode works with tsconfig.json with comments', async () => {
@@ -260,13 +259,11 @@ describe('CLIHelper', () => {
     CLIHelper.dump('test');
     expect(logSpy.mock.calls[0][0]).toBe('test');
 
-    c.enabled = true;
+    process.env.FORCE_COLOR = '1';
     CLIHelper.dump('select 1 + 1', new Configuration({ type: 'sqlite', highlighter: new SqlHighlighter() }, false));
-    c.enabled = false;
+    process.env.FORCE_COLOR = '0';
 
-    if (chalk.level > 0) {
-      expect(logSpy.mock.calls[1][0]).toMatch('[37m[1mselect[22m[39m [32m1[39m [0m+[0m [32m1[39m');
-    }
+    expect(logSpy.mock.calls[1][0]).toMatch('[37m[1mselect[22m[39m [32m1[39m [0m+[0m [32m1[39m');
 
     logSpy.mockRestore();
   });

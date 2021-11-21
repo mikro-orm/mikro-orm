@@ -6,4 +6,4 @@ export * from './MongoEntityManager';
 export * from './MongoEntityRepository';
 export { MongoEntityManager as EntityManager } from './MongoEntityManager';
 export { MongoEntityRepository as EntityRepository } from './MongoEntityRepository';
-export { ObjectId } from 'mongodb';
+export { ObjectId } from 'bson';

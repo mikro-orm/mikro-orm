@@ -1,5 +1,5 @@
 import type { MikroORM } from '@mikro-orm/core';
-import { LoadStrategy, Logger, wrap } from '@mikro-orm/core';
+import { LoadStrategy, wrap } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 import { initORMPostgreSql, mockLogger, wipeDatabasePostgreSql } from '../bootstrap';
@@ -264,9 +264,7 @@ describe('automatic refreshing of already loaded entities', () => {
     expect(b1.baz!.id).toBe(baz.id);
     expect(wrap(b1).toJSON()).toMatchObject({ baz: { id: baz.id, bar: bar.id, name: 'baz' } });
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     await orm.em.flush();
     expect(mock.mock.calls.length).toBe(0);

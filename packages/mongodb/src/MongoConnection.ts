@@ -2,11 +2,12 @@ import type {
   Collection, Db, MongoClientOptions, ClientSession, BulkWriteResult, Filter, UpdateFilter, OptionalId, UpdateResult,
   DeleteResult, InsertManyResult, InsertOneResult, WithId,
 } from 'mongodb';
-import { MongoClient, ObjectId } from 'mongodb';
+import { MongoClient } from 'mongodb';
+import { ObjectId } from 'bson';
 import { inspect } from 'util';
 import type {
   ConnectionConfig, QueryResult, Transaction, QueryOrderMap, FilterQuery, AnyEntity, EntityName, Dictionary,
-  EntityData, TransactionEventBroadcaster, IsolationLevel,
+  EntityData, TransactionEventBroadcaster, IsolationLevel, Configuration, ConnectionOptions,
 } from '@mikro-orm/core';
 import { Connection, Utils, QueryOrder, EventType, ValidationError } from '@mikro-orm/core';
 
@@ -15,6 +16,18 @@ export class MongoConnection extends Connection {
   protected client!: MongoClient;
   protected db!: Db;
   private connected = false;
+
+  constructor(config: Configuration, options?: ConnectionOptions, type: 'read' | 'write' = 'write') {
+    super(config, options, type);
+
+    ObjectId.prototype[inspect.custom] = function () {
+      return `ObjectId('${this.toHexString()}')`;
+    };
+
+    Date.prototype[inspect.custom] = function () {
+      return `ISODate('${this.toISOString()}')`;
+    };
+  }
 
   async connect(): Promise<void> {
     this.client = new MongoClient(this.config.getClientUrl(), this.getConnectionOptions());
@@ -134,7 +147,7 @@ export class MongoConnection extends Connection {
 
     const now = Date.now();
     const res = await resultSet.toArray();
-    this.logQuery(`${query}.toArray();`, Date.now() - now);
+    this.logQuery(`${query}.toArray();`, { took: Date.now() - now });
 
     return res as EntityData<T>[];
   }
@@ -165,7 +178,7 @@ export class MongoConnection extends Connection {
     const query = `db.getCollection('${collection}').aggregate(${this.logObject(pipeline)}, ${this.logObject(options)}).toArray();`;
     const now = Date.now();
     const res = this.getCollection(collection).aggregate<T>(pipeline, options).toArray();
-    this.logQuery(query, Date.now() - now);
+    this.logQuery(query, { took: Date.now() - now });
 
     return res;
   }
@@ -217,10 +230,6 @@ export class MongoConnection extends Connection {
     await eventBroadcaster?.dispatchEvent(EventType.afterTransactionRollback, ctx);
   }
 
-  protected logQuery(query: string, took?: number): void {
-    super.logQuery(query, took);
-  }
-
   private async runQuery<T, U extends QueryResult<T> | number = QueryResult<T>>(method: 'insertOne' | 'insertMany' | 'updateMany' | 'bulkUpdateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T> | Partial<T>[], where?: FilterQuery<T> | FilterQuery<T>[], ctx?: Transaction<ClientSession>): Promise<U> {
     collection = this.getCollectionName(collection);
     const logger = this.config.getLogger();
@@ -267,7 +276,7 @@ export class MongoConnection extends Connection {
         break;
     }
 
-    this.logQuery(query!, Date.now() - now);
+    this.logQuery(query!, { took: Date.now() - now });
 
     if (method === 'countDocuments') {
       return res! as unknown as U;
@@ -300,11 +309,3 @@ export class MongoConnection extends Connection {
   }
 
 }
-
-ObjectId.prototype[inspect.custom] = function () {
-  return `ObjectId('${this.toHexString()}')`;
-};
-
-Date.prototype[inspect.custom] = function () {
-  return `ISODate('${this.toISOString()}')`;
-};

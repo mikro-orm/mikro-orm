@@ -1,8 +1,8 @@
 import type { Dictionary } from '@mikro-orm/core';
-import { Entity, Logger, MetadataDiscovery, MetadataStorage, MikroORM, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
+import { Entity, MetadataDiscovery, MetadataStorage, MikroORM, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
 import type { MySqlDriver } from '@mikro-orm/mysql';
 import { BaseUser2, CompanyOwner2, Employee2, Manager2, Type } from '../../entities-sql';
-import { initORMMySql, wipeDatabaseMySql } from '../../bootstrap';
+import { initORMMySql, mockLogger, wipeDatabaseMySql } from '../../bootstrap';
 
 describe('single table inheritance in mysql', () => {
 
@@ -56,10 +56,7 @@ describe('single table inheritance in mysql', () => {
 
   test('loading STI entities respects the entity type (GH #1252)', async () => {
     await createEntities();
-
-    const mock = jest.fn();
-    const logger = new Logger(mock, true);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm);
 
     const managers = await orm.em.find(Manager2, {});
     expect(mock.mock.calls[0][0]).toMatch('select `m0`.* from `base_user2` as `m0` where `m0`.`type` in (\'manager\', \'owner\')');

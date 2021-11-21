@@ -1,5 +1,6 @@
-import { Entity, PrimaryKey, MikroORM, BigIntType, OneToMany, Collection, Enum, ManyToOne, Logger, Property } from '@mikro-orm/core';
+import { Entity, PrimaryKey, MikroORM, BigIntType, OneToMany, Collection, Enum, ManyToOne, Property } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { mockLogger } from '../helpers';
 
 export enum LevelType {
   A = 'a',
@@ -71,9 +72,8 @@ describe('GH issue 482', () => {
     await orm.em.persistAndFlush(job);
     job.levels.removeAll();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, true);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm);
+
     orm.config.set('debug', ['query', 'query-params']);
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
@@ -83,9 +83,8 @@ describe('GH issue 482', () => {
   });
 
   test(`GH issue 631 - nullable bigint type`, async () => {
-    const mock = jest.fn();
-    const logger = new Logger(mock, true);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm);
+
     orm.config.set('debug', ['query', 'query-params']);
 
     const job = new Job();

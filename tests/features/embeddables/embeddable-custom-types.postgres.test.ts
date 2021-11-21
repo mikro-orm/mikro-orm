@@ -1,6 +1,7 @@
 import type { EntityProperty, Platform } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, Logger, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { mockLogger } from '../../helpers';
 
 export class AlwaysConvertsToAbc extends Type<string, string> {
 
@@ -137,9 +138,7 @@ describe('embedded entities with custom types', () => {
     parent.nested2 = new Nested('shouldNeverBeSaved');
     parent.someValue = '1231213';
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query', 'query-params']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query', 'query-params']);
     await orm.em.persistAndFlush(parent);
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
@@ -173,9 +172,7 @@ describe('embedded entities with custom types', () => {
     const user = new User();
     user.savings = new Savings(15200.23);
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
     await orm.em.persistAndFlush(user);
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch('begin');

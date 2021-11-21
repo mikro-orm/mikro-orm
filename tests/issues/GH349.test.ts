@@ -1,5 +1,5 @@
 import { Entity, PrimaryKey, Property, MikroORM, SerializedPrimaryKey } from '@mikro-orm/core';
-import { Decimal128, ObjectId } from 'mongodb';
+import { Decimal128, ObjectId } from 'bson';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 
 @Entity()

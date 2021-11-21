@@ -1,5 +1,5 @@
 import type { ClientSession } from 'mongodb';
-import { ObjectId } from 'mongodb';
+import { ObjectId } from 'bson';
 import type {
   EntityData, AnyEntity, FilterQuery, EntityMetadata, EntityProperty, Configuration, FindOneOptions, FindOptions,
   QueryResult, Transaction, IDatabaseDriver, EntityManager, Dictionary, PopulateOptions, CountOptions, EntityDictionary, EntityField, NativeInsertUpdateOptions, NativeInsertUpdateManyOptions,

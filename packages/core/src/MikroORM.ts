@@ -1,12 +1,12 @@
-import c from 'ansi-colors';
-
 import type { EntityManagerType, IDatabaseDriver } from './drivers';
 import { MetadataDiscovery, MetadataStorage, MetadataValidator, ReflectMetadataProvider } from './metadata';
-import type { Logger, Options } from './utils';
+import type { Options } from './utils';
+import type { Logger } from './logging';
 import { Configuration, ConfigurationLoader, Utils } from './utils';
 import { NullCacheAdapter } from './cache';
 import type { EntityManager } from './EntityManager';
 import type { AnyEntity, Constructor, IEntityGenerator, IMigrator, ISchemaGenerator, ISeedManager } from './typings';
+import { colors } from './logging';
 
 /**
  * Helper class for bootstrapping the MikroORM.
@@ -80,9 +80,9 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     const db = dbName + (clientUrl ? ' on ' + clientUrl : '');
 
     if (await this.isConnected()) {
-      this.logger.log('info', `MikroORM successfully connected to database ${c.green(db)}`);
+      this.logger.log('info', `MikroORM successfully connected to database ${colors.green(db)}`);
     } else {
-      this.logger.log('info', c.red(`MikroORM failed to connect to database ${db}`));
+      this.logger.error('info', `MikroORM failed to connect to database ${db}`);
     }
 
     return this.driver;

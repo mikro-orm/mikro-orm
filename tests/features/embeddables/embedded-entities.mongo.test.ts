@@ -1,7 +1,8 @@
 import type { Platform } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, EntitySchema, Logger, MikroORM, PrimaryKey, Property, ReferenceType, SerializedPrimaryKey, Type } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, EntitySchema, MikroORM, PrimaryKey, Property, ReferenceType, SerializedPrimaryKey, Type } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 import { ObjectId, MongoConnection, MongoPlatform } from '@mikro-orm/mongodb';
+import { mockLogger } from '../../helpers';
 
 @Embeddable()
 class Address1Base {
@@ -254,9 +255,8 @@ describe('embedded entities in mongo', () => {
     user.address3 = new Address1('Downing street 12', '789', 'London 3', 'UK 3');
     user.address4 = new Address1('Downing street 13', '10', 'London 4', 'UK 4');
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, true);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm);
+
     await orm.em.persistAndFlush(user);
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('user').insertOne({ address1_street: 'Downing street 10', address1_postalCode: '123', address1_city: 'London 1', address1_country: 'UK 1', addr_street: 'Downing street 11', addr_postalCode: undefined, addr_city: 'London 2', addr_country: 'UK 2', street: 'Downing street 12', postalCode: '789', city: 'London 3', country: 'UK 3', address4: { street: 'Downing street 13', postalCode: '10', city: 'London 4', country: 'UK 4' } }, { session: undefined });`);
@@ -381,9 +381,8 @@ describe('embedded entities in mongo', () => {
   });
 
   test('assign entity changes on embeddables (GH issue 1083)', async () => {
-    const mock = jest.fn();
-    const logger = new Logger(mock, true);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm);
+
 
     const john = await orm.em.findOneOrFail(User, { address1: { street: 'Rainbow st. 1' } });
     const data: any = {};

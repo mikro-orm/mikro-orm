@@ -1,5 +1,5 @@
 import type { EntityName } from '@mikro-orm/core';
-import { ArrayCollection, Collection, EntityManager, LockMode, Logger, MikroORM, QueryOrder, ValidationError, wrap } from '@mikro-orm/core';
+import { ArrayCollection, Collection, EntityManager, LockMode, MikroORM, QueryOrder, ValidationError, wrap } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { initORMSqlite2, mockLogger, wipeDatabaseSqlite2 } from './bootstrap';
 import type { IAuthor4, IPublisher4, ITest4 } from './entities-schema';
@@ -137,9 +137,7 @@ describe('EntityManagerSqlite2', () => {
   });
 
   test('nested transaction rollback with save-points will commit the outer one', async () => {
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     // start outer transaction
     const transaction = orm.em.transactional(async em => {
@@ -431,9 +429,7 @@ describe('EntityManagerSqlite2', () => {
     const author = orm.em.create(Author4, { name: 'name', email: 'email' });
     await orm.em.persistAndFlush(author);
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     await orm.em.transactional(async em => {
       await em.lock(author, LockMode.PESSIMISTIC_WRITE);
@@ -449,9 +445,7 @@ describe('EntityManagerSqlite2', () => {
     const author = orm.em.create(Author4, { name: 'name', email: 'email' });
     await orm.em.persistAndFlush(author);
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     await orm.em.transactional(async em => {
       await em.lock(author, LockMode.PESSIMISTIC_READ);
@@ -942,9 +936,7 @@ describe('EntityManagerSqlite2', () => {
     bar1.fooBar = undefined;
     bar3.fooBar = bar2;
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');

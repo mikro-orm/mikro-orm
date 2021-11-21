@@ -1,11 +1,10 @@
-import { Logger } from '@mikro-orm/core';
+import { Configuration, DefaultLogger } from '@mikro-orm/core';
 
 describe('Logger', () => {
 
   test('should have debug mode disabled by default', async () => {
     const mock = jest.fn();
-    const logger = new Logger(mock);
-    // @ts-ignore
+    const logger = new DefaultLogger({ writer: mock });
     expect(logger.debugMode).toBe(false);
     logger.log('discovery', 'test debug msg');
     expect(mock.mock.calls.length).toBe(0);
@@ -15,8 +14,7 @@ describe('Logger', () => {
 
   test('should print debug messages when debug mode enabled', async () => {
     const mock = jest.fn();
-    const logger = new Logger(mock, true);
-    // @ts-ignore
+    const logger = new DefaultLogger({ writer: mock, debugMode: true });
     expect(logger.debugMode).toBe(true);
     logger.log('discovery', 'test debug msg');
     expect(mock.mock.calls.length).toBe(1);
@@ -28,8 +26,7 @@ describe('Logger', () => {
 
   test('should not print debug messages when given namespace not enabled', async () => {
     const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    // @ts-ignore
+    const logger = new DefaultLogger({ writer: mock, debugMode: ['query'] });
     expect(logger.debugMode).toEqual(['query']);
     logger.log('discovery', 'test debug msg');
     expect(mock.mock.calls.length).toBe(0);
@@ -37,6 +34,10 @@ describe('Logger', () => {
     expect(mock.mock.calls.length).toBe(0);
     logger.log('query', 'test query msg');
     expect(mock.mock.calls.length).toBe(1);
+    logger.error('query', 'test error msg');
+    expect(mock.mock.calls.length).toBe(2);
+    logger.warn('query', 'test warning msg');
+    expect(mock.mock.calls.length).toBe(3);
   });
 
 });

@@ -1,6 +1,6 @@
 import { BaseEntity, Cascade, Collection, Entity, LockMode, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property, wrap } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
-import { mockLogger } from '../../bootstrap';
+import { mockLogger } from '../../helpers';
 
 @Entity({ schema: 'n1' })
 export class Author {

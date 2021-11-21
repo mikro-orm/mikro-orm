@@ -1,12 +1,12 @@
 (global as any).process.env.FORCE_COLOR = 0;
 import umzug from 'umzug';
 import type { MikroORM } from '@mikro-orm/core';
-import { Logger, MetadataStorage } from '@mikro-orm/core';
+import { MetadataStorage } from '@mikro-orm/core';
 import { Migration, MigrationStorage, Migrator } from '@mikro-orm/migrations';
 import type { DatabaseTable, MySqlDriver } from '@mikro-orm/mysql';
 import { DatabaseSchema, SchemaGenerator } from '@mikro-orm/mysql';
 import { remove } from 'fs-extra';
-import { initORMMySql } from '../../bootstrap';
+import { initORMMySql, mockLogger } from '../../bootstrap';
 
 class MigrationTest1 extends Migration {
 
@@ -218,9 +218,7 @@ describe('Migrator', () => {
     // @ts-ignore
     const runner = migrator.runner;
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const migration1 = new MigrationTest1(orm.em.getDriver(), orm.config);
     const spy1 = jest.spyOn(Migration.prototype, 'addSql');
@@ -263,9 +261,7 @@ describe('Migrator', () => {
     const migratorMock = jest.spyOn(Migration.prototype, 'down');
     migratorMock.mockImplementation(async () => void 0);
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     await migrator.up(migration.fileName);
     await migrator.down(migration.fileName.replace('Migration', '').replace('.ts', ''));
@@ -301,9 +297,7 @@ describe('Migrator', () => {
     const migrationMock = jest.spyOn(Migration.prototype, 'down');
     migrationMock.mockImplementation(async () => void 0);
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     await orm.em.transactional(async em => {
       const ret1 = await migrator.up({ transaction: em.getTransactionContext() });
@@ -340,9 +334,7 @@ describe('Migrator', () => {
     const migratorMock = jest.spyOn(Migration.prototype, 'down');
     migratorMock.mockImplementation(async () => void 0);
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     await migrator.up(migration.fileName);
     await migrator.down(migration.fileName.replace('Migration', ''));
@@ -388,9 +380,7 @@ describe('Migrator - with explicit migrations', () => {
     // @ts-ignore
     await migrator.storage.ensureTable();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const spy1 = jest.spyOn(Migration.prototype, 'addSql');
     await migrator.up();

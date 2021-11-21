@@ -1,12 +1,12 @@
 import type { EntityMetadata } from '@mikro-orm/core';
 import {
-  Collection, EntityManager, JavaScriptMetadataProvider, LockMode, MikroORM, QueryOrder, Logger, ValidationError, wrap,
+  Collection, EntityManager, JavaScriptMetadataProvider, LockMode, MikroORM, QueryOrder, ValidationError, wrap,
   UniqueConstraintViolationException, TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException,
   NonUniqueFieldNameException, InvalidFieldNameException,
 } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
-import { initORMSqlite, wipeDatabaseSqlite } from './bootstrap';
+import { initORMSqlite, mockLogger, wipeDatabaseSqlite } from './bootstrap';
 const { Author3 } = require('./entities-js/index').Author3;
 const { Book3 } = require('./entities-js/index').Book3;
 const { BookTag3 } = require('./entities-js/index').BookTag3;
@@ -174,9 +174,7 @@ describe('EntityManagerSqlite', () => {
   });
 
   test('nested transaction rollback with save-points will commit the outer one', async () => {
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     // start outer transaction
     const transaction = orm.em.transactional(async em => {
@@ -469,9 +467,7 @@ describe('EntityManagerSqlite', () => {
     const author = new Author3('name', 'email');
     await orm.em.persistAndFlush(author);
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     await orm.em.transactional(async em => {
       await em.lock(author, LockMode.PESSIMISTIC_WRITE);
@@ -487,9 +483,7 @@ describe('EntityManagerSqlite', () => {
     const author = new Author3('name', 'email');
     await orm.em.persistAndFlush(author);
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     await orm.em.transactional(async em => {
       await em.lock(author, LockMode.PESSIMISTIC_READ);

@@ -1,5 +1,6 @@
-import { Entity, PrimaryKey, Property, OneToOne, MikroORM, Logger } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, OneToOne, MikroORM } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { mockLogger } from '../helpers';
 
 @Entity()
 export class Profile {
@@ -51,9 +52,7 @@ describe('GH issue 1704', () => {
     user.profile.id = 2;
     await orm.em.fork().persistAndFlush(user);
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const getAndFlush = async (expected: number) => {
       const em = orm.em.fork();

@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb';
+import { ObjectId } from 'bson';
 import FooBar from './FooBar';
 import { Book } from './Book';
 export declare class FooBaz {

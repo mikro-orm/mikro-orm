@@ -1,8 +1,8 @@
-import { MikroORM, Logger } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/core';
 import { Author, Book } from '../../entities';
 import FooBar from '../../entities/FooBar';
 import type { MongoDriver } from '@mikro-orm/mongodb';
-import { BASE_DIR, initORMMongo, wipeDatabase } from '../../bootstrap';
+import { BASE_DIR, initORMMongo, mockLogger, wipeDatabase } from '../../bootstrap';
 
 describe('filters [mongo]', () => {
 
@@ -43,9 +43,7 @@ describe('filters [mongo]', () => {
     expect(em.getFilterParams('tenant')).toMatchObject({ tenant: 123 });
     expect(em.getFilterParams('writtenBy')).toMatchObject({ author: book1.author });
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, true);
-    Object.assign(em.config, { logger });
+    const mock = mockLogger(orm);
 
     await em.find(Author, {}, { populate: ['books.perex'] });
     expect(mock.mock.calls.length).toBe(2);

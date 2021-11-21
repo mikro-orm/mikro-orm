@@ -1,6 +1,6 @@
-import c from 'ansi-colors';
 import type { Arguments, Argv, CommandModule } from 'yargs';
 import type { MikroORM } from '@mikro-orm/core';
+import { colors } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { CLIHelper } from '../CLIHelper';
 
@@ -25,7 +25,7 @@ export class DatabaseSeedCommand<T> implements CommandModule<T, { class: string 
     const seeder = orm.getSeeder();
     const seederClass = args.class || orm.config.get('seeder').defaultSeeder;
     await seeder.seedString(seederClass);
-    CLIHelper.dump(c.green(`Seeder ${seederClass} successfully seeded`));
+    CLIHelper.dump(colors.green(`Seeder ${seederClass} successfully seeded`));
     await orm.close(true);
   }
 

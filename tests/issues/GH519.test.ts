@@ -1,5 +1,6 @@
-import { Entity, PrimaryKey, MikroORM, ManyToOne, Collection, OneToMany, Logger } from '@mikro-orm/core';
+import { Entity, PrimaryKey, MikroORM, ManyToOne, Collection, OneToMany } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { mockLogger } from '../helpers';
 
 @Entity()
 class Competition {
@@ -70,9 +71,7 @@ describe('GH issue 519', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
     const [items, count] = await orm.em.getRepository(Registration).findAndCount({ competition });
     expect(items.length).toBe(3);
     expect(count).toBe(3);

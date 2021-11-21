@@ -1,7 +1,7 @@
 import type { Options } from '@mikro-orm/core';
 import { JavaScriptMetadataProvider } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
-import { BASE_DIR } from './bootstrap';
+import { BASE_DIR } from './helpers';
 
 const { BaseEntity4, Test3 } = require('./entities-js/index');
 

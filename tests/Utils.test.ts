@@ -1,5 +1,5 @@
 import path from 'path';
-import { ObjectId } from 'mongodb';
+import { ObjectId } from 'bson';
 import type { EntityMetadata, MikroORM } from '@mikro-orm/core';
 import { compareObjects, Utils } from '@mikro-orm/core';
 import { Author } from './entities';

@@ -103,7 +103,7 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
-  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | Knex.QueryBuilder | Knex.Raw, params: any[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction): Promise<T> {
+  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | Knex.QueryBuilder | Knex.Raw, params: unknown[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction): Promise<T> {
     if (Utils.isObject<Knex.QueryBuilder | Knex.Raw>(queryOrKnex)) {
       ctx ??= ((queryOrKnex as any).client.transacting ? queryOrKnex : null);
       const q = queryOrKnex.toSQL();
@@ -121,7 +121,7 @@ export abstract class AbstractSqlConnection extends Connection {
       }
 
       return query;
-    });
+    }, { query: queryOrKnex, params });
 
     return this.transformRawResult<T>(res, method);
   }
@@ -132,10 +132,6 @@ export abstract class AbstractSqlConnection extends Connection {
   async loadFile(path: string): Promise<void> {
     const buf = await readFile(path);
     await this.client.raw(buf.toString());
-  }
-
-  protected logQuery(query: string, took?: number): void {
-    super.logQuery(query, took);
   }
 
   protected createKnexClient(type: string): Knex {

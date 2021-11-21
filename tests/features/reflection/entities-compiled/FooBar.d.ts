@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb';
+import { ObjectId } from 'bson';
 import { FooBaz } from './FooBaz';
 export default class FooBar {
     _id: ObjectId;

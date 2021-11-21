@@ -1,6 +1,7 @@
 import type { ObjectHydrator } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, Logger, ManyToOne, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, ManyToOne, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { mockLogger } from '../../helpers';
 
 @Entity()
 class Source {
@@ -204,10 +205,7 @@ describe('embedded entities in postgres', () => {
   }
 
   test('persist and load', async () => {
-    const mock = jest.fn();
-    const logger = new Logger(mock, true);
-    Object.assign(orm.config, { logger });
-
+    const mock = mockLogger(orm);
     const { user1, user2 } = await createUsers();
 
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
@@ -362,11 +360,7 @@ describe('embedded entities in postgres', () => {
 
   test('populating entities in embeddables', async () => {
     await createUsers();
-
-    const mock = jest.fn();
-    const logger = new Logger(mock, true);
-    Object.assign(orm.config, { logger });
-
+    const mock = mockLogger(orm);
     const users = await orm.em.find(User, {}, {
       populate: [
         'profile1.source',

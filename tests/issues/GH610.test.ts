@@ -1,6 +1,7 @@
-import { Entity, PrimaryKey, ManyToOne, IdentifiedReference, Property, MikroORM, wrap, Logger, ObjectBindingPattern } from '@mikro-orm/core';
+import { Entity, PrimaryKey, ManyToOne, IdentifiedReference, Property, MikroORM, wrap, ObjectBindingPattern } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { SchemaGenerator } from '@mikro-orm/knex';
+import { mockLogger } from '../helpers';
 
 @Entity()
 export class Test {
@@ -42,9 +43,7 @@ describe('GH issue 610', () => {
     test.rootNode = wrap(test).toReference();
     orm.em.persist(test);
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into `test` (`name`) values (?)');

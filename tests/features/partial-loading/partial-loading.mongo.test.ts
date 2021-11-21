@@ -1,8 +1,7 @@
 import type { MikroORM } from '@mikro-orm/core';
-import { Logger } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 import { Author, Book, BookTag } from '../../entities';
-import { initORMMongo, wipeDatabase } from '../../bootstrap';
+import { initORMMongo, mockLogger, wipeDatabase } from '../../bootstrap';
 
 describe('partial loading (mongo)', () => {
 
@@ -35,9 +34,7 @@ describe('partial loading (mongo)', () => {
     await orm.em.persistAndFlush(god);
     orm.em.clear();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const r1 = await orm.em.find(Author, god, { fields: ['id', 'books.author', 'books.title'], populate: ['books'] });
     expect(r1).toHaveLength(1);
@@ -75,9 +72,7 @@ describe('partial loading (mongo)', () => {
     await orm.em.persistAndFlush(god);
     orm.em.clear();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const r1 = await orm.em.find(Book, b1, { fields: ['id', 'title', 'author', 'author.email'], populate: ['author'], filters: false });
     expect(r1).toHaveLength(1);
@@ -121,9 +116,7 @@ describe('partial loading (mongo)', () => {
     await orm.em.persistAndFlush(god);
     orm.em.clear();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const r1 = await orm.em.find(BookTag, {}, { fields: ['name', 'books.title', 'books.tags'], populate: ['books'], filters: false });
     expect(r1).toHaveLength(6);
@@ -160,9 +153,7 @@ describe('partial loading (mongo)', () => {
     await orm.em.persistAndFlush(god);
     orm.em.clear();
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     const r1 = await orm.em.find(BookTag, {}, { fields: ['name', 'books.title', 'books.tags', 'books.author', 'books.author.email'], populate: ['books.author'], filters: false });
     expect(r1).toHaveLength(6);

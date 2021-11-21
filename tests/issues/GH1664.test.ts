@@ -1,5 +1,6 @@
-import { Entity, Logger, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql/src';
+import { mockLogger } from '../helpers';
 
 @Entity()
 class MultipleUniqueNullableProperties {
@@ -39,9 +40,7 @@ describe('embedded entities in postgresql', () => {
   test('persist and load single item', async () => {
     const e1 = new MultipleUniqueNullableProperties('a', 'b');
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     await orm.em.persistAndFlush(e1);
 
@@ -63,9 +62,7 @@ describe('embedded entities in postgresql', () => {
     const e1 = new MultipleUniqueNullableProperties('a1', 'b1');
     const e2 = new MultipleUniqueNullableProperties('a2', 'b2');
 
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
 
     await orm.em.persistAndFlush([e1, e2]);
 

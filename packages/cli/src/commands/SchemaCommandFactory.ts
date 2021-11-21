@@ -1,6 +1,6 @@
 import type { Arguments, Argv, CommandModule } from 'yargs';
-import c from 'ansi-colors';
 import type { MikroORM } from '@mikro-orm/core';
+import { colors } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { SchemaGenerator } from '@mikro-orm/knex';
 import { CLIHelper } from '../CLIHelper';
@@ -116,7 +116,7 @@ export class SchemaCommandFactory {
       await seeder.seedString(args.seed || orm.config.get('seeder').defaultSeeder);
     }
 
-    CLIHelper.dump(c.green(successMessage));
+    CLIHelper.dump(colors.green(successMessage));
     await orm.close(true);
   }
 

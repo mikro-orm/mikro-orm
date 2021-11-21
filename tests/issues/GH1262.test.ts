@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import { remove } from 'fs-extra';
-import { TEMP_DIR } from '../bootstrap';
+import { TEMP_DIR } from '../helpers';
 
 @Entity({ tableName: 'user' })
 class UserBefore {

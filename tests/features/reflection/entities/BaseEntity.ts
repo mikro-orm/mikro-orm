@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb';
+import { ObjectId } from 'bson';
 import { PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
 
 export abstract class BaseEntity {

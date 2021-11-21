@@ -1,6 +1,7 @@
-import { Entity, Logger, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
+import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { Guid } from 'guid-typescript';
+import { mockLogger } from '../helpers';
 
 export class GuidType extends Type<Guid | undefined, string | undefined> {
 
@@ -58,9 +59,7 @@ describe('GH issue 1721', () => {
   });
 
   test(`GH issue 1721`, async () => {
-    const mock = jest.fn();
-    const logger = new Logger(mock, true);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm);
 
     const e = new Couch();
     e.id = Guid.parse('aaaaaaaa-c65f-42b8-408a-034a6948448f');

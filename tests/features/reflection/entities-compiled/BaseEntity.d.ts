@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb';
+import { ObjectId } from 'bson';
 export declare abstract class BaseEntity {
     _id: ObjectId;
     id: string;

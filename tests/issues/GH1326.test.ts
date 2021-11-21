@@ -1,4 +1,5 @@
-import { Collection, Entity, IdentifiedReference, Logger, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { mockLogger } from '../helpers';
 
 @Entity()
 export class Driver {
@@ -76,9 +77,7 @@ describe('GH issue 1326', () => {
         },
       }],
     });
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
     await orm.em.persistAndFlush(newDriver);
     expect(mock.mock.calls).toHaveLength(5);
     expect(mock.mock.calls[0][0]).toMatch('begin');
@@ -103,9 +102,7 @@ describe('GH issue 1326', () => {
         },
       }],
     });
-    const mock = jest.fn();
-    const logger = new Logger(mock, ['query']);
-    Object.assign(orm.config, { logger });
+    const mock = mockLogger(orm, ['query']);
     await orm.em.persistAndFlush(newDriver);
     expect(mock.mock.calls).toHaveLength(5);
     expect(mock.mock.calls[0][0]).toMatch('begin');

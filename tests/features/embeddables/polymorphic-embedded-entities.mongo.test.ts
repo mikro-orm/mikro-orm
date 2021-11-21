@@ -1,7 +1,7 @@
 import { Embeddable, Embedded, Entity, Enum, MikroORM, PrimaryKey, Property, SerializedPrimaryKey, wrap } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
-import { mockLogger } from '../../bootstrap';
-import { ObjectId } from 'mongodb';
+import { ObjectId } from 'bson';
+import { mockLogger } from '../../helpers';
 
 enum AnimalType {
   CAT,
