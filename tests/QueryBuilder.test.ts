@@ -1525,6 +1525,12 @@ describe('QueryBuilder', () => {
     expect(clone.getParams()).toEqual(['test 123', '%3', 'or this name', 10, 5]);
   });
 
+  test('qb.getNextAlias()', async () => {
+    const qb1 = orm.em.createQueryBuilder(Author2);
+    expect(qb1.alias).toBe('e0');
+    expect(qb1.getNextAlias()).toBe('e1');
+  });
+
   test('$or and $and combined', async () => {
     const qb1 = orm.em.createQueryBuilder(Author2, 'a');
     qb1.select('*').where({
