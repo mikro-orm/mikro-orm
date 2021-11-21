@@ -12,6 +12,7 @@ const methods = {
   persistAndFlush: jest.fn(),
   persistLater: jest.fn(),
   createQueryBuilder: jest.fn(),
+  qb: jest.fn(),
   findOne: jest.fn(),
   findOneOrFail: jest.fn(),
   find: jest.fn(),
@@ -62,6 +63,8 @@ describe('EntityRepository', () => {
     await repo.findOneOrFail('bar');
     expect(methods.findOneOrFail.mock.calls[0]).toEqual([Publisher, 'bar', undefined]);
     await repo.createQueryBuilder();
+    expect(methods.createQueryBuilder.mock.calls[0]).toEqual([Publisher, undefined]);
+    await repo.qb();
     expect(methods.createQueryBuilder.mock.calls[0]).toEqual([Publisher, undefined]);
     repo.remove(e);
     expect(methods.remove.mock.calls[0]).toEqual([e]);

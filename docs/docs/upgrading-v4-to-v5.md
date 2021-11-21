@@ -153,3 +153,8 @@ You can use destructing if you want to have a single entity return type:
 ```ts
 const [loadedAuthor] = await em.populate(author, ...);
 ```
+
+## QueryBuilder is awaitable
+
+Previously awaiting of QB instance was a no-op. In v5, QB is promise-like interface,
+so we can await it. More about this in [Awaiting the QueryBuilder](./query-builder.md#awaiting-the-querybuilder) section.

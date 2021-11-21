@@ -68,6 +68,34 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual([2, 1]);
   });
 
+  test('awaiting the QB instance', async () => {
+    const qb1 = orm.em.qb(Publisher2);
+    const res1 = await qb1.insert({ name: 'p1', type: PublisherType.GLOBAL });
+    expect(res1.insertId > 0).toBe(true); // test the type
+    expect(res1.insertId).toBeGreaterThanOrEqual(1);
+
+    const qb2 = orm.em.qb(Publisher2);
+    const res2 = await qb2.select('*').where({ name: 'p1' }).limit(5);
+    expect(res2.map(p => p.name)).toEqual(['p1']); // test the type
+    expect(res2).toHaveLength(1);
+    expect(res2[0]).toBeInstanceOf(Publisher2);
+
+    const qb3 = orm.em.qb(Publisher2);
+    const res3 = await qb3.count().where({ name: 'p1' });
+    expect(res3 > 0).toBe(true); // test the type
+    expect(res3).toBe(1);
+
+    const qb4 = orm.em.qb(Publisher2);
+    const res4 = await qb4.update({ type: PublisherType.LOCAL }).where({ name: 'p1' });
+    expect(res4.affectedRows > 0).toBe(true); // test the type
+    expect(res4.affectedRows).toBe(1);
+
+    const qb5 = orm.em.qb(Publisher2);
+    const res5 = await qb5.delete().where({ name: 'p1' });
+    expect(res5.affectedRows > 0).toBe(true); // test the type
+    expect(res5.affectedRows).toBe(1);
+  });
+
   test('select query with order by variants', async () => {
     const qb1 = orm.em.createQueryBuilder(Publisher2);
     qb1.select('*').where({ name: 'test 123' }).orderBy({ name: QueryOrder.DESC, type: 'ASC' }).limit(2, 1);
@@ -1755,21 +1783,21 @@ describe('QueryBuilder', () => {
   });
 
   test('pivot joining of m:n when target entity is null (GH issue 548)', async () => {
-    const qb11 = await orm.em.createQueryBuilder(User2, 'u').select('u.*').where({ cars: null });
+    const qb11 =  orm.em.createQueryBuilder(User2, 'u').select('u.*').where({ cars: null });
     expect(qb11.getQuery()).toMatch('select `u`.* ' +
       'from `user2` as `u` ' +
       'left join `user2_cars` as `e1` on `u`.`first_name` = `e1`.`user2_first_name` and `u`.`last_name` = `e1`.`user2_last_name` ' +
       'where (`e1`.`car2_name`, `e1`.`car2_year`) is null');
     expect(qb11.getParams()).toEqual([]);
 
-    const qb2 = await orm.em.createQueryBuilder(Book2, 'b').select('b.*').where({ $or: [{ tags: null }, { tags: { $ne: 1 } }] });
+    const qb2 =  orm.em.createQueryBuilder(Book2, 'b').select('b.*').where({ $or: [{ tags: null }, { tags: { $ne: 1 } }] });
     expect(qb2.getQuery()).toMatch('select `b`.*, `b`.price * 1.19 as `price_taxed` ' +
       'from `book2` as `b` ' +
       'left join `book2_tags` as `e1` on `b`.`uuid_pk` = `e1`.`book2_uuid_pk` ' +
       'where (`e1`.`book_tag2_id` is null or `e1`.`book_tag2_id` != ?)');
     expect(qb2.getParams()).toEqual(['1']);
 
-    const qb3 = await orm.em.createQueryBuilder(Author2, 'a').select('a.*').where({ friends: null }).orderBy({ friends: { name: QueryOrder.ASC } });
+    const qb3 =  orm.em.createQueryBuilder(Author2, 'a').select('a.*').where({ friends: null }).orderBy({ friends: { name: QueryOrder.ASC } });
     expect(qb3.getQuery()).toMatch('select `a`.* ' +
       'from `author2` as `a` ' +
       'left join `author_to_friend` as `e1` on `a`.`id` = `e1`.`author2_1_id` ' +
@@ -1778,7 +1806,7 @@ describe('QueryBuilder', () => {
       'order by `e2`.`name` asc');
     expect(qb3.getParams()).toEqual([]);
 
-    const qb4 = await orm.em.createQueryBuilder(Author2, 'a').select('a.*').where({ friends: null }).orderBy({ friends: QueryOrder.ASC });
+    const qb4 =  orm.em.createQueryBuilder(Author2, 'a').select('a.*').where({ friends: null }).orderBy({ friends: QueryOrder.ASC });
     expect(qb4.getQuery()).toMatch('select `a`.* ' +
       'from `author2` as `a` ' +
       'left join `author_to_friend` as `e1` on `a`.`id` = `e1`.`author2_1_id` ' +
@@ -1788,35 +1816,35 @@ describe('QueryBuilder', () => {
   });
 
   test('pivot joining of m:n when no target entity needed directly (GH issue 549)', async () => {
-    const qb1 = await orm.em.createQueryBuilder(Book2, 'b').select('b.*').where({ tags: { id: 1 } });
+    const qb1 = orm.em.createQueryBuilder(Book2, 'b').select('b.*').where({ tags: { id: 1 } });
     expect(qb1.getQuery()).toMatch('select `b`.*, `b`.price * 1.19 as `price_taxed` ' +
       'from `book2` as `b` ' +
       'left join `book2_tags` as `e1` on `b`.`uuid_pk` = `e1`.`book2_uuid_pk` ' +
       'where `e1`.`book_tag2_id` = ?');
     expect(qb1.getParams()).toEqual(['1']);
 
-    const qb11 = await orm.em.createQueryBuilder(User2, 'u').select('u.*').where({ cars: { name: 'n', year: 1 } });
+    const qb11 = orm.em.createQueryBuilder(User2, 'u').select('u.*').where({ cars: { name: 'n', year: 1 } });
     expect(qb11.getQuery()).toMatch('select `u`.* ' +
       'from `user2` as `u` ' +
       'left join `user2_cars` as `e1` on `u`.`first_name` = `e1`.`user2_first_name` and `u`.`last_name` = `e1`.`user2_last_name` ' +
       'where (`e1`.`car2_name`, `e1`.`car2_year`) = (?, ?)');
     expect(qb11.getParams()).toEqual(['n', 1]);
 
-    const qb12 = await orm.em.createQueryBuilder(User2, 'u').select('u.*').where({ cars: { $in: [{ name: 'n', year: 1 }, { name: 'n', year: 2 }] } });
+    const qb12 = orm.em.createQueryBuilder(User2, 'u').select('u.*').where({ cars: { $in: [{ name: 'n', year: 1 }, { name: 'n', year: 2 }] } });
     expect(qb12.getQuery()).toMatch('select `u`.* ' +
       'from `user2` as `u` ' +
       'left join `user2_cars` as `e1` on `u`.`first_name` = `e1`.`user2_first_name` and `u`.`last_name` = `e1`.`user2_last_name` ' +
       'where (`e1`.`car2_name`, `e1`.`car2_year`) in ((?, ?), (?, ?))');
     expect(qb12.getParams()).toEqual(['n', 1, 'n', 2]);
 
-    const qb2 = await orm.em.createQueryBuilder(Book2, 'b').select('b.*').where({ $or: [{ tags: { id: null } }, { tags: { $ne: 1 } }] });
+    const qb2 = orm.em.createQueryBuilder(Book2, 'b').select('b.*').where({ $or: [{ tags: { id: null } }, { tags: { $ne: 1 } }] });
     expect(qb2.getQuery()).toMatch('select `b`.*, `b`.price * 1.19 as `price_taxed` ' +
       'from `book2` as `b` ' +
       'left join `book2_tags` as `e1` on `b`.`uuid_pk` = `e1`.`book2_uuid_pk` ' +
       'where (`e1`.`book_tag2_id` is null or `e1`.`book_tag2_id` != ?)');
     expect(qb2.getParams()).toEqual(['1']);
 
-    const qb4 = await orm.em.createQueryBuilder(Author2, 'a').select('a.*').where({ friends: 1 }).orderBy({ friends: { id: QueryOrder.ASC } });
+    const qb4 = orm.em.createQueryBuilder(Author2, 'a').select('a.*').where({ friends: 1 }).orderBy({ friends: { id: QueryOrder.ASC } });
     expect(qb4.getQuery()).toMatch('select `a`.* ' +
       'from `author2` as `a` ' +
       'left join `author_to_friend` as `e1` on `a`.`id` = `e1`.`author2_1_id` ' +

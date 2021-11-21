@@ -19,6 +19,13 @@ export class SqlEntityManager<D extends AbstractSqlDriver = AbstractSqlDriver> e
   }
 
   /**
+   * Shortcut for `createQueryBuilder()`
+   */
+  qb<T>(entityName: EntityName<T>, alias?: string, type?: 'read' | 'write') {
+    return this.createQueryBuilder(entityName, alias, type);
+  }
+
+  /**
    * Creates raw SQL query that won't be escaped when used as a parameter.
    */
   raw<R = Knex.Raw>(sql: string, bindings: Knex.RawBinding[] | Knex.ValueDict = []): R {

@@ -15,7 +15,8 @@ When you need to execute some SQL query without all the ORM stuff involved, you 
 compose the query yourself, or use the `QueryBuilder` helper to construct the query for you:
 
 ```typescript
-const qb = orm.em.createQueryBuilder(Author);
+// since v5 we can also use `em.qb()` shortcut
+const qb = em.createQueryBuilder(Author);
 qb.update({ name: 'test 123', type: PublisherType.GLOBAL }).where({ id: 123, type: PublisherType.LOCAL });
 
 console.log(qb.getQuery());
@@ -29,55 +30,6 @@ const res1 = await qb.execute();
 ```
 
 `QueryBuilder` also supports [smart query conditions](query-conditions.md).
-
-## Using Knex.js
-
-Under the hood, `QueryBuilder` uses [`Knex.js`](https://knexjs.org) to compose and run queries.
-You can access configured `knex` instance via `qb.getKnexQuery()` method:
-
-```typescript
-const qb = orm.em.createQueryBuilder(Author);
-qb.update({ name: 'test 123', type: PublisherType.GLOBAL }).where({ id: 123, type: PublisherType.LOCAL });
-const knex = qb.getKnexQuery(); // instance of Knex' QueryBuilder
-
-// do what ever you need with `knex`
-
-const res = await orm.em.getConnection().execute(knex);
-const entities = res.map(a => orm.em.map(Author, a));
-console.log(entities); // Author[]
-```
-
-You can also get clear and configured knex instance from the connection via `getKnex()` method.
-As this method is not available on the base `Connection` class, you will need to either manually
-type cast the connection to `AbstractSqlConnection` (or the actual implementation you are using, 
-e.g. `MySqlConnection`), or provide correct driver type hint to your `EntityManager` instance, 
-which will be then automatically inferred in `em.getConnection()` method.
-
-> Driver and connection implementations are not directly exported from `@mikro-orm/core` module. 
-> You can import them from the driver packages (e.g. `import { PostgreSqlDriver } from '@mikro-orm/postgresql'`).
-
-```typescript
-const conn = orm.em.getConnection() as AbstractSqlConnection;
-// you can make sure the `em` is correctly typed to `EntityManager<AbstractSqlDriver>`
-// or one of its implementations:
-// const em: EntityManager<AbstractSqlDriver> = orm.em;
-
-const knex = conn.getKnex();
-
-// do what ever you need with `knex`
-
-const res = await knex;
-```
-
-## Running Native SQL Query
-
-You can run native SQL via underlying connection
-
-```typescript
-const connection = orm.em.getConnection();
-const res = await connection.execute('select 1 as count');
-console.log(res); // res is array of objects: `[ { count: 1 } ]`
-```
 
 ## Executing the Query
 
@@ -94,9 +46,9 @@ is enabled by default). In following example, `Book` entity has `createdAt` prop
 with implicit underscored field name `created_at`:
 
 ```typescript
-const res4 = await orm.em.createQueryBuilder(Book).select('*').execute('get', true);
+const res4 = await em.createQueryBuilder(Book).select('*').execute('get', true);
 console.log(res4); // `createdAt` will be defined, while `created_at` will be missing
-const res5 = await orm.em.createQueryBuilder(Book).select('*').execute('get', false);
+const res5 = await em.createQueryBuilder(Book).select('*').execute('get', false);
 console.log(res5); // `created_at` will be defined, while `createdAt` will be missing
 ```
 
@@ -104,13 +56,63 @@ To get entity instances from the QueryBuilder result, you can use `getResult()` 
 methods:
 
 ```typescript
-const book = await orm.em.createQueryBuilder(Book).select('*').where({ id: 1 }).getSingleResult();
+const book = await em.createQueryBuilder(Book).select('*').where({ id: 1 }).getSingleResult();
 console.log(book instanceof Book); // true
-const books = await orm.em.createQueryBuilder(Book).select('*').getResult();
+const books = await em.createQueryBuilder(Book).select('*').getResult();
 console.log(books[0] instanceof Book); // true
 ```
 
 > You can also use `qb.getResultList()` which is alias to `qb.getResult()`.
+
+## Awaiting the QueryBuilder
+
+Since v5 we can await the `QueryBuilder` instance, which will automatically execute
+the QB and return appropriate response. The QB instance is now typed based on usage
+of `select/insert/update/delete/truncate` methods to one of:
+
+- `SelectQueryBuilder`
+  - awaiting yields array of entities (as `qb.getResultList()`)
+- `CountQueryBuilder`
+  - awaiting yields number (as `qb.getCount()`)
+- `InsertQueryBuilder` (extends `RunQueryBuilder`)
+  - awaiting yields `QueryResult`
+- `UpdateQueryBuilder` (extends `RunQueryBuilder`)
+  - awaiting yields `QueryResult`
+- `DeleteQueryBuilder` (extends `RunQueryBuilder`)
+  - awaiting yields `QueryResult`
+- `TruncateQueryBuilder` (extends `RunQueryBuilder`)
+  - awaiting yields `QueryResult`
+
+```ts
+const res1 = await em.qb(Publisher).insert({
+  name: 'p1',
+  type: PublisherType.GLOBAL,
+});
+// res1 is of type `QueryResult<Publisher>`
+console.log(res1.insertId);
+
+const res2 = await em.qb(Publisher)
+        .select('*')
+        .where({ name: 'p1' })
+        .limit(5);
+// res2 is Publisher[]
+console.log(res2.map(p => p.name));
+
+const res3 = await em.qb(Publisher).count().where({ name: 'p1' });
+// res3 is number
+console.log(res3 > 0);
+
+const res4 = await em.qb(Publisher)
+        .update({ type: PublisherType.LOCAL })
+        .where({ name: 'p1' });
+// res4 is QueryResult<Publisher>
+console.log(res4.affectedRows > 0);
+
+const res5 = await em.qb(Publisher).delete().where({ name: 'p1' });
+// res4 is QueryResult<Publisher>
+console.log(res4.affectedRows > 0);
+expect(res5.affectedRows > 0).toBe(true); // test the type
+```
 
 ## Mapping Raw Results to Entities
 
@@ -124,10 +126,10 @@ mapped to entity properties automatically:
 
 ```typescript
 const results = await knex.select('*').from('users').where(knex.raw('id = ?', [id]));
-const users = results.map(user => orm.em.map(User, user));
+const users = results.map(user => em.map(User, user));
 
 // or use EntityRepository.map()
-const repo = orm.em.getRepository(User);
+const repo = em.getRepository(User);
 const users = results.map(user => repo.map(user));
 ```
 
@@ -136,7 +138,7 @@ const users = results.map(user => repo.map(user));
 `QueryBuilder` supports automatic joining based on entity metadata:
 
 ```typescript
-const qb = orm.em.createQueryBuilder(BookTag, 't');
+const qb = em.createQueryBuilder(BookTag, 't');
 qb.select('*').where({ books: 123 });
 
 console.log(qb.getQuery());
@@ -149,7 +151,7 @@ console.log(qb.getQuery());
 This also works for multiple levels of nesting:
 
 ```typescript
-const qb = orm.em.createQueryBuilder(Author);
+const qb = em.createQueryBuilder(Author);
 qb.select('*')
   .where({ books: { tags: { name: 'Cool' } } })
   .orderBy({ books: { tags: { createdBy: QueryOrder.DESC } } });
@@ -172,7 +174,7 @@ the root entity will be selected. To populate its relationships, you can use [`e
 Another way is to manually specify join property via `join()`/`leftJoin()` methods:
 
 ```typescript
-const qb = orm.em.createQueryBuilder(BookTag, 't');
+const qb = em.createQueryBuilder(BookTag, 't');
 qb.select(['b.uuid', 'b.*', 't.*'], true)
   .join('t.books', 'b')
   .where({ 'b.title': 'test 123' })
@@ -193,7 +195,7 @@ To select multiple entities and map them from `QueryBuilder`, we can use
 
 ```ts
 // `res` will contain array of authors, with books and their tags populated
-const res = await orm.em.createQueryBuilder(Author, 'a')
+const res = await em.createQueryBuilder(Author, 'a')
   .select('*')
   .leftJoinAndSelect('a.books', 'b')
   .leftJoinAndSelect('b.tags', 't')
@@ -211,7 +213,7 @@ manually, use `andWhere()`/`orWhere()`, or provide condition object:
 It is possible to use any SQL fragment in your `WHERE` query or `ORDER BY` clause:
 
 ```ts
-const users = orm.em.createQueryBuilder(User)
+const users = em.createQueryBuilder(User)
   .select('*')
   .where({ 'lower(email)': 'foo@bar.baz' })
   .orderBy({ [`(point(loc_latitude, loc_longitude) <@> point(0, 0))`]: 'ASC' })
@@ -230,7 +232,7 @@ order by (point(loc_latitude, loclongitude) <@> point(0, 0)) asc
 ### Custom SQL in where
 
 ```typescript
-const qb = orm.em.createQueryBuilder(BookTag, 't');
+const qb = em.createQueryBuilder(BookTag, 't');
 qb.select(['b.*', 't.*'])
   .leftJoin('t.books', 'b')
   .where('b.title = ? or b.title = ?', ['test 123', 'lol 321'])
@@ -249,7 +251,7 @@ console.log(qb.getQuery());
 ### andWhere() and orWhere()
 
 ```typescript
-const qb = orm.em.createQueryBuilder(BookTag, 't');
+const qb = em.createQueryBuilder(BookTag, 't');
 qb.select(['b.*', 't.*'])
   .leftJoin('t.books', 'b')
   .where('b.title = ? or b.title = ?', ['test 123', 'lol 321'])
@@ -268,7 +270,7 @@ console.log(qb.getQuery());
 ### Conditions Object
 
 ```typescript
-const qb = orm.em.createQueryBuilder(Test);
+const qb = em.createQueryBuilder(Test);
 qb.select('*').where({ $and: [{ id: { $nin: [3, 4] } }, { id: { $gt: 2 } }] });
 
 console.log(qb.getQuery());
@@ -281,7 +283,7 @@ To create a count query, we can ue `qb.count()`, which will intialize a select c
 with `count()` function. By default, it will use the primary key. 
 
 ```typescript
-const qb = orm.em.createQueryBuilder(Test);
+const qb = em.createQueryBuilder(Test);
 qb.count().where({ $and: [{ id: { $nin: [3, 4] } }, { id: { $gt: 2 } }] });
 
 console.log(qb.getQuery());
@@ -295,7 +297,7 @@ const count = res ? +res.count : 0;
 To simplify this process, we can use `qb.getCount()` method. Following code is equivalent:
 
 ```typescript
-const qb = orm.em.createQueryBuilder(Test);
+const qb = em.createQueryBuilder(Test);
 qb.select('*').limit(10, 20).where({ $and: [{ id: { $nin: [3, 4] } }, { id: { $gt: 2 } }] });
 
 const count = await qb.getCount();
@@ -309,8 +311,8 @@ cloned under the hood, so calling `getCount()` does not mutate the original QB s
 You can filter using sub-queries in where conditions:
 
 ```typescript
-const qb1 = orm.em.createQueryBuilder(Book2, 'b').select('b.author').where({ price: { $gt: 100 } });
-const qb2 = orm.em.createQueryBuilder(Author2, 'a').select('*').where({ id: { $in: qb1.getKnexQuery() } });
+const qb1 = em.createQueryBuilder(Book2, 'b').select('b.author').where({ price: { $gt: 100 } });
+const qb2 = em.createQueryBuilder(Author2, 'a').select('*').where({ id: { $in: qb1.getKnexQuery() } });
 
 console.log(qb2.getQuery());
 // select `a`.* from `author2` as `a` where `a`.`id` in (select `b`.`author_id` from `book2` as `b` where `b`.`price` > ?)
@@ -321,9 +323,9 @@ For sub-queries in selects, use the `qb.as(alias)` method:
 > The dynamic property (`booksTotal`) needs to be defined at the entity level (as `persist: false`).
 
 ```typescript
-const knex = orm.em.getKnex();
-const qb1 = orm.em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: knex.ref('a.id') }).as('Author2.booksTotal');
-const qb2 = orm.em.createQueryBuilder(Author2, 'a');
+const knex = em.getKnex();
+const qb1 = em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: knex.ref('a.id') }).as('Author2.booksTotal');
+const qb2 = em.createQueryBuilder(Author2, 'a');
 qb2.select(['*', qb1]).orderBy({ booksTotal: 'desc' });
 
 console.log(qb2.getQuery());
@@ -331,9 +333,9 @@ console.log(qb2.getQuery());
 ```
 
 ```typescript
-const knex = orm.em.getKnex();
-const qb3 = orm.em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: knex.ref('a.id') }).as('books_total');
-const qb4 = orm.em.createQueryBuilder(Author2, 'a');
+const knex = em.getKnex();
+const qb3 = em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: knex.ref('a.id') }).as('books_total');
+const qb4 = em.createQueryBuilder(Author2, 'a');
 qb4.select(['*', qb3]).orderBy({ booksTotal: 'desc' });
 
 console.log(qb4.getQuery());
@@ -346,9 +348,9 @@ When you want to filter by sub-query on the left-hand side of a predicate, you w
 > You always need to use prefix in the `qb.withSchema()` (so `a.booksTotal`). 
 
 ```typescript
-const knex = orm.em.getKnex();
-const qb1 = orm.em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: knex.ref('a.id') }).getKnexQuery();
-const qb2 = orm.em.createQueryBuilder(Author2, 'a');
+const knex = em.getKnex();
+const qb1 = em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: knex.ref('a.id') }).getKnexQuery();
+const qb2 = em.createQueryBuilder(Author2, 'a');
 qb2.select('*').withSubQuery(qb1, 'a.booksTotal').where({ 'a.booksTotal': { $in: [1, 2, 3] } });
 
 console.log(qb2.getQuery());
@@ -356,9 +358,9 @@ console.log(qb2.getQuery());
 ```
 
 ```typescript
-const knex = orm.em.getKnex();
-const qb3 = orm.em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: knex.ref('a.id') }).getKnexQuery();
-const qb4 = orm.em.createQueryBuilder(Author2, 'a');
+const knex = em.getKnex();
+const qb3 = em.createQueryBuilder(Book2, 'b').count('b.uuid', true).where({ author: knex.ref('a.id') }).getKnexQuery();
+const qb4 = em.createQueryBuilder(Author2, 'a');
 qb4.select('*').withSubQuery(qb3, 'a.booksTotal').where({ 'a.booksTotal': 1 });
 
 console.log(qb4.getQuery());
@@ -370,7 +372,7 @@ console.log(qb4.getQuery());
 You can use `qb.raw()` to insert raw SQL snippets like this:
 
 ```typescript
-const qb = orm.em.createQueryBuilder(Book);
+const qb = em.createQueryBuilder(Book);
 qb.update({ price: qb.raw('price + 1') }).where({ uuid: '123' });
 
 console.log(qb.getQuery());
@@ -382,7 +384,7 @@ console.log(qb.getQuery());
 We can set the `LockMode` via `qb.setLockMode()`.  
 
 ```typescript
-const qb = orm.em.createQueryBuilder(Test);
+const qb = em.createQueryBuilder(Test);
 qb.select('*').where({ name: 'Lol 321' }).setLockMode(LockMode.PESSIMISTIC_READ);
 
 console.log(qb.getQuery()); // for MySQL
@@ -403,7 +405,7 @@ Available lock modes:
 Optionally we can also pass list of table aliases we want to lock via second parameter:
 
 ```typescript
-const qb = orm.em.createQueryBuilder(User, 'u');
+const qb = em.createQueryBuilder(User, 'u');
 qb.select('*')
   .leftJoinAndSelect('u.identities', 'i')
   .where({ name: 'Jon' })
@@ -416,3 +418,55 @@ console.log(qb.getQuery()); // for Postgres
 //   where "u"."name" = 'Jon' 
 //   for update of "u" skip locked
 ```
+
+## Using Knex.js
+
+Under the hood, `QueryBuilder` uses [`Knex.js`](https://knexjs.org) to compose and run queries.
+You can access configured `knex` instance via `qb.getKnexQuery()` method:
+
+```typescript
+const qb = em.createQueryBuilder(Author);
+qb.update({ name: 'test 123', type: PublisherType.GLOBAL }).where({ id: 123, type: PublisherType.LOCAL });
+const knex = qb.getKnexQuery(); // instance of Knex' QueryBuilder
+
+// do what ever you need with `knex`
+
+const res = await em.getConnection().execute(knex);
+const entities = res.map(a => em.map(Author, a));
+console.log(entities); // Author[]
+```
+
+You can also get clear and configured knex instance from the connection via `getKnex()` method.
+As this method is not available on the base `Connection` class, you will need to either manually
+type cast the connection to `AbstractSqlConnection` (or the actual implementation you are using,
+e.g. `MySqlConnection`), or provide correct driver type hint to your `EntityManager` instance,
+which will be then automatically inferred in `em.getConnection()` method.
+
+> Driver and connection implementations are not directly exported from `@mikro-orm/core` module.
+> You can import them from the driver packages (e.g. `import { PostgreSqlDriver } from '@mikro-orm/postgresql'`).
+
+```typescript
+const conn = em.getConnection() as AbstractSqlConnection;
+// you can make sure the `em` is correctly typed to `EntityManager<AbstractSqlDriver>`
+// or one of its implementations:
+// const em: EntityManager<AbstractSqlDriver> = em;
+
+const knex = conn.getKnex();
+
+// do what ever you need with `knex`
+
+const res = await knex;
+```
+
+## Running Native SQL Query
+
+You can run native SQL via underlying connection
+
+```typescript
+const connection = em.getConnection();
+const res = await connection.execute('select 1 as count');
+console.log(res); // res is array of objects: `[ { count: 1 } ]`
+```
+
+Since v4 we can also use `em.execute()` which will also handle logging and mapping
+of exceptions.
