@@ -1,6 +1,6 @@
 import 'reflect-metadata';
-import type { EntityManager, LoggerNamespace, Options } from '@mikro-orm/core';
-import { JavaScriptMetadataProvider, LoadStrategy, DefaultLogger, MikroORM, Utils } from '@mikro-orm/core';
+import type { EntityManager, Options } from '@mikro-orm/core';
+import { JavaScriptMetadataProvider, LoadStrategy, MikroORM, Utils } from '@mikro-orm/core';
 import type { AbstractSqlDriver, SqlEntityManager } from '@mikro-orm/knex';
 import { SchemaGenerator, SqlEntityRepository } from '@mikro-orm/knex';
 import { SqliteDriver } from '@mikro-orm/sqlite';
@@ -9,7 +9,6 @@ import type { MySqlDriver } from '@mikro-orm/mysql';
 import type { MariaDbDriver } from '@mikro-orm/mariadb';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
-import { Author, Book, BookTag, Publisher, Test } from './entities';
 import {
   Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2, Label2, Configuration2, Address2, FooParam2,
   Car2, CarOwner2, User2, BaseUser2,
@@ -21,11 +20,9 @@ import { Author2Subscriber } from './subscribers/Author2Subscriber';
 import { Test2Subscriber } from './subscribers/Test2Subscriber';
 import { EverythingSubscriber } from './subscribers/EverythingSubscriber';
 import { FlushSubscriber } from './subscribers/FlushSubscriber';
+import { BASE_DIR } from './helpers';
 
 const { BaseEntity4, Author3, Book3, BookTag3, Publisher3, Test3 } = require('./entities-js/index');
-
-export const BASE_DIR = __dirname;
-export const TEMP_DIR = process.cwd() + '/temp';
 
 let ensureIndexes = true; // ensuring indexes is slow, and it is enough to make it once
 
@@ -162,13 +159,15 @@ export async function initORMSqlite2() {
 }
 
 export async function wipeDatabase(em: EntityManager) {
-  await em.getRepository(Author).nativeDelete({});
-  await em.getRepository(Book).nativeDelete({});
-  await em.getRepository(BookTag).nativeDelete({});
-  await em.getRepository(Publisher).nativeDelete({});
-  await em.getRepository(Test).nativeDelete({});
-  await em.getRepository(FooBar).nativeDelete({});
-  await em.getRepository(FooBaz).nativeDelete({});
+  // requiring those entities is causing memory leaks when running many tests in jest,
+  // probably because of some patching inside mongodb
+  await em.getRepository('Author').nativeDelete({});
+  await em.getRepository('Book').nativeDelete({});
+  await em.getRepository('BookTag').nativeDelete({});
+  await em.getRepository('Publisher').nativeDelete({});
+  await em.getRepository('Test').nativeDelete({});
+  await em.getRepository('FooBar').nativeDelete({});
+  await em.getRepository('FooBaz').nativeDelete({});
   em.clear();
 }
 
@@ -249,12 +248,4 @@ export async function wipeDatabaseSqlite2(em: SqlEntityManager) {
   em.clear();
 }
 
-export function mockLogger(orm: MikroORM, debug: LoggerNamespace[] = ['query', 'query-params'], mock?: jest.Mock) {
-  const logger = orm.config.getLogger();
-  mock ??= jest.fn();
-  Object.assign(logger, { writer: mock });
-  orm.config.set('debug', debug);
-  logger.setDebugMode(debug);
-
-  return mock;
-}
+export * from './helpers';

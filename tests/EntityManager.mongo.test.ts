@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb';
+import { ObjectId } from 'bson';
 import type { EntityProperty } from '@mikro-orm/core';
 import { Collection, Configuration, MikroORM, QueryOrder, Reference, wrap, UniqueConstraintViolationException, IdentityMap, EntitySchema, NullHighlighter } from '@mikro-orm/core';
 import { EntityManager, MongoConnection, MongoDriver } from '@mikro-orm/mongodb';

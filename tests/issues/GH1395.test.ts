@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb';
+import { ObjectId } from 'bson';
 import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 
 export interface EmailMessageTest {

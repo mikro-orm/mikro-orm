@@ -1,6 +1,6 @@
 import { Collection, Entity, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, wrap } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
-import { mockLogger } from '../bootstrap';
+import { mockLogger } from '../helpers';
 
 @Entity()
 class Order {

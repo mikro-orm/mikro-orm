@@ -1,7 +1,7 @@
 import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, Collection, MikroORM } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { SchemaGenerator } from '@mikro-orm/sqlite';
-import { mockLogger } from '../bootstrap';
+import { mockLogger } from '../helpers';
 
 @Entity()
 class A {

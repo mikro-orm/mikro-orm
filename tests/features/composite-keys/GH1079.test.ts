@@ -1,7 +1,7 @@
 import { Entity, PrimaryKey, MikroORM, ManyToOne, Enum, PrimaryKeyType, Property, BigIntType, wrap } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
-import { mockLogger } from '../../bootstrap';
+import { mockLogger } from '../../helpers';
 
 @Entity()
 class User {

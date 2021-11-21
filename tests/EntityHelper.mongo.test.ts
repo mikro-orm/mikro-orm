@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb';
+import { ObjectId } from 'bson';
 import { inspect } from 'util';
 
 import type { AnyEntity, MikroORM } from '@mikro-orm/core';

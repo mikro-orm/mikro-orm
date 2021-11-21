@@ -1,6 +1,6 @@
 import { Embeddable, Embedded, Entity, expr, MikroORM, PrimaryKey, Property, ReferenceType, t } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
-import { mockLogger } from '../../bootstrap';
+import { mockLogger } from '../../helpers';
 
 @Embeddable()
 class Address1 {

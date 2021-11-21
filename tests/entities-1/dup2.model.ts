@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb';
+import { ObjectId } from 'bson';
 import { Entity, OneToOne, PrimaryKey, SerializedPrimaryKey } from '@mikro-orm/core';
 import { Dup1 } from './dup1.model';
 

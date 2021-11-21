@@ -1,6 +1,6 @@
 import type { Platform } from '@mikro-orm/core';
 import { Cascade, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType, Property, Type } from '@mikro-orm/core';
-import { mockLogger } from '../bootstrap';
+import { mockLogger } from '../helpers';
 
 export class Sku {
 

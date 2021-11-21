@@ -1,6 +1,6 @@
 import { Entity, PrimaryKey, Property, MikroORM, ManyToOne, OneToMany, Collection, BigIntType } from '@mikro-orm/core';
 import type { MySqlDriver } from '@mikro-orm/mysql';
-import { mockLogger } from '../bootstrap';
+import { mockLogger } from '../helpers';
 
 @Entity()
 export class Foo {

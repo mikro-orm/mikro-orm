@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb';
+import { ObjectId } from 'bson';
 import { Entity, PrimaryKey, Property, MikroORM, Dictionary } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 

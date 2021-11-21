@@ -1,4 +1,4 @@
-import { mockLogger } from '../bootstrap';
+import { mockLogger } from '../helpers';
 
 (global as any).process.env.FORCE_COLOR = 0;
 

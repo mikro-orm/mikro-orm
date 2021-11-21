@@ -1,6 +1,6 @@
 import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property, Filter, ManyToOne } from '@mikro-orm/core';
 import type { AbstractSqlDriver, EntityManager } from '@mikro-orm/knex';
-import { mockLogger } from '../../bootstrap';
+import { mockLogger } from '../../helpers';
 
 @Filter({
   name: 'isActive',

@@ -1,6 +1,6 @@
 import { Entity, PrimaryKey, MikroORM, BigIntType, OneToMany, Collection, Enum, ManyToOne, Property } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
-import { mockLogger } from '../bootstrap';
+import { mockLogger } from '../helpers';
 
 export enum LevelType {
   A = 'a',

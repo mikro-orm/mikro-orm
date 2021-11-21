@@ -4,8 +4,7 @@ describe('Logger', () => {
 
   test('should have debug mode disabled by default', async () => {
     const mock = jest.fn();
-    const config = new Configuration({ type: 'sqlite', logger: mock }, false);
-    const logger = new DefaultLogger(config);
+    const logger = new DefaultLogger({ writer: mock });
     expect(logger.debugMode).toBe(false);
     logger.log('discovery', 'test debug msg');
     expect(mock.mock.calls.length).toBe(0);
@@ -15,8 +14,7 @@ describe('Logger', () => {
 
   test('should print debug messages when debug mode enabled', async () => {
     const mock = jest.fn();
-    const config = new Configuration({ type: 'sqlite', logger: mock, debug: true }, false);
-    const logger = new DefaultLogger(config);
+    const logger = new DefaultLogger({ writer: mock, debugMode: true });
     expect(logger.debugMode).toBe(true);
     logger.log('discovery', 'test debug msg');
     expect(mock.mock.calls.length).toBe(1);
@@ -28,8 +26,7 @@ describe('Logger', () => {
 
   test('should not print debug messages when given namespace not enabled', async () => {
     const mock = jest.fn();
-    const config = new Configuration({ type: 'sqlite', logger: mock, debug: ['query'] }, false);
-    const logger = new DefaultLogger(config);
+    const logger = new DefaultLogger({ writer: mock, debugMode: ['query'] });
     expect(logger.debugMode).toEqual(['query']);
     logger.log('discovery', 'test debug msg');
     expect(mock.mock.calls.length).toBe(0);

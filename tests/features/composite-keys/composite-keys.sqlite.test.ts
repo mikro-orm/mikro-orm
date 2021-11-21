@@ -4,7 +4,7 @@ import {
 } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { AbstractSqlConnection } from '@mikro-orm/sqlite';
-import { mockLogger } from '../../bootstrap';
+import { mockLogger } from '../../helpers';
 
 @Entity()
 export class FooBar2 {

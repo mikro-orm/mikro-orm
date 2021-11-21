@@ -1,5 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { mockLogger } from '../bootstrap';
+import { mockLogger } from '../helpers';
 
 @Entity()
 export class A {

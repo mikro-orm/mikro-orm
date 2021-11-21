@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb';
+import { ObjectId } from 'bson';
 import type { MikroORM, EntityFactory } from '@mikro-orm/core';
 import { Collection, ReferenceType, wrap } from '@mikro-orm/core';
 import { Book, Author, Publisher, Test, BookTag } from './entities';

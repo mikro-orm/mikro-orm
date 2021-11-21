@@ -1,6 +1,6 @@
 import { Entity, LoadStrategy, ManyToOne, MikroORM, PrimaryKey, Property, t, Type } from '@mikro-orm/core';
 import type { MySqlDriver } from '@mikro-orm/mysql';
-import { mockLogger } from '../../bootstrap';
+import { mockLogger } from '../../helpers';
 
 export class Point {
 

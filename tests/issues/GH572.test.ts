@@ -1,6 +1,6 @@
 import { Entity, IdentifiedReference, MikroORM, OneToOne, PrimaryKey, Property, QueryOrder } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
-import { mockLogger } from '../bootstrap';
+import { mockLogger } from '../helpers';
 
 @Entity()
 export class A {

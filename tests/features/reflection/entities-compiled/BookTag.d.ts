@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb';
+import { ObjectId } from 'bson';
 import { Collection, EntitySchema } from '@mikro-orm/core';
 import { Book } from './Book';
 export declare class BookTag {

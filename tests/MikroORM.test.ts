@@ -10,7 +10,7 @@ jest.mock('knex', () => ({ knex }));
 
 import { Configuration, EntityManager, MikroORM, NullCacheAdapter } from '@mikro-orm/core';
 import fs from 'fs-extra';
-import { BASE_DIR } from './bootstrap';
+import { BASE_DIR } from './helpers';
 import { Author, Test } from './entities';
 import { Author2, Car2, CarOwner2, Sandwich, User2 } from './entities-sql';
 import { BaseEntity2 } from './entities-sql/BaseEntity2';

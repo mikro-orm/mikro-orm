@@ -1,6 +1,6 @@
 import type { ObjectHydrator } from '@mikro-orm/core';
 import { Embeddable, Embedded, Entity, Enum, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/core';
-import { mockLogger } from '../../bootstrap';
+import { mockLogger } from '../../helpers';
 
 enum AnimalType {
   CAT,

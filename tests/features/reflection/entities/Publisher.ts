@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb';
+import { ObjectId } from 'bson';
 import { BeforeCreate, Entity, Enum, ManyToMany, OneToMany, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
 import type { Book } from './Book';
 import type { Test } from './Test';

@@ -1,7 +1,7 @@
 import type { ObjectHydrator } from '@mikro-orm/core';
 import { Embeddable, Embedded, Entity, ManyToOne, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
-import { mockLogger } from '../../bootstrap';
+import { mockLogger } from '../../helpers';
 
 @Entity()
 class Source {

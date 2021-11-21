@@ -1,5 +1,5 @@
 import { NullCacheAdapter } from '@mikro-orm/core';
-import { TEMP_DIR } from './bootstrap';
+import { TEMP_DIR } from './helpers';
 
 describe('NullCacheAdapter', () => {
 

@@ -7,7 +7,7 @@ import {
   Property,
 } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
-import { mockLogger } from '../bootstrap';
+import { mockLogger } from '../helpers';
 export class NativeBigIntType extends BigIntType {
 
   convertToJSValue(value: any): any {

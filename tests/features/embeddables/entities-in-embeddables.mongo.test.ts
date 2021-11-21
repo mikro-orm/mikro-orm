@@ -2,7 +2,7 @@ import type { ObjectHydrator } from '@mikro-orm/core';
 import { Embeddable, Embedded, Entity, ManyToOne, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 import { ObjectId } from '@mikro-orm/mongodb';
-import { mockLogger } from '../../bootstrap';
+import { mockLogger } from '../../helpers';
 
 @Entity()
 class Source {

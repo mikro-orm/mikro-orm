@@ -2,7 +2,7 @@ import type { Platform } from '@mikro-orm/core';
 import { Embeddable, Embedded, Entity, EntitySchema, MikroORM, PrimaryKey, Property, ReferenceType, SerializedPrimaryKey, Type } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 import { ObjectId, MongoConnection, MongoPlatform } from '@mikro-orm/mongodb';
-import { mockLogger } from '../../bootstrap';
+import { mockLogger } from '../../helpers';
 
 @Embeddable()
 class Address1Base {

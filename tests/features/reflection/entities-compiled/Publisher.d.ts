@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb';
+import { ObjectId } from 'bson';
 import { Book } from './Book';
 import { Test } from './Test';
 import { Collection } from '../TsMorphMetadataProvider.test';

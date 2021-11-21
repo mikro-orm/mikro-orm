@@ -1,6 +1,6 @@
 import type { Has, IsExact } from 'conditional-type-checks';
 import { assert } from 'conditional-type-checks';
-import type { ObjectId } from 'mongodb';
+import type { ObjectId } from 'bson';
 import type { EntityData, EntityDTO, FilterQuery, FilterValue, Loaded, OperatorMap, Primary, PrimaryKeyType, Query } from '../packages/core/src/typings';
 import type { Author2, Book2, BookTag2, Car2, FooBar2, FooParam2, Publisher2, User2 } from './entities-sql';
 import type { Author } from './entities';
