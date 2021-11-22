@@ -515,6 +515,10 @@ describe('EntityManagerMongo', () => {
     expect(driver.getConnection().getCollection(BookTag).collectionName).toBe('book-tag');
     expect(orm.em.getCollection(BookTag).collectionName).toBe('book-tag');
 
+    expect(() => {
+      driver.getPlatform().generateCustomOrder('foo', [1, 2, 3]);
+    }).toThrow();
+
     const conn = driver.getConnection();
     const ctx = await conn.begin();
     const first = await driver.nativeInsert(Publisher.name, { name: 'test 123', type: 'GLOBAL' }, { ctx });

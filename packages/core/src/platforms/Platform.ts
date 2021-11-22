@@ -381,4 +381,12 @@ export abstract class Platform {
     return;
   }
 
+  /**
+   * Generates a custom order by statement given a set of in order values, eg.
+   * ORDER BY (CASE WHEN priority = 'low' THEN 1 WHEN priority = 'medium' THEN 2 ELSE NULL END)
+   */
+  generateCustomOrder(escapedColumn: string, values: unknown[]) {
+    throw new Error('Not supported');
+  }
+
 }

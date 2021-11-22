@@ -482,6 +482,7 @@ export class QueryBuilderHelper {
       // eslint-disable-next-line prefer-const
       let [alias, field] = this.splitField(k);
       alias = populate[alias] || alias;
+
       Utils.splitPrimaryKeys(field).forEach(f => {
         const prop = this.getProperty(f, alias);
         const noPrefix = (prop && prop.persist === false) || QueryBuilderHelper.isCustomExpression(f);
@@ -489,7 +490,14 @@ export class QueryBuilderHelper {
         /* istanbul ignore next */
         const rawColumn = Utils.isString(column) ? column.split('.').map(e => this.knex.ref(e)).join('.') : column;
 
-        ret.push(`${rawColumn} ${order.toLowerCase()}`);
+
+        const customOrder = prop?.customOrder;
+
+        const colPart = customOrder
+          ? this.platform.generateCustomOrder(rawColumn, customOrder)
+          : rawColumn;
+
+        ret.push(`${colPart} ${order.toLowerCase()}`);
       });
     });
 
