@@ -9306,10 +9306,10 @@ typedarray-to-buffer@^3.1.5:
   dependencies:
     is-typedarray "^1.0.0"
 
-typedoc-plugin-markdown@3.11.6:
-  version "3.11.6"
-  resolved "https://registry.yarnpkg.com/typedoc-plugin-markdown/-/typedoc-plugin-markdown-3.11.6.tgz#6690e8f25fa9c031c0615ee912744fc151a997b8"
-  integrity sha512-CV1BuxL7HR/EE1ctnPXOWzf4/Exl0FzkwtFVYaKTVWTnD/dkFLgABOfWuOL4lPmzLUOsAL85pmq+/PB6cdRppw==
+typedoc-plugin-markdown@3.11.7:
+  version "3.11.7"
+  resolved "https://registry.yarnpkg.com/typedoc-plugin-markdown/-/typedoc-plugin-markdown-3.11.7.tgz#9ba24e2cf55992ce4664a2630b2e510aaec43468"
+  integrity sha512-Wm3HP5gcBOGOOTeDA8GLgw+BY+GAI31RP9Lyog21BvTaSeWUcdXls5TG1MK+XDatS2/0dup9gFO+emoyoQJm9Q==
   dependencies:
     handlebars "^4.7.7"
 
