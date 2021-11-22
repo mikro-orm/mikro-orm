@@ -301,7 +301,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const cached = await this.tryCache<T, Loaded<T, P>>(entityName, options.cache, [entityName, 'em.findOne', options, where], options.refresh, true);
 
     if (cached?.data) {
-      await this.entityLoader.populate<T, P>(entityName, [cached.data as T], options.populate as unknown as PopulateOptions<T>[], { ...options, where, convertCustomTypes: false, lookup: false });
+      await this.entityLoader.populate<T, P>(entityName, [cached.data as T], options.populate as unknown as PopulateOptions<T>[], { ...options as Dictionary, where, convertCustomTypes: false, lookup: false });
       return cached.data;
     }
 
@@ -848,7 +848,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const preparedPopulate = this.preparePopulate<T>(entityName, options.populate, options.strategy);
-    await this.entityLoader.populate(entityName, [entity], preparedPopulate, { ...options, where, convertCustomTypes: false, lookup: false });
+    await this.entityLoader.populate(entityName, [entity], preparedPopulate, { ...options as Dictionary, where, convertCustomTypes: false, lookup: false });
 
     return entity as Loaded<T, P>;
   }

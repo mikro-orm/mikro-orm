@@ -473,7 +473,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const qb = this.createQueryBuilder<T>(prop.type, ctx, !!ctx).unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES).withSchema(options?.schema);
     const populate = this.autoJoinOneToOneOwner(targetMeta, [{ field: prop.pivotTable }]);
     const fields = this.buildFields(targetMeta, (options?.populate ?? []) as unknown as PopulateOptions<T>[], [], qb, options?.fields as Field<T>[]);
-    qb.select(fields).populate(populate).where(where).orderBy(orderBy!);
+    qb.select(fields).populate(populate).where(where).orderBy(orderBy!).setLockMode(options?.lockMode, options?.lockTableAliases);
 
     if (owners.length === 1 && (options?.offset != null || options?.limit != null)) {
       qb.limit(options.limit, options.offset);

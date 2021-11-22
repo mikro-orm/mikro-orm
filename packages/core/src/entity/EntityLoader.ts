@@ -4,7 +4,7 @@ import { QueryHelper } from '../utils/QueryHelper';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
 import type { Collection } from './Collection';
-import type { QueryOrderMap } from '../enums';
+import type { QueryOrderMap , LockMode } from '../enums';
 import { LoadStrategy, QueryOrder, ReferenceType } from '../enums';
 import { Reference } from './Reference';
 import type { EntityField, FindOptions } from '../drivers/IDatabaseDriver';
@@ -19,6 +19,7 @@ export type EntityLoaderOptions<T, P extends string = never> = {
   convertCustomTypes?: boolean;
   filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
   strategy?: LoadStrategy;
+  lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
 };
 
 export class EntityLoader {
@@ -219,14 +220,17 @@ export class EntityLoader {
     }
 
     const ids = Utils.unique(children.map(e => Utils.getPrimaryKeyValues(e, e.__meta!.primaryKeys, true)));
-    const where = { ...QueryHelper.processWhere({ [fk]: { $in: ids } }, meta.name!, this.metadata, this.driver.getPlatform(), !options.convertCustomTypes), ...(options.where as Dictionary) } as FilterQuery<T>;
-    const fields = this.buildFields<T>(prop, options);
+    const cond1 = QueryHelper.processWhere({ [fk]: { $in: ids } }, meta.name!, this.metadata, this.driver.getPlatform(), !options.convertCustomTypes);
 
-    return this.em.find<T>(prop.type, where, {
+    const where = options.where[fk]
+      ? { $and: [cond1, options.where] }
+      : { ...cond1, ...(options.where as Dictionary) };
+    const fields = this.buildFields<T>(prop, options);
+    const { refresh, filters, convertCustomTypes, lockMode, strategy } = options;
+
+    return this.em.find<T>(prop.type, where as FilterQuery<T>, {
+      refresh, filters, convertCustomTypes, lockMode, strategy,
       orderBy: [...Utils.asArray(options.orderBy), ...Utils.asArray(prop.orderBy), { [fk]: QueryOrder.ASC }] as QueryOrderMap<T>[],
-      refresh: options.refresh,
-      filters: options.filters,
-      convertCustomTypes: options.convertCustomTypes,
       populate: populate.children as never,
       fields: fields.length > 0 ? fields : undefined,
     }) as Promise<T[]>;
@@ -335,8 +339,7 @@ export class EntityLoader {
     }
 
     if (filters) {
-      /* istanbul ignore next */
-      return this.em.applyFilters(prop.type, subCond, options.filters ?? {}, 'read');
+      return this.em.applyFilters(prop.type, subCond, options.filters, 'read');
     }
 
     return subCond;
