@@ -1,5 +1,6 @@
 import { inspect } from 'util';
-import { expr, LockMode, MikroORM, QueryFlag, QueryOrder, UnderscoreNamingStrategy } from '@mikro-orm/core';
+import type { QueryOrderKeysFlat } from '@mikro-orm/core';
+import { expr, LockMode, MikroORM, QueryFlag, QueryOrder, QueryOrderKeys, QueryOrderNumeric, UnderscoreNamingStrategy } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { CriteriaNode } from '@mikro-orm/knex';
 import { MySqlDriver } from '@mikro-orm/mysql';
@@ -121,6 +122,41 @@ describe('QueryBuilder', () => {
     qb5.select('*').where({ name: 'test 123' }).orderBy([{ name: 'desc' }, { type: -1 }, { name: 'asc' }]).limit(2, 1);
     expect(qb5.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` = ? order by `e0`.`name` desc, `e0`.`type` desc, `e0`.`name` asc limit ? offset ?');
     expect(qb5.getParams()).toEqual(['test 123', 2, 1]);
+
+    const pairs: [order: QueryOrderKeysFlat, expected: string][] = [
+      [QueryOrder.ASC, 'asc'],
+      [QueryOrder.ASC_NULLS_LAST, 'asc nulls last'],
+      [QueryOrder.ASC_NULLS_FIRST, 'asc nulls first'],
+      [QueryOrder.DESC, 'desc'],
+      [QueryOrder.DESC_NULLS_LAST, 'desc nulls last'],
+      [QueryOrder.DESC_NULLS_FIRST, 'desc nulls first'],
+      [QueryOrder.asc, 'asc'],
+      [QueryOrder.asc_nulls_last, 'asc nulls last'],
+      [QueryOrder.asc_nulls_first, 'asc nulls first'],
+      [QueryOrder.desc, 'desc'],
+      [QueryOrder.desc_nulls_last, 'desc nulls last'],
+      [QueryOrder.desc_nulls_first, 'desc nulls first'],
+      ['ASC', 'asc'],
+      ['ASC_NULLS_LAST', 'asc nulls last'],
+      ['ASC_NULLS_FIRST', 'asc nulls first'],
+      ['DESC', 'desc'],
+      ['DESC_NULLS_LAST', 'desc nulls last'],
+      ['DESC_NULLS_FIRST', 'desc nulls first'],
+      ['asc', 'asc'],
+      ['asc_nulls_last', 'asc nulls last'],
+      ['asc_nulls_first', 'asc nulls first'],
+      ['desc', 'desc'],
+      ['desc_nulls_last', 'desc nulls last'],
+      ['desc_nulls_first', 'desc nulls first'],
+      [QueryOrderNumeric.ASC, 'asc'],
+      [QueryOrderNumeric.DESC, 'desc'],
+    ];
+
+    for (const [order, expected] of pairs) {
+      const qb = orm.em.createQueryBuilder(Publisher2);
+      qb.select('*').orderBy({ name: order });
+      expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` order by `e0`.`name` ' + expected);
+    }
   });
 
   test('select constant expression', async () => {

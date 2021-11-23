@@ -1,10 +1,20 @@
 import type { Knex } from 'knex';
 import { inspect } from 'util';
-import type { Dictionary, EntityMetadata, EntityProperty, FlatQueryOrderMap, MetadataStorage, Platform, EntityData, QBFilterQuery } from '@mikro-orm/core';
+import type {
+  Dictionary,
+  EntityMetadata,
+  EntityProperty,
+  FlatQueryOrderMap,
+  MetadataStorage,
+  Platform,
+  EntityData,
+  QBFilterQuery,
+  QueryOrderKeysFlat } from '@mikro-orm/core';
 import {
   LockMode,
   OptimisticLockError,
   QueryOperator,
+  QueryOrder,
   QueryOrderNumeric,
   ReferenceType,
   Utils,
@@ -468,14 +478,25 @@ export class QueryBuilderHelper {
     return this.getQueryOrderFromObject(type, orderBy, populate);
   }
 
+  private normalizeOrder(direction: QueryOrderKeysFlat): string {
+    let order = '';
+    if (Utils.isNumber<QueryOrderNumeric>(direction)) {
+      order = QueryOrderNumeric[direction];
+    } else if (QueryOrder[direction]) {
+      order = QueryOrder[direction];
+    } else {
+      order = direction;
+    }
+    return order.toLowerCase();
+  }
+
   getQueryOrderFromObject(type: QueryType, orderBy: FlatQueryOrderMap, populate: Dictionary<string>): string {
     const ret: string[] = [];
     Object.keys(orderBy).forEach(k => {
-      const direction = orderBy[k];
-      const order = Utils.isNumber<QueryOrderNumeric>(direction) ? QueryOrderNumeric[direction] : direction;
+      const order = this.normalizeOrder(orderBy[k]);
 
       if (QueryBuilderHelper.isCustomExpression(k)) {
-        ret.push(`${k} ${order.toLowerCase()}`);
+        ret.push(`${k} ${order}`);
         return;
       }
 
@@ -497,7 +518,7 @@ export class QueryBuilderHelper {
           ? this.platform.generateCustomOrder(rawColumn, customOrder)
           : rawColumn;
 
-        ret.push(`${colPart} ${order.toLowerCase()}`);
+        ret.push(`${colPart} ${order}`);
       });
     });
 
