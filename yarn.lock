@@ -1584,10 +1584,10 @@
   resolved "https://registry.yarnpkg.com/@tootallnate/once/-/once-1.1.2.tgz#ccb91445360179a04e7fe6aff78c00ffc1eeaf82"
   integrity sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==
 
-"@ts-morph/common@~0.12.1":
-  version "0.12.1"
-  resolved "https://registry.yarnpkg.com/@ts-morph/common/-/common-0.12.1.tgz#126515619817aec5dd1f7a3ab7cf74e89fe3e71c"
-  integrity sha512-V2JI295qFTusoR0vlFQb5ddNUlYuaLWIvNBU3uZFQgrABYSoEkKzdJabvsL4iPpgAR+CF+gTjepBK/s0KyaNAw==
+"@ts-morph/common@~0.12.2":
+  version "0.12.2"
+  resolved "https://registry.yarnpkg.com/@ts-morph/common/-/common-0.12.2.tgz#61d07a47d622d231e833c44471ab306faaa41aed"
+  integrity sha512-m5KjptpIf1K0t0QL38uE+ol1n+aNn9MgRq++G3Zym1FlqfN+rThsXlp3cAgib14pIeXF7jk3UtJQOviwawFyYg==
   dependencies:
     fast-glob "^3.2.7"
     minimatch "^3.0.4"
@@ -7680,12 +7680,12 @@ ts-jest@27.0.7:
     semver "7.x"
     yargs-parser "20.x"
 
-ts-morph@13.0.1:
-  version "13.0.1"
-  resolved "https://registry.yarnpkg.com/ts-morph/-/ts-morph-13.0.1.tgz#08b99187108f53514e475097e47c5d672f7ef7b6"
-  integrity sha512-nJQm/Yz8utWAqieZHkY5Phphzi62kulNEOiliqnarzGpPBrWSsdn2Pz+DP7gulwyg/LRaFifvtSAsbvxylwAnw==
+ts-morph@13.0.2:
+  version "13.0.2"
+  resolved "https://registry.yarnpkg.com/ts-morph/-/ts-morph-13.0.2.tgz#55546023493ef82389d9e4f28848a556c784bac4"
+  integrity sha512-SjeeHaRf/mFsNeR3KTJnx39JyEOzT4e+DX28gQx5zjzEOuFs2eGrqeN2PLKs/+AibSxPmzV7RD8nJVKmFJqtLA==
   dependencies:
-    "@ts-morph/common" "~0.12.1"
+    "@ts-morph/common" "~0.12.2"
     code-block-writer "^11.0.0"
 
 ts-node@10.4.0:
