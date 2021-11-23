@@ -282,6 +282,40 @@ describe('EntityManagerPostgre', () => {
     await expect(orm.em.findOne(Author2, { name: 'God Persisted!' })).resolves.not.toBeNull();
   });
 
+  test('collection loads items after savepoint should not fail', async () => {
+    const publisher = new Publisher2('7K publisher', PublisherType.GLOBAL);
+    const book = new Book2('My Life on The Wall, part 1', new Author2('name', 'email'));
+    book.publisher = wrap(publisher).toReference();
+
+    const author = new Author2('Bartleby', 'bartelby@writer.org');
+    author.books.add(book);
+
+    await orm.em.persistAndFlush(author);
+    orm.em.clear();
+
+    const mock = mockLogger(orm, ['query']);
+    const em = orm.em.fork();
+    await em.begin();
+
+    const book2 = await em.findOneOrFail(Book2, book.uuid);
+    const publisher2 = await book2.publisher!.load();
+
+    await em.transactional(async () => {
+      //
+    });
+
+    const books = await publisher2.books.loadItems();
+    await em.commit();
+
+    expect(mock.mock.calls[0][0]).toMatch(`begin`);
+    expect(mock.mock.calls[1][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."uuid_pk" = $1 limit $2`);
+    expect(mock.mock.calls[2][0]).toMatch(`select "p0".* from "publisher2" as "p0" where "p0"."id" = $1 limit $2`);
+    expect(mock.mock.calls[3][0]).toMatch(`savepoint trx`);
+    expect(mock.mock.calls[4][0]).toMatch(`release savepoint trx`);
+    expect(mock.mock.calls[5][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."publisher_id" = $1 order by "b0"."uuid_pk" asc`);
+    expect(mock.mock.calls[6][0]).toMatch(`commit`);
+  });
+
   test('should load entities', async () => {
     expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.em).toBeInstanceOf(EntityManager);

@@ -73,7 +73,7 @@ export class UnitOfWork {
     }
 
     const helper = entity.__helper!;
-    helper!.__em = this.em;
+    helper!.__em ??= this.em;
 
     if (data && helper!.__initialized && (refresh || !helper!.__originalEntityData)) {
       // we can't use the `data` directly here as it can contain fetch joined data, that can't be used for diffing the state
