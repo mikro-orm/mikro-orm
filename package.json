@@ -99,6 +99,7 @@
     "semanticCommits": "enabled",
     "separateMajorMinor": false,
     "dependencyDashboard": false,
+    "preserveSemverRanges": true,
     "packageRules": [
       {
         "matchUpdateTypes": [
