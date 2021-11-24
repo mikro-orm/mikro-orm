@@ -176,11 +176,19 @@ export class ArrayCollection<T, O> {
   protected propagateToOwningSide(item: T, method: 'add' | 'remove'): void {
     const collection = item[this.property.mappedBy as keyof T] as unknown as ArrayCollection<O, T>;
 
-    if (this.property.reference === ReferenceType.MANY_TO_MANY && this.shouldPropagateToCollection(collection, method)) {
-      collection[method](this.owner);
+    if (this.property.reference === ReferenceType.MANY_TO_MANY) {
+      if (this.shouldPropagateToCollection(collection, method)) {
+        collection[method](this.owner);
+      }
     } else if (this.property.reference === ReferenceType.ONE_TO_MANY && !(this.property.orphanRemoval && method === 'remove')) {
-      const owner = this.property.targetMeta!.properties[this.property.mappedBy].mapToPk ? this.owner.__helper!.getPrimaryKey() : this.owner;
-      item[this.property.mappedBy] = method === 'add' ? owner : null;
+      const prop2 = this.property.targetMeta!.properties[this.property.mappedBy];
+      const owner = prop2.mapToPk ? this.owner.__helper!.getPrimaryKey() : this.owner;
+      const value = method === 'add' ? owner : null;
+
+      // skip if already propagated
+      if (Reference.unwrapReference(item[this.property.mappedBy]) !== value) {
+        item[this.property.mappedBy] = value;
+      }
     }
   }
 

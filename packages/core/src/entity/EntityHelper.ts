@@ -92,7 +92,7 @@ export class EntityHelper {
               Object.defineProperty(this, '__data', { value: {} });
             }
 
-            EntityHelper.defineReferenceProperty(prop, this, val);
+            EntityHelper.defineReferenceProperty(meta, prop, this, val);
           },
         });
       });
@@ -115,7 +115,7 @@ export class EntityHelper {
     }
   }
 
-  private static defineReferenceProperty<T extends AnyEntity<T>>(prop: EntityProperty<T>, ref: T, val: AnyEntity): void {
+  private static defineReferenceProperty<T extends AnyEntity<T>>(meta: EntityMetadata<T>, prop: EntityProperty<T>, ref: T, val: AnyEntity): void {
     Object.defineProperty(ref, prop.name, {
       get() {
         return this.__data[prop.name];
@@ -123,7 +123,7 @@ export class EntityHelper {
       set(val: AnyEntity | Reference<AnyEntity>) {
         const entity = Reference.unwrapReference(val ?? this.__data[prop.name]);
         this.__data[prop.name] = Reference.wrapReference(val as T, prop);
-        EntityHelper.propagate(entity, this, prop, Reference.unwrapReference(val));
+        EntityHelper.propagate(meta, entity, this, prop, Reference.unwrapReference(val));
       },
       enumerable: true,
       configurable: true,
@@ -131,29 +131,33 @@ export class EntityHelper {
     ref[prop.name] = val as T[string & keyof T];
   }
 
-  private static propagate<T extends AnyEntity<T>, O extends AnyEntity<O>>(entity: T, owner: O, prop: EntityProperty<O>, value?: O[keyof O]): void {
-    const inverse = value && value[prop.inversedBy || prop.mappedBy];
+  private static propagate<T extends AnyEntity<T>, O extends AnyEntity<O>>(meta: EntityMetadata<O>, entity: T, owner: O, prop: EntityProperty<O>, value?: O[keyof O]): void {
+    const inverseProps = prop.targetMeta!.relations.filter(prop2 => (prop2.inversedBy || prop2.mappedBy) === prop.name && prop2.targetMeta!.root.className === meta.root.className);
 
-    if (prop.reference === ReferenceType.MANY_TO_ONE && Utils.isCollection<O, T>(inverse) && inverse.isInitialized()) {
-      inverse.add(owner);
-    }
+    for (const prop2 of inverseProps) {
+      const inverse = value?.[prop2.name as string];
 
-    if (prop.reference === ReferenceType.ONE_TO_ONE && entity && entity.__helper!.__initialized && Reference.unwrapReference(inverse) !== owner && value != null) {
-      EntityHelper.propagateOneToOne(entity, owner, prop);
-    }
+      if (prop.reference === ReferenceType.MANY_TO_ONE && Utils.isCollection<O, T>(inverse) && inverse.isInitialized()) {
+        inverse.add(owner);
+      }
 
-    if (prop.reference === ReferenceType.ONE_TO_ONE && entity && entity.__helper!.__initialized && entity[prop.inversedBy || prop.mappedBy] != null && value == null) {
-      entity[prop.inversedBy || prop.mappedBy] = value;
+      if (prop.reference === ReferenceType.ONE_TO_ONE && entity && entity.__helper!.__initialized && Reference.unwrapReference(inverse) !== owner && value != null) {
+        EntityHelper.propagateOneToOne(entity, owner, prop, prop2);
+      }
+
+      if (prop.reference === ReferenceType.ONE_TO_ONE && entity && entity.__helper!.__initialized && entity[prop2.name] != null && value == null) {
+        entity[prop2.name] = value;
+      }
     }
   }
 
-  private static propagateOneToOne<T, O>(entity: T, owner: O, prop: EntityProperty<O>): void {
-    const inverse = entity[prop.inversedBy || prop.mappedBy];
+  private static propagateOneToOne<T, O>(entity: T, owner: O, prop: EntityProperty<O>, prop2: EntityProperty<T>): void {
+    const inverse = entity[prop2.name];
 
     if (Reference.isReference(inverse)) {
       inverse.set(owner);
     } else {
-      entity[prop.inversedBy || prop.mappedBy] = Reference.wrapReference(owner, prop);
+      entity[prop2.name] = Reference.wrapReference(owner, prop) as unknown as T[keyof T & string];
     }
   }
 
