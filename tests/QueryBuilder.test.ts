@@ -1895,6 +1895,31 @@ describe('QueryBuilder', () => {
     const qb16 = pg.em.createQueryBuilder(Book2).orderBy({ meta: { bar: { num: QueryOrder.DESC } } });
     expect(qb16.getFormattedQuery()).toBe(`select "e0".*, "e0".price * 1.19 as "price_taxed" from "book2" as "e0" order by "meta"->'bar'->>'num' desc`);
 
+    // arrays
+    const qb17 = pg.em.createQueryBuilder(Author2);
+    qb17.select('*').where({ identities: { $eq: ['4', '5', '6'] } });
+    expect(qb17.getFormattedQuery()).toEqual(`select "e0".* from "author2" as "e0" where "e0"."identities" = '{4,5,6}'`);
+
+    const qb18 = pg.em.createQueryBuilder(Author2);
+    qb18.select('*').where({ identities: { $ne: ['4', '5', '6'] } });
+    expect(qb18.getFormattedQuery()).toEqual(`select "e0".* from "author2" as "e0" where "e0"."identities" != '{4,5,6}'`);
+
+    const qb19 = pg.em.createQueryBuilder(Author2);
+    qb19.select('*').where({ identities: { $lt: ['4', '5', '6'] } });
+    expect(qb19.getFormattedQuery()).toEqual(`select "e0".* from "author2" as "e0" where "e0"."identities" < '{4,5,6}'`);
+
+    const qb20 = pg.em.createQueryBuilder(Author2);
+    qb20.select('*').where({ identities: { $lte: ['4', '5', '6'] } });
+    expect(qb20.getFormattedQuery()).toEqual(`select "e0".* from "author2" as "e0" where "e0"."identities" <= '{4,5,6}'`);
+
+    const qb21 = pg.em.createQueryBuilder(Author2);
+    qb21.select('*').where({ identities: { $gt: ['4', '5', '6'] } });
+    expect(qb21.getFormattedQuery()).toEqual(`select "e0".* from "author2" as "e0" where "e0"."identities" > '{4,5,6}'`);
+
+    const qb22 = pg.em.createQueryBuilder(Author2);
+    qb22.select('*').where({ identities: { $gte: ['4', '5', '6'] } });
+    expect(qb22.getFormattedQuery()).toEqual(`select "e0".* from "author2" as "e0" where "e0"."identities" >= '{4,5,6}'`);
+
     await pg.close(true);
   });
 
