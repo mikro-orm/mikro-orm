@@ -2000,6 +2000,10 @@ describe('QueryBuilder', () => {
     const qb16 = pg.em.createQueryBuilder(Book2).orderBy({ meta: { bar: { num: QueryOrder.DESC } } });
     expect(qb16.getFormattedQuery()).toBe(`select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" order by "b0"."meta"->'bar'->>'num' desc`);
 
+    const qb17 = pg.em.createQueryBuilder(Author2);
+    qb17.select('*').where({ identities: { $eq: ['4', '5', '6'] } });
+    expect(qb17.getFormattedQuery()).toEqual(`select "a0".* from "author2" as "a0" where "a0"."identities" = '{4,5,6}'`);
+
     // pessimistic locking
     await pg.em.transactional(async em => {
       const qb1 = em.createQueryBuilder(Book2);
