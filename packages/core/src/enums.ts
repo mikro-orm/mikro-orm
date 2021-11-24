@@ -23,7 +23,17 @@ export enum QueryOperator {
   $contained = '<@', // postgres only
 }
 
-export const ARRAY_OPERATORS = ['$overlap', '$contains', '$contained', '$eq'];
+export const ARRAY_OPERATORS = [
+  '$eq',
+  '$gt',
+  '$gte',
+  '$lt',
+  '$lte',
+  '$ne',
+  '$overlap',
+  '$contains',
+  '$contained',
+];
 
 export enum QueryOrder {
   ASC = 'ASC',
