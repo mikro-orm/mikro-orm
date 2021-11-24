@@ -94,12 +94,12 @@
   "renovate": {
     "extends": [
       "config:base",
+      ":preserveSemverRanges",
       ":semanticCommitTypeAll(chore)"
     ],
     "semanticCommits": "enabled",
     "separateMajorMinor": false,
     "dependencyDashboard": false,
-    "preserveSemverRanges": true,
     "packageRules": [
       {
         "matchUpdateTypes": [
