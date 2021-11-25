@@ -90,7 +90,9 @@ export class QueryHelper {
 
     if (Array.isArray(where) && root) {
       const rootPrimaryKey = meta ? Utils.getPrimaryKeyHash(meta.primaryKeys) : entityName;
-      return { [rootPrimaryKey]: { $in: (where as ObjectQuery<T>[]).map(sub => QueryHelper.processWhere(sub, entityName, metadata, platform, convertCustomTypes, false)) } } as ObjectQuery<T>;
+      const cond = { [rootPrimaryKey]: { $in: where } } as ObjectQuery<T>;
+
+      return QueryHelper.processWhere(cond, entityName, metadata, platform, convertCustomTypes, false);
     }
 
     if (!Utils.isPlainObject(where)) {
