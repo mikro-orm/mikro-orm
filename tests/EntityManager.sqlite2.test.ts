@@ -1225,7 +1225,7 @@ describe('EntityManagerSqlite2', () => {
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into `author4` (`created_at`, `email`, `name`, `terms_accepted`, `updated_at`) values');
-    expect(mock.mock.calls[2][0]).toMatch('insert into `book4` (`title`, `author_id`, `created_at`, `updated_at`) values');
+    expect(mock.mock.calls[2][0]).toMatch('insert into `book4` (`created_at`, `updated_at`, `title`, `author_id`) values');
     expect(mock.mock.calls[3][0]).toMatch('commit');
   });
 

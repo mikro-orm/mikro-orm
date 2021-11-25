@@ -3,7 +3,6 @@ import type { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty,
 import type { EntityFactory } from '../entity';
 import { EntityIdentifier } from '../entity';
 import type { ChangeSet } from './ChangeSet';
-import { ChangeSetType } from './ChangeSet';
 import type { QueryResult } from '../connections';
 import type { Configuration } from '../utils';
 import { Utils } from '../utils';
@@ -349,24 +348,6 @@ export class ChangeSetPersister {
         Utils.setPayloadProperty<T>(changeSet.payload, meta, prop, value.getValue(), indexes);
       }
     });
-
-    if (prop.onCreate && changeSet.type === ChangeSetType.CREATE && changeSet.entity[prop.name] === undefined) {
-      changeSet.entity[prop.name] = prop.onCreate(changeSet.entity);
-      changeSet.payload[prop.name] = prop.customType ? prop.customType.convertToDatabaseValue(changeSet.entity[prop.name], this.platform) : changeSet.entity[prop.name];
-
-      if (prop.primary) {
-        this.mapPrimaryKey(changeSet.entity.__meta!, changeSet.entity[prop.name] as unknown as IPrimaryKey, changeSet);
-      }
-    }
-
-    if (prop.onUpdate && changeSet.type === ChangeSetType.UPDATE) {
-      changeSet.entity[prop.name] = prop.onUpdate(changeSet.entity);
-      changeSet.payload[prop.name] = prop.customType ? prop.customType.convertToDatabaseValue(changeSet.entity[prop.name], this.platform) : changeSet.entity[prop.name];
-    }
-
-    if (changeSet.payload[prop.name] as unknown instanceof Date) {
-      changeSet.payload[prop.name] = this.platform.processDateProperty(changeSet.payload[prop.name]);
-    }
   }
 
   /**

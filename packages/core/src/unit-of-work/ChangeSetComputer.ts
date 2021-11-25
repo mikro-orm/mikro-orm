@@ -27,6 +27,14 @@ export class ChangeSetComputer {
     }
 
     const type = entity.__helper!.__originalEntityData ? ChangeSetType.UPDATE : ChangeSetType.CREATE;
+    const map = new Map();
+
+    // Execute `onCreate` and `onUpdate` on properties recursively, saves `onUpdate` results
+    // to the `map` as we want to apply those only if something else changed.
+    for (const prop of meta.hydrateProps) {
+      this.processPropertyInitializers(entity, prop, type, map);
+    }
+
     const changeSet = new ChangeSet(entity, type, this.computePayload(entity), meta);
 
     if (changeSet.type === ChangeSetType.UPDATE) {
@@ -45,7 +53,36 @@ export class ChangeSetComputer {
       return null;
     }
 
+    if (map.size > 0) {
+      for (const [entity, [prop, value]] of map) {
+        entity[prop] = value;
+      }
+
+      // Recompute the changeset, we need to merge this as here we ignore relations.
+      const diff = this.computePayload(entity);
+      Utils.merge(changeSet.payload, diff);
+    }
+
     return changeSet;
+  }
+
+  /**
+   * Traverses entity graph and executes `onCreate` and `onUpdate` methods, assigning the values to given properties.
+   */
+  private processPropertyInitializers<T extends AnyEntity<T>>(entity: T, prop: EntityProperty<T>, type: ChangeSetType, map: Map<T, unknown>, nested?: boolean): void {
+    if (prop.onCreate && type === ChangeSetType.CREATE && entity[prop.name] == null) {
+      entity[prop.name] = prop.onCreate(entity);
+    }
+
+    if (prop.onUpdate && type === ChangeSetType.UPDATE) {
+      map.set(entity, [prop.name, prop.onUpdate(entity)]);
+    }
+
+    if (prop.reference === ReferenceType.EMBEDDED && entity[prop.name]) {
+      for (const embeddedProp of prop.targetMeta!.hydrateProps) {
+        this.processPropertyInitializers(entity[prop.name], embeddedProp, type, map, nested || prop.object);
+      }
+    }
   }
 
   private computePayload<T extends AnyEntity<T>>(entity: T): EntityData<T> {

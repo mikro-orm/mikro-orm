@@ -42,7 +42,6 @@ describe('GH issue 2371', () => {
       entities: [Car, Vehicle, Truck, Garage],
       dbName: ':memory:',
       type: 'sqlite',
-      debug: true,
     });
     await orm.getSchemaGenerator().createSchema();
   });

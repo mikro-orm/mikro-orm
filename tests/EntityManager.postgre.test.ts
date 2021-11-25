@@ -717,7 +717,7 @@ describe('EntityManagerPostgre', () => {
       await em.lock(author, LockMode.PESSIMISTIC_WRITE);
     });
 
-    expect(mock.mock.calls.length).toBe(3);
+    expect(mock.mock.calls).toHaveLength(3);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('select 1 from "author2" as "a0" where "a0"."id" = $1 for update');
     expect(mock.mock.calls[2][0]).toMatch('commit');
