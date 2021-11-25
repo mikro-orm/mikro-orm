@@ -39,7 +39,7 @@ export class ArrayCollection<T, O> {
     }
 
     const meta = this.property.targetMeta!;
-    const args = [...meta.toJsonParams.map(() => undefined), [this.property.name]];
+    const args = [...meta.toJsonParams.map(() => undefined)];
 
     return this.getItems().map(item => wrap(item).toJSON(...args));
   }
