@@ -51,16 +51,15 @@ describe('GH issue 2059', () => {
     const b2 = new Category('B2', b);
     await orm.em.fork().persistAndFlush([a, b]);
 
-    /*
-    Current tree structure is:
+    /* Current tree structure is:
         - CAT A
-           | - CAT A1
-           |     |  - CAT A11
-           |     |     |  - CAT A111
-           | - CAT A2
+          | - CAT A1
+          |   | - CAT A11
+          |   |   |  - CAT A111
+          | - CAT A2
         - CAT B
-           | - CAT B1
-           | - CAT B2
+          | - CAT B1
+          | - CAT B2
      */
 
     // Load root categories and populate children and children of children
