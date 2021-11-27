@@ -1,6 +1,5 @@
-import type { Dictionary, EntityMetadata, EntityProperty, NamingStrategy, Platform } from '@mikro-orm/core';
+import type { Dictionary, EntityMetadata, EntityOptions, EntityProperty, NamingStrategy, Platform } from '@mikro-orm/core';
 import { ReferenceType, UnknownType, Utils } from '@mikro-orm/core';
-import type { SchemaHelper } from '@mikro-orm/knex';
 
 export class SourceFile {
 
@@ -9,8 +8,7 @@ export class SourceFile {
 
   constructor(private readonly meta: EntityMetadata,
               private readonly namingStrategy: NamingStrategy,
-              private readonly platform: Platform,
-              private readonly helper: SchemaHelper) { }
+              private readonly platform: Platform) { }
 
   generate(): string {
     this.coreImports.add('Entity');
@@ -57,9 +55,22 @@ export class SourceFile {
   }
 
   private getCollectionDecl() {
-    const needsCollection = this.meta.collection !== this.namingStrategy.classToTableName(this.meta.className);
+    const options: EntityOptions<unknown> = {};
+    const quote = (str: string) => `'${str}'`;
 
-    return needsCollection ? `{ collection: '${this.meta.collection}' }` : '';
+    if (this.meta.collection !== this.namingStrategy.classToTableName(this.meta.className)) {
+      options.tableName = quote(this.meta.collection);
+    }
+
+    if (this.meta.schema) {
+      options.schema = quote(this.meta.schema);
+    }
+
+    if (!Utils.hasObjectKeys(options)) {
+      return '';
+    }
+
+    return `{ ${Object.entries(options).map(([opt, val]) => `${opt}: ${val}`).join(', ')} }`;
   }
 
   private getPropertyDefinition(prop: EntityProperty, padLeft: number): string {
@@ -181,7 +192,8 @@ export class SourceFile {
   }
 
   private getForeignKeyDecoratorOptions(options: Dictionary, prop: EntityProperty) {
-    const className = this.namingStrategy.getClassName(prop.referencedTableName, '_');
+    const parts = prop.referencedTableName.split('.', 2);
+    const className = this.namingStrategy.getClassName(parts.length > 1 ? parts[1] : parts[0], '_');
     this.entityImports.add(className);
     options.entity = `() => ${className}`;
 

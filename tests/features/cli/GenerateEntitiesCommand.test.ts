@@ -30,7 +30,7 @@ describe('GenerateEntitiesCommand', () => {
 
     const args = { option: jest.fn() };
     cmd.builder(args as any);
-    expect(args.option.mock.calls.length).toBe(3);
+    expect(args.option.mock.calls.length).toBe(4);
     expect(args.option.mock.calls[0][0]).toBe('s');
     expect(args.option.mock.calls[0][1]).toMatchObject({ alias: 'save', type: 'boolean' });
     expect(args.option.mock.calls[1][0]).toBe('d');

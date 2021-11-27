@@ -1,0 +1,26 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`multiple connected schemas in postgres generate entities for given schema only 1`] = `
+Array [
+  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Author } from './Author';
+
+@Entity({ schema: 'n2' })
+export class Book {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255, nullable: true })
+  name?: string;
+
+  @ManyToOne({ entity: () => Author, onUpdateIntegrity: 'cascade', onDelete: 'cascade', nullable: true })
+  author?: Author;
+
+  @ManyToOne({ entity: () => Book, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
+  basedOn?: Book;
+
+}
+",
+]
+`;
