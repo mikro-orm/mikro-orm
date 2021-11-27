@@ -17,6 +17,7 @@ export class CLIHelper {
 
   static async getORM(warnWhenNoEntities?: boolean, opts: Partial<Options> = {}): Promise<MikroORM> {
     const options = await CLIHelper.getConfiguration(warnWhenNoEntities, opts);
+    options.set('allowGlobalContext', true);
     const settings = await ConfigurationLoader.getSettings();
     options.getLogger().setDebugMode(false);
 
