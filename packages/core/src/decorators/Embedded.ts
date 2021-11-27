@@ -23,4 +23,7 @@ export type EmbeddedOptions = {
   nullable?: boolean;
   object?: boolean;
   array?: boolean;
+  hidden?: boolean;
+  serializer?: (value: any) => any;
+  serializedName?: string;
 };
