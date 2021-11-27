@@ -80,6 +80,7 @@ export class QueryHelper {
 
     where = QueryHelper.processParams(where) || {};
 
+    /* istanbul ignore next */
     if (!root && Utils.isPrimaryKey<T>(where)) {
       return where;
     }

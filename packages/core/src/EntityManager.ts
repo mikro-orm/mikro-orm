@@ -7,8 +7,8 @@ import { EntityAssigner, EntityFactory, EntityLoader, EntityValidator, Reference
 import { UnitOfWork } from './unit-of-work';
 import type { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, InsertOptions, LockOptions, UpdateOptions, GetReferenceOptions } from './drivers';
 import type { AnyEntity, AutoPath, Dictionary, EntityData, EntityDictionary, EntityDTO, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, New, Populate, PopulateOptions, Primary } from './typings';
-import type { IsolationLevel, LoadStrategy } from './enums';
-import { LockMode, ReferenceType, SCALAR_TYPES } from './enums';
+import type { IsolationLevel } from './enums';
+import { LoadStrategy, LockMode, ReferenceType, SCALAR_TYPES } from './enums';
 import type { MetadataStorage } from './metadata';
 import type { Transaction } from './connections';
 import { EventManager, TransactionEventBroadcaster } from './events';
@@ -871,7 +871,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const ret: PopulateOptions<T>[] = this.entityLoader.normalizePopulate<T>(entityName, populate as true, strategy);
 
     return ret.map(field => {
-      field.strategy = strategy ?? field.strategy ?? this.config.get('loadStrategy');
+      // force select-in strategy when populating all relations as otherwise we could cause infinite loops when self-referencing
+      field.strategy = populate === true ? LoadStrategy.SELECT_IN : (strategy ?? field.strategy ?? this.config.get('loadStrategy'));
       return field;
     });
   }

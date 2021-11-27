@@ -4,7 +4,7 @@ import { QueryHelper } from '../utils/QueryHelper';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
 import type { Collection } from './Collection';
-import type { QueryOrderMap , LockMode } from '../enums';
+import type { LockMode, QueryOrderMap } from '../enums';
 import { LoadStrategy, QueryOrder, ReferenceType } from '../enums';
 import { Reference } from './Reference';
 import type { EntityField, FindOptions } from '../drivers/IDatabaseDriver';
@@ -60,7 +60,7 @@ export class EntityLoader {
 
   normalizePopulate<T>(entityName: string, populate: PopulateOptions<T>[] | true, strategy?: LoadStrategy, lookup = true): PopulateOptions<T>[] {
     if (populate === true || populate.some(p => p.all)) {
-      populate = this.lookupAllRelationships(entityName, strategy);
+      populate = this.lookupAllRelationships(entityName);
     } else {
       populate = Utils.asArray(populate);
     }
@@ -79,7 +79,7 @@ export class EntityLoader {
       p.field = f;
       p.children = p.children || [];
       const prop = this.metadata.find(entityName)!.properties[f];
-      p.children.push(this.expandNestedPopulate(prop.type, parts, p.strategy));
+      p.children.push(this.expandNestedPopulate(prop.type, parts, p.strategy, p.all));
     });
 
     // merge same fields
@@ -117,11 +117,11 @@ export class EntityLoader {
   /**
    * Expands `books.perex` like populate to use `children` array instead of the dot syntax
    */
-  private expandNestedPopulate<T>(entityName: string, parts: string[], strategy?: LoadStrategy): PopulateOptions<T> {
+  private expandNestedPopulate<T>(entityName: string, parts: string[], strategy?: LoadStrategy, all?: boolean): PopulateOptions<T> {
     const meta = this.metadata.find(entityName)!;
     const field = parts.shift()!;
     const prop = meta.properties[field];
-    const ret = { field, strategy } as PopulateOptions<T>;
+    const ret = { field, strategy, all } as PopulateOptions<T>;
 
     if (parts.length > 0) {
       ret.children = [this.expandNestedPopulate(prop.type, parts, strategy)];
@@ -229,9 +229,10 @@ export class EntityLoader {
     const { refresh, filters, convertCustomTypes, lockMode, strategy } = options;
 
     return this.em.find<T>(prop.type, where as FilterQuery<T>, {
-      refresh, filters, convertCustomTypes, lockMode, strategy,
+      refresh, filters, convertCustomTypes, lockMode,
       orderBy: [...Utils.asArray(options.orderBy), ...Utils.asArray(prop.orderBy), { [fk]: QueryOrder.ASC }] as QueryOrderMap<T>[],
-      populate: populate.children as never,
+      populate: populate.children as never ?? populate.all,
+      strategy,
       fields: fields.length > 0 ? fields : undefined,
     }) as Promise<T[]>;
   }
@@ -401,27 +402,18 @@ export class EntityLoader {
     return children.filter(e => !(e[field] as AnyEntity).__helper!.__initialized).map(e => Reference.unwrapReference(e[field]));
   }
 
-  private lookupAllRelationships<T>(entityName: string, strategy?: LoadStrategy, prefix = '', visited: string[] = []): PopulateOptions<T>[] {
-    if (visited.includes(entityName)) {
-      return [];
-    }
-
-    visited.push(entityName);
+  private lookupAllRelationships<T>(entityName: string): PopulateOptions<T>[] {
     const ret: PopulateOptions<T>[] = [];
     const meta = this.metadata.find(entityName)!;
 
     meta.relations.forEach(prop => {
-      const prefixed = prefix ? `${prefix}.${prop.name}` : prop.name;
-      const nested = this.lookupAllRelationships(prop.type, strategy, prefixed, visited);
-
-      if (nested.length > 0) {
-        ret.push(...nested);
-      } else {
         ret.push({
-          field: prefixed,
-          strategy: strategy ?? prop.strategy ?? this.em.config.get('loadStrategy'),
+          field: prop.name,
+          // force select-in strategy when populating all relations as otherwise we could cause infinite loops when self-referencing
+          strategy: LoadStrategy.SELECT_IN,
+          // no need to look up populate children recursively as we just pass `all: true` here
+          all: true,
         });
-      }
     });
 
     return ret;
