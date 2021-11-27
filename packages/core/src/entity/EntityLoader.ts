@@ -1,4 +1,4 @@
-import type { AnyEntity, Dictionary, EntityProperty, FilterQuery, PopulateOptions, Primary } from '../typings';
+import type { AnyEntity, Dictionary, EntityMetadata, EntityProperty, FilterQuery, PopulateOptions, Primary } from '../typings';
 import type { EntityManager } from '../EntityManager';
 import { QueryHelper } from '../utils/QueryHelper';
 import { Utils } from '../utils/Utils';
@@ -8,6 +8,8 @@ import type { LockMode, QueryOrderMap } from '../enums';
 import { LoadStrategy, QueryOrder, ReferenceType } from '../enums';
 import { Reference } from './Reference';
 import type { EntityField, FindOptions } from '../drivers/IDatabaseDriver';
+import type { MetadataStorage } from '../metadata/MetadataStorage';
+import type { Platform } from '../platforms/Platform';
 
 export type EntityLoaderOptions<T, P extends string = never> = {
   where?: FilterQuery<T>;
@@ -17,6 +19,7 @@ export type EntityLoaderOptions<T, P extends string = never> = {
   validate?: boolean;
   lookup?: boolean;
   convertCustomTypes?: boolean;
+  ignoreLazyScalarProperties?: boolean;
   filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
   strategy?: LoadStrategy;
   lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
@@ -136,9 +139,29 @@ export class EntityLoader {
   private async populateMany<T extends AnyEntity<T>>(entityName: string, entities: T[], populate: PopulateOptions<T>, options: Required<EntityLoaderOptions<T>>): Promise<AnyEntity[]> {
     const field = populate.field as keyof T;
     const meta = this.metadata.find<T>(entityName)!;
-    const prop = meta.properties[field as string];
+    const prop = meta.properties[field as string] as EntityProperty;
 
-    if ((prop.reference === ReferenceType.SCALAR && prop.lazy) || prop.reference === ReferenceType.EMBEDDED) {
+    if (prop.reference === ReferenceType.SCALAR && prop.lazy) {
+      const filtered = entities.filter(e => options.refresh || e[prop.name] === undefined);
+
+      if (options.ignoreLazyScalarProperties || filtered.length === 0) {
+        return entities;
+      }
+
+      const pk = Utils.getPrimaryKeyHash(meta.primaryKeys);
+      const ids = Utils.unique(filtered.map(e => Utils.getPrimaryKeyValues(e, meta.primaryKeys, true)));
+      const where = this.mergePrimaryCondition(ids, pk, options, meta, this.metadata, this.driver.getPlatform());
+      const { filters, convertCustomTypes, lockMode, strategy } = options;
+
+      await this.em.find(meta.className, where as FilterQuery<T>, {
+        filters, convertCustomTypes, lockMode, strategy,
+        fields: [prop.name] as never,
+      });
+
+      return entities;
+    }
+
+    if (prop.reference === ReferenceType.EMBEDDED) {
       return [];
     }
 
@@ -220,11 +243,7 @@ export class EntityLoader {
     }
 
     const ids = Utils.unique(children.map(e => Utils.getPrimaryKeyValues(e, e.__meta!.primaryKeys, true)));
-    const cond1 = QueryHelper.processWhere({ [fk]: { $in: ids } }, meta.name!, this.metadata, this.driver.getPlatform(), !options.convertCustomTypes);
-
-    const where = options.where[fk]
-      ? { $and: [cond1, options.where] }
-      : { ...cond1, ...(options.where as Dictionary) };
+    const where = this.mergePrimaryCondition<T>(ids, fk, options, meta, this.metadata, this.driver.getPlatform());
     const fields = this.buildFields<T>(prop, options);
     const { refresh, filters, convertCustomTypes, lockMode, strategy } = options;
 
@@ -235,6 +254,14 @@ export class EntityLoader {
       strategy,
       fields: fields.length > 0 ? fields : undefined,
     }) as Promise<T[]>;
+  }
+
+  private mergePrimaryCondition<T>(ids: T[], pk: string, options: EntityLoaderOptions<T>, meta: EntityMetadata, metadata: MetadataStorage, platform: Platform) {
+    const cond1 = QueryHelper.processWhere({ [pk]: { $in: ids } }, meta.name!, metadata, platform, !options.convertCustomTypes);
+
+    return options.where![pk]
+      ? { $and: [cond1, options.where] }
+      : { ...cond1, ...(options.where as Dictionary) };
   }
 
   private async populateField<T extends AnyEntity<T>>(entityName: string, entities: T[], populate: PopulateOptions<T>, options: Required<EntityLoaderOptions<T>>): Promise<void> {
@@ -263,15 +290,17 @@ export class EntityLoader {
     const innerOrderBy = Utils.asArray(options.orderBy)
       .filter(orderBy => Utils.isObject(orderBy[prop.name]))
       .map(orderBy => orderBy[prop.name]);
+    const { refresh, filters, ignoreLazyScalarProperties } = options;
 
     await this.populate<T>(prop.type, filtered, populate.children, {
       where: await this.extractChildCondition(options, prop, false) as FilterQuery<T>,
       orderBy: innerOrderBy,
-      refresh: options.refresh,
       fields: fields.length > 0 ? fields : undefined,
-      filters: options.filters,
       validate: false,
       lookup: false,
+      refresh,
+      filters,
+      ignoreLazyScalarProperties,
     });
   }
 

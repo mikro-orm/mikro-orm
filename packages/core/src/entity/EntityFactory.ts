@@ -82,6 +82,7 @@ export class EntityFactory {
 
     // do not override values changed by user
     Object.keys(diff).forEach(key => delete diff2[key]);
+    Object.keys(diff2).filter(key => diff2[key] === undefined).forEach(key => delete diff2[key]);
     this.hydrate(entity, meta, diff2, options);
 
     // we need to update the entity data only with keys that were not present before

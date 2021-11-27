@@ -154,7 +154,7 @@ describe('Joined loading strategy', () => {
     const mock = mockLogger(orm, ['query']);
 
     await orm.em.find(Author2, { id: author2.id }, { populate: ['books2.perex'] });
-    expect(mock.mock.calls.length).toBe(1);
+    expect(mock.mock.calls).toHaveLength(1);
     expect(mock.mock.calls[0][0]).toMatch('select "a0"."id", "a0"."created_at", "a0"."updated_at", "a0"."name", "a0"."email", "a0"."age", "a0"."terms_accepted", "a0"."optional", "a0"."identities", "a0"."born", "a0"."born_time", "a0"."favourite_book_uuid_pk", "a0"."favourite_author_id", ' +
       '"b1"."uuid_pk" as "b1__uuid_pk", "b1"."created_at" as "b1__created_at", "b1"."title" as "b1__title", "b1"."perex" as "b1__perex", "b1"."price" as "b1__price", "b1".price * 1.19 as "b1__price_taxed", "b1"."double" as "b1__double", "b1"."meta" as "b1__meta", "b1"."author_id" as "b1__author_id", "b1"."publisher_id" as "b1__publisher_id" ' +
       'from "author2" as "a0" ' +

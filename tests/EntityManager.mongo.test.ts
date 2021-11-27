@@ -2065,45 +2065,6 @@ describe('EntityManagerMongo', () => {
     expect(b4.object).toBe(123);
   });
 
-  test('lazy scalar properties', async () => {
-    const book = new Book('b', new Author('n', 'e'));
-    book.perex = '123';
-    await orm.em.persistAndFlush(book);
-    orm.em.clear();
-
-    const mock = mockLogger(orm);
-
-    const r1 = await orm.em.find(Author, {}, { populate: ['books'] });
-    expect(r1[0].books[0].perex).not.toBe('123');
-    expect(mock.mock.calls.length).toBe(2);
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('author').find({}, { session: undefined }).toArray()`);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ .* }, { session: undefined, projection: { _id: 1, createdAt: 1, title: 1, author: 1, publisher: 1, tags: 1, metaObject: 1, metaArray: 1, metaArrayOfStrings: 1, point: 1, tenant: 1 } }\)/);
-
-    orm.em.clear();
-    mock.mock.calls.length = 0;
-    const r2 = await orm.em.find(Author, {}, { populate: ['books.perex'] });
-    expect(r2[0].books[0].perex).toBe('123');
-    expect(mock.mock.calls.length).toBe(2);
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('author').find({}, { session: undefined }).toArray()`);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ .* }, { session: undefined }\)/);
-
-    orm.em.clear();
-    mock.mock.calls.length = 0;
-    const r3 = await orm.em.findOne(Author, book.author, { populate: ['books'] });
-    expect(r3!.books[0].perex).not.toBe('123');
-    expect(mock.mock.calls.length).toBe(2);
-    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.find\({ .* }, { session: undefined }\)/);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ .* }, { session: undefined, projection: { _id: 1, createdAt: 1, title: 1, author: 1, publisher: 1, tags: 1, metaObject: 1, metaArray: 1, metaArrayOfStrings: 1, point: 1, tenant: 1 } }\)/);
-
-    orm.em.clear();
-    mock.mock.calls.length = 0;
-    const r4 = await orm.em.findOne(Author, book.author, { populate: ['books.perex'] });
-    expect(r4!.books[0].perex).toBe('123');
-    expect(mock.mock.calls.length).toBe(2);
-    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.find\({ .* }, { session: undefined }\)/);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ .* }, { session: undefined }\)/);
-  });
-
   test('working with arrays', async () => {
     const book = new Book('B');
     await orm.em.persist(book).flush();
