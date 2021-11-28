@@ -14,8 +14,10 @@ const entityHelperSymbol = Symbol('helper');
 export class EntityHelper {
 
   static decorate<T extends AnyEntity<T>>(meta: EntityMetadata<T>, em: EntityManager): void {
+    const fork = em.fork(); // use fork so we can access `EntityFactory`
+
     if (meta.embeddable) {
-      EntityHelper.defineBaseProperties(meta, meta.prototype, em);
+      EntityHelper.defineBaseProperties(meta, meta.prototype, fork);
       return;
     }
 
@@ -25,7 +27,7 @@ export class EntityHelper {
       EntityHelper.defineIdProperty(meta, em.getPlatform());
     }
 
-    EntityHelper.defineBaseProperties(meta, meta.prototype, em);
+    EntityHelper.defineBaseProperties(meta, meta.prototype, fork);
     const prototype = meta.prototype as Dictionary;
 
     if (em.config.get('propagateToOneOwner')) {
@@ -59,6 +61,7 @@ export class EntityHelper {
       __entity: { value: !meta.embeddable },
       __meta: { value: meta },
       __platform: { value: em.getPlatform() },
+      __factory: { value: em.getEntityFactory() },
       [entityHelperSymbol]: { value: null, writable: true, enumerable: false },
       __helper: {
         get(): WrappedEntity<T, keyof T> {

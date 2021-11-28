@@ -113,6 +113,7 @@ export interface IWrappedEntityInternal<T, PK extends keyof T | unknown = Primar
   __data: Dictionary;
   __em?: any; // we cannot have `EntityManager` here as that causes a cycle
   __platform: Platform;
+  __factory: EntityFactory; // internal factory instance that has its own global fork
   __initialized: boolean;
   __originalEntityData?: EntityData<T>;
   __loadedProperties: Set<string>;

@@ -203,6 +203,10 @@ export class UnitOfWork {
       return;
     }
 
+    // if (!entity.__helper!.__initialized && !entity.__helper!.__em) {
+    //   entity.__helper!.__em = this.em;
+    // }
+
     this.persistStack.add(entity);
     this.removeStack.delete(entity);
     this.cascade(entity, Cascade.PERSIST, visited, { checkRemoveStack: true });
@@ -581,10 +585,15 @@ export class UnitOfWork {
   }
 
   private fixMissingReference<T extends AnyEntity<T>>(entity: T, prop: EntityProperty<T>): void {
-    const reference = Reference.unwrapReference(entity[prop.name]);
+    const reference = Reference.unwrapReference(entity[prop.name]) as AnyEntity;
 
-    if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && reference && !Utils.isEntity(reference) && !prop.mapToPk) {
-      entity[prop.name] = this.em.getReference(prop.type, reference as Primary<T[string & keyof T]>, { wrapped: !!prop.wrappedReference }) as T[string & keyof T];
+    if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && reference && !prop.mapToPk) {
+      if (!Utils.isEntity(reference)) {
+        entity[prop.name] = this.em.getReference(prop.type, reference as Primary<T[string & keyof T]>, { wrapped: !!prop.wrappedReference }) as T[string & keyof T];
+      } else if (!reference.__helper!.__initialized && !reference.__helper!.__em) {
+        const pk = reference.__helper!.getSerializedPrimaryKey();
+        entity[prop.name] = this.em.getReference(prop.type, pk as Primary<T[string & keyof T]>, { wrapped: !!prop.wrappedReference }) as T[string & keyof T];
+      }
     }
 
     const isCollection = [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference);

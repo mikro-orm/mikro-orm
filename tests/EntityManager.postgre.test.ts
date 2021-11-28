@@ -1959,6 +1959,46 @@ describe('EntityManagerPostgre', () => {
     expect(b.$[0].publisher?.$.id).toBe(1);
   });
 
+  test('creating unmanaged entity reference', async () => {
+    await orm.em.getDriver().nativeInsertMany(Publisher2.name, [
+      { id: 1, name: 'p 1', type: PublisherType.LOCAL, type2: PublisherType2.LOCAL },
+      { id: 2, name: 'p 2', type: PublisherType.GLOBAL, type2: PublisherType2.GLOBAL },
+    ]);
+    const a = new Author2('a', 'e');
+    const b = new Book2('t', a, 123);
+    b.publisher = Reference.createFromPK(Publisher2, 1);
+
+    const mock = mockLogger(orm, ['query']);
+
+    // not managed reference
+    expect(wrap(b.publisher, true).__em).toBeUndefined();
+    await orm.em.persistAndFlush(a);
+    // after flush it will become managed
+    expect(wrap(b.publisher, true).__em).toBe(orm.em);
+
+    // or will get replaced by existing managed reference to same entity
+    b.publisher = Reference.createFromPK(Publisher2, 2);
+    expect(wrap(b.publisher, true).__em).toBeUndefined();
+    const ref2 = orm.em.getReference(Publisher2, 2);
+    expect(wrap(ref2, true).__em).toBe(orm.em);
+    await orm.em.flush();
+    expect(wrap(b.publisher, true).__em).toBe(orm.em);
+    expect(b.publisher.unwrap()).toBe(ref2);
+
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "email", "name", "terms_accepted", "updated_at") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"');
+    expect(mock.mock.calls[2][0]).toMatch('insert into "book2" ("author_id", "created_at", "price", "publisher_id", "title", "uuid_pk") values ($1, $2, $3, $4, $5, $6) returning "uuid_pk", "created_at", "title"');
+    expect(mock.mock.calls[3][0]).toMatch('commit');
+    expect(mock.mock.calls[4][0]).toMatch('begin');
+    expect(mock.mock.calls[5][0]).toMatch('update "book2" set "publisher_id" = $1 where "uuid_pk" = $2');
+    expect(mock.mock.calls[6][0]).toMatch('commit');
+
+    mock.mockReset();
+    await orm.em.flush();
+    expect(mock.mock.calls).toHaveLength(0);
+    mock.mockRestore();
+  });
+
   afterAll(async () => orm.close(true));
 
 });

@@ -1,4 +1,5 @@
-import type { AnyEntity, Cast, Dictionary, EntityProperty, IsUnknown, PrimaryProperty } from '../typings';
+import type { AnyEntity, Cast, Constructor, Dictionary, EntityProperty, IsUnknown, Primary, PrimaryProperty } from '../typings';
+import type { EntityFactory } from './EntityFactory';
 import { wrap } from './wrap';
 
 export type IdentifiedReference<T extends AnyEntity<T>, PK extends keyof T | unknown = PrimaryProperty<T>> = true extends IsUnknown<PK> ? Reference<T> : ({ [K in Cast<PK, keyof T>]: T[K] } & Reference<T>);
@@ -33,6 +34,16 @@ export class Reference<T extends AnyEntity<T>> {
     }
 
     return new Reference(entity as T) as IdentifiedReference<T, PK>;
+  }
+
+  static createFromPK<T extends AnyEntity<T>, PK extends keyof T | unknown = PrimaryProperty<T>>(entityType: Constructor<T>, pk: Primary<T>): IdentifiedReference<T, PK> {
+    const ref = this.createNakedFromPK(entityType, pk);
+    return new Reference(ref) as IdentifiedReference<T, PK>;
+  }
+
+  static createNakedFromPK<T extends AnyEntity<T>, PK extends keyof T | unknown = PrimaryProperty<T>>(entityType: Constructor<T>, pk: Primary<T>): T {
+    const factory = entityType.prototype.__factory as EntityFactory;
+    return factory.createReference(entityType, pk, { merge: false });
   }
 
   /**
