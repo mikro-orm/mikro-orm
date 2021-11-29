@@ -31,7 +31,9 @@ export class UnitOfWork {
   private readonly comparator = this.em.getComparator();
   private readonly changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.collectionUpdates, this.removeStack, this.metadata, this.platform, this.em.config);
   private readonly changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.metadata, this.em.config.getHydrator(this.metadata), this.em.getEntityFactory(), this.em.config);
+  private readonly queue: (() => Promise<void>)[] = [];
   private working = false;
+  private insideHooks = false;
 
   constructor(private readonly em: EntityManager) { }
 
@@ -203,10 +205,6 @@ export class UnitOfWork {
       return;
     }
 
-    // if (!entity.__helper!.__initialized && !entity.__helper!.__em) {
-    //   entity.__helper!.__em = this.em;
-    // }
-
     this.persistStack.add(entity);
     this.removeStack.delete(entity);
     this.cascade(entity, Cascade.PERSIST, visited, { checkRemoveStack: true });
@@ -227,14 +225,32 @@ export class UnitOfWork {
 
   async commit(): Promise<void> {
     if (this.working) {
-      throw ValidationError.cannotCommit();
+      if (this.insideHooks) {
+        throw ValidationError.cannotCommit();
+      }
+
+      return await new Promise<void>((resolve, reject) => {
+        this.queue.push(async () => {
+          await this.doCommit().then(resolve, reject);
+        });
+      });
     }
 
+    this.working = true;
+    await this.doCommit();
+
+    while (this.queue.length) {
+      await this.queue.shift()!();
+    }
+
+    this.working = false;
+  }
+
+  private async doCommit(): Promise<void> {
     const oldTx = this.em.getTransactionContext();
 
     try {
       await this.eventManager.dispatchEvent(EventType.beforeFlush, { em: this.em, uow: this });
-      this.working = true;
       this.computeChangeSets();
       await this.eventManager.dispatchEvent(EventType.onFlush, { em: this.em, uow: this });
 
@@ -457,6 +473,7 @@ export class UnitOfWork {
   }
 
   private async runHooks<T extends AnyEntity<T>>(type: EventType, changeSet: ChangeSet<T>, sync = false): Promise<unknown> {
+    this.insideHooks = true;
     const hasListeners = this.eventManager.hasListeners(type, changeSet.entity.__meta!);
 
     if (!hasListeners) {
@@ -477,6 +494,8 @@ export class UnitOfWork {
     if (wrapped.__identifier && diff[wrapped.__meta.primaryKeys[0]]) {
       wrapped.__identifier.setValue(diff[wrapped.__meta.primaryKeys[0]] as IPrimaryKeyValue);
     }
+
+    this.insideHooks = false;
   }
 
   private postCommitCleanup(): void {
@@ -488,6 +507,7 @@ export class UnitOfWork {
     this.collectionDeletions.clear();
     this.extraUpdates.clear();
     this.working = false;
+    this.insideHooks = false;
   }
 
   private cascade<T extends AnyEntity<T>>(entity: T, type: Cascade, visited: WeakSet<AnyEntity>, options: { checkRemoveStack?: boolean } = {}): void {

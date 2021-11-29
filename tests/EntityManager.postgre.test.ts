@@ -1999,6 +1999,85 @@ describe('EntityManagerPostgre', () => {
     mock.mockRestore();
   });
 
+  test('flushing via Promise.all()', async () => {
+    const mock = mockLogger(orm, ['query']);
+
+    const ret = await Promise.all([
+      (async () => {
+        const a = new Author2('a1', 'e1');
+        const b = new Book2('t1', a, 123);
+        await orm.em.persistAndFlush(b);
+        return b;
+      })(),
+      (async () => {
+        const a = new Author2('a2', 'e2');
+        const b = new Book2('t2', a, 456);
+        await orm.em.persistAndFlush(b);
+        return b;
+      })(),
+      (async () => {
+        const a = new Author2('a3', 'e3');
+        const b = new Book2('t3', a, 789);
+        await orm.em.persistAndFlush(b);
+        return b;
+      })(),
+    ]);
+
+    // flushing things at the same tick will even batch the queries
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5), ($6, $7, $8, $9, $10), ($11, $12, $13, $14, $15) returning "id", "created_at", "updated_at", "age", "terms_accepted"');
+    expect(mock.mock.calls[2][0]).toMatch('insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values ($1, $2, $3, $4, $5), ($6, $7, $8, $9, $10), ($11, $12, $13, $14, $15) returning "uuid_pk", "created_at", "title"');
+    expect(mock.mock.calls[3][0]).toMatch('commit');
+
+    expect(ret.map(b => b.author.id)).toEqual([1, 2, 3]);
+    expect(ret.map(b => b.author.name)).toEqual(['a1', 'a2', 'a3']);
+
+    mock.mockReset();
+
+    const ret2 = await Promise.all([
+      (async () => {
+        const a = new Author2('a4', 'e4');
+        const b = new Book2('t4', a, 123);
+        await new Promise(r => setTimeout(r, 100));
+        await orm.em.persistAndFlush(b);
+        return b;
+      })(),
+      (async () => {
+        const a = new Author2('a5', 'e5');
+        const b = new Book2('t5', a, 456);
+        await new Promise(r => setTimeout(r, 20));
+        await orm.em.persistAndFlush(b);
+        return b;
+      })(),
+      (async () => {
+        const a = new Author2('a6', 'e6');
+        const b = new Book2('t6', a, 789);
+        await new Promise(r => setTimeout(r, 70));
+        await orm.em.persistAndFlush(b);
+        return b;
+      })(),
+    ]);
+
+    // flushing things at different time will create multiple transactions
+    expect(mock.mock.calls[0][0]).toMatch(`begin`);
+    expect(mock.mock.calls[1][0]).toMatch(`insert into "author2" ("created_at", "email", "name", "terms_accepted", "updated_at") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"`);
+    expect(mock.mock.calls[2][0]).toMatch(`insert into "book2" ("author_id", "created_at", "price", "title", "uuid_pk") values ($1, $2, $3, $4, $5) returning "uuid_pk", "created_at", "title"`);
+    expect(mock.mock.calls[3][0]).toMatch(`commit`);
+    expect(mock.mock.calls[4][0]).toMatch(`begin`);
+    expect(mock.mock.calls[5][0]).toMatch(`insert into "author2" ("created_at", "email", "name", "terms_accepted", "updated_at") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"`);
+    expect(mock.mock.calls[6][0]).toMatch(`insert into "book2" ("author_id", "created_at", "price", "title", "uuid_pk") values ($1, $2, $3, $4, $5) returning "uuid_pk", "created_at", "title"`);
+    expect(mock.mock.calls[7][0]).toMatch(`commit`);
+    expect(mock.mock.calls[8][0]).toMatch(`begin`);
+    expect(mock.mock.calls[9][0]).toMatch(`insert into "author2" ("created_at", "email", "name", "terms_accepted", "updated_at") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"`);
+    expect(mock.mock.calls[10][0]).toMatch(`insert into "book2" ("author_id", "created_at", "price", "title", "uuid_pk") values ($1, $2, $3, $4, $5) returning "uuid_pk", "created_at", "title"`);
+    expect(mock.mock.calls[11][0]).toMatch(`commit`);
+
+    expect(ret2.map(b => b.author.id)).toEqual([6, 4, 5]);
+    expect(ret2.map(b => b.author.name)).toEqual(['a4', 'a5', 'a6']);
+
+    mock.mockRestore();
+  });
+
   afterAll(async () => orm.close(true));
 
 });
