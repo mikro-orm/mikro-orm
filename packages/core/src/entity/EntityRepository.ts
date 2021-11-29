@@ -171,17 +171,7 @@ export class EntityRepository<T extends AnyEntity<T>> {
   /**
    * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
    */
-  async populate<P extends string = never>(entities: T, populate: AutoPath<T, P>[] | boolean, options?: EntityLoaderOptions<T>): Promise<Loaded<T, P>>;
-
-  /**
-   * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
-   */
-  async populate<P extends string = never>(entities: T[], populate: AutoPath<T, P>[] | boolean, options?: EntityLoaderOptions<T>): Promise<Loaded<T, P>[]>;
-
-  /**
-   * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
-   */
-  async populate<P extends string = never>(entities: T | T[], populate: AutoPath<T, P>[] | boolean, options?: EntityLoaderOptions<T>): Promise<Loaded<T, P> | Loaded<T, P>[]> {
+  async populate<P extends string = never>(entities: T | T[], populate: AutoPath<T, P>[] | boolean, options?: EntityLoaderOptions<T, P>): Promise<Loaded<T, P>[]> {
     return this.em.populate(entities as T, populate, options);
   }
 
