@@ -145,7 +145,11 @@ export class ChangeSetComputer {
     }
 
     if (prop.owner || target.getItems(false).filter(item => !item.__helper!.__initialized).length > 0) {
-      this.collectionUpdates.add(target);
+      if (this.platform.usesPivotTable()) {
+        this.collectionUpdates.add(target);
+      } else {
+        changeSet.payload[prop.name] = target.getItems(false).map((item: AnyEntity) => item.__helper!.__identifier ?? item.__helper!.getPrimaryKey());
+      }
     } else {
       target.setDirty(false); // inverse side with only populated items, nothing to persist
     }

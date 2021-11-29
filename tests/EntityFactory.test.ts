@@ -217,13 +217,12 @@ describe('EntityFactory', () => {
 
     await orm.em.persistAndFlush(a1);
 
-    expect(mock.mock.calls).toHaveLength(6);
+    expect(mock.mock.calls).toHaveLength(5);
     expect(mock.mock.calls[0][0]).toMatch('db.begin()');
     expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('book-tag'\)\.insertOne\({ name: 't1' }, { session: '\[ClientSession]' }\);/);
     expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('author'\)\.insertOne\({ createdAt: ISODate\('.*'\), updatedAt: ISODate\('.*'\), foo: 'bar', name: 'Jon', email: 'jon@snow\.com', termsAccepted: false }, { session: '\[ClientSession]' }\);/);
-    expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\('books-table'\)\.insertOne\({ createdAt: ISODate\('.*'\), title: 'B1', publisher: ObjectId\('5b0d19b28b21c648c2c8a600'\), author: ObjectId\('.*'\) }, { session: '\[ClientSession]' }\);/);
-    expect(mock.mock.calls[4][0]).toMatch(/db\.getCollection\('books-table'\)\.updateMany\({ _id: ObjectId\('.*'\) }, { '\$set': { tags: \[ ObjectId\('.*'\), ObjectId\('5b0d19b28b21c648c2c8a601'\) ] } }, { session: '\[ClientSession]' }\);/);
-    expect(mock.mock.calls[5][0]).toMatch('db.commit()');
+    expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\('books-table'\)\.insertOne\({ createdAt: ISODate\('.*'\), title: 'B1', publisher: ObjectId\('5b0d19b28b21c648c2c8a600'\), author: ObjectId\('.*'\), tags: \[ ObjectId\('.*'\), ObjectId\('5b0d19b28b21c648c2c8a601'\) ] }, { session: '\[ClientSession]' }\);/);
+    expect(mock.mock.calls[4][0]).toMatch('db.commit()');
 
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -249,13 +248,12 @@ describe('EntityFactory', () => {
 
     await orm.em.persistAndFlush(a2);
 
-    expect(mock.mock.calls.length).toBe(6);
+    expect(mock.mock.calls.length).toBe(5);
     expect(mock.mock.calls[0][0]).toMatch('db.begin()');
     expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('book-tag'\)\.insertOne\({ name: 't1' }, { session: '\[ClientSession]' }\);/);
     expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('author'\)\.insertOne\({ createdAt: ISODate\('.*'\), updatedAt: ISODate\('.*'\), foo: 'bar', name: 'Jon', email: 'jon2@snow\.com', termsAccepted: false }, { session: '\[ClientSession]' }\);/);
-    expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\('books-table'\)\.insertOne\({ createdAt: ISODate\('.*'\), title: 'B1', publisher: ObjectId\('5b0d19b28b21c648c2c8a600'\), author: ObjectId\('.*'\) }, { session: '\[ClientSession]' }\);/);
-    expect(mock.mock.calls[4][0]).toMatch(/db\.getCollection\('books-table'\)\.updateMany\({ _id: ObjectId\('.*'\) }, { '\$set': { tags: \[ ObjectId\('.*'\), ObjectId\('5b0d19b28b21c648c2c8a601'\) ] } }, { session: '\[ClientSession]' }\);/);
-    expect(mock.mock.calls[5][0]).toMatch('db.commit()');
+    expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\('books-table'\)\.insertOne\({ createdAt: ISODate\('.*'\), title: 'B1', publisher: ObjectId\('5b0d19b28b21c648c2c8a600'\), author: ObjectId\('.*'\), tags: \[ ObjectId\('.*'\), ObjectId\('5b0d19b28b21c648c2c8a601'\) ] }, { session: '\[ClientSession]' }\);/);
+    expect(mock.mock.calls[4][0]).toMatch('db.commit()');
   });
 
   test('em.create() should not mutate the input object (GH issue 1294)', async () => {

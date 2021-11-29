@@ -515,9 +515,7 @@ describe('EntityManagerMongo', () => {
     expect(driver.getConnection().getCollection(BookTag).collectionName).toBe('book-tag');
     expect(orm.em.getCollection(BookTag).collectionName).toBe('book-tag');
 
-    expect(() => {
-      driver.getPlatform().generateCustomOrder('foo', [1, 2, 3]);
-    }).toThrow();
+    expect(() => driver.getPlatform().generateCustomOrder('foo', [1, 2, 3])).toThrow();
 
     const conn = driver.getConnection();
     const ctx = await conn.begin();
@@ -685,6 +683,8 @@ describe('EntityManagerMongo', () => {
   });
 
   test('many to many relation', async () => {
+    const mock = mockLogger(orm);
+
     const author = new Author('Jon Snow', 'snow@wall.st');
     const book1 = new Book('My Life on The Wall, part 1', author);
     const book2 = new Book('My Life on The Wall, part 2', author);
@@ -710,9 +710,19 @@ describe('EntityManagerMongo', () => {
     expect(book1.tags.toArray()).toEqual([wrap(tag1).toJSON(), wrap(tag3).toJSON()]);
     expect(book1.tags.toJSON()).toEqual([wrap(tag1).toJSON(), wrap(tag3).toJSON()]);
 
+    // ensure we don't have separate update queries for collection sync
+    expect(mock.mock.calls).toHaveLength(5);
+    expect(mock.mock.calls[1][0]).toMatch(`db.getCollection('book-tag').insertMany(`);
+    expect(mock.mock.calls[2][0]).toMatch(`db.getCollection('author').insertOne(`);
+    expect(mock.mock.calls[3][0]).toMatch(`db.getCollection('books-table').insertMany(`);
+    orm.em.clear();
+
+    // just to raise coverage, that method is no longer used internally
+    await orm.em.getDriver().syncCollection(book1.tags);
+
     // test inverse side
     const tagRepository = orm.em.getRepository(BookTag);
-    let tags = await tagRepository.findAll();
+    let tags = await tagRepository.findAll({ populate: ['books'] });
     expect(tags).toBeInstanceOf(Array);
     expect(tags.length).toBe(5);
     expect(tags[0]).toBeInstanceOf(BookTag);
