@@ -6,6 +6,7 @@ import { QueryResult, Transaction } from '../connections';
 import { Configuration, Utils } from '../utils';
 import { IDatabaseDriver } from '../drivers';
 import { OptimisticLockError } from '../errors';
+import { ReferenceType } from '../enums';
 
 export class ChangeSetPersister {
 
@@ -244,6 +245,10 @@ export class ChangeSetPersister {
 
   private processProperty<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {
     const value = changeSet.payload[prop.name];
+
+    if (prop.reference === ReferenceType.MANY_TO_MANY && Array.isArray(value)) {
+      changeSet.payload[prop.name] = value.map(val => val instanceof EntityIdentifier ? val.getValue() : val);
+    }
 
     if (value as unknown instanceof EntityIdentifier) {
       changeSet.payload[prop.name] = value.getValue();

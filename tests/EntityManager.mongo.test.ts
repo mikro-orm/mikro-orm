@@ -676,6 +676,10 @@ describe('EntityManagerMongo', () => {
   });
 
   test('many to many relation', async () => {
+    const mock = jest.fn();
+    const logger = new Logger(mock, true);
+    Object.assign(orm.config, { logger });
+
     const author = new Author('Jon Snow', 'snow@wall.st');
     const book1 = new Book('My Life on The Wall, part 1', author);
     const book2 = new Book('My Life on The Wall, part 2', author);
@@ -701,9 +705,19 @@ describe('EntityManagerMongo', () => {
     expect(book1.tags.toArray()).toEqual([wrap(tag1).toJSON(), wrap(tag3).toJSON()]);
     expect(book1.tags.toJSON()).toEqual([wrap(tag1).toJSON(), wrap(tag3).toJSON()]);
 
+    // ensure we don't have separate update queries for collection sync
+    expect(mock.mock.calls).toHaveLength(5);
+    expect(mock.mock.calls[1][0]).toMatch(`db.getCollection('book-tag').insertMany(`);
+    expect(mock.mock.calls[2][0]).toMatch(`db.getCollection('author').insertOne(`);
+    expect(mock.mock.calls[3][0]).toMatch(`db.getCollection('books-table').insertMany(`);
+    orm.em.clear();
+
+    // just to raise coverage, that method is no longer used internally
+    await orm.em.getDriver().syncCollection(book1.tags as any);
+
     // test inverse side
     const tagRepository = orm.em.getRepository(BookTag);
-    let tags = await tagRepository.findAll();
+    let tags = await tagRepository.findAll({ populate: ['books'] });
     expect(tags).toBeInstanceOf(Array);
     expect(tags.length).toBe(5);
     expect(tags[0]).toBeInstanceOf(BookTag);
@@ -715,7 +729,7 @@ describe('EntityManagerMongo', () => {
     expect(tags[0].books.length).toBe(2);
 
     orm.em.clear();
-    tags = await orm.em.find(BookTag, {});
+    tags = await orm.em.find(BookTag, {}) as any[];
     expect(tags[0].books.isInitialized()).toBe(false);
     expect(tags[0].books.isDirty()).toBe(false);
     expect(() => tags[0].books.getItems()).toThrowError(/Collection<Book> of entity BookTag\[\w{24}] not initialized/);
