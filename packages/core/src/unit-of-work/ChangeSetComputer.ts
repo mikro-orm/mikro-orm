@@ -26,10 +26,7 @@ export class ChangeSetComputer {
 
     const type = entity.__helper!.__originalEntityData ? ChangeSetType.UPDATE : ChangeSetType.CREATE;
     const changeSet = new ChangeSet(entity, type, this.computePayload(entity), meta);
-
-    if (changeSet.type === ChangeSetType.UPDATE) {
-      changeSet.originalEntity = entity.__helper!.__originalEntityData;
-    }
+    changeSet.originalEntity = entity.__helper!.__originalEntityData;
 
     if (this.config.get('validate')) {
       this.validator.validate<T>(changeSet.entity, changeSet.payload, meta);

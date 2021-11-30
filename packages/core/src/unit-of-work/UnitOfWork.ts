@@ -34,7 +34,7 @@ export class UnitOfWork {
 
   constructor(private readonly em: EntityManager) { }
 
-  merge<T extends AnyEntity<T>>(entity: T, visited?: WeakSet<AnyEntity>): void {
+  merge<T extends AnyEntity<T>>(entity: T, visited?: Set<AnyEntity>): void {
     const wrapped = entity.__helper!;
     // only for v4, as `fork()` uses `em.merge()` in v4 when copying the identity map
     wrapped.__em ??= this.em;
@@ -59,7 +59,7 @@ export class UnitOfWork {
       wrapped.__originalEntityData = this.comparator.prepareEntity(entity);
     }
 
-    this.cascade(entity, Cascade.MERGE, visited ?? new WeakSet<AnyEntity>());
+    this.cascade(entity, Cascade.MERGE, visited ?? new Set<AnyEntity>());
   }
 
   /**
@@ -188,21 +188,24 @@ export class UnitOfWork {
     }
   }
 
-  persist<T extends AnyEntity<T>>(entity: T, visited = new WeakSet<AnyEntity>(), checkRemoveStack = false): void {
+  persist<T extends AnyEntity<T>>(entity: T, visited?: Set<AnyEntity>, options: { checkRemoveStack?: boolean; cascade?: boolean } = {}): void {
     if (this.persistStack.has(entity)) {
       return;
     }
 
-    if (checkRemoveStack && this.removeStack.has(entity)) {
+    if (options.checkRemoveStack && this.removeStack.has(entity)) {
       return;
     }
 
     this.persistStack.add(entity);
     this.removeStack.delete(entity);
-    this.cascade(entity, Cascade.PERSIST, visited, { checkRemoveStack: true });
+
+    if (options.cascade ?? true) {
+      this.cascade(entity, Cascade.PERSIST, visited, options);
+    }
   }
 
-  remove(entity: AnyEntity, visited = new WeakSet<AnyEntity>()): void {
+  remove(entity: AnyEntity, visited = new Set<AnyEntity>()): void {
     if (!entity || this.removeStack.has(entity)) {
       return;
     }
@@ -285,13 +288,13 @@ export class UnitOfWork {
     this.changeSets.clear();
 
     for (const entity of this.persistStack) {
-      this.cascade(entity, Cascade.PERSIST, new WeakSet<AnyEntity>(), { checkRemoveStack: true });
+      this.cascade(entity, Cascade.PERSIST, new Set<AnyEntity>(), { checkRemoveStack: true });
     }
 
     for (const entity of this.identityMap) {
-      if (!this.removeStack.has(entity) && !this.orphanRemoveStack.has(entity)) {
+      if (!this.removeStack.has(entity) && !this.persistStack.has(entity) && !this.orphanRemoveStack.has(entity)) {
         this.persistStack.add(entity);
-        this.cascade(entity, Cascade.PERSIST, new WeakSet<AnyEntity>(), { checkRemoveStack: true });
+        this.cascade(entity, Cascade.PERSIST, new Set<AnyEntity>(), { checkRemoveStack: true });
       }
     }
 
@@ -300,12 +303,12 @@ export class UnitOfWork {
     }
 
     for (const entity of this.orphanRemoveStack) {
-      this.remove(entity);
+      this.removeStack.add(entity);
+      this.cascade(entity, Cascade.REMOVE);
     }
 
     for (const entity of this.removeStack) {
-      const meta = this.metadata.find(entity.constructor.name)!;
-      this.changeSets.set(entity, new ChangeSet(entity, ChangeSetType.DELETE, {}, meta));
+      this.changeSets.set(entity, new ChangeSet(entity, ChangeSetType.DELETE, {}, entity.__meta!));
     }
   }
 
@@ -343,7 +346,7 @@ export class UnitOfWork {
     return [...this.collectionDeletions];
   }
 
-  private findNewEntities<T extends AnyEntity<T>>(entity: T, visited = new WeakSet<AnyEntity>()): void {
+  private findNewEntities<T extends AnyEntity<T>>(entity: T, visited = new Set<AnyEntity>()): void {
     if (visited.has(entity)) {
       return;
     }
@@ -408,7 +411,7 @@ export class UnitOfWork {
     wrapped.__identifier = new EntityIdentifier();
   }
 
-  private processReference<T extends AnyEntity<T>>(parent: T, prop: EntityProperty<T>, reference: any, visited: WeakSet<AnyEntity>): void {
+  private processReference<T extends AnyEntity<T>>(parent: T, prop: EntityProperty<T>, reference: any, visited: Set<AnyEntity>): void {
     const isToOne = prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE;
 
     if (isToOne && Utils.isEntity(reference)) {
@@ -420,13 +423,13 @@ export class UnitOfWork {
     }
   }
 
-  private processToOneReference<T extends AnyEntity<T>>(reference: any, visited: WeakSet<AnyEntity>): void {
+  private processToOneReference<T extends AnyEntity<T>>(reference: any, visited: Set<AnyEntity>): void {
     if (!reference.__helper!.__managed) {
       this.findNewEntities(reference, visited);
     }
   }
 
-  private processToManyReference<T extends AnyEntity<T>>(reference: Collection<AnyEntity>, visited: WeakSet<AnyEntity>, parent: T, prop: EntityProperty<T>): void {
+  private processToManyReference<T extends AnyEntity<T>>(reference: Collection<AnyEntity>, visited: Set<AnyEntity>, parent: T, prop: EntityProperty<T>): void {
     if (this.isCollectionSelfReferenced(reference, visited)) {
       this.extraUpdates.add([parent, prop.name, reference]);
       parent[prop.name as keyof T] = new Collection<AnyEntity>(parent) as unknown as T[keyof T];
@@ -473,7 +476,7 @@ export class UnitOfWork {
     this.working = false;
   }
 
-  private cascade<T extends AnyEntity<T>>(entity: T, type: Cascade, visited: WeakSet<AnyEntity>, options: { checkRemoveStack?: boolean } = {}): void {
+  private cascade<T extends AnyEntity<T>>(entity: T, type: Cascade, visited = new Set<AnyEntity>(), options: { checkRemoveStack?: boolean; cascade?: boolean } = {}): void {
     if (visited.has(entity)) {
       return;
     }
@@ -481,7 +484,7 @@ export class UnitOfWork {
     visited.add(entity);
 
     switch (type) {
-      case Cascade.PERSIST: this.persist(entity, visited, options.checkRemoveStack); break;
+      case Cascade.PERSIST: this.persist(entity, visited, options); break;
       case Cascade.MERGE: this.merge(entity, visited); break;
       case Cascade.REMOVE: this.remove(entity, visited); break;
     }
@@ -491,7 +494,7 @@ export class UnitOfWork {
     }
   }
 
-  private cascadeReference<T extends AnyEntity<T>>(entity: T, prop: EntityProperty<T>, type: Cascade, visited: WeakSet<AnyEntity>, options: { checkRemoveStack?: boolean }): void {
+  private cascadeReference<T extends AnyEntity<T>>(entity: T, prop: EntityProperty<T>, type: Cascade, visited: Set<AnyEntity>, options: { checkRemoveStack?: boolean }): void {
     this.fixMissingReference(entity, prop);
 
     if (!this.shouldCascade(prop, type)) {
@@ -519,7 +522,7 @@ export class UnitOfWork {
     }
   }
 
-  private isCollectionSelfReferenced(collection: Collection<AnyEntity>, visited: WeakSet<AnyEntity>): boolean {
+  private isCollectionSelfReferenced(collection: Collection<AnyEntity>, visited: Set<AnyEntity>): boolean {
     const filtered = collection.getItems(false).filter(item => !item.__helper!.__originalEntityData);
     return filtered.some(items => visited.has(items));
   }
