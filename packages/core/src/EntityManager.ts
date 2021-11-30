@@ -593,7 +593,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   persist(entity: AnyEntity | Reference<AnyEntity> | (AnyEntity | Reference<AnyEntity>)[]): this {
     if (Utils.isEntity(entity)) {
       // do not cascade just yet, cascading of entities in persist stack is done when flushing
-      this.getUnitOfWork().persist(entity, new WeakSet([entity]));
+      this.getUnitOfWork().persist(entity, undefined, { cascade: false });
       return this;
     }
 
@@ -607,7 +607,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       // do not cascade just yet, cascading of entities in persist stack is done when flushing
-      this.getUnitOfWork().persist(Reference.unwrapReference(ent), new WeakSet([entity]));
+      this.getUnitOfWork().persist(Reference.unwrapReference(ent), undefined, { cascade: false });
     }
 
     return this;

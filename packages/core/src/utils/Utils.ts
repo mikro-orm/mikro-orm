@@ -769,7 +769,7 @@ export class Utils {
   /* istanbul ignore next */
   static createFunction(context: Map<string, any>, code: string) {
     try {
-      return new Function(...context.keys(), code)(...context.values());
+      return new Function(...context.keys(), `'use strict';\n` + code)(...context.values());
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error(code);

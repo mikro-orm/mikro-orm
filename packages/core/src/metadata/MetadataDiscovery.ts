@@ -609,7 +609,7 @@ export class MetadataDiscovery {
     return order;
   }
 
-  private initPolyEmbeddables(embeddedProp: EntityProperty, discovered: EntityMetadata[], visited = new WeakSet<EntityProperty>()): void {
+  private initPolyEmbeddables(embeddedProp: EntityProperty, discovered: EntityMetadata[], visited = new Set<EntityProperty>()): void {
     if (embeddedProp.reference !== ReferenceType.EMBEDDED || visited.has(embeddedProp)) {
       return;
     }
@@ -656,7 +656,7 @@ export class MetadataDiscovery {
     }
   }
 
-  private initEmbeddables(meta: EntityMetadata, embeddedProp: EntityProperty, visited = new WeakSet<EntityProperty>()): void {
+  private initEmbeddables(meta: EntityMetadata, embeddedProp: EntityProperty, visited = new Set<EntityProperty>()): void {
     if (embeddedProp.reference !== ReferenceType.EMBEDDED || visited.has(embeddedProp)) {
       return;
     }
