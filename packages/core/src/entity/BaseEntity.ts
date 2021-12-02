@@ -13,6 +13,10 @@ export abstract class BaseEntity<T, PK extends keyof T, P extends string = never
     return (this as unknown as AnyEntity<T>).__helper!.__initialized;
   }
 
+  isTouched(): boolean {
+    return (this as unknown as AnyEntity<T>).__helper!.__touched;
+  }
+
   populated(populated = true): void {
     (this as unknown as AnyEntity<T>).__helper!.populated(populated);
   }

@@ -1,5 +1,5 @@
 import type { MikroORM } from '@mikro-orm/core';
-import { LoadStrategy, wrap } from '@mikro-orm/core';
+import { FlushMode, LoadStrategy, wrap } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 import { initORMPostgreSql, mockLogger, wipeDatabasePostgreSql } from '../bootstrap';
@@ -42,7 +42,8 @@ describe('automatic refreshing of already loaded entities', () => {
     expect(r1[0].id).toBe(god.id);
     expect(r1[0].name).toBeUndefined();
     expect(r1[0].termsAccepted).toBeUndefined();
-    const r2 = await orm.em.find(Author2, god, { populate: ['books'] });
+    // with auto-flush mode, this would trigger flushing as we have dirty author and we query for authors
+    const r2 = await orm.em.find(Author2, god, { populate: ['books'], flushMode: FlushMode.COMMIT });
     expect(r2).toHaveLength(1);
     expect(r2[0].id).toBe(god.id);
     expect(r2[0].name).toBe(god.name);
@@ -66,7 +67,8 @@ describe('automatic refreshing of already loaded entities', () => {
     expect(r1[0].id).toBe(god.id);
     expect(r1[0].name).toBeUndefined();
     expect(r1[0].termsAccepted).toBeUndefined();
-    const r2 = await orm.em.find(Author2, god, { populate: ['books', 'books.perex'], strategy: LoadStrategy.JOINED });
+    // with auto-flush mode, this would trigger flushing as we have dirty author and we query for authors
+    const r2 = await orm.em.find(Author2, god, { populate: ['books', 'books.perex'], strategy: LoadStrategy.JOINED, flushMode: FlushMode.COMMIT });
     expect(r2).toHaveLength(1);
     expect(r2[0].id).toBe(god.id);
     expect(r2[0].name).toBe(god.name);
@@ -99,7 +101,8 @@ describe('automatic refreshing of already loaded entities', () => {
     expect(r1[0].books[0].author).toBeDefined();
     expect(r1[0].books[0].price).toBeUndefined();
     expect(r1[0].books[0].perex).toBeUndefined();
-    const r2 = await orm.em.find(Author2, god, { populate: ['books', 'books.perex'], strategy: LoadStrategy.JOINED });
+    // with auto-flush mode, this would trigger flushing as we have dirty author and we query for authors
+    const r2 = await orm.em.find(Author2, god, { populate: ['books', 'books.perex'], strategy: LoadStrategy.JOINED, flushMode: FlushMode.COMMIT });
     expect(r2).toHaveLength(1);
     expect(r2[0].id).toBe(god.id);
     expect(r2[0].name).toBe(god.name);
@@ -131,7 +134,8 @@ describe('automatic refreshing of already loaded entities', () => {
     expect(r1[0].favouriteAuthor!.name).toBeDefined();
     expect(r1[0].favouriteAuthor!.age).toBeUndefined();
     r1[0].favouriteAuthor!.name = 'lol';
-    const r2 = await orm.em.find(Author2, god, { populate: ['favouriteAuthor'], strategy: LoadStrategy.JOINED });
+    // with auto-flush mode, this would trigger flushing as we have dirty author and we query for authors
+    const r2 = await orm.em.find(Author2, god, { populate: ['favouriteAuthor'], strategy: LoadStrategy.JOINED, flushMode: FlushMode.COMMIT });
     expect(r2).toHaveLength(1);
     expect(r2[0].id).toBe(god.id);
     expect(r2[0].name).toBe(god.name);
@@ -163,19 +167,22 @@ describe('automatic refreshing of already loaded entities', () => {
     expect(a1.identities).toBeUndefined();
 
     // reloading with same fields won't fire the query
-    const a11 = await orm.em.findOneOrFail(Author2, god, { fields: ['email'] });
+    // with auto-flush mode, this would trigger flushing as we have dirty author and we query for authors
+    const a11 = await orm.em.findOneOrFail(Author2, god, { fields: ['email'], flushMode: FlushMode.COMMIT });
     expect(a11).toBe(a1);
     expect(mock).toBeCalledTimes(2);
 
     // reloading with additional fields will work without `refresh: true`
-    const a12 = await orm.em.findOneOrFail(Author2, god, { fields: ['id', 'age'] });
+    // with auto-flush mode, this would trigger flushing as we have dirty author and we query for authors
+    const a12 = await orm.em.findOneOrFail(Author2, god, { fields: ['id', 'age'], flushMode: FlushMode.COMMIT });
     expect(a12).toBe(a1);
     expect(a1.age).toBe(999);
     a1.age = 1000;
     expect(mock).toBeCalledTimes(3);
 
     // reloading without partial loading will work without `refresh: true`
-    const a2 = await orm.em.findOneOrFail(Author2, god, { populate: ['books'] });
+    // with auto-flush mode, this would trigger flushing as we have dirty author and we query for authors
+    const a2 = await orm.em.findOneOrFail(Author2, god, { populate: ['books'], flushMode: FlushMode.COMMIT });
     expect(mock).toBeCalledTimes(4);
     expect(a2.id).toBe(god.id);
     expect(a2.name).toBe(god.name);
@@ -215,19 +222,22 @@ describe('automatic refreshing of already loaded entities', () => {
     expect(a1.identities).toBeUndefined();
 
     // reloading with same fields won't fire the query
-    const a11 = await orm.em.findOneOrFail(Author2, god, { fields: ['email'] });
+    // with auto-flush mode, this would trigger flushing as we have dirty author and we query for authors
+    const a11 = await orm.em.findOneOrFail(Author2, god, { fields: ['email'], flushMode: FlushMode.COMMIT });
     expect(a11).toBe(a1);
     expect(mock).toBeCalledTimes(1);
 
     // reloading with additional fields will work without `refresh: true`
-    const a12 = await orm.em.findOneOrFail(Author2, god, { fields: ['id', 'age'] });
+    // with auto-flush mode, this would trigger flushing as we have dirty author and we query for authors
+    const a12 = await orm.em.findOneOrFail(Author2, god, { fields: ['id', 'age'], flushMode: FlushMode.COMMIT });
     expect(a12).toBe(a1);
     expect(a1.age).toBe(999);
     a1.age = 1000;
     expect(mock).toBeCalledTimes(2);
 
     // reloading without partial loading will work without `refresh: true`
-    const a2 = await orm.em.findOneOrFail(Author2, god, { populate: ['books'], strategy: LoadStrategy.JOINED });
+    // with auto-flush mode, this would trigger flushing as we have dirty author and we query for authors
+    const a2 = await orm.em.findOneOrFail(Author2, god, { populate: ['books'], strategy: LoadStrategy.JOINED, flushMode: FlushMode.COMMIT });
     expect(mock).toBeCalledTimes(3);
     expect(a2.id).toBe(god.id);
     expect(a2.name).toBe(god.name);
@@ -236,12 +246,14 @@ describe('automatic refreshing of already loaded entities', () => {
     expect(a1).toBe(a2);
 
     // no query should be fired as the entity was fully loaded before too
-    const b11 = await orm.em.findOneOrFail(Book2, god.books[0].uuid, { filters: false });
+    // with auto-flush mode, this would trigger flushing as we have dirty author and we query for authors
+    const b11 = await orm.em.findOneOrFail(Book2, god.books[0].uuid, { filters: false, flushMode: FlushMode.COMMIT });
     expect(mock).toBeCalledTimes(3);
     expect(b11).toBe(a1.books[0]);
 
     // reloading with additional lazy scalar properties will work without `refresh: true`
-    const b12 = await orm.em.findOneOrFail(Book2, god.books[0], { populate: ['perex'], filters: false });
+    // with auto-flush mode, this would trigger flushing as we have dirty author and we query for authors
+    const b12 = await orm.em.findOneOrFail(Book2, god.books[0], { populate: ['perex'], filters: false, flushMode: FlushMode.COMMIT });
     expect(mock).toBeCalledTimes(4);
     expect(b11).toBe(b12);
 

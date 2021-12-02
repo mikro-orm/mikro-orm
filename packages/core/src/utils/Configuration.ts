@@ -34,7 +34,7 @@ import type { EventSubscriber } from '../events';
 import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
 import { NotFoundError } from '../errors';
 import { RequestContext } from './RequestContext';
-import { LoadStrategy } from '../enums';
+import { FlushMode, LoadStrategy } from '../enums';
 import { MemoryCacheAdapter } from '../cache/MemoryCacheAdapter';
 
 export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
@@ -61,6 +61,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => NotFoundError.findOneFailed(entityName, where),
     baseDir: process.cwd(),
     hydrator: ObjectHydrator,
+    flushMode: FlushMode.AUTO,
     loadStrategy: LoadStrategy.SELECT_IN,
     autoJoinOneToOneOwner: true,
     propagateToOneOwner: true,
@@ -402,6 +403,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   batchSize: number;
   hydrator: HydratorConstructor;
   loadStrategy: LoadStrategy;
+  flushMode: FlushMode;
   entityRepository?: Constructor<EntityRepository<any>>;
   replicas?: Partial<ConnectionOptions>[];
   strict: boolean;

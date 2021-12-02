@@ -276,8 +276,7 @@ describe('EntityManagerMySql', () => {
 
   test(`1:1 relationships with an inverse side primary key of 0 should link`, async () => {
     // Set up static data with id of 0
-    const driver = orm.em.getDriver();
-    const response = await driver.getConnection().execute('SET sql_mode = \'NO_AUTO_VALUE_ON_ZERO\';insert into foo_baz2 (id, name) values (?, ?)', [0, 'testBaz'], 'run');
+    const response = await orm.em.execute('set sql_mode = \'NO_AUTO_VALUE_ON_ZERO\'; insert into foo_baz2 (id, name) values (?, ?); set sql_mode = \'\'', [0, 'testBaz'], 'run');
     expect(response[1]).toMatchObject({
       affectedRows: 1,
       insertId: 0,
@@ -306,7 +305,7 @@ describe('EntityManagerMySql', () => {
   test('transactions', async () => {
     const god1 = new Author2('God1', 'hello@heaven1.god');
     await orm.em.begin();
-    await orm.em.persist(god1);
+    orm.em.persist(god1);
     await orm.em.rollback();
     const res1 = await orm.em.findOne(Author2, { name: 'God1' });
     expect(res1).toBeNull();

@@ -1868,6 +1868,7 @@ describe('EntityManagerPostgre', () => {
     expect(Subscriber.log).toHaveLength(2);
     const updates = Subscriber.log.reduce((x, y) => x.concat(y), []).filter(c => c.type === ChangeSetType.UPDATE);
     expect(updates).toHaveLength(0);
+    Subscriber.log.length = 0;
   });
 
   test('getConnection() with replicas (GH issue #1963)', async () => {

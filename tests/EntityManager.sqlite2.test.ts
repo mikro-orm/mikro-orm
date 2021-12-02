@@ -1,4 +1,5 @@
 import type { EntityName } from '@mikro-orm/core';
+import { setTimeout } from 'timers/promises';
 import { ArrayCollection, Collection, EntityManager, LockMode, MikroORM, QueryOrder, ValidationError, wrap } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { initORMSqlite2, mockLogger, wipeDatabaseSqlite2 } from './bootstrap';
@@ -846,7 +847,7 @@ describe('EntityManagerSqlite2', () => {
     expect(+author.updatedAt - +author.createdAt).toBeLessThanOrEqual(1);
 
     author.name = 'name1';
-    await new Promise(resolve => setTimeout(resolve, 10));
+    await setTimeout(10);
     await repo.persistAndFlush(author);
     await expect(author.createdAt).toBeDefined();
     await expect(author.updatedAt).toBeDefined();
@@ -933,12 +934,15 @@ describe('EntityManagerSqlite2', () => {
     const bar3 = orm.em.create(FooBar4, { name: 'bar 3' });
     bar1.fooBar = bar2;
     await orm.em.persistAndFlush([bar1, bar3]);
+
     bar1.fooBar = undefined;
     bar3.fooBar = bar2;
 
     const mock = mockLogger(orm, ['query']);
 
+    await setTimeout(10);
     await orm.em.flush();
+
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('select `f0`.`id` from `foo_bar4` as `f0` where ((`f0`.`id` = ? and `f0`.`version` = ?) or (`f0`.`id` = ? and `f0`.`version` = ?))');
     expect(mock.mock.calls[2][0]).toMatch('update `foo_bar4` set `foo_bar_id` = case when (`id` = ?) then ? when (`id` = ?) then ? else `foo_bar_id` end, `updated_at` = case when (`id` = ?) then ? when (`id` = ?) then ? else `updated_at` end, `version` = `version` + 1 where `id` in (?, ?)');

@@ -8,7 +8,7 @@ import { UnitOfWork } from './unit-of-work';
 import type { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, InsertOptions, LockOptions, UpdateOptions, GetReferenceOptions } from './drivers';
 import type { AnyEntity, AutoPath, Dictionary, EntityData, EntityDictionary, EntityDTO, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, New, Populate, PopulateOptions, Primary } from './typings';
 import type { IsolationLevel } from './enums';
-import { LoadStrategy, LockMode, ReferenceType, SCALAR_TYPES } from './enums';
+import { FlushMode, LoadStrategy, LockMode, ReferenceType, SCALAR_TYPES } from './enums';
 import type { MetadataStorage } from './metadata';
 import type { Transaction } from './connections';
 import { EventManager, TransactionEventBroadcaster } from './events';
@@ -93,7 +93,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Finds all entities matching your `where` query. You can pass additional options via the `options` parameter.
    */
   async find<T extends AnyEntity<T>, P extends string = never>(entityName: EntityName<T>, where: FilterQuery<T>, options: FindOptions<T, P> = {}): Promise<Loaded<T, P>[]> {
-    if (options.disableIdentityMap) {
+    if (!options.disableIdentityMap) {
+      await this.tryFlush(entityName, options);
+    } else {
       const fork = this.fork({ clear: false });
       const ret = await fork.find<T, P>(entityName, where, { ...options, disableIdentityMap: false });
       fork.clear();
@@ -277,7 +279,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Finds first entity matching your `where` query.
    */
   async findOne<T extends AnyEntity<T>, P extends string = never>(entityName: EntityName<T>, where: FilterQuery<T>, options: FindOneOptions<T, P> = {}): Promise<Loaded<T, P> | null> {
-    if (options.disableIdentityMap) {
+    if (!options.disableIdentityMap) {
+      await this.tryFlush(entityName, options);
+    } else {
       const fork = this.fork({ clear: false });
       const ret = await fork.findOne<T, P>(entityName, where, { ...options, disableIdentityMap: false });
       fork.clear();
@@ -378,6 +382,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async rollback(): Promise<void> {
     await this.getConnection('write').rollback(this.transactionContext, new TransactionEventBroadcaster(this));
     delete this.transactionContext;
+    this.getUnitOfWork().clearActionsQueue();
   }
 
   /**
@@ -675,6 +680,20 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async flush(): Promise<void> {
     await this.getUnitOfWork().commit();
+  }
+
+  protected async tryFlush<T>(entityName: EntityName<T>, options: { flushMode?: FlushMode }): Promise<void> {
+    const flushMode = options.flushMode ?? this.config.get('flushMode');
+    entityName = Utils.className(entityName);
+    const meta = this.metadata.get(entityName);
+
+    if (flushMode === FlushMode.COMMIT) {
+      return;
+    }
+
+    if (flushMode === FlushMode.ALWAYS || this.getUnitOfWork().shouldAutoFlush(meta)) {
+      await this.flush();
+    }
   }
 
   /**

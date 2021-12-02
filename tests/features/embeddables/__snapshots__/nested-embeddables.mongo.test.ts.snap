@@ -3,11 +3,11 @@
 exports[`embedded entities in mongo diffing 1`] = `
 "function(entity) {
   const ret = {};
-  if ('_id' in entity && entity._id != null) {
+  if (typeof entity._id !== 'undefined' && entity._id != null) {
     ret._id = clone(entity._id);
   }
 
-  if ('name' in entity) {
+  if (typeof entity.name !== 'undefined') {
     ret.name = entity.name;
   }
 

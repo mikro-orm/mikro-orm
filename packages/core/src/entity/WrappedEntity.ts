@@ -15,6 +15,7 @@ import type { EntityIdentifier } from './EntityIdentifier';
 export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
 
   __initialized = true;
+  __touched = false;
   __populated?: boolean;
   __lazyInitialized?: boolean;
   __managed?: boolean;
@@ -22,6 +23,7 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   __em?: EntityManager;
   __serializationContext: { root?: SerializationContext<T>; populate?: PopulateOptions<T>[] } = {};
   __loadedProperties = new Set<string>();
+  __data: Dictionary = {};
 
   /** holds last entity data snapshot so we can compute changes when persisting managed entities */
   __originalEntityData?: EntityData<T>;
@@ -36,6 +38,10 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
 
   isInitialized(): boolean {
     return this.__initialized;
+  }
+
+  isTouched(): boolean {
+    return this.__touched;
   }
 
   populated(populated = true): void {

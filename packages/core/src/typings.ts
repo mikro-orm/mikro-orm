@@ -92,6 +92,7 @@ export type QBFilterQuery<T = any> = FilterQuery<T> | Dictionary;
 
 export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T | unknown = PrimaryProperty<T>, P extends string = string> {
   isInitialized(): boolean;
+  isTouched(): boolean;
   populated(populated?: boolean): void;
   init<P extends Populate<T> = Populate<T>>(populated?: boolean, populate?: P, lockMode?: LockMode): Promise<T>;
   toReference<PK2 extends PK | unknown = PrimaryProperty<T>, P2 extends string = string>(): IdentifiedReference<T, PK2> & LoadedReference<T>;
@@ -115,6 +116,7 @@ export interface IWrappedEntityInternal<T, PK extends keyof T | unknown = Primar
   __platform: Platform;
   __factory: EntityFactory; // internal factory instance that has its own global fork
   __initialized: boolean;
+  __touched: boolean;
   __originalEntityData?: EntityData<T>;
   __loadedProperties: Set<string>;
   __identifier?: EntityIdentifier;
