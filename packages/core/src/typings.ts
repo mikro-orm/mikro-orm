@@ -8,6 +8,7 @@ import type { Platform } from './platforms';
 import type { Configuration } from './utils';
 import { EntityComparator, Utils } from './utils';
 import type { EntityManager } from './EntityManager';
+import type { IDatabaseDriver } from './drivers/IDatabaseDriver';
 
 export type Constructor<T = unknown> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
@@ -596,6 +597,20 @@ export interface IHydrator {
 
 export interface HydratorConstructor {
   new (metadata: MetadataStorage, platform: Platform, config: Configuration): IHydrator;
+}
+
+export interface IComparator {
+  diffEntities<T>(entityName: string, a: EntityData<T>, b: EntityData<T>): EntityData<T>;
+  prepareEntity<T extends AnyEntity<T>>(entity: T): EntityData<T>;
+  mapResult<T extends AnyEntity<T>>(entityName: string, result: EntityDictionary<T>): EntityData<T> | null;
+  getEntityComparator<T>(entityName: string): (a: T, b: T) => EntityData<T>;
+  getPkGetter<T extends AnyEntity<T>>(meta: EntityMetadata<T>): (e: T) => Primary<T>;
+  getPkGetterConverted<T extends AnyEntity<T>>(meta: EntityMetadata<T>): (e: T) => Primary<T>;
+  getPkSerializer<T extends AnyEntity<T>>(meta: EntityMetadata<T>): (e: T) => string;
+}
+
+export interface ComapratorConstructor {
+  new (metadata: MetadataStorage, driver: IDatabaseDriver): IComparator;
 }
 
 export interface ISeedManager {

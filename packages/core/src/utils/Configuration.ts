@@ -6,6 +6,7 @@ import { FileCacheAdapter, NullCacheAdapter } from '../cache';
 import type { EntityRepository } from '../entity';
 import type {
   AnyEntity,
+  ComapratorConstructor,
   Constructor,
   Dictionary,
   EntityClass,
@@ -36,6 +37,7 @@ import { NotFoundError } from '../errors';
 import { RequestContext } from './RequestContext';
 import { LoadStrategy } from '../enums';
 import { MemoryCacheAdapter } from '../cache/MemoryCacheAdapter';
+import { EntityComparator } from './EntityComparator';
 
 export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
@@ -61,6 +63,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => NotFoundError.findOneFailed(entityName, where),
     baseDir: process.cwd(),
     hydrator: ObjectHydrator,
+    comparator: EntityComparator,
     loadStrategy: LoadStrategy.SELECT_IN,
     autoJoinOneToOneOwner: true,
     propagateToOneOwner: true,
@@ -198,6 +201,10 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   getHydrator(metadata: MetadataStorage): IHydrator {
     return this.cached(this.options.hydrator, metadata, this.platform, this);
+  }
+
+  getComparator(metadata: MetadataStorage) {
+    return this.cached(this.options.comparator, metadata, this.getDriver());
   }
 
   /**
@@ -401,6 +408,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   useBatchUpdates?: boolean;
   batchSize: number;
   hydrator: HydratorConstructor;
+  comparator: ComapratorConstructor;
   loadStrategy: LoadStrategy;
   entityRepository?: Constructor<EntityRepository<any>>;
   replicas?: Partial<ConnectionOptions>[];

@@ -6,13 +6,12 @@ import type { AssignOptions, EntityLoaderOptions, EntityRepository, IdentifiedRe
 import { EntityAssigner, EntityFactory, EntityLoader, EntityValidator, Reference } from './entity';
 import { UnitOfWork } from './unit-of-work';
 import type { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, InsertOptions, LockOptions, UpdateOptions, GetReferenceOptions } from './drivers';
-import type { AnyEntity, AutoPath, Dictionary, EntityData, EntityDictionary, EntityDTO, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, New, Populate, PopulateOptions, Primary } from './typings';
+import type { AnyEntity, AutoPath, Dictionary, EntityData, EntityDictionary, EntityDTO, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, IComparator, Loaded, New, Populate, PopulateOptions, Primary } from './typings';
 import type { IsolationLevel } from './enums';
 import { LoadStrategy, LockMode, ReferenceType, SCALAR_TYPES } from './enums';
 import type { MetadataStorage } from './metadata';
 import type { Transaction } from './connections';
 import { EventManager, TransactionEventBroadcaster } from './events';
-import { EntityComparator } from './utils/EntityComparator';
 import { OptimisticLockError, ValidationError } from './errors';
 
 /**
@@ -43,7 +42,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
               private readonly metadata: MetadataStorage,
               private readonly useContext = true,
               private readonly eventManager = new EventManager(config.get('subscribers')),
-              private readonly comparator = new EntityComparator(metadata, driver.getPlatform())) { }
+              private readonly comparator = config.getComparator(metadata)) { }
 
   /**
    * Gets the Driver instance used by this EntityManager.
@@ -822,7 +821,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Gets the EntityComparator.
    */
-  getComparator(): EntityComparator {
+  getComparator(): IComparator {
     return this.comparator;
   }
 
