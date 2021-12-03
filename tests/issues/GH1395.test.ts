@@ -1,5 +1,5 @@
 import { ObjectId } from 'bson';
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, MikroORM, PrimaryKey, Property, t, wrap } from '@mikro-orm/core';
 
 export interface EmailMessageTest {
   html?: string;
@@ -17,6 +17,14 @@ export class TestTemplate {
 
   @Property({ type: 'json', nullable: true })
   messages?: EmailMessageTest[];
+
+  @Property({ type: t.json, nullable: false })
+  geometry?: {
+    top: number;
+    left: number;
+    width: number;
+    height: number;
+  };
 
 }
 
@@ -78,6 +86,47 @@ describe('GH issue 1395', () => {
       { html: 'xxx', language: 'en' },
       { html: 'yyy', language: 'fr' },
     ]);
+  });
+
+  test('assign to JSON property (GH #2492)', async () => {
+    const item1 = orm.em.create(TestTemplate, {
+      name: 'test',
+      messages: [
+        { html: 'aaa', language: 'en' },
+        { html: 'bbb', language: 'fr' },
+      ],
+      geometry: {
+        top: 0,
+        left: 0,
+        width: 640,
+        height: 480,
+      },
+    });
+    expect(item1).toMatchObject({
+      name: 'test',
+      messages: [ { html: 'aaa', language: 'en' }, { html: 'bbb', language: 'fr' } ],
+      geometry: { top: 0, left: 0, width: 640, height: 480 },
+    });
+
+    const item2 = orm.em.create(TestTemplate, {});
+    wrap(item2).assign({
+      name: 'test',
+      messages: [
+        { html: 'aaa', language: 'en' },
+        { html: 'bbb', language: 'fr' },
+      ],
+      geometry: {
+        top: 0,
+        left: 0,
+        width: 640,
+        height: 480,
+      },
+    });
+    expect(item2).toMatchObject({
+      name: 'test',
+      messages: [ { html: 'aaa', language: 'en' }, { html: 'bbb', language: 'fr' } ],
+      geometry: { top: 0, left: 0, width: 640, height: 480 },
+    });
   });
 
 });
