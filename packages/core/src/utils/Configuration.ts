@@ -197,12 +197,15 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
-   * Gets instance of Hydrator.
+   * Gets instance of Hydrator. (cached)
    */
   getHydrator(metadata: MetadataStorage): IHydrator {
     return this.cached(this.options.hydrator, metadata, this.platform, this);
   }
 
+  /**
+   * Gets instance of Comparator. (cached)
+   */
   getComparator(metadata: MetadataStorage) {
     return this.cached(this.options.comparator, metadata, this.getDriver());
   }
