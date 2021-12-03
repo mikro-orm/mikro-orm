@@ -2365,7 +2365,7 @@ bser@2.1.1:
   dependencies:
     node-int64 "^0.4.0"
 
-bson@*, bson@^4.5.4:
+bson@*, bson@^4.5.4, bson@^4.6.0:
   version "4.6.0"
   resolved "https://registry.yarnpkg.com/bson/-/bson-4.6.0.tgz#15c3b39ba3940c3d915a0c44d51459f4b4fbf1b2"
   integrity sha512-8jw1NU1hglS+Da1jDOUYuNcBJ4cNHCFIqzlwoFNnsTOg2R/ox0aTYcTiBN4dzRa9q7Cvy6XErh3L8ReTEb9AQQ==
@@ -5616,6 +5616,17 @@ mongodb@4.2.0:
   integrity sha512-lg3MJ9dAKxhogRnIB6/j63gfD7JryZwRC0nNzZ82RhENw4nCmscZVqRfOmNzTvSNndJx9ZhxZpm9JvnKuH/GTA==
   dependencies:
     bson "^4.5.4"
+    denque "^2.0.1"
+    mongodb-connection-string-url "^2.2.0"
+  optionalDependencies:
+    saslprep "^1.0.3"
+
+mongodb@4.2.1:
+  version "4.2.1"
+  resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-4.2.1.tgz#c167db158ab0bf6552b3f9c91b396cb4100c2f04"
+  integrity sha512-nDC+ulM/Ea3Q2VG5eemuGfB7T4ORwrtKegH2XW9OLlUBgQF6OTNrzFCS1Z3SJGVA+T0Sr1xBYV6DMnp0A7us0g==
+  dependencies:
+    bson "^4.6.0"
     denque "^2.0.1"
     mongodb-connection-string-url "^2.2.0"
   optionalDependencies:

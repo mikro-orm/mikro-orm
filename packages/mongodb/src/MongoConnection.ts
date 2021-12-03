@@ -1,6 +1,6 @@
 import type {
   Collection, Db, MongoClientOptions, ClientSession, BulkWriteResult, Filter, UpdateFilter, OptionalId, UpdateResult,
-  DeleteResult, InsertManyResult, InsertOneResult, WithId,
+  DeleteResult, InsertManyResult, InsertOneResult,
 } from 'mongodb';
 import { MongoClient } from 'mongodb';
 import { ObjectId } from 'bson';
@@ -116,7 +116,7 @@ export class MongoConnection extends Connection {
       options.projection = fields.reduce((o, k) => ({ ...o, [k]: 1 }), {});
     }
 
-    const resultSet = this.getCollection<T>(collection).find(where as Filter<WithId<T>>, options);
+    const resultSet = this.getCollection<T>(collection).find(where as Filter<T>, options);
     let query = `db.getCollection('${collection}').find(${this.logObject(where)}, ${this.logObject(options)})`;
     orderBy = Utils.asArray(orderBy);
 
