@@ -28,7 +28,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   private readonly validator = new EntityValidator(this.config.get('strict'));
   private readonly repositoryMap: Dictionary<EntityRepository<AnyEntity>> = {};
   private readonly entityLoader: EntityLoader = new EntityLoader(this);
-  private readonly comparator = new EntityComparator(this.metadata, this.driver.getPlatform());
   private readonly unitOfWork: UnitOfWork = new UnitOfWork(this);
   private readonly entityFactory: EntityFactory = new EntityFactory(this.unitOfWork, this);
   private readonly resultCache = this.config.getResultCacheAdapter();
@@ -43,7 +42,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
               private readonly driver: D,
               private readonly metadata: MetadataStorage,
               private readonly useContext = true,
-              private readonly eventManager = new EventManager(config.get('subscribers'))) { }
+              private readonly eventManager = new EventManager(config.get('subscribers')),
+              private readonly comparator = new EntityComparator(metadata, driver.getPlatform())) { }
 
   /**
    * Gets the Driver instance used by this EntityManager.
@@ -733,7 +733,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     // we need to allow global context here as forking from global EM is fine
     const allowGlobalContext = this.config.get('allowGlobalContext');
     this.config.set('allowGlobalContext', true);
-    const em = new (this.constructor as typeof EntityManager)(this.config, this.driver, this.metadata, options.useContext, eventManager);
+    const em = new (this.constructor as typeof EntityManager)(this.config, this.driver, this.metadata, options.useContext, eventManager, this.comparator);
     this.config.set('allowGlobalContext', allowGlobalContext);
 
     em.filters = { ...this.filters };

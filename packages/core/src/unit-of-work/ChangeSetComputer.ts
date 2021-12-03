@@ -10,14 +10,14 @@ import { EntityComparator } from '../utils/EntityComparator';
 
 export class ChangeSetComputer {
 
-  private readonly comparator = new EntityComparator(this.metadata, this.platform);
 
   constructor(private readonly validator: EntityValidator,
               private readonly collectionUpdates: Set<Collection<AnyEntity>>,
               private readonly removeStack: Set<AnyEntity>,
               private readonly metadata: MetadataStorage,
               private readonly platform: Platform,
-              private readonly config: Configuration) { }
+              private readonly config: Configuration,
+              private readonly comparator = new EntityComparator(metadata, platform)) { }
 
   computeChangeSet<T extends AnyEntity<T>>(entity: T): ChangeSet<T> | null {
     const meta = this.metadata.get(entity.constructor.name);
