@@ -939,7 +939,7 @@ describe('EntityManagerSqlite2', () => {
 
     const mock = mockLogger(orm, ['query']);
 
-    await setTimeout(10);
+    await new Promise(resolve => setTimeout(resolve, 10));
     await orm.em.flush();
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
