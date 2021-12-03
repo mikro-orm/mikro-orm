@@ -13,11 +13,13 @@ describe('RequestContext', () => {
 
   test('create new context', async () => {
     expect(RequestContext.getEntityManager()).toBeUndefined();
+    expect(orm.em.id).toBe(1);
     RequestContext.create(orm.em, () => {
       const em = RequestContext.getEntityManager()!;
       expect(em).not.toBe(orm.em);
-      // access UoW via property so we do not get the one from request context automatically
-      // @ts-ignore
+      expect(orm.em.id).not.toBe(1);
+      expect(orm.em.id).toBe(em.id);
+      // @ts-expect-error access UoW via property so we do not get the one from request context automatically
       expect(em.unitOfWork.getIdentityMap()).not.toBe(orm.em.unitOfWork.getIdentityMap());
       expect(RequestContext.currentRequestContext()).not.toBeUndefined();
       expect(RequestContext.currentRequestContext()!.em).toBe(em);
@@ -30,8 +32,7 @@ describe('RequestContext', () => {
     const ret = await RequestContext.createAsync(orm.em, async () => {
       const em = RequestContext.getEntityManager()!;
       expect(em).not.toBe(orm.em);
-      // access UoW via property so we do not get the one from request context automatically
-      // @ts-ignore
+      // @ts-expect-error access UoW via property so we do not get the one from request context automatically
       expect(em.unitOfWork.getIdentityMap()).not.toBe(orm.em.unitOfWork.getIdentityMap());
       expect(RequestContext.currentRequestContext()).not.toBeUndefined();
 

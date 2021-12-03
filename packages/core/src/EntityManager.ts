@@ -23,7 +23,7 @@ import { OptimisticLockError, ValidationError } from './errors';
 export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
   private static counter = 1;
-  readonly id = EntityManager.counter++;
+  readonly _id = EntityManager.counter++;
   readonly name = this.config.get('contextName');
   private readonly validator = new EntityValidator(this.config.get('strict'));
   private readonly repositoryMap: Dictionary<EntityRepository<AnyEntity>> = {};
@@ -765,7 +765,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Gets the EntityManager based on current transaction/request context.
    */
-  getContext(): EntityManager {
+  getContext(validate = true): EntityManager {
     let em = TransactionContext.getEntityManager(); // prefer the tx context
 
     if (!em) {
@@ -773,7 +773,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       em = this.useContext ? (this.config.get('context')(this.name) || this) : this;
     }
 
-    if (this.useContext && em.id === 1 && !this.config.get('allowGlobalContext')) {
+    if (validate && this.useContext && em.id === 1 && !this.config.get('allowGlobalContext')) {
       throw ValidationError.cannotUseGlobalContext();
     }
 
@@ -942,6 +942,14 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       const expiration = Array.isArray(config) ? config[1] : (Utils.isNumber(config) ? config : undefined);
       await this.resultCache.set(key.key, data instanceof Function ? data() : data, '', expiration);
     }
+  }
+
+  /**
+   * Returns the ID of this EntityManager. Respects the context, so global EM will give you the contextual ID
+   * if executed inside request context handler.
+   */
+  get id(): number {
+    return this.getContext(false)._id;
   }
 
   /**
