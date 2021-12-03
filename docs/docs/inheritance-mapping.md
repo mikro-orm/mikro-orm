@@ -214,7 +214,7 @@ an adverse impact on the index and column layout inside the database.
 This strategy is very efficient for querying across all types in the hierarchy or 
 for specific types. No table joins are required, only a WHERE clause listing the 
 type identifiers. In particular, relationships involving types that employ this 
-mapping strategy are very performing.
+mapping strategy are very performant.
 
 ### SQL Schema considerations
 
