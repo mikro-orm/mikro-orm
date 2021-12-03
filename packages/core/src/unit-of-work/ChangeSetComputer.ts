@@ -9,13 +9,14 @@ import { ReferenceType } from '../enums';
 
 export class ChangeSetComputer {
 
+  private readonly comparator = this.config.getComparator(this.metadata);
+
   constructor(private readonly validator: EntityValidator,
               private readonly collectionUpdates: Set<Collection<AnyEntity>>,
               private readonly removeStack: Set<AnyEntity>,
               private readonly metadata: MetadataStorage,
               private readonly platform: Platform,
-              private readonly config: Configuration,
-              private readonly comparator = config.getComparator(metadata)) { }
+              private readonly config: Configuration) { }
 
   computeChangeSet<T extends AnyEntity<T>>(entity: T): ChangeSet<T> | null {
     const meta = this.metadata.get(entity.constructor.name);
