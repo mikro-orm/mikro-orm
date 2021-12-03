@@ -1,12 +1,12 @@
 import { inspect } from 'util';
 
-import type { Configuration } from './utils';
+import type { Configuration, EntityComparator } from './utils';
 import { QueryHelper, TransactionContext, Utils } from './utils';
 import type { AssignOptions, EntityLoaderOptions, EntityRepository, IdentifiedReference } from './entity';
 import { EntityAssigner, EntityFactory, EntityLoader, EntityValidator, Reference } from './entity';
 import { UnitOfWork } from './unit-of-work';
 import type { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, InsertOptions, LockOptions, UpdateOptions, GetReferenceOptions } from './drivers';
-import type { AnyEntity, AutoPath, Dictionary, EntityData, EntityDictionary, EntityDTO, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, IComparator, Loaded, New, Populate, PopulateOptions, Primary } from './typings';
+import type { AnyEntity, AutoPath, Dictionary, EntityData, EntityDictionary, EntityDTO, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, New, Populate, PopulateOptions, Primary } from './typings';
 import type { IsolationLevel } from './enums';
 import { LoadStrategy, LockMode, ReferenceType, SCALAR_TYPES } from './enums';
 import type { MetadataStorage } from './metadata';
@@ -27,6 +27,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   private readonly validator = new EntityValidator(this.config.get('strict'));
   private readonly repositoryMap: Dictionary<EntityRepository<AnyEntity>> = {};
   private readonly entityLoader: EntityLoader = new EntityLoader(this);
+  private readonly comparator = this.config.getComparator(this.metadata);
   private readonly unitOfWork: UnitOfWork = new UnitOfWork(this);
   private readonly entityFactory: EntityFactory = new EntityFactory(this.unitOfWork, this);
   private readonly resultCache = this.config.getResultCacheAdapter();
@@ -41,8 +42,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
               private readonly driver: D,
               private readonly metadata: MetadataStorage,
               private readonly useContext = true,
-              private readonly eventManager = new EventManager(config.get('subscribers')),
-              private readonly comparator = config.getComparator(metadata)) { }
+              private readonly eventManager = new EventManager(config.get('subscribers'))) { }
 
   /**
    * Gets the Driver instance used by this EntityManager.
@@ -732,7 +732,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     // we need to allow global context here as forking from global EM is fine
     const allowGlobalContext = this.config.get('allowGlobalContext');
     this.config.set('allowGlobalContext', true);
-    const em = new (this.constructor as typeof EntityManager)(this.config, this.driver, this.metadata, options.useContext, eventManager, this.comparator);
+    const em = new (this.constructor as typeof EntityManager)(this.config, this.driver, this.metadata, options.useContext, eventManager);
     this.config.set('allowGlobalContext', allowGlobalContext);
 
     em.filters = { ...this.filters };
@@ -821,7 +821,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Gets the EntityComparator.
    */
-  getComparator(): IComparator {
+  getComparator(): EntityComparator {
     return this.comparator;
   }
 

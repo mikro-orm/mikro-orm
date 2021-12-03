@@ -599,18 +599,8 @@ export interface HydratorConstructor {
   new (metadata: MetadataStorage, platform: Platform, config: Configuration): IHydrator;
 }
 
-export interface IComparator {
-  diffEntities<T>(entityName: string, a: EntityData<T>, b: EntityData<T>): EntityData<T>;
-  prepareEntity<T extends AnyEntity<T>>(entity: T): EntityData<T>;
-  mapResult<T extends AnyEntity<T>>(entityName: string, result: EntityDictionary<T>): EntityData<T> | null;
-  getEntityComparator<T>(entityName: string): (a: T, b: T) => EntityData<T>;
-  getPkGetter<T extends AnyEntity<T>>(meta: EntityMetadata<T>): (e: T) => Primary<T>;
-  getPkGetterConverted<T extends AnyEntity<T>>(meta: EntityMetadata<T>): (e: T) => Primary<T>;
-  getPkSerializer<T extends AnyEntity<T>>(meta: EntityMetadata<T>): (e: T) => string;
-}
-
 export interface ComapratorConstructor {
-  new (metadata: MetadataStorage, driver: IDatabaseDriver): IComparator;
+  new (metadata: MetadataStorage, driver: IDatabaseDriver): EntityComparator;
 }
 
 export interface ISeedManager {
