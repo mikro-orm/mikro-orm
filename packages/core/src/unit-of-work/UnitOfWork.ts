@@ -36,7 +36,8 @@ export class UnitOfWork {
 
   merge<T extends AnyEntity<T>>(entity: T, visited?: WeakSet<AnyEntity>): void {
     const wrapped = entity.__helper!;
-    wrapped.__em = this.em;
+    // only for v4, as `fork()` uses `em.merge()` in v4 when copying the identity map
+    wrapped.__em ??= this.em;
     wrapped.__populated = true;
 
     if (!wrapped.hasPrimaryKey()) {
