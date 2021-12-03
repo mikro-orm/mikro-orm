@@ -55,6 +55,10 @@ export class EntityFactory {
     entity.__helper!.__initialized = options.initialized;
     this.hydrate(entity, meta2, data, options);
 
+    if (exists && meta.discriminatorColumn && !(entity instanceof meta2.class)) {
+      Object.setPrototypeOf(entity, meta2.prototype);
+    }
+
     if (options.merge && entity.__helper!.hasPrimaryKey()) {
       this.unitOfWork.registerManaged(entity, data, options.refresh && options.initialized, options.newEntity);
     }
