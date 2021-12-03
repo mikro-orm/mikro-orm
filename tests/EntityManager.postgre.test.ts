@@ -278,7 +278,9 @@ describe('EntityManagerPostgre', () => {
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 
-    const mock = mockLogger(orm, ['query']);
+    const mock = jest.fn();
+    const logger = new Logger(mock, ['query']);
+    Object.assign(orm.config, { logger });
     const em = orm.em.fork();
     await em.begin();
 
