@@ -65,9 +65,10 @@ export class EntityAssigner {
       }
 
       if (options.mergeObjects && Utils.isPlainObject(value)) {
-        Utils.merge(entity[prop as keyof T], value);
+        entity[prop] ??= {};
+        Utils.merge(entity[prop], value);
       } else if (!props[prop] || props[prop].setter || !props[prop].getter) {
-        entity[prop as keyof T] = value;
+        entity[prop] = value;
       }
     });
 
