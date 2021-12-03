@@ -8,7 +8,6 @@ import type { Platform } from './platforms';
 import type { Configuration } from './utils';
 import { EntityComparator, Utils } from './utils';
 import type { EntityManager } from './EntityManager';
-import type { IDatabaseDriver } from './drivers/IDatabaseDriver';
 
 export type Constructor<T = unknown> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
@@ -600,7 +599,7 @@ export interface HydratorConstructor {
 }
 
 export interface ComapratorConstructor {
-  new (metadata: MetadataStorage, driver: IDatabaseDriver): EntityComparator;
+  new (metadata: MetadataStorage, platform: Platform): EntityComparator;
 }
 
 export interface ISeedManager {

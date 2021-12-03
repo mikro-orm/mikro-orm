@@ -207,7 +207,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets instance of Comparator. (cached)
    */
   getComparator(metadata: MetadataStorage) {
-    return this.cached(this.options.comparator, metadata, this.getDriver());
+    return this.cached(this.options.comparator, metadata, this.platform);
   }
 
   /**
