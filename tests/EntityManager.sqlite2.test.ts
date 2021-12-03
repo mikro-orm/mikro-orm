@@ -1,5 +1,4 @@
 import type { EntityName } from '@mikro-orm/core';
-import { setTimeout } from 'timers/promises';
 import { ArrayCollection, Collection, EntityManager, LockMode, MikroORM, QueryOrder, ValidationError, wrap } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { initORMSqlite2, mockLogger, wipeDatabaseSqlite2 } from './bootstrap';
@@ -847,7 +846,7 @@ describe('EntityManagerSqlite2', () => {
     expect(+author.updatedAt - +author.createdAt).toBeLessThanOrEqual(1);
 
     author.name = 'name1';
-    await setTimeout(10);
+    await new Promise(resolve => setTimeout(resolve, 10));
     await repo.persistAndFlush(author);
     await expect(author.createdAt).toBeDefined();
     await expect(author.updatedAt).toBeDefined();
