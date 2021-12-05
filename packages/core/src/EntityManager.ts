@@ -7,8 +7,8 @@ import { EntityAssigner, EntityFactory, EntityLoader, EntityValidator, Reference
 import { UnitOfWork } from './unit-of-work';
 import type { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, InsertOptions, LockOptions, UpdateOptions, GetReferenceOptions } from './drivers';
 import type { AnyEntity, AutoPath, Dictionary, EntityData, EntityDictionary, EntityDTO, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, New, Populate, PopulateOptions, Primary } from './typings';
-import type { IsolationLevel } from './enums';
 import { FlushMode, LoadStrategy, LockMode, ReferenceType, SCALAR_TYPES } from './enums';
+import type { TransactionOptions } from './enums';
 import type { MetadataStorage } from './metadata';
 import type { Transaction } from './connections';
 import { EventManager, TransactionEventBroadcaster } from './events';
@@ -35,6 +35,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   private filters: Dictionary<FilterDef<any>> = {};
   private filterParams: Dictionary<Dictionary> = {};
   private transactionContext?: Transaction;
+  private flushMode?: FlushMode;
 
   /**
    * @internal
@@ -179,6 +180,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   getFilterParams<T extends Dictionary = Dictionary>(name: string): T {
     return this.getContext().filterParams[name] as T;
+  }
+
+  setFlushMode(flushMode?: FlushMode): void {
+    this.flushMode = flushMode;
   }
 
   protected async processWhere<T extends AnyEntity<T>, P extends string = never>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, P> | FindOneOptions<T, P>, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<T>> {
@@ -345,8 +350,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Runs your callback wrapped inside a database transaction.
    */
-  async transactional<T>(cb: (em: D[typeof EntityManagerType]) => Promise<T>, options: { ctx?: Transaction; isolationLevel?: IsolationLevel } = {}): Promise<T> {
-    const em = this.fork({ clear: false });
+  async transactional<T>(cb: (em: D[typeof EntityManagerType]) => Promise<T>, options: TransactionOptions = {}): Promise<T> {
+    const em = this.fork({ clear: false, flushMode: options.flushMode });
     options.ctx ??= this.transactionContext;
 
     return TransactionContext.createAsync(em, async () => {
@@ -363,7 +368,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Starts new transaction bound to this EntityManager. Use `ctx` parameter to provide the parent when nesting transactions.
    */
-  async begin(options: { ctx?: Transaction; isolationLevel?: IsolationLevel } = {}): Promise<void> {
+  async begin(options: TransactionOptions = {}): Promise<void> {
     this.transactionContext = await this.getConnection('write').begin({ ...options, eventBroadcaster: new TransactionEventBroadcaster(this) });
   }
 
@@ -470,19 +475,19 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
   /**
    * Merges given entity to this EntityManager so it becomes managed. You can force refreshing of existing entities
-   * via second parameter. By default it will return already loaded entities without modifying them.
+   * via second parameter. By default, it will return already loaded entities without modifying them.
    */
   merge<T extends AnyEntity<T>>(entity: T, options?: MergeOptions): T;
 
   /**
    * Merges given entity to this EntityManager so it becomes managed. You can force refreshing of existing entities
-   * via second parameter. By default it will return already loaded entities without modifying them.
+   * via second parameter. By default, it will return already loaded entities without modifying them.
    */
   merge<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityData<T> | EntityDTO<T>, options?: MergeOptions): T;
 
   /**
    * Merges given entity to this EntityManager so it becomes managed. You can force refreshing of existing entities
-   * via second parameter. By default it will return already loaded entities without modifying them.
+   * via second parameter. By default, it will return already loaded entities without modifying them.
    */
   merge<T extends AnyEntity<T>>(entityName: EntityName<T> | T, data?: EntityData<T> | EntityDTO<T> | MergeOptions, options: MergeOptions = {}): T {
     if (Utils.isEntity(entityName)) {
@@ -682,8 +687,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     await this.getUnitOfWork().commit();
   }
 
-  protected async tryFlush<T>(entityName: EntityName<T>, options: { flushMode?: FlushMode }): Promise<void> {
-    const flushMode = options.flushMode ?? this.config.get('flushMode');
+  /**
+   * @internal
+   */
+  async tryFlush<T>(entityName: EntityName<T>, options: { flushMode?: FlushMode }): Promise<void> {
+    const flushMode = options.flushMode ?? this.getContext().flushMode ?? this.config.get('flushMode');
     entityName = Utils.className(entityName);
     const meta = this.metadata.get(entityName);
 
@@ -753,6 +761,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const allowGlobalContext = this.config.get('allowGlobalContext');
     this.config.set('allowGlobalContext', true);
     const em = new (this.constructor as typeof EntityManager)(this.config, this.driver, this.metadata, options.useContext, eventManager);
+    em.setFlushMode(options.flushMode);
     this.config.set('allowGlobalContext', allowGlobalContext);
 
     em.filters = { ...this.filters };
@@ -986,11 +995,12 @@ export interface MergeOptions {
   schema?: string;
 }
 
-interface ForkOptions {
+export interface ForkOptions {
   /** do we want clear identity map? defaults to true */
   clear?: boolean;
   /** use request context? should be used only for top level request scope EM, defaults to false */
   useContext?: boolean;
   /** do we want to use fresh EventManager instance? defaults to false (global instance) */
   freshEventManager?: boolean;
+  flushMode?: FlushMode;
 }

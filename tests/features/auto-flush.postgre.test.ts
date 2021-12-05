@@ -76,6 +76,69 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     expect(mock.mock.calls).toHaveLength(7);
   });
 
+  test('em.fork() supports flushMode option', async () => {
+    await createEntities();
+    const mock = mockLogger(orm, ['query']);
+
+    const em = orm.em.fork({ flushMode: FlushMode.COMMIT });
+    const books = await em.find(Book2, {});
+    expect(books).toHaveLength(3);
+    books[0].price = 1000;
+
+    const ret = await Promise.all(books.map(async () => {
+      return em.find(Book2, { price: { $gt: 500 } });
+    }));
+    expect(ret[0]).toHaveLength(1);
+    expect(ret[1]).toHaveLength(1);
+    expect(ret[2]).toHaveLength(1);
+    expect(mock.mock.calls).toHaveLength(4);
+  });
+
+  test('em.transactional() supports flushMode option', async () => {
+    await createEntities();
+    const mock = mockLogger(orm, ['query']);
+
+    await orm.em.transactional(async () => {
+      const books = await orm.em.find(Book2, {});
+      expect(books).toHaveLength(3);
+      books[0].price = 1000;
+
+      const ret = await Promise.all(books.map(async () => {
+        return orm.em.find(Book2, { price: { $gt: 500 } });
+      }));
+      expect(ret[0]).toHaveLength(1);
+      expect(ret[1]).toHaveLength(1);
+      expect(ret[2]).toHaveLength(1);
+    }, { flushMode: FlushMode.COMMIT });
+
+    // update will be still triggered at the end of transaction, so as the last query before `commit`
+    expect(mock.mock.calls).toHaveLength(7);
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('select');
+    expect(mock.mock.calls[2][0]).toMatch('select');
+    expect(mock.mock.calls[3][0]).toMatch('select');
+    expect(mock.mock.calls[4][0]).toMatch('select');
+    expect(mock.mock.calls[5][0]).toMatch('update');
+    expect(mock.mock.calls[6][0]).toMatch('commit');
+  });
+
+  test('QB triggers auto-flushing', async () => {
+    await createEntities();
+    const mock = mockLogger(orm, ['query']);
+
+    const books = await orm.em.createQueryBuilder(Book2).select('*');
+    expect(books).toHaveLength(3);
+    books[0].price = 1000;
+
+    const ret = await Promise.all(books.map(async () => {
+      return orm.em.qb(Book2).select('*').where({ price: { $gt: 500 } });
+    }));
+    expect(ret[0]).toHaveLength(2);
+    expect(ret[1]).toHaveLength(2);
+    expect(ret[2]).toHaveLength(2);
+    expect(mock.mock.calls).toHaveLength(7);
+  });
+
   test('em.find() supports `FindOptions.flushMode` to allow disabling auto-flush for given query', async () => {
     await createEntities();
     const mock = mockLogger(orm, ['query']);
@@ -86,6 +149,23 @@ describe('automatic flushing when querying for overlapping entities via em.find/
 
     const ret = await Promise.all(books.map(async () => {
       return orm.em.find(Book2, { price: { $gt: 500 } }, { flushMode: FlushMode.COMMIT });
+    }));
+    expect(ret[0]).toHaveLength(1);
+    expect(ret[1]).toHaveLength(1);
+    expect(ret[2]).toHaveLength(1);
+    expect(mock.mock.calls).toHaveLength(4);
+  });
+
+  test('QB supports `setFlushMode()` to allow disabling auto-flush for given query', async () => {
+    await createEntities();
+    const mock = mockLogger(orm, ['query']);
+
+    const books = await orm.em.qb(Book2).select('*');
+    expect(books).toHaveLength(3);
+    books[0].price = 1000;
+
+    const ret = await Promise.all(books.map(async () => {
+      return orm.em.qb(Book2).select('*').where({ price: { $gt: 500 } }).setFlushMode(FlushMode.COMMIT);
     }));
     expect(ret[0]).toHaveLength(1);
     expect(ret[1]).toHaveLength(1);
@@ -131,9 +211,5 @@ describe('automatic flushing when querying for overlapping entities via em.find/
   });
 
   test.todo('em.find() triggers auto-flush when STI entity changed');
-  test.todo('QB triggers auto-flushing');
-  test.todo('QB supports `setFlushMode()` to allow disabling auto-flush for given query');
-  test.todo('em.fork() supports flushMode option');
-  test.todo('em.transactional() supports flushMode option');
 
 });
