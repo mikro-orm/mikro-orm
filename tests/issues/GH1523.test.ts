@@ -1,4 +1,4 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, wrap } from '@mikro-orm/core';
+import { Collection, Entity, FlushMode, ManyToOne, MikroORM, OneToMany, PrimaryKey, wrap } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 abstract class Base {
@@ -44,6 +44,7 @@ describe('GH issue 1523', () => {
       entities: [Base, Parent, Child, Param],
       dbName: ':memory:',
       type: 'sqlite',
+      flushMode: FlushMode.COMMIT,
     });
     await orm.getSchemaGenerator().createSchema();
   });
