@@ -4,7 +4,7 @@ import type { Transaction } from './connections';
 export const enum FlushMode {
   /** The `EntityManager` tries to delay the flush until the current Transaction is committed, although it might flush prematurely too. */
   COMMIT,
-  /** This is the default mode and it flushes the `EntityManager` only if necessary. */
+  /** This is the default mode, and it flushes the `EntityManager` only if necessary. */
   AUTO,
   /** Flushes the `EntityManager` before every query. */
   ALWAYS,

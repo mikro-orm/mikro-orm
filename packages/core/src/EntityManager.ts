@@ -761,7 +761,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const allowGlobalContext = this.config.get('allowGlobalContext');
     this.config.set('allowGlobalContext', true);
     const em = new (this.constructor as typeof EntityManager)(this.config, this.driver, this.metadata, options.useContext, eventManager);
-    em.setFlushMode(options.flushMode);
+    em.setFlushMode(options.flushMode ?? this.flushMode);
     this.config.set('allowGlobalContext', allowGlobalContext);
 
     em.filters = { ...this.filters };

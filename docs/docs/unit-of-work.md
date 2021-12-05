@@ -100,5 +100,39 @@ await em.persistAndFlush(user);
 You can find more information about transactions in [Transactions and concurrency](transactions.md) 
 page.
 
+## Flush Modes
+
+The flushing strategy is given by the `flushMode` of the current running `EntityManager`.
+
+- `FlushMode.COMMIT` - The `EntityManager` tries to delay the flush until the current Transaction is committed, although it might flush prematurely too.
+- `FlushMode.AUTO` - This is the default mode, and it flushes the `EntityManager` only if necessary.
+- `FlushMode.ALWAYS` - Flushes the `EntityManager` before every query.
+
+`FlushMode.AUTO` will try to detect changes on the entity we are querying, and flush
+if there is an overlap:
+
+```ts
+// querying for author will trigger auto-flush if we have new author persisted
+const a1 = new Author(...);
+orm.em.persist(a1);
+const r1 = await orm.em.find(Author, {});
+
+// querying author won't trigger auto-flush if we have new book, but no changes on author
+const b4 = new Book(...);
+orm.em.persist(b4);
+const r2 = await orm.em.find(Author, {});
+
+// but querying for book will trigger auto-flush
+const r3 = await orm.em.find(Book, {});
+```
+
+We can set the flush mode on different places:
+
+- in the ORM config via `Options.flushMode`
+- for given `EntityManager` instance (and its forks) via `em.setFlushMode()`
+- for given `EntityManager` fork via `em.fork({ flushMode })`
+- for given QueryBuilder instance via `qb.setFlushMode()`
+- for given transaction scope via `em.transactional(..., { flushMode })`
+
 > This part of documentation is highly inspired by [doctrine internals docs](https://www.doctrine-project.org/projects/doctrine-orm/en/2.6/reference/unitofwork.html)
 > as the behaviour here is pretty much the same.
