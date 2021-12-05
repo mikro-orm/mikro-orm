@@ -3,13 +3,14 @@ import { FlushMode } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 import { initORMPostgreSql, mockLogger, wipeDatabasePostgreSql } from '../bootstrap';
-import { Author2, Book2 } from '../entities-sql';
+import { Author2, BaseUser2, Book2, CompanyOwner2, Employee2, Manager2 } from '../entities-sql';
 
 describe('automatic flushing when querying for overlapping entities via em.find/One', () => {
 
   let orm: MikroORM<PostgreSqlDriver>;
 
-  beforeAll(async () => orm = await initORMPostgreSql());
+  // @ts-ignore
+  beforeAll(async () => orm = await initORMPostgreSql(undefined, [CompanyOwner2, Employee2, Manager2, BaseUser2]));
   beforeEach(async () => wipeDatabasePostgreSql(orm.em));
   afterAll(async () => orm.close(true));
 
@@ -210,6 +211,37 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     expect(mock.mock.calls).toHaveLength(7);
   });
 
-  test.todo('em.find() triggers auto-flush when STI entity changed');
+  test('em.find() triggers auto-flush when STI entity changed', async () => {
+    await orm.getSchemaGenerator().updateSchema();
+    await orm.em.nativeDelete(BaseUser2, {});
+
+    const employee1 = new Employee2('Emp', '1');
+    employee1.employeeProp = 1;
+    const employee2 = new Employee2('Emp', '2');
+    employee2.employeeProp = 2;
+    const manager = new Manager2('Man', '3');
+    manager.managerProp = 'i am manager';
+    const owner = new CompanyOwner2('Bruce', 'Almighty');
+    owner.ownerProp = 'i am owner';
+    owner.managerProp = 'i said i am owner';
+    owner.favouriteEmployee = employee2;
+    owner.favouriteManager = manager;
+
+    await orm.em.fork().persistAndFlush([owner, employee1]);
+
+    const mock = mockLogger(orm, ['query']);
+
+    const users = await orm.em.find(BaseUser2, {});
+    expect(users).toHaveLength(4);
+    users[0].lastName = '...';
+
+    const ret = await Promise.all(users.slice(0, 3).map(async () => {
+      return orm.em.find(BaseUser2, { lastName: '...' });
+    }));
+    expect(ret[0]).toHaveLength(1);
+    expect(ret[1]).toHaveLength(1);
+    expect(ret[2]).toHaveLength(1);
+    expect(mock.mock.calls).toHaveLength(7);
+  });
 
 });
