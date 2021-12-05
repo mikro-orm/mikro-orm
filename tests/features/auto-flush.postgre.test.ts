@@ -9,7 +9,6 @@ describe('automatic flushing when querying for overlapping entities via em.find/
 
   let orm: MikroORM<PostgreSqlDriver>;
 
-  // @ts-ignore
   beforeAll(async () => orm = await initORMPostgreSql(undefined, [CompanyOwner2, Employee2, Manager2, BaseUser2]));
   beforeEach(async () => wipeDatabasePostgreSql(orm.em));
   afterAll(async () => orm.close(true));
