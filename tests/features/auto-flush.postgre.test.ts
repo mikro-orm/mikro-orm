@@ -241,6 +241,8 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     expect(ret[1]).toHaveLength(1);
     expect(ret[2]).toHaveLength(1);
     expect(mock.mock.calls).toHaveLength(7);
+
+    await orm.getSchemaGenerator().dropSchema();
   });
 
 });
