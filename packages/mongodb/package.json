@@ -55,7 +55,7 @@
     "access": "public"
   },
   "dependencies": {
-    "mongodb": "4.2.0",
+    "mongodb": "4.2.1",
     "bson": "^4.5.4"
   },
   "devDependencies": {

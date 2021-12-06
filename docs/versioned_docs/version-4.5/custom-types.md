@@ -90,6 +90,15 @@ export class FooBar {
 }
 ```
 
+If our type implementation is stateless, e.g. if we want the type to behave
+differently for each property, we can use `customType` option and provide an
+instance of the type:
+
+```ts
+@Property({ customType: new MyDateType('DD-MM-YYYY') })
+born?: string;
+```
+
 ## Advanced example - PointType and WKT
 
 In this example we will combine mapping values via database as well as during runtime.
