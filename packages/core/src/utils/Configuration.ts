@@ -6,7 +6,6 @@ import { FileCacheAdapter, NullCacheAdapter } from '../cache';
 import type { EntityRepository } from '../entity';
 import type {
   AnyEntity,
-  ComapratorConstructor,
   Constructor,
   Dictionary,
   EntityClass,
@@ -63,7 +62,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => NotFoundError.findOneFailed(entityName, where),
     baseDir: process.cwd(),
     hydrator: ObjectHydrator,
-    comparator: EntityComparator,
     loadStrategy: LoadStrategy.SELECT_IN,
     autoJoinOneToOneOwner: true,
     propagateToOneOwner: true,
@@ -207,7 +205,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets instance of Comparator. (cached)
    */
   getComparator(metadata: MetadataStorage) {
-    return this.cached(this.options.comparator, metadata, this.platform);
+    return this.cached(EntityComparator, metadata, this.platform);
   }
 
   /**
@@ -411,7 +409,6 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   useBatchUpdates?: boolean;
   batchSize: number;
   hydrator: HydratorConstructor;
-  comparator: ComapratorConstructor;
   loadStrategy: LoadStrategy;
   entityRepository?: Constructor<EntityRepository<any>>;
   replicas?: Partial<ConnectionOptions>[];

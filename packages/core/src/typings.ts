@@ -598,10 +598,6 @@ export interface HydratorConstructor {
   new (metadata: MetadataStorage, platform: Platform, config: Configuration): IHydrator;
 }
 
-export interface ComapratorConstructor {
-  new (metadata: MetadataStorage, platform: Platform): EntityComparator;
-}
-
 export interface ISeedManager {
   refreshDatabase(): Promise<void>;
   seed(...seederClasses: { new(): Seeder }[]): Promise<void>;

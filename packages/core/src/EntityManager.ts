@@ -1,6 +1,6 @@
 import { inspect } from 'util';
 
-import type { Configuration, EntityComparator } from './utils';
+import type { Configuration } from './utils';
 import { QueryHelper, TransactionContext, Utils } from './utils';
 import type { AssignOptions, EntityLoaderOptions, EntityRepository, IdentifiedReference } from './entity';
 import { EntityAssigner, EntityFactory, EntityLoader, EntityValidator, Reference } from './entity';
@@ -12,6 +12,7 @@ import { LoadStrategy, LockMode, ReferenceType, SCALAR_TYPES } from './enums';
 import type { MetadataStorage } from './metadata';
 import type { Transaction } from './connections';
 import { EventManager, TransactionEventBroadcaster } from './events';
+import type { EntityComparator } from './utils/EntityComparator';
 import { OptimisticLockError, ValidationError } from './errors';
 
 /**
