@@ -6,11 +6,10 @@ import { ChangeSet, ChangeSetType } from './ChangeSet';
 import type { Collection, EntityValidator } from '../entity';
 import type { Platform } from '../platforms';
 import { ReferenceType } from '../enums';
-import { EntityComparator } from '../utils/EntityComparator';
 
 export class ChangeSetComputer {
 
-  private readonly comparator = new EntityComparator(this.metadata, this.platform);
+  private readonly comparator = this.config.getComparator(this.metadata);
 
   constructor(private readonly validator: EntityValidator,
               private readonly collectionUpdates: Set<Collection<AnyEntity>>,
