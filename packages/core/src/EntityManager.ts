@@ -9,7 +9,7 @@ import { LoadStrategy, LockMode, QueryOrderMap, ReferenceType, SCALAR_TYPES } fr
 import { MetadataStorage } from './metadata';
 import { Transaction } from './connections';
 import { EventManager, TransactionEventBroadcaster } from './events';
-import { EntityComparator } from './utils/EntityComparator';
+import type { EntityComparator } from './utils/EntityComparator';
 import { OptimisticLockError, ValidationError } from './errors';
 
 /**
@@ -24,7 +24,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   private readonly validator = new EntityValidator(this.config.get('strict'));
   private readonly repositoryMap: Dictionary<EntityRepository<AnyEntity>> = {};
   private readonly entityLoader: EntityLoader = new EntityLoader(this);
-  private readonly comparator = new EntityComparator(this.metadata, this.driver.getPlatform());
+  private readonly comparator = this.config.getComparator(this.metadata);
   private readonly unitOfWork: UnitOfWork = new UnitOfWork(this);
   private readonly entityFactory = new EntityFactory(this.unitOfWork, this);
   private readonly resultCache = this.config.getResultCacheAdapter();
