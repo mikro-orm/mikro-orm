@@ -1,5 +1,5 @@
 import type { MikroORM } from '@mikro-orm/core';
-import { FlushMode } from '@mikro-orm/core';
+import { FlushMode, wrap } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 import { initORMPostgreSql, mockLogger, wipeDatabasePostgreSql } from '../bootstrap';
@@ -57,6 +57,24 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     const r3 = await orm.em.find(Book2, {});
     expect(mock).toBeCalledTimes(4);
     expect(r3).toHaveLength(4);
+  });
+
+  test('em.find() triggers auto-flush for newly flushed entities too', async () => {
+    const god = new Author2('God', 'hello@heaven.god');
+    god.favouriteAuthor = new Author2('God 2', 'hello2@heaven.god');
+    god.favouriteAuthor.age = 21;
+    god.age = 999;
+
+    expect(wrap(god, true).__touched).toBe(false);
+    await orm.em.persistAndFlush(god);
+    expect(wrap(god, true).__touched).toBe(false);
+
+    god.age = 123;
+    expect(wrap(god, true).__touched).toBe(true);
+
+    const authors = await orm.em.find(Author2, { age: 123 });
+    expect(wrap(god, true).__touched).toBe(false);
+    expect(authors).toHaveLength(1);
   });
 
   test('changes to managed entities are detected automatically', async () => {

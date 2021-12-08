@@ -90,11 +90,12 @@ export class EntityHelper {
   private static defineProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>): void {
     Object
       .values<EntityProperty>(meta.properties)
-      .filter(prop => prop.persist !== false)
+      .filter(prop => [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk)
       .forEach(prop => {
         Object.defineProperty(meta.prototype, prop.name, {
           set(val: AnyEntity) {
-            EntityHelper.defineProperty(meta, prop, this, val);
+            EntityHelper.defineReferenceProperty(meta, prop, this);
+            this[prop.name] = val;
           },
         });
       });
@@ -117,35 +118,20 @@ export class EntityHelper {
     }
   }
 
-  private static defineProperty<T extends AnyEntity<T>>(meta: EntityMetadata<T>, prop: EntityProperty<T>, ref: T, val: unknown): void {
-    if ([ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk) {
-      Object.defineProperty(ref, prop.name, {
-        get() {
-          return this.__helper.__data[prop.name];
-        },
-        set(val: AnyEntity | Reference<AnyEntity>) {
-          const entity = Reference.unwrapReference(val ?? this.__helper.__data[prop.name]);
-          this.__helper.__data[prop.name] = Reference.wrapReference(val as T, prop);
-          this.__helper.__touched = true;
-          EntityHelper.propagate(meta, entity, this, prop, Reference.unwrapReference(val));
-        },
-        enumerable: true,
-        configurable: true,
-      });
-    } else {
-      Object.defineProperty(ref, prop.name, {
-        get() {
-          return this.__helper.__data[prop.name];
-        },
-        set(val: unknown) {
-          this.__helper.__data[prop.name] = val;
-          this.__helper.__touched = true;
-        },
-        enumerable: true,
-        configurable: true,
-      });
-    }
-    ref[prop.name] = val as T[string & keyof T];
+  static defineReferenceProperty<T extends AnyEntity<T>>(meta: EntityMetadata<T>, prop: EntityProperty<T>, ref: T): void {
+    Object.defineProperty(ref, prop.name, {
+      get() {
+        return this.__helper.__data[prop.name];
+      },
+      set(val: AnyEntity | Reference<AnyEntity>) {
+        const entity = Reference.unwrapReference(val ?? this.__helper.__data[prop.name]);
+        this.__helper.__data[prop.name] = Reference.wrapReference(val as T, prop);
+        this.__helper.__touched = true;
+        EntityHelper.propagate(meta, entity, this, prop, Reference.unwrapReference(val));
+      },
+      enumerable: true,
+      configurable: true,
+    });
   }
 
   private static propagate<T extends AnyEntity<T>, O extends AnyEntity<O>>(meta: EntityMetadata<O>, entity: T, owner: O, prop: EntityProperty<O>, value?: O[keyof O]): void {

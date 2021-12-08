@@ -169,6 +169,10 @@ export class EntityFactory {
         meta.relations
           .filter(prop => [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference))
           .forEach(prop => delete entity[prop.name]);
+
+        if (options.initialized && !(entity as Dictionary).__gettersDefined) {
+          Object.defineProperties(entity, meta.definedProperties);
+        }
       }
 
       return entity;
@@ -182,6 +186,10 @@ export class EntityFactory {
     if (meta.selfReferencing && !options.newEntity) {
       this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes);
       this.unitOfWork.registerManaged(entity);
+    }
+
+    if (options.initialized && !(entity as Dictionary).__gettersDefined) {
+      Object.defineProperties(entity, meta.definedProperties);
     }
 
     return entity;

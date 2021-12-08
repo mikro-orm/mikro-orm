@@ -1,4 +1,4 @@
-import type { AnyEntity, EntityData, EntityMetadata, EntityProperty, FilterQuery, IPrimaryKeyValue, Primary } from '../typings';
+import type { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, IPrimaryKeyValue, Primary } from '../typings';
 import { Collection, EntityIdentifier, Reference } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { ChangeSetComputer } from './ChangeSetComputer';
@@ -78,7 +78,7 @@ export class UnitOfWork {
     }
 
     const helper = entity.__helper!;
-    helper!.__em ??= this.em;
+    helper.__em ??= this.em;
 
     if (data && helper!.__initialized && (refresh || !helper!.__originalEntityData)) {
       // we can't use the `data` directly here as it can contain fetch joined data, that can't be used for diffing the state
@@ -86,6 +86,11 @@ export class UnitOfWork {
       Object.keys(data).forEach(key => entity.__helper!.__loadedProperties.add(key));
       this.queuedActions.delete(helper.__meta.className);
       helper.__touched = false;
+
+      if (!(entity as Dictionary).__gettersDefined) {
+        helper.__data = { ...entity };
+        Object.defineProperties(entity, helper.__meta.definedProperties);
+      }
     }
 
     return entity;

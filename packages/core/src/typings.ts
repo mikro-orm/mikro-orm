@@ -314,6 +314,29 @@ export class EntityMetadata<T extends AnyEntity<T> = any> {
     if (initIndexes && this.name) {
       this.props.forEach(prop => this.initIndexes(prop));
     }
+
+    this.definedProperties = this.props.reduce((o, prop) => {
+      const isCollection = [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference);
+      const isReference = [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk;
+
+      if (prop.inherited || prop.primary || isCollection || prop.persist === false || isReference) {
+        return o;
+      }
+
+      o[prop.name] = {
+        get() {
+          return this.__helper.__data[prop.name];
+        },
+        set(val: unknown) {
+          this.__helper.__data[prop.name] = val;
+          this.__helper.__touched = true;
+        },
+        enumerable: true,
+        configurable: true,
+      };
+
+      return o;
+    }, { __gettersDefined: { value: true, enumerable: false } } as Dictionary);
   }
 
   private initIndexes(prop: EntityProperty<T>): void {
@@ -386,6 +409,7 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   readonly?: boolean;
   polymorphs?: EntityMetadata[];
   root: EntityMetadata<T>;
+  definedProperties: Dictionary;
 }
 
 export interface ISchemaGenerator {
