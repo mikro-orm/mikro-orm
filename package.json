@@ -149,7 +149,7 @@
     "rimraf": "3.0.2",
     "run-rs": "0.7.5",
     "sql-formatter": "4.0.2",
-    "ts-jest": "27.1.0",
+    "ts-jest": "27.1.1",
     "ts-node": "10.4.0",
     "typescript": "4.5.2",
     "uuid": "8.3.2"
