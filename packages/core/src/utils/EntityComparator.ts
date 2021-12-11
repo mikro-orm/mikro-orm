@@ -246,9 +246,9 @@ export class EntityComparator {
           lines.push(...prop.fieldNames.map(field => `    ${propName(field, 'mapped')} = true;`), '  }');
         } else {
           if (prop.type === 'boolean') {
-            lines.push(`  if ('${prop.fieldNames[0]}' in result) { ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : !!${propName(prop.fieldNames[0])}; mapped.${prop.fieldNames[0]} = true; }`);
+            lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') { ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : !!${propName(prop.fieldNames[0])}; mapped.${prop.fieldNames[0]} = true; }`);
           } else {
-            lines.push(`  if ('${prop.fieldNames[0]}' in result) { ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])}; ${propName(prop.fieldNames[0], 'mapped')} = true; }`);
+            lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') { ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])}; ${propName(prop.fieldNames[0], 'mapped')} = true; }`);
           }
         }
       }
@@ -278,7 +278,7 @@ export class EntityComparator {
           return '';
         }
 
-        const mapped = `'${k}' in entity${tail ? '.' + tail : ''}`;
+        const mapped = `typeof entity${tail ? '.' + tail : ''}${this.wrap(k)} !== 'undefined'`;
         tail += tail ? ('.' + k) : k;
 
         return mapped;

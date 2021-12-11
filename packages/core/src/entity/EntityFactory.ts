@@ -54,6 +54,7 @@ export class EntityFactory {
     const entity = exists ?? this.createEntity<T>(data, meta2, options);
     entity.__helper!.__initialized = options.initialized;
     this.hydrate(entity, meta2, data, options);
+    entity.__helper!.__touched = false;
 
     if (exists && meta.discriminatorColumn && !(entity instanceof meta2.class)) {
       Object.setPrototypeOf(entity, meta2.prototype);
@@ -117,6 +118,8 @@ export class EntityFactory {
         this.create(prop.type, data[prop.name] as EntityData<T>, options); // we can ignore the value, we just care about the `mergeData` call
       }
     });
+
+    entity.__helper!.__touched = false;
   }
 
   createReference<T>(entityName: EntityName<T>, id: Primary<T> | Primary<T>[] | Record<string, Primary<T>>, options: Pick<FactoryOptions, 'merge' | 'convertCustomTypes' | 'schema'> = {}): T {
@@ -166,6 +169,10 @@ export class EntityFactory {
         meta.relations
           .filter(prop => [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference))
           .forEach(prop => delete entity[prop.name]);
+
+        if (options.initialized && !(entity as Dictionary).__gettersDefined) {
+          Object.defineProperties(entity, meta.definedProperties);
+        }
       }
 
       return entity;
@@ -179,6 +186,10 @@ export class EntityFactory {
     if (meta.selfReferencing && !options.newEntity) {
       this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes);
       this.unitOfWork.registerManaged(entity);
+    }
+
+    if (options.initialized && !(entity as Dictionary).__gettersDefined) {
+      Object.defineProperties(entity, meta.definedProperties);
     }
 
     return entity;

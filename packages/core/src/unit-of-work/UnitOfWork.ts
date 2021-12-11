@@ -1,4 +1,4 @@
-import type { AnyEntity, EntityData, EntityMetadata, EntityProperty, FilterQuery, IPrimaryKeyValue, Primary } from '../typings';
+import type { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, IPrimaryKeyValue, Primary } from '../typings';
 import { Collection, EntityIdentifier, Reference } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { ChangeSetComputer } from './ChangeSetComputer';
@@ -31,7 +31,8 @@ export class UnitOfWork {
   private readonly comparator = this.em.getComparator();
   private readonly changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.collectionUpdates, this.removeStack, this.metadata, this.platform, this.em.config);
   private readonly changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.metadata, this.em.config.getHydrator(this.metadata), this.em.getEntityFactory(), this.em.config);
-  private readonly queue: (() => Promise<void>)[] = [];
+  private readonly queuedActions = new Set<string>();
+  private readonly flushQueue: (() => Promise<void>)[] = [];
   private working = false;
   private insideHooks = false;
 
@@ -59,6 +60,8 @@ export class UnitOfWork {
     // as there can be some entity with already changed state that is not yet flushed
     if (wrapped.__initialized && (!visited || !wrapped.__originalEntityData)) {
       wrapped.__originalEntityData = this.comparator.prepareEntity(entity);
+      this.queuedActions.delete(wrapped.__meta.className);
+      wrapped.__touched = false;
     }
 
     this.cascade(entity, Cascade.MERGE, visited ?? new Set<AnyEntity>());
@@ -75,12 +78,14 @@ export class UnitOfWork {
     }
 
     const helper = entity.__helper!;
-    helper!.__em ??= this.em;
+    helper.__em ??= this.em;
 
     if (data && helper!.__initialized && (refresh || !helper!.__originalEntityData)) {
       // we can't use the `data` directly here as it can contain fetch joined data, that can't be used for diffing the state
       helper!.__originalEntityData = this.comparator.prepareEntity(entity);
       Object.keys(data).forEach(key => entity.__helper!.__loadedProperties.add(key));
+      this.queuedActions.delete(helper.__meta.className);
+      helper.__touched = false;
     }
 
     return entity;
@@ -165,6 +170,28 @@ export class UnitOfWork {
     return this.extraUpdates;
   }
 
+  shouldAutoFlush<T extends AnyEntity<T>>(meta: EntityMetadata<T>): boolean {
+    if (this.insideHooks) {
+      return false;
+    }
+
+    if (this.queuedActions.has(meta.className) || this.queuedActions.has(meta.root.className)) {
+      return true;
+    }
+
+    for (const entity of this.identityMap.getStore(meta).values()) {
+      if (entity.__helper!.isTouched()) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  clearActionsQueue(): void {
+    this.queuedActions.clear();
+  }
+
   computeChangeSet<T extends AnyEntity<T>>(entity: T): void {
     const cs = this.changeSetComputer.computeChangeSet(entity);
 
@@ -176,7 +203,9 @@ export class UnitOfWork {
     this.checkOrphanRemoval(cs);
     this.changeSets.set(entity, cs);
     this.persistStack.delete(entity);
+    this.queuedActions.delete(cs.name);
     entity.__helper!.__originalEntityData = this.comparator.prepareEntity(entity);
+    entity.__helper!.__touched = false;
   }
 
   recomputeSingleChangeSet<T extends AnyEntity<T>>(entity: T): void {
@@ -193,6 +222,7 @@ export class UnitOfWork {
       this.checkOrphanRemoval(cs);
       Object.assign(changeSet.payload, cs.payload);
       entity.__helper!.__originalEntityData = this.comparator.prepareEntity(entity);
+      entity.__helper!.__touched = false;
     }
   }
 
@@ -206,6 +236,7 @@ export class UnitOfWork {
     }
 
     this.persistStack.add(entity);
+    this.queuedActions.add(entity.__meta!.className);
     this.removeStack.delete(entity);
 
     if (options.cascade ?? true) {
@@ -220,6 +251,7 @@ export class UnitOfWork {
 
     if (entity.__helper!.hasPrimaryKey()) {
       this.removeStack.add(entity);
+      this.queuedActions.add(entity.__meta!.className);
     }
 
     this.persistStack.delete(entity);
@@ -233,7 +265,7 @@ export class UnitOfWork {
       }
 
       return await new Promise<void>((resolve, reject) => {
-        this.queue.push(async () => {
+        this.flushQueue.push(async () => {
           await this.doCommit().then(resolve, reject);
         });
       });
@@ -242,8 +274,8 @@ export class UnitOfWork {
     this.working = true;
     await this.doCommit();
 
-    while (this.queue.length) {
-      await this.queue.shift()!();
+    while (this.flushQueue.length) {
+      await this.flushQueue.shift()!();
     }
 
     this.working = false;
@@ -311,6 +343,7 @@ export class UnitOfWork {
 
     delete wrapped.__identifier;
     delete wrapped.__originalEntityData;
+    wrapped.__touched = false;
   }
 
   computeChangeSets(): void {
@@ -354,6 +387,7 @@ export class UnitOfWork {
   scheduleOrphanRemoval(entity?: AnyEntity): void {
     if (entity) {
       this.orphanRemoveStack.add(entity);
+      this.queuedActions.add(entity.__meta!.className);
     }
   }
 
@@ -476,15 +510,18 @@ export class UnitOfWork {
   }
 
   private async runHooks<T extends AnyEntity<T>>(type: EventType, changeSet: ChangeSet<T>, sync = false): Promise<unknown> {
-    this.insideHooks = true;
     const hasListeners = this.eventManager.hasListeners(type, changeSet.entity.__meta!);
 
     if (!hasListeners) {
       return;
     }
 
+    this.insideHooks = true;
+
     if (!sync) {
-      return this.eventManager.dispatchEvent(type, { entity: changeSet.entity, em: this.em, changeSet });
+      await this.eventManager.dispatchEvent(type, { entity: changeSet.entity, em: this.em, changeSet });
+      this.insideHooks = false;
+      return;
     }
 
     const copy = this.comparator.prepareEntity(changeSet.entity) as T;
@@ -509,6 +546,7 @@ export class UnitOfWork {
     this.collectionUpdates.clear();
     this.collectionDeletions.clear();
     this.extraUpdates.clear();
+    this.queuedActions.clear();
     this.working = false;
     this.insideHooks = false;
   }
@@ -740,6 +778,7 @@ export class UnitOfWork {
 
     for (const changeSet of changeSets) {
       changeSet.entity.__helper!.__originalEntityData = this.comparator.prepareEntity(changeSet.entity);
+      changeSet.entity.__helper!.__touched = false;
       await this.runHooks(EventType.afterUpdate, changeSet);
     }
   }

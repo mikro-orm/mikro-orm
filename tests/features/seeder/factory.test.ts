@@ -35,7 +35,6 @@ export class HouseFactory extends Factory<House> {
 describe('Factory', () => {
 
   let orm: MikroORM<SqliteDriver>;
-  let projectCountBefore: number;
   let persistSpy: SpyInstance;
   let flushSpy: SpyInstance;
 
@@ -46,18 +45,12 @@ describe('Factory', () => {
       dbName: ':memory:',
     });
     await orm.getSchemaGenerator().createSchema();
-  });
-
-  afterAll(() => {
-    orm.close(true);
-  });
-
-  beforeEach(async () => {
-    projectCountBefore = (await orm.em.findAndCount(Project, {}))[1];
-    orm.em.clear();
     persistSpy = jest.spyOn(orm.em, 'persist');
     flushSpy = jest.spyOn(orm.em, 'flush');
   });
+
+  afterAll(() => orm.close(true));
+  beforeEach(() => orm.em.clear());
 
   afterEach(() => {
     persistSpy.mockClear();
@@ -70,9 +63,6 @@ describe('Factory', () => {
     expect(project.id).toBeUndefined();
     expect(persistSpy).toBeCalled();
     expect(flushSpy).not.toBeCalled();
-
-    const projectCountAfter = (await orm.em.findAndCount(Project, {}))[1];
-    expect(projectCountAfter).toEqual(projectCountBefore);
   });
 
   test('that a factory can create a single instance of an entity and save it in the database', async () => {
@@ -81,8 +71,6 @@ describe('Factory', () => {
     expect(flushSpy).toBeCalled();
     expect(projectSaved).toBeInstanceOf(Project);
     expect(projectSaved.id).toBeDefined();
-    const projectCountAfter = (await orm.em.findAndCount(Project, {}))[1];
-    expect(projectCountAfter).toEqual(projectCountBefore + 1);
   });
 
   test('that a factory can make multiple instances of an entity without saving them in the database', async () => {
@@ -91,8 +79,6 @@ describe('Factory', () => {
     expect(persistSpy).toBeCalledTimes(1);
     expect(flushSpy).not.toBeCalled();
     expect(projects.length).toBe(5);
-    const projectCountAfter = (await orm.em.findAndCount(Project, {}))[1];
-    expect(projectCountAfter).toEqual(projectCountBefore);
   });
 
   test('that a factory can create multiple instances of an entity and save them in the database', async () => {
@@ -101,19 +87,16 @@ describe('Factory', () => {
     expect(flushSpy).toBeCalledTimes(1);
     expect(projectSaved).toBeInstanceOf(Array);
     expect(projectSaved.length).toBe(5);
-    const projectCountAfter = (await orm.em.findAndCount(Project, {}))[1];
-    expect(projectCountAfter).toEqual(projectCountBefore + 5);
   });
 
   test('that properties of the factory can be overwritten', async () => {
     const projectDefault = new ProjectFactory(orm.em).makeOne();
-
     expect(projectDefault.worth).toBe(120000);
 
     const project = new ProjectFactory(orm.em)
       .makeOne({
         worth: 36,
-      }) as Project;
+      });
     expect(project.worth).toBe(36);
   });
 

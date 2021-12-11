@@ -3,7 +3,7 @@ import type {
   IPrimaryKey, PopulateOptions, EntityDictionary, ExpandProperty, AutoPath,
 } from '../typings';
 import type { Connection, QueryResult, Transaction } from '../connections';
-import type { LockMode, QueryOrderMap, QueryFlag, LoadStrategy } from '../enums';
+import type { FlushMode, LockMode, QueryOrderMap, QueryFlag, LoadStrategy } from '../enums';
 import type { Platform } from '../platforms';
 import type { MetadataStorage } from '../metadata';
 import type { Collection } from '../entity';
@@ -100,6 +100,7 @@ export interface FindOptions<T, P extends string = never> {
   groupBy?: string | string[];
   having?: QBFilterQuery<T>;
   strategy?: LoadStrategy;
+  flushMode?: FlushMode;
   filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
   lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
   lockTableAliases?: string[];

@@ -23,6 +23,7 @@ describe('single table inheritance in mysql', () => {
     owner.managerProp = 'i said i am owner';
     owner.favouriteEmployee = employee2;
     owner.favouriteManager = manager;
+    expect(Object.keys(owner)).not.toHaveLength(0);
 
     expect((owner as any).type).not.toBeDefined();
     await orm.em.persistAndFlush([owner, employee1]);
@@ -123,7 +124,7 @@ describe('single table inheritance in mysql', () => {
     expect(Object.keys(users[0])).toEqual(['id', 'firstName', 'lastName', 'type', 'employeeProp']);
     expect(Object.keys(users[1])).toEqual(['id', 'firstName', 'lastName', 'type', 'employeeProp']);
     expect(Object.keys(users[2])).toEqual(['id', 'firstName', 'lastName', 'type', 'managerProp']);
-    expect(Object.keys(users[3])).toEqual(['id', 'firstName', 'lastName', 'type', 'ownerProp', 'favouriteEmployee', 'favouriteManager', 'managerProp']);
+    expect(Object.keys(users[3])).toEqual(['firstName', 'lastName', 'type', 'ownerProp', 'favouriteEmployee', 'favouriteManager', 'managerProp', 'id']);
 
     expect([...orm.em.getUnitOfWork().getIdentityMap().keys()]).toEqual(['BaseUser2-4', 'BaseUser2-1', 'BaseUser2-2', 'BaseUser2-3']);
 
