@@ -86,11 +86,6 @@ export class UnitOfWork {
       Object.keys(data).forEach(key => entity.__helper!.__loadedProperties.add(key));
       this.queuedActions.delete(helper.__meta.className);
       helper.__touched = false;
-
-      if (!(entity as Dictionary).__gettersDefined) {
-        helper.__data = { ...entity };
-        Object.defineProperties(entity, helper.__meta.definedProperties);
-      }
     }
 
     return entity;

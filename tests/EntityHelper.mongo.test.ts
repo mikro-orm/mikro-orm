@@ -80,9 +80,8 @@ describe('EntityHelperMongo', () => {
   test('BaseEntity methods', async () => {
     const god = new Author('God', 'hello@heaven.god');
     expect(wrap(god, true).__populated).toBeUndefined();
-    // not managed entities do not track changes (before being flushed)
-    expect(wrap(god, true).__touched).toBe(false);
-    expect(god.isTouched()).toBe(false);
+    expect(wrap(god, true).__touched).toBe(true);
+    expect(god.isTouched()).toBe(true);
     god.populated();
     expect(wrap(god, true).__populated).toBe(true);
     expect(wrap(god, true).__platform).toBe(orm.em.getDriver().getPlatform());

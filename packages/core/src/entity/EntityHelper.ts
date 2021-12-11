@@ -89,13 +89,37 @@ export class EntityHelper {
    */
   private static defineProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>): void {
     Object
-      .values<EntityProperty>(meta.properties)
+      .values(meta.properties)
       .filter(prop => [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk)
       .forEach(prop => {
         Object.defineProperty(meta.prototype, prop.name, {
           set(val: AnyEntity) {
             EntityHelper.defineReferenceProperty(meta, prop, this);
             this[prop.name] = val;
+          },
+        });
+      });
+
+    Object
+      .values(meta.properties)
+      .filter(prop => !(prop.inherited || prop.primary || prop.persist === false))
+      .filter(prop => !([ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk))
+      .forEach(prop => {
+        Object.defineProperty(meta.prototype, prop.name, {
+          set(val) {
+            Object.defineProperty(this, prop.name, {
+              get() {
+                return this.__helper.__data[prop.name];
+              },
+              set(val) {
+                this.__helper.__data[prop.name] = val;
+                this.__helper.__touched = true;
+              },
+              enumerable: true,
+              configurable: true,
+            });
+            this.__helper.__data[prop.name] = val;
+            this.__helper.__touched = true;
           },
         });
       });

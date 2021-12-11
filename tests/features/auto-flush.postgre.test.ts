@@ -65,7 +65,7 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     god.favouriteAuthor.age = 21;
     god.age = 999;
 
-    expect(wrap(god, true).__touched).toBe(false);
+    expect(wrap(god, true).__touched).toBe(true);
     await orm.em.persistAndFlush(god);
     expect(wrap(god, true).__touched).toBe(false);
 
