@@ -2059,6 +2059,9 @@ describe('EntityManagerPostgre', () => {
       })(),
     ]);
 
+    expect(ret2.map(b => b.author.id)).toEqual([6, 4, 5]);
+    expect(ret2.map(b => b.author.name)).toEqual(['a4', 'a5', 'a6']);
+
     // flushing things at different time will create multiple transactions
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
     expect(mock.mock.calls[1][0]).toMatch(`insert into "author2" ("created_at", "email", "name", "terms_accepted", "updated_at") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"`);
@@ -2072,9 +2075,6 @@ describe('EntityManagerPostgre', () => {
     expect(mock.mock.calls[9][0]).toMatch(`insert into "author2" ("created_at", "email", "name", "terms_accepted", "updated_at") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"`);
     expect(mock.mock.calls[10][0]).toMatch(`insert into "book2" ("author_id", "created_at", "price", "title", "uuid_pk") values ($1, $2, $3, $4, $5) returning "uuid_pk", "created_at", "title"`);
     expect(mock.mock.calls[11][0]).toMatch(`commit`);
-
-    expect(ret2.map(b => b.author.id)).toEqual([6, 4, 5]);
-    expect(ret2.map(b => b.author.name)).toEqual(['a4', 'a5', 'a6']);
 
     mock.mockRestore();
   });

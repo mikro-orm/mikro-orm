@@ -35,19 +35,6 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     return (await this.getSourceFile(tsPath, validate))!;
   }
 
-  /**
-   * Re-hydrates missing attributes like `customType` (functions/instances are lost when caching to JSON)
-   */
-  loadFromCache(meta: EntityMetadata, cache: EntityMetadata): void {
-    Object.values(cache.properties).forEach(prop => {
-      if (prop.customType) {
-        prop.customType = meta.properties[prop.name].customType;
-      }
-    });
-
-    Utils.merge(meta, cache);
-  }
-
   protected async initProperties(meta: EntityMetadata): Promise<void> {
     // load types and column names
     for (const prop of Object.values(meta.properties)) {

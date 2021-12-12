@@ -263,8 +263,16 @@ export class MetadataDiscovery {
       return;
     }
 
-    const copy = Object.assign({}, meta);
+    const copy = Utils.copy(meta);
     delete copy.prototype;
+
+    copy.props
+      .filter(prop => prop.type as unknown instanceof Type)
+      .forEach(prop => {
+        ['type', 'customType']
+          .filter(k => prop[k] as unknown instanceof Type)
+          .forEach(k => delete (prop as Dictionary)[k]);
+      });
 
     // base entity without properties might not have path, but nothing to cache there
     if (meta.path) {

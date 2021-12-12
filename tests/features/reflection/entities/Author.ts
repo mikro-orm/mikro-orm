@@ -24,7 +24,7 @@ export class Author extends BaseEntity {
   @Property({ fieldName: 'identitiesArray' })
   identities?: string[];
 
-  @Property({ type: DateType })
+  @Property({ type: new DateType() })
   born?: Date;
 
   @OneToMany('Book', 'author', { referenceColumnName: '_id', cascade: [Cascade.PERSIST], orphanRemoval: true })
