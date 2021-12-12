@@ -12,7 +12,16 @@ export abstract class MetadataProvider {
 
   abstract loadEntityMetadata(meta: EntityMetadata, name: string): Promise<void>;
 
+  /**
+   * Re-hydrates missing attributes like `customType` (functions/instances are lost when caching to JSON)
+   */
   loadFromCache(meta: EntityMetadata, cache: EntityMetadata): void {
+    Object.values(cache.properties).forEach(prop => {
+      if (prop.customType) {
+        prop.customType = meta.properties[prop.name].customType;
+      }
+    });
+
     Utils.merge(meta, cache);
   }
 
