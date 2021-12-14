@@ -23,7 +23,6 @@ export class UnitOfWork {
   private readonly orphanRemoveStack = new Set<AnyEntity>();
   private readonly changeSets = new Map<AnyEntity, ChangeSet<AnyEntity>>();
   private readonly collectionUpdates = new Set<Collection<AnyEntity>>();
-  private readonly collectionDeletions = new Set<Collection<AnyEntity>>();
   private readonly extraUpdates = new Set<[AnyEntity, string | string[], AnyEntity | AnyEntity[] | Reference<any> | Collection<any>]>();
   private readonly metadata = this.em.getMetadata();
   private readonly platform = this.em.getPlatform();
@@ -227,11 +226,7 @@ export class UnitOfWork {
   }
 
   persist<T extends AnyEntity<T>>(entity: T, visited?: Set<AnyEntity>, options: { checkRemoveStack?: boolean; cascade?: boolean } = {}): void {
-    if (this.persistStack.has(entity)) {
-      return;
-    }
-
-    if (options.checkRemoveStack && this.removeStack.has(entity)) {
+    if (options.checkRemoveStack && (this.removeStack.has(entity))) {
       return;
     }
 
@@ -244,18 +239,17 @@ export class UnitOfWork {
     }
   }
 
-  remove(entity: AnyEntity, visited = new Set<AnyEntity>()): void {
-    if (!entity || this.removeStack.has(entity)) {
-      return;
-    }
-
+  remove<T extends AnyEntity<T>>(entity: T, visited?: Set<AnyEntity>, options: { cascade?: boolean } = {}): void {
     if (entity.__helper!.hasPrimaryKey()) {
       this.removeStack.add(entity);
       this.queuedActions.add(entity.__meta!.className);
     }
 
     this.persistStack.delete(entity);
-    this.cascade(entity, Cascade.REMOVE, visited);
+
+    if (options.cascade ?? true) {
+      this.cascade(entity, Cascade.REMOVE, visited);
+    }
   }
 
   async commit(): Promise<void> {
@@ -290,7 +284,7 @@ export class UnitOfWork {
       await this.eventManager.dispatchEvent(EventType.onFlush, { em: this.em, uow: this });
 
       // nothing to do, do not start transaction
-      if (this.changeSets.size === 0 && this.collectionUpdates.size === 0 && this.collectionDeletions.size === 0 && this.extraUpdates.size === 0) {
+      if (this.changeSets.size === 0 && this.collectionUpdates.size === 0 && this.extraUpdates.size === 0) {
         return void await this.eventManager.dispatchEvent(EventType.afterFlush, { em: this.em, uow: this });
       }
 
@@ -350,6 +344,12 @@ export class UnitOfWork {
     this.changeSets.clear();
     const visited = new Set<AnyEntity>();
 
+    for (const entity of this.removeStack) {
+      this.cascade(entity, Cascade.REMOVE, visited);
+    }
+
+    visited.clear();
+
     for (const entity of this.persistStack) {
       this.cascade(entity, Cascade.PERSIST, visited, { checkRemoveStack: true });
     }
@@ -369,11 +369,28 @@ export class UnitOfWork {
 
     for (const entity of this.orphanRemoveStack) {
       this.removeStack.add(entity);
-      this.cascade(entity, Cascade.REMOVE, visited);
+    }
+
+    // Check insert stack if there are any entities matching something from delete stack. This can happen when recreating entities.
+    const inserts: ChangeSet<any>[] = [];
+
+    for (const cs of this.changeSets.values()) {
+      if (cs.type === ChangeSetType.CREATE) {
+        inserts.push(cs);
+      }
     }
 
     for (const entity of this.removeStack) {
-      this.changeSets.set(entity, new ChangeSet(entity, ChangeSetType.DELETE, {}, entity.__meta!));
+      const deletePkHash = entity.__helper!.getSerializedPrimaryKey();
+      let type = ChangeSetType.DELETE;
+
+      for (const cs of inserts) {
+        if (deletePkHash === cs.getSerializedPrimaryKey()) {
+          type = ChangeSetType.DELETE_EARLY;
+        }
+      }
+
+      this.changeSets.set(entity, new ChangeSet(entity, type, {}, entity.__meta!));
     }
   }
 
@@ -387,29 +404,17 @@ export class UnitOfWork {
     props.forEach(p => delete changeSet.payload[p.name]);
   }
 
-  scheduleOrphanRemoval(entity?: AnyEntity): void {
+  scheduleOrphanRemoval(entity?: AnyEntity, visited?: Set<AnyEntity>): void {
     if (entity) {
       this.orphanRemoveStack.add(entity);
       this.queuedActions.add(entity.__meta!.className);
+      this.cascade(entity, Cascade.SCHEDULE_ORPHAN_REMOVAL, visited);
     }
   }
 
-  cancelOrphanRemoval(entity: AnyEntity): void {
+  cancelOrphanRemoval(entity: AnyEntity, visited?: Set<AnyEntity>): void {
     this.orphanRemoveStack.delete(entity);
-  }
-
-  /**
-   * Schedules a complete collection for removal when this UnitOfWork commits.
-   */
-  scheduleCollectionDeletion(collection: Collection<AnyEntity>): void {
-    this.collectionDeletions.add(collection);
-  }
-
-  /**
-   * Gets the currently scheduled complete collection deletions
-   */
-  getScheduledCollectionDeletions() {
-    return [...this.collectionDeletions];
+    this.cascade(entity, Cascade.CANCEL_ORPHAN_REMOVAL, visited);
   }
 
   private findNewEntities<T extends AnyEntity<T>>(entity: T, visited = new Set<AnyEntity>(), idx = 0): void {
@@ -439,7 +444,6 @@ export class UnitOfWork {
     if (changeSet && !this.checkUniqueProps(changeSet)) {
       this.checkOrphanRemoval(changeSet);
       this.changeSets.set(entity, changeSet);
-      this.persistStack.delete(entity);
     }
   }
 
@@ -547,7 +551,6 @@ export class UnitOfWork {
     this.orphanRemoveStack.clear();
     this.changeSets.clear();
     this.collectionUpdates.clear();
-    this.collectionDeletions.clear();
     this.extraUpdates.clear();
     this.queuedActions.clear();
     this.working = false;
@@ -564,7 +567,9 @@ export class UnitOfWork {
     switch (type) {
       case Cascade.PERSIST: this.persist(entity, visited, options); break;
       case Cascade.MERGE: this.merge(entity, visited); break;
-      case Cascade.REMOVE: this.remove(entity, visited); break;
+      case Cascade.REMOVE: this.remove(entity, visited, options); break;
+      case Cascade.SCHEDULE_ORPHAN_REMOVAL: this.scheduleOrphanRemoval(entity, visited); break;
+      case Cascade.CANCEL_ORPHAN_REMOVAL: this.cancelOrphanRemoval(entity, visited); break;
     }
 
     for (const prop of entity.__meta!.relations) {
@@ -606,7 +611,7 @@ export class UnitOfWork {
   }
 
   private shouldCascade(prop: EntityProperty, type: Cascade): boolean {
-    if (type === Cascade.REMOVE && prop.orphanRemoval) {
+    if ([Cascade.REMOVE, Cascade.SCHEDULE_ORPHAN_REMOVAL, Cascade.CANCEL_ORPHAN_REMOVAL].includes(type) && prop.orphanRemoval) {
       return true;
     }
 
@@ -677,10 +682,9 @@ export class UnitOfWork {
     const commitOrder = this.getCommitOrder();
     const commitOrderReversed = [...commitOrder].reverse();
 
-    // 1. whole collection deletions
-    for (const coll of this.collectionDeletions) {
-      await this.em.getDriver().clearCollection(coll, { ctx });
-      coll.takeSnapshot();
+    // 1. early delete - when we recreate entity in the same UoW, we need to issue those delete queries before inserts
+    for (const name of commitOrderReversed) {
+      await this.commitDeleteChangeSets(groups[ChangeSetType.DELETE_EARLY].get(name) ?? [], ctx);
     }
 
     // 2. create
@@ -811,6 +815,7 @@ export class UnitOfWork {
       [ChangeSetType.CREATE]: new Map<string, ChangeSet<any>[]>(),
       [ChangeSetType.UPDATE]: new Map<string, ChangeSet<any>[]>(),
       [ChangeSetType.DELETE]: new Map<string, ChangeSet<any>[]>(),
+      [ChangeSetType.DELETE_EARLY]: new Map<string, ChangeSet<any>[]>(),
     };
 
     this.changeSets.forEach(cs => {

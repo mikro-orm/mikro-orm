@@ -1,16 +1,6 @@
-import type {
-  CountOptions,
-  LockOptions,
-  DeleteOptions,
-  FindOneOptions,
-  FindOptions,
-  IDatabaseDriver,
-  NativeInsertUpdateManyOptions,
-  NativeInsertUpdateOptions,
-  DriverMethodOptions,
-} from './IDatabaseDriver';
+import type { CountOptions, LockOptions, DeleteOptions, FindOneOptions, FindOptions, IDatabaseDriver, NativeInsertUpdateManyOptions, NativeInsertUpdateOptions, DriverMethodOptions } from './IDatabaseDriver';
 import { EntityManagerType } from './IDatabaseDriver';
-import type { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityProperty, ObjectQuery, FilterQuery, PopulateOptions, Primary } from '../typings';
+import type { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityProperty, FilterQuery, PopulateOptions, Primary } from '../typings';
 import type { MetadataStorage } from '../metadata';
 import type { Connection, QueryResult, Transaction } from '../connections';
 import type { Configuration, ConnectionOptions } from '../utils';
@@ -71,21 +61,6 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     const pk = this.metadata.find(coll.property.type)!.primaryKeys[0];
     const data = { [coll.property.name]: coll.getIdentifiers(pk) } as EntityData<T>;
     await this.nativeUpdate<T>(coll.owner.constructor.name, coll.owner.__helper!.getPrimaryKey() as FilterQuery<T>, data, options);
-  }
-
-  async clearCollection<T, O>(coll: Collection<T, O>, options?: DriverMethodOptions): Promise<void> {
-    // this currently serves only for 1:m collections with orphan removal, m:n ones are handled via `syncCollection` method
-    const snapshot = coll.getSnapshot();
-    /* istanbul ignore next */
-    const deleteDiff = snapshot?.map(item => (item as AnyEntity<T>).__helper!.__primaryKeyCond) ?? [];
-
-    /* istanbul ignore next */
-    if (deleteDiff.length === 0) {
-      return;
-    }
-
-    const cond = { [Utils.getPrimaryKeyHash(coll.property.targetMeta!.primaryKeys)]: deleteDiff } as ObjectQuery<T>;
-    await this.nativeDelete<T>(coll.property.type, cond, options);
   }
 
   mapResult<T>(result: EntityDictionary<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[] = []): EntityData<T> | null {

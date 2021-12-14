@@ -129,18 +129,12 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   }
 
   set(items: (T | Reference<T>)[]): void {
-    const unwrapped = items.map(i => Reference.unwrapReference(i));
-    unwrapped.forEach(item => this.validateItemType(item));
-    this.validateModification(unwrapped);
-
     if (!this.initialized) {
       this.initialized = true;
       this.snapshot = undefined;
     }
 
-    super.set(unwrapped);
-    this.setDirty();
-    this.cancelOrphanRemoval(unwrapped);
+    super.set(items);
   }
 
   /**
@@ -150,18 +144,6 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     this.initialized = true;
     super.hydrate(items);
     this.takeSnapshot();
-  }
-
-  removeAll(): void {
-    const em = this.getEntityManager([], false);
-
-    if (this.property.reference === ReferenceType.ONE_TO_MANY && this.property.orphanRemoval && em) {
-      em.getUnitOfWork().scheduleCollectionDeletion(this);
-      const unwrapped = this.getItems(false).map(i => Reference.unwrapReference(i));
-      this.modify('remove', unwrapped);
-    } else {
-      super.removeAll();
-    }
   }
 
   remove(...items: (T | Reference<T> | ((item: T) => boolean))[]): void {
