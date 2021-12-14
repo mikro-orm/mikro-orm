@@ -286,15 +286,16 @@ export class UnitOfWork {
 
   computeChangeSets(): void {
     this.changeSets.clear();
+    const visited = new Set<AnyEntity>();
 
     for (const entity of this.persistStack) {
-      this.cascade(entity, Cascade.PERSIST, new Set<AnyEntity>(), { checkRemoveStack: true });
+      this.cascade(entity, Cascade.PERSIST, visited, { checkRemoveStack: true });
     }
 
     for (const entity of this.identityMap) {
       if (!this.removeStack.has(entity) && !this.persistStack.has(entity) && !this.orphanRemoveStack.has(entity)) {
         this.persistStack.add(entity);
-        this.cascade(entity, Cascade.PERSIST, new Set<AnyEntity>(), { checkRemoveStack: true });
+        this.cascade(entity, Cascade.PERSIST, visited, { checkRemoveStack: true });
       }
     }
 
@@ -302,9 +303,11 @@ export class UnitOfWork {
       this.findNewEntities(entity);
     }
 
+    visited.clear();
+
     for (const entity of this.orphanRemoveStack) {
       this.removeStack.add(entity);
-      this.cascade(entity, Cascade.REMOVE);
+      this.cascade(entity, Cascade.REMOVE, visited);
     }
 
     for (const entity of this.removeStack) {
