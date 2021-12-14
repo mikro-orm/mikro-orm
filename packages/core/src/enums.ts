@@ -102,6 +102,11 @@ export enum Cascade {
   MERGE = 'merge',
   REMOVE = 'remove',
   ALL = 'all',
+
+  /** @internal */
+  SCHEDULE_ORPHAN_REMOVAL = 'schedule_orphan_removal',
+  /** @internal */
+  CANCEL_ORPHAN_REMOVAL = 'cancel_orphan_removal',
 }
 
 export enum LoadStrategy {

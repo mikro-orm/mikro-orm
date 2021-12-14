@@ -648,6 +648,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * To remove entities by condition, use `em.nativeDelete()`.
    */
   remove<T extends AnyEntity<T>>(entity: T | Reference<T> | (T | Reference<T>)[]): this {
+    if (Utils.isEntity<T>(entity)) {
+      // do not cascade just yet, cascading of entities in persist stack is done when flushing
+      this.getUnitOfWork().remove(entity, undefined, { cascade: true });
+      return this;
+    }
+
     const entities = Utils.asArray(entity, true);
 
     for (const ent of entities) {
@@ -655,7 +661,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         throw new Error(`You need to pass entity instance or reference to 'em.remove()'. To remove entities by condition, use 'em.nativeDelete()'.`);
       }
 
-      this.getUnitOfWork().remove(Reference.unwrapReference(ent));
+      // do not cascade just yet, cascading of entities in remove stack is done when flushing
+      this.getUnitOfWork().remove(Reference.unwrapReference(ent), undefined, { cascade: true });
     }
 
     return this;

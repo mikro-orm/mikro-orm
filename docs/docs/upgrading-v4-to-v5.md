@@ -158,3 +158,12 @@ const [loadedAuthor] = await em.populate(author, ...);
 
 Previously awaiting of QB instance was a no-op. In v5, QB is promise-like interface,
 so we can await it. More about this in [Awaiting the QueryBuilder](./query-builder.md#awaiting-the-querybuilder) section.
+
+## `UnitOfWork.getScheduledCollectionDeletions()` has been removed
+
+Previously scheduled collection deletions were used for a hack when removing 
+1:m collection via orphan removal might require early deletes - in case we were 
+adding the same entity (but different instance), so with same PK - inserting it 
+in the same unit would cause unique constraint failures.
+
+Also `IDatabaseDriver.clearCollection()` method is no longer present in the driver API.
