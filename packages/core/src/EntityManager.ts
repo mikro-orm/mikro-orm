@@ -728,7 +728,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const ret = p in props && (props[p].reference !== ReferenceType.SCALAR || props[p].lazy);
 
     if (!ret) {
-      return false;
+      return !!this.metadata.find(property)?.pivotTable;
     }
 
     if (parts.length > 0) {
@@ -905,6 +905,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const ret: PopulateOptions<T>[] = this.entityLoader.normalizePopulate<T>(entityName, populate as true, strategy);
+    const invalid = ret.find(({ field }) => !this.canPopulate(entityName, field));
+
+    if (invalid) {
+      throw ValidationError.invalidPropertyName(entityName, invalid.field);
+    }
 
     return ret.map(field => {
       // force select-in strategy when populating all relations as otherwise we could cause infinite loops when self-referencing

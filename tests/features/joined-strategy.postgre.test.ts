@@ -22,6 +22,11 @@ describe('Joined loading strategy', () => {
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 
+    // @ts-expect-error test runtime validation
+    await expect(orm.em.findOneOrFail(Author2, author, { populate: ['books123', 'following'] })).rejects.toThrow(`Entity 'Author2' does not have property 'books123'`);
+    // @ts-expect-error test runtime validation
+    await expect(orm.em.findOneOrFail(Author2, author, { populate: ['books2', 'followinga'] })).rejects.toThrow(`Entity 'Author2' does not have property 'followinga'`);
+
     const a2 = await orm.em.findOneOrFail(Author2, author, { populate: ['books2', 'following'] });
     expect(a2.books2).toHaveLength(2);
     expect(a2.books2[0].title).toBe('The Fall');
@@ -150,6 +155,11 @@ describe('Joined loading strategy', () => {
     author2.books2.add(stranger, fall);
     await orm.em.persistAndFlush(author2);
     orm.em.clear();
+
+    // @ts-expect-error test runtime validation
+    await expect(orm.em.find(Author2, {}, { populate: ['books123', 'following'] })).rejects.toThrow(`Entity 'Author2' does not have property 'books123'`);
+    // @ts-expect-error test runtime validation
+    await expect(orm.em.find(Author2, {}, { populate: ['books2', 'followinga'] })).rejects.toThrow(`Entity 'Author2' does not have property 'followinga'`);
 
     const mock = mockLogger(orm, ['query']);
 
