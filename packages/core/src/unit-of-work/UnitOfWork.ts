@@ -240,11 +240,8 @@ export class UnitOfWork {
   }
 
   remove<T extends AnyEntity<T>>(entity: T, visited?: Set<AnyEntity>, options: { cascade?: boolean } = {}): void {
-    if (entity.__helper!.hasPrimaryKey()) {
-      this.removeStack.add(entity);
-      this.queuedActions.add(entity.__meta!.className);
-    }
-
+    this.removeStack.add(entity);
+    this.queuedActions.add(entity.__meta!.className);
     this.persistStack.delete(entity);
 
     if (options.cascade ?? true) {
