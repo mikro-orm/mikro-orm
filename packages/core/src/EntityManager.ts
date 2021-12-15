@@ -650,7 +650,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   remove<T extends AnyEntity<T>>(entity: T | Reference<T> | (T | Reference<T>)[]): this {
     if (Utils.isEntity<T>(entity)) {
       // do not cascade just yet, cascading of entities in persist stack is done when flushing
-      this.getUnitOfWork().remove(entity, undefined, { cascade: true });
+      this.getUnitOfWork().remove(entity, undefined, { cascade: false });
       return this;
     }
 
@@ -662,7 +662,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       // do not cascade just yet, cascading of entities in remove stack is done when flushing
-      this.getUnitOfWork().remove(Reference.unwrapReference(ent), undefined, { cascade: true });
+      this.getUnitOfWork().remove(Reference.unwrapReference(ent), undefined, { cascade: false });
     }
 
     return this;

@@ -329,8 +329,9 @@ export class UnitOfWork {
     const wrapped = entity.__helper!;
 
     wrapped.__meta.relations
-      .filter(prop => prop.mappedBy && entity[prop.name] && entity[prop.name][prop.mappedBy])
-      .forEach(prop => delete entity[prop.name][prop.mappedBy]);
+      .map(prop => [prop.name, prop.mappedBy || prop.inversedBy])
+      .filter(([name, inverse]) => (inverse) && entity[name] && entity[name][inverse] && !Utils.isCollection(entity[name][inverse]))
+      .forEach(([name, inverse]) => delete entity[name][inverse]);
 
     delete wrapped.__identifier;
     delete wrapped.__originalEntityData;
