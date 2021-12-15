@@ -210,10 +210,7 @@ export class UnitOfWork {
       return;
     }
 
-    if (entity.__helper!.hasPrimaryKey()) {
-      this.removeStack.add(entity);
-    }
-
+    this.removeStack.add(entity);
     this.persistStack.delete(entity);
     this.cascade(entity, Cascade.REMOVE, visited);
   }
