@@ -97,7 +97,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     if (!options.disableIdentityMap) {
       await this.tryFlush(entityName, options);
     } else {
-      const fork = this.fork({ clear: false });
+      const fork = this.fork();
       const ret = await fork.find<T, P>(entityName, where, { ...options, disableIdentityMap: false });
       fork.clear();
 
@@ -287,7 +287,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     if (!options.disableIdentityMap) {
       await this.tryFlush(entityName, options);
     } else {
-      const fork = this.fork({ clear: false });
+      const fork = this.fork();
       const ret = await fork.findOne<T, P>(entityName, where, { ...options, disableIdentityMap: false });
       fork.clear();
 
