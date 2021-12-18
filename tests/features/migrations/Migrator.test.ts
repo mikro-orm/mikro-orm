@@ -210,6 +210,24 @@ describe('Migrator', () => {
     await expect(migrator.getPendingMigrations()).resolves.toEqual([]);
   });
 
+  test('remove extension only', async () => {
+    await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
+    const migrator = new Migrator(orm.em);
+    // @ts-ignore
+    const storage = migrator.storage;
+
+    await storage.ensureTable(); // creates the table
+    await storage.logMigration('test.migration.ts'); // can have extension
+    await expect(storage.getExecutedMigrations()).resolves.toMatchObject([{ name: 'test.migration' }]);
+    await expect(storage.executed()).resolves.toEqual(['test.migration.ts']);
+
+    await storage.ensureTable(); // table exists, no-op
+    await storage.unlogMigration('test.migration');
+    await expect(storage.executed()).resolves.toEqual([]);
+
+    await expect(migrator.getPendingMigrations()).resolves.toEqual([]);
+  });
+
   test('runner', async () => {
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migrator = new Migrator(orm.em);
