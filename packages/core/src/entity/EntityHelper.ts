@@ -104,7 +104,7 @@ export class EntityHelper {
 
     Object
       .values(meta.properties)
-      .filter(prop => !(prop.inherited || prop.primary || prop.persist === false))
+      .filter(prop => !(prop.inherited || prop.primary || prop.persist === false || prop.embedded))
       .filter(prop => !([ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk))
       .forEach(prop => {
         Object.defineProperty(meta.prototype, prop.name, {

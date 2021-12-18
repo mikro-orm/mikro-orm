@@ -319,7 +319,7 @@ export class EntityMetadata<T extends AnyEntity<T> = any> {
       const isCollection = [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference);
       const isReference = [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk;
 
-      if (prop.inherited || prop.primary || isCollection || prop.persist === false || isReference) {
+      if (prop.inherited || prop.primary || isCollection || prop.persist === false || isReference || prop.embedded) {
         return o;
       }
 
