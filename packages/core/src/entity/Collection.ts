@@ -24,11 +24,6 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   constructor(owner: O, items?: T[], initialized = true) {
     super(owner, items);
     this.initialized = !!items || initialized;
-    Object.defineProperty(this, 'snapshot', { enumerable: false });
-    Object.defineProperty(this, '_populated', { enumerable: false });
-    Object.defineProperty(this, '_lazyInitialized', { enumerable: false });
-    Object.defineProperty(this, '$', { get: () => super.getItems() });
-    Object.defineProperty(this, 'get', { value: () => super.getItems() });
   }
 
   /**
@@ -401,6 +396,11 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   }
 
 }
+
+Object.defineProperties(Collection.prototype, {
+  $: { get() { return this.getItems(false); } },
+  get: { get() { return () => this.getItems(false); } },
+});
 
 export interface InitOptions<T> {
   populate?: Populate<T>;

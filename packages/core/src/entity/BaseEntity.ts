@@ -4,10 +4,6 @@ import { AssignOptions, EntityAssigner } from './EntityAssigner';
 
 export abstract class BaseEntity<T extends AnyEntity<T>, PK extends keyof T, P extends Populate<T> | unknown = unknown> implements IWrappedEntity<T, PK, P> {
 
-  constructor() {
-    Object.defineProperty(this, '__baseEntity', { value: true });
-  }
-
   isInitialized(): boolean {
     return (this as unknown as T).__helper!.__initialized;
   }
@@ -41,3 +37,5 @@ export abstract class BaseEntity<T extends AnyEntity<T>, PK extends keyof T, P e
   }
 
 }
+
+Object.defineProperty(BaseEntity.prototype, '__baseEntity', { value: true, writable: false, enumerable: false });
