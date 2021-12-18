@@ -9,7 +9,6 @@ export class Reference<T extends AnyEntity<T>> {
   constructor(private entity: T) {
     this.set(entity);
     const meta = this.entity.__meta!;
-    Object.defineProperty(this, '__reference', { value: true });
 
     meta.primaryKeys.forEach(primaryKey => {
       Object.defineProperty(this, primaryKey, {
@@ -105,11 +104,6 @@ export class Reference<T extends AnyEntity<T>> {
     }
 
     this.entity = entity;
-    Object.defineProperty(this, '__meta', { value: this.entity.__meta!, writable: true });
-    Object.defineProperty(this, '__platform', { value: this.entity.__platform!, writable: true });
-    Object.defineProperty(this, '__helper', { value: this.entity.__helper!, writable: true });
-    Object.defineProperty(this, '$', { value: this.entity, writable: true });
-    Object.defineProperty(this, 'get', { value: () => this.entity, writable: true });
   }
 
   unwrap(): T {
@@ -141,3 +135,12 @@ export class Reference<T extends AnyEntity<T>> {
   }
 
 }
+
+Object.defineProperties(Reference.prototype, {
+  __reference: { value: true, enumerable: false },
+  __meta: { get() { return this.entity.__meta!; } },
+  __platform: { get() { return this.entity.__platform!; } },
+  __helper: { get() { return this.entity.__helper!; } },
+  $: { get() { return this.entity; } },
+  get: { get() { return () => this.entity; } },
+});
