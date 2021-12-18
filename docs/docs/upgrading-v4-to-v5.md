@@ -167,3 +167,13 @@ adding the same entity (but different instance), so with same PK - inserting it
 in the same unit would cause unique constraint failures.
 
 Also `IDatabaseDriver.clearCollection()` method is no longer present in the driver API.
+
+## `populateAfterFlush` is enabled by default
+
+After flushing a new entity, all relations are marked as populated,
+just like if the entity was loaded from the db. This aligns the serialized
+output of `e.toJSON()` of a loaded entity and just-inserted one.
+
+In v4 this behaviour was disabled by default, so even after the new entity was
+flushed, the serialized form contained only FKs for its relations. We can opt in
+to this old behaviour via `populateAfterFlush: false`.

@@ -66,7 +66,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     loadStrategy: LoadStrategy.SELECT_IN,
     autoJoinOneToOneOwner: true,
     propagateToOneOwner: true,
-    populateAfterFlush: false,
+    populateAfterFlush: true,
     forceEntityConstructor: false,
     forceUndefined: false,
     forceUtcTimezone: false,
