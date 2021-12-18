@@ -61,7 +61,7 @@ Before you submit your pull request consider the following guidelines:
 
 - This project aims to have 100% code coverage, so be sure to **include appropriate test cases**.
 - Follow defined [coding standard](#coding-standard), use `yarn lint` command to check it.
-- Commit your changes using a descriptive commit message that follows defined [commit message conventions](#commit). 
+- Commit your changes using a descriptive commit message that follows defined [commit message conventions](#commit-message-guidelines). 
   Adherence to these conventions is necessary because release notes are automatically generated from these messages.
 - Push the code to your forked repository and create a pull request on GitHub.
 - If somebody from project contributors suggest changes then:
@@ -90,7 +90,7 @@ Some highlights:
 - do not use `public` keyword (allowed only in constructor)
 - prefer `const` over `let` (and do not use `var`)
 
-## <a name="commit"></a> Commit Message Guidelines
+## Commit Message Guidelines
 
 The project have very precise rules over how git commit messages can be formatted. This leads to 
 **more readable messages** that are easy to follow when looking through the **project history**.
