@@ -157,6 +157,10 @@ export class EntityFactory {
 
   private createEntity<T extends AnyEntity<T>>(data: EntityData<T>, meta: EntityMetadata<T>, options: FactoryOptions): T {
     if (options.newEntity || meta.forceConstructor) {
+      if (!meta.class) {
+        throw new Error(`Cannot create entity ${meta.className}, class prototype is unknown`);
+      }
+
       const params = this.extractConstructorParams<T>(meta, data, options);
       const Entity = meta.class;
       meta.constructorParams.forEach(prop => delete data[prop]);

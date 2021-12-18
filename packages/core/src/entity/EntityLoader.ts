@@ -50,6 +50,7 @@ export class EntityLoader {
     populate = this.normalizePopulate<T>(entityName, populate, options.strategy, options.lookup);
     const invalid = populate.find(({ field }) => !this.em.canPopulate(entityName, field));
 
+    /* istanbul ignore next */
     if (options.validate && invalid) {
       throw ValidationError.invalidPropertyName(entityName, invalid.field);
     }

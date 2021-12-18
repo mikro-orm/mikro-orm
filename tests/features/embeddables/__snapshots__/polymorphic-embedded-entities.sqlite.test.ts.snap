@@ -46,6 +46,29 @@ exports[`polymorphic embeddables in sqlite diffing 1`] = `
     if (data.pet2 && typeof data.pet2.name !== 'undefined') entity.pet2.name = data.pet2.name;
     if (data.pet2 && typeof data.pet2.canMeow !== 'undefined') entity.pet2.canMeow = data.pet2.canMeow === null ? null : !!data.pet2.canMeow;
   }
+  if (typeof data.pets === 'string') {
+    data.pets = JSON.parse(data.pets);
+  }
+  if (Array.isArray(data.pets)) {
+    entity.pets = [];
+    data.pets.forEach((_, idx_0) => {
+      if (typeof data.pets[idx_0] === 'string') {
+        data.pets[idx_0] = JSON.parse(data.pets[idx_0]);
+      }
+      if (data.pets[idx_0] != null) {
+        if (data.pets[idx_0].type == '1') {
+          entity.pets[idx_0] = factory.createEmbeddable('Dog', data.pets[idx_0], { newEntity, convertCustomTypes });
+        }
+        if (data.pets[idx_0].type == '0') {
+          entity.pets[idx_0] = factory.createEmbeddable('Cat', data.pets[idx_0], { newEntity, convertCustomTypes });
+        }
+        if (data.pets && data.pets[idx_0] && typeof data.pets[idx_0].canBark !== 'undefined') entity.pets[idx_0].canBark = data.pets[idx_0].canBark === null ? null : !!data.pets[idx_0].canBark;
+        if (data.pets && data.pets[idx_0] && typeof data.pets[idx_0].type !== 'undefined') entity.pets[idx_0].type = data.pets[idx_0].type;
+        if (data.pets && data.pets[idx_0] && typeof data.pets[idx_0].name !== 'undefined') entity.pets[idx_0].name = data.pets[idx_0].name;
+        if (data.pets && data.pets[idx_0] && typeof data.pets[idx_0].canMeow !== 'undefined') entity.pets[idx_0].canMeow = data.pets[idx_0].canMeow === null ? null : !!data.pets[idx_0].canMeow;
+      }
+    });
+  }
 }"
 `;
 
@@ -76,12 +99,27 @@ exports[`polymorphic embeddables in sqlite diffing 2`] = `
     ret.pet2 = cloneEmbeddable(ret.pet2);
   }
 
+  if (Array.isArray(entity.pets)) {
+    ret.pets = [];
+    entity.pets.forEach((_, idx_0) => {
+
+      if (entity.pets[idx_0] != null) {
+        ret.pets[idx_0] = {};
+        ret.pets[idx_0].canBark = clone(entity.pets[idx_0].canBark);
+        ret.pets[idx_0].type = clone(entity.pets[idx_0].type);
+        ret.pets[idx_0].name = clone(entity.pets[idx_0].name);
+        ret.pets[idx_0].canMeow = clone(entity.pets[idx_0].canMeow);
+      }
+    });
+    ret.pets = cloneEmbeddable(ret.pets);
+  }
+
   return ret;
 }"
 `;
 
 exports[`polymorphic embeddables in sqlite schema 1`] = `
-"create table \`owner\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`pet_can_bark\` integer null, \`pet_type\` integer not null, \`pet_name\` text not null, \`pet_can_meow\` integer null, \`pet2\` json not null);
+"create table \`owner\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`pet_can_bark\` integer null, \`pet_type\` integer not null, \`pet_name\` text not null, \`pet_can_meow\` integer null, \`pet2\` json not null, \`pets\` json not null);
 create index \`owner_pet_type_index\` on \`owner\` (\`pet_type\`);
 
 "
