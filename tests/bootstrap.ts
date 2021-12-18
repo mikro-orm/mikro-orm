@@ -37,7 +37,6 @@ export async function initORMMongo() {
     type: 'mongo',
     ensureIndexes,
     implicitTransactions: true,
-    populateAfterFlush: true,
     validate: true,
     filters: { allowedFooBars: { cond: args => ({ id: { $in: args.allowed } }), entity: ['FooBar'], default: false } },
     pool: { min: 1, max: 3 },
@@ -60,6 +59,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     charset: 'utf8mb4',
     logger: (i: any) => i,
     multipleStatements: true,
+    populateAfterFlush: false,
     entityRepository: SqlEntityRepository,
     type,
     replicas: [{ name: 'read-1' }, { name: 'read-2' }], // create two read replicas with same configuration, just for testing purposes

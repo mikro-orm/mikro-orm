@@ -92,21 +92,23 @@ export class EntityHelper {
   private static defineProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>): void {
     Object
       .values(meta.properties)
-      .filter(prop => [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk)
       .forEach(prop => {
-        Object.defineProperty(meta.prototype, prop.name, {
-          set(val: AnyEntity) {
-            EntityHelper.defineReferenceProperty(meta, prop, this);
-            this[prop.name] = val;
-          },
-        });
-      });
+        const isCollection = [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference);
+        const isReference = [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk;
 
-    Object
-      .values(meta.properties)
-      .filter(prop => !(prop.inherited || prop.primary || prop.persist === false || prop.embedded))
-      .filter(prop => !([ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk))
-      .forEach(prop => {
+        if (isReference) {
+          return Object.defineProperty(meta.prototype, prop.name, {
+            set(val: AnyEntity) {
+              EntityHelper.defineReferenceProperty(meta, prop, this);
+              this[prop.name] = val;
+            },
+          });
+        }
+
+        if (prop.inherited || prop.primary || prop.persist === false || prop.embedded || isCollection) {
+          return;
+        }
+
         Object.defineProperty(meta.prototype, prop.name, {
           set(val) {
             Object.defineProperty(this, prop.name, {
