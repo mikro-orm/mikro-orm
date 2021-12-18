@@ -1,6 +1,7 @@
 import type { MigrationsOptions, Transaction } from '@mikro-orm/core';
 import { Utils } from '@mikro-orm/core';
 import type { AbstractSqlDriver, Table } from '@mikro-orm/knex';
+import * as path from 'path';
 import type { MigrationRow } from './typings';
 
 export class MigrationStorage {
@@ -70,8 +71,13 @@ export class MigrationStorage {
   }
 
   protected getMigrationName(name: string) {
-    // strip extension
-    return name.replace(/\.\w+$/, '');
+    const parsedName = path.parse(name);
+    if (['.js', '.ts'].includes(parsedName.ext)) {
+      // strip extension
+      return parsedName.name;
+    }
+
+    return name;
   }
 
 }
