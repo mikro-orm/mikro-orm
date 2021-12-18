@@ -90,7 +90,7 @@ Some highlights:
 - do not use `public` keyword (allowed only in constructor)
 - prefer `const` over `let` (and do not use `var`)
 
-## Commit Message Guidelines
+## <a name="commit"></a> Commit Message Guidelines
 
 The project have very precise rules over how git commit messages can be formatted. This leads to 
 **more readable messages** that are easy to follow when looking through the **project history**.
