@@ -1,4 +1,4 @@
-import { Entity, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, LoadStrategy, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Checkout {
@@ -35,6 +35,39 @@ export class Discount {
 
 }
 
+@Entity()
+export class Checkout2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
+  @OneToOne(() => Discount2, discount => discount.checkout, {
+    nullable: true,
+    orphanRemoval: true,
+  })
+  discount?: any;
+
+}
+
+@Entity()
+export class Discount2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @OneToOne(() => Checkout2)
+  checkout!: Checkout2;
+
+  @Property()
+  amount: number;
+
+  constructor(amount: number) {
+    this.amount = amount;
+  }
+
+}
+
 describe('Remove entity issue (GH 2273)', () => {
   let orm: MikroORM;
 
@@ -42,7 +75,7 @@ describe('Remove entity issue (GH 2273)', () => {
     orm = await MikroORM.init({
       type: 'sqlite',
       dbName: ':memory:',
-      entities: [Discount, Checkout],
+      entities: [Discount, Checkout, Discount2, Checkout2],
     });
   });
 
@@ -91,4 +124,38 @@ describe('Remove entity issue (GH 2273)', () => {
     expect(checkout.discount?.amount).toBe(2000);
     expect(discounts.length).toBe(1);
   });
+
+  it('Should be able to orphan remove discount from checkout', async () => {
+    const createdCheckout = new Checkout2();
+    createdCheckout.discount = new Discount2(25);
+
+    await orm.em.fork().persistAndFlush(createdCheckout);
+
+    {
+      // Remove the discount by setting it to null
+      const em = orm.em.fork();
+      const checkout = await em.findOneOrFail(Checkout2, createdCheckout.id, {
+        populate: ['discount'],
+        strategy: LoadStrategy.JOINED,
+      });
+
+      const discount = checkout.discount;
+      checkout.discount = null;
+      expect(checkout.discount).toBeNull();
+      expect(discount.checkout).toBeNull();
+      await em.flush();
+    }
+
+    {
+      // Verify checkout.discount is destroyed
+      const checkout = await orm.em.fork().findOneOrFail(Checkout2, createdCheckout.id, {
+        populate: ['discount'],
+        strategy: LoadStrategy.JOINED,
+      });
+      expect(checkout.discount).toBeNull();
+      const discounts = await orm.em.fork().find(Discount2, {});
+      expect(discounts).toHaveLength(0);
+    }
+  });
+
 });
