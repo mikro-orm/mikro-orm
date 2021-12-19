@@ -130,7 +130,13 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const joinedProps = this.joinedProps(meta, populate);
 
     joinedProps.forEach(p => {
-      const relation = meta.properties[p.field as keyof T & string];
+      const relation = meta.properties[p.field];
+
+      /* istanbul ignore next */
+      if (!relation) {
+        return;
+      }
+
       const meta2 = this.metadata.find(relation.type)!;
       const path = parentJoinPath ? `${parentJoinPath}.${relation.name}` : `${meta.name}.${relation.name}`;
       const relationAlias = qb.getAliasForJoinPath(path);
