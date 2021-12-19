@@ -10,7 +10,7 @@ import { initORMSqlite } from '../../bootstrap';
 const closeSpy = jest.spyOn(MikroORM.prototype, 'close');
 jest.spyOn(CLIHelper, 'showHelp').mockImplementation(() => void 0);
 const getPendingMigrations = jest.spyOn(Migrator.prototype, 'getPendingMigrations');
-getPendingMigrations.mockResolvedValue([{ file: '1' }]);
+getPendingMigrations.mockResolvedValue([{ name: '1' }]);
 const dumpMock = jest.spyOn(CLIHelper, 'dump');
 dumpMock.mockImplementation(() => void 0);
 jest.spyOn(CLIHelper, 'dumpTable').mockImplementation(() => void 0);

@@ -128,7 +128,7 @@ export class MigrationCommandFactory {
     const pending = await migrator.getPendingMigrations();
     CLIHelper.dumpTable({
       columns: ['Name'],
-      rows: pending.map(row => [row.file.replace(/\.[jt]s$/, '')]),
+      rows: pending.map(row => [row.name]),
       empty: 'No pending migrations',
     });
   }

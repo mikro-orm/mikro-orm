@@ -126,7 +126,6 @@ export class ConfigurationLoader {
     const ret: Dictionary = {};
     const array = (v: string) => v.split(',').map(vv => vv.trim());
     const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
-    const re = (v: string) => new RegExp(v);
     const num = (v: string) => +v;
     const read = (o: Dictionary, envKey: string, key: string, mapper: (v: string) => unknown = v => v) => {
       if (!(envKey in process.env)) {
@@ -177,7 +176,7 @@ export class ConfigurationLoader {
     ret.migrations = {};
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_TABLE_NAME', 'tableName');
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_PATH', 'path');
-    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_PATTERN', 'pattern', re);
+    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_GLOB', 'glob');
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_TRANSACTIONAL', 'transactional', bool);
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_DISABLE_FOREIGN_KEYS', 'disableForeignKeys', bool);
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_ALL_OR_NOTHING', 'allOrNothing', bool);

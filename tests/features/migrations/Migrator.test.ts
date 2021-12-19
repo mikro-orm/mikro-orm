@@ -1,5 +1,5 @@
 (global as any).process.env.FORCE_COLOR = 0;
-import umzug from 'umzug';
+import { Umzug } from 'umzug';
 import type { MikroORM } from '@mikro-orm/core';
 import { MetadataStorage } from '@mikro-orm/core';
 import { Migration, MigrationStorage, Migrator } from '@mikro-orm/migrations';
@@ -63,10 +63,10 @@ describe('Migrator', () => {
     const migrator = orm.getMigrator();
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
-    const upMock = jest.spyOn(umzug.prototype, 'up');
-    upMock.mockImplementation(() => void 0);
-    const downMock = jest.spyOn(umzug.prototype, 'down');
-    downMock.mockImplementation(() => void 0);
+    const upMock = jest.spyOn(Umzug.prototype, 'up');
+    upMock.mockImplementation(() => void 0 as any);
+    const downMock = jest.spyOn(Umzug.prototype, 'down');
+    downMock.mockImplementation(() => void 0 as any);
     await migrator.up();
     await migrator.down(migration.fileName.replace('.ts', ''));
     await migrator.up();
@@ -150,7 +150,7 @@ describe('Migrator', () => {
 
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migration2 = await migrator.createInitialMigration(undefined);
-    expect(logMigrationMock).toBeCalledWith('Migration20191013214813.ts');
+    expect(logMigrationMock).toBeCalledWith({ name: 'Migration20191013214813.ts', context: null });
     expect(migration2).toMatchSnapshot('initial-migration-dump');
     await remove(process.cwd() + '/temp/migrations/' + migration2.fileName);
   });
@@ -170,10 +170,10 @@ describe('Migrator', () => {
   });
 
   test('run schema migration', async () => {
-    const upMock = jest.spyOn(umzug.prototype, 'up');
-    const downMock = jest.spyOn(umzug.prototype, 'down');
-    upMock.mockImplementationOnce(() => void 0);
-    downMock.mockImplementationOnce(() => void 0);
+    const upMock = jest.spyOn(Umzug.prototype, 'up');
+    const downMock = jest.spyOn(Umzug.prototype, 'down');
+    upMock.mockImplementationOnce(() => void 0 as any);
+    downMock.mockImplementationOnce(() => void 0 as any);
     const migrator = new Migrator(orm.em);
     await migrator.up();
     expect(upMock).toBeCalledTimes(1);
@@ -199,12 +199,12 @@ describe('Migrator', () => {
     const storage = migrator.storage;
 
     await storage.ensureTable(); // creates the table
-    await storage.logMigration('test.ts'); // can have extension
+    await storage.logMigration({ name: 'test.ts', context: null }); // can have extension
     await expect(storage.getExecutedMigrations()).resolves.toMatchObject([{ name: 'test' }]);
-    await expect(storage.executed()).resolves.toEqual(['test.ts']);
+    await expect(storage.executed()).resolves.toEqual(['test']);
 
     await storage.ensureTable(); // table exists, no-op
-    await storage.unlogMigration('test');
+    await storage.unlogMigration({ name: 'test', context: null });
     await expect(storage.executed()).resolves.toEqual([]);
 
     await expect(migrator.getPendingMigrations()).resolves.toEqual([]);
@@ -217,12 +217,12 @@ describe('Migrator', () => {
     const storage = migrator.storage;
 
     await storage.ensureTable(); // creates the table
-    await storage.logMigration('test.migration.ts'); // can have extension
+    await storage.logMigration({ name: 'test.migration.ts', context: null }); // can have extension
     await expect(storage.getExecutedMigrations()).resolves.toMatchObject([{ name: 'test.migration' }]);
-    await expect(storage.executed()).resolves.toEqual(['test.migration.ts']);
+    await expect(storage.executed()).resolves.toEqual(['test.migration']);
 
     await storage.ensureTable(); // table exists, no-op
-    await storage.unlogMigration('test.migration');
+    await storage.unlogMigration({ name: 'test.migration', context: null });
     await expect(storage.executed()).resolves.toEqual([]);
 
     await expect(migrator.getPendingMigrations()).resolves.toEqual([]);

@@ -68,13 +68,15 @@ Snapshotting can be disabled via `migrations.snapshot: false` in the ORM config.
 
 ## Configuration
 
+> Since v5, `umzug` 3.0 is used, and `pattern` option has been replaced with `glob`.
+
 ```typescript
 await MikroORM.init({
   // default values:
   migrations: {
     tableName: 'mikro_orm_migrations', // name of database table with log of executed transactions
     path: './migrations', // path to the folder with migrations
-    pattern: /^[\w-]+\d+\.[jt]s$/, // regex pattern for the migration files
+    glob: '!(*.d).{js,ts}', // how to match migration files (all .js and .ts files, but not .d.ts)
     transactional: true, // wrap each migration in a transaction
     disableForeignKeys: true, // wrap statements with `set foreign_key_checks = 0` or equivalent
     allOrNothing: true, // wrap all migrations in master transaction
@@ -86,6 +88,27 @@ await MikroORM.init({
   },
 })
 ```
+
+## Running migrations in production
+
+In production environment we might want to use compiled migration files. Since v5,
+this should work almost out of box, all we need to do is to configure the migration
+path accordingly:
+
+```ts
+import { MikroORM, Utils } from '@mikro-orm/core';
+
+await MikroORM.init({
+  migrations: {
+    path: Utils.detectTsNode() ? 'src/migrations' : 'dist/migrations',
+  },
+  // ...
+});
+```
+
+This should allow using CLI to generate TS migration files (as in CLI you probably
+have TS support enabled), while using compiled JS files in production, where ts-node
+is not registered.
 
 ## Using custom `MigrationGenerator`
 

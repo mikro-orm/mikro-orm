@@ -370,7 +370,7 @@ MikroORM.init({
   migrations: {
     tableName: 'mikro_orm_migrations', // migrations table name
     path: process.cwd() + '/migrations', // path to folder with migration files
-    pattern: /^[\w-]+\d+\.ts$/, // how to match migration files
+    glob: '!(*.d).{js,ts}', // how to match migration files (all .js and .ts files, but not .d.ts)
     transactional: true, // run each migration inside transaction
     disableForeignKeys: true, // try to disable foreign_key_checks (or equivalent)
     allOrNothing: true, // run all migrations in current batch in master transaction
