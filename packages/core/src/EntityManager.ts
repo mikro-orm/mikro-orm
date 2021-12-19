@@ -5,7 +5,7 @@ import { QueryHelper, TransactionContext, Utils } from './utils';
 import type { AssignOptions, EntityLoaderOptions, EntityRepository, IdentifiedReference } from './entity';
 import { EntityAssigner, EntityFactory, EntityLoader, EntityValidator, Reference } from './entity';
 import { UnitOfWork } from './unit-of-work';
-import type { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, InsertOptions, LockOptions, UpdateOptions, GetReferenceOptions } from './drivers';
+import type { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, InsertOptions, LockOptions, UpdateOptions, GetReferenceOptions, EntityField } from './drivers';
 import type { AnyEntity, AutoPath, Dictionary, EntityData, EntityDictionary, EntityDTO, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, New, Populate, PopulateOptions, Primary } from './typings';
 import { FlushMode, LoadStrategy, LockMode, ReferenceType, SCALAR_TYPES } from './enums';
 import type { TransactionOptions } from './enums';
@@ -108,7 +108,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     where = await this.processWhere<T, P>(entityName, where, options, 'read');
     this.validator.validateParams(where);
     options.orderBy = options.orderBy || {};
-    options.populate = this.preparePopulate<T>(entityName, options.populate, options.strategy) as unknown as Populate<T, P>;
+    options.populate = this.preparePopulate<T, P>(entityName, options) as unknown as Populate<T, P>;
     const populate = options.populate as unknown as PopulateOptions<T>[];
     const cached = await this.tryCache<T, Loaded<T, P>[]>(entityName, options.cache, [entityName, 'em.find', options, where], options.refresh, true);
 
@@ -307,7 +307,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     this.validator.validateParams(where);
-    options.populate = this.preparePopulate<T>(entityName, options.populate as true, options.strategy) as unknown as Populate<T, P>;
+    options.populate = this.preparePopulate<T, P>(entityName, options) as unknown as Populate<T, P>;
     const cached = await this.tryCache<T, Loaded<T, P>>(entityName, options.cache, [entityName, 'em.findOne', options, where], options.refresh, true);
 
     if (cached?.data) {
@@ -581,7 +581,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async count<T, P extends string = never>(entityName: EntityName<T>, where: FilterQuery<T> = {} as FilterQuery<T>, options: CountOptions<T, P> = {}): Promise<number> {
     entityName = Utils.className(entityName);
     where = await this.processWhere<T, P>(entityName, where, options as FindOptions<T, P>, 'read');
-    options.populate = this.preparePopulate(entityName, options.populate) as unknown as Populate<T>;
+    options.populate = this.preparePopulate(entityName, options) as unknown as Populate<T>;
     this.validator.validateParams(where);
 
     const cached = await this.tryCache<T, number>(entityName, options.cache, [entityName, 'em.count', options, where]);
@@ -725,7 +725,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     entityName = Utils.className(entityName);
     const [p, ...parts] = property.split('.');
     const props = this.metadata.get(entityName).properties;
-    const ret = p in props && (props[p].reference !== ReferenceType.SCALAR || props[p].lazy);
+    const ret = p in props;
 
     if (!ret) {
       return !!this.metadata.find(property)?.pivotTable;
@@ -749,7 +749,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const entityName = entities[0].constructor.name;
-    const preparedPopulate = this.preparePopulate<T>(entityName, populate as true);
+    const preparedPopulate = this.preparePopulate<T>(entityName, { populate: populate as true });
     await this.entityLoader.populate(entityName, entities, preparedPopulate, options);
 
     return entities as Loaded<T, P>[];
@@ -883,28 +883,45 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       });
     }
 
-    const preparedPopulate = this.preparePopulate<T>(entityName, options.populate, options.strategy);
+    const preparedPopulate = this.preparePopulate<T, P>(entityName, options);
     await this.entityLoader.populate(entityName, [entity], preparedPopulate, { ...options as Dictionary, where, convertCustomTypes: false, ignoreLazyScalarProperties: true, lookup: false });
 
     return entity as Loaded<T, P>;
   }
 
-  private preparePopulate<T extends AnyEntity<T>>(entityName: string, populate?: Populate<T, any>, strategy?: LoadStrategy): PopulateOptions<T>[] {
-    if (!populate) {
-      return this.entityLoader.normalizePopulate<T>(entityName, [], strategy);
+  private buildFields<T, P extends string>(fields: readonly EntityField<T, P>[] = []): readonly AutoPath<T, P>[] {
+    return fields.reduce((ret, f) => {
+      if (Utils.isPlainObject(f)) {
+        Object.keys(f).forEach(ff => ret.push(...this.buildFields(f[ff]).map(field => `${ff}.${field}` as never)));
+      } else {
+        ret.push(f as never);
+      }
+
+      return ret;
+    }, [] as AutoPath<T, P>[]);
+  }
+
+  private preparePopulate<T extends AnyEntity<T>, P extends string = never>(entityName: string, options: Pick<FindOptions<T, P>, 'populate' | 'strategy' | 'fields'>): PopulateOptions<T>[] {
+    // infer populate hint if only `fields` are available
+    if (!options.populate && options.fields) {
+      options.populate = this.buildFields(options.fields);
     }
 
-    if (Array.isArray(populate)) {
-      populate = (populate as string[]).map(field => {
+    if (!options.populate) {
+      return this.entityLoader.normalizePopulate<T>(entityName, [], options.strategy);
+    }
+
+    if (Array.isArray(options.populate)) {
+      options.populate = (options.populate as string[]).map(field => {
         if (Utils.isString(field)) {
-          return { field, strategy };
+          return { field, strategy: options.strategy };
         }
 
         return field;
       }) as unknown as Populate<T>;
     }
 
-    const ret: PopulateOptions<T>[] = this.entityLoader.normalizePopulate<T>(entityName, populate as true, strategy);
+    const ret: PopulateOptions<T>[] = this.entityLoader.normalizePopulate<T>(entityName, options.populate as true, options.strategy);
     const invalid = ret.find(({ field }) => !this.canPopulate(entityName, field));
 
     if (invalid) {
@@ -913,7 +930,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     return ret.map(field => {
       // force select-in strategy when populating all relations as otherwise we could cause infinite loops when self-referencing
-      field.strategy = populate === true ? LoadStrategy.SELECT_IN : (strategy ?? field.strategy ?? this.config.get('loadStrategy'));
+      field.strategy = options.populate === true ? LoadStrategy.SELECT_IN : (options.strategy ?? field.strategy ?? this.config.get('loadStrategy'));
       return field;
     });
   }

@@ -1315,7 +1315,7 @@ describe('EntityManagerMongo', () => {
   test('canPopulate', async () => {
     const repo = orm.em.getRepository(Author);
     expect(repo.canPopulate('test')).toBe(false);
-    expect(repo.canPopulate('name')).toBe(false);
+    expect(repo.canPopulate('name')).toBe(true);
     expect(repo.canPopulate('favouriteBook.author')).toBe(true);
     expect(repo.canPopulate('books')).toBe(true);
   });

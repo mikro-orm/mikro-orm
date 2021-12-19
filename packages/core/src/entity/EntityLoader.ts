@@ -245,7 +245,7 @@ export class EntityLoader {
 
     const ids = Utils.unique(children.map(e => Utils.getPrimaryKeyValues(e, e.__meta!.primaryKeys, true)));
     const where = this.mergePrimaryCondition<T>(ids, fk, options, meta, this.metadata, this.driver.getPlatform());
-    const fields = this.buildFields<T>(prop, options);
+    const fields = this.buildFields(options.fields, prop);
     const { refresh, filters, convertCustomTypes, lockMode, strategy } = options;
 
     return this.em.find<T>(prop.type, where as FilterQuery<T>, {
@@ -266,12 +266,17 @@ export class EntityLoader {
   }
 
   private async populateField<T extends AnyEntity<T>>(entityName: string, entities: T[], populate: PopulateOptions<T>, options: Required<EntityLoaderOptions<T>>): Promise<void> {
+    const prop = this.metadata.find(entityName)!.properties[populate.field] as EntityProperty<T>;
+
+    if (prop.reference === ReferenceType.SCALAR && !prop.lazy) {
+      return;
+    }
+
     if (!populate.children) {
       return void await this.populateMany<T>(entityName, entities, populate, options);
     }
 
     await this.populateMany<T>(entityName, entities, populate, options);
-    const prop = this.metadata.find(entityName)!.properties[populate.field];
     const children: T[] = [];
 
     for (const entity of entities) {
@@ -287,7 +292,7 @@ export class EntityLoader {
     }
 
     const filtered = Utils.unique(children);
-    const fields = this.buildFields<T>(prop, options);
+    const fields = this.buildFields(options.fields, prop);
     const innerOrderBy = Utils.asArray(options.orderBy)
       .filter(orderBy => Utils.isObject(orderBy[prop.name]))
       .map(orderBy => orderBy[prop.name]);
@@ -295,7 +300,7 @@ export class EntityLoader {
 
     await this.populate<T>(prop.type, filtered, populate.children, {
       where: await this.extractChildCondition(options, prop, false) as FilterQuery<T>,
-      orderBy: innerOrderBy,
+      orderBy: innerOrderBy as QueryOrderMap<T>[],
       fields: fields.length > 0 ? fields : undefined,
       validate: false,
       lookup: false,
@@ -309,7 +314,7 @@ export class EntityLoader {
     const ids = filtered.map((e: AnyEntity<T>) => e.__helper!.__primaryKeys);
     const refresh = options.refresh;
     const where = await this.extractChildCondition(options, prop, true);
-    const fields = this.buildFields(prop, options);
+    const fields = this.buildFields(options.fields, prop);
     const options2 = { ...options } as FindOptions<T>;
     delete options2.limit;
     delete options2.offset;
@@ -376,8 +381,8 @@ export class EntityLoader {
     return subCond;
   }
 
-  private buildFields<T>(prop: EntityProperty<T>, options: Required<EntityLoaderOptions<T>>): EntityField<T>[] {
-    return (options.fields || []).reduce((ret, f) => {
+  private buildFields<T, P extends string>(fields: readonly EntityField<T, P>[] = [], prop: EntityProperty<T>): readonly EntityField<T>[] {
+    return fields.reduce((ret, f) => {
       if (Utils.isPlainObject(f)) {
         Object.keys(f)
           .filter(ff => ff === prop.name)
