@@ -11,7 +11,7 @@ const closeSpy = jest.spyOn(MikroORM.prototype, 'close');
 const showHelpMock = jest.spyOn(CLIHelper, 'showHelp');
 showHelpMock.mockImplementation(() => void 0);
 const ensureDatabase = jest.spyOn(SchemaGenerator.prototype, 'ensureDatabase');
-ensureDatabase.mockImplementation(async () => void 0);
+ensureDatabase.mockImplementation(async () => false);
 const dumpMock = jest.spyOn(CLIHelper, 'dump');
 dumpMock.mockImplementation(() => void 0);
 

@@ -78,7 +78,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     migrations: {
       tableName: 'mikro_orm_migrations',
       path: './migrations',
-      pattern: /^[\w-]+\d+\.[jt]s$/,
+      glob: '!(*.d).{js,ts}',
       transactional: true,
       disableForeignKeys: true,
       allOrNothing: true,
@@ -345,7 +345,7 @@ export interface ConnectionOptions {
 export type MigrationsOptions = {
   tableName?: string;
   path?: string;
-  pattern?: RegExp;
+  glob?: string;
   transactional?: boolean;
   disableForeignKeys?: boolean;
   allOrNothing?: boolean;

@@ -417,7 +417,7 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
 export interface ISchemaGenerator {
   generate(): Promise<string>;
   createSchema(options?: { wrap?: boolean; schema?: string }): Promise<void>;
-  ensureDatabase(): Promise<void>;
+  ensureDatabase(): Promise<boolean>;
   getCreateSchemaSQL(options?: { wrap?: boolean; schema?: string }): Promise<string>;
   dropSchema(options?: { wrap?: boolean; dropMigrationsTable?: boolean; dropDb?: boolean; schema?: string }): Promise<void>;
   getDropSchemaSQL(options?: { wrap?: boolean; dropMigrationsTable?: boolean; schema?: string }): Promise<string>;
@@ -433,7 +433,7 @@ export interface IEntityGenerator {
   generate(options?: { baseDir?: string; save?: boolean; schema?: string }): Promise<string[]>;
 }
 
-type UmzugMigration = { path?: string; file: string };
+type UmzugMigration = { name: string; path?: string };
 type MigrateOptions = { from?: string | number; to?: string | number; migrations?: string[]; transaction?: Transaction };
 type MigrationResult = { fileName: string; code: string; diff: MigrationDiff };
 type MigrationRow = { name: string; executed_at: Date };
