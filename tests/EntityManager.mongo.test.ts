@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson';
 import type { EntityProperty } from '@mikro-orm/core';
 import { Collection, Configuration, MikroORM, QueryOrder, Reference, wrap, UniqueConstraintViolationException, IdentityMap, EntitySchema, NullHighlighter } from '@mikro-orm/core';
-import { EntityManager, MongoConnection, MongoDriver } from '@mikro-orm/mongodb';
+import { EntityManager, MongoConnection, MongoDriver, MongoPlatform } from '@mikro-orm/mongodb';
 import { MongoHighlighter } from '@mikro-orm/mongo-highlighter';
 
 import { Author, Book, BookTag, Publisher, PublisherType, Test } from './entities';
@@ -1810,6 +1810,8 @@ describe('EntityManagerMongo', () => {
     const ref1 = orm.em.getRepository(Author).getReference<'id' | '_id'>(author.id, { wrapped: true });
     expect(ref).not.toBe(ref1);
     expect(ref.unwrap()).toBe(ref1.unwrap());
+    // @ts-expect-error private getter
+    expect(ref.__platform).toBeInstanceOf(MongoPlatform);
     expect(ref.isInitialized()).toBe(false);
     expect(typeof ref.id).toBe('string');
     expect(ref._id).toBeInstanceOf(ObjectId);

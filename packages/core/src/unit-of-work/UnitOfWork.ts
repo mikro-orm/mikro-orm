@@ -179,7 +179,7 @@ export class UnitOfWork {
     }
 
     for (const entity of this.identityMap.getStore(meta).values()) {
-      if (entity.__helper!.isTouched()) {
+      if (entity.__helper!.__initialized && entity.__helper!.isTouched()) {
         return true;
       }
     }
@@ -379,11 +379,11 @@ export class UnitOfWork {
     }
 
     for (const entity of this.removeStack) {
-      const deletePkHash = entity.__helper!.getSerializedPrimaryKey();
+      const deletePkHash = [entity.__helper!.getSerializedPrimaryKey(), ...this.expandUniqueProps(entity)];
       let type = ChangeSetType.DELETE;
 
       for (const cs of inserts) {
-        if (deletePkHash === cs.getSerializedPrimaryKey()) {
+        if (deletePkHash.some(hash => hash === cs.getSerializedPrimaryKey() || this.expandUniqueProps(cs.entity).find(child => hash === child))) {
           type = ChangeSetType.DELETE_EARLY;
         }
       }
@@ -451,10 +451,20 @@ export class UnitOfWork {
     }
 
     // when changing a unique nullable property (or a 1:1 relation), we can't do it in a single query as it would cause unique constraint violations
-    const uniqueProps = changeSet.entity.__meta!.props.filter(prop => prop.unique && prop.nullable && changeSet.payload[prop.name] != null);
+    const uniqueProps = changeSet.entity.__meta!.uniqueProps.filter(prop => prop.nullable && changeSet.payload[prop.name] != null);
     this.scheduleExtraUpdate(changeSet, uniqueProps);
 
     return changeSet.type === ChangeSetType.UPDATE && !Utils.hasObjectKeys(changeSet.payload);
+  }
+
+  private expandUniqueProps<T extends AnyEntity<T>>(entity: T): string[] {
+    return entity.__meta!.uniqueProps.map(prop => {
+      if (entity[prop.name]) {
+        return prop.reference === ReferenceType.SCALAR ? entity[prop.name] : (entity[prop.name] as AnyEntity).__helper!.getSerializedPrimaryKey();
+      }
+
+      return undefined;
+    }).filter(i => i) as string[];
   }
 
   private checkOrphanRemoval<T extends AnyEntity<T>>(changeSet: ChangeSet<T>): void {

@@ -302,6 +302,7 @@ export class EntityMetadata<T extends AnyEntity<T> = any> {
     const props = Object.values(this.properties).sort((a, b) => this.propertyOrder.get(a.name)! - this.propertyOrder.get(b.name)!);
     this.props = [...props.filter(p => p.primary), ...props.filter(p => !p.primary)];
     this.relations = this.props.filter(prop => prop.reference !== ReferenceType.SCALAR && prop.reference !== ReferenceType.EMBEDDED);
+    this.uniqueProps = this.props.filter(prop => prop.unique);
     this.comparableProps = this.props.filter(prop => EntityComparator.isComparable(prop, this.root));
     this.hydrateProps = this.props.filter(prop => {
       // `prop.userDefined` is either `undefined` or `false`
@@ -395,6 +396,7 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   relations: EntityProperty<T>[];
   comparableProps: EntityProperty<T>[]; // for EntityComparator
   hydrateProps: EntityProperty<T>[]; // for Hydrator
+  uniqueProps: EntityProperty<T>[];
   indexes: { properties: (keyof T & string) | (keyof T & string)[]; name?: string; type?: string; options?: Dictionary; expression?: string }[];
   uniques: { properties: (keyof T & string) | (keyof T & string)[]; name?: string; options?: Dictionary }[];
   customRepository: () => Constructor<EntityRepository<T>>;
