@@ -889,7 +889,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return entity as Loaded<T, P>;
   }
 
-  private buildFields<T, P extends string>(fields: readonly EntityField<T, P>[] = []): readonly AutoPath<T, P>[] {
+  private buildFields<T, P extends string>(fields: readonly EntityField<T, P>[]): readonly AutoPath<T, P>[] {
     return fields.reduce((ret, f) => {
       if (Utils.isPlainObject(f)) {
         Object.keys(f).forEach(ff => ret.push(...this.buildFields(f[ff]).map(field => `${ff}.${field}` as never)));

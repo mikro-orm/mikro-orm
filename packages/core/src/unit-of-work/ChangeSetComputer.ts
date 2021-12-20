@@ -13,7 +13,6 @@ export class ChangeSetComputer {
 
   constructor(private readonly validator: EntityValidator,
               private readonly collectionUpdates: Set<Collection<AnyEntity>>,
-              private readonly removeStack: Set<AnyEntity>,
               private readonly metadata: MetadataStorage,
               private readonly platform: Platform,
               private readonly config: Configuration) { }
@@ -128,13 +127,6 @@ export class ChangeSetComputer {
 
   private processToMany<T extends AnyEntity<T>>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
     const target = changeSet.entity[prop.name] as unknown as Collection<any>;
-
-    // remove items from collection based on removeStack
-    if (target.isInitialized() && this.removeStack.size > 0) {
-      target.getItems(false)
-        .filter(item => this.removeStack.has(item))
-        .forEach(item => target.remove(item));
-    }
 
     if (!target.isDirty()) {
       return;

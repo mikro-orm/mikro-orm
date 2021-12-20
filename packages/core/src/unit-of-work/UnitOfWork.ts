@@ -28,7 +28,7 @@ export class UnitOfWork {
   private readonly platform = this.em.getPlatform();
   private readonly eventManager = this.em.getEventManager();
   private readonly comparator = this.em.getComparator();
-  private readonly changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.collectionUpdates, this.removeStack, this.metadata, this.platform, this.em.config);
+  private readonly changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.collectionUpdates, this.metadata, this.platform, this.em.config);
   private readonly changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.metadata, this.em.config.getHydrator(this.metadata), this.em.getEntityFactory(), this.em.config);
   private readonly queuedActions = new Set<string>();
   private readonly flushQueue: (() => Promise<void>)[] = [];
@@ -243,6 +243,15 @@ export class UnitOfWork {
     this.removeStack.add(entity);
     this.queuedActions.add(entity.__meta!.className);
     this.persistStack.delete(entity);
+
+    // remove from referencing collections
+    for (const prop of entity.__meta!.bidirectionalRelations) {
+      const inverse = prop.mappedBy || prop.inversedBy;
+
+      if (entity[prop.name] && Utils.isCollection(Reference.unwrapReference(entity[prop.name])[inverse])) {
+        (Reference.unwrapReference(entity[prop.name])[inverse] as Collection<T>).removeWithoutPropagation(entity);
+      }
+    }
 
     if (options.cascade ?? true) {
       this.cascade(entity, Cascade.REMOVE, visited);
@@ -619,7 +628,7 @@ export class UnitOfWork {
   }
 
   private shouldCascade(prop: EntityProperty, type: Cascade): boolean {
-    if ([Cascade.REMOVE, Cascade.SCHEDULE_ORPHAN_REMOVAL, Cascade.CANCEL_ORPHAN_REMOVAL].includes(type) && prop.orphanRemoval) {
+    if ([Cascade.REMOVE, Cascade.SCHEDULE_ORPHAN_REMOVAL, Cascade.CANCEL_ORPHAN_REMOVAL, Cascade.ALL].includes(type) && prop.orphanRemoval) {
       return true;
     }
 

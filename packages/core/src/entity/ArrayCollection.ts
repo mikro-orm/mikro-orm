@@ -112,6 +112,16 @@ export class ArrayCollection<T, O> {
     this.remove(...this.items);
   }
 
+  /**
+   * @internal
+   */
+  removeWithoutPropagation(entity: T): void {
+    this.incrementCount(-1);
+    delete this[this.items.size - 1]; // remove last item
+    this.items.delete(entity);
+    Object.assign(this, [...this.items]); // reassign array access
+  }
+
   contains(item: T | Reference<T>, check?: boolean): boolean {
     const entity = Reference.unwrapReference(item);
     return this.items.has(entity);

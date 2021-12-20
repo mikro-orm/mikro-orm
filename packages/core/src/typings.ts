@@ -302,6 +302,7 @@ export class EntityMetadata<T extends AnyEntity<T> = any> {
     const props = Object.values(this.properties).sort((a, b) => this.propertyOrder.get(a.name)! - this.propertyOrder.get(b.name)!);
     this.props = [...props.filter(p => p.primary), ...props.filter(p => !p.primary)];
     this.relations = this.props.filter(prop => prop.reference !== ReferenceType.SCALAR && prop.reference !== ReferenceType.EMBEDDED);
+    this.bidirectionalRelations = this.relations.filter(prop => prop.mappedBy || prop.inversedBy);
     this.uniqueProps = this.props.filter(prop => prop.unique);
     this.comparableProps = this.props.filter(prop => EntityComparator.isComparable(prop, this.root));
     this.hydrateProps = this.props.filter(prop => {
@@ -394,6 +395,7 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   properties: { [K in keyof T & string]: EntityProperty<T> };
   props: EntityProperty<T>[];
   relations: EntityProperty<T>[];
+  bidirectionalRelations: EntityProperty<T>[];
   comparableProps: EntityProperty<T>[]; // for EntityComparator
   hydrateProps: EntityProperty<T>[]; // for Hydrator
   uniqueProps: EntityProperty<T>[];
