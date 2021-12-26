@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.5.10](https://github.com/mikro-orm/mikro-orm/compare/v4.5.9...v4.5.10) (2021-12-26)
+
+
+### Bug Fixes
+
+* **mongo:** allow using `pool.min/max` options in mongo driver ([830179d](https://github.com/mikro-orm/mikro-orm/commit/830179d512d5aa6e4c990b27c84e38b29468ba44)), closes [#2228](https://github.com/mikro-orm/mikro-orm/issues/2228)
+
+
+
+
+
 ## [4.5.9](https://github.com/mikro-orm/mikro-orm/compare/v4.5.8...v4.5.9) (2021-08-24)
 
 **Note:** Version bump only for package @mikro-orm/mongodb
