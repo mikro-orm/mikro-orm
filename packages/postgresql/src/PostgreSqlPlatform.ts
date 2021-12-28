@@ -50,6 +50,14 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return `{${values.join(',')}}`;
   }
 
+  unmarshallArray(value: string): string[] {
+    if (value === '{}') {
+      return [];
+    }
+
+    return value.substring(1, value.length - 1).split(',');
+  }
+
   getBlobDeclarationSQL(): string {
     return 'bytea';
   }
