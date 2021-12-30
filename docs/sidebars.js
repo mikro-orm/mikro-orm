@@ -114,6 +114,7 @@ module.exports = {
         'usage-with-js',
         'usage-with-babel',
         'usage-with-adminjs',
+        'usage-with-tsed',
         'entity-constructors',
         'multiple-schemas',
         'using-bigint-pks',
