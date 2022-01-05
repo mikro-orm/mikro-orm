@@ -149,7 +149,7 @@ export class QueryBuilderHelper {
 
   joinManyToManyReference(prop: EntityProperty, ownerAlias: string, alias: string, pivotAlias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary, path: string): Dictionary<JoinOptions> {
     const ret = {
-      [`${ownerAlias}.${prop.name}`]: {
+      [`${ownerAlias}.${prop.name}#${pivotAlias}`]: {
         prop, type, cond, ownerAlias,
         alias: pivotAlias,
         inverseAlias: alias,
@@ -166,8 +166,8 @@ export class QueryBuilderHelper {
     }
 
     const prop2 = this.metadata.find(prop.pivotTable)!.properties[prop.type + (prop.owner ? '_inverse' : '_owner')];
-    ret[`${pivotAlias}.${prop2.name}`] = this.joinManyToOneReference(prop2, pivotAlias, alias, type);
-    ret[`${pivotAlias}.${prop2.name}`].path = path;
+    ret[`${pivotAlias}.${prop2.name}#${alias}`] = this.joinManyToOneReference(prop2, pivotAlias, alias, type);
+    ret[`${pivotAlias}.${prop2.name}#${alias}`].path = path;
 
     return ret;
   }
