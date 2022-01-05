@@ -28,13 +28,6 @@ describe('MikroOrmSeeder', () => {
 
   afterAll(async () => await orm.close(true));
 
-  test('refreshDatabase', async () => {
-    const seeder = orm.getSeeder();
-    await seeder.refreshDatabase();
-    expect(dropSchema).toHaveBeenCalledTimes(1);
-    expect(createSchema).toHaveBeenCalledTimes(1);
-  });
-
   test('seed', async () => {
     const seeder = orm.getSeeder();
     const bookRunMock = jest.spyOn(Book3Seeder.prototype, 'run');
@@ -50,7 +43,7 @@ describe('MikroOrmSeeder', () => {
   });
 
   test('seedString', async () => {
-    orm.config.set('seeder', { path: 'tests/database/seeder', defaultSeeder: 'DatabaseSeeder' });
+    orm.config.set('seeder', { path: './database/seeder', defaultSeeder: 'DatabaseSeeder' });
     const seeder = orm.getSeeder();
     const seedMock = jest.spyOn(SeedManager.prototype, 'seed');
 
@@ -61,13 +54,13 @@ describe('MikroOrmSeeder', () => {
   });
 
   test('createSeeder', async () => {
-    orm.config.set('seeder', { path: './database/seeder', defaultSeeder: 'DatabaseSeeder' });
+    orm.config.set('seeder', { path: process.cwd() + '/temp/seeders', defaultSeeder: 'DatabaseSeeder' });
     const seeder = orm.getSeeder();
 
-    const seederFile = await seeder.createSeeder('Book3Seeder');
-    expect(seederFile).toBe(`./database/seeder/book3.seeder.ts`);
-    const fileContents = await readFile(`./database/seeder/book3.seeder.ts`, 'utf8');
-    expect(fileContents).toContain('export class Book3Seeder extends Seeder {');
-    await remove('./database');
+    const seederFile = await seeder.createSeeder('Publisher3Seeder');
+    expect(seederFile).toBe(process.cwd() + `/temp/seeders/publisher3.seeder.ts`);
+    const fileContents = await readFile(seederFile, 'utf8');
+    expect(fileContents).toContain('export class Publisher3Seeder extends Seeder {');
+    await remove(seederFile);
   });
 });

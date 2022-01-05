@@ -1,37 +1,37 @@
-import type { MikroORM } from '@mikro-orm/core';
+import type { ISeedManager, EntityManager } from '@mikro-orm/core';
 import { Utils } from '@mikro-orm/core';
 import type { Seeder } from './seeder';
 import { ensureDir, writeFile } from 'fs-extra';
 
-export class SeedManager {
+export class SeedManager implements ISeedManager {
 
-  constructor(private orm: MikroORM) {
-  }
+  private readonly config = this.em.config;
+  private readonly options = this.config.get('seeder');
+  private readonly absolutePath = Utils.absolutePath(this.options.path, this.config.get('baseDir'));
 
-  async refreshDatabase(): Promise<void> {
-    const generator = this.orm.getSchemaGenerator();
-    await generator.dropSchema();
-    await generator.createSchema();
+  constructor(private readonly em: EntityManager) {
   }
 
   async seed(...seederClasses: { new(): Seeder }[]): Promise<void> {
     for (const seederClass of seederClasses) {
       const seeder = new seederClass();
-      await seeder.run(this.orm.em);
-      await this.orm.em.flush();
-      this.orm.em.clear();
+      await seeder.run(this.em);
+      await this.em.flush();
+      this.em.clear();
     }
   }
 
   async seedString(...seederClasses: string[]): Promise<void> {
     for (const seederClass of seederClasses) {
-      const seeder = await import(`${process.cwd()}/${this.orm.config.get('seeder').path}/${this.getFileName(seederClass)}`);
+      const seedersPath = Utils.normalizePath(this.absolutePath);
+      const filePath = `${seedersPath}/${this.getFileName(seederClass)}`;
+      const seeder = await import(filePath);
       await this.seed(seeder[seederClass]);
     }
   }
 
   async createSeeder(seederClass: string): Promise<string> {
-    await this.ensureMigrationsDirExists();
+    await this.ensureSeedersDirExists();
     return this.generate(seederClass);
   }
 
@@ -47,25 +47,23 @@ export class SeedManager {
     return `${parts.join('-')}.seeder.ts`;
   }
 
-  private async ensureMigrationsDirExists() {
-    await ensureDir(Utils.normalizePath(this.orm.config.get('seeder').path));
+  private async ensureSeedersDirExists() {
+    await ensureDir(Utils.normalizePath(this.absolutePath));
   }
 
   private async generate(seederClass: string): Promise<string> {
-    const path = Utils.normalizePath(this.orm.config.get('seeder').path);
-    const fileName = this.getFileName(seederClass);
-    const ret = `import { EntityManager } from '@mikro-orm/core';
-import { Seeder } from '@mikro-orm/seeder';
-export class ${seederClass} extends Seeder {
+    const seedersPath = Utils.normalizePath(this.absolutePath);
+    const filePath = `${seedersPath}/${this.getFileName(seederClass)}`;
 
-  run(em: EntityManager): Promise<void> {
-  }
+    let ret = `import type { EntityManager } from '@mikro-orm/core';\n`;
+    ret += `import { Seeder } from '@mikro-orm/seeder';\n\n`;
+    ret += `export class ${seederClass} extends Seeder {\n\n`;
+    ret += `  async run(em: EntityManager): Promise<void> {}\n\n`;
+    ret += `}\n`;
 
-}`;
+    await writeFile(filePath, ret);
 
-    await writeFile(path + '/' + fileName, ret);
-
-    return path + '/' + fileName;
+    return filePath;
   }
 
 }
