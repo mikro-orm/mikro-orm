@@ -48,7 +48,7 @@
     "access": "public"
   },
   "dependencies": {
-    "faker": "5.5.3"
+    "faker": "6.6.6"
   },
   "peerDependencies": {
     "@mikro-orm/core": "^4.0.0||^5.0.0-dev.0"
