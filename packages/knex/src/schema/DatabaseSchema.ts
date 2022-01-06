@@ -11,6 +11,7 @@ import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
 export class DatabaseSchema {
 
   private tables: DatabaseTable[] = [];
+  private enums: Dictionary<string[]> = {};
   private namespaces = new Set<string>();
 
   constructor(private readonly platform: AbstractSqlPlatform,
@@ -26,6 +27,21 @@ export class DatabaseSchema {
     }
 
     return table;
+  }
+
+  addEnums(enums: Dictionary<string[]>): void {
+    this.enums = { ...enums };
+    // this.enums.push(
+    //   ...Object.entries(enums).map(entry => ({
+    //     shared: true,
+    //     name: entry[0],
+    //     values: entry[1],
+    //   }) as Enum),
+    // );
+  }
+
+  getEnums(): Dictionary<string[]> {
+    return this.enums;
   }
 
   getTables(): DatabaseTable[] {
@@ -50,6 +66,11 @@ export class DatabaseSchema {
 
   static async create(connection: AbstractSqlConnection, platform: AbstractSqlPlatform, config: Configuration, schemaName?: string): Promise<DatabaseSchema> {
     const schema = new DatabaseSchema(platform, schemaName ?? config.get('schema'));
+
+    // shared enums are schema-level enums that can be shared by multiple tables e.g Postgres ENUM type.
+    const sharedEnums = await platform.getSchemaHelper()!.getSharedEnumDefinitions(connection, schema.name);
+    schema.addEnums(sharedEnums);
+
     const tables = await connection.execute<Table[]>(platform.getSchemaHelper()!.getListTablesSQL());
 
     for (const t of tables) {
@@ -63,8 +84,11 @@ export class DatabaseSchema {
       const indexes = await platform.getSchemaHelper()!.getIndexes(connection, table.name, table.schema);
       const pks = await platform.getSchemaHelper()!.getPrimaryKeys(connection, indexes, table.name, table.schema);
       const fks = await platform.getSchemaHelper()!.getForeignKeys(connection, table.name, table.schema);
-      const enums = await platform.getSchemaHelper()!.getEnumDefinitions(connection, table.name, table.schema);
-      table.init(cols, indexes, pks, fks, enums);
+      // column enums are attached to a single column in a single table, for example MySQL enums
+      // or Postgres check constraints. These are keyed by the column name, and contain a list
+      // of strings for the values.
+      const ownedEnums = await platform.getSchemaHelper()!.getEnumDefinitions(connection, table.name, table.schema);
+      table.init(cols, indexes, pks, fks, sharedEnums, ownedEnums);
     }
 
     return schema;

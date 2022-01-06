@@ -44,6 +44,10 @@ export abstract class SchemaHelper {
     return this.mapForeignKeys(fks, tableName, schemaName);
   }
 
+  async getSharedEnumDefinitions(connection: AbstractSqlConnection, schemaName?: string): Promise<Dictionary<string[]>> {
+    return {};
+  }
+
   async getEnumDefinitions(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary> {
     return {};
   }

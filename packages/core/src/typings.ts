@@ -223,6 +223,7 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   persist?: boolean;
   hidden?: boolean;
   enum?: boolean;
+  useSharedEnum?: boolean;
   items?: (number | string)[];
   version?: boolean;
   concurrencyCheck?: boolean;
@@ -271,6 +272,7 @@ export class EntityMetadata<T extends AnyEntity<T> = any> {
     this.indexes = [];
     this.uniques = [];
     this.concurrencyCheckKeys = new Set();
+    this.enums = {};
     Object.assign(this, meta);
   }
 
@@ -423,6 +425,7 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   polymorphs?: EntityMetadata[];
   root: EntityMetadata<T>;
   definedProperties: Dictionary;
+  enums: Dictionary<string[]>;
 }
 
 export interface ISchemaGenerator {

@@ -12,6 +12,7 @@ export class DatabaseTable {
   private columns: Dictionary<Column> = {};
   private indexes: Index[] = [];
   private foreignKeys: Dictionary<ForeignKey> = {};
+  private enums: Dictionary<string[]> = {};
   public comment?: string;
 
   constructor(private readonly platform: AbstractSqlPlatform,
@@ -34,18 +35,22 @@ export class DatabaseTable {
     return this.indexes;
   }
 
-  init(cols: Column[], indexes: Index[], pks: string[], fks: Dictionary<ForeignKey>, enums: Dictionary<string[]>): void {
+  init(cols: Column[], indexes: Index[], pks: string[], fks: Dictionary<ForeignKey>,
+    sharedEnums: Dictionary<string[]>, ownedEnums: Dictionary<string[]>): void {
     this.indexes = indexes;
     this.foreignKeys = fks;
+    this.enums = ownedEnums;
 
     this.columns = cols.reduce((o, v) => {
       const index = indexes.filter(i => i.columnNames[0] === v.name);
       v.primary = v.primary || pks.includes(v.name);
       v.unique = index.some(i => i.unique && !i.primary);
-      const type = v.name in enums ? 'enum' : v.type;
+      const useSharedEnum = v.type in sharedEnums;
+      const useOwnedEnum = v.name in ownedEnums;
+      const type = (useSharedEnum || useOwnedEnum) ? 'enum' : v.type;
       v.mappedType = this.platform.getMappedType(type);
       v.default = v.default?.toString().startsWith('nextval(') ? null : v.default;
-      v.enumItems = enums[v.name] || [];
+      v.enumItems = useSharedEnum ? sharedEnums[v.type] : useOwnedEnum ? ownedEnums[v.name] : [];
       o[v.name] = v;
 
       return o;
@@ -150,7 +155,7 @@ export class DatabaseTable {
     return this.platform.getIndexName(this.name, columnNames, type);
   }
 
-  getEntityDeclaration(namingStrategy: NamingStrategy, schemaHelper: SchemaHelper): EntityMetadata {
+  getEntityDeclaration(namingStrategy: NamingStrategy, schemaHelper: SchemaHelper, sharedEnums: Dictionary<string[]>): EntityMetadata {
     let name = namingStrategy.getClassName(this.name, '_');
     name = name.match(/^\d/) ? 'E' + name : name;
     const schema = new EntitySchema({ name, collection: this.name, schema: this.schema });
@@ -176,8 +181,15 @@ export class DatabaseTable {
       }
     }
 
+    schema.addEnumTypes(
+      Object.keys(this.enums).reduce((o, columnName) => {
+        const enumClassName = namingStrategy.getClassName(this.name + '_' + columnName, '_');
+        o[enumClassName] = this.enums[columnName];
+        return o;
+    }, {} as Dictionary<string[]>));
+
     for (const column of this.getColumns()) {
-      const prop = this.getPropertyDeclaration(column, namingStrategy, schemaHelper, compositeFkIndexes, compositeFkUniques);
+      const prop = this.getPropertyDeclaration(column, namingStrategy, schemaHelper, compositeFkIndexes, compositeFkUniques, sharedEnums);
       schema.addProperty(prop.name, prop.type, prop);
     }
 
@@ -224,7 +236,8 @@ export class DatabaseTable {
     return !!this.getPrimaryKey();
   }
 
-  private getPropertyDeclaration(column: Column, namingStrategy: NamingStrategy, schemaHelper: SchemaHelper, compositeFkIndexes: Dictionary<{ keyName: string }>, compositeFkUniques: Dictionary<{ keyName: string }>) {
+  private getPropertyDeclaration(column: Column, namingStrategy: NamingStrategy, schemaHelper: SchemaHelper,
+    compositeFkIndexes: Dictionary<{ keyName: string }>, compositeFkUniques: Dictionary<{ keyName: string }>, sharedEnums: Dictionary<string[]>) {
     const fk = Object.values(this.foreignKeys).find(fk => fk.columnNames.includes(column.name));
     const prop = this.getPropertyName(namingStrategy, column);
     const index = compositeFkIndexes[prop] || this.indexes.find(idx => idx.columnNames[0] === column.name && !idx.composite && !idx.unique && !idx.primary);
@@ -254,6 +267,8 @@ export class DatabaseTable {
       length: column.length,
       index: index ? index.keyName : undefined,
       unique: unique ? unique.keyName : undefined,
+      enum: !!column.enumItems?.length,
+      useSharedEnum: column.type in sharedEnums,
       ...fkOptions,
     };
   }
@@ -286,6 +301,12 @@ export class DatabaseTable {
     if (fk) {
       const parts = fk.referencedTableName.split('.', 2);
       return namingStrategy.getClassName(parts.length > 1 ? parts[1] : parts[0], '_');
+    }
+    // If this column is using an enum.
+    if (column.enumItems?.length) {
+      // We will create a new enum name for this type and set it as the property type as well.
+      // The enum name will be a concatenation of the table name and the column name.
+      return namingStrategy.getClassName(this.name + '_' + column.name, '_');
     }
 
     return column.mappedType?.compareAsType() ?? 'unknown';

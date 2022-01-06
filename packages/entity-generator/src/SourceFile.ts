@@ -1,10 +1,12 @@
 import type { Dictionary, EntityMetadata, EntityOptions, EntityProperty, NamingStrategy, Platform } from '@mikro-orm/core';
 import { ReferenceType, UnknownType, Utils } from '@mikro-orm/core';
+import type { IFile } from './typings';
 
-export class SourceFile {
+export class SourceFile implements IFile {
 
   private readonly coreImports = new Set<string>();
   private readonly entityImports = new Set<string>();
+  private readonly entityExports = new Set<string>(); // for re-exporting imported enums.
 
   constructor(private readonly meta: EntityMetadata,
               private readonly namingStrategy: NamingStrategy,
@@ -47,7 +49,32 @@ export class SourceFile {
       imports.push(`import { ${entity} } from './${entity}';`);
     });
 
-    return `${imports.join('\n')}\n\n${ret}`;
+    const ownedEnumDefitions = Object.entries(this.meta.enums).map(entry => this.getEnumClassDefinition(entry[0], entry[1], 2));
+
+    const exports: string[] = [];
+    this.entityExports.forEach(entity => {
+      exports.push(`export { ${entity} } from './${entity}';`);
+    });
+
+    ret = `${imports.join('\n')}\n\n${ret}`;
+    if (ownedEnumDefitions.length) {
+      ret += '\n' + ownedEnumDefitions.join('\n');
+    }
+    if (exports.length) {
+      ret += '\n' + exports.join('\n') + '\n';
+    }
+
+    return ret;
+  }
+
+  private getEnumClassDefinition(enumClassName: string, enumValues: string[], padLeft: number): string {
+    const padding = ' '.repeat(padLeft);
+    let ret = `export enum ${enumClassName} {\n`;
+    enumValues.forEach(enumValue => {
+      ret += `${padding}${enumValue.toUpperCase()} = '${enumValue}',\n`;
+    });
+    ret += '}\n';
+    return ret;
   }
 
   getBaseName() {
@@ -75,13 +102,19 @@ export class SourceFile {
 
   private getPropertyDefinition(prop: EntityProperty, padLeft: number): string {
     // string defaults are usually things like SQL functions
-    const useDefault = prop.default != null && typeof prop.default !== 'string';
+    // string defaults can be an enum though, in which case useDefault should be true.
+    const useDefault = prop.default != null && (prop.enum || typeof prop.default !== 'string');
     const optional = prop.nullable ? '?' : (useDefault ? '' : '!');
     const ret = `${prop.name}${optional}: ${prop.type}`;
     const padding = ' '.repeat(padLeft);
 
     if (!useDefault) {
       return `${padding + ret};\n`;
+    }
+
+    if (prop.enum && typeof prop.default === 'string') {
+      const noQuoteDefault = prop.default.match(/^'(.*)'$/)?.[1] ?? prop.default;
+      return `${padding}${ret} = ${prop.type}.${noQuoteDefault.toUpperCase()};\n`;
     }
 
     return `${padding}${ret} = ${prop.default};\n`;
@@ -97,6 +130,16 @@ export class SourceFile {
       this.getForeignKeyDecoratorOptions(options, prop);
     } else {
       this.getScalarPropertyDecoratorOptions(options, prop);
+    }
+
+    if (prop.enum) {
+      options.items = `() => ${prop.type}`;
+      if (prop.useSharedEnum) {
+        // prop.type should be the same as the shared enum class name.
+        this.entityImports.add(prop.type);
+        // Also add it to the list to be re-exported.
+        this.entityExports.add(prop.type);
+      }
     }
 
     this.getCommonDecoratorOptions(options, prop);
@@ -153,6 +196,12 @@ export class SourceFile {
   private getCommonDecoratorOptions(options: Dictionary, prop: EntityProperty) {
     if (prop.nullable) {
       options.nullable = true;
+    }
+
+    // If prop is an enum, its default value would be covered in the property definition
+    // instead of in property decorator, so we early return.
+    if (prop.enum) {
+      return;
     }
 
     if (prop.default && typeof prop.default === 'string') {
@@ -229,6 +278,10 @@ export class SourceFile {
 
     if (prop.primary) {
       return '@PrimaryKey';
+    }
+
+    if (prop.enum) {
+      return '@Enum';
     }
 
     return '@Property';
