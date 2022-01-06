@@ -19,7 +19,6 @@ module.exports = {
   projectName: 'mikro-orm',
   scripts: ['/js/custom.js'],
   themeConfig: {
-    gtag: { trackingID: 'UA-135618258-1' },
     algolia: {
       apiKey: '26fadcd97750a33cd8081a07dda2c0cf',
       indexName: 'mikro-orm',
@@ -132,6 +131,7 @@ module.exports = {
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
         },
+        gtag: { trackingID: 'UA-135618258-1' },
       },
     ],
   ],
