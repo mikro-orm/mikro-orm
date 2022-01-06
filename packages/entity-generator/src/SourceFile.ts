@@ -1,12 +1,10 @@
 import type { Dictionary, EntityMetadata, EntityOptions, EntityProperty, NamingStrategy, Platform } from '@mikro-orm/core';
 import { ReferenceType, UnknownType, Utils } from '@mikro-orm/core';
-import type { IFile } from './typings';
 
-export class SourceFile implements IFile {
+export class SourceFile {
 
   private readonly coreImports = new Set<string>();
   private readonly entityImports = new Set<string>();
-  private readonly entityExports = new Set<string>(); // for re-exporting imported enums.
 
   constructor(private readonly meta: EntityMetadata,
               private readonly namingStrategy: NamingStrategy,
@@ -51,29 +49,11 @@ export class SourceFile implements IFile {
 
     const ownedEnumDefitions = Object.entries(this.meta.enums).map(entry => this.getEnumClassDefinition(entry[0], entry[1], 2));
 
-    const exports: string[] = [];
-    this.entityExports.forEach(entity => {
-      exports.push(`export { ${entity} } from './${entity}';`);
-    });
-
     ret = `${imports.join('\n')}\n\n${ret}`;
     if (ownedEnumDefitions.length) {
       ret += '\n' + ownedEnumDefitions.join('\n');
     }
-    if (exports.length) {
-      ret += '\n' + exports.join('\n') + '\n';
-    }
 
-    return ret;
-  }
-
-  private getEnumClassDefinition(enumClassName: string, enumValues: string[], padLeft: number): string {
-    const padding = ' '.repeat(padLeft);
-    let ret = `export enum ${enumClassName} {\n`;
-    enumValues.forEach(enumValue => {
-      ret += `${padding}${enumValue.toUpperCase()} = '${enumValue}',\n`;
-    });
-    ret += '}\n';
     return ret;
   }
 
@@ -120,6 +100,16 @@ export class SourceFile implements IFile {
     return `${padding}${ret} = ${prop.default};\n`;
   }
 
+  private getEnumClassDefinition(enumClassName: string, enumValues: string[], padLeft: number): string {
+    const padding = ' '.repeat(padLeft);
+    let ret = `export enum ${enumClassName} {\n`;
+    enumValues.forEach(enumValue => {
+      ret += `${padding}${enumValue.toUpperCase()} = '${enumValue}',\n`;
+    });
+    ret += '}\n';
+    return ret;
+  }
+
   private getPropertyDecorator(prop: EntityProperty, padLeft: number): string {
     const padding = ' '.repeat(padLeft);
     const options = {} as Dictionary;
@@ -134,12 +124,6 @@ export class SourceFile implements IFile {
 
     if (prop.enum) {
       options.items = `() => ${prop.type}`;
-      if (prop.useSharedEnum) {
-        // prop.type should be the same as the shared enum class name.
-        this.entityImports.add(prop.type);
-        // Also add it to the list to be re-exported.
-        this.entityExports.add(prop.type);
-      }
     }
 
     this.getCommonDecoratorOptions(options, prop);

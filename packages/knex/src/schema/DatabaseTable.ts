@@ -35,22 +35,19 @@ export class DatabaseTable {
     return this.indexes;
   }
 
-  init(cols: Column[], indexes: Index[], pks: string[], fks: Dictionary<ForeignKey>,
-    sharedEnums: Dictionary<string[]>, ownedEnums: Dictionary<string[]>): void {
+  init(cols: Column[], indexes: Index[], pks: string[], fks: Dictionary<ForeignKey>, enums: Dictionary<string[]>): void {
     this.indexes = indexes;
     this.foreignKeys = fks;
-    this.enums = ownedEnums;
+    this.enums = enums;
 
     this.columns = cols.reduce((o, v) => {
       const index = indexes.filter(i => i.columnNames[0] === v.name);
       v.primary = v.primary || pks.includes(v.name);
       v.unique = index.some(i => i.unique && !i.primary);
-      const useSharedEnum = v.type in sharedEnums;
-      const useOwnedEnum = v.name in ownedEnums;
-      const type = (useSharedEnum || useOwnedEnum) ? 'enum' : v.type;
+      const type = v.name in enums ? 'enum' : v.type;
       v.mappedType = this.platform.getMappedType(type);
       v.default = v.default?.toString().startsWith('nextval(') ? null : v.default;
-      v.enumItems = useSharedEnum ? sharedEnums[v.type] : useOwnedEnum ? ownedEnums[v.name] : [];
+      v.enumItems = v.name in enums ? enums[v.name] : [];
       o[v.name] = v;
 
       return o;
@@ -155,7 +152,7 @@ export class DatabaseTable {
     return this.platform.getIndexName(this.name, columnNames, type);
   }
 
-  getEntityDeclaration(namingStrategy: NamingStrategy, schemaHelper: SchemaHelper, sharedEnums: Dictionary<string[]>): EntityMetadata {
+  getEntityDeclaration(namingStrategy: NamingStrategy, schemaHelper: SchemaHelper): EntityMetadata {
     let name = namingStrategy.getClassName(this.name, '_');
     name = name.match(/^\d/) ? 'E' + name : name;
     const schema = new EntitySchema({ name, collection: this.name, schema: this.schema });
@@ -189,7 +186,7 @@ export class DatabaseTable {
     }, {} as Dictionary<string[]>));
 
     for (const column of this.getColumns()) {
-      const prop = this.getPropertyDeclaration(column, namingStrategy, schemaHelper, compositeFkIndexes, compositeFkUniques, sharedEnums);
+      const prop = this.getPropertyDeclaration(column, namingStrategy, schemaHelper, compositeFkIndexes, compositeFkUniques);
       schema.addProperty(prop.name, prop.type, prop);
     }
 
@@ -237,7 +234,7 @@ export class DatabaseTable {
   }
 
   private getPropertyDeclaration(column: Column, namingStrategy: NamingStrategy, schemaHelper: SchemaHelper,
-    compositeFkIndexes: Dictionary<{ keyName: string }>, compositeFkUniques: Dictionary<{ keyName: string }>, sharedEnums: Dictionary<string[]>) {
+    compositeFkIndexes: Dictionary<{ keyName: string }>, compositeFkUniques: Dictionary<{ keyName: string }>) {
     const fk = Object.values(this.foreignKeys).find(fk => fk.columnNames.includes(column.name));
     const prop = this.getPropertyName(namingStrategy, column);
     const index = compositeFkIndexes[prop] || this.indexes.find(idx => idx.columnNames[0] === column.name && !idx.composite && !idx.unique && !idx.primary);
@@ -268,7 +265,6 @@ export class DatabaseTable {
       index: index ? index.keyName : undefined,
       unique: unique ? unique.keyName : undefined,
       enum: !!column.enumItems?.length,
-      useSharedEnum: column.type in sharedEnums,
       ...fkOptions,
     };
   }

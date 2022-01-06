@@ -223,7 +223,6 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   persist?: boolean;
   hidden?: boolean;
   enum?: boolean;
-  useSharedEnum?: boolean;
   items?: (number | string)[];
   version?: boolean;
   concurrencyCheck?: boolean;
