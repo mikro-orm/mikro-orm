@@ -119,6 +119,11 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     const optional = property.hasQuestionToken?.() || union.includes('null') || union.includes('undefined');
     type = union.filter(t => !['null', 'undefined'].includes(t)).join(' | ');
 
+    type = type
+      .replace(/Array<(.*)>/, '$1') // unwrap array
+      .replace(/\[]$/, '')          // remove array suffix
+      .replace(/\((.*)\)/, '$1');   // unwrap union types
+
     return { type, optional };
   }
 

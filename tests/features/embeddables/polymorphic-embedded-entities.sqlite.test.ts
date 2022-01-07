@@ -1,5 +1,6 @@
 import type { ObjectHydrator } from '@mikro-orm/core';
 import { Embeddable, Embedded, Entity, Enum, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/core';
+import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { mockLogger } from '../../helpers';
 
 enum AnimalType {
@@ -10,7 +11,7 @@ enum AnimalType {
 @Embeddable({ abstract: true, discriminatorColumn: 'type' })
 abstract class Animal {
 
-  @Enum(() => AnimalType)
+  @Enum()
   type!: AnimalType;
 
   @Property()
@@ -21,8 +22,8 @@ abstract class Animal {
 @Embeddable({ discriminatorValue: AnimalType.CAT })
 class Cat extends Animal {
 
-  @Property({ nullable: true })
-  canMeow?: boolean = true;
+  @Property()
+  canMeow? = true;
 
   constructor(name: string) {
     super();
@@ -35,8 +36,8 @@ class Cat extends Animal {
 @Embeddable({ discriminatorValue: AnimalType.DOG })
 class Dog extends Animal {
 
-  @Property({ nullable: true })
-  canBark?: boolean = true;
+  @Property()
+  canBark? = true;
 
   constructor(name: string) {
     super();
@@ -55,13 +56,13 @@ class Owner {
   @Property()
   name: string;
 
-  @Embedded(() => [Cat, Dog])
+  @Embedded()
   pet!: Cat | Dog;
 
-  @Embedded(() => [Cat, Dog], { object: true })
+  @Embedded({ object: true })
   pet2!: Cat | Dog;
 
-  @Embedded(() => [Cat, Dog], { array: true })
+  @Embedded()
   pets: (Cat | Dog)[] = [];
 
   constructor(name: string) {
@@ -79,6 +80,7 @@ describe('polymorphic embeddables in sqlite', () => {
       entities: [Dog, Cat, Owner],
       dbName: ':memory:',
       type: 'sqlite',
+      metadataProvider: TsMorphMetadataProvider,
     });
     await orm.getSchemaGenerator().createSchema();
   });
