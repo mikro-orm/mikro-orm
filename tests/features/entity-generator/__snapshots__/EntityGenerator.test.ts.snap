@@ -99,7 +99,7 @@ export class AuthorToFriend {
 
 }
 ",
-  "import { Entity, Index, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, Index, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class BaseUser2 {
@@ -114,8 +114,8 @@ export class BaseUser2 {
   lastName!: string;
 
   @Index({ name: 'base_user2_type_index' })
-  @Property({ columnType: \`enum('employee','manager','owner')\`, length: 8 })
-  type!: string;
+  @Enum({ items: () => BaseUser2Type })
+  type!: BaseUser2Type;
 
   @Property({ length: 255, nullable: true })
   ownerProp?: string;
@@ -132,6 +132,12 @@ export class BaseUser2 {
   @Property({ length: 255, nullable: true })
   managerProp?: string;
 
+}
+
+export enum BaseUser2Type {
+  EMPLOYEE = 'employee',
+  MANAGER = 'manager',
+  OWNER = 'owner',
 }
 ",
   "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
@@ -353,7 +359,7 @@ export class FooParam2 {
 
 }
 ",
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Publisher2 {
@@ -364,11 +370,11 @@ export class Publisher2 {
   @Property({ length: 255 })
   name!: string;
 
-  @Property({ columnType: \`enum('local','global')\`, length: 6 })
-  type!: string;
+  @Enum({ items: () => Publisher2Type })
+  type!: Publisher2Type;
 
-  @Property({ columnType: \`enum('LOCAL','GLOBAL')\`, length: 6 })
-  type2!: string;
+  @Enum({ items: () => Publisher2Type2 })
+  type2!: Publisher2Type2;
 
   @Property({ columnType: 'tinyint(4)', nullable: true })
   enum1?: number;
@@ -379,12 +385,32 @@ export class Publisher2 {
   @Property({ columnType: 'tinyint(4)', nullable: true })
   enum3?: number;
 
-  @Property({ columnType: \`enum('a','b','c')\`, length: 1, nullable: true })
-  enum4?: string;
+  @Enum({ items: () => Publisher2Enum4, nullable: true })
+  enum4?: Publisher2Enum4;
 
-  @Property({ columnType: \`enum('a')\`, length: 1, nullable: true })
-  enum5?: string;
+  @Enum({ items: () => Publisher2Enum5, nullable: true })
+  enum5?: Publisher2Enum5;
 
+}
+
+export enum Publisher2Type {
+  LOCAL = 'local',
+  GLOBAL = 'global',
+}
+
+export enum Publisher2Type2 {
+  LOCAL = 'LOCAL',
+  GLOBAL = 'GLOBAL',
+}
+
+export enum Publisher2Enum4 {
+  A = 'a',
+  B = 'b',
+  C = 'c',
+}
+
+export enum Publisher2Enum5 {
+  A = 'a',
 }
 ",
   "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
@@ -823,7 +849,7 @@ export class Label2Tests {
 
 }
 ",
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Publisher2 {
@@ -834,11 +860,11 @@ export class Publisher2 {
   @Property({ length: 255 })
   name!: string;
 
-  @Property({ columnType: 'text' })
-  type!: string;
+  @Enum({ items: () => Publisher2Type })
+  type!: Publisher2Type;
 
-  @Property({ columnType: 'text' })
-  type2!: string;
+  @Enum({ items: () => Publisher2Type2 })
+  type2!: Publisher2Type2;
 
   @Property({ columnType: 'int2', nullable: true })
   enum1?: number;
@@ -849,12 +875,32 @@ export class Publisher2 {
   @Property({ columnType: 'int2', nullable: true })
   enum3?: number;
 
-  @Property({ columnType: 'text', nullable: true })
-  enum4?: string;
+  @Enum({ items: () => Publisher2Enum4, nullable: true })
+  enum4?: Publisher2Enum4;
 
-  @Property({ columnType: 'text', nullable: true })
-  enum5?: string;
+  @Enum({ items: () => Publisher2Enum5, nullable: true })
+  enum5?: Publisher2Enum5;
 
+}
+
+export enum Publisher2Type {
+  LOCAL = 'local',
+  GLOBAL = 'global',
+}
+
+export enum Publisher2Type2 {
+  LOCAL = 'LOCAL',
+  GLOBAL = 'GLOBAL',
+}
+
+export enum Publisher2Enum4 {
+  A = 'a',
+  B = 'b',
+  C = 'c',
+}
+
+export enum Publisher2Enum5 {
+  A = 'a',
 }
 ",
   "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';

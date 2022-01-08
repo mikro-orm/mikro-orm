@@ -86,8 +86,9 @@ export class SourceFile {
 
   private getPropertyDefinition(prop: EntityProperty, padLeft: number): string {
     // string defaults are usually things like SQL functions
-    // string defaults can be an enum though, in which case useDefault should be true.
-    const useDefault = prop.default != null && (prop.enum || typeof prop.default !== 'string');
+    // string defaults can also be enums, for that useDefault should be true.
+    const isEnumOrNonStringDefault = prop.enum || typeof prop.default !== 'string';
+    const useDefault = prop.default != null && isEnumOrNonStringDefault;
     const optional = prop.nullable ? '?' : (useDefault ? '' : '!');
     const ret = `${prop.name}${optional}: ${prop.type}`;
     const padding = ' '.repeat(padLeft);
@@ -97,7 +98,8 @@ export class SourceFile {
     }
 
     if (prop.enum && typeof prop.default === 'string') {
-      const noQuoteDefault = prop.default.match(/^'(.*)'$/)?.[1] ?? prop.default;
+      const match = prop.default.match(/^'(.*)'$/);
+      const noQuoteDefault = match?.[1] ?? prop.default;
       return `${padding}${ret} = ${prop.type}.${noQuoteDefault.toUpperCase()};\n`;
     }
 
