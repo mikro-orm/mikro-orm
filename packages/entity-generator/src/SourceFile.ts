@@ -27,6 +27,7 @@ export class SourceFile {
     });
 
     ret += `export class ${this.meta.className} {\n`;
+    const enumDefinitions: string[] = [];
     Object.values(this.meta.properties).forEach(prop => {
       const decorator = this.getPropertyDecorator(prop, 2);
       const definition = this.getPropertyDefinition(prop, 2);
@@ -38,6 +39,11 @@ export class SourceFile {
       ret += decorator;
       ret += definition;
       ret += '\n';
+
+      if (prop.enum) {
+        const enumClassName = this.namingStrategy.getClassName(this.meta.collection + '_' + prop.fieldNames[0], '_');
+        enumDefinitions.push(this.getEnumClassDefinition(enumClassName, prop.items as string[], 2));
+      }
     });
     ret += '}\n';
 
@@ -47,11 +53,9 @@ export class SourceFile {
       imports.push(`import { ${entity} } from './${entity}';`);
     });
 
-    const ownedEnumDefitions = Object.entries(this.meta.enums).map(entry => this.getEnumClassDefinition(entry[0], entry[1], 2));
-
     ret = `${imports.join('\n')}\n\n${ret}`;
-    if (ownedEnumDefitions.length) {
-      ret += '\n' + ownedEnumDefitions.join('\n');
+    if (enumDefinitions.length) {
+      ret += '\n' + enumDefinitions.join('\n');
     }
 
     return ret;

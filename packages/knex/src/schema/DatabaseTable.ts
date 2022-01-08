@@ -12,7 +12,6 @@ export class DatabaseTable {
   private columns: Dictionary<Column> = {};
   private indexes: Index[] = [];
   private foreignKeys: Dictionary<ForeignKey> = {};
-  private enums: Dictionary<string[]> = {};
   public comment?: string;
 
   constructor(private readonly platform: AbstractSqlPlatform,
@@ -38,7 +37,6 @@ export class DatabaseTable {
   init(cols: Column[], indexes: Index[], pks: string[], fks: Dictionary<ForeignKey>, enums: Dictionary<string[]>): void {
     this.indexes = indexes;
     this.foreignKeys = fks;
-    this.enums = enums;
 
     this.columns = cols.reduce((o, v) => {
       const index = indexes.filter(i => i.columnNames[0] === v.name);
@@ -178,13 +176,6 @@ export class DatabaseTable {
       }
     }
 
-    schema.addEnumTypes(
-      Object.keys(this.enums).reduce((o, columnName) => {
-        const enumClassName = namingStrategy.getClassName(this.name + '_' + columnName, '_');
-        o[enumClassName] = this.enums[columnName];
-        return o;
-    }, {} as Dictionary<string[]>));
-
     for (const column of this.getColumns()) {
       const prop = this.getPropertyDeclaration(column, namingStrategy, schemaHelper, compositeFkIndexes, compositeFkUniques);
       schema.addProperty(prop.name, prop.type, prop);
@@ -265,6 +256,7 @@ export class DatabaseTable {
       index: index ? index.keyName : undefined,
       unique: unique ? unique.keyName : undefined,
       enum: !!column.enumItems?.length,
+      items: column.enumItems,
       ...fkOptions,
     };
   }

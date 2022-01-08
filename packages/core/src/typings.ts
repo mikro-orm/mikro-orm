@@ -271,7 +271,6 @@ export class EntityMetadata<T extends AnyEntity<T> = any> {
     this.indexes = [];
     this.uniques = [];
     this.concurrencyCheckKeys = new Set();
-    this.enums = {};
     Object.assign(this, meta);
   }
 
@@ -424,7 +423,6 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   polymorphs?: EntityMetadata[];
   root: EntityMetadata<T>;
   definedProperties: Dictionary;
-  enums: Dictionary<string[]>;
 }
 
 export interface ISchemaGenerator {

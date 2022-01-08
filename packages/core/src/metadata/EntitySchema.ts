@@ -84,10 +84,6 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     this._meta.properties[name] = prop;
   }
 
-  addEnumTypes(enumTypes: Dictionary<string[]>) {
-    this._meta.enums = { ...this._meta.enums, ...enumTypes };
-  }
-
   addEnum(name: string & keyof T, type?: TypeType, options: EnumOptions<T> = {}): void {
     if (options.items instanceof Function) {
       options.items = Utils.extractEnumValues(options.items());
