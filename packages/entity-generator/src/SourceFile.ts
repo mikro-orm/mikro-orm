@@ -206,6 +206,16 @@ export class SourceFile {
       t = 'datetime';
     }
 
+    if (prop.fieldNames[0] !== this.namingStrategy.propertyToColumnName(prop.name)) {
+      options.fieldName = `'${prop.fieldNames[0]}'`;
+    }
+
+    // for enum properties, we don't need a column type or the property length
+    // in the decorator so return early.
+    if (prop.enum) {
+      return;
+    }
+
     const mappedType1 = this.platform.getMappedType(t);
     const mappedType2 = this.platform.getMappedType(prop.columnTypes[0]);
     const columnType1 = mappedType1.getColumnType({ ...prop, autoincrement: false }, this.platform);
@@ -215,11 +225,7 @@ export class SourceFile {
       options.columnType = this.quote(prop.columnTypes[0]);
     }
 
-    if (prop.fieldNames[0] !== this.namingStrategy.propertyToColumnName(prop.name)) {
-      options.fieldName = `'${prop.fieldNames[0]}'`;
-    }
-
-    if (prop.length && prop.columnTypes[0] !== 'enum') {
+    if (prop.length) {
       options.length = prop.length;
     }
   }

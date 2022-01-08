@@ -50,7 +50,6 @@ export class DatabaseSchema {
 
   static async create(connection: AbstractSqlConnection, platform: AbstractSqlPlatform, config: Configuration, schemaName?: string): Promise<DatabaseSchema> {
     const schema = new DatabaseSchema(platform, schemaName ?? config.get('schema'));
-
     const tables = await connection.execute<Table[]>(platform.getSchemaHelper()!.getListTablesSQL());
 
     for (const t of tables) {

@@ -47,7 +47,7 @@ export class DatabaseTable {
       const type = v.name in enums ? 'enum' : v.type;
       v.mappedType = this.platform.getMappedType(type);
       v.default = v.default?.toString().startsWith('nextval(') ? null : v.default;
-      v.enumItems = v.name in enums ? enums[v.name] : [];
+      v.enumItems = enums[v.name] || [];
       o[v.name] = v;
 
       return o;
