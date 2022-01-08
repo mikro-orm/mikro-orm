@@ -56,3 +56,4 @@ hide_title: true
   - [GraphQL + PostgreSQL + Typescript](https://github.com/driescroons/mikro-orm-graphql-example)
   - [Inversify + PostgreSQL](https://github.com/PodaruDragos/inversify-example-app)
   - [NextJS + MySQL](https://github.com/jonahallibone/mikro-orm-nextjs)
+  - [Fastify + Mercurius + PostgreSQL + Typescript](https://github.com/47vigen/fastify-mikro-orm-mercurius-graphql-example)
