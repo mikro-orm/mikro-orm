@@ -183,11 +183,8 @@ export class ObjectHydrator extends Hydrator {
       return ret;
     };
 
-    const hydrateEmbedded = (prop: EntityProperty, path: string[], dataKey: string): string[] => {
-      const entityKey = path.map(k => this.wrap(k)).join('');
+    const registerEmbeddedPrototype = (prop: EntityProperty, path: string[]): void => {
       const convertorKey = path.filter(k => !k.match(/\[idx_\d+]/)).map(k => this.safeKey(k)).join('_');
-      const ret: string[] = [];
-      const conds: string[] = [];
 
       if (prop.targetMeta?.polymorphs) {
         prop.targetMeta.polymorphs.forEach(meta => {
@@ -196,7 +193,9 @@ export class ObjectHydrator extends Hydrator {
       } else {
         context.set(`prototype_${convertorKey}`, prop.embeddable.prototype);
       }
+    };
 
+    const parseObjectEmbeddable = (prop: EntityProperty, dataKey: string, ret: string[]): void => {
       if (!this.platform.convertsJsonAutomatically() && (prop.object || prop.array)) {
         ret.push(
           `  if (typeof data${dataKey} === 'string') {`,
@@ -204,6 +203,14 @@ export class ObjectHydrator extends Hydrator {
           `  }`,
         );
       }
+    };
+
+    const hydrateEmbedded = (prop: EntityProperty, path: string[], dataKey: string): string[] => {
+      const entityKey = path.map(k => this.wrap(k)).join('');
+      const ret: string[] = [];
+      const conds: string[] = [];
+      registerEmbeddedPrototype(prop, path);
+      parseObjectEmbeddable(prop, dataKey, ret);
 
       if (prop.object) {
         conds.push(`data${dataKey} != null`);
@@ -243,11 +250,11 @@ export class ObjectHydrator extends Hydrator {
 
     const hydrateEmbeddedArray = (prop: EntityProperty, path: string[], dataKey: string): string[] => {
       const entityKey = path.map(k => this.wrap(k)).join('');
-      const convertorKey = path.filter(k => !k.match(/\[idx_\d+]/)).map(k => this.safeKey(k)).join('_');
       const ret: string[] = [];
       const idx = this.tmpIndex++;
+      registerEmbeddedPrototype(prop, path);
+      parseObjectEmbeddable(prop, dataKey, ret);
 
-      context.set(`prototype_${convertorKey}`, prop.embeddable.prototype);
       ret.push(`  if (Array.isArray(data${dataKey})) {`);
       ret.push(`    entity${entityKey} = [];`);
       ret.push(`    data${dataKey}.forEach((_, idx_${idx}) => {`);

@@ -34,12 +34,23 @@ as well as `esModuleInterop` in `tsconfig.json` via:
 
 Then call `MikroORM.init` as part of bootstrapping your app:
 
+> To access driver specific methods like `em.createQueryBuilder()` we need to specify
+> the driver type when calling `MikroORM.init()`. Alternatively we can cast the
+> `orm.em` to `EntityManager` exported from the driver package:
+>
+> ```ts
+> import { EntityManager } from '@mikro-orm/postgresql';
+> const em = orm.em as EntityManager;
+> const qb = em.createQueryBuilder(...);
+> ```
+
 ```typescript
-const orm = await MikroORM.init({
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql'; // or any other driver package
+
+const orm = await MikroORM.init<PostgreSqlDriver>({
   entities: ['./dist/entities'], // path to your JS entities (dist), relative to `baseDir`
   dbName: 'my-db-name',
-  type: 'mongo',
-  clientUrl: '...', // defaults to 'mongodb://localhost:27017' for mongodb driver
+  type: 'postgresql',
 });
 console.log(orm.em); // access EntityManager via `em` property
 ```

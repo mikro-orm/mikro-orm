@@ -35,19 +35,6 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     return (await this.getSourceFile(tsPath, validate))!;
   }
 
-  /**
-   * Re-hydrates missing attributes like `customType` (functions/instances are lost when caching to JSON)
-   */
-  loadFromCache(meta: EntityMetadata, cache: EntityMetadata): void {
-    Object.values(cache.properties).forEach(prop => {
-      if (prop.customType) {
-        prop.customType = meta.properties[prop.name].customType;
-      }
-    });
-
-    Utils.merge(meta, cache);
-  }
-
   protected async initProperties(meta: EntityMetadata): Promise<void> {
     // load types and column names
     for (const prop of Object.values(meta.properties)) {
@@ -131,6 +118,11 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     const union = type.split(' | ');
     const optional = property.hasQuestionToken?.() || union.includes('null') || union.includes('undefined');
     type = union.filter(t => !['null', 'undefined'].includes(t)).join(' | ');
+
+    type = type
+      .replace(/Array<(.*)>/, '$1') // unwrap array
+      .replace(/\[]$/, '')          // remove array suffix
+      .replace(/\((.*)\)/, '$1');   // unwrap union types
 
     return { type, optional };
   }

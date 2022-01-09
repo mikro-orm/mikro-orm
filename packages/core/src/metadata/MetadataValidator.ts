@@ -55,9 +55,14 @@ export class MetadataValidator {
       throw MetadataError.onlyAbstractEntitiesDiscovered();
     }
 
+    const unwrap = (type: string) => type
+      .replace(/Array<(.*)>/, '$1') // unwrap array
+      .replace(/\[]$/, '')          // remove array suffix
+      .replace(/\((.*)\)/, '$1');   // unwrap union types
+
     // check for not discovered entities
     discovered.forEach(meta => Object.values(meta.properties).forEach(prop => {
-      if (prop.reference !== ReferenceType.SCALAR && !prop.type.split(/ ?\| ?/).every(type => discovered.find(m => m.className === type))) {
+      if (prop.reference !== ReferenceType.SCALAR && !unwrap(prop.type).split(/ ?\| ?/).every(type => discovered.find(m => m.className === type))) {
         throw MetadataError.fromUnknownEntity(prop.type, `${meta.className}.${prop.name}`);
       }
     }));

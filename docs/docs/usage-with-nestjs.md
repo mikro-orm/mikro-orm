@@ -211,6 +211,9 @@ object.
 
 > `@UseRequestContext()` decorator was added in v4.1.0 
 
+> Since v5, `@UseRequestContext()` decorator is available in the `@mikro-orm/core` 
+> package. It is valid approach not just for nestjs projects. 
+
 As mentioned in the [docs](identity-map.md), we need a clean state for each request. That is handled automatically thanks to the `RequestContext` helper registered via middleware. 
 
 But middlewares are executed only for regular HTTP request handles, what if we need

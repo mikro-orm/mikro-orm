@@ -34,7 +34,10 @@ export class SchemaGenerator {
     await this.execute(sql);
   }
 
-  async ensureDatabase() {
+  /**
+   * Returns true if the database was created.
+   */
+  async ensureDatabase(): Promise<boolean> {
     const dbName = this.config.get('dbName')!;
     const exists = await this.helper.databaseExists(this.connection, dbName);
 
@@ -44,7 +47,11 @@ export class SchemaGenerator {
       await this.createDatabase(dbName);
       this.config.set('dbName', dbName);
       await this.driver.reconnect();
+
+      return true;
     }
+
+    return false;
   }
 
   getTargetSchema(schema?: string): DatabaseSchema {

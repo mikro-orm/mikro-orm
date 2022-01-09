@@ -92,6 +92,7 @@ export type QBFilterQuery<T = any> = FilterQuery<T> | Dictionary;
 
 export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T | unknown = PrimaryProperty<T>, P extends string = string> {
   isInitialized(): boolean;
+  isTouched(): boolean;
   populated(populated?: boolean): void;
   init<P extends Populate<T> = Populate<T>>(populated?: boolean, populate?: P, lockMode?: LockMode): Promise<T>;
   toReference<PK2 extends PK | unknown = PrimaryProperty<T>, P2 extends string = string>(): IdentifiedReference<T, PK2> & LoadedReference<T>;
@@ -113,7 +114,9 @@ export interface IWrappedEntityInternal<T, PK extends keyof T | unknown = Primar
   __data: Dictionary;
   __em?: any; // we cannot have `EntityManager` here as that causes a cycle
   __platform: Platform;
+  __factory: EntityFactory; // internal factory instance that has its own global fork
   __initialized: boolean;
+  __touched: boolean;
   __originalEntityData?: EntityData<T>;
   __loadedProperties: Set<string>;
   __identifier?: EntityIdentifier;
@@ -299,6 +302,8 @@ export class EntityMetadata<T extends AnyEntity<T> = any> {
     const props = Object.values(this.properties).sort((a, b) => this.propertyOrder.get(a.name)! - this.propertyOrder.get(b.name)!);
     this.props = [...props.filter(p => p.primary), ...props.filter(p => !p.primary)];
     this.relations = this.props.filter(prop => prop.reference !== ReferenceType.SCALAR && prop.reference !== ReferenceType.EMBEDDED);
+    this.bidirectionalRelations = this.relations.filter(prop => prop.mappedBy || prop.inversedBy);
+    this.uniqueProps = this.props.filter(prop => prop.unique);
     this.comparableProps = this.props.filter(prop => EntityComparator.isComparable(prop, this.root));
     this.hydrateProps = this.props.filter(prop => {
       // `prop.userDefined` is either `undefined` or `false`
@@ -311,6 +316,29 @@ export class EntityMetadata<T extends AnyEntity<T> = any> {
     if (initIndexes && this.name) {
       this.props.forEach(prop => this.initIndexes(prop));
     }
+
+    this.definedProperties = this.props.reduce((o, prop) => {
+      const isCollection = [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference);
+      const isReference = [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk;
+
+      if (prop.inherited || prop.primary || isCollection || prop.persist === false || isReference || prop.embedded) {
+        return o;
+      }
+
+      o[prop.name] = {
+        get() {
+          return this.__helper.__data[prop.name];
+        },
+        set(val: unknown) {
+          this.__helper.__data[prop.name] = val;
+          this.__helper.__touched = true;
+        },
+        enumerable: true,
+        configurable: true,
+      };
+
+      return o;
+    }, { __gettersDefined: { value: true, enumerable: false } } as Dictionary);
   }
 
   private initIndexes(prop: EntityProperty<T>): void {
@@ -367,8 +395,10 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   properties: { [K in keyof T & string]: EntityProperty<T> };
   props: EntityProperty<T>[];
   relations: EntityProperty<T>[];
+  bidirectionalRelations: EntityProperty<T>[];
   comparableProps: EntityProperty<T>[]; // for EntityComparator
   hydrateProps: EntityProperty<T>[]; // for Hydrator
+  uniqueProps: EntityProperty<T>[];
   indexes: { properties: (keyof T & string) | (keyof T & string)[]; name?: string; type?: string; options?: Dictionary; expression?: string }[];
   uniques: { properties: (keyof T & string) | (keyof T & string)[]; name?: string; options?: Dictionary }[];
   customRepository: () => Constructor<EntityRepository<T>>;
@@ -383,12 +413,13 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   readonly?: boolean;
   polymorphs?: EntityMetadata[];
   root: EntityMetadata<T>;
+  definedProperties: Dictionary;
 }
 
 export interface ISchemaGenerator {
   generate(): Promise<string>;
   createSchema(options?: { wrap?: boolean; schema?: string }): Promise<void>;
-  ensureDatabase(): Promise<void>;
+  ensureDatabase(): Promise<boolean>;
   getCreateSchemaSQL(options?: { wrap?: boolean; schema?: string }): Promise<string>;
   dropSchema(options?: { wrap?: boolean; dropMigrationsTable?: boolean; dropDb?: boolean; schema?: string }): Promise<void>;
   getDropSchemaSQL(options?: { wrap?: boolean; dropMigrationsTable?: boolean; schema?: string }): Promise<string>;
@@ -401,10 +432,10 @@ export interface ISchemaGenerator {
 }
 
 export interface IEntityGenerator {
-  generate(options?: { baseDir?: string; save?: boolean }): Promise<string[]>;
+  generate(options?: { baseDir?: string; save?: boolean; schema?: string }): Promise<string[]>;
 }
 
-type UmzugMigration = { path?: string; file: string };
+type UmzugMigration = { name: string; path?: string };
 type MigrateOptions = { from?: string | number; to?: string | number; migrations?: string[]; transaction?: Transaction };
 type MigrationResult = { fileName: string; code: string; diff: MigrationDiff };
 type MigrationRow = { name: string; executed_at: Date };

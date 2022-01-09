@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.5.10](https://github.com/mikro-orm/mikro-orm/compare/v4.5.9...v4.5.10) (2021-12-26)
+
+
+### Bug Fixes
+
+* **core:** rehydrate custom types when using metadata cache ([3ea37a6](https://github.com/mikro-orm/mikro-orm/commit/3ea37a6c7cb2761630c8a89e558bba2abfb9e261)), closes [#2489](https://github.com/mikro-orm/mikro-orm/issues/2489)
+* **reflection:** relative paths not stripped completely ([#2164](https://github.com/mikro-orm/mikro-orm/issues/2164)) ([cbe7503](https://github.com/mikro-orm/mikro-orm/commit/cbe7503dac2e0f2de67fb4278ebee503452f7e93))
+
+
+
+
+
 ## [4.5.9](https://github.com/mikro-orm/mikro-orm/compare/v4.5.8...v4.5.9) (2021-08-24)
 
 **Note:** Version bump only for package @mikro-orm/reflection

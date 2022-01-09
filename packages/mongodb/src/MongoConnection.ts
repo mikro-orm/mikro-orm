@@ -1,6 +1,6 @@
 import type {
-  Collection, Db, MongoClientOptions, ClientSession, BulkWriteResult, Filter, UpdateFilter, OptionalId, UpdateResult,
-  DeleteResult, InsertManyResult, InsertOneResult, WithId,
+  Collection, Db, MongoClientOptions, ClientSession, BulkWriteResult, Filter, UpdateFilter, OptionalUnlessRequiredId, UpdateResult,
+  DeleteResult, InsertManyResult, InsertOneResult,
 } from 'mongodb';
 import { MongoClient } from 'mongodb';
 import { ObjectId } from 'bson';
@@ -116,7 +116,7 @@ export class MongoConnection extends Connection {
       options.projection = fields.reduce((o, k) => ({ ...o, [k]: 1 }), {});
     }
 
-    const resultSet = this.getCollection<T>(collection).find(where as Filter<WithId<T>>, options);
+    const resultSet = this.getCollection<T>(collection).find(where as Filter<T>, options);
     let query = `db.getCollection('${collection}').find(${this.logObject(where)}, ${this.logObject(options)})`;
     orderBy = Utils.asArray(orderBy);
 
@@ -242,11 +242,11 @@ export class MongoConnection extends Connection {
     switch (method) {
       case 'insertOne':
         query = log(() => `db.getCollection('${collection}').insertOne(${this.logObject(data)}, ${this.logObject(options)});`);
-        res = await this.getCollection<T>(collection).insertOne(data as OptionalId<T>, options);
+        res = await this.getCollection<T>(collection).insertOne(data as OptionalUnlessRequiredId<T>, options);
         break;
       case 'insertMany':
         query = log(() => `db.getCollection('${collection}').insertMany(${this.logObject(data)}, ${this.logObject(options)});`);
-        res = await this.getCollection<T>(collection).insertMany(data as OptionalId<T>[], options);
+        res = await this.getCollection<T>(collection).insertMany(data as OptionalUnlessRequiredId<T>[], options);
         break;
       case 'updateMany': {
         const payload = Object.keys(data!).some(k => k.startsWith('$')) ? data : { $set: data };

@@ -1,3 +1,4 @@
+import { inspect } from 'util';
 import type { AnyEntity, Dictionary, EntityProperty, IPrimaryKey, Primary } from '../typings';
 import { Reference } from './Reference';
 import { wrap } from './wrap';
@@ -17,12 +18,6 @@ export class ArrayCollection<T, O> {
       this.items = new Set(items);
       this.items.forEach(item => this[i++] = item);
     }
-
-    Object.defineProperty(this, 'items', { enumerable: false });
-    Object.defineProperty(this, 'owner', { enumerable: false, writable: true });
-    Object.defineProperty(this, '_property', { enumerable: false, writable: true });
-    Object.defineProperty(this, '_count', { enumerable: false, writable: true });
-    Object.defineProperty(this, '__collection', { value: true });
   }
 
   async loadCount(): Promise<number> {
@@ -115,6 +110,16 @@ export class ArrayCollection<T, O> {
 
   removeAll(): void {
     this.remove(...this.items);
+  }
+
+  /**
+   * @internal
+   */
+  removeWithoutPropagation(entity: T): void {
+    this.incrementCount(-1);
+    delete this[this.items.size - 1]; // remove last item
+    this.items.delete(entity);
+    Object.assign(this, [...this.items]); // reassign array access
   }
 
   contains(item: T | Reference<T>, check?: boolean): boolean {
@@ -211,7 +216,21 @@ export class ArrayCollection<T, O> {
     }
   }
 
+  [inspect.custom](depth: number) {
+    const object = { ...this };
+    const hidden = ['items', 'owner', '_property', '_count', 'snapshot', '_populated', '_lazyInitialized'];
+    hidden.forEach(k => delete object[k]);
+    const ret = inspect(object, { depth });
+    const name = `${this.constructor.name}<${this.property.type}>`;
+
+    return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
+  }
+
 }
+
+Object.defineProperties(ArrayCollection.prototype, {
+  __collection: { value: true, enumerable: false, writable: false },
+});
 
 export interface ArrayCollection<T, O> {
   [k: number]: T;

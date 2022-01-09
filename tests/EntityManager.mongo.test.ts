@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson';
 import type { EntityProperty } from '@mikro-orm/core';
 import { Collection, Configuration, MikroORM, QueryOrder, Reference, wrap, UniqueConstraintViolationException, IdentityMap, EntitySchema, NullHighlighter } from '@mikro-orm/core';
-import { EntityManager, MongoConnection, MongoDriver } from '@mikro-orm/mongodb';
+import { EntityManager, MongoConnection, MongoDriver, MongoPlatform } from '@mikro-orm/mongodb';
 import { MongoHighlighter } from '@mikro-orm/mongo-highlighter';
 
 import { Author, Book, BookTag, Publisher, PublisherType, Test } from './entities';
@@ -515,9 +515,7 @@ describe('EntityManagerMongo', () => {
     expect(driver.getConnection().getCollection(BookTag).collectionName).toBe('book-tag');
     expect(orm.em.getCollection(BookTag).collectionName).toBe('book-tag');
 
-    expect(() => {
-      driver.getPlatform().generateCustomOrder('foo', [1, 2, 3]);
-    }).toThrow();
+    expect(() => driver.getPlatform().generateCustomOrder('foo', [1, 2, 3])).toThrow();
 
     const conn = driver.getConnection();
     const ctx = await conn.begin();
@@ -685,6 +683,8 @@ describe('EntityManagerMongo', () => {
   });
 
   test('many to many relation', async () => {
+    const mock = mockLogger(orm);
+
     const author = new Author('Jon Snow', 'snow@wall.st');
     const book1 = new Book('My Life on The Wall, part 1', author);
     const book2 = new Book('My Life on The Wall, part 2', author);
@@ -710,9 +710,19 @@ describe('EntityManagerMongo', () => {
     expect(book1.tags.toArray()).toEqual([wrap(tag1).toJSON(), wrap(tag3).toJSON()]);
     expect(book1.tags.toJSON()).toEqual([wrap(tag1).toJSON(), wrap(tag3).toJSON()]);
 
+    // ensure we don't have separate update queries for collection sync
+    expect(mock.mock.calls).toHaveLength(5);
+    expect(mock.mock.calls[1][0]).toMatch(`db.getCollection('book-tag').insertMany(`);
+    expect(mock.mock.calls[2][0]).toMatch(`db.getCollection('author').insertOne(`);
+    expect(mock.mock.calls[3][0]).toMatch(`db.getCollection('books-table').insertMany(`);
+    orm.em.clear();
+
+    // just to raise coverage, that method is no longer used internally
+    await orm.em.getDriver().syncCollection(book1.tags);
+
     // test inverse side
     const tagRepository = orm.em.getRepository(BookTag);
-    let tags = await tagRepository.findAll();
+    let tags = await tagRepository.findAll({ populate: ['books'] });
     expect(tags).toBeInstanceOf(Array);
     expect(tags.length).toBe(5);
     expect(tags[0]).toBeInstanceOf(BookTag);
@@ -1305,7 +1315,7 @@ describe('EntityManagerMongo', () => {
   test('canPopulate', async () => {
     const repo = orm.em.getRepository(Author);
     expect(repo.canPopulate('test')).toBe(false);
-    expect(repo.canPopulate('name')).toBe(false);
+    expect(repo.canPopulate('name')).toBe(true);
     expect(repo.canPopulate('favouriteBook.author')).toBe(true);
     expect(repo.canPopulate('books')).toBe(true);
   });
@@ -1800,6 +1810,8 @@ describe('EntityManagerMongo', () => {
     const ref1 = orm.em.getRepository(Author).getReference<'id' | '_id'>(author.id, { wrapped: true });
     expect(ref).not.toBe(ref1);
     expect(ref.unwrap()).toBe(ref1.unwrap());
+    // @ts-expect-error private getter
+    expect(ref.__platform).toBeInstanceOf(MongoPlatform);
     expect(ref.isInitialized()).toBe(false);
     expect(typeof ref.id).toBe('string');
     expect(ref._id).toBeInstanceOf(ObjectId);
@@ -2063,45 +2075,6 @@ describe('EntityManagerMongo', () => {
 
     const b4 = await orm.em.findOneOrFail(FooBar, bar.id);
     expect(b4.object).toBe(123);
-  });
-
-  test('lazy scalar properties', async () => {
-    const book = new Book('b', new Author('n', 'e'));
-    book.perex = '123';
-    await orm.em.persistAndFlush(book);
-    orm.em.clear();
-
-    const mock = mockLogger(orm);
-
-    const r1 = await orm.em.find(Author, {}, { populate: ['books'] });
-    expect(r1[0].books[0].perex).not.toBe('123');
-    expect(mock.mock.calls.length).toBe(2);
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('author').find({}, { session: undefined }).toArray()`);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ .* }, { session: undefined, projection: { _id: 1, createdAt: 1, title: 1, author: 1, publisher: 1, tags: 1, metaObject: 1, metaArray: 1, metaArrayOfStrings: 1, point: 1, tenant: 1 } }\)/);
-
-    orm.em.clear();
-    mock.mock.calls.length = 0;
-    const r2 = await orm.em.find(Author, {}, { populate: ['books.perex'] });
-    expect(r2[0].books[0].perex).toBe('123');
-    expect(mock.mock.calls.length).toBe(2);
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('author').find({}, { session: undefined }).toArray()`);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ .* }, { session: undefined }\)/);
-
-    orm.em.clear();
-    mock.mock.calls.length = 0;
-    const r3 = await orm.em.findOne(Author, book.author, { populate: ['books'] });
-    expect(r3!.books[0].perex).not.toBe('123');
-    expect(mock.mock.calls.length).toBe(2);
-    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.find\({ .* }, { session: undefined }\)/);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ .* }, { session: undefined, projection: { _id: 1, createdAt: 1, title: 1, author: 1, publisher: 1, tags: 1, metaObject: 1, metaArray: 1, metaArrayOfStrings: 1, point: 1, tenant: 1 } }\)/);
-
-    orm.em.clear();
-    mock.mock.calls.length = 0;
-    const r4 = await orm.em.findOne(Author, book.author, { populate: ['books.perex'] });
-    expect(r4!.books[0].perex).toBe('123');
-    expect(mock.mock.calls.length).toBe(2);
-    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.find\({ .* }, { session: undefined }\)/);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ .* }, { session: undefined }\)/);
   });
 
   test('working with arrays', async () => {

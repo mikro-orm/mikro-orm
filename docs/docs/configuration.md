@@ -267,6 +267,22 @@ MikroORM.init({
 });
 ```
 
+## Serialization of new entities
+
+After flushing a new entity, all relations are marked as populated,
+just like if the entity was loaded from the db. This aligns the serialized
+output of `e.toJSON()` of a loaded entity and just-inserted one.
+
+In v4 this behaviour was disabled by default, so even after the new entity was 
+flushed, the serialized form contained only FKs for its relations. We can opt in 
+to this old behaviour via `populateAfterFlush: false`.
+
+```typescript
+MikroORM.init({
+  populateAfterFlush: false,
+});
+```
+
 ## Custom Hydrator
 
 Hydrator is responsible for assigning values from the database to entities. 
@@ -354,7 +370,7 @@ MikroORM.init({
   migrations: {
     tableName: 'mikro_orm_migrations', // migrations table name
     path: process.cwd() + '/migrations', // path to folder with migration files
-    pattern: /^[\w-]+\d+\.ts$/, // how to match migration files
+    glob: '!(*.d).{js,ts}', // how to match migration files (all .js and .ts files, but not .d.ts)
     transactional: true, // run each migration inside transaction
     disableForeignKeys: true, // try to disable foreign_key_checks (or equivalent)
     allOrNothing: true, // run all migrations in current batch in master transaction

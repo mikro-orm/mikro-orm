@@ -5,15 +5,28 @@ title: Usage with MongoDB
 To use MikroORM with mongo database, do not forget to install `@mikro-orm/mongodb`
 dependency. Then call `MikroORM.init()` as part of bootstrapping your app:
 
+> To access driver specific methods like `em.aggregate()` we need to specify
+> the driver type when calling `MikroORM.init()`. Alternatively we can cast the
+> `orm.em` to `EntityManager` exported from the driver package:
+>
+> ```ts
+> import { EntityManager } from '@mikro-orm/mongodb';
+> const em = orm.em as EntityManager;
+> const qb = em.aggregate(...);
+> ```
+
 > We need to use `clientUrl` to setup hosts, using `host` or `port` is not supported.
 
 ```typescript
-const orm = await MikroORM.init({
+import type { MongoDriver } from '@mikro-orm/mongodb'; // or any other SQL driver package
+
+const orm = await MikroORM.init<MongoDriver>({
   entities: [Author, Book, ...],
   dbName: 'my-db-name',
   clientUrl: '...',
   type: 'mongo',
 });
+console.log(orm.em); // access EntityManager via `em` property
 ```
 
 ## Defining entity
@@ -103,7 +116,7 @@ To automatically create new indexes when initializing the ORM, you need to enabl
 `ensureIndexes` option. 
 
 ```typescript
-const orm = await MikroORM.init({
+const orm = await MikroORM.init<MongoDriver>({
   entities: [Author, Book, ...],
   dbName: 'my-db-name',
   type: 'mongo',

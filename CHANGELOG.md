@@ -3,6 +3,47 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.5.10](https://github.com/mikro-orm/mikro-orm/compare/v4.5.9...v4.5.10) (2021-12-26)
+
+
+### Bug Fixes
+
+* **core:** allow putting not managed entities to remove stack ([0edb72e](https://github.com/mikro-orm/mikro-orm/commit/0edb72e03486f4ae417c0f3d0719e61f6dd3ad5a)), closes [#2395](https://github.com/mikro-orm/mikro-orm/issues/2395)
+* **core:** defer cascading of persist operation ([7d18310](https://github.com/mikro-orm/mikro-orm/commit/7d183105341336c3f407f90f800906373676e1a4)), closes [#2161](https://github.com/mikro-orm/mikro-orm/issues/2161)
+* **core:** do not override internal EM instance when forking EM ([fb0abf9](https://github.com/mikro-orm/mikro-orm/commit/fb0abf93c8d33b73f82b748c0a175f753c77a4e0)), closes [#2342](https://github.com/mikro-orm/mikro-orm/issues/2342)
+* **core:** do not save entity state in `merge` when it's not initialized ([bdd7452](https://github.com/mikro-orm/mikro-orm/commit/bdd745217d22515109649c5403230eb4fecf4a9b)), closes [#1927](https://github.com/mikro-orm/mikro-orm/issues/1927)
+* **core:** fix assigning to object property without value ([aca56e1](https://github.com/mikro-orm/mikro-orm/commit/aca56e183ade6b402c615e628a9fb33da9f1706b)), closes [#2492](https://github.com/mikro-orm/mikro-orm/issues/2492)
+* **core:** fix collection state when `forceEntityConstructor` is used ([53d4c39](https://github.com/mikro-orm/mikro-orm/commit/53d4c39ce2447978cb7b0e4a05a060c62cf738f5)), closes [#2406](https://github.com/mikro-orm/mikro-orm/issues/2406) [#2409](https://github.com/mikro-orm/mikro-orm/issues/2409)
+* **core:** fix reflection of enums in babel ([05dee1d](https://github.com/mikro-orm/mikro-orm/commit/05dee1dbc355e6646374ec9115a4eaba4c0f900f)), closes [#2198](https://github.com/mikro-orm/mikro-orm/issues/2198)
+* **core:** fix serialization of self referencing collections ([fdbe4f4](https://github.com/mikro-orm/mikro-orm/commit/fdbe4f4c4c29d7cf115631a3455acfcd1df658f6)), closes [#2059](https://github.com/mikro-orm/mikro-orm/issues/2059)
+* **core:** rehydrate custom types when using metadata cache ([3ea37a6](https://github.com/mikro-orm/mikro-orm/commit/3ea37a6c7cb2761630c8a89e558bba2abfb9e261)), closes [#2489](https://github.com/mikro-orm/mikro-orm/issues/2489)
+* **core:** remove entity from its bidirectional relations after delete ([c754a62](https://github.com/mikro-orm/mikro-orm/commit/c754a62f6b7659cf631f3b3ab49a60b3e626702f)), closes [#2238](https://github.com/mikro-orm/mikro-orm/issues/2238)
+* **embeddables:** add missing serialization options to `@Embedded()` ([aca6d08](https://github.com/mikro-orm/mikro-orm/commit/aca6d080e206e5a7b7d11647c01fe0e457b409c1)), closes [#2464](https://github.com/mikro-orm/mikro-orm/issues/2464)
+* **embeddables:** ensure order of discovery does not matter for embeddables ([e3f9dbc](https://github.com/mikro-orm/mikro-orm/commit/e3f9dbc10fdd2571fd83706a05cc1117eae8a58f)), closes [#2242](https://github.com/mikro-orm/mikro-orm/issues/2242)
+* **embeddables:** fix validating nullable object embeddables ([d60dded](https://github.com/mikro-orm/mikro-orm/commit/d60dded063d2a94802575cdfd445df3cbfcd99b2)), closes [#2233](https://github.com/mikro-orm/mikro-orm/issues/2233)
+* **mongo:** allow using `pool.min/max` options in mongo driver ([830179d](https://github.com/mikro-orm/mikro-orm/commit/830179d512d5aa6e4c990b27c84e38b29468ba44)), closes [#2228](https://github.com/mikro-orm/mikro-orm/issues/2228)
+* **mongo:** do not use separate update queries for M:N collections if not needed ([f6383a0](https://github.com/mikro-orm/mikro-orm/commit/f6383a0a2b49519114e2bf34786d91b17527db47)), closes [#2483](https://github.com/mikro-orm/mikro-orm/issues/2483)
+* **postgres:** add extra array operators ([#2467](https://github.com/mikro-orm/mikro-orm/issues/2467)) ([a1fd357](https://github.com/mikro-orm/mikro-orm/commit/a1fd357eb26404a6638d52ddd5110771412dd922))
+* **reflection:** relative paths not stripped completely ([#2164](https://github.com/mikro-orm/mikro-orm/issues/2164)) ([cbe7503](https://github.com/mikro-orm/mikro-orm/commit/cbe7503dac2e0f2de67fb4278ebee503452f7e93))
+* **sqlite:** patch dialect only once ([a7fe71e](https://github.com/mikro-orm/mikro-orm/commit/a7fe71e032fd819949fd3e2bd0bd7b1a9d073a6d)), closes [#2422](https://github.com/mikro-orm/mikro-orm/issues/2422)
+* **sti:** fix prototype of child entity after it gets loaded ([e78942a](https://github.com/mikro-orm/mikro-orm/commit/e78942ab93789be3c353c0d75444b80bbeee51e0)), closes [#2493](https://github.com/mikro-orm/mikro-orm/issues/2493) [#2364](https://github.com/mikro-orm/mikro-orm/issues/2364)
+* **sti:** respect custom table names ([b17aea9](https://github.com/mikro-orm/mikro-orm/commit/b17aea9c05f0fbcd7cd9b646a9542cf733edaaf6)), closes [#2356](https://github.com/mikro-orm/mikro-orm/issues/2356)
+* **validation:** validate missing 1:m mappedBy key in factory ([7ef40c0](https://github.com/mikro-orm/mikro-orm/commit/7ef40c04bfabee0b6278784f0241ffb4a66d484b)), closes [#2393](https://github.com/mikro-orm/mikro-orm/issues/2393)
+* update mysql2 dependency to 2.3.2 ([#2376](https://github.com/mikro-orm/mikro-orm/issues/2376)) ([f9c417a](https://github.com/mikro-orm/mikro-orm/commit/f9c417aadedddc450c890020c0b213749fd51340))
+
+
+### Performance Improvements
+
+* **core:** define `Reference` properties on prototype ([4ef2623](https://github.com/mikro-orm/mikro-orm/commit/4ef2623680734403453961559c13383a979c8ae6))
+* **core:** do not redefine `Collection` properties as non-enumerable ([523addd](https://github.com/mikro-orm/mikro-orm/commit/523addd05b4e79021a4c63490ae3afb2a9789d66)), closes [#2543](https://github.com/mikro-orm/mikro-orm/issues/2543)
+* **core:** reuse EntityComparator on fork() ([#2496](https://github.com/mikro-orm/mikro-orm/issues/2496)) ([bd2ccfd](https://github.com/mikro-orm/mikro-orm/commit/bd2ccfda950d4fce6dc33b35c35b833d70837a2c))
+* **core:** use shared memory for cycles when computing change sets ([c12ff4b](https://github.com/mikro-orm/mikro-orm/commit/c12ff4bb126185e08ea9f86c9b166fcc3fa67082)), closes [#2379](https://github.com/mikro-orm/mikro-orm/issues/2379)
+* **core:** various small performance improvements in UoW ([d8ea1c2](https://github.com/mikro-orm/mikro-orm/commit/d8ea1c2053f4cf201e4aa621c42fc33e0ac09012))
+
+
+
+
+
 ## [4.5.9](https://github.com/mikro-orm/mikro-orm/compare/v4.5.8...v4.5.9) (2021-08-24)
 
 **Note:** Version bump only for package @mikro-orm/core

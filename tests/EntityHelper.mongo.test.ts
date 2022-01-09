@@ -80,6 +80,8 @@ describe('EntityHelperMongo', () => {
   test('BaseEntity methods', async () => {
     const god = new Author('God', 'hello@heaven.god');
     expect(wrap(god, true).__populated).toBeUndefined();
+    expect(wrap(god, true).__touched).toBe(true);
+    expect(god.isTouched()).toBe(true);
     god.populated();
     expect(wrap(god, true).__populated).toBe(true);
     expect(wrap(god, true).__platform).toBe(orm.em.getDriver().getPlatform());
@@ -87,6 +89,13 @@ describe('EntityHelperMongo', () => {
     const ref = god.toReference();
     expect(ref).toBeInstanceOf(Reference);
     expect(ref.getEntity()).toBe(god);
+
+    await orm.em.persistAndFlush(god);
+    expect(wrap(god, true).__touched).toBe(false);
+    expect(god.isTouched()).toBe(false);
+    god.name = '123';
+    expect(wrap(god, true).__touched).toBe(true);
+    expect(god.isTouched()).toBe(true);
   });
 
   test('#load() should populate the entity', async () => {
@@ -200,10 +209,10 @@ describe('EntityHelperMongo', () => {
     expect(actual).toBe('Author {\n' +
       '  hookTest: false,\n' +
       '  termsAccepted: false,\n' +
-      '  books: Collection {\n' +
+      '  books: Collection<Book> {\n' +
       "    '0': Book {\n" +
       '      createdAt: ISODate(\'2020-07-18T17:31:08.535Z\'),\n' +
-      '      tags: [Collection],\n' +
+      '      tags: [Collection<BookTag>],\n' +
       "      title: 'Bible',\n" +
       '      author: [Author],\n' +
       '      publisher: [Reference]\n' +
@@ -211,23 +220,23 @@ describe('EntityHelperMongo', () => {
       '    initialized: true,\n' +
       '    dirty: true\n' +
       '  },\n' +
-      '  friends: Collection { initialized: true, dirty: false },\n' +
+      '  friends: Collection<Author> { initialized: true, dirty: false },\n' +
       "  name: 'God',\n" +
       "  email: 'hello@heaven.god',\n" +
       "  foo: 'bar',\n" +
       '  favouriteAuthor: Author {\n' +
       '    hookTest: false,\n' +
       '    termsAccepted: false,\n' +
-      "    books: Collection { '0': [Book], initialized: true, dirty: true },\n" +
-      '    friends: Collection { initialized: true, dirty: false },\n' +
+      "    books: Collection<Book> { '0': [Book], initialized: true, dirty: true },\n" +
+      '    friends: Collection<Author> { initialized: true, dirty: false },\n' +
       "    name: 'God',\n" +
       "    email: 'hello@heaven.god',\n" +
       "    foo: 'bar',\n" +
       '    favouriteAuthor: Author {\n' +
       '      hookTest: false,\n' +
       '      termsAccepted: false,\n' +
-      '      books: [Collection],\n' +
-      '      friends: [Collection],\n' +
+      '      books: [Collection<Book>],\n' +
+      '      friends: [Collection<Author>],\n' +
       "      name: 'God',\n" +
       "      email: 'hello@heaven.god',\n" +
       "      foo: 'bar',\n" +

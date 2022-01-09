@@ -1,9 +1,10 @@
 import type { MigrationsOptions, Transaction } from '@mikro-orm/core';
-import { Utils } from '@mikro-orm/core';
 import type { AbstractSqlDriver, Table } from '@mikro-orm/knex';
+import type { MigrationParams, UmzugStorage } from 'umzug';
+import * as path from 'path';
 import type { MigrationRow } from './typings';
 
-export class MigrationStorage {
+export class MigrationStorage implements UmzugStorage {
 
   private readonly connection = this.driver.getConnection();
   private readonly knex = this.connection.getKnex();
@@ -15,20 +16,17 @@ export class MigrationStorage {
 
   async executed(): Promise<string[]> {
     const migrations = await this.getExecutedMigrations();
-    /* istanbul ignore next */
-    const ext = this.options.emit === 'js' || !Utils.detectTsNode() ? 'js' : 'ts';
-
-    return migrations.map(({ name }) => `${this.getMigrationName(name)}.${ext}`);
+    return migrations.map(({ name }) => `${this.getMigrationName(name)}`);
   }
 
-  async logMigration(name: string): Promise<void> {
-    name = this.getMigrationName(name);
+  async logMigration(params: MigrationParams<any>): Promise<void> {
+    const name = this.getMigrationName(params.name);
     await this.driver.nativeInsert(this.options.tableName!, { name }, { ctx: this.masterTransaction });
   }
 
-  async unlogMigration(name: string): Promise<void> {
-    const withoutExt = this.getMigrationName(name);
-    const qb = this.knex.delete().from(this.options.tableName!).where('name', 'in', [name, withoutExt]);
+  async unlogMigration(params: MigrationParams<any>): Promise<void> {
+    const withoutExt = this.getMigrationName(params.name);
+    const qb = this.knex.delete().from(this.options.tableName!).where('name', 'in', [params.name, withoutExt]);
 
     if (this.masterTransaction) {
       qb.transacting(this.masterTransaction);
@@ -69,9 +67,18 @@ export class MigrationStorage {
     delete this.masterTransaction;
   }
 
-  protected getMigrationName(name: string) {
-    // strip extension
-    return name.replace(/\.\w+$/, '');
+  /**
+   * @internal
+   */
+  getMigrationName(name: string) {
+    const parsedName = path.parse(name);
+
+    if (['.js', '.ts'].includes(parsedName.ext)) {
+      // strip extension
+      return parsedName.name;
+    }
+
+    return name;
   }
 
 }

@@ -5,12 +5,12 @@ import { EntityAssigner } from './EntityAssigner';
 
 export abstract class BaseEntity<T, PK extends keyof T, P extends string = never> implements IWrappedEntity<T, PK, P> {
 
-  constructor() {
-    Object.defineProperty(this, '__baseEntity', { value: true });
-  }
-
   isInitialized(): boolean {
     return (this as unknown as AnyEntity<T>).__helper!.__initialized;
+  }
+
+  isTouched(): boolean {
+    return (this as unknown as AnyEntity<T>).__helper!.__touched;
   }
 
   populated(populated = true): void {
@@ -50,3 +50,5 @@ export abstract class BaseEntity<T, PK extends keyof T, P extends string = never
   }
 
 }
+
+Object.defineProperty(BaseEntity.prototype, '__baseEntity', { value: true, writable: false, enumerable: false });

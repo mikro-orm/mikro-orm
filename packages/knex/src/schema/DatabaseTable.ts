@@ -144,7 +144,7 @@ export class DatabaseTable {
   getEntityDeclaration(namingStrategy: NamingStrategy, schemaHelper: SchemaHelper): EntityMetadata {
     let name = namingStrategy.getClassName(this.name, '_');
     name = name.match(/^\d/) ? 'E' + name : name;
-    const schema = new EntitySchema({ name, collection: this.name });
+    const schema = new EntitySchema({ name, collection: this.name, schema: this.schema });
     const compositeFkIndexes: Dictionary<{ keyName: string }> = {};
     const compositeFkUniques: Dictionary<{ keyName: string }> = {};
 
@@ -275,7 +275,8 @@ export class DatabaseTable {
 
   private getPropertyType(namingStrategy: NamingStrategy, column: Column, fk?: ForeignKey): string {
     if (fk) {
-      return namingStrategy.getClassName(fk.referencedTableName, '_');
+      const parts = fk.referencedTableName.split('.', 2);
+      return namingStrategy.getClassName(parts.length > 1 ? parts[1] : parts[0], '_');
     }
 
     return column.mappedType?.compareAsType() ?? 'unknown';

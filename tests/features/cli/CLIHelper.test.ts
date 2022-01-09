@@ -378,13 +378,13 @@ describe('CLIHelper', () => {
       rows: [['val 1', 'val 2'], ['val 3', 'val 4'], ['val 5', 'val 6']],
       empty: 'Empty...',
     });
-    expect(require('colors').stripColors(dumpSpy.mock.calls[0][0])).toMatchSnapshot('has rows');
+    expect(dumpSpy.mock.calls[0][0]).toMatchSnapshot('has rows');
     CLIHelper.dumpTable({
       columns: ['Name', 'Executed at'],
       rows: [],
       empty: 'Empty...',
     });
-    expect(require('colors').stripColors(dumpSpy.mock.calls[1][0])).toMatchSnapshot('empty');
+    expect(dumpSpy.mock.calls[1][0]).toMatchSnapshot('empty');
     dumpSpy.mockRestore();
   });
 

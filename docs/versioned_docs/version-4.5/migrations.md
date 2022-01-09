@@ -163,7 +163,7 @@ await MikroORM.init({
 });
 ```
 
-With the help of (webpacks context module api)[https://webpack.js.org/guides/dependency-management/#context-module-api]
+With the help of [webpack's context module api](https://webpack.js.org/guides/dependency-management/#context-module-api)
 we can dynamically import the migrations making it possible to import all files in a folder.
 
 ```typescript

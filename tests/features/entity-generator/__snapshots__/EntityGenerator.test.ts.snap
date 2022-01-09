@@ -74,7 +74,7 @@ export class Author2 {
   "import { Entity, ManyToOne } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
-@Entity({ collection: 'author2_following' })
+@Entity({ tableName: 'author2_following' })
 export class Author2Following {
 
   @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
@@ -177,7 +177,7 @@ export class Book2 {
 import { Book2 } from './Book2';
 import { BookTag2 } from './BookTag2';
 
-@Entity({ collection: 'book2_tags' })
+@Entity({ tableName: 'book2_tags' })
 export class Book2Tags {
 
   @PrimaryKey()
@@ -391,7 +391,7 @@ export class Publisher2 {
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
 
-@Entity({ collection: 'publisher2_tests' })
+@Entity({ tableName: 'publisher2_tests' })
 export class Publisher2Tests {
 
   @PrimaryKey()
@@ -455,7 +455,7 @@ export class Test2 {
 import { FooBar2 } from './FooBar2';
 import { Test2 } from './Test2';
 
-@Entity({ collection: 'test2_bars' })
+@Entity({ tableName: 'test2_bars' })
 export class Test2Bars {
 
   @ManyToOne({ entity: () => Test2, onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
@@ -490,7 +490,7 @@ export class User2 {
 import { Car2 } from './Car2';
 import { User2 } from './User2';
 
-@Entity({ collection: 'user2_cars' })
+@Entity({ tableName: 'user2_cars' })
 export class User2Cars {
 
   @ManyToOne({ entity: () => User2, onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
@@ -505,7 +505,7 @@ export class User2Cars {
 import { Sandwich } from './Sandwich';
 import { User2 } from './User2';
 
-@Entity({ collection: 'user2_sandwiches' })
+@Entity({ tableName: 'user2_sandwiches' })
 export class User2Sandwiches {
 
   @ManyToOne({ entity: () => User2, onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
@@ -593,7 +593,7 @@ export class Author2 {
   "import { Entity, ManyToOne } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
-@Entity({ collection: 'author2_following' })
+@Entity({ tableName: 'author2_following' })
 export class Author2Following {
 
   @ManyToOne({ entity: () => Author2, fieldName: 'author2_1_id', onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
@@ -661,7 +661,7 @@ export class Book2 {
 import { Book2 } from './Book2';
 import { BookTag2 } from './BookTag2';
 
-@Entity({ collection: 'book2_tags' })
+@Entity({ tableName: 'book2_tags' })
 export class Book2Tags {
 
   @PrimaryKey()
@@ -843,7 +843,7 @@ export class Publisher2 {
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
 
-@Entity({ collection: 'publisher2_tests' })
+@Entity({ tableName: 'publisher2_tests' })
 export class Publisher2Tests {
 
   @PrimaryKey()
@@ -887,7 +887,7 @@ export class Test2 {
 import { FooBar2 } from './FooBar2';
 import { Test2 } from './Test2';
 
-@Entity({ collection: 'test2_bars' })
+@Entity({ tableName: 'test2_bars' })
 export class Test2Bars {
 
   @ManyToOne({ entity: () => Test2, onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
@@ -977,7 +977,7 @@ export class Book3 {
 import { Book3 } from './Book3';
 import { BookTag3 } from './BookTag3';
 
-@Entity({ collection: 'book3_tags' })
+@Entity({ tableName: 'book3_tags' })
 export class Book3Tags {
 
   @PrimaryKey()
@@ -1027,7 +1027,7 @@ export class Publisher3 {
 import { Publisher3 } from './Publisher3';
 import { Test3 } from './Test3';
 
-@Entity({ collection: 'publisher3_tests' })
+@Entity({ tableName: 'publisher3_tests' })
 export class Publisher3Tests {
 
   @PrimaryKey()
@@ -1064,7 +1064,7 @@ exports[`EntityGenerator table name starting with number [mysql]: mysql-entity-d
 Array [
   "import { Entity, PrimaryKey } from '@mikro-orm/core';
 
-@Entity({ collection: '123_table_name' })
+@Entity({ tableName: '123_table_name' })
 export class E123TableName {
 
   @PrimaryKey()

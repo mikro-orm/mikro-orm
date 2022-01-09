@@ -3,11 +3,13 @@ import type { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty,
 import type { EntityFactory } from '../entity';
 import { EntityIdentifier } from '../entity';
 import type { ChangeSet } from './ChangeSet';
+import { ChangeSetType } from './ChangeSet';
 import type { QueryResult } from '../connections';
 import type { Configuration } from '../utils';
 import { Utils } from '../utils';
 import type { DriverMethodOptions, IDatabaseDriver } from '../drivers';
 import { OptimisticLockError } from '../errors';
+import { ReferenceType } from '../enums';
 
 export class ChangeSetPersister {
 
@@ -306,31 +308,46 @@ export class ChangeSetPersister {
     }
   }
 
+  /**
+   * This method also handles reloading of database default values for inserts, so we use
+   * a single query in case of both versioning and default values is used.
+   */
   private async reloadVersionValues<T extends AnyEntity<T>>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], options?: DriverMethodOptions) {
-    if (!meta.versionProperty) {
+    const reloadProps = meta.versionProperty ? [meta.properties[meta.versionProperty]] : [];
+
+    if (changeSets[0].type === ChangeSetType.CREATE) {
+      // do not reload things that already had a runtime value
+      reloadProps.push(...meta.props.filter(prop => prop.defaultRaw && prop.defaultRaw.toLowerCase() !== 'null' && changeSets[0].entity[prop.name] == null));
+    }
+
+    if (reloadProps.length === 0) {
       return;
     }
 
     const pk = Utils.getPrimaryKeyHash(meta.primaryKeys);
     const pks = changeSets.map(cs => cs.getPrimaryKey());
     options = this.propagateSchemaFromMetadata(meta, options, {
-      fields: [meta.versionProperty],
+      fields: reloadProps.map(prop => prop.fieldNames[0]),
     });
     const data = await this.driver.find<T>(meta.name!, { [pk]: { $in: pks } } as FilterQuery<T>, options);
-    const map = new Map<string, Date>();
-    data.forEach(e => map.set(Utils.getCompositeKeyHash(e, meta), e[meta.versionProperty] as Date));
+    const map = new Map<string, Dictionary>();
+    data.forEach(item => map.set(Utils.getCompositeKeyHash(item, meta), item));
 
     for (const changeSet of changeSets) {
-      const version = map.get(changeSet.entity.__helper!.getSerializedPrimaryKey());
+      const data = map.get(changeSet.entity.__helper!.getSerializedPrimaryKey());
 
-      // needed for sqlite
-      if (meta.properties[meta.versionProperty].type.toLowerCase() === 'date') {
-        changeSet.entity[meta.versionProperty] = new Date(version as unknown as string) as unknown as T[keyof T & string];
-      } else {
-        changeSet.entity[meta.versionProperty] = version as unknown as T[keyof T & string];
+      for (const prop of reloadProps) {
+        const value = data![prop.name];
+
+        // needed for sqlite
+        if (prop.type.toLowerCase() === 'date') {
+          changeSet.entity[prop.name] = new Date(value) as unknown as T[keyof T & string];
+        } else {
+          changeSet.entity[prop.name] = value;
+        }
+
+        changeSet.payload![prop.name] = value;
       }
-
-      changeSet.payload![meta.versionProperty] = version;
     }
   }
 
@@ -338,6 +355,10 @@ export class ChangeSetPersister {
     const meta = this.metadata.find(changeSet.name)!;
     const values = Utils.unwrapProperty(changeSet.payload, meta, prop, true); // for object embeddables
     const value = changeSet.payload[prop.name] as unknown; // for inline embeddables
+
+    if (prop.reference === ReferenceType.MANY_TO_MANY && Array.isArray(value)) {
+      changeSet.payload[prop.name] = value.map(val => val instanceof EntityIdentifier ? val.getValue() : val);
+    }
 
     if (value instanceof EntityIdentifier) {
       Utils.setPayloadProperty<T>(changeSet.payload, meta, prop, value.getValue());

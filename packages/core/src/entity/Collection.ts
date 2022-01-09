@@ -25,11 +25,6 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   constructor(owner: O, items?: T[], initialized = true) {
     super(owner, items);
     this.initialized = !!items || initialized;
-    Object.defineProperty(this, 'snapshot', { enumerable: false });
-    Object.defineProperty(this, '_populated', { enumerable: false });
-    Object.defineProperty(this, '_lazyInitialized', { enumerable: false });
-    Object.defineProperty(this, '$', { get: () => this });
-    Object.defineProperty(this, 'get', { value: () => this });
   }
 
   /**
@@ -129,18 +124,12 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   }
 
   set(items: (T | Reference<T>)[]): void {
-    const unwrapped = items.map(i => Reference.unwrapReference(i));
-    unwrapped.forEach(item => this.validateItemType(item));
-    this.validateModification(unwrapped);
-
     if (!this.initialized) {
       this.initialized = true;
       this.snapshot = undefined;
     }
 
-    super.set(unwrapped);
-    this.setDirty();
-    this.cancelOrphanRemoval(unwrapped);
+    super.set(items);
   }
 
   /**
@@ -150,18 +139,6 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     this.initialized = true;
     super.hydrate(items);
     this.takeSnapshot();
-  }
-
-  removeAll(): void {
-    const em = this.getEntityManager([], false);
-
-    if (this.property.reference === ReferenceType.ONE_TO_MANY && this.property.orphanRemoval && em) {
-      em.getUnitOfWork().scheduleCollectionDeletion(this);
-      const unwrapped = this.getItems(false).map(i => Reference.unwrapReference(i));
-      this.modify('remove', unwrapped);
-    } else {
-      super.removeAll();
-    }
   }
 
   remove(...items: (T | Reference<T> | ((item: T) => boolean))[]): void {
@@ -417,6 +394,11 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   }
 
 }
+
+Object.defineProperties(Collection.prototype, {
+  $: { get() { return this; } },
+  get: { get() { return () => this; } },
+});
 
 export interface InitOptions<T, P extends string = never> {
   populate?: Populate<T, P>;

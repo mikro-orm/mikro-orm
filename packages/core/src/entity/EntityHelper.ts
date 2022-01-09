@@ -14,8 +14,10 @@ const entityHelperSymbol = Symbol('helper');
 export class EntityHelper {
 
   static decorate<T extends AnyEntity<T>>(meta: EntityMetadata<T>, em: EntityManager): void {
+    const fork = em.fork(); // use fork so we can access `EntityFactory`
+
     if (meta.embeddable) {
-      EntityHelper.defineBaseProperties(meta, meta.prototype, em);
+      EntityHelper.defineBaseProperties(meta, meta.prototype, fork);
       return;
     }
 
@@ -25,12 +27,9 @@ export class EntityHelper {
       EntityHelper.defineIdProperty(meta, em.getPlatform());
     }
 
-    EntityHelper.defineBaseProperties(meta, meta.prototype, em);
+    EntityHelper.defineBaseProperties(meta, meta.prototype, fork);
+    EntityHelper.defineProperties(meta);
     const prototype = meta.prototype as Dictionary;
-
-    if (em.config.get('propagateToOneOwner')) {
-      EntityHelper.defineReferenceProperties(meta);
-    }
 
     if (!prototype.toJSON) { // toJSON can be overridden
       prototype.toJSON = function (this: T, ...args: any[]) {
@@ -53,12 +52,19 @@ export class EntityHelper {
     });
   }
 
+  /**
+   * As a performance optimization, we create entity state methods in a lazy manner. We first add
+   * the `null` value to the prototype to reserve space in memory. Then we define a setter on the
+   * prototype, that will be executed exactly once per entity instance. There we redefine given
+   * property on the entity instance, so shadowing the prototype setter.
+   */
   private static defineBaseProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>, prototype: T, em: EntityManager) {
     const helperParams = meta.embeddable ? [] : [em.getComparator().getPkGetter(meta), em.getComparator().getPkSerializer(meta), em.getComparator().getPkGetterConverted(meta)];
     Object.defineProperties(prototype, {
       __entity: { value: !meta.embeddable },
       __meta: { value: meta },
       __platform: { value: em.getPlatform() },
+      __factory: { value: em.getEntityFactory() },
       [entityHelperSymbol]: { value: null, writable: true, enumerable: false },
       __helper: {
         get(): WrappedEntity<T, keyof T> {
@@ -77,22 +83,47 @@ export class EntityHelper {
 
   /**
    * Defines getter and setter for every owning side of m:1 and 1:1 relation. This is then used for propagation of
-   * changes to the inverse side of bi-directional relations.
+   * changes to the inverse side of bi-directional relations. Rest of the properties are also defined this way to
+   * achieve dirtyness, which is then used for fast checks whether we need to auto-flush because of managed entities.
+   *
    * First defines a setter on the prototype, once called, actual get/set handlers are registered on the instance rather
    * than on its prototype. Thanks to this we still have those properties enumerable (e.g. part of `Object.keys(entity)`).
    */
-  private static defineReferenceProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>): void {
+  private static defineProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>): void {
     Object
-      .values<EntityProperty>(meta.properties)
-      .filter(prop => [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk)
+      .values(meta.properties)
       .forEach(prop => {
-        Object.defineProperty(meta.prototype, prop.name, {
-          set(val: AnyEntity) {
-            if (!('__data' in this)) {
-              Object.defineProperty(this, '__data', { value: {} });
-            }
+        const isCollection = [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference);
+        const isReference = [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk;
 
-            EntityHelper.defineReferenceProperty(meta, prop, this, val);
+        if (isReference) {
+          return Object.defineProperty(meta.prototype, prop.name, {
+            set(val: AnyEntity) {
+              EntityHelper.defineReferenceProperty(meta, prop, this);
+              this[prop.name] = val;
+            },
+          });
+        }
+
+        if (prop.inherited || prop.primary || prop.persist === false || prop.embedded || isCollection) {
+          return;
+        }
+
+        Object.defineProperty(meta.prototype, prop.name, {
+          set(val) {
+            Object.defineProperty(this, prop.name, {
+              get() {
+                return this.__helper.__data[prop.name];
+              },
+              set(val) {
+                this.__helper.__data[prop.name] = val;
+                this.__helper.__touched = true;
+              },
+              enumerable: true,
+              configurable: true,
+            });
+            this.__helper.__data[prop.name] = val;
+            this.__helper.__touched = true;
           },
         });
       });
@@ -115,20 +146,20 @@ export class EntityHelper {
     }
   }
 
-  private static defineReferenceProperty<T extends AnyEntity<T>>(meta: EntityMetadata<T>, prop: EntityProperty<T>, ref: T, val: AnyEntity): void {
+  static defineReferenceProperty<T extends AnyEntity<T>>(meta: EntityMetadata<T>, prop: EntityProperty<T>, ref: T): void {
     Object.defineProperty(ref, prop.name, {
       get() {
-        return this.__data[prop.name];
+        return this.__helper.__data[prop.name];
       },
       set(val: AnyEntity | Reference<AnyEntity>) {
-        const entity = Reference.unwrapReference(val ?? this.__data[prop.name]);
-        this.__data[prop.name] = Reference.wrapReference(val as T, prop);
+        const entity = Reference.unwrapReference(val ?? this.__helper.__data[prop.name]);
+        this.__helper.__data[prop.name] = Reference.wrapReference(val as T, prop);
+        this.__helper.__touched = true;
         EntityHelper.propagate(meta, entity, this, prop, Reference.unwrapReference(val));
       },
       enumerable: true,
       configurable: true,
     });
-    ref[prop.name] = val as T[string & keyof T];
   }
 
   private static propagate<T extends AnyEntity<T>, O extends AnyEntity<O>>(meta: EntityMetadata<O>, entity: T, owner: O, prop: EntityProperty<O>, value?: O[keyof O]): void {
@@ -147,6 +178,7 @@ export class EntityHelper {
 
       if (prop.reference === ReferenceType.ONE_TO_ONE && entity && entity.__helper!.__initialized && entity[prop2.name] != null && value == null) {
         entity[prop2.name] = value;
+        entity.__helper!.__em?.getUnitOfWork().scheduleOrphanRemoval(entity);
       }
     }
   }

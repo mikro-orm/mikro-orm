@@ -12,4 +12,5 @@ export * from './Embeddable';
 export * from './Embedded';
 export * from './Filter';
 export * from './Subscriber';
+export * from './UseRequestContext';
 export * from './hooks';

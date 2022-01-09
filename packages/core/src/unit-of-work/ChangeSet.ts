@@ -3,6 +3,7 @@ import type { EntityData, AnyEntity, EntityMetadata, EntityDictionary, Primary }
 export class ChangeSet<T extends AnyEntity<T>> {
 
   private primaryKey?: Primary<T> | Primary<T>[] | null;
+  private serializedPrimaryKey?: string;
 
   constructor(public entity: T,
               public type: ChangeSetType,
@@ -17,6 +18,11 @@ export class ChangeSet<T extends AnyEntity<T>> {
   getPrimaryKey(): Primary<T> | Primary<T>[] | null {
     this.primaryKey ??= this.entity.__helper!.getPrimaryKey(true);
     return this.primaryKey;
+  }
+
+  getSerializedPrimaryKey(): string | null {
+    this.serializedPrimaryKey ??= this.entity.__helper!.getSerializedPrimaryKey();
+    return this.serializedPrimaryKey;
   }
 
 }
@@ -37,4 +43,5 @@ export enum ChangeSetType {
   CREATE = 'create',
   UPDATE = 'update',
   DELETE = 'delete',
+  DELETE_EARLY = 'delete_early',
 }

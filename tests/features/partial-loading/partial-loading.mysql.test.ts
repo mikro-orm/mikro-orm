@@ -37,7 +37,7 @@ describe('partial loading (mysql)', () => {
 
     const mock = mockLogger(orm, ['query']);
 
-    const r1 = await orm.em.find(Author2, god, { fields: ['id', 'books.author', 'books.title'], populate: ['books'] });
+    const r1 = await orm.em.find(Author2, god, { fields: ['id', 'books.author', 'books.title'] });
     expect(r1).toHaveLength(1);
     expect(r1[0].id).toBe(god.id);
     expect(r1[0].name).toBeUndefined();
@@ -50,7 +50,7 @@ describe('partial loading (mysql)', () => {
     orm.em.clear();
     mock.mock.calls.length = 0;
 
-    const r2 = await orm.em.find(Author2, god, { fields: ['id', { books: ['uuid', 'author', 'title'] }], populate: ['books'] });
+    const r2 = await orm.em.find(Author2, god, { fields: ['id', { books: ['uuid', 'author', 'title'] }] });
     expect(r2).toHaveLength(1);
     expect(r2[0].id).toBe(god.id);
     expect(r2[0].name).toBeUndefined();
@@ -118,7 +118,7 @@ describe('partial loading (mysql)', () => {
 
     const mock = mockLogger(orm, ['query']);
 
-    const r1 = await orm.em.find(BookTag2, {}, { fields: ['name', 'books.title'], populate: ['books'], filters: false });
+    const r1 = await orm.em.find(BookTag2, {}, { fields: ['name', 'books.title'], filters: false });
     expect(r1).toHaveLength(6);
     expect(r1[0].name).toBe('t1');
     expect(r1[0].books[0].title).toBe('Bible 1');
@@ -129,7 +129,7 @@ describe('partial loading (mysql)', () => {
     orm.em.clear();
     mock.mock.calls.length = 0;
 
-    const r2 = await orm.em.find(BookTag2, { name: 't1' }, { fields: ['name', { books: ['title'] }], populate: ['books'], filters: false });
+    const r2 = await orm.em.find(BookTag2, { name: 't1' }, { fields: ['name', { books: ['title'] }], filters: false });
     expect(r2).toHaveLength(1);
     expect(r2[0].name).toBe('t1');
     expect(r2[0].books[0].title).toBe('Bible 1');

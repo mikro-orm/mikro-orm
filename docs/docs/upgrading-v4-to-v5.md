@@ -158,3 +158,32 @@ const [loadedAuthor] = await em.populate(author, ...);
 
 Previously awaiting of QB instance was a no-op. In v5, QB is promise-like interface,
 so we can await it. More about this in [Awaiting the QueryBuilder](./query-builder.md#awaiting-the-querybuilder) section.
+
+## `UnitOfWork.getScheduledCollectionDeletions()` has been removed
+
+Previously scheduled collection deletions were used for a hack when removing 
+1:m collection via orphan removal might require early deletes - in case we were 
+adding the same entity (but different instance), so with same PK - inserting it 
+in the same unit would cause unique constraint failures.
+
+Also `IDatabaseDriver.clearCollection()` method is no longer present in the driver API.
+
+## `populateAfterFlush` is enabled by default
+
+After flushing a new entity, all relations are marked as populated,
+just like if the entity was loaded from the db. This aligns the serialized
+output of `e.toJSON()` of a loaded entity and just-inserted one.
+
+In v4 this behaviour was disabled by default, so even after the new entity was
+flushed, the serialized form contained only FKs for its relations. We can opt in
+to this old behaviour via `populateAfterFlush: false`.
+
+## `migrations.pattern` is removed in favour of `migrations.glob`
+
+Migrations are using `umzug` under the hood, which is now upgraded to v3.0.
+With this version, the `pattern` configuration options is no longer available, 
+and has been replaced with `glob`. This change is also reflected in MikroORM.
+
+The default value for `glob` is `!(*.d).{js,ts}`, so both JS and TS files are matched
+(but not .d.ts files). You should usually not need to change this option as this default
+suits both development and production environments.

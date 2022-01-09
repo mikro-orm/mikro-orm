@@ -26,12 +26,25 @@ npm i -s @mikro-orm/core @mikro-orm/sqlite      # for sqlite
 
 Then call `MikroORM.init` as part of bootstrapping your app:
 
+> To access driver specific methods like `em.createQueryBuilder()` we need to specify
+> the driver type when calling `MikroORM.init()`. Alternatively we can cast the
+> `orm.em` to `EntityManager` exported from the driver package:
+>
+> ```ts
+> import { EntityManager } from '@mikro-orm/postgresql';
+> const em = orm.em as EntityManager;
+> const qb = em.createQueryBuilder(...);
+> ```
+
 ```typescript
-const orm = await MikroORM.init({
-  entities: [Author, Book, ...],
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql'; // or any other SQL driver package
+
+const orm = await MikroORM.init<PostgreSqlDriver>({
+  entities: ['./dist/entities'], // path to your JS entities (dist), relative to `baseDir`
   dbName: 'my-db-name',
-  type: 'mysql', // or 'sqlite' or 'postgresql' or 'mariadb'
+  type: 'postgresql',
 });
+console.log(orm.em); // access EntityManager via `em` property
 ```
 
 ## Custom driver
@@ -43,7 +56,7 @@ driver class via `driver` configuration option:
 ```typescript
 import { MyCustomDriver } from './MyCustomDriver.ts';
 
-const orm = await MikroORM.init({
+const orm = await MikroORM.init<MyCustomDriver>({
   entities: [Author, Book, ...],
   dbName: 'my-db-name',
   driver: MyCustomDriver, // provide the class, not just its name

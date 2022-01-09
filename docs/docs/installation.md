@@ -38,12 +38,23 @@ as well as `esModuleInterop` in `tsconfig.json` via:
 
 Then call `MikroORM.init` as part of bootstrapping your app:
 
+> To access driver specific methods like `em.createQueryBuilder()` we need to specify
+> the driver type when calling `MikroORM.init()`. Alternatively we can cast the
+> `orm.em` to `EntityManager` exported from the driver package:
+>
+> ```ts
+> import { EntityManager } from '@mikro-orm/postgresql';
+> const em = orm.em as EntityManager;
+> const qb = em.createQueryBuilder(...);
+> ```
+
 ```typescript
-const orm = await MikroORM.init({
-  entities: [Author, Book, BookTag],
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql'; // or any other driver package
+
+const orm = await MikroORM.init<PostgreSqlDriver>({
+  entities: ['./dist/entities'], // path to your JS entities (dist), relative to `baseDir`
   dbName: 'my-db-name',
-  type: 'mongo', // one of `mongo` | `mysql` | `mariadb` | `postgresql` | `sqlite`
-  clientUrl: '...', // defaults to 'mongodb://localhost:27017' for mongodb driver
+  type: 'postgresql',
 });
 console.log(orm.em); // access EntityManager via `em` property
 ```
@@ -56,7 +67,7 @@ it uses [`globby`](https://github.com/sindresorhus/globby) so we can use
 including negative globs. 
 
 ```typescript
-const orm = await MikroORM.init({
+const orm = await MikroORM.init<PostgreSqlDriver>({
   entities: ['./dist/app/**/entities'],
   // ...
 });
@@ -112,7 +123,7 @@ need to install `@mikro-orm/reflection`.
 ```typescript
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 
-const orm = await MikroORM.init({
+const orm = await MikroORM.init<PostgreSqlDriver>({
   metadataProvider: TsMorphMetadataProvider,
   // ...
 });
@@ -121,7 +132,7 @@ const orm = await MikroORM.init({
 Read more about the differences in [Metadata Providers section](metadata-providers.md).
 
 ```typescript
-const orm = await MikroORM.init({
+const orm = await MikroORM.init<PostgreSqlDriver>({
   entities: ['./dist/entities/**/*.js'], // path to your JS entities (dist), relative to `baseDir`
   entitiesTs: ['./src/entities/**/*.ts'], // path to your TS entities (source), relative to `baseDir`
   // ...
@@ -143,7 +154,7 @@ You can also use different [metadata provider](metadata-providers.md) or even wr
 > suited than using `JavaScriptMetadataProvider`.
 
 ```typescript
-const orm = await MikroORM.init({
+const orm = await MikroORM.init<PostgreSqlDriver>({
   // default in v4, so not needed to specify explicitly
   metadataProvider: ReflectMetadataProvider,
   // ...

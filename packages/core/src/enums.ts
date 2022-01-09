@@ -1,4 +1,14 @@
 import type { ExpandProperty } from './typings';
+import type { Transaction } from './connections';
+
+export const enum FlushMode {
+  /** The `EntityManager` tries to delay the flush until the current Transaction is committed, although it might flush prematurely too. */
+  COMMIT,
+  /** This is the default mode, and it flushes the `EntityManager` only if necessary. */
+  AUTO,
+  /** Flushes the `EntityManager` before every query. */
+  ALWAYS,
+}
 
 export enum GroupOperator {
   $and = 'and',
@@ -92,6 +102,11 @@ export enum Cascade {
   MERGE = 'merge',
   REMOVE = 'remove',
   ALL = 'all',
+
+  /** @internal */
+  SCHEDULE_ORPHAN_REMOVAL = 'schedule_orphan_removal',
+  /** @internal */
+  CANCEL_ORPHAN_REMOVAL = 'cancel_orphan_removal',
 }
 
 export enum LoadStrategy {
@@ -138,3 +153,9 @@ export enum EventType {
 }
 
 export type TransactionEventType = EventType.beforeTransactionStart | EventType.afterTransactionStart | EventType.beforeTransactionCommit | EventType.afterTransactionCommit | EventType.beforeTransactionRollback | EventType.afterTransactionRollback;
+
+export interface TransactionOptions {
+  ctx?: Transaction;
+  isolationLevel?: IsolationLevel;
+  flushMode?: FlushMode;
+}

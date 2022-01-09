@@ -1,4 +1,5 @@
-import type { AnyEntity, Cast, Dictionary, EntityProperty, IsUnknown, PrimaryProperty } from '../typings';
+import type { AnyEntity, Cast, Constructor, Dictionary, EntityProperty, IsUnknown, Primary, PrimaryProperty } from '../typings';
+import type { EntityFactory } from './EntityFactory';
 import { wrap } from './wrap';
 
 export type IdentifiedReference<T extends AnyEntity<T>, PK extends keyof T | unknown = PrimaryProperty<T>> = true extends IsUnknown<PK> ? Reference<T> : ({ [K in Cast<PK, keyof T>]: T[K] } & Reference<T>);
@@ -8,7 +9,6 @@ export class Reference<T extends AnyEntity<T>> {
   constructor(private entity: T) {
     this.set(entity);
     const meta = this.entity.__meta!;
-    Object.defineProperty(this, '__reference', { value: true });
 
     meta.primaryKeys.forEach(primaryKey => {
       Object.defineProperty(this, primaryKey, {
@@ -33,6 +33,16 @@ export class Reference<T extends AnyEntity<T>> {
     }
 
     return new Reference(entity as T) as IdentifiedReference<T, PK>;
+  }
+
+  static createFromPK<T extends AnyEntity<T>, PK extends keyof T | unknown = PrimaryProperty<T>>(entityType: Constructor<T>, pk: Primary<T>): IdentifiedReference<T, PK> {
+    const ref = this.createNakedFromPK(entityType, pk);
+    return new Reference(ref) as IdentifiedReference<T, PK>;
+  }
+
+  static createNakedFromPK<T extends AnyEntity<T>, PK extends keyof T | unknown = PrimaryProperty<T>>(entityType: Constructor<T>, pk: Primary<T>): T {
+    const factory = entityType.prototype.__factory as EntityFactory;
+    return factory.createReference(entityType, pk, { merge: false });
   }
 
   /**
@@ -94,11 +104,6 @@ export class Reference<T extends AnyEntity<T>> {
     }
 
     this.entity = entity;
-    Object.defineProperty(this, '__meta', { value: this.entity.__meta!, writable: true });
-    Object.defineProperty(this, '__platform', { value: this.entity.__platform!, writable: true });
-    Object.defineProperty(this, '__helper', { value: this.entity.__helper!, writable: true });
-    Object.defineProperty(this, '$', { value: this.entity, writable: true });
-    Object.defineProperty(this, 'get', { value: () => this.entity, writable: true });
   }
 
   unwrap(): T {
@@ -130,3 +135,12 @@ export class Reference<T extends AnyEntity<T>> {
   }
 
 }
+
+Object.defineProperties(Reference.prototype, {
+  __reference: { value: true, enumerable: false },
+  __meta: { get() { return this.entity.__meta!; } },
+  __platform: { get() { return this.entity.__platform!; } },
+  __helper: { get() { return this.entity.__helper!; } },
+  $: { get() { return this.entity; } },
+  get: { get() { return () => this.entity; } },
+});

@@ -37,7 +37,6 @@ export async function initORMMongo() {
     type: 'mongo',
     ensureIndexes,
     implicitTransactions: true,
-    populateAfterFlush: true,
     validate: true,
     filters: { allowedFooBars: { cond: args => ({ id: { $in: args.allowed } }), entity: ['FooBar'], default: false } },
     pool: { min: 1, max: 3 },
@@ -60,6 +59,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     charset: 'utf8mb4',
     logger: (i: any) => i,
     multipleStatements: true,
+    populateAfterFlush: false,
     entityRepository: SqlEntityRepository,
     type,
     replicas: [{ name: 'read-1' }, { name: 'read-2' }], // create two read replicas with same configuration, just for testing purposes
@@ -91,9 +91,9 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
   return orm as MikroORM<D>;
 }
 
-export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN) {
+export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, entities: any[] = []) {
   const orm = await MikroORM.init<PostgreSqlDriver>({
-    entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Label2, Configuration2],
+    entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Label2, Configuration2, ...entities],
     dbName: `mikro_orm_test`,
     baseDir: BASE_DIR,
     type: 'postgresql',

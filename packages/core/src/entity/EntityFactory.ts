@@ -54,6 +54,11 @@ export class EntityFactory {
     const entity = exists ?? this.createEntity<T>(data, meta2, options);
     entity.__helper!.__initialized = options.initialized;
     this.hydrate(entity, meta2, data, options);
+    entity.__helper!.__touched = false;
+
+    if (exists && meta.discriminatorColumn && !(entity instanceof meta2.class)) {
+      Object.setPrototypeOf(entity, meta2.prototype);
+    }
 
     if (options.merge && entity.__helper!.hasPrimaryKey()) {
       this.unitOfWork.registerManaged(entity, data, options.refresh && options.initialized, options.newEntity);
@@ -82,6 +87,7 @@ export class EntityFactory {
 
     // do not override values changed by user
     Object.keys(diff).forEach(key => delete diff2[key]);
+    Object.keys(diff2).filter(key => diff2[key] === undefined).forEach(key => delete diff2[key]);
     this.hydrate(entity, meta, diff2, options);
 
     // we need to update the entity data only with keys that were not present before
@@ -112,6 +118,8 @@ export class EntityFactory {
         this.create(prop.type, data[prop.name] as EntityData<T>, options); // we can ignore the value, we just care about the `mergeData` call
       }
     });
+
+    entity.__helper!.__touched = false;
   }
 
   createReference<T>(entityName: EntityName<T>, id: Primary<T> | Primary<T>[] | Record<string, Primary<T>>, options: Pick<FactoryOptions, 'merge' | 'convertCustomTypes' | 'schema'> = {}): T {
@@ -149,6 +157,10 @@ export class EntityFactory {
 
   private createEntity<T extends AnyEntity<T>>(data: EntityData<T>, meta: EntityMetadata<T>, options: FactoryOptions): T {
     if (options.newEntity || meta.forceConstructor) {
+      if (!meta.class) {
+        throw new Error(`Cannot create entity ${meta.className}, class prototype is unknown`);
+      }
+
       const params = this.extractConstructorParams<T>(meta, data, options);
       const Entity = meta.class;
       meta.constructorParams.forEach(prop => delete data[prop]);
@@ -161,6 +173,10 @@ export class EntityFactory {
         meta.relations
           .filter(prop => [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference))
           .forEach(prop => delete entity[prop.name]);
+
+        if (options.initialized && !(entity as Dictionary).__gettersDefined) {
+          Object.defineProperties(entity, meta.definedProperties);
+        }
       }
 
       return entity;
@@ -174,6 +190,10 @@ export class EntityFactory {
     if (meta.selfReferencing && !options.newEntity) {
       this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes);
       this.unitOfWork.registerManaged(entity);
+    }
+
+    if (options.initialized && !(entity as Dictionary).__gettersDefined) {
+      Object.defineProperties(entity, meta.definedProperties);
     }
 
     return entity;

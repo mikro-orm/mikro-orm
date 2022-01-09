@@ -439,6 +439,23 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['test 123', '%3', 2, 1]);
   });
 
+  test('select with leftJoin for same property multiple times', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2, 'p');
+    qb.select(['p.*', 'b.*', 'b2.*'])
+      .leftJoin('books', 'b')
+      .leftJoin('books', 'b2')
+      .where({ 'b.title': 'test 123', 'b2.title': /3$/ })
+      .limit(2, 1);
+    const sql = 'select `p`.*, `b`.*, `b2`.* ' +
+      'from `publisher2` as `p` ' +
+      'left join `book2` as `b` on `p`.`id` = `b`.`publisher_id` ' +
+      'left join `book2` as `b2` on `p`.`id` = `b2`.`publisher_id` ' +
+      'where `b`.`title` = ? and `b2`.`title` like ? ' +
+      'limit ? offset ?';
+    expect(qb.getQuery()).toEqual(sql);
+    expect(qb.getParams()).toEqual(['test 123', '%3', 2, 1]);
+  });
+
   test('select with boolean', async () => {
     const qb = orm.em.createQueryBuilder(Author2);
     qb.select('*').where({ termsAccepted: false });
@@ -1829,6 +1846,17 @@ describe('QueryBuilder', () => {
       'where `e1`.`author2_2_id` is null ' +
       'order by `e1`.`author2_2_id` asc');
     expect(qb4.getParams()).toEqual([]);
+  });
+
+  test('123 pivot joining of m:n when no target entity needed directly (GH issue 549)', async () => {
+    const qb3 =  orm.em.createQueryBuilder(Author2, 'a').select('a.*').where({ friends: null }).orderBy({ friends: { name: QueryOrder.ASC } });
+    expect(qb3.getQuery()).toMatch('select `a`.* ' +
+      'from `author2` as `a` ' +
+      'left join `author_to_friend` as `e1` on `a`.`id` = `e1`.`author2_1_id` ' +
+      'left join `author2` as `e2` on `e1`.`author2_2_id` = `e2`.`id` ' +
+      'where `e1`.`author2_2_id` is null ' +
+      'order by `e2`.`name` asc');
+    expect(qb3.getParams()).toEqual([]);
   });
 
   test('pivot joining of m:n when no target entity needed directly (GH issue 549)', async () => {

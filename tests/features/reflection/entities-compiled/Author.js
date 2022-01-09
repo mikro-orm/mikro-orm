@@ -50,7 +50,7 @@ __decorate([
     __metadata("design:type", Array)
 ], Author.prototype, "identities", void 0);
 __decorate([
-    core_1.Property({ type: core_1.DateType }),
+    core_1.Property({ type: new core_1.DateType() }),
     __metadata("design:type", Date)
 ], Author.prototype, "born", void 0);
 __decorate([

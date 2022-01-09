@@ -183,6 +183,23 @@ book.author = Reference.create(repo.getReference(2));
 await orm.em.flush();
 ```
 
+Since v5 we can also create entity references without access to `EntityManager`. 
+This can be handy if you want to create a reference from inside entity constructor:
+
+```ts
+@Entity()
+export class Book {
+
+  @ManyToOne(() => Author, { wrappedReference: true })
+  author!: IdentifiedReference<Author>;
+
+  constructor(authorId: number) {
+    this.author = Reference.createFromPK(Author, authorId);
+  }
+
+}
+```
+
 Another way is to use `toReference()` method available as part of 
 [`WrappedEntity` interface](entity-helper.md#wrappedentity-and-wrap-helper):
 

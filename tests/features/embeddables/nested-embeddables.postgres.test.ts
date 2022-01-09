@@ -150,6 +150,8 @@ describe('embedded entities in postgres', () => {
     expect(u1.profile1).toBeInstanceOf(Profile);
     expect(u1.profile1.identity).toBeInstanceOf(Identity);
     expect(u1.profile1.identity.meta).toBeInstanceOf(IdentityMeta);
+    expect(Object.keys(u1).sort()).toEqual(['id', 'name', 'profile1', 'profile2']);
+    expect('profile1_identity_meta' in u1).toBe(false);
     expect(u1.profile1).toMatchObject({
       username: 'u1',
       identity: {

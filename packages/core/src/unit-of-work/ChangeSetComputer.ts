@@ -6,15 +6,13 @@ import { ChangeSet, ChangeSetType } from './ChangeSet';
 import type { Collection, EntityValidator } from '../entity';
 import type { Platform } from '../platforms';
 import { ReferenceType } from '../enums';
-import { EntityComparator } from '../utils/EntityComparator';
 
 export class ChangeSetComputer {
 
-  private readonly comparator = new EntityComparator(this.metadata, this.platform);
+  private readonly comparator = this.config.getComparator(this.metadata);
 
   constructor(private readonly validator: EntityValidator,
               private readonly collectionUpdates: Set<Collection<AnyEntity>>,
-              private readonly removeStack: Set<AnyEntity>,
               private readonly metadata: MetadataStorage,
               private readonly platform: Platform,
               private readonly config: Configuration) { }
@@ -36,10 +34,7 @@ export class ChangeSetComputer {
     }
 
     const changeSet = new ChangeSet(entity, type, this.computePayload(entity), meta);
-
-    if (changeSet.type === ChangeSetType.UPDATE) {
-      changeSet.originalEntity = entity.__helper!.__originalEntityData;
-    }
+    changeSet.originalEntity = entity.__helper!.__originalEntityData;
 
     if (this.config.get('validate')) {
       this.validator.validate<T>(changeSet.entity, changeSet.payload, meta);
@@ -133,19 +128,16 @@ export class ChangeSetComputer {
   private processToMany<T extends AnyEntity<T>>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
     const target = changeSet.entity[prop.name] as unknown as Collection<any>;
 
-    // remove items from collection based on removeStack
-    if (target.isInitialized() && this.removeStack.size > 0) {
-      target.getItems(false)
-        .filter(item => this.removeStack.has(item))
-        .forEach(item => target.remove(item));
-    }
-
     if (!target.isDirty()) {
       return;
     }
 
     if (prop.owner || target.getItems(false).filter(item => !item.__helper!.__initialized).length > 0) {
-      this.collectionUpdates.add(target);
+      if (this.platform.usesPivotTable()) {
+        this.collectionUpdates.add(target);
+      } else {
+        changeSet.payload[prop.name] = target.getItems(false).map((item: AnyEntity) => item.__helper!.__identifier ?? item.__helper!.getPrimaryKey());
+      }
     } else {
       target.setDirty(false); // inverse side with only populated items, nothing to persist
     }

@@ -20,7 +20,7 @@ drop table if exists \\"user\\" cascade;
 exports[`embedded entities with custom types snapshot generator 1`] = `
 "function(entity) {
   const ret = {};
-  if ('id' in entity && entity.id != null) {
+  if (typeof entity.id !== 'undefined' && entity.id != null) {
     ret.id = entity.id;
   }
 
@@ -45,11 +45,11 @@ exports[`embedded entities with custom types snapshot generator 1`] = `
     ret.nested2 = cloneEmbeddable(ret.nested2);
   }
 
-  if ('after' in entity) {
+  if (typeof entity.after !== 'undefined') {
     ret.after = entity.after;
   }
 
-  if ('someValue' in entity) {
+  if (typeof entity.someValue !== 'undefined') {
     ret.someValue = clone(convertToDatabaseValue_someValue(entity.someValue));
   }
 

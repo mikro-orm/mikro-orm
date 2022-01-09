@@ -207,4 +207,10 @@ describe('multiple connected schemas in postgres', () => {
     });
   });
 
+  test('generate entities for given schema only', async () => {
+    const generator = orm.getEntityGenerator();
+    const entities = await generator.generate({ schema: 'n2' });
+    expect(entities).toMatchSnapshot();
+  });
+
 });

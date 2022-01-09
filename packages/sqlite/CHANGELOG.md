@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.5.10](https://github.com/mikro-orm/mikro-orm/compare/v4.5.9...v4.5.10) (2021-12-26)
+
+
+### Bug Fixes
+
+* **sqlite:** patch dialect only once ([a7fe71e](https://github.com/mikro-orm/mikro-orm/commit/a7fe71e032fd819949fd3e2bd0bd7b1a9d073a6d)), closes [#2422](https://github.com/mikro-orm/mikro-orm/issues/2422)
+
+
+
+
+
 ## [4.5.9](https://github.com/mikro-orm/mikro-orm/compare/v4.5.8...v4.5.9) (2021-08-24)
 
 **Note:** Version bump only for package @mikro-orm/sqlite

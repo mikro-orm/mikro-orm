@@ -34,8 +34,9 @@ import type { EventSubscriber } from '../events';
 import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
 import { NotFoundError } from '../errors';
 import { RequestContext } from './RequestContext';
-import { LoadStrategy } from '../enums';
+import { FlushMode, LoadStrategy } from '../enums';
 import { MemoryCacheAdapter } from '../cache/MemoryCacheAdapter';
+import { EntityComparator } from './EntityComparator';
 
 export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
@@ -61,10 +62,11 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => NotFoundError.findOneFailed(entityName, where),
     baseDir: process.cwd(),
     hydrator: ObjectHydrator,
+    flushMode: FlushMode.AUTO,
     loadStrategy: LoadStrategy.SELECT_IN,
     autoJoinOneToOneOwner: true,
     propagateToOneOwner: true,
-    populateAfterFlush: false,
+    populateAfterFlush: true,
     forceEntityConstructor: false,
     forceUndefined: false,
     forceUtcTimezone: false,
@@ -76,7 +78,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     migrations: {
       tableName: 'mikro_orm_migrations',
       path: './migrations',
-      pattern: /^[\w-]+\d+\.[jt]s$/,
+      glob: '!(*.d).{js,ts}',
       transactional: true,
       disableForeignKeys: true,
       allOrNothing: true,
@@ -194,10 +196,17 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
-   * Gets instance of Hydrator.
+   * Gets instance of Hydrator. (cached)
    */
   getHydrator(metadata: MetadataStorage): IHydrator {
     return this.cached(this.options.hydrator, metadata, this.platform, this);
+  }
+
+  /**
+   * Gets instance of Comparator. (cached)
+   */
+  getComparator(metadata: MetadataStorage) {
+    return this.cached(EntityComparator, metadata, this.platform);
   }
 
   /**
@@ -336,7 +345,7 @@ export interface ConnectionOptions {
 export type MigrationsOptions = {
   tableName?: string;
   path?: string;
-  pattern?: RegExp;
+  glob?: string;
   transactional?: boolean;
   disableForeignKeys?: boolean;
   allOrNothing?: boolean;
@@ -402,6 +411,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   batchSize: number;
   hydrator: HydratorConstructor;
   loadStrategy: LoadStrategy;
+  flushMode: FlushMode;
   entityRepository?: Constructor<EntityRepository<any>>;
   replicas?: Partial<ConnectionOptions>[];
   strict: boolean;

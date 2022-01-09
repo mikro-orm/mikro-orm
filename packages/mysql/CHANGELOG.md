@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.5.10](https://github.com/mikro-orm/mikro-orm/compare/v4.5.9...v4.5.10) (2021-12-26)
+
+
+### Bug Fixes
+
+* update mysql2 dependency to 2.3.2 ([#2376](https://github.com/mikro-orm/mikro-orm/issues/2376)) ([f9c417a](https://github.com/mikro-orm/mikro-orm/commit/f9c417aadedddc450c890020c0b213749fd51340))
+
+
+
+
+
 ## [4.5.9](https://github.com/mikro-orm/mikro-orm/compare/v4.5.8...v4.5.9) (2021-08-24)
 
 **Note:** Version bump only for package @mikro-orm/mysql

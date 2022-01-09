@@ -33,8 +33,20 @@ from the driver package to access the `createQueryBuilder()` method.
 ```typescript
 import { EntityManager } from '@mikro-orm/mysql'; // or any other SQL driver package
 
-const em: EntityManager;
+const em = orm.em as EntityManager;
 const qb = await em.createQueryBuilder(...);
+```
+
+To have the `orm.em` variable properly typed, we can use generic type parameter of
+`MikroORM.init()`:
+
+```ts
+import { MySqlDriver } from '@mikro-orm/mysql'; // or any other SQL driver package
+
+const orm = await MikroORM.init<MySqlDriver>({
+  // ...
+});
+console.log(orm.em); // access EntityManager via `em` property
 ```
 
 Same applies for the `aggregate()` method in mongo driver:
@@ -42,7 +54,7 @@ Same applies for the `aggregate()` method in mongo driver:
 ```typescript
 import { EntityManager } from '@mikro-orm/mongodb';
 
-const em: EntityManager;
+const em = orm.em as EntityManager;
 const ret = await em.aggregate(...);
 ```
 

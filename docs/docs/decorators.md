@@ -28,12 +28,13 @@ export class Author { ... }
 ### @Property()
 
 `@Property()` decorator is used to define regular entity property. All following decorators
-extend the `@Property()` decorator, so you can also use its parameters there. 
+extend the `@Property()` decorator, so you can also use its parameters there.
 
 | Parameter | Type | Optional | Description |
 |-----------|------|----------|-------------|
 | `fieldName` | `string` | yes | Override default property name (see [Naming Strategy](naming-strategy.md)). |
-| `type` | `string` &#124; `Type` | yes | Explicitly specify the runtime type (see [Metadata Providers](metadata-providers.md) and [Custom Types](custom-types.md)). |
+| `type` | `string` &#124; `Constructor<Type>` &#124; `Type` | yes | Explicitly specify the runtime type (see [Metadata Providers](metadata-providers.md) and [Custom Types](custom-types.md)). |
+| `customType` | `Type` | yes | Explicitly specify the mapped type instance for this property (see [Custom Types](custom-types.md)). |
 | `onUpdate` | `() => any` | yes | Automatically update the property value every time entity gets updated. |
 | `persist` | `boolean` | yes | Set to `false` to define [Shadow Property](serializing.md#shadow-properties). |
 | `hidden` | `boolean` | yes | Set to `true` to omit the property when [Serializing](serializing.md). |

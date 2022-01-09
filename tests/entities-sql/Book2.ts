@@ -28,7 +28,7 @@ export class Book2 {
   price?: number;
 
   @Formula(alias => `${alias}.price * 1.19`)
-  priceTaxed?: number;
+  priceTaxed?: string;
 
   @Property({ type: t.double, nullable: true })
   double?: number;
