@@ -371,10 +371,10 @@ export class Publisher2 {
   name!: string;
 
   @Enum({ items: () => Publisher2Type })
-  type!: Publisher2Type;
+  type: Publisher2Type = Publisher2Type.LOCAL;
 
   @Enum({ items: () => Publisher2Type2 })
-  type2!: Publisher2Type2;
+  type2: Publisher2Type2 = Publisher2Type2.LOCAL;
 
   @Property({ columnType: 'tinyint(4)', nullable: true })
   enum1?: number;
@@ -861,10 +861,10 @@ export class Publisher2 {
   name!: string;
 
   @Enum({ items: () => Publisher2Type })
-  type!: Publisher2Type;
+  type: Publisher2Type = Publisher2Type.LOCAL;
 
   @Enum({ items: () => Publisher2Type2 })
-  type2!: Publisher2Type2;
+  type2: Publisher2Type2 = Publisher2Type2.LOCAL;
 
   @Property({ columnType: 'int2', nullable: true })
   enum1?: number;
