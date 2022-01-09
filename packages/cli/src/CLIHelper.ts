@@ -1,6 +1,4 @@
 import { pathExists } from 'fs-extra';
-import type { Table } from 'cli-table3';
-import CliTable3 from 'cli-table3';
 import yargs from 'yargs';
 
 import type { Configuration, IDatabaseDriver, Options } from '@mikro-orm/core';
@@ -92,9 +90,24 @@ export class CLIHelper {
       return CLIHelper.dump(options.empty);
     }
 
-    const table = new CliTable3({ head: options.columns, style: { compact: true } }) as Table;
-    table.push(...options.rows);
-    CLIHelper.dump(table.toString());
+    const data = [options.columns, ...options.rows];
+    const lengths = options.columns.map(() => 0);
+    data.forEach(row => {
+      row.forEach((cell, idx) => {
+        lengths[idx] = Math.max(lengths[idx], cell.length + 2);
+      });
+    });
+
+    let ret = '';
+    ret += colors.grey('┌' + lengths.map(length => '─'.repeat(length)).join('┬') + '┐\n');
+    ret += colors.grey('│') + lengths.map((length, idx) => ' ' + colors.red(options.columns[idx]) + ' '.repeat(length - options.columns[idx].length - 1)).join(colors.grey('│')) + colors.grey('│\n');
+    ret += colors.grey('├' + lengths.map(length => '─'.repeat(length)).join('┼') + '┤\n');
+    options.rows.forEach(row => {
+      ret += colors.grey('│') + lengths.map((length, idx) => ' ' + row[idx] + ' '.repeat(length - row[idx].length - 1)).join(colors.grey('│')) + colors.grey('│\n');
+    });
+    ret += colors.grey('└' + lengths.map(length => '─'.repeat(length)).join('┴') + '┘');
+
+    CLIHelper.dump(ret);
   }
 
   /* istanbul ignore next */

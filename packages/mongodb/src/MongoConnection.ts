@@ -1,5 +1,5 @@
 import type {
-  Collection, Db, MongoClientOptions, ClientSession, BulkWriteResult, Filter, UpdateFilter, OptionalId, UpdateResult,
+  Collection, Db, MongoClientOptions, ClientSession, BulkWriteResult, Filter, UpdateFilter, OptionalUnlessRequiredId, UpdateResult,
   DeleteResult, InsertManyResult, InsertOneResult,
 } from 'mongodb';
 import { MongoClient } from 'mongodb';
@@ -242,11 +242,11 @@ export class MongoConnection extends Connection {
     switch (method) {
       case 'insertOne':
         query = log(() => `db.getCollection('${collection}').insertOne(${this.logObject(data)}, ${this.logObject(options)});`);
-        res = await this.getCollection<T>(collection).insertOne(data as OptionalId<T>, options);
+        res = await this.getCollection<T>(collection).insertOne(data as OptionalUnlessRequiredId<T>, options);
         break;
       case 'insertMany':
         query = log(() => `db.getCollection('${collection}').insertMany(${this.logObject(data)}, ${this.logObject(options)});`);
-        res = await this.getCollection<T>(collection).insertMany(data as OptionalId<T>[], options);
+        res = await this.getCollection<T>(collection).insertMany(data as OptionalUnlessRequiredId<T>[], options);
         break;
       case 'updateMany': {
         const payload = Object.keys(data!).some(k => k.startsWith('$')) ? data : { $set: data };
