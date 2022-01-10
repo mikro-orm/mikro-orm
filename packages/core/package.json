@@ -59,7 +59,7 @@
     "dotenv": "10.0.0",
     "escaya": "0.0.61",
     "fs-extra": "10.0.0",
-    "globby": "11.0.4",
+    "globby": "12.0.2",
     "reflect-metadata": "0.1.13",
     "mikro-orm": "^4.5.9"
   },
