@@ -23,6 +23,10 @@ All hooks support async methods with one exception - `@OnInit`.
 - `@OnInit` is fired when new instance of entity is created, either manually `em.create()`, or 
 automatically when new entities are loaded from database
 
+- `@OnLoad` is fired when new entity is loaded into context (e.g. via `em.find()` 
+  or `em.populate()`). As opposed to `@OnInit` this will be fired only for fully 
+  loaded entities, not references, and this hook can be async. 
+
 - `@BeforeCreate()` and `@BeforeUpdate()` is fired right before we persist the entity in database
 
 - `@AfterCreate()` and `@AfterUpdate()` is fired right after the entity is updated in database and 
@@ -109,6 +113,7 @@ export class EverythingSubscriber implements EventSubscriber {
   async beforeFlush<T>(args: EventArgs<T>): Promise<void> { ... }
   async onFlush<T>(args: EventArgs<T>): Promise<void> { ... }
   async afterFlush<T>(args: EventArgs<T>): Promise<void> { ... }
+  async onLoad<T>(args: EventArgs<T>): Promise<void> { ... }
   onInit<T>(args: EventArgs<T>): void { ... }
 
 }

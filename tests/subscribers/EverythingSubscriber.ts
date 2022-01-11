@@ -30,6 +30,10 @@ export class EverythingSubscriber implements EventSubscriber {
     EverythingSubscriber.log.push(['beforeUpdate', args]);
   }
 
+  async onLoad<T>(args: EventArgs<T>): Promise<void> {
+    EverythingSubscriber.log.push(['onLoad', args]);
+  }
+
   onInit<T>(args: EventArgs<T>): void {
     EverythingSubscriber.log.push(['onInit', args]);
   }

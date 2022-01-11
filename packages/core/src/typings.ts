@@ -123,6 +123,7 @@ export interface IWrappedEntityInternal<T, PK extends keyof T | unknown = Primar
   __managed: boolean;
   __schema?: string;
   __populated: boolean;
+  __onLoadFired: boolean;
   __lazyInitialized: boolean;
   __primaryKeys: Primary<T>[];
   __primaryKeyCond: Primary<T> | Primary<T>[];

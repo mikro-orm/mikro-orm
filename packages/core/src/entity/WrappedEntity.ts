@@ -19,6 +19,7 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   __populated?: boolean;
   __lazyInitialized?: boolean;
   __managed?: boolean;
+  __onLoadFired?: boolean;
   __schema?: string;
   __em?: EntityManager;
   __serializationContext: { root?: SerializationContext<T>; populate?: PopulateOptions<T>[] } = {};

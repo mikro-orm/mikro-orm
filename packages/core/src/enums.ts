@@ -135,6 +135,7 @@ export enum IsolationLevel {
 
 export enum EventType {
   onInit = 'onInit',
+  onLoad = 'onLoad',
   beforeCreate = 'beforeCreate',
   afterCreate = 'afterCreate',
   beforeUpdate = 'beforeUpdate',

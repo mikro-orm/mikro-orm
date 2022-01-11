@@ -31,6 +31,7 @@ export class UnitOfWork {
   private readonly changeSetComputer = new ChangeSetComputer(this.em.getValidator(), this.collectionUpdates, this.metadata, this.platform, this.em.config);
   private readonly changeSetPersister = new ChangeSetPersister(this.em.getDriver(), this.metadata, this.em.config.getHydrator(this.metadata), this.em.getEntityFactory(), this.em.config);
   private readonly queuedActions = new Set<string>();
+  private readonly loadedEntities = new Set<AnyEntity>();
   private readonly flushQueue: (() => Promise<void>)[] = [];
   private working = false;
   private insideHooks = false;
@@ -69,17 +70,21 @@ export class UnitOfWork {
   /**
    * @internal
    */
-  registerManaged<T extends AnyEntity<T>>(entity: T, data?: EntityData<T>, refresh?: boolean, newEntity?: boolean): T {
+  registerManaged<T extends AnyEntity<T>>(entity: T, data?: EntityData<T>, options?: { refresh?: boolean; newEntity?: boolean; loaded?: boolean }): T {
     this.identityMap.store(entity);
 
-    if (newEntity) {
+    if (options?.newEntity) {
       return entity;
+    }
+
+    if (options?.loaded && entity.__helper!.__initialized && !entity.__helper!.__onLoadFired) {
+      this.loadedEntities.add(entity);
     }
 
     const helper = entity.__helper!;
     helper.__em ??= this.em;
 
-    if (data && helper!.__initialized && (refresh || !helper!.__originalEntityData)) {
+    if (data && helper!.__initialized && (options?.refresh || !helper!.__originalEntityData)) {
       // we can't use the `data` directly here as it can contain fetch joined data, that can't be used for diffing the state
       helper!.__originalEntityData = this.comparator.prepareEntity(entity);
       Object.keys(data).forEach(key => entity.__helper!.__loadedProperties.add(key));
@@ -88,6 +93,20 @@ export class UnitOfWork {
     }
 
     return entity;
+  }
+
+  /**
+   * @internal
+   */
+  async dispatchOnLoadEvent(): Promise<void> {
+    for (const entity of this.loadedEntities) {
+      if (this.eventManager.hasListeners(EventType.onLoad, entity.__meta!)) {
+        await this.eventManager.dispatchEvent(EventType.onLoad, { entity, em: this.em });
+        entity.__helper!.__onLoadFired = true;
+      }
+    }
+
+    this.loadedEntities.clear();
   }
 
   /**
@@ -330,6 +349,7 @@ export class UnitOfWork {
 
   clear(): void {
     this.identityMap.clear();
+    this.loadedEntities.clear();
     this.postCommitCleanup();
   }
 
@@ -769,7 +789,7 @@ export class UnitOfWork {
     await this.changeSetPersister.executeInserts(changeSets, { ctx });
 
     for (const changeSet of changeSets) {
-      this.registerManaged<T>(changeSet.entity, changeSet.payload, true);
+      this.registerManaged<T>(changeSet.entity, changeSet.payload, { refresh: true });
       await this.runHooks(EventType.afterCreate, changeSet);
     }
   }

@@ -61,7 +61,11 @@ export class EntityFactory {
     }
 
     if (options.merge && entity.__helper!.hasPrimaryKey()) {
-      this.unitOfWork.registerManaged(entity, data, options.refresh && options.initialized, options.newEntity);
+      this.unitOfWork.registerManaged(entity, data, {
+        refresh: options.refresh && options.initialized,
+        newEntity: options.newEntity,
+        loaded: options.initialized,
+      });
     }
 
     if (this.eventManager.hasListeners(EventType.onInit, meta2)) {

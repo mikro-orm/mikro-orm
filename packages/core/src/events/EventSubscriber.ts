@@ -21,6 +21,7 @@ export interface TransactionEventArgs extends Omit<EventArgs<unknown>, 'entity' 
 export interface EventSubscriber<T = any> {
   getSubscribedEntities?(): EntityName<T>[];
   onInit?(args: EventArgs<T>): void;
+  onLoad?(args: EventArgs<T>): Promise<void>;
   beforeCreate?(args: EventArgs<T>): Promise<void>;
   afterCreate?(args: EventArgs<T>): Promise<void>;
   beforeUpdate?(args: EventArgs<T>): Promise<void>;

@@ -33,6 +33,10 @@ export function OnInit() {
   return hook(EventType.onInit);
 }
 
+export function OnLoad() {
+  return hook(EventType.onLoad);
+}
+
 /**
  * Called before deleting entity, but only when providing initialized entity to EM#remove()
  */
