@@ -313,4 +313,24 @@ describe('SchemaGenerator', () => {
     await orm.close(true);
   });
 
+  test('refreshDatabase [mysql]', async () => {
+    const orm = await initORMMySql('mysql', {}, true);
+
+    const dropSchema = jest.spyOn(SchemaGenerator.prototype, 'dropSchema');
+    const createSchema = jest.spyOn(SchemaGenerator.prototype, 'createSchema');
+
+    dropSchema.mockImplementation(() => Promise.resolve());
+    createSchema.mockImplementation(() => Promise.resolve());
+
+    const generator = new SchemaGenerator(orm.em);
+    await generator.refreshDatabase();
+
+    expect(dropSchema).toBeCalledTimes(1);
+    expect(createSchema).toBeCalledTimes(1);
+
+    dropSchema.mockRestore();
+    createSchema.mockRestore();
+
+    await orm.close(true);
+  });
 });

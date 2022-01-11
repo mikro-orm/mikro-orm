@@ -100,7 +100,10 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     },
     metadataProvider: ReflectMetadataProvider,
     highlighter: new NullHighlighter(),
-    seeder: { path: './database/seeder', defaultSeeder: 'DatabaseSeeder' },
+    seeder: {
+      path: './seeders',
+      defaultSeeder: 'DatabaseSeeder',
+    },
   };
 
   static readonly PLATFORMS = {

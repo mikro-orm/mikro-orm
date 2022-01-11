@@ -629,10 +629,9 @@ export interface HydratorConstructor {
 }
 
 export interface ISeedManager {
-  refreshDatabase(): Promise<void>;
   seed(...seederClasses: { new(): Seeder }[]): Promise<void>;
   seedString(...seederClasses: string[]): Promise<void>;
-  createSeeder(seederClass: string): Promise<void>;
+  createSeeder(seederClass: string): Promise<string>;
 }
 
 export interface Seeder {

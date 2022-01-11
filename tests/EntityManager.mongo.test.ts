@@ -169,6 +169,33 @@ describe('EntityManagerMongo', () => {
     expect(collections).toContain('foo-bar');
   });
 
+  test('refresh collections', async () => {
+    const driver = orm.em.getDriver();
+    const createCollection = jest.spyOn(MongoDriver.prototype, 'createCollections');
+    const dropCollections = jest.spyOn(MongoDriver.prototype, 'dropCollections');
+    const ensureIndexes = jest.spyOn(MongoDriver.prototype, 'ensureIndexes');
+
+    createCollection.mockImplementation(() => Promise.resolve());
+    dropCollections.mockImplementation(() => Promise.resolve());
+    ensureIndexes.mockImplementation(() => Promise.resolve());
+
+    await driver.refreshCollections();
+
+    expect(dropCollections).toBeCalledTimes(1);
+    expect(createCollection).toBeCalledTimes(1);
+    expect(ensureIndexes).toBeCalledTimes(1);
+
+    await driver.refreshCollections({ ensureIndexes: false });
+
+    expect(dropCollections).toBeCalledTimes(2);
+    expect(createCollection).toBeCalledTimes(2);
+    expect(ensureIndexes).toBeCalledTimes(1);
+
+    createCollection.mockRestore();
+    dropCollections.mockRestore();
+    ensureIndexes.mockRestore();
+  });
+
   test('should provide custom repository', async () => {
     const repo = orm.em.getRepository(Author);
     expect(repo).toBeInstanceOf(AuthorRepository);

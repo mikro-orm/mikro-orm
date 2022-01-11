@@ -122,6 +122,17 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     await this.rethrow(Promise.all(promises));
   }
 
+  async refreshCollections(options: RefreshCollectionsOptions = {}): Promise<void> {
+    options.ensureIndexes ??= true;
+
+    await this.dropCollections();
+    await this.createCollections();
+
+    if (options.ensureIndexes) {
+      await this.ensureIndexes();
+    }
+  }
+
   async ensureIndexes(): Promise<void> {
     await this.rethrow(this.createCollections());
     const promises: Promise<string>[] = [];
@@ -310,4 +321,9 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return ret.length > 0 ? ret : undefined;
   }
 
+}
+
+export interface RefreshCollectionsOptions {
+  /** create indexes? defaults to true */
+  ensureIndexes?: boolean;
 }

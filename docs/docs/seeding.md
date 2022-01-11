@@ -154,13 +154,13 @@ const books: Book[] = new BookFactory(orm.em).each(book => {
 }).make(5);
 ``` 
 
-## Default settings
+## Configuration
 The seeder has a few default settings that can be changed easily through the MikroORM config. Underneath you find the configuration options with their defaults.
 ```ts
 MikroORM.init({
     seeder: {
-        path: './database/seeders/', 
-        defaultSeeder: 'DatabaseSeeder'
+        path: './seeders', // path to the folder with seeders
+        defaultSeeder: 'DatabaseSeeder' // default seeder class name
     }
 });
 ```
@@ -198,7 +198,9 @@ beforeAll(async () => {
     const seeder = orm.getSeeder();
     
     // Refresh the database to start clean
-    await seeder.refreshDatabase();
+    await orm.getSchemaGenerator().refreshDatabase();
+    // Or for mongo
+    await orm.em.getDriver().refreshCollections();
     
     // Seed using a seeder defined by you
     await seeder.seed(DatabaseSeeder);

@@ -54,6 +54,11 @@ export class SchemaGenerator {
     return false;
   }
 
+  async refreshDatabase(): Promise<void> {
+    await this.dropSchema();
+    await this.createSchema();
+  }
+
   getTargetSchema(schema?: string): DatabaseSchema {
     const metadata = this.getOrderedMetadata(schema);
     return DatabaseSchema.fromMetadata(metadata, this.platform, this.config, schema);
