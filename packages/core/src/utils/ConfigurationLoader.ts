@@ -176,6 +176,7 @@ export class ConfigurationLoader {
     ret.migrations = {};
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_TABLE_NAME', 'tableName');
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_PATH', 'path');
+    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_PATH_TS', 'pathTs');
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_GLOB', 'glob');
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_TRANSACTIONAL', 'transactional', bool);
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_DISABLE_FOREIGN_KEYS', 'disableForeignKeys', bool);

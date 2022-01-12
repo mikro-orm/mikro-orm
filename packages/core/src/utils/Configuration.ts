@@ -348,6 +348,7 @@ export interface ConnectionOptions {
 export type MigrationsOptions = {
   tableName?: string;
   path?: string;
+  pathTs?: string;
   glob?: string;
   transactional?: boolean;
   disableForeignKeys?: boolean;

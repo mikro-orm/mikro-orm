@@ -458,6 +458,7 @@ MIKRO_ORM_ENTITIES = ./dist/foo/*.entity.js, ./dist/bar/*.entity.js
 MIKRO_ORM_ENTITIES_TS = ./src/foo/*.entity.ts, ./src/bar/*.entity.ts
 MIKRO_ORM_DB_NAME = test.db
 MIKRO_ORM_MIGRATIONS_PATH = ./dist/migrations
+MIKRO_ORM_MIGRATIONS_PATH_TS = ./src/migrations
 MIKRO_ORM_MIGRATIONS_PATTERN = ^[\w-]+\d+\.js$
 MIKRO_ORM_POPULATE_AFTER_FLUSH = true
 MIKRO_ORM_FORCE_ENTITY_CONSTRUCTOR = true
@@ -501,6 +502,7 @@ Full list of supported options:
 | `MIKRO_ORM_DISCOVERY_DISABLE_DYNAMIC_FILE_ACCESS` | `discovery.disableDynamicFileAccess` |
 | `MIKRO_ORM_MIGRATIONS_TABLE_NAME` | `migrations.tableName` |
 | `MIKRO_ORM_MIGRATIONS_PATH` | `migrations.path` |
+| `MIKRO_ORM_MIGRATIONS_PATH_TS` | `migrations.pathTs` |
 | `MIKRO_ORM_MIGRATIONS_PATTERN` | `migrations.pattern` |
 | `MIKRO_ORM_MIGRATIONS_TRANSACTIONAL` | `migrations.transactional` |
 | `MIKRO_ORM_MIGRATIONS_DISABLE_FOREIGN_KEYS` | `migrations.disableForeignKeys` |

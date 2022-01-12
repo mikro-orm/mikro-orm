@@ -23,10 +23,14 @@ export class Migrator implements IMigrator {
   private readonly schemaGenerator = new SchemaGenerator(this.em);
   private readonly config = this.em.config;
   private readonly options = this.config.get('migrations');
-  private readonly absolutePath = Utils.absolutePath(this.options.path!, this.config.get('baseDir'));
-  private readonly snapshotPath = join(this.absolutePath, `.snapshot-${this.config.get('dbName')}.json`);
+  private readonly absolutePath: string;
+  private readonly snapshotPath: string;
 
   constructor(private readonly em: EntityManager) {
+    /* istanbul ignore next */
+    const key = (this.config.get('tsNode', Utils.detectTsNode()) && this.options.pathTs) ? 'pathTs' : 'path';
+    this.absolutePath = Utils.absolutePath(this.options[key]!, this.config.get('baseDir'));
+    this.snapshotPath = join(this.absolutePath, `.snapshot-${this.config.get('dbName')}.json`);
     this.createUmzug();
   }
 
@@ -200,11 +204,19 @@ export class Migrator implements IMigrator {
   }
 
   protected resolve(params: MigrationParams<any>): RunnableMigration<any> {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const migration = require(params.path!);
-    const MigrationClass = Object.values(migration)[0] as Constructor<Migration>;
+    const createMigrationHandler = async (method: 'up' | 'down') => {
+      const migration = await Utils.dynamicImport(params.path!);
+      const MigrationClass = Object.values(migration)[0] as Constructor<Migration>;
+      const instance = new MigrationClass(this.driver, this.config);
 
-    return this.initialize(MigrationClass, params.name);
+      await this.runner.run(instance, method);
+    };
+
+    return {
+      name: this.storage.getMigrationName(params.name),
+      up: () => createMigrationHandler('up'),
+      down: () => createMigrationHandler('down'),
+    };
   }
 
   protected async getCurrentSchema(): Promise<DatabaseSchema> {
@@ -340,7 +352,7 @@ export class Migrator implements IMigrator {
 
   private async ensureMigrationsDirExists() {
     if (!this.options.migrationsList) {
-      await ensureDir(Utils.normalizePath(this.options.path!));
+      await ensureDir(this.absolutePath);
     }
   }
 

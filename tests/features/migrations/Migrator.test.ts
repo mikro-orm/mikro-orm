@@ -14,6 +14,10 @@ class MigrationTest1 extends Migration {
     this.addSql('select 1 + 1');
   }
 
+  async down(): Promise<void> {
+    this.addSql('select 1 - 1');
+  }
+
 }
 
 class MigrationTest2 extends Migration {
@@ -24,6 +28,15 @@ class MigrationTest2 extends Migration {
     this.addSql(knex.raw('select 1 + 1'));
     this.addSql(knex.select(knex.raw('2 + 2 as count2')));
     const res = await this.execute('select 1 + 1 as count1');
+    expect(res).toEqual([{ count1: 2 }]);
+  }
+
+  async down(): Promise<void> {
+    this.addSql('select 1 - 1');
+    const knex = this.getKnex();
+    this.addSql(knex.raw('select 1 - 1'));
+    this.addSql(knex.select(knex.raw('2 - 2 as count2')));
+    const res = await this.execute('select 1 - 1 as count1');
     expect(res).toEqual([{ count1: 2 }]);
   }
 
@@ -252,7 +265,6 @@ describe('Migrator', () => {
     expect(mock.mock.calls[5][0]).toMatch('commit');
     mock.mock.calls.length = 0;
 
-    await expect(runner.run(migration1, 'down')).rejects.toThrowError('This migration cannot be reverted');
     const executed = await migrator.getExecutedMigrations();
     expect(executed).toEqual([]);
 
@@ -403,6 +415,8 @@ describe('Migrator - with explicit migrations', () => {
     const spy1 = jest.spyOn(Migration.prototype, 'addSql');
     await migrator.up();
     expect(spy1).toBeCalledWith('select 1 + 1');
+    await migrator.down();
+    expect(spy1).toBeCalledWith('select 1 - 1');
     const calls = mock.mock.calls.map(call => {
       return call[0]
         .replace(/ \[took \d+ ms]/, '')

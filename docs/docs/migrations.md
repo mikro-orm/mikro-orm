@@ -70,12 +70,16 @@ Snapshotting can be disabled via `migrations.snapshot: false` in the ORM config.
 
 > Since v5, `umzug` 3.0 is used, and `pattern` option has been replaced with `glob`.
 
+> `migrations.path` and `migrations.pathTs` works the same way as `entities` and 
+> `entitiesTs` in entity discovery.
+
 ```typescript
 await MikroORM.init({
   // default values:
   migrations: {
     tableName: 'mikro_orm_migrations', // name of database table with log of executed transactions
     path: './migrations', // path to the folder with migrations
+    pathTs: undefined, // path to the folder with TS migrations (if used, you should put path to compiled files in `path`)
     glob: '!(*.d).{js,ts}', // how to match migration files (all .js and .ts files, but not .d.ts)
     transactional: true, // wrap each migration in a transaction
     disableForeignKeys: true, // wrap statements with `set foreign_key_checks = 0` or equivalent
@@ -100,8 +104,13 @@ import { MikroORM, Utils } from '@mikro-orm/core';
 
 await MikroORM.init({
   migrations: {
-    path: Utils.detectTsNode() ? 'src/migrations' : 'dist/migrations',
+    path: 'dist/migrations',
+    pathTs: 'src/migrations',
   },
+  // or alternatively
+  // migrations: {
+  //   path: Utils.detectTsNode() ? 'src/migrations' : 'dist/migrations',
+  // },
   // ...
 });
 ```

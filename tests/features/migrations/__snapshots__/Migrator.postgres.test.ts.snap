@@ -412,7 +412,7 @@ exports[`Migrator (postgres) generate js schema migration: migration-js-dump 1`]
 Object {
   "code": "'use strict';
 Object.defineProperty(exports, '__esModule', { value: true });
-const Migration = require('@mikro-orm/migrations').Migration;
+const { Migration } = require('@mikro-orm/migrations');
 
 class Migration20191013214813 extends Migration {
 
