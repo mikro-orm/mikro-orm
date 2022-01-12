@@ -21,7 +21,7 @@ export class ConfigurationLoader {
       path = Utils.normalizePath(path);
 
       if (await pathExists(path)) {
-        const config = await import(path);
+        const config = await Utils.dynamicImport(path);
         /* istanbul ignore next */
         let tmp = config.default ?? config;
 

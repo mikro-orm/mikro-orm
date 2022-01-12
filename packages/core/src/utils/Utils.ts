@@ -752,6 +752,20 @@ export class Utils {
     return createRequire(resolve(from))(id);
   }
 
+  /**
+   * Hack to keep dynamic imports even when compiling to CJS.
+   * We can't use it always, as it would break ts-node.
+   * @see https://github.com/microsoft/TypeScript/issues/43329#issuecomment-922544562
+   */
+  static async dynamicImport<T = any>(id: string): Promise<T> {
+    if (!process.env.MIKRO_ORM_DYNAMIC_IMPORTS) {
+      return import(id);
+    }
+
+    /* istanbul ignore next */
+    return Function(`return import('${id}')`)();
+  }
+
   static getORMVersion(): string {
     /* istanbul ignore next */
     try {

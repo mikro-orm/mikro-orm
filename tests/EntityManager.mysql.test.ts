@@ -13,7 +13,6 @@ import { Author2Subscriber } from './subscribers/Author2Subscriber';
 import { EverythingSubscriber } from './subscribers/EverythingSubscriber';
 import { FlushSubscriber } from './subscribers/FlushSubscriber';
 import { Test2Subscriber } from './subscribers/Test2Subscriber';
-import { ManualAuthor2Subscriber } from './subscribers/ManualAuthor2Subscriber';
 
 describe('EntityManagerMySql', () => {
 

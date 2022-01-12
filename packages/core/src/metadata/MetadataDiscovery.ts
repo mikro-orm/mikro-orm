@@ -959,7 +959,7 @@ export class MetadataDiscovery {
 
   private async initEnumValues(prop: EntityProperty, path: string): Promise<void> {
     path = Utils.normalizePath(this.config.get('baseDir'), path);
-    const exports = await import(path);
+    const exports = await Utils.dynamicImport(path);
     const target = exports[prop.type] || exports.default;
 
     if (target) {
@@ -994,7 +994,7 @@ export class MetadataDiscovery {
   }
 
   private async getEntityClassOrSchema(path: string, name: string) {
-    const exports = await import(path);
+    const exports = await Utils.dynamicImport(path);
     const targets = Object.values<Dictionary>(exports)
       .filter(item => item instanceof EntitySchema || (item instanceof Function && MetadataStorage.isKnownEntity(item.name)));
 
