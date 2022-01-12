@@ -5,11 +5,19 @@ import { SchemaHelper } from '@mikro-orm/knex';
 export class SqliteSchemaHelper extends SchemaHelper {
 
   getSchemaBeginning(charset: string): string {
-    return 'pragma foreign_keys = off;\n\n';
+    return `${this.disableForeignKeysSQL()}\n\n`;
   }
 
   getSchemaEnd(): string {
-    return 'pragma foreign_keys = on;\n';
+    return `${this.enableForeignKeysSQL()}\n`;
+  }
+
+  disableForeignKeysSQL(): string {
+    return 'pragma foreign_keys = off;';
+  }
+
+  enableForeignKeysSQL(): string {
+    return 'pragma foreign_keys = on;';
   }
 
   supportsSchemaConstraints(): boolean {
