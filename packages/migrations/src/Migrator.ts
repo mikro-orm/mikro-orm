@@ -30,7 +30,11 @@ export class Migrator implements IMigrator {
     /* istanbul ignore next */
     const key = (this.config.get('tsNode', Utils.detectTsNode()) && this.options.pathTs) ? 'pathTs' : 'path';
     this.absolutePath = Utils.absolutePath(this.options[key]!, this.config.get('baseDir'));
-    this.snapshotPath = join(this.absolutePath, `.snapshot-${this.config.get('dbName')}.json`);
+    // for snapshots, we always want to use the path based on `emit` option, regardless of whether we run in ts-node context
+    /* istanbul ignore next */
+    const snapshotPath = this.options.emit === 'ts' && this.options.pathTs ? this.options.pathTs : this.options.path!;
+    const absoluteSnapshotPath = Utils.absolutePath(snapshotPath, this.config.get('baseDir'));
+    this.snapshotPath = join(absoluteSnapshotPath, `.snapshot-${this.config.get('dbName')}.json`);
     this.createUmzug();
   }
 
