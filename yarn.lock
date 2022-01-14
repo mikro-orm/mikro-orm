@@ -2641,7 +2641,7 @@ colorette@2.0.16, colorette@^2.0.16:
   resolved "https://registry.yarnpkg.com/colorette/-/colorette-2.0.16.tgz#713b9af84fdb000139f04546bd4a93f62a5085da"
   integrity sha512-hUewv7oMjCp+wkBv5Rm0v87eJhq4woh5rSR+42YSQJKecCqgIqNkZ6lAlQms/BwHPJA5NKMRlpxPRv0n8HQW6g==
 
-colors@^1.1.2:
+colors@1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/colors/-/colors-1.4.0.tgz#c50491479d4c1bdaed2c9ced32cf7c7dc2360f78"
   integrity sha512-a+UqTh4kgZg/SlGvfbzDHpgRu7AAQOmmqRHJnxhRZICKFUT91brVhNNt58CMWU9PsBbv3PDCZUHbVxuDiH2mtA==
@@ -6457,12 +6457,12 @@ pretty-format@^27.0.0, pretty-format@^27.4.6:
     ansi-styles "^5.0.0"
     react-is "^17.0.1"
 
-prettyjson@1.2.1:
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/prettyjson/-/prettyjson-1.2.1.tgz#fcffab41d19cab4dfae5e575e64246619b12d289"
-  integrity sha1-/P+rQdGcq0365eV15kJGYZsS0ok=
+prettyjson@1.2.2:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/prettyjson/-/prettyjson-1.2.2.tgz#b12ebcaf8b1d501fe0de95e54159393e66a1bcfa"
+  integrity sha512-hDso231aQslRQPJjuSMIyUTN5CmW78AwEHlvigOs9E9IO+blW1AJTCJC6pQ8FArBSFsp5ZUdZsWXCUfXiD2D0w==
   dependencies:
-    colors "^1.1.2"
+    colors "1.4.0"
     minimist "^1.2.0"
 
 process-nextick-args@~2.0.0:
@@ -6881,10 +6881,10 @@ run-parallel@^1.1.9:
   dependencies:
     queue-microtask "^1.2.2"
 
-run-rs@0.7.5:
-  version "0.7.5"
-  resolved "https://registry.yarnpkg.com/run-rs/-/run-rs-0.7.5.tgz#c07f625f6508f4969b061eed22f2ec069c9866cb"
-  integrity sha512-f9xNyJL75xA2TXGnAFA8/eVlHb31Ke+YejPQmRyRg1bgGkgEv6mXuZs4fvmFu/v2Ue/RRJ31F4D4zsEOeG+VVg==
+run-rs@0.7.6:
+  version "0.7.6"
+  resolved "https://registry.yarnpkg.com/run-rs/-/run-rs-0.7.6.tgz#fa284ba72e0a752a2333095d229d8329f4d16917"
+  integrity sha512-k//mO+AI4EVrDoVWDZiYBAu298mJosGUoi0gXII4yHsDWmdAF6fT1m/XDwV8DIA2LebSmgYZauW2DWx43W/trQ==
   dependencies:
     chalk "2.4.1"
     co "4.6.0"
@@ -6892,7 +6892,7 @@ run-rs@0.7.5:
     moment "2.22.2"
     mongodb "3.6.x"
     mongodb-topology-manager "2.1.0"
-    prettyjson "1.2.1"
+    prettyjson "1.2.2"
 
 rxjs@^6.6.0:
   version "6.6.7"

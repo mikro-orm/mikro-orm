@@ -147,7 +147,7 @@
     "lint-staged": "12.1.7",
     "mongodb": "4.3.0",
     "rimraf": "3.0.2",
-    "run-rs": "0.7.5",
+    "run-rs": "0.7.6",
     "sql-formatter": "4.0.2",
     "ts-jest": "27.1.2",
     "ts-node": "10.4.0",
