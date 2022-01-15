@@ -186,6 +186,11 @@ export class ConfigurationLoader {
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_EMIT', 'emit');
     cleanup(ret, 'migrations');
 
+    ret.schemaGenerator = {};
+    read(ret.schemaGenerator, 'MIKRO_ORM_SCHEMA_GENERATOR_DISABLE_FOREIGN_KEYS', 'disableForeignKeys', bool);
+    read(ret.schemaGenerator, 'MIKRO_ORM_SCHEMA_GENERATOR_CREATE_FOREIGN_KEY_CONSTRAINTS', 'createForeignKeyConstraints', bool);
+    cleanup(ret, 'schemaGenerator');
+
     ret.seeder = {};
     read(ret.seeder, 'MIKRO_ORM_SEEDER_PATH', 'path');
     read(ret.seeder, 'MIKRO_ORM_SEEDER_DEFAULT_SEEDER', 'defaultSeeder');

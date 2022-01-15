@@ -88,6 +88,10 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       emit: 'ts',
       fileName: (timestamp: string) => `Migration${timestamp}`,
     },
+    schemaGenerator: {
+      disableForeignKeys: true,
+      createForeignKeyConstraints: true,
+    },
     cache: {
       pretty: false,
       adapter: FileCacheAdapter,
@@ -431,6 +435,10 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   tsNode?: boolean;
   baseDir: string;
   migrations: MigrationsOptions;
+  schemaGenerator: {
+    disableForeignKeys?: boolean;
+    createForeignKeyConstraints?: boolean;
+  };
   cache: {
     enabled?: boolean;
     pretty?: boolean;

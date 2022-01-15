@@ -262,13 +262,7 @@ set session_replication_role = 'origin';
 "
 `;
 
-exports[`SchemaGenerator [postgres] generate schema from metadata [postgres]: postgres-update-schema-dump 1`] = `
-"set names 'utf8';
-set session_replication_role = 'replica';
-
-set session_replication_role = 'origin';
-"
-`;
+exports[`SchemaGenerator [postgres] generate schema from metadata [postgres]: postgres-update-schema-dump 1`] = `""`;
 
 exports[`SchemaGenerator [postgres] update empty schema from metadata [postgres]: postgres-update-empty-schema-dump 1`] = `
 "set names 'utf8';

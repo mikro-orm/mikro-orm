@@ -46,6 +46,23 @@ npx mikro-orm schema:fresh --run --seed=UsersSeeder  # seed the database with th
 ```
 > You can specify the default database seeder in the orm config with the key `config.seeder.defaultSeeder`
 
+## Configuration
+
+We can configure the schema generator globally via the ORM config:
+
+```ts
+const orm = await MikroORM.init({
+  // default values:
+  schemaGenerator: {
+    disableForeignKeys: true, // wrap statements with `set foreign_key_checks = 0` or equivalent
+    createForeignKeyConstraints: true, // whether to generate FK constraints
+  },
+});
+```
+
+> Note that if we disable FK constraints and current schema is using them, the 
+> schema diffing will try to remove those that already exist.
+
 ## Using SchemaGenerator programmatically
 
 Or you can create simple script where you initialize MikroORM like this:

@@ -64,6 +64,7 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
   }
 
   private addColumn(this: any, col: Dictionary, that: PostgreSqlConnection): void {
+    const options = that.config.get('schemaGenerator');
     const quotedTableName = this.tableName();
     const type = col.getColumnType();
     const colName = this.client.wrapIdentifier(col.getColumnName(), col.columnBuilder.queryContext());
@@ -73,7 +74,10 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
 
     if (col.type === 'enu') {
       this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} type text using (${colName}::text)`, bindings: [] });
-      this.pushQuery({ sql: `alter table ${quotedTableName} add constraint "${constraintName}" ${type.replace(/^text /, '')}`, bindings: [] });
+      /* istanbul ignore else */
+      if (options.createForeignKeyConstraints) {
+        this.pushQuery({ sql: `alter table ${quotedTableName} add constraint "${constraintName}" ${type.replace(/^text /, '')}`, bindings: [] });
+      }
     } else if (type === 'uuid') {
       // we need to drop the default as it would be invalid
       this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} drop default`, bindings: [] });

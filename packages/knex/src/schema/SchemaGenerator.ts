@@ -16,6 +16,7 @@ export class SchemaGenerator {
   private readonly helper = this.platform.getSchemaHelper()!;
   private readonly connection = this.driver.getConnection();
   private readonly knex = this.connection.getKnex();
+  private readonly options = this.config.get('schemaGenerator');
 
   constructor(private readonly em: SqlEntityManager) { }
 
@@ -65,7 +66,7 @@ export class SchemaGenerator {
   }
 
   async getCreateSchemaSQL(options: { wrap?: boolean; schema?: string } = {}): Promise<string> {
-    const wrap = options.wrap ?? true;
+    const wrap = options.wrap ?? this.options.disableForeignKeys;
     const toSchema = this.getTargetSchema(options.schema);
     let ret = '';
 
@@ -101,7 +102,7 @@ export class SchemaGenerator {
   }
 
   async getDropSchemaSQL(options: { wrap?: boolean; dropMigrationsTable?: boolean; schema?: string } = {}): Promise<string> {
-    const wrap = options.wrap ?? true;
+    const wrap = options.wrap ?? this.options.disableForeignKeys;
     const metadata = this.getOrderedMetadata(options.schema).reverse();
     let ret = '';
 
@@ -147,7 +148,7 @@ export class SchemaGenerator {
   }
 
   private async prepareSchemaForComparison(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema; schema?: string }) {
-    options.wrap ??= true;
+    options.wrap ??= this.options.disableForeignKeys;
     options.safe ??= false;
     options.dropTables ??= true;
     const toSchema = this.getTargetSchema(options.schema);
@@ -232,6 +233,10 @@ export class SchemaGenerator {
   }
 
   private createForeignKey(table: Knex.CreateTableBuilder, foreignKey: ForeignKey, schema?: string) {
+    if (!this.options.createForeignKeyConstraints) {
+      return;
+    }
+
     const builder = table
       .foreign(foreignKey.columnNames, foreignKey.constraintName)
       .references(foreignKey.referencedColumnNames)
@@ -295,7 +300,7 @@ export class SchemaGenerator {
         this.configureColumn(column, col);
         const foreignKey = Object.values(diff.addedForeignKeys).find(fk => fk.columnNames.length === 1 && fk.columnNames[0] === column.name);
 
-        if (foreignKey) {
+        if (foreignKey && this.options.createForeignKeyConstraints) {
           delete diff.addedForeignKeys[foreignKey.constraintName];
           col.references(foreignKey.referencedColumnNames[0])
             .inTable(this.getReferencedTableName(foreignKey.referencedTableName))
@@ -395,9 +400,9 @@ export class SchemaGenerator {
   }
 
   private wrapSchema(sql: string, options: { wrap?: boolean } = {}): string {
-    options.wrap ??= true;
+    options.wrap ??= this.options.disableForeignKeys;
 
-    if (!options.wrap) {
+    if (!options.wrap || sql.trim() === '') {
       return sql;
     }
 

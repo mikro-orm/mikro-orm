@@ -127,9 +127,4 @@ pragma foreign_keys = on;
 "
 `;
 
-exports[`SchemaGenerator [sqlite2] generate schema from metadata [sqlite2]: sqlite2-update-schema-dump 1`] = `
-"pragma foreign_keys = off;
-
-pragma foreign_keys = on;
-"
-`;
+exports[`SchemaGenerator [sqlite2] generate schema from metadata [sqlite2]: sqlite2-update-schema-dump 1`] = `""`;

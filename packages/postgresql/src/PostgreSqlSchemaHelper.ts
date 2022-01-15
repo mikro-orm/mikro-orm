@@ -33,7 +33,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       + `and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name`;
   }
 
-  async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName = 'public'): Promise<Column[]> {
+  async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName: string): Promise<Column[]> {
     const sql = `select column_name,
       column_default,
       is_nullable,
@@ -82,7 +82,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     })));
   }
 
-  getForeignKeysSQL(tableName: string, schemaName = 'public'): string {
+  getForeignKeysSQL(tableName: string, schemaName: string): string {
     return `select kcu.table_name as table_name, rel_kcu.table_name as referenced_table_name,
       rel_kcu.constraint_schema as referenced_schema_name,
       kcu.column_name as column_name,
@@ -102,7 +102,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       order by kcu.table_schema, kcu.table_name, kcu.ordinal_position, kcu.constraint_name`;
   }
 
-  async getEnumDefinitions(connection: AbstractSqlConnection, tableName: string, schemaName = 'public'): Promise<Dictionary> {
+  async getEnumDefinitions(connection: AbstractSqlConnection, tableName: string, schemaName: string): Promise<Dictionary> {
     const sql = `select conrelid::regclass as table_from, conname, pg_get_constraintdef(c.oid) as enum_def
       from pg_constraint c join pg_namespace n on n.oid = c.connamespace
       where contype = 'c' and conrelid = '"${schemaName}"."${tableName}"'::regclass order by contype`;
@@ -172,6 +172,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const parts = tableDiff.name.split('.');
     const tableName = parts.pop()!;
     const schemaName = parts.pop();
+    /* istanbul ignore next */
     const name = (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName;
 
     return `alter table "${name}" alter column "${uuid.column.name}" type text using ("${uuid.column.name}"::text)`;
@@ -244,7 +245,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return `alter index ${oldIndexName} rename to ${keyName}`;
   }
 
-  private getIndexesSQL(tableName: string, schemaName = 'public'): string {
+  private getIndexesSQL(tableName: string, schemaName: string): string {
     return `select relname as constraint_name, attname as column_name, idx.indisunique as unique, idx.indisprimary as primary
       from pg_index idx
       left join pg_class AS i on i.oid = idx.indexrelid

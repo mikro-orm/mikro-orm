@@ -459,7 +459,6 @@ MIKRO_ORM_ENTITIES_TS = ./src/foo/*.entity.ts, ./src/bar/*.entity.ts
 MIKRO_ORM_DB_NAME = test.db
 MIKRO_ORM_MIGRATIONS_PATH = ./dist/migrations
 MIKRO_ORM_MIGRATIONS_PATH_TS = ./src/migrations
-MIKRO_ORM_MIGRATIONS_PATTERN = ^[\w-]+\d+\.js$
 MIKRO_ORM_POPULATE_AFTER_FLUSH = true
 MIKRO_ORM_FORCE_ENTITY_CONSTRUCTOR = true
 MIKRO_ORM_FORCE_UNDEFINED = true
@@ -503,12 +502,14 @@ Full list of supported options:
 | `MIKRO_ORM_MIGRATIONS_TABLE_NAME` | `migrations.tableName` |
 | `MIKRO_ORM_MIGRATIONS_PATH` | `migrations.path` |
 | `MIKRO_ORM_MIGRATIONS_PATH_TS` | `migrations.pathTs` |
-| `MIKRO_ORM_MIGRATIONS_PATTERN` | `migrations.pattern` |
+| `MIKRO_ORM_MIGRATIONS_GLOB` | `migrations.glob` |
 | `MIKRO_ORM_MIGRATIONS_TRANSACTIONAL` | `migrations.transactional` |
 | `MIKRO_ORM_MIGRATIONS_DISABLE_FOREIGN_KEYS` | `migrations.disableForeignKeys` |
 | `MIKRO_ORM_MIGRATIONS_ALL_OR_NOTHING` | `migrations.allOrNothing` |
 | `MIKRO_ORM_MIGRATIONS_DROP_TABLES` | `migrations.dropTables` |
 | `MIKRO_ORM_MIGRATIONS_SAFE` | `migrations.safe` |
 | `MIKRO_ORM_MIGRATIONS_EMIT` | `migrations.emit` |
+| `MIKRO_ORM_SCHEMA_GENERATOR_DISABLE_FOREIGN_KEYS` | `migrations.disableForeignKeys` |
+| `MIKRO_ORM_SCHEMA_GENERATOR_CREATE_FOREIGN_KEY_CONSTRAINTS` | `migrations.createForeignKeyConstraints` |
 | `MIKRO_ORM_SEEDER_PATH` | `seeder.path` |
 | `MIKRO_ORM_SEEDER_DEFAULT_SEEDER` | `seeder.defaultSeeder` |
