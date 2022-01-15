@@ -526,7 +526,8 @@ export class MetadataDiscovery {
     ret.targetMeta = meta;
     ret.joinColumns = [];
     ret.inverseJoinColumns = [];
-    ret.referencedTableName = meta.collection;
+    const schema = meta.schema ?? this.platform.getDefaultSchemaName();
+    ret.referencedTableName = schema ? schema + '.' + meta.tableName : meta.tableName;
 
     if (owner) {
       ret.owner = true;
@@ -546,7 +547,6 @@ export class MetadataDiscovery {
       ret.fieldNames = ret.joinColumns = prop.inverseJoinColumns;
       ret.referencedColumnNames = [];
       ret.inverseJoinColumns = [];
-      ret.referencedTableName = meta.collection;
       meta.primaryKeys.forEach(primaryKey => {
         const prop2 = meta.properties[primaryKey];
         ret.referencedColumnNames.push(...prop2.fieldNames);

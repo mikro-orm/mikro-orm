@@ -61,7 +61,7 @@ export class SchemaGenerator {
 
   getTargetSchema(schema?: string): DatabaseSchema {
     const metadata = this.getOrderedMetadata(schema);
-    return DatabaseSchema.fromMetadata(metadata, this.platform, this.config, schema);
+    return DatabaseSchema.fromMetadata(metadata, this.platform, this.config, schema ?? this.platform.getDefaultSchemaName());
   }
 
   async getCreateSchemaSQL(options: { wrap?: boolean; schema?: string } = {}): Promise<string> {
@@ -70,6 +70,10 @@ export class SchemaGenerator {
     let ret = '';
 
     for (const namespace of toSchema.getNamespaces()) {
+      if (namespace === this.platform.getDefaultSchemaName()) {
+        continue;
+      }
+
       ret += await this.dump(this.knex.schema.createSchemaIfNotExists(namespace));
     }
 
@@ -78,7 +82,7 @@ export class SchemaGenerator {
     }
 
     for (const tableDef of toSchema.getTables()) {
-      ret += await this.dump(this.knex.schema.withSchema(tableDef.schema!).alterTable(tableDef.name, table => this.createForeignKeys(table, tableDef, options.schema)));
+      ret += await this.dump(this.createSchemaBuilder(tableDef.schema).alterTable(tableDef.name, table => this.createForeignKeys(table, tableDef, options.schema)));
     }
 
     return this.wrapSchema(ret, { wrap });
@@ -160,13 +164,17 @@ export class SchemaGenerator {
 
     if (this.platform.supportsSchemas()) {
       for (const newNamespace of schemaDiff.newNamespaces) {
-        ret += await this.dump(this.knex.schema.createSchema(newNamespace));
+        // schema might already exist, e.g. explicit usage of `public` in postgres
+        ret += await this.dump(this.knex.schema.createSchemaIfNotExists(newNamespace));
       }
     }
 
     if (!options.safe) {
       for (const orphanedForeignKey of schemaDiff.orphanedForeignKeys) {
-        ret += await this.dump(this.knex.schema.alterTable(orphanedForeignKey.localTableName, table => table.dropForeign(orphanedForeignKey.columnNames, orphanedForeignKey.constraintName)));
+        const [schemaName, tableName] = this.splitTableName(orphanedForeignKey.localTableName);
+        ret += await this.dump(this.createSchemaBuilder(schemaName).alterTable(tableName, table => {
+          return table.dropForeign(orphanedForeignKey.columnNames, orphanedForeignKey.constraintName);
+        }));
       }
     }
 
@@ -175,7 +183,9 @@ export class SchemaGenerator {
     }
 
     for (const newTable of Object.values(schemaDiff.newTables)) {
-      ret += await this.dump(this.knex.schema.withSchema(newTable.schema!).alterTable(newTable.name, table => this.createForeignKeys(table, newTable, options.schema)));
+      ret += await this.dump(this.createSchemaBuilder(newTable.schema).alterTable(newTable.name, table => {
+        this.createForeignKeys(table, newTable, options.schema);
+      }));
     }
 
     if (options.dropTables && !options.safe) {
@@ -206,14 +216,19 @@ export class SchemaGenerator {
   }
 
   private getReferencedTableName(referencedTableName: string, schema?: string) {
-    schema ??= this.config.get('schema');
+    const [schemaName, tableName] = this.splitTableName(referencedTableName);
+    schema = schemaName ?? schema ?? this.config.get('schema');
 
     /* istanbul ignore next */
-    if (schema && referencedTableName.startsWith('*.')) {
+    if (schema && schemaName ==='*') {
       return `${schema}.${referencedTableName.replace(/^\*\./, '')}`;
     }
 
-    return referencedTableName;
+    if (schemaName === this.platform.getDefaultSchemaName()) {
+      return tableName;
+    }
+
+    return `${schemaName}.${tableName}`;
   }
 
   private createForeignKey(table: Knex.CreateTableBuilder, foreignKey: ForeignKey, schema?: string) {
@@ -239,8 +254,9 @@ export class SchemaGenerator {
     const ret: Knex.SchemaBuilder[] = [];
     const push = (sql: string) => sql ? ret.push(this.knex.schema.raw(sql)) : undefined;
     push(this.helper.getPreAlterTable(diff, safe));
+    const [schemaName, tableName] = this.splitTableName(diff.name);
 
-    ret.push(this.knex.schema.alterTable(diff.name, table => {
+    ret.push(this.createSchemaBuilder(schemaName).alterTable(tableName, table => {
       for (const foreignKey of Object.values(diff.removedForeignKeys)) {
         table.dropForeign(foreignKey.columnNames, foreignKey.constraintName);
       }
@@ -253,10 +269,19 @@ export class SchemaGenerator {
     return ret;
   }
 
+  private splitTableName(name: string): [string | undefined, string] {
+    const parts = name.split('.');
+    const tableName = parts.pop()!;
+    const schemaName = parts.pop();
+
+    return [schemaName, tableName];
+  }
+
   private alterTable(diff: TableDifference, safe: boolean): Knex.SchemaBuilder[] {
     const ret: Knex.SchemaBuilder[] = [];
+    const [schemaName, tableName] = this.splitTableName(diff.name);
 
-    ret.push(this.knex.schema.alterTable(diff.name, table => {
+    ret.push(this.createSchemaBuilder(schemaName).alterTable(tableName, table => {
       for (const index of Object.values(diff.removedIndexes)) {
         this.dropIndex(table, index);
       }
@@ -297,7 +322,7 @@ export class SchemaGenerator {
       }
 
       for (const { column } of Object.values(diff.changedColumns).filter(diff => diff.changedProperties.has('autoincrement'))) {
-        this.helper.pushTableQuery(table, this.helper.getAlterColumnAutoincrement(diff.name, column));
+        this.helper.pushTableQuery(table, this.helper.getAlterColumnAutoincrement(tableName, column));
       }
 
       for (const { column, changedProperties } of Object.values(diff.changedColumns).filter(diff => diff.changedProperties.has('comment'))) {
@@ -305,11 +330,11 @@ export class SchemaGenerator {
           continue; // will be handled via knex
         }
 
-        this.helper.pushTableQuery(table, this.helper.getChangeColumnCommentSQL(diff.name, column));
+        this.helper.pushTableQuery(table, this.helper.getChangeColumnCommentSQL(tableName, column));
       }
 
       for (const [oldColumnName, column] of Object.entries(diff.renamedColumns)) {
-        this.helper.pushTableQuery(table, this.helper.getRenameColumnSQL(diff.name, oldColumnName, column));
+        this.helper.pushTableQuery(table, this.helper.getRenameColumnSQL(tableName, oldColumnName, column));
       }
 
       for (const foreignKey of Object.values(diff.addedForeignKeys)) {
@@ -383,8 +408,18 @@ export class SchemaGenerator {
     return ret;
   }
 
+  private createSchemaBuilder(schema?: string): Knex.SchemaBuilder {
+    const builder = this.knex.schema;
+
+    if (schema && schema !== this.platform.getDefaultSchemaName()) {
+      builder.withSchema(schema);
+    }
+
+    return builder;
+  }
+
   private createTable(tableDef: DatabaseTable): Knex.SchemaBuilder {
-    return this.knex.schema.withSchema(tableDef.schema!).createTable(tableDef.name, table => {
+    return this.createSchemaBuilder(tableDef.schema).createTable(tableDef.name, table => {
       tableDef.getColumns().forEach(column => {
         const col = this.helper.createTableColumn(table, column, tableDef);
         this.configureColumn(column, col);
@@ -418,7 +453,7 @@ export class SchemaGenerator {
       const keyName = tableName.includes('.') ? tableName.split('.').pop()! + '_pkey' : undefined;
       table.primary(index.columnNames, keyName);
     } else if (index.unique) {
-      table.unique(index.columnNames, index.keyName);
+      table.unique(index.columnNames, { indexName: index.keyName });
     } else if (index.expression) {
       this.helper.pushTableQuery(table, index.expression);
     } else {
@@ -437,11 +472,7 @@ export class SchemaGenerator {
   }
 
   private dropTable(name: string, schema?: string): Knex.SchemaBuilder {
-    let builder = this.knex.schema.dropTableIfExists(name);
-
-    if (schema) {
-      builder.withSchema(schema);
-    }
+    let builder = this.createSchemaBuilder(schema).dropTableIfExists(name);
 
     if (this.platform.usesCascadeStatement()) {
       builder = this.knex.schema.raw(builder.toQuery() + ' cascade');

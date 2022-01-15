@@ -173,12 +173,13 @@ export class QueryBuilderHelper {
   }
 
   joinPivotTable(field: string, prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary = {}): JoinOptions {
-    const prop2 = this.metadata.find(field)!.properties[prop.mappedBy || prop.inversedBy];
+    const pivotMeta = this.metadata.find(field)!;
+    const prop2 = pivotMeta.properties[prop.mappedBy || prop.inversedBy];
 
     return {
       prop, type, cond, ownerAlias, alias,
-      table: this.metadata.find(field)!.collection,
-      schema: prop2.targetMeta!.schema,
+      table: pivotMeta.collection,
+      schema: pivotMeta.schema,
       joinColumns: prop.joinColumns,
       inverseJoinColumns: prop2.joinColumns,
       primaryKeys: prop.referencedColumnNames,

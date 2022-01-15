@@ -16,7 +16,11 @@ export class DatabaseTable {
 
   constructor(private readonly platform: AbstractSqlPlatform,
               readonly name: string,
-              readonly schema?: string) { }
+              readonly schema?: string) {
+    Object.defineProperties(this, {
+      platform: { enumerable: false, writable: true },
+    });
+  }
 
   getColumns(): Column[] {
     return Object.values(this.columns);
@@ -92,7 +96,12 @@ export class DatabaseTable {
 
     if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference)) {
       const constraintName = this.getIndexName(true, prop.fieldNames, 'foreign');
-      const schema = prop.targetMeta!.schema === '*' ? this.schema : prop.targetMeta!.schema;
+      let schema = prop.targetMeta!.schema === '*' ? this.schema : prop.targetMeta!.schema ?? this.schema;
+
+      if (prop.referencedTableName.includes('.')) {
+        schema = undefined;
+      }
+
       this.foreignKeys[constraintName] = {
         constraintName,
         columnNames: prop.fieldNames,
@@ -183,8 +192,8 @@ export class DatabaseTable {
   /**
    * The shortest name is stripped of the default namespace. All other namespaced elements are returned as full-qualified names.
    */
-  getShortestName(defaultNamespaceName?: string): string {
-    if (!this.schema || this.schema === defaultNamespaceName || this.name.startsWith(this.schema + '.')) {
+  getShortestName(): string {
+    if (!this.schema || this.name.startsWith(this.schema + '.')) {
       return this.name;
     }
 

@@ -298,6 +298,14 @@ export class EntityMetadata<T extends AnyEntity<T> = any> {
     return this.primaryKeys.map(pk => this.properties[pk]);
   }
 
+  get tableName(): string {
+    return this.collection;
+  }
+
+  set tableName(name: string) {
+    this.collection = name;
+  }
+
   sync(initIndexes = false) {
     this.root ??= this;
     const props = Object.values(this.properties).sort((a, b) => this.propertyOrder.get(a.name)! - this.propertyOrder.get(b.name)!);

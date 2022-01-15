@@ -62,7 +62,7 @@ export class SourceFile {
       options.tableName = quote(this.meta.collection);
     }
 
-    if (this.meta.schema) {
+    if (this.meta.schema && this.meta.schema !== this.platform.getDefaultSchemaName()) {
       options.schema = quote(this.meta.schema);
     }
 

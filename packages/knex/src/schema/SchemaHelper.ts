@@ -53,7 +53,11 @@ export abstract class SchemaHelper {
   }
 
   getRenameColumnSQL(tableName: string, oldColumnName: string, to: Column): string {
-    return `alter table ${this.platform.quoteIdentifier(tableName)} rename column ${this.platform.quoteIdentifier(oldColumnName)} to ${this.platform.quoteIdentifier(to.name)}`;
+    tableName = this.platform.quoteIdentifier(tableName);
+    oldColumnName = this.platform.quoteIdentifier(oldColumnName);
+    const columnName = this.platform.quoteIdentifier(to.name);
+
+    return `alter table ${tableName} rename column ${oldColumnName} to ${columnName}`;
   }
 
   getCreateIndexSQL(tableName: string, index: Index): string {

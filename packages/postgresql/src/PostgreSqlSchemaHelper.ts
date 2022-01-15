@@ -24,8 +24,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return `${this.enableForeignKeysSQL()}\n`;
   }
 
-  getListTablesSQL(schemaName = 'public'): string {
-    return `select table_name, nullif(table_schema, '${schemaName}') as schema_name, `
+  getListTablesSQL(): string {
+    return `select table_name, table_schema as schema_name, `
       + `(select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c
           where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment `
       + `from information_schema.tables `
@@ -84,7 +84,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
   getForeignKeysSQL(tableName: string, schemaName = 'public'): string {
     return `select kcu.table_name as table_name, rel_kcu.table_name as referenced_table_name,
-      case when rel_kcu.constraint_schema = 'public' then null else rel_kcu.constraint_schema end as referenced_schema_name,
+      rel_kcu.constraint_schema as referenced_schema_name,
       kcu.column_name as column_name,
       rel_kcu.column_name as referenced_column_name, kcu.constraint_name, rco.update_rule, rco.delete_rule
       from information_schema.table_constraints tco
@@ -169,7 +169,12 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       return '';
     }
 
-    return `alter table "${tableDiff.name}" alter column "${uuid.column.name}" type text using ("${uuid.column.name}"::text)`;
+    const parts = tableDiff.name.split('.');
+    const tableName = parts.pop()!;
+    const schemaName = parts.pop();
+    const name = (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName;
+
+    return `alter table "${name}" alter column "${uuid.column.name}" type text using ("${uuid.column.name}"::text)`;
   }
 
   getAlterColumnAutoincrement(tableName: string, column: Column): string {

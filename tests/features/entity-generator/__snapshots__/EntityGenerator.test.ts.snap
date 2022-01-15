@@ -805,6 +805,24 @@ export class Label2 {
 
 }
 ",
+  "import { Entity, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+import { Label2 } from './Label2';
+import { Test2 } from './Test2';
+
+@Entity({ tableName: 'label2_tests', schema: 'label_schema' })
+export class Label2Tests {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne({ entity: () => Label2, onUpdateIntegrity: 'cascade', onDelete: 'cascade' })
+  label2!: Label2;
+
+  @ManyToOne({ entity: () => Test2, onUpdateIntegrity: 'cascade', onDelete: 'cascade' })
+  test2!: Test2;
+
+}
+",
   "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()

@@ -26,7 +26,7 @@ export class SchemaComparator {
     const foreignKeysToTable: Dictionary<ForeignKey[]> = {};
 
     for (const namespace of toSchema.getNamespaces()) {
-      if (fromSchema.hasNamespace(namespace)) {
+      if (fromSchema.hasNamespace(namespace) || namespace === this.platform.getDefaultSchemaName()) {
         continue;
       }
 
@@ -34,7 +34,7 @@ export class SchemaComparator {
     }
 
     for (const namespace of fromSchema.getNamespaces()) {
-      if (toSchema.hasNamespace(namespace)) {
+      if (toSchema.hasNamespace(namespace) || namespace === this.platform.getDefaultSchemaName()) {
         continue;
       }
 
@@ -42,7 +42,7 @@ export class SchemaComparator {
     }
 
     for (const table of toSchema.getTables()) {
-      const tableName = table.getShortestName(toSchema.name);
+      const tableName = table.getShortestName();
 
       if (!fromSchema.hasTable(tableName)) {
         diff.newTables[tableName] = toSchema.getTable(tableName)!;
@@ -57,7 +57,7 @@ export class SchemaComparator {
 
     // Check if there are tables removed
     for (let table of fromSchema.getTables()) {
-      const tableName = table.getShortestName(fromSchema.name);
+      const tableName = table.getShortestName();
       table = fromSchema.getTable(tableName)!;
 
       if (!toSchema.hasTable(tableName)) {
@@ -75,14 +75,16 @@ export class SchemaComparator {
     }
 
     for (const table of Object.values(diff.removedTables)) {
-      if (!foreignKeysToTable[table.name]) {
+      const tableName = (table.schema ? table.schema + '.' : '') + table.name;
+
+      if (!foreignKeysToTable[tableName]) {
         continue;
       }
 
-      diff.orphanedForeignKeys.push(...foreignKeysToTable[table.name]!);
+      diff.orphanedForeignKeys.push(...foreignKeysToTable[tableName]);
 
       // Deleting duplicated foreign keys present both on the orphanedForeignKey and the removedForeignKeys from changedTables.
-      for (const foreignKey of foreignKeysToTable[table.name]) {
+      for (const foreignKey of foreignKeysToTable[tableName]) {
         const localTableName = foreignKey.localTableName;
 
         if (!diff.changedTables[localTableName]) {
@@ -91,7 +93,7 @@ export class SchemaComparator {
 
         for (const [key, fk] of Object.entries(diff.changedTables[localTableName].removedForeignKeys)) {
           // We check if the key is from the removed table, if not we skip.
-          if (table.name !== fk.referencedTableName) {
+          if (tableName !== fk.referencedTableName) {
             continue;
           }
 

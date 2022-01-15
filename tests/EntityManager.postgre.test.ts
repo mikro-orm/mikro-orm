@@ -129,9 +129,9 @@ describe('EntityManagerPostgre', () => {
     ]);
 
     expect(mock.mock.calls[0][0]).toMatch('insert into "publisher2" ("name", "type", "type2") values ($1, $2, $3), ($4, $5, $6), ($7, $8, $9) returning "id"');
-    expect(mock.mock.calls[1][0]).toMatch('insert into "public"."publisher2_tests" ("publisher2_id", "test2_id") values ($1, $2), ($3, $4), ($5, $6)');
-    expect(mock.mock.calls[2][0]).toMatch('insert into "public"."publisher2_tests" ("publisher2_id", "test2_id") values ($1, $2), ($3, $4)');
-    expect(mock.mock.calls[3][0]).toMatch('insert into "public"."publisher2_tests" ("publisher2_id", "test2_id") values ($1, $2), ($3, $4), ($5, $6)');
+    expect(mock.mock.calls[1][0]).toMatch('insert into "publisher2_tests" ("publisher2_id", "test2_id") values ($1, $2), ($3, $4), ($5, $6)');
+    expect(mock.mock.calls[2][0]).toMatch('insert into "publisher2_tests" ("publisher2_id", "test2_id") values ($1, $2), ($3, $4)');
+    expect(mock.mock.calls[3][0]).toMatch('insert into "publisher2_tests" ("publisher2_id", "test2_id") values ($1, $2), ($3, $4), ($5, $6)');
 
     // postgres returns all the ids based on returning clause
     expect(res).toMatchObject({ insertId: 1, affectedRows: 3, row: { id: 1 }, rows: [ { id: 1 }, { id: 2 }, { id: 3 } ] });
@@ -1109,6 +1109,30 @@ describe('EntityManagerPostgre', () => {
     expect(publishers).toBeInstanceOf(Array);
     expect(publishers.length).toBe(2);
     expect(publishers[0]).toBeInstanceOf(Publisher2);
+    expect(publishers[0].tests).toBeInstanceOf(Collection);
+    expect(publishers[0].tests.isInitialized()).toBe(true);
+    expect(publishers[0].tests.isDirty()).toBe(false);
+    expect(publishers[0].tests.count()).toBe(0);
+    await publishers[0].tests.init(); // empty many to many on owning side should not make db calls
+    expect(wrap(publishers[1].tests.getItems()[0]).isInitialized()).toBe(true);
+  });
+
+  test('populating many to many relation with explicit schema name', async () => {
+    const p1 = new Label2('foo');
+    expect(p1.tests).toBeInstanceOf(Collection);
+    expect(p1.tests.isInitialized()).toBe(true);
+    expect(p1.tests.isDirty()).toBe(false);
+    expect(p1.tests.count()).toBe(0);
+    const p2 = new Label2('bar');
+    p2.tests.add(new Test2(), new Test2());
+    await orm.em.persistAndFlush([p1, p2]);
+    const repo = orm.em.getRepository(Label2);
+
+    orm.em.clear();
+    const publishers = await repo.findAll({ populate: ['tests'] });
+    expect(publishers).toBeInstanceOf(Array);
+    expect(publishers.length).toBe(2);
+    expect(publishers[0]).toBeInstanceOf(Label2);
     expect(publishers[0].tests).toBeInstanceOf(Collection);
     expect(publishers[0].tests.isInitialized()).toBe(true);
     expect(publishers[0].tests.isDirty()).toBe(false);

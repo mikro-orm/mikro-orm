@@ -139,14 +139,17 @@ export class Migrator implements IMigrator {
 
     Object.values(this.em.getMetadata().getAll())
       .filter(meta => meta.collection)
-      .forEach(meta => expected.add(meta.collection));
+      .forEach(meta => {
+        const schema = meta.schema ?? this.em.getPlatform().getDefaultSchemaName();
+        expected.add(schema ? `${schema}.${meta.collection}` : meta.collection);
+      });
 
     schema.getTables().forEach(table => {
-      /* istanbul ignore next */
-      const tableName = table.schema ? `${table.schema}.${table.name}` : table.name;
+      const schema = table.schema ?? this.em.getPlatform().getDefaultSchemaName();
+      const tableName = schema ? `${schema}.${table.name}` : table.name;
 
       if (expected.has(tableName)) {
-        exists.add(tableName);
+        exists.add(table.schema ? `${table.schema}.${table.name}` : table.name);
       }
     });
 

@@ -95,7 +95,7 @@ export class Book3 {
 
 }
 
-describe('dropping tables with  FKs in postgres', () => {
+describe('dropping tables with FKs in postgres', () => {
 
   test('schema generator removes stale FKs on target table dropping 1', async () => {
     const orm = await MikroORM.init({

@@ -1,9 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`multiple connected schemas in postgres schema generator allows creating FKs across different schemas 1`] = `
-"create schema \\"n1\\";
+"create schema if not exists \\"n1\\";
 
-create schema \\"n2\\";
+create schema if not exists \\"n2\\";
 
 create table \\"n1\\".\\"author\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"mentor_id\\" int null);
 alter table \\"n1\\".\\"author\\" add constraint \\"author_mentor_id_unique\\" unique (\\"mentor_id\\");
@@ -22,10 +22,10 @@ exports[`multiple connected schemas in postgres schema generator allows creating
 "alter table \\"n2\\".\\"book\\" drop constraint \\"book_author_id_foreign\\";
 alter table \\"n2\\".\\"book\\" drop constraint \\"book_based_on_id_foreign\\";
 
-alter table \\"n2\\".\\"book\\" drop constraint if exists \\"n2.book_author_id_check\\";
+alter table \\"n2\\".\\"book\\" drop constraint if exists \\"book_author_id_check\\";
 alter table \\"n2\\".\\"book\\" alter column \\"author_id\\" type int using (\\"author_id\\"::int);
 alter table \\"n2\\".\\"book\\" alter column \\"author_id\\" drop not null;
-alter table \\"n2\\".\\"book\\" drop constraint if exists \\"n2.book_based_on_id_check\\";
+alter table \\"n2\\".\\"book\\" drop constraint if exists \\"book_based_on_id_check\\";
 alter table \\"n2\\".\\"book\\" alter column \\"based_on_id\\" type int using (\\"based_on_id\\"::int);
 alter table \\"n2\\".\\"book\\" alter column \\"based_on_id\\" set not null;
 alter table \\"n2\\".\\"book\\" add constraint \\"book_author_id_foreign\\" foreign key (\\"author_id\\") references \\"n1\\".\\"author\\" (\\"id\\") on update cascade on delete set null;

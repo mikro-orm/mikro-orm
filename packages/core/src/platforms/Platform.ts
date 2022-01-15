@@ -152,6 +152,10 @@ export abstract class Platform {
     return typeof value === 'object' && value !== null && '__raw' in value;
   }
 
+  getDefaultSchemaName(): string | undefined {
+    return undefined;
+  }
+
   getBooleanTypeDeclarationSQL(): string {
     return 'boolean';
   }

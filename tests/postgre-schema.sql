@@ -6,6 +6,7 @@ drop table if exists "author_to_friend" cascade;
 drop table if exists "book_to_tag_unordered" cascade;
 drop table if exists "book2_tags" cascade;
 drop table if exists "publisher2_tests" cascade;
+drop table if exists "label_schema"."label2_tests" cascade;
 drop table if exists "test2_bars" cascade;
 drop table if exists "configuration2" cascade;
 drop table if exists "test2" cascade;
@@ -23,6 +24,8 @@ drop table if exists "new_table" cascade;
 drop table if exists "author2_to_author2" cascade;
 drop table if exists "book2_to_book_tag2" cascade;
 drop table if exists "publisher2_to_test2" cascade;
+
+create schema if not exists "label_schema";
 
 create table "label2" ("uuid" uuid not null, "name" varchar(255) not null);
 alter table "label2" add constraint "label2_pkey" primary key ("uuid");
@@ -66,6 +69,8 @@ alter table "configuration2" add constraint "configuration2_pkey" primary key ("
 
 create table "publisher2_tests" ("id" serial primary key, "publisher2_id" int4 not null, "test2_id" int4 not null);
 
+create table "label_schema"."label2_tests" ("id" serial primary key, "label2_uuid" uuid not null, "test2_id" int4 not null);
+
 create table "test2_bars" ("test2_id" int4 not null, "foo_bar2_id" int4 not null);
 alter table "test2_bars" add constraint "test2_bars_pkey" primary key ("test2_id", "foo_bar2_id");
 
@@ -101,6 +106,9 @@ alter table "configuration2" add constraint "configuration2_test_id_foreign" for
 
 alter table "publisher2_tests" add constraint "publisher2_tests_publisher2_id_foreign" foreign key ("publisher2_id") references "publisher2" ("id") on update cascade on delete cascade;
 alter table "publisher2_tests" add constraint "publisher2_tests_test2_id_foreign" foreign key ("test2_id") references "test2" ("id") on update cascade on delete cascade;
+
+alter table "label_schema"."label2_tests" add constraint "label2_tests_label2_uuid_foreign" foreign key ("label2_uuid") references "label2" ("uuid") on update cascade on delete cascade;
+alter table "label_schema"."label2_tests" add constraint "label2_tests_test2_id_foreign" foreign key ("test2_id") references "test2" ("id") on update cascade on delete cascade;
 
 alter table "test2_bars" add constraint "test2_bars_test2_id_foreign" foreign key ("test2_id") references "test2" ("id") on update cascade on delete cascade;
 alter table "test2_bars" add constraint "test2_bars_foo_bar2_id_foreign" foreign key ("foo_bar2_id") references "foo_bar2" ("id") on update cascade on delete cascade;

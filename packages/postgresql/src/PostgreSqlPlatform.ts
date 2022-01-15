@@ -193,6 +193,10 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return true;
   }
 
+  getDefaultSchemaName(): string | undefined {
+    return 'public';
+  }
+
   /**
    * Returns the default name of index for the given columns
    * cannot go past 64 character length for identifiers in MySQL

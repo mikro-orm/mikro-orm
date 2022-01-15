@@ -7,6 +7,8 @@ Object {
 export class Migration20191013214813 extends Migration {
 
   async up(): Promise<void> {
+    this.addSql('create schema if not exists \\"label_schema\\";');
+
     this.addSql('create table \\"label2\\" (\\"uuid\\" uuid not null, \\"name\\" varchar(255) not null);');
     this.addSql('alter table \\"label2\\" add constraint \\"label2_pkey\\" primary key (\\"uuid\\");');
 
@@ -52,6 +54,8 @@ export class Migration20191013214813 extends Migration {
     this.addSql('create table \\"test2_bars\\" (\\"test2_id\\" int not null, \\"foo_bar2_id\\" int not null);');
     this.addSql('alter table \\"test2_bars\\" add constraint \\"test2_bars_pkey\\" primary key (\\"test2_id\\", \\"foo_bar2_id\\");');
 
+    this.addSql('create table \\"label_schema\\".\\"label2_tests\\" (\\"id\\" serial primary key, \\"label2_uuid\\" uuid not null, \\"test2_id\\" int not null);');
+
     this.addSql('create table \\"book2_tags\\" (\\"order\\" serial primary key, \\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);');
 
     this.addSql('create table \\"book_to_tag_unordered\\" (\\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);');
@@ -88,6 +92,9 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table \\"test2_bars\\" add constraint \\"test2_bars_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;');
     this.addSql('alter table \\"test2_bars\\" add constraint \\"test2_bars_foo_bar2_id_foreign\\" foreign key (\\"foo_bar2_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade on delete cascade;');
 
+    this.addSql('alter table \\"label_schema\\".\\"label2_tests\\" add constraint \\"label2_tests_label2_uuid_foreign\\" foreign key (\\"label2_uuid\\") references \\"label2\\" (\\"uuid\\") on update cascade on delete cascade;');
+    this.addSql('alter table \\"label_schema\\".\\"label2_tests\\" add constraint \\"label2_tests_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;');
+
     this.addSql('alter table \\"book2_tags\\" add constraint \\"book2_tags_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;');
     this.addSql('alter table \\"book2_tags\\" add constraint \\"book2_tags_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;');
 
@@ -106,6 +113,8 @@ export class Migration20191013214813 extends Migration {
   "diff": Object {
     "down": Array [],
     "up": Array [
+      "create schema if not exists \\"label_schema\\";",
+      "",
       "create table \\"label2\\" (\\"uuid\\" uuid not null, \\"name\\" varchar(255) not null);",
       "alter table \\"label2\\" add constraint \\"label2_pkey\\" primary key (\\"uuid\\");",
       "",
@@ -151,6 +160,8 @@ export class Migration20191013214813 extends Migration {
       "create table \\"test2_bars\\" (\\"test2_id\\" int not null, \\"foo_bar2_id\\" int not null);",
       "alter table \\"test2_bars\\" add constraint \\"test2_bars_pkey\\" primary key (\\"test2_id\\", \\"foo_bar2_id\\");",
       "",
+      "create table \\"label_schema\\".\\"label2_tests\\" (\\"id\\" serial primary key, \\"label2_uuid\\" uuid not null, \\"test2_id\\" int not null);",
+      "",
       "create table \\"book2_tags\\" (\\"order\\" serial primary key, \\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);",
       "",
       "create table \\"book_to_tag_unordered\\" (\\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);",
@@ -186,6 +197,9 @@ export class Migration20191013214813 extends Migration {
       "",
       "alter table \\"test2_bars\\" add constraint \\"test2_bars_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;",
       "alter table \\"test2_bars\\" add constraint \\"test2_bars_foo_bar2_id_foreign\\" foreign key (\\"foo_bar2_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade on delete cascade;",
+      "",
+      "alter table \\"label_schema\\".\\"label2_tests\\" add constraint \\"label2_tests_label2_uuid_foreign\\" foreign key (\\"label2_uuid\\") references \\"label2\\" (\\"uuid\\") on update cascade on delete cascade;",
+      "alter table \\"label_schema\\".\\"label2_tests\\" add constraint \\"label2_tests_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;",
       "",
       "alter table \\"book2_tags\\" add constraint \\"book2_tags_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;",
       "alter table \\"book2_tags\\" add constraint \\"book2_tags_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;",
@@ -211,6 +225,8 @@ Object {
 export class Migration20191013214813 extends Migration {
 
   async up(): Promise<void> {
+    this.addSql('create schema if not exists \\"label_schema\\";');
+
     this.addSql('create table \\"label2\\" (\\"uuid\\" uuid not null, \\"name\\" varchar(255) not null);');
     this.addSql('alter table \\"label2\\" add constraint \\"label2_pkey\\" primary key (\\"uuid\\");');
 
@@ -256,6 +272,8 @@ export class Migration20191013214813 extends Migration {
     this.addSql('create table \\"test2_bars\\" (\\"test2_id\\" int not null, \\"foo_bar2_id\\" int not null);');
     this.addSql('alter table \\"test2_bars\\" add constraint \\"test2_bars_pkey\\" primary key (\\"test2_id\\", \\"foo_bar2_id\\");');
 
+    this.addSql('create table \\"label_schema\\".\\"label2_tests\\" (\\"id\\" serial primary key, \\"label2_uuid\\" uuid not null, \\"test2_id\\" int not null);');
+
     this.addSql('create table \\"book2_tags\\" (\\"order\\" serial primary key, \\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);');
 
     this.addSql('create table \\"book_to_tag_unordered\\" (\\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);');
@@ -292,6 +310,9 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table \\"test2_bars\\" add constraint \\"test2_bars_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;');
     this.addSql('alter table \\"test2_bars\\" add constraint \\"test2_bars_foo_bar2_id_foreign\\" foreign key (\\"foo_bar2_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade on delete cascade;');
 
+    this.addSql('alter table \\"label_schema\\".\\"label2_tests\\" add constraint \\"label2_tests_label2_uuid_foreign\\" foreign key (\\"label2_uuid\\") references \\"label2\\" (\\"uuid\\") on update cascade on delete cascade;');
+    this.addSql('alter table \\"label_schema\\".\\"label2_tests\\" add constraint \\"label2_tests_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;');
+
     this.addSql('alter table \\"book2_tags\\" add constraint \\"book2_tags_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;');
     this.addSql('alter table \\"book2_tags\\" add constraint \\"book2_tags_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;');
 
@@ -310,6 +331,8 @@ export class Migration20191013214813 extends Migration {
   "diff": Object {
     "down": Array [],
     "up": Array [
+      "create schema if not exists \\"label_schema\\";",
+      "",
       "create table \\"label2\\" (\\"uuid\\" uuid not null, \\"name\\" varchar(255) not null);",
       "alter table \\"label2\\" add constraint \\"label2_pkey\\" primary key (\\"uuid\\");",
       "",
@@ -355,6 +378,8 @@ export class Migration20191013214813 extends Migration {
       "create table \\"test2_bars\\" (\\"test2_id\\" int not null, \\"foo_bar2_id\\" int not null);",
       "alter table \\"test2_bars\\" add constraint \\"test2_bars_pkey\\" primary key (\\"test2_id\\", \\"foo_bar2_id\\");",
       "",
+      "create table \\"label_schema\\".\\"label2_tests\\" (\\"id\\" serial primary key, \\"label2_uuid\\" uuid not null, \\"test2_id\\" int not null);",
+      "",
       "create table \\"book2_tags\\" (\\"order\\" serial primary key, \\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);",
       "",
       "create table \\"book_to_tag_unordered\\" (\\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);",
@@ -390,6 +415,9 @@ export class Migration20191013214813 extends Migration {
       "",
       "alter table \\"test2_bars\\" add constraint \\"test2_bars_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;",
       "alter table \\"test2_bars\\" add constraint \\"test2_bars_foo_bar2_id_foreign\\" foreign key (\\"foo_bar2_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade on delete cascade;",
+      "",
+      "alter table \\"label_schema\\".\\"label2_tests\\" add constraint \\"label2_tests_label2_uuid_foreign\\" foreign key (\\"label2_uuid\\") references \\"label2\\" (\\"uuid\\") on update cascade on delete cascade;",
+      "alter table \\"label_schema\\".\\"label2_tests\\" add constraint \\"label2_tests_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;",
       "",
       "alter table \\"book2_tags\\" add constraint \\"book2_tags_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;",
       "alter table \\"book2_tags\\" add constraint \\"book2_tags_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;",
@@ -663,7 +691,7 @@ export class Migration20191013214813 extends Migration {
 exports[`Migrator (postgres) up/down params [all or nothing disabled]: all-or-nothing-disabled 1`] = `
 Array [
   "select 1 from pg_database where datname = 'mikro_orm_test'",
-  "select table_name, nullif(table_schema, 'public') as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
+  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
   "create table \\"mikro_orm_migrations\\" (\\"id\\" serial primary key, \\"name\\" varchar(255), \\"executed_at\\" timestamptz default current_timestamp)",
   "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
   "begin",
@@ -671,36 +699,36 @@ Array [
   "commit",
   "insert into \\"mikro_orm_migrations\\" (\\"name\\") values ($1)",
   "select 1 from pg_database where datname = 'mikro_orm_test'",
-  "select table_name, nullif(table_schema, 'public') as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
+  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
   "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
   "begin",
   "commit",
   "delete from \\"mikro_orm_migrations\\" where \\"name\\" in ($1, $2)",
   "select 1 from pg_database where datname = 'mikro_orm_test'",
-  "select table_name, nullif(table_schema, 'public') as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
+  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
   "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
   "begin",
   "select 1",
   "commit",
   "insert into \\"mikro_orm_migrations\\" (\\"name\\") values ($1)",
   "select 1 from pg_database where datname = 'mikro_orm_test'",
-  "select table_name, nullif(table_schema, 'public') as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
+  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
   "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
   "begin",
   "commit",
   "delete from \\"mikro_orm_migrations\\" where \\"name\\" in ($1, $2)",
   "select 1 from pg_database where datname = 'mikro_orm_test'",
-  "select table_name, nullif(table_schema, 'public') as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
+  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
   "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
   "begin",
   "select 1",
   "commit",
   "insert into \\"mikro_orm_migrations\\" (\\"name\\") values ($1)",
   "select 1 from pg_database where datname = 'mikro_orm_test'",
-  "select table_name, nullif(table_schema, 'public') as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
+  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
   "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
   "select 1 from pg_database where datname = 'mikro_orm_test'",
-  "select table_name, nullif(table_schema, 'public') as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
+  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
   "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
   "begin",
   "commit",
@@ -711,7 +739,7 @@ Array [
 exports[`Migrator (postgres) up/down params [all or nothing enabled]: all-or-nothing 1`] = `
 Array [
   "select 1 from pg_database where datname = 'mikro_orm_test'",
-  "select table_name, nullif(table_schema, 'public') as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
+  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
   "create table \\"mikro_orm_migrations\\" (\\"id\\" serial primary key, \\"name\\" varchar(255), \\"executed_at\\" timestamptz default current_timestamp)",
   "begin",
   "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
@@ -721,7 +749,7 @@ Array [
   "insert into \\"mikro_orm_migrations\\" (\\"name\\") values ($1)",
   "commit",
   "select 1 from pg_database where datname = 'mikro_orm_test'",
-  "select table_name, nullif(table_schema, 'public') as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
+  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
   "begin",
   "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
   "savepointtrx\\\\d+",
@@ -729,7 +757,7 @@ Array [
   "delete from \\"mikro_orm_migrations\\" where \\"name\\" in ($1, $2)",
   "commit",
   "select 1 from pg_database where datname = 'mikro_orm_test'",
-  "select table_name, nullif(table_schema, 'public') as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
+  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
   "begin",
   "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
   "savepointtrx\\\\d+",
@@ -738,7 +766,7 @@ Array [
   "insert into \\"mikro_orm_migrations\\" (\\"name\\") values ($1)",
   "commit",
   "select 1 from pg_database where datname = 'mikro_orm_test'",
-  "select table_name, nullif(table_schema, 'public') as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
+  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
   "begin",
   "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
   "savepointtrx\\\\d+",
@@ -746,7 +774,7 @@ Array [
   "delete from \\"mikro_orm_migrations\\" where \\"name\\" in ($1, $2)",
   "commit",
   "select 1 from pg_database where datname = 'mikro_orm_test'",
-  "select table_name, nullif(table_schema, 'public') as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
+  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
   "begin",
   "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
   "savepointtrx\\\\d+",
@@ -755,12 +783,12 @@ Array [
   "insert into \\"mikro_orm_migrations\\" (\\"name\\") values ($1)",
   "commit",
   "select 1 from pg_database where datname = 'mikro_orm_test'",
-  "select table_name, nullif(table_schema, 'public') as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
+  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
   "begin",
   "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
   "commit",
   "select 1 from pg_database where datname = 'mikro_orm_test'",
-  "select table_name, nullif(table_schema, 'public') as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
+  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
   "begin",
   "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
   "savepointtrx\\\\d+",
@@ -774,7 +802,7 @@ exports[`Migrator (postgres) up/down with explicit transaction: explicit-tx 1`] 
 Array [
   "begin",
   "select 1 from pg_database where datname = 'mikro_orm_test'",
-  "select table_name, nullif(table_schema, 'public') as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
+  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
   "create table \\"mikro_orm_migrations\\" (\\"id\\" serial primary key, \\"name\\" varchar(255), \\"executed_at\\" timestamptz default current_timestamp)",
   "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
   "savepointtrx_xx",
@@ -786,19 +814,19 @@ Array [
   "release savepointtrx_xx",
   "insert into \\"mikro_orm_migrations\\" (\\"name\\") values ($1)",
   "select 1 from pg_database where datname = 'mikro_orm_test'",
-  "select table_name, nullif(table_schema, 'public') as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
+  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
   "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
   "savepointtrx_xx",
   "release savepointtrx_xx",
   "delete from \\"mikro_orm_migrations\\" where \\"name\\" in ($1, $2)",
   "select 1 from pg_database where datname = 'mikro_orm_test'",
-  "select table_name, nullif(table_schema, 'public') as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
+  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
   "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
   "savepointtrx_xx",
   "release savepointtrx_xx",
   "delete from \\"mikro_orm_migrations\\" where \\"name\\" in ($1, $2)",
   "select 1 from pg_database where datname = 'mikro_orm_test'",
-  "select table_name, nullif(table_schema, 'public') as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
+  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
   "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
   "commit",
 ]
