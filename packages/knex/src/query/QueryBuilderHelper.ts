@@ -489,8 +489,6 @@ export class QueryBuilderHelper {
         const column = this.mapper(noPrefix ? f : `${alias}.${f}`, type);
         /* istanbul ignore next */
         const rawColumn = Utils.isString(column) ? column.split('.').map(e => this.knex.ref(e)).join('.') : column;
-
-
         const customOrder = prop?.customOrder;
 
         const colPart = customOrder
@@ -514,9 +512,9 @@ export class QueryBuilderHelper {
   }
 
   splitField(field: string): [string, string] {
-    const [a, b] = field.split('.');
-    const fromAlias = b ? a : this.alias;
-    const fromField = b || a;
+    const parts = field.split('.');
+    const fromField = parts.pop()!;
+    const fromAlias = parts.length > 0 ? parts.join('.') : this.alias;
 
     return [fromAlias, fromField];
   }

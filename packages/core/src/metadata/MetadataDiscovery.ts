@@ -80,7 +80,7 @@ export class MetadataDiscovery {
     filtered.forEach(meta => this.autoWireBidirectionalProperties(meta));
 
     for (const meta of filtered) {
-      discovered.push(...(await this.processEntity(meta)));
+      discovered.push(...await this.processEntity(meta));
     }
 
     discovered.forEach(meta => meta.sync(true));
