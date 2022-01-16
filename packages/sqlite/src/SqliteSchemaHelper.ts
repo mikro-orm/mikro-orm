@@ -31,17 +31,40 @@ export class SqliteSchemaHelper extends SchemaHelper {
 
   async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<any[]> {
     const columns = await connection.execute<any[]>(`pragma table_info('${tableName}')`);
+    const composite = columns.reduce((count, col) => count + (col.pk ? 1 : 0), 0) > 1;
 
-    return columns.map(col => ({
-      name: col.name,
-      type: col.type,
-      default: col.dflt_value,
-      nullable: !col.notnull,
-      primary: !!col.pk,
-      mappedType: connection.getPlatform().getMappedType(col.type),
-      unsigned: false,
-      autoincrement: false,
-    }));
+    return columns.map(col => {
+      const mappedType = connection.getPlatform().getMappedType(col.type);
+      return {
+        name: col.name,
+        type: col.type,
+        default: col.dflt_value,
+        nullable: !col.notnull,
+        primary: !!col.pk,
+        mappedType,
+        unsigned: false,
+        autoincrement: !composite && col.pk && this.platform.isNumericColumn(mappedType),
+      };
+    });
+  }
+
+  async getEnumDefinitions(connection: AbstractSqlConnection, tableName: string, schemaName: string): Promise<Dictionary<string[]>> {
+    const sql = `select sql from sqlite_master where type = ? and name = ?`;
+    const tableDefinition = await connection.execute<{ sql: string }>(sql, ['table', tableName], 'get');
+
+    const checkConstraints = tableDefinition.sql.match(/[`["'][^`\]"']+[`\]"'] text check \(.*?\)/gi) ?? [];
+    return checkConstraints.reduce((o, item) => {
+      // check constraints are defined as (note that last closing paren is missing):
+      // `type` text check (`type` in ('local', 'global')
+      const match = item.match(/[`["']([^`\]"']+)[`\]"'] text check \(.* \((.*)\)/i);
+
+      /* istanbul ignore else */
+      if (match) {
+        o[match[1]] = match[2].split(',').map((item: string) => item.trim().match(/^\(?'(.*)'/)![1]);
+      }
+
+      return o;
+    }, {} as Dictionary<string[]>);
   }
 
   async getPrimaryKeys(connection: AbstractSqlConnection, indexes: Dictionary, tableName: string, schemaName?: string): Promise<string[]> {

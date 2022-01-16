@@ -56,7 +56,7 @@
   },
   "dependencies": {
     "fs-extra": "10.0.0",
-    "knex": "0.95.15",
+    "knex": "1.0.1",
     "sqlstring": "2.3.2"
   },
   "devDependencies": {
@@ -70,13 +70,16 @@
     "mysql": "^2.18.1",
     "mysql2": "^2.1.0",
     "pg": "^8.0.3",
-    "sqlite3": "^5.0.0"
+    "@vscode/sqlite3": "^5.0.0"
   },
   "peerDependenciesMeta": {
     "@mikro-orm/entity-generator": {
       "optional": true
     },
     "@mikro-orm/migrations": {
+      "optional": true
+    },
+    "@vscode/sqlite3": {
       "optional": true
     },
     "mssql": {
@@ -89,9 +92,6 @@
       "optional": true
     },
     "pg": {
-      "optional": true
-    },
-    "sqlite3": {
       "optional": true
     }
   }

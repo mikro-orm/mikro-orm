@@ -133,7 +133,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
       const platform = connection.getPlatform();
       const mappedType = platform.getMappedType(col.column_type);
       const defaultValue = str(this.normalizeDefaultValue(col.column_default, col.length));
-      return ({
+      return {
         name: col.column_name,
         type: platform.isNumericColumn(mappedType) ? col.column_type.replace(/ unsigned$/, '').replace(/\(\d+\)$/, '') : col.column_type,
         mappedType,
@@ -148,7 +148,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
         scale: col.numeric_scale,
         comment: col.column_comment,
         extra: col.extra.replace('auto_increment', ''),
-      });
+      };
     });
   }
 
