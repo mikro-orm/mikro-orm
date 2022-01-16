@@ -764,6 +764,7 @@ export class Utils {
       return import(id);
     }
 
+    /* istanbul ignore next */
     if (platform() === 'win32') {
       id = pathToFileURL(id).toString();
     }
