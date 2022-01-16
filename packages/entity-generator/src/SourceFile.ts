@@ -188,19 +188,17 @@ export class SourceFile {
       options.nullable = true;
     }
 
-    // If prop is an enum, its default value would be covered in the property definition
-    // instead of in property decorator, so we early return.
-    if (prop.enum) {
-      return;
-    }
-
-    if (prop.default && typeof prop.default === 'string') {
-      if ([`''`, ''].includes(prop.default)) {
-        options.default = `''`;
-      } else if (prop.default.match(/^'.*'$/)) {
-        options.default = prop.default;
+    if (prop.default !== null && prop.default !== undefined) {
+      if (typeof prop.default === 'string') {
+        if ([`''`, ''].includes(prop.default)) {
+          options.default = `''`;
+        } else if (prop.default.match(/^'.*'$/)) {
+          options.default = prop.default;
+        } else {
+          options.defaultRaw = `\`${prop.default}\``;
+        }
       } else {
-        options.defaultRaw = `\`${prop.default}\``;
+        options.default = prop.default;
       }
     }
   }
