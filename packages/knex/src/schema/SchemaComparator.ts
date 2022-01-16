@@ -455,7 +455,10 @@ export class SchemaComparator {
     }
 
     if (from.default && to.default) {
-      return from.default.toString().toLowerCase() === to.default.toString().toLowerCase();
+      return from.default.toString().toLowerCase() === to.default.toString().toLowerCase() ||
+      // This is because to.default could be wrapped in another pair of quotes if the default value
+      // is a string. See MetadataDiscovery.initDefaultValue().
+        `'${from.default.toString().toLowerCase()}'` === to.default.toString().toLowerCase();
     }
 
     if (['', this.helper.getDefaultEmptyString()].includes(to.default!) && from.default != null) {

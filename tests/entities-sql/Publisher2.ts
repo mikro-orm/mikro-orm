@@ -35,10 +35,10 @@ export class Publisher2 extends BaseEntity2 {
   @ManyToMany({ entity: () => Test2, pivotTable: 'publisher2_tests', fixedOrder: true })
   tests!: Collection<Test2>;
 
-  @Enum(() => PublisherType)
+  @Enum({ items: () => PublisherType, default: 'local' })
   type = PublisherType.LOCAL;
 
-  @Enum(() => PublisherType2)
+  @Enum({ items: () => PublisherType2, default: 'LOCAL' })
   type2 = PublisherType2.LOCAL;
 
   @Enum({ nullable: true })
