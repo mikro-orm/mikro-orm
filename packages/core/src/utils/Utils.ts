@@ -4,7 +4,7 @@ import type { GlobbyOptions } from 'globby';
 import globby from 'globby';
 import { extname, isAbsolute, join, normalize, relative, resolve } from 'path';
 import { platform } from 'os';
-import { pathToFileURL } from 'url'
+import { pathToFileURL } from 'url';
 import { pathExists } from 'fs-extra';
 import { createHash } from 'crypto';
 import { recovery } from 'escaya';
