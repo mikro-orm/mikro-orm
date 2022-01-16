@@ -3,6 +3,8 @@ import clone from 'clone';
 import type { GlobbyOptions } from 'globby';
 import globby from 'globby';
 import { extname, isAbsolute, join, normalize, relative, resolve } from 'path';
+import { platform } from 'os';
+import { pathToFileURL } from 'url'
 import { pathExists } from 'fs-extra';
 import { createHash } from 'crypto';
 import { recovery } from 'escaya';
@@ -604,8 +606,8 @@ export class Utils {
       // eslint-disable-next-line no-prototype-builtins
       && (value.constructor.prototype.hasOwnProperty('isPrototypeOf') || Object.getPrototypeOf(value.constructor.prototype) === null)
     )
-    || (value && Object.getPrototypeOf(value) === null)
-    || value instanceof PlainObject;
+      || (value && Object.getPrototypeOf(value) === null)
+      || value instanceof PlainObject;
   }
 
   /**
@@ -760,6 +762,10 @@ export class Utils {
   static async dynamicImport<T = any>(id: string): Promise<T> {
     if (!process.env.MIKRO_ORM_DYNAMIC_IMPORTS) {
       return import(id);
+    }
+
+    if (platform() === 'win32') {
+      id = pathToFileURL(id).toString();
     }
 
     /* istanbul ignore next */
