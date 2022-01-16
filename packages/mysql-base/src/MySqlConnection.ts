@@ -1,10 +1,25 @@
 import type { Knex } from '@mikro-orm/knex';
-import { AbstractSqlConnection } from '@mikro-orm/knex';
+import { AbstractSqlConnection, MonkeyPatchable } from '@mikro-orm/knex';
 
 export class MySqlConnection extends AbstractSqlConnection {
 
   async connect(): Promise<void> {
+    this.patchKnex();
     this.client = this.createKnexClient('mysql2');
+  }
+
+  private patchKnex() {
+    const { MySqlColumnCompiler } = MonkeyPatchable;
+
+    // we need the old behaviour to be able to add auto_increment to a column that is already PK
+    MySqlColumnCompiler.prototype.increments = function (options = { primaryKey: true }) {
+      return 'int unsigned not null auto_increment' + (this.tableCompiler._canBeAddPrimaryKey(options) ? ' primary key' : '');
+    };
+
+    /* istanbul ignore next */
+    MySqlColumnCompiler.prototype.bigincrements = function (options = { primaryKey: true }) {
+      return 'bigint unsigned not null auto_increment' + (this.tableCompiler._canBeAddPrimaryKey(options) ? ' primary key' : '');
+    };
   }
 
   getDefaultClientUrl(): string {
