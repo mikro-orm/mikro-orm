@@ -188,7 +188,7 @@ export class SourceFile {
       options.nullable = true;
     }
 
-    if (prop.default !== null && prop.default !== undefined) {
+    if (prop.default != null) {
       if (typeof prop.default === 'string') {
         if ([`''`, ''].includes(prop.default)) {
           options.default = `''`;

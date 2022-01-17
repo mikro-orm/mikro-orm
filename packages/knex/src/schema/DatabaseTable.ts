@@ -224,8 +224,12 @@ export class DatabaseTable {
     return !!this.getPrimaryKey();
   }
 
-  private getPropertyDeclaration(column: Column, namingStrategy: NamingStrategy, schemaHelper: SchemaHelper,
-    compositeFkIndexes: Dictionary<{ keyName: string }>, compositeFkUniques: Dictionary<{ keyName: string }>) {
+  private getPropertyDeclaration(
+    column: Column,
+    namingStrategy: NamingStrategy,
+    schemaHelper: SchemaHelper,
+    compositeFkIndexes: Dictionary<{ keyName: string }>,
+    compositeFkUniques: Dictionary<{ keyName: string }>) {
     const fk = Object.values(this.foreignKeys).find(fk => fk.columnNames.includes(column.name));
     const prop = this.getPropertyName(namingStrategy, column);
     const index = compositeFkIndexes[prop] || this.indexes.find(idx => idx.columnNames[0] === column.name && !idx.composite && !idx.unique && !idx.primary);
