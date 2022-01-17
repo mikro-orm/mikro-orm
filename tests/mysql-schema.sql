@@ -37,7 +37,7 @@ set foreign_key_checks = 0;
 
 create table `sandwich` (`id` int(10) unsigned not null auto_increment primary key, `name` varchar(255) not null, `price` int(11) not null) default character set utf8mb4 engine = InnoDB;
 
-create table `publisher2` (`id` int(10) unsigned not null auto_increment primary key, `name` varchar(255) not null, `type` enum('local', 'global') not null default 'local', `type2` enum('LOCAL', 'GLOBAL') not null default 'LOCAL', `enum1` tinyint null, `enum2` tinyint null, `enum3` tinyint null, `enum4` enum('a', 'b', 'c') null, `enum5` enum('a') null) default character set utf8mb4 engine = InnoDB;
+create table `publisher2` (`id` int(10) unsigned not null auto_increment primary key, `name` varchar(255) not null, `type` enum('local', 'global') not null, `type2` enum('LOCAL', 'GLOBAL') not null, `enum1` tinyint null, `enum2` tinyint null, `enum3` tinyint null, `enum4` enum('a', 'b', 'c') null, `enum5` enum('a') null) default character set utf8mb4 engine = InnoDB;
 
 create table `foo_baz2` (`id` int(10) unsigned not null auto_increment primary key, `name` varchar(255) not null, `version` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;
 

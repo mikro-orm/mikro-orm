@@ -1,7 +1,7 @@
 import type { AbstractSqlConnection, Column, Index, Knex, TableDifference } from '@mikro-orm/knex';
 import { SchemaHelper } from '@mikro-orm/knex';
 import type { Dictionary , Type } from '@mikro-orm/core';
-import { StringType, TextType } from '@mikro-orm/core';
+import { EnumType, StringType, TextType } from '@mikro-orm/core';
 
 export class MySqlSchemaHelper extends SchemaHelper {
 
@@ -169,7 +169,8 @@ export class MySqlSchemaHelper extends SchemaHelper {
   }
 
   protected wrap(val: string | undefined, type: Type<unknown>): string | undefined {
-    return typeof val === 'string' && val.length > 0 && (type instanceof StringType || type instanceof TextType) ? this.platform.quoteValue(val) : val;
+    return typeof val === 'string' && val.length > 0 && (type instanceof StringType
+      || type instanceof TextType || type instanceof EnumType) ? this.platform.quoteValue(val) : val;
   }
 
 }

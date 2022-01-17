@@ -39,7 +39,7 @@ alter table "foo_bar2" add constraint "foo_bar2_foo_bar_id_unique" unique ("foo_
 create table "foo_param2" ("bar_id" int4 not null, "baz_id" int4 not null, "value" varchar(255) not null, "version" timestamptz(3) not null default current_timestamp(3));
 alter table "foo_param2" add constraint "foo_param2_pkey" primary key ("bar_id", "baz_id");
 
-create table "publisher2" ("id" serial primary key, "name" varchar(255) not null, "type" text check ("type" in ('local', 'global')) not null default 'local', "type2" text check ("type2" in ('LOCAL', 'GLOBAL')) not null default 'LOCAL', "enum1" int2 null, "enum2" int2 null, "enum3" int2 null, "enum4" text check ("enum4" in ('a', 'b', 'c')) null, "enum5" text check ("enum5" in ('a')) null);
+create table "publisher2" ("id" serial primary key, "name" varchar(255) not null, "type" text check ("type" in ('local', 'global')) not null, "type2" text check ("type2" in ('LOCAL', 'GLOBAL')) not null, "enum1" int2 null, "enum2" int2 null, "enum3" int2 null, "enum4" text check ("enum4" in ('a', 'b', 'c')) null, "enum5" text check ("enum5" in ('a')) null);
 
 create table "book_tag2" ("id" bigserial primary key, "name" varchar(50) not null);
 
