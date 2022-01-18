@@ -225,3 +225,17 @@ const bar = new FooBar();
 bar.name = 'bar';
 await em.persistAndFlush(bar);
 ```
+
+## Transaction events
+
+Transaction events happen at the beginning and end of a transaction. 
+
+- `beforeTransactionStart` is executed before a transaction starts.
+- `afterTransactionStart` is executed after a transaction starts.
+- `beforeTransactionCommit` is executed before a transaction is committed.
+- `afterTransactionCommit` is executed after a transaction is committed.
+- `beforeTransactionRollback` is executed before a transaction is rolled back.
+- `afterTransactionRollback` is executed after a transaction is rolled back.
+
+They are also entity agnostic and will only reference the transaction, `UnitOfWork` instance
+and `EntityManager` instance.
