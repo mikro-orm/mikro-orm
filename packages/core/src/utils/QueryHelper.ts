@@ -1,7 +1,7 @@
 import { Reference } from '../entity/Reference';
 import { Utils } from './Utils';
 import type { AnyEntity, Dictionary, EntityMetadata, EntityProperty, FilterDef, ObjectQuery, FilterQuery } from '../typings';
-import { ARRAY_OPERATORS, GroupOperator } from '../enums';
+import { ARRAY_OPERATORS, GroupOperator, ReferenceType } from '../enums';
 import type { Platform } from '../platforms';
 import type { MetadataStorage } from '../metadata/MetadataStorage';
 import { JsonType } from '../types';
@@ -56,7 +56,17 @@ export class QueryHelper {
     }
 
     if (meta.primaryKeys.every(pk => pk in where) && Utils.getObjectKeysSize(where) === meta.primaryKeys.length) {
-      return !GroupOperator[key as string] && Object.keys(where).every(k => !Utils.isPlainObject(where[k]) || Object.keys(where[k]).every(v => !Utils.isOperator(v, false)));
+      return !GroupOperator[key as string] && Object.keys(where).every(k => !Utils.isPlainObject(where[k]) || Object.keys(where[k]).every(v => {
+        if (Utils.isOperator(v, false)) {
+          return false;
+        }
+
+        if ([ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(meta.properties[k].reference)) {
+          return this.inlinePrimaryKeyObjects(where[k], meta.properties[k].targetMeta, metadata, v);
+        }
+
+        return true;
+      }));
     }
 
     Object.keys(where).forEach(k => {

@@ -105,7 +105,16 @@ export class ObjectCriteriaNode extends CriteriaNode {
     const embeddable = this.prop.reference === ReferenceType.EMBEDDED;
     const knownKey = [ReferenceType.SCALAR, ReferenceType.MANY_TO_ONE, ReferenceType.EMBEDDED].includes(this.prop.reference) || (this.prop.reference === ReferenceType.ONE_TO_ONE && this.prop.owner);
     const operatorKeys = knownKey && Object.keys(this.payload).every(key => Utils.isOperator(key, false));
-    const primaryKeys = knownKey && Object.keys(this.payload).every(key => this.metadata.find(this.entityName)!.primaryKeys.includes(key));
+    const primaryKeys = knownKey && Object.keys(this.payload).every(key => {
+      const meta = this.metadata.find(this.entityName)!;
+      if (!meta.primaryKeys.includes(key)) {
+        return false;
+      }
+      if (!Utils.isPlainObject(this.payload[key].payload) || ![ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(meta.properties[key].reference)) {
+        return true;
+      }
+      return Object.keys(this.payload[key].payload).every(k => meta.properties[key].targetMeta!.primaryKeys.includes(k));
+    });
 
     return !primaryKeys && !nestedAlias && !operatorKeys && !embeddable;
   }
