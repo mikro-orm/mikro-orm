@@ -112,6 +112,10 @@ export abstract class Platform {
     return 'datetime' + (column.length ? `(${column.length})` : '');
   }
 
+  getDefaultDateTimeLength(): number {
+    return 0;
+  }
+
   getDateTypeDeclarationSQL(length?: number): string {
     return 'date' + (length ? `(${length})` : '');
   }

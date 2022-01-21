@@ -1,5 +1,5 @@
 import type { Dictionary, EntityMetadata, EntityProperty, NamingStrategy } from '@mikro-orm/core';
-import { Cascade, DecimalType, EntitySchema, ReferenceType, t, Utils } from '@mikro-orm/core';
+import { Cascade, DateTimeType, DecimalType, EntitySchema, ReferenceType, t, Utils } from '@mikro-orm/core';
 import type { SchemaHelper } from './SchemaHelper';
 import type { Column, ForeignKey, Index } from '../typings';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
@@ -70,6 +70,10 @@ export class DatabaseTable {
           prop.scale = +match[2];
           prop.length = undefined;
         }
+      }
+
+      if (mappedType instanceof DateTimeType) {
+        prop.length ??= this.platform.getDefaultDateTimeLength();
       }
 
       const primary = !meta.compositePK && !!prop.primary && prop.reference === ReferenceType.SCALAR && this.platform.isNumericColumn(mappedType);
