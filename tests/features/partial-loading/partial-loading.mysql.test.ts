@@ -12,6 +12,23 @@ describe('partial loading (mysql)', () => {
   beforeEach(async () => wipeDatabaseMySql(orm.em));
   afterAll(async () => orm.close(true));
 
+  async function createEntities() {
+    const god = new Author2(`God `, `hello@heaven.god`);
+    const b1 = new Book2(`Bible 1`, god);
+    b1.price = 123;
+    b1.tags.add(new BookTag2('t1'), new BookTag2('t2'));
+    const b2 = new Book2(`Bible 2`, god);
+    b2.price = 456;
+    b2.tags.add(new BookTag2('t3'), new BookTag2('t4'));
+    const b3 = new Book2(`Bible 3`, god);
+    b3.price = 789;
+    b3.tags.add(new BookTag2('t5'), new BookTag2('t6'));
+    await orm.em.persistAndFlush(god);
+    orm.em.clear();
+
+    return god;
+  }
+
   test('partial selects', async () => {
     const author = new Author2('Jon Snow', 'snow@wall.st');
     author.born = new Date('1990-03-23');
@@ -25,23 +42,14 @@ describe('partial loading (mysql)', () => {
   });
 
   test('partial nested loading (1:m)', async () => {
-    const god = new Author2(`God `, `hello@heaven.god`);
-    const b1 = new Book2(`Bible 1`, god);
-    b1.price = 123;
-    const b2 = new Book2(`Bible 2`, god);
-    b2.price = 456;
-    const b3 = new Book2(`Bible 3`, god);
-    b3.price = 789;
-    await orm.em.persistAndFlush(god);
-    orm.em.clear();
-
+    const god = await createEntities();
     const mock = mockLogger(orm, ['query']);
 
     const r1 = await orm.em.find(Author2, god, { fields: ['id', 'books.author', 'books.title'] });
     expect(r1).toHaveLength(1);
     expect(r1[0].id).toBe(god.id);
     expect(r1[0].name).toBeUndefined();
-    expect(r1[0].books[0].uuid).toBe(b1.uuid);
+    expect(r1[0].books[0].uuid).toBe(god.books[0].uuid);
     expect(r1[0].books[0].title).toBe('Bible 1');
     expect(r1[0].books[0].price).toBeUndefined();
     expect(r1[0].books[0].author).toBeDefined();
@@ -54,25 +62,45 @@ describe('partial loading (mysql)', () => {
     expect(r2).toHaveLength(1);
     expect(r2[0].id).toBe(god.id);
     expect(r2[0].name).toBeUndefined();
-    expect(r2[0].books[0].uuid).toBe(b1.uuid);
+    expect(r2[0].books[0].uuid).toBe(god.books[0].uuid);
     expect(r2[0].books[0].title).toBe('Bible 1');
     expect(r2[0].books[0].price).toBeUndefined();
     expect(r2[0].books[0].author).toBeDefined();
     expect(mock.mock.calls[0][0]).toMatch('select `a0`.`id` from `author2` as `a0` where `a0`.`id` = ?');
     expect(mock.mock.calls[1][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`author_id`, `b0`.`title` from `book2` as `b0` where `b0`.`author_id` is not null and `b0`.`author_id` in (?) order by `b0`.`title` asc');
+    orm.em.clear();
+    mock.mock.calls.length = 0;
+
+    // collection properties in `fields` are ignored
+    const r0 = await orm.em.find(Author2, god, { fields: ['id', 'books', 'books.author', 'books.title'] });
+    expect(r0).toHaveLength(1);
+    expect(r0[0].id).toBe(god.id);
+    expect(r0[0].name).toBeUndefined();
+    expect(r0[0].books[0].uuid).toBe(god.books[0].uuid);
+    expect(r0[0].books[0].title).toBe('Bible 1');
+    expect(r0[0].books[0].price).toBeUndefined();
+    expect(r0[0].books[0].author).toBeDefined();
+    expect(mock.mock.calls[0][0]).toMatch('select `a0`.`id` from `author2` as `a0` where `a0`.`id` = ?');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`author_id`, `b0`.`title` from `book2` as `b0` where `b0`.`author_id` is not null and `b0`.`author_id` in (?) order by `b0`.`title` asc');
+    orm.em.clear();
+    mock.mock.calls.length = 0;
+
+    // when populating collections, the owner is selected automatically (here book.author)
+    const r00 = await orm.em.find(Author2, god, { fields: ['id', 'books.title'] });
+    expect(r00).toHaveLength(1);
+    expect(r00[0].id).toBe(god.id);
+    expect(r00[0].name).toBeUndefined();
+    expect(r00[0].books[0].uuid).toBe(god.books[0].uuid);
+    expect(r00[0].books[0].title).toBe('Bible 1');
+    expect(r00[0].books[0].price).toBeUndefined();
+    expect(r00[0].books[0].author).toBeDefined();
+    expect(mock.mock.calls[0][0]).toMatch('select `a0`.`id` from `author2` as `a0` where `a0`.`id` = ?');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`title`, `b0`.`author_id` from `book2` as `b0` where `b0`.`author_id` is not null and `b0`.`author_id` in (?) order by `b0`.`title` asc');
   });
 
   test('partial nested loading (m:1)', async () => {
-    const god = new Author2(`God `, `hello@heaven.god`);
-    const b1 = new Book2(`Bible 1`, god);
-    b1.price = 123;
-    const b2 = new Book2(`Bible 2`, god);
-    b2.price = 456;
-    const b3 = new Book2(`Bible 3`, god);
-    b3.price = 789;
-    await orm.em.persistAndFlush(god);
-    orm.em.clear();
-
+    const god = await createEntities();
+    const b1 = god.books[0];
     const mock = mockLogger(orm, ['query']);
 
     const r1 = await orm.em.find(Book2, b1, { fields: ['uuid', 'title', 'author', 'author.email'], populate: ['author'], filters: false });
@@ -103,19 +131,7 @@ describe('partial loading (mysql)', () => {
   });
 
   test('partial nested loading (m:n)', async () => {
-    const god = new Author2(`God `, `hello@heaven.god`);
-    const b1 = new Book2(`Bible 1`, god);
-    b1.price = 123;
-    b1.tags.add(new BookTag2('t1'), new BookTag2('t2'));
-    const b2 = new Book2(`Bible 2`, god);
-    b2.price = 456;
-    b2.tags.add(new BookTag2('t3'), new BookTag2('t4'));
-    const b3 = new Book2(`Bible 3`, god);
-    b3.price = 789;
-    b3.tags.add(new BookTag2('t5'), new BookTag2('t6'));
-    await orm.em.persistAndFlush(god);
-    orm.em.clear();
-
+    await createEntities();
     const mock = mockLogger(orm, ['query']);
 
     const r1 = await orm.em.find(BookTag2, {}, { fields: ['name', 'books.title'], filters: false });
@@ -138,22 +154,6 @@ describe('partial loading (mysql)', () => {
     expect(mock.mock.calls[0][0]).toMatch('select `b0`.`id`, `b0`.`name` from `book_tag2` as `b0` where `b0`.`name` = ?');
     expect(mock.mock.calls[1][0]).toMatch('select `b0`.`uuid_pk`, `b0`.`title`, `b1`.`book2_uuid_pk` as `fk__book2_uuid_pk`, `b1`.`book_tag2_id` as `fk__book_tag2_id`, `t2`.`id` as `test_id` from `book2` as `b0` left join `book2_tags` as `b1` on `b0`.`uuid_pk` = `b1`.`book2_uuid_pk` left join `test2` as `t2` on `b0`.`uuid_pk` = `t2`.`book_uuid_pk` where `b1`.`book_tag2_id` in (?) order by `b1`.`order` asc');
   });
-
-  async function createEntities() {
-    const god = new Author2(`God `, `hello@heaven.god`);
-    const b1 = new Book2(`Bible 1`, god);
-    b1.price = 123;
-    b1.tags.add(new BookTag2('t1'), new BookTag2('t2'));
-    const b2 = new Book2(`Bible 2`, god);
-    b2.price = 456;
-    b2.tags.add(new BookTag2('t3'), new BookTag2('t4'));
-    const b3 = new Book2(`Bible 3`, god);
-    b3.price = 789;
-    b3.tags.add(new BookTag2('t5'), new BookTag2('t6'));
-    await orm.em.persistAndFlush(god);
-    orm.em.clear();
-    return god;
-  }
 
   test('partial nested loading (dot notation)', async () => {
     const god = await createEntities();

@@ -625,21 +625,28 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return prop;
   }
 
-  private prepareFields<T extends AnyEntity<T>, U extends string | Knex.Raw = string | Knex.Raw>(fields: Field<T>[], type: 'where' | 'groupBy' | 'sub-query' = 'where'): U[] {
+  private prepareFields<T extends AnyEntity<T>, U extends string | Knex.Raw>(fields: Field<T>[], type: 'where' | 'groupBy' | 'sub-query' = 'where'): U[] {
     const ret: Field<T>[] = [];
 
-    fields.forEach(f => {
-      if (!Utils.isString(f)) {
-        return ret.push(f);
+    fields.forEach(field => {
+      if (!Utils.isString(field)) {
+        return ret.push(field);
       }
 
-      const join = Object.keys(this._joins).find(k => f === k.substring(0, k.indexOf('#')))!;
+      const join = Object.keys(this._joins).find(k => field === k.substring(0, k.indexOf('#')))!;
 
       if (join && type === 'where') {
         return ret.push(...this.helper.mapJoinColumns(this.type, this._joins[join]) as string[]);
       }
 
-      ret.push(this.helper.mapper(f, this.type) as string);
+      const [a, f] = this.helper.splitField(field);
+      const prop = this.helper.getProperty(f, a);
+
+      if (prop && [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference)) {
+        return;
+      }
+
+      ret.push(this.helper.mapper(field, this.type) as string);
     });
 
     const meta = this.metadata.find(this.entityName);

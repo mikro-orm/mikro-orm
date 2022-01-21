@@ -635,7 +635,7 @@ export class QueryBuilderHelper {
     return prop.fieldNames[0] ?? field;
   }
 
-  private getProperty(field: string, alias?: string): EntityProperty | undefined {
+  getProperty(field: string, alias?: string): EntityProperty | undefined {
     const entityName = this.aliasMap[alias!] || this.entityName;
     const meta = this.metadata.find(entityName);
 

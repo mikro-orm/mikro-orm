@@ -154,7 +154,7 @@ export class EntityLoader {
       const where = this.mergePrimaryCondition(ids, pk, options, meta, this.metadata, this.driver.getPlatform());
       const { filters, convertCustomTypes, lockMode, strategy } = options;
 
-      await this.em.find(meta.className, where as FilterQuery<T>, {
+      await this.em.find(meta.className, where, {
         filters, convertCustomTypes, lockMode, strategy,
         fields: [prop.name] as never,
       });
@@ -248,20 +248,20 @@ export class EntityLoader {
     const fields = this.buildFields(options.fields, prop);
     const { refresh, filters, convertCustomTypes, lockMode, strategy } = options;
 
-    return this.em.find<T>(prop.type, where as FilterQuery<T>, {
+    return this.em.find(prop.type, where, {
       refresh, filters, convertCustomTypes, lockMode,
       orderBy: [...Utils.asArray(options.orderBy), ...Utils.asArray(prop.orderBy), { [fk]: QueryOrder.ASC }] as QueryOrderMap<T>[],
       populate: populate.children as never ?? populate.all,
       strategy,
-      fields: fields.length > 0 ? fields : undefined,
-    }) as Promise<T[]>;
+      fields,
+    });
   }
 
-  private mergePrimaryCondition<T>(ids: T[], pk: string, options: EntityLoaderOptions<T>, meta: EntityMetadata, metadata: MetadataStorage, platform: Platform) {
+  private mergePrimaryCondition<T>(ids: T[], pk: string, options: EntityLoaderOptions<T>, meta: EntityMetadata, metadata: MetadataStorage, platform: Platform): FilterQuery<T> {
     const cond1 = QueryHelper.processWhere({ [pk]: { $in: ids } }, meta.name!, metadata, platform, !options.convertCustomTypes);
 
     return options.where![pk]
-      ? { $and: [cond1, options.where] }
+      ? { $and: [cond1, options.where] } as FilterQuery<any>
       : { ...cond1, ...(options.where as Dictionary) };
   }
 
@@ -301,7 +301,7 @@ export class EntityLoader {
     await this.populate<T>(prop.type, filtered, populate.children, {
       where: await this.extractChildCondition(options, prop, false) as FilterQuery<T>,
       orderBy: innerOrderBy as QueryOrderMap<T>[],
-      fields: fields.length > 0 ? fields : undefined,
+      fields,
       validate: false,
       lookup: false,
       refresh,
@@ -318,7 +318,7 @@ export class EntityLoader {
     const options2 = { ...options } as FindOptions<T>;
     delete options2.limit;
     delete options2.offset;
-    options2.fields = (fields.length > 0 ? fields : undefined) as EntityField<T>[];
+    options2.fields = fields;
     options2.populate = (populate?.children ?? []) as never;
 
     if (prop.customType) {
@@ -381,8 +381,8 @@ export class EntityLoader {
     return subCond;
   }
 
-  private buildFields<T, P extends string>(fields: readonly EntityField<T, P>[] = [], prop: EntityProperty<T>): readonly EntityField<T>[] {
-    return fields.reduce((ret, f) => {
+  private buildFields<T, P extends string>(fields: readonly EntityField<T, P>[] = [], prop: EntityProperty<T>): readonly EntityField<T>[] | undefined {
+    const ret = fields.reduce((ret, f) => {
       if (Utils.isPlainObject(f)) {
         Object.keys(f)
           .filter(ff => ff === prop.name)
@@ -400,6 +400,21 @@ export class EntityLoader {
 
       return ret;
     }, [] as EntityField<T>[]);
+
+    if (ret.length === 0) {
+      return undefined;
+    }
+
+    // we need to automatically select the FKs too, e.g. for 1:m relations to be able to wire them with the items
+    if (prop.reference === ReferenceType.ONE_TO_MANY) {
+      const owner = prop.targetMeta!.properties[prop.mappedBy] as EntityProperty<T>;
+
+      if (!ret.includes(owner.name)) {
+        ret.push(owner.name);
+      }
+    }
+
+    return ret;
   }
 
   private getChildReferences<T extends AnyEntity<T>>(entities: T[], prop: EntityProperty<T>, refresh: boolean): AnyEntity[] {
