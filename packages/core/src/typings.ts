@@ -578,7 +578,7 @@ type Defined<T> = Exclude<T, undefined>;
 // For each property on T check if it is included in prefix of keys to load L:
 //   1. It yes, mark the collection or reference loaded and resolve its inner type recursively (passing suffix).
 //   2. If no, just return it as-is (scalars will be included, loadables too but not loaded).
-export type Loaded<T, L extends string = never> = {
+export type Loaded<T, L extends string = never> = T & {
   [K in keyof T]: K extends Prefix<L>
     ? LoadedLoadable<Defined<T[K]>, Loaded<ExtractType<Defined<T[K]>>, Suffix<L>>>
     : T[K]
