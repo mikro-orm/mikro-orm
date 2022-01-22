@@ -960,6 +960,7 @@ export class MetadataDiscovery {
   private async initEnumValues(prop: EntityProperty, path: string): Promise<void> {
     path = Utils.normalizePath(this.config.get('baseDir'), path);
     const exports = await Utils.dynamicImport(path);
+    /* istanbul ignore next */
     const target = exports[prop.type] || exports.default;
 
     if (target) {

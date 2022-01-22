@@ -6,7 +6,13 @@ import type {
   FindOneOptions,
   FindOptions, Primary,
   QueryResult,
-  Transaction } from '@mikro-orm/core';
+  Transaction,
+  IDatabaseDriver,
+  AnyEntity,
+  EntityDictionary,
+  NativeInsertUpdateManyOptions,
+  NativeInsertUpdateOptions,
+} from '@mikro-orm/core';
 import {
   Configuration,
   DatabaseDriver,
@@ -18,7 +24,7 @@ import {
 
 class Platform1 extends Platform { }
 
-class Driver extends DatabaseDriver<Connection> {
+class Driver extends DatabaseDriver<Connection> implements IDatabaseDriver {
 
   protected readonly platform = new Platform1();
 
@@ -43,11 +49,11 @@ class Driver extends DatabaseDriver<Connection> {
     return { affectedRows: 0, insertId: 0 as Primary<T> };
   }
 
-  async nativeInsert<T>(entityName: string, data: EntityData<T>, ctx: Transaction | undefined): Promise<QueryResult<T>> {
+  async nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>> {
     return { affectedRows: 0, insertId: 0 as Primary<T> };
   }
 
-  async nativeInsertMany<T>(entityName: string, data: EntityData<T>[], ctx: Transaction | undefined): Promise<QueryResult<T>> {
+  async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>): Promise<QueryResult<T>> {
     return { affectedRows: 0, insertId: 0 as Primary<T> };
   }
 
@@ -59,7 +65,7 @@ class Driver extends DatabaseDriver<Connection> {
 
 describe('DatabaseDriver', () => {
 
-  test('should load entities', async () => {
+  test('default validations', async () => {
     const config = new Configuration({ type: 'mongo', allowGlobalContext: true } as any, false);
     const driver = new Driver(config, []);
     expect(driver.createEntityManager()).toBeInstanceOf(EntityManager);
@@ -71,6 +77,7 @@ describe('DatabaseDriver', () => {
     const e1 = driver.convertException(new Error('test'));
     const e2 = driver.convertException(e1);
     expect(e1).toBe(e2);
+    expect(() => driver.getPlatform().getSchemaGenerator(driver)).toThrowError('Driver does not support SchemaGenerator');
   });
 
 });

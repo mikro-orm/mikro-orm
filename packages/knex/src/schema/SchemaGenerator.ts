@@ -1,24 +1,33 @@
 import type { Knex } from 'knex';
 import type { Dictionary, EntityMetadata } from '@mikro-orm/core';
-import { CommitOrderCalculator } from '@mikro-orm/core';
+import { AbstractSchemaGenerator } from '@mikro-orm/core';
 import type { Column, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
 import { DatabaseSchema } from './DatabaseSchema';
 import type { DatabaseTable } from './DatabaseTable';
-import type { SqlEntityManager } from '../SqlEntityManager';
+import type { AbstractSqlDriver } from '../AbstractSqlDriver';
 import { SchemaComparator } from './SchemaComparator';
+import { SqlEntityManager } from '../SqlEntityManager';
 
-export class SchemaGenerator {
+/**
+ * Should be renamed to `SqlSchemaGenerator` in v6
+ */
+export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> {
 
-  private readonly config = this.em.config;
-  private readonly driver = this.em.getDriver();
-  private readonly metadata = this.em.getMetadata();
-  private readonly platform = this.driver.getPlatform();
   private readonly helper = this.platform.getSchemaHelper()!;
-  private readonly connection = this.driver.getConnection();
   private readonly knex = this.connection.getKnex();
   private readonly options = this.config.get('schemaGenerator');
 
-  constructor(private readonly em: SqlEntityManager) { }
+  /**
+   * @deprecated For back compatibility, we also support EM as the parameter.
+   */
+  constructor(em: SqlEntityManager);
+
+  /**
+   * `orm.getSchemaGenerator()` should be preferred way of getting the SchemaGenerator instance.
+   */
+  constructor(driver: AbstractSqlDriver | SqlEntityManager) {
+    super(driver instanceof SqlEntityManager ? driver.getDriver() : driver);
+  }
 
   async generate(): Promise<string> {
     const [dropSchema, createSchema] = await Promise.all([
@@ -53,11 +62,6 @@ export class SchemaGenerator {
     }
 
     return false;
-  }
-
-  async refreshDatabase(): Promise<void> {
-    await this.dropSchema();
-    await this.createSchema();
   }
 
   getTargetSchema(schema?: string): DatabaseSchema {
@@ -498,28 +502,6 @@ export class SchemaGenerator {
     for (const fk of Object.values(tableDef.getForeignKeys())) {
       this.createForeignKey(table, fk, schema);
     }
-  }
-
-  private getOrderedMetadata(schema?: string): EntityMetadata[] {
-    const metadata = Object.values(this.metadata.getAll()).filter(meta => {
-      const isRootEntity = meta.root.className === meta.className;
-      return isRootEntity && !meta.embeddable;
-    });
-    const calc = new CommitOrderCalculator();
-    metadata.forEach(meta => calc.addNode(meta.root.className));
-    let meta = metadata.pop();
-
-    while (meta) {
-      for (const prop of meta.props) {
-        calc.discoverProperty(prop, meta.root.className);
-      }
-
-      meta = metadata.pop();
-    }
-
-    return calc.sort()
-      .map(cls => this.metadata.find(cls)!)
-      .filter(meta => schema ? [schema, '*'].includes(meta.schema!) : meta.schema !== '*');
   }
 
   private async dump(builder: Knex.SchemaBuilder, append = '\n\n'): Promise<string> {

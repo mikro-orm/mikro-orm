@@ -159,43 +159,6 @@ describe('EntityManagerMongo', () => {
     await orm.em.getRepository(Book).remove(lastBook[0]).flush();
   });
 
-  test('create/drop collection', async () => {
-    const driver = orm.em.getDriver();
-    await driver.getConnection().dropCollection(FooBar);
-    let collections = await driver.getConnection().listCollections();
-    expect(collections).not.toContain('foo-bar');
-    await driver.createCollections();
-    collections = await driver.getConnection().listCollections();
-    expect(collections).toContain('foo-bar');
-  });
-
-  test('refresh collections', async () => {
-    const driver = orm.em.getDriver();
-    const createCollection = jest.spyOn(MongoDriver.prototype, 'createCollections');
-    const dropCollections = jest.spyOn(MongoDriver.prototype, 'dropCollections');
-    const ensureIndexes = jest.spyOn(MongoDriver.prototype, 'ensureIndexes');
-
-    createCollection.mockImplementation(() => Promise.resolve());
-    dropCollections.mockImplementation(() => Promise.resolve());
-    ensureIndexes.mockImplementation(() => Promise.resolve());
-
-    await driver.refreshCollections();
-
-    expect(dropCollections).toBeCalledTimes(1);
-    expect(createCollection).toBeCalledTimes(1);
-    expect(ensureIndexes).toBeCalledTimes(1);
-
-    await driver.refreshCollections({ ensureIndexes: false });
-
-    expect(dropCollections).toBeCalledTimes(2);
-    expect(createCollection).toBeCalledTimes(2);
-    expect(ensureIndexes).toBeCalledTimes(1);
-
-    createCollection.mockRestore();
-    dropCollections.mockRestore();
-    ensureIndexes.mockRestore();
-  });
-
   test('should provide custom repository', async () => {
     const repo = orm.em.getRepository(Author);
     expect(repo).toBeInstanceOf(AuthorRepository);
@@ -538,6 +501,7 @@ describe('EntityManagerMongo', () => {
     expect(driver.getPlatform().usesPivotTable()).toBe(false);
     expect(driver.getPlatform().usesImplicitTransactions()).toBe(false);
     await expect(driver.loadFromPivotTable({} as EntityProperty, [])).rejects.toThrowError('MongoDriver does not use pivot tables');
+    await expect(driver.getConnection().execute('')).rejects.toThrowError('MongoConnection does not support generic execute method');
     await expect(driver.getConnection().execute('')).rejects.toThrowError('MongoConnection does not support generic execute method');
     expect(driver.getConnection().getCollection(BookTag).collectionName).toBe('book-tag');
     expect(orm.em.getCollection(BookTag).collectionName).toBe('book-tag');

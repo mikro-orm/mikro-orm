@@ -5,7 +5,7 @@ import type { Logger } from './logging';
 import { Configuration, ConfigurationLoader, Utils } from './utils';
 import { NullCacheAdapter } from './cache';
 import type { EntityManager } from './EntityManager';
-import type { AnyEntity, Constructor, IEntityGenerator, IMigrator, ISchemaGenerator, ISeedManager } from './typings';
+import type { AnyEntity, Constructor, IEntityGenerator, IMigrator, ISeedManager } from './typings';
 import { colors } from './logging';
 
 /**
@@ -45,7 +45,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
       await orm.connect();
 
       if (orm.config.get('ensureIndexes')) {
-        await orm.driver.ensureIndexes();
+        await orm.getSchemaGenerator().ensureIndexes();
       }
     }
 
@@ -132,8 +132,8 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Gets the SchemaGenerator.
    */
-  getSchemaGenerator<T extends ISchemaGenerator = ISchemaGenerator>(): T {
-    return this.driver.getPlatform().getSchemaGenerator(this.em) as T;
+  getSchemaGenerator(): ReturnType<ReturnType<D['getPlatform']>['getSchemaGenerator']> {
+    return this.driver.getPlatform().getSchemaGenerator(this.driver) as any;
   }
 
   /**

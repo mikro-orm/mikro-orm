@@ -83,7 +83,7 @@ are several things you need to respect:
     - use `implicitTransactions: true` to enable them globally
     - or use explicit transaction demarcation via `em.transactional()`
 - you need to explicitly create all collections before working with them
-    - use `em.getDriver().createCollections()` method to do so
+    - use `orm.getSchemaGenerator().createSchema()` method to do so
 
 ```sh
 # first create replica set
@@ -102,7 +102,7 @@ const orm = await MikroORM.init<MongoDriver>({
   implicitTransactions: true, // defaults to false
 });
 
-await orm.em.getDriver().createCollections();
+await orm.getSchemaGenerator().createSchema();
 ```
 
 > The `createCollections` method is present on the `MongoDriver` class only. You need 
@@ -124,10 +124,12 @@ const orm = await MikroORM.init<MongoDriver>({
 });
 ``` 
 
-Alternatively you can call `ensureIndexes()` method on the `MongoDriver`:
+Alternatively you can call `ensureIndexes()` method on the `SchemaGenerator`:
+
+> SchemaGenerator support for mongo was introduced in v5.
 
 ```typescript
-await orm.em.getDriver().ensureIndexes();
+await orm.getSchemaGenerator().ensureIndexes();
 ```
 
 > You can pass additional index/unique options via `options` parameter:

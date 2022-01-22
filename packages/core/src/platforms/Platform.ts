@@ -6,6 +6,7 @@ import type { AnyEntity, Constructor, EntityProperty, IEntityGenerator, IMigrato
 import { ExceptionConverter } from './ExceptionConverter';
 import type { EntityManager } from '../EntityManager';
 import type { Configuration } from '../utils/Configuration';
+import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
 import {
   ArrayType, BigIntType, BlobType, BooleanType, DateType, DecimalType, DoubleType, JsonType, SmallIntType, TimeType,
   TinyIntType, Type, UuidType, StringType, IntegerType, FloatType, DateTimeType, TextType, EnumType, UnknownType,
@@ -304,8 +305,8 @@ export abstract class Platform {
     return this.exceptionConverter;
   }
 
-  getSchemaGenerator(em: EntityManager): ISchemaGenerator {
-    throw new Error(`${this.constructor.name} does not support SchemaGenerator`);
+  getSchemaGenerator(driver: IDatabaseDriver): ISchemaGenerator {
+    throw new Error(`${driver.constructor.name} does not support SchemaGenerator`);
   }
 
   getEntityGenerator(em: EntityManager): IEntityGenerator {

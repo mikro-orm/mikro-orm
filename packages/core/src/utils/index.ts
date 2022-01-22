@@ -6,3 +6,4 @@ export * from './TransactionContext';
 export * from './QueryHelper';
 export * from './NullHighlighter';
 export * from './EntityComparator';
+export * from './AbstractSchemaGenerator';

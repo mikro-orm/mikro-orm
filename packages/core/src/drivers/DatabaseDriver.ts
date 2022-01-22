@@ -121,6 +121,10 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     });
   }
 
+  getMetadata(): MetadataStorage {
+    return this.metadata;
+  }
+
   getDependencies(): string[] {
     return this.dependencies;
   }

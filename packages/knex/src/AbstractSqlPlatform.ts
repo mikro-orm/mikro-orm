@@ -1,5 +1,5 @@
 import { escape } from 'sqlstring';
-import type { Constructor, EntityManager, EntityRepository } from '@mikro-orm/core';
+import type { Constructor, EntityManager, EntityRepository, IDatabaseDriver } from '@mikro-orm/core';
 import { JsonProperty, Platform, Utils } from '@mikro-orm/core';
 import { SqlEntityRepository } from './SqlEntityRepository';
 import type { SchemaHelper } from './schema';
@@ -25,8 +25,8 @@ export abstract class AbstractSqlPlatform extends Platform {
     return this.schemaHelper;
   }
 
-  getSchemaGenerator(em: EntityManager): SchemaGenerator {
-    return new SchemaGenerator(em as any); // cast as `any` to get around circular dependencies
+  getSchemaGenerator(driver: IDatabaseDriver): SchemaGenerator {
+    return new SchemaGenerator(driver as any); // cast as `any` to get around circular dependencies
   }
 
   getEntityGenerator(em: EntityManager) {
