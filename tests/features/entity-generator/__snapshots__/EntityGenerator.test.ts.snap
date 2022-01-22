@@ -1,5 +1,73 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`EntityGenerator enum with default value [mysql]: mysql-entity-dump-enum-default-value 1`] = `
+Array [
+  "import { Entity, Enum, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Publisher2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 100, nullable: true, default: '123' })
+  test?: string;
+
+  @Enum({ items: () => Publisher2Type, default: 'local' })
+  type: Publisher2Type = Publisher2Type.LOCAL;
+
+  @Enum({ items: () => Publisher2Type2, nullable: true, default: 'LOCAL' })
+  type2?: Publisher2Type2 = Publisher2Type2.LOCAL;
+
+}
+
+export enum Publisher2Type {
+  LOCAL = 'local',
+  GLOBAL = 'global',
+}
+
+export enum Publisher2Type2 {
+  LOCAL = 'LOCAL',
+  GLOBAL = 'GLOBAL',
+}
+",
+]
+`;
+
+exports[`EntityGenerator enum with default value [postgres]: postgres-entity-dump-enum-default-value 1`] = `
+Array [
+  "import { Entity, Enum, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Publisher2 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ nullable: true, default: '123' })
+  test?: string;
+
+  @Enum({ items: () => Publisher2Type, default: 'local' })
+  type: Publisher2Type = Publisher2Type.LOCAL;
+
+  @Enum({ items: () => Publisher2Type2, nullable: true, default: 'LOCAL' })
+  type2?: Publisher2Type2 = Publisher2Type2.LOCAL;
+
+}
+
+export enum Publisher2Type {
+  LOCAL = 'local',
+  GLOBAL = 'global',
+}
+
+export enum Publisher2Type2 {
+  LOCAL = 'LOCAL',
+  GLOBAL = 'GLOBAL',
+}
+",
+]
+`;
+
 exports[`EntityGenerator generate entities from schema [mysql]: mysql-entity-dump 1`] = `
 Array [
   "import { Entity, OneToOne, Property } from '@mikro-orm/core';
@@ -1134,68 +1202,6 @@ export class E123TableName {
   @PrimaryKey()
   id!: number;
 
-}
-",
-]
-`;
-
-exports[`EntityGenerator enum with default value [mysql]: mysql-entity-dump-enum-default-value 1`] = `
-Array [
-  "import { Entity, Enum, PrimaryKey } from '@mikro-orm/core';
-
-@Entity()
-export class Publisher2 {
-
-  @PrimaryKey()
-  id!: number;
-
-  @Enum({ items: () => Publisher2Type, default: 'local' })
-  type: Publisher2Type = Publisher2Type.LOCAL;
-
-  @Enum({ items: () => Publisher2Type2, nullable: true, default: 'LOCAL' })
-  type2?: Publisher2Type2 = Publisher2Type2.LOCAL;
-
-}
-
-export enum Publisher2Type {
-  LOCAL = 'local',
-  GLOBAL = 'global',
-}
-
-export enum Publisher2Type2 {
-  LOCAL = 'LOCAL',
-  GLOBAL = 'GLOBAL',
-}
-",
-]
-`;
-
-exports[`EntityGenerator enum with default value [postgres]: postgres-entity-dump-enum-default-value 1`] = `
-Array [
-  "import { Entity, Enum, PrimaryKey } from '@mikro-orm/core';
-
-@Entity()
-export class Publisher2 {
-
-  @PrimaryKey()
-  id!: number;
-
-  @Enum({ items: () => Publisher2Type, default: 'local' })
-  type: Publisher2Type = Publisher2Type.LOCAL;
-
-  @Enum({ items: () => Publisher2Type2, nullable: true, default: 'LOCAL' })
-  type2?: Publisher2Type2 = Publisher2Type2.LOCAL;
-
-}
-
-export enum Publisher2Type {
-  LOCAL = 'local',
-  GLOBAL = 'global',
-}
-
-export enum Publisher2Type2 {
-  LOCAL = 'LOCAL',
-  GLOBAL = 'GLOBAL',
 }
 ",
 ]

@@ -67,14 +67,13 @@ export class SourceFile {
 
   private getCollectionDecl() {
     const options: EntityOptions<unknown> = {};
-    const quote = (str: string) => `'${str}'`;
 
     if (this.meta.collection !== this.namingStrategy.classToTableName(this.meta.className)) {
-      options.tableName = quote(this.meta.collection);
+      options.tableName = this.quote(this.meta.collection);
     }
 
     if (this.meta.schema && this.meta.schema !== this.platform.getDefaultSchemaName()) {
-      options.schema = quote(this.meta.schema);
+      options.schema = this.quote(this.meta.schema);
     }
 
     if (!Utils.hasObjectKeys(options)) {
@@ -98,9 +97,7 @@ export class SourceFile {
     }
 
     if (prop.enum && typeof prop.default === 'string') {
-      const match = prop.default.match(/^'(.*)'$/);
-      const noQuoteDefault = match?.[1] ?? prop.default;
-      return `${padding}${ret} = ${prop.type}.${noQuoteDefault.toUpperCase()};\n`;
+      return `${padding}${ret} = ${prop.type}.${prop.default.toUpperCase()};\n`;
     }
 
     return `${padding}${ret} = ${prop.default};\n`;
@@ -109,10 +106,13 @@ export class SourceFile {
   private getEnumClassDefinition(enumClassName: string, enumValues: string[], padLeft: number): string {
     const padding = ' '.repeat(padLeft);
     let ret = `export enum ${enumClassName} {\n`;
-    enumValues.forEach(enumValue => {
+
+    for (const enumValue of enumValues) {
       ret += `${padding}${enumValue.toUpperCase()} = '${enumValue}',\n`;
-    });
+    }
+
     ret += '}\n';
+
     return ret;
   }
 
@@ -120,7 +120,7 @@ export class SourceFile {
     const padding = ' '.repeat(padLeft);
     const options = {} as Dictionary;
     let decorator = this.getDecoratorType(prop);
-    this.coreImports.add(decorator.substr(1));
+    this.coreImports.add(decorator.substring(1));
 
     if (prop.reference !== ReferenceType.SCALAR) {
       this.getForeignKeyDecoratorOptions(options, prop);
@@ -183,23 +183,26 @@ export class SourceFile {
     return [];
   }
 
-  private getCommonDecoratorOptions(options: Dictionary, prop: EntityProperty) {
+  private getCommonDecoratorOptions(options: Dictionary, prop: EntityProperty): void {
     if (prop.nullable) {
       options.nullable = true;
     }
 
-    if (prop.default != null) {
-      if (typeof prop.default === 'string') {
-        if ([`''`, ''].includes(prop.default)) {
-          options.default = `''`;
-        } else if (prop.default.match(/^'.*'$/)) {
-          options.default = prop.default;
-        } else {
-          options.defaultRaw = `\`${prop.default}\``;
-        }
-      } else {
-        options.default = prop.default;
-      }
+    if (prop.default == null) {
+      return;
+    }
+
+    if (typeof prop.default !== 'string') {
+      options.default = prop.default;
+      return;
+    }
+
+    if ([`''`, ''].includes(prop.default)) {
+      options.default = `''`;
+    } else if (prop.defaultRaw === this.quote(prop.default)) {
+      options.default = this.quote(prop.default);
+    } else {
+      options.defaultRaw = `\`${prop.default}\``;
     }
   }
 
@@ -258,7 +261,8 @@ export class SourceFile {
   }
 
   private quote(val: string) {
-    return val.includes(`'`) ? `\`${val}\`` : `'${val}'`;
+    /* istanbul ignore next */
+    return val.startsWith(`'`) ? `\`${val}\`` : `'${val}'`;
   }
 
   private getDecoratorType(prop: EntityProperty): string {

@@ -233,7 +233,8 @@ export class DatabaseTable {
     namingStrategy: NamingStrategy,
     schemaHelper: SchemaHelper,
     compositeFkIndexes: Dictionary<{ keyName: string }>,
-    compositeFkUniques: Dictionary<{ keyName: string }>) {
+    compositeFkUniques: Dictionary<{ keyName: string }>,
+  ) {
     const fk = Object.values(this.foreignKeys).find(fk => fk.columnNames.includes(column.name));
     const prop = this.getPropertyName(namingStrategy, column);
     const index = compositeFkIndexes[prop] || this.indexes.find(idx => idx.columnNames[0] === column.name && !idx.composite && !idx.unique && !idx.primary);
@@ -327,6 +328,13 @@ export class DatabaseTable {
 
     if (propType === 'number') {
       return +column.default;
+    }
+
+    // unquote string defaults if `raw = false`
+    const match = ('' + val).match(/^'(.*)'$/);
+
+    if (!raw && match) {
+      return match[1];
     }
 
     return '' + val;

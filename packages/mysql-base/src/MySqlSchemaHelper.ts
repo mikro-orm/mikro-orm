@@ -169,8 +169,8 @@ export class MySqlSchemaHelper extends SchemaHelper {
   }
 
   protected wrap(val: string | undefined, type: Type<unknown>): string | undefined {
-    return typeof val === 'string' && val.length > 0 && (type instanceof StringType
-      || type instanceof TextType || type instanceof EnumType) ? this.platform.quoteValue(val) : val;
+    const stringType = type instanceof StringType || type instanceof TextType || type instanceof EnumType;
+    return typeof val === 'string' && val.length > 0 && stringType ? this.platform.quoteValue(val) : val;
   }
 
 }

@@ -1,4 +1,4 @@
-import { Collection, Entity, Enum, ManyToMany, OneToMany, Property } from '@mikro-orm/core';
+import { Collection, Entity, Enum, EnumType, ManyToMany, OneToMany, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Test2 } from './Test2';
 import { BaseEntity2 } from './BaseEntity2';
@@ -41,7 +41,7 @@ export class Publisher2 extends BaseEntity2 {
   @Enum(() => PublisherType2)
   type2 = PublisherType2.LOCAL;
 
-  @Enum({ nullable: true })
+  @Enum({ nullable: true, type: EnumType })
   enum1?: Enum1;
 
   @Enum({ type: 'Enum2', nullable: true })

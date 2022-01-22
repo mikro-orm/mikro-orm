@@ -101,7 +101,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       order by kcu.table_schema, kcu.table_name, kcu.ordinal_position, kcu.constraint_name`;
   }
 
-  async getEnumDefinitions(connection: AbstractSqlConnection, tableName: string, schemaName = 'public'): Promise<Dictionary<string[]>> {
+  async getEnumDefinitions(connection: AbstractSqlConnection, tableName: string, schemaName: string): Promise<Dictionary<string[]>> {
     const sql = `select conrelid::regclass as table_from, conname, pg_get_constraintdef(c.oid) as enum_def
       from pg_constraint c join pg_namespace n on n.oid = c.connamespace
       where contype = 'c' and conrelid = '"${schemaName}"."${tableName}"'::regclass order by contype`;
