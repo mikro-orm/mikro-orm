@@ -89,4 +89,34 @@ describe('EntityGenerator', () => {
     await orm.close(true);
   });
 
+  test('enum with default value [mysql]', async () => {
+    const orm = await initORMMySql('mysql', {}, true);
+    await orm.getSchemaGenerator().dropSchema();
+    await orm.getSchemaGenerator().execute(`
+    create table \`publisher2\` (\`id\` int(10) unsigned not null auto_increment primary key, \`type\` enum('local', 'global') not null default 'local', \`type2\` enum('LOCAL', 'GLOBAL') default 'LOCAL') default character set utf8mb4 engine = InnoDB;
+    `);
+    const generator = orm.getEntityGenerator();
+    const dump = await generator.generate({ save: false, baseDir: './temp/entities' });
+    expect(dump).toMatchSnapshot('mysql-entity-dump-enum-default-value');
+    await orm.getSchemaGenerator().execute(`
+      drop table if exists \`publisher2\`;
+    `);
+    await orm.close(true);
+  });
+
+  test('enum with default value [postgres]', async () => {
+    const orm = await initORMPostgreSql();
+    await orm.getSchemaGenerator().dropSchema();
+    await orm.getSchemaGenerator().execute(`
+    create table "publisher2" ("id" serial primary key, "type" text check ("type" in ('local', 'global')) not null default 'local', "type2" text check ("type2" in ('LOCAL', 'GLOBAL')) default 'LOCAL');
+    `);
+    const generator = orm.getEntityGenerator();
+    const dump = await generator.generate({ save: false, baseDir: './temp/entities' });
+    expect(dump).toMatchSnapshot('postgres-entity-dump-enum-default-value');
+    await orm.getSchemaGenerator().execute(`
+      drop table if exists "publisher2";
+    `);
+    await orm.close(true);
+  });
+
 });

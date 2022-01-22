@@ -27,6 +27,7 @@ export class SourceFile {
     });
 
     ret += `export class ${this.meta.className} {\n`;
+    const enumDefinitions: string[] = [];
     Object.values(this.meta.properties).forEach(prop => {
       const decorator = this.getPropertyDecorator(prop, 2);
       const definition = this.getPropertyDefinition(prop, 2);
@@ -38,6 +39,11 @@ export class SourceFile {
       ret += decorator;
       ret += definition;
       ret += '\n';
+
+      if (prop.enum) {
+        const enumClassName = this.namingStrategy.getClassName(this.meta.collection + '_' + prop.fieldNames[0], '_');
+        enumDefinitions.push(this.getEnumClassDefinition(enumClassName, prop.items as string[], 2));
+      }
     });
     ret += '}\n';
 
@@ -47,7 +53,12 @@ export class SourceFile {
       imports.push(`import { ${entity} } from './${entity}';`);
     });
 
-    return `${imports.join('\n')}\n\n${ret}`;
+    ret = `${imports.join('\n')}\n\n${ret}`;
+    if (enumDefinitions.length) {
+      ret += '\n' + enumDefinitions.join('\n');
+    }
+
+    return ret;
   }
 
   getBaseName() {
@@ -75,7 +86,9 @@ export class SourceFile {
 
   private getPropertyDefinition(prop: EntityProperty, padLeft: number): string {
     // string defaults are usually things like SQL functions
-    const useDefault = prop.default != null && typeof prop.default !== 'string';
+    // string defaults can also be enums, for that useDefault should be true.
+    const isEnumOrNonStringDefault = prop.enum || typeof prop.default !== 'string';
+    const useDefault = prop.default != null && isEnumOrNonStringDefault;
     const optional = prop.nullable ? '?' : (useDefault ? '' : '!');
     const ret = `${prop.name}${optional}: ${prop.type}`;
     const padding = ' '.repeat(padLeft);
@@ -84,7 +97,23 @@ export class SourceFile {
       return `${padding + ret};\n`;
     }
 
+    if (prop.enum && typeof prop.default === 'string') {
+      const match = prop.default.match(/^'(.*)'$/);
+      const noQuoteDefault = match?.[1] ?? prop.default;
+      return `${padding}${ret} = ${prop.type}.${noQuoteDefault.toUpperCase()};\n`;
+    }
+
     return `${padding}${ret} = ${prop.default};\n`;
+  }
+
+  private getEnumClassDefinition(enumClassName: string, enumValues: string[], padLeft: number): string {
+    const padding = ' '.repeat(padLeft);
+    let ret = `export enum ${enumClassName} {\n`;
+    enumValues.forEach(enumValue => {
+      ret += `${padding}${enumValue.toUpperCase()} = '${enumValue}',\n`;
+    });
+    ret += '}\n';
+    return ret;
   }
 
   private getPropertyDecorator(prop: EntityProperty, padLeft: number): string {
@@ -97,6 +126,10 @@ export class SourceFile {
       this.getForeignKeyDecoratorOptions(options, prop);
     } else {
       this.getScalarPropertyDecoratorOptions(options, prop);
+    }
+
+    if (prop.enum) {
+      options.items = `() => ${prop.type}`;
     }
 
     this.getCommonDecoratorOptions(options, prop);
@@ -155,13 +188,17 @@ export class SourceFile {
       options.nullable = true;
     }
 
-    if (prop.default && typeof prop.default === 'string') {
-      if ([`''`, ''].includes(prop.default)) {
-        options.default = `''`;
-      } else if (prop.default.match(/^'.*'$/)) {
-        options.default = prop.default;
+    if (prop.default != null) {
+      if (typeof prop.default === 'string') {
+        if ([`''`, ''].includes(prop.default)) {
+          options.default = `''`;
+        } else if (prop.default.match(/^'.*'$/)) {
+          options.default = prop.default;
+        } else {
+          options.defaultRaw = `\`${prop.default}\``;
+        }
       } else {
-        options.defaultRaw = `\`${prop.default}\``;
+        options.default = prop.default;
       }
     }
   }
@@ -173,6 +210,16 @@ export class SourceFile {
       t = 'datetime';
     }
 
+    if (prop.fieldNames[0] !== this.namingStrategy.propertyToColumnName(prop.name)) {
+      options.fieldName = `'${prop.fieldNames[0]}'`;
+    }
+
+    // for enum properties, we don't need a column type or the property length
+    // in the decorator so return early.
+    if (prop.enum) {
+      return;
+    }
+
     const mappedType1 = this.platform.getMappedType(t);
     const mappedType2 = this.platform.getMappedType(prop.columnTypes[0]);
     const columnType1 = mappedType1.getColumnType({ ...prop, autoincrement: false }, this.platform);
@@ -182,11 +229,7 @@ export class SourceFile {
       options.columnType = this.quote(prop.columnTypes[0]);
     }
 
-    if (prop.fieldNames[0] !== this.namingStrategy.propertyToColumnName(prop.name)) {
-      options.fieldName = `'${prop.fieldNames[0]}'`;
-    }
-
-    if (prop.length && prop.columnTypes[0] !== 'enum') {
+    if (prop.length) {
       options.length = prop.length;
     }
   }
@@ -229,6 +272,10 @@ export class SourceFile {
 
     if (prop.primary) {
       return '@PrimaryKey';
+    }
+
+    if (prop.enum) {
+      return '@Enum';
     }
 
     return '@Property';

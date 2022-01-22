@@ -228,7 +228,12 @@ export class DatabaseTable {
     return !!this.getPrimaryKey();
   }
 
-  private getPropertyDeclaration(column: Column, namingStrategy: NamingStrategy, schemaHelper: SchemaHelper, compositeFkIndexes: Dictionary<{ keyName: string }>, compositeFkUniques: Dictionary<{ keyName: string }>) {
+  private getPropertyDeclaration(
+    column: Column,
+    namingStrategy: NamingStrategy,
+    schemaHelper: SchemaHelper,
+    compositeFkIndexes: Dictionary<{ keyName: string }>,
+    compositeFkUniques: Dictionary<{ keyName: string }>) {
     const fk = Object.values(this.foreignKeys).find(fk => fk.columnNames.includes(column.name));
     const prop = this.getPropertyName(namingStrategy, column);
     const index = compositeFkIndexes[prop] || this.indexes.find(idx => idx.columnNames[0] === column.name && !idx.composite && !idx.unique && !idx.primary);
@@ -258,6 +263,8 @@ export class DatabaseTable {
       length: column.length,
       index: index ? index.keyName : undefined,
       unique: unique ? unique.keyName : undefined,
+      enum: !!column.enumItems?.length,
+      items: column.enumItems,
       ...fkOptions,
     };
   }
@@ -290,6 +297,12 @@ export class DatabaseTable {
     if (fk) {
       const parts = fk.referencedTableName.split('.', 2);
       return namingStrategy.getClassName(parts.length > 1 ? parts[1] : parts[0], '_');
+    }
+    // If this column is using an enum.
+    if (column.enumItems?.length) {
+      // We will create a new enum name for this type and set it as the property type as well.
+      // The enum name will be a concatenation of the table name and the column name.
+      return namingStrategy.getClassName(this.name + '_' + column.name, '_');
     }
 
     return column.mappedType?.compareAsType() ?? 'unknown';
