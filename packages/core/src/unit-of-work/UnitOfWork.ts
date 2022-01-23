@@ -263,12 +263,18 @@ export class UnitOfWork {
     this.queuedActions.add(entity.__meta!.className);
     this.persistStack.delete(entity);
 
-    // remove from referencing collections
+    // remove from referencing relations
     for (const prop of entity.__meta!.bidirectionalRelations) {
-      const inverse = prop.mappedBy || prop.inversedBy;
+      const inverseProp = prop.mappedBy || prop.inversedBy;
+      const relation = Reference.unwrapReference(entity[prop.name]);
 
-      if (entity[prop.name] && Utils.isCollection(Reference.unwrapReference(entity[prop.name])[inverse])) {
-        (Reference.unwrapReference(entity[prop.name])[inverse] as Collection<T>).removeWithoutPropagation(entity);
+      if (prop.reference === ReferenceType.ONE_TO_MANY && Utils.isCollection<AnyEntity>(relation)) {
+        relation.getItems(false).forEach(item => delete item[inverseProp]);
+        continue;
+      }
+
+      if (relation && Utils.isCollection(relation[inverseProp])) {
+        relation[inverseProp].removeWithoutPropagation(entity);
       }
     }
 

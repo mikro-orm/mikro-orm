@@ -150,6 +150,8 @@ describe('events (mysql)', () => {
       ['afterUpdate', 'Author2'],
       ['beforeUpdate', 'Book2'],
       ['afterUpdate', 'Book2'],
+      ['beforeUpdate', 'Book2'],
+      ['afterUpdate', 'Book2'],
       ['beforeDelete', 'Book2'],
       ['beforeDelete', 'Book2'],
       ['afterDelete', 'Book2'],

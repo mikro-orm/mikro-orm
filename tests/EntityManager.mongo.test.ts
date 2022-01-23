@@ -335,6 +335,26 @@ describe('EntityManagerMongo', () => {
     expect(orm.em.getUnitOfWork().getIdentityMap()).toEqual({ registry: new Map([[Author, new Map<string, Author>()]]) });
   });
 
+  test('removing entity will remove its FK from relations', async () => {
+    const author = new Author('auth', 'email');
+    const publisher = new Publisher('pub');
+    author.books.add(new Book('b1'));
+    author.books[0].publisher = Reference.create(publisher);
+    author.books.add(new Book('b2'));
+    author.books[1].publisher = Reference.create(publisher);
+    author.books.add(new Book('b3'));
+    author.books[2].publisher = Reference.create(publisher);
+    await orm.em.fork().persistAndFlush(author);
+
+    const p1 = await orm.em.findOneOrFail(Publisher, publisher, { populate: ['books'] });
+    orm.em.remove(p1);
+    await orm.em.flush();
+
+    const books = await orm.em.fork().find(Book, {});
+    expect(books).toHaveLength(3);
+    expect(books.map(b => b.publisher)).toEqual([null, null, null]);
+  });
+
   test('removing persisted entity via PK', async () => {
     const author = new Author('name', 'email');
     const repo = orm.em.getRepository(Author);
