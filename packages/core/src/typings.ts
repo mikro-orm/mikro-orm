@@ -438,6 +438,7 @@ export interface ISchemaGenerator {
   createDatabase(name: string): Promise<void>;
   dropDatabase(name: string): Promise<void>;
   execute(sql: string, options?: { wrap?: boolean }): Promise<void>;
+  ensureIndexes(): Promise<void>;
 }
 
 export interface IEntityGenerator {

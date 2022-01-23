@@ -9,12 +9,14 @@ import type { MetadataStorage } from '../metadata';
 import type { Collection } from '../entity';
 import type { EntityManager } from '../EntityManager';
 import type { DriverException } from '../exceptions';
+import type { Configuration } from '../utils/Configuration';
 
 export const EntityManagerType = Symbol('EntityManagerType');
 
 export interface IDatabaseDriver<C extends Connection = Connection> {
 
   [EntityManagerType]: EntityManager<this>;
+  readonly config: Configuration;
 
   createEntityManager<D extends IDatabaseDriver = IDatabaseDriver>(useContext?: boolean): D[typeof EntityManagerType];
 
@@ -62,6 +64,8 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   getPlatform(): Platform;
 
   setMetadata(metadata: MetadataStorage): void;
+
+  getMetadata(): MetadataStorage;
 
   ensureIndexes(): Promise<void>;
 

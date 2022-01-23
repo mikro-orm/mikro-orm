@@ -195,7 +195,7 @@ describe('embedded entities in mongo', () => {
   });
 
   afterAll(async () => {
-    await orm.em.getDriver().dropCollections();
+    await orm.getSchemaGenerator().dropSchema();
     await orm.close(true);
   });
 
@@ -243,8 +243,8 @@ describe('embedded entities in mongo', () => {
   test('create collections', async () => {
     const createCollection = jest.spyOn(MongoConnection.prototype, 'createCollection');
     createCollection.mockResolvedValue({} as any);
-    await orm.em.getDriver().createCollections();
-    expect(createCollection.mock.calls.map(c => c[0])).toEqual(['user', 'custom-user', 'parent']);
+    await orm.getSchemaGenerator().createSchema();
+    expect(createCollection.mock.calls.map(c => c[0])).toEqual(['parent', 'custom-user', 'user']);
     createCollection.mockRestore();
   });
 

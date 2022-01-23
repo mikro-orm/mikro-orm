@@ -81,7 +81,7 @@ describe('polymorphic embeddables in mongo', () => {
   });
 
   afterAll(async () => {
-    await orm.em.getDriver().dropCollections();
+    await orm.getSchemaGenerator().dropSchema();
     await orm.close();
   });
 
