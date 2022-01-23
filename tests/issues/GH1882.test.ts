@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, Property, MikroORM, ManyToOne, OneToMany, Collection, BigIntType } from '@mikro-orm/core';
+import { BigIntType, Collection, Entity, ManyToOne, MikroORM, OneToMany, PopulateHint, PrimaryKey, Property } from '@mikro-orm/core';
 import type { MySqlDriver } from '@mikro-orm/mysql';
 import { mockLogger } from '../helpers';
 
@@ -62,15 +62,14 @@ describe('GH issue 1882', () => {
     const mock = mockLogger(orm, ['query']);
     const cond =  { $or: [{ barItems: '5678' }, { name: 'fooName' }] };
 
-    const res = await orm.em.find(
-      Foo,
-      cond,
-      { populate: ['barItems'] },
-    );
+    await orm.em.fork().find(Foo, cond, { populate: ['barItems'], populateWhere: PopulateHint.INFER });
+    expect(mock.mock.calls[0][0]).toMatch('select `f0`.* from `foo` as `f0` left join `bar` as `b1` on `f0`.`id` = `b1`.`foo_id` where (`b1`.`id` = ? or `f0`.`name` = ?)');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.* from `bar` as `b0` where `b0`.`foo_id` in (?) and `b0`.`id` = ? order by `b0`.`foo_id` asc');
+    mock.mockReset();
 
-    const queries = mock.mock.calls;
-    expect(queries[0][0]).toMatch('select `f0`.* from `foo` as `f0` left join `bar` as `b1` on `f0`.`id` = `b1`.`foo_id` where (`b1`.`id` = ? or `f0`.`name` = ?)');
-    expect(queries[1][0]).toMatch('select `b0`.* from `bar` as `b0` where `b0`.`foo_id` in (?) and `b0`.`id` = ? order by `b0`.`foo_id` asc');
+    await orm.em.fork().find(Foo, cond, { populate: ['barItems'] });
+    expect(mock.mock.calls[0][0]).toMatch('select `f0`.* from `foo` as `f0` left join `bar` as `b1` on `f0`.`id` = `b1`.`foo_id` where (`b1`.`id` = ? or `f0`.`name` = ?)');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.* from `bar` as `b0` where `b0`.`foo_id` in (?) order by `b0`.`foo_id` asc');
   });
 
   test(`GH issue 1882-2`, async () => {
@@ -89,16 +88,18 @@ describe('GH issue 1882', () => {
     const mock = mockLogger(orm, ['query']);
     const cond =  { $and: [{ barItems: '3456' }] };
 
-    const res = await orm.em.find(
-      Foo,
-      cond,
-      { populate: ['barItems'] },
-    );
+    await orm.em.find(Foo, cond, { populate: ['barItems'], populateWhere: PopulateHint.INFER });
     orm.em.clear();
 
-    const queries = mock.mock.calls;
-    expect(queries[0][0]).toMatch('select `f0`.* from `foo` as `f0` left join `bar` as `b1` on `f0`.`id` = `b1`.`foo_id` where `b1`.`id` = ?');
-    expect(queries[1][0]).toMatch('select `b0`.* from `bar` as `b0` where `b0`.`foo_id` in (?) and `b0`.`id` = ? order by `b0`.`foo_id` asc');
+    expect(mock.mock.calls[0][0]).toMatch('select `f0`.* from `foo` as `f0` left join `bar` as `b1` on `f0`.`id` = `b1`.`foo_id` where `b1`.`id` = ?');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.* from `bar` as `b0` where `b0`.`foo_id` in (?) and `b0`.`id` = ? order by `b0`.`foo_id` asc');
+    mock.mockReset();
+
+    await orm.em.find(Foo, cond, { populate: ['barItems'] });
+    orm.em.clear();
+
+    expect(mock.mock.calls[0][0]).toMatch('select `f0`.* from `foo` as `f0` left join `bar` as `b1` on `f0`.`id` = `b1`.`foo_id` where `b1`.`id` = ?');
+    expect(mock.mock.calls[1][0]).toMatch('select `b0`.* from `bar` as `b0` where `b0`.`foo_id` in (?) order by `b0`.`foo_id` asc');
   });
 
 });

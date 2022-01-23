@@ -10,6 +10,11 @@ export const enum FlushMode {
   ALWAYS,
 }
 
+export enum PopulateHint {
+  INFER,
+  ALL,
+}
+
 export enum GroupOperator {
   $and = 'and',
   $or = 'or',

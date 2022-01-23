@@ -1,9 +1,9 @@
 import type {
   EntityData, EntityMetadata, EntityProperty, AnyEntity, FilterQuery, Primary, Dictionary, QBFilterQuery,
-  IPrimaryKey, PopulateOptions, EntityDictionary, ExpandProperty, AutoPath,
+  IPrimaryKey, PopulateOptions, EntityDictionary, ExpandProperty, AutoPath, ObjectQuery,
 } from '../typings';
 import type { Connection, QueryResult, Transaction } from '../connections';
-import type { FlushMode, LockMode, QueryOrderMap, QueryFlag, LoadStrategy } from '../enums';
+import type { FlushMode, LockMode, QueryOrderMap, QueryFlag, LoadStrategy, PopulateHint } from '../enums';
 import type { Platform } from '../platforms';
 import type { MetadataStorage } from '../metadata';
 import type { Collection } from '../entity';
@@ -89,6 +89,7 @@ export type EntityField<T, P extends string = never> = keyof T | AutoPath<T, P> 
 
 export interface FindOptions<T, P extends string = never> {
   populate?: readonly AutoPath<T, P>[] | boolean;
+  populateWhere?: ObjectQuery<T> | PopulateHint;
   orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[];
   cache?: boolean | number | [string, number];
   limit?: number;

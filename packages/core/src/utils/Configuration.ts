@@ -34,7 +34,7 @@ import type { EventSubscriber } from '../events';
 import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
 import { NotFoundError } from '../errors';
 import { RequestContext } from './RequestContext';
-import { FlushMode, LoadStrategy } from '../enums';
+import { FlushMode, LoadStrategy, PopulateHint } from '../enums';
 import { MemoryCacheAdapter } from '../cache/MemoryCacheAdapter';
 import { EntityComparator } from './EntityComparator';
 
@@ -64,6 +64,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     hydrator: ObjectHydrator,
     flushMode: FlushMode.AUTO,
     loadStrategy: LoadStrategy.SELECT_IN,
+    populateWhere: PopulateHint.ALL,
     autoJoinOneToOneOwner: true,
     propagateToOneOwner: true,
     populateAfterFlush: true,
@@ -149,7 +150,11 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets specific configuration option. Falls back to specified `defaultValue` if provided.
    */
   get<T extends keyof MikroORMOptions<D>, U extends MikroORMOptions<D>[T]>(key: T, defaultValue?: U): U {
-    return (Utils.isDefined(this.options[key]) ? this.options[key] : defaultValue) as U;
+    if (typeof this.options[key] !== 'undefined') {
+      return this.options[key] as U;
+    }
+
+    return defaultValue as U;
   }
 
   getAll(): MikroORMOptions<D> {
@@ -419,6 +424,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   batchSize: number;
   hydrator: HydratorConstructor;
   loadStrategy: LoadStrategy;
+  populateWhere: PopulateHint;
   flushMode: FlushMode;
   entityRepository?: Constructor<EntityRepository<any>>;
   replicas?: Partial<ConnectionOptions>[];

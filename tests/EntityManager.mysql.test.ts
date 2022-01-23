@@ -4,7 +4,7 @@ import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
 import {
   Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, ValidationError, wrap,
   UniqueConstraintViolationException, TableNotFoundException, TableExistsException, SyntaxErrorException,
-  NonUniqueFieldNameException, InvalidFieldNameException, expr, IsolationLevel, NullHighlighter,
+  NonUniqueFieldNameException, InvalidFieldNameException, expr, IsolationLevel, NullHighlighter, PopulateHint,
 } from '@mikro-orm/core';
 import { MySqlDriver, MySqlConnection } from '@mikro-orm/mysql';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
@@ -1029,6 +1029,7 @@ describe('EntityManagerMySql', () => {
 
     const a3 = await orm.em.findOneOrFail(Author2, { books: { tags: { name: { $in: ['silly', 'strange'] } } } }, {
       populate: ['books.tags'],
+      populateWhere: PopulateHint.INFER,
       orderBy: { books: { tags: { name: QueryOrder.DESC }, title: QueryOrder.ASC } },
     });
     expect(a3.books.getItems().map(b => b.title)).toEqual(['b4', 'b1', 'b2']); // first strange tag (desc), then silly by name (asc)
@@ -1036,12 +1037,35 @@ describe('EntityManagerMySql', () => {
 
     const a4 = await orm.em.findOneOrFail(Author2, { books: { tags: { name: { $in: ['silly', 'strange'] } } } }, {
       populate: ['books.tags'],
+      populateWhere: PopulateHint.INFER,
       orderBy: [
         { books: { tags: { name: QueryOrder.DESC } } },
         { books: { title: QueryOrder.ASC } },
       ],
     });
     expect(a4.books.getItems().map(b => b.title)).toEqual(['b4', 'b1', 'b2']); // first strange tag (desc), then silly by name (asc)
+    orm.em.clear();
+
+    const a5 = await orm.em.findOneOrFail(Author2, { books: { tags: { name: { $in: ['silly', 'strange'] } } } }, {
+      populate: ['books.tags'],
+      populateWhere: PopulateHint.ALL,
+      orderBy: [
+        { books: { tags: { name: QueryOrder.DESC } } },
+        { books: { title: QueryOrder.ASC } },
+      ],
+    });
+    expect(a5.books.getItems().map(b => b.title)).toEqual(['b4', 'b1', 'b2', 'b3', 'b5']);
+    orm.em.clear();
+
+    const a6 = await orm.em.findOneOrFail(Author2, { books: { tags: { name: { $in: ['silly', 'strange'] } } } }, {
+      populate: ['books.tags'],
+      populateWhere: {},
+      orderBy: [
+        { books: { tags: { name: QueryOrder.DESC } } },
+        { books: { title: QueryOrder.ASC } },
+      ],
+    });
+    expect(a6.books.getItems().map(b => b.title)).toEqual(['b4', 'b1', 'b2', 'b3', 'b5']);
   });
 
   test('many to many relation', async () => {
@@ -1420,6 +1444,7 @@ describe('EntityManagerMySql', () => {
 
     const books = await orm.em.find(Book2, { tags: { name: { $ne: 'funny' } } }, {
       populate: ['tags'],
+      populateWhere: PopulateHint.INFER,
       orderBy: { title: QueryOrder.DESC, tags: { name: QueryOrder.ASC } },
     });
     await expect(books.length).toBe(3);
@@ -1457,6 +1482,7 @@ describe('EntityManagerMySql', () => {
     orm.em.clear();
     const books = await orm.em.find(Book2, { tagsUnordered: { name: { $ne: 'funny' } } }, {
       populate: ['tagsUnordered', 'perex'],
+      populateWhere: PopulateHint.INFER,
       orderBy: { title: QueryOrder.DESC },
     });
     expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t3`.`id` as `test_id` from `book2` as `b0` ' +
@@ -1477,6 +1503,7 @@ describe('EntityManagerMySql', () => {
     mock.mock.calls.length = 0;
     const tags = await orm.em.find(BookTag2, { booksUnordered: { title: { $ne: 'My Life on The Wall, part 3' } } }, {
       populate: ['booksUnordered.perex'],
+      populateWhere: PopulateHint.INFER,
       orderBy: { name: QueryOrder.ASC },
     });
     expect(mock.mock.calls[1][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `b1`.`book2_uuid_pk` as `fk__book2_uuid_pk`, `b1`.`book_tag2_id` as `fk__book_tag2_id`, `t2`.`id` as `test_id` from `book2` as `b0` ' +

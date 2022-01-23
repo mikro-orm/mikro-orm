@@ -187,3 +187,40 @@ and has been replaced with `glob`. This change is also reflected in MikroORM.
 The default value for `glob` is `!(*.d).{js,ts}`, so both JS and TS files are matched
 (but not .d.ts files). You should usually not need to change this option as this default
 suits both development and production environments.
+
+## Population no longer infers the where condition by default
+
+> This applies only to SELECT_IN strategy, as JOINED strategy implies the inference.
+
+Previously when we used populate hints in `em.find()` and similar methods, the
+query for our entity would be analysed and parts of it extracted and used for 
+the population. Following example would find all authors that have books with 
+given IDs, and populate their books collection, again using this PK condition,
+resulting in only such books being in those collections. 
+
+```ts
+// this would end up with `Author.books` collections having only books of PK 1, 2, 3
+const a = await em.find(Author, { books: [1, 2, 3] }, { populate: ['books'] });
+```
+
+Following this example, if we wanted to load all books, we would need a separate 
+`em.populate()` call:
+
+```ts
+const a = await em.find(Author, { books: [1, 2, 3] });
+await em.populate(a, ['books']);
+```
+
+This behaviour changed and is now configurable both globally and locally, via 
+`populateWhere` option. Globally we can specify one of `PopulateHint.ALL` and 
+`PopulateHint.INFER`, the former being the default in v5, the latter being the
+default behaviour in v4. Locally (via `FindOptions`) we can also specify custom
+where condition that will be passed to `em.populate()` call.
+
+```ts
+// revert back to the old behaviour locally
+const a = await em.find(Author, { books: [1, 2, 3] }, {
+  populate: ['books'],
+  populateWhere: PopulateHint.INFER,
+});
+```
