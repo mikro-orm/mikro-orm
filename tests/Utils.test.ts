@@ -20,10 +20,8 @@ describe('Utils', () => {
     expect(Utils.isDefined(data)).toBe(false);
     data = null;
     expect(Utils.isDefined(data)).toBe(true);
-    expect(Utils.isDefined(data, true)).toBe(false);
     data = 0;
     expect(Utils.isDefined(data)).toBe(true);
-    expect(Utils.isDefined(data, true)).toBe(true);
   });
 
   test('isObject', () => {

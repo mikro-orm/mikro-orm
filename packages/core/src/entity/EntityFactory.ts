@@ -222,7 +222,7 @@ export class EntityFactory {
       return this.unitOfWork.getById<T>(meta.name!, data[meta.primaryKeys[0]] as Primary<T>, options.schema);
     }
 
-    if (meta.primaryKeys.some(pk => !Utils.isDefined(data[pk as keyof T], true))) {
+    if (meta.primaryKeys.some(pk => data[pk as keyof T] == null)) {
       return undefined;
     }
 
@@ -255,7 +255,7 @@ export class EntityFactory {
   private denormalizePrimaryKey<T>(data: EntityData<T>, primaryKey: string, prop: EntityProperty<T>): void {
     const pk = this.platform.getSerializedPrimaryKeyField(primaryKey);
 
-    if (Utils.isDefined(data[pk], true) || Utils.isDefined(data[primaryKey], true)) {
+    if (data[pk] != null || data[primaryKey] != null) {
       let id = data[pk] || data[primaryKey];
 
       if (prop.type.toLowerCase() === 'objectid') {

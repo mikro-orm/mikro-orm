@@ -76,7 +76,7 @@ export class EntityValidator {
   }
 
   validatePrimaryKey<T extends AnyEntity<T>>(entity: EntityData<T>, meta: EntityMetadata): void {
-    const pkExists = meta.primaryKeys.every(pk => Utils.isDefined(entity[pk], true)) || Utils.isDefined(entity[meta.serializedPrimaryKey], true);
+    const pkExists = meta.primaryKeys.every(pk => entity[pk] != null) || entity[meta.serializedPrimaryKey] != null;
 
     if (!entity || !pkExists) {
       throw ValidationError.fromMergeWithoutPK(meta);

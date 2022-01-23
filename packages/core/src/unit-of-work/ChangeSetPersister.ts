@@ -384,7 +384,7 @@ export class ChangeSetPersister {
           return ret;
         }
 
-        if (prop.fieldNames && Utils.isDefined(res.row![prop.fieldNames[0]], true) && !Utils.isDefined(changeSet.entity[prop.name], true)) {
+        if (prop.fieldNames && res.row![prop.fieldNames[0]] != null && changeSet.entity[prop.name] == null) {
           ret[prop.name] = changeSet.payload[prop.name] = res.row![prop.fieldNames[0]];
         }
 
