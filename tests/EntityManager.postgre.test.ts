@@ -3,7 +3,7 @@ import type { EventSubscriber, ChangeSet, AnyEntity, FlushEventArgs } from '@mik
 import {
   Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, ValidationError, ChangeSetType, wrap, expr,
   UniqueConstraintViolationException, TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException,
-  NonUniqueFieldNameException, InvalidFieldNameException, LoadStrategy, IsolationLevel,
+  NonUniqueFieldNameException, InvalidFieldNameException, LoadStrategy, IsolationLevel, PopulateHint,
 } from '@mikro-orm/core';
 import { PostgreSqlDriver, PostgreSqlConnection } from '@mikro-orm/postgresql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2, Label2 } from './entities-sql';
@@ -778,6 +778,7 @@ describe('EntityManagerPostgre', () => {
       await em.find(Book2, {}, {
         lockMode: LockMode.PESSIMISTIC_PARTIAL_WRITE,
         populate: ['author', 'tags'],
+        populateWhere: PopulateHint.INFER,
         strategy: LoadStrategy.SELECT_IN,
       });
     });
@@ -1286,9 +1287,9 @@ describe('EntityManagerPostgre', () => {
     const mock = mockLogger(orm, ['query']);
     const res = await orm.em.find(Author2, { books: { title: { $in: ['b1', 'b2'] } } }, { populate: ['books.perex'] });
     expect(res).toHaveLength(1);
-    expect(res[0].books.length).toBe(2);
+    expect(res[0].books.length).toBe(3);
     expect(mock.mock.calls[0][0]).toMatch('select "a0".* from "author2" as "a0" left join "book2" as "b1" on "a0"."id" = "b1"."author_id" where "b1"."title" in ($1, $2)');
-    expect(mock.mock.calls[1][0]).toMatch('select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."author_id" in ($1) and "b0"."title" in ($2, $3) order by "b0"."title" asc');
+    expect(mock.mock.calls[1][0]).toMatch('select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."author_id" in ($1) order by "b0"."title" asc');
   });
 
   test('trying to populate non-existing or non-reference property will throw', async () => {

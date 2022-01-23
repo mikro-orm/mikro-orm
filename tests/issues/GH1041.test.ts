@@ -1,4 +1,4 @@
-import { Collection, Entity, LoadStrategy, ManyToMany, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { Collection, Entity, LoadStrategy, ManyToMany, MikroORM, PopulateHint, PrimaryKey, Property } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { mockLogger } from '../helpers';
 
@@ -98,11 +98,18 @@ describe('GH issue 1041, 1043', () => {
     expect(log.mock.calls[0][0]).toMatch('select `u0`.`id`, `u0`.`name`, `a1`.`id` as `a1__id`, `a1`.`name` as `a1__name` from `user` as `u0` left join `user_apps` as `u2` on `u0`.`id` = `u2`.`user_id` left join `app` as `a1` on `u2`.`app_id` = `a1`.`id` where `u2`.`app_id` = 1');
   });
 
+  test('select-in strategy: find by many-to-many relation IDs (PopulateHint.INFER)', async () => {
+    const findPromise = orm.em.findOne(User, { apps: [1, 2, 3] }, { populate: ['apps'], strategy: LoadStrategy.SELECT_IN, populateWhere: PopulateHint.INFER });
+    await expect(findPromise).resolves.toBeInstanceOf(User);
+    expect(log.mock.calls[0][0]).toMatch('select `u0`.* from `user` as `u0` left join `user_apps` as `u1` on `u0`.`id` = `u1`.`user_id` where `u1`.`app_id` in (1, 2, 3) limit 1');
+    expect(log.mock.calls[1][0]).toMatch('select `a0`.*, `u1`.`app_id` as `fk__app_id`, `u1`.`user_id` as `fk__user_id` from `app` as `a0` left join `user_apps` as `u1` on `a0`.`id` = `u1`.`app_id` where `a0`.`id` in (1, 2, 3) and `u1`.`user_id` in (123)');
+  });
+
   test('select-in strategy: find by many-to-many relation IDs', async () => {
     const findPromise = orm.em.findOne(User, { apps: [1, 2, 3] }, { populate: ['apps'], strategy: LoadStrategy.SELECT_IN });
     await expect(findPromise).resolves.toBeInstanceOf(User);
     expect(log.mock.calls[0][0]).toMatch('select `u0`.* from `user` as `u0` left join `user_apps` as `u1` on `u0`.`id` = `u1`.`user_id` where `u1`.`app_id` in (1, 2, 3) limit 1');
-    expect(log.mock.calls[1][0]).toMatch('select `a0`.*, `u1`.`app_id` as `fk__app_id`, `u1`.`user_id` as `fk__user_id` from `app` as `a0` left join `user_apps` as `u1` on `a0`.`id` = `u1`.`app_id` where `a0`.`id` in (1, 2, 3) and `u1`.`user_id` in (123)');
+    expect(log.mock.calls[1][0]).toMatch('select `a0`.*, `u1`.`app_id` as `fk__app_id`, `u1`.`user_id` as `fk__user_id` from `app` as `a0` left join `user_apps` as `u1` on `a0`.`id` = `u1`.`app_id` where `u1`.`user_id` in (123)');
   });
 
   test('joined strategy: find by many-to-many relation IDs', async () => {

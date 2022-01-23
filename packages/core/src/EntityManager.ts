@@ -7,7 +7,7 @@ import { EntityAssigner, EntityFactory, EntityLoader, EntityValidator, Reference
 import { UnitOfWork } from './unit-of-work';
 import type { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, InsertOptions, LockOptions, UpdateOptions, GetReferenceOptions, EntityField } from './drivers';
 import type { AnyEntity, AutoPath, Dictionary, EntityData, EntityDictionary, EntityDTO, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, New, Populate, PopulateOptions, Primary } from './typings';
-import { FlushMode, LoadStrategy, LockMode, ReferenceType, SCALAR_TYPES } from './enums';
+import { FlushMode, LoadStrategy, LockMode, PopulateHint, ReferenceType, SCALAR_TYPES } from './enums';
 import type { TransactionOptions } from './enums';
 import type { MetadataStorage } from './metadata';
 import type { Transaction } from './connections';
@@ -113,7 +113,14 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const cached = await this.tryCache<T, Loaded<T, P>[]>(entityName, options.cache, [entityName, 'em.find', options, where], options.refresh, true);
 
     if (cached?.data) {
-      await this.entityLoader.populate<T, P>(entityName, cached.data as T[], populate, { ...options, where, convertCustomTypes: false, ignoreLazyScalarProperties: true, lookup: false });
+      await this.entityLoader.populate<T, P>(entityName, cached.data as T[], populate, {
+        ...options as Dictionary,
+        ...this.getPopulateWhere(where, options),
+        convertCustomTypes: false,
+        ignoreLazyScalarProperties: true,
+        lookup: false,
+      });
+
       return cached.data;
     }
 
@@ -133,11 +140,33 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const unique = Utils.unique(ret);
-    await this.entityLoader.populate<T, P>(entityName, unique, populate, { ...options, where, convertCustomTypes: false, ignoreLazyScalarProperties: true, lookup: false });
+    await this.entityLoader.populate<T, P>(entityName, unique, populate, {
+      ...options as Dictionary,
+      ...this.getPopulateWhere(where, options),
+      convertCustomTypes: false,
+      ignoreLazyScalarProperties: true,
+      lookup: false,
+    });
     await this.getUnitOfWork().dispatchOnLoadEvent();
     await this.storeCache(options.cache, cached!, () => unique.map(e => e.__helper!.toPOJO()));
 
     return unique as Loaded<T, P>[];
+  }
+
+  private getPopulateWhere<T, P extends string>(where: FilterQuery<T>, options: Pick<FindOptions<T, P>, 'populateWhere'>): { where: FilterQuery<T>; populateWhere?: PopulateHint } {
+    if (options.populateWhere === undefined) {
+      options.populateWhere = this.config.get('populateWhere');
+    }
+
+    if (options.populateWhere === PopulateHint.ALL) {
+      return { where: {} as FilterQuery<T>, populateWhere: options.populateWhere };
+    }
+
+    if (options.populateWhere === PopulateHint.INFER) {
+      return { where, populateWhere: options.populateWhere };
+    }
+
+    return { where: options.populateWhere };
   }
 
   /**
@@ -312,7 +341,14 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const cached = await this.tryCache<T, Loaded<T, P>>(entityName, options.cache, [entityName, 'em.findOne', options, where], options.refresh, true);
 
     if (cached?.data) {
-      await this.entityLoader.populate<T, P>(entityName, [cached.data as T], options.populate as unknown as PopulateOptions<T>[], { ...options as Dictionary, where, convertCustomTypes: false, ignoreLazyScalarProperties: true, lookup: false });
+      await this.entityLoader.populate<T, P>(entityName, [cached.data as T], options.populate as unknown as PopulateOptions<T>[], {
+        ...options as Dictionary,
+        ...this.getPopulateWhere(where, options),
+        convertCustomTypes: false,
+        ignoreLazyScalarProperties: true,
+        lookup: false,
+      });
+
       return cached.data;
     }
 
@@ -886,7 +922,13 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const preparedPopulate = this.preparePopulate<T, P>(entityName, options);
-    await this.entityLoader.populate(entityName, [entity], preparedPopulate, { ...options as Dictionary, where, convertCustomTypes: false, ignoreLazyScalarProperties: true, lookup: false });
+    await this.entityLoader.populate(entityName, [entity], preparedPopulate, {
+      ...options as Dictionary,
+      ...this.getPopulateWhere(where, options),
+      convertCustomTypes: false,
+      ignoreLazyScalarProperties: true,
+      lookup: false,
+    });
 
     return entity as Loaded<T, P>;
   }
