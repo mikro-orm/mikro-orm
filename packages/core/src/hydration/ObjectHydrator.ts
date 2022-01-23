@@ -223,9 +223,8 @@ export class ObjectHydrator extends Hydrator {
       ret.push(`  if (${conds.join(' || ')}) {`);
 
       if (prop.targetMeta?.polymorphs) {
-        const targetMeta = prop.targetMeta;
-        targetMeta.polymorphs!.forEach(meta => {
-          const childProp = prop.embeddedProps[targetMeta.discriminatorColumn!];
+        prop.targetMeta.polymorphs!.forEach(meta => {
+          const childProp = prop.embeddedProps[prop.targetMeta!.discriminatorColumn!];
           const childDataKey = prop.object ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
           // weak comparison as we can have numbers that might have been converted to strings due to being object keys
           ret.push(`    if (data${childDataKey} == '${meta.discriminatorValue}') {`);

@@ -465,7 +465,6 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   async loadFromPivotTable<T, O>(prop: EntityProperty, owners: Primary<O>[][], where: FilterQuery<T> = {} as FilterQuery<T>, orderBy?: QueryOrderMap<T>[], ctx?: Transaction, options?: FindOptions<T>): Promise<Dictionary<T[]>> {
     const pivotProp2 = this.getPivotInverseProperty(prop);
     const ownerMeta = this.metadata.find(pivotProp2.type)!;
-    const targetMeta = this.metadata.find(prop.type)!;
     const cond = { [`${prop.pivotTable}.${pivotProp2.name}`]: { $in: ownerMeta.compositePK ? owners : owners.map(o => o[0]) } };
 
     /* istanbul ignore if */
@@ -477,8 +476,8 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     orderBy = this.getPivotOrderBy(prop, orderBy);
     const qb = this.createQueryBuilder<T>(prop.type, ctx, !!ctx).unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES).withSchema(options?.schema);
-    const populate = this.autoJoinOneToOneOwner(targetMeta, [{ field: prop.pivotTable }]);
-    const fields = this.buildFields(targetMeta, (options?.populate ?? []) as unknown as PopulateOptions<T>[], [], qb, options?.fields as Field<T>[]);
+    const populate = this.autoJoinOneToOneOwner(prop.targetMeta!, [{ field: prop.pivotTable }]);
+    const fields = this.buildFields(prop.targetMeta!, (options?.populate ?? []) as unknown as PopulateOptions<T>[], [], qb, options?.fields as Field<T>[]);
     qb.select(fields).populate(populate).where(where).orderBy(orderBy!).setLockMode(options?.lockMode, options?.lockTableAliases);
 
     if (owners.length === 1 && (options?.offset != null || options?.limit != null)) {
