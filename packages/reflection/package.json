@@ -55,7 +55,7 @@
     "access": "public"
   },
   "dependencies": {
-    "globby": "11.0.4",
+    "globby": "13.0.0",
     "ts-morph": "13.0.3"
   },
   "devDependencies": {
