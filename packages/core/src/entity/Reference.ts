@@ -66,7 +66,7 @@ export class Reference<T extends AnyEntity<T>> {
   /**
    * Returns wrapped entity.
    */
-  static unwrapReference<T extends AnyEntity<T>>(ref: T | Reference<T>): T {
+  static unwrapReference<T>(ref: T | Reference<T>): T {
     return Reference.isReference<T>(ref) ? (ref as Reference<T>).unwrap() : ref;
   }
 

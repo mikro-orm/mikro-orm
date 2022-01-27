@@ -3,6 +3,7 @@ import type { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityName, Ent
 import type { UnitOfWork } from '../unit-of-work';
 import type { EntityManager } from '../EntityManager';
 import { EventType, ReferenceType } from '../enums';
+import { Reference } from './Reference';
 
 export interface FactoryOptions {
   initialized?: boolean;
@@ -27,6 +28,7 @@ export class EntityFactory {
               private readonly em: EntityManager) { }
 
   create<T extends AnyEntity<T>, P extends string = string>(entityName: EntityName<T>, data: EntityData<T>, options: FactoryOptions = {}): New<T, P> {
+    data = Reference.unwrapReference(data);
     options.initialized ??= true;
 
     if ((data as Dictionary).__entity) {

@@ -1142,6 +1142,19 @@ describe('EntityManagerPostgre', () => {
     expect(wrap(publishers[1].tests.getItems()[0]).isInitialized()).toBe(true);
   });
 
+  test('em.create(ref) does not mark reference as loaded', async () => {
+    await createBooksWithTags();
+
+    const p = await orm.em.findOneOrFail(Book2, { uuid: { $ne: null } });
+    expect(p.publisher!.isInitialized()).toBe(false);
+    const b1 = orm.em.create(Book2, {
+      author: p.author,
+      publisher: p.publisher,
+    });
+    expect(p.publisher!.isInitialized()).toBe(false);
+    expect(b1.publisher!.isInitialized()).toBe(false);
+  });
+
   test('populating many to many relation on inverse side', async () => {
     await createBooksWithTags();
     const repo = orm.em.getRepository(BookTag2);
