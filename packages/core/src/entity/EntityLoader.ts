@@ -24,6 +24,7 @@ export type EntityLoaderOptions<T, P extends string = never> = {
   filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
   strategy?: LoadStrategy;
   lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
+  schema?: string;
 };
 
 export class EntityLoader {
@@ -247,7 +248,7 @@ export class EntityLoader {
     const ids = Utils.unique(children.map(e => Utils.getPrimaryKeyValues(e, e.__meta!.primaryKeys, true)));
     const where = this.mergePrimaryCondition<T>(ids, fk, options, meta, this.metadata, this.driver.getPlatform());
     const fields = this.buildFields(options.fields, prop);
-    const { refresh, filters, convertCustomTypes, lockMode, strategy, populateWhere } = options;
+    const { refresh, filters, convertCustomTypes, lockMode, strategy, populateWhere, schema } = options;
 
     return this.em.find(prop.type, where, {
       refresh, filters, convertCustomTypes, lockMode, populateWhere,
@@ -255,6 +256,7 @@ export class EntityLoader {
       populate: populate.children as never ?? populate.all,
       strategy,
       fields,
+      schema,
     });
   }
 
