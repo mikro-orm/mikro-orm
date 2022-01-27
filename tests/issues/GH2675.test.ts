@@ -22,7 +22,7 @@ export class B {
 
 describe('GH issue 2675', () => {
 
-	let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
@@ -32,14 +32,14 @@ describe('GH issue 2675', () => {
     });
     await orm.getSchemaGenerator().ensureDatabase();
 
-	// Create schema dynamically
-	await orm.getSchemaGenerator().execute(`drop schema if exists myschema cascade`);
-	await orm.getSchemaGenerator().execute(`create schema if not exists myschema`);
+    // Create schema dynamically
+    await orm.getSchemaGenerator().execute(`drop schema if exists myschema cascade`);
+    await orm.getSchemaGenerator().execute(`create schema if not exists myschema`);
 
-	// Initialize DB for dynamic schema entity
-	await orm.getSchemaGenerator().execute(`create table "myschema"."a" ("id" serial primary key);`);
-	await orm.getSchemaGenerator().execute(`create table "myschema"."b" ("id" serial primary key, "a_id" int not null);`);
-	await orm.getSchemaGenerator().execute(`alter table "myschema"."b" add constraint "b_a_id_foreign" foreign key ("a_id") references "myschema"."a" ("id") on update cascade on delete cascade;`);
+    // Initialize DB for dynamic schema entity
+    await orm.getSchemaGenerator().execute(`create table "myschema"."a" ("id" serial primary key);`);
+    await orm.getSchemaGenerator().execute(`create table "myschema"."b" ("id" serial primary key, "a_id" int not null);`);
+    await orm.getSchemaGenerator().execute(`alter table "myschema"."b" add constraint "b_a_id_foreign" foreign key ("a_id") references "myschema"."a" ("id") on update cascade on delete cascade;`);
   });
 
   afterAll(() => orm.close(true));
@@ -47,15 +47,15 @@ describe('GH issue 2675', () => {
   test('should query with specified schema without throwing sql exception', async () => {
     // Create sample data
     const a = orm.em.create(A, {}, {
-		schema: 'myschema',
-	});
-	expect(wrap(a).getSchema()).toBe('myschema');
+      schema: 'myschema',
+    });
+    expect(wrap(a).getSchema()).toBe('myschema');
     orm.em.persist(a);
 
     const b = orm.em.create(B, { a }, {
-		schema: 'myschema',
-	});
-	expect(wrap(b).getSchema()).toBe('myschema');
+      schema: 'myschema',
+    });
+    expect(wrap(b).getSchema()).toBe('myschema');
     orm.em.persist(b);
 
     await orm.em.flush();
@@ -65,8 +65,8 @@ describe('GH issue 2675', () => {
       strategy: LoadStrategy.SELECT_IN,
       schema: 'myschema',
     }).catch(() => {
-		// Undefined if exception thrown
-	});
+      // Undefined if exception thrown
+    });
 
     expect(r?.a?.id).not.toEqual(undefined);
   });
