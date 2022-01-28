@@ -98,7 +98,8 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   }
 
   marshallArray(values: string[]): string {
-    return `{${values.join(',')}}`;
+    // Empty string needs to be explicitly represented
+    return `{${values.map(v => !v ? `""` : v).join(',')}}`;
   }
 
   unmarshallArray(value: string): string[] {
@@ -106,7 +107,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
       return [];
     }
 
-    return value.substring(1, value.length - 1).split(',');
+    return value.substring(1, value.length - 1).split(',').map(v => v === `""` ? '' : v);
   }
 
   getBlobDeclarationSQL(): string {
