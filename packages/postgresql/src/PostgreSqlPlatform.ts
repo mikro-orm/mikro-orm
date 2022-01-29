@@ -107,6 +107,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
       return [];
     }
 
+    /* istanbul ignore next */
     return value.substring(1, value.length - 1).split(',').map(v => v === `""` ? '' : v);
   }
 

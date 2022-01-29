@@ -1805,7 +1805,7 @@ describe('QueryBuilder', () => {
     const node = new CriteriaNode(orm.em.getMetadata(), Author2.name);
     node.payload = { foo: 123 };
     expect(node.process({} as any)).toBe(node.payload);
-    expect(inspect(node)).toBe(`CriteriaNode { entityName: 'Author2', key: undefined, payload: { foo: 123 } }`);
+    expect(inspect(node)).toBe(`CriteriaNode { entityName: 'Author2', payload: { foo: 123 } }`);
   });
 
   test('getAliasForJoinPath', async () => {
@@ -1941,6 +1941,247 @@ describe('QueryBuilder', () => {
       'left join `book2_tags` as `e2` on `e0`.`uuid_pk` = `e2`.`book2_uuid_pk` ' +
       'left join `book_tag2` as `e1` on `e2`.`book_tag2_id` = `e1`.`id` ' +
       'where `e1`.`name` in (?) and `e0`.`uuid_pk` != ? and `e0`.`created_at` > ?');
+  });
+
+  test('branching to-many relations (#2677)', async () => {
+    // branching as its m:n
+    const qb1 = orm.em.createQueryBuilder(Book2);
+    qb1.select('*').where({
+      $and: [
+        { tags: { name: 'tag1' } },
+        { tags: { name: 'tag2' } },
+      ],
+    });
+    expect(qb1.getQuery()).toEqual('select `e0`.*, `e0`.price * 1.19 as `price_taxed` ' +
+      'from `book2` as `e0` ' +
+      'left join `book2_tags` as `e2` on `e0`.`uuid_pk` = `e2`.`book2_uuid_pk` ' +
+      'left join `book_tag2` as `e1` on `e2`.`book_tag2_id` = `e1`.`id` ' +
+      'left join `book2_tags` as `e4` on `e0`.`uuid_pk` = `e4`.`book2_uuid_pk` ' +
+      'left join `book_tag2` as `e3` on `e4`.`book_tag2_id` = `e3`.`id` ' +
+      'where `e1`.`name` = ? and `e3`.`name` = ?');
+
+    // no branching as its m:1
+    const qb2 = orm.em.createQueryBuilder(Book2);
+    qb2.select('*').where({
+      $and: [
+        { author: { name: 'a1' } },
+        { author: { name: 'a2' } },
+      ],
+    });
+    expect(qb2.getQuery()).toEqual('select `e0`.*, `e0`.price * 1.19 as `price_taxed` ' +
+      'from `book2` as `e0` ' +
+      'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
+      'where `e1`.`name` = ? and `e1`.`name` = ?');
+
+    // no branching as its m:1 and $or
+    const qb3 = orm.em.createQueryBuilder(Book2);
+    qb3.select('*').where({
+      $or: [
+        { author: { name: 'a1' } },
+        { author: { name: 'a2' } },
+      ],
+    });
+    expect(qb3.getQuery()).toEqual('select `e0`.*, `e0`.price * 1.19 as `price_taxed` ' +
+      'from `book2` as `e0` ' +
+      'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
+      'where (`e1`.`name` = ? or `e1`.`name` = ?)');
+
+    // branching as its 1:m
+    const qb4 = orm.em.createQueryBuilder(Author2);
+    qb4.select('*').where({
+      $and: [
+        { books: { title: 'b1' } },
+        { books: { title: 'b2' } },
+      ],
+    });
+    expect(qb4.getQuery()).toEqual('select `e0`.* ' +
+      'from `author2` as `e0` ' +
+      'left join `book2` as `e1` on `e0`.`id` = `e1`.`author_id` ' +
+      'left join `book2` as `e2` on `e0`.`id` = `e2`.`author_id` ' +
+      'where `e1`.`title` = ? and `e2`.`title` = ?');
+
+    // no branching as its $or
+    const qb5 = orm.em.createQueryBuilder(Author2);
+    qb5.select('*').where({
+      $or: [
+        { books: { title: 't1' } },
+        { books: { title: 't2' } },
+      ],
+    });
+    expect(qb5.getQuery()).toEqual('select `e0`.* ' +
+      'from `author2` as `e0` ' +
+      'left join `book2` as `e1` on `e0`.`id` = `e1`.`author_id` ' +
+      'where (`e1`.`title` = ? or `e1`.`title` = ?)');
+
+    // no branching as the $and is under m:n
+    const qb6 = orm.em.createQueryBuilder(Book2);
+    qb6.select('*').where({
+      tags: {
+        $and: [
+          { name: 'tag1' },
+          { name: 'tag2' },
+        ],
+      },
+    });
+    expect(qb6.getQuery()).toEqual('select `e0`.*, `e0`.price * 1.19 as `price_taxed` ' +
+      'from `book2` as `e0` ' +
+      'left join `book2_tags` as `e2` on `e0`.`uuid_pk` = `e2`.`book2_uuid_pk` ' +
+      'left join `book_tag2` as `e1` on `e2`.`book_tag2_id` = `e1`.`id` ' +
+      'where `e1`.`name` = ? and `e1`.`name` = ?');
+
+    // no branching as its m:1
+    const qb7 = orm.em.createQueryBuilder(Book2);
+    qb7.select('*').where({
+      $and: [
+        { author: { favouriteBook: { title: 'a1' } } },
+        { author: { favouriteBook: { title: 'a2' } } },
+      ],
+    });
+    expect(qb7.getQuery()).toEqual('select `e0`.*, `e0`.price * 1.19 as `price_taxed` ' +
+      'from `book2` as `e0` ' +
+      'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
+      'left join `book2` as `e2` on `e1`.`favourite_book_uuid_pk` = `e2`.`uuid_pk` ' +
+      'where `e2`.`title` = ? and `e2`.`title` = ?');
+
+    // branching as its 1:m
+    const qb8 = orm.em.createQueryBuilder(Author2);
+    qb8.select('*').where({
+      $and: [
+        { books: { author: { name: 'a1' } } },
+        { books: { author: { name: 'a2' } } },
+      ],
+    });
+    expect(qb8.getQuery()).toEqual('select `e0`.* ' +
+      'from `author2` as `e0` ' +
+      'left join `book2` as `e1` on `e0`.`id` = `e1`.`author_id` ' +
+      'left join `author2` as `e2` on `e1`.`author_id` = `e2`.`id` ' +
+      'left join `book2` as `e3` on `e0`.`id` = `e3`.`author_id` ' +
+      'left join `author2` as `e4` on `e3`.`author_id` = `e4`.`id` ' +
+      'where `e2`.`name` = ? and `e4`.`name` = ?');
+
+    // no branching as its both m:1
+    const qb9 = orm.em.createQueryBuilder(Book2);
+    qb9.select('*').where({
+      $and: [
+        {
+          author: {
+            $and: [
+              { favouriteBook: { title: 'a1' } },
+              { favouriteBook: { title: 'a2' } },
+            ],
+          },
+        },
+        {
+          author: {
+            $and: [
+              { favouriteBook: { title: 'a3' } },
+              { favouriteBook: { title: 'a4' } },
+            ],
+          },
+        },
+      ],
+    });
+    expect(qb9.getQuery()).toEqual('select `e0`.*, `e0`.price * 1.19 as `price_taxed` ' +
+      'from `book2` as `e0` ' +
+      'left join `author2` as `e1` on `e0`.`author_id` = `e1`.`id` ' +
+      'left join `book2` as `e2` on `e1`.`favourite_book_uuid_pk` = `e2`.`uuid_pk` ' +
+      'where `e2`.`title` = ? and `e2`.`title` = ? and `e2`.`title` = ? and `e2`.`title` = ?');
+
+    // branching as its both 1:m/m:n
+    const qb10 = orm.em.createQueryBuilder(Author2);
+    qb10.select('*').where({
+      $and: [
+        {
+          books: {
+            $and: [
+              { tags: { name: 't1' } },
+              { tags: { name: 't2' } },
+            ],
+          },
+        },
+        {
+          books: {
+            $and: [
+              { tags: { name: 't3' } },
+              { tags: { name: 't4' } },
+            ],
+          },
+        },
+      ],
+    });
+    expect(qb10.getQuery()).toEqual('select `e0`.* ' +
+      'from `author2` as `e0` ' +
+      'left join `book2` as `e1` on `e0`.`id` = `e1`.`author_id` ' +
+      'left join `book2_tags` as `e3` on `e1`.`uuid_pk` = `e3`.`book2_uuid_pk` ' +
+      'left join `book_tag2` as `e2` on `e3`.`book_tag2_id` = `e2`.`id` ' +
+      'left join `book2_tags` as `e5` on `e1`.`uuid_pk` = `e5`.`book2_uuid_pk` ' +
+      'left join `book_tag2` as `e4` on `e5`.`book_tag2_id` = `e4`.`id` ' +
+      'left join `book2` as `e6` on `e0`.`id` = `e6`.`author_id` ' +
+      'left join `book2_tags` as `e8` on `e6`.`uuid_pk` = `e8`.`book2_uuid_pk` ' +
+      'left join `book_tag2` as `e7` on `e8`.`book_tag2_id` = `e7`.`id` ' +
+      'left join `book2_tags` as `e10` on `e6`.`uuid_pk` = `e10`.`book2_uuid_pk` ' +
+      'left join `book_tag2` as `e9` on `e10`.`book_tag2_id` = `e9`.`id` ' +
+      'where `e2`.`name` = ? and `e4`.`name` = ? and `e7`.`name` = ? and `e9`.`name` = ?');
+
+    // no branching as its $or
+    const qb11 = orm.em.createQueryBuilder(Author2);
+    qb11.select('*').where({
+      $or: [
+        {
+          books: {
+            $or: [
+              { tags: { name: 't1' } },
+              { tags: { name: 't2' } },
+            ],
+          },
+        },
+        {
+          books: {
+            $or: [
+              { tags: { name: 't3' } },
+              { tags: { name: 't4' } },
+            ],
+          },
+        },
+      ],
+    });
+    expect(qb11.getQuery()).toEqual('select `e0`.* ' +
+      'from `author2` as `e0` ' +
+      'left join `book2` as `e1` on `e0`.`id` = `e1`.`author_id` ' +
+      'left join `book2_tags` as `e3` on `e1`.`uuid_pk` = `e3`.`book2_uuid_pk` ' +
+      'left join `book_tag2` as `e2` on `e3`.`book_tag2_id` = `e2`.`id` ' +
+      'where (((`e2`.`name` = ? or `e2`.`name` = ?)) or ((`e2`.`name` = ? or `e2`.`name` = ?)))');
+
+    // branching only for $and
+    const qb12 = orm.em.createQueryBuilder(Author2);
+    qb12.select('*').where({
+      $or: [
+        {
+          books: {
+            $and: [
+              { tags: { name: 't1' } },
+              { tags: { name: 't2' } },
+            ],
+          },
+        },
+        {
+          books: {
+            $and: [
+              { tags: { name: 't3' } },
+              { tags: { name: 't4' } },
+            ],
+          },
+        },
+      ],
+    });
+    expect(qb12.getQuery()).toEqual('select `e0`.* ' +
+      'from `author2` as `e0` ' +
+      'left join `book2` as `e1` on `e0`.`id` = `e1`.`author_id` ' +
+      'left join `book2_tags` as `e3` on `e1`.`uuid_pk` = `e3`.`book2_uuid_pk` ' +
+      'left join `book_tag2` as `e2` on `e3`.`book_tag2_id` = `e2`.`id` ' +
+      'left join `book2_tags` as `e5` on `e1`.`uuid_pk` = `e5`.`book2_uuid_pk` ' +
+      'left join `book_tag2` as `e4` on `e5`.`book_tag2_id` = `e4`.`id` ' +
+      'where ((`e2`.`name` = ? and `e4`.`name` = ?) or (`e2`.`name` = ? and `e4`.`name` = ?))');
   });
 
   test('postgres', async () => {

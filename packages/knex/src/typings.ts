@@ -138,11 +138,12 @@ export interface ICriteriaNode {
   readonly key?: string | undefined;
   payload: any;
   prop?: EntityProperty;
+  index?: number;
   process<T>(qb: IQueryBuilder<T>, alias?: string): any;
   shouldInline(payload: any): boolean;
   willAutoJoin<T>(qb: IQueryBuilder<T>, alias?: string): boolean;
   shouldRename(payload: any): boolean;
   renameFieldToPK<T>(qb: IQueryBuilder<T>): string;
-  getPath(): string;
+  getPath(addIndex?: boolean): string;
   getPivotPath(path: string): string;
 }

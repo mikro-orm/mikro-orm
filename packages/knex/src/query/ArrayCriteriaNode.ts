@@ -18,8 +18,4 @@ export class ArrayCriteriaNode extends CriteriaNode {
     });
   }
 
-  getPath(): string {
-    return this.parent?.parent?.getPath() ?? '';
-  }
-
 }

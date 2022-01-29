@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import type { EntityProperty, MetadataStorage } from '@mikro-orm/core';
+import type { Dictionary, EntityProperty, MetadataStorage } from '@mikro-orm/core';
 import { ReferenceType, Utils } from '@mikro-orm/core';
 import type { ICriteriaNode, IQueryBuilder } from '../typings';
 
@@ -12,6 +12,7 @@ export class CriteriaNode implements ICriteriaNode {
 
   payload: any;
   prop?: EntityProperty;
+  index?: number;
 
   constructor(protected readonly metadata: MetadataStorage,
               readonly entityName: string,
@@ -78,29 +79,21 @@ export class CriteriaNode implements ICriteriaNode {
     return Utils.getPrimaryKeyHash(this.prop!.referencedColumnNames.map(col => `${alias}.${col}`));
   }
 
-  getPath(): string {
-    const parentPath = this.parent?.getPath();
-    let ret = this.parent && this.prop ? this.prop.name : this.entityName;
-
-    if (parentPath && this.prop?.reference === ReferenceType.SCALAR) {
-      return parentPath;
-    }
-
-    if (this.parent && Array.isArray(this.parent.payload) && this.parent.parent && !this.key) {
-      ret = this.parent.parent.key!;
-    }
-
-    if (parentPath) {
-      ret = parentPath + '.' + ret;
-    } else if (this.parent?.entityName && ret && this.prop) {
-      ret = this.parent.entityName + '.' + ret;
-    }
+  getPath(addIndex = false): string {
+    // use index on parent only if we are processing to-many relation
+    const addParentIndex = this.prop && [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(this.prop.reference);
+    const parentPath = this.parent?.getPath(addParentIndex) ?? this.entityName;
+    const index = addIndex && this.index != null ? `[${this.index}]` : '';
+    // ignore group operators to allow easier mapping (e.g. for orderBy)
+    const key = this.key && !['$and', '$or', '$not'].includes(this.key) ? '.' + this.key : '';
+    const ret = parentPath + index + key;
 
     if (this.isPivotJoin()) {
+      // distinguish pivot table join from target entity join
       return this.getPivotPath(ret);
     }
 
-    return ret ?? '';
+    return ret;
   }
 
   private isPivotJoin(): boolean {
@@ -120,7 +113,12 @@ export class CriteriaNode implements ICriteriaNode {
   }
 
   [inspect.custom]() {
-    return `${this.constructor.name} ${inspect({ entityName: this.entityName, key: this.key, payload: this.payload })}`;
+    const o: Dictionary = {};
+    ['entityName', 'key', 'index', 'payload']
+      .filter(k => this[k] != null)
+      .forEach(k => o[k] = this[k]);
+
+    return `${this.constructor.name} ${inspect(o)}`;
   }
 
   static isCustomExpression(field: string): boolean {
