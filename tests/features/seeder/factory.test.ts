@@ -1,7 +1,7 @@
 import { MikroORM } from '@mikro-orm/core';
 import { Factory } from '@mikro-orm/seeder';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
-import type * as Faker from 'faker';
+import type { Faker } from '@mikro-orm/seeder';
 import { House } from './entities/house.entity';
 import { Project } from './entities/project.entity';
 import SpyInstance = jest.SpyInstance;
@@ -10,7 +10,7 @@ export class ProjectFactory extends Factory<Project> {
 
   model = Project;
 
-  definition(faker: typeof Faker): Partial<Project> {
+  definition(faker: Faker): Partial<Project> {
     return {
       name: 'Money vault',
       owner: faker.name.findName(),
@@ -24,7 +24,7 @@ export class HouseFactory extends Factory<House> {
 
   model = House;
 
-  definition(faker: typeof Faker): Partial<House> {
+  definition(faker: Faker): Partial<House> {
     return {
       address: faker.address.city(),
     };

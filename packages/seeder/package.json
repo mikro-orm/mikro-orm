@@ -48,13 +48,12 @@
     "access": "public"
   },
   "dependencies": {
-    "faker": "5.5.3"
+    "@faker-js/faker": "6.0.0-alpha.5"
   },
   "peerDependencies": {
     "@mikro-orm/core": "^5.0.0-rc.0"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^5.0.0-rc.0",
-    "@types/faker": "5.5.9"
+    "@mikro-orm/core": "^5.0.0-rc.0"
   }
 }

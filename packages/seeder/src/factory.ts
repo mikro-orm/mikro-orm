@@ -1,4 +1,5 @@
-import Faker from 'faker';
+import type { Faker } from '@faker-js/faker';
+import faker from '@faker-js/faker';
 import type { EntityManager } from '@mikro-orm/core';
 
 export abstract class Factory<C> {
@@ -6,16 +7,17 @@ export abstract class Factory<C> {
   abstract readonly model: { new(): C };
   private eachFunction?: (entity: C) => void;
 
-  constructor(private readonly em: EntityManager) {
-  }
+  constructor(private readonly em: EntityManager) { }
 
-  protected abstract definition(faker: typeof Faker): Partial<C>;
+  protected abstract definition(faker: Faker): Partial<C>;
 
   private makeEntity(overrideParameters?: Partial<C>): C {
-    const entity = this.em.create(this.model, Object.assign({}, this.definition(Faker), overrideParameters));
+    const entity = this.em.create(this.model, Object.assign({}, this.definition(faker), overrideParameters));
+
     if (this.eachFunction) {
       this.eachFunction(entity);
     }
+
     return entity;
   }
 

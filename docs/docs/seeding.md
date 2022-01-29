@@ -75,14 +75,13 @@ When testing you may insert entities in the database before starting a test. Ins
 
 Lets have a look at an example factory for an [Author entity](http://mikro-orm.io/docs/defining-entities).
 ```typescript
-import { Factory } from '@mikro-orm/seeder';
-import Faker from 'faker';
+import { Factory, Faker } from '@mikro-orm/seeder';
 import { Author } from './entities/author.entity';
 
 export class AuthorFactory extends Factory<Author> {
   model = Author;
 
-  definition(faker: typeof Faker): Partial<Author> {
+  definition(faker: Faker): Partial<Author> {
     return {
       name: faker.person.findName(),
       email: faker.internet.email(),
@@ -93,25 +92,25 @@ export class AuthorFactory extends Factory<Author> {
 ``` 
 Basically you extend the base `Factory` class, define a `model` property and a `definition` method. The `model` defines for which entity the factory generates entity instances. The `definition` method returns the default set of attribute values that should be applied when creating an entity using the factory.
 
-Via the faker property, factories have access to the [Faker library](https://github.com/marak/Faker.js/), which allows you to conveniently generate various kinds of random data for testing.
+Via the faker property, factories have access to the [Faker library](https://github.com/faker-js/faker), which allows you to conveniently generate various kinds of random data for testing.
 
 ### Creating entities using factories
 Once you defined your factories you can use them to generate entities. Simply import the factory, instantiate it and call the `makeOne` method.
 ```typescript
-const author: Author = new AuthorFactory(orm.em).makeOne();
+const author = new AuthorFactory(orm.em).makeOne();
 ```
 
 #### Generate multiple entities
 Generate multiple entities by calling the `make` method. The parameter of the `make` method is the number of entities you generate.
 ```typescript
 // Generate 5 authors
-const authors: Author[] = new AuthorFactory(orm.em).make(5);
+const authors = new AuthorFactory(orm.em).make(5);
 ``` 
 
 #### Overriding attributes
 If you would like to override some of the default values of your factories, you may pass an object to the make method. Only the specified attributes will be replaced while the rest of the attributes remain set to their default values as specified by the factory.
 ```typescript
-const author: Author = new AuthorFactory(orm.em).make({
+const author = new AuthorFactory(orm.em).make({
     name: 'John Snow'
 });
 ``` 
@@ -120,20 +119,20 @@ const author: Author = new AuthorFactory(orm.em).make({
 The `create` method instantiates entities and persists them to the database using the `persistAndFlush` method of the EntityManager.
 ```typescript
 // Make and persist a single author
-const author: Author = await new AuthorFactory(orm.em).createOne();
+const author = await new AuthorFactory(orm.em).createOne();
 
 // Make and persist 5 authors
-const authors: Author[] = await new AuthorFactory(orm.em).create(5);
+const authors = await new AuthorFactory(orm.em).create(5);
 ```
 You can override the default values of your factories by passing an object to the `create` method.
 ```typescript
 // Make and persist a single author
-const author: Author = await new AuthorFactory(orm.em).createOne({
+const author = await new AuthorFactory(orm.em).createOne({
     name: 'John Snow'
 });
 
 // Make and persist a 5 authors
-const authors: Author[] = await new AuthorFactory(orm.em).create(5, {
+const authors = await new AuthorFactory(orm.em).create(5, {
     name: 'John Snow'
 });
 ```
