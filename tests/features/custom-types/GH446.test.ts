@@ -44,7 +44,7 @@ class C {
   @OneToOne({ primary: true })
   b!: B;
 
-  [PrimaryKeyType]: B | A | string;
+  [PrimaryKeyType]?: B | A | string;
 
 }
 

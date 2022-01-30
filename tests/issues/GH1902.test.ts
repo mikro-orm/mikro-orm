@@ -55,7 +55,7 @@ class UserTenantEntity {
   @ManyToOne({ primary: true, entity: () => TenantEntity, fieldName: 'tenantId', cascade: [] })
   tenant!: TenantEntity;
 
-  [PrimaryKeyType]: [number, number];
+  [PrimaryKeyType]?: [number, number];
   [OptionalProps]?: 'isActive';
 
   @Property({ type: 'boolean', fieldName: 'isActive' })

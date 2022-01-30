@@ -33,7 +33,7 @@ export class Car {
   @PrimaryKey()
   year: number;
 
-  [PrimaryKeyType]: [string, number]; // this is needed for proper type checks in `FilterQuery`
+  [PrimaryKeyType]?: [string, number]; // this is needed for proper type checks in `FilterQuery`
 
   constructor(name: string, year: number) {
     this.name = name;
@@ -120,7 +120,7 @@ export class ArticleAttribute {
   @Property()
   value!: string;
 
-  [PrimaryKeyType]: [number, string]; // this is needed for proper type checks in `FilterQuery`
+  [PrimaryKeyType]?: [number, string]; // this is needed for proper type checks in `FilterQuery`
 
   constructor(name: string, value: string, article: Article) {
     this.attribute = name;
@@ -155,7 +155,7 @@ export class Address {
   @OneToOne({ primary: true })
   user!: User;
 
-  [PrimaryKeyType]: number; // this is needed for proper type checks in `FilterQuery`
+  [PrimaryKeyType]?: number; // this is needed for proper type checks in `FilterQuery`
 
 }
 ```
@@ -223,7 +223,7 @@ export class OrderItem {
   @Property()
   offeredPrice: number;
 
-  [PrimaryKeyType]: [number, number]; // this is needed for proper type checks in `FilterQuery`
+  [PrimaryKeyType]?: [number, number]; // this is needed for proper type checks in `FilterQuery`
 
   constructor(order: Order, product: Product, amount = 1) {
     this.order = order;

@@ -24,7 +24,7 @@ export class Chat {
   @ManyToOne(() => User, { nullable: true })
   User?: User;
 
-  [PrimaryKeyType]: [number, number];
+  [PrimaryKeyType]?: [number, number];
 
   constructor(owner: User, recipient: User) {
     this.owner = Reference.create(owner);

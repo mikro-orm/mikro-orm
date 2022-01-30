@@ -14,7 +14,7 @@ class User {
 @Entity()
 class Wallet {
 
-  [PrimaryKeyType]: [string, string];
+  [PrimaryKeyType]?: [string, string];
 
   @PrimaryKey()
   currencyRef!: string;
@@ -56,7 +56,7 @@ enum DepositStatus {
 @Entity()
 export class Deposit extends AbstractDeposit<'status'> {
 
-  [PrimaryKeyType]: [string, string, string];
+  [PrimaryKeyType]?: [string, string, string];
 
   @PrimaryKey()
   txRef!: string;

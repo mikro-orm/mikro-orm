@@ -30,7 +30,7 @@ export const PrimaryKeyProp = Symbol('PrimaryKeyProp');
 export const OptionalProps = Symbol('OptionalProps');
 
 type ReadonlyPrimary<T> = T extends any[] ? Readonly<T> : T;
-export type Primary<T> = T extends { [PrimaryKeyType]: infer PK } // TODO `PrimaryKeyType` should be optional
+export type Primary<T> = T extends { [PrimaryKeyType]?: infer PK }
   ? ReadonlyPrimary<PK> : T extends { _id: infer PK }
   ? ReadonlyPrimary<PK> | string : T extends { uuid: infer PK }
   ? ReadonlyPrimary<PK> : T extends { id: infer PK }
@@ -73,14 +73,12 @@ export type OperatorMap<T> = {
 
 export type FilterValue2<T> = T | ExpandScalar<T> | Primary<T>;
 export type FilterValue<T> = OperatorMap<FilterValue2<T>> | FilterValue2<T> | FilterValue2<T>[] | null;
-// eslint-disable-next-line @typescript-eslint/ban-types
 type ExpandObject<T> = T extends object
   ? T extends Scalar
     ? never
     : { [K in keyof T]?: Query<ExpandProperty<T[K]>> | FilterValue<ExpandProperty<T[K]>> | null }
   : never;
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 export type Query<T> = T extends object
   ? T extends Scalar
     ? never
@@ -433,7 +431,7 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   class: Constructor<T>;
   abstract: boolean;
   useCache: boolean;
-  filters: Dictionary<FilterDef<T>>;
+  filters: Dictionary<FilterDef>;
   comment?: string;
   selfReferencing?: boolean;
   readonly?: boolean;
@@ -534,9 +532,9 @@ export interface MigrationObject {
   class: Constructor<Migration>;
 }
 
-export type FilterDef<T extends AnyEntity<T>> = {
+export type FilterDef = {
   name: string;
-  cond: FilterQuery<T> | ((args: Dictionary, type: 'read' | 'update' | 'delete', em: any) => FilterQuery<T> | Promise<FilterQuery<T>>);
+  cond: Dictionary | ((args: Dictionary, type: 'read' | 'update' | 'delete', em: any) => Dictionary | Promise<Dictionary>);
   default?: boolean;
   entity?: string[];
   args?: boolean;
@@ -558,7 +556,6 @@ type StringKeys<T> = T extends Collection<any>
   ? `${Exclude<keyof ExtractType<T>, symbol>}`
   : T extends Reference<any>
     ? `${Exclude<keyof ExtractType<T>, symbol>}`
-    // eslint-disable-next-line @typescript-eslint/ban-types
     : T extends object
       ? `${Exclude<keyof ExtractType<T>, symbol>}`
       : never;

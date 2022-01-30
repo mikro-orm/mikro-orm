@@ -70,7 +70,7 @@ export class OrderItem {
   @Property()
   offeredPrice: number;
 
-  [PrimaryKeyType]: [number, number]; // this is needed for proper type checks in `FilterQuery`
+  [PrimaryKeyType]?: [number, number]; // this is needed for proper type checks in `FilterQuery`
 
   constructor(order: Order, product: Product, amount = 1) {
     this.order = order;

@@ -399,7 +399,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   entities: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema<any>)[]; // `any` required here for some TS weirdness
   entitiesTs: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema<any>)[]; // `any` required here for some TS weirdness
   subscribers: EventSubscriber[];
-  filters: Dictionary<{ name?: string } & Omit<FilterDef<AnyEntity>, 'name'>>;
+  filters: Dictionary<{ name?: string } & Omit<FilterDef, 'name'>>;
   discovery: {
     warnWhenNoEntities?: boolean;
     requireEntitiesArray?: boolean;

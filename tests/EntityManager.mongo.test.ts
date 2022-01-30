@@ -530,7 +530,7 @@ describe('EntityManagerMongo', () => {
 
     const conn = driver.getConnection();
     const ctx = await conn.begin();
-    const first = await driver.nativeInsert(Publisher.name, { name: 'test 123', type: 'GLOBAL' }, { ctx });
+    const first = await driver.nativeInsert<Publisher>(Publisher.name, { name: 'test 123', type: PublisherType.GLOBAL }, { ctx });
     await conn.commit(ctx);
     await driver.nativeUpdate<Publisher>(Publisher.name, first.insertId, { name: 'test 456' });
     await driver.nativeUpdateMany<Publisher>(Publisher.name, [first.insertId], [{ name: 'test 789' }]);

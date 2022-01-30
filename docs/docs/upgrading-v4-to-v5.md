@@ -224,3 +224,16 @@ const a = await em.find(Author, { books: [1, 2, 3] }, {
   populateWhere: PopulateHint.INFER,
 });
 ```
+
+## `em.create()` respects required properties
+
+`em.create()` will now require you to pass all non-optional properties. Some 
+properties might be defined as required for TS, but we have a default value for 
+them (either runtime, or database one) - for such we can use `OptionalProps` 
+symbol to specify which properties should be considered as optional.
+
+## `PrimaryKeyType` symbol should be defined as optional
+
+Previously when we had nonstandard PK types, we could use `PrimaryKeyType` symbol
+to let the type system know it. It was required to define this property as 
+required, now it can be defined as optional too.

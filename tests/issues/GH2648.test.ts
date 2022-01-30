@@ -15,7 +15,7 @@ export class A {
 @Entity()
 export class B1 {
 
-  [PrimaryKeyType]: number;
+  [PrimaryKeyType]?: number;
   @ManyToOne({ entity: () => A, primary: true, wrappedReference: true })
   a!: IdentifiedReference<A>;
 
@@ -27,7 +27,7 @@ export class B2 {
   @PrimaryKey()
   id!: number;
 
-  [PrimaryKeyType]: number;
+  [PrimaryKeyType]?: number;
   @OneToOne({ entity: () => A, primary: true, wrappedReference: true })
   a!: IdentifiedReference<A>;
 
@@ -36,7 +36,7 @@ export class B2 {
 @Entity()
 export class B3 {
 
-  [PrimaryKeyType]: number;
+  [PrimaryKeyType]?: number;
   @OneToOne({ entity: () => A, primary: true, wrappedReference: true })
   a!: IdentifiedReference<A>;
 
@@ -48,7 +48,7 @@ export class B4 {
   @PrimaryKey()
   id!: number;
 
-  [PrimaryKeyType]: number;
+  [PrimaryKeyType]?: number;
   @OneToOne({ entity: () => A, primary: true, wrappedReference: true })
   a!: IdentifiedReference<A>;
 

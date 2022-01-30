@@ -32,7 +32,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   private readonly unitOfWork: UnitOfWork = new UnitOfWork(this);
   private readonly entityFactory: EntityFactory = new EntityFactory(this.unitOfWork, this);
   private readonly resultCache = this.config.getResultCacheAdapter();
-  private filters: Dictionary<FilterDef<any>> = {};
+  private filters: Dictionary<FilterDef> = {};
   private filterParams: Dictionary<Dictionary> = {};
   private transactionContext?: Transaction;
   private flushMode?: FlushMode;
@@ -187,8 +187,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
    */
-  addFilter(name: string, cond: FilterQuery<AnyEntity> | ((args: Dictionary) => FilterQuery<AnyEntity>), entityName?: EntityName<AnyEntity> | EntityName<AnyEntity>[], enabled = true): void {
-    const options: FilterDef<AnyEntity> = { name, cond, default: enabled };
+  addFilter(name: string, cond: Dictionary | ((args: Dictionary) => FilterQuery<AnyEntity>), entityName?: EntityName<AnyEntity> | EntityName<AnyEntity>[], enabled = true): void {
+    const options: FilterDef = { name, cond, default: enabled };
 
     if (entityName) {
       options.entity = Utils.asArray(entityName).map(n => Utils.className(n));
@@ -251,7 +251,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async applyFilters<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: Dictionary<boolean | Dictionary> | string[] | boolean, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<T>> {
     const meta = this.metadata.find<T>(entityName);
-    const filters: FilterDef<any>[] = [];
+    const filters: FilterDef[] = [];
     const ret: Dictionary[] = [];
 
     if (!meta) {
@@ -259,7 +259,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const active = new Set<string>();
-    const push = (source: Dictionary<FilterDef<any>>) => {
+    const push = (source: Dictionary<FilterDef>) => {
       const activeFilters = QueryHelper
         .getActiveFilters(entityName, options, source)
         .filter(f => !active.has(f.name));

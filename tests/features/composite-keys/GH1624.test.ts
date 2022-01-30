@@ -52,7 +52,7 @@ export class User {
   @OneToMany({ entity: 'UserRole', mappedBy: 'user' })
   userRoles = new Collection<UserRole>(this);
 
-  [PrimaryKeyType]: [string, string];
+  [PrimaryKeyType]?: [string, string];
 
   constructor(value: Partial<User> = {}) {
     Object.assign(this, value);
@@ -101,7 +101,7 @@ export class UserRole {
   })
   role!: IdentifiedReference<Role>;
 
-  [PrimaryKeyType]: [string, string, string];
+  [PrimaryKeyType]?: [string, string, string];
 
   constructor(value: Partial<UserRole> = {}) {
     Object.assign(this, value);
@@ -155,7 +155,7 @@ export class Site {
   @Property({ columnType: 'varchar' })
   name!: string;
 
-  [PrimaryKeyType]: [string, string, string];
+  [PrimaryKeyType]?: [string, string, string];
 
   constructor(value: Partial<Site> = {}) {
     Object.assign(this, value);

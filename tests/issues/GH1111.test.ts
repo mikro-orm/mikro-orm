@@ -14,7 +14,7 @@ class Node {
 @Entity()
 class A {
 
-  [PrimaryKeyType]: number;
+  [PrimaryKeyType]?: number;
   [PrimaryKeyProp]: 'node';
   @OneToOne({ entity: () => Node, wrappedReference: true, primary: true, onDelete: 'cascade', onUpdateIntegrity: 'cascade' })
   node!: IdentifiedReference<Node>;

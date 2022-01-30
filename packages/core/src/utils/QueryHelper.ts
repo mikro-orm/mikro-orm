@@ -175,7 +175,7 @@ export class QueryHelper {
     }, {} as ObjectQuery<T>);
   }
 
-  static getActiveFilters(entityName: string, options: Dictionary<boolean | Dictionary> | string[] | boolean, filters: Dictionary<FilterDef<any>>): FilterDef<any>[] {
+  static getActiveFilters(entityName: string, options: Dictionary<boolean | Dictionary> | string[] | boolean, filters: Dictionary<FilterDef>): FilterDef[] {
     if (options === false) {
       return [];
     }
@@ -196,7 +196,7 @@ export class QueryHelper {
       });
   }
 
-  static isFilterActive(entityName: string, filterName: string, filter: FilterDef<any>, options: Dictionary<boolean | Dictionary>): boolean {
+  static isFilterActive(entityName: string, filterName: string, filter: FilterDef, options: Dictionary<boolean | Dictionary>): boolean {
     if (filter.entity && !filter.entity.includes(entityName)) {
       return false;
     }

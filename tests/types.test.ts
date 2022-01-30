@@ -18,7 +18,7 @@ describe('check typings', () => {
     assert<IsExact<Primary<Author2>, string>>(false);
 
     // PrimaryKeyType symbol has priority
-    type Test = { _id: ObjectId; id: string; uuid: number; [PrimaryKeyType]: Date };
+    type Test = { _id: ObjectId; id: string; uuid: number; [PrimaryKeyType]?: Date };
     assert<IsExact<Primary<Test>, Date>>(true);
     assert<IsExact<Primary<Test>, ObjectId>>(false);
     assert<IsExact<Primary<Test>, string>>(false);

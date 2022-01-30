@@ -43,7 +43,7 @@ export class SiteCategory {
   @ManyToOne({ entity: () => Category, primary: true })
   category!: Category;
 
-  [PrimaryKeyType]: [number, number];
+  [PrimaryKeyType]?: [number, number];
 
 }
 

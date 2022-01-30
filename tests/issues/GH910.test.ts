@@ -65,7 +65,7 @@ export class CartItem {
   @PrimaryKey({ type: SkuType })
   readonly sku: Sku;
 
-  [PrimaryKeyType]: [string, string];
+  [PrimaryKeyType]?: [string, string];
 
   @Property()
   quantity: number;
