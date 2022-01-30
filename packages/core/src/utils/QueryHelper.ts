@@ -16,7 +16,11 @@ export class QueryHelper {
     }
 
     if (Utils.isEntity(params)) {
-      return params.__helper!.__primaryKeyCond;
+      if (params.__meta!.compositePK) {
+        return params.__helper!.__primaryKeys;
+      }
+
+      return params.__helper!.getPrimaryKey();
     }
 
     if (params === undefined) {

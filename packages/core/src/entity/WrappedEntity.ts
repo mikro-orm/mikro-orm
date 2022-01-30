@@ -153,15 +153,6 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
     return Utils.getPrimaryKeyValues(this.entity, this.entity.__meta!.primaryKeys);
   }
 
-  // TODO used only at one place, probably replaceable
-  get __primaryKeyCond(): Primary<T> | Primary<T>[] | null {
-    if (this.entity.__meta!.compositePK) {
-      return this.__primaryKeys;
-    }
-
-    return this.getPrimaryKey();
-  }
-
   [inspect.custom]() {
     return `[WrappedEntity<${this.entity.__meta!.className}>]`;
   }

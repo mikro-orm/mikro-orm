@@ -125,7 +125,6 @@ export interface IWrappedEntityInternal<T, PK extends keyof T | unknown = Primar
   __onLoadFired: boolean;
   __lazyInitialized: boolean;
   __primaryKeys: Primary<T>[];
-  __primaryKeyCond: Primary<T> | Primary<T>[];
   __serializationContext: { root?: SerializationContext<T>; populate?: PopulateOptions<T>[] };
 }
 
