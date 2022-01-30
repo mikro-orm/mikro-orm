@@ -94,10 +94,10 @@ export class N {
 async function createEntities(orm: MikroORM) {
   const a = orm.em.create(A, { value: 'A' });
   const t = orm.em.create(T, { value: 'T' });
-  const v = orm.em.create(V, {});
+  const v = orm.em.create(V, {} as any);
   const a2 = orm.em.create(A, { value: 'A2' });
   const t2 = orm.em.create(T, { value: 'T2' });
-  const v2 = orm.em.create(V, {});
+  const v2 = orm.em.create(V, {} as any);
   const e = orm.em.create(E, { a, t, v });
   const e2 = orm.em.create(E, { a: a2, t: t2, v: v2 });
   const n = orm.em.create(N, { id: e, a });

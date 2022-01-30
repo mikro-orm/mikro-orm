@@ -111,10 +111,10 @@ export class TC {
   id!: number;
 
   @ManyToOne(() => C)
-  c!: C;
+  c?: C;
 
   @ManyToOne(() => T)
-  t!: T;
+  t?: T;
 
   @OneToMany(() => A, a => a.tc, { eager: true })
   as? = new Collection<A>(this);

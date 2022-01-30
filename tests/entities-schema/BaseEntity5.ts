@@ -1,9 +1,11 @@
+import type { OptionalProps } from '@mikro-orm/core';
 import { EntitySchema } from '@mikro-orm/core';
 
 export interface IBaseEntity5 {
   id: number;
   createdAt: Date;
   updatedAt: Date;
+  [OptionalProps]?: 'createdAt' | 'updatedAt';
 }
 
 export const BaseEntity5 = new EntitySchema<IBaseEntity5>({

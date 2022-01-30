@@ -1,4 +1,4 @@
-import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, MikroORM, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers';
 
@@ -35,6 +35,8 @@ export class Audit {
 
 @Entity()
 export class MyEntity {
+
+  [OptionalProps]?: 'audit1' | 'audit2';
 
   @PrimaryKey()
   id!: number;

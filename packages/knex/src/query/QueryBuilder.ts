@@ -10,6 +10,7 @@ import { QueryBuilderHelper } from './QueryBuilderHelper';
 import type { SqlEntityManager } from '../SqlEntityManager';
 import { CriteriaNodeFactory } from './CriteriaNodeFactory';
 import type { Field, JoinOptions } from '../typings';
+import type { RequiredEntityData } from '@mikro-orm/core/src/typings';
 
 /**
  * SQL query builder with fluent interface.
@@ -106,7 +107,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.select([...Utils.asArray(this._fields), ...Utils.asArray(fields)]);
   }
 
-  insert(data: EntityData<T> | EntityData<T>[]): InsertQueryBuilder<T> {
+  insert(data: RequiredEntityData<T> | RequiredEntityData<T>[]): InsertQueryBuilder<T> {
     return this.init(QueryType.INSERT, data) as InsertQueryBuilder<T>;
   }
 

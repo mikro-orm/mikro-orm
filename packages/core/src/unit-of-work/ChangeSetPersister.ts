@@ -185,7 +185,7 @@ export class ChangeSetPersister {
     cond = Utils.isPlainObject(cond) ? cond : { [meta.primaryKeys[0]]: cond };
 
     for (const key of meta.concurrencyCheckKeys) {
-      cond[key as string] = changeSet.originalEntity![key];
+      cond[key as string] = changeSet.originalEntity![key as string];
 
       if (changeSet.payload[key]) {
         tmp.push(key);

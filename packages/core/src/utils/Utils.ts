@@ -415,7 +415,7 @@ export class Utils {
 
   static getCompositeKeyHash<T extends AnyEntity<T>>(data: EntityData<T>, meta: EntityMetadata<T>): string {
     const pks = meta.primaryKeys.map(pk => {
-      const value = data[pk];
+      const value = data[pk as string];
       const prop = meta.properties[pk];
 
       if (prop.targetMeta && Utils.isPlainObject(value)) {

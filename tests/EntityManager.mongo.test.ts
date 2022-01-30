@@ -1282,7 +1282,7 @@ describe('EntityManagerMongo', () => {
   test('em.create properly cascades collections', async () => {
     const author = orm.em.create(Author, { name: 'Jon Snow', email: 'snow@wall 1.st' });
     author.books.add(new Book('Test 1'));
-    author.books.add(orm.em.create(Book, { title: 'Test 2' }));
+    author.books.add(orm.em.create(Book, { title: 'Test 2', author }));
     await orm.em.persistAndFlush(author);
     expect(author._id).toBeDefined();
     expect(author.books[0]._id).toBeDefined();

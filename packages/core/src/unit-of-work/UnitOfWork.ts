@@ -21,7 +21,7 @@ export class UnitOfWork {
   private readonly persistStack = new Set<AnyEntity>();
   private readonly removeStack = new Set<AnyEntity>();
   private readonly orphanRemoveStack = new Set<AnyEntity>();
-  private readonly changeSets = new Map<AnyEntity, ChangeSet<AnyEntity>>();
+  private readonly changeSets = new Map<AnyEntity, ChangeSet<any>>();
   private readonly collectionUpdates = new Set<Collection<AnyEntity>>();
   private readonly extraUpdates = new Set<[AnyEntity, string | string[], AnyEntity | AnyEntity[] | Reference<any> | Collection<any>]>();
   private readonly metadata = this.em.getMetadata();
@@ -581,8 +581,8 @@ export class UnitOfWork {
     Object.assign(changeSet.payload, diff);
     const wrapped = changeSet.entity.__helper!;
 
-    if (wrapped.__identifier && diff[wrapped.__meta.primaryKeys[0]]) {
-      wrapped.__identifier.setValue(diff[wrapped.__meta.primaryKeys[0]] as IPrimaryKeyValue);
+    if (wrapped.__identifier && diff[wrapped.__meta.primaryKeys[0] as string]) {
+      wrapped.__identifier.setValue(diff[wrapped.__meta.primaryKeys[0] as string] as IPrimaryKeyValue);
     }
 
     this.insideHooks = false;

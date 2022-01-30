@@ -1,31 +1,9 @@
 import type { Knex } from 'knex';
 import type {
-  AnyEntity,
-  Collection,
-  Configuration,
-  Constructor,
-  CountOptions,
-  DeleteOptions,
-  Dictionary,
-  DriverMethodOptions,
-  EntityData,
-  EntityDictionary,
-  EntityField,
-  EntityManager,
-  EntityMetadata,
-  EntityProperty,
-  FilterQuery,
-  FindOneOptions,
-  FindOptions,
-  IDatabaseDriver,
-  LockOptions,
-  NativeInsertUpdateManyOptions,
-  NativeInsertUpdateOptions,
-  PopulateOptions,
-  Primary,
-  QueryOrderMap,
-  QueryResult,
-  Transaction,
+  AnyEntity, Collection, Configuration, Constructor, CountOptions, DeleteOptions, Dictionary, DriverMethodOptions,
+  EntityData, EntityDictionary, EntityField, EntityManager, EntityMetadata, EntityProperty, FilterQuery, FindOneOptions,
+  FindOptions, IDatabaseDriver, LockOptions, NativeInsertUpdateManyOptions, NativeInsertUpdateOptions, PopulateOptions, Primary,
+  QueryOrderMap, QueryResult, RequiredEntityData, Transaction,
 } from '@mikro-orm/core';
 import { DatabaseDriver, EntityManagerType, LoadStrategy, QueryFlag, ReferenceType, Utils } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from './AbstractSqlConnection';
@@ -111,7 +89,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return res[0] || null;
   }
 
-  mapResult<T extends AnyEntity<T>>(result: EntityData<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[] = [], qb?: QueryBuilder<T>, map: Dictionary = {}): EntityData<T> | null {
+  mapResult<T>(result: EntityData<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[] = [], qb?: QueryBuilder<T>, map: Dictionary = {}): EntityData<T> | null {
     const ret = super.mapResult(result, meta);
 
     /* istanbul ignore if */
@@ -223,7 +201,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const collections = this.extractManyToMany(entityName, data);
     const pks = this.getPrimaryKeyFields(entityName);
     const qb = this.createQueryBuilder<T>(entityName, options.ctx, true, options.convertCustomTypes).withSchema(this.getSchemaName(meta, options));
-    const res = await this.rethrow(qb.insert(data).execute('run', false));
+    const res = await this.rethrow(qb.insert(data as unknown as RequiredEntityData<T>).execute('run', false));
     res.row = res.row || {};
     let pk: any;
 
@@ -253,7 +231,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     if (fields.length === 0) {
       const qb = this.createQueryBuilder<T>(entityName, options.ctx, true, options.convertCustomTypes).withSchema(this.getSchemaName(meta, options));
-      res = await this.rethrow(qb.insert(data).execute('run', false));
+      res = await this.rethrow(qb.insert(data as unknown as RequiredEntityData<T>[]).execute('run', false));
     } else {
       let sql = `insert into ${(this.getTableName(meta, options))} `;
       /* istanbul ignore next */
@@ -655,7 +633,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     this.metadata.find(entityName)!.relations.forEach(prop => {
       if (prop.reference === ReferenceType.MANY_TO_MANY && data[prop.name]) {
-        ret[prop.name as keyof T] = data[prop.name].map((item: Primary<T>) => Utils.asArray(item));
+        ret[prop.name] = data[prop.name].map((item: Primary<T>) => Utils.asArray(item));
         delete data[prop.name];
       }
     });
@@ -669,8 +647,8 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
 
     for (const prop of meta.relations) {
-      if (collections[prop.name]) {
-        await this.rethrow(this.updateCollectionDiff(meta, prop, pks, clear, collections[prop.name] as Primary<T>[][], options));
+      if (collections[prop.name as string]) {
+        await this.rethrow(this.updateCollectionDiff(meta, prop, pks, clear, collections[prop.name as string] as Primary<T>[][], options));
       }
     }
   }

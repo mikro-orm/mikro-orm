@@ -1,4 +1,4 @@
-import { Collection, Entity, Enum, EnumType, ManyToMany, OneToMany, Property } from '@mikro-orm/core';
+import { Collection, Entity, Enum, EnumType, ManyToMany, OneToMany, OptionalProps, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Test2 } from './Test2';
 import { BaseEntity2 } from './BaseEntity2';
@@ -25,6 +25,8 @@ export enum Enum2 {
 
 @Entity()
 export class Publisher2 extends BaseEntity2 {
+
+  [OptionalProps]?: 'type' | 'type2' | 'hookTest';
 
   @Property({ fieldName: 'name' })
   name: string;

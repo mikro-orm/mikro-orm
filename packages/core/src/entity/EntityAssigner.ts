@@ -1,7 +1,7 @@
 import { inspect } from 'util';
 import type { Collection } from './Collection';
 import type { EntityManager } from '../EntityManager';
-import type { AnyEntity, EntityData, EntityDTO, EntityMetadata, EntityProperty, Primary } from '../typings';
+import type { AnyEntity, EntityData, EntityDTO, EntityMetadata, EntityProperty, Primary, RequiredEntityData } from '../typings';
 import { Utils } from '../utils/Utils';
 import { Reference } from './Reference';
 import { ReferenceType, SCALAR_TYPES } from '../enums';
@@ -225,7 +225,7 @@ export class EntityAssigner {
     }
 
     if (Utils.isPlainObject(item)) {
-      return em.create<T>(prop.type, item as EntityData<T>, options);
+      return em.create<T>(prop.type, item as RequiredEntityData<T>, options);
     }
 
     invalid.push(item);

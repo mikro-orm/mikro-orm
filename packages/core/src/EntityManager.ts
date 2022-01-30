@@ -6,7 +6,7 @@ import type { AssignOptions, EntityLoaderOptions, EntityRepository, IdentifiedRe
 import { EntityAssigner, EntityFactory, EntityLoader, EntityValidator, Reference } from './entity';
 import { UnitOfWork } from './unit-of-work';
 import type { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, InsertOptions, LockOptions, UpdateOptions, GetReferenceOptions, EntityField } from './drivers';
-import type { AnyEntity, AutoPath, Dictionary, EntityData, EntityDictionary, EntityDTO, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, New, Populate, PopulateOptions, Primary } from './typings';
+import type { AnyEntity, AutoPath, Dictionary, EntityData, EntityDictionary, EntityDTO, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, New, Populate, PopulateOptions, Primary, RequiredEntityData } from './typings';
 import { FlushMode, LoadStrategy, LockMode, PopulateHint, ReferenceType, SCALAR_TYPES } from './enums';
 import type { TransactionOptions } from './enums';
 import type { MetadataStorage } from './metadata';
@@ -558,7 +558,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * the whole `data` parameter will be passed. This means we can also define `constructor(data: Partial<T>)` and
    * `em.create()` will pass the data into it (unless we have a property named `data` too).
    */
-  create<T extends AnyEntity<T>, P extends string = never>(entityName: EntityName<T>, data: EntityData<T>, options: { managed?: boolean; schema?: string } = {}): New<T, P> {
+  create<T extends AnyEntity<T>, P extends string = never>(entityName: EntityName<T>, data: RequiredEntityData<T>, options: { managed?: boolean; schema?: string } = {}): New<T, P> {
     return this.getEntityFactory().create<T, P>(entityName, data, { ...options, newEntity: !options.managed });
   }
 

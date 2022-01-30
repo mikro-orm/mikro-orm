@@ -1,4 +1,4 @@
-import { MikroORM, Entity, PrimaryKey, PrimaryKeyType, Unique, Collection, ManyToOne, OneToMany, Property, Filter, LoadStrategy } from '@mikro-orm/core';
+import { MikroORM, Entity, PrimaryKey, PrimaryKeyType, Unique, Collection, ManyToOne, OneToMany, Property, Filter, LoadStrategy, OptionalProps } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity({ tableName: 'users' })
@@ -22,6 +22,8 @@ export class UserEntity {
 
 @Entity({ tableName: 'tenants' })
 export class TenantEntity {
+
+  [OptionalProps]?: 'isEnabled';
 
   @PrimaryKey({ type: 'number' })
   id!: number;
@@ -54,6 +56,7 @@ class UserTenantEntity {
   tenant!: TenantEntity;
 
   [PrimaryKeyType]: [number, number];
+  [OptionalProps]?: 'isActive';
 
   @Property({ type: 'boolean', fieldName: 'isActive' })
   isActive: boolean = true;

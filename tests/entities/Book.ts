@@ -1,6 +1,6 @@
 import { ObjectId } from 'bson';
 import type { EntityDTO } from '@mikro-orm/core';
-import { Collection, IdentifiedReference, Cascade, Entity, Index, ManyToMany, ManyToOne, PrimaryKey, Property, Unique, wrap, Filter, Dictionary } from '@mikro-orm/core';
+import { Collection, IdentifiedReference, Cascade, Entity, Index, ManyToMany, ManyToOne, PrimaryKey, Property, Unique, wrap, Filter, Dictionary, OptionalProps } from '@mikro-orm/core';
 import { Publisher } from './Publisher';
 import { Author } from './Author';
 import { BookTag } from './book-tag';
@@ -13,6 +13,8 @@ import { BookRepository } from '../repositories/BookRepository';
 @Index({ options: { point: '2dsphere', title: -1 } })
 @Filter({ name: 'writtenBy', cond: args => ({ author: args.author }) })
 export class Book extends BaseEntity3<Book> {
+
+  [OptionalProps]?: 'createdAt' | 'publisher';
 
   @PrimaryKey()
   _id!: ObjectId;

@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
-import { BigIntType, Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { BigIntType, Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { performance } from 'perf_hooks';
 
 @Entity()
 export class VendorBuyerRelationship {
+
+  [OptionalProps]?: 'created';
 
   @PrimaryKey({ type: BigIntType })
   id!: string;
@@ -25,6 +27,8 @@ export class VendorBuyerRelationship {
 
 @Entity()
 export class Member {
+
+  [OptionalProps]?: 'created';
 
   @PrimaryKey({ type: BigIntType })
   id!: string;
@@ -48,6 +52,8 @@ export class Member {
 
 @Entity()
 export class Job {
+
+  [OptionalProps]?: 'rejected';
 
   @PrimaryKey({ type: BigIntType })
   id!: string;
@@ -80,6 +86,8 @@ export class Job {
 
 @Entity()
 export class Order {
+
+  [OptionalProps]?: 'created';
 
   @PrimaryKey({ type: BigIntType })
   id!: string;

@@ -108,7 +108,7 @@ describe('GH issue 1395', () => {
       geometry: { top: 0, left: 0, width: 640, height: 480 },
     });
 
-    const item2 = orm.em.create(TestTemplate, {});
+    const item2 = orm.em.create(TestTemplate, {} as any);
     wrap(item2).assign({
       name: 'test',
       messages: [

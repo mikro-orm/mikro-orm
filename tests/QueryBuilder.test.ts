@@ -1242,7 +1242,7 @@ describe('QueryBuilder', () => {
 
   test('insert query', async () => {
     const qb0 = orm.em.createQueryBuilder(Publisher2);
-    qb0.insert([{}, {}]);
+    qb0.insert([{}, {}] as any);
     expect(qb0.getQuery()).toEqual('insert into `publisher2` (`id`) values (default), (default)');
     expect(qb0.getParams()).toEqual([]);
 
@@ -1252,9 +1252,9 @@ describe('QueryBuilder', () => {
     expect(qb1.getParams()).toEqual(['test 123', PublisherType.GLOBAL]);
 
     const qb2 = orm.em.createQueryBuilder(Author2);
-    qb2.insert({ name: 'test 123', favouriteBook: '2359', termsAccepted: true });
-    expect(qb2.getQuery()).toEqual('insert into `author2` (`favourite_book_uuid_pk`, `name`, `terms_accepted`) values (?, ?, ?)');
-    expect(qb2.getParams()).toEqual(['2359', 'test 123', true]);
+    qb2.insert({ name: 'test 123', email: 'e', favouriteBook: '2359', termsAccepted: true });
+    expect(qb2.getQuery()).toEqual('insert into `author2` (`email`, `favourite_book_uuid_pk`, `name`, `terms_accepted`) values (?, ?, ?, ?)');
+    expect(qb2.getParams()).toEqual(['e', '2359', 'test 123', true]);
 
     const qb3 = orm.em.createQueryBuilder<any>(BookTag2);
     qb3.insert({ books: 123 }).withSchema('test123');
@@ -2193,11 +2193,11 @@ describe('QueryBuilder', () => {
     await pg.getSchemaGenerator().ensureDatabase();
 
     const qb01 = pg.em.createQueryBuilder(FooBar2);
-    qb01.insert({ array: [] });
+    qb01.insert({ array: [] } as any);
     expect(qb01.getFormattedQuery()).toEqual(`insert into "foo_bar2" ("array") values ('{}') returning "id", "version"`);
 
     const qb02 = pg.em.createQueryBuilder(FooBar2);
-    qb02.insert({ array: [1, 2, 3] });
+    qb02.insert({ array: [1, 2, 3] } as any);
     expect(qb02.getFormattedQuery()).toEqual(`insert into "foo_bar2" ("array") values ('{1,2,3}') returning "id", "version"`);
 
     const qb1 = pg.em.createQueryBuilder(Publisher2);
@@ -2492,7 +2492,7 @@ describe('QueryBuilder', () => {
     expect(res1).toEqual([]);
 
     spy.mockResolvedValue({ insertId: 123 });
-    const res2 = await orm.em.createQueryBuilder(Book2).insert({}).execute();
+    const res2 = await orm.em.createQueryBuilder(Book2).insert({ author: 1 }).execute();
     expect(res2.insertId).toBe(123);
     const res3 = await orm.em.createQueryBuilder(Book2).update({}).execute();
     expect(res3.insertId).toBe(123);

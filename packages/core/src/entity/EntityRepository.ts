@@ -1,5 +1,5 @@
 import type { EntityManager, MergeOptions } from '../EntityManager';
-import type { EntityData, EntityName, AnyEntity, Primary, Loaded, New, FilterQuery, EntityDictionary, AutoPath } from '../typings';
+import type { EntityData, EntityName, AnyEntity, Primary, Loaded, New, FilterQuery, EntityDictionary, AutoPath, RequiredEntityData } from '../typings';
 import type { CountOptions, DeleteOptions, FindOneOptions, FindOneOrFailOptions, FindOptions, GetReferenceOptions, UpdateOptions } from '../drivers/IDatabaseDriver';
 import type { IdentifiedReference, Reference } from './Reference';
 import type { EntityLoaderOptions } from './EntityLoader';
@@ -183,7 +183,7 @@ export class EntityRepository<T extends AnyEntity<T>> {
    * the whole `data` parameter will be passed. This means we can also define `constructor(data: Partial<T>)` and
    * `em.create()` will pass the data into it (unless we have a property named `data` too).
    */
-  create<P extends string = any>(data: EntityData<T>): New<T, P> {
+  create<P extends string = any>(data: RequiredEntityData<T>): New<T, P> {
     return this.em.create<T, P>(this.entityName, data);
   }
 

@@ -1,7 +1,9 @@
+import type { OptionalProps } from '@mikro-orm/core';
 import { ArrayType, BlobType, EntitySchema, JsonType } from '@mikro-orm/core';
 import type { IFooBaz4, IBaseEntity5 } from './index';
 
-export interface IFooBar4 extends IBaseEntity5 {
+export interface IFooBar4 extends Omit<IBaseEntity5, typeof OptionalProps> {
+  [OptionalProps]?: 'version' | IBaseEntity5[typeof OptionalProps];
   name: string;
   baz?: IFooBaz4;
   fooBar?: IFooBar4;

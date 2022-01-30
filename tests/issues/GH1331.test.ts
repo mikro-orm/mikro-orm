@@ -5,7 +5,7 @@ import {
   LoadStrategy,
   ManyToOne,
   MikroORM,
-  OneToMany,
+  OneToMany, OptionalProps,
   PrimaryKey,
   Property,
   QueryOrder,
@@ -14,6 +14,8 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class D {
+
+  [OptionalProps]?: 'c';
 
   @PrimaryKey()
   id!: number;
@@ -32,6 +34,8 @@ export class D {
 
 @Entity()
 export class C {
+
+  [OptionalProps]?: 'b';
 
   @PrimaryKey()
   id!: number;
@@ -60,6 +64,8 @@ export class C {
 
 @Entity()
 export class B {
+
+  [OptionalProps]?: 'a';
 
   @PrimaryKey()
   id!: number;
@@ -122,7 +128,7 @@ describe('GH issue 1331', () => {
     await orm.close(true);
   });
 
-  test(`relations' orderBy should be respectend when using LoadStrategy.JOINED`, async () => {
+  test(`relations' orderBy should be respected when using LoadStrategy.JOINED`, async () => {
     const a = orm.em.create(A, {});
     const b1 = orm.em.create(B, { order: 0 });
     const b2 = orm.em.create(B, { order: 2 });

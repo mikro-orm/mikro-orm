@@ -221,6 +221,7 @@ describe('EntityAssignerMySql', () => {
   test('assigning to collections with `updateNestedEntities` flag', async () => {
     const entity = orm.em.create(Author2, {
       name: 'god',
+      email: 'e',
       books: [
         { title: 'b1' },
         { title: 'b2' },

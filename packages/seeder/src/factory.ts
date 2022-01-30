@@ -1,18 +1,21 @@
 import type { Faker } from '@faker-js/faker';
 import faker from '@faker-js/faker';
-import type { EntityManager } from '@mikro-orm/core';
+import type { RequiredEntityData, EntityManager } from '@mikro-orm/core';
 
-export abstract class Factory<C> {
+export abstract class Factory<T> {
 
-  abstract readonly model: { new(): C };
-  private eachFunction?: (entity: C) => void;
+  abstract readonly model: { new(): T };
+  private eachFunction?: (entity: T) => void;
 
   constructor(private readonly em: EntityManager) { }
 
-  protected abstract definition(faker: Faker): Partial<C>;
+  protected abstract definition(faker: Faker): Partial<T>;
 
-  private makeEntity(overrideParameters?: Partial<C>): C {
-    const entity = this.em.create(this.model, Object.assign({}, this.definition(faker), overrideParameters));
+  private makeEntity(overrideParameters?: Partial<T>): T {
+    const entity = this.em.create(this.model, {
+      ...this.definition(faker),
+      ...overrideParameters,
+    } as unknown as RequiredEntityData<T>);
 
     if (this.eachFunction) {
       this.eachFunction(entity);
@@ -25,7 +28,7 @@ export abstract class Factory<C> {
    * Make a single entity and persist (not flush)
    * @param overrideParameters Object specifying what default attributes of the entity factory should be overridden
    */
-  makeOne(overrideParameters?: Partial<C>): C {
+  makeOne(overrideParameters?: Partial<T>): T {
     const entity = this.makeEntity(overrideParameters);
     this.em.persist(entity);
     return entity;
@@ -36,7 +39,7 @@ export abstract class Factory<C> {
    * @param amount Number of entities that should be generated
    * @param overrideParameters Object specifying what default attributes of the entity factory should be overridden
    */
-  make(amount: number, overrideParameters?: Partial<C>): C[] {
+  make(amount: number, overrideParameters?: Partial<T>): T[] {
     const entities = [...Array(amount)].map(() => {
       return this.makeEntity(overrideParameters);
     });
@@ -48,7 +51,7 @@ export abstract class Factory<C> {
    * Create (and flush) a single entity
    * @param overrideParameters Object specifying what default attributes of the entity factory should be overridden
    */
-  async createOne(overrideParameters?: Partial<C>): Promise<C> {
+  async createOne(overrideParameters?: Partial<T>): Promise<T> {
     const entity = this.makeOne(overrideParameters);
     await this.em.flush();
     return entity;
@@ -59,7 +62,7 @@ export abstract class Factory<C> {
    * @param amount Number of entities that should be generated
    * @param overrideParameters Object specifying what default attributes of the entity factory should be overridden
    */
-  async create(amount: number, overrideParameters?: Partial<C>): Promise<C[]> {
+  async create(amount: number, overrideParameters?: Partial<T>): Promise<T[]> {
     const entities = this.make(amount, overrideParameters);
     await this.em.flush();
     return entities;
@@ -70,7 +73,7 @@ export abstract class Factory<C> {
    * In case of `createOne` or `create` it is applied before the entity is persisted
    * @param eachFunction The function that is applied on every entity
    */
-  each(eachFunction: (entity: C) => void) {
+  each(eachFunction: (entity: T) => void) {
     this.eachFunction = eachFunction;
     return this;
   }

@@ -1,5 +1,5 @@
 import { v4 } from 'uuid';
-import { Cascade, Collection, Entity, Filter, Formula, IdentifiedReference, ManyToMany, ManyToOne, OneToOne, PrimaryKey, Property, QueryOrder, t } from '@mikro-orm/core';
+import { Cascade, Collection, Entity, Filter, Formula, IdentifiedReference, ManyToMany, ManyToOne, OneToOne, OptionalProps, PrimaryKey, Property, QueryOrder, t } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
@@ -11,6 +11,8 @@ import { Test2 } from './Test2';
 @Filter({ name: 'hasAuthor', cond: { author: { $ne: null } }, default: true })
 @Filter({ name: 'writtenBy', cond: args => ({ author: { name: args.name } }) })
 export class Book2 {
+
+  [OptionalProps]?: 'createdAt';
 
   @PrimaryKey({ name: 'uuid_pk', type: t.uuid })
   uuid = v4();

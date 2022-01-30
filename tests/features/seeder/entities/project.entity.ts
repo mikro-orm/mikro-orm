@@ -1,8 +1,10 @@
-import { Collection, Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { Collection, Entity, OneToMany, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { House } from './house.entity';
 
 @Entity()
 export class Project {
+
+  [OptionalProps]?: 'createdAt';
 
   @PrimaryKey()
   id!: number;

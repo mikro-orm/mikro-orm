@@ -1,4 +1,4 @@
-import { Collection, EntitySchema, MikroORM } from '@mikro-orm/core';
+import { Collection, EntitySchema, MikroORM, OptionalProps } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { v4 } from 'uuid';
 
@@ -7,6 +7,7 @@ class TaskProps {
   id = v4();
   version = new Date();
   projects = new Collection<ProjectProps>(this);
+  [OptionalProps]?: 'version';
 
 }
 

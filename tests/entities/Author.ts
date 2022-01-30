@@ -19,7 +19,7 @@ import { BaseEntity } from './BaseEntity';
   args: false,
   default: true,
 })
-export class Author extends BaseEntity<Author> {
+export class Author extends BaseEntity<Author, 'termsAccepted' | 'favouriteBook' | 'favouriteAuthor' | 'code2' | 'version' | 'versionAsString'> {
 
   [EntityRepositoryType]: AuthorRepository;
 

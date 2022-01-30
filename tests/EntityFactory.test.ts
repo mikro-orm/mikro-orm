@@ -227,7 +227,7 @@ describe('EntityFactory', () => {
     orm.em.clear();
     mock.mock.calls.length = 0;
 
-    const a2 = repo.create({});
+    const a2 = repo.create({} as any);
     repo.assign(a2, { name: 'Jon', email: 'jon2@snow.com', books: [
       { title: 'B1', publisher: '5b0d19b28b21c648c2c8a600', tags: [{ name: 't1' }, '5b0d19b28b21c648c2c8a601'] },
     ] });
@@ -259,6 +259,7 @@ describe('EntityFactory', () => {
   test('em.create() should not mutate the input object (GH issue 1294)', async () => {
     const data = {
       name: 'this is my name',
+      email: 'e',
       age: 21,
     };
 

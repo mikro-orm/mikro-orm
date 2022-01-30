@@ -12,7 +12,7 @@ import type { EntityManager } from './EntityManager';
 export type Constructor<T = unknown> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
 // eslint-disable-next-line @typescript-eslint/ban-types
-export type ExcludeFunctions<T, K extends keyof T> = T[K] extends Function ? never : K;
+export type ExcludeFunctions<T, K extends keyof T> = T[K] extends Function ? never : (K extends symbol ? never : K);
 export type Cast<T, R> = T extends R ? T : R;
 export type IsUnknown<T> = T extends unknown ? unknown extends T ? true : never : never;
 
@@ -27,6 +27,7 @@ export type DeepPartial<T> = T & {
 export const EntityRepositoryType = Symbol('EntityRepositoryType');
 export const PrimaryKeyType = Symbol('PrimaryKeyType');
 export const PrimaryKeyProp = Symbol('PrimaryKeyProp');
+export const OptionalProps = Symbol('OptionalProps');
 
 type ReadonlyPrimary<T> = T extends any[] ? Readonly<T> : T;
 export type Primary<T> = T extends { [PrimaryKeyType]: infer PK } // TODO `PrimaryKeyType` should be optional
@@ -165,7 +166,23 @@ export type EntityDataNested<T> = T extends undefined
     ? Readonly<T>
     : EntityData<T> | ExpandEntityProp<T>;
 type EntityDataItem<T> = T | EntityDataProp<T> | null;
-export type EntityData<T> = { [K in keyof T]?: EntityDataItem<T[K]> };
+
+type ExplicitlyOptionalProps<T> = T extends { [OptionalProps]?: infer PK } ? PK : never;
+type ExplicitlyOptionalProps2<T> = ExplicitlyOptionalProps<T> | 'id' | '_id' | 'uuid';
+
+type IsOptional<T, K extends keyof T> = T[K] extends Collection<any>
+  ? true
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  : T[K] extends Function
+    ? true
+    : K extends symbol
+      ? true
+      : K extends ExplicitlyOptionalProps2<T>
+        ? true
+        : false;
+type RequiredKeys<T, K extends keyof T> = IsOptional<T, K> extends false ? K : never;
+export type EntityData<T> = { [K in keyof T as ExcludeFunctions<T, K>]?: EntityDataItem<T[K]> };
+export type RequiredEntityData<T> = EntityData<T> & { [K in keyof T as RequiredKeys<T, K>]: EntityDataItem<T[K]> };
 export type EntityDictionary<T> = EntityData<T> & Dictionary;
 
 type Relation<T> = {

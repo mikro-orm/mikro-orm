@@ -85,8 +85,8 @@ export class EntityFactory {
     const diff = this.comparator.diffEntities(meta.className, originalEntityData, existsData);
 
     // version properties are not part of entity snapshots
-    if (meta.versionProperty && data[meta.versionProperty] && data[meta.versionProperty] !== originalEntityData[meta.versionProperty]) {
-      diff[meta.versionProperty] = data[meta.versionProperty];
+    if (meta.versionProperty && data[meta.versionProperty as string] && data[meta.versionProperty as string] !== originalEntityData[meta.versionProperty as string]) {
+      diff[meta.versionProperty as string] = data[meta.versionProperty as string];
     }
 
     const diff2 = this.comparator.diffEntities(meta.className, existsData, data);
@@ -110,18 +110,18 @@ export class EntityFactory {
 
     // in case of joined loading strategy, we need to cascade the merging to possibly loaded relations manually
     meta.relations.forEach(prop => {
-      if ([ReferenceType.MANY_TO_MANY, ReferenceType.ONE_TO_MANY].includes(prop.reference) && Array.isArray(data[prop.name])) {
+      if ([ReferenceType.MANY_TO_MANY, ReferenceType.ONE_TO_MANY].includes(prop.reference) && Array.isArray(data[prop.name as string])) {
         // instead of trying to match the collection items (which could easily fail if the collection was loaded with different ordering),
         // we just create the entity from scratch, which will automatically pick the right one from the identity map and call `mergeData` on it
-        (data[prop.name] as EntityData<T>[])
+        (data[prop.name as string] as EntityData<T>[])
           .filter(child => Utils.isPlainObject(child)) // objects with prototype can be PKs (e.g. `ObjectId`)
           .forEach(child => this.create(prop.type, child, options)); // we can ignore the value, we just care about the `mergeData` call
 
         return;
       }
 
-      if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && Utils.isPlainObject(data[prop.name]) && entity[prop.name] && (entity[prop.name] as AnyEntity).__helper!.__initialized) {
-        this.create(prop.type, data[prop.name] as EntityData<T>, options); // we can ignore the value, we just care about the `mergeData` call
+      if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && Utils.isPlainObject(data[prop.name as string]) && entity[prop.name] && (entity[prop.name] as AnyEntity).__helper!.__initialized) {
+        this.create(prop.type, data[prop.name as string] as EntityData<T>, options); // we can ignore the value, we just care about the `mergeData` call
       }
     });
 
@@ -221,10 +221,10 @@ export class EntityFactory {
 
   private findEntity<T>(data: EntityData<T>, meta: EntityMetadata<T>, options: FactoryOptions): T | undefined {
     if (!meta.compositePK && !meta.properties[meta.primaryKeys[0]]?.customType) {
-      return this.unitOfWork.getById<T>(meta.name!, data[meta.primaryKeys[0]] as Primary<T>, options.schema);
+      return this.unitOfWork.getById<T>(meta.name!, data[meta.primaryKeys[0] as string] as Primary<T>, options.schema);
     }
 
-    if (meta.primaryKeys.some(pk => data[pk as keyof T] == null)) {
+    if (meta.primaryKeys.some(pk => data[pk as string] == null)) {
       return undefined;
     }
 
@@ -265,7 +265,7 @@ export class EntityFactory {
       }
 
       delete data[pk];
-      data[primaryKey as keyof T] = id as Primary<T> & T[keyof T];
+      data[primaryKey] = id as Primary<T> & T[keyof T];
     }
   }
 
