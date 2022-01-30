@@ -3,7 +3,7 @@ import type { Connection, Dictionary } from '@mikro-orm/core';
 import { BigIntType, EnumType, Utils } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
-import type { Column, Index, TableDifference } from '../typings';
+import type { Check, Column, Index, TableDifference } from '../typings';
 import type { DatabaseTable } from './DatabaseTable';
 
 export abstract class SchemaHelper {
@@ -139,6 +139,10 @@ export abstract class SchemaHelper {
   }
 
   async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Index[]> {
+    throw new Error('Not supported by given driver');
+  }
+
+  async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Check[]> {
     throw new Error('Not supported by given driver');
   }
 

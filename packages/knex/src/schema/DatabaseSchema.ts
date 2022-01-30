@@ -61,10 +61,11 @@ export class DatabaseSchema {
       table.comment = t.table_comment;
       const cols = await platform.getSchemaHelper()!.getColumns(connection, table.name, table.schema);
       const indexes = await platform.getSchemaHelper()!.getIndexes(connection, table.name, table.schema);
+      const checks = await platform.getSchemaHelper()!.getChecks(connection, table.name, table.schema);
       const pks = await platform.getSchemaHelper()!.getPrimaryKeys(connection, indexes, table.name, table.schema);
       const fks = await platform.getSchemaHelper()!.getForeignKeys(connection, table.name, table.schema);
       const enums = await platform.getSchemaHelper()!.getEnumDefinitions(connection, table.name, table.schema);
-      table.init(cols, indexes, pks, fks, enums);
+      table.init(cols, indexes, checks, pks, fks, enums);
     }
 
     return schema;
@@ -82,6 +83,7 @@ export class DatabaseSchema {
       meta.indexes.forEach(index => table.addIndex(meta, index, 'index'));
       meta.uniques.forEach(index => table.addIndex(meta, index, 'unique'));
       table.addIndex(meta, { properties: meta.props.filter(prop => prop.primary).map(prop => prop.name) }, 'primary');
+      meta.checks.forEach(check => table.addCheck(check));
     }
 
     return schema;

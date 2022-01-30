@@ -1,4 +1,4 @@
-import type { AbstractSqlConnection, Column, Index, Knex, TableDifference } from '@mikro-orm/knex';
+import type { AbstractSqlConnection, Check, Column, Index, Knex, TableDifference } from '@mikro-orm/knex';
 import { SchemaHelper } from '@mikro-orm/knex';
 import type { Dictionary , Type } from '@mikro-orm/core';
 import { EnumType, StringType, TextType } from '@mikro-orm/core';
@@ -162,6 +162,11 @@ export class MySqlSchemaHelper extends SchemaHelper {
       unique: !index.Non_unique,
       primary: index.Key_name === 'PRIMARY',
     })));
+  }
+
+  async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Check[]> {
+    // @todo No support for CHECK constraints in current test MySQL version (minimum version is 8.0.16).
+    return [];
   }
 
   normalizeDefaultValue(defaultValue: string, length: number) {

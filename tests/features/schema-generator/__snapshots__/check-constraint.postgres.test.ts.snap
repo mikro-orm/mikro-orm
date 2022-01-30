@@ -1,0 +1,34 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`check constraint [postgres] check constraint diff [postgres]: postgres-check-constraint-diff-1 1`] = `
+"create table \\"new_table\\" (\\"id\\" serial primary key, \\"price\\" int not null, constraint foo_custom check (price >= 0));
+
+"
+`;
+
+exports[`check constraint [postgres] check constraint diff [postgres]: postgres-check-constraint-diff-2 1`] = `
+"alter table \\"new_table\\" drop constraint foo_custom;
+alter table \\"new_table\\" add constraint foo_custom check(price > 0);
+
+"
+`;
+
+exports[`check constraint [postgres] check constraint diff [postgres]: postgres-check-constraint-diff-3 1`] = `
+"alter table \\"new_table\\" drop constraint foo_custom;
+
+"
+`;
+
+exports[`check constraint [postgres] check constraint diff [postgres]: postgres-check-constraint-diff-4 1`] = `
+"alter table \\"new_table\\" add constraint bar_custom check(price > 0);
+
+"
+`;
+
+exports[`check constraint [postgres] check constraint diff [postgres]: postgres-check-constraint-diff-5 1`] = `""`;
+
+exports[`check constraint [postgres] check constraint is generated for decorator [postgres]: postgres-check-constraint-decorator 1`] = `
+"create table \\"foo_entity\\" (\\"id\\" serial primary key, \\"price\\" int not null, constraint foo_custom check (price >= 0));
+
+"
+`;

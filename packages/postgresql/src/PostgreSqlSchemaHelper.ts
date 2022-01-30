@@ -1,6 +1,6 @@
 import type { Dictionary } from '@mikro-orm/core';
 import { BigIntType, EnumType, Utils } from '@mikro-orm/core';
-import type { AbstractSqlConnection, Column, Index, DatabaseTable, TableDifference } from '@mikro-orm/knex';
+import type { AbstractSqlConnection, Column, Index, DatabaseTable, TableDifference, Check } from '@mikro-orm/knex';
 import { SchemaHelper } from '@mikro-orm/knex';
 import type { Knex } from 'knex';
 
@@ -81,6 +81,16 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     })));
   }
 
+  async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName: string): Promise<Check[]> {
+    const sql = this.getChecksSQL(tableName, schemaName);
+    const checks = await connection.execute<any[]>(sql);
+
+    return checks.filter(check => check.name.endsWith('_custom')).map(check => ({
+      name: check.name.replace(/_custom$/, ''),
+      expression: check.expression.replace(/^check \(\((.+)\)\)$/i, '$1'),
+    }));
+  }
+
   getForeignKeysSQL(tableName: string, schemaName: string): string {
     return `select kcu.table_name as table_name, rel_kcu.table_name as referenced_table_name,
       rel_kcu.constraint_schema as referenced_schema_name,
@@ -108,6 +118,10 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const enums = await connection.execute<any[]>(sql);
 
     return enums.reduce((o, item) => {
+      if (item.conname.endsWith('_custom')) {
+        return o;
+      }
+
       // check constraints are defined as one of:
       // `CHECK ((type = ANY (ARRAY['local'::text, 'global'::text])))`
       // `CHECK (((enum_test)::text = ANY ((ARRAY['a'::character varying, 'b'::character varying, 'c'::character varying])::text[])))`
@@ -250,6 +264,15 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       left join pg_class AS i on i.oid = idx.indexrelid
       left join pg_attribute a on a.attrelid = idx.indrelid and a.attnum = ANY(idx.indkey) and a.attnum > 0
       where indrelid = '"${schemaName}"."${tableName}"'::regclass`;
+  }
+
+  private getChecksSQL(tableName: string, schemaName: string): string {
+    return `select pgc.conname as name, pg_get_constraintdef(pgc.oid) as expression
+      from pg_constraint pgc
+      join pg_namespace nsp on nsp.oid = pgc.connamespace
+      join pg_class cls on pgc.conrelid = cls.oid
+      left join information_schema.constraint_column_usage ccu on pgc.conname = ccu.constraint_name and nsp.nspname = ccu.constraint_schema
+      where contype = 'c' and ccu.table_name = '${tableName}' AND ccu.table_schema = '${schemaName}'`;
   }
 
 }

@@ -69,6 +69,11 @@ export interface Index {
   type?: string | Readonly<{ indexType?: string; storageEngineIndexType?: 'hash' | 'btree'; predicate?: Knex.QueryBuilder }>; // for back compatibility mainly, to allow using knex's `index.type` option (e.g. gin index)
 }
 
+export interface Check {
+  name: string;
+  expression: string;
+}
+
 export interface ColumnDifference {
   oldColumnName: string;
   column: Column;
@@ -88,6 +93,9 @@ export interface TableDifference {
   changedIndexes: Dictionary<Index>;
   removedIndexes: Dictionary<Index>;
   renamedIndexes: Dictionary<Index>;
+  addedChecks: Dictionary<Check>;
+  changedChecks: Dictionary<Check>;
+  removedChecks: Dictionary<Check>;
   addedForeignKeys: Dictionary<ForeignKey>;
   changedForeignKeys: Dictionary<ForeignKey>;
   removedForeignKeys: Dictionary<ForeignKey>;

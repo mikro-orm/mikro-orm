@@ -16,6 +16,7 @@ describe('SchemaHelper', () => {
     expect(() => helper.getForeignKeysSQL('table')).toThrowError('Not supported by given driver');
     await expect(helper.getColumns({} as any, 'table')).rejects.toThrowError('Not supported by given driver');
     await expect(helper.getIndexes({} as any, 'table')).rejects.toThrowError('Not supported by given driver');
+    await expect(helper.getChecks({} as any, 'table')).rejects.toThrowError('Not supported by given driver');
   });
 
   test('mysql schema helper', async () => {
