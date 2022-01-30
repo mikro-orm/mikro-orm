@@ -1,6 +1,6 @@
 import type { Knex } from 'knex';
 import type {
-  AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FlatQueryOrderMap,
+  AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FlatQueryOrderMap, RequiredEntityData,
   GroupOperator, MetadataStorage, PopulateOptions, QBFilterQuery, QueryOrderMap, QueryResult, FlushMode, FilterQuery,
 } from '@mikro-orm/core';
 import { LoadStrategy, LockMode, QueryFlag, QueryHelper, ReferenceType, Utils, ValidationError } from '@mikro-orm/core';
@@ -10,7 +10,6 @@ import { QueryBuilderHelper } from './QueryBuilderHelper';
 import type { SqlEntityManager } from '../SqlEntityManager';
 import { CriteriaNodeFactory } from './CriteriaNodeFactory';
 import type { Field, JoinOptions } from '../typings';
-import type { RequiredEntityData } from '@mikro-orm/core/src/typings';
 
 /**
  * SQL query builder with fluent interface.
