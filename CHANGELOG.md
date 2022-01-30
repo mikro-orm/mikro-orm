@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.0.0-rc.1](https://github.com/mikro-orm/mikro-orm/compare/16c5e91...eb16b2c) (2022-01-30)
+
+### Bug Fixes
+
+* **core**: allow empty strings in postgres arrays (#2680) ([5a33722](https://github.com/mikro-orm/mikro-orm/commit/5a33722))
+* **core**: allow calling `em.create()` with reference wrapper ([c069960](https://github.com/mikro-orm/mikro-orm/commit/c069960))
+* **core**: respect request context when creating QB ([a2b7b84](https://github.com/mikro-orm/mikro-orm/commit/a2b7b84))
+* **core**: respect specified schema when populating (select-in) (#2676) ([21a1be0](https://github.com/mikro-orm/mikro-orm/commit/21a1be0))
+* **sql**: split `$and` branches when auto joining to-many relations ([70c795a](https://github.com/mikro-orm/mikro-orm/commit/70c795a))
+
+
+### Features
+
+* **core**: add custom table check constraint support for postgres (#2688) ([89aca5f](https://github.com/mikro-orm/mikro-orm/commit/89aca5f))
+* **core**: validate required properties before flushing new entities ([9eec3a9](https://github.com/mikro-orm/mikro-orm/commit/9eec3a9))
+* **core**: make `em.create()` respect required properties ([2385f1d](https://github.com/mikro-orm/mikro-orm/commit/2385f1d))
+* **seeder**: use community driven faker fork and reexport it ([3c9f8e9](https://github.com/mikro-orm/mikro-orm/commit/3c9f8e9))
+
+
+
 ## [5.0.0-rc.0](https://github.com/mikro-orm/mikro-orm/compare/v4.5.10...16c5e91) (2022-01-23)
 
 ### Bug Fixes
