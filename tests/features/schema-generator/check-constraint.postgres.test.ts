@@ -1,5 +1,4 @@
 import { Check, Entity, EntitySchema, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { SchemaGenerator } from '@mikro-orm/knex';
 import { initORMPostgreSql } from '../../bootstrap';
 
 @Entity()

@@ -48,7 +48,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
     });
   }
 
-  async getEnumDefinitions(connection: AbstractSqlConnection, tableName: string, schemaName: string): Promise<Dictionary<string[]>> {
+  async getEnumDefinitions(connection: AbstractSqlConnection, checks: Check[], tableName: string, schemaName: string): Promise<Dictionary<string[]>> {
     const sql = `select sql from sqlite_master where type = ? and name = ?`;
     const tableDefinition = await connection.execute<{ sql: string }>(sql, ['table', tableName], 'get');
 

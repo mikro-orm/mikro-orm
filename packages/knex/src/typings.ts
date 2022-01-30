@@ -72,6 +72,8 @@ export interface Index {
 export interface Check {
   name: string;
   expression: string;
+  definition?: string;
+  columnName?: string;
 }
 
 export interface ColumnDifference {

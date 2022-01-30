@@ -83,10 +83,12 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
   async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName: string): Promise<Check[]> {
     const sql = this.getChecksSQL(tableName, schemaName);
-    const checks = await connection.execute<any[]>(sql);
+    const checks = await connection.execute<{ name: string; column_name: string; expression: string }[]>(sql);
 
-    return checks.filter(check => check.name.endsWith('_custom')).map(check => ({
-      name: check.name.replace(/_custom$/, ''),
+    return checks.map(check => ({
+      name: check.name,
+      columnName: check.column_name,
+      definition: check.expression,
       expression: check.expression.replace(/^check \(\((.+)\)\)$/i, '$1'),
     }));
   }
@@ -111,31 +113,27 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       order by kcu.table_schema, kcu.table_name, kcu.ordinal_position, kcu.constraint_name`;
   }
 
-  async getEnumDefinitions(connection: AbstractSqlConnection, tableName: string, schemaName: string): Promise<Dictionary<string[]>> {
-    const sql = `select conrelid::regclass as table_from, conname, pg_get_constraintdef(c.oid) as enum_def
-      from pg_constraint c join pg_namespace n on n.oid = c.connamespace
-      where contype = 'c' and conrelid = '"${schemaName}"."${tableName}"'::regclass order by contype`;
-    const enums = await connection.execute<any[]>(sql);
-
-    return enums.reduce((o, item) => {
-      if (item.conname.endsWith('_custom')) {
-        return o;
-      }
-
+  async getEnumDefinitions(connection: AbstractSqlConnection, checks: Check[], tableName: string, schemaName: string): Promise<Dictionary<string[]>> {
+    const found: number[] = [];
+    const enums = checks.reduce((o, item, index) => {
       // check constraints are defined as one of:
       // `CHECK ((type = ANY (ARRAY['local'::text, 'global'::text])))`
       // `CHECK (((enum_test)::text = ANY ((ARRAY['a'::character varying, 'b'::character varying, 'c'::character varying])::text[])))`
       // `CHECK ((type = 'a'::text))`
-      const m1 = item.enum_def.match(/check \(\(\((\w+)\)::/i) || item.enum_def.match(/check \(\((\w+) = /i);
-      const m2 = item.enum_def.match(/\(array\[(.*)]\)/i) || item.enum_def.match(/ = (.*)\)/i);
+      const m1 = item.definition?.match(/check \(\(\((\w+)\)::/i) || item.definition?.match(/check \(\((\w+) = /i);
+      const m2 = item.definition?.match(/\(array\[(.*)]\)/i) || item.definition?.match(/ = (.*)\)/i);
 
-      /* istanbul ignore else */
-      if (m1 && m2) {
-        o[m1[1]] = m2[1].split(',').map((item: string) => item.trim().match(/^\(?'(.*)'/)![1]);
+      if (item.columnName && m1 && m2) {
+        o[item.columnName] = m2[1].split(',').map((item: string) => item.trim().match(/^\(?'(.*)'/)![1]);
+        found.push(index);
       }
 
       return o;
     }, {} as Dictionary<string[]>);
+
+    found.reverse().forEach(index => checks.splice(index, 1));
+
+    return enums;
   }
 
   createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>) {
@@ -267,12 +265,12 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   private getChecksSQL(tableName: string, schemaName: string): string {
-    return `select pgc.conname as name, pg_get_constraintdef(pgc.oid) as expression
+    return `select pgc.conname as name, conrelid::regclass as table_from, ccu.column_name as column_name, pg_get_constraintdef(pgc.oid) as expression
       from pg_constraint pgc
       join pg_namespace nsp on nsp.oid = pgc.connamespace
       join pg_class cls on pgc.conrelid = cls.oid
       left join information_schema.constraint_column_usage ccu on pgc.conname = ccu.constraint_name and nsp.nspname = ccu.constraint_schema
-      where contype = 'c' and ccu.table_name = '${tableName}' AND ccu.table_schema = '${schemaName}'`;
+      where contype = 'c' and ccu.table_name = '${tableName}' and ccu.table_schema = '${schemaName}'`;
   }
 
 }

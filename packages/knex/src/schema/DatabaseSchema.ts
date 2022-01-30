@@ -64,7 +64,7 @@ export class DatabaseSchema {
       const checks = await platform.getSchemaHelper()!.getChecks(connection, table.name, table.schema);
       const pks = await platform.getSchemaHelper()!.getPrimaryKeys(connection, indexes, table.name, table.schema);
       const fks = await platform.getSchemaHelper()!.getForeignKeys(connection, table.name, table.schema);
-      const enums = await platform.getSchemaHelper()!.getEnumDefinitions(connection, table.name, table.schema);
+      const enums = await platform.getSchemaHelper()!.getEnumDefinitions(connection, checks, table.name, table.schema);
       table.init(cols, indexes, checks, pks, fks, enums);
     }
 

@@ -501,11 +501,11 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
   }
 
   private createCheck(table: Knex.CreateTableBuilder, check: Check) {
-    table.check(check.expression, {}, `${check.name}_custom`);
+    table.check(check.expression, {}, check.name);
   }
 
   private dropCheck(table: Knex.CreateTableBuilder, check: Check) {
-    table.dropChecks(`${check.name}_custom`);
+    table.dropChecks(check.name);
   }
 
   private dropTable(name: string, schema?: string): Knex.SchemaBuilder {

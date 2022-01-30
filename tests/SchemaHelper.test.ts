@@ -11,7 +11,7 @@ describe('SchemaHelper', () => {
     expect(helper.getSchemaBeginning('utf8')).toBe('');
     expect(helper.getSchemaEnd()).toBe('');
     expect(helper.getChangeColumnCommentSQL('a', {} as any)).toBe('');
-    await expect(helper.getEnumDefinitions(jest.fn() as any, '')).resolves.toEqual({});
+    await expect(helper.getEnumDefinitions(jest.fn() as any, [], '')).resolves.toEqual({});
     expect(() => helper.getListTablesSQL()).toThrowError('Not supported by given driver');
     expect(() => helper.getForeignKeysSQL('table')).toThrowError('Not supported by given driver');
     await expect(helper.getColumns({} as any, 'table')).rejects.toThrowError('Not supported by given driver');
