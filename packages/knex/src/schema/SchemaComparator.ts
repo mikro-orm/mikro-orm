@@ -1,6 +1,6 @@
 import type { Dictionary, EntityProperty } from '@mikro-orm/core';
 import { BooleanType, DateTimeType } from '@mikro-orm/core';
-import type { Column, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
+import type { Check, Column, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
 import type { DatabaseSchema } from './DatabaseSchema';
 import type { DatabaseTable } from './DatabaseTable';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
@@ -116,12 +116,15 @@ export class SchemaComparator {
       addedColumns: {},
       addedForeignKeys: {},
       addedIndexes: {},
+      addedChecks: {},
       changedColumns: {},
       changedForeignKeys: {},
       changedIndexes: {},
+      changedChecks: {},
       removedColumns: {},
       removedForeignKeys: {},
       removedIndexes: {},
+      removedChecks: {},
       renamedColumns: {},
       renamedIndexes: {},
       fromTable,
@@ -204,6 +207,38 @@ export class SchemaComparator {
     }
 
     this.detectIndexRenamings(tableDifferences);
+
+    const fromTableChecks = fromTable.getChecks();
+    const toTableChecks = toTable.getChecks();
+
+    // See if all the checks in "from" table exist in "to" table
+    for (const check of toTableChecks) {
+      if (fromTable.hasCheck(check.name)) {
+        continue;
+      }
+
+      tableDifferences.addedChecks[check.name] = check;
+      changes++;
+    }
+
+    // See if there are any removed checks in "to" table
+    for (const check of fromTableChecks) {
+      if (!toTable.hasCheck(check.name)) {
+        tableDifferences.removedChecks[check.name] = check;
+        changes++;
+        continue;
+      }
+
+      // See if index has changed in "to" table
+      const toTableCheck = toTable.getCheck(check.name)!;
+
+      if (!this.diffCheck(check, toTableCheck)) {
+        continue;
+      }
+
+      tableDifferences.changedChecks[check.name] = toTableCheck;
+      changes++;
+    }
 
     const fromForeignKeys = { ...fromTable.getForeignKeys() };
     const toForeignKeys = { ...toTable.getForeignKeys() };
@@ -432,6 +467,10 @@ export class SchemaComparator {
     }
 
     return index1.primary === index2.primary && index1.unique === index2.unique;
+  }
+
+  diffCheck(check1: Check, check2: Check): boolean {
+    return check1.expression !== check2.expression;
   }
 
   hasSameDefaultValue(from: Column, to: Column): boolean {

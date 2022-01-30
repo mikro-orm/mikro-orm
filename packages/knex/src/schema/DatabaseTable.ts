@@ -1,7 +1,7 @@
 import type { Dictionary, EntityMetadata, EntityProperty, NamingStrategy } from '@mikro-orm/core';
 import { Cascade, DateTimeType, DecimalType, EntitySchema, ReferenceType, t, Utils } from '@mikro-orm/core';
 import type { SchemaHelper } from './SchemaHelper';
-import type { Column, ForeignKey, Index } from '../typings';
+import type { Check, Column, ForeignKey, Index } from '../typings';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
 
 /**
@@ -11,6 +11,7 @@ export class DatabaseTable {
 
   private columns: Dictionary<Column> = {};
   private indexes: Index[] = [];
+  private checks: Check[] = [];
   private foreignKeys: Dictionary<ForeignKey> = {};
   public comment?: string;
 
@@ -34,8 +35,13 @@ export class DatabaseTable {
     return this.indexes;
   }
 
-  init(cols: Column[], indexes: Index[], pks: string[], fks: Dictionary<ForeignKey>, enums: Dictionary<string[]>): void {
+  getChecks(): Check[] {
+    return this.checks;
+  }
+
+  init(cols: Column[], indexes: Index[], checks: Check[], pks: string[], fks: Dictionary<ForeignKey>, enums: Dictionary<string[]>): void {
     this.indexes = indexes;
+    this.checks = checks;
     this.foreignKeys = fks;
 
     this.columns = cols.reduce((o, v) => {
@@ -220,6 +226,14 @@ export class DatabaseTable {
     return !!this.getIndex(indexName);
   }
 
+  getCheck(checkName: string) {
+    return this.checks.find(i => i.name === checkName);
+  }
+
+  hasCheck(checkName: string) {
+    return !!this.getCheck(checkName);
+  }
+
   getPrimaryKey() {
     return this.indexes.find(i => i.primary);
   }
@@ -357,6 +371,10 @@ export class DatabaseTable {
       type: index.type,
       expression: index.expression,
     });
+  }
+
+  addCheck(check: { name: string; expression: string }) {
+    this.checks.push(check);
   }
 
   toJSON(): Dictionary {

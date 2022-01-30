@@ -1,5 +1,5 @@
 import type { Connection, Dictionary } from '@mikro-orm/core';
-import type { AbstractSqlConnection, Index } from '@mikro-orm/knex';
+import type { AbstractSqlConnection, Index, Check } from '@mikro-orm/knex';
 import { SchemaHelper } from '@mikro-orm/knex';
 
 export class SqliteSchemaHelper extends SchemaHelper {
@@ -100,6 +100,11 @@ export class SqliteSchemaHelper extends SchemaHelper {
     }
 
     return this.mapIndexes(ret);
+  }
+
+  async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Check[]> {
+    // Not supported at the moment.
+    return [];
   }
 
   getForeignKeysSQL(tableName: string): string {

@@ -284,6 +284,7 @@ export class EntityMetadata<T extends AnyEntity<T> = any> {
     this.hooks = {};
     this.indexes = [];
     this.uniques = [];
+    this.checks = [];
     this.concurrencyCheckKeys = new Set();
     Object.assign(this, meta);
   }
@@ -424,6 +425,7 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   uniqueProps: EntityProperty<T>[];
   indexes: { properties: (keyof T & string) | (keyof T & string)[]; name?: string; type?: string; options?: Dictionary; expression?: string }[];
   uniques: { properties: (keyof T & string) | (keyof T & string)[]; name?: string; options?: Dictionary }[];
+  checks: { name: string; expression: string }[];
   customRepository: () => Constructor<EntityRepository<T>>;
   hooks: Partial<Record<keyof typeof EventType, (string & keyof T)[]>>;
   prototype: T;

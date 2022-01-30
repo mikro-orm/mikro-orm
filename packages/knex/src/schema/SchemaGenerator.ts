@@ -1,7 +1,7 @@
 import type { Knex } from 'knex';
 import type { Dictionary, EntityMetadata } from '@mikro-orm/core';
 import { AbstractSchemaGenerator } from '@mikro-orm/core';
-import type { Column, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
+import type { Check, Column, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
 import { DatabaseSchema } from './DatabaseSchema';
 import type { DatabaseTable } from './DatabaseTable';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
@@ -299,6 +299,14 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
         this.dropIndex(table, index);
       }
 
+      for (const check of Object.values(diff.removedChecks)) {
+        this.dropCheck(table, check);
+      }
+
+      for (const check of Object.values(diff.changedChecks)) {
+        this.dropCheck(table, check);
+      }
+
       for (const column of Object.values(diff.addedColumns)) {
         const col = this.helper.createTableColumn(table, column, diff.fromTable);
         this.configureColumn(column, col);
@@ -371,6 +379,14 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
         }
       }
 
+      for (const check of Object.values(diff.addedChecks)) {
+        this.createCheck(table, check);
+      }
+
+      for (const check of Object.values(diff.changedChecks)) {
+        this.createCheck(table, check);
+      }
+
       if ('changedComment' in diff) {
         table.comment(diff.changedComment ?? '');
       }
@@ -438,6 +454,10 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
         this.createIndex(table, index, tableDef.name, !tableDef.getColumns().some(c => c.autoincrement));
       }
 
+      for (const check of tableDef.getChecks()) {
+        this.createCheck(table, check);
+      }
+
       if (tableDef.comment) {
         table.comment(tableDef.comment);
       }
@@ -478,6 +498,14 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
     } else {
       table.dropIndex(index.columnNames, oldIndexName);
     }
+  }
+
+  private createCheck(table: Knex.CreateTableBuilder, check: Check) {
+    table.check(check.expression, {}, `${check.name}_custom`);
+  }
+
+  private dropCheck(table: Knex.CreateTableBuilder, check: Check) {
+    table.dropChecks(`${check.name}_custom`);
   }
 
   private dropTable(name: string, schema?: string): Knex.SchemaBuilder {
