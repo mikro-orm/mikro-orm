@@ -1,6 +1,6 @@
 import type { MetadataStorage } from '../metadata';
 import type { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, IHydrator, IPrimaryKey } from '../typings';
-import type { EntityFactory } from '../entity';
+import type { EntityFactory, EntityValidator } from '../entity';
 import { EntityIdentifier } from '../entity';
 import type { ChangeSet } from './ChangeSet';
 import { ChangeSetType } from './ChangeSet';
@@ -19,6 +19,7 @@ export class ChangeSetPersister {
               private readonly metadata: MetadataStorage,
               private readonly hydrator: IHydrator,
               private readonly factory: EntityFactory,
+              private readonly validator: EntityValidator,
               private readonly config: Configuration) { }
 
   async executeInserts<T extends AnyEntity<T>>(changeSets: ChangeSet<T>[], options?: DriverMethodOptions, withSchema?: boolean): Promise<void> {
@@ -91,6 +92,10 @@ export class ChangeSetPersister {
 
     for (const prop of meta.props) {
       this.processProperty(changeSet, prop);
+    }
+
+    if (changeSet.type === ChangeSetType.CREATE && this.config.get('validateRequired')) {
+      this.validator.validateRequired(changeSet.entity);
     }
   }
 

@@ -1,4 +1,4 @@
-import type { Platform } from '@mikro-orm/core';
+import type { Dictionary, Platform } from '@mikro-orm/core';
 import { Embeddable, Embedded, Entity, EntitySchema, MikroORM, PrimaryKey, Property, ReferenceType, SerializedPrimaryKey, Type } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 import { ObjectId, MongoConnection, MongoPlatform } from '@mikro-orm/mongodb';
@@ -381,12 +381,15 @@ describe('embedded entities in mongo', () => {
   });
 
   test('assign entity changes on embeddables (GH issue 1083)', async () => {
+    let john = new User();
+    john.address1 = new Address1('Rainbow st. 1', '001', 'London', 'UK');
+    john.address2 = new Address2('Rainbow st. 2', 'London', 'UK');
+    await orm.em.persistAndFlush(john);
+    orm.em.clear();
+
     const mock = mockLogger(orm);
-
-
-    const john = await orm.em.findOneOrFail(User, { address1: { street: 'Rainbow st. 1' } });
-    const data: any = {};
-    // data.address1 = { street: 'Rainbow st. 3', postalCode: '003', city: 'London', country: 'UKK' };
+    john = await orm.em.findOneOrFail(User, { address1: { street: 'Rainbow st. 1' } });
+    const data: Dictionary = {};
     data.address1 = new Address1('Rainbow st. 3', '003', 'London', 'UKK');
     data.address1.street = 'Rainbow st. 33';
 

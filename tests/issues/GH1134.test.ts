@@ -41,8 +41,8 @@ export class V {
   @PrimaryKey()
   id: string = v4();
 
-  @OneToOne({ entity: 'I', mappedBy: 'id' })
-  i!: I;
+  @OneToOne({ entity: 'I', mappedBy: 'id', nullable: true })
+  i?: I;
 
 }
 
@@ -94,10 +94,10 @@ export class N {
 async function createEntities(orm: MikroORM) {
   const a = orm.em.create(A, { value: 'A' });
   const t = orm.em.create(T, { value: 'T' });
-  const v = orm.em.create(V, {} as any);
+  const v = orm.em.create(V, {});
   const a2 = orm.em.create(A, { value: 'A2' });
   const t2 = orm.em.create(T, { value: 'T2' });
-  const v2 = orm.em.create(V, {} as any);
+  const v2 = orm.em.create(V, {});
   const e = orm.em.create(E, { a, t, v });
   const e2 = orm.em.create(E, { a: a2, t: t2, v: v2 });
   const n = orm.em.create(N, { id: e, a });

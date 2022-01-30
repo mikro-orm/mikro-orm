@@ -47,6 +47,7 @@ describe('EntityManagerMongo2', () => {
 
   test('loadCount with m:n relationships', async () => {
     let bible = new Book('Bible');
+    bible.author = new Author('a', 'b');
     bible.tags.add(new BookTag('t1'), new BookTag('t2'), new BookTag('t3'));
     await orm.em.persistAndFlush(bible);
     orm.em.clear();
@@ -55,6 +56,11 @@ describe('EntityManagerMongo2', () => {
     await expect(bible.tags.loadCount()).resolves.toEqual(3);
     bible.tags.removeAll();
     await expect(bible.tags.loadCount()).resolves.toEqual(0);
+  });
+
+  test('required fields validation', async () => {
+    const jon = new Author('Jon', undefined as any);
+    await expect(orm.em.persistAndFlush(jon)).rejects.toThrow(`Value for Author.email is required, 'undefined' found`);
   });
 
   afterAll(async () => orm.close(true));

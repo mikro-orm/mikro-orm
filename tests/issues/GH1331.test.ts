@@ -27,15 +27,14 @@ export class D {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     entity: () => C,
     wrappedReference: true,
+    nullable: true,
   })
-  c!: IdentifiedReference<C>;
+  c?: IdentifiedReference<C>;
 
 }
 
 @Entity()
 export class C {
-
-  [OptionalProps]?: 'b';
 
   @PrimaryKey()
   id!: number;
@@ -47,8 +46,9 @@ export class C {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     entity: () => B,
     wrappedReference: true,
+    nullable: true,
   })
-  b!: IdentifiedReference<B>;
+  b?: IdentifiedReference<B>;
 
   @OneToMany(
     () => D,
@@ -65,8 +65,6 @@ export class C {
 @Entity()
 export class B {
 
-  [OptionalProps]?: 'a';
-
   @PrimaryKey()
   id!: number;
 
@@ -77,8 +75,9 @@ export class B {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     entity: () => A,
     wrappedReference: true,
+    nullable: true,
   })
-  a!: IdentifiedReference<A>;
+  a?: IdentifiedReference<A>;
 
   @OneToMany(
     () => C,

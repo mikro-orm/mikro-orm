@@ -38,6 +38,25 @@ export class EntityValidator {
     });
   }
 
+  validateRequired<T extends AnyEntity<T>>(entity: T): void {
+    for (const prop of entity.__meta!.props) {
+      if (
+        entity[prop.name] == null &&
+        !prop.nullable &&
+        !prop.autoincrement &&
+        !prop.default &&
+        !prop.defaultRaw &&
+        !prop.onCreate &&
+        !prop.embedded &&
+        prop.name !== entity.__meta!.root.discriminatorColumn &&
+        prop.type.toLowerCase() !== 'objectid' &&
+        prop.persist !== false
+      ) {
+        throw ValidationError.propertyRequired(entity, prop);
+      }
+    }
+  }
+
   validateProperty<T extends AnyEntity<T>>(prop: EntityProperty, givenValue: any, entity: T) {
     if (givenValue === null || givenValue === undefined) {
       return givenValue;

@@ -54,6 +54,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     },
     strict: false,
     validate: false,
+    validateRequired: true,
     context: (name: string) => RequestContext.getEntityManager(name),
     contextName: 'default',
     allowGlobalContext: false,
@@ -430,6 +431,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   replicas?: Partial<ConnectionOptions>[];
   strict: boolean;
   validate: boolean;
+  validateRequired: boolean;
   context: (name: string) => EntityManager | undefined;
   contextName: string;
   allowGlobalContext: boolean;

@@ -14,7 +14,7 @@ import { BookRepository } from '../repositories/BookRepository';
 @Filter({ name: 'writtenBy', cond: args => ({ author: args.author }) })
 export class Book extends BaseEntity3<Book> {
 
-  [OptionalProps]?: 'createdAt' | 'publisher';
+  [OptionalProps]?: 'createdAt';
 
   @PrimaryKey()
   _id!: ObjectId;
@@ -25,33 +25,33 @@ export class Book extends BaseEntity3<Book> {
   @Property()
   title: string;
 
-  @Property({ lazy: true })
+  @Property({ lazy: true, nullable: true })
   perex?: string;
 
   @ManyToOne(() => Author)
   author: Author;
 
-  @ManyToOne(() => Publisher, { wrappedReference: true, cascade: [Cascade.PERSIST, Cascade.REMOVE] })
+  @ManyToOne(() => Publisher, { wrappedReference: true, cascade: [Cascade.PERSIST, Cascade.REMOVE], nullable: true })
   @Index({ name: 'publisher_idx' })
-  publisher!: IdentifiedReference<Publisher, '_id' | 'id'>;
+  publisher?: IdentifiedReference<Publisher, '_id' | 'id'>;
 
   @ManyToMany(() => BookTag)
   tags = new Collection<BookTag>(this);
 
-  @Property({ type: 'json' })
+  @Property({ type: 'json', nullable: true })
   metaObject?: Dictionary<unknown>;
 
-  @Property()
+  @Property({ nullable: true })
   metaArray?: any[];
 
-  @Property()
+  @Property({ nullable: true })
   metaArrayOfStrings?: string[];
 
-  @Property()
+  @Property({ nullable: true })
   @Index({ type: '2dsphere' })
   point?: [number, number];
 
-  @Property()
+  @Property({ nullable: true })
   tenant?: number;
 
   constructor(title: string, author?: Author) {

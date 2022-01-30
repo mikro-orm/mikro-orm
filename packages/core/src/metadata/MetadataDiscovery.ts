@@ -69,6 +69,7 @@ export class MetadataDiscovery {
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initFieldName(prop)));
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initVersionProperty(meta, prop)));
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initCustomType(meta, prop)));
+    filtered.forEach(meta => this.initAutoincrement(meta)); // once again after we init custom types
 
     for (const meta of filtered) {
       for (const prop of Object.values(meta.properties)) {
@@ -991,6 +992,10 @@ export class MetadataDiscovery {
   }
 
   private isNumericProperty(prop: EntityProperty): boolean {
+    if (prop.customType) {
+      return this.platform.isNumericColumn(prop.customType);
+    }
+
     return prop.type === 'number' || this.platform.isBigIntProperty(prop);
   }
 

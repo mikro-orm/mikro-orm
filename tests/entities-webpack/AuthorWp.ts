@@ -13,7 +13,7 @@ export class AuthorWp {
   @Property({ type: 'string' })
   email!: string;
 
-  @Property({ type: 'number' })
+  @Property({ type: 'number', nullable: true })
   age?: number;
 
   @OneToMany(() => BookWp, book => book.author)

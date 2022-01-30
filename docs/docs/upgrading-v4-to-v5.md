@@ -232,6 +232,13 @@ properties might be defined as required for TS, but we have a default value for
 them (either runtime, or database one) - for such we can use `OptionalProps` 
 symbol to specify which properties should be considered as optional.
 
+## Required properties are validated before insert
+
+Previously the validation took place in the database, so it worked only for SQL
+drivers. Now we have runtime validation based on the entity metadata. This means
+mongo users now need to use `nullable: true` on their optional properties, or
+disable the validation globally via `validateRequired: false` in the ORM config.
+
 ## `PrimaryKeyType` symbol should be defined as optional
 
 Previously when we had nonstandard PK types, we could use `PrimaryKeyType` symbol

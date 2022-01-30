@@ -365,6 +365,21 @@ MikroORM.init({
 
 Read more about this in [Property Validation](property-validation.md) section.
 
+## Required properties validation
+
+Since v5, new entities are validated on runtime (just before executing insert
+queries), based on the entity metadata. This means that mongo users now need 
+to use `nullable: true` on their optional properties too).
+
+This behaviour can be disabled globally via `validateRequired: false` in the 
+ORM config.
+
+```typescript
+MikroORM.init({
+  validateRequired: false,
+});
+```
+
 ## Debugging & Logging
 
 You can enable logging with `debug` option. Either set it to `true` to log everything, or 

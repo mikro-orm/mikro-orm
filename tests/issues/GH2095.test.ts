@@ -110,10 +110,10 @@ export class TC {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => C)
+  @ManyToOne(() => C, { nullable: true })
   c?: C;
 
-  @ManyToOne(() => T)
+  @ManyToOne(() => T, { nullable: true })
   t?: T;
 
   @OneToMany(() => A, a => a.tc, { eager: true })
@@ -255,7 +255,6 @@ describe('GH issue 2095', () => {
     expect(secondResults.length).toBe(20);
     expect(firstMaxDate.getTime()).toBeLessThan(secondMinDate.getTime());
   });
-
 
   test('getting users with limit 3. must be: [id-user-03, id-user-02, id-user-01]', async () => {
     const [ users, total ] = await orm.em.findAndCount(

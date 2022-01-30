@@ -2117,6 +2117,16 @@ describe('EntityManagerPostgre', () => {
     mock.mockRestore();
   });
 
+  test('required fields validation', async () => {
+    const jon = new Author2('Jon', undefined as any);
+    await expect(orm.em.persistAndFlush(jon)).rejects.toThrow(`Value for Author2.email is required, 'undefined' found`);
+
+    orm.config.set('validateRequired', false);
+    await expect(orm.em.persistAndFlush(jon)).rejects.toThrow(`null value in column "email" of relation "author2" violates not-null constraint`);
+    await expect(orm.em.persistAndFlush(jon)).rejects.toThrow(NotNullConstraintViolationException);
+    orm.config.set('validateRequired', true);
+  });
+
   afterAll(async () => orm.close(true));
 
 });

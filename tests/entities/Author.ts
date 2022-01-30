@@ -19,7 +19,7 @@ import { BaseEntity } from './BaseEntity';
   args: false,
   default: true,
 })
-export class Author extends BaseEntity<Author, 'termsAccepted' | 'favouriteBook' | 'favouriteAuthor' | 'code2' | 'version' | 'versionAsString'> {
+export class Author extends BaseEntity<Author, 'termsAccepted' | 'code2' | 'version' | 'versionAsString'> {
 
   [EntityRepositoryType]: AuthorRepository;
 
@@ -56,11 +56,11 @@ export class Author extends BaseEntity<Author, 'termsAccepted' | 'favouriteBook'
   @ManyToMany(() => Author)
   friends = new Collection<Author>(this);
 
-  @ManyToOne(() => Book)
-  favouriteBook!: Book;
+  @ManyToOne(() => Book, { nullable: true })
+  favouriteBook?: Book;
 
-  @ManyToOne(() => Author)
-  favouriteAuthor!: Author;
+  @ManyToOne(() => Author, { nullable: true })
+  favouriteAuthor?: Author;
 
   @Property({ persist: false })
   version!: number;
@@ -68,7 +68,7 @@ export class Author extends BaseEntity<Author, 'termsAccepted' | 'favouriteBook'
   @Property({ persist: false })
   versionAsString!: string;
 
-  @Property()
+  @Property({ nullable: true })
   tenant?: number;
 
   constructor(name: string, email: string) {

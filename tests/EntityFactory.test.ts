@@ -94,7 +94,7 @@ describe('EntityFactory', () => {
     expect(author.name).toBe('test');
     expect(author.email).toBe('mail@test.com');
     expect(author.favouriteBook).toBeInstanceOf(Book);
-    expect(author.favouriteBook.id).toBe('5b0d19b28b21c648c2c8a600');
+    expect(author.favouriteBook!.id).toBe('5b0d19b28b21c648c2c8a600');
   });
 
   test('should return entity without id [reference as constructor parameter]', async () => {
@@ -205,7 +205,7 @@ describe('EntityFactory', () => {
     expect(a1.books.isDirty()).toBe(true);
     expect(a1.books[0].title).toBe('B1');
     expect(a1.books[0].author).toBe(a1); // propagation to owning side
-    expect(a1.books[0].publisher.id).toBe('5b0d19b28b21c648c2c8a600');
+    expect(a1.books[0].publisher!.id).toBe('5b0d19b28b21c648c2c8a600');
     expect(wrap(a1.books[0].publisher).isInitialized()).toBe(false);
     expect(a1.books[0].tags.isInitialized()).toBe(true);
     expect(a1.books[0].tags.isDirty()).toBe(true); // owning side
@@ -227,8 +227,8 @@ describe('EntityFactory', () => {
     orm.em.clear();
     mock.mock.calls.length = 0;
 
-    const a2 = repo.create({} as any);
-    repo.assign(a2, { name: 'Jon', email: 'jon2@snow.com', books: [
+    const a2 = repo.create({ name: 'Jon', email: 'jon2@snow.com' });
+    repo.assign(a2, { books: [
       { title: 'B1', publisher: '5b0d19b28b21c648c2c8a600', tags: [{ name: 't1' }, '5b0d19b28b21c648c2c8a601'] },
     ] });
 
@@ -238,7 +238,7 @@ describe('EntityFactory', () => {
     expect(a2.books.isDirty()).toBe(true);
     expect(a2.books[0].title).toBe('B1');
     expect(a2.books[0].author).toBe(a2); // propagation to owning side
-    expect(a2.books[0].publisher.id).toBe('5b0d19b28b21c648c2c8a600');
+    expect(a2.books[0].publisher!.id).toBe('5b0d19b28b21c648c2c8a600');
     expect(wrap(a2.books[0].publisher).isInitialized()).toBe(false);
     expect(a2.books[0].tags.isInitialized()).toBe(true);
     expect(a2.books[0].tags.isDirty()).toBe(true); // owning side

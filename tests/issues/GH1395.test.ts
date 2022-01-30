@@ -18,7 +18,7 @@ export class TestTemplate {
   @Property({ type: 'json', nullable: true })
   messages?: EmailMessageTest[];
 
-  @Property({ type: t.json, nullable: false })
+  @Property({ type: t.json, nullable: true })
   geometry?: {
     top: number;
     left: number;
@@ -104,13 +104,12 @@ describe('GH issue 1395', () => {
     });
     expect(item1).toMatchObject({
       name: 'test',
-      messages: [ { html: 'aaa', language: 'en' }, { html: 'bbb', language: 'fr' } ],
+      messages: [{ html: 'aaa', language: 'en' }, { html: 'bbb', language: 'fr' }],
       geometry: { top: 0, left: 0, width: 640, height: 480 },
     });
 
-    const item2 = orm.em.create(TestTemplate, {} as any);
+    const item2 = orm.em.create(TestTemplate, { name: 'test' });
     wrap(item2).assign({
-      name: 'test',
       messages: [
         { html: 'aaa', language: 'en' },
         { html: 'bbb', language: 'fr' },
@@ -124,7 +123,7 @@ describe('GH issue 1395', () => {
     });
     expect(item2).toMatchObject({
       name: 'test',
-      messages: [ { html: 'aaa', language: 'en' }, { html: 'bbb', language: 'fr' } ],
+      messages: [{ html: 'aaa', language: 'en' }, { html: 'bbb', language: 'fr' }],
       geometry: { top: 0, left: 0, width: 640, height: 480 },
     });
   });

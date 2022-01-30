@@ -55,7 +55,7 @@ describe('RequestContext', () => {
         const jon = await em.findOne(Author, author.id, { populate: ['favouriteBook'] });
         expect(jon!.favouriteBook).toBeInstanceOf(Book);
         expect(wrap(jon!.favouriteBook).isInitialized()).toBe(true);
-        expect(jon!.favouriteBook.title).toBe('Bible');
+        expect(jon!.favouriteBook!.title).toBe('Bible');
         resolve();
       });
     });

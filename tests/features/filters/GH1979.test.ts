@@ -85,12 +85,12 @@ describe('GH issue 1979', () => {
     ACTIVE_PROFIT_2.id = 2;
     ACTIVE_PROFIT_2.benefitStatus = 'A';
     ACTIVE_PROFIT_2.createdAt = new Date(now - 320000);
-    ACTIVE_PROFIT_1.title = 'PROFIT_B';
+    ACTIVE_PROFIT_2.title = 'PROFIT_B';
     const INACTIVE_PROFIT = new Profit();
     INACTIVE_PROFIT.id = 3;
     INACTIVE_PROFIT.benefitStatus = 'B';
     INACTIVE_PROFIT.createdAt = new Date(now + 320000);
-    ACTIVE_PROFIT_1.title = 'PROFIT_C';
+    INACTIVE_PROFIT.title = 'PROFIT_C';
 
     const ACTIVE_LOST_1 = new Lost();
     ACTIVE_LOST_1.id = 1;
