@@ -66,7 +66,7 @@
     "@mikro-orm/core": "^5.0.0-rc.1",
     "@mikro-orm/entity-generator": "^5.0.0-rc.1",
     "@mikro-orm/migrations": "^5.0.0-rc.1",
-    "mssql": "^7.0.0",
+    "mssql": "^8.0.0",
     "mysql": "^2.18.1",
     "mysql2": "^2.1.0",
     "pg": "^8.0.3",
