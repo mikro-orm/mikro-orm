@@ -48,7 +48,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
   nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: NativeDeleteOptions<T>): Promise<QueryResult<T>>;
 
-  syncCollection<T, O>(collection: Collection<T, O>, options?: { ctx?: Transaction }): Promise<void>;
+  syncCollection<T, O>(collection: Collection<T, O>, options?: DriverMethodOptions): Promise<void>;
 
   count<T extends AnyEntity<T>, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T, P>): Promise<number>;
 

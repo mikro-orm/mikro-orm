@@ -546,17 +546,21 @@ export class UnitOfWork {
     }
   }
 
-  private processToManyReference<T extends AnyEntity<T>>(reference: Collection<AnyEntity>, visited: Set<AnyEntity>, parent: T, prop: EntityProperty<T>): void {
-    if (this.isCollectionSelfReferenced(reference, visited)) {
-      this.extraUpdates.add([parent, prop.name, reference]);
+  private processToManyReference<T extends AnyEntity<T>>(collection: Collection<AnyEntity>, visited: Set<AnyEntity>, parent: T, prop: EntityProperty<T>): void {
+    if (this.isCollectionSelfReferenced(collection, visited)) {
+      this.extraUpdates.add([parent, prop.name, collection]);
       parent[prop.name as keyof T] = new Collection<AnyEntity>(parent) as unknown as T[keyof T];
 
       return;
     }
 
-    reference.getItems(false)
+    collection.getItems(false)
       .filter(item => !item.__helper!.__originalEntityData)
-      .forEach(item => this.findNewEntities(item, visited));
+      .forEach(item => {
+        // propagate schema from parent
+        item.__helper!.__schema ??= collection.owner.__helper!.__schema;
+        this.findNewEntities(item, visited);
+      });
   }
 
   private async runHooks<T extends AnyEntity<T>>(type: EventType, changeSet: ChangeSet<T>, sync = false): Promise<unknown> {

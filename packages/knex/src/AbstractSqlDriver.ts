@@ -51,7 +51,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     qb.select(fields)
       .populate(populate)
       .where(where)
-      .orderBy([ ...Utils.asArray(options.orderBy), ...joinedPropsOrderBy ])
+      .orderBy([...Utils.asArray(options.orderBy), ...joinedPropsOrderBy])
       .groupBy(options.groupBy!)
       .having(options.having!)
       .withSchema(this.getSchemaName(meta, options));
@@ -233,7 +233,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       const qb = this.createQueryBuilder<T>(entityName, options.ctx, true, options.convertCustomTypes).withSchema(this.getSchemaName(meta, options));
       res = await this.rethrow(qb.insert(data as unknown as RequiredEntityData<T>[]).execute('run', false));
     } else {
-      let sql = `insert into ${(this.getTableName(meta, options))} `;
+      let sql = `insert into ${this.getTableName(meta, options)} `;
       /* istanbul ignore next */
       sql += fields.length > 0 ? '(' + fields.map(k => this.platform.quoteIdentifier(k)).join(', ') + ')' : 'default';
       sql += ` values `;
@@ -430,11 +430,20 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     if (coll.property.reference === ReferenceType.ONE_TO_MANY) {
       const cols = coll.property.referencedColumnNames;
       const qb = this.createQueryBuilder(coll.property.type, ctx, true)
+        .withSchema(this.getSchemaName(meta, options))
         .update({ [coll.property.mappedBy]: pks })
         .getKnexQuery()
         .whereIn(cols, insertDiff as string[][]);
 
       return this.rethrow(this.execute<any>(qb));
+    }
+
+    const ownerSchema = wrapped.getSchema() === '*' ? this.config.get('schema') : wrapped.getSchema();
+    const pivotMeta = this.metadata.find(coll.property.pivotTable)!;
+
+    if (pivotMeta.schema === '*') {
+      options ??= {};
+      options.schema = ownerSchema;
     }
 
     return this.rethrow(this.updateCollectionDiff<T, O>(meta, coll.property, pks as any, deleteDiff as any, insertDiff as any, options));
@@ -653,13 +662,22 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
   }
 
-  protected async updateCollectionDiff<T extends AnyEntity<T>, O extends AnyEntity<O>>(meta: EntityMetadata<O>, prop: EntityProperty<T>, pks: Primary<O>[], deleteDiff: Primary<T>[][] | boolean, insertDiff: Primary<T>[][], options?: DriverMethodOptions): Promise<void> {
+  protected async updateCollectionDiff<T extends AnyEntity<T>, O extends AnyEntity<O>>(
+    meta: EntityMetadata<O>,
+    prop: EntityProperty<T>,
+    pks: Primary<O>[],
+    deleteDiff: Primary<T>[][] | boolean,
+    insertDiff: Primary<T>[][],
+    options?: DriverMethodOptions & { ownerSchema?: string },
+  ): Promise<void> {
     if (!deleteDiff) {
       deleteDiff = [];
     }
 
     if (deleteDiff === true || deleteDiff.length > 0) {
-      const qb1 = this.createQueryBuilder(prop.pivotTable, options?.ctx, true).withSchema(this.getSchemaName(meta, options)).unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);
+      const qb1 = this.createQueryBuilder(prop.pivotTable, options?.ctx, true)
+        .withSchema(this.getSchemaName(meta, options))
+        .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);
       const knex = qb1.getKnex();
 
       if (Array.isArray(deleteDiff)) {

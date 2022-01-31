@@ -451,6 +451,7 @@ export class MetadataDiscovery {
       [schemaName, tableName] = prop.pivotTable.split('.');
     }
 
+    schemaName ??= meta.schema;
     const targetType = prop.targetMeta!.root.className;
     const data = new EntityMetadata({
       name: prop.pivotTable,
@@ -528,7 +529,7 @@ export class MetadataDiscovery {
     ret.joinColumns = [];
     ret.inverseJoinColumns = [];
     const schema = meta.schema ?? this.platform.getDefaultSchemaName();
-    ret.referencedTableName = schema ? schema + '.' + meta.tableName : meta.tableName;
+    ret.referencedTableName = schema && schema !== '*' ? schema + '.' + meta.tableName : meta.tableName;
 
     if (owner) {
       ret.owner = true;

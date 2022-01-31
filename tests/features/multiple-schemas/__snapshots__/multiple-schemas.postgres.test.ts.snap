@@ -22,5 +22,33 @@ export class Book {
 
 }
 ",
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity({ schema: 'n2' })
+export class BookTag {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ length: 255, nullable: true })
+  name?: string;
+
+}
+",
+  "import { Entity, ManyToOne } from '@mikro-orm/core';
+import { Book } from './Book';
+import { BookTag } from './BookTag';
+
+@Entity({ schema: 'n2' })
+export class BookTags {
+
+  @ManyToOne({ entity: () => Book, onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
+  book!: Book;
+
+  @ManyToOne({ entity: () => BookTag, onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
+  bookTag!: BookTag;
+
+}
+",
 ]
 `;

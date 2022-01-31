@@ -58,7 +58,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   }
 
   async syncCollection<T, O>(coll: Collection<T, O>, options?: DriverMethodOptions): Promise<void> {
-    const pk = this.metadata.find(coll.property.type)!.primaryKeys[0];
+    const pk = coll.property.targetMeta!.primaryKeys[0];
     const data = { [coll.property.name]: coll.getIdentifiers(pk) } as EntityData<T>;
     await this.nativeUpdate<T>(coll.owner.constructor.name, coll.owner.__helper!.getPrimaryKey() as FilterQuery<T>, data, options);
   }
