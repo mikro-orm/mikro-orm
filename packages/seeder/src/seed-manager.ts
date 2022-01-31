@@ -10,6 +10,7 @@ export class SeedManager implements ISeedManager {
   private readonly absolutePath = Utils.absolutePath(this.options.path, this.config.get('baseDir'));
 
   constructor(private readonly em: EntityManager) {
+    this.em = this.em.fork();
   }
 
   async seed(...seederClasses: { new(): Seeder }[]): Promise<void> {
