@@ -143,7 +143,7 @@
     "husky": "7.0.4",
     "jest": "27.4.7",
     "lerna": "4.0.0",
-    "lint-staged": "12.3.2",
+    "lint-staged": "12.3.3",
     "mongodb": "4.3.1",
     "rimraf": "3.0.2",
     "run-rs": "0.7.6",
