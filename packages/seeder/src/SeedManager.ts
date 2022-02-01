@@ -1,6 +1,6 @@
 import type { ISeedManager, EntityManager } from '@mikro-orm/core';
 import { Utils } from '@mikro-orm/core';
-import type { Seeder } from './seeder';
+import type { Seeder } from './Seeder';
 import { ensureDir, writeFile } from 'fs-extra';
 
 export class SeedManager implements ISeedManager {
