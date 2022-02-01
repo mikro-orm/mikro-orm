@@ -2,12 +2,12 @@ import { MetadataStorage, MetadataValidator } from '../metadata';
 import { Utils } from '../utils';
 import type { Cascade, LoadStrategy } from '../enums';
 import { ReferenceType } from '../enums';
-import type { EntityName, EntityProperty, AnyEntity, Constructor } from '../typings';
+import type { EntityName, EntityProperty, Constructor, CheckCallback, Dictionary } from '../typings';
 import type { Type } from '../types';
 
 export function Property<T>(options: PropertyOptions<T> = {}) {
-  return function (target: AnyEntity, propertyName: string) {
-    const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
+  return function (target: any, propertyName: string) {
+    const meta = MetadataStorage.getMetadataFromDecorator<T>(target.constructor as T & Dictionary);
     const desc = Object.getOwnPropertyDescriptor(target, propertyName) || {};
     MetadataValidator.validateSingleDecorator(meta, propertyName, ReferenceType.SCALAR);
     const name = options.name || propertyName;
@@ -17,7 +17,8 @@ export function Property<T>(options: PropertyOptions<T> = {}) {
     }
 
     options.name = propertyName;
-    const prop = Object.assign({ reference: ReferenceType.SCALAR }, options) as EntityProperty;
+    const { check, ...opts } = options;
+    const prop = { reference: ReferenceType.SCALAR, ...opts } as EntityProperty;
     prop.getter = !!desc.get;
     prop.setter = !!desc.set;
 
@@ -27,6 +28,10 @@ export function Property<T>(options: PropertyOptions<T> = {}) {
       prop.type = 'method';
       prop.getterName = propertyName;
       prop.name = name;
+    }
+
+    if (check) {
+      meta.checks.push({ property: prop.name, expression: check });
     }
 
     meta.properties[prop.name] = prop;
@@ -59,6 +64,7 @@ export type PropertyOptions<T> = {
   concurrencyCheck?: boolean;
   index?: boolean | string;
   unique?: boolean | string;
+  check?: string | CheckCallback<T>;
   lazy?: boolean;
   primary?: boolean;
   setter?: boolean;

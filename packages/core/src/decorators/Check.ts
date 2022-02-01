@@ -1,16 +1,19 @@
 import { MetadataStorage } from '../metadata';
-import type { AnyEntity } from '../typings';
+import { Utils } from '../utils/Utils';
+import type { CheckConstraint, Dictionary } from '../typings';
 
-export function Check<T>(options: CheckOptions) {
-  return function <U>(target: U) {
-    const meta = MetadataStorage.getMetadataFromDecorator(target);
+export function Check<T>(options: CheckOptions<T>) {
+  return function (target: any, propertyName?: string) {
+    const meta = MetadataStorage.getMetadataFromDecorator<T>((propertyName ? target.constructor : target) as T & Dictionary);
+    options.property ??= propertyName;
     meta.checks.push(options);
 
-    return target;
+    if (!propertyName) {
+      return target;
+    }
+
+    return Utils.propertyDecoratorReturnValue();
   };
 }
 
-export interface CheckOptions {
-  name: string;
-  expression: string;
-}
+export type CheckOptions<T = any> = CheckConstraint<T>;

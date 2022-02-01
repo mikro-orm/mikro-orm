@@ -70,6 +70,7 @@ export class MetadataDiscovery {
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initVersionProperty(meta, prop)));
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initCustomType(meta, prop)));
     filtered.forEach(meta => this.initAutoincrement(meta)); // once again after we init custom types
+    filtered.forEach(meta => this.initCheckConstraints(meta));
 
     for (const meta of filtered) {
       for (const prop of Object.values(meta.properties)) {
@@ -804,6 +805,25 @@ export class MetadataDiscovery {
     if (pks.length === 1 && this.isNumericProperty(pks[0])) {
       /* istanbul ignore next */
       pks[0].autoincrement ??= true;
+    }
+  }
+
+  private initCheckConstraints(meta: EntityMetadata): void {
+    const map = Object.values(meta.properties).reduce((o, prop) => {
+      if (prop.fieldNames) {
+        o[prop.name] = prop.fieldNames[0];
+      }
+
+      return o;
+    }, {} as Dictionary);
+
+    for (const check of meta.checks) {
+      const columns = check.property ? meta.properties[check.property].fieldNames : [];
+      check.name ??= this.namingStrategy.indexName(meta.tableName, columns, 'check');
+
+      if (check.expression instanceof Function) {
+        check.expression = check.expression(map);
+      }
     }
   }
 

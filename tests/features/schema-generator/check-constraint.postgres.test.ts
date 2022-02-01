@@ -2,7 +2,7 @@ import { Check, Entity, EntitySchema, MikroORM, PrimaryKey, Property } from '@mi
 import { initORMPostgreSql } from '../../bootstrap';
 
 @Entity()
-@Check({ name: 'foo', expression: 'price >= 0' })
+@Check<FooEntity>({ expression: columns => `${columns.price} >= 0` })
 export class FooEntity {
 
   @PrimaryKey()
@@ -10,6 +10,13 @@ export class FooEntity {
 
   @Property()
   price!: number;
+
+  @Property()
+  @Check<FooEntity>({ expression: columns => `${columns.price2} >= 0` })
+  price2!: number;
+
+  @Property({ check: 'price3 >= 0' })
+  price3!: number;
 
 }
 

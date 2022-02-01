@@ -373,7 +373,7 @@ export class DatabaseTable {
     });
   }
 
-  addCheck(check: { name: string; expression: string }) {
+  addCheck(check: Check) {
     this.checks.push(check);
   }
 

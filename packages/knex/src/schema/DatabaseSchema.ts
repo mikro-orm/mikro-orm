@@ -83,7 +83,15 @@ export class DatabaseSchema {
       meta.indexes.forEach(index => table.addIndex(meta, index, 'index'));
       meta.uniques.forEach(index => table.addIndex(meta, index, 'unique'));
       table.addIndex(meta, { properties: meta.props.filter(prop => prop.primary).map(prop => prop.name) }, 'primary');
-      meta.checks.forEach(check => table.addCheck(check));
+      meta.checks.forEach(check => {
+        const columnName = check.property ? meta.properties[check.property].fieldNames[0] : undefined;
+        table.addCheck({
+          name: check.name!,
+          expression: check.expression as string,
+          definition: `check ((${check.expression}))`,
+          columnName,
+        });
+      });
     }
 
     return schema;

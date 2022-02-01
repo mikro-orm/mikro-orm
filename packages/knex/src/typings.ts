@@ -1,5 +1,5 @@
 import type { Knex } from 'knex';
-import type { Dictionary, EntityProperty, GroupOperator, QBFilterQuery, QueryOrderMap, Type } from '@mikro-orm/core';
+import type { CheckCallback, Dictionary, EntityProperty, GroupOperator, QBFilterQuery, QueryOrderMap, Type } from '@mikro-orm/core';
 import type { QueryType } from './query/enums';
 import type { DatabaseSchema, DatabaseTable } from './schema';
 
@@ -69,9 +69,9 @@ export interface Index {
   type?: string | Readonly<{ indexType?: string; storageEngineIndexType?: 'hash' | 'btree'; predicate?: Knex.QueryBuilder }>; // for back compatibility mainly, to allow using knex's `index.type` option (e.g. gin index)
 }
 
-export interface Check {
+export interface Check<T = unknown> {
   name: string;
-  expression: string;
+  expression: string | CheckCallback<T>;
   definition?: string;
   columnName?: string;
 }

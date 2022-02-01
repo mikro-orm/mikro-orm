@@ -38,7 +38,7 @@ Read more about them in the [Metadata Providers section](metadata-providers.md).
 >
 > `ts-morph` is compatible only with the `tsc` approach.
 
-> From v3 you can also use default exports when defining your entity.
+> From v3 we can also use default exports when defining your entity.
 
 Example definition of a `Book` entity follows. We can switch the tabs to see the difference
 for various ways:
@@ -471,7 +471,7 @@ to define the enum in another file, we should reexport it also in place where we
 Another possibility is to provide the reference to the enum implementation in the decorator
 via `@Enum(() => UserRole)`.
 
-> You can also set enum items manually via `items: string[]` attribute.
+> We can also set enum items manually via `items: string[]` attribute.
 
 <Tabs
 groupId="entity-def"
@@ -797,8 +797,8 @@ properties: {
 
 ## Indexes
 
-You can define indexes via `@Index()` decorator, for unique indexes, use `@Unique()` decorator.
-You can use it either on entity class, or on entity property:
+We can define indexes via `@Index()` decorator, for unique indexes, we can 
+use `@Unique()` decorator. We can use it either on entity class, or on entity property:
 
 <Tabs
 groupId="entity-def"
@@ -883,9 +883,110 @@ export const AuthorSchema = new EntitySchema<Author, BaseEntity>({
   </TabItem>
 </Tabs>
 
+## Check constraints
+
+We can define check constraints via `@Check()` decorator. We can use it 
+either on entity class, or on entity property. It has a required `expression`
+property, that can be either a string or a callback, that receives map of
+property names to column names. Note that we need to use the generic type 
+argument if we want TypeScript suggestions for the property names.
+
+> Check constraints are currently supported only in postgres driver.
+
+<Tabs
+groupId="entity-def"
+defaultValue="reflect-metadata"
+values={[
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
+{label: 'EntitySchema', value: 'entity-schema'},
+]
+}>
+<TabItem value="reflect-metadata">
+
+```ts title="./entities/Book.ts"
+@Entity()
+// with generated name based on the table name 
+@Check({ expression: 'price1 >= 0' })
+// with explicit name 
+@Check({ name: 'foo', expression: columns => `${columns.price1} >= 0` })
+// with explicit type argument we get autocomplete on `columns` 
+@Check<FooEntity>({ expression: columns => `${columns.price1} >= 0` })
+export class Book {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  price1!: number;
+
+  @Property()
+  @Check({ expression: 'price2 >= 0' })
+  price2!: number;
+
+  @Property({ check: columns => `${columns.price3} >= 0` })
+  price3!: number;
+
+}
+```
+
+  </TabItem>
+  <TabItem value="ts-morph">
+
+```ts title="./entities/Book.ts"
+@Entity()
+// with generated name based on the table name 
+@Check({ expression: 'price1 >= 0' })
+// with explicit name 
+@Check({ name: 'foo', expression: columns => `${columns.price1} >= 0` })
+// with explicit type argument we get autocomplete on `columns` 
+@Check<FooEntity>({ expression: columns => `${columns.price1} >= 0` })
+export class Book {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  price1!: number;
+
+  @Property()
+  @Check({ expression: 'price2 >= 0' })
+  price2!: number;
+
+  @Property({ check: columns => `${columns.price3} >= 0` })
+  price3!: number;
+
+}
+```
+
+  </TabItem>
+  <TabItem value="entity-schema">
+
+```ts title="./entities/Book.ts"
+export const BookSchema = new EntitySchema<Book>({
+  class: Book,
+  checks: [
+    { expression: 'price1 >= 0' },
+    { name: 'foo', expression: columns => `${columns.price1} >= 0` },
+    { expression: columns => `${columns.price1} >= 0` },
+    { propertyName: 'price2', expression: 'price2 >= 0' },
+    { propertyName: 'price3', expression: columns => `${columns.price3} >= 0` },
+  ],
+  properties: {
+    id: { type: 'number', primary: true },
+    price1: { type: 'number' },
+    price2: { type: 'number' },
+    price3: { type: 'number' },
+  },
+});
+```
+
+  </TabItem>
+</Tabs>
+
 ## Custom Types
 
-You can define custom types by extending `Type` abstract class. It has 4 optional methods:
+We can define custom types by extending `Type` abstract class. It has 4 optional methods:
 
 - `convertToDatabaseValue(value: any, platform: Platform): any`
 
@@ -908,9 +1009,9 @@ More information can be found in [Custom Types](custom-types.md) section.
 
 ## Lazy scalar properties
 
-You can mark any property as `lazy: true` to omit it from the select clause.
-This can be handy for properties that are too large and you want to have them
-available only some times, like a full text of an article.
+We can mark any property as `lazy: true` to omit it from the select clause.
+This can be handy for properties that are too large, and you want to have them
+available only sometimes, like a full text of an article.
 
 <Tabs
 groupId="entity-def"
@@ -948,7 +1049,7 @@ properties: {
   </TabItem>
 </Tabs>
 
-You can use `populate` parameter to load them.
+We can use `populate` parameter to load them.
 
 ```ts
 const b1 = await em.find(Book, 1); // this will omit the `text` property
@@ -960,7 +1061,7 @@ const b2 = await em.find(Book, 1, { populate: ['text'] }); // this will load the
 
 ## Virtual Properties
 
-You can define your properties as virtual, either as a method, or via JavaScript `get/set`.
+We can define our properties as virtual, either as a method, or via JavaScript `get/set`.
 
 Following example defines User entity with `firstName` and `lastName` database fields, that
 are both hidden from the serialized response, replaced with virtual properties `fullName`
@@ -1073,7 +1174,7 @@ also possible to define multiple entities in a single file using folder based di
 
 ## Using BaseEntity
 
-You can define your own base entity with properties that you require on all entities, like
+We can define our own base entity with properties that are required on all entities, like
 primary key and created/updated time. Single table inheritance is also supported.
 
 Read more about this topic in [Inheritance Mapping](inheritance-mapping.md) section.
@@ -1394,7 +1495,7 @@ export const BookSchema = new EntitySchema<Book>({
 
 ### Using BigInt as primary key (MySQL and PostgreSQL)
 
-You can use `BigIntType` to support `bigint`s. By default, it will represent the value as
+We can use `BigIntType` to support `bigint`s. By default, it will represent the value as
 a `string`.
 
 <Tabs
@@ -1551,5 +1652,5 @@ const book = new Book();
 console.log(book.isInitialized()); // true
 ```
 
-With your entities set up, you can start [using entity manager](entity-manager.md) and
+Having the entities set up, we can now start [using entity manager](entity-manager.md) and
 [repositories](repositories.md) as described in following sections.

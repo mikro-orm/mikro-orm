@@ -200,6 +200,14 @@ export type EntityDTOProp<T> = T extends Scalar
             : T;
 export type EntityDTO<T> = { [K in keyof T as ExcludeFunctions<T, K>]: EntityDTOProp<T[K]> };
 
+export type CheckCallback<T> = (columns: Record<keyof T, string>) => string;
+
+export interface CheckConstraint<T extends AnyEntity<T> = any> {
+  name?: string;
+  property?: string;
+  expression: string | CheckCallback<T>;
+}
+
 export interface EntityProperty<T extends AnyEntity<T> = any> {
   name: string & keyof T;
   entity: () => EntityName<T>;
@@ -425,7 +433,7 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   uniqueProps: EntityProperty<T>[];
   indexes: { properties: (keyof T & string) | (keyof T & string)[]; name?: string; type?: string; options?: Dictionary; expression?: string }[];
   uniques: { properties: (keyof T & string) | (keyof T & string)[]; name?: string; options?: Dictionary }[];
-  checks: { name: string; expression: string }[];
+  checks: CheckConstraint<T>[];
   customRepository: () => Constructor<EntityRepository<T>>;
   hooks: Partial<Record<keyof typeof EventType, (string & keyof T)[]>>;
   prototype: T;
