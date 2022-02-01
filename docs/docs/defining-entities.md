@@ -493,7 +493,7 @@ export class User {
   @Enum(() => UserRole)
   role!: UserRole; // string enum
 
-  @Enum()
+  @Enum(() => UserStatus)
   status!: UserStatus; // numeric/const enum
 
   @Enum(() => OutsideEnum)
@@ -528,10 +528,10 @@ import { OutsideEnum } from './OutsideEnum.ts';
 @Entity()
 export class User {
 
-  @Enum()
+  @Enum(() => UserRole)
   role!: UserRole; // string enum
 
-  @Enum()
+  @Enum(() => UserStatus)
   status!: UserStatus; // numeric enum
 
   @Enum(() => OutsideEnum)

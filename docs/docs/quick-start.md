@@ -35,7 +35,7 @@ as well as `esModuleInterop` in `tsconfig.json` via:
 Then call `MikroORM.init` as part of bootstrapping your app:
 
 > To access driver specific methods like `em.createQueryBuilder()` we need to specify
-> the driver type when calling `MikroORM.init()`. Alternatively we can cast the
+> the driver type when calling `MikroORM.init<D>()`. Alternatively we can cast the
 > `orm.em` to `EntityManager` exported from the driver package:
 >
 > ```ts

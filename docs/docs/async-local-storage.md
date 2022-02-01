@@ -7,8 +7,8 @@ Since v5 `AsyncLocalStorage` is used inside `RequestContext` helper so this sect
 is no longer valid.
 :::
 
-By default, the `domain` api is used in the `RequestContext` helper. Since v4.0.3,
-you can use the new `AsyncLocalStorage` too, if you are on up to date node version:
+In v4 and older versions, the `domain` api was used in the `RequestContext` helper. Since v4.0.3,
+we can use the new `AsyncLocalStorage` too, if we are on up-to-date node version:
 
 ```typescript
 const storage = new AsyncLocalStorage<EntityManager>();
