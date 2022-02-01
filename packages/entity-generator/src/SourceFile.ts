@@ -84,13 +84,18 @@ export class SourceFile {
   }
 
   private getPropertyDefinition(prop: EntityProperty, padLeft: number): string {
-    // string defaults are usually things like SQL functions
-    // string defaults can also be enums, for that useDefault should be true.
+    const padding = ' '.repeat(padLeft);
+
+    if (prop.reference === ReferenceType.MANY_TO_MANY) {
+      this.coreImports.add('Collection');
+      return `${padding}${prop.name} = new Collection<${prop.type}>(this);\n`;
+    }
+
+    // string defaults are usually things like SQL functions, but can be also enums, for that `useDefault` should be true
     const isEnumOrNonStringDefault = prop.enum || typeof prop.default !== 'string';
     const useDefault = prop.default != null && isEnumOrNonStringDefault;
     const optional = prop.nullable ? '?' : (useDefault ? '' : '!');
     const ret = `${prop.name}${optional}: ${prop.type}`;
-    const padding = ' '.repeat(padLeft);
 
     if (!useDefault) {
       return `${padding + ret};\n`;
@@ -122,7 +127,9 @@ export class SourceFile {
     let decorator = this.getDecoratorType(prop);
     this.coreImports.add(decorator.substring(1));
 
-    if (prop.reference !== ReferenceType.SCALAR) {
+    if (prop.reference === ReferenceType.MANY_TO_MANY) {
+      this.getManyToManyDecoratorOptions(options, prop);
+    } else if (prop.reference !== ReferenceType.SCALAR) {
       this.getForeignKeyDecoratorOptions(options, prop);
     } else {
       this.getScalarPropertyDecoratorOptions(options, prop);
@@ -237,6 +244,27 @@ export class SourceFile {
     }
   }
 
+  private getManyToManyDecoratorOptions(options: Dictionary, prop: EntityProperty) {
+    this.entityImports.add(prop.type);
+    options.entity = `() => ${prop.type}`;
+
+    if (prop.pivotTable !== this.namingStrategy.joinTableName(this.meta.collection, prop.type, prop.name)) {
+      options.pivotTable = this.quote(prop.pivotTable);
+    }
+
+    if (prop.joinColumns.length === 1) {
+      options.joinColumn = this.quote(prop.joinColumns[0]);
+    } else {
+      options.joinColumns = `[${prop.joinColumns.map(this.quote).join(', ')}]`;
+    }
+
+    if (prop.inverseJoinColumns.length === 1) {
+      options.inverseJoinColumn = this.quote(prop.inverseJoinColumns[0]);
+    } else {
+      options.inverseJoinColumns = `[${prop.inverseJoinColumns.map(this.quote).join(', ')}]`;
+    }
+  }
+
   private getForeignKeyDecoratorOptions(options: Dictionary, prop: EntityProperty) {
     const parts = prop.referencedTableName.split('.', 2);
     const className = this.namingStrategy.getClassName(parts.length > 1 ? parts[1] : parts[0], '_');
@@ -272,6 +300,10 @@ export class SourceFile {
 
     if (prop.reference === ReferenceType.MANY_TO_ONE) {
       return '@ManyToOne';
+    }
+
+    if (prop.reference === ReferenceType.MANY_TO_MANY) {
+      return '@ManyToMany';
     }
 
     if (prop.primary) {

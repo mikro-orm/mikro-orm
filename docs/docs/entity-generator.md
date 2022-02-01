@@ -43,5 +43,4 @@ $ ts-node generate-entities
 
 ## Current limitations
 
-- many to many relations are not supported, pivot table will be represented as separate entity
 - in mysql, tinyint columns will be defined as boolean properties

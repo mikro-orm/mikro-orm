@@ -2,8 +2,9 @@
 
 exports[`multiple connected schemas in postgres generate entities for given schema only 1`] = `
 Array [
-  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Author } from './Author';
+import { BookTag } from './BookTag';
 
 @Entity({ schema: 'n2' })
 export class Book {
@@ -20,6 +21,9 @@ export class Book {
   @ManyToOne({ entity: () => Book, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
   basedOn?: Book;
 
+  @ManyToMany({ entity: () => BookTag, joinColumn: 'book_id', inverseJoinColumn: 'book_tag_id' })
+  tags = new Collection<BookTag>(this);
+
 }
 ",
   "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
@@ -32,21 +36,6 @@ export class BookTag {
 
   @Property({ length: 255, nullable: true })
   name?: string;
-
-}
-",
-  "import { Entity, ManyToOne } from '@mikro-orm/core';
-import { Book } from './Book';
-import { BookTag } from './BookTag';
-
-@Entity({ schema: 'n2' })
-export class BookTags {
-
-  @ManyToOne({ entity: () => Book, onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
-  book!: Book;
-
-  @ManyToOne({ entity: () => BookTag, onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
-  bookTag!: BookTag;
 
 }
 ",

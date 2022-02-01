@@ -409,11 +409,11 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   async syncCollection<T extends AnyEntity<T>, O extends AnyEntity<O>>(coll: Collection<T, O>, options?: DriverMethodOptions): Promise<void> {
     const wrapped = coll.owner.__helper!;
     const meta = wrapped.__meta;
-    const pks = wrapped.getPrimaryKeys(true);
+    const pks = wrapped.getPrimaryKeys(true)!;
     const snap = coll.getSnapshot();
     const includes = <T>(arr: T[], item: T) => !!arr.find(i => Utils.equals(i, item));
-    const snapshot = snap ? snap.map(item => item.__helper!.getPrimaryKeys(true)) : [];
-    const current = coll.getItems(false).map(item => item.__helper!.getPrimaryKeys(true));
+    const snapshot = snap ? snap.map(item => item.__helper!.getPrimaryKeys(true)!) : [];
+    const current = coll.getItems(false).map(item => item.__helper!.getPrimaryKeys(true)!);
     const deleteDiff = snap ? snapshot.filter(item => !includes(current, item)) : true;
     const insertDiff = current.filter(item => !includes(snapshot, item));
     const target = snapshot.filter(item => includes(current, item)).concat(...insertDiff);
@@ -438,15 +438,17 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       return this.rethrow(this.execute<any>(qb));
     }
 
+    /* istanbul ignore next */
     const ownerSchema = wrapped.getSchema() === '*' ? this.config.get('schema') : wrapped.getSchema();
     const pivotMeta = this.metadata.find(coll.property.pivotTable)!;
 
     if (pivotMeta.schema === '*') {
+      /* istanbul ignore next */
       options ??= {};
       options.schema = ownerSchema;
     }
 
-    return this.rethrow(this.updateCollectionDiff<T, O>(meta, coll.property, pks as any, deleteDiff as any, insertDiff as any, options));
+    return this.rethrow(this.updateCollectionDiff<T, O>(meta, coll.property, pks, deleteDiff, insertDiff, options));
   }
 
   async loadFromPivotTable<T, O>(prop: EntityProperty, owners: Primary<O>[][], where: FilterQuery<T> = {} as FilterQuery<T>, orderBy?: QueryOrderMap<T>[], ctx?: Transaction, options?: FindOptions<T>): Promise<Dictionary<T[]>> {
