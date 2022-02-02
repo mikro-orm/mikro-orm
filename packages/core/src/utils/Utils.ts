@@ -475,9 +475,14 @@ export class Utils {
     return cond;
   }
 
-  static getPrimaryKeyCondFromArray<T extends AnyEntity<T>>(pks: Primary<T>[], primaryKeys: string[]): Record<string, Primary<T>> {
-    return primaryKeys.reduce((o, pk, idx) => {
-      o[pk] = Utils.extractPK<T>(pks[idx]);
+  static getPrimaryKeyCondFromArray<T extends AnyEntity<T>>(pks: Primary<T>[], meta: EntityMetadata<T>): Record<string, Primary<T>> {
+    return meta.getPrimaryProps().reduce((o, pk, idx) => {
+      if (Array.isArray(pks[idx]) && pk.targetMeta) {
+        o[pk.name] = Utils.getPrimaryKeyCondFromArray(pks[idx] as unknown[], pk.targetMeta);
+      } else {
+        o[pk.name] = Utils.extractPK<T>(pks[idx]);
+      }
+
       return o;
     }, {} as any);
   }

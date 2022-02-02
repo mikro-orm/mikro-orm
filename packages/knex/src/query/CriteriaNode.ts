@@ -22,7 +22,13 @@ export class CriteriaNode implements ICriteriaNode {
     const meta = parent && metadata.find(parent.entityName);
 
     if (meta && key) {
-      Utils.splitPrimaryKeys(key).forEach(k => {
+      const pks = Utils.splitPrimaryKeys(key);
+
+      if (pks.length > 1) {
+        return;
+      }
+
+      pks.forEach(k => {
         this.prop = meta.props.find(prop => prop.name === k || (prop.fieldNames || []).includes(k));
 
         // do not validate if the key is prefixed or type casted (e.g. `k::text`)
@@ -66,14 +72,14 @@ export class CriteriaNode implements ICriteriaNode {
   }
 
   renameFieldToPK<T>(qb: IQueryBuilder<T>): string {
-    const alias = qb.getAliasForJoinPath(this.getPath());
+    const alias = qb.getAliasForJoinPath(this.getPath()) ?? qb.alias;
 
     if (this.prop!.reference === ReferenceType.MANY_TO_MANY) {
       return Utils.getPrimaryKeyHash(this.prop!.inverseJoinColumns.map(col => `${alias}.${col}`));
     }
 
     if (this.prop!.joinColumns.length > 1) {
-      return Utils.getPrimaryKeyHash(this.prop!.joinColumns);
+      return Utils.getPrimaryKeyHash(this.prop!.joinColumns.map(col => `${alias}.${col}`));
     }
 
     return Utils.getPrimaryKeyHash(this.prop!.referencedColumnNames.map(col => `${alias}.${col}`));

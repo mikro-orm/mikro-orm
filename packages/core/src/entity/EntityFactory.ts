@@ -131,10 +131,10 @@ export class EntityFactory {
   createReference<T>(entityName: EntityName<T>, id: Primary<T> | Primary<T>[] | Record<string, Primary<T>>, options: Pick<FactoryOptions, 'merge' | 'convertCustomTypes' | 'schema'> = {}): T {
     options.convertCustomTypes ??= true;
     entityName = Utils.className(entityName);
-    const meta = this.metadata.get(entityName);
+    const meta = this.metadata.get<T>(entityName);
 
     if (Array.isArray(id)) {
-      id = Utils.getPrimaryKeyCondFromArray(id, meta.primaryKeys);
+      id = Utils.getPrimaryKeyCondFromArray(id, meta);
     }
 
     const pks = Utils.getOrderedPrimaryKeys<T>(id, meta, this.platform, options.convertCustomTypes);

@@ -1,6 +1,7 @@
 import { inspect } from 'util';
 import { expr, LockMode, MikroORM, QueryFlag, QueryOrder, UnderscoreNamingStrategy } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { QueryBuilder } from '@mikro-orm/postgresql';
 import { CriteriaNode } from '@mikro-orm/knex';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { Address2, Author2, Book2, BookTag2, Car2, CarOwner2, Configuration2, FooBar2, FooBaz2, FooParam2, Publisher2, PublisherType, Test2, User2 } from './entities-sql';
@@ -8,7 +9,6 @@ import { initORMMySql } from './bootstrap';
 import { BaseEntity2 } from './entities-sql/BaseEntity2';
 import { performance } from 'perf_hooks';
 import { BaseEntity22 } from './entities-sql/BaseEntity22';
-import { QueryBuilder } from '@mikro-orm/postgresql';
 
 describe('QueryBuilder', () => {
 

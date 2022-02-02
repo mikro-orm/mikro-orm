@@ -32,7 +32,20 @@ export class QueryBuilderHelper {
     const fields = Utils.splitPrimaryKeys(field);
 
     if (fields.length > 1) {
-      return this.knex.raw('(' + fields.map(f => this.knex.ref(this.mapper(f, type, value, alias))).join(', ') + ')');
+      const parts: string[] = [];
+
+      for (const p of fields) {
+        const [a, f] = this.splitField(p);
+        const prop = this.getProperty(f, a);
+
+        if (prop) {
+          parts.push(...prop.fieldNames.map(f => this.mapper(f, type, value, alias)));
+        } else {
+          parts.push(this.mapper(`${a}.${f}`, type, value, alias));
+        }
+      }
+
+      return this.knex.raw('(' + parts.map(part => this.knex.ref(part)).join(', ') + ')');
     }
 
     let ret = field;

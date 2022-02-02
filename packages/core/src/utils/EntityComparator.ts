@@ -236,21 +236,45 @@ export class EntityComparator {
     const context = new Map<string, any>();
     const propName = (name: string, parent = 'result') => parent + this.wrap(name);
 
+    // respects nested composite keys, e.g. `[1, [2, 3]]`
+    const createCompositeKeyArray = (prop: EntityProperty, fieldNames = prop.fieldNames, idx = 0): string => {
+      if (!prop.targetMeta) {
+        return propName(fieldNames[idx++]);
+      }
+
+      const parts: string[] = [];
+
+      for (const pk of prop.targetMeta.getPrimaryProps()) {
+        parts.push(createCompositeKeyArray(pk, fieldNames, idx));
+        idx += pk.fieldNames.length;
+      }
+
+      if (parts.length > 1) {
+        return '[' + parts.join(', ') + ']';
+      }
+
+      return parts[0];
+    };
+
     lines.push(`  const mapped = {};`);
     meta.props.forEach(prop => {
-      if (prop.fieldNames) {
-        if (prop.fieldNames.length > 1) {
-          lines.push(`  if (${prop.fieldNames.map(field => `${propName(field)} != null`).join(' && ')}) {\n    ret${this.wrap(prop.name)} = [${prop.fieldNames.map(field => `${propName(field)}`).join(', ')}];`);
-          lines.push(...prop.fieldNames.map(field => `    ${propName(field, 'mapped')} = true;`));
-          lines.push(`  } else if (${prop.fieldNames.map(field => `${propName(field)} == null`).join(' && ')}) {\n    ret${this.wrap(prop.name)} = null;`);
-          lines.push(...prop.fieldNames.map(field => `    ${propName(field, 'mapped')} = true;`), '  }');
-        } else {
-          if (prop.type === 'boolean') {
-            lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') { ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : !!${propName(prop.fieldNames[0])}; mapped.${prop.fieldNames[0]} = true; }`);
-          } else {
-            lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') { ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])}; ${propName(prop.fieldNames[0], 'mapped')} = true; }`);
-          }
-        }
+      if (!prop.fieldNames) {
+        return;
+      }
+
+      if (prop.targetMeta && prop.fieldNames.length > 1) {
+        lines.push(`  if (${prop.fieldNames.map(field => `${propName(field)} != null`).join(' && ')}) {`);
+        lines.push(`    ret${this.wrap(prop.name)} = ${createCompositeKeyArray(prop)};`);
+        lines.push(...prop.fieldNames.map(field => `    ${propName(field, 'mapped')} = true;`));
+        lines.push(`  } else if (${prop.fieldNames.map(field => `${propName(field)} == null`).join(' && ')}) {\n    ret${this.wrap(prop.name)} = null;`);
+        lines.push(...prop.fieldNames.map(field => `    ${propName(field, 'mapped')} = true;`), '  }');
+        return;
+      }
+
+      if (prop.type === 'boolean') {
+        lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') { ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : !!${propName(prop.fieldNames[0])}; mapped.${prop.fieldNames[0]} = true; }`);
+      } else {
+        lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') { ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])}; ${propName(prop.fieldNames[0], 'mapped')} = true; }`);
       }
     });
     lines.push(`  for (let k in result) { if (result.hasOwnProperty(k) && !mapped[k]) ret[k] = result[k]; }`);
