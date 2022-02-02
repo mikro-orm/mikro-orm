@@ -5,6 +5,8 @@ import { compareObjects, Utils } from '@mikro-orm/core';
 import { Author } from './entities';
 import { initORMMongo, wipeDatabase, BASE_DIR } from './bootstrap';
 import FooBar from './entities/FooBar';
+import type { URL } from 'url';
+import { pathToFileURL } from 'url';
 
 class Test {}
 
@@ -181,6 +183,29 @@ describe('Utils', () => {
     expect(Utils.normalizePath('./test/foo/bar/')).toBe('./test/foo/bar');
     expect(Utils.normalizePath('test/')).toBe('./test');
     expect(Utils.normalizePath('/test')).toBe('/test');
+    expect(Utils.normalizePath('./foo', '/test')).toBe('/test');
+  });
+
+  describe('posix', () => {
+    let spy: jest.SpyInstance<string, [string | URL]>;
+    beforeAll(() => spy = jest.spyOn(Utils, 'fileURLToPath'));
+    test('normalizePath', () => {
+      spy.mockImplementation(() => '/test');
+      expect(Utils.normalizePath('file:///test')).toBe('/test');
+      expect(Utils.normalizePath('./foo', 'file:///test')).toBe('/test');
+    });
+    afterAll(() => spy.mockRestore());
+  });
+
+  describe('windows', () => {
+    let spy: jest.SpyInstance<string, [string | URL]>;
+    beforeAll(() => spy = jest.spyOn(Utils, 'fileURLToPath'));
+    test('normalizePath', () => {
+      spy.mockImplementation(() => 'C:/test');
+      expect(Utils.normalizePath('file:///C:/test')).toBe('C:/test');
+      expect(Utils.normalizePath('./foo', 'file:///C:/test')).toBe('C:/test');
+    });
+    afterAll(() => spy.mockRestore());
   });
 
   test('relativePath', () => {
@@ -188,6 +213,8 @@ describe('Utils', () => {
     expect(Utils.relativePath('test', process.cwd())).toBe('./test');
     expect(Utils.relativePath(process.cwd() + '/tests/', process.cwd())).toBe('./tests');
     expect(Utils.relativePath(process.cwd() + '/tests/cli/', process.cwd())).toBe('./tests/cli');
+    expect(Utils.relativePath(pathToFileURL(process.cwd() + '/tests/cli/').href, process.cwd())).toBe('./tests/cli');
+    expect(Utils.relativePath(process.cwd() + '/tests/cli/', pathToFileURL(process.cwd()).href)).toBe('./tests/cli');
   });
 
   test('absolutePath', () => {
@@ -196,6 +223,7 @@ describe('Utils', () => {
     expect(Utils.absolutePath(process.cwd() + '/tests/')).toBe(Utils.normalizePath(process.cwd() + '/tests'));
     expect(Utils.absolutePath('./tests/cli')).toBe(Utils.normalizePath(process.cwd() + '/tests/cli'));
     expect(Utils.absolutePath('')).toBe(Utils.normalizePath(process.cwd()));
+    expect(Utils.absolutePath(pathToFileURL(process.cwd() + '/tests/').href)).toBe(Utils.normalizePath(process.cwd() + '/tests'));
   });
 
   test('pathExists wrapper', async () => {
@@ -349,6 +377,52 @@ describe('Utils', () => {
       '    at Function.Module._load (internal/modules/cjs/loader.js:703:12)',
     ];
     expect(Utils.lookupPathFromDecorator('Customer', stack1)).toBe('C:/www/my-project/src/entities/Customer.ts');
+  });
+
+  describe('posix', () => {
+    let spy: jest.SpyInstance<string, [string | URL]>;
+    beforeAll(() => spy = jest.spyOn(Utils, 'fileURLToPath'));
+    test('lookup path from decorator loaded from an ES module', () => {
+      // with tslib, via ts-node
+      const stack1 = [
+        '    at Function.lookupPathFromDecorator (/usr/local/var/www/my-project/node_modules/mikro-orm/dist/utils/Utils.js:170:23)',
+        '    at /usr/local/var/www/my-project/node_modules/mikro-orm/dist/decorators/PrimaryKey.js:12:23',
+        '    at DecorateProperty (/usr/local/var/www/my-project/node_modules/reflect-metadata/Reflect.js:553:33)',
+        '    at Object.decorate (/usr/local/var/www/my-project/node_modules/reflect-metadata/Reflect.js:123:24)',
+        '    at __decorate (file:///usr/local/var/www/my-project/src/entities/Customer.ts:4:92)',
+        '    at Object.<anonymous> (/usr/local/var/www/my-project/src/entities/Customer.ts:9:3)',
+        '    at Module._compile (internal/modules/cjs/loader.js:776:30)',
+        '    at Module.m._compile (/usr/local/var/www/my-project/node_modules/ts-node/src/index.ts:473:23)',
+        '    at Module._extensions.js (internal/modules/cjs/loader.js:787:10)',
+        '    at Object.require.extensions.<computed> [as .ts] (/usr/local/var/www/my-project/node_modules/ts-node/src/index.ts:476:12)',
+      ];
+      spy.mockImplementation(() => '/usr/local/var/www/my-project/src/entities/Customer.ts');
+      expect(Utils.lookupPathFromDecorator('Customer', stack1)).toBe('/usr/local/var/www/my-project/src/entities/Customer.ts');
+    });
+    afterAll(() => spy.mockRestore());
+  });
+
+  describe('windows', () => {
+    let spy: jest.SpyInstance<string, [string | URL]>;
+    beforeAll(() => spy = jest.spyOn(Utils, 'fileURLToPath'));
+    test('lookup path from decorator loaded from an ES module', () => {
+      // with tslib, via ts-node
+      const stack1 = [
+        '    at Function.lookupPathFromDecorator (C:\\www\\my-project\\node_modules\\mikro-orm\\dist\\utils\\Utils.js:175:26)',
+        '    at C:\\www\\my-project\\node_modules\\mikro-orm\\dist\\decorators\\PrimaryKey.js:12:23',
+        '    at Object.__decorate (C:\\www\\my-project\\node_modules\\tslib\\tslib.js:93:114)',
+        '    at Object.<anonymous> (file:///C:/www/my-project/src/entities/Customer.ts:7:5)',
+        '    at Module._compile (internal/modules/cjs/loader.js:936:30)',
+        '    at Module.m._compile (C:\\www\\my-project\\node_modules\\ts-node\\src\\index.ts:493:23)',
+        '    at Module._extensions.js (internal/modules/cjs/loader.js:947:10)',
+        '    at Object.require.extensions.<computed> [as .ts] (C:\\www\\my-project\\node_modules\\ts-node\\src\\index.ts:496:12)',
+        '    at Module.load (internal/modules/cjs/loader.js:790:32)',
+        '    at Function.Module._load (internal/modules/cjs/loader.js:703:12)',
+      ];
+      spy.mockImplementation(() => 'C:/www/my-project/src/entities/Customer.ts');
+      expect(Utils.lookupPathFromDecorator('Customer', stack1)).toBe('C:/www/my-project/src/entities/Customer.ts');
+    });
+    afterAll(() => spy.mockRestore());
   });
 
   test('requireFrom can require a package.json file', () => {
