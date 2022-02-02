@@ -371,7 +371,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
         return qb.orderByRaw(queryOrder);
       }
     }, this._orderBy);
-    Utils.runIfNotEmpty(() => qb.limit(this._limit!), this._limit);
+    Utils.runIfNotEmpty(() => qb.limit(this._limit!), this._limit != null);
     Utils.runIfNotEmpty(() => qb.offset(this._offset!), this._offset);
     Utils.runIfNotEmpty(() => this.helper.appendOnConflictClause(this.type, this._onConflict!, qb), this._onConflict);
 
