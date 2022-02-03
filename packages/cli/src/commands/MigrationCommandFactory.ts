@@ -169,12 +169,13 @@ export class MigrationCommandFactory {
 
   private static async handleFreshCommand(args: Arguments<Options>, migrator: IMigrator, orm: MikroORM<AbstractSqlDriver>) {
     const generator = new SchemaGenerator(orm.em);
-    await generator.dropSchema();
+    await generator.dropSchema({ dropMigrationsTable: true });
     CLIHelper.dump(colors.green('Dropped schema successfully'));
     const opts = MigrationCommandFactory.getUpDownOptions(args);
-    await migrator.up(opts as string[]);
+    await migrator.up(opts);
     const message = this.getUpDownSuccessMessage('up', opts);
     CLIHelper.dump(colors.green(message));
+
     if (args.seed !== undefined) {
       const seeder = orm.getSeeder();
       const seederClass = args.seed || orm.config.get('seeder').defaultSeeder;
