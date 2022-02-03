@@ -1,4 +1,4 @@
-import { basename, extname, isAbsolute } from 'path';
+import { basename, extname } from 'path';
 import globby from 'globby';
 
 import type { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, EntityProperty } from '../typings';
