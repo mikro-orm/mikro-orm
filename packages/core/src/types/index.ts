@@ -26,7 +26,7 @@ export {
   StringType, UuidType, TextType, UnknownType,
 };
 
-export const t = {
+export const types = {
   date: DateType,
   time: TimeType,
   datetime: DateTimeType,
@@ -47,3 +47,5 @@ export const t = {
   uuid: UuidType,
   text: TextType,
 };
+
+export const t = types;
