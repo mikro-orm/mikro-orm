@@ -3,20 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.0.0-rc.2](https://github.com/mikro-orm/mikro-orm/compare/eb16b2c...70ae06a) (2022-02-03)
+
+### Bug Fixes
+
+* **core**: allow using MongoNamingStrategy with SQL drivers ([c38c66c](https://github.com/mikro-orm/mikro-orm/commit/c38c66c))
+* **core**: fix pivot tables for wild card schema entities ([623dc91](https://github.com/mikro-orm/mikro-orm/commit/623dc91))
+* **core**: fix support for nested composite PKs ([14dcff8](https://github.com/mikro-orm/mikro-orm/commit/14dcff8))
+* **core**: handle `file://` urls in normalizePath ([#2697](https://github.com/mikro-orm/mikro-orm/issues/2697)) ([127b0ae](https://github.com/mikro-orm/mikro-orm/commit/127b0ae))
+* **migrations**: clear the migrations table in `migration:fresh` ([63eb4e6](https://github.com/mikro-orm/mikro-orm/commit/63eb4e6))
+* **query-builder**: respect `0` as limit ([#2700](https://github.com/mikro-orm/mikro-orm/issues/2700)) ([3f284ed](https://github.com/mikro-orm/mikro-orm/commit/3f284ed))
+* **seeder**: fork EM in the seeder manager so we dont use global context ([022a1cc](https://github.com/mikro-orm/mikro-orm/commit/022a1cc))
+* **types**: fix populate type hints for nullable properties ([bc1bf76](https://github.com/mikro-orm/mikro-orm/commit/bc1bf76))
+
+
+### Features
+
+* **core**: allow defining check constraints via callback ([965f740](https://github.com/mikro-orm/mikro-orm/commit/965f740))
+* **entity-generator**: add support for generating M:N properties ([c0628c5](https://github.com/mikro-orm/mikro-orm/commit/c0628c5))
+
+
+
 ## [5.0.0-rc.1](https://github.com/mikro-orm/mikro-orm/compare/16c5e91...eb16b2c) (2022-01-30)
 
 ### Bug Fixes
 
-* **core**: allow empty strings in postgres arrays (#2680) ([5a33722](https://github.com/mikro-orm/mikro-orm/commit/5a33722))
+* **core**: allow empty strings in postgres arrays ([#2680](https://github.com/mikro-orm/mikro-orm/issues/2680)) ([5a33722](https://github.com/mikro-orm/mikro-orm/commit/5a33722))
 * **core**: allow calling `em.create()` with reference wrapper ([c069960](https://github.com/mikro-orm/mikro-orm/commit/c069960))
 * **core**: respect request context when creating QB ([a2b7b84](https://github.com/mikro-orm/mikro-orm/commit/a2b7b84))
-* **core**: respect specified schema when populating (select-in) (#2676) ([21a1be0](https://github.com/mikro-orm/mikro-orm/commit/21a1be0))
+* **core**: respect specified schema when populating (select-in) ([#2676](https://github.com/mikro-orm/mikro-orm/issues/2676)) ([21a1be0](https://github.com/mikro-orm/mikro-orm/commit/21a1be0))
 * **sql**: split `$and` branches when auto joining to-many relations ([70c795a](https://github.com/mikro-orm/mikro-orm/commit/70c795a))
 
 
 ### Features
 
-* **core**: add custom table check constraint support for postgres (#2688) ([89aca5f](https://github.com/mikro-orm/mikro-orm/commit/89aca5f))
+* **core**: add custom table check constraint support for postgres ([#2688](https://github.com/mikro-orm/mikro-orm/issues/2688)) ([89aca5f](https://github.com/mikro-orm/mikro-orm/commit/89aca5f))
 * **core**: validate required properties before flushing new entities ([9eec3a9](https://github.com/mikro-orm/mikro-orm/commit/9eec3a9))
 * **core**: make `em.create()` respect required properties ([2385f1d](https://github.com/mikro-orm/mikro-orm/commit/2385f1d))
 * **seeder**: use community driven faker fork and reexport it ([3c9f8e9](https://github.com/mikro-orm/mikro-orm/commit/3c9f8e9))
@@ -497,13 +518,6 @@ Please see the [upgrading guide](docs/docs/upgrading-v4-to-v5.md).
 ### Performance Improvements
 
 * **core:** make `IdentityMap` iterable ([e13757a](https://github.com/mikro-orm/mikro-orm/commit/e13757a0510d576561b124f1072c314c864ae443))
-
-
-### Reverts
-
-* Revert "chore(deps): update dependency typedoc to v0.20.1" (#1245) ([b5b25e1](https://github.com/mikro-orm/mikro-orm/commit/b5b25e1ae708010e6a6042db135c492e9f2004a7)), closes [#1245](https://github.com/mikro-orm/mikro-orm/issues/1245)
-
-
 
 
 
