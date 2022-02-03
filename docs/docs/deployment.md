@@ -26,7 +26,7 @@ What discovery process does is to sniff TS types and save their value to string,
 used later for validation. You can skip the whole process by simply providing those values 
 manually:
 
-```typescript
+```ts
 @Entity()
 export class Book {
 
@@ -76,7 +76,7 @@ every required module/file and has no external dependencies.
 Webpack requires every required file to be hardcoded in your code. Code like this won't work 
 (it will throw an error because Webpack doesn't know which file to include in the bundle):
 
-```typescript
+```ts
 let dependencyNameInVariable = 'dependency';
 const dependency = import(dependencyNameInVariable);
 ```
@@ -100,7 +100,7 @@ First thing you should do is to disable dynamic file access in the discovery pro
 
 #### Manually defining entities
 
-```typescript
+```ts
 import { Author, Book, BookTag, Publisher, Test } from '../entities';
 
 await MikroORM.init({
@@ -125,7 +125,7 @@ Here, all files with the extension `.ts` will be imported from the directory `..
 
 > [`flatMap`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap) is a method from ECMAScript 2019 and requires [Node.js](https://nodejs.org/) 11 or higher.
 
-```typescript
+```ts
 await MikroORM.init({
   // ...
   entities: await getEntities(),
@@ -159,7 +159,7 @@ configuration. Configuration for Webpack is stored in the root of the project as
 
 For bundling MikroORM the following configuration is required:
 
-```javascript
+```js
 const path = require('path');
 const { EnvironmentPlugin, IgnorePlugin } = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin');

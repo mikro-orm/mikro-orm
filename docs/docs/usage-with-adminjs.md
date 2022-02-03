@@ -46,7 +46,7 @@ The process is straightforward but differs based on which `plugin` you are using
 
 ### MikroORM + Express Plugin
 
-```typescript
+```ts
 import AdminJS from 'adminjs';
 import { Database, Resource } from '@adminjs/mikroorm';
 import AdminJSExpress from '@adminjs/express';
@@ -90,7 +90,7 @@ run();
 
 ### MikroORM + Hapi Plugin
 
-```typescript
+```ts
 import AdminJS from 'adminjs';
 import { Database, Resource } from '@adminjs/mikroorm';
 import AdminJSHapi from '@adminjs/hapi';
@@ -149,12 +149,12 @@ The examples above set up AdminJS with unauthenticated access. To require your u
 You need to use `AdminJSExpress.buildAuthenticatedRouter` instead of `AdminJS.buildRouter`:
 
 **Before**:
-```typescript
+```ts
   const router = AdminJSExpress.buildRouter(admin);
 ```
 
 **After**:
-```typescript
+```ts
 const ADMIN_EMAIL = 'example@test.com';
 const ADMIN_PASSWORD = 'password';
 
@@ -174,14 +174,14 @@ const router = AdminJSExpress.buildAuthenticatedRouter(admin, {
 You need to simply add `auth` property to AdminJS options.
 
 **Before**:
-```typescript
+```ts
 const adminOptions = {
   databases: [orm],
 };
 ```
 
 **After**:
-```typescript
+```ts
 const ADMIN_EMAIL = 'example@test.com';
 const ADMIN_PASSWORD = 'password';
 

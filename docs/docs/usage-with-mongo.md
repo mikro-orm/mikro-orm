@@ -17,7 +17,7 @@ dependency. Then call `MikroORM.init()` as part of bootstrapping your app:
 
 > We need to use `clientUrl` to setup hosts, using `host` or `port` is not supported.
 
-```typescript
+```ts
 import type { MongoDriver } from '@mikro-orm/mongodb'; // or any other SQL driver package
 
 const orm = await MikroORM.init<MongoDriver>({
@@ -33,7 +33,7 @@ console.log(orm.em); // access EntityManager via `em` property
 
 When defining entity, do not forget to define primary key like this:
 
-```typescript
+```ts
 @PrimaryKey()
 _id: ObjectId;
 
@@ -49,7 +49,7 @@ id!: string; // won't be saved in the database
 Every entity has both `ObjectId` and `string` id available, also all methods of `EntityManager` 
 and `EntityRepository` supports querying by both of them. 
 
-```typescript
+```ts
 const author = orm.em.getReference('...id...');
 console.log(author.id);  // returns '...id...'
 console.log(author._id); // returns ObjectId('...id...')
@@ -90,7 +90,7 @@ are several things you need to respect:
 $ run-rs -v 4.2.3
 ```
 
-```typescript
+```ts
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 
@@ -115,7 +115,7 @@ use `@Index()` and `@Unique()` as described in [Defining Entities section](defin
 To automatically create new indexes when initializing the ORM, you need to enable
 `ensureIndexes` option. 
 
-```typescript
+```ts
 const orm = await MikroORM.init<MongoDriver>({
   entities: [Author, Book, ...],
   dbName: 'my-db-name',
@@ -128,7 +128,7 @@ Alternatively you can call `ensureIndexes()` method on the `SchemaGenerator`:
 
 > SchemaGenerator support for mongo was introduced in v5.
 
-```typescript
+```ts
 await orm.getSchemaGenerator().ensureIndexes();
 ```
 
@@ -152,7 +152,7 @@ database with initial fixtures. Using ORM for such operations can bring unnecess
 boilerplate code. In this case, you can use one of `nativeInsert/nativeUpdate/nativeDelete`
 methods:
 
-```typescript
+```ts
 em.nativeInsert<T extends AnyEntity>(entityName: string, data: any): Promise<IPrimaryKey>;
 em.nativeUpdate<T extends AnyEntity>(entityName: string, where: FilterQuery<T>, data: any): Promise<number>;
 em.nativeDelete<T extends AnyEntity>(entityName: string, where: FilterQuery<T> | any): Promise<number>;
@@ -164,7 +164,7 @@ Keep in mind that they do not hydrate results to entities, and they do not trigg
 
 They are also available as `EntityRepository` shortcuts:
 
-```typescript
+```ts
 EntityRepository.nativeInsert(data: any): Promise<IPrimaryKey>;
 EntityRepository.nativeUpdate(where: FilterQuery<T>, data: any): Promise<number>;
 EntityRepository.nativeDelete(where: FilterQuery<T> | any): Promise<number>;
@@ -172,7 +172,7 @@ EntityRepository.nativeDelete(where: FilterQuery<T> | any): Promise<number>;
 
 There is also shortcut for calling `aggregate` method:
 
-```typescript
+```ts
 em.aggregate(entityName: string, pipeline: any[]): Promise<any[]>;
 EntityRepository.aggregate(pipeline: any[]): Promise<any[]>;
 ```

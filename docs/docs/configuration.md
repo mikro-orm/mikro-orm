@@ -7,7 +7,7 @@ title: Configuration
 You can either provide array of entity instances via `entities`, or let the ORM look up your 
 entities in selected folders. 
 
-```typescript
+```ts
 MikroORM.init({
   entities: [Author, Book, Publisher, BookTag],
 });
@@ -22,7 +22,7 @@ compiled files (see more at [Metadata Providers](metadata-providers.md)).
 > needs to discover the TS files. Always specify this option if you use folder/file
 > based discovery. 
 
-```typescript
+```ts
 MikroORM.init({
   entities: ['./dist/modules/users/entities', './dist/modules/projects/entities'],
   entitiesTs: ['./src/modules/users/entities', './src/modules/projects/entities'],
@@ -45,7 +45,7 @@ the `JavaScriptMetadataProvider`.
 > You can also implement your own metadata provider and use it instead. To do so, extend the 
 > `MetadataProvider` class.
 
-```typescript
+```ts
 import { MikroORM } from '@mikro-orm/core';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 
@@ -56,7 +56,7 @@ MikroORM.init({
 
 There are also some additional options how you can adjust the discovery process:
 
-```typescript
+```ts
 MikroORM.init({
   discovery: {
     warnWhenNoEntities: false, // by default, discovery throws when no entity is processed
@@ -89,7 +89,7 @@ To select driver, you can either use `type` option, or provide the driver class 
 > You can pass additional options to the underlying driver (e.g. `mysql2`) via `driverOptions`. 
 > The object will be deeply merged, overriding all internally used options.
 
-```typescript
+```ts
 import { MySqlDriver } from '@mikro-orm/mysql';
 
 MikroORM.init({
@@ -100,7 +100,7 @@ MikroORM.init({
 
 > From v3.5.1 you can also set the timezone directly in the ORM configuration:
 >
-> ```typescript
+> ```ts
 > MikroORM.init({
 >   type: 'mysql',
 >   timezone: '+02:00',
@@ -112,7 +112,7 @@ MikroORM.init({
 Each platform (driver) provides default connection string, you can override it as a whole
 through `clientUrl`, or partially through one of following options:
 
-```typescript
+```ts
 export interface DynamicPassword {
   password: string;
   expirationChecker?: () => boolean;
@@ -146,7 +146,7 @@ Following table shows default client connection strings:
 To set up read replicas, you can use `replicas` option. You can provide only those parts of the 
 `ConnectionOptions` interface, they will be used to override the `master` connection options.
 
-```typescript
+```ts
 MikroORM.init({
   type: 'mysql',
   dbName: 'my_db_name',
@@ -203,7 +203,7 @@ strategy. There are 3 basic naming strategies you can choose from:
 
 > You can also define your own custom `NamingStrategy` implementation.
 
-```typescript
+```ts
 MikroORM.init({
   namingStrategy: EntityCaseNamingStrategy,
 });
@@ -217,7 +217,7 @@ By default, owning side of 1:1 relation will be auto-joined when you select the 
 so we can have the reference to it. You can disable this behaviour via `autoJoinOneToOneOwner` 
 configuration toggle.
 
-```typescript
+```ts
 MikroORM.init({
   autoJoinOneToOneOwner: false,
 });
@@ -228,7 +228,7 @@ MikroORM.init({
 MikroORM defines getter and setter for every owning side of m:1 and 1:1 relation. This is 
 then used for propagation of changes to the inverse side of bi-directional relations.
 
-```typescript
+```ts
 const author = new Author('n', 'e');
 const book = new Book('t');
 book.author = author;
@@ -237,7 +237,7 @@ console.log(author.books.contains(book)); // true
 
 You can disable this behaviour via `propagateToOneOwner` option.
 
-```typescript
+```ts
 MikroORM.init({
   propagateToOneOwner: false,
 });
@@ -249,7 +249,7 @@ Use `forceUtcTimezone` option to force the `Date`s to be saved in UTC in datetim
 without timezone. It works for MySQL (`datetime` type) and PostgreSQL (`timestamp` type). 
 SQLite does this by default. 
 
-```typescript
+```ts
 MikroORM.init({
   forceUtcTimezone: true,
 });
@@ -261,7 +261,7 @@ By default `null` values from nullable database columns are hydrated as `null`.
 Using `forceUndefined` we can tell the ORM to convert those `null` values to
 `undefined` instead. 
 
-```typescript
+```ts
 MikroORM.init({
   forceUndefined: true,
 });
@@ -277,7 +277,7 @@ In v4 this behaviour was disabled by default, so even after the new entity was
 flushed, the serialized form contained only FKs for its relations. We can opt in 
 to this old behaviour via `populateAfterFlush: false`.
 
-```typescript
+```ts
 MikroORM.init({
   populateAfterFlush: false,
 });
@@ -324,7 +324,7 @@ MikroORM.init({
 Hydrator is responsible for assigning values from the database to entities. 
 You can implement your custom `Hydrator` (by extending the abstract `Hydrator` class):
 
-```typescript
+```ts
 MikroORM.init({
   hydrator: MyCustomHydrator,
 });
@@ -337,7 +337,7 @@ You can also register custom base repository (for all entities where you do not 
 
 > You can still use entity specific repositories in combination with global base repository.
 
-```typescript
+```ts
 MikroORM.init({
   entityRepository: CustomBaseRepository,
 });
@@ -356,7 +356,7 @@ data types for you automatically. If automatic conversion fails, it will throw a
 enable strict mode to disable this feature and let ORM throw errors instead. Validation is triggered 
 when persisting the entity. 
 
-```typescript
+```ts
 MikroORM.init({
   validate: true,
   strict: true,
@@ -374,7 +374,7 @@ to use `nullable: true` on their optional properties too).
 This behaviour can be disabled globally via `validateRequired: false` in the 
 ORM config.
 
-```typescript
+```ts
 MikroORM.init({
   validateRequired: false,
 });
@@ -385,7 +385,7 @@ MikroORM.init({
 You can enable logging with `debug` option. Either set it to `true` to log everything, or 
 provide array of `'query' | 'query-params' | 'discovery' | 'info'` namespaces.
 
-```typescript
+```ts
 MikroORM.init({
   logger: (message: string) => myLogger.info(message), // defaults to `console.log()`
   debug: true, // or provide array like `['query', 'query-params']`
@@ -401,7 +401,7 @@ Read more about this in [Debugging](debugging.md) section.
 When no entity is found during `em.findOneOrFail()` call, `new Error()` will be thrown. 
 You can customize how the `Error` instance is created via `findOneOrFailHandler`:
 
-```typescript
+```ts
 MikroORM.init({
   findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => {
     return new NotFoundException(`${entityName} not found!`);
@@ -416,7 +416,7 @@ Read more about this in [Entity Manager](entity-manager.md#handling-not-found-en
 Under the `migrations` namespace, you can adjust how the integrated migrations support works.
 Following example shows all possible options and their defaults:
 
-```typescript
+```ts
 MikroORM.init({
   migrations: {
     tableName: 'mikro_orm_migrations', // migrations table name
@@ -437,7 +437,7 @@ Read more about this in [Migrations](migrations.md) section.
 By default, metadata discovery results are cached. You can either disable caching, or adjust 
 how it works. Following example shows all possible options and their defaults:
 
-```typescript
+```ts
 MikroORM.init({
   cache: {
     enabled: true,
@@ -454,7 +454,7 @@ Read more about this in [Metadata Cache](metadata-cache.md) section.
 
 Using the `mikro-orm database:import db-file.sql` you can import a database dump file. This can be useful when kickstarting an application or could be used in tests to reset the database. Database dumps often have queries spread over multiple lines and therefore you need the following configuration.
 
-```typescript
+```ts
 MikroORM.init({
   ...
   multipleStatements: true,
@@ -473,6 +473,22 @@ constructors, we can use `forceEntityConstructor` toggle:
 ```ts
 MikroORM.init({
   forceEntityConstructor: true, // or specify just some entities via `[Author, 'Book', ...]` 
+});
+```
+
+## Persist created entities automatically 
+
+If we create new entity via `em.create()`, we still need to mark it via 
+`em.persist()` to make the `EntityManager` aware of it. Alternatively we
+can enable `persistOnCreate` flag, which will make this work automatically.
+
+> This flag affects only `em.create()`, entities created via constructors
+> still need explicit `em.persist()` call or they need to be part of entity 
+> graph of some already managed entity.
+
+```ts
+MikroORM.init({
+  persistOnCreate: true,
 });
 ```
 

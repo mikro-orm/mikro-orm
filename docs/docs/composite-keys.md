@@ -23,7 +23,7 @@ ID fields have to have their values set before you call `em.persist(entity)`.
 Suppose you want to create a database of cars and use the model-name and year of 
 production as primary keys:
 
-```typescript
+```ts
 @Entity()
 export class Car {
 
@@ -45,7 +45,7 @@ export class Car {
 
 Now you can use this entity:
 
-```typescript
+```ts
 const car = new Car('Audi A8', 2010);
 await em.persistAndFlush(car);
 ```
@@ -53,7 +53,7 @@ await em.persistAndFlush(car);
 And for querying you need to provide all primary keys in the condition or an array of
 primary keys in the same order as the keys were defined:
 
-```typescript
+```ts
 const audi1 = await em.findOneOrFail(Car, { name: 'Audi A8', year: 2010 });
 const audi2 = await em.findOneOrFail(Car, ['Audi A8', 2010]);
 ```
@@ -93,7 +93,7 @@ The semantics of mapping identity through foreign entities are easy:
 
 We keep up the example of an Article with arbitrary attributes, the mapping looks like this:
 
-```typescript
+```ts
 @Entity()
 export class Article {
 
@@ -137,7 +137,7 @@ Sometimes you have the requirement that two objects are related by a `@OneToOne`
 association and that the dependent class should re-use the primary key of the class 
 it depends on. One good example for this is a user-address relationship:
 
-```typescript
+```ts
 @Entity()
 export class User {
 
@@ -166,7 +166,7 @@ In the classic order product shop example there is the concept of the order item
 contains references to order and product and additional data such as the amount of products 
 purchased and maybe even the current price.
 
-```typescript
+```ts
 @Entity()
 export class Order {
 
@@ -239,7 +239,7 @@ export class OrderItem {
 Internally composite keys are represented as tuples, containing all the values in the
 same order as the primary keys were defined. 
 
-```typescript
+```ts
 const qb1 = em.createQueryBuilder(CarOwner);
 qb1.select('*').where({ car: { name: 'Audi A8', year: 2010 } });
 console.log(qb1.getQuery());  // select `e0`.* from `car_owner` as `e0` where `e0`.`name` = ? and `e0`.`year` = ?
@@ -255,7 +255,7 @@ console.log(qb3.getQuery());  // 'select `e0`.* from `car_owner` as `e0` where (
 
 This also applies when you want to get a reference to entity with composite key:
 
-```typescript
+```ts
 const ref = em.getReference(Car, ['Audi A8', 2010]);
 console.log(ref instanceof Car); // true
 ``` 

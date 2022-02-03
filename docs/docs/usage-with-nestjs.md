@@ -28,7 +28,7 @@ $ npm i -s @mikro-orm/core @mikro-orm/nestjs @mikro-orm/sqlite      # for sqlite
 
 Once the installation process is completed, we can import the `MikroOrmModule` into the root `AppModule`.
 
-```typescript
+```ts
 @Module({
   imports: [
     MikroOrmModule.forRoot({
@@ -48,7 +48,7 @@ The `forRoot()` method accepts the same configuration object as `init()` from th
 
 Alternatively we can [configure the CLI](installation.md#setting-up-the-commandline-tool) by creating a configuration file `mikro-orm.config.ts` and then call the `forRoot()` without any arguments. This won't work when you use a build tools that use tree shaking. 
 
-```typescript
+```ts
 @Module({
   imports: [
     MikroOrmModule.forRoot(),
@@ -85,7 +85,7 @@ MikroORM supports the repository design pattern. For every entity we can create 
 > repositories for those. On the other hand, base entities need to be part of the list
 > in `forRoot()` (or in the ORM config in general).
 
-```typescript
+```ts
 // photo.module.ts
 
 @Module({
@@ -98,7 +98,7 @@ export class PhotoModule {}
 
 and import it into the root `AppModule`:
 
-```typescript
+```ts
 // app.module.ts
 @Module({
   imports: [MikroOrmModule.forRoot(...), PhotoModule],
@@ -108,7 +108,7 @@ export class AppModule {}
 
 In this way we can inject the `PhotoRepository` to the `PhotoService` using the `@InjectRepository()` decorator:
 
-```typescript
+```ts
 @Injectable()
 export class PhotoService {
   constructor(
@@ -136,7 +136,7 @@ the Nest.js DI container.
 `**./author.entity.ts**`
 
 ```ts
-@Entity()
+@Entity({ customRepository: () => AuthorRepository })
 export class Author {
 
   // to allow inference in `em.getRepository()`
@@ -148,7 +148,6 @@ export class Author {
 `**./author.repository.ts**`
 
 ```ts
-@Repository(Author)
 export class AuthorRepository extends EntityRepository<Author> {
 
   // your custom methods...
@@ -299,7 +298,7 @@ The GraphQL module in NestJS uses `apollo-server-express` which enables `bodypar
 By default, the `domain` api is used in the `RequestContext` helper. Since `@mikro-orm/core@4.0.3`,
 you can use the new `AsyncLocalStorage` too, if you are on up to date node version:
 
-```typescript
+```ts
 // create new (global) storage instance
 const storage = new AsyncLocalStorage<EntityManager>();
 
@@ -328,7 +327,7 @@ app.use((req, res, next) => {
 
 The `@mikro-orm/nestjs` package exposes `getRepositoryToken()` function that returns prepared token based on a given entity to allow mocking the repository.
 
-```typescript
+```ts
 @Module({
   providers: [
     PhotoService,

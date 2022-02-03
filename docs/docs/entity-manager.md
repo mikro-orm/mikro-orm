@@ -21,7 +21,7 @@ perform according database queries. As an entity loaded from database becomes ma
 automatically, you do not have to call persist on those, and flush is enough to update 
 them.
 
-```typescript
+```ts
 const book = await orm.em.findOne(Book, 1);
 book.title = 'How to persist things...';
 
@@ -35,7 +35,7 @@ To save entity state to database, you need to persist it. Persist determines
 whether to use `insert` or `update` and computes appropriate change-set. Entity references
 that are not persisted yet (does not have identifier) will be cascade persisted automatically. 
 
-```typescript
+```ts
 // use constructors in your entities for required parameters
 const author = new Author('Jon Snow', 'snow@wall.st');
 author.born = new Date();
@@ -65,7 +65,7 @@ To fetch entities from database you can use `find()` and `findOne()` of `EntityM
 
 Example:
 
-```typescript
+```ts
 const author = await orm.em.findOne(Author, '...id...');
 const books = await orm.em.find(Book, {});
 
@@ -87,7 +87,7 @@ for (const author of authors) {
 
 To populate entity relations, you can use `populate` parameter.
 
-```typescript
+```ts
 const books = await orm.em.find(Book, { foo: 1 }, ['author.friends']);
 ```
 
@@ -95,7 +95,7 @@ You can also use `em.populate()` helper to populate relations (or to ensure they
 are fully populated) on already loaded entities. This is also handy when loading 
 entities via `QueryBuilder`:
 
-```typescript
+```ts
 const authors = await orm.em.createQueryBuilder(Author).select('*').getResult();
 await em.populate(authors, ['books.tags']);
 
@@ -109,7 +109,7 @@ console.log(authors[0].books[0].tags[0]); // initialized BookTag
 Querying entities via conditions object (`where` in `em.find(Entity, where: FilterQuery<T>)`) 
 supports many different ways:
 
-```typescript
+```ts
 // search by entity properties
 const users = await orm.em.find(User, { firstName: 'John' });
 
@@ -155,7 +155,7 @@ problematic.
 
 > As a last resort, you can always type cast the query to `any`.
 
-```typescript
+```ts
 const books = await orm.em.find<Book>(Book, { ... your complex query ... });
 // or
 const books = await orm.em.getRepository(Book).find({ ... your complex query ... });
@@ -174,7 +174,7 @@ this and all requested relationships will be automatically joined. Currently it 
 them so you can search and sort by those. To populate entities, do not forget to pass the populate 
 parameter as well. 
 
-```typescript
+```ts
 // find author of a book that has tag specified by name
 const author = await orm.em.findOne(Author, { books: { tags: { name: 'Tag name' } } });
 console.log(author.books.isInitialized()); // false, as it only works for query and sort
@@ -238,7 +238,7 @@ const author = await orm.em.findOne(Author, '...', { fields: ['name', { books: [
 If you are going to paginate your results, you can use `em.findAndCount()` that will return
 total count of entities before applying limit and offset.
 
-```typescript
+```ts
 const [authors, count] = await orm.em.findAndCount(Author, { ... }, { limit: 10, offset: 50 });
 console.log(authors.length); // based on limit parameter, e.g. 10
 console.log(count); // total count, e.g. 1327
@@ -249,7 +249,7 @@ console.log(count); // total count, e.g. 1327
 When you call `em.findOne()` and no entity is found based on your criteria, `null` will be 
 returned. If you rather have an `Error` instance thrown, you can use `em.findOneOrFail()`:
 
-```typescript
+```ts
 const author = await orm.em.findOne(Author, { name: 'does-not-exist' });
 console.log(author === null); // true
 
@@ -264,7 +264,7 @@ try {
 You can customize the error either globally via `findOneOrFailHandler` option, or locally via 
 `failHandler` option in `findOneOrFail` call.
 
-```typescript
+```ts
 try {
   const author = await orm.em.findOneOrFail(Author, { name: 'does-not-exist' }, {
     failHandler: (entityName: string, where: Record<string, any> | IPrimaryKey) => new Error(`Failed: ${entityName} in ${util.inspect(where)}`)
@@ -323,7 +323,7 @@ await orm.em.flush(); // calling flush have no effect, as the entity is not mana
 Both `em.find` and `em.findOne()` methods have generic return types.
 All of following examples are equal and will let typescript correctly infer the entity type:
 
-```typescript
+```ts
 const author1 = await orm.em.findOne<Author>(Author.name, '...id...');
 const author2 = await orm.em.findOne<Author>('Author', '...id...');
 const author3 = await orm.em.findOne(Author, '...id...');
@@ -346,7 +346,7 @@ or [`tests/EntityManager.mysql.test.ts`](https://github.com/mikro-orm/mikro-orm/
 Entity properties provide some support for custom ordering via the `customOrder` attribute. This is
 useful for values that have a natural order that doesn't align with their underlying data representation. Consider the code below, the natural sorting order would be `high`, `low`, `medium`. However we can provide the `customOrder` to indicate how the enum values should be sorted.
 
-```typescript
+```ts
 enum Priority { Low = 'low', Medium = 'medium', High = 'high' }
 @Entity()
 class Task {

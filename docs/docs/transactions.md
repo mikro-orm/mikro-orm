@@ -29,7 +29,7 @@ The first approach is to use the implicit transaction handling provided by the M
 `EntityManager`. Given the following code snippet, without any explicit transaction 
 demarcation:
 
-```typescript
+```ts
 const user = new User(...);
 user.name = 'George';
 await orm.em.persistAndFlush(user);
@@ -46,7 +46,7 @@ the ORM.
 The explicit alternative is to use the transactions API directly to control the boundaries. 
 The code then looks like this:
 
-```typescript
+```ts
 await orm.em.transactional(em => {
   //... do some work
   const user = new User(...);
@@ -58,7 +58,7 @@ await orm.em.transactional(em => {
 Or you can use `begin/commit/rollback` methods explicitly. Following example is
 equivalent to the previous one:
 
-```typescript
+```ts
 const em = orm.em.fork(false);
 await em.begin();
 
@@ -139,7 +139,7 @@ is thrown, indicating that the entity has been modified by someone else already.
 
 You designate a version field in an entity as follows. In this example we'll use an integer.
 
-```typescript
+```ts
 export class User {
   // ...
   @Property({ version: true })
@@ -150,7 +150,7 @@ export class User {
 
 Alternatively a datetime type can be used (which maps to a SQL timestamp or datetime):
 
-```typescript
+```ts
 export class User {
   // ...
   @Property({ version: true })
@@ -177,7 +177,7 @@ an optimistic locking exception:
 You can always verify the version of an entity during a request either when calling 
 `em.findOne()`:
 
-```typescript
+```ts
 const theEntityId = 1;
 const expectedVersion = 184;
 
@@ -194,7 +194,7 @@ try {
 
 Or you can use `em.lock()` to find out:
 
-```typescript
+```ts
 const theEntityId = 1;
 const expectedVersion = 184;
 const entity = await orm.em.findOne(User, theEntityId);
@@ -261,7 +261,7 @@ Locking.
 
 See the example code (frontend):
 
-```typescript
+```ts
 const res = await fetch('api.example.com/book/123');
 const book = res.json();
 console.log(book.version); // prints the current version
@@ -279,7 +279,7 @@ await fetch('api.example.com/book/123', {
 
 And the corresponding API endpoints:
 
-```typescript
+```ts
 // GET /book/:id
 async findOne(req, res) {
   const book = await this.em.findOne(Book, +req.query.id);
@@ -334,7 +334,7 @@ Optionally we can also pass list of table aliases we want to lock via `lockTable
 
 > The root entity is always aliased as `e0` when using `em.find()` or `em.findOne()`.
 
-```typescript
+```ts
 const res = await em.find(User, { name: 'Jon' }, {
   populate: ['identities'],
   strategy: LoadStrategy.JOINED,

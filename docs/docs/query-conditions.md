@@ -2,10 +2,10 @@
 title: Smart Query Conditions
 ---
 
-When you want to make complex queries, you can easily end up with a lot of boilerplate code
+When you want to make complex queries, we can easily end up with a lot of boilerplate code
 full of curly brackets:
 
-```typescript
+```ts
 const res = await orm.em.find(Author, { $and: [
   { id: { $in: [1, 2, 7] }, },
   { id: { $nin: [3, 4] }, },
@@ -17,9 +17,9 @@ const res = await orm.em.find(Author, { $and: [
 ] });
 ```
 
-For AND condition with single field, you can also do this:
+For AND condition with single field, we can also do this:
 
-```typescript
+```ts
 const res = await orm.em.find(Author, { 
   id: { 
     $in: [1, 2, 7],
@@ -33,48 +33,16 @@ const res = await orm.em.find(Author, {
 });
 ```
 
-Another way to do this by including the operator in your keys:
-
-> This approach is deprecated and will be removed in future versions.
-
-```typescript
-const res = await orm.em.find(Author, { $and: [
-  { 'id:in': [1, 2, 7] },
-  { 'id:nin': [3, 4] },
-  { 'id:gt': 5 },
-  { 'id:lt': 10 },
-  { 'id:gte': 7 },
-  { 'id:lte': 8 },
-  { 'id:ne': 9 },
-] });
-```
-
-For comparison operators, you can also use their mathematical symbols:
-
-```typescript
-const res = await orm.em.find(Author, { $and: [
-  { 'id >': 5 },
-  { 'id <': 10 },
-  { 'id >=': 7 },
-  { 'id <=': 8 },
-  { 'id !=': 9 },
-] });
-```
-
-> Keys with operators like this will cause TypeScript errors as there is no way to support 
-> them on the typings side. They are still supported, but you will need to cast the condition
-> to `any` to use them. 
-
 There is also shortcut for `$in` - simply provide array as value and it 
 will be converted automatically:
 
-```typescript
+```ts
 const res = await orm.em.find(Author, { favouriteBook: [1, 2, 7] });
 ```
 
-For primary key lookup, you can provide the array directly to `em.find()`:
+For primary key lookup, we can provide the array directly to `em.find()`:
 
-```typescript
+```ts
 const res = await orm.em.find(Author, [1, 2, 7]);
 ```
 

@@ -11,7 +11,7 @@ data types for you automatically. If automatic conversion fails, it will throw a
 enable strict mode to disable this feature and let ORM throw errors instead. Validation is triggered 
 when persisting the entity. 
 
-```typescript
+```ts
 // number instead of string will throw
 const author = new Author('test', 'test');
 wrap(author).assign({ name: 111, email: 222 });

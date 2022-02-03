@@ -2,11 +2,10 @@
 title: Propagation
 ---
 
-By default MikroORM will propagate all changes made to one side of bi-directional relations
-to the other side, keeping them in sync. This works for all relations, including M:1 and 1:1.
-As part of the discovery process, all M:1 and 1:1 properties are re-defined as getter/setter.
+By default, MikroORM will propagate all changes made to one side of bi-directional relations to the other side, keeping them in sync. This works for all relations, including M:1 and 1:1. As part of
+the discovery process, all M:1 and 1:1 properties are re-defined as getter/setter.
 
-```typescript
+```ts
 const author = new Author(...);
 const book = new Book(...);
 book.author = author;
@@ -17,10 +16,9 @@ console.log(author.books.contains(book)); // true
 
 ## Propagation of Collection's add() and remove() operations
 
-When you use one of `Collection.add()` method, the item is added to given collection, 
-and this action is also propagated to its counterpart. 
+When you use one of `Collection.add()` method, the item is added to given collection, and this action is also propagated to its counterpart.
 
-```typescript
+```ts
 // one to many
 const author = new Author(...);
 const book = new Book(...);
@@ -29,9 +27,9 @@ author.books.add(book);
 console.log(book.author); // author will be set thanks to the propagation
 ```
 
-For M:N this works in both ways, either from owning side, or from inverse side. 
+For M:N this works in both ways, either from owning side, or from inverse side.
 
-```typescript
+```ts
 // many to many works both from owning side and from inverse side
 const book = new Book(...);
 const tag = new BookTag(...);

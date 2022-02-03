@@ -5,7 +5,7 @@ title: Using native BigInt PKs (MySQL and PostgreSQL)
 We can use `BigIntType` to support `bigint`s. By default, it will represent the value as
 a `string`.
 
-```typescript
+```ts
 import { Entity, PrimaryKey, t } from '@mikro-orm/core';
 
 @Entity()
@@ -22,7 +22,7 @@ is mapped to a string. If we want to map it to a number anyway, we can implement
 [custom type](custom-types.md) that will do so. Similarly, we can define one to 
 use the native `bigint` type:
 
-```typescript
+```ts
 export class NativeBigIntType extends BigIntType {
 
   convertToJSValue(value: any): any {

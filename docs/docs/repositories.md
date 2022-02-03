@@ -3,13 +3,16 @@ title: Using EntityRepository instead of EntityManager
 sidebar_label: Entity Repository
 ---
 
-More convenient way of fetching entities from database is by using `EntityRepository`, that
-carries the entity name so you do not have to pass it to every `find` and `findOne` calls:
+Entity Repositories are thin layers on top of `EntityManager`. They act as an 
+extension point, so we can add custom methods, or even alter the existing ones. 
+The default, `EntityRepository` implementation just forwards the calls to 
+underlying `EntityManager` instance.
 
-Example:
+> `EntityRepository` class carries the entity type, so we do not have to pass 
+> it to every `find` or `findOne` calls.
 
-```typescript
-const booksRepository = orm.em.getRepository(Book);
+```ts
+const booksRepository = em.getRepository(Book);
 
 // with sorting, limit and offset parameters, populating author references
 const books = await booksRepository.find({ author: '...' }, ['author'], { title: QueryOrder.DESC }, 2, 1);
@@ -25,6 +28,10 @@ const books = await booksRepository.find({ author: '...' }, {
 console.log(books); // Book[]
 ```
 
+Note that there is no such thing as "flushing repository" - it is just a shortcut
+to `em.flush()`. In other words, we always flush the whole Unit of Work, not just
+a single entity that this repository represents.
+
 ## Custom Repository
 
 :::info
@@ -35,13 +42,12 @@ exported from your driver package.
 
 To use custom repository, just extend `EntityRepository<T>` class:
 
-```typescript
+```ts
 import { EntityRepository } from '@mikro-orm/mysql'; // or any other driver package
 
-@Repository(Author)
 export class CustomAuthorRepository extends EntityRepository<Author> {
 
-  // your custom methods...
+  // custom methods...
   public findAndUpdate(...) {
     // ...
   }
@@ -49,20 +55,22 @@ export class CustomAuthorRepository extends EntityRepository<Author> {
 }
 ```
 
-You can also omit the `@Repository` decorator and register your repository in `@Entity` 
-decorator instead:
+And register the repository via `@Entity` decorator:
 
-```typescript
+```ts
 @Entity({ customRepository: () => CustomAuthorRepository })
 export class Author {
   // ...
 }
 ```
 
+> `@Repository()` decorator has been removing in v5, use
+> `@Entity({ customRepository: () => MyRepository })` instead.
+
 Note that we need to pass that repository reference inside a callback so we will not run
 into circular dependency issues when using entity references inside that repository.
 
-Now you can access your custom repository via `em.getRepository()` method.
+Now we can access our custom repository via `em.getRepository()` method.
 
 ### Inferring custom repository type
 
@@ -81,10 +89,8 @@ export class Author {
 const repo = em.getRepository(Author); // repo has type AuthorRepository
 ```
 
-> You can also register custom base repository (for all entities where you do not specify 
+> We can also register custom base repository (for all entities where we do not specify 
 > `customRepository`) globally, via `MikroORM.init({ entityRepository: CustomBaseRepository })`.
-
-> Note that you cannot use both `@Repository(Author)` on the repository and `{ customRepository: () => AuthorRepository }` on the entity at the same time. This will cause a circular dependency and throws an error. Either one of options achieves the same goal.
 
 For more examples, take a look at
 [`tests/EntityManager.mongo.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts)

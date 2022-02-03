@@ -36,7 +36,7 @@ Then call `MikroORM.init` as part of bootstrapping your app:
 > const qb = em.createQueryBuilder(...);
 > ```
 
-```typescript
+```ts
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql'; // or any other SQL driver package
 
 const orm = await MikroORM.init<PostgreSqlDriver>({
@@ -53,7 +53,7 @@ If you want to use database that is not currently supported, you can implement y
 More information about how to create one can be [found here](custom-driver.md). Then provide the 
 driver class via `driver` configuration option: 
 
-```typescript
+```ts
 import { MyCustomDriver } from './MyCustomDriver.ts';
 
 const orm = await MikroORM.init<MyCustomDriver>({
@@ -84,7 +84,7 @@ CREATE TABLE `publisher_to_test` (
 You can adjust the name of pivot table via `pivotTable` option in `@ManyToMany` decorator
 defined on owning side: 
 
-```typescript
+```ts
 // for unidirectional
 @ManyToMany({ entity: () => Test, owner: true, pivotTable: 'publisher2test' })
 tests = new Collection<Test>(this);
@@ -99,7 +99,7 @@ tags = new Collection<BookTag>(this);
 When you need to execute some SQL query without all the ORM stuff involved, you can either
 compose the query yourself, or use the `QueryBuilder` helper to construct the query for you:
 
-```typescript
+```ts
 const qb = orm.em.createQueryBuilder(Author);
 qb.update({ name: 'test 123', type: PublisherType.GLOBAL }).where({ id: 123, type: PublisherType.LOCAL });
 
@@ -119,7 +119,7 @@ const res2 = await driver.execute('SELECT ? + ?', [1, 2]);
 
 `QueryBuilder` provides fluent interface with these methods:
 
-```typescript
+```ts
 QueryBuilder.select(fields: string | string[], distinct?: boolean): QueryBuilder;
 QueryBuilder.insert(data: any): QueryBuilder;
 QueryBuilder.update(data: any): QueryBuilder;
@@ -152,7 +152,7 @@ When you need to explicitly handle the transaction, you can use `em.transactiona
 to run callback in transaction. It will provide forked `EntityManager` as a parameter 
 with clear isolated identity map - please use that to make changes. 
 
-```typescript
+```ts
 // if an error occurs inside the callback, all db queries from inside the callback will be rolled back
 await orm.em.transactional(async (em: EntityManager) => {
   const god = new Author('God', 'hello@heaven.god');
@@ -164,7 +164,7 @@ await orm.em.transactional(async (em: EntityManager) => {
 
 SQL supports LIKE queries via native JS regular expressions:
 
-```typescript
+```ts
 const author1 = new Author2('Author 1', 'a1@example.com');
 const author2 = new Author2('Author 2', 'a2@example.com');
 const author3 = new Author2('Author 3', 'a3@example.com');
@@ -182,7 +182,7 @@ database with initial fixtures. Using ORM for such operations can bring unnecess
 boilerplate code. In this case, you can use one of `nativeInsert/nativeUpdate/nativeDelete`
 methods:
 
-```typescript
+```ts
 em.nativeInsert<T extends AnyEntity>(entityName: string, data: any): Promise<IPrimaryKey>;
 em.nativeUpdate<T extends AnyEntity>(entityName: string, where: FilterQuery<T>, data: any): Promise<number>;
 em.nativeDelete<T extends AnyEntity>(entityName: string, where: FilterQuery<T> | any): Promise<number>;
@@ -194,7 +194,7 @@ trigger lifecycle hooks.
 
 They are also available as `EntityRepository` shortcuts:
 
-```typescript
+```ts
 EntityRepository.nativeInsert(data: any): Promise<IPrimaryKey>;
 EntityRepository.nativeUpdate(where: FilterQuery<T>, data: any): Promise<number>;
 EntityRepository.nativeDelete(where: FilterQuery<T> | any): Promise<number>;
@@ -204,7 +204,7 @@ Additionally there is `execute()` method that supports executing raw SQL queries
 instances. To create `QueryBuilder`, you can use `createQueryBuilder()` factory method on both 
 `EntityManager` and `EntityRepository` classes: 
 
-```typescript
+```ts
 const qb = em.createQueryBuilder('Author');
 qb.select('*').where({ id: { $in: [...] } });
 const res = await em.getDriver().execute(qb);

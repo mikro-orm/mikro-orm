@@ -65,7 +65,7 @@ method, it means you are subscribing to all entities.
 You can either register the subscribers manually in the ORM configuration (via 
 `subscribers` array where you put the instance):
 
-```typescript
+```ts
 MikroORM.init({
   subscribers: [new AuthorSubscriber()],
 });
@@ -75,7 +75,7 @@ Or use `@Subscriber()` decorator - keep in mind that you need to make sure the f
 loaded in order to make this decorator registration work (e.g. you import that file 
 explicitly somewhere).
 
-```typescript
+```ts
 import { EntityName, EventArgs, EventSubscriber, Subscriber } from '@mikro-orm/core';
 
 @Subscriber()
@@ -98,7 +98,7 @@ export class AuthorSubscriber implements EventSubscriber<Author> {
 
 Another example, where we register to all the events and all entities: 
 
-```typescript
+```ts
 import { EventArgs, EventSubscriber, Subscriber } from '@mikro-orm/core';
 
 @Subscriber()
@@ -125,7 +125,7 @@ As a parameter to the hook method we get `EventArgs` instance. It will always co
 reference to the current `EntityManager` and the particular entity. Events fired
 from `UnitOfWork` during flush operation also contain the `ChangeSet` object.
 
-```typescript
+```ts
 interface EventArgs<T> {
   entity: T;
   em: EntityManager;
@@ -164,7 +164,7 @@ entity in particular.
 Flush event args will not contain any entity instance, as they are entity agnostic.
 They do contain additional reference to the `UnitOfWork` instance.
 
-```typescript
+```ts
 interface FlushEventArgs extends Omit<EventArgs<unknown>, 'entity'> {
   uow?: UnitOfWork;
 }
@@ -178,7 +178,7 @@ interface FlushEventArgs extends Omit<EventArgs<unknown>, 'entity'> {
 
 You can observe all the changes that are part of given UnitOfWork via those methods:
 
-```typescript
+```ts
 UnitOfWork.getChangeSets(): ChangeSet<AnyEntity>[];
 UnitOfWork.getOriginalEntityData(): Map<string, EntityData<AnyEntity>>;
 UnitOfWork.getPersistStack(): Set<AnyEntity>;
@@ -202,7 +202,7 @@ we are interested in. After we create the `FooBaz` instance and link it with
 2. Call `uow.recomputeSingleChangeSet(cs.entity)` to recalculate the existing 
   change set of the `FooBar` entity.
 
-```typescript
+```ts
 @Subscriber()
 export class FooBarSubscriber implements EventSubscriber {
 

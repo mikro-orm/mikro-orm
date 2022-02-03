@@ -9,7 +9,7 @@ the database, MikroORM will keep a reference to this object inside its `UnitOfWo
 This allows MikroORM room for optimizations. If you call the EntityManager and ask for an 
 entity with a specific ID twice, it will return the same instance:
 
-```typescript
+```ts
 const authorRepository = orm.em.getRepository(Author);
 const jon1 = await authorRepository.findOne(1);
 const jon2 = await authorRepository.findOne(1);
@@ -26,7 +26,7 @@ The identity map being indexed by primary keys only allows shortcuts when you as
 by primary key. When you query by other properties, you will still get the same reference, 
 but two separate database calls will be made:
 
-```typescript
+```ts
 const authorRepository = orm.em.getRepository(Author);
 const jon1 = await authorRepository.findOne({ name: 'Jon Snow' });
 const jon2 = await authorRepository.findOne({ name: 'Jon Snow' });
@@ -51,7 +51,7 @@ confusing to other developers.
 The following code WILL update your database with the changes made to the `Author` object, 
 even if you did not call `em.persist()`:
 
-```typescript
+```ts
 const authorRepository = orm.em.getRepository(Author);
 const jon = await authorRepository.findOne(1);
 jon.email = 'foo@bar.com';
@@ -86,7 +86,7 @@ are ready, simply calling `flush()` will run them inside a transaction.
 
 > You can also control the transaction boundaries manually via `em.transactional(cb)`.
 
-```typescript
+```ts
 const user = await em.findOne(User, 1);
 user.email = 'foo@bar.com';
 const car = new Car();

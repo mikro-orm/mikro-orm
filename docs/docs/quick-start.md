@@ -44,7 +44,7 @@ Then call `MikroORM.init` as part of bootstrapping your app:
 > const qb = em.createQueryBuilder(...);
 > ```
 
-```typescript
+```ts
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql'; // or any other driver package
 
 const orm = await MikroORM.init<PostgreSqlDriver>({
@@ -64,7 +64,7 @@ Then you will need to fork entity manager for each request so their
 [identity maps](https://mikro-orm.io/identity-map/) will not collide. 
 To do so, use the `RequestContext` helper:
 
-```typescript
+```ts
 const app = express();
 
 app.use((req, res, next) => {
@@ -82,7 +82,7 @@ More info about `RequestContext` is described [here](https://mikro-orm.io/identi
 Now you can start defining your entities (in one of the `entities` folders). This is how
 simple entity can look like in mongo driver:
 
-```typescript title="./entities/MongoBook.ts"
+```ts title="./entities/MongoBook.ts"
 @Entity()
 export class MongoBook {
 
@@ -111,7 +111,7 @@ export class MongoBook {
 
 For SQL drivers, you can use `id: number` PK:
 
-```typescript title="./entities/SqlBook.ts"
+```ts title="./entities/SqlBook.ts"
 @Entity()
 export class SqlBook {
 
@@ -123,7 +123,7 @@ export class SqlBook {
 
 Or if you want to use UUID primary keys:
 
-```typescript title="./entities/UuidBook.ts"
+```ts title="./entities/UuidBook.ts"
 import { v4 } from 'uuid';
 
 @Entity()
@@ -145,7 +145,7 @@ To save entity state to database, you need to persist it. Persist determines
 whether to use `insert` or `update` and computes appropriate change-set. Entity references
 that are not persisted yet (does not have identifier) will be cascade persisted automatically. 
 
-```typescript
+```ts
 // use constructors in your entities for required parameters
 const author = new Author('Jon Snow', 'snow@wall.st');
 author.born = new Date();
@@ -165,7 +165,7 @@ await orm.em.persistAndFlush([book1, book2, book3]);
 
 To fetch entities from database you can use `find()` and `findOne()` of `EntityManager`: 
 
-```typescript
+```ts
 const authors = orm.em.find(Author, {});
 
 for (const author of authors) {
@@ -182,7 +182,7 @@ for (const author of authors) {
 More convenient way of fetching entities from database is by using `EntityRepository`, that
 carries the entity name so you do not have to pass it to every `find` and `findOne` calls:
 
-```typescript
+```ts
 const booksRepository = orm.em.getRepository(Book);
 
 // with sorting, limit and offset parameters, populating author references

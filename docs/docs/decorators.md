@@ -9,16 +9,23 @@ title: Decorators
 `@Entity` decorator is used to mark your model classes as entities. Do not use it for 
 abstract base classes.
 
-| Parameter | Type | Optional | Description |
-|-----------|------|----------|-------------|
-| `tableName` | `string` | yes | Override default collection/table name. |
-| `collection` | `string` | yes | Alias for `tableName`. |
-| `comment` | `string` | yes | Specify comment to table **(SQL only)** |
-| `customRepository` | `() => EntityRepository` | yes | Set custom repository class. |
+| Parameter          | Type                     | Optional | Description                                                                     |
+|--------------------|--------------------------|----------|---------------------------------------------------------------------------------|
+| `tableName`        | `string`                 | yes      | Override default collection/table name.                                         |
+| `schema`           | `string`                 | yes      | Sets the schema name                                                            |
+| `collection`       | `string`                 | yes      | Alias for `tableName`.                                                          |
+| `comment`          | `string`                 | yes      | Specify comment to table **(SQL only)**                                         |
+| `customRepository` | `() => EntityRepository` | yes      | Set [custom repository class](repositories.md#custom-repository).               |
+| `discriminatorColumn` |  `string` | yes      | For [Single Table Inheritance](inheritance-mapping.md#single-table-inheritance) |                 
+| `discriminatorMap`   |  `Dictionary<string>` | yes      | For [Single Table Inheritance](inheritance-mapping.md#single-table-inheritance) |     
+| `discriminatorValue` |  `number` &#124; `string`| yes      | For [Single Table Inheritance](inheritance-mapping.md#single-table-inheritance) |
 
-> You can also use `@Repository()` decorator instead of `customRepository` parameter.
+abstract | `boolean`;
 
-```typescript
+readonly | `boolean`;
+
+
+```ts
 @Entity({ tableName: 'authors' })
 export class Author { ... }
 ```
@@ -51,7 +58,7 @@ extend the `@Property()` decorator, so you can also use its parameters there.
 
 > You can use property initializers as usual.
 
-```typescript
+```ts
 @Property({ length: 50, fieldName: 'first_name' })
 name!: string;
 
@@ -79,12 +86,15 @@ registered = false;
 
 > Note that if only one PrimaryKey is set and it's type is number it will be set to auto incremented automatically in all SQL drivers. 
 
-```typescript
+```ts
 @PrimaryKey()
 id!: number; // auto increment PK in SQL drivers
 
+@PrimaryKey({ autoincrement: false })
+id!: number; // numeric PK without auto increment
+
 @PrimaryKey()
-uuid = uuid.v4(); // uuid PK in SQL drivers
+uuid: string = uuid.v4(); // uuid PK in SQL drivers
 
 @PrimaryKey()
 _id!: ObjectId; // ObjectId PK in mongodb driver
@@ -101,7 +111,7 @@ You will be able to use it to manipulate with the primary key as string.
  
 See [Usage with MongoDB](usage-with-mongo.md) and [Serializing](serializing.md).
 
-```typescript
+```ts
 @PrimaryKey()
 _id: ObjectId;
 
@@ -125,7 +135,7 @@ See [Defining Entities](defining-entities.md#enums).
 |-----------|------|----------|-------------|
 | `items` | `number[]` &#124; `string[]` &#124; `() => Dictionary` | yes | Specify enum items explicitly. |
 
-```typescript
+```ts
 @Enum() // with ts-morph metadata provider we do not need to specify anything
 enum0 = MyEnum1.VALUE_1;
 
@@ -153,7 +163,7 @@ See [Defining Entities](defining-entities.md#formulas).
 |-----------|------|----------|-------------|
 | `formula` | `string` &#124; `() => string` | no | SQL fragment that will be part of the select clause.  |
 
-```typescript
+```ts
 @Formula('obj_length * obj_height * obj_width')
 objectVolume?: number;
 ```
@@ -173,7 +183,7 @@ See [Defining Entities](defining-entities.md#indexes).
 | `properties` | `string` &#124; `string[]` | yes | list of properties, required when using on entity level |
 | `type`       | `string` | yes      | index type, not available for `@Unique()` |
 
-```typescript
+```ts
 @Entity()
 @Index({ properties: ['name', 'age'] }) // compound index, with generated name
 @Index({ name: 'custom_idx_name', properties: ['name'] }) // simple index, with custom name
@@ -191,6 +201,50 @@ export class Author {
   @Index({ name: 'born_index' })
   @Property()
   born?: Date;
+
+}
+```
+
+### @Check()
+
+We can define check constraints via `@Check()` decorator. We can use it
+either on entity class, or on entity property. It has a required `expression`
+property, that can be either a string or a callback, that receives map of
+property names to column names. Note that we need to use the generic type
+argument if we want TypeScript suggestions for the property names.
+
+> Check constraints are currently supported only in postgres driver.
+
+See [Defining Entities](defining-entities.md#check-constraints).
+
+| Parameter    | Type     | Optional | Description       |
+|--------------|----------|----------|-------------------|
+| `name`       | `string` | yes      | constraint name   |
+| `property`   | `string` | yes      | property name, only used when generating the constraint name |
+| `expression` | `string` &#124; `CheckCallback` | no       | constraint definition, can be a callback that gets a map of property to column names |
+
+```ts
+@Entity()
+// with generated name based on the table name 
+@Check({ expression: 'price1 >= 0' })
+// with explicit name 
+@Check({ name: 'foo', expression: columns => `${columns.price1} >= 0` })
+// with explicit type argument we get autocomplete on `columns` 
+@Check<FooEntity>({ expression: columns => `${columns.price1} >= 0` })
+export class Book {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  price1!: number;
+
+  @Property()
+  @Check({ expression: 'price2 >= 0' })
+  price2!: number;
+
+  @Property({ check: columns => `${columns.price3} >= 0` })
+  price3!: number;
 
 }
 ```
@@ -230,7 +284,7 @@ See [Defining Entities](relationships.md#manytoone) for more examples.
 | `onDelete` | `string` | yes | [Referential integrity](cascading.md#declarative-referential-integrity). |
 | `onUpdateIntegrity` | `string` | yes | [Referential integrity](cascading.md#declarative-referential-integrity). |
 
-```typescript
+```ts
 @ManyToOne()
 author1?: Author; // type taken via reflection (TsMorphMetadataProvider)
 
@@ -265,7 +319,7 @@ See [Defining Entities](relationships.md#onetoone) for more examples, including 
 | `onDelete` | `string` | yes | [Referential integrity](cascading.md#declarative-referential-integrity). |
 | `onUpdateIntegrity` | `string` | yes | [Referential integrity](cascading.md#declarative-referential-integrity). |
 
-```typescript
+```ts
 // when none of `owner/inverseBy/mappedBy` is provided, it will be considered owning side
 @OneToOne()
 bestFriend1!: User;
@@ -301,7 +355,7 @@ See [Defining Entities](relationships.md#onetomany) for more examples, including
 | `joinColumn` | `string` | yes | Override default database column name on the owning side (see [Naming Strategy](naming-strategy.md)). |
 | `inverseJoinColumn` | `string` | yes | Override default database column name on the inverse side (see [Naming Strategy](naming-strategy.md)). |
 
-```typescript
+```ts
 @OneToMany(() => Book, book => book.author)
 books1 = new Collection<Book>(this);
 
@@ -335,7 +389,7 @@ See [Defining Entities](relationships.md#manytomany) for more examples, includin
 | `joinColumn` | `string` | yes | Override default database column name on the owning side (see [Naming Strategy](naming-strategy.md)). |
 | `inverseJoinColumn` | `string` | yes | Override default database column name on the inverse side (see [Naming Strategy](naming-strategy.md)). |
 
-```typescript
+```ts
 @ManyToMany({ entity: () => BookTag, cascade: [], fixedOrderColumn: 'order' })
 tags = new Collection<BookTag>(this); // m:n with autoincrement PK
 
@@ -357,10 +411,23 @@ automatically when new entities are loaded from database
 
 > `@OnInit` is not fired when you create the entity manually via its constructor (`new MyEntity()`)
 
-```typescript
+```ts
 @OnInit()
 doStuffOnInit() {
   this.fullName = `${this.firstName} - ${this.lastName}`; // initialize shadow property
+}
+```
+
+### @OnLoad()
+
+Fired when new entities are loaded from database. Unline `@InInit()`, 
+this will be fired only for fully loaded entities (not references). The method
+can be `async`.
+
+```ts
+@OnLoad()
+async doStuffOnLoad() {
+  // ...
 }
 ```
 
@@ -368,7 +435,7 @@ doStuffOnInit() {
 
 Fired right before we persist the new entity into the database.
 
-```typescript
+```ts
 @BeforeCreate()
 async doStuffBeforeCreate() {
   // ...
@@ -381,7 +448,7 @@ Fired right after the new entity is created in the database and merged to identi
 Since this event entity will have reference to `EntityManager` and will be 
 enabled to call `wrap(entity).init()` method (including all entity references and collections).
 
-```typescript
+```ts
 @AfterCreate()
 async doStuffAfterCreate() {
   // ...
@@ -392,7 +459,7 @@ async doStuffAfterCreate() {
 
 Fired right before we update the entity in the database.
 
-```typescript
+```ts
 @BeforeUpdate()
 async doStuffBeforeUpdate() {
   // ...
@@ -403,7 +470,7 @@ async doStuffBeforeUpdate() {
 
 Fired right after the entity is updated in the database. 
 
-```typescript
+```ts
 @AfterUpdate()
 async doStuffAfterUpdate() {
   // ...
@@ -415,7 +482,7 @@ async doStuffAfterUpdate() {
 Fired right before we delete the record from database. It is fired only when
 removing entity or entity reference, not when deleting records by query. 
 
-```typescript
+```ts
 @BeforeDelete()
 async doStuffBeforeDelete() {
   // ...
@@ -426,25 +493,10 @@ async doStuffBeforeDelete() {
 
 Fired right after the record gets deleted from database and it is unset from the identity map.
 
-```typescript
+```ts
 @AfterDelete()
 async doStuffAfterDelete() {
   // ...
-}
-```
-
-## Entity Repository
-
-### @Repository()
-
-Used to register custom entity repository. 
-
-> `em.getRepository()` will automatically return custom repository if it is registered.
-
-```typescript
-@Repository(Author)
-export class CustomAuthorRepository extends EntityRepository<Author> {
-  // your custom methods...
 }
 ```
 
@@ -456,7 +508,7 @@ Used to register an event subscriber. Keep in mind that you need to make sure th
 gets loaded in order to make this decorator registration work (e.g. you import that file 
 explicitly somewhere).
 
-```typescript
+```ts
 @Subscriber()
 export class AuthorSubscriber implements EventSubscriber<Author> {
   // ...

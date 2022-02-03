@@ -13,7 +13,7 @@ The loading strategy can be specified both at mapping time and when loading enti
 
 For example, given the following entities:
 
-```typescript
+```ts
 import { Entity, LoadStrategy, OneToMany, ManyToOne } from '@mikro-orm/core';
 
 @Entity()
@@ -32,13 +32,13 @@ export class Book {
 The following will issue two SQL statements.
 One to load the author and another to load all the books belonging to that author:
 
-```typescript
+```ts
 const author = await orm.em.findOne(Author, 1, ['books']);
 ```
 
 If we update the `Author.books` mapping to the following:
 
-```typescript
+```ts
 import { Entity, LoadStrategy, OneToMany } from '@mikro-orm/core';
 
 @Entity()
@@ -54,14 +54,14 @@ export class Author {
 
 The following will issue **one** SQL statement:
 
-```typescript
+```ts
 const author = await orm.em.findOne(Author, 1, ['books']);
 ```
 
 You can also specify the load strategy as needed. This will override whatever strategy is declared in the mapping.
 This also works for nested populates:
 
-```typescript
+```ts
 // one level
 const author = await orm.em.findOne(Author, 1, { 
   populate: {

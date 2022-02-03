@@ -10,7 +10,7 @@ is no longer valid.
 In v4 and older versions, the `domain` api was used in the `RequestContext` helper. Since v4.0.3,
 we can use the new `AsyncLocalStorage` too, if we are on up-to-date node version:
 
-```typescript
+```ts
 const storage = new AsyncLocalStorage<EntityManager>();
 
 const orm = await MikroORM.init({

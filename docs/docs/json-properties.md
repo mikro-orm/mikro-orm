@@ -4,9 +4,8 @@ title: Using JSON properties
 
 ## Defining JSON properties
 
-Each database driver behaves a bit differently when it comes to JSON properties.
-MikroORM tries to unify the experience via [JsonType](custom-types.md#jsontype).
-This type will be also used if you specify `type: 'json'`.
+Each database driver behaves a bit differently when it comes to JSON properties. MikroORM tries to unify the experience via [JsonType](custom-types.md#jsontype). This type will be also used if we
+specify `type: 'json'`.
 
 ```ts
 @Entity()
@@ -28,10 +27,10 @@ We can query by JSON object properties easily:
 const b = await em.findOne(Book, {
   meta: {
     valid: true,
-    nested: { 
-      foo: '123', 
-      bar: 321, 
-      deep: { 
+    nested: {
+      foo: '123',
+      bar: 321,
+      deep: {
         baz: 59,
         qux: false,
       },

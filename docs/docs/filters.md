@@ -15,7 +15,7 @@ Filters are applied to those methods of `EntityManager`: `find()`, `findOne()`,
 
 > The `cond` parameter can be a callback, possibly asynchronous.
 
-```typescript
+```ts
 @Entity()
 @Filter({ name: 'expensive', cond: { price: { $gt: 1000 } } })
 @Filter({ name: 'long', cond: { 'length(text)': { $gt: 10000 } } })
@@ -49,7 +49,7 @@ asynchronous. It will get three arguments:
 - `type` - type of operation that is being filtered, one of `'read'`, `'update'`, `'delete'`
 - `em` - current instance of `EntityManager`
 
-```typescript
+```ts
 import type { EntityManager } from '@mikro-orm/mysql';
 
 @Entity()
@@ -98,7 +98,7 @@ entities.
 
 > Filters as well as filter params set on the EM will be copied to all its forks.
 
-```typescript
+```ts
 // bound to entity, enabled by default
 em.addFilter('writtenBy', args => ({ author: args.id }), Book);
 
@@ -116,7 +116,7 @@ em.setFilterParams('writtenBy', { id: 321 });
 
 Global filters can be also registered via ORM configuration:
 
-```typescript
+```ts
 MikroORM.init({
   filters: { tenant: { cond: args => ({ tenant: args.tenant }), entity: ['Author', 'User'] } },
   ...
@@ -132,7 +132,7 @@ parameters to those that are expecting them.
 
 > By passing `filters: false` we can also disable all the filters for given call. 
 
-```typescript
+```ts
 em.find(Book, {}); // same as `{ tenantId: 123 }`
 em.find(Book, {}, { filters: ['writtenBy'] }); // same as `{ author: 321, tenantId: 123 }`
 em.find(Book, {}, { filters: { tenant: false } }); // disabled tenant filter, so truly `{}`
@@ -153,7 +153,7 @@ When toggling filters via `FindOptions`, we do not care about the entity name. T
 means that when you have multiple filters defined on different entities, but with 
 the same name, they will be controlled via single toggle in the `FindOptions`. 
 
-```typescript
+```ts
 @Entity()
 @Filter({ name: 'tenant', cond: args => ({ tenant: args.tenant }) })
 export class Author {

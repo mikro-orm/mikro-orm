@@ -2,34 +2,38 @@
 title: Metadata Cache
 ---
 
-> In v4 you need to explicitly install `@mikro-orm/reflection` to use `TsMorphMetadataProvider`.
+> In v4 and later versions, we need to explicitly install `@mikro-orm/reflection`
+> to use `TsMorphMetadataProvider`.
 
-Under the hood, `MikroORM` uses [`ts-morph`](https://github.com/dsherret/ts-morph) to read 
-TypeScript source files of all entities to be able to detect all types. Thanks to this, 
-defining the type is enough for runtime validation.
+MikroORM allows different ways to [obtain entity metadata](metadata-providers.md).
+One way is to use [`ts-morph`](https://github.com/dsherret/ts-morph) to read 
+TypeScript source files of all entities to be able to detect all types. This 
+process can be performance heavy and time-consuming. For this reason, metadata
+cache is automatically enabled for `TsMorphMetadataProvider`. It can be optionally
+enabled for the other metadata providers, but it should not be needed.
 
-If you use folder-based discovery, you should specify paths to
-the compiled entities via `entities` as well as paths to the TS source files of
-those entities via `entitiesTs`. When you run the ORM via `ts-node`, the latter
-will be used automatically, or if you explicitly pass `tsNode: true` in the config.
+After the discovery process ends, all metadata will be cached. By default, 
+`FileCacheAdapter` will be used to store the cache inside `./temp` folder to JSON
+files.
 
-After the discovery process ends, all metadata will be cached. By default, `FileCacheAdapter`
-will be used to store the cache inside `./temp` folder to JSON files. 
+If we use folder based discovery, cache will be dependent on environment - if we 
+run via ts-node, the cache will be generated for TS files. To generate production
+cache, we can use the CLI command `mikro-orm cache:generate`.
 
 ## Automatic Invalidation
 
 Entity metadata are cached together with modified time of the source file, and every time
-the cache is requested, it first checks if the cache is not invalid. This way you can forgot 
+the cache is requested, it first checks if the cache is not invalid. This way we can forget 
 about the caching mechanism most of the time.
 
-One case where you can end up needing to wipe the cache manually is when you work withing a 
+One case where we can end up needing to wipe the cache manually is when we work withing a 
 git branch where contents of entities folder differs. 
 
 ## Disabling Metadata Cache
 
-You can disable caching via:
+We can disable metadata caching via:
 
-```typescript
+```ts
 await MikroORM.init({
   cache: { enabled: false },
   // ...
@@ -40,7 +44,7 @@ await MikroORM.init({
 
 By default, cached metadata will be one line JSON string. You can force pretty printing it:
 
-```typescript
+```ts
 await MikroORM.init({
   cache: { pretty: true },
   // ...
@@ -49,10 +53,11 @@ await MikroORM.init({
 
 ## Using Different temp Folder
 
-You can set the temp folder via:
+We can set the cache directory via:
 
-```typescript
+```ts
 await MikroORM.init({
+  // defaults to `./temp`
   cache: { options: { cacheDir: '...' } },
   // ...
 });
@@ -63,23 +68,39 @@ await MikroORM.init({
 You can also implement your own cache adapter, for example to store the cache in redis. 
 To do so, just implement simple `CacheAdapter` interface:
 
-```typescript
+```ts
 export interface CacheAdapter {
 
-  get(name: string): any;
+  /**
+   * Gets the items under `name` key from the cache.
+   */
+  get(name: string): Promise<any>;
 
-  set(name: string, data: any, origin: string): void;
+  /**
+   * Sets the item to the cache. `origin` is used for cache invalidation and should reflect the change in data.
+   */
+  set(name: string, data: any, origin: string, expiration?: number): Promise<void>;
+
+  /**
+   * Clears all items stored in the cache.
+   */
+  clear(): Promise<void>;
+
+  /**
+   * Called inside `MikroORM.close()` Allows graceful shutdowns (e.g. for redis).
+   */
+  close?(): Promise<void>;
 
 }
 ```
 
-```typescript
+```ts
 export class RedisCacheAdapter implements CacheAdapter { ... }
 ```
 
 And provide the implementation in `cache.adapter` option:
 
-```typescript
+```ts
 await MikroORM.init({
   cache: { adapter: RedisCacheAdapter, options: { ... } },
   // ...

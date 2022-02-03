@@ -10,7 +10,7 @@ string ids of entity relations as user input. Normally you would need to use
 `em.getReference()` to create references from each id first, and then
 use those references to update entity relations:
 
-```typescript
+```ts
 const jon = new Author('Jon Snow', 'snow@wall.st');
 const book = new Book('Book', jon);
 book.author = orm.em.getReference<Author>(Author, '...id...');
@@ -18,7 +18,7 @@ book.author = orm.em.getReference<Author>(Author, '...id...');
 
 Same result can be easily achieved with `entity.assign()`:
 
-```typescript
+```ts
 import { wrap } from '@mikro-orm/core';
 
 wrap(book).assign({ 
@@ -33,7 +33,7 @@ console.log(book.author.id); // '...id...'
 To use `entity.assign()` on not managed entities, you need to provide `EntityManager` 
 instance explicitly: 
 
-```typescript
+```ts
 import { wrap } from '@mikro-orm/core';
 
 const book = new Book();
@@ -47,7 +47,7 @@ By default, `entity.assign(data)` behaves same way as `Object.assign(entity, dat
 e.g. it does not merge things recursively. To enable deep merging of object properties (not referenced entities), 
 use second parameter to enable `mergeObjects` flag:
 
-```typescript
+```ts
 import { wrap } from '@mikro-orm/core';
 
 book.meta = { foo: 1, bar: 2 };
@@ -65,7 +65,7 @@ Since v5, `assign` allows updating deep entity graph by default. To update exist
 entity, we need to provide its PK in the `data`, as well as to **load that entity first
 into current context**.
 
-```typescript
+```ts
 const book = await em.findOneOrFail(Book, 1, { populate: ['author'] });
 
 // update existing book's author's name
@@ -80,7 +80,7 @@ wrap(book).assign({
 If we want to always update the entity, even without the entity PK being present 
 in `data`, we can use `updateByPrimaryKey: false`:
 
-```typescript
+```ts
 const book = await em.findOneOrFail(Book, 1, { populate: ['author'] });
 
 // update existing book's author's name
@@ -94,7 +94,7 @@ wrap(book).assign({
 Otherwise the entity data without PK are considered as new entity, and will trigger
 insert query:
 
-```typescript
+```ts
 const book = await em.findOneOrFail(Book, 1, { populate: ['author'] });
 
 // creating new author for given book
@@ -109,7 +109,7 @@ Same applies to the case when we do not load the child entity first into the con
 e.g. when we try to assign to a relation that was not populated. Even if we provide
 its PK, it will be considered as new object and trigger an insert query.
 
-```typescript
+```ts
 const book = await em.findOneOrFail(Book, 1); // author is not populated
 
 // creating new author for given book
@@ -137,7 +137,7 @@ wrap(user).assign({ addresses: new Address(...) });
 `IWrappedEntity` is an interface that defines public helper methods provided 
 by the ORM:
 
-```typescript
+```ts
 interface IWrappedEntity<T, PK extends keyof T> {
   isInitialized(): boolean;
   populated(populated?: boolean): void;
@@ -163,7 +163,7 @@ and use the `wrap(entity)` helper method instead to access them.
 > if you want to access internal properties like `__meta` or `__em`, you need to explicitly
 > ask for the helper via `wrap(entity, true)`.
 
-```typescript
+```ts
 import { BaseEntity } from '@mikro-orm/core';
 
 @Entity()
@@ -172,7 +172,7 @@ export class Book extends BaseEntity<Book, 'id'> { ... }
 
 Then you can work with those methods directly:
 
-```typescript
+```ts
 book.meta = { foo: 1, bar: 2 };
 book.assign({ meta: { foo: 3 } }, { mergeObjects: true });
 console.log(book.meta); // { foo: 3, bar: 2 }
@@ -184,7 +184,7 @@ Previously it was possible to access internal properties like `__meta` or `__em`
 from the `wrap()` helper. Now to access them, you need to use second parameter of
 wrap:
 
-```typescript
+```ts
 @Entity()
 export class Author { ... }
 

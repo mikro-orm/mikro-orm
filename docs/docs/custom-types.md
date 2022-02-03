@@ -6,35 +6,35 @@ You can define custom types by extending `Type` abstract class. It has several o
 
 - `convertToDatabaseValue(value: any, platform: Platform): any`
 
-  Converts a value from its JS representation to its database representation of this type.
-  By default returns unchanged `value`.
+  Converts a value from its JS representation to its database representation of this type. By default returns unchanged `value`.
 
 - `convertToJSValue(value: any, platform: Platform): any`
 
-  Converts a value from its database representation to its JS representation of this type.
-  By default returns unchanged `value`.
+  Converts a value from its database representation to its JS representation of this type. By default returns unchanged `value`.
 
 - `toJSON(value: any, platform: Platform): any`
 
-  Converts a value from its JS representation to its serialized JSON form of this type.
-  By default uses the runtime value.
+  Converts a value from its JS representation to its serialized JSON form of this type. By default uses the runtime value.
 
 - `getColumnType(prop: EntityProperty, platform: Platform): string`
 
-  Gets the SQL declaration snippet for a field of this type.
-  By default returns `columnType` of given property.
+  Gets the SQL declaration snippet for a field of this type. By default returns `columnType` of given property.
 
 - `convertToDatabaseValueSQL(key: string, platform: Platform): string`
 
   Converts a value from its JS representation to its database representation of this type.
   _(added in v4.4.2)_
 
-- `convertToJSValueSQL?(key: string, platform: Platform): string`
+- `convertToJSValueSQL(key: string, platform: Platform): string`
 
   Modifies the SQL expression (identifier, parameter) to convert to a JS value.
   _(added in v4.4.2)_
 
-```typescript
+- `compareAsType(): string`
+
+  How should the raw database values be compared? Used in `EntityComparator`.Possible values: `string` | `number` | `boolean` | `date` | `any` | `buffer` | `array`.
+
+```ts
 import { Type, Platform, EntityProperty, ValidationError } from '@mikro-orm/core';
 
 export class DateType extends Type<Date, string> {
@@ -74,7 +74,7 @@ export class DateType extends Type<Date, string> {
 
 Then you can use this type when defining your entity properties:
 
-```typescript
+```ts
 @Entity()
 export class FooBar {
 
@@ -90,9 +90,7 @@ export class FooBar {
 }
 ```
 
-If our type implementation is stateless, e.g. if we want the type to behave 
-differently for each property, we can use `customType` option and provide an
-instance of the type:
+If our type implementation is stateless, e.g. if we want the type to behave differently for each property, we can use `customType` option and provide an instance of the type:
 
 ```ts
 @Property({ customType: new MyDateType('DD-MM-YYYY') })
@@ -112,8 +110,11 @@ First let's define the `Point` class that will be used to represent the value du
 ```ts
 export class Point {
 
-  constructor(public latitude: number,
-              public longitude: number) { }
+  constructor(
+    public latitude: number,
+    public longitude: number,
+  ) {
+  }
 
 }
 ```
@@ -200,24 +201,16 @@ update `location` set `point` = ST_PointFromText('point(2.34 9.87)') where `id` 
 commit
 ```
 
-We do a 2-step conversion here. In the first step, we convert the Point object into
-a string representation before saving to the database (in the convertToDatabaseValue
-method) and back into an object after fetching the value from the database (in the
-convertToJSValue method).
+We do a 2-step conversion here. In the first step, we convert the Point object into a string representation before saving to the database (in the convertToDatabaseValue method) and back into an object
+after fetching the value from the database (in the convertToJSValue method).
 
-The format of the string representation format is called Well-known text (WKT). The
-advantage of this format is, that it is both human readable and parsable by MySQL.
+The format of the string representation format is called Well-known text (WKT). The advantage of this format is, that it is both human readable and parsable by MySQL.
 
-Internally, MySQL stores geometry values in a binary format that is not identical to
-the WKT format. So, we need to let MySQL transform the WKT representation into its
-internal format.
+Internally, MySQL stores geometry values in a binary format that is not identical to the WKT format. So, we need to let MySQL transform the WKT representation into its internal format.
 
-This is where the `convertToJSValueSQL` and `convertToDatabaseValueSQL` methods come
-into play.
+This is where the `convertToJSValueSQL` and `convertToDatabaseValueSQL` methods come into play.
 
-This methods wrap a sql expression (the WKT representation of the Point) into MySQL
-functions ST_PointFromText and ST_AsText which convert WKT strings to and from the
-internal format of MySQL.
+This methods wrap a sql expression (the WKT representation of the Point) into MySQL functions ST_PointFromText and ST_AsText which convert WKT strings to and from the internal format of MySQL.
 
 > When using DQL queries, the `convertToJSValueSQL` and `convertToDatabaseValueSQL` methods
 > only apply to identification variables and path expressions in SELECT clauses. Expressions
@@ -225,19 +218,51 @@ internal format of MySQL.
 
 ## Types provided by MikroORM
 
-There are few types provided by MikroORM. All of them aim to provide similar
-experience among all the drivers, even if the particular feature is not supported
-out of box by the driver.
+There are few types provided by MikroORM. All of them aim to provide similar experience among all the drivers, even if the particular feature is not supported out of box by the driver.
+
+Since v5, we can also use the `type` map exported from the `core` package. It contains a map of all mapped types provided by the ORM, allowing autocomplete.
+
+```ts
+import { Property, types } from '@mikro-orm/core';
+
+@Property({ type: types.bigint, nullable: true })
+largeNumber?: string; // bigints are mapped to strings so we dont loose precision
+```
+
+> Same map is also exported shortcut `t`.
+
+The map is defined as follows:
+
+```ts
+export const types = {
+  date: DateType,
+  time: TimeType,
+  datetime: DateTimeType,
+  bigint: BigIntType,
+  blob: BlobType,
+  array: ArrayType,
+  enumArray: EnumArrayType,
+  enum: EnumType,
+  json: JsonType,
+  integer: IntegerType,
+  smallint: SmallIntType,
+  tinyint: TinyIntType,
+  float: FloatType,
+  double: DoubleType,
+  boolean: BooleanType,
+  decimal: DecimalType,
+  string: StringType,
+  uuid: UuidType,
+  text: TextType,
+};
+```
 
 ### ArrayType
 
-In PostgreSQL and MongoDB, it uses native arrays, otherwise it concatenates the
-values into string separated by commas. This means that you can't use values that
-contain comma with the `ArrayType` (but you can create custom array type that will
-handle this case, e.g. by using different separator).
+In PostgreSQL and MongoDB, it uses native arrays, otherwise it concatenates the values into string separated by commas. This means that you can't use values that contain comma with the `ArrayType` (
+but you can create custom array type that will handle this case, e.g. by using different separator).
 
-By default array of strings is returned from the type. You can also have arrays
-of numbers or other data types - to do so, you will need to implement custom
+By default, array of strings is returned from the type. You can also have arrays of numbers or other data types - to do so, you will need to implement custom
 `hydrate` method that is used for converting the array values to the right type.
 
 > `ArrayType` will be used automatically if `type` is set to `array` (default behaviour
@@ -247,7 +272,7 @@ of numbers or other data types - to do so, you will need to implement custom
 > automatically (but with reflect-metadata we would have a string array for both
 > unless we specify the type manually as `type: 'number[]')
 
-```typescript
+```ts
 @Property({ type: ArrayType, nullable: true })
 stringArray?: string[];
 
@@ -257,12 +282,13 @@ numericArray?: number[];
 
 ### BigIntType
 
-You can use `BigIntType` to support `bigint`s. By default, it will represent the
-value as a `string`.
+You can use `BigIntType` to support `bigint`s. By default, it will represent the value as a `string`.
 
-```typescript
+```ts
 @PrimaryKey({ type: BigIntType })
-id: string;
+id
+:
+string;
 ```
 
 ### BlobType
@@ -273,18 +299,17 @@ Blob type can be used to store binary data in the database.
 > This means that the following example should work even without the explicit
 > `type: BlobType` option (with both reflect-metadata and ts-morph providers).
 
-```typescript
+```ts
 @Property({ type: BlobType, nullable: true })
 blob?: Buffer;
 ```
 
 ### JsonType
 
-To store objects we can use `JsonType`. As some drivers are handling objects
-automatically and some don't, this type will handle the serialization in a driver
-independent way (calling `parse` and `stringify` only when needed).
+To store objects we can use `JsonType`. As some drivers are handling objects automatically and some don't, this type will handle the serialization in a driver independent way (calling `parse`
+and `stringify` only when needed).
 
-```typescript
+```ts
 @Property({ type: JsonType, nullable: true })
 object?: { foo: string; bar: number };
 ```
@@ -294,7 +319,7 @@ object?: { foo: string; bar: number };
 To store dates without time information, we can use `DateType`. It does use `date`
 column type and maps it to the `Date` object.
 
-```typescript
+```ts
 @Property({ type: DateType, nullable: true })
 born?: Date;
 ```
@@ -304,7 +329,7 @@ born?: Date;
 As opposed to the `DateType`, to store only the time information, we can use
 `TimeType`. It will use the `time` column type, the runtime type is string.
 
-```typescript
+```ts
 @Property({ type: TimeType, nullable: true })
 bornTime?: string;
 ```

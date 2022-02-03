@@ -12,7 +12,7 @@ structure:
 When you use nested populate while querying all `BookTag`s, this is what happens in
 the background:
 
-```typescript
+```ts
 const tags = await orm.em.findAll(BookTag, ['books.publisher.tests', 'books.author']);
 console.log(tags[0].books[0].publisher.tests[0].name); // prints name of nested test
 console.log(tags[0].books[0].author.name); // prints name of nested author
@@ -48,7 +48,7 @@ SELECT `e0`.* FROM `author` AS `e0` WHERE `e0`.`id` IN (?);
 
 For mongo driver its even simpler as no pivot tables are involved:
 
-```typescript
+```ts
 db.getCollection("book-tag").find({}).toArray();
 db.getCollection("book").find({"tags":{"$in":[...]}}).toArray();
 db.getCollection("publisher").find({"_id":{"$in":[...]}}).toArray();
@@ -60,7 +60,7 @@ db.getCollection("author").find({"_id":{"$in":[...]}}).toArray();
 
 To populate existing entities, you can use `em.populate()`.
 
-```typescript
+```ts
 const authors = await orm.em.createQueryBuilder(Author).select('*').getResult();
 await em.populate(authors, ['books.tags']);
 

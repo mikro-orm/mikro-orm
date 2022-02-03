@@ -16,7 +16,7 @@ Default value for `autoFlush` is now `false`. That means you need to call
 options to ease the transition but generally it is not recommended as it can cause unwanted
 small transactions being created around each `persist`. 
 
-```typescript
+```ts
 orm.em.persist(new Entity()); // no auto-flushing by default
 await orm.em.flush();
 await orm.em.persist(new Entity(), true); // you can still use second parameter to auto-flush
@@ -48,7 +48,7 @@ parameter, e.g.: `AnyEntity<Book, 'myPrimaryProperty'>'`)
 To keep all public methods that were part of `IEntity` interface in v2, you can use 
 `WrappedEntity<T, PK>` via interface merging:
 
-```typescript
+```ts
 @Entity()
 export class Book { ... }
 export interface Book extends WrappedEntity<Book, 'id'> { }
@@ -90,7 +90,7 @@ Previously all entity instances, including entity references (not fully loaded e
 we know only the primary key), had instantiated collection classes. Now only initialized entities
 have them.
 
-```typescript
+```ts
 const book = em.getReference(Book, 1);
 console.log(book.tags); // undefined
 await book.init();
@@ -106,7 +106,7 @@ from the database) have this internal reference.
 To use `assign()` method on new (not managed) entities, you need to provide the `em`
 parameter:
 
-```typescript
+```ts
 const book = new Book();
 wrap(book).assign(data, { em: orm.em });
 ```

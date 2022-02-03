@@ -16,7 +16,7 @@ be wrapped in one master transaction, so if one of them fails, everything will b
 
 Migrations are classes that extend Migration abstract class:
 
-```typescript
+```ts
 import { Migration } from '@mikro-orm/migrations';
 
 export class Migration20191019195930 extends Migration {
@@ -73,7 +73,7 @@ Snapshotting can be disabled via `migrations.snapshot: false` in the ORM config.
 > `migrations.path` and `migrations.pathTs` works the same way as `entities` and 
 > `entitiesTs` in entity discovery.
 
-```typescript
+```ts
 await MikroORM.init({
   // default values:
   migrations: {
@@ -193,7 +193,7 @@ npx mikro-orm migration:fresh --seed=UsersSeeder  # seed the database with the U
 
 Or you can create a simple script where you initialize MikroORM like this:
 
-```typescript title="./migrate.ts"
+```ts title="./migrate.ts"
 import { MikroORM } from '@mikro-orm/core';
 
 (async () => {
@@ -237,7 +237,7 @@ await orm.em.transactional(async em => {
 If you do not want to dynamically import a folder (e.g. when bundling your code with webpack) you can import migrations
 directly.
 
-```typescript
+```ts
 import { MikroORM } from '@mikro-orm/core';
 import { Migration20191019195930 } from '../migrations/Migration20191019195930.ts';
 
@@ -256,7 +256,7 @@ await MikroORM.init({
 With the help of [webpack's context module api](https://webpack.js.org/guides/dependency-management/#context-module-api)
 we can dynamically import the migrations making it possible to import all files in a folder.
 
-```typescript
+```ts
 import { MikroORM } from '@mikro-orm/core';
 import { basename } from 'path';
 

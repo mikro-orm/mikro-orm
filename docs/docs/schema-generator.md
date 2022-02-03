@@ -9,13 +9,16 @@ title: Schema Generator
 > the SQL on development server and saving it into SQL Migration files that are executed 
 > manually on the production server.
 
-> SchemaTool assumes your project uses the given database on its own. Update and Drop 
+> SchemaGenerator assumes your project uses the given database on its own. Update and Drop 
 > commands will mess with other tables if they are not related to the current project 
 > that is using MikroORM. Please be careful!
 
 To generate schema from your entity metadata, you can use `SchemaGenerator` helper. 
 
 You can use it via CLI: 
+
+> To work with the CLI, first install `@mikro-orm/cli` package locally.
+> The version needs to be aligned with the `@mikro-orm/core` package.
 
 ```sh
 npx mikro-orm schema:create --dump   # Dumps create schema SQL
@@ -67,7 +70,7 @@ const orm = await MikroORM.init({
 
 Or you can create simple script where you initialize MikroORM like this:
 
-```typescript title="./create-schema.ts"
+```ts title="./create-schema.ts"
 import { MikroORM } from '@mikro-orm/core';
 
 (async () => {

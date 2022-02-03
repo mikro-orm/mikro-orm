@@ -12,7 +12,7 @@ method will throw error in this case.
 > Note that array access in `Collection` is available only for reading already loaded items, you 
 > cannot add new items to `Collection` this way. 
 
-```typescript
+```ts
 const author = em.findOne(Author, '...', ['books']); // populating books collection
 
 // or we could lazy load books collection later via `init()` method
@@ -58,7 +58,7 @@ console.log(await author.books.loadItems()); // Book[]
 
 `OneToMany` collections are inverse side of `ManyToOne` references, to which they need to point via `fk` attribute:
  
-```typescript
+```ts
 @Entity()
 export class Book {
 
@@ -98,7 +98,7 @@ relations. All references are stored as an array of `ObjectId`s on owning entity
 Unidirectional `ManyToMany` relations are defined only on one side, if you define only `entity`
 attribute, then it will be considered the owning side:
 
-```typescript
+```ts
 @ManyToMany(() => Book)
 books1 = new Collection<Book>(this);
 
@@ -112,7 +112,7 @@ books2 = new Collection<Book>(this);
 Bidirectional `ManyToMany` relations are defined on both sides, while one is owning side (where references are store), 
 marked by `inversedBy` attribute pointing to the inverse side:
 
-```typescript
+```ts
 @ManyToMany(() => BookTag, tag => tag.books, { owner: true })
 tags = new Collection<BookTag>(this);
 
@@ -123,7 +123,7 @@ tags = new Collection<BookTag>(this);
 
 And on the inversed side we define it with `mappedBy` attribute pointing back to the owner:
 
-```typescript
+```ts
 @ManyToMany(() => Book, book => book.tags)
 books = new Collection<Book>(this);
 
@@ -151,7 +151,7 @@ properties instead of pivot table columns (which `fixedOrderColumn` is). On the 
 When you use one of `Collection.add()` method, the item is added to given collection, 
 and this action is also propagated to its counterpart. 
 
-```typescript
+```ts
 // one to many
 const author = new Author(...);
 const book = new Book(...);
@@ -162,7 +162,7 @@ console.log(book.author); // author will be set thanks to the propagation
 
 For M:N this works in both ways, either from owning side, or from inverse side. 
 
-```typescript
+```ts
 // many to many works both from owning side and from inverse side
 const book = new Book(...);
 const tag = new BookTag(...);
@@ -186,7 +186,7 @@ Same applies for `Collection.remove()`.
 When initializing collection items via `collection.init()`, you can filter the collection
 as well as order its items:
 
-```typescript
+```ts
 await book.tags.init({ where: { active: true }, orderBy: { name: QueryOrder.DESC } });
 ```
 

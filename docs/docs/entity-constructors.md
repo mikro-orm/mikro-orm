@@ -9,7 +9,7 @@ so it is a handy place to require your data when creating new entity.
 For example following `Book` entity definition will always require to set `title` and `author`, 
 but `publisher` will be optional:
 
-```typescript
+```ts
 @Entity()
 export class Book {
 

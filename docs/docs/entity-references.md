@@ -13,7 +13,7 @@ reference when fetching the same document from database.
 You can call `await wrap(entity).init()` to initialize the entity. This will trigger database call 
 and populate itself, keeping the same reference in identity map. 
 
-```typescript
+```ts
 const author = orm.em.getReference('...id...');
 console.log(author.id); // accessing the id will not trigger any db call
 console.log(author.isInitialized()); // false
@@ -29,7 +29,7 @@ console.log(author.name); // defined
 When you define `@ManyToOne` and `@OneToOne` properties on your entity, TypeScript compiler
 will think that desired entities are always loaded:
 
-```typescript
+```ts
 @Entity()
 export class Book {
 
@@ -147,7 +147,7 @@ There are also `getEntity()` and `getProperty()` methods that are synchronous ge
 that will first check if the wrapped entity is initialized, and if not, it will throw 
 and error.
 
-```typescript
+```ts
 const book = await orm.em.findOne(Book, 1);
 console.log(book.author instanceof Reference); // true
 console.log(book.author.isInitialized()); // false
@@ -161,7 +161,7 @@ If you use different metadata provider than `TsMorphMetadataProvider`
 (e.g. `ReflectMetadataProvider`), you will also need to explicitly set `wrappedReference` 
 parameter:
 
-```typescript
+```ts
 @ManyToOne(() => Author, { wrappedReference: true })
 author!: IdentifiedReference<Author>;
 ```
@@ -172,7 +172,7 @@ When you define the property as `Reference` wrapper, you will need to assign the
 to it instead of the entity. You can create it via `Reference.create()` factory, or use `wrapped`
 option of `em.getReference()`:
 
-```typescript
+```ts
 const book = await orm.em.findOne(Book, 1);
 const repo = orm.em.getRepository(Author);
 
@@ -203,14 +203,14 @@ export class Book {
 Another way is to use `toReference()` method available as part of 
 [`WrappedEntity` interface](entity-helper.md#wrappedentity-and-wrap-helper):
 
-```typescript
+```ts
 const author = new Author(...)
 book.author = wrap(author).toReference();
 ```
 
 If the reference already exist, you can also re-assign to it via `set()` method:
 
-```typescript
+```ts
 book.author.set(new Author(...));
 ```
 
@@ -225,7 +225,7 @@ name via `PrimaryKeyProp` symbol (`[PrimaryKeyProp]?: 'foo';`).
 
 We can also override this via second generic type argument.
 
-```typescript
+```ts
 const book = await orm.em.findOne(Book, 1);
 console.log(book.author.id); // ok, returns the PK
 ```

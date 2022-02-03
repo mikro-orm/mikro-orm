@@ -4,7 +4,7 @@ title: Logging
 
 For development purposes it might come handy to enable logging and debug mode:
 
-```typescript
+```ts
 return MikroORM.init({
   debug: true,
 });
@@ -19,8 +19,7 @@ By doing this `MikroORM` will start using `console.log()` function to dump all q
 [query] commit [took 2 ms]
 ```
 
-It is also useful for debugging problems with entity discovery, as you will see information
-about every processed entity:
+It is also useful for debugging problems with entity discovery, as you will see information about every processed entity:
 
 ```
 [discovery] ORM entity discovery started
@@ -33,9 +32,9 @@ about every processed entity:
 
 ## Custom Logger
 
-We can also provide our own logger function via `logger` option. 
+We can also provide our own logger function via `logger` option.
 
-```typescript
+```ts
 return MikroORM.init({
   debug: true,
   logger: msg => myCustomLogger.log(msg),
@@ -48,7 +47,9 @@ and use our own implementation of the `Logger` interface:
 ```ts
 import { Logger, LoggerOptions, MikroORM, Configuration } from '@mikro-orm/core';
 
-class MyLogger implements Logger { ... }
+class MyLogger implements Logger {
+  // ...
+}
 
 const orm = await MikroORM.init({
   debug: true,
@@ -56,8 +57,7 @@ const orm = await MikroORM.init({
 });
 ```
 
-We can also extend the `DefaultLogger` instead of implementing everything from 
-scratch. It is also exported from the `@mikro-orm/core` package.
+We can also extend the `DefaultLogger` instead of implementing everything from scratch. It is also exported from the `@mikro-orm/core` package.
 
 The `Logger` interface is defined as follows:
 
@@ -95,10 +95,9 @@ To disable colored output, we can use multiple environment variables:
 
 ## Logger Namespaces
 
-There are multiple Logger Namespaces that you can specifically request, while omitting the rest.
-Just specify array of them via the `debug` option:
+There are multiple Logger Namespaces that you can specifically request, while omitting the rest. Just specify array of them via the `debug` option:
 
-```typescript
+```ts
 return MikroORM.init({
   debug: ['query'], // now only queries will be logged
 });
@@ -110,15 +109,12 @@ If you provide `query-params` then you must also provide `query` in order for it
 
 ## Highlighters
 
-Previously Highlight.js was used to highlight various things in the CLI, 
-like SQL and mongo queries, or migrations or entities generated via CLI.
-While the library worked fine, it was causing performance issues mainly 
-for those bundling via webpack and using lambdas, as the library was huge.
+Previously Highlight.js was used to highlight various things in the CLI, like SQL and mongo queries, or migrations or entities generated via CLI. While the library worked fine, it was causing
+performance issues mainly for those bundling via webpack and using lambdas, as the library was huge.
 
-In v4 highlighting is disabled by default, and there are 2 highlighters 
-you can optionally use (you need to install them first).
+Since v4, highlighting is disabled by default, and there are 2 highlighters you can optionally use (you need to install them first).
 
-```typescript
+```ts
 import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
 
 MikroORM.init({
@@ -127,5 +123,5 @@ MikroORM.init({
 });
 ```
 
-For MongoDB you can use `MongoHighlighter` from `@mikro-orm/mongo-highlighter` 
+For MongoDB you can use `MongoHighlighter` from `@mikro-orm/mongo-highlighter`
 package.

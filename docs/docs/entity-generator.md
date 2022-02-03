@@ -6,6 +6,9 @@ To generate entities from existing database schema, you can use `EntityGenerator
 
 You can use it via CLI: 
 
+> To work with the CLI, first install `@mikro-orm/cli` package locally.
+> The version needs to be aligned with the `@mikro-orm/core` package.
+
 ```sh
 npx mikro-orm generate-entities --dump  # Dumps all generated entities
 npx mikro-orm generate-entities --save --path=./my-entities  # Saves entities into given directory
@@ -13,7 +16,7 @@ npx mikro-orm generate-entities --save --path=./my-entities  # Saves entities in
 
 Or you can create simple script where you initialize MikroORM like this:
 
-```typescript title="./generate-entities.ts"
+```ts title="./generate-entities.ts"
 import { MikroORM } from '@mikro-orm/core';
 
 (async () => {

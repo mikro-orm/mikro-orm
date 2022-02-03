@@ -30,7 +30,7 @@ from the driver package to access the `createQueryBuilder()` method.
 > this name and under `EntityManager` alias, so you can just change the
 > location from where you import.
 
-```typescript
+```ts
 import { EntityManager } from '@mikro-orm/mysql'; // or any other SQL driver package
 
 const em = orm.em as EntityManager;
@@ -51,7 +51,7 @@ console.log(orm.em); // access EntityManager via `em` property
 
 Same applies for the `aggregate()` method in mongo driver:
 
-```typescript
+```ts
 import { EntityManager } from '@mikro-orm/mongodb';
 
 const em = orm.em as EntityManager;
@@ -147,3 +147,5 @@ To fix this, disable the [`useDefineForClassFields`](https://www.typescriptlang.
   }
 }
 ```
+
+

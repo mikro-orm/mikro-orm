@@ -24,7 +24,7 @@ On the inversed side we define it with `mappedBy` attribute pointing back to the
 
 There are multiple ways how to define the relationship, all of following is equivalent:
 
-```typescript
+```ts
 @Entity()
 export class Book {
 
@@ -52,7 +52,7 @@ to the referred entity.
 
 Again, all of following is equivalent:
 
-```typescript
+```ts
 @Entity()
 export class Author {
 
@@ -87,7 +87,7 @@ that the foreign key column is also unique.
 
 ### Owning Side
 
-```typescript
+```ts
 @Entity()
 export class User {
 
@@ -108,7 +108,7 @@ export class User {
 
 ### Inverse Side
 
-```typescript
+```ts
 @Entity()
 export class User {
 
@@ -132,7 +132,7 @@ Here are examples of how you can define ManyToMany relationship:
 
 ### Owning Side
 
-```typescript
+```ts
 @Entity()
 export class Book {
 
@@ -158,7 +158,7 @@ export class Book {
 
 ### Inverse Side
 
-```typescript
+```ts
 @Entity()
 export class BookTag {
 

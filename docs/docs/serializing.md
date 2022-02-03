@@ -4,7 +4,7 @@ title: Serializing
 
 By default, all entities are monkey patched with `toObject()` and `toJSON` methods:
 
-```typescript
+```ts
 export interface AnyEntity<K = number | string> {
   toObject(parent?: AnyEntity, isCollection?: boolean): Record<string, any>;
   toJSON(...args: any[]): Record<string, any>;
@@ -16,7 +16,7 @@ When you serialize your entity via `JSON.stringify(entity)`, its `toJSON` method
 called automatically. You can provide custom implementation for `toJSON`, while using 
 `toObject` for initial serialization:
 
-```typescript
+```ts
 @Entity()
 export class Book {
 
@@ -43,7 +43,7 @@ export class Book {
 If you want to omit some properties from serialized result, you can mark them with `hidden`
 flag on `@Property()` decorator:
 
-```typescript
+```ts
 @Entity()
 export class Book {
 
@@ -67,7 +67,7 @@ Such property can be assigned via one of `Entity.assign()`, `em.create()` and
 This can be handle when dealing with additional values selected via `QueryBuilder` or 
 MongoDB's aggregations.
 
-```typescript
+```ts
 @Entity()
 export class Book {
 
@@ -87,7 +87,7 @@ console.log(wrap(book).toJSON().count); // 123
 As an alternative to custom `toJSON()` method, we can also use property serializers.
 They allow to specify a callback that will be used when serializing a property:
 
-```typescript
+```ts
 @Entity()
 export class Book {
 

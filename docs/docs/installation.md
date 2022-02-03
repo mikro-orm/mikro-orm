@@ -48,7 +48,7 @@ Then call `MikroORM.init` as part of bootstrapping your app:
 > const qb = em.createQueryBuilder(...);
 > ```
 
-```typescript
+```ts
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql'; // or any other driver package
 
 const orm = await MikroORM.init<PostgreSqlDriver>({
@@ -66,7 +66,7 @@ it uses [`globby`](https://github.com/sindresorhus/globby) so we can use
 [globbing patterns](https://github.com/sindresorhus/globby#globbing-patterns), 
 including negative globs. 
 
-```typescript
+```ts
 const orm = await MikroORM.init<PostgreSqlDriver>({
   entities: ['./dist/app/**/entities'],
   // ...
@@ -120,7 +120,7 @@ In v4 the default metadata provider is `ReflectMetadataProvider`. If you want to
 `ts-morph` based discovery (that reads actual TS types via the compiler API), you 
 need to install `@mikro-orm/reflection`.
 
-```typescript
+```ts
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 
 const orm = await MikroORM.init<PostgreSqlDriver>({
@@ -131,7 +131,7 @@ const orm = await MikroORM.init<PostgreSqlDriver>({
 
 Read more about the differences in [Metadata Providers section](metadata-providers.md).
 
-```typescript
+```ts
 const orm = await MikroORM.init<PostgreSqlDriver>({
   entities: ['./dist/entities/**/*.js'], // path to your JS entities (dist), relative to `baseDir`
   entitiesTs: ['./src/entities/**/*.ts'], // path to your TS entities (source), relative to `baseDir`
@@ -153,7 +153,7 @@ You can also use different [metadata provider](metadata-providers.md) or even wr
 > Using [`EntitySchema`](entity-schema.md) is another way to define your entities, which is better
 > suited than using `JavaScriptMetadataProvider`.
 
-```typescript
+```ts
 const orm = await MikroORM.init<PostgreSqlDriver>({
   // default in v4, so not needed to specify explicitly
   metadataProvider: ReflectMetadataProvider,
@@ -166,7 +166,7 @@ const orm = await MikroORM.init<PostgreSqlDriver>({
 Then you will need to fork Entity Manager for each request so their identity maps will not 
 collide. To do so, use the `RequestContext` helper:
 
-```typescript
+```ts
 const app = express();
 
 app.use((req, res, next) => {
@@ -177,7 +177,7 @@ app.use((req, res, next) => {
 > If the `next` handler needs to be awaited (like in Koa), 
 > use `RequestContext.createAsync()` instead.
 >
-> ```typescript
+> ```ts
 > app.use((ctx, next) => RequestContext.createAsync(orm.em, next));
 > ```
 
@@ -247,7 +247,7 @@ load it.
 }
 ```
 
-```typescript title="./src/mikro-orm.config.ts"
+```ts title="./src/mikro-orm.config.ts"
 export default {
   entities: [Author, Book, BookTag],
   dbName: 'my-db-name',

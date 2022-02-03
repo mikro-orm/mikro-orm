@@ -16,7 +16,7 @@ defining the type is enough for runtime validation.
 
 To use it, first install the `@mikro-orm/reflection` package.
 
-```typescript
+```ts
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 
 await MikroORM.init({
@@ -50,7 +50,7 @@ metadata exported by TypeScript compiler.
 You will need to install `reflect-metadata` module and import at the top of your app's 
 bootstrap script (e.g. `main.ts` or `app.ts`). 
 
-```typescript
+```ts
 import 'reflect-metadata';
 ```
 
@@ -58,7 +58,7 @@ Next step is to enable `emitDecoratorMetadata` flag in your `tsconfig.json`.
 
 > As this approach does not have performance impact, metadata caching is not really necessary. 
 
-```typescript
+```ts
 await MikroORM.init({
   metadataProvider: ReflectMetadataProvider,
   // ...
@@ -71,7 +71,7 @@ await MikroORM.init({
 
 Type inference is not supported, you need to always explicitly specify the type:
 
-```typescript
+```ts
 @Property()
 createdAt: Date = new Date();
 ```
@@ -80,7 +80,7 @@ createdAt: Date = new Date();
 
 You need to provide target entity type in `@OneToMany` and `@ManyToMany` decorators:
 
-```typescript
+```ts
 @OneToMany(() => Book, b => b.author)
 books = new Collection<Book>(this);
 
@@ -92,7 +92,7 @@ publisher!: IdentifiedReference<Publisher>;
 
 Reading property nullability is not supported, you need to explicitly set `nullable` attribute:
 
-```typescript
+```ts
 @Property({ nullable: true })
 prop?: string;
 ```
@@ -103,17 +103,17 @@ By default, enum is considered as numeric type. For string enums, you need to ex
 provide one of:
 
 - reference to the enum (which will force you to define the enum before defining the entity)
-  ```typescript
+  ```ts
   @Enum(() => UserRole)
   role: UserRole;
   ```
 - name of the enum (if it is present in the same file)
-  ```typescript
+  ```ts
   @Enum({ type: 'UserRole' })
   role: UserRole;
   ```
 - list of the enum items
-  ```typescript
+  ```ts
   @Enum({ items: ['a', 'b', 'c'] })
   role: UserRole;
   ```
@@ -124,7 +124,7 @@ Reading type of referenced entity in `@ManyToOne` and `@OneToOne` properties fai
 circular dependency. You will need to explicitly define the type in the decorator (preferably 
 via `entity: () => ...` callback).
 
-```typescript
+```ts
 @ManyToOne({ entity: () => Author })
 author: Author;
 ``` 
@@ -146,7 +146,7 @@ This provider should be used only if you are not using TypeScript at all and the
 not use decorators to annotate your properties. It will require you to specify the whole schema 
 manually. 
 
-```typescript
+```ts
 await MikroORM.init({
   metadataProvider: JavaScriptMetadataProvider,
   // ...

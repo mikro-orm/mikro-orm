@@ -4,7 +4,7 @@ title: Defining Entities via EntitySchema
 
 With `EntitySchema` helper you define the schema programmatically. 
 
-```typescript title="./entities/Book.ts"
+```ts title="./entities/Book.ts"
 export interface Book extends BaseEntity {
   title: string;
   author: Author;
@@ -27,7 +27,7 @@ export const schema = new EntitySchema<Book, BaseEntity>({
 When creating new entity instances, you will need to use `em.create()` method that will
 create instance of internally created class. 
 
-```typescript
+```ts
 const repo = em.getRepository<Author>('Author');
 const author = repo.create('Author', { name: 'name', email: 'email' }); // instance of internal Author class
 await repo.persistAndFlush(author);
@@ -44,7 +44,7 @@ You can achieve this by letting your DTO class extend the `PlainObject` class. T
 
 You can optionally use custom class for entity instances.  
 
-```typescript title="./entities/Author.ts"
+```ts title="./entities/Author.ts"
 export class Author extends BaseEntity {
   name: string;
   email: string;
@@ -80,7 +80,7 @@ export const schema = new EntitySchema<Author, BaseEntity>({
 
 Then you can use the entity class as usual:
 
-```typescript
+```ts
 const repo = em.getRepository(Author);
 const author = new Author('name', 'email');
 await repo.persistAndFlush(author);
@@ -90,7 +90,7 @@ await repo.persistAndFlush(author);
 
 Do not forget that base entities needs to be discovered just like normal entities. 
 
-```typescript title="./entities/BaseEntity.ts"
+```ts title="./entities/BaseEntity.ts"
 export interface BaseEntity {
   id: number;
   createdAt: Date;
@@ -114,7 +114,7 @@ The parameter of `EntitySchema` requires to provide either `name` or `class` par
 When using `class`, `extends` will be automatically inferred. You can optionally pass 
 these additional parameters:
 
-```typescript
+```ts
 name: string;
 class: Constructor<T>;
 extends: string;
@@ -130,7 +130,7 @@ abstract: boolean;
 Every property then needs to contain a type specification - one of `type`/`customType`/`entity`.
 Here are some examples of various property types:
 
-```typescript
+```ts
 export enum MyEnum {
   LOCAL = 'local',
   GLOBAL = 'global',
@@ -160,7 +160,7 @@ export const schema = new EntitySchema<FooBar>({
 
 ## MongoDB example
 
-```typescript
+```ts
 export class BookTag {
   _id!: ObjectId;
   id!: string;

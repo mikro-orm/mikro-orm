@@ -46,7 +46,7 @@ your `package.json`.
 If you want to use ts-morph, you need to install `@mikro-orm/reflection` package
 and enable the provider explicitly in the ORM config, as described [here](./metadata-providers.md#tsmorphmetadataprovider).
 
-```typescript
+```ts
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 
 await MikroORM.init({
@@ -80,7 +80,7 @@ from the driver package to access the `createQueryBuilder()` method.
 > this name and under `EntityManager` alias, so you can just change the 
 > location from where you import.
 
-```typescript
+```ts
 import { EntityManager } from '@mikro-orm/mysql'; // or any other SQL driver package
 
 const em: EntityManager;
@@ -89,7 +89,7 @@ const qb = await em.createQueryBuilder(...);
 
 Same applies for the `aggregate()` method in mongo driver:
 
-```typescript
+```ts
 import { EntityManager } from '@mikro-orm/mongodb';
 
 const em: EntityManager;
@@ -125,7 +125,7 @@ or references to the entities or instances of `EntitySchema`.
 
 This basically means that all you need to change is renaming `entitiesDirs` to `entities`.
 
-```typescript
+```ts
 MikroORM.init({
   entities: ['dist/**/entities', 'dist/**/*.entity.js', FooBar, FooBaz],
   entitiesTs: ['src/**/entities', 'src/**/*.entity.ts', FooBar, FooBaz],
@@ -155,7 +155,7 @@ will return your entity.
 `flush` param is removed, both `persist` and `remove` methods are synchronous and
 require explicit flushing, possibly via fluent interface call.
 
-```typescript
+```ts
 // before
 await em.persist(jon, true);
 await em.remove(Author, jon, true);
@@ -175,7 +175,7 @@ In v4, the method is now simplified and works only with entity instances. Use
 `em.nativeDelete()` explicitly if you want to fire a delete query instead of 
 letting the `UnitOfWork` doing its job.
 
-```typescript
+```ts
 // before
 await em.remove(Author, 1); // fires query directly
 
@@ -202,7 +202,7 @@ for usage without classes (interfaces + `EntitySchema`) - in that case it is now
 supported to pass actual instance of `EntitySchema` as the first parameter to these
 methods, that will allow correct type inference:
 
-```typescript
+```ts
 const author = await em.findOne(AuthorSchema, { ... }, ['books']);
 console.log(author.books.get()); // `get()` is now inferred correctly
 ```
@@ -263,7 +263,7 @@ for those bundling via webpack and using lambdas, as the library was huge.
 In v4 highlighting is disabled by default, and there are 2 highlighters 
 you can optionally use (you need to install them first).
 
-```typescript
+```ts
 import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
 
 MikroORM.init({

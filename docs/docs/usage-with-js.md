@@ -3,14 +3,13 @@ title: Usage with JavaScript
 sidebar_label: Usage with Vanilla JS
 ---
 
-Since MikroORM 3.2, we can use `EntitySchema` helper to define own entities without 
-decorators, which works also for Vanilla JavaScript.
+Since MikroORM 3.2, we can use `EntitySchema` helper to define own entities without decorators, which works also for Vanilla JavaScript.
 
 > Read more about `EntitySchema` in [this section](entity-schema.md).
 
 Here is an example of such entity:
 
-```javascript title="./entities/Author.js"
+```js title="./entities/Author.js"
 const { Collection, EntitySchema } = require('@mikro-orm/core');
 const { Book } = require('./Book');
 const { BaseEntity } = require('./BaseEntity');
@@ -68,12 +67,12 @@ module.exports.entity = Author;
 module.exports.schema = schema;
 ```
 
-> Do not forget to provide `name` and `path` schema parameters as well as `entity` 
+> Do not forget to provide `name` and `path` schema parameters as well as `entity`
 > and `schema` exports.
 
 Reference parameter can be one of (where `SCALAR` is the default one):
 
-```typescript
+```ts
 export enum ReferenceType {
   SCALAR = 'scalar',
   ONE_TO_ONE = '1:1',
@@ -84,15 +83,17 @@ export enum ReferenceType {
 }
 ```
 
-You can register your entities as usual.
+We can register our entities as usual:
 
-```javascript
+```js
 const orm = await MikroORM.init({
   entities: [Author, Book, BookTag, BaseEntity],
   dbName: 'my-db-name',
   type: 'mysql',
 });
 ```
+
+> We can also pass the `EntitySchema` instance to the `entities` array.
 
 For more examples of plain JavaScript entity definitions take a look
 [Express JavaScript example](https://github.com/mikro-orm/express-js-example-app). 

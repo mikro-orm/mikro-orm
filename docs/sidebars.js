@@ -19,7 +19,7 @@ module.exports = {
       'deployment',
       'query-builder',
       'caching',
-      'debugging',
+      'logging',
     ],
     'Advanced Features': [
       'nested-populate',

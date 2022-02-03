@@ -5,7 +5,7 @@ title: Identity Map and Request Context
 `MikroORM` uses identity map in background so you will always get the same instance of 
 one entity.
 
-```typescript
+```ts
 const authorRepository = orm.em.getRepository(Author);
 const jon = await authorRepository.findOne({ name: 'Jon Snow' }, ['books']);
 const authors = await authorRepository.findAll(['books']);
@@ -16,7 +16,7 @@ console.log(jon === authors[0]); // true
 
 If you want to clear this identity map cache, you can do so via `em.clear()` method:
 
-```typescript
+```ts
 orm.em.clear();
 ```
 
@@ -27,7 +27,7 @@ to clone entity manager and use the clone in request context. There are two ways
 
 With `fork()` method you can simply get clean entity manager with its own context and identity map:
 
-```typescript
+```ts
 const em = orm.em.fork();
 ```
 
@@ -54,7 +54,7 @@ in the background to isolate the request context. MikroORM will always use reque
 entity manager if available, so all you need to do is to create new request context preferably 
 as a middleware:
 
-```typescript
+```ts
 app.use((req, res, next) => {
   RequestContext.create(orm.em, next);
 });

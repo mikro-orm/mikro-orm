@@ -17,7 +17,7 @@ You can control this behaviour via `cascade` attribute of `@ManyToOne`, `@ManyTo
 
 > New entities without primary key will be always persisted, regardless of `cascade` value. 
 
-```typescript
+```ts
 // cascade persist is default value
 @OneToMany({ entity: () => Book, mappedBy: 'author' })
 books = new Collection<Book>(this);
@@ -47,7 +47,7 @@ books = new Collection<Book>(this);
 
 Here is example of how cascade persist works:
 
-```typescript
+```ts
 const book = await orm.em.findOne(Book, 'id', ['author', 'tags']);
 book.author.name = 'Foo Bar';
 book.tags[0].name = 'new name 1';
@@ -66,14 +66,14 @@ example assumes that `Book.publisher` is set to `Cascade.REMOVE`:
 > Note that cascade remove for collections can be inefficient as it will fire 1 query
 > for each entity in collection.
 
-```typescript
+```ts
 await orm.em.remove(book).flush(); // this will also remove book.publisher
 ```
 
 Keep in mind that cascade remove **can be dangerous** when used on `@ManyToOne` fields, 
 as cascade removed entity can stay referenced in another entities that were not removed.
 
-```typescript
+```ts
 const publisher = new Publisher(...);
 // all books with same publisher
 book1.publisher = book2.publisher = book3.publisher = publisher;
@@ -89,7 +89,7 @@ In addition to `Cascade.REMOVE`, there is also additional and more aggressive re
 cascading mode which can be specified using the `orphanRemoval` flag of the `@OneToOne`
 and `@OneToMany` properties:
 
-```typescript
+```ts
 @Entity()
 export class Author {
 
@@ -107,7 +107,7 @@ the operation down to all loaded `Book`s. By enabling orphan removal on the coll
 `Book`s will be also removed when they get disconnected from the collection (either via 
 `remove()`, or by replacing collection items via `set()`):
 
-```typescript
+```ts
 await author.books.set([book1, book2]); // replace whole collection
 await author.books.remove(book1); // remove book from collection
 await orm.em.persistAndFlush(author); // book1 will be removed, as well as all original items (before we called `set()`)
@@ -126,7 +126,7 @@ also define database level referential integrity actions: `on update` and `on de
 Their values are automatically inferred from the `cascade` option value. You can also 
 control the value manually via `onUpdateIntegrity` and `onDelete` options. 
 
-```typescript
+```ts
 @Entity()
 export class Book {
 

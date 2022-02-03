@@ -11,7 +11,7 @@ terminology, it is called database, but from implementation point of view, it is
 All you need to do is simply define the schema name via `schema` options, or 
 table name including schema name in `tableName` option:
 
-```typescript
+```ts
 @Entity({ schema: 'first_schema' })
 export class Foo { ... }
 
@@ -27,13 +27,13 @@ as expected.
 You can also query for entity in specific schema via `EntityManager`, `EntityRepository` or 
 `QueryBuilder`:
 
-```typescript
+```ts
 const user = await em.findOne(User, { ... }, { schema: 'client-123' });
 ```
 
 To create entity in specific schema, you will need to use `QueryBuilder`:
 
-```typescript
+```ts
 const qb = em.createQueryBuilder(User);
 await qb.insert({ email: 'foo@bar.com' }).withSchema('client-123');
 ```

@@ -12,7 +12,7 @@ strategy. There are 3 basic naming strategies you can choose from:
 You can override this when initializing ORM. You can also provide your own naming strategy, just 
 implement `NamingStrategy` interface and provide your implementation when bootstrapping ORM:
 
-```typescript
+```ts
 class YourCustomNamingStrategy implements NamingStrategy {
   ...
 }
