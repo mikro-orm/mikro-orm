@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-## [5.0.0-rc.2](https://github.com/mikro-orm/mikro-orm/compare/eb16b2c...70ae06a) (2022-02-03)
+## [5.0.0-rc.2](https://github.com/mikro-orm/mikro-orm/compare/eb16b2c...fed2d5b) (2022-02-03)
 
 ### Bug Fixes
 
