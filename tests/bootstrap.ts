@@ -147,6 +147,7 @@ export async function initORMSqlite2() {
     debug: ['query'],
     propagateToOneOwner: false,
     forceUndefined: true,
+    persistOnCreate: true,
     logger: i => i,
     cache: { pretty: true },
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },

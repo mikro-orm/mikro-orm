@@ -26,7 +26,7 @@ describe('EntityManagerSqlite2', () => {
   test('should convert entity to PK when trying to search by entity', async () => {
     const repo = orm.em.getRepository(Author4);
     const author = orm.em.create(Author4, { name: 'name', email: 'email' });
-    await repo.persistAndFlush(author);
+    await repo.flush();
     const a = await repo.findOne(author);
     const authors = await repo.find({ id: author.id });
     expect(a).toBe(author);
@@ -36,7 +36,7 @@ describe('EntityManagerSqlite2', () => {
   test('hydration with `forceUndefined` converts null values', async () => {
     const repo = orm.em.getRepository(Author4);
     const author = orm.em.create(Author4, { name: 'name', email: 'email' });
-    await repo.persistAndFlush(author);
+    await repo.flush();
     orm.em.clear();
 
     const a = await repo.findOneOrFail(author);
@@ -172,7 +172,7 @@ describe('EntityManagerSqlite2', () => {
     const bible = orm.em.create(Book4, { title: 'Bible', author: god });
     expect(bible.author).toBe(god);
     bible.author = god;
-    await orm.em.persistAndFlush(bible);
+    await orm.em.flush();
 
     const author = orm.em.create(Author4, { name: 'Jon Snow', email: 'snow@wall.st' });
     author.born = new Date('1990-03-23');
@@ -189,14 +189,10 @@ describe('EntityManagerSqlite2', () => {
     book3.publisher = wrap(publisher).toReference();
     book3.author = author;
 
-    const repo = orm.em.getRepository(Book4);
-    repo.persist(book1);
-    repo.persist(book2);
-    repo.persist(book3);
-    await repo.flush();
+    await orm.em.flush();
     orm.em.clear();
 
-    const publisher7k = (await orm.em.getRepository(Publisher4).findOne({ name: '7K publisher' }))!;
+    const publisher7k = await orm.em.getRepository(Publisher4).findOneOrFail({ name: '7K publisher' });
     expect(publisher7k).not.toBeNull();
     expect(publisher7k.tests).toBeInstanceOf(Collection);
     expect(publisher7k.tests.isInitialized()).toBe(false);
@@ -292,7 +288,7 @@ describe('EntityManagerSqlite2', () => {
   test('findOne should initialize entity that is already in IM', async () => {
     const god = orm.em.create(Author4, { name: 'God', email: 'hello@heaven.god' });
     const bible = orm.em.create(Book4, { title: 'Bible', author: god });
-    await orm.em.persist(bible).flush();
+    await orm.em.flush();
     orm.em.clear();
 
     const ref = orm.em.getReference(Author4, god.id);
@@ -303,10 +299,10 @@ describe('EntityManagerSqlite2', () => {
   });
 
   test('findOne supports regexps', async () => {
-    const author1 = orm.em.create(Author4, { name: 'Author 1', email: 'a1@example.com' });
-    const author2 = orm.em.create(Author4, { name: 'Author 2', email: 'a2@example.com' });
-    const author4 = orm.em.create(Author4, { name: 'Author 3', email: 'a3@example.com' });
-    await orm.em.persist([author1, author2, author4]).flush();
+    orm.em.create(Author4, { name: 'Author 1', email: 'a1@example.com' });
+    orm.em.create(Author4, { name: 'Author 2', email: 'a2@example.com' });
+    orm.em.create(Author4, { name: 'Author 3', email: 'a3@example.com' });
+    await orm.em.flush();
     orm.em.clear();
 
     const authors = await orm.em.find(Author4, { email: /exa.*le\.c.m$/ });
@@ -321,7 +317,7 @@ describe('EntityManagerSqlite2', () => {
 
     for (let i = 0; i < 5; i++) {
       test.name = 'test' + i;
-      await orm.em.persistAndFlush(test);
+      await orm.em.flush();
       expect(typeof test.version).toBe('number');
       expect(test.version).toBe(i + 1);
     }
@@ -330,7 +326,7 @@ describe('EntityManagerSqlite2', () => {
   test('findOne supports optimistic locking [testStandardFailureThrowsException]', async () => {
     const test = orm.em.create(Test4, {});
     test.name = 'test';
-    await orm.em.persistAndFlush(test);
+    await orm.em.flush();
     expect(typeof test.version).toBe('number');
     expect(test.version).toBe(1);
     orm.em.clear();
@@ -352,7 +348,7 @@ describe('EntityManagerSqlite2', () => {
   test('findOne supports optimistic locking [versioned proxy]', async () => {
     const test = orm.em.create(Test4, {});
     test.name = 'test';
-    await orm.em.persistAndFlush(test);
+    await orm.em.flush();
     orm.em.clear();
 
     const proxy = orm.em.getReference(Test4, test.id);
@@ -363,7 +359,7 @@ describe('EntityManagerSqlite2', () => {
   test('findOne supports optimistic locking [versioned proxy]', async () => {
     const test = orm.em.create(Test4, {});
     test.name = 'test';
-    await orm.em.persistAndFlush(test);
+    await orm.em.flush();
     orm.em.clear();
 
     const test2 = await orm.em.findOne(Test4, test.id);
@@ -399,14 +395,14 @@ describe('EntityManagerSqlite2', () => {
   test('findOne supports optimistic locking [versioned entity]', async () => {
     const test = orm.em.create(Test4, {});
     test.name = 'test';
-    await orm.em.persistAndFlush(test);
+    await orm.em.flush();
     await orm.em.lock(test, LockMode.OPTIMISTIC, test.version);
   });
 
   test('findOne supports optimistic locking [version mismatch]', async () => {
     const test = orm.em.create(Test4, {});
     test.name = 'test';
-    await orm.em.persistAndFlush(test);
+    await orm.em.flush();
     await expect(orm.em.lock(test, LockMode.OPTIMISTIC, test.version + 1)).rejects.toThrowError('The optimistic lock failed, version 2 was expected, but is actually 1');
   });
 
@@ -418,7 +414,7 @@ describe('EntityManagerSqlite2', () => {
 
   test('pessimistic locking requires active transaction', async () => {
     const test = orm.em.create(Test4, { name: 'Lock test' });
-    await orm.em.persistAndFlush(test);
+    await orm.em.flush();
     await expect(orm.em.findOne(Test4, test.id, { lockMode: LockMode.PESSIMISTIC_READ })).rejects.toThrowError('An open transaction is required for this operation');
     await expect(orm.em.findOne(Test4, test.id, { lockMode: LockMode.PESSIMISTIC_WRITE })).rejects.toThrowError('An open transaction is required for this operation');
     await expect(orm.em.lock(test, LockMode.PESSIMISTIC_READ)).rejects.toThrowError('An open transaction is required for this operation');

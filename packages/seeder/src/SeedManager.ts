@@ -11,6 +11,7 @@ export class SeedManager implements ISeedManager {
 
   constructor(private readonly em: EntityManager) {
     this.em = this.em.fork();
+    this.config.set('persistOnCreate', true);
   }
 
   async seed(...seederClasses: { new(): Seeder }[]): Promise<void> {

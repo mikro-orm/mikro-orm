@@ -558,8 +558,15 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * the whole `data` parameter will be passed. This means we can also define `constructor(data: Partial<T>)` and
    * `em.create()` will pass the data into it (unless we have a property named `data` too).
    */
-  create<T extends AnyEntity<T>, P extends string = never>(entityName: EntityName<T>, data: RequiredEntityData<T>, options: { managed?: boolean; schema?: string } = {}): New<T, P> {
-    return this.getEntityFactory().create<T, P>(entityName, data, { ...options, newEntity: !options.managed });
+  create<T extends AnyEntity<T>, P extends string = never>(entityName: EntityName<T>, data: RequiredEntityData<T>, options: CreateOptions = {}): New<T, P> {
+    const entity = this.getEntityFactory().create<T, P>(entityName, data, { ...options, newEntity: !options.managed });
+    options.persist ??= this.config.get('persistOnCreate');
+
+    if (options.persist) {
+      this.persist(entity);
+    }
+
+    return entity;
   }
 
   /**
@@ -1062,6 +1069,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return `[EntityManager<${this.id}>]`;
   }
 
+}
+
+export interface CreateOptions {
+  managed?: boolean;
+  schema?: string;
+  persist?: boolean;
 }
 
 export interface MergeOptions {
