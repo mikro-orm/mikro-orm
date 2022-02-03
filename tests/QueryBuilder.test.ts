@@ -1042,6 +1042,28 @@ describe('QueryBuilder', () => {
     expect(qb12.getParams()).toEqual(['Foo Baz']);
   });
 
+  test('select formula property explicitly', async () => {
+    const qb1 = orm.em.createQueryBuilder(FooBar2);
+    qb1.select('random').where({ id: 1 });
+    expect(qb1.getQuery()).toEqual('select (select 123) as `random` from `foo_bar2` as `e0` where `e0`.`id` = ?');
+    expect(qb1.getParams()).toEqual([1]);
+
+    const qb2 = orm.em.createQueryBuilder(FooBar2);
+    qb2.select('*').where({ id: 1 });
+    expect(qb2.getQuery()).toEqual('select `e0`.*, (select 123) as `random` from `foo_bar2` as `e0` where `e0`.`id` = ?');
+    expect(qb2.getParams()).toEqual([1]);
+
+    const qb3 = orm.em.createQueryBuilder(FooBar2);
+    qb3.select('*').where({ random: { $gt: 0.5 } });
+    expect(qb3.getQuery()).toEqual('select `e0`.*, (select 123) as `random` from `foo_bar2` as `e0` where (select 123) > ?');
+    expect(qb3.getParams()).toEqual([0.5]);
+
+    const qb4 = orm.em.createQueryBuilder(FooBar2);
+    qb4.select('*').having({ random: { $gt: 0.5 } });
+    expect(qb4.getQuery()).toEqual('select `e0`.*, (select 123) as `random` from `foo_bar2` as `e0` having (select 123) > ?');
+    expect(qb4.getParams()).toEqual([0.5]);
+  });
+
   test('select with deep where condition with self-reference', async () => {
     const qb1 = orm.em.createQueryBuilder(Book2);
     qb1.select('*').where({ author: { favouriteAuthor: { name: 'Jon Snow', termsAccepted: true } } });

@@ -1,14 +1,7 @@
 import type { Knex } from 'knex';
 import { inspect } from 'util';
-import type { Dictionary, EntityMetadata, EntityProperty, FlatQueryOrderMap, MetadataStorage, Platform, EntityData, QBFilterQuery } from '@mikro-orm/core';
-import {
-  LockMode,
-  OptimisticLockError,
-  QueryOperator,
-  QueryOrderNumeric,
-  ReferenceType,
-  Utils,
-} from '@mikro-orm/core';
+import type { Dictionary, EntityData, EntityMetadata, EntityProperty, FlatQueryOrderMap, MetadataStorage, Platform, QBFilterQuery } from '@mikro-orm/core';
+import { LockMode, OptimisticLockError, QueryOperator, QueryOrderNumeric, ReferenceType, Utils } from '@mikro-orm/core';
 import { QueryType } from './enums';
 import type { Field, JoinOptions } from '../typings';
 
@@ -58,6 +51,14 @@ export class QueryBuilderHelper {
       return this.knex.raw(this.prefix(field, isTableNameAliasRequired));
     }
 
+    if (prop?.formula) {
+      const alias2 = this.knex.ref(a).toString();
+      const aliased = this.knex.ref(prop.fieldNames[0]).toString();
+      const as = alias === null ? '' : ` as ${aliased}`;
+
+      return this.knex.raw(`${prop.formula(alias2)}${as}`);
+    }
+
     if (prop?.customType?.convertToJSValueSQL) {
       const prefixed = this.prefix(field, isTableNameAliasRequired, true);
       const valueSQL = prop.customType.convertToJSValueSQL!(prefixed, this.platform);
@@ -66,7 +67,7 @@ export class QueryBuilderHelper {
         return this.knex.raw(valueSQL);
       }
 
-      return this.knex.raw(valueSQL + ' as ' + this.platform.quoteIdentifier(alias ?? prop.fieldNames[0]));
+      return this.knex.raw(`${valueSQL} as ${this.platform.quoteIdentifier(alias ?? prop.fieldNames[0])}`);
     }
 
     // do not wrap custom expressions

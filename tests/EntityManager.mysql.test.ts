@@ -2220,6 +2220,15 @@ describe('EntityManagerMySql', () => {
       'left join `author2` as `a1` on `b0`.`author_id` = `a1`.`id` ' +
       'left join `test2` as `t2` on `b0`.`uuid_pk` = `t2`.`book_uuid_pk` ' +
       'where `b0`.`author_id` is not null and `a1`.`name` = ? limit ?');
+
+    // should trigger auto-flush
+    orm.em.create(FooBar2, { name: 'f' }, { persist: true });
+    await orm.em.findOneOrFail(FooBar2, { random: { $gt: 0.5 } }, { having: { random: { $gt: 0.5 } } });
+    expect(mock.mock.calls[1][0]).toMatch('begin');
+    expect(mock.mock.calls[2][0]).toMatch('insert into `foo_bar2` (`name`) values (?)');
+    expect(mock.mock.calls[3][0]).toMatch('select `f0`.`id`, `f0`.`version`, `f0`.`version` from `foo_bar2` as `f0` where `f0`.`id` in (?)');
+    expect(mock.mock.calls[4][0]).toMatch('commit');
+    expect(mock.mock.calls[5][0]).toMatch('select `f0`.*, (select 123) as `random` from `foo_bar2` as `f0` where (select 123) > ? having (select 123) > ? limit ?');
   });
 
   test('lazy formulas (gh #1229)', async () => {
