@@ -26,6 +26,8 @@ export interface ManyToOneOptions<T, O> extends ReferenceOptions<T, O> {
   mapToPk?: boolean;
   joinColumn?: string;
   joinColumns?: string[];
+  referenceColumnName?: string;
+  referencedColumnNames?: string[];
   onDelete?: 'cascade' | 'no action' | 'set null' | 'set default' | string;
   onUpdateIntegrity?: 'cascade' | 'no action' | 'set null' | 'set default' | string;
 }

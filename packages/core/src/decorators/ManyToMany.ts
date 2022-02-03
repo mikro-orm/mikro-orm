@@ -34,4 +34,5 @@ export interface ManyToManyOptions<T, O> extends ReferenceOptions<T, O> {
   inverseJoinColumn?: string;
   inverseJoinColumns?: string[];
   referenceColumnName?: string;
+  referencedColumnNames?: string[];
 }
