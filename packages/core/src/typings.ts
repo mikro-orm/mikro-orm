@@ -597,7 +597,7 @@ type LoadedLoadable<T, E> = T extends Collection<any>
 
 type Prefix<K> = K extends `${infer S}.${string}` ? S : K;
 type Suffix<K> = K extends `${string}.${infer S}` ? S : never;
-type Defined<T> = Exclude<T, undefined>;
+type Defined<T> = Exclude<T, null | undefined>;
 
 // For each property on T check if it is included in prefix of keys to load L:
 //   1. It yes, mark the collection or reference loaded and resolve its inner type recursively (passing suffix).
