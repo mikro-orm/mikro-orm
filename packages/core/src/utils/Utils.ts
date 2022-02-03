@@ -4,7 +4,8 @@ import type { GlobbyOptions } from 'globby';
 import globby from 'globby';
 import { extname, isAbsolute, join, normalize, relative, resolve } from 'path';
 import { platform } from 'os';
-import { pathToFileURL } from 'url';
+import type { URL } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import { pathExists } from 'fs-extra';
 import { createHash } from 'crypto';
 import { recovery } from 'escaya';
@@ -636,13 +637,43 @@ export class Utils {
     return !(prop && type) || prop.reference === type;
   }
 
+  static fileURLToPath(url: string | URL) {
+    // expose `fileURLToPath` on Utils so that it can be properly mocked in tests
+    return fileURLToPath(url);
+  }
+
+  /**
+   * Resolves and normalizes a series of path parts relative to each preceeding part.
+   * If any part is a `file:` URL, it is converted to a local path. If any part is an
+   * absolute path, it replaces preceeding paths (similar to `path.resolve` in NodeJS).
+   * Trailing directory separators are removed, and all directory separators are converted
+   * to POSIX-style separators (`/`).
+   */
   static normalizePath(...parts: string[]): string {
+    let start = 0;
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+      if (isAbsolute(part)) {
+        start = i;
+      } else if (part.startsWith('file:')) {
+        start = i;
+        parts[i] = Utils.fileURLToPath(part);
+      }
+    }
+    if (start > 0) {
+      parts = parts.slice(start);
+    }
+
     let path = parts.join('/').replace(/\\/g, '/').replace(/\/$/, '');
     path = normalize(path).replace(/\\/g, '/');
 
     return (path.match(/^[/.]|[a-zA-Z]:/) || path.startsWith('!')) ? path : './' + path;
   }
 
+  /**
+   * Determines the relative path between two paths. If either path is a `file:` URL,
+   * it is converted to a local path.
+   */
   static relativePath(path: string, relativeTo: string): string {
     if (!path) {
       return path;
@@ -654,17 +685,21 @@ export class Utils {
       return path;
     }
 
-    path = relative(relativeTo, path);
+    path = relative(Utils.normalizePath(relativeTo), path);
 
     return Utils.normalizePath(path);
   }
 
+  /**
+   * Computes the absolute path to for the given path relative to the provided base directory.
+   * If either `path` or `baseDir` are `file:` URLs, they are converted to local paths.
+   */
   static absolutePath(path: string, baseDir = process.cwd()): string {
     if (!path) {
       return Utils.normalizePath(baseDir);
     }
 
-    if (!isAbsolute(path)) {
+    if (!isAbsolute(path) && !path.startsWith('file://')) {
       path = baseDir + '/' + path;
     }
 

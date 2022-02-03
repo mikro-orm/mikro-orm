@@ -133,7 +133,7 @@ export class MetadataDiscovery {
       }
 
       const name = this.namingStrategy.getClassName(filename);
-      const path = Utils.normalizePath(...(isAbsolute(filepath) ? [filepath] : [this.config.get('baseDir'), filepath]));
+      const path = Utils.normalizePath(this.config.get('baseDir'), filepath);
       const targets = await this.getEntityClassOrSchema(path, name);
 
       for (const target of targets) {
