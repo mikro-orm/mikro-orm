@@ -29,7 +29,7 @@ hide_title: true
   - [Serializing](serializing.md)
   - [Updating Entity Values with `Entity.assign()`](entity-helper.md)
   - [Property Validation](property-validation.md)
-  - [Lifecycle Hooks](lifecycle-hooks.md)
+  - [Events and Lifecycle Hooks](events.md)
   - [Loading Strategies](loading-strategies.md)
   - [Naming Strategy](naming-strategy.md)
   - [Metadata Providers](metadata-providers.md)
