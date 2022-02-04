@@ -10,7 +10,7 @@ export class ImportCommand implements CommandModule {
   describe = 'Imports the SQL file to the database';
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   async handler(args: Arguments) {
     const orm = await CLIHelper.getORM() as MikroORM<AbstractSqlDriver>;

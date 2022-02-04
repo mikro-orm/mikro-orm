@@ -18,7 +18,7 @@ export class DatabaseSeedCommand<T> implements CommandModule<T, { class: string 
   };
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   async handler(args: Arguments<{ class?: string }>) {
     const orm = await CLIHelper.getORM(undefined) as MikroORM<AbstractSqlDriver>;

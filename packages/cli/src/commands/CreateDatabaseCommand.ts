@@ -9,7 +9,7 @@ export class CreateDatabaseCommand implements CommandModule {
   describe = 'Create your database if it does not exist';
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   async handler(args: Arguments) {
     const orm = await CLIHelper.getORM() as MikroORM<AbstractSqlDriver>;

@@ -17,7 +17,7 @@ export class CreateSeederCommand<T> implements CommandModule<T, { seeder: string
   };
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   async handler(args: Arguments<{ seeder: string }>) {
     const seederName = CreateSeederCommand.getSeederClassName(args.seeder);

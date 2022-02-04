@@ -10,7 +10,7 @@ export class GenerateEntitiesCommand<U extends Options = Options> implements Com
   describe = 'Generate entities based on current database schema';
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   builder(args: Argv) {
     args.option('s', {
@@ -37,7 +37,7 @@ export class GenerateEntitiesCommand<U extends Options = Options> implements Com
   }
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   async handler(args: Arguments<U>): Promise<void> {
     if (!args.save && !args.dump) {
