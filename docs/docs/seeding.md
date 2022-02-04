@@ -250,10 +250,8 @@ beforeAll(async () => {
   // Get seeder from MikroORM
   const seeder = orm.getSeeder();
 
-  // Refresh the database to start clean
+  // Refresh the database to start clean (work in mongo too since v5)
   await orm.getSchemaGenerator().refreshDatabase();
-  // Or for mongo
-  await orm.getSchemaGenerator().refreshCollections();
 
   // Seed using a seeder defined by you
   await seeder.seed(DatabaseSeeder);

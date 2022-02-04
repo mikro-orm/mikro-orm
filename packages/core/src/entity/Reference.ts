@@ -46,7 +46,7 @@ export class Reference<T extends AnyEntity<T>> {
   }
 
   /**
-   * Checks whether the argument is instance or `Reference` wrapper.
+   * Checks whether the argument is instance of `Reference` wrapper.
    */
   static isReference<T extends AnyEntity<T>>(data: any): data is Reference<T> {
     return data && !!data.__reference;

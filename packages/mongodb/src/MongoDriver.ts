@@ -231,10 +231,10 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   }
 
   /**
-   * @deprecated use `orm.getSchemaGenerator().dropSchema()` instead
+   * @deprecated use `orm.getSchemaGenerator().refreshDatabase()` instead
    */
   async refreshCollections(options: CreateSchemaOptions = {}): Promise<void> {
-    await this.platform.getSchemaGenerator(this).refreshCollections(options);
+    await this.platform.getSchemaGenerator(this).refreshDatabase(options);
   }
 
   /**

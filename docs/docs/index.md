@@ -34,7 +34,7 @@ hide_title: true
   - [Naming Strategy](naming-strategy.md)
   - [Metadata Providers](metadata-providers.md)
   - [Metadata Cache](metadata-cache.md)
-  - [Debugging](debugging.md)
+  - [Debugging](logging.md)
   - [Schema Generator](schema-generator.md)
   - [Entity Generator](entity-generator.md)
   - [Migrations](migrations.md)

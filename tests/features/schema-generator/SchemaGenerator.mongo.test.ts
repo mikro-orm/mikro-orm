@@ -31,13 +31,13 @@ describe('SchemaGenerator', () => {
     dropCollections.mockResolvedValue();
     ensureIndexes.mockResolvedValue();
 
-    await orm.getSchemaGenerator().refreshCollections();
+    await orm.getSchemaGenerator().refreshDatabase();
 
     expect(dropCollections).toBeCalledTimes(1);
     expect(createCollection).toBeCalledTimes(1);
     expect(ensureIndexes).toBeCalledTimes(1);
 
-    await orm.getSchemaGenerator().refreshCollections({ ensureIndexes: false });
+    await orm.getSchemaGenerator().refreshDatabase({ ensureIndexes: false });
 
     expect(dropCollections).toBeCalledTimes(2);
     expect(createCollection).toBeCalledTimes(2);
@@ -60,11 +60,11 @@ describe('SchemaGenerator', () => {
     const driver = orm.em.getDriver();
     const createSchemaSpy = jest.spyOn(MongoSchemaGenerator.prototype, 'createSchema');
     const dropSchemaSpy = jest.spyOn(MongoSchemaGenerator.prototype, 'dropSchema');
-    const refreshCollectionsSpy = jest.spyOn(MongoSchemaGenerator.prototype, 'refreshCollections');
+    const refreshDatabaseSpy = jest.spyOn(MongoSchemaGenerator.prototype, 'refreshDatabase');
     const ensureIndexesSpy = jest.spyOn(MongoSchemaGenerator.prototype, 'ensureIndexes');
     createSchemaSpy.mockImplementation();
     dropSchemaSpy.mockImplementation();
-    refreshCollectionsSpy.mockImplementation();
+    refreshDatabaseSpy.mockImplementation();
 
     await driver.createCollections();
     expect(createSchemaSpy).toBeCalledTimes(1);
@@ -73,14 +73,14 @@ describe('SchemaGenerator', () => {
     expect(dropSchemaSpy).toBeCalledTimes(1);
 
     await driver.refreshCollections();
-    expect(refreshCollectionsSpy).toBeCalledTimes(1);
+    expect(refreshDatabaseSpy).toBeCalledTimes(1);
 
     await driver.ensureIndexes();
     expect(ensureIndexesSpy).toBeCalledTimes(1);
 
     createSchemaSpy.mockRestore();
     dropSchemaSpy.mockRestore();
-    refreshCollectionsSpy.mockRestore();
+    refreshDatabaseSpy.mockRestore();
     ensureIndexesSpy.mockRestore();
   });
 

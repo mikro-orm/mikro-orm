@@ -394,7 +394,7 @@ MikroORM.init({
 });
 ```
 
-Read more about this in [Debugging](debugging.md) section.
+Read more about this in [Debugging](logging.md) section.
 
 ## Custom Fail Handler
 
