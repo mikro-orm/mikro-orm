@@ -269,10 +269,10 @@ export class MetadataDiscovery {
     delete copy.prototype;
 
     copy.props
-      .filter(prop => prop.type as unknown instanceof Type)
+      .filter(prop => Type.isMappedType(prop.type))
       .forEach(prop => {
         ['type', 'customType']
-          .filter(k => prop[k] as unknown instanceof Type)
+          .filter(k => Type.isMappedType(prop[k]))
           .forEach(k => delete (prop as Dictionary)[k]);
       });
 
@@ -888,12 +888,13 @@ export class MetadataDiscovery {
       prop.customType = Type.getType(JsonType);
     }
 
-    if (prop.type as unknown instanceof Type) {
-      prop.customType = prop.type as unknown as Type<any>;
+    // `prop.type` might be actually instance of custom type class
+    if (Type.isMappedType(prop.type)) {
+      prop.customType = prop.type;
     }
 
-    // eslint-disable-next-line no-prototype-builtins
-    if (Type.isPrototypeOf(prop.type) && !prop.customType) {
+    // `prop.type` might also be custom type class (not instance), so `typeof MyType` will give us `function`, not `object`
+    if (typeof prop.type === 'function' && Type.isMappedType((prop.type as Constructor).prototype) && !prop.customType) {
       prop.customType = Type.getType(prop.type as unknown as Constructor<Type>);
     }
 
@@ -901,7 +902,7 @@ export class MetadataDiscovery {
       prop.columnTypes = prop.columnTypes ?? [prop.customType.getColumnType(prop, this.platform)];
     }
 
-    if (prop.customType as unknown instanceof Type && prop.reference === ReferenceType.SCALAR) {
+    if (Type.isMappedType(prop.customType) && prop.reference === ReferenceType.SCALAR) {
       prop.type = prop.customType.constructor.name;
     }
   }

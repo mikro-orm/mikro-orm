@@ -71,8 +71,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
 
     const prop = { name, reference: ReferenceType.SCALAR, ...options, type: this.normalizeType(options, type) } as EntityProperty<T>;
 
-    // eslint-disable-next-line no-prototype-builtins
-    if (type && Type.isPrototypeOf(type)) {
+    if (type && Type.isMappedType((type as Constructor).prototype)) {
       prop.type = type as string;
     }
 
