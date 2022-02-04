@@ -74,7 +74,7 @@ export class MyService {
 }
 ```
 
-> Notice that the `EntityManager` is imported from the `@mikro-orm/driver` package, where driver is `mysql`, `sqlite`, `postgres` or what driver you are using.
+> Notice that the `EntityManager` is imported from the `@mikro-orm/driver` package, where driver is `mysql`, `sqlite`, `postgres` or whatever driver you are using.
 >
 > In case you have `@mikro-orm/knex` installed as a dependency, you can also import the `EntityManager` from there.
 

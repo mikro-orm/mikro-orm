@@ -3,10 +3,11 @@ title: Metadata Providers
 ---
 
 As part of entity discovery process, MikroORM uses so called `MetadataProvider` to get necessary
-type information about your entities' properties. There are 3 built-in metadata providers you can 
-use:
+type information about our entities' properties.
 
-> You can also implement custom metadata provider by extending abstract `MetadataProvider` class.
+> We can also implement custom metadata provider by extending abstract `MetadataProvider` class.
+
+There are 3 built-in metadata providers we can use:
 
 ## TsMorphMetadataProvider
 
@@ -25,36 +26,36 @@ await MikroORM.init({
 });
 ```
 
-If you use folder-based discovery, you should specify paths to
+If we use folder-based discovery, we should specify paths to
 the compiled entities via `entities` as well as paths to the TS source files of
-those entities via `entitiesTs`. When you run the ORM via `ts-node`, the latter
-will be used automatically, or if you explicitly pass `tsNode: true` in the config.
+those entities via `entitiesTs`. When we run the ORM via `ts-node`, the latter
+will be used automatically, or if we explicitly pass `tsNode: true` in the config. Note that `tsNode: true` should not be part of production config.
 
 > When running via `node`, `.d.ts` files are used to obtain the type, so we 
 > need to ship them in the production build. TS source files are no longer 
-> needed (since v4). Be sure to enable `compilerOptions.declaration` in your
+> needed (since v4). Be sure to enable `compilerOptions.declaration` in our
 > `tsconfig.json`.
 
 After the discovery process ends, all [metadata will be cached](metadata-cache.md). By default, 
 `FileCacheAdapter` will be used to store the cache inside `./temp` folder in JSON files. 
 
-> You can generate production cache via CLI command `mikro-orm cache:generate`.
+> We can generate production cache via CLI command `mikro-orm cache:generate`.
 
-> You can implement custom cache adapter by implementing `CacheAdapter` interface.
+> We can implement custom cache adapter by implementing `CacheAdapter` interface.
 
 ## ReflectMetadataProvider
 
 `ReflectMetadataProvider` uses `reflect-metadata` module to read the type from decorator 
 metadata exported by TypeScript compiler. 
 
-You will need to install `reflect-metadata` module and import at the top of your app's 
+We will need to install `reflect-metadata` module and import at the top of our app's 
 bootstrap script (e.g. `main.ts` or `app.ts`). 
 
 ```ts
 import 'reflect-metadata';
 ```
 
-Next step is to enable `emitDecoratorMetadata` flag in your `tsconfig.json`.
+Next step is to enable `emitDecoratorMetadata` flag in our `tsconfig.json`.
 
 > As this approach does not have performance impact, metadata caching is not really necessary. 
 
@@ -69,7 +70,7 @@ await MikroORM.init({
 
 #### Explicit types
 
-Type inference is not supported, you need to always explicitly specify the type:
+Type inference is not supported, we need to always explicitly specify the type:
 
 ```ts
 @Property()
@@ -78,7 +79,7 @@ createdAt: Date = new Date();
 
 #### Collection properties and Identified references
 
-You need to provide target entity type in `@OneToMany` and `@ManyToMany` decorators:
+We need to provide target entity type in `@OneToMany` and `@ManyToMany` decorators:
 
 ```ts
 @OneToMany(() => Book, b => b.author)
@@ -90,7 +91,7 @@ publisher!: IdentifiedReference<Publisher>;
 
 #### Optional properties
 
-Reading property nullability is not supported, you need to explicitly set `nullable` attribute:
+Reading property nullability is not supported, we need to explicitly set `nullable` attribute:
 
 ```ts
 @Property({ nullable: true })
@@ -99,10 +100,10 @@ prop?: string;
 
 #### Enums
 
-By default, enum is considered as numeric type. For string enums, you need to explicitly 
+By default, enum is considered as numeric type. For string enums, we need to explicitly 
 provide one of:
 
-- reference to the enum (which will force you to define the enum before defining the entity)
+- reference to the enum (which will force we to define the enum before defining the entity)
   ```ts
   @Enum(() => UserRole)
   role: UserRole;
@@ -121,7 +122,7 @@ provide one of:
 #### Circular dependencies
 
 Reading type of referenced entity in `@ManyToOne` and `@OneToOne` properties fails if there is 
-circular dependency. You will need to explicitly define the type in the decorator (preferably 
+circular dependency. We will need to explicitly define the type in the decorator (preferably 
 via `entity: () => ...` callback).
 
 ```ts
@@ -129,21 +130,21 @@ via `entity: () => ...` callback).
 author: Author;
 ``` 
 
-> There can be recursion issues when you define multiple entities (with circular dependencies 
-> between each other) in single file. In that case, you might want to provide the type via decorator's
+> There can be recursion issues when we define multiple entities (with circular dependencies 
+> between each other) in single file. In that case, we might want to provide the type via decorator's
 > `type` or `entity` attributes and set the TS property type to something else (like `any` or `object`).
 
 #### Additional typings might be required
 
-You might have to install additional typings, one example is use of `ObjectId` in MongoDB, 
+We might have to install additional typings, one example is use of `ObjectId` in MongoDB, 
 which requires `@types/mongodb` to be installed. 
 
 ## JavaScriptMetadataProvider
 
 > `JavaScriptMetadataProvider` is deprecated, [use `EntitySchema` instead](entity-schema.md).
 
-This provider should be used only if you are not using TypeScript at all and therefore you do 
-not use decorators to annotate your properties. It will require you to specify the whole schema 
+This provider should be used only if we are not using TypeScript at all and therefore we do 
+not use decorators to annotate our properties. It will require we to specify the whole schema 
 manually. 
 
 ```ts
@@ -153,4 +154,4 @@ await MikroORM.init({
 });
 ```
 
-You can read more about it in [Usage with JavaScript section](usage-with-js.md).
+We can read more about it in [Usage with JavaScript section](usage-with-js.md).

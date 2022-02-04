@@ -18,7 +18,7 @@ or registered as new through `em.persist()`.
 
 `em.flush()` will go through all managed entities, compute appropriate change sets and 
 perform according database queries. As an entity loaded from database becomes managed 
-automatically, you do not have to call persist on those, and flush is enough to update 
+automatically, we do not have to call persist on those, and flush is enough to update 
 them.
 
 ```ts
@@ -31,12 +31,12 @@ await orm.em.flush();
 
 ## Persisting and Cascading
 
-To save entity state to database, you need to persist it. Persist determines 
+To save entity state to database, we need to persist it. Persist determines 
 whether to use `insert` or `update` and computes appropriate change-set. Entity references
 that are not persisted yet (does not have identifier) will be cascade persisted automatically. 
 
 ```ts
-// use constructors in your entities for required parameters
+// use constructors in our entities for required parameters
 const author = new Author('Jon Snow', 'snow@wall.st');
 author.born = new Date();
 
@@ -61,7 +61,7 @@ await orm.em.flush(); // flush everything to database at once
 
 ## Fetching Entities with EntityManager
 
-To fetch entities from database you can use `find()` and `findOne()` of `EntityManager`: 
+To fetch entities from database we can use `find()` and `findOne()` of `EntityManager`: 
 
 Example:
 
@@ -85,7 +85,7 @@ for (const author of authors) {
 }
 ```
 
-To populate entity relations, you can use `populate` parameter.
+To populate entity relations, we can use `populate` parameter.
 
 ```ts
 const books = await orm.em.find(Book, { foo: 1 }, ['author.friends']);
@@ -99,7 +99,7 @@ entities via `QueryBuilder`:
 const authors = await orm.em.createQueryBuilder(Author).select('*').getResult();
 await em.populate(authors, ['books.tags']);
 
-// now your Author entities will have `books` collections populated, 
+// now our Author entities will have `books` collections populated, 
 // as well as they will have their `tags` collections populated.
 console.log(authors[0].books[0].tags[0]); // initialized BookTag
 ```
@@ -113,7 +113,7 @@ supports many different ways:
 // search by entity properties
 const users = await orm.em.find(User, { firstName: 'John' });
 
-// for searching by reference you can use primary key directly
+// for searching by reference we can use primary key directly
 const id = 1;
 const users = await orm.em.find(User, { organization: id });
 
@@ -128,42 +128,55 @@ const users = await orm.em.find(User, { organization: ent });
 // complex queries with operators
 const users = await orm.em.find(User, { $and: [{ id: { $nin: [3, 4] } }, { id: { $gt: 2 } }] });
 
-// you can also search for array of primary keys directly
+// we can also search for array of primary keys directly
 const users = await orm.em.find(User, [1, 2, 3, 4, 5]);
 
-// and in findOne all of this works, plus you can search by single primary key
+// and in findOne all of this works, plus we can search by single primary key
 const user1 = await orm.em.findOne(User, 1);
 ```
 
-As you can see in the fifth example, one can also use operators like `$and`, `$or`, `$gte`, 
+As we can see in the fifth example, one can also use operators like `$and`, `$or`, `$gte`, 
 `$gt`, `$lte`, `$lt`, `$in`, `$nin`, `$eq`, `$ne`, `$like`, `$re`. More about that can be found in 
 [Query Conditions](query-conditions.md) section.
 
-#### Using custom FilterQuery DTO
-If you decide to abstract the filter options in your own object then you might run into the problem that the find option does not return the results you'd expect. This is due to the fact that the FilterQuery should be provided as a POJO (Plain Old JS Object `{}`).
+#### Using custom classes in `FilterQuery`
 
-If you want to provide your own FilterQuery DTO, then your DTO class should extend the `PlainObject` class. This way MikroORM knows it should be treated as such.
+If we decide to abstract the filter options in our own object then we might run into the problem that the find option does not return the results we'd expect. This is due to the fact that the `FilterQuery` should be provided as a plain object (POJO), and not a class instance with prototype.
+
+If we want to provide our own `FilterQuery` DTO, then our DTO class should extend the `PlainObject` class. This way MikroORM knows it should be treated as such.
+
+```ts
+import { PlainObject } from '@mikro-orm/core';
+
+class Filter extends PlainObject {
+  name: string;
+}
+
+const where = new Filter();
+where.name = 'Jon';
+const res = await em.find(Author, where);
+```
 
 #### Mitigating `Type instantiation is excessively deep and possibly infinite.ts(2589)` error
 
-Sometimes you might be facing TypeScript errors caused by too complex query for it to 
+Sometimes we might be facing TypeScript errors caused by too complex query for it to 
 properly infer all types. Usually it can be solved by providing the type argument 
 explicitly.
 
 You can also opt in to use repository instead, as there the type inference should not be
 problematic. 
 
-> As a last resort, you can always type cast the query to `any`.
+> As a last resort, we can always type cast the query to `any`.
 
 ```ts
-const books = await orm.em.find<Book>(Book, { ... your complex query ... });
+const books = await orm.em.find<Book>(Book, { ... our complex query ... });
 // or
-const books = await orm.em.getRepository(Book).find({ ... your complex query ... });
+const books = await orm.em.getRepository(Book).find({ ... our complex query ... });
 // or
-const books = await orm.em.find<any>(Book, { ... your complex query ... }) as Book[];
+const books = await orm.em.find<any>(Book, { ... our complex query ... }) as Book[];
 ```
 
-Another problem you might be facing is `RangeError: Maximum call stack size exceeded` error 
+Another problem we might be facing is `RangeError: Maximum call stack size exceeded` error 
 thrown during TypeScript compilation (usually from file `node_modules/typescript/lib/typescript.js`).
 The solution to this is the same, just provide the type argument explicitly.
 
@@ -171,7 +184,7 @@ The solution to this is the same, just provide the type argument explicitly.
 
 You can also search by referenced entity properties. Simply pass nested where condition like 
 this and all requested relationships will be automatically joined. Currently it will only join 
-them so you can search and sort by those. To populate entities, do not forget to pass the populate 
+them so we can search and sort by those. To populate entities, do not forget to pass the populate 
 parameter as well. 
 
 ```ts
@@ -185,7 +198,7 @@ console.log(author.books[0].tags.isInitialized()); // true, because it was popul
 console.log(author.books[0].tags[0].isInitialized()); // true, because it was populated
 ```
 
-> This feature is fully available only for SQL drivers. In MongoDB always you need to 
+> This feature is fully available only for SQL drivers. In MongoDB always we need to 
 > query from the owning side - so in the example above, first load book tag by name,
 > then associated book, then the author. Another option is to denormalize the schema.  
 
@@ -193,7 +206,7 @@ console.log(author.books[0].tags[0].isInitialized()); // true, because it was po
 
 > This feature is supported only for `SELECT_IN` loading strategy.
 
-When fetching single entity, you can choose to select only parts of an entity via `options.fields`:
+When fetching single entity, we can choose to select only parts of an entity via `options.fields`:
 
 ```ts
 const author = await orm.em.findOne(Author, '...', { fields: ['name', 'born'] });
@@ -220,8 +233,8 @@ It is also possible to use multiple levels:
 const author = await orm.em.findOne(Author, '...', { fields: ['name', { books: ['title', 'price', 'author', { author: ['email'] }] }] });
 ```
 
-Primary keys are always selected even if you omit them. On the other hand, you are responsible 
-for selecting the FKs - if you omit such property, the relation might not be loaded properly.
+Primary keys are always selected even if we omit them. On the other hand, we are responsible 
+for selecting the FKs - if we omit such property, the relation might not be loaded properly.
 In the following example the books would not be linked the author, because we did not specify 
 the `books.author` field to be loaded.
 
@@ -231,11 +244,11 @@ const author = await orm.em.findOne(Author, '...', { fields: ['name', { books: [
 ```
 
 > Same problem can occur in mongo with M:N collections - those are stored as array property 
-> on the owning entity, so you need to make sure to mark such properties too.
+> on the owning entity, so we need to make sure to mark such properties too.
 
 ### Fetching Paginated Results
 
-If you are going to paginate your results, you can use `em.findAndCount()` that will return
+If we are going to paginate our results, we can use `em.findAndCount()` that will return
 total count of entities before applying limit and offset.
 
 ```ts
@@ -246,8 +259,8 @@ console.log(count); // total count, e.g. 1327
 
 ### Handling Not Found Entities
 
-When you call `em.findOne()` and no entity is found based on your criteria, `null` will be 
-returned. If you rather have an `Error` instance thrown, you can use `em.findOneOrFail()`:
+When we call `em.findOne()` and no entity is found based on our criteria, `null` will be 
+returned. If we rather have an `Error` instance thrown, we can use `em.findOneOrFail()`:
 
 ```ts
 const author = await orm.em.findOne(Author, { name: 'does-not-exist' });
@@ -270,13 +283,13 @@ try {
     failHandler: (entityName: string, where: Record<string, any> | IPrimaryKey) => new Error(`Failed: ${entityName} in ${util.inspect(where)}`)
   });
 } catch (e) {
-  console.error(e); // your custom error
+  console.error(e); // our custom error
 }
 ```
 
 ### Using custom SQL fragments
 
-It is possible to use any SQL fragment in your `WHERE` query or `ORDER BY` clause:
+It is possible to use any SQL fragment in our `WHERE` query or `ORDER BY` clause:
 
 > The `expr()` helper is an identity function - all it does is to return its parameter.
 > We can use it to bypass the strict type checks in `FilterQuery`.
@@ -304,7 +317,7 @@ context, load the entities inside that, and clear it afterwards, so the main ide
 will stay clean.
 
 > As opposed to _managed_ entities, such entities are called _detached_. 
-> To be able to work with them, you first need to merge them via `em.registerManaged()`. 
+> To be able to work with them, we first need to merge them via `em.registerManaged()`. 
 
 ```ts
 const users = await orm.em.find(User, { email: 'foo@bar.baz' }, {
@@ -333,10 +346,10 @@ As the last one is the least verbose, it should be preferred.
 
 ## Entity Repositories
 
-Although you can use `EntityManager` directly, much more convenient way is to use 
+Although we can use `EntityManager` directly, much more convenient way is to use 
 [`EntityRepository` instead](https://mikro-orm.io/repositories/). You can register
-your repositories in dependency injection container like [InversifyJS](http://inversify.io/)
-so you do not need to get them from `EntityManager` each time.
+our repositories in dependency injection container like [InversifyJS](http://inversify.io/)
+so we do not need to get them from `EntityManager` each time.
 
 For more examples, take a look at
 [`tests/EntityManager.mongo.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts)

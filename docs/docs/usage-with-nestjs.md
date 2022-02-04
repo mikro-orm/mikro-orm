@@ -74,11 +74,12 @@ export class MyService {
 }
 ```
 
-> Notice that the `EntityManager` is imported from the `@mikro-orm/driver` package, where driver is `mysql`, `sqlite`, `postgres` or what driver you are using.
+> Notice that the `EntityManager` is imported from the `@mikro-orm/driver` package, where driver is `mysql`, `sqlite`, `postgres` or whatever driver you are using.
 > 
 > In case you have `@mikro-orm/knex` installed as a dependency, you can also import the `EntityManager` from there.
 
 ## Repositories
+
 MikroORM supports the repository design pattern. For every entity we can create a repository. Read the complete [documentation on repositories here](repositories.md). To define which repositories shall be registered in the current scope you can use the `forFeature()` method. For example, in this way:
 
 > You should **not** register your base entities via `forFeature()`, as there are no
@@ -148,6 +149,8 @@ export class Author {
 `**./author.repository.ts**`
 
 ```ts
+import { EntityRepository } from '@mikro-orm/mysql'; // Import EntityManager from your driver package or `@mikro-orm/knex`
+
 export class AuthorRepository extends EntityRepository<Author> {
 
   // your custom methods...
@@ -295,8 +298,14 @@ The GraphQL module in NestJS uses `apollo-server-express` which enables `bodypar
  
 ## Using `AsyncLocalStorage` for request context
 
-By default, the `domain` api is used in the `RequestContext` helper. Since `@mikro-orm/core@4.0.3`,
-you can use the new `AsyncLocalStorage` too, if you are on up to date node version:
+:::info
+Since v5 `AsyncLocalStorage` is used inside `RequestContext` helper so this section
+is no longer valid.
+:::
+
+In older versions, the `domain` api was used in the `RequestContext` helper. 
+Since `@mikro-orm/core@4.0.3`, we can use the new `AsyncLocalStorage` too, if 
+you are on up to date node version:
 
 ```ts
 // create new (global) storage instance
@@ -327,12 +336,24 @@ app.use((req, res, next) => {
 
 The `@mikro-orm/nestjs` package exposes `getRepositoryToken()` function that returns prepared token based on a given entity to allow mocking the repository.
 
+> If we register the provider only via `getRepositoryToken()`, we need to use 
+> the `@InjectRepository` decorator. To be able to use custom repository without
+> this decorator, we need to register it with `provide: PhotoRepository`.
+> `provide`: 
+
 ```ts
 @Module({
   providers: [
     PhotoService,
+    // required for `@InjectRepository` decorator
     {
       provide: getRepositoryToken(Photo),
+      useValue: mockedRepository,
+    },
+
+    // required for custom repositories if we don't want to use `@InjectRepository`
+    {
+      provide: PhotoRepository,
       useValue: mockedRepository,
     },
   ],

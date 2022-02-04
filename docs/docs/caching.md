@@ -13,8 +13,8 @@ instance. Default expiration is 1 second.
 const res = await em.find(Book, { author: { name: 'Jon Snow' } }, {
   populate: ['author', 'tags'],
   cache: 50, // set expiration to 50ms
-  // cache: ['cache-id', 50], // set custom cache id and expiration
-  // cache: true, // use default cache id and expiration
+  // cache: ['cache-key', 50], // set custom cache key and expiration
+  // cache: true, // use default cache key and expiration
 });
 ```
 
@@ -33,6 +33,7 @@ the ORM configuration:
 ```ts
 const orm = await MikroORM.init({
   resultCache: {
+    // following options are the defaults
     adapter: MemoryCacheAdapter,
     expiration: 1000, // 1s
     options: {},
@@ -41,4 +42,46 @@ const orm = await MikroORM.init({
 });
 ```
 
+To clear the cached result, we need to load it with explicit cache key, and later
+on we can use `em.clearCache(cacheKey)` method.
+
+```ts
+// set the cache key to 'book-cache-key', with experiation of 60s
+const res = await em.find(Book, { ... }, { cache: ['book-cache-key', 60_000] });
+
+// clear the cache key by name
+await em.clearCache('book-cache-key');
+```
+
 Custom cache adapters need to implement `CacheAdapter` interface.
+
+```ts
+export interface CacheAdapter {
+
+  /**
+   * Gets the items under `name` key from the cache.
+   */
+  get(name: string): Promise<any>;
+
+  /**
+   * Sets the item to the cache. `origin` is used for cache invalidation and should reflect the change in data.
+   */
+  set(name: string, data: any, origin: string, expiration?: number): Promise<void>;
+
+  /**
+   * Removes the item from cache.
+   */
+  remove(name: string): Promise<void>;
+
+  /**
+   * Clears all items stored in the cache.
+   */
+  clear(): Promise<void>;
+
+  /**
+   * Called inside `MikroORM.close()` Allows graceful shutdowns (e.g. for redis).
+   */
+  close?(): Promise<void>;
+
+}
+```

@@ -2,29 +2,29 @@
 title: Naming Strategy
 ---
 
-When mapping your entities to database tables and columns, their names will be defined by naming 
-strategy. There are 3 basic naming strategies you can choose from:
+When mapping our entities to database tables and columns, their names will be defined by naming 
+strategy. There are 3 basic naming strategies we can choose from:
 
 - `UnderscoreNamingStrategy` - default of all SQL drivers
 - `MongoNamingStrategy` - default of `MongoDriver`
 - `EntityCaseNamingStrategy` - uses unchanged entity and property names
 
-You can override this when initializing ORM. You can also provide your own naming strategy, just 
-implement `NamingStrategy` interface and provide your implementation when bootstrapping ORM:
+You can override this when initializing ORM. You can also provide our own naming strategy, just 
+implement `NamingStrategy` interface and provide our implementation when bootstrapping ORM:
 
 ```ts
-class YourCustomNamingStrategy implements NamingStrategy {
+class MyCustomNamingStrategy implements NamingStrategy {
   ...
 }
 
 const orm = await MikroORM.init({
   ...
-  namingStrategy: YourCustomNamingStrategy,
+  namingStrategy: MyCustomNamingStrategy,
   ...
 });
 ```
 
-> You can also extend `AbstractNamingStrategy` which implements one method for you - `getClassName()`
+> You can also extend `AbstractNamingStrategy` which implements one method for we - `getClassName()`
 > that is used to map entity file name to class name.
 
 ## Naming Strategy in mongo driver
@@ -36,7 +36,7 @@ be translated into lower-cased dashed form:
 
 ## Naming Strategy in SQL drivers
 
-`MySqlDriver` defaults to `UnderscoreNamingStrategy`, which means your all your database tables and
+`MySqlDriver` defaults to `UnderscoreNamingStrategy`, which means our all our database tables and
 columns will be lower-cased and words divided by underscored:
 
 ```sql
@@ -108,6 +108,6 @@ the types (e.g. mysql and sqlite enforce the PK name).
 
 Returns alias name for given entity. The alias needs to be unique across the 
 query, which is by default ensured via appended index parameter. It is optional 
-to use it as long as you ensure it will be unique.
+to use it as long as we ensure it will be unique.
 
 ---

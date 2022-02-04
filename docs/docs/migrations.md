@@ -5,7 +5,7 @@ title: Migrations
 > To use migrations we need to first install `@mikro-orm/migrations` package.
 
 MikroORM has integrated support for migrations via [umzug](https://github.com/sequelize/umzug).
-It allows you to generate migrations with current schema differences.
+It allows we to generate migrations with current schema differences.
 
 > Since v5, migrations are stored without extension.
 
@@ -28,7 +28,7 @@ export class Migration20191019195930 extends Migration {
 }
 ```
 
-To support undoing those changed, you can implement the `down` method, which throws an error by default. 
+To support undoing those changed, we can implement the `down` method, which throws an error by default. 
 
 Migrations are by default wrapped in a transaction. You can override this behaviour on 
 per migration basis by implementing the `isTransactional(): boolean` method.
@@ -42,8 +42,8 @@ accessed via `Migration.getKnex()`;
 
 ## Initial migration
 
-If you want to start using migrations, and you already have the schema generated, 
-you can do so by creating so called initial migration:
+If we want to start using migrations, and we already have the schema generated, 
+we can do so by creating so called initial migration:
 
 > Initial migration can be created only if there are no migrations previously
 > generated or executed. 
@@ -58,7 +58,7 @@ This will create the initial migration, containing the schema dump from
 ## Snapshots
 
 Creating new migration will automatically save the target schema snapshot into 
-migrations folder. This snapshot will be then used if you try to create new migration,
+migrations folder. This snapshot will be then used if we try to create new migration,
 instead of using current database schema. This means that if we try to create new 
 migration before we run the pending ones, we still get the right schema diff.
 
@@ -79,7 +79,7 @@ await MikroORM.init({
   migrations: {
     tableName: 'mikro_orm_migrations', // name of database table with log of executed transactions
     path: './migrations', // path to the folder with migrations
-    pathTs: undefined, // path to the folder with TS migrations (if used, you should put path to compiled files in `path`)
+    pathTs: undefined, // path to the folder with TS migrations (if used, we should put path to compiled files in `path`)
     glob: '!(*.d).{js,ts}', // how to match migration files (all .js and .ts files, but not .d.ts)
     transactional: true, // wrap each migration in a transaction
     disableForeignKeys: true, // wrap statements with `set foreign_key_checks = 0` or equivalent
@@ -115,7 +115,7 @@ await MikroORM.init({
 });
 ```
 
-This should allow using CLI to generate TS migration files (as in CLI you probably
+This should allow using CLI to generate TS migration files (as in CLI we probably
 have TS support enabled), while using compiled JS files in production, where ts-node
 is not registered.
 
@@ -170,7 +170,7 @@ npx mikro-orm migration:fresh    # Drop the database and migrate up to the lates
 > To create blank migration file, we can use 
 > `npx mikro-orm migration:create --blank`.
 
-For `migration:up` and `migration:down` commands you can specify `--from` (`-f`), `--to` (`-t`) 
+For `migration:up` and `migration:down` commands we can specify `--from` (`-f`), `--to` (`-t`) 
 and `--only` (`-o`) options to run only a subset of migrations:
 
 ```sh
@@ -179,10 +179,10 @@ npx mikro-orm migration:up --only 2019101923                  # apply a single m
 npx mikro-orm migration:down --to 0                           # migrate down all migrations
 ```
 
-> To run TS migration files, you will need to [enable `useTsNode` flag](installation.md)
-> in your `package.json`.
+> To run TS migration files, we will need to [enable `useTsNode` flag](installation.md#setting-up-the-commandline-tool)
+> in our `package.json`.
 
-For the `migration:fresh` command you can specify `--seed` to seed the database after migrating.
+For the `migration:fresh` command we can specify `--seed` to seed the database after migrating.
 ```shell
 npx mikro-orm migration:fresh --seed              # seed the database with the default database seeder
 npx mikro-orm migration:fresh --seed=UsersSeeder  # seed the database with the UsersSeeder
@@ -191,14 +191,14 @@ npx mikro-orm migration:fresh --seed=UsersSeeder  # seed the database with the U
 
 ## Using the Migrator programmatically
 
-Or you can create a simple script where you initialize MikroORM like this:
+Or we can create a simple script where we initialize MikroORM like this:
 
 ```ts title="./migrate.ts"
 import { MikroORM } from '@mikro-orm/core';
 
 (async () => {
   const orm = await MikroORM.init({
-    dbName: 'your-db-name',
+    dbName: 'our-db-name',
     // ...
   });
 
@@ -224,7 +224,7 @@ $ ts-node migrate
 
 ## Providing transaction context
 
-In some cases you might want to control the transaction context yourself:
+In some cases we might want to control the transaction context ourselves:
 
 ```ts
 await orm.em.transactional(async em => {
@@ -234,7 +234,7 @@ await orm.em.transactional(async em => {
 
 ## Importing migrations statically
 
-If you do not want to dynamically import a folder (e.g. when bundling your code with webpack) you can import migrations
+If we do not want to dynamically import a folder (e.g. when bundling our code with webpack) we can import migrations
 directly.
 
 ```ts
@@ -291,5 +291,3 @@ queries automatically, so transactions are not working as expected.
 
 - https://github.com/mikro-orm/mikro-orm/issues/217
 - https://dev.mysql.com/doc/refman/5.7/en/implicit-commit.html
-
-[&larr; Back to table of contents](index.md#table-of-contents)

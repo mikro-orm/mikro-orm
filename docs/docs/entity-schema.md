@@ -2,19 +2,24 @@
 title: Defining Entities via EntitySchema
 ---
 
-With `EntitySchema` helper you define the schema programmatically. 
+With `EntitySchema` helper we define the schema programmatically. 
 
 ```ts title="./entities/Book.ts"
-export interface Book extends BaseEntity {
+export interface Book extends CustomBaseEntity {
   title: string;
   author: Author;
   publisher: Publisher;
   tags: Collection<BookTag>;
 }
 
-export const schema = new EntitySchema<Book, BaseEntity>({
+// The second type argument is optional, and should be used only with custom
+// base entities, not with the `BaseEntity` class exported from `@mikro-orm/core`. 
+export const schema = new EntitySchema<Book, CustomBaseEntity>({
+  // name should be used only with interfaces
   name: 'Book',
-  extends: 'BaseEntity',
+  // if we use actual class, we need this instead:
+  // class: Book,
+  extends: 'CustomBaseEntity', // only if we extend custom base entity
   properties: {
     title: { type: 'string' },
     author: { reference: 'm:1', entity: 'Author', inversedBy: 'books' },
@@ -35,17 +40,12 @@ await repo.persistAndFlush(author);
 
 > Using this approach, metadata caching is automatically disabled as it is not needed.
 
-#### Using DTO class
-It is very common to define a DTO (Data Transfer Object) to validate incoming request bodies and pass the request body data on to the other parts of your application. If you pass the DTO directly to the `create` method it could lead to unexpected results. The data for the `create` method should be provided as a POJO (Plain Old JS Object `{}`).
-
-You can achieve this by letting your DTO class extend the `PlainObject` class. This way MikroORM knows it should be treated as such.
-
 ## Using custom entity classes
 
 You can optionally use custom class for entity instances.  
 
 ```ts title="./entities/Author.ts"
-export class Author extends BaseEntity {
+export class Author extends CustomBaseEntity {
   name: string;
   email: string;
   age?: number;
@@ -57,12 +57,13 @@ export class Author extends BaseEntity {
   version?: number;
   
   constructor(name: string, email: string) {
+    super();
     this.name = name;
     this.email = email;
   }
 }
 
-export const schema = new EntitySchema<Author, BaseEntity>({
+export const schema = new EntitySchema<Author, CustomBaseEntity>({
   class: Author,
   properties: {
     name: { type: 'string' },
@@ -86,19 +87,19 @@ const author = new Author('name', 'email');
 await repo.persistAndFlush(author);
 ```
 
-## Using BaseEntity
+## Using custom base entity
 
 Do not forget that base entities needs to be discovered just like normal entities. 
 
 ```ts title="./entities/BaseEntity.ts"
-export interface BaseEntity {
+export interface CustomBaseEntity {
   id: number;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export const schema = new EntitySchema<BaseEntity>({
-  name: 'BaseEntity',
+export const schema = new EntitySchema<CustomBaseEntity>({
+  name: 'CustomBaseEntity',
   abstract: true,
   properties: {
     id: { type: 'number', primary: true },
