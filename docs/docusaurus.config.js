@@ -155,5 +155,20 @@ module.exports = {
         cleanOutputDir: true,
       },
     ],
+    [
+      '@docusaurus/plugin-client-redirects',
+      {
+        redirects: [
+          {
+            from: '/docs/lifecycle-hooks',
+            to: '/docs/events',
+          },
+          {
+            from: '/docs/debugging',
+            to: '/docs/logging',
+          },
+        ],
+      },
+    ],
   ],
 };

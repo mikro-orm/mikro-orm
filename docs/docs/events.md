@@ -1,13 +1,13 @@
 ---
-title: Lifecycle Hooks and EventSubscriber
-sidebar_label: Hooks and Events
+title: Events and Lifecycle Hooks
+sidebar_label: Events and Hooks
 ---
 
 There are two ways to hook to the lifecycle of an entity: 
 
 - **Lifecycle hooks** are methods defined on the entity prototype.
 - **EventSubscriber**s are classes that can be used to hook to multiple entities
-  or when you do not want to have the method present on the entity prototype.
+  or when we do not want to have the method present on the entity prototype.
 
 > Hooks are internally executed the same way as subscribers.
 
@@ -15,17 +15,15 @@ There are two ways to hook to the lifecycle of an entity:
 
 ## Hooks
 
-You can use lifecycle hooks to run some code when entity gets persisted. You can mark any of
-entity methods with them, you can also mark multiple methods with same hook.
+We can use lifecycle hooks to run some code when entity gets persisted. We can mark any of
+entity methods with them, we can also mark multiple methods with same hook.
 
 All hooks support async methods with one exception - `@OnInit`.
 
 - `@OnInit` is fired when new instance of entity is created, either manually `em.create()`, or 
 automatically when new entities are loaded from database
 
-- `@OnLoad` is fired when new entity is loaded into context (e.g. via `em.find()` 
-  or `em.populate()`). As opposed to `@OnInit` this will be fired only for fully 
-  loaded entities, not references, and this hook can be async. 
+- `@OnLoad` is fired when new entity is loaded into context (e.g. via `em.find()` or `em.populate()`). As opposed to `@OnInit` this will be fired only for fully loaded entities, not references, and this hook can be async. 
 
 - `@BeforeCreate()` and `@BeforeUpdate()` is fired right before we persist the entity in database
 
@@ -39,7 +37,7 @@ removing entity or entity reference, not when deleting records by query.
 - `@AfterDelete()` is fired right after the record gets deleted from database and it is unset from 
 the identity map.
 
-> `@OnInit` is not fired when you create the entity manually via its constructor (`new MyEntity()`)
+> `@OnInit` is not fired when we create the entity manually via its constructor (`new MyEntity()`)
 
 > `@OnInit` can be sometimes fired twice, once when the entity reference is
 > created, and once after its populated. To distinguish between those we can
@@ -58,12 +56,12 @@ locking errors.
 
 ## EventSubscriber
 
-Use `EventSubscriber` to hook to multiple entities or if you do not want to pollute
-the entity prototype. All methods are optional, if you omit the `getSubscribedEntities()`
-method, it means you are subscribing to all entities.
+Use `EventSubscriber` to hook to multiple entities or if we do not want to pollute
+the entity prototype. All methods are optional, if we omit the `getSubscribedEntities()`
+method, it means we are subscribing to all entities.
 
-You can either register the subscribers manually in the ORM configuration (via 
-`subscribers` array where you put the instance):
+We can either register the subscribers manually in the ORM configuration (via 
+`subscribers` array where we put the instance):
 
 ```ts
 MikroORM.init({
@@ -71,8 +69,8 @@ MikroORM.init({
 });
 ```
 
-Or use `@Subscriber()` decorator - keep in mind that you need to make sure the file gets 
-loaded in order to make this decorator registration work (e.g. you import that file 
+Or use `@Subscriber()` decorator - keep in mind that we need to make sure the file gets 
+loaded in order to make this decorator registration work (e.g. we import that file 
 explicitly somewhere).
 
 ```ts
@@ -104,17 +102,28 @@ import { EventArgs, EventSubscriber, Subscriber } from '@mikro-orm/core';
 @Subscriber()
 export class EverythingSubscriber implements EventSubscriber {
 
+  // entity life cycle events
+  onInit<T>(args: EventArgs<T>): void { ... }
+  async onLoad<T>(args: EventArgs<T>): Promise<void> { ... }
   async beforeCreate<T>(args: EventArgs<T>): Promise<void> { ... }
   async afterCreate<T>(args: EventArgs<T>): Promise<void> { ... }
   async beforeUpdate<T>(args: EventArgs<T>): Promise<void> { ... }
   async afterUpdate<T>(args: EventArgs<T>): Promise<void> { ... }
   async beforeDelete<T>(args: EventArgs<T>): Promise<void> { ... }
   async afterDelete<T>(args: EventArgs<T>): Promise<void> { ... }
+  
+  // flush events
   async beforeFlush<T>(args: EventArgs<T>): Promise<void> { ... }
   async onFlush<T>(args: EventArgs<T>): Promise<void> { ... }
   async afterFlush<T>(args: EventArgs<T>): Promise<void> { ... }
-  async onLoad<T>(args: EventArgs<T>): Promise<void> { ... }
-  onInit<T>(args: EventArgs<T>): void { ... }
+
+  // transaction events
+  async beforeTransactionStart(args: TransactionEventArgs): Promise<void> { ... }
+  async afterTransactionStart(args: TransactionEventArgs): Promise<void> { ... }
+  async beforeTransactionCommit(args: TransactionEventArgs): Promise<void> { ... }
+  async afterTransactionCommit(args: TransactionEventArgs): Promise<void> { ... }
+  async beforeTransactionRollback(args: TransactionEventArgs): Promise<void> { ... }
+  async afterTransactionRollback(args: TransactionEventArgs): Promise<void> { ... }
 
 }
 ```
@@ -146,6 +155,7 @@ enum ChangeSetType {
   CREATE = 'create',
   UPDATE = 'update',
   DELETE = 'delete',
+  DELETE_EARLY = 'delete_early',
 }
 ```
 
@@ -174,9 +184,29 @@ interface FlushEventArgs extends Omit<EventArgs<unknown>, 'entity'> {
 > will not have any effect for those. They are fired only once per the `flush` 
 > operation.
 
+## Transaction events
+
+We can also tap into the database transaction events:
+
+- `beforeTransactionStart`
+- `afterTransactionStart`
+- `beforeTransactionCommit`
+- `afterTransactionCommit`
+- `beforeTransactionRollback`
+- `afterTransactionRollback`
+
+Transaction event args will not contain any entity instance, as they are entity agnostic. They do contain additional reference to the `UnitOfWork` instance and native `Transaction` object (e.g. for SQL drivers it will be knex client instance).
+
+```ts
+export interface TransactionEventArgs extends Omit<EventArgs<unknown>, 'entity' | 'changeSet'> {
+  transaction?: Transaction;
+  uow?: UnitOfWork;
+}
+```
+
 ### Getting the changes from UnitOfWork
 
-You can observe all the changes that are part of given UnitOfWork via those methods:
+We can observe all the changes that are part of given UnitOfWork via those methods:
 
 ```ts
 UnitOfWork.getChangeSets(): ChangeSet<AnyEntity>[];

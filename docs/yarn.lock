@@ -2610,7 +2610,7 @@
     url-loader "^4.1.1"
     webpack "^5.61.0"
 
-"@docusaurus/plugin-client-redirects@2.0.0-beta.15":
+"@docusaurus/plugin-client-redirects@^2.0.0-beta.15":
   version "2.0.0-beta.15"
   resolved "https://registry.yarnpkg.com/@docusaurus/plugin-client-redirects/-/plugin-client-redirects-2.0.0-beta.15.tgz#ccee67923e7e80ef76a995d7b495a42a1449ae2c"
   integrity sha512-FcH1y+a+Bmc5x50kZn5RvLr2a6iPiGnRK4iUP7G1eNozJC+8+93OwyZYSCdEOf2LyoVOtEq06xlfORFP2mfQDQ==
