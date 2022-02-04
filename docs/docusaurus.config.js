@@ -160,12 +160,12 @@ module.exports = {
       {
         redirects: [
           {
-            from: '/docs/lifecycle-hooks',
-            to: '/docs/events',
+            from: '/docs/next/lifecycle-hooks',
+            to: '/docs/next/events',
           },
           {
-            from: '/docs/debugging',
-            to: '/docs/logging',
+            from: '/docs/next/debugging',
+            to: '/docs/next/logging',
           },
         ],
       },
