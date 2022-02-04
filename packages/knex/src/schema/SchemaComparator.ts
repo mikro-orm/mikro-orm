@@ -429,6 +429,11 @@ export class SchemaComparator {
    * Compares index1 with index2 and returns index2 if there are any differences or false in case there are no differences.
    */
   diffIndex(index1: Index, index2: Index): boolean {
+    // if one of them is a custom expression, compare only by name
+    if (index1.expression || index2.expression) {
+      return index1.keyName !== index2.keyName;
+    }
+
     return !this.isIndexFulfilledBy(index1, index2) || !this.isIndexFulfilledBy(index2, index1);
   }
 

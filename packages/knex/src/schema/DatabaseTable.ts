@@ -357,7 +357,7 @@ export class DatabaseTable {
   addIndex(meta: EntityMetadata, index: { properties: string | string[]; name?: string; type?: string; expression?: string; options?: Dictionary }, type: 'index' | 'unique' | 'primary') {
     const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
 
-    if (properties.length === 0) {
+    if (properties.length === 0 && !index.expression) {
       return;
     }
 
