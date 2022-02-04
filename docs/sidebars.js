@@ -28,7 +28,7 @@ module.exports = {
       'loading-strategies',
       'serializing',
       'entity-helper',
-      'lifecycle-hooks',
+      'events',
       'composite-keys',
       'custom-types',
       'embeddables',
