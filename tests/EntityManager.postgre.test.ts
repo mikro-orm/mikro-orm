@@ -1578,25 +1578,42 @@ describe('EntityManagerPostgre', () => {
     await createBooksWithTags();
 
     const mock = mockLogger(orm, ['query']);
+    const call = () => orm.em.findOneOrFail(Book2, {
+      author: { name: 'Jon Snow' },
+    }, {
+      populate: ['author', 'tags'],
+      cache: ['abc', 50],
+      strategy: LoadStrategy.JOINED,
+    });
 
-    const res1 = await orm.em.findOneOrFail(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags'], cache: ['abc', 50], strategy: LoadStrategy.JOINED });
+    const res1 = await call();
     expect(mock.mock.calls).toHaveLength(1);
     orm.em.clear();
 
-    const res2 = await orm.em.findOneOrFail(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags'], cache: ['abc', 50], strategy: LoadStrategy.JOINED });
+    const res2 = await call();
     expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
     expect(wrap(res1).toObject()).toEqual(wrap(res2).toObject());
     orm.em.clear();
 
-    const res3 = await orm.em.findOneOrFail(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags'], cache: ['abc', 50], strategy: LoadStrategy.JOINED });
+    const res3 = await call();
     expect(mock.mock.calls).toHaveLength(1); // cache hit, no new query fired
     expect(wrap(res1).toObject()).toEqual(wrap(res3).toObject());
     orm.em.clear();
 
     await new Promise(r => setTimeout(r, 100)); // wait for cache to expire
-    const res4 = await orm.em.findOneOrFail(Book2, { author: { name: 'Jon Snow' } }, { populate: ['author', 'tags'], cache: ['abc', 50], strategy: LoadStrategy.JOINED });
+    const res4 = await call();
     expect(mock.mock.calls).toHaveLength(2); // cache miss, new query fired
     expect(wrap(res1).toObject()).toEqual(wrap(res4).toObject());
+
+    const res5 = await call();
+    expect(mock.mock.calls).toHaveLength(2); // cache hit
+    expect(wrap(res1).toObject()).toEqual(wrap(res5).toObject());
+
+    // clear key
+    await orm.em.clearCache('abc');
+    const res6 = await call();
+    expect(mock.mock.calls).toHaveLength(3); // cache miss as we just cleared the key
+    expect(wrap(res1).toObject()).toEqual(wrap(res6).toObject());
   });
 
   test('result caching (count)', async () => {

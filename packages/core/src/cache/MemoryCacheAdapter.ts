@@ -7,7 +7,7 @@ export class MemoryCacheAdapter implements CacheAdapter {
   constructor(private readonly options: { expiration: number }) { }
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   async get<T = any>(name: string): Promise<T | undefined> {
     const data = this.data.get(name);
@@ -24,14 +24,21 @@ export class MemoryCacheAdapter implements CacheAdapter {
   }
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   async set(name: string, data: any, origin: string, expiration?: number): Promise<void> {
     this.data.set(name, { data, expiration: Date.now() + (expiration ?? this.options.expiration) });
   }
 
   /**
-   * @inheritdoc
+   * @inheritDoc
+   */
+  async remove(name: string): Promise<void> {
+    this.data.delete(name);
+  }
+
+  /**
+   * @inheritDoc
    */
   async clear(): Promise<void> {
     this.data.clear();

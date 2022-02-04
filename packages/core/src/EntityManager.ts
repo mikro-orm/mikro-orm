@@ -1055,6 +1055,22 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
+   * Clears result cache for given cache key. If we want to be able to call this method,
+   * we need to set the cache key explicitly when storing the cache.
+   *
+   * ```ts
+   * // set the cache key to 'book-cache-key', with experiation of 60s
+   * const res = await em.find(Book, { ... }, { cache: ['book-cache-key', 60_000] });
+   *
+   * // clear the cache key by name
+   * await em.clearCache('book-cache-key');
+   * ```
+   */
+  async clearCache(cacheKey: string) {
+    await this.resultCache.remove(cacheKey);
+  }
+
+  /**
    * Returns the ID of this EntityManager. Respects the context, so global EM will give you the contextual ID
    * if executed inside request context handler.
    */

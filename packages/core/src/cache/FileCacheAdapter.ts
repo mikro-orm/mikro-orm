@@ -13,7 +13,7 @@ export class FileCacheAdapter implements CacheAdapter {
               private readonly pretty = false) { }
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   async get(name: string): Promise<any> {
     const path = await this.path(name);
@@ -33,7 +33,7 @@ export class FileCacheAdapter implements CacheAdapter {
   }
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   async set(name: string, data: any, origin: string): Promise<void> {
     const [path, hash] = await Promise.all([
@@ -46,7 +46,15 @@ export class FileCacheAdapter implements CacheAdapter {
   }
 
   /**
-   * @inheritdoc
+   * @inheritDoc
+   */
+  async remove(name: string): Promise<void> {
+    const path = await this.path(name);
+    await unlink(path);
+  }
+
+  /**
+   * @inheritDoc
    */
   async clear(): Promise<void> {
     const path = await this.path('*');

@@ -3,21 +3,28 @@ import type { CacheAdapter } from './CacheAdapter';
 export class NullCacheAdapter implements CacheAdapter {
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   async get(name: string): Promise<any> {
     return null;
   }
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   async set(name: string, data: any, origin: string): Promise<void> {
     // ignore
   }
 
   /**
-   * @inheritdoc
+   * @inheritDoc
+   */
+  async remove(name: string): Promise<void> {
+    // ignore
+  }
+
+  /**
+   * @inheritDoc
    */
   async clear(): Promise<void> {
     // ignore
