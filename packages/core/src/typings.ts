@@ -6,7 +6,8 @@ import type { EntitySchema, MetadataStorage } from './metadata';
 import type { Type } from './types';
 import type { Platform } from './platforms';
 import type { Configuration } from './utils';
-import { EntityComparator, Utils } from './utils';
+import { Utils } from './utils/Utils';
+import { EntityComparator } from './utils/EntityComparator';
 import type { EntityManager } from './EntityManager';
 
 export type Constructor<T = unknown> = new (...args: any[]) => T;
@@ -670,9 +671,6 @@ export interface ISeedManager {
 
 export interface Seeder {
   run(em: EntityManager): Promise<void>;
-}
-
-export abstract class PlainObject {
 }
 
 export type MaybePromise<T> = T | Promise<T>;

@@ -165,3 +165,6 @@ export interface TransactionOptions {
   isolationLevel?: IsolationLevel;
   flushMode?: FlushMode;
 }
+
+export abstract class PlainObject {
+}

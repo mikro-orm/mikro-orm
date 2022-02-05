@@ -10,8 +10,7 @@ import { pathExists } from 'fs-extra';
 import { createHash } from 'crypto';
 import { recovery } from 'escaya';
 import type { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityName, EntityProperty, IMetadataStorage, Primary } from '../typings';
-import { PlainObject } from '../typings';
-import { GroupOperator, QueryOperator, ReferenceType } from '../enums';
+import { GroupOperator, QueryOperator, ReferenceType, PlainObject } from '../enums';
 import type { Collection } from '../entity';
 import type { Platform } from '../platforms';
 

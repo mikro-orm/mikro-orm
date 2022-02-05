@@ -4,7 +4,7 @@ import type { AnyEntity, Dictionary, EntityMetadata, EntityProperty, FilterDef, 
 import { ARRAY_OPERATORS, GroupOperator, ReferenceType } from '../enums';
 import type { Platform } from '../platforms';
 import type { MetadataStorage } from '../metadata/MetadataStorage';
-import { JsonType } from '../types';
+import { JsonType } from '../types/JsonType';
 
 export class QueryHelper {
 
