@@ -175,6 +175,21 @@
       "label": "Reference",
       "items": [
         {
+          "type": "link",
+          "label": "EntityManager API",
+          "href": "/api/core/class/EventManager"
+        },
+        {
+          "type": "link",
+          "label": "EntityRepository API",
+          "href": "/api/core/class/EntityRepository"
+        },
+        {
+          "type": "link",
+          "label": "QueryBuilder API",
+          "href": "/api/knex/class/QueryBuilder"
+        },
+        {
           "type": "doc",
           "id": "version-4.5/decorators"
         },

@@ -172,6 +172,14 @@ module.exports = {
       {
         redirects: [
           {
+            from: '/docs',
+            to: '/docs/installation',
+          },
+          {
+            from: '/docs/next',
+            to: '/docs/next/installation',
+          },
+          {
             from: '/docs/next/lifecycle-hooks',
             to: '/docs/next/events',
           },
