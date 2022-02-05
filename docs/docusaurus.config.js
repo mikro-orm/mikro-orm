@@ -6,7 +6,20 @@
  */
 
 const pkg = require('../packages/core/package.json');
-const packages = ['core', 'knex', 'cli', 'migrations', 'entity-generator', 'reflection'].map(d => ({ path: `packages/${d}` }));
+const packages = [
+  'core',
+  'knex',
+  'cli',
+  'migrations',
+  'entity-generator',
+  'reflection',
+  'sqlite',
+  'mariadb',
+  'mongodb',
+  'mysql',
+  'postgresql',
+  'seeder',
+].map(d => ({ path: `packages/${d}` }));
 
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 module.exports = {
@@ -84,8 +97,9 @@ module.exports = {
           items: [
             { label: 'Installation & Usage', to: 'docs/installation' },
             { label: 'Quick Start', href: 'https://github.com/mikro-orm/mikro-orm#-quick-start' },
-            { label: 'Migration from v3 to v4', to: 'docs/upgrading-v3-to-v4' },
-            { label: 'Version 3.6 docs', to: 'docs/3.6/installation' },
+            { label: 'Migration from v4 to v5', to: 'docs/upgrading-v4-to-v5' },
+            { label: 'Version 4.5 docs', to: 'docs/installation' },
+            // { label: 'Version 4.5 docs', to: 'docs/4.5/installation' }, // FIXME after release
           ],
         },
         {
@@ -142,8 +156,6 @@ module.exports = {
         projectRoot: `${__dirname}/..`,
         packages,
         typedocOptions: {
-          // excludeExternals: false,
-          // entryPoints: packages,
           readme: 'none',
           tsconfig: '../tsconfig.json',
           excludeExternals: true,
