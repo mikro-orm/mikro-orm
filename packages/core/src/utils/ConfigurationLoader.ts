@@ -6,6 +6,7 @@ import type { Options } from './Configuration';
 import { Configuration } from './Configuration';
 import { Utils } from './Utils';
 import type { Dictionary } from '../typings';
+import { colors } from '../logging/colors';
 
 /**
  * @internal
@@ -197,6 +198,51 @@ export class ConfigurationLoader {
     cleanup(ret, 'seeder');
 
     return ret;
+  }
+
+  static async getORMPackages(): Promise<Set<string>> {
+    const pkg = await this.getPackageConfig();
+    return new Set([
+      ...Object.keys(pkg.dependencies ?? {}),
+      ...Object.keys(pkg.devDependencies ?? {}),
+    ]);
+  }
+
+  static async getORMPackageVersion(name: string): Promise<string | undefined> {
+    /* istanbul ignore next */
+    try {
+      const pkg = await Utils.dynamicImport<{ version?: string }>(`${name}/package.json`);
+      return pkg?.version;
+    } catch (e) {
+      return undefined;
+    }
+  }
+
+  // inspired by https://github.com/facebook/mikro-orm/pull/3386
+  static async checkPackageVersion(): Promise<string> {
+    const coreVersion = await Utils.getORMVersion();
+    const deps = await this.getORMPackages();
+    const exceptions = new Set(['nestjs', 'sql-highlighter', 'mongo-highlighter']);
+    const ormPackages = [...deps].filter(d => d.startsWith('@mikro-orm/') && !exceptions.has(d.substring('@mikro-orm/'.length)));
+
+    if (process.env.MIKRO_ORM_ALLOW_VERSION_MISMATCH) {
+      return coreVersion;
+    }
+
+    for (const ormPackage of ormPackages) {
+      const version = await this.getORMPackageVersion(ormPackage);
+
+      if (version !== coreVersion) {
+        throw new Error(
+          `Bad ${colors.cyan(ormPackage)} version ${colors.yellow('' + version)}.\n` +
+          `All official @mikro-orm/* packages need to have the exact same version as @mikro-orm/core (${colors.green(coreVersion)}).\n` +
+          `Only exceptions are packages that don't live in the 'mikro-orm' repository: ${[...exceptions].join(', ')}.\n` +
+          `Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?`,
+        );
+      }
+    }
+
+    return coreVersion;
   }
 
 }

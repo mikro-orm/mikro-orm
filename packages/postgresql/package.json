@@ -6,6 +6,7 @@
   "module": "dist/index.mjs",
   "typings": "dist/index.d.ts",
   "exports": {
+    "./package.json": "./package.json",
     ".": {
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
@@ -56,7 +57,7 @@
   },
   "dependencies": {
     "@mikro-orm/knex": "^5.0.0-rc.2",
-    "pg": "8.7.1"
+    "pg": "8.7.3"
   },
   "devDependencies": {
     "@mikro-orm/core": "^5.0.0-rc.2"

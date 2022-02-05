@@ -813,16 +813,16 @@ export class Utils {
     return Function(`return import('${id}')`)();
   }
 
-  static getORMVersion(): string {
+  static async getORMVersion(): Promise<string> {
     /* istanbul ignore next */
     try {
       // this works with ts-node during development (where we have `src` folder)
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      return require('../../package.json').version;
+      const pkg = await this.dynamicImport('../../package.json');
+      return pkg.version;
     } catch {
       // this works with node in production build (where we do not have the `src` folder)
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      return require('../package.json').version;
+      const pkg = await this.dynamicImport('../package.json');
+      return pkg.version;
     }
   }
 

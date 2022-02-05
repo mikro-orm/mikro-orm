@@ -19,7 +19,9 @@ import { CreateDatabaseCommand } from './commands/CreateDatabaseCommand';
 export class CLIConfigurator {
 
   static async configure(): Promise<Argv> {
+    await ConfigurationLoader.checkPackageVersion();
     const settings = await ConfigurationLoader.getSettings();
+    const version = await Utils.getORMVersion();
 
     if (settings.useTsNode) {
       await ConfigurationLoader.registerTsNode(settings.tsConfigPath);
@@ -28,7 +30,7 @@ export class CLIConfigurator {
     // noinspection HtmlDeprecatedTag
     return yargs
       .scriptName('mikro-orm')
-      .version(Utils.getORMVersion())
+      .version(version)
       .usage('Usage: $0 <command> [options]')
       .example('$0 schema:update --run', 'Runs schema synchronization')
       .alias('v', 'version')

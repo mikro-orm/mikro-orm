@@ -8,7 +8,7 @@ jest.mock('knex', () => ({ knex }));
 
 (global as any).process.env.FORCE_COLOR = 0;
 
-import { Configuration, EntityManager, MikroORM, NullCacheAdapter } from '@mikro-orm/core';
+import { Configuration, EntityManager, MikroORM, NullCacheAdapter, Utils } from '@mikro-orm/core';
 import fs from 'fs-extra';
 import { BASE_DIR } from './helpers';
 import { Author, Test } from './entities';
@@ -198,7 +198,8 @@ describe('MikroORM', () => {
       debug: ['info'],
       logger,
     });
-    expect(logger.mock.calls[0][0]).toEqual('[info] MikroORM failed to connect to database not-found on mysql://root@127.0.0.1:3306');
+    expect(logger.mock.calls[0][0]).toEqual(`[info] MikroORM version: ${await Utils.getORMVersion()}`);
+    expect(logger.mock.calls[1][0]).toEqual('[info] MikroORM failed to connect to database not-found on mysql://root@127.0.0.1:3306');
   });
 
   test('orm.close() calls CacheAdapter.close()', async () => {

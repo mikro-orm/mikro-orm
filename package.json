@@ -52,34 +52,6 @@
     "run-rs-in-background": "yarn run-rs > /dev/null 2>&1 &",
     "lint": "eslint packages/**/*.ts"
   },
-  "jest": {
-    "testTimeout": 30000,
-    "preset": "ts-jest",
-    "collectCoverage": false,
-    "collectCoverageFrom": [
-      "<rootDir>/packages/*/src/**/*.ts"
-    ],
-    "moduleNameMapper": {
-      "@mikro-orm/mongo-highlighter": "<rootDir>/node_modules/@mikro-orm/mongo-highlighter",
-      "@mikro-orm/sql-highlighter": "<rootDir>/node_modules/@mikro-orm/sql-highlighter",
-      "@mikro-orm/(.*)": "<rootDir>/packages/$1/src"
-    },
-    "modulePathIgnorePatterns": [
-      "dist/package.json",
-      "<rootDir>/package.json"
-    ],
-    "coveragePathIgnorePatterns": [
-      "<rootDir>/packages/cli/src/cli.ts"
-    ],
-    "setupFiles": [
-      "<rootDir>/tests/setup.ts"
-    ],
-    "globals": {
-      "ts-jest": {
-        "tsconfig": "tests/tsconfig.json"
-      }
-    }
-  },
   "commitlint": {
     "extends": [
       "@commitlint/config-conventional"
@@ -141,7 +113,7 @@
     "gen-esm-wrapper": "1.1.3",
     "guid-typescript": "1.0.9",
     "husky": "7.0.4",
-    "jest": "27.4.7",
+    "jest": "27.5.0",
     "lerna": "4.0.0",
     "lint-staged": "12.3.3",
     "mongodb": "4.3.1",

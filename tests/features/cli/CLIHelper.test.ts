@@ -124,12 +124,41 @@ describe('CLIHelper', () => {
     Object.keys(process.env).filter(k => k.startsWith('MIKRO_ORM_')).forEach(k => delete process.env[k]);
     process.env.MIKRO_ORM_ALLOW_GLOBAL_CONTEXT = '1';
     process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI = '1';
+    process.env.MIKRO_ORM_ALLOW_VERSION_MISMATCH = '1';
   });
 
   test('disallows global install of CLI package', async () => {
     delete process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI;
     await expect(CLIHelper.getConfiguration()).rejects.toThrowError(`@mikro-orm/cli needs to be installed as a local dependency!`);
     process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI = '1';
+  });
+
+  test('disallows version mismatch of ORM packages', async () => {
+    delete process.env.MIKRO_ORM_ALLOW_VERSION_MISMATCH;
+    const spy = jest.spyOn(ConfigurationLoader, 'getORMPackages');
+    spy.mockResolvedValueOnce(new Set(['@mikro-orm/weird-package']));
+    const spy3 = jest.spyOn(Utils, 'getORMVersion');
+    spy3.mockResolvedValue('5.0.0');
+
+    await expect(ConfigurationLoader.checkPackageVersion()).rejects.toThrowError(`Bad @mikro-orm/weird-package version undefined.
+All official @mikro-orm/* packages need to have the exact same version as @mikro-orm/core (5.0.0).
+Only exceptions are packages that don't live in the 'mikro-orm' repository: nestjs, sql-highlighter, mongo-highlighter.
+Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?`);
+
+    spy.mockResolvedValueOnce(new Set(['@mikro-orm/weird-package']));
+    const spy2 = jest.spyOn(ConfigurationLoader, 'getORMPackageVersion');
+    spy2.mockResolvedValueOnce('1.2.3');
+
+    await expect(ConfigurationLoader.checkPackageVersion()).rejects.toThrowError(`Bad @mikro-orm/weird-package version 1.2.3.
+All official @mikro-orm/* packages need to have the exact same version as @mikro-orm/core (5.0.0).
+Only exceptions are packages that don't live in the 'mikro-orm' repository: nestjs, sql-highlighter, mongo-highlighter.
+Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?`);
+
+    await expect(ConfigurationLoader.checkPackageVersion()).resolves.toMatch(/^\d+\.\d+\.\d+/);
+    process.env.MIKRO_ORM_ALLOW_VERSION_MISMATCH = '1';
+    spy.mockRestore();
+    spy2.mockRestore();
+    spy3.mockRestore();
   });
 
   test('registerTsNode works with tsconfig.json with comments', async () => {

@@ -6,6 +6,7 @@
   "module": "dist/index.mjs",
   "typings": "dist/index.d.ts",
   "exports": {
+    "./package.json": "./package.json",
     ".": {
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"

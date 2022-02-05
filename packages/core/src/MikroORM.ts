@@ -26,6 +26,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    * If you omit the `options` parameter, your CLI config will be used.
    */
   static async init<D extends IDatabaseDriver = IDatabaseDriver>(options?: Options<D> | Configuration<D>, connect = true): Promise<MikroORM<D>> {
+    const coreVersion = await ConfigurationLoader.checkPackageVersion();
     const env = ConfigurationLoader.loadEnvironmentVars<D>(options);
 
     if (!options) {
@@ -34,6 +35,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
 
     options = options instanceof Configuration ? options.getAll() : options;
     const orm = new MikroORM<D>(Utils.merge(options, env));
+    orm.logger.log('info', `MikroORM version: ${colors.green(coreVersion)}`);
 
     // we need to allow global context here as we are not in a scope of requests yet
     const allowGlobalContext = orm.config.get('allowGlobalContext');
