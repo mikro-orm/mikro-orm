@@ -56,13 +56,13 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/knex": "^5.0.0-rc.2",
+    "@mikro-orm/knex": "5.0.0-rc.2",
     "fs-extra": "10.0.0"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^5.0.0-rc.2"
+    "@mikro-orm/core": "5.0.0-rc.2"
   },
   "peerDependencies": {
-    "@mikro-orm/core": "^5.0.0-dev.0"
+    "@mikro-orm/core": "5.0.0-rc.2"
   }
 }

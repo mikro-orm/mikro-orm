@@ -56,17 +56,17 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/knex": "^5.0.0-rc.2",
+    "@mikro-orm/knex": "5.0.0-rc.2",
     "pg": "8.7.3"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^5.0.0-rc.2"
+    "@mikro-orm/core": "5.0.0-rc.2"
   },
   "peerDependencies": {
-    "@mikro-orm/core": "^5.0.0-dev.0",
-    "@mikro-orm/entity-generator": "^5.0.0-dev.0",
-    "@mikro-orm/migrations": "^5.0.0-dev.0",
-    "@mikro-orm/seeder": "^5.0.0-dev.0"
+    "@mikro-orm/core": "5.0.0-rc.2",
+    "@mikro-orm/entity-generator": "5.0.0-rc.2",
+    "@mikro-orm/migrations": "5.0.0-rc.2",
+    "@mikro-orm/seeder": "5.0.0-rc.2"
   },
   "peerDependenciesMeta": {
     "@mikro-orm/entity-generator": {

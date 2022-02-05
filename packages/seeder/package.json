@@ -51,9 +51,9 @@
     "@faker-js/faker": "6.0.0-alpha.5"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^5.0.0-rc.2"
+    "@mikro-orm/core": "5.0.0-rc.2"
   },
   "peerDependencies": {
-    "@mikro-orm/core": "^5.0.0-dev.0"
+    "@mikro-orm/core": "5.0.0-rc.2"
   }
 }
