@@ -13,6 +13,7 @@ export class MariaDbPlatform extends AbstractSqlPlatform {
     return 'utf8mb4';
   }
 
+  /* istanbul ignore next */
   getSearchJsonPropertyKey(path: string[], type: string): string {
     const [a, ...b] = path;
     return expr(alias => `${this.quoteIdentifier(`${alias}.${a}`)}->'$.${b.join('.')}'`);
@@ -50,6 +51,8 @@ export class MariaDbPlatform extends AbstractSqlPlatform {
     }
 
     let indexName = super.getIndexName(tableName, columns, type);
+
+    /* istanbul ignore next */
     if (indexName.length > 64) {
       indexName = `${indexName.substr(0, 57 - type.length)}_${Utils.hash(indexName).substr(0, 5)}_${type}`;
     }

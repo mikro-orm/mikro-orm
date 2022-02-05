@@ -8,8 +8,8 @@ describe('SchemaHelper', () => {
 
   test('default schema helpers', async () => {
     const helper = new SchemaHelperTest(new MySqlPlatform());
-    expect(helper.getSchemaBeginning('utf8')).toBe('');
-    expect(helper.getSchemaEnd()).toBe('');
+    expect(helper.getSchemaBeginning('utf8')).toBe('\n\n');
+    expect(helper.getSchemaEnd()).toBe('\n');
     expect(helper.getChangeColumnCommentSQL('a', {} as any)).toBe('');
     await expect(helper.getEnumDefinitions(jest.fn() as any, [], '')).resolves.toEqual({});
     expect(() => helper.getListTablesSQL()).toThrowError('Not supported by given driver');

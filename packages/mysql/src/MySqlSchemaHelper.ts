@@ -15,10 +15,6 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return `set names ${charset};\n${this.disableForeignKeysSQL()}\n\n`;
   }
 
-  getSchemaEnd(): string {
-    return `${this.enableForeignKeysSQL()}\n`;
-  }
-
   disableForeignKeysSQL(): string {
     return 'set foreign_key_checks = 0;';
   }

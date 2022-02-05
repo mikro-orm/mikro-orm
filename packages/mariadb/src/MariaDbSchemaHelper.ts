@@ -2,6 +2,7 @@ import type { AbstractSqlConnection, Check, Column, Index, Knex, TableDifference
 import { SchemaHelper } from '@mikro-orm/knex';
 import type { Dictionary , Type } from '@mikro-orm/core';
 
+/* istanbul ignore next */
 export class MariaDbSchemaHelper extends SchemaHelper {
 
   static readonly DEFAULT_VALUES = {
@@ -12,10 +13,6 @@ export class MariaDbSchemaHelper extends SchemaHelper {
 
   getSchemaBeginning(charset: string): string {
     return `set names ${charset};\n${this.disableForeignKeysSQL()}\n\n`;
-  }
-
-  getSchemaEnd(): string {
-    return `${this.enableForeignKeysSQL()}\n`;
   }
 
   disableForeignKeysSQL(): string {

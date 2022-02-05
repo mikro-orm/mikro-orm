@@ -4,14 +4,6 @@ import { SchemaHelper } from '@mikro-orm/knex';
 
 export class SqliteSchemaHelper extends SchemaHelper {
 
-  getSchemaBeginning(charset: string): string {
-    return `${this.disableForeignKeysSQL()}\n\n`;
-  }
-
-  getSchemaEnd(): string {
-    return `${this.enableForeignKeysSQL()}\n`;
-  }
-
   disableForeignKeysSQL(): string {
     return 'pragma foreign_keys = off;';
   }

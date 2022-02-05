@@ -20,10 +20,6 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return `set names '${charset}';\n${this.disableForeignKeysSQL()}\n\n`;
   }
 
-  getSchemaEnd(): string {
-    return `${this.enableForeignKeysSQL()}\n`;
-  }
-
   getListTablesSQL(): string {
     return `select table_name, table_schema as schema_name, `
       + `(select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c
