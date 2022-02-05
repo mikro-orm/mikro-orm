@@ -71,14 +71,14 @@
     "@mikro-orm/seeder": "^5.0.0-rc.2"
   },
   "peerDependencies": {
-    "@mikro-orm/entity-generator": "^5.0.0-dev.0||^5.0.0-rc.0",
-    "@mikro-orm/migrations": "^5.0.0-dev.0||^5.0.0-rc.0",
-    "@mikro-orm/seeder": "^5.0.0-dev.0||^5.0.0-rc.0",
-    "@mikro-orm/mariadb": "^5.0.0-dev.0||^5.0.0-rc.0",
-    "@mikro-orm/mongodb": "^5.0.0-dev.0||^5.0.0-rc.0",
-    "@mikro-orm/mysql": "^5.0.0-dev.0||^5.0.0-rc.0",
-    "@mikro-orm/postgresql": "^5.0.0-dev.0||^5.0.0-rc.0",
-    "@mikro-orm/sqlite": "^5.0.0-dev.0||^5.0.0-rc.0"
+    "@mikro-orm/entity-generator": "^5.0.0-dev.0",
+    "@mikro-orm/migrations": "^5.0.0-dev.0",
+    "@mikro-orm/seeder": "^5.0.0-dev.0",
+    "@mikro-orm/mariadb": "^5.0.0-dev.0",
+    "@mikro-orm/mongodb": "^5.0.0-dev.0",
+    "@mikro-orm/mysql": "^5.0.0-dev.0",
+    "@mikro-orm/postgresql": "^5.0.0-dev.0",
+    "@mikro-orm/sqlite": "^5.0.0-dev.0"
   },
   "peerDependenciesMeta": {
     "@mikro-orm/entity-generator": {
