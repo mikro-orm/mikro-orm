@@ -64,6 +64,6 @@
     "@mikro-orm/core": "^5.0.0-rc.2"
   },
   "peerDependencies": {
-    "@mikro-orm/core": "^5.0.0-rc.2"
+    "@mikro-orm/core": "^5.0.0-dev.0||^5.0.0-rc.0"
   }
 }
