@@ -123,6 +123,13 @@ describe('CLIHelper', () => {
     await expect(CLIHelper.getConfiguration()).resolves.toBeInstanceOf(Configuration);
     Object.keys(process.env).filter(k => k.startsWith('MIKRO_ORM_')).forEach(k => delete process.env[k]);
     process.env.MIKRO_ORM_ALLOW_GLOBAL_CONTEXT = '1';
+    process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI = '1';
+  });
+
+  test('disallows global install of CLI package', async () => {
+    delete process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI;
+    await expect(CLIHelper.getConfiguration()).rejects.toThrowError(`@mikro-orm/cli needs to be installed as a local dependency!`);
+    process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI = '1';
   });
 
   test('registerTsNode works with tsconfig.json with comments', async () => {

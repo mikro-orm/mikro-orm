@@ -10,6 +10,16 @@ import { colors, ConfigurationLoader, MikroORM, Utils } from '@mikro-orm/core';
 export class CLIHelper {
 
   static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true, options: Partial<Options> = {}): Promise<Configuration<D>> {
+    const pkg = await ConfigurationLoader.getPackageConfig();
+    const deps = new Set([
+      ...Object.keys(pkg.dependencies ?? {}),
+      ...Object.keys(pkg.devDependencies ?? {}),
+    ]);
+
+    if (!deps.has('@mikro-orm/cli') && !process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI) {
+      throw new Error('@mikro-orm/cli needs to be installed as a local dependency!');
+    }
+
     return ConfigurationLoader.getConfiguration(validate, options);
   }
 
