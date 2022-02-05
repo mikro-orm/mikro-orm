@@ -1,6 +1,6 @@
 import type { InputMigrations, MigrateDownOptions, MigrateUpOptions, MigrationParams, RunnableMigration } from 'umzug';
 import { Umzug } from 'umzug';
-import { join } from 'path';
+import { basename, join } from 'path';
 import { ensureDir, pathExists, writeJSON } from 'fs-extra';
 import type { Constructor, Dictionary, IMigrationGenerator, IMigrator, Transaction } from '@mikro-orm/core';
 import { t, Type, UnknownType, Utils } from '@mikro-orm/core';
@@ -34,7 +34,8 @@ export class Migrator implements IMigrator {
     /* istanbul ignore next */
     const snapshotPath = this.options.emit === 'ts' && this.options.pathTs ? this.options.pathTs : this.options.path!;
     const absoluteSnapshotPath = Utils.absolutePath(snapshotPath, this.config.get('baseDir'));
-    this.snapshotPath = join(absoluteSnapshotPath, `.snapshot-${this.config.get('dbName')}.json`);
+    const dbName = basename(this.config.get('dbName'));
+    this.snapshotPath = Utils.normalizePath(absoluteSnapshotPath, `.snapshot-${dbName}.json`);
     this.createUmzug();
   }
 

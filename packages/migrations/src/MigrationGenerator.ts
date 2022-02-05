@@ -15,7 +15,7 @@ export abstract class MigrationGenerator implements IMigrationGenerator {
   async generate(diff: { up: string[]; down: string[] }, path?: string): Promise<[string, string]> {
     /* istanbul ignore next */
     const defaultPath = this.options.emit === 'ts' && this.options.pathTs ? this.options.pathTs : this.options.path!;
-    path = Utils.normalizePath(path || defaultPath);
+    path = Utils.normalizePath(this.driver.config.get('baseDir'), path ?? defaultPath);
     await ensureDir(path);
     const timestamp = new Date().toISOString().replace(/[-T:]|\.\d{3}z$/ig, '');
     const className = this.namingStrategy.classToMigrationName(timestamp);
