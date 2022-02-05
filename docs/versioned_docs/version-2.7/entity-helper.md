@@ -42,4 +42,3 @@ book.assign({ meta: { foo: 4 } });
 console.log(book.meta); // { foo: 4 }
 ```
 
-[&larr; Back to table of contents](index.md#table-of-contents)

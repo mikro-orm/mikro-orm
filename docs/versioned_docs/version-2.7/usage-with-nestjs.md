@@ -57,4 +57,3 @@ export class PhotoModule {}
 
 > Don't forget to import the feature module in your top level module.
 
-[&larr; Back to table of contents](index.md#table-of-contents)

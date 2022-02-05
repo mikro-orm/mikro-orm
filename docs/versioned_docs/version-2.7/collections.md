@@ -142,4 +142,3 @@ console.log(book.tags.contains(tag)); // true
 
 Same applies for `Collection.remove()`.
 
-[&larr; Back to table of contents](index.md#table-of-contents)

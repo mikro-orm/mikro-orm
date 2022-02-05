@@ -46,4 +46,3 @@ author.assign({ age: false });
 await orm.em.persistAndFlush(author); // throws "Validation error: trying to set Author.age of type 'number' to 'false' of type 'boolean'"
 ```
 
-[&larr; Back to table of contents](index.md#table-of-contents)
