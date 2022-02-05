@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.0.0-rc.3](https://github.com/mikro-orm/mikro-orm/compare/fed2d5b...a88b179) (2022-02-05)
+
+### Bug Fixes
+
+* **core**: fix populating entities with wildcard schema ([98d0bfb](https://github.com/mikro-orm/mikro-orm/commit/98d0bfb))
+* **migrations**: respect `baseDir` and allow absolute paths for sqlite `dbName` ([36a3ae5](https://github.com/mikro-orm/mikro-orm/commit/36a3ae5))
+* **query-builder**: fix mapping of formula properties ([2607266](https://github.com/mikro-orm/mikro-orm/commit/2607266))
+* **schema**: do not ignore entity level indexes with just expression ([0ee9c4d](https://github.com/mikro-orm/mikro-orm/commit/0ee9c4d))
+
+
+### Features
+
+* **cli**: validate CLI package is installed locally ([8952149](https://github.com/mikro-orm/mikro-orm/commit/8952149))
+* **core**: validate version mismatch in ORM packages ([cf70219](https://github.com/mikro-orm/mikro-orm/commit/cf70219))
+* **core**: add `em.clearCache(key)` method ([1ccfad8](https://github.com/mikro-orm/mikro-orm/commit/1ccfad8))
+* **core**: expose `referencedColumnNames` on m:1/1:1 decorators ([2f5a5e1](https://github.com/mikro-orm/mikro-orm/commit/2f5a5e1))
+* **core**: add `persistOnCreate` option and enable it for seeder ([f0fec1b](https://github.com/mikro-orm/mikro-orm/commit/f0fec1b))
+
+
+
 ## [5.0.0-rc.2](https://github.com/mikro-orm/mikro-orm/compare/eb16b2c...fed2d5b) (2022-02-03)
 
 ### Bug Fixes
