@@ -252,4 +252,16 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     });
   }
 
+  /**
+   * @internal
+   */
+  getSchemaName(meta?: EntityMetadata, options?: { schema?: string }): string | undefined {
+    if (meta?.schema && meta.schema !== '*') {
+      return meta.schema;
+    }
+
+    /* istanbul ignore next */
+    return options?.schema === '*' ? this.config.get('schema') : options?.schema ?? (meta?.schema === '*' ? this.config.get('schema') : meta?.schema);
+  }
+
 }

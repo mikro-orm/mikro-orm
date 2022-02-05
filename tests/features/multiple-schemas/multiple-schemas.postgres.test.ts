@@ -99,7 +99,7 @@ describe('multiple connected schemas in postgres', () => {
   // if we have * schema on entity, it can exist in any schema, always controlled by the parameter
   // no schema on entity - default schema or from global orm config
   test('should work', async () => {
-    const author = new Author();
+    let author = new Author();
     author.name = 'a1';
     author.books.add(new Book(), new Book(), new Book());
     author.books[0].tags.add(new BookTag(), new BookTag(), new BookTag());
@@ -120,6 +120,79 @@ describe('multiple connected schemas in postgres', () => {
     expect(wrap(author.books[1].tags[0]).getSchema()).toBe('n2');
     expect(wrap(author.books[2]).getSchema()).toBe('n2');
     expect(wrap(author.books[2].tags[0]).getSchema()).toBe('n2');
+
+    orm.em.clear();
+    author = await orm.em.findOneOrFail(Author, author, { populate: true });
+
+    expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toEqual([
+      'Author-n1:1',
+      'Book-n2:1',
+      'Book-n2:2',
+      'Book-n2:3',
+      'BookTag-n2:1',
+      'BookTag-n2:2',
+      'BookTag-n2:3',
+      'BookTag-n2:4',
+      'BookTag-n2:5',
+      'BookTag-n2:6',
+      'BookTag-n2:7',
+      'BookTag-n2:8',
+      'BookTag-n2:9',
+    ]);
+
+    expect(wrap(author).getSchema()).toBe('n1');
+    expect(wrap(author.books[0]).getSchema()).toBe('n2');
+    expect(wrap(author.books[0].tags[0]).getSchema()).toBe('n2');
+    expect(wrap(author.books[1]).getSchema()).toBe('n2');
+    expect(wrap(author.books[1].tags[0]).getSchema()).toBe('n2');
+    expect(wrap(author.books[2]).getSchema()).toBe('n2');
+    expect(wrap(author.books[2].tags[0]).getSchema()).toBe('n2');
+
+    // update entities and flush
+    author.name = 'new name';
+    author.books[0].name = 'new name 1';
+    author.books[0].tags[0].name = 'new name 1';
+    author.books[1].name = 'new name 2';
+    author.books[1].tags[0].name = 'new name 2';
+    author.books[2].name = 'new name 3';
+    author.books[2].tags[0].name = 'new name 3';
+
+    const mock = mockLogger(orm);
+    await orm.em.flush();
+
+    expect(mock.mock.calls[0][0]).toMatch(`begin`);
+    expect(mock.mock.calls[1][0]).toMatch(`update "n2"."book_tag" set "name" = case when ("id" = 1) then 'new name 1' when ("id" = 4) then 'new name 2' when ("id" = 7) then 'new name 3' else "name" end where "id" in (1, 4, 7)`);
+    expect(mock.mock.calls[2][0]).toMatch(`update "n1"."author" set "name" = 'new name' where "id" = 1`);
+    expect(mock.mock.calls[3][0]).toMatch(`update "n2"."book" set "name" = case when ("id" = 1) then 'new name 1' when ("id" = 2) then 'new name 2' when ("id" = 3) then 'new name 3' else "name" end where "id" in (1, 2, 3)`);
+    expect(mock.mock.calls[4][0]).toMatch(`commit`);
+    mock.mockReset();
+
+    // remove entity
+    orm.em.remove(author);
+    await orm.em.flush();
+
+    expect(mock.mock.calls[0][0]).toMatch(`begin`);
+    expect(mock.mock.calls[1][0]).toMatch(`delete from "n2"."book" where "id" in (1, 2, 3)`);
+    expect(mock.mock.calls[2][0]).toMatch(`delete from "n1"."author" where "id" in (1)`);
+    expect(mock.mock.calls[3][0]).toMatch(`delete from "n2"."book_tag" where "id" in (1, 2, 3, 4, 5, 6, 7, 8, 9)`);
+    expect(mock.mock.calls[4][0]).toMatch(`commit`);
+
+    orm.em.clear();
+
+    const n1 = await orm.em.find(Author, {});
+    const n3 = await orm.em.find(Book, {});
+    const n4 = await orm.em.find(Book, {});
+    const n5 = await orm.em.find(Book, {});
+    const n3tags = await orm.em.find(BookTag, {});
+    const n4tags = await orm.em.find(BookTag, {});
+    const n5tags = await orm.em.find(BookTag, {});
+    expect(n1).toHaveLength(0);
+    expect(n3).toHaveLength(0);
+    expect(n4).toHaveLength(0);
+    expect(n5).toHaveLength(0);
+    expect(n3tags).toHaveLength(0);
+    expect(n4tags).toHaveLength(0);
+    expect(n5tags).toHaveLength(0);
   });
 
   test('use different schema via options', async () => {
@@ -218,6 +291,28 @@ describe('multiple connected schemas in postgres', () => {
     expect(mock.mock.calls[7][0]).toMatch(`update "n5"."book_tag" set "name" = case when ("id" = 1) then 'new name 3' when ("id" = 4) then 'new name 4' else "name" end where "id" in (1, 4)`);
     expect(mock.mock.calls[8][0]).toMatch(`commit`);
     mock.mockReset();
+
+    const fork = orm.em.fork();
+    await fork.findOneOrFail(Author, author, { populate: true, schema: 'n5' });
+
+    expect(mock.mock.calls[0][0]).toMatch(`select "a0".* from "n1"."author" as "a0" where "a0"."id" = 1 limit 1`);
+    expect(mock.mock.calls[1][0]).toMatch(`select "b0".* from "n5"."book" as "b0" where "b0"."author_id" in (1) order by "b0"."author_id" asc`);
+    expect(mock.mock.calls[2][0]).toMatch(`select "a0".* from "n1"."author" as "a0" where "a0"."id" in (1) order by "a0"."id" asc`);
+    expect(mock.mock.calls[3][0]).toMatch(`select "b0".* from "n5"."book" as "b0" where "b0"."author_id" in (1) order by "b0"."author_id" asc`);
+    expect(mock.mock.calls[4][0]).toMatch(`select "b0".*, "b1"."book_tag_id" as "fk__book_tag_id", "b1"."book_id" as "fk__book_id" from "n5"."book_tag" as "b0" left join "n5"."book_tags" as "b1" on "b0"."id" = "b1"."book_tag_id" where "b1"."book_id" in (2, 1)`);
+    mock.mockReset();
+
+    expect(fork.getUnitOfWork().getIdentityMap().keys()).toEqual([
+      'Author-n1:1',
+      'Book-n5:2',
+      'Book-n5:1',
+      'BookTag-n5:5',
+      'BookTag-n5:6',
+      'BookTag-n5:4',
+      'BookTag-n5:2',
+      'BookTag-n5:3',
+      'BookTag-n5:1',
+    ]);
 
     // remove entity
     orm.em.remove(author);

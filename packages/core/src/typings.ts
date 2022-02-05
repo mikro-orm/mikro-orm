@@ -648,12 +648,13 @@ export interface IHydrator {
     type: 'full' | 'returning' | 'reference',
     newEntity?: boolean,
     convertCustomTypes?: boolean,
+    schema?: string,
   ): void;
 
   /**
    * Hydrates primary keys only
    */
-  hydrateReference<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes?: boolean): void;
+  hydrateReference<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes?: boolean, schema?: string): void;
 
 }
 

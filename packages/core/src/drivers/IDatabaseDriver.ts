@@ -82,6 +82,11 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
    */
   convertException(exception: Error): DriverException;
 
+  /**
+   * @internal
+   */
+  getSchemaName(meta?: EntityMetadata, options?: { schema?: string }): string | undefined;
+
 }
 
 type FieldsMap<T, P extends string = never> = { [K in keyof T]?: EntityField<ExpandProperty<T[K]>>[] };

@@ -173,7 +173,7 @@ export class EntityFactory {
 
       // creates new instance via constructor as this is the new entity
       const entity = new Entity(...params);
-      entity.__helper!.__schema = this.getSchemaName(options);
+      entity.__helper!.__schema = this.driver.getSchemaName(meta, options);
 
       if (!options.newEntity) {
         meta.relations
@@ -191,10 +191,10 @@ export class EntityFactory {
     // creates new entity instance, bypassing constructor call as its already persisted entity
     const entity = Object.create(meta.class.prototype) as T;
     entity.__helper!.__managed = true;
-    entity.__helper!.__schema = this.getSchemaName(options);
+    entity.__helper!.__schema = this.driver.getSchemaName(meta, options);
 
     if (meta.selfReferencing && !options.newEntity) {
-      this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes);
+      this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes, this.driver.getSchemaName(meta, options));
       this.unitOfWork.registerManaged(entity);
     }
 
@@ -205,23 +205,20 @@ export class EntityFactory {
     return entity;
   }
 
-  private getSchemaName(options: { schema?: string }): string | undefined {
-    /* istanbul ignore next */
-    return options.schema === '*' ? this.config.get('schema') : options.schema;
-  }
-
   private hydrate<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, options: FactoryOptions): void {
     if (options.initialized) {
-      this.hydrator.hydrate(entity, meta, data, this, 'full', options.newEntity, options.convertCustomTypes);
+      this.hydrator.hydrate(entity, meta, data, this, 'full', options.newEntity, options.convertCustomTypes, this.driver.getSchemaName(meta, options));
     } else {
-      this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes);
+      this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes, this.driver.getSchemaName(meta, options));
     }
     Object.keys(data).forEach(key => entity.__helper!.__loadedProperties.add(key));
   }
 
   private findEntity<T>(data: EntityData<T>, meta: EntityMetadata<T>, options: FactoryOptions): T | undefined {
+    const schema = this.driver.getSchemaName(meta, options);
+
     if (!meta.compositePK && !meta.properties[meta.primaryKeys[0]]?.customType) {
-      return this.unitOfWork.getById<T>(meta.name!, data[meta.primaryKeys[0] as string] as Primary<T>, options.schema);
+      return this.unitOfWork.getById<T>(meta.name!, data[meta.primaryKeys[0] as string] as Primary<T>, schema);
     }
 
     if (meta.primaryKeys.some(pk => data[pk as string] == null)) {
@@ -230,7 +227,7 @@ export class EntityFactory {
 
     const pks = Utils.getOrderedPrimaryKeys<T>(data as Dictionary, meta, this.platform, options.convertCustomTypes);
 
-    return this.unitOfWork.getById<T>(meta.name!, pks, options.schema);
+    return this.unitOfWork.getById<T>(meta.name!, pks, schema);
   }
 
   private processDiscriminatorColumn<T>(meta: EntityMetadata<T>, data: EntityData<T>): EntityMetadata<T> {

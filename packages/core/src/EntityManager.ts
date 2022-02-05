@@ -134,7 +134,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const ret: T[] = [];
 
     for (const data of results) {
-      const entity = this.getEntityFactory().create(entityName, data as EntityData<T>, { merge: true, refresh: options.refresh, convertCustomTypes: true }) as T;
+      const entity = this.getEntityFactory().create(entityName, data as EntityData<T>, {
+        merge: true,
+        refresh: options.refresh,
+        schema: options.schema,
+        convertCustomTypes: true,
+      }) as T;
       this.getUnitOfWork().registerManaged(entity, data, { refresh: options.refresh, loaded: true });
       ret.push(entity);
     }
@@ -359,7 +364,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return null;
     }
 
-    entity = this.getEntityFactory().create<T>(entityName, data as EntityData<T>, { refresh: options.refresh, merge: true, convertCustomTypes: true });
+    entity = this.getEntityFactory().create<T>(entityName, data as EntityData<T>, {
+      merge: true,
+      refresh: options.refresh,
+      schema: options.schema,
+      convertCustomTypes: true,
+    });
     this.getUnitOfWork().registerManaged(entity, data, { refresh: options.refresh, loaded: true });
     await this.lockAndPopulate(entityName, entity, where, options);
     await this.getUnitOfWork().dispatchOnLoadEvent();

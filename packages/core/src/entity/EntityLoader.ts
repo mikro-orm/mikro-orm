@@ -334,7 +334,12 @@ export class EntityLoader {
 
     for (const entity of filtered) {
       const items = map[entity.__helper!.getSerializedPrimaryKey()].map(item => {
-        const entity = this.em.getEntityFactory().create<T>(prop.type, item, { refresh, merge: true, convertCustomTypes: true });
+        const entity = this.em.getEntityFactory().create<T>(prop.type, item, {
+          refresh,
+          merge: true,
+          convertCustomTypes: true,
+          schema: options.schema ?? this.em.config.get('schema'),
+        });
         return this.em.getUnitOfWork().registerManaged<T>(entity, item, { refresh, loaded: true });
       });
       (entity[prop.name] as unknown as Collection<AnyEntity>).hydrate(items);

@@ -204,7 +204,7 @@ export class QueryBuilderHelper {
     Object.values(joins).forEach(join => {
       let table = `${join.table} as ${join.alias}`;
       const method = join.type === 'pivotJoin' ? 'leftJoin' : join.type;
-      schema = join.schema ?? schema;
+      schema = join.schema && join.schema !== '*' ? join.schema : schema;
 
       if (schema) {
         table = `${schema}.${table}`;

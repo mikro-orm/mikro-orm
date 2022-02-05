@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`polymorphic embeddables in sqlite diffing 1`] = `
-"function(entity, data, factory, newEntity, convertCustomTypes) {
+"function(entity, data, factory, newEntity, convertCustomTypes, schema) {
   if (typeof data.id !== 'undefined') entity.id = data.id;
   if (typeof data.name !== 'undefined') entity.name = data.name;
   if (data.pet_canBark != null || data.pet_type != null || data.pet_name != null || data.pet_canMeow != null) {

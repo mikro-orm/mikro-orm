@@ -313,11 +313,6 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return res as unknown as QueryResult<T>;
   }
 
-  private getSchemaName(meta: EntityMetadata | undefined, options?: { schema?: string }): string | undefined {
-    /* istanbul ignore next */
-    return options?.schema === '*' ? this.config.get('schema') : options?.schema ?? (meta?.schema === '*' ? this.config.get('schema') : meta?.schema);
-  }
-
   async nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
     options.processCollections ??= true;
     options.convertCustomTypes ??= true;
@@ -464,7 +459,9 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
 
     orderBy = this.getPivotOrderBy(prop, orderBy);
-    const qb = this.createQueryBuilder<T>(prop.type, ctx, !!ctx).unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES).withSchema(options?.schema);
+    const qb = this.createQueryBuilder<T>(prop.type, ctx, !!ctx)
+      .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES)
+      .withSchema(this.getSchemaName(prop.targetMeta, options));
     const populate = this.autoJoinOneToOneOwner(prop.targetMeta!, [{ field: prop.pivotTable }]);
     const fields = this.buildFields(prop.targetMeta!, (options?.populate ?? []) as unknown as PopulateOptions<T>[], [], qb, options?.fields as Field<T>[]);
     qb.select(fields).populate(populate).where(where).orderBy(orderBy!).setLockMode(options?.lockMode, options?.lockTableAliases);
