@@ -6,7 +6,7 @@
  */
 
 const pkg = require('../packages/core/package.json');
-const packages = ['core', 'knex', 'cli', 'migrations', 'entity-generator', 'reflection'].map(d => `../packages/${d}/src/index.ts`);
+const packages = ['core', 'knex', 'cli', 'migrations', 'entity-generator', 'reflection'].map(d => ({ path: `packages/${d}` }));
 
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 module.exports = {
@@ -47,7 +47,7 @@ module.exports = {
           position: 'left',
         },
         { to: 'docs/installation', label: 'Docs', position: 'left' },
-        { to: 'docs/api', label: 'API', position: 'left' },
+        { to: 'api', label: 'API', position: 'left' },
         { to: 'docs/faq', label: 'FAQ', position: 'left' },
         { to: 'blog', label: 'Blog', position: 'left' },
         {
@@ -137,22 +137,22 @@ module.exports = {
   ],
   plugins: [
     [
-      'docusaurus-plugin-typedoc',
+      'docusaurus-plugin-typedoc-api',
       {
-        entryPoints: packages,
-        sidebar: {
-          sidebarFile: 'typedoc-sidebar.js',
-          readmeLabel: 'README',
-          globalsLabel: 'Overview',
+        projectRoot: `${__dirname}/..`,
+        packages,
+        typedocOptions: {
+          // excludeExternals: false,
+          // entryPoints: packages,
+          readme: 'none',
+          tsconfig: '../tsconfig.json',
+          excludeExternals: true,
+          excludePrivate: true,
+          excludeProtected: true,
+          excludeInternal: true,
+          externalPattern: '**/node_modules/*',
+          cleanOutputDir: true,
         },
-        readme: 'none',
-        tsconfig: '../tsconfig.json',
-        excludeExternals: true,
-        excludePrivate: true,
-        excludeProtected: true,
-        excludeInternal: true,
-        externalPattern: '**/node_modules/*',
-        cleanOutputDir: true,
       },
     ],
     [
