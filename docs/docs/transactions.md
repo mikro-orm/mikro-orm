@@ -59,7 +59,7 @@ Or you can use `begin/commit/rollback` methods explicitly. Following example is
 equivalent to the previous one:
 
 ```ts
-const em = orm.em.fork(false);
+const em = orm.em.fork();
 await em.begin();
 
 try {

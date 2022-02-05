@@ -19,6 +19,6 @@ const orm = await MikroORM.init({
 });
 
 app.use((req, res, next) => {
-  storage.run(orm.em.fork(true, true), next);
+  storage.run(orm.em.fork({ useContext: true }), next);
 });
 ```

@@ -327,8 +327,9 @@ export class AppModule {}
 // register the request context middleware
 const app = await NestFactory.create(AppModule, { ... });
 
+const orm = app.get(MikroORM);
 app.use((req, res, next) => {
-  storage.run(orm.em.fork(true, true), next);
+  storage.run(orm.em.fork({ useContext: true }), next);
 });
 ```
 
