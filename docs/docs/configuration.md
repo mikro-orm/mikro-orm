@@ -411,6 +411,19 @@ MikroORM.init({
 
 Read more about this in [Entity Manager](entity-manager.md#handling-not-found-entities) docs.
 
+## Schema Generator
+
+Following example shows all possible options and their defaults:
+
+```ts
+MikroORM.init({
+  schemaGenerator: {
+    disableForeignKeys: true, // try to disable foreign_key_checks (or equivalent)
+    createForeignKeyConstraints: true, // do not generate FK constraints
+  },
+});
+```
+
 ## Migrations
 
 Under the `migrations` namespace, you can adjust how the integrated migrations support works.
@@ -431,6 +444,21 @@ MikroORM.init({
 ```
 
 Read more about this in [Migrations](migrations.md) section.
+
+## Seeder
+
+Following example shows all possible options and their defaults:
+
+```ts
+MikroORM.init({
+  seeder: {
+    path: './seeders',
+    defaultSeeder: 'DatabaseSeeder',
+  },
+});
+```
+
+Read more about this in [seeding docs](seeding.md).
 
 ## Caching
 
