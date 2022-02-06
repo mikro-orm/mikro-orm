@@ -65,10 +65,10 @@
     "@mikro-orm/core": "^5.0.0"
   },
   "peerDependencies": {
-    "@mikro-orm/core": "5.0.0-rc.3",
-    "@mikro-orm/entity-generator": "5.0.0-rc.3",
-    "@mikro-orm/migrations": "5.0.0-rc.3",
-    "@mikro-orm/seeder": "5.0.0-rc.3"
+    "@mikro-orm/core": "^5.0.0",
+    "@mikro-orm/entity-generator": "^5.0.0",
+    "@mikro-orm/migrations": "^5.0.0",
+    "@mikro-orm/seeder": "^5.0.0"
   },
   "peerDependenciesMeta": {
     "@mikro-orm/entity-generator": {
