@@ -33,7 +33,8 @@ module.exports = {
   scripts: ['/js/custom.js'],
   themeConfig: {
     algolia: {
-      apiKey: '26fadcd97750a33cd8081a07dda2c0cf',
+      apiKey: '83015544b5b03ca27af77c74a25d4868',
+      appId: 'V3HQ8I5PUQ',
       indexName: 'mikro-orm',
       contextualSearch: true,
     },
