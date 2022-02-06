@@ -22,11 +22,11 @@ automatically, we do not have to call persist on those, and flush is enough to u
 them.
 
 ```ts
-const book = await orm.em.findOne(Book, 1);
+const book = await em.findOne(Book, 1);
 book.title = 'How to persist things...';
 
 // no need to persist `book` as its already managed by the EM
-await orm.em.flush();
+await em.flush();
 ```
 
 ## Persisting and Cascading
@@ -50,13 +50,13 @@ const book3 = new Book('My Life on The Wall, part 3', author);
 book3.publisher = publisher;
 
 // just persist books, author and publisher will be automatically cascade persisted
-await orm.em.persistAndFlush([book1, book2, book3]);
+await em.persistAndFlush([book1, book2, book3]);
 
 // or one by one
-orm.em.persist(book1);
-orm.em.persist(book2);
-orm.em.persist(book3); 
-await orm.em.flush(); // flush everything to database at once
+em.persist(book1);
+em.persist(book2);
+em.persist(book3); 
+await em.flush(); // flush everything to database at once
 ```
 
 ## Fetching Entities with EntityManager
@@ -66,8 +66,8 @@ To fetch entities from database we can use `find()` and `findOne()` of `EntityMa
 Example:
 
 ```ts
-const author = await orm.em.findOne(Author, '...id...');
-const books = await orm.em.find(Book, {});
+const author = await em.findOne(Author, '...id...');
+const books = await em.find(Book, {});
 
 for (const author of authors) {
   console.log(author.name); // Jon Snow
@@ -88,7 +88,7 @@ for (const author of authors) {
 To populate entity relations, we can use `populate` parameter.
 
 ```ts
-const books = await orm.em.find(Book, { foo: 1 }, ['author.friends']);
+const books = await em.find(Book, { foo: 1 }, { populate: ['author.friends'] });
 ```
 
 You can also use `em.populate()` helper to populate relations (or to ensure they 
@@ -96,8 +96,8 @@ are fully populated) on already loaded entities. This is also handy when loading
 entities via `QueryBuilder`:
 
 ```ts
-const authors = await orm.em.createQueryBuilder(Author).select('*').getResult();
-await em.populate(authors, ['books.tags']);
+const authors = await em.createQueryBuilder(Author).select('*').getResult();
+await em.populate(authors, { populate: ['books.tags'] });
 
 // now our Author entities will have `books` collections populated, 
 // as well as they will have their `tags` collections populated.
@@ -111,28 +111,28 @@ supports many different ways:
 
 ```ts
 // search by entity properties
-const users = await orm.em.find(User, { firstName: 'John' });
+const users = await em.find(User, { firstName: 'John' });
 
 // for searching by reference we can use primary key directly
 const id = 1;
-const users = await orm.em.find(User, { organization: id });
+const users = await em.find(User, { organization: id });
 
 // or pass unpopulated reference (including `Reference` wrapper)
-const ref = await orm.em.getReference(Organization, id);
-const users = await orm.em.find(User, { organization: ref });
+const ref = await em.getReference(Organization, id);
+const users = await em.find(User, { organization: ref });
 
 // fully populated entities as also supported
-const ent = await orm.em.findOne(Organization, id);
-const users = await orm.em.find(User, { organization: ent });
+const ent = await em.findOne(Organization, id);
+const users = await em.find(User, { organization: ent });
 
 // complex queries with operators
-const users = await orm.em.find(User, { $and: [{ id: { $nin: [3, 4] } }, { id: { $gt: 2 } }] });
+const users = await em.find(User, { $and: [{ id: { $nin: [3, 4] } }, { id: { $gt: 2 } }] });
 
 // we can also search for array of primary keys directly
-const users = await orm.em.find(User, [1, 2, 3, 4, 5]);
+const users = await em.find(User, [1, 2, 3, 4, 5]);
 
 // and in findOne all of this works, plus we can search by single primary key
-const user1 = await orm.em.findOne(User, 1);
+const user1 = await em.findOne(User, 1);
 ```
 
 As we can see in the fifth example, one can also use operators like `$and`, `$or`, `$gte`, 
@@ -169,11 +169,11 @@ problematic.
 > As a last resort, we can always type cast the query to `any`.
 
 ```ts
-const books = await orm.em.find<Book>(Book, { ... our complex query ... });
+const books = await em.find<Book>(Book, { ... our complex query ... });
 // or
-const books = await orm.em.getRepository(Book).find({ ... our complex query ... });
+const books = await em.getRepository(Book).find({ ... our complex query ... });
 // or
-const books = await orm.em.find<any>(Book, { ... our complex query ... }) as Book[];
+const books = await em.find<any>(Book, { ... our complex query ... }) as Book[];
 ```
 
 Another problem we might be facing is `RangeError: Maximum call stack size exceeded` error 
@@ -189,10 +189,10 @@ parameter as well.
 
 ```ts
 // find author of a book that has tag specified by name
-const author = await orm.em.findOne(Author, { books: { tags: { name: 'Tag name' } } });
+const author = await em.findOne(Author, { books: { tags: { name: 'Tag name' } } });
 console.log(author.books.isInitialized()); // false, as it only works for query and sort
 
-const author = await orm.em.findOne(Author, { books: { tags: { name: 'Tag name' } } }, ['books.tags']);
+const author = await em.findOne(Author, { books: { tags: { name: 'Tag name' } } }, { populate: ['books.tags'] });
 console.log(author.books.isInitialized()); // true, because it was populated
 console.log(author.books[0].tags.isInitialized()); // true, because it was populated
 console.log(author.books[0].tags[0].isInitialized()); // true, because it was populated
@@ -209,7 +209,7 @@ console.log(author.books[0].tags[0].isInitialized()); // true, because it was po
 When fetching single entity, we can choose to select only parts of an entity via `options.fields`:
 
 ```ts
-const author = await orm.em.findOne(Author, '...', { fields: ['name', 'born'] });
+const author = await em.findOne(Author, '...', { fields: ['name', 'born'] });
 console.log(author.id); // PK is always selected
 console.log(author.name); // Jon Snow
 console.log(author.email); // undefined
@@ -218,19 +218,19 @@ console.log(author.email); // undefined
 From v4.4 it is also possible to specify fields for nested relations:
 
 ```ts
-const author = await orm.em.findOne(Author, '...', { fields: ['name', 'books.title', 'books.author', 'books.price'] });
+const author = await em.findOne(Author, '...', { fields: ['name', 'books.title', 'books.author', 'books.price'] });
 ```
 
 Or with an alternative object syntax:
 
 ```ts
-const author = await orm.em.findOne(Author, '...', { fields: ['name', { books: ['title', 'author', 'price'] }] });
+const author = await em.findOne(Author, '...', { fields: ['name', { books: ['title', 'author', 'price'] }] });
 ```
 
 It is also possible to use multiple levels:
 
 ```ts
-const author = await orm.em.findOne(Author, '...', { fields: ['name', { books: ['title', 'price', 'author', { author: ['email'] }] }] });
+const author = await em.findOne(Author, '...', { fields: ['name', { books: ['title', 'price', 'author', { author: ['email'] }] }] });
 ```
 
 Primary keys are always selected even if we omit them. On the other hand, we are responsible 
@@ -240,7 +240,7 @@ the `books.author` field to be loaded.
 
 ```ts
 // this will load both author and book entities, but they won't be connected due to the missing FK in select
-const author = await orm.em.findOne(Author, '...', { fields: ['name', { books: ['title', 'price'] });
+const author = await em.findOne(Author, '...', { fields: ['name', { books: ['title', 'price'] });
 ```
 
 > Same problem can occur in mongo with M:N collections - those are stored as array property 
@@ -252,7 +252,7 @@ If we are going to paginate our results, we can use `em.findAndCount()` that wil
 total count of entities before applying limit and offset.
 
 ```ts
-const [authors, count] = await orm.em.findAndCount(Author, { ... }, { limit: 10, offset: 50 });
+const [authors, count] = await em.findAndCount(Author, { ... }, { limit: 10, offset: 50 });
 console.log(authors.length); // based on limit parameter, e.g. 10
 console.log(count); // total count, e.g. 1327
 ```
@@ -263,11 +263,11 @@ When we call `em.findOne()` and no entity is found based on our criteria, `null`
 returned. If we rather have an `Error` instance thrown, we can use `em.findOneOrFail()`:
 
 ```ts
-const author = await orm.em.findOne(Author, { name: 'does-not-exist' });
+const author = await em.findOne(Author, { name: 'does-not-exist' });
 console.log(author === null); // true
 
 try {
-  const author = await orm.em.findOneOrFail(Author, { name: 'does-not-exist' });
+  const author = await em.findOneOrFail(Author, { name: 'does-not-exist' });
   // author will be always found here
 } catch (e) {
   console.error('Not found', e);
@@ -279,7 +279,7 @@ You can customize the error either globally via `findOneOrFailHandler` option, o
 
 ```ts
 try {
-  const author = await orm.em.findOneOrFail(Author, { name: 'does-not-exist' }, {
+  const author = await em.findOneOrFail(Author, { name: 'does-not-exist' }, {
     failHandler: (entityName: string, where: Record<string, any> | IPrimaryKey) => new Error(`Failed: ${entityName} in ${util.inspect(where)}`)
   });
 } catch (e) {
@@ -295,7 +295,7 @@ It is possible to use any SQL fragment in our `WHERE` query or `ORDER BY` clause
 > We can use it to bypass the strict type checks in `FilterQuery`.
 
 ```ts
-const users = await orm.em.find(User, { [expr('lower(email)')]: 'foo@bar.baz' }, {
+const users = await em.find(User, { [expr('lower(email)')]: 'foo@bar.baz' }, {
   orderBy: { [`(point(loc_latitude, loc_longitude) <@> point(0, 0))`]: 'ASC' },
 });
 ```
@@ -320,12 +320,12 @@ will stay clean.
 > To be able to work with them, we first need to merge them via `em.registerManaged()`. 
 
 ```ts
-const users = await orm.em.find(User, { email: 'foo@bar.baz' }, {
+const users = await em.find(User, { email: 'foo@bar.baz' }, {
   disableIdentityMap: true,
-  populate: { cars: { brand: true } },
+  populate: ['cars.brand'],
 });
 users[0].name = 'changed';
-await orm.em.flush(); // calling flush have no effect, as the entity is not managed  
+await em.flush(); // calling flush have no effect, as the entity is not managed  
 ```
 
 > Keep in mind that this can also have 
@@ -337,9 +337,9 @@ Both `em.find` and `em.findOne()` methods have generic return types.
 All of following examples are equal and will let typescript correctly infer the entity type:
 
 ```ts
-const author1 = await orm.em.findOne<Author>(Author.name, '...id...');
-const author2 = await orm.em.findOne<Author>('Author', '...id...');
-const author3 = await orm.em.findOne(Author, '...id...');
+const author1 = await em.findOne<Author>(Author.name, '...id...');
+const author2 = await em.findOne<Author>('Author', '...id...');
+const author3 = await em.findOne(Author, '...id...');
 ```
 
 As the last one is the least verbose, it should be preferred. 
@@ -378,13 +378,13 @@ class Task {
 
 // ...
 
-await orm.em.persistAndFlush([
-  orm.em.create(Task, { label: 'A', priority: Priority.Low }),
-  orm.em.create(Task, { label: 'B', priority: Priority.Medium }),
-  orm.em.create(Task, { label: 'C', priority: Priority.High })
+await em.persistAndFlush([
+  em.create(Task, { label: 'A', priority: Priority.Low }),
+  em.create(Task, { label: 'B', priority: Priority.Medium }),
+  em.create(Task, { label: 'C', priority: Priority.High })
 ]);
 
-const tasks = await orm.em.find(Task, {}, { orderBy: { priority: QueryOrder.ASC } });
+const tasks = await em.find(Task, {}, { orderBy: { priority: QueryOrder.ASC } });
 for (const t of tasks) {
   console.log(t.label);
 }

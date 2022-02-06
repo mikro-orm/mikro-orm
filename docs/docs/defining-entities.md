@@ -56,7 +56,7 @@ for various ways:
 
 ```ts title="./entities/Book.ts"
 @Entity()
-export class Book extends BaseEntity {
+export class Book extends CustomBaseEntity {
 
   @Property()
   title!: string;
@@ -78,7 +78,7 @@ export class Book extends BaseEntity {
 
 ```ts title="./entities/Book.ts"
 @Entity()
-export class Book extends BaseEntity {
+export class Book extends CustomBaseEntity {
 
   @Property()
   title!: string;
@@ -99,16 +99,16 @@ export class Book extends BaseEntity {
   <TabItem value="entity-schema">
 
 ```ts title="./entities/Book.ts"
-export interface IBook extends BaseEntity {
+export interface IBook extends CustomBaseEntity {
   title: string;
   author: Author;
   publisher?: IdentifiedReference<Publisher>;
   tags: Collection<BookTag>;
 }
 
-export const Book = new EntitySchema<IBook, BaseEntity>({
+export const Book = new EntitySchema<IBook, CustomBaseEntity>({
   name: 'Book',
-  extends: 'BaseEntity',
+  extends: 'CustomBaseEntity',
   properties: {
     title: { type: 'string' },
     author: { reference: 'm:1', entity: 'Author' },
@@ -863,7 +863,7 @@ export class Author {
   <TabItem value="entity-schema">
 
 ```ts title="./entities/Author.ts"
-export const AuthorSchema = new EntitySchema<Author, BaseEntity>({
+export const AuthorSchema = new EntitySchema<Author, CustomBaseEntity>({
   class: Author,
   indexes: [
     { properties: ['name', 'age'] }, // compound index, with generated name
@@ -1172,7 +1172,7 @@ console.log(wrap(author).toJSON()); // { fullName: 'Jon Snow', fullName2: 'Jon S
 Starting with MikroORM 4.2, there is no limitation for entity file names. It is now
 also possible to define multiple entities in a single file using folder based discovery.
 
-## Using BaseEntity
+## Using custom base entity
 
 We can define our own base entity with properties that are required on all entities, like
 primary key and created/updated time. Single table inheritance is also supported.
@@ -1193,10 +1193,10 @@ values={[
 }>
 <TabItem value="reflect-metadata">
 
-```ts title="./entities/BaseEntity.ts"
+```ts title="./entities/CustomBaseEntity.ts"
 import { v4 } from 'uuid';
 
-export abstract class BaseEntity {
+export abstract class CustomBaseEntity {
 
   @PrimaryKey()
   uuid: string = v4();
@@ -1213,10 +1213,10 @@ export abstract class BaseEntity {
   </TabItem>
   <TabItem value="ts-morph">
 
-```ts title="./entities/BaseEntity.ts"
+```ts title="./entities/CustomBaseEntity.ts"
 import { v4 } from 'uuid';
 
-export abstract class BaseEntity {
+export abstract class CustomBaseEntity {
 
   @PrimaryKey()
   uuid = v4();
@@ -1233,15 +1233,15 @@ export abstract class BaseEntity {
   </TabItem>
   <TabItem value="entity-schema">
 
-```ts title="./entities/BaseEntity.ts"
-export interface BaseEntity {
+```ts title="./entities/CustomBaseEntity.ts"
+export interface CustomBaseEntity {
   uuid: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export const schema = new EntitySchema<BaseEntity>({
-  name: 'BaseEntity',
+export const schema = new EntitySchema<CustomBaseEntity>({
+  name: 'CustomBaseEntity',
   abstract: true,
   properties: {
     id: { type: 'number', primary: true },
@@ -1260,7 +1260,7 @@ not define any decorated property). In that case, we need to mark it as abstract
 
 ```ts
 @Entity({ abstract: true })
-export abstract class BaseEntity {
+export abstract class CustomBaseEntity {
   // ...
 }
 ```
@@ -1509,7 +1509,7 @@ values={[
 }>
 <TabItem value="reflect-metadata">
 
-```ts title="./entities/BaseEntity.ts"
+```ts title="./entities/CustomBaseEntity.ts"
 @Entity()
 export class Book {
 
@@ -1522,7 +1522,7 @@ export class Book {
   </TabItem>
   <TabItem value="ts-morph">
 
-```ts title="./entities/BaseEntity.ts"
+```ts title="./entities/CustomBaseEntity.ts"
 @Entity()
 export class Book {
 
@@ -1535,7 +1535,7 @@ export class Book {
   </TabItem>
   <TabItem value="entity-schema">
 
-```ts title="./entities/BaseEntity.ts"
+```ts title="./entities/CustomBaseEntity.ts"
 properties: {
   id: { type: BigIntType },
 },

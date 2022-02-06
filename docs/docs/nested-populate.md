@@ -13,7 +13,7 @@ When you use nested populate while querying all `BookTag`s, this is what happens
 the background:
 
 ```ts
-const tags = await orm.em.findAll(BookTag, ['books.publisher.tests', 'books.author']);
+const tags = await em.findAll(BookTag, { populate: ['books.publisher.tests', 'books.author'] });
 console.log(tags[0].books[0].publisher.tests[0].name); // prints name of nested test
 console.log(tags[0].books[0].author.name); // prints name of nested author
 ```
@@ -61,7 +61,7 @@ db.getCollection("author").find({"_id":{"$in":[...]}}).toArray();
 To populate existing entities, you can use `em.populate()`.
 
 ```ts
-const authors = await orm.em.createQueryBuilder(Author).select('*').getResult();
+const authors = await em.createQueryBuilder(Author).select('*').getResult();
 await em.populate(authors, ['books.tags']);
 
 // now your Author entities will have `books` collections populated, 

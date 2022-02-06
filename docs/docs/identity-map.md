@@ -6,9 +6,9 @@ title: Identity Map and Request Context
 one entity.
 
 ```ts
-const authorRepository = orm.em.getRepository(Author);
-const jon = await authorRepository.findOne({ name: 'Jon Snow' }, ['books']);
-const authors = await authorRepository.findAll(['books']);
+const authorRepository = em.getRepository(Author);
+const jon = await authorRepository.findOne({ name: 'Jon Snow' }, { populate: ['books'] });
+const authors = await authorRepository.findAll({ populate: ['books'] });
 
 // identity map in action
 console.log(jon === authors[0]); // true

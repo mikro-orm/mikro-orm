@@ -48,7 +48,7 @@ books = new Collection<Book>(this);
 Here is example of how cascade persist works:
 
 ```ts
-const book = await orm.em.findOne(Book, 'id', ['author', 'tags']);
+const book = await orm.em.findOne(Book, 'id', { populate: ['author', 'tags'] });
 book.author.name = 'Foo Bar';
 book.tags[0].name = 'new name 1';
 book.tags[1].name = 'new name 2';

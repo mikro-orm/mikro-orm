@@ -160,13 +160,13 @@ const book3 = new Book('My Life on The Wall, part 3', author);
 book3.publisher = publisher;
 
 // just persist books, author and publisher will be automatically cascade persisted
-await orm.em.persistAndFlush([book1, book2, book3]);
+await em.persistAndFlush([book1, book2, book3]);
 ```
 
 To fetch entities from database you can use `find()` and `findOne()` of `EntityManager`: 
 
 ```ts
-const authors = orm.em.find(Author, {});
+const authors = em.find(Author, {});
 
 for (const author of authors) {
   console.log(author); // instance of Author entity
@@ -183,12 +183,8 @@ More convenient way of fetching entities from database is by using `EntityReposi
 carries the entity name so you do not have to pass it to every `find` and `findOne` calls:
 
 ```ts
-const booksRepository = orm.em.getRepository(Book);
+const booksRepository = em.getRepository(Book);
 
-// with sorting, limit and offset parameters, populating author references
-const books = await booksRepository.find({ author: '...' }, ['author'], { title: QueryOrder.DESC }, 2, 1);
-
-// or with options object
 const books = await booksRepository.find({ author: '...' }, { 
   populate: ['author'],
   limit: 1,

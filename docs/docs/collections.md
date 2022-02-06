@@ -13,7 +13,7 @@ method will throw error in this case.
 > cannot add new items to `Collection` this way. 
 
 ```ts
-const author = em.findOne(Author, '...', ['books']); // populating books collection
+const author = em.findOne(Author, '...', { populate: ['books'] }); // populating books collection
 
 // or we could lazy load books collection later via `init()` method
 await author.books.init();

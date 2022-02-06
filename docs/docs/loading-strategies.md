@@ -33,7 +33,7 @@ The following will issue two SQL statements.
 One to load the author and another to load all the books belonging to that author:
 
 ```ts
-const author = await orm.em.findOne(Author, 1, ['books']);
+const author = await orm.em.findOne(Author, 1, { populate: ['books'] });
 ```
 
 If we update the `Author.books` mapping to the following:
@@ -55,25 +55,15 @@ export class Author {
 The following will issue **one** SQL statement:
 
 ```ts
-const author = await orm.em.findOne(Author, 1, ['books']);
+const author = await orm.em.findOne(Author, 1, { populate: ['books'] });
 ```
 
 You can also specify the load strategy as needed. This will override whatever strategy is declared in the mapping.
 This also works for nested populates:
 
 ```ts
-// one level
-const author = await orm.em.findOne(Author, 1, { 
-  populate: {
-    books: LoadStrategy.JOINED,
-  },
-});
-
-// two or more levels - use `FindOptions.strategy`
 const author = await orm.em.findOne(Author, 1, {
-  populate: {
-    books: { publisher: true },
-  },
+  populate: ['books.publisher'],
   strategy: LoadStrategy.JOINED
 });
 ```

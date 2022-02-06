@@ -14,10 +14,6 @@ underlying `EntityManager` instance.
 ```ts
 const booksRepository = em.getRepository(Book);
 
-// with sorting, limit and offset parameters, populating author references
-const books = await booksRepository.find({ author: '...' }, ['author'], { title: QueryOrder.DESC }, 2, 1);
-
-// or with options object
 const books = await booksRepository.find({ author: '...' }, { 
   populate: ['author'],
   limit: 1,
