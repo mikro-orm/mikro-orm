@@ -31,6 +31,7 @@ module.exports = {
   organizationName: 'mikro-orm',
   projectName: 'mikro-orm',
   scripts: ['/js/custom.js'],
+  trailingSlash: false,
   themeConfig: {
     algolia: {
       apiKey: '83015544b5b03ca27af77c74a25d4868',
