@@ -98,8 +98,7 @@ module.exports = {
             { label: 'Installation & Usage', to: 'docs/installation' },
             { label: 'Quick Start', href: 'https://github.com/mikro-orm/mikro-orm#-quick-start' },
             { label: 'Migration from v4 to v5', to: 'docs/upgrading-v4-to-v5' },
-            { label: 'Version 4.5 docs', to: 'docs/installation' },
-            // { label: 'Version 4.5 docs', to: 'docs/4.5/installation' }, // FIXME after release
+            { label: 'Version 4.5 docs', to: 'docs/4.5/installation' },
           ],
         },
         {
