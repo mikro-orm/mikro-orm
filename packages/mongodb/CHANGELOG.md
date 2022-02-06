@@ -3,6 +3,82 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.0.0](https://github.com/mikro-orm/mikro-orm/compare/v4.5.3...v5.0.0) (2022-02-06)
+
+
+### Bug Fixes
+
+* **core:** declare peer dependencies on driver packages ([1873e8c](https://github.com/mikro-orm/mikro-orm/commit/1873e8c4b9b5b9cb5979604f529ddd0cc6717042)), closes [#2110](https://github.com/mikro-orm/mikro-orm/issues/2110)
+* **mongo:** allow using `pool.min/max` options in mongo driver ([9223055](https://github.com/mikro-orm/mikro-orm/commit/9223055e4661400bd662fb989d55fcc75244f61b)), closes [#2228](https://github.com/mikro-orm/mikro-orm/issues/2228)
+
+
+### chore
+
+* upgrade typescript to v4.5.2 ([2bd8220](https://github.com/mikro-orm/mikro-orm/commit/2bd8220378f47533ecc075ac5e04a4a50c4d9225))
+
+
+### Code Refactoring
+
+* use options parameters in `IDatabaseDriver` ([#2204](https://github.com/mikro-orm/mikro-orm/issues/2204)) ([9a32ac0](https://github.com/mikro-orm/mikro-orm/commit/9a32ac0655f7ec701399250b88605cc5f5fc3b2c))
+
+
+### Features
+
+* **core:** add support for ESM via `gen-esm-wrapper` ([aa71065](https://github.com/mikro-orm/mikro-orm/commit/aa71065d0727920db7da9bfdecdb33e6b8165cb5)), closes [#1010](https://github.com/mikro-orm/mikro-orm/issues/1010)
+* **core:** add support for polymorphic embeddables ([#2426](https://github.com/mikro-orm/mikro-orm/issues/2426)) ([7b7c3a2](https://github.com/mikro-orm/mikro-orm/commit/7b7c3a22fe517e13a1a610f142c59e758acd3c3f)), closes [#1165](https://github.com/mikro-orm/mikro-orm/issues/1165)
+* **core:** allow passing arrays in `orderBy` parameter ([#2211](https://github.com/mikro-orm/mikro-orm/issues/2211)) ([0ec22ed](https://github.com/mikro-orm/mikro-orm/commit/0ec22ed3c88ea0e8c749dc164bb5c1d23ac7b9dc)), closes [#2010](https://github.com/mikro-orm/mikro-orm/issues/2010)
+* **core:** allow providing custom `Logger` instance ([#2443](https://github.com/mikro-orm/mikro-orm/issues/2443)) ([c7a75e0](https://github.com/mikro-orm/mikro-orm/commit/c7a75e00de01b85ece282cd64429a57a49e5842d))
+* **core:** make `FindOptions.fields` strictly typed (dot notation) ([fd43099](https://github.com/mikro-orm/mikro-orm/commit/fd43099a63cae31ba32f833bed1b75c13f2dd43c))
+* **core:** make `populate` parameter strictly typed with dot notation ([3372f02](https://github.com/mikro-orm/mikro-orm/commit/3372f0243f1af34e22a16be2cecba6dc5c04dd0d))
+* **core:** validate version mismatch in ORM packages ([cf70219](https://github.com/mikro-orm/mikro-orm/commit/cf702195e2dd0dce4d66da26f1d349dddf05b007))
+* **embeddables:** allow using m:1 properties inside embeddables ([#1948](https://github.com/mikro-orm/mikro-orm/issues/1948)) ([ffca73e](https://github.com/mikro-orm/mikro-orm/commit/ffca73ecf3ecf405dee3042ad0ab60848721ab7b))
+* **mongo:** add `SchemaGenerator` support for mongo ([#2658](https://github.com/mikro-orm/mikro-orm/issues/2658)) ([cc11859](https://github.com/mikro-orm/mikro-orm/commit/cc1185971d1ee5780b183623a8afb455b3f79d3a))
+* **mongo:** upgrade node-mongodb to v4 ([#2425](https://github.com/mikro-orm/mikro-orm/issues/2425)) ([2e4c135](https://github.com/mikro-orm/mikro-orm/commit/2e4c1350be693dbdde4ce99f720cf23202ae6f76))
+* **sql:** allow setting transaction isolation level ([6ae5fbf](https://github.com/mikro-orm/mikro-orm/commit/6ae5fbf70dd87fe2380b74d83bc8a04bb8f447fe)), closes [#819](https://github.com/mikro-orm/mikro-orm/issues/819)
+* **typings:** make `em.create()` and other methods strict ([#1718](https://github.com/mikro-orm/mikro-orm/issues/1718)) ([e8b7119](https://github.com/mikro-orm/mikro-orm/commit/e8b7119eca0df7d686a7d3d91bfc17b74baaeea1)), closes [#1456](https://github.com/mikro-orm/mikro-orm/issues/1456)
+
+
+### BREAKING CHANGES
+
+* Previously it was possible to call `em.populate()` with a single entity input,
+and the output would be again just a single entity.
+
+Due to issues with TS 4.5, this method now always return array of entities.
+You can use destructing if you want to have a single entity return type:
+
+```ts
+const [loadedAuthor] = await em.populate(author, ...);
+```
+* **core:** Embeddable instances are now created via `EntityFactory` and they respect the
+`forceEntityConstructor` configuration. Due to this we need to have EM instance
+when assigning to embedded properties. 
+
+Using `em.assign()` should be preferred to get around this.
+
+Deep assigning of child entities now works by default based on the presence of PKs in the payload.
+This behaviour can be disable via updateByPrimaryKey: false in the assign options.
+
+`mergeObjects` option is now enabled by default.
+* Most of the methods on IDatabaseDriver interface now have different signature.
+* **core:** Populate parameter is now strictly typed and supports only array of strings or a boolean.
+Object way is no longer supported. To set loading strategy, use `FindOptions.strategy`.
+* **sql:** - `em.transactional()` signature has changed, the parameter is now options object
+- `em.begin()` signature has changed, the parameter is now options object
+* **typings:** Some methods are now strictly typed, so previously fine usages might be restricted on TS level.
+To get around those, we might either cast as `any`, provide the generic `T` type as `any`, or
+use `expr` helper.
+
+```ts
+em.create(User, { someNotDefinedProp: 123 }); // throws if someNotDefinedProp not on the User
+em.create(User, { [expr('someNotDefinedProp')]: 123 }); // works, using expr
+em.create<any>(User, { someNotDefinedProp: 123 }); // works, using type cast
+em.create(User, { someNotDefinedProp: 123 } as any); // works, using type cast
+```
+
+
+
+
+
 ## [4.5.10](https://github.com/mikro-orm/mikro-orm/compare/v4.5.9...v4.5.10) (2021-12-26)
 
 

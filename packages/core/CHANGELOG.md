@@ -3,6 +3,330 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.0.0](https://github.com/mikro-orm/mikro-orm/compare/v4.5.3...v5.0.0) (2022-02-06)
+
+
+### Bug Fixes
+
+* **assign:** do not convert FK to entity when assigning to `mapToPK` property ([b14c8fb](https://github.com/mikro-orm/mikro-orm/commit/b14c8fbacfb3cf9e6b1991f268b73cd193890190)), closes [#2337](https://github.com/mikro-orm/mikro-orm/issues/2337)
+* **core:** allow calling `em.create()` with reference wrapper ([c069960](https://github.com/mikro-orm/mikro-orm/commit/c06996096d8e6555af87aeeb06e66a47d57938df))
+* **core:** allow non-standard property names (hyphens, spaces, ...) ([cc68230](https://github.com/mikro-orm/mikro-orm/commit/cc682305b44bd4ef886e7a744f8f4b1d69d090ff)), closes [#1958](https://github.com/mikro-orm/mikro-orm/issues/1958)
+* **core:** allow propagation to multiple matching inverse sides ([cf7d538](https://github.com/mikro-orm/mikro-orm/commit/cf7d5387a26016b78c11a54d96686eea7ae7b73f)), closes [#2371](https://github.com/mikro-orm/mikro-orm/issues/2371)
+* **core:** allow putting not managed entities to remove stack ([7a47151](https://github.com/mikro-orm/mikro-orm/commit/7a47151d363ba162a51edade0125dbe34aa44adb)), closes [#2395](https://github.com/mikro-orm/mikro-orm/issues/2395)
+* **core:** allow using `updateNestedEntities` flag with collections ([65de1a5](https://github.com/mikro-orm/mikro-orm/commit/65de1a524bc8aa98b4e690304b36a9fb9f48f730)), closes [#1717](https://github.com/mikro-orm/mikro-orm/issues/1717)
+* **core:** allow using MongoNamingStrategy with SQL drivers ([c38c66c](https://github.com/mikro-orm/mikro-orm/commit/c38c66c388b841122459132152c5baf21896e8a8)), closes [#2693](https://github.com/mikro-orm/mikro-orm/issues/2693)
+* **core:** consider non-plain objects as PKs ([2fe9f2b](https://github.com/mikro-orm/mikro-orm/commit/2fe9f2be6184ab0d10a8f9292611dd7177fdb9cf)), closes [#1721](https://github.com/mikro-orm/mikro-orm/issues/1721)
+* **core:** consider objects without prototype as POJO ([b49807f](https://github.com/mikro-orm/mikro-orm/commit/b49807f181365367ecdb25c85bddabe8e2ca3c5a)), closes [#2274](https://github.com/mikro-orm/mikro-orm/issues/2274)
+* **core:** convert custom types for `onCreate` & `onUpdate` ([e5f5b38](https://github.com/mikro-orm/mikro-orm/commit/e5f5b38e9b656993a7cef16ef04cb57ea9c117fe)), closes [#1751](https://github.com/mikro-orm/mikro-orm/issues/1751)
+* **core:** convert custom types for collection items in joined strategy ([5b76600](https://github.com/mikro-orm/mikro-orm/commit/5b76600bb1c1ee812ea7119d5819843c9e7dc866)), closes [#1754](https://github.com/mikro-orm/mikro-orm/issues/1754)
+* **core:** convert custom types on PKs in update and delete queries ([b33be4a](https://github.com/mikro-orm/mikro-orm/commit/b33be4a3fca15b6aea9a37b8e41cd49c71a6ab78)), closes [#1798](https://github.com/mikro-orm/mikro-orm/issues/1798)
+* **core:** defer cascading of persist operation ([6abb3b0](https://github.com/mikro-orm/mikro-orm/commit/6abb3b07e4a2209f64cc9a16f6ba8bc322c184ac)), closes [#2161](https://github.com/mikro-orm/mikro-orm/issues/2161)
+* **core:** detect ts-jest usage ([94acc18](https://github.com/mikro-orm/mikro-orm/commit/94acc187b01950124ce8a54eadd3e8cee144e35a))
+* **core:** do not apply limit/offset to populate pivot table queries ([a73c4e0](https://github.com/mikro-orm/mikro-orm/commit/a73c4e092138d95fe85cebc5b6c87e94746286ca)), closes [#2121](https://github.com/mikro-orm/mikro-orm/issues/2121)
+* **core:** do not check stack trace when detecting ts-node ([06cca85](https://github.com/mikro-orm/mikro-orm/commit/06cca8542677691eaf35f8b037151050c93d2bbc))
+* **core:** do not override existing values via `prop.onCreate` ([fb67ea6](https://github.com/mikro-orm/mikro-orm/commit/fb67ea6c984302273df9915811aff7dcba795ff7))
+* **core:** do not override internal EM instance when forking EM ([8139174](https://github.com/mikro-orm/mikro-orm/commit/813917404f65f74265d6b9f31d5ff060fa8b6ead)), closes [#2342](https://github.com/mikro-orm/mikro-orm/issues/2342)
+* **core:** do not propagate `mapToPk` properties ([b93c59e](https://github.com/mikro-orm/mikro-orm/commit/b93c59ec8224ceb9f5070e3fa722a1b32fb39577))
+* **core:** do not save entity state in `merge` when it's not initialized ([4141539](https://github.com/mikro-orm/mikro-orm/commit/41415397a751c238e7b9746ff89b16ce865e224e)), closes [#1927](https://github.com/mikro-orm/mikro-orm/issues/1927)
+* **core:** ensure correct casting in deep JSON queries with operators ([5c79e34](https://github.com/mikro-orm/mikro-orm/commit/5c79e34671b870119fbd38f230bb4b434d91c05e)), closes [#1734](https://github.com/mikro-orm/mikro-orm/issues/1734)
+* **core:** fix `findAndCount` with populate ([d2f69ae](https://github.com/mikro-orm/mikro-orm/commit/d2f69ae8d2b5831047030c9891207625f2a476eb)), closes [#1736](https://github.com/mikro-orm/mikro-orm/issues/1736)
+* **core:** fix `QueryFlag.PAGINATE` with joined loading strategy ([c6d72b8](https://github.com/mikro-orm/mikro-orm/commit/c6d72b864d7c36f219e5b0b1e2d3aa66586bf4b8))
+* **core:** fix assigning embedded arrays ([f02fb75](https://github.com/mikro-orm/mikro-orm/commit/f02fb75b1ca4b91b906fcc3dbfa00b2551884525)), closes [#1699](https://github.com/mikro-orm/mikro-orm/issues/1699)
+* **core:** fix assigning to object property without value ([90165ab](https://github.com/mikro-orm/mikro-orm/commit/90165ab589627e43199c66fc2373562872ec4ba5)), closes [#2492](https://github.com/mikro-orm/mikro-orm/issues/2492)
+* **core:** fix clearing 1:m collections ([462a126](https://github.com/mikro-orm/mikro-orm/commit/462a12697e96740e5371b06ce2caf6e9c2bc14cd)), closes [#1914](https://github.com/mikro-orm/mikro-orm/issues/1914)
+* **core:** fix collection state when `forceEntityConstructor` is used ([674abbb](https://github.com/mikro-orm/mikro-orm/commit/674abbb28d9c5d5caf0cea441a447af7c987cdb0)), closes [#2406](https://github.com/mikro-orm/mikro-orm/issues/2406) [#2409](https://github.com/mikro-orm/mikro-orm/issues/2409)
+* **core:** fix conversion of custom type PKs in some cases ([28e83ef](https://github.com/mikro-orm/mikro-orm/commit/28e83ef9364293fa450877b79401aac18ade6ed7)), closes [#1263](https://github.com/mikro-orm/mikro-orm/issues/1263)
+* **core:** fix extraction of child condition when populating 2 ([1653269](https://github.com/mikro-orm/mikro-orm/commit/16532691c769805e297818d9d1d275769e193434)), closes [#1882](https://github.com/mikro-orm/mikro-orm/issues/1882)
+* **core:** fix hydrating of inlined embeddables via `em.create()` ([057317f](https://github.com/mikro-orm/mikro-orm/commit/057317f2ad39db2b46e50bb78b56f485b0cdb81d)), closes [#1840](https://github.com/mikro-orm/mikro-orm/issues/1840)
+* **core:** fix joined strategy with FK as PK ([5412913](https://github.com/mikro-orm/mikro-orm/commit/5412913696ab62529b9a87f78ea9f97f6517073c)), closes [#1902](https://github.com/mikro-orm/mikro-orm/issues/1902)
+* **core:** fix M:N relations with custom type PKs ([3cdc786](https://github.com/mikro-orm/mikro-orm/commit/3cdc78605c9ce8b204df431abba3aea2a0d24429)), closes [#1930](https://github.com/mikro-orm/mikro-orm/issues/1930)
+* **core:** fix missing embedded columns on joined select query ([#2664](https://github.com/mikro-orm/mikro-orm/issues/2664)) ([88e2309](https://github.com/mikro-orm/mikro-orm/commit/88e23095ae0165ff792c2029222b1bf12038f09a))
+* **core:** fix nested query with fk as pk ([#2650](https://github.com/mikro-orm/mikro-orm/issues/2650)) ([cc54ff9](https://github.com/mikro-orm/mikro-orm/commit/cc54ff94e6c3bc79fd6fb67b169df7489cd1405c)), closes [#2648](https://github.com/mikro-orm/mikro-orm/issues/2648)
+* **core:** fix ordering by pivot table with explicit schema name ([eb1f9bb](https://github.com/mikro-orm/mikro-orm/commit/eb1f9bb1b10beedfbd5bf4b27aabe485e68e1dc9)), closes [#2621](https://github.com/mikro-orm/mikro-orm/issues/2621)
+* **core:** fix persisting complex composite keys in m:1 relations ([9f91b54](https://github.com/mikro-orm/mikro-orm/commit/9f91b5470e3fba415ff239cc983680dee20dcaef)), closes [#1687](https://github.com/mikro-orm/mikro-orm/issues/1687)
+* **core:** fix pivot tables for wild card schema entities ([623dc91](https://github.com/mikro-orm/mikro-orm/commit/623dc9188b4cd1de30ac0feb190de036d1739e16)), closes [#2690](https://github.com/mikro-orm/mikro-orm/issues/2690)
+* **core:** fix populating entities with wildcard schema ([98d0bfb](https://github.com/mikro-orm/mikro-orm/commit/98d0bfb30e268f1a391f4364fe6acb9049a607cb))
+* **core:** fix propagation of locking option with select-in population ([f3990d0](https://github.com/mikro-orm/mikro-orm/commit/f3990d0e6eabd40434bbf8d5259519a99423e514)), closes [#1670](https://github.com/mikro-orm/mikro-orm/issues/1670)
+* **core:** fix querying by complex composite keys via entity instance ([293a3cb](https://github.com/mikro-orm/mikro-orm/commit/293a3cbf4498a38ff7a8badaf7d5d4f1b46d2716)), closes [#1695](https://github.com/mikro-orm/mikro-orm/issues/1695)
+* **core:** fix querying by JSON properties ([73108b1](https://github.com/mikro-orm/mikro-orm/commit/73108b183542ef34b4893d5859794e166a82ce39)), closes [#1673](https://github.com/mikro-orm/mikro-orm/issues/1673)
+* **core:** fix reflection of enums in babel ([a5b8ee9](https://github.com/mikro-orm/mikro-orm/commit/a5b8ee9f20b6aceff6871765feff41b016fc6acc)), closes [#2198](https://github.com/mikro-orm/mikro-orm/issues/2198)
+* **core:** fix serialization of self referencing collections ([79c2a10](https://github.com/mikro-orm/mikro-orm/commit/79c2a10ba077c29c4d233abe22da8f8b389efdb1)), closes [#2059](https://github.com/mikro-orm/mikro-orm/issues/2059)
+* **core:** fix state of entities from result cached ([0d95eef](https://github.com/mikro-orm/mikro-orm/commit/0d95eef2311f671db18141e90d7521668f0e267a)), closes [#1704](https://github.com/mikro-orm/mikro-orm/issues/1704)
+* **core:** fix support for nested composite PKs ([14dcff8](https://github.com/mikro-orm/mikro-orm/commit/14dcff8f301577d64d99b7d71e392f211a5e178e)), closes [#2647](https://github.com/mikro-orm/mikro-orm/issues/2647)
+* **core:** fix transaction context in nested transactions ([091e60d](https://github.com/mikro-orm/mikro-orm/commit/091e60d5636959477176d851ef112ab53f1c6609)), closes [#1910](https://github.com/mikro-orm/mikro-orm/issues/1910)
+* **core:** improve partial loading of 1:m relations ([3ddde1e](https://github.com/mikro-orm/mikro-orm/commit/3ddde1e9a5e31c245da44ebaa96332ee61ef0c61)), closes [#2651](https://github.com/mikro-orm/mikro-orm/issues/2651)
+* **core:** issue delete queries after extra/collection updates ([66468da](https://github.com/mikro-orm/mikro-orm/commit/66468da1bcc2ea02fc9bf6b7f87ab5cc16b84cb0))
+* **core:** issue early delete queries for recreating unique properties ([decfd10](https://github.com/mikro-orm/mikro-orm/commit/decfd10721958db51752e59c1827c6ad2e29ab55)), closes [#2273](https://github.com/mikro-orm/mikro-orm/issues/2273)
+* **core:** make entity helper property non-enumerable ([3cac0cf](https://github.com/mikro-orm/mikro-orm/commit/3cac0cfccb0ae1145f9bb2260e7ecb8020275080))
+* **core:** propagate `em.remove()` to 1:m collections ([c23c39c](https://github.com/mikro-orm/mikro-orm/commit/c23c39cf70a3f417a6537a2941db87b89b6d78db)), closes [#2395](https://github.com/mikro-orm/mikro-orm/issues/2395)
+* **core:** propagate `em.remove()` to m:1 properties of 1:m relations ([e6fa2f7](https://github.com/mikro-orm/mikro-orm/commit/e6fa2f7841b4508406d3a36caec31f63b2aaa4bf)), closes [#2636](https://github.com/mikro-orm/mikro-orm/issues/2636)
+* **core:** propagate unsetting of 1:1 from inverse side ([1e78977](https://github.com/mikro-orm/mikro-orm/commit/1e78977c4846b0436b5fc6e5f91137faefaf681b)), closes [#1872](https://github.com/mikro-orm/mikro-orm/issues/1872)
+* **core:** rehydrate custom types when using metadata cache ([3bcb9a5](https://github.com/mikro-orm/mikro-orm/commit/3bcb9a52d1bcfd2596826603f2e090b7c8baddf9)), closes [#2489](https://github.com/mikro-orm/mikro-orm/issues/2489)
+* **core:** reload default values after flush in mysql/sqlite ([d57a6a9](https://github.com/mikro-orm/mikro-orm/commit/d57a6a9a4583c4771777bd60ad914647cad8cdb0)), closes [#2581](https://github.com/mikro-orm/mikro-orm/issues/2581)
+* **core:** remove entity from its bidirectional relations after delete ([7e40b5c](https://github.com/mikro-orm/mikro-orm/commit/7e40b5cb664cb8f3fef5623308f0a6849392f80e)), closes [#2238](https://github.com/mikro-orm/mikro-orm/issues/2238)
+* **core:** reset current transaction before running `afterFlush` event ([d98837d](https://github.com/mikro-orm/mikro-orm/commit/d98837d5d67171a26f7cc8dc46f9ada9a5d42092)), closes [#1824](https://github.com/mikro-orm/mikro-orm/issues/1824)
+* **core:** respect filters defined on base entities ([65fec06](https://github.com/mikro-orm/mikro-orm/commit/65fec06c6ed467a70cf80ff5eef49712aa8277bb)), closes [#1979](https://github.com/mikro-orm/mikro-orm/issues/1979)
+* **core:** respect read replica options ([#2152](https://github.com/mikro-orm/mikro-orm/issues/2152)) ([9ec668d](https://github.com/mikro-orm/mikro-orm/commit/9ec668d201d9017359812d8bebcfc063aac60f55)), closes [#1963](https://github.com/mikro-orm/mikro-orm/issues/1963)
+* **core:** respect specified schema when populating (select-in) ([#2676](https://github.com/mikro-orm/mikro-orm/issues/2676)) ([21a1be0](https://github.com/mikro-orm/mikro-orm/commit/21a1be0083a05576c49934db939b36e7dd30f391))
+* **core:** rework orphan removal and cascading ([#2532](https://github.com/mikro-orm/mikro-orm/issues/2532)) ([eb3ea4a](https://github.com/mikro-orm/mikro-orm/commit/eb3ea4a5c187706ea745cb160d2078d57a975e53))
+* **core:** save collection snapshots recursively after flush ([3f5ba2f](https://github.com/mikro-orm/mikro-orm/commit/3f5ba2fb27695da6731d6f79937c849aa0137b8d)), closes [#2410](https://github.com/mikro-orm/mikro-orm/issues/2410) [#2411](https://github.com/mikro-orm/mikro-orm/issues/2411)
+* **core:** schedule orphan removal on 1:1 inverse sides when relation nulled ([a904fe8](https://github.com/mikro-orm/mikro-orm/commit/a904fe841f15334ed79fdb41d63af0036c7e628d)), closes [#2273](https://github.com/mikro-orm/mikro-orm/issues/2273)
+* **core:** support extending in `tsconfig.json` ([#1804](https://github.com/mikro-orm/mikro-orm/issues/1804)) ([e1e0adb](https://github.com/mikro-orm/mikro-orm/commit/e1e0adb09fdfbb2f9bf57fdac68e2a5a2e21957d)), closes [#1792](https://github.com/mikro-orm/mikro-orm/issues/1792)
+* **core:** support getters in `EntitySchema` property types ([9858205](https://github.com/mikro-orm/mikro-orm/commit/9858205facbed3935a081d493f629d031df2de01)), closes [#1867](https://github.com/mikro-orm/mikro-orm/issues/1867)
+* **core:** support loading lazy scalar properties via `em.populate()` ([c20fe88](https://github.com/mikro-orm/mikro-orm/commit/c20fe883268ecd844d31818dd59cf0cf24b16d2b)), closes [#1479](https://github.com/mikro-orm/mikro-orm/issues/1479)
+* **core:** sync `MigrateOptions` type in core with migrations package ([#2259](https://github.com/mikro-orm/mikro-orm/issues/2259)) ([d4b8c2c](https://github.com/mikro-orm/mikro-orm/commit/d4b8c2ca07fda96c0935b595fabd7c19ceed904f))
+* **core:** truly load the whole entity graph when `populate: true` ([3c21663](https://github.com/mikro-orm/mikro-orm/commit/3c216638f2f472bffd90a41dea69e1db2ecfe23d)), closes [#1134](https://github.com/mikro-orm/mikro-orm/issues/1134)
+* **core:** use `$and` for merging of multiple filter conditions ([0a0622a](https://github.com/mikro-orm/mikro-orm/commit/0a0622aecac0ba96a39172745fd4bad4ea44edb3)), closes [#1776](https://github.com/mikro-orm/mikro-orm/issues/1776)
+* **core:** use clean internal identity map with `disableIdentityMap` ([0677d74](https://github.com/mikro-orm/mikro-orm/commit/0677d74664e975c0b16afb1b90da260e9d7df1a3)), closes [#1307](https://github.com/mikro-orm/mikro-orm/issues/1307)
+* **core:** use tsconfig-paths loadConfig function ([#1854](https://github.com/mikro-orm/mikro-orm/issues/1854)) ([76e8d1c](https://github.com/mikro-orm/mikro-orm/commit/76e8d1c787bce0b432f3b171171edf65908e42f0)), closes [#1849](https://github.com/mikro-orm/mikro-orm/issues/1849)
+* **embeddables:** add missing serialization options to `@Embedded()` ([9f91578](https://github.com/mikro-orm/mikro-orm/commit/9f91578ce55a5d80e908c8bef2c7cbac3d6eb73b)), closes [#2464](https://github.com/mikro-orm/mikro-orm/issues/2464)
+* **embeddables:** allow using more than 10 embedded arrays ([7806667](https://github.com/mikro-orm/mikro-orm/commit/7806667afde2c4d76405b49c8e818dd4f0520104)), closes [#1912](https://github.com/mikro-orm/mikro-orm/issues/1912)
+* **embeddables:** ensure order of discovery does not matter for embeddables ([b095d9e](https://github.com/mikro-orm/mikro-orm/commit/b095d9e70770e478b85d5ca644fa0f8e42365e2a)), closes [#2242](https://github.com/mikro-orm/mikro-orm/issues/2242)
+* **embeddables:** fix validating nullable object embeddables ([8ab2941](https://github.com/mikro-orm/mikro-orm/commit/8ab2941d819b839cf588a04630fa69c5a9072f83)), closes [#2233](https://github.com/mikro-orm/mikro-orm/issues/2233)
+* **embeddables:** order of discovery of embeddables should not matter ([d955b29](https://github.com/mikro-orm/mikro-orm/commit/d955b29913906a23ecc767c41c42292271fe7a8d)), closes [#2149](https://github.com/mikro-orm/mikro-orm/issues/2149)
+* handle `file://` urls in normalizePath ([#2697](https://github.com/mikro-orm/mikro-orm/issues/2697)) ([127b0ae](https://github.com/mikro-orm/mikro-orm/commit/127b0ae8e5e1667484772286e7c26672dc01e16b))
+* **mongo:** do not use separate update queries for M:N collections if not needed ([e57984d](https://github.com/mikro-orm/mikro-orm/commit/e57984d0d3048637c75b1f3f5ff46d0ed5528e92)), closes [#2483](https://github.com/mikro-orm/mikro-orm/issues/2483)
+* **mongo:** fix extraction of child condition when populating ([66ab1c6](https://github.com/mikro-orm/mikro-orm/commit/66ab1c63dfa0ad71749aa11f996bc155848ec7ec)), closes [#1891](https://github.com/mikro-orm/mikro-orm/issues/1891)
+* **mongo:** validate usage of migrator and entity generator ([1db1a63](https://github.com/mikro-orm/mikro-orm/commit/1db1a6376a4cd21412822cfbd1e68f7b178e54e6)), closes [#1801](https://github.com/mikro-orm/mikro-orm/issues/1801)
+* **postgres:** add extra array operators ([#2467](https://github.com/mikro-orm/mikro-orm/issues/2467)) ([576117e](https://github.com/mikro-orm/mikro-orm/commit/576117e23699c5ce5ab954c9fbec8b6297e6b359))
+* **postgres:** fix propagation of PKs with custom names ([41380de](https://github.com/mikro-orm/mikro-orm/commit/41380de018a4984bbfbc5e4fb27ec399225f88ac)), closes [#1990](https://github.com/mikro-orm/mikro-orm/issues/1990)
+* **postgres:** support comparing array columns via `$eq` ([6eb320e](https://github.com/mikro-orm/mikro-orm/commit/6eb320e233633af7c9b26219393e2caa816fd59f)), closes [#2462](https://github.com/mikro-orm/mikro-orm/issues/2462)
+* **schema:** improve diffing of default values for strings and dates ([d4ac638](https://github.com/mikro-orm/mikro-orm/commit/d4ac6385aa84208732f144e6bd9f68e8cf5c6697)), closes [#2385](https://github.com/mikro-orm/mikro-orm/issues/2385)
+* **sti:** allow m:n relations between two STI entities ([6c797e9](https://github.com/mikro-orm/mikro-orm/commit/6c797e9e8f578bbcd77bdd1220e7b07e3d4d46e8)), closes [#2246](https://github.com/mikro-orm/mikro-orm/issues/2246)
+* **sti:** fix prototype of child entity after it gets loaded ([a0827f5](https://github.com/mikro-orm/mikro-orm/commit/a0827f53c3dd28233406cc912ab772b97c3ad697)), closes [#2493](https://github.com/mikro-orm/mikro-orm/issues/2493) [#2364](https://github.com/mikro-orm/mikro-orm/issues/2364)
+* **sti:** respect custom table names ([42a9522](https://github.com/mikro-orm/mikro-orm/commit/42a952213f4a33cab3f1e49bd215ebac9693aadd)), closes [#2356](https://github.com/mikro-orm/mikro-orm/issues/2356)
+* **ts-morph:** fix validation of embedded polymorphic arrays ([b6a068a](https://github.com/mikro-orm/mikro-orm/commit/b6a068ae16c5bb9355c7544b7480e89923fa6560))
+* **types:** fix populate type hints for nullable properties ([bc1bf76](https://github.com/mikro-orm/mikro-orm/commit/bc1bf763508af96fe8e64f7f806a8a70c1ba2e5a)), closes [#2701](https://github.com/mikro-orm/mikro-orm/issues/2701)
+* **validation:** validate missing 1:m mappedBy key in factory ([e75fcff](https://github.com/mikro-orm/mikro-orm/commit/e75fcff68e2e2f9f66a84887ecd8aa4166d8bb2c)), closes [#2393](https://github.com/mikro-orm/mikro-orm/issues/2393)
+
+
+### chore
+
+* upgrade typescript to v4.5.2 ([2bd8220](https://github.com/mikro-orm/mikro-orm/commit/2bd8220378f47533ecc075ac5e04a4a50c4d9225))
+
+
+### Code Refactoring
+
+* **core:** `PrimaryKeyType` symbol should be defined as optional ([db0b399](https://github.com/mikro-orm/mikro-orm/commit/db0b399da133f7ca04c73347b1bd1a01c3c88001))
+* **core:** remove `@Repository()` decorator ([17a55b6](https://github.com/mikro-orm/mikro-orm/commit/17a55b6ef726a8b696594e7bc2d63cb857b92559))
+* **core:** remove `em.find/findOne` arguments in favour of options object ([7b577ab](https://github.com/mikro-orm/mikro-orm/commit/7b577ab88238f4ffccb593db50483ba61d037f23))
+* **core:** return `Collection` instance from `LoadedCollection.get()/$` ([27cbe69](https://github.com/mikro-orm/mikro-orm/commit/27cbe6963ebca526395d44ed3ba95e58da14d4da)), closes [#2394](https://github.com/mikro-orm/mikro-orm/issues/2394)
+* **core:** use options parameter in `em.merge()` ([aaee27c](https://github.com/mikro-orm/mikro-orm/commit/aaee27c1f475aab0eb3b3d9fea160f0bc941279e))
+* **core:** use options parameters on `SchemaGenerator` ([7e48c5d](https://github.com/mikro-orm/mikro-orm/commit/7e48c5d2487d0f67838927f42efdcd4580a86fd0))
+* enable `populateAfterFlush` by default ([6dc184c](https://github.com/mikro-orm/mikro-orm/commit/6dc184c84fd697f2a2660c14ed86de12c037dda3)), closes [#784](https://github.com/mikro-orm/mikro-orm/issues/784)
+* use options parameters in `IDatabaseDriver` ([#2204](https://github.com/mikro-orm/mikro-orm/issues/2204)) ([9a32ac0](https://github.com/mikro-orm/mikro-orm/commit/9a32ac0655f7ec701399250b88605cc5f5fc3b2c))
+
+
+### Features
+
+* **cli:** allow exporting async functions from CLI config ([912728d](https://github.com/mikro-orm/mikro-orm/commit/912728d491be22aee7e893bbd854d0722b9e9f7b))
+* **cli:** improve loading of CLI settings from package.json ([03f9ddd](https://github.com/mikro-orm/mikro-orm/commit/03f9dddcc748ee322adcf2886a05ef0605b36d95)), closes [#545](https://github.com/mikro-orm/mikro-orm/issues/545)
+* **cli:** only warn with `useTsNode: true` without ts-node available ([5aff134](https://github.com/mikro-orm/mikro-orm/commit/5aff134d6c2a2be7093a465de68a33b41829cc0a)), closes [#1957](https://github.com/mikro-orm/mikro-orm/issues/1957)
+* **core:** add `em.clearCache(key)` method ([1ccfad8](https://github.com/mikro-orm/mikro-orm/commit/1ccfad858ecb6e7130004c037a956cb5f15d7bc3))
+* **core:** add `EventType.onLoad` that fires after entity is fully loaded ([14c2fa9](https://github.com/mikro-orm/mikro-orm/commit/14c2fa9763d9bbabc43e2b513d9285ed52df3de2))
+* **core:** add `freshEventManager` to `em.fork()` options ([a0f3fd0](https://github.com/mikro-orm/mikro-orm/commit/a0f3fd09a7818ad9bebf6074b44c09ecced23858)), closes [#1741](https://github.com/mikro-orm/mikro-orm/issues/1741)
+* **core:** add `persistOnCreate` option and enable it for seeder ([f0fec1b](https://github.com/mikro-orm/mikro-orm/commit/f0fec1b917a228869482bf781d256ab68c0b138c)), closes [#2629](https://github.com/mikro-orm/mikro-orm/issues/2629)
+* **core:** add `populateWhere` option ([#2660](https://github.com/mikro-orm/mikro-orm/issues/2660)) ([16c5e91](https://github.com/mikro-orm/mikro-orm/commit/16c5e91545b11057b9e78c3f6d910cc409f7f8c1))
+* **core:** add `QueryFlag.AUTO_JOIN_ONE_TO_ONE_OWNER` ([be9d9e1](https://github.com/mikro-orm/mikro-orm/commit/be9d9e16d59991fe2ea7a20db56602557845d813)), closes [#1660](https://github.com/mikro-orm/mikro-orm/issues/1660)
+* **core:** add `Reference.createFromPK()` helper method ([2217154](https://github.com/mikro-orm/mikro-orm/commit/2217154f15f1f2263bbe7c8c81b789c95eb7f6bb))
+* **core:** add callback parameter to `Collection.remove()` ([0b37654](https://github.com/mikro-orm/mikro-orm/commit/0b376544d4dd6ff551e4b65bede225b110e0e4b4)), closes [#2398](https://github.com/mikro-orm/mikro-orm/issues/2398)
+* **core:** add custom table check constraint support for postgres ([#2688](https://github.com/mikro-orm/mikro-orm/issues/2688)) ([89aca5f](https://github.com/mikro-orm/mikro-orm/commit/89aca5f41cf85bad8bbea51d0c1f9983ec01e903))
+* **core:** add index/key name to naming strategy ([a842e3e](https://github.com/mikro-orm/mikro-orm/commit/a842e3eea80349777ccdf7b8840b3c1860e9607f))
+* **core:** add PlainObject class that DTO's can extend to treat class as POJO ([#1837](https://github.com/mikro-orm/mikro-orm/issues/1837)) ([645b27a](https://github.com/mikro-orm/mikro-orm/commit/645b27a4d00a8d607e1d18303be8896a5c87a25b))
+* **core:** add support for advanced locking ([0cbed9c](https://github.com/mikro-orm/mikro-orm/commit/0cbed9ccead86cda46cb5d1715fd0b2382d5da18)), closes [#1786](https://github.com/mikro-orm/mikro-orm/issues/1786)
+* **core:** add support for concurrency checks ([#2437](https://github.com/mikro-orm/mikro-orm/issues/2437)) ([acd43fe](https://github.com/mikro-orm/mikro-orm/commit/acd43feb0f391ec96f82916d94422c8d9b1341b0))
+* **core:** add support for custom property ordering ([#2444](https://github.com/mikro-orm/mikro-orm/issues/2444)) ([40ae4d6](https://github.com/mikro-orm/mikro-orm/commit/40ae4d6b96fbc68ac8ff99edc3cd5209e0968527))
+* **core:** add support for ESM via `gen-esm-wrapper` ([aa71065](https://github.com/mikro-orm/mikro-orm/commit/aa71065d0727920db7da9bfdecdb33e6b8165cb5)), closes [#1010](https://github.com/mikro-orm/mikro-orm/issues/1010)
+* **core:** add support for multiple schemas (including UoW) ([#2296](https://github.com/mikro-orm/mikro-orm/issues/2296)) ([d64d100](https://github.com/mikro-orm/mikro-orm/commit/d64d100b0ef6fd3335d234aeac1ffa9b34b8f7ea)), closes [#2074](https://github.com/mikro-orm/mikro-orm/issues/2074)
+* **core:** add support for polymorphic embeddables ([#2426](https://github.com/mikro-orm/mikro-orm/issues/2426)) ([7b7c3a2](https://github.com/mikro-orm/mikro-orm/commit/7b7c3a22fe517e13a1a610f142c59e758acd3c3f)), closes [#1165](https://github.com/mikro-orm/mikro-orm/issues/1165)
+* **core:** allow configuring aliasing naming strategy ([#2419](https://github.com/mikro-orm/mikro-orm/issues/2419)) ([89d63b3](https://github.com/mikro-orm/mikro-orm/commit/89d63b399e66cc61a7ba9294b39dacb9a9bf8cd1))
+* **core:** allow defining check constraints via callback ([965f740](https://github.com/mikro-orm/mikro-orm/commit/965f740f830bd0676b9870dec358c9c69bc068cc)), closes [#2688](https://github.com/mikro-orm/mikro-orm/issues/2688) [#1711](https://github.com/mikro-orm/mikro-orm/issues/1711)
+* **core:** allow passing arrays in `orderBy` parameter ([#2211](https://github.com/mikro-orm/mikro-orm/issues/2211)) ([0ec22ed](https://github.com/mikro-orm/mikro-orm/commit/0ec22ed3c88ea0e8c749dc164bb5c1d23ac7b9dc)), closes [#2010](https://github.com/mikro-orm/mikro-orm/issues/2010)
+* **core:** allow providing custom `Logger` instance ([#2443](https://github.com/mikro-orm/mikro-orm/issues/2443)) ([c7a75e0](https://github.com/mikro-orm/mikro-orm/commit/c7a75e00de01b85ece282cd64429a57a49e5842d))
+* **core:** allow using short lived tokens in config ([4499838](https://github.com/mikro-orm/mikro-orm/commit/44998383b21a3aef943a922a3e75426369178f35)), closes [#1818](https://github.com/mikro-orm/mikro-orm/issues/1818)
+* **core:** automatically infer `populate` hint based on `fields` ([0097539](https://github.com/mikro-orm/mikro-orm/commit/0097539c762c7c79e703bf02cffb24321f11a2b0)), closes [#2468](https://github.com/mikro-orm/mikro-orm/issues/2468)
+* **core:** conditionally support folder based discovery of ESM ([8c8f0d0](https://github.com/mikro-orm/mikro-orm/commit/8c8f0d0a472c29ddd0696ccdd145ac138a9a8f69)), closes [#2631](https://github.com/mikro-orm/mikro-orm/issues/2631)
+* **core:** expose `referencedColumnNames` on m:1/1:1 decorators ([2f5a5e1](https://github.com/mikro-orm/mikro-orm/commit/2f5a5e1b3d3fb97da6b993c4c3795553300d8d15)), closes [#593](https://github.com/mikro-orm/mikro-orm/issues/593)
+* **core:** implement auto-flush mode ([#2491](https://github.com/mikro-orm/mikro-orm/issues/2491)) ([f1d8bf1](https://github.com/mikro-orm/mikro-orm/commit/f1d8bf1dcdc769d4db2d79c7fb022b8d11007ce5)), closes [#2359](https://github.com/mikro-orm/mikro-orm/issues/2359)
+* **core:** implement auto-refreshing of loaded entities ([#2263](https://github.com/mikro-orm/mikro-orm/issues/2263)) ([9dce38c](https://github.com/mikro-orm/mikro-orm/commit/9dce38cd69667907e1eba5cef609ac4ddf6a2945)), closes [#2292](https://github.com/mikro-orm/mikro-orm/issues/2292)
+* **core:** implement partial loading support for joined loading strategy ([2bebb5e](https://github.com/mikro-orm/mikro-orm/commit/2bebb5e75595ae3369887ee8bed7be48efc45173)), closes [#1707](https://github.com/mikro-orm/mikro-orm/issues/1707)
+* **core:** keep collection state of dirty collections after initializing ([49ed651](https://github.com/mikro-orm/mikro-orm/commit/49ed65149c6cf02ef6afb533c697a8e0ae281a3a)), closes [#2408](https://github.com/mikro-orm/mikro-orm/issues/2408)
+* **core:** make `em.create()` respect required properties ([2385f1d](https://github.com/mikro-orm/mikro-orm/commit/2385f1d18b1b5235750fc5f29b4d51fe04aca7b8))
+* **core:** make `FindOptions.fields` strictly typed (dot notation) ([fd43099](https://github.com/mikro-orm/mikro-orm/commit/fd43099a63cae31ba32f833bed1b75c13f2dd43c))
+* **core:** make `populate` parameter strictly typed with dot notation ([3372f02](https://github.com/mikro-orm/mikro-orm/commit/3372f0243f1af34e22a16be2cecba6dc5c04dd0d))
+* **core:** move `@UseRequestContext()` decorator to `core` package ([253216d](https://github.com/mikro-orm/mikro-orm/commit/253216d25ef49b32f14958e8892adb00b5d46482))
+* **core:** rework deep assigning of entities and enable it by default ([#1978](https://github.com/mikro-orm/mikro-orm/issues/1978)) ([8f455ad](https://github.com/mikro-orm/mikro-orm/commit/8f455ad7dfe37d75f5abb3a83ac4610be74d43a7))
+* **core:** support column names with spaces ([00b54b4](https://github.com/mikro-orm/mikro-orm/commit/00b54b46f627cf820d40e0f68eaadcea86236801)), closes [#1617](https://github.com/mikro-orm/mikro-orm/issues/1617)
+* **core:** use `AsyncLocalStorage` instead of `domain` API ([be27bf7](https://github.com/mikro-orm/mikro-orm/commit/be27bf7329675e0f4371f9d47800ea8fcbe6ca3f))
+* **core:** validate populate hint on runtime for joined strategy too ([94877e3](https://github.com/mikro-orm/mikro-orm/commit/94877e3d7800c325cfe7e4b75380df8d8e224718)), closes [#2527](https://github.com/mikro-orm/mikro-orm/issues/2527)
+* **core:** validate required properties before flushing new entities ([9eec3a9](https://github.com/mikro-orm/mikro-orm/commit/9eec3a9b018830a37ba57e5e5cdd27a48e97d7b1)), closes [#2176](https://github.com/mikro-orm/mikro-orm/issues/2176)
+* **core:** validate usage of global context ([#2381](https://github.com/mikro-orm/mikro-orm/issues/2381)) ([f0cbcc2](https://github.com/mikro-orm/mikro-orm/commit/f0cbcc2d977ffb8b867a21ee2ac857ef26986d73))
+* **core:** validate version mismatch in ORM packages ([cf70219](https://github.com/mikro-orm/mikro-orm/commit/cf702195e2dd0dce4d66da26f1d349dddf05b007))
+* **embeddables:** allow using m:1 properties inside embeddables ([#1948](https://github.com/mikro-orm/mikro-orm/issues/1948)) ([ffca73e](https://github.com/mikro-orm/mikro-orm/commit/ffca73ecf3ecf405dee3042ad0ab60848721ab7b))
+* **embeddables:** support `onCreate` and `onUpdate` ([288899d](https://github.com/mikro-orm/mikro-orm/commit/288899d34966775133321ef1f06d20a914955dfe)), closes [#2283](https://github.com/mikro-orm/mikro-orm/issues/2283) [#2391](https://github.com/mikro-orm/mikro-orm/issues/2391)
+* **entity-generator:** add enum generation support ([#2608](https://github.com/mikro-orm/mikro-orm/issues/2608)) ([1e0b411](https://github.com/mikro-orm/mikro-orm/commit/1e0b411dad3cb0ebb456b34e1bcac9a71f059c48))
+* **entity-generator:** allow specifying schema ([beb2993](https://github.com/mikro-orm/mikro-orm/commit/beb299383c647f9f2d7431e177659d299fb0f041)), closes [#1301](https://github.com/mikro-orm/mikro-orm/issues/1301)
+* **filters:** add `em` parameter to the filter callback parameters ([6858986](https://github.com/mikro-orm/mikro-orm/commit/6858986060e10e6170186094469df6e354a7413e)), closes [#2214](https://github.com/mikro-orm/mikro-orm/issues/2214)
+* **migrations:** allow providing custom `MigrationGenerator` ([3cc366b](https://github.com/mikro-orm/mikro-orm/commit/3cc366b7a7e269a2c527edc324695620e8025163)), closes [#1913](https://github.com/mikro-orm/mikro-orm/issues/1913)
+* **migrations:** allow using migrations with ES modules ([072f23f](https://github.com/mikro-orm/mikro-orm/commit/072f23fe873c969f77a519ef5b997c30e3246093)), closes [#2631](https://github.com/mikro-orm/mikro-orm/issues/2631)
+* **migrations:** store migrations without extensions ([4036716](https://github.com/mikro-orm/mikro-orm/commit/40367166f9e74a042e2f6314f31877f27a15a14d)), closes [#2239](https://github.com/mikro-orm/mikro-orm/issues/2239)
+* **migrations:** use snapshots for generating diffs in new migrations ([#1815](https://github.com/mikro-orm/mikro-orm/issues/1815)) ([9c37f61](https://github.com/mikro-orm/mikro-orm/commit/9c37f6141d8723d6c472dfd3557a1d749d344455))
+* **mongo:** add `SchemaGenerator` support for mongo ([#2658](https://github.com/mikro-orm/mikro-orm/issues/2658)) ([cc11859](https://github.com/mikro-orm/mikro-orm/commit/cc1185971d1ee5780b183623a8afb455b3f79d3a))
+* **mongo:** upgrade node-mongodb to v4 ([#2425](https://github.com/mikro-orm/mikro-orm/issues/2425)) ([2e4c135](https://github.com/mikro-orm/mikro-orm/commit/2e4c1350be693dbdde4ce99f720cf23202ae6f76))
+* **schema:** add support for timestamp columns in mysql ([a224ec9](https://github.com/mikro-orm/mikro-orm/commit/a224ec9137afe035bd0ed8d6e77376bc076a0f45)), closes [#2386](https://github.com/mikro-orm/mikro-orm/issues/2386)
+* **schema:** allow disabling foreign key constraints ([fcdb236](https://github.com/mikro-orm/mikro-orm/commit/fcdb236eb8112ebaed3450892f51fd469902ac62)), closes [#2548](https://github.com/mikro-orm/mikro-orm/issues/2548)
+* **schema:** rework schema diffing ([#1641](https://github.com/mikro-orm/mikro-orm/issues/1641)) ([05f15a3](https://github.com/mikro-orm/mikro-orm/commit/05f15a37db178271a88dfa743be8ac01cd97db8e)), closes [#1486](https://github.com/mikro-orm/mikro-orm/issues/1486) [#1518](https://github.com/mikro-orm/mikro-orm/issues/1518) [#579](https://github.com/mikro-orm/mikro-orm/issues/579) [#1559](https://github.com/mikro-orm/mikro-orm/issues/1559) [#1602](https://github.com/mikro-orm/mikro-orm/issues/1602) [#1480](https://github.com/mikro-orm/mikro-orm/issues/1480) [#1687](https://github.com/mikro-orm/mikro-orm/issues/1687)
+* **seeder:** add seeder package ([#929](https://github.com/mikro-orm/mikro-orm/issues/929)) ([2b86e22](https://github.com/mikro-orm/mikro-orm/commit/2b86e22eb061060ee2c67a85741b99c1ddcac9c0)), closes [#251](https://github.com/mikro-orm/mikro-orm/issues/251)
+* **sql:** add callback signature to `expr()` with alias parameter ([48702c7](https://github.com/mikro-orm/mikro-orm/commit/48702c7576f63f0a19dd81612ffae339b2988e62)), closes [#2405](https://github.com/mikro-orm/mikro-orm/issues/2405)
+* **sql:** allow setting transaction isolation level ([6ae5fbf](https://github.com/mikro-orm/mikro-orm/commit/6ae5fbf70dd87fe2380b74d83bc8a04bb8f447fe)), closes [#819](https://github.com/mikro-orm/mikro-orm/issues/819)
+* **sql:** allow tuple comparison via `expr` helper ([90777a7](https://github.com/mikro-orm/mikro-orm/commit/90777a7f5ac3619d2ef902eb9dc69ed6d762ca33)), closes [#2399](https://github.com/mikro-orm/mikro-orm/issues/2399)
+* **sql:** generate down migrations automatically ([#2139](https://github.com/mikro-orm/mikro-orm/issues/2139)) ([7d78d0c](https://github.com/mikro-orm/mikro-orm/commit/7d78d0cb853250b20a8d79bf5036885256f19848))
+* support flushing via `Promise.all()` ([f788773](https://github.com/mikro-orm/mikro-orm/commit/f788773de2b6cbefbff6cc72600017eae1f4df22)), closes [#2412](https://github.com/mikro-orm/mikro-orm/issues/2412)
+* **typings:** make `em.create()` and other methods strict ([#1718](https://github.com/mikro-orm/mikro-orm/issues/1718)) ([e8b7119](https://github.com/mikro-orm/mikro-orm/commit/e8b7119eca0df7d686a7d3d91bfc17b74baaeea1)), closes [#1456](https://github.com/mikro-orm/mikro-orm/issues/1456)
+* **typings:** make `toObject()` and similar strict ([#1719](https://github.com/mikro-orm/mikro-orm/issues/1719)) ([c202396](https://github.com/mikro-orm/mikro-orm/commit/c202396a205b710b8afcd68f6a7ccc5a0ab64769))
+
+
+### Performance Improvements
+
+* **core:** define `Reference` properties on prototype ([4ba390d](https://github.com/mikro-orm/mikro-orm/commit/4ba390d59bb65f56d8154e8b7a387c29ab01e3d5))
+* **core:** do not redefine `Collection` properties as non-enumerable ([8a604a6](https://github.com/mikro-orm/mikro-orm/commit/8a604a69fe684fac7df8b93a3cc88d1ad47a76ff))
+* **core:** do not update entity state on forking EM ([de3191c](https://github.com/mikro-orm/mikro-orm/commit/de3191c55b58aeba33704c085755bec170db7f07))
+* **core:** reuse EntityComparator on fork() ([#2496](https://github.com/mikro-orm/mikro-orm/issues/2496)) ([b2a9b12](https://github.com/mikro-orm/mikro-orm/commit/b2a9b12d459ec7a5aab0b2e3cf1032715a9ef5c8))
+* **core:** use shared memory for cycles when computing change sets ([ced0fad](https://github.com/mikro-orm/mikro-orm/commit/ced0fad3088239aeffee1e788008de56a9f51eec)), closes [#2379](https://github.com/mikro-orm/mikro-orm/issues/2379)
+* **core:** various small performance improvements in UoW ([84b5d1b](https://github.com/mikro-orm/mikro-orm/commit/84b5d1b1b867de7cfa8e1349327dc96b7250d4eb))
+
+
+### BREAKING CHANGES
+
+* **core:** Previously the validation took place in the database, so it worked only for SQL
+drivers. Now we have runtime validation based on the entity metadata. This means
+mongo users now need to use `nullable: true` on their optional properties, or
+disable the validation globally via `validateRequired: false` in the ORM config.
+* **core:** Previously when we had nonstandard PK types, we could use `PrimaryKeyType` symbol
+to let the type system know it. It was required to define this property as required,
+now it can be defined as optional too.
+* **core:** `em.create()` will now require you to pass all non-optional properties. Some properties
+might be defined as required for TS but we have a default value for them (either runtime,
+or database one) - for such we can use `OptionalProps` symbol to specify which properties
+should be considered as optional.
+* After flushing a new entity, all relations are marked as populated,
+just like if the entity was loaded from the db. This aligns the serialized
+output of `e.toJSON()` of a loaded entity and just-inserted one.
+
+In v4 this behaviour was disabled by default, so even after the new entity was
+flushed, the serialized form contained only FKs for its relations. We can opt in
+to this old behaviour via `populateAfterFlush: false`.
+* Previously it was possible to call `em.populate()` with a single entity input,
+and the output would be again just a single entity.
+
+Due to issues with TS 4.5, this method now always return array of entities.
+You can use destructing if you want to have a single entity return type:
+
+```ts
+const [loadedAuthor] = await em.populate(author, ...);
+```
+* **core:** Embeddable instances are now created via `EntityFactory` and they respect the
+`forceEntityConstructor` configuration. Due to this we need to have EM instance
+when assigning to embedded properties. 
+
+Using `em.assign()` should be preferred to get around this.
+
+Deep assigning of child entities now works by default based on the presence of PKs in the payload.
+This behaviour can be disable via updateByPrimaryKey: false in the assign options.
+
+`mergeObjects` option is now enabled by default.
+* **core:** Previously with select-in strategy as well as with QueryBuilder, table aliases
+were always the letter `e` followed by unique index. In v5, we use the same
+method as with joined strategy - the letter is inferred from the entity name.
+
+This can be breaking if you used the aliases somewhere, e.g. in custom SQL
+fragments. We can restore to the old behaviour by implementing custom naming
+strategy, overriding the `aliasName` method:
+
+```ts
+import { AbstractNamingStrategy } from '@mikro-orm/core';
+
+class CustomNamingStrategy extends AbstractNamingStrategy {
+  aliasName(entityName: string, index: number) {
+    return 'e' + index;
+  }
+}
+```
+
+Note that in v5 it is possible to use `expr()` helper to access the alias name
+dynamically, e.g. ``expr(alias => `lower('${alias}.name')`)``, which should be
+now preferred way instead of hardcoding the aliases.
+* **core:** Previously those dynamically added getters returned the array copy of collection
+items. In v5, we return the collection instance, which is also iterable and has
+a `length` getter and indexed access support, so it mimics the array. To get the
+array copy as before, call `getItems()` as with a regular collection.
+* **core:** `em.getReference()` now has options parameter.
+* Most of the methods on IDatabaseDriver interface now have different signature.
+* **core:** The decorator was problematic as it could only work properly it the file was required
+soon enough - before the ORM initialization, otherwise the repository would not be
+registered at all.
+
+Use `@Entity({ customRepository: () => CustomRepository })` in the entity definition
+instead.
+* **core:** `em.fork()` now has an options object parameter instead of the separate boolean params.
+* **core:** `merge()` has now the last parameter as options object instead of two separate bool params.
+* **core:** Populate parameter is now strictly typed and supports only array of strings or a boolean.
+Object way is no longer supported. To set loading strategy, use `FindOptions.strategy`.
+* **core:** Following method signatures changed, options parameter is now the only way to set things like
+`populate`, `orderBy`, etc.
+- `em.find()`
+- `em.findOne()`
+- `em.findOneOrFail()`
+- `em.findAndCount()`
+- `repo.find()`
+- `repo.findOne()`
+- `repo.findOneOrFail()`
+- `repo.findAndCount()`
+- `repo.findAll()`
+* **core:** `SchemaGenerator` API changed, boolean parameters are now removed
+in favour of options objects
+
+```ts
+interface SchemaGenerator {
+  generate(): Promise<string>;
+  createSchema(options?: { wrap?: boolean }): Promise<void>;
+  ensureDatabase(): Promise<void>;
+  getCreateSchemaSQL(options?: { wrap?: boolean }): Promise<string>;
+  dropSchema(options?: { wrap?: boolean; dropMigrationsTable?: boolean; dropDb?: boolean }): Promise<void>;
+  getDropSchemaSQL(options?: { wrap?: boolean; dropMigrationsTable?: boolean }): Promise<string>;
+  updateSchema(options?: { wrap?: boolean; safe?: boolean; dropDb?: boolean; dropTables?: boolean }): Promise<void>;
+  getUpdateSchemaSQL(options?: { wrap?: boolean; safe?: boolean; dropDb?: boolean; dropTables?: boolean }): Promise<string>;
+  createDatabase(name: string): Promise<void>;
+  dropDatabase(name: string): Promise<void>;
+  execute(sql: string, options?: { wrap?: boolean }): Promise<void>;
+}
+```
+* **sql:** - `em.transactional()` signature has changed, the parameter is now options object
+- `em.begin()` signature has changed, the parameter is now options object
+* **core:** Signature of `em.populate()` changed, it now uses options parameter.
+
+```diff
+-populate<P>(entities: T, populate: P, where?: FilterQuery<T>, orderBy?: QueryOrderMap,
+-            refresh?: boolean, validate?: boolean): Promise<Loaded<T, P>>;
++populate<P>(entities: T,populate: P, options?: EntityLoaderOptions<T>): Promise<Loaded<T, P>>;
+```
+* **typings:** Some methods are now strictly typed, so previously fine usages might be restricted on TS level.
+* **typings:** Some methods are now strictly typed, so previously fine usages might be restricted on TS level.
+To get around those, we might either cast as `any`, provide the generic `T` type as `any`, or
+use `expr` helper.
+
+```ts
+em.create(User, { someNotDefinedProp: 123 }); // throws if someNotDefinedProp not on the User
+em.create(User, { [expr('someNotDefinedProp')]: 123 }); // works, using expr
+em.create<any>(User, { someNotDefinedProp: 123 }); // works, using type cast
+em.create(User, { someNotDefinedProp: 123 } as any); // works, using type cast
+```
+* **core:** Node ">= 12.17.0 || >= 13.10.0" required.
+
+
+
+
+
 ## [4.5.10](https://github.com/mikro-orm/mikro-orm/compare/v4.5.9...v4.5.10) (2021-12-26)
 
 
