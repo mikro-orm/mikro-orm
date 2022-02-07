@@ -77,5 +77,10 @@ module.exports = {
       { type: 'link', label: 'NextJS + MySQL', href: 'https://github.com/jonahallibone/mikro-orm-nextjs' },
       { type: 'link', label: 'GraphQL + PostgreSQL + TypeScript', href: 'https://github.com/driescroons/mikro-orm-graphql-example' },
     ],
+    'Upgrading': [
+      'upgrading-v4-to-v5',
+      'upgrading-v3-to-v4',
+      'upgrading-v2-to-v3',
+    ],
   }
 };

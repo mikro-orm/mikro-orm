@@ -76,17 +76,17 @@ html[data-theme="light"] .admonition-info {
   max-height: 100%;
 }
 
-.navbar .navbar__link[href*=github],
-.navbar .navbar__link[href*=twitter],
-.navbar .navbar__link[href*=slack] {
+.navbar .icon[href*=github],
+.navbar .icon[href*=twitter],
+.navbar .icon[href*=slack] {
   font-size: 0;
   padding: 4px;
   margin: 0 4px;
 }
 
-.navbar .navbar__link[href*=github]:before,
-.navbar .navbar__link[href*=twitter]:before,
-.navbar .navbar__link[href*=slack]:before {
+.navbar .icon[href*=github]::before,
+.navbar .icon[href*=twitter]::before,
+.navbar .icon[href*=slack]::before {
   content: '';
   display: block;
   width: 32px;
@@ -94,15 +94,15 @@ html[data-theme="light"] .admonition-info {
   background-size: cover;
 }
 
-.navbar .navbar__link[href*=github]:before {
+.navbar .icon[href*=github]::before {
   background-image: url('/static/img/github-brand.svg');
 }
 
-.navbar .navbar__link[href*=slack]:before {
+.navbar .icon[href*=slack]::before {
   background-image: url('/static/img/slack-brand.svg');
 }
 
-.navbar .navbar__link[href*=twitter]:before {
+.navbar .icon[href*=twitter]::before {
   background-image: url('/static/img/twitter-brand.svg');
 }
 
@@ -220,6 +220,19 @@ html[data-theme="dark"] .navbar .navbar__link[href*=twitter]:before {
 
   .buttons_src-pages- {
     margin: 0 -30px;
+  }
+}
+
+@media screen and (min-width: 995px) and (max-width: 1130px) {
+  .navbar .icon[href*=twitter],
+  .navbar .icon[href*=slack] {
+    display: none;
+  }
+}
+
+@media screen and (min-width: 995px) and (max-width: 1030px) {
+  .navbar a[data-type="versions"] {
+    display: none;
   }
 }
 
