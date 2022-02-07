@@ -816,11 +816,11 @@ export class Utils {
     /* istanbul ignore next */
     try {
       // this works with ts-node during development (where we have `src` folder)
-      const pkg = await this.dynamicImport('../../package.json');
+      const pkg = await this.dynamicImport(__dirname + '/../../package.json');
       return pkg.version;
     } catch {
       // this works with node in production build (where we do not have the `src` folder)
-      const pkg = await this.dynamicImport('../package.json');
+      const pkg = await this.dynamicImport(__dirname + '/../package.json');
       return pkg.version;
     }
   }
