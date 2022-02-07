@@ -376,7 +376,15 @@ export abstract class Platform {
       return false;
     }
 
-    return [ReferenceType.SCALAR, ReferenceType.MANY_TO_ONE, ReferenceType.EMBEDDED].includes(prop.reference) || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
+    if ([ReferenceType.SCALAR, ReferenceType.MANY_TO_ONE].includes(prop.reference)) {
+      return true;
+    }
+
+    if (prop.reference === ReferenceType.EMBEDDED) {
+      return !!prop.object;
+    }
+
+    return prop.reference === ReferenceType.ONE_TO_ONE && prop.owner;
   }
 
   /**
