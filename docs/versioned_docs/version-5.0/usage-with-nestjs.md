@@ -243,6 +243,21 @@ export class MyService {
 }
 ```
 
+Alternatively we can provide a callback that will return the `MikroORM` instance.
+
+```ts
+import { DI } from '..';
+
+export class MyService {
+
+  @UseRequestContext(() => DI.orm)
+  async doSomething() {
+    // this will be executed in a separate context
+  }
+
+}
+```
+
 Another thing to look out for how you combine them with other decorators.
 For example if you use it in combination with NestJS's "[BullJS queues module](https://docs.nestjs.com/techniques/queues)", a safe bet is to extract the part of the code that needs a clean [docs](identity-map.md),
 either in a new method or inject a separate service.

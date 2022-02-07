@@ -225,7 +225,7 @@ scheduled tasks.
 We can use the `@UseRequestContext()` decorator. It requires you to first inject the
 `MikroORM` instance to current context, it will be then used to create the context 
 for you. Under the hood, the decorator will register new request context for your 
-method and execute it inside the context. 
+method and execute it inside the context.
 
 Keep in mind, that all handlers that are decorated with @UseRequestContext(), should NOT return anything.
 
@@ -236,6 +236,21 @@ export class MyService {
   constructor(private readonly orm: MikroORM) { }
 
   @UseRequestContext()
+  async doSomething() {
+    // this will be executed in a separate context
+  }
+
+}
+```
+
+Alternatively we can provide a callback that will return the `MikroORM` instance.
+
+```ts
+import { DI } from '..';
+
+export class MyService {
+
+  @UseRequestContext(() => DI.orm)
   async doSomething() {
     // this will be executed in a separate context
   }
