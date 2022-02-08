@@ -34,7 +34,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     options = options instanceof Configuration ? options.getAll() : options;
-    const orm = new MikroORM<D>(Utils.merge(options, env));
+    const orm = new this<D>(Utils.merge(options, env));
     orm.logger.log('info', `MikroORM version: ${colors.green(coreVersion)}`);
 
     // we need to allow global context here as we are not in a scope of requests yet
