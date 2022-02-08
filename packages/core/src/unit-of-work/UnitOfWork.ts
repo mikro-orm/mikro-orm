@@ -263,12 +263,13 @@ export class UnitOfWork {
     this.queuedActions.add(entity.__meta!.className);
     this.persistStack.delete(entity);
 
-    // remove from referencing relations
+    // remove from referencing relations (but don't remove FKs as PKs)
     for (const prop of entity.__meta!.bidirectionalRelations) {
       const inverseProp = prop.mappedBy || prop.inversedBy;
       const relation = Reference.unwrapReference(entity[prop.name]);
+      const prop2 = prop.targetMeta!.properties[inverseProp];
 
-      if (prop.reference === ReferenceType.ONE_TO_MANY && Utils.isCollection<AnyEntity>(relation)) {
+      if (prop.reference === ReferenceType.ONE_TO_MANY && !prop2.primary && Utils.isCollection<AnyEntity>(relation)) {
         relation.getItems(false).forEach(item => delete item[inverseProp]);
         continue;
       }
