@@ -279,7 +279,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     const url = this.getClientUrl().match(/:\/\/.+\/([^?]+)/);
 
     if (url) {
-      this.options.dbName = this.get('dbName', url[1]);
+      this.options.dbName = this.get('dbName', decodeURIComponent(url[1]));
     }
 
     if (!this.options.charset) {

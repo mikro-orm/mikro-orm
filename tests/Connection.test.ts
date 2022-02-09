@@ -37,4 +37,16 @@ describe('Connection', () => {
     await expect(conn.rollback({} as any)).rejects.toThrowError('Transactions are not supported by current driver');
   });
 
+  test('special characters in username and password', async () => {
+    const options = { type: 'postgresql', clientUrl: 'pg://user%40:passw%40rd@host:1234/db%40name' } as const;
+    const conn = new CustomConnection(new Configuration(options, false));
+    expect(conn.getConnectionOptions()).toMatchObject({
+      host: 'host',
+      port: 1234,
+      user: 'user@',
+      password: 'passw@rd',
+      database: 'db@name',
+    });
+  });
+
 });
