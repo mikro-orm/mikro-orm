@@ -232,7 +232,7 @@ export class ConfigurationLoader {
     for (const ormPackage of ormPackages) {
       const version = await this.getORMPackageVersion(ormPackage);
 
-      if (version !== coreVersion) {
+      if (version != null && version !== coreVersion) {
         throw new Error(
           `Bad ${colors.cyan(ormPackage)} version ${colors.yellow('' + version)}.\n` +
           `All official @mikro-orm/* packages need to have the exact same version as @mikro-orm/core (${colors.green(coreVersion)}).\n` +
