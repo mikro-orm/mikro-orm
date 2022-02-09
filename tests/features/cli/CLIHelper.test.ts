@@ -140,10 +140,7 @@ describe('CLIHelper', () => {
     const spy3 = jest.spyOn(Utils, 'getORMVersion');
     spy3.mockResolvedValue('5.0.0');
 
-    await expect(ConfigurationLoader.checkPackageVersion()).rejects.toThrowError(`Bad @mikro-orm/weird-package version undefined.
-All official @mikro-orm/* packages need to have the exact same version as @mikro-orm/core (5.0.0).
-Only exceptions are packages that don't live in the 'mikro-orm' repository: nestjs, sql-highlighter, mongo-highlighter.
-Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?`);
+    await expect(ConfigurationLoader.checkPackageVersion()).resolves.toMatch(/^\d+\.\d+\.\d+/);
 
     spy.mockResolvedValueOnce(new Set(['@mikro-orm/weird-package']));
     const spy2 = jest.spyOn(ConfigurationLoader, 'getORMPackageVersion');
