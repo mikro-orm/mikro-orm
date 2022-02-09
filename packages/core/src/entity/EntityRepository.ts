@@ -183,8 +183,8 @@ export class EntityRepository<T extends AnyEntity<T>> {
    * the whole `data` parameter will be passed. This means we can also define `constructor(data: Partial<T>)` and
    * `em.create()` will pass the data into it (unless we have a property named `data` too).
    */
-  create<P extends string = any>(data: RequiredEntityData<T>): New<T, P> {
-    return this.em.create<T, P>(this.entityName, data);
+  create<P = never>(data: RequiredEntityData<T>): T {
+    return this.em.create(this.entityName, data);
   }
 
   /**
