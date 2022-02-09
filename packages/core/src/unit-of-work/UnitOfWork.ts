@@ -113,7 +113,7 @@ export class UnitOfWork {
    * Returns entity from the identity map. For composite keys, you need to pass an array of PKs in the same order as they are defined in `meta.primaryKeys`.
    */
   getById<T extends AnyEntity<T>>(entityName: string, id: Primary<T> | Primary<T>[], schema?: string): T | undefined {
-    if (!id || (Array.isArray(id) && id.length === 0)) {
+    if (id == null || (Array.isArray(id) && id.length === 0)) {
       return undefined;
     }
 

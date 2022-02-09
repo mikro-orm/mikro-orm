@@ -208,13 +208,13 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     if (pks.length > 1) { // owner has composite pk
       pk = Utils.getPrimaryKeyCond(data as T, pks);
     } else {
-      res.insertId = data[pks[0]] || res.insertId || res.row[pks[0]];
+      res.insertId = data[pks[0]] ?? res.insertId ?? res.row[pks[0]];
       pk = [res.insertId];
     }
 
     await this.processManyToMany<T>(meta, pk, collections, false, options);
 
-    return res as unknown as QueryResult<T>;
+    return res;
   }
 
   async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
@@ -227,10 +227,10 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     data.forEach(row => Object.keys(row).forEach(k => set.add(k)));
     const props = [...set].map(name => meta.properties[name] ?? { name, fieldNames: [name] }) as EntityProperty<T>[];
     const fields = Utils.flatten(props.map(prop => prop.fieldNames));
-    let res: QueryResult;
+    let res: QueryResult<T>;
 
     if (fields.length === 0) {
-      const qb = this.createQueryBuilder<T>(entityName, options.ctx, true, options.convertCustomTypes).withSchema(this.getSchemaName(meta, options));
+      const qb = this.createQueryBuilder(entityName, options.ctx, true, options.convertCustomTypes).withSchema(this.getSchemaName(meta, options));
       res = await this.rethrow(qb.insert(data as unknown as RequiredEntityData<T>[]).execute('run', false));
     } else {
       let sql = `insert into ${this.getTableName(meta, options)} `;
@@ -264,7 +264,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
         sql += returningFields.length > 0 ? ` returning ${returningFields.map(field => this.platform.quoteIdentifier(field)).join(', ')}` : '';
       }
 
-      res = await this.execute<QueryResult>(sql, params, 'run', options.ctx);
+      res = await this.execute(sql, params, 'run', options.ctx);
     }
 
     let pk: any[];
@@ -283,7 +283,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       await this.processManyToMany<T>(meta, pk[i], collections[i], false, options);
     }
 
-    return res as unknown as QueryResult<T>;
+    return res;
   }
 
   async nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T> = {}): Promise<QueryResult<T>> {
@@ -291,7 +291,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const meta = this.metadata.find<T>(entityName);
     const pks = this.getPrimaryKeyFields(entityName);
     const collections = this.extractManyToMany(entityName, data);
-    let res: QueryResult = { affectedRows: 0, insertId: 0, row: {} };
+    let res = { affectedRows: 0, insertId: 0, row: {} } as QueryResult<T>;
 
     if (Utils.isPrimaryKey(where) && pks.length === 1) {
       where = { [pks[0]]: where } as FilterQuery<T>;
@@ -310,7 +310,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const pk = pks.map(pk => Utils.extractPK<T>(data[pk] || where, meta)!) as Primary<T>[];
     await this.processManyToMany<T>(meta, pk, collections, true, options);
 
-    return res as unknown as QueryResult<T>;
+    return res;
   }
 
   async nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
@@ -379,13 +379,13 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     });
     const values = pks.length > 1 && this.platform.requiresValuesKeyword() ? 'values ' : '';
     sql += ` in (${values}${conds.join(', ')})`;
-    const res = await this.rethrow(this.execute<QueryResult>(sql, params, 'run', options.ctx));
+    const res = await this.rethrow(this.execute<QueryResult<T>>(sql, params, 'run', options.ctx));
 
     for (let i = 0; i < collections.length; i++) {
       await this.processManyToMany<T>(meta, where[i] as Primary<T>[], collections[i], false, options);
     }
 
-    return res as unknown as QueryResult<T>;
+    return res;
   }
 
   async nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T> | string | any, options: DeleteOptions<T> = {}): Promise<QueryResult<T>> {

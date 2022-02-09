@@ -89,7 +89,7 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
 
   hasPrimaryKey(): boolean {
     const pk = this.getPrimaryKey();
-    return pk !== undefined && pk !== null;
+    return pk != null;
   }
 
   getPrimaryKey(convertCustomTypes = false): Primary<T> | null {
@@ -103,7 +103,7 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   getPrimaryKeys(convertCustomTypes = false): Primary<T>[] | null {
     const pk = this.getPrimaryKey(convertCustomTypes);
 
-    if (!pk) {
+    if (pk == null) {
       return null;
     }
 
