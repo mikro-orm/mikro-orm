@@ -6,7 +6,8 @@
     "start": "docusaurus start",
     "build": "node --max_old_space_size=16000 node_modules/@docusaurus/core/bin/docusaurus build",
     "swizzle": "docusaurus swizzle",
-    "deploy": "node --max_old_space_size=16000 node_modules/@docusaurus/core/bin/docusaurus deploy"
+    "deploy": "node --max_old_space_size=16000 node_modules/@docusaurus/core/bin/docusaurus deploy",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@docusaurus/core": "2.0.0-beta.14",
@@ -14,6 +15,7 @@
     "@docusaurus/preset-classic": "2.0.0-beta.14",
     "classnames": "2.3.1",
     "docusaurus-plugin-typedoc-api": "1.7.1",
+    "patch-package": "6.4.7",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "typescript": "4.5.5"
