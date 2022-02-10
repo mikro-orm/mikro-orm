@@ -78,7 +78,16 @@
     "@mikro-orm/sqlite": "^5.0.0"
   },
   "peerDependenciesMeta": {
+    "@mikro-orm/cli": {
+      "optional": true
+    },
     "@mikro-orm/entity-generator": {
+      "optional": true
+    },
+    "@mikro-orm/knex": {
+      "optional": true
+    },
+    "@mikro-orm/mariadb": {
       "optional": true
     },
     "@mikro-orm/migrations": {
@@ -90,10 +99,10 @@
     "@mikro-orm/mysql": {
       "optional": true
     },
-    "@mikro-orm/mariadb": {
+    "@mikro-orm/postgresql": {
       "optional": true
     },
-    "@mikro-orm/postgresql": {
+    "@mikro-orm/reflection": {
       "optional": true
     },
     "@mikro-orm/seeder": {
