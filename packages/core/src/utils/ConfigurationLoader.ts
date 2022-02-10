@@ -223,7 +223,7 @@ export class ConfigurationLoader {
     const coreVersion = await Utils.getORMVersion();
     const deps = await this.getORMPackages();
     const exceptions = new Set(['nestjs', 'sql-highlighter', 'mongo-highlighter']);
-    const ormPackages = [...deps].filter(d => d.startsWith('@mikro-orm/') && !exceptions.has(d.substring('@mikro-orm/'.length)));
+    const ormPackages = [...deps].filter(d => d.startsWith('@mikro-orm/') && d !== '@mikro-orm/core' && !exceptions.has(d.substring('@mikro-orm/'.length)));
 
     if (process.env.MIKRO_ORM_ALLOW_VERSION_MISMATCH) {
       return coreVersion;
