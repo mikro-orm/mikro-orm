@@ -10,7 +10,7 @@ import { pathExists } from 'fs-extra';
 import { createHash } from 'crypto';
 import { recovery } from 'escaya';
 import type { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityName, EntityProperty, IMetadataStorage, Primary } from '../typings';
-import { GroupOperator, QueryOperator, ReferenceType, PlainObject } from '../enums';
+import { GroupOperator, PlainObject, QueryOperator, ReferenceType } from '../enums';
 import type { Collection } from '../entity';
 import type { Platform } from '../platforms';
 
@@ -785,7 +785,7 @@ export class Utils {
    * @param id The module to require
    * @param from Location to start the node resolution
    */
-  static requireFrom(id: string, from: string) {
+  static requireFrom<T extends Dictionary>(id: string, from: string): T {
     if (!extname(from)) {
       from = join(from, '__fake.js');
     }
@@ -812,16 +812,14 @@ export class Utils {
     return Function(`return import('${id}')`)();
   }
 
-  static async getORMVersion(): Promise<string> {
+  static getORMVersion(): string {
     /* istanbul ignore next */
     try {
       // this works with ts-node during development (where we have `src` folder)
-      const pkg = await this.dynamicImport(__dirname + '/../../package.json');
-      return pkg.version;
+      return this.requireFrom<{ version: string }>(`../../package.json`, __dirname).version;
     } catch {
       // this works with node in production build (where we do not have the `src` folder)
-      const pkg = await this.dynamicImport(__dirname + '/../package.json');
-      return pkg.version;
+      return this.requireFrom<{ version: string }>(`../package.json`, __dirname).version;
     }
   }
 
@@ -973,7 +971,7 @@ export class Utils {
     from ??= process.cwd();
 
     try {
-      return Utils.requireFrom(module, from);
+      return Utils.requireFrom<T>(module, from);
     } catch (err: any) {
       if (err.message.includes(allowError)) {
         // eslint-disable-next-line no-console

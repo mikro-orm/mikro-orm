@@ -96,6 +96,14 @@ describe('EntityHelperMongo', () => {
     god.name = '123';
     expect(wrap(god, true).__touched).toBe(true);
     expect(god.isTouched()).toBe(true);
+    expect(god.toPOJO()).toMatchObject({
+      name: '123',
+      email: 'hello@heaven.god',
+      books: [],
+      foo: 'bar',
+      friends: [],
+      termsAccepted: false,
+    });
   });
 
   test('#load() should populate the entity', async () => {

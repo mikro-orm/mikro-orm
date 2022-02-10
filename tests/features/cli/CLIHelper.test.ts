@@ -98,12 +98,20 @@ describe('CLIHelper', () => {
         },
       };
     });
-    requireFromMock
-      .mockImplementationOnce(() => ({ register: registerMock }))
-      .mockImplementationOnce(() => ({ register: registerPathsMock }));
+    requireFromMock.mockImplementation(id => {
+      if (id === 'ts-node') {
+        return { register: registerMock };
+      }
+
+      if (id === 'tsconfig-paths') {
+        return { register: registerPathsMock };
+      }
+
+      return {};
+    });
     const cli = await CLIConfigurator.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
-    expect(requireFromMock).toHaveBeenCalledTimes(2);
+    expect(requireFromMock).toHaveBeenCalledTimes(4);
     expect(requireFromMock).toHaveBeenCalledWith('ts-node', process.cwd() + '/tsconfig.extended-abs.json');
     expect(requireFromMock).toHaveBeenCalledWith('tsconfig-paths', process.cwd() + '/tsconfig.extended-abs.json');
     expect(registerPathsMock).toHaveBeenCalledWith({
@@ -138,7 +146,7 @@ describe('CLIHelper', () => {
     const spy = jest.spyOn(ConfigurationLoader, 'getORMPackages');
     spy.mockResolvedValueOnce(new Set(['@mikro-orm/weird-package']));
     const spy3 = jest.spyOn(Utils, 'getORMVersion');
-    spy3.mockResolvedValue('5.0.0');
+    spy3.mockReturnValue('5.0.0');
 
     await expect(ConfigurationLoader.checkPackageVersion()).resolves.toMatch(/^\d+\.\d+\.\d+/);
 

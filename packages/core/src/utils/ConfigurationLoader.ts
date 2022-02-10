@@ -14,8 +14,9 @@ import { colors } from '../logging/colors';
 export class ConfigurationLoader {
 
   static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true, options?: Partial<Options>): Promise<Configuration<D>> {
-    const paths = await ConfigurationLoader.getConfigPaths();
-    const env = ConfigurationLoader.loadEnvironmentVars(options);
+    this.registerDotenv(options);
+    const paths = await this.getConfigPaths();
+    const env = this.loadEnvironmentVars();
 
     for (let path of paths) {
       path = Utils.absolutePath(path);
@@ -120,10 +121,13 @@ export class ConfigurationLoader {
     }
   }
 
-  static loadEnvironmentVars<D extends IDatabaseDriver>(options?: Options<D> | Configuration<D>): Partial<Options<D>> {
+  static registerDotenv<D extends IDatabaseDriver>(options?: Options<D> | Configuration<D>): void {
     const baseDir = options instanceof Configuration ? options.get('baseDir') : options?.baseDir;
     const path = process.env.MIKRO_ORM_ENV ?? ((baseDir ?? process.cwd()) + '/.env');
     dotenv.config({ path });
+  }
+
+  static loadEnvironmentVars<D extends IDatabaseDriver>(): Partial<Options<D>> {
     const ret: Dictionary = {};
     const array = (v: string) => v.split(',').map(vv => vv.trim());
     const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
@@ -211,7 +215,7 @@ export class ConfigurationLoader {
   static async getORMPackageVersion(name: string): Promise<string | undefined> {
     /* istanbul ignore next */
     try {
-      const pkg = await Utils.dynamicImport<{ version?: string }>(`${name}/package.json`);
+      const pkg = Utils.requireFrom(`${name}/package.json`, process.cwd());
       return pkg?.version;
     } catch (e) {
       return undefined;

@@ -85,7 +85,7 @@ export class CLIHelper {
 
   static async getModuleVersion(name: string): Promise<string> {
     try {
-      const pkg = Utils.requireFrom(`${name}/package.json`, process.cwd());
+      const pkg = Utils.requireFrom<{ version: string }>(`${name}/package.json`, process.cwd());
       return colors.green(pkg.version);
     } catch {
       return colors.red('not-found');

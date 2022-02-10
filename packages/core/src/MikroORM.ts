@@ -26,8 +26,9 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    * If you omit the `options` parameter, your CLI config will be used.
    */
   static async init<D extends IDatabaseDriver = IDatabaseDriver>(options?: Options<D> | Configuration<D>, connect = true): Promise<MikroORM<D>> {
+    ConfigurationLoader.registerDotenv(options);
     const coreVersion = await ConfigurationLoader.checkPackageVersion();
-    const env = ConfigurationLoader.loadEnvironmentVars<D>(options);
+    const env = ConfigurationLoader.loadEnvironmentVars<D>();
 
     if (!options) {
       options = await ConfigurationLoader.getConfiguration<D>();
