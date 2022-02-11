@@ -65,26 +65,17 @@
     "reflect-metadata": "0.1.13"
   },
   "peerDependencies": {
-    "@mikro-orm/cli": "^5.0.0",
     "@mikro-orm/entity-generator": "^5.0.0",
-    "@mikro-orm/knex": "^5.0.0",
     "@mikro-orm/mariadb": "^5.0.0",
     "@mikro-orm/migrations": "^5.0.0",
     "@mikro-orm/mongodb": "^5.0.0",
     "@mikro-orm/mysql": "^5.0.0",
     "@mikro-orm/postgresql": "^5.0.0",
-    "@mikro-orm/reflection": "^5.0.0",
     "@mikro-orm/seeder": "^5.0.0",
     "@mikro-orm/sqlite": "^5.0.0"
   },
   "peerDependenciesMeta": {
-    "@mikro-orm/cli": {
-      "optional": true
-    },
     "@mikro-orm/entity-generator": {
-      "optional": true
-    },
-    "@mikro-orm/knex": {
       "optional": true
     },
     "@mikro-orm/mariadb": {
@@ -100,9 +91,6 @@
       "optional": true
     },
     "@mikro-orm/postgresql": {
-      "optional": true
-    },
-    "@mikro-orm/reflection": {
       "optional": true
     },
     "@mikro-orm/seeder": {
