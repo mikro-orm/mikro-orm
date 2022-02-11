@@ -24,4 +24,8 @@ export class Project {
   @Property()
   createdAt: Date = new Date();
 
+  constructor(name: string) {
+    this.name = name;
+  }
+
 }
