@@ -85,7 +85,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
     this.alias = alias ?? this.getNextAlias(this.entityName);
     this._aliasMap[this.alias] = this.entityName;
-    this.helper = new QueryBuilderHelper(this.entityName, this.alias, this._aliasMap, this.subQueries, this.metadata, this.knex, this.platform);
+    this.helper = new QueryBuilderHelper(this.entityName, this.alias, this._aliasMap, this.subQueries, this.knex, this.driver);
   }
 
   select(fields: Field<T> | Field<T>[], distinct = false): SelectQueryBuilder<T> {

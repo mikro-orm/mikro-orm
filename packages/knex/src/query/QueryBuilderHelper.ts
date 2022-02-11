@@ -1,22 +1,25 @@
 import type { Knex } from 'knex';
 import { inspect } from 'util';
-import type { Dictionary, EntityData, EntityMetadata, EntityProperty, FlatQueryOrderMap, MetadataStorage, Platform, QBFilterQuery } from '@mikro-orm/core';
+import type { Dictionary, EntityData, EntityMetadata, EntityProperty, FlatQueryOrderMap, QBFilterQuery } from '@mikro-orm/core';
 import { LockMode, OptimisticLockError, QueryOperator, QueryOrderNumeric, ReferenceType, Utils } from '@mikro-orm/core';
 import { QueryType } from './enums';
 import type { Field, JoinOptions } from '../typings';
+import type { AbstractSqlDriver } from '../AbstractSqlDriver';
 
 /**
  * @internal
  */
 export class QueryBuilderHelper {
 
+  private readonly platform = this.driver.getPlatform();
+  private readonly metadata = this.driver.getMetadata();
+
   constructor(private readonly entityName: string,
               private readonly alias: string,
               private readonly aliasMap: Dictionary<string>,
               private readonly subQueries: Dictionary<string>,
-              private readonly metadata: MetadataStorage,
               private readonly knex: Knex,
-              private readonly platform: Platform) { }
+              private readonly driver: AbstractSqlDriver) { }
 
   mapper(field: string, type?: QueryType): string;
   mapper(field: string, type?: QueryType, value?: any, alias?: string | null): string;
@@ -139,15 +142,15 @@ export class QueryBuilderHelper {
   }
 
   joinOneToReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary = {}): JoinOptions {
-    const meta = this.metadata.find(prop.type)!;
-    const prop2 = meta.properties[prop.mappedBy || prop.inversedBy];
+    const prop2 = prop.targetMeta!.properties[prop.mappedBy || prop.inversedBy];
     const table = this.getTableName(prop.type);
+    const schema = this.driver.getSchemaName(prop.targetMeta);
     const joinColumns = prop.owner ? prop.referencedColumnNames : prop2.joinColumns;
     const inverseJoinColumns = prop.referencedColumnNames;
     const primaryKeys = prop.owner ? prop.joinColumns : prop2.referencedColumnNames;
 
     return {
-      prop, type, cond, ownerAlias, alias, table,
+      prop, type, cond, ownerAlias, alias, table, schema,
       joinColumns, inverseJoinColumns, primaryKeys,
     };
   }
@@ -156,6 +159,7 @@ export class QueryBuilderHelper {
     return {
       prop, type, cond, ownerAlias, alias,
       table: this.getTableName(prop.type),
+      schema: this.driver.getSchemaName(prop.targetMeta),
       joinColumns: prop.referencedColumnNames,
       primaryKeys: prop.fieldNames,
     };
@@ -171,6 +175,7 @@ export class QueryBuilderHelper {
         inverseJoinColumns: prop.inverseJoinColumns,
         primaryKeys: prop.referencedColumnNames,
         table: prop.pivotTable,
+        schema: this.driver.getSchemaName(this.metadata.find(prop.pivotTable)),
         path: path.endsWith('[pivot]') ? path : `${path}[pivot]`,
       } as JoinOptions,
     };
