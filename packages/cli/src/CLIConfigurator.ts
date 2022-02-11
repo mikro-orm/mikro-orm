@@ -21,7 +21,7 @@ export class CLIConfigurator {
   static async configure(): Promise<Argv> {
     await ConfigurationLoader.checkPackageVersion();
     const settings = await ConfigurationLoader.getSettings();
-    const version = await Utils.getORMVersion();
+    const version = Utils.getORMVersion();
 
     if (settings.useTsNode) {
       await ConfigurationLoader.registerTsNode(settings.tsConfigPath);

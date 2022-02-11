@@ -63,10 +63,14 @@ export class ConfigurationLoader {
 
   static async getSettings(): Promise<Settings> {
     const config = await ConfigurationLoader.getPackageConfig();
-    const settings = config['mikro-orm'] || {};
+    const settings = { ...config['mikro-orm'] };
     const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
-    settings.useTsNode = process.env.MIKRO_ORM_CLI_USE_TS_NODE ? bool(process.env.MIKRO_ORM_CLI_USE_TS_NODE) : settings.useTsNode;
+    settings.useTsNode = process.env.MIKRO_ORM_CLI_USE_TS_NODE != null ? bool(process.env.MIKRO_ORM_CLI_USE_TS_NODE) : settings.useTsNode;
     settings.tsConfigPath = process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH ?? settings.tsConfigPath;
+
+    if (process.env.MIKRO_ORM_CLI?.endsWith('.ts')) {
+      settings.useTsNode = true;
+    }
 
     return settings;
   }
