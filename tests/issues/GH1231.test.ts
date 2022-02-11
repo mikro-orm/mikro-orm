@@ -77,9 +77,7 @@ describe('one to many relations read with query builder in postgresql (GH issue 
       dbName: 'mikro_orm_test_1231',
       type: 'postgresql',
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.getSchemaGenerator().refreshDatabase();
 
     const teacher1 = new Teacher('Jolene', 'Smith');
     teacher1.id = 1;

@@ -23,9 +23,7 @@ describe('GH issue 472', () => {
       type: 'postgresql',
       namingStrategy: EntityCaseNamingStrategy,
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.getSchemaGenerator().refreshDatabase();
   });
 
   afterAll(() => orm.close(true));

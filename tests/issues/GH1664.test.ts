@@ -30,9 +30,7 @@ describe('embedded entities in postgresql', () => {
       dbName: 'mikro_orm_test_unique_nullable_insert',
       type: 'postgresql',
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.getSchemaGenerator().refreshDatabase();
   });
 
   afterAll(() => orm.close(true));

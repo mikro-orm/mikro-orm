@@ -57,9 +57,7 @@ describe('GH issue 1326', () => {
       port: 3307,
       entities: [Driver, License, LicenseType],
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.getSchemaGenerator().refreshDatabase();
   });
 
   afterAll(async () => {

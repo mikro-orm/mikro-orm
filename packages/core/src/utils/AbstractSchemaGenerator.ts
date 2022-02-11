@@ -27,6 +27,7 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
   }
 
   async refreshDatabase(): Promise<void> {
+    await this.ensureDatabase();
     await this.dropSchema();
     await this.createSchema();
   }

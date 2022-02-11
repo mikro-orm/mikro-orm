@@ -89,9 +89,7 @@ describe('custom types [mysql]', () => {
       port: 3307,
     });
 
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.getSchemaGenerator().refreshDatabase();
   });
   beforeEach(async () => {
     await orm.em.nativeDelete(Address, {});

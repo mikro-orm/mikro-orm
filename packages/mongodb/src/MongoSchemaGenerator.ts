@@ -36,6 +36,10 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     await this.createSchema(options);
   }
 
+  async ensureDatabase(): Promise<boolean> {
+    return true;
+  }
+
   async refreshDatabase(options: CreateSchemaOptions = {}): Promise<void> {
     options.ensureIndexes ??= true;
 

@@ -63,9 +63,7 @@ describe('GH issue 1930', () => {
       type: 'mysql',
       port: 3307,
     });
-    await new SchemaGenerator(orm.em).ensureDatabase();
-    await new SchemaGenerator(orm.em).dropSchema();
-    await new SchemaGenerator(orm.em).createSchema();
+    await new SchemaGenerator(orm.em).refreshDatabase();
   });
 
   afterAll(async () => {

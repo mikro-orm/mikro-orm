@@ -58,9 +58,7 @@ describe('GH issue 2489', () => {
       type: 'postgresql',
       cache: { enabled: true },
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.getSchemaGenerator().refreshDatabase();
   });
 
   afterAll(() => orm.close(true));

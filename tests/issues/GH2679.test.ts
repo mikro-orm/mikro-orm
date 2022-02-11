@@ -23,9 +23,7 @@ describe('GH issue 2679', () => {
       type: 'postgresql',
     });
 
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.getSchemaGenerator().refreshDatabase();
   });
 
   beforeEach(async () => {
