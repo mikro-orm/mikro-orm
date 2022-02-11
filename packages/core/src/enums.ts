@@ -1,4 +1,4 @@
-import type { ExpandProperty } from './typings';
+import type { Dictionary, ExcludeFunctions, ExpandProperty } from './typings';
 import type { Transaction } from './connections';
 
 export const enum FlushMode {
@@ -74,8 +74,10 @@ export type QueryOrderKeysFlat = QueryOrder | QueryOrderNumeric | keyof typeof Q
 export type QueryOrderKeys<T> = QueryOrderKeysFlat | QueryOrderMap<T>;
 
 export type QueryOrderMap<T> = {
-  [K in keyof T]?: QueryOrderKeys<ExpandProperty<T[K]>>;
+  [K in keyof T as ExcludeFunctions<T, K>]?: QueryOrderKeys<ExpandProperty<T[K]>>;
 };
+
+export type QBQueryOrderMap<T> = QueryOrderMap<T> | Dictionary;
 
 export interface FlatQueryOrderMap {
   [x: string]: QueryOrderKeysFlat;

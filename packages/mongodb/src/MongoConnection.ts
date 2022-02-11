@@ -120,7 +120,7 @@ export class MongoConnection extends Connection {
     let query = `db.getCollection('${collection}').find(${this.logObject(where)}, ${this.logObject(options)})`;
     orderBy = Utils.asArray(orderBy);
 
-    if (orderBy.length > 0) {
+    if (Array.isArray(orderBy) && orderBy.length > 0) {
       const orderByTuples: [string, number][] = [];
       orderBy.forEach(o => {
         Object.keys(o).forEach(k => {

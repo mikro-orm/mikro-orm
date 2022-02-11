@@ -1,7 +1,7 @@
 import type { Knex } from 'knex';
 import type {
   AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FlatQueryOrderMap, RequiredEntityData,
-  GroupOperator, MetadataStorage, PopulateOptions, QBFilterQuery, QueryOrderMap, QueryResult, FlushMode, FilterQuery,
+  GroupOperator, MetadataStorage, PopulateOptions, QBFilterQuery, QueryOrderMap, QueryResult, FlushMode, FilterQuery, QBQueryOrderMap,
 } from '@mikro-orm/core';
 import { LoadStrategy, LockMode, QueryFlag, QueryHelper, ReferenceType, Utils, ValidationError } from '@mikro-orm/core';
 import { QueryType } from './enums';
@@ -226,7 +226,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.where(cond as string, params, '$or');
   }
 
-  orderBy(orderBy: QueryOrderMap<unknown> | QueryOrderMap<unknown>[]): this {
+  orderBy(orderBy: QBQueryOrderMap<T> | QBQueryOrderMap<T>[]): this {
     this._orderBy = [];
     Utils.asArray(orderBy).forEach(o => {
       const processed = QueryHelper.processWhere(o as Dictionary, this.entityName, this.metadata, this.platform, false)!;

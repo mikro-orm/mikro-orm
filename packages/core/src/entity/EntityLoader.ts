@@ -297,8 +297,8 @@ export class EntityLoader {
     const filtered = Utils.unique(children);
     const fields = this.buildFields(options.fields, prop);
     const innerOrderBy = Utils.asArray(options.orderBy)
-      .filter(orderBy => Utils.isObject(orderBy[prop.name]))
-      .map(orderBy => orderBy[prop.name]);
+      .filter(orderBy => Utils.isObject(orderBy[prop.name as string]))
+      .map(orderBy => orderBy[prop.name as string]);
     const { refresh, filters, ignoreLazyScalarProperties, populateWhere } = options;
 
     await this.populate<T>(prop.type, filtered, populate.children, {
