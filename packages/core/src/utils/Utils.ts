@@ -489,14 +489,14 @@ export class Utils {
 
   static getOrderedPrimaryKeys<T extends AnyEntity<T>>(id: Primary<T> | Record<string, Primary<T>>, meta: EntityMetadata<T>, platform?: Platform, convertCustomTypes?: boolean): Primary<T>[] {
     const data = (Utils.isPrimaryKey(id) ? { [meta.primaryKeys[0]]: id } : id) as Record<string, Primary<T>>;
-    return meta.primaryKeys.map((pk, idx) => {
+    const pks = meta.primaryKeys.map((pk, idx) => {
       const prop = meta.properties[pk];
       // `data` can be a composite PK in form of array of PKs, or a DTO
       let value = Array.isArray(data) ? data[idx] : data[pk];
 
       if (prop.reference !== ReferenceType.SCALAR && prop.targetMeta) {
         const value2 = this.getOrderedPrimaryKeys(value, prop.targetMeta, platform); // do not convert custom types yet
-        value = value2[0] as Primary<T>;
+        value = value2.length > 1 ? value2 : value2[0];
       }
 
       if (prop.customType && platform && convertCustomTypes) {
@@ -504,7 +504,11 @@ export class Utils {
       }
 
       return value;
-    }) as Primary<T>[];
+    });
+
+    // we need to flatten the PKs as composite PKs can be build from another composite PKs
+    // and this method is used to get the PK hash in identity map, that expects flat array
+    return Utils.flatten(pks) as Primary<T>[];
   }
 
   /**
