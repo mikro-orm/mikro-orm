@@ -77,7 +77,7 @@ export type FilterValue<T> = OperatorMap<FilterValue2<T>> | FilterValue2<T> | Fi
 type ExpandObject<T> = T extends object
   ? T extends Scalar
     ? never
-    : { [K in keyof T]?: Query<ExpandProperty<T[K]>> | FilterValue<ExpandProperty<T[K]>> | null }
+    : { [K in keyof T as ExcludeFunctions<T, K>]?: Query<ExpandProperty<T[K]>> | FilterValue<ExpandProperty<T[K]>> | null }
   : never;
 
 export type Query<T> = T extends object
