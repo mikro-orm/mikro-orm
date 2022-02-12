@@ -202,6 +202,9 @@ export class ConfigurationLoader {
 
     ret.seeder = {};
     read(ret.seeder, 'MIKRO_ORM_SEEDER_PATH', 'path');
+    read(ret.seeder, 'MIKRO_ORM_SEEDER_PATH_TS', 'pathTs');
+    read(ret.seeder, 'MIKRO_ORM_SEEDER_GLOB', 'glob');
+    read(ret.seeder, 'MIKRO_ORM_SEEDER_EMIT', 'emit');
     read(ret.seeder, 'MIKRO_ORM_SEEDER_DEFAULT_SEEDER', 'defaultSeeder');
     cleanup(ret, 'seeder');
 

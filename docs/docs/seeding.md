@@ -7,18 +7,31 @@ script or combine multiple seed scripts.
 
 ## Configuration
 
+> `seeder.path` and `seeder.pathTs` works the same way as `entities` and
+> `entitiesTs` in entity discovery.
+
 The seeder has a few default settings that can be changed easily through the MikroORM config. Underneath you find the configuration options with their defaults.
 
 ```ts
 MikroORM.init({
   seeder: {
     path: './seeders', // path to the folder with seeders
-    defaultSeeder: 'DatabaseSeeder' // default seeder class name
-  }
+    pathTs: undefined, // path to the folder with TS seeders (if used, we should put path to compiled files in `path`)
+    defaultSeeder: 'DatabaseSeeder', // default seeder class name
+    glob: '!(*.d).{js,ts}', // how to match seeder files (all .js and .ts files, but not .d.ts)
+    emit: 'ts', // seeder generation mode
+    fileName: (className: string) => className, // seeder file naming convention
+  },
 });
 ```
 
-You can also override these default using the [environment variables](configuration.md#using-environment-variables) `MIKRO_ORM_SEEDER_PATH` and `MIKRO_ORM_SEEDER_DEFAULT_SEEDER`.
+We can also override these default using the [environment variables](configuration.md#using-environment-variables):
+
+- `MIKRO_ORM_SEEDER_PATH`
+- `MIKRO_ORM_SEEDER_PATH_TS`
+- `MIKRO_ORM_SEEDER_EMIT`
+- `MIKRO_ORM_SEEDER_GLOB`
+- `MIKRO_ORM_SEEDER_DEFAULT_SEEDER`.
 
 ## Seeders
 
@@ -266,3 +279,27 @@ afterAll(async () => {
   await orm.close();
 });
 ```
+
+## Running migrations in production
+
+In production environment we might want to use compiled seeder files. All we need to do is to configure the seeder path accordingly:
+
+```ts
+import { MikroORM, Utils } from '@mikro-orm/core';
+
+await MikroORM.init({
+  seeder: {
+    path: 'dist/seeders',
+    pathTs: 'src/seeders',
+  },
+  // or alternatively
+  // seeder: {
+  //   path: Utils.detectTsNode() ? 'src/seeders' : 'dist/seeders',
+  // },
+  // ...
+});
+```
+
+This should allow using CLI to generate TS seeder files (as in CLI we probably
+have TS support enabled), while using compiled JS files in production, where ts-node
+is not registered.

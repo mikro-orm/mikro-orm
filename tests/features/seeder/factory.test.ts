@@ -1,6 +1,5 @@
 import { MikroORM } from '@mikro-orm/core';
 import { Factory } from '@mikro-orm/seeder';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
 import type { Faker } from '@mikro-orm/seeder';
 import { House } from './entities/house.entity';
 import { Project } from './entities/project.entity';
@@ -34,7 +33,7 @@ export class HouseFactory extends Factory<House> {
 
 describe('Factory', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
   let persistSpy: SpyInstance;
   let flushSpy: SpyInstance;
 

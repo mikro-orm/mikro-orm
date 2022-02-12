@@ -607,4 +607,7 @@ Full list of supported options:
 | `MIKRO_ORM_SCHEMA_GENERATOR_DISABLE_FOREIGN_KEYS` | `migrations.disableForeignKeys` |
 | `MIKRO_ORM_SCHEMA_GENERATOR_CREATE_FOREIGN_KEY_CONSTRAINTS` | `migrations.createForeignKeyConstraints` |
 | `MIKRO_ORM_SEEDER_PATH` | `seeder.path` |
+| `MIKRO_ORM_SEEDER_PATH_TS` | `seeder.pathTs` |
+| `MIKRO_ORM_SEEDER_GLOB` | `seeder.glob` |
+| `MIKRO_ORM_SEEDER_EMIT` | `seeder.emit` |
 | `MIKRO_ORM_SEEDER_DEFAULT_SEEDER` | `seeder.defaultSeeder` |
