@@ -66,7 +66,8 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
 
   getTargetSchema(schema?: string): DatabaseSchema {
     const metadata = this.getOrderedMetadata(schema);
-    return DatabaseSchema.fromMetadata(metadata, this.platform, this.config, schema ?? this.platform.getDefaultSchemaName());
+    const schemaName = schema ?? this.config.get('schema') ?? this.platform.getDefaultSchemaName();
+    return DatabaseSchema.fromMetadata(metadata, this.platform, this.config, schemaName);
   }
 
   async getCreateSchemaSQL(options: { wrap?: boolean; schema?: string } = {}): Promise<string> {
@@ -122,8 +123,9 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
   }
 
   private getSchemaName(meta: EntityMetadata, options: { schema?: string }): string | undefined {
+    const schemaName = options.schema ?? this.config.get('schema');
     /* istanbul ignore next */
-    return meta.schema === '*' ? options.schema : meta.schema;
+    return meta.schema && meta.schema === '*' ? schemaName : (meta.schema ?? schemaName);
   }
 
   async updateSchema(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema; schema?: string } = {}): Promise<void> {
