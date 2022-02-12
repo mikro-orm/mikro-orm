@@ -529,7 +529,7 @@ export class MetadataDiscovery {
     ret.targetMeta = meta;
     ret.joinColumns = [];
     ret.inverseJoinColumns = [];
-    const schema = meta.schema ?? this.platform.getDefaultSchemaName();
+    const schema = meta.schema ?? this.config.get('schema') ?? this.platform.getDefaultSchemaName();
     ret.referencedTableName = schema && schema !== '*' ? schema + '.' + meta.tableName : meta.tableName;
 
     if (owner) {
