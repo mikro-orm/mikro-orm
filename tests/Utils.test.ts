@@ -117,12 +117,20 @@ describe('Utils', () => {
     b.a = 'b';
     expect(a.a).toBe('a');
     expect(b.a).toBe('b');
+    expect(Utils.copy(new Error('foo'))).toEqual(new Error('foo'));
+    expect(Utils.copy(/abc/gim)).toEqual(/abc/gim);
 
-    const c = { a: 'a', b: 'c', inner: { foo: 'bar' } } as any;
+    const re = /a/;
+    re.lastIndex = 1;
+    expect(Utils.copy(re)).toEqual(re);
+    expect(Utils.copy(re).lastIndex).toEqual(re.lastIndex);
+
+    const c = { a: 'a', b: 'c', inner: { foo: 'bar', p: Promise.resolve() } } as any;
     const d = Utils.copy(c);
     d.inner.lol = 'new';
     expect(c.inner.lol).toBeUndefined();
     expect(d.inner.lol).toBe('new');
+    expect(c.inner.p).toBeInstanceOf(Promise);
   });
 
   /**

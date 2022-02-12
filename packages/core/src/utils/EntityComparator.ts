@@ -1,4 +1,4 @@
-import clone from 'clone';
+import { clone } from './clone';
 import type { AnyEntity, EntityData, EntityDictionary, EntityMetadata, EntityProperty, IMetadataStorage, Primary } from '../typings';
 import { ReferenceType } from '../enums';
 import type { Platform } from '../platforms';

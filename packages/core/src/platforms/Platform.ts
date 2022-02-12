@@ -1,4 +1,4 @@
-import clone from 'clone';
+import { clone } from '../utils/clone';
 import { EntityRepository } from '../entity';
 import type { NamingStrategy } from '../naming-strategy';
 import { UnderscoreNamingStrategy } from '../naming-strategy';

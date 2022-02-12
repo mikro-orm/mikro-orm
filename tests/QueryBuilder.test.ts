@@ -1389,6 +1389,11 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['123']);
   });
 
+  test('count query with column reference via static raw helper', async () => {
+    const qb = orm.em.createQueryBuilder(Book2);
+    await qb.where({ price: orm.em.raw('price + 1') }).getCount();
+  });
+
   test('update query with JSON type and raw value', async () => {
     const qb = orm.em.createQueryBuilder(Book2);
     const raw = qb.raw<any>(`jsonb_set(payload, '$.{consumed}', ?)`, [123]);

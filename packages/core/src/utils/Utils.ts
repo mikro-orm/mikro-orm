@@ -1,5 +1,4 @@
 import { createRequire } from 'module';
-import clone from 'clone';
 import type { GlobbyOptions } from 'globby';
 import globby from 'globby';
 import { extname, isAbsolute, join, normalize, relative, resolve } from 'path';
@@ -9,6 +8,7 @@ import { fileURLToPath, pathToFileURL } from 'url';
 import { pathExists } from 'fs-extra';
 import { createHash } from 'crypto';
 import { recovery } from 'escaya';
+import { clone } from './clone';
 import type { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityName, EntityProperty, IMetadataStorage, Primary } from '../typings';
 import { GroupOperator, PlainObject, QueryOperator, ReferenceType } from '../enums';
 import type { Collection } from '../entity';
