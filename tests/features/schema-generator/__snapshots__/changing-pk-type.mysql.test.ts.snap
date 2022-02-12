@@ -5,8 +5,7 @@ Object {
   "down": "drop table if exists \`user\`;
 
 ",
-  "up": "create table \`user\` (\`id\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
-alter table \`user\` add primary key \`user_pkey\`(\`id\`);
+  "up": "create table \`user\` (\`id\` varchar(255) not null, primary key (\`id\`)) default character set utf8mb4 engine = InnoDB;
 
 ",
 }
