@@ -48,7 +48,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@faker-js/faker": "6.0.0-alpha.5"
+    "@faker-js/faker": "6.0.0-alpha.6"
   },
   "devDependencies": {
     "@mikro-orm/core": "^5.0.0"
