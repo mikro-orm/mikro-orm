@@ -63,6 +63,13 @@ describe('EntityManagerMongo2', () => {
     await expect(orm.em.persistAndFlush(jon)).rejects.toThrow(`Value for Author.email is required, 'undefined' found`);
   });
 
+  test('Loaded type does not remove optionality', async () => {
+    const b = await orm.em.find(Book, {}, { populate: ['publisher'] });
+    // @ts-expect-error publisher can be null
+    const p1 = b[0]?.publisher.$.name;
+    const p2 = b[0]?.publisher?.$.name;
+  });
+
   afterAll(async () => orm.close(true));
 
 });

@@ -166,7 +166,8 @@ export type EntityDataNested<T> = T extends undefined
 type EntityDataItem<T> = T | EntityDataProp<T> | null;
 
 type ExplicitlyOptionalProps<T> = T extends { [OptionalProps]?: infer PK } ? PK : never;
-type ExplicitlyOptionalProps2<T> = ExplicitlyOptionalProps<T> | 'id' | '_id' | 'uuid';
+type NullableKeys<T> = { [K in keyof T]: null extends T[K] ? K : never }[keyof T];
+type ProbablyOptionalProps<T> = ExplicitlyOptionalProps<T> | 'id' | '_id' | 'uuid' | Defined<NullableKeys<T>>;
 
 type IsOptional<T, K extends keyof T> = T[K] extends Collection<any>
   ? true
@@ -175,7 +176,7 @@ type IsOptional<T, K extends keyof T> = T[K] extends Collection<any>
     ? true
     : K extends symbol
       ? true
-      : K extends ExplicitlyOptionalProps2<T>
+      : K extends ProbablyOptionalProps<T>
         ? true
         : false;
 type RequiredKeys<T, K extends keyof T> = IsOptional<T, K> extends false ? K : never;
@@ -606,13 +607,13 @@ type Defined<T> = Exclude<T, null | undefined>;
 //   2. If no, just return it as-is (scalars will be included, loadables too but not loaded).
 export type Loaded<T, L extends string = never> = T & {
   [K in keyof T]: K extends Prefix<L>
-    ? LoadedLoadable<Defined<T[K]>, Loaded<ExtractType<Defined<T[K]>>, Suffix<L>>>
+    ? LoadedLoadable<T[K], Loaded<ExtractType<T[K]>, Suffix<L>>>
     : T[K]
 };
 
-export interface LoadedReference<T> extends Reference<T> {
-  $: T;
-  get(): T;
+export interface LoadedReference<T> extends Reference<Defined<T>> {
+  $: Defined<T>;
+  get(): Defined<T>;
 }
 
 export interface LoadedCollection<T> extends Collection<T> {

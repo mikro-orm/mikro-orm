@@ -1,6 +1,6 @@
 import { ObjectId } from 'bson';
-import type { EntityDTO } from '@mikro-orm/core';
-import { Collection, IdentifiedReference, Cascade, Entity, Index, ManyToMany, ManyToOne, PrimaryKey, Property, Unique, wrap, Filter, Dictionary, OptionalProps } from '@mikro-orm/core';
+import type { EntityDTO, IdentifiedReference } from '@mikro-orm/core';
+import { Collection, Cascade, Entity, Index, ManyToMany, ManyToOne, PrimaryKey, Property, Unique, wrap, Filter, Dictionary, OptionalProps } from '@mikro-orm/core';
 import { Publisher } from './Publisher';
 import { Author } from './Author';
 import { BookTag } from './book-tag';
@@ -33,7 +33,7 @@ export class Book extends BaseEntity3<Book> {
 
   @ManyToOne(() => Publisher, { wrappedReference: true, cascade: [Cascade.PERSIST, Cascade.REMOVE], nullable: true })
   @Index({ name: 'publisher_idx' })
-  publisher?: IdentifiedReference<Publisher, '_id' | 'id'>;
+  publisher!: IdentifiedReference<Publisher, '_id' | 'id'> | null;
 
   @ManyToMany(() => BookTag)
   tags = new Collection<BookTag>(this);
