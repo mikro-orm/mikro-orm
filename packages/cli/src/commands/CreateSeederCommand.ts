@@ -1,7 +1,5 @@
 import type { Arguments, Argv, CommandModule } from 'yargs';
-import type { MikroORM } from '@mikro-orm/core';
 import { colors } from '@mikro-orm/core';
-import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { CLIHelper } from '../CLIHelper';
 
 export class CreateSeederCommand<T> implements CommandModule<T, { seeder: string }> {
@@ -20,28 +18,22 @@ export class CreateSeederCommand<T> implements CommandModule<T, { seeder: string
    * @inheritDoc
    */
   async handler(args: Arguments<{ seeder: string }>) {
-    const seederName = CreateSeederCommand.getSeederClassName(args.seeder);
-    const orm = await CLIHelper.getORM(undefined) as MikroORM<AbstractSqlDriver>;
+    const className = CreateSeederCommand.getSeederClassName(args.seeder);
+    const orm = await CLIHelper.getORM();
     const seeder = orm.getSeeder();
-    const path = await seeder.createSeeder(seederName);
+    const path = await seeder.createSeeder(className);
     CLIHelper.dump(colors.green(`Seeder ${args.seeder} successfully created at ${path}`));
     await orm.close(true);
   }
 
   /**
    * Will return a seeder name that is formatted like this EntitySeeder
-   * @param seedName
-   * @private
    */
-  static getSeederClassName(seedName: string): string {
-    const seedNameMatches = seedName.match(/(.+)(seeder)/i);
-    if (seedNameMatches) {
-      seedName = seedNameMatches[1];
-    }
-    const seedNameSplit = seedName.split('-');
-    return seedNameSplit.map(name => {
-      return name.charAt(0).toUpperCase() + name.slice(1);
-    }).join('') + 'Seeder';
+  private static getSeederClassName(name: string): string {
+    name = name.match(/(.+)seeder/i)?.[1] ?? name;
+    const parts = name.split('-');
+
+    return parts.map(name => name.charAt(0).toUpperCase() + name.slice(1)).join('') + 'Seeder';
   }
 
 }

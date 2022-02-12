@@ -113,7 +113,7 @@ export class SchemaCommandFactory {
 
     if (args.seed !== undefined) {
       const seeder = orm.getSeeder();
-      await seeder.seedString(args.seed || orm.config.get('seeder').defaultSeeder);
+      await seeder.seedString(args.seed || orm.config.get('seeder').defaultSeeder!);
     }
 
     CLIHelper.dump(colors.green(successMessage));

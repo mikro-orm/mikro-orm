@@ -1,32 +1,29 @@
-import SpyInstance = jest.SpyInstance;
-
+import { remove, readFile } from 'fs-extra';
 import { MikroORM } from '@mikro-orm/core';
 import { SeedManager } from '@mikro-orm/seeder';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { SchemaGenerator } from '@mikro-orm/sqlite';
-// noinspection ES6PreferShortImport
 import { initORMSqlite } from '../../bootstrap';
 import { Book3Seeder } from '../../database/seeder/book3.seeder';
-import { remove, readFile } from 'fs-extra';
 import { Author3Seeder } from '../../database/seeder/author3.seeder';
 
-const createSchema = jest.spyOn(SchemaGenerator.prototype, 'createSchema');
-createSchema.mockImplementation(async () => void 0);
-const dropSchema = jest.spyOn(SchemaGenerator.prototype, 'dropSchema');
-dropSchema.mockImplementation(async () => void 0);
+describe('Seeder', () => {
 
-describe('MikroOrmSeeder', () => {
-
-  let orm: MikroORM<SqliteDriver>;
-  let getORMMock: SpyInstance;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await initORMSqlite();
-    getORMMock = jest.spyOn(MikroORM, 'init');
+    const getORMMock = jest.spyOn(MikroORM, 'init');
     getORMMock.mockResolvedValue(orm);
+    const createSchema = jest.spyOn(SchemaGenerator.prototype, 'createSchema');
+    createSchema.mockImplementation();
+    const dropSchema = jest.spyOn(SchemaGenerator.prototype, 'dropSchema');
+    dropSchema.mockImplementation();
   });
 
-  afterAll(async () => await orm.close(true));
+  afterAll(async () => {
+    await orm.close(true);
+    jest.restoreAllMocks();
+  });
 
   test('seed', async () => {
     const seeder = orm.getSeeder();
@@ -43,7 +40,10 @@ describe('MikroOrmSeeder', () => {
   });
 
   test('seedString', async () => {
-    orm.config.set('seeder', { path: './database/seeder', defaultSeeder: 'DatabaseSeeder' });
+    const options = orm.config.get('seeder');
+    options.path = './database/seeder';
+    options.defaultSeeder = 'DatabaseSeeder';
+    orm.config.set('seeder', options);
     const seeder = orm.getSeeder();
     const seedMock = jest.spyOn(SeedManager.prototype, 'seed');
 
@@ -51,16 +51,38 @@ describe('MikroOrmSeeder', () => {
     expect(seedMock).toHaveBeenCalledTimes(1);
     await seeder.seedString('Book3Seeder', 'Author3Seeder');
     expect(seedMock).toHaveBeenCalledTimes(3);
+
+    const re = 'Seeder class Unknown not found in ./tests/database/seeder/!(*.d).{js,ts}';
+    await expect(seeder.seedString('Unknown')).rejects.toThrow(re);
   });
 
-  test('createSeeder', async () => {
-    orm.config.set('seeder', { path: process.cwd() + '/temp/seeders', defaultSeeder: 'DatabaseSeeder' });
+  test('createSeeder (TS)', async () => {
+    const options = orm.config.get('seeder');
+    options.path = process.cwd() + '/temp/seeders';
+    options.defaultSeeder = 'DatabaseSeeder';
+    orm.config.set('seeder', options);
     const seeder = orm.getSeeder();
 
     const seederFile = await seeder.createSeeder('Publisher3Seeder');
-    expect(seederFile).toBe(process.cwd() + `/temp/seeders/publisher3.seeder.ts`);
+    expect(seederFile).toBe(process.cwd() + `/temp/seeders/Publisher3Seeder.ts`);
     const fileContents = await readFile(seederFile, 'utf8');
     expect(fileContents).toContain('export class Publisher3Seeder extends Seeder {');
     await remove(seederFile);
   });
+
+  test('createSeeder (JS)', async () => {
+    const options = orm.config.get('seeder');
+    options.path = process.cwd() + '/temp/seeders';
+    options.emit = 'js';
+    options.defaultSeeder = 'DatabaseSeeder';
+    orm.config.set('seeder', options);
+    const seeder = orm.getSeeder();
+
+    const seederFile = await seeder.createSeeder('Publisher3Seeder');
+    expect(seederFile).toBe(process.cwd() + `/temp/seeders/Publisher3Seeder.js`);
+    const fileContents = await readFile(seederFile, 'utf8');
+    expect(fileContents).toContain('exports.Publisher3Seeder = Publisher3Seeder;');
+    await remove(seederFile);
+  });
+
 });

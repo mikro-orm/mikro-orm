@@ -110,6 +110,9 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     seeder: {
       path: './seeders',
       defaultSeeder: 'DatabaseSeeder',
+      glob: '!(*.d).{js,ts}',
+      emit: 'ts',
+      fileName: (className: string) => className,
     },
   };
 
@@ -373,6 +376,15 @@ export type MigrationsOptions = {
   migrationsList?: MigrationObject[];
 };
 
+export type SeederOptions = {
+  path?: string;
+  pathTs?: string;
+  glob?: string;
+  defaultSeeder?: string;
+  emit?: 'js' | 'ts';
+  fileName?: (className: string) => string;
+};
+
 export interface PoolConfig {
   name?: string;
   afterCreate?: (...a: unknown[]) => unknown;
@@ -461,7 +473,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
     options?: Dictionary;
   };
   metadataProvider: { new(config: Configuration): MetadataProvider };
-  seeder: { path: string; defaultSeeder: string };
+  seeder: SeederOptions;
 }
 
 export type Options<D extends IDatabaseDriver = IDatabaseDriver> =

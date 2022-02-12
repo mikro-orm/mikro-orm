@@ -178,7 +178,7 @@ export class MigrationCommandFactory {
 
     if (args.seed !== undefined) {
       const seeder = orm.getSeeder();
-      const seederClass = args.seed || orm.config.get('seeder').defaultSeeder;
+      const seederClass = args.seed || orm.config.get('seeder').defaultSeeder!;
       await seeder.seedString(seederClass);
       CLIHelper.dump(colors.green(`Database seeded successfully with seeder class ${seederClass}`));
     }
