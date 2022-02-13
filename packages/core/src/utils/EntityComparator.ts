@@ -530,7 +530,10 @@ export class EntityComparator {
     }
 
     if (['objectid'].includes(type)) {
-      const cond = `last${this.wrap(prop.name)}.toHexString() !== current${this.wrap(prop.name)}.toHexString()`;
+      // We might be comparing PK to object, in case we compare with cached data of populated entity
+      // in such case we just ignore the comparison and fallback to `equals()` (which will still mark
+      // it as not equal as we compare PK to plain object).
+      const cond = `last${this.wrap(prop.name)}.toHexString?.() !== current${this.wrap(prop.name)}.toHexString?.()`;
       return this.getGenericComparator(this.wrap(prop.name), cond);
     }
 
