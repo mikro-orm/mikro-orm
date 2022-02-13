@@ -3,6 +3,40 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.0.1](https://github.com/mikro-orm/mikro-orm/compare/v5.0.0...v5.0.1) (2022-02-13)
+
+
+### Bug Fixes
+
+* **core:** allow cloning QB with raw conditions ([04d9d88](https://github.com/mikro-orm/mikro-orm/commit/04d9d885492e845bb25c33a3c9ff3a2b9d448d38)), closes [#2748](https://github.com/mikro-orm/mikro-orm/issues/2748)
+* **core:** allow using 0 as PK ([a2e423c](https://github.com/mikro-orm/mikro-orm/commit/a2e423c5e7006f4869e87b842f646f502ab3846b)), closes [#2729](https://github.com/mikro-orm/mikro-orm/issues/2729)
+* **core:** do not propagate removal to FK as PK ([a0a19c2](https://github.com/mikro-orm/mikro-orm/commit/a0a19c22604586c1f3256aba7759c3204e1f02b0)), closes [#2723](https://github.com/mikro-orm/mikro-orm/issues/2723)
+* **core:** fix support for complex composite (nested) PKs ([a7fc7a1](https://github.com/mikro-orm/mikro-orm/commit/a7fc7a19125e43a8cc9edca8cb8e50e5d54b58b1)), closes [#2647](https://github.com/mikro-orm/mikro-orm/issues/2647)
+* **core:** ignore ORM packages where we failed to extract version ([b1627c5](https://github.com/mikro-orm/mikro-orm/commit/b1627c502949ef73530dd0c20a829f0bdc5de2fc)), closes [#2732](https://github.com/mikro-orm/mikro-orm/issues/2732)
+* **core:** respect `null` in `Loaded` type ([72385b3](https://github.com/mikro-orm/mikro-orm/commit/72385b3d752e07a7c17ba4f329018de2b16fbfbf)), closes [#2750](https://github.com/mikro-orm/mikro-orm/issues/2750)
+* **core:** return entity type from `em.create()` instead of `New<T>` ([8ff277d](https://github.com/mikro-orm/mikro-orm/commit/8ff277dbf5ea5919445c318bbb74c2c823b53fc4)), closes [#2727](https://github.com/mikro-orm/mikro-orm/issues/2727)
+* **core:** support special characters in `clientUrl` ([43e28b8](https://github.com/mikro-orm/mikro-orm/commit/43e28b8739f4e60814328d99129943c8a3975082)), closes [#2730](https://github.com/mikro-orm/mikro-orm/issues/2730)
+* **core:** use `createRequire` instead of dynamic import for JSON files ([f567d2d](https://github.com/mikro-orm/mikro-orm/commit/f567d2d073854163e6de8bddbf8e1a256a6fcaed)), closes [#2738](https://github.com/mikro-orm/mikro-orm/issues/2738)
+* **embeddables:** fix loading inline embeddables with joined strategy ([adaa5c6](https://github.com/mikro-orm/mikro-orm/commit/adaa5c648f5f7466aa149a7cee02f0d83abe032e)), closes [#2717](https://github.com/mikro-orm/mikro-orm/issues/2717)
+* **esm:** fix getting ORM version on windows with ESM ([eb3a1be](https://github.com/mikro-orm/mikro-orm/commit/eb3a1be5d777252685e401c978a28c86a60c8bde))
+* **mongo:** fix caching populated results in mongo ([42ea5be](https://github.com/mikro-orm/mikro-orm/commit/42ea5be05677c85315ea65ac2e47f82d9de03754)), closes [#2754](https://github.com/mikro-orm/mikro-orm/issues/2754)
+* **query-builder:** respect explicit entity schema ([717aa5e](https://github.com/mikro-orm/mikro-orm/commit/717aa5e823e02c4d0ee6d7ab7afc8afa28887433)), closes [#2740](https://github.com/mikro-orm/mikro-orm/issues/2740)
+* **schema:** fix explicit schema name support ([#2752](https://github.com/mikro-orm/mikro-orm/issues/2752)) ([68631ea](https://github.com/mikro-orm/mikro-orm/commit/68631ea786e40aecd8ffc31baead9a23699874b7))
+* **seeder:** fix Factory type for entity with constructor params ([#2745](https://github.com/mikro-orm/mikro-orm/issues/2745)) ([8b7b977](https://github.com/mikro-orm/mikro-orm/commit/8b7b97729935d9fe35f8b57cd9e64dddc8fa86e6))
+* **typing:** exclude symbols and functions from `FilterQuery` ([1d24eb8](https://github.com/mikro-orm/mikro-orm/commit/1d24eb87b2e833cd9ab86f2859fc7fee0db3e378)), closes [#2742](https://github.com/mikro-orm/mikro-orm/issues/2742)
+
+
+### Features
+
+* **core:** add `getContext` parameter to `@UseRequestContext()` ([9516b48](https://github.com/mikro-orm/mikro-orm/commit/9516b48525929d3bbef1794b25fa862048c589f7)), closes [#2721](https://github.com/mikro-orm/mikro-orm/issues/2721)
+* **query-builder:** allow autocomplete on `qb.orderBy()` ([fdf03c3](https://github.com/mikro-orm/mikro-orm/commit/fdf03c38322f79e0b41181b834db903d5138124d)), closes [#2747](https://github.com/mikro-orm/mikro-orm/issues/2747)
+* **schema:** ensure database when calling `refreshDatabase()` ([7ce12d6](https://github.com/mikro-orm/mikro-orm/commit/7ce12d6f54845d169c769084d90ec82a1ab15c35))
+* **seeder:** refactor seeder to support running compiled files ([#2751](https://github.com/mikro-orm/mikro-orm/issues/2751)) ([8d9c4c0](https://github.com/mikro-orm/mikro-orm/commit/8d9c4c0454d06920cd59647f1f2ea4070ea2bd5a)), closes [#2728](https://github.com/mikro-orm/mikro-orm/issues/2728)
+
+
+
+
+
 # [5.0.0](https://github.com/mikro-orm/mikro-orm/compare/v4.5.10...v5.0.0) (2022-02-06)
 
 ### Bug Fixes
