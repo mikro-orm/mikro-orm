@@ -290,10 +290,8 @@ export class UnitOfWork {
         throw ValidationError.cannotCommit();
       }
 
-      return await new Promise<void>((resolve, reject) => {
-        this.flushQueue.push(async () => {
-          await this.doCommit().then(resolve, reject);
-        });
+      return new Promise<void>((resolve, reject) => {
+        this.flushQueue.push(() => this.doCommit().then(resolve, reject));
       });
     }
 
