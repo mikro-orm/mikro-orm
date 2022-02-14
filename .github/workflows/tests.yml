@@ -38,7 +38,6 @@ jobs:
 
       - name: Install
         run: |
-          yarn config set ignore-engines true
           yarn
 
       - name: Lint
@@ -70,7 +69,6 @@ jobs:
 
       - name: Install
         run: |
-          yarn config set ignore-engines true
           yarn
 
       - name: Build & deploy docs
@@ -108,7 +106,6 @@ jobs:
 
       - name: Install
         run: |
-          yarn config set ignore-engines true
           yarn
 
       - name: Lint
@@ -121,7 +118,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [ 14, 15, '16.10' ]
+        node-version: [ 14, '16.10' ]
     steps:
       - name: Checkout Source code
         uses: actions/checkout@v2
@@ -147,7 +144,6 @@ jobs:
 
       - name: Install
         run: |
-          yarn config set ignore-engines true
           yarn
 
       - name: Set CC Required env vars

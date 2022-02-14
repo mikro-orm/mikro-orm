@@ -34,7 +34,6 @@ jobs:
 
     - name: Install
       run: |
-        yarn config set ignore-engines true
         yarn
 
     - name: Build & deploy docs

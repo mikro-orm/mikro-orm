@@ -85,13 +85,10 @@
     "@mikro-orm/entity-generator": {
       "optional": true
     },
-    "@mikro-orm/migrations": {
-      "optional": true
-    },
-    "@mikro-orm/seeder": {
-      "optional": true
-    },
     "@mikro-orm/mariadb": {
+      "optional": true
+    },
+    "@mikro-orm/migrations": {
       "optional": true
     },
     "@mikro-orm/mongodb": {
@@ -101,6 +98,9 @@
       "optional": true
     },
     "@mikro-orm/postgresql": {
+      "optional": true
+    },
+    "@mikro-orm/seeder": {
       "optional": true
     },
     "@mikro-orm/sqlite": {
