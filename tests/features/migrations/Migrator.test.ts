@@ -54,6 +54,7 @@ describe('Migrator', () => {
     orm = await initORMMySql('mysql', {}, true);
     await remove(process.cwd() + '/temp/migrations');
   });
+  beforeEach(() => orm.config.resetServiceCache());
   afterAll(async () => orm.close(true));
 
   test('generate js schema migration', async () => {

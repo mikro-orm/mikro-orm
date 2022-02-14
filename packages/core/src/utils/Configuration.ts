@@ -128,7 +128,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   private readonly logger: Logger;
   private readonly driver: D;
   private readonly platform: Platform;
-  private readonly cache: Dictionary = {};
+  private readonly cache = new Map<string, any>();
 
   constructor(options: Options, validate = true) {
     this.options = Utils.merge({}, Configuration.DEFAULTS, options);
@@ -209,42 +209,42 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets instance of NamingStrategy. (cached)
    */
   getNamingStrategy(): NamingStrategy {
-    return this.cached(this.options.namingStrategy || this.platform.getNamingStrategy());
+    return this.getCachedService(this.options.namingStrategy || this.platform.getNamingStrategy());
   }
 
   /**
    * Gets instance of Hydrator. (cached)
    */
   getHydrator(metadata: MetadataStorage): IHydrator {
-    return this.cached(this.options.hydrator, metadata, this.platform, this);
+    return this.getCachedService(this.options.hydrator, metadata, this.platform, this);
   }
 
   /**
    * Gets instance of Comparator. (cached)
    */
   getComparator(metadata: MetadataStorage) {
-    return this.cached(EntityComparator, metadata, this.platform);
+    return this.getCachedService(EntityComparator, metadata, this.platform);
   }
 
   /**
    * Gets instance of MetadataProvider. (cached)
    */
   getMetadataProvider(): MetadataProvider {
-    return this.cached(this.options.metadataProvider, this);
+    return this.getCachedService(this.options.metadataProvider, this);
   }
 
   /**
    * Gets instance of CacheAdapter. (cached)
    */
   getCacheAdapter(): CacheAdapter {
-    return this.cached(this.options.cache.adapter!, this.options.cache.options, this.options.baseDir, this.options.cache.pretty);
+    return this.getCachedService(this.options.cache.adapter!, this.options.cache.options, this.options.baseDir, this.options.cache.pretty);
   }
 
   /**
    * Gets instance of CacheAdapter for result cache. (cached)
    */
   getResultCacheAdapter(): CacheAdapter {
-    return this.cached(this.options.resultCache.adapter!, { expiration: this.options.resultCache.expiration, ...this.options.resultCache.options });
+    return this.getCachedService(this.options.resultCache.adapter!, { expiration: this.options.resultCache.expiration, ...this.options.resultCache.options });
   }
 
   /**
@@ -260,6 +260,22 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     return this.platform.getRepositoryClass();
+  }
+
+  /**
+   * Creates instance of given service and caches it.
+   */
+  getCachedService<T extends { new(...args: any[]): InstanceType<T> }>(cls: T, ...args: ConstructorParameters<T>): InstanceType<T> {
+    if (!this.cache.has(cls.name)) {
+      const Class = cls as { new(...args: any[]): T };
+      this.cache.set(cls.name, new Class(...args));
+    }
+
+    return this.cache.get(cls.name);
+  }
+
+  resetServiceCache(): void {
+    this.cache.clear();
   }
 
   private init(): void {
@@ -326,15 +342,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     return new this.options.driver!(this);
-  }
-
-  private cached<T extends { new(...args: any[]): InstanceType<T> }>(cls: T, ...args: ConstructorParameters<T>): InstanceType<T> {
-    if (!this.cache[cls.name]) {
-      const Class = cls as { new(...args: any[]): T };
-      this.cache[cls.name] = new Class(...args);
-    }
-
-    return this.cache[cls.name];
   }
 
 }

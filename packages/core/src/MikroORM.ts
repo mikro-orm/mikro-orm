@@ -156,7 +156,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
   getSeeder<T extends ISeedManager = ISeedManager>(): T {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { SeedManager } = require('@mikro-orm/seeder');
-    return new SeedManager(this.em);
+    return this.config.getCachedService(SeedManager, this.em);
   }
 
 }

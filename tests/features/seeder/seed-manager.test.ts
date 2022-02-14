@@ -20,6 +20,8 @@ describe('Seeder', () => {
     dropSchema.mockImplementation();
   });
 
+  beforeEach(() => orm.config.resetServiceCache());
+
   afterAll(async () => {
     await orm.close(true);
     jest.restoreAllMocks();

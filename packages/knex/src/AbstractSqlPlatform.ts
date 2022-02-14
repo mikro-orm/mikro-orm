@@ -26,19 +26,19 @@ export abstract class AbstractSqlPlatform extends Platform {
   }
 
   getSchemaGenerator(driver: IDatabaseDriver): SchemaGenerator {
-    return new SchemaGenerator(driver as any); // cast as `any` to get around circular dependencies
+    return this.config.getCachedService(SchemaGenerator, driver as any); // cast as `any` to get around circular dependencies
   }
 
   getEntityGenerator(em: EntityManager) {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { EntityGenerator } = require('@mikro-orm/entity-generator');
-    return new EntityGenerator(em);
+    return this.config.getCachedService(EntityGenerator, em);
   }
 
   getMigrator(em: EntityManager) {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { Migrator } = require('@mikro-orm/migrations');
-    return new Migrator(em);
+    return this.config.getCachedService(Migrator, em);
   }
 
   quoteValue(value: any): string {

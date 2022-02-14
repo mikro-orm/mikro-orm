@@ -42,6 +42,7 @@ describe('Migrator (postgres)', () => {
     orm = await initORMPostgreSql();
     await remove(process.cwd() + '/temp/migrations');
   });
+  beforeEach(() => orm.config.resetServiceCache());
   afterAll(async () => orm.close(true));
 
   test('generate js schema migration', async () => {
