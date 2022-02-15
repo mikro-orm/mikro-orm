@@ -449,16 +449,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Fires native insert query. Calling this has no side effects on the context (identity map).
    */
-  async nativeInsert<T extends AnyEntity<T>>(entity: T): Promise<Primary<T>>;
-
-  /**
-   * Fires native insert query. Calling this has no side effects on the context (identity map).
-   */
-  async nativeInsert<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityData<T>): Promise<Primary<T>>;
-
-  /**
-   * Fires native insert query. Calling this has no side effects on the context (identity map).
-   */
   async nativeInsert<T extends AnyEntity<T>>(entityNameOrEntity: EntityName<T> | T, data?: EntityData<T>, options: InsertOptions<T> = {}): Promise<Primary<T>> {
     let entityName;
 
