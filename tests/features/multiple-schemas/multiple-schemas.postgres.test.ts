@@ -297,9 +297,7 @@ describe('multiple connected schemas in postgres', () => {
 
     expect(mock.mock.calls[0][0]).toMatch(`select "a0".* from "n1"."author" as "a0" where "a0"."id" = 1 limit 1`);
     expect(mock.mock.calls[1][0]).toMatch(`select "b0".* from "n5"."book" as "b0" where "b0"."author_id" in (1) order by "b0"."author_id" asc`);
-    expect(mock.mock.calls[2][0]).toMatch(`select "a0".* from "n1"."author" as "a0" where "a0"."id" in (1) order by "a0"."id" asc`);
-    expect(mock.mock.calls[3][0]).toMatch(`select "b0".* from "n5"."book" as "b0" where "b0"."author_id" in (1) order by "b0"."author_id" asc`);
-    expect(mock.mock.calls[4][0]).toMatch(`select "b0".*, "b1"."book_tag_id" as "fk__book_tag_id", "b1"."book_id" as "fk__book_id" from "n5"."book_tag" as "b0" left join "n5"."book_tags" as "b1" on "b0"."id" = "b1"."book_tag_id" where "b1"."book_id" in (2, 1)`);
+    expect(mock.mock.calls[2][0]).toMatch(`select "b0".*, "b1"."book_tag_id" as "fk__book_tag_id", "b1"."book_id" as "fk__book_id" from "n5"."book_tag" as "b0" left join "n5"."book_tags" as "b1" on "b0"."id" = "b1"."book_tag_id" where "b1"."book_id" in (2, 1)`);
     mock.mockReset();
 
     expect(fork.getUnitOfWork().getIdentityMap().keys()).toEqual([

@@ -132,6 +132,7 @@ export class EntityFactory {
     options.convertCustomTypes ??= true;
     entityName = Utils.className(entityName);
     const meta = this.metadata.get<T>(entityName);
+    const schema = this.driver.getSchemaName(meta, options);
 
     if (Array.isArray(id)) {
       id = Utils.getPrimaryKeyCondFromArray(id, meta);
@@ -143,7 +144,7 @@ export class EntityFactory {
       id = { [meta.primaryKeys[0]]: id as Primary<T> };
     }
 
-    const exists = this.unitOfWork.getById<T>(entityName, pks, options.schema);
+    const exists = this.unitOfWork.getById<T>(entityName, pks, schema);
 
     if (exists) {
       return exists;
