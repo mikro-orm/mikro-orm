@@ -500,14 +500,11 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   protected getTableName<T>(meta: EntityMetadata<T>, options: NativeInsertUpdateManyOptions<T>): string {
-    let tableName = this.platform.quoteIdentifier(meta.collection);
+    const tableName = this.platform.quoteIdentifier(meta.collection);
+    const schema = this.getSchemaName(meta, options);
 
-    if (options.schema === '*') {
-      return this.platform.quoteIdentifier(this.config.get('schema')) + '.' + tableName;
-    }
-
-    if (meta.schema || options.schema) {
-      tableName = this.platform.quoteIdentifier(options.schema ?? meta.schema!) + '.' + tableName;
+    if (schema) {
+      return this.platform.quoteIdentifier(schema) + '.' + tableName;
     }
 
     return tableName;
