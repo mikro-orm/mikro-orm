@@ -45,7 +45,7 @@ module.exports = {
       'read-connections',
     ],
     'Reference': [
-      { type: 'link', label: 'EntityManager API', href: '/api/next/core/class/EventManager' },
+      { type: 'link', label: 'EntityManager API', href: '/api/next/core/class/EntityManager' },
       { type: 'link', label: 'EntityRepository API', href: '/api/next/core/class/EntityRepository' },
       { type: 'link', label: 'QueryBuilder API', href: '/api/next/knex/class/QueryBuilder' },
       'decorators',
