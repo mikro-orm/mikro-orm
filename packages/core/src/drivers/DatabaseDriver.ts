@@ -260,8 +260,13 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       return meta.schema;
     }
 
-    /* istanbul ignore next */
-    return options?.schema === '*' ? this.config.get('schema') : options?.schema ?? (meta?.schema === '*' ? this.config.get('schema') : meta?.schema);
+    if (options?.schema === '*') {
+      return this.config.get('schema');
+    }
+
+    const schemaName = meta?.schema === '*' ? this.config.get('schema') : meta?.schema;
+
+    return options?.schema ?? schemaName ?? this.config.get('schema');
   }
 
 }

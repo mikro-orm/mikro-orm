@@ -1,95 +1,81 @@
-import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property, MikroORM } from '@mikro-orm/core';
+import { BaseEntity, Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/core';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
 
-@Entity({
-  tableName: 'person',
-})
-export class PersonEntity {
+@Entity()
+export class Parent extends BaseEntity<Parent, 'id'> {
 
   @PrimaryKey()
-  id!: number;
+  id!: string;
 
-  @Property()
-  name!: string;
-
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  @OneToMany(() => TaskEntity, task => task.person)
-  tasks = new Collection<TaskEntity>(this);
+  @OneToMany({ entity: 'Child', mappedBy: 'parent' })
+  children = new Collection<Child>(this);
 
 }
 
-@Entity({
-  tableName: 'task',
-})
-export class TaskEntity {
+@Entity()
+export class Child extends BaseEntity<Parent, 'id'> {
 
   @PrimaryKey()
-  id!: number;
+  id!: string;
 
-  @Property()
-  description!: string;
-
-  @ManyToOne(() => PersonEntity)
-  person!: PersonEntity;
+  @ManyToOne({
+    entity: () => Parent,
+    wrappedReference: true,
+    index: true,
+    onDelete: 'cascade',
+  })
+  parent!: IdentifiedReference<Parent>;
 
 }
 
-describe('GH #2729', () => {
+describe('GH issue 1003', () => {
 
-  let orm: MikroORM;
+  let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      type: 'sqlite',
+      entities: [Child, Parent],
       dbName: ':memory:',
-      entities: [PersonEntity, TaskEntity],
+      type: 'sqlite',
     });
     await orm.getSchemaGenerator().createSchema();
-
-    await orm.em.nativeInsert(TaskEntity, {
-      description: 'person zero task',
-      person: await orm.em.nativeInsert(PersonEntity, {
-        id: 0,
-        name: 'zero',
-      }),
-    });
-    await orm.em.nativeInsert(TaskEntity, {
-      description: 'person one task',
-      person: await orm.em.nativeInsert(PersonEntity, {
-        id: 1,
-        name: 'one',
-      }),
-    });
-    await orm.em.nativeInsert(TaskEntity, {
-      description: 'person two task',
-      person: await orm.em.nativeInsert(PersonEntity, {
-        id: 2,
-        name: 'two',
-      }),
-    });
   });
 
   afterAll(async () => {
-    await orm.close();
+    await orm.close(true);
   });
 
-  it('relations with PK 0', async () => {
-    const persons = await orm.em.fork().find(PersonEntity, {});
-    expect(persons).toHaveLength(3);
+  test(`GH issue 1003`, async () => {
+    const parent = orm.em.create(Parent, { id: 'parentId' });
+    const child1 = orm.em.create(Child, { id: 'childId1', parent });
+    const child2 = orm.em.create(Child, { id: 'childId2', parent });
+    parent.children.add(child1, child2);
+    await orm.em.persist(parent).flush();
+    orm.em.clear();
 
-    const tasks = await orm.em.fork().find(TaskEntity, {}, { orderBy: { id: 'asc' } });
-    expect(tasks).toHaveLength(3);
-    expect(tasks[0].person.id).toBe(0);
-    expect(tasks[1].person.id).toBe(1);
-    expect(tasks[2].person.id).toBe(2);
+    const removeStack = orm.em.getUnitOfWork().getRemoveStack();
+    const storedParent = await orm.em.findOneOrFail(Parent, 'parentId', { populate: ['children'] });
+    const removeChild = storedParent.children[0];
+    expect(removeStack.size).toBe(0);
+    orm.em.remove(removeChild); // Remove child
+    expect(removeStack.size).toBe(1);
 
-    const tasks2 = await orm.em.fork().find(TaskEntity, {}, { populate: ['person'], orderBy: { id: 'asc' } });
-
-    expect(tasks2[1].person.id).toBe(1);
-    expect(tasks2[1].person.name).toBe('one');
-    expect(tasks2[2].person.id).toBe(2);
-    expect(tasks2[2].person.name).toBe('two');
-    expect(tasks2[0].person.id).toBe(0);
-    expect(tasks2[0].person.name).toBe('zero');
+    // Add unrelated child to same parent
+    const newChild = orm.em.create(Child, { id: 'newChildId', parent: storedParent });
+    expect(removeStack.size).toBe(1);
+    orm.em.persist(newChild);
+    expect(removeStack.size).toBe(1);
+    await orm.em.flush();
+    expect(newChild.toPOJO()).toEqual({
+      id: 'newChildId',
+      parent: {
+        id: 'parentId',
+        children: [
+          { id: 'childId2', parent: { id: 'parentId' } },
+          { id: 'newChildId' },
+        ],
+      },
+    });
   });
 
 });
