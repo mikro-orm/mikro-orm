@@ -18,6 +18,10 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return true;
   }
 
+  supportsCustomPrimaryKeyNames(): boolean {
+    return true;
+  }
+
   /**
    * Postgres will complain if we try to batch update uniquely constrained property (moving the value from one entity to another).
    * This flag will result in postponing 1:1 updates (removing them from the batched query).

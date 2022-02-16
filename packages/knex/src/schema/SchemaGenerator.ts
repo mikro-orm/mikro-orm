@@ -365,17 +365,17 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
       }
 
       for (const index of Object.values(diff.addedIndexes)) {
-        this.createIndex(table, index, diff.name);
+        this.createIndex(table, index);
       }
 
       for (const index of Object.values(diff.changedIndexes)) {
-        this.createIndex(table, index, diff.name, true);
+        this.createIndex(table, index, true);
       }
 
       for (const [oldIndexName, index] of Object.entries(diff.renamedIndexes)) {
         if (index.unique) {
           this.dropIndex(table, index, oldIndexName);
-          this.createIndex(table, index, diff.name);
+          this.createIndex(table, index);
         } else {
           this.helper.pushTableQuery(table, this.helper.getRenameIndexSQL(diff.name, index, oldIndexName));
         }
@@ -453,7 +453,7 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
       });
 
       for (const index of tableDef.getIndexes()) {
-        this.createIndex(table, index, tableDef.name, !tableDef.getColumns().some(c => c.autoincrement));
+        this.createIndex(table, index, !tableDef.getColumns().some(c => c.autoincrement));
       }
 
       for (const check of tableDef.getChecks()) {
@@ -474,14 +474,13 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
     });
   }
 
-  private createIndex(table: Knex.CreateTableBuilder, index: Index, tableName: string, createPrimary = false) {
+  private createIndex(table: Knex.CreateTableBuilder, index: Index, createPrimary = false) {
     if (index.primary && !createPrimary) {
       return;
     }
 
     if (index.primary) {
-      /* istanbul ignore next */
-      const keyName = tableName.includes('.') ? tableName.split('.').pop()! + '_pkey' : undefined;
+      const keyName = this.platform.supportsCustomPrimaryKeyNames() ? index.keyName : undefined;
       table.primary(index.columnNames, keyName);
     } else if (index.unique) {
       table.unique(index.columnNames, { indexName: index.keyName });
