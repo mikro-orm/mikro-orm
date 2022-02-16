@@ -576,6 +576,10 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     const tableName = this.helper.getTableName(this.entityName) + (this.finalized && this.helper.isTableNameAliasRequired(this.type) ? ` as ${this.alias}` : '');
     const qb = this.knex(tableName);
 
+    if (this._schema) {
+      qb.withSchema(this._schema);
+    }
+
     if (this.context) {
       qb.transacting(this.context);
     }
