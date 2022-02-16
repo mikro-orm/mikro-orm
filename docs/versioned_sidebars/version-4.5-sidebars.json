@@ -177,7 +177,7 @@
         {
           "type": "link",
           "label": "EntityManager API",
-          "href": "/api/core/class/EventManager"
+          "href": "/api/core/class/EntityManager"
         },
         {
           "type": "link",
