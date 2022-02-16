@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.0.2](https://github.com/mikro-orm/mikro-orm/compare/v5.0.1...v5.0.2) (2022-02-16)
+
+
+### Bug Fixes
+
+* **core:** allow passing entity instance in `repo.nativeInsert()` ([791c009](https://github.com/mikro-orm/mikro-orm/commit/791c009e4dadc99137b6337c22d00a73d52087f9))
+* **core:** do not ignore schema name from config in `em.getReference()` ([58680fc](https://github.com/mikro-orm/mikro-orm/commit/58680fc28a672abdfeff2636bfbecbfdef500e7d))
+* **core:** do not ignore schema name in batch queries ([b47393e](https://github.com/mikro-orm/mikro-orm/commit/b47393e30eb495b81d124c523b00cb4620593ff0))
+* **core:** do not ignore schema name in collection updates ([d688dc1](https://github.com/mikro-orm/mikro-orm/commit/d688dc19270277370f129f67e4347f2139a9313e))
+* **core:** do not ignore value from database even if we only have a getter ([35103b3](https://github.com/mikro-orm/mikro-orm/commit/35103b335727a19bc12f95b3cc5918058917722f)), closes [#2760](https://github.com/mikro-orm/mikro-orm/issues/2760)
+* **core:** respect global schema ([b569686](https://github.com/mikro-orm/mikro-orm/commit/b569686af7746551bd8779d694fa11035b80a736))
+* **postgres:** do not ignore custom PK constraint names ([3201ef7](https://github.com/mikro-orm/mikro-orm/commit/3201ef7b2b2f4ea745f946da0966da9f94fd2cc8)), closes [#2762](https://github.com/mikro-orm/mikro-orm/issues/2762)
+* **seeder:** declare missing dependency on globby ([0599032](https://github.com/mikro-orm/mikro-orm/commit/05990328ccad8b0e8a37b0eb323a89d1df876976))
+* **typing:** remove overloads for `em.nativeInsert()` ([e21d470](https://github.com/mikro-orm/mikro-orm/commit/e21d47013b2ece6768caebc813c869e1cf2a35f2))
+
+
+
+
+
 ## [5.0.1](https://github.com/mikro-orm/mikro-orm/compare/v5.0.0...v5.0.1) (2022-02-13)
 
 

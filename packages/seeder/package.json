@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/seeder",
-  "version": "5.0.1",
+  "version": "5.0.2",
   "description": "Seeder package for MikroORM.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -52,7 +52,7 @@
     "globby": "11.0.4"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^5.0.1"
+    "@mikro-orm/core": "^5.0.2"
   },
   "peerDependencies": {
     "@mikro-orm/core": "^5.0.0"
