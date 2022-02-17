@@ -60,7 +60,7 @@
     "escaya": "0.0.61",
     "fs-extra": "10.0.0",
     "globby": "11.0.4",
-    "mikro-orm": "^5.0.0",
+    "mikro-orm": "5.0.2",
     "reflect-metadata": "0.1.13"
   },
   "peerDependencies": {
