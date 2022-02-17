@@ -54,7 +54,7 @@ export class ChangeSetComputer {
       }
 
       // Recompute the changeset, we need to merge this as here we ignore relations.
-      const diff = this.computePayload(entity);
+      const diff = this.computePayload(entity, true);
       Utils.merge(changeSet.payload, diff);
     }
 
@@ -80,14 +80,22 @@ export class ChangeSetComputer {
     }
   }
 
-  private computePayload<T extends AnyEntity<T>>(entity: T): EntityData<T> {
+  private computePayload<T extends AnyEntity<T>>(entity: T, ignoreUndefined = false): EntityData<T> {
     const data = this.comparator.prepareEntity(entity);
     const entityName = entity.__meta!.root.className;
     const originalEntityData = entity.__helper!.__originalEntityData;
 
     if (originalEntityData) {
       const comparator = this.comparator.getEntityComparator(entityName);
-      return comparator(originalEntityData, data);
+      const diff = comparator(originalEntityData, data);
+
+      if (ignoreUndefined) {
+        Object.keys(diff)
+          .filter(k => diff[k] === undefined)
+          .forEach(k => delete diff[k]);
+      }
+
+      return diff;
     }
 
     return data;
