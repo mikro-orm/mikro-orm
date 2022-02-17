@@ -210,7 +210,7 @@ export class EntityRepository<T extends AnyEntity<T>> {
   }
 
   protected get em(): EntityManager {
-    return this._em.getContext();
+    return this._em.getContext(false);
   }
 
 }

@@ -1891,6 +1891,19 @@ describe('EntityManagerPostgre', () => {
     orm.config.set('allowGlobalContext', true);
   });
 
+  test('working with global identity map will not throw if disableIdentityMap is used', async () => {
+    orm.config.set('allowGlobalContext', false);
+
+    await orm.em.nativeInsert(FooBar2, { name: 'bar 1' });
+    const res1 = await orm.em.getRepository(FooBar2).find({}, { disableIdentityMap: true });
+    expect(res1).toHaveLength(1);
+
+    const res2 = await orm.em.find(FooBar2, {}, { disableIdentityMap: true });
+    expect(res2).toHaveLength(1);
+
+    orm.config.set('allowGlobalContext', true);
+  });
+
   test('Collection.init() returns Loaded type', async () => {
     await createBooksWithTags();
     const a = await orm.em.findOneOrFail(Author2, { email: 'snow@wall.st' });
