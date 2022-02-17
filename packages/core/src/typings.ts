@@ -152,7 +152,7 @@ export type EntityDataProp<T> = T extends Scalar
   ? T
   : T extends Reference<infer U>
     ? EntityDataNested<U>
-    : T extends Collection<infer U>
+    : T extends Collection<infer U, any>
         ? U | U[] | EntityDataNested<U> | EntityDataNested<U>[]
         : T extends readonly (infer U)[]
             ? U | U[] | EntityDataNested<U> | EntityDataNested<U>[]
@@ -169,7 +169,7 @@ type ExplicitlyOptionalProps<T> = T extends { [OptionalProps]?: infer PK } ? PK 
 type NullableKeys<T> = { [K in keyof T]: null extends T[K] ? K : never }[keyof T];
 type ProbablyOptionalProps<T> = ExplicitlyOptionalProps<T> | 'id' | '_id' | 'uuid' | Defined<NullableKeys<T>>;
 
-type IsOptional<T, K extends keyof T> = T[K] extends Collection<any>
+type IsOptional<T, K extends keyof T> = T[K] extends Collection<any, any>
   ? true
   // eslint-disable-next-line @typescript-eslint/ban-types
   : T[K] extends Function
@@ -562,10 +562,10 @@ export type PopulateOptions<T> = {
   children?: PopulateOptions<T[keyof T]>[];
 };
 
-type Loadable<T> = Collection<T> | Reference<T> | readonly T[]; // we need to support raw arrays in embeddables too to allow population
+type Loadable<T> = Collection<T, any> | Reference<T> | readonly T[]; // we need to support raw arrays in embeddables too to allow population
 type ExtractType<T> = T extends Loadable<infer U> ? U : T;
 
-type StringKeys<T> = T extends Collection<any>
+type StringKeys<T> = T extends Collection<any, any>
   ? `${Exclude<keyof ExtractType<T>, symbol>}`
   : T extends Reference<any>
     ? `${Exclude<keyof ExtractType<T>, symbol>}`
@@ -589,13 +589,13 @@ export type AutoPath<O, P extends string> =
 
 export type ExpandProperty<T> = T extends Reference<infer U>
   ? NonNullable<U>
-  : T extends Collection<infer U>
+  : T extends Collection<infer U, any>
     ? NonNullable<U>
     : T extends (infer U)[]
       ? NonNullable<U>
       : NonNullable<T>;
 
-type LoadedLoadable<T, E> = T extends Collection<any>
+type LoadedLoadable<T, E> = T extends Collection<any, any>
   ? T & LoadedCollection<E>
   : (T extends Reference<any> ? T & LoadedReference<E> : T & E);
 
