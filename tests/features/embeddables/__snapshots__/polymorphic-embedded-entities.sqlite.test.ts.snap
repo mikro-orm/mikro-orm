@@ -4,7 +4,7 @@ exports[`polymorphic embeddables in sqlite diffing 1`] = `
 "function(entity, data, factory, newEntity, convertCustomTypes, schema) {
   if (typeof data.id !== 'undefined') entity.id = data.id;
   if (typeof data.name !== 'undefined') entity.name = data.name;
-  if (data.pet_canBark != null || data.pet_type != null || data.pet_name != null || data.pet_canMeow != null) {
+  if (data.pet_canBark !== undefined || data.pet_type !== undefined || data.pet_name !== undefined || data.pet_canMeow !== undefined) {
     if (data.pet_type == '1') {
       entity.pet = factory.createEmbeddable('Dog', data, { newEntity, convertCustomTypes });
     }

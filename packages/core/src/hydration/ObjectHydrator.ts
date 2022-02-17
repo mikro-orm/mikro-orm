@@ -215,9 +215,10 @@ export class ObjectHydrator extends Hydrator {
       if (prop.object) {
         conds.push(`data${dataKey} != null`);
       } else {
+        const notNull = prop.nullable ? '!= null' : '!== undefined';
         meta.props
           .filter(p => p.embedded?.[0] === prop.name)
-          .forEach(p => conds.push(`data${this.wrap(p.name)} != null`));
+          .forEach(p => conds.push(`data${this.wrap(p.name)} ${notNull}`));
       }
 
       ret.push(`  if (${conds.join(' || ')}) {`);

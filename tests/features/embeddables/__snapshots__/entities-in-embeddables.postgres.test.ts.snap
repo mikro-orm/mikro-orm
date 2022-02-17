@@ -164,10 +164,10 @@ exports[`embedded entities in postgres diffing 2`] = `
 "function(entity, data, factory, newEntity, convertCustomTypes, schema) {
   if (typeof data.id !== 'undefined') entity.id = data.id;
   if (typeof data.name !== 'undefined') entity.name = data.name;
-  if (data.profile1_username != null || data.profile1_identity != null || data.profile1_source != null) {
+  if (data.profile1_username !== undefined || data.profile1_identity !== undefined || data.profile1_source !== undefined) {
     entity.profile1 = factory.createEmbeddable('Profile', data, { newEntity, convertCustomTypes });
     if (typeof data.profile1_username !== 'undefined') entity.profile1.username = data.profile1_username;
-    if (data.profile1_identity_email != null || data.profile1_identity_meta != null || data.profile1_identity_links != null || data.profile1_identity_source != null) {
+    if (data.profile1_identity_email !== undefined || data.profile1_identity_meta !== undefined || data.profile1_identity_links !== undefined || data.profile1_identity_source !== undefined) {
       entity.profile1.identity = factory.createEmbeddable('Identity', data, { newEntity, convertCustomTypes });
       if (typeof data.profile1_identity_email !== 'undefined') entity.profile1.identity.email = data.profile1_identity_email;
       if (data.profile1_identity_meta_foo != null || data.profile1_identity_meta_bar != null || data.profile1_identity_meta_source != null) {
@@ -368,7 +368,7 @@ exports[`embedded entities in postgres diffing 2`] = `
   if (data.profile1 != null) {
     entity.profile1 = factory.createEmbeddable('Profile', data.profile1, { newEntity, convertCustomTypes });
     if (data.profile1 && typeof data.profile1.username !== 'undefined') entity.profile1.username = data.profile1.username;
-    if (data.profile1_identity_email != null || data.profile1_identity_meta != null || data.profile1_identity_links != null || data.profile1_identity_source != null) {
+    if (data.profile1_identity_email !== undefined || data.profile1_identity_meta !== undefined || data.profile1_identity_links !== undefined || data.profile1_identity_source !== undefined) {
       entity.profile1.identity = factory.createEmbeddable('Identity', data, { newEntity, convertCustomTypes });
       if (typeof data.profile1_identity_email !== 'undefined') entity.profile1.identity.email = data.profile1_identity_email;
       if (data.profile1_identity_meta_foo != null || data.profile1_identity_meta_bar != null || data.profile1_identity_meta_source != null) {
