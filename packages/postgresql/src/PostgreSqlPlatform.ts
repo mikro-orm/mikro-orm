@@ -78,7 +78,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   }
 
   isBigIntProperty(prop: EntityProperty): boolean {
-    return super.isBigIntProperty(prop) || (prop.columnTypes && prop.columnTypes[0] === 'bigserial');
+    return super.isBigIntProperty(prop) || (['bigserial', 'int8'].includes(prop.columnTypes?.[0]));
   }
 
   getArrayDeclarationSQL(): string {

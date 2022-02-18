@@ -1018,7 +1018,8 @@ export class MetadataDiscovery {
       return this.platform.isNumericColumn(prop.customType);
     }
 
-    return prop.type === 'number' || this.platform.isBigIntProperty(prop);
+    const numericMappedType = prop.columnTypes?.[0] && this.platform.isNumericColumn(this.platform.getMappedType(prop.columnTypes[0]));
+    return numericMappedType || prop.type === 'number' || this.platform.isBigIntProperty(prop);
   }
 
   private async getEntityClassOrSchema(path: string, name: string) {
