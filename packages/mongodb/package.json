@@ -56,8 +56,8 @@
     "access": "public"
   },
   "dependencies": {
-    "bson": "^4.6.0",
-    "mongodb": "4.3.1"
+    "bson": "^4.6.1",
+    "mongodb": "4.4.0"
   },
   "devDependencies": {
     "@mikro-orm/core": "^5.0.2"
