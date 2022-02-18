@@ -138,12 +138,12 @@ export async function initORMSqlite() {
   return orm;
 }
 
-export async function initORMSqlite2() {
+export async function initORMSqlite2(type: 'sqlite' | 'better-sqlite' = 'sqlite') {
   const orm = await MikroORM.init<SqliteDriver>({
     entities: [Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5],
     dbName: ':memory:',
     baseDir: BASE_DIR,
-    driver: SqliteDriver,
+    type,
     debug: ['query'],
     propagateToOneOwner: false,
     forceUndefined: true,
@@ -152,7 +152,7 @@ export async function initORMSqlite2() {
     cache: { pretty: true },
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
   });
-  const schemaGenerator = new SchemaGenerator(orm.em);
+  const schemaGenerator = orm.getSchemaGenerator();
   await schemaGenerator.dropSchema();
   await schemaGenerator.createSchema();
 

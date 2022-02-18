@@ -5,11 +5,11 @@ import { initORMSqlite2, mockLogger, wipeDatabaseSqlite2 } from './bootstrap';
 import type { IAuthor4, IPublisher4, ITest4 } from './entities-schema';
 import { Author4, Book4, BookTag4, FooBar4, Publisher4, PublisherType, Test4 } from './entities-schema';
 
-describe('EntityManagerSqlite2', () => {
+describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver => {
 
   let orm: MikroORM<SqliteDriver>;
 
-  beforeAll(async () => orm = await initORMSqlite2());
+  beforeAll(async () => orm = await initORMSqlite2(driver));
   beforeEach(async () => wipeDatabaseSqlite2(orm.em));
 
   test('isConnected()', async () => {

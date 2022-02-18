@@ -1,6 +1,5 @@
 import type { Config } from '@jest/types';
 
-// Sync object
 const config: Config.InitialOptions = {
   testTimeout: 30000,
   preset: 'ts-jest',
@@ -20,6 +19,7 @@ const config: Config.InitialOptions = {
   ],
   coveragePathIgnorePatterns: [
     '<rootDir>/packages/cli/src/cli.ts',
+    '<rootDir>/packages/better-sqlite',
   ],
   setupFiles: [
     '<rootDir>/tests/setup.ts',

@@ -79,7 +79,8 @@
     "@mikro-orm/mysql": "^5.0.0",
     "@mikro-orm/postgresql": "^5.0.0",
     "@mikro-orm/seeder": "^5.0.0",
-    "@mikro-orm/sqlite": "^5.0.0"
+    "@mikro-orm/sqlite": "^5.0.0",
+    "@mikro-orm/better-sqlite": "^5.0.0"
   },
   "peerDependenciesMeta": {
     "@mikro-orm/entity-generator": {
@@ -104,6 +105,9 @@
       "optional": true
     },
     "@mikro-orm/sqlite": {
+      "optional": true
+    },
+    "@mikro-orm/better-sqlite": {
       "optional": true
     }
   }
