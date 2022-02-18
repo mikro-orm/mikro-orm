@@ -6,7 +6,7 @@ import { BetterSqlitePlatform } from './BetterSqlitePlatform';
 export class BetterSqliteDriver extends AbstractSqlDriver<BetterSqliteConnection> {
 
   constructor(config: Configuration) {
-    super(config, new BetterSqlitePlatform(), BetterSqliteConnection, ['knex', 'BetterSqlite3']);
+    super(config, new BetterSqlitePlatform(), BetterSqliteConnection, ['knex', 'better-sqlite3']);
   }
 
   async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {

@@ -50,7 +50,7 @@ module.exports = {
     '@typescript-eslint/type-annotation-spacing': 'error',
     '@typescript-eslint/array-type': 'error',
     '@typescript-eslint/no-unnecessary-qualifier': 'error',
-    '@typescript-eslint/no-unnecessary-type-arguments': 'error',
+    '@typescript-eslint/no-unnecessary-type-arguments': 'off', // disabled as it started to be buggy
     '@typescript-eslint/quotes': ['error', 'single', { avoidEscape: true, allowTemplateLiterals: true }],
     '@typescript-eslint/semi': ['error', 'always'],
     '@typescript-eslint/no-useless-constructor': 'error',
