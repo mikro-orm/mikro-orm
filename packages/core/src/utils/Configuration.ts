@@ -117,11 +117,12 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   };
 
   static readonly PLATFORMS = {
-    mongo: { className: 'MongoDriver', module: () => require('@mikro-orm/mongodb') },
-    mysql: { className: 'MySqlDriver', module: () => require('@mikro-orm/mysql') },
-    mariadb: { className: 'MariaDbDriver', module: () => require('@mikro-orm/mariadb') },
-    postgresql: { className: 'PostgreSqlDriver', module: () => require('@mikro-orm/postgresql') },
-    sqlite: { className: 'SqliteDriver', module: () => require('@mikro-orm/sqlite') },
+    'mongo': { className: 'MongoDriver', module: () => require('@mikro-orm/mongodb') },
+    'mysql': { className: 'MySqlDriver', module: () => require('@mikro-orm/mysql') },
+    'mariadb': { className: 'MariaDbDriver', module: () => require('@mikro-orm/mariadb') },
+    'postgresql': { className: 'PostgreSqlDriver', module: () => require('@mikro-orm/postgresql') },
+    'sqlite': { className: 'SqliteDriver', module: () => require('@mikro-orm/sqlite') },
+    'better-sqlite': { className: 'BetterSqliteDriver', module: () => require('@mikro-orm/better-sqlite') },
   };
 
   private readonly options: MikroORMOptions<D>;

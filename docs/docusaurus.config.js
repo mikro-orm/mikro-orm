@@ -14,6 +14,7 @@ const packages = [
   'entity-generator',
   'reflection',
   'sqlite',
+  'better-sqlite',
   'mariadb',
   'mongodb',
   'mysql',
