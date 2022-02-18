@@ -194,7 +194,7 @@ export class EntityFactory {
     entity.__helper!.__managed = true;
     entity.__helper!.__schema = this.driver.getSchemaName(meta, options);
 
-    if (meta.selfReferencing && !options.newEntity) {
+    if (options.merge && !options.newEntity) {
       this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes, this.driver.getSchemaName(meta, options));
       this.unitOfWork.registerManaged(entity);
     }
@@ -218,7 +218,7 @@ export class EntityFactory {
   private findEntity<T>(data: EntityData<T>, meta: EntityMetadata<T>, options: FactoryOptions): T | undefined {
     const schema = this.driver.getSchemaName(meta, options);
 
-    if (!meta.compositePK && !meta.properties[meta.primaryKeys[0]]?.customType) {
+    if (!meta.compositePK && !meta.getPrimaryProps()[0]?.customType) {
       return this.unitOfWork.getById<T>(meta.name!, data[meta.primaryKeys[0] as string] as Primary<T>, schema);
     }
 
