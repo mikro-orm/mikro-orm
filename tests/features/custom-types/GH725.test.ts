@@ -1,6 +1,5 @@
 import { EntitySchema, MikroORM, Type, ValidationError } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
-import { SchemaGenerator } from '@mikro-orm/knex';
 
 export class DateTime {
 
@@ -109,8 +108,8 @@ describe('GH issue 725', () => {
     });
     await orm.getSchemaGenerator().ensureDatabase();
     await orm.getSchemaGenerator().execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
-    await new SchemaGenerator(orm.em).dropSchema();
-    await new SchemaGenerator(orm.em).createSchema();
+    await orm.getSchemaGenerator().dropSchema();
+    await orm.getSchemaGenerator().createSchema();
 
     const test = new Test();
     orm.em.persist(test);

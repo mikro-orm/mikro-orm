@@ -6,7 +6,7 @@ import {
 } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
-import { initORMSqlite, mockLogger, wipeDatabaseSqlite } from './bootstrap';
+import { initORMSqlite, mockLogger } from './bootstrap';
 const { Author3 } = require('./entities-js/index').Author3;
 const { Book3 } = require('./entities-js/index').Book3;
 const { BookTag3 } = require('./entities-js/index').BookTag3;
@@ -18,7 +18,7 @@ describe('EntityManagerSqlite', () => {
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => orm = await initORMSqlite());
-  beforeEach(async () => wipeDatabaseSqlite(orm.em));
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
 
   test('isConnected()', async () => {
     expect(await orm.isConnected()).toBe(true);

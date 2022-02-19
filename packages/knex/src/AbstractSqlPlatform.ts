@@ -4,6 +4,7 @@ import { JsonProperty, Platform, Utils } from '@mikro-orm/core';
 import { SqlEntityRepository } from './SqlEntityRepository';
 import type { SchemaHelper } from './schema';
 import { SchemaGenerator } from './schema';
+import type { SqlEntityManager } from './SqlEntityManager';
 
 export abstract class AbstractSqlPlatform extends Platform {
 
@@ -25,8 +26,9 @@ export abstract class AbstractSqlPlatform extends Platform {
     return this.schemaHelper;
   }
 
-  getSchemaGenerator(driver: IDatabaseDriver): SchemaGenerator {
-    return this.config.getCachedService(SchemaGenerator, driver as any); // cast as `any` to get around circular dependencies
+  getSchemaGenerator(driver: IDatabaseDriver, em?: SqlEntityManager): SchemaGenerator {
+    /* istanbul ignore next */
+    return this.config.getCachedService(SchemaGenerator, em ?? driver as any); // cast as `any` to get around circular dependencies
   }
 
   getEntityGenerator(em: EntityManager) {

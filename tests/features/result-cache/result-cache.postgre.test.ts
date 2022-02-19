@@ -2,7 +2,7 @@ import type { MikroORM } from '@mikro-orm/core';
 import { wrap, LoadStrategy } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { Author2, Book2, BookTag2, Publisher2 } from '../../entities-sql';
-import { initORMPostgreSql, mockLogger, wipeDatabasePostgreSql } from '../../bootstrap';
+import { initORMPostgreSql, mockLogger } from '../../bootstrap';
 
 describe('result cache (postgres)', () => {
 
@@ -30,7 +30,7 @@ describe('result cache (postgres)', () => {
   }
 
   beforeAll(async () => orm = await initORMPostgreSql());
-  beforeEach(async () => wipeDatabasePostgreSql(orm.em));
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
   afterAll(async () => orm.close(true));
 
   test('result caching (find)', async () => {

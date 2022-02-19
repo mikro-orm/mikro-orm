@@ -1,5 +1,4 @@
 import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { SchemaGenerator } from '@mikro-orm/sqlite';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
@@ -26,9 +25,9 @@ describe('GH issue 2401', () => {
       dbName: `mikro_orm_test_gh_2401`,
       type: 'postgresql',
     });
-    await new SchemaGenerator(orm.em).ensureDatabase();
-    await new SchemaGenerator(orm.em).dropSchema();
-    await new SchemaGenerator(orm.em).createSchema();
+    await orm.getSchemaGenerator().ensureDatabase();
+    await orm.getSchemaGenerator().dropSchema();
+    await orm.getSchemaGenerator().createSchema();
   });
 
   afterAll(() => orm.close(true));

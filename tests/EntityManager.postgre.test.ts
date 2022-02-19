@@ -7,7 +7,7 @@ import {
 } from '@mikro-orm/core';
 import { PostgreSqlDriver, PostgreSqlConnection } from '@mikro-orm/postgresql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2, Label2 } from './entities-sql';
-import { initORMPostgreSql, mockLogger, wipeDatabasePostgreSql } from './bootstrap';
+import { initORMPostgreSql, mockLogger } from './bootstrap';
 import { performance } from 'perf_hooks';
 
 describe('EntityManagerPostgre', () => {
@@ -36,7 +36,7 @@ describe('EntityManagerPostgre', () => {
   }
 
   beforeAll(async () => orm = await initORMPostgreSql());
-  beforeEach(async () => wipeDatabasePostgreSql(orm.em));
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
 
   test('isConnected()', async () => {
     await expect(orm.isConnected()).resolves.toBe(true);

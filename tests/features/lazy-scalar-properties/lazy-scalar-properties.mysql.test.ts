@@ -1,6 +1,6 @@
 import type { MikroORM } from '@mikro-orm/core';
 import type { MySqlDriver } from '@mikro-orm/mysql';
-import { initORMMySql, mockLogger, wipeDatabaseMySql } from '../../bootstrap';
+import { initORMMySql, mockLogger } from '../../bootstrap';
 import { Author2, Book2 } from '../../entities-sql';
 
 describe('lazy scalar properties (mysql)', () => {
@@ -8,7 +8,7 @@ describe('lazy scalar properties (mysql)', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql(undefined, undefined, true));
-  beforeEach(async () => wipeDatabaseMySql(orm.em));
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
 
   test('lazy scalar properties', async () => {
     const book = new Book2('b', new Author2('n', 'e'));

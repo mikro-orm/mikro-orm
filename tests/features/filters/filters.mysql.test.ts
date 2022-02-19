@@ -2,14 +2,14 @@ import type { MikroORM } from '@mikro-orm/core';
 import { QueryOrder } from '@mikro-orm/core';
 import type { MySqlDriver } from '@mikro-orm/mysql';
 import { Author2, Book2 } from '../../entities-sql';
-import { initORMMySql, mockLogger, wipeDatabaseMySql } from '../../bootstrap';
+import { initORMMySql, mockLogger } from '../../bootstrap';
 
 describe('filters [mysql]', () => {
 
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
-  beforeEach(async () => wipeDatabaseMySql(orm.em));
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
   afterAll(async () => orm.close(true));
 
   test('filters', async () => {

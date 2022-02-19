@@ -2,7 +2,7 @@ import type { MikroORM } from '@mikro-orm/core';
 import { LoadStrategy, QueryFlag, QueryOrder, Reference, wrap } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { AbstractSqlConnection } from '@mikro-orm/postgresql';
-import { initORMPostgreSql, mockLogger, wipeDatabasePostgreSql } from '../bootstrap';
+import { initORMPostgreSql, mockLogger } from '../bootstrap';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2 } from '../entities-sql';
 
 describe('Joined loading strategy', () => {
@@ -10,7 +10,7 @@ describe('Joined loading strategy', () => {
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => orm = await initORMPostgreSql(LoadStrategy.JOINED));
-  beforeEach(async () => wipeDatabasePostgreSql(orm.em));
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
 
   afterAll(async () => orm.close(true));
 

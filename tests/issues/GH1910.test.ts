@@ -24,9 +24,9 @@ describe('GH issue 1910', () => {
       dbName: 'mikro_orm_test_gh_1910',
       type: 'postgresql',
     });
-    await new SchemaGenerator(orm.em).ensureDatabase();
-    await new SchemaGenerator(orm.em).dropSchema();
-    await new SchemaGenerator(orm.em).createSchema();
+    await orm.getSchemaGenerator().ensureDatabase();
+    await orm.getSchemaGenerator().dropSchema();
+    await orm.getSchemaGenerator().createSchema();
   });
 
   afterAll(() => orm.close(true));

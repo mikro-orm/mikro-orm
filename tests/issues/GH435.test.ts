@@ -1,6 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
-import { SchemaGenerator } from '@mikro-orm/knex';
 
 class MyType extends Type<string, number> {
 
@@ -39,9 +38,9 @@ describe('GH issue 435', () => {
       dbName: ':memory:',
       type: 'sqlite',
     });
-    await new SchemaGenerator(orm.em).ensureDatabase();
-    await new SchemaGenerator(orm.em).dropSchema();
-    await new SchemaGenerator(orm.em).createSchema();
+    await orm.getSchemaGenerator().ensureDatabase();
+    await orm.getSchemaGenerator().dropSchema();
+    await orm.getSchemaGenerator().createSchema();
   });
 
   afterAll(() => orm.close(true));

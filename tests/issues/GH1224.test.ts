@@ -1,6 +1,5 @@
 import { Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, PrimaryKeyType, Property, Reference } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
-import { SchemaGenerator } from '@mikro-orm/knex';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -52,7 +51,7 @@ describe('GH issue 1224', () => {
       cache: { enabled: false },
     });
     mockLogger(orm, ['query', 'query-params'], log);
-    await new SchemaGenerator(orm.em).ensureDatabase();
+    await orm.getSchemaGenerator().ensureDatabase();
   });
 
 

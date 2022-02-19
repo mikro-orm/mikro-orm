@@ -1,7 +1,7 @@
 import { RequestContext, MikroORM, wrap } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { Author4, BaseEntity5, Book4, BookTag4, FooBar4, FooBaz4, Publisher4, Test4 } from './entities-schema';
-import { initORMMongo, wipeDatabase } from './bootstrap';
+import { initORMMongo } from './bootstrap';
 import { Author, Book } from './entities';
 
 describe('RequestContext', () => {
@@ -9,7 +9,7 @@ describe('RequestContext', () => {
   let orm: MikroORM;
 
   beforeAll(async () => orm = await initORMMongo());
-  beforeEach(async () => wipeDatabase(orm.em));
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
 
   test('create new context', async () => {
     expect(RequestContext.getEntityManager()).toBeUndefined();

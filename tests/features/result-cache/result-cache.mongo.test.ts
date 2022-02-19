@@ -2,7 +2,7 @@ import type { MikroORM } from '@mikro-orm/core';
 import { wrap } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 import { Author, Book, BookTag, Publisher } from '../../entities';
-import { initORMMongo, mockLogger, wipeDatabase } from '../../bootstrap';
+import { initORMMongo, mockLogger } from '../../bootstrap';
 
 describe('result cache (mongo)', () => {
 
@@ -32,7 +32,7 @@ describe('result cache (mongo)', () => {
   }
 
   beforeAll(async () => orm = await initORMMongo());
-  beforeEach(async () => wipeDatabase(orm.em));
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
   afterAll(async () => orm.close(true));
 
   test('result caching (find)', async () => {

@@ -3,7 +3,7 @@ import { ObjectId } from 'bson';
 import type { EntityMetadata, MikroORM } from '@mikro-orm/core';
 import { compareObjects, Utils } from '@mikro-orm/core';
 import { Author } from './entities';
-import { initORMMongo, wipeDatabase, BASE_DIR } from './bootstrap';
+import { initORMMongo, BASE_DIR } from './bootstrap';
 import FooBar from './entities/FooBar';
 import type { URL } from 'url';
 import { pathToFileURL } from 'url';
@@ -15,7 +15,7 @@ describe('Utils', () => {
   let orm: MikroORM;
 
   beforeAll(async () => orm = await initORMMongo());
-  beforeEach(async () => wipeDatabase(orm.em));
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
 
   test('isDefined', () => {
     let data;

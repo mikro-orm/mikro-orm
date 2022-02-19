@@ -1,6 +1,5 @@
 import { Entity, IdentifiedReference, MikroORM, OneToOne, PrimaryKey, Property, wrap, Reference } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
-import { SchemaGenerator } from '@mikro-orm/sqlite';
 
 @Entity()
 export class A {
@@ -42,8 +41,8 @@ describe('GH issue 269', () => {
       type: 'sqlite',
       autoJoinOneToOneOwner: false,
     });
-    await new SchemaGenerator(orm.em).dropSchema();
-    await new SchemaGenerator(orm.em).createSchema();
+    await orm.getSchemaGenerator().dropSchema();
+    await orm.getSchemaGenerator().createSchema();
   });
 
   afterAll(() => orm.close(true));

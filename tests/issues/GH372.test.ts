@@ -4,7 +4,6 @@ import { mockLogger } from '../helpers';
 
 import type { Knex } from 'knex';
 import { knex } from 'knex';
-import { SchemaGenerator } from '@mikro-orm/knex';
 import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
@@ -52,9 +51,9 @@ describe('GH issue 372', () => {
       dbName: `mikro_orm_test_gh_372`,
       type: 'postgresql',
     });
-    await new SchemaGenerator(orm.em).ensureDatabase();
-    await new SchemaGenerator(orm.em).dropSchema();
-    await new SchemaGenerator(orm.em).createSchema();
+    await orm.getSchemaGenerator().ensureDatabase();
+    await orm.getSchemaGenerator().dropSchema();
+    await orm.getSchemaGenerator().createSchema();
   });
 
   afterAll(async () => {

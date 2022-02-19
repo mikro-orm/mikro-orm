@@ -467,6 +467,7 @@ export interface ISchemaGenerator {
   execute(sql: string, options?: { wrap?: boolean }): Promise<void>;
   ensureIndexes(): Promise<void>;
   refreshDatabase(): Promise<void>;
+  clearDatabase(options?: { schema?: string }): Promise<void>;
 }
 
 export interface IEntityGenerator {

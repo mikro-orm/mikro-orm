@@ -1,6 +1,5 @@
 import { Entity, PrimaryKey, Property, MikroORM, Index, Unique } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
-import { SchemaGenerator } from '@mikro-orm/knex';
 
 abstract class A {
 
@@ -35,8 +34,8 @@ describe('GH issue 463', () => {
       dbName: ':memory:',
       type: 'sqlite',
     });
-    await new SchemaGenerator(orm.em).dropSchema();
-    await new SchemaGenerator(orm.em).createSchema();
+    await orm.getSchemaGenerator().dropSchema();
+    await orm.getSchemaGenerator().createSchema();
   });
 
   afterAll(() => orm.close(true));
@@ -45,7 +44,7 @@ describe('GH issue 463', () => {
     const sql = 'create table `b` (`id` integer not null primary key autoincrement, `foo` text not null, `bar` text not null, `name` text not null);\n' +
       'create index `b_foo_index` on `b` (`foo`);\n' +
       'create unique index `b_bar_unique` on `b` (`bar`);\n\n';
-    expect(await new SchemaGenerator(orm.em).getCreateSchemaSQL({ wrap: false })).toBe(sql);
+    expect(await orm.getSchemaGenerator().getCreateSchemaSQL({ wrap: false })).toBe(sql);
   });
 
 });

@@ -1,6 +1,5 @@
 import 'reflect-metadata';
 import { Collection, Entity, ManyToMany, ManyToOne, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/core';
-import { SchemaGenerator } from '@mikro-orm/knex';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'auth.users' })
@@ -51,20 +50,20 @@ describe('GH issue 450', () => {
       type: 'postgresql',
       cache: { enabled: false },
     });
-    await new SchemaGenerator(orm.em).ensureDatabase();
+    await orm.getSchemaGenerator().ensureDatabase();
 
     await orm.em.getConnection().execute('drop schema if exists auth');
     await orm.em.getConnection().execute('drop schema if exists operations');
     await orm.em.getConnection().execute('set search_path to auth, operations, public');
 
-    await new SchemaGenerator(orm.em).dropSchema();
-    await new SchemaGenerator(orm.em).createSchema();
+    await orm.getSchemaGenerator().dropSchema();
+    await orm.getSchemaGenerator().createSchema();
   });
 
   afterAll(async () => {
-    await new SchemaGenerator(orm.em).dropSchema({ wrap: true, dropMigrationsTable: true, dropDb: true });
-    await new SchemaGenerator(orm.em).dropDatabase('auth');
-    await new SchemaGenerator(orm.em).dropDatabase('operations');
+    await orm.getSchemaGenerator().dropSchema({ wrap: true, dropMigrationsTable: true, dropDb: true });
+    await orm.getSchemaGenerator().dropDatabase('auth');
+    await orm.getSchemaGenerator().dropDatabase('operations');
     await orm.close(true);
   });
 

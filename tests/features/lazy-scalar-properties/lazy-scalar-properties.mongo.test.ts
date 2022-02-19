@@ -1,6 +1,6 @@
 import type { MikroORM } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
-import { initORMMongo, mockLogger, wipeDatabase } from '../../bootstrap';
+import { initORMMongo, mockLogger } from '../../bootstrap';
 import { Author, Book } from '../../entities';
 
 describe('lazy scalar properties (mongo)', () => {
@@ -8,7 +8,7 @@ describe('lazy scalar properties (mongo)', () => {
   let orm: MikroORM<MongoDriver>;
 
   beforeAll(async () => orm = await initORMMongo());
-  beforeEach(async () => wipeDatabase(orm.em));
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
 
   test('lazy scalar properties', async () => {
     const book = new Book('b', new Author('n', 'e'));

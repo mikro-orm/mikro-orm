@@ -6,7 +6,6 @@ import { DatabaseSchema } from './DatabaseSchema';
 import type { DatabaseTable } from './DatabaseTable';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
 import { SchemaComparator } from './SchemaComparator';
-import { SqlEntityManager } from '../SqlEntityManager';
 
 /**
  * Should be renamed to `SqlSchemaGenerator` in v6
@@ -16,18 +15,6 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
   private readonly helper = this.platform.getSchemaHelper()!;
   private readonly knex = this.connection.getKnex();
   private readonly options = this.config.get('schemaGenerator');
-
-  /**
-   * @deprecated For back compatibility, we also support EM as the parameter.
-   */
-  constructor(em: SqlEntityManager);
-
-  /**
-   * `orm.getSchemaGenerator()` should be preferred way of getting the SchemaGenerator instance.
-   */
-  constructor(driver: AbstractSqlDriver | SqlEntityManager) {
-    super(driver instanceof SqlEntityManager ? driver.getDriver() : driver);
-  }
 
   async generate(): Promise<string> {
     const [dropSchema, createSchema] = await Promise.all([
@@ -104,6 +91,31 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
 
     const sql = await this.getDropSchemaSQL(options);
     await this.execute(sql);
+  }
+
+  async clearDatabase(options?: { schema?: string; truncate?: boolean }): Promise<void> {
+    // truncate by default, so no value is considered as true
+    /* istanbul ignore if */
+    if (options?.truncate === false) {
+      return super.clearDatabase(options);
+    }
+
+    await this.execute(this.helper.disableForeignKeysSQL());
+
+    for (const meta of this.getOrderedMetadata(options?.schema).reverse()) {
+      await this.driver.createQueryBuilder(meta.className, this.em?.getTransactionContext(), true, false)
+        .withSchema(options?.schema)
+        .truncate();
+    }
+
+    await this.execute(this.helper.enableForeignKeysSQL());
+
+    if (this.em) {
+      const allowGlobalContext = this.config.get('allowGlobalContext');
+      this.config.set('allowGlobalContext', true);
+      this.em.clear();
+      this.config.set('allowGlobalContext', allowGlobalContext);
+    }
   }
 
   async getDropSchemaSQL(options: { wrap?: boolean; dropMigrationsTable?: boolean; schema?: string } = {}): Promise<string> {

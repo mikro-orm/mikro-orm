@@ -1,5 +1,4 @@
 import { EntitySchema, EnumType, MikroORM, ReferenceType, Type, Utils } from '@mikro-orm/core';
-import type { EntityManager } from '@mikro-orm/knex';
 import { SchemaGenerator } from '@mikro-orm/knex';
 import { BASE_DIR, initORMMySql } from '../../bootstrap';
 import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from '../../entities-sql';
@@ -18,7 +17,7 @@ describe('SchemaGenerator', () => {
       type: 'mysql',
     });
 
-    const generator = new SchemaGenerator(orm.em as EntityManager);
+    const generator = orm.getSchemaGenerator();
     await generator.ensureDatabase();
     await generator.dropDatabase(dbName);
     await orm.close(true);
@@ -35,7 +34,7 @@ describe('SchemaGenerator', () => {
       migrations: { path: BASE_DIR + '/../temp/migrations' },
     });
 
-    const generator = new SchemaGenerator(orm.em as EntityManager);
+    const generator = orm.getSchemaGenerator();
     await generator.createSchema();
     await generator.dropSchema({ wrap: false, dropMigrationsTable: false, dropDb: true });
     await orm.close(true);
@@ -53,7 +52,7 @@ describe('SchemaGenerator', () => {
       type: 'mariadb',
     });
 
-    const generator = new SchemaGenerator(orm.em as EntityManager);
+    const generator = orm.getSchemaGenerator();
     await generator.ensureDatabase();
     await generator.dropDatabase(dbName);
     await orm.close(true);
@@ -71,7 +70,7 @@ describe('SchemaGenerator', () => {
       migrations: { path: BASE_DIR + '/../temp/migrations' },
     });
 
-    const generator = new SchemaGenerator(orm.em as EntityManager);
+    const generator = orm.getSchemaGenerator();
     await generator.createSchema();
     await generator.dropSchema({ wrap: false, dropMigrationsTable: false, dropDb: true });
     await orm.close(true);
@@ -80,7 +79,7 @@ describe('SchemaGenerator', () => {
 
   test('generate schema from metadata [mysql]', async () => {
     const orm = await initORMMySql('mysql', {}, true);
-    const generator = new SchemaGenerator(orm.em);
+    const generator = orm.getSchemaGenerator();
     await generator.ensureDatabase();
     const dump = await generator.generate();
     expect(dump).toMatchSnapshot('mysql-schema-dump');
@@ -100,7 +99,7 @@ describe('SchemaGenerator', () => {
   test('update schema [mysql]', async () => {
     const orm = await initORMMySql('mysql', {}, true);
     const meta = orm.getMetadata();
-    const generator = new SchemaGenerator(orm.em);
+    const generator = orm.getSchemaGenerator();
 
     const newTableMeta = EntitySchema.fromMetadata({
       properties: {
@@ -232,7 +231,7 @@ describe('SchemaGenerator', () => {
   test('rename column [mysql]', async () => {
     const orm = await initORMMySql('mysql', {}, true);
     const meta = orm.getMetadata();
-    const generator = new SchemaGenerator(orm.em);
+    const generator = orm.getSchemaGenerator();
 
     const authorMeta = meta.get('Author2');
     const ageProp = authorMeta.properties.age;
@@ -257,7 +256,7 @@ describe('SchemaGenerator', () => {
   test('update schema enums [mysql]', async () => {
     const orm = await initORMMySql('mysql', {}, true);
     const meta = orm.getMetadata();
-    const generator = new SchemaGenerator(orm.em);
+    const generator = orm.getSchemaGenerator();
 
     const newTableMeta = new EntitySchema({
       properties: {
@@ -322,7 +321,7 @@ describe('SchemaGenerator', () => {
     dropSchema.mockImplementation(() => Promise.resolve());
     createSchema.mockImplementation(() => Promise.resolve());
 
-    const generator = new SchemaGenerator(orm.em);
+    const generator = orm.getSchemaGenerator();
     await generator.refreshDatabase();
 
     expect(dropSchema).toBeCalledTimes(1);

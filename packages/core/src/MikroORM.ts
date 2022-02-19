@@ -136,7 +136,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets the SchemaGenerator.
    */
   getSchemaGenerator(): ReturnType<ReturnType<D['getPlatform']>['getSchemaGenerator']> {
-    return this.driver.getPlatform().getSchemaGenerator(this.driver) as any;
+    return this.driver.getPlatform().getSchemaGenerator(this.driver, this.em) as any;
   }
 
   /**

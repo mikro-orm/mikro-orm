@@ -2,7 +2,6 @@
 
 import { Collection, Entity, Enum, Filter, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property, QueryFlag } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
-import { SchemaGenerator } from '@mikro-orm/postgresql';
 
 @Entity()
 export class Group {
@@ -169,9 +168,9 @@ describe('GH issue 2095', () => {
       type: 'postgresql',
     });
 
-    await new SchemaGenerator(orm.em).ensureDatabase();
-    await new SchemaGenerator(orm.em).dropSchema();
-    await new SchemaGenerator(orm.em).createSchema();
+    await orm.getSchemaGenerator().ensureDatabase();
+    await orm.getSchemaGenerator().dropSchema();
+    await orm.getSchemaGenerator().createSchema();
 
     const group1 = new Group('id-group-01', 'Group #1'); // RF
     const group2 = new Group('id-group-02', 'Group #2'); // admin

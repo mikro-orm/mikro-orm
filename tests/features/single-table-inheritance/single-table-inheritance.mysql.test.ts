@@ -2,14 +2,14 @@ import type { Dictionary } from '@mikro-orm/core';
 import { Entity, MetadataDiscovery, MetadataStorage, MikroORM, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
 import type { MySqlDriver } from '@mikro-orm/mysql';
 import { BaseUser2, CompanyOwner2, Employee2, Manager2, Type } from '../../entities-sql';
-import { initORMMySql, mockLogger, wipeDatabaseMySql } from '../../bootstrap';
+import { initORMMySql, mockLogger } from '../../bootstrap';
 
 describe('single table inheritance in mysql', () => {
 
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
-  beforeEach(async () => wipeDatabaseMySql(orm.em));
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
 
   async function createEntities() {
     const employee1 = new Employee2('Emp', '1');

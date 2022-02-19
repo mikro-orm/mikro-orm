@@ -2,7 +2,7 @@ import { ObjectId } from 'bson';
 import type { MikroORM, EntityFactory } from '@mikro-orm/core';
 import { Collection, ReferenceType, wrap } from '@mikro-orm/core';
 import { Book, Author, Publisher, Test, BookTag } from './entities';
-import { initORMMongo, mockLogger, wipeDatabase } from './bootstrap';
+import { initORMMongo, mockLogger } from './bootstrap';
 import { AuthorRepository } from './repositories/AuthorRepository';
 import { BookRepository } from './repositories/BookRepository';
 
@@ -16,7 +16,7 @@ describe('EntityFactory', () => {
     factory = orm.em.getEntityFactory();
     expect(orm.config.getNamingStrategy().referenceColumnName()).toBe('_id');
   });
-  beforeEach(async () => wipeDatabase(orm.em));
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
 
   test('should load entities', async () => {
     const metadata = orm.getMetadata().getAll();

@@ -1,6 +1,4 @@
 import { EntitySchema, ReferenceType, Utils, MikroORM, Type, EnumType } from '@mikro-orm/core';
-import type { EntityManager } from '@mikro-orm/knex';
-import { SchemaGenerator } from '@mikro-orm/knex';
 import { BASE_DIR, initORMPostgreSql } from '../../bootstrap';
 import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from '../../entities-sql';
 import { BaseEntity22 } from '../../entities-sql/BaseEntity22';
@@ -11,7 +9,7 @@ describe('SchemaGenerator [postgres]', () => {
   test('update schema - entity in different namespace [postgres] (GH #1215)', async () => {
     const orm = await initORMPostgreSql();
     const meta = orm.getMetadata();
-    const generator = new SchemaGenerator(orm.em);
+    const generator = orm.getSchemaGenerator();
     await generator.updateSchema();
     await generator.execute('drop schema if exists "other"');
 
@@ -51,7 +49,7 @@ describe('SchemaGenerator [postgres]', () => {
   test('update schema enums [postgres]', async () => {
     const orm = await initORMPostgreSql();
     const meta = orm.getMetadata();
-    const generator = new SchemaGenerator(orm.em);
+    const generator = orm.getSchemaGenerator();
     await generator.updateSchema();
 
     const newTableMeta = new EntitySchema({
@@ -119,7 +117,7 @@ describe('SchemaGenerator [postgres]', () => {
       type: 'postgresql',
     });
 
-    const generator = new SchemaGenerator(orm.em as EntityManager);
+    const generator = orm.getSchemaGenerator();
     await generator.ensureDatabase();
     await generator.dropDatabase(dbName);
     await orm.close(true);
@@ -135,7 +133,7 @@ describe('SchemaGenerator [postgres]', () => {
       migrations: { path: BASE_DIR + '/../temp/migrations' },
     });
 
-    const generator = new SchemaGenerator(orm.em as EntityManager);
+    const generator = orm.getSchemaGenerator();
     await generator.createSchema();
     await generator.dropSchema({ wrap: false, dropMigrationsTable: false, dropDb: true });
     await orm.close(true);
@@ -146,7 +144,7 @@ describe('SchemaGenerator [postgres]', () => {
   test('generate schema from metadata [postgres]', async () => {
     const orm = await initORMPostgreSql();
     orm.em.getConnection().execute('drop table if exists new_table cascade');
-    const generator = new SchemaGenerator(orm.em as EntityManager);
+    const generator = orm.getSchemaGenerator();
     const dump = await generator.generate();
     expect(dump).toMatchSnapshot('postgres-schema-dump');
 
@@ -169,7 +167,7 @@ describe('SchemaGenerator [postgres]', () => {
     const orm = await initORMPostgreSql();
     orm.em.getConnection().execute('drop table if exists new_table cascade');
     const meta = orm.getMetadata();
-    const generator = new SchemaGenerator(orm.em as EntityManager);
+    const generator = orm.getSchemaGenerator();
     await generator.updateSchema();
 
     const newTableMeta = EntitySchema.fromMetadata({
@@ -291,7 +289,7 @@ describe('SchemaGenerator [postgres]', () => {
   test('update indexes [postgres]', async () => {
     const orm = await initORMPostgreSql();
     const meta = orm.getMetadata();
-    const generator = new SchemaGenerator(orm.em);
+    const generator = orm.getSchemaGenerator();
     await generator.updateSchema();
 
     meta.get('Book2').indexes.push({
@@ -329,7 +327,7 @@ describe('SchemaGenerator [postgres]', () => {
 
   test('update empty schema from metadata [postgres]', async () => {
     const orm = await initORMPostgreSql();
-    const generator = new SchemaGenerator(orm.em as EntityManager);
+    const generator = orm.getSchemaGenerator();
     await generator.dropSchema();
 
     const updateDump = await generator.getUpdateSchemaSQL();

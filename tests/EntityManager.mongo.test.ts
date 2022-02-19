@@ -6,7 +6,7 @@ import { MongoHighlighter } from '@mikro-orm/mongo-highlighter';
 
 import { Author, Book, BookTag, Publisher, PublisherType, Test } from './entities';
 import { AuthorRepository } from './repositories/AuthorRepository';
-import { initORMMongo, mockLogger, wipeDatabase } from './bootstrap';
+import { initORMMongo, mockLogger } from './bootstrap';
 import FooBar from './entities/FooBar';
 import { FooBaz } from './entities/FooBaz';
 
@@ -15,7 +15,7 @@ describe('EntityManagerMongo', () => {
   let orm: MikroORM<MongoDriver>;
 
   beforeAll(async () => orm = await initORMMongo());
-  beforeEach(async () => wipeDatabase(orm.em));
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
 
   test('should load entities', async () => {
     expect(orm).toBeInstanceOf(MikroORM);

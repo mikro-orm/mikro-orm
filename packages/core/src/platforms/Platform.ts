@@ -305,7 +305,7 @@ export abstract class Platform {
     return this.exceptionConverter;
   }
 
-  getSchemaGenerator(driver: IDatabaseDriver): ISchemaGenerator {
+  getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): ISchemaGenerator {
     throw new Error(`${driver.constructor.name} does not support SchemaGenerator`);
   }
 

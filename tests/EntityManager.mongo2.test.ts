@@ -3,14 +3,14 @@ import { wrap } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 
 import { Author, Book, BookTag, Publisher } from './entities';
-import { initORMMongo, wipeDatabase } from './bootstrap';
+import { initORMMongo } from './bootstrap';
 
 describe('EntityManagerMongo2', () => {
 
   let orm: MikroORM<MongoDriver>;
 
   beforeAll(async () => orm = await initORMMongo());
-  beforeEach(async () => wipeDatabase(orm.em));
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
 
   test('loaded references and collections', async () => {
     const pub = new Publisher('Publisher 123');

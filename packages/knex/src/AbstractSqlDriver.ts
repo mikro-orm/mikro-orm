@@ -619,7 +619,8 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return prop.fieldNames;
   }
 
-  protected createQueryBuilder<T extends AnyEntity<T>>(entityName: string, ctx?: Transaction<Knex.Transaction>, write?: boolean, convertCustomTypes?: boolean): QueryBuilder<T> {
+  /** @internal */
+  createQueryBuilder<T extends AnyEntity<T>>(entityName: string, ctx?: Transaction<Knex.Transaction>, write?: boolean, convertCustomTypes?: boolean): QueryBuilder<T> {
     const qb = new QueryBuilder<T>(entityName, this.metadata, this, ctx, undefined, write ? 'write' : 'read');
 
     if (!convertCustomTypes) {

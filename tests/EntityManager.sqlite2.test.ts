@@ -1,7 +1,7 @@
 import type { EntityName } from '@mikro-orm/core';
 import { ArrayCollection, Collection, EntityManager, LockMode, MikroORM, QueryOrder, ValidationError, wrap } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
-import { initORMSqlite2, mockLogger, wipeDatabaseSqlite2 } from './bootstrap';
+import { initORMSqlite2, mockLogger } from './bootstrap';
 import type { IAuthor4, IPublisher4, ITest4 } from './entities-schema';
 import { Author4, Book4, BookTag4, FooBar4, Publisher4, PublisherType, Test4 } from './entities-schema';
 
@@ -10,7 +10,7 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => orm = await initORMSqlite2(driver));
-  beforeEach(async () => wipeDatabaseSqlite2(orm.em));
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
 
   test('isConnected()', async () => {
     expect(await orm.isConnected()).toBe(true);

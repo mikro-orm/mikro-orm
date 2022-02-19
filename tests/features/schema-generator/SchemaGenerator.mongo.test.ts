@@ -2,7 +2,7 @@ import type { MikroORM } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 import { MongoSchemaGenerator } from '@mikro-orm/mongodb';
 import FooBar from '../../entities/FooBar';
-import { initORMMongo, wipeDatabase } from '../../bootstrap';
+import { initORMMongo } from '../../bootstrap';
 
 describe('SchemaGenerator', () => {
 
@@ -10,7 +10,7 @@ describe('SchemaGenerator', () => {
 
   beforeAll(async () => orm = await initORMMongo());
   afterAll(async () => await orm.close(true));
-  beforeEach(async () => wipeDatabase(orm.em));
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
 
   test('create/drop collection', async () => {
     const driver = orm.em.getDriver();

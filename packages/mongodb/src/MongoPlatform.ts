@@ -1,5 +1,8 @@
 import { ObjectId } from 'bson';
-import type { IPrimaryKey, Primary, NamingStrategy, Constructor, EntityRepository, EntityProperty, PopulateOptions, EntityMetadata, IDatabaseDriver } from '@mikro-orm/core';
+import type {
+  IPrimaryKey, Primary, NamingStrategy, Constructor, EntityRepository, EntityProperty,
+  PopulateOptions, EntityMetadata, IDatabaseDriver , EntityManager,
+} from '@mikro-orm/core';
 import { Platform, MongoNamingStrategy, Utils, ReferenceType, MetadataError } from '@mikro-orm/core';
 import { MongoExceptionConverter } from './MongoExceptionConverter';
 import { MongoEntityRepository } from './MongoEntityRepository';
@@ -17,8 +20,8 @@ export class MongoPlatform extends Platform {
     return MongoEntityRepository;
   }
 
-  getSchemaGenerator(driver: IDatabaseDriver): MongoSchemaGenerator {
-    return new MongoSchemaGenerator(driver as any); // cast as `any` to get around circular dependencies
+  getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): MongoSchemaGenerator {
+    return new MongoSchemaGenerator(em ?? driver as any);
   }
 
   normalizePrimaryKey<T extends number | string = number | string>(data: Primary<T> | IPrimaryKey | ObjectId): T {

@@ -3,14 +3,14 @@ import { assign, expr, wrap } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 import { ObjectId } from '@mikro-orm/mongodb';
 import { Author, Book, BookTag } from '../../entities';
-import { initORMMongo, wipeDatabase } from '../../bootstrap';
+import { initORMMongo } from '../../bootstrap';
 
 describe('EntityAssignerMongo', () => {
 
   let orm: MikroORM<MongoDriver>;
 
   beforeAll(async () => orm = await initORMMongo());
-  beforeEach(async () => wipeDatabase(orm.em));
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
 
   test('#assign() should update entity values', async () => {
     const god = new Author('God', 'hello@heaven.god');

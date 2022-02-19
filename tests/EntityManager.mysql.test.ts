@@ -8,7 +8,7 @@ import {
 } from '@mikro-orm/core';
 import { MySqlDriver, MySqlConnection } from '@mikro-orm/mysql';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
-import { initORMMySql, mockLogger, wipeDatabaseMySql } from './bootstrap';
+import { initORMMySql, mockLogger } from './bootstrap';
 import { Author2Subscriber } from './subscribers/Author2Subscriber';
 import { EverythingSubscriber } from './subscribers/EverythingSubscriber';
 import { FlushSubscriber } from './subscribers/FlushSubscriber';
@@ -19,8 +19,9 @@ describe('EntityManagerMySql', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql());
-  beforeEach(async () => wipeDatabaseMySql(orm.em));
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
   afterEach(() => {
+    orm.config.set('debug', false);
     Author2Subscriber.log.length = 0;
     EverythingSubscriber.log.length = 0;
     FlushSubscriber.log.length = 0;
