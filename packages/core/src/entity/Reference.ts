@@ -1,5 +1,6 @@
-import type { AnyEntity, Cast, Constructor, Dictionary, EntityProperty, IsUnknown, Primary, PrimaryProperty } from '../typings';
+import type { Populate, AnyEntity, Cast, Constructor, Dictionary, EntityProperty, IsUnknown, Primary, PrimaryProperty } from '../typings';
 import type { EntityFactory } from './EntityFactory';
+import type { LockMode } from '../enums';
 import { wrap } from './wrap';
 
 export type IdentifiedReference<T extends AnyEntity<T>, PK extends keyof T | unknown = PrimaryProperty<T>> = true extends IsUnknown<PK> ? Reference<T> : ({ [K in Cast<PK, keyof T>]: T[K] } & Reference<T>);
@@ -74,7 +75,7 @@ export class Reference<T extends AnyEntity<T>> {
    * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
    * Returns the entity.
    */
-  async load(): Promise<T>;
+  async load<K extends keyof T = never, P extends string = never>(options?: LoadReferenceOptions<T, P>): Promise<T>;
 
   /**
    * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
@@ -86,13 +87,15 @@ export class Reference<T extends AnyEntity<T>> {
    * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
    * Returns either the whole entity, or the requested property.
    */
-  async load<K extends keyof T = never>(prop?: K): Promise<T | T[K]> {
+  async load<K extends keyof T = never, P extends string = never>(options?: LoadReferenceOptions<T, P> | K): Promise<T | T[K]> {
+    const opts: Dictionary = typeof options === 'object' ? options : { prop: options };
+
     if (!this.isInitialized()) {
-      await this.entity.__helper!.init();
+      await this.entity.__helper!.init(undefined, opts?.populate, opts?.lockMode);
     }
 
-    if (prop) {
-      return this.entity[prop];
+    if (opts.prop) {
+      return this.entity[opts.prop];
     }
 
     return this.entity;
@@ -144,3 +147,8 @@ Object.defineProperties(Reference.prototype, {
   $: { get() { return this.entity; } },
   get: { get() { return () => this.entity; } },
 });
+
+export interface LoadReferenceOptions<T, P extends string = never> {
+  populate?: Populate<T, P>;
+  lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
+}

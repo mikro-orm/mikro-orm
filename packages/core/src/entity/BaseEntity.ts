@@ -1,5 +1,5 @@
 import { Reference } from './Reference';
-import type { AnyEntity, EntityData, EntityDTO, IWrappedEntity } from '../typings';
+import type { AnyEntity, EntityData, EntityDTO, IWrappedEntity, Loaded } from '../typings';
 import type { AssignOptions } from './EntityAssigner';
 import { EntityAssigner } from './EntityAssigner';
 
@@ -37,8 +37,8 @@ export abstract class BaseEntity<T, PK extends keyof T, P extends string = never
     return EntityAssigner.assign(this as unknown as T, data, options);
   }
 
-  init(populated = true): Promise<T> {
-    return (this as unknown as AnyEntity<T>).__helper!.init(populated);
+  init<P extends string = never>(populated = true): Promise<Loaded<T, P>> {
+    return (this as unknown as AnyEntity<T>).__helper!.init<P>(populated);
   }
 
   getSchema(): string | undefined {

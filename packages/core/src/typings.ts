@@ -94,7 +94,7 @@ export interface IWrappedEntity<T extends AnyEntity<T>, PK extends keyof T | unk
   isInitialized(): boolean;
   isTouched(): boolean;
   populated(populated?: boolean): void;
-  init<P extends Populate<T> = Populate<T>>(populated?: boolean, populate?: P, lockMode?: LockMode): Promise<T>;
+  init<P extends string = never>(populated?: boolean, populate?: Populate<T, P>, lockMode?: LockMode): Promise<Loaded<T, P>>;
   toReference<PK2 extends PK | unknown = PrimaryProperty<T>, P2 extends string = string>(): IdentifiedReference<T, PK2> & LoadedReference<T>;
   toObject(ignoreFields?: string[]): EntityDTO<T>;
   toJSON(...args: any[]): EntityDTO<T>;

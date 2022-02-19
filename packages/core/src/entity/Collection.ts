@@ -2,7 +2,7 @@ import type { AnyEntity, Dictionary, EntityData, EntityMetadata, FilterQuery, Lo
 import { ArrayCollection } from './ArrayCollection';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
-import type { QueryOrderMap } from '../enums';
+import type { QueryOrderMap , LockMode } from '../enums';
 import { QueryOrder, ReferenceType } from '../enums';
 import { Reference } from './Reference';
 import type { Transaction } from '../connections/Connection';
@@ -44,12 +44,12 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   /**
    * Initializes the collection and returns the items
    */
-  async loadItems(): Promise<T[]> {
+  async loadItems<P extends string = never>(options?: InitOptions<T, P>): Promise<Loaded<T, P>[]> {
     if (!this.isInitialized(true)) {
-      await this.init();
+      await this.init(options);
     }
 
-    return super.getItems();
+    return super.getItems() as Loaded<T, P>[];
   }
 
   /**
@@ -206,7 +206,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     const em = this.getEntityManager();
 
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
-      const map = await em.getDriver().loadFromPivotTable(this.property, [this.owner.__helper!.__primaryKeys], options.where, options.orderBy);
+      const map = await em.getDriver().loadFromPivotTable(this.property, [this.owner.__helper!.__primaryKeys], options.where, options.orderBy, undefined, options);
       this.hydrate(map[this.owner.__helper!.getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, { convertCustomTypes: true })));
       this._lazyInitialized = true;
 
@@ -225,8 +225,11 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     const where = this.createCondition(options.where);
     const order = [...this.items]; // copy order of references
     const customOrder = !!options.orderBy;
-    const orderBy = this.createOrderBy(options.orderBy);
-    const items: T[] = await em.find(this.property.type, where, { populate: options.populate, orderBy });
+    const items: T[] = await em.find(this.property.type, where, {
+      populate: options.populate,
+      lockMode: options.lockMode,
+      orderBy: this.createOrderBy(options.orderBy),
+    });
 
     if (!customOrder) {
       this.reorderItems(items, order);
@@ -404,4 +407,5 @@ export interface InitOptions<T, P extends string = never> {
   populate?: Populate<T, P>;
   orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[];
   where?: FilterQuery<T>;
+  lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
 }
