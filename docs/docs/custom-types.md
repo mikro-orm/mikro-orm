@@ -286,9 +286,7 @@ You can use `BigIntType` to support `bigint`s. By default, it will represent the
 
 ```ts
 @PrimaryKey({ type: BigIntType })
-id
-:
-string;
+id: string;
 ```
 
 ### BlobType
