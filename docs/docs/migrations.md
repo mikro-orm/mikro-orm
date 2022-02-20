@@ -42,6 +42,8 @@ accessed via `Migration.getKnex()`;
 
 ## Initial migration
 
+> This is optional and only needed for the specific use case, when both entities and schema already exist.
+
 If we want to start using migrations, and we already have the schema generated, 
 we can do so by creating so called initial migration:
 

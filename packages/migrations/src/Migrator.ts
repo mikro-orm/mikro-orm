@@ -71,6 +71,7 @@ export class Migrator implements IMigrator {
     await this.ensureMigrationsDirExists();
     const schemaExists = await this.validateInitialMigration();
     const diff = await this.getSchemaDiff(false, true);
+    await this.storeCurrentSchema();
     const migration = await this.generator.generate(diff, path);
 
     if (schemaExists) {
