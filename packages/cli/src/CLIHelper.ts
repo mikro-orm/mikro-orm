@@ -64,7 +64,7 @@ export class CLIHelper {
   }
 
   static async dumpDependencies() {
-    const version = await Utils.getORMVersion();
+    const version = Utils.getORMVersion();
     CLIHelper.dump(' - dependencies:');
     CLIHelper.dump(`   - mikro-orm ${colors.green(version)}`);
     CLIHelper.dump(`   - node ${colors.green(CLIHelper.getNodeVersion())}`);

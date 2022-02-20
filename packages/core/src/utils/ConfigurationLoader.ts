@@ -48,7 +48,12 @@ export class ConfigurationLoader {
 
   static async getPackageConfig(basePath = process.cwd()): Promise<Dictionary> {
     if (await pathExists(`${basePath}/package.json`)) {
-      return import(`${basePath}/package.json`);
+      /* istanbul ignore next */
+      try {
+        return await import(`${basePath}/package.json`);
+      } catch {
+        return {};
+      }
     }
 
     const parentFolder = await realpath(`${basePath}/..`);
@@ -231,14 +236,15 @@ export class ConfigurationLoader {
 
   // inspired by https://github.com/facebook/mikro-orm/pull/3386
   static async checkPackageVersion(): Promise<string> {
-    const coreVersion = await Utils.getORMVersion();
-    const deps = await this.getORMPackages();
-    const exceptions = new Set(['nestjs', 'sql-highlighter', 'mongo-highlighter']);
-    const ormPackages = [...deps].filter(d => d.startsWith('@mikro-orm/') && d !== '@mikro-orm/core' && !exceptions.has(d.substring('@mikro-orm/'.length)));
+    const coreVersion = Utils.getORMVersion();
 
     if (process.env.MIKRO_ORM_ALLOW_VERSION_MISMATCH) {
       return coreVersion;
     }
+
+    const deps = await this.getORMPackages();
+    const exceptions = new Set(['nestjs', 'sql-highlighter', 'mongo-highlighter']);
+    const ormPackages = [...deps].filter(d => d.startsWith('@mikro-orm/') && d !== '@mikro-orm/core' && !exceptions.has(d.substring('@mikro-orm/'.length)));
 
     for (const ormPackage of ormPackages) {
       const version = await this.getORMPackageVersion(ormPackage);

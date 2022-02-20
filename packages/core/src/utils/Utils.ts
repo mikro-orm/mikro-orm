@@ -820,10 +820,12 @@ export class Utils {
     /* istanbul ignore next */
     try {
       // this works with ts-node during development (where we have `src` folder)
-      return this.requireFrom<{ version: string }>(`../../package.json`, __dirname).version;
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      return require('../../package.json').version;
     } catch {
       // this works with node in production build (where we do not have the `src` folder)
-      return this.requireFrom<{ version: string }>(`../package.json`, __dirname).version;
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      return require('../package.json').version;
     }
   }
 

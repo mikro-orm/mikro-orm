@@ -111,7 +111,7 @@ describe('CLIHelper', () => {
     });
     const cli = await CLIConfigurator.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
-    expect(requireFromMock).toHaveBeenCalledTimes(4);
+    expect(requireFromMock).toHaveBeenCalledTimes(2);
     expect(requireFromMock).toHaveBeenCalledWith('ts-node', process.cwd() + '/tsconfig.extended-abs.json');
     expect(requireFromMock).toHaveBeenCalledWith('tsconfig-paths', process.cwd() + '/tsconfig.extended-abs.json');
     expect(registerPathsMock).toHaveBeenCalledWith({
