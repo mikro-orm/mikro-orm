@@ -1,0 +1,7 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`dropping tables with FKs in postgres schema generator removes stale FKs on target table dropping 1 1`] = `
+"alter table \`sequence\` add column \`another_property\` text null;
+
+"
+`;

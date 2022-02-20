@@ -23,7 +23,11 @@ export class BetterSqliteSchemaHelper extends SchemaHelper {
 
   async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<any[]> {
     const columns = await connection.execute<any[]>(`pragma table_info('${tableName}')`);
+    const sql = `select sql from sqlite_master where type = ? and name = ?`;
+    const tableDefinition = await connection.execute<{ sql: string }>(sql, ['table', tableName], 'get');
     const composite = columns.reduce((count, col) => count + (col.pk ? 1 : 0), 0) > 1;
+    // there can be only one, so naive check like this should be enough
+    const hasAutoincrement = tableDefinition.sql.toLowerCase().includes('autoincrement');
 
     return columns.map(col => {
       const mappedType = connection.getPlatform().getMappedType(col.type);
@@ -35,7 +39,7 @@ export class BetterSqliteSchemaHelper extends SchemaHelper {
         primary: !!col.pk,
         mappedType,
         unsigned: false,
-        autoincrement: !composite && col.pk && this.platform.isNumericColumn(mappedType),
+        autoincrement: !composite && col.pk && this.platform.isNumericColumn(mappedType) && hasAutoincrement,
       };
     });
   }
