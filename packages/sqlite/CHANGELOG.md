@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.0.3](https://github.com/mikro-orm/mikro-orm/compare/v5.0.2...v5.0.3) (2022-02-20)
+
+
+### Bug Fixes
+
+* **sqlite:** respect `autoincrement: false` in schema diffing ([b39b6ad](https://github.com/mikro-orm/mikro-orm/commit/b39b6ada0e276a21c3089558a996092174b546fc)), closes [#2800](https://github.com/mikro-orm/mikro-orm/issues/2800)
+
+
+
+
+
 ## [5.0.2](https://github.com/mikro-orm/mikro-orm/compare/v5.0.1...v5.0.2) (2022-02-16)
 
 **Note:** Version bump only for package @mikro-orm/sqlite

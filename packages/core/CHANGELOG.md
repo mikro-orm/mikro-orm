@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.0.3](https://github.com/mikro-orm/mikro-orm/compare/v5.0.2...v5.0.3) (2022-02-20)
+
+
+### Bug Fixes
+
+* **core:** do not trigger global context validation from repositories ([f651865](https://github.com/mikro-orm/mikro-orm/commit/f651865a3adab17a3025e76dc094b04b1f004181)), closes [#2778](https://github.com/mikro-orm/mikro-orm/issues/2778)
+* **core:** fix processing of `onUpdate` properties ([9cf454e](https://github.com/mikro-orm/mikro-orm/commit/9cf454ef8a91239e00fad27d41d00b18c8f18263)), closes [#2781](https://github.com/mikro-orm/mikro-orm/issues/2781)
+* **core:** fix processing of multiple `onUpdate` properties on one entity ([4f0e4cc](https://github.com/mikro-orm/mikro-orm/commit/4f0e4cc959269a8485684d18e156795372a9bd37)), closes [#2784](https://github.com/mikro-orm/mikro-orm/issues/2784)
+* **core:** hydrate not-null embeddable prop even with all null values ([09aee05](https://github.com/mikro-orm/mikro-orm/commit/09aee05105c2da231a18afaf639285e74da62a3a)), closes [#2774](https://github.com/mikro-orm/mikro-orm/issues/2774)
+* **core:** register entity to identity map as early as possible ([d8f3613](https://github.com/mikro-orm/mikro-orm/commit/d8f3613402ca51d02f74a3f8af4dae63ffdfcd60)), closes [#2777](https://github.com/mikro-orm/mikro-orm/issues/2777)
+* **core:** respect `onDelete: cascade` when propagating removal ([f1e8578](https://github.com/mikro-orm/mikro-orm/commit/f1e85787703a93d33ff47bdd155afc8f0b3f6777)), closes [#2703](https://github.com/mikro-orm/mikro-orm/issues/2703)
+* **core:** revert to `require()` when getting ORM version to fix webpack support ([6cfb526](https://github.com/mikro-orm/mikro-orm/commit/6cfb5269696a9c0991198b238667c40f0dae2250)), closes [#2799](https://github.com/mikro-orm/mikro-orm/issues/2799)
+* **postgres:** consider int8 as numeric when inferring autoincrement value ([64bc99d](https://github.com/mikro-orm/mikro-orm/commit/64bc99d3ddb2293dbf4a3cb70aa22e16ac813b2d)), closes [#2791](https://github.com/mikro-orm/mikro-orm/issues/2791)
+* **typing:** fix populate hints on collections where both type args are provided ([e39ef5b](https://github.com/mikro-orm/mikro-orm/commit/e39ef5b9acdb5f052d9e4f0d3d6c04af5f43eefb)), closes [#2771](https://github.com/mikro-orm/mikro-orm/issues/2771)
+
+
+### Features
+
+* add better-sqlite driver ([#2792](https://github.com/mikro-orm/mikro-orm/issues/2792)) ([1b39d66](https://github.com/mikro-orm/mikro-orm/commit/1b39d6687fc2db64e85a45f6a964cf1776a374aa))
+* **core:** add `connect` config option ([8aaad33](https://github.com/mikro-orm/mikro-orm/commit/8aaad33a6ea8008450ccb8847237510400e00b94))
+* **core:** add `SchemaGenerator.clearDatabase()` ([ecad9c6](https://github.com/mikro-orm/mikro-orm/commit/ecad9c68e8013350bef75b402d6f3c526389765b)), closes [#2220](https://github.com/mikro-orm/mikro-orm/issues/2220)
+* **core:** add populate option to `Reference.load` and `Collection.loadItems` ([1527c1a](https://github.com/mikro-orm/mikro-orm/commit/1527c1a1c2ec7034f6deabf4f37134562aa59a3c)), closes [#2796](https://github.com/mikro-orm/mikro-orm/issues/2796)
+
+
+
+
+
 ## [5.0.2](https://github.com/mikro-orm/mikro-orm/compare/v5.0.1...v5.0.2) (2022-02-16)
 
 
