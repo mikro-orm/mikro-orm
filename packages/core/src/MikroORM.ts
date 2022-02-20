@@ -44,7 +44,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     await orm.discoverEntities();
     orm.config.set('allowGlobalContext', allowGlobalContext);
 
-    if (connect) {
+    if (connect && orm.config.get('connect')) {
       await orm.connect();
 
       if (orm.config.get('ensureIndexes')) {

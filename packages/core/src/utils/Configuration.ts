@@ -66,6 +66,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     flushMode: FlushMode.AUTO,
     loadStrategy: LoadStrategy.SELECT_IN,
     populateWhere: PopulateHint.ALL,
+    connect: true,
     autoJoinOneToOneOwner: true,
     propagateToOneOwner: true,
     populateAfterFlush: true,
@@ -433,6 +434,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   driverOptions: Dictionary;
   namingStrategy?: { new(): NamingStrategy };
   implicitTransactions?: boolean;
+  connect: boolean;
   autoJoinOneToOneOwner: boolean;
   propagateToOneOwner: boolean;
   populateAfterFlush: boolean;
