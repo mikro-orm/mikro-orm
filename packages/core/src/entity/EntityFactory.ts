@@ -166,6 +166,7 @@ export class EntityFactory {
         throw new Error(`Cannot create entity ${meta.className}, class prototype is unknown`);
       }
 
+      options.initialized = options.newEntity || options.initialized;
       const params = this.extractConstructorParams<T>(meta, data, options);
       const Entity = meta.class;
       meta.constructorParams.forEach(prop => delete data[prop]);
