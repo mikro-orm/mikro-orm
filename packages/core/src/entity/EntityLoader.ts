@@ -85,6 +85,7 @@ export class EntityLoader {
       p.field = f;
       p.children = p.children || [];
       const prop = this.metadata.find(entityName)!.properties[f];
+      p.strategy ??= prop.strategy;
       p.children.push(this.expandNestedPopulate(prop.type, parts, p.strategy, p.all));
     });
 
@@ -237,8 +238,8 @@ export class EntityLoader {
 
     if (prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner && populate.strategy !== LoadStrategy.JOINED && !this.em.config.get('autoJoinOneToOneOwner')) {
       children.length = 0;
-      children.push(...entities);
       fk = meta.properties[prop.mappedBy].name;
+      children.push(...this.filterByReferences(entities, prop.name, options.refresh));
     }
 
     if (children.length === 0) {
@@ -461,6 +462,15 @@ export class EntityLoader {
     return children.filter(e => !(e[field] as AnyEntity).__helper!.__initialized).map(e => Reference.unwrapReference(e[field]));
   }
 
+  private filterByReferences<T extends AnyEntity<T>>(entities: T[], field: keyof T, refresh: boolean): T[] {
+    /* istanbul ignore next */
+    if (refresh) {
+      return entities;
+    }
+
+    return entities.filter(e => !(e[field] as AnyEntity)?.__helper?.__initialized);
+  }
+
   private lookupAllRelationships<T>(entityName: string): PopulateOptions<T>[] {
     const ret: PopulateOptions<T>[] = [];
     const meta = this.metadata.find(entityName)!;
@@ -499,7 +509,7 @@ export class EntityLoader {
         } else {
           ret.push({
             field: prefixed,
-            strategy: strategy ?? prop.strategy ?? this.em.config.get('loadStrategy'),
+            strategy: strategy ?? prop.strategy,
           });
         }
       });

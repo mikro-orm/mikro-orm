@@ -985,7 +985,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     return ret.map(field => {
       // force select-in strategy when populating all relations as otherwise we could cause infinite loops when self-referencing
-      field.strategy = options.populate === true ? LoadStrategy.SELECT_IN : (options.strategy ?? field.strategy ?? this.config.get('loadStrategy'));
+      field.strategy = options.populate === true ? LoadStrategy.SELECT_IN : (options.strategy ?? field.strategy);
       return field;
     });
   }
