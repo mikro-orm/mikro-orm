@@ -203,7 +203,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   getChangeColumnCommentSQL(tableName: string, to: Column): string {
-    const value = to.comment ? `'${to.comment}'` : 'null';
+    const value = to.comment ? this.platform.quoteValue(to.comment) : 'null';
     return `comment on column "${tableName}"."${to.name}" is ${value}`;
   }
 

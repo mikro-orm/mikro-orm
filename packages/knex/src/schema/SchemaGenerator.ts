@@ -402,7 +402,8 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
       }
 
       if ('changedComment' in diff) {
-        table.comment(diff.changedComment ?? '');
+        const comment = diff.changedComment ? this.platform.quoteValue(diff.changedComment).replace(/^'|'$/g, '') : '';
+        table.comment(comment);
       }
     }));
 
@@ -473,7 +474,8 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
       }
 
       if (tableDef.comment) {
-        table.comment(tableDef.comment);
+        const comment = this.platform.quoteValue(tableDef.comment).replace(/^'|'$/g, '');
+        table.comment(comment);
       }
 
       if (!this.helper.supportsSchemaConstraints()) {

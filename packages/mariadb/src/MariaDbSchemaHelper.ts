@@ -88,7 +88,15 @@ export class MariaDbSchemaHelper extends SchemaHelper {
   }
 
   private getColumnDeclarationSQL(col: Column): string {
-    return `${col.type}${col.unsigned ? ' unsigned' : ''}${col.autoincrement ? ' auto_increment' : ''} ${col.nullable ? 'null' : 'not null'}${col.default ? ' default ' + col.default : ''}${col.comment ? ` comment '${col.comment}'` : ''}`;
+    let ret = col.type;
+    ret += col.unsigned ? ' unsigned' : '';
+    ret += col.autoincrement ? ' auto_increment' : '';
+    ret += ' ';
+    ret += col.nullable ? 'null' : 'not null';
+    ret += col.default ? ' default ' + col.default : '';
+    ret += col.comment ? ` comment ${this.platform.quoteValue(col.comment)}` : '';
+
+    return ret;
   }
 
   getForeignKeysSQL(tableName: string, schemaName?: string): string {
