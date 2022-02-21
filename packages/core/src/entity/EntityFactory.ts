@@ -1,6 +1,5 @@
 import { Utils } from '../utils/Utils';
 import type { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityName, EntityProperty, New, Primary } from '../typings';
-import type { UnitOfWork } from '../unit-of-work';
 import type { EntityManager } from '../EntityManager';
 import { EventType, ReferenceType } from '../enums';
 import { Reference } from './Reference';
@@ -24,8 +23,7 @@ export class EntityFactory {
   private readonly eventManager = this.em.getEventManager();
   private readonly comparator = this.em.getComparator();
 
-  constructor(private readonly unitOfWork: UnitOfWork,
-              private readonly em: EntityManager) { }
+  constructor(private readonly em: EntityManager) { }
 
   create<T extends AnyEntity<T>, P extends string = string>(entityName: EntityName<T>, data: EntityData<T>, options: FactoryOptions = {}): New<T, P> {
     data = Reference.unwrapReference(data);
@@ -301,6 +299,10 @@ export class EntityFactory {
 
       return data[k];
     });
+  }
+
+  private get unitOfWork() {
+    return this.em.getUnitOfWork(false);
   }
 
 }

@@ -20,7 +20,7 @@ exports[`embedded entities in mongo diffing 1`] = `
       if (entity.profile1.identity.meta != null) {
         ret.profile1_identity_meta_foo = clone(entity.profile1.identity.meta.foo);
         ret.profile1_identity_meta_bar = clone(entity.profile1.identity.meta.bar);
-        if (typeof entity.profile1 !== 'undefined' && typeof entity.profile1.identity !== 'undefined' && typeof entity.profile1.identity.meta !== 'undefined' && (entity.profile1.identity.meta.source == null || entity.profile1.identity.meta.source.__helper.hasPrimaryKey())) {
+        if (typeof entity.profile1 !== 'undefined' && typeof entity.profile1.identity !== 'undefined' && typeof entity.profile1.identity.meta !== 'undefined' && (entity.profile1.identity.meta.source == null || entity.profile1.identity.meta.source.__helper?.hasPrimaryKey())) {
           ret.profile1_identity_meta_source = getPrimaryKeyValues_profile1_identity_meta_source(entity.profile1.identity.meta.source);
         }
       
@@ -39,7 +39,7 @@ exports[`embedded entities in mongo diffing 1`] = `
               ret.profile1_identity_links[idx_0].meta = {};
               ret.profile1_identity_links[idx_0].meta.foo = clone(entity.profile1.identity.links[idx_0].meta.foo);
               ret.profile1_identity_links[idx_0].meta.bar = clone(entity.profile1.identity.links[idx_0].meta.bar);
-              if (typeof entity.profile1 !== 'undefined' && typeof entity.profile1.identity !== 'undefined' && typeof entity.profile1.identity.links !== 'undefined' && typeof entity.profile1.identity.links[idx_0].meta !== 'undefined' && (entity.profile1.identity.links[idx_0].meta.source == null || entity.profile1.identity.links[idx_0].meta.source.__helper.hasPrimaryKey())) {
+              if (typeof entity.profile1 !== 'undefined' && typeof entity.profile1.identity !== 'undefined' && typeof entity.profile1.identity.links !== 'undefined' && typeof entity.profile1.identity.links[idx_0].meta !== 'undefined' && (entity.profile1.identity.links[idx_0].meta.source == null || entity.profile1.identity.links[idx_0].meta.source.__helper?.hasPrimaryKey())) {
                 ret.profile1_identity_links[idx_0].meta.source = getPrimaryKeyValues_profile1_identity_links_meta_source(entity.profile1.identity.links[idx_0].meta.source);
               }
             
@@ -53,7 +53,7 @@ exports[`embedded entities in mongo diffing 1`] = `
                   ret.profile1_identity_links[idx_0].metas[idx_1] = {};
                   ret.profile1_identity_links[idx_0].metas[idx_1].foo = clone(entity.profile1.identity.links[idx_0].metas[idx_1].foo);
                   ret.profile1_identity_links[idx_0].metas[idx_1].bar = clone(entity.profile1.identity.links[idx_0].metas[idx_1].bar);
-                  if (typeof entity.profile1 !== 'undefined' && typeof entity.profile1.identity !== 'undefined' && typeof entity.profile1.identity.links !== 'undefined' && typeof entity.profile1.identity.links[idx_0].metas !== 'undefined' && (entity.profile1.identity.links[idx_0].metas[idx_1].source == null || entity.profile1.identity.links[idx_0].metas[idx_1].source.__helper.hasPrimaryKey())) {
+                  if (typeof entity.profile1 !== 'undefined' && typeof entity.profile1.identity !== 'undefined' && typeof entity.profile1.identity.links !== 'undefined' && typeof entity.profile1.identity.links[idx_0].metas !== 'undefined' && (entity.profile1.identity.links[idx_0].metas[idx_1].source == null || entity.profile1.identity.links[idx_0].metas[idx_1].source.__helper?.hasPrimaryKey())) {
                     ret.profile1_identity_links[idx_0].metas[idx_1].source = getPrimaryKeyValues_profile1_identity_links_metas_source(entity.profile1.identity.links[idx_0].metas[idx_1].source);
                   }
                 
@@ -61,7 +61,7 @@ exports[`embedded entities in mongo diffing 1`] = `
               });
             }
 
-            if (typeof entity.profile1 !== 'undefined' && typeof entity.profile1.identity !== 'undefined' && typeof entity.profile1.identity.links !== 'undefined' && (entity.profile1.identity.links[idx_0].source == null || entity.profile1.identity.links[idx_0].source.__helper.hasPrimaryKey())) {
+            if (typeof entity.profile1 !== 'undefined' && typeof entity.profile1.identity !== 'undefined' && typeof entity.profile1.identity.links !== 'undefined' && (entity.profile1.identity.links[idx_0].source == null || entity.profile1.identity.links[idx_0].source.__helper?.hasPrimaryKey())) {
               ret.profile1_identity_links[idx_0].source = getPrimaryKeyValues_profile1_identity_links_source(entity.profile1.identity.links[idx_0].source);
             }
           
@@ -70,13 +70,13 @@ exports[`embedded entities in mongo diffing 1`] = `
         ret.profile1_identity_links = cloneEmbeddable(ret.profile1_identity_links);
       }
 
-      if (typeof entity.profile1 !== 'undefined' && typeof entity.profile1.identity !== 'undefined' && (entity.profile1.identity.source == null || entity.profile1.identity.source.__helper.hasPrimaryKey())) {
+      if (typeof entity.profile1 !== 'undefined' && typeof entity.profile1.identity !== 'undefined' && (entity.profile1.identity.source == null || entity.profile1.identity.source.__helper?.hasPrimaryKey())) {
         ret.profile1_identity_source = getPrimaryKeyValues_profile1_identity_source(entity.profile1.identity.source);
       }
     
     }
 
-    if (typeof entity.profile1 !== 'undefined' && (entity.profile1.source == null || entity.profile1.source.__helper.hasPrimaryKey())) {
+    if (typeof entity.profile1 !== 'undefined' && (entity.profile1.source == null || entity.profile1.source.__helper?.hasPrimaryKey())) {
       ret.profile1_source = getPrimaryKeyValues_profile1_source(entity.profile1.source);
     }
   
@@ -94,7 +94,7 @@ exports[`embedded entities in mongo diffing 1`] = `
         ret.profile2.identity.meta = {};
         ret.profile2.identity.meta.foo = clone(entity.profile2.identity.meta.foo);
         ret.profile2.identity.meta.bar = clone(entity.profile2.identity.meta.bar);
-        if (typeof entity.profile2 !== 'undefined' && typeof entity.profile2.identity !== 'undefined' && typeof entity.profile2.identity.meta !== 'undefined' && (entity.profile2.identity.meta.source == null || entity.profile2.identity.meta.source.__helper.hasPrimaryKey())) {
+        if (typeof entity.profile2 !== 'undefined' && typeof entity.profile2.identity !== 'undefined' && typeof entity.profile2.identity.meta !== 'undefined' && (entity.profile2.identity.meta.source == null || entity.profile2.identity.meta.source.__helper?.hasPrimaryKey())) {
           ret.profile2.identity.meta.source = getPrimaryKeyValues_profile2_identity_meta_source(entity.profile2.identity.meta.source);
         }
       
@@ -113,7 +113,7 @@ exports[`embedded entities in mongo diffing 1`] = `
               ret.profile2.identity.links[idx_2].meta = {};
               ret.profile2.identity.links[idx_2].meta.foo = clone(entity.profile2.identity.links[idx_2].meta.foo);
               ret.profile2.identity.links[idx_2].meta.bar = clone(entity.profile2.identity.links[idx_2].meta.bar);
-              if (typeof entity.profile2 !== 'undefined' && typeof entity.profile2.identity !== 'undefined' && typeof entity.profile2.identity.links !== 'undefined' && typeof entity.profile2.identity.links[idx_2].meta !== 'undefined' && (entity.profile2.identity.links[idx_2].meta.source == null || entity.profile2.identity.links[idx_2].meta.source.__helper.hasPrimaryKey())) {
+              if (typeof entity.profile2 !== 'undefined' && typeof entity.profile2.identity !== 'undefined' && typeof entity.profile2.identity.links !== 'undefined' && typeof entity.profile2.identity.links[idx_2].meta !== 'undefined' && (entity.profile2.identity.links[idx_2].meta.source == null || entity.profile2.identity.links[idx_2].meta.source.__helper?.hasPrimaryKey())) {
                 ret.profile2.identity.links[idx_2].meta.source = getPrimaryKeyValues_profile2_identity_links_meta_source(entity.profile2.identity.links[idx_2].meta.source);
               }
             
@@ -127,7 +127,7 @@ exports[`embedded entities in mongo diffing 1`] = `
                   ret.profile2.identity.links[idx_2].metas[idx_3] = {};
                   ret.profile2.identity.links[idx_2].metas[idx_3].foo = clone(entity.profile2.identity.links[idx_2].metas[idx_3].foo);
                   ret.profile2.identity.links[idx_2].metas[idx_3].bar = clone(entity.profile2.identity.links[idx_2].metas[idx_3].bar);
-                  if (typeof entity.profile2 !== 'undefined' && typeof entity.profile2.identity !== 'undefined' && typeof entity.profile2.identity.links !== 'undefined' && typeof entity.profile2.identity.links[idx_2].metas !== 'undefined' && (entity.profile2.identity.links[idx_2].metas[idx_3].source == null || entity.profile2.identity.links[idx_2].metas[idx_3].source.__helper.hasPrimaryKey())) {
+                  if (typeof entity.profile2 !== 'undefined' && typeof entity.profile2.identity !== 'undefined' && typeof entity.profile2.identity.links !== 'undefined' && typeof entity.profile2.identity.links[idx_2].metas !== 'undefined' && (entity.profile2.identity.links[idx_2].metas[idx_3].source == null || entity.profile2.identity.links[idx_2].metas[idx_3].source.__helper?.hasPrimaryKey())) {
                     ret.profile2.identity.links[idx_2].metas[idx_3].source = getPrimaryKeyValues_profile2_identity_links_metas_source(entity.profile2.identity.links[idx_2].metas[idx_3].source);
                   }
                 
@@ -135,7 +135,7 @@ exports[`embedded entities in mongo diffing 1`] = `
               });
             }
 
-            if (typeof entity.profile2 !== 'undefined' && typeof entity.profile2.identity !== 'undefined' && typeof entity.profile2.identity.links !== 'undefined' && (entity.profile2.identity.links[idx_2].source == null || entity.profile2.identity.links[idx_2].source.__helper.hasPrimaryKey())) {
+            if (typeof entity.profile2 !== 'undefined' && typeof entity.profile2.identity !== 'undefined' && typeof entity.profile2.identity.links !== 'undefined' && (entity.profile2.identity.links[idx_2].source == null || entity.profile2.identity.links[idx_2].source.__helper?.hasPrimaryKey())) {
               ret.profile2.identity.links[idx_2].source = getPrimaryKeyValues_profile2_identity_links_source(entity.profile2.identity.links[idx_2].source);
             }
           
@@ -143,13 +143,13 @@ exports[`embedded entities in mongo diffing 1`] = `
         });
       }
 
-      if (typeof entity.profile2 !== 'undefined' && typeof entity.profile2.identity !== 'undefined' && (entity.profile2.identity.source == null || entity.profile2.identity.source.__helper.hasPrimaryKey())) {
+      if (typeof entity.profile2 !== 'undefined' && typeof entity.profile2.identity !== 'undefined' && (entity.profile2.identity.source == null || entity.profile2.identity.source.__helper?.hasPrimaryKey())) {
         ret.profile2.identity.source = getPrimaryKeyValues_profile2_identity_source(entity.profile2.identity.source);
       }
     
     }
 
-    if (typeof entity.profile2 !== 'undefined' && (entity.profile2.source == null || entity.profile2.source.__helper.hasPrimaryKey())) {
+    if (typeof entity.profile2 !== 'undefined' && (entity.profile2.source == null || entity.profile2.source.__helper?.hasPrimaryKey())) {
       ret.profile2.source = getPrimaryKeyValues_profile2_source(entity.profile2.source);
     }
   

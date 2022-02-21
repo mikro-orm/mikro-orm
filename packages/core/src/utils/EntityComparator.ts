@@ -317,7 +317,7 @@ export class EntityComparator {
     }
 
     if (isRef) {
-      ret += ` && (entity${entityKey} == null || entity${entityKey}.__helper.hasPrimaryKey())`;
+      ret += ` && (entity${entityKey} == null || entity${entityKey}.__helper?.hasPrimaryKey())`;
     }
 
     return ret;

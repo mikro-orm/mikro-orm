@@ -340,19 +340,7 @@ export class ChangeSetPersister {
 
     for (const changeSet of changeSets) {
       const data = map.get(changeSet.entity.__helper!.getSerializedPrimaryKey());
-
-      for (const prop of reloadProps) {
-        const value = data![prop.name];
-
-        // needed for sqlite
-        if (prop.type.toLowerCase() === 'date') {
-          changeSet.entity[prop.name] = new Date(value) as unknown as T[keyof T & string];
-        } else {
-          changeSet.entity[prop.name] = value;
-        }
-
-        changeSet.payload![prop.name] = value;
-      }
+      this.hydrator.hydrate<T>(changeSet.entity, meta, data as EntityData<T>, this.factory, 'returning', false, true);
     }
   }
 

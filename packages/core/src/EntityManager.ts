@@ -29,8 +29,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   private readonly repositoryMap: Dictionary<EntityRepository<AnyEntity>> = {};
   private readonly entityLoader: EntityLoader = new EntityLoader(this);
   private readonly comparator = this.config.getComparator(this.metadata);
+  private readonly entityFactory: EntityFactory = new EntityFactory(this);
   private readonly unitOfWork: UnitOfWork = new UnitOfWork(this);
-  private readonly entityFactory: EntityFactory = new EntityFactory(this.unitOfWork, this);
   private readonly resultCache = this.config.getResultCacheAdapter();
   private filters: Dictionary<FilterDef> = {};
   private filterParams: Dictionary<Dictionary> = {};
@@ -835,7 +835,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Gets the UnitOfWork used by the EntityManager to coordinate operations.
    */
-  getUnitOfWork(): UnitOfWork {
+  getUnitOfWork(useContext = true): UnitOfWork {
+    if (!useContext) {
+      return this.unitOfWork;
+    }
+
     return this.getContext().unitOfWork;
   }
 
