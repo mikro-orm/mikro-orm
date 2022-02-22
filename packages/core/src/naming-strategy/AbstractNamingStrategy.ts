@@ -35,7 +35,7 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
   }
 
   columnNameToProperty(columnName: string): string {
-    return columnName.replace(/[_ ](\w)/g, m => m[1].toUpperCase()).replace(/_+/g, '');
+    return columnName.replace(/[_\- ](\w)/g, m => m[1].toUpperCase()).replace(/[_\- ]+/g, '');
   }
 
   aliasName(entityName: string, index: number): string {
