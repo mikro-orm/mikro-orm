@@ -209,6 +209,27 @@ object.
 > still need CLI config with the full list of entities. On the other hand, we can
 > use globs there, as the CLI won't go through webpack.
 
+## Request context
+You need to fork entity manager for each request so their 
+[identity maps](https://mikro-orm.io/identity-map/) will not collide. 
+To do so, use the `RequestContext` helper in the **main.ts**:
+```ts
+const app = await NestFactory.create(AppModule, { bodyParser: false });
+...
+const orm = app.get(MikroORM);
+app.use((req, res, next) => {
+  RequestContext.create(orm.em, next);
+});
+...
+```
+
+> You should register this middleware as the last one just before request handlers and before
+> any of your custom middleware that is using the ORM. There might be issues when you register 
+> it before request processing middleware like `queryParser` or `bodyParser`, so definitely 
+> register the context after them. 
+
+More info about `RequestContext` is described [here](https://mikro-orm.io/identity-map/#request-context).
+
 ## Request scoped handlers in queues
 
 > `@UseRequestContext()` decorator was added in v4.1.0 
