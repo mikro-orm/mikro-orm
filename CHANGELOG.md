@@ -13,13 +13,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 * **core:** fix propagation of FK as PK with not flushed entity ([25be857](https://github.com/mikro-orm/mikro-orm/commit/25be857354999626abdf17c386a95559d37b3b56)), closes [#2810](https://github.com/mikro-orm/mikro-orm/issues/2810)
 * **core:** fix unsetting identity of orphans (1:1 with orphan removal) ([91e7315](https://github.com/mikro-orm/mikro-orm/commit/91e7315f86f6e31f7ff30589dac82882a9f09783)), closes [#2806](https://github.com/mikro-orm/mikro-orm/issues/2806)
 * **core:** respect schema from config when adding new entities to context ([7a6b6e2](https://github.com/mikro-orm/mikro-orm/commit/7a6b6e2f130527909887643765c0c051f57a052a))
+* **core:** respect load strategy specified in property definition ([1a6b4b2](https://github.com/mikro-orm/mikro-orm/commit/1a6b4b2c7cc902c32aeff2d99a5dd666b221089e)), closes [#2803](https://github.com/mikro-orm/mikro-orm/issues/2803)
 * **entity-generator:** fix property names for columns with dashes ([#2813](https://github.com/mikro-orm/mikro-orm/issues/2813)) ([c920d5f](https://github.com/mikro-orm/mikro-orm/commit/c920d5f1e025d1602d04f6d339f2e3f697049035))
 * **schema:** escape table/column comments ([fff1581](https://github.com/mikro-orm/mikro-orm/commit/fff1581d7ff8f2ab5014e57d14c3938e120eb272)), closes [#2805](https://github.com/mikro-orm/mikro-orm/issues/2805)
-
-
-### Features
-
-* **core:** respect load strategy specified in property definition ([1a6b4b2](https://github.com/mikro-orm/mikro-orm/commit/1a6b4b2c7cc902c32aeff2d99a5dd666b221089e)), closes [#2803](https://github.com/mikro-orm/mikro-orm/issues/2803)
 
 
 
