@@ -12,4 +12,14 @@ describe('UnderscoreNamingStrategy', () => {
     expect(ns.referenceColumnName()).toBe('id');
   });
 
+  test('should convert column names to camel cased properties', async () => {
+    const ns = new UnderscoreNamingStrategy();
+    expect(ns.columnNameToProperty('BookTag')).toBe('BookTag');
+    expect(ns.columnNameToProperty('bookTag')).toBe('bookTag');
+    expect(ns.columnNameToProperty('book_tag')).toBe('bookTag');
+    expect(ns.columnNameToProperty('book tag')).toBe('bookTag');
+    expect(ns.columnNameToProperty('book-tag')).toBe('bookTag');
+    expect(ns.columnNameToProperty('Book__--  _- tag')).toBe('BookTag');
+  });
+
 });
