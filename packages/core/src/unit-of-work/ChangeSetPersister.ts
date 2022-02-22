@@ -239,7 +239,7 @@ export class ChangeSetPersister {
    * Sets populate flag to new entities so they are serialized like if they were loaded from the db
    */
   private markAsPopulated<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, meta: EntityMetadata<T>) {
-    changeSet.entity.__helper!.__schema = changeSet.schema === '*' ? this.config.get('schema') : changeSet.schema;
+    changeSet.entity.__helper!.__schema = this.driver.getSchemaName(meta, changeSet);
 
     if (!this.config.get('populateAfterFlush')) {
       return;
