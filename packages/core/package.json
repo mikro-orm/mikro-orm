@@ -58,7 +58,7 @@
   "dependencies": {
     "dotenv": "16.0.0",
     "escaya": "0.0.61",
-    "fs-extra": "10.0.0",
+    "fs-extra": "10.0.1",
     "globby": "11.0.4",
     "mikro-orm": "^5.0.3",
     "reflect-metadata": "0.1.13"
