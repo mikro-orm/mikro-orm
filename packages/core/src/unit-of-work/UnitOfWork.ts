@@ -530,7 +530,14 @@ export class UnitOfWork {
       return;
     }
 
-    wrapped.__identifier = new EntityIdentifier();
+    const pk = wrapped.__meta.getPrimaryProps()[0];
+
+    if (pk.reference === ReferenceType.SCALAR) {
+      wrapped.__identifier = new EntityIdentifier();
+    } else {
+      this.initIdentifier(entity[pk.name]);
+      wrapped.__identifier = (entity[pk.name] as AnyEntity).__helper?.__identifier;
+    }
   }
 
   private processReference<T extends AnyEntity<T>>(parent: T, prop: EntityProperty<T>, reference: any, visited: Set<AnyEntity>, idx: number): void {
