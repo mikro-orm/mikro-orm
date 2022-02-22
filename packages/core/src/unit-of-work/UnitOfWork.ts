@@ -362,10 +362,16 @@ export class UnitOfWork {
     this.identityMap.delete(entity);
     const wrapped = entity.__helper!;
 
-    wrapped.__meta.relations
+    wrapped.__meta.bidirectionalRelations
       .map(prop => [prop.name, prop.mappedBy || prop.inversedBy])
-      .filter(([name, inverse]) => (inverse) && entity[name] && entity[name][inverse] && !Utils.isCollection(entity[name][inverse]))
-      .forEach(([name, inverse]) => delete entity[name][inverse]);
+      .forEach(([name, inverse]) => {
+        const rel = Reference.unwrapReference(entity[name]);
+
+        // there is a value, and it is still a self-reference (e.g. not replaced by user manually)
+        if (rel?.[inverse] && entity === rel?.[inverse]) {
+          delete rel[inverse];
+        }
+      });
 
     delete wrapped.__identifier;
     delete wrapped.__originalEntityData;
