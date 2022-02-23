@@ -176,7 +176,7 @@ export class EntityHelper {
         EntityHelper.propagateOneToOne(entity, owner, prop, prop2);
       }
 
-      if (prop.reference === ReferenceType.ONE_TO_ONE && entity && entity.__helper!.__initialized && entity[prop2.name] != null && value == null) {
+      if (prop.reference === ReferenceType.ONE_TO_ONE && entity && entity.__helper!.__initialized && entity[prop2.name] != null && value == null && prop.orphanRemoval !== false) {
         entity[prop2.name] = value;
         entity.__helper!.__em?.getUnitOfWork().scheduleOrphanRemoval(entity);
       }
