@@ -8,7 +8,7 @@ export class Position {
   id!: number;
 
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  @OneToOne(() => Leg, (leg: Leg) => leg.position, { owner: true, nullable: true, orphanRemoval: false })
+  @OneToOne(() => Leg, (leg: Leg) => leg.position, { owner: true, nullable: true })
   leg?: any;
 
 }
@@ -31,7 +31,7 @@ export class Position2 {
   id!: number;
 
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  @OneToOne(() => Leg2, (leg: Leg2) => leg.position, { owner: true, nullable: true })
+  @OneToOne(() => Leg2, (leg: Leg2) => leg.position, { owner: true, nullable: true , orphanRemoval: true })
   leg?: any;
 
 }
@@ -55,7 +55,6 @@ describe('GH issue 2815', () => {
     orm = await MikroORM.init({
       type: 'sqlite',
       dbName: ':memory:',
-      debug: true,
       entities: [Position, Leg, Position2, Leg2],
     });
     await orm.getSchemaGenerator().createSchema();
