@@ -41,7 +41,6 @@ export class EntityValidator {
   validateRequired<T extends AnyEntity<T>>(entity: T): void {
     for (const prop of entity.__meta!.props) {
       if (
-        entity[prop.name] == null &&
         !prop.nullable &&
         !prop.autoincrement &&
         !prop.default &&
@@ -50,7 +49,8 @@ export class EntityValidator {
         !prop.embedded &&
         prop.name !== entity.__meta!.root.discriminatorColumn &&
         prop.type.toLowerCase() !== 'objectid' &&
-        prop.persist !== false
+        prop.persist !== false &&
+        entity[prop.name] == null
       ) {
         throw ValidationError.propertyRequired(entity, prop);
       }
