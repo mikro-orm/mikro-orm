@@ -182,10 +182,10 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
   }
 
-  async count<T extends AnyEntity<T>>(entityName: string, where: any, options: CountOptions<T> = {}, ctx?: Transaction<Knex.Transaction>): Promise<number> {
+  async count<T extends AnyEntity<T>>(entityName: string, where: any, options: CountOptions<T> = {}): Promise<number> {
     const meta = this.metadata.find(entityName)!;
     const pks = meta.primaryKeys;
-    const qb = this.createQueryBuilder(entityName, ctx, !!ctx, false)
+    const qb = this.createQueryBuilder(entityName, options.ctx, !!options.ctx, false)
       .groupBy(options.groupBy!)
       .having(options.having!)
       .populate(options.populate as unknown as PopulateOptions<T>[] ?? [])
