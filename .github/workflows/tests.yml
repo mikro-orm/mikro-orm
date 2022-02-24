@@ -41,7 +41,10 @@ jobs:
           yarn config set ignore-engines true
           yarn
 
-      - name: Lint
+      - name: Test TS
+        run: yarn tsc-check-tests
+
+      - name: Build
         run: yarn build
 
   docs:
