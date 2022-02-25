@@ -44,7 +44,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   _populateMap: Dictionary<string> = {};
 
   private aliasCounter = 0;
-  private flags: Set<QueryFlag> = new Set([QueryFlag.CONVERT_CUSTOM_TYPES]);
+  private flags: Set<QueryFlag> = new Set([QueryFlag.CONVERT_CUSTOM_TYPES, QueryFlag.DISABLE_PAGINATE]);
   private finalized = false;
   private _joins: Dictionary<JoinOptions> = {};
   private _aliasMap: Dictionary<string> = {};
@@ -141,7 +141,11 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.join(field, alias, cond, 'leftJoin');
   }
 
-  joinAndSelect(field: string, alias: string, cond: QBFilterQuery = {}, type: 'leftJoin' | 'innerJoin' | 'pivotJoin' = 'innerJoin', path?: string): this {
+  joinAndSelect(field: string, alias: string, cond: QBFilterQuery = {}, type: 'leftJoin' | 'innerJoin' | 'pivotJoin' = 'innerJoin', path?: string): SelectQueryBuilder<T> {
+    if (!this.type) {
+      this.select('*');
+    }
+
     const prop = this.joinReference(field, alias, cond, type, path);
     this.addSelect(this.getFieldsForJoinedLoad<T>(prop, alias));
     const [fromAlias] = this.helper.splitField(field);
@@ -156,10 +160,10 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
     this._joinedProps.set(alias, item);
 
-    return this;
+    return this as SelectQueryBuilder<T>;
   }
 
-  leftJoinAndSelect(field: string, alias: string, cond: QBFilterQuery = {}): this {
+  leftJoinAndSelect(field: string, alias: string, cond: QBFilterQuery = {}): SelectQueryBuilder<T> {
     return this.joinAndSelect(field, alias, cond, 'leftJoin');
   }
 
@@ -501,7 +505,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
    */
   async getCount(field?: string | string[], distinct = false): Promise<number> {
     const qb = this.clone();
-    qb.count(field, distinct).limit(undefined).offset(undefined);
+    qb.count(field, distinct).limit(undefined).offset(undefined).orderBy([]);
     const res = await qb.execute<{ count: number }>('get', false);
 
     return res ? +res.count : 0;
@@ -805,13 +809,24 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     QueryHelper.processObjectParams(this._having);
     this.finalized = true;
 
-    if (meta && this.flags.has(QueryFlag.PAGINATE) && this._limit! > 0) {
+    // automatically enable paginate flag when we detect to-many joins
+    if (this.flags.has(QueryFlag.DISABLE_PAGINATE) && this.hasToManyJoins()) {
+      this.flags.add(QueryFlag.PAGINATE);
+    }
+
+    if (meta && this.flags.has(QueryFlag.PAGINATE) && (this._limit! > 0 || this._offset! > 0)) {
       this.wrapPaginateSubQuery(meta);
     }
 
     if (meta && (this.flags.has(QueryFlag.UPDATE_SUB_QUERY) || this.flags.has(QueryFlag.DELETE_SUB_QUERY))) {
       this.wrapModifySubQuery(meta);
     }
+  }
+
+  private hasToManyJoins(): boolean {
+    return this._joinedProps.size > 0 && Object.values(this._joins).some(join => {
+      return [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(join.prop.reference);
+    });
   }
 
   private wrapPaginateSubQuery(meta: EntityMetadata): void {
