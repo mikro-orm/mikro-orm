@@ -190,7 +190,9 @@ describe('Migrator (sqlite)', () => {
 
     await storage.ensureTable(); // creates the table
     await storage.logMigration({ name: 'test', context: null });
-    await expect(storage.getExecutedMigrations()).resolves.toMatchObject([{ name: 'test' }]);
+    const executed = await storage.getExecutedMigrations();
+    expect(executed).toMatchObject([{ name: 'test' }]);
+    expect(executed[0].executed_at).toBeInstanceOf(Date);
     await expect(storage.executed()).resolves.toEqual(['test']);
 
     await storage.ensureTable(); // table exists, no-op

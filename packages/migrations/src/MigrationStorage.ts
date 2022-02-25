@@ -42,7 +42,15 @@ export class MigrationStorage implements UmzugStorage {
       qb.transacting(this.masterTransaction);
     }
 
-    return this.connection.execute<MigrationRow[]>(qb);
+    const res = await this.connection.execute<MigrationRow[]>(qb);
+
+    return res.map(row => {
+      if (typeof row.executed_at === 'string') {
+        row.executed_at = new Date(row.executed_at);
+      }
+
+      return row;
+    });
   }
 
   async ensureTable(): Promise<void> {
