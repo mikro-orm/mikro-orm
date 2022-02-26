@@ -776,9 +776,9 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     this._populate.forEach(({ field }) => {
       const [fromAlias, fromField] = this.helper.splitField(field);
       const aliasedField = `${fromAlias}.${fromField}`;
-      const join = Object.keys(this._joins).find(k => `${aliasedField}#${this._joins[k].alias}` === k)!;
+      const join = Object.keys(this._joins).find(k => `${aliasedField}#${this._joins[k].alias}` === k);
 
-      if (this._joins[join] && this.helper.isOneToOneInverse(fromField)) {
+      if (join && this._joins[join] && this.helper.isOneToOneInverse(fromField)) {
         return this._populateMap[join] = this._joins[join].alias;
       }
 
@@ -787,8 +787,9 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       } else if (meta && this.helper.isOneToOneInverse(fromField)) {
         const prop = meta.properties[fromField];
         const alias = this.getNextAlias(prop.pivotTable ?? prop.type);
-        this._joins[join] = this.helper.joinOneToReference(prop, this.alias, alias, 'leftJoin');
-        this._populateMap[join] = this._joins[join].alias;
+        const aliasedName = `${fromAlias}.${prop.name}#${alias}`;
+        this._joins[aliasedName] = this.helper.joinOneToReference(prop, this.alias, alias, 'leftJoin');
+        this._populateMap[aliasedName] = this._joins[aliasedName].alias;
       }
     });
 
