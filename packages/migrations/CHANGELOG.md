@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.0.5](https://github.com/mikro-orm/mikro-orm/compare/v5.0.4...v5.0.5) (2022-02-27)
+
+
+### Bug Fixes
+
+* **migrations:** ensure executedAt is a `Date` when listing executed migrations ([c8753ee](https://github.com/mikro-orm/mikro-orm/commit/c8753eec7b1130bf084d04ce32f9fe23aced7e21)), closes [#2817](https://github.com/mikro-orm/mikro-orm/issues/2817)
+
+
+
+
+
 ## [5.0.4](https://github.com/mikro-orm/mikro-orm/compare/v5.0.3...v5.0.4) (2022-02-22)
 
 **Note:** Version bump only for package @mikro-orm/migrations

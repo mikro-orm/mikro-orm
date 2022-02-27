@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.0.5](https://github.com/mikro-orm/mikro-orm/compare/v5.0.4...v5.0.5) (2022-02-27)
+
+
+### Bug Fixes
+
+* **core:** fix auto-joining multiple 1:1 properties ([0566e74](https://github.com/mikro-orm/mikro-orm/commit/0566e74b9587f28318bfbef384cb7ead8203aed9)), closes [#2821](https://github.com/mikro-orm/mikro-orm/issues/2821)
+* **core:** respect `orphanRemoval` in 1:1 relations ([#2816](https://github.com/mikro-orm/mikro-orm/issues/2816)) ([55ff07b](https://github.com/mikro-orm/mikro-orm/commit/55ff07be3f781d2c6a788a463d26dec38570509c))
+* **knex:** respect explicit transaction in `em.count()` ([#2818](https://github.com/mikro-orm/mikro-orm/issues/2818)) ([2d26a63](https://github.com/mikro-orm/mikro-orm/commit/2d26a631ebcc2bb1d1315f40f95594dca0abe9fc))
+* **migrations:** ensure executedAt is a `Date` when listing executed migrations ([c8753ee](https://github.com/mikro-orm/mikro-orm/commit/c8753eec7b1130bf084d04ce32f9fe23aced7e21)), closes [#2817](https://github.com/mikro-orm/mikro-orm/issues/2817)
+* **query-builder:** use paginate flag automatically based on to-many joins ([db9963f](https://github.com/mikro-orm/mikro-orm/commit/db9963fff8ceb980354b328f2d59353b9177aef3)), closes [#2823](https://github.com/mikro-orm/mikro-orm/issues/2823)
+
+
+
+
+
 ## [5.0.4](https://github.com/mikro-orm/mikro-orm/compare/v5.0.3...v5.0.4) (2022-02-22)
 
 

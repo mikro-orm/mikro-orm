@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.0.5](https://github.com/mikro-orm/mikro-orm/compare/v5.0.4...v5.0.5) (2022-02-27)
+
+
+### Bug Fixes
+
+* **core:** respect `orphanRemoval` in 1:1 relations ([#2816](https://github.com/mikro-orm/mikro-orm/issues/2816)) ([55ff07b](https://github.com/mikro-orm/mikro-orm/commit/55ff07be3f781d2c6a788a463d26dec38570509c))
+* **query-builder:** use paginate flag automatically based on to-many joins ([db9963f](https://github.com/mikro-orm/mikro-orm/commit/db9963fff8ceb980354b328f2d59353b9177aef3)), closes [#2823](https://github.com/mikro-orm/mikro-orm/issues/2823)
+
+
+
+
+
 ## [5.0.4](https://github.com/mikro-orm/mikro-orm/compare/v5.0.3...v5.0.4) (2022-02-22)
 
 
