@@ -843,7 +843,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       for (const orderMap of this._orderBy) {
         for (const [field, direction] of Object.entries(orderMap)) {
           orderBy.push({
-            [`min(${this.ref(field)})`]: direction,
+            [`min(${this.ref(this.helper.mapper(field, this.type))})`]: direction,
           });
         }
       }
