@@ -113,6 +113,7 @@ export interface FindOptions<T, P extends string = never> {
   lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
   lockTableAliases?: string[];
   ctx?: Transaction;
+  forceWriteConnection?: boolean;
 }
 
 export interface FindOneOptions<T, P extends string = never> extends Omit<FindOptions<T, P>, 'limit' | 'offset' | 'lockMode'> {
