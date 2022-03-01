@@ -1981,6 +1981,9 @@ describe('EntityManagerMySql', () => {
     expect(mock.mock.calls[12][0]).toMatch(/select.*via write connection '127\.0\.0\.1'/);
     expect(mock.mock.calls[13][0]).toMatch(/update.*via write connection '127\.0\.0\.1'/);
     expect(mock.mock.calls[14][0]).toMatch(/commit.*via write connection '127\.0\.0\.1'/);
+
+    await orm.em.findOne(Author2, author, { forceWriteConnection: true, refresh: true });
+    expect(mock.mock.calls[15][0]).toMatch(/select `a0`\.\*, `a1`\.`author_id` as `address_author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`\.`id` = `a1`\.`author_id` where `a0`.`id` = \? limit \?.*via write connection '127\.0\.0\.1'/);
   });
 
   test('datetime is stored in correct timezone', async () => {

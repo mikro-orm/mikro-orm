@@ -40,4 +40,6 @@ await em.transactional(async em => {
   const a = await em.findOne(Author, 1); // write connection
   a.name = 'test'; // will trigger update on write connection once flushed
 });
+
+const res4 = await em.findOne(Author, 1, { forceWriteConnection: true }); // write connection
 ```
