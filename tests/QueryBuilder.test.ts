@@ -2568,6 +2568,11 @@ describe('QueryBuilder', () => {
     expect(sql2).toBe(expected);
   });
 
+  test(`order by forumla field should not include 'as'`, async () => {
+    const sql = orm.em.createQueryBuilder(Book2).select('*').orderBy({ priceTaxed: QueryOrder.DESC }).getFormattedQuery();
+    expect(sql).toBe('select `e0`.*, `e0`.price * 1.19 as `price_taxed` from `book2` as `e0` order by `e0`.price * 1.19 desc');
+  });
+
   test('execute return type works based on qb.select/insert/update/delete() being used', async () => {
     const spy = jest.spyOn(QueryBuilder.prototype, 'execute');
 
