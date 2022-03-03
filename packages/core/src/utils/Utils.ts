@@ -172,8 +172,8 @@ export class Utils {
     let size = 0;
 
     for (const key in object) {
-      /* istanbul ignore else */ // eslint-disable-next-line no-prototype-builtins
-      if (object.hasOwnProperty(key)) {
+      /* istanbul ignore else */
+      if (Object.prototype.hasOwnProperty.call(object, key)) {
         size++;
       }
     }
@@ -187,8 +187,8 @@ export class Utils {
    */
   static hasObjectKeys(object: Dictionary): boolean {
     for (const key in object) {
-      /* istanbul ignore else */ // eslint-disable-next-line no-prototype-builtins
-      if (object.hasOwnProperty(key)) {
+      /* istanbul ignore else */
+      if (Object.prototype.hasOwnProperty.call(object, key)) {
         return true;
       }
     }
