@@ -460,6 +460,18 @@ describe('Utils', () => {
     expect(Utils.asArray(new Set(['a']))).toEqual(['a']);
   });
 
+  test('getObjectKeysSize', () => {
+    expect(Utils.getObjectKeysSize({ a: 'a' })).toEqual(1);
+    expect(Utils.getObjectKeysSize({ a: 'a', __proto__: null })).toEqual(1);
+  });
+
+  test('hasObjectKeys', () => {
+    expect(Utils.hasObjectKeys({  })).toEqual(false);
+    expect(Utils.hasObjectKeys({  __proto__: null })).toEqual(false);
+    expect(Utils.hasObjectKeys({ a: 'a' })).toEqual(true);
+    expect(Utils.hasObjectKeys({ a: 'a', __proto__: null })).toEqual(true);
+  });
+
   afterAll(async () => orm.close(true));
 
 });
