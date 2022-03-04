@@ -60,7 +60,7 @@ export class Author {
 }
 ```
 
-> `@Repository()` decorator has been removing in v5, use
+> `@Repository()` decorator has been removed in v5, use
 > `@Entity({ customRepository: () => MyRepository })` instead.
 
 Note that we need to pass that repository reference inside a callback so we will not run
