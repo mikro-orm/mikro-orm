@@ -62,7 +62,7 @@
     "@mikro-orm/core": "^5.0.5",
     "@mikro-orm/knex": "^5.0.5",
     "fs-extra": "10.0.1",
-    "tsconfig-paths": "3.12.0",
+    "tsconfig-paths": "3.13.0",
     "yargonaut": "1.1.4",
     "yargs": "15.4.1"
   },
