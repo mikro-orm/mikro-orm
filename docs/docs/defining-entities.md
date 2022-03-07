@@ -1234,6 +1234,8 @@ export abstract class CustomBaseEntity {
   <TabItem value="entity-schema">
 
 ```ts title="./entities/CustomBaseEntity.ts"
+import { v4 } from 'uuid';
+
 export interface CustomBaseEntity {
   uuid: string;
   createdAt: Date;
@@ -1244,7 +1246,7 @@ export const schema = new EntitySchema<CustomBaseEntity>({
   name: 'CustomBaseEntity',
   abstract: true,
   properties: {
-    id: { type: 'number', primary: true },
+    uuid: { type: 'uuid', onCreate: () => v4(), primary: true },
     createdAt: { type: 'Date', onCreate: () => new Date(), nullable: true },
     updatedAt: { type: 'Date', onCreate: () => new Date(), onUpdate: () => new Date(), nullable: true },
   },
