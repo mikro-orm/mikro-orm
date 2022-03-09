@@ -451,7 +451,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   loadStrategy: LoadStrategy;
   populateWhere: PopulateHint;
   flushMode: FlushMode;
-  entityRepository?: Constructor<EntityRepository<any>>;
+  entityRepository?: Constructor;
   replicas?: Partial<ConnectionOptions>[];
   strict: boolean;
   validate: boolean;
