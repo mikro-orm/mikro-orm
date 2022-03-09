@@ -62,10 +62,10 @@ describe('GH issue 1910', () => {
       return [1, 2, 3, 4];
     });
 
-    expect(await em.findOne(A, id1)).toBeNull();
-    expect(await em.findOne(A, id2)).not.toBeNull();
-    expect(await em.findOne(A, id3)).toBeNull();
-    expect(await em.findOne(A, id4)).not.toBeNull();
+    await expect(em.fork().findOne(A, id1)).resolves.toBeNull();
+    await expect(em.fork().findOne(A, id2)).resolves.not.toBeNull();
+    await expect(em.fork().findOne(A, id3)).resolves.toBeNull();
+    await expect(em.fork().findOne(A, id4)).resolves.not.toBeNull();
   });
 
 });

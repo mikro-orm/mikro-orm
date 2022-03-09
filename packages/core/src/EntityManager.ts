@@ -399,6 +399,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Runs your callback wrapped inside a database transaction.
    */
   async transactional<T>(cb: (em: D[typeof EntityManagerType]) => Promise<T>, options: TransactionOptions = {}): Promise<T> {
+    const context = this.getContext(false);
     const em = this.fork({ clear: false, flushMode: options.flushMode });
     options.ctx ??= this.transactionContext;
 
@@ -407,6 +408,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         em.transactionContext = trx;
         const ret = await cb(em);
         await em.flush();
+
+        // ensure all entities from inner context are merged to the upper one
+        for (const entity of em.unitOfWork.getIdentityMap()) {
+          context.unitOfWork.registerManaged(entity);
+          entity.__helper!.__em = context;
+        }
 
         return ret;
       }, { ...options, eventBroadcaster: new TransactionEventBroadcaster(em) });
