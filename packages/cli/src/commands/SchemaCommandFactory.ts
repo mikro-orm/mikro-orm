@@ -4,6 +4,7 @@ import { colors } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { SchemaGenerator } from '@mikro-orm/knex';
 import { CLIHelper } from '../CLIHelper';
+import {OrmProvider} from "./typings";
 
 export class SchemaCommandFactory {
 
@@ -21,14 +22,14 @@ export class SchemaCommandFactory {
     fresh: 'Schema successfully dropped and recreated',
   };
 
-  static create<U extends Options = Options>(command: SchemaMethod): CommandModule<unknown, U> & { builder: (args: Argv) => Argv<U>; handler: (args: Arguments<U>) => Promise<void> } {
+  static create<U extends Options = Options>(command: SchemaMethod, ormProvider: OrmProvider<AbstractSqlDriver>): CommandModule<unknown, U> & { builder: (args: Argv) => Argv<U>; handler: (args: Arguments<U>) => Promise<void> } {
     const successMessage = SchemaCommandFactory.SUCCESS_MESSAGES[command];
 
     return {
       command: `schema:${command}`,
       describe: SchemaCommandFactory.DESCRIPTIONS[command],
       builder: (args: Argv) => SchemaCommandFactory.configureSchemaCommand(args, command) as Argv<U>,
-      handler: (args: Arguments<U>) => SchemaCommandFactory.handleSchemaCommand(args, command, successMessage),
+      handler: (args: Arguments<U>) => SchemaCommandFactory.handleSchemaCommand(args, command, successMessage, ormProvider),
     };
   }
 
@@ -90,12 +91,16 @@ export class SchemaCommandFactory {
     return args;
   }
 
-  static async handleSchemaCommand(args: Arguments<Options>, method: SchemaMethod, successMessage: string) {
+  static async handleSchemaCommand(args: Arguments<Options>, method: SchemaMethod, successMessage: string, ormProvider: OrmProvider<AbstractSqlDriver>) {
     if (!args.run && !args.dump) {
       return CLIHelper.showHelp();
     }
 
-    const orm = await CLIHelper.getORM() as MikroORM<AbstractSqlDriver>;
+    const orm = await ormProvider()
+    if (!await orm.isConnected()) {
+      await orm.connect();
+    }
+
     const generator = new SchemaGenerator(orm.em);
     const params = { wrap: !args.fkChecks, ...args };
 

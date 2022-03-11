@@ -1,13 +1,13 @@
 import type { Arguments, Argv, CommandModule } from 'yargs';
 import type { Configuration, MikroORM, MikroORMOptions, IMigrator } from '@mikro-orm/core';
-import { Utils, colors } from '@mikro-orm/core';
+import {Utils, colors, IDatabaseDriver} from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { SchemaGenerator } from '@mikro-orm/knex';
 import type { MigrateOptions } from '@mikro-orm/migrations';
 import { CLIHelper } from '../CLIHelper';
+import {OrmProvider} from "./typings";
 
 export class MigrationCommandFactory {
-
   static readonly DESCRIPTIONS = {
     create: 'Create new migration with current schema diff',
     up: 'Migrate up to the latest version',
@@ -17,12 +17,12 @@ export class MigrationCommandFactory {
     fresh: 'Clear the database and rerun all migrations',
   };
 
-  static create<U extends Options = Options>(command: MigratorMethod): CommandModule<unknown, U> & { builder: (args: Argv) => Argv<U>; handler: (args: Arguments<U>) => Promise<void> } {
+  static create<U extends Options = Options>(command: MigratorMethod, ormProvider: OrmProvider<AbstractSqlDriver>): CommandModule<unknown, U> & { builder: (args: Argv) => Argv<U>; handler: (args: Arguments<U>) => Promise<void> } {
     return {
       command: `migration:${command}`,
       describe: MigrationCommandFactory.DESCRIPTIONS[command],
       builder: (args: Argv) => MigrationCommandFactory.configureMigrationCommand(args, command) as Argv<U>,
-      handler: (args: Arguments<U>) => MigrationCommandFactory.handleMigrationCommand(args, command),
+      handler: (args: Arguments<U>) => MigrationCommandFactory.handleMigrationCommand(args, command, ormProvider),
     };
   }
 
@@ -83,10 +83,13 @@ export class MigrationCommandFactory {
     });
   }
 
-  static async handleMigrationCommand(args: Arguments<Options>, method: MigratorMethod): Promise<void> {
-    const options = { pool: { min: 1, max: 1 } } as Partial<MikroORMOptions>;
-    const orm = await CLIHelper.getORM(undefined, options) as MikroORM<AbstractSqlDriver>;
+  static async handleMigrationCommand(args: Arguments<Options>, method: MigratorMethod, ormProvider: OrmProvider<AbstractSqlDriver>): Promise<void> {
+    const options = { pool: { min: 1, max: 1 } } as Partial<MikroORMOptions>; // TODO
     const { Migrator } = await import('@mikro-orm/migrations');
+    const orm = await ormProvider()
+    if (!await orm.isConnected()) {
+      await orm.connect();
+    }
     const migrator = new Migrator(orm.em);
 
     switch (method) {

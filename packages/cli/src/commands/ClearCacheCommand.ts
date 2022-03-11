@@ -1,18 +1,21 @@
 import type { Arguments, CommandModule } from 'yargs';
-import { colors } from '@mikro-orm/core';
+import {colors} from '@mikro-orm/core';
 import { CLIHelper } from '../CLIHelper';
+import {ConfigProvider} from "./typings";
 
 export class ClearCacheCommand implements CommandModule {
-
   command = 'cache:clear';
   describe = 'Clear metadata cache';
+
+  constructor(private configProvider: ConfigProvider) {
+    this.handler.bind(this)
+  }
 
   /**
    * @inheritDoc
    */
   async handler(args: Arguments) {
-    const config = await CLIHelper.getConfiguration();
-
+    const config = await this.configProvider()
     if (!config.get('cache').enabled) {
       CLIHelper.dump(colors.red('Metadata cache is disabled in your configuration. Set cache.enabled to true to use this command.'));
       return;

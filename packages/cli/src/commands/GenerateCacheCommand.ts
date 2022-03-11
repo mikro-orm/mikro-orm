@@ -1,17 +1,21 @@
 import type { Arguments, CommandModule } from 'yargs';
-import { MetadataDiscovery, MetadataStorage, colors } from '@mikro-orm/core';
+import {MetadataDiscovery, MetadataStorage, colors} from '@mikro-orm/core';
 import { CLIHelper } from '../CLIHelper';
+import {ConfigProvider} from "./typings";
 
 export class GenerateCacheCommand implements CommandModule {
-
   command = 'cache:generate';
   describe = 'Generate metadata cache for production';
+
+  constructor(private configProvider: ConfigProvider) {
+    this.handler.bind(this)
+  }
 
   /**
    * @inheritDoc
    */
   async handler(args: Arguments) {
-    const config = await CLIHelper.getConfiguration();
+    const config = await this.configProvider()
 
     if (!config.get('cache').enabled) {
       return CLIHelper.dump(colors.red('Metadata cache is disabled in your configuration. Set cache.enabled to true to use this command.'));

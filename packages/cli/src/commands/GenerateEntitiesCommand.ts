@@ -1,13 +1,19 @@
 import type { Arguments, Argv, CommandModule } from 'yargs';
 import type { EntityManager } from '@mikro-orm/knex';
 import { CLIHelper } from '../CLIHelper';
+import { MikroORM} from "@mikro-orm/core";
+import {AbstractSqlDriver} from "@mikro-orm/knex";
+import {OrmProvider} from "./typings";
 
 export type Options = { dump: boolean; save: boolean; path: string; schema: string };
 
 export class GenerateEntitiesCommand<U extends Options = Options> implements CommandModule<unknown, U> {
-
   command = 'generate-entities';
   describe = 'Generate entities based on current database schema';
+
+  constructor(private ormProvider: OrmProvider) {
+    this.handler.bind(this)
+  }
 
   /**
    * @inheritDoc
@@ -44,8 +50,12 @@ export class GenerateEntitiesCommand<U extends Options = Options> implements Com
       return CLIHelper.showHelp();
     }
 
-    const orm = await CLIHelper.getORM(false);
     const { EntityGenerator } = await import('@mikro-orm/entity-generator');
+    const orm = await this.ormProvider()
+    if (!await orm.isConnected()) {
+      await orm.connect();
+    }
+
     const generator = new EntityGenerator(orm.em as EntityManager);
     const dump = await generator.generate({ save: args.save, baseDir: args.path, schema: args.schema });
 

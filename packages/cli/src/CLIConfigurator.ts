@@ -1,7 +1,7 @@
 import type { Argv } from 'yargs';
-import yargs from 'yargs';
+import yargs, {CommandModule} from 'yargs';
 
-import { ConfigurationLoader, Utils } from '@mikro-orm/core';
+import {ConfigurationLoader, Utils} from '@mikro-orm/core';
 import { ClearCacheCommand } from './commands/ClearCacheCommand';
 import { DatabaseSeedCommand } from './commands/DatabaseSeedCommand';
 import { DebugCommand } from './commands/DebugCommand';
@@ -12,6 +12,8 @@ import { MigrationCommandFactory } from './commands/MigrationCommandFactory';
 import { SchemaCommandFactory } from './commands/SchemaCommandFactory';
 import { CreateSeederCommand } from './commands/CreateSeederCommand';
 import { CreateDatabaseCommand } from './commands/CreateDatabaseCommand';
+import {CLIHelper} from "./CLIHelper";
+import {ConfigProvider, OrmProvider} from "./commands/typings";
 
 /**
  * @internal
@@ -27,34 +29,59 @@ export class CLIConfigurator {
       await ConfigurationLoader.registerTsNode(settings.tsConfigPath);
     }
 
-    // noinspection HtmlDeprecatedTag
-    return yargs
-      .scriptName('mikro-orm')
+    const yargsInstance = yargs.scriptName('mikro-orm')
       .version(version)
       .usage('Usage: $0 <command> [options]')
-      .example('$0 schema:update --run', 'Runs schema synchronization')
+
+
+    CLIConfigurator.createOrmCommands(() => CLIHelper.getORM())
+      .forEach(command => yargsInstance.command(command))
+
+    CLIConfigurator.createConfigCommands(() => CLIHelper.getConfiguration())
+      .forEach(command => yargsInstance.command(command))
+
+    yargsInstance.command(new DebugCommand())
+    yargsInstance.example('$0 schema:update --run', 'Runs schema synchronization')
       .alias('v', 'version')
       .alias('h', 'help')
-      .command(new ClearCacheCommand())
-      .command(new GenerateCacheCommand())
-      .command(new GenerateEntitiesCommand())
-      .command(new CreateDatabaseCommand())
-      .command(new ImportCommand())
-      .command(new DatabaseSeedCommand())
-      .command(new CreateSeederCommand())
-      .command(SchemaCommandFactory.create('create'))
-      .command(SchemaCommandFactory.create('drop'))
-      .command(SchemaCommandFactory.create('update'))
-      .command(SchemaCommandFactory.create('fresh'))
-      .command(MigrationCommandFactory.create('create'))
-      .command(MigrationCommandFactory.create('up'))
-      .command(MigrationCommandFactory.create('down'))
-      .command(MigrationCommandFactory.create('list'))
-      .command(MigrationCommandFactory.create('pending'))
-      .command(MigrationCommandFactory.create('fresh'))
-      .command(new DebugCommand())
+
+    // noinspection HtmlDeprecatedTag
+    return yargsInstance
       .recommendCommands()
       .strict();
+  }
+
+  /**
+   * @internal
+   */
+  static createConfigCommands(configProvider: ConfigProvider): CommandModule[] {
+    return [
+      new ClearCacheCommand(configProvider),
+      new GenerateCacheCommand(configProvider),
+    ]
+  }
+
+  /**
+   * @internal
+   */
+  static createOrmCommands(ormProvider: OrmProvider<any>): CommandModule[] {
+    return [
+      new GenerateEntitiesCommand(ormProvider),
+      new CreateDatabaseCommand(ormProvider),
+      new ImportCommand(ormProvider),
+      new DatabaseSeedCommand(ormProvider),
+      new CreateSeederCommand(ormProvider),
+      SchemaCommandFactory.create('create', ormProvider),
+      SchemaCommandFactory.create('drop', ormProvider),
+      SchemaCommandFactory.create('update', ormProvider),
+      SchemaCommandFactory.create('fresh', ormProvider),
+      MigrationCommandFactory.create('create', ormProvider),
+      MigrationCommandFactory.create('up', ormProvider),
+      MigrationCommandFactory.create('down', ormProvider),
+      MigrationCommandFactory.create('list', ormProvider),
+      MigrationCommandFactory.create('pending', ormProvider),
+      MigrationCommandFactory.create('fresh', ormProvider)
+    ] as any
   }
 
 }

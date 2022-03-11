@@ -1,11 +1,10 @@
-import type { Arguments, Argv, CommandModule } from 'yargs';
-import type { MikroORM } from '@mikro-orm/core';
-import { colors } from '@mikro-orm/core';
-import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import type { Arguments, Argv } from 'yargs';
+import {colors} from '@mikro-orm/core';
 import { CLIHelper } from '../CLIHelper';
+import {CommandModule} from "yargs";
+import {OrmProvider} from "./typings";
 
 export class CreateSeederCommand<T> implements CommandModule<T, { seeder: string }> {
-
   command = 'seeder:create <seeder>';
   describe = 'Create a new seeder class';
   builder = (args: Argv) => {
@@ -16,12 +15,20 @@ export class CreateSeederCommand<T> implements CommandModule<T, { seeder: string
     return args as Argv<{ seeder: string }>;
   };
 
+  constructor(private ormProvider: OrmProvider) {
+    this.handler.bind(this)
+  }
+
   /**
    * @inheritDoc
    */
   async handler(args: Arguments<{ seeder: string }>) {
+    const orm = await this.ormProvider()
+    if (!await orm.isConnected()) {
+      await orm.connect();
+    }
+
     const seederName = CreateSeederCommand.getSeederClassName(args.seeder);
-    const orm = await CLIHelper.getORM(undefined) as MikroORM<AbstractSqlDriver>;
     const seeder = orm.getSeeder();
     const path = await seeder.createSeeder(seederName);
     CLIHelper.dump(colors.green(`Seeder ${args.seeder} successfully created at ${path}`));
