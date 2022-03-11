@@ -679,3 +679,5 @@ export interface Seeder {
 }
 
 export type MaybePromise<T> = T | Promise<T>;
+
+export type ConnectionType = 'read' | 'write';

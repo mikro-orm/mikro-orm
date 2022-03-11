@@ -1,6 +1,6 @@
 import type { CountOptions, LockOptions, DeleteOptions, FindOneOptions, FindOptions, IDatabaseDriver, NativeInsertUpdateManyOptions, NativeInsertUpdateOptions, DriverMethodOptions } from './IDatabaseDriver';
 import { EntityManagerType } from './IDatabaseDriver';
-import type { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityProperty, FilterQuery, PopulateOptions, Primary } from '../typings';
+import type { AnyEntity, ConnectionType, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityProperty, FilterQuery, PopulateOptions, Primary } from '../typings';
 import type { MetadataStorage } from '../metadata';
 import type { Connection, QueryResult, Transaction } from '../connections';
 import type { Configuration, ConnectionOptions } from '../utils';
@@ -83,7 +83,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return this.connect();
   }
 
-  getConnection(type: 'read' | 'write' = 'write'): C {
+  getConnection(type: ConnectionType = 'write'): C {
     if (type === 'write' || this.replicas.length === 0) {
       return this.connection as C;
     }

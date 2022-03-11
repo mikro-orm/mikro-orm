@@ -6,7 +6,7 @@ import type { AssignOptions, EntityLoaderOptions, EntityRepository, IdentifiedRe
 import { EntityAssigner, EntityFactory, EntityLoader, EntityValidator, Reference } from './entity';
 import { UnitOfWork } from './unit-of-work';
 import type { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, InsertOptions, LockOptions, UpdateOptions, GetReferenceOptions, EntityField } from './drivers';
-import type { AnyEntity, AutoPath, Dictionary, EntityData, EntityDictionary, EntityDTO, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, Populate, PopulateOptions, Primary, RequiredEntityData } from './typings';
+import type { AnyEntity, AutoPath, ConnectionType, Dictionary, EntityData, EntityDictionary, EntityDTO, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, Populate, PopulateOptions, Primary, RequiredEntityData } from './typings';
 import { FlushMode, LoadStrategy, LockMode, PopulateHint, ReferenceType, SCALAR_TYPES } from './enums';
 import type { TransactionOptions } from './enums';
 import type { MetadataStorage } from './metadata';
@@ -57,7 +57,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Gets the Connection instance, by default returns write connection
    */
-  getConnection(type?: 'read' | 'write'): ReturnType<D['getConnection']> {
+  getConnection(type?: ConnectionType): ReturnType<D['getConnection']> {
     return this.driver.getConnection(type) as ReturnType<D['getConnection']>;
   }
 

@@ -1,11 +1,9 @@
 import { v4 } from 'uuid';
 import { inspect } from 'util';
 import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
-import {
-  Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, ValidationError, wrap,
-  UniqueConstraintViolationException, TableNotFoundException, TableExistsException, SyntaxErrorException,
-  NonUniqueFieldNameException, InvalidFieldNameException, expr, IsolationLevel, NullHighlighter, PopulateHint,
-} from '@mikro-orm/core';
+import { Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, ValidationError, wrap,
+  UniqueConstraintViolationException, TableNotFoundException, TableExistsException, SyntaxErrorException, NonUniqueFieldNameException,
+  InvalidFieldNameException, expr, IsolationLevel, NullHighlighter, PopulateHint } from '@mikro-orm/core';
 import { MySqlDriver, MySqlConnection } from '@mikro-orm/mysql';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, Test2 } from './entities-sql';
 import { initORMMySql, mockLogger } from './bootstrap';
@@ -1938,52 +1936,6 @@ describe('EntityManagerMySql', () => {
 
     Object.assign(orm.config.getLogger(), { highlighter: new NullHighlighter() });
     process.env.FORCE_COLOR = '0';
-  });
-
-  test('read replicas', async () => {
-    const mock = mockLogger(orm, ['query']);
-
-    let author = new Author2('Jon Snow', 'snow@wall.st');
-    author.born = new Date('1990-03-23');
-    author.books.add(new Book2('B', author));
-    await orm.em.persistAndFlush(author);
-    expect(mock.mock.calls[0][0]).toMatch(/begin.*via write connection '127\.0\.0\.1'/);
-    expect(mock.mock.calls[1][0]).toMatch(/insert into `author2`.*via write connection '127\.0\.0\.1'/);
-    expect(mock.mock.calls[2][0]).toMatch(/insert into `book2`.*via write connection '127\.0\.0\.1'/);
-    expect(mock.mock.calls[3][0]).toMatch(/commit.*via write connection '127\.0\.0\.1'/);
-
-    orm.em.clear();
-    author = (await orm.em.findOne(Author2, author))!;
-    await orm.em.findOne(Author2, author, { refresh: true });
-    await orm.em.findOne(Author2, author, { refresh: true });
-    expect(mock.mock.calls[4][0]).toMatch(/select `a0`\.\*, `a1`\.`author_id` as `address_author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`\.`id` = `a1`\.`author_id` where `a0`.`id` = \? limit \?.*via read connection 'read-\d'/);
-    expect(mock.mock.calls[5][0]).toMatch(/select `a0`\.\*, `a1`\.`author_id` as `address_author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`\.`id` = `a1`\.`author_id` where `a0`.`id` = \? limit \?.*via read connection 'read-\d'/);
-    expect(mock.mock.calls[6][0]).toMatch(/select `a0`\.\*, `a1`\.`author_id` as `address_author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`\.`id` = `a1`\.`author_id` where `a0`.`id` = \? limit \?.*via read connection 'read-\d'/);
-
-    author.name = 'Jon Blow';
-    await orm.em.flush();
-    expect(mock.mock.calls[7][0]).toMatch(/begin.*via write connection '127\.0\.0\.1'/);
-    expect(mock.mock.calls[8][0]).toMatch(/update `author2` set `name` = \?, `updated_at` = \? where `id` = \?.*via write connection '127\.0\.0\.1'/);
-    expect(mock.mock.calls[9][0]).toMatch(/commit.*via write connection '127\.0\.0\.1'/);
-
-    const qb = orm.em.createQueryBuilder(Author2, 'a', 'write');
-    await qb.select('*').where({ name: /.*Blow/ }).execute();
-    expect(mock.mock.calls[10][0]).toMatch(/select `a`.* from `author2` as `a` where `a`.`name` like \?.*via write connection '127\.0\.0\.1'/);
-
-    await orm.em.transactional(async em => {
-      const book = await em.findOne(Book2, { title: 'B' });
-      author.name = 'Jon Flow';
-      author.favouriteBook = book!;
-      await em.flush();
-    });
-
-    expect(mock.mock.calls[11][0]).toMatch(/begin.*via write connection '127\.0\.0\.1'/);
-    expect(mock.mock.calls[12][0]).toMatch(/select.*via write connection '127\.0\.0\.1'/);
-    expect(mock.mock.calls[13][0]).toMatch(/update.*via write connection '127\.0\.0\.1'/);
-    expect(mock.mock.calls[14][0]).toMatch(/commit.*via write connection '127\.0\.0\.1'/);
-
-    await orm.em.findOne(Author2, author, { forceWriteConnection: true, refresh: true });
-    expect(mock.mock.calls[15][0]).toMatch(/select `a0`\.\*, `a1`\.`author_id` as `address_author_id` from `author2` as `a0` left join `address2` as `a1` on `a0`\.`id` = `a1`\.`author_id` where `a0`.`id` = \? limit \?.*via write connection '127\.0\.0\.1'/);
   });
 
   test('datetime is stored in correct timezone', async () => {

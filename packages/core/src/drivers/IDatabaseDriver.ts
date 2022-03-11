@@ -1,5 +1,5 @@
 import type {
-  EntityData, EntityMetadata, EntityProperty, AnyEntity, FilterQuery, Primary, Dictionary, QBFilterQuery,
+  ConnectionType, EntityData, EntityMetadata, EntityProperty, AnyEntity, FilterQuery, Primary, Dictionary, QBFilterQuery,
   IPrimaryKey, PopulateOptions, EntityDictionary, ExpandProperty, AutoPath, ObjectQuery,
 } from '../typings';
 import type { Connection, QueryResult, Transaction } from '../connections';
@@ -26,7 +26,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
   reconnect(): Promise<C>;
 
-  getConnection(type?: 'read' | 'write'): C;
+  getConnection(type?: ConnectionType): C;
 
   /**
    * Finds selection of entities
@@ -113,7 +113,7 @@ export interface FindOptions<T, P extends string = never> {
   lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
   lockTableAliases?: string[];
   ctx?: Transaction;
-  forceWriteConnection?: boolean;
+  connectionType?: ConnectionType;
 }
 
 export interface FindOneOptions<T, P extends string = never> extends Omit<FindOptions<T, P>, 'limit' | 'offset' | 'lockMode'> {
@@ -143,6 +143,7 @@ export interface CountOptions<T, P extends string = never>  {
   cache?: boolean | number | [string, number];
   populate?: readonly AutoPath<T, P>[] | boolean;
   ctx?: Transaction;
+  connectionType?: ConnectionType;
 }
 
 export interface InsertOptions<T>  {
