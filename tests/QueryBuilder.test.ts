@@ -1584,7 +1584,7 @@ describe('QueryBuilder', () => {
       .join('b.tags', 't')
       .where({ 'p.name': 'test 123', 'b.title': /3$/ })
       .orderBy({ 'b.title': QueryOrder.DESC })
-      .unsetFlag(QueryFlag.DISABLE_PAGINATE)
+      .setFlag(QueryFlag.DISABLE_PAGINATE)
       .limit(10, 5);
 
     const sql = 'select `p`.*, `b`.*, `a`.*, `t`.* ' +
@@ -2615,7 +2615,7 @@ describe('QueryBuilder', () => {
 
   test('sub-query order-by fields are always fully qualified', () => {
     const expected = 'select `e0`.*, `books`.`uuid_pk` as `books__uuid_pk`, `books`.`created_at` as `books__created_at`, `books`.`title` as `books__title`, `books`.`price` as `books__price`, `books`.price * 1.19 as `books__price_taxed`, `books`.`double` as `books__double`, `books`.`meta` as `books__meta`, `books`.`author_id` as `books__author_id`, `books`.`publisher_id` as `books__publisher_id` from `author2` as `e0` inner join `book2` as `books` on `e0`.`id` = `books`.`author_id` where `e0`.`id` in (select `e0`.`id` from (select `e0`.`id` from `author2` as `e0` inner join `book2` as `books` on `e0`.`id` = `books`.`author_id` group by `e0`.`id` order by min(`e0`.`id`) desc limit 10) as `e0`) order by `e0`.`id` desc';
-    const sql = orm.em.createQueryBuilder(Author2).select('*').joinAndSelect('books','books').orderBy({ id: QueryOrder.DESC }).limit(10).getFormattedQuery();
+    const sql = orm.em.createQueryBuilder(Author2).select('*').joinAndSelect('books', 'books').orderBy({ id: QueryOrder.DESC }).limit(10).getFormattedQuery();
     expect(sql).toBe(expected);
   });
 

@@ -1610,11 +1610,12 @@ describe('EntityManagerPostgre', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    // without paginate flag it fails to get 5 records
+    // without paginate flag it fails to get only 2 records (we need to explicitly disable it)
     const res1 = await orm.em.find(Author2, { books: { title: /^Bible/ } }, {
       orderBy: { name: QueryOrder.ASC, books: { title: QueryOrder.ASC } },
       offset: 3,
       limit: 5,
+      flags: [QueryFlag.DISABLE_PAGINATE],
     });
 
     expect(res1).toHaveLength(2);

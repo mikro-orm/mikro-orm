@@ -44,7 +44,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   _populateMap: Dictionary<string> = {};
 
   private aliasCounter = 0;
-  private flags: Set<QueryFlag> = new Set([QueryFlag.CONVERT_CUSTOM_TYPES, QueryFlag.DISABLE_PAGINATE]);
+  private flags: Set<QueryFlag> = new Set([QueryFlag.CONVERT_CUSTOM_TYPES]);
   private finalized = false;
   private _joins: Dictionary<JoinOptions> = {};
   private _aliasMap: Dictionary<string> = {};
@@ -811,7 +811,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     this.finalized = true;
 
     // automatically enable paginate flag when we detect to-many joins
-    if (this.flags.has(QueryFlag.DISABLE_PAGINATE) && this.hasToManyJoins()) {
+    if (!this.flags.has(QueryFlag.DISABLE_PAGINATE) && this.hasToManyJoins()) {
       this.flags.add(QueryFlag.PAGINATE);
     }
 
@@ -825,7 +825,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   }
 
   private hasToManyJoins(): boolean {
-    return this._joinedProps.size > 0 && Object.values(this._joins).some(join => {
+    return Object.values(this._joins).some(join => {
       return [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(join.prop.reference);
     });
   }

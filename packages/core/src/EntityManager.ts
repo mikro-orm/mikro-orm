@@ -131,16 +131,18 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return [];
     }
 
+    const uow = this.getUnitOfWork();
+    const factory = this.getEntityFactory();
     const ret: T[] = [];
 
     for (const data of results) {
-      const entity = this.getEntityFactory().create(entityName, data as EntityData<T>, {
+      const entity = factory.create(entityName, data as EntityData<T>, {
         merge: true,
         refresh: options.refresh,
         schema: options.schema,
         convertCustomTypes: true,
       }) as T;
-      this.getUnitOfWork().registerManaged(entity, data, { refresh: options.refresh, loaded: true });
+      uow.registerManaged(entity, data, { refresh: options.refresh, loaded: true });
       ret.push(entity);
     }
 
@@ -152,7 +154,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       ignoreLazyScalarProperties: true,
       lookup: false,
     });
-    await this.getUnitOfWork().dispatchOnLoadEvent();
+    await uow.dispatchOnLoadEvent();
     await this.storeCache(options.cache, cached!, () => unique.map(e => e.__helper!.toPOJO()));
 
     return unique as Loaded<T, P>[];
@@ -334,7 +336,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     where = await this.processWhere(entityName, where, options, 'read');
     this.validator.validateEmptyWhere(where);
     this.checkLockRequirements(options.lockMode, meta);
-    let entity = this.getUnitOfWork().tryGetById<T>(entityName, where, options.schema);
+    const uow = this.getUnitOfWork();
+    let entity = uow.tryGetById<T>(entityName, where, options.schema);
     const isOptimisticLocking = !Utils.isDefined(options.lockMode) || options.lockMode === LockMode.OPTIMISTIC;
 
     if (entity && !this.shouldRefresh(meta, entity, options) && isOptimisticLocking) {
@@ -370,9 +373,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       schema: options.schema,
       convertCustomTypes: true,
     });
-    this.getUnitOfWork().registerManaged(entity, data, { refresh: options.refresh, loaded: true });
+    uow.registerManaged(entity, data, { refresh: options.refresh, loaded: true });
     await this.lockAndPopulate(entityName, entity, where, options);
-    await this.getUnitOfWork().dispatchOnLoadEvent();
+    await uow.dispatchOnLoadEvent();
     await this.storeCache(options.cache, cached!, () => entity!.__helper!.toPOJO());
 
     return entity as Loaded<T, P>;
@@ -545,7 +548,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     entityName = Utils.className(entityName as string);
     this.validator.validatePrimaryKey(data as EntityData<T>, this.metadata.get(entityName));
-    let entity = this.getUnitOfWork().tryGetById<T>(entityName, data as FilterQuery<T>, options.schema, false);
+    const uow = this.getUnitOfWork();
+    let entity = uow.tryGetById<T>(entityName, data as FilterQuery<T>, options.schema, false);
 
     if (entity && entity.__helper!.__initialized && !options.refresh) {
       return entity;
@@ -556,7 +560,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     entity = Utils.isEntity<T>(data) ? data : this.getEntityFactory().create<T>(entityName, data as EntityData<T>, { merge: true, ...options });
     this.validator.validate(entity, data, childMeta ?? meta);
-    this.getUnitOfWork().merge(entity);
+    uow.merge(entity);
 
     return entity;
   }
@@ -657,9 +661,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * The entity will be entered into the database at or before transaction commit or as a result of the flush operation.
    */
   persist(entity: AnyEntity | Reference<AnyEntity> | (AnyEntity | Reference<AnyEntity>)[]): this {
+    const uow = this.getUnitOfWork();
+
     if (Utils.isEntity(entity)) {
       // do not cascade just yet, cascading of entities in persist stack is done when flushing
-      this.getUnitOfWork().persist(entity, undefined, { cascade: false });
+      uow.persist(entity, undefined, { cascade: false });
       return this;
     }
 
@@ -673,7 +679,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       // do not cascade just yet, cascading of entities in persist stack is done when flushing
-      this.getUnitOfWork().persist(Reference.unwrapReference(ent), undefined, { cascade: false });
+      uow.persist(Reference.unwrapReference(ent), undefined, { cascade: false });
     }
 
     return this;
@@ -704,9 +710,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * To remove entities by condition, use `em.nativeDelete()`.
    */
   remove<T extends AnyEntity<T>>(entity: T | Reference<T> | (T | Reference<T>)[]): this {
+    const uow = this.getUnitOfWork();
+
     if (Utils.isEntity<T>(entity)) {
       // do not cascade just yet, cascading of entities in persist stack is done when flushing
-      this.getUnitOfWork().remove(entity, undefined, { cascade: false });
+      uow.remove(entity, undefined, { cascade: false });
       return this;
     }
 
@@ -718,7 +726,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       // do not cascade just yet, cascading of entities in remove stack is done when flushing
-      this.getUnitOfWork().remove(Reference.unwrapReference(ent), undefined, { cascade: false });
+      uow.remove(Reference.unwrapReference(ent), undefined, { cascade: false });
     }
 
     return this;

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 
-import { Collection, Entity, Enum, Filter, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property, QueryFlag } from '@mikro-orm/core';
+import { Collection, Entity, Enum, Filter, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
@@ -157,6 +157,7 @@ export class B {
 
 }
 
+// paginate flag is enabled automatically so no need to provide it in the find options
 describe('GH issue 2095', () => {
 
   let orm: MikroORM<PostgreSqlDriver>;
@@ -234,7 +235,6 @@ describe('GH issue 2095', () => {
       limit: 20,
       orderBy: { end: 'ASC' },
       populate: ['tc.c'],
-      flags: [QueryFlag.PAGINATE],
     });
 
     orm.em.clear();
@@ -244,7 +244,6 @@ describe('GH issue 2095', () => {
       offset: 20,
       orderBy: { end: 'ASC' },
       populate: ['tc.c'],
-      flags: [QueryFlag.PAGINATE],
     });
 
     const firstMaxDate = new Date(Math.max(...firstResults.map(e => e.end.getTime())));
@@ -259,7 +258,7 @@ describe('GH issue 2095', () => {
     const [ users, total ] = await orm.em.findAndCount(
       User,
       { groups: { $in: ['id-group-01', 'id-group-02', 'id-group-03'] } },
-      { limit: 3, offset: 0, orderBy: { id: 'desc' }, flags: [QueryFlag.PAGINATE] },
+      { limit: 3, offset: 0, orderBy: { id: 'desc' } },
     );
     expect(users).toHaveLength(3);
     expect(total).toBe(3);
@@ -272,7 +271,7 @@ describe('GH issue 2095', () => {
     const [ users, total ] = await orm.em.findAndCount(
       User,
       { groups: { $in: ['id-group-01', 'id-group-02', 'id-group-03'] } },
-      { limit: 2, offset: 1, orderBy: { id: 'desc' }, flags: [QueryFlag.PAGINATE] },
+      { limit: 2, offset: 1, orderBy: { id: 'desc' } },
     );
     expect(users).toHaveLength(2);
     expect(total).toBe(3);
@@ -284,7 +283,7 @@ describe('GH issue 2095', () => {
     const [ users, total ] = await orm.em.findAndCount(
       User,
       { groups: { $in: ['id-group-01', 'id-group-02', 'id-group-03'] } },
-      { limit: 2, offset: 0, orderBy: { id: 'desc' }, flags: [QueryFlag.PAGINATE] },
+      { limit: 2, offset: 0, orderBy: { id: 'desc' } },
     );
     expect(users).toHaveLength(2);
     expect(total).toBe(3);
@@ -296,7 +295,7 @@ describe('GH issue 2095', () => {
     const [ users, total ] = await orm.em.findAndCount(
       User,
       { groups: { $in: ['id-group-01', 'id-group-02', 'id-group-03'] } },
-      { limit: 2, offset: 2, orderBy: { id: 'desc' }, flags: [QueryFlag.PAGINATE] },
+      { limit: 2, offset: 2, orderBy: { id: 'desc' } },
     );
     expect(users).toHaveLength(1);
     expect(total).toBe(3);

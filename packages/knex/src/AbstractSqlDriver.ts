@@ -84,6 +84,11 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       opts.limit = 1;
     }
 
+    if (opts.limit! > 0 && !opts.flags?.includes(QueryFlag.DISABLE_PAGINATE)) {
+      opts.flags ??= [];
+      opts.flags.push(QueryFlag.DISABLE_PAGINATE);
+    }
+
     const res = await this.find<T>(entityName, where, opts);
 
     return res[0] || null;
