@@ -73,7 +73,7 @@ export class ChangeSetComputer {
 
     if (prop.onUpdate && type === ChangeSetType.UPDATE) {
       const pairs = map.get(entity) ?? [];
-      pairs.push([prop.name, prop.onUpdate(entity)]);
+      pairs.push([prop.name, prop.onUpdate({ ...entity, ...Object.fromEntries(pairs) })]);
       map.set(entity, pairs);
     }
 

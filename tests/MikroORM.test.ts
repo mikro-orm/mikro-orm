@@ -64,7 +64,7 @@ describe('MikroORM', () => {
 
   test('folder based discover with multiple entities in single file', async () => {
     const orm = await MikroORM.init({ type: 'mongo', dbName: 'test', baseDir: BASE_DIR, entities: ['entities'] }, false);
-    expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['Author', 'Book', 'BookTag', 'Dummy', 'Foo1', 'Foo2',  'Foo3', 'FooBar', 'FooBaz', 'Publisher', 'Test']);
+    expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['Author', 'Book', 'BookTag', 'Dummy', 'Foo1', 'Foo2',  'Foo3', 'FooBar', 'FooBaz', 'Publisher', 'Test', 'UpdateCreatePropAccess']);
     await orm.close();
   });
 

@@ -9,6 +9,7 @@ import { AuthorRepository } from './repositories/AuthorRepository';
 import { initORMMongo, mockLogger } from './bootstrap';
 import FooBar from './entities/FooBar';
 import { FooBaz } from './entities/FooBaz';
+import { UpdateCreatePropAccess } from './entities/UpdateCreatePropAccess';
 
 describe('EntityManagerMongo', () => {
 
@@ -2040,6 +2041,25 @@ describe('EntityManagerMongo', () => {
     expect(bar.onUpdateTest).toBe(true);
     expect(bar.meta.onCreateCalled).toBe(true);
     expect(bar.meta.onUpdateCalled).toBe(true);
+  });
+
+  test('property onCreate and onUpdate have reference to updated values from previous onUpdate/onCreate calls', async () => {
+    const propAccess = UpdateCreatePropAccess.create('b1');
+    expect(propAccess.onCreatePropertyAccessTestSource).toBeUndefined();
+    expect(propAccess.onCreatePropertyAccessTestReceive).toBeUndefined();
+    expect(propAccess.onUpdatePropertyAccessTestSource).toEqual(0);
+    expect(propAccess.onUpdatePropertyAccessTestReceive).toEqual(1);
+    await orm.em.persistAndFlush(propAccess);
+
+    expect(propAccess.onCreatePropertyAccessTestSource).toEqual(propAccess.onCreatePropertyAccessTestReceive);
+    expect(propAccess.onUpdatePropertyAccessTestSource).toEqual(0);
+    expect(propAccess.onUpdatePropertyAccessTestReceive).toEqual(1);
+
+    propAccess.name = 'newName';
+    await orm.em.persistAndFlush(propAccess);
+
+    expect(propAccess.onCreatePropertyAccessTestSource).toEqual(propAccess.onCreatePropertyAccessTestReceive);
+    expect(propAccess.onUpdatePropertyAccessTestSource).toEqual(propAccess.onUpdatePropertyAccessTestReceive);
   });
 
   test('custom types', async () => {
