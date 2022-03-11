@@ -618,8 +618,8 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   /** @internal */
-  createQueryBuilder<T extends AnyEntity<T>>(entityName: string, ctx?: Transaction<Knex.Transaction>, prefferedConnectionType?: ConnectionType, convertCustomTypes?: boolean): QueryBuilder<T> {
-    const connectionType = this.resolveConnectionType({ ctx, connectionType: prefferedConnectionType });
+  createQueryBuilder<T extends AnyEntity<T>>(entityName: string, ctx?: Transaction<Knex.Transaction>, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean): QueryBuilder<T> {
+    const connectionType = this.resolveConnectionType({ ctx, connectionType: preferredConnectionType });
     const qb = new QueryBuilder<T>(entityName, this.metadata, this, ctx, undefined, connectionType);
 
     if (!convertCustomTypes) {
