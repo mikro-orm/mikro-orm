@@ -2,7 +2,7 @@ import { URL } from 'url';
 import type { Configuration, ConnectionOptions, DynamicPassword } from '../utils';
 import type { LogContext } from '../logging';
 import type { MetadataStorage } from '../metadata';
-import type { AnyEntity, Dictionary, MaybePromise, Primary } from '../typings';
+import type { AnyEntity, ConnectionType, Dictionary, MaybePromise, Primary } from '../typings';
 import type { Platform } from '../platforms/Platform';
 import type { TransactionEventBroadcaster } from '../events/TransactionEventBroadcaster';
 import type { IsolationLevel } from '../enums';
@@ -17,7 +17,7 @@ export abstract class Connection {
 
   constructor(protected readonly config: Configuration,
               options?: ConnectionOptions,
-              protected readonly type: 'read' | 'write' = 'write') {
+              protected readonly type: ConnectionType = 'write') {
     if (options) {
       this.options = options;
     } else {

@@ -1,6 +1,6 @@
 import type { Knex } from 'knex';
 import type {
-  AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FlatQueryOrderMap, RequiredEntityData,
+  AnyEntity, ConnectionType, Dictionary, EntityData, EntityMetadata, EntityProperty, FlatQueryOrderMap, RequiredEntityData,
   GroupOperator, MetadataStorage, PopulateOptions, QBFilterQuery, QueryOrderMap, QueryResult, FlushMode, FilterQuery, QBQueryOrderMap,
 } from '@mikro-orm/core';
 import { LoadStrategy, LockMode, QueryFlag, QueryHelper, ReferenceType, Utils, ValidationError } from '@mikro-orm/core';
@@ -77,7 +77,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
               private readonly driver: AbstractSqlDriver,
               private readonly context?: Knex.Transaction,
               alias?: string,
-              private connectionType?: 'read' | 'write',
+              private connectionType?: ConnectionType,
               private readonly em?: SqlEntityManager) {
     if (alias) {
       this.aliasCounter++;
