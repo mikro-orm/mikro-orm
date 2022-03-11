@@ -9,6 +9,7 @@ import type { Configuration } from './utils';
 import { Utils } from './utils/Utils';
 import { EntityComparator } from './utils/EntityComparator';
 import type { EntityManager } from './EntityManager';
+import type { EventSubscriber } from './events';
 
 export type Constructor<T = unknown> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
@@ -438,7 +439,7 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   uniques: { properties: (keyof T & string) | (keyof T & string)[]; name?: string; options?: Dictionary }[];
   checks: CheckConstraint<T>[];
   customRepository: () => Constructor<EntityRepository<T>>;
-  hooks: Partial<Record<keyof typeof EventType, (string & keyof T)[]>>;
+  hooks: Partial<Record<keyof typeof EventType, ((string & keyof T) | NonNullable<EventSubscriber[keyof EventSubscriber]>)[]>>;
   prototype: T;
   class: Constructor<T>;
   abstract: boolean;

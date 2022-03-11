@@ -63,6 +63,24 @@ class Author3 extends BaseEntity4 {
 Author3.beforeDestroyCalled = 0;
 Author3.afterDestroyCalled = 0;
 
+async function beforeUpdate(args) {
+  this.version += 1;
+  await args.em.findOne('Book3', { title: { $ne: null } }); // test this won't cause failures (GH #1503)
+}
+
+async function afterUpdate(args) {
+  this.versionAsString = 'v' + this.version;
+  await args.em.findOne('Book3', { title: { $nin: [''] } }); // test this won't cause failures (GH #1503)
+}
+
+function beforeDelete() {
+  Author3.beforeDestroyCalled += 1;
+}
+
+function afterDelete() {
+  Author3.afterDestroyCalled += 1;
+}
+
 const schema = new EntitySchema({
   class: Author3,
   properties: {
@@ -116,10 +134,10 @@ const schema = new EntitySchema({
   hooks: {
     beforeCreate: ['beforeCreate'],
     afterCreate: ['afterCreate'],
-    beforeUpdate: ['beforeUpdate'],
-    afterUpdate: ['afterUpdate'],
-    beforeDelete: ['beforeDelete'],
-    afterDelete: ['afterDelete'],
+    beforeUpdate: ['beforeUpdate', beforeUpdate],
+    afterUpdate: ['afterUpdate', afterUpdate],
+    beforeDelete: ['beforeDelete', beforeDelete],
+    afterDelete: ['afterDelete', afterDelete],
   },
   indexes: [{ properties: ['name', 'favouriteBook'] }],
   path: __filename,
