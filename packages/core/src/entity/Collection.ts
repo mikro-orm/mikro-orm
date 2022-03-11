@@ -1,4 +1,4 @@
-import type { AnyEntity, Dictionary, EntityData, EntityMetadata, FilterQuery, Loaded, LoadedCollection, Populate, Primary } from '../typings';
+import type { AnyEntity, EntityData, EntityDTO, EntityMetadata, FilterQuery, Loaded, LoadedCollection, Populate, Primary } from '../typings';
 import { ArrayCollection } from './ArrayCollection';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
@@ -108,7 +108,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     return super.getItems();
   }
 
-  toJSON(): Dictionary[] {
+  toJSON(): EntityDTO<T>[] {
     if (!this.isInitialized()) {
       return [];
     }

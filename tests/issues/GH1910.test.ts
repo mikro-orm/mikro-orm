@@ -1,7 +1,6 @@
 import type { EntityManager } from '@mikro-orm/core';
 import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
-import { SchemaGenerator } from '@mikro-orm/postgresql';
 
 @Entity()
 export class A {
