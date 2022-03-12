@@ -2,7 +2,7 @@ import type { Dictionary, DriverException } from '@mikro-orm/core';
 import {
   DeadlockException, ExceptionConverter, ForeignKeyConstraintViolationException, InvalidFieldNameException,
   NonUniqueFieldNameException, NotNullConstraintViolationException, SyntaxErrorException, TableExistsException,
-  TableNotFoundException, UniqueConstraintViolationException,
+  TableNotFoundException, UniqueConstraintViolationException, CheckConstraintViolationException,
 } from '@mikro-orm/core';
 
 export class PostgreSqlExceptionConverter extends ExceptionConverter {
@@ -31,6 +31,8 @@ export class PostgreSqlExceptionConverter extends ExceptionConverter {
         return new ForeignKeyConstraintViolationException(exception);
       case '23505':
         return new UniqueConstraintViolationException(exception);
+      case '23514':
+        return new CheckConstraintViolationException(exception);
       case '42601':
         return new SyntaxErrorException(exception);
       case '42702':

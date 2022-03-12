@@ -62,6 +62,11 @@ export class DeadlockException extends ServerException { }
 export class ForeignKeyConstraintViolationException extends ConstraintViolationException { }
 
 /**
+ * Exception for a check constraint violation detected in the driver.
+ */
+export class CheckConstraintViolationException extends ConstraintViolationException { }
+
+/**
  * Exception for an invalid specified field name in a statement detected in the driver.
  */
 export class InvalidFieldNameException extends ServerException { }

@@ -1,6 +1,6 @@
 import type { Dictionary, DriverException } from '@mikro-orm/core';
 import {
-  ConnectionException, ExceptionConverter, InvalidFieldNameException, LockWaitTimeoutException, NonUniqueFieldNameException,
+  ConnectionException, ExceptionConverter, InvalidFieldNameException, LockWaitTimeoutException, NonUniqueFieldNameException, CheckConstraintViolationException,
   NotNullConstraintViolationException, ReadOnlyException, SyntaxErrorException, TableExistsException, TableNotFoundException, UniqueConstraintViolationException,
 } from '@mikro-orm/core';
 
@@ -28,6 +28,10 @@ export class SqliteExceptionConverter extends ExceptionConverter {
 
     if (exception.message.includes('may not be NULL') || exception.message.includes('NOT NULL constraint failed')) {
       return new NotNullConstraintViolationException(exception);
+    }
+
+    if (exception.message.includes('CHECK constraint failed')) {
+      return new CheckConstraintViolationException(exception);
     }
 
     if (exception.message.includes('no such table:')) {
