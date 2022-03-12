@@ -479,6 +479,21 @@ type MigrateOptions = { from?: string | number; to?: string | number; migrations
 type MigrationResult = { fileName: string; code: string; diff: MigrationDiff };
 type MigrationRow = { name: string; executed_at: Date };
 
+/**
+ * @internal
+ */
+export interface IMigratorStorage {
+  executed(): Promise<string[]>;
+  logMigration(params: Dictionary): Promise<void>;
+  unlogMigration(params: Dictionary): Promise<void>;
+  getExecutedMigrations(): Promise<MigrationRow[]>;
+  ensureTable(): Promise<void>;
+  setMasterMigration(trx: Transaction): void;
+  unsetMasterMigration(): void;
+  getMigrationName(name: string): string;
+  getTableName(): { schemaName: string; tableName: string };
+}
+
 export interface IMigrator {
   /**
    * Checks current schema for changes, generates new migration if there are any.
@@ -512,6 +527,11 @@ export interface IMigrator {
    * Executes down migrations to the given point. Without parameter it will migrate one version down.
    */
   down(options?: string | string[] | MigrateOptions): Promise<UmzugMigration[]>;
+
+  /**
+   * @internal
+   */
+  getStorage(): IMigratorStorage;
 }
 
 export interface MigrationDiff {

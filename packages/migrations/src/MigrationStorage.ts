@@ -20,13 +20,15 @@ export class MigrationStorage implements UmzugStorage {
   }
 
   async logMigration(params: MigrationParams<any>): Promise<void> {
+    const { tableName, schemaName } = this.getTableName();
     const name = this.getMigrationName(params.name);
-    await this.driver.nativeInsert(this.options.tableName!, { name }, { ctx: this.masterTransaction });
+    await this.driver.nativeInsert(tableName, { name }, { schema: schemaName, ctx: this.masterTransaction });
   }
 
   async unlogMigration(params: MigrationParams<any>): Promise<void> {
+    const { tableName, schemaName } = this.getTableName();
     const withoutExt = this.getMigrationName(params.name);
-    const qb = this.knex.delete().from(this.options.tableName!).where('name', 'in', [params.name, withoutExt]);
+    const qb = this.knex.delete().from(tableName).withSchema(schemaName).where('name', 'in', [params.name, withoutExt]);
 
     if (this.masterTransaction) {
       qb.transacting(this.masterTransaction);
@@ -36,7 +38,8 @@ export class MigrationStorage implements UmzugStorage {
   }
 
   async getExecutedMigrations(): Promise<MigrationRow[]> {
-    const qb = this.knex.select('*').from(this.options.tableName!).orderBy('id', 'asc');
+    const { tableName, schemaName } = this.getTableName();
+    const qb = this.knex.select('*').from(tableName).withSchema(schemaName).orderBy('id', 'asc');
 
     if (this.masterTransaction) {
       qb.transacting(this.masterTransaction);
@@ -55,16 +58,17 @@ export class MigrationStorage implements UmzugStorage {
 
   async ensureTable(): Promise<void> {
     const tables = await this.connection.execute<Table[]>(this.helper.getListTablesSQL(), [], 'all', this.masterTransaction);
+    const { tableName, schemaName } = this.getTableName();
 
-    if (tables.find(t => t.table_name === this.options.tableName!)) {
+    if (tables.find(t => t.table_name === tableName && (!t.schema_name || t.schema_name === schemaName))) {
       return;
     }
 
-    await this.knex.schema.createTable(this.options.tableName!, table => {
+    await this.knex.schema.createTable(tableName, table => {
       table.increments();
       table.string('name');
       table.dateTime('executed_at').defaultTo(this.knex.fn.now());
-    });
+    }).withSchema(schemaName);
   }
 
   setMasterMigration(trx: Transaction) {
@@ -87,6 +91,17 @@ export class MigrationStorage implements UmzugStorage {
     }
 
     return name;
+  }
+
+  /**
+   * @internal
+   */
+  getTableName(): { tableName: string; schemaName: string } {
+    const parts = this.options.tableName!.split('.');
+    const tableName = parts.length > 1 ? parts[1] : parts[0];
+    const schemaName = parts.length > 1 ? parts[0] : this.driver.config.get('schema', this.driver.getPlatform().getDefaultSchemaName());
+
+    return { tableName, schemaName };
   }
 
 }

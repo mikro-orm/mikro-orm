@@ -502,17 +502,6 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return this.rethrow(this.connection.execute(queryOrKnex, params, method, ctx));
   }
 
-  protected getTableName<T>(meta: EntityMetadata<T>, options: NativeInsertUpdateManyOptions<T>): string {
-    const tableName = this.platform.quoteIdentifier(meta.collection);
-    const schema = this.getSchemaName(meta, options);
-
-    if (schema) {
-      return this.platform.quoteIdentifier(schema) + '.' + tableName;
-    }
-
-    return tableName;
-  }
-
   /**
    * 1:1 owner side needs to be marked for population so QB auto-joins the owner id
    */
