@@ -998,7 +998,8 @@ export class MetadataDiscovery {
 
       meta2.primaryKeys.forEach(primaryKey => {
         const pk = meta2.properties[primaryKey];
-        prop.unsigned = this.platform.supportsUnsigned() && this.isNumericProperty(pk);
+        // if at least one of the target columns is unsigned, we need to mark the property as unsigned
+        prop.unsigned ||= this.platform.supportsUnsigned() && this.isNumericProperty(pk);
       });
 
       return;
