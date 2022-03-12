@@ -20,7 +20,10 @@ describe('QueryHelper', () => {
         'key4<=': 123,
         'key5!=': 123,
         'key6!': 123,
-      }, entityName: 'id', metadata: orm.getMetadata(), platform: orm.em.getDriver().getPlatform(),
+      },
+      entityName: 'id',
+      metadata: orm.getMetadata(),
+      platform: orm.em.getDriver().getPlatform(),
     })).toEqual({
       key1: { $gt: 123 },
       key2: { $lt: 123 },
@@ -37,7 +40,10 @@ describe('QueryHelper', () => {
         'key4 <=': 123,
         'key5 !=': 123,
         'key6 !': 123,
-      }, entityName: 'id', metadata: orm.getMetadata(), platform: orm.em.getDriver().getPlatform(),
+      },
+      entityName: 'id',
+      metadata: orm.getMetadata(),
+      platform: orm.em.getDriver().getPlatform(),
     })).toEqual({
       key1: { $gt: 123 },
       key2: { $lt: 123 },

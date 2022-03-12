@@ -279,7 +279,7 @@ interface ProcessWhereOptions<T> {
   entityName: string;
   metadata: MetadataStorage;
   platform: Platform;
-  aliased: boolean;
+  aliased?: boolean;
   convertCustomTypes?: boolean;
   root?: boolean;
 }
