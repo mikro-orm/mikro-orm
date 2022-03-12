@@ -95,7 +95,7 @@ export type EntityField<T, P extends string = never> = keyof T | AutoPath<T, P> 
 export interface FindOptions<T, P extends string = never> {
   populate?: readonly AutoPath<T, P>[] | boolean;
   populateWhere?: ObjectQuery<T> | PopulateHint;
-  orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[];
+  orderBy?: (QueryOrderMap<T> & { 0?: never }) | QueryOrderMap<T>[];
   cache?: boolean | number | [string, number];
   limit?: number;
   offset?: number;
