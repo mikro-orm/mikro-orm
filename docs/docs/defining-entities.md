@@ -798,7 +798,9 @@ properties: {
 ## Indexes
 
 We can define indexes via `@Index()` decorator, for unique indexes, we can 
-use `@Unique()` decorator. We can use it either on entity class, or on entity property:
+use `@Unique()` decorator. We can use it either on entity class, or on entity property. 
+
+To define complex indexes, we can use index expressions. They allow us to specify the final `create index` query and an index name - this name is then used for index diffing, so the schema generator will only try to create it if it's not there yet, or remove it, if it's no longer defined in the entity. Index expressions are not bound to any property, rather to the entity itself (we can still define them on both entity and property level).
 
 <Tabs
 groupId="entity-def"
@@ -830,6 +832,10 @@ export class Author {
   @Property()
   born?: Date;
 
+  @Index({ name: 'custom_index_expr', expression: 'alter table `author` add index `custom_index_expr`(`title`)' })
+  @Property()
+  title!: string;
+
 }
 ```
 
@@ -855,6 +861,10 @@ export class Author {
   @Property()
   born?: Date;
 
+  @Index({ name: 'custom_index_expr', expression: 'alter table `author` add index `custom_index_expr`(`title`)' })
+  @Property()
+  title!: string;
+
 }
 
 ```
@@ -868,6 +878,7 @@ export const AuthorSchema = new EntitySchema<Author, CustomBaseEntity>({
   indexes: [
     { properties: ['name', 'age'] }, // compound index, with generated name
     { name: 'custom_idx_name', properties: ['name'] }, // simple index, with custom name
+    { name: 'custom_index_expr', expression: 'alter table `author` add index `custom_index_expr`(`title`)' },
   ],
   uniques: [
     { properties: ['name', 'email'] },
@@ -876,6 +887,7 @@ export const AuthorSchema = new EntitySchema<Author, CustomBaseEntity>({
     email: { type: 'string', unique: true }, // generated name
     age: { type: 'number', nullable: true, index: true }, // generated name
     born: { type: Date, nullable: true, index: 'born_index' },
+    title: { type: 'string' },
   },
 });
 ```
