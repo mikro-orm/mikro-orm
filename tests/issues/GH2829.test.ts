@@ -48,8 +48,6 @@ describe('GH issue 2829', () => {
     });
   });
 
-  afterAll(() => orm.close(true));
-
   test('entities with property `length` and type checking of `orderBy`', async () => {
     let fn: () => Promise<any>;
 

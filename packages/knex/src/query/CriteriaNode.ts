@@ -29,10 +29,11 @@ export class CriteriaNode implements ICriteriaNode {
       }
 
       pks.forEach(k => {
-        this.prop = meta.props.find(prop => prop.name === k || (prop.fieldNames || []).includes(k));
+        this.prop = meta.props.find(prop => prop.name === k || (prop.fieldNames?.length === 1 && prop.fieldNames[0] === k));
+        const isProp = this.prop || meta.props.find(prop => (prop.fieldNames || []).includes(k));
 
         // do not validate if the key is prefixed or type casted (e.g. `k::text`)
-        if (validate && !this.prop && !k.includes('.') && !k.includes('::') && !Utils.isOperator(k) && !CriteriaNode.isCustomExpression(k)) {
+        if (validate && !isProp && !k.includes('.') && !k.includes('::') && !Utils.isOperator(k) && !CriteriaNode.isCustomExpression(k)) {
           throw new Error(`Trying to query by not existing property ${entityName}.${k}`);
         }
       });
