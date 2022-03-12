@@ -123,10 +123,10 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return 'jsonb';
   }
 
-  getSearchJsonPropertyKey(path: string[], type: string): string {
+  getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
     const first = path.shift();
     const last = path.pop();
-    const root = expr(alias => this.quoteIdentifier(`${alias}.${first}`));
+    const root = aliased ? expr(alias => this.quoteIdentifier(`${alias}.${first}`)) : this.quoteIdentifier(first!);
     const types = {
       number: 'float8',
       boolean: 'bool',

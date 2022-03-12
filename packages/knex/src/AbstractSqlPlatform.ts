@@ -86,8 +86,8 @@ export abstract class AbstractSqlPlatform extends Platform {
     return ret;
   }
 
-  getSearchJsonPropertySQL(path: string, type: string): string {
-    return this.getSearchJsonPropertyKey(path.split('->'), type);
+  getSearchJsonPropertySQL(path: string, type: string, aliased: boolean): string {
+    return this.getSearchJsonPropertyKey(path.split('->'), type, aliased);
   }
 
   isRaw(value: any): boolean {

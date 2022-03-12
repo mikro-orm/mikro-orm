@@ -1999,6 +1999,24 @@ describe('QueryBuilder', () => {
     expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` order by length(name) desc, `e0`.`type` asc');
   });
 
+  test('complex condition for json property with update query (GH #2839)', async () => {
+    const qb141 = orm.em.createQueryBuilder(Book2).update({ meta: { items: 3 } }).where({
+      $and: [
+        { uuid: 'b47f1cca-90ca-11ec-99e0-42010a5d800c' },
+        { $or: [
+            { meta: null },
+            { meta: { $eq: null } },
+            { meta: { time: { $lt: 1646147306 } } },
+          ] },
+      ],
+    });
+    expect(qb141.getFormattedQuery()).toBe('update `book2` set `meta` = \'{\\"items\\":3}\' ' +
+      'where `uuid_pk` = \'b47f1cca-90ca-11ec-99e0-42010a5d800c\' ' +
+      'and (`meta` is null ' +
+      'or `meta` is null ' +
+      'or `meta`->\'$.time\' < 1646147306)');
+  });
+
   test('GH issue 786', async () => {
     const qb1 = orm.em.createQueryBuilder(Book2);
     qb1.select('*').where({
@@ -2352,6 +2370,23 @@ describe('QueryBuilder', () => {
     expect(qb15.getFormattedQuery()).toBe(`select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" order by "b0"."meta"->'bar'->>'str' asc`);
     const qb16 = pg.em.createQueryBuilder(Book2).orderBy({ meta: { bar: { num: QueryOrder.DESC } } });
     expect(qb16.getFormattedQuery()).toBe(`select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" order by "b0"."meta"->'bar'->>'num' desc`);
+
+    // complex condition for json property with update query (GH #2839)
+    const qb141 = pg.em.createQueryBuilder(Book2).update({ meta: { items: 3 } }).where({
+      $and: [
+        { uuid: 'b47f1cca-90ca-11ec-99e0-42010a5d800c' },
+        { $or: [
+          { meta: null },
+          { meta: { $eq: null } },
+          { meta: { time: { $lt: 1646147306 } } },
+        ] },
+      ],
+    });
+    expect(qb141.getFormattedQuery()).toBe('update "book2" set "meta" = \'{"items":3}\' ' +
+      'where "uuid_pk" = \'b47f1cca-90ca-11ec-99e0-42010a5d800c\' ' +
+      'and ("meta" is null ' +
+      'or "meta" is null ' +
+      'or ("meta"->>\'time\')::float8 < 1646147306)');
 
     // arrays
     const qb17 = pg.em.createQueryBuilder(Author2);

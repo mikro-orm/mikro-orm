@@ -730,7 +730,7 @@ export class MetadataDiscovery {
 
         path.push(prop.name);
         meta.properties[name].fieldNames = [path.join('.')]; // store path for ObjectHydrator
-        meta.properties[name].fieldNameRaw = this.platform.getSearchJsonPropertySQL(path.join('->'), prop.type); // for querying in SQL drivers
+        meta.properties[name].fieldNameRaw = this.platform.getSearchJsonPropertySQL(path.join('->'), prop.type, true); // for querying in SQL drivers
         meta.properties[name].persist = false; // only virtual as we store the whole object
       }
 

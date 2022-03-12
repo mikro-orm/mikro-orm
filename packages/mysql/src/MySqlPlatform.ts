@@ -13,9 +13,14 @@ export class MySqlPlatform extends AbstractSqlPlatform {
     return 'utf8mb4';
   }
 
-  getSearchJsonPropertyKey(path: string[], type: string): string {
+  getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
     const [a, ...b] = path;
-    return expr(alias => `${this.quoteIdentifier(`${alias}.${a}`)}->'$.${b.join('.')}'`);
+
+    if (aliased) {
+      return expr(alias => `${this.quoteIdentifier(`${alias}.${a}`)}->'$.${b.join('.')}'`);
+    }
+
+    return `${this.quoteIdentifier(a)}->'$.${b.join('.')}'`;
   }
 
   getBooleanTypeDeclarationSQL(): string {

@@ -224,7 +224,14 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   protected async processWhere<T extends AnyEntity<T>, P extends string = never>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, P> | FindOneOptions<T, P>, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<T>> {
-    where = QueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata, this.driver.getPlatform(), options.convertCustomTypes);
+    where = QueryHelper.processWhere({
+      where: where as FilterQuery<T>,
+      entityName,
+      metadata: this.metadata,
+      platform: this.driver.getPlatform(),
+      convertCustomTypes: options.convertCustomTypes,
+      aliased: type === 'read',
+    });
     where = await this.applyFilters(entityName, where, options.filters ?? {}, type);
     where = await this.applyDiscriminatorCondition(entityName, where);
 
@@ -296,7 +303,13 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         cond = filter.cond;
       }
 
-      ret.push(QueryHelper.processWhere(cond, entityName, this.metadata, this.driver.getPlatform()));
+      ret.push(QueryHelper.processWhere({
+        where: cond,
+        entityName,
+        metadata: this.metadata,
+        platform: this.driver.getPlatform(),
+        aliased: type === 'read',
+      }));
     }
 
     const conds = [...ret, where as Dictionary].filter(c => Utils.hasObjectKeys(c)) as FilterQuery<T>[];

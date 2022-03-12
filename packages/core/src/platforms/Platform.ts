@@ -281,11 +281,11 @@ export abstract class Platform {
     return 'json';
   }
 
-  getSearchJsonPropertySQL(path: string, type: string): string {
+  getSearchJsonPropertySQL(path: string, type: string, aliased: boolean): string {
     return path;
   }
 
-  getSearchJsonPropertyKey(path: string[], type: string): string {
+  getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
     return path.join('.');
   }
 

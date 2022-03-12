@@ -1,7 +1,22 @@
 import type { Knex } from 'knex';
 import type {
-  AnyEntity, ConnectionType, Dictionary, EntityData, EntityMetadata, EntityProperty, FlatQueryOrderMap, RequiredEntityData,
-  GroupOperator, MetadataStorage, PopulateOptions, QBFilterQuery, QueryOrderMap, QueryResult, FlushMode, FilterQuery, QBQueryOrderMap,
+  AnyEntity,
+  ConnectionType,
+  Dictionary,
+  EntityData,
+  EntityMetadata,
+  EntityProperty,
+  FilterQuery,
+  FlatQueryOrderMap,
+  FlushMode,
+  GroupOperator,
+  MetadataStorage,
+  PopulateOptions,
+  QBFilterQuery,
+  QBQueryOrderMap,
+  QueryOrderMap,
+  QueryResult,
+  RequiredEntityData,
 } from '@mikro-orm/core';
 import { LoadStrategy, LockMode, QueryFlag, QueryHelper, ReferenceType, Utils, ValidationError } from '@mikro-orm/core';
 import { QueryType } from './enums';
@@ -188,7 +203,14 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       cond = { [`(${cond})`]: Utils.asArray(params) };
       operator = operator || '$and';
     } else {
-      cond = QueryHelper.processWhere(cond, this.entityName, this.metadata, this.platform, this.flags.has(QueryFlag.CONVERT_CUSTOM_TYPES)) as FilterQuery<T>;
+      cond = QueryHelper.processWhere({
+        where: cond,
+        entityName: this.entityName,
+        metadata: this.metadata,
+        platform: this.platform,
+        aliased: !this.type || [QueryType.SELECT, QueryType.COUNT].includes(this.type),
+        convertCustomTypes: this.flags.has(QueryFlag.CONVERT_CUSTOM_TYPES),
+      }) as FilterQuery<T>;
     }
 
     const op = operator || params as keyof typeof GroupOperator;
@@ -233,7 +255,14 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   orderBy(orderBy: QBQueryOrderMap<T> | QBQueryOrderMap<T>[]): this {
     this._orderBy = [];
     Utils.asArray(orderBy).forEach(o => {
-      const processed = QueryHelper.processWhere(o as Dictionary, this.entityName, this.metadata, this.platform, false)!;
+      const processed = QueryHelper.processWhere({
+        where: o as Dictionary,
+        entityName: this.entityName,
+        metadata: this.metadata,
+        platform: this.platform,
+        aliased: !this.type || [QueryType.SELECT, QueryType.COUNT].includes(this.type),
+        convertCustomTypes: false,
+      })!;
       this._orderBy.push(CriteriaNodeFactory.createNode(this.metadata, this.entityName, processed).process(this));
     });
 
@@ -602,7 +631,13 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     }
 
     this._aliasMap[alias] = prop.type;
-    cond = QueryHelper.processWhere(cond, this.entityName, this.metadata, this.platform)!;
+    cond = QueryHelper.processWhere({
+      where: cond,
+      entityName: this.entityName,
+      metadata: this.metadata,
+      platform: this.platform,
+      aliased: !this.type || [QueryType.SELECT, QueryType.COUNT].includes(this.type),
+    })!;
     let aliasedName = `${fromAlias}.${prop.name}#${alias}`;
     path ??= `${(Object.values(this._joins).find(j => j.alias === fromAlias)?.path ?? entityName)}.${prop.name}`;
 
@@ -894,30 +929,44 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
 export interface RunQueryBuilder<T> extends Omit<QueryBuilder<T>, 'getResult' | 'getSingleResult' | 'getResultList' | 'where'> {
   where(cond: QBFilterQuery<T> | string, params?: keyof typeof GroupOperator | any[], operator?: keyof typeof GroupOperator): this;
+
   execute<U = QueryResult<T>>(method?: 'all' | 'get' | 'run', mapResults?: boolean): Promise<U>;
+
   then<TResult1 = QueryResult<T>, TResult2 = never>(onfulfilled?: ((value: QueryResult<T>) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<QueryResult<T>>;
 }
 
 export interface SelectQueryBuilder<T> extends QueryBuilder<T> {
   execute<U = T[]>(method?: 'all' | 'get' | 'run', mapResults?: boolean): Promise<U>;
+
   execute<U = T[]>(method: 'all', mapResults?: boolean): Promise<U>;
+
   execute<U = T>(method: 'get', mapResults?: boolean): Promise<U>;
+
   execute<U = QueryResult<T>>(method: 'run', mapResults?: boolean): Promise<U>;
+
   then<TResult1 = T[], TResult2 = never>(onfulfilled?: ((value: T[]) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<T[]>;
 }
 
 export interface CountQueryBuilder<T> extends QueryBuilder<T> {
   execute<U = { count: number }[]>(method?: 'all' | 'get' | 'run', mapResults?: boolean): Promise<U>;
+
   execute<U = { count: number }[]>(method: 'all', mapResults?: boolean): Promise<U>;
+
   execute<U = { count: number }>(method: 'get', mapResults?: boolean): Promise<U>;
+
   execute<U = QueryResult<{ count: number }>>(method: 'run', mapResults?: boolean): Promise<U>;
+
   then<TResult1 = number, TResult2 = never>(onfulfilled?: ((value: number) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<number>;
 }
 
-export interface InsertQueryBuilder<T> extends RunQueryBuilder<T> {}
+export interface InsertQueryBuilder<T> extends RunQueryBuilder<T> {
+}
 
-export interface UpdateQueryBuilder<T> extends RunQueryBuilder<T> {}
+export interface UpdateQueryBuilder<T> extends RunQueryBuilder<T> {
+}
 
-export interface DeleteQueryBuilder<T> extends RunQueryBuilder<T> {}
+export interface DeleteQueryBuilder<T> extends RunQueryBuilder<T> {
+}
 
-export interface TruncateQueryBuilder<T> extends RunQueryBuilder<T> {}
+export interface TruncateQueryBuilder<T> extends RunQueryBuilder<T> {
+}
