@@ -27,12 +27,12 @@ export class EventManager {
   dispatchEvent<T extends AnyEntity<T>>(event: EventType.onInit, args: Partial<EventArgs<T>>): unknown;
   dispatchEvent<T extends AnyEntity<T>>(event: EventType, args: Partial<EventArgs<T> | FlushEventArgs>): Promise<unknown>;
   dispatchEvent<T extends AnyEntity<T>>(event: EventType, args: Partial<EventArgs<T> | FlushEventArgs | TransactionEventArgs>): Promise<unknown> | unknown {
-    const listeners: [EventType, EventSubscriber<T>][] = [];
+    const listeners: (readonly [PropertyKey | NonNullable<EventSubscriber<T>[keyof EventSubscriber<T>]>, EventSubscriber<T> | AnyEntity<T>])[] = [];
     const entity: T = (args as EventArgs<T>).entity;
 
     // execute lifecycle hooks first
     const hooks = (entity && entity.__meta!.hooks[event]) || [];
-    listeners.push(...hooks.map(hook => [hook, entity] as [EventType, EventSubscriber<T>]));
+    listeners.push(...hooks.map(hook => [hook, entity] as const));
 
     for (const listener of this.listeners[event] || []) {
       const entities = this.entities.get(listener)!;
@@ -42,11 +42,18 @@ export class EventManager {
       }
     }
 
+    const runListener = ([hook, subscriber]: readonly [PropertyKey | NonNullable<EventSubscriber<T>[keyof EventSubscriber<T>]>, EventSubscriber<T> | AnyEntity<T>]) => {
+      if (typeof hook !== 'function') {
+        return subscriber[hook]!(args as (EventArgs<T> & FlushEventArgs & TransactionEventArgs));
+      }
+      return (hook as (args: Partial<EventArgs<T> | FlushEventArgs | TransactionEventArgs>) => Promise<unknown> | unknown).call(subscriber, args);
+    };
+
     if (event === EventType.onInit) {
-      return listeners.forEach(listener => listener[1][listener[0]]!(args as (EventArgs<T> & FlushEventArgs & TransactionEventArgs)));
+      return listeners.forEach(runListener);
     }
 
-    return Utils.runSerial(listeners, listener => listener[1][listener[0]]!(args as (EventArgs<T> & FlushEventArgs & TransactionEventArgs)) as Promise<void>);
+    return Utils.runSerial(listeners, runListener);
   }
 
   hasListeners<T extends AnyEntity<T>>(event: EventType, meta: EntityMetadata<T>): boolean {
