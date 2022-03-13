@@ -438,7 +438,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     /* istanbul ignore next */
     const ownerSchema = wrapped.getSchema() === '*' ? this.config.get('schema') : wrapped.getSchema();
-    const pivotMeta = this.metadata.find(coll.property.pivotTable)!;
+    const pivotMeta = this.metadata.find(coll.property.pivotEntity)!;
 
     if (pivotMeta.schema === '*') {
       /* istanbul ignore next */
@@ -452,7 +452,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   async loadFromPivotTable<T, O>(prop: EntityProperty, owners: Primary<O>[][], where: FilterQuery<T> = {} as FilterQuery<T>, orderBy?: QueryOrderMap<T>[], ctx?: Transaction, options?: FindOptions<T>): Promise<Dictionary<T[]>> {
     const pivotProp2 = this.getPivotInverseProperty(prop);
     const ownerMeta = this.metadata.find(pivotProp2.type)!;
-    const cond = { [`${prop.pivotTable}.${pivotProp2.name}`]: { $in: ownerMeta.compositePK ? owners : owners.map(o => o[0]) } };
+    const cond = { [`${prop.pivotEntity}.${pivotProp2.name}`]: { $in: ownerMeta.compositePK ? owners : owners.map(o => o[0]) } };
 
     /* istanbul ignore if */
     if (!Utils.isEmpty(where) && Object.keys(where as Dictionary).every(k => Utils.isOperator(k, false))) {
@@ -465,7 +465,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const qb = this.createQueryBuilder<T>(prop.type, ctx, options?.connectionType)
       .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES)
       .withSchema(this.getSchemaName(prop.targetMeta, options));
-    const populate = this.autoJoinOneToOneOwner(prop.targetMeta!, [{ field: prop.pivotTable }]);
+    const populate = this.autoJoinOneToOneOwner(prop.targetMeta!, [{ field: prop.pivotEntity }]);
     const fields = this.buildFields(prop.targetMeta!, (options?.populate ?? []) as unknown as PopulateOptions<T>[], [], qb, options?.fields as Field<T>[]);
     qb.select(fields).populate(populate).where(where).orderBy(orderBy!).setLockMode(options?.lockMode, options?.lockTableAliases);
 
@@ -677,7 +677,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
 
     if (deleteDiff === true || deleteDiff.length > 0) {
-      const qb1 = this.createQueryBuilder(prop.pivotTable, options?.ctx, 'write')
+      const qb1 = this.createQueryBuilder(prop.pivotEntity, options?.ctx, 'write')
         .withSchema(this.getSchemaName(meta, options))
         .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);
       const knex = qb1.getKnex();
@@ -704,10 +704,10 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     /* istanbul ignore else */
     if (this.platform.allowsMultiInsert()) {
-      await this.nativeInsertMany<T>(prop.pivotTable, items as EntityData<T>[], { ...options, convertCustomTypes: false, processCollections: false });
+      await this.nativeInsertMany<T>(prop.pivotEntity, items as EntityData<T>[], { ...options, convertCustomTypes: false, processCollections: false });
     } else {
       await Utils.runSerial(items, item => {
-        return this.createQueryBuilder(prop.pivotTable, options?.ctx, 'write')
+        return this.createQueryBuilder(prop.pivotEntity, options?.ctx, 'write')
           .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES)
           .withSchema(this.getSchemaName(meta, options))
           .insert(item)

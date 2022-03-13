@@ -29,6 +29,7 @@ export interface ManyToManyOptions<T, O> extends ReferenceOptions<T, O> {
   fixedOrder?: boolean;
   fixedOrderColumn?: string;
   pivotTable?: string;
+  pivotEntity?: string | (() => EntityName<any>);
   joinColumn?: string;
   joinColumns?: string[];
   inverseJoinColumn?: string;

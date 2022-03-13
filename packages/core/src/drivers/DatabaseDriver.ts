@@ -191,7 +191,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     }
 
     if (prop.fixedOrder) {
-      return [{ [`${prop.pivotTable}.${prop.fixedOrderColumn}`]: QueryOrder.ASC } as QueryOrderMap<T>];
+      return [{ [`${prop.pivotEntity}.${prop.fixedOrderColumn}`]: QueryOrder.ASC } as QueryOrderMap<T>];
     }
 
     return [];
@@ -203,19 +203,13 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   }
 
   protected getPivotInverseProperty(prop: EntityProperty): EntityProperty {
-    const pivotMeta = this.metadata.find(prop.pivotTable)!;
-    const targetType = prop.targetMeta?.root.className;
-    let inverse: string;
+    const pivotMeta = this.metadata.find(prop.pivotEntity)!;
 
     if (prop.owner) {
-      const pivotProp1 = pivotMeta.properties[targetType + '_inverse'];
-      inverse = pivotProp1.mappedBy;
-    } else {
-      const pivotProp1 = pivotMeta.properties[targetType + '_owner'];
-      inverse = pivotProp1.inversedBy;
+      return pivotMeta.relations[0];
     }
 
-    return pivotMeta.properties[inverse];
+    return pivotMeta.relations[1];
   }
 
   protected createReplicas(cb: (c: ConnectionOptions) => C): C[] {

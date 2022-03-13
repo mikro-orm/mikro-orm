@@ -1,22 +1,7 @@
 import type { Knex } from 'knex';
 import type {
-  AnyEntity,
-  ConnectionType,
-  Dictionary,
-  EntityData,
-  EntityMetadata,
-  EntityProperty,
-  FilterQuery,
-  FlatQueryOrderMap,
-  FlushMode,
-  GroupOperator,
-  MetadataStorage,
-  PopulateOptions,
-  QBFilterQuery,
-  QBQueryOrderMap,
-  QueryOrderMap,
-  QueryResult,
-  RequiredEntityData,
+  AnyEntity, ConnectionType, Dictionary, EntityData, EntityMetadata, EntityProperty, FlatQueryOrderMap, RequiredEntityData,
+  GroupOperator, MetadataStorage, PopulateOptions, QBFilterQuery, QueryOrderMap, QueryResult, FlushMode, FilterQuery, QBQueryOrderMap,
 } from '@mikro-orm/core';
 import { LoadStrategy, LockMode, QueryFlag, QueryHelper, ReferenceType, Utils, ValidationError } from '@mikro-orm/core';
 import { QueryType } from './enums';
@@ -648,13 +633,13 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
       if (type !== 'pivotJoin') {
         const oldPivotAlias = this.getAliasForJoinPath(path + '[pivot]');
-        pivotAlias = oldPivotAlias ?? this.getNextAlias(prop.pivotTable);
+        pivotAlias = oldPivotAlias ?? this.getNextAlias(prop.pivotEntity);
         aliasedName = `${fromAlias}.${prop.name}#${pivotAlias}`;
       }
 
       const joins = this.helper.joinManyToManyReference(prop, fromAlias, alias, pivotAlias, type, cond, path);
       Object.assign(this._joins, joins);
-      this._aliasMap[pivotAlias] = prop.pivotTable;
+      this._aliasMap[pivotAlias] = prop.pivotEntity;
     } else if (prop.reference === ReferenceType.ONE_TO_ONE) {
       this._joins[aliasedName] = this.helper.joinOneToReference(prop, fromAlias, alias, type, cond);
     } else { // MANY_TO_ONE
@@ -821,7 +806,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
         this.autoJoinPivotTable(field);
       } else if (meta && this.helper.isOneToOneInverse(fromField)) {
         const prop = meta.properties[fromField];
-        const alias = this.getNextAlias(prop.pivotTable ?? prop.type);
+        const alias = this.getNextAlias(prop.pivotEntity ?? prop.type);
         const aliasedName = `${fromAlias}.${prop.name}#${alias}`;
         this._joins[aliasedName] = this.helper.joinOneToReference(prop, this.alias, alias, 'leftJoin');
         this._populateMap[aliasedName] = this._joins[aliasedName].alias;
@@ -914,8 +899,8 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
   private autoJoinPivotTable(field: string): void {
     const pivotMeta = this.metadata.find(field)!;
-    const owner = pivotMeta.props.find(prop => prop.reference === ReferenceType.MANY_TO_ONE && prop.owner)!;
-    const inverse = pivotMeta.props.find(prop => prop.reference === ReferenceType.MANY_TO_ONE && !prop.owner)!;
+    const owner = pivotMeta.relations[0];
+    const inverse = pivotMeta.relations[1];
     const prop = this._cond[pivotMeta.name + '.' + owner.name] || this._orderBy[pivotMeta.name + '.' + owner.name] ? inverse : owner;
     const pivotAlias = this.getNextAlias(pivotMeta.name!);
 
@@ -929,44 +914,30 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
 export interface RunQueryBuilder<T> extends Omit<QueryBuilder<T>, 'getResult' | 'getSingleResult' | 'getResultList' | 'where'> {
   where(cond: QBFilterQuery<T> | string, params?: keyof typeof GroupOperator | any[], operator?: keyof typeof GroupOperator): this;
-
   execute<U = QueryResult<T>>(method?: 'all' | 'get' | 'run', mapResults?: boolean): Promise<U>;
-
   then<TResult1 = QueryResult<T>, TResult2 = never>(onfulfilled?: ((value: QueryResult<T>) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<QueryResult<T>>;
 }
 
 export interface SelectQueryBuilder<T> extends QueryBuilder<T> {
   execute<U = T[]>(method?: 'all' | 'get' | 'run', mapResults?: boolean): Promise<U>;
-
   execute<U = T[]>(method: 'all', mapResults?: boolean): Promise<U>;
-
   execute<U = T>(method: 'get', mapResults?: boolean): Promise<U>;
-
   execute<U = QueryResult<T>>(method: 'run', mapResults?: boolean): Promise<U>;
-
   then<TResult1 = T[], TResult2 = never>(onfulfilled?: ((value: T[]) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<T[]>;
 }
 
 export interface CountQueryBuilder<T> extends QueryBuilder<T> {
   execute<U = { count: number }[]>(method?: 'all' | 'get' | 'run', mapResults?: boolean): Promise<U>;
-
   execute<U = { count: number }[]>(method: 'all', mapResults?: boolean): Promise<U>;
-
   execute<U = { count: number }>(method: 'get', mapResults?: boolean): Promise<U>;
-
   execute<U = QueryResult<{ count: number }>>(method: 'run', mapResults?: boolean): Promise<U>;
-
   then<TResult1 = number, TResult2 = never>(onfulfilled?: ((value: number) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<number>;
 }
 
-export interface InsertQueryBuilder<T> extends RunQueryBuilder<T> {
-}
+export interface InsertQueryBuilder<T> extends RunQueryBuilder<T> {}
 
-export interface UpdateQueryBuilder<T> extends RunQueryBuilder<T> {
-}
+export interface UpdateQueryBuilder<T> extends RunQueryBuilder<T> {}
 
-export interface DeleteQueryBuilder<T> extends RunQueryBuilder<T> {
-}
+export interface DeleteQueryBuilder<T> extends RunQueryBuilder<T> {}
 
-export interface TruncateQueryBuilder<T> extends RunQueryBuilder<T> {
-}
+export interface TruncateQueryBuilder<T> extends RunQueryBuilder<T> {}

@@ -1,0 +1,16 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`custom pivot entity for m:n with additional properties schema 1`] = `
+"pragma foreign_keys = off;
+
+create table \`order\` (\`id\` integer not null primary key autoincrement, \`paid\` integer not null, \`shipped\` integer not null, \`created\` datetime not null);
+
+create table \`product\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`current_price\` integer not null);
+
+create table \`order_item\` (\`order_id\` integer not null, \`product_id\` integer not null, \`amount\` integer not null default 1, \`offered_price\` integer not null default 0, constraint \`order_item_order_id_foreign\` foreign key(\`order_id\`) references \`order\`(\`id\`) on update cascade, constraint \`order_item_product_id_foreign\` foreign key(\`product_id\`) references \`product\`(\`id\`) on update cascade, primary key (\`order_id\`, \`product_id\`));
+create index \`order_item_order_id_index\` on \`order_item\` (\`order_id\`);
+create index \`order_item_product_id_index\` on \`order_item\` (\`product_id\`);
+
+pragma foreign_keys = on;
+"
+`;
