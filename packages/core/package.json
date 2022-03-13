@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/core",
-  "version": "5.0.5",
+  "version": "5.1.0",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -60,7 +60,7 @@
     "escaya": "0.0.61",
     "fs-extra": "10.0.1",
     "globby": "11.0.4",
-    "mikro-orm": "5.0.5",
+    "mikro-orm": "^5.1.0",
     "reflect-metadata": "0.1.13"
   },
   "peerDependencies": {

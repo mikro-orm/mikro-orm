@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.1.0](https://github.com/mikro-orm/mikro-orm/compare/v5.0.5...v5.1.0) (2022-03-13)
+
+
+### Bug Fixes
+
+* **core:** do not alias JSON conditions on update/delete queries ([5c0674e](https://github.com/mikro-orm/mikro-orm/commit/5c0674e61d97f9b143b48ae5314e5e7d1eeb4529)), closes [#2839](https://github.com/mikro-orm/mikro-orm/issues/2839)
+* **core:** fix ordering by complex composite PKs ([dde11d3](https://github.com/mikro-orm/mikro-orm/commit/dde11d3b2fdd62df28f57c6410e47e14a087ecf3)), closes [#2886](https://github.com/mikro-orm/mikro-orm/issues/2886)
+* **knex:** `order by` with a formula field should not include `as` ([#2848](https://github.com/mikro-orm/mikro-orm/issues/2848)) ([09e8bfa](https://github.com/mikro-orm/mikro-orm/commit/09e8bfa036962af13449d5e164ce6a983aa48094))
+* **knex:** fully qualify sub-query order-by fields ([#2835](https://github.com/mikro-orm/mikro-orm/issues/2835)) ([f74dc73](https://github.com/mikro-orm/mikro-orm/commit/f74dc73ef8aa0c256b30811aeb3c2269a8a94aa1))
+* **postgres:** respect schema name in migration storage ([fbf9bfa](https://github.com/mikro-orm/mikro-orm/commit/fbf9bfa3aad21a4175dea91cd1a6c9742541cbc6)), closes [#2828](https://github.com/mikro-orm/mikro-orm/issues/2828)
+
+
+### Features
+
+* **core:** allow better control over connection type when using read-replicas ([#2896](https://github.com/mikro-orm/mikro-orm/issues/2896)) ([e40ae2d](https://github.com/mikro-orm/mikro-orm/commit/e40ae2d65abe3d49435356cf79068de5c3d73bd1))
+* **core:** allow forcing write connection via `forceWriteConnection` ([#2838](https://github.com/mikro-orm/mikro-orm/issues/2838)) ([36d1969](https://github.com/mikro-orm/mikro-orm/commit/36d19697a9dc504724ce2bf246f7f0906afb6517))
+* **core:** allow specifying custom pivot table entity ([#2901](https://github.com/mikro-orm/mikro-orm/issues/2901)) ([8237d16](https://github.com/mikro-orm/mikro-orm/commit/8237d168479c5a61af28cf1a51fcd52f23079179))
+* **core:** enable `QueryFlag.PAGINATE` automatically for `em.find()` ([ccb4223](https://github.com/mikro-orm/mikro-orm/commit/ccb4223c2a6ea39103fa9b82ccee8f0b3a9e4f1e)), closes [#2867](https://github.com/mikro-orm/mikro-orm/issues/2867)
+
+
+
+
+
 ## [5.0.5](https://github.com/mikro-orm/mikro-orm/compare/v5.0.4...v5.0.5) (2022-02-27)
 
 
