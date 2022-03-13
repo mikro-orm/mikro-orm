@@ -13,6 +13,7 @@ import type { EventSubscriber } from './events';
 
 export type Constructor<T = unknown> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
+export type AsyncFunction<R = any, T = Dictionary> = (args: T) => Promise<T>;
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type ExcludeFunctions<T, K extends keyof T> = T[K] extends Function ? never : (K extends symbol ? never : K);
 export type Cast<T, R> = T extends R ? T : R;
@@ -439,7 +440,7 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   uniques: { properties: (keyof T & string) | (keyof T & string)[]; name?: string; options?: Dictionary }[];
   checks: CheckConstraint<T>[];
   customRepository: () => Constructor<EntityRepository<T>>;
-  hooks: Partial<Record<keyof typeof EventType, ((string & keyof T) | NonNullable<EventSubscriber[keyof EventSubscriber]>)[]>>;
+  hooks: { [K in EventType]?: (keyof T | EventSubscriber<T>[EventType])[] };
   prototype: T;
   class: Constructor<T>;
   abstract: boolean;
