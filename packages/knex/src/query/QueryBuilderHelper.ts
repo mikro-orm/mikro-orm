@@ -175,7 +175,7 @@ export class QueryBuilderHelper {
         inverseJoinColumns: prop.inverseJoinColumns,
         primaryKeys: prop.referencedColumnNames,
         table: prop.pivotTable,
-        schema: this.driver.getSchemaName(this.metadata.find(prop.pivotTable)),
+        schema: this.driver.getSchemaName(this.metadata.find(prop.pivotEntity)),
         path: path.endsWith('[pivot]') ? path : `${path}[pivot]`,
       } as JoinOptions,
     };
@@ -184,7 +184,7 @@ export class QueryBuilderHelper {
       return ret;
     }
 
-    const prop2 = this.metadata.find(prop.pivotTable)!.properties[prop.type + (prop.owner ? '_inverse' : '_owner')];
+    const prop2 = this.metadata.find(prop.pivotEntity)!.properties[prop.type + (prop.owner ? '_inverse' : '_owner')];
     ret[`${pivotAlias}.${prop2.name}#${alias}`] = this.joinManyToOneReference(prop2, pivotAlias, alias, type);
     ret[`${pivotAlias}.${prop2.name}#${alias}`].path = path;
 
@@ -193,7 +193,7 @@ export class QueryBuilderHelper {
 
   joinPivotTable(field: string, prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary = {}): JoinOptions {
     const pivotMeta = this.metadata.find(field)!;
-    const prop2 = pivotMeta.properties[prop.mappedBy || prop.inversedBy];
+    const prop2 = pivotMeta.relations[0] === prop ? pivotMeta.relations[1] : pivotMeta.relations[0];
 
     return {
       prop, type, cond, ownerAlias, alias,

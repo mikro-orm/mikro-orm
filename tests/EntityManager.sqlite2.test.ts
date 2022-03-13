@@ -4,7 +4,6 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { initORMSqlite2, mockLogger } from './bootstrap';
 import type { IAuthor4, IPublisher4, ITest4 } from './entities-schema';
 import { Author4, Book4, BookTag4, FooBar4, Publisher4, PublisherType, Test4 } from './entities-schema';
-import { Book2 } from './entities-sql';
 
 describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver => {
 

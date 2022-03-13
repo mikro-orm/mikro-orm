@@ -74,7 +74,7 @@ export class MetadataStorage {
   }
 
   get<T extends AnyEntity<T> = any>(entity: string, init = false, validate = true): EntityMetadata<T> {
-    if (validate && !init && entity && !this.has(entity)) {
+    if (validate && !init && !this.has(entity)) {
       throw MetadataError.missingMetadata(entity);
     }
 
