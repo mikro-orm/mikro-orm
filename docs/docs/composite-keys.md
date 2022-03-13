@@ -234,6 +234,40 @@ export class OrderItem {
 }
 ```
 
+:::info
+By default, a generated pivot table entity is used under the hood to represent the pivot table. Since v5.1 we can provide our own implementation via `pivotEntity` option.
+
+The pivot table entity needs to have exactly two many-to-one properties, where first one needs to point to the owning entity and the second to the target entity of the many-to-many relation.
+
+```ts
+@Entity()
+export class Order {
+
+  @ManyToMany({ entity: () => Product, pivotEntity: () => OrderItem })
+  products = new Collection<Product>(this);
+
+}
+```
+
+If we want to add new items to such M:N collection, we need to have all non-FK properties to define a database level default value.
+
+```ts
+@Entity()
+export class OrderItem {
+
+  @ManyToOne({ primary: true })
+  order: Order;
+
+  @ManyToOne({ primary: true })
+  product: Product;
+
+  @Property({ default: 1 })
+  amount!: number;
+
+}
+```
+:::
+
 ## Using QueryBuilder with composite keys
 
 Internally composite keys are represented as tuples, containing all the values in the

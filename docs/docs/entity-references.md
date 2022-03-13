@@ -1,6 +1,6 @@
 ---
 title: Entity References
-sidebar_label: Entity References and Reference<T> Wrapper
+sidebar_label: Entity References
 ---
 
 import Tabs from '@theme/Tabs';
