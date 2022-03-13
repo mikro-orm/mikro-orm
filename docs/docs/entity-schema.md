@@ -218,9 +218,9 @@ function beforeUpdate() {
 }
 
 // Defined outsite, this available via args.
-const beforeUpdate2 = (args: EventArgs) => args.entity.version++
+const beforeUpdate2 = (args: EventArgs) => args.entity.version++;
 
-export const schema = new EntitySchema<BookTag>({
+export const schema = new EntitySchema({
   class: BookTag,
   hooks: {
     beforeCreate: ['beforeCreate'], // Instance method
