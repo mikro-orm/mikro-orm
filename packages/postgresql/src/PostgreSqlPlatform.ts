@@ -221,4 +221,15 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return indexName;
   }
 
+  /**
+   * @inheritDoc
+   */
+  castColumn(prop?: EntityProperty): string {
+    if (prop?.columnTypes?.[0] === this.getUuidTypeDeclarationSQL({})) {
+      return '::text';
+    }
+
+    return '';
+  }
+
 }

@@ -862,8 +862,11 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       const orderBy = [];
       for (const orderMap of this._orderBy) {
         for (const [field, direction] of Object.entries(orderMap)) {
+          const [a, f] = this.helper.splitField(field);
+          const prop = this.helper.getProperty(f, a);
+          const type = this.platform.castColumn(prop);
           orderBy.push({
-            [`min(${this.ref(this.helper.mapper(field, this.type))})`]: direction,
+            [`min(${this.ref(this.helper.mapper(field, this.type))}${type})`]: direction,
           });
         }
       }

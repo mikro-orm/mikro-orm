@@ -410,4 +410,11 @@ export abstract class Platform {
     throw new Error('Not supported');
   }
 
+  /**
+   * @internal
+   */
+  castColumn(prop?: EntityProperty): string {
+    return '';
+  }
+
 }
