@@ -231,6 +231,7 @@ export class EntityLoader {
     const children = this.getChildReferences<T>(entities, prop, options.refresh);
     const meta = this.metadata.find(prop.type)!;
     let fk = Utils.getPrimaryKeyHash(meta.primaryKeys);
+    let schema: string | undefined = options.schema;
 
     if (prop.reference === ReferenceType.ONE_TO_MANY || (prop.reference === ReferenceType.MANY_TO_MANY && !prop.owner)) {
       fk = meta.properties[prop.mappedBy].name;
@@ -246,10 +247,14 @@ export class EntityLoader {
       return [];
     }
 
+    if (!schema && [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference)) {
+      schema = children.find(e => e.__helper!.__schema)?.__helper!.__schema;
+    }
+
     const ids = Utils.unique(children.map(e => Utils.getPrimaryKeyValues(e, e.__meta!.primaryKeys, true)));
     const where = this.mergePrimaryCondition<T>(ids, fk, options, meta, this.metadata, this.driver.getPlatform());
     const fields = this.buildFields(options.fields, prop);
-    const { refresh, filters, convertCustomTypes, lockMode, strategy, populateWhere, schema } = options;
+    const { refresh, filters, convertCustomTypes, lockMode, strategy, populateWhere } = options;
 
     return this.em.find(prop.type, where, {
       refresh, filters, convertCustomTypes, lockMode, populateWhere,
