@@ -505,7 +505,7 @@ export class QueryBuilderHelper {
 
       Utils.splitPrimaryKeys(field).forEach(f => {
         const prop = this.getProperty(f, alias);
-        const noPrefix = (prop && prop.persist === false) || QueryBuilderHelper.isCustomExpression(f);
+        const noPrefix = (prop && prop.persist === false && !prop.formula) || QueryBuilderHelper.isCustomExpression(f);
         const column = this.mapper(noPrefix ? f : `${alias}.${f}`, type, undefined, null);
         /* istanbul ignore next */
         const rawColumn = Utils.isString(column) ? column.split('.').map(e => this.knex.ref(e)).join('.') : column;
