@@ -447,6 +447,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Commits the transaction bound to this EntityManager. Flushes before doing the actual commit query.
    */
   async commit(): Promise<void> {
+    if (!this.transactionContext) {
+      throw ValidationError.transactionRequired();
+    }
+
     await this.flush();
     await this.getConnection('write').commit(this.transactionContext, new TransactionEventBroadcaster(this));
     delete this.transactionContext;
@@ -456,6 +460,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Rollbacks the transaction bound to this EntityManager.
    */
   async rollback(): Promise<void> {
+    if (!this.transactionContext) {
+      throw ValidationError.transactionRequired();
+    }
+
     await this.getConnection('write').rollback(this.transactionContext, new TransactionEventBroadcaster(this));
     delete this.transactionContext;
     this.getUnitOfWork().clearActionsQueue();

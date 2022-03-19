@@ -317,6 +317,11 @@ describe('EntityManagerPostgre', () => {
     expect(mock.mock.calls[7][0]).toMatch(`commit`);
   });
 
+  test('em.commit/rollback validation', async () => {
+    await expect(orm.em.commit()).rejects.toThrowError('An open transaction is required for this operation');
+    await expect(orm.em.rollback()).rejects.toThrowError('An open transaction is required for this operation');
+  });
+
   test('should load entities', async () => {
     expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.em).toBeInstanceOf(EntityManager);
