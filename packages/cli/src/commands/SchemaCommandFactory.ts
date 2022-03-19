@@ -97,7 +97,7 @@ export class SchemaCommandFactory {
 
     const orm = await CLIHelper.getORM() as MikroORM<AbstractSqlDriver>;
     const generator = new SchemaGenerator(orm.em);
-    const params = { wrap: !args.fkChecks, ...args };
+    const params = { wrap: args.fkChecks == null ? undefined : !args.fkChecks, ...args };
 
     if (args.dump) {
       const m = `get${method.substr(0, 1).toUpperCase()}${method.substr(1)}SchemaSQL` as 'getCreateSchemaSQL' | 'getUpdateSchemaSQL' | 'getDropSchemaSQL';
