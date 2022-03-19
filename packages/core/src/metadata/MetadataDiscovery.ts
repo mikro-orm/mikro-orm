@@ -478,9 +478,7 @@ export class MetadataDiscovery {
     if (prop.fixedOrder) {
       const primaryProp = await this.defineFixedOrderProperty(prop, targetType);
       data.properties[primaryProp.name] = primaryProp;
-      data.primaryKeys = [primaryProp.name];
     } else {
-      data.primaryKeys = [meta.root.name + '_owner', targetType + '_inverse'];
       data.compositePK = true;
     }
 
