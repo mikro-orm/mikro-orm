@@ -866,7 +866,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
           const prop = this.helper.getProperty(f, a);
           const type = this.platform.castColumn(prop);
           orderBy.push({
-            [`min(${this.ref(this.helper.mapper(field, this.type))}${type})`]: direction,
+            [`min(${this.ref(this.helper.mapper(field, this.type, undefined, null))}${type})`]: direction,
           });
         }
       }
