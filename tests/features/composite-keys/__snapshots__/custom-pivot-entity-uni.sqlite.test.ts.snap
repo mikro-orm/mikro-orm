@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`custom pivot entity for m:n with additional properties (bidirectional) schema 1`] = `
+exports[`custom pivot entity for m:n with additional properties (unidirectional) schema 1`] = `
 "pragma foreign_keys = off;
 
 create table \`order\` (\`id\` integer not null primary key autoincrement, \`paid\` integer not null, \`shipped\` integer not null, \`created\` datetime not null);

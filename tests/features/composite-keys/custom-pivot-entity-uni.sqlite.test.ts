@@ -37,9 +37,6 @@ export class Product {
   @Property()
   currentPrice: number;
 
-  @ManyToMany(() => Order, o => o.products)
-  orders = new Collection<Order>(this);
-
   constructor(name: string, currentPrice: number) {
     this.name = name;
     this.currentPrice = currentPrice;
@@ -72,7 +69,7 @@ export class OrderItem {
 
 }
 
-describe('custom pivot entity for m:n with additional properties (bidirectional)', () => {
+describe('custom pivot entity for m:n with additional properties (unidirectional)', () => {
 
   let orm: MikroORM;
 
@@ -125,49 +122,11 @@ describe('custom pivot entity for m:n with additional properties (bidirectional)
   }
 
   test(`should work`, async () => {
-    const { order1, order2, product1, product2, product3, product4, product5 } = await createEntities();
+    const { product1, product2, product3, product4, product5 } = await createEntities();
+    const productRepository = orm.em.getRepository(Product);
 
     const orders = await orm.em.find(Order, {}, { populate: true });
     expect(orders).toHaveLength(3);
-
-    // test inverse side
-    const productRepository = orm.em.getRepository(Product);
-    let products = await productRepository.findAll();
-    expect(products).toBeInstanceOf(Array);
-    expect(products.length).toBe(5);
-    expect(products[0]).toBeInstanceOf(Product);
-    expect(products[0].name).toBe('p1');
-    expect(products[0].orders).toBeInstanceOf(Collection);
-    expect(products[0].orders.isInitialized()).toBe(true);
-    expect(products[0].orders.isDirty()).toBe(false);
-    expect(products[0].orders.count()).toBe(2);
-    expect(products[0].orders.length).toBe(2);
-
-    orm.em.clear();
-    products = await orm.em.find(Product, {});
-    expect(products[0].orders.isInitialized()).toBe(false);
-    expect(products[0].orders.isDirty()).toBe(false);
-    expect(() => products[0].orders.getItems()).toThrowError(/Collection<Order> of entity Product\[\d+] not initialized/);
-    expect(() => products[0].orders.remove(order1, order2)).toThrowError(/Collection<Order> of entity Product\[\d+] not initialized/);
-    expect(() => products[0].orders.removeAll()).toThrowError(/Collection<Order> of entity Product\[\d+] not initialized/);
-    expect(() => products[0].orders.contains(order1)).toThrowError(/Collection<Order> of entity Product\[\d+] not initialized/);
-
-    // test M:N lazy load
-    orm.em.clear();
-    products = await productRepository.findAll();
-    await products[0].orders.init();
-    expect(products[0].orders.count()).toBe(2);
-    expect(products[0].orders.getItems()[0]).toBeInstanceOf(Order);
-    expect(products[0].orders.getItems()[0].id).toBeDefined();
-    expect(wrap(products[0].orders.getItems()[0]).isInitialized()).toBe(true);
-    expect(products[0].orders.isInitialized()).toBe(true);
-    const old = products[0];
-    expect(products[1].orders.isInitialized()).toBe(false);
-    products = await productRepository.findAll({ populate: ['orders'] as const });
-    expect(products[1].orders.isInitialized()).toBe(true);
-    expect(products[0].id).toBe(old.id);
-    expect(products[0]).toBe(old);
-    expect(products[0].orders).toBe(old.orders);
 
     // test M:N lazy load
     orm.em.clear();
