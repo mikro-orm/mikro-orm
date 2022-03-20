@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.1.1](https://github.com/mikro-orm/mikro-orm/compare/v5.1.0...v5.1.1) (2022-03-20)
+
+
+### Bug Fixes
+
+* **core:** fix custom pivot table entities for unidirectional relations ([01bdbf6](https://github.com/mikro-orm/mikro-orm/commit/01bdbf65836b6db1c7353d4dd14032645df3a978))
+* **postgres:** fix pagination with order by UUID PK ([042626c](https://github.com/mikro-orm/mikro-orm/commit/042626c6aa1c1538ce65fb12db435b088e11e518)), closes [#2910](https://github.com/mikro-orm/mikro-orm/issues/2910)
+* **postgres:** respect known schema when loading wild card entity relations ([61d1e85](https://github.com/mikro-orm/mikro-orm/commit/61d1e853db610d46c23d56b0bc9fe03383da005d)), closes [#2909](https://github.com/mikro-orm/mikro-orm/issues/2909)
+
+
+### Features
+
+* **core:** validate `em.begin` was called when using `em.commit/rollback` ([67fa076](https://github.com/mikro-orm/mikro-orm/commit/67fa076df1753e9dc433dbc79657b4f240949d8d)), closes [#2918](https://github.com/mikro-orm/mikro-orm/issues/2918)
+
+
+
+
+
 # [5.1.0](https://github.com/mikro-orm/mikro-orm/compare/v5.0.5...v5.1.0) (2022-03-13)
 
 

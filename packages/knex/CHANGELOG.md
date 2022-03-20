@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.1.1](https://github.com/mikro-orm/mikro-orm/compare/v5.1.0...v5.1.1) (2022-03-20)
+
+
+### Bug Fixes
+
+* **core:** fix custom pivot table entities for unidirectional relations ([01bdbf6](https://github.com/mikro-orm/mikro-orm/commit/01bdbf65836b6db1c7353d4dd14032645df3a978))
+* **knex:** `order by` with a formula field should not include `as` for sub-queries ([#2929](https://github.com/mikro-orm/mikro-orm/issues/2929)) ([74751fb](https://github.com/mikro-orm/mikro-orm/commit/74751fbb2a14f2b6029df5f07fac99310df75f31))
+* **postgres:** allow explicit schema name in `prop.pivotTable` ([1860ff5](https://github.com/mikro-orm/mikro-orm/commit/1860ff5e335b4142e4d7917ac5c4d1c18ba4044d)), closes [#2919](https://github.com/mikro-orm/mikro-orm/issues/2919)
+* **postgres:** fix pagination with order by UUID PK ([042626c](https://github.com/mikro-orm/mikro-orm/commit/042626c6aa1c1538ce65fb12db435b088e11e518)), closes [#2910](https://github.com/mikro-orm/mikro-orm/issues/2910)
+
+
+
+
+
 # [5.1.0](https://github.com/mikro-orm/mikro-orm/compare/v5.0.5...v5.1.0) (2022-03-13)
 
 
