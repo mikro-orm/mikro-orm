@@ -363,6 +363,10 @@ export abstract class Platform {
     return this.namingStrategy.indexName(tableName, columns, type);
   }
 
+  getDefaultPrimaryName(tableName: string, columns: string[]): string {
+    return this.namingStrategy.indexName(tableName, columns, 'primary');
+  }
+
   supportsCustomPrimaryKeyNames(): boolean {
     return false;
   }
