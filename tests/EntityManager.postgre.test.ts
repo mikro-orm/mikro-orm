@@ -1,9 +1,9 @@
 import { v4 } from 'uuid';
-import type { EventSubscriber, ChangeSet, AnyEntity, FlushEventArgs } from '@mikro-orm/core';
+import type { EventSubscriber, ChangeSet, AnyEntity, FlushEventArgs, FilterQuery, EntityDTO } from '@mikro-orm/core';
 import {
   Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, ValidationError, ChangeSetType, wrap, expr,
   UniqueConstraintViolationException, TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException,
-  NonUniqueFieldNameException, InvalidFieldNameException, LoadStrategy, IsolationLevel, PopulateHint,
+  NonUniqueFieldNameException, InvalidFieldNameException, LoadStrategy, IsolationLevel, PopulateHint, FlushMode,
 } from '@mikro-orm/core';
 import { PostgreSqlDriver, PostgreSqlConnection } from '@mikro-orm/postgresql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2, Label2 } from './entities-sql';
@@ -2035,6 +2035,31 @@ describe('EntityManagerPostgre', () => {
     expect(mock.mock.calls[11][0]).toMatch(`commit`);
 
     mock.mockRestore();
+  });
+
+  test('GH #2934', async () => {
+    const users = [
+      { name: 'A', email: 'A' },
+      { name: 'B', email: 'B' },
+      { name: 'C', email: 'C' },
+      { name: 'D', email: 'D' },
+    ];
+
+    async function saveUser(options: FilterQuery<Author2>): Promise<Author2> {
+      let user = await orm.em.findOne(Author2, options);
+
+      if (!user) {
+        user = orm.em.create(Author2, options as any);
+        await orm.em.persistAndFlush(user);
+      }
+
+      expect(user.id).toBeDefined();
+
+      return user;
+    }
+
+    const res = await Promise.all(users.map(userData => saveUser(userData)));
+    res.forEach(user => expect(user.id).toBeDefined());
   });
 
   test('required fields validation', async () => {
