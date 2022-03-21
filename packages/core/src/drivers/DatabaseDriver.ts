@@ -15,7 +15,7 @@ import { DriverException } from '../exceptions';
 
 export abstract class DatabaseDriver<C extends Connection> implements IDatabaseDriver<C> {
 
-  [EntityManagerType]: EntityManager<this>;
+  [EntityManagerType]!: EntityManager<this>;
 
   protected readonly connection!: C;
   protected readonly replicas: C[] = [];
@@ -43,7 +43,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   abstract nativeDelete<T>(entityName: string, where: FilterQuery<T>, options?: DeleteOptions<T>): Promise<QueryResult<T>>;
 
-  abstract count<T>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T>): Promise<number>;
+  abstract count<T extends AnyEntity<T>, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T, P>): Promise<number>;
 
   createEntityManager<D extends IDatabaseDriver = IDatabaseDriver>(useContext?: boolean): D[typeof EntityManagerType] {
     return new EntityManager(this.config, this, this.metadata, useContext) as unknown as EntityManager<D>;

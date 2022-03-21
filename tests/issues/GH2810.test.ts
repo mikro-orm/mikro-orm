@@ -14,8 +14,8 @@ export class NodeEntity {
 @Entity()
 export class ElementEntity {
 
-  [PrimaryKeyType]: number;
-  [PrimaryKeyProp]: 'node';
+  [PrimaryKeyType]?: number;
+  [PrimaryKeyProp]?: 'node';
 
   @OneToOne({ entity: () => NodeEntity, primary: true, onDelete: 'cascade', onUpdateIntegrity: 'cascade' })
   node!: NodeEntity;

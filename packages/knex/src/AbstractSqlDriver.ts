@@ -12,7 +12,7 @@ import type { Field } from './typings';
 
 export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = AbstractSqlConnection> extends DatabaseDriver<C> {
 
-  [EntityManagerType]: SqlEntityManager<this>;
+  [EntityManagerType]!: SqlEntityManager<this>;
 
   protected readonly connection: C;
   protected readonly replicas: C[] = [];

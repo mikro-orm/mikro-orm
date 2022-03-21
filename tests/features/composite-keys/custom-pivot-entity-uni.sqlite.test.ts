@@ -59,7 +59,7 @@ export class OrderItem {
   @Property({ default: 0 })
   offeredPrice: number;
 
-  [PrimaryKeyType]: [number, number];
+  [PrimaryKeyType]?: [number, number];
 
   constructor(order: Order, product: Product) {
     this.order = order;
