@@ -26,7 +26,7 @@ jobs:
           node-version: 16.10
 
       - name: Cache node_modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-16.10-modules-${{ hashFiles('**/yarn.lock') }}
@@ -61,7 +61,7 @@ jobs:
           node-version: 16.10
 
       - name: Cache node_modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-16.10-modules-${{ hashFiles('**/yarn.lock') }}
@@ -96,7 +96,7 @@ jobs:
           node-version: 16.10
 
       - name: Cache node_modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-16.10-modules-${{ hashFiles('**/yarn.lock') }}
@@ -135,7 +135,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Cache node_modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-${{ matrix.node-version }}-modules-${{ hashFiles('**/yarn.lock') }}
@@ -207,7 +207,7 @@ jobs:
           node-version: 16.10
 
       - name: Cache node_modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-16.10-modules-${{ hashFiles('**/yarn.lock') }}
