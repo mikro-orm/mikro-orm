@@ -114,9 +114,11 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const enums = checks.reduce((o, item, index) => {
       // check constraints are defined as one of:
       // `CHECK ((type = ANY (ARRAY['local'::text, 'global'::text])))`
+      // `CHECK (("columnName" = ANY (ARRAY['local'::text, 'global'::text])))`
       // `CHECK (((enum_test)::text = ANY ((ARRAY['a'::character varying, 'b'::character varying, 'c'::character varying])::text[])))`
+      // `CHECK ((("enumTest")::text = ANY ((ARRAY['a'::character varying, 'b'::character varying, 'c'::character varying])::text[])))`
       // `CHECK ((type = 'a'::text))`
-      const m1 = item.definition?.match(/check \(\(\((\w+)\)::/i) || item.definition?.match(/check \(\((\w+) = /i);
+      const m1 = item.definition?.match(/check \(\(\("?(\w+)"?\)::/i) || item.definition?.match(/check \(\("?(\w+)"? = /i);
       const m2 = item.definition?.match(/\(array\[(.*)]\)/i) || item.definition?.match(/ = (.*)\)/i);
 
       if (item.columnName && m1 && m2) {
