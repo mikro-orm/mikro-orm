@@ -80,15 +80,29 @@ export abstract class SchemaHelper {
     return [this.getDropIndexSQL(tableName, { ...index, keyName: oldIndexName }), this.getCreateIndexSQL(tableName, index)].join(';\n');
   }
 
+  hasNonDefaultPrimaryKeyName(table: DatabaseTable): boolean {
+    const pkIndex = table.getPrimaryKey();
+
+    if (!pkIndex || !this.platform.supportsCustomPrimaryKeyNames()) {
+      return false;
+    }
+
+    const defaultName = this.platform.getDefaultPrimaryName(table.name, pkIndex.columnNames);
+
+    return pkIndex?.keyName !== defaultName;
+  }
+
   createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>) {
     const compositePK = fromTable.getPrimaryKey()?.composite;
 
     if (column.autoincrement && !compositePK && (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type'))) {
+      const primaryKey = !changedProperties && !this.hasNonDefaultPrimaryKeyName(fromTable);
+
       if (column.mappedType instanceof BigIntType) {
-        return table.bigIncrements(column.name, { primaryKey: !changedProperties });
+        return table.bigIncrements(column.name, { primaryKey });
       }
 
-      return table.increments(column.name, { primaryKey: !changedProperties });
+      return table.increments(column.name, { primaryKey });
     }
 
     if (column.mappedType instanceof EnumType && column.enumItems?.every(item => Utils.isString(item))) {

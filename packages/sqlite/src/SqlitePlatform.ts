@@ -118,10 +118,14 @@ export class SqlitePlatform extends AbstractSqlPlatform {
 
   getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
     if (type === 'primary') {
-      return 'primary';
+      return this.getDefaultPrimaryName(tableName, columns);
     }
 
     return super.getIndexName(tableName, columns, type);
+  }
+
+  getDefaultPrimaryName(tableName: string, columns: string[]): string {
+    return 'primary';
   }
 
   supportsDownMigrations(): boolean {

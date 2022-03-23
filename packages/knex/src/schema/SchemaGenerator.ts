@@ -1,4 +1,4 @@
-import type { Knex } from 'knex';
+﻿import type { Knex } from 'knex';
 import type { Dictionary, EntityMetadata } from '@mikro-orm/core';
 import { AbstractSchemaGenerator } from '@mikro-orm/core';
 import type { Check, Column, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
@@ -239,7 +239,7 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
     schema = schemaName ?? schema ?? this.config.get('schema');
 
     /* istanbul ignore next */
-    if (schema && schemaName ==='*') {
+    if (schema && schemaName === '*') {
       return `${schema}.${referencedTableName.replace(/^\*\./, '')}`;
     }
 
@@ -377,17 +377,17 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
       }
 
       for (const index of Object.values(diff.addedIndexes)) {
-        this.createIndex(table, index);
+        this.createIndex(table, index, diff.fromTable);
       }
 
       for (const index of Object.values(diff.changedIndexes)) {
-        this.createIndex(table, index, true);
+        this.createIndex(table, index, diff.fromTable, true);
       }
 
       for (const [oldIndexName, index] of Object.entries(diff.renamedIndexes)) {
         if (index.unique) {
           this.dropIndex(table, index, oldIndexName);
-          this.createIndex(table, index);
+          this.createIndex(table, index, diff.fromTable);
         } else {
           this.helper.pushTableQuery(table, this.helper.getRenameIndexSQL(diff.name, index, oldIndexName));
         }
@@ -466,7 +466,8 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
       });
 
       for (const index of tableDef.getIndexes()) {
-        this.createIndex(table, index, !tableDef.getColumns().some(c => c.autoincrement));
+        const createPrimary = !tableDef.getColumns().some(c => c.autoincrement) || this.helper.hasNonDefaultPrimaryKeyName(tableDef);
+        this.createIndex(table, index, tableDef, createPrimary);
       }
 
       for (const check of tableDef.getChecks()) {
@@ -488,13 +489,13 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
     });
   }
 
-  private createIndex(table: Knex.CreateTableBuilder, index: Index, createPrimary = false) {
+  private createIndex(table: Knex.CreateTableBuilder, index: Index, tableDef: DatabaseTable, createPrimary = false) {
     if (index.primary && !createPrimary) {
       return;
     }
 
     if (index.primary) {
-      const keyName = this.platform.supportsCustomPrimaryKeyNames() ? index.keyName : undefined;
+      const keyName = this.helper.hasNonDefaultPrimaryKeyName(tableDef) ? index.keyName : undefined;
       table.primary(index.columnNames, keyName);
     } else if (index.unique) {
       table.unique(index.columnNames, { indexName: index.keyName });

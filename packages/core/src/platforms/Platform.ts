@@ -363,6 +363,11 @@ export abstract class Platform {
     return this.namingStrategy.indexName(tableName, columns, type);
   }
 
+  /* istanbul ignore next */
+  getDefaultPrimaryName(tableName: string, columns: string[]): string {
+    return this.namingStrategy.indexName(tableName, columns, 'primary');
+  }
+
   supportsCustomPrimaryKeyNames(): boolean {
     return false;
   }

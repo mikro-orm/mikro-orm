@@ -52,17 +52,21 @@ export class MariaDbPlatform extends AbstractSqlPlatform {
    */
   getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
     if (type === 'primary') {
-      return 'PRIMARY'; // https://dev.mysql.com/doc/refman/8.0/en/create-table.html#create-table-indexes-keys
+      return this.getDefaultPrimaryName(tableName, columns);
     }
 
-    let indexName = super.getIndexName(tableName, columns, type);
+    const indexName = super.getIndexName(tableName, columns, type);
 
     /* istanbul ignore next */
     if (indexName.length > 64) {
-      indexName = `${indexName.substr(0, 57 - type.length)}_${Utils.hash(indexName).substr(0, 5)}_${type}`;
+      return `${indexName.substr(0, 57 - type.length)}_${Utils.hash(indexName).substr(0, 5)}_${type}`;
     }
 
     return indexName;
+  }
+
+  getDefaultPrimaryName(tableName: string, columns: string[]): string {
+    return 'PRIMARY'; // https://dev.mysql.com/doc/refman/8.0/en/create-table.html#create-table-indexes-keys
   }
 
 }

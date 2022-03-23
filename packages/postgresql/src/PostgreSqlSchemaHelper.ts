@@ -1,6 +1,6 @@
 import type { Dictionary } from '@mikro-orm/core';
 import { BigIntType, EnumType, Utils } from '@mikro-orm/core';
-import type { AbstractSqlConnection, Column, Index, DatabaseTable, TableDifference, Check } from '@mikro-orm/knex';
+import type { AbstractSqlConnection, Check, Column, DatabaseTable, Index, TableDifference } from '@mikro-orm/knex';
 import { SchemaHelper } from '@mikro-orm/knex';
 import type { Knex } from 'knex';
 
@@ -135,14 +135,15 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>) {
-    const compositePK = fromTable.getPrimaryKey()?.composite;
+    const pk = fromTable.getPrimaryKey();
+    const primaryKey = !changedProperties && !this.hasNonDefaultPrimaryKeyName(fromTable);
 
-    if (column.autoincrement && !compositePK && !changedProperties) {
+    if (column.autoincrement && !pk?.composite && !changedProperties) {
       if (column.mappedType instanceof BigIntType) {
-        return table.bigIncrements(column.name);
+        return table.bigIncrements(column.name, { primaryKey });
       }
 
-      return table.increments(column.name);
+      return table.increments(column.name, { primaryKey });
     }
 
     if (column.mappedType instanceof EnumType && column.enumItems?.every(item => Utils.isString(item))) {
