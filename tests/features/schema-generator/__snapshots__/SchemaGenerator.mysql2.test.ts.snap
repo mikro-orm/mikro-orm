@@ -8,9 +8,7 @@ create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary
 create table \`foo_baz2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;
 
 create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`name with space\` varchar(255) null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`array\` text null, \`object_property\` json null) default character set utf8mb4 engine = InnoDB;
-alter table \`foo_bar2\` add index \`foo_bar2_baz_id_index\`(\`baz_id\`);
 alter table \`foo_bar2\` add unique \`foo_bar2_baz_id_unique\`(\`baz_id\`);
-alter table \`foo_bar2\` add index \`foo_bar2_foo_bar_id_index\`(\`foo_bar_id\`);
 alter table \`foo_bar2\` add unique \`foo_bar2_foo_bar_id_unique\`(\`foo_bar_id\`);
 
 create table \`foo_param2\` (\`bar_id\` int unsigned not null, \`baz_id\` int unsigned not null, \`value\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3), primary key (\`bar_id\`, \`baz_id\`)) default character set utf8mb4 engine = InnoDB;
@@ -43,7 +41,6 @@ create table \`book_tag2\` (\`id\` bigint unsigned not null auto_increment prima
 create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum('employee', 'manager', 'owner') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;
 alter table \`base_user2\` add index \`base_user2_type_index\`(\`type\`);
 alter table \`base_user2\` add index \`base_user2_favourite_employee_id_index\`(\`favourite_employee_id\`);
-alter table \`base_user2\` add index \`base_user2_favourite_manager_id_index\`(\`favourite_manager_id\`);
 alter table \`base_user2\` add unique \`base_user2_favourite_manager_id_unique\`(\`favourite_manager_id\`);
 
 create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int null default null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int unsigned null) default character set utf8mb4 engine = InnoDB;
@@ -63,7 +60,6 @@ alter table \`book2\` add index \`book2_author_id_index\`(\`author_id\`);
 alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);
 
 create table \`test2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) null, \`book_uuid_pk\` varchar(36) null, \`parent_id\` int unsigned null, \`version\` int not null default 1) default character set utf8mb4 engine = InnoDB;
-alter table \`test2\` add index \`test2_book_uuid_pk_index\`(\`book_uuid_pk\`);
 alter table \`test2\` add unique \`test2_book_uuid_pk_unique\`(\`book_uuid_pk\`);
 alter table \`test2\` add index \`test2_parent_id_index\`(\`parent_id\`);
 
@@ -95,7 +91,6 @@ alter table \`author2_following\` add index \`author2_following_author2_1_id_ind
 alter table \`author2_following\` add index \`author2_following_author2_2_id_index\`(\`author2_2_id\`);
 
 create table \`address2\` (\`author_id\` int unsigned not null, \`value\` varchar(255) not null comment 'This is address property', primary key (\`author_id\`)) default character set utf8mb4 engine = InnoDB comment = 'This is address table';
-alter table \`address2\` add index \`address2_author_id_index\`(\`author_id\`);
 
 "
 `;
@@ -162,9 +157,7 @@ create table \`publisher2\` (\`id\` int unsigned not null auto_increment primary
 create table \`foo_baz2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;
 
 create table \`foo_bar2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) not null, \`name with space\` varchar(255) null, \`baz_id\` int unsigned null, \`foo_bar_id\` int unsigned null, \`version\` datetime not null default current_timestamp, \`blob\` blob null, \`array\` text null, \`object_property\` json null) default character set utf8mb4 engine = InnoDB;
-alter table \`foo_bar2\` add index \`foo_bar2_baz_id_index\`(\`baz_id\`);
 alter table \`foo_bar2\` add unique \`foo_bar2_baz_id_unique\`(\`baz_id\`);
-alter table \`foo_bar2\` add index \`foo_bar2_foo_bar_id_index\`(\`foo_bar_id\`);
 alter table \`foo_bar2\` add unique \`foo_bar2_foo_bar_id_unique\`(\`foo_bar_id\`);
 
 create table \`foo_param2\` (\`bar_id\` int unsigned not null, \`baz_id\` int unsigned not null, \`value\` varchar(255) not null, \`version\` datetime(3) not null default current_timestamp(3), primary key (\`bar_id\`, \`baz_id\`)) default character set utf8mb4 engine = InnoDB;
@@ -197,7 +190,6 @@ create table \`book_tag2\` (\`id\` bigint unsigned not null auto_increment prima
 create table \`base_user2\` (\`id\` int unsigned not null auto_increment primary key, \`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`type\` enum('employee', 'manager', 'owner') not null, \`owner_prop\` varchar(255) null, \`favourite_employee_id\` int unsigned null, \`favourite_manager_id\` int unsigned null, \`employee_prop\` int null, \`manager_prop\` varchar(255) null) default character set utf8mb4 engine = InnoDB;
 alter table \`base_user2\` add index \`base_user2_type_index\`(\`type\`);
 alter table \`base_user2\` add index \`base_user2_favourite_employee_id_index\`(\`favourite_employee_id\`);
-alter table \`base_user2\` add index \`base_user2_favourite_manager_id_index\`(\`favourite_manager_id\`);
 alter table \`base_user2\` add unique \`base_user2_favourite_manager_id_unique\`(\`favourite_manager_id\`);
 
 create table \`author2\` (\`id\` int unsigned not null auto_increment primary key, \`created_at\` datetime(3) not null default current_timestamp(3), \`updated_at\` datetime(3) not null default current_timestamp(3), \`name\` varchar(255) not null, \`email\` varchar(255) not null, \`age\` int null default null, \`terms_accepted\` tinyint(1) not null default false, \`optional\` tinyint(1) null, \`identities\` text null, \`born\` date null, \`born_time\` time null, \`favourite_book_uuid_pk\` varchar(36) null, \`favourite_author_id\` int unsigned null) default character set utf8mb4 engine = InnoDB;
@@ -217,7 +209,6 @@ alter table \`book2\` add index \`book2_author_id_index\`(\`author_id\`);
 alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);
 
 create table \`test2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) null, \`book_uuid_pk\` varchar(36) null, \`parent_id\` int unsigned null, \`version\` int not null default 1) default character set utf8mb4 engine = InnoDB;
-alter table \`test2\` add index \`test2_book_uuid_pk_index\`(\`book_uuid_pk\`);
 alter table \`test2\` add unique \`test2_book_uuid_pk_unique\`(\`book_uuid_pk\`);
 alter table \`test2\` add index \`test2_parent_id_index\`(\`parent_id\`);
 
@@ -249,7 +240,6 @@ alter table \`author2_following\` add index \`author2_following_author2_1_id_ind
 alter table \`author2_following\` add index \`author2_following_author2_2_id_index\`(\`author2_2_id\`);
 
 create table \`address2\` (\`author_id\` int unsigned not null, \`value\` varchar(255) not null comment 'This is address property', primary key (\`author_id\`)) default character set utf8mb4 engine = InnoDB comment = 'This is address table';
-alter table \`address2\` add index \`address2_author_id_index\`(\`author_id\`);
 
 "
 `;
@@ -257,12 +247,20 @@ alter table \`address2\` add index \`address2_author_id_index\`(\`author_id\`);
 exports[`SchemaGenerator (no FKs) generate schema from metadata [mysql]: mysql-update-schema-dump 1`] = `
 "alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
 
+alter table \`foo_bar2\` drop index \`foo_bar2_baz_id_index\`;
+alter table \`foo_bar2\` drop index \`foo_bar2_foo_bar_id_index\`;
+
+alter table \`base_user2\` drop index \`base_user2_favourite_manager_id_index\`;
+
 alter table \`book2\` drop \`foo\`;
 
 alter table \`test2\` drop index \`test2_foo___bar_unique\`;
+alter table \`test2\` drop index \`test2_book_uuid_pk_index\`;
 alter table \`test2\` drop index \`test2_foo___bar_index\`;
 alter table \`test2\` drop \`foo___bar\`;
 alter table \`test2\` drop \`foo___baz\`;
+
+alter table \`address2\` drop index \`address2_author_id_index\`;
 
 "
 `;
@@ -271,6 +269,11 @@ exports[`SchemaGenerator (no FKs) rename column [mysql]: mysql-update-schema-ren
 "alter table \`author2\` drop foreign key \`author2_favourite_author_id_foreign\`;
 
 alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
+
+alter table \`foo_bar2\` drop index \`foo_bar2_baz_id_index\`;
+alter table \`foo_bar2\` drop index \`foo_bar2_foo_bar_id_index\`;
+
+alter table \`base_user2\` drop index \`base_user2_favourite_manager_id_index\`;
 
 alter table \`author2\` drop index \`author2_favourite_author_id_index\`;
 alter table \`author2\` drop index \`author2_name_age_index\`;
@@ -282,9 +285,12 @@ alter table \`author2\` add index \`author2_name_age_in_years_index\`(\`name\`, 
 alter table \`book2\` drop \`foo\`;
 
 alter table \`test2\` drop index \`test2_foo___bar_unique\`;
+alter table \`test2\` drop index \`test2_book_uuid_pk_index\`;
 alter table \`test2\` drop index \`test2_foo___bar_index\`;
 alter table \`test2\` drop \`foo___bar\`;
 alter table \`test2\` drop \`foo___baz\`;
+
+alter table \`address2\` drop index \`address2_author_id_index\`;
 
 "
 `;
@@ -323,12 +329,20 @@ exports[`SchemaGenerator (no FKs) update schema [mysql]: mysql-update-schema-cre
 
 alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
 
+alter table \`foo_bar2\` drop index \`foo_bar2_baz_id_index\`;
+alter table \`foo_bar2\` drop index \`foo_bar2_foo_bar_id_index\`;
+
+alter table \`base_user2\` drop index \`base_user2_favourite_manager_id_index\`;
+
 alter table \`book2\` drop \`foo\`;
 
 alter table \`test2\` drop index \`test2_foo___bar_unique\`;
+alter table \`test2\` drop index \`test2_book_uuid_pk_index\`;
 alter table \`test2\` drop index \`test2_foo___bar_index\`;
 alter table \`test2\` drop \`foo___bar\`;
 alter table \`test2\` drop \`foo___baz\`;
+
+alter table \`address2\` drop index \`address2_author_id_index\`;
 
 "
 `;
@@ -337,7 +351,6 @@ exports[`SchemaGenerator (no FKs) update schema [mysql]: mysql-update-schema-dro
 "alter table \`foo_bar2\` drop foreign key \`foo_bar2_baz_id_foreign\`;
 
 alter table \`foo_bar2\` drop index \`foo_bar2_baz_id_unique\`;
-alter table \`foo_bar2\` drop index \`foo_bar2_baz_id_index\`;
 alter table \`foo_bar2\` drop \`baz_id\`;
 
 "
@@ -413,12 +426,20 @@ exports[`SchemaGenerator (no FKs) update schema enums [mysql]: mysql-update-sche
 
 alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
 
+alter table \`foo_bar2\` drop index \`foo_bar2_baz_id_index\`;
+alter table \`foo_bar2\` drop index \`foo_bar2_foo_bar_id_index\`;
+
+alter table \`base_user2\` drop index \`base_user2_favourite_manager_id_index\`;
+
 alter table \`book2\` drop \`foo\`;
 
 alter table \`test2\` drop index \`test2_foo___bar_unique\`;
+alter table \`test2\` drop index \`test2_book_uuid_pk_index\`;
 alter table \`test2\` drop index \`test2_foo___bar_index\`;
 alter table \`test2\` drop \`foo___bar\`;
 alter table \`test2\` drop \`foo___baz\`;
+
+alter table \`address2\` drop index \`address2_author_id_index\`;
 
 "
 `;

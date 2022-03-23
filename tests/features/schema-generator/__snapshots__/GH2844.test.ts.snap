@@ -11,7 +11,6 @@ alter table \`step\` add index \`step_user_action_id_user_action_index\`(\`user_
 alter table \`step\` add index \`step_id_user_action_id_user_action_index\`(\`id\`, \`user_action_id_user_action\`);
 
 create table \`component\` (\`id_component\` varchar(255) not null, \`step_id\` int unsigned not null, \`step_user_action_id_user_action\` varchar(255) not null, \`resultComponentId\` varchar(255) null, primary key (\`id_component\`)) default character set utf8mb4 engine = InnoDB;
-alter table \`component\` add index \`component_resultComponentId_index\`(\`resultComponentId\`);
 alter table \`component\` add index \`component_step_id_step_user_action_id_user_action_index\`(\`step_id\`, \`step_user_action_id_user_action\`);
 
 alter table \`step\` add constraint \`step_user_action_id_user_action_foreign\` foreign key (\`user_action_id_user_action\`) references \`user_action\` (\`id_user_action\`) on update cascade on delete cascade;

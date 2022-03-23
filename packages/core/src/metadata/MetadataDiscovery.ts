@@ -1020,7 +1020,7 @@ export class MetadataDiscovery {
   }
 
   private initIndexes(prop: EntityProperty): void {
-    if ((prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner)) && this.platform.indexForeignKeys()) {
+    if (prop.reference === ReferenceType.MANY_TO_ONE && this.platform.indexForeignKeys()) {
       prop.index ??= true;
     }
   }
