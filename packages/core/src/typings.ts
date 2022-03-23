@@ -386,7 +386,7 @@ export class EntityMetadata<T extends AnyEntity<T> = any> {
   private initIndexes(prop: EntityProperty<T>): void {
     const simpleIndex = this.indexes.find(index => index.properties === prop.name && !index.options && !index.type && !index.expression);
     const simpleUnique = this.uniques.find(index => index.properties === prop.name && !index.options);
-    const owner = prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
+    const owner = prop.reference === ReferenceType.MANY_TO_ONE;
 
     if (!prop.index && simpleIndex) {
       Utils.defaultValue(simpleIndex, 'name', true);
@@ -400,7 +400,7 @@ export class EntityMetadata<T extends AnyEntity<T> = any> {
       this.uniques.splice(this.uniques.indexOf(simpleUnique), 1);
     }
 
-    if (owner && prop.fieldNames.length > 1) {
+    if (prop.index && owner && prop.fieldNames.length > 1) {
       this.indexes.push({ properties: prop.name });
       prop.index = false;
     }

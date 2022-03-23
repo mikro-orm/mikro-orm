@@ -60,7 +60,6 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table \`car_owner2\` add index \`car_owner2_car_name_car_year_index\`(\`car_name\`, \`car_year\`);');
 
     this.addSql('create table \`user2\` (\`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`foo\` int null, \`favourite_car_name\` varchar(100) null, \`favourite_car_year\` int unsigned null, primary key (\`first_name\`, \`last_name\`)) default character set utf8mb4 engine = InnoDB;');
-    this.addSql('alter table \`user2\` add index \`user2_favourite_car_name_favourite_car_year_index\`(\`favourite_car_name\`, \`favourite_car_year\`);');
     this.addSql('alter table \`user2\` add unique \`user2_favourite_car_name_favourite_car_year_unique\`(\`favourite_car_name\`, \`favourite_car_year\`);');
 
     this.addSql('create table \`user2_sandwiches\` (\`user2_first_name\` varchar(100) not null, \`user2_last_name\` varchar(100) not null, \`sandwich_id\` int unsigned not null, primary key (\`user2_first_name\`, \`user2_last_name\`, \`sandwich_id\`)) default character set utf8mb4 engine = InnoDB;');
@@ -207,7 +206,6 @@ export class Migration20191013214813 extends Migration {
       "alter table \`car_owner2\` add index \`car_owner2_car_name_car_year_index\`(\`car_name\`, \`car_year\`);",
       "",
       "create table \`user2\` (\`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`foo\` int null, \`favourite_car_name\` varchar(100) null, \`favourite_car_year\` int unsigned null, primary key (\`first_name\`, \`last_name\`)) default character set utf8mb4 engine = InnoDB;",
-      "alter table \`user2\` add index \`user2_favourite_car_name_favourite_car_year_index\`(\`favourite_car_name\`, \`favourite_car_year\`);",
       "alter table \`user2\` add unique \`user2_favourite_car_name_favourite_car_year_unique\`(\`favourite_car_name\`, \`favourite_car_year\`);",
       "",
       "create table \`user2_sandwiches\` (\`user2_first_name\` varchar(100) not null, \`user2_last_name\` varchar(100) not null, \`sandwich_id\` int unsigned not null, primary key (\`user2_first_name\`, \`user2_last_name\`, \`sandwich_id\`)) default character set utf8mb4 engine = InnoDB;",
@@ -340,37 +338,19 @@ class Migration20191013214813 extends Migration {
   async up() {
     this.addSql('alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;');
 
-    this.addSql('alter table \`foo_bar2\` drop index \`foo_bar2_baz_id_index\`;');
-    this.addSql('alter table \`foo_bar2\` drop index \`foo_bar2_foo_bar_id_index\`;');
-
-    this.addSql('alter table \`base_user2\` drop index \`base_user2_favourite_manager_id_index\`;');
-
     this.addSql('alter table \`book2\` drop \`foo\`;');
 
     this.addSql('alter table \`test2\` drop index \`test2_foo___bar_unique\`;');
-    this.addSql('alter table \`test2\` drop index \`test2_book_uuid_pk_index\`;');
-    this.addSql('alter table \`test2\` drop index \`test2_foo___bar_index\`;');
     this.addSql('alter table \`test2\` drop \`foo___bar\`;');
     this.addSql('alter table \`test2\` drop \`foo___baz\`;');
-
-    this.addSql('alter table \`address2\` drop index \`address2_author_id_index\`;');
   }
 
   async down() {
-    this.addSql('alter table \`address2\` add index \`address2_author_id_index\`(\`author_id\`);');
-
-    this.addSql('alter table \`base_user2\` add index \`base_user2_favourite_manager_id_index\`(\`favourite_manager_id\`);');
-
     this.addSql('alter table \`book2\` add \`foo\` varchar(255) null default \\\\'lol\\\\';');
-
-    this.addSql('alter table \`foo_bar2\` add index \`foo_bar2_baz_id_index\`(\`baz_id\`);');
-    this.addSql('alter table \`foo_bar2\` add index \`foo_bar2_foo_bar_id_index\`(\`foo_bar_id\`);');
 
     this.addSql('alter table \`test2\` add \`foo___bar\` int unsigned null, add \`foo___baz\` int unsigned null;');
     this.addSql('alter table \`test2\` add constraint \`test2_foo___bar_foreign\` foreign key (\`foo___bar\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;');
     this.addSql('alter table \`test2\` add unique \`test2_foo___bar_unique\`(\`foo___bar\`);');
-    this.addSql('alter table \`test2\` add index \`test2_book_uuid_pk_index\`(\`book_uuid_pk\`);');
-    this.addSql('alter table \`test2\` add index \`test2_foo___bar_index\`(\`foo___bar\`);');
   }
 
 }
@@ -378,38 +358,20 @@ exports.Migration20191013214813 = Migration20191013214813;
 ",
   "diff": Object {
     "down": Array [
-      "alter table \`address2\` add index \`address2_author_id_index\`(\`author_id\`);",
-      "",
-      "alter table \`base_user2\` add index \`base_user2_favourite_manager_id_index\`(\`favourite_manager_id\`);",
-      "",
       "alter table \`book2\` add \`foo\` varchar(255) null default 'lol';",
-      "",
-      "alter table \`foo_bar2\` add index \`foo_bar2_baz_id_index\`(\`baz_id\`);",
-      "alter table \`foo_bar2\` add index \`foo_bar2_foo_bar_id_index\`(\`foo_bar_id\`);",
       "",
       "alter table \`test2\` add \`foo___bar\` int unsigned null, add \`foo___baz\` int unsigned null;",
       "alter table \`test2\` add constraint \`test2_foo___bar_foreign\` foreign key (\`foo___bar\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;",
       "alter table \`test2\` add unique \`test2_foo___bar_unique\`(\`foo___bar\`);",
-      "alter table \`test2\` add index \`test2_book_uuid_pk_index\`(\`book_uuid_pk\`);",
-      "alter table \`test2\` add index \`test2_foo___bar_index\`(\`foo___bar\`);",
     ],
     "up": Array [
       "alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;",
       "",
-      "alter table \`foo_bar2\` drop index \`foo_bar2_baz_id_index\`;",
-      "alter table \`foo_bar2\` drop index \`foo_bar2_foo_bar_id_index\`;",
-      "",
-      "alter table \`base_user2\` drop index \`base_user2_favourite_manager_id_index\`;",
-      "",
       "alter table \`book2\` drop \`foo\`;",
       "",
       "alter table \`test2\` drop index \`test2_foo___bar_unique\`;",
-      "alter table \`test2\` drop index \`test2_book_uuid_pk_index\`;",
-      "alter table \`test2\` drop index \`test2_foo___bar_index\`;",
       "alter table \`test2\` drop \`foo___bar\`;",
       "alter table \`test2\` drop \`foo___baz\`;",
-      "",
-      "alter table \`address2\` drop index \`address2_author_id_index\`;",
     ],
   },
   "fileName": "Migration20191013214813.js",
@@ -425,75 +387,39 @@ export class Migration20191013214813 extends Migration {
   async up(): Promise<void> {
     this.addSql('alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;');
 
-    this.addSql('alter table \`foo_bar2\` drop index \`foo_bar2_baz_id_index\`;');
-    this.addSql('alter table \`foo_bar2\` drop index \`foo_bar2_foo_bar_id_index\`;');
-
-    this.addSql('alter table \`base_user2\` drop index \`base_user2_favourite_manager_id_index\`;');
-
     this.addSql('alter table \`book2\` drop \`foo\`;');
 
     this.addSql('alter table \`test2\` drop index \`test2_foo___bar_unique\`;');
-    this.addSql('alter table \`test2\` drop index \`test2_book_uuid_pk_index\`;');
-    this.addSql('alter table \`test2\` drop index \`test2_foo___bar_index\`;');
     this.addSql('alter table \`test2\` drop \`foo___bar\`;');
     this.addSql('alter table \`test2\` drop \`foo___baz\`;');
-
-    this.addSql('alter table \`address2\` drop index \`address2_author_id_index\`;');
   }
 
   async down(): Promise<void> {
-    this.addSql('alter table \`address2\` add index \`address2_author_id_index\`(\`author_id\`);');
-
-    this.addSql('alter table \`base_user2\` add index \`base_user2_favourite_manager_id_index\`(\`favourite_manager_id\`);');
-
     this.addSql('alter table \`book2\` add \`foo\` varchar(255) null default \\\\'lol\\\\';');
-
-    this.addSql('alter table \`foo_bar2\` add index \`foo_bar2_baz_id_index\`(\`baz_id\`);');
-    this.addSql('alter table \`foo_bar2\` add index \`foo_bar2_foo_bar_id_index\`(\`foo_bar_id\`);');
 
     this.addSql('alter table \`test2\` add \`foo___bar\` int unsigned null, add \`foo___baz\` int unsigned null;');
     this.addSql('alter table \`test2\` add constraint \`test2_foo___bar_foreign\` foreign key (\`foo___bar\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;');
     this.addSql('alter table \`test2\` add unique \`test2_foo___bar_unique\`(\`foo___bar\`);');
-    this.addSql('alter table \`test2\` add index \`test2_book_uuid_pk_index\`(\`book_uuid_pk\`);');
-    this.addSql('alter table \`test2\` add index \`test2_foo___bar_index\`(\`foo___bar\`);');
   }
 
 }
 ",
   "diff": Object {
     "down": Array [
-      "alter table \`address2\` add index \`address2_author_id_index\`(\`author_id\`);",
-      "",
-      "alter table \`base_user2\` add index \`base_user2_favourite_manager_id_index\`(\`favourite_manager_id\`);",
-      "",
       "alter table \`book2\` add \`foo\` varchar(255) null default 'lol';",
-      "",
-      "alter table \`foo_bar2\` add index \`foo_bar2_baz_id_index\`(\`baz_id\`);",
-      "alter table \`foo_bar2\` add index \`foo_bar2_foo_bar_id_index\`(\`foo_bar_id\`);",
       "",
       "alter table \`test2\` add \`foo___bar\` int unsigned null, add \`foo___baz\` int unsigned null;",
       "alter table \`test2\` add constraint \`test2_foo___bar_foreign\` foreign key (\`foo___bar\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;",
       "alter table \`test2\` add unique \`test2_foo___bar_unique\`(\`foo___bar\`);",
-      "alter table \`test2\` add index \`test2_book_uuid_pk_index\`(\`book_uuid_pk\`);",
-      "alter table \`test2\` add index \`test2_foo___bar_index\`(\`foo___bar\`);",
     ],
     "up": Array [
       "alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;",
       "",
-      "alter table \`foo_bar2\` drop index \`foo_bar2_baz_id_index\`;",
-      "alter table \`foo_bar2\` drop index \`foo_bar2_foo_bar_id_index\`;",
-      "",
-      "alter table \`base_user2\` drop index \`base_user2_favourite_manager_id_index\`;",
-      "",
       "alter table \`book2\` drop \`foo\`;",
       "",
       "alter table \`test2\` drop index \`test2_foo___bar_unique\`;",
-      "alter table \`test2\` drop index \`test2_book_uuid_pk_index\`;",
-      "alter table \`test2\` drop index \`test2_foo___bar_index\`;",
       "alter table \`test2\` drop \`foo___bar\`;",
       "alter table \`test2\` drop \`foo___baz\`;",
-      "",
-      "alter table \`address2\` drop index \`address2_author_id_index\`;",
     ],
   },
   "fileName": "migration-20191013214813.ts",
@@ -509,75 +435,39 @@ export class Migration20191013214813 extends Migration {
   async up(): Promise<void> {
     this.addSql('alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;');
 
-    this.addSql('alter table \`foo_bar2\` drop index \`foo_bar2_baz_id_index\`;');
-    this.addSql('alter table \`foo_bar2\` drop index \`foo_bar2_foo_bar_id_index\`;');
-
-    this.addSql('alter table \`base_user2\` drop index \`base_user2_favourite_manager_id_index\`;');
-
     this.addSql('alter table \`book2\` drop \`foo\`;');
 
     this.addSql('alter table \`test2\` drop index \`test2_foo___bar_unique\`;');
-    this.addSql('alter table \`test2\` drop index \`test2_book_uuid_pk_index\`;');
-    this.addSql('alter table \`test2\` drop index \`test2_foo___bar_index\`;');
     this.addSql('alter table \`test2\` drop \`foo___bar\`;');
     this.addSql('alter table \`test2\` drop \`foo___baz\`;');
-
-    this.addSql('alter table \`address2\` drop index \`address2_author_id_index\`;');
   }
 
   async down(): Promise<void> {
-    this.addSql('alter table \`address2\` add index \`address2_author_id_index\`(\`author_id\`);');
-
-    this.addSql('alter table \`base_user2\` add index \`base_user2_favourite_manager_id_index\`(\`favourite_manager_id\`);');
-
     this.addSql('alter table \`book2\` add \`foo\` varchar(255) null default \\\\'lol\\\\';');
-
-    this.addSql('alter table \`foo_bar2\` add index \`foo_bar2_baz_id_index\`(\`baz_id\`);');
-    this.addSql('alter table \`foo_bar2\` add index \`foo_bar2_foo_bar_id_index\`(\`foo_bar_id\`);');
 
     this.addSql('alter table \`test2\` add \`foo___bar\` int unsigned null, add \`foo___baz\` int unsigned null;');
     this.addSql('alter table \`test2\` add constraint \`test2_foo___bar_foreign\` foreign key (\`foo___bar\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;');
     this.addSql('alter table \`test2\` add unique \`test2_foo___bar_unique\`(\`foo___bar\`);');
-    this.addSql('alter table \`test2\` add index \`test2_book_uuid_pk_index\`(\`book_uuid_pk\`);');
-    this.addSql('alter table \`test2\` add index \`test2_foo___bar_index\`(\`foo___bar\`);');
   }
 
 }
 ",
   "diff": Object {
     "down": Array [
-      "alter table \`address2\` add index \`address2_author_id_index\`(\`author_id\`);",
-      "",
-      "alter table \`base_user2\` add index \`base_user2_favourite_manager_id_index\`(\`favourite_manager_id\`);",
-      "",
       "alter table \`book2\` add \`foo\` varchar(255) null default 'lol';",
-      "",
-      "alter table \`foo_bar2\` add index \`foo_bar2_baz_id_index\`(\`baz_id\`);",
-      "alter table \`foo_bar2\` add index \`foo_bar2_foo_bar_id_index\`(\`foo_bar_id\`);",
       "",
       "alter table \`test2\` add \`foo___bar\` int unsigned null, add \`foo___baz\` int unsigned null;",
       "alter table \`test2\` add constraint \`test2_foo___bar_foreign\` foreign key (\`foo___bar\`) references \`foo_bar2\` (\`id\`) on update cascade on delete set null;",
       "alter table \`test2\` add unique \`test2_foo___bar_unique\`(\`foo___bar\`);",
-      "alter table \`test2\` add index \`test2_book_uuid_pk_index\`(\`book_uuid_pk\`);",
-      "alter table \`test2\` add index \`test2_foo___bar_index\`(\`foo___bar\`);",
     ],
     "up": Array [
       "alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;",
       "",
-      "alter table \`foo_bar2\` drop index \`foo_bar2_baz_id_index\`;",
-      "alter table \`foo_bar2\` drop index \`foo_bar2_foo_bar_id_index\`;",
-      "",
-      "alter table \`base_user2\` drop index \`base_user2_favourite_manager_id_index\`;",
-      "",
       "alter table \`book2\` drop \`foo\`;",
       "",
       "alter table \`test2\` drop index \`test2_foo___bar_unique\`;",
-      "alter table \`test2\` drop index \`test2_book_uuid_pk_index\`;",
-      "alter table \`test2\` drop index \`test2_foo___bar_index\`;",
       "alter table \`test2\` drop \`foo___bar\`;",
       "alter table \`test2\` drop \`foo___baz\`;",
-      "",
-      "alter table \`address2\` drop index \`address2_author_id_index\`;",
     ],
   },
   "fileName": "Migration20191013214813.ts",
@@ -615,7 +505,6 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table \`car_owner2\` add index \`car_owner2_car_name_car_year_index\`(\`car_name\`, \`car_year\`);');
 
     this.addSql('create table \`user2\` (\`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`foo\` int null, \`favourite_car_name\` varchar(100) null, \`favourite_car_year\` int unsigned null, primary key (\`first_name\`, \`last_name\`)) default character set utf8mb4 engine = InnoDB;');
-    this.addSql('alter table \`user2\` add index \`user2_favourite_car_name_favourite_car_year_index\`(\`favourite_car_name\`, \`favourite_car_year\`);');
     this.addSql('alter table \`user2\` add unique \`user2_favourite_car_name_favourite_car_year_unique\`(\`favourite_car_name\`, \`favourite_car_year\`);');
 
     this.addSql('create table \`user2_sandwiches\` (\`user2_first_name\` varchar(100) not null, \`user2_last_name\` varchar(100) not null, \`sandwich_id\` int unsigned not null, primary key (\`user2_first_name\`, \`user2_last_name\`, \`sandwich_id\`)) default character set utf8mb4 engine = InnoDB;');
@@ -762,7 +651,6 @@ export class Migration20191013214813 extends Migration {
       "alter table \`car_owner2\` add index \`car_owner2_car_name_car_year_index\`(\`car_name\`, \`car_year\`);",
       "",
       "create table \`user2\` (\`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`foo\` int null, \`favourite_car_name\` varchar(100) null, \`favourite_car_year\` int unsigned null, primary key (\`first_name\`, \`last_name\`)) default character set utf8mb4 engine = InnoDB;",
-      "alter table \`user2\` add index \`user2_favourite_car_name_favourite_car_year_index\`(\`favourite_car_name\`, \`favourite_car_year\`);",
       "alter table \`user2\` add unique \`user2_favourite_car_name_favourite_car_year_unique\`(\`favourite_car_name\`, \`favourite_car_year\`);",
       "",
       "create table \`user2_sandwiches\` (\`user2_first_name\` varchar(100) not null, \`user2_last_name\` varchar(100) not null, \`sandwich_id\` int unsigned not null, primary key (\`user2_first_name\`, \`user2_last_name\`, \`sandwich_id\`)) default character set utf8mb4 engine = InnoDB;",

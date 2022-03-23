@@ -28,7 +28,6 @@ create table \`car_owner2\` (\`id\` int unsigned not null auto_increment primary
 alter table \`car_owner2\` add index \`car_owner2_car_name_car_year_index\`(\`car_name\`, \`car_year\`);
 
 create table \`user2\` (\`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`foo\` int null, \`favourite_car_name\` varchar(100) null, \`favourite_car_year\` int unsigned null, primary key (\`first_name\`, \`last_name\`)) default character set utf8mb4 engine = InnoDB;
-alter table \`user2\` add index \`user2_favourite_car_name_favourite_car_year_index\`(\`favourite_car_name\`, \`favourite_car_year\`);
 alter table \`user2\` add unique \`user2_favourite_car_name_favourite_car_year_unique\`(\`favourite_car_name\`, \`favourite_car_year\`);
 
 create table \`user2_sandwiches\` (\`user2_first_name\` varchar(100) not null, \`user2_last_name\` varchar(100) not null, \`sandwich_id\` int unsigned not null, primary key (\`user2_first_name\`, \`user2_last_name\`, \`sandwich_id\`)) default character set utf8mb4 engine = InnoDB;
@@ -235,7 +234,6 @@ create table \`car_owner2\` (\`id\` int unsigned not null auto_increment primary
 alter table \`car_owner2\` add index \`car_owner2_car_name_car_year_index\`(\`car_name\`, \`car_year\`);
 
 create table \`user2\` (\`first_name\` varchar(100) not null, \`last_name\` varchar(100) not null, \`foo\` int null, \`favourite_car_name\` varchar(100) null, \`favourite_car_year\` int unsigned null, primary key (\`first_name\`, \`last_name\`)) default character set utf8mb4 engine = InnoDB;
-alter table \`user2\` add index \`user2_favourite_car_name_favourite_car_year_index\`(\`favourite_car_name\`, \`favourite_car_year\`);
 alter table \`user2\` add unique \`user2_favourite_car_name_favourite_car_year_unique\`(\`favourite_car_name\`, \`favourite_car_year\`);
 
 create table \`user2_sandwiches\` (\`user2_first_name\` varchar(100) not null, \`user2_last_name\` varchar(100) not null, \`sandwich_id\` int unsigned not null, primary key (\`user2_first_name\`, \`user2_last_name\`, \`sandwich_id\`)) default character set utf8mb4 engine = InnoDB;
@@ -362,20 +360,11 @@ set foreign_key_checks = 0;
 
 alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
 
-alter table \`foo_bar2\` drop index \`foo_bar2_baz_id_index\`;
-alter table \`foo_bar2\` drop index \`foo_bar2_foo_bar_id_index\`;
-
-alter table \`base_user2\` drop index \`base_user2_favourite_manager_id_index\`;
-
 alter table \`book2\` drop \`foo\`;
 
 alter table \`test2\` drop index \`test2_foo___bar_unique\`;
-alter table \`test2\` drop index \`test2_book_uuid_pk_index\`;
-alter table \`test2\` drop index \`test2_foo___bar_index\`;
 alter table \`test2\` drop \`foo___bar\`;
 alter table \`test2\` drop \`foo___baz\`;
-
-alter table \`address2\` drop index \`address2_author_id_index\`;
 
 set foreign_key_checks = 1;
 "
@@ -385,11 +374,6 @@ exports[`SchemaGenerator rename column [mysql]: mysql-update-schema-rename-colum
 "alter table \`author2\` drop foreign key \`author2_favourite_author_id_foreign\`;
 
 alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
-
-alter table \`foo_bar2\` drop index \`foo_bar2_baz_id_index\`;
-alter table \`foo_bar2\` drop index \`foo_bar2_foo_bar_id_index\`;
-
-alter table \`base_user2\` drop index \`base_user2_favourite_manager_id_index\`;
 
 alter table \`author2\` drop index \`author2_favourite_author_id_index\`;
 alter table \`author2\` drop index \`author2_name_age_index\`;
@@ -402,12 +386,8 @@ alter table \`author2\` add index \`author2_name_age_in_years_index\`(\`name\`, 
 alter table \`book2\` drop \`foo\`;
 
 alter table \`test2\` drop index \`test2_foo___bar_unique\`;
-alter table \`test2\` drop index \`test2_book_uuid_pk_index\`;
-alter table \`test2\` drop index \`test2_foo___bar_index\`;
 alter table \`test2\` drop \`foo___bar\`;
 alter table \`test2\` drop \`foo___baz\`;
-
-alter table \`address2\` drop index \`address2_author_id_index\`;
 
 "
 `;
@@ -448,20 +428,11 @@ exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-create-table
 
 alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
 
-alter table \`foo_bar2\` drop index \`foo_bar2_baz_id_index\`;
-alter table \`foo_bar2\` drop index \`foo_bar2_foo_bar_id_index\`;
-
-alter table \`base_user2\` drop index \`base_user2_favourite_manager_id_index\`;
-
 alter table \`book2\` drop \`foo\`;
 
 alter table \`test2\` drop index \`test2_foo___bar_unique\`;
-alter table \`test2\` drop index \`test2_book_uuid_pk_index\`;
-alter table \`test2\` drop index \`test2_foo___bar_index\`;
 alter table \`test2\` drop \`foo___bar\`;
 alter table \`test2\` drop \`foo___baz\`;
-
-alter table \`address2\` drop index \`address2_author_id_index\`;
 
 "
 `;
@@ -545,20 +516,11 @@ exports[`SchemaGenerator update schema enums [mysql]: mysql-update-schema-enums-
 
 alter table \`test2\` drop foreign key \`test2_foo___bar_foreign\`;
 
-alter table \`foo_bar2\` drop index \`foo_bar2_baz_id_index\`;
-alter table \`foo_bar2\` drop index \`foo_bar2_foo_bar_id_index\`;
-
-alter table \`base_user2\` drop index \`base_user2_favourite_manager_id_index\`;
-
 alter table \`book2\` drop \`foo\`;
 
 alter table \`test2\` drop index \`test2_foo___bar_unique\`;
-alter table \`test2\` drop index \`test2_book_uuid_pk_index\`;
-alter table \`test2\` drop index \`test2_foo___bar_index\`;
 alter table \`test2\` drop \`foo___bar\`;
 alter table \`test2\` drop \`foo___baz\`;
-
-alter table \`address2\` drop index \`address2_author_id_index\`;
 
 "
 `;
