@@ -381,7 +381,7 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
       }
 
       for (const index of Object.values(diff.changedIndexes)) {
-        this.createIndex(table, index, diff.fromTable, true, true);
+        this.createIndex(table, index, diff.fromTable, true);
       }
 
       for (const [oldIndexName, index] of Object.entries(diff.renamedIndexes)) {
@@ -466,7 +466,8 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
       });
 
       for (const index of tableDef.getIndexes()) {
-        this.createIndex(table, index, tableDef, true);
+        const createPrimary = !tableDef.getColumns().some(c => c.autoincrement) || this.helper.hasNonDefaultPrimaryKeyName(tableDef);
+        this.createIndex(table, index, tableDef, createPrimary);
       }
 
       for (const check of tableDef.getChecks()) {
@@ -488,22 +489,14 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
     });
   }
 
-  private createIndex(table: Knex.CreateTableBuilder, index: Index, tableDef: DatabaseTable, createPrimary = false, useExplicitPKName = false) {
+  private createIndex(table: Knex.CreateTableBuilder, index: Index, tableDef: DatabaseTable, createPrimary = false) {
     if (index.primary && !createPrimary) {
       return;
     }
 
     if (index.primary) {
-      const defaultName = this.platform.getDefaultPrimaryName(tableDef.name, index.columnNames);
-
-      if (this.platform.supportsCustomPrimaryKeyNames() && (useExplicitPKName || index.keyName !== defaultName)) {
-        table.primary(index.columnNames, { constraintName: index.keyName });
-        return;
-      }
-
-      if (index.composite || !tableDef.getColumns().some(c => c.autoincrement)) {
-        table.primary(index.columnNames);
-      }
+      const keyName = this.helper.hasNonDefaultPrimaryKeyName(tableDef) ? index.keyName : undefined;
+      table.primary(index.columnNames, keyName);
     } else if (index.unique) {
       table.unique(index.columnNames, { indexName: index.keyName });
     } else if (index.expression) {
