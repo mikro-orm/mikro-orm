@@ -51,7 +51,7 @@ console.log(book.author.isInitialized()); // false
 console.log(book.author.name); // undefined as `Author` is not loaded yet
 ```
 
-You can overcome this issue by using the `Reference<T>` wrapper. It simply wraps the entity, 
+> You can overcome this issue by using the `Reference<T>` wrapper. It simply wraps the entity, 
 defining `load(): Promise<T>` method that will first lazy load the association if not already
 available. You can also use `unwrap(): T` method to access the underlying entity without loading
 it.
