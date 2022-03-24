@@ -996,6 +996,35 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }, [] as AutoPath<T, P>[]);
   }
 
+  private populateCache: { [entityName: string]: string[] } = {};
+  private buildEntityPopulate(entityName: string): string[] {
+    if (this.populateCache[entityName])
+      return this.populateCache[entityName];
+    let visited: string[] = [];
+    const build = (entityName: string, parent: string[] = []): string[] => {
+      if (visited.includes(entityName))
+        return [];
+      visited.push(entityName);
+      const meta = this.metadata.find(entityName);
+      if (!meta)
+        return [];
+      const props = meta.hydrateProps.filter(prop => prop.reference !== ReferenceType.SCALAR);
+      if (props.length === 0)
+        return [];
+      const populate = props.flatMap(prop => {
+        const arr = [...parent].concat(prop.name);
+        return [
+          arr.join('.'),
+          ...build(prop.type, arr)
+        ]
+      });
+      return populate;
+    }
+    const populate = build(entityName);
+    this.populateCache[entityName] = populate;
+    return populate;
+  }
+
   private preparePopulate<T extends AnyEntity<T>, P extends string = never>(entityName: string, options: Pick<FindOptions<T, P>, 'populate' | 'strategy' | 'fields'>): PopulateOptions<T>[] {
     // infer populate hint if only `fields` are available
     if (!options.populate && options.fields) {
@@ -1004,6 +1033,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     if (!options.populate) {
       return this.entityLoader.normalizePopulate<T>(entityName, [], options.strategy);
+    }
+
+    if (options.populate === true) {
+      options.populate = this.buildEntityPopulate(entityName) as never;
+      options.strategy = LoadStrategy.SELECT_IN;
     }
 
     if (Array.isArray(options.populate)) {
