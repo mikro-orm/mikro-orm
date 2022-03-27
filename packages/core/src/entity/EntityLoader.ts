@@ -481,16 +481,24 @@ export class EntityLoader {
     const meta = this.metadata.find(entityName)!;
 
     meta.relations.forEach(prop => {
-        ret.push({
-          field: prop.name,
-          // force select-in strategy when populating all relations as otherwise we could cause infinite loops when self-referencing
-          strategy: LoadStrategy.SELECT_IN,
-          // no need to look up populate children recursively as we just pass `all: true` here
-          all: true,
-        });
+      ret.push({
+        field: this.getRelationName(meta, prop),
+        // force select-in strategy when populating all relations as otherwise we could cause infinite loops when self-referencing
+        strategy: LoadStrategy.SELECT_IN,
+        // no need to look up populate children recursively as we just pass `all: true` here
+        all: true,
+      });
     });
 
     return ret;
+  }
+
+  private getRelationName(meta: EntityMetadata, prop: EntityProperty): string {
+    if (!prop.embedded) {
+      return prop.name;
+    }
+
+    return `${this.getRelationName(meta, meta.properties[prop.embedded[0]])}.${prop.embedded[1]}`;
   }
 
   private lookupEagerLoadedRelationships<T>(entityName: string, populate: PopulateOptions<T>[], strategy?: LoadStrategy, prefix = '', visited: string[] = []): PopulateOptions<T>[] {
