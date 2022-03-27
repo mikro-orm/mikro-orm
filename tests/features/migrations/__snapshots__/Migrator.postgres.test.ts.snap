@@ -413,7 +413,6 @@ const { Migration } = require('@mikro-orm/migrations');
 class Migration20191013214813 extends Migration {
 
   async up() {
-    this.addSql('alter table \\"custom\\".\\"book2\\" drop constraint if exists \\"book2_double_check\\";');
     this.addSql('alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);');
     this.addSql('alter table \\"custom\\".\\"book2\\" drop column \\"foo\\";');
 
@@ -422,7 +421,6 @@ class Migration20191013214813 extends Migration {
 
   async down() {
     this.addSql('alter table \\"custom\\".\\"book2\\" add column \\"foo\\" varchar null default \\\\'lol\\\\';');
-    this.addSql('alter table \\"custom\\".\\"book2\\" drop constraint if exists \\"book2_double_check\\";');
     this.addSql('alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type numeric using (\\"double\\"::numeric);');
 
     this.addSql('alter table \\"custom\\".\\"test2\\" add column \\"path\\" polygon null default null;');
@@ -434,13 +432,11 @@ exports.Migration20191013214813 = Migration20191013214813;
   "diff": Object {
     "down": Array [
       "alter table \\"custom\\".\\"book2\\" add column \\"foo\\" varchar null default 'lol';",
-      "alter table \\"custom\\".\\"book2\\" drop constraint if exists \\"book2_double_check\\";",
       "alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type numeric using (\\"double\\"::numeric);",
       "",
       "alter table \\"custom\\".\\"test2\\" add column \\"path\\" polygon null default null;",
     ],
     "up": Array [
-      "alter table \\"custom\\".\\"book2\\" drop constraint if exists \\"book2_double_check\\";",
       "alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);",
       "alter table \\"custom\\".\\"book2\\" drop column \\"foo\\";",
       "",
@@ -461,8 +457,6 @@ export class Migration20191013214813 extends Migration {
 
   async up(): Promise<void> {
     this.addSql('alter table
-                   \\"custom\\".\\"book2\\" drop constraint if exists \\"book2_double_check\\";');
-    this.addSql('alter table
                    \\"custom\\".\\"book2\\"
                  alter column
                    \\"double\\" type double precision using (\\"double\\" :: double precision);');
@@ -479,8 +473,6 @@ export class Migration20191013214813 extends Migration {
                  add
                    column \\"foo\\" varchar null default \\\\'lol\\\\';');
     this.addSql('alter table
-                   \\"custom\\".\\"book2\\" drop constraint if exists \\"book2_double_check\\";');
-    this.addSql('alter table
                    \\"custom\\".\\"book2\\"
                  alter column
                    \\"double\\" type numeric using (\\"double\\" :: numeric);');
@@ -496,13 +488,11 @@ export class Migration20191013214813 extends Migration {
   "diff": Object {
     "down": Array [
       "alter table \\"custom\\".\\"book2\\" add column \\"foo\\" varchar null default 'lol';",
-      "alter table \\"custom\\".\\"book2\\" drop constraint if exists \\"book2_double_check\\";",
       "alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type numeric using (\\"double\\"::numeric);",
       "",
       "alter table \\"custom\\".\\"test2\\" add column \\"path\\" polygon null default null;",
     ],
     "up": Array [
-      "alter table \\"custom\\".\\"book2\\" drop constraint if exists \\"book2_double_check\\";",
       "alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);",
       "alter table \\"custom\\".\\"book2\\" drop column \\"foo\\";",
       "",
@@ -520,7 +510,6 @@ Object {
 export class Migration20191013214813 extends Migration {
 
   async up(): Promise<void> {
-    this.addSql('alter table \\"custom\\".\\"book2\\" drop constraint if exists \\"book2_double_check\\";');
     this.addSql('alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);');
     this.addSql('alter table \\"custom\\".\\"book2\\" drop column \\"foo\\";');
 
@@ -529,7 +518,6 @@ export class Migration20191013214813 extends Migration {
 
   async down(): Promise<void> {
     this.addSql('alter table \\"custom\\".\\"book2\\" add column \\"foo\\" varchar null default \\\\'lol\\\\';');
-    this.addSql('alter table \\"custom\\".\\"book2\\" drop constraint if exists \\"book2_double_check\\";');
     this.addSql('alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type numeric using (\\"double\\"::numeric);');
 
     this.addSql('alter table \\"custom\\".\\"test2\\" add column \\"path\\" polygon null default null;');
@@ -540,13 +528,11 @@ export class Migration20191013214813 extends Migration {
   "diff": Object {
     "down": Array [
       "alter table \\"custom\\".\\"book2\\" add column \\"foo\\" varchar null default 'lol';",
-      "alter table \\"custom\\".\\"book2\\" drop constraint if exists \\"book2_double_check\\";",
       "alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type numeric using (\\"double\\"::numeric);",
       "",
       "alter table \\"custom\\".\\"test2\\" add column \\"path\\" polygon null default null;",
     ],
     "up": Array [
-      "alter table \\"custom\\".\\"book2\\" drop constraint if exists \\"book2_double_check\\";",
       "alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);",
       "alter table \\"custom\\".\\"book2\\" drop column \\"foo\\";",
       "",
@@ -564,7 +550,6 @@ Object {
 export class Migration20191013214813 extends Migration {
 
   async up(): Promise<void> {
-    this.addSql('alter table \\"custom\\".\\"book2\\" drop constraint if exists \\"book2_double_check\\";');
     this.addSql('alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);');
     this.addSql('alter table \\"custom\\".\\"book2\\" drop column \\"foo\\";');
 
@@ -573,7 +558,6 @@ export class Migration20191013214813 extends Migration {
 
   async down(): Promise<void> {
     this.addSql('alter table \\"custom\\".\\"book2\\" add column \\"foo\\" varchar null default \\\\'lol\\\\';');
-    this.addSql('alter table \\"custom\\".\\"book2\\" drop constraint if exists \\"book2_double_check\\";');
     this.addSql('alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type numeric using (\\"double\\"::numeric);');
 
     this.addSql('alter table \\"custom\\".\\"test2\\" add column \\"path\\" polygon null default null;');
@@ -584,13 +568,11 @@ export class Migration20191013214813 extends Migration {
   "diff": Object {
     "down": Array [
       "alter table \\"custom\\".\\"book2\\" add column \\"foo\\" varchar null default 'lol';",
-      "alter table \\"custom\\".\\"book2\\" drop constraint if exists \\"book2_double_check\\";",
       "alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type numeric using (\\"double\\"::numeric);",
       "",
       "alter table \\"custom\\".\\"test2\\" add column \\"path\\" polygon null default null;",
     ],
     "up": Array [
-      "alter table \\"custom\\".\\"book2\\" drop constraint if exists \\"book2_double_check\\";",
       "alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);",
       "alter table \\"custom\\".\\"book2\\" drop column \\"foo\\";",
       "",
@@ -619,7 +601,6 @@ Object {
 export class Migration20191013214813 extends Migration {
 
   async up(): Promise<void> {
-    this.addSql('alter table \\"custom\\".\\"book2\\" drop constraint if exists \\"book2_double_check\\";');
     this.addSql('alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);');
     this.addSql('alter table \\"custom\\".\\"book2\\" drop column \\"foo\\";');
 
@@ -628,7 +609,6 @@ export class Migration20191013214813 extends Migration {
 
   async down(): Promise<void> {
     this.addSql('alter table \\"custom\\".\\"book2\\" add column \\"foo\\" varchar null default \\\\'lol\\\\';');
-    this.addSql('alter table \\"custom\\".\\"book2\\" drop constraint if exists \\"book2_double_check\\";');
     this.addSql('alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type numeric using (\\"double\\"::numeric);');
 
     this.addSql('alter table \\"custom\\".\\"test2\\" add column \\"path\\" polygon null default null;');
@@ -639,13 +619,11 @@ export class Migration20191013214813 extends Migration {
   "diff": Object {
     "down": Array [
       "alter table \\"custom\\".\\"book2\\" add column \\"foo\\" varchar null default 'lol';",
-      "alter table \\"custom\\".\\"book2\\" drop constraint if exists \\"book2_double_check\\";",
       "alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type numeric using (\\"double\\"::numeric);",
       "",
       "alter table \\"custom\\".\\"test2\\" add column \\"path\\" polygon null default null;",
     ],
     "up": Array [
-      "alter table \\"custom\\".\\"book2\\" drop constraint if exists \\"book2_double_check\\";",
       "alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);",
       "alter table \\"custom\\".\\"book2\\" drop column \\"foo\\";",
       "",

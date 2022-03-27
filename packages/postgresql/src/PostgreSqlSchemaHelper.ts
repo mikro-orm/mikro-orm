@@ -174,12 +174,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   getPreAlterTable(tableDiff: TableDifference, safe: boolean): string {
-    // changing uuid column type requires to cast it to text first
-    const uuid = Object.values(tableDiff.changedColumns).find(col => col.changedProperties.has('type') && col.fromColumn.type === 'uuid');
-
-    if (!uuid) {
-      return '';
-    }
+    const ret: string[] = [];
 
     const parts = tableDiff.name.split('.');
     const tableName = parts.pop()!;
@@ -187,7 +182,22 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     /* istanbul ignore next */
     const name = (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName;
 
-    return `alter table "${name}" alter column "${uuid.column.name}" type text using ("${uuid.column.name}"::text)`;
+    // detect that the column was an enum before and remove the check constraint in such case here
+    const changedEnums = Object.values(tableDiff.changedColumns).filter(col => col.fromColumn.mappedType instanceof EnumType);
+
+    for (const col of changedEnums) {
+      const constraintName = `${tableName}_${col.column.name}_check`;
+      ret.push(`alter table "${name}" drop constraint if exists "${constraintName}"`);
+    }
+
+    // changing uuid column type requires to cast it to text first
+    const uuids = Object.values(tableDiff.changedColumns).filter(col => col.changedProperties.has('type') && col.fromColumn.type === 'uuid');
+
+    for (const col of uuids) {
+      ret.push(`alter table "${name}" alter column "${col.column.name}" type text using ("${col.column.name}"::text)`);
+    }
+
+    return ret.join(';\n');
   }
 
   getAlterColumnAutoincrement(tableName: string, column: Column): string {

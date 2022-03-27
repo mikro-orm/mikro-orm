@@ -22,10 +22,8 @@ exports[`multiple connected schemas in postgres schema generator allows creating
 "alter table \\"n2\\".\\"book\\" drop constraint \\"book_author_id_foreign\\";
 alter table \\"n2\\".\\"book\\" drop constraint \\"book_based_on_id_foreign\\";
 
-alter table \\"n2\\".\\"book\\" drop constraint if exists \\"book_author_id_check\\";
 alter table \\"n2\\".\\"book\\" alter column \\"author_id\\" type int using (\\"author_id\\"::int);
 alter table \\"n2\\".\\"book\\" alter column \\"author_id\\" drop not null;
-alter table \\"n2\\".\\"book\\" drop constraint if exists \\"book_based_on_id_check\\";
 alter table \\"n2\\".\\"book\\" alter column \\"based_on_id\\" type int using (\\"based_on_id\\"::int);
 alter table \\"n2\\".\\"book\\" alter column \\"based_on_id\\" set not null;
 alter table \\"n2\\".\\"book\\" add constraint \\"book_author_id_foreign\\" foreign key (\\"author_id\\") references \\"n1\\".\\"author\\" (\\"id\\") on update cascade on delete set null;

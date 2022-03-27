@@ -14,12 +14,10 @@ alter table \\"user\\" add constraint \\"user_pkey\\" primary key (\\"id\\");
 
 exports[`changing PK column type [postgres] (GH 1480) changing PK type: 1. change PK type from text to int 1`] = `
 Object {
-  "down": "alter table \\"user\\" drop constraint if exists \\"user_id_check\\";
-alter table \\"user\\" alter column \\"id\\" type varchar using (\\"id\\"::varchar);
+  "down": "alter table \\"user\\" alter column \\"id\\" type varchar using (\\"id\\"::varchar);
 
 ",
-  "up": "alter table \\"user\\" drop constraint if exists \\"user_id_check\\";
-alter table \\"user\\" alter column \\"id\\" type int using (\\"id\\"::int);
+  "up": "alter table \\"user\\" alter column \\"id\\" type int using (\\"id\\"::int);
 
 ",
 }
@@ -57,13 +55,11 @@ alter table \\"user\\" add constraint \\"user_pkey\\" primary key (\\"id\\");
 
 exports[`changing PK column type [postgres] (GH 1480) changing PK type: 4. change PK type from int to serial 1`] = `
 Object {
-  "down": "alter table \\"user\\" drop constraint if exists \\"user_id_check\\";
-alter table \\"user\\" alter column \\"id\\" type int4 using (\\"id\\"::int4);
+  "down": "alter table \\"user\\" alter column \\"id\\" type int4 using (\\"id\\"::int4);
 alter table \\"user\\" alter column \\"id\\" drop default;
 
 ",
-  "up": "alter table \\"user\\" drop constraint if exists \\"user_id_check\\";
-alter table \\"user\\" alter column \\"id\\" type int using (\\"id\\"::int);
+  "up": "alter table \\"user\\" alter column \\"id\\" type int using (\\"id\\"::int);
 create sequence if not exists \\"user_id_seq\\";
 select setval('user_id_seq', (select max(\\"id\\") from \\"user\\"));
 alter table \\"user\\" alter column \\"id\\" set default nextval('user_id_seq');
@@ -76,15 +72,13 @@ exports[`changing PK column type [postgres] (GH 1480) changing PK type: 5. chang
 Object {
   "down": "alter table \\"user\\" alter column \\"id\\" type text using (\\"id\\"::text);
 
-alter table \\"user\\" drop constraint if exists \\"user_id_check\\";
 alter table \\"user\\" alter column \\"id\\" type int4 using (\\"id\\"::int4);
 create sequence if not exists \\"user_id_seq\\";
 select setval('user_id_seq', (select max(\\"id\\") from \\"user\\"));
 alter table \\"user\\" alter column \\"id\\" set default nextval('user_id_seq');
 
 ",
-  "up": "alter table \\"user\\" drop constraint if exists \\"user_id_check\\";
-alter table \\"user\\" alter column \\"id\\" drop default;
+  "up": "alter table \\"user\\" alter column \\"id\\" drop default;
 alter table \\"user\\" alter column \\"id\\" type uuid using (\\"id\\"::text::uuid);
 alter table \\"user\\" alter column \\"id\\" drop default;
 
