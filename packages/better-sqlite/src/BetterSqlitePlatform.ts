@@ -112,10 +112,6 @@ export class BetterSqlitePlatform extends AbstractSqlPlatform {
     return `json_extract(${this.quoteIdentifier(a)}, '$.${b.join('.')}')`;
   }
 
-  getDefaultIntegrityRule(): string {
-    return 'no action';
-  }
-
   getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
     if (type === 'primary') {
       return this.getDefaultPrimaryName(tableName, columns);

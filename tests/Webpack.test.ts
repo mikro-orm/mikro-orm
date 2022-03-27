@@ -8,7 +8,7 @@ describe('Webpack', () => {
   test('should create entity', async () => {
     const orm = await MikroORM.init({
       dbName: `mikro_orm_test`,
-      port: 3307,
+      port: 3308,
       multipleStatements: true,
       type: 'mysql',
       discovery: { disableDynamicFileAccess: true },

@@ -165,10 +165,6 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return super.quoteValue(value);
   }
 
-  getDefaultIntegrityRule(): string {
-    return 'no action';
-  }
-
   indexForeignKeys() {
     return false;
   }

@@ -50,7 +50,7 @@ describe('diffing default values (GH #2385)', () => {
       entities: [Foo1],
       dbName: 'mikro_orm_test_gh_2385',
       type: 'mysql',
-      port: 3307,
+      port: 3308,
     });
     await orm.getSchemaGenerator().refreshDatabase();
     expect(await orm.getSchemaGenerator().getCreateSchemaSQL()).toMatchSnapshot();

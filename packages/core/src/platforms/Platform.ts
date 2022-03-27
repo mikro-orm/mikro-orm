@@ -257,10 +257,6 @@ export abstract class Platform {
     return 'text';
   }
 
-  getDefaultIntegrityRule(): string {
-    return 'restrict';
-  }
-
   marshallArray(values: string[]): string {
     return values.join(',');
   }

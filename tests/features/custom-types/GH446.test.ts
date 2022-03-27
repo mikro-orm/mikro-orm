@@ -67,7 +67,7 @@ describe('GH issue 446', () => {
       entities: [A, B, C, D],
       dbName: `mikro_orm_test_gh_446`,
       type: 'mysql',
-      port: 3307,
+      port: 3308,
     });
     await orm.getSchemaGenerator().refreshDatabase();
   });

@@ -411,13 +411,13 @@ export class Publisher2 {
   @Enum({ items: () => Publisher2Type2 })
   type2!: Publisher2Type2;
 
-  @Property({ columnType: 'tinyint(4)', nullable: true })
+  @Property({ columnType: 'tinyint', nullable: true })
   enum1?: number;
 
-  @Property({ columnType: 'tinyint(4)', nullable: true })
+  @Property({ columnType: 'tinyint', nullable: true })
   enum2?: number;
 
-  @Property({ columnType: 'tinyint(4)', nullable: true })
+  @Property({ columnType: 'tinyint', nullable: true })
   enum3?: number;
 
   @Enum({ items: () => Publisher2Enum4, nullable: true })
