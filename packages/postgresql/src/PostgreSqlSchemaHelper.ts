@@ -41,7 +41,9 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       (select pg_catalog.col_description(c.oid, cols.ordinal_position::int)
         from pg_catalog.pg_class c
         where c.oid = (select ('"' || cols.table_schema || '"."' || cols.table_name || '"')::regclass::oid) and c.relname = cols.table_name) as column_comment
-      from information_schema.columns cols where table_schema = '${schemaName}' and table_name = '${tableName}'`;
+      from information_schema.columns cols where table_schema = '${schemaName}' and table_name = '${tableName}'
+      order by ordinal_position`;
+
     const columns = await connection.execute<any[]>(sql);
     const str = (val: string | number | undefined) => val != null ? '' + val : val;
 

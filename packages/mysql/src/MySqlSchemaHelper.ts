@@ -131,7 +131,8 @@ export class MySqlSchemaHelper extends SchemaHelper {
       numeric_precision as numeric_precision,
       numeric_scale as numeric_scale,
       ifnull(datetime_precision, character_maximum_length) length
-      from information_schema.columns where table_schema = database() and table_name = '${tableName}'`;
+      from information_schema.columns where table_schema = database() and table_name = '${tableName}'
+      order by ordinal_position`;
     const columns = await connection.execute<any[]>(sql);
     const str = (val?: string | number) => val != null ? '' + val : val;
     const extra = (val: string) => val.replace(/auto_increment|default_generated/i, '').trim();
