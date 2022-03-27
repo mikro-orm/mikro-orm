@@ -96,6 +96,25 @@ describe('SchemaGenerator', () => {
     await orm.close(true);
   });
 
+  test('generate schema from metadata [mariadb]', async () => {
+    const orm = await initORMMySql('mariadb', {}, true);
+    const generator = orm.getSchemaGenerator();
+    await generator.ensureDatabase();
+    const dump = await generator.generate();
+    expect(dump).toMatchSnapshot('mariadb-schema-dump');
+
+    const dropDump = await generator.getDropSchemaSQL();
+    expect(dropDump).toMatchSnapshot('mariadb-drop-schema-dump');
+
+    const createDump = await generator.getCreateSchemaSQL();
+    expect(createDump).toMatchSnapshot('mariadb-create-schema-dump');
+
+    const updateDump = await generator.getUpdateSchemaSQL();
+    expect(updateDump).toMatchSnapshot('mariadb-update-schema-dump');
+
+    await orm.close(true);
+  });
+
   test('update schema [mysql]', async () => {
     const orm = await initORMMySql('mysql', {}, true);
     const meta = orm.getMetadata();

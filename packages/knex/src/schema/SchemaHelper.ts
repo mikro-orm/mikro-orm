@@ -156,7 +156,7 @@ export abstract class SchemaHelper {
     throw new Error('Not supported by given driver');
   }
 
-  async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Check[]> {
+  async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName?: string, columns?: Column[]): Promise<Check[]> {
     throw new Error('Not supported by given driver');
   }
 

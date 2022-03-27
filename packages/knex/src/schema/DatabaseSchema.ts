@@ -64,7 +64,7 @@ export class DatabaseSchema {
       table.comment = t.table_comment;
       const cols = await platform.getSchemaHelper()!.getColumns(connection, table.name, table.schema);
       const indexes = await platform.getSchemaHelper()!.getIndexes(connection, table.name, table.schema);
-      const checks = await platform.getSchemaHelper()!.getChecks(connection, table.name, table.schema);
+      const checks = await platform.getSchemaHelper()!.getChecks(connection, table.name, table.schema, cols);
       const pks = await platform.getSchemaHelper()!.getPrimaryKeys(connection, indexes, table.name, table.schema);
       const fks = await platform.getSchemaHelper()!.getForeignKeys(connection, table.name, table.schema);
       const enums = await platform.getSchemaHelper()!.getEnumDefinitions(connection, checks, table.name, table.schema);

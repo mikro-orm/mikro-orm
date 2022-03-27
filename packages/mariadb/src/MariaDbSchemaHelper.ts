@@ -106,6 +106,40 @@ export class MariaDbSchemaHelper extends SchemaHelper {
       + `where k.table_name = '${tableName}' and k.table_schema = database() and c.constraint_schema = database() and k.referenced_column_name is not null`;
   }
 
+  private getChecksSQL(tableName: string, _schemaName: string): string {
+    return `select tc.constraint_schema as table_schema, tc.table_name as table_name, tc.constraint_name as name, tc.check_clause as expression,
+      case when tc.level = 'Column' then tc.constraint_name else null end as column_name
+      from information_schema.check_constraints tc
+      where tc.table_name = '${tableName}' and tc.constraint_schema = database()`;
+  }
+
+  async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName: string, columns?: Column[]): Promise<Check[]> {
+    const sql = this.getChecksSQL(tableName, schemaName);
+    const checks = await connection.execute<{ name: string; column_name: string; expression: string }[]>(sql);
+    const ret: Check[] = [];
+
+    for (const check of checks) {
+      const match = check.expression.match(/^json_valid\(`(.*)`\)$/i);
+      const col = columns?.find(col => col.name === match?.[1]);
+
+      if (col && match) {
+        col.type = 'json';
+        col.mappedType = this.platform.getMappedType('json');
+        delete col.length;
+        continue;
+      }
+
+      ret.push({
+        name: check.name,
+        columnName: check.column_name,
+        definition: `check (${check.expression})`,
+        expression: check.expression,
+      });
+    }
+
+    return ret;
+  }
+
   async getEnumDefinitions(connection: AbstractSqlConnection, checks: Check[], tableName: string, schemaName?: string): Promise<Dictionary<string[]>> {
     const sql =  `select column_name as column_name, column_type as column_type from information_schema.columns
       where data_type = 'enum' and table_name = '${tableName}' and table_schema = database()`;
@@ -166,11 +200,6 @@ export class MariaDbSchemaHelper extends SchemaHelper {
       unique: !index.Non_unique,
       primary: index.Key_name === 'PRIMARY',
     })));
-  }
-
-  async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Check[]> {
-    // @todo No support for CHECK constraints in current test MySQL version (minimum version is 8.0.16).
-    return [];
   }
 
   normalizeDefaultValue(defaultValue: string, length: number) {

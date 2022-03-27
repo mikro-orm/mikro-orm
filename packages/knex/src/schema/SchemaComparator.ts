@@ -475,7 +475,8 @@ export class SchemaComparator {
   }
 
   diffCheck(check1: Check, check2: Check): boolean {
-    return check1.expression !== check2.expression;
+    const unquote = (str?: string) => str?.replace(/['"`]/g, '');
+    return unquote(check1.expression as string) !== unquote(check2.expression as string);
   }
 
   hasSameDefaultValue(from: Column, to: Column): boolean {
