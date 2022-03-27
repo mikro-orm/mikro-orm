@@ -142,7 +142,7 @@ describe('indexes on FKs in postgres (GH 1518)', () => {
       entities: [Author],
       dbName: `mikro_orm_test_gh_1518`,
       type: 'mysql',
-      port: 3307,
+      port: 3308,
     });
     await orm.getSchemaGenerator().ensureDatabase();
     await orm.getSchemaGenerator().execute('set foreign_key_checks = 0');

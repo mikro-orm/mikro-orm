@@ -86,7 +86,7 @@ describe('custom types [mysql]', () => {
       entities: [Location, Address],
       dbName: `mikro_orm_test_custom_types`,
       type: 'mysql',
-      port: 3307,
+      port: 3308,
     });
 
     await orm.getSchemaGenerator().refreshDatabase();

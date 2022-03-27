@@ -99,7 +99,7 @@ describe('embedded entities in mysql', () => {
       entities: [Address1, Address2, User],
       dbName: `mikro_orm_test_embeddables`,
       type: 'mysql',
-      port: 3307,
+      port: 3308,
     });
     await orm.getSchemaGenerator().refreshDatabase();
   });
@@ -289,7 +289,7 @@ describe('embedded entities in mysql', () => {
       entities: [Address1, UserWithCity],
       dbName: `mikro_orm_test_embeddables`,
       type: 'mysql',
-      port: 3307,
+      port: 3308,
     })).rejects.toThrow(err);
   });
 
