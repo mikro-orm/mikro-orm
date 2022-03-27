@@ -405,6 +405,7 @@ export class EntityMetadata<T extends AnyEntity<T> = any> {
       prop.index = false;
     }
 
+    /* istanbul ignore next */
     if (owner && prop.fieldNames.length > 1 && prop.unique) {
       this.uniques.push({ properties: prop.name });
       prop.unique = false;

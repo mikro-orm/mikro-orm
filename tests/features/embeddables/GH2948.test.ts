@@ -14,7 +14,7 @@ export class Fiz {
 
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToOne({ entity: () => BazEntity, eager: true })
-  _baz: BazEntity;
+  _baz: any;
 
 }
 
