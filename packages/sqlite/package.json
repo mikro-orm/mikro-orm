@@ -57,7 +57,7 @@
   },
   "dependencies": {
     "@mikro-orm/knex": "^5.1.1",
-    "@vscode/sqlite3": "5.0.7",
+    "@vscode/sqlite3": "5.0.8",
     "fs-extra": "10.0.1",
     "sqlstring-sqlite": "0.1.1"
   },
