@@ -4,13 +4,14 @@ import type { Configuration } from './utils';
 import { QueryHelper, TransactionContext, Utils } from './utils';
 import type { AssignOptions, EntityLoaderOptions, EntityRepository, IdentifiedReference } from './entity';
 import { EntityAssigner, EntityFactory, EntityLoader, EntityValidator, Reference } from './entity';
-import { UnitOfWork } from './unit-of-work';
+import { ChangeSetType, UnitOfWork } from './unit-of-work';
 import type { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, InsertOptions, LockOptions, UpdateOptions, GetReferenceOptions, EntityField } from './drivers';
 import type { AnyEntity, AutoPath, ConnectionType, Dictionary, EntityData, EntityDictionary, EntityDTO, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, Populate, PopulateOptions, Primary, RequiredEntityData } from './typings';
 import { FlushMode, LoadStrategy, LockMode, PopulateHint, ReferenceType, SCALAR_TYPES } from './enums';
 import type { TransactionOptions } from './enums';
 import type { MetadataStorage } from './metadata';
 import type { Transaction } from './connections';
+import type { FlushEventArgs } from './events';
 import { EventManager, TransactionEventBroadcaster } from './events';
 import type { EntityComparator } from './utils/EntityComparator';
 import { OptimisticLockError, ValidationError } from './errors';
@@ -416,12 +417,19 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async transactional<T>(cb: (em: D[typeof EntityManagerType]) => Promise<T>, options: TransactionOptions = {}): Promise<T> {
     const context = this.getContext(false);
-    const em = this.fork({ clear: false, flushMode: options.flushMode });
+    const em = this.fork({ clear: false, flushMode: options.flushMode, freshEventManager: true });
     options.ctx ??= this.transactionContext;
 
     return TransactionContext.createAsync(em, async () => {
       return em.getConnection().transactional(async trx => {
         em.transactionContext = trx;
+        em.eventManager.registerSubscriber({
+          afterFlush: async (args: FlushEventArgs) => {
+            args.uow.getChangeSets()
+              .filter(cs => [ChangeSetType.DELETE, ChangeSetType.DELETE_EARLY].includes(cs.type))
+              .forEach(cs => this.unitOfWork.unsetIdentity(cs.entity));
+          },
+        });
         const ret = await cb(em);
         await em.flush();
 
