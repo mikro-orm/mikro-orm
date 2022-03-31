@@ -202,7 +202,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     options.convertCustomTypes ??= true;
     const meta = this.metadata.find<T>(entityName)!;
     const collections = this.extractManyToMany(entityName, data);
-    const pks = this.getPrimaryKeyFields(entityName);
+    const pks = meta?.primaryKeys ?? [this.config.getNamingStrategy().referenceColumnName()];
     const qb = this.createQueryBuilder<T>(entityName, options.ctx, 'write', options.convertCustomTypes).withSchema(this.getSchemaName(meta, options));
     const res = await this.rethrow(qb.insert(data as unknown as RequiredEntityData<T>).execute('run', false));
     res.row = res.row || {};
@@ -230,17 +230,18 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     data.forEach(row => Object.keys(row).forEach(k => set.add(k)));
     const props = [...set].map(name => meta.properties[name] ?? { name, fieldNames: [name] }) as EntityProperty<T>[];
     const fields = Utils.flatten(props.map(prop => prop.fieldNames));
-    let res: QueryResult<T>;
+    const params: unknown[] = [];
 
-    if (fields.length === 0) {
-      const qb = this.createQueryBuilder(entityName, options.ctx, 'write', options.convertCustomTypes).withSchema(this.getSchemaName(meta, options));
-      res = await this.rethrow(qb.insert(data as unknown as RequiredEntityData<T>[]).execute('run', false));
+    let sql = `insert into ${this.getTableName(meta, options)} `;
+    sql += fields.length > 0 ? '(' + fields.map(k => this.platform.quoteIdentifier(k)).join(', ') + ')' : `(${this.platform.quoteIdentifier(pks[0])})`;
+
+    if (fields.length > 0 || this.platform.usesDefaultKeyword()) {
+      sql += ' values ';
     } else {
-      let sql = `insert into ${this.getTableName(meta, options)} `;
-      /* istanbul ignore next */
-      sql += fields.length > 0 ? '(' + fields.map(k => this.platform.quoteIdentifier(k)).join(', ') + ')' : 'default';
-      sql += ` values `;
-      const params: any[] = [];
+      sql += ' ' + data.map(() => `select null as ${this.platform.quoteIdentifier(pks[0])}`).join(' union all ');
+    }
+
+    if (fields.length > 0 || this.platform.usesDefaultKeyword()) {
       sql += data.map(row => {
         const keys: string[] = [];
         props.forEach(prop => {
@@ -256,20 +257,19 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
           }
         });
 
-        return '(' + keys.join(', ') + ')';
+        return '(' + (keys.join(', ') || 'default') + ')';
       }).join(', ');
-
-      if (this.platform.usesReturningStatement()) {
-        /* istanbul ignore next */
-        const returningProps = meta!.props.filter(prop => prop.primary || prop.defaultRaw);
-        const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
-        /* istanbul ignore next */
-        sql += returningFields.length > 0 ? ` returning ${returningFields.map(field => this.platform.quoteIdentifier(field)).join(', ')}` : '';
-      }
-
-      res = await this.execute(sql, params, 'run', options.ctx);
     }
 
+    if (this.platform.usesReturningStatement()) {
+      /* istanbul ignore next */
+      const returningProps = meta!.props.filter(prop => prop.primary || prop.defaultRaw);
+      const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
+      /* istanbul ignore next */
+      sql += returningFields.length > 0 ? ` returning ${returningFields.map(field => this.platform.quoteIdentifier(field)).join(', ')}` : '';
+    }
+
+    const res = await this.execute<QueryResult<T>>(sql, params, 'run', options.ctx);
     let pk: any[];
 
     /* istanbul ignore next */
