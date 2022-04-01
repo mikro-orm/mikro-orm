@@ -3,7 +3,7 @@ import { Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany
 @Entity()
 export class Cat {
 
-  [PrimaryKeyType]: [string, string];
+  [PrimaryKeyType]?: [string, string];
 
   @PrimaryKey()
   name!: string;

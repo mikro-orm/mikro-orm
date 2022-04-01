@@ -44,6 +44,10 @@ export abstract class AbstractSqlPlatform extends Platform {
   }
 
   quoteValue(value: any): string {
+    if (this.isRaw(value)) {
+      return value;
+    }
+
     /* istanbul ignore if */
     if (Utils.isPlainObject(value) || value?.[JsonProperty]) {
       return escape(JSON.stringify(value));
@@ -86,12 +90,12 @@ export abstract class AbstractSqlPlatform extends Platform {
     return ret;
   }
 
-  getSearchJsonPropertySQL(path: string, type: string): string {
-    return this.getSearchJsonPropertyKey(path.split('->'), type);
+  getSearchJsonPropertySQL(path: string, type: string, aliased: boolean): string {
+    return this.getSearchJsonPropertyKey(path.split('->'), type, aliased);
   }
 
   isRaw(value: any): boolean {
-    return super.isRaw(value) || (typeof value === 'object' && value !== null && value.client && value.ref && value.constructor.name === 'Ref');
+    return super.isRaw(value) || (typeof value === 'object' && value !== null && value.client && ['Ref', 'Raw'].includes(value.constructor.name));
   }
 
   supportsSchemas(): boolean {

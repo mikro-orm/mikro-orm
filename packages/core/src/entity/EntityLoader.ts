@@ -231,6 +231,7 @@ export class EntityLoader {
     const children = this.getChildReferences<T>(entities, prop, options.refresh);
     const meta = this.metadata.find(prop.type)!;
     let fk = Utils.getPrimaryKeyHash(meta.primaryKeys);
+    let schema: string | undefined = options.schema;
 
     if (prop.reference === ReferenceType.ONE_TO_MANY || (prop.reference === ReferenceType.MANY_TO_MANY && !prop.owner)) {
       fk = meta.properties[prop.mappedBy].name;
@@ -246,10 +247,14 @@ export class EntityLoader {
       return [];
     }
 
+    if (!schema && [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference)) {
+      schema = children.find(e => e.__helper!.__schema)?.__helper!.__schema;
+    }
+
     const ids = Utils.unique(children.map(e => Utils.getPrimaryKeyValues(e, e.__meta!.primaryKeys, true)));
     const where = this.mergePrimaryCondition<T>(ids, fk, options, meta, this.metadata, this.driver.getPlatform());
     const fields = this.buildFields(options.fields, prop);
-    const { refresh, filters, convertCustomTypes, lockMode, strategy, populateWhere, schema } = options;
+    const { refresh, filters, convertCustomTypes, lockMode, strategy, populateWhere } = options;
 
     return this.em.find(prop.type, where, {
       refresh, filters, convertCustomTypes, lockMode, populateWhere,
@@ -262,7 +267,7 @@ export class EntityLoader {
   }
 
   private mergePrimaryCondition<T>(ids: T[], pk: string, options: EntityLoaderOptions<T>, meta: EntityMetadata, metadata: MetadataStorage, platform: Platform): FilterQuery<T> {
-    const cond1 = QueryHelper.processWhere({ [pk]: { $in: ids } }, meta.name!, metadata, platform, !options.convertCustomTypes);
+    const cond1 = QueryHelper.processWhere({ where: { [pk]: { $in: ids } }, entityName: meta.name!, metadata, platform, convertCustomTypes: !options.convertCustomTypes });
 
     return options.where![pk]
       ? { $and: [cond1, options.where] } as FilterQuery<any>
@@ -476,16 +481,24 @@ export class EntityLoader {
     const meta = this.metadata.find(entityName)!;
 
     meta.relations.forEach(prop => {
-        ret.push({
-          field: prop.name,
-          // force select-in strategy when populating all relations as otherwise we could cause infinite loops when self-referencing
-          strategy: LoadStrategy.SELECT_IN,
-          // no need to look up populate children recursively as we just pass `all: true` here
-          all: true,
-        });
+      ret.push({
+        field: this.getRelationName(meta, prop),
+        // force select-in strategy when populating all relations as otherwise we could cause infinite loops when self-referencing
+        strategy: LoadStrategy.SELECT_IN,
+        // no need to look up populate children recursively as we just pass `all: true` here
+        all: true,
+      });
     });
 
     return ret;
+  }
+
+  private getRelationName(meta: EntityMetadata, prop: EntityProperty): string {
+    if (!prop.embedded) {
+      return prop.name;
+    }
+
+    return `${this.getRelationName(meta, meta.properties[prop.embedded[0]])}.${prop.embedded[1]}`;
   }
 
   private lookupEagerLoadedRelationships<T>(entityName: string, populate: PopulateOptions<T>[], strategy?: LoadStrategy, prefix = '', visited: string[] = []): PopulateOptions<T>[] {

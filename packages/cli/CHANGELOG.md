@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.1.1](https://github.com/mikro-orm/mikro-orm/compare/v5.1.0...v5.1.1) (2022-03-20)
+
+
+### Bug Fixes
+
+* **schema:** respect `disableForeignKeys` in schema generator ([f1b8e46](https://github.com/mikro-orm/mikro-orm/commit/f1b8e46af0f9b01c9c2fc1372c588dce98313656)), closes [#2912](https://github.com/mikro-orm/mikro-orm/issues/2912)
+
+
+
+
+
+# [5.1.0](https://github.com/mikro-orm/mikro-orm/compare/v5.0.5...v5.1.0) (2022-03-13)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
 ## [5.0.5](https://github.com/mikro-orm/mikro-orm/compare/v5.0.4...v5.0.5) (2022-02-27)
 
 **Note:** Version bump only for package @mikro-orm/cli

@@ -54,7 +54,7 @@ describe('GH issue 1326', () => {
     orm = await MikroORM.init({
       type: 'mysql',
       dbName: `mikro_orm_test_gh_1326`,
-      port: 3307,
+      port: 3308,
       entities: [Driver, License, LicenseType],
     });
     await orm.getSchemaGenerator().refreshDatabase();

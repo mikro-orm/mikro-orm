@@ -15,7 +15,7 @@ import type { CreateSchemaOptions } from './MongoSchemaGenerator';
 
 export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
-  [EntityManagerType]: MongoEntityManager<this>;
+  [EntityManagerType]!: MongoEntityManager<this>;
 
   protected readonly connection = new MongoConnection(this.config);
   protected readonly platform = new MongoPlatform();

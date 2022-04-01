@@ -135,6 +135,7 @@ export class QueryBuilderHelper {
     });
 
     if (!Utils.hasObjectKeys(data) && meta && multi) {
+      /* istanbul ignore next */
       data[meta.primaryKeys[0]] = this.platform.usesDefaultKeyword() ? this.knex.raw('default') : undefined;
     }
 
@@ -166,6 +167,7 @@ export class QueryBuilderHelper {
   }
 
   joinManyToManyReference(prop: EntityProperty, ownerAlias: string, alias: string, pivotAlias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary, path: string): Dictionary<JoinOptions> {
+    const pivotMeta = this.metadata.find(prop.pivotEntity)!;
     const ret = {
       [`${ownerAlias}.${prop.name}#${pivotAlias}`]: {
         prop, type, cond, ownerAlias,
@@ -174,8 +176,8 @@ export class QueryBuilderHelper {
         joinColumns: prop.joinColumns,
         inverseJoinColumns: prop.inverseJoinColumns,
         primaryKeys: prop.referencedColumnNames,
-        table: prop.pivotTable,
-        schema: this.driver.getSchemaName(this.metadata.find(prop.pivotTable)),
+        table: pivotMeta.tableName,
+        schema: this.driver.getSchemaName(pivotMeta),
         path: path.endsWith('[pivot]') ? path : `${path}[pivot]`,
       } as JoinOptions,
     };
@@ -184,7 +186,7 @@ export class QueryBuilderHelper {
       return ret;
     }
 
-    const prop2 = this.metadata.find(prop.pivotTable)!.properties[prop.type + (prop.owner ? '_inverse' : '_owner')];
+    const prop2 = prop.owner ? pivotMeta.relations[1] : pivotMeta.relations[0];
     ret[`${pivotAlias}.${prop2.name}#${alias}`] = this.joinManyToOneReference(prop2, pivotAlias, alias, type);
     ret[`${pivotAlias}.${prop2.name}#${alias}`].path = path;
 
@@ -193,7 +195,7 @@ export class QueryBuilderHelper {
 
   joinPivotTable(field: string, prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary = {}): JoinOptions {
     const pivotMeta = this.metadata.find(field)!;
-    const prop2 = pivotMeta.properties[prop.mappedBy || prop.inversedBy];
+    const prop2 = pivotMeta.relations[0] === prop ? pivotMeta.relations[1] : pivotMeta.relations[0];
 
     return {
       prop, type, cond, ownerAlias, alias,
@@ -505,8 +507,8 @@ export class QueryBuilderHelper {
 
       Utils.splitPrimaryKeys(field).forEach(f => {
         const prop = this.getProperty(f, alias);
-        const noPrefix = (prop && prop.persist === false) || QueryBuilderHelper.isCustomExpression(f);
-        const column = this.mapper(noPrefix ? f : `${alias}.${f}`, type);
+        const noPrefix = (prop && prop.persist === false && !prop.formula) || QueryBuilderHelper.isCustomExpression(f);
+        const column = this.mapper(noPrefix ? f : `${alias}.${f}`, type, undefined, null);
         /* istanbul ignore next */
         const rawColumn = Utils.isString(column) ? column.split('.').map(e => this.knex.ref(e)).join('.') : column;
         const customOrder = prop?.customOrder;

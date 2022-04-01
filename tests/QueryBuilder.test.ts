@@ -1584,7 +1584,7 @@ describe('QueryBuilder', () => {
       .join('b.tags', 't')
       .where({ 'p.name': 'test 123', 'b.title': /3$/ })
       .orderBy({ 'b.title': QueryOrder.DESC })
-      .unsetFlag(QueryFlag.DISABLE_PAGINATE)
+      .setFlag(QueryFlag.DISABLE_PAGINATE)
       .limit(10, 5);
 
     const sql = 'select `p`.*, `b`.*, `a`.*, `t`.* ' +
@@ -1999,6 +1999,24 @@ describe('QueryBuilder', () => {
     expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` order by length(name) desc, `e0`.`type` asc');
   });
 
+  test('complex condition for json property with update query (GH #2839)', async () => {
+    const qb141 = orm.em.createQueryBuilder(Book2).update({ meta: { items: 3 } }).where({
+      $and: [
+        { uuid: 'b47f1cca-90ca-11ec-99e0-42010a5d800c' },
+        { $or: [
+            { meta: null },
+            { meta: { $eq: null } },
+            { meta: { time: { $lt: 1646147306 } } },
+          ] },
+      ],
+    });
+    expect(qb141.getFormattedQuery()).toBe('update `book2` set `meta` = \'{\\"items\\":3}\' ' +
+      'where `uuid_pk` = \'b47f1cca-90ca-11ec-99e0-42010a5d800c\' ' +
+      'and (`meta` is null ' +
+      'or `meta` is null ' +
+      'or `meta`->\'$.time\' < 1646147306)');
+  });
+
   test('GH issue 786', async () => {
     const qb1 = orm.em.createQueryBuilder(Book2);
     qb1.select('*').where({
@@ -2353,6 +2371,23 @@ describe('QueryBuilder', () => {
     const qb16 = pg.em.createQueryBuilder(Book2).orderBy({ meta: { bar: { num: QueryOrder.DESC } } });
     expect(qb16.getFormattedQuery()).toBe(`select "b0".*, "b0".price * 1.19 as "price_taxed" from "book2" as "b0" order by "b0"."meta"->'bar'->>'num' desc`);
 
+    // complex condition for json property with update query (GH #2839)
+    const qb141 = pg.em.createQueryBuilder(Book2).update({ meta: { items: 3 } }).where({
+      $and: [
+        { uuid: 'b47f1cca-90ca-11ec-99e0-42010a5d800c' },
+        { $or: [
+          { meta: null },
+          { meta: { $eq: null } },
+          { meta: { time: { $lt: 1646147306 } } },
+        ] },
+      ],
+    });
+    expect(qb141.getFormattedQuery()).toBe('update "book2" set "meta" = \'{"items":3}\' ' +
+      'where "uuid_pk" = \'b47f1cca-90ca-11ec-99e0-42010a5d800c\' ' +
+      'and ("meta" is null ' +
+      'or "meta" is null ' +
+      'or ("meta"->>\'time\')::float8 < 1646147306)');
+
     // arrays
     const qb17 = pg.em.createQueryBuilder(Author2);
     qb17.select('*').where({ identities: { $eq: ['4', '5', '6'] } });
@@ -2568,6 +2603,11 @@ describe('QueryBuilder', () => {
     expect(sql2).toBe(expected);
   });
 
+  test(`order by forumla field should not include 'as'`, async () => {
+    const sql = orm.em.createQueryBuilder(Book2).select('*').orderBy({ priceTaxed: QueryOrder.DESC }).getFormattedQuery();
+    expect(sql).toBe('select `e0`.*, `e0`.price * 1.19 as `price_taxed` from `book2` as `e0` order by `e0`.price * 1.19 desc');
+  });
+
   test('execute return type works based on qb.select/insert/update/delete() being used', async () => {
     const spy = jest.spyOn(QueryBuilder.prototype, 'execute');
 
@@ -2606,6 +2646,17 @@ describe('QueryBuilder', () => {
     const expected = 'select `e0`.`id` from `book2` as `e0` limit 0';
     const sql = orm.em.createQueryBuilder(Book2).select('id').limit(0).getFormattedQuery();
     expect(sql).toBe(expected);
+  });
+
+  test('sub-query order-by fields are always fully qualified', () => {
+    const expected = 'select `e0`.*, `books`.`uuid_pk` as `books__uuid_pk`, `books`.`created_at` as `books__created_at`, `books`.`title` as `books__title`, `books`.`price` as `books__price`, `books`.price * 1.19 as `books__price_taxed`, `books`.`double` as `books__double`, `books`.`meta` as `books__meta`, `books`.`author_id` as `books__author_id`, `books`.`publisher_id` as `books__publisher_id` from `author2` as `e0` inner join `book2` as `books` on `e0`.`id` = `books`.`author_id` where `e0`.`id` in (select `e0`.`id` from (select `e0`.`id` from `author2` as `e0` inner join `book2` as `books` on `e0`.`id` = `books`.`author_id` group by `e0`.`id` order by min(`e0`.`id`) desc limit 10) as `e0`) order by `e0`.`id` desc';
+    const sql = orm.em.createQueryBuilder(Author2).select('*').joinAndSelect('books', 'books').orderBy({ id: QueryOrder.DESC }).limit(10).getFormattedQuery();
+    expect(sql).toBe(expected);
+  });
+
+  test(`sub-query order-by fields should not include 'as'`, async () => {
+    const sql = orm.em.createQueryBuilder(Author2).select('*').joinAndSelect('books', 'books').orderBy([{ books: { priceTaxed: QueryOrder.DESC } }, { id: QueryOrder.DESC }]).limit(10).getFormattedQuery();
+    expect(sql).toBe('select `e0`.*, `books`.`uuid_pk` as `books__uuid_pk`, `books`.`created_at` as `books__created_at`, `books`.`title` as `books__title`, `books`.`price` as `books__price`, `books`.price * 1.19 as `books__price_taxed`, `books`.`double` as `books__double`, `books`.`meta` as `books__meta`, `books`.`author_id` as `books__author_id`, `books`.`publisher_id` as `books__publisher_id` from `author2` as `e0` inner join `book2` as `books` on `e0`.`id` = `books`.`author_id` where `e0`.`id` in (select `e0`.`id` from (select `e0`.`id` from `author2` as `e0` inner join `book2` as `books` on `e0`.`id` = `books`.`author_id` group by `e0`.`id` order by min(`books`.price * 1.19) desc, min(`e0`.`id`) desc limit 10) as `e0`) order by `books`.price * 1.19 desc, `e0`.`id` desc');
   });
 
   afterAll(async () => orm.close(true));

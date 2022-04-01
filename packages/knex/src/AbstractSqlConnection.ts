@@ -135,7 +135,7 @@ export abstract class AbstractSqlConnection extends Connection {
   }
 
   protected createKnexClient(type: string): Knex {
-    return knex(this.getKnexOptions(type))
+    return knex<any, any>(this.getKnexOptions(type))
       .on('query', data => {
         if (!data.__knexQueryUid) {
           this.logQuery(data.sql.toLowerCase().replace(/;$/, ''));

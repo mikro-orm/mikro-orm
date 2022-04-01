@@ -15,6 +15,8 @@ Mapped superclasses, just as regular, non-mapped classes, can appear in the midd
 > are only possible if the mapped superclass is only used in exactly one entity at the moment. For
 > further support of inheritance, the single table inheritance features have to be used.
 
+> Also note that we can't use generics to define any relations. This means that we cannot have a generic type argument in the base entity that would be used as a target of some relation. 
+
 ```ts
 // do not use @Entity decorator on base classes (mapped superclasses)
 // we can also use @Entity({ abstract: true })

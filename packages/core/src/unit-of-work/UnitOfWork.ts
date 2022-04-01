@@ -295,14 +295,17 @@ export class UnitOfWork {
       });
     }
 
-    this.working = true;
-    await this.doCommit();
+    try {
+      this.working = true;
+      await this.doCommit();
 
-    while (this.flushQueue.length) {
-      await this.flushQueue.shift()!();
+      while (this.flushQueue.length) {
+        await this.flushQueue.shift()!();
+      }
+    } finally {
+      this.postCommitCleanup();
+      this.working = false;
     }
-
-    this.working = false;
   }
 
   private async doCommit(): Promise<void> {
@@ -333,7 +336,6 @@ export class UnitOfWork {
       this.resetTransaction(oldTx);
       await this.eventManager.dispatchEvent(EventType.afterFlush, { em: this.em, uow: this });
     } finally {
-      this.postCommitCleanup();
       this.resetTransaction(oldTx);
     }
   }

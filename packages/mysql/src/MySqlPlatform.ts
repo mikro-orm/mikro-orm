@@ -13,9 +13,14 @@ export class MySqlPlatform extends AbstractSqlPlatform {
     return 'utf8mb4';
   }
 
-  getSearchJsonPropertyKey(path: string[], type: string): string {
+  getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
     const [a, ...b] = path;
-    return expr(alias => `${this.quoteIdentifier(`${alias}.${a}`)}->'$.${b.join('.')}'`);
+
+    if (aliased) {
+      return expr(alias => `${this.quoteIdentifier(`${alias}.${a}`)}->'$.${b.join('.')}'`);
+    }
+
+    return `${this.quoteIdentifier(a)}->'$.${b.join('.')}'`;
   }
 
   getBooleanTypeDeclarationSQL(): string {
@@ -46,15 +51,19 @@ export class MySqlPlatform extends AbstractSqlPlatform {
    */
   getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
     if (type === 'primary') {
-      return 'PRIMARY'; // https://dev.mysql.com/doc/refman/8.0/en/create-table.html#create-table-indexes-keys
+      return this.getDefaultPrimaryName(tableName, columns);
     }
 
-    let indexName = super.getIndexName(tableName, columns, type);
+    const indexName = super.getIndexName(tableName, columns, type);
     if (indexName.length > 64) {
-      indexName = `${indexName.substr(0, 57 - type.length)}_${Utils.hash(indexName).substr(0, 5)}_${type}`;
+      return `${indexName.substr(0, 57 - type.length)}_${Utils.hash(indexName).substr(0, 5)}_${type}`;
     }
 
     return indexName;
+  }
+
+  getDefaultPrimaryName(tableName: string, columns: string[]): string {
+    return 'PRIMARY'; // https://dev.mysql.com/doc/refman/8.0/en/create-table.html#create-table-indexes-keys
   }
 
 }

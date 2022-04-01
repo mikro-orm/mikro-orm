@@ -34,7 +34,7 @@ describe('index and FK names should be a max of 64 chars in mysql (GH 1271)', ()
     orm = await MikroORM.init({
       entities: [ParentEntity, ChildEntity],
       dbName: `mikro_orm_test_gh_1271`,
-      port: 3307,
+      port: 3308,
       type: 'mysql',
     });
     await orm.getSchemaGenerator().ensureDatabase();

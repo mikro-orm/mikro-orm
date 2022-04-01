@@ -63,7 +63,7 @@ describe('changing PK column type [mysql] (GH 1480)', () => {
     orm = await MikroORM.init({
       entities: [User0],
       dbName: 'mikro_orm_test_gh_1480',
-      port: 3307,
+      port: 3308,
       type: 'mysql',
     });
     generator = orm.getSchemaGenerator();

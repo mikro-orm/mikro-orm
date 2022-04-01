@@ -409,11 +409,9 @@ alter table \\"author2\\" add constraint \\"author2_favourite_book_uuid_pk_forei
 exports[`SchemaGenerator [postgres] update schema [postgres]: postgres-update-schema-alter-column 1`] = `
 "alter table \\"author2\\" drop constraint \\"author2_favourite_author_id_foreign\\";
 
-alter table \\"author2\\" drop constraint if exists \\"author2_name_check\\";
 alter table \\"author2\\" alter column \\"name\\" type int using (\\"name\\"::int);
 alter table \\"author2\\" alter column \\"name\\" set default 42;
 alter table \\"author2\\" alter column \\"name\\" drop not null;
-alter table \\"author2\\" drop constraint if exists \\"author2_age_check\\";
 alter table \\"author2\\" alter column \\"age\\" type int using (\\"age\\"::int);
 alter table \\"author2\\" alter column \\"age\\" set default 42;
 alter table \\"author2\\" add constraint \\"author2_favourite_author_id_foreign\\" foreign key (\\"favourite_author_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade on delete set null;
@@ -443,7 +441,6 @@ alter table \\"new_table\\" drop constraint \\"new_table_pkey\\";
 alter table \\"new_table\\" drop column \\"id\\";
 alter table \\"new_table\\" drop column \\"updated_at\\";
 
-alter table \\"author2\\" drop constraint if exists \\"author2_name_check\\";
 alter table \\"author2\\" alter column \\"name\\" drop default;
 alter table \\"author2\\" alter column \\"name\\" type int using (\\"name\\"::int);
 alter table \\"author2\\" alter column \\"name\\" set not null;
@@ -508,8 +505,7 @@ exports[`SchemaGenerator [postgres] update schema enums [postgres]: postgres-upd
 `;
 
 exports[`SchemaGenerator [postgres] update schema enums [postgres]: postgres-update-schema-enums-2 1`] = `
-"alter table \\"new_table\\" drop constraint if exists \\"new_table_enum_test_check\\";
-alter table \\"new_table\\" alter column \\"enum_test\\" type text using (\\"enum_test\\"::text);
+"alter table \\"new_table\\" alter column \\"enum_test\\" type text using (\\"enum_test\\"::text);
 alter table \\"new_table\\" add constraint \\"new_table_enum_test_check\\" check (\\"enum_test\\" in ('a', 'b'));
 
 "
@@ -517,6 +513,7 @@ alter table \\"new_table\\" add constraint \\"new_table_enum_test_check\\" check
 
 exports[`SchemaGenerator [postgres] update schema enums [postgres]: postgres-update-schema-enums-3 1`] = `
 "alter table \\"new_table\\" drop constraint if exists \\"new_table_enum_test_check\\";
+
 alter table \\"new_table\\" alter column \\"enum_test\\" type text using (\\"enum_test\\"::text);
 alter table \\"new_table\\" add constraint \\"new_table_enum_test_check\\" check (\\"enum_test\\" in ('a', 'b', 'c'));
 
@@ -525,6 +522,7 @@ alter table \\"new_table\\" add constraint \\"new_table_enum_test_check\\" check
 
 exports[`SchemaGenerator [postgres] update schema enums [postgres]: postgres-update-schema-enums-4 1`] = `
 "alter table \\"new_table\\" drop constraint if exists \\"new_table_enum_test_check\\";
+
 alter table \\"new_table\\" alter column \\"enum_test\\" type int using (\\"enum_test\\"::int);
 
 "

@@ -5,6 +5,8 @@ import { EnumType, StringType, TextType } from '@mikro-orm/core';
 
 export class MySqlSchemaHelper extends SchemaHelper {
 
+  private readonly _cache: Dictionary = {};
+
   static readonly DEFAULT_VALUES = {
     'now()': ['now()', 'current_timestamp'],
     'current_timestamp(?)': ['current_timestamp(?)'],
@@ -129,9 +131,11 @@ export class MySqlSchemaHelper extends SchemaHelper {
       numeric_precision as numeric_precision,
       numeric_scale as numeric_scale,
       ifnull(datetime_precision, character_maximum_length) length
-      from information_schema.columns where table_schema = database() and table_name = '${tableName}'`;
+      from information_schema.columns where table_schema = database() and table_name = '${tableName}'
+      order by ordinal_position`;
     const columns = await connection.execute<any[]>(sql);
-    const str = (val: string | number | undefined) => val != null ? '' + val : val;
+    const str = (val?: string | number) => val != null ? '' + val : val;
+    const extra = (val: string) => val.replace(/auto_increment|default_generated/i, '').trim();
 
     return columns.map(col => {
       const platform = connection.getPlatform();
@@ -151,7 +155,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
         precision: col.numeric_precision,
         scale: col.numeric_scale,
         comment: col.column_comment,
-        extra: col.extra.replace('auto_increment', ''),
+        extra: extra(col.extra),
       };
     });
   }
@@ -168,9 +172,47 @@ export class MySqlSchemaHelper extends SchemaHelper {
     })));
   }
 
-  async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Check[]> {
-    // @todo No support for CHECK constraints in current test MySQL version (minimum version is 8.0.16).
-    return [];
+  private async supportsCheckConstraints(connection: AbstractSqlConnection): Promise<boolean> {
+    if (this._cache.supportsCheckConstraints != null) {
+      return this._cache.supportsCheckConstraints;
+    }
+
+    const sql = `select 1 from information_schema.tables where table_name = 'CHECK_CONSTRAINTS' and table_schema = 'information_schema'`;
+    const res = await connection.execute(sql);
+
+    return this._cache.supportsCheckConstraints = res.length > 0;
+  }
+
+  private getChecksSQL(tableName: string, _schemaName: string): string {
+    return `select cc.constraint_schema as table_schema, tc.table_name as table_name, cc.constraint_name as name, cc.check_clause as expression
+      from information_schema.check_constraints cc
+      join information_schema.table_constraints tc
+        on tc.constraint_schema = cc.constraint_schema
+        and tc.constraint_name = cc.constraint_name
+        and constraint_type = 'CHECK'
+      where tc.table_name = '${tableName}' and tc.constraint_schema = database()`;
+  }
+
+  async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName: string, columns?: Column[]): Promise<Check[]> {
+    /* istanbul ignore next */
+    if (!await this.supportsCheckConstraints(connection)) {
+      return [];
+    }
+
+    const sql = this.getChecksSQL(tableName, schemaName);
+    const checks = await connection.execute<{ name: string; column_name: string; expression: string }[]>(sql);
+    const ret: Check[] = [];
+
+    for (const check of checks) {
+      ret.push({
+        name: check.name,
+        columnName: check.column_name,
+        definition: `check ${check.expression}`,
+        expression: check.expression.replace(/^\((.*)\)$/, '$1'),
+      });
+    }
+
+    return ret;
   }
 
   normalizeDefaultValue(defaultValue: string, length: number) {

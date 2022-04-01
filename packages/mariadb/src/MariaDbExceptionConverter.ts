@@ -2,7 +2,7 @@ import type { Dictionary, DriverException } from '@mikro-orm/core';
 import {
   DeadlockException, LockWaitTimeoutException, TableExistsException, TableNotFoundException,
   ForeignKeyConstraintViolationException, UniqueConstraintViolationException, InvalidFieldNameException, NonUniqueFieldNameException,
-  SyntaxErrorException, ConnectionException, NotNullConstraintViolationException, ExceptionConverter,
+  SyntaxErrorException, ConnectionException, NotNullConstraintViolationException, ExceptionConverter, CheckConstraintViolationException,
 } from '@mikro-orm/core';
 
 export class MariaDbExceptionConverter extends ExceptionConverter {
@@ -30,6 +30,8 @@ export class MariaDbExceptionConverter extends ExceptionConverter {
       case 1452:
       case 1701:
         return new ForeignKeyConstraintViolationException(exception);
+      case 4025:
+        return new CheckConstraintViolationException(exception);
       case 1062:
       case 1557:
       case 1569:

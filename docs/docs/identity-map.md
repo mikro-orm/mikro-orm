@@ -1,5 +1,6 @@
 ---
 title: Identity Map and Request Context
+sidebar_label: Identity Map
 ---
 
 `MikroORM` uses identity map in background so you will always get the same instance of 

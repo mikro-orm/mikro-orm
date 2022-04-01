@@ -130,11 +130,12 @@ describe('SchemaGenerator [postgres]', () => {
       dbName,
       baseDir: BASE_DIR,
       type: 'postgresql',
-      migrations: { path: BASE_DIR + '/../temp/migrations' },
+      migrations: { path: BASE_DIR + '/../temp/migrations', tableName: 'public.mikro_orm_migrations' },
     });
 
     const generator = orm.getSchemaGenerator();
     await generator.createSchema();
+    await generator.updateSchema();
     await generator.dropSchema({ wrap: false, dropMigrationsTable: false, dropDb: true });
     await orm.close(true);
 

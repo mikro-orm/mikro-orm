@@ -121,6 +121,8 @@ export const Book = new EntitySchema<IBook, CustomBaseEntity>({
   </TabItem>
 </Tabs>
 
+> Including `{ wrappedEntity: true }` in your `IdentifiedReference` property definitions will wrap the reference, providing access to helper methods like `.load` and `.unwrap`, which can be helpful for loading data and changing the type of your references where you plan to use them.
+
 Here is another example of `Author` entity, that was referenced from the `Book` one, this
 time defined for mongo:
 
@@ -798,7 +800,9 @@ properties: {
 ## Indexes
 
 We can define indexes via `@Index()` decorator, for unique indexes, we can 
-use `@Unique()` decorator. We can use it either on entity class, or on entity property:
+use `@Unique()` decorator. We can use it either on entity class, or on entity property. 
+
+To define complex indexes, we can use index expressions. They allow us to specify the final `create index` query and an index name - this name is then used for index diffing, so the schema generator will only try to create it if it's not there yet, or remove it, if it's no longer defined in the entity. Index expressions are not bound to any property, rather to the entity itself (we can still define them on both entity and property level).
 
 <Tabs
 groupId="entity-def"
@@ -830,6 +834,10 @@ export class Author {
   @Property()
   born?: Date;
 
+  @Index({ name: 'custom_index_expr', expression: 'alter table `author` add index `custom_index_expr`(`title`)' })
+  @Property()
+  title!: string;
+
 }
 ```
 
@@ -855,6 +863,10 @@ export class Author {
   @Property()
   born?: Date;
 
+  @Index({ name: 'custom_index_expr', expression: 'alter table `author` add index `custom_index_expr`(`title`)' })
+  @Property()
+  title!: string;
+
 }
 
 ```
@@ -868,6 +880,7 @@ export const AuthorSchema = new EntitySchema<Author, CustomBaseEntity>({
   indexes: [
     { properties: ['name', 'age'] }, // compound index, with generated name
     { name: 'custom_idx_name', properties: ['name'] }, // simple index, with custom name
+    { name: 'custom_index_expr', expression: 'alter table `author` add index `custom_index_expr`(`title`)' },
   ],
   uniques: [
     { properties: ['name', 'email'] },
@@ -876,6 +889,7 @@ export const AuthorSchema = new EntitySchema<Author, CustomBaseEntity>({
     email: { type: 'string', unique: true }, // generated name
     age: { type: 'number', nullable: true, index: true }, // generated name
     born: { type: Date, nullable: true, index: 'born_index' },
+    title: { type: 'string' },
   },
 });
 ```
@@ -1234,6 +1248,8 @@ export abstract class CustomBaseEntity {
   <TabItem value="entity-schema">
 
 ```ts title="./entities/CustomBaseEntity.ts"
+import { v4 } from 'uuid';
+
 export interface CustomBaseEntity {
   uuid: string;
   createdAt: Date;
@@ -1244,7 +1260,7 @@ export const schema = new EntitySchema<CustomBaseEntity>({
   name: 'CustomBaseEntity',
   abstract: true,
   properties: {
-    id: { type: 'number', primary: true },
+    uuid: { type: 'uuid', onCreate: () => v4(), primary: true },
     createdAt: { type: 'Date', onCreate: () => new Date(), nullable: true },
     updatedAt: { type: 'Date', onCreate: () => new Date(), onUpdate: () => new Date(), nullable: true },
   },

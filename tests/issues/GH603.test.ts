@@ -72,7 +72,7 @@ describe('GH issue 603', () => {
       entities: [TaskSchema, ProjectSchema],
       dbName: `mikro_orm_test_gh_603`,
       type: 'mysql',
-      port: 3307,
+      port: 3308,
     });
     await orm.getSchemaGenerator().refreshDatabase();
 

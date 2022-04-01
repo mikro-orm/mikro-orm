@@ -55,13 +55,15 @@ describe('CreateSchemaCommand', () => {
 
     expect(getCreateSchemaSQL.mock.calls.length).toBe(0);
     await expect(cmd.handler({ dump: true } as any)).resolves.toBeUndefined();
-    expect(getCreateSchemaSQL.mock.calls.length).toBe(1);
+    expect(getCreateSchemaSQL).toBeCalledTimes(1);
+    expect(getCreateSchemaSQL).toBeCalledWith({ wrap: undefined, dump: true });
     expect(seed.mock.calls.length).toBe(0);
     expect(closeSpy).toBeCalledTimes(2);
 
     expect(seed.mock.calls.length).toBe(0);
-    await expect(cmd.handler({ run: true, seed: '' } as any)).resolves.toBeUndefined();
+    await expect(cmd.handler({ run: true, fkChecks: true, seed: '' } as any)).resolves.toBeUndefined();
     expect(createSchema.mock.calls.length).toBe(2);
+    expect(createSchema).toBeCalledWith({ run: true, wrap: false, seed: '', fkChecks: true });
     expect(seed.mock.calls.length).toBe(1);
     expect(seed).toBeCalledWith(orm.config.get('seeder').defaultSeeder);
     expect(closeSpy).toBeCalledTimes(3);

@@ -1,10 +1,8 @@
 import type { Knex } from 'knex';
-import type {
-  AnyEntity, Collection, Configuration, Constructor, CountOptions, DeleteOptions, Dictionary, DriverMethodOptions,
-  EntityData, EntityDictionary, EntityField, EntityManager, EntityMetadata, EntityProperty, FilterQuery, FindOneOptions,
-  FindOptions, IDatabaseDriver, LockOptions, NativeInsertUpdateManyOptions, NativeInsertUpdateOptions, PopulateOptions, Primary,
-  QueryOrderMap, QueryResult, RequiredEntityData, Transaction,
-} from '@mikro-orm/core';
+import type { AnyEntity, Collection, ConnectionType, Configuration, Constructor, CountOptions, DeleteOptions, Dictionary,
+  DriverMethodOptions, EntityData, EntityDictionary, EntityField, EntityManager, EntityMetadata, EntityProperty, FilterQuery,
+  FindOneOptions, FindOptions, IDatabaseDriver, LockOptions, NativeInsertUpdateManyOptions, NativeInsertUpdateOptions,
+  PopulateOptions, Primary, QueryOrderMap, QueryResult, RequiredEntityData, Transaction } from '@mikro-orm/core';
 import { DatabaseDriver, EntityManagerType, LoadStrategy, QueryFlag, ReferenceType, Utils } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from './AbstractSqlConnection';
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform';
@@ -14,7 +12,7 @@ import type { Field } from './typings';
 
 export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = AbstractSqlConnection> extends DatabaseDriver<C> {
 
-  [EntityManagerType]: SqlEntityManager<this>;
+  [EntityManagerType]!: SqlEntityManager<this>;
 
   protected readonly connection: C;
   protected readonly replicas: C[] = [];
@@ -40,7 +38,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const meta = this.metadata.find<T>(entityName)!;
     const populate = this.autoJoinOneToOneOwner(meta, options.populate as unknown as PopulateOptions<T>[], options.fields);
     const joinedProps = this.joinedProps(meta, populate);
-    const qb = this.createQueryBuilder<T>(entityName, options.ctx, !!options.ctx, false);
+    const qb = this.createQueryBuilder<T>(entityName, options.ctx, options.connectionType, false);
     const fields = this.buildFields(meta, populate, joinedProps, qb, options.fields as Field<T>[]);
     const joinedPropsOrderBy = this.buildJoinedPropsOrderBy(entityName, qb, meta, joinedProps);
 
@@ -82,6 +80,11 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     if (joinedProps.length === 0) {
       opts.limit = 1;
+    }
+
+    if (opts.limit! > 0 && !opts.flags?.includes(QueryFlag.DISABLE_PAGINATE)) {
+      opts.flags ??= [];
+      opts.flags.push(QueryFlag.DISABLE_PAGINATE);
     }
 
     const res = await this.find<T>(entityName, where, opts);
@@ -185,7 +188,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   async count<T extends AnyEntity<T>>(entityName: string, where: any, options: CountOptions<T> = {}): Promise<number> {
     const meta = this.metadata.find(entityName)!;
     const pks = meta.primaryKeys;
-    const qb = this.createQueryBuilder(entityName, options.ctx, !!options.ctx, false)
+    const qb = this.createQueryBuilder(entityName, options.ctx, options.connectionType, false)
       .groupBy(options.groupBy!)
       .having(options.having!)
       .populate(options.populate as unknown as PopulateOptions<T>[] ?? [])
@@ -199,8 +202,8 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     options.convertCustomTypes ??= true;
     const meta = this.metadata.find<T>(entityName)!;
     const collections = this.extractManyToMany(entityName, data);
-    const pks = this.getPrimaryKeyFields(entityName);
-    const qb = this.createQueryBuilder<T>(entityName, options.ctx, true, options.convertCustomTypes).withSchema(this.getSchemaName(meta, options));
+    const pks = meta?.primaryKeys ?? [this.config.getNamingStrategy().referenceColumnName()];
+    const qb = this.createQueryBuilder<T>(entityName, options.ctx, 'write', options.convertCustomTypes).withSchema(this.getSchemaName(meta, options));
     const res = await this.rethrow(qb.insert(data as unknown as RequiredEntityData<T>).execute('run', false));
     res.row = res.row || {};
     let pk: any;
@@ -227,17 +230,18 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     data.forEach(row => Object.keys(row).forEach(k => set.add(k)));
     const props = [...set].map(name => meta.properties[name] ?? { name, fieldNames: [name] }) as EntityProperty<T>[];
     const fields = Utils.flatten(props.map(prop => prop.fieldNames));
-    let res: QueryResult<T>;
+    const params: unknown[] = [];
 
-    if (fields.length === 0) {
-      const qb = this.createQueryBuilder(entityName, options.ctx, true, options.convertCustomTypes).withSchema(this.getSchemaName(meta, options));
-      res = await this.rethrow(qb.insert(data as unknown as RequiredEntityData<T>[]).execute('run', false));
+    let sql = `insert into ${this.getTableName(meta, options)} `;
+    sql += fields.length > 0 ? '(' + fields.map(k => this.platform.quoteIdentifier(k)).join(', ') + ')' : `(${this.platform.quoteIdentifier(pks[0])})`;
+
+    if (fields.length > 0 || this.platform.usesDefaultKeyword()) {
+      sql += ' values ';
     } else {
-      let sql = `insert into ${this.getTableName(meta, options)} `;
-      /* istanbul ignore next */
-      sql += fields.length > 0 ? '(' + fields.map(k => this.platform.quoteIdentifier(k)).join(', ') + ')' : 'default';
-      sql += ` values `;
-      const params: any[] = [];
+      sql += ' ' + data.map(() => `select null as ${this.platform.quoteIdentifier(pks[0])}`).join(' union all ');
+    }
+
+    if (fields.length > 0 || this.platform.usesDefaultKeyword()) {
       sql += data.map(row => {
         const keys: string[] = [];
         props.forEach(prop => {
@@ -253,20 +257,19 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
           }
         });
 
-        return '(' + keys.join(', ') + ')';
+        return '(' + (keys.join(', ') || 'default') + ')';
       }).join(', ');
-
-      if (this.platform.usesReturningStatement()) {
-        /* istanbul ignore next */
-        const returningProps = meta!.props.filter(prop => prop.primary || prop.defaultRaw);
-        const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
-        /* istanbul ignore next */
-        sql += returningFields.length > 0 ? ` returning ${returningFields.map(field => this.platform.quoteIdentifier(field)).join(', ')}` : '';
-      }
-
-      res = await this.execute(sql, params, 'run', options.ctx);
     }
 
+    if (this.platform.usesReturningStatement()) {
+      /* istanbul ignore next */
+      const returningProps = meta!.props.filter(prop => prop.primary || prop.defaultRaw);
+      const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
+      /* istanbul ignore next */
+      sql += returningFields.length > 0 ? ` returning ${returningFields.map(field => this.platform.quoteIdentifier(field)).join(', ')}` : '';
+    }
+
+    const res = await this.execute<QueryResult<T>>(sql, params, 'run', options.ctx);
     let pk: any[];
 
     /* istanbul ignore next */
@@ -298,7 +301,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
 
     if (Utils.hasObjectKeys(data)) {
-      const qb = this.createQueryBuilder<T>(entityName, options.ctx, true, options.convertCustomTypes)
+      const qb = this.createQueryBuilder<T>(entityName, options.ctx, 'write', options.convertCustomTypes)
         .update(data)
         .withSchema(this.getSchemaName(meta, options))
         .where(where);
@@ -396,7 +399,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       where = { [pks[0]]: where };
     }
 
-    const qb = this.createQueryBuilder(entityName, options.ctx, true, false).delete(where).withSchema(this.getSchemaName(meta, options));
+    const qb = this.createQueryBuilder(entityName, options.ctx, 'write', false).delete(where).withSchema(this.getSchemaName(meta, options));
 
     return this.rethrow(qb.execute('run', false));
   }
@@ -424,7 +427,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     if (coll.property.reference === ReferenceType.ONE_TO_MANY) {
       const cols = coll.property.referencedColumnNames;
-      const qb = this.createQueryBuilder(coll.property.type, ctx, true)
+      const qb = this.createQueryBuilder(coll.property.type, ctx, 'write')
         .withSchema(this.getSchemaName(meta, options))
         .update({ [coll.property.mappedBy]: pks })
         .getKnexQuery()
@@ -435,7 +438,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     /* istanbul ignore next */
     const ownerSchema = wrapped.getSchema() === '*' ? this.config.get('schema') : wrapped.getSchema();
-    const pivotMeta = this.metadata.find(coll.property.pivotTable)!;
+    const pivotMeta = this.metadata.find(coll.property.pivotEntity)!;
 
     if (pivotMeta.schema === '*') {
       /* istanbul ignore next */
@@ -449,7 +452,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   async loadFromPivotTable<T, O>(prop: EntityProperty, owners: Primary<O>[][], where: FilterQuery<T> = {} as FilterQuery<T>, orderBy?: QueryOrderMap<T>[], ctx?: Transaction, options?: FindOptions<T>): Promise<Dictionary<T[]>> {
     const pivotProp2 = this.getPivotInverseProperty(prop);
     const ownerMeta = this.metadata.find(pivotProp2.type)!;
-    const cond = { [`${prop.pivotTable}.${pivotProp2.name}`]: { $in: ownerMeta.compositePK ? owners : owners.map(o => o[0]) } };
+    const cond = { [`${prop.pivotEntity}.${pivotProp2.name}`]: { $in: ownerMeta.compositePK ? owners : owners.map(o => o[0]) } };
 
     /* istanbul ignore if */
     if (!Utils.isEmpty(where) && Object.keys(where as Dictionary).every(k => Utils.isOperator(k, false))) {
@@ -459,10 +462,10 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
 
     orderBy = this.getPivotOrderBy(prop, orderBy);
-    const qb = this.createQueryBuilder<T>(prop.type, ctx, !!ctx)
+    const qb = this.createQueryBuilder<T>(prop.type, ctx, options?.connectionType)
       .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES)
       .withSchema(this.getSchemaName(prop.targetMeta, options));
-    const populate = this.autoJoinOneToOneOwner(prop.targetMeta!, [{ field: prop.pivotTable }]);
+    const populate = this.autoJoinOneToOneOwner(prop.targetMeta!, [{ field: prop.pivotEntity }]);
     const fields = this.buildFields(prop.targetMeta!, (options?.populate ?? []) as unknown as PopulateOptions<T>[], [], qb, options?.fields as Field<T>[]);
     qb.select(fields).populate(populate).where(where).orderBy(orderBy!).setLockMode(options?.lockMode, options?.lockTableAliases);
 
@@ -497,17 +500,6 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
   async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | Knex.QueryBuilder | Knex.Raw, params: any[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction): Promise<T> {
     return this.rethrow(this.connection.execute(queryOrKnex, params, method, ctx));
-  }
-
-  protected getTableName<T>(meta: EntityMetadata<T>, options: NativeInsertUpdateManyOptions<T>): string {
-    const tableName = this.platform.quoteIdentifier(meta.collection);
-    const schema = this.getSchemaName(meta, options);
-
-    if (schema) {
-      return this.platform.quoteIdentifier(schema) + '.' + tableName;
-    }
-
-    return tableName;
   }
 
   /**
@@ -620,14 +612,27 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   /** @internal */
-  createQueryBuilder<T extends AnyEntity<T>>(entityName: string, ctx?: Transaction<Knex.Transaction>, write?: boolean, convertCustomTypes?: boolean): QueryBuilder<T> {
-    const qb = new QueryBuilder<T>(entityName, this.metadata, this, ctx, undefined, write ? 'write' : 'read');
+  createQueryBuilder<T extends AnyEntity<T>>(entityName: string, ctx?: Transaction<Knex.Transaction>, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean): QueryBuilder<T> {
+    const connectionType = this.resolveConnectionType({ ctx, connectionType: preferredConnectionType });
+    const qb = new QueryBuilder<T>(entityName, this.metadata, this, ctx, undefined, connectionType);
 
     if (!convertCustomTypes) {
       qb.unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);
     }
 
     return qb;
+  }
+
+  protected resolveConnectionType(args: { ctx?: Transaction<Knex.Transaction>; connectionType?: ConnectionType}) {
+    if (args.ctx) {
+      return 'write';
+    } else if (args.connectionType) {
+      return args.connectionType;
+    } else if (this.config.get('preferReadReplicas') === true) {
+      return 'read';
+    }
+
+    return 'write';
   }
 
   protected extractManyToMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>): EntityData<T> {
@@ -672,7 +677,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
 
     if (deleteDiff === true || deleteDiff.length > 0) {
-      const qb1 = this.createQueryBuilder(prop.pivotTable, options?.ctx, true)
+      const qb1 = this.createQueryBuilder(prop.pivotEntity, options?.ctx, 'write')
         .withSchema(this.getSchemaName(meta, options))
         .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);
       const knex = qb1.getKnex();
@@ -699,10 +704,10 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     /* istanbul ignore else */
     if (this.platform.allowsMultiInsert()) {
-      await this.nativeInsertMany<T>(prop.pivotTable, items as EntityData<T>[], { ...options, convertCustomTypes: false, processCollections: false });
+      await this.nativeInsertMany<T>(prop.pivotEntity, items as EntityData<T>[], { ...options, convertCustomTypes: false, processCollections: false });
     } else {
       await Utils.runSerial(items, item => {
-        return this.createQueryBuilder(prop.pivotTable, options?.ctx, true)
+        return this.createQueryBuilder(prop.pivotEntity, options?.ctx, 'write')
           .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES)
           .withSchema(this.getSchemaName(meta, options))
           .insert(item)

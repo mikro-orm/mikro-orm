@@ -1,6 +1,6 @@
 import type { CountOptions, LockOptions, DeleteOptions, FindOneOptions, FindOptions, IDatabaseDriver, NativeInsertUpdateManyOptions, NativeInsertUpdateOptions, DriverMethodOptions } from './IDatabaseDriver';
 import { EntityManagerType } from './IDatabaseDriver';
-import type { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityProperty, FilterQuery, PopulateOptions, Primary } from '../typings';
+import type { AnyEntity, ConnectionType, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityProperty, FilterQuery, PopulateOptions, Primary } from '../typings';
 import type { MetadataStorage } from '../metadata';
 import type { Connection, QueryResult, Transaction } from '../connections';
 import type { Configuration, ConnectionOptions } from '../utils';
@@ -15,7 +15,7 @@ import { DriverException } from '../exceptions';
 
 export abstract class DatabaseDriver<C extends Connection> implements IDatabaseDriver<C> {
 
-  [EntityManagerType]: EntityManager<this>;
+  [EntityManagerType]!: EntityManager<this>;
 
   protected readonly connection!: C;
   protected readonly replicas: C[] = [];
@@ -43,7 +43,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   abstract nativeDelete<T>(entityName: string, where: FilterQuery<T>, options?: DeleteOptions<T>): Promise<QueryResult<T>>;
 
-  abstract count<T>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T>): Promise<number>;
+  abstract count<T extends AnyEntity<T>, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T, P>): Promise<number>;
 
   createEntityManager<D extends IDatabaseDriver = IDatabaseDriver>(useContext?: boolean): D[typeof EntityManagerType] {
     return new EntityManager(this.config, this, this.metadata, useContext) as unknown as EntityManager<D>;
@@ -83,7 +83,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return this.connect();
   }
 
-  getConnection(type: 'read' | 'write' = 'write'): C {
+  getConnection(type: ConnectionType = 'write'): C {
     if (type === 'write' || this.replicas.length === 0) {
       return this.connection as C;
     }
@@ -191,7 +191,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     }
 
     if (prop.fixedOrder) {
-      return [{ [`${prop.pivotTable}.${prop.fixedOrderColumn}`]: QueryOrder.ASC } as QueryOrderMap<T>];
+      return [{ [`${prop.pivotEntity}.${prop.fixedOrderColumn}`]: QueryOrder.ASC } as QueryOrderMap<T>];
     }
 
     return [];
@@ -199,23 +199,17 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   protected getPrimaryKeyFields(entityName: string): string[] {
     const meta = this.metadata.find(entityName);
-    return meta ? meta.primaryKeys : [this.config.getNamingStrategy().referenceColumnName()];
+    return meta ? Utils.flatten(meta.getPrimaryProps().map(pk => pk.fieldNames)) : [this.config.getNamingStrategy().referenceColumnName()];
   }
 
   protected getPivotInverseProperty(prop: EntityProperty): EntityProperty {
-    const pivotMeta = this.metadata.find(prop.pivotTable)!;
-    const targetType = prop.targetMeta?.root.className;
-    let inverse: string;
+    const pivotMeta = this.metadata.find(prop.pivotEntity)!;
 
     if (prop.owner) {
-      const pivotProp1 = pivotMeta.properties[targetType + '_inverse'];
-      inverse = pivotProp1.mappedBy;
-    } else {
-      const pivotProp1 = pivotMeta.properties[targetType + '_owner'];
-      inverse = pivotProp1.inversedBy;
+      return pivotMeta.relations[0];
     }
 
-    return pivotMeta.properties[inverse];
+    return pivotMeta.relations[1];
   }
 
   protected createReplicas(cb: (c: ConnectionOptions) => C): C[] {
@@ -250,6 +244,20 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return promise.catch(e => {
       throw this.convertException(e);
     });
+  }
+
+  /**
+   * @internal
+   */
+  getTableName<T>(meta: EntityMetadata<T>, options: NativeInsertUpdateManyOptions<T>): string {
+    const tableName = this.platform.quoteIdentifier(meta.tableName);
+    const schema = this.getSchemaName(meta, options);
+
+    if (schema) {
+      return this.platform.quoteIdentifier(schema) + '.' + tableName;
+    }
+
+    return tableName;
   }
 
   /**

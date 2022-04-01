@@ -12,7 +12,7 @@ describe('SchemaGenerator (no FKs)', () => {
     const orm = await MikroORM.init({
       entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName,
-      port: 3307,
+      port: 3308,
       baseDir: BASE_DIR,
       type: 'mysql',
       schemaGenerator: { createForeignKeyConstraints: false, disableForeignKeys: false },
@@ -29,7 +29,7 @@ describe('SchemaGenerator (no FKs)', () => {
     const orm = await MikroORM.init({
       entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName,
-      port: 3307,
+      port: 3308,
       baseDir: BASE_DIR,
       type: 'mysql',
       migrations: { path: BASE_DIR + '/../temp/migrations' },

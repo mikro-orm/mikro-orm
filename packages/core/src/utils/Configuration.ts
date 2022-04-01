@@ -115,6 +115,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       emit: 'ts',
       fileName: (className: string) => className,
     },
+    preferReadReplicas: true,
   };
 
   static readonly PLATFORMS = {
@@ -451,7 +452,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   loadStrategy: LoadStrategy;
   populateWhere: PopulateHint;
   flushMode: FlushMode;
-  entityRepository?: Constructor<EntityRepository<any>>;
+  entityRepository?: Constructor;
   replicas?: Partial<ConnectionOptions>[];
   strict: boolean;
   validate: boolean;
@@ -484,6 +485,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   };
   metadataProvider: { new(config: Configuration): MetadataProvider };
   seeder: SeederOptions;
+  preferReadReplicas: boolean;
 }
 
 export type Options<D extends IDatabaseDriver = IDatabaseDriver> =

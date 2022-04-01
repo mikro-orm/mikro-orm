@@ -3,13 +3,14 @@ import type { Configuration } from './utils';
 import { QueryHelper, TransactionContext, Utils } from './utils';
 import type { AssignOptions, EntityLoaderOptions, EntityRepository, IdentifiedReference } from './entity';
 import { EntityAssigner, EntityFactory, EntityLoader, EntityValidator, Reference } from './entity';
-import { UnitOfWork } from './unit-of-work';
-import type { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, LockOptions, NativeInsertUpdateOptions, UpdateOptions, GetReferenceOptions, EntityField } from './drivers';
-import type { AnyEntity, AutoPath, Dictionary, EntityData, EntityDictionary, EntityDTO, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, Populate, PopulateOptions, Primary, RequiredEntityData } from './typings';
+import { ChangeSetType, UnitOfWork } from './unit-of-work';
+import type { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, InsertOptions, LockOptions, NativeInsertUpdateOptions, UpdateOptions, GetReferenceOptions, EntityField } from './drivers';
+import type { AnyEntity, AutoPath, ConnectionType, Dictionary, EntityData, EntityDictionary, EntityDTO, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, Populate, PopulateOptions, Primary, RequiredEntityData } from './typings';
 import { FlushMode, LoadStrategy, LockMode, PopulateHint, ReferenceType, SCALAR_TYPES } from './enums';
 import type { TransactionOptions } from './enums';
 import type { MetadataStorage } from './metadata';
 import type { Transaction } from './connections';
+import type { FlushEventArgs } from './events';
 import { EventManager, TransactionEventBroadcaster } from './events';
 import type { EntityComparator } from './utils/EntityComparator';
 import { OptimisticLockError, ValidationError } from './errors';
@@ -56,7 +57,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Gets the Connection instance, by default returns write connection
    */
-  getConnection(type?: 'read' | 'write'): ReturnType<D['getConnection']> {
+  getConnection(type?: ConnectionType): ReturnType<D['getConnection']> {
     return this.driver.getConnection(type) as ReturnType<D['getConnection']>;
   }
 
@@ -76,7 +77,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     if (!this.repositoryMap[entityName]) {
       const meta = this.metadata.get(entityName);
       const RepositoryClass = this.config.getRepositoryClass(meta.customRepository)!;
-      this.repositoryMap[entityName] = new RepositoryClass(this, entityName);
+      this.repositoryMap[entityName] = new RepositoryClass(this, entityName) as EntityRepository<any>;
     }
 
     return this.repositoryMap[entityName] as unknown as GetRepository<T, U>;
@@ -130,16 +131,18 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return [];
     }
 
+    const uow = this.getUnitOfWork();
+    const factory = this.getEntityFactory();
     const ret: T[] = [];
 
     for (const data of results) {
-      const entity = this.getEntityFactory().create(entityName, data as EntityData<T>, {
+      const entity = factory.create(entityName, data as EntityData<T>, {
         merge: true,
         refresh: options.refresh,
         schema: options.schema,
         convertCustomTypes: true,
       }) as T;
-      this.getUnitOfWork().registerManaged(entity, data, { refresh: options.refresh, loaded: true });
+      uow.registerManaged(entity, data, { refresh: options.refresh, loaded: true });
       ret.push(entity);
     }
 
@@ -151,7 +154,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       ignoreLazyScalarProperties: true,
       lookup: false,
     });
-    await this.getUnitOfWork().dispatchOnLoadEvent();
+    await uow.dispatchOnLoadEvent();
     await this.storeCache(options.cache, cached!, () => unique.map(e => e.__helper!.toPOJO()));
 
     return unique as Loaded<T, P>[];
@@ -221,7 +224,14 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   protected async processWhere<T extends AnyEntity<T>, P extends string = never>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, P> | FindOneOptions<T, P>, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<T>> {
-    where = QueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata, this.driver.getPlatform(), options.convertCustomTypes);
+    where = QueryHelper.processWhere({
+      where: where as FilterQuery<T>,
+      entityName,
+      metadata: this.metadata,
+      platform: this.driver.getPlatform(),
+      convertCustomTypes: options.convertCustomTypes,
+      aliased: type === 'read',
+    });
     where = await this.applyFilters(entityName, where, options.filters ?? {}, type);
     where = await this.applyDiscriminatorCondition(entityName, where);
 
@@ -293,7 +303,13 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         cond = filter.cond;
       }
 
-      ret.push(QueryHelper.processWhere(cond, entityName, this.metadata, this.driver.getPlatform()));
+      ret.push(QueryHelper.processWhere({
+        where: cond,
+        entityName,
+        metadata: this.metadata,
+        platform: this.driver.getPlatform(),
+        aliased: type === 'read',
+      }));
     }
 
     const conds = [...ret, where as Dictionary].filter(c => Utils.hasObjectKeys(c)) as FilterQuery<T>[];
@@ -333,7 +349,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     where = await this.processWhere(entityName, where, options, 'read');
     this.validator.validateEmptyWhere(where);
     this.checkLockRequirements(options.lockMode, meta);
-    let entity = this.getUnitOfWork().tryGetById<T>(entityName, where, options.schema);
+    const uow = this.getUnitOfWork();
+    let entity = uow.tryGetById<T>(entityName, where, options.schema);
     const isOptimisticLocking = !Utils.isDefined(options.lockMode) || options.lockMode === LockMode.OPTIMISTIC;
 
     if (entity && !this.shouldRefresh(meta, entity, options) && isOptimisticLocking) {
@@ -369,9 +386,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       schema: options.schema,
       convertCustomTypes: true,
     });
-    this.getUnitOfWork().registerManaged(entity, data, { refresh: options.refresh, loaded: true });
+    uow.registerManaged(entity, data, { refresh: options.refresh, loaded: true });
     await this.lockAndPopulate(entityName, entity, where, options);
-    await this.getUnitOfWork().dispatchOnLoadEvent();
+    await uow.dispatchOnLoadEvent();
     await this.storeCache(options.cache, cached!, () => entity!.__helper!.toPOJO());
 
     return entity as Loaded<T, P>;
@@ -398,14 +415,28 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Runs your callback wrapped inside a database transaction.
    */
   async transactional<T>(cb: (em: D[typeof EntityManagerType]) => Promise<T>, options: TransactionOptions = {}): Promise<T> {
-    const em = this.fork({ clear: false, flushMode: options.flushMode });
+    const context = this.getContext(false);
+    const em = this.fork({ clear: false, flushMode: options.flushMode, freshEventManager: true });
     options.ctx ??= this.transactionContext;
 
     return TransactionContext.createAsync(em, async () => {
       return em.getConnection().transactional(async trx => {
         em.transactionContext = trx;
+        em.eventManager.registerSubscriber({
+          afterFlush: async (args: FlushEventArgs) => {
+            args.uow.getChangeSets()
+              .filter(cs => [ChangeSetType.DELETE, ChangeSetType.DELETE_EARLY].includes(cs.type))
+              .forEach(cs => this.unitOfWork.unsetIdentity(cs.entity));
+          },
+        });
         const ret = await cb(em);
         await em.flush();
+
+        // ensure all entities from inner context are merged to the upper one
+        for (const entity of em.unitOfWork.getIdentityMap()) {
+          context.unitOfWork.registerManaged(entity);
+          entity.__helper!.__em = context;
+        }
 
         return ret;
       }, { ...options, eventBroadcaster: new TransactionEventBroadcaster(em) });
@@ -423,6 +454,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Commits the transaction bound to this EntityManager. Flushes before doing the actual commit query.
    */
   async commit(): Promise<void> {
+    if (!this.transactionContext) {
+      throw ValidationError.transactionRequired();
+    }
+
     await this.flush();
     await this.getConnection('write').commit(this.transactionContext, new TransactionEventBroadcaster(this));
     delete this.transactionContext;
@@ -432,6 +467,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Rollbacks the transaction bound to this EntityManager.
    */
   async rollback(): Promise<void> {
+    if (!this.transactionContext) {
+      throw ValidationError.transactionRequired();
+    }
+
     await this.getConnection('write').rollback(this.transactionContext, new TransactionEventBroadcaster(this));
     delete this.transactionContext;
     this.getUnitOfWork().clearActionsQueue();
@@ -537,7 +576,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     entityName = Utils.className(entityName as string);
     this.validator.validatePrimaryKey(data as EntityData<T>, this.metadata.get(entityName));
-    let entity = this.getUnitOfWork().tryGetById<T>(entityName, data as FilterQuery<T>, options.schema, false);
+    const uow = this.getUnitOfWork();
+    let entity = uow.tryGetById<T>(entityName, data as FilterQuery<T>, options.schema, false);
 
     if (entity && entity.__helper!.__initialized && !options.refresh) {
       return entity;
@@ -548,7 +588,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     entity = Utils.isEntity<T>(data) ? data : this.getEntityFactory().create<T>(entityName, data as EntityData<T>, { merge: true, ...options });
     this.validator.validate(entity, data, childMeta ?? meta);
-    this.getUnitOfWork().merge(entity);
+    uow.merge(entity);
 
     return entity;
   }
@@ -649,9 +689,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * The entity will be entered into the database at or before transaction commit or as a result of the flush operation.
    */
   persist(entity: AnyEntity | Reference<AnyEntity> | (AnyEntity | Reference<AnyEntity>)[]): this {
+    const uow = this.getUnitOfWork();
+
     if (Utils.isEntity(entity)) {
       // do not cascade just yet, cascading of entities in persist stack is done when flushing
-      this.getUnitOfWork().persist(entity, undefined, { cascade: false });
+      uow.persist(entity, undefined, { cascade: false });
       return this;
     }
 
@@ -665,7 +707,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       // do not cascade just yet, cascading of entities in persist stack is done when flushing
-      this.getUnitOfWork().persist(Reference.unwrapReference(ent), undefined, { cascade: false });
+      uow.persist(Reference.unwrapReference(ent), undefined, { cascade: false });
     }
 
     return this;
@@ -696,9 +738,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * To remove entities by condition, use `em.nativeDelete()`.
    */
   remove<T extends AnyEntity<T>>(entity: T | Reference<T> | (T | Reference<T>)[]): this {
+    const uow = this.getUnitOfWork();
+
     if (Utils.isEntity<T>(entity)) {
       // do not cascade just yet, cascading of entities in persist stack is done when flushing
-      this.getUnitOfWork().remove(entity, undefined, { cascade: false });
+      uow.remove(entity, undefined, { cascade: false });
       return this;
     }
 
@@ -710,7 +754,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       // do not cascade just yet, cascading of entities in remove stack is done when flushing
-      this.getUnitOfWork().remove(Reference.unwrapReference(ent), undefined, { cascade: false });
+      uow.remove(Reference.unwrapReference(ent), undefined, { cascade: false });
     }
 
     return this;

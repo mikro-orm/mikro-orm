@@ -1,6 +1,6 @@
 import type { Dictionary } from '@mikro-orm/core';
 import { BigIntType, EnumType, Utils } from '@mikro-orm/core';
-import type { AbstractSqlConnection, Column, Index, DatabaseTable, TableDifference, Check } from '@mikro-orm/knex';
+import type { AbstractSqlConnection, Check, Column, DatabaseTable, Index, TableDifference } from '@mikro-orm/knex';
 import { SchemaHelper } from '@mikro-orm/knex';
 import type { Knex } from 'knex';
 
@@ -41,7 +41,9 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       (select pg_catalog.col_description(c.oid, cols.ordinal_position::int)
         from pg_catalog.pg_class c
         where c.oid = (select ('"' || cols.table_schema || '"."' || cols.table_name || '"')::regclass::oid) and c.relname = cols.table_name) as column_comment
-      from information_schema.columns cols where table_schema = '${schemaName}' and table_name = '${tableName}'`;
+      from information_schema.columns cols where table_schema = '${schemaName}' and table_name = '${tableName}'
+      order by ordinal_position`;
+
     const columns = await connection.execute<any[]>(sql);
     const str = (val: string | number | undefined) => val != null ? '' + val : val;
 
@@ -114,9 +116,11 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const enums = checks.reduce((o, item, index) => {
       // check constraints are defined as one of:
       // `CHECK ((type = ANY (ARRAY['local'::text, 'global'::text])))`
+      // `CHECK (("columnName" = ANY (ARRAY['local'::text, 'global'::text])))`
       // `CHECK (((enum_test)::text = ANY ((ARRAY['a'::character varying, 'b'::character varying, 'c'::character varying])::text[])))`
+      // `CHECK ((("enumTest")::text = ANY ((ARRAY['a'::character varying, 'b'::character varying, 'c'::character varying])::text[])))`
       // `CHECK ((type = 'a'::text))`
-      const m1 = item.definition?.match(/check \(\(\((\w+)\)::/i) || item.definition?.match(/check \(\((\w+) = /i);
+      const m1 = item.definition?.match(/check \(\(\("?(\w+)"?\)::/i) || item.definition?.match(/check \(\("?(\w+)"? = /i);
       const m2 = item.definition?.match(/\(array\[(.*)]\)/i) || item.definition?.match(/ = (.*)\)/i);
 
       if (item.columnName && m1 && m2) {
@@ -133,14 +137,15 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>) {
-    const compositePK = fromTable.getPrimaryKey()?.composite;
+    const pk = fromTable.getPrimaryKey();
+    const primaryKey = !changedProperties && !this.hasNonDefaultPrimaryKeyName(fromTable);
 
-    if (column.autoincrement && !compositePK && !changedProperties) {
+    if (column.autoincrement && !pk?.composite && !changedProperties) {
       if (column.mappedType instanceof BigIntType) {
-        return table.bigIncrements(column.name);
+        return table.bigIncrements(column.name, { primaryKey });
       }
 
-      return table.increments(column.name);
+      return table.increments(column.name, { primaryKey });
     }
 
     if (column.mappedType instanceof EnumType && column.enumItems?.every(item => Utils.isString(item))) {
@@ -169,12 +174,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   getPreAlterTable(tableDiff: TableDifference, safe: boolean): string {
-    // changing uuid column type requires to cast it to text first
-    const uuid = Object.values(tableDiff.changedColumns).find(col => col.changedProperties.has('type') && col.fromColumn.type === 'uuid');
-
-    if (!uuid) {
-      return '';
-    }
+    const ret: string[] = [];
 
     const parts = tableDiff.name.split('.');
     const tableName = parts.pop()!;
@@ -182,7 +182,22 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     /* istanbul ignore next */
     const name = (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName;
 
-    return `alter table "${name}" alter column "${uuid.column.name}" type text using ("${uuid.column.name}"::text)`;
+    // detect that the column was an enum before and remove the check constraint in such case here
+    const changedEnums = Object.values(tableDiff.changedColumns).filter(col => col.fromColumn.mappedType instanceof EnumType);
+
+    for (const col of changedEnums) {
+      const constraintName = `${tableName}_${col.column.name}_check`;
+      ret.push(`alter table "${name}" drop constraint if exists "${constraintName}"`);
+    }
+
+    // changing uuid column type requires to cast it to text first
+    const uuids = Object.values(tableDiff.changedColumns).filter(col => col.changedProperties.has('type') && col.fromColumn.type === 'uuid');
+
+    for (const col of uuids) {
+      ret.push(`alter table "${name}" alter column "${col.column.name}" type text using ("${col.column.name}"::text)`);
+    }
+
+    return ret.join(';\n');
   }
 
   getAlterColumnAutoincrement(tableName: string, column: Column): string {

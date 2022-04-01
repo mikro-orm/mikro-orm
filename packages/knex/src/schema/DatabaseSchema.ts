@@ -51,9 +51,12 @@ export class DatabaseSchema {
   static async create(connection: AbstractSqlConnection, platform: AbstractSqlPlatform, config: Configuration, schemaName?: string): Promise<DatabaseSchema> {
     const schema = new DatabaseSchema(platform, schemaName ?? config.get('schema'));
     const tables = await connection.execute<Table[]>(platform.getSchemaHelper()!.getListTablesSQL());
+    const parts = config.get('migrations').tableName!.split('.');
+    const migrationsTableName = parts[1] ?? parts[0];
+    const migrationsSchemaName = parts.length > 1 ? parts[0] : config.get('schema', platform.getDefaultSchemaName());
 
     for (const t of tables) {
-      if (t.table_name === config.get('migrations').tableName) {
+      if (t.table_name === migrationsTableName && (!t.schema_name || t.schema_name === migrationsSchemaName)) {
         continue;
       }
 
@@ -61,7 +64,7 @@ export class DatabaseSchema {
       table.comment = t.table_comment;
       const cols = await platform.getSchemaHelper()!.getColumns(connection, table.name, table.schema);
       const indexes = await platform.getSchemaHelper()!.getIndexes(connection, table.name, table.schema);
-      const checks = await platform.getSchemaHelper()!.getChecks(connection, table.name, table.schema);
+      const checks = await platform.getSchemaHelper()!.getChecks(connection, table.name, table.schema, cols);
       const pks = await platform.getSchemaHelper()!.getPrimaryKeys(connection, indexes, table.name, table.schema);
       const fks = await platform.getSchemaHelper()!.getForeignKeys(connection, table.name, table.schema);
       const enums = await platform.getSchemaHelper()!.getEnumDefinitions(connection, checks, table.name, table.schema);

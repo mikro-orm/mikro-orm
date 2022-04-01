@@ -55,7 +55,7 @@ describe('comment diffing in mysql', () => {
       entities: [Book0],
       dbName: `mikro_orm_test_comments`,
       type: 'mysql',
-      port: 3307,
+      port: 3308,
     });
     generator = orm.getSchemaGenerator();
     await generator.ensureDatabase();
