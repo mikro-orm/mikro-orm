@@ -3127,10 +3127,10 @@ electron-to-chromium@^1.4.17:
   resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.40.tgz#f5dbced7bfbc7072e5e7ca5487f8f9a42c8bc768"
   integrity sha512-j+eVIyQGt2EU5xPWUblhpp5P5z5xyAdRgzogBgfe2F5JGV17gr9pfzWBua6DlPL00LavbOjxubWkWkbVQe9Wlw==
 
-emittery@^0.10.0:
-  version "0.10.0"
-  resolved "https://registry.yarnpkg.com/emittery/-/emittery-0.10.0.tgz#bb373c660a9d421bb44706ec4967ed50c02a8026"
-  integrity sha512-AGvFfs+d0JKCJQ4o01ASQLGPmSCxgfU9RFXvzPvZdjKK8oscynksuJhWrSTSw7j7Ep/sZct5b5ZhYCi8S/t0HQ==
+emittery@^0.10.2:
+  version "0.10.2"
+  resolved "https://registry.yarnpkg.com/emittery/-/emittery-0.10.2.tgz#902eec8aedb8c41938c46e9385e9db7e03182933"
+  integrity sha512-aITqOwnLanpHLNXZJENbOgjUBeHocD+xsSJmNrjovKBW5HbSpW3d1pEls7GFQPUWXiwG9+0P4GtHfEqC/4M0Iw==
 
 emittery@^0.8.1:
   version "0.8.1"
@@ -7826,13 +7826,13 @@ umask@^1.1.0:
   resolved "https://registry.yarnpkg.com/umask/-/umask-1.1.0.tgz#f29cebf01df517912bb58ff9c4e50fde8e33320d"
   integrity sha1-8pzr8B31F5ErtY/5xOUP3o4zMg0=
 
-umzug@3.1.0:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/umzug/-/umzug-3.1.0.tgz#81149cad74f0e10ad0c9908244a164561a969ce9"
-  integrity sha512-Ox/D/N4VuWBrLbRPWrF/x0pIETmpNakKP+Jna1ZrfJDiLQyYwbTTayPd5NEtfjSSz9JG2DOOKie251Vu6teKWw==
+umzug@3.1.1:
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/umzug/-/umzug-3.1.1.tgz#dfbe52308bf2908984380bdffd0c75c07831fd1f"
+  integrity sha512-sgMDzUK6ZKS3pjzRJpAHqSkvAQ+64Dourq6JfQv11i0nMu0/QqE3V3AUpj2pWYxFBaSvnUxKrzZQmPr6NZhvdQ==
   dependencies:
     "@rushstack/ts-command-line" "^4.7.7"
-    emittery "^0.10.0"
+    emittery "^0.10.2"
     fs-jetpack "^4.1.0"
     glob "^7.1.6"
     pony-cause "^1.1.1"
