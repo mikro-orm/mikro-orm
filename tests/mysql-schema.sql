@@ -42,9 +42,7 @@ create table `publisher2` (`id` int(10) unsigned not null auto_increment primary
 create table `foo_baz2` (`id` int(10) unsigned not null auto_increment primary key, `name` varchar(255) not null, `version` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;
 
 create table `foo_bar2` (`id` int(10) unsigned not null auto_increment primary key, `name` varchar(255) not null, `name with space` varchar(255) null, `baz_id` int(10) unsigned null, `foo_bar_id` int(10) unsigned null, `version` datetime not null default current_timestamp, `blob` blob null, `array` text null, `object_property` json null) default character set utf8mb4 engine = InnoDB;
-alter table `foo_bar2` add index `foo_bar2_baz_id_index`(`baz_id`);
 alter table `foo_bar2` add unique `foo_bar2_baz_id_unique`(`baz_id`);
-alter table `foo_bar2` add index `foo_bar2_foo_bar_id_index`(`foo_bar_id`);
 alter table `foo_bar2` add unique `foo_bar2_foo_bar_id_unique`(`foo_bar_id`);
 
 create table `foo_param2` (`bar_id` int(10) unsigned not null, `baz_id` int(10) unsigned not null, `value` varchar(255) not null, `version` datetime(3) not null default current_timestamp(3)) default character set utf8mb4 engine = InnoDB;
@@ -65,7 +63,6 @@ alter table `car_owner2` add index `car_owner2_car_name_car_year_index`(`car_nam
 create table `user2` (`first_name` varchar(100) not null, `last_name` varchar(100) not null, `foo` int(11) null, `favourite_car_name` varchar(100) null, `favourite_car_year` int(10) unsigned null) default character set utf8mb4 engine = InnoDB;
 alter table `user2` add unique `user2_favourite_car_name_favourite_car_year_unique`(`favourite_car_name`, `favourite_car_year`);
 alter table `user2` add primary key `user2_pkey`(`first_name`, `last_name`);
-alter table `user2` add index `user2_favourite_car_name_favourite_car_year_index`(`favourite_car_name`, `favourite_car_year`);
 
 create table `user2_sandwiches` (`user2_first_name` varchar(100) not null, `user2_last_name` varchar(100) not null, `sandwich_id` int(10) unsigned not null) default character set utf8mb4 engine = InnoDB;
 alter table `user2_sandwiches` add index `user2_sandwiches_sandwich_id_index`(`sandwich_id`);
@@ -82,7 +79,6 @@ create table `book_tag2` (`id` bigint unsigned not null auto_increment primary k
 create table `base_user2` (`id` int(10) unsigned not null auto_increment primary key, `first_name` varchar(100) not null, `last_name` varchar(100) not null, `type` enum('employee', 'manager', 'owner') not null, `owner_prop` varchar(255) null, `favourite_employee_id` int(10) unsigned null, `favourite_manager_id` int(10) unsigned null, `employee_prop` int(11) null, `manager_prop` varchar(255) null) default character set utf8mb4 engine = InnoDB;
 alter table `base_user2` add index `base_user2_type_index`(`type`);
 alter table `base_user2` add index `base_user2_favourite_employee_id_index`(`favourite_employee_id`);
-alter table `base_user2` add index `base_user2_favourite_manager_id_index`(`favourite_manager_id`);
 alter table `base_user2` add unique `base_user2_favourite_manager_id_unique`(`favourite_manager_id`);
 
 create table `author2` (`id` int(10) unsigned not null auto_increment primary key, `created_at` datetime(3) not null default current_timestamp(3), `updated_at` datetime(3) not null default current_timestamp(3), `name` varchar(255) not null, `email` varchar(255) not null, `age` int(11) null default null, `terms_accepted` tinyint(1) not null default false, `optional` tinyint(1) null, `identities` text null, `born` date null, `born_time` time null, `favourite_book_uuid_pk` varchar(36) null, `favourite_author_id` int(10) unsigned null) default character set utf8mb4 engine = InnoDB;
@@ -103,9 +99,7 @@ alter table `book2` add index `book2_author_id_index`(`author_id`);
 alter table `book2` add index `book2_publisher_id_index`(`publisher_id`);
 
 create table `test2` (`id` int(10) unsigned not null auto_increment primary key, `name` varchar(255) null, `book_uuid_pk` varchar(36) null, `parent_id` int(10) unsigned null, `version` int(11) not null default 1, `foo___bar` int(10) unsigned null, `foo___baz` int(10) unsigned null) default character set utf8mb4 engine = InnoDB;
-alter table `test2` add index `test2_book_uuid_pk_index`(`book_uuid_pk`);
 alter table `test2` add unique `test2_book_uuid_pk_unique`(`book_uuid_pk`);
-alter table `test2` add index `test2_foo___bar_index`(`foo___bar`);
 alter table `test2` add unique `test2_foo___bar_unique`(`foo___bar`);
 alter table `test2` add index `test2_parent_id_index`(`parent_id`);
 
@@ -143,7 +137,6 @@ alter table `author2_following` add primary key `author2_following_pkey`(`author
 
 create table `address2` (`author_id` int(10) unsigned not null, `value` varchar(255) not null comment 'This is address property') default character set utf8mb4 engine = InnoDB comment = 'This is address table';
 alter table `address2` add primary key `address2_pkey`(`author_id`);
-alter table `address2` add index `address2_author_id_index`(`author_id`);
 
 alter table `foo_bar2` add constraint `foo_bar2_baz_id_foreign` foreign key (`baz_id`) references `foo_baz2` (`id`) on update cascade on delete set null;
 alter table `foo_bar2` add constraint `foo_bar2_foo_bar_id_foreign` foreign key (`foo_bar_id`) references `foo_bar2` (`id`) on update cascade on delete set null;

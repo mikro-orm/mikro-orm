@@ -18,7 +18,7 @@ jobs:
           access_token: ${{ github.token }}
 
       - name: Checkout Source code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Use Node.js 16.10
         uses: actions/setup-node@v3
@@ -26,7 +26,7 @@ jobs:
           node-version: 16.10
 
       - name: Cache node_modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-16.10-modules-${{ hashFiles('**/yarn.lock') }}
@@ -53,7 +53,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Use Node.js 16.10
         uses: actions/setup-node@v3
@@ -61,7 +61,7 @@ jobs:
           node-version: 16.10
 
       - name: Cache node_modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-16.10-modules-${{ hashFiles('**/yarn.lock') }}
@@ -88,7 +88,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Use Node.js 16.10
         uses: actions/setup-node@v3
@@ -96,7 +96,7 @@ jobs:
           node-version: 16.10
 
       - name: Cache node_modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-16.10-modules-${{ hashFiles('**/yarn.lock') }}
@@ -127,7 +127,7 @@ jobs:
         node-version: [ 14, '16.10' ]
     steps:
       - name: Checkout Source code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
@@ -135,7 +135,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Cache node_modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-${{ matrix.node-version }}-modules-${{ hashFiles('**/yarn.lock') }}
@@ -196,7 +196,7 @@ jobs:
     needs: [ test, build, lint ]
     steps:
       - name: Checkout Source code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0 # we need to pull everything to have correct dev version suffix
           ref: master
@@ -207,7 +207,7 @@ jobs:
           node-version: 16.10
 
       - name: Cache node_modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-16.10-modules-${{ hashFiles('**/yarn.lock') }}

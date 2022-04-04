@@ -420,7 +420,7 @@ doStuffOnInit() {
 
 ### @OnLoad()
 
-Fired when new entities are loaded from database. Unline `@InInit()`, 
+Fired when new entities are loaded from database. Unlike `@InInit()`, 
 this will be fired only for fully loaded entities (not references). The method
 can be `async`.
 

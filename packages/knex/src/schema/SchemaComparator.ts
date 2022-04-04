@@ -362,7 +362,10 @@ export class SchemaComparator {
       return true;
     }
 
-    const rule = (key: ForeignKey, method: 'updateRule' | 'deleteRule') => (key[method] ?? this.platform.getDefaultIntegrityRule()).toLowerCase();
+    const defaultRule = ['restrict', 'no action'];
+    const rule = (key: ForeignKey, method: 'updateRule' | 'deleteRule') => {
+      return (key[method] ?? defaultRule[0]).toLowerCase().replace(defaultRule[1], defaultRule[0]);
+    };
     const compare = (method: 'updateRule' | 'deleteRule') => rule(key1, method) === rule(key2, method);
 
     return !compare('updateRule') || !compare('deleteRule');
@@ -475,7 +478,8 @@ export class SchemaComparator {
   }
 
   diffCheck(check1: Check, check2: Check): boolean {
-    return check1.expression !== check2.expression;
+    const unquote = (str?: string) => str?.replace(/['"`]/g, '');
+    return unquote(check1.expression as string) !== unquote(check2.expression as string);
   }
 
   hasSameDefaultValue(from: Column, to: Column): boolean {

@@ -21,7 +21,7 @@ import { BaseEntity } from './BaseEntity';
 })
 export class Author extends BaseEntity<Author, 'termsAccepted' | 'code2' | 'version' | 'versionAsString'> {
 
-  [EntityRepositoryType]: AuthorRepository;
+  [EntityRepositoryType]?: AuthorRepository;
 
   static beforeDestroyCalled = 0;
   static afterDestroyCalled = 0;

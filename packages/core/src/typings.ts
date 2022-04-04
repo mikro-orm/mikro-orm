@@ -9,9 +9,11 @@ import type { Configuration } from './utils';
 import { Utils } from './utils/Utils';
 import { EntityComparator } from './utils/EntityComparator';
 import type { EntityManager } from './EntityManager';
+import type { EventSubscriber } from './events';
 
 export type Constructor<T = unknown> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
+export type AsyncFunction<R = any, T = Dictionary> = (args: T) => Promise<T>;
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type ExcludeFunctions<T, K extends keyof T> = T[K] extends Function ? never : (K extends symbol ? never : K);
 export type Cast<T, R> = T extends R ? T : R;
@@ -269,6 +271,7 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   fixedOrder?: boolean;
   fixedOrderColumn?: string;
   pivotTable: string;
+  pivotEntity: string;
   joinColumns: string[];
   inverseJoinColumns: string[];
   referencedColumnNames: string[];
@@ -300,6 +303,10 @@ export class EntityMetadata<T extends AnyEntity<T> = any> {
   }
 
   addProperty(prop: EntityProperty<T>, sync = true) {
+    if (prop.pivotTable && !prop.pivotEntity) {
+      prop.pivotEntity = prop.pivotTable;
+    }
+
     this.properties[prop.name] = prop;
     this.propertyOrder.set(prop.name, this.props.length);
 
@@ -379,7 +386,7 @@ export class EntityMetadata<T extends AnyEntity<T> = any> {
   private initIndexes(prop: EntityProperty<T>): void {
     const simpleIndex = this.indexes.find(index => index.properties === prop.name && !index.options && !index.type && !index.expression);
     const simpleUnique = this.uniques.find(index => index.properties === prop.name && !index.options);
-    const owner = prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
+    const owner = prop.reference === ReferenceType.MANY_TO_ONE;
 
     if (!prop.index && simpleIndex) {
       Utils.defaultValue(simpleIndex, 'name', true);
@@ -393,11 +400,12 @@ export class EntityMetadata<T extends AnyEntity<T> = any> {
       this.uniques.splice(this.uniques.indexOf(simpleUnique), 1);
     }
 
-    if (owner && prop.fieldNames.length > 1) {
+    if (prop.index && owner && prop.fieldNames.length > 1) {
       this.indexes.push({ properties: prop.name });
       prop.index = false;
     }
 
+    /* istanbul ignore next */
     if (owner && prop.fieldNames.length > 1 && prop.unique) {
       this.uniques.push({ properties: prop.name });
       prop.unique = false;
@@ -438,7 +446,7 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   uniques: { properties: (keyof T & string) | (keyof T & string)[]; name?: string; options?: Dictionary }[];
   checks: CheckConstraint<T>[];
   customRepository: () => Constructor<EntityRepository<T>>;
-  hooks: Partial<Record<keyof typeof EventType, (string & keyof T)[]>>;
+  hooks: { [K in EventType]?: (keyof T | EventSubscriber<T>[EventType])[] };
   prototype: T;
   class: Constructor<T>;
   abstract: boolean;
@@ -479,6 +487,21 @@ type MigrateOptions = { from?: string | number; to?: string | number; migrations
 type MigrationResult = { fileName: string; code: string; diff: MigrationDiff };
 type MigrationRow = { name: string; executed_at: Date };
 
+/**
+ * @internal
+ */
+export interface IMigratorStorage {
+  executed(): Promise<string[]>;
+  logMigration(params: Dictionary): Promise<void>;
+  unlogMigration(params: Dictionary): Promise<void>;
+  getExecutedMigrations(): Promise<MigrationRow[]>;
+  ensureTable(): Promise<void>;
+  setMasterMigration(trx: Transaction): void;
+  unsetMasterMigration(): void;
+  getMigrationName(name: string): string;
+  getTableName(): { schemaName: string; tableName: string };
+}
+
 export interface IMigrator {
   /**
    * Checks current schema for changes, generates new migration if there are any.
@@ -512,6 +535,11 @@ export interface IMigrator {
    * Executes down migrations to the given point. Without parameter it will migrate one version down.
    */
   down(options?: string | string[] | MigrateOptions): Promise<UmzugMigration[]>;
+
+  /**
+   * @internal
+   */
+  getStorage(): IMigratorStorage;
 }
 
 export interface MigrationDiff {
@@ -679,3 +707,5 @@ export interface Seeder {
 }
 
 export type MaybePromise<T> = T | Promise<T>;
+
+export type ConnectionType = 'read' | 'write';

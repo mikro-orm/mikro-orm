@@ -257,10 +257,6 @@ export abstract class Platform {
     return 'text';
   }
 
-  getDefaultIntegrityRule(): string {
-    return 'restrict';
-  }
-
   marshallArray(values: string[]): string {
     return values.join(',');
   }
@@ -281,11 +277,11 @@ export abstract class Platform {
     return 'json';
   }
 
-  getSearchJsonPropertySQL(path: string, type: string): string {
+  getSearchJsonPropertySQL(path: string, type: string, aliased: boolean): string {
     return path;
   }
 
-  getSearchJsonPropertyKey(path: string[], type: string): string {
+  getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
     return path.join('.');
   }
 
@@ -363,6 +359,11 @@ export abstract class Platform {
     return this.namingStrategy.indexName(tableName, columns, type);
   }
 
+  /* istanbul ignore next */
+  getDefaultPrimaryName(tableName: string, columns: string[]): string {
+    return this.namingStrategy.indexName(tableName, columns, 'primary');
+  }
+
   supportsCustomPrimaryKeyNames(): boolean {
     return false;
   }
@@ -408,6 +409,13 @@ export abstract class Platform {
    */
   generateCustomOrder(escapedColumn: string, values: unknown[]) {
     throw new Error('Not supported');
+  }
+
+  /**
+   * @internal
+   */
+  castColumn(prop?: EntityProperty): string {
+    return '';
   }
 
 }

@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/seeder",
-  "version": "5.0.5",
+  "version": "5.1.1",
   "description": "Seeder package for MikroORM.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -48,11 +48,11 @@
     "access": "public"
   },
   "dependencies": {
-    "@faker-js/faker": "6.0.0-alpha.7",
+    "@faker-js/faker": "6.1.1",
     "globby": "11.0.4"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^5.0.5"
+    "@mikro-orm/core": "^5.1.1"
   },
   "peerDependencies": {
     "@mikro-orm/core": "^5.0.0"

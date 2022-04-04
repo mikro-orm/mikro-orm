@@ -337,15 +337,22 @@ export class MetadataDiscovery {
   private initManyToManyFields(meta: EntityMetadata, prop: EntityProperty): void {
     const meta2 = this.metadata.get(prop.type);
     Utils.defaultValue(prop, 'fixedOrder', !!prop.fixedOrderColumn);
+    const pivotMeta = this.metadata.find(prop.pivotEntity);
+
+    if (pivotMeta) {
+      pivotMeta.pivotTable = true;
+      prop.pivotTable = pivotMeta.tableName;
+    }
 
     if (!prop.pivotTable && prop.owner && this.platform.usesPivotTable()) {
-      prop.pivotTable = this.namingStrategy.joinTableName(meta.collection, meta2.collection, prop.name);
+      prop.pivotTable = this.namingStrategy.joinTableName(meta.tableName, meta2.tableName, prop.name);
     }
 
     if (prop.mappedBy) {
       const prop2 = meta2.properties[prop.mappedBy];
       this.initManyToManyFields(meta2, prop2);
       prop.pivotTable = prop2.pivotTable;
+      prop.pivotEntity = prop2.pivotEntity ?? prop2.pivotTable;
       prop.fixedOrder = prop2.fixedOrder;
       prop.fixedOrderColumn = prop2.fixedOrderColumn;
       prop.joinColumns = prop2.inverseJoinColumns;
@@ -419,8 +426,7 @@ export class MetadataDiscovery {
     const ret: EntityMetadata[] = [];
 
     if (this.platform.usesPivotTable()) {
-      const promises = Object
-        .values(meta.properties)
+      const promises = Object.values(meta.properties)
         .filter(prop => prop.reference === ReferenceType.MANY_TO_MANY && prop.owner && prop.pivotTable)
         .map(prop => this.definePivotTableEntity(meta, prop));
       (await Promise.all(promises)).forEach(meta => ret.push(meta));
@@ -430,7 +436,7 @@ export class MetadataDiscovery {
   }
 
   private initFactoryField<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>): void {
-    ['mappedBy', 'inversedBy'].forEach(type => {
+    ['mappedBy', 'inversedBy', 'pivotEntity'].forEach(type => {
       const value = prop[type];
 
       if (value instanceof Function) {
@@ -445,6 +451,12 @@ export class MetadataDiscovery {
   }
 
   private async definePivotTableEntity(meta: EntityMetadata, prop: EntityProperty): Promise<EntityMetadata> {
+    const pivotMeta = this.metadata.find(prop.pivotEntity);
+
+    if (pivotMeta) {
+      return pivotMeta;
+    }
+
     let tableName = prop.pivotTable;
     let schemaName: string | undefined;
 
@@ -461,13 +473,12 @@ export class MetadataDiscovery {
       schema: schemaName,
       pivotTable: true,
     });
+    prop.pivotEntity = data.className;
 
     if (prop.fixedOrder) {
       const primaryProp = await this.defineFixedOrderProperty(prop, targetType);
       data.properties[primaryProp.name] = primaryProp;
-      data.primaryKeys = [primaryProp.name];
     } else {
-      data.primaryKeys = [meta.root.name + '_owner', targetType + '_inverse'];
       data.compositePK = true;
     }
 
@@ -486,7 +497,7 @@ export class MetadataDiscovery {
     data.properties[meta.root.name + '_owner'] = await this.definePivotProperty(prop, meta.root.name + '_owner', meta.root.name!, targetType + '_inverse', true);
     data.properties[targetType + '_inverse'] = await this.definePivotProperty(prop, targetType + '_inverse', targetType, meta.root.name + '_owner', false);
 
-    return this.metadata.set(prop.pivotTable, data);
+    return this.metadata.set(data.className, data);
   }
 
   private async defineFixedOrderProperty(prop: EntityProperty, targetType: string): Promise<EntityProperty> {
@@ -730,7 +741,7 @@ export class MetadataDiscovery {
 
         path.push(prop.name);
         meta.properties[name].fieldNames = [path.join('.')]; // store path for ObjectHydrator
-        meta.properties[name].fieldNameRaw = this.platform.getSearchJsonPropertySQL(path.join('->'), prop.type); // for querying in SQL drivers
+        meta.properties[name].fieldNameRaw = this.platform.getSearchJsonPropertySQL(path.join('->'), prop.type, true); // for querying in SQL drivers
         meta.properties[name].persist = false; // only virtual as we store the whole object
       }
 
@@ -998,7 +1009,8 @@ export class MetadataDiscovery {
 
       meta2.primaryKeys.forEach(primaryKey => {
         const pk = meta2.properties[primaryKey];
-        prop.unsigned = this.platform.supportsUnsigned() && this.isNumericProperty(pk);
+        // if at least one of the target columns is unsigned, we need to mark the property as unsigned
+        prop.unsigned ||= this.platform.supportsUnsigned() && this.isNumericProperty(pk);
       });
 
       return;
@@ -1008,7 +1020,7 @@ export class MetadataDiscovery {
   }
 
   private initIndexes(prop: EntityProperty): void {
-    if ((prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner)) && this.platform.indexForeignKeys()) {
+    if (prop.reference === ReferenceType.MANY_TO_ONE && this.platform.indexForeignKeys()) {
       prop.index ??= true;
     }
   }

@@ -1,0 +1,40 @@
+import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+class Author {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ unique: true })
+  name!: string;
+
+}
+
+let orm: MikroORM;
+
+beforeAll(async () => {
+  orm = await MikroORM.init({
+    entities: [Author],
+    dbName: ':memory:',
+    type: 'better-sqlite',
+  });
+  await orm.getSchemaGenerator().createSchema();
+});
+
+afterAll(async () => {
+  await orm.close(true);
+});
+
+test(`GH issue 2973`, async () => {
+  for (const i of [1, 2, 3]) {
+    for (const name of ['John', 'Bob']) {
+      await orm.em.transactional(async em => {
+        const foo1 = await em.findOne(Author, { name });
+        foo1 && await em.removeAndFlush(foo1);
+        const foo2 = em.create(Author, { name });
+        await em.persistAndFlush(foo2);
+      });
+    }
+  }
+});

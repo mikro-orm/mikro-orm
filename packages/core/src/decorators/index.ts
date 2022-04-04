@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 export * from './PrimaryKey';
 export * from './Entity';
 export * from './OneToOne';

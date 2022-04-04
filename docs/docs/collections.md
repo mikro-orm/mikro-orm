@@ -2,15 +2,19 @@
 title: Collections
 ---
 
-`OneToMany` and `ManyToMany` collections are stored in a `Collection` wrapper. It implements
-iterator so you can use `for of` loop to iterate through it. 
+`OneToMany` and `ManyToMany` properties are stored in a `Collection` wrapper.
 
-Another way to access collection items is to use bracket syntax like when you access array items.
-Keep in mind that this approach will not check if the collection is initialed, while using `get`
-method will throw error in this case.
+## Working with collections
 
-> Note that array access in `Collection` is available only for reading already loaded items, you 
-> cannot add new items to `Collection` this way. 
+The `Collection` class implements iterator, so we can use `for of` loop to iterate through it.
+
+Another way to access collection items is to use bracket syntax like when we access array items. Keep in mind that this approach will not check if the collection is initialed, while using `get` method will throw error in this case.
+
+> Note that array access in `Collection` is available only for reading already loaded items, we cannot add new items to `Collection` this way.
+
+To get all entities stored in a `Collection`, we can use `getItems()` method. It will throw in case the `Collection` is not initialized. If we want to disable this validation, we can use `getItems(false)`. This will give us the entity instances managed by the identity map.
+
+Alternatively we can use `toArray()` which will serialize the `Collection` to an array of DTOs. Modifying those will have no effect on the actual entity instances.
 
 ```ts
 const author = em.findOne(Author, '...', { populate: ['books'] }); // populating books collection
@@ -29,7 +33,7 @@ for (const book of author.books) {
   console.log(book.publisher.name); // undefined
 }
 
-// collection needs to be initialized before you can work with it
+// collection needs to be initialized before we can work with it
 author.books.add(book);
 console.log(author.books.contains(book)); // true
 author.books.remove(book);
@@ -47,6 +51,12 @@ console.log(author.books.getIdentifiers('_id')); // array of ObjectId
 console.log(author.books[1]); // Book
 console.log(author.books[12345]); // undefined, even if the collection is not initialized
 
+// getting array of the items
+console.log(author.books.getItems()); // Book[]
+
+// serializing the collection
+console.log(author.books.toArray()); // EntityDTO<Book>[]
+
 const author = em.findOne(Author, '...'); // books collection has not been populated
 const count = await author.books.loadCount(); // gets the count of collection items from database instead of counting loaded items
 console.log(author.books.getItems()); // throws because the collection has not been initialized
@@ -57,7 +67,7 @@ console.log(await author.books.loadItems()); // Book[]
 ## OneToMany Collections
 
 `OneToMany` collections are inverse side of `ManyToOne` references, to which they need to point via `fk` attribute:
- 
+
 ```ts
 @Entity()
 export class Book {
@@ -88,15 +98,13 @@ export class Author {
 
 ## ManyToMany Collections
 
-For ManyToMany, SQL drivers use pivot table that holds reference to both entities. 
+For ManyToMany, SQL drivers use pivot table that holds reference to both entities.
 
-As opposed to them, with MongoDB we do not need to have join tables for `ManyToMany` 
-relations. All references are stored as an array of `ObjectId`s on owning entity. 
+As opposed to them, with MongoDB we do not need to have join tables for `ManyToMany` relations. All references are stored as an array of `ObjectId`s on owning entity.
 
 ### Unidirectional
 
-Unidirectional `ManyToMany` relations are defined only on one side, if you define only `entity`
-attribute, then it will be considered the owning side:
+Unidirectional `ManyToMany` relations are defined only on one side, if we define only `entity` attribute, then it will be considered the owning side:
 
 ```ts
 @ManyToMany(() => Book)
@@ -109,8 +117,7 @@ books2 = new Collection<Book>(this);
 
 ### Bidirectional
 
-Bidirectional `ManyToMany` relations are defined on both sides, while one is owning side (where references are store), 
-marked by `inversedBy` attribute pointing to the inverse side:
+Bidirectional `ManyToMany` relations are defined on both sides, while one is owning side (where references are store), marked by `inversedBy` attribute pointing to the inverse side:
 
 ```ts
 @ManyToMany(() => BookTag, tag => tag.books, { owner: true })
@@ -132,24 +139,52 @@ books = new Collection<Book>(this);
 books = new Collection<Book>(this);
 ```
 
+### Custom pivot table entity
+
+By default, a generated pivot table entity is used under the hood to represent the pivot table. Since v5.1 we can provide our own implementation via `pivotEntity` option.
+
+The pivot table entity needs to have exactly two many-to-one properties, where first one needs to point to the owning entity and the second to the target entity of the many-to-many relation.
+
+```ts
+@Entity()
+export class Order {
+
+  @ManyToMany({ entity: () => Product, pivotEntity: () => OrderItem })
+  products = new Collection<Product>(this);
+
+}
+```
+
+If we want to add new items to such M:N collection, we need to have all non-FK properties to define a database level default value.
+
+```ts
+@Entity()
+export class OrderItem {
+
+  @ManyToOne({ primary: true })
+  order: Order;
+
+  @ManyToOne({ primary: true })
+  product: Product;
+
+  @Property({ default: 1 })
+  amount!: number;
+
+}
+```
+
 ### Forcing fixed order of collection items
 
-> Since v3 many to many collections does not require having auto increment primary key, that 
+> Since v3 many to many collections does not require having auto increment primary key, that
 > was used to ensure fixed order of collection items.
 
-To preserve fixed order of collections, you can use `fixedOrder: true` attribute, which will 
-start ordering by `id` column. Schema generator will convert the pivot table to have auto increment
-primary key `id`. You can also change the order column name via `fixedOrderColumn: 'order'`. 
+To preserve fixed order of collections, we can use `fixedOrder: true` attribute, which will start ordering by `id` column. Schema generator will convert the pivot table to have auto increment primary key `id`. We can also change the order column name via `fixedOrderColumn: 'order'`.
 
-You can also specify default ordering via `orderBy: { ... }` attribute. This will be used when
-you fully populate the collection including its items, as it orders by the referenced entity 
-properties instead of pivot table columns (which `fixedOrderColumn` is). On the other hand, 
-`fixedOrder` is used to maintain the insert order of items instead of ordering by some property. 
+We can also specify default ordering via `orderBy: { ... }` attribute. This will be used when we fully populate the collection including its items, as it orders by the referenced entity properties instead of pivot table columns (which `fixedOrderColumn` is). On the other hand, `fixedOrder` is used to maintain the insert order of items instead of ordering by some property.
 
 ## Propagation of Collection's add() and remove() operations
 
-When you use one of `Collection.add()` method, the item is added to given collection, 
-and this action is also propagated to its counterpart. 
+When we use one of `Collection.add()` method, the item is added to given collection, and this action is also propagated to its counterpart.
 
 ```ts
 // one to many
@@ -160,7 +195,7 @@ author.books.add(book);
 console.log(book.author); // author will be set thanks to the propagation
 ```
 
-For M:N this works in both ways, either from owning side, or from inverse side. 
+For M:N this works in both ways, either from owning side, or from inverse side.
 
 ```ts
 // many to many works both from owning side and from inverse side
@@ -176,28 +211,23 @@ console.log(book.tags.contains(tag)); // true
 
 > Collections on both sides have to be initialized, otherwise propagation won't work.
 
-> Although this propagation works also for M:N inverse side, you should always use owning
-> side to manipulate the collection.
+> Although this propagation works also for M:N inverse side, we should always use owning side to manipulate the collection.
 
 Same applies for `Collection.remove()`.
 
 ## Filtering and ordering of collection items
 
-When initializing collection items via `collection.init()`, you can filter the collection
-as well as order its items:
+When initializing collection items via `collection.init()`, we can filter the collection as well as order its items:
 
 ```ts
 await book.tags.init({ where: { active: true }, orderBy: { name: QueryOrder.DESC } });
 ```
 
-> You should never modify partially loaded collection.
+> We should never modify partially loaded collection.
 
 ## Filtering Collections
 
-Collections have a `matching` method that allows to slice parts of data from a collection.
-By default, it will return the list of entities based on the query. We can use the `store`
-boolean parameter to save this list into the collection items - this will mark the 
-collection as `readonly`, methods like `add` or `remove` will throw. 
+Collections have a `matching` method that allows to slice parts of data from a collection. By default, it will return the list of entities based on the query. We can use the `store` boolean parameter to save this list into the collection items - this will mark the collection as `readonly`, methods like `add` or `remove` will throw.
 
 ```ts
 const a = await em.findOneOrFail(Author, 1);

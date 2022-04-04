@@ -123,10 +123,10 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return 'jsonb';
   }
 
-  getSearchJsonPropertyKey(path: string[], type: string): string {
+  getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
     const first = path.shift();
     const last = path.pop();
-    const root = expr(alias => this.quoteIdentifier(`${alias}.${first}`));
+    const root = aliased ? expr(alias => this.quoteIdentifier(`${alias}.${first}`)) : this.quoteIdentifier(first!);
     const types = {
       number: 'float8',
       boolean: 'bool',
@@ -163,10 +163,6 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     }
 
     return super.quoteValue(value);
-  }
-
-  getDefaultIntegrityRule(): string {
-    return 'no action';
   }
 
   indexForeignKeys() {
@@ -213,12 +209,32 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
    * cannot go past 64 character length for identifiers in MySQL
    */
   getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
-    let indexName = super.getIndexName(tableName, columns, type);
+    const indexName = super.getIndexName(tableName, columns, type);
     if (indexName.length > 64) {
-      indexName = `${indexName.substr(0, 57 - type.length)}_${Utils.hash(indexName).substr(0, 5)}_${type}`;
+      return `${indexName.substr(0, 57 - type.length)}_${Utils.hash(indexName).substr(0, 5)}_${type}`;
     }
 
     return indexName;
+  }
+
+  getDefaultPrimaryName(tableName: string, columns: string[]): string {
+    const indexName = `${tableName}_pkey`;
+    if (indexName.length > 64) {
+      return `${indexName.substr(0, 57 - 'primary'.length)}_${Utils.hash(indexName).substr(0, 5)}_primary`;
+    }
+
+    return indexName;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  castColumn(prop?: EntityProperty): string {
+    if (prop?.columnTypes?.[0] === this.getUuidTypeDeclarationSQL({})) {
+      return '::text';
+    }
+
+    return '';
   }
 
 }

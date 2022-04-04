@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import type { AnyEntity, Dictionary, EntityProperty, IPrimaryKey, Primary } from '../typings';
+import type { AnyEntity, EntityDTO, EntityProperty, IPrimaryKey, Primary } from '../typings';
 import { Reference } from './Reference';
 import { wrap } from './wrap';
 import { ReferenceType } from '../enums';
@@ -28,7 +28,7 @@ export class ArrayCollection<T, O> {
     return [...this.items];
   }
 
-  toArray(): Dictionary[] {
+  toArray(): EntityDTO<T>[] {
     if (this.items.size === 0) {
       return [];
     }
@@ -39,7 +39,7 @@ export class ArrayCollection<T, O> {
     return this.getItems().map(item => wrap(item).toJSON(...args));
   }
 
-  toJSON(): Dictionary[] {
+  toJSON(): EntityDTO<T>[] {
     return this.toArray();
   }
 

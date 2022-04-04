@@ -65,7 +65,7 @@ describe('changing column in mysql (GH 2407)', () => {
       entities: [Book1],
       dbName: `mikro_orm_test_gh_2407`,
       type: 'mysql',
-      port: 3307,
+      port: 3308,
     });
     await orm.getSchemaGenerator().refreshDatabase();
   });

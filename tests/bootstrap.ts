@@ -50,7 +50,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     entities: ['entities-sql/**/*.js', '!**/Label2.js'],
     entitiesTs: ['entities-sql/**/*.ts', '!**/Label2.ts'],
     clientUrl: `mysql://root@127.0.0.1:3306/mikro_orm_test`,
-    port: type === 'mysql' ? 3307 : 3309,
+    port: type === 'mysql' ? 3308 : 3309,
     baseDir: BASE_DIR,
     debug: ['query', 'query-params'],
     timezone: 'Z',

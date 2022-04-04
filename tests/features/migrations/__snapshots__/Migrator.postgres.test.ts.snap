@@ -7,105 +7,97 @@ Object {
 export class Migration20191013214813 extends Migration {
 
   async up(): Promise<void> {
-    this.addSql('create schema if not exists \\"label_schema\\";');
+    this.addSql('create schema if not exists \\"custom\\";');
 
-    this.addSql('create table \\"label2\\" (\\"uuid\\" uuid not null, \\"name\\" varchar(255) not null);');
-    this.addSql('alter table \\"label2\\" add constraint \\"label2_pkey\\" primary key (\\"uuid\\");');
+    this.addSql('create table \\"custom\\".\\"foo_baz2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));');
 
-    this.addSql('create table \\"foo_baz2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));');
+    this.addSql('create table \\"custom\\".\\"foo_bar2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"name with space\\" varchar(255) null, \\"baz_id\\" int null, \\"foo_bar_id\\" int null, \\"version\\" timestamptz(0) not null default current_timestamp(0), \\"blob\\" bytea null, \\"array\\" text[] null, \\"object_property\\" jsonb null);');
+    this.addSql('alter table \\"custom\\".\\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_unique\\" unique (\\"baz_id\\");');
+    this.addSql('alter table \\"custom\\".\\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_unique\\" unique (\\"foo_bar_id\\");');
 
-    this.addSql('create table \\"foo_bar2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"name with space\\" varchar(255) null, \\"baz_id\\" int null, \\"foo_bar_id\\" int null, \\"version\\" timestamptz(0) not null default current_timestamp(0), \\"blob\\" bytea null, \\"array\\" text[] null, \\"object_property\\" jsonb null);');
-    this.addSql('alter table \\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_unique\\" unique (\\"baz_id\\");');
-    this.addSql('alter table \\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_unique\\" unique (\\"foo_bar_id\\");');
+    this.addSql('create table \\"custom\\".\\"foo_param2\\" (\\"bar_id\\" int not null, \\"baz_id\\" int not null, \\"value\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));');
+    this.addSql('alter table \\"custom\\".\\"foo_param2\\" add constraint \\"foo_param2_pkey\\" primary key (\\"bar_id\\", \\"baz_id\\");');
 
-    this.addSql('create table \\"foo_param2\\" (\\"bar_id\\" int not null, \\"baz_id\\" int not null, \\"value\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));');
-    this.addSql('alter table \\"foo_param2\\" add constraint \\"foo_param2_pkey\\" primary key (\\"bar_id\\", \\"baz_id\\");');
+    this.addSql('create table \\"custom\\".\\"publisher2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"type\\" text check (\\"type\\" in (\\\\'local\\\\', \\\\'global\\\\')) not null, \\"type2\\" text check (\\"type2\\" in (\\\\'LOCAL\\\\', \\\\'GLOBAL\\\\')) not null, \\"enum1\\" smallint null, \\"enum2\\" smallint null, \\"enum3\\" smallint null, \\"enum4\\" text check (\\"enum4\\" in (\\\\'a\\\\', \\\\'b\\\\', \\\\'c\\\\')) null, \\"enum5\\" text check (\\"enum5\\" in (\\\\'a\\\\')) null);');
 
-    this.addSql('create table \\"publisher2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"type\\" text check (\\"type\\" in (\\\\'local\\\\', \\\\'global\\\\')) not null, \\"type2\\" text check (\\"type2\\" in (\\\\'LOCAL\\\\', \\\\'GLOBAL\\\\')) not null, \\"enum1\\" smallint null, \\"enum2\\" smallint null, \\"enum3\\" smallint null, \\"enum4\\" text check (\\"enum4\\" in (\\\\'a\\\\', \\\\'b\\\\', \\\\'c\\\\')) null, \\"enum5\\" text check (\\"enum5\\" in (\\\\'a\\\\')) null);');
+    this.addSql('create table \\"custom\\".\\"book_tag2\\" (\\"id\\" bigserial primary key, \\"name\\" varchar(50) not null);');
 
-    this.addSql('create table \\"book_tag2\\" (\\"id\\" bigserial primary key, \\"name\\" varchar(50) not null);');
+    this.addSql('create table \\"custom\\".\\"author2\\" (\\"id\\" serial primary key, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"updated_at\\" timestamptz(3) not null default current_timestamp(3), \\"name\\" varchar(255) not null, \\"email\\" varchar(255) not null, \\"age\\" int null default null, \\"terms_accepted\\" boolean not null default false, \\"optional\\" boolean null, \\"identities\\" text[] null, \\"born\\" date null, \\"born_time\\" time(0) null, \\"favourite_book_uuid_pk\\" uuid null, \\"favourite_author_id\\" int null);');
+    this.addSql('create index \\"custom_email_index_name\\" on \\"custom\\".\\"author2\\" (\\"email\\");');
+    this.addSql('alter table \\"custom\\".\\"author2\\" add constraint \\"custom_email_unique_name\\" unique (\\"email\\");');
+    this.addSql('create index \\"author2_terms_accepted_index\\" on \\"custom\\".\\"author2\\" (\\"terms_accepted\\");');
+    this.addSql('create index \\"author2_born_index\\" on \\"custom\\".\\"author2\\" (\\"born\\");');
+    this.addSql('create index \\"born_time_idx\\" on \\"custom\\".\\"author2\\" (\\"born_time\\");');
+    this.addSql('create index \\"custom_idx_name_123\\" on \\"custom\\".\\"author2\\" (\\"name\\");');
+    this.addSql('create index \\"author2_name_age_index\\" on \\"custom\\".\\"author2\\" (\\"name\\", \\"age\\");');
+    this.addSql('alter table \\"custom\\".\\"author2\\" add constraint \\"author2_name_email_unique\\" unique (\\"name\\", \\"email\\");');
 
-    this.addSql('create table \\"author2\\" (\\"id\\" serial primary key, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"updated_at\\" timestamptz(3) not null default current_timestamp(3), \\"name\\" varchar(255) not null, \\"email\\" varchar(255) not null, \\"age\\" int null default null, \\"terms_accepted\\" boolean not null default false, \\"optional\\" boolean null, \\"identities\\" text[] null, \\"born\\" date null, \\"born_time\\" time(0) null, \\"favourite_book_uuid_pk\\" uuid null, \\"favourite_author_id\\" int null);');
-    this.addSql('create index \\"custom_email_index_name\\" on \\"author2\\" (\\"email\\");');
-    this.addSql('alter table \\"author2\\" add constraint \\"custom_email_unique_name\\" unique (\\"email\\");');
-    this.addSql('create index \\"author2_terms_accepted_index\\" on \\"author2\\" (\\"terms_accepted\\");');
-    this.addSql('create index \\"author2_born_index\\" on \\"author2\\" (\\"born\\");');
-    this.addSql('create index \\"born_time_idx\\" on \\"author2\\" (\\"born_time\\");');
-    this.addSql('create index \\"custom_idx_name_123\\" on \\"author2\\" (\\"name\\");');
-    this.addSql('create index \\"author2_name_age_index\\" on \\"author2\\" (\\"name\\", \\"age\\");');
-    this.addSql('alter table \\"author2\\" add constraint \\"author2_name_email_unique\\" unique (\\"name\\", \\"email\\");');
+    this.addSql('create table \\"custom\\".\\"address2\\" (\\"author_id\\" int not null, \\"value\\" varchar(255) not null);');
+    this.addSql('comment on table \\"custom\\".\\"address2\\" is \\\\'This is address table\\\\';');
+    this.addSql('comment on column \\"custom\\".\\"address2\\".\\"value\\" is \\\\'This is address property\\\\';');
+    this.addSql('alter table \\"custom\\".\\"address2\\" add constraint \\"address2_pkey\\" primary key (\\"author_id\\");');
 
-    this.addSql('create table \\"address2\\" (\\"author_id\\" int not null, \\"value\\" varchar(255) not null);');
-    this.addSql('comment on table \\"address2\\" is \\\\'This is address table\\\\';');
-    this.addSql('comment on column \\"address2\\".\\"value\\" is \\\\'This is address property\\\\';');
-    this.addSql('alter table \\"address2\\" add constraint \\"address2_pkey\\" primary key (\\"author_id\\");');
+    this.addSql('create table \\"custom\\".\\"book2\\" (\\"uuid_pk\\" uuid not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null default \\\\'\\\\', \\"perex\\" text null, \\"price\\" numeric(8,2) null, \\"double\\" double precision null, \\"meta\\" jsonb null, \\"author_id\\" int not null, \\"publisher_id\\" int null);');
+    this.addSql('alter table \\"custom\\".\\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\\");');
 
-    this.addSql('create table \\"book2\\" (\\"uuid_pk\\" uuid not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null default \\\\'\\\\', \\"perex\\" text null, \\"price\\" numeric(8,2) null, \\"double\\" double precision null, \\"meta\\" jsonb null, \\"author_id\\" int not null, \\"publisher_id\\" int null);');
-    this.addSql('alter table \\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\\");');
+    this.addSql('create table \\"custom\\".\\"test2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) null, \\"book_uuid_pk\\" uuid null, \\"parent_id\\" int null, \\"version\\" int not null default 1);');
+    this.addSql('alter table \\"custom\\".\\"test2\\" add constraint \\"test2_book_uuid_pk_unique\\" unique (\\"book_uuid_pk\\");');
 
-    this.addSql('create table \\"test2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) null, \\"book_uuid_pk\\" uuid null, \\"parent_id\\" int null, \\"version\\" int not null default 1);');
-    this.addSql('alter table \\"test2\\" add constraint \\"test2_book_uuid_pk_unique\\" unique (\\"book_uuid_pk\\");');
+    this.addSql('create table \\"custom\\".\\"configuration2\\" (\\"property\\" varchar(255) not null, \\"test_id\\" int not null, \\"value\\" varchar(255) not null);');
+    this.addSql('alter table \\"custom\\".\\"configuration2\\" add constraint \\"configuration2_pkey\\" primary key (\\"property\\", \\"test_id\\");');
 
-    this.addSql('create table \\"configuration2\\" (\\"property\\" varchar(255) not null, \\"test_id\\" int not null, \\"value\\" varchar(255) not null);');
-    this.addSql('alter table \\"configuration2\\" add constraint \\"configuration2_pkey\\" primary key (\\"property\\", \\"test_id\\");');
+    this.addSql('create table \\"custom\\".\\"publisher2_tests\\" (\\"id\\" serial primary key, \\"publisher2_id\\" int not null, \\"test2_id\\" int not null);');
 
-    this.addSql('create table \\"publisher2_tests\\" (\\"id\\" serial primary key, \\"publisher2_id\\" int not null, \\"test2_id\\" int not null);');
+    this.addSql('create table \\"custom\\".\\"test2_bars\\" (\\"test2_id\\" int not null, \\"foo_bar2_id\\" int not null);');
+    this.addSql('alter table \\"custom\\".\\"test2_bars\\" add constraint \\"test2_bars_pkey\\" primary key (\\"test2_id\\", \\"foo_bar2_id\\");');
 
-    this.addSql('create table \\"test2_bars\\" (\\"test2_id\\" int not null, \\"foo_bar2_id\\" int not null);');
-    this.addSql('alter table \\"test2_bars\\" add constraint \\"test2_bars_pkey\\" primary key (\\"test2_id\\", \\"foo_bar2_id\\");');
+    this.addSql('create table \\"custom\\".\\"book2_tags\\" (\\"order\\" serial primary key, \\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);');
 
-    this.addSql('create table \\"label_schema\\".\\"label2_tests\\" (\\"id\\" serial primary key, \\"label2_uuid\\" uuid not null, \\"test2_id\\" int not null);');
+    this.addSql('create table \\"custom\\".\\"book_to_tag_unordered\\" (\\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);');
+    this.addSql('alter table \\"custom\\".\\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_pkey\\" primary key (\\"book2_uuid_pk\\", \\"book_tag2_id\\");');
 
-    this.addSql('create table \\"book2_tags\\" (\\"order\\" serial primary key, \\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);');
+    this.addSql('create table \\"custom\\".\\"author_to_friend\\" (\\"author2_1_id\\" int not null, \\"author2_2_id\\" int not null);');
+    this.addSql('alter table \\"custom\\".\\"author_to_friend\\" add constraint \\"author_to_friend_pkey\\" primary key (\\"author2_1_id\\", \\"author2_2_id\\");');
 
-    this.addSql('create table \\"book_to_tag_unordered\\" (\\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);');
-    this.addSql('alter table \\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_pkey\\" primary key (\\"book2_uuid_pk\\", \\"book_tag2_id\\");');
+    this.addSql('create table \\"custom\\".\\"author2_following\\" (\\"author2_1_id\\" int not null, \\"author2_2_id\\" int not null);');
+    this.addSql('alter table \\"custom\\".\\"author2_following\\" add constraint \\"author2_following_pkey\\" primary key (\\"author2_1_id\\", \\"author2_2_id\\");');
 
-    this.addSql('create table \\"author_to_friend\\" (\\"author2_1_id\\" int not null, \\"author2_2_id\\" int not null);');
-    this.addSql('alter table \\"author_to_friend\\" add constraint \\"author_to_friend_pkey\\" primary key (\\"author2_1_id\\", \\"author2_2_id\\");');
+    this.addSql('alter table \\"custom\\".\\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_foreign\\" foreign key (\\"baz_id\\") references \\"custom\\".\\"foo_baz2\\" (\\"id\\") on update cascade on delete set null;');
+    this.addSql('alter table \\"custom\\".\\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_foreign\\" foreign key (\\"foo_bar_id\\") references \\"custom\\".\\"foo_bar2\\" (\\"id\\") on update cascade on delete set null;');
 
-    this.addSql('create table \\"author2_following\\" (\\"author2_1_id\\" int not null, \\"author2_2_id\\" int not null);');
-    this.addSql('alter table \\"author2_following\\" add constraint \\"author2_following_pkey\\" primary key (\\"author2_1_id\\", \\"author2_2_id\\");');
+    this.addSql('alter table \\"custom\\".\\"foo_param2\\" add constraint \\"foo_param2_bar_id_foreign\\" foreign key (\\"bar_id\\") references \\"custom\\".\\"foo_bar2\\" (\\"id\\") on update cascade;');
+    this.addSql('alter table \\"custom\\".\\"foo_param2\\" add constraint \\"foo_param2_baz_id_foreign\\" foreign key (\\"baz_id\\") references \\"custom\\".\\"foo_baz2\\" (\\"id\\") on update cascade;');
 
-    this.addSql('alter table \\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_foreign\\" foreign key (\\"baz_id\\") references \\"foo_baz2\\" (\\"id\\") on update cascade on delete set null;');
-    this.addSql('alter table \\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_foreign\\" foreign key (\\"foo_bar_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade on delete set null;');
+    this.addSql('alter table \\"custom\\".\\"author2\\" add constraint \\"author2_favourite_book_uuid_pk_foreign\\" foreign key (\\"favourite_book_uuid_pk\\") references \\"custom\\".\\"book2\\" (\\"uuid_pk\\") on update no action on delete cascade;');
+    this.addSql('alter table \\"custom\\".\\"author2\\" add constraint \\"author2_favourite_author_id_foreign\\" foreign key (\\"favourite_author_id\\") references \\"custom\\".\\"author2\\" (\\"id\\") on update cascade on delete set null;');
 
-    this.addSql('alter table \\"foo_param2\\" add constraint \\"foo_param2_bar_id_foreign\\" foreign key (\\"bar_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade;');
-    this.addSql('alter table \\"foo_param2\\" add constraint \\"foo_param2_baz_id_foreign\\" foreign key (\\"baz_id\\") references \\"foo_baz2\\" (\\"id\\") on update cascade;');
+    this.addSql('alter table \\"custom\\".\\"address2\\" add constraint \\"address2_author_id_foreign\\" foreign key (\\"author_id\\") references \\"custom\\".\\"author2\\" (\\"id\\") on update cascade on delete cascade;');
 
-    this.addSql('alter table \\"author2\\" add constraint \\"author2_favourite_book_uuid_pk_foreign\\" foreign key (\\"favourite_book_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update no action on delete cascade;');
-    this.addSql('alter table \\"author2\\" add constraint \\"author2_favourite_author_id_foreign\\" foreign key (\\"favourite_author_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete set null;');
+    this.addSql('alter table \\"custom\\".\\"book2\\" add constraint \\"book2_author_id_foreign\\" foreign key (\\"author_id\\") references \\"custom\\".\\"author2\\" (\\"id\\");');
+    this.addSql('alter table \\"custom\\".\\"book2\\" add constraint \\"book2_publisher_id_foreign\\" foreign key (\\"publisher_id\\") references \\"custom\\".\\"publisher2\\" (\\"id\\") on update cascade on delete cascade;');
 
-    this.addSql('alter table \\"address2\\" add constraint \\"address2_author_id_foreign\\" foreign key (\\"author_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;');
+    this.addSql('alter table \\"custom\\".\\"test2\\" add constraint \\"test2_book_uuid_pk_foreign\\" foreign key (\\"book_uuid_pk\\") references \\"custom\\".\\"book2\\" (\\"uuid_pk\\") on delete set null;');
+    this.addSql('alter table \\"custom\\".\\"test2\\" add constraint \\"test2_parent_id_foreign\\" foreign key (\\"parent_id\\") references \\"custom\\".\\"test2\\" (\\"id\\") on update cascade on delete set null;');
 
-    this.addSql('alter table \\"book2\\" add constraint \\"book2_author_id_foreign\\" foreign key (\\"author_id\\") references \\"author2\\" (\\"id\\");');
-    this.addSql('alter table \\"book2\\" add constraint \\"book2_publisher_id_foreign\\" foreign key (\\"publisher_id\\") references \\"publisher2\\" (\\"id\\") on update cascade on delete cascade;');
+    this.addSql('alter table \\"custom\\".\\"configuration2\\" add constraint \\"configuration2_test_id_foreign\\" foreign key (\\"test_id\\") references \\"custom\\".\\"test2\\" (\\"id\\") on update cascade;');
 
-    this.addSql('alter table \\"test2\\" add constraint \\"test2_book_uuid_pk_foreign\\" foreign key (\\"book_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on delete set null;');
-    this.addSql('alter table \\"test2\\" add constraint \\"test2_parent_id_foreign\\" foreign key (\\"parent_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete set null;');
+    this.addSql('alter table \\"custom\\".\\"publisher2_tests\\" add constraint \\"publisher2_tests_publisher2_id_foreign\\" foreign key (\\"publisher2_id\\") references \\"custom\\".\\"publisher2\\" (\\"id\\") on update cascade on delete cascade;');
+    this.addSql('alter table \\"custom\\".\\"publisher2_tests\\" add constraint \\"publisher2_tests_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"custom\\".\\"test2\\" (\\"id\\") on update cascade on delete cascade;');
 
-    this.addSql('alter table \\"configuration2\\" add constraint \\"configuration2_test_id_foreign\\" foreign key (\\"test_id\\") references \\"test2\\" (\\"id\\") on update cascade;');
+    this.addSql('alter table \\"custom\\".\\"test2_bars\\" add constraint \\"test2_bars_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"custom\\".\\"test2\\" (\\"id\\") on update cascade on delete cascade;');
+    this.addSql('alter table \\"custom\\".\\"test2_bars\\" add constraint \\"test2_bars_foo_bar2_id_foreign\\" foreign key (\\"foo_bar2_id\\") references \\"custom\\".\\"foo_bar2\\" (\\"id\\") on update cascade on delete cascade;');
 
-    this.addSql('alter table \\"publisher2_tests\\" add constraint \\"publisher2_tests_publisher2_id_foreign\\" foreign key (\\"publisher2_id\\") references \\"publisher2\\" (\\"id\\") on update cascade on delete cascade;');
-    this.addSql('alter table \\"publisher2_tests\\" add constraint \\"publisher2_tests_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;');
+    this.addSql('alter table \\"custom\\".\\"book2_tags\\" add constraint \\"book2_tags_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"custom\\".\\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;');
+    this.addSql('alter table \\"custom\\".\\"book2_tags\\" add constraint \\"book2_tags_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"custom\\".\\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;');
 
-    this.addSql('alter table \\"test2_bars\\" add constraint \\"test2_bars_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;');
-    this.addSql('alter table \\"test2_bars\\" add constraint \\"test2_bars_foo_bar2_id_foreign\\" foreign key (\\"foo_bar2_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade on delete cascade;');
+    this.addSql('alter table \\"custom\\".\\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"custom\\".\\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;');
+    this.addSql('alter table \\"custom\\".\\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"custom\\".\\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;');
 
-    this.addSql('alter table \\"label_schema\\".\\"label2_tests\\" add constraint \\"label2_tests_label2_uuid_foreign\\" foreign key (\\"label2_uuid\\") references \\"label2\\" (\\"uuid\\") on update cascade on delete cascade;');
-    this.addSql('alter table \\"label_schema\\".\\"label2_tests\\" add constraint \\"label2_tests_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;');
+    this.addSql('alter table \\"custom\\".\\"author_to_friend\\" add constraint \\"author_to_friend_author2_1_id_foreign\\" foreign key (\\"author2_1_id\\") references \\"custom\\".\\"author2\\" (\\"id\\") on update cascade on delete cascade;');
+    this.addSql('alter table \\"custom\\".\\"author_to_friend\\" add constraint \\"author_to_friend_author2_2_id_foreign\\" foreign key (\\"author2_2_id\\") references \\"custom\\".\\"author2\\" (\\"id\\") on update cascade on delete cascade;');
 
-    this.addSql('alter table \\"book2_tags\\" add constraint \\"book2_tags_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;');
-    this.addSql('alter table \\"book2_tags\\" add constraint \\"book2_tags_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;');
-
-    this.addSql('alter table \\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;');
-    this.addSql('alter table \\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;');
-
-    this.addSql('alter table \\"author_to_friend\\" add constraint \\"author_to_friend_author2_1_id_foreign\\" foreign key (\\"author2_1_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;');
-    this.addSql('alter table \\"author_to_friend\\" add constraint \\"author_to_friend_author2_2_id_foreign\\" foreign key (\\"author2_2_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;');
-
-    this.addSql('alter table \\"author2_following\\" add constraint \\"author2_following_author2_1_id_foreign\\" foreign key (\\"author2_1_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;');
-    this.addSql('alter table \\"author2_following\\" add constraint \\"author2_following_author2_2_id_foreign\\" foreign key (\\"author2_2_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;');
+    this.addSql('alter table \\"custom\\".\\"author2_following\\" add constraint \\"author2_following_author2_1_id_foreign\\" foreign key (\\"author2_1_id\\") references \\"custom\\".\\"author2\\" (\\"id\\") on update cascade on delete cascade;');
+    this.addSql('alter table \\"custom\\".\\"author2_following\\" add constraint \\"author2_following_author2_2_id_foreign\\" foreign key (\\"author2_2_id\\") references \\"custom\\".\\"author2\\" (\\"id\\") on update cascade on delete cascade;');
   }
 
 }
@@ -113,105 +105,97 @@ export class Migration20191013214813 extends Migration {
   "diff": Object {
     "down": Array [],
     "up": Array [
-      "create schema if not exists \\"label_schema\\";",
+      "create schema if not exists \\"custom\\";",
       "",
-      "create table \\"label2\\" (\\"uuid\\" uuid not null, \\"name\\" varchar(255) not null);",
-      "alter table \\"label2\\" add constraint \\"label2_pkey\\" primary key (\\"uuid\\");",
+      "create table \\"custom\\".\\"foo_baz2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));",
       "",
-      "create table \\"foo_baz2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));",
+      "create table \\"custom\\".\\"foo_bar2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"name with space\\" varchar(255) null, \\"baz_id\\" int null, \\"foo_bar_id\\" int null, \\"version\\" timestamptz(0) not null default current_timestamp(0), \\"blob\\" bytea null, \\"array\\" text[] null, \\"object_property\\" jsonb null);",
+      "alter table \\"custom\\".\\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_unique\\" unique (\\"baz_id\\");",
+      "alter table \\"custom\\".\\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_unique\\" unique (\\"foo_bar_id\\");",
       "",
-      "create table \\"foo_bar2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"name with space\\" varchar(255) null, \\"baz_id\\" int null, \\"foo_bar_id\\" int null, \\"version\\" timestamptz(0) not null default current_timestamp(0), \\"blob\\" bytea null, \\"array\\" text[] null, \\"object_property\\" jsonb null);",
-      "alter table \\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_unique\\" unique (\\"baz_id\\");",
-      "alter table \\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_unique\\" unique (\\"foo_bar_id\\");",
+      "create table \\"custom\\".\\"foo_param2\\" (\\"bar_id\\" int not null, \\"baz_id\\" int not null, \\"value\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));",
+      "alter table \\"custom\\".\\"foo_param2\\" add constraint \\"foo_param2_pkey\\" primary key (\\"bar_id\\", \\"baz_id\\");",
       "",
-      "create table \\"foo_param2\\" (\\"bar_id\\" int not null, \\"baz_id\\" int not null, \\"value\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));",
-      "alter table \\"foo_param2\\" add constraint \\"foo_param2_pkey\\" primary key (\\"bar_id\\", \\"baz_id\\");",
+      "create table \\"custom\\".\\"publisher2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"type\\" text check (\\"type\\" in ('local', 'global')) not null, \\"type2\\" text check (\\"type2\\" in ('LOCAL', 'GLOBAL')) not null, \\"enum1\\" smallint null, \\"enum2\\" smallint null, \\"enum3\\" smallint null, \\"enum4\\" text check (\\"enum4\\" in ('a', 'b', 'c')) null, \\"enum5\\" text check (\\"enum5\\" in ('a')) null);",
       "",
-      "create table \\"publisher2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"type\\" text check (\\"type\\" in ('local', 'global')) not null, \\"type2\\" text check (\\"type2\\" in ('LOCAL', 'GLOBAL')) not null, \\"enum1\\" smallint null, \\"enum2\\" smallint null, \\"enum3\\" smallint null, \\"enum4\\" text check (\\"enum4\\" in ('a', 'b', 'c')) null, \\"enum5\\" text check (\\"enum5\\" in ('a')) null);",
+      "create table \\"custom\\".\\"book_tag2\\" (\\"id\\" bigserial primary key, \\"name\\" varchar(50) not null);",
       "",
-      "create table \\"book_tag2\\" (\\"id\\" bigserial primary key, \\"name\\" varchar(50) not null);",
+      "create table \\"custom\\".\\"author2\\" (\\"id\\" serial primary key, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"updated_at\\" timestamptz(3) not null default current_timestamp(3), \\"name\\" varchar(255) not null, \\"email\\" varchar(255) not null, \\"age\\" int null default null, \\"terms_accepted\\" boolean not null default false, \\"optional\\" boolean null, \\"identities\\" text[] null, \\"born\\" date null, \\"born_time\\" time(0) null, \\"favourite_book_uuid_pk\\" uuid null, \\"favourite_author_id\\" int null);",
+      "create index \\"custom_email_index_name\\" on \\"custom\\".\\"author2\\" (\\"email\\");",
+      "alter table \\"custom\\".\\"author2\\" add constraint \\"custom_email_unique_name\\" unique (\\"email\\");",
+      "create index \\"author2_terms_accepted_index\\" on \\"custom\\".\\"author2\\" (\\"terms_accepted\\");",
+      "create index \\"author2_born_index\\" on \\"custom\\".\\"author2\\" (\\"born\\");",
+      "create index \\"born_time_idx\\" on \\"custom\\".\\"author2\\" (\\"born_time\\");",
+      "create index \\"custom_idx_name_123\\" on \\"custom\\".\\"author2\\" (\\"name\\");",
+      "create index \\"author2_name_age_index\\" on \\"custom\\".\\"author2\\" (\\"name\\", \\"age\\");",
+      "alter table \\"custom\\".\\"author2\\" add constraint \\"author2_name_email_unique\\" unique (\\"name\\", \\"email\\");",
       "",
-      "create table \\"author2\\" (\\"id\\" serial primary key, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"updated_at\\" timestamptz(3) not null default current_timestamp(3), \\"name\\" varchar(255) not null, \\"email\\" varchar(255) not null, \\"age\\" int null default null, \\"terms_accepted\\" boolean not null default false, \\"optional\\" boolean null, \\"identities\\" text[] null, \\"born\\" date null, \\"born_time\\" time(0) null, \\"favourite_book_uuid_pk\\" uuid null, \\"favourite_author_id\\" int null);",
-      "create index \\"custom_email_index_name\\" on \\"author2\\" (\\"email\\");",
-      "alter table \\"author2\\" add constraint \\"custom_email_unique_name\\" unique (\\"email\\");",
-      "create index \\"author2_terms_accepted_index\\" on \\"author2\\" (\\"terms_accepted\\");",
-      "create index \\"author2_born_index\\" on \\"author2\\" (\\"born\\");",
-      "create index \\"born_time_idx\\" on \\"author2\\" (\\"born_time\\");",
-      "create index \\"custom_idx_name_123\\" on \\"author2\\" (\\"name\\");",
-      "create index \\"author2_name_age_index\\" on \\"author2\\" (\\"name\\", \\"age\\");",
-      "alter table \\"author2\\" add constraint \\"author2_name_email_unique\\" unique (\\"name\\", \\"email\\");",
+      "create table \\"custom\\".\\"address2\\" (\\"author_id\\" int not null, \\"value\\" varchar(255) not null);",
+      "comment on table \\"custom\\".\\"address2\\" is 'This is address table';",
+      "comment on column \\"custom\\".\\"address2\\".\\"value\\" is 'This is address property';",
+      "alter table \\"custom\\".\\"address2\\" add constraint \\"address2_pkey\\" primary key (\\"author_id\\");",
       "",
-      "create table \\"address2\\" (\\"author_id\\" int not null, \\"value\\" varchar(255) not null);",
-      "comment on table \\"address2\\" is 'This is address table';",
-      "comment on column \\"address2\\".\\"value\\" is 'This is address property';",
-      "alter table \\"address2\\" add constraint \\"address2_pkey\\" primary key (\\"author_id\\");",
+      "create table \\"custom\\".\\"book2\\" (\\"uuid_pk\\" uuid not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null default '', \\"perex\\" text null, \\"price\\" numeric(8,2) null, \\"double\\" double precision null, \\"meta\\" jsonb null, \\"author_id\\" int not null, \\"publisher_id\\" int null);",
+      "alter table \\"custom\\".\\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\\");",
       "",
-      "create table \\"book2\\" (\\"uuid_pk\\" uuid not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null default '', \\"perex\\" text null, \\"price\\" numeric(8,2) null, \\"double\\" double precision null, \\"meta\\" jsonb null, \\"author_id\\" int not null, \\"publisher_id\\" int null);",
-      "alter table \\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\\");",
+      "create table \\"custom\\".\\"test2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) null, \\"book_uuid_pk\\" uuid null, \\"parent_id\\" int null, \\"version\\" int not null default 1);",
+      "alter table \\"custom\\".\\"test2\\" add constraint \\"test2_book_uuid_pk_unique\\" unique (\\"book_uuid_pk\\");",
       "",
-      "create table \\"test2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) null, \\"book_uuid_pk\\" uuid null, \\"parent_id\\" int null, \\"version\\" int not null default 1);",
-      "alter table \\"test2\\" add constraint \\"test2_book_uuid_pk_unique\\" unique (\\"book_uuid_pk\\");",
+      "create table \\"custom\\".\\"configuration2\\" (\\"property\\" varchar(255) not null, \\"test_id\\" int not null, \\"value\\" varchar(255) not null);",
+      "alter table \\"custom\\".\\"configuration2\\" add constraint \\"configuration2_pkey\\" primary key (\\"property\\", \\"test_id\\");",
       "",
-      "create table \\"configuration2\\" (\\"property\\" varchar(255) not null, \\"test_id\\" int not null, \\"value\\" varchar(255) not null);",
-      "alter table \\"configuration2\\" add constraint \\"configuration2_pkey\\" primary key (\\"property\\", \\"test_id\\");",
+      "create table \\"custom\\".\\"publisher2_tests\\" (\\"id\\" serial primary key, \\"publisher2_id\\" int not null, \\"test2_id\\" int not null);",
       "",
-      "create table \\"publisher2_tests\\" (\\"id\\" serial primary key, \\"publisher2_id\\" int not null, \\"test2_id\\" int not null);",
+      "create table \\"custom\\".\\"test2_bars\\" (\\"test2_id\\" int not null, \\"foo_bar2_id\\" int not null);",
+      "alter table \\"custom\\".\\"test2_bars\\" add constraint \\"test2_bars_pkey\\" primary key (\\"test2_id\\", \\"foo_bar2_id\\");",
       "",
-      "create table \\"test2_bars\\" (\\"test2_id\\" int not null, \\"foo_bar2_id\\" int not null);",
-      "alter table \\"test2_bars\\" add constraint \\"test2_bars_pkey\\" primary key (\\"test2_id\\", \\"foo_bar2_id\\");",
+      "create table \\"custom\\".\\"book2_tags\\" (\\"order\\" serial primary key, \\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);",
       "",
-      "create table \\"label_schema\\".\\"label2_tests\\" (\\"id\\" serial primary key, \\"label2_uuid\\" uuid not null, \\"test2_id\\" int not null);",
+      "create table \\"custom\\".\\"book_to_tag_unordered\\" (\\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);",
+      "alter table \\"custom\\".\\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_pkey\\" primary key (\\"book2_uuid_pk\\", \\"book_tag2_id\\");",
       "",
-      "create table \\"book2_tags\\" (\\"order\\" serial primary key, \\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);",
+      "create table \\"custom\\".\\"author_to_friend\\" (\\"author2_1_id\\" int not null, \\"author2_2_id\\" int not null);",
+      "alter table \\"custom\\".\\"author_to_friend\\" add constraint \\"author_to_friend_pkey\\" primary key (\\"author2_1_id\\", \\"author2_2_id\\");",
       "",
-      "create table \\"book_to_tag_unordered\\" (\\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);",
-      "alter table \\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_pkey\\" primary key (\\"book2_uuid_pk\\", \\"book_tag2_id\\");",
+      "create table \\"custom\\".\\"author2_following\\" (\\"author2_1_id\\" int not null, \\"author2_2_id\\" int not null);",
+      "alter table \\"custom\\".\\"author2_following\\" add constraint \\"author2_following_pkey\\" primary key (\\"author2_1_id\\", \\"author2_2_id\\");",
       "",
-      "create table \\"author_to_friend\\" (\\"author2_1_id\\" int not null, \\"author2_2_id\\" int not null);",
-      "alter table \\"author_to_friend\\" add constraint \\"author_to_friend_pkey\\" primary key (\\"author2_1_id\\", \\"author2_2_id\\");",
+      "alter table \\"custom\\".\\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_foreign\\" foreign key (\\"baz_id\\") references \\"custom\\".\\"foo_baz2\\" (\\"id\\") on update cascade on delete set null;",
+      "alter table \\"custom\\".\\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_foreign\\" foreign key (\\"foo_bar_id\\") references \\"custom\\".\\"foo_bar2\\" (\\"id\\") on update cascade on delete set null;",
       "",
-      "create table \\"author2_following\\" (\\"author2_1_id\\" int not null, \\"author2_2_id\\" int not null);",
-      "alter table \\"author2_following\\" add constraint \\"author2_following_pkey\\" primary key (\\"author2_1_id\\", \\"author2_2_id\\");",
+      "alter table \\"custom\\".\\"foo_param2\\" add constraint \\"foo_param2_bar_id_foreign\\" foreign key (\\"bar_id\\") references \\"custom\\".\\"foo_bar2\\" (\\"id\\") on update cascade;",
+      "alter table \\"custom\\".\\"foo_param2\\" add constraint \\"foo_param2_baz_id_foreign\\" foreign key (\\"baz_id\\") references \\"custom\\".\\"foo_baz2\\" (\\"id\\") on update cascade;",
       "",
-      "alter table \\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_foreign\\" foreign key (\\"baz_id\\") references \\"foo_baz2\\" (\\"id\\") on update cascade on delete set null;",
-      "alter table \\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_foreign\\" foreign key (\\"foo_bar_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade on delete set null;",
+      "alter table \\"custom\\".\\"author2\\" add constraint \\"author2_favourite_book_uuid_pk_foreign\\" foreign key (\\"favourite_book_uuid_pk\\") references \\"custom\\".\\"book2\\" (\\"uuid_pk\\") on update no action on delete cascade;",
+      "alter table \\"custom\\".\\"author2\\" add constraint \\"author2_favourite_author_id_foreign\\" foreign key (\\"favourite_author_id\\") references \\"custom\\".\\"author2\\" (\\"id\\") on update cascade on delete set null;",
       "",
-      "alter table \\"foo_param2\\" add constraint \\"foo_param2_bar_id_foreign\\" foreign key (\\"bar_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade;",
-      "alter table \\"foo_param2\\" add constraint \\"foo_param2_baz_id_foreign\\" foreign key (\\"baz_id\\") references \\"foo_baz2\\" (\\"id\\") on update cascade;",
+      "alter table \\"custom\\".\\"address2\\" add constraint \\"address2_author_id_foreign\\" foreign key (\\"author_id\\") references \\"custom\\".\\"author2\\" (\\"id\\") on update cascade on delete cascade;",
       "",
-      "alter table \\"author2\\" add constraint \\"author2_favourite_book_uuid_pk_foreign\\" foreign key (\\"favourite_book_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update no action on delete cascade;",
-      "alter table \\"author2\\" add constraint \\"author2_favourite_author_id_foreign\\" foreign key (\\"favourite_author_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete set null;",
+      "alter table \\"custom\\".\\"book2\\" add constraint \\"book2_author_id_foreign\\" foreign key (\\"author_id\\") references \\"custom\\".\\"author2\\" (\\"id\\");",
+      "alter table \\"custom\\".\\"book2\\" add constraint \\"book2_publisher_id_foreign\\" foreign key (\\"publisher_id\\") references \\"custom\\".\\"publisher2\\" (\\"id\\") on update cascade on delete cascade;",
       "",
-      "alter table \\"address2\\" add constraint \\"address2_author_id_foreign\\" foreign key (\\"author_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;",
+      "alter table \\"custom\\".\\"test2\\" add constraint \\"test2_book_uuid_pk_foreign\\" foreign key (\\"book_uuid_pk\\") references \\"custom\\".\\"book2\\" (\\"uuid_pk\\") on delete set null;",
+      "alter table \\"custom\\".\\"test2\\" add constraint \\"test2_parent_id_foreign\\" foreign key (\\"parent_id\\") references \\"custom\\".\\"test2\\" (\\"id\\") on update cascade on delete set null;",
       "",
-      "alter table \\"book2\\" add constraint \\"book2_author_id_foreign\\" foreign key (\\"author_id\\") references \\"author2\\" (\\"id\\");",
-      "alter table \\"book2\\" add constraint \\"book2_publisher_id_foreign\\" foreign key (\\"publisher_id\\") references \\"publisher2\\" (\\"id\\") on update cascade on delete cascade;",
+      "alter table \\"custom\\".\\"configuration2\\" add constraint \\"configuration2_test_id_foreign\\" foreign key (\\"test_id\\") references \\"custom\\".\\"test2\\" (\\"id\\") on update cascade;",
       "",
-      "alter table \\"test2\\" add constraint \\"test2_book_uuid_pk_foreign\\" foreign key (\\"book_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on delete set null;",
-      "alter table \\"test2\\" add constraint \\"test2_parent_id_foreign\\" foreign key (\\"parent_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete set null;",
+      "alter table \\"custom\\".\\"publisher2_tests\\" add constraint \\"publisher2_tests_publisher2_id_foreign\\" foreign key (\\"publisher2_id\\") references \\"custom\\".\\"publisher2\\" (\\"id\\") on update cascade on delete cascade;",
+      "alter table \\"custom\\".\\"publisher2_tests\\" add constraint \\"publisher2_tests_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"custom\\".\\"test2\\" (\\"id\\") on update cascade on delete cascade;",
       "",
-      "alter table \\"configuration2\\" add constraint \\"configuration2_test_id_foreign\\" foreign key (\\"test_id\\") references \\"test2\\" (\\"id\\") on update cascade;",
+      "alter table \\"custom\\".\\"test2_bars\\" add constraint \\"test2_bars_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"custom\\".\\"test2\\" (\\"id\\") on update cascade on delete cascade;",
+      "alter table \\"custom\\".\\"test2_bars\\" add constraint \\"test2_bars_foo_bar2_id_foreign\\" foreign key (\\"foo_bar2_id\\") references \\"custom\\".\\"foo_bar2\\" (\\"id\\") on update cascade on delete cascade;",
       "",
-      "alter table \\"publisher2_tests\\" add constraint \\"publisher2_tests_publisher2_id_foreign\\" foreign key (\\"publisher2_id\\") references \\"publisher2\\" (\\"id\\") on update cascade on delete cascade;",
-      "alter table \\"publisher2_tests\\" add constraint \\"publisher2_tests_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;",
+      "alter table \\"custom\\".\\"book2_tags\\" add constraint \\"book2_tags_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"custom\\".\\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;",
+      "alter table \\"custom\\".\\"book2_tags\\" add constraint \\"book2_tags_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"custom\\".\\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;",
       "",
-      "alter table \\"test2_bars\\" add constraint \\"test2_bars_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;",
-      "alter table \\"test2_bars\\" add constraint \\"test2_bars_foo_bar2_id_foreign\\" foreign key (\\"foo_bar2_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade on delete cascade;",
+      "alter table \\"custom\\".\\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"custom\\".\\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;",
+      "alter table \\"custom\\".\\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"custom\\".\\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;",
       "",
-      "alter table \\"label_schema\\".\\"label2_tests\\" add constraint \\"label2_tests_label2_uuid_foreign\\" foreign key (\\"label2_uuid\\") references \\"label2\\" (\\"uuid\\") on update cascade on delete cascade;",
-      "alter table \\"label_schema\\".\\"label2_tests\\" add constraint \\"label2_tests_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;",
+      "alter table \\"custom\\".\\"author_to_friend\\" add constraint \\"author_to_friend_author2_1_id_foreign\\" foreign key (\\"author2_1_id\\") references \\"custom\\".\\"author2\\" (\\"id\\") on update cascade on delete cascade;",
+      "alter table \\"custom\\".\\"author_to_friend\\" add constraint \\"author_to_friend_author2_2_id_foreign\\" foreign key (\\"author2_2_id\\") references \\"custom\\".\\"author2\\" (\\"id\\") on update cascade on delete cascade;",
       "",
-      "alter table \\"book2_tags\\" add constraint \\"book2_tags_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;",
-      "alter table \\"book2_tags\\" add constraint \\"book2_tags_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;",
-      "",
-      "alter table \\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;",
-      "alter table \\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;",
-      "",
-      "alter table \\"author_to_friend\\" add constraint \\"author_to_friend_author2_1_id_foreign\\" foreign key (\\"author2_1_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;",
-      "alter table \\"author_to_friend\\" add constraint \\"author_to_friend_author2_2_id_foreign\\" foreign key (\\"author2_2_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;",
-      "",
-      "alter table \\"author2_following\\" add constraint \\"author2_following_author2_1_id_foreign\\" foreign key (\\"author2_1_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;",
-      "alter table \\"author2_following\\" add constraint \\"author2_following_author2_2_id_foreign\\" foreign key (\\"author2_2_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;",
+      "alter table \\"custom\\".\\"author2_following\\" add constraint \\"author2_following_author2_1_id_foreign\\" foreign key (\\"author2_1_id\\") references \\"custom\\".\\"author2\\" (\\"id\\") on update cascade on delete cascade;",
+      "alter table \\"custom\\".\\"author2_following\\" add constraint \\"author2_following_author2_2_id_foreign\\" foreign key (\\"author2_2_id\\") references \\"custom\\".\\"author2\\" (\\"id\\") on update cascade on delete cascade;",
     ],
   },
   "fileName": "Migration20191013214813.ts",
@@ -225,105 +209,97 @@ Object {
 export class Migration20191013214813 extends Migration {
 
   async up(): Promise<void> {
-    this.addSql('create schema if not exists \\"label_schema\\";');
+    this.addSql('create schema if not exists \\"custom\\";');
 
-    this.addSql('create table \\"label2\\" (\\"uuid\\" uuid not null, \\"name\\" varchar(255) not null);');
-    this.addSql('alter table \\"label2\\" add constraint \\"label2_pkey\\" primary key (\\"uuid\\");');
+    this.addSql('create table \\"custom\\".\\"foo_baz2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));');
 
-    this.addSql('create table \\"foo_baz2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));');
+    this.addSql('create table \\"custom\\".\\"foo_bar2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"name with space\\" varchar(255) null, \\"baz_id\\" int null, \\"foo_bar_id\\" int null, \\"version\\" timestamptz(0) not null default current_timestamp(0), \\"blob\\" bytea null, \\"array\\" text[] null, \\"object_property\\" jsonb null);');
+    this.addSql('alter table \\"custom\\".\\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_unique\\" unique (\\"baz_id\\");');
+    this.addSql('alter table \\"custom\\".\\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_unique\\" unique (\\"foo_bar_id\\");');
 
-    this.addSql('create table \\"foo_bar2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"name with space\\" varchar(255) null, \\"baz_id\\" int null, \\"foo_bar_id\\" int null, \\"version\\" timestamptz(0) not null default current_timestamp(0), \\"blob\\" bytea null, \\"array\\" text[] null, \\"object_property\\" jsonb null);');
-    this.addSql('alter table \\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_unique\\" unique (\\"baz_id\\");');
-    this.addSql('alter table \\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_unique\\" unique (\\"foo_bar_id\\");');
+    this.addSql('create table \\"custom\\".\\"foo_param2\\" (\\"bar_id\\" int not null, \\"baz_id\\" int not null, \\"value\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));');
+    this.addSql('alter table \\"custom\\".\\"foo_param2\\" add constraint \\"foo_param2_pkey\\" primary key (\\"bar_id\\", \\"baz_id\\");');
 
-    this.addSql('create table \\"foo_param2\\" (\\"bar_id\\" int not null, \\"baz_id\\" int not null, \\"value\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));');
-    this.addSql('alter table \\"foo_param2\\" add constraint \\"foo_param2_pkey\\" primary key (\\"bar_id\\", \\"baz_id\\");');
+    this.addSql('create table \\"custom\\".\\"publisher2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"type\\" text check (\\"type\\" in (\\\\'local\\\\', \\\\'global\\\\')) not null, \\"type2\\" text check (\\"type2\\" in (\\\\'LOCAL\\\\', \\\\'GLOBAL\\\\')) not null, \\"enum1\\" smallint null, \\"enum2\\" smallint null, \\"enum3\\" smallint null, \\"enum4\\" text check (\\"enum4\\" in (\\\\'a\\\\', \\\\'b\\\\', \\\\'c\\\\')) null, \\"enum5\\" text check (\\"enum5\\" in (\\\\'a\\\\')) null);');
 
-    this.addSql('create table \\"publisher2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"type\\" text check (\\"type\\" in (\\\\'local\\\\', \\\\'global\\\\')) not null, \\"type2\\" text check (\\"type2\\" in (\\\\'LOCAL\\\\', \\\\'GLOBAL\\\\')) not null, \\"enum1\\" smallint null, \\"enum2\\" smallint null, \\"enum3\\" smallint null, \\"enum4\\" text check (\\"enum4\\" in (\\\\'a\\\\', \\\\'b\\\\', \\\\'c\\\\')) null, \\"enum5\\" text check (\\"enum5\\" in (\\\\'a\\\\')) null);');
+    this.addSql('create table \\"custom\\".\\"book_tag2\\" (\\"id\\" bigserial primary key, \\"name\\" varchar(50) not null);');
 
-    this.addSql('create table \\"book_tag2\\" (\\"id\\" bigserial primary key, \\"name\\" varchar(50) not null);');
+    this.addSql('create table \\"custom\\".\\"author2\\" (\\"id\\" serial primary key, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"updated_at\\" timestamptz(3) not null default current_timestamp(3), \\"name\\" varchar(255) not null, \\"email\\" varchar(255) not null, \\"age\\" int null default null, \\"terms_accepted\\" boolean not null default false, \\"optional\\" boolean null, \\"identities\\" text[] null, \\"born\\" date null, \\"born_time\\" time(0) null, \\"favourite_book_uuid_pk\\" uuid null, \\"favourite_author_id\\" int null);');
+    this.addSql('create index \\"custom_email_index_name\\" on \\"custom\\".\\"author2\\" (\\"email\\");');
+    this.addSql('alter table \\"custom\\".\\"author2\\" add constraint \\"custom_email_unique_name\\" unique (\\"email\\");');
+    this.addSql('create index \\"author2_terms_accepted_index\\" on \\"custom\\".\\"author2\\" (\\"terms_accepted\\");');
+    this.addSql('create index \\"author2_born_index\\" on \\"custom\\".\\"author2\\" (\\"born\\");');
+    this.addSql('create index \\"born_time_idx\\" on \\"custom\\".\\"author2\\" (\\"born_time\\");');
+    this.addSql('create index \\"custom_idx_name_123\\" on \\"custom\\".\\"author2\\" (\\"name\\");');
+    this.addSql('create index \\"author2_name_age_index\\" on \\"custom\\".\\"author2\\" (\\"name\\", \\"age\\");');
+    this.addSql('alter table \\"custom\\".\\"author2\\" add constraint \\"author2_name_email_unique\\" unique (\\"name\\", \\"email\\");');
 
-    this.addSql('create table \\"author2\\" (\\"id\\" serial primary key, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"updated_at\\" timestamptz(3) not null default current_timestamp(3), \\"name\\" varchar(255) not null, \\"email\\" varchar(255) not null, \\"age\\" int null default null, \\"terms_accepted\\" boolean not null default false, \\"optional\\" boolean null, \\"identities\\" text[] null, \\"born\\" date null, \\"born_time\\" time(0) null, \\"favourite_book_uuid_pk\\" uuid null, \\"favourite_author_id\\" int null);');
-    this.addSql('create index \\"custom_email_index_name\\" on \\"author2\\" (\\"email\\");');
-    this.addSql('alter table \\"author2\\" add constraint \\"custom_email_unique_name\\" unique (\\"email\\");');
-    this.addSql('create index \\"author2_terms_accepted_index\\" on \\"author2\\" (\\"terms_accepted\\");');
-    this.addSql('create index \\"author2_born_index\\" on \\"author2\\" (\\"born\\");');
-    this.addSql('create index \\"born_time_idx\\" on \\"author2\\" (\\"born_time\\");');
-    this.addSql('create index \\"custom_idx_name_123\\" on \\"author2\\" (\\"name\\");');
-    this.addSql('create index \\"author2_name_age_index\\" on \\"author2\\" (\\"name\\", \\"age\\");');
-    this.addSql('alter table \\"author2\\" add constraint \\"author2_name_email_unique\\" unique (\\"name\\", \\"email\\");');
+    this.addSql('create table \\"custom\\".\\"address2\\" (\\"author_id\\" int not null, \\"value\\" varchar(255) not null);');
+    this.addSql('comment on table \\"custom\\".\\"address2\\" is \\\\'This is address table\\\\';');
+    this.addSql('comment on column \\"custom\\".\\"address2\\".\\"value\\" is \\\\'This is address property\\\\';');
+    this.addSql('alter table \\"custom\\".\\"address2\\" add constraint \\"address2_pkey\\" primary key (\\"author_id\\");');
 
-    this.addSql('create table \\"address2\\" (\\"author_id\\" int not null, \\"value\\" varchar(255) not null);');
-    this.addSql('comment on table \\"address2\\" is \\\\'This is address table\\\\';');
-    this.addSql('comment on column \\"address2\\".\\"value\\" is \\\\'This is address property\\\\';');
-    this.addSql('alter table \\"address2\\" add constraint \\"address2_pkey\\" primary key (\\"author_id\\");');
+    this.addSql('create table \\"custom\\".\\"book2\\" (\\"uuid_pk\\" uuid not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null default \\\\'\\\\', \\"perex\\" text null, \\"price\\" numeric(8,2) null, \\"double\\" double precision null, \\"meta\\" jsonb null, \\"author_id\\" int not null, \\"publisher_id\\" int null);');
+    this.addSql('alter table \\"custom\\".\\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\\");');
 
-    this.addSql('create table \\"book2\\" (\\"uuid_pk\\" uuid not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null default \\\\'\\\\', \\"perex\\" text null, \\"price\\" numeric(8,2) null, \\"double\\" double precision null, \\"meta\\" jsonb null, \\"author_id\\" int not null, \\"publisher_id\\" int null);');
-    this.addSql('alter table \\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\\");');
+    this.addSql('create table \\"custom\\".\\"test2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) null, \\"book_uuid_pk\\" uuid null, \\"parent_id\\" int null, \\"version\\" int not null default 1);');
+    this.addSql('alter table \\"custom\\".\\"test2\\" add constraint \\"test2_book_uuid_pk_unique\\" unique (\\"book_uuid_pk\\");');
 
-    this.addSql('create table \\"test2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) null, \\"book_uuid_pk\\" uuid null, \\"parent_id\\" int null, \\"version\\" int not null default 1);');
-    this.addSql('alter table \\"test2\\" add constraint \\"test2_book_uuid_pk_unique\\" unique (\\"book_uuid_pk\\");');
+    this.addSql('create table \\"custom\\".\\"configuration2\\" (\\"property\\" varchar(255) not null, \\"test_id\\" int not null, \\"value\\" varchar(255) not null);');
+    this.addSql('alter table \\"custom\\".\\"configuration2\\" add constraint \\"configuration2_pkey\\" primary key (\\"property\\", \\"test_id\\");');
 
-    this.addSql('create table \\"configuration2\\" (\\"property\\" varchar(255) not null, \\"test_id\\" int not null, \\"value\\" varchar(255) not null);');
-    this.addSql('alter table \\"configuration2\\" add constraint \\"configuration2_pkey\\" primary key (\\"property\\", \\"test_id\\");');
+    this.addSql('create table \\"custom\\".\\"publisher2_tests\\" (\\"id\\" serial primary key, \\"publisher2_id\\" int not null, \\"test2_id\\" int not null);');
 
-    this.addSql('create table \\"publisher2_tests\\" (\\"id\\" serial primary key, \\"publisher2_id\\" int not null, \\"test2_id\\" int not null);');
+    this.addSql('create table \\"custom\\".\\"test2_bars\\" (\\"test2_id\\" int not null, \\"foo_bar2_id\\" int not null);');
+    this.addSql('alter table \\"custom\\".\\"test2_bars\\" add constraint \\"test2_bars_pkey\\" primary key (\\"test2_id\\", \\"foo_bar2_id\\");');
 
-    this.addSql('create table \\"test2_bars\\" (\\"test2_id\\" int not null, \\"foo_bar2_id\\" int not null);');
-    this.addSql('alter table \\"test2_bars\\" add constraint \\"test2_bars_pkey\\" primary key (\\"test2_id\\", \\"foo_bar2_id\\");');
+    this.addSql('create table \\"custom\\".\\"book2_tags\\" (\\"order\\" serial primary key, \\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);');
 
-    this.addSql('create table \\"label_schema\\".\\"label2_tests\\" (\\"id\\" serial primary key, \\"label2_uuid\\" uuid not null, \\"test2_id\\" int not null);');
+    this.addSql('create table \\"custom\\".\\"book_to_tag_unordered\\" (\\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);');
+    this.addSql('alter table \\"custom\\".\\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_pkey\\" primary key (\\"book2_uuid_pk\\", \\"book_tag2_id\\");');
 
-    this.addSql('create table \\"book2_tags\\" (\\"order\\" serial primary key, \\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);');
+    this.addSql('create table \\"custom\\".\\"author_to_friend\\" (\\"author2_1_id\\" int not null, \\"author2_2_id\\" int not null);');
+    this.addSql('alter table \\"custom\\".\\"author_to_friend\\" add constraint \\"author_to_friend_pkey\\" primary key (\\"author2_1_id\\", \\"author2_2_id\\");');
 
-    this.addSql('create table \\"book_to_tag_unordered\\" (\\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);');
-    this.addSql('alter table \\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_pkey\\" primary key (\\"book2_uuid_pk\\", \\"book_tag2_id\\");');
+    this.addSql('create table \\"custom\\".\\"author2_following\\" (\\"author2_1_id\\" int not null, \\"author2_2_id\\" int not null);');
+    this.addSql('alter table \\"custom\\".\\"author2_following\\" add constraint \\"author2_following_pkey\\" primary key (\\"author2_1_id\\", \\"author2_2_id\\");');
 
-    this.addSql('create table \\"author_to_friend\\" (\\"author2_1_id\\" int not null, \\"author2_2_id\\" int not null);');
-    this.addSql('alter table \\"author_to_friend\\" add constraint \\"author_to_friend_pkey\\" primary key (\\"author2_1_id\\", \\"author2_2_id\\");');
+    this.addSql('alter table \\"custom\\".\\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_foreign\\" foreign key (\\"baz_id\\") references \\"custom\\".\\"foo_baz2\\" (\\"id\\") on update cascade on delete set null;');
+    this.addSql('alter table \\"custom\\".\\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_foreign\\" foreign key (\\"foo_bar_id\\") references \\"custom\\".\\"foo_bar2\\" (\\"id\\") on update cascade on delete set null;');
 
-    this.addSql('create table \\"author2_following\\" (\\"author2_1_id\\" int not null, \\"author2_2_id\\" int not null);');
-    this.addSql('alter table \\"author2_following\\" add constraint \\"author2_following_pkey\\" primary key (\\"author2_1_id\\", \\"author2_2_id\\");');
+    this.addSql('alter table \\"custom\\".\\"foo_param2\\" add constraint \\"foo_param2_bar_id_foreign\\" foreign key (\\"bar_id\\") references \\"custom\\".\\"foo_bar2\\" (\\"id\\") on update cascade;');
+    this.addSql('alter table \\"custom\\".\\"foo_param2\\" add constraint \\"foo_param2_baz_id_foreign\\" foreign key (\\"baz_id\\") references \\"custom\\".\\"foo_baz2\\" (\\"id\\") on update cascade;');
 
-    this.addSql('alter table \\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_foreign\\" foreign key (\\"baz_id\\") references \\"foo_baz2\\" (\\"id\\") on update cascade on delete set null;');
-    this.addSql('alter table \\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_foreign\\" foreign key (\\"foo_bar_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade on delete set null;');
+    this.addSql('alter table \\"custom\\".\\"author2\\" add constraint \\"author2_favourite_book_uuid_pk_foreign\\" foreign key (\\"favourite_book_uuid_pk\\") references \\"custom\\".\\"book2\\" (\\"uuid_pk\\") on update no action on delete cascade;');
+    this.addSql('alter table \\"custom\\".\\"author2\\" add constraint \\"author2_favourite_author_id_foreign\\" foreign key (\\"favourite_author_id\\") references \\"custom\\".\\"author2\\" (\\"id\\") on update cascade on delete set null;');
 
-    this.addSql('alter table \\"foo_param2\\" add constraint \\"foo_param2_bar_id_foreign\\" foreign key (\\"bar_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade;');
-    this.addSql('alter table \\"foo_param2\\" add constraint \\"foo_param2_baz_id_foreign\\" foreign key (\\"baz_id\\") references \\"foo_baz2\\" (\\"id\\") on update cascade;');
+    this.addSql('alter table \\"custom\\".\\"address2\\" add constraint \\"address2_author_id_foreign\\" foreign key (\\"author_id\\") references \\"custom\\".\\"author2\\" (\\"id\\") on update cascade on delete cascade;');
 
-    this.addSql('alter table \\"author2\\" add constraint \\"author2_favourite_book_uuid_pk_foreign\\" foreign key (\\"favourite_book_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update no action on delete cascade;');
-    this.addSql('alter table \\"author2\\" add constraint \\"author2_favourite_author_id_foreign\\" foreign key (\\"favourite_author_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete set null;');
+    this.addSql('alter table \\"custom\\".\\"book2\\" add constraint \\"book2_author_id_foreign\\" foreign key (\\"author_id\\") references \\"custom\\".\\"author2\\" (\\"id\\");');
+    this.addSql('alter table \\"custom\\".\\"book2\\" add constraint \\"book2_publisher_id_foreign\\" foreign key (\\"publisher_id\\") references \\"custom\\".\\"publisher2\\" (\\"id\\") on update cascade on delete cascade;');
 
-    this.addSql('alter table \\"address2\\" add constraint \\"address2_author_id_foreign\\" foreign key (\\"author_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;');
+    this.addSql('alter table \\"custom\\".\\"test2\\" add constraint \\"test2_book_uuid_pk_foreign\\" foreign key (\\"book_uuid_pk\\") references \\"custom\\".\\"book2\\" (\\"uuid_pk\\") on delete set null;');
+    this.addSql('alter table \\"custom\\".\\"test2\\" add constraint \\"test2_parent_id_foreign\\" foreign key (\\"parent_id\\") references \\"custom\\".\\"test2\\" (\\"id\\") on update cascade on delete set null;');
 
-    this.addSql('alter table \\"book2\\" add constraint \\"book2_author_id_foreign\\" foreign key (\\"author_id\\") references \\"author2\\" (\\"id\\");');
-    this.addSql('alter table \\"book2\\" add constraint \\"book2_publisher_id_foreign\\" foreign key (\\"publisher_id\\") references \\"publisher2\\" (\\"id\\") on update cascade on delete cascade;');
+    this.addSql('alter table \\"custom\\".\\"configuration2\\" add constraint \\"configuration2_test_id_foreign\\" foreign key (\\"test_id\\") references \\"custom\\".\\"test2\\" (\\"id\\") on update cascade;');
 
-    this.addSql('alter table \\"test2\\" add constraint \\"test2_book_uuid_pk_foreign\\" foreign key (\\"book_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on delete set null;');
-    this.addSql('alter table \\"test2\\" add constraint \\"test2_parent_id_foreign\\" foreign key (\\"parent_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete set null;');
+    this.addSql('alter table \\"custom\\".\\"publisher2_tests\\" add constraint \\"publisher2_tests_publisher2_id_foreign\\" foreign key (\\"publisher2_id\\") references \\"custom\\".\\"publisher2\\" (\\"id\\") on update cascade on delete cascade;');
+    this.addSql('alter table \\"custom\\".\\"publisher2_tests\\" add constraint \\"publisher2_tests_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"custom\\".\\"test2\\" (\\"id\\") on update cascade on delete cascade;');
 
-    this.addSql('alter table \\"configuration2\\" add constraint \\"configuration2_test_id_foreign\\" foreign key (\\"test_id\\") references \\"test2\\" (\\"id\\") on update cascade;');
+    this.addSql('alter table \\"custom\\".\\"test2_bars\\" add constraint \\"test2_bars_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"custom\\".\\"test2\\" (\\"id\\") on update cascade on delete cascade;');
+    this.addSql('alter table \\"custom\\".\\"test2_bars\\" add constraint \\"test2_bars_foo_bar2_id_foreign\\" foreign key (\\"foo_bar2_id\\") references \\"custom\\".\\"foo_bar2\\" (\\"id\\") on update cascade on delete cascade;');
 
-    this.addSql('alter table \\"publisher2_tests\\" add constraint \\"publisher2_tests_publisher2_id_foreign\\" foreign key (\\"publisher2_id\\") references \\"publisher2\\" (\\"id\\") on update cascade on delete cascade;');
-    this.addSql('alter table \\"publisher2_tests\\" add constraint \\"publisher2_tests_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;');
+    this.addSql('alter table \\"custom\\".\\"book2_tags\\" add constraint \\"book2_tags_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"custom\\".\\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;');
+    this.addSql('alter table \\"custom\\".\\"book2_tags\\" add constraint \\"book2_tags_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"custom\\".\\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;');
 
-    this.addSql('alter table \\"test2_bars\\" add constraint \\"test2_bars_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;');
-    this.addSql('alter table \\"test2_bars\\" add constraint \\"test2_bars_foo_bar2_id_foreign\\" foreign key (\\"foo_bar2_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade on delete cascade;');
+    this.addSql('alter table \\"custom\\".\\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"custom\\".\\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;');
+    this.addSql('alter table \\"custom\\".\\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"custom\\".\\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;');
 
-    this.addSql('alter table \\"label_schema\\".\\"label2_tests\\" add constraint \\"label2_tests_label2_uuid_foreign\\" foreign key (\\"label2_uuid\\") references \\"label2\\" (\\"uuid\\") on update cascade on delete cascade;');
-    this.addSql('alter table \\"label_schema\\".\\"label2_tests\\" add constraint \\"label2_tests_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;');
+    this.addSql('alter table \\"custom\\".\\"author_to_friend\\" add constraint \\"author_to_friend_author2_1_id_foreign\\" foreign key (\\"author2_1_id\\") references \\"custom\\".\\"author2\\" (\\"id\\") on update cascade on delete cascade;');
+    this.addSql('alter table \\"custom\\".\\"author_to_friend\\" add constraint \\"author_to_friend_author2_2_id_foreign\\" foreign key (\\"author2_2_id\\") references \\"custom\\".\\"author2\\" (\\"id\\") on update cascade on delete cascade;');
 
-    this.addSql('alter table \\"book2_tags\\" add constraint \\"book2_tags_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;');
-    this.addSql('alter table \\"book2_tags\\" add constraint \\"book2_tags_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;');
-
-    this.addSql('alter table \\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;');
-    this.addSql('alter table \\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;');
-
-    this.addSql('alter table \\"author_to_friend\\" add constraint \\"author_to_friend_author2_1_id_foreign\\" foreign key (\\"author2_1_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;');
-    this.addSql('alter table \\"author_to_friend\\" add constraint \\"author_to_friend_author2_2_id_foreign\\" foreign key (\\"author2_2_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;');
-
-    this.addSql('alter table \\"author2_following\\" add constraint \\"author2_following_author2_1_id_foreign\\" foreign key (\\"author2_1_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;');
-    this.addSql('alter table \\"author2_following\\" add constraint \\"author2_following_author2_2_id_foreign\\" foreign key (\\"author2_2_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;');
+    this.addSql('alter table \\"custom\\".\\"author2_following\\" add constraint \\"author2_following_author2_1_id_foreign\\" foreign key (\\"author2_1_id\\") references \\"custom\\".\\"author2\\" (\\"id\\") on update cascade on delete cascade;');
+    this.addSql('alter table \\"custom\\".\\"author2_following\\" add constraint \\"author2_following_author2_2_id_foreign\\" foreign key (\\"author2_2_id\\") references \\"custom\\".\\"author2\\" (\\"id\\") on update cascade on delete cascade;');
   }
 
 }
@@ -331,105 +307,97 @@ export class Migration20191013214813 extends Migration {
   "diff": Object {
     "down": Array [],
     "up": Array [
-      "create schema if not exists \\"label_schema\\";",
+      "create schema if not exists \\"custom\\";",
       "",
-      "create table \\"label2\\" (\\"uuid\\" uuid not null, \\"name\\" varchar(255) not null);",
-      "alter table \\"label2\\" add constraint \\"label2_pkey\\" primary key (\\"uuid\\");",
+      "create table \\"custom\\".\\"foo_baz2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));",
       "",
-      "create table \\"foo_baz2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));",
+      "create table \\"custom\\".\\"foo_bar2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"name with space\\" varchar(255) null, \\"baz_id\\" int null, \\"foo_bar_id\\" int null, \\"version\\" timestamptz(0) not null default current_timestamp(0), \\"blob\\" bytea null, \\"array\\" text[] null, \\"object_property\\" jsonb null);",
+      "alter table \\"custom\\".\\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_unique\\" unique (\\"baz_id\\");",
+      "alter table \\"custom\\".\\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_unique\\" unique (\\"foo_bar_id\\");",
       "",
-      "create table \\"foo_bar2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"name with space\\" varchar(255) null, \\"baz_id\\" int null, \\"foo_bar_id\\" int null, \\"version\\" timestamptz(0) not null default current_timestamp(0), \\"blob\\" bytea null, \\"array\\" text[] null, \\"object_property\\" jsonb null);",
-      "alter table \\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_unique\\" unique (\\"baz_id\\");",
-      "alter table \\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_unique\\" unique (\\"foo_bar_id\\");",
+      "create table \\"custom\\".\\"foo_param2\\" (\\"bar_id\\" int not null, \\"baz_id\\" int not null, \\"value\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));",
+      "alter table \\"custom\\".\\"foo_param2\\" add constraint \\"foo_param2_pkey\\" primary key (\\"bar_id\\", \\"baz_id\\");",
       "",
-      "create table \\"foo_param2\\" (\\"bar_id\\" int not null, \\"baz_id\\" int not null, \\"value\\" varchar(255) not null, \\"version\\" timestamptz(3) not null default current_timestamp(3));",
-      "alter table \\"foo_param2\\" add constraint \\"foo_param2_pkey\\" primary key (\\"bar_id\\", \\"baz_id\\");",
+      "create table \\"custom\\".\\"publisher2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"type\\" text check (\\"type\\" in ('local', 'global')) not null, \\"type2\\" text check (\\"type2\\" in ('LOCAL', 'GLOBAL')) not null, \\"enum1\\" smallint null, \\"enum2\\" smallint null, \\"enum3\\" smallint null, \\"enum4\\" text check (\\"enum4\\" in ('a', 'b', 'c')) null, \\"enum5\\" text check (\\"enum5\\" in ('a')) null);",
       "",
-      "create table \\"publisher2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"type\\" text check (\\"type\\" in ('local', 'global')) not null, \\"type2\\" text check (\\"type2\\" in ('LOCAL', 'GLOBAL')) not null, \\"enum1\\" smallint null, \\"enum2\\" smallint null, \\"enum3\\" smallint null, \\"enum4\\" text check (\\"enum4\\" in ('a', 'b', 'c')) null, \\"enum5\\" text check (\\"enum5\\" in ('a')) null);",
+      "create table \\"custom\\".\\"book_tag2\\" (\\"id\\" bigserial primary key, \\"name\\" varchar(50) not null);",
       "",
-      "create table \\"book_tag2\\" (\\"id\\" bigserial primary key, \\"name\\" varchar(50) not null);",
+      "create table \\"custom\\".\\"author2\\" (\\"id\\" serial primary key, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"updated_at\\" timestamptz(3) not null default current_timestamp(3), \\"name\\" varchar(255) not null, \\"email\\" varchar(255) not null, \\"age\\" int null default null, \\"terms_accepted\\" boolean not null default false, \\"optional\\" boolean null, \\"identities\\" text[] null, \\"born\\" date null, \\"born_time\\" time(0) null, \\"favourite_book_uuid_pk\\" uuid null, \\"favourite_author_id\\" int null);",
+      "create index \\"custom_email_index_name\\" on \\"custom\\".\\"author2\\" (\\"email\\");",
+      "alter table \\"custom\\".\\"author2\\" add constraint \\"custom_email_unique_name\\" unique (\\"email\\");",
+      "create index \\"author2_terms_accepted_index\\" on \\"custom\\".\\"author2\\" (\\"terms_accepted\\");",
+      "create index \\"author2_born_index\\" on \\"custom\\".\\"author2\\" (\\"born\\");",
+      "create index \\"born_time_idx\\" on \\"custom\\".\\"author2\\" (\\"born_time\\");",
+      "create index \\"custom_idx_name_123\\" on \\"custom\\".\\"author2\\" (\\"name\\");",
+      "create index \\"author2_name_age_index\\" on \\"custom\\".\\"author2\\" (\\"name\\", \\"age\\");",
+      "alter table \\"custom\\".\\"author2\\" add constraint \\"author2_name_email_unique\\" unique (\\"name\\", \\"email\\");",
       "",
-      "create table \\"author2\\" (\\"id\\" serial primary key, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"updated_at\\" timestamptz(3) not null default current_timestamp(3), \\"name\\" varchar(255) not null, \\"email\\" varchar(255) not null, \\"age\\" int null default null, \\"terms_accepted\\" boolean not null default false, \\"optional\\" boolean null, \\"identities\\" text[] null, \\"born\\" date null, \\"born_time\\" time(0) null, \\"favourite_book_uuid_pk\\" uuid null, \\"favourite_author_id\\" int null);",
-      "create index \\"custom_email_index_name\\" on \\"author2\\" (\\"email\\");",
-      "alter table \\"author2\\" add constraint \\"custom_email_unique_name\\" unique (\\"email\\");",
-      "create index \\"author2_terms_accepted_index\\" on \\"author2\\" (\\"terms_accepted\\");",
-      "create index \\"author2_born_index\\" on \\"author2\\" (\\"born\\");",
-      "create index \\"born_time_idx\\" on \\"author2\\" (\\"born_time\\");",
-      "create index \\"custom_idx_name_123\\" on \\"author2\\" (\\"name\\");",
-      "create index \\"author2_name_age_index\\" on \\"author2\\" (\\"name\\", \\"age\\");",
-      "alter table \\"author2\\" add constraint \\"author2_name_email_unique\\" unique (\\"name\\", \\"email\\");",
+      "create table \\"custom\\".\\"address2\\" (\\"author_id\\" int not null, \\"value\\" varchar(255) not null);",
+      "comment on table \\"custom\\".\\"address2\\" is 'This is address table';",
+      "comment on column \\"custom\\".\\"address2\\".\\"value\\" is 'This is address property';",
+      "alter table \\"custom\\".\\"address2\\" add constraint \\"address2_pkey\\" primary key (\\"author_id\\");",
       "",
-      "create table \\"address2\\" (\\"author_id\\" int not null, \\"value\\" varchar(255) not null);",
-      "comment on table \\"address2\\" is 'This is address table';",
-      "comment on column \\"address2\\".\\"value\\" is 'This is address property';",
-      "alter table \\"address2\\" add constraint \\"address2_pkey\\" primary key (\\"author_id\\");",
+      "create table \\"custom\\".\\"book2\\" (\\"uuid_pk\\" uuid not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null default '', \\"perex\\" text null, \\"price\\" numeric(8,2) null, \\"double\\" double precision null, \\"meta\\" jsonb null, \\"author_id\\" int not null, \\"publisher_id\\" int null);",
+      "alter table \\"custom\\".\\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\\");",
       "",
-      "create table \\"book2\\" (\\"uuid_pk\\" uuid not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null default '', \\"perex\\" text null, \\"price\\" numeric(8,2) null, \\"double\\" double precision null, \\"meta\\" jsonb null, \\"author_id\\" int not null, \\"publisher_id\\" int null);",
-      "alter table \\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\\");",
+      "create table \\"custom\\".\\"test2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) null, \\"book_uuid_pk\\" uuid null, \\"parent_id\\" int null, \\"version\\" int not null default 1);",
+      "alter table \\"custom\\".\\"test2\\" add constraint \\"test2_book_uuid_pk_unique\\" unique (\\"book_uuid_pk\\");",
       "",
-      "create table \\"test2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) null, \\"book_uuid_pk\\" uuid null, \\"parent_id\\" int null, \\"version\\" int not null default 1);",
-      "alter table \\"test2\\" add constraint \\"test2_book_uuid_pk_unique\\" unique (\\"book_uuid_pk\\");",
+      "create table \\"custom\\".\\"configuration2\\" (\\"property\\" varchar(255) not null, \\"test_id\\" int not null, \\"value\\" varchar(255) not null);",
+      "alter table \\"custom\\".\\"configuration2\\" add constraint \\"configuration2_pkey\\" primary key (\\"property\\", \\"test_id\\");",
       "",
-      "create table \\"configuration2\\" (\\"property\\" varchar(255) not null, \\"test_id\\" int not null, \\"value\\" varchar(255) not null);",
-      "alter table \\"configuration2\\" add constraint \\"configuration2_pkey\\" primary key (\\"property\\", \\"test_id\\");",
+      "create table \\"custom\\".\\"publisher2_tests\\" (\\"id\\" serial primary key, \\"publisher2_id\\" int not null, \\"test2_id\\" int not null);",
       "",
-      "create table \\"publisher2_tests\\" (\\"id\\" serial primary key, \\"publisher2_id\\" int not null, \\"test2_id\\" int not null);",
+      "create table \\"custom\\".\\"test2_bars\\" (\\"test2_id\\" int not null, \\"foo_bar2_id\\" int not null);",
+      "alter table \\"custom\\".\\"test2_bars\\" add constraint \\"test2_bars_pkey\\" primary key (\\"test2_id\\", \\"foo_bar2_id\\");",
       "",
-      "create table \\"test2_bars\\" (\\"test2_id\\" int not null, \\"foo_bar2_id\\" int not null);",
-      "alter table \\"test2_bars\\" add constraint \\"test2_bars_pkey\\" primary key (\\"test2_id\\", \\"foo_bar2_id\\");",
+      "create table \\"custom\\".\\"book2_tags\\" (\\"order\\" serial primary key, \\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);",
       "",
-      "create table \\"label_schema\\".\\"label2_tests\\" (\\"id\\" serial primary key, \\"label2_uuid\\" uuid not null, \\"test2_id\\" int not null);",
+      "create table \\"custom\\".\\"book_to_tag_unordered\\" (\\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);",
+      "alter table \\"custom\\".\\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_pkey\\" primary key (\\"book2_uuid_pk\\", \\"book_tag2_id\\");",
       "",
-      "create table \\"book2_tags\\" (\\"order\\" serial primary key, \\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);",
+      "create table \\"custom\\".\\"author_to_friend\\" (\\"author2_1_id\\" int not null, \\"author2_2_id\\" int not null);",
+      "alter table \\"custom\\".\\"author_to_friend\\" add constraint \\"author_to_friend_pkey\\" primary key (\\"author2_1_id\\", \\"author2_2_id\\");",
       "",
-      "create table \\"book_to_tag_unordered\\" (\\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);",
-      "alter table \\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_pkey\\" primary key (\\"book2_uuid_pk\\", \\"book_tag2_id\\");",
+      "create table \\"custom\\".\\"author2_following\\" (\\"author2_1_id\\" int not null, \\"author2_2_id\\" int not null);",
+      "alter table \\"custom\\".\\"author2_following\\" add constraint \\"author2_following_pkey\\" primary key (\\"author2_1_id\\", \\"author2_2_id\\");",
       "",
-      "create table \\"author_to_friend\\" (\\"author2_1_id\\" int not null, \\"author2_2_id\\" int not null);",
-      "alter table \\"author_to_friend\\" add constraint \\"author_to_friend_pkey\\" primary key (\\"author2_1_id\\", \\"author2_2_id\\");",
+      "alter table \\"custom\\".\\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_foreign\\" foreign key (\\"baz_id\\") references \\"custom\\".\\"foo_baz2\\" (\\"id\\") on update cascade on delete set null;",
+      "alter table \\"custom\\".\\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_foreign\\" foreign key (\\"foo_bar_id\\") references \\"custom\\".\\"foo_bar2\\" (\\"id\\") on update cascade on delete set null;",
       "",
-      "create table \\"author2_following\\" (\\"author2_1_id\\" int not null, \\"author2_2_id\\" int not null);",
-      "alter table \\"author2_following\\" add constraint \\"author2_following_pkey\\" primary key (\\"author2_1_id\\", \\"author2_2_id\\");",
+      "alter table \\"custom\\".\\"foo_param2\\" add constraint \\"foo_param2_bar_id_foreign\\" foreign key (\\"bar_id\\") references \\"custom\\".\\"foo_bar2\\" (\\"id\\") on update cascade;",
+      "alter table \\"custom\\".\\"foo_param2\\" add constraint \\"foo_param2_baz_id_foreign\\" foreign key (\\"baz_id\\") references \\"custom\\".\\"foo_baz2\\" (\\"id\\") on update cascade;",
       "",
-      "alter table \\"foo_bar2\\" add constraint \\"foo_bar2_baz_id_foreign\\" foreign key (\\"baz_id\\") references \\"foo_baz2\\" (\\"id\\") on update cascade on delete set null;",
-      "alter table \\"foo_bar2\\" add constraint \\"foo_bar2_foo_bar_id_foreign\\" foreign key (\\"foo_bar_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade on delete set null;",
+      "alter table \\"custom\\".\\"author2\\" add constraint \\"author2_favourite_book_uuid_pk_foreign\\" foreign key (\\"favourite_book_uuid_pk\\") references \\"custom\\".\\"book2\\" (\\"uuid_pk\\") on update no action on delete cascade;",
+      "alter table \\"custom\\".\\"author2\\" add constraint \\"author2_favourite_author_id_foreign\\" foreign key (\\"favourite_author_id\\") references \\"custom\\".\\"author2\\" (\\"id\\") on update cascade on delete set null;",
       "",
-      "alter table \\"foo_param2\\" add constraint \\"foo_param2_bar_id_foreign\\" foreign key (\\"bar_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade;",
-      "alter table \\"foo_param2\\" add constraint \\"foo_param2_baz_id_foreign\\" foreign key (\\"baz_id\\") references \\"foo_baz2\\" (\\"id\\") on update cascade;",
+      "alter table \\"custom\\".\\"address2\\" add constraint \\"address2_author_id_foreign\\" foreign key (\\"author_id\\") references \\"custom\\".\\"author2\\" (\\"id\\") on update cascade on delete cascade;",
       "",
-      "alter table \\"author2\\" add constraint \\"author2_favourite_book_uuid_pk_foreign\\" foreign key (\\"favourite_book_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update no action on delete cascade;",
-      "alter table \\"author2\\" add constraint \\"author2_favourite_author_id_foreign\\" foreign key (\\"favourite_author_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete set null;",
+      "alter table \\"custom\\".\\"book2\\" add constraint \\"book2_author_id_foreign\\" foreign key (\\"author_id\\") references \\"custom\\".\\"author2\\" (\\"id\\");",
+      "alter table \\"custom\\".\\"book2\\" add constraint \\"book2_publisher_id_foreign\\" foreign key (\\"publisher_id\\") references \\"custom\\".\\"publisher2\\" (\\"id\\") on update cascade on delete cascade;",
       "",
-      "alter table \\"address2\\" add constraint \\"address2_author_id_foreign\\" foreign key (\\"author_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;",
+      "alter table \\"custom\\".\\"test2\\" add constraint \\"test2_book_uuid_pk_foreign\\" foreign key (\\"book_uuid_pk\\") references \\"custom\\".\\"book2\\" (\\"uuid_pk\\") on delete set null;",
+      "alter table \\"custom\\".\\"test2\\" add constraint \\"test2_parent_id_foreign\\" foreign key (\\"parent_id\\") references \\"custom\\".\\"test2\\" (\\"id\\") on update cascade on delete set null;",
       "",
-      "alter table \\"book2\\" add constraint \\"book2_author_id_foreign\\" foreign key (\\"author_id\\") references \\"author2\\" (\\"id\\");",
-      "alter table \\"book2\\" add constraint \\"book2_publisher_id_foreign\\" foreign key (\\"publisher_id\\") references \\"publisher2\\" (\\"id\\") on update cascade on delete cascade;",
+      "alter table \\"custom\\".\\"configuration2\\" add constraint \\"configuration2_test_id_foreign\\" foreign key (\\"test_id\\") references \\"custom\\".\\"test2\\" (\\"id\\") on update cascade;",
       "",
-      "alter table \\"test2\\" add constraint \\"test2_book_uuid_pk_foreign\\" foreign key (\\"book_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on delete set null;",
-      "alter table \\"test2\\" add constraint \\"test2_parent_id_foreign\\" foreign key (\\"parent_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete set null;",
+      "alter table \\"custom\\".\\"publisher2_tests\\" add constraint \\"publisher2_tests_publisher2_id_foreign\\" foreign key (\\"publisher2_id\\") references \\"custom\\".\\"publisher2\\" (\\"id\\") on update cascade on delete cascade;",
+      "alter table \\"custom\\".\\"publisher2_tests\\" add constraint \\"publisher2_tests_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"custom\\".\\"test2\\" (\\"id\\") on update cascade on delete cascade;",
       "",
-      "alter table \\"configuration2\\" add constraint \\"configuration2_test_id_foreign\\" foreign key (\\"test_id\\") references \\"test2\\" (\\"id\\") on update cascade;",
+      "alter table \\"custom\\".\\"test2_bars\\" add constraint \\"test2_bars_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"custom\\".\\"test2\\" (\\"id\\") on update cascade on delete cascade;",
+      "alter table \\"custom\\".\\"test2_bars\\" add constraint \\"test2_bars_foo_bar2_id_foreign\\" foreign key (\\"foo_bar2_id\\") references \\"custom\\".\\"foo_bar2\\" (\\"id\\") on update cascade on delete cascade;",
       "",
-      "alter table \\"publisher2_tests\\" add constraint \\"publisher2_tests_publisher2_id_foreign\\" foreign key (\\"publisher2_id\\") references \\"publisher2\\" (\\"id\\") on update cascade on delete cascade;",
-      "alter table \\"publisher2_tests\\" add constraint \\"publisher2_tests_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;",
+      "alter table \\"custom\\".\\"book2_tags\\" add constraint \\"book2_tags_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"custom\\".\\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;",
+      "alter table \\"custom\\".\\"book2_tags\\" add constraint \\"book2_tags_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"custom\\".\\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;",
       "",
-      "alter table \\"test2_bars\\" add constraint \\"test2_bars_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;",
-      "alter table \\"test2_bars\\" add constraint \\"test2_bars_foo_bar2_id_foreign\\" foreign key (\\"foo_bar2_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade on delete cascade;",
+      "alter table \\"custom\\".\\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"custom\\".\\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;",
+      "alter table \\"custom\\".\\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"custom\\".\\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;",
       "",
-      "alter table \\"label_schema\\".\\"label2_tests\\" add constraint \\"label2_tests_label2_uuid_foreign\\" foreign key (\\"label2_uuid\\") references \\"label2\\" (\\"uuid\\") on update cascade on delete cascade;",
-      "alter table \\"label_schema\\".\\"label2_tests\\" add constraint \\"label2_tests_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;",
+      "alter table \\"custom\\".\\"author_to_friend\\" add constraint \\"author_to_friend_author2_1_id_foreign\\" foreign key (\\"author2_1_id\\") references \\"custom\\".\\"author2\\" (\\"id\\") on update cascade on delete cascade;",
+      "alter table \\"custom\\".\\"author_to_friend\\" add constraint \\"author_to_friend_author2_2_id_foreign\\" foreign key (\\"author2_2_id\\") references \\"custom\\".\\"author2\\" (\\"id\\") on update cascade on delete cascade;",
       "",
-      "alter table \\"book2_tags\\" add constraint \\"book2_tags_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;",
-      "alter table \\"book2_tags\\" add constraint \\"book2_tags_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;",
-      "",
-      "alter table \\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;",
-      "alter table \\"book_to_tag_unordered\\" add constraint \\"book_to_tag_unordered_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;",
-      "",
-      "alter table \\"author_to_friend\\" add constraint \\"author_to_friend_author2_1_id_foreign\\" foreign key (\\"author2_1_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;",
-      "alter table \\"author_to_friend\\" add constraint \\"author_to_friend_author2_2_id_foreign\\" foreign key (\\"author2_2_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;",
-      "",
-      "alter table \\"author2_following\\" add constraint \\"author2_following_author2_1_id_foreign\\" foreign key (\\"author2_1_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;",
-      "alter table \\"author2_following\\" add constraint \\"author2_following_author2_2_id_foreign\\" foreign key (\\"author2_2_id\\") references \\"author2\\" (\\"id\\") on update cascade on delete cascade;",
+      "alter table \\"custom\\".\\"author2_following\\" add constraint \\"author2_following_author2_1_id_foreign\\" foreign key (\\"author2_1_id\\") references \\"custom\\".\\"author2\\" (\\"id\\") on update cascade on delete cascade;",
+      "alter table \\"custom\\".\\"author2_following\\" add constraint \\"author2_following_author2_2_id_foreign\\" foreign key (\\"author2_2_id\\") references \\"custom\\".\\"author2\\" (\\"id\\") on update cascade on delete cascade;",
     ],
   },
   "fileName": "Migration20191013214813.ts",
@@ -445,19 +413,17 @@ const { Migration } = require('@mikro-orm/migrations');
 class Migration20191013214813 extends Migration {
 
   async up() {
-    this.addSql('alter table \\"book2\\" drop constraint if exists \\"book2_double_check\\";');
-    this.addSql('alter table \\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);');
-    this.addSql('alter table \\"book2\\" drop column \\"foo\\";');
+    this.addSql('alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);');
+    this.addSql('alter table \\"custom\\".\\"book2\\" drop column \\"foo\\";');
 
-    this.addSql('alter table \\"test2\\" drop column \\"path\\";');
+    this.addSql('alter table \\"custom\\".\\"test2\\" drop column \\"path\\";');
   }
 
   async down() {
-    this.addSql('alter table \\"book2\\" add column \\"foo\\" varchar null default \\\\'lol\\\\';');
-    this.addSql('alter table \\"book2\\" drop constraint if exists \\"book2_double_check\\";');
-    this.addSql('alter table \\"book2\\" alter column \\"double\\" type numeric using (\\"double\\"::numeric);');
+    this.addSql('alter table \\"custom\\".\\"book2\\" add column \\"foo\\" varchar null default \\\\'lol\\\\';');
+    this.addSql('alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type numeric using (\\"double\\"::numeric);');
 
-    this.addSql('alter table \\"test2\\" add column \\"path\\" polygon null default null;');
+    this.addSql('alter table \\"custom\\".\\"test2\\" add column \\"path\\" polygon null default null;');
   }
 
 }
@@ -465,18 +431,16 @@ exports.Migration20191013214813 = Migration20191013214813;
 ",
   "diff": Object {
     "down": Array [
-      "alter table \\"book2\\" add column \\"foo\\" varchar null default 'lol';",
-      "alter table \\"book2\\" drop constraint if exists \\"book2_double_check\\";",
-      "alter table \\"book2\\" alter column \\"double\\" type numeric using (\\"double\\"::numeric);",
+      "alter table \\"custom\\".\\"book2\\" add column \\"foo\\" varchar null default 'lol';",
+      "alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type numeric using (\\"double\\"::numeric);",
       "",
-      "alter table \\"test2\\" add column \\"path\\" polygon null default null;",
+      "alter table \\"custom\\".\\"test2\\" add column \\"path\\" polygon null default null;",
     ],
     "up": Array [
-      "alter table \\"book2\\" drop constraint if exists \\"book2_double_check\\";",
-      "alter table \\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);",
-      "alter table \\"book2\\" drop column \\"foo\\";",
+      "alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);",
+      "alter table \\"custom\\".\\"book2\\" drop column \\"foo\\";",
       "",
-      "alter table \\"test2\\" drop column \\"path\\";",
+      "alter table \\"custom\\".\\"test2\\" drop column \\"path\\";",
     ],
   },
   "fileName": "Migration20191013214813.js",
@@ -493,32 +457,28 @@ export class Migration20191013214813 extends Migration {
 
   async up(): Promise<void> {
     this.addSql('alter table
-                   \\"book2\\" drop constraint if exists \\"book2_double_check\\";');
-    this.addSql('alter table
-                   \\"book2\\"
+                   \\"custom\\".\\"book2\\"
                  alter column
                    \\"double\\" type double precision using (\\"double\\" :: double precision);');
     this.addSql('alter table
-                   \\"book2\\" drop column \\"foo\\";');
+                   \\"custom\\".\\"book2\\" drop column \\"foo\\";');
 
     this.addSql('alter table
-                   \\"test2\\" drop column \\"path\\";');
+                   \\"custom\\".\\"test2\\" drop column \\"path\\";');
   }
 
   async down(): Promise<void> {
     this.addSql('alter table
-                   \\"book2\\"
+                   \\"custom\\".\\"book2\\"
                  add
                    column \\"foo\\" varchar null default \\\\'lol\\\\';');
     this.addSql('alter table
-                   \\"book2\\" drop constraint if exists \\"book2_double_check\\";');
-    this.addSql('alter table
-                   \\"book2\\"
+                   \\"custom\\".\\"book2\\"
                  alter column
                    \\"double\\" type numeric using (\\"double\\" :: numeric);');
 
     this.addSql('alter table
-                   \\"test2\\"
+                   \\"custom\\".\\"test2\\"
                  add
                    column \\"path\\" polygon null default null;');
   }
@@ -527,18 +487,16 @@ export class Migration20191013214813 extends Migration {
 ",
   "diff": Object {
     "down": Array [
-      "alter table \\"book2\\" add column \\"foo\\" varchar null default 'lol';",
-      "alter table \\"book2\\" drop constraint if exists \\"book2_double_check\\";",
-      "alter table \\"book2\\" alter column \\"double\\" type numeric using (\\"double\\"::numeric);",
+      "alter table \\"custom\\".\\"book2\\" add column \\"foo\\" varchar null default 'lol';",
+      "alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type numeric using (\\"double\\"::numeric);",
       "",
-      "alter table \\"test2\\" add column \\"path\\" polygon null default null;",
+      "alter table \\"custom\\".\\"test2\\" add column \\"path\\" polygon null default null;",
     ],
     "up": Array [
-      "alter table \\"book2\\" drop constraint if exists \\"book2_double_check\\";",
-      "alter table \\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);",
-      "alter table \\"book2\\" drop column \\"foo\\";",
+      "alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);",
+      "alter table \\"custom\\".\\"book2\\" drop column \\"foo\\";",
       "",
-      "alter table \\"test2\\" drop column \\"path\\";",
+      "alter table \\"custom\\".\\"test2\\" drop column \\"path\\";",
     ],
   },
   "fileName": "Migration20191013214813.ts",
@@ -552,37 +510,33 @@ Object {
 export class Migration20191013214813 extends Migration {
 
   async up(): Promise<void> {
-    this.addSql('alter table \\"book2\\" drop constraint if exists \\"book2_double_check\\";');
-    this.addSql('alter table \\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);');
-    this.addSql('alter table \\"book2\\" drop column \\"foo\\";');
+    this.addSql('alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);');
+    this.addSql('alter table \\"custom\\".\\"book2\\" drop column \\"foo\\";');
 
-    this.addSql('alter table \\"test2\\" drop column \\"path\\";');
+    this.addSql('alter table \\"custom\\".\\"test2\\" drop column \\"path\\";');
   }
 
   async down(): Promise<void> {
-    this.addSql('alter table \\"book2\\" add column \\"foo\\" varchar null default \\\\'lol\\\\';');
-    this.addSql('alter table \\"book2\\" drop constraint if exists \\"book2_double_check\\";');
-    this.addSql('alter table \\"book2\\" alter column \\"double\\" type numeric using (\\"double\\"::numeric);');
+    this.addSql('alter table \\"custom\\".\\"book2\\" add column \\"foo\\" varchar null default \\\\'lol\\\\';');
+    this.addSql('alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type numeric using (\\"double\\"::numeric);');
 
-    this.addSql('alter table \\"test2\\" add column \\"path\\" polygon null default null;');
+    this.addSql('alter table \\"custom\\".\\"test2\\" add column \\"path\\" polygon null default null;');
   }
 
 }
 ",
   "diff": Object {
     "down": Array [
-      "alter table \\"book2\\" add column \\"foo\\" varchar null default 'lol';",
-      "alter table \\"book2\\" drop constraint if exists \\"book2_double_check\\";",
-      "alter table \\"book2\\" alter column \\"double\\" type numeric using (\\"double\\"::numeric);",
+      "alter table \\"custom\\".\\"book2\\" add column \\"foo\\" varchar null default 'lol';",
+      "alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type numeric using (\\"double\\"::numeric);",
       "",
-      "alter table \\"test2\\" add column \\"path\\" polygon null default null;",
+      "alter table \\"custom\\".\\"test2\\" add column \\"path\\" polygon null default null;",
     ],
     "up": Array [
-      "alter table \\"book2\\" drop constraint if exists \\"book2_double_check\\";",
-      "alter table \\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);",
-      "alter table \\"book2\\" drop column \\"foo\\";",
+      "alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);",
+      "alter table \\"custom\\".\\"book2\\" drop column \\"foo\\";",
       "",
-      "alter table \\"test2\\" drop column \\"path\\";",
+      "alter table \\"custom\\".\\"test2\\" drop column \\"path\\";",
     ],
   },
   "fileName": "migration-20191013214813.ts",
@@ -596,37 +550,33 @@ Object {
 export class Migration20191013214813 extends Migration {
 
   async up(): Promise<void> {
-    this.addSql('alter table \\"book2\\" drop constraint if exists \\"book2_double_check\\";');
-    this.addSql('alter table \\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);');
-    this.addSql('alter table \\"book2\\" drop column \\"foo\\";');
+    this.addSql('alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);');
+    this.addSql('alter table \\"custom\\".\\"book2\\" drop column \\"foo\\";');
 
-    this.addSql('alter table \\"test2\\" drop column \\"path\\";');
+    this.addSql('alter table \\"custom\\".\\"test2\\" drop column \\"path\\";');
   }
 
   async down(): Promise<void> {
-    this.addSql('alter table \\"book2\\" add column \\"foo\\" varchar null default \\\\'lol\\\\';');
-    this.addSql('alter table \\"book2\\" drop constraint if exists \\"book2_double_check\\";');
-    this.addSql('alter table \\"book2\\" alter column \\"double\\" type numeric using (\\"double\\"::numeric);');
+    this.addSql('alter table \\"custom\\".\\"book2\\" add column \\"foo\\" varchar null default \\\\'lol\\\\';');
+    this.addSql('alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type numeric using (\\"double\\"::numeric);');
 
-    this.addSql('alter table \\"test2\\" add column \\"path\\" polygon null default null;');
+    this.addSql('alter table \\"custom\\".\\"test2\\" add column \\"path\\" polygon null default null;');
   }
 
 }
 ",
   "diff": Object {
     "down": Array [
-      "alter table \\"book2\\" add column \\"foo\\" varchar null default 'lol';",
-      "alter table \\"book2\\" drop constraint if exists \\"book2_double_check\\";",
-      "alter table \\"book2\\" alter column \\"double\\" type numeric using (\\"double\\"::numeric);",
+      "alter table \\"custom\\".\\"book2\\" add column \\"foo\\" varchar null default 'lol';",
+      "alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type numeric using (\\"double\\"::numeric);",
       "",
-      "alter table \\"test2\\" add column \\"path\\" polygon null default null;",
+      "alter table \\"custom\\".\\"test2\\" add column \\"path\\" polygon null default null;",
     ],
     "up": Array [
-      "alter table \\"book2\\" drop constraint if exists \\"book2_double_check\\";",
-      "alter table \\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);",
-      "alter table \\"book2\\" drop column \\"foo\\";",
+      "alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);",
+      "alter table \\"custom\\".\\"book2\\" drop column \\"foo\\";",
       "",
-      "alter table \\"test2\\" drop column \\"path\\";",
+      "alter table \\"custom\\".\\"test2\\" drop column \\"path\\";",
     ],
   },
   "fileName": "Migration20191013214813.ts",
@@ -651,37 +601,33 @@ Object {
 export class Migration20191013214813 extends Migration {
 
   async up(): Promise<void> {
-    this.addSql('alter table \\"book2\\" drop constraint if exists \\"book2_double_check\\";');
-    this.addSql('alter table \\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);');
-    this.addSql('alter table \\"book2\\" drop column \\"foo\\";');
+    this.addSql('alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);');
+    this.addSql('alter table \\"custom\\".\\"book2\\" drop column \\"foo\\";');
 
-    this.addSql('alter table \\"test2\\" drop column \\"path\\";');
+    this.addSql('alter table \\"custom\\".\\"test2\\" drop column \\"path\\";');
   }
 
   async down(): Promise<void> {
-    this.addSql('alter table \\"book2\\" add column \\"foo\\" varchar null default \\\\'lol\\\\';');
-    this.addSql('alter table \\"book2\\" drop constraint if exists \\"book2_double_check\\";');
-    this.addSql('alter table \\"book2\\" alter column \\"double\\" type numeric using (\\"double\\"::numeric);');
+    this.addSql('alter table \\"custom\\".\\"book2\\" add column \\"foo\\" varchar null default \\\\'lol\\\\';');
+    this.addSql('alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type numeric using (\\"double\\"::numeric);');
 
-    this.addSql('alter table \\"test2\\" add column \\"path\\" polygon null default null;');
+    this.addSql('alter table \\"custom\\".\\"test2\\" add column \\"path\\" polygon null default null;');
   }
 
 }
 ",
   "diff": Object {
     "down": Array [
-      "alter table \\"book2\\" add column \\"foo\\" varchar null default 'lol';",
-      "alter table \\"book2\\" drop constraint if exists \\"book2_double_check\\";",
-      "alter table \\"book2\\" alter column \\"double\\" type numeric using (\\"double\\"::numeric);",
+      "alter table \\"custom\\".\\"book2\\" add column \\"foo\\" varchar null default 'lol';",
+      "alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type numeric using (\\"double\\"::numeric);",
       "",
-      "alter table \\"test2\\" add column \\"path\\" polygon null default null;",
+      "alter table \\"custom\\".\\"test2\\" add column \\"path\\" polygon null default null;",
     ],
     "up": Array [
-      "alter table \\"book2\\" drop constraint if exists \\"book2_double_check\\";",
-      "alter table \\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);",
-      "alter table \\"book2\\" drop column \\"foo\\";",
+      "alter table \\"custom\\".\\"book2\\" alter column \\"double\\" type double precision using (\\"double\\"::double precision);",
+      "alter table \\"custom\\".\\"book2\\" drop column \\"foo\\";",
       "",
-      "alter table \\"test2\\" drop column \\"path\\";",
+      "alter table \\"custom\\".\\"test2\\" drop column \\"path\\";",
     ],
   },
   "fileName": "Migration20191013214813.ts",
@@ -690,110 +636,110 @@ export class Migration20191013214813 extends Migration {
 
 exports[`Migrator (postgres) up/down params [all or nothing disabled]: all-or-nothing-disabled 1`] = `
 Array [
-  "select 1 from pg_database where datname = 'mikro_orm_test'",
+  "select 1 from pg_database where datname = 'mikro_orm_test_migrations'",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
-  "create table \\"mikro_orm_migrations\\" (\\"id\\" serial primary key, \\"name\\" varchar(255), \\"executed_at\\" timestamptz default current_timestamp)",
-  "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
+  "create table \\"custom\\".\\"mikro_orm_migrations\\" (\\"id\\" serial primary key, \\"name\\" varchar(255), \\"executed_at\\" timestamptz default current_timestamp)",
+  "select * from \\"custom\\".\\"mikro_orm_migrations\\" order by \\"id\\" asc",
   "begin",
   "select 1",
   "commit",
-  "insert into \\"mikro_orm_migrations\\" (\\"name\\") values ($1)",
-  "select 1 from pg_database where datname = 'mikro_orm_test'",
+  "insert into \\"custom\\".\\"mikro_orm_migrations\\" (\\"name\\") values ($1)",
+  "select 1 from pg_database where datname = 'mikro_orm_test_migrations'",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
-  "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
+  "select * from \\"custom\\".\\"mikro_orm_migrations\\" order by \\"id\\" asc",
   "begin",
   "commit",
-  "delete from \\"mikro_orm_migrations\\" where \\"name\\" in ($1, $2)",
-  "select 1 from pg_database where datname = 'mikro_orm_test'",
+  "delete from \\"custom\\".\\"mikro_orm_migrations\\" where \\"name\\" in ($1, $2)",
+  "select 1 from pg_database where datname = 'mikro_orm_test_migrations'",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
-  "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
-  "begin",
-  "select 1",
-  "commit",
-  "insert into \\"mikro_orm_migrations\\" (\\"name\\") values ($1)",
-  "select 1 from pg_database where datname = 'mikro_orm_test'",
-  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
-  "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
-  "begin",
-  "commit",
-  "delete from \\"mikro_orm_migrations\\" where \\"name\\" in ($1, $2)",
-  "select 1 from pg_database where datname = 'mikro_orm_test'",
-  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
-  "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
+  "select * from \\"custom\\".\\"mikro_orm_migrations\\" order by \\"id\\" asc",
   "begin",
   "select 1",
   "commit",
-  "insert into \\"mikro_orm_migrations\\" (\\"name\\") values ($1)",
-  "select 1 from pg_database where datname = 'mikro_orm_test'",
+  "insert into \\"custom\\".\\"mikro_orm_migrations\\" (\\"name\\") values ($1)",
+  "select 1 from pg_database where datname = 'mikro_orm_test_migrations'",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
-  "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
-  "select 1 from pg_database where datname = 'mikro_orm_test'",
-  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
-  "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
+  "select * from \\"custom\\".\\"mikro_orm_migrations\\" order by \\"id\\" asc",
   "begin",
   "commit",
-  "delete from \\"mikro_orm_migrations\\" where \\"name\\" in ($1, $2)",
+  "delete from \\"custom\\".\\"mikro_orm_migrations\\" where \\"name\\" in ($1, $2)",
+  "select 1 from pg_database where datname = 'mikro_orm_test_migrations'",
+  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
+  "select * from \\"custom\\".\\"mikro_orm_migrations\\" order by \\"id\\" asc",
+  "begin",
+  "select 1",
+  "commit",
+  "insert into \\"custom\\".\\"mikro_orm_migrations\\" (\\"name\\") values ($1)",
+  "select 1 from pg_database where datname = 'mikro_orm_test_migrations'",
+  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
+  "select * from \\"custom\\".\\"mikro_orm_migrations\\" order by \\"id\\" asc",
+  "select 1 from pg_database where datname = 'mikro_orm_test_migrations'",
+  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
+  "select * from \\"custom\\".\\"mikro_orm_migrations\\" order by \\"id\\" asc",
+  "begin",
+  "commit",
+  "delete from \\"custom\\".\\"mikro_orm_migrations\\" where \\"name\\" in ($1, $2)",
 ]
 `;
 
 exports[`Migrator (postgres) up/down params [all or nothing enabled]: all-or-nothing 1`] = `
 Array [
-  "select 1 from pg_database where datname = 'mikro_orm_test'",
+  "select 1 from pg_database where datname = 'mikro_orm_test_migrations'",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
-  "create table \\"mikro_orm_migrations\\" (\\"id\\" serial primary key, \\"name\\" varchar(255), \\"executed_at\\" timestamptz default current_timestamp)",
+  "create table \\"custom\\".\\"mikro_orm_migrations\\" (\\"id\\" serial primary key, \\"name\\" varchar(255), \\"executed_at\\" timestamptz default current_timestamp)",
   "begin",
-  "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
+  "select * from \\"custom\\".\\"mikro_orm_migrations\\" order by \\"id\\" asc",
   "savepointtrx\\\\d+",
   "select 1",
   "release savepointtrx\\\\d+",
-  "insert into \\"mikro_orm_migrations\\" (\\"name\\") values ($1)",
+  "insert into \\"custom\\".\\"mikro_orm_migrations\\" (\\"name\\") values ($1)",
   "commit",
-  "select 1 from pg_database where datname = 'mikro_orm_test'",
+  "select 1 from pg_database where datname = 'mikro_orm_test_migrations'",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
   "begin",
-  "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
+  "select * from \\"custom\\".\\"mikro_orm_migrations\\" order by \\"id\\" asc",
   "savepointtrx\\\\d+",
   "release savepointtrx\\\\d+",
-  "delete from \\"mikro_orm_migrations\\" where \\"name\\" in ($1, $2)",
+  "delete from \\"custom\\".\\"mikro_orm_migrations\\" where \\"name\\" in ($1, $2)",
   "commit",
-  "select 1 from pg_database where datname = 'mikro_orm_test'",
+  "select 1 from pg_database where datname = 'mikro_orm_test_migrations'",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
   "begin",
-  "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
-  "savepointtrx\\\\d+",
-  "select 1",
-  "release savepointtrx\\\\d+",
-  "insert into \\"mikro_orm_migrations\\" (\\"name\\") values ($1)",
-  "commit",
-  "select 1 from pg_database where datname = 'mikro_orm_test'",
-  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
-  "begin",
-  "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
-  "savepointtrx\\\\d+",
-  "release savepointtrx\\\\d+",
-  "delete from \\"mikro_orm_migrations\\" where \\"name\\" in ($1, $2)",
-  "commit",
-  "select 1 from pg_database where datname = 'mikro_orm_test'",
-  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
-  "begin",
-  "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
+  "select * from \\"custom\\".\\"mikro_orm_migrations\\" order by \\"id\\" asc",
   "savepointtrx\\\\d+",
   "select 1",
   "release savepointtrx\\\\d+",
-  "insert into \\"mikro_orm_migrations\\" (\\"name\\") values ($1)",
+  "insert into \\"custom\\".\\"mikro_orm_migrations\\" (\\"name\\") values ($1)",
   "commit",
-  "select 1 from pg_database where datname = 'mikro_orm_test'",
+  "select 1 from pg_database where datname = 'mikro_orm_test_migrations'",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
   "begin",
-  "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
-  "commit",
-  "select 1 from pg_database where datname = 'mikro_orm_test'",
-  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
-  "begin",
-  "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
+  "select * from \\"custom\\".\\"mikro_orm_migrations\\" order by \\"id\\" asc",
   "savepointtrx\\\\d+",
   "release savepointtrx\\\\d+",
-  "delete from \\"mikro_orm_migrations\\" where \\"name\\" in ($1, $2)",
+  "delete from \\"custom\\".\\"mikro_orm_migrations\\" where \\"name\\" in ($1, $2)",
+  "commit",
+  "select 1 from pg_database where datname = 'mikro_orm_test_migrations'",
+  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
+  "begin",
+  "select * from \\"custom\\".\\"mikro_orm_migrations\\" order by \\"id\\" asc",
+  "savepointtrx\\\\d+",
+  "select 1",
+  "release savepointtrx\\\\d+",
+  "insert into \\"custom\\".\\"mikro_orm_migrations\\" (\\"name\\") values ($1)",
+  "commit",
+  "select 1 from pg_database where datname = 'mikro_orm_test_migrations'",
+  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
+  "begin",
+  "select * from \\"custom\\".\\"mikro_orm_migrations\\" order by \\"id\\" asc",
+  "commit",
+  "select 1 from pg_database where datname = 'mikro_orm_test_migrations'",
+  "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
+  "begin",
+  "select * from \\"custom\\".\\"mikro_orm_migrations\\" order by \\"id\\" asc",
+  "savepointtrx\\\\d+",
+  "release savepointtrx\\\\d+",
+  "delete from \\"custom\\".\\"mikro_orm_migrations\\" where \\"name\\" in ($1, $2)",
   "commit",
 ]
 `;
@@ -801,33 +747,33 @@ Array [
 exports[`Migrator (postgres) up/down with explicit transaction: explicit-tx 1`] = `
 Array [
   "begin",
-  "select 1 from pg_database where datname = 'mikro_orm_test'",
+  "select 1 from pg_database where datname = 'mikro_orm_test_migrations'",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
-  "create table \\"mikro_orm_migrations\\" (\\"id\\" serial primary key, \\"name\\" varchar(255), \\"executed_at\\" timestamptz default current_timestamp)",
-  "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
+  "create table \\"custom\\".\\"mikro_orm_migrations\\" (\\"id\\" serial primary key, \\"name\\" varchar(255), \\"executed_at\\" timestamptz default current_timestamp)",
+  "select * from \\"custom\\".\\"mikro_orm_migrations\\" order by \\"id\\" asc",
   "savepointtrx_xx",
   "select 1",
   "release savepointtrx_xx",
-  "insert into \\"mikro_orm_migrations\\" (\\"name\\") values ($1)",
+  "insert into \\"custom\\".\\"mikro_orm_migrations\\" (\\"name\\") values ($1)",
   "savepointtrx_xx",
   "select 1",
   "release savepointtrx_xx",
-  "insert into \\"mikro_orm_migrations\\" (\\"name\\") values ($1)",
-  "select 1 from pg_database where datname = 'mikro_orm_test'",
+  "insert into \\"custom\\".\\"mikro_orm_migrations\\" (\\"name\\") values ($1)",
+  "select 1 from pg_database where datname = 'mikro_orm_test_migrations'",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
-  "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
+  "select * from \\"custom\\".\\"mikro_orm_migrations\\" order by \\"id\\" asc",
   "savepointtrx_xx",
   "release savepointtrx_xx",
-  "delete from \\"mikro_orm_migrations\\" where \\"name\\" in ($1, $2)",
-  "select 1 from pg_database where datname = 'mikro_orm_test'",
+  "delete from \\"custom\\".\\"mikro_orm_migrations\\" where \\"name\\" in ($1, $2)",
+  "select 1 from pg_database where datname = 'mikro_orm_test_migrations'",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
-  "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
+  "select * from \\"custom\\".\\"mikro_orm_migrations\\" order by \\"id\\" asc",
   "savepointtrx_xx",
   "release savepointtrx_xx",
-  "delete from \\"mikro_orm_migrations\\" where \\"name\\" in ($1, $2)",
-  "select 1 from pg_database where datname = 'mikro_orm_test'",
+  "delete from \\"custom\\".\\"mikro_orm_migrations\\" where \\"name\\" in ($1, $2)",
+  "select 1 from pg_database where datname = 'mikro_orm_test_migrations'",
   "select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('\\"' || table_schema || '\\".\\"' || table_name || '\\"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where table_schema not like 'pg_%' and table_schema != 'information_schema' and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name",
-  "select * from \\"mikro_orm_migrations\\" order by \\"id\\" asc",
+  "select * from \\"custom\\".\\"mikro_orm_migrations\\" order by \\"id\\" asc",
   "commit",
 ]
 `;

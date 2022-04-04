@@ -12,7 +12,7 @@ describe('SchemaGenerator', () => {
     const orm = await MikroORM.init({
       entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName,
-      port: 3307,
+      port: 3308,
       baseDir: BASE_DIR,
       type: 'mysql',
     });
@@ -28,7 +28,7 @@ describe('SchemaGenerator', () => {
     const orm = await MikroORM.init({
       entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName,
-      port: 3307,
+      port: 3308,
       baseDir: BASE_DIR,
       type: 'mysql',
       migrations: { path: BASE_DIR + '/../temp/migrations' },
@@ -47,7 +47,7 @@ describe('SchemaGenerator', () => {
     const orm = await MikroORM.init({
       entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName,
-      port: 3307,
+      port: 3308,
       baseDir: BASE_DIR,
       type: 'mariadb',
     });
@@ -64,7 +64,7 @@ describe('SchemaGenerator', () => {
     const orm = await MikroORM.init({
       entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName,
-      port: 3307,
+      port: 3308,
       baseDir: BASE_DIR,
       type: 'mariadb',
       migrations: { path: BASE_DIR + '/../temp/migrations' },
@@ -92,6 +92,25 @@ describe('SchemaGenerator', () => {
 
     const updateDump = await generator.getUpdateSchemaSQL();
     expect(updateDump).toMatchSnapshot('mysql-update-schema-dump');
+
+    await orm.close(true);
+  });
+
+  test('generate schema from metadata [mariadb]', async () => {
+    const orm = await initORMMySql('mariadb', {}, true);
+    const generator = orm.getSchemaGenerator();
+    await generator.ensureDatabase();
+    const dump = await generator.generate();
+    expect(dump).toMatchSnapshot('mariadb-schema-dump');
+
+    const dropDump = await generator.getDropSchemaSQL();
+    expect(dropDump).toMatchSnapshot('mariadb-drop-schema-dump');
+
+    const createDump = await generator.getCreateSchemaSQL();
+    expect(createDump).toMatchSnapshot('mariadb-create-schema-dump');
+
+    const updateDump = await generator.getUpdateSchemaSQL();
+    expect(updateDump).toMatchSnapshot('mariadb-update-schema-dump');
 
     await orm.close(true);
   });

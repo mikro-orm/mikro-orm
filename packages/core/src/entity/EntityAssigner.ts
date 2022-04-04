@@ -13,6 +13,12 @@ const validator = new EntityValidator(false);
 export class EntityAssigner {
 
   static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T> | Partial<EntityDTO<T>>, options: AssignOptions = {}): T {
+    if (options.visited?.has(entity)) {
+      return entity;
+    }
+
+    options.visited ??= new Set();
+    options.visited.add(entity);
     const wrapped = entity.__helper!;
     options = {
       updateNestedEntities: true,
@@ -30,9 +36,9 @@ export class EntityAssigner {
         return;
       }
 
-      let value = data[prop as keyof typeof data];
+      let value = data[prop];
 
-      if (props[prop] && !props[prop].nullable && (value === undefined || value === null)) {
+      if (props[prop] && !props[prop].nullable && value == null) {
         throw new Error(`You must pass a non-${value} value to the property ${prop} of entity ${entity.constructor.name}.`);
       }
 
@@ -246,4 +252,6 @@ export interface AssignOptions {
   merge?: boolean;
   schema?: string;
   em?: EntityManager;
+  /** @internal */
+  visited?: Set<AnyEntity>;
 }

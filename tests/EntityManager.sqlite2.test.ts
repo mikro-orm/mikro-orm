@@ -526,6 +526,23 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     expect(b1).toBe(b5);
     expect(b1).toBe(b6);
     expect(b1).toBe(b7);
+
+    // complex condition for json property with update query (GH #2839)
+    const qb141 = orm.em.createQueryBuilder(Book4).update({ meta: { items: 3 } }).where({
+      $and: [
+        { id: 123 },
+        { $or: [
+            { meta: null },
+            { meta: { $eq: null } },
+            { meta: { time: { $lt: 1646147306 } } },
+          ] },
+      ],
+    });
+    expect(qb141.getFormattedQuery()).toBe('update `book4` set `meta` = \'{"items":3}\' ' +
+      'where `id` = 123 ' +
+      'and (`meta` is null ' +
+      'or `meta` is null ' +
+      'or json_extract(`meta`, \'$.time\') < 1646147306)');
   });
 
   test('findOne by id', async () => {

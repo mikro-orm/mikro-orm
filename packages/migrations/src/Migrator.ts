@@ -142,7 +142,7 @@ export class Migrator implements IMigrator {
     Object.values(this.em.getMetadata().getAll())
       .filter(meta => meta.collection)
       .forEach(meta => {
-        const schema = meta.schema ?? this.em.getPlatform().getDefaultSchemaName();
+        const schema = meta.schema ?? this.config.get('schema', this.em.getPlatform().getDefaultSchemaName());
         expected.add(schema ? `${schema}.${meta.collection}` : meta.collection);
       });
 

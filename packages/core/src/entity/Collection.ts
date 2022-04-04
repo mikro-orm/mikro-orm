@@ -1,8 +1,8 @@
-import type { AnyEntity, Dictionary, EntityData, EntityMetadata, FilterQuery, Loaded, LoadedCollection, Populate, Primary } from '../typings';
+import type { AnyEntity, EntityData, EntityDTO, EntityMetadata, FilterQuery, Loaded, LoadedCollection, Populate, Primary } from '../typings';
 import { ArrayCollection } from './ArrayCollection';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
-import type { QueryOrderMap , LockMode } from '../enums';
+import type { LockMode, QueryOrderMap } from '../enums';
 import { QueryOrder, ReferenceType } from '../enums';
 import { Reference } from './Reference';
 import type { Transaction } from '../connections/Connection';
@@ -62,12 +62,12 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     }
 
     const em = this.getEntityManager();
-    const pivotMeta = em.getMetadata().find(this.property.pivotTable)!;
+    const pivotMeta = em.getMetadata().find(this.property.pivotEntity)!;
 
     if (!em.getPlatform().usesPivotTable() && this.property.reference === ReferenceType.MANY_TO_MANY) {
       this._count = this.length;
     } else if (this.property.pivotTable && !(this.property.inversedBy || this.property.mappedBy)) {
-      this._count = await em.count(this.property.type, this.createLoadCountCondition({} as FilterQuery<T>, pivotMeta), { populate: [{ field: this.property.pivotTable }] });
+      this._count = await em.count(this.property.type, this.createLoadCountCondition({} as FilterQuery<T>, pivotMeta), { populate: [{ field: this.property.pivotEntity }] });
     } else {
       this._count = await em.count(this.property.type, this.createLoadCountCondition({} as FilterQuery<T>, pivotMeta));
     }
@@ -108,7 +108,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     return super.getItems();
   }
 
-  toJSON(): Dictionary[] {
+  toJSON(): EntityDTO<T>[] {
     if (!this.isInitialized()) {
       return [];
     }
@@ -317,9 +317,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     if (this.property.reference === ReferenceType.ONE_TO_MANY) {
       cond[this.property.mappedBy] = val;
     } else if (pivotMeta && this.property.owner && !this.property.inversedBy) {
-      const pivotProp1 = pivotMeta.properties[this.property.type + '_inverse'];
-      const inverse = pivotProp1.mappedBy;
-      const key = `${this.property.pivotTable}.${pivotMeta.properties[inverse].name}`;
+      const key = `${this.property.pivotEntity}.${pivotMeta.relations[0].name}`;
       cond[key] = val;
     } else {
       const key = this.property.owner ? this.property.inversedBy : this.property.mappedBy;
