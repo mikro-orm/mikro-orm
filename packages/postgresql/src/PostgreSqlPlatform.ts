@@ -230,11 +230,11 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
    * @inheritDoc
    */
   castColumn(prop?: EntityProperty): string {
-    if (prop?.columnTypes?.[0] === this.getUuidTypeDeclarationSQL({})) {
-      return '::text';
+    switch (prop?.columnTypes?.[0]) {
+      case this.getUuidTypeDeclarationSQL({}): return '::text';
+      case this.getBooleanTypeDeclarationSQL(): return '::int';
+      default: return '';
     }
-
-    return '';
   }
 
 }

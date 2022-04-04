@@ -110,6 +110,9 @@ export class TC {
   @PrimaryKey({ type: 'uuid' })
   id: string = v4();
 
+  @Property({ nullable: true })
+  bool?: boolean;
+
   @ManyToOne(() => C, { nullable: true })
   c?: C;
 
@@ -256,6 +259,9 @@ describe('GH issue 2095', () => {
 
     // this requires casting of the UUID column to use it in `min()` (GH #2910)
     await orm.em.fork().find(T, {}, { orderBy: { tc: { id: 'desc' } }, limit: 5 });
+
+    // this requires casting of the bool column to use it in `min()` (GH #2910)
+    await orm.em.fork().find(T, {}, { orderBy: { tc: { bool: 'desc' } }, limit: 5 });
   });
 
   test('getting users with limit 3. must be: [id-user-03, id-user-02, id-user-01]', async () => {
