@@ -144,11 +144,6 @@ export interface CountOptions<T, P extends string = never>  {
   ctx?: Transaction;
 }
 
-export interface InsertOptions<T>  {
-  schema?: string;
-  ctx?: Transaction;
-}
-
 export interface UpdateOptions<T>  {
   filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
   schema?: string;
