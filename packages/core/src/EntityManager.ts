@@ -4,7 +4,7 @@ import { QueryHelper, TransactionContext, Utils } from './utils';
 import type { AssignOptions, EntityLoaderOptions, EntityRepository, IdentifiedReference } from './entity';
 import { EntityAssigner, EntityFactory, EntityLoader, EntityValidator, Reference } from './entity';
 import { ChangeSetType, UnitOfWork } from './unit-of-work';
-import type { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, InsertOptions, LockOptions, NativeInsertUpdateOptions, UpdateOptions, GetReferenceOptions, EntityField } from './drivers';
+import type { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, LockOptions, NativeInsertUpdateOptions, UpdateOptions, GetReferenceOptions, EntityField } from './drivers';
 import type { AnyEntity, AutoPath, ConnectionType, Dictionary, EntityData, EntityDictionary, EntityDTO, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, Populate, PopulateOptions, Primary, RequiredEntityData } from './typings';
 import { FlushMode, LoadStrategy, LockMode, PopulateHint, ReferenceType, SCALAR_TYPES } from './enums';
 import type { TransactionOptions } from './enums';
