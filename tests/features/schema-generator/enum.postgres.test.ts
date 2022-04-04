@@ -1,4 +1,4 @@
-import { Entity, EntityCaseNamingStrategy, Enum, MikroORM, PrimaryKey } from '@mikro-orm/core';
+import { Entity, EntityCaseNamingStrategy, Enum, MikroORM, PrimaryKey, Unique } from '@mikro-orm/core';
 
 enum Food {
   Waffles = 'Waffles',
@@ -17,22 +17,55 @@ export class Something {
 
 }
 
-describe('GH issue #2938', () => {
+export enum ChatLimitInterval {
+  UNKNOWN = 0,
+  INSTANT = 1,
+  DAILY = 2,
+  WEEKLY = 3,
+  MONTHLY = 4,
+}
 
-  test('enum diffing with case sensitive column names', async () => {
-    const orm = await MikroORM.init({
-      entities: [Something],
-      dbName: `mikro_orm_test_enum1`,
-      type: 'postgresql',
-      namingStrategy: EntityCaseNamingStrategy,
-    });
+@Entity()
+@Unique({
+  properties: ['interval', 'id'],
+})
+export class MessageThread {
 
-    await orm.getSchemaGenerator().refreshDatabase();
+  @PrimaryKey()
+  id!: number;
 
-    const diff = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
-    expect(diff).toBe('');
+  @Enum(() => ChatLimitInterval)
+  interval!: ChatLimitInterval;
 
-    await orm.close(true);
+}
+
+test('enum diffing with case sensitive column names (GH issue #2938)', async () => {
+  const orm = await MikroORM.init({
+    entities: [Something],
+    dbName: `mikro_orm_test_enum1`,
+    type: 'postgresql',
+    namingStrategy: EntityCaseNamingStrategy,
   });
 
+  await orm.getSchemaGenerator().refreshDatabase();
+
+  const diff = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+  expect(diff).toBe('');
+
+  await orm.close(true);
+});
+
+test('numeric enum diffing (GH issue #2932)', async () => {
+  const orm = await MikroORM.init({
+    entities: [MessageThread],
+    dbName: `mikro_orm_test_enum2`,
+    type: 'postgresql',
+  });
+
+  await orm.getSchemaGenerator().refreshDatabase();
+
+  const diff = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+  expect(diff).toBe('');
+
+  await orm.close(true);
 });

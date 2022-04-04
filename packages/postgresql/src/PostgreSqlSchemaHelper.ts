@@ -69,14 +69,16 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
   async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName: string): Promise<Index[]> {
     const sql = this.getIndexesSQL(tableName, schemaName);
-    const indexes = await connection.execute<any[]>(sql);
+    const res = await connection.execute<any[]>(sql);
+    const unquote = (str: string) => str.replace(/['"`]/g, '');
 
-    return this.mapIndexes(indexes.map(index => ({
-      columnNames: [index.column_name],
+    return res.map(index => ({
+      columnNames: index.index_def.map((name: string) => unquote(name)),
+      composite: index.index_def.length > 1,
       keyName: index.constraint_name,
       unique: index.unique,
       primary: index.primary,
-    })));
+    }), []);
   }
 
   async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName: string): Promise<Check[]> {
@@ -268,10 +270,14 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   private getIndexesSQL(tableName: string, schemaName: string): string {
-    return `select relname as constraint_name, attname as column_name, idx.indisunique as unique, idx.indisprimary as primary
+    return `select relname as constraint_name, idx.indisunique as unique, idx.indisprimary as primary,
+      array(
+        select pg_get_indexdef(idx.indexrelid, k + 1, true)
+        from generate_subscripts(idx.indkey, 1) as k
+        order by k
+      ) as index_def
       from pg_index idx
       left join pg_class AS i on i.oid = idx.indexrelid
-      left join pg_attribute a on a.attrelid = idx.indrelid and a.attnum = ANY(idx.indkey) and a.attnum > 0
       where indrelid = '"${schemaName}"."${tableName}"'::regclass`;
   }
 
