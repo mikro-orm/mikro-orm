@@ -48,7 +48,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@faker-js/faker": "6.1.1",
+    "@faker-js/faker": "6.1.2",
     "globby": "11.0.4"
   },
   "devDependencies": {
