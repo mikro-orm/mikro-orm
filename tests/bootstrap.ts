@@ -8,6 +8,7 @@ import type { MongoDriver } from '@mikro-orm/mongodb';
 import type { MySqlDriver } from '@mikro-orm/mysql';
 import type { MariaDbDriver } from '@mikro-orm/mariadb';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { MsSqlDriver } from '@mikro-orm/mssql';
 
 import {
   Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2, Label2, Configuration2, Address2, FooParam2,
@@ -111,6 +112,44 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, e
   await connection.loadFile(__dirname + '/postgre-schema.sql');
   Author2Subscriber.log.length = 0;
   Test2Subscriber.log.length = 0;
+  EverythingSubscriber.log.length = 0;
+  FlushSubscriber.log.length = 0;
+
+  return orm;
+}
+
+export async function initORMMsSql() {
+  const orm = await MikroORM.init<MsSqlDriver>({
+    entities: ['entities-mssql'],
+    dbName: `mikro_orm_test`,
+    baseDir: BASE_DIR,
+    type: 'mssql',
+    password: 'Root.Root',
+    // debug: ['query'],
+    debug: true,
+    forceUtcTimezone: true,
+    autoJoinOneToOneOwner: false,
+  });
+
+  const schemaGenerator = orm.getSchemaGenerator();
+  await schemaGenerator.ensureDatabase();
+  // await schemaGenerator.dropSchema();
+  // console.log(await schemaGenerator.generate());
+  // await schemaGenerator.createSchema();
+  const connection = orm.em.getConnection();
+  await connection.loadFile(__dirname + '/mssql-schema.sql');
+  const metadata = orm.getMetadata().getAll();
+
+  for (const meta of Object.values(metadata)) {
+    const pks = meta.getPrimaryProps();
+    const autoIncrement = meta.tableName && pks.length === 1 && (pks[0].type === 'number' || orm.em.getPlatform().isBigIntProperty(pks[0]));
+
+    if (autoIncrement) {
+      await orm.em.execute('SET IDENTITY_INSERT ?? ON', [meta.tableName]);
+    }
+  }
+
+  Author2Subscriber.log.length = 0;
   EverythingSubscriber.log.length = 0;
   FlushSubscriber.log.length = 0;
 

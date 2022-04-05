@@ -125,6 +125,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     'postgresql': { className: 'PostgreSqlDriver', module: () => require('@mikro-orm/postgresql') },
     'sqlite': { className: 'SqliteDriver', module: () => require('@mikro-orm/sqlite') },
     'better-sqlite': { className: 'BetterSqliteDriver', module: () => require('@mikro-orm/better-sqlite') },
+    'mssql': { className: 'MsSqlDriver', module: () => require('@mikro-orm/mssql') },
   };
 
   private readonly options: MikroORMOptions<D>;

@@ -525,7 +525,8 @@ export class QueryBuilderHelper {
   }
 
   finalize(type: QueryType, qb: Knex.QueryBuilder, meta?: EntityMetadata): void {
-    const useReturningStatement = type === QueryType.INSERT && this.platform.usesReturningStatement() && meta && !meta.compositePK;
+    const usesReturningStatement = this.platform.usesReturningStatement() || this.platform.usesOutputStatement();
+    const useReturningStatement = type === QueryType.INSERT && usesReturningStatement && meta && !meta.compositePK;
 
     if (useReturningStatement) {
       const returningProps = meta!.props.filter(prop => prop.primary || prop.defaultRaw);

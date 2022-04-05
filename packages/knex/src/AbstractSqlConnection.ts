@@ -184,6 +184,7 @@ export abstract class AbstractSqlConnection extends Connection {
       return formatted;
     }
 
+    // FIXME is this ok for mssql? without it it breaks some existing postgres tests
     return this.client.client.positionBindings(query);
   }
 

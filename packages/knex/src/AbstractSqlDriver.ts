@@ -235,6 +235,12 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     let sql = `insert into ${this.getTableName(meta, options)} `;
     sql += fields.length > 0 ? '(' + fields.map(k => this.platform.quoteIdentifier(k)).join(', ') + ')' : `(${this.platform.quoteIdentifier(pks[0])})`;
 
+    if (this.platform.usesOutputStatement()) {
+      const returningProps = meta!.props.filter(prop => prop.primary || prop.defaultRaw);
+      const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
+      sql += returningFields.length > 0 ? ` output ${returningFields.map(field => 'inserted.' + this.platform.quoteIdentifier(field)).join(', ')}` : '';
+    }
+
     if (fields.length > 0 || this.platform.usesDefaultKeyword()) {
       sql += ' values ';
     } else {

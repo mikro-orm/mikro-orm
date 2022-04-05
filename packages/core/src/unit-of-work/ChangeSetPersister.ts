@@ -14,6 +14,7 @@ import { ReferenceType } from '../enums';
 export class ChangeSetPersister {
 
   private readonly platform = this.driver.getPlatform();
+  private readonly usesReturningStatement = this.platform.usesReturningStatement() || this.platform.usesOutputStatement();
 
   constructor(private readonly driver: IDatabaseDriver,
               private readonly metadata: MetadataStorage,
@@ -115,7 +116,7 @@ export class ChangeSetPersister {
     wrapped.__initialized = true;
     wrapped.__managed = true;
 
-    if (!this.platform.usesReturningStatement()) {
+    if (!this.usesReturningStatement) {
       await this.reloadVersionValues(meta, [changeSet], options);
     }
 
@@ -129,7 +130,7 @@ export class ChangeSetPersister {
       const chunk = changeSets.slice(i, i + size);
       await this.persistNewEntitiesBatch(meta, chunk, options);
 
-      if (!this.platform.usesReturningStatement()) {
+      if (!this.usesReturningStatement) {
         await this.reloadVersionValues(meta, chunk, options);
       }
     }
@@ -370,7 +371,7 @@ export class ChangeSetPersister {
    * We do need to map to the change set payload too, as it will be used in the originalEntityData for new entities.
    */
   private mapReturnedValues<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, res: QueryResult<T>, meta: EntityMetadata<T>): void {
-    if (this.platform.usesReturningStatement() && res.row && Utils.hasObjectKeys(res.row)) {
+    if (this.usesReturningStatement && res.row && Utils.hasObjectKeys(res.row)) {
       const data = meta.props.reduce((ret, prop) => {
         if (prop.primary && !changeSet.entity.__helper!.hasPrimaryKey()) {
           this.mapPrimaryKey(meta, res.row![prop.fieldNames[0]], changeSet);
