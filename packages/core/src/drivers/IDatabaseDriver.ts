@@ -146,11 +146,6 @@ export interface CountOptions<T, P extends string = never>  {
   connectionType?: ConnectionType;
 }
 
-export interface InsertOptions<T>  {
-  schema?: string;
-  ctx?: Transaction;
-}
-
 export interface UpdateOptions<T>  {
   filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
   schema?: string;
