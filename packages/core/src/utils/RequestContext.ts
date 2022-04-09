@@ -33,9 +33,7 @@ export class RequestContext {
    */
   static async createAsync<T>(em: EntityManager | EntityManager[], next: (...args: any[]) => Promise<T>): Promise<T> {
     const ctx = this.createContext(em);
-    return new Promise((resolve, reject) => {
-      this.storage.run(ctx, () => next().then(resolve).catch(reject));
-    });
+    return this.storage.run(ctx, next);
   }
 
   /**
