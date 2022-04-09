@@ -513,7 +513,8 @@ export class EntityLoader {
     meta.relations
       .filter(prop => prop.eager || populate.some(p => p.field === prop.name))
       .forEach(prop => {
-        const prefixed = prefix ? `${prefix}.${prop.name}` : prop.name;
+        const field = this.getRelationName(meta, prop);
+        const prefixed = prefix ? `${prefix}.${field}` : field;
         const nestedPopulate = populate.find(p => p.field === prop.name)?.children ?? [];
         const nested = this.lookupEagerLoadedRelationships(prop.type, nestedPopulate, strategy, prefixed, visited.slice());
 
