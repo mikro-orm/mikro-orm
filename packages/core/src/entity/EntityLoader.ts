@@ -515,7 +515,7 @@ export class EntityLoader {
       .forEach(prop => {
         const prefixed = prefix ? `${prefix}.${prop.name}` : prop.name;
         const nestedPopulate = populate.find(p => p.field === prop.name)?.children ?? [];
-        const nested = this.lookupEagerLoadedRelationships(prop.type, nestedPopulate, strategy, prefixed, visited);
+        const nested = this.lookupEagerLoadedRelationships(prop.type, nestedPopulate, strategy, prefixed, visited.slice());
 
         if (nested.length > 0) {
           ret.push(...nested);
