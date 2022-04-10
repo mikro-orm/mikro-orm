@@ -5,13 +5,11 @@ import { User } from '../../features/seeder/entities/user.entity';
 export class UserSeeder extends Seeder {
 
   async run(em: EntityManager): Promise<void> {
-    const user = em.create(User, {
+    em.create(User, {
       name: 'Scrooge McDuck',
       email: 'scrooge@money.dc',
       password: 'MoneyIsForSwimming',
-    });
-    await em.persistAndFlush(user);
-    em.clear();
+    }, { persist: true });
   }
 
 }
