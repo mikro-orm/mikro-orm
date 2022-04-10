@@ -1,6 +1,6 @@
 import { inspect } from 'util';
 import type { EntityManager } from '../EntityManager';
-import type { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, Populate, PopulateOptions, Primary } from '../typings';
+import type { AnyEntity, ConnectionType, Dictionary, EntityData, EntityDictionary, EntityMetadata, Populate, PopulateOptions, Primary } from '../typings';
 import type { IdentifiedReference } from './Reference';
 import { Reference } from './Reference';
 import type { SerializationContext } from './EntityTransformer';
@@ -75,12 +75,12 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
     return EntityAssigner.assign(this.entity, data, options);
   }
 
-  async init<P extends Populate<T> = Populate<T>>(populated = true, populate?: P, lockMode?: LockMode): Promise<T> {
+  async init<P extends Populate<T> = Populate<T>>(populated = true, populate?: P, lockMode?: LockMode, connectionType?: ConnectionType): Promise<T> {
     if (!this.__em) {
       throw ValidationError.entityNotManaged(this.entity);
     }
 
-    await this.__em.findOne(this.entity.constructor.name, this.entity, { refresh: true, lockMode, populate });
+    await this.__em.findOne(this.entity.constructor.name, this.entity, { refresh: true, lockMode, populate, connectionType });
     this.populated(populated);
     this.__lazyInitialized = true;
 

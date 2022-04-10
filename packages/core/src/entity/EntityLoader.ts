@@ -1,4 +1,4 @@
-import type { AnyEntity, Dictionary, EntityMetadata, EntityProperty, FilterQuery, PopulateOptions, Primary } from '../typings';
+import type { AnyEntity, Dictionary, EntityMetadata, EntityProperty, FilterQuery, PopulateOptions, Primary, ConnectionType } from '../typings';
 import type { EntityManager } from '../EntityManager';
 import { QueryHelper } from '../utils/QueryHelper';
 import { Utils } from '../utils/Utils';
@@ -25,6 +25,7 @@ export type EntityLoaderOptions<T, P extends string = never> = {
   strategy?: LoadStrategy;
   lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
   schema?: string;
+  connectionType?: ConnectionType;
 };
 
 export class EntityLoader {
@@ -155,10 +156,10 @@ export class EntityLoader {
       const pk = Utils.getPrimaryKeyHash(meta.primaryKeys);
       const ids = Utils.unique(filtered.map(e => Utils.getPrimaryKeyValues(e, meta.primaryKeys, true)));
       const where = this.mergePrimaryCondition(ids, pk, options, meta, this.metadata, this.driver.getPlatform());
-      const { filters, convertCustomTypes, lockMode, strategy, populateWhere } = options;
+      const { filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType } = options;
 
       await this.em.find(meta.className, where, {
-        filters, convertCustomTypes, lockMode, strategy, populateWhere,
+        filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType,
         fields: [prop.name] as never,
       });
 
@@ -254,15 +255,13 @@ export class EntityLoader {
     const ids = Utils.unique(children.map(e => Utils.getPrimaryKeyValues(e, e.__meta!.primaryKeys, true)));
     const where = this.mergePrimaryCondition<T>(ids, fk, options, meta, this.metadata, this.driver.getPlatform());
     const fields = this.buildFields(options.fields, prop);
-    const { refresh, filters, convertCustomTypes, lockMode, strategy, populateWhere } = options;
+    const { refresh, filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType } = options;
 
     return this.em.find(prop.type, where, {
       refresh, filters, convertCustomTypes, lockMode, populateWhere,
       orderBy: [...Utils.asArray(options.orderBy), ...Utils.asArray(prop.orderBy), { [fk]: QueryOrder.ASC }] as QueryOrderMap<T>[],
       populate: populate.children as never ?? populate.all,
-      strategy,
-      fields,
-      schema,
+      strategy, fields, schema, connectionType,
     });
   }
 
@@ -305,7 +304,7 @@ export class EntityLoader {
     const innerOrderBy = Utils.asArray(options.orderBy)
       .filter(orderBy => Utils.isObject(orderBy[prop.name as string]))
       .map(orderBy => orderBy[prop.name as string]);
-    const { refresh, filters, ignoreLazyScalarProperties, populateWhere } = options;
+    const { refresh, filters, ignoreLazyScalarProperties, populateWhere, connectionType } = options;
 
     await this.populate<T>(prop.type, filtered, populate.children, {
       where: await this.extractChildCondition(options, prop, false) as FilterQuery<T>,
@@ -317,6 +316,7 @@ export class EntityLoader {
       filters,
       ignoreLazyScalarProperties,
       populateWhere,
+      connectionType,
     });
   }
 

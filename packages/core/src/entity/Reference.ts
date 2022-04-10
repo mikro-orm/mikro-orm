@@ -1,4 +1,7 @@
-import type { Populate, AnyEntity, Cast, Constructor, Dictionary, EntityProperty, IsUnknown, Primary, PrimaryProperty } from '../typings';
+import type {
+  Populate, AnyEntity, Cast, Constructor, Dictionary, EntityProperty, IsUnknown, Primary,
+  PrimaryProperty, ConnectionType,
+} from '../typings';
 import type { EntityFactory } from './EntityFactory';
 import type { LockMode } from '../enums';
 import { wrap } from './wrap';
@@ -91,7 +94,7 @@ export class Reference<T extends AnyEntity<T>> {
     const opts: Dictionary = typeof options === 'object' ? options : { prop: options };
 
     if (!this.isInitialized()) {
-      await this.entity.__helper!.init(undefined, opts?.populate, opts?.lockMode);
+      await this.entity.__helper!.init(undefined, opts?.populate, opts?.lockMode, opts?.connectionType);
     }
 
     if (opts.prop) {
@@ -151,4 +154,5 @@ Object.defineProperties(Reference.prototype, {
 export interface LoadReferenceOptions<T, P extends string = never> {
   populate?: Populate<T, P>;
   lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
+  connectionType?: ConnectionType;
 }

@@ -1,4 +1,4 @@
-import type { AnyEntity, EntityData, EntityDTO, EntityMetadata, FilterQuery, Loaded, LoadedCollection, Populate, Primary } from '../typings';
+import type { AnyEntity, EntityData, EntityDTO, EntityMetadata, FilterQuery, Loaded, LoadedCollection, Populate, Primary, ConnectionType } from '../typings';
 import { ArrayCollection } from './ArrayCollection';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
@@ -229,6 +229,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
       populate: options.populate,
       lockMode: options.lockMode,
       orderBy: this.createOrderBy(options.orderBy),
+      connectionType: options.connectionType,
     });
 
     if (!customOrder) {
@@ -406,4 +407,5 @@ export interface InitOptions<T, P extends string = never> {
   orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[];
   where?: FilterQuery<T>;
   lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
+  connectionType?: ConnectionType;
 }
