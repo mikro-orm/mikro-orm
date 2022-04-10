@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 
-import { Collection, Entity, Enum, Filter, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Collection, Entity, Enum, Filter, LoadStrategy, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PopulateHint, PrimaryKey, Property } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
 
@@ -66,20 +66,20 @@ export class C {
 @Filter({
   name: 'vis',
   cond: (args, type) => {
-      return {
-          $or: [
-              {
-                init: args.u.c.id,
-              },
-              {
-                  init: {
-                      $ne: args.u.c.id,
-                  },
-                  tc: { c: args.u.c.id },
-                  status: [Status.LIVE, Status.CLOSED],
-              },
-          ],
-      };
+    return {
+      $or: [
+        {
+          init: args.u.c.id,
+        },
+        {
+          init: {
+            $ne: args.u.c.id,
+          },
+          tc: { c: args.u.c.id },
+          status: [Status.LIVE, Status.CLOSED],
+        },
+      ],
+    };
   },
   default: true,
 })
@@ -131,16 +131,16 @@ export class A {
   id!: number;
 
   @ManyToOne(() => TC, {
-      nullable: false,
-      onDelete: 'cascade',
+    nullable: false,
+    onDelete: 'cascade',
   })
   tc!: TC;
 
   @OneToOne(() => B, undefined, {
-      nullable: true,
-      inversedBy: b => b.a,
-      onDelete: 'set null',
-      eager: true,
+    nullable: true,
+    inversedBy: b => b.a,
+    onDelete: 'set null',
+    eager: true,
   })
   b?: any;
 
@@ -150,14 +150,14 @@ export class A {
 @Entity()
 export class B {
 
-    @PrimaryKey()
-    id!: number;
+  @PrimaryKey()
+  id!: number;
 
-    @ManyToOne(() => C)
-    sub!: C;
+  @ManyToOne(() => C)
+  sub!: C;
 
-    @OneToOne(() => A, a => a.b, { nullable: true, onDelete: 'set null' })
-    a?: A;
+  @OneToOne(() => A, a => a.b, { nullable: true, onDelete: 'set null' })
+  a?: A;
 
 }
 
@@ -199,14 +199,14 @@ describe('GH issue 2095', () => {
     const c = orm.em.create(C, {});
     const cp = orm.em.create(C, {});
 
-    const start = new Date(2020,0,1);
-    const end = new Date(2021,0, 1);
+    const start = new Date(2020, 0, 1);
+    const end = new Date(2021, 0, 1);
 
     for (let i = 0; i < 50; i++) {
       const tc = orm.em.create(TC, { c: cp });
       const t = orm.em.create(T, {
         end: new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime())),
-        status: enumValues[Math.floor(Math.random()*enumValues.length)],
+        status: enumValues[Math.floor(Math.random() * enumValues.length)],
         init: c,
         tc: [tc],
       });
@@ -233,7 +233,7 @@ describe('GH issue 2095', () => {
 
     orm.em.clear();
 
-    orm.em.setFilterParams('vis', { u:{ c:{ id: c.id } } });
+    orm.em.setFilterParams('vis', { u: { c: { id: c.id } } });
 
     const firstResults = await orm.em.find(T, {}, {
       limit: 20,
@@ -265,7 +265,7 @@ describe('GH issue 2095', () => {
   });
 
   test('getting users with limit 3. must be: [id-user-03, id-user-02, id-user-01]', async () => {
-    const [ users, total ] = await orm.em.findAndCount(
+    const [users, total] = await orm.em.findAndCount(
       User,
       { groups: { $in: ['id-group-01', 'id-group-02', 'id-group-03'] } },
       { limit: 3, offset: 0, orderBy: { id: 'desc' } },
@@ -277,8 +277,114 @@ describe('GH issue 2095', () => {
     expect(users[2].id).toBe('id-user-01');
   });
 
+  test('pagination with populate and `populateWhere: infer` with joined strategy (#2985)', async () => {
+    const users1 = await orm.em.fork().find(
+      User,
+      { groups: { name: ['Group #2', 'Group #3'] } },
+      {
+        limit: 2,
+        orderBy: { id: 'desc', groups: { name: 'asc' } },
+        populate: ['groups'],
+        strategy: LoadStrategy.SELECT_IN,
+        populateWhere: PopulateHint.ALL,
+      },
+    );
+    expect(users1).toHaveLength(2);
+    expect(users1[0].id).toBe('id-user-03');
+    expect(users1[1].id).toBe('id-user-02');
+    expect(users1[1].groups).toHaveLength(2);
+    expect(users1[1].groups[0].name).toBe('Group #1');
+    expect(users1[1].groups[1].name).toBe('Group #3');
+
+    const users2 = await orm.em.fork().find(
+      User,
+      { groups: { name: ['Group #2', 'Group #3'] } },
+      {
+        limit: 2,
+        orderBy: { id: 'desc', groups: { name: 'asc' } },
+        populate: ['groups'],
+        strategy: LoadStrategy.SELECT_IN,
+        populateWhere: PopulateHint.INFER,
+      },
+    );
+    expect(users2).toHaveLength(2);
+    expect(users2[0].id).toBe('id-user-03');
+    expect(users2[1].id).toBe('id-user-02');
+    expect(users2[1].groups).toHaveLength(1);
+    expect(users2[1].groups[0].name).toBe('Group #3');
+
+    const users3 = await orm.em.fork().find(
+      User,
+      { groups: { name: ['Group #2', 'Group #3'] } },
+      {
+        limit: 2,
+        orderBy: { id: 'desc', groups: { name: 'asc' } },
+        populate: ['groups'],
+        strategy: LoadStrategy.JOINED,
+        populateWhere: PopulateHint.ALL,
+      },
+    );
+    expect(users3).toHaveLength(2);
+    expect(users3[0].id).toBe('id-user-03');
+    expect(users3[1].id).toBe('id-user-02');
+    expect(users3[1].groups).toHaveLength(2);
+    expect(users3[1].groups[0].name).toBe('Group #1');
+    expect(users3[1].groups[1].name).toBe('Group #3');
+
+    const users4 = await orm.em.fork().find(
+      User,
+      { groups: { name: ['Group #2', 'Group #3'] } },
+      {
+        limit: 2,
+        orderBy: { id: 'desc', groups: { name: 'asc' } },
+        populate: ['groups'],
+        strategy: LoadStrategy.JOINED,
+        populateWhere: PopulateHint.INFER,
+      },
+    );
+    expect(users4).toHaveLength(2);
+    expect(users4[0].id).toBe('id-user-03');
+    expect(users4[1].id).toBe('id-user-02');
+    expect(users4[1].groups).toHaveLength(1);
+    expect(users4[1].groups[0].name).toBe('Group #3');
+
+    const users5 = await orm.em.fork().find(
+      User,
+      { groups: { name: ['Group #2', 'Group #3'] } },
+      {
+        limit: 2,
+        orderBy: { id: 'desc', groups: { name: 'asc' } },
+        populate: ['groups'],
+        strategy: LoadStrategy.SELECT_IN,
+        populateWhere: { groups: { name: ['Group #1'] } },
+      },
+    );
+    expect(users5).toHaveLength(2);
+    expect(users5[0].id).toBe('id-user-03');
+    expect(users5[1].id).toBe('id-user-02');
+    expect(users5[1].groups).toHaveLength(1);
+    expect(users5[1].groups[0].name).toBe('Group #1');
+
+    const users6 = await orm.em.fork().find(
+      User,
+      { groups: { name: ['Group #2', 'Group #3'] } },
+      {
+        limit: 2,
+        orderBy: { id: 'desc', groups: { name: 'asc' } },
+        populate: ['groups'],
+        strategy: LoadStrategy.JOINED,
+        populateWhere: { groups: { name: ['Group #1'] } },
+      },
+    );
+    // with joined strategy the populateWhere condition is AND-ed with the base query
+    expect(users6).toHaveLength(1);
+    expect(users6[0].id).toBe('id-user-02');
+    expect(users6[0].groups).toHaveLength(1);
+    expect(users6[0].groups[0].name).toBe('Group #1');
+  });
+
   test('getting users with limit 2, offset 1. must be: [id-user-02, id-user-01]', async () => {
-    const [ users, total ] = await orm.em.findAndCount(
+    const [users, total] = await orm.em.findAndCount(
       User,
       { groups: { $in: ['id-group-01', 'id-group-02', 'id-group-03'] } },
       { limit: 2, offset: 1, orderBy: { id: 'desc' } },
@@ -290,7 +396,7 @@ describe('GH issue 2095', () => {
   });
 
   test('getting users with limit 2, offset 0. must be: [id-user-03, id-user-02]', async () => {
-    const [ users, total ] = await orm.em.findAndCount(
+    const [users, total] = await orm.em.findAndCount(
       User,
       { groups: { $in: ['id-group-01', 'id-group-02', 'id-group-03'] } },
       { limit: 2, offset: 0, orderBy: { id: 'desc' } },
@@ -302,7 +408,7 @@ describe('GH issue 2095', () => {
   });
 
   test('getting users with limit 2, offset 2. must be: [id-user-01]', async () => {
-    const [ users, total ] = await orm.em.findAndCount(
+    const [users, total] = await orm.em.findAndCount(
       User,
       { groups: { $in: ['id-group-01', 'id-group-02', 'id-group-03'] } },
       { limit: 2, offset: 2, orderBy: { id: 'desc' } },

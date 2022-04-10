@@ -1,9 +1,9 @@
 import type { Knex } from 'knex';
 import type {
-  AnyEntity, ConnectionType, Dictionary, EntityData, EntityMetadata, EntityProperty, FlatQueryOrderMap, RequiredEntityData,
+  AnyEntity, ConnectionType, Dictionary, EntityData, EntityMetadata, EntityProperty, FlatQueryOrderMap, RequiredEntityData, ObjectQuery,
   GroupOperator, MetadataStorage, PopulateOptions, QBFilterQuery, QueryOrderMap, QueryResult, FlushMode, FilterQuery, QBQueryOrderMap,
 } from '@mikro-orm/core';
-import { LoadStrategy, LockMode, QueryFlag, QueryHelper, ReferenceType, Utils, ValidationError } from '@mikro-orm/core';
+import { LoadStrategy, LockMode, PopulateHint, QueryFlag, QueryHelper, ReferenceType, Utils, ValidationError } from '@mikro-orm/core';
 import { QueryType } from './enums';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
 import { QueryBuilderHelper } from './QueryBuilderHelper';
@@ -40,6 +40,8 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   _fields?: Field<T>[];
   /** @internal */
   _populate: PopulateOptions<T>[] = [];
+  /** @internal */
+  _populateWhere?: ObjectQuery<T> | PopulateHint;
   /** @internal */
   _populateMap: Dictionary<string> = {};
 
@@ -295,8 +297,9 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   /**
    * @internal
    */
-  populate(populate: PopulateOptions<T>[]): this {
+  populate(populate: PopulateOptions<T>[], populateWhere?: ObjectQuery<T> | PopulateHint): this {
     this._populate = populate;
+    this._populateWhere = populateWhere;
 
     return this;
   }
@@ -575,10 +578,10 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
     // clone array/object properties
     const properties = [
-      'flags', '_populate', '_populateMap', '_joins', '_joinedProps', '_aliasMap', '_cond', '_data', '_orderBy',
+      'flags', '_populate', '_populateWhere', '_populateMap', '_joins', '_joinedProps', '_aliasMap', '_cond', '_data', '_orderBy',
       '_schema', '_indexHint', '_cache', 'subQueries', 'lockMode', 'lockTables',
     ];
-    properties.forEach(prop => (qb as any)[prop] = Utils.copy(this[prop as keyof this]));
+    properties.forEach(prop => (qb as any)[prop] = Utils.copy(this[prop]));
 
     /* istanbul ignore else */
     if (this._fields) {
@@ -882,7 +885,14 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     const subSubQuery = this.getKnex().select(pks).from(knexQuery);
     this._limit = undefined;
     this._offset = undefined;
+    const cond = this._cond;
     this.select(this._fields!).where({ [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubQuery } });
+
+    if (this._populateWhere === PopulateHint.INFER) {
+      this.andWhere(cond);
+    } else if (typeof this._populateWhere === 'object') {
+      this.andWhere(this._populateWhere);
+    }
   }
 
   private wrapModifySubQuery(meta: EntityMetadata): void {

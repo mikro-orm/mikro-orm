@@ -1,8 +1,10 @@
 import type { Knex } from 'knex';
-import type { AnyEntity, Collection, ConnectionType, Configuration, Constructor, CountOptions, DeleteOptions, Dictionary,
+import type {
+  AnyEntity, Collection, ConnectionType, Configuration, Constructor, CountOptions, DeleteOptions, Dictionary,
   DriverMethodOptions, EntityData, EntityDictionary, EntityField, EntityManager, EntityMetadata, EntityProperty, FilterQuery,
   FindOneOptions, FindOptions, IDatabaseDriver, LockOptions, NativeInsertUpdateManyOptions, NativeInsertUpdateOptions,
-  PopulateOptions, Primary, QueryOrderMap, QueryResult, RequiredEntityData, Transaction } from '@mikro-orm/core';
+  PopulateOptions, Primary, QueryOrderMap, QueryResult, RequiredEntityData, Transaction,
+} from '@mikro-orm/core';
 import { DatabaseDriver, EntityManagerType, LoadStrategy, QueryFlag, ReferenceType, Utils } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from './AbstractSqlConnection';
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform';
@@ -47,7 +49,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
 
     qb.select(fields)
-      .populate(populate)
+      .populate(populate, joinedProps.length > 0 ? options.populateWhere : undefined)
       .where(where)
       .orderBy([...Utils.asArray(options.orderBy), ...joinedPropsOrderBy])
       .groupBy(options.groupBy!)
