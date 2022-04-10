@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.1.2](https://github.com/mikro-orm/mikro-orm/compare/v5.1.1...v5.1.2) (2022-04-10)
+
+
+### Bug Fixes
+
+* **postgres:** do not ignore custom PK constraint names ([#2931](https://github.com/mikro-orm/mikro-orm/issues/2931)) ([24bf10e](https://github.com/mikro-orm/mikro-orm/commit/24bf10e668dd2d3b4b6cc4c52ed215fbffcc9d45))
+* **postgres:** drop enum constraints only when the column was an enum ([76fef39](https://github.com/mikro-orm/mikro-orm/commit/76fef399ac01ffd22f5b652701e0769ae5161838))
+* **postgres:** ensure correct column order in compound index/uniques ([321be79](https://github.com/mikro-orm/mikro-orm/commit/321be7992dd7007425fcf5277f09171639db0e28)), closes [#2932](https://github.com/mikro-orm/mikro-orm/issues/2932)
+* **postgres:** fix pagination with order by bool column ([d5476cd](https://github.com/mikro-orm/mikro-orm/commit/d5476cd04b0eca4fb7c98d790013e6532fdd57fc)), closes [#2910](https://github.com/mikro-orm/mikro-orm/issues/2910)
+* **postgres:** fix schema diffing on enums with case-sensitive names ([050875b](https://github.com/mikro-orm/mikro-orm/commit/050875b2f3582499440b14cda1cb04dd2883c6b8)), closes [#2938](https://github.com/mikro-orm/mikro-orm/issues/2938) [#2932](https://github.com/mikro-orm/mikro-orm/issues/2932)
+
+
+### Features
+
+* **schema:** support mysql 8 ([#2961](https://github.com/mikro-orm/mikro-orm/issues/2961)) ([acc960e](https://github.com/mikro-orm/mikro-orm/commit/acc960ebc694c61a959f48e89a9fee5513f6bdfa))
+
+
+
+
+
 ## [5.1.1](https://github.com/mikro-orm/mikro-orm/compare/v5.1.0...v5.1.1) (2022-03-20)
 
 

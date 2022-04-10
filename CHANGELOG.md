@@ -3,6 +3,39 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.1.2](https://github.com/mikro-orm/mikro-orm/compare/v5.1.1...v5.1.2) (2022-04-10)
+
+
+### Bug Fixes
+
+* **core:** allow converting custom types via `em.nativeInsert()` ([#2979](https://github.com/mikro-orm/mikro-orm/issues/2979)) ([8d76852](https://github.com/mikro-orm/mikro-orm/commit/8d7685224eaf6f111807a61e4a1ba3ce39453717))
+* **core:** do not clean up UoW before each "flush step" ([3ae732d](https://github.com/mikro-orm/mikro-orm/commit/3ae732d3d27ef842bfa16470fbf2b04860259af2)), closes [#2934](https://github.com/mikro-orm/mikro-orm/issues/2934)
+* **core:** do not quote knex.raw() instances returned from custom types ([8a4c836](https://github.com/mikro-orm/mikro-orm/commit/8a4c8367a8af032ff3e4ab00825f5fc5aa605ae8)), closes [#1841](https://github.com/mikro-orm/mikro-orm/issues/1841)
+* **core:** fix eager loading of nested embeddable m:1 properties ([4867db9](https://github.com/mikro-orm/mikro-orm/commit/4867db9f60ff25b35503b229845fb06eb02621ee)), closes [#2975](https://github.com/mikro-orm/mikro-orm/issues/2975)
+* **core:** fix eager loading when multiple relations target same entity ([21922ce](https://github.com/mikro-orm/mikro-orm/commit/21922ce175cbe0ceb73b9765087976dac159294b)), closes [#2990](https://github.com/mikro-orm/mikro-orm/issues/2990)
+* **core:** fix mapping of inserted PKs with custom field names from batch insert ([080d8e0](https://github.com/mikro-orm/mikro-orm/commit/080d8e0249391e437abc371a375ce62e5de0ba93)), closes [#2977](https://github.com/mikro-orm/mikro-orm/issues/2977)
+* **core:** never reassign the same entity via `em.assign()` ([cdfbabd](https://github.com/mikro-orm/mikro-orm/commit/cdfbabd5d30d40df061a75b79cc1fc52a6cf6b39)), closes [#2974](https://github.com/mikro-orm/mikro-orm/issues/2974)
+* **core:** propagate entity removal in `em.transactional()` to upper context ([6e5166b](https://github.com/mikro-orm/mikro-orm/commit/6e5166b5eb8b89d6c0448c32b7deb46e310d0c58)), closes [#2973](https://github.com/mikro-orm/mikro-orm/issues/2973)
+* **core:** respect `connectionType` in populate queries ([fe40a9f](https://github.com/mikro-orm/mikro-orm/commit/fe40a9f5663d5a886e975ca049f41a67da60f569)), closes [#2994](https://github.com/mikro-orm/mikro-orm/issues/2994)
+* **core:** support `PopulateHint.INFER` with pagination and joined strategy ([56f8737](https://github.com/mikro-orm/mikro-orm/commit/56f873706132678c0129148a114fa94503f734a8)), closes [#2985](https://github.com/mikro-orm/mikro-orm/issues/2985)
+* **core:** use correct path for relations inside embeddables with populate: true ([4735dba](https://github.com/mikro-orm/mikro-orm/commit/4735dba93f2b7f89a6232aa2b27297fa3aa9418a)), closes [#2948](https://github.com/mikro-orm/mikro-orm/issues/2948)
+* **postgres:** do not ignore custom PK constraint names ([#2931](https://github.com/mikro-orm/mikro-orm/issues/2931)) ([24bf10e](https://github.com/mikro-orm/mikro-orm/commit/24bf10e668dd2d3b4b6cc4c52ed215fbffcc9d45))
+* **postgres:** drop enum constraints only when the column was an enum ([76fef39](https://github.com/mikro-orm/mikro-orm/commit/76fef399ac01ffd22f5b652701e0769ae5161838))
+* **postgres:** ensure correct column order in compound index/uniques ([321be79](https://github.com/mikro-orm/mikro-orm/commit/321be7992dd7007425fcf5277f09171639db0e28)), closes [#2932](https://github.com/mikro-orm/mikro-orm/issues/2932)
+* **postgres:** fix pagination with order by bool column ([d5476cd](https://github.com/mikro-orm/mikro-orm/commit/d5476cd04b0eca4fb7c98d790013e6532fdd57fc)), closes [#2910](https://github.com/mikro-orm/mikro-orm/issues/2910)
+* **postgres:** fix schema diffing on enums with case-sensitive names ([050875b](https://github.com/mikro-orm/mikro-orm/commit/050875b2f3582499440b14cda1cb04dd2883c6b8)), closes [#2938](https://github.com/mikro-orm/mikro-orm/issues/2938) [#2932](https://github.com/mikro-orm/mikro-orm/issues/2932)
+* **schema:** do not create FK index for 1:1 properties (they are unique already) ([473795c](https://github.com/mikro-orm/mikro-orm/commit/473795c26f0b54b3997ce4c839a2834ff43290d8)), closes [#2942](https://github.com/mikro-orm/mikro-orm/issues/2942)
+
+
+### Features
+
+* **mariadb:** implement check constraint support + fix json column diffing ([b513b16](https://github.com/mikro-orm/mikro-orm/commit/b513b1636964a9185f5abfc19b5762a57c5c9006)), closes [#2151](https://github.com/mikro-orm/mikro-orm/issues/2151)
+* **schema:** support mysql 8 ([#2961](https://github.com/mikro-orm/mikro-orm/issues/2961)) ([acc960e](https://github.com/mikro-orm/mikro-orm/commit/acc960ebc694c61a959f48e89a9fee5513f6bdfa))
+
+
+
+
+
 ## [5.1.1](https://github.com/mikro-orm/mikro-orm/compare/v5.1.0...v5.1.1) (2022-03-20)
 
 
