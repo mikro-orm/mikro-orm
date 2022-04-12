@@ -82,7 +82,7 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
   }
 
   async dropSchema(options: { wrap?: boolean; dropMigrationsTable?: boolean; dropDb?: boolean; schema?: string } = {}): Promise<void> {
-    options.wrap ??= true;
+    options.wrap ??= this.options.disableForeignKeys ?? true;
 
     if (options.dropDb) {
       const name = this.config.get('dbName')!;
