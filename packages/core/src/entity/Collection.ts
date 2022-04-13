@@ -141,6 +141,9 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     this.takeSnapshot();
   }
 
+  /**
+   * @inheritDoc
+   */
   remove(...items: (T | Reference<T> | ((item: T) => boolean))[]): void {
     if (items[0] instanceof Function) {
       for (const item of this.items) {

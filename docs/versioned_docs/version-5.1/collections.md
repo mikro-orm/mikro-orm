@@ -64,6 +64,10 @@ console.log(author.books.getItems()); // throws because the collection has not b
 console.log(await author.books.loadItems()); // Book[]
 ```
 
+### Removing items from collection
+
+Removing item from collection does necessarily imply deleting the target entity, it means we are disconnecting the relation - removing items from collection, not removing entities from database - `Collection.remove()` is not the same as `em.remove()`. If we want to delete the entity by removing it from collection, we need to enable `orphanRemoval: true`, which tells the ORM we don't want orphaned entities to exist, so we know those should be removed.
+
 ## OneToMany Collections
 
 `OneToMany` collections are inverse side of `ManyToOne` references, to which they need to point via `fk` attribute:
