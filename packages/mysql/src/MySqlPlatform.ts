@@ -56,7 +56,7 @@ export class MySqlPlatform extends AbstractSqlPlatform {
 
     const indexName = super.getIndexName(tableName, columns, type);
     if (indexName.length > 64) {
-      return `${indexName.substr(0, 57 - type.length)}_${Utils.hash(indexName).substr(0, 5)}_${type}`;
+      return `${indexName.substring(0, 56 - type.length)}_${Utils.hash(indexName, 5)}_${type}`;
     }
 
     return indexName;

@@ -1,4 +1,4 @@
-import { Entity, EntityCaseNamingStrategy, Enum, MikroORM, PrimaryKey, Unique } from '@mikro-orm/core';
+import { Entity, EntityCaseNamingStrategy, Enum, MikroORM, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 
 enum Food {
   Waffles = 'Waffles',
@@ -29,6 +29,9 @@ export enum ChatLimitInterval {
 @Unique({
   properties: ['interval', 'id'],
 })
+@Unique({
+  properties: ['interval', 'id', 'someVeryVeryVeryVeryVeryVeryVeryLongPropertyName'],
+})
 export class MessageThread {
 
   @PrimaryKey()
@@ -36,6 +39,9 @@ export class MessageThread {
 
   @Enum(() => ChatLimitInterval)
   interval!: ChatLimitInterval;
+
+  @Property()
+  someVeryVeryVeryVeryVeryVeryVeryLongPropertyName!: string;
 
 }
 
@@ -58,7 +64,7 @@ test('enum diffing with case sensitive column names (GH issue #2938)', async () 
 test('numeric enum diffing (GH issue #2932)', async () => {
   const orm = await MikroORM.init({
     entities: [MessageThread],
-    dbName: `mikro_orm_test_enum2`,
+    dbName: 'mikro_orm_test_enum2',
     type: 'postgresql',
   });
 

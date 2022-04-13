@@ -211,7 +211,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
     const indexName = super.getIndexName(tableName, columns, type);
     if (indexName.length > 64) {
-      return `${indexName.substr(0, 57 - type.length)}_${Utils.hash(indexName).substr(0, 5)}_${type}`;
+      return `${indexName.substring(0, 56 - type.length)}_${Utils.hash(indexName, 5)}_${type}`;
     }
 
     return indexName;
@@ -220,7 +220,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   getDefaultPrimaryName(tableName: string, columns: string[]): string {
     const indexName = `${tableName}_pkey`;
     if (indexName.length > 64) {
-      return `${indexName.substr(0, 57 - 'primary'.length)}_${Utils.hash(indexName).substr(0, 5)}_primary`;
+      return `${indexName.substring(0, 56 - 'primary'.length)}_${Utils.hash(indexName, 5)}_primary`;
     }
 
     return indexName;

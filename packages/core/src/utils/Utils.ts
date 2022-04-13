@@ -709,8 +709,14 @@ export class Utils {
     return Utils.normalizePath(path);
   }
 
-  static hash(data: string): string {
-    return createHash('md5').update(data).digest('hex');
+  static hash(data: string, length?: number): string {
+    const hash = createHash('md5').update(data).digest('hex');
+
+    if (length) {
+      return hash.substring(0, length);
+    }
+
+    return hash;
   }
 
   static runIfNotEmpty(clause: () => any, data: any): void {
