@@ -98,5 +98,5 @@ export class Book {
 
 const author = new Author('God')
 const book = new Book(author);
-console.log(wrap(book).toJSON().authorName); // 'God'
+console.log(wrap(book).toJSON().authorName); // 'Good'
 ```
