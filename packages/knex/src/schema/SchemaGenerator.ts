@@ -82,8 +82,6 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
   }
 
   async dropSchema(options: { wrap?: boolean; dropMigrationsTable?: boolean; dropDb?: boolean; schema?: string } = {}): Promise<void> {
-    options.wrap ??= true;
-
     if (options.dropDb) {
       const name = this.config.get('dbName')!;
       return this.dropDatabase(name);
@@ -121,7 +119,22 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
   async getDropSchemaSQL(options: { wrap?: boolean; dropMigrationsTable?: boolean; schema?: string } = {}): Promise<string> {
     const wrap = options.wrap ?? this.options.disableForeignKeys;
     const metadata = this.getOrderedMetadata(options.schema).reverse();
+    const schema = await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema);
     let ret = '';
+
+    // remove FKs explicitly if we can't use cascading statement and we don't disable FK checks (we need this for circular relations)
+    for (const meta of metadata) {
+      const table = schema.getTable(meta.tableName);
+
+      if (!this.platform.usesCascadeStatement() && table && !wrap) {
+        for (const fk of Object.values(table.getForeignKeys())) {
+          const builder = this.createSchemaBuilder(table.schema).alterTable(table.name, tbl => {
+            tbl.dropForeign(fk.columnNames, fk.constraintName);
+          });
+          ret += await this.dump(builder, '\n');
+        }
+      }
+    }
 
     for (const meta of metadata) {
       ret += await this.dump(this.dropTable(meta.collection, this.getSchemaName(meta, options)), '\n');
