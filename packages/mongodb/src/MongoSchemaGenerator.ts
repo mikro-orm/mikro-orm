@@ -117,7 +117,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
   }
 
   private createPropertyIndexes(meta: EntityMetadata, prop: EntityProperty, type: 'index' | 'unique') {
-    if (!prop[type]) {
+    if (!prop[type] || !meta.collection) {
       return [];
     }
 

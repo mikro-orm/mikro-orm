@@ -77,6 +77,7 @@ describe('polymorphic embeddables in mongo', () => {
       clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/mikro-orm-test-poly-embeddables?replicaSet=rs',
       type: 'mongo',
       validate: true,
+      ensureIndexes: true,
     });
   });
 
