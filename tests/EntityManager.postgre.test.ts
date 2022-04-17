@@ -841,6 +841,19 @@ describe('EntityManagerPostgre', () => {
     }
   });
 
+  test('stable results of serialization with partial loading', async () => {
+    const god = new Author2('God', 'hello@heaven.god');
+    god.books.add(new Book2('Bible', god));
+    await orm.em.fork().persistAndFlush(god);
+
+    const newGod = await orm.em.findOneOrFail(Author2, god.id, {
+      populate: ['books'],
+      fields: [{ books: ['title'] }],
+    });
+    const json = wrap(newGod).toJSON();
+    expect(json.books[0].author).toBe(newGod.id);
+  });
+
   test('findOne by id', async () => {
     const authorRepository = orm.em.getRepository(Author2);
     const jon = new Author2('Jon Snow', 'snow@wall.st');

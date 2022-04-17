@@ -161,6 +161,7 @@ export class EntityLoader {
       await this.em.find(meta.className, where, {
         filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType,
         fields: [prop.name] as never,
+        populate: [],
       });
 
       return entities;
@@ -260,7 +261,7 @@ export class EntityLoader {
     return this.em.find(prop.type, where, {
       refresh, filters, convertCustomTypes, lockMode, populateWhere,
       orderBy: [...Utils.asArray(options.orderBy), ...Utils.asArray(prop.orderBy), { [fk]: QueryOrder.ASC }] as QueryOrderMap<T>[],
-      populate: populate.children as never ?? populate.all,
+      populate: populate.children as never ?? populate.all ?? [],
       strategy, fields, schema, connectionType,
     });
   }
