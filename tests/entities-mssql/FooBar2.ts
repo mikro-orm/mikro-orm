@@ -1,4 +1,4 @@
-import { ArrayType, BlobType, Entity, Formula, JsonType, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, Formula, JsonType, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { BaseEntity22 } from './BaseEntity22';
 import { FooBaz2 } from './FooBaz2';
 

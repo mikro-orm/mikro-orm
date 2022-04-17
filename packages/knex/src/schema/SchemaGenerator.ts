@@ -12,9 +12,9 @@ import { SchemaComparator } from './SchemaComparator';
  */
 export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> {
 
-  private readonly helper = this.platform.getSchemaHelper()!;
-  private readonly knex = this.connection.getKnex();
-  private readonly options = this.config.get('schemaGenerator');
+  protected readonly helper = this.platform.getSchemaHelper()!;
+  protected readonly knex = this.connection.getKnex();
+  protected readonly options = this.config.get('schemaGenerator');
 
   async generate(): Promise<string> {
     const [dropSchema, createSchema] = await Promise.all([

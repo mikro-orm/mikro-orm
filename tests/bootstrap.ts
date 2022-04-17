@@ -13,7 +13,6 @@ import type { MsSqlDriver } from '@mikro-orm/mssql';
 import {
   Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2, Label2, Configuration2, Address2, FooParam2,
 } from './entities-sql';
-import FooBar from './entities/FooBar';
 import { Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5 } from './entities-schema';
 import { Author2Subscriber } from './subscribers/Author2Subscriber';
 import { Test2Subscriber } from './subscribers/Test2Subscriber';
@@ -129,6 +128,12 @@ export async function initORMMsSql() {
     debug: true,
     forceUtcTimezone: true,
     autoJoinOneToOneOwner: false,
+    logger: i => i,
+    // driverOptions: {
+    //   connection: {
+    //     requestTimeout: 60 * 1000
+    //   }
+    // }
   });
 
   const schemaGenerator = orm.getSchemaGenerator();
@@ -144,9 +149,9 @@ export async function initORMMsSql() {
     const pks = meta.getPrimaryProps();
     const autoIncrement = meta.tableName && pks.length === 1 && (pks[0].type === 'number' || orm.em.getPlatform().isBigIntProperty(pks[0]));
 
-    if (autoIncrement) {
-      await orm.em.execute('SET IDENTITY_INSERT ?? ON', [meta.tableName]);
-    }
+    // if (autoIncrement) {
+    //   await orm.em.execute('SET IDENTITY_INSERT ?? ON', [meta.tableName]);
+    // }
   }
 
   Author2Subscriber.log.length = 0;

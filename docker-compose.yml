@@ -33,15 +33,15 @@ services:
       POSTGRES_HOST_AUTH_METHOD: trust
 
   mssql:
-    image: mcr.microsoft.com/azure-sql-edge
+    image: mcr.microsoft.com/azure-sql-edge:latest
     ports:
       - "1433:1433"
-    volumes:
-      - mssql:/var/opt/mssql/data
-    user: root
+    # volumes:
+    #   - mssql:/var/opt/mssql/data
+    #user: root
     environment:
-      SA_PASSWORD: Root.Root
-      ACCEPT_EULA: Y
+      MSSQL_SA_PASSWORD: Root.Root
+      ACCEPT_EULA: 1
 
 volumes:
   mysql8:
@@ -60,4 +60,4 @@ volumes:
     driver_opts:
       type: tmpfs
       device: tmpfs
-  mssql:
+  # mssql:

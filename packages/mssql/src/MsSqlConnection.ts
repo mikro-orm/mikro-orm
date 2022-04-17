@@ -1,6 +1,7 @@
 import { AbstractSqlConnection, MonkeyPatchable } from '@mikro-orm/knex';
 import type { Knex } from '@mikro-orm/knex';
-import { EventType, IsolationLevel, TransactionEventBroadcaster } from '@mikro-orm/core';
+import type { IsolationLevel, TransactionEventBroadcaster } from '@mikro-orm/core';
+import { EventType } from '@mikro-orm/core';
 
 export class MsSqlConnection extends AbstractSqlConnection {
 
@@ -28,10 +29,11 @@ export class MsSqlConnection extends AbstractSqlConnection {
     config.options = {
       ...(options as any),
       ...(config.options || {}),
+      database: config.database,
     };
 
-    // TODO is this ok? we should select the db afterwards?
-    delete (config as any).database;
+    // TODO is this ok? we should select the db afterwards? - No, don't do this - Michael
+    // delete (config as any).database;
 
     return config;
   }
@@ -55,12 +57,6 @@ export class MsSqlConnection extends AbstractSqlConnection {
   }
 
   protected transformRawResult<T>(res: any, method: 'all' | 'get' | 'run'): T {
-    // if (!Utils.isDefined<any>(res, true)) {
-    //   return res;
-    // }
-
-    console.log('TODO: transformRawResult', res, method);
-
     if (method === 'get') {
       return res[0];
     }
@@ -69,8 +65,12 @@ export class MsSqlConnection extends AbstractSqlConnection {
       return res;
     }
 
+    const rowCount = res.length;
+    const hasEmptyCount = (rowCount === 1) && ('' in res[0]);
+    const emptyRow = res[0][''];
+
     return {
-      affectedRows: Array.isArray(res) ? res[0]?.[''] : undefined,
+      affectedRows: hasEmptyCount ? emptyRow : res.length,
       insertId: res[0] ? res[0].id : 0,
       row: res[0],
       rows: res,
