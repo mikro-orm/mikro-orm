@@ -57,7 +57,7 @@
   },
   "dependencies": {
     "@mikro-orm/knex": "^5.1.2",
-    "fs-extra": "10.0.1",
+    "fs-extra": "10.1.0",
     "knex": "1.0.7",
     "umzug": "3.1.1"
   },
