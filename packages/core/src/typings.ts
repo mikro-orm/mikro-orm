@@ -702,8 +702,8 @@ export interface ISeedManager {
   createSeeder(className: string): Promise<string>;
 }
 
-export interface Seeder {
-  run(em: EntityManager): Promise<void>;
+export interface Seeder<T extends Dictionary = Dictionary> {
+  run(em: EntityManager, context?: T): Promise<void>;
 }
 
 export type MaybePromise<T> = T | Promise<T>;

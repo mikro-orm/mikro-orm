@@ -119,6 +119,33 @@ export class DatabaseSeeder extends Seeder {
 }
 ```
 
+### Shared context
+
+Often we might want to generate entities that are referencing other entities, created by other seeders. For that we can use the shared context object provided in the second parameter or `run` method. It is automatically created when using `this.call()` and passed down to each seeder's `run` method. Let's see how the `AuthorSeeder` and `BookSeeder` from previous example could look like:
+
+```ts
+export class AuthorSeeder extends Seeder {
+  async run(em: EntityManager, context: Dictionary): Promise<void> {
+    // save the entity to the context
+    context.author = em.create(Author, {
+      name: '...',
+      email: '...',
+    });
+  }
+}
+```
+
+```ts
+export class BookSeeder extends Seeder {
+  async run(em: EntityManager, context: Dictionary): Promise<void> {
+    em.create(Book, {
+      title: '...',
+      author: context.author, // use the entity from context
+    });
+  }
+}
+```
+
 ## Entity factories
 
 When testing you may insert entities in the database before starting a test. Instead of specifying every attribute of every entity by hand, you could also use a `Factory` to define a set of default

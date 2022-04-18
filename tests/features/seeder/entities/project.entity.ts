@@ -1,5 +1,6 @@
-import { Collection, Entity, OneToMany, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
+import { Collection, Entity, ManyToOne, OneToMany, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { House } from './house.entity';
+import { User } from './user.entity';
 
 @Entity()
 export class Project {
@@ -12,8 +13,8 @@ export class Project {
   @Property()
   name!: string;
 
-  @Property()
-  owner!: string;
+  @ManyToOne(() => User)
+  owner!: User;
 
   @Property()
   worth!: number;

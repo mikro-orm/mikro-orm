@@ -3,6 +3,7 @@ import { Factory } from '@mikro-orm/seeder';
 import type { Faker } from '@mikro-orm/seeder';
 import { House } from './entities/house.entity';
 import { Project } from './entities/project.entity';
+import { User } from './entities/user.entity';
 import SpyInstance = jest.SpyInstance;
 
 export class ProjectFactory extends Factory<Project> {
@@ -12,7 +13,11 @@ export class ProjectFactory extends Factory<Project> {
   definition(faker: Faker): Partial<Project> {
     return {
       name: 'Money vault',
-      owner: faker.name.findName(),
+      owner: {
+        name: faker.name.findName(),
+        email: faker.internet.email(),
+        password: faker.internet.password(),
+      } as User,
       worth: 120000,
     };
   }
@@ -39,7 +44,7 @@ describe('Factory', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [Project, House],
+      entities: [Project, House, User],
       type: 'sqlite',
       dbName: ':memory:',
     });
