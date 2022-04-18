@@ -62,7 +62,10 @@ export class EntityAssigner {
 
             if (pk) {
               const ref = em.getReference(props[prop].type, pk as Primary<T>, options);
-              if (ref.__helper!.isInitialized()) {
+              // if the PK differs, we want to change the target entity, not update it
+              const sameTarget = ref.__helper.getSerializedPrimaryKey() === unwrappedEntity.__helper.getSerializedPrimaryKey();
+
+              if (ref.__helper!.isInitialized() && sameTarget) {
                 return EntityAssigner.assign(ref, value, options);
               }
             }
