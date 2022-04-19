@@ -502,7 +502,7 @@ export class UnitOfWork {
   private expandUniqueProps<T extends AnyEntity<T>>(entity: T): string[] {
     return entity.__meta!.uniqueProps.map(prop => {
       if (entity[prop.name]) {
-        return prop.reference === ReferenceType.SCALAR ? entity[prop.name] : (entity[prop.name] as AnyEntity).__helper!.getSerializedPrimaryKey();
+        return prop.reference === ReferenceType.SCALAR  || prop.mapToPk ? entity[prop.name] : (entity[prop.name] as AnyEntity).__helper!.getSerializedPrimaryKey();
       }
 
       return undefined;
