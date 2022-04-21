@@ -88,4 +88,15 @@ describe('GH issue 2679', () => {
     const loaded = (await orm.em.find(User, {}))[0];
     expect(loaded.groups).toEqual(['', 'foo', '', 'bar', '']);
   });
+
+  test('special chars in array items (#3037)', async () => {
+    const create = orm.em.create(User, {
+      groups: ['', 'f{o}o', '', '{bar}', ''],
+    });
+    await orm.em.persistAndFlush(create);
+    orm.em.clear();
+
+    const loaded = (await orm.em.find(User, {}))[0];
+    expect(loaded.groups).toEqual(['', 'f{o}o', '', '{bar}', '']);
+  });
 });

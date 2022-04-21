@@ -102,8 +102,8 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   }
 
   marshallArray(values: string[]): string {
-    // Empty string needs to be explicitly represented
-    return `{${values.map(v => !v ? `""` : v).join(',')}}`;
+    const quote = (v: string) => v === '' || v.match(/["{}]/) ? `"${v}"` : v;
+    return `{${values.map(v => quote('' + v)).join(',')}}`;
   }
 
   unmarshallArray(value: string): string[] {
