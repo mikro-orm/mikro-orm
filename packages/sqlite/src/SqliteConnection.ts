@@ -99,20 +99,35 @@ export class SqliteConnection extends AbstractSqlConnection {
 
     /* istanbul ignore next */
     Sqlite3DialectTableCompiler.prototype.foreign = function (this: typeof Sqlite3DialectTableCompiler, foreignInfo: Dictionary) {
-      foreignInfo.column = this.formatter.columnize(foreignInfo.column);
       foreignInfo.column = Array.isArray(foreignInfo.column)
         ? foreignInfo.column
         : [foreignInfo.column];
-      foreignInfo.inTable = this.formatter.columnize(foreignInfo.inTable);
-      foreignInfo.references = this.formatter.columnize(foreignInfo.references);
+      foreignInfo.column = foreignInfo.column.map((column: unknown) =>
+        this.client.customWrapIdentifier(column, (a: unknown) => a),
+      );
+      foreignInfo.inTable = this.client.customWrapIdentifier(
+        foreignInfo.inTable,
+        (a: unknown) => a,
+      );
+      foreignInfo.references = Array.isArray(foreignInfo.references)
+        ? foreignInfo.references
+        : [foreignInfo.references];
+      foreignInfo.references = foreignInfo.references.map((column: unknown) =>
+        this.client.customWrapIdentifier(column, (a: unknown) => a),
+      );
+      // quoted versions
+      const column = this.formatter.columnize(foreignInfo.column);
+      const inTable = this.formatter.columnize(foreignInfo.inTable);
+      const references = this.formatter.columnize(foreignInfo.references);
+      const keyName = this.formatter.columnize(foreignInfo.keyName);
 
-      const addColumnQuery = this.sequence.find((query: { sql: string }) => query.sql.includes(`add column ${foreignInfo.column[0]}`));
+      const addColumnQuery = this.sequence.find((query: { sql: string }) => query.sql.includes(`add column ${column[0]}`));
 
       // no need for temp tables if we just add a column
       if (addColumnQuery) {
         const onUpdate = foreignInfo.onUpdate ? ` on update ${foreignInfo.onUpdate}` : '';
         const onDelete = foreignInfo.onDelete ? ` on delete ${foreignInfo.onDelete}` : '';
-        addColumnQuery.sql += ` constraint ${foreignInfo.keyName} references ${foreignInfo.inTable} (${foreignInfo.references})${onUpdate}${onDelete}`;
+        addColumnQuery.sql += ` constraint ${keyName} references ${inTable} (${references})${onUpdate}${onDelete}`;
         return;
       }
 
