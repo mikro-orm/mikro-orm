@@ -51,6 +51,8 @@ describe('decorators', () => {
   test('ManyToMany', () => {
     const storage = MetadataStorage.getMetadata();
     const key = 'Test2-' + Utils.hash('/path/to/entity');
+    const err = 'Mixing first decorator parameter as options object with other parameters is forbidden. If you want to use the options parameter at first position, provide all options inside it.';
+    expect(() => ManyToMany({ entity: () => Test }, 'name')(new Test2(), 'test0')).toThrow(err);
     ManyToMany({ entity: () => Test })(new Test2(), 'test0');
     ManyToMany({ entity: () => Test })(new Test2(), 'test0'); // calling multiple times won't throw
     expect(storage[key].properties.test0).toMatchObject({ reference: ReferenceType.MANY_TO_MANY, name: 'test0' });
