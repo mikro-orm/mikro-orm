@@ -450,10 +450,23 @@ export class MetadataDiscovery {
     });
   }
 
+  private ensureCorrectFKOrderInPivotEntity(meta: EntityMetadata, owner: EntityProperty): void {
+    const [first, second] = meta.relations;
+
+    // wrong FK order, first FK needs to point to the owning side
+    // (note that we can detect this only if the FKs target different types)
+    if (owner.type === first.type && first.type !== second.type) {
+      delete meta.properties[first.name];
+      meta.removeProperty(first.name, false);
+      meta.addProperty(first);
+    }
+  }
+
   private async definePivotTableEntity(meta: EntityMetadata, prop: EntityProperty): Promise<EntityMetadata> {
     const pivotMeta = this.metadata.find(prop.pivotEntity);
 
     if (pivotMeta) {
+      this.ensureCorrectFKOrderInPivotEntity(pivotMeta, prop);
       return pivotMeta;
     }
 
