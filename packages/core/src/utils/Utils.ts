@@ -136,6 +136,37 @@ export class Utils {
   }
 
   /**
+   * Relation decorators allow using two signatures
+   * - using first parameter as options object
+   * - using all parameters
+   *
+   * This function validates those two ways are not mixed and returns the final options object.
+   * If the second way is used, we always consider the last parameter as options object.
+   * @internal
+   */
+  static processDecoratorParameters<T>(params: Dictionary): T {
+    const keys = Object.keys(params);
+    const values = Object.values(params);
+
+    if (!Utils.isPlainObject(values[0])) {
+      const lastKey = keys[keys.length - 1];
+      const last = params[lastKey];
+      delete params[lastKey];
+
+      return { ...last, ...params };
+    }
+
+    // validate only first parameter is used if its an option object
+    const empty = (v: unknown) => v == null || (Utils.isPlainObject(v) && !Utils.hasObjectKeys(v));
+    if (values.slice(1).some(v => !empty(v))) {
+      throw new Error('Mixing first decorator parameter as options object with other parameters is forbidden. ' +
+        'If you want to use the options parameter at first position, provide all options inside it.');
+    }
+
+    return values[0] as T;
+  }
+
+  /**
    * Checks if the argument is instance of `Object`, but not one of the blacklisted types. Returns false for arrays.
    */
   static isNotObject<T = Dictionary>(o: any, not: any[]): o is T {

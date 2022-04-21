@@ -9,7 +9,7 @@ export function ManyToOne<T, O>(
   options: Partial<ManyToOneOptions<T, O>> = {},
 ) {
   return function (target: AnyEntity, propertyName: string) {
-    options = Utils.isObject<ManyToOneOptions<T, O>>(entity) ? entity : { ...options, entity };
+    options = Utils.processDecoratorParameters<ManyToOneOptions<T, O>>({ entity, options });
     const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
     MetadataValidator.validateSingleDecorator(meta, propertyName, ReferenceType.MANY_TO_ONE);
     const property = { name: propertyName, reference: ReferenceType.MANY_TO_ONE } as EntityProperty;

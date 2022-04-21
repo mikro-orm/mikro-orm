@@ -11,7 +11,7 @@ export function ManyToMany<T, O>(
   options: Partial<ManyToManyOptions<T, O>> = {},
 ) {
   return function (target: AnyEntity, propertyName: string) {
-    options = Utils.isObject<ManyToManyOptions<T, O>>(entity) ? entity : { ...options, entity, mappedBy };
+    options = Utils.processDecoratorParameters<ManyToManyOptions<T, O>>({ entity, mappedBy, options });
     const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
     MetadataValidator.validateSingleDecorator(meta, propertyName, ReferenceType.MANY_TO_MANY);
     const property = { name: propertyName, reference: ReferenceType.MANY_TO_MANY } as EntityProperty<T>;
