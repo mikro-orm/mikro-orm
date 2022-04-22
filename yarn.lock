@@ -1771,9 +1771,10 @@
   resolved "https://registry.yarnpkg.com/@types/minimist/-/minimist-1.2.2.tgz#ee771e2ba4b3dc5b372935d549fd9617bf345b8c"
   integrity sha512-jhuKLIRrhvCPLqwPcx6INqmKeiA5EWrsCOPhrlFSrbrmU4ZMPjj5Ul/oLCMDO98XRUIwVm78xICz4EPCektzeQ==
 
-"@types/mysql2@types/mysql2#d4ef3b2292f328049f7e4c545f6adab7d6a350a9":
+"@types/mysql2@types/mysql2#89378b2cb3974ea8cdd1d633b8f056e54e5d2384":
   version "1.0.0"
-  resolved "https://codeload.github.com/types/mysql2/tar.gz/d4ef3b2292f328049f7e4c545f6adab7d6a350a9"
+  uid "89378b2cb3974ea8cdd1d633b8f056e54e5d2384"
+  resolved "https://codeload.github.com/types/mysql2/tar.gz/89378b2cb3974ea8cdd1d633b8f056e54e5d2384"
   dependencies:
     "@types/mysql" types/mysql
 
