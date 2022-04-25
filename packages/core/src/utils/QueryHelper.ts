@@ -55,7 +55,7 @@ export class QueryHelper {
       });
     }
 
-    if (!Utils.isPlainObject(where)) {
+    if (!Utils.isPlainObject(where) || (key && meta.properties[key]?.customType instanceof JsonType)) {
       return false;
     }
 
