@@ -1,6 +1,6 @@
 import type { Faker } from '@faker-js/faker';
 import faker from '@faker-js/faker';
-import type { RequiredEntityData, EntityManager, Constructor } from '@mikro-orm/core';
+import type { RequiredEntityData, EntityData, EntityManager, Constructor } from '@mikro-orm/core';
 
 export abstract class Factory<T> {
 
@@ -9,9 +9,9 @@ export abstract class Factory<T> {
 
   constructor(private readonly em: EntityManager) { }
 
-  protected abstract definition(faker: Faker): Partial<RequiredEntityData<T>>;
+  protected abstract definition(faker: Faker): EntityData<T>;
 
-  private makeEntity(overrideParameters?: Partial<RequiredEntityData<T>>): T {
+  private makeEntity(overrideParameters?: EntityData<T>): T {
     const entity = this.em.create(this.model, {
       ...this.definition(faker),
       ...overrideParameters,
@@ -28,7 +28,7 @@ export abstract class Factory<T> {
    * Make a single entity and persist (not flush)
    * @param overrideParameters Object specifying what default attributes of the entity factory should be overridden
    */
-  makeOne(overrideParameters?: Partial<RequiredEntityData<T>>): T {
+  makeOne(overrideParameters?: EntityData<T>): T {
     const entity = this.makeEntity(overrideParameters);
     this.em.persist(entity);
     return entity;
@@ -39,7 +39,7 @@ export abstract class Factory<T> {
    * @param amount Number of entities that should be generated
    * @param overrideParameters Object specifying what default attributes of the entity factory should be overridden
    */
-  make(amount: number, overrideParameters?: Partial<RequiredEntityData<T>>): T[] {
+  make(amount: number, overrideParameters?: EntityData<T>): T[] {
     const entities = [...Array(amount)].map(() => {
       return this.makeEntity(overrideParameters);
     });
@@ -51,7 +51,7 @@ export abstract class Factory<T> {
    * Create (and flush) a single entity
    * @param overrideParameters Object specifying what default attributes of the entity factory should be overridden
    */
-  async createOne(overrideParameters?: Partial<RequiredEntityData<T>>): Promise<T> {
+  async createOne(overrideParameters?: EntityData<T>): Promise<T> {
     const entity = this.makeOne(overrideParameters);
     await this.em.flush();
     return entity;
@@ -62,7 +62,7 @@ export abstract class Factory<T> {
    * @param amount Number of entities that should be generated
    * @param overrideParameters Object specifying what default attributes of the entity factory should be overridden
    */
-  async create(amount: number, overrideParameters?: Partial<RequiredEntityData<T>>): Promise<T[]> {
+  async create(amount: number, overrideParameters?: EntityData<T>): Promise<T[]> {
     const entities = this.make(amount, overrideParameters);
     await this.em.flush();
     return entities;
