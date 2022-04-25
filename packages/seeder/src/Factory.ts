@@ -9,9 +9,9 @@ export abstract class Factory<T> {
 
   constructor(private readonly em: EntityManager) { }
 
-  protected abstract definition(faker: Faker): Partial<T>;
+  protected abstract definition(faker: Faker): Partial<RequiredEntityData<T>>;
 
-  private makeEntity(overrideParameters?: Partial<T>): T {
+  private makeEntity(overrideParameters?: Partial<RequiredEntityData<T>>): T {
     const entity = this.em.create(this.model, {
       ...this.definition(faker),
       ...overrideParameters,
@@ -28,7 +28,7 @@ export abstract class Factory<T> {
    * Make a single entity and persist (not flush)
    * @param overrideParameters Object specifying what default attributes of the entity factory should be overridden
    */
-  makeOne(overrideParameters?: Partial<T>): T {
+  makeOne(overrideParameters?: Partial<RequiredEntityData<T>>): T {
     const entity = this.makeEntity(overrideParameters);
     this.em.persist(entity);
     return entity;
@@ -39,7 +39,7 @@ export abstract class Factory<T> {
    * @param amount Number of entities that should be generated
    * @param overrideParameters Object specifying what default attributes of the entity factory should be overridden
    */
-  make(amount: number, overrideParameters?: Partial<T>): T[] {
+  make(amount: number, overrideParameters?: Partial<RequiredEntityData<T>>): T[] {
     const entities = [...Array(amount)].map(() => {
       return this.makeEntity(overrideParameters);
     });
@@ -51,7 +51,7 @@ export abstract class Factory<T> {
    * Create (and flush) a single entity
    * @param overrideParameters Object specifying what default attributes of the entity factory should be overridden
    */
-  async createOne(overrideParameters?: Partial<T>): Promise<T> {
+  async createOne(overrideParameters?: Partial<RequiredEntityData<T>>): Promise<T> {
     const entity = this.makeOne(overrideParameters);
     await this.em.flush();
     return entity;
@@ -62,7 +62,7 @@ export abstract class Factory<T> {
    * @param amount Number of entities that should be generated
    * @param overrideParameters Object specifying what default attributes of the entity factory should be overridden
    */
-  async create(amount: number, overrideParameters?: Partial<T>): Promise<T[]> {
+  async create(amount: number, overrideParameters?: Partial<RequiredEntityData<T>>): Promise<T[]> {
     const entities = this.make(amount, overrideParameters);
     await this.em.flush();
     return entities;
