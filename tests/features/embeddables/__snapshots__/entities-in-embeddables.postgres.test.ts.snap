@@ -183,6 +183,8 @@ exports[`embedded entities in postgres diffing 2`] = `
             entity.profile1.identity.meta.source = factory.create('Source', data.profile1_identity_meta_source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
           }
         }
+      } else if (data.profile1_identity_meta === null) {
+        entity.profile1.identity.meta = null;
       }
       if (data.profile1_identity_meta != null) {
         entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', data.profile1_identity_meta, { newEntity, convertCustomTypes });
@@ -197,6 +199,8 @@ exports[`embedded entities in postgres diffing 2`] = `
             entity.profile1.identity.meta.source = factory.create('Source', data.profile1_identity_meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
           }
         }
+      } else if (data.profile1_identity_meta === null) {
+        entity.profile1.identity.meta = null;
       }
       if (Array.isArray(data.profile1_identity_links)) {
         entity.profile1.identity.links = [];
@@ -219,6 +223,8 @@ exports[`embedded entities in postgres diffing 2`] = `
                   entity.profile1.identity.links[idx_0].meta.source = factory.create('Source', data.profile1_identity_links[idx_0].meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
                 }
               }
+            } else if (data.profile1_identity_links[idx_0].meta === null) {
+              entity.profile1.identity.links[idx_0].meta = null;
             }
             if (Array.isArray(data.profile1_identity_links[idx_0].metas)) {
               entity.profile1.identity.links[idx_0].metas = [];
@@ -236,6 +242,8 @@ exports[`embedded entities in postgres diffing 2`] = `
                       entity.profile1.identity.links[idx_0].metas[idx_1].source = factory.create('Source', data.profile1_identity_links[idx_0].metas[idx_1].source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
                     }
                   }
+                } else if (data.profile1_identity_links[idx_0].metas[idx_1] === null) {
+                  entity.profile1.identity.links[idx_0].metas[idx_1] = null;
                 }
               });
             }
@@ -248,6 +256,8 @@ exports[`embedded entities in postgres diffing 2`] = `
                 entity.profile1.identity.links[idx_0].source = factory.create('Source', data.profile1_identity_links[idx_0].source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
               }
             }
+          } else if (data.profile1_identity_links[idx_0] === null) {
+            entity.profile1.identity.links[idx_0] = null;
           }
         });
       }
@@ -260,6 +270,8 @@ exports[`embedded entities in postgres diffing 2`] = `
           entity.profile1.identity.source = factory.create('Source', data.profile1_identity_source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
         }
       }
+    } else if (data.profile1_identity === null) {
+      entity.profile1.identity = null;
     }
     if (data.profile1_identity != null) {
       entity.profile1.identity = factory.createEmbeddable('Identity', data.profile1_identity, { newEntity, convertCustomTypes });
@@ -277,6 +289,8 @@ exports[`embedded entities in postgres diffing 2`] = `
             entity.profile1.identity.meta.source = factory.create('Source', data.profile1_identity_meta_source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
           }
         }
+      } else if (data.profile1_identity.meta === null) {
+        entity.profile1.identity.meta = null;
       }
       if (data.profile1_identity.meta != null) {
         entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', data.profile1_identity.meta, { newEntity, convertCustomTypes });
@@ -291,6 +305,8 @@ exports[`embedded entities in postgres diffing 2`] = `
             entity.profile1.identity.meta.source = factory.create('Source', data.profile1_identity.meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
           }
         }
+      } else if (data.profile1_identity.meta === null) {
+        entity.profile1.identity.meta = null;
       }
       if (Array.isArray(data.profile1_identity.links)) {
         entity.profile1.identity.links = [];
@@ -313,6 +329,8 @@ exports[`embedded entities in postgres diffing 2`] = `
                   entity.profile1.identity.links[idx_2].meta.source = factory.create('Source', data.profile1_identity.links[idx_2].meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
                 }
               }
+            } else if (data.profile1_identity.links[idx_2].meta === null) {
+              entity.profile1.identity.links[idx_2].meta = null;
             }
             if (Array.isArray(data.profile1_identity.links[idx_2].metas)) {
               entity.profile1.identity.links[idx_2].metas = [];
@@ -330,6 +348,8 @@ exports[`embedded entities in postgres diffing 2`] = `
                       entity.profile1.identity.links[idx_2].metas[idx_3].source = factory.create('Source', data.profile1_identity.links[idx_2].metas[idx_3].source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
                     }
                   }
+                } else if (data.profile1_identity.links[idx_2].metas[idx_3] === null) {
+                  entity.profile1.identity.links[idx_2].metas[idx_3] = null;
                 }
               });
             }
@@ -342,6 +362,8 @@ exports[`embedded entities in postgres diffing 2`] = `
                 entity.profile1.identity.links[idx_2].source = factory.create('Source', data.profile1_identity.links[idx_2].source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
               }
             }
+          } else if (data.profile1_identity.links[idx_2] === null) {
+            entity.profile1.identity.links[idx_2] = null;
           }
         });
       }
@@ -354,6 +376,8 @@ exports[`embedded entities in postgres diffing 2`] = `
           entity.profile1.identity.source = factory.create('Source', data.profile1_identity.source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
         }
       }
+    } else if (data.profile1_identity === null) {
+      entity.profile1.identity = null;
     }
     if (data.profile1_source === null) {
     entity.profile1.source = null;
@@ -364,6 +388,8 @@ exports[`embedded entities in postgres diffing 2`] = `
         entity.profile1.source = factory.create('Source', data.profile1_source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
       }
     }
+  } else if (data.profile1 === null) {
+    entity.profile1 = null;
   }
   if (data.profile1 != null) {
     entity.profile1 = factory.createEmbeddable('Profile', data.profile1, { newEntity, convertCustomTypes });
@@ -384,6 +410,8 @@ exports[`embedded entities in postgres diffing 2`] = `
             entity.profile1.identity.meta.source = factory.create('Source', data.profile1_identity_meta_source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
           }
         }
+      } else if (data.profile1_identity_meta === null) {
+        entity.profile1.identity.meta = null;
       }
       if (data.profile1_identity_meta != null) {
         entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', data.profile1_identity_meta, { newEntity, convertCustomTypes });
@@ -398,6 +426,8 @@ exports[`embedded entities in postgres diffing 2`] = `
             entity.profile1.identity.meta.source = factory.create('Source', data.profile1_identity_meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
           }
         }
+      } else if (data.profile1_identity_meta === null) {
+        entity.profile1.identity.meta = null;
       }
       if (Array.isArray(data.profile1_identity_links)) {
         entity.profile1.identity.links = [];
@@ -420,6 +450,8 @@ exports[`embedded entities in postgres diffing 2`] = `
                   entity.profile1.identity.links[idx_4].meta.source = factory.create('Source', data.profile1_identity_links[idx_4].meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
                 }
               }
+            } else if (data.profile1_identity_links[idx_4].meta === null) {
+              entity.profile1.identity.links[idx_4].meta = null;
             }
             if (Array.isArray(data.profile1_identity_links[idx_4].metas)) {
               entity.profile1.identity.links[idx_4].metas = [];
@@ -437,6 +469,8 @@ exports[`embedded entities in postgres diffing 2`] = `
                       entity.profile1.identity.links[idx_4].metas[idx_5].source = factory.create('Source', data.profile1_identity_links[idx_4].metas[idx_5].source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
                     }
                   }
+                } else if (data.profile1_identity_links[idx_4].metas[idx_5] === null) {
+                  entity.profile1.identity.links[idx_4].metas[idx_5] = null;
                 }
               });
             }
@@ -449,6 +483,8 @@ exports[`embedded entities in postgres diffing 2`] = `
                 entity.profile1.identity.links[idx_4].source = factory.create('Source', data.profile1_identity_links[idx_4].source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
               }
             }
+          } else if (data.profile1_identity_links[idx_4] === null) {
+            entity.profile1.identity.links[idx_4] = null;
           }
         });
       }
@@ -461,6 +497,8 @@ exports[`embedded entities in postgres diffing 2`] = `
           entity.profile1.identity.source = factory.create('Source', data.profile1_identity_source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
         }
       }
+    } else if (data.profile1.identity === null) {
+      entity.profile1.identity = null;
     }
     if (data.profile1.identity != null) {
       entity.profile1.identity = factory.createEmbeddable('Identity', data.profile1.identity, { newEntity, convertCustomTypes });
@@ -478,6 +516,8 @@ exports[`embedded entities in postgres diffing 2`] = `
             entity.profile1.identity.meta.source = factory.create('Source', data.profile1_identity_meta_source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
           }
         }
+      } else if (data.profile1.identity.meta === null) {
+        entity.profile1.identity.meta = null;
       }
       if (data.profile1.identity.meta != null) {
         entity.profile1.identity.meta = factory.createEmbeddable('IdentityMeta', data.profile1.identity.meta, { newEntity, convertCustomTypes });
@@ -492,6 +532,8 @@ exports[`embedded entities in postgres diffing 2`] = `
             entity.profile1.identity.meta.source = factory.create('Source', data.profile1.identity.meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
           }
         }
+      } else if (data.profile1.identity.meta === null) {
+        entity.profile1.identity.meta = null;
       }
       if (Array.isArray(data.profile1.identity.links)) {
         entity.profile1.identity.links = [];
@@ -514,6 +556,8 @@ exports[`embedded entities in postgres diffing 2`] = `
                   entity.profile1.identity.links[idx_6].meta.source = factory.create('Source', data.profile1.identity.links[idx_6].meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
                 }
               }
+            } else if (data.profile1.identity.links[idx_6].meta === null) {
+              entity.profile1.identity.links[idx_6].meta = null;
             }
             if (Array.isArray(data.profile1.identity.links[idx_6].metas)) {
               entity.profile1.identity.links[idx_6].metas = [];
@@ -531,6 +575,8 @@ exports[`embedded entities in postgres diffing 2`] = `
                       entity.profile1.identity.links[idx_6].metas[idx_7].source = factory.create('Source', data.profile1.identity.links[idx_6].metas[idx_7].source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
                     }
                   }
+                } else if (data.profile1.identity.links[idx_6].metas[idx_7] === null) {
+                  entity.profile1.identity.links[idx_6].metas[idx_7] = null;
                 }
               });
             }
@@ -543,6 +589,8 @@ exports[`embedded entities in postgres diffing 2`] = `
                 entity.profile1.identity.links[idx_6].source = factory.create('Source', data.profile1.identity.links[idx_6].source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
               }
             }
+          } else if (data.profile1.identity.links[idx_6] === null) {
+            entity.profile1.identity.links[idx_6] = null;
           }
         });
       }
@@ -555,6 +603,8 @@ exports[`embedded entities in postgres diffing 2`] = `
           entity.profile1.identity.source = factory.create('Source', data.profile1.identity.source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
         }
       }
+    } else if (data.profile1.identity === null) {
+      entity.profile1.identity = null;
     }
     if (data.profile1.source === null) {
     entity.profile1.source = null;
@@ -565,6 +615,8 @@ exports[`embedded entities in postgres diffing 2`] = `
         entity.profile1.source = factory.create('Source', data.profile1.source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
       }
     }
+  } else if (data.profile1 === null) {
+    entity.profile1 = null;
   }
   if (data.profile2 != null) {
     entity.profile2 = factory.createEmbeddable('Profile', data.profile2, { newEntity, convertCustomTypes });
@@ -585,6 +637,8 @@ exports[`embedded entities in postgres diffing 2`] = `
             entity.profile2.identity.meta.source = factory.create('Source', data.profile2.identity.meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
           }
         }
+      } else if (data.profile2.identity.meta === null) {
+        entity.profile2.identity.meta = null;
       }
       if (Array.isArray(data.profile2.identity.links)) {
         entity.profile2.identity.links = [];
@@ -607,6 +661,8 @@ exports[`embedded entities in postgres diffing 2`] = `
                   entity.profile2.identity.links[idx_8].meta.source = factory.create('Source', data.profile2.identity.links[idx_8].meta.source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
                 }
               }
+            } else if (data.profile2.identity.links[idx_8].meta === null) {
+              entity.profile2.identity.links[idx_8].meta = null;
             }
             if (Array.isArray(data.profile2.identity.links[idx_8].metas)) {
               entity.profile2.identity.links[idx_8].metas = [];
@@ -624,6 +680,8 @@ exports[`embedded entities in postgres diffing 2`] = `
                       entity.profile2.identity.links[idx_8].metas[idx_9].source = factory.create('Source', data.profile2.identity.links[idx_8].metas[idx_9].source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
                     }
                   }
+                } else if (data.profile2.identity.links[idx_8].metas[idx_9] === null) {
+                  entity.profile2.identity.links[idx_8].metas[idx_9] = null;
                 }
               });
             }
@@ -636,6 +694,8 @@ exports[`embedded entities in postgres diffing 2`] = `
                 entity.profile2.identity.links[idx_8].source = factory.create('Source', data.profile2.identity.links[idx_8].source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
               }
             }
+          } else if (data.profile2.identity.links[idx_8] === null) {
+            entity.profile2.identity.links[idx_8] = null;
           }
         });
       }
@@ -648,6 +708,8 @@ exports[`embedded entities in postgres diffing 2`] = `
           entity.profile2.identity.source = factory.create('Source', data.profile2.identity.source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
         }
       }
+    } else if (data.profile2.identity === null) {
+      entity.profile2.identity = null;
     }
     if (data.profile2.source === null) {
     entity.profile2.source = null;
@@ -658,6 +720,8 @@ exports[`embedded entities in postgres diffing 2`] = `
         entity.profile2.source = factory.create('Source', data.profile2.source, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });
       }
     }
+  } else if (data.profile2 === null) {
+    entity.profile2 = null;
   }
 }"
 `;

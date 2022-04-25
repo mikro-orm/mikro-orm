@@ -243,6 +243,10 @@ export class ObjectHydrator extends Hydrator {
           // eslint-disable-next-line @typescript-eslint/no-use-before-define
           ret.push(...hydrateProperty(childProp, prop.object, [...path, childProp.embedded![1]], childDataKey).map(l => '  ' + l));
         });
+
+      const nullVal = this.config.get('forceUndefined') ? 'undefined' : 'null';
+      ret.push(`  } else if (data${dataKey} === null) {`);
+      ret.push(`    entity${entityKey} = ${nullVal};`);
       ret.push(`  }`);
 
       return ret;

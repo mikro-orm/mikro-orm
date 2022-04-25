@@ -50,7 +50,7 @@ describe('GH issue 2233', () => {
       .getKnexQuery();
 
     const mapped = orm.em.map(File, raw);
-    expect(mapped).toEqual({ id: 1 });
+    expect(mapped).toEqual({ id: 1, lock: null });
   });
 
 });

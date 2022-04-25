@@ -15,6 +15,8 @@ exports[`polymorphic embeddables in sqlite diffing 1`] = `
     if (typeof data.pet_type !== 'undefined') entity.pet.type = data.pet_type;
     if (typeof data.pet_name !== 'undefined') entity.pet.name = data.pet_name;
     if (typeof data.pet_canMeow !== 'undefined') entity.pet.canMeow = data.pet_canMeow === null ? null : !!data.pet_canMeow;
+  } else if (data.pet === null) {
+    entity.pet = null;
   }
   if (typeof data.pet === 'string') {
     data.pet = JSON.parse(data.pet);
@@ -30,6 +32,8 @@ exports[`polymorphic embeddables in sqlite diffing 1`] = `
     if (data.pet && typeof data.pet.type !== 'undefined') entity.pet.type = data.pet.type;
     if (data.pet && typeof data.pet.name !== 'undefined') entity.pet.name = data.pet.name;
     if (data.pet && typeof data.pet.canMeow !== 'undefined') entity.pet.canMeow = data.pet.canMeow === null ? null : !!data.pet.canMeow;
+  } else if (data.pet === null) {
+    entity.pet = null;
   }
   if (typeof data.pet2 === 'string') {
     data.pet2 = JSON.parse(data.pet2);
@@ -45,6 +49,8 @@ exports[`polymorphic embeddables in sqlite diffing 1`] = `
     if (data.pet2 && typeof data.pet2.type !== 'undefined') entity.pet2.type = data.pet2.type;
     if (data.pet2 && typeof data.pet2.name !== 'undefined') entity.pet2.name = data.pet2.name;
     if (data.pet2 && typeof data.pet2.canMeow !== 'undefined') entity.pet2.canMeow = data.pet2.canMeow === null ? null : !!data.pet2.canMeow;
+  } else if (data.pet2 === null) {
+    entity.pet2 = null;
   }
   if (typeof data.pets === 'string') {
     data.pets = JSON.parse(data.pets);
@@ -66,6 +72,8 @@ exports[`polymorphic embeddables in sqlite diffing 1`] = `
         if (data.pets && data.pets[idx_0] && typeof data.pets[idx_0].type !== 'undefined') entity.pets[idx_0].type = data.pets[idx_0].type;
         if (data.pets && data.pets[idx_0] && typeof data.pets[idx_0].name !== 'undefined') entity.pets[idx_0].name = data.pets[idx_0].name;
         if (data.pets && data.pets[idx_0] && typeof data.pets[idx_0].canMeow !== 'undefined') entity.pets[idx_0].canMeow = data.pets[idx_0].canMeow === null ? null : !!data.pets[idx_0].canMeow;
+      } else if (data.pets[idx_0] === null) {
+        entity.pets[idx_0] = null;
       }
     });
   }

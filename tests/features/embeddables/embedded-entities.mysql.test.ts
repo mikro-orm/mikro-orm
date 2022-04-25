@@ -227,6 +227,18 @@ describe('embedded entities in mysql', () => {
     expect(mock.mock.calls[10][0]).toMatch('select `u0`.* from `user` as `u0` where `u0`.`address4`->\'$.postalCode\' = ? limit ?');
   });
 
+  test('GH issue 3063', async () => {
+    const user = new User();
+    orm.em.assign(user, {
+      address1: { street: 'Downing street 10', postalCode: '123', city: 'London 1', country: 'UK 1' },
+      address2: { street: 'Downing street 11', city: 'London 2', country: 'UK 2' },
+      address3: { street: 'Downing street 12', postalCode: '789', city: 'London 3', country: 'UK 3' },
+    });
+    await orm.em.persistAndFlush(user);
+    const r = await orm.em.fork().findOneOrFail(User, user);
+    expect(r.address5).toBe(null);
+  });
+
   test('assign', async () => {
     const user = new User();
     wrap(user).assign({
