@@ -4,7 +4,7 @@ import type { EntityManager } from '../EntityManager';
 export class TransactionContext {
 
   private static storage = new AsyncLocalStorage<TransactionContext>();
-  readonly id = this.em.id;
+  readonly id = this.em._id;
 
   constructor(readonly em: EntityManager) { }
 

@@ -807,7 +807,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Clears the EntityManager. All entities that are currently managed by this EntityManager become detached.
    */
   clear(): void {
-    this.getUnitOfWork().clear();
+    this.getContext().unitOfWork.clear();
   }
 
   /**
@@ -868,7 +868,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     if (!options.clear) {
       for (const entity of this.getUnitOfWork().getIdentityMap()) {
-        em.getUnitOfWork().registerManaged(entity);
+        em.unitOfWork.registerManaged(entity);
       }
     }
 
@@ -899,12 +899,14 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   getContext(validate = true): EntityManager {
     let em = TransactionContext.getEntityManager(); // prefer the tx context
 
-    if (!em) {
-      // no explicit tx started
-      em = this.useContext ? (this.config.get('context')(this.name) || this) : this;
+    if (em) {
+      return em;
     }
 
-    if (validate && this.useContext && em.id === 1 && !this.config.get('allowGlobalContext')) {
+    // no explicit tx started
+    em = this.useContext ? (this.config.get('context')(this.name) || this) : this;
+
+    if (validate && this.useContext && !this.config.get('allowGlobalContext') && em._id === 1) {
       throw ValidationError.cannotUseGlobalContext();
     }
 
