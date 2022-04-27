@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.1.3](https://github.com/mikro-orm/mikro-orm/compare/v5.1.2...v5.1.3) (2022-04-27)
+
+
+### Bug Fixes
+
+* **postgres:** allow using special characters in string arrays ([366da5f](https://github.com/mikro-orm/mikro-orm/commit/366da5f420f2487fbc7d79fb662ec7db0931afc0)), closes [#3037](https://github.com/mikro-orm/mikro-orm/issues/3037)
+* **schema:** fix diffing of indexes with too long inferred name ([01ba9ed](https://github.com/mikro-orm/mikro-orm/commit/01ba9edef9b202f324f6e580b0f55161ca927801)), closes [#2932](https://github.com/mikro-orm/mikro-orm/issues/2932)
+
+
+
+
+
 ## [5.1.2](https://github.com/mikro-orm/mikro-orm/compare/v5.1.1...v5.1.2) (2022-04-10)
 
 

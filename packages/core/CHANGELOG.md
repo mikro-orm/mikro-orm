@@ -3,6 +3,34 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.1.3](https://github.com/mikro-orm/mikro-orm/compare/v5.1.2...v5.1.3) (2022-04-27)
+
+
+### Bug Fixes
+
+* **core:** allow replacing target entity in relations with `assign` ([90ec83f](https://github.com/mikro-orm/mikro-orm/commit/90ec83fc01296dc6f3560df00e637b050852b7f2)), closes [#3026](https://github.com/mikro-orm/mikro-orm/issues/3026)
+* **core:** do not inline query for JSON properties that match PK names ([e6005d8](https://github.com/mikro-orm/mikro-orm/commit/e6005d838f6faccb56f2082ecf93c23f74cbc08a)), closes [#3054](https://github.com/mikro-orm/mikro-orm/issues/3054)
+* **core:** fix serialization when using partial loading for nested relations ([00be9f1](https://github.com/mikro-orm/mikro-orm/commit/00be9f1e0cefad70e70a66859c0466c3fd60fade)), closes [#3011](https://github.com/mikro-orm/mikro-orm/issues/3011)
+* **core:** hydrate nullable embedded properties as `null` ([e8490f6](https://github.com/mikro-orm/mikro-orm/commit/e8490f68dae699de99b93616c9a10ba2bf0417f4)), closes [#3063](https://github.com/mikro-orm/mikro-orm/issues/3063)
+* **core:** respect mapToPk when expanding properties ([#3031](https://github.com/mikro-orm/mikro-orm/issues/3031)) ([757801e](https://github.com/mikro-orm/mikro-orm/commit/757801e9260b4cc89577b89ddbeec7a428fdb9a0))
+* **schema:** fix diffing of indexes with too long inferred name ([01ba9ed](https://github.com/mikro-orm/mikro-orm/commit/01ba9edef9b202f324f6e580b0f55161ca927801)), closes [#2932](https://github.com/mikro-orm/mikro-orm/issues/2932)
+
+
+### Features
+
+* **core:** try to fix FK order automatically for custom pivot entities ([cc9e427](https://github.com/mikro-orm/mikro-orm/commit/cc9e4277ac348b16de72eddbf339d2494e1533fb)), closes [#3040](https://github.com/mikro-orm/mikro-orm/issues/3040)
+* **core:** validate decorator parameters are used properly ([cb3e1dd](https://github.com/mikro-orm/mikro-orm/commit/cb3e1ddf45b8d8196ca1f61afef223eca06ac0b7)), closes [#3040](https://github.com/mikro-orm/mikro-orm/issues/3040)
+* **seeder:** created shared context when calling other seeders ([6fa04ae](https://github.com/mikro-orm/mikro-orm/commit/6fa04ae4d98756544d9215cd62863707158193ba)), closes [#3022](https://github.com/mikro-orm/mikro-orm/issues/3022)
+
+
+### Performance Improvements
+
+* **core:** do not use contextual EM where we know we are in a fork already ([ba16532](https://github.com/mikro-orm/mikro-orm/commit/ba165328055454ae971fe5c6016e83883566cbc0))
+
+
+
+
+
 ## [5.1.2](https://github.com/mikro-orm/mikro-orm/compare/v5.1.1...v5.1.2) (2022-04-10)
 
 

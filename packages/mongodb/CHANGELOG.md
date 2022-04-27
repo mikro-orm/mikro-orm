@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.1.3](https://github.com/mikro-orm/mikro-orm/compare/v5.1.2...v5.1.3) (2022-04-27)
+
+
+### Bug Fixes
+
+* **mongo:** fix ensuring indexes with polymorphic embeddables ([aa5e4d2](https://github.com/mikro-orm/mikro-orm/commit/aa5e4d230f1cf9541d14f1c5a7c5a8b69d1a0dfd)), closes [#3013](https://github.com/mikro-orm/mikro-orm/issues/3013)
+
+
+
+
+
 ## [5.1.2](https://github.com/mikro-orm/mikro-orm/compare/v5.1.1...v5.1.2) (2022-04-10)
 
 **Note:** Version bump only for package @mikro-orm/mongodb

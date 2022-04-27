@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.1.3](https://github.com/mikro-orm/mikro-orm/compare/v5.1.2...v5.1.3) (2022-04-27)
+
+
+### Bug Fixes
+
+* **seeder:** explicitly flush forks when calling `Seeder.call()` ([c8ece7c](https://github.com/mikro-orm/mikro-orm/commit/c8ece7cd2b1c5b3972e0375d7c941196e6b57031)), closes [#2998](https://github.com/mikro-orm/mikro-orm/issues/2998)
+* **seeder:** fix type of Factory methods ([#3064](https://github.com/mikro-orm/mikro-orm/issues/3064)) ([06e88e7](https://github.com/mikro-orm/mikro-orm/commit/06e88e72d3a4393190fe46c8de9578c7f3ff2812))
+
+
+### Features
+
+* **seeder:** created shared context when calling other seeders ([6fa04ae](https://github.com/mikro-orm/mikro-orm/commit/6fa04ae4d98756544d9215cd62863707158193ba)), closes [#3022](https://github.com/mikro-orm/mikro-orm/issues/3022)
+
+
+
+
+
 ## [5.1.2](https://github.com/mikro-orm/mikro-orm/compare/v5.1.1...v5.1.2) (2022-04-10)
 
 **Note:** Version bump only for package @mikro-orm/seeder

@@ -3,6 +3,42 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.1.3](https://github.com/mikro-orm/mikro-orm/compare/v5.1.2...v5.1.3) (2022-04-27)
+
+
+### Bug Fixes
+
+* **core:** allow replacing target entity in relations with `assign` ([90ec83f](https://github.com/mikro-orm/mikro-orm/commit/90ec83fc01296dc6f3560df00e637b050852b7f2)), closes [#3026](https://github.com/mikro-orm/mikro-orm/issues/3026)
+* **core:** do not inline query for JSON properties that match PK names ([e6005d8](https://github.com/mikro-orm/mikro-orm/commit/e6005d838f6faccb56f2082ecf93c23f74cbc08a)), closes [#3054](https://github.com/mikro-orm/mikro-orm/issues/3054)
+* **core:** fix serialization when using partial loading for nested relations ([00be9f1](https://github.com/mikro-orm/mikro-orm/commit/00be9f1e0cefad70e70a66859c0466c3fd60fade)), closes [#3011](https://github.com/mikro-orm/mikro-orm/issues/3011)
+* **core:** hydrate nullable embedded properties as `null` ([e8490f6](https://github.com/mikro-orm/mikro-orm/commit/e8490f68dae699de99b93616c9a10ba2bf0417f4)), closes [#3063](https://github.com/mikro-orm/mikro-orm/issues/3063)
+* **core:** respect mapToPk when expanding properties ([#3031](https://github.com/mikro-orm/mikro-orm/issues/3031)) ([757801e](https://github.com/mikro-orm/mikro-orm/commit/757801e9260b4cc89577b89ddbeec7a428fdb9a0))
+* **mongo:** fix ensuring indexes with polymorphic embeddables ([aa5e4d2](https://github.com/mikro-orm/mikro-orm/commit/aa5e4d230f1cf9541d14f1c5a7c5a8b69d1a0dfd)), closes [#3013](https://github.com/mikro-orm/mikro-orm/issues/3013)
+* **postgres:** allow using special characters in string arrays ([366da5f](https://github.com/mikro-orm/mikro-orm/commit/366da5f420f2487fbc7d79fb662ec7db0931afc0)), closes [#3037](https://github.com/mikro-orm/mikro-orm/issues/3037)
+* **postgres:** ensure schema exists before creating migrations table ([f211813](https://github.com/mikro-orm/mikro-orm/commit/f21181377fd9ff9885e3b0610394d0c7002614bf)), closes [#3039](https://github.com/mikro-orm/mikro-orm/issues/3039)
+* **schema:** fix diffing of indexes with too long inferred name ([01ba9ed](https://github.com/mikro-orm/mikro-orm/commit/01ba9edef9b202f324f6e580b0f55161ca927801)), closes [#2932](https://github.com/mikro-orm/mikro-orm/issues/2932)
+* **schema:** remove FKs first when trying to `dropSchema` without disabled FKs ([b1b5f55](https://github.com/mikro-orm/mikro-orm/commit/b1b5f553d3710893cdfdcc842e6e367f0b34a621)), closes [#3004](https://github.com/mikro-orm/mikro-orm/issues/3004)
+* **seeder:** explicitly flush forks when calling `Seeder.call()` ([c8ece7c](https://github.com/mikro-orm/mikro-orm/commit/c8ece7cd2b1c5b3972e0375d7c941196e6b57031)), closes [#2998](https://github.com/mikro-orm/mikro-orm/issues/2998)
+* **seeder:** fix type of Factory methods ([#3064](https://github.com/mikro-orm/mikro-orm/issues/3064)) ([06e88e7](https://github.com/mikro-orm/mikro-orm/commit/06e88e72d3a4393190fe46c8de9578c7f3ff2812))
+* **sqlite:** fix reflection of tables with FKs ([389bc0d](https://github.com/mikro-orm/mikro-orm/commit/389bc0ddc69cf9d58c9fecc1440a6bcdfe62af7f)), closes [#2959](https://github.com/mikro-orm/mikro-orm/issues/2959)
+* **sqlite:** upgrade knex to v2 + switch back to sqlite3 ([f3e4b9d](https://github.com/mikro-orm/mikro-orm/commit/f3e4b9dd8a29e44510e5549b773205d52475cb72)), closes [#3046](https://github.com/mikro-orm/mikro-orm/issues/3046)
+
+
+### Features
+
+* **core:** try to fix FK order automatically for custom pivot entities ([cc9e427](https://github.com/mikro-orm/mikro-orm/commit/cc9e4277ac348b16de72eddbf339d2494e1533fb)), closes [#3040](https://github.com/mikro-orm/mikro-orm/issues/3040)
+* **core:** validate decorator parameters are used properly ([cb3e1dd](https://github.com/mikro-orm/mikro-orm/commit/cb3e1ddf45b8d8196ca1f61afef223eca06ac0b7)), closes [#3040](https://github.com/mikro-orm/mikro-orm/issues/3040)
+* **seeder:** created shared context when calling other seeders ([6fa04ae](https://github.com/mikro-orm/mikro-orm/commit/6fa04ae4d98756544d9215cd62863707158193ba)), closes [#3022](https://github.com/mikro-orm/mikro-orm/issues/3022)
+
+
+### Performance Improvements
+
+* **core:** do not use contextual EM where we know we are in a fork already ([ba16532](https://github.com/mikro-orm/mikro-orm/commit/ba165328055454ae971fe5c6016e83883566cbc0))
+
+
+
+
+
 ## [5.1.2](https://github.com/mikro-orm/mikro-orm/compare/v5.1.1...v5.1.2) (2022-04-10)
 
 
