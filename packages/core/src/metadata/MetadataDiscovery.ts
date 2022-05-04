@@ -441,9 +441,14 @@ export class MetadataDiscovery {
 
       if (value instanceof Function) {
         const meta2 = this.metadata.get(prop.type);
-        prop[type] = value(meta2.properties).name;
+        
+        const returnedValue = value(meta2.properties);
+        
+        if (returnedValue) {
+          prop[type] = returnedValue.name;
+        }
 
-        if (prop[type] == null) {
+        if (!returnedValue || prop[type] == null) {
           throw MetadataError.fromWrongReference(meta, prop, type as 'mappedBy' | 'inversedBy');
         }
       }
