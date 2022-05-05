@@ -441,7 +441,7 @@ export class MetadataDiscovery {
 
       if (value instanceof Function) {
         const meta2 = this.metadata.get(prop.type);
-        
+        prop[type] = value(meta2.properties)?.name;
         const returnedValue = value(meta2.properties);
         
         if (returnedValue) {
