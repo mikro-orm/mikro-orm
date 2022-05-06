@@ -61,7 +61,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     // eslint-disable-next-line no-console
     logger: console.log.bind(console),
     findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => NotFoundError.findOneFailed(entityName, where),
-    findOneOrFailHandlerSingle: (entityName: string, where: Dictionary | IPrimaryKey) => NotFoundError.findOneFailedSingle(entityName, where),
+    findExactlyOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => NotFoundError.findExactlyOneFailed(entityName, where),
     baseDir: process.cwd(),
     hydrator: ObjectHydrator,
     flushMode: FlushMode.AUTO,
@@ -464,7 +464,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   logger: (message: string) => void;
   loggerFactory?: (options: LoggerOptions) => Logger;
   findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
-  findOneOrFailHandlerSingle: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
+  findExactlyOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
   debug: boolean | LoggerNamespace[];
   highlighter: Highlighter;
   tsNode?: boolean;
