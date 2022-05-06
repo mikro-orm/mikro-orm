@@ -234,7 +234,7 @@ export class NotFoundError<T extends AnyEntity = AnyEntity> extends ValidationEr
   }
 
   static findExactlyOneFailed(name: string, where: Dictionary | IPrimaryKey): NotFoundError {
-    return new NotFoundError(`Multiple ${name} entities were found (${inspect(where)})`);
+    return new NotFoundError(`Wrong number of ${name} entities found for query ${inspect(where)}, expected exactly one`);
   }
 
 }
