@@ -233,4 +233,8 @@ export class NotFoundError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return new NotFoundError(`${name} not found (${inspect(where)})`);
   }
 
+  static findOneFailedSingle(name: string, where: Dictionary | IPrimaryKey): NotFoundError {
+    return new NotFoundError(`Multiple ${name} entities were found (${inspect(where)})`);
+  }
+
 }

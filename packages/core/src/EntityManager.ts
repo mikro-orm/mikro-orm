@@ -396,14 +396,24 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
   /**
    * Finds first entity matching your `where` query. If nothing found, it will throw an error.
+   * If the `single` option is specified and nothing is found or more than one matching entity is found, it will throw an error.
    * You can override the factory for creating this method via `options.failHandler` locally
-   * or via `Configuration.findOneOrFailHandler` globally.
+   * or via `Configuration.findOneOrFailHandler` (`findOneOrFailHandlerSingle` when specifying `single`) globally.
    */
-  async findOneOrFail<T extends AnyEntity<T>, P extends string = never>(entityName: EntityName<T>, where: FilterQuery<T>, options: FindOneOrFailOptions<T, P> = {}): Promise<Loaded<T, P>> {
-    const entity = await this.findOne(entityName, where, options);
+   async findOneOrFail<T extends AnyEntity<T>, P extends string = never>(entityName: EntityName<T>, where: FilterQuery<T>, options: FindOneOrFailOptions<T, P> = {}): Promise<Loaded<T, P>> {
+    let entity;
+    let isSingleViolation = false;
 
-    if (!entity) {
-      options.failHandler = options.failHandler || this.config.get('findOneOrFailHandler');
+    if (options.single) {
+      const ret = await this.find(entityName, where, options as FindOptions<T, P>);
+      isSingleViolation = ret.length !== 1;
+      entity = ret[0];
+    } else {
+      entity = await this.findOne(entityName, where, options);
+    }
+
+    if (!entity || isSingleViolation) {
+      options.failHandler ??= options.single ? this.config.get('findOneOrFailHandlerSingle') : this.config.get('findOneOrFailHandler');
       entityName = Utils.className(entityName);
       throw options.failHandler!(entityName, where);
     }
