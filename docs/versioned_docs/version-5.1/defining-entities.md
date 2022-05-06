@@ -282,7 +282,7 @@ export const AuthorSchema = new EntitySchema<Author>({
     _id: { type: 'ObjectId', primary: true },
     id: { type: String, serializedPrimaryKey: true },
     createdAt: { type: Date },
-    updatedAt: { type: Date, onUpdate: () => new Date() }),
+    updatedAt: { type: Date, onUpdate: () => new Date() },
     name: { type: String },
     email: { type: String },
     age: { type: Number, nullable: true },
