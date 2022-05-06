@@ -396,14 +396,25 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
   /**
    * Finds first entity matching your `where` query. If nothing found, it will throw an error.
+   * If the `strict` option is specified and nothing is found or more than one matching entity is found, it will throw an error.
    * You can override the factory for creating this method via `options.failHandler` locally
-   * or via `Configuration.findOneOrFailHandler` globally.
+   * or via `Configuration.findOneOrFailHandler` (`findExactlyOneOrFailHandler` when specifying `strict`) globally.
    */
   async findOneOrFail<T extends AnyEntity<T>, P extends string = never>(entityName: EntityName<T>, where: FilterQuery<T>, options: FindOneOrFailOptions<T, P> = {}): Promise<Loaded<T, P>> {
-    const entity = await this.findOne(entityName, where, options);
+    let entity: Loaded<T, P> | null;
+    let isStrictViolation = false;
 
-    if (!entity) {
-      options.failHandler = options.failHandler || this.config.get('findOneOrFailHandler');
+    if (options.strict) {
+      const ret = await this.find(entityName, where, { ...options as FindOptions<T, P>, limit: 2 });
+      isStrictViolation = ret.length !== 1;
+      entity = ret[0];
+    } else {
+      entity = await this.findOne(entityName, where, options);
+    }
+
+    if (!entity || isStrictViolation) {
+      const key = options.strict ? 'findExactlyOneOrFailHandler' : 'findOneOrFailHandler';
+      options.failHandler ??= this.config.get(key);
       entityName = Utils.className(entityName);
       throw options.failHandler!(entityName, where);
     }

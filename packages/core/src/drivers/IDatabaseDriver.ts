@@ -123,6 +123,7 @@ export interface FindOneOptions<T, P extends string = never> extends Omit<FindOp
 
 export interface FindOneOrFailOptions<T, P extends string = never> extends FindOneOptions<T, P> {
   failHandler?: (entityName: string, where: Dictionary | IPrimaryKey | any) => Error;
+  strict?: boolean;
 }
 
 export interface NativeInsertUpdateOptions<T> {
