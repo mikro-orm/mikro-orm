@@ -400,12 +400,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * You can override the factory for creating this method via `options.failHandler` locally
    * or via `Configuration.findOneOrFailHandler` (`findExactlyOneOrFailHandler` when specifying `strict`) globally.
    */
-  async findOneOrFail<T extends AnyEntity<T>, P extends string = never>(entityName: EntityName<T>, where: FilterQuery<T>, options: FindOneOrFailOptions<T, P> = {}): Promise<Loaded<T, P>> {
-    let entity;
+  async findOneOrFail<T extends AnyEntity<T>, P extends string = never>(entityName: EntityName<T>, where: FilterQuery<T>, options: FindOneOrFailOptions<T, P> = {}): Promise<Loaded<T, P> | null> {
+    let entity: Loaded<T, P> | null;
     let isStrictViolation = false;
 
     if (options.strict) {
-      const ret = await this.find(entityName, where, options as FindOptions<T, P>);
+      const ret = await this.find(entityName, where, { ...options as FindOptions<T, P>, limit: 2 });
       isStrictViolation = ret.length !== 1;
       entity = ret[0];
     } else {
