@@ -52,15 +52,15 @@ describe('GH issue 3051', () => {
   });
 
   test('find a result and throw if it is not a single entity', async () => {
-    const jonSnow = await orm.em.findOneOrFail(Author, { name: 'Jon Snow' }, { single: true, populate: ['books'] });
+    const jonSnow = await orm.em.findOneOrFail(Author, { name: 'Jon Snow' }, { strict: true, populate: ['books'] });
 
     expect(jonSnow).not.toBeNull();
 
-    await expect(orm.em.findOneOrFail(Book, { author: jonSnow }, { single: true })).rejects.toThrowError(`Multiple Book entities were found ({ author: '${jonSnow.id}' })`);
+    await expect(orm.em.findOneOrFail(Book, { author: jonSnow }, { strict: true })).rejects.toThrowError(`Wrong number of Book entities found for query { author: '${jonSnow?.id}' }, expected exactly one`);
     await expect(orm.em.findOneOrFail(Book, { title: 'b4' })).rejects.toThrowError('Book not found ({ title: \'b4\' })');
-    await expect(orm.em.findOneOrFail(Book, { author: jonSnow }, { single: true, failHandler: () => new Error('Test') })).rejects.toThrowError('Test');
-    await expect(orm.em.findOneOrFail(Book, { author: jonSnow }, { single: true, failHandler: (entityName: string) => new Error(`Failed: ${entityName}`) })).rejects.toThrowError('Failed: Book');
-    await expect(orm.em.findOneOrFail(Book, { title: 'b4' }, { single: true, failHandler: () => new Error('Test') })).rejects.toThrowError('Test');
-    await expect(orm.em.findOneOrFail(Book, { title: 'b4' }, { single: true, failHandler: (entityName: string) => new Error(`Failed: ${entityName}`) })).rejects.toThrowError('Failed: Book');
+    await expect(orm.em.findOneOrFail(Book, { author: jonSnow }, { strict: true, failHandler: () => new Error('Test') })).rejects.toThrowError('Test');
+    await expect(orm.em.findOneOrFail(Book, { author: jonSnow }, { strict: true, failHandler: (entityName: string) => new Error(`Failed: ${entityName}`) })).rejects.toThrowError('Failed: Book');
+    await expect(orm.em.findOneOrFail(Book, { title: 'b4' }, { strict: true, failHandler: () => new Error('Test') })).rejects.toThrowError('Test');
+    await expect(orm.em.findOneOrFail(Book, { title: 'b4' }, { strict: true, failHandler: (entityName: string) => new Error(`Failed: ${entityName}`) })).rejects.toThrowError('Failed: Book');
   });
 });
