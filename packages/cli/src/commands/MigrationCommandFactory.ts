@@ -1,4 +1,4 @@
-import type { Arguments, Argv, CommandModule } from 'yargs';
+import type { ArgumentsCamelCase, Argv, CommandModule } from 'yargs';
 import type { Configuration, MikroORM, MikroORMOptions, IMigrator } from '@mikro-orm/core';
 import { Utils, colors } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
@@ -17,12 +17,12 @@ export class MigrationCommandFactory {
     fresh: 'Clear the database and rerun all migrations',
   };
 
-  static create<U extends Options = Options>(command: MigratorMethod): CommandModule<unknown, U> & { builder: (args: Argv) => Argv<U>; handler: (args: Arguments<U>) => Promise<void> } {
+  static create<U extends Options = Options>(command: MigratorMethod): CommandModule<unknown, U> & { builder: (args: Argv) => Argv<U>; handler: (args: ArgumentsCamelCase<U>) => Promise<void> } {
     return {
       command: `migration:${command}`,
       describe: MigrationCommandFactory.DESCRIPTIONS[command],
       builder: (args: Argv) => MigrationCommandFactory.configureMigrationCommand(args, command) as Argv<U>,
-      handler: (args: Arguments<U>) => MigrationCommandFactory.handleMigrationCommand(args, command),
+      handler: (args: ArgumentsCamelCase<U>) => MigrationCommandFactory.handleMigrationCommand(args, command),
     };
   }
 
@@ -83,7 +83,7 @@ export class MigrationCommandFactory {
     });
   }
 
-  static async handleMigrationCommand(args: Arguments<Options>, method: MigratorMethod): Promise<void> {
+  static async handleMigrationCommand(args: ArgumentsCamelCase<Options>, method: MigratorMethod): Promise<void> {
     const options = { pool: { min: 1, max: 1 } } as Partial<MikroORMOptions>;
     const orm = await CLIHelper.getORM(undefined, options) as MikroORM<AbstractSqlDriver>;
     const { Migrator } = await import('@mikro-orm/migrations');
@@ -117,7 +117,7 @@ export class MigrationCommandFactory {
     });
   }
 
-  private static async handleUpDownCommand(args: Arguments<Options>, migrator: IMigrator, method: MigratorMethod) {
+  private static async handleUpDownCommand(args: ArgumentsCamelCase<Options>, migrator: IMigrator, method: MigratorMethod) {
     const opts = MigrationCommandFactory.getUpDownOptions(args);
     await migrator[method](opts as string[]);
     const message = this.getUpDownSuccessMessage(method as 'up' | 'down', opts);
@@ -143,7 +143,7 @@ export class MigrationCommandFactory {
     });
   }
 
-  private static async handleCreateCommand(migrator: IMigrator, args: Arguments<Options>, config: Configuration): Promise<void> {
+  private static async handleCreateCommand(migrator: IMigrator, args: ArgumentsCamelCase<Options>, config: Configuration): Promise<void> {
     const ret = await migrator.createMigration(args.path, args.blank, args.initial);
 
     if (ret.diff.up.length === 0) {
@@ -167,7 +167,7 @@ export class MigrationCommandFactory {
     CLIHelper.dump(colors.green(`${ret.fileName} successfully created`));
   }
 
-  private static async handleFreshCommand(args: Arguments<Options>, migrator: IMigrator, orm: MikroORM<AbstractSqlDriver>) {
+  private static async handleFreshCommand(args: ArgumentsCamelCase<Options>, migrator: IMigrator, orm: MikroORM<AbstractSqlDriver>) {
     const generator = new SchemaGenerator(orm.em);
     await generator.dropSchema({ dropMigrationsTable: true });
     CLIHelper.dump(colors.green('Dropped schema successfully'));

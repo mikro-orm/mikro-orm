@@ -1,4 +1,4 @@
-import type { Arguments, Argv, CommandModule } from 'yargs';
+import type { ArgumentsCamelCase, Argv, CommandModule } from 'yargs';
 import { colors } from '@mikro-orm/core';
 import { CLIHelper } from '../CLIHelper';
 
@@ -17,7 +17,7 @@ export class CreateSeederCommand<T> implements CommandModule<T, { seeder: string
   /**
    * @inheritDoc
    */
-  async handler(args: Arguments<{ seeder: string }>) {
+  async handler(args: ArgumentsCamelCase<{ seeder: string }>) {
     const className = CreateSeederCommand.getSeederClassName(args.seeder);
     const orm = await CLIHelper.getORM();
     const seeder = orm.getSeeder();

@@ -1,4 +1,4 @@
-import type { Arguments, Argv, CommandModule } from 'yargs';
+import type { ArgumentsCamelCase, Argv, CommandModule } from 'yargs';
 import type { EntityManager } from '@mikro-orm/knex';
 import { CLIHelper } from '../CLIHelper';
 
@@ -39,7 +39,7 @@ export class GenerateEntitiesCommand<U extends Options = Options> implements Com
   /**
    * @inheritDoc
    */
-  async handler(args: Arguments<U>): Promise<void> {
+  async handler(args: ArgumentsCamelCase<U>): Promise<void> {
     if (!args.save && !args.dump) {
       return CLIHelper.showHelp();
     }

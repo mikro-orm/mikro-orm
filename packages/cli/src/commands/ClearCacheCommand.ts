@@ -1,4 +1,4 @@
-import type { Arguments, CommandModule } from 'yargs';
+import type { ArgumentsCamelCase, CommandModule } from 'yargs';
 import { colors } from '@mikro-orm/core';
 import { CLIHelper } from '../CLIHelper';
 
@@ -10,7 +10,7 @@ export class ClearCacheCommand implements CommandModule {
   /**
    * @inheritDoc
    */
-  async handler(args: Arguments) {
+  async handler(args: ArgumentsCamelCase) {
     const config = await CLIHelper.getConfiguration();
 
     if (!config.get('cache').enabled) {
