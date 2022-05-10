@@ -40,6 +40,6 @@
 
 .featureImage {
   height: 150px;
-  width: 200px;
+  max-width: 200px;
   padding: 20px 0 30px;
 }

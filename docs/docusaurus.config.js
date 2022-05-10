@@ -63,10 +63,10 @@ module.exports = {
           position: 'left',
         },
         { to: 'docs/installation', label: 'Docs', position: 'left' },
-        { to: 'api', label: 'API', position: 'left' },
+        { to: 'api', label: 'API', position: 'left', activeBaseRegex: 'api/(?!core/changelog)', },
         { to: 'docs/faq', label: 'FAQ', position: 'left' },
         { to: 'blog', label: 'Blog', position: 'left' },
-        { href: 'https://github.com/mikro-orm/mikro-orm/blob/master/CHANGELOG.md', label: 'Changelog', position: 'left', className: 'changelog' },
+        { to: 'api/core/changelog', label: 'Changelog', position: 'left', className: 'changelog' },
         {
           to: '/versions',
           label: `latest: v${pkg.version}`,
@@ -160,6 +160,7 @@ module.exports = {
       'docusaurus-plugin-typedoc-api',
       {
         projectRoot: `${__dirname}/..`,
+        changelogs: true,
         packages,
         typedocOptions: {
           readme: 'none',
