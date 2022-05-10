@@ -21,11 +21,17 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   getListTablesSQL(): string {
+    const ignoreSpecificSchemasSQL = [
+      'information_schema',
+      'tiger',
+      'topology',
+    ].map(s => `table_schema != '${s}'`).join(' and ');
+
     return `select table_name, table_schema as schema_name, `
       + `(select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c
           where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment `
       + `from information_schema.tables `
-      + `where table_schema not like 'pg_%' and table_schema != 'information_schema' `
+      + `where table_schema not like 'pg_%' and ${ignoreSpecificSchemasSQL} `
       + `and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name`;
   }
 
