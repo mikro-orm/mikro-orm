@@ -44,7 +44,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       'information_schema',
       'tiger',
       'topology',
-      ...this.platform.getConfig().get('schemaGenerator').ignoreSchema,
+      /* istanbul ignore next */
+      ...this.platform.getConfig().get('schemaGenerator').ignoreSchema ?? [],
     ].map(s => this.platform.quoteValue(s)).join(', ');
 
     return `"${column}" not like 'pg_%' and "${column}" not in (${ignored})`;

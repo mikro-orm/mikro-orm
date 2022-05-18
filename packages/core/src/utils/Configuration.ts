@@ -474,7 +474,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   schemaGenerator: {
     disableForeignKeys?: boolean;
     createForeignKeyConstraints?: boolean;
-    ignoreSchema: string[];
+    ignoreSchema?: string[];
   };
   cache: {
     enabled?: boolean;

@@ -244,6 +244,7 @@ export class ObjectHydrator extends Hydrator {
           ret.push(...hydrateProperty(childProp, prop.object, [...path, childProp.embedded![1]], childDataKey).map(l => '  ' + l));
         });
 
+      /* istanbul ignore next */
       const nullVal = this.config.get('forceUndefined') ? 'undefined' : 'null';
       ret.push(`  } else if (data${dataKey} === null) {`);
       ret.push(`    entity${entityKey} = ${nullVal};`);
