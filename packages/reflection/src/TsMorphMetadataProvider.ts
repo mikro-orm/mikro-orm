@@ -90,14 +90,9 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     }
 
     const tsType = property.getType();
-
-    if (tsType.isEnum()) {
-      prop.enum = true;
-    }
-
     const typeName = tsType.getText(property);
 
-    if (tsType.isEnum()) {
+    if (prop.enum && tsType.isEnum()) {
       prop.items = tsType.getUnionTypes().map(t => t.getLiteralValueOrThrow()) as string[];
     }
 
