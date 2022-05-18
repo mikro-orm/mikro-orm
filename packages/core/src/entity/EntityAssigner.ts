@@ -133,7 +133,7 @@ export class EntityAssigner {
 
   private static assignReference<T extends AnyEntity<T>>(entity: T, value: any, prop: EntityProperty, em: EntityManager, options: AssignOptions): void {
     if (Utils.isEntity(value, true)) {
-      entity[prop.name] = value;
+      entity[prop.name] = Reference.wrapReference(value, prop);
     } else if (Utils.isPrimaryKey(value, true)) {
       entity[prop.name] = prop.mapToPk ? value : Reference.wrapReference(em.getReference<T>(prop.type, value, options), prop);
     } else if (Utils.isPlainObject(value) && options.merge) {
