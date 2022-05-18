@@ -15,7 +15,7 @@ export class SqlEntityManager<D extends AbstractSqlDriver = AbstractSqlDriver> e
    */
   createQueryBuilder<T>(entityName: EntityName<T>, alias?: string, type?: ConnectionType): QueryBuilder<T> {
     entityName = Utils.className(entityName);
-    const context = this.getContext() as SqlEntityManager;
+    const context = this.getContext();
 
     return new QueryBuilder<T>(entityName, this.getMetadata(), this.getDriver(), context.getTransactionContext(), alias, type, context);
   }

@@ -33,7 +33,7 @@ export class SqlEntityRepository<T> extends EntityRepository<T> {
   }
 
   protected get em(): SqlEntityManager {
-    return this._em.getContext(false) as SqlEntityManager;
+    return this._em.getContext(false);
   }
 
 }

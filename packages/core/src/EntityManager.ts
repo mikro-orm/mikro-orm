@@ -906,16 +906,17 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
   /**
    * Gets the EntityManager based on current transaction/request context.
+   * @internal
    */
-  getContext(validate = true): EntityManager {
-    let em = TransactionContext.getEntityManager(); // prefer the tx context
+  getContext(validate = true): this {
+    let em = TransactionContext.getEntityManager() as this; // prefer the tx context
 
     if (em) {
       return em;
     }
 
     // no explicit tx started
-    em = this.useContext ? (this.config.get('context')(this.name) || this) : this;
+    em = this.useContext ? (this.config.get('context')(this.name) as this || this) : this;
 
     if (validate && this.useContext && !this.config.get('allowGlobalContext') && em._id === 1) {
       throw ValidationError.cannotUseGlobalContext();

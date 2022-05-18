@@ -17,7 +17,7 @@ export class MongoEntityRepository<T> extends EntityRepository<T> {
   }
 
   protected get em(): MongoEntityManager {
-    return this._em.getContext(false) as MongoEntityManager;
+    return this._em.getContext(false);
   }
 
 }
