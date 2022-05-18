@@ -59,6 +59,7 @@ const orm = await MikroORM.init({
   schemaGenerator: {
     disableForeignKeys: true, // wrap statements with `set foreign_key_checks = 0` or equivalent
     createForeignKeyConstraints: true, // whether to generate FK constraints
+    ignoreSchema: [], // allows ignoring some schemas when diffing
   },
 });
 ```
