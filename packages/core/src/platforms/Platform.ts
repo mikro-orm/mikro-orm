@@ -344,6 +344,10 @@ export abstract class Platform {
     }
   }
 
+  getConfig(): Configuration {
+    return this.config;
+  }
+
   isNumericColumn(mappedType: Type<unknown>): boolean {
     return [IntegerType, SmallIntType, BigIntType].some(t => mappedType instanceof t);
   }

@@ -96,6 +96,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     schemaGenerator: {
       disableForeignKeys: true,
       createForeignKeyConstraints: true,
+      ignoreSchema: [],
     },
     cache: {
       pretty: false,
@@ -473,6 +474,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   schemaGenerator: {
     disableForeignKeys?: boolean;
     createForeignKeyConstraints?: boolean;
+    ignoreSchema: string[];
   };
   cache: {
     enabled?: boolean;

@@ -35,6 +35,26 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       + `and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name`;
   }
 
+  async getNamespaces(connection: AbstractSqlConnection): Promise<string[]> {
+    const sql = `select schema_name from information_schema.schemata `
+      + `where ${this.getIgnoredNamespacesConditionSQL()} `
+      + `order by schema_name`;
+    const res = await connection.execute<{ schema_name: string }[]>(sql);
+
+    return res.map(row => row.schema_name);
+  }
+
+  private getIgnoredNamespacesConditionSQL(column = 'schema_name'): string {
+    const ignored = [
+      'information_schema',
+      'tiger',
+      'topology',
+      ...this.platform.getConfig().get('schemaGenerator').ignoreSchema,
+    ].map(s => this.platform.quoteValue(s)).join(', ');
+
+    return `"${column}" not like 'pg_%' and "${column}" not in (${ignored})`;
+  }
+
   async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName: string): Promise<Column[]> {
     const sql = `select column_name,
       column_default,

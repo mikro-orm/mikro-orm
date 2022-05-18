@@ -64,8 +64,10 @@ export class MigrationStorage implements UmzugStorage {
       return;
     }
 
-    if (schemaName) {
-      await this.knex.schema.createSchemaIfNotExists(schemaName);
+    const schemas = await this.helper.getNamespaces(this.connection);
+
+    if (schemaName && !schemas.includes(schemaName)) {
+      await this.knex.schema.createSchema(schemaName);
     }
 
     await this.knex.schema.createTable(tableName, table => {

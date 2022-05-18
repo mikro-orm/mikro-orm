@@ -148,6 +148,10 @@ export abstract class SchemaHelper {
     return '';
   }
 
+  async getNamespaces(connection: AbstractSqlConnection): Promise<string[]> {
+    return [];
+  }
+
   async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Column[]> {
     throw new Error('Not supported by given driver');
   }
