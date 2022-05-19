@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.1.4](https://github.com/mikro-orm/mikro-orm/compare/v5.1.3...v5.1.4) (2022-05-19)
+
+
+### Bug Fixes
+
+* **mongo:** support queries with mongo specific operators on embeddables ([2fb9002](https://github.com/mikro-orm/mikro-orm/commit/2fb900294acef87bc939e0417ec3fd720f806ffd))
+* **postgres:** do not try to create schema for migrations when it exists ([d6af811](https://github.com/mikro-orm/mikro-orm/commit/d6af81160b4099436237dc312f7dbb4bbffc4378)), closes [#3106](https://github.com/mikro-orm/mikro-orm/issues/3106)
+* **postgres:** fix resolving knex when other version is explicitly installed ([41f5665](https://github.com/mikro-orm/mikro-orm/commit/41f5665bcf234cdccf5a466173b7937acd3c9a1a)), closes [#3129](https://github.com/mikro-orm/mikro-orm/issues/3129)
+* **postgres:** ignore schemas prefixed with `crdb_` too ([049fea3](https://github.com/mikro-orm/mikro-orm/commit/049fea3f77063f504a617e32cb9a4e303fbbf0be)), closes [#3021](https://github.com/mikro-orm/mikro-orm/issues/3021)
+* **schema:** always ignore PostGIS schemas when diffing ([#3096](https://github.com/mikro-orm/mikro-orm/issues/3096)) ([626e3db](https://github.com/mikro-orm/mikro-orm/commit/626e3dbe1edeb2b43bbe08aa2a025524da65a790))
+
+
+### Features
+
+* **postgres:** allow ignoring specified schemas ([3f1d2da](https://github.com/mikro-orm/mikro-orm/commit/3f1d2da742bc1301d4ab89d42be37a694a69edcd))
+
+
+
+
+
 ## [5.1.3](https://github.com/mikro-orm/mikro-orm/compare/v5.1.2...v5.1.3) (2022-04-27)
 
 

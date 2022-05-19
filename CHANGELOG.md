@@ -3,6 +3,33 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.1.4](https://github.com/mikro-orm/mikro-orm/compare/v5.1.3...v5.1.4) (2022-05-19)
+
+
+### Bug Fixes
+
+* **core:** allow asterisk in `FindOptions.fields` on TS level ([43e1d0b](https://github.com/mikro-orm/mikro-orm/commit/43e1d0b765e3c6346340e6c734af7826d3ab3486)), closes [#3127](https://github.com/mikro-orm/mikro-orm/issues/3127)
+* **core:** fix aliasing of formula properties in complex conditions ([#3130](https://github.com/mikro-orm/mikro-orm/issues/3130)) ([071846e](https://github.com/mikro-orm/mikro-orm/commit/071846ee77ae453a3e26a244ea8c2f0966ab6942))
+* **core:** improve type of `em.getContext()` ([158f077](https://github.com/mikro-orm/mikro-orm/commit/158f077d1d0fbe4fd0edcf736a2f6a49a336fb14)), closes [#3120](https://github.com/mikro-orm/mikro-orm/issues/3120)
+* **core:** improve validation of wrong entity references ([#3085](https://github.com/mikro-orm/mikro-orm/issues/3085)) ([f5de135](https://github.com/mikro-orm/mikro-orm/commit/f5de135b5eff3d0ad1b26de7a2af5925c3ef7f37))
+* **core:** wrap relations in `Reference` wrapper when assigning entity instance ([97f1f59](https://github.com/mikro-orm/mikro-orm/commit/97f1f59f29522074b5cd5f86579dc1dd6a1b4c9d)), closes [#3092](https://github.com/mikro-orm/mikro-orm/issues/3092)
+* **mongo:** support queries with mongo specific operators on embeddables ([2fb9002](https://github.com/mikro-orm/mikro-orm/commit/2fb900294acef87bc939e0417ec3fd720f806ffd))
+* **postgres:** do not try to create schema for migrations when it exists ([d6af811](https://github.com/mikro-orm/mikro-orm/commit/d6af81160b4099436237dc312f7dbb4bbffc4378)), closes [#3106](https://github.com/mikro-orm/mikro-orm/issues/3106)
+* **postgres:** fix resolving knex when other version is explicitly installed ([41f5665](https://github.com/mikro-orm/mikro-orm/commit/41f5665bcf234cdccf5a466173b7937acd3c9a1a)), closes [#3129](https://github.com/mikro-orm/mikro-orm/issues/3129)
+* **postgres:** ignore schemas prefixed with `crdb_` too ([049fea3](https://github.com/mikro-orm/mikro-orm/commit/049fea3f77063f504a617e32cb9a4e303fbbf0be)), closes [#3021](https://github.com/mikro-orm/mikro-orm/issues/3021)
+* **schema:** always ignore PostGIS schemas when diffing ([#3096](https://github.com/mikro-orm/mikro-orm/issues/3096)) ([626e3db](https://github.com/mikro-orm/mikro-orm/commit/626e3dbe1edeb2b43bbe08aa2a025524da65a790))
+* **ts-morph:** do not mark properties as enums automatically based on type ([c3923df](https://github.com/mikro-orm/mikro-orm/commit/c3923dffd98d651abef4008d1078b512540b80f0)), closes [#3099](https://github.com/mikro-orm/mikro-orm/issues/3099)
+
+
+### Features
+
+* **core:** add `strict` option to `em.findOneOrFail()` ([#3088](https://github.com/mikro-orm/mikro-orm/issues/3088)) ([d38242a](https://github.com/mikro-orm/mikro-orm/commit/d38242aba2d669355522fff57e30c10f64427173))
+* **postgres:** allow ignoring specified schemas ([3f1d2da](https://github.com/mikro-orm/mikro-orm/commit/3f1d2da742bc1301d4ab89d42be37a694a69edcd))
+
+
+
+
+
 ## [5.1.3](https://github.com/mikro-orm/mikro-orm/compare/v5.1.2...v5.1.3) (2022-04-27)
 
 

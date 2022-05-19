@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.1.4](https://github.com/mikro-orm/mikro-orm/compare/v5.1.3...v5.1.4) (2022-05-19)
+
+
+### Bug Fixes
+
+* **core:** allow asterisk in `FindOptions.fields` on TS level ([43e1d0b](https://github.com/mikro-orm/mikro-orm/commit/43e1d0b765e3c6346340e6c734af7826d3ab3486)), closes [#3127](https://github.com/mikro-orm/mikro-orm/issues/3127)
+* **core:** improve type of `em.getContext()` ([158f077](https://github.com/mikro-orm/mikro-orm/commit/158f077d1d0fbe4fd0edcf736a2f6a49a336fb14)), closes [#3120](https://github.com/mikro-orm/mikro-orm/issues/3120)
+* **core:** improve validation of wrong entity references ([#3085](https://github.com/mikro-orm/mikro-orm/issues/3085)) ([f5de135](https://github.com/mikro-orm/mikro-orm/commit/f5de135b5eff3d0ad1b26de7a2af5925c3ef7f37))
+* **core:** wrap relations in `Reference` wrapper when assigning entity instance ([97f1f59](https://github.com/mikro-orm/mikro-orm/commit/97f1f59f29522074b5cd5f86579dc1dd6a1b4c9d)), closes [#3092](https://github.com/mikro-orm/mikro-orm/issues/3092)
+* **mongo:** support queries with mongo specific operators on embeddables ([2fb9002](https://github.com/mikro-orm/mikro-orm/commit/2fb900294acef87bc939e0417ec3fd720f806ffd))
+* **postgres:** do not try to create schema for migrations when it exists ([d6af811](https://github.com/mikro-orm/mikro-orm/commit/d6af81160b4099436237dc312f7dbb4bbffc4378)), closes [#3106](https://github.com/mikro-orm/mikro-orm/issues/3106)
+
+
+### Features
+
+* **core:** add `strict` option to `em.findOneOrFail()` ([#3088](https://github.com/mikro-orm/mikro-orm/issues/3088)) ([d38242a](https://github.com/mikro-orm/mikro-orm/commit/d38242aba2d669355522fff57e30c10f64427173))
+
+
+
+
+
 ## [5.1.3](https://github.com/mikro-orm/mikro-orm/compare/v5.1.2...v5.1.3) (2022-04-27)
 
 
