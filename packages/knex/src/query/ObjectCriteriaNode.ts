@@ -26,7 +26,8 @@ export class ObjectCriteriaNode extends CriteriaNode {
       const payload = childNode.process(qb, this.prop ? alias : ownerAlias);
       const operator = Utils.isOperator(field);
       const customExpression = ObjectCriteriaNode.isCustomExpression(field);
-      const virtual = childNode.prop?.persist === false;
+      // we need to keep the prefixing for formulas otherwise we would lose aliasing context when nesting inside group operators
+      const virtual = childNode.prop?.persist === false && !childNode.prop?.formula;
       // if key is missing, we are inside group operator and we need to prefix with alias
       const primaryKey = this.key && this.metadata.find(this.entityName)!.primaryKeys.includes(field);
 
