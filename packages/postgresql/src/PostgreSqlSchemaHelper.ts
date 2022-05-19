@@ -48,7 +48,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       ...this.platform.getConfig().get('schemaGenerator').ignoreSchema ?? [],
     ].map(s => this.platform.quoteValue(s)).join(', ');
 
-    return `"${column}" not like 'pg_%' and "${column}" not in (${ignored})`;
+    return `"${column}" not like 'pg_%' and "${column}" not like 'crdb_%' and "${column}" not in (${ignored})`;
   }
 
   async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName: string): Promise<Column[]> {
