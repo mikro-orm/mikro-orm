@@ -31,8 +31,12 @@ describe('EntityManagerMongo2', () => {
     expect(book1.tags.$[2].name).toBe('t3');
     orm.em.clear();
 
-    const books = await orm.em.find(Book, { id: bible.id }, { populate: ['publisher.books.publisher'] });
+    const books = await orm.em.find(Book, { id: bible.id }, {
+      populate: ['publisher.books.publisher'],
+      fields: ['*', 'publisher.name'],
+    });
     expect(books[0].publisher!.get().books.get()[0].publisher!.$.name).toBe('Publisher 123');
+    expect(books[0].publisher!.$.type).toBeUndefined();
 
     const book5 = await orm.em.findOneOrFail(Book, bible, { populate: ['publisher', 'tags', 'perex'] });
     expect(book5.publisher!.$.name).toBe('Publisher 123');

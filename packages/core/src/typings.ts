@@ -594,25 +594,25 @@ export type PopulateOptions<T> = {
 type Loadable<T> = Collection<T, any> | Reference<T> | readonly T[]; // we need to support raw arrays in embeddables too to allow population
 type ExtractType<T> = T extends Loadable<infer U> ? U : T;
 
-type StringKeys<T> = T extends Collection<any, any>
-  ? `${Exclude<keyof ExtractType<T>, symbol>}`
+type StringKeys<T, E extends string = never> = T extends Collection<any, any>
+  ? `${Exclude<keyof ExtractType<T> | E, symbol>}`
   : T extends Reference<any>
-    ? `${Exclude<keyof ExtractType<T>, symbol>}`
+    ? `${Exclude<keyof ExtractType<T> | E, symbol>}`
     : T extends object
-      ? `${Exclude<keyof ExtractType<T>, symbol>}`
+      ? `${Exclude<keyof ExtractType<T> | E, symbol>}`
       : never;
-type GetStringKey<T, K extends StringKeys<T>> = K extends keyof T ? ExtractType<T[K]> : never;
+type GetStringKey<T, K extends StringKeys<T, string>, E extends string> = K extends keyof T ? ExtractType<T[K]> : (K extends E ? keyof T : never);
 
-export type AutoPath<O, P extends string> =
+export type AutoPath<O, P extends string, E extends string = never> =
   P extends any ?
     (P & `${string}.` extends never ? P : P & `${string}.`) extends infer Q
       ? Q extends `${infer A}.${infer B}`
-        ? A extends StringKeys<O>
-          ? `${A}.${AutoPath<Defined<GetStringKey<O, A>>, B>}`
+        ? A extends StringKeys<O, E>
+          ? `${A}.${AutoPath<Defined<GetStringKey<O, A, E>>, B, E>}`
           : never
-        : Q extends StringKeys<O>
-          ? (Defined<GetStringKey<O, Q>> extends unknown ? Exclude<P, `${string}.`> : never) | (StringKeys<Defined<GetStringKey<O, Q>>> extends never ? never : `${Q}.`)
-          : StringKeys<O>
+        : Q extends StringKeys<O, E>
+          ? (Defined<GetStringKey<O, Q, E>> extends unknown ? Exclude<P, `${string}.`> : never) | (StringKeys<Defined<GetStringKey<O, Q, E>>, E> extends never ? never : `${Q}.`)
+          : StringKeys<O, E>
       : never
     : never;
 

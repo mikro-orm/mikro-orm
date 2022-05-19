@@ -90,7 +90,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 }
 
 type FieldsMap<T, P extends string = never> = { [K in keyof T]?: EntityField<ExpandProperty<T[K]>>[] };
-export type EntityField<T, P extends string = never> = keyof T | AutoPath<T, P> | FieldsMap<T, P>;
+export type EntityField<T, P extends string = never> = keyof T | '*' | AutoPath<T, P, '*'> | FieldsMap<T, P>;
 
 export interface FindOptions<T, P extends string = never> {
   populate?: readonly AutoPath<T, P>[] | boolean;

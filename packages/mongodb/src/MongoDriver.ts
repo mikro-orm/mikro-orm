@@ -202,6 +202,9 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
         if (prop) {
           prop = prop.serializedPrimaryKey ? meta.getPrimaryProps()[0] : prop;
           ret.push(prop.fieldNames[0]);
+        } else if (field === '*') {
+          const props = meta.props.filter(prop => this.platform.shouldHaveColumn(prop, populate));
+          ret.push(...Utils.flatten(props.filter(p => !lazyProps.includes(p)).map(p => p.fieldNames)));
         } else {
           ret.push(field as keyof T & string);
         }
