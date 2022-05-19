@@ -1,5 +1,5 @@
 import type { Dictionary, Platform } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, EntitySchema, MikroORM, PrimaryKey, Property, ReferenceType, SerializedPrimaryKey, Type } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, EntitySchema, expr, MikroORM, PrimaryKey, Property, ReferenceType, SerializedPrimaryKey, Type } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 import { ObjectId, MongoConnection, MongoPlatform } from '@mikro-orm/mongodb';
 import { mockLogger } from '../../helpers';
@@ -314,6 +314,13 @@ describe('embedded entities in mongo', () => {
     await expect(orm.em.findOneOrFail(User, { address1: { $or: [{ city: 'London 1' }, { city: 'Berlin' }] } })).rejects.toThrowError(err);
     const u4 = await orm.em.findOneOrFail(User, { address4: { postalCode: '999' } });
     expect(u4).toBe(u1);
+    const u5 = await orm.em.findOneOrFail(User, {
+      address4: {
+        [expr('$exists')]: true,
+      },
+    });
+    expect(u5).toBe(u1);
+    expect(mock.mock.calls[7][0]).toMatch(/db\.getCollection\('user'\)\.find\({ address4: { '\$exists': true } }, { session: undefined }\)\.limit\(1\).toArray\(\);/);
   });
 
   test('validation of object embeddables (GH issue #466)', async () => {

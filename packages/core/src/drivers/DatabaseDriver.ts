@@ -147,6 +147,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
       if (prop.reference === ReferenceType.EMBEDDED && Utils.isObject(data[prop.name])) {
         const props = prop.embeddedProps;
+        let unknownProp = false;
 
         Object.keys(data[prop.name]).forEach(kk => {
           const operator = Object.keys(data[prop.name]).some(f => Utils.isOperator(f));
@@ -169,14 +170,23 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
               data[`${path.join('.')}.${sub.embedded![1]}`] = payload[sub.embedded![1]];
             };
-            inline(data[prop.name], props[kk], [prop.name]);
+
+            // we might be using some native JSON operator, e.g. with mongodb's `$geoWithin` or `$exists`
+            if (props[kk]) {
+              inline(data[prop.name], props[kk], [prop.name]);
+            } else {
+              unknownProp = true;
+            }
           } else if (props[kk]) {
             data[props[kk].name] = data[prop.name][props[kk].embedded![1]];
           } else {
             throw ValidationError.invalidEmbeddableQuery(meta.className, kk, prop.type);
           }
         });
-        delete data[prop.name];
+
+        if (!unknownProp) {
+          delete data[prop.name];
+        }
       }
     });
   }

@@ -39,11 +39,11 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   private getIgnoredNamespacesConditionSQL(column = 'schema_name'): string {
+    /* istanbul ignore next */
     const ignored = [
       'information_schema',
       'tiger',
       'topology',
-      /* istanbul ignore next */
       ...this.platform.getConfig().get('schemaGenerator').ignoreSchema ?? [],
     ].map(s => this.platform.quoteValue(s)).join(', ');
 
