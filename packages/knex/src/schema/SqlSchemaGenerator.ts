@@ -8,8 +8,8 @@ import { SchemaComparator } from './SchemaComparator';
 
 export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> implements ISchemaGenerator {
 
-  private readonly helper = this.platform.getSchemaHelper()!;
-  private readonly options = this.config.get('schemaGenerator');
+  protected readonly helper = this.platform.getSchemaHelper()!;
+  protected readonly options = this.config.get('schemaGenerator');
   protected lastEnsuredDatabase?: string;
 
   static register(orm: MikroORM): void {

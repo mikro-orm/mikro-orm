@@ -1,9 +1,17 @@
 {
   "name": "@mikro-orm/mssql",
-  "version": "5.1.1",
+  "version": "5.1.4",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
   "main": "dist/index.js",
+  "module": "dist/index.mjs",
   "typings": "dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/mikro-orm/mikro-orm.git"
@@ -39,6 +47,7 @@
   },
   "scripts": {
     "build": "yarn clean && yarn compile && yarn copy",
+    "postbuild": "yarn gen-esm-wrapper dist/index.js dist/index.mjs",
     "clean": "rimraf ./dist",
     "compile": "tsc -p tsconfig.build.json",
     "copy": "ts-node -T ../../scripts/copy.ts"
@@ -52,9 +61,23 @@
     "tsqlstring": "1.0.1"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^5.1.1"
+    "@mikro-orm/core": "^5.1.4"
   },
   "peerDependencies": {
-    "@mikro-orm/core": "^5.0.0"
+    "@mikro-orm/core": "^5.0.0",
+    "@mikro-orm/entity-generator": "^5.0.0",
+    "@mikro-orm/migrations": "^5.0.0",
+    "@mikro-orm/seeder": "^5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@mikro-orm/entity-generator": {
+      "optional": true
+    },
+    "@mikro-orm/migrations": {
+      "optional": true
+    },
+    "@mikro-orm/seeder": {
+      "optional": true
+    }
   }
 }

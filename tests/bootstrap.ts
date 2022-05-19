@@ -193,6 +193,12 @@ export async function initORMMsSql() {
     debug: true,
     forceUtcTimezone: true,
     autoJoinOneToOneOwner: false,
+    logger: i => i,
+    // driverOptions: {
+    //   connection: {
+    //     requestTimeout: 60 * 1000
+    //   }
+    // }
   });
 
   const schemaGenerator = orm.getSchemaGenerator();
@@ -208,9 +214,9 @@ export async function initORMMsSql() {
     const pks = meta.getPrimaryProps();
     const autoIncrement = meta.tableName && pks.length === 1 && (pks[0].type === 'number' || orm.em.getPlatform().isBigIntProperty(pks[0]));
 
-    if (autoIncrement) {
-      await orm.em.execute('SET IDENTITY_INSERT ?? ON', [meta.tableName]);
-    }
+    // if (autoIncrement) {
+    //   await orm.em.execute('SET IDENTITY_INSERT ?? ON', [meta.tableName]);
+    // }
   }
 
   Author2Subscriber.log.length = 0;

@@ -1,6 +1,7 @@
-import type { Dictionary, DriverException } from '@mikro-orm/core';
+import type {
+  Dictionary, DriverException } from '@mikro-orm/core';
 import {
-  DeadlockException, ExceptionConverter, ForeignKeyConstraintViolationException, InvalidFieldNameException,
+  ExceptionConverter, InvalidFieldNameException,
   NonUniqueFieldNameException, NotNullConstraintViolationException, SyntaxErrorException, TableExistsException,
   TableNotFoundException, UniqueConstraintViolationException,
 } from '@mikro-orm/core';
@@ -10,38 +11,25 @@ export class MsSqlExceptionConverter extends ExceptionConverter {
 
   /* istanbul ignore next */
   /**
-   * @link http://www.postgresql.org/docs/9.4/static/errcodes-appendix.html
+   * @link https://docs.microsoft.com/en-us/sql/relational-databases/errors-events/mssqlserver-511-database-engine-error?view=sql-server-ver15
    * @link https://github.com/doctrine/dbal/blob/master/src/Driver/AbstractPostgreSQLDriver.php
    */
   convertException(exception: Error & Dictionary): DriverException {
-    console.log(exception.number, typeof exception.number);
+    // console.log(exception.number, typeof exception.number, exception.message);
     switch (exception.number) {
-      case '40001':
-      case '40P01':
-        return new DeadlockException(exception);
-      case '0A000':
-        // Foreign key constraint violations during a TRUNCATE operation
-        // are considered "feature not supported" in PostgreSQL.
-        if (exception.message.includes('truncate')) {
-          return new ForeignKeyConstraintViolationException(exception);
-        }
-
-        break;
       case 515:
         return new NotNullConstraintViolationException(exception);
-      case '23503':
-        return new ForeignKeyConstraintViolationException(exception);
-      case '23505':
-        return new UniqueConstraintViolationException(exception);
       case 102:
         return new SyntaxErrorException(exception);
-      case '42702':
-        return new NonUniqueFieldNameException(exception);
-      case '42703':
+      case 207:
         return new InvalidFieldNameException(exception);
-      case '42P01':
+      case 208:
         return new TableNotFoundException(exception);
-      case '42P07':
+      case 209:
+        return new NonUniqueFieldNameException(exception);
+      case 2601:
+        return new UniqueConstraintViolationException(exception);
+      case 2714:
         return new TableExistsException(exception);
     }
 

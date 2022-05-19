@@ -1,8 +1,12 @@
+import type { SchemaGenerator, SqlEntityManager } from '@mikro-orm/knex';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 // @ts-expect-error no types available
 import SqlString from 'tsqlstring';
 import { MsSqlSchemaHelper } from './MsSqlSchemaHelper';
 import { MsSqlExceptionConverter } from './MsSqlExceptionConverter';
+import type { EntityProperty, IDatabaseDriver } from '@mikro-orm/core';
+import { MsSqlSchemaGenerator } from './MsSqlSchemaGenerator';
+import { MssqlTimeStamp, UnicodeString } from './types';
 
 // TODO check what methods are needed
 export class MsSqlPlatform extends AbstractSqlPlatform {
@@ -19,7 +23,7 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
   }
 
   getCurrentTimestampSQL(length: number): string {
-    return `current_timestamp`; // FIXME length? or GETDATE?
+    return `current_timestamp`;
   }
 
   getTimeTypeDeclarationSQL(): string {
@@ -47,7 +51,32 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
       return `0x${value.toString('hex')}`;
     }
 
+    if (value instanceof UnicodeString) {
+      return `N${SqlString.escape(value)}`;
+    }
+
+    if (value instanceof Date) {
+      return SqlString.dateToString(value.toISOString(), 'Z');
+    }
+
+    if (value instanceof MssqlTimeStamp) {
+      return value.escape();
+    }
+
     return SqlString.escape(value);
+  }
+
+  quoteVersionValue(value: Date | number, prop: EntityProperty): Date | string | number {
+    if (value instanceof Date) {
+      return new MssqlTimeStamp(value) as any;
+    }
+
+    return super.quoteVersionValue(value, prop);
+  }
+
+  getSchemaGenerator(driver: IDatabaseDriver, em?: SqlEntityManager): SchemaGenerator {
+    /* istanbul ignore next */
+    return this.config.getCachedService(MsSqlSchemaGenerator, em ?? driver as any); // cast as `any` to get around circular dependencies
   }
 
 }
