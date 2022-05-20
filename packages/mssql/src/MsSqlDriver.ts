@@ -1,4 +1,15 @@
-import type { AnyEntity, Configuration, ConnectionType, EntityDictionary, EntityProperty, FilterQuery, NativeInsertUpdateManyOptions, NativeInsertUpdateOptions, QueryResult, Transaction } from '@mikro-orm/core';
+import type {
+  AnyEntity,
+  Configuration,
+  ConnectionType,
+  EntityDictionary,
+  EntityProperty,
+  FilterQuery,
+  NativeInsertUpdateManyOptions,
+  NativeInsertUpdateOptions,
+  QueryResult,
+  Transaction,
+} from '@mikro-orm/core';
 import { QueryFlag, Utils } from '@mikro-orm/core';
 import type { Knex, QueryBuilder } from '@mikro-orm/knex';
 import { AbstractSqlDriver } from '@mikro-orm/knex';
@@ -14,10 +25,11 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
 
   protected getPrimaryKeyFields(entityName: string): string[] {
     const meta = this.metadata.find(entityName);
+
     if (meta?.pivotTable) {
-      const pks = Utils.flatten(Object.values(meta.properties).filter(({ primary }) => primary).map(({ fieldNames }) => fieldNames));
-      return pks;
+      return Utils.flatten(Object.values(meta.properties).filter(({ primary }) => primary).map(({ fieldNames }) => fieldNames));
     }
+
     return meta ? Utils.flatten(meta.getPrimaryProps().map(pk => pk.fieldNames)) : [this.config.getNamingStrategy().referenceColumnName()];
   }
 

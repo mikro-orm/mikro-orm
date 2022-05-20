@@ -34,11 +34,9 @@ describe('EntityManagerMsSql', () => {
     } as any, false);
     const driver = new MsSqlDriver(config);
     expect(driver.getConnection().getConnectionOptions()).toEqual({
-      database: 'db_name',
       host: '127.0.0.10',
       options: {
         enableArithAbort: true,
-        database: 'db_name',
       },
       password: 'Root.Root',
       port: 1234,

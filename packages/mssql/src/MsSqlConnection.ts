@@ -1,7 +1,6 @@
-import { AbstractSqlConnection, MonkeyPatchable } from '@mikro-orm/knex';
 import type { Knex } from '@mikro-orm/knex';
-import type { IsolationLevel, TransactionEventBroadcaster } from '@mikro-orm/core';
-import { EventType } from '@mikro-orm/core';
+import { AbstractSqlConnection, MonkeyPatchable } from '@mikro-orm/knex';
+import type { Dictionary, IsolationLevel, TransactionEventBroadcaster } from '@mikro-orm/core';
 
 export class MsSqlConnection extends AbstractSqlConnection {
 
@@ -20,22 +19,13 @@ export class MsSqlConnection extends AbstractSqlConnection {
   }
 
   getConnectionOptions(): Knex.MsSqlConnectionConfig {
-    const config = super.getConnectionOptions() as Knex.MsSqlConnectionConfig;
-    // TODO: getConnectionOptions
-    const options = {
-      enableArithAbort: true,
-    };
+    const config = super.getConnectionOptions() as Dictionary;
 
-    config.options = {
-      ...(options as any),
-      ...(config.options || {}),
-      database: config.database,
-    };
+    config.options ??= {};
+    config.options.enableArithAbort ??= true;
+    delete config.database;
 
-    // TODO is this ok? we should select the db afterwards? - No, don't do this - Michael
-    // delete (config as any).database;
-
-    return config;
+    return config as Knex.MsSqlConnectionConfig;
   }
 
   async begin(options: { isolationLevel?: IsolationLevel; ctx?: Knex.Transaction; eventBroadcaster?: TransactionEventBroadcaster } = {}): Promise<Knex.Transaction> {
