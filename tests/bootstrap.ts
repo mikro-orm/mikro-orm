@@ -182,7 +182,7 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, e
   return orm;
 }
 
-export async function initORMMsSql() {
+export async function initORMMsSql(additionalOptions: Partial<Options<MsSqlDriver>> = {}) {
   const orm = await MikroORM.init({
     entities: ['entities-mssql'],
     dbName: `mikro_orm_test`,
@@ -193,13 +193,11 @@ export async function initORMMsSql() {
     forceUtcTimezone: true,
     autoJoinOneToOneOwner: false,
     logger: i => i,
+    ...additionalOptions,
   });
 
   const schemaGenerator = orm.getSchemaGenerator();
   await schemaGenerator.ensureDatabase();
-  // await schemaGenerator.dropSchema();
-  // console.log(await schemaGenerator.generate());
-  // await schemaGenerator.createSchema();
   const connection = orm.em.getConnection();
   await connection.loadFile(__dirname + '/mssql-schema.sql');
 

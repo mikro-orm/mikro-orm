@@ -1,11 +1,11 @@
 import type { Knex } from '@mikro-orm/knex';
-import { AbstractSqlConnection, MonkeyPatchable } from '@mikro-orm/knex';
+import { AbstractSqlConnection } from '@mikro-orm/knex';
 import type { Dictionary, IsolationLevel, TransactionEventBroadcaster } from '@mikro-orm/core';
 
 export class MsSqlConnection extends AbstractSqlConnection {
 
   async connect(): Promise<void> {
-    this.client = this.createKnexClient(this.getPatchedDialect());
+    this.client = this.createKnexClient('mssql');
 
     try {
       const dbName = this.platform.quoteIdentifier(this.config.get('dbName'));
@@ -73,22 +73,6 @@ export class MsSqlConnection extends AbstractSqlConnection {
       row: res[0],
       rows: res,
     } as unknown as T;
-  }
-
-  private getPatchedDialect() {
-    const { MsSqlDialect } = MonkeyPatchable;
-
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const _query = MsSqlDialect.prototype._query;
-    MsSqlDialect.prototype._query = function (connection: any, query: any) {
-      if (!query || typeof query === 'string') {
-        query = { sql: query };
-      }
-
-      return _query.call(this, connection, query);
-    };
-
-    return MsSqlDialect;
   }
 
 }
