@@ -8,7 +8,8 @@ export class MsSqlConnection extends AbstractSqlConnection {
     this.client = this.createKnexClient(this.getPatchedDialect());
 
     try {
-      await this.execute(`use ${this.config.get('dbName')}`);
+      const dbName = this.platform.quoteIdentifier(this.config.get('dbName'));
+      await this.execute(`use ${dbName}`);
     } catch {
       // the db might not exist
     }

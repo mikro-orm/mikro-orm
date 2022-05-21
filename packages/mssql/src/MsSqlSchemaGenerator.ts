@@ -9,14 +9,18 @@ export class MsSqlSchemaGenerator extends SchemaGenerator {
       return super.clearDatabase(options);
     }
 
-    await this.connection.loadFile(__dirname + '/truncate.sql');
+    for (const meta of this.getOrderedMetadata(options?.schema).reverse()) {
+      const res = await this.driver.nativeDelete(meta.className, {}, options);
 
-    if (this.em) {
-      const allowGlobalContext = this.config.get('allowGlobalContext');
-      this.config.set('allowGlobalContext', true);
-      this.em.clear();
-      this.config.set('allowGlobalContext', allowGlobalContext);
+      if (meta.getPrimaryProps().some(pk => pk.autoincrement)) {
+        const tableName = this.driver.getTableName(meta, { schema: options?.schema });
+        await this.execute(`dbcc checkident (${tableName}, reseed, ${res.affectedRows > 0 ? 0 : 1})`, {
+          ctx: this.em?.getTransactionContext(),
+        });
+      }
     }
+
+    this.clearIdentityMap();
   }
 
 }

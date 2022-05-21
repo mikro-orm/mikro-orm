@@ -45,12 +45,18 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
       await this.driver.nativeDelete(meta.className, {}, options);
     }
 
-    if (this.em) {
-      const allowGlobalContext = this.config.get('allowGlobalContext');
-      this.config.set('allowGlobalContext', true);
-      this.em.clear();
-      this.config.set('allowGlobalContext', allowGlobalContext);
+    this.clearIdentityMap();
+  }
+
+  protected clearIdentityMap(): void {
+    if (!this.em) {
+      return;
     }
+
+    const allowGlobalContext = this.config.get('allowGlobalContext');
+    this.config.set('allowGlobalContext', true);
+    this.em.clear();
+    this.config.set('allowGlobalContext', allowGlobalContext);
   }
 
   async getCreateSchemaSQL(): Promise<string> {

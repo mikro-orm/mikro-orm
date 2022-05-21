@@ -10,25 +10,20 @@ export class MsSqlSchemaHelper extends SchemaHelper {
     return 'master';
   }
 
-  // TODO? https://stackoverflow.com/questions/159038/how-can-foreign-key-constraints-be-temporarily-disabled-using-t-sql
-  getSchemaBeginning(): string {
-    // return 'EXEC sp_MSforeachtable "ALTER TABLE ? NOCHECK CONSTRAINT all"';
-    return '';
+  disableForeignKeysSQL() {
+    return 'exec sp_MSforeachtable "alter table ? nocheck constraint all"';
   }
 
-  // TODO? https://stackoverflow.com/questions/159038/how-can-foreign-key-constraints-be-temporarily-disabled-using-t-sql
-  getSchemaEnd(): string {
-    // return 'exec sp_MSforeachtable @command1="print \'?\'", @command2="ALTER TABLE ? WITH CHECK CHECK CONSTRAINT all"\n';
-    return '';
+  enableForeignKeysSQL() {
+    return 'exec sp_MSforeachtable @command1="print \'?\'", @command2="alter table ? with check check constraint all"\n';
   }
 
-  // TODO is this needed?
   getDatabaseExistsSQL(name: string): string {
     return `select 1 from master.sys.databases where name = N'${name}'`;
   }
 
   getListTablesSQL(): string {
-    return `SELECT table_name FROM information_schema.tables WHERE table_type = 'base table'`;
+    return `select table_name from information_schema.tables where table_type = 'base table'`;
   }
 
   normalizeDefaultValue(defaultValue: string, length: number) {

@@ -189,16 +189,10 @@ export async function initORMMsSql() {
     baseDir: BASE_DIR,
     driver: MsSqlDriver,
     password: 'Root.Root',
-    // debug: ['query'],
     debug: true,
     forceUtcTimezone: true,
     autoJoinOneToOneOwner: false,
     logger: i => i,
-    // driverOptions: {
-    //   connection: {
-    //     requestTimeout: 60 * 1000
-    //   }
-    // }
   });
 
   const schemaGenerator = orm.getSchemaGenerator();
@@ -208,16 +202,6 @@ export async function initORMMsSql() {
   // await schemaGenerator.createSchema();
   const connection = orm.em.getConnection();
   await connection.loadFile(__dirname + '/mssql-schema.sql');
-  const metadata = orm.getMetadata().getAll();
-
-  for (const meta of Object.values(metadata)) {
-    const pks = meta.getPrimaryProps();
-    const autoIncrement = meta.tableName && pks.length === 1 && (pks[0].type === 'number' || orm.em.getPlatform().isBigIntProperty(pks[0]));
-
-    // if (autoIncrement) {
-    //   await orm.em.execute('SET IDENTITY_INSERT ?? ON', [meta.tableName]);
-    // }
-  }
 
   Author2Subscriber.log.length = 0;
   EverythingSubscriber.log.length = 0;

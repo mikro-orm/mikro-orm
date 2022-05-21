@@ -1350,7 +1350,7 @@ describe('EntityManagerMsSql', () => {
     await expect(driver.execute('select uuid from author2')).rejects.toThrow(InvalidFieldNameException);
   });
 
-  // this should run in ~800ms (when running single test locally)
+  // this should run in ~300ms (when running single test locally)
   test('perf: one to many', async () => {
     const author = new Author2('Jon Snow', 'snow@wall.st');
     await orm.em.persistAndFlush(author);
@@ -1364,7 +1364,7 @@ describe('EntityManagerMsSql', () => {
     expect(author.books.getItems().every(b => b.uuid)).toBe(true);
   });
 
-  // this should run in ~1100ms (when running single test locally)
+  // this should run in ~600ms (when running single test locally)
   test('perf: batch insert and update', async () => {
     const authors = new Set<Author2>();
 
@@ -1392,7 +1392,7 @@ describe('EntityManagerMsSql', () => {
     await orm.em.flush();
     const took = performance.now() - start;
 
-    if (took > 500) {
+    if (took > 400) {
       process.stdout.write(`delete test took ${took}\n`);
     }
   });
