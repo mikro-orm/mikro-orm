@@ -20,23 +20,18 @@ export class MsSqlQueryBuilder<T extends AnyEntity<T> = AnyEntity> extends Query
     return qb;
   }
 
-  private overrideToSql(qb: Knex.QueryBuilder, getSql: (results: Knex.Sql) => string) {
+  private appendIdentityInsert(qb: Knex.QueryBuilder) {
+    const meta = this.metadata.get(this.entityName);
+    const table = this.driver.getTableName(meta, { schema: this._schema });
+
     const originalToSQL = qb.toSQL;
     qb.toSQL = () => {
-      const results = originalToSQL.apply(qb);
+      const res = originalToSQL.apply(qb);
       return {
-        ...results,
-        sql: getSql(results),
+        ...res,
+        sql: `set identity_insert ${table} on; ${res.sql}; set identity_insert ${table} off;`,
       };
     };
-  }
-
-  private appendIdentityInsert(qb: Knex.QueryBuilder) {
-    this.overrideToSql(qb, (results: Knex.Sql) => {
-      const { tableName, schema } = this.metadata.get(this.entityName);
-      const table = schema ? `${schema}.${tableName}` : tableName;
-      return `set identity_insert ${table} on; ${results.sql}; set identity_insert ${table} off;`;
-    });
   }
 
   private checkIdentityInsert(data: RequiredEntityData<T> | RequiredEntityData<T>[]) {

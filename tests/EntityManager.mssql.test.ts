@@ -1205,7 +1205,6 @@ describe('EntityManagerMsSql', () => {
       'where [b0].[author_id] is not null and [a3].[name] = @p0');
   });
 
-  // TODO: this one may need to be looked at. Im using a custom type to do zoning
   test('datetime is stored in correct timezone', async () => {
     const author = new Author2('n', 'e');
     author.createdAt = new Date('2000-01-01T00:00:00Z');

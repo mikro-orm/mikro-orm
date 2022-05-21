@@ -124,12 +124,12 @@ ALTER TABLE [foo_bar2] ADD CONSTRAINT [foo_bar2_foo_bar_id_foreign] FOREIGN KEY 
 -- ALTER TABLE [foo_param2] ADD CONSTRAINT [foo_param2_bar_id_foreign] FOREIGN KEY ([bar_id]) REFERENCES [foo_bar2] ([id]) ON UPDATE cascade;
 -- ALTER TABLE [foo_param2] ADD CONSTRAINT [foo_param2_baz_id_foreign] FOREIGN KEY ([baz_id]) REFERENCES [foo_baz2] ([id]) ON UPDATE cascade;
 
--- ALTER TABLE [car_owner2] ADD CONSTRAINT [car_owner2_car_name_car_year_foreign] FOREIGN KEY ([car_name], [car_year]) REFERENCES [car2] ([name], [year]) ON UPDATE cascade;
+ALTER TABLE [car_owner2] ADD CONSTRAINT [car_owner2_car_name_car_year_foreign] FOREIGN KEY ([car_name], [car_year]) REFERENCES [car2] ([name], [year]) ON UPDATE cascade;
 
--- ALTER TABLE [user2] ADD CONSTRAINT [user2_favourite_car_name_favourite_car_year_foreign] FOREIGN KEY ([favourite_car_name], [favourite_car_year]) REFERENCES [car2] ([name], [year]) ON UPDATE cascade ON DELETE set null;
+ALTER TABLE [user2] ADD CONSTRAINT [user2_favourite_car_name_favourite_car_year_foreign] FOREIGN KEY ([favourite_car_name], [favourite_car_year]) REFERENCES [car2] ([name], [year]) ON UPDATE cascade ON DELETE set null;
 
--- ALTER TABLE [user2_sandwiches] ADD CONSTRAINT [user2_sandwiches_user2_first_name_user2_last_name_foreign] FOREIGN KEY ([user2_first_name], [user2_last_name]) REFERENCES [user2] ([first_name], [last_name]) ON UPDATE cascade ON DELETE cascade;
--- ALTER TABLE [user2_sandwiches] ADD CONSTRAINT [user2_sandwiches_sandwich_id_foreign] FOREIGN KEY ([sandwich_id]) REFERENCES [sandwich] ([id]) ON UPDATE cascade ON DELETE cascade;
+ALTER TABLE [user2_sandwiches] ADD CONSTRAINT [user2_sandwiches_user2_first_name_user2_last_name_foreign] FOREIGN KEY ([user2_first_name], [user2_last_name]) REFERENCES [user2] ([first_name], [last_name]) ON UPDATE cascade ON DELETE cascade;
+ALTER TABLE [user2_sandwiches] ADD CONSTRAINT [user2_sandwiches_sandwich_id_foreign] FOREIGN KEY ([sandwich_id]) REFERENCES [sandwich] ([id]) ON UPDATE cascade ON DELETE cascade;
 
 -- ALTER TABLE [user2_cars] ADD CONSTRAINT [user2_cars_user2_first_name_user2_last_name_foreign] FOREIGN KEY ([user2_first_name], [user2_last_name]) REFERENCES [user2] ([first_name], [last_name]) ON UPDATE cascade ON DELETE cascade;
 -- ALTER TABLE [user2_cars] ADD CONSTRAINT [user2_cars_car2_name_car2_year_foreign] FOREIGN KEY ([car2_name], [car2_year]) REFERENCES [car2] ([name], [year]) ON UPDATE cascade ON DELETE cascade;
@@ -140,21 +140,21 @@ ALTER TABLE [foo_bar2] ADD CONSTRAINT [foo_bar2_foo_bar_id_foreign] FOREIGN KEY 
 -- ALTER TABLE [author2] ADD CONSTRAINT [author2_favourite_book_uuid_pk_foreign] FOREIGN KEY ([favourite_book_uuid_pk]) REFERENCES [book2] ([uuid_pk]) ON UPDATE no action ON DELETE cascade;
 -- ALTER TABLE [author2] ADD CONSTRAINT [author2_favourite_author_id_foreign] FOREIGN KEY ([favourite_author_id]) REFERENCES [author2] ([id]) ON UPDATE cascade ON DELETE set null;
 
--- ALTER TABLE [book2] ADD CONSTRAINT [book2_author_id_foreign] FOREIGN KEY ([author_id]) REFERENCES [author2] ([id]);
--- ALTER TABLE [book2] ADD CONSTRAINT [book2_publisher_id_foreign] FOREIGN KEY ([publisher_id]) REFERENCES [publisher2] ([id]) ON UPDATE cascade ON DELETE cascade;
+ALTER TABLE [book2] ADD CONSTRAINT [book2_author_id_foreign] FOREIGN KEY ([author_id]) REFERENCES [author2] ([id]);
+ALTER TABLE [book2] ADD CONSTRAINT [book2_publisher_id_foreign] FOREIGN KEY ([publisher_id]) REFERENCES [publisher2] ([id]) ON UPDATE cascade ON DELETE cascade;
 
--- ALTER TABLE [test2] ADD CONSTRAINT [test2_book_uuid_pk_foreign] FOREIGN KEY ([book_uuid_pk]) REFERENCES [book2] ([uuid_pk]) ON DELETE set null;
+ALTER TABLE [test2] ADD CONSTRAINT [test2_book_uuid_pk_foreign] FOREIGN KEY ([book_uuid_pk]) REFERENCES [book2] ([uuid_pk]) ON DELETE set null;
 
--- ALTER TABLE [configuration2] ADD CONSTRAINT [configuration2_test_id_foreign] FOREIGN KEY ([test_id]) REFERENCES [test2] ([id]) ON UPDATE cascade;
+ALTER TABLE [configuration2] ADD CONSTRAINT [configuration2_test_id_foreign] FOREIGN KEY ([test_id]) REFERENCES [test2] ([id]) ON UPDATE cascade;
 
 -- ALTER TABLE [publisher2_tests] ADD CONSTRAINT [publisher2_tests_publisher2_id_foreign] FOREIGN KEY ([publisher2_id]) REFERENCES [publisher2] ([id]) ON UPDATE cascade ON DELETE cascade;
 -- ALTER TABLE [publisher2_tests] ADD CONSTRAINT [publisher2_tests_test2_id_foreign] FOREIGN KEY ([test2_id]) REFERENCES [test2] ([id]) ON UPDATE cascade ON DELETE cascade;
 
--- ALTER TABLE [book2_tags] ADD CONSTRAINT [book2_tags_book2_uuid_pk_foreign] FOREIGN KEY ([book2_uuid_pk]) REFERENCES [book2] ([uuid_pk]) ON UPDATE cascade ON DELETE cascade;
--- ALTER TABLE [book2_tags] ADD CONSTRAINT [book2_tags_book_tag2_id_foreign] FOREIGN KEY ([book_tag2_id]) REFERENCES [book_tag2] ([id]) ON UPDATE cascade ON DELETE cascade;
+ALTER TABLE [book2_tags] ADD CONSTRAINT [book2_tags_book2_uuid_pk_foreign] FOREIGN KEY ([book2_uuid_pk]) REFERENCES [book2] ([uuid_pk]) ON UPDATE cascade ON DELETE cascade;
+ALTER TABLE [book2_tags] ADD CONSTRAINT [book2_tags_book_tag2_id_foreign] FOREIGN KEY ([book_tag2_id]) REFERENCES [book_tag2] ([id]) ON UPDATE cascade ON DELETE cascade;
 
--- ALTER TABLE [book_to_tag_unordered] ADD CONSTRAINT [book_to_tag_unordered_book2_uuid_pk_foreign] FOREIGN KEY ([book2_uuid_pk]) REFERENCES [book2] ([uuid_pk]) ON UPDATE cascade ON DELETE cascade;
--- ALTER TABLE [book_to_tag_unordered] ADD CONSTRAINT [book_to_tag_unordered_book_tag2_id_foreign] FOREIGN KEY ([book_tag2_id]) REFERENCES [book_tag2] ([id]) ON UPDATE cascade ON DELETE cascade;
+ALTER TABLE [book_to_tag_unordered] ADD CONSTRAINT [book_to_tag_unordered_book2_uuid_pk_foreign] FOREIGN KEY ([book2_uuid_pk]) REFERENCES [book2] ([uuid_pk]) ON UPDATE cascade ON DELETE cascade;
+ALTER TABLE [book_to_tag_unordered] ADD CONSTRAINT [book_to_tag_unordered_book_tag2_id_foreign] FOREIGN KEY ([book_tag2_id]) REFERENCES [book_tag2] ([id]) ON UPDATE cascade ON DELETE cascade;
 
 -- ALTER TABLE [author_to_friend] ADD CONSTRAINT [author_to_friend_author2_1_id_foreign] FOREIGN KEY ([author2_1_id]) REFERENCES [author2] ([id]) ON UPDATE cascade ON DELETE cascade;
 -- ALTER TABLE [author_to_friend] ADD CONSTRAINT [author_to_friend_author2_2_id_foreign] FOREIGN KEY ([author2_2_id]) REFERENCES [author2] ([id]) ON UPDATE cascade ON DELETE cascade;

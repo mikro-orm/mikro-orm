@@ -4,9 +4,8 @@ import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import SqlString from 'tsqlstring';
 import { MsSqlSchemaHelper } from './MsSqlSchemaHelper';
 import { MsSqlExceptionConverter } from './MsSqlExceptionConverter';
-import type { EntityProperty, IDatabaseDriver } from '@mikro-orm/core';
+import type { IDatabaseDriver } from '@mikro-orm/core';
 import { MsSqlSchemaGenerator } from './MsSqlSchemaGenerator';
-import { MssqlTimeStamp, UnicodeString } from './types';
 
 // TODO check what methods are needed
 export class MsSqlPlatform extends AbstractSqlPlatform {
@@ -51,27 +50,11 @@ export class MsSqlPlatform extends AbstractSqlPlatform {
       return `0x${value.toString('hex')}`;
     }
 
-    if (value instanceof UnicodeString) {
-      return `N${SqlString.escape(value)}`;
-    }
-
     if (value instanceof Date) {
       return SqlString.dateToString(value.toISOString(), 'Z');
     }
 
-    if (value instanceof MssqlTimeStamp) {
-      return value.escape();
-    }
-
     return SqlString.escape(value);
-  }
-
-  quoteVersionValue(value: Date | number, prop: EntityProperty): Date | string | number {
-    if (value instanceof Date) {
-      return new MssqlTimeStamp(value) as any;
-    }
-
-    return super.quoteVersionValue(value, prop);
   }
 
   getSchemaGenerator(driver: IDatabaseDriver, em?: SqlEntityManager): SchemaGenerator {
