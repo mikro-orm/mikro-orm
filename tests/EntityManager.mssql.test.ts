@@ -1350,6 +1350,37 @@ describe('EntityManagerMsSql', () => {
     await expect(driver.execute('select uuid from author2')).rejects.toThrow(InvalidFieldNameException);
   });
 
+  // this should run in ~800ms (when running single test locally)
+  test('perf: one to many', async () => {
+    const author = new Author2('Jon Snow', 'snow@wall.st');
+    await orm.em.persistAndFlush(author);
+
+    for (let i = 1; i <= 1000; i++) {
+      const b = new Book2('My Life on The Wall, part ' + i, author);
+      author.books.add(b);
+    }
+
+    await orm.em.flush();
+    expect(author.books.getItems().every(b => b.uuid)).toBe(true);
+  });
+
+  // this should run in ~1100ms (when running single test locally)
+  test('perf: batch insert and update', async () => {
+    const authors = new Set<Author2>();
+
+    for (let i = 1; i <= 1000; i++) {
+      const author = new Author2(`Jon Snow ${i}`, `snow-${i}@wall.st`);
+      orm.em.persist(author);
+      authors.add(author);
+    }
+
+    await orm.em.flush();
+    authors.forEach(author => expect(author.id).toBeGreaterThan(0));
+
+    authors.forEach(a => a.termsAccepted = true);
+    await orm.em.flush();
+  });
+
   test('perf: delete', async () => {
     const start = performance.now();
     for (let i = 1; i <= 5_000; i++) {

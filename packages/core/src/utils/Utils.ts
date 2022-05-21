@@ -303,6 +303,10 @@ export class Utils {
    * Gets array without duplicates.
    */
   static unique<T = string>(items: T[]): T[] {
+    if (items.length < 2) {
+      return items;
+    }
+
     return [...new Set(items)];
   }
 

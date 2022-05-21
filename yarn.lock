@@ -1403,7 +1403,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mikro-orm/core@npm:5.9.3, @mikro-orm/core@npm:^5.1.1, @mikro-orm/core@npm:^5.9.2, @mikro-orm/core@workspace:packages/core":
+"@mikro-orm/core@npm:5.9.3, @mikro-orm/core@npm:^5.1.4, @mikro-orm/core@npm:^5.9.2, @mikro-orm/core@workspace:packages/core":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/core@workspace:packages/core"
   dependencies:
@@ -1429,7 +1429,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mikro-orm/knex@npm:5.9.3, @mikro-orm/knex@npm:^5.1.1, @mikro-orm/knex@workspace:packages/knex":
+"@mikro-orm/knex@npm:5.9.3, @mikro-orm/knex@npm:^5.1.4, @mikro-orm/knex@workspace:packages/knex":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/knex@workspace:packages/knex"
   dependencies:
@@ -1506,12 +1506,22 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/mssql@workspace:packages/mssql"
   dependencies:
-    "@mikro-orm/core": "npm:^5.1.1"
-    "@mikro-orm/knex": "npm:^5.1.1"
-    mssql: "npm:8.0.2"
+    "@mikro-orm/core": "npm:^5.1.4"
+    "@mikro-orm/knex": "npm:^5.1.4"
+    mssql: "npm:8.1.1"
     tsqlstring: "npm:1.0.1"
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
+    "@mikro-orm/entity-generator": ^5.0.0
+    "@mikro-orm/migrations": ^5.0.0
+    "@mikro-orm/seeder": ^5.0.0
+  peerDependenciesMeta:
+    "@mikro-orm/entity-generator":
+      optional: true
+    "@mikro-orm/migrations":
+      optional: true
+    "@mikro-orm/seeder":
+      optional: true
   languageName: unknown
   linkType: soft
 
@@ -3779,6 +3789,13 @@ __metadata:
   version: 10.0.0
   resolution: "commander@npm:10.0.0"
   checksum: a4fc6d79b44fd87f6c5fbbdfc8d10fa8b33e1676ae170356419b9e06faf802899fae03a3b151c2e6a18047885ca42d2b70e0a94d4e5042edb948100848d43f91
+  languageName: node
+  linkType: hard
+
+"commander@npm:^9.1.0":
+  version: 9.5.0
+  resolution: "commander@npm:9.5.0"
+  checksum: 41c49b3d0f94a1fbeb0463c85b13f15aa15a9e0b4d5e10a49c0a1d58d4489b549d62262b052ae0aa6cfda53299bee487bfe337825df15e342114dde543f82906
   languageName: node
   linkType: hard
 
@@ -8166,18 +8183,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mssql@npm:8.0.2":
-  version: 8.0.2
-  resolution: "mssql@npm:8.0.2"
+"mssql@npm:8.1.1":
+  version: 8.1.1
+  resolution: "mssql@npm:8.1.1"
   dependencies:
     "@tediousjs/connection-string": "npm:^0.3.0"
+    commander: "npm:^9.1.0"
     debug: "npm:^4.3.3"
     rfdc: "npm:^1.3.0"
     tarn: "npm:^3.0.2"
     tedious: "npm:^14.0.0"
   bin:
     mssql: bin/mssql
-  checksum: 96626890e36dfe002359bac277257553b924083f359c0331a9894e98ee0d16284f89d7f738194575fea3a03860c328441368cc5fa45c775504e49f38388a202d
+  checksum: e0eb9ce36e3c04cd7069614515687849f508c248f8ad0ba0b824e22e7321a5529291752bff3298a515025ade4ca8469a536830a9934730e33b606712486c8c3d
   languageName: node
   linkType: hard
 

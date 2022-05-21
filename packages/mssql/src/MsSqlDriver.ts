@@ -23,20 +23,6 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
     super(config, new MsSqlPlatform(), MsSqlConnection, ['knex', 'mssql']);
   }
 
-  protected getPrimaryKeyFields(entityName: string): string[] {
-    const meta = this.metadata.find(entityName);
-
-    if (meta?.pivotTable) {
-      return Utils.flatten(Object.values(meta.properties).filter(({ primary }) => primary).map(({ fieldNames }) => fieldNames));
-    }
-
-    return meta ? Utils.flatten(meta.getPrimaryProps().map(pk => pk.fieldNames)) : [this.config.getNamingStrategy().referenceColumnName()];
-  }
-
-  async nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T> = {}): Promise<QueryResult<T>> {
-    return super.nativeInsert(entityName, data, options);
-  }
-
   async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
     const meta = this.metadata.get<T>(entityName);
     const set = new Set<string>();
@@ -50,7 +36,7 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
       const returningProps = meta!.props.filter(prop => prop.primary || prop.defaultRaw);
       const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
       const tableName = this.getTableName(meta, options);
-      const using = `SELECT *  FROM (VALUES ${data.map((x, i) => `(${i})`).join(',')}) v (id) WHERE 1 = 1`;
+      const using = `select * from (values ${data.map((x, i) => `(${i})`).join(',')}) v (id) where 1 = 1`;
       const output = returningFields.length > 0 ? `output ${returningFields.map(field => 'inserted.' + this.platform.quoteIdentifier(field)).join(', ')}` : '';
       const sql = `merge into ${tableName} using (${using}) s on 1 = 0 when not matched then insert default values ${output};`;
 
@@ -78,10 +64,6 @@ export class MsSqlDriver extends AbstractSqlDriver<MsSqlConnection> {
     }
 
     return super.nativeInsertMany(entityName, data, options);
-  }
-
-  async nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T> = {}): Promise<QueryResult<T>> {
-    return super.nativeUpdate(entityName, where, data, options);
   }
 
   createQueryBuilder<T extends AnyEntity<T>>(entityName: string, ctx?: Transaction<Knex.Transaction>, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean): QueryBuilder<T> {

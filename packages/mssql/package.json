@@ -56,8 +56,8 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/knex": "^5.1.1",
-    "mssql": "8.0.2",
+    "@mikro-orm/knex": "^5.1.4",
+    "mssql": "8.1.1",
     "tsqlstring": "1.0.1"
   },
   "devDependencies": {

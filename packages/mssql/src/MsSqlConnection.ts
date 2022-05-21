@@ -64,7 +64,7 @@ export class MsSqlConnection extends AbstractSqlConnection {
 
     const rowCount = res.length;
     const hasEmptyCount = (rowCount === 1) && ('' in res[0]);
-    const emptyRow = res[0][''];
+    const emptyRow = hasEmptyCount && res[0][''];
 
     return {
       affectedRows: hasEmptyCount ? emptyRow : res.length,
