@@ -30,6 +30,10 @@ export class MsSqlConnection extends AbstractSqlConnection {
 
   async begin(options: { isolationLevel?: IsolationLevel; ctx?: Knex.Transaction; eventBroadcaster?: TransactionEventBroadcaster } = {}): Promise<Knex.Transaction> {
     if (!options.ctx) {
+      if (options.isolationLevel) {
+        this.logQuery(`set transaction isolation level ${options.isolationLevel}`);
+      }
+
       this.logQuery('begin');
     }
 
@@ -42,7 +46,10 @@ export class MsSqlConnection extends AbstractSqlConnection {
   }
 
   async rollback(ctx: Knex.Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
-    // this.logQuery('rollback');
+    if (eventBroadcaster?.isTopLevel()) {
+      this.logQuery('rollback');
+    }
+
     return super.rollback(ctx, eventBroadcaster);
   }
 
@@ -70,15 +77,6 @@ export class MsSqlConnection extends AbstractSqlConnection {
   private getPatchedDialect() {
     const { MsSqlDialect } = MonkeyPatchable;
 
-    // const processResponse = MsSqlDialect.prototype.processResponse;
-    // MsSqlDialect.prototype.processResponse = (obj: any, runner: any) => {
-    //   if (obj.method === 'insert') {
-    //     return obj.response;
-    //   }
-    //
-    //   return processResponse(obj, runner);
-    // };
-
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const _query = MsSqlDialect.prototype._query;
     MsSqlDialect.prototype._query = function (connection: any, query: any) {
@@ -87,79 +85,9 @@ export class MsSqlConnection extends AbstractSqlConnection {
       }
 
       return _query.call(this, connection, query);
-      // return new Promise((resolve, reject) => {
-      //   const rows: any[] = [];
-      //   const request = this._makeRequest(query, (err: any, count: number) => {
-      //     if (err) {
-      //       return reject(err);
-      //     }
-      //
-      //     query.response = rows;
-      //
-      //     process.nextTick(() => this._chomp(connection));
-      //
-      //     resolve(query);
-      //   });
-      //
-      //   request.on('row', (row: any) => {
-      //     // debug('request::row');
-      //     rows.push(row);
-      //   });
-      //
-      //   this._assignBindings(request, query.bindings);
-      //   this._enqueueRequest(request, connection);
-      // });
     };
-    // MsSqlDialect.prototype._query2 = function (connection: any, obj: any) {
-    //   if (!obj || typeof obj === 'string') {
-    //     obj = { sql: obj };
-    //   }
-    //
-    //   return new Promise((resolve: any, reject) => {
-    //     const { sql } = obj;
-    //
-    //     if (!sql) {
-    //       return resolve();
-    //     }
-    //
-    //     const req = (connection.tx_ || connection).request();
-    //     // req.verbose = true;
-    //     req.multiple = true; // fixme base on config? probably needed for scope_identity, but that is wrong anyway, we want to use `output` somehow
-    //
-    //     if (obj.bindings) {
-    //       for (let i = 0; i < obj.bindings.length; i++) {
-    //         this._setReqInput(req, i, obj.bindings[i]);
-    //       }
-    //     }
-    //
-    //     req.query(sql, (err: Error, recordset: any) => {
-    //       if (err) {
-    //         return reject(err);
-    //       }
-    //
-    //       obj.response = recordset.recordsets[0];
-    //       resolve(obj);
-    //     });
-    //   });
-    // };
 
     return MsSqlDialect;
-  }
-
-  private getCallMethod(obj: any): string {
-    if (obj.method === 'raw' && obj.sql.trim().match('^insert into|update|delete')) {
-      return 'run';
-    }
-
-    switch (obj.method) {
-      case 'insert':
-      case 'update':
-      case 'counter':
-      case 'del':
-        return 'run';
-      default:
-        return 'all';
-    }
   }
 
 }

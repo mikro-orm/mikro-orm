@@ -1,7 +1,7 @@
 import { v4 } from 'uuid';
 import {
   Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, ValidationError, wrap, UniqueConstraintViolationException,
-  TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException, NonUniqueFieldNameException, InvalidFieldNameException,
+  TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException, NonUniqueFieldNameException, InvalidFieldNameException, IsolationLevel,
 } from '@mikro-orm/core';
 import { MsSqlDriver, MsSqlConnection } from '@mikro-orm/mssql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2 } from './entities-mssql';
@@ -234,6 +234,23 @@ describe('EntityManagerMsSql', () => {
     expect(mock.mock.calls[4][0]).toMatch('insert into [author2] ([created_at], [email], [name], [terms_accepted], [updated_at]) output inserted.[id], inserted.[created_at], inserted.[updated_at], inserted.[age], inserted.[terms_accepted] values (@p0, @p1, @p2, @p3, @p4)');
     expect(mock.mock.calls[5][0]).toMatch('commit');
     await expect(orm.em.findOne(Author2, { name: 'God Persisted!' })).resolves.not.toBeNull();
+  });
+
+  test('transactions with isolation levels', async () => {
+    const mock = mockLogger(orm, ['query']);
+
+    const god1 = new Author2('God1', 'hello@heaven1.god');
+    try {
+      await orm.em.transactional(async em => {
+        await em.persistAndFlush(god1);
+        throw new Error(); // rollback the transaction
+      }, { isolationLevel: IsolationLevel.READ_UNCOMMITTED });
+    } catch { }
+
+    expect(mock.mock.calls[0][0]).toMatch('set transaction isolation level read uncommitted');
+    expect(mock.mock.calls[1][0]).toMatch('begin');
+    expect(mock.mock.calls[2][0]).toMatch('insert into [author2] ([created_at], [email], [name], [terms_accepted], [updated_at]) output inserted.[id], inserted.[created_at], inserted.[updated_at], inserted.[age], inserted.[terms_accepted] values (@p0, @p1, @p2, @p3, @p4)');
+    expect(mock.mock.calls[3][0]).toMatch('rollback');
   });
 
   test('should load entities', async () => {
@@ -1205,14 +1222,8 @@ describe('EntityManagerMsSql', () => {
     const author = new Author2('n', 'e');
     author.id = 5;
     author.address = new Address2(author, 'v1');
-
-    // TODO? when outside tx, it won't help, when inside, it throws for permissions
-    // SET IDENTITY_INSERT [author2] ON - Cannot find the object "author2" because it does not exist or you do not have permissions.
-    await orm.em.execute('SET IDENTITY_INSERT [author2] ON');
-    await orm.em.transactional(async () => {
-      await orm.em.execute('SET IDENTITY_INSERT [author2] ON');
-      await orm.em.persistAndFlush(author);
-    });
+    await orm.em.persistAndFlush(author);
+    orm.em.clear();
 
     const a1 = await orm.em.findOneOrFail(Author2, author.id, { populate: ['address'] });
     expect(a1.address!.value).toBe('v1');
@@ -1350,7 +1361,7 @@ describe('EntityManagerMsSql', () => {
     await orm.em.flush();
     const took = performance.now() - start;
 
-    if (took > 300) {
+    if (took > 500) {
       process.stdout.write(`delete test took ${took}\n`);
     }
   });

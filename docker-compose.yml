@@ -48,9 +48,6 @@ services:
     image: mcr.microsoft.com/azure-sql-edge:latest
     ports:
       - "1433:1433"
-    # volumes:
-    #   - mssql:/var/opt/mssql/data
-    #user: root
     environment:
       MSSQL_SA_PASSWORD: Root.Root
       ACCEPT_EULA: 1
@@ -68,4 +65,3 @@ volumes:
     driver_opts:
       type: tmpfs
       device: tmpfs
-  # mssql:
