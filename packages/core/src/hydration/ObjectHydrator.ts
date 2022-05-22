@@ -228,12 +228,14 @@ export class ObjectHydrator extends Hydrator {
           const childProp = prop.embeddedProps[prop.targetMeta!.discriminatorColumn!];
           const childDataKey = prop.object ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
           // weak comparison as we can have numbers that might have been converted to strings due to being object keys
-          ret.push(`    if (data${childDataKey} == '${meta.discriminatorValue}') {`);
+          ret.push(`    if (data${childDataKey} == '${meta.discriminatorValue}' && entity${entityKey} == null) {`);
           ret.push(`      entity${entityKey} = factory.createEmbeddable('${meta.className}', data${prop.object ? dataKey : ''}, { newEntity, convertCustomTypes });`);
           ret.push(`    }`);
         });
       } else {
-        ret.push(`    entity${entityKey} = factory.createEmbeddable('${prop.targetMeta!.className}', data${prop.object ? dataKey : ''}, { newEntity, convertCustomTypes });`);
+        ret.push(`    if(entity${entityKey} == null) {`);
+        ret.push(`      entity${entityKey} = factory.createEmbeddable('${prop.targetMeta!.className}', data${prop.object ? dataKey : ''}, { newEntity, convertCustomTypes });`);
+        ret.push(`    }`);
       }
 
       meta.props
