@@ -1,4 +1,3 @@
-
 import {
   Embeddable,
   Embedded,
@@ -50,7 +49,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Parent, Nested],
     dbName: ':memory:',
-    type: 'postgresql',
+    type: 'sqlite',
   });
   await orm.getSchemaGenerator().refreshDatabase();
 });
