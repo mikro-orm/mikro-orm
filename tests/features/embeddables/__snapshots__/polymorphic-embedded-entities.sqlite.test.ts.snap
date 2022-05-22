@@ -5,10 +5,10 @@ exports[`polymorphic embeddables in sqlite diffing 1`] = `
   if (typeof data.id !== 'undefined') entity.id = data.id;
   if (typeof data.name !== 'undefined') entity.name = data.name;
   if (data.pet_canBark !== undefined || data.pet_type !== undefined || data.pet_name !== undefined || data.pet_canMeow !== undefined) {
-    if (data.pet_type == '1') {
+    if (data.pet_type == '1' && entity.pet == null) {
       entity.pet = factory.createEmbeddable('Dog', data, { newEntity, convertCustomTypes });
     }
-    if (data.pet_type == '0') {
+    if (data.pet_type == '0' && entity.pet == null) {
       entity.pet = factory.createEmbeddable('Cat', data, { newEntity, convertCustomTypes });
     }
     if (typeof data.pet_canBark !== 'undefined') entity.pet.canBark = data.pet_canBark === null ? null : !!data.pet_canBark;
@@ -22,10 +22,10 @@ exports[`polymorphic embeddables in sqlite diffing 1`] = `
     data.pet = JSON.parse(data.pet);
   }
   if (data.pet != null) {
-    if (data.pet.type == '1') {
+    if (data.pet.type == '1' && entity.pet == null) {
       entity.pet = factory.createEmbeddable('Dog', data.pet, { newEntity, convertCustomTypes });
     }
-    if (data.pet.type == '0') {
+    if (data.pet.type == '0' && entity.pet == null) {
       entity.pet = factory.createEmbeddable('Cat', data.pet, { newEntity, convertCustomTypes });
     }
     if (data.pet && typeof data.pet.canBark !== 'undefined') entity.pet.canBark = data.pet.canBark === null ? null : !!data.pet.canBark;
@@ -39,10 +39,10 @@ exports[`polymorphic embeddables in sqlite diffing 1`] = `
     data.pet2 = JSON.parse(data.pet2);
   }
   if (data.pet2 != null) {
-    if (data.pet2.type == '1') {
+    if (data.pet2.type == '1' && entity.pet2 == null) {
       entity.pet2 = factory.createEmbeddable('Dog', data.pet2, { newEntity, convertCustomTypes });
     }
-    if (data.pet2.type == '0') {
+    if (data.pet2.type == '0' && entity.pet2 == null) {
       entity.pet2 = factory.createEmbeddable('Cat', data.pet2, { newEntity, convertCustomTypes });
     }
     if (data.pet2 && typeof data.pet2.canBark !== 'undefined') entity.pet2.canBark = data.pet2.canBark === null ? null : !!data.pet2.canBark;
@@ -62,10 +62,10 @@ exports[`polymorphic embeddables in sqlite diffing 1`] = `
         data.pets[idx_0] = JSON.parse(data.pets[idx_0]);
       }
       if (data.pets[idx_0] != null) {
-        if (data.pets[idx_0].type == '1') {
+        if (data.pets[idx_0].type == '1' && entity.pets[idx_0] == null) {
           entity.pets[idx_0] = factory.createEmbeddable('Dog', data.pets[idx_0], { newEntity, convertCustomTypes });
         }
-        if (data.pets[idx_0].type == '0') {
+        if (data.pets[idx_0].type == '0' && entity.pets[idx_0] == null) {
           entity.pets[idx_0] = factory.createEmbeddable('Cat', data.pets[idx_0], { newEntity, convertCustomTypes });
         }
         if (data.pets && data.pets[idx_0] && typeof data.pets[idx_0].canBark !== 'undefined') entity.pets[idx_0].canBark = data.pets[idx_0].canBark === null ? null : !!data.pets[idx_0].canBark;
