@@ -233,7 +233,7 @@ export class ObjectHydrator extends Hydrator {
           ret.push(`    }`);
         });
       } else {
-        ret.push(`    if(entity${entityKey} == null) {`);
+        ret.push(`    if (entity${entityKey} == null) {`);
         ret.push(`      entity${entityKey} = factory.createEmbeddable('${prop.targetMeta!.className}', data${prop.object ? dataKey : ''}, { newEntity, convertCustomTypes });`);
         ret.push(`    }`);
       }
