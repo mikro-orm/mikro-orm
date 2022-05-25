@@ -603,12 +603,16 @@ type StringKeys<T, E extends string = never> = T extends Collection<any, any>
       : never;
 type GetStringKey<T, K extends StringKeys<T, string>, E extends string> = K extends keyof T ? ExtractType<T[K]> : (K extends E ? keyof T : never);
 
-export type AutoPath<O, P extends string, E extends string = never> =
+// limit depth of the recursion to 5 (inspired by https://www.angularfix.com/2022/01/why-am-i-getting-instantiation-is.html)
+type Prev = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+export type AutoPath<O, P extends string, E extends string = never, D extends Prev[number] = 5> =
+  [D] extends [never] ? string :
   P extends any ?
     (P & `${string}.` extends never ? P : P & `${string}.`) extends infer Q
       ? Q extends `${infer A}.${infer B}`
         ? A extends StringKeys<O, E>
-          ? `${A}.${AutoPath<Defined<GetStringKey<O, A, E>>, B, E>}`
+          ? `${A}.${AutoPath<Defined<GetStringKey<O, A, E>>, B, E, Prev[D]>}`
           : never
         : Q extends StringKeys<O, E>
           ? (Defined<GetStringKey<O, Q, E>> extends unknown ? Exclude<P, `${string}.`> : never) | (StringKeys<Defined<GetStringKey<O, Q, E>>, E> extends never ? never : `${Q}.`)

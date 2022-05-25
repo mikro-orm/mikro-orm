@@ -128,7 +128,6 @@ describe('GH issue 2948', () => {
     await expect(foo2._bar[1]._fiz[1]._baz.name).toBeDefined();
     orm.em.clear();
 
-    // @ts-expect-error TODO apparently the embedded arrays are giving hard times to TS
     const [foo1] = await orm.em.find(FooEntity, {}, { populate: ['_bar._fiz._baz'] });
     expect(foo1._bar[0]._fiz[0]._baz.name).toBeDefined();
     expect(foo1._bar[0]._fiz[1]._baz.name).toBeDefined();
