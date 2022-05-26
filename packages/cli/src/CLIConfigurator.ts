@@ -24,7 +24,12 @@ export class CLIConfigurator {
     const version = Utils.getORMVersion();
 
     if (settings.useTsNode) {
-      await ConfigurationLoader.registerTsNode(settings.tsConfigPath);
+      const tsNode = await ConfigurationLoader.registerTsNode(settings.tsConfigPath);
+
+      /* istanbul ignore if */
+      if (!tsNode) {
+        process.env.MIKRO_ORM_CLI_USE_TS_NODE ??= '0';
+      }
     }
 
     // noinspection HtmlDeprecatedTag
