@@ -142,7 +142,7 @@ export class QueryHelper {
         return this.processJsonCondition(o, value, [prop.fieldNames[0]], platform, aliased);
       }
 
-      if (Array.isArray(value) && !Utils.isOperator(key) && !QueryHelper.isSupportedOperator(key) && !key.includes('?')) {
+      if (Array.isArray(value) && !Utils.isOperator(key) && !QueryHelper.isSupportedOperator(key) && !key.includes('?') && key !== '$center') {
         if (platform.allowsComparingTuples()) {
           // comparing single composite key - use $eq instead of $in
           const op = !value.every(v => Array.isArray(v)) && composite ? '$eq' : '$in';
