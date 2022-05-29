@@ -35,7 +35,7 @@ export class QueryBuilderHelper {
         const prop = this.getProperty(f, a);
 
         if (prop) {
-          parts.push(...prop.fieldNames.map(f => this.mapper(f, type, value, alias)));
+          parts.push(...prop.fieldNames.map(f => this.mapper(a !== this.alias ? `${a}.${f}` : f, type, value, alias)));
         } else {
           parts.push(this.mapper(`${a}.${f}`, type, value, alias));
         }
