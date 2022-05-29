@@ -42,6 +42,11 @@ jobs:
         cd docs
         yarn
         yarn deploy
+        # squash all commits to reduce repository size 
+        git checkout gh-pages
+        git update-ref -d refs/heads/gh-pages
+        git commit -m "mikro-orm.io"
+        git push -f
       env:
         GIT_USER: "B4nan:${{ secrets.GH_TOKEN }}"
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
