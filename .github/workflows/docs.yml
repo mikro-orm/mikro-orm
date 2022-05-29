@@ -11,20 +11,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Use Node.js 16
+    - name: Use Node.js 18
       uses: actions/setup-node@v3
       with:
-        node-version: 16
+        node-version: 18
 
     - name: Set git identity
       run: |
         git config --global user.name "Martin Adámek"
         git config --global user.email "banan23@gmail.com"
-
-    - name: Install libkrb5-dev (for run-rs)
-      run: |
-        sudo apt update
-        sudo apt install libkrb5-dev
 
     - name: Cache node_modules
       uses: actions/cache@v3
