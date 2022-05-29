@@ -188,8 +188,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   async count<T extends AnyEntity<T>>(entityName: string, where: any, options: CountOptions<T> = {}): Promise<number> {
-    const meta = this.metadata.find(entityName)!;
-    const pks = meta.primaryKeys;
+    const meta = this.metadata.find(entityName);
     const qb = this.createQueryBuilder(entityName, options.ctx, options.connectionType, false)
       .groupBy(options.groupBy!)
       .having(options.having!)
@@ -197,7 +196,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       .withSchema(this.getSchemaName(meta, options))
       .where(where);
 
-    return this.rethrow(qb.getCount(pks, true));
+    return this.rethrow(qb.getCount());
   }
 
   async nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>, options: NativeInsertUpdateOptions<T> = {}): Promise<QueryResult<T>> {

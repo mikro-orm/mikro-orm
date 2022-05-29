@@ -21,9 +21,13 @@ export class QueryBuilderHelper {
               private readonly knex: Knex,
               private readonly driver: AbstractSqlDriver) { }
 
-  mapper(field: string, type?: QueryType): string;
-  mapper(field: string, type?: QueryType, value?: any, alias?: string | null): string;
-  mapper(field: string, type = QueryType.SELECT, value?: any, alias?: string | null): string | Knex.Raw {
+  mapper(field: string | Knex.Raw, type?: QueryType): string;
+  mapper(field: string | Knex.Raw, type?: QueryType, value?: any, alias?: string | null): string;
+  mapper(field: string | Knex.Raw, type = QueryType.SELECT, value?: any, alias?: string | null): string | Knex.Raw {
+    if (typeof field !== 'string') {
+      return field;
+    }
+
     const isTableNameAliasRequired = this.isTableNameAliasRequired(type);
     const fields = Utils.splitPrimaryKeys(field);
 

@@ -125,7 +125,13 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   }
 
   count(field?: string | string[], distinct = false): CountQueryBuilder<T> {
-    this._fields = [...(field ? Utils.asArray(field) : this.metadata.find(this.entityName)!.primaryKeys)];
+    if (field) {
+      this._fields = Utils.asArray(field);
+    } else if (this.hasToManyJoins()) {
+      this._fields = this.metadata.find(this.entityName)!.primaryKeys;
+    } else {
+      this._fields = [this.raw('*')];
+    }
 
     if (distinct) {
       this.flags.add(QueryFlag.DISTINCT);
@@ -520,9 +526,9 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   /**
    * Executes count query (without offset and limit), returning total count of results
    */
-  async getCount(field?: string | string[], distinct = false): Promise<number> {
+  async getCount(field?: string | string[], distinct?: boolean): Promise<number> {
     const qb = this.clone();
-    qb.count(field, distinct).limit(undefined).offset(undefined).orderBy([]);
+    qb.count(field, distinct ?? qb.hasToManyJoins()).limit(undefined).offset(undefined).orderBy([]);
     const res = await qb.execute<{ count: number }>('get', false);
 
     return res ? +res.count : 0;
@@ -847,7 +853,8 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     }
   }
 
-  private hasToManyJoins(): boolean {
+  /** @internal */
+  hasToManyJoins(): boolean {
     return Object.values(this._joins).some(join => {
       return [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(join.prop.reference);
     });

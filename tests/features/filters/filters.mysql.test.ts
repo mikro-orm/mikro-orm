@@ -83,7 +83,7 @@ describe('filters [mysql]', () => {
     await orm.em.count(Book2, { author: { name: 'Jon' } }, {
       filters: { hasAuthor: false, long: true },
     });
-    expect(mock.mock.calls[6][0]).toMatch('select count(distinct `b0`.`uuid_pk`) as `count` ' +
+    expect(mock.mock.calls[6][0]).toMatch('select count(*) as `count` ' +
       'from `book2` as `b0` ' +
       'left join `author2` as `a1` on `b0`.`author_id` = `a1`.`id` ' +
       'where length(perex) > 10000 and `a1`.`name` = \'Jon\'');

@@ -874,7 +874,7 @@ describe('QueryBuilder', () => {
   test('select count query', async () => {
     const qb = orm.em.createQueryBuilder(Publisher2);
     qb.count().where({ name: 'test 123', type: PublisherType.GLOBAL });
-    expect(qb.getQuery()).toEqual('select count(`e0`.`id`) as `count` from `publisher2` as `e0` where `e0`.`name` = ? and `e0`.`type` = ?');
+    expect(qb.getQuery()).toEqual('select count(*) as `count` from `publisher2` as `e0` where `e0`.`name` = ? and `e0`.`type` = ?');
     expect(qb.getParams()).toEqual(['test 123', PublisherType.GLOBAL]);
   });
 
@@ -888,7 +888,7 @@ describe('QueryBuilder', () => {
   test('select count with non-standard PK field name (uuid_pk)', async () => {
     const qb = orm.em.createQueryBuilder(Book2);
     qb.count().where({ title: 'test 123' });
-    expect(qb.getQuery()).toEqual('select count(`e0`.`uuid_pk`) as `count` from `book2` as `e0` where `e0`.`title` = ?');
+    expect(qb.getQuery()).toEqual('select count(*) as `count` from `book2` as `e0` where `e0`.`title` = ?');
     expect(qb.getParams()).toEqual(['test 123']);
   });
 
@@ -2527,7 +2527,7 @@ describe('QueryBuilder', () => {
   test('count query with auto-joining (GH issue 858)', async () => {
     // m:1 -> 1:1 inverse -> PK
     const sql1 = orm.em.createQueryBuilder(Author2).count().where({ favouriteBook: { test: { id: 1 } } }).getQuery();
-    expect(sql1).toBe('select count(`e0`.`id`) as `count` ' +
+    expect(sql1).toBe('select count(*) as `count` ' +
       'from `author2` as `e0` ' +
       'left join `book2` as `e1` on `e0`.`favourite_book_uuid_pk` = `e1`.`uuid_pk` ' +
       'left join `test2` as `e2` on `e1`.`uuid_pk` = `e2`.`book_uuid_pk` ' +
@@ -2541,7 +2541,7 @@ describe('QueryBuilder', () => {
       'where `e2`.`id` = ?');
 
     const sql3 = orm.em.createQueryBuilder(Book2).count().where({ test: { id: 1 } }).getQuery();
-    expect(sql3).toBe('select count(`e0`.`uuid_pk`) as `count` ' +
+    expect(sql3).toBe('select count(*) as `count` ' +
       'from `book2` as `e0` ' +
       'left join `test2` as `e1` on `e0`.`uuid_pk` = `e1`.`book_uuid_pk` ' +
       'where `e1`.`id` = ?');

@@ -1078,10 +1078,10 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     expect(count3).toBe(2);
     const count4 = await orm.em.createQueryBuilder(Author4).where({ email: '123' }).getCount();
     expect(count4).toBe(0);
-    expect(mock.mock.calls[0][0]).toMatch('select count(`a0`.`id`) as `count` from `author4` as `a0`');
+    expect(mock.mock.calls[0][0]).toMatch('select count(*) as `count` from `author4` as `a0`');
     expect(mock.mock.calls[1][0]).toMatch('select count(`a0`.`terms_accepted`) as `count` from `author4` as `a0`');
     expect(mock.mock.calls[2][0]).toMatch('select count(distinct `a0`.`terms_accepted`) as `count` from `author4` as `a0`');
-    expect(mock.mock.calls[3][0]).toMatch('select count(`a0`.`id`) as `count` from `author4` as `a0` where `a0`.`email` = \'123\'');
+    expect(mock.mock.calls[3][0]).toMatch('select count(*) as `count` from `author4` as `a0` where `a0`.`email` = \'123\'');
   });
 
   test('using collection methods with null/undefined (GH issue #1408)', async () => {
