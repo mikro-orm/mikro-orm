@@ -853,8 +853,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     }
   }
 
-  /** @internal */
-  hasToManyJoins(): boolean {
+  private hasToManyJoins(): boolean {
     return Object.values(this._joins).some(join => {
       return [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(join.prop.reference);
     });
