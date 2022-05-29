@@ -49,7 +49,6 @@ jobs:
         yarn
         yarn deploy
         # squash all commits to reduce repository size 
-        git checkout gh-pages
         git reset HEAD~2
         git commit --amend -m 'mikro-orm.io'
         git push --force origin gh-pages
