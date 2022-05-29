@@ -56,7 +56,7 @@ jobs:
       run: |
         git fetch
         git checkout gh-pages
-        git reset HEAD~3
+        git reset HEAD~2
         git commit --amend -m 'mikro-orm.io'
         git push --force origin gh-pages
       env:
