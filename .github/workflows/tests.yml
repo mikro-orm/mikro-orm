@@ -55,16 +55,16 @@ jobs:
       - name: Checkout Source code
         uses: actions/checkout@v3
 
-      - name: Use Node.js 18
+      - name: Use Node.js 16
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 16
 
       - name: Cache node_modules
         uses: actions/cache@v3
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-18-modules-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-16-modules-${{ hashFiles('**/yarn.lock') }}
 
       - name: Install libkrb5-dev (for run-rs)
         run: |
