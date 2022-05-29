@@ -43,15 +43,22 @@ jobs:
         yarn config set ignore-engines true
         yarn
 
+    - name: Squash all commits to reduce repository size
+      run: |
+        git fetch
+        git checkout gh-pages
+        git reset HEAD~3
+        git commit --amend -m 'mikro-orm.io'
+        git push --force origin gh-pages
+      env:
+        GIT_USER: "B4nan:${{ secrets.GH_TOKEN }}"
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
     - name: Build & deploy docs
       run: |
         cd docs
         yarn
         yarn deploy
-        # squash all commits to reduce repository size 
-        git reset HEAD~2
-        git commit --amend -m 'mikro-orm.io'
-        git push --force origin gh-pages
       env:
         GIT_USER: "B4nan:${{ secrets.GH_TOKEN }}"
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
