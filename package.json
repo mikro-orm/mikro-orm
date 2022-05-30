@@ -114,7 +114,7 @@
     "husky": "8.0.1",
     "jest": "28.1.0",
     "lerna": "5.0.0",
-    "lint-staged": "12.4.2",
+    "lint-staged": "12.4.3",
     "mongodb": "4.6.0",
     "node-gyp": "^9.0.0",
     "rimraf": "3.0.2",
