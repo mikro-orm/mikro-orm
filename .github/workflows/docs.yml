@@ -57,7 +57,7 @@ jobs:
         git fetch
         git checkout gh-pages
         git reset HEAD~1
-        git commit --amend -m 'mikro-orm.io'
+        git commit -a --amend -m 'mikro-orm.io'
         git push --force origin gh-pages
       env:
         GIT_USER: "B4nan:${{ secrets.GH_TOKEN }}"
