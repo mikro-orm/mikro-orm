@@ -1,5 +1,5 @@
 import type { Knex } from 'knex';
-import type { EntityName } from '@mikro-orm/core';
+import type { ConnectionType, EntityName } from '@mikro-orm/core';
 import { EntityRepository } from '@mikro-orm/core';
 import type { SqlEntityManager } from './SqlEntityManager';
 import type { QueryBuilder } from './query';
@@ -28,12 +28,12 @@ export class SqlEntityRepository<T> extends EntityRepository<T> {
   /**
    * Returns configured knex instance.
    */
-  getKnex(type?: 'read' | 'write'): Knex {
+  getKnex(type?: ConnectionType): Knex {
     return this.em.getConnection(type).getKnex();
   }
 
   protected get em(): SqlEntityManager {
-    return this._em.getContext() as SqlEntityManager;
+    return this._em.getContext(false);
   }
 
 }

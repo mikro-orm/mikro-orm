@@ -4,7 +4,7 @@
   "workspaces": [
     "packages/*"
   ],
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "TypeScript ORM for Node.js based on Data Mapper, Unit of Work and Identity Map patterns. Supports MongoDB, MySQL, PostgreSQL and SQLite databases as well as usage with vanilla JavaScript.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -39,47 +39,18 @@
   },
   "homepage": "https://mikro-orm.io",
   "scripts": {
-    "bootstrap": "lerna bootstrap && husky install",
-    "postinstall": "yarn bootstrap",
+    "postinstall": "husky install",
     "clean": "lerna run clean",
     "build": "lerna run build",
     "release": "yarn build && lerna publish from-package --contents dist --force-publish",
-    "publish:next": "lerna publish --canary major --preid dev --dist-tag next --force-publish",
-    "release:next": "yarn build && yarn publish:next",
+    "publish:next": "lerna publish --canary --preid dev --dist-tag next --force-publish",
+    "release:next": "lerna run compile && yarn publish:next",
     "test": "jest --runInBand",
     "tsc-check-tests": "tsc --noEmit --project tests/tsconfig.json",
     "coverage": "rimraf temp tests/generated-entities && yarn test --coverage",
     "run-rs": "run-rs -v 4.2.3 -l ubuntu1804",
     "run-rs-in-background": "yarn run-rs > /dev/null 2>&1 &",
     "lint": "eslint packages/**/*.ts"
-  },
-  "jest": {
-    "testTimeout": 30000,
-    "preset": "ts-jest",
-    "collectCoverage": false,
-    "collectCoverageFrom": [
-      "<rootDir>/packages/*/src/**/*.ts"
-    ],
-    "moduleNameMapper": {
-      "@mikro-orm/mongo-highlighter": "<rootDir>/node_modules/@mikro-orm/mongo-highlighter",
-      "@mikro-orm/sql-highlighter": "<rootDir>/node_modules/@mikro-orm/sql-highlighter",
-      "@mikro-orm/(.*)": "<rootDir>/packages/$1/src"
-    },
-    "modulePathIgnorePatterns": [
-      "dist/package.json",
-      "<rootDir>/package.json"
-    ],
-    "coveragePathIgnorePatterns": [
-      "<rootDir>/packages/cli/src/cli.ts"
-    ],
-    "setupFiles": [
-      "<rootDir>/tests/setup.ts"
-    ],
-    "globals": {
-      "ts-jest": {
-        "tsconfig": "tests/tsconfig.json"
-      }
-    }
   },
   "commitlint": {
     "extends": [
@@ -120,38 +91,38 @@
     "node": ">= 14.0.0"
   },
   "devDependencies": {
-    "@commitlint/cli": "16.0.2",
-    "@commitlint/config-conventional": "16.0.0",
+    "@commitlint/cli": "17.0.1",
+    "@commitlint/config-conventional": "17.0.0",
     "@mikro-orm/mongo-highlighter": "1.0.0",
     "@mikro-orm/sql-highlighter": "1.0.1",
-    "@types/clone": "2.1.1",
     "@types/fs-extra": "9.0.13",
-    "@types/jest": "27.4.0",
-    "@types/mysql2": "types/mysql2#d4ef3b2292f328049f7e4c545f6adab7d6a350a9",
-    "@types/node": "16.11.19",
-    "@types/pg": "8.6.3",
+    "@types/jest": "27.5.1",
+    "@types/mysql2": "types/mysql2#89378b2cb3974ea8cdd1d633b8f056e54e5d2384",
+    "@types/node": "17.0.18",
+    "@types/pg": "8.6.5",
     "@types/sqlstring": "2.3.0",
     "@types/uuid": "8.3.4",
-    "@types/webpack-env": "1.16.3",
-    "@typescript-eslint/eslint-plugin": "5.9.0",
-    "@typescript-eslint/parser": "5.9.0",
-    "bson": "^4.6.0",
+    "@types/webpack-env": "1.17.0",
+    "@typescript-eslint/eslint-plugin": "5.26.0",
+    "@typescript-eslint/parser": "5.26.0",
+    "bson": "^4.6.3",
     "conditional-type-checks": "1.0.5",
-    "eslint": "8.6.0",
-    "fs-extra": "10.0.0",
+    "eslint": "8.16.0",
+    "fs-extra": "10.1.0",
     "gen-esm-wrapper": "1.1.3",
     "guid-typescript": "1.0.9",
-    "husky": "7.0.4",
-    "jest": "27.4.7",
-    "lerna": "4.0.0",
-    "lint-staged": "12.1.7",
-    "mongodb": "4.3.0",
+    "husky": "8.0.1",
+    "jest": "28.1.0",
+    "lerna": "5.0.0",
+    "lint-staged": "12.4.2",
+    "mongodb": "4.6.0",
+    "node-gyp": "^9.0.0",
     "rimraf": "3.0.2",
-    "run-rs": "0.7.5",
-    "sql-formatter": "4.0.2",
-    "ts-jest": "27.1.2",
-    "ts-node": "10.4.0",
-    "typescript": "4.5.4",
+    "run-rs": "0.7.6",
+    "sql-formatter": "6.1.2",
+    "ts-jest": "28.0.3",
+    "ts-node": "10.8.0",
+    "typescript": "4.7.2",
     "uuid": "8.3.2"
   }
 }

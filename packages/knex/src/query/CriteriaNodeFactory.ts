@@ -35,7 +35,12 @@ export class CriteriaNodeFactory {
 
   static createArrayNode(metadata: MetadataStorage, entityName: string, payload: any[], parent?: ICriteriaNode, key?: string): ICriteriaNode {
     const node = new ArrayCriteriaNode(metadata, entityName, parent, key);
-    node.payload = payload.map(item => this.createNode(metadata, entityName, item, node));
+    node.payload = payload.map((item, index) => {
+      const n = this.createNode(metadata, entityName, item, node);
+      n.index = key === '$and' ? index : undefined; // we care about branching only for $and
+
+      return n;
+    });
 
     return node;
   }

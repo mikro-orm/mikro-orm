@@ -1,5 +1,5 @@
 import { Entity, PrimaryKey, Property, MikroORM, EntityCaseNamingStrategy } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 class A {
@@ -14,7 +14,7 @@ class A {
 
 describe('GH issue 472', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
@@ -23,9 +23,7 @@ describe('GH issue 472', () => {
       type: 'postgresql',
       namingStrategy: EntityCaseNamingStrategy,
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.getSchemaGenerator().refreshDatabase();
   });
 
   afterAll(() => orm.close(true));

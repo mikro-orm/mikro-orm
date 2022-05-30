@@ -1,6 +1,5 @@
 import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
-import { SchemaGenerator } from '@mikro-orm/knex';
 
 @Entity({ tableName: 'name' })
 class Name {
@@ -42,7 +41,7 @@ describe('GH issue 1346', () => {
       type: 'postgresql',
     });
 
-    await new SchemaGenerator(orm.em).ensureDatabase();
+    await orm.getSchemaGenerator().ensureDatabase();
   });
 
   beforeEach(async () => {

@@ -1,7 +1,5 @@
-import type { Arguments, Argv, CommandModule } from 'yargs';
-import type { MikroORM } from '@mikro-orm/core';
+import type { ArgumentsCamelCase, Argv, CommandModule } from 'yargs';
 import { colors } from '@mikro-orm/core';
-import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { CLIHelper } from '../CLIHelper';
 
 export class DatabaseSeedCommand<T> implements CommandModule<T, { class: string }> {
@@ -18,14 +16,13 @@ export class DatabaseSeedCommand<T> implements CommandModule<T, { class: string 
   };
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
-  async handler(args: Arguments<{ class?: string }>) {
-    const orm = await CLIHelper.getORM(undefined) as MikroORM<AbstractSqlDriver>;
-    const seeder = orm.getSeeder();
-    const seederClass = args.class || orm.config.get('seeder').defaultSeeder;
-    await seeder.seedString(seederClass);
-    CLIHelper.dump(colors.green(`Seeder ${seederClass} successfully seeded`));
+  async handler(args: ArgumentsCamelCase<{ class?: string }>) {
+    const orm = await CLIHelper.getORM();
+    const className = args.class ?? orm.config.get('seeder').defaultSeeder!;
+    await orm.getSeeder().seedString(className);
+    CLIHelper.dump(colors.green(`Seeder ${className} successfully executed`));
     await orm.close(true);
   }
 

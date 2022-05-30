@@ -1,16 +1,16 @@
 import { inspect } from 'util';
-
 import type { Configuration } from './utils';
 import { QueryHelper, TransactionContext, Utils } from './utils';
 import type { AssignOptions, EntityLoaderOptions, EntityRepository, IdentifiedReference } from './entity';
 import { EntityAssigner, EntityFactory, EntityLoader, EntityValidator, Reference } from './entity';
-import { UnitOfWork } from './unit-of-work';
-import type { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, InsertOptions, LockOptions, UpdateOptions, GetReferenceOptions, EntityField } from './drivers';
-import type { AnyEntity, AutoPath, Dictionary, EntityData, EntityDictionary, EntityDTO, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, New, Populate, PopulateOptions, Primary } from './typings';
-import { FlushMode, LoadStrategy, LockMode, ReferenceType, SCALAR_TYPES } from './enums';
+import { ChangeSetType, UnitOfWork } from './unit-of-work';
+import type { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, LockOptions, NativeInsertUpdateOptions, UpdateOptions, GetReferenceOptions, EntityField } from './drivers';
+import type { AnyEntity, AutoPath, ConnectionType, Dictionary, EntityData, EntityDictionary, EntityDTO, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, Populate, PopulateOptions, Primary, RequiredEntityData } from './typings';
+import { FlushMode, LoadStrategy, LockMode, PopulateHint, ReferenceType, SCALAR_TYPES } from './enums';
 import type { TransactionOptions } from './enums';
 import type { MetadataStorage } from './metadata';
 import type { Transaction } from './connections';
+import type { FlushEventArgs } from './events';
 import { EventManager, TransactionEventBroadcaster } from './events';
 import type { EntityComparator } from './utils/EntityComparator';
 import { OptimisticLockError, ValidationError } from './errors';
@@ -29,10 +29,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   private readonly repositoryMap: Dictionary<EntityRepository<AnyEntity>> = {};
   private readonly entityLoader: EntityLoader = new EntityLoader(this);
   private readonly comparator = this.config.getComparator(this.metadata);
+  private readonly entityFactory: EntityFactory = new EntityFactory(this);
   private readonly unitOfWork: UnitOfWork = new UnitOfWork(this);
-  private readonly entityFactory: EntityFactory = new EntityFactory(this.unitOfWork, this);
   private readonly resultCache = this.config.getResultCacheAdapter();
-  private filters: Dictionary<FilterDef<any>> = {};
+  private filters: Dictionary<FilterDef> = {};
   private filterParams: Dictionary<Dictionary> = {};
   private transactionContext?: Transaction;
   private flushMode?: FlushMode;
@@ -57,7 +57,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Gets the Connection instance, by default returns write connection
    */
-  getConnection(type?: 'read' | 'write'): ReturnType<D['getConnection']> {
+  getConnection(type?: ConnectionType): ReturnType<D['getConnection']> {
     return this.driver.getConnection(type) as ReturnType<D['getConnection']>;
   }
 
@@ -77,7 +77,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     if (!this.repositoryMap[entityName]) {
       const meta = this.metadata.get(entityName);
       const RepositoryClass = this.config.getRepositoryClass(meta.customRepository)!;
-      this.repositoryMap[entityName] = new RepositoryClass(this, entityName);
+      this.repositoryMap[entityName] = new RepositoryClass(this, entityName) as EntityRepository<any>;
     }
 
     return this.repositoryMap[entityName] as unknown as GetRepository<T, U>;
@@ -113,7 +113,14 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const cached = await this.tryCache<T, Loaded<T, P>[]>(entityName, options.cache, [entityName, 'em.find', options, where], options.refresh, true);
 
     if (cached?.data) {
-      await this.entityLoader.populate<T, P>(entityName, cached.data as T[], populate, { ...options, where, convertCustomTypes: false, ignoreLazyScalarProperties: true, lookup: false });
+      await this.entityLoader.populate<T, P>(entityName, cached.data as T[], populate, {
+        ...options as Dictionary,
+        ...this.getPopulateWhere(where, options),
+        convertCustomTypes: false,
+        ignoreLazyScalarProperties: true,
+        lookup: false,
+      });
+
       return cached.data;
     }
 
@@ -124,19 +131,49 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return [];
     }
 
+    const uow = this.getUnitOfWork();
+    const factory = this.getEntityFactory();
     const ret: T[] = [];
 
     for (const data of results) {
-      const entity = this.getEntityFactory().create(entityName, data as EntityData<T>, { merge: true, refresh: options.refresh, convertCustomTypes: true }) as T;
-      this.getUnitOfWork().registerManaged(entity, data, options.refresh);
+      const entity = factory.create(entityName, data as EntityData<T>, {
+        merge: true,
+        refresh: options.refresh,
+        schema: options.schema,
+        convertCustomTypes: true,
+      }) as T;
+      uow.registerManaged(entity, data, { refresh: options.refresh, loaded: true });
       ret.push(entity);
     }
 
     const unique = Utils.unique(ret);
-    await this.entityLoader.populate<T, P>(entityName, unique, populate, { ...options, where, convertCustomTypes: false, ignoreLazyScalarProperties: true, lookup: false });
+    await this.entityLoader.populate<T, P>(entityName, unique, populate, {
+      ...options as Dictionary,
+      ...this.getPopulateWhere(where, options),
+      convertCustomTypes: false,
+      ignoreLazyScalarProperties: true,
+      lookup: false,
+    });
+    await uow.dispatchOnLoadEvent();
     await this.storeCache(options.cache, cached!, () => unique.map(e => e.__helper!.toPOJO()));
 
     return unique as Loaded<T, P>[];
+  }
+
+  private getPopulateWhere<T, P extends string>(where: FilterQuery<T>, options: Pick<FindOptions<T, P>, 'populateWhere'>): { where: FilterQuery<T>; populateWhere?: PopulateHint } {
+    if (options.populateWhere === undefined) {
+      options.populateWhere = this.config.get('populateWhere');
+    }
+
+    if (options.populateWhere === PopulateHint.ALL) {
+      return { where: {} as FilterQuery<T>, populateWhere: options.populateWhere };
+    }
+
+    if (options.populateWhere === PopulateHint.INFER) {
+      return { where, populateWhere: options.populateWhere };
+    }
+
+    return { where: options.populateWhere };
   }
 
   /**
@@ -157,8 +194,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Registers global filter to this entity manager. Global filters are enabled by default (unless disabled via last parameter).
    */
-  addFilter(name: string, cond: FilterQuery<AnyEntity> | ((args: Dictionary) => FilterQuery<AnyEntity>), entityName?: EntityName<AnyEntity> | EntityName<AnyEntity>[], enabled = true): void {
-    const options: FilterDef<AnyEntity> = { name, cond, default: enabled };
+  addFilter(name: string, cond: Dictionary | ((args: Dictionary) => FilterQuery<AnyEntity>), entityName?: EntityName<AnyEntity> | EntityName<AnyEntity>[], enabled = true): void {
+    const options: FilterDef = { name, cond, default: enabled };
 
     if (entityName) {
       options.entity = Utils.asArray(entityName).map(n => Utils.className(n));
@@ -187,7 +224,14 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   protected async processWhere<T extends AnyEntity<T>, P extends string = never>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, P> | FindOneOptions<T, P>, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<T>> {
-    where = QueryHelper.processWhere(where as FilterQuery<T>, entityName, this.metadata, this.driver.getPlatform(), options.convertCustomTypes);
+    where = QueryHelper.processWhere({
+      where: where as FilterQuery<T>,
+      entityName,
+      metadata: this.metadata,
+      platform: this.driver.getPlatform(),
+      convertCustomTypes: options.convertCustomTypes,
+      aliased: type === 'read',
+    });
     where = await this.applyFilters(entityName, where, options.filters ?? {}, type);
     where = await this.applyDiscriminatorCondition(entityName, where);
 
@@ -221,7 +265,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async applyFilters<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: Dictionary<boolean | Dictionary> | string[] | boolean, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<T>> {
     const meta = this.metadata.find<T>(entityName);
-    const filters: FilterDef<any>[] = [];
+    const filters: FilterDef[] = [];
     const ret: Dictionary[] = [];
 
     if (!meta) {
@@ -229,7 +273,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const active = new Set<string>();
-    const push = (source: Dictionary<FilterDef<any>>) => {
+    const push = (source: Dictionary<FilterDef>) => {
       const activeFilters = QueryHelper
         .getActiveFilters(entityName, options, source)
         .filter(f => !active.has(f.name));
@@ -259,7 +303,13 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         cond = filter.cond;
       }
 
-      ret.push(QueryHelper.processWhere(cond, entityName, this.metadata, this.driver.getPlatform()));
+      ret.push(QueryHelper.processWhere({
+        where: cond,
+        entityName,
+        metadata: this.metadata,
+        platform: this.driver.getPlatform(),
+        aliased: type === 'read',
+      }));
     }
 
     const conds = [...ret, where as Dictionary].filter(c => Utils.hasObjectKeys(c)) as FilterQuery<T>[];
@@ -299,7 +349,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     where = await this.processWhere(entityName, where, options, 'read');
     this.validator.validateEmptyWhere(where);
     this.checkLockRequirements(options.lockMode, meta);
-    let entity = this.getUnitOfWork().tryGetById<T>(entityName, where, options.schema);
+    const uow = this.getUnitOfWork();
+    let entity = uow.tryGetById<T>(entityName, where, options.schema);
     const isOptimisticLocking = !Utils.isDefined(options.lockMode) || options.lockMode === LockMode.OPTIMISTIC;
 
     if (entity && !this.shouldRefresh(meta, entity, options) && isOptimisticLocking) {
@@ -311,7 +362,14 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const cached = await this.tryCache<T, Loaded<T, P>>(entityName, options.cache, [entityName, 'em.findOne', options, where], options.refresh, true);
 
     if (cached?.data) {
-      await this.entityLoader.populate<T, P>(entityName, [cached.data as T], options.populate as unknown as PopulateOptions<T>[], { ...options as Dictionary, where, convertCustomTypes: false, ignoreLazyScalarProperties: true, lookup: false });
+      await this.entityLoader.populate<T, P>(entityName, [cached.data as T], options.populate as unknown as PopulateOptions<T>[], {
+        ...options as Dictionary,
+        ...this.getPopulateWhere(where, options),
+        convertCustomTypes: false,
+        ignoreLazyScalarProperties: true,
+        lookup: false,
+      });
+
       return cached.data;
     }
 
@@ -322,9 +380,15 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return null;
     }
 
-    entity = this.getEntityFactory().create<T>(entityName, data as EntityData<T>, { refresh: options.refresh, merge: true, convertCustomTypes: true });
-    this.getUnitOfWork().registerManaged(entity, data as EntityData<T>, options.refresh);
+    entity = this.getEntityFactory().create<T>(entityName, data as EntityData<T>, {
+      merge: true,
+      refresh: options.refresh,
+      schema: options.schema,
+      convertCustomTypes: true,
+    });
+    uow.registerManaged(entity, data, { refresh: options.refresh, loaded: true });
     await this.lockAndPopulate(entityName, entity, where, options);
+    await uow.dispatchOnLoadEvent();
     await this.storeCache(options.cache, cached!, () => entity!.__helper!.toPOJO());
 
     return entity as Loaded<T, P>;
@@ -332,14 +396,25 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
   /**
    * Finds first entity matching your `where` query. If nothing found, it will throw an error.
+   * If the `strict` option is specified and nothing is found or more than one matching entity is found, it will throw an error.
    * You can override the factory for creating this method via `options.failHandler` locally
-   * or via `Configuration.findOneOrFailHandler` globally.
+   * or via `Configuration.findOneOrFailHandler` (`findExactlyOneOrFailHandler` when specifying `strict`) globally.
    */
   async findOneOrFail<T extends AnyEntity<T>, P extends string = never>(entityName: EntityName<T>, where: FilterQuery<T>, options: FindOneOrFailOptions<T, P> = {}): Promise<Loaded<T, P>> {
-    const entity = await this.findOne(entityName, where, options);
+    let entity: Loaded<T, P> | null;
+    let isStrictViolation = false;
 
-    if (!entity) {
-      options.failHandler = options.failHandler || this.config.get('findOneOrFailHandler');
+    if (options.strict) {
+      const ret = await this.find(entityName, where, { ...options as FindOptions<T, P>, limit: 2 });
+      isStrictViolation = ret.length !== 1;
+      entity = ret[0];
+    } else {
+      entity = await this.findOne(entityName, where, options);
+    }
+
+    if (!entity || isStrictViolation) {
+      const key = options.strict ? 'findExactlyOneOrFailHandler' : 'findOneOrFailHandler';
+      options.failHandler ??= this.config.get(key);
       entityName = Utils.className(entityName);
       throw options.failHandler!(entityName, where);
     }
@@ -351,14 +426,28 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Runs your callback wrapped inside a database transaction.
    */
   async transactional<T>(cb: (em: D[typeof EntityManagerType]) => Promise<T>, options: TransactionOptions = {}): Promise<T> {
-    const em = this.fork({ clear: false, flushMode: options.flushMode });
+    const context = this.getContext(false);
+    const em = this.fork({ clear: false, flushMode: options.flushMode, freshEventManager: true });
     options.ctx ??= this.transactionContext;
 
     return TransactionContext.createAsync(em, async () => {
       return em.getConnection().transactional(async trx => {
         em.transactionContext = trx;
+        em.eventManager.registerSubscriber({
+          afterFlush: async (args: FlushEventArgs) => {
+            args.uow.getChangeSets()
+              .filter(cs => [ChangeSetType.DELETE, ChangeSetType.DELETE_EARLY].includes(cs.type))
+              .forEach(cs => this.unitOfWork.unsetIdentity(cs.entity));
+          },
+        });
         const ret = await cb(em);
         await em.flush();
+
+        // ensure all entities from inner context are merged to the upper one
+        for (const entity of em.unitOfWork.getIdentityMap()) {
+          context.unitOfWork.registerManaged(entity);
+          entity.__helper!.__em = context;
+        }
 
         return ret;
       }, { ...options, eventBroadcaster: new TransactionEventBroadcaster(em) });
@@ -376,6 +465,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Commits the transaction bound to this EntityManager. Flushes before doing the actual commit query.
    */
   async commit(): Promise<void> {
+    if (!this.transactionContext) {
+      throw ValidationError.transactionRequired();
+    }
+
     await this.flush();
     await this.getConnection('write').commit(this.transactionContext, new TransactionEventBroadcaster(this));
     delete this.transactionContext;
@@ -385,6 +478,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Rollbacks the transaction bound to this EntityManager.
    */
   async rollback(): Promise<void> {
+    if (!this.transactionContext) {
+      throw ValidationError.transactionRequired();
+    }
+
     await this.getConnection('write').rollback(this.transactionContext, new TransactionEventBroadcaster(this));
     delete this.transactionContext;
     this.getUnitOfWork().clearActionsQueue();
@@ -401,24 +498,18 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Fires native insert query. Calling this has no side effects on the context (identity map).
    */
-  async nativeInsert<T extends AnyEntity<T>>(entity: T): Promise<Primary<T>>;
-
-  /**
-   * Fires native insert query. Calling this has no side effects on the context (identity map).
-   */
-  async nativeInsert<T extends AnyEntity<T>>(entityName: EntityName<T>, data: EntityData<T>): Promise<Primary<T>>;
-
-  /**
-   * Fires native insert query. Calling this has no side effects on the context (identity map).
-   */
-  async nativeInsert<T extends AnyEntity<T>>(entityNameOrEntity: EntityName<T> | T, data?: EntityData<T>, options: InsertOptions<T> = {}): Promise<Primary<T>> {
+  async nativeInsert<T extends AnyEntity<T>>(entityNameOrEntity: EntityName<T> | T, data?: EntityData<T> | T, options: NativeInsertUpdateOptions<T> = {}): Promise<Primary<T>> {
     let entityName;
 
     if (data === undefined) {
       entityName = entityNameOrEntity.constructor.name;
-      data = this.comparator.prepareEntity(entityNameOrEntity as T);
+      data = entityNameOrEntity as T;
     } else {
       entityName = Utils.className(entityNameOrEntity as EntityName<T>);
+    }
+
+    if (Utils.isEntity(data)) {
+      data = this.comparator.prepareEntity(data as T);
     }
 
     data = QueryHelper.processObjectParams(data) as EntityData<T>;
@@ -496,7 +587,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     entityName = Utils.className(entityName as string);
     this.validator.validatePrimaryKey(data as EntityData<T>, this.metadata.get(entityName));
-    let entity = this.getUnitOfWork().tryGetById<T>(entityName, data as FilterQuery<T>, options.schema, false);
+    const uow = this.getUnitOfWork();
+    let entity = uow.tryGetById<T>(entityName, data as FilterQuery<T>, options.schema, false);
 
     if (entity && entity.__helper!.__initialized && !options.refresh) {
       return entity;
@@ -507,7 +599,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     entity = Utils.isEntity<T>(data) ? data : this.getEntityFactory().create<T>(entityName, data as EntityData<T>, { merge: true, ...options });
     this.validator.validate(entity, data, childMeta ?? meta);
-    this.getUnitOfWork().merge(entity);
+    uow.merge(entity);
 
     return entity;
   }
@@ -520,8 +612,15 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * the whole `data` parameter will be passed. This means we can also define `constructor(data: Partial<T>)` and
    * `em.create()` will pass the data into it (unless we have a property named `data` too).
    */
-  create<T extends AnyEntity<T>, P extends string = never>(entityName: EntityName<T>, data: EntityData<T>, options: { managed?: boolean; schema?: string } = {}): New<T, P> {
-    return this.getEntityFactory().create<T, P>(entityName, data, { ...options, newEntity: !options.managed });
+  create<T extends AnyEntity<T>>(entityName: EntityName<T>, data: RequiredEntityData<T>, options: CreateOptions = {}): T {
+    const entity = this.getEntityFactory().create(entityName, data, { ...options, newEntity: !options.managed });
+    options.persist ??= this.config.get('persistOnCreate');
+
+    if (options.persist) {
+      this.persist(entity);
+    }
+
+    return entity;
   }
 
   /**
@@ -601,9 +700,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * The entity will be entered into the database at or before transaction commit or as a result of the flush operation.
    */
   persist(entity: AnyEntity | Reference<AnyEntity> | (AnyEntity | Reference<AnyEntity>)[]): this {
+    const uow = this.getUnitOfWork();
+
     if (Utils.isEntity(entity)) {
       // do not cascade just yet, cascading of entities in persist stack is done when flushing
-      this.getUnitOfWork().persist(entity, undefined, { cascade: false });
+      uow.persist(entity, undefined, { cascade: false });
       return this;
     }
 
@@ -617,7 +718,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       // do not cascade just yet, cascading of entities in persist stack is done when flushing
-      this.getUnitOfWork().persist(Reference.unwrapReference(ent), undefined, { cascade: false });
+      uow.persist(Reference.unwrapReference(ent), undefined, { cascade: false });
     }
 
     return this;
@@ -648,9 +749,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * To remove entities by condition, use `em.nativeDelete()`.
    */
   remove<T extends AnyEntity<T>>(entity: T | Reference<T> | (T | Reference<T>)[]): this {
+    const uow = this.getUnitOfWork();
+
     if (Utils.isEntity<T>(entity)) {
       // do not cascade just yet, cascading of entities in persist stack is done when flushing
-      this.getUnitOfWork().remove(entity, undefined, { cascade: false });
+      uow.remove(entity, undefined, { cascade: false });
       return this;
     }
 
@@ -662,7 +765,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       // do not cascade just yet, cascading of entities in remove stack is done when flushing
-      this.getUnitOfWork().remove(Reference.unwrapReference(ent), undefined, { cascade: false });
+      uow.remove(Reference.unwrapReference(ent), undefined, { cascade: false });
     }
 
     return this;
@@ -715,7 +818,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Clears the EntityManager. All entities that are currently managed by this EntityManager become detached.
    */
   clear(): void {
-    this.getUnitOfWork().clear();
+    this.getContext().unitOfWork.clear();
   }
 
   /**
@@ -776,7 +879,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     if (!options.clear) {
       for (const entity of this.getUnitOfWork().getIdentityMap()) {
-        em.getUnitOfWork().registerManaged(entity);
+        em.unitOfWork.registerManaged(entity);
       }
     }
 
@@ -786,7 +889,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Gets the UnitOfWork used by the EntityManager to coordinate operations.
    */
-  getUnitOfWork(): UnitOfWork {
+  getUnitOfWork(useContext = true): UnitOfWork {
+    if (!useContext) {
+      return this.unitOfWork;
+    }
+
     return this.getContext().unitOfWork;
   }
 
@@ -799,16 +906,19 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
   /**
    * Gets the EntityManager based on current transaction/request context.
+   * @internal
    */
-  getContext(validate = true): EntityManager {
-    let em = TransactionContext.getEntityManager(); // prefer the tx context
+  getContext(validate = true): this {
+    let em = TransactionContext.getEntityManager() as this; // prefer the tx context
 
-    if (!em) {
-      // no explicit tx started
-      em = this.useContext ? (this.config.get('context')(this.name) || this) : this;
+    if (em) {
+      return em;
     }
 
-    if (validate && this.useContext && em.id === 1 && !this.config.get('allowGlobalContext')) {
+    // no explicit tx started
+    em = this.useContext ? (this.config.get('context')(this.name) as this || this) : this;
+
+    if (validate && this.useContext && !this.config.get('allowGlobalContext') && em._id === 1) {
       throw ValidationError.cannotUseGlobalContext();
     }
 
@@ -884,7 +994,13 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const preparedPopulate = this.preparePopulate<T, P>(entityName, options);
-    await this.entityLoader.populate(entityName, [entity], preparedPopulate, { ...options as Dictionary, where, convertCustomTypes: false, ignoreLazyScalarProperties: true, lookup: false });
+    await this.entityLoader.populate(entityName, [entity], preparedPopulate, {
+      ...options as Dictionary,
+      ...this.getPopulateWhere(where, options),
+      convertCustomTypes: false,
+      ignoreLazyScalarProperties: true,
+      lookup: false,
+    });
 
     return entity as Loaded<T, P>;
   }
@@ -930,7 +1046,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     return ret.map(field => {
       // force select-in strategy when populating all relations as otherwise we could cause infinite loops when self-referencing
-      field.strategy = options.populate === true ? LoadStrategy.SELECT_IN : (options.strategy ?? field.strategy ?? this.config.get('loadStrategy'));
+      field.strategy = options.populate === true ? LoadStrategy.SELECT_IN : (options.strategy ?? field.strategy);
       return field;
     });
   }
@@ -985,6 +1101,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         data = cached;
       }
 
+      await this.getUnitOfWork().dispatchOnLoadEvent();
+
       return { key: cacheKey, data };
     }
 
@@ -1002,6 +1120,22 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
+   * Clears result cache for given cache key. If we want to be able to call this method,
+   * we need to set the cache key explicitly when storing the cache.
+   *
+   * ```ts
+   * // set the cache key to 'book-cache-key', with experiation of 60s
+   * const res = await em.find(Book, { ... }, { cache: ['book-cache-key', 60_000] });
+   *
+   * // clear the cache key by name
+   * await em.clearCache('book-cache-key');
+   * ```
+   */
+  async clearCache(cacheKey: string) {
+    await this.resultCache.remove(cacheKey);
+  }
+
+  /**
    * Returns the ID of this EntityManager. Respects the context, so global EM will give you the contextual ID
    * if executed inside request context handler.
    */
@@ -1016,6 +1150,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     return `[EntityManager<${this.id}>]`;
   }
 
+}
+
+export interface CreateOptions {
+  managed?: boolean;
+  schema?: string;
+  persist?: boolean;
 }
 
 export interface MergeOptions {

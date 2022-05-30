@@ -50,9 +50,7 @@ describe('GH issue 519', () => {
       dbName: `mikro_orm_test_gh_519`,
       type: 'postgresql',
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.getSchemaGenerator().refreshDatabase();
   });
 
   afterAll(() => orm.close(true));
@@ -78,7 +76,7 @@ describe('GH issue 519', () => {
     const queries: string[] = mock.mock.calls.map(c => c[0]).sort();
     expect(queries).toHaveLength(2);
     expect(queries[0]).toMatch('select "r0".* from "registration" as "r0" where "r0"."competition_id" = $1');
-    expect(queries[1]).toMatch('select count(distinct("r0"."competition_id", "r0"."user_id")) as "count" from "registration" as "r0" where "r0"."competition_id" = $1');
+    expect(queries[1]).toMatch('select count(*) as "count" from "registration" as "r0" where "r0"."competition_id" = $1');
   });
 
 });

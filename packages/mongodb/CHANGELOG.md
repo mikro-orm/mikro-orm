@@ -3,6 +3,192 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.1.5](https://github.com/mikro-orm/mikro-orm/compare/v5.1.4...v5.1.5) (2022-05-29)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+## [5.1.4](https://github.com/mikro-orm/mikro-orm/compare/v5.1.3...v5.1.4) (2022-05-19)
+
+
+### Bug Fixes
+
+* **core:** allow asterisk in `FindOptions.fields` on TS level ([43e1d0b](https://github.com/mikro-orm/mikro-orm/commit/43e1d0b765e3c6346340e6c734af7826d3ab3486)), closes [#3127](https://github.com/mikro-orm/mikro-orm/issues/3127)
+* **core:** improve type of `em.getContext()` ([158f077](https://github.com/mikro-orm/mikro-orm/commit/158f077d1d0fbe4fd0edcf736a2f6a49a336fb14)), closes [#3120](https://github.com/mikro-orm/mikro-orm/issues/3120)
+
+
+
+
+
+## [5.1.3](https://github.com/mikro-orm/mikro-orm/compare/v5.1.2...v5.1.3) (2022-04-27)
+
+
+### Bug Fixes
+
+* **mongo:** fix ensuring indexes with polymorphic embeddables ([aa5e4d2](https://github.com/mikro-orm/mikro-orm/commit/aa5e4d230f1cf9541d14f1c5a7c5a8b69d1a0dfd)), closes [#3013](https://github.com/mikro-orm/mikro-orm/issues/3013)
+
+
+
+
+
+## [5.1.2](https://github.com/mikro-orm/mikro-orm/compare/v5.1.1...v5.1.2) (2022-04-10)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+## [5.1.1](https://github.com/mikro-orm/mikro-orm/compare/v5.1.0...v5.1.1) (2022-03-20)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+# [5.1.0](https://github.com/mikro-orm/mikro-orm/compare/v5.0.5...v5.1.0) (2022-03-13)
+
+
+### Features
+
+* **core:** allow better control over connection type when using read-replicas ([#2896](https://github.com/mikro-orm/mikro-orm/issues/2896)) ([e40ae2d](https://github.com/mikro-orm/mikro-orm/commit/e40ae2d65abe3d49435356cf79068de5c3d73bd1))
+
+
+
+
+
+## [5.0.5](https://github.com/mikro-orm/mikro-orm/compare/v5.0.4...v5.0.5) (2022-02-27)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+## [5.0.4](https://github.com/mikro-orm/mikro-orm/compare/v5.0.3...v5.0.4) (2022-02-22)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+## [5.0.3](https://github.com/mikro-orm/mikro-orm/compare/v5.0.2...v5.0.3) (2022-02-20)
+
+
+### Bug Fixes
+
+* **core:** do not trigger global context validation from repositories ([f651865](https://github.com/mikro-orm/mikro-orm/commit/f651865a3adab17a3025e76dc094b04b1f004181)), closes [#2778](https://github.com/mikro-orm/mikro-orm/issues/2778)
+
+
+### Features
+
+* **core:** add `SchemaGenerator.clearDatabase()` ([ecad9c6](https://github.com/mikro-orm/mikro-orm/commit/ecad9c68e8013350bef75b402d6f3c526389765b)), closes [#2220](https://github.com/mikro-orm/mikro-orm/issues/2220)
+
+
+
+
+
+## [5.0.2](https://github.com/mikro-orm/mikro-orm/compare/v5.0.1...v5.0.2) (2022-02-16)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+## [5.0.1](https://github.com/mikro-orm/mikro-orm/compare/v5.0.0...v5.0.1) (2022-02-13)
+
+
+### Features
+
+* **query-builder:** allow autocomplete on `qb.orderBy()` ([fdf03c3](https://github.com/mikro-orm/mikro-orm/commit/fdf03c38322f79e0b41181b834db903d5138124d)), closes [#2747](https://github.com/mikro-orm/mikro-orm/issues/2747)
+* **schema:** ensure database when calling `refreshDatabase()` ([7ce12d6](https://github.com/mikro-orm/mikro-orm/commit/7ce12d6f54845d169c769084d90ec82a1ab15c35))
+
+
+
+
+
+# [5.0.0](https://github.com/mikro-orm/mikro-orm/compare/v4.5.3...v5.0.0) (2022-02-06)
+
+
+### Bug Fixes
+
+* **core:** declare peer dependencies on driver packages ([1873e8c](https://github.com/mikro-orm/mikro-orm/commit/1873e8c4b9b5b9cb5979604f529ddd0cc6717042)), closes [#2110](https://github.com/mikro-orm/mikro-orm/issues/2110)
+* **mongo:** allow using `pool.min/max` options in mongo driver ([9223055](https://github.com/mikro-orm/mikro-orm/commit/9223055e4661400bd662fb989d55fcc75244f61b)), closes [#2228](https://github.com/mikro-orm/mikro-orm/issues/2228)
+
+
+### chore
+
+* upgrade typescript to v4.5.2 ([2bd8220](https://github.com/mikro-orm/mikro-orm/commit/2bd8220378f47533ecc075ac5e04a4a50c4d9225))
+
+
+### Code Refactoring
+
+* use options parameters in `IDatabaseDriver` ([#2204](https://github.com/mikro-orm/mikro-orm/issues/2204)) ([9a32ac0](https://github.com/mikro-orm/mikro-orm/commit/9a32ac0655f7ec701399250b88605cc5f5fc3b2c))
+
+
+### Features
+
+* **core:** add support for ESM via `gen-esm-wrapper` ([aa71065](https://github.com/mikro-orm/mikro-orm/commit/aa71065d0727920db7da9bfdecdb33e6b8165cb5)), closes [#1010](https://github.com/mikro-orm/mikro-orm/issues/1010)
+* **core:** add support for polymorphic embeddables ([#2426](https://github.com/mikro-orm/mikro-orm/issues/2426)) ([7b7c3a2](https://github.com/mikro-orm/mikro-orm/commit/7b7c3a22fe517e13a1a610f142c59e758acd3c3f)), closes [#1165](https://github.com/mikro-orm/mikro-orm/issues/1165)
+* **core:** allow passing arrays in `orderBy` parameter ([#2211](https://github.com/mikro-orm/mikro-orm/issues/2211)) ([0ec22ed](https://github.com/mikro-orm/mikro-orm/commit/0ec22ed3c88ea0e8c749dc164bb5c1d23ac7b9dc)), closes [#2010](https://github.com/mikro-orm/mikro-orm/issues/2010)
+* **core:** allow providing custom `Logger` instance ([#2443](https://github.com/mikro-orm/mikro-orm/issues/2443)) ([c7a75e0](https://github.com/mikro-orm/mikro-orm/commit/c7a75e00de01b85ece282cd64429a57a49e5842d))
+* **core:** make `FindOptions.fields` strictly typed (dot notation) ([fd43099](https://github.com/mikro-orm/mikro-orm/commit/fd43099a63cae31ba32f833bed1b75c13f2dd43c))
+* **core:** make `populate` parameter strictly typed with dot notation ([3372f02](https://github.com/mikro-orm/mikro-orm/commit/3372f0243f1af34e22a16be2cecba6dc5c04dd0d))
+* **core:** validate version mismatch in ORM packages ([cf70219](https://github.com/mikro-orm/mikro-orm/commit/cf702195e2dd0dce4d66da26f1d349dddf05b007))
+* **embeddables:** allow using m:1 properties inside embeddables ([#1948](https://github.com/mikro-orm/mikro-orm/issues/1948)) ([ffca73e](https://github.com/mikro-orm/mikro-orm/commit/ffca73ecf3ecf405dee3042ad0ab60848721ab7b))
+* **mongo:** add `SchemaGenerator` support for mongo ([#2658](https://github.com/mikro-orm/mikro-orm/issues/2658)) ([cc11859](https://github.com/mikro-orm/mikro-orm/commit/cc1185971d1ee5780b183623a8afb455b3f79d3a))
+* **mongo:** upgrade node-mongodb to v4 ([#2425](https://github.com/mikro-orm/mikro-orm/issues/2425)) ([2e4c135](https://github.com/mikro-orm/mikro-orm/commit/2e4c1350be693dbdde4ce99f720cf23202ae6f76))
+* **sql:** allow setting transaction isolation level ([6ae5fbf](https://github.com/mikro-orm/mikro-orm/commit/6ae5fbf70dd87fe2380b74d83bc8a04bb8f447fe)), closes [#819](https://github.com/mikro-orm/mikro-orm/issues/819)
+* **typings:** make `em.create()` and other methods strict ([#1718](https://github.com/mikro-orm/mikro-orm/issues/1718)) ([e8b7119](https://github.com/mikro-orm/mikro-orm/commit/e8b7119eca0df7d686a7d3d91bfc17b74baaeea1)), closes [#1456](https://github.com/mikro-orm/mikro-orm/issues/1456)
+
+
+### BREAKING CHANGES
+
+* Previously it was possible to call `em.populate()` with a single entity input,
+and the output would be again just a single entity.
+
+Due to issues with TS 4.5, this method now always return array of entities.
+You can use destructing if you want to have a single entity return type:
+
+```ts
+const [loadedAuthor] = await em.populate(author, ...);
+```
+* **core:** Embeddable instances are now created via `EntityFactory` and they respect the
+`forceEntityConstructor` configuration. Due to this we need to have EM instance
+when assigning to embedded properties. 
+
+Using `em.assign()` should be preferred to get around this.
+
+Deep assigning of child entities now works by default based on the presence of PKs in the payload.
+This behaviour can be disable via updateByPrimaryKey: false in the assign options.
+
+`mergeObjects` option is now enabled by default.
+* Most of the methods on IDatabaseDriver interface now have different signature.
+* **core:** Populate parameter is now strictly typed and supports only array of strings or a boolean.
+Object way is no longer supported. To set loading strategy, use `FindOptions.strategy`.
+* **sql:** - `em.transactional()` signature has changed, the parameter is now options object
+- `em.begin()` signature has changed, the parameter is now options object
+* **typings:** Some methods are now strictly typed, so previously fine usages might be restricted on TS level.
+To get around those, we might either cast as `any`, provide the generic `T` type as `any`, or
+use `expr` helper.
+
+```ts
+em.create(User, { someNotDefinedProp: 123 }); // throws if someNotDefinedProp not on the User
+em.create(User, { [expr('someNotDefinedProp')]: 123 }); // works, using expr
+em.create<any>(User, { someNotDefinedProp: 123 }); // works, using type cast
+em.create(User, { someNotDefinedProp: 123 } as any); // works, using type cast
+```
+
+
+
+
+
 ## [4.5.10](https://github.com/mikro-orm/mikro-orm/compare/v4.5.9...v4.5.10) (2021-12-26)
 
 

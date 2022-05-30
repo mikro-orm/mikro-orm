@@ -34,7 +34,7 @@ import type { EventSubscriber } from '../events';
 import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
 import { NotFoundError } from '../errors';
 import { RequestContext } from './RequestContext';
-import { FlushMode, LoadStrategy } from '../enums';
+import { FlushMode, LoadStrategy, PopulateHint } from '../enums';
 import { MemoryCacheAdapter } from '../cache/MemoryCacheAdapter';
 import { EntityComparator } from './EntityComparator';
 
@@ -54,19 +54,24 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     },
     strict: false,
     validate: false,
+    validateRequired: true,
     context: (name: string) => RequestContext.getEntityManager(name),
     contextName: 'default',
     allowGlobalContext: false,
     // eslint-disable-next-line no-console
     logger: console.log.bind(console),
     findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => NotFoundError.findOneFailed(entityName, where),
+    findExactlyOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => NotFoundError.findExactlyOneFailed(entityName, where),
     baseDir: process.cwd(),
     hydrator: ObjectHydrator,
     flushMode: FlushMode.AUTO,
     loadStrategy: LoadStrategy.SELECT_IN,
+    populateWhere: PopulateHint.ALL,
+    connect: true,
     autoJoinOneToOneOwner: true,
     propagateToOneOwner: true,
     populateAfterFlush: true,
+    persistOnCreate: false,
     forceEntityConstructor: false,
     forceUndefined: false,
     forceUtcTimezone: false,
@@ -88,6 +93,11 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       emit: 'ts',
       fileName: (timestamp: string) => `Migration${timestamp}`,
     },
+    schemaGenerator: {
+      disableForeignKeys: true,
+      createForeignKeyConstraints: true,
+      ignoreSchema: [],
+    },
     cache: {
       pretty: false,
       adapter: FileCacheAdapter,
@@ -100,22 +110,30 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     },
     metadataProvider: ReflectMetadataProvider,
     highlighter: new NullHighlighter(),
-    seeder: { path: './database/seeder', defaultSeeder: 'DatabaseSeeder' },
+    seeder: {
+      path: './seeders',
+      defaultSeeder: 'DatabaseSeeder',
+      glob: '!(*.d).{js,ts}',
+      emit: 'ts',
+      fileName: (className: string) => className,
+    },
+    preferReadReplicas: true,
   };
 
   static readonly PLATFORMS = {
-    mongo: { className: 'MongoDriver', module: () => require('@mikro-orm/mongodb') },
-    mysql: { className: 'MySqlDriver', module: () => require('@mikro-orm/mysql') },
-    mariadb: { className: 'MariaDbDriver', module: () => require('@mikro-orm/mariadb') },
-    postgresql: { className: 'PostgreSqlDriver', module: () => require('@mikro-orm/postgresql') },
-    sqlite: { className: 'SqliteDriver', module: () => require('@mikro-orm/sqlite') },
+    'mongo': { className: 'MongoDriver', module: () => require('@mikro-orm/mongodb') },
+    'mysql': { className: 'MySqlDriver', module: () => require('@mikro-orm/mysql') },
+    'mariadb': { className: 'MariaDbDriver', module: () => require('@mikro-orm/mariadb') },
+    'postgresql': { className: 'PostgreSqlDriver', module: () => require('@mikro-orm/postgresql') },
+    'sqlite': { className: 'SqliteDriver', module: () => require('@mikro-orm/sqlite') },
+    'better-sqlite': { className: 'BetterSqliteDriver', module: () => require('@mikro-orm/better-sqlite') },
   };
 
   private readonly options: MikroORMOptions<D>;
   private readonly logger: Logger;
   private readonly driver: D;
   private readonly platform: Platform;
-  private readonly cache: Dictionary = {};
+  private readonly cache = new Map<string, any>();
 
   constructor(options: Options, validate = true) {
     this.options = Utils.merge({}, Configuration.DEFAULTS, options);
@@ -142,7 +160,11 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets specific configuration option. Falls back to specified `defaultValue` if provided.
    */
   get<T extends keyof MikroORMOptions<D>, U extends MikroORMOptions<D>[T]>(key: T, defaultValue?: U): U {
-    return (Utils.isDefined(this.options[key]) ? this.options[key] : defaultValue) as U;
+    if (typeof this.options[key] !== 'undefined') {
+      return this.options[key] as U;
+    }
+
+    return defaultValue as U;
   }
 
   getAll(): MikroORMOptions<D> {
@@ -192,42 +214,42 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets instance of NamingStrategy. (cached)
    */
   getNamingStrategy(): NamingStrategy {
-    return this.cached(this.options.namingStrategy || this.platform.getNamingStrategy());
+    return this.getCachedService(this.options.namingStrategy || this.platform.getNamingStrategy());
   }
 
   /**
    * Gets instance of Hydrator. (cached)
    */
   getHydrator(metadata: MetadataStorage): IHydrator {
-    return this.cached(this.options.hydrator, metadata, this.platform, this);
+    return this.getCachedService(this.options.hydrator, metadata, this.platform, this);
   }
 
   /**
    * Gets instance of Comparator. (cached)
    */
   getComparator(metadata: MetadataStorage) {
-    return this.cached(EntityComparator, metadata, this.platform);
+    return this.getCachedService(EntityComparator, metadata, this.platform);
   }
 
   /**
    * Gets instance of MetadataProvider. (cached)
    */
   getMetadataProvider(): MetadataProvider {
-    return this.cached(this.options.metadataProvider, this);
+    return this.getCachedService(this.options.metadataProvider, this);
   }
 
   /**
    * Gets instance of CacheAdapter. (cached)
    */
   getCacheAdapter(): CacheAdapter {
-    return this.cached(this.options.cache.adapter!, this.options.cache.options, this.options.baseDir, this.options.cache.pretty);
+    return this.getCachedService(this.options.cache.adapter!, this.options.cache.options, this.options.baseDir, this.options.cache.pretty);
   }
 
   /**
    * Gets instance of CacheAdapter for result cache. (cached)
    */
   getResultCacheAdapter(): CacheAdapter {
-    return this.cached(this.options.resultCache.adapter!, { expiration: this.options.resultCache.expiration, ...this.options.resultCache.options });
+    return this.getCachedService(this.options.resultCache.adapter!, { expiration: this.options.resultCache.expiration, ...this.options.resultCache.options });
   }
 
   /**
@@ -243,6 +265,22 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     return this.platform.getRepositoryClass();
+  }
+
+  /**
+   * Creates instance of given service and caches it.
+   */
+  getCachedService<T extends { new(...args: any[]): InstanceType<T> }>(cls: T, ...args: ConstructorParameters<T>): InstanceType<T> {
+    if (!this.cache.has(cls.name)) {
+      const Class = cls as { new(...args: any[]): T };
+      this.cache.set(cls.name, new Class(...args));
+    }
+
+    return this.cache.get(cls.name);
+  }
+
+  resetServiceCache(): void {
+    this.cache.clear();
   }
 
   private init(): void {
@@ -265,7 +303,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     const url = this.getClientUrl().match(/:\/\/.+\/([^?]+)/);
 
     if (url) {
-      this.options.dbName = this.get('dbName', url[1]);
+      this.options.dbName = this.get('dbName', decodeURIComponent(url[1]));
     }
 
     if (!this.options.charset) {
@@ -311,15 +349,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     return new this.options.driver!(this);
   }
 
-  private cached<T extends { new(...args: any[]): InstanceType<T> }>(cls: T, ...args: ConstructorParameters<T>): InstanceType<T> {
-    if (!this.cache[cls.name]) {
-      const Class = cls as { new(...args: any[]): T };
-      this.cache[cls.name] = new Class(...args);
-    }
-
-    return this.cache[cls.name];
-  }
-
 }
 
 export interface DynamicPassword {
@@ -345,6 +374,7 @@ export interface ConnectionOptions {
 export type MigrationsOptions = {
   tableName?: string;
   path?: string;
+  pathTs?: string;
   glob?: string;
   transactional?: boolean;
   disableForeignKeys?: boolean;
@@ -356,6 +386,15 @@ export type MigrationsOptions = {
   generator?: Constructor<IMigrationGenerator>;
   fileName?: (timestamp: string) => string;
   migrationsList?: MigrationObject[];
+};
+
+export type SeederOptions = {
+  path?: string;
+  pathTs?: string;
+  glob?: string;
+  defaultSeeder?: string;
+  emit?: 'js' | 'ts';
+  fileName?: (className: string) => string;
 };
 
 export interface PoolConfig {
@@ -386,7 +425,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   entities: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema<any>)[]; // `any` required here for some TS weirdness
   entitiesTs: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema<any>)[]; // `any` required here for some TS weirdness
   subscribers: EventSubscriber[];
-  filters: Dictionary<{ name?: string } & Omit<FilterDef<AnyEntity>, 'name'>>;
+  filters: Dictionary<{ name?: string } & Omit<FilterDef, 'name'>>;
   discovery: {
     warnWhenNoEntities?: boolean;
     requireEntitiesArray?: boolean;
@@ -398,9 +437,11 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   driverOptions: Dictionary;
   namingStrategy?: { new(): NamingStrategy };
   implicitTransactions?: boolean;
+  connect: boolean;
   autoJoinOneToOneOwner: boolean;
   propagateToOneOwner: boolean;
   populateAfterFlush: boolean;
+  persistOnCreate: boolean;
   forceEntityConstructor: boolean | (Constructor<AnyEntity> | string)[];
   forceUndefined: boolean;
   forceUtcTimezone: boolean;
@@ -411,22 +452,30 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   batchSize: number;
   hydrator: HydratorConstructor;
   loadStrategy: LoadStrategy;
+  populateWhere: PopulateHint;
   flushMode: FlushMode;
-  entityRepository?: Constructor<EntityRepository<any>>;
+  entityRepository?: Constructor;
   replicas?: Partial<ConnectionOptions>[];
   strict: boolean;
   validate: boolean;
+  validateRequired: boolean;
   context: (name: string) => EntityManager | undefined;
   contextName: string;
   allowGlobalContext: boolean;
   logger: (message: string) => void;
   loggerFactory?: (options: LoggerOptions) => Logger;
   findOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
+  findExactlyOneOrFailHandler: (entityName: string, where: Dictionary | IPrimaryKey) => Error;
   debug: boolean | LoggerNamespace[];
   highlighter: Highlighter;
   tsNode?: boolean;
   baseDir: string;
   migrations: MigrationsOptions;
+  schemaGenerator: {
+    disableForeignKeys?: boolean;
+    createForeignKeyConstraints?: boolean;
+    ignoreSchema?: string[];
+  };
   cache: {
     enabled?: boolean;
     pretty?: boolean;
@@ -439,7 +488,8 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
     options?: Dictionary;
   };
   metadataProvider: { new(config: Configuration): MetadataProvider };
-  seeder: { path: string; defaultSeeder: string };
+  seeder: SeederOptions;
+  preferReadReplicas: boolean;
 }
 
 export type Options<D extends IDatabaseDriver = IDatabaseDriver> =

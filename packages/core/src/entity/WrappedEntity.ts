@@ -1,6 +1,6 @@
 import { inspect } from 'util';
 import type { EntityManager } from '../EntityManager';
-import type { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, Populate, PopulateOptions, Primary } from '../typings';
+import type { AnyEntity, ConnectionType, Dictionary, EntityData, EntityDictionary, EntityMetadata, Populate, PopulateOptions, Primary } from '../typings';
 import type { IdentifiedReference } from './Reference';
 import { Reference } from './Reference';
 import type { SerializationContext } from './EntityTransformer';
@@ -19,6 +19,7 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   __populated?: boolean;
   __lazyInitialized?: boolean;
   __managed?: boolean;
+  __onLoadFired?: boolean;
   __schema?: string;
   __em?: EntityManager;
   __serializationContext: { root?: SerializationContext<T>; populate?: PopulateOptions<T>[] } = {};
@@ -74,12 +75,12 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
     return EntityAssigner.assign(this.entity, data, options);
   }
 
-  async init<P extends Populate<T> = Populate<T>>(populated = true, populate?: P, lockMode?: LockMode): Promise<T> {
+  async init<P extends Populate<T> = Populate<T>>(populated = true, populate?: P, lockMode?: LockMode, connectionType?: ConnectionType): Promise<T> {
     if (!this.__em) {
       throw ValidationError.entityNotManaged(this.entity);
     }
 
-    await this.__em.findOne(this.entity.constructor.name, this.entity, { refresh: true, lockMode, populate });
+    await this.__em.findOne(this.entity.constructor.name, this.entity, { refresh: true, lockMode, populate, connectionType });
     this.populated(populated);
     this.__lazyInitialized = true;
 
@@ -88,7 +89,7 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
 
   hasPrimaryKey(): boolean {
     const pk = this.getPrimaryKey();
-    return pk !== undefined && pk !== null;
+    return pk != null;
   }
 
   getPrimaryKey(convertCustomTypes = false): Primary<T> | null {
@@ -102,7 +103,7 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   getPrimaryKeys(convertCustomTypes = false): Primary<T>[] | null {
     const pk = this.getPrimaryKey(convertCustomTypes);
 
-    if (!pk) {
+    if (pk == null) {
       return null;
     }
 
@@ -150,15 +151,6 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
 
   get __primaryKeys(): Primary<T>[] {
     return Utils.getPrimaryKeyValues(this.entity, this.entity.__meta!.primaryKeys);
-  }
-
-  // TODO used only at one place, probably replaceable
-  get __primaryKeyCond(): Primary<T> | Primary<T>[] | null {
-    if (this.entity.__meta!.compositePK) {
-      return this.__primaryKeys;
-    }
-
-    return this.getPrimaryKey();
   }
 
   [inspect.custom]() {

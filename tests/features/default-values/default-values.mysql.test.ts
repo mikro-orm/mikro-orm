@@ -30,11 +30,9 @@ describe('default values in mysql', () => {
       entities: [A],
       dbName: `mikro_orm_test_default_values`,
       type: 'mysql',
-      port: 3307,
+      port: 3308,
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.getSchemaGenerator().refreshDatabase();
   });
 
   afterAll(() => orm.close(true));

@@ -1,10 +1,10 @@
-import type { AnyEntity, Dictionary, EntityMetadata, EntityProperty, FilterQuery, PopulateOptions, Primary } from '../typings';
+import type { AnyEntity, Dictionary, EntityMetadata, EntityProperty, FilterQuery, PopulateOptions, Primary, ConnectionType } from '../typings';
 import type { EntityManager } from '../EntityManager';
 import { QueryHelper } from '../utils/QueryHelper';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
 import type { Collection } from './Collection';
-import type { LockMode, QueryOrderMap } from '../enums';
+import type { LockMode, QueryOrderMap, PopulateHint } from '../enums';
 import { LoadStrategy, QueryOrder, ReferenceType } from '../enums';
 import { Reference } from './Reference';
 import type { EntityField, FindOptions } from '../drivers/IDatabaseDriver';
@@ -13,6 +13,7 @@ import type { Platform } from '../platforms/Platform';
 
 export type EntityLoaderOptions<T, P extends string = never> = {
   where?: FilterQuery<T>;
+  populateWhere?: PopulateHint;
   fields?: readonly EntityField<T, P>[];
   orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[];
   refresh?: boolean;
@@ -23,6 +24,8 @@ export type EntityLoaderOptions<T, P extends string = never> = {
   filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
   strategy?: LoadStrategy;
   lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
+  schema?: string;
+  connectionType?: ConnectionType;
 };
 
 export class EntityLoader {
@@ -83,6 +86,7 @@ export class EntityLoader {
       p.field = f;
       p.children = p.children || [];
       const prop = this.metadata.find(entityName)!.properties[f];
+      p.strategy ??= prop.strategy;
       p.children.push(this.expandNestedPopulate(prop.type, parts, p.strategy, p.all));
     });
 
@@ -152,11 +156,12 @@ export class EntityLoader {
       const pk = Utils.getPrimaryKeyHash(meta.primaryKeys);
       const ids = Utils.unique(filtered.map(e => Utils.getPrimaryKeyValues(e, meta.primaryKeys, true)));
       const where = this.mergePrimaryCondition(ids, pk, options, meta, this.metadata, this.driver.getPlatform());
-      const { filters, convertCustomTypes, lockMode, strategy } = options;
+      const { filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType } = options;
 
-      await this.em.find(meta.className, where as FilterQuery<T>, {
-        filters, convertCustomTypes, lockMode, strategy,
+      await this.em.find(meta.className, where, {
+        filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType,
         fields: [prop.name] as never,
+        populate: [],
       });
 
       return entities;
@@ -228,6 +233,7 @@ export class EntityLoader {
     const children = this.getChildReferences<T>(entities, prop, options.refresh);
     const meta = this.metadata.find(prop.type)!;
     let fk = Utils.getPrimaryKeyHash(meta.primaryKeys);
+    let schema: string | undefined = options.schema;
 
     if (prop.reference === ReferenceType.ONE_TO_MANY || (prop.reference === ReferenceType.MANY_TO_MANY && !prop.owner)) {
       fk = meta.properties[prop.mappedBy].name;
@@ -235,33 +241,36 @@ export class EntityLoader {
 
     if (prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner && populate.strategy !== LoadStrategy.JOINED && !this.em.config.get('autoJoinOneToOneOwner')) {
       children.length = 0;
-      children.push(...entities);
       fk = meta.properties[prop.mappedBy].name;
+      children.push(...this.filterByReferences(entities, prop.name, options.refresh));
     }
 
     if (children.length === 0) {
       return [];
     }
 
+    if (!schema && [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference)) {
+      schema = children.find(e => e.__helper!.__schema)?.__helper!.__schema;
+    }
+
     const ids = Utils.unique(children.map(e => Utils.getPrimaryKeyValues(e, e.__meta!.primaryKeys, true)));
     const where = this.mergePrimaryCondition<T>(ids, fk, options, meta, this.metadata, this.driver.getPlatform());
     const fields = this.buildFields(options.fields, prop);
-    const { refresh, filters, convertCustomTypes, lockMode, strategy } = options;
+    const { refresh, filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType } = options;
 
-    return this.em.find<T>(prop.type, where as FilterQuery<T>, {
-      refresh, filters, convertCustomTypes, lockMode,
+    return this.em.find(prop.type, where, {
+      refresh, filters, convertCustomTypes, lockMode, populateWhere,
       orderBy: [...Utils.asArray(options.orderBy), ...Utils.asArray(prop.orderBy), { [fk]: QueryOrder.ASC }] as QueryOrderMap<T>[],
-      populate: populate.children as never ?? populate.all,
-      strategy,
-      fields: fields.length > 0 ? fields : undefined,
-    }) as Promise<T[]>;
+      populate: populate.children as never ?? populate.all ?? [],
+      strategy, fields, schema, connectionType,
+    });
   }
 
-  private mergePrimaryCondition<T>(ids: T[], pk: string, options: EntityLoaderOptions<T>, meta: EntityMetadata, metadata: MetadataStorage, platform: Platform) {
-    const cond1 = QueryHelper.processWhere({ [pk]: { $in: ids } }, meta.name!, metadata, platform, !options.convertCustomTypes);
+  private mergePrimaryCondition<T>(ids: T[], pk: string, options: EntityLoaderOptions<T>, meta: EntityMetadata, metadata: MetadataStorage, platform: Platform): FilterQuery<T> {
+    const cond1 = QueryHelper.processWhere({ where: { [pk]: { $in: ids } }, entityName: meta.name!, metadata, platform, convertCustomTypes: !options.convertCustomTypes });
 
     return options.where![pk]
-      ? { $and: [cond1, options.where] }
+      ? { $and: [cond1, options.where] } as FilterQuery<any>
       : { ...cond1, ...(options.where as Dictionary) };
   }
 
@@ -294,19 +303,21 @@ export class EntityLoader {
     const filtered = Utils.unique(children);
     const fields = this.buildFields(options.fields, prop);
     const innerOrderBy = Utils.asArray(options.orderBy)
-      .filter(orderBy => Utils.isObject(orderBy[prop.name]))
-      .map(orderBy => orderBy[prop.name]);
-    const { refresh, filters, ignoreLazyScalarProperties } = options;
+      .filter(orderBy => Utils.isObject(orderBy[prop.name as string]))
+      .map(orderBy => orderBy[prop.name as string]);
+    const { refresh, filters, ignoreLazyScalarProperties, populateWhere, connectionType } = options;
 
     await this.populate<T>(prop.type, filtered, populate.children, {
       where: await this.extractChildCondition(options, prop, false) as FilterQuery<T>,
       orderBy: innerOrderBy as QueryOrderMap<T>[],
-      fields: fields.length > 0 ? fields : undefined,
+      fields,
       validate: false,
       lookup: false,
       refresh,
       filters,
       ignoreLazyScalarProperties,
+      populateWhere,
+      connectionType,
     });
   }
 
@@ -318,7 +329,7 @@ export class EntityLoader {
     const options2 = { ...options } as FindOptions<T>;
     delete options2.limit;
     delete options2.offset;
-    options2.fields = (fields.length > 0 ? fields : undefined) as EntityField<T>[];
+    options2.fields = fields;
     options2.populate = (populate?.children ?? []) as never;
 
     if (prop.customType) {
@@ -330,8 +341,13 @@ export class EntityLoader {
 
     for (const entity of filtered) {
       const items = map[entity.__helper!.getSerializedPrimaryKey()].map(item => {
-        const entity = this.em.getEntityFactory().create<T>(prop.type, item, { refresh, merge: true, convertCustomTypes: true });
-        return this.em.getUnitOfWork().registerManaged<T>(entity, item, refresh);
+        const entity = this.em.getEntityFactory().create<T>(prop.type, item, {
+          refresh,
+          merge: true,
+          convertCustomTypes: true,
+          schema: options.schema ?? this.em.config.get('schema'),
+        });
+        return this.em.getUnitOfWork().registerManaged<T>(entity, item, { refresh, loaded: true });
       });
       (entity[prop.name] as unknown as Collection<AnyEntity>).hydrate(items);
       children.push(...items);
@@ -381,8 +397,8 @@ export class EntityLoader {
     return subCond;
   }
 
-  private buildFields<T, P extends string>(fields: readonly EntityField<T, P>[] = [], prop: EntityProperty<T>): readonly EntityField<T>[] {
-    return fields.reduce((ret, f) => {
+  private buildFields<T, P extends string>(fields: readonly EntityField<T, P>[] = [], prop: EntityProperty<T>): readonly EntityField<T>[] | undefined {
+    const ret = fields.reduce((ret, f) => {
       if (Utils.isPlainObject(f)) {
         Object.keys(f)
           .filter(ff => ff === prop.name)
@@ -400,6 +416,21 @@ export class EntityLoader {
 
       return ret;
     }, [] as EntityField<T>[]);
+
+    if (ret.length === 0) {
+      return undefined;
+    }
+
+    // we need to automatically select the FKs too, e.g. for 1:m relations to be able to wire them with the items
+    if (prop.reference === ReferenceType.ONE_TO_MANY) {
+      const owner = prop.targetMeta!.properties[prop.mappedBy] as EntityProperty<T>;
+
+      if (!ret.includes(owner.name)) {
+        ret.push(owner.name);
+      }
+    }
+
+    return ret;
   }
 
   private getChildReferences<T extends AnyEntity<T>>(entities: T[], prop: EntityProperty<T>, refresh: boolean): AnyEntity[] {
@@ -437,21 +468,38 @@ export class EntityLoader {
     return children.filter(e => !(e[field] as AnyEntity).__helper!.__initialized).map(e => Reference.unwrapReference(e[field]));
   }
 
+  private filterByReferences<T extends AnyEntity<T>>(entities: T[], field: keyof T, refresh: boolean): T[] {
+    /* istanbul ignore next */
+    if (refresh) {
+      return entities;
+    }
+
+    return entities.filter(e => !(e[field] as AnyEntity)?.__helper?.__initialized);
+  }
+
   private lookupAllRelationships<T>(entityName: string): PopulateOptions<T>[] {
     const ret: PopulateOptions<T>[] = [];
     const meta = this.metadata.find(entityName)!;
 
     meta.relations.forEach(prop => {
-        ret.push({
-          field: prop.name,
-          // force select-in strategy when populating all relations as otherwise we could cause infinite loops when self-referencing
-          strategy: LoadStrategy.SELECT_IN,
-          // no need to look up populate children recursively as we just pass `all: true` here
-          all: true,
-        });
+      ret.push({
+        field: this.getRelationName(meta, prop),
+        // force select-in strategy when populating all relations as otherwise we could cause infinite loops when self-referencing
+        strategy: LoadStrategy.SELECT_IN,
+        // no need to look up populate children recursively as we just pass `all: true` here
+        all: true,
+      });
     });
 
     return ret;
+  }
+
+  private getRelationName(meta: EntityMetadata, prop: EntityProperty): string {
+    if (!prop.embedded) {
+      return prop.name;
+    }
+
+    return `${this.getRelationName(meta, meta.properties[prop.embedded[0]])}.${prop.embedded[1]}`;
   }
 
   private lookupEagerLoadedRelationships<T>(entityName: string, populate: PopulateOptions<T>[], strategy?: LoadStrategy, prefix = '', visited: string[] = []): PopulateOptions<T>[] {
@@ -466,16 +514,17 @@ export class EntityLoader {
     meta.relations
       .filter(prop => prop.eager || populate.some(p => p.field === prop.name))
       .forEach(prop => {
-        const prefixed = prefix ? `${prefix}.${prop.name}` : prop.name;
+        const field = this.getRelationName(meta, prop);
+        const prefixed = prefix ? `${prefix}.${field}` : field;
         const nestedPopulate = populate.find(p => p.field === prop.name)?.children ?? [];
-        const nested = this.lookupEagerLoadedRelationships(prop.type, nestedPopulate, strategy, prefixed, visited);
+        const nested = this.lookupEagerLoadedRelationships(prop.type, nestedPopulate, strategy, prefixed, visited.slice());
 
         if (nested.length > 0) {
           ret.push(...nested);
         } else {
           ret.push({
             field: prefixed,
-            strategy: strategy ?? prop.strategy ?? this.em.config.get('loadStrategy'),
+            strategy: strategy ?? prop.strategy,
           });
         }
       });

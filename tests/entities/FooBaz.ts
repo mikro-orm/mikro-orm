@@ -18,8 +18,8 @@ export class FooBaz {
   @OneToOne(() => FooBar, bar => bar.baz, { eager: true })
   bar!: FooBar;
 
-  @ManyToOne({ eager: true })
-  book!: Book;
+  @ManyToOne({ eager: true, nullable: true })
+  book?: Book;
 
   static create(name: string) {
     const baz = new FooBaz();

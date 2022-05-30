@@ -13,3 +13,11 @@
 .footerLogoLink:hover {
   opacity: 1;
 }
+
+footer ul {
+  padding-left: 0;
+}
+
+footer ul li {
+  list-style: none;
+}

@@ -72,4 +72,3 @@ await loader.populate(Author, authors, ['books.tags']);
 console.log(authors[0].books[0].tags[0]); // initialized BookTag
 ```
 
-[&larr; Back to table of contents](index.md#table-of-contents)

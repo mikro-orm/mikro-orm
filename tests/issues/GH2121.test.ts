@@ -60,7 +60,7 @@ describe('GH issue 2121', () => {
       limit: 10,
       offset: 8,
     });
-    expect(result[0].tags).toHaveLength(1);
+    expect(result[0].tags).toHaveLength(2);
     await orm.em.clear();
 
     const result2 = await orm.em.find(Product, { tags: { slug: ['slug0'] } }, {
@@ -68,7 +68,7 @@ describe('GH issue 2121', () => {
       limit: 10,
       offset: 9,
     });
-    expect(result2[0].tags).toHaveLength(1);
+    expect(result2[0].tags).toHaveLength(2);
     await result2[0].tags.init();
   });
 

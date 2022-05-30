@@ -6,7 +6,21 @@
  */
 
 const pkg = require('../packages/core/package.json');
-const packages = ['core', 'knex', 'cli', 'migrations', 'entity-generator', 'reflection'].map(d => `../packages/${d}/src/index.ts`);
+const packages = [
+  'core',
+  'knex',
+  'cli',
+  'migrations',
+  'entity-generator',
+  'reflection',
+  'sqlite',
+  'better-sqlite',
+  'mariadb',
+  'mongodb',
+  'mysql',
+  'postgresql',
+  'seeder',
+].map(d => ({ path: `packages/${d}` }));
 
 /** @type {import('@docusaurus/types').DocusaurusConfig} */
 module.exports = {
@@ -18,9 +32,11 @@ module.exports = {
   organizationName: 'mikro-orm',
   projectName: 'mikro-orm',
   scripts: ['/js/custom.js'],
+  trailingSlash: false,
   themeConfig: {
     algolia: {
-      apiKey: '26fadcd97750a33cd8081a07dda2c0cf',
+      apiKey: '83015544b5b03ca27af77c74a25d4868',
+      appId: 'V3HQ8I5PUQ',
       indexName: 'mikro-orm',
       contextualSearch: true,
     },
@@ -47,9 +63,10 @@ module.exports = {
           position: 'left',
         },
         { to: 'docs/installation', label: 'Docs', position: 'left' },
-        { to: 'docs/api', label: 'API', position: 'left' },
+        { to: 'api', label: 'API', position: 'left', activeBaseRegex: 'api/(?!core/changelog)', },
         { to: 'docs/faq', label: 'FAQ', position: 'left' },
         { to: 'blog', label: 'Blog', position: 'left' },
+        { to: 'api/core/changelog', label: 'Changelog', position: 'left', className: 'changelog' },
         {
           to: '/versions',
           label: `latest: v${pkg.version}`,
@@ -61,18 +78,21 @@ module.exports = {
           label: 'Slack',
           position: 'right',
           title: 'Chat on Slack',
+          className: 'icon',
         },
         {
           href: 'https://github.com/mikro-orm/mikro-orm',
           label: 'GitHub',
           position: 'right',
           title: 'View on GitHub',
+          className: 'icon',
         },
         {
           href: 'https://twitter.com/MikroORM',
           label: 'Twitter',
           position: 'right',
           title: 'Twitter',
+          className: 'icon',
         },
       ],
     },
@@ -84,8 +104,8 @@ module.exports = {
           items: [
             { label: 'Installation & Usage', to: 'docs/installation' },
             { label: 'Quick Start', href: 'https://github.com/mikro-orm/mikro-orm#-quick-start' },
-            { label: 'Migration from v3 to v4', to: 'docs/upgrading-v3-to-v4' },
-            { label: 'Version 3.6 docs', to: 'docs/3.6/installation' },
+            { label: 'Migration from v4 to v5', to: 'docs/upgrading-v4-to-v5' },
+            { label: 'Version 4.5 docs', to: 'docs/4.5/installation' },
           ],
         },
         {
@@ -137,22 +157,44 @@ module.exports = {
   ],
   plugins: [
     [
-      'docusaurus-plugin-typedoc',
+      'docusaurus-plugin-typedoc-api',
       {
-        entryPoints: packages,
-        sidebar: {
-          sidebarFile: 'typedoc-sidebar.js',
-          readmeLabel: 'README',
-          globalsLabel: 'Overview',
+        projectRoot: `${__dirname}/..`,
+        changelogs: true,
+        packages,
+        typedocOptions: {
+          readme: 'none',
+          tsconfig: '../tsconfig.json',
+          excludeExternals: true,
+          excludePrivate: true,
+          excludeProtected: true,
+          excludeInternal: true,
+          externalPattern: '**/node_modules/*',
+          cleanOutputDir: true,
         },
-        readme: 'none',
-        tsconfig: '../tsconfig.json',
-        excludeExternals: true,
-        excludePrivate: true,
-        excludeProtected: true,
-        excludeInternal: true,
-        externalPattern: '**/node_modules/*',
-        cleanOutputDir: true,
+      },
+    ],
+    [
+      '@docusaurus/plugin-client-redirects',
+      {
+        redirects: [
+          {
+            from: '/docs',
+            to: '/docs/installation',
+          },
+          {
+            from: '/docs/next',
+            to: '/docs/next/installation',
+          },
+          {
+            from: '/docs/next/lifecycle-hooks',
+            to: '/docs/next/events',
+          },
+          {
+            from: '/docs/next/debugging',
+            to: '/docs/next/logging',
+          },
+        ],
       },
     ],
   ],

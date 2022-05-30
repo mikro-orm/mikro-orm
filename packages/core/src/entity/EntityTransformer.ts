@@ -153,7 +153,7 @@ export class EntityTransformer {
     return visible && !prefixed && !ignoreFields.includes(propName);
   }
 
-  private static propertyName<T extends AnyEntity<T>>(meta: EntityMetadata<T>, prop: keyof T & string, platform?: Platform): keyof T & string {
+  private static propertyName<T extends AnyEntity<T>>(meta: EntityMetadata<T>, prop: keyof T & string, platform?: Platform): string {
     if (meta.properties[prop].serializedName) {
       return meta.properties[prop].serializedName as keyof T & string;
     }

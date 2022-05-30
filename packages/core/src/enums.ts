@@ -1,4 +1,4 @@
-import type { ExpandProperty } from './typings';
+import type { Dictionary, ExcludeFunctions, ExpandProperty } from './typings';
 import type { Transaction } from './connections';
 
 export const enum FlushMode {
@@ -8,6 +8,11 @@ export const enum FlushMode {
   AUTO,
   /** Flushes the `EntityManager` before every query. */
   ALWAYS,
+}
+
+export enum PopulateHint {
+  INFER,
+  ALL,
 }
 
 export enum GroupOperator {
@@ -69,8 +74,10 @@ export type QueryOrderKeysFlat = QueryOrder | QueryOrderNumeric | keyof typeof Q
 export type QueryOrderKeys<T> = QueryOrderKeysFlat | QueryOrderMap<T>;
 
 export type QueryOrderMap<T> = {
-  [K in keyof T]?: QueryOrderKeys<ExpandProperty<T[K]>>;
+  [K in keyof T as ExcludeFunctions<T, K>]?: QueryOrderKeys<ExpandProperty<T[K]>>;
 };
+
+export type QBQueryOrderMap<T> = QueryOrderMap<T> | Dictionary;
 
 export interface FlatQueryOrderMap {
   [x: string]: QueryOrderKeysFlat;
@@ -79,6 +86,7 @@ export interface FlatQueryOrderMap {
 export enum QueryFlag {
   DISTINCT = 'DISTINCT',
   PAGINATE = 'PAGINATE',
+  DISABLE_PAGINATE = 'DISABLE_PAGINATE',
   UPDATE_SUB_QUERY = 'UPDATE_SUB_QUERY',
   DELETE_SUB_QUERY = 'DELETE_SUB_QUERY',
   CONVERT_CUSTOM_TYPES = 'CONVERT_CUSTOM_TYPES',
@@ -135,6 +143,7 @@ export enum IsolationLevel {
 
 export enum EventType {
   onInit = 'onInit',
+  onLoad = 'onLoad',
   beforeCreate = 'beforeCreate',
   afterCreate = 'afterCreate',
   beforeUpdate = 'beforeUpdate',
@@ -158,4 +167,7 @@ export interface TransactionOptions {
   ctx?: Transaction;
   isolationLevel?: IsolationLevel;
   flushMode?: FlushMode;
+}
+
+export abstract class PlainObject {
 }

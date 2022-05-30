@@ -1,12 +1,12 @@
 (global as any).process.env.FORCE_COLOR = 0;
 import { Umzug } from 'umzug';
-import type { MikroORM } from '@mikro-orm/core';
-import { MetadataStorage } from '@mikro-orm/core';
+import { MetadataStorage, MikroORM } from '@mikro-orm/core';
 import { Migration, MigrationStorage, Migrator } from '@mikro-orm/migrations';
 import type { DatabaseTable, SqliteDriver } from '@mikro-orm/sqlite';
 import { DatabaseSchema } from '@mikro-orm/sqlite';
 import { remove } from 'fs-extra';
-import { initORMSqlite2, mockLogger } from '../../bootstrap';
+import { initORMSqlite2, mockLogger, TEMP_DIR } from '../../bootstrap';
+import { BaseEntity5, FooBar4, FooBaz4 } from '../../entities-schema';
 
 class MigrationTest1 extends Migration {
 
@@ -190,7 +190,9 @@ describe('Migrator (sqlite)', () => {
 
     await storage.ensureTable(); // creates the table
     await storage.logMigration({ name: 'test', context: null });
-    await expect(storage.getExecutedMigrations()).resolves.toMatchObject([{ name: 'test' }]);
+    const executed = await storage.getExecutedMigrations();
+    expect(executed).toMatchObject([{ name: 'test' }]);
+    expect(executed[0].executed_at).toBeInstanceOf(Date);
     await expect(storage.executed()).resolves.toEqual(['test']);
 
     await storage.ensureTable(); // table exists, no-op
@@ -300,6 +302,17 @@ describe('Migrator (sqlite)', () => {
         .replace(/ trx\d+/, 'trx_xx');
     });
     expect(calls).toMatchSnapshot('all-or-nothing-disabled');
+  });
+
+  test('snapshots with absolute path to database', async () => {
+    const orm = await MikroORM.init({
+      type: 'sqlite',
+      entities: [FooBar4, FooBaz4, BaseEntity5],
+      dbName: TEMP_DIR + '/test.db',
+      baseDir: TEMP_DIR,
+    });
+    await expect(orm.getMigrator().createMigration()).resolves.not.toThrow();
+    await orm.close();
   });
 
 });

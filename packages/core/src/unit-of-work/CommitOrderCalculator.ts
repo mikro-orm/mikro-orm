@@ -60,7 +60,7 @@ export class CommitOrderCalculator {
 
   discoverProperty(prop: EntityProperty, entityName: string): void {
     const toOneOwner = (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner) || prop.reference === ReferenceType.MANY_TO_ONE;
-    const toManyOwner = prop.reference === ReferenceType.MANY_TO_MANY && prop.owner && !prop.pivotTable;
+    const toManyOwner = prop.reference === ReferenceType.MANY_TO_MANY && prop.owner && !prop.pivotEntity;
 
     if (!toOneOwner && !toManyOwner) {
       return;

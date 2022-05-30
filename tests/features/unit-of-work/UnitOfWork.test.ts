@@ -1,7 +1,7 @@
 import { Author } from '../../entities';
 import type { ChangeSet, ChangeSetComputer, EventSubscriber, FlushEventArgs, MikroORM } from '@mikro-orm/core';
 import { ChangeSetType, EntityValidator, IdentityMap, UnitOfWork } from '@mikro-orm/core';
-import { initORMMongo, mockLogger, wipeDatabase } from '../../bootstrap';
+import { initORMMongo, mockLogger } from '../../bootstrap';
 import FooBar from '../../entities/FooBar';
 import { FooBaz } from '../../entities/FooBaz';
 import { Dummy } from '../../entities/Dummy';
@@ -18,7 +18,7 @@ describe('UnitOfWork', () => {
     // @ts-ignore
     computer = uow.changeSetComputer;
   });
-  beforeEach(async () => wipeDatabase(orm.em));
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
 
   test('entity validation when persisting [not strict]', async () => {
     // number instead of string will throw

@@ -204,7 +204,7 @@ export class EntityComparatorOld {
 
     const value = entity[prop.name];
     const noPkRef = Utils.isEntity<T>(value, true) && !value.__helper!.hasPrimaryKey();
-    const noPkProp = prop.primary && !Utils.isDefined(value, true);
+    const noPkProp = prop.primary && value == null;
 
     // bidirectional 1:1 and m:1 fields are defined as setters, we need to check for `undefined` explicitly
     const isSetter = [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy);

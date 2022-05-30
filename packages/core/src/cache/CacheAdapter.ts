@@ -11,6 +11,11 @@ export interface CacheAdapter {
   set(name: string, data: any, origin: string, expiration?: number): Promise<void>;
 
   /**
+   * Removes the item from cache.
+   */
+  remove(name: string): Promise<void>;
+
+  /**
    * Clears all items stored in the cache.
    */
   clear(): Promise<void>;

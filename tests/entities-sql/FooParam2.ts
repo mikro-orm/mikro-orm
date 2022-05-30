@@ -17,7 +17,7 @@ export class FooParam2 {
   @Property({ version: true })
   version!: Date;
 
-  [PrimaryKeyType]: [number, number];
+  [PrimaryKeyType]?: [number, number];
   [PrimaryKeyProp]?: 'bar' | 'baz';
 
   constructor(bar: FooBar2, baz: FooBaz2, value: string) {

@@ -1,11 +1,11 @@
+import { wrap } from '@mikro-orm/core';
+import type { IdentifiedReference, Reference, Collection, EntityManager, EntityName } from '@mikro-orm/core';
 import type { Has, IsExact } from 'conditional-type-checks';
 import { assert } from 'conditional-type-checks';
 import type { ObjectId } from 'bson';
 import type { EntityData, EntityDTO, FilterQuery, FilterValue, Loaded, OperatorMap, Primary, PrimaryKeyType, Query } from '../packages/core/src/typings';
 import type { Author2, Book2, BookTag2, Car2, FooBar2, FooParam2, Publisher2, User2 } from './entities-sql';
 import type { Author } from './entities';
-import type { IdentifiedReference, Reference } from '@mikro-orm/core';
-import { wrap } from '@mikro-orm/core';
 
 type IsAssignable<T, Expected> = Expected extends T ? true : false;
 
@@ -18,7 +18,7 @@ describe('check typings', () => {
     assert<IsExact<Primary<Author2>, string>>(false);
 
     // PrimaryKeyType symbol has priority
-    type Test = { _id: ObjectId; id: string; uuid: number; [PrimaryKeyType]: Date };
+    type Test = { _id: ObjectId; id: string; uuid: number; [PrimaryKeyType]?: Date };
     assert<IsExact<Primary<Test>, Date>>(true);
     assert<IsExact<Primary<Test>, ObjectId>>(false);
     assert<IsExact<Primary<Test>, string>>(false);
@@ -289,6 +289,36 @@ describe('check typings', () => {
     const compositeRef = {} as IdentifiedReference<FooParam2>;
     const bar = compositeRef.bar;
     const baz = compositeRef.baz;
+  });
+
+  test('AutoPath with optional nullable properties', async () => {
+    interface MessageRecipient {
+      id: string;
+      message?: Message | null;
+    }
+
+    interface Message {
+      id: string;
+      phoneService?: PhoneService | null;
+      messageRecipients: Collection<MessageRecipient>;
+    }
+
+    interface PhoneService {
+      id: string;
+      phoneServiceVendor?: PhoneServiceVendor | null;
+      messages: Collection<Message>;
+    }
+
+    interface PhoneServiceVendor {
+      id: string;
+      phoneService?: PhoneService;
+    }
+
+    const em = { findOne: jest.fn() as any } as EntityManager;
+
+    await em.findOne('MessageRecipient' as EntityName<MessageRecipient>, '1', {
+      populate: ['message', 'message.phoneService', 'message.phoneService.phoneServiceVendor'],
+    });
   });
 
   test('FilterQueryOrPrimary ok assignments', async () => {

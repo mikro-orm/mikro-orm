@@ -12,10 +12,10 @@ export class Book0 {
 
 }
 
-@Entity({ tableName: 'book', comment: 'this is books table' })
+@Entity({ tableName: 'book', comment: 'this is book\'s table' })
 export class Book1 {
 
-  @PrimaryKey({ comment: 'this is primary key' })
+  @PrimaryKey({ comment: 'this is primary\'s key' })
   id!: number;
 
   @Property({ comment: 'this is name of book' })
@@ -55,7 +55,7 @@ describe('comment diffing in mysql', () => {
       entities: [Book0],
       dbName: `mikro_orm_test_comments`,
       type: 'mysql',
-      port: 3307,
+      port: 3308,
     });
     generator = orm.getSchemaGenerator();
     await generator.ensureDatabase();

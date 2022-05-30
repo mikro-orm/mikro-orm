@@ -2,7 +2,7 @@ import type { MikroORM } from '@mikro-orm/core';
 import { FlushMode, LoadStrategy, wrap } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
-import { initORMPostgreSql, mockLogger, wipeDatabasePostgreSql } from '../bootstrap';
+import { initORMPostgreSql, mockLogger } from '../bootstrap';
 import { Author2, Book2, FooBar2, FooBaz2 } from '../entities-sql';
 
 describe('automatic refreshing of already loaded entities', () => {
@@ -10,7 +10,7 @@ describe('automatic refreshing of already loaded entities', () => {
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => orm = await initORMPostgreSql());
-  beforeEach(async () => wipeDatabasePostgreSql(orm.em));
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
   afterAll(async () => orm.close(true));
 
   async function createEntities() {

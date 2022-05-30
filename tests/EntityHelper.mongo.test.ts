@@ -5,7 +5,7 @@ import type { AnyEntity, MikroORM } from '@mikro-orm/core';
 import { Reference, wrap } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 import { Author, Book, Publisher, Test } from './entities';
-import { initORMMongo, wipeDatabase } from './bootstrap';
+import { initORMMongo } from './bootstrap';
 import FooBar from './entities/FooBar';
 import { FooBaz } from './entities/FooBaz';
 
@@ -14,7 +14,7 @@ describe('EntityHelperMongo', () => {
   let orm: MikroORM<MongoDriver>;
 
   beforeAll(async () => orm = await initORMMongo());
-  beforeEach(async () => wipeDatabase(orm.em));
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
 
   test('#toObject() should return DTO', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
@@ -96,6 +96,14 @@ describe('EntityHelperMongo', () => {
     god.name = '123';
     expect(wrap(god, true).__touched).toBe(true);
     expect(god.isTouched()).toBe(true);
+    expect(god.toPOJO()).toMatchObject({
+      name: '123',
+      email: 'hello@heaven.god',
+      books: [],
+      foo: 'bar',
+      friends: [],
+      termsAccepted: false,
+    });
   });
 
   test('#load() should populate the entity', async () => {

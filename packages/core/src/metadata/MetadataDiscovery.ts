@@ -1,4 +1,4 @@
-import { basename, extname, isAbsolute } from 'path';
+import { basename, extname } from 'path';
 import globby from 'globby';
 
 import type { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, EntityProperty } from '../typings';
@@ -69,6 +69,8 @@ export class MetadataDiscovery {
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initFieldName(prop)));
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initVersionProperty(meta, prop)));
     filtered.forEach(meta => Object.values(meta.properties).forEach(prop => this.initCustomType(meta, prop)));
+    filtered.forEach(meta => this.initAutoincrement(meta)); // once again after we init custom types
+    filtered.forEach(meta => this.initCheckConstraints(meta));
 
     for (const meta of filtered) {
       for (const prop of Object.values(meta.properties)) {
@@ -80,7 +82,7 @@ export class MetadataDiscovery {
     filtered.forEach(meta => this.autoWireBidirectionalProperties(meta));
 
     for (const meta of filtered) {
-      discovered.push(...(await this.processEntity(meta)));
+      discovered.push(...await this.processEntity(meta));
     }
 
     discovered.forEach(meta => meta.sync(true));
@@ -131,7 +133,7 @@ export class MetadataDiscovery {
       }
 
       const name = this.namingStrategy.getClassName(filename);
-      const path = Utils.normalizePath(...(isAbsolute(filepath) ? [filepath] : [this.config.get('baseDir'), filepath]));
+      const path = Utils.normalizePath(this.config.get('baseDir'), filepath);
       const targets = await this.getEntityClassOrSchema(path, name);
 
       for (const target of targets) {
@@ -267,10 +269,10 @@ export class MetadataDiscovery {
     delete copy.prototype;
 
     copy.props
-      .filter(prop => prop.type as unknown instanceof Type)
+      .filter(prop => Type.isMappedType(prop.type))
       .forEach(prop => {
         ['type', 'customType']
-          .filter(k => prop[k] as unknown instanceof Type)
+          .filter(k => Type.isMappedType(prop[k]))
           .forEach(k => delete (prop as Dictionary)[k]);
       });
 
@@ -335,15 +337,22 @@ export class MetadataDiscovery {
   private initManyToManyFields(meta: EntityMetadata, prop: EntityProperty): void {
     const meta2 = this.metadata.get(prop.type);
     Utils.defaultValue(prop, 'fixedOrder', !!prop.fixedOrderColumn);
+    const pivotMeta = this.metadata.find(prop.pivotEntity);
+
+    if (pivotMeta) {
+      pivotMeta.pivotTable = true;
+      prop.pivotTable = pivotMeta.tableName;
+    }
 
     if (!prop.pivotTable && prop.owner && this.platform.usesPivotTable()) {
-      prop.pivotTable = this.namingStrategy.joinTableName(meta.collection, meta2.collection, prop.name);
+      prop.pivotTable = this.namingStrategy.joinTableName(meta.tableName, meta2.tableName, prop.name);
     }
 
     if (prop.mappedBy) {
       const prop2 = meta2.properties[prop.mappedBy];
       this.initManyToManyFields(meta2, prop2);
       prop.pivotTable = prop2.pivotTable;
+      prop.pivotEntity = prop2.pivotEntity ?? prop2.pivotTable;
       prop.fixedOrder = prop2.fixedOrder;
       prop.fixedOrderColumn = prop2.fixedOrderColumn;
       prop.joinColumns = prop2.inverseJoinColumns;
@@ -417,8 +426,7 @@ export class MetadataDiscovery {
     const ret: EntityMetadata[] = [];
 
     if (this.platform.usesPivotTable()) {
-      const promises = Object
-        .values(meta.properties)
+      const promises = Object.values(meta.properties)
         .filter(prop => prop.reference === ReferenceType.MANY_TO_MANY && prop.owner && prop.pivotTable)
         .map(prop => this.definePivotTableEntity(meta, prop));
       (await Promise.all(promises)).forEach(meta => ret.push(meta));
@@ -428,12 +436,12 @@ export class MetadataDiscovery {
   }
 
   private initFactoryField<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>): void {
-    ['mappedBy', 'inversedBy'].forEach(type => {
+    ['mappedBy', 'inversedBy', 'pivotEntity'].forEach(type => {
       const value = prop[type];
 
       if (value instanceof Function) {
         const meta2 = this.metadata.get(prop.type);
-        prop[type] = value(meta2.properties).name;
+        prop[type] = value(meta2.properties)?.name;
 
         if (prop[type] == null) {
           throw MetadataError.fromWrongReference(meta, prop, type as 'mappedBy' | 'inversedBy');
@@ -442,7 +450,26 @@ export class MetadataDiscovery {
     });
   }
 
+  private ensureCorrectFKOrderInPivotEntity(meta: EntityMetadata, owner: EntityProperty): void {
+    const [first, second] = meta.relations;
+
+    // wrong FK order, first FK needs to point to the owning side
+    // (note that we can detect this only if the FKs target different types)
+    if (owner.type === first.type && first.type !== second.type) {
+      delete meta.properties[first.name];
+      meta.removeProperty(first.name, false);
+      meta.addProperty(first);
+    }
+  }
+
   private async definePivotTableEntity(meta: EntityMetadata, prop: EntityProperty): Promise<EntityMetadata> {
+    const pivotMeta = this.metadata.find(prop.pivotEntity);
+
+    if (pivotMeta) {
+      this.ensureCorrectFKOrderInPivotEntity(pivotMeta, prop);
+      return pivotMeta;
+    }
+
     let tableName = prop.pivotTable;
     let schemaName: string | undefined;
 
@@ -450,6 +477,7 @@ export class MetadataDiscovery {
       [schemaName, tableName] = prop.pivotTable.split('.');
     }
 
+    schemaName ??= meta.schema;
     const targetType = prop.targetMeta!.root.className;
     const data = new EntityMetadata({
       name: prop.pivotTable,
@@ -458,13 +486,12 @@ export class MetadataDiscovery {
       schema: schemaName,
       pivotTable: true,
     });
+    prop.pivotEntity = data.className;
 
     if (prop.fixedOrder) {
       const primaryProp = await this.defineFixedOrderProperty(prop, targetType);
       data.properties[primaryProp.name] = primaryProp;
-      data.primaryKeys = [primaryProp.name];
     } else {
-      data.primaryKeys = [meta.root.name + '_owner', targetType + '_inverse'];
       data.compositePK = true;
     }
 
@@ -483,7 +510,7 @@ export class MetadataDiscovery {
     data.properties[meta.root.name + '_owner'] = await this.definePivotProperty(prop, meta.root.name + '_owner', meta.root.name!, targetType + '_inverse', true);
     data.properties[targetType + '_inverse'] = await this.definePivotProperty(prop, targetType + '_inverse', targetType, meta.root.name + '_owner', false);
 
-    return this.metadata.set(prop.pivotTable, data);
+    return this.metadata.set(data.className, data);
   }
 
   private async defineFixedOrderProperty(prop: EntityProperty, targetType: string): Promise<EntityProperty> {
@@ -526,7 +553,8 @@ export class MetadataDiscovery {
     ret.targetMeta = meta;
     ret.joinColumns = [];
     ret.inverseJoinColumns = [];
-    ret.referencedTableName = meta.collection;
+    const schema = meta.schema ?? this.config.get('schema') ?? this.platform.getDefaultSchemaName();
+    ret.referencedTableName = schema && schema !== '*' ? schema + '.' + meta.tableName : meta.tableName;
 
     if (owner) {
       ret.owner = true;
@@ -546,7 +574,6 @@ export class MetadataDiscovery {
       ret.fieldNames = ret.joinColumns = prop.inverseJoinColumns;
       ret.referencedColumnNames = [];
       ret.inverseJoinColumns = [];
-      ret.referencedTableName = meta.collection;
       meta.primaryKeys.forEach(primaryKey => {
         const prop2 = meta.properties[primaryKey];
         ret.referencedColumnNames.push(...prop2.fieldNames);
@@ -727,7 +754,7 @@ export class MetadataDiscovery {
 
         path.push(prop.name);
         meta.properties[name].fieldNames = [path.join('.')]; // store path for ObjectHydrator
-        meta.properties[name].fieldNameRaw = this.platform.getSearchJsonPropertySQL(path.join('->'), prop.type); // for querying in SQL drivers
+        meta.properties[name].fieldNameRaw = this.platform.getSearchJsonPropertySQL(path.join('->'), prop.type, true); // for querying in SQL drivers
         meta.properties[name].persist = false; // only virtual as we store the whole object
       }
 
@@ -805,6 +832,25 @@ export class MetadataDiscovery {
     }
   }
 
+  private initCheckConstraints(meta: EntityMetadata): void {
+    const map = Object.values(meta.properties).reduce((o, prop) => {
+      if (prop.fieldNames) {
+        o[prop.name] = prop.fieldNames[0];
+      }
+
+      return o;
+    }, {} as Dictionary);
+
+    for (const check of meta.checks) {
+      const columns = check.property ? meta.properties[check.property].fieldNames : [];
+      check.name ??= this.namingStrategy.indexName(meta.tableName, columns, 'check');
+
+      if (check.expression instanceof Function) {
+        check.expression = check.expression(map);
+      }
+    }
+  }
+
   private getDefaultVersionValue(prop: EntityProperty): string {
     if (typeof prop.defaultRaw !== 'undefined') {
       return prop.defaultRaw;
@@ -866,12 +912,13 @@ export class MetadataDiscovery {
       prop.customType = Type.getType(JsonType);
     }
 
-    if (prop.type as unknown instanceof Type) {
-      prop.customType = prop.type as unknown as Type<any>;
+    // `prop.type` might be actually instance of custom type class
+    if (Type.isMappedType(prop.type)) {
+      prop.customType = prop.type;
     }
 
-    // eslint-disable-next-line no-prototype-builtins
-    if (Type.isPrototypeOf(prop.type) && !prop.customType) {
+    // `prop.type` might also be custom type class (not instance), so `typeof MyType` will give us `function`, not `object`
+    if (typeof prop.type === 'function' && Type.isMappedType((prop.type as Constructor).prototype) && !prop.customType) {
       prop.customType = Type.getType(prop.type as unknown as Constructor<Type>);
     }
 
@@ -879,7 +926,7 @@ export class MetadataDiscovery {
       prop.columnTypes = prop.columnTypes ?? [prop.customType.getColumnType(prop, this.platform)];
     }
 
-    if (prop.customType as unknown instanceof Type && prop.reference === ReferenceType.SCALAR) {
+    if (Type.isMappedType(prop.customType) && prop.reference === ReferenceType.SCALAR) {
       prop.type = prop.customType.constructor.name;
     }
   }
@@ -959,7 +1006,8 @@ export class MetadataDiscovery {
 
   private async initEnumValues(prop: EntityProperty, path: string): Promise<void> {
     path = Utils.normalizePath(this.config.get('baseDir'), path);
-    const exports = await import(path);
+    const exports = await Utils.dynamicImport(path);
+    /* istanbul ignore next */
     const target = exports[prop.type] || exports.default;
 
     if (target) {
@@ -974,7 +1022,8 @@ export class MetadataDiscovery {
 
       meta2.primaryKeys.forEach(primaryKey => {
         const pk = meta2.properties[primaryKey];
-        prop.unsigned = this.platform.supportsUnsigned() && this.isNumericProperty(pk);
+        // if at least one of the target columns is unsigned, we need to mark the property as unsigned
+        prop.unsigned ||= this.platform.supportsUnsigned() && this.isNumericProperty(pk);
       });
 
       return;
@@ -984,17 +1033,22 @@ export class MetadataDiscovery {
   }
 
   private initIndexes(prop: EntityProperty): void {
-    if ((prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner)) && this.platform.indexForeignKeys()) {
+    if (prop.reference === ReferenceType.MANY_TO_ONE && this.platform.indexForeignKeys()) {
       prop.index ??= true;
     }
   }
 
   private isNumericProperty(prop: EntityProperty): boolean {
-    return prop.type === 'number' || this.platform.isBigIntProperty(prop);
+    if (prop.customType) {
+      return this.platform.isNumericColumn(prop.customType);
+    }
+
+    const numericMappedType = prop.columnTypes?.[0] && this.platform.isNumericColumn(this.platform.getMappedType(prop.columnTypes[0]));
+    return numericMappedType || prop.type === 'number' || this.platform.isBigIntProperty(prop);
   }
 
   private async getEntityClassOrSchema(path: string, name: string) {
-    const exports = await import(path);
+    const exports = await Utils.dynamicImport(path);
     const targets = Object.values<Dictionary>(exports)
       .filter(item => item instanceof EntitySchema || (item instanceof Function && MetadataStorage.isKnownEntity(item.name)));
 

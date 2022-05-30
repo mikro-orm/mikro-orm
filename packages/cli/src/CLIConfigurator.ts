@@ -19,16 +19,23 @@ import { CreateDatabaseCommand } from './commands/CreateDatabaseCommand';
 export class CLIConfigurator {
 
   static async configure(): Promise<Argv> {
+    await ConfigurationLoader.checkPackageVersion();
     const settings = await ConfigurationLoader.getSettings();
+    const version = Utils.getORMVersion();
 
     if (settings.useTsNode) {
-      await ConfigurationLoader.registerTsNode(settings.tsConfigPath);
+      const tsNode = await ConfigurationLoader.registerTsNode(settings.tsConfigPath);
+
+      /* istanbul ignore if */
+      if (!tsNode) {
+        process.env.MIKRO_ORM_CLI_USE_TS_NODE ??= '0';
+      }
     }
 
     // noinspection HtmlDeprecatedTag
     return yargs
       .scriptName('mikro-orm')
-      .version(Utils.getORMVersion())
+      .version(version)
       .usage('Usage: $0 <command> [options]')
       .example('$0 schema:update --run', 'Runs schema synchronization')
       .alias('v', 'version')

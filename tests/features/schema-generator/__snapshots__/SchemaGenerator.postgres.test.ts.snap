@@ -4,6 +4,8 @@ exports[`SchemaGenerator [postgres] generate schema from metadata [postgres]: po
 "set names 'utf8';
 set session_replication_role = 'replica';
 
+create schema if not exists \\"label_schema\\";
+
 create table \\"label2\\" (\\"uuid\\" uuid not null, \\"name\\" varchar(255) not null);
 alter table \\"label2\\" add constraint \\"label2_pkey\\" primary key (\\"uuid\\");
 
@@ -49,6 +51,8 @@ create table \\"publisher2_tests\\" (\\"id\\" serial primary key, \\"publisher2_
 create table \\"test2_bars\\" (\\"test2_id\\" int not null, \\"foo_bar2_id\\" int not null);
 alter table \\"test2_bars\\" add constraint \\"test2_bars_pkey\\" primary key (\\"test2_id\\", \\"foo_bar2_id\\");
 
+create table \\"label_schema\\".\\"label2_tests\\" (\\"id\\" serial primary key, \\"label2_uuid\\" uuid not null, \\"test2_id\\" int not null);
+
 create table \\"book2_tags\\" (\\"order\\" serial primary key, \\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);
 
 create table \\"book_to_tag_unordered\\" (\\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);
@@ -85,6 +89,9 @@ alter table \\"publisher2_tests\\" add constraint \\"publisher2_tests_test2_id_f
 alter table \\"test2_bars\\" add constraint \\"test2_bars_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;
 alter table \\"test2_bars\\" add constraint \\"test2_bars_foo_bar2_id_foreign\\" foreign key (\\"foo_bar2_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade on delete cascade;
 
+alter table \\"label_schema\\".\\"label2_tests\\" add constraint \\"label2_tests_label2_uuid_foreign\\" foreign key (\\"label2_uuid\\") references \\"label2\\" (\\"uuid\\") on update cascade on delete cascade;
+alter table \\"label_schema\\".\\"label2_tests\\" add constraint \\"label2_tests_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;
+
 alter table \\"book2_tags\\" add constraint \\"book2_tags_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;
 alter table \\"book2_tags\\" add constraint \\"book2_tags_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;
 
@@ -109,6 +116,7 @@ drop table if exists \\"author2_following\\" cascade;
 drop table if exists \\"author_to_friend\\" cascade;
 drop table if exists \\"book_to_tag_unordered\\" cascade;
 drop table if exists \\"book2_tags\\" cascade;
+drop table if exists \\"label_schema\\".\\"label2_tests\\" cascade;
 drop table if exists \\"test2_bars\\" cascade;
 drop table if exists \\"publisher2_tests\\" cascade;
 drop table if exists \\"configuration2\\" cascade;
@@ -135,6 +143,7 @@ drop table if exists \\"author2_following\\" cascade;
 drop table if exists \\"author_to_friend\\" cascade;
 drop table if exists \\"book_to_tag_unordered\\" cascade;
 drop table if exists \\"book2_tags\\" cascade;
+drop table if exists \\"label_schema\\".\\"label2_tests\\" cascade;
 drop table if exists \\"test2_bars\\" cascade;
 drop table if exists \\"publisher2_tests\\" cascade;
 drop table if exists \\"configuration2\\" cascade;
@@ -148,6 +157,8 @@ drop table if exists \\"foo_param2\\" cascade;
 drop table if exists \\"foo_bar2\\" cascade;
 drop table if exists \\"foo_baz2\\" cascade;
 drop table if exists \\"label2\\" cascade;
+
+create schema if not exists \\"label_schema\\";
 
 create table \\"label2\\" (\\"uuid\\" uuid not null, \\"name\\" varchar(255) not null);
 alter table \\"label2\\" add constraint \\"label2_pkey\\" primary key (\\"uuid\\");
@@ -194,6 +205,8 @@ create table \\"publisher2_tests\\" (\\"id\\" serial primary key, \\"publisher2_
 create table \\"test2_bars\\" (\\"test2_id\\" int not null, \\"foo_bar2_id\\" int not null);
 alter table \\"test2_bars\\" add constraint \\"test2_bars_pkey\\" primary key (\\"test2_id\\", \\"foo_bar2_id\\");
 
+create table \\"label_schema\\".\\"label2_tests\\" (\\"id\\" serial primary key, \\"label2_uuid\\" uuid not null, \\"test2_id\\" int not null);
+
 create table \\"book2_tags\\" (\\"order\\" serial primary key, \\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);
 
 create table \\"book_to_tag_unordered\\" (\\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);
@@ -229,6 +242,9 @@ alter table \\"publisher2_tests\\" add constraint \\"publisher2_tests_test2_id_f
 
 alter table \\"test2_bars\\" add constraint \\"test2_bars_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;
 alter table \\"test2_bars\\" add constraint \\"test2_bars_foo_bar2_id_foreign\\" foreign key (\\"foo_bar2_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade on delete cascade;
+
+alter table \\"label_schema\\".\\"label2_tests\\" add constraint \\"label2_tests_label2_uuid_foreign\\" foreign key (\\"label2_uuid\\") references \\"label2\\" (\\"uuid\\") on update cascade on delete cascade;
+alter table \\"label_schema\\".\\"label2_tests\\" add constraint \\"label2_tests_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;
 
 alter table \\"book2_tags\\" add constraint \\"book2_tags_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;
 alter table \\"book2_tags\\" add constraint \\"book2_tags_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;
@@ -246,17 +262,13 @@ set session_replication_role = 'origin';
 "
 `;
 
-exports[`SchemaGenerator [postgres] generate schema from metadata [postgres]: postgres-update-schema-dump 1`] = `
-"set names 'utf8';
-set session_replication_role = 'replica';
-
-set session_replication_role = 'origin';
-"
-`;
+exports[`SchemaGenerator [postgres] generate schema from metadata [postgres]: postgres-update-schema-dump 1`] = `""`;
 
 exports[`SchemaGenerator [postgres] update empty schema from metadata [postgres]: postgres-update-empty-schema-dump 1`] = `
 "set names 'utf8';
 set session_replication_role = 'replica';
+
+create schema if not exists \\"label_schema\\";
 
 create table \\"label2\\" (\\"uuid\\" uuid not null, \\"name\\" varchar(255) not null);
 alter table \\"label2\\" add constraint \\"label2_pkey\\" primary key (\\"uuid\\");
@@ -303,6 +315,8 @@ create table \\"publisher2_tests\\" (\\"id\\" serial primary key, \\"publisher2_
 create table \\"test2_bars\\" (\\"test2_id\\" int not null, \\"foo_bar2_id\\" int not null);
 alter table \\"test2_bars\\" add constraint \\"test2_bars_pkey\\" primary key (\\"test2_id\\", \\"foo_bar2_id\\");
 
+create table \\"label_schema\\".\\"label2_tests\\" (\\"id\\" serial primary key, \\"label2_uuid\\" uuid not null, \\"test2_id\\" int not null);
+
 create table \\"book2_tags\\" (\\"order\\" serial primary key, \\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);
 
 create table \\"book_to_tag_unordered\\" (\\"book2_uuid_pk\\" uuid not null, \\"book_tag2_id\\" bigint not null);
@@ -338,6 +352,9 @@ alter table \\"publisher2_tests\\" add constraint \\"publisher2_tests_test2_id_f
 
 alter table \\"test2_bars\\" add constraint \\"test2_bars_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;
 alter table \\"test2_bars\\" add constraint \\"test2_bars_foo_bar2_id_foreign\\" foreign key (\\"foo_bar2_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade on delete cascade;
+
+alter table \\"label_schema\\".\\"label2_tests\\" add constraint \\"label2_tests_label2_uuid_foreign\\" foreign key (\\"label2_uuid\\") references \\"label2\\" (\\"uuid\\") on update cascade on delete cascade;
+alter table \\"label_schema\\".\\"label2_tests\\" add constraint \\"label2_tests_test2_id_foreign\\" foreign key (\\"test2_id\\") references \\"test2\\" (\\"id\\") on update cascade on delete cascade;
 
 alter table \\"book2_tags\\" add constraint \\"book2_tags_book2_uuid_pk_foreign\\" foreign key (\\"book2_uuid_pk\\") references \\"book2\\" (\\"uuid_pk\\") on update cascade on delete cascade;
 alter table \\"book2_tags\\" add constraint \\"book2_tags_book_tag2_id_foreign\\" foreign key (\\"book_tag2_id\\") references \\"book_tag2\\" (\\"id\\") on update cascade on delete cascade;
@@ -392,11 +409,9 @@ alter table \\"author2\\" add constraint \\"author2_favourite_book_uuid_pk_forei
 exports[`SchemaGenerator [postgres] update schema [postgres]: postgres-update-schema-alter-column 1`] = `
 "alter table \\"author2\\" drop constraint \\"author2_favourite_author_id_foreign\\";
 
-alter table \\"author2\\" drop constraint if exists \\"author2_name_check\\";
 alter table \\"author2\\" alter column \\"name\\" type int using (\\"name\\"::int);
 alter table \\"author2\\" alter column \\"name\\" set default 42;
 alter table \\"author2\\" alter column \\"name\\" drop not null;
-alter table \\"author2\\" drop constraint if exists \\"author2_age_check\\";
 alter table \\"author2\\" alter column \\"age\\" type int using (\\"age\\"::int);
 alter table \\"author2\\" alter column \\"age\\" set default 42;
 alter table \\"author2\\" add constraint \\"author2_favourite_author_id_foreign\\" foreign key (\\"favourite_author_id\\") references \\"foo_bar2\\" (\\"id\\") on update cascade on delete set null;
@@ -426,7 +441,6 @@ alter table \\"new_table\\" drop constraint \\"new_table_pkey\\";
 alter table \\"new_table\\" drop column \\"id\\";
 alter table \\"new_table\\" drop column \\"updated_at\\";
 
-alter table \\"author2\\" drop constraint if exists \\"author2_name_check\\";
 alter table \\"author2\\" alter column \\"name\\" drop default;
 alter table \\"author2\\" alter column \\"name\\" type int using (\\"name\\"::int);
 alter table \\"author2\\" alter column \\"name\\" set not null;
@@ -468,7 +482,7 @@ create index \\"author2_name_age_in_years_index\\" on \\"author2\\" (\\"name\\",
 `;
 
 exports[`SchemaGenerator [postgres] update schema - entity in different namespace [postgres] (GH #1215): postgres-update-schema-1215 1`] = `
-"create schema \\"other\\";
+"create schema if not exists \\"other\\";
 
 create table \\"other\\".\\"new_table\\" (\\"id\\" serial primary key, \\"column_name\\" varchar(255) not null);
 alter table \\"other\\".\\"new_table\\" add constraint \\"new_table_column_name_unique\\" unique (\\"column_name\\");
@@ -491,8 +505,7 @@ exports[`SchemaGenerator [postgres] update schema enums [postgres]: postgres-upd
 `;
 
 exports[`SchemaGenerator [postgres] update schema enums [postgres]: postgres-update-schema-enums-2 1`] = `
-"alter table \\"new_table\\" drop constraint if exists \\"new_table_enum_test_check\\";
-alter table \\"new_table\\" alter column \\"enum_test\\" type text using (\\"enum_test\\"::text);
+"alter table \\"new_table\\" alter column \\"enum_test\\" type text using (\\"enum_test\\"::text);
 alter table \\"new_table\\" add constraint \\"new_table_enum_test_check\\" check (\\"enum_test\\" in ('a', 'b'));
 
 "
@@ -500,6 +513,7 @@ alter table \\"new_table\\" add constraint \\"new_table_enum_test_check\\" check
 
 exports[`SchemaGenerator [postgres] update schema enums [postgres]: postgres-update-schema-enums-3 1`] = `
 "alter table \\"new_table\\" drop constraint if exists \\"new_table_enum_test_check\\";
+
 alter table \\"new_table\\" alter column \\"enum_test\\" type text using (\\"enum_test\\"::text);
 alter table \\"new_table\\" add constraint \\"new_table_enum_test_check\\" check (\\"enum_test\\" in ('a', 'b', 'c'));
 
@@ -508,6 +522,7 @@ alter table \\"new_table\\" add constraint \\"new_table_enum_test_check\\" check
 
 exports[`SchemaGenerator [postgres] update schema enums [postgres]: postgres-update-schema-enums-4 1`] = `
 "alter table \\"new_table\\" drop constraint if exists \\"new_table_enum_test_check\\";
+
 alter table \\"new_table\\" alter column \\"enum_test\\" type int using (\\"enum_test\\"::int);
 
 "

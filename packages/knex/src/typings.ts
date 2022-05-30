@@ -1,5 +1,5 @@
 import type { Knex } from 'knex';
-import type { Dictionary, EntityProperty, GroupOperator, QBFilterQuery, QueryOrderMap, Type } from '@mikro-orm/core';
+import type { CheckCallback, Dictionary, EntityProperty, GroupOperator, QBFilterQuery, QueryOrderMap, Type } from '@mikro-orm/core';
 import type { QueryType } from './query/enums';
 import type { DatabaseSchema, DatabaseTable } from './schema';
 
@@ -69,6 +69,13 @@ export interface Index {
   type?: string | Readonly<{ indexType?: string; storageEngineIndexType?: 'hash' | 'btree'; predicate?: Knex.QueryBuilder }>; // for back compatibility mainly, to allow using knex's `index.type` option (e.g. gin index)
 }
 
+export interface Check<T = unknown> {
+  name: string;
+  expression: string | CheckCallback<T>;
+  definition?: string;
+  columnName?: string;
+}
+
 export interface ColumnDifference {
   oldColumnName: string;
   column: Column;
@@ -88,6 +95,9 @@ export interface TableDifference {
   changedIndexes: Dictionary<Index>;
   removedIndexes: Dictionary<Index>;
   renamedIndexes: Dictionary<Index>;
+  addedChecks: Dictionary<Check>;
+  changedChecks: Dictionary<Check>;
+  removedChecks: Dictionary<Check>;
   addedForeignKeys: Dictionary<ForeignKey>;
   changedForeignKeys: Dictionary<ForeignKey>;
   removedForeignKeys: Dictionary<ForeignKey>;
@@ -138,11 +148,12 @@ export interface ICriteriaNode {
   readonly key?: string | undefined;
   payload: any;
   prop?: EntityProperty;
+  index?: number;
   process<T>(qb: IQueryBuilder<T>, alias?: string): any;
   shouldInline(payload: any): boolean;
   willAutoJoin<T>(qb: IQueryBuilder<T>, alias?: string): boolean;
   shouldRename(payload: any): boolean;
   renameFieldToPK<T>(qb: IQueryBuilder<T>): string;
-  getPath(): string;
+  getPath(addIndex?: boolean): string;
   getPivotPath(path: string): string;
 }

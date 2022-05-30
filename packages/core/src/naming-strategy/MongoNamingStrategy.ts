@@ -15,7 +15,7 @@ export class MongoNamingStrategy extends AbstractNamingStrategy {
   }
 
   joinTableName(sourceEntity: string, targetEntity: string, propertyName: string): string {
-    return '';
+    return this.classToTableName(sourceEntity) + '_' + this.propertyToColumnName(propertyName);
   }
 
   propertyToColumnName(propertyName: string): string {

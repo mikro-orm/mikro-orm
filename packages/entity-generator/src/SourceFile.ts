@@ -27,6 +27,7 @@ export class SourceFile {
     });
 
     ret += `export class ${this.meta.className} {\n`;
+    const enumDefinitions: string[] = [];
     Object.values(this.meta.properties).forEach(prop => {
       const decorator = this.getPropertyDecorator(prop, 2);
       const definition = this.getPropertyDefinition(prop, 2);
@@ -38,6 +39,11 @@ export class SourceFile {
       ret += decorator;
       ret += definition;
       ret += '\n';
+
+      if (prop.enum) {
+        const enumClassName = this.namingStrategy.getClassName(this.meta.collection + '_' + prop.fieldNames[0], '_');
+        enumDefinitions.push(this.getEnumClassDefinition(enumClassName, prop.items as string[], 2));
+      }
     });
     ret += '}\n';
 
@@ -47,7 +53,12 @@ export class SourceFile {
       imports.push(`import { ${entity} } from './${entity}';`);
     });
 
-    return `${imports.join('\n')}\n\n${ret}`;
+    ret = `${imports.join('\n')}\n\n${ret}`;
+    if (enumDefinitions.length) {
+      ret += '\n' + enumDefinitions.join('\n');
+    }
+
+    return ret;
   }
 
   getBaseName() {
@@ -56,14 +67,13 @@ export class SourceFile {
 
   private getCollectionDecl() {
     const options: EntityOptions<unknown> = {};
-    const quote = (str: string) => `'${str}'`;
 
     if (this.meta.collection !== this.namingStrategy.classToTableName(this.meta.className)) {
-      options.tableName = quote(this.meta.collection);
+      options.tableName = this.quote(this.meta.collection);
     }
 
-    if (this.meta.schema) {
-      options.schema = quote(this.meta.schema);
+    if (this.meta.schema && this.meta.schema !== this.platform.getDefaultSchemaName()) {
+      options.schema = this.quote(this.meta.schema);
     }
 
     if (!Utils.hasObjectKeys(options)) {
@@ -74,29 +84,59 @@ export class SourceFile {
   }
 
   private getPropertyDefinition(prop: EntityProperty, padLeft: number): string {
-    // string defaults are usually things like SQL functions
-    const useDefault = prop.default != null && typeof prop.default !== 'string';
+    const padding = ' '.repeat(padLeft);
+
+    if (prop.reference === ReferenceType.MANY_TO_MANY) {
+      this.coreImports.add('Collection');
+      return `${padding}${prop.name} = new Collection<${prop.type}>(this);\n`;
+    }
+
+    // string defaults are usually things like SQL functions, but can be also enums, for that `useDefault` should be true
+    const isEnumOrNonStringDefault = prop.enum || typeof prop.default !== 'string';
+    const useDefault = prop.default != null && isEnumOrNonStringDefault;
     const optional = prop.nullable ? '?' : (useDefault ? '' : '!');
     const ret = `${prop.name}${optional}: ${prop.type}`;
-    const padding = ' '.repeat(padLeft);
 
     if (!useDefault) {
       return `${padding + ret};\n`;
     }
 
+    if (prop.enum && typeof prop.default === 'string') {
+      return `${padding}${ret} = ${prop.type}.${prop.default.toUpperCase()};\n`;
+    }
+
     return `${padding}${ret} = ${prop.default};\n`;
+  }
+
+  private getEnumClassDefinition(enumClassName: string, enumValues: string[], padLeft: number): string {
+    const padding = ' '.repeat(padLeft);
+    let ret = `export enum ${enumClassName} {\n`;
+
+    for (const enumValue of enumValues) {
+      ret += `${padding}${enumValue.toUpperCase()} = '${enumValue}',\n`;
+    }
+
+    ret += '}\n';
+
+    return ret;
   }
 
   private getPropertyDecorator(prop: EntityProperty, padLeft: number): string {
     const padding = ' '.repeat(padLeft);
     const options = {} as Dictionary;
     let decorator = this.getDecoratorType(prop);
-    this.coreImports.add(decorator.substr(1));
+    this.coreImports.add(decorator.substring(1));
 
-    if (prop.reference !== ReferenceType.SCALAR) {
+    if (prop.reference === ReferenceType.MANY_TO_MANY) {
+      this.getManyToManyDecoratorOptions(options, prop);
+    } else if (prop.reference !== ReferenceType.SCALAR) {
       this.getForeignKeyDecoratorOptions(options, prop);
     } else {
       this.getScalarPropertyDecoratorOptions(options, prop);
+    }
+
+    if (prop.enum) {
+      options.items = `() => ${prop.type}`;
     }
 
     this.getCommonDecoratorOptions(options, prop);
@@ -150,19 +190,26 @@ export class SourceFile {
     return [];
   }
 
-  private getCommonDecoratorOptions(options: Dictionary, prop: EntityProperty) {
+  private getCommonDecoratorOptions(options: Dictionary, prop: EntityProperty): void {
     if (prop.nullable) {
       options.nullable = true;
     }
 
-    if (prop.default && typeof prop.default === 'string') {
-      if ([`''`, ''].includes(prop.default)) {
-        options.default = `''`;
-      } else if (prop.default.match(/^'.*'$/)) {
-        options.default = prop.default;
-      } else {
-        options.defaultRaw = `\`${prop.default}\``;
-      }
+    if (prop.default == null) {
+      return;
+    }
+
+    if (typeof prop.default !== 'string') {
+      options.default = prop.default;
+      return;
+    }
+
+    if ([`''`, ''].includes(prop.default)) {
+      options.default = `''`;
+    } else if (prop.defaultRaw === this.quote(prop.default)) {
+      options.default = this.quote(prop.default);
+    } else {
+      options.defaultRaw = `\`${prop.default}\``;
     }
   }
 
@@ -171,6 +218,16 @@ export class SourceFile {
 
     if (t === 'date') {
       t = 'datetime';
+    }
+
+    if (prop.fieldNames[0] !== this.namingStrategy.propertyToColumnName(prop.name)) {
+      options.fieldName = `'${prop.fieldNames[0]}'`;
+    }
+
+    // for enum properties, we don't need a column type or the property length
+    // in the decorator so return early.
+    if (prop.enum) {
+      return;
     }
 
     const mappedType1 = this.platform.getMappedType(t);
@@ -182,12 +239,29 @@ export class SourceFile {
       options.columnType = this.quote(prop.columnTypes[0]);
     }
 
-    if (prop.fieldNames[0] !== this.namingStrategy.propertyToColumnName(prop.name)) {
-      options.fieldName = `'${prop.fieldNames[0]}'`;
+    if (prop.length) {
+      options.length = prop.length;
+    }
+  }
+
+  private getManyToManyDecoratorOptions(options: Dictionary, prop: EntityProperty) {
+    this.entityImports.add(prop.type);
+    options.entity = `() => ${prop.type}`;
+
+    if (prop.pivotTable !== this.namingStrategy.joinTableName(this.meta.collection, prop.type, prop.name)) {
+      options.pivotTable = this.quote(prop.pivotTable);
     }
 
-    if (prop.length && prop.columnTypes[0] !== 'enum') {
-      options.length = prop.length;
+    if (prop.joinColumns.length === 1) {
+      options.joinColumn = this.quote(prop.joinColumns[0]);
+    } else {
+      options.joinColumns = `[${prop.joinColumns.map(this.quote).join(', ')}]`;
+    }
+
+    if (prop.inverseJoinColumns.length === 1) {
+      options.inverseJoinColumn = this.quote(prop.inverseJoinColumns[0]);
+    } else {
+      options.inverseJoinColumns = `[${prop.inverseJoinColumns.map(this.quote).join(', ')}]`;
     }
   }
 
@@ -215,7 +289,8 @@ export class SourceFile {
   }
 
   private quote(val: string) {
-    return val.includes(`'`) ? `\`${val}\`` : `'${val}'`;
+    /* istanbul ignore next */
+    return val.startsWith(`'`) ? `\`${val}\`` : `'${val}'`;
   }
 
   private getDecoratorType(prop: EntityProperty): string {
@@ -227,8 +302,16 @@ export class SourceFile {
       return '@ManyToOne';
     }
 
+    if (prop.reference === ReferenceType.MANY_TO_MANY) {
+      return '@ManyToMany';
+    }
+
     if (prop.primary) {
       return '@PrimaryKey';
+    }
+
+    if (prop.enum) {
+      return '@Enum';
     }
 
     return '@Property';

@@ -1,8 +1,11 @@
-import { Collection, Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { Collection, Entity, IdentifiedReference, ManyToOne, OneToMany, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { House } from './house.entity';
+import { User } from './user.entity';
 
 @Entity()
 export class Project {
+
+  [OptionalProps]?: 'createdAt';
 
   @PrimaryKey()
   id!: number;
@@ -10,8 +13,8 @@ export class Project {
   @Property()
   name!: string;
 
-  @Property()
-  owner!: string;
+  @ManyToOne({ entity: () => User, wrappedReference: true })
+  owner!: IdentifiedReference<User>;
 
   @Property()
   worth!: number;
@@ -21,5 +24,9 @@ export class Project {
 
   @Property()
   createdAt: Date = new Date();
+
+  constructor(name: string) {
+    this.name = name;
+  }
 
 }

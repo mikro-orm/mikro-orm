@@ -1,6 +1,5 @@
-import { Collection, Entity, IdentifiedReference, DefaultLogger, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, PrimaryKeyType, Property, Reference } from '@mikro-orm/core';
+import { Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, PrimaryKeyType, Property, Reference } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
-import { SchemaGenerator } from '@mikro-orm/knex';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -14,8 +13,8 @@ class Node {
 @Entity()
 class A {
 
-  [PrimaryKeyType]: number;
-  [PrimaryKeyProp]: 'node';
+  [PrimaryKeyType]?: number;
+  [PrimaryKeyProp]?: 'node';
   @OneToOne({ entity: () => Node, wrappedReference: true, primary: true, onDelete: 'cascade', onUpdateIntegrity: 'cascade' })
   node!: IdentifiedReference<Node>;
 
@@ -55,7 +54,7 @@ describe('GH issue 1111', () => {
       cache: { enabled: false },
     });
     mockLogger(orm, ['query', 'query-params'], log);
-    await new SchemaGenerator(orm.em).ensureDatabase();
+    await orm.getSchemaGenerator().ensureDatabase();
   });
 
 

@@ -1,4 +1,4 @@
-import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Configuration2 } from './Configuration2';
 import { FooBar2 } from './FooBar2';
@@ -6,6 +6,8 @@ import { Publisher2 } from './Publisher2';
 
 @Entity()
 export class Test2 {
+
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;

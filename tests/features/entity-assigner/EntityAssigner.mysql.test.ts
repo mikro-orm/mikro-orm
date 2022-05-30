@@ -1,7 +1,7 @@
 import type { MikroORM } from '@mikro-orm/core';
 import { Reference, wrap } from '@mikro-orm/core';
 import type { MySqlDriver } from '@mikro-orm/mysql';
-import { initORMMySql, wipeDatabaseMySql } from '../../bootstrap';
+import { initORMMySql } from '../../bootstrap';
 import { Author2, Book2, BookTag2, FooBar2, Publisher2, PublisherType } from '../../entities-sql';
 
 describe('EntityAssignerMySql', () => {
@@ -9,7 +9,7 @@ describe('EntityAssignerMySql', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
-  beforeEach(async () => wipeDatabaseMySql(orm.em));
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
 
   test('assign() should update entity values [mysql]', async () => {
     const god = new Author2('God', 'hello@heaven.god');
@@ -221,6 +221,7 @@ describe('EntityAssignerMySql', () => {
   test('assigning to collections with `updateNestedEntities` flag', async () => {
     const entity = orm.em.create(Author2, {
       name: 'god',
+      email: 'e',
       books: [
         { title: 'b1' },
         { title: 'b2' },

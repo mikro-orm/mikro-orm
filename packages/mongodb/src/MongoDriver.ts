@@ -1,8 +1,9 @@
 import type { ClientSession } from 'mongodb';
 import { ObjectId } from 'bson';
 import type {
-  EntityData, AnyEntity, FilterQuery, EntityMetadata, EntityProperty, Configuration, FindOneOptions, FindOptions,
-  QueryResult, Transaction, IDatabaseDriver, EntityManager, Dictionary, PopulateOptions, CountOptions, EntityDictionary, EntityField, NativeInsertUpdateOptions, NativeInsertUpdateManyOptions,
+  EntityData, AnyEntity, FilterQuery, Configuration, FindOneOptions, FindOptions,
+  QueryResult, Transaction, IDatabaseDriver, EntityManager, Dictionary, PopulateOptions,
+  CountOptions, EntityDictionary, EntityField, NativeInsertUpdateOptions, NativeInsertUpdateManyOptions,
 } from '@mikro-orm/core';
 import {
   DatabaseDriver, Utils, ReferenceType, EntityManagerType,
@@ -10,10 +11,11 @@ import {
 import { MongoConnection } from './MongoConnection';
 import { MongoPlatform } from './MongoPlatform';
 import { MongoEntityManager } from './MongoEntityManager';
+import type { CreateSchemaOptions } from './MongoSchemaGenerator';
 
 export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
-  [EntityManagerType]: MongoEntityManager<this>;
+  [EntityManagerType]!: MongoEntityManager<this>;
 
   protected readonly connection = new MongoConnection(this.config);
   protected readonly platform = new MongoPlatform();
@@ -97,104 +99,8 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return this.rethrow(this.getConnection('read').aggregate(entityName, pipeline, ctx));
   }
 
-  async createCollections(): Promise<void> {
-    const existing = await this.getConnection('write').listCollections();
-    const metadata = Object.values(this.metadata.getAll()).filter(meta => {
-      const isRootEntity = meta.root.className === meta.className;
-      return isRootEntity && !meta.embeddable;
-    });
-
-    const promises = metadata
-      .filter(meta => !existing.includes(meta.collection))
-      .map(meta => this.getConnection('write').createCollection(meta.collection));
-
-    await this.rethrow(Promise.all(promises));
-  }
-
-  async dropCollections(): Promise<void> {
-    const db = this.getConnection('write').getDb();
-    const collections = await this.rethrow(db.listCollections().toArray());
-    const existing = collections.map(c => c.name);
-    const promises = Object.values(this.metadata.getAll())
-      .filter(meta => existing.includes(meta.collection))
-      .map(meta => this.getConnection('write').dropCollection(meta.collection));
-
-    await this.rethrow(Promise.all(promises));
-  }
-
-  async ensureIndexes(): Promise<void> {
-    await this.rethrow(this.createCollections());
-    const promises: Promise<string>[] = [];
-
-    for (const meta of Object.values(this.metadata.getAll())) {
-      promises.push(...this.createIndexes(meta));
-      promises.push(...this.createUniqueIndexes(meta));
-
-      for (const prop of meta.props) {
-        promises.push(...this.createPropertyIndexes(meta, prop, 'index'));
-        promises.push(...this.createPropertyIndexes(meta, prop, 'unique'));
-      }
-    }
-
-    await this.rethrow(Promise.all(promises));
-  }
-
-  private createIndexes(meta: EntityMetadata) {
-    const promises: Promise<string>[] = [];
-    meta.indexes.forEach(index => {
-      let fieldOrSpec: string | Dictionary;
-      const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
-      const collection = this.getConnection('write').getCollection(meta.name!);
-
-      if (index.options && properties.length === 0) {
-        return promises.push(collection.createIndex(index.options));
-      }
-
-      if (index.type) {
-        const spec: Dictionary<string> = {};
-        properties.forEach(prop => spec[prop] = index.type!);
-        fieldOrSpec = spec;
-      } else {
-        fieldOrSpec = properties.reduce((o, i) => { o[i] = 1; return o; }, {});
-      }
-
-      promises.push(collection.createIndex(fieldOrSpec, {
-        name: index.name,
-        unique: false,
-        ...(index.options || {}),
-      }));
-    });
-
-    return promises;
-  }
-
-  private createUniqueIndexes(meta: EntityMetadata) {
-    const promises: Promise<string>[] = [];
-    meta.uniques.forEach(index => {
-      const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
-      const fieldOrSpec = properties.reduce((o, i) => { o[i] = 1; return o; }, {});
-      promises.push(this.getConnection('write').getCollection(meta.name!).createIndex(fieldOrSpec, {
-        name: index.name,
-        unique: true,
-        ...(index.options || {}),
-      }));
-    });
-
-    return promises;
-  }
-
-  private createPropertyIndexes(meta: EntityMetadata, prop: EntityProperty, type: 'index' | 'unique') {
-    if (!prop[type]) {
-      return [];
-    }
-
-    const fieldOrSpec = prop.fieldNames.reduce((o, i) => { o[i] = 1; return o; }, {});
-
-    return [this.getConnection('write').getCollection(meta.name!).createIndex(fieldOrSpec, {
-      name: (Utils.isString(prop[type]) ? prop[type] : undefined) as string,
-      unique: type === 'unique',
-      sparse: prop.nullable === true,
-    })];
+  getPlatform(): MongoPlatform {
+    return this.platform;
   }
 
   private renameFields<T>(entityName: string, data: T, where = false): T {
@@ -296,6 +202,9 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
         if (prop) {
           prop = prop.serializedPrimaryKey ? meta.getPrimaryProps()[0] : prop;
           ret.push(prop.fieldNames[0]);
+        } else if (field === '*') {
+          const props = meta.props.filter(prop => this.platform.shouldHaveColumn(prop, populate));
+          ret.push(...Utils.flatten(props.filter(p => !lazyProps.includes(p)).map(p => p.fieldNames)));
         } else {
           ret.push(field as keyof T & string);
         }
@@ -308,6 +217,34 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     return ret.length > 0 ? ret : undefined;
+  }
+
+  /**
+   * @deprecated use `orm.getSchemaGenerator().createSchema()` instead
+   */
+  async createCollections(): Promise<void> {
+    await this.platform.getSchemaGenerator(this).createSchema();
+  }
+
+  /**
+   * @deprecated use `orm.getSchemaGenerator().dropSchema()` instead
+   */
+  async dropCollections(): Promise<void> {
+    await this.platform.getSchemaGenerator(this).dropSchema();
+  }
+
+  /**
+   * @deprecated use `orm.getSchemaGenerator().refreshDatabase()` instead
+   */
+  async refreshCollections(options: CreateSchemaOptions = {}): Promise<void> {
+    await this.platform.getSchemaGenerator(this).refreshDatabase(options);
+  }
+
+  /**
+   * @deprecated use `orm.getSchemaGenerator().ensureIndexes()` instead
+   */
+  async ensureIndexes(): Promise<void> {
+    await this.platform.getSchemaGenerator(this).ensureIndexes();
   }
 
 }

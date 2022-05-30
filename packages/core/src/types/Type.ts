@@ -62,4 +62,15 @@ export abstract class Type<JSType = string, DBType = JSType> {
     return Type.types.get(key);
   }
 
+  /**
+   * Checks whether the argument is instance of `Type`.
+   */
+  static isMappedType(data: any): data is Type<any> {
+    return !!data?.__mappedType;
+  }
+
 }
+
+Object.defineProperties(Type.prototype, {
+  __mappedType: { value: true, enumerable: false, writable: false },
+});

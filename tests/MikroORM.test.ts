@@ -8,7 +8,7 @@ jest.mock('knex', () => ({ knex }));
 
 (global as any).process.env.FORCE_COLOR = 0;
 
-import { Configuration, EntityManager, MikroORM, NullCacheAdapter } from '@mikro-orm/core';
+import { Configuration, EntityManager, MikroORM, NullCacheAdapter, Utils } from '@mikro-orm/core';
 import fs from 'fs-extra';
 import { BASE_DIR } from './helpers';
 import { Author, Test } from './entities';
@@ -18,9 +18,9 @@ import { BaseEntity2 } from './entities-sql/BaseEntity2';
 describe('MikroORM', () => {
 
   test('should throw when not enough config provided', async () => {
-    const err = `No platform type specified, please fill in \`type\` or provide custom driver class in \`driver\` option. Available platforms types: [ 'mongo', 'mysql', 'mariadb', 'postgresql', 'sqlite' ]`;
+    const err = `No platform type specified, please fill in \`type\` or provide custom driver class in \`driver\` option. Available platforms types: [\n  'mongo',\n  'mysql',\n  'mariadb',\n  'postgresql',\n  'sqlite',\n  'better-sqlite'\n]`;
     expect(() => new MikroORM({ entities: ['entities'], clientUrl: '' })).toThrowError(err);
-    const err2 = `Invalid platform type specified: 'wut', please fill in valid \`type\` or provide custom driver class in \`driver\` option. Available platforms types: [ 'mongo', 'mysql', 'mariadb', 'postgresql', 'sqlite' ]`;
+    const err2 = `Invalid platform type specified: 'wut', please fill in valid \`type\` or provide custom driver class in \`driver\` option. Available platforms types: [\n  'mongo',\n  'mysql',\n  'mariadb',\n  'postgresql',\n  'sqlite',\n  'better-sqlite'\n]`;
     expect(() => new MikroORM({ type: 'wut' as any, entities: ['entities'], clientUrl: '' })).toThrowError(err2);
     expect(() => new MikroORM({ type: 'mongo', entities: ['entities'], dbName: '' })).toThrowError('No database specified, please fill in `dbName` or `clientUrl` option');
     expect(() => new MikroORM({ type: 'mongo', entities: [], dbName: 'test' })).toThrowError('No entities found, please use `entities` option');
@@ -198,7 +198,8 @@ describe('MikroORM', () => {
       debug: ['info'],
       logger,
     });
-    expect(logger.mock.calls[0][0]).toEqual('[info] MikroORM failed to connect to database not-found on mysql://root@127.0.0.1:3306');
+    expect(logger.mock.calls[0][0]).toEqual(`[info] MikroORM version: ${await Utils.getORMVersion()}`);
+    expect(logger.mock.calls[1][0]).toEqual('[info] MikroORM failed to connect to database not-found on mysql://root@127.0.0.1:3306');
   });
 
   test('orm.close() calls CacheAdapter.close()', async () => {

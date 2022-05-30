@@ -3,6 +3,170 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.1.5](https://github.com/mikro-orm/mikro-orm/compare/v5.1.4...v5.1.5) (2022-05-29)
+
+
+### Bug Fixes
+
+* **cli:** disable TS mode when we fail to register ts-node ([457d9d3](https://github.com/mikro-orm/mikro-orm/commit/457d9d32d78ed34b254aae3b2b2f29b382e7175e)), closes [#3152](https://github.com/mikro-orm/mikro-orm/issues/3152)
+
+
+
+
+
+## [5.1.4](https://github.com/mikro-orm/mikro-orm/compare/v5.1.3...v5.1.4) (2022-05-19)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.1.3](https://github.com/mikro-orm/mikro-orm/compare/v5.1.2...v5.1.3) (2022-04-27)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.1.2](https://github.com/mikro-orm/mikro-orm/compare/v5.1.1...v5.1.2) (2022-04-10)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.1.1](https://github.com/mikro-orm/mikro-orm/compare/v5.1.0...v5.1.1) (2022-03-20)
+
+
+### Bug Fixes
+
+* **schema:** respect `disableForeignKeys` in schema generator ([f1b8e46](https://github.com/mikro-orm/mikro-orm/commit/f1b8e46af0f9b01c9c2fc1372c588dce98313656)), closes [#2912](https://github.com/mikro-orm/mikro-orm/issues/2912)
+
+
+
+
+
+# [5.1.0](https://github.com/mikro-orm/mikro-orm/compare/v5.0.5...v5.1.0) (2022-03-13)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.0.5](https://github.com/mikro-orm/mikro-orm/compare/v5.0.4...v5.0.5) (2022-02-27)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.0.4](https://github.com/mikro-orm/mikro-orm/compare/v5.0.3...v5.0.4) (2022-02-22)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.0.3](https://github.com/mikro-orm/mikro-orm/compare/v5.0.2...v5.0.3) (2022-02-20)
+
+
+### Bug Fixes
+
+* **core:** revert to `require()` when getting ORM version to fix webpack support ([6cfb526](https://github.com/mikro-orm/mikro-orm/commit/6cfb5269696a9c0991198b238667c40f0dae2250)), closes [#2799](https://github.com/mikro-orm/mikro-orm/issues/2799)
+
+
+### Features
+
+* add better-sqlite driver ([#2792](https://github.com/mikro-orm/mikro-orm/issues/2792)) ([1b39d66](https://github.com/mikro-orm/mikro-orm/commit/1b39d6687fc2db64e85a45f6a964cf1776a374aa))
+
+
+
+
+
+## [5.0.2](https://github.com/mikro-orm/mikro-orm/compare/v5.0.1...v5.0.2) (2022-02-16)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.0.1](https://github.com/mikro-orm/mikro-orm/compare/v5.0.0...v5.0.1) (2022-02-13)
+
+
+### Bug Fixes
+
+* **core:** use `createRequire` instead of dynamic import for JSON files ([f567d2d](https://github.com/mikro-orm/mikro-orm/commit/f567d2d073854163e6de8bddbf8e1a256a6fcaed)), closes [#2738](https://github.com/mikro-orm/mikro-orm/issues/2738)
+
+
+### Features
+
+* **seeder:** refactor seeder to support running compiled files ([#2751](https://github.com/mikro-orm/mikro-orm/issues/2751)) ([8d9c4c0](https://github.com/mikro-orm/mikro-orm/commit/8d9c4c0454d06920cd59647f1f2ea4070ea2bd5a)), closes [#2728](https://github.com/mikro-orm/mikro-orm/issues/2728)
+
+
+
+
+
+# [5.0.0](https://github.com/mikro-orm/mikro-orm/compare/v4.5.3...v5.0.0) (2022-02-06)
+
+
+### Bug Fixes
+
+* **cli:** validate configuration in CLI cache commands ([#2146](https://github.com/mikro-orm/mikro-orm/issues/2146)) ([544583b](https://github.com/mikro-orm/mikro-orm/commit/544583b3158ff408eab3982b63585adc9a637b5a)), closes [#2145](https://github.com/mikro-orm/mikro-orm/issues/2145)
+* **core:** declare peer dependencies on driver packages ([1873e8c](https://github.com/mikro-orm/mikro-orm/commit/1873e8c4b9b5b9cb5979604f529ddd0cc6717042)), closes [#2110](https://github.com/mikro-orm/mikro-orm/issues/2110)
+* **migrations:** clear the migrations table in `migration:fresh` ([63eb4e6](https://github.com/mikro-orm/mikro-orm/commit/63eb4e64d1de06ffc3fdfff06e937eafb926c86b)), closes [#2698](https://github.com/mikro-orm/mikro-orm/issues/2698)
+
+
+### Code Refactoring
+
+* **core:** use options parameters on `SchemaGenerator` ([7e48c5d](https://github.com/mikro-orm/mikro-orm/commit/7e48c5d2487d0f67838927f42efdcd4580a86fd0))
+
+
+### Features
+
+* **cli:** add `database:create` command ([#1778](https://github.com/mikro-orm/mikro-orm/issues/1778)) ([7e9d97d](https://github.com/mikro-orm/mikro-orm/commit/7e9d97d06c7f07db93a3b033909bda21594e7ac6)), closes [#1757](https://github.com/mikro-orm/mikro-orm/issues/1757)
+* **cli:** validate CLI package is installed locally ([8952149](https://github.com/mikro-orm/mikro-orm/commit/8952149a78be5ba527ae1614cb1eb36d6d8d1dd9))
+* **core:** add support for ESM via `gen-esm-wrapper` ([aa71065](https://github.com/mikro-orm/mikro-orm/commit/aa71065d0727920db7da9bfdecdb33e6b8165cb5)), closes [#1010](https://github.com/mikro-orm/mikro-orm/issues/1010)
+* **core:** add support for multiple schemas (including UoW) ([#2296](https://github.com/mikro-orm/mikro-orm/issues/2296)) ([d64d100](https://github.com/mikro-orm/mikro-orm/commit/d64d100b0ef6fd3335d234aeac1ffa9b34b8f7ea)), closes [#2074](https://github.com/mikro-orm/mikro-orm/issues/2074)
+* **core:** allow providing custom `Logger` instance ([#2443](https://github.com/mikro-orm/mikro-orm/issues/2443)) ([c7a75e0](https://github.com/mikro-orm/mikro-orm/commit/c7a75e00de01b85ece282cd64429a57a49e5842d))
+* **core:** validate version mismatch in ORM packages ([cf70219](https://github.com/mikro-orm/mikro-orm/commit/cf702195e2dd0dce4d66da26f1d349dddf05b007))
+* **entity-generator:** allow specifying schema ([beb2993](https://github.com/mikro-orm/mikro-orm/commit/beb299383c647f9f2d7431e177659d299fb0f041)), closes [#1301](https://github.com/mikro-orm/mikro-orm/issues/1301)
+* **seeder:** add seeder package ([#929](https://github.com/mikro-orm/mikro-orm/issues/929)) ([2b86e22](https://github.com/mikro-orm/mikro-orm/commit/2b86e22eb061060ee2c67a85741b99c1ddcac9c0)), closes [#251](https://github.com/mikro-orm/mikro-orm/issues/251)
+* **sql:** generate down migrations automatically ([#2139](https://github.com/mikro-orm/mikro-orm/issues/2139)) ([7d78d0c](https://github.com/mikro-orm/mikro-orm/commit/7d78d0cb853250b20a8d79bf5036885256f19848))
+
+
+### BREAKING CHANGES
+
+* **core:** `em.getReference()` now has options parameter.
+* **core:** `SchemaGenerator` API changed, boolean parameters are now removed
+in favour of options objects
+
+```ts
+interface SchemaGenerator {
+  generate(): Promise<string>;
+  createSchema(options?: { wrap?: boolean }): Promise<void>;
+  ensureDatabase(): Promise<void>;
+  getCreateSchemaSQL(options?: { wrap?: boolean }): Promise<string>;
+  dropSchema(options?: { wrap?: boolean; dropMigrationsTable?: boolean; dropDb?: boolean }): Promise<void>;
+  getDropSchemaSQL(options?: { wrap?: boolean; dropMigrationsTable?: boolean }): Promise<string>;
+  updateSchema(options?: { wrap?: boolean; safe?: boolean; dropDb?: boolean; dropTables?: boolean }): Promise<void>;
+  getUpdateSchemaSQL(options?: { wrap?: boolean; safe?: boolean; dropDb?: boolean; dropTables?: boolean }): Promise<string>;
+  createDatabase(name: string): Promise<void>;
+  dropDatabase(name: string): Promise<void>;
+  execute(sql: string, options?: { wrap?: boolean }): Promise<void>;
+}
+```
+
+
+
+
+
 ## [4.5.10](https://github.com/mikro-orm/mikro-orm/compare/v4.5.9...v4.5.10) (2021-12-26)
 
 **Note:** Version bump only for package @mikro-orm/cli

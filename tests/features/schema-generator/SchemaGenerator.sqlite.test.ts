@@ -1,12 +1,10 @@
-import type { EntityManager } from '@mikro-orm/knex';
-import { SchemaGenerator } from '@mikro-orm/knex';
 import { initORMSqlite } from '../../bootstrap';
 
 describe('SchemaGenerator [sqlite]', () => {
 
   test('generate schema from metadata [sqlite]', async () => {
     const orm = await initORMSqlite();
-    const generator = new SchemaGenerator(orm.em);
+    const generator = orm.getSchemaGenerator();
     const dump = await generator.generate();
     expect(dump).toMatchSnapshot('sqlite-schema-dump');
 
@@ -31,7 +29,7 @@ describe('SchemaGenerator [sqlite]', () => {
 
   test('update empty schema from metadata [sqlite]', async () => {
     const orm = await initORMSqlite();
-    const generator = new SchemaGenerator(orm.em as EntityManager);
+    const generator = orm.getSchemaGenerator();
     await generator.dropSchema();
 
     const updateDump = await generator.getUpdateSchemaSQL();

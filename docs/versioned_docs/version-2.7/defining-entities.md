@@ -160,4 +160,3 @@ id: number;
 With your entities set up, you can start [using entity manager](entity-manager.md) and 
 [repositories](repositories.md) as described in following sections. 
 
-[&larr; Back to table of contents](index.md#table-of-contents)

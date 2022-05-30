@@ -202,4 +202,3 @@ queries automatically, so transactions are not working as expected.
 - https://github.com/mikro-orm/mikro-orm/issues/217
 - https://dev.mysql.com/doc/refman/5.7/en/implicit-commit.html
 
-[&larr; Back to table of contents](index.md#table-of-contents)

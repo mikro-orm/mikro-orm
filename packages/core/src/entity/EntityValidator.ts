@@ -38,6 +38,25 @@ export class EntityValidator {
     });
   }
 
+  validateRequired<T extends AnyEntity<T>>(entity: T): void {
+    for (const prop of entity.__meta!.props) {
+      if (
+        !prop.nullable &&
+        !prop.autoincrement &&
+        !prop.default &&
+        !prop.defaultRaw &&
+        !prop.onCreate &&
+        !prop.embedded &&
+        prop.name !== entity.__meta!.root.discriminatorColumn &&
+        prop.type.toLowerCase() !== 'objectid' &&
+        prop.persist !== false &&
+        entity[prop.name] == null
+      ) {
+        throw ValidationError.propertyRequired(entity, prop);
+      }
+    }
+  }
+
   validateProperty<T extends AnyEntity<T>>(prop: EntityProperty, givenValue: any, entity: T) {
     if (givenValue === null || givenValue === undefined) {
       return givenValue;
@@ -76,7 +95,7 @@ export class EntityValidator {
   }
 
   validatePrimaryKey<T extends AnyEntity<T>>(entity: EntityData<T>, meta: EntityMetadata): void {
-    const pkExists = meta.primaryKeys.every(pk => Utils.isDefined(entity[pk], true)) || Utils.isDefined(entity[meta.serializedPrimaryKey], true);
+    const pkExists = meta.primaryKeys.every(pk => entity[pk] != null) || entity[meta.serializedPrimaryKey] != null;
 
     if (!entity || !pkExists) {
       throw ValidationError.fromMergeWithoutPK(meta);

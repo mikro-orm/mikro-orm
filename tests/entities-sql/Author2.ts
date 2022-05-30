@@ -1,6 +1,6 @@
 import {
   AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate, Collection, Entity, OneToMany, Property, ManyToOne,
-  QueryOrder, OnInit, ManyToMany, Index, Unique, OneToOne, Cascade, LoadStrategy, EventArgs, t,
+  QueryOrder, OnInit, ManyToMany, Index, Unique, OneToOne, Cascade, LoadStrategy, EventArgs, t, OnLoad, OptionalProps,
 } from '@mikro-orm/core';
 
 import { Book2 } from './Book2';
@@ -12,6 +12,8 @@ import { Address2 } from './Address2';
 @Index({ name: 'custom_idx_name_123', properties: ['name'] })
 @Unique({ properties: ['name', 'email'] })
 export class Author2 extends BaseEntity2 {
+
+  [OptionalProps]?: 'createdAt' | 'updatedAt' | 'termsAccepted' | 'version' | 'versionAsString' | 'code' | 'booksTotal' | 'hookParams' | 'hookTest' | 'onLoadCalled';
 
   static beforeDestroyCalled = 0;
   static afterDestroyCalled = 0;
@@ -85,6 +87,7 @@ export class Author2 extends BaseEntity2 {
   booksTotal!: number;
 
   hookParams: any[] = [];
+  onLoadCalled?: number;
 
   constructor(name: string, email: string) {
     super();
@@ -96,6 +99,11 @@ export class Author2 extends BaseEntity2 {
   onInit() {
     this.code = `${this.email} - ${this.name}`;
     this.hookParams = [];
+  }
+
+  @OnLoad()
+  onLoad() {
+    this.onLoadCalled = this.onLoadCalled ? this.onLoadCalled + 1 : 1;
   }
 
   @BeforeCreate()

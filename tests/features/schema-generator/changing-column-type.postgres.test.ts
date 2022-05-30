@@ -65,9 +65,7 @@ describe('changing column in postgres (GH 2407)', () => {
       dbName: `mikro_orm_test_gh_2407`,
       type: 'postgresql',
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.getSchemaGenerator().refreshDatabase();
   });
 
   afterAll(() => orm.close(true));
@@ -76,8 +74,7 @@ describe('changing column in postgres (GH 2407)', () => {
     await orm.discoverEntity(Book2);
     orm.getMetadata().reset('Book1');
     const diff1 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
-    expect(diff1).toBe(`alter table "book" drop constraint if exists "book_my_column_check";
-alter table "book" alter column "my_column" type boolean using ("my_column"::boolean);
+    expect(diff1).toBe(`alter table "book" alter column "my_column" type boolean using ("my_column"::boolean);
 alter table "book" alter column "my_column" set default false;
 alter table "book" alter column "my_column" set not null;\n\n`);
     await orm.getSchemaGenerator().execute(diff1);
@@ -85,8 +82,7 @@ alter table "book" alter column "my_column" set not null;\n\n`);
     await orm.discoverEntity(Book3);
     orm.getMetadata().reset('Book2');
     const diff3 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
-    expect(diff3).toBe(`alter table "book" drop constraint if exists "book_my_column_check";
-alter table "book" alter column "my_column" type boolean using ("my_column"::boolean);
+    expect(diff3).toBe(`alter table "book" alter column "my_column" type boolean using ("my_column"::boolean);
 alter table "book" alter column "my_column" drop not null;\n\n`);
     await orm.getSchemaGenerator().execute(diff3);
 

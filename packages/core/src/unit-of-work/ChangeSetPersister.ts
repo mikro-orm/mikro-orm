@@ -1,6 +1,6 @@
 import type { MetadataStorage } from '../metadata';
 import type { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, IHydrator, IPrimaryKey } from '../typings';
-import type { EntityFactory } from '../entity';
+import type { EntityFactory, EntityValidator } from '../entity';
 import { EntityIdentifier } from '../entity';
 import type { ChangeSet } from './ChangeSet';
 import { ChangeSetType } from './ChangeSet';
@@ -19,6 +19,7 @@ export class ChangeSetPersister {
               private readonly metadata: MetadataStorage,
               private readonly hydrator: IHydrator,
               private readonly factory: EntityFactory,
+              private readonly validator: EntityValidator,
               private readonly config: Configuration) { }
 
   async executeInserts<T extends AnyEntity<T>>(changeSets: ChangeSet<T>[], options?: DriverMethodOptions, withSchema?: boolean): Promise<void> {
@@ -91,6 +92,10 @@ export class ChangeSetPersister {
 
     for (const prop of meta.props) {
       this.processProperty(changeSet, prop);
+    }
+
+    if (changeSet.type === ChangeSetType.CREATE && this.config.get('validateRequired')) {
+      this.validator.validateRequired(changeSet.entity);
     }
   }
 
@@ -185,7 +190,7 @@ export class ChangeSetPersister {
     cond = Utils.isPlainObject(cond) ? cond : { [meta.primaryKeys[0]]: cond };
 
     for (const key of meta.concurrencyCheckKeys) {
-      cond[key as string] = changeSet.originalEntity![key];
+      cond[key as string] = changeSet.originalEntity![key as string];
 
       if (changeSet.payload[key]) {
         tmp.push(key);
@@ -234,7 +239,7 @@ export class ChangeSetPersister {
    * Sets populate flag to new entities so they are serialized like if they were loaded from the db
    */
   private markAsPopulated<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, meta: EntityMetadata<T>) {
-    changeSet.entity.__helper!.__schema = changeSet.schema === '*' ? this.config.get('schema') : changeSet.schema;
+    changeSet.entity.__helper!.__schema = this.driver.getSchemaName(meta, changeSet);
 
     if (!this.config.get('populateAfterFlush')) {
       return;
@@ -335,19 +340,7 @@ export class ChangeSetPersister {
 
     for (const changeSet of changeSets) {
       const data = map.get(changeSet.entity.__helper!.getSerializedPrimaryKey());
-
-      for (const prop of reloadProps) {
-        const value = data![prop.name];
-
-        // needed for sqlite
-        if (prop.type.toLowerCase() === 'date') {
-          changeSet.entity[prop.name] = new Date(value) as unknown as T[keyof T & string];
-        } else {
-          changeSet.entity[prop.name] = value;
-        }
-
-        changeSet.payload![prop.name] = value;
-      }
+      this.hydrator.hydrate<T>(changeSet.entity, meta, data as EntityData<T>, this.factory, 'returning', false, true);
     }
   }
 
@@ -384,7 +377,7 @@ export class ChangeSetPersister {
           return ret;
         }
 
-        if (prop.fieldNames && Utils.isDefined(res.row![prop.fieldNames[0]], true) && !Utils.isDefined(changeSet.entity[prop.name], true)) {
+        if (prop.fieldNames && res.row![prop.fieldNames[0]] != null && changeSet.entity[prop.name] == null) {
           ret[prop.name] = changeSet.payload[prop.name] = res.row![prop.fieldNames[0]];
         }
 

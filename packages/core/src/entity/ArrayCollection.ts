@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import type { AnyEntity, Dictionary, EntityProperty, IPrimaryKey, Primary } from '../typings';
+import type { AnyEntity, EntityDTO, EntityProperty, IPrimaryKey, Primary } from '../typings';
 import { Reference } from './Reference';
 import { wrap } from './wrap';
 import { ReferenceType } from '../enums';
@@ -28,7 +28,7 @@ export class ArrayCollection<T, O> {
     return [...this.items];
   }
 
-  toArray(): Dictionary[] {
+  toArray(): EntityDTO<T>[] {
     if (this.items.size === 0) {
       return [];
     }
@@ -39,7 +39,7 @@ export class ArrayCollection<T, O> {
     return this.getItems().map(item => wrap(item).toJSON(...args));
   }
 
-  toJSON(): Dictionary[] {
+  toJSON(): EntityDTO<T>[] {
     return this.toArray();
   }
 
@@ -92,6 +92,12 @@ export class ArrayCollection<T, O> {
     this.add(...items);
   }
 
+  /**
+   * Remove specified item(s) from the collection. Note that removing item from collection does necessarily imply deleting the target entity,
+   * it means we are disconnecting the relation - removing items from collection, not removing entities from database - `Collection.remove()`
+   * is not the same as `em.remove()`. If we want to delete the entity by removing it from collection, we need to enable `orphanRemoval: true`,
+   * which tells the ORM we don't want orphaned entities to exist, so we know those should be removed.
+   */
   remove(...items: (T | Reference<T>)[]): void {
     this.incrementCount(-items.length);
 
@@ -108,6 +114,12 @@ export class ArrayCollection<T, O> {
     }
   }
 
+  /**
+   * Remove all items from the collection. Note that removing items from collection does necessarily imply deleting the target entity,
+   * it means we are disconnecting the relation - removing items from collection, not removing entities from database - `Collection.remove()`
+   * is not the same as `em.remove()`. If we want to delete the entity by removing it from collection, we need to enable `orphanRemoval: true`,
+   * which tells the ORM we don't want orphaned entities to exist, so we know those should be removed.
+   */
   removeAll(): void {
     this.remove(...this.items);
   }

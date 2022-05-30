@@ -6,7 +6,8 @@ import {
 } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
-import { initORMSqlite, mockLogger, wipeDatabaseSqlite } from './bootstrap';
+import { initORMSqlite, mockLogger } from './bootstrap';
+const { BaseEntity4 } = require('./entities-js/index').BaseEntity4;
 const { Author3 } = require('./entities-js/index').Author3;
 const { Book3 } = require('./entities-js/index').Book3;
 const { BookTag3 } = require('./entities-js/index').BookTag3;
@@ -18,7 +19,7 @@ describe('EntityManagerSqlite', () => {
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => orm = await initORMSqlite());
-  beforeEach(async () => wipeDatabaseSqlite(orm.em));
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
 
   test('isConnected()', async () => {
     expect(await orm.isConnected()).toBe(true);
@@ -740,33 +741,47 @@ describe('EntityManagerSqlite', () => {
   test('hooks', async () => {
     Author3.beforeDestroyCalled = 0;
     Author3.afterDestroyCalled = 0;
+    BaseEntity4.beforeDestroyCalled = 0;
+    BaseEntity4.afterDestroyCalled = 0;
     const repo = orm.em.getRepository(Author3);
     const author = new Author3('Jon Snow', 'snow@wall.st');
     expect(author.id).toBeUndefined();
     expect(author.version).toBeUndefined();
     expect(author.versionAsString).toBeUndefined();
+    expect(author.baseVersion).toBeUndefined();
+    expect(author.baseVersionAsString).toBeUndefined();
 
     await repo.persistAndFlush(author);
     expect(author.id).toBeDefined();
     expect(author.version).toBe(1);
     expect(author.versionAsString).toBe('v1');
+    expect(author.baseVersion).toBe(1);
+    expect(author.baseVersionAsString).toBe('v1');
 
     author.name = 'John Snow';
     await repo.persistAndFlush(author);
-    expect(author.version).toBe(2);
-    expect(author.versionAsString).toBe('v2');
+    expect(author.version).toBe(3);
+    expect(author.versionAsString).toBe('v3');
+    expect(author.baseVersion).toBe(3);
+    expect(author.baseVersionAsString).toBe('v3');
 
     expect(Author3.beforeDestroyCalled).toBe(0);
     expect(Author3.afterDestroyCalled).toBe(0);
+    expect(BaseEntity4.beforeDestroyCalled).toBe(0);
+    expect(BaseEntity4.afterDestroyCalled).toBe(0);
     await repo.remove(author).flush();
-    expect(Author3.beforeDestroyCalled).toBe(1);
-    expect(Author3.afterDestroyCalled).toBe(1);
+    expect(Author3.beforeDestroyCalled).toBe(2);
+    expect(Author3.afterDestroyCalled).toBe(2);
+    expect(BaseEntity4.beforeDestroyCalled).toBe(2);
+    expect(BaseEntity4.afterDestroyCalled).toBe(2);
 
     const author2 = new Author3('Johny Cash', 'johny@cash.com');
     await repo.persistAndFlush(author2);
     await repo.remove(author2).flush();
-    expect(Author3.beforeDestroyCalled).toBe(2);
-    expect(Author3.afterDestroyCalled).toBe(2);
+    expect(Author3.beforeDestroyCalled).toBe(4);
+    expect(Author3.afterDestroyCalled).toBe(4);
+    expect(BaseEntity4.beforeDestroyCalled).toBe(4);
+    expect(BaseEntity4.afterDestroyCalled).toBe(4);
   });
 
   test('trying to populate non-existing or non-reference property will throw', async () => {

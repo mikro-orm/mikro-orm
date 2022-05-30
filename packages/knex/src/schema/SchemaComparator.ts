@@ -1,6 +1,6 @@
 import type { Dictionary, EntityProperty } from '@mikro-orm/core';
 import { BooleanType, DateTimeType } from '@mikro-orm/core';
-import type { Column, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
+import type { Check, Column, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
 import type { DatabaseSchema } from './DatabaseSchema';
 import type { DatabaseTable } from './DatabaseTable';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
@@ -26,7 +26,7 @@ export class SchemaComparator {
     const foreignKeysToTable: Dictionary<ForeignKey[]> = {};
 
     for (const namespace of toSchema.getNamespaces()) {
-      if (fromSchema.hasNamespace(namespace)) {
+      if (fromSchema.hasNamespace(namespace) || namespace === this.platform.getDefaultSchemaName()) {
         continue;
       }
 
@@ -34,7 +34,7 @@ export class SchemaComparator {
     }
 
     for (const namespace of fromSchema.getNamespaces()) {
-      if (toSchema.hasNamespace(namespace)) {
+      if (toSchema.hasNamespace(namespace) || namespace === this.platform.getDefaultSchemaName()) {
         continue;
       }
 
@@ -42,7 +42,7 @@ export class SchemaComparator {
     }
 
     for (const table of toSchema.getTables()) {
-      const tableName = table.getShortestName(toSchema.name);
+      const tableName = table.getShortestName();
 
       if (!fromSchema.hasTable(tableName)) {
         diff.newTables[tableName] = toSchema.getTable(tableName)!;
@@ -57,7 +57,7 @@ export class SchemaComparator {
 
     // Check if there are tables removed
     for (let table of fromSchema.getTables()) {
-      const tableName = table.getShortestName(fromSchema.name);
+      const tableName = table.getShortestName();
       table = fromSchema.getTable(tableName)!;
 
       if (!toSchema.hasTable(tableName)) {
@@ -75,14 +75,16 @@ export class SchemaComparator {
     }
 
     for (const table of Object.values(diff.removedTables)) {
-      if (!foreignKeysToTable[table.name]) {
+      const tableName = (table.schema ? table.schema + '.' : '') + table.name;
+
+      if (!foreignKeysToTable[tableName]) {
         continue;
       }
 
-      diff.orphanedForeignKeys.push(...foreignKeysToTable[table.name]!);
+      diff.orphanedForeignKeys.push(...foreignKeysToTable[tableName]);
 
       // Deleting duplicated foreign keys present both on the orphanedForeignKey and the removedForeignKeys from changedTables.
-      for (const foreignKey of foreignKeysToTable[table.name]) {
+      for (const foreignKey of foreignKeysToTable[tableName]) {
         const localTableName = foreignKey.localTableName;
 
         if (!diff.changedTables[localTableName]) {
@@ -91,7 +93,7 @@ export class SchemaComparator {
 
         for (const [key, fk] of Object.entries(diff.changedTables[localTableName].removedForeignKeys)) {
           // We check if the key is from the removed table, if not we skip.
-          if (table.name !== fk.referencedTableName) {
+          if (tableName !== fk.referencedTableName) {
             continue;
           }
 
@@ -114,12 +116,15 @@ export class SchemaComparator {
       addedColumns: {},
       addedForeignKeys: {},
       addedIndexes: {},
+      addedChecks: {},
       changedColumns: {},
       changedForeignKeys: {},
       changedIndexes: {},
+      changedChecks: {},
       removedColumns: {},
       removedForeignKeys: {},
       removedIndexes: {},
+      removedChecks: {},
       renamedColumns: {},
       renamedIndexes: {},
       fromTable,
@@ -202,6 +207,38 @@ export class SchemaComparator {
     }
 
     this.detectIndexRenamings(tableDifferences);
+
+    const fromTableChecks = fromTable.getChecks();
+    const toTableChecks = toTable.getChecks();
+
+    // See if all the checks in "from" table exist in "to" table
+    for (const check of toTableChecks) {
+      if (fromTable.hasCheck(check.name)) {
+        continue;
+      }
+
+      tableDifferences.addedChecks[check.name] = check;
+      changes++;
+    }
+
+    // See if there are any removed checks in "to" table
+    for (const check of fromTableChecks) {
+      if (!toTable.hasCheck(check.name)) {
+        tableDifferences.removedChecks[check.name] = check;
+        changes++;
+        continue;
+      }
+
+      // See if index has changed in "to" table
+      const toTableCheck = toTable.getCheck(check.name)!;
+
+      if (!this.diffCheck(check, toTableCheck)) {
+        continue;
+      }
+
+      tableDifferences.changedChecks[check.name] = toTableCheck;
+      changes++;
+    }
 
     const fromForeignKeys = { ...fromTable.getForeignKeys() };
     const toForeignKeys = { ...toTable.getForeignKeys() };
@@ -325,7 +362,10 @@ export class SchemaComparator {
       return true;
     }
 
-    const rule = (key: ForeignKey, method: 'updateRule' | 'deleteRule') => (key[method] ?? this.platform.getDefaultIntegrityRule()).toLowerCase();
+    const defaultRule = ['restrict', 'no action'];
+    const rule = (key: ForeignKey, method: 'updateRule' | 'deleteRule') => {
+      return (key[method] ?? defaultRule[0]).toLowerCase().replace(defaultRule[1], defaultRule[0]);
+    };
     const compare = (method: 'updateRule' | 'deleteRule') => rule(key1, method) === rule(key2, method);
 
     return !compare('updateRule') || !compare('deleteRule');
@@ -392,6 +432,11 @@ export class SchemaComparator {
    * Compares index1 with index2 and returns index2 if there are any differences or false in case there are no differences.
    */
   diffIndex(index1: Index, index2: Index): boolean {
+    // if one of them is a custom expression, compare only by name
+    if (index1.expression || index2.expression) {
+      return index1.keyName !== index2.keyName;
+    }
+
     return !this.isIndexFulfilledBy(index1, index2) || !this.isIndexFulfilledBy(index2, index1);
   }
 
@@ -430,6 +475,11 @@ export class SchemaComparator {
     }
 
     return index1.primary === index2.primary && index1.unique === index2.unique;
+  }
+
+  diffCheck(check1: Check, check2: Check): boolean {
+    const unquote = (str?: string) => str?.replace(/['"`]/g, '');
+    return unquote(check1.expression as string) !== unquote(check2.expression as string);
   }
 
   hasSameDefaultValue(from: Column, to: Column): boolean {

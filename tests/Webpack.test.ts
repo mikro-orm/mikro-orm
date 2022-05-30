@@ -8,7 +8,7 @@ describe('Webpack', () => {
   test('should create entity', async () => {
     const orm = await MikroORM.init({
       dbName: `mikro_orm_test`,
-      port: 3307,
+      port: 3308,
       multipleStatements: true,
       type: 'mysql',
       discovery: { disableDynamicFileAccess: true },
@@ -17,7 +17,7 @@ describe('Webpack', () => {
 
     expect(orm.getMetadata().has('BookWp')).toBe(true);
     expect(orm.getMetadata().has('AuthorWp')).toBe(true);
-    const author = orm.em.create(AuthorWp, { name: 'Name' });
+    const author = orm.em.create(AuthorWp, { name: 'Name', email: 'abc' });
     expect(author).toBeInstanceOf(AuthorWp);
     expect(author.name).toBe('Name');
 

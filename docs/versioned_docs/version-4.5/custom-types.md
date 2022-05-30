@@ -90,7 +90,7 @@ export class FooBar {
 }
 ```
 
-If our type implementation is stateless, e.g. if we want the type to behave
+If our type implementation is stateful, e.g. if we want the type to behave
 differently for each property, we can use `customType` option and provide an
 instance of the type:
 

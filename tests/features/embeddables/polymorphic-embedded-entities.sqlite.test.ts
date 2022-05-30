@@ -1,5 +1,5 @@
 import type { ObjectHydrator } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, Enum, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, Enum, MikroORM, OptionalProps, PrimaryKey, Property, wrap } from '@mikro-orm/core';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { mockLogger } from '../../helpers';
 
@@ -49,6 +49,8 @@ class Dog extends Animal {
 
 @Entity()
 class Owner {
+
+  [OptionalProps]?: 'pets';
 
   @PrimaryKey()
   id!: number;

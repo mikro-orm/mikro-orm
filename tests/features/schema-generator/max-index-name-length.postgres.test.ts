@@ -2,7 +2,7 @@ import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Propert
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 
 
-@Entity({ tableName: 'very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' })
+@Entity({ tableName: 'very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' })
 class ChildEntity {
 
   @PrimaryKey()
@@ -46,6 +46,8 @@ describe('index and FK names should be a max of 64 chars in mysql (GH 1915)', ()
     const sql = await orm.getSchemaGenerator().getCreateSchemaSQL();
     expect(sql).toMatchSnapshot();
     await orm.getSchemaGenerator().execute(sql);
+    const diff = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toBe('');
   });
 
 });

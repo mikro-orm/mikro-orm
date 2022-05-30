@@ -51,7 +51,7 @@ export class FooParam2 {
   @Property({ version: true })
   version!: Date;
 
-  [PrimaryKeyType]: [number, number];
+  [PrimaryKeyType]?: [number, number];
 
   constructor(bar: FooBar2, baz: FooBaz2, value: string) {
     this.bar = bar;
@@ -155,7 +155,7 @@ export class Car2 {
   @ManyToMany('User2', 'cars')
   users = new Collection<User2>(this);
 
-  [PrimaryKeyType]: [string, number];
+  [PrimaryKeyType]?: [string, number];
 
   constructor(name: string, year: number, price: number) {
     this.name = name;
@@ -186,7 +186,7 @@ export class User2 {
   @OneToOne({ entity: () => Car2, nullable: true })
   favouriteCar?: Car2;
 
-  [PrimaryKeyType]: [string, string];
+  [PrimaryKeyType]?: [string, string];
 
   constructor(firstName: string, lastName: string) {
     this.firstName = firstName;

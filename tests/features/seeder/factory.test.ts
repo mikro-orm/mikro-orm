@@ -1,19 +1,24 @@
 import { MikroORM } from '@mikro-orm/core';
+import type { EntityData } from '@mikro-orm/core';
 import { Factory } from '@mikro-orm/seeder';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
-import type * as Faker from 'faker';
+import type { Faker } from '@mikro-orm/seeder';
 import { House } from './entities/house.entity';
 import { Project } from './entities/project.entity';
+import { User } from './entities/user.entity';
 import SpyInstance = jest.SpyInstance;
 
 export class ProjectFactory extends Factory<Project> {
 
   model = Project;
 
-  definition(faker: typeof Faker): Partial<Project> {
+  definition(faker: Faker): EntityData<Project> {
     return {
       name: 'Money vault',
-      owner: faker.name.findName(),
+      owner: {
+        name: faker.name.findName(),
+        email: faker.internet.email(),
+        password: faker.internet.password(),
+      } as User,
       worth: 120000,
     };
   }
@@ -24,7 +29,7 @@ export class HouseFactory extends Factory<House> {
 
   model = House;
 
-  definition(faker: typeof Faker): Partial<House> {
+  definition(faker: Faker): Partial<House> {
     return {
       address: faker.address.city(),
     };
@@ -34,13 +39,13 @@ export class HouseFactory extends Factory<House> {
 
 describe('Factory', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
   let persistSpy: SpyInstance;
   let flushSpy: SpyInstance;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [Project, House],
+      entities: [Project, House, User],
       type: 'sqlite',
       dbName: ':memory:',
     });

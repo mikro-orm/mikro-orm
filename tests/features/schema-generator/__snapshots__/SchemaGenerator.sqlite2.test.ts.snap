@@ -6,9 +6,7 @@ exports[`SchemaGenerator [sqlite2] generate schema from metadata [sqlite2]: sqli
 create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);
 
 create table \`foo_bar4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null default 'asd', \`baz_id\` integer null, \`foo_bar_id\` integer null, \`version\` integer not null default 1, \`blob\` blob null, \`array\` text null, \`object\` json null, constraint \`foo_bar4_baz_id_foreign\` foreign key(\`baz_id\`) references \`foo_baz4\`(\`id\`) on delete set null on update cascade, constraint \`foo_bar4_foo_bar_id_foreign\` foreign key(\`foo_bar_id\`) references \`foo_bar4\`(\`id\`) on delete set null on update cascade);
-create index \`foo_bar4_baz_id_index\` on \`foo_bar4\` (\`baz_id\`);
 create unique index \`foo_bar4_baz_id_unique\` on \`foo_bar4\` (\`baz_id\`);
-create index \`foo_bar4_foo_bar_id_index\` on \`foo_bar4\` (\`foo_bar_id\`);
 create unique index \`foo_bar4_foo_bar_id_unique\` on \`foo_bar4\` (\`foo_bar_id\`);
 
 create table \`test4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text null, \`version\` integer not null default 1);
@@ -92,9 +90,7 @@ drop table if exists \`foo_baz4\`;
 create table \`foo_baz4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null, \`version\` datetime not null default current_timestamp);
 
 create table \`foo_bar4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text not null default 'asd', \`baz_id\` integer null, \`foo_bar_id\` integer null, \`version\` integer not null default 1, \`blob\` blob null, \`array\` text null, \`object\` json null, constraint \`foo_bar4_baz_id_foreign\` foreign key(\`baz_id\`) references \`foo_baz4\`(\`id\`) on delete set null on update cascade, constraint \`foo_bar4_foo_bar_id_foreign\` foreign key(\`foo_bar_id\`) references \`foo_bar4\`(\`id\`) on delete set null on update cascade);
-create index \`foo_bar4_baz_id_index\` on \`foo_bar4\` (\`baz_id\`);
 create unique index \`foo_bar4_baz_id_unique\` on \`foo_bar4\` (\`baz_id\`);
-create index \`foo_bar4_foo_bar_id_index\` on \`foo_bar4\` (\`foo_bar_id\`);
 create unique index \`foo_bar4_foo_bar_id_unique\` on \`foo_bar4\` (\`foo_bar_id\`);
 
 create table \`test4\` (\`id\` integer not null primary key autoincrement, \`created_at\` datetime null, \`updated_at\` datetime null, \`name\` text null, \`version\` integer not null default 1);
@@ -127,9 +123,4 @@ pragma foreign_keys = on;
 "
 `;
 
-exports[`SchemaGenerator [sqlite2] generate schema from metadata [sqlite2]: sqlite2-update-schema-dump 1`] = `
-"pragma foreign_keys = off;
-
-pragma foreign_keys = on;
-"
-`;
+exports[`SchemaGenerator [sqlite2] generate schema from metadata [sqlite2]: sqlite2-update-schema-dump 1`] = `""`;

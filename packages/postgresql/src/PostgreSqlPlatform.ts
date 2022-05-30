@@ -18,6 +18,10 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return true;
   }
 
+  supportsCustomPrimaryKeyNames(): boolean {
+    return true;
+  }
+
   /**
    * Postgres will complain if we try to batch update uniquely constrained property (moving the value from one entity to another).
    * This flag will result in postponing 1:1 updates (removing them from the batched query).
@@ -31,8 +35,13 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return `current_timestamp(${length})`;
   }
 
-  getDateTimeTypeDeclarationSQL(column: { length: number }): string {
-    return `timestamptz(${column.length})`;
+  getDateTimeTypeDeclarationSQL(column: { length?: number }): string {
+    /* istanbul ignore next */
+    return 'timestamptz' + (column.length != null ? `(${column.length})` : '');
+  }
+
+  getDefaultDateTimeLength(): number {
+    return 6; // timestamptz actually means timestamptz(6)
   }
 
   getTimeTypeDeclarationSQL(): string {
@@ -69,7 +78,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   }
 
   isBigIntProperty(prop: EntityProperty): boolean {
-    return super.isBigIntProperty(prop) || (prop.columnTypes && prop.columnTypes[0] === 'bigserial');
+    return super.isBigIntProperty(prop) || (['bigserial', 'int8'].includes(prop.columnTypes?.[0]));
   }
 
   getArrayDeclarationSQL(): string {
@@ -93,7 +102,8 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   }
 
   marshallArray(values: string[]): string {
-    return `{${values.join(',')}}`;
+    const quote = (v: string) => v === '' || v.match(/["{}]/) ? `"${v}"` : v;
+    return `{${values.map(v => quote('' + v)).join(',')}}`;
   }
 
   unmarshallArray(value: string): string[] {
@@ -101,7 +111,8 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
       return [];
     }
 
-    return value.substring(1, value.length - 1).split(',');
+    /* istanbul ignore next */
+    return value.substring(1, value.length - 1).split(',').map(v => v === `""` ? '' : v);
   }
 
   getBlobDeclarationSQL(): string {
@@ -112,10 +123,10 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return 'jsonb';
   }
 
-  getSearchJsonPropertyKey(path: string[], type: string): string {
+  getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
     const first = path.shift();
     const last = path.pop();
-    const root = expr(alias => this.quoteIdentifier(`${alias}.${first}`));
+    const root = aliased ? expr(alias => this.quoteIdentifier(`${alias}.${first}`)) : this.quoteIdentifier(first!);
     const types = {
       number: 'float8',
       boolean: 'bool',
@@ -154,10 +165,6 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return super.quoteValue(value);
   }
 
-  getDefaultIntegrityRule(): string {
-    return 'no action';
-  }
-
   indexForeignKeys() {
     return false;
   }
@@ -193,17 +200,41 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return true;
   }
 
+  getDefaultSchemaName(): string | undefined {
+    return 'public';
+  }
+
   /**
    * Returns the default name of index for the given columns
    * cannot go past 64 character length for identifiers in MySQL
    */
   getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
-    let indexName = super.getIndexName(tableName, columns, type);
+    const indexName = super.getIndexName(tableName, columns, type);
     if (indexName.length > 64) {
-      indexName = `${indexName.substr(0, 57 - type.length)}_${Utils.hash(indexName).substr(0, 5)}_${type}`;
+      return `${indexName.substring(0, 56 - type.length)}_${Utils.hash(indexName, 5)}_${type}`;
     }
 
     return indexName;
+  }
+
+  getDefaultPrimaryName(tableName: string, columns: string[]): string {
+    const indexName = `${tableName}_pkey`;
+    if (indexName.length > 64) {
+      return `${indexName.substring(0, 56 - 'primary'.length)}_${Utils.hash(indexName, 5)}_primary`;
+    }
+
+    return indexName;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  castColumn(prop?: EntityProperty): string {
+    switch (prop?.columnTypes?.[0]) {
+      case this.getUuidTypeDeclarationSQL({}): return '::text';
+      case this.getBooleanTypeDeclarationSQL(): return '::int';
+      default: return '';
+    }
   }
 
 }

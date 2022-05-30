@@ -178,7 +178,9 @@ export class EntityHelper {
 
       if (prop.reference === ReferenceType.ONE_TO_ONE && entity && entity.__helper!.__initialized && entity[prop2.name] != null && value == null) {
         entity[prop2.name] = value;
-        entity.__helper!.__em?.getUnitOfWork().scheduleOrphanRemoval(entity);
+        if (prop.orphanRemoval) {
+          entity.__helper!.__em?.getUnitOfWork().scheduleOrphanRemoval(entity);
+        }
       }
     }
   }

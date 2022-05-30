@@ -1,5 +1,5 @@
-import type { Platform } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, EntitySchema, MikroORM, PrimaryKey, Property, ReferenceType, SerializedPrimaryKey, Type } from '@mikro-orm/core';
+import type { Dictionary, Platform } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, EntitySchema, expr, MikroORM, PrimaryKey, Property, ReferenceType, SerializedPrimaryKey, Type } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 import { ObjectId, MongoConnection, MongoPlatform } from '@mikro-orm/mongodb';
 import { mockLogger } from '../../helpers';
@@ -195,7 +195,7 @@ describe('embedded entities in mongo', () => {
   });
 
   afterAll(async () => {
-    await orm.em.getDriver().dropCollections();
+    await orm.getSchemaGenerator().dropSchema();
     await orm.close(true);
   });
 
@@ -243,8 +243,8 @@ describe('embedded entities in mongo', () => {
   test('create collections', async () => {
     const createCollection = jest.spyOn(MongoConnection.prototype, 'createCollection');
     createCollection.mockResolvedValue({} as any);
-    await orm.em.getDriver().createCollections();
-    expect(createCollection.mock.calls.map(c => c[0])).toEqual(['user', 'custom-user', 'parent']);
+    await orm.getSchemaGenerator().createSchema();
+    expect(createCollection.mock.calls.map(c => c[0])).toEqual(['parent', 'custom-user', 'user']);
     createCollection.mockRestore();
   });
 
@@ -314,6 +314,13 @@ describe('embedded entities in mongo', () => {
     await expect(orm.em.findOneOrFail(User, { address1: { $or: [{ city: 'London 1' }, { city: 'Berlin' }] } })).rejects.toThrowError(err);
     const u4 = await orm.em.findOneOrFail(User, { address4: { postalCode: '999' } });
     expect(u4).toBe(u1);
+    const u5 = await orm.em.findOneOrFail(User, {
+      address4: {
+        [expr('$exists')]: true,
+      },
+    });
+    expect(u5).toBe(u1);
+    expect(mock.mock.calls[7][0]).toMatch(/db\.getCollection\('user'\)\.find\({ address4: { '\$exists': true } }, { session: undefined }\)\.limit\(1\).toArray\(\);/);
   });
 
   test('validation of object embeddables (GH issue #466)', async () => {
@@ -381,12 +388,15 @@ describe('embedded entities in mongo', () => {
   });
 
   test('assign entity changes on embeddables (GH issue 1083)', async () => {
+    let john = new User();
+    john.address1 = new Address1('Rainbow st. 1', '001', 'London', 'UK');
+    john.address2 = new Address2('Rainbow st. 2', 'London', 'UK');
+    await orm.em.persistAndFlush(john);
+    orm.em.clear();
+
     const mock = mockLogger(orm);
-
-
-    const john = await orm.em.findOneOrFail(User, { address1: { street: 'Rainbow st. 1' } });
-    const data: any = {};
-    // data.address1 = { street: 'Rainbow st. 3', postalCode: '003', city: 'London', country: 'UKK' };
+    john = await orm.em.findOneOrFail(User, { address1: { street: 'Rainbow st. 1' } });
+    const data: Dictionary = {};
     data.address1 = new Address1('Rainbow st. 3', '003', 'London', 'UKK');
     data.address1.street = 'Rainbow st. 33';
 

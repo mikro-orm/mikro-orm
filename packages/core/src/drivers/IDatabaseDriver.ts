@@ -1,20 +1,22 @@
 import type {
-  EntityData, EntityMetadata, EntityProperty, AnyEntity, FilterQuery, Primary, Dictionary, QBFilterQuery,
-  IPrimaryKey, PopulateOptions, EntityDictionary, ExpandProperty, AutoPath,
+  ConnectionType, EntityData, EntityMetadata, EntityProperty, AnyEntity, FilterQuery, Primary, Dictionary, QBFilterQuery,
+  IPrimaryKey, PopulateOptions, EntityDictionary, ExpandProperty, AutoPath, ObjectQuery,
 } from '../typings';
 import type { Connection, QueryResult, Transaction } from '../connections';
-import type { FlushMode, LockMode, QueryOrderMap, QueryFlag, LoadStrategy } from '../enums';
+import type { FlushMode, LockMode, QueryOrderMap, QueryFlag, LoadStrategy, PopulateHint } from '../enums';
 import type { Platform } from '../platforms';
 import type { MetadataStorage } from '../metadata';
 import type { Collection } from '../entity';
 import type { EntityManager } from '../EntityManager';
 import type { DriverException } from '../exceptions';
+import type { Configuration } from '../utils/Configuration';
 
 export const EntityManagerType = Symbol('EntityManagerType');
 
 export interface IDatabaseDriver<C extends Connection = Connection> {
 
   [EntityManagerType]: EntityManager<this>;
+  readonly config: Configuration;
 
   createEntityManager<D extends IDatabaseDriver = IDatabaseDriver>(useContext?: boolean): D[typeof EntityManagerType];
 
@@ -24,7 +26,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
   reconnect(): Promise<C>;
 
-  getConnection(type?: 'read' | 'write'): C;
+  getConnection(type?: ConnectionType): C;
 
   /**
    * Finds selection of entities
@@ -46,13 +48,13 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
   nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: NativeDeleteOptions<T>): Promise<QueryResult<T>>;
 
-  syncCollection<T, O>(collection: Collection<T, O>, options?: { ctx?: Transaction }): Promise<void>;
+  syncCollection<T, O>(collection: Collection<T, O>, options?: DriverMethodOptions): Promise<void>;
 
   count<T extends AnyEntity<T>, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T, P>): Promise<number>;
 
   aggregate(entityName: string, pipeline: any[]): Promise<any[]>;
 
-  mapResult<T extends AnyEntity<T>>(result: EntityDictionary<T>, meta: EntityMetadata, populate?: PopulateOptions<T>[]): EntityData<T> | null;
+  mapResult<T>(result: EntityDictionary<T>, meta: EntityMetadata<T>, populate?: PopulateOptions<T>[]): EntityData<T> | null;
 
   /**
    * When driver uses pivot tables for M:N, this method will load identifiers for given collections from them
@@ -62,6 +64,8 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   getPlatform(): Platform;
 
   setMetadata(metadata: MetadataStorage): void;
+
+  getMetadata(): MetadataStorage;
 
   ensureIndexes(): Promise<void>;
 
@@ -78,14 +82,20 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
    */
   convertException(exception: Error): DriverException;
 
+  /**
+   * @internal
+   */
+  getSchemaName(meta?: EntityMetadata, options?: { schema?: string }): string | undefined;
+
 }
 
 type FieldsMap<T, P extends string = never> = { [K in keyof T]?: EntityField<ExpandProperty<T[K]>>[] };
-export type EntityField<T, P extends string = never> = keyof T | AutoPath<T, P> | FieldsMap<T, P>;
+export type EntityField<T, P extends string = never> = keyof T | '*' | AutoPath<T, P, '*'> | FieldsMap<T, P>;
 
 export interface FindOptions<T, P extends string = never> {
   populate?: readonly AutoPath<T, P>[] | boolean;
-  orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[];
+  populateWhere?: ObjectQuery<T> | PopulateHint;
+  orderBy?: (QueryOrderMap<T> & { 0?: never }) | QueryOrderMap<T>[];
   cache?: boolean | number | [string, number];
   limit?: number;
   offset?: number;
@@ -103,6 +113,7 @@ export interface FindOptions<T, P extends string = never> {
   lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
   lockTableAliases?: string[];
   ctx?: Transaction;
+  connectionType?: ConnectionType;
 }
 
 export interface FindOneOptions<T, P extends string = never> extends Omit<FindOptions<T, P>, 'limit' | 'offset' | 'lockMode'> {
@@ -112,6 +123,7 @@ export interface FindOneOptions<T, P extends string = never> extends Omit<FindOp
 
 export interface FindOneOrFailOptions<T, P extends string = never> extends FindOneOptions<T, P> {
   failHandler?: (entityName: string, where: Dictionary | IPrimaryKey | any) => Error;
+  strict?: boolean;
 }
 
 export interface NativeInsertUpdateOptions<T> {
@@ -132,11 +144,7 @@ export interface CountOptions<T, P extends string = never>  {
   cache?: boolean | number | [string, number];
   populate?: readonly AutoPath<T, P>[] | boolean;
   ctx?: Transaction;
-}
-
-export interface InsertOptions<T>  {
-  schema?: string;
-  ctx?: Transaction;
+  connectionType?: ConnectionType;
 }
 
 export interface UpdateOptions<T>  {

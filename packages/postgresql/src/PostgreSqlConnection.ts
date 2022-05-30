@@ -64,16 +64,19 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
   }
 
   private addColumn(this: any, col: Dictionary, that: PostgreSqlConnection): void {
+    const options = that.config.get('schemaGenerator');
     const quotedTableName = this.tableName();
     const type = col.getColumnType();
     const colName = this.client.wrapIdentifier(col.getColumnName(), col.columnBuilder.queryContext());
-    const constraintName = `${this.tableNameRaw}_${col.getColumnName()}_check`;
-    this.pushQuery({ sql: `alter table ${quotedTableName} drop constraint if exists "${constraintName}"`, bindings: [] });
+    const constraintName = `${this.tableNameRaw.replace(/^.*\.(.*)$/, '$1')}_${col.getColumnName()}_check`;
     that.dropColumnDefault.call(this, col, colName);
 
     if (col.type === 'enu') {
       this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} type text using (${colName}::text)`, bindings: [] });
-      this.pushQuery({ sql: `alter table ${quotedTableName} add constraint "${constraintName}" ${type.replace(/^text /, '')}`, bindings: [] });
+      /* istanbul ignore else */
+      if (options.createForeignKeyConstraints) {
+        this.pushQuery({ sql: `alter table ${quotedTableName} add constraint "${constraintName}" ${type.replace(/^text /, '')}`, bindings: [] });
+      }
     } else if (type === 'uuid') {
       // we need to drop the default as it would be invalid
       this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} drop default`, bindings: [] });

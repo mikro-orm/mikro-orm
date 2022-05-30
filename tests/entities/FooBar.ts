@@ -26,10 +26,10 @@ export default class FooBar {
   @Property({ type: new ArrayType(i => +i), nullable: true })
   array?: number[];
 
-  @Property()
+  @Property({ nullable: true })
   num?: number;
 
-  @Property()
+  @Property({ nullable: true })
   str?: string;
 
   @Property({ type: JsonType, nullable: true })

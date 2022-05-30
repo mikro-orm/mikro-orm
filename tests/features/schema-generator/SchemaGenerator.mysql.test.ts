@@ -1,5 +1,4 @@
 import { EntitySchema, EnumType, MikroORM, ReferenceType, Type, Utils } from '@mikro-orm/core';
-import type { EntityManager } from '@mikro-orm/knex';
 import { SchemaGenerator } from '@mikro-orm/knex';
 import { BASE_DIR, initORMMySql } from '../../bootstrap';
 import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from '../../entities-sql';
@@ -13,12 +12,12 @@ describe('SchemaGenerator', () => {
     const orm = await MikroORM.init({
       entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName,
-      port: 3307,
+      port: 3308,
       baseDir: BASE_DIR,
       type: 'mysql',
     });
 
-    const generator = new SchemaGenerator(orm.em as EntityManager);
+    const generator = orm.getSchemaGenerator();
     await generator.ensureDatabase();
     await generator.dropDatabase(dbName);
     await orm.close(true);
@@ -29,13 +28,13 @@ describe('SchemaGenerator', () => {
     const orm = await MikroORM.init({
       entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName,
-      port: 3307,
+      port: 3308,
       baseDir: BASE_DIR,
       type: 'mysql',
       migrations: { path: BASE_DIR + '/../temp/migrations' },
     });
 
-    const generator = new SchemaGenerator(orm.em as EntityManager);
+    const generator = orm.getSchemaGenerator();
     await generator.createSchema();
     await generator.dropSchema({ wrap: false, dropMigrationsTable: false, dropDb: true });
     await orm.close(true);
@@ -48,12 +47,12 @@ describe('SchemaGenerator', () => {
     const orm = await MikroORM.init({
       entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName,
-      port: 3307,
+      port: 3308,
       baseDir: BASE_DIR,
       type: 'mariadb',
     });
 
-    const generator = new SchemaGenerator(orm.em as EntityManager);
+    const generator = orm.getSchemaGenerator();
     await generator.ensureDatabase();
     await generator.dropDatabase(dbName);
     await orm.close(true);
@@ -65,13 +64,13 @@ describe('SchemaGenerator', () => {
     const orm = await MikroORM.init({
       entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName,
-      port: 3307,
+      port: 3308,
       baseDir: BASE_DIR,
       type: 'mariadb',
       migrations: { path: BASE_DIR + '/../temp/migrations' },
     });
 
-    const generator = new SchemaGenerator(orm.em as EntityManager);
+    const generator = orm.getSchemaGenerator();
     await generator.createSchema();
     await generator.dropSchema({ wrap: false, dropMigrationsTable: false, dropDb: true });
     await orm.close(true);
@@ -80,7 +79,7 @@ describe('SchemaGenerator', () => {
 
   test('generate schema from metadata [mysql]', async () => {
     const orm = await initORMMySql('mysql', {}, true);
-    const generator = new SchemaGenerator(orm.em);
+    const generator = orm.getSchemaGenerator();
     await generator.ensureDatabase();
     const dump = await generator.generate();
     expect(dump).toMatchSnapshot('mysql-schema-dump');
@@ -97,10 +96,29 @@ describe('SchemaGenerator', () => {
     await orm.close(true);
   });
 
+  test('generate schema from metadata [mariadb]', async () => {
+    const orm = await initORMMySql('mariadb', {}, true);
+    const generator = orm.getSchemaGenerator();
+    await generator.ensureDatabase();
+    const dump = await generator.generate();
+    expect(dump).toMatchSnapshot('mariadb-schema-dump');
+
+    const dropDump = await generator.getDropSchemaSQL();
+    expect(dropDump).toMatchSnapshot('mariadb-drop-schema-dump');
+
+    const createDump = await generator.getCreateSchemaSQL();
+    expect(createDump).toMatchSnapshot('mariadb-create-schema-dump');
+
+    const updateDump = await generator.getUpdateSchemaSQL();
+    expect(updateDump).toMatchSnapshot('mariadb-update-schema-dump');
+
+    await orm.close(true);
+  });
+
   test('update schema [mysql]', async () => {
     const orm = await initORMMySql('mysql', {}, true);
     const meta = orm.getMetadata();
-    const generator = new SchemaGenerator(orm.em);
+    const generator = orm.getSchemaGenerator();
 
     const newTableMeta = EntitySchema.fromMetadata({
       properties: {
@@ -232,7 +250,7 @@ describe('SchemaGenerator', () => {
   test('rename column [mysql]', async () => {
     const orm = await initORMMySql('mysql', {}, true);
     const meta = orm.getMetadata();
-    const generator = new SchemaGenerator(orm.em);
+    const generator = orm.getSchemaGenerator();
 
     const authorMeta = meta.get('Author2');
     const ageProp = authorMeta.properties.age;
@@ -257,7 +275,7 @@ describe('SchemaGenerator', () => {
   test('update schema enums [mysql]', async () => {
     const orm = await initORMMySql('mysql', {}, true);
     const meta = orm.getMetadata();
-    const generator = new SchemaGenerator(orm.em);
+    const generator = orm.getSchemaGenerator();
 
     const newTableMeta = new EntitySchema({
       properties: {
@@ -313,4 +331,24 @@ describe('SchemaGenerator', () => {
     await orm.close(true);
   });
 
+  test('refreshDatabase [mysql]', async () => {
+    const orm = await initORMMySql('mysql', {}, true);
+
+    const dropSchema = jest.spyOn(SchemaGenerator.prototype, 'dropSchema');
+    const createSchema = jest.spyOn(SchemaGenerator.prototype, 'createSchema');
+
+    dropSchema.mockImplementation(() => Promise.resolve());
+    createSchema.mockImplementation(() => Promise.resolve());
+
+    const generator = orm.getSchemaGenerator();
+    await generator.refreshDatabase();
+
+    expect(dropSchema).toBeCalledTimes(1);
+    expect(createSchema).toBeCalledTimes(1);
+
+    dropSchema.mockRestore();
+    createSchema.mockRestore();
+
+    await orm.close(true);
+  });
 });

@@ -3,14 +3,14 @@ import { LoadStrategy, wrap } from '@mikro-orm/core';
 import type { MySqlDriver } from '@mikro-orm/mysql';
 import { AbstractSqlConnection } from '@mikro-orm/mysql';
 import { Author2, Configuration2, FooBar2, FooBaz2, FooParam2, Test2, Address2, Car2, CarOwner2, User2, Sandwich } from '../../entities-sql';
-import { initORMMySql, mockLogger, wipeDatabaseMySql } from '../../bootstrap';
+import { initORMMySql, mockLogger } from '../../bootstrap';
 
 describe('composite keys in mysql', () => {
 
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
-  beforeEach(async () => wipeDatabaseMySql(orm.em));
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
 
   test('dynamic attributes', async () => {
     const test = Test2.create('t');

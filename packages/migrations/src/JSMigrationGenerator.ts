@@ -8,7 +8,7 @@ export class JSMigrationGenerator extends MigrationGenerator {
   generateMigrationFile(className: string, diff: { up: string[]; down: string[] }): string {
     let ret = `'use strict';\n`;
     ret += `Object.defineProperty(exports, '__esModule', { value: true });\n`;
-    ret += `const Migration = require('@mikro-orm/migrations').Migration;\n\n`;
+    ret += `const { Migration } = require('@mikro-orm/migrations');\n\n`;
     ret += `class ${className} extends Migration {\n\n`;
     ret += `  async up() {\n`;
     diff.up.forEach(sql => ret += this.createStatement(sql, 4));

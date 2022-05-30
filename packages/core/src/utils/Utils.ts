@@ -1,14 +1,16 @@
 import { createRequire } from 'module';
-import clone from 'clone';
 import type { GlobbyOptions } from 'globby';
 import globby from 'globby';
 import { extname, isAbsolute, join, normalize, relative, resolve } from 'path';
+import { platform } from 'os';
+import type { URL } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import { pathExists } from 'fs-extra';
 import { createHash } from 'crypto';
 import { recovery } from 'escaya';
+import { clone } from './clone';
 import type { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityName, EntityProperty, IMetadataStorage, Primary } from '../typings';
-import { PlainObject } from '../typings';
-import { GroupOperator, QueryOperator, ReferenceType } from '../enums';
+import { GroupOperator, PlainObject, QueryOperator, ReferenceType } from '../enums';
 import type { Collection } from '../entity';
 import type { Platform } from '../platforms';
 
@@ -122,8 +124,8 @@ export class Utils {
   /**
    * Checks if the argument is not undefined
    */
-  static isDefined<T = Record<string, unknown>>(data: any, considerNullUndefined = false): data is T {
-    return typeof data !== 'undefined' && !(considerNullUndefined && data === null);
+  static isDefined<T = Record<string, unknown>>(data: any): data is T {
+    return typeof data !== 'undefined';
   }
 
   /**
@@ -131,6 +133,37 @@ export class Utils {
    */
   static isObject<T = Dictionary>(o: any): o is T {
     return !!o && typeof o === 'object' && !Array.isArray(o);
+  }
+
+  /**
+   * Relation decorators allow using two signatures
+   * - using first parameter as options object
+   * - using all parameters
+   *
+   * This function validates those two ways are not mixed and returns the final options object.
+   * If the second way is used, we always consider the last parameter as options object.
+   * @internal
+   */
+  static processDecoratorParameters<T>(params: Dictionary): T {
+    const keys = Object.keys(params);
+    const values = Object.values(params);
+
+    if (!Utils.isPlainObject(values[0])) {
+      const lastKey = keys[keys.length - 1];
+      const last = params[lastKey];
+      delete params[lastKey];
+
+      return { ...last, ...params };
+    }
+
+    // validate only first parameter is used if its an option object
+    const empty = (v: unknown) => v == null || (Utils.isPlainObject(v) && !Utils.hasObjectKeys(v));
+    if (values.slice(1).some(v => !empty(v))) {
+      throw new Error('Mixing first decorator parameter as options object with other parameters is forbidden. ' +
+        'If you want to use the options parameter at first position, provide all options inside it.');
+    }
+
+    return values[0] as T;
   }
 
   /**
@@ -170,8 +203,8 @@ export class Utils {
     let size = 0;
 
     for (const key in object) {
-      /* istanbul ignore else */ // eslint-disable-next-line no-prototype-builtins
-      if (object.hasOwnProperty(key)) {
+      /* istanbul ignore else */
+      if (Object.prototype.hasOwnProperty.call(object, key)) {
         size++;
       }
     }
@@ -185,8 +218,8 @@ export class Utils {
    */
   static hasObjectKeys(object: Dictionary): boolean {
     for (const key in object) {
-      /* istanbul ignore else */ // eslint-disable-next-line no-prototype-builtins
-      if (object.hasOwnProperty(key)) {
+      /* istanbul ignore else */
+      if (Object.prototype.hasOwnProperty.call(object, key)) {
         return true;
       }
     }
@@ -413,7 +446,7 @@ export class Utils {
 
   static getCompositeKeyHash<T extends AnyEntity<T>>(data: EntityData<T>, meta: EntityMetadata<T>): string {
     const pks = meta.primaryKeys.map(pk => {
-      const value = data[pk];
+      const value = data[pk as string];
       const prop = meta.properties[pk];
 
       if (prop.targetMeta && Utils.isPlainObject(value)) {
@@ -473,23 +506,28 @@ export class Utils {
     return cond;
   }
 
-  static getPrimaryKeyCondFromArray<T extends AnyEntity<T>>(pks: Primary<T>[], primaryKeys: string[]): Record<string, Primary<T>> {
-    return primaryKeys.reduce((o, pk, idx) => {
-      o[pk] = Utils.extractPK<T>(pks[idx]);
+  static getPrimaryKeyCondFromArray<T extends AnyEntity<T>>(pks: Primary<T>[], meta: EntityMetadata<T>): Record<string, Primary<T>> {
+    return meta.getPrimaryProps().reduce((o, pk, idx) => {
+      if (Array.isArray(pks[idx]) && pk.targetMeta) {
+        o[pk.name] = Utils.getPrimaryKeyCondFromArray(pks[idx] as unknown[], pk.targetMeta);
+      } else {
+        o[pk.name] = Utils.extractPK<T>(pks[idx]);
+      }
+
       return o;
     }, {} as any);
   }
 
   static getOrderedPrimaryKeys<T extends AnyEntity<T>>(id: Primary<T> | Record<string, Primary<T>>, meta: EntityMetadata<T>, platform?: Platform, convertCustomTypes?: boolean): Primary<T>[] {
     const data = (Utils.isPrimaryKey(id) ? { [meta.primaryKeys[0]]: id } : id) as Record<string, Primary<T>>;
-    return meta.primaryKeys.map((pk, idx) => {
+    const pks = meta.primaryKeys.map((pk, idx) => {
       const prop = meta.properties[pk];
       // `data` can be a composite PK in form of array of PKs, or a DTO
       let value = Array.isArray(data) ? data[idx] : data[pk];
 
       if (prop.reference !== ReferenceType.SCALAR && prop.targetMeta) {
         const value2 = this.getOrderedPrimaryKeys(value, prop.targetMeta, platform); // do not convert custom types yet
-        value = value2[0] as Primary<T>;
+        value = value2.length > 1 ? value2 : value2[0];
       }
 
       if (prop.customType && platform && convertCustomTypes) {
@@ -497,7 +535,11 @@ export class Utils {
       }
 
       return value;
-    }) as Primary<T>[];
+    });
+
+    // we need to flatten the PKs as composite PKs can be build from another composite PKs
+    // and this method is used to get the PK hash in identity map, that expects flat array
+    return Utils.flatten(pks) as Primary<T>[];
   }
 
   /**
@@ -604,8 +646,8 @@ export class Utils {
       // eslint-disable-next-line no-prototype-builtins
       && (value.constructor.prototype.hasOwnProperty('isPrototypeOf') || Object.getPrototypeOf(value.constructor.prototype) === null)
     )
-    || (value && Object.getPrototypeOf(value) === null)
-    || value instanceof PlainObject;
+      || (value && Object.getPrototypeOf(value) === null)
+      || value instanceof PlainObject;
   }
 
   /**
@@ -629,13 +671,43 @@ export class Utils {
     return !(prop && type) || prop.reference === type;
   }
 
+  static fileURLToPath(url: string | URL) {
+    // expose `fileURLToPath` on Utils so that it can be properly mocked in tests
+    return fileURLToPath(url);
+  }
+
+  /**
+   * Resolves and normalizes a series of path parts relative to each preceeding part.
+   * If any part is a `file:` URL, it is converted to a local path. If any part is an
+   * absolute path, it replaces preceeding paths (similar to `path.resolve` in NodeJS).
+   * Trailing directory separators are removed, and all directory separators are converted
+   * to POSIX-style separators (`/`).
+   */
   static normalizePath(...parts: string[]): string {
+    let start = 0;
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+      if (isAbsolute(part)) {
+        start = i;
+      } else if (part.startsWith('file:')) {
+        start = i;
+        parts[i] = Utils.fileURLToPath(part);
+      }
+    }
+    if (start > 0) {
+      parts = parts.slice(start);
+    }
+
     let path = parts.join('/').replace(/\\/g, '/').replace(/\/$/, '');
     path = normalize(path).replace(/\\/g, '/');
 
     return (path.match(/^[/.]|[a-zA-Z]:/) || path.startsWith('!')) ? path : './' + path;
   }
 
+  /**
+   * Determines the relative path between two paths. If either path is a `file:` URL,
+   * it is converted to a local path.
+   */
   static relativePath(path: string, relativeTo: string): string {
     if (!path) {
       return path;
@@ -647,25 +719,35 @@ export class Utils {
       return path;
     }
 
-    path = relative(relativeTo, path);
+    path = relative(Utils.normalizePath(relativeTo), path);
 
     return Utils.normalizePath(path);
   }
 
+  /**
+   * Computes the absolute path to for the given path relative to the provided base directory.
+   * If either `path` or `baseDir` are `file:` URLs, they are converted to local paths.
+   */
   static absolutePath(path: string, baseDir = process.cwd()): string {
     if (!path) {
       return Utils.normalizePath(baseDir);
     }
 
-    if (!isAbsolute(path)) {
+    if (!isAbsolute(path) && !path.startsWith('file://')) {
       path = baseDir + '/' + path;
     }
 
     return Utils.normalizePath(path);
   }
 
-  static hash(data: string): string {
-    return createHash('md5').update(data).digest('hex');
+  static hash(data: string, length?: number): string {
+    const hash = createHash('md5').update(data).digest('hex');
+
+    if (length) {
+      return hash.substring(0, length);
+    }
+
+    return hash;
   }
 
   static runIfNotEmpty(clause: () => any, data: any): void {
@@ -744,12 +826,31 @@ export class Utils {
    * @param id The module to require
    * @param from Location to start the node resolution
    */
-  static requireFrom(id: string, from: string) {
+  static requireFrom<T extends Dictionary>(id: string, from: string): T {
     if (!extname(from)) {
       from = join(from, '__fake.js');
     }
 
     return createRequire(resolve(from))(id);
+  }
+
+  /**
+   * Hack to keep dynamic imports even when compiling to CJS.
+   * We can't use it always, as it would break ts-node.
+   * @see https://github.com/microsoft/TypeScript/issues/43329#issuecomment-922544562
+   */
+  static async dynamicImport<T = any>(id: string): Promise<T> {
+    if (!process.env.MIKRO_ORM_DYNAMIC_IMPORTS) {
+      return import(id);
+    }
+
+    /* istanbul ignore next */
+    if (platform() === 'win32') {
+      id = pathToFileURL(id).toString();
+    }
+
+    /* istanbul ignore next */
+    return Function(`return import('${id}')`)();
   }
 
   static getORMVersion(): string {
@@ -913,7 +1014,7 @@ export class Utils {
     from ??= process.cwd();
 
     try {
-      return Utils.requireFrom(module, from);
+      return Utils.requireFrom<T>(module, from);
     } catch (err: any) {
       if (err.message.includes(allowError)) {
         // eslint-disable-next-line no-console

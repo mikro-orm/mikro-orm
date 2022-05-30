@@ -2,14 +2,14 @@ import { v4 } from 'uuid';
 import { Collection, Configuration, EntityManager, MikroORM, QueryOrder, Reference, wrap } from '@mikro-orm/core';
 import { MariaDbDriver } from '@mikro-orm/mariadb';
 import { Author2, Book2, BookTag2, Publisher2, PublisherType } from './entities-sql';
-import { initORMMySql, wipeDatabaseMySql } from './bootstrap';
+import { initORMMySql } from './bootstrap';
 
 describe('EntityManagerMariaDb', () => {
 
   let orm: MikroORM<MariaDbDriver>;
 
   beforeAll(async () => orm = await initORMMySql<MariaDbDriver>('mariadb', {}, true));
-  beforeEach(async () => wipeDatabaseMySql(orm.em));
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
 
   test('isConnected()', async () => {
     expect(await orm.isConnected()).toBe(true);

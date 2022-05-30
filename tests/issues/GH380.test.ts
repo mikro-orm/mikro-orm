@@ -1,6 +1,5 @@
 import { Entity, PrimaryKey, Property, MikroORM } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
-import { SchemaGenerator } from '@mikro-orm/knex';
 
 @Entity()
 class A {
@@ -26,15 +25,15 @@ describe('GH issue 380', () => {
       dbName: `mikro_orm_test_gh_380`,
       type: 'postgresql',
     });
-    await new SchemaGenerator(orm.em).ensureDatabase();
-    await new SchemaGenerator(orm.em).dropSchema();
-    await new SchemaGenerator(orm.em).createSchema();
+    await orm.getSchemaGenerator().ensureDatabase();
+    await orm.getSchemaGenerator().dropSchema();
+    await orm.getSchemaGenerator().createSchema();
   });
 
   afterAll(() => orm.close(true));
 
   test(`schema updates respect default values`, async () => {
-    const generator = new SchemaGenerator(orm.em);
+    const generator = orm.getSchemaGenerator();
     const dump = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(dump).toBe('');
   });

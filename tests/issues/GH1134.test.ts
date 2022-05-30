@@ -41,8 +41,8 @@ export class V {
   @PrimaryKey()
   id: string = v4();
 
-  @OneToOne({ entity: 'I', mappedBy: 'id' })
-  i!: I;
+  @OneToOne({ entity: 'I', mappedBy: 'id', nullable: true })
+  i?: I;
 
 }
 

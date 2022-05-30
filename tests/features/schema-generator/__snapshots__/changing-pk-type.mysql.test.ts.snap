@@ -5,8 +5,7 @@ Object {
   "down": "drop table if exists \`user\`;
 
 ",
-  "up": "create table \`user\` (\`id\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
-alter table \`user\` add primary key \`user_pkey\`(\`id\`);
+  "up": "create table \`user\` (\`id\` varchar(255) not null, primary key (\`id\`)) default character set utf8mb4 engine = InnoDB;
 
 ",
 }
@@ -17,7 +16,7 @@ Object {
   "down": "alter table \`user\` modify \`id\` varchar(255) not null;
 
 ",
-  "up": "alter table \`user\` modify \`id\` int not null;
+  "up": "alter table \`user\` modify \`id\` int unsigned not null;
 
 ",
 }
@@ -30,7 +29,7 @@ alter table \`user\` drop \`id2\`;
 alter table \`user\` add primary key \`user_pkey\`(\`id\`);
 
 ",
-  "up": "alter table \`user\` add \`id2\` int not null;
+  "up": "alter table \`user\` add \`id2\` int unsigned not null;
 alter table \`user\` drop primary key;
 alter table \`user\` add primary key \`user_pkey\`(\`id\`, \`id2\`);
 
@@ -40,7 +39,7 @@ alter table \`user\` add primary key \`user_pkey\`(\`id\`, \`id2\`);
 
 exports[`changing PK column type [mysql] (GH 1480) changing PK type: 3. remove old PK (make it single PK again) 1`] = `
 Object {
-  "down": "alter table \`user\` add \`id2\` int not null;
+  "down": "alter table \`user\` add \`id2\` int unsigned not null;
 alter table \`user\` drop primary key;
 alter table \`user\` add primary key \`user_pkey\`(\`id\`, \`id2\`);
 
@@ -55,7 +54,7 @@ alter table \`user\` add primary key \`user_pkey\`(\`id\`);
 
 exports[`changing PK column type [mysql] (GH 1480) changing PK type: 4. change PK type from int to serial 1`] = `
 Object {
-  "down": "alter table \`user\` modify \`id\` int not null;
+  "down": "alter table \`user\` modify \`id\` int unsigned not null;
 
 ",
   "up": "alter table \`user\` modify \`id\` int unsigned not null auto_increment;

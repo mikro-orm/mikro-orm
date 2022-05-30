@@ -24,7 +24,7 @@ export class Chat {
   @ManyToOne(() => User, { nullable: true })
   User?: User;
 
-  [PrimaryKeyType]: [number, number];
+  [PrimaryKeyType]?: [number, number];
 
   constructor(owner: User, recipient: User) {
     this.owner = Reference.create(owner);
@@ -43,9 +43,7 @@ describe('GH issue 589', () => {
       dbName: `mikro_orm_test_gh_589`,
       type: 'postgresql',
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.getSchemaGenerator().refreshDatabase();
   });
 
   afterAll(async () => {

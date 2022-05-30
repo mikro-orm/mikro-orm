@@ -119,9 +119,7 @@ describe('embedded entities with custom types', () => {
       dbName: 'mikro_orm_test_embeddables_custom_types',
       type: 'postgresql',
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.getSchemaGenerator().refreshDatabase();
   });
 
   afterAll(() => orm.close(true));

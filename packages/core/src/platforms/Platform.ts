@@ -1,4 +1,4 @@
-import clone from 'clone';
+import { clone } from '../utils/clone';
 import { EntityRepository } from '../entity';
 import type { NamingStrategy } from '../naming-strategy';
 import { UnderscoreNamingStrategy } from '../naming-strategy';
@@ -6,6 +6,7 @@ import type { AnyEntity, Constructor, EntityProperty, IEntityGenerator, IMigrato
 import { ExceptionConverter } from './ExceptionConverter';
 import type { EntityManager } from '../EntityManager';
 import type { Configuration } from '../utils/Configuration';
+import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
 import {
   ArrayType, BigIntType, BlobType, BooleanType, DateType, DecimalType, DoubleType, JsonType, SmallIntType, TimeType,
   TinyIntType, Type, UuidType, StringType, IntegerType, FloatType, DateTimeType, TextType, EnumType, UnknownType,
@@ -112,6 +113,10 @@ export abstract class Platform {
     return 'datetime' + (column.length ? `(${column.length})` : '');
   }
 
+  getDefaultDateTimeLength(): number {
+    return 0;
+  }
+
   getDateTypeDeclarationSQL(length?: number): string {
     return 'date' + (length ? `(${length})` : '');
   }
@@ -150,6 +155,10 @@ export abstract class Platform {
 
   isRaw(value: any): boolean {
     return typeof value === 'object' && value !== null && '__raw' in value;
+  }
+
+  getDefaultSchemaName(): string | undefined {
+    return undefined;
   }
 
   getBooleanTypeDeclarationSQL(): string {
@@ -248,10 +257,6 @@ export abstract class Platform {
     return 'text';
   }
 
-  getDefaultIntegrityRule(): string {
-    return 'restrict';
-  }
-
   marshallArray(values: string[]): string {
     return values.join(',');
   }
@@ -272,11 +277,11 @@ export abstract class Platform {
     return 'json';
   }
 
-  getSearchJsonPropertySQL(path: string, type: string): string {
+  getSearchJsonPropertySQL(path: string, type: string, aliased: boolean): string {
     return path;
   }
 
-  getSearchJsonPropertyKey(path: string[], type: string): string {
+  getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
     return path.join('.');
   }
 
@@ -296,8 +301,8 @@ export abstract class Platform {
     return this.exceptionConverter;
   }
 
-  getSchemaGenerator(em: EntityManager): ISchemaGenerator {
-    throw new Error(`${this.constructor.name} does not support SchemaGenerator`);
+  getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): ISchemaGenerator {
+    throw new Error(`${driver.constructor.name} does not support SchemaGenerator`);
   }
 
   getEntityGenerator(em: EntityManager): IEntityGenerator {
@@ -339,6 +344,10 @@ export abstract class Platform {
     }
   }
 
+  getConfig(): Configuration {
+    return this.config;
+  }
+
   isNumericColumn(mappedType: Type<unknown>): boolean {
     return [IntegerType, SmallIntType, BigIntType].some(t => mappedType instanceof t);
   }
@@ -354,6 +363,15 @@ export abstract class Platform {
     return this.namingStrategy.indexName(tableName, columns, type);
   }
 
+  /* istanbul ignore next */
+  getDefaultPrimaryName(tableName: string, columns: string[]): string {
+    return this.namingStrategy.indexName(tableName, columns, 'primary');
+  }
+
+  supportsCustomPrimaryKeyNames(): boolean {
+    return false;
+  }
+
   shouldHaveColumn<T extends AnyEntity<T>>(prop: EntityProperty<T>, populate: PopulateOptions<T>[] | boolean, includeFormulas = true): boolean {
     if (prop.formula) {
       return includeFormulas && (!prop.lazy || populate === true || (populate !== false && populate.some(p => p.field === prop.name)));
@@ -367,7 +385,15 @@ export abstract class Platform {
       return false;
     }
 
-    return [ReferenceType.SCALAR, ReferenceType.MANY_TO_ONE].includes(prop.reference) || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
+    if ([ReferenceType.SCALAR, ReferenceType.MANY_TO_ONE].includes(prop.reference)) {
+      return true;
+    }
+
+    if (prop.reference === ReferenceType.EMBEDDED) {
+      return !!prop.object;
+    }
+
+    return prop.reference === ReferenceType.ONE_TO_ONE && prop.owner;
   }
 
   /**
@@ -387,6 +413,13 @@ export abstract class Platform {
    */
   generateCustomOrder(escapedColumn: string, values: unknown[]) {
     throw new Error('Not supported');
+  }
+
+  /**
+   * @internal
+   */
+  castColumn(prop?: EntityProperty): string {
+    return '';
   }
 
 }

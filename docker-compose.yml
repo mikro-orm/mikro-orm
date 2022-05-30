@@ -3,36 +3,40 @@ version: "3.4"
 services:
   # mongodb is managed via `run-rs`
 
-  mysql:
-    image: mysql:5.7
-    platform: linux/x86_64
+  mysql8:
+    image: mysql:8-oracle
     restart: unless-stopped
     ports:
-      - 3307:3306
+      - "3308:3306"
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: 1
+    command: [ "mysqld", "--default-authentication-plugin=mysql_native_password" ]
     volumes:
-      - mysql:/var/lib/mysql
+      - mysql8:/var/lib/mysql
 
   mariadb:
-    image: mariadb:10.7.1
+    image: mariadb:10.8
     ports:
-      - 3309:3306
+      - "3309:3306"
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: 1
     volumes:
       - mariadb:/var/lib/mysql
 
   postgre:
-    image: postgres:14.1
+    image: postgres:14.3
     ports:
-      - 5432:5432
+      - "5432:5432"
     volumes:
       - postgre:/var/lib/postgresql/data
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
 
 volumes:
+  mysql8:
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
   mysql:
     driver_opts:
       type: tmpfs

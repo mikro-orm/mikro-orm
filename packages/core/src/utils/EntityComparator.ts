@@ -1,4 +1,4 @@
-import clone from 'clone';
+import { clone } from './clone';
 import type { AnyEntity, EntityData, EntityDictionary, EntityMetadata, EntityProperty, IMetadataStorage, Primary } from '../typings';
 import { ReferenceType } from '../enums';
 import type { Platform } from '../platforms';
@@ -236,21 +236,45 @@ export class EntityComparator {
     const context = new Map<string, any>();
     const propName = (name: string, parent = 'result') => parent + this.wrap(name);
 
+    // respects nested composite keys, e.g. `[1, [2, 3]]`
+    const createCompositeKeyArray = (prop: EntityProperty, fieldNames = prop.fieldNames, idx = 0): string => {
+      if (!prop.targetMeta) {
+        return propName(fieldNames[idx++]);
+      }
+
+      const parts: string[] = [];
+
+      for (const pk of prop.targetMeta.getPrimaryProps()) {
+        parts.push(createCompositeKeyArray(pk, fieldNames, idx));
+        idx += pk.fieldNames.length;
+      }
+
+      if (parts.length > 1) {
+        return '[' + parts.join(', ') + ']';
+      }
+
+      return parts[0];
+    };
+
     lines.push(`  const mapped = {};`);
     meta.props.forEach(prop => {
-      if (prop.fieldNames) {
-        if (prop.fieldNames.length > 1) {
-          lines.push(`  if (${prop.fieldNames.map(field => `${propName(field)} != null`).join(' && ')}) {\n    ret${this.wrap(prop.name)} = [${prop.fieldNames.map(field => `${propName(field)}`).join(', ')}];`);
-          lines.push(...prop.fieldNames.map(field => `    ${propName(field, 'mapped')} = true;`));
-          lines.push(`  } else if (${prop.fieldNames.map(field => `${propName(field)} == null`).join(' && ')}) {\n    ret${this.wrap(prop.name)} = null;`);
-          lines.push(...prop.fieldNames.map(field => `    ${propName(field, 'mapped')} = true;`), '  }');
-        } else {
-          if (prop.type === 'boolean') {
-            lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') { ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : !!${propName(prop.fieldNames[0])}; mapped.${prop.fieldNames[0]} = true; }`);
-          } else {
-            lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') { ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])}; ${propName(prop.fieldNames[0], 'mapped')} = true; }`);
-          }
-        }
+      if (!prop.fieldNames) {
+        return;
+      }
+
+      if (prop.targetMeta && prop.fieldNames.length > 1) {
+        lines.push(`  if (${prop.fieldNames.map(field => `${propName(field)} != null`).join(' && ')}) {`);
+        lines.push(`    ret${this.wrap(prop.name)} = ${createCompositeKeyArray(prop)};`);
+        lines.push(...prop.fieldNames.map(field => `    ${propName(field, 'mapped')} = true;`));
+        lines.push(`  } else if (${prop.fieldNames.map(field => `${propName(field)} == null`).join(' && ')}) {\n    ret${this.wrap(prop.name)} = null;`);
+        lines.push(...prop.fieldNames.map(field => `    ${propName(field, 'mapped')} = true;`), '  }');
+        return;
+      }
+
+      if (prop.type === 'boolean') {
+        lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') { ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : !!${propName(prop.fieldNames[0])}; mapped.${prop.fieldNames[0]} = true; }`);
+      } else {
+        lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') { ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])}; ${propName(prop.fieldNames[0], 'mapped')} = true; }`);
       }
     });
     lines.push(`  for (let k in result) { if (result.hasOwnProperty(k) && !mapped[k]) ret[k] = result[k]; }`);
@@ -293,7 +317,7 @@ export class EntityComparator {
     }
 
     if (isRef) {
-      ret += ` && (entity${entityKey} == null || entity${entityKey}.__helper.hasPrimaryKey())`;
+      ret += ` && (entity${entityKey} == null || entity${entityKey}.__helper?.hasPrimaryKey())`;
     }
 
     return ret;
@@ -506,7 +530,10 @@ export class EntityComparator {
     }
 
     if (['objectid'].includes(type)) {
-      const cond = `last${this.wrap(prop.name)}.toHexString() !== current${this.wrap(prop.name)}.toHexString()`;
+      // We might be comparing PK to object, in case we compare with cached data of populated entity
+      // in such case we just ignore the comparison and fallback to `equals()` (which will still mark
+      // it as not equal as we compare PK to plain object).
+      const cond = `last${this.wrap(prop.name)}.toHexString?.() !== current${this.wrap(prop.name)}.toHexString?.()`;
       return this.getGenericComparator(this.wrap(prop.name), cond);
     }
 

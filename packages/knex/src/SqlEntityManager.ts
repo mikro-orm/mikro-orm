@@ -1,5 +1,5 @@
 import type { Knex } from 'knex';
-import type { AnyEntity, Dictionary, EntityData, EntityName, EntityRepository, GetRepository, QueryResult } from '@mikro-orm/core';
+import type { AnyEntity, ConnectionType, Dictionary, EntityData, EntityName, EntityRepository, GetRepository, QueryResult } from '@mikro-orm/core';
 import { EntityManager, Utils } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from './AbstractSqlDriver';
 import { QueryBuilder } from './query';
@@ -13,15 +13,17 @@ export class SqlEntityManager<D extends AbstractSqlDriver = AbstractSqlDriver> e
   /**
    * Creates a QueryBuilder instance
    */
-  createQueryBuilder<T>(entityName: EntityName<T>, alias?: string, type?: 'read' | 'write'): QueryBuilder<T> {
+  createQueryBuilder<T>(entityName: EntityName<T>, alias?: string, type?: ConnectionType): QueryBuilder<T> {
     entityName = Utils.className(entityName);
-    return new QueryBuilder<T>(entityName, this.getMetadata(), this.getDriver(), this.getTransactionContext(), alias, type, this);
+    const context = this.getContext();
+
+    return new QueryBuilder<T>(entityName, this.getMetadata(), this.getDriver(), context.getTransactionContext(), alias, type, context);
   }
 
   /**
    * Shortcut for `createQueryBuilder()`
    */
-  qb<T>(entityName: EntityName<T>, alias?: string, type?: 'read' | 'write') {
+  qb<T>(entityName: EntityName<T>, alias?: string, type?: ConnectionType) {
     return this.createQueryBuilder(entityName, alias, type);
   }
 
@@ -38,7 +40,7 @@ export class SqlEntityManager<D extends AbstractSqlDriver = AbstractSqlDriver> e
   /**
    * Returns configured knex instance.
    */
-  getKnex(type?: 'read' | 'write') {
+  getKnex(type?: ConnectionType) {
     return this.getConnection(type).getKnex();
   }
 

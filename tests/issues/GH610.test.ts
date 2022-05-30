@@ -1,6 +1,5 @@
 import { Entity, PrimaryKey, ManyToOne, IdentifiedReference, Property, MikroORM, wrap, ObjectBindingPattern } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
-import { SchemaGenerator } from '@mikro-orm/knex';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -31,8 +30,8 @@ describe('GH issue 610', () => {
       dbName: ':memory:',
       type: 'sqlite',
     });
-    await new SchemaGenerator(orm.em).dropSchema();
-    await new SchemaGenerator(orm.em).createSchema();
+    await orm.getSchemaGenerator().dropSchema();
+    await orm.getSchemaGenerator().createSchema();
   });
 
   afterAll(() => orm.close(true));

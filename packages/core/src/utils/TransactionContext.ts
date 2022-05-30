@@ -4,19 +4,17 @@ import type { EntityManager } from '../EntityManager';
 export class TransactionContext {
 
   private static storage = new AsyncLocalStorage<TransactionContext>();
-  readonly id = this.em.id;
+  readonly id = this.em._id;
 
   constructor(readonly em: EntityManager) { }
 
   /**
    * Creates new TransactionContext instance and runs the code inside its domain.
    */
-  static async createAsync<T>(em: EntityManager, next: (...args: any[]) => Promise<T>): Promise<T> {
+  static createAsync<T>(em: EntityManager, next: (...args: any[]) => Promise<T>): Promise<T> {
     const context = new TransactionContext(em);
 
-    return new Promise((resolve, reject) => {
-      this.storage.run(context, () => next().then(resolve).catch(reject));
-    });
+    return this.storage.run(context, next);
   }
 
   /**

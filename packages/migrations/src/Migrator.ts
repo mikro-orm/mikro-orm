@@ -1,6 +1,6 @@
 import type { InputMigrations, MigrateDownOptions, MigrateUpOptions, MigrationParams, RunnableMigration } from 'umzug';
 import { Umzug } from 'umzug';
-import { join } from 'path';
+import { basename, join } from 'path';
 import { ensureDir, pathExists, writeJSON } from 'fs-extra';
 import type { Constructor, Dictionary, IMigrationGenerator, IMigrator, Transaction } from '@mikro-orm/core';
 import { t, Type, UnknownType, Utils } from '@mikro-orm/core';
@@ -23,10 +23,19 @@ export class Migrator implements IMigrator {
   private readonly schemaGenerator = new SchemaGenerator(this.em);
   private readonly config = this.em.config;
   private readonly options = this.config.get('migrations');
-  private readonly absolutePath = Utils.absolutePath(this.options.path!, this.config.get('baseDir'));
-  private readonly snapshotPath = join(this.absolutePath, `.snapshot-${this.config.get('dbName')}.json`);
+  private readonly absolutePath: string;
+  private readonly snapshotPath: string;
 
   constructor(private readonly em: EntityManager) {
+    /* istanbul ignore next */
+    const key = (this.config.get('tsNode', Utils.detectTsNode()) && this.options.pathTs) ? 'pathTs' : 'path';
+    this.absolutePath = Utils.absolutePath(this.options[key]!, this.config.get('baseDir'));
+    // for snapshots, we always want to use the path based on `emit` option, regardless of whether we run in ts-node context
+    /* istanbul ignore next */
+    const snapshotPath = this.options.emit === 'ts' && this.options.pathTs ? this.options.pathTs : this.options.path!;
+    const absoluteSnapshotPath = Utils.absolutePath(snapshotPath, this.config.get('baseDir'));
+    const dbName = basename(this.config.get('dbName'));
+    this.snapshotPath = Utils.normalizePath(absoluteSnapshotPath, `.snapshot-${dbName}.json`);
     this.createUmzug();
   }
 
@@ -62,6 +71,7 @@ export class Migrator implements IMigrator {
     await this.ensureMigrationsDirExists();
     const schemaExists = await this.validateInitialMigration();
     const diff = await this.getSchemaDiff(false, true);
+    await this.storeCurrentSchema();
     const migration = await this.generator.generate(diff, path);
 
     if (schemaExists) {
@@ -131,14 +141,17 @@ export class Migrator implements IMigrator {
 
     Object.values(this.em.getMetadata().getAll())
       .filter(meta => meta.collection)
-      .forEach(meta => expected.add(meta.collection));
+      .forEach(meta => {
+        const schema = meta.schema ?? this.config.get('schema', this.em.getPlatform().getDefaultSchemaName());
+        expected.add(schema ? `${schema}.${meta.collection}` : meta.collection);
+      });
 
     schema.getTables().forEach(table => {
-      /* istanbul ignore next */
-      const tableName = table.schema ? `${table.schema}.${table.name}` : table.name;
+      const schema = table.schema ?? this.em.getPlatform().getDefaultSchemaName();
+      const tableName = schema ? `${schema}.${table.name}` : table.name;
 
       if (expected.has(tableName)) {
-        exists.add(tableName);
+        exists.add(table.schema ? `${table.schema}.${table.name}` : table.name);
       }
     });
 
@@ -200,11 +213,19 @@ export class Migrator implements IMigrator {
   }
 
   protected resolve(params: MigrationParams<any>): RunnableMigration<any> {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const migration = require(params.path!);
-    const MigrationClass = Object.values(migration)[0] as Constructor<Migration>;
+    const createMigrationHandler = async (method: 'up' | 'down') => {
+      const migration = await Utils.dynamicImport(params.path!);
+      const MigrationClass = Object.values(migration)[0] as Constructor<Migration>;
+      const instance = new MigrationClass(this.driver, this.config);
 
-    return this.initialize(MigrationClass, params.name);
+      await this.runner.run(instance, method);
+    };
+
+    return {
+      name: this.storage.getMigrationName(params.name),
+      up: () => createMigrationHandler('up'),
+      down: () => createMigrationHandler('down'),
+    };
   }
 
   protected async getCurrentSchema(): Promise<DatabaseSchema> {
@@ -340,7 +361,7 @@ export class Migrator implements IMigrator {
 
   private async ensureMigrationsDirExists() {
     if (!this.options.migrationsList) {
-      await ensureDir(Utils.normalizePath(this.options.path!));
+      await ensureDir(this.absolutePath);
     }
   }
 

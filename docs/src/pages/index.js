@@ -16,31 +16,82 @@ import styles from './styles.module.css';
 const features = [
   {
     title: <>Implicit Transactions</>,
-    imageUrl: 'img/lock-icon.svg',
+    imageUrl: 'img/icons/lock-icon.svg',
     description: (
       <>
-        MikroORM allows handling transactions automatically. When you call <code>em.flush()</code>, all computed changes
-        are wrapped inside a database transaction.
+        MikroORM allows handling <Link to="/docs/transactions">transactions</Link> automatically. When you call <code>em.flush()</code>, all <Link to="/docs/unit-of-work#how-mikroorm-detects-changes">computed changes</Link> are wrapped inside a database transaction.
       </>
     ),
   },
   {
     title: <>DRY Entities</>,
-    imageUrl: 'img/hairdryer.svg',
+    imageUrl: 'img/icons/hairdryer.svg',
     description: (
       <>
-        Uses source code analysis so you do not have to repeat yourself when defining entities. Simply define correct
-        TypeScript types and you are good to go!
+        Uses <Link to="/docs/metadata-providers#tsmorphmetadataprovider">source code analysis</Link> so you do not have to repeat yourself when defining entities. Simply define correct TypeScript types and you are good to go!
       </>
     ),
   },
   {
     title: <>Supports both SQL and NoSQL</>,
-    imageUrl: 'img/creative-idea.svg',
+    imageUrl: 'img/icons/creative-idea.svg',
     description: (
       <>
-        Supports MongoDB, MySQL, MariaDB, PostgreSQL and SQLite databases, and more can be supported via custom
-        drivers right now.
+        Supports <Link to="/docs/usage-with-mongo">MongoDB</Link>, <Link to="/docs/usage-with-sql">MySQL, MariaDB, PostgreSQL and SQLite</Link> databases, and more can be supported via custom drivers right now.
+      </>
+    ),
+  },
+  {
+    title: <>Migrations</>,
+    imageUrl: 'img/icons/migration.png',
+    description: (
+      <>
+        Keep your schema in sync with <Link to="/docs/schema-generator">SchemaGenerator</Link> and <Link to="/docs/migrations">Migrator</Link>. Supports both up and down migrations.
+      </>
+    ),
+  },
+  {
+    title: <>Seeder</>,
+    imageUrl: 'img/icons/seeds.png',
+    description: (
+      <>
+        With the <Link to="/docs/seeding">Seeder</Link> and seeding factories, we can generate fake data of any volume/shape and seed the database with ease.
+      </>
+    ),
+  },
+  {
+    title: <>Automatic Batching</>,
+    imageUrl: 'img/icons/batch-processing.png',
+    description: (
+      <>
+        Thanks to the <Link to="/docs/unit-of-work">UnitOfWork</Link>, all queries it fires are automatically batched. Inserts, updates, deletes - you name it!
+      </>
+    ),
+  },
+  {
+    title: <>Events</>,
+    imageUrl: 'img/icons/calendar.png',
+    description: (
+      <>
+        Powerful <Link to="/docs/events">event system</Link> allows to hook into not only the entity lifecycle. Want to alter how the UnitOfWork works? Try <Link to="/docs/events#using-onflush-event"><code>onFlush</code></Link> event!
+      </>
+    ),
+  },
+  {
+    title: <>QueryBuilder</>,
+    imageUrl: 'img/icons/magnet.png',
+    description: (
+      <>
+        Includes metadata-aware <Link to="/docs/query-builder">QueryBuilder</Link> with auto-joining support. Need more flexibility? We got you covered!
+      </>
+    ),
+  },
+  {
+    title: <>Filters</>,
+    imageUrl: 'img/icons/filter.png',
+    description: (
+      <>
+        Define and control your common <Link to="/docs/filters">filters</Link> globally. Want to show only results relevant for a given tenant? Or maybe you want to automatically hide all soft-deleted entities?
       </>
     ),
   },
@@ -49,7 +100,7 @@ const features = [
 function Feature({imageUrl, title, description}) {
   const imgUrl = useBaseUrl(imageUrl);
   return (
-    <div className={classnames('col col--4', styles.feature)}>
+    <div className={classnames('col col--4 margin-bottom--xl', styles.feature)}>
       {imgUrl && (
         <div className="text--center">
           <img className={styles.featureImage} src={imgUrl} alt={title} />

@@ -27,7 +27,7 @@ export class ArrayType<T extends string | number = string> extends Type<T[] | nu
   }
 
   convertToJSValue(value: T[] | string | null, platform: Platform): T[] | null {
-    if (!Utils.isDefined(value, true)) {
+    if (value == null) {
       return value as null;
     }
 

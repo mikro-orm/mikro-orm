@@ -1,23 +1,20 @@
-import type { Knex } from 'knex';
+﻿import type { Knex } from 'knex';
 import type { Dictionary, EntityMetadata } from '@mikro-orm/core';
-import { CommitOrderCalculator } from '@mikro-orm/core';
-import type { Column, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
+import { AbstractSchemaGenerator } from '@mikro-orm/core';
+import type { Check, Column, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
 import { DatabaseSchema } from './DatabaseSchema';
 import type { DatabaseTable } from './DatabaseTable';
-import type { SqlEntityManager } from '../SqlEntityManager';
+import type { AbstractSqlDriver } from '../AbstractSqlDriver';
 import { SchemaComparator } from './SchemaComparator';
 
-export class SchemaGenerator {
+/**
+ * Should be renamed to `SqlSchemaGenerator` in v6
+ */
+export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> {
 
-  private readonly config = this.em.config;
-  private readonly driver = this.em.getDriver();
-  private readonly metadata = this.em.getMetadata();
-  private readonly platform = this.driver.getPlatform();
   private readonly helper = this.platform.getSchemaHelper()!;
-  private readonly connection = this.driver.getConnection();
   private readonly knex = this.connection.getKnex();
-
-  constructor(private readonly em: SqlEntityManager) { }
+  private readonly options = this.config.get('schemaGenerator');
 
   async generate(): Promise<string> {
     const [dropSchema, createSchema] = await Promise.all([
@@ -56,15 +53,20 @@ export class SchemaGenerator {
 
   getTargetSchema(schema?: string): DatabaseSchema {
     const metadata = this.getOrderedMetadata(schema);
-    return DatabaseSchema.fromMetadata(metadata, this.platform, this.config, schema);
+    const schemaName = schema ?? this.config.get('schema') ?? this.platform.getDefaultSchemaName();
+    return DatabaseSchema.fromMetadata(metadata, this.platform, this.config, schemaName);
   }
 
   async getCreateSchemaSQL(options: { wrap?: boolean; schema?: string } = {}): Promise<string> {
-    const wrap = options.wrap ?? true;
+    const wrap = options.wrap ?? this.options.disableForeignKeys;
     const toSchema = this.getTargetSchema(options.schema);
     let ret = '';
 
     for (const namespace of toSchema.getNamespaces()) {
+      if (namespace === this.platform.getDefaultSchemaName()) {
+        continue;
+      }
+
       ret += await this.dump(this.knex.schema.createSchemaIfNotExists(namespace));
     }
 
@@ -73,15 +75,13 @@ export class SchemaGenerator {
     }
 
     for (const tableDef of toSchema.getTables()) {
-      ret += await this.dump(this.knex.schema.withSchema(tableDef.schema!).alterTable(tableDef.name, table => this.createForeignKeys(table, tableDef, options.schema)));
+      ret += await this.dump(this.createSchemaBuilder(tableDef.schema).alterTable(tableDef.name, table => this.createForeignKeys(table, tableDef, options.schema)));
     }
 
     return this.wrapSchema(ret, { wrap });
   }
 
   async dropSchema(options: { wrap?: boolean; dropMigrationsTable?: boolean; dropDb?: boolean; schema?: string } = {}): Promise<void> {
-    options.wrap ??= true;
-
     if (options.dropDb) {
       const name = this.config.get('dbName')!;
       return this.dropDatabase(name);
@@ -91,10 +91,50 @@ export class SchemaGenerator {
     await this.execute(sql);
   }
 
+  async clearDatabase(options?: { schema?: string; truncate?: boolean }): Promise<void> {
+    // truncate by default, so no value is considered as true
+    /* istanbul ignore if */
+    if (options?.truncate === false) {
+      return super.clearDatabase(options);
+    }
+
+    await this.execute(this.helper.disableForeignKeysSQL());
+
+    for (const meta of this.getOrderedMetadata(options?.schema).reverse()) {
+      await this.driver.createQueryBuilder(meta.className, this.em?.getTransactionContext(), 'write', false)
+        .withSchema(options?.schema)
+        .truncate();
+    }
+
+    await this.execute(this.helper.enableForeignKeysSQL());
+
+    if (this.em) {
+      const allowGlobalContext = this.config.get('allowGlobalContext');
+      this.config.set('allowGlobalContext', true);
+      this.em.clear();
+      this.config.set('allowGlobalContext', allowGlobalContext);
+    }
+  }
+
   async getDropSchemaSQL(options: { wrap?: boolean; dropMigrationsTable?: boolean; schema?: string } = {}): Promise<string> {
-    const wrap = options.wrap ?? true;
+    const wrap = options.wrap ?? this.options.disableForeignKeys;
     const metadata = this.getOrderedMetadata(options.schema).reverse();
+    const schema = await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema);
     let ret = '';
+
+    // remove FKs explicitly if we can't use cascading statement and we don't disable FK checks (we need this for circular relations)
+    for (const meta of metadata) {
+      const table = schema.getTable(meta.tableName);
+
+      if (!this.platform.usesCascadeStatement() && table && !wrap) {
+        for (const fk of Object.values(table.getForeignKeys())) {
+          const builder = this.createSchemaBuilder(table.schema).alterTable(table.name, tbl => {
+            tbl.dropForeign(fk.columnNames, fk.constraintName);
+          });
+          ret += await this.dump(builder, '\n');
+        }
+      }
+    }
 
     for (const meta of metadata) {
       ret += await this.dump(this.dropTable(meta.collection, this.getSchemaName(meta, options)), '\n');
@@ -108,8 +148,9 @@ export class SchemaGenerator {
   }
 
   private getSchemaName(meta: EntityMetadata, options: { schema?: string }): string | undefined {
+    const schemaName = options.schema ?? this.config.get('schema');
     /* istanbul ignore next */
-    return meta.schema === '*' ? options.schema : meta.schema;
+    return meta.schema && meta.schema === '*' ? schemaName : (meta.schema ?? schemaName);
   }
 
   async updateSchema(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema; schema?: string } = {}): Promise<void> {
@@ -138,7 +179,7 @@ export class SchemaGenerator {
   }
 
   private async prepareSchemaForComparison(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema; schema?: string }) {
-    options.wrap ??= true;
+    options.wrap ??= this.options.disableForeignKeys;
     options.safe ??= false;
     options.dropTables ??= true;
     const toSchema = this.getTargetSchema(options.schema);
@@ -155,13 +196,17 @@ export class SchemaGenerator {
 
     if (this.platform.supportsSchemas()) {
       for (const newNamespace of schemaDiff.newNamespaces) {
-        ret += await this.dump(this.knex.schema.createSchema(newNamespace));
+        // schema might already exist, e.g. explicit usage of `public` in postgres
+        ret += await this.dump(this.knex.schema.createSchemaIfNotExists(newNamespace));
       }
     }
 
     if (!options.safe) {
       for (const orphanedForeignKey of schemaDiff.orphanedForeignKeys) {
-        ret += await this.dump(this.knex.schema.alterTable(orphanedForeignKey.localTableName, table => table.dropForeign(orphanedForeignKey.columnNames, orphanedForeignKey.constraintName)));
+        const [schemaName, tableName] = this.splitTableName(orphanedForeignKey.localTableName);
+        ret += await this.dump(this.createSchemaBuilder(schemaName).alterTable(tableName, table => {
+          return table.dropForeign(orphanedForeignKey.columnNames, orphanedForeignKey.constraintName);
+        }));
       }
     }
 
@@ -170,7 +215,9 @@ export class SchemaGenerator {
     }
 
     for (const newTable of Object.values(schemaDiff.newTables)) {
-      ret += await this.dump(this.knex.schema.withSchema(newTable.schema!).alterTable(newTable.name, table => this.createForeignKeys(table, newTable, options.schema)));
+      ret += await this.dump(this.createSchemaBuilder(newTable.schema).alterTable(newTable.name, table => {
+        this.createForeignKeys(table, newTable, options.schema);
+      }));
     }
 
     if (options.dropTables && !options.safe) {
@@ -201,17 +248,26 @@ export class SchemaGenerator {
   }
 
   private getReferencedTableName(referencedTableName: string, schema?: string) {
-    schema ??= this.config.get('schema');
+    const [schemaName, tableName] = this.splitTableName(referencedTableName);
+    schema = schemaName ?? schema ?? this.config.get('schema');
 
     /* istanbul ignore next */
-    if (schema && referencedTableName.startsWith('*.')) {
+    if (schema && schemaName === '*') {
       return `${schema}.${referencedTableName.replace(/^\*\./, '')}`;
     }
 
-    return referencedTableName;
+    if (schemaName === this.platform.getDefaultSchemaName()) {
+      return tableName;
+    }
+
+    return `${schemaName}.${tableName}`;
   }
 
   private createForeignKey(table: Knex.CreateTableBuilder, foreignKey: ForeignKey, schema?: string) {
+    if (!this.options.createForeignKeyConstraints) {
+      return;
+    }
+
     const builder = table
       .foreign(foreignKey.columnNames, foreignKey.constraintName)
       .references(foreignKey.referencedColumnNames)
@@ -234,8 +290,9 @@ export class SchemaGenerator {
     const ret: Knex.SchemaBuilder[] = [];
     const push = (sql: string) => sql ? ret.push(this.knex.schema.raw(sql)) : undefined;
     push(this.helper.getPreAlterTable(diff, safe));
+    const [schemaName, tableName] = this.splitTableName(diff.name);
 
-    ret.push(this.knex.schema.alterTable(diff.name, table => {
+    ret.push(this.createSchemaBuilder(schemaName).alterTable(tableName, table => {
       for (const foreignKey of Object.values(diff.removedForeignKeys)) {
         table.dropForeign(foreignKey.columnNames, foreignKey.constraintName);
       }
@@ -248,10 +305,19 @@ export class SchemaGenerator {
     return ret;
   }
 
+  private splitTableName(name: string): [string | undefined, string] {
+    const parts = name.split('.');
+    const tableName = parts.pop()!;
+    const schemaName = parts.pop();
+
+    return [schemaName, tableName];
+  }
+
   private alterTable(diff: TableDifference, safe: boolean): Knex.SchemaBuilder[] {
     const ret: Knex.SchemaBuilder[] = [];
+    const [schemaName, tableName] = this.splitTableName(diff.name);
 
-    ret.push(this.knex.schema.alterTable(diff.name, table => {
+    ret.push(this.createSchemaBuilder(schemaName).alterTable(tableName, table => {
       for (const index of Object.values(diff.removedIndexes)) {
         this.dropIndex(table, index);
       }
@@ -260,12 +326,20 @@ export class SchemaGenerator {
         this.dropIndex(table, index);
       }
 
+      for (const check of Object.values(diff.removedChecks)) {
+        this.dropCheck(table, check);
+      }
+
+      for (const check of Object.values(diff.changedChecks)) {
+        this.dropCheck(table, check);
+      }
+
       for (const column of Object.values(diff.addedColumns)) {
         const col = this.helper.createTableColumn(table, column, diff.fromTable);
         this.configureColumn(column, col);
         const foreignKey = Object.values(diff.addedForeignKeys).find(fk => fk.columnNames.length === 1 && fk.columnNames[0] === column.name);
 
-        if (foreignKey) {
+        if (foreignKey && this.options.createForeignKeyConstraints) {
           delete diff.addedForeignKeys[foreignKey.constraintName];
           col.references(foreignKey.referencedColumnNames[0])
             .inTable(this.getReferencedTableName(foreignKey.referencedTableName))
@@ -292,7 +366,7 @@ export class SchemaGenerator {
       }
 
       for (const { column } of Object.values(diff.changedColumns).filter(diff => diff.changedProperties.has('autoincrement'))) {
-        this.helper.pushTableQuery(table, this.helper.getAlterColumnAutoincrement(diff.name, column));
+        this.helper.pushTableQuery(table, this.helper.getAlterColumnAutoincrement(tableName, column));
       }
 
       for (const { column, changedProperties } of Object.values(diff.changedColumns).filter(diff => diff.changedProperties.has('comment'))) {
@@ -300,11 +374,11 @@ export class SchemaGenerator {
           continue; // will be handled via knex
         }
 
-        this.helper.pushTableQuery(table, this.helper.getChangeColumnCommentSQL(diff.name, column));
+        this.helper.pushTableQuery(table, this.helper.getChangeColumnCommentSQL(tableName, column));
       }
 
       for (const [oldColumnName, column] of Object.entries(diff.renamedColumns)) {
-        this.helper.pushTableQuery(table, this.helper.getRenameColumnSQL(diff.name, oldColumnName, column));
+        this.helper.pushTableQuery(table, this.helper.getRenameColumnSQL(tableName, oldColumnName, column));
       }
 
       for (const foreignKey of Object.values(diff.addedForeignKeys)) {
@@ -316,24 +390,33 @@ export class SchemaGenerator {
       }
 
       for (const index of Object.values(diff.addedIndexes)) {
-        this.createIndex(table, index, diff.name);
+        this.createIndex(table, index, diff.fromTable);
       }
 
       for (const index of Object.values(diff.changedIndexes)) {
-        this.createIndex(table, index, diff.name, true);
+        this.createIndex(table, index, diff.fromTable, true);
       }
 
       for (const [oldIndexName, index] of Object.entries(diff.renamedIndexes)) {
         if (index.unique) {
           this.dropIndex(table, index, oldIndexName);
-          this.createIndex(table, index, diff.name);
+          this.createIndex(table, index, diff.fromTable);
         } else {
           this.helper.pushTableQuery(table, this.helper.getRenameIndexSQL(diff.name, index, oldIndexName));
         }
       }
 
+      for (const check of Object.values(diff.addedChecks)) {
+        this.createCheck(table, check);
+      }
+
+      for (const check of Object.values(diff.changedChecks)) {
+        this.createCheck(table, check);
+      }
+
       if ('changedComment' in diff) {
-        table.comment(diff.changedComment ?? '');
+        const comment = diff.changedComment ? this.platform.quoteValue(diff.changedComment).replace(/^'|'$/g, '') : '';
+        table.comment(comment);
       }
     }));
 
@@ -365,9 +448,9 @@ export class SchemaGenerator {
   }
 
   private wrapSchema(sql: string, options: { wrap?: boolean } = {}): string {
-    options.wrap ??= true;
+    options.wrap ??= this.options.disableForeignKeys;
 
-    if (!options.wrap) {
+    if (!options.wrap || sql.trim() === '') {
       return sql;
     }
 
@@ -378,19 +461,35 @@ export class SchemaGenerator {
     return ret;
   }
 
+  private createSchemaBuilder(schema?: string): Knex.SchemaBuilder {
+    const builder = this.knex.schema;
+
+    if (schema && schema !== this.platform.getDefaultSchemaName()) {
+      builder.withSchema(schema);
+    }
+
+    return builder;
+  }
+
   private createTable(tableDef: DatabaseTable): Knex.SchemaBuilder {
-    return this.knex.schema.withSchema(tableDef.schema!).createTable(tableDef.name, table => {
+    return this.createSchemaBuilder(tableDef.schema).createTable(tableDef.name, table => {
       tableDef.getColumns().forEach(column => {
         const col = this.helper.createTableColumn(table, column, tableDef);
         this.configureColumn(column, col);
       });
 
       for (const index of tableDef.getIndexes()) {
-        this.createIndex(table, index, tableDef.name, !tableDef.getColumns().some(c => c.autoincrement));
+        const createPrimary = !tableDef.getColumns().some(c => c.autoincrement) || this.helper.hasNonDefaultPrimaryKeyName(tableDef);
+        this.createIndex(table, index, tableDef, createPrimary);
+      }
+
+      for (const check of tableDef.getChecks()) {
+        this.createCheck(table, check);
       }
 
       if (tableDef.comment) {
-        table.comment(tableDef.comment);
+        const comment = this.platform.quoteValue(tableDef.comment).replace(/^'|'$/g, '');
+        table.comment(comment);
       }
 
       if (!this.helper.supportsSchemaConstraints()) {
@@ -403,17 +502,16 @@ export class SchemaGenerator {
     });
   }
 
-  private createIndex(table: Knex.CreateTableBuilder, index: Index, tableName: string, createPrimary = false) {
+  private createIndex(table: Knex.CreateTableBuilder, index: Index, tableDef: DatabaseTable, createPrimary = false) {
     if (index.primary && !createPrimary) {
       return;
     }
 
     if (index.primary) {
-      /* istanbul ignore next */
-      const keyName = tableName.includes('.') ? tableName.split('.').pop()! + '_pkey' : undefined;
+      const keyName = this.helper.hasNonDefaultPrimaryKeyName(tableDef) ? index.keyName : undefined;
       table.primary(index.columnNames, keyName);
     } else if (index.unique) {
-      table.unique(index.columnNames, index.keyName);
+      table.unique(index.columnNames, { indexName: index.keyName });
     } else if (index.expression) {
       this.helper.pushTableQuery(table, index.expression);
     } else {
@@ -431,12 +529,16 @@ export class SchemaGenerator {
     }
   }
 
-  private dropTable(name: string, schema?: string): Knex.SchemaBuilder {
-    let builder = this.knex.schema.dropTableIfExists(name);
+  private createCheck(table: Knex.CreateTableBuilder, check: Check) {
+    table.check(check.expression as string, {}, check.name);
+  }
 
-    if (schema) {
-      builder.withSchema(schema);
-    }
+  private dropCheck(table: Knex.CreateTableBuilder, check: Check) {
+    table.dropChecks(check.name);
+  }
+
+  private dropTable(name: string, schema?: string): Knex.SchemaBuilder {
+    let builder = this.createSchemaBuilder(schema).dropTableIfExists(name);
 
     if (this.platform.usesCascadeStatement()) {
       builder = this.knex.schema.raw(builder.toQuery() + ' cascade');
@@ -457,28 +559,6 @@ export class SchemaGenerator {
     for (const fk of Object.values(tableDef.getForeignKeys())) {
       this.createForeignKey(table, fk, schema);
     }
-  }
-
-  private getOrderedMetadata(schema?: string): EntityMetadata[] {
-    const metadata = Object.values(this.metadata.getAll()).filter(meta => {
-      const isRootEntity = meta.root.className === meta.className;
-      return isRootEntity && !meta.embeddable;
-    });
-    const calc = new CommitOrderCalculator();
-    metadata.forEach(meta => calc.addNode(meta.root.className));
-    let meta = metadata.pop();
-
-    while (meta) {
-      for (const prop of meta.props) {
-        calc.discoverProperty(prop, meta.root.className);
-      }
-
-      meta = metadata.pop();
-    }
-
-    return calc.sort()
-      .map(cls => this.metadata.find(cls)!)
-      .filter(meta => schema ? [schema, '*'].includes(meta.schema!) : meta.schema !== '*');
   }
 
   private async dump(builder: Knex.SchemaBuilder, append = '\n\n'): Promise<string> {

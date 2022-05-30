@@ -20,4 +20,3 @@ console.log(author.isInitialized()); // true
 console.log(author.name); // defined
 ```
 
-[&larr; Back to table of contents](index.md#table-of-contents)

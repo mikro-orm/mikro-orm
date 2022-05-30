@@ -133,9 +133,7 @@ describe('embedded entities in postgres', () => {
       type: 'postgresql',
       dbName: `mikro_orm_test_entities_in_embedddables`,
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.getSchemaGenerator().refreshDatabase();
   });
 
   beforeEach(async () => {

@@ -2,14 +2,14 @@ import type { Dictionary } from '@mikro-orm/core';
 import { Entity, MetadataDiscovery, MetadataStorage, MikroORM, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
 import type { MySqlDriver } from '@mikro-orm/mysql';
 import { BaseUser2, CompanyOwner2, Employee2, Manager2, Type } from '../../entities-sql';
-import { initORMMySql, mockLogger, wipeDatabaseMySql } from '../../bootstrap';
+import { initORMMySql, mockLogger } from '../../bootstrap';
 
 describe('single table inheritance in mysql', () => {
 
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
-  beforeEach(async () => wipeDatabaseMySql(orm.em));
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
 
   async function createEntities() {
     const employee1 = new Employee2('Emp', '1');
@@ -124,7 +124,7 @@ describe('single table inheritance in mysql', () => {
     expect(Object.keys(users[0])).toEqual(['id', 'firstName', 'lastName', 'type', 'employeeProp']);
     expect(Object.keys(users[1])).toEqual(['id', 'firstName', 'lastName', 'type', 'employeeProp']);
     expect(Object.keys(users[2])).toEqual(['id', 'firstName', 'lastName', 'type', 'managerProp']);
-    expect(Object.keys(users[3])).toEqual(['firstName', 'lastName', 'type', 'ownerProp', 'favouriteEmployee', 'favouriteManager', 'managerProp', 'id']);
+    expect(Object.keys(users[3])).toEqual(['id', 'firstName', 'lastName', 'type', 'ownerProp', 'favouriteEmployee', 'favouriteManager', 'managerProp']);
 
     expect([...orm.em.getUnitOfWork().getIdentityMap().keys()]).toEqual(['BaseUser2-4', 'BaseUser2-1', 'BaseUser2-2', 'BaseUser2-3']);
 

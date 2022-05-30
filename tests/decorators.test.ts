@@ -1,4 +1,5 @@
 import { ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, Property, MetadataStorage, ReferenceType, Utils, Subscriber, UseRequestContext } from '@mikro-orm/core';
+import type { Dictionary } from '@mikro-orm/core';
 import { Test } from './entities';
 
 class Test2 {}
@@ -7,6 +8,8 @@ class Test4 {}
 class Test5 {}
 class Test6 {}
 const TEST_VALUE = 'expected value';
+
+const DI = {} as Dictionary;
 
 class TestClass {
 
@@ -32,6 +35,11 @@ class TestClass {
     //
   }
 
+  @UseRequestContext(() => DI.orm)
+  methodWithCallback() {
+    //
+  }
+
 }
 
 
@@ -43,6 +51,8 @@ describe('decorators', () => {
   test('ManyToMany', () => {
     const storage = MetadataStorage.getMetadata();
     const key = 'Test2-' + Utils.hash('/path/to/entity');
+    const err = 'Mixing first decorator parameter as options object with other parameters is forbidden. If you want to use the options parameter at first position, provide all options inside it.';
+    expect(() => ManyToMany({ entity: () => Test }, 'name')(new Test2(), 'test0')).toThrow(err);
     ManyToMany({ entity: () => Test })(new Test2(), 'test0');
     ManyToMany({ entity: () => Test })(new Test2(), 'test0'); // calling multiple times won't throw
     expect(storage[key].properties.test0).toMatchObject({ reference: ReferenceType.MANY_TO_MANY, name: 'test0' });
@@ -111,11 +121,16 @@ describe('decorators', () => {
     expect(ret3).toBeUndefined();
     const ret4 = await test.methodReturnsNothing();
     expect(ret4).toBeUndefined();
+    const ret5 = await test.methodWithCallback();
+    expect(ret5).toBeUndefined();
 
     const notOrm = jest.fn() as unknown as MikroORM;
     const test2 = new TestClass(notOrm);
+    DI.orm = orm;
+    const ret6 = await test2.methodWithCallback();
+    expect(ret6).toBeUndefined();
 
-    const err = '@UseRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property';
+    const err = '@UseRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property, or with a callback parameter like `@UseRequestContext(() => orm)`';
     await expect(test2.asyncMethodReturnsValue()).rejects.toThrow(err);
   });
 

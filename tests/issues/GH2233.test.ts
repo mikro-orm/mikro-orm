@@ -1,6 +1,5 @@
 import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
-import { SchemaGenerator } from '@mikro-orm/sqlite';
 
 @Embeddable()
 export class Lock {
@@ -34,7 +33,7 @@ describe('GH issue 2233', () => {
       dbName: ':memory:',
       type: 'sqlite',
     });
-    await new SchemaGenerator(orm.em).createSchema();
+    await orm.getSchemaGenerator().createSchema();
   });
 
   afterAll(() => orm.close(true));
@@ -51,7 +50,7 @@ describe('GH issue 2233', () => {
       .getKnexQuery();
 
     const mapped = orm.em.map(File, raw);
-    expect(mapped).toEqual({ id: 1 });
+    expect(mapped).toEqual({ id: 1, lock: null });
   });
 
 });

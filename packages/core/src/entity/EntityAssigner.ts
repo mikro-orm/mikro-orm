@@ -1,7 +1,7 @@
 import { inspect } from 'util';
 import type { Collection } from './Collection';
 import type { EntityManager } from '../EntityManager';
-import type { AnyEntity, EntityData, EntityDTO, EntityMetadata, EntityProperty, Primary } from '../typings';
+import type { AnyEntity, EntityData, EntityDTO, EntityMetadata, EntityProperty, Primary, RequiredEntityData } from '../typings';
 import { Utils } from '../utils/Utils';
 import { Reference } from './Reference';
 import { ReferenceType, SCALAR_TYPES } from '../enums';
@@ -13,6 +13,12 @@ const validator = new EntityValidator(false);
 export class EntityAssigner {
 
   static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T> | Partial<EntityDTO<T>>, options: AssignOptions = {}): T {
+    if (options.visited?.has(entity)) {
+      return entity;
+    }
+
+    options.visited ??= new Set();
+    options.visited.add(entity);
     const wrapped = entity.__helper!;
     options = {
       updateNestedEntities: true,
@@ -30,9 +36,9 @@ export class EntityAssigner {
         return;
       }
 
-      let value = data[prop as keyof typeof data];
+      let value = data[prop];
 
-      if (props[prop] && !props[prop].nullable && (value === undefined || value === null)) {
+      if (props[prop] && !props[prop].nullable && value == null) {
         throw new Error(`You must pass a non-${value} value to the property ${prop} of entity ${entity.constructor.name}.`);
       }
 
@@ -46,7 +52,7 @@ export class EntityAssigner {
         value = props[prop].customType.convertToJSValue(value, entity.__platform);
       }
 
-      if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(props[prop]?.reference) && Utils.isDefined(value, true) && EntityAssigner.validateEM(em)) {
+      if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(props[prop]?.reference) && value != null && EntityAssigner.validateEM(em)) {
         // eslint-disable-next-line no-prototype-builtins
         if (options.updateNestedEntities && entity.hasOwnProperty(prop) && Utils.isEntity(entity[prop], true) && Utils.isPlainObject(value)) {
           const unwrappedEntity = Reference.unwrapReference(entity[prop]);
@@ -56,7 +62,10 @@ export class EntityAssigner {
 
             if (pk) {
               const ref = em.getReference(props[prop].type, pk as Primary<T>, options);
-              if (ref.__helper!.isInitialized()) {
+              // if the PK differs, we want to change the target entity, not update it
+              const sameTarget = ref.__helper.getSerializedPrimaryKey() === unwrappedEntity.__helper.getSerializedPrimaryKey();
+
+              if (ref.__helper!.isInitialized() && sameTarget) {
                 return EntityAssigner.assign(ref, value, options);
               }
             }
@@ -124,7 +133,7 @@ export class EntityAssigner {
 
   private static assignReference<T extends AnyEntity<T>>(entity: T, value: any, prop: EntityProperty, em: EntityManager, options: AssignOptions): void {
     if (Utils.isEntity(value, true)) {
-      entity[prop.name] = value;
+      entity[prop.name] = Reference.wrapReference(value, prop);
     } else if (Utils.isPrimaryKey(value, true)) {
       entity[prop.name] = prop.mapToPk ? value : Reference.wrapReference(em.getReference<T>(prop.type, value, options), prop);
     } else if (Utils.isPlainObject(value) && options.merge) {
@@ -225,7 +234,7 @@ export class EntityAssigner {
     }
 
     if (Utils.isPlainObject(item)) {
-      return em.create<T>(prop.type, item as EntityData<T>, options);
+      return em.create<T>(prop.type, item as RequiredEntityData<T>, options);
     }
 
     invalid.push(item);
@@ -246,4 +255,6 @@ export interface AssignOptions {
   merge?: boolean;
   schema?: string;
   em?: EntityManager;
+  /** @internal */
+  visited?: Set<AnyEntity>;
 }

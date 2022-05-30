@@ -10,7 +10,6 @@ import {
   LoadStrategy,
 } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
-import { SchemaGenerator } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Owner {
@@ -89,7 +88,7 @@ describe('GH issue 1553', () => {
       entities: [Radio, RadioOption, Owner],
       loadStrategy: LoadStrategy.JOINED,
     });
-    await new SchemaGenerator(orm.em).createSchema();
+    await orm.getSchemaGenerator().createSchema();
   });
 
   afterAll(async () => {

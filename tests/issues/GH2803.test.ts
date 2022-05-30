@@ -1,0 +1,65 @@
+import { Collection, Entity, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { mockLogger } from '../helpers';
+
+@Entity()
+export class Book {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name?: string;
+
+  @OneToMany({
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    entity: () => Tag,
+    mappedBy: t => t.book,
+    strategy: LoadStrategy.JOINED,
+  })
+  tags = new Collection<Tag>(this);
+
+}
+
+@Entity()
+export class Tag {
+
+  @PrimaryKey()
+  id!: number;
+
+  @ManyToOne(() => Book)
+  book!: Book;
+
+}
+
+describe('GH issue 2803', () => {
+
+  let orm: MikroORM<SqliteDriver>;
+
+  beforeAll(async () => {
+    orm = await MikroORM.init({
+      type: 'sqlite',
+      dbName: ':memory:',
+      entities: [Book, Tag],
+    });
+    await orm.getSchemaGenerator().createSchema();
+  });
+
+  afterAll(async () => {
+    await orm.close(true);
+  });
+
+  test(`load strategy defined on property level is respected`, async () => {
+    const b = orm.em.create(Book, {
+      name: 'b',
+      tags: [{}, {}, {}],
+    });
+    await orm.em.fork().persist(b).flush();
+
+    const mock = mockLogger(orm, ['query']);
+    const ret = await orm.em.find(Book, {}, { populate: ['tags'] });
+    expect(ret[0].tags).toHaveLength(3);
+    expect(mock).toBeCalledTimes(1);
+  });
+
+});

@@ -5,7 +5,7 @@ import {
   LoadStrategy,
   ManyToOne,
   MikroORM,
-  OneToMany,
+  OneToMany, OptionalProps,
   PrimaryKey,
   Property,
   QueryOrder,
@@ -14,6 +14,8 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class D {
+
+  [OptionalProps]?: 'c';
 
   @PrimaryKey()
   id!: number;
@@ -25,8 +27,9 @@ export class D {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     entity: () => C,
     wrappedReference: true,
+    nullable: true,
   })
-  c!: IdentifiedReference<C>;
+  c?: IdentifiedReference<C>;
 
 }
 
@@ -43,8 +46,9 @@ export class C {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     entity: () => B,
     wrappedReference: true,
+    nullable: true,
   })
-  b!: IdentifiedReference<B>;
+  b?: IdentifiedReference<B>;
 
   @OneToMany(
     () => D,
@@ -71,8 +75,9 @@ export class B {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     entity: () => A,
     wrappedReference: true,
+    nullable: true,
   })
-  a!: IdentifiedReference<A>;
+  a?: IdentifiedReference<A>;
 
   @OneToMany(
     () => C,
@@ -122,7 +127,7 @@ describe('GH issue 1331', () => {
     await orm.close(true);
   });
 
-  test(`relations' orderBy should be respectend when using LoadStrategy.JOINED`, async () => {
+  test(`relations' orderBy should be respected when using LoadStrategy.JOINED`, async () => {
     const a = orm.em.create(A, {});
     const b1 = orm.em.create(B, { order: 0 });
     const b2 = orm.em.create(B, { order: 2 });

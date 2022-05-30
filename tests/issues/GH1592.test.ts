@@ -1,6 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property, IdentifiedReference, LoadStrategy, OneToOne } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
-import { SchemaGenerator } from '@mikro-orm/sqlite';
 
 @Entity()
 export class RadioOption {
@@ -48,7 +47,7 @@ describe('GH issue 1592', () => {
       entities: [Radio, RadioOption],
       loadStrategy: LoadStrategy.JOINED,
     });
-    await new SchemaGenerator(orm.em).createSchema();
+    await orm.getSchemaGenerator().createSchema();
   });
 
   afterAll(async () => {

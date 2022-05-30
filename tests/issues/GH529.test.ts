@@ -70,7 +70,7 @@ export class OrderItem {
   @Property()
   offeredPrice: number;
 
-  [PrimaryKeyType]: [number, number]; // this is needed for proper type checks in `FilterQuery`
+  [PrimaryKeyType]?: [number, number]; // this is needed for proper type checks in `FilterQuery`
 
   constructor(order: Order, product: Product, amount = 1) {
     this.order = order;
@@ -91,9 +91,7 @@ describe('GH issue 529', () => {
       dbName: `mikro_orm_test_gh_529`,
       type: 'postgresql',
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.getSchemaGenerator().refreshDatabase();
   });
 
   afterAll(async () => {

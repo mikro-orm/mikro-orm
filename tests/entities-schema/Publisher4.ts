@@ -1,10 +1,11 @@
-import type { Collection } from '@mikro-orm/core';
-import { EntitySchema, Enum } from '@mikro-orm/core';
+import type { Collection , OptionalProps } from '@mikro-orm/core';
+import { EntitySchema } from '@mikro-orm/core';
 import type { IBaseEntity5 } from './BaseEntity5';
 import type { IBook4 } from './Book4';
 import type { ITest4 } from './Test4';
 
-export interface IPublisher4 extends IBaseEntity5 {
+export interface IPublisher4 extends Omit<IBaseEntity5, typeof OptionalProps> {
+  [OptionalProps]?: 'name' | 'type' | IBaseEntity5[typeof OptionalProps];
   name: string;
   type: PublisherType;
   books: Collection<IBook4>;

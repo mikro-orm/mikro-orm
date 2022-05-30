@@ -1,9 +1,10 @@
 import { escape } from 'sqlstring';
-import type { Constructor, EntityManager, EntityRepository } from '@mikro-orm/core';
+import type { Constructor, EntityManager, EntityRepository, IDatabaseDriver } from '@mikro-orm/core';
 import { JsonProperty, Platform, Utils } from '@mikro-orm/core';
 import { SqlEntityRepository } from './SqlEntityRepository';
 import type { SchemaHelper } from './schema';
 import { SchemaGenerator } from './schema';
+import type { SqlEntityManager } from './SqlEntityManager';
 
 export abstract class AbstractSqlPlatform extends Platform {
 
@@ -25,23 +26,28 @@ export abstract class AbstractSqlPlatform extends Platform {
     return this.schemaHelper;
   }
 
-  getSchemaGenerator(em: EntityManager): SchemaGenerator {
-    return new SchemaGenerator(em as any); // cast as `any` to get around circular dependencies
+  getSchemaGenerator(driver: IDatabaseDriver, em?: SqlEntityManager): SchemaGenerator {
+    /* istanbul ignore next */
+    return this.config.getCachedService(SchemaGenerator, em ?? driver as any); // cast as `any` to get around circular dependencies
   }
 
   getEntityGenerator(em: EntityManager) {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { EntityGenerator } = require('@mikro-orm/entity-generator');
-    return new EntityGenerator(em);
+    return this.config.getCachedService(EntityGenerator, em);
   }
 
   getMigrator(em: EntityManager) {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { Migrator } = require('@mikro-orm/migrations');
-    return new Migrator(em);
+    return this.config.getCachedService(Migrator, em);
   }
 
   quoteValue(value: any): string {
+    if (this.isRaw(value)) {
+      return value;
+    }
+
     /* istanbul ignore if */
     if (Utils.isPlainObject(value) || value?.[JsonProperty]) {
       return escape(JSON.stringify(value));
@@ -84,12 +90,12 @@ export abstract class AbstractSqlPlatform extends Platform {
     return ret;
   }
 
-  getSearchJsonPropertySQL(path: string, type: string): string {
-    return this.getSearchJsonPropertyKey(path.split('->'), type);
+  getSearchJsonPropertySQL(path: string, type: string, aliased: boolean): string {
+    return this.getSearchJsonPropertyKey(path.split('->'), type, aliased);
   }
 
   isRaw(value: any): boolean {
-    return super.isRaw(value) || (typeof value === 'object' && value !== null && value.client && value.ref && value.constructor.name === 'Ref');
+    return super.isRaw(value) || (typeof value === 'object' && value !== null && value.client && ['Ref', 'Raw'].includes(value.constructor.name));
   }
 
   supportsSchemas(): boolean {

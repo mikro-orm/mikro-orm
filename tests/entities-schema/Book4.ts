@@ -1,4 +1,4 @@
-import type { Collection, Reference } from '@mikro-orm/core';
+import type { Collection, Reference , OptionalProps } from '@mikro-orm/core';
 import { EntitySchema, t } from '@mikro-orm/core';
 import type { IBaseEntity5 } from './BaseEntity5';
 import type { IAuthor4 } from './Author4';
@@ -12,7 +12,8 @@ export interface Book4Meta {
   nested?: { foo: string; bar?: number; deep?: { baz: number; qux: boolean } };
 }
 
-export interface IBook4 extends IBaseEntity5 {
+export interface IBook4 extends Omit<IBaseEntity5, typeof OptionalProps> {
+  [OptionalProps]?: 'meta' | IBaseEntity5[typeof OptionalProps];
   title: string;
   price?: number;
   author?: IAuthor4;

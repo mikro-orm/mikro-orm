@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, MikroORM, ManyToOne, Enum, PrimaryKeyType, Property, BigIntType, wrap } from '@mikro-orm/core';
+import { Entity, PrimaryKey, MikroORM, ManyToOne, Enum, PrimaryKeyType, Property, BigIntType, wrap, OptionalProps } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
 import { mockLogger } from '../../helpers';
@@ -14,7 +14,7 @@ class User {
 @Entity()
 class Wallet {
 
-  [PrimaryKeyType]: [string, string];
+  [PrimaryKeyType]?: [string, string];
 
   @PrimaryKey()
   currencyRef!: string;
@@ -27,7 +27,9 @@ class Wallet {
 
 }
 
-class AbstractDeposit {
+class AbstractDeposit<Optional> {
+
+  [OptionalProps]?: 'createdAt' | 'updatedAt' | Optional;
 
   @Property({ type: String, nullable: false })
   amount!: string;
@@ -52,9 +54,9 @@ enum DepositStatus {
 
 
 @Entity()
-export class Deposit extends AbstractDeposit {
+export class Deposit extends AbstractDeposit<'status'> {
 
-  [PrimaryKeyType]: [string, string, string];
+  [PrimaryKeyType]?: [string, string, string];
 
   @PrimaryKey()
   txRef!: string;
@@ -80,9 +82,7 @@ describe('GH issue 1079', () => {
       dbName: `mikro_orm_test_gh_1079`,
       type: 'postgresql',
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.getSchemaGenerator().refreshDatabase();
   });
 
   afterAll(() => orm.close(true));

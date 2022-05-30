@@ -6,7 +6,7 @@ import { MongoClient } from 'mongodb';
 import { ObjectId } from 'bson';
 import { inspect } from 'util';
 import type {
-  ConnectionConfig, QueryResult, Transaction, QueryOrderMap, FilterQuery, AnyEntity, EntityName, Dictionary,
+  ConnectionType, ConnectionConfig, QueryResult, Transaction, QueryOrderMap, FilterQuery, AnyEntity, EntityName, Dictionary,
   EntityData, TransactionEventBroadcaster, IsolationLevel, Configuration, ConnectionOptions,
 } from '@mikro-orm/core';
 import { Connection, Utils, QueryOrder, EventType, ValidationError } from '@mikro-orm/core';
@@ -17,7 +17,7 @@ export class MongoConnection extends Connection {
   protected db!: Db;
   private connected = false;
 
-  constructor(config: Configuration, options?: ConnectionOptions, type: 'read' | 'write' = 'write') {
+  constructor(config: Configuration, options?: ConnectionOptions, type: ConnectionType = 'write') {
     super(config, options, type);
 
     ObjectId.prototype[inspect.custom] = function () {
@@ -120,7 +120,7 @@ export class MongoConnection extends Connection {
     let query = `db.getCollection('${collection}').find(${this.logObject(where)}, ${this.logObject(options)})`;
     orderBy = Utils.asArray(orderBy);
 
-    if (orderBy.length > 0) {
+    if (Array.isArray(orderBy) && orderBy.length > 0) {
       const orderByTuples: [string, number][] = [];
       orderBy.forEach(o => {
         Object.keys(o).forEach(k => {

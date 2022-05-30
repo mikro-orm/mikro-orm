@@ -44,6 +44,7 @@ export class Book1 {
 @Entity({ tableName: 'book' })
 @Index({ properties: 'author1' })
 @Index({ properties: 'author3' })
+@Index({ name: 'custom_index_expr123', expression: 'create  index  "custom_index_expr123" on "book" ("isbn")' })
 export class Book2 {
 
   @PrimaryKey()
@@ -79,6 +80,7 @@ export class Book2 {
 @Index({ properties: 'author1' })
 @Index({ properties: 'author3', name: 'lol31' })
 @Index({ properties: 'author3', name: 'lol41' })
+@Index({ name: 'custom_index_expr123', expression: 'create  index  "custom_index_expr123" on "book" ("isbn")' })
 export class Book3 {
 
   @PrimaryKey()

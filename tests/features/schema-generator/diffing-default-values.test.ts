@@ -50,11 +50,9 @@ describe('diffing default values (GH #2385)', () => {
       entities: [Foo1],
       dbName: 'mikro_orm_test_gh_2385',
       type: 'mysql',
-      port: 3307,
+      port: 3308,
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.getSchemaGenerator().refreshDatabase();
     expect(await orm.getSchemaGenerator().getCreateSchemaSQL()).toMatchSnapshot();
     await expect(orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
     await orm.close();
@@ -67,9 +65,7 @@ describe('diffing default values (GH #2385)', () => {
       type: 'mariadb',
       port: 3309,
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.getSchemaGenerator().refreshDatabase();
     expect(await orm.getSchemaGenerator().getCreateSchemaSQL()).toMatchSnapshot();
     await expect(orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
     await orm.close();
@@ -81,9 +77,7 @@ describe('diffing default values (GH #2385)', () => {
       dbName: 'mikro_orm_test_gh_2385',
       type: 'postgresql',
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.getSchemaGenerator().refreshDatabase();
     expect(await orm.getSchemaGenerator().getCreateSchemaSQL()).toMatchSnapshot();
     await expect(orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
     await orm.close();

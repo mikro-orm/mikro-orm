@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import type { EntityProperty, MetadataStorage } from '@mikro-orm/core';
+import type { Dictionary, EntityProperty, MetadataStorage } from '@mikro-orm/core';
 import { ReferenceType, Utils } from '@mikro-orm/core';
 import type { ICriteriaNode, IQueryBuilder } from '../typings';
 
@@ -12,6 +12,7 @@ export class CriteriaNode implements ICriteriaNode {
 
   payload: any;
   prop?: EntityProperty;
+  index?: number;
 
   constructor(protected readonly metadata: MetadataStorage,
               readonly entityName: string,
@@ -21,11 +22,18 @@ export class CriteriaNode implements ICriteriaNode {
     const meta = parent && metadata.find(parent.entityName);
 
     if (meta && key) {
-      Utils.splitPrimaryKeys(key).forEach(k => {
-        this.prop = meta.props.find(prop => prop.name === k || (prop.fieldNames || []).includes(k));
+      const pks = Utils.splitPrimaryKeys(key);
+
+      if (pks.length > 1) {
+        return;
+      }
+
+      pks.forEach(k => {
+        this.prop = meta.props.find(prop => prop.name === k || (prop.fieldNames?.length === 1 && prop.fieldNames[0] === k));
+        const isProp = this.prop || meta.props.find(prop => (prop.fieldNames || []).includes(k));
 
         // do not validate if the key is prefixed or type casted (e.g. `k::text`)
-        if (validate && !this.prop && !k.includes('.') && !k.includes('::') && !Utils.isOperator(k) && !CriteriaNode.isCustomExpression(k)) {
+        if (validate && !isProp && !k.includes('.') && !k.includes('::') && !Utils.isOperator(k) && !CriteriaNode.isCustomExpression(k)) {
           throw new Error(`Trying to query by not existing property ${entityName}.${k}`);
         }
       });
@@ -65,42 +73,34 @@ export class CriteriaNode implements ICriteriaNode {
   }
 
   renameFieldToPK<T>(qb: IQueryBuilder<T>): string {
-    const alias = qb.getAliasForJoinPath(this.getPath());
+    const alias = qb.getAliasForJoinPath(this.getPath()) ?? qb.alias;
 
     if (this.prop!.reference === ReferenceType.MANY_TO_MANY) {
       return Utils.getPrimaryKeyHash(this.prop!.inverseJoinColumns.map(col => `${alias}.${col}`));
     }
 
     if (this.prop!.joinColumns.length > 1) {
-      return Utils.getPrimaryKeyHash(this.prop!.joinColumns);
+      return Utils.getPrimaryKeyHash(this.prop!.joinColumns.map(col => `${alias}.${col}`));
     }
 
     return Utils.getPrimaryKeyHash(this.prop!.referencedColumnNames.map(col => `${alias}.${col}`));
   }
 
-  getPath(): string {
-    const parentPath = this.parent?.getPath();
-    let ret = this.parent && this.prop ? this.prop.name : this.entityName;
-
-    if (parentPath && this.prop?.reference === ReferenceType.SCALAR) {
-      return parentPath;
-    }
-
-    if (this.parent && Array.isArray(this.parent.payload) && this.parent.parent && !this.key) {
-      ret = this.parent.parent.key!;
-    }
-
-    if (parentPath) {
-      ret = parentPath + '.' + ret;
-    } else if (this.parent?.entityName && ret && this.prop) {
-      ret = this.parent.entityName + '.' + ret;
-    }
+  getPath(addIndex = false): string {
+    // use index on parent only if we are processing to-many relation
+    const addParentIndex = this.prop && [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(this.prop.reference);
+    const parentPath = this.parent?.getPath(addParentIndex) ?? this.entityName;
+    const index = addIndex && this.index != null ? `[${this.index}]` : '';
+    // ignore group operators to allow easier mapping (e.g. for orderBy)
+    const key = this.key && !['$and', '$or', '$not'].includes(this.key) ? '.' + this.key : '';
+    const ret = parentPath + index + key;
 
     if (this.isPivotJoin()) {
+      // distinguish pivot table join from target entity join
       return this.getPivotPath(ret);
     }
 
-    return ret ?? '';
+    return ret;
   }
 
   private isPivotJoin(): boolean {
@@ -120,7 +120,12 @@ export class CriteriaNode implements ICriteriaNode {
   }
 
   [inspect.custom]() {
-    return `${this.constructor.name} ${inspect({ entityName: this.entityName, key: this.key, payload: this.payload })}`;
+    const o: Dictionary = {};
+    ['entityName', 'key', 'index', 'payload']
+      .filter(k => this[k] != null)
+      .forEach(k => o[k] = this[k]);
+
+    return `${this.constructor.name} ${inspect(o)}`;
   }
 
   static isCustomExpression(field: string): boolean {

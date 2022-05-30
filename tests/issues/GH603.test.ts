@@ -1,4 +1,4 @@
-import { Collection, EntitySchema, MikroORM } from '@mikro-orm/core';
+import { Collection, EntitySchema, MikroORM, OptionalProps } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { v4 } from 'uuid';
 
@@ -7,6 +7,7 @@ class TaskProps {
   id = v4();
   version = new Date();
   projects = new Collection<ProjectProps>(this);
+  [OptionalProps]?: 'version';
 
 }
 
@@ -71,11 +72,9 @@ describe('GH issue 603', () => {
       entities: [TaskSchema, ProjectSchema],
       dbName: `mikro_orm_test_gh_603`,
       type: 'mysql',
-      port: 3307,
+      port: 3308,
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.getSchemaGenerator().refreshDatabase();
 
     const project = orm.em.create(ProjectProps, { name: 'Test project' });
     const task = orm.em.create(TaskProps, {});

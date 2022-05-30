@@ -10,7 +10,7 @@ export class FooBaz2 {
   @Property()
   name: string;
 
-  @OneToOne(() => FooBar2, 'baz')
+  @OneToOne(() => FooBar2, 'baz', { nullable: true })
   bar?: FooBar2;
 
   @Property({ version: true })

@@ -5,7 +5,7 @@ import type { Logger } from './logging';
 import { Configuration, ConfigurationLoader, Utils } from './utils';
 import { NullCacheAdapter } from './cache';
 import type { EntityManager } from './EntityManager';
-import type { AnyEntity, Constructor, IEntityGenerator, IMigrator, ISchemaGenerator, ISeedManager } from './typings';
+import type { AnyEntity, Constructor, IEntityGenerator, IMigrator, ISeedManager } from './typings';
 import { colors } from './logging';
 
 /**
@@ -26,7 +26,9 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    * If you omit the `options` parameter, your CLI config will be used.
    */
   static async init<D extends IDatabaseDriver = IDatabaseDriver>(options?: Options<D> | Configuration<D>, connect = true): Promise<MikroORM<D>> {
-    const env = ConfigurationLoader.loadEnvironmentVars<D>(options);
+    ConfigurationLoader.registerDotenv(options);
+    const coreVersion = await ConfigurationLoader.checkPackageVersion();
+    const env = ConfigurationLoader.loadEnvironmentVars<D>();
 
     if (!options) {
       options = await ConfigurationLoader.getConfiguration<D>();
@@ -34,6 +36,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
 
     options = options instanceof Configuration ? options.getAll() : options;
     const orm = new MikroORM<D>(Utils.merge(options, env));
+    orm.logger.log('info', `MikroORM version: ${colors.green(coreVersion)}`);
 
     // we need to allow global context here as we are not in a scope of requests yet
     const allowGlobalContext = orm.config.get('allowGlobalContext');
@@ -41,11 +44,11 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     await orm.discoverEntities();
     orm.config.set('allowGlobalContext', allowGlobalContext);
 
-    if (connect) {
+    if (connect && orm.config.get('connect')) {
       await orm.connect();
 
       if (orm.config.get('ensureIndexes')) {
-        await orm.driver.ensureIndexes();
+        await orm.getSchemaGenerator().ensureIndexes();
       }
     }
 
@@ -132,8 +135,8 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Gets the SchemaGenerator.
    */
-  getSchemaGenerator<T extends ISchemaGenerator = ISchemaGenerator>(): T {
-    return this.driver.getPlatform().getSchemaGenerator(this.em) as T;
+  getSchemaGenerator(): ReturnType<ReturnType<D['getPlatform']>['getSchemaGenerator']> {
+    return this.driver.getPlatform().getSchemaGenerator(this.driver, this.em) as any;
   }
 
   /**
@@ -153,7 +156,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
   getSeeder<T extends ISeedManager = ISeedManager>(): T {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { SeedManager } = require('@mikro-orm/seeder');
-    return new SeedManager(this);
+    return this.config.getCachedService(SeedManager, this.em);
   }
 
 }

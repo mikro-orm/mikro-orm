@@ -2,16 +2,22 @@ import type { MikroORM } from '@mikro-orm/core';
 import { FlushMode, wrap } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
-import { initORMPostgreSql, mockLogger, wipeDatabasePostgreSql } from '../bootstrap';
+import { initORMPostgreSql, mockLogger } from '../bootstrap';
 import { Author2, BaseUser2, Book2, CompanyOwner2, Employee2, Manager2 } from '../entities-sql';
 
 describe('automatic flushing when querying for overlapping entities via em.find/One', () => {
 
   let orm: MikroORM<PostgreSqlDriver>;
 
-  beforeAll(async () => orm = await initORMPostgreSql(undefined, [CompanyOwner2, Employee2, Manager2, BaseUser2]));
-  beforeEach(async () => wipeDatabasePostgreSql(orm.em));
-  afterAll(async () => orm.close(true));
+  beforeAll(async () => {
+    orm = await initORMPostgreSql(undefined, [CompanyOwner2, Employee2, Manager2, BaseUser2]);
+    await orm.getSchemaGenerator().updateSchema();
+  });
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  afterAll(async () => {
+    await orm.getSchemaGenerator().dropSchema();
+    await orm.close(true);
+  });
 
   async function createEntities() {
     const god = new Author2('God', 'hello@heaven.god');
@@ -229,9 +235,6 @@ describe('automatic flushing when querying for overlapping entities via em.find/
   });
 
   test('em.find() triggers auto-flush when STI entity changed', async () => {
-    await orm.getSchemaGenerator().updateSchema();
-    await orm.em.nativeDelete(BaseUser2, {});
-
     const employee1 = new Employee2('Emp', '1');
     employee1.employeeProp = 1;
     const employee2 = new Employee2('Emp', '2');
@@ -259,8 +262,6 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     expect(ret[1]).toHaveLength(1);
     expect(ret[2]).toHaveLength(1);
     expect(mock.mock.calls).toHaveLength(7);
-
-    await orm.getSchemaGenerator().dropSchema();
   });
 
 });

@@ -1,8 +1,8 @@
-import type { AnyEntity, Dictionary, EntityData, EntityMetadata, FilterQuery, Loaded, LoadedCollection, Populate, Primary } from '../typings';
+import type { AnyEntity, EntityData, EntityDTO, EntityMetadata, FilterQuery, Loaded, LoadedCollection, Populate, Primary, ConnectionType } from '../typings';
 import { ArrayCollection } from './ArrayCollection';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
-import type { QueryOrderMap } from '../enums';
+import type { LockMode, QueryOrderMap } from '../enums';
 import { QueryOrder, ReferenceType } from '../enums';
 import { Reference } from './Reference';
 import type { Transaction } from '../connections/Connection';
@@ -44,12 +44,12 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   /**
    * Initializes the collection and returns the items
    */
-  async loadItems(): Promise<T[]> {
+  async loadItems<P extends string = never>(options?: InitOptions<T, P>): Promise<Loaded<T, P>[]> {
     if (!this.isInitialized(true)) {
-      await this.init();
+      await this.init(options);
     }
 
-    return super.getItems();
+    return super.getItems() as Loaded<T, P>[];
   }
 
   /**
@@ -62,12 +62,12 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     }
 
     const em = this.getEntityManager();
-    const pivotMeta = em.getMetadata().find(this.property.pivotTable)!;
+    const pivotMeta = em.getMetadata().find(this.property.pivotEntity)!;
 
     if (!em.getPlatform().usesPivotTable() && this.property.reference === ReferenceType.MANY_TO_MANY) {
       this._count = this.length;
     } else if (this.property.pivotTable && !(this.property.inversedBy || this.property.mappedBy)) {
-      this._count = await em.count(this.property.type, this.createLoadCountCondition({} as FilterQuery<T>, pivotMeta), { populate: [{ field: this.property.pivotTable }] });
+      this._count = await em.count(this.property.type, this.createLoadCountCondition({} as FilterQuery<T>, pivotMeta), { populate: [{ field: this.property.pivotEntity }] });
     } else {
       this._count = await em.count(this.property.type, this.createLoadCountCondition({} as FilterQuery<T>, pivotMeta));
     }
@@ -108,7 +108,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     return super.getItems();
   }
 
-  toJSON(): Dictionary[] {
+  toJSON(): EntityDTO<T>[] {
     if (!this.isInitialized()) {
       return [];
     }
@@ -141,6 +141,9 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     this.takeSnapshot();
   }
 
+  /**
+   * @inheritDoc
+   */
   remove(...items: (T | Reference<T> | ((item: T) => boolean))[]): void {
     if (items[0] instanceof Function) {
       for (const item of this.items) {
@@ -206,7 +209,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     const em = this.getEntityManager();
 
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
-      const map = await em.getDriver().loadFromPivotTable(this.property, [this.owner.__helper!.__primaryKeys], options.where, options.orderBy);
+      const map = await em.getDriver().loadFromPivotTable(this.property, [this.owner.__helper!.__primaryKeys], options.where, options.orderBy, undefined, options);
       this.hydrate(map[this.owner.__helper!.getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, { convertCustomTypes: true })));
       this._lazyInitialized = true;
 
@@ -225,8 +228,12 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     const where = this.createCondition(options.where);
     const order = [...this.items]; // copy order of references
     const customOrder = !!options.orderBy;
-    const orderBy = this.createOrderBy(options.orderBy);
-    const items: T[] = await em.find(this.property.type, where, { populate: options.populate, orderBy });
+    const items: T[] = await em.find(this.property.type, where, {
+      populate: options.populate,
+      lockMode: options.lockMode,
+      orderBy: this.createOrderBy(options.orderBy),
+      connectionType: options.connectionType,
+    });
 
     if (!customOrder) {
       this.reorderItems(items, order);
@@ -314,9 +321,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     if (this.property.reference === ReferenceType.ONE_TO_MANY) {
       cond[this.property.mappedBy] = val;
     } else if (pivotMeta && this.property.owner && !this.property.inversedBy) {
-      const pivotProp1 = pivotMeta.properties[this.property.type + '_inverse'];
-      const inverse = pivotProp1.mappedBy;
-      const key = `${this.property.pivotTable}.${pivotMeta.properties[inverse].name}`;
+      const key = `${this.property.pivotEntity}.${pivotMeta.relations[0].name}`;
       cond[key] = val;
     } else {
       const key = this.property.owner ? this.property.inversedBy : this.property.mappedBy;
@@ -404,4 +409,6 @@ export interface InitOptions<T, P extends string = never> {
   populate?: Populate<T, P>;
   orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[];
   where?: FilterQuery<T>;
+  lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
+  connectionType?: ConnectionType;
 }

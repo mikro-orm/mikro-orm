@@ -6,7 +6,7 @@ import { MongoHighlighter } from '@mikro-orm/mongo-highlighter';
 
 import { Author, Book, BookTag, Publisher, PublisherType, Test } from './entities';
 import { AuthorRepository } from './repositories/AuthorRepository';
-import { initORMMongo, mockLogger, wipeDatabase } from './bootstrap';
+import { initORMMongo, mockLogger } from './bootstrap';
 import FooBar from './entities/FooBar';
 import { FooBaz } from './entities/FooBaz';
 
@@ -15,7 +15,7 @@ describe('EntityManagerMongo', () => {
   let orm: MikroORM<MongoDriver>;
 
   beforeAll(async () => orm = await initORMMongo());
-  beforeEach(async () => wipeDatabase(orm.em));
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
 
   test('should load entities', async () => {
     expect(orm).toBeInstanceOf(MikroORM);
@@ -109,11 +109,11 @@ describe('EntityManagerMongo', () => {
         expect(book.title).toMatch(/My Life on The Wall, part \d/);
         expect(book.author).toBeInstanceOf(Author);
         expect(wrap(book.author).isInitialized()).toBe(true);
-        expect(book.publisher.isInitialized()).toBe(false);
-        expect(typeof book.publisher.id).toBe('string');
-        expect(book.publisher._id).toBeInstanceOf(ObjectId);
-        expect(book.publisher.unwrap()).toBeInstanceOf(Publisher);
-        expect(wrap(book.publisher.unwrap()).isInitialized()).toBe(false);
+        expect(book.publisher!.isInitialized()).toBe(false);
+        expect(typeof book.publisher!.id).toBe('string');
+        expect(book.publisher!._id).toBeInstanceOf(ObjectId);
+        expect(book.publisher!.unwrap()).toBeInstanceOf(Publisher);
+        expect(wrap(book.publisher!.unwrap()).isInitialized()).toBe(false);
       }
     }
 
@@ -159,16 +159,6 @@ describe('EntityManagerMongo', () => {
     await orm.em.getRepository(Book).remove(lastBook[0]).flush();
   });
 
-  test('create/drop collection', async () => {
-    const driver = orm.em.getDriver();
-    await driver.getConnection().dropCollection(FooBar);
-    let collections = await driver.getConnection().listCollections();
-    expect(collections).not.toContain('foo-bar');
-    await driver.createCollections();
-    collections = await driver.getConnection().listCollections();
-    expect(collections).toContain('foo-bar');
-  });
-
   test('should provide custom repository', async () => {
     const repo = orm.em.getRepository(Author);
     expect(repo).toBeInstanceOf(AuthorRepository);
@@ -180,6 +170,7 @@ describe('EntityManagerMongo', () => {
     const bar = FooBar.create('fb');
     bar.baz = FooBaz.create('fz');
     bar.baz.book = new Book('FooBar vs FooBaz');
+    bar.baz.book.author = new Author('a', 'b');
     await orm.em.persistAndFlush(bar);
     orm.em.clear();
 
@@ -187,7 +178,7 @@ describe('EntityManagerMongo', () => {
     const a = await repo.findOne(bar.id, { populate: ['baz.bar'] });
     expect(wrap(a!.baz!).isInitialized()).toBe(true);
     expect(wrap(a!.baz!.book).isInitialized()).toBe(true);
-    expect(a!.baz!.book.title).toBe('FooBar vs FooBaz');
+    expect(a!.baz!.book!.title).toBe('FooBar vs FooBaz');
   });
 
   test('property serializer', async () => {
@@ -343,6 +334,26 @@ describe('EntityManagerMongo', () => {
     await repo.flush();
     expect(orm.em.getUnitOfWork().getById<Author>(Author.name, author.id)).toBeUndefined();
     expect(orm.em.getUnitOfWork().getIdentityMap()).toEqual({ registry: new Map([[Author, new Map<string, Author>()]]) });
+  });
+
+  test('removing entity will remove its FK from relations', async () => {
+    const author = new Author('auth', 'email');
+    const publisher = new Publisher('pub');
+    author.books.add(new Book('b1'));
+    author.books[0].publisher = Reference.create(publisher);
+    author.books.add(new Book('b2'));
+    author.books[1].publisher = Reference.create(publisher);
+    author.books.add(new Book('b3'));
+    author.books[2].publisher = Reference.create(publisher);
+    await orm.em.fork().persistAndFlush(author);
+
+    const p1 = await orm.em.findOneOrFail(Publisher, publisher, { populate: ['books'] });
+    orm.em.remove(p1);
+    await orm.em.flush();
+
+    const books = await orm.em.fork().find(Book, {});
+    expect(books).toHaveLength(3);
+    expect(books.map(b => b.publisher)).toEqual([null, null, null]);
   });
 
   test('removing persisted entity via PK', async () => {
@@ -504,13 +515,14 @@ describe('EntityManagerMongo', () => {
     const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(MongoDriver);
     expect(driver.getDependencies()).toEqual(['mongodb']);
-    expect(orm.config.getNamingStrategy().joinTableName('a', 'b', 'c')).toEqual('');
+    expect(orm.config.getNamingStrategy().joinTableName('a', 'b', 'c')).toEqual('a_c');
     expect(await driver.find(BookTag.name, { foo: 'bar', books: 123 }, { orderBy: {} })).toEqual([]);
     expect(await driver.findOne(BookTag.name, { foo: 'bar', books: 123 })).toBeNull();
     expect(await driver.findOne(BookTag.name, { foo: 'bar', books: 123 }, { orderBy: {} })).toBeNull();
     expect(driver.getPlatform().usesPivotTable()).toBe(false);
     expect(driver.getPlatform().usesImplicitTransactions()).toBe(false);
     await expect(driver.loadFromPivotTable({} as EntityProperty, [])).rejects.toThrowError('MongoDriver does not use pivot tables');
+    await expect(driver.getConnection().execute('')).rejects.toThrowError('MongoConnection does not support generic execute method');
     await expect(driver.getConnection().execute('')).rejects.toThrowError('MongoConnection does not support generic execute method');
     expect(driver.getConnection().getCollection(BookTag).collectionName).toBe('book-tag');
     expect(orm.em.getCollection(BookTag).collectionName).toBe('book-tag');
@@ -519,7 +531,7 @@ describe('EntityManagerMongo', () => {
 
     const conn = driver.getConnection();
     const ctx = await conn.begin();
-    const first = await driver.nativeInsert(Publisher.name, { name: 'test 123', type: 'GLOBAL' }, { ctx });
+    const first = await driver.nativeInsert<Publisher>(Publisher.name, { name: 'test 123', type: PublisherType.GLOBAL }, { ctx });
     await conn.commit(ctx);
     await driver.nativeUpdate<Publisher>(Publisher.name, first.insertId, { name: 'test 456' });
     await driver.nativeUpdateMany<Publisher>(Publisher.name, [first.insertId], [{ name: 'test 789' }]);
@@ -679,7 +691,7 @@ describe('EntityManagerMongo', () => {
     await wrap(jon.favouriteBook).init();
     expect(jon.favouriteBook).toBeInstanceOf(Book);
     expect(wrap(jon.favouriteBook).isInitialized()).toBe(true);
-    expect(jon.favouriteBook.title).toBe('Bible');
+    expect(jon.favouriteBook?.title).toBe('Bible');
   });
 
   test('many to many relation', async () => {
@@ -812,7 +824,7 @@ describe('EntityManagerMongo', () => {
     expect(p1.tests.isDirty()).toBe(false);
     expect(p1.tests.count()).toBe(0);
     const p2 = new Publisher('bar');
-    p2.tests.add(new Test(), new Test());
+    p2.tests.add(new Test({ name: 't1' }), new Test({ name: 't2' }));
     await orm.em.persistAndFlush([p1, p2]);
     const repo = orm.em.getRepository(Publisher);
 
@@ -896,7 +908,7 @@ describe('EntityManagerMongo', () => {
     // merge cached author with his references
     orm.em.clear();
     const cachedAuthor = orm.em.merge<Author>(Author, cache);
-    expect(cachedAuthor).toBe(cachedAuthor.favouriteBook.author);
+    expect(cachedAuthor).toBe(cachedAuthor.favouriteBook?.author);
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toEqual([
       'Author-' + author.id,
       'Book-' + book1.id,
@@ -911,7 +923,7 @@ describe('EntityManagerMongo', () => {
     // merge detached author
     orm.em.clear();
     const cachedAuthor2 = orm.em.merge(author);
-    expect(cachedAuthor2).toBe(cachedAuthor2.favouriteBook.author);
+    expect(cachedAuthor2).toBe(cachedAuthor2.favouriteBook?.author);
     expect([...orm.em.getUnitOfWork().getIdentityMap().keys()]).toEqual([
       'Author-' + author.id,
       'Book-' + book1.id,
@@ -1083,7 +1095,7 @@ describe('EntityManagerMongo', () => {
     const repo = orm.em.getRepository(Book);
     let books = await repo.findAll();
     expect(books.length).toBe(3);
-    expect(books[0].publisher.unwrap().id).toBeDefined();
+    expect(books[0].publisher!.unwrap().id).toBeDefined();
     expect(await orm.em.count(Publisher)).toBe(1);
 
     // we need to remove those books from IM or ORM will try to persist them automatically (and they still have link to the publisher)
@@ -1137,13 +1149,13 @@ describe('EntityManagerMongo', () => {
     expect(wrap(tags[0].books[0].author).isInitialized()).toBe(true);
     expect(tags[0].books[0].author.name).toBe('Jon Snow');
     expect(tags[0].books[0].publisher).toBeInstanceOf(Reference);
-    expect(tags[0].books[0].publisher.isInitialized()).toBe(true);
-    expect(tags[0].books[0].publisher.unwrap()).toBeInstanceOf(Publisher);
-    expect(wrap(tags[0].books[0].publisher.unwrap()).isInitialized()).toBe(true);
-    expect(tags[0].books[0].publisher.unwrap().tests.isInitialized(true)).toBe(true);
-    expect(tags[0].books[0].publisher.unwrap().tests.count()).toBe(2);
-    expect(tags[0].books[0].publisher.unwrap().tests[0].name).toBe('t11');
-    expect(tags[0].books[0].publisher.unwrap().tests[1].name).toBe('t12');
+    expect(tags[0].books[0].publisher!.isInitialized()).toBe(true);
+    expect(tags[0].books[0].publisher!.unwrap()).toBeInstanceOf(Publisher);
+    expect(wrap(tags[0].books[0].publisher!.unwrap()).isInitialized()).toBe(true);
+    expect(tags[0].books[0].publisher!.unwrap().tests.isInitialized(true)).toBe(true);
+    expect(tags[0].books[0].publisher!.unwrap().tests.count()).toBe(2);
+    expect(tags[0].books[0].publisher!.unwrap().tests[0].name).toBe('t11');
+    expect(tags[0].books[0].publisher!.unwrap().tests[1].name).toBe('t12');
 
     orm.em.clear();
     const books = await orm.em.find(Book, {}, { populate: ['publisher.tests', 'author'] });
@@ -1154,13 +1166,13 @@ describe('EntityManagerMongo', () => {
     expect(wrap(books[0].author).isInitialized()).toBe(true);
     expect(books[0].author.name).toBe('Jon Snow');
     expect(books[0].publisher).toBeInstanceOf(Reference);
-    expect(books[0].publisher.isInitialized()).toBe(true);
-    expect(books[0].publisher.unwrap()).toBeInstanceOf(Publisher);
-    expect(wrap(books[0].publisher.unwrap()).isInitialized()).toBe(true);
-    expect(books[0].publisher.unwrap().tests.isInitialized(true)).toBe(true);
-    expect(books[0].publisher.unwrap().tests.count()).toBe(2);
-    expect(books[0].publisher.unwrap().tests[0].name).toBe('t11');
-    expect(books[0].publisher.unwrap().tests[1].name).toBe('t12');
+    expect(books[0].publisher!.isInitialized()).toBe(true);
+    expect(books[0].publisher!.unwrap()).toBeInstanceOf(Publisher);
+    expect(wrap(books[0].publisher!.unwrap()).isInitialized()).toBe(true);
+    expect(books[0].publisher!.unwrap().tests.isInitialized(true)).toBe(true);
+    expect(books[0].publisher!.unwrap().tests.count()).toBe(2);
+    expect(books[0].publisher!.unwrap().tests[0].name).toBe('t11');
+    expect(books[0].publisher!.unwrap().tests[1].name).toBe('t12');
   });
 
   test('nested populating with empty collection', async () => {
@@ -1222,8 +1234,8 @@ describe('EntityManagerMongo', () => {
     expect(tags[0].books.count()).toBe(2);
     expect(wrap(tags[0].books[0]).isInitialized()).toBe(true);
     expect(tags[0].books[0].publisher).toBeInstanceOf(Reference);
-    expect(tags[0].books[0].publisher.unwrap()).toBeInstanceOf(Publisher);
-    expect(tags[0].books[0].publisher.isInitialized()).toBe(true);
+    expect(tags[0].books[0].publisher!.unwrap()).toBeInstanceOf(Publisher);
+    expect(tags[0].books[0].publisher!.isInitialized()).toBe(true);
     expect(tags[0].books[0].author).toBeInstanceOf(Author);
     expect(wrap(tags[0].books[0].author).isInitialized()).toBe(true);
     expect(tags[0].books[0].author.books.isInitialized(true)).toBe(true);
@@ -1271,7 +1283,7 @@ describe('EntityManagerMongo', () => {
   test('em.create properly cascades collections', async () => {
     const author = orm.em.create(Author, { name: 'Jon Snow', email: 'snow@wall 1.st' });
     author.books.add(new Book('Test 1'));
-    author.books.add(orm.em.create(Book, { title: 'Test 2' }));
+    author.books.add(orm.em.create(Book, { title: 'Test 2', author }));
     await orm.em.persistAndFlush(author);
     expect(author._id).toBeDefined();
     expect(author.books[0]._id).toBeDefined();
@@ -1594,7 +1606,7 @@ describe('EntityManagerMongo', () => {
 
     const jon = await orm.em.findOne(Author, author.id, { populate: ['favouriteBook'] });
     expect(jon!.favouriteBook).toBeInstanceOf(Book);
-    expect(jon!.favouriteBook.title).toBe(book1.title);
+    expect(jon!.favouriteBook?.title).toBe(book1.title);
   });
 
   test('self referencing M:N (1 step)', async () => {
@@ -1674,11 +1686,11 @@ describe('EntityManagerMongo', () => {
     const a = (await orm.em.findOne(Author, author, { populate: ['favouriteBook'] }))!;
     expect(a).not.toBe(author);
     a.name = 'test 1';
-    a.favouriteBook.title = 'test 2';
+    a.favouriteBook!.title = 'test 2';
     const a1 = (await orm.em.findOne(Author, { favouriteBook: a.favouriteBook }))!;
     const b1 = (await orm.em.findOne(Book, { author }))!;
     expect(a.name).toBe('test 1');
-    expect(a.favouriteBook.title).toBe('test 2');
+    expect(a.favouriteBook?.title).toBe('test 2');
     expect(a1.name).toBe('test 1');
     expect(b1.title).toBe('test 2');
     await orm.em.persistAndFlush(a);
@@ -1699,11 +1711,11 @@ describe('EntityManagerMongo', () => {
     const a = (await orm.em.findOne(Author, author, { populate: ['favouriteBook'] }))!;
     expect(a).not.toBe(author);
     a.name = 'test 1';
-    a.favouriteBook.title = 'test 2';
+    a.favouriteBook!.title = 'test 2';
     const a1 = orm.em.getReference(Author, a.id)!;
-    const b1 = orm.em.getReference(Book, a.favouriteBook.id)!;
+    const b1 = orm.em.getReference(Book, a.favouriteBook!.id)!;
     expect(a.name).toBe('test 1');
-    expect(a.favouriteBook.title).toBe('test 2');
+    expect(a.favouriteBook!.title).toBe('test 2');
     expect(a1.name).toBe('test 1');
     expect(b1.title).toBe('test 2');
     await orm.em.persistAndFlush(a);
@@ -1734,7 +1746,7 @@ describe('EntityManagerMongo', () => {
     expect(author.favouriteBook).toBe('0000007b5c9c61c332380f78');
     await orm.em.persistAndFlush(author);
     expect(author.favouriteBook).toBeInstanceOf(Book);
-    expect(author.favouriteBook.id).toBe('0000007b5c9c61c332380f78');
+    expect(author.favouriteBook!.id).toBe('0000007b5c9c61c332380f78');
   });
 
   test('automatically fix array of PKs instead of collection when flushing (m:n)', async () => {
@@ -2079,6 +2091,7 @@ describe('EntityManagerMongo', () => {
 
   test('working with arrays', async () => {
     const book = new Book('B');
+    book.author = new Author('a', 'b');
     await orm.em.persist(book).flush();
 
     const mock = mockLogger(orm);

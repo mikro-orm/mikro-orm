@@ -1,6 +1,6 @@
 import type { EntityManager, MergeOptions } from '../EntityManager';
-import type { EntityData, EntityName, AnyEntity, Primary, Loaded, New, FilterQuery, EntityDictionary, AutoPath } from '../typings';
-import type { CountOptions, DeleteOptions, FindOneOptions, FindOneOrFailOptions, FindOptions, GetReferenceOptions, UpdateOptions } from '../drivers/IDatabaseDriver';
+import type { EntityData, EntityName, AnyEntity, Primary, Loaded, FilterQuery, EntityDictionary, AutoPath, RequiredEntityData } from '../typings';
+import type { CountOptions, DeleteOptions, FindOneOptions, FindOneOrFailOptions, FindOptions, GetReferenceOptions, NativeInsertUpdateOptions, UpdateOptions } from '../drivers/IDatabaseDriver';
 import type { IdentifiedReference, Reference } from './Reference';
 import type { EntityLoaderOptions } from './EntityLoader';
 
@@ -114,8 +114,8 @@ export class EntityRepository<T extends AnyEntity<T>> {
   /**
    * Fires native insert query. Calling this has no side effects on the context (identity map).
    */
-  async nativeInsert(data: EntityData<T>): Promise<Primary<T>> {
-    return this.em.nativeInsert<T>(this.entityName, data);
+  async nativeInsert(data: T | EntityData<T>, options?: NativeInsertUpdateOptions<T>): Promise<Primary<T>> {
+    return this.em.nativeInsert<T>(this.entityName, data, options);
   }
 
   /**
@@ -183,8 +183,8 @@ export class EntityRepository<T extends AnyEntity<T>> {
    * the whole `data` parameter will be passed. This means we can also define `constructor(data: Partial<T>)` and
    * `em.create()` will pass the data into it (unless we have a property named `data` too).
    */
-  create<P extends string = any>(data: EntityData<T>): New<T, P> {
-    return this.em.create<T, P>(this.entityName, data);
+  create<P = never>(data: RequiredEntityData<T>): T {
+    return this.em.create(this.entityName, data);
   }
 
   /**
@@ -210,7 +210,7 @@ export class EntityRepository<T extends AnyEntity<T>> {
   }
 
   protected get em(): EntityManager {
-    return this._em.getContext();
+    return this._em.getContext(false);
   }
 
 }

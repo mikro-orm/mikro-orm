@@ -2,14 +2,14 @@ import { MikroORM } from '@mikro-orm/core';
 import { Author, Book } from '../../entities';
 import FooBar from '../../entities/FooBar';
 import type { MongoDriver } from '@mikro-orm/mongodb';
-import { BASE_DIR, initORMMongo, mockLogger, wipeDatabase } from '../../bootstrap';
+import { BASE_DIR, initORMMongo, mockLogger } from '../../bootstrap';
 
 describe('filters [mongo]', () => {
 
   let orm: MikroORM<MongoDriver>;
 
   beforeAll(async () => orm = await initORMMongo());
-  beforeEach(async () => wipeDatabase(orm.em));
+  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
   afterAll(async () => orm.close(true));
 
   test('global filters', async () => {

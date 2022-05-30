@@ -3,7 +3,7 @@ import type { AnyEntity, Constructor, Dictionary, EntityMetadata, EntityProperty
 
 export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
 
-  constructor(message: string, private readonly entity?: T) {
+  constructor(message: string, readonly entity?: T) {
     super(message);
     Error.captureStackTrace(this, this.constructor);
 
@@ -74,6 +74,11 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     }
 
     return new ValidationError(`Could not convert ${mode} value '${value}' of type '${valueType}' to type ${type.name}`);
+  }
+
+  static propertyRequired(entity: AnyEntity, property: EntityProperty): ValidationError {
+    const entityName = entity.__meta!.className;
+    return new ValidationError(`Value for ${entityName}.${property.name} is required, '${entity[property.name]}' found\nentity: ${inspect(entity)}`, entity);
   }
 
   static cannotModifyInverseCollection(owner: AnyEntity, property: EntityProperty): ValidationError {
@@ -226,6 +231,10 @@ export class NotFoundError<T extends AnyEntity = AnyEntity> extends ValidationEr
 
   static findOneFailed(name: string, where: Dictionary | IPrimaryKey): NotFoundError {
     return new NotFoundError(`${name} not found (${inspect(where)})`);
+  }
+
+  static findExactlyOneFailed(name: string, where: Dictionary | IPrimaryKey): NotFoundError {
+    return new NotFoundError(`Wrong number of ${name} entities found for query ${inspect(where)}, expected exactly one`);
   }
 
 }

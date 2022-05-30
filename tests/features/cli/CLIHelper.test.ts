@@ -98,9 +98,17 @@ describe('CLIHelper', () => {
         },
       };
     });
-    requireFromMock
-      .mockImplementationOnce(() => ({ register: registerMock }))
-      .mockImplementationOnce(() => ({ register: registerPathsMock }));
+    requireFromMock.mockImplementation(id => {
+      if (id === 'ts-node') {
+        return { register: registerMock };
+      }
+
+      if (id === 'tsconfig-paths') {
+        return { register: registerPathsMock };
+      }
+
+      return {};
+    });
     const cli = await CLIConfigurator.configure() as any;
     expect(cli.$0).toBe('mikro-orm');
     expect(requireFromMock).toHaveBeenCalledTimes(2);
@@ -123,6 +131,39 @@ describe('CLIHelper', () => {
     await expect(CLIHelper.getConfiguration()).resolves.toBeInstanceOf(Configuration);
     Object.keys(process.env).filter(k => k.startsWith('MIKRO_ORM_')).forEach(k => delete process.env[k]);
     process.env.MIKRO_ORM_ALLOW_GLOBAL_CONTEXT = '1';
+    process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI = '1';
+    process.env.MIKRO_ORM_ALLOW_VERSION_MISMATCH = '1';
+  });
+
+  test('disallows global install of CLI package', async () => {
+    delete process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI;
+    await expect(CLIHelper.getConfiguration()).rejects.toThrowError(`@mikro-orm/cli needs to be installed as a local dependency!`);
+    process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI = '1';
+  });
+
+  test('disallows version mismatch of ORM packages', async () => {
+    delete process.env.MIKRO_ORM_ALLOW_VERSION_MISMATCH;
+    const spy = jest.spyOn(ConfigurationLoader, 'getORMPackages');
+    spy.mockResolvedValueOnce(new Set(['@mikro-orm/weird-package']));
+    const spy3 = jest.spyOn(Utils, 'getORMVersion');
+    spy3.mockReturnValue('5.0.0');
+
+    await expect(ConfigurationLoader.checkPackageVersion()).resolves.toMatch(/^\d+\.\d+\.\d+/);
+
+    spy.mockResolvedValueOnce(new Set(['@mikro-orm/weird-package']));
+    const spy2 = jest.spyOn(ConfigurationLoader, 'getORMPackageVersion');
+    spy2.mockResolvedValueOnce('1.2.3');
+
+    await expect(ConfigurationLoader.checkPackageVersion()).rejects.toThrowError(`Bad @mikro-orm/weird-package version 1.2.3.
+All official @mikro-orm/* packages need to have the exact same version as @mikro-orm/core (5.0.0).
+Only exceptions are packages that don't live in the 'mikro-orm' repository: nestjs, sql-highlighter, mongo-highlighter.
+Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?`);
+
+    await expect(ConfigurationLoader.checkPackageVersion()).resolves.toMatch(/^\d+\.\d+\.\d+/);
+    process.env.MIKRO_ORM_ALLOW_VERSION_MISMATCH = '1';
+    spy.mockRestore();
+    spy2.mockRestore();
+    spy3.mockRestore();
   });
 
   test('registerTsNode works with tsconfig.json with comments', async () => {
@@ -130,10 +171,10 @@ describe('CLIHelper', () => {
     const register = jest.fn();
     register.mockReturnValueOnce({ config: { options: {} } });
     requireFromMock.mockImplementation(() => ({ register }));
-    await expect(ConfigurationLoader.registerTsNode(__dirname + '/../tsconfig.json')).resolves.toBeUndefined();
+    await expect(ConfigurationLoader.registerTsNode(__dirname + '/../tsconfig.json')).resolves.toBe(true);
     register.mockReturnValue({ config: {} });
-    await expect(ConfigurationLoader.registerTsNode(__dirname + '/../tsconfig.json')).resolves.toBeUndefined();
-    await expect(ConfigurationLoader.registerTsNode('./tests/tsconfig.json')).resolves.toBeUndefined();
+    await expect(ConfigurationLoader.registerTsNode(__dirname + '/../tsconfig.json')).resolves.toBe(true);
+    await expect(ConfigurationLoader.registerTsNode('./tests/tsconfig.json')).resolves.toBe(true);
     register.mockRestore();
     requireFromMock.mockRestore();
   });
@@ -353,7 +394,7 @@ describe('CLIHelper', () => {
 
   test('getConfigPaths', async () => {
     (global as any).process.env.MIKRO_ORM_CLI = './override/orm-config.ts';
-    await expect(CLIHelper.getConfigPaths()).resolves.toEqual(['./override/orm-config.ts', './mikro-orm.config.js']);
+    await expect(CLIHelper.getConfigPaths()).resolves.toEqual(['./override/orm-config.ts', './mikro-orm.config.ts', './mikro-orm.config.js']);
     delete (global as any).process.env.MIKRO_ORM_CLI;
     await expect(CLIHelper.getConfigPaths()).resolves.toEqual(['./mikro-orm.config.js']);
 

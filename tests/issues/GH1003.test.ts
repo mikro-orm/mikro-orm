@@ -47,8 +47,8 @@ describe('GH issue 1003', () => {
 
   test(`GH issue 1003`, async () => {
     const parent = orm.em.create(Parent, { id: 'parentId' });
-    const child1 = orm.em.create(Child, { id: 'childId1' });
-    const child2 = orm.em.create(Child, { id: 'childId2' });
+    const child1 = orm.em.create(Child, { id: 'childId1', parent });
+    const child2 = orm.em.create(Child, { id: 'childId2', parent });
     parent.children.add(child1, child2);
     await orm.em.persist(parent).flush();
     orm.em.clear();

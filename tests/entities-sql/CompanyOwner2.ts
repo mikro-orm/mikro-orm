@@ -8,10 +8,10 @@ export class CompanyOwner2 extends Manager2 {
   @Property()
   ownerProp!: string;
 
-  @ManyToOne(() => Employee2)
+  @ManyToOne(() => Employee2, { nullable: true })
   favouriteEmployee?: Employee2;
 
-  @OneToOne(() => Manager2)
+  @OneToOne({ entity: () => Manager2, nullable: true })
   favouriteManager?: Manager2;
 
   state?: string;

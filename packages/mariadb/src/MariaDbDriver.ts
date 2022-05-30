@@ -1,5 +1,5 @@
 import type { AnyEntity, Configuration, EntityDictionary, NativeInsertUpdateManyOptions, QueryResult } from '@mikro-orm/core';
-import { AbstractSqlDriver } from '@mikro-orm/mysql-base';
+import { AbstractSqlDriver } from '@mikro-orm/knex';
 import { MariaDbConnection } from './MariaDbConnection';
 import { MariaDbPlatform } from './MariaDbPlatform';
 

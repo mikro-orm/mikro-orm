@@ -1,7 +1,6 @@
 import type { EntityManager } from '@mikro-orm/core';
 import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
-import { SchemaGenerator } from '@mikro-orm/postgresql';
 
 @Entity()
 export class A {
@@ -24,9 +23,9 @@ describe('GH issue 1910', () => {
       dbName: 'mikro_orm_test_gh_1910',
       type: 'postgresql',
     });
-    await new SchemaGenerator(orm.em).ensureDatabase();
-    await new SchemaGenerator(orm.em).dropSchema();
-    await new SchemaGenerator(orm.em).createSchema();
+    await orm.getSchemaGenerator().ensureDatabase();
+    await orm.getSchemaGenerator().dropSchema();
+    await orm.getSchemaGenerator().createSchema();
   });
 
   afterAll(() => orm.close(true));
@@ -62,10 +61,10 @@ describe('GH issue 1910', () => {
       return [1, 2, 3, 4];
     });
 
-    expect(await em.findOne(A, id1)).toBeNull();
-    expect(await em.findOne(A, id2)).not.toBeNull();
-    expect(await em.findOne(A, id3)).toBeNull();
-    expect(await em.findOne(A, id4)).not.toBeNull();
+    await expect(em.fork().findOne(A, id1)).resolves.toBeNull();
+    await expect(em.fork().findOne(A, id2)).resolves.not.toBeNull();
+    await expect(em.fork().findOne(A, id3)).resolves.toBeNull();
+    await expect(em.fork().findOne(A, id4)).resolves.not.toBeNull();
   });
 
 });

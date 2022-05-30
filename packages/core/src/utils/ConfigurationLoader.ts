@@ -6,6 +6,7 @@ import type { Options } from './Configuration';
 import { Configuration } from './Configuration';
 import { Utils } from './Utils';
 import type { Dictionary } from '../typings';
+import { colors } from '../logging/colors';
 
 /**
  * @internal
@@ -13,15 +14,16 @@ import type { Dictionary } from '../typings';
 export class ConfigurationLoader {
 
   static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true, options?: Partial<Options>): Promise<Configuration<D>> {
-    const paths = await ConfigurationLoader.getConfigPaths();
-    const env = ConfigurationLoader.loadEnvironmentVars(options);
+    this.registerDotenv(options);
+    const paths = await this.getConfigPaths();
+    const env = this.loadEnvironmentVars();
 
     for (let path of paths) {
       path = Utils.absolutePath(path);
       path = Utils.normalizePath(path);
 
       if (await pathExists(path)) {
-        const config = await import(path);
+        const config = await Utils.dynamicImport(path);
         /* istanbul ignore next */
         let tmp = config.default ?? config;
 
@@ -46,7 +48,12 @@ export class ConfigurationLoader {
 
   static async getPackageConfig(basePath = process.cwd()): Promise<Dictionary> {
     if (await pathExists(`${basePath}/package.json`)) {
-      return import(`${basePath}/package.json`);
+      /* istanbul ignore next */
+      try {
+        return await import(`${basePath}/package.json`);
+      } catch {
+        return {};
+      }
     }
 
     const parentFolder = await realpath(`${basePath}/..`);
@@ -61,10 +68,14 @@ export class ConfigurationLoader {
 
   static async getSettings(): Promise<Settings> {
     const config = await ConfigurationLoader.getPackageConfig();
-    const settings = config['mikro-orm'] || {};
+    const settings = { ...config['mikro-orm'] };
     const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
-    settings.useTsNode = process.env.MIKRO_ORM_CLI_USE_TS_NODE ? bool(process.env.MIKRO_ORM_CLI_USE_TS_NODE) : settings.useTsNode;
+    settings.useTsNode = process.env.MIKRO_ORM_CLI_USE_TS_NODE != null ? bool(process.env.MIKRO_ORM_CLI_USE_TS_NODE) : settings.useTsNode;
     settings.tsConfigPath = process.env.MIKRO_ORM_CLI_TS_CONFIG_PATH ?? settings.tsConfigPath;
+
+    if (process.env.MIKRO_ORM_CLI?.endsWith('.ts')) {
+      settings.useTsNode = true;
+    }
 
     return settings;
   }
@@ -89,7 +100,7 @@ export class ConfigurationLoader {
     return paths.filter(p => p.endsWith('.js') || tsNode);
   }
 
-  static async registerTsNode(configPath = 'tsconfig.json'): Promise<void> {
+  static async registerTsNode(configPath = 'tsconfig.json'): Promise<boolean> {
     const tsConfigPath = isAbsolute(configPath) ? configPath : join(process.cwd(), configPath);
 
     const tsNode = Utils.tryRequire({
@@ -100,7 +111,7 @@ export class ConfigurationLoader {
 
     /* istanbul ignore next */
     if (!tsNode) {
-      return;
+      return false;
     }
 
     const { options } = tsNode.register({
@@ -117,12 +128,17 @@ export class ConfigurationLoader {
         paths: options.paths,
       });
     }
+
+    return true;
   }
 
-  static loadEnvironmentVars<D extends IDatabaseDriver>(options?: Options<D> | Configuration<D>): Partial<Options<D>> {
+  static registerDotenv<D extends IDatabaseDriver>(options?: Options<D> | Configuration<D>): void {
     const baseDir = options instanceof Configuration ? options.get('baseDir') : options?.baseDir;
     const path = process.env.MIKRO_ORM_ENV ?? ((baseDir ?? process.cwd()) + '/.env');
     dotenv.config({ path });
+  }
+
+  static loadEnvironmentVars<D extends IDatabaseDriver>(): Partial<Options<D>> {
     const ret: Dictionary = {};
     const array = (v: string) => v.split(',').map(vv => vv.trim());
     const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
@@ -176,6 +192,7 @@ export class ConfigurationLoader {
     ret.migrations = {};
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_TABLE_NAME', 'tableName');
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_PATH', 'path');
+    read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_PATH_TS', 'pathTs');
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_GLOB', 'glob');
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_TRANSACTIONAL', 'transactional', bool);
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_DISABLE_FOREIGN_KEYS', 'disableForeignKeys', bool);
@@ -185,12 +202,66 @@ export class ConfigurationLoader {
     read(ret.migrations, 'MIKRO_ORM_MIGRATIONS_EMIT', 'emit');
     cleanup(ret, 'migrations');
 
+    ret.schemaGenerator = {};
+    read(ret.schemaGenerator, 'MIKRO_ORM_SCHEMA_GENERATOR_DISABLE_FOREIGN_KEYS', 'disableForeignKeys', bool);
+    read(ret.schemaGenerator, 'MIKRO_ORM_SCHEMA_GENERATOR_CREATE_FOREIGN_KEY_CONSTRAINTS', 'createForeignKeyConstraints', bool);
+    cleanup(ret, 'schemaGenerator');
+
     ret.seeder = {};
-    read(ret.migrations, 'MIKRO_ORM_SEEDER_PATH', 'path');
-    read(ret.migrations, 'MIKRO_ORM_SEEDER_DEFAULT_SEEDER', 'defaultSeeder');
+    read(ret.seeder, 'MIKRO_ORM_SEEDER_PATH', 'path');
+    read(ret.seeder, 'MIKRO_ORM_SEEDER_PATH_TS', 'pathTs');
+    read(ret.seeder, 'MIKRO_ORM_SEEDER_GLOB', 'glob');
+    read(ret.seeder, 'MIKRO_ORM_SEEDER_EMIT', 'emit');
+    read(ret.seeder, 'MIKRO_ORM_SEEDER_DEFAULT_SEEDER', 'defaultSeeder');
     cleanup(ret, 'seeder');
 
     return ret;
+  }
+
+  static async getORMPackages(): Promise<Set<string>> {
+    const pkg = await this.getPackageConfig();
+    return new Set([
+      ...Object.keys(pkg.dependencies ?? {}),
+      ...Object.keys(pkg.devDependencies ?? {}),
+    ]);
+  }
+
+  static async getORMPackageVersion(name: string): Promise<string | undefined> {
+    /* istanbul ignore next */
+    try {
+      const pkg = Utils.requireFrom(`${name}/package.json`, process.cwd());
+      return pkg?.version;
+    } catch (e) {
+      return undefined;
+    }
+  }
+
+  // inspired by https://github.com/facebook/mikro-orm/pull/3386
+  static async checkPackageVersion(): Promise<string> {
+    const coreVersion = Utils.getORMVersion();
+
+    if (process.env.MIKRO_ORM_ALLOW_VERSION_MISMATCH) {
+      return coreVersion;
+    }
+
+    const deps = await this.getORMPackages();
+    const exceptions = new Set(['nestjs', 'sql-highlighter', 'mongo-highlighter']);
+    const ormPackages = [...deps].filter(d => d.startsWith('@mikro-orm/') && d !== '@mikro-orm/core' && !exceptions.has(d.substring('@mikro-orm/'.length)));
+
+    for (const ormPackage of ormPackages) {
+      const version = await this.getORMPackageVersion(ormPackage);
+
+      if (version != null && version !== coreVersion) {
+        throw new Error(
+          `Bad ${colors.cyan(ormPackage)} version ${colors.yellow('' + version)}.\n` +
+          `All official @mikro-orm/* packages need to have the exact same version as @mikro-orm/core (${colors.green(coreVersion)}).\n` +
+          `Only exceptions are packages that don't live in the 'mikro-orm' repository: ${[...exceptions].join(', ')}.\n` +
+          `Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?`,
+        );
+      }
+    }
+
+    return coreVersion;
   }
 
 }

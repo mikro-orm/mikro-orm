@@ -23,7 +23,7 @@ export class User2 {
   @OneToOne({ entity: () => Car2, nullable: true })
   favouriteCar?: Car2;
 
-  [PrimaryKeyType]: [string, string];
+  [PrimaryKeyType]?: [string, string];
 
   constructor(firstName: string, lastName: string) {
     this.firstName = firstName;

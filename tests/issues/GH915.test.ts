@@ -11,7 +11,7 @@ export class A {
 @Entity()
 export class B {
 
-  [PrimaryKeyType]: number;
+  [PrimaryKeyType]?: number;
 
   @OneToOne({ primary: true, cascade: [] })
   object!: A;

@@ -18,15 +18,15 @@ jobs:
           access_token: ${{ github.token }}
 
       - name: Checkout Source code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Use Node.js 16.10
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: 16.10
+          node-version: '16.10'
 
       - name: Cache node_modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-16.10-modules-${{ hashFiles('**/yarn.lock') }}
@@ -41,8 +41,46 @@ jobs:
           yarn config set ignore-engines true
           yarn
 
-      - name: Lint
+      - name: Test TS
+        run: yarn tsc-check-tests
+
+      - name: Build
         run: yarn build
+
+  docs:
+    name: Docs build
+    if: ${{ !contains(github.event.head_commit.message, '[skip ci]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source code
+        uses: actions/checkout@v3
+
+      - name: Use Node.js 16
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-16-modules-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Install libkrb5-dev (for run-rs)
+        run: |
+          sudo apt update
+          sudo apt install libkrb5-dev
+
+      - name: Install
+        run: |
+          yarn config set ignore-engines true
+          yarn
+
+      - name: Build & deploy docs
+        run: |
+          cd docs
+          yarn
+          yarn build
 
   lint:
     name: Lint
@@ -50,15 +88,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Use Node.js 16.10
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: 16.10
+          node-version: '16.10'
 
       - name: Cache node_modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-16.10-modules-${{ hashFiles('**/yarn.lock') }}
@@ -86,18 +124,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [ 14, '16.10', 17 ]
+        node-version: [ 14, '16.10', 18 ]
     steps:
       - name: Checkout Source code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
 
       - name: Cache node_modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-${{ matrix.node-version }}-modules-${{ hashFiles('**/yarn.lock') }}
@@ -158,18 +196,18 @@ jobs:
     needs: [ test, build, lint ]
     steps:
       - name: Checkout Source code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0 # we need to pull everything to have correct dev version suffix
           ref: master
 
       - name: Use Node.js 16.10
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: 16.10
+          node-version: '16.10'
 
       - name: Cache node_modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-16.10-modules-${{ hashFiles('**/yarn.lock') }}

@@ -21,7 +21,7 @@ export interface NamingStrategy {
   propertyToColumnName(propertyName: string): string;
 
   /**
-   * Return a column name for a property (used in `EntityGenerator`).
+   * Return a property for a column name (used in `EntityGenerator`).
    */
   columnNameToProperty(columnName: string): string;
 
@@ -48,7 +48,7 @@ export interface NamingStrategy {
   /**
    * Returns key/constraint name for given type. Some drivers might not support all the types (e.g. mysql and sqlite enforce the PK name).
    */
-  indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence'): string;
+  indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check'): string;
 
   /**
    * Returns alias name for given entity. The alias needs to be unique across the query, which is by default

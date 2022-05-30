@@ -1,4 +1,4 @@
-import type { Arguments, Argv, CommandModule } from 'yargs';
+import type { ArgumentsCamelCase, Argv, CommandModule } from 'yargs';
 import type { MikroORM } from '@mikro-orm/core';
 import { colors } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
@@ -21,14 +21,14 @@ export class SchemaCommandFactory {
     fresh: 'Schema successfully dropped and recreated',
   };
 
-  static create<U extends Options = Options>(command: SchemaMethod): CommandModule<unknown, U> & { builder: (args: Argv) => Argv<U>; handler: (args: Arguments<U>) => Promise<void> } {
+  static create<U extends Options = Options>(command: SchemaMethod): CommandModule<unknown, U> & { builder: (args: Argv) => Argv<U>; handler: (args: ArgumentsCamelCase<U>) => Promise<void> } {
     const successMessage = SchemaCommandFactory.SUCCESS_MESSAGES[command];
 
     return {
       command: `schema:${command}`,
       describe: SchemaCommandFactory.DESCRIPTIONS[command],
       builder: (args: Argv) => SchemaCommandFactory.configureSchemaCommand(args, command) as Argv<U>,
-      handler: (args: Arguments<U>) => SchemaCommandFactory.handleSchemaCommand(args, command, successMessage),
+      handler: (args: ArgumentsCamelCase<U>) => SchemaCommandFactory.handleSchemaCommand(args, command, successMessage),
     };
   }
 
@@ -90,14 +90,14 @@ export class SchemaCommandFactory {
     return args;
   }
 
-  static async handleSchemaCommand(args: Arguments<Options>, method: SchemaMethod, successMessage: string) {
+  static async handleSchemaCommand(args: ArgumentsCamelCase<Options>, method: SchemaMethod, successMessage: string) {
     if (!args.run && !args.dump) {
       return CLIHelper.showHelp();
     }
 
     const orm = await CLIHelper.getORM() as MikroORM<AbstractSqlDriver>;
     const generator = new SchemaGenerator(orm.em);
-    const params = { wrap: !args.fkChecks, ...args };
+    const params = { wrap: args.fkChecks == null ? undefined : !args.fkChecks, ...args };
 
     if (args.dump) {
       const m = `get${method.substr(0, 1).toUpperCase()}${method.substr(1)}SchemaSQL` as 'getCreateSchemaSQL' | 'getUpdateSchemaSQL' | 'getDropSchemaSQL';
@@ -113,7 +113,7 @@ export class SchemaCommandFactory {
 
     if (args.seed !== undefined) {
       const seeder = orm.getSeeder();
-      await seeder.seedString(args.seed || orm.config.get('seeder').defaultSeeder);
+      await seeder.seedString(args.seed || orm.config.get('seeder').defaultSeeder!);
     }
 
     CLIHelper.dump(colors.green(successMessage));

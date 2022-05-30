@@ -3,7 +3,7 @@ import type { Connection, Dictionary } from '@mikro-orm/core';
 import { BigIntType, EnumType, Utils } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
-import type { Column, Index, TableDifference } from '../typings';
+import type { Check, Column, Index, TableDifference } from '../typings';
 import type { DatabaseTable } from './DatabaseTable';
 
 export abstract class SchemaHelper {
@@ -11,7 +11,7 @@ export abstract class SchemaHelper {
   constructor(protected readonly platform: AbstractSqlPlatform) {}
 
   getSchemaBeginning(charset: string): string {
-    return `${this.disableForeignKeysSQL()}`;
+    return `${this.disableForeignKeysSQL()}\n\n`;
   }
 
   disableForeignKeysSQL() {
@@ -23,7 +23,7 @@ export abstract class SchemaHelper {
   }
 
   getSchemaEnd(): string {
-    return `${this.enableForeignKeysSQL()}`;
+    return `${this.enableForeignKeysSQL()}\n`;
   }
 
   finalizeTable(table: Knex.TableBuilder, charset: string, collate?: string): void {
@@ -44,7 +44,7 @@ export abstract class SchemaHelper {
     return this.mapForeignKeys(fks, tableName, schemaName);
   }
 
-  async getEnumDefinitions(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary> {
+  async getEnumDefinitions(connection: AbstractSqlConnection, checks: Check[], tableName: string, schemaName?: string): Promise<Dictionary<string[]>> {
     return {};
   }
 
@@ -53,7 +53,11 @@ export abstract class SchemaHelper {
   }
 
   getRenameColumnSQL(tableName: string, oldColumnName: string, to: Column): string {
-    return `alter table ${this.platform.quoteIdentifier(tableName)} rename column ${this.platform.quoteIdentifier(oldColumnName)} to ${this.platform.quoteIdentifier(to.name)}`;
+    tableName = this.platform.quoteIdentifier(tableName);
+    oldColumnName = this.platform.quoteIdentifier(oldColumnName);
+    const columnName = this.platform.quoteIdentifier(to.name);
+
+    return `alter table ${tableName} rename column ${oldColumnName} to ${columnName}`;
   }
 
   getCreateIndexSQL(tableName: string, index: Index): string {
@@ -76,15 +80,29 @@ export abstract class SchemaHelper {
     return [this.getDropIndexSQL(tableName, { ...index, keyName: oldIndexName }), this.getCreateIndexSQL(tableName, index)].join(';\n');
   }
 
+  hasNonDefaultPrimaryKeyName(table: DatabaseTable): boolean {
+    const pkIndex = table.getPrimaryKey();
+
+    if (!pkIndex || !this.platform.supportsCustomPrimaryKeyNames()) {
+      return false;
+    }
+
+    const defaultName = this.platform.getDefaultPrimaryName(table.name, pkIndex.columnNames);
+
+    return pkIndex?.keyName !== defaultName;
+  }
+
   createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>) {
     const compositePK = fromTable.getPrimaryKey()?.composite;
 
     if (column.autoincrement && !compositePK && (!changedProperties || changedProperties.has('autoincrement') || changedProperties.has('type'))) {
+      const primaryKey = !changedProperties && !this.hasNonDefaultPrimaryKeyName(fromTable);
+
       if (column.mappedType instanceof BigIntType) {
-        return table.bigIncrements(column.name, { primaryKey: !changedProperties });
+        return table.bigIncrements(column.name, { primaryKey });
       }
 
-      return table.increments(column.name, { primaryKey: !changedProperties });
+      return table.increments(column.name, { primaryKey });
     }
 
     if (column.mappedType instanceof EnumType && column.enumItems?.every(item => Utils.isString(item))) {
@@ -130,11 +148,19 @@ export abstract class SchemaHelper {
     return '';
   }
 
+  async getNamespaces(connection: AbstractSqlConnection): Promise<string[]> {
+    return [];
+  }
+
   async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Column[]> {
     throw new Error('Not supported by given driver');
   }
 
   async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Index[]> {
+    throw new Error('Not supported by given driver');
+  }
+
+  async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName?: string, columns?: Column[]): Promise<Check[]> {
     throw new Error('Not supported by given driver');
   }
 

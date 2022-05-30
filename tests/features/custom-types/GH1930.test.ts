@@ -1,7 +1,6 @@
 import { v4, parse, stringify } from 'uuid';
 import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
 import type { MySqlDriver } from '@mikro-orm/mysql';
-import { SchemaGenerator } from '@mikro-orm/mysql';
 
 export class UuidBinaryType extends Type<string, Buffer> {
 
@@ -61,11 +60,9 @@ describe('GH issue 1930', () => {
       entities: [A, B],
       dbName: `mikro_orm_test_gh_1930`,
       type: 'mysql',
-      port: 3307,
+      port: 3308,
     });
-    await new SchemaGenerator(orm.em).ensureDatabase();
-    await new SchemaGenerator(orm.em).dropSchema();
-    await new SchemaGenerator(orm.em).createSchema();
+    await orm.getSchemaGenerator().refreshDatabase();
   });
 
   afterAll(async () => {

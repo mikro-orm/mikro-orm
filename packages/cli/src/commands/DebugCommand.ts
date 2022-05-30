@@ -9,7 +9,7 @@ export class DebugCommand implements CommandModule {
   describe = 'Debug CLI configuration';
 
   /**
-   * @inheritdoc
+   * @inheritDoc
    */
   async handler() {
     CLIHelper.dump(`Current ${colors.cyan('MikroORM')} CLI configuration`);

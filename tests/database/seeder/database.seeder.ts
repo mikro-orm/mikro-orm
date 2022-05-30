@@ -7,8 +7,8 @@ export class DatabaseSeeder extends Seeder {
 
   run(em: EntityManager): Promise<void> {
     return this.call(em, [
-      ProjectSeeder,
       UserSeeder,
+      ProjectSeeder,
     ]);
   }
 

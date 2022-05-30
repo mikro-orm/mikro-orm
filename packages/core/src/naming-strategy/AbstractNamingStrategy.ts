@@ -13,10 +13,10 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
     return `Migration${timestamp}`;
   }
 
-  indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence'): string {
+  indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check'): string {
     /* istanbul ignore next */
     if (tableName.includes('.')) {
-      tableName = tableName.substr(tableName.indexOf('.') + 1);
+      tableName = tableName.substring(tableName.indexOf('.') + 1);
     }
 
     if (type === 'primary') {
@@ -27,11 +27,15 @@ export abstract class AbstractNamingStrategy implements NamingStrategy {
       return `${tableName}_${columns.join('_')}_seq`;
     }
 
-    return `${tableName}_${columns.join('_')}_${type}`;
+    if (columns.length > 0) {
+      return `${tableName}_${columns.join('_')}_${type}`;
+    }
+
+    return `${tableName}_${type}`;
   }
 
   columnNameToProperty(columnName: string): string {
-    return columnName.replace(/[_ ](\w)/g, m => m[1].toUpperCase()).replace(/_+/g, '');
+    return columnName.replace(/[_\- ](\w)/g, m => m[1].toUpperCase()).replace(/[_\- ]+/g, '');
   }
 
   aliasName(entityName: string, index: number): string {

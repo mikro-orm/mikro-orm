@@ -33,9 +33,7 @@ export class RequestContext {
    */
   static async createAsync<T>(em: EntityManager | EntityManager[], next: (...args: any[]) => Promise<T>): Promise<T> {
     const ctx = this.createContext(em);
-    return new Promise((resolve, reject) => {
-      this.storage.run(ctx, () => next().then(resolve).catch(reject));
-    });
+    return this.storage.run(ctx, next);
   }
 
   /**
@@ -57,9 +55,9 @@ export class RequestContext {
     const forks = new Map<string, EntityManager>();
 
     if (Array.isArray(em)) {
-      em.forEach(em => forks.set(em.name, em.fork({ clear: true, useContext: true })));
+      em.forEach(em => forks.set(em.name, em.fork({ useContext: true })));
     } else {
-      forks.set(em.name, em.fork({ clear: true, useContext: true }));
+      forks.set(em.name, em.fork({ useContext: true }));
     }
 
     return new RequestContext(forks);
