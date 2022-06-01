@@ -1,5 +1,5 @@
 import type { PropertyDeclaration, SourceFile } from 'ts-morph';
-import { Project } from 'ts-morph';
+import { Project, ModuleKind } from 'ts-morph';
 import type { EntityMetadata, EntityProperty } from '@mikro-orm/core';
 import { MetadataError, MetadataProvider, MetadataStorage, Utils } from '@mikro-orm/core';
 
@@ -8,6 +8,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
   private readonly project = new Project({
     compilerOptions: {
       strictNullChecks: true,
+      module: ModuleKind.Node16,
     },
   });
 
