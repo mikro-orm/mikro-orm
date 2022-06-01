@@ -52,13 +52,17 @@ jobs:
         GIT_USER: "B4nan:${{ secrets.GH_TOKEN }}"
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-#    - name: Squash all commits to reduce repository size
-#      run: |
-#        git fetch
-#        git checkout gh-pages
-#        git reset HEAD~1
-#        git commit -a --amend -m 'mikro-orm.io'
-#        git push --force origin gh-pages
-#      env:
-#        GIT_USER: "B4nan:${{ secrets.GH_TOKEN }}"
-#        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+  squash:
+    runs-on: ubuntu-latest
+    needs: [ build ]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Squash all commits to reduce repository size
+      run: |
+        git checkout gh-pages
+        git reset HEAD^
+        git commit -a --amend -m 'mikro-orm.io docs'
+        git push --force origin gh-pages
+      env:
+        GIT_USER: "B4nan:${{ secrets.GH_TOKEN }}"
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
