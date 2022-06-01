@@ -59,6 +59,13 @@ jobs:
     - uses: actions/checkout@v3
       with:
         ref: 'gh-pages'
+        fetch-depth: 0
+
+    - name: Set git identity
+      run: |
+        git config --global user.name "Martin Adámek"
+        git config --global user.email "banan23@gmail.com"
+
     - name: Squash all commits to reduce repository size
       run: |
         TOTAL_COMMITS="$(git rev-list --all --count)"
