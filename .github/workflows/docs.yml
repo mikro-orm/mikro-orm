@@ -57,11 +57,16 @@ jobs:
     needs: [ build ]
     steps:
     - uses: actions/checkout@v3
+      with:
+        ref: 'gh-pages'
     - name: Squash all commits to reduce repository size
       run: |
-        git checkout gh-pages
-        git reset HEAD^
-        git commit -a --amend -m 'mikro-orm.io docs'
+        TOTAL_COMMITS="$(git rev-list --all --count)"
+        TOTAL_COMMITS=$((TOTAL_COMMITS-1))
+        echo "squashing $TOTAL_COMMITS commits"
+        git reset HEAD~$TOTAL_COMMITS
+        git add .
+        git commit --amend -m 'mikro-orm.io docs'
         git push --force origin gh-pages
       env:
         GIT_USER: "B4nan:${{ secrets.GH_TOKEN }}"
