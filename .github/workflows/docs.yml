@@ -68,8 +68,7 @@ jobs:
 
     - name: Squash all commits to reduce repository size
       run: |
-        TOTAL_COMMITS="$(git rev-list --all --count)"
-        TOTAL_COMMITS=$((TOTAL_COMMITS-1))
+        TOTAL_COMMITS="$(($(git rev-list --count HEAD)-1))"
         echo "squashing $TOTAL_COMMITS commits"
         git reset HEAD~$TOTAL_COMMITS
         git add .
