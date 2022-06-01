@@ -135,6 +135,13 @@ export abstract class AbstractSqlConnection extends Connection {
   }
 
   protected createKnexClient(type: string): Knex {
+    const driverOptions = this.config.get('driverOptions');
+
+    if (driverOptions.context?.client instanceof knex.Client) {
+      this.logger.log('info', 'Reusing knex client provided via `driverOptions`');
+      return driverOptions as Knex;
+    }
+
     return knex<any, any>(this.getKnexOptions(type))
       .on('query', data => {
         if (!data.__knexQueryUid) {
