@@ -2,8 +2,8 @@
 title: Using Multiple Schemas
 ---
 
-In MySQL and PostgreSQL is is possible to define your entities in multiple schemas. In MySQL 
-terminology, it is called database, but from implementation point of view, it is a schema. 
+In MySQL and PostgreSQL it is possible to define your entities in multiple schemas. In MySQL 
+terminology, it is called database, but from an implementation point of view, it is a schema. 
 
 > To use multiple schemas, your connection needs to have access to all of them (multiple 
 > connections are not supported in a single MikroORM instance).
