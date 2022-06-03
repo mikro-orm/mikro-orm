@@ -3,6 +3,7 @@ import type { AnyEntity, EntityDTO, EntityProperty, IPrimaryKey, Primary } from 
 import { Reference } from './Reference';
 import { wrap } from './wrap';
 import { ReferenceType } from '../enums';
+import { MetadataError } from '../errors';
 import { Utils } from '../utils/Utils';
 
 export class ArrayCollection<T, O> {
@@ -166,7 +167,13 @@ export class ArrayCollection<T, O> {
    */
   get property(): EntityProperty<T> {
     if (!this._property) {
-      const meta = this.owner.__meta!;
+      const meta = this.owner.__meta;
+
+      /* istanbul ignore if */
+      if (!meta) {
+        throw MetadataError.missingMetadata(this.owner.constructor.name);
+      }
+
       const field = Object.keys(meta.properties).find(k => this.owner[k] === this);
       this._property = meta.properties[field!];
     }
