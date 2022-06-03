@@ -120,7 +120,7 @@
     "rimraf": "3.0.2",
     "run-rs": "0.7.6",
     "sql-formatter": "6.1.2",
-    "ts-jest": "28.0.3",
+    "ts-jest": "28.0.4",
     "ts-node": "10.8.0",
     "typescript": "4.7.2",
     "uuid": "8.3.2"
