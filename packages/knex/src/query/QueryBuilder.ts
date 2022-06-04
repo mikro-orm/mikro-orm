@@ -201,6 +201,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
         entityName: this.entityName,
         metadata: this.metadata,
         platform: this.platform,
+        aliasMap: this._aliasMap,
         aliased: !this.type || [QueryType.SELECT, QueryType.COUNT].includes(this.type),
         convertCustomTypes: this.flags.has(QueryFlag.CONVERT_CUSTOM_TYPES),
       }) as FilterQuery<T>;
@@ -253,6 +254,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
         entityName: this.entityName,
         metadata: this.metadata,
         platform: this.platform,
+        aliasMap: this._aliasMap,
         aliased: !this.type || [QueryType.SELECT, QueryType.COUNT].includes(this.type),
         convertCustomTypes: false,
       })!;
@@ -630,6 +632,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       entityName: this.entityName,
       metadata: this.metadata,
       platform: this.platform,
+      aliasMap: this._aliasMap,
       aliased: !this.type || [QueryType.SELECT, QueryType.COUNT].includes(this.type),
     })!;
     let aliasedName = `${fromAlias}.${prop.name}#${alias}`;

@@ -118,7 +118,7 @@ export class QueryHelper {
 
     return Object.keys(where as Dictionary).reduce((o, key) => {
       let value = where![key];
-      const prop = meta?.properties[key];
+      const prop = this.findProperty(key, options);
       const keys = prop?.joinColumns?.length ?? 0;
       const composite = keys > 1;
 
@@ -272,6 +272,16 @@ export class QueryHelper {
     return o;
   }
 
+  static findProperty<T>(fieldName: string, options: ProcessWhereOptions<T>): EntityProperty<T> | undefined {
+    const parts = fieldName.split('.');
+    const propName = parts.pop()!;
+    const alias = parts.length > 0 ? parts.join('.') : undefined;
+    const entityName = alias ? options.aliasMap?.[alias] : options.entityName;
+    const meta = entityName ? options.metadata.find<T>(entityName) : undefined;
+
+    return meta?.properties[propName];
+  }
+
 }
 
 interface ProcessWhereOptions<T> {
@@ -280,6 +290,7 @@ interface ProcessWhereOptions<T> {
   metadata: MetadataStorage;
   platform: Platform;
   aliased?: boolean;
+  aliasMap?: Dictionary<string>;
   convertCustomTypes?: boolean;
   root?: boolean;
 }
