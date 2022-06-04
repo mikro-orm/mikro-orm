@@ -23,7 +23,7 @@ export class ObjectHydrator extends Hydrator {
    */
   hydrate<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'returning' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string): void {
     const hydrate = this.getEntityHydrator(meta, type);
-    Utils.callCompiledFunction(hydrate, entity, data, factory, newEntity, convertCustomTypes, schema);
+    Utils.callCompiledFunction(hydrate, entity.__helper!.__data as T, data, factory, newEntity, convertCustomTypes, schema);
   }
 
   /**

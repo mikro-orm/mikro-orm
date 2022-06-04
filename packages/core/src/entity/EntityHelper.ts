@@ -111,19 +111,20 @@ export class EntityHelper {
 
         Object.defineProperty(meta.prototype, prop.name, {
           set(val) {
-            Object.defineProperty(this, prop.name, {
-              get() {
-                return this.__helper.__data[prop.name];
-              },
-              set(val) {
-                this.__helper.__data[prop.name] = val;
-                this.__helper.__touched = true;
-              },
-              enumerable: true,
-              configurable: true,
-            });
-            this.__helper.__data[prop.name] = val;
-            this.__helper.__touched = true;
+            Object.defineProperty(this, prop.name, { value: val, configurable: true, enumerable: true, writable: true });
+            // Object.defineProperty(this, prop.name, {
+            //   get() {
+            //     return this.__helper.__data[prop.name];
+            //   },
+            //   set(val) {
+            //     this.__helper.__data[prop.name] = val;
+            //     this.__helper.__touched = true;
+            //   },
+            //   enumerable: true,
+            //   configurable: true,
+            // });
+            // this.__helper.__data[prop.name] = val;
+            // this.__helper.__touched = true;
           },
         });
       });
