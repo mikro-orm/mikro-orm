@@ -44,6 +44,10 @@ Then run this script via `ts-node` (or compile it to plain JS and use `node`):
 $ ts-node generate-entities
 ```
 
+## Advanced
+
+By default, the `EntityGenerator` generates only owning sides of relations (e.g. M:1). We can configure it via `entityGenerator: { bidirectionalRelations: true }` to generate also the inverse sides for them. 
+
 ## Current limitations
 
 - in mysql, tinyint columns will be defined as boolean properties

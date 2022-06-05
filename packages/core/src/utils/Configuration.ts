@@ -98,6 +98,9 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       createForeignKeyConstraints: true,
       ignoreSchema: [],
     },
+    entityGenerator: {
+      bidirectionalRelations: false,
+    },
     cache: {
       pretty: false,
       adapter: FileCacheAdapter,
@@ -475,6 +478,9 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
     disableForeignKeys?: boolean;
     createForeignKeyConstraints?: boolean;
     ignoreSchema?: string[];
+  };
+  entityGenerator: {
+    bidirectionalRelations?: boolean;
   };
   cache: {
     enabled?: boolean;

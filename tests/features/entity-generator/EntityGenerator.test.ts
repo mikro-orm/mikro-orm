@@ -17,6 +17,17 @@ describe('EntityGenerator', () => {
     await orm.close(true);
   });
 
+  test('generate entities with bidirectional relations [mysql]', async () => {
+    const orm = await initORMMySql('mysql', { entityGenerator: { bidirectionalRelations: true } }, true);
+    const generator = orm.getEntityGenerator();
+    const dump = await generator.generate({ save: true, baseDir: './temp/entities' });
+    expect(dump).toMatchSnapshot('mysql-entity-bidirectional-dump');
+    await expect(pathExists('./temp/entities/Author2.ts')).resolves.toBe(true);
+    await remove('./temp/entities');
+
+    await orm.close(true);
+  });
+
   test('generate entities from schema [sqlite]', async () => {
     const orm = await initORMSqlite();
     const generator = new EntityGenerator(orm.em);

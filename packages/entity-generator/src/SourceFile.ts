@@ -86,7 +86,7 @@ export class SourceFile {
   private getPropertyDefinition(prop: EntityProperty, padLeft: number): string {
     const padding = ' '.repeat(padLeft);
 
-    if (prop.reference === ReferenceType.MANY_TO_MANY) {
+    if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference)) {
       this.coreImports.add('Collection');
       return `${padding}${prop.name} = new Collection<${prop.type}>(this);\n`;
     }
@@ -129,6 +129,8 @@ export class SourceFile {
 
     if (prop.reference === ReferenceType.MANY_TO_MANY) {
       this.getManyToManyDecoratorOptions(options, prop);
+    } else if (prop.reference === ReferenceType.ONE_TO_MANY) {
+      this.getOneToManyDecoratorOptions(options, prop);
     } else if (prop.reference !== ReferenceType.SCALAR) {
       this.getForeignKeyDecoratorOptions(options, prop);
     } else {
@@ -191,7 +193,7 @@ export class SourceFile {
   }
 
   private getCommonDecoratorOptions(options: Dictionary, prop: EntityProperty): void {
-    if (prop.nullable) {
+    if (prop.nullable && !prop.mappedBy) {
       options.nullable = true;
     }
 
@@ -248,6 +250,11 @@ export class SourceFile {
     this.entityImports.add(prop.type);
     options.entity = `() => ${prop.type}`;
 
+    if (prop.mappedBy) {
+      options.mappedBy = this.quote(prop.mappedBy);
+      return;
+    }
+
     if (prop.pivotTable !== this.namingStrategy.joinTableName(this.meta.collection, prop.type, prop.name)) {
       options.pivotTable = this.quote(prop.pivotTable);
     }
@@ -265,22 +272,33 @@ export class SourceFile {
     }
   }
 
+  private getOneToManyDecoratorOptions(options: Dictionary, prop: EntityProperty) {
+    this.entityImports.add(prop.type);
+    options.entity = `() => ${prop.type}`;
+    options.mappedBy = this.quote(prop.mappedBy);
+  }
+
   private getForeignKeyDecoratorOptions(options: Dictionary, prop: EntityProperty) {
     const parts = prop.referencedTableName.split('.', 2);
     const className = this.namingStrategy.getClassName(parts.length > 1 ? parts[1] : parts[0], '_');
     this.entityImports.add(className);
     options.entity = `() => ${className}`;
 
+    if (prop.mappedBy) {
+      options.mappedBy = this.quote(prop.mappedBy);
+      return;
+    }
+
     if (prop.fieldNames[0] !== this.namingStrategy.joinKeyColumnName(prop.name, prop.referencedColumnNames[0])) {
-      options.fieldName = `'${prop.fieldNames[0]}'`;
+      options.fieldName = this.quote(prop.fieldNames[0]);
     }
 
     if (!['no action', 'restrict'].includes(prop.onUpdateIntegrity!.toLowerCase())) {
-      options.onUpdateIntegrity = `'${prop.onUpdateIntegrity}'`;
+      options.onUpdateIntegrity = this.quote(prop.onUpdateIntegrity!);
     }
 
     if (!['no action', 'restrict'].includes(prop.onDelete!.toLowerCase())) {
-      options.onDelete = `'${prop.onDelete}'`;
+      options.onDelete = this.quote(prop.onDelete!);
     }
 
     if (prop.primary) {
@@ -300,6 +318,10 @@ export class SourceFile {
 
     if (prop.reference === ReferenceType.MANY_TO_ONE) {
       return '@ManyToOne';
+    }
+
+    if (prop.reference === ReferenceType.ONE_TO_MANY) {
+      return '@OneToMany';
     }
 
     if (prop.reference === ReferenceType.MANY_TO_MANY) {
