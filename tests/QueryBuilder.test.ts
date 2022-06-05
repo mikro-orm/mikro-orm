@@ -1370,6 +1370,11 @@ describe('QueryBuilder', () => {
     await qb.where({ price: orm.em.raw('price + 1') }).getCount();
   });
 
+  test('gh issue 3182', async () => {
+    const qb = orm.em.createQueryBuilder(Author2);
+    await qb.count('id', true).getCount();
+  });
+
   test('update query with JSON type and raw value', async () => {
     const qb = orm.em.createQueryBuilder(Book2);
     const raw = qb.raw<any>(`jsonb_set(payload, '$.{consumed}', ?)`, [123]);
