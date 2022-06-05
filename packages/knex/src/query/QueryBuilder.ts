@@ -529,14 +529,15 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
    * Executes count query (without offset and limit), returning total count of results
    */
   async getCount(field?: string | string[], distinct?: boolean): Promise<number> {
-    if (this.type === QueryType.COUNT) {
-      const res = await this.execute<{ count: number }>('get', false);
-      return res ? +res.count : 0;
-    }
+    let res: { count: number };
 
-    const qb = this.clone();
-    qb.count(field, distinct ?? qb.hasToManyJoins()).limit(undefined).offset(undefined).orderBy([]);
-    const res = await qb.execute<{ count: number }>('get', false);
+    if (this.type === QueryType.COUNT) {
+      res = await this.execute<{ count: number }>('get', false);
+    } else {
+      const qb = this.clone();
+      qb.count(field, distinct ?? qb.hasToManyJoins()).limit(undefined).offset(undefined).orderBy([]);
+      res = await qb.execute<{ count: number }>('get', false);
+    }
 
     return res ? +res.count : 0;
   }

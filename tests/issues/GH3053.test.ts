@@ -53,5 +53,5 @@ test(`GH issue 3053`, async () => {
       type: AuthorType.Apple,
     },
   }).getFormattedQuery();
-  expect(sql).toBe("select `b0`.* from `book` as `b0` left join `author` as `a1` on `b0`.`id` = `a1`.`book_id` where (`a1`.`id`, `a1`.`type`) in (values ('123ABC', 'Apple'))");
+  expect(sql).toBe("select `b0`.* from `book` as `b0` left join `author` as `a1` on `b0`.`id` = `a1`.`book_id` where (`a1`.`id`, `a1`.`type`) in (('123ABC', 'Apple'))");
 });

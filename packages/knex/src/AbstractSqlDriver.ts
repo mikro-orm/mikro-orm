@@ -381,8 +381,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       params.push(cond);
       return '?';
     });
-    const values = pks.length > 1 && this.platform.requiresValuesKeyword() ? 'values ' : '';
-    sql += ` in (${values}${conds.join(', ')})`;
+    sql += ` in (${conds.join(', ')})`;
     const res = await this.rethrow(this.execute<QueryResult<T>>(sql, params, 'run', options.ctx));
 
     for (let i = 0; i < collections.length; i++) {

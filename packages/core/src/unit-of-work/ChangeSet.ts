@@ -2,22 +2,32 @@ import type { EntityData, AnyEntity, EntityMetadata, EntityDictionary, Primary }
 
 export class ChangeSet<T extends AnyEntity<T>> {
 
-  private primaryKey?: Primary<T> | Primary<T>[] | null;
+  private primaryKey?: Primary<T> | null;
   private serializedPrimaryKey?: string;
 
   constructor(public entity: T,
               public type: ChangeSetType,
               public payload: EntityDictionary<T>,
-              meta: EntityMetadata<T>) {
+              private meta: EntityMetadata<T>) {
     this.name = meta.className;
     this.rootName = meta.root.className;
     this.collection = meta.root.collection;
     this.schema = entity.__helper!.__schema ?? meta.root.schema;
   }
 
-  getPrimaryKey(): Primary<T> | Primary<T>[] | null {
-    this.primaryKey ??= this.entity.__helper!.getPrimaryKey(true);
-    return this.primaryKey;
+  getPrimaryKey(object = false): Primary<T> | null {
+    if (!this.originalEntity) {
+      this.primaryKey ??= this.entity.__helper!.getPrimaryKey(true);
+    } else if (this.meta.compositePK || object) {
+      this.primaryKey = this.meta.primaryKeys.reduce((o, pk) => {
+        o[pk] = (this.originalEntity as T)[pk];
+        return o;
+      }, {} as T) as any;
+    } else {
+      this.primaryKey = (this.originalEntity as T)[this.meta.primaryKeys[0]] as Primary<T>;
+    }
+
+    return this.primaryKey ?? null;
   }
 
   getSerializedPrimaryKey(): string | null {

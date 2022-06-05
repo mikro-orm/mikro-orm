@@ -350,6 +350,47 @@ describe('composite keys in mysql', () => {
     await expect(user.cars.loadCount()).resolves.toEqual(1);
   });
 
+  test('changing PK', async () => {
+    const car = new Car2('Audi A8', 2010, 200_000);
+    await orm.em.persistAndFlush(car);
+    car.year = 2015;
+
+    const mock = mockLogger(orm);
+    await orm.em.flush();
+    expect(mock).toBeCalledTimes(3);
+    expect(mock.mock.calls[1][0]).toMatch("update `car2` set `year` = 2015 where `name` = 'Audi A8' and `year` = 2010");
+
+    const c = await orm.em.fork().findOne(Car2, car);
+    expect(c).toBeDefined();
+    expect(c!.year).toBe(2015);
+  });
+
+  test('changing PK (batch)', async () => {
+    const cars = [
+      new Car2('Audi A8 a', 2011, 200_000),
+      new Car2('Audi A8 b', 2012, 200_000),
+    ];
+    await orm.em.persistAndFlush(cars);
+    cars[0].year = 2015;
+    cars[1].year = 2016;
+
+    const mock = mockLogger(orm);
+    await orm.em.flush();
+    expect(mock).toBeCalledTimes(3);
+    expect(mock.mock.calls[1][0]).toMatch("update `car2` set `year` = case when (`name` = 'Audi A8 a' and `year` = 2011) then 2015 when (`name` = 'Audi A8 b' and `year` = 2012) then 2016 else `year` end where (`name`, `year`) in (('Audi A8 a', 2011), ('Audi A8 b', 2012))");
+
+    const c1 = await orm.em.fork().findOne(Car2, cars[0]);
+    expect(c1).toBeDefined();
+    expect(c1!.year).toBe(2015);
+
+    const c2 = await orm.em.fork().findOne(Car2, cars[1]);
+    expect(c2).toBeDefined();
+    expect(c2!.year).toBe(2016);
+
+    await orm.em.flush();
+    expect(mock).toBeCalledTimes(5);
+  });
+
   test('qb.leftJoinAndSelect() with FK as PK', async () => {
     const author = new Author2('n', 'e');
     author.id = 5;

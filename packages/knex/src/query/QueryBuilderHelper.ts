@@ -41,7 +41,7 @@ export class QueryBuilderHelper {
         if (prop) {
           parts.push(...prop.fieldNames.map(f => this.mapper(a !== this.alias ? `${a}.${f}` : f, type, value, alias)));
         } else {
-          parts.push(this.mapper(`${a}.${f}`, type, value, alias));
+          parts.push(this.mapper(a !== this.alias ? `${a}.${f}` : f, type, value, alias));
         }
       }
 
@@ -402,8 +402,7 @@ export class QueryBuilderHelper {
     const fields = Utils.splitPrimaryKeys(key);
 
     if (fields.length > 1 && Array.isArray(value[op]) && !value[op].every((v: unknown) => Array.isArray(v))) {
-      const values = this.platform.requiresValuesKeyword() ? 'values ' : '';
-      value[op] = this.knex.raw(`${values}(${fields.map(() => '?').join(', ')})`, value[op]);
+      value[op] = this.knex.raw(`(${fields.map(() => '?').join(', ')})`, value[op]);
     }
 
     if (this.subQueries[key]) {

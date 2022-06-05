@@ -137,10 +137,6 @@ export abstract class Platform {
     return 3;
   }
 
-  requiresValuesKeyword() {
-    return false;
-  }
-
   allowsComparingTuples() {
     return true;
   }
