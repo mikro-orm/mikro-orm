@@ -374,7 +374,6 @@ export class EntityMetadata<T extends AnyEntity<T> = any> {
         set(val: unknown) {
           this.__helper.__data[prop.name] = val;
           this.__helper.__touched = true;
-          Object.defineProperty(this, prop.name, { value: val, configurable: true, enumerable: true, writable: true });
         },
         enumerable: true,
         configurable: true,
@@ -382,7 +381,6 @@ export class EntityMetadata<T extends AnyEntity<T> = any> {
 
       return o;
     }, { __gettersDefined: { value: true, enumerable: false } } as Dictionary);
-    this.definedProperties = {};
   }
 
   private initIndexes(prop: EntityProperty<T>): void {
