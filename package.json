@@ -113,7 +113,7 @@
     "guid-typescript": "1.0.9",
     "husky": "8.0.1",
     "jest": "28.1.1",
-    "lerna": "5.0.0",
+    "lerna": "5.1.0",
     "lint-staged": "13.0.0",
     "mongodb": "4.7.0",
     "node-gyp": "^9.0.0",
