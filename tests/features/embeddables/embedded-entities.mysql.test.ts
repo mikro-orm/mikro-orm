@@ -56,10 +56,10 @@ class User {
   @PrimaryKey()
   id!: number;
 
-  @Embedded()
+  @Embedded(() => Address1)
   address1!: Address1;
 
-  @Embedded({ prefix: 'addr_', nullable: true })
+  @Embedded(() => Address2, { prefix: 'addr_', nullable: true })
   address2?: Address2;
 
   @Embedded({ prefix: false })
@@ -82,7 +82,7 @@ class UserWithCity {
   @PrimaryKey()
   id!: number;
 
-  @Embedded({ object: false, prefix: false })
+  @Embedded(() => Address1, { object: false, prefix: false })
   address1!: Address1;
 
   @Property({ type: String })
@@ -96,7 +96,7 @@ describe('embedded entities in mysql', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [Address1, Address2, User],
+      entities: [User],
       dbName: `mikro_orm_test_embeddables`,
       type: 'mysql',
       port: 3308,

@@ -46,7 +46,7 @@ describe('GH issue #2717', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [User, Profile, Cat],
+      entities: [User],
       dbName: ':memory:',
       type: 'sqlite',
       loadStrategy: LoadStrategy.JOINED,

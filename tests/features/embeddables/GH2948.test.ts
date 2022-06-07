@@ -96,7 +96,7 @@ describe('GH issue 2948', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [BazEntity, FooEntity, Bar, Fiz],
+      entities: [FooEntity],
       dbName: ':memory:',
       type: 'sqlite',
       namingStrategy: CustomNamingStrategy,

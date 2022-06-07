@@ -55,7 +55,7 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [MyEntity, Audit, NestedAudit],
+      entities: [MyEntity],
       dbName: ':memory:',
       type: 'sqlite',
     });
