@@ -54,7 +54,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    entities: [Country, Address, Provider],
+    entities: [Provider],
     dbName: ':memory:',
     type: 'better-sqlite',
   });

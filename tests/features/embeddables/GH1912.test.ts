@@ -109,7 +109,7 @@ describe('GH issue 1912', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [Example, Metadata],
+      entities: [Example],
       dbName: ':memory:',
       type: 'sqlite',
     });
