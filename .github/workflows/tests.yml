@@ -31,11 +31,6 @@ jobs:
           path: '**/node_modules'
           key: ${{ runner.os }}-16.10-modules-${{ hashFiles('**/yarn.lock') }}
 
-      - name: Install libkrb5-dev (for run-rs)
-        run: |
-          sudo apt update
-          sudo apt install libkrb5-dev
-
       - name: Install
         run: |
           yarn config set ignore-engines true
@@ -65,11 +60,6 @@ jobs:
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-16-modules-${{ hashFiles('**/yarn.lock') }}
-
-      - name: Install libkrb5-dev (for run-rs)
-        run: |
-          sudo apt update
-          sudo apt install libkrb5-dev
 
       - name: Install
         run: |
@@ -104,11 +94,6 @@ jobs:
       - name: EditorConfig Lint
         uses: docker://mstruebing/editorconfig-checker:2.4.0@sha256:8e977f26d3fdc3b719568f85f5e1b95ae9feb07f61f2db2ccdafd5d037fc5653
 
-      - name: Install libkrb5-dev (for run-rs)
-        run: |
-          sudo apt update
-          sudo apt install libkrb5-dev
-
       - name: Install
         run: |
           yarn config set ignore-engines true
@@ -140,13 +125,9 @@ jobs:
           path: '**/node_modules'
           key: ${{ runner.os }}-${{ matrix.node-version }}-modules-${{ hashFiles('**/yarn.lock') }}
 
-      - name: Install libkrb5-dev (for run-rs)
-        run: |
-          sudo apt update
-          sudo apt install libkrb5-dev
-
       - name: Init docker
-        run: docker-compose up -d
+        run: |
+          docker-compose up -d
 
       - name: Install
         run: |
@@ -169,7 +150,6 @@ jobs:
       - name: Test
         if: steps.changed_packages.outputs.changed_packages != '0'
         run: |
-          yarn run-rs-in-background
           yarn coverage > COVERAGE_RESULT
           echo "$(cat COVERAGE_RESULT)"
           git status && git diff
@@ -211,11 +191,6 @@ jobs:
         with:
           path: '**/node_modules'
           key: ${{ runner.os }}-16.10-modules-${{ hashFiles('**/yarn.lock') }}
-
-      - name: Install libkrb5-dev (for run-rs)
-        run: |
-          sudo apt update
-          sudo apt install libkrb5-dev
 
       - name: Check for changes
         id: changed_packages

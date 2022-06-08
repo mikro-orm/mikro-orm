@@ -64,7 +64,7 @@ describe('GH issue 349', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A, B, C],
-      clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/mikro-orm-test?replicaSet=rs',
+      clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
       type: 'mongo',
       debug: ['discovery'],
       logger: i => i,

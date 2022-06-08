@@ -48,8 +48,6 @@
     "test": "jest --runInBand",
     "tsc-check-tests": "tsc --noEmit --project tests/tsconfig.json",
     "coverage": "rimraf temp tests/generated-entities && yarn test --coverage",
-    "run-rs": "run-rs -v 4.2.3 -l ubuntu1804",
-    "run-rs-in-background": "yarn run-rs > /dev/null 2>&1 &",
     "lint": "eslint packages/**/*.ts"
   },
   "commitlint": {
@@ -116,9 +114,9 @@
     "lerna": "5.1.0",
     "lint-staged": "13.0.0",
     "mongodb": "4.7.0",
+    "mongodb-memory-server": "^8.6.0",
     "node-gyp": "^9.0.0",
     "rimraf": "3.0.2",
-    "run-rs": "0.7.6",
     "sql-formatter": "6.1.2",
     "ts-jest": "28.0.4",
     "ts-node": "10.8.1",
