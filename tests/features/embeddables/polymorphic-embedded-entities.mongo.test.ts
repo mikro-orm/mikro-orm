@@ -74,7 +74,7 @@ describe('polymorphic embeddables in mongo', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Owner],
-      clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/mikro-orm-test-poly-embeddables?replicaSet=rs',
+      clientUrl: 'mongodb://localhost:27017/mikro-orm-test-poly-embeddables',
       type: 'mongo',
       validate: true,
       ensureIndexes: true,

@@ -131,7 +131,7 @@ describe('embedded entities in mongo', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [User],
-      clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/mikro-orm-test-entities-in-embeddables?replicaSet=rs',
+      clientUrl: 'mongodb://localhost:27017/mikro-orm-test-entities-in-embeddables',
       type: 'mongo',
     });
   });

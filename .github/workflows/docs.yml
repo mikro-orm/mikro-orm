@@ -27,11 +27,6 @@ jobs:
         git config --global user.name "Martin Adámek"
         git config --global user.email "banan23@gmail.com"
 
-    - name: Install libkrb5-dev (for run-rs)
-      run: |
-        sudo apt update
-        sudo apt install libkrb5-dev
-
     - name: Cache node_modules
       uses: actions/cache@v3
       with:

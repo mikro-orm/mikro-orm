@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import type { Options } from '@mikro-orm/core';
 import { JavaScriptMetadataProvider, LoadStrategy, MikroORM, Utils } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
@@ -24,17 +25,46 @@ const { BaseEntity4, Author3, Book3, BookTag3, Publisher3, Test3 } = require('./
 
 let ensureIndexes = true; // ensuring indexes is slow, and it is enough to make it once
 
-export async function initORMMongo() {
+const replicaSets: MongoMemoryReplSet[] = [];
+
+export async function initMongoReplSet(db?: string): Promise<string> {
+  const rs = new MongoMemoryReplSet({
+    replSet: {
+      name: 'rs',
+      count: 3,
+      dbName: db,
+    },
+  });
+
+  await rs.start();
+  await rs.waitUntilRunning();
+  await new Promise(resolve => setTimeout(resolve, 3e3));
+  replicaSets.push(rs);
+
+  return rs.getUri(db);
+}
+
+export async function closeReplSets(): Promise<void> {
+  for (const rs of replicaSets) {
+    await rs.stop();
+  }
+}
+
+export async function initORMMongo(replicaSet = false) {
+  const clientUrl = replicaSet
+    ? await initMongoReplSet('mikro-orm-test')
+    : 'mongodb://localhost:27017/mikro-orm-test';
+
   const orm = await MikroORM.init<MongoDriver>({
     entities: ['entities'],
     tsNode: false,
-    clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/mikro-orm-test?replicaSet=rs',
+    clientUrl,
     baseDir: BASE_DIR,
     debug: true,
     logger: i => i,
     type: 'mongo',
     ensureIndexes,
-    implicitTransactions: true,
+    implicitTransactions: replicaSet,
     validate: true,
     filters: { allowedFooBars: { cond: args => ({ id: { $in: args.allowed } }), entity: ['FooBar'], default: false } },
     pool: { min: 1, max: 3 },
