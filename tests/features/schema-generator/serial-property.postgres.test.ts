@@ -1,4 +1,5 @@
 import { Entity,  MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { mockLogger } from '../../helpers';
 
 @Entity({ tableName: 'something' })
 export class Something0 {
@@ -72,6 +73,8 @@ test('schema generator works with non-pk autoincrement columns (serial)', async 
     schemaGenerator: { disableForeignKeys: false },
   });
 
+  const mock = mockLogger(orm, ['schema']);
+
   const generator = orm.getSchemaGenerator();
   await generator.refreshDatabase();
   await expect(generator.getUpdateSchemaSQL()).resolves.toBe('');
@@ -109,6 +112,14 @@ test('schema generator works with non-pk autoincrement columns (serial)', async 
   await expect(generator.getUpdateSchemaSQL()).resolves.toBe('');
 
   await orm.close(true);
+
+  expect(mock.mock.calls).toHaveLength(6);
+  expect(mock.mock.calls[0][0]).toMatch(`column public.something._id of type serial added`);
+  expect(mock.mock.calls[1][0]).toMatch(`'autoincrement' changed for column public.something._id { column1: { name: '_id', type: 'int4', mappedType: IntegerType {}, length: null, precision: 32, scale: 0, nullable: false, default: null, unsigned: true, autoincrement: true, comment: null, primary: false, unique: false, enumItems: [] }, column2: { name: '_id', type: 'int', mappedType: IntegerType {}, unsigned: false, autoincrement: false, primary: false, nullable: false, length: undefined, precision: undefined, scale: undefined, default: undefined, enumItems: undefined, comment: undefined, extra: undefined }}`);
+  expect(mock.mock.calls[2][0]).toMatch(`column public.something._id changed { changedProperties: Set(1) { 'autoincrement' } }`);
+  expect(mock.mock.calls[3][0]).toMatch(`'autoincrement' changed for column public.something._id { column1: { name: '_id', type: 'int4', mappedType: IntegerType {}, length: null, precision: 32, scale: 0, nullable: false, default: null, unsigned: undefined, autoincrement: undefined, comment: null, primary: false, unique: false, enumItems: [] }, column2: { name: '_id', type: 'serial', mappedType: IntegerType {}, unsigned: true, autoincrement: true, primary: false, nullable: false, length: undefined, precision: undefined, scale: undefined, default: undefined, enumItems: undefined, comment: undefined, extra: undefined }}`);
+  expect(mock.mock.calls[4][0]).toMatch(`column public.something._id changed { changedProperties: Set(1) { 'autoincrement' } }`);
+  expect(mock.mock.calls[5][0]).toMatch(`column public.something._id removed`);
 });
 
 test('create schema dump with serial property', async () => {
