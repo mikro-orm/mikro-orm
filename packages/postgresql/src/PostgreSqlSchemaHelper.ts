@@ -161,7 +161,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
   createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>) {
     const pk = fromTable.getPrimaryKey();
-    const primaryKey = !changedProperties && !this.hasNonDefaultPrimaryKeyName(fromTable);
+    const primaryKey = column.primary && !changedProperties && !this.hasNonDefaultPrimaryKeyName(fromTable);
 
     if (column.autoincrement && !pk?.composite && !changedProperties) {
       if (column.mappedType instanceof BigIntType) {
