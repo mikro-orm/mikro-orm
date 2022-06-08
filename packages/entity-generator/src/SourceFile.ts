@@ -95,6 +95,12 @@ export class SourceFile {
     const isEnumOrNonStringDefault = prop.enum || typeof prop.default !== 'string';
     const useDefault = prop.default != null && isEnumOrNonStringDefault;
     const optional = prop.nullable ? '?' : (useDefault ? '' : '!');
+
+    if (prop.wrappedReference) {
+      this.coreImports.add('IdentifiedReference');
+      return `${padding}${prop.name}${optional}: IdentifiedReference<${prop.type}>;\n`;
+    }
+
     const ret = `${prop.name}${optional}: ${prop.type}`;
 
     if (!useDefault) {
@@ -283,6 +289,10 @@ export class SourceFile {
     const className = this.namingStrategy.getClassName(parts.length > 1 ? parts[1] : parts[0], '_');
     this.entityImports.add(className);
     options.entity = `() => ${className}`;
+
+    if (prop.wrappedReference) {
+      options.wrappedReference = true;
+    }
 
     if (prop.mappedBy) {
       options.mappedBy = this.quote(prop.mappedBy);

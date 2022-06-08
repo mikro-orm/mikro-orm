@@ -31,6 +31,10 @@ export class EntityGenerator {
       this.generateBidirectionalRelations(metadata);
     }
 
+    if (this.config.get('entityGenerator').identifiedReferences) {
+      this.generateIdentifiedReferences(metadata);
+    }
+
     for (const meta of metadata) {
       if (!meta.pivotTable) {
         this.sources.push(new SourceFile(meta, this.namingStrategy, this.platform));
@@ -94,6 +98,16 @@ export class EntityGenerator {
         }
 
         targetMeta.addProperty(newProp);
+      }
+    }
+  }
+
+  private generateIdentifiedReferences(metadata: EntityMetadata[]): void {
+    for (const meta of metadata.filter(m => !m.pivotTable)) {
+      for (const prop of meta.relations) {
+        if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference)) {
+          prop.wrappedReference = true;
+        }
       }
     }
   }

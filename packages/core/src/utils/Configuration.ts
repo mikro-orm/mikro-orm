@@ -100,6 +100,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     },
     entityGenerator: {
       bidirectionalRelations: false,
+      identifiedReferences: false,
     },
     cache: {
       pretty: false,
@@ -481,6 +482,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   };
   entityGenerator: {
     bidirectionalRelations?: boolean;
+    identifiedReferences?: boolean;
   };
   cache: {
     enabled?: boolean;

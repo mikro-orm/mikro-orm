@@ -46,7 +46,7 @@ $ ts-node generate-entities
 
 ## Advanced
 
-By default, the `EntityGenerator` generates only owning sides of relations (e.g. M:1). We can configure it via `entityGenerator: { bidirectionalRelations: true }` to generate also the inverse sides for them. 
+By default, the `EntityGenerator` generates only owning sides of relations (e.g. M:1). We can configure it via `entityGenerator: { bidirectionalRelations: true }` to generate also the inverse sides for them. To generate M:1 and 1:1 relations as wrapped references, use `entityGenerator: { identifiedReferences: true }`.
 
 ## Current limitations
 
