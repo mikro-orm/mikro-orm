@@ -20,16 +20,16 @@ jobs:
       - name: Checkout Source code
         uses: actions/checkout@v3
 
-      - name: Use Node.js 16.10
+      - name: Use Node.js 16
         uses: actions/setup-node@v3
         with:
-          node-version: '16.10'
+          node-version: 16
 
       - name: Cache node_modules
         uses: actions/cache@v3
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-16.10-modules-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-16-modules-${{ hashFiles('**/yarn.lock') }}
 
       - name: Install
         run: |
@@ -80,16 +80,16 @@ jobs:
       - name: Checkout Source code
         uses: actions/checkout@v3
 
-      - name: Use Node.js 16.10
+      - name: Use Node.js 16
         uses: actions/setup-node@v3
         with:
-          node-version: '16.10'
+          node-version: 16
 
       - name: Cache node_modules
         uses: actions/cache@v3
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-16.10-modules-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-16-modules-${{ hashFiles('**/yarn.lock') }}
 
       - name: EditorConfig Lint
         uses: docker://mstruebing/editorconfig-checker:2.4.0@sha256:8e977f26d3fdc3b719568f85f5e1b95ae9feb07f61f2db2ccdafd5d037fc5653
@@ -109,7 +109,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [ 14, '16.10' ]
+        node-version: [ 14, 16, 18 ]
     steps:
       - name: Checkout Source code
         uses: actions/checkout@v3
@@ -181,16 +181,16 @@ jobs:
           fetch-depth: 0 # we need to pull everything to have correct dev version suffix
           ref: master
 
-      - name: Use Node.js 16.10
+      - name: Use Node.js 16
         uses: actions/setup-node@v3
         with:
-          node-version: '16.10'
+          node-version: 16
 
       - name: Cache node_modules
         uses: actions/cache@v3
         with:
           path: '**/node_modules'
-          key: ${{ runner.os }}-16.10-modules-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-16-modules-${{ hashFiles('**/yarn.lock') }}
 
       - name: Check for changes
         id: changed_packages

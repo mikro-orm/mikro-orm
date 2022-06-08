@@ -3,6 +3,7 @@ import type { Config } from '@jest/types';
 const config: Config.InitialOptions = {
   testTimeout: 30000,
   preset: 'ts-jest',
+  runtime: '@side/jest-runtime',
   collectCoverage: false,
   collectCoverageFrom: [
     '<rootDir>/packages/*/src/**/*.ts',
