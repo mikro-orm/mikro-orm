@@ -1,7 +1,71 @@
 version: "3.4"
 
 services:
-  # mongodb is managed via `run-rs`
+  # first, we define the three mongo servers that will act as replicas
+  # here, we setup the hostname ports, and startup command
+  # which is the same as discussed in the previous section
+  mongo1:
+    hostname: mongo1
+    image: mongo
+    expose:
+      - 27017
+    ports:
+      - "27017:27017"
+    restart: always
+    command: mongod --replSet rs
+  mongo2:
+    hostname: mongo2
+    image: mongo
+    expose:
+      - 27017
+    ports:
+      - "27018:27017"
+    restart: always
+    command: mongod --replSet rs
+  mongo3:
+    hostname: mongo3
+    image: mongo
+    expose:
+      - 27017
+    ports:
+      - "27019:27017"
+    restart: always
+    command: mongod --replSet rs
+
+  # finally, we can define the initialization server
+  # this runs the `rs.initiate` command to intialize
+  # the replica set and connect the three servers to each other
+  mongoinit:
+    image: mongo
+    # this container will exit after executing the command
+    restart: "no"
+    depends_on:
+      - mongo1
+      - mongo2
+      - mongo3
+    command: >
+      mongo --host mongo1:27017 --eval 
+      '
+      db = (new Mongo("mongo1:27017")).getDB("test");
+      config = {
+      "_id" : "rs",
+      "members" : [
+        {
+          "_id" : 0,
+          "host" : "mongo1:27017"
+        },
+        {
+          "_id" : 1,
+          "host" : "mongo2:27017"
+        },
+        {
+          "_id" : 2,
+          "host" : "mongo3:27017"
+        }
+      ]
+      };
+      rs.initiate(config);
+      '
 
   mysql8:
     image: mysql:8-oracle

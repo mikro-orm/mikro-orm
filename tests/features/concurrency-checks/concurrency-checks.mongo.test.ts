@@ -36,7 +36,7 @@ describe('optimistic locking - concurrency check (mongo)', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [ConcurrencyCheckUser],
-      clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/mikro_orm_test_concurrency_check?replicaSet=rs',
+      clientUrl: 'mongodb://mongo1:27017,mongo2:27018,mongo3:27019/mikro_orm_test_concurrency_check?replicaSet=rs',
       type: 'mongo',
     });
     mock = mockLogger(orm, ['query', 'query-params']);

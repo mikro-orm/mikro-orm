@@ -35,7 +35,7 @@ describe('GH issue 1395', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [TestTemplate],
-      clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/mikro-orm-test?replicaSet=rs',
+      clientUrl: 'mongodb://mongo1:27017,mongo2:27018,mongo3:27019/mikro-orm-test?replicaSet=rs',
       type: 'mongo',
     });
     await orm.em.nativeDelete(TestTemplate, {});
