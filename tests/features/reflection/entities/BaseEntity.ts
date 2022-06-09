@@ -19,6 +19,6 @@ export abstract class BaseEntity {
   foo?: string;
 
   @Property({ persist: false })
-  hookTest = false;
+  hookTest: boolean = false;
 
 }

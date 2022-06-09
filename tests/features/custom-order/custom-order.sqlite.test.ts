@@ -51,7 +51,7 @@ class Task {
   })
   priority?: Priority;
 
-  @Property({ customOrder: ['bad', 'ok', 'good'], nullable: true })
+  @Property({ type: 'string', customOrder: ['bad', 'ok', 'good'], nullable: true })
   rating?: Rating;
 
   @Enum({

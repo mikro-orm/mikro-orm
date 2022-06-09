@@ -23,7 +23,7 @@ export abstract class BaseEntity<T extends BaseEntity<T, any>, Optional extends 
   foo?: string;
 
   @Property({ persist: false })
-  hookTest = false;
+  hookTest: boolean = false;
 
   @BeforeCreate()
   baseBeforeCreate() {

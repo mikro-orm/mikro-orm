@@ -38,10 +38,10 @@ export class Publisher2 extends BaseEntity2 {
   tests!: Collection<Test2>;
 
   @Enum(() => PublisherType)
-  type = PublisherType.LOCAL;
+  type: PublisherType = PublisherType.LOCAL;
 
   @Enum(() => PublisherType2)
-  type2 = PublisherType2.LOCAL;
+  type2: PublisherType2 = PublisherType2.LOCAL;
 
   @Enum({ nullable: true, type: EnumType })
   enum1?: Enum1;

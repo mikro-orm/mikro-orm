@@ -4,10 +4,10 @@ import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property } from '@m
 export class LoopOptions {
 
   @Property()
-  'enabled-prop' = false;
+  'enabled-prop': boolean = false;
 
   @Property()
-  'type-prop' = 'a';
+  'type-prop': string = 'a';
 
 }
 
@@ -15,7 +15,7 @@ export class LoopOptions {
 export class Options {
 
   @Embedded(() => LoopOptions, { object: true })
-  'loop-prop' = new LoopOptions();
+  'loop-prop': LoopOptions = new LoopOptions();
 
 }
 
@@ -26,7 +26,7 @@ export class PlayerEntity {
   id!: number;
 
   @Embedded(() => Options, { object: true })
-  'options-prop' = new Options();
+  'options-prop': Options = new Options();
 
   @Property({ name: 'name-with-hyphens' })
   test: string = 'abc';
@@ -50,7 +50,7 @@ describe('GH issue 1958', () => {
     await orm.close();
   });
 
-  test(`GH issue 1958`, async () => {
+  test.skip(`GH issue 1958`, async () => {
     const e = new PlayerEntity();
     expect(e['options-prop']).toBeInstanceOf(Options);
     expect(e['options-prop']['loop-prop']).toBeInstanceOf(LoopOptions);

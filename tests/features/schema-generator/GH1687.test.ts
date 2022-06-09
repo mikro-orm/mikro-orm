@@ -71,10 +71,10 @@ export class User {
   date_of_birth?: Date;
 
   @Property({ columnType: 'timestamptz', nullable: false })
-  created = new Date();
+  created: Date = new Date();
 
   @Property({ columnType: 'timestamptz', onUpdate: () => new Date().toISOString() })
-  modified = new Date();
+  modified: Date = new Date();
 
   @ManyToOne()
   city!: City;

@@ -24,7 +24,7 @@ class B {
   a!: A;
 
   @Property()
-  foo = 'bar';
+  foo: string = 'bar';
 
 }
 
@@ -34,7 +34,7 @@ describe('GH issue 369', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [A, B],
+      entities: [A],
       dbName: ':memory:',
       type: 'sqlite',
     });

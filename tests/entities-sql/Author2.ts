@@ -68,10 +68,10 @@ export class Author2 extends BaseEntity2 {
   @ManyToMany(() => Author2, a => a.following)
   followers = new Collection<Author2>(this);
 
-  @ManyToOne({ nullable: true, onUpdateIntegrity: 'no action', onDelete: 'cascade' })
+  @ManyToOne(() => Book2, { nullable: true, onUpdateIntegrity: 'no action', onDelete: 'cascade' })
   favouriteBook?: Book2;
 
-  @ManyToOne({ nullable: true })
+  @ManyToOne(() => Author2, { nullable: true })
   favouriteAuthor?: Author2;
 
   @Property({ persist: false })

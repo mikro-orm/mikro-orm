@@ -1,5 +1,4 @@
 import { Type } from './Type';
-import { Utils } from '../utils';
 import type { EntityProperty } from '../typings';
 import type { Platform } from '../platforms';
 import { ValidationError } from '../errors';
@@ -31,7 +30,7 @@ export class ArrayType<T extends string | number = string> extends Type<T[] | nu
       return value as null;
     }
 
-    if (Utils.isString(value)) {
+    if (typeof value === 'string') {
       value = platform.unmarshallArray(value) as T[];
     }
 

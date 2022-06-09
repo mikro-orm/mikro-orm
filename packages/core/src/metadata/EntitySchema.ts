@@ -86,6 +86,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
   addEnum(name: string & keyof T, type?: TypeType, options: EnumOptions<T> = {}): void {
     if (options.items instanceof Function) {
       options.items = Utils.extractEnumValues(options.items());
+      type ??= typeof options.items[0];
     }
 
     // enum arrays are simple numeric/string arrays, the constrain is enforced in the custom type only

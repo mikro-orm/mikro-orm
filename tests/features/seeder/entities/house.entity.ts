@@ -11,7 +11,7 @@ export class House {
   address!: string;
 
   @Property()
-  bought = false;
+  bought: boolean = false;
 
   @ManyToOne(() => Project)
   project!: Project;

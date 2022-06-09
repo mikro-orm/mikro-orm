@@ -94,6 +94,8 @@
     "@mikro-orm/mongo-highlighter": "1.0.0",
     "@mikro-orm/sql-highlighter": "1.0.1",
     "@side/jest-runtime": "^1.0.0",
+    "@swc/core": "^1.2.197",
+    "@swc/jest": "^0.2.21",
     "@types/fs-extra": "9.0.13",
     "@types/jest": "28.1.1",
     "@types/mysql2": "types/mysql2#89378b2cb3974ea8cdd1d633b8f056e54e5d2384",
@@ -119,7 +121,6 @@
     "node-gyp": "^9.0.0",
     "rimraf": "3.0.2",
     "sql-formatter": "6.1.2",
-    "ts-jest": "28.0.4",
     "ts-node": "10.8.1",
     "typescript": "4.7.3",
     "uuid": "8.3.2"

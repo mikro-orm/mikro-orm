@@ -1,7 +1,6 @@
 import { Type } from './Type';
 import type { Platform } from '../platforms';
 import type { EntityProperty } from '../typings';
-import { Utils } from '../utils';
 
 export class JsonType extends Type<unknown, string | null> {
 
@@ -14,7 +13,7 @@ export class JsonType extends Type<unknown, string | null> {
   }
 
   convertToJSValue(value: string | unknown, platform: Platform): unknown {
-    if (!platform.convertsJsonAutomatically() && Utils.isString(value)) {
+    if (!platform.convertsJsonAutomatically() && typeof value === 'string') {
       return JSON.parse(value);
     }
 
