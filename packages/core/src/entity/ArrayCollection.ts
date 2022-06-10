@@ -111,7 +111,6 @@ export class ArrayCollection<T, O> {
       if (this.items.delete(entity)) {
         this.incrementCount(-1);
         delete this[this.items.size]; // remove last item
-        Object.assign(this, [...this.items]); // reassign array access
         this.propagate(entity, 'remove');
       }
     }
@@ -137,7 +136,6 @@ export class ArrayCollection<T, O> {
 
     this.incrementCount(-1);
     delete this[this.items.size];
-    Object.assign(this, [...this.items]);
   }
 
   contains(item: T | Reference<T>, check?: boolean): boolean {
