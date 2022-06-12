@@ -1,0 +1,29 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`schema generator works with non-pk autoincrement columns (serial) 1`] = `
+"alter table \\"something\\" add column \\"_id\\" serial;
+
+"
+`;
+
+exports[`schema generator works with non-pk autoincrement columns (serial) 2`] = `
+"alter table \\"something\\" alter column \\"_id\\" type int using (\\"_id\\"::int);
+alter table \\"something\\" alter column \\"_id\\" drop default;
+
+"
+`;
+
+exports[`schema generator works with non-pk autoincrement columns (serial) 3`] = `
+"alter table \\"something\\" alter column \\"_id\\" type int using (\\"_id\\"::int);
+create sequence if not exists \\"something__id_seq\\";
+select setval('something__id_seq', (select max(\\"_id\\") from \\"something\\"));
+alter table \\"something\\" alter column \\"_id\\" set default nextval('something__id_seq');
+
+"
+`;
+
+exports[`schema generator works with non-pk autoincrement columns (serial) 4`] = `
+"alter table \\"something\\" drop column \\"_id\\";
+
+"
+`;

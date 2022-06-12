@@ -3,6 +3,40 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.2.0](https://github.com/mikro-orm/mikro-orm/compare/v5.1.5...v5.2.0) (2022-06-10)
+
+
+### Bug Fixes
+
+* **core:** allow changing PK via UoW ([32ab215](https://github.com/mikro-orm/mikro-orm/commit/32ab21583d2718ab874ff71b3f13c9e6a9e5faf0)), closes [#3184](https://github.com/mikro-orm/mikro-orm/issues/3184)
+* **core:** ensure correct cached value in `loadCount` ([4471bb8](https://github.com/mikro-orm/mikro-orm/commit/4471bb8b59151e8e450ab8f557a5337862aa88fc))
+* **query-builder:** fix processing of custom types in explicitly aliased queries ([db137a6](https://github.com/mikro-orm/mikro-orm/commit/db137a6cdbe182363d0e4a743b8b8f915e324b09)), closes [#3172](https://github.com/mikro-orm/mikro-orm/issues/3172)
+* typing detection with typescript 4.7 node16 ([#3163](https://github.com/mikro-orm/mikro-orm/issues/3163)) ([08322fa](https://github.com/mikro-orm/mikro-orm/commit/08322fa90112534629e4d2327991519e0b3e01c4))
+
+
+### Features
+
+* **core:** automatically discover target embeddables and relationships ([#3190](https://github.com/mikro-orm/mikro-orm/issues/3190)) ([8624dc5](https://github.com/mikro-orm/mikro-orm/commit/8624dc5228e63cdadf38a13ee29a554d844ef4ac))
+* **entity-generator:** allow generating bidirectional relations ([8b93400](https://github.com/mikro-orm/mikro-orm/commit/8b93400f2bc3569375d7316cf5b995fc1c6821c6)), closes [#3181](https://github.com/mikro-orm/mikro-orm/issues/3181)
+* **entity-generator:** allow generating identified references ([1fbf5ac](https://github.com/mikro-orm/mikro-orm/commit/1fbf5ac1ab2334c7e7ccbe190ded411a9490431c))
+* **schema:** add logging to schema comparator ([f96eaaf](https://github.com/mikro-orm/mikro-orm/commit/f96eaaf52a02c14e5413cbd25267a272bfeee92f))
+
+
+
+
+
+## [5.1.5](https://github.com/mikro-orm/mikro-orm/compare/v5.1.4...v5.1.5) (2022-05-29)
+
+
+### Bug Fixes
+
+* **cli:** disable TS mode when we fail to register ts-node ([457d9d3](https://github.com/mikro-orm/mikro-orm/commit/457d9d32d78ed34b254aae3b2b2f29b382e7175e)), closes [#3152](https://github.com/mikro-orm/mikro-orm/issues/3152)
+* **core:** assign new embeddable entity only when it is null or undefined ([#3135](https://github.com/mikro-orm/mikro-orm/issues/3135)) ([4f870fb](https://github.com/mikro-orm/mikro-orm/commit/4f870fb4a650ad7a00524424494ea31cd484af60))
+
+
+
+
+
 ## [5.1.4](https://github.com/mikro-orm/mikro-orm/compare/v5.1.3...v5.1.4) (2022-05-19)
 
 

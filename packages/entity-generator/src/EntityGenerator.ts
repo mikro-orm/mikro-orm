@@ -1,5 +1,5 @@
 import { ensureDir, writeFile } from 'fs-extra';
-import type { EntityProperty } from '@mikro-orm/core';
+import type { EntityProperty , EntityMetadata } from '@mikro-orm/core';
 import { ReferenceType, Utils } from '@mikro-orm/core';
 import type { EntityManager } from '@mikro-orm/knex';
 import { DatabaseSchema } from '@mikro-orm/knex';
@@ -25,7 +25,31 @@ export class EntityGenerator {
       .filter(table => !options.schema || table.schema === options.schema)
       .map(table => table.getEntityDeclaration(this.namingStrategy, this.helper));
 
-    // detect M:N relations
+    this.detectManyToManyRelations(metadata);
+
+    if (this.config.get('entityGenerator').bidirectionalRelations) {
+      this.generateBidirectionalRelations(metadata);
+    }
+
+    if (this.config.get('entityGenerator').identifiedReferences) {
+      this.generateIdentifiedReferences(metadata);
+    }
+
+    for (const meta of metadata) {
+      if (!meta.pivotTable) {
+        this.sources.push(new SourceFile(meta, this.namingStrategy, this.platform));
+      }
+    }
+
+    if (options.save) {
+      await ensureDir(baseDir);
+      await Promise.all(this.sources.map(file => writeFile(baseDir + '/' + file.getBaseName(), file.generate())));
+    }
+
+    return this.sources.map(file => file.generate());
+  }
+
+  private detectManyToManyRelations(metadata: EntityMetadata[]): void {
     for (const meta of metadata) {
       if (
         meta.compositePK &&                                                         // needs to have composite PK
@@ -47,19 +71,45 @@ export class EntityGenerator {
         } as EntityProperty);
       }
     }
+  }
 
-    for (const meta of metadata) {
-      if (!meta.pivotTable) {
-        this.sources.push(new SourceFile(meta, this.namingStrategy, this.platform));
+  private generateBidirectionalRelations(metadata: EntityMetadata[]): void {
+    for (const meta of metadata.filter(m => !m.pivotTable)) {
+      for (const prop of meta.relations) {
+        const targetMeta = metadata.find(m => m.className === prop.type)!;
+        const newProp = {
+          name: prop.name + 'Inverse',
+          type: meta.className,
+          joinColumns: prop.fieldNames,
+          referencedTableName: meta.tableName,
+          referencedColumnNames: Utils.flatten(targetMeta.getPrimaryProps().map(pk => pk.fieldNames)),
+          mappedBy: prop.name,
+        } as EntityProperty;
+
+        if (prop.reference === ReferenceType.MANY_TO_ONE) {
+          newProp.reference = ReferenceType.ONE_TO_MANY;
+        } else if (prop.reference === ReferenceType.ONE_TO_ONE && !prop.mappedBy) {
+          newProp.reference = ReferenceType.ONE_TO_ONE;
+          newProp.nullable = true;
+        } else if (prop.reference === ReferenceType.MANY_TO_MANY && !prop.mappedBy) {
+          newProp.reference = ReferenceType.MANY_TO_MANY;
+        } else {
+          continue;
+        }
+
+        targetMeta.addProperty(newProp);
       }
     }
+  }
 
-    if (options.save) {
-      await ensureDir(baseDir);
-      await Promise.all(this.sources.map(file => writeFile(baseDir + '/' + file.getBaseName(), file.generate())));
+  private generateIdentifiedReferences(metadata: EntityMetadata[]): void {
+    for (const meta of metadata.filter(m => !m.pivotTable)) {
+      for (const prop of meta.relations) {
+        if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference)) {
+          prop.wrappedReference = true;
+        }
+      }
     }
-
-    return this.sources.map(file => file.generate());
   }
 
 }

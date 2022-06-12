@@ -101,7 +101,7 @@ class User {
   @PrimaryKey()
   id!: number;
 
-  @Embedded()
+  @Embedded(() => Savings)
   savings!: Savings;
 
   @Property({ nullable: true })
@@ -115,7 +115,7 @@ describe('embedded entities with custom types', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [Parent, Nested, Inner, Savings, User],
+      entities: [Parent, User],
       dbName: 'mikro_orm_test_embeddables_custom_types',
       type: 'postgresql',
     });

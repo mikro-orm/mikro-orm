@@ -125,7 +125,13 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   }
 
   count(field?: string | string[], distinct = false): CountQueryBuilder<T> {
-    this._fields = [...(field ? Utils.asArray(field) : this.metadata.find(this.entityName)!.primaryKeys)];
+    if (field) {
+      this._fields = Utils.asArray(field);
+    } else if (this.hasToManyJoins()) {
+      this._fields = this.metadata.find(this.entityName)!.primaryKeys;
+    } else {
+      this._fields = [this.raw('*')];
+    }
 
     if (distinct) {
       this.flags.add(QueryFlag.DISTINCT);
@@ -195,6 +201,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
         entityName: this.entityName,
         metadata: this.metadata,
         platform: this.platform,
+        aliasMap: this._aliasMap,
         aliased: !this.type || [QueryType.SELECT, QueryType.COUNT].includes(this.type),
         convertCustomTypes: this.flags.has(QueryFlag.CONVERT_CUSTOM_TYPES),
       }) as FilterQuery<T>;
@@ -247,6 +254,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
         entityName: this.entityName,
         metadata: this.metadata,
         platform: this.platform,
+        aliasMap: this._aliasMap,
         aliased: !this.type || [QueryType.SELECT, QueryType.COUNT].includes(this.type),
         convertCustomTypes: false,
       })!;
@@ -520,10 +528,16 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
   /**
    * Executes count query (without offset and limit), returning total count of results
    */
-  async getCount(field?: string | string[], distinct = false): Promise<number> {
-    const qb = this.clone();
-    qb.count(field, distinct).limit(undefined).offset(undefined).orderBy([]);
-    const res = await qb.execute<{ count: number }>('get', false);
+  async getCount(field?: string | string[], distinct?: boolean): Promise<number> {
+    let res: { count: number };
+
+    if (this.type === QueryType.COUNT) {
+      res = await this.execute<{ count: number }>('get', false);
+    } else {
+      const qb = this.clone();
+      qb.count(field, distinct ?? qb.hasToManyJoins()).limit(undefined).offset(undefined).orderBy([]);
+      res = await qb.execute<{ count: number }>('get', false);
+    }
 
     return res ? +res.count : 0;
   }
@@ -624,6 +638,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       entityName: this.entityName,
       metadata: this.metadata,
       platform: this.platform,
+      aliasMap: this._aliasMap,
       aliased: !this.type || [QueryType.SELECT, QueryType.COUNT].includes(this.type),
     })!;
     let aliasedName = `${fromAlias}.${prop.name}#${alias}`;

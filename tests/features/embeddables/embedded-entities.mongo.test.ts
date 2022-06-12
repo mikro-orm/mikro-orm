@@ -145,7 +145,7 @@ class CustomUser {
   @SerializedPrimaryKey()
   id!: string;
 
-  @Embedded()
+  @Embedded(() => CustomAddress)
   address!: CustomAddress;
 
 }
@@ -187,8 +187,8 @@ describe('embedded entities in mongo', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [Address1Base, Address1, Address2Base, Address2, User, CustomAddress, CustomUser, childSchema, parentSchema],
-      clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/mikro-orm-test-embeddables?replicaSet=rs',
+      entities: [User, CustomUser, childSchema, parentSchema],
+      clientUrl: 'mongodb://localhost:27017/mikro-orm-test-embeddables',
       type: 'mongo',
       validate: true,
     });

@@ -100,7 +100,7 @@ export class ConfigurationLoader {
     return paths.filter(p => p.endsWith('.js') || tsNode);
   }
 
-  static async registerTsNode(configPath = 'tsconfig.json'): Promise<void> {
+  static async registerTsNode(configPath = 'tsconfig.json'): Promise<boolean> {
     const tsConfigPath = isAbsolute(configPath) ? configPath : join(process.cwd(), configPath);
 
     const tsNode = Utils.tryRequire({
@@ -111,7 +111,7 @@ export class ConfigurationLoader {
 
     /* istanbul ignore next */
     if (!tsNode) {
-      return;
+      return false;
     }
 
     const { options } = tsNode.register({
@@ -128,6 +128,8 @@ export class ConfigurationLoader {
         paths: options.paths,
       });
     }
+
+    return true;
   }
 
   static registerDotenv<D extends IDatabaseDriver>(options?: Options<D> | Configuration<D>): void {

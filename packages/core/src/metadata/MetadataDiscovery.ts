@@ -103,9 +103,35 @@ export class MetadataDiscovery {
 
     await this.discoverDirectories(paths);
     await this.discoverReferences(refs);
+    await this.discoverMissingTargets();
     this.validator.validateDiscovered(this.discovered, this.config.get('discovery').warnWhenNoEntities!);
 
     return this.discovered;
+  }
+
+  private async discoverMissingTargets(): Promise<void> {
+    const unwrap = (type: string) => type
+      .replace(/Array<(.*)>/, '$1') // unwrap array
+      .replace(/\[]$/, '')          // remove array suffix
+      .replace(/\((.*)\)/, '$1');   // unwrap union types
+
+    const missing = this.discovered.flatMap(meta => Object.values(meta.properties).filter(prop => {
+      return prop.reference !== ReferenceType.SCALAR && !unwrap(prop.type).split(/ ?\| ?/).every(type => this.discovered.find(m => m.className === type));
+    }));
+
+    for (const prop of missing) {
+      const target = (prop.entity?.() || prop.type) as Constructor<AnyEntity>;
+      await this.tryDiscoverTargets(Utils.asArray(target));
+    }
+  }
+
+  private async tryDiscoverTargets(targets: Constructor<AnyEntity>[]): Promise<void> {
+    for (const target of targets) {
+      if (typeof target === 'function' && target.name && !this.metadata.has(target.name)) {
+        await this.discoverReferences([target]);
+        await this.discoverMissingTargets();
+      }
+    }
   }
 
   private async discoverDirectories(paths: string[]): Promise<void> {

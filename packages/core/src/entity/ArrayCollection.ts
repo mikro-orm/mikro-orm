@@ -3,6 +3,7 @@ import type { AnyEntity, EntityDTO, EntityProperty, IPrimaryKey, Primary } from 
 import { Reference } from './Reference';
 import { wrap } from './wrap';
 import { ReferenceType } from '../enums';
+import { MetadataError } from '../errors';
 import { Utils } from '../utils/Utils';
 
 export class ArrayCollection<T, O> {
@@ -99,7 +100,6 @@ export class ArrayCollection<T, O> {
    * which tells the ORM we don't want orphaned entities to exist, so we know those should be removed.
    */
   remove(...items: (T | Reference<T>)[]): void {
-    this.incrementCount(-items.length);
 
     for (const item of items) {
       if (!item) {
@@ -107,10 +107,13 @@ export class ArrayCollection<T, O> {
       }
 
       const entity = Reference.unwrapReference(item);
-      delete this[this.items.size - 1]; // remove last item
-      this.items.delete(entity);
-      Object.assign(this, [...this.items]); // reassign array access
-      this.propagate(entity, 'remove');
+
+      if (this.items.delete(entity)) {
+        this.incrementCount(-1);
+        delete this[this.items.size]; // remove last item
+        Object.assign(this, [...this.items]); // reassign array access
+        this.propagate(entity, 'remove');
+      }
     }
   }
 
@@ -128,10 +131,13 @@ export class ArrayCollection<T, O> {
    * @internal
    */
   removeWithoutPropagation(entity: T): void {
+    if (!this.items.delete(entity)) {
+      return;
+    }
+
     this.incrementCount(-1);
-    delete this[this.items.size - 1]; // remove last item
-    this.items.delete(entity);
-    Object.assign(this, [...this.items]); // reassign array access
+    delete this[this.items.size];
+    Object.assign(this, [...this.items]);
   }
 
   contains(item: T | Reference<T>, check?: boolean): boolean {
@@ -166,7 +172,13 @@ export class ArrayCollection<T, O> {
    */
   get property(): EntityProperty<T> {
     if (!this._property) {
-      const meta = this.owner.__meta!;
+      const meta = this.owner.__meta;
+
+      /* istanbul ignore if */
+      if (!meta) {
+        throw MetadataError.missingMetadata(this.owner.constructor.name);
+      }
+
       const field = Object.keys(meta.properties).find(k => this.owner[k] === this);
       this._property = meta.properties[field!];
     }

@@ -171,10 +171,10 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     const register = jest.fn();
     register.mockReturnValueOnce({ config: { options: {} } });
     requireFromMock.mockImplementation(() => ({ register }));
-    await expect(ConfigurationLoader.registerTsNode(__dirname + '/../tsconfig.json')).resolves.toBeUndefined();
+    await expect(ConfigurationLoader.registerTsNode(__dirname + '/../tsconfig.json')).resolves.toBe(true);
     register.mockReturnValue({ config: {} });
-    await expect(ConfigurationLoader.registerTsNode(__dirname + '/../tsconfig.json')).resolves.toBeUndefined();
-    await expect(ConfigurationLoader.registerTsNode('./tests/tsconfig.json')).resolves.toBeUndefined();
+    await expect(ConfigurationLoader.registerTsNode(__dirname + '/../tsconfig.json')).resolves.toBe(true);
+    await expect(ConfigurationLoader.registerTsNode('./tests/tsconfig.json')).resolves.toBe(true);
     register.mockRestore();
     requireFromMock.mockRestore();
   });

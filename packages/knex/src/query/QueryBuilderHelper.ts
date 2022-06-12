@@ -21,9 +21,13 @@ export class QueryBuilderHelper {
               private readonly knex: Knex,
               private readonly driver: AbstractSqlDriver) { }
 
-  mapper(field: string, type?: QueryType): string;
-  mapper(field: string, type?: QueryType, value?: any, alias?: string | null): string;
-  mapper(field: string, type = QueryType.SELECT, value?: any, alias?: string | null): string | Knex.Raw {
+  mapper(field: string | Knex.Raw, type?: QueryType): string;
+  mapper(field: string | Knex.Raw, type?: QueryType, value?: any, alias?: string | null): string;
+  mapper(field: string | Knex.Raw, type = QueryType.SELECT, value?: any, alias?: string | null): string | Knex.Raw {
+    if (typeof field !== 'string') {
+      return field;
+    }
+
     const isTableNameAliasRequired = this.isTableNameAliasRequired(type);
     const fields = Utils.splitPrimaryKeys(field);
 
@@ -35,9 +39,9 @@ export class QueryBuilderHelper {
         const prop = this.getProperty(f, a);
 
         if (prop) {
-          parts.push(...prop.fieldNames.map(f => this.mapper(f, type, value, alias)));
+          parts.push(...prop.fieldNames.map(f => this.mapper(a !== this.alias ? `${a}.${f}` : f, type, value, alias)));
         } else {
-          parts.push(this.mapper(`${a}.${f}`, type, value, alias));
+          parts.push(this.mapper(a !== this.alias ? `${a}.${f}` : f, type, value, alias));
         }
       }
 
@@ -398,8 +402,7 @@ export class QueryBuilderHelper {
     const fields = Utils.splitPrimaryKeys(key);
 
     if (fields.length > 1 && Array.isArray(value[op]) && !value[op].every((v: unknown) => Array.isArray(v))) {
-      const values = this.platform.requiresValuesKeyword() ? 'values ' : '';
-      value[op] = this.knex.raw(`${values}(${fields.map(() => '?').join(', ')})`, value[op]);
+      value[op] = this.knex.raw(`(${fields.map(() => '?').join(', ')})`, value[op]);
     }
 
     if (this.subQueries[key]) {

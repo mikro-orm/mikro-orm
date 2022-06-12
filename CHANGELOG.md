@@ -3,6 +3,51 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.2.0](https://github.com/mikro-orm/mikro-orm/compare/v5.1.5...v5.2.0) (2022-06-10)
+
+
+### Bug Fixes
+
+* **core:** allow changing PK via UoW ([32ab215](https://github.com/mikro-orm/mikro-orm/commit/32ab21583d2718ab874ff71b3f13c9e6a9e5faf0)), closes [#3184](https://github.com/mikro-orm/mikro-orm/issues/3184)
+* **core:** ensure correct cached value in `loadCount` ([4471bb8](https://github.com/mikro-orm/mikro-orm/commit/4471bb8b59151e8e450ab8f557a5337862aa88fc))
+* **query-builder:** fix calling `qb.count('id', true).getCount()` ([a97324a](https://github.com/mikro-orm/mikro-orm/commit/a97324a2b85dd8463f300004bee82b906a68251d)), closes [#3182](https://github.com/mikro-orm/mikro-orm/issues/3182)
+* **query-builder:** fix processing of custom types in explicitly aliased queries ([db137a6](https://github.com/mikro-orm/mikro-orm/commit/db137a6cdbe182363d0e4a743b8b8f915e324b09)), closes [#3172](https://github.com/mikro-orm/mikro-orm/issues/3172)
+* **schema:** do not consider autoincrement columns as primary automatically ([088afdb](https://github.com/mikro-orm/mikro-orm/commit/088afdb96ef8fd20a3868c050bb749a4e825fd19)), closes [#3187](https://github.com/mikro-orm/mikro-orm/issues/3187)
+* **ts-morph:** use module: 'node16' for reflection ([024d9d9](https://github.com/mikro-orm/mikro-orm/commit/024d9d997728b91c7530280ccf4f49bf154a4330)), closes [#3168](https://github.com/mikro-orm/mikro-orm/issues/3168)
+* typing detection with typescript 4.7 node16 ([#3163](https://github.com/mikro-orm/mikro-orm/issues/3163)) ([08322fa](https://github.com/mikro-orm/mikro-orm/commit/08322fa90112534629e4d2327991519e0b3e01c4))
+
+
+### Features
+
+* **core:** automatically discover target embeddables and relationships ([#3190](https://github.com/mikro-orm/mikro-orm/issues/3190)) ([8624dc5](https://github.com/mikro-orm/mikro-orm/commit/8624dc5228e63cdadf38a13ee29a554d844ef4ac))
+* **entity-generator:** allow generating bidirectional relations ([8b93400](https://github.com/mikro-orm/mikro-orm/commit/8b93400f2bc3569375d7316cf5b995fc1c6821c6)), closes [#3181](https://github.com/mikro-orm/mikro-orm/issues/3181)
+* **entity-generator:** allow generating identified references ([1fbf5ac](https://github.com/mikro-orm/mikro-orm/commit/1fbf5ac1ab2334c7e7ccbe190ded411a9490431c))
+* **knex:** allow reusing existing knex client via `driverOptions` ([c169eda](https://github.com/mikro-orm/mikro-orm/commit/c169eda1907f3af217ed77fecce8df1f20c45872)), closes [#3167](https://github.com/mikro-orm/mikro-orm/issues/3167)
+* **schema:** add logging to schema comparator ([f96eaaf](https://github.com/mikro-orm/mikro-orm/commit/f96eaaf52a02c14e5413cbd25267a272bfeee92f))
+
+
+
+
+
+## [5.1.5](https://github.com/mikro-orm/mikro-orm/compare/v5.1.4...v5.1.5) (2022-05-29)
+
+
+### Bug Fixes
+
+* **cli:** disable TS mode when we fail to register ts-node ([457d9d3](https://github.com/mikro-orm/mikro-orm/commit/457d9d32d78ed34b254aae3b2b2f29b382e7175e)), closes [#3152](https://github.com/mikro-orm/mikro-orm/issues/3152)
+* **core:** assign new embeddable entity only when it is null or undefined ([#3135](https://github.com/mikro-orm/mikro-orm/issues/3135)) ([4f870fb](https://github.com/mikro-orm/mikro-orm/commit/4f870fb4a650ad7a00524424494ea31cd484af60))
+* **core:** support TypeScript 4.7 ([06b6e4e](https://github.com/mikro-orm/mikro-orm/commit/06b6e4ead56ce8a8429e707492a1e190291d7f2c))
+* **query-builder:** fix aliasing of relations with composite PK ([095e241](https://github.com/mikro-orm/mikro-orm/commit/095e2416026b926edd07da2eb694b31101e873c3)), closes [#3053](https://github.com/mikro-orm/mikro-orm/issues/3053)
+
+
+### Performance Improvements
+
+* **query-builder:** use distinct counts only when joining to-many relations ([eebe34d](https://github.com/mikro-orm/mikro-orm/commit/eebe34d8a11725c35b9e857f1ff4a1967cc6c1f8)), closes [#3044](https://github.com/mikro-orm/mikro-orm/issues/3044)
+
+
+
+
+
 ## [5.1.4](https://github.com/mikro-orm/mikro-orm/compare/v5.1.3...v5.1.4) (2022-05-19)
 
 

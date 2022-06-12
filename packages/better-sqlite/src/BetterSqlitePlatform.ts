@@ -85,10 +85,6 @@ export class BetterSqlitePlatform extends AbstractSqlPlatform {
     return value;
   }
 
-  requiresValuesKeyword() {
-    return true;
-  }
-
   quoteValue(value: any): string {
     /* istanbul ignore if */
     if (Utils.isPlainObject(value) || value?.[JsonProperty]) {

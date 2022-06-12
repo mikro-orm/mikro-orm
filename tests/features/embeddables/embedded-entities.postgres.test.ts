@@ -66,7 +66,7 @@ class User {
   @Embedded()
   address1!: Address1;
 
-  @Embedded({ prefix: 'addr_', nullable: true })
+  @Embedded(() => Address2, { prefix: 'addr_', nullable: true })
   address2?: Address2;
 
   @Embedded({ prefix: false })
@@ -89,7 +89,7 @@ describe('embedded entities in postgresql', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [Address1, Address2, User],
+      entities: [User],
       dbName: 'mikro_orm_test_embeddables',
       type: 'postgresql',
     });

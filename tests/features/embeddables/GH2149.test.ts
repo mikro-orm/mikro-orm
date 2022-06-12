@@ -36,7 +36,7 @@ describe('GH issue 2149', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [Options, LoopOptions, PlayerEntity],
+      entities: [PlayerEntity],
       dbName: ':memory:',
       type: 'sqlite',
     });

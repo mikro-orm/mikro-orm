@@ -101,7 +101,7 @@ describe('embedded entities in postgres', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [User, Profile, Identity, IdentityMeta, IdentityLink],
+      entities: [User],
       type: 'postgresql',
       dbName: `mikro_orm_test_nested_embedddables`,
     });

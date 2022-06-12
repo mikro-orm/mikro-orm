@@ -170,10 +170,8 @@ describe('UnitOfWork', () => {
 
     const mock = mockLogger(orm);
     await em.persistAndFlush(bar);
-    expect(mock.mock.calls[0][0]).toMatch('db.begin()');
-    expect(mock.mock.calls[1][0]).toMatch(`db.getCollection('foo-baz').insertOne({ name: 'dynamic' }, { session: '[ClientSession]' })`);
-    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('foo-bar'\)\.insertOne\({ name: 'bar', onCreateTest: true, onUpdateTest: true, baz: ObjectId\('\w+'\) }, { session: '\[ClientSession]' }\)/);
-    expect(mock.mock.calls[3][0]).toMatch('db.commit()');
+    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('foo-baz').insertOne({ name: 'dynamic' }, { session: undefined })`);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('foo-bar'\)\.insertOne\({ name: 'bar', onCreateTest: true, onUpdateTest: true, baz: ObjectId\('\w+'\) }, { session: undefined }\)/);
 
     expect(changeSets.map(cs => [cs.type, cs.name])).toEqual([
       [ChangeSetType.CREATE, 'FooBar'],

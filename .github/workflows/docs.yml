@@ -16,15 +16,16 @@ jobs:
       with:
         node-version: 16
 
+    - name: Cache node_modules
+      uses: actions/cache@v3
+      with:
+        path: '**/node_modules'
+        key: ${{ runner.os }}-16-modules-${{ hashFiles('**/yarn.lock') }}
+
     - name: Set git identity
       run: |
         git config --global user.name "Martin Adámek"
         git config --global user.email "banan23@gmail.com"
-
-    - name: Install libkrb5-dev (for run-rs)
-      run: |
-        sudo apt update
-        sudo apt install libkrb5-dev
 
     - name: Cache node_modules
       uses: actions/cache@v3
@@ -42,6 +43,32 @@ jobs:
         cd docs
         yarn
         yarn deploy
+      env:
+        GIT_USER: "B4nan:${{ secrets.GH_TOKEN }}"
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+  squash:
+    runs-on: ubuntu-latest
+    needs: [ build ]
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: 'gh-pages'
+        fetch-depth: 0
+
+    - name: Set git identity
+      run: |
+        git config --global user.name "Martin Adámek"
+        git config --global user.email "banan23@gmail.com"
+
+    - name: Squash all commits to reduce repository size
+      run: |
+        TOTAL_COMMITS="$(($(git rev-list --count HEAD)-1))"
+        echo "squashing $TOTAL_COMMITS commits"
+        git reset HEAD~$TOTAL_COMMITS
+        git add .
+        git commit --amend -m 'mikro-orm.io docs'
+        git push --force origin gh-pages
       env:
         GIT_USER: "B4nan:${{ secrets.GH_TOKEN }}"
         GH_TOKEN: ${{ secrets.GH_TOKEN }}

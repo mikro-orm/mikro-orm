@@ -69,7 +69,7 @@ export class ChangeSetPersister {
       const chunk = changeSets.slice(i, i + size);
       const pks = chunk.map(cs => cs.getPrimaryKey());
       options = this.propagateSchemaFromMetadata(meta, options);
-      await this.driver.nativeDelete(meta.className, { [pk]: { $in: pks } }, options);
+      await this.driver.nativeDelete(meta.className, { [pk]: { $in: pks } } as FilterQuery<T>, options);
     }
   }
 
@@ -266,7 +266,7 @@ export class ChangeSetPersister {
       return this.driver.nativeUpdate(changeSet.name, changeSet.getPrimaryKey() as Dictionary, changeSet.payload, options);
     }
 
-    const cond = Utils.getPrimaryKeyCond<T>(changeSet.entity, meta.primaryKeys) as Dictionary;
+    const cond = changeSet.getPrimaryKey(true) as Dictionary;
 
     if (meta.versionProperty) {
       cond[meta.versionProperty] = this.platform.quoteVersionValue(changeSet.entity[meta.versionProperty] as unknown as Date, meta.properties[meta.versionProperty]);
@@ -330,7 +330,7 @@ export class ChangeSetPersister {
     }
 
     const pk = Utils.getPrimaryKeyHash(meta.primaryKeys);
-    const pks = changeSets.map(cs => cs.getPrimaryKey());
+    const pks = changeSets.map(cs => cs.entity.__helper!.getPrimaryKey());
     options = this.propagateSchemaFromMetadata(meta, options, {
       fields: reloadProps.map(prop => prop.fieldNames[0]),
     });

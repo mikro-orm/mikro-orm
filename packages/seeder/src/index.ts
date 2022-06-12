@@ -9,5 +9,5 @@ export * from './Factory';
 export * from './SeedManager';
 
 // reexport faker instance and Faker type
-import faker, { Faker } from '@faker-js/faker';
+import { faker, Faker } from '@faker-js/faker';
 export { faker, Faker };

@@ -16,6 +16,7 @@ import type { MongoDriver } from '@mikro-orm/mongodb';
 import { ObjectId } from '@mikro-orm/mongodb';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 as uuid } from 'uuid';
+import { closeReplSets, initMongoReplSet } from '../bootstrap';
 
 class UserSubscriber implements EventSubscriber {
 
@@ -597,7 +598,7 @@ describe('GH issue 1175', () => {
     beforeAll(async () => {
       orm = await MikroORM.init({
         entities: [Entity1175],
-        clientUrl: 'mongodb://localhost:27017,localhost:27018,localhost:27019/mikro-orm-test?replicaSet=rs',
+        clientUrl: await initMongoReplSet('mikro-orm-test'),
         type: 'mongo',
         implicitTransactions: true,
         subscribers: [testSubscriber],
@@ -609,6 +610,7 @@ describe('GH issue 1175', () => {
 
     afterAll(async () => {
       await orm.close();
+      await closeReplSets();
     });
 
     beforeEach(() => {
