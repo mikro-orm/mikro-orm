@@ -105,7 +105,7 @@ export class EntityHelper {
           });
         }
 
-        if (prop.inherited || prop.primary || prop.persist === false || prop.embedded || isCollection) {
+        if (prop.inherited || prop.primary || prop.persist === false || prop.trackChanges === false || prop.embedded || isCollection) {
           return;
         }
 

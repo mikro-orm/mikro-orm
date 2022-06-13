@@ -134,5 +134,18 @@ We can set the flush mode on different places:
 - for given QueryBuilder instance via `qb.setFlushMode()`
 - for given transaction scope via `em.transactional(..., { flushMode })`
 
+### Change tracking and performance considerations
+
+When we use the default `FlushMode.AUTO`, we need to detect changes done on managed entities. To do this, every property is dynamically redefined as a `get/set` pair. While this should be all transparent to end users, it can lead to performance issues if we need to read some properties very often (e.g. millions of times).
+
+> Scalar primary keys are never defined as `get/set` pairs.
+
+To mitigate this, we can disable change tracking on a property level. Changing such properties will no longer trigger the auto flush mechanism, but they will be respected during explicit `flush()` call.
+
+```ts
+@Property({ trackChanges: false })
+code!: string;
+```
+
 > This part of documentation is highly inspired by [doctrine internals docs](https://www.doctrine-project.org/projects/doctrine-orm/en/2.6/reference/unitofwork.html)
 > as the behaviour here is pretty much the same.

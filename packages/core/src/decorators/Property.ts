@@ -59,6 +59,7 @@ export type PropertyOptions<T> = {
   nullable?: boolean;
   unsigned?: boolean;
   persist?: boolean;
+  trackChanges?: boolean;
   hidden?: boolean;
   version?: boolean;
   concurrencyCheck?: boolean;

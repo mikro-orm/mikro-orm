@@ -247,6 +247,7 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   unsigned?: boolean;
   mapToPk?: boolean;
   persist?: boolean;
+  trackChanges?: boolean;
   hidden?: boolean;
   enum?: boolean;
   items?: (number | string)[];
@@ -363,7 +364,7 @@ export class EntityMetadata<T extends AnyEntity<T> = any> {
       const isCollection = [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference);
       const isReference = [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk;
 
-      if (prop.inherited || prop.primary || isCollection || prop.persist === false || isReference || prop.embedded) {
+      if (prop.inherited || prop.primary || isCollection || prop.persist === false || prop.trackChanges === false || isReference || prop.embedded) {
         return o;
       }
 
