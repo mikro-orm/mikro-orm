@@ -14,6 +14,7 @@ export class ArrayCollection<T, O> {
   private _property?: EntityProperty;
 
   constructor(readonly owner: O & AnyEntity<O>, items?: T[]) {
+    /* istanbul ignore next */
     if (items) {
       let i = 0;
       this.items = new Set(items);

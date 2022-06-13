@@ -21,6 +21,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   private readonly?: boolean;
   private _populated = false;
   private _lazyInitialized = false;
+  private _em?: unknown;
 
   constructor(owner: O, items?: T[], initialized = true) {
     super(owner, items);
@@ -31,7 +32,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
    * Creates new Collection instance, assigns it to the owning entity and sets the items to it (propagating them to their inverse sides)
    */
   static create<T, O = any>(owner: O, prop: keyof O, items: undefined | T[], initialized: boolean): Collection<T, O> {
-    const coll = new Collection<T, O>(owner, items, initialized);
+    const coll = new Collection<T, O>(owner, undefined, initialized);
     owner[prop] = coll as unknown as O[keyof O];
 
     if (items) {
@@ -269,11 +270,19 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   }
 
   private getEntityManager(items: T[] = [], required = true) {
-    let em = this.owner.__helper!.__em;
+    let em = this._em ?? this.owner.__helper!.__em;
 
     if (!em) {
-      const item = (items.concat(...this.items) as AnyEntity<T>[]).find(i => i?.__helper!.__em);
-      em = item?.__helper!.__em;
+      for (const i of items as AnyEntity<T>[]) {
+        if (i?.__helper!.__em) {
+          em = i?.__helper!.__em;
+          break;
+        }
+      }
+    }
+
+    if (em) {
+      Object.defineProperty(this, '_em', { value: em });
     }
 
     if (!em && required) {

@@ -1859,7 +1859,7 @@ describe('EntityManagerPostgre', () => {
     });
   });
 
-  // this should run in ~600ms (when running single test locally)
+  // this should run in ~200ms (when running single test locally)
   test('perf: one to many', async () => {
     const author = new Author2('Jon Snow', 'snow@wall.st');
     await orm.em.persistAndFlush(author);
@@ -1873,7 +1873,24 @@ describe('EntityManagerPostgre', () => {
     expect(author.books.getItems().every(b => b.uuid)).toBe(true);
   });
 
-  // this should run in ~800ms (when running single test locally)
+  // this should run in ~150ms (when running single test locally)
+  test('perf: one to many via em.create()', async () => {
+    const books = [] as Book2[];
+    for (let i = 1; i <= 10000; i++) {
+      const b = new Book2('My Life on The Wall, part ' + i, undefined as any);
+      books.push(b);
+    }
+
+    console.time('one to many via em.create()');
+    const author = orm.em.create(Author2,{
+      name: 'Jon Snow',
+      email: 'snow@wall.st',
+      books,
+    });
+    console.timeEnd('one to many via em.create()');
+  });
+
+  // this should run in ~400ms (when running single test locally)
   test('perf: batch insert and update', async () => {
     const authors = new Set<Author2>();
 
