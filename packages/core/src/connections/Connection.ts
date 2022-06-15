@@ -74,6 +74,8 @@ export abstract class Connection {
   getConnectionOptions(): ConnectionConfig {
     const ret: ConnectionConfig = {};
     const url = new URL(this.options.clientUrl ?? this.config.getClientUrl());
+    const socketPath = this.config.get('driverOptions').connection.socketPath;
+    this.options.host = ret.host = socketPath ?? this.config.get('host', url.hostname);
     this.options.host = ret.host = this.options.host ?? this.config.get('host', decodeURIComponent(url.hostname));
     this.options.port = ret.port = this.options.port ?? this.config.get('port', +url.port);
     this.options.user = ret.user = this.options.user ?? this.config.get('user', decodeURIComponent(url.username));
@@ -86,8 +88,10 @@ export abstract class Connection {
   getClientUrl(): string {
     const options = this.getConnectionOptions();
     const url = new URL(this.config.getClientUrl(true));
-
-    return `${url.protocol}//${options.user}${options.password ? ':*****' : ''}@${options.host}:${options.port}`;
+    if(this.config.get('driverOptions').connection.socketPath)
+        return `${url.protocol}//${options.user}${options.password ? ':*****' : ''}@/${options.database}?host=${options.host}`;
+    else
+        return `${url.protocol}//${options.user}${options.password ? ':*****' : ''}@${options.host}${options.port}`;
   }
 
   setMetadata(metadata: MetadataStorage): void {
