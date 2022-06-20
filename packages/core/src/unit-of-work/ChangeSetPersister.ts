@@ -336,7 +336,7 @@ export class ChangeSetPersister {
     });
     const data = await this.driver.find<T>(meta.name!, { [pk]: { $in: pks } } as FilterQuery<T>, options);
     const map = new Map<string, Dictionary>();
-    data.forEach(item => map.set(Utils.getCompositeKeyHash(item, meta), item));
+    data.forEach(item => map.set(Utils.getCompositeKeyHash(item, meta, true, this.platform), item));
 
     for (const changeSet of changeSets) {
       const data = map.get(changeSet.entity.__helper!.getSerializedPrimaryKey());

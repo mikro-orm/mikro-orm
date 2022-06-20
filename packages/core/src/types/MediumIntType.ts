@@ -8,8 +8,4 @@ export class MediumIntType extends IntegerType {
     return platform.getMediumIntTypeDeclarationSQL(prop);
   }
 
-  compareAsType(): string {
-    return 'number';
-  }
-
 }

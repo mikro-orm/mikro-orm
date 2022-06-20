@@ -448,13 +448,17 @@ export class Utils {
     return null;
   }
 
-  static getCompositeKeyHash<T extends AnyEntity<T>>(data: EntityData<T>, meta: EntityMetadata<T>): string {
+  static getCompositeKeyHash<T extends AnyEntity<T>>(data: EntityData<T>, meta: EntityMetadata<T>, convertCustomTypes = false, platform?: Platform): string {
     const pks = meta.primaryKeys.map(pk => {
       const value = data[pk as string];
       const prop = meta.properties[pk];
 
       if (prop.targetMeta && Utils.isPlainObject(value)) {
         return this.getCompositeKeyHash(value, prop.targetMeta);
+      }
+
+      if (prop.customType && platform && convertCustomTypes) {
+        return prop.customType.convertToJSValue(value, platform);
       }
 
       return value;
