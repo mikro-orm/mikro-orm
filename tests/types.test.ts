@@ -15,6 +15,7 @@ describe('check typings', () => {
     assert<IsExact<Primary<Book2>, string>>(true);
     assert<IsExact<Primary<Book2>, number>>(false);
     assert<IsExact<Primary<Author2>, number>>(true);
+    assert<IsExact<Primary<{ id?: number }>, number>>(true);
     assert<IsExact<Primary<Author2>, string>>(false);
 
     // PrimaryKeyType symbol has priority

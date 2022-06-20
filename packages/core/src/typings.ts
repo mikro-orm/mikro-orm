@@ -34,14 +34,14 @@ export const OptionalProps = Symbol('OptionalProps');
 
 type ReadonlyPrimary<T> = T extends any[] ? Readonly<T> : T;
 export type Primary<T> = T extends { [PrimaryKeyType]?: infer PK }
-  ? ReadonlyPrimary<PK> : T extends { _id: infer PK }
-  ? ReadonlyPrimary<PK> | string : T extends { uuid: infer PK }
-  ? ReadonlyPrimary<PK> : T extends { id: infer PK }
+  ? ReadonlyPrimary<PK> : T extends { _id?: infer PK }
+  ? ReadonlyPrimary<PK> | string : T extends { uuid?: infer PK }
+  ? ReadonlyPrimary<PK> : T extends { id?: infer PK }
   ? ReadonlyPrimary<PK> : never;
 export type PrimaryProperty<T> = T extends { [PrimaryKeyProp]?: infer PK }
-  ? PK : T extends { _id: any }
-  ? '_id' | string : T extends { uuid: any }
-  ? 'uuid' : T extends { id: any }
+  ? PK : T extends { _id?: any }
+  ? '_id' | string : T extends { uuid?: any }
+  ? 'uuid' : T extends { id?: any }
   ? 'id' : never;
 export type IPrimaryKeyValue = number | string | bigint | Date | { toHexString(): string };
 export type IPrimaryKey<T extends IPrimaryKeyValue = IPrimaryKeyValue> = T;
