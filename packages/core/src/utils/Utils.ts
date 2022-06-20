@@ -267,6 +267,10 @@ export class Utils {
 
     if (Utils.isObject(target) && Utils.isPlainObject(source)) {
       Object.entries(source).forEach(([key, value]) => {
+        if (typeof value === 'undefined') {
+          return;
+        }
+
         if (Utils.isPlainObject(value)) {
           if (!(key in target)) {
             Object.assign(target, { [key]: {} });
