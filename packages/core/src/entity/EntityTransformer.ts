@@ -83,6 +83,14 @@ export class SerializationContext<T extends AnyEntity<T>> {
 export class EntityTransformer {
 
   static toObject<T extends AnyEntity<T>>(entity: T, ignoreFields: string[] = [], raw = false): EntityData<T> {
+    if (!Array.isArray(ignoreFields)) {
+      ignoreFields = [];
+    }
+
+    if (typeof raw as unknown !== 'boolean') {
+      raw = false;
+    }
+
     const wrapped = entity.__helper!;
     let contextCreated = false;
 
