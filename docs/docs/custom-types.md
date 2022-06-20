@@ -247,6 +247,7 @@ export const types = {
   integer: IntegerType,
   smallint: SmallIntType,
   tinyint: TinyIntType,
+  mediumint: MediumIntType,
   float: FloatType,
   double: DoubleType,
   boolean: BooleanType,

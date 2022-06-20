@@ -11,6 +11,7 @@ import { JsonType } from './JsonType';
 import { IntegerType } from './IntegerType';
 import { SmallIntType } from './SmallIntType';
 import { TinyIntType } from './TinyIntType';
+import { MediumIntType } from './MediumIntType';
 import { FloatType } from './FloatType';
 import { DoubleType } from './DoubleType';
 import { BooleanType } from './BooleanType';
@@ -22,7 +23,7 @@ import { UnknownType } from './UnknownType';
 
 export {
   Type, DateType, TimeType, DateTimeType, BigIntType, BlobType, ArrayType, EnumArrayType, EnumType,
-  JsonType, IntegerType, SmallIntType, TinyIntType, FloatType, DoubleType, BooleanType, DecimalType,
+  JsonType, IntegerType, SmallIntType, TinyIntType, MediumIntType, FloatType, DoubleType, BooleanType, DecimalType,
   StringType, UuidType, TextType, UnknownType,
 };
 
@@ -39,6 +40,7 @@ export const types = {
   integer: IntegerType,
   smallint: SmallIntType,
   tinyint: TinyIntType,
+  mediumint: MediumIntType,
   float: FloatType,
   double: DoubleType,
   boolean: BooleanType,

@@ -16,7 +16,7 @@ class Book {
 
 }
 
-test(`GH issue 3019`, async () => {
+test(`GH issue 3221`, async () => {
   const orm = await MikroORM.init({
     entities: [Book],
     type: 'sqlite',

@@ -9,7 +9,7 @@ import type { Configuration } from '../utils/Configuration';
 import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
 import {
   ArrayType, BigIntType, BlobType, BooleanType, DateType, DecimalType, DoubleType, JsonType, SmallIntType, TimeType,
-  TinyIntType, Type, UuidType, StringType, IntegerType, FloatType, DateTimeType, TextType, EnumType, UnknownType,
+  TinyIntType, Type, UuidType, StringType, IntegerType, FloatType, DateTimeType, TextType, EnumType, UnknownType, MediumIntType,
 } from '../types';
 import { Utils } from '../utils/Utils';
 import { ReferenceType } from '../enums';
@@ -169,6 +169,10 @@ export abstract class Platform {
     return 'smallint';
   }
 
+  getMediumIntTypeDeclarationSQL(column: { length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
+    return 'mediumint';
+  }
+
   getTinyIntTypeDeclarationSQL(column: { length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
     return 'tinyint';
   }
@@ -230,6 +234,7 @@ export abstract class Platform {
       case 'bigint': return Type.getType(BigIntType);
       case 'smallint': return Type.getType(SmallIntType);
       case 'tinyint': return Type.getType(TinyIntType);
+      case 'mediumint': return Type.getType(MediumIntType);
       case 'float': return Type.getType(FloatType);
       case 'double': return Type.getType(DoubleType);
       case 'integer': return Type.getType(IntegerType);

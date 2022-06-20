@@ -87,10 +87,6 @@ export class EntityTransformer {
       ignoreFields = [];
     }
 
-    if (typeof raw as unknown !== 'boolean') {
-      raw = false;
-    }
-
     const wrapped = entity.__helper!;
     let contextCreated = false;
 
