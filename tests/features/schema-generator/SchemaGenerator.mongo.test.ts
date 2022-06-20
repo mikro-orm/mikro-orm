@@ -56,6 +56,14 @@ describe('SchemaGenerator', () => {
     spy.mockRestore();
   });
 
+  test('ensureIndexes also recreates changed indexes and removes not defined ones', async () => {
+    const meta = orm.getMetadata().get('Author');
+    meta.properties.born.nullable = false;
+    await orm.getSchemaGenerator().ensureIndexes();
+    meta.properties.born.nullable = true;
+    await orm.getSchemaGenerator().ensureIndexes();
+  });
+
   test('deprecated driver methods that are now in MongoSchemaGenerator', async () => {
     const driver = orm.em.getDriver();
     const createSchemaSpy = jest.spyOn(MongoSchemaGenerator.prototype, 'createSchema');
