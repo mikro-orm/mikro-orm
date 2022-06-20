@@ -259,7 +259,7 @@ describe('embedded entities in mongo', () => {
 
     await orm.em.persistAndFlush(user);
     orm.em.clear();
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('user').insertOne({ address1_street: 'Downing street 10', address1_postalCode: '123', address1_city: 'London 1', address1_country: 'UK 1', addr_street: 'Downing street 11', addr_postalCode: undefined, addr_city: 'London 2', addr_country: 'UK 2', street: 'Downing street 12', postalCode: '789', city: 'London 3', country: 'UK 3', address4: { street: 'Downing street 13', postalCode: '10', city: 'London 4', country: 'UK 4' } }, { session: undefined });`);
+    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('user').insertOne({ address1_street: 'Downing street 10', address1_postalCode: '123', address1_city: 'London 1', address1_country: 'UK 1', addr_street: 'Downing street 11', addr_city: 'London 2', addr_country: 'UK 2', street: 'Downing street 12', postalCode: '789', city: 'London 3', country: 'UK 3', address4: { street: 'Downing street 13', postalCode: '10', city: 'London 4', country: 'UK 4' } }, { session: undefined });`);
 
     const u = await orm.em.findOneOrFail(User, user.id);
     expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('user'\)\.find\({ _id: .* }, { session: undefined }\)\.limit\(1\).toArray\(\);/);
@@ -273,7 +273,6 @@ describe('embedded entities in mongo', () => {
     expect(u.address2).toBeInstanceOf(Address2);
     expect(u.address2).toEqual({
       street: 'Downing street 11',
-      postalCode: null,
       city: 'London 2',
       country: 'UK 2',
     });
@@ -365,7 +364,6 @@ describe('embedded entities in mongo', () => {
       expect(user.address2).toBeInstanceOf(Address2);
       expect(user.address2).toEqual({
         street: 'Rainbow st. 2',
-        postalCode: null,
         city: 'London',
         country: 'UK',
       });

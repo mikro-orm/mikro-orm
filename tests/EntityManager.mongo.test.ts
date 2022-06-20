@@ -248,6 +248,19 @@ describe('EntityManagerMongo', () => {
     expect(b.name).toBe('fz');
   });
 
+  test('unsetting 1:1 relation (GH #3233)', async () => {
+    const bars = [FooBar.create('fb1'), FooBar.create('fb2'), FooBar.create('fb3'), FooBar.create('fb4')];
+    bars[0].fooBar = bars[3];
+    await orm.em.persist(bars).flush();
+    bars[1].fooBar = bars[0].fooBar;
+    bars[0].fooBar = undefined;
+    await orm.em.flush();
+
+    bars[2].fooBar = bars[1].fooBar;
+    bars[1].fooBar = undefined;
+    await orm.em.flush();
+  });
+
   test(`entity.init() and collection.init() works only for managed entities`, async () => {
     const author = new Author('a', 'b');
     await expect(wrap(author).init()).rejects.toThrowError('Entity Author is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()');
@@ -358,7 +371,7 @@ describe('EntityManagerMongo', () => {
 
     const books = await orm.em.fork().find(Book, {});
     expect(books).toHaveLength(3);
-    expect(books.map(b => b.publisher)).toEqual([null, null, null]);
+    expect(books.map(b => b.publisher)).toEqual([undefined, undefined, undefined]);
   });
 
   test('removing persisted entity via PK', async () => {
@@ -1671,7 +1684,7 @@ describe('EntityManagerMongo', () => {
     await expect(orm.em.findOne(FooBaz, baz2)).resolves.not.toBeNull();
 
     // replacing reference with null will trigger orphan removal
-    bar.baz = null;
+    bar.baz = undefined as any;
     await orm.em.persistAndFlush(bar);
     await expect(orm.em.findOne(FooBaz, baz2)).resolves.toBeNull();
 
@@ -1813,8 +1826,8 @@ describe('EntityManagerMongo', () => {
     orm.em.clear();
     god = (await orm.em.findOne(Author, god.id))!;
     expect(god).toBeInstanceOf(Author);
-    expect(god.age).toBeNull();
-    expect(god.born).toBeNull();
+    expect(god.age).toBeUndefined();
+    expect(god.born).toBeUndefined();
   });
 
   test('reference wrapper', async () => {

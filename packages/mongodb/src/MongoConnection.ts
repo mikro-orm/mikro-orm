@@ -241,15 +241,17 @@ export class MongoConnection extends Connection {
 
     switch (method) {
       case 'insertOne':
+        Object.keys(data as Dictionary).filter(k => typeof (data as Dictionary)[k] === 'undefined').forEach(k => delete (data as Dictionary)[k]);
         query = log(() => `db.getCollection('${collection}').insertOne(${this.logObject(data)}, ${this.logObject(options)});`);
         res = await this.getCollection<T>(collection).insertOne(data as OptionalUnlessRequiredId<T>, options);
         break;
       case 'insertMany':
+        (data as Dictionary[]).forEach(data => Object.keys(data).filter(k => typeof data[k] === 'undefined').forEach(k => delete data[k]));
         query = log(() => `db.getCollection('${collection}').insertMany(${this.logObject(data)}, ${this.logObject(options)});`);
         res = await this.getCollection<T>(collection).insertMany(data as OptionalUnlessRequiredId<T>[], options);
         break;
       case 'updateMany': {
-        const payload = Object.keys(data!).some(k => k.startsWith('$')) ? data : { $set: data };
+        const payload = Object.keys(data!).some(k => k.startsWith('$')) ? data : this.createUpdatePayload(data);
         query = log(() => `db.getCollection('${collection}').updateMany(${this.logObject(where)}, ${this.logObject(payload)}, ${this.logObject(options)});`);
         res = await this.getCollection<T>(collection).updateMany(where as Filter<T>, payload as UpdateFilter<T>, options) as UpdateResult;
         break;
@@ -260,7 +262,7 @@ export class MongoConnection extends Connection {
 
         (data as T[]).forEach((row, idx) => {
           const cond = { _id: (where as Dictionary[])[idx] };
-          const doc = { $set: row };
+          const doc = this.createUpdatePayload(row);
           query += log(() => `bulk.find(${this.logObject(cond)}).update(${this.logObject(doc)});\n`);
           bulk.find(cond).update(doc);
         });
@@ -272,7 +274,7 @@ export class MongoConnection extends Connection {
       case 'deleteMany':
       case 'countDocuments':
         query = log(() => `db.getCollection('${collection}').${method}(${this.logObject(where)}, ${this.logObject(options)});`);
-        res = await this.getCollection<T>(collection)[method as 'deleteMany'](where as Filter<T>, options); // cast to deleteMany to fix some typing weirdness
+        res = await this.getCollection<T>(collection)[method](where as Filter<T>, options);
         break;
     }
 
@@ -283,6 +285,27 @@ export class MongoConnection extends Connection {
     }
 
     return this.transformResult<T>(res!) as U;
+  }
+
+  private createUpdatePayload<T>(row: T): { $set?: unknown[]; $unset?: unknown[] } {
+    const doc: Dictionary = { $set: row };
+    const keys = Object.keys(row);
+    const $unset: { $set?: unknown[]; $unset?: unknown[] } = {};
+
+    keys.filter(k => typeof row[k] === 'undefined').forEach(k => {
+      $unset[k] = '';
+      delete row[k];
+    });
+
+    if (Utils.hasObjectKeys($unset)) {
+      doc.$unset = $unset;
+
+      if (!Utils.hasObjectKeys(doc.$set)) {
+        delete doc.$set;
+      }
+    }
+
+    return doc;
   }
 
   private transformResult<T>(res: any): QueryResult<T> {
