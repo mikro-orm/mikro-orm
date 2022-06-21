@@ -452,6 +452,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   async loadFromPivotTable<T, O>(prop: EntityProperty, owners: Primary<O>[][], where: FilterQuery<T> = {} as FilterQuery<T>, orderBy?: QueryOrderMap<T>[], ctx?: Transaction, options?: FindOptions<T>): Promise<Dictionary<T[]>> {
     const pivotProp2 = this.getPivotInverseProperty(prop);
     const ownerMeta = this.metadata.find(pivotProp2.type)!;
+    const pivotMeta = this.metadata.find(prop.pivotEntity)!;
     const cond = { [`${prop.pivotEntity}.${pivotProp2.name}`]: { $in: ownerMeta.compositePK ? owners : owners.map(o => o[0]) } };
 
     /* istanbul ignore if */
@@ -471,6 +472,15 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     if (owners.length === 1 && (options?.offset != null || options?.limit != null)) {
       qb.limit(options.limit, options.offset);
+    }
+
+    if (prop.targetMeta!.schema !== '*' && pivotMeta.schema === '*' && options?.schema) {
+      // eslint-disable-next-line dot-notation
+      qb['finalize']();
+      // eslint-disable-next-line dot-notation
+      Object.values(qb['_joins']).forEach(join => {
+        join.schema = options.schema;
+      });
     }
 
     const items = owners.length ? await this.rethrow(qb.execute('all')) : [];
