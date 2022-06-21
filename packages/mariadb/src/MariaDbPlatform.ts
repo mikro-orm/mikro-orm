@@ -28,9 +28,9 @@ export class MariaDbPlatform extends AbstractSqlPlatform {
     return 'tinyint(1)';
   }
 
-  getMappedType(type: string): Type<unknown> {
+  getDefaultMappedType(type: string): Type<unknown> {
     if (type === 'tinyint(1)') {
-      return super.getMappedType('boolean');
+      return super.getDefaultMappedType('boolean');
     }
 
     const normalizedType = this.extractSimpleType(type);
@@ -39,7 +39,7 @@ export class MariaDbPlatform extends AbstractSqlPlatform {
       timestamp: 'datetime',
     };
 
-    return super.getMappedType(map[normalizedType] ?? type);
+    return super.getDefaultMappedType(map[normalizedType] ?? type);
   }
 
   supportsUnsigned(): boolean {

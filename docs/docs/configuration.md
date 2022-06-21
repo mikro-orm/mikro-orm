@@ -71,6 +71,27 @@ MikroORM.init({
 
 Read more about this in [Metadata Providers](metadata-providers.md) sections.
 
+### Adjusting the default type mapping
+
+Since v5.2 we can alter how the ORM picks the default mapped type representation based on the inferred type of a property. One example is a mapping of `foo: string` to `varchar(255)`. If we wanted to change this default to a `text` type in postgres, we can use the `discover.getMappedType` callback:
+
+```ts
+import { MikroORM, Platform, Type } from '@mikro-orm/core';
+
+const orm = await MikroORM.init({
+  discovery: {
+    getMappedType(type: string, platform: Platform) {
+      // override the mapping for string properties only
+      if (type === 'string') {
+        return Type.getType(TextType);
+      }
+
+      return platform.getDefaultMappedType(type);
+    },
+  },
+});
+```
+
 ## Driver
 
 To select driver, you can either use `type` option, or provide the driver class reference.

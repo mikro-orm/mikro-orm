@@ -222,6 +222,11 @@ export abstract class Platform {
   }
 
   getMappedType(type: string): Type<unknown> {
+    const mappedType = this.config.get('discovery').getMappedType?.(type, this);
+    return mappedType ?? this.getDefaultMappedType(type);
+  }
+
+  getDefaultMappedType(type: string): Type<unknown> {
     if (type.endsWith('[]')) {
       return Type.getType(ArrayType);
     }

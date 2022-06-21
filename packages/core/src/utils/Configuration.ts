@@ -37,6 +37,7 @@ import { RequestContext } from './RequestContext';
 import { FlushMode, LoadStrategy, PopulateHint } from '../enums';
 import { MemoryCacheAdapter } from '../cache/MemoryCacheAdapter';
 import { EntityComparator } from './EntityComparator';
+import type { Type } from '../types/Type';
 
 export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
@@ -435,6 +436,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
     requireEntitiesArray?: boolean;
     alwaysAnalyseProperties?: boolean;
     disableDynamicFileAccess?: boolean;
+    getMappedType?: (type: string, platform: Platform) => Type<unknown> | undefined;
   };
   type?: keyof typeof Configuration.PLATFORMS;
   driver?: { new(config: Configuration): D };

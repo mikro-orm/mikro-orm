@@ -169,7 +169,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return false;
   }
 
-  getMappedType(type: string): Type<unknown> {
+  getDefaultMappedType(type: string): Type<unknown> {
     const normalizedType = this.extractSimpleType(type);
     const map = {
       'int2': 'smallint',
@@ -193,7 +193,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
       'character varying': 'varchar',
     };
 
-    return super.getMappedType(map[normalizedType] ?? type);
+    return super.getDefaultMappedType(map[normalizedType] ?? type);
   }
 
   supportsSchemas(): boolean {
