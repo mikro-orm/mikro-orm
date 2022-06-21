@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.2.1](https://github.com/mikro-orm/mikro-orm/compare/v5.2.0...v5.2.1) (2022-06-21)
+
+
+### Bug Fixes
+
+* **core:** prefer current schema for loading wild card pivot table entities ([f40cafa](https://github.com/mikro-orm/mikro-orm/commit/f40cafa6ec81263ccbd94b9367bff7662333e67c)), closes [#3177](https://github.com/mikro-orm/mikro-orm/issues/3177)
+
+
+
+
+
 # [5.2.0](https://github.com/mikro-orm/mikro-orm/compare/v5.1.5...v5.2.0) (2022-06-10)
 
 

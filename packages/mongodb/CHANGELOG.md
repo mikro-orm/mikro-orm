@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.2.1](https://github.com/mikro-orm/mikro-orm/compare/v5.2.0...v5.2.1) (2022-06-21)
+
+
+### Bug Fixes
+
+* **mongo:** recreate indexes when they differ ([60fc7f6](https://github.com/mikro-orm/mikro-orm/commit/60fc7f65b52a503abb3ccf7d99766ca4d4ba820c)), closes [#3118](https://github.com/mikro-orm/mikro-orm/issues/3118)
+* **mongo:** use `$unset` when property value is `undefined` ([f059811](https://github.com/mikro-orm/mikro-orm/commit/f05981135d984b73b5f8144758ab7055c533d3cc)), closes [#3233](https://github.com/mikro-orm/mikro-orm/issues/3233)
+
+
+
+
+
 # [5.2.0](https://github.com/mikro-orm/mikro-orm/compare/v5.1.5...v5.2.0) (2022-06-10)
 
 

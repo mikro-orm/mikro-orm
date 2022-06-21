@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.2.1](https://github.com/mikro-orm/mikro-orm/compare/v5.2.0...v5.2.1) (2022-06-21)
+
+
+### Bug Fixes
+
+* **core:** fix reloading version values with custom types on PKs ([ebd7888](https://github.com/mikro-orm/mikro-orm/commit/ebd78882cc910f3cd965ec2299a8b67958d36747)), closes [#3209](https://github.com/mikro-orm/mikro-orm/issues/3209)
+* **core:** fix serialization of entities wrapped in POJOs ([af4fadf](https://github.com/mikro-orm/mikro-orm/commit/af4fadffe9fb78341e45c016836be0824aaaac8d)), closes [#3221](https://github.com/mikro-orm/mikro-orm/issues/3221)
+* **core:** ignore `undefined` values during options merge ([9e0f559](https://github.com/mikro-orm/mikro-orm/commit/9e0f559c3c265540e89ca6eeafe5a3b836c01fba)), closes [#3234](https://github.com/mikro-orm/mikro-orm/issues/3234)
+* **core:** prefer current schema for loading wild card pivot table entities ([f40cafa](https://github.com/mikro-orm/mikro-orm/commit/f40cafa6ec81263ccbd94b9367bff7662333e67c)), closes [#3177](https://github.com/mikro-orm/mikro-orm/issues/3177)
+* **mongo:** recreate indexes when they differ ([60fc7f6](https://github.com/mikro-orm/mikro-orm/commit/60fc7f65b52a503abb3ccf7d99766ca4d4ba820c)), closes [#3118](https://github.com/mikro-orm/mikro-orm/issues/3118)
+* **mongo:** use `$unset` when property value is `undefined` ([f059811](https://github.com/mikro-orm/mikro-orm/commit/f05981135d984b73b5f8144758ab7055c533d3cc)), closes [#3233](https://github.com/mikro-orm/mikro-orm/issues/3233)
+* **mysql:** handle mediumint PKs correctly ([0bbbe5c](https://github.com/mikro-orm/mikro-orm/commit/0bbbe5c7827875a88a199b94add9ae81776dce42)), closes [#3230](https://github.com/mikro-orm/mikro-orm/issues/3230)
+* **types:** fix inference of optional PKs ([424e0bb](https://github.com/mikro-orm/mikro-orm/commit/424e0bb5c50248ac2d45da55dd1a451663944d31)), closes [#3230](https://github.com/mikro-orm/mikro-orm/issues/3230)
+
+
+### Features
+
+* **core:** allow to adjust default type mapping ([ca8ce57](https://github.com/mikro-orm/mikro-orm/commit/ca8ce5721f0d547ceec1cf645443b6ae00deaf09)), closes [#3066](https://github.com/mikro-orm/mikro-orm/issues/3066)
+
+
+### Performance Improvements
+
+* **core:** allow disabling change tracking on property level ([7d5e32d](https://github.com/mikro-orm/mikro-orm/commit/7d5e32d8eb7ec25ace2336e1bd4da5d97d015c08)), closes [#3019](https://github.com/mikro-orm/mikro-orm/issues/3019)
+* **core:** make `Collection.add` on not managed entities much faster ([75adda9](https://github.com/mikro-orm/mikro-orm/commit/75adda9b9a714b7918ec76fb7d5cd50f084cd6ba)), closes [#3211](https://github.com/mikro-orm/mikro-orm/issues/3211)
+
+
+
+
+
 # [5.2.0](https://github.com/mikro-orm/mikro-orm/compare/v5.1.5...v5.2.0) (2022-06-10)
 
 
