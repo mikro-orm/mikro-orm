@@ -92,6 +92,8 @@ export class ObjectCriteriaNode extends CriteriaNode {
         } else {
           o[key] = payload[k];
         }
+      } else if (ObjectCriteriaNode.isCustomExpression(k)) {
+        o[k] = payload[k];
       } else {
         o[`${childAlias}.${k}`] = payload[k];
       }

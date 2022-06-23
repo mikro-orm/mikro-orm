@@ -120,7 +120,7 @@ export class MetadataDiscovery {
     }));
 
     for (const prop of missing) {
-      const target = (prop.entity?.() || prop.type) as Constructor<AnyEntity>;
+      const target = (prop.entity instanceof Function ? prop.entity() : prop.type) as Constructor<AnyEntity>;
       await this.tryDiscoverTargets(Utils.asArray(target));
     }
   }
