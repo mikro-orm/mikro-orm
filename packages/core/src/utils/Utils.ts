@@ -112,6 +112,10 @@ export function equals(a: any, b: any): boolean {
     return compareObjects(a, b);
   }
 
+  if (typeof a === 'number' && typeof b === 'number' && Number.isNaN(a) && Number.isNaN(b)) {
+    return true;
+  }
+
   return false;
 }
 

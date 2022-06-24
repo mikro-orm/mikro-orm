@@ -79,6 +79,7 @@ describe('Utils', () => {
     expect(Utils.equals({ a: 'a', b: 'c', c: { d: 'e', f: ['g', 'h'] } }, { a: 'a', b: 'c', c: { d: 'e', f: ['g', 'h'] } })).toBe(true);
     expect(compareObjects(null, undefined)).toBe(true);
     expect(compareObjects(new Test(), new Author('n', 'e'))).toBe(false);
+    expect(Utils.equals(NaN, NaN)).toBe(true);
   });
 
   test('merge', () => {
