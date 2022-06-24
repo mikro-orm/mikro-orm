@@ -270,7 +270,11 @@ try {
   const author = await em.findOneOrFail(Author, { name: 'does-not-exist' });
   // author will be always found here
 } catch (e) {
-  console.error('Not found', e);
+  if (e instanceof NotFoundError) {
+    console.error('Not found', e);
+  }
+  
+  throw e;
 }
 ```
 
