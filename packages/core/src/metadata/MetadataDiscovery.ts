@@ -452,10 +452,12 @@ export class MetadataDiscovery {
     const ret: EntityMetadata[] = [];
 
     if (this.platform.usesPivotTable()) {
-      const promises = Object.values(meta.properties)
-        .filter(prop => prop.reference === ReferenceType.MANY_TO_MANY && prop.owner && prop.pivotTable)
-        .map(prop => this.definePivotTableEntity(meta, prop));
-      (await Promise.all(promises)).forEach(meta => ret.push(meta));
+      const pivotProps = Object.values(meta.properties).filter(prop => {
+        return prop.reference === ReferenceType.MANY_TO_MANY && prop.owner && prop.pivotTable;
+      });
+      await Utils.runSerial(pivotProps, async prop => {
+        return ret.push(await this.definePivotTableEntity(meta, prop));
+      });
     }
 
     return ret;
