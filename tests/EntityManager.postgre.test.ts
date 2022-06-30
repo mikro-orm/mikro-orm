@@ -322,6 +322,76 @@ describe('EntityManagerPostgre', () => {
     await expect(orm.em.rollback()).rejects.toThrowError('An open transaction is required for this operation');
   });
 
+  test('test nested find with repository', async () => {
+    const mock = mockLogger(orm, ['query', 'query-params']);
+
+    const book = new Book2('My Life on The Wall, part 1');
+
+    const author = new Author2('Bartleby', 'bartelby@writer.org');
+    author.books.add(book);
+
+    await orm.em.persistAndFlush(author);
+
+    orm.em.clear();
+
+    const reqEm = orm.em.fork();
+
+    async function requestCommonService() {
+      const [b] = await reqEm.getRepository(Book2).find({});
+      return b.title;
+    }
+
+    const { titleA, titleB, titleInner } = await reqEm.transactional(async em => {
+      const b = await em.findOneOrFail(Book2, book.uuid);
+      wrap(b).assign({
+        title: 'New title',
+      });
+      await em.flush();
+      const titleA = b.title;
+      const titleInner = await requestCommonService();
+      const titleB = b.title;
+      return { titleA, titleB, titleInner };
+    });
+
+    expect(titleA).toEqual(titleInner);
+    expect(titleA).toEqual(titleB);
+  });
+
+  test('test nested find with EM', async () => {
+    const mock = mockLogger(orm, ['query', 'query-params']);
+
+    const book = new Book2('My Life on The Wall, part 1');
+
+    const author = new Author2('Bartleby', 'bartelby@writer.org');
+    author.books.add(book);
+
+    await orm.em.persistAndFlush(author);
+
+    orm.em.clear();
+
+    const reqEm = orm.em.fork();
+
+    async function requestCommonService() {
+      const [b] = await reqEm.find(Book2, {});
+      return b.title;
+    }
+
+    const { titleA, titleB, titleInner } = await reqEm.transactional(async em => {
+      const b = await em.findOneOrFail(Book2, book.uuid);
+      wrap(b).assign({
+        title: 'New title',
+      });
+      await em.flush();
+      const titleA = b.title;
+      const titleInner = await requestCommonService();
+      const titleB = b.title;
+      return { titleA, titleB, titleInner };
+    });
+
+    expect(titleA).toEqual(titleInner);
+    expect(titleA).toEqual(titleB);
+  });
+
   test('should load entities', async () => {
     expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.em).toBeInstanceOf(EntityManager);
