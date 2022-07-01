@@ -6,7 +6,8 @@ export class User {
   @PrimaryKey()
   _id!: number;
 
-  @Property()
+
+  @Property({ type: 'boolean' })
   email!: string;
 
 }
@@ -26,10 +27,20 @@ beforeAll(async () => {
 afterAll(() => orm.close(true));
 
 test('retry limit to 3 when ensureIndex() fails', async () => {
-  const userEntity1 = await orm.em.create(User, {
+  const user1 = await orm.em.create(User, {
     email: 'test',
   });
-  const userEntity2 = await orm.em.create(User, {
+  const user2 = await orm.em.create(User, {
     email: 'test',
   });
+  await orm.em.persistAndFlush(
+    [user1, user2],
+  );
+  const userMeta = orm.em.getMetadata().get('User');
+  userMeta.uniques = [{
+    properties: 'email',
+  }];
+  await expect(
+    orm.getSchemaGenerator().ensureIndexes(),
+  ).rejects.toThrowError(/Failed to create indexes:/);
 });
