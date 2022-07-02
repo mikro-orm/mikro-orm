@@ -104,10 +104,12 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
       const skipIndexes = res.filter(r => r.status === 'fulfilled').map((r: Dictionary, id) => ({ collection: promises[id][0], indexName: r.value }));
       const collectionsWithFailedIndexes = res.filter(r => r.status === 'rejected').map((r: Dictionary, id) => promises[id][0]);
       await this.dropIndexes({ skipIndexes, collectionsWithFailedIndexes });
-      if (options.retryLimit === 1) {
+
+      if (options.retryLimit === 0) {
         const failedIndexes = res.filter(r => r.status === 'rejected').map((r: Dictionary, id) => `${promises[id][0]} - ${r.reason}`);
         throw new Error(`Failed to create indexes: ${failedIndexes.join(', ')}`);
       }
+
       await this.ensureIndexes({
         retry: collectionsWithFailedIndexes,
         retryLimit: options.retryLimit - 1,
