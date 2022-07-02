@@ -521,7 +521,7 @@ export class Utils {
   static getPrimaryKeyCondFromArray<T extends AnyEntity<T>>(pks: Primary<T>[], meta: EntityMetadata<T>): Record<string, Primary<T>> {
     return meta.getPrimaryProps().reduce((o, pk, idx) => {
       if (Array.isArray(pks[idx]) && pk.targetMeta) {
-        o[pk.name] = Utils.getPrimaryKeyCondFromArray(pks[idx] as unknown[], pk.targetMeta);
+        o[pk.name] = pks[idx];
       } else {
         o[pk.name] = Utils.extractPK<T>(pks[idx]);
       }
