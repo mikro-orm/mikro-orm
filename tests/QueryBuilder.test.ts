@@ -2022,6 +2022,11 @@ describe('QueryBuilder', () => {
       'or `meta`->\'$.time\' < 1646147306)');
   });
 
+  test('query json property with operator directly (GH #3246)', async () => {
+    const qb = orm.em.createQueryBuilder(Book2).where({ meta: { $ne: null } });
+    expect(qb.getFormattedQuery()).toBe('select `e0`.*, `e0`.price * 1.19 as `price_taxed` from `book2` as `e0` where `e0`.`meta` is not null');
+  });
+
   test('GH issue 786', async () => {
     const qb1 = orm.em.createQueryBuilder(Book2);
     qb1.select('*').where({

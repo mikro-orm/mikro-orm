@@ -264,6 +264,11 @@ export class QueryHelper {
       return o;
     }
 
+    if (path.length === 1) {
+      o[path[0]] = value;
+      return o;
+    }
+
     const operatorObject = Utils.isPlainObject(value) && Object.keys(value).every(k => Utils.isOperator(k));
     const type = operatorObject ? typeof Object.values(value)[0] : typeof value;
     const k = platform.getSearchJsonPropertyKey(path, type, alias);
