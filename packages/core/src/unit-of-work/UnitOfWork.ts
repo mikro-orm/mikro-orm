@@ -549,8 +549,17 @@ export class UnitOfWork {
       return this.processToOneReference(reference, visited, idx);
     }
 
-    if (Utils.isCollection<any>(reference, prop, ReferenceType.MANY_TO_MANY) && reference.isDirty()) {
-      this.processToManyReference(reference, visited, parent, prop);
+    if (Utils.isCollection<any>(reference, prop)) {
+      reference.getItems(false)
+        .filter(item => !item.__helper!.__originalEntityData)
+        .forEach(item => {
+          // propagate schema from parent
+          item.__helper!.__schema ??= parent.__helper!.__schema;
+        });
+
+      if (prop.reference === ReferenceType.MANY_TO_MANY && reference.isDirty()) {
+        this.processToManyReference(reference, visited, parent, prop);
+      }
     }
   }
 
@@ -570,11 +579,7 @@ export class UnitOfWork {
 
     collection.getItems(false)
       .filter(item => !item.__helper!.__originalEntityData)
-      .forEach(item => {
-        // propagate schema from parent
-        item.__helper!.__schema ??= collection.owner.__helper!.__schema;
-        this.findNewEntities(item, visited);
-      });
+      .forEach(item => this.findNewEntities(item, visited));
   }
 
   private async runHooks<T extends AnyEntity<T>>(type: EventType, changeSet: ChangeSet<T>, sync = false): Promise<unknown> {

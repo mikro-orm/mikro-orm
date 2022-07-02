@@ -234,6 +234,9 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
       lockMode: options.lockMode,
       orderBy: this.createOrderBy(options.orderBy),
       connectionType: options.connectionType,
+      schema: this.property.targetMeta!.schema === '*'
+        ? this.owner.__helper!.__schema
+        : this.property.targetMeta!.schema,
     });
 
     if (!customOrder) {

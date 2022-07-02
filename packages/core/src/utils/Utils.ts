@@ -675,12 +675,8 @@ export class Utils {
     return ret;
   }
 
-  static isCollection<T, O = unknown>(item: any, prop?: EntityProperty<T>, type?: ReferenceType): item is Collection<T, O> {
-    if (!item?.__collection) {
-      return false;
-    }
-
-    return !(prop && type) || prop.reference === type;
+  static isCollection<T, O = unknown>(item: any): item is Collection<T, O> {
+    return item?.__collection;
   }
 
   static fileURLToPath(url: string | URL) {
