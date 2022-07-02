@@ -6,19 +6,17 @@ export class User {
   @PrimaryKey()
   _id!: number;
 
-
-  @Property({ type: 'boolean' })
+  @Property()
   email!: string;
 
 }
-
 
 let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [User],
-    dbName: 'GH3216',
+    dbName: 'mikro-orm-test-gh3261',
     type: 'mongo',
   });
   await orm.getSchemaGenerator().dropSchema();
@@ -27,10 +25,10 @@ beforeAll(async () => {
 afterAll(() => orm.close(true));
 
 test('retry limit to 3 when ensureIndex() fails', async () => {
-  const user1 = await orm.em.create(User, {
+  const user1 = orm.em.create(User, {
     email: 'test',
   });
-  const user2 = await orm.em.create(User, {
+  const user2 = orm.em.create(User, {
     email: 'test',
   });
   await orm.em.persistAndFlush(

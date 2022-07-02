@@ -74,8 +74,9 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     await Promise.all(promises);
   }
 
-  async ensureIndexes(options: EnsureIndexesOptions = {}, retryLimit = 3): Promise<void> {
+  async ensureIndexes(options: EnsureIndexesOptions = {}): Promise<void> {
     options.ensureCollections ??= true;
+    options.retryLimit ??= 3;
 
     if (options.ensureCollections) {
       await this.createSchema({ ensureIndexes: false });
@@ -103,11 +104,14 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
       const skipIndexes = res.filter(r => r.status === 'fulfilled').map((r: Dictionary, id) => ({ collection: promises[id][0], indexName: r.value }));
       const collectionsWithFailedIndexes = res.filter(r => r.status === 'rejected').map((r: Dictionary, id) => promises[id][0]);
       await this.dropIndexes({ skipIndexes, collectionsWithFailedIndexes });
-      if (retryLimit === 1) {
+      if (options.retryLimit === 1) {
         const failedIndexes = res.filter(r => r.status === 'rejected').map((r: Dictionary, id) => `${promises[id][0]} - ${r.reason}`);
         throw new Error(`Failed to create indexes: ${failedIndexes.join(', ')}`);
       }
-      await this.ensureIndexes({ retry: collectionsWithFailedIndexes }, retryLimit - 1);
+      await this.ensureIndexes({
+        retry: collectionsWithFailedIndexes,
+        retryLimit: options.retryLimit - 1,
+      });
     }
   }
 
@@ -185,4 +189,5 @@ export interface CreateSchemaOptions {
 export interface EnsureIndexesOptions {
   ensureCollections?: boolean;
   retry?: boolean | string[];
+  retryLimit?: number;
 }
