@@ -359,8 +359,12 @@ export class EntityComparator {
 
   private getEmbeddedPropertySnapshot<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, context: Map<string, any>, level: number, path: string[], dataKey: string, object = prop.object): string {
     const padding = ' '.repeat(level * 2);
+    let ret = `${level === 1 ? '' : '\n'}`;
+
+    const nullCond = `entity${path.map(k => this.wrap(k)).join('')} === null`;
+    ret += `${padding}if (${nullCond}) ret${dataKey} = null;\n`;
     const cond = `entity${path.map(k => this.wrap(k)).join('')} != null`;
-    let ret = `${level === 1 ? '' : '\n'}${padding}if (${cond}) {\n`;
+    ret += `${padding}if (${cond}) {\n`;
 
     if (object) {
       ret += `${padding}  ret${dataKey} = {};\n`;

@@ -91,6 +91,7 @@ exports[`polymorphic embeddables in sqlite diffing 2`] = `
     ret.name = entity.name;
   }
 
+  if (entity.pet === null) ret.pet = null;
   if (entity.pet != null) {
     ret.pet_canBark = clone(entity.pet.canBark);
     ret.pet_type = clone(entity.pet.type);
@@ -98,6 +99,7 @@ exports[`polymorphic embeddables in sqlite diffing 2`] = `
     ret.pet_canMeow = clone(entity.pet.canMeow);
   }
 
+  if (entity.pet2 === null) ret.pet2 = null;
   if (entity.pet2 != null) {
     ret.pet2 = {};
     ret.pet2.canBark = clone(entity.pet2.canBark);
@@ -111,6 +113,7 @@ exports[`polymorphic embeddables in sqlite diffing 2`] = `
     ret.pets = [];
     entity.pets.forEach((_, idx_0) => {
 
+      if (entity.pets[idx_0] === null) ret.pets[idx_0] = null;
       if (entity.pets[idx_0] != null) {
         ret.pets[idx_0] = {};
         ret.pets[idx_0].canBark = clone(entity.pets[idx_0].canBark);

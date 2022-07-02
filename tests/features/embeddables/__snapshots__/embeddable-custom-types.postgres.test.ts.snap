@@ -24,19 +24,23 @@ exports[`embedded entities with custom types snapshot generator 1`] = `
     ret.id = entity.id;
   }
 
+  if (entity.nested === null) ret.nested = null;
   if (entity.nested != null) {
     ret.nested_someValue = clone(convertToDatabaseValue_nested_someValue(entity.nested.someValue));
 
+    if (entity.nested.deep === null) ret.nested_deep = null;
     if (entity.nested.deep != null) {
       ret.nested_deep_someValue = clone(convertToDatabaseValue_nested_deep_someValue(entity.nested.deep.someValue));
     }
 
   }
 
+  if (entity.nested2 === null) ret.nested2 = null;
   if (entity.nested2 != null) {
     ret.nested2 = {};
     ret.nested2.someValue = clone(convertToDatabaseValue_nested2_someValue(entity.nested2.someValue));
 
+    if (entity.nested2.deep === null) ret.nested2.deep = null;
     if (entity.nested2.deep != null) {
       ret.nested2.deep = {};
       ret.nested2.deep.someValue = clone(convertToDatabaseValue_nested2_deep_someValue(entity.nested2.deep.someValue));
