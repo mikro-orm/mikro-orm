@@ -549,7 +549,7 @@ export class UnitOfWork {
       return this.processToOneReference(reference, visited, idx);
     }
 
-    if (Utils.isCollection<any>(reference, prop)) {
+    if (Utils.isCollection<any>(reference)) {
       reference.getItems(false)
         .filter(item => !item.__helper!.__originalEntityData)
         .forEach(item => {

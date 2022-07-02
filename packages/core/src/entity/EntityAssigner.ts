@@ -42,7 +42,7 @@ export class EntityAssigner {
         throw new Error(`You must pass a non-${value} value to the property ${prop} of entity ${entity.constructor.name}.`);
       }
 
-      if (props[prop] && Utils.isCollection(entity[prop as keyof T], props[prop]) && Array.isArray(value) && EntityAssigner.validateEM(em)) {
+      if (props[prop] && Utils.isCollection(entity[prop as keyof T]) && Array.isArray(value) && EntityAssigner.validateEM(em)) {
         return EntityAssigner.assignCollection<T>(entity, entity[prop as keyof T] as unknown as Collection<AnyEntity>, value, props[prop], em!, options);
       }
 
