@@ -10,7 +10,6 @@ export class User {
   email!: string;
 
 }
-
 let orm: MikroORM;
 
 beforeAll(async () => {
