@@ -1914,7 +1914,7 @@ describe('EntityManagerPostgre', () => {
     expect(() => orm.em.create(Author2, { name: 'a1', email: 'e1' })).toThrowError(err);
     const author = new Author2('a', 'e');
     expect(() => orm.em.persist(author)).toThrowError(err);
-    expect(() => orm.em.assign(author, { name: 'b' })).not.toThrowError(err);
+    expect(() => orm.em.assign(author, { name: 'b' })).toThrowError(err);
     expect(() => orm.em.assign(author, { books: ['1', '2', '3'] })).toThrowError(err);
     await expect(orm.em.flush()).rejects.toThrowError(err);
 
