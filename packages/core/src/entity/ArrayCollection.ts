@@ -10,6 +10,7 @@ export class ArrayCollection<T, O> {
 
   protected readonly items = new Set<T>();
   protected initialized = true;
+  protected dirty = false;
   protected _count?: number;
   private _property?: EntityProperty;
 
@@ -101,7 +102,6 @@ export class ArrayCollection<T, O> {
    * which tells the ORM we don't want orphaned entities to exist, so we know those should be removed.
    */
   remove(...items: (T | Reference<T>)[]): void {
-
     for (const item of items) {
       if (!item) {
         continue;
@@ -158,6 +158,14 @@ export class ArrayCollection<T, O> {
     return this.initialized;
   }
 
+  isDirty(): boolean {
+    return this.dirty;
+  }
+
+  setDirty(dirty = true): void {
+    this.dirty = dirty;
+  }
+
   get length(): number {
     return this.count();
   }
@@ -187,7 +195,7 @@ export class ArrayCollection<T, O> {
     return this._property!;
   }
 
-  protected propagate(item: T, method: 'add' | 'remove'): void {
+  protected propagate(item: T, method: 'add' | 'remove' | 'takeSnapshot'): void {
     if (this.property.owner && this.property.inversedBy) {
       this.propagateToInverseSide(item, method);
     } else if (!this.property.owner && this.property.mappedBy) {
@@ -195,7 +203,7 @@ export class ArrayCollection<T, O> {
     }
   }
 
-  protected propagateToInverseSide(item: T, method: 'add' | 'remove'): void {
+  protected propagateToInverseSide(item: T, method: 'add' | 'remove' | 'takeSnapshot'): void {
     const collection = item[this.property.inversedBy as keyof T] as unknown as ArrayCollection<O, T>;
 
     if (this.shouldPropagateToCollection(collection, method)) {
@@ -203,7 +211,7 @@ export class ArrayCollection<T, O> {
     }
   }
 
-  protected propagateToOwningSide(item: T, method: 'add' | 'remove'): void {
+  protected propagateToOwningSide(item: T, method: 'add' | 'remove' | 'takeSnapshot'): void {
     const collection = item[this.property.mappedBy as keyof T] as unknown as ArrayCollection<O, T>;
 
     if (this.property.reference === ReferenceType.MANY_TO_MANY) {
@@ -222,17 +230,19 @@ export class ArrayCollection<T, O> {
     }
   }
 
-  protected shouldPropagateToCollection(collection: ArrayCollection<O, T>, method: 'add' | 'remove'): boolean {
-    if (!collection || !collection.isInitialized()) {
+  protected shouldPropagateToCollection(collection: ArrayCollection<O, T>, method: 'add' | 'remove' | 'takeSnapshot'): boolean {
+    if (!collection) {
       return false;
     }
 
-    if (method === 'add') {
-      return !collection.contains(this.owner, false);
+    switch (method) {
+      case 'add':
+        return !collection.contains(this.owner, false);
+      case 'remove':
+        return collection.isInitialized() && collection.contains(this.owner, false);
+      case 'takeSnapshot':
+        return collection.isDirty();
     }
-
-    // remove
-    return collection.contains(this.owner, false);
   }
 
   protected incrementCount(value: number) {

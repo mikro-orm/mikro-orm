@@ -213,7 +213,7 @@ tag.books.add(book);
 console.log(book.tags.contains(tag)); // true
 ``` 
 
-> Collections on both sides have to be initialized, otherwise propagation won't work.
+>  Since v5.2.2 propagation of adding new items to inverse side M:N relation also works if the owning collection is not initialized. For propagation of remove operation, both sides still have to be initialized.
 
 > Although this propagation works also for M:N inverse side, we should always use owning side to manipulate the collection.
 
