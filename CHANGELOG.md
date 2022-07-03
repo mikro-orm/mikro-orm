@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.2.2](https://github.com/mikro-orm/mikro-orm/compare/v5.2.1...v5.2.2) (2022-07-03)
+
+
+### Bug Fixes
+
+* **core:** consider two `NaN` as equal when computing changesets ([#3250](https://github.com/mikro-orm/mikro-orm/issues/3250)) ([95116a0](https://github.com/mikro-orm/mikro-orm/commit/95116a05bb142ed90f5b572e109d6740900c5cf1))
+* **core:** ensure correct context usage in all `EntityManager` public methods ([cc6d59b](https://github.com/mikro-orm/mikro-orm/commit/cc6d59b9a96fbfd4106e37c21814ded84b56588a)), closes [#3271](https://github.com/mikro-orm/mikro-orm/issues/3271)
+* **core:** ensure FK as PK is not marked as initialized too early ([f12f92f](https://github.com/mikro-orm/mikro-orm/commit/f12f92f185eb78fc1471c5ec1411cd2bf5d11308)), closes [#3269](https://github.com/mikro-orm/mikro-orm/issues/3269)
+* **core:** fix populating of 1:m collections between wildcard schema entities ([69c06aa](https://github.com/mikro-orm/mikro-orm/commit/69c06aa5b3ac553bb6c1438a7143d56d18fcf894)), closes [#3270](https://github.com/mikro-orm/mikro-orm/issues/3270)
+* **core:** fix populating of relations in `afterFlush` hook ([26ab686](https://github.com/mikro-orm/mikro-orm/commit/26ab6861ba0c0b64563c69d91f85e17776a58e71)), closes [#3005](https://github.com/mikro-orm/mikro-orm/issues/3005)
+* **core:** fix querying JSON properties with operators directly ([077ca62](https://github.com/mikro-orm/mikro-orm/commit/077ca623e6d8f0faff8e6af9ea468cf9b525d61a)), closes [#3246](https://github.com/mikro-orm/mikro-orm/issues/3246)
+* **mongo:** persist explicit `null` value on object embeddable as `null` ([1c56e7a](https://github.com/mikro-orm/mikro-orm/commit/1c56e7ab1b2d5325588b444998ffa53adce6f699)), closes [#3258](https://github.com/mikro-orm/mikro-orm/issues/3258)
+* **mongo:** retry only 3 times if ensuring indexes fails ([#3272](https://github.com/mikro-orm/mikro-orm/issues/3272)) ([299a028](https://github.com/mikro-orm/mikro-orm/commit/299a028739879d87e5b16a497d3333780502a112))
+* **seeder:** fs-extra dep ([#3268](https://github.com/mikro-orm/mikro-orm/issues/3268)) ([972e5ba](https://github.com/mikro-orm/mikro-orm/commit/972e5bac8d679303422a07a19b07a352529c4ff6))
+* **sql:** fix prefixing of JSON queries nested on relations ([847ff46](https://github.com/mikro-orm/mikro-orm/commit/847ff468f48dbb99e06ffe713e5d66a461e524b2)), closes [#3242](https://github.com/mikro-orm/mikro-orm/issues/3242)
+
+
+### Features
+
+* **core:** propagate add operation to m:n owner even if not initialized ([#3273](https://github.com/mikro-orm/mikro-orm/issues/3273)) ([dc9255c](https://github.com/mikro-orm/mikro-orm/commit/dc9255cb4c26291c7e33a7c38da0475fb20f3832))
+
+
+
+
+
 ## [5.2.1](https://github.com/mikro-orm/mikro-orm/compare/v5.2.0...v5.2.1) (2022-06-21)
 
 
