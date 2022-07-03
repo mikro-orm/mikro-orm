@@ -334,6 +334,7 @@ export class UnitOfWork {
         await this.persistToDatabase(groups, this.em.getTransactionContext());
       }
       this.resetTransaction(oldTx);
+      this.working = false;
       await this.eventManager.dispatchEvent(EventType.afterFlush, { em: this.em, uow: this });
     } finally {
       this.resetTransaction(oldTx);
