@@ -17,7 +17,6 @@ export interface MatchingOptions<T, P extends string = never> extends FindOption
 export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
 
   private snapshot: T[] | undefined = []; // used to create a diff of the collection at commit time, undefined marks overridden values so we need to wipe when flushing
-  private dirty = false;
   private readonly?: boolean;
   private _populated = false;
   private _lazyInitialized = false;
@@ -189,14 +188,6 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     this._lazyInitialized = false;
   }
 
-  isDirty(): boolean {
-    return this.dirty;
-  }
-
-  setDirty(dirty = true): void {
-    this.dirty = dirty;
-  }
-
   async init<P extends string = never>(options: InitOptions<T, P> = {}): Promise<LoadedCollection<Loaded<T, P>>> {
     if (this.dirty) {
       const items = [...this.items];
@@ -263,6 +254,12 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   takeSnapshot(): void {
     this.snapshot = [...this.items];
     this.setDirty(false);
+
+    if (this.property.owner) {
+      this.items.forEach(item => {
+        this.propagate(item, 'takeSnapshot');
+      });
+    }
   }
 
   /**
