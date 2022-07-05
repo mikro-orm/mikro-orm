@@ -101,13 +101,21 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     const res = await Promise.allSettled(promises.map(p => p[1]));
 
     if (res.some(r => r.status === 'rejected') && options.retry !== false) {
-      const skipIndexes = res.filter(r => r.status === 'fulfilled').map((r: Dictionary, id) => ({ collection: promises[id][0], indexName: r.value }));
-      const collectionsWithFailedIndexes = res.filter(r => r.status === 'rejected').map((r: Dictionary, id) => promises[id][0]);
-      await this.dropIndexes({ skipIndexes, collectionsWithFailedIndexes });
+      const skipIndexes = [];
+      const collectionsWithFailedIndexes = [];
 
+      for (let i = 0; i < res.length; i++) {
+        const r: Dictionary = res[i];
+        if (r.status === 'rejected') {
+          collectionsWithFailedIndexes.push(promises[i][0]);
+        } else {
+          skipIndexes.push({ collection: promises[i][0], indexName: r.value });
+        }
+      }
+
+      await this.dropIndexes({ skipIndexes, collectionsWithFailedIndexes });
       if (options.retryLimit === 0) {
-        const failedIndexes = res.filter(r => r.status === 'rejected').map((r: Dictionary, id) => `${promises[id][0]} - ${r.reason}`);
-        throw new Error(`Failed to create indexes: ${failedIndexes.join(', ')}`);
+        throw new Error(`Failed to create indexes: ${collectionsWithFailedIndexes.join(', ')}`);
       }
 
       await this.ensureIndexes({

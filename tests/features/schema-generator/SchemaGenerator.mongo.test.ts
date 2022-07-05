@@ -1,8 +1,8 @@
 import type { MikroORM } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 import { MongoSchemaGenerator } from '@mikro-orm/mongodb';
-import FooBar from '../../entities/FooBar';
 import { initORMMongo } from '../../bootstrap';
+import FooBar from '../../entities/FooBar';
 
 describe('SchemaGenerator', () => {
 
@@ -57,11 +57,24 @@ describe('SchemaGenerator', () => {
   });
 
   test('ensureIndexes also recreates changed indexes and removes not defined ones', async () => {
-    const meta = orm.getMetadata().get('Author');
-    meta.properties.born.nullable = false;
+    const dropIndexesSpy = jest.spyOn(MongoSchemaGenerator.prototype, 'dropIndexes');
+    const ensureIndexesSpy = jest.spyOn(MongoSchemaGenerator.prototype, 'ensureIndexes');
+    const meta = orm.getMetadata().get('FooBaz');
+    meta.properties.name.nullable = false;
     await orm.getSchemaGenerator().ensureIndexes();
-    meta.properties.born.nullable = true;
+    meta.properties.name.nullable = true;
     await orm.getSchemaGenerator().ensureIndexes();
+
+    expect(dropIndexesSpy).toBeCalledWith(
+      expect.objectContaining({
+      collectionsWithFailedIndexes: ['foo-baz'],
+     }));
+
+    expect(ensureIndexesSpy).toBeCalledTimes(3);
+
+    dropIndexesSpy.mockRestore();
+    ensureIndexesSpy.mockRestore();
+
   });
 
   test('deprecated driver methods that are now in MongoSchemaGenerator', async () => {
