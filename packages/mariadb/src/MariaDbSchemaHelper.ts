@@ -232,8 +232,7 @@ export class MariaDbSchemaHelper extends SchemaHelper {
   }
 
   protected wrap(val: string | undefined | null, type: Type<unknown>): string | undefined | null {
-    const stringType = type instanceof StringType || type instanceof TextType || type instanceof EnumType;
-    return typeof val === 'string' && val.length > 0 && stringType ? this.platform.quoteValue(val) : val;
+    return val;
   }
 
 }

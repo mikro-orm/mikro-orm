@@ -225,7 +225,7 @@ export class EntityLoader {
   private initializeManyToMany<T extends AnyEntity<T>>(filtered: T[], children: AnyEntity[], prop: EntityProperty, field: keyof T): void {
     for (const entity of filtered) {
       const items = children.filter(child => (child[prop.mappedBy] as unknown as Collection<AnyEntity>).contains(entity));
-      (entity[field] as unknown as Collection<AnyEntity>).hydrate(items);
+      (entity[field] as unknown as Collection<AnyEntity>).hydrate(items, true);
     }
   }
 
@@ -349,7 +349,7 @@ export class EntityLoader {
         });
         return this.em.getUnitOfWork().registerManaged<T>(entity, item, { refresh, loaded: true });
       });
-      (entity[prop.name] as unknown as Collection<AnyEntity>).hydrate(items);
+      (entity[prop.name] as unknown as Collection<AnyEntity>).hydrate(items, true);
       children.push(...items);
     }
 

@@ -135,10 +135,10 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   /**
    * @internal
    */
-  hydrate(items: T[]): void {
+  hydrate(items: T[], forcePropagate?: boolean): void {
     this.initialized = true;
     super.hydrate(items);
-    this.takeSnapshot();
+    this.takeSnapshot(forcePropagate);
   }
 
   /**
@@ -251,11 +251,11 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   /**
    * @internal
    */
-  takeSnapshot(): void {
+  takeSnapshot(forcePropagate?: boolean): void {
     this.snapshot = [...this.items];
     this.setDirty(false);
 
-    if (this.property.owner) {
+    if (this.property.owner || forcePropagate) {
       this.items.forEach(item => {
         this.propagate(item, 'takeSnapshot');
       });
