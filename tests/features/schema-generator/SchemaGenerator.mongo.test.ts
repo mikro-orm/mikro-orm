@@ -68,13 +68,12 @@ describe('SchemaGenerator', () => {
     expect(dropIndexesSpy).toBeCalledWith(
       expect.objectContaining({
       collectionsWithFailedIndexes: ['foo-baz'],
-     }));
+    }));
 
     expect(ensureIndexesSpy).toBeCalledTimes(3);
 
     dropIndexesSpy.mockRestore();
     ensureIndexesSpy.mockRestore();
-
   });
 
   test('deprecated driver methods that are now in MongoSchemaGenerator', async () => {

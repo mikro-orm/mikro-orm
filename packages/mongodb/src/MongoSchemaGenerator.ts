@@ -114,6 +114,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
       }
 
       await this.dropIndexes({ skipIndexes, collectionsWithFailedIndexes });
+
       if (options.retryLimit === 0) {
         throw new Error(`Failed to create indexes: ${collectionsWithFailedIndexes.join(', ')}`);
       }
