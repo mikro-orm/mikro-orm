@@ -1,6 +1,7 @@
-import type { AbstractSqlConnection, Check, Column, Index, Knex, TableDifference } from '@mikro-orm/knex';
+import type { AbstractSqlConnection, Check, Column, Index, Knex, TableDifference, DatabaseTable } from '@mikro-orm/knex';
 import { SchemaHelper } from '@mikro-orm/knex';
-import type { Dictionary , Type } from '@mikro-orm/core';
+import type { Dictionary, Type } from '@mikro-orm/core';
+import { EnumType, StringType, TextType, MediumIntType } from '@mikro-orm/core';
 
 /* istanbul ignore next */
 export class MariaDbSchemaHelper extends SchemaHelper {
@@ -87,13 +88,34 @@ export class MariaDbSchemaHelper extends SchemaHelper {
     return `alter table ${tableName} modify ${columnName} ${this.getColumnDeclarationSQL(to)}`;
   }
 
-  private getColumnDeclarationSQL(col: Column): string {
+  createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>) {
+    if (column.mappedType instanceof MediumIntType) {
+      return table.specificType(column.name, this.getColumnDeclarationSQL(column, true));
+    }
+
+    return super.createTableColumn(table, column, fromTable, changedProperties);
+  }
+
+  configureColumn(column: Column, col: Knex.ColumnBuilder, knex: Knex, changedProperties?: Set<string>) {
+    if (column.mappedType instanceof MediumIntType) {
+      return col;
+    }
+
+    return super.configureColumn(column, col, knex, changedProperties);
+  }
+
+  private getColumnDeclarationSQL(col: Column, addPrimary = false): string {
     let ret = col.type;
     ret += col.unsigned ? ' unsigned' : '';
     ret += col.autoincrement ? ' auto_increment' : '';
     ret += ' ';
     ret += col.nullable ? 'null' : 'not null';
     ret += col.default ? ' default ' + col.default : '';
+
+    if (addPrimary && col.primary) {
+      ret += ' primary key';
+    }
+
     ret += col.comment ? ` comment ${this.platform.quoteValue(col.comment)}` : '';
 
     return ret;
@@ -166,7 +188,8 @@ export class MariaDbSchemaHelper extends SchemaHelper {
       from information_schema.columns where table_schema = database() and table_name = '${tableName}'
       order by ordinal_position`;
     const columns = await connection.execute<any[]>(sql);
-    const str = (val: string | number | undefined) => val != null ? '' + val : val;
+    const str = (val?: string | number) => val != null ? '' + val : val;
+    const extra = (val: string) => val.replace(/auto_increment|default_generated/i, '').trim();
 
     return columns.map(col => {
       const platform = connection.getPlatform();
@@ -186,7 +209,7 @@ export class MariaDbSchemaHelper extends SchemaHelper {
         precision: col.numeric_precision,
         scale: col.numeric_scale,
         comment: col.column_comment,
-        extra: col.extra.replace('auto_increment', ''),
+        extra: extra(col.extra),
       };
     });
   }
@@ -208,7 +231,8 @@ export class MariaDbSchemaHelper extends SchemaHelper {
   }
 
   protected wrap(val: string | undefined, type: Type<unknown>): string | undefined {
-    return val;
+    const stringType = type instanceof StringType || type instanceof TextType || type instanceof EnumType;
+    return typeof val === 'string' && val.length > 0 && stringType ? this.platform.quoteValue(val) : val;
   }
 
 }
