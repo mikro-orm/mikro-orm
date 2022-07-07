@@ -116,6 +116,36 @@ describe('EntityGenerator', () => {
     await orm.close(true);
   });
 
+  test('numeric nullable columns with null default [mysql]', async () => {
+    const orm = await initORMMySql('mysql', {}, true);
+    await orm.getSchemaGenerator().dropSchema();
+    await orm.getSchemaGenerator().execute(`
+      CREATE TABLE if not exists \`vrf\` (  \`id\` int(11) NOT NULL AUTO_INCREMENT,  \`vrf_id\` int(11) DEFAULT NULL,  \`comments\` varchar(150) DEFAULT NULL,  \`created_at\` timestamp NULL DEFAULT current_timestamp(),  \`updated_at\` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),  PRIMARY KEY (\`id\`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+    const generator = orm.getEntityGenerator();
+    const dump = await generator.generate({ save: false, baseDir: './temp/entities' });
+    expect(dump).toMatchSnapshot('mysql-entity-gh-3285');
+    await orm.getSchemaGenerator().execute(`
+      drop table if exists \`vrf\`;
+    `);
+    await orm.close(true);
+  });
+
+  test('numeric nullable columns with null default [mariadb]', async () => {
+    const orm = await initORMMySql('mariadb', {}, true);
+    await orm.getSchemaGenerator().dropSchema();
+    await orm.getSchemaGenerator().execute(`
+      CREATE TABLE if not exists \`vrf\` (  \`id\` int(11) NOT NULL AUTO_INCREMENT,  \`vrf_id\` int(11) DEFAULT NULL,  \`comments\` varchar(150) DEFAULT NULL,  \`created_at\` timestamp NULL DEFAULT current_timestamp(),  \`updated_at\` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),  PRIMARY KEY (\`id\`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+    const generator = orm.getEntityGenerator();
+    const dump = await generator.generate({ save: false, baseDir: './temp/entities' });
+    expect(dump).toMatchSnapshot('mariadb-entity-gh-3285');
+    await orm.getSchemaGenerator().execute(`
+      drop table if exists \`vrf\`;
+    `);
+    await orm.close(true);
+  });
+
   test('enum with default value [mysql]', async () => {
     const orm = await initORMMySql('mysql', {}, true);
     await orm.getSchemaGenerator().dropSchema();

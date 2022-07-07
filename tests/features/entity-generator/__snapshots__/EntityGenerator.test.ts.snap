@@ -2206,6 +2206,60 @@ export class User2 {
 ]
 `;
 
+exports[`EntityGenerator numeric nullable columns with null default [mariadb]: mariadb-entity-gh-3285 1`] = `
+Array [
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Vrf {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ nullable: true })
+  vrfId?: number;
+
+  @Property({ length: 150, nullable: true })
+  comments?: string;
+
+  @Property({ nullable: true, defaultRaw: \`current_timestamp()\` })
+  createdAt?: Date;
+
+  @Property({ nullable: true, defaultRaw: \`current_timestamp()\` })
+  updatedAt?: Date;
+
+}
+",
+]
+`;
+
+exports[`EntityGenerator numeric nullable columns with null default [mysql]: mysql-entity-gh-3285 1`] = `
+Array [
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Vrf {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property({ nullable: true })
+  vrfId?: number;
+
+  @Property({ length: 150, nullable: true })
+  comments?: string;
+
+  @Property({ nullable: true, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  createdAt?: Date;
+
+  @Property({ nullable: true, defaultRaw: \`CURRENT_TIMESTAMP\` })
+  updatedAt?: Date;
+
+}
+",
+]
+`;
+
 exports[`EntityGenerator table name starting with number [mysql]: mysql-entity-dump-number 1`] = `
 Array [
   "import { Entity, PrimaryKey } from '@mikro-orm/core';
