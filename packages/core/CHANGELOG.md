@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.2.3](https://github.com/mikro-orm/mikro-orm/compare/v5.2.2...v5.2.3) (2022-07-08)
+
+
+### Bug Fixes
+
+* **core:** ensure M:N collections are not dirty after populating of inverse side ([21ba9b2](https://github.com/mikro-orm/mikro-orm/commit/21ba9b212473a9347b2bd38a048710a9628c05ee)), closes [#3287](https://github.com/mikro-orm/mikro-orm/issues/3287)
+
+
+
+
+
 ## [5.2.2](https://github.com/mikro-orm/mikro-orm/compare/v5.2.1...v5.2.2) (2022-07-03)
 
 

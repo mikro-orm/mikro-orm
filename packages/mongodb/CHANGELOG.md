@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.2.3](https://github.com/mikro-orm/mikro-orm/compare/v5.2.2...v5.2.3) (2022-07-08)
+
+
+### Bug Fixes
+
+* **mongo:** fix wrog filter of entity name ([#3276](https://github.com/mikro-orm/mikro-orm/issues/3276)) ([da20e1f](https://github.com/mikro-orm/mikro-orm/commit/da20e1f74329f6fe6913e4a483bde7e71bfec17b))
+
+
+
+
+
 ## [5.2.2](https://github.com/mikro-orm/mikro-orm/compare/v5.2.1...v5.2.2) (2022-07-03)
 
 

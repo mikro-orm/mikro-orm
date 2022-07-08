@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.2.3](https://github.com/mikro-orm/mikro-orm/compare/v5.2.2...v5.2.3) (2022-07-08)
+
+
+### Bug Fixes
+
+* **core:** ensure M:N collections are not dirty after populating of inverse side ([21ba9b2](https://github.com/mikro-orm/mikro-orm/commit/21ba9b212473a9347b2bd38a048710a9628c05ee)), closes [#3287](https://github.com/mikro-orm/mikro-orm/issues/3287)
+* **mariadb:** backport some fixes from the mysql driver ([9a57386](https://github.com/mikro-orm/mikro-orm/commit/9a57386af03a268302b88aa70b20038911bd0cc3))
+* **mariadb:** fix inference of nullable columns when generating entities ([4bd606a](https://github.com/mikro-orm/mikro-orm/commit/4bd606ace99cfa5c2216aac5880128bb736dd199)), closes [#3285](https://github.com/mikro-orm/mikro-orm/issues/3285)
+* **mongo:** fix wrog filter of entity name ([#3276](https://github.com/mikro-orm/mikro-orm/issues/3276)) ([da20e1f](https://github.com/mikro-orm/mikro-orm/commit/da20e1f74329f6fe6913e4a483bde7e71bfec17b))
+
+
+
+
+
 ## [5.2.2](https://github.com/mikro-orm/mikro-orm/compare/v5.2.1...v5.2.2) (2022-07-03)
 
 
