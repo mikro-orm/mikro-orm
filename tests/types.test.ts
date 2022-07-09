@@ -1,5 +1,5 @@
 import { wrap } from '@mikro-orm/core';
-import type { IdentifiedReference, Reference, Collection, EntityManager, EntityName } from '@mikro-orm/core';
+import type { IdentifiedReference, Reference, Collection, EntityManager, EntityName, RequiredEntityData } from '@mikro-orm/core';
 import type { Has, IsExact } from 'conditional-type-checks';
 import { assert } from 'conditional-type-checks';
 import type { ObjectId } from 'bson';
@@ -320,6 +320,29 @@ describe('check typings', () => {
     await em.findOne('MessageRecipient' as EntityName<MessageRecipient>, '1', {
       populate: ['message', 'message.phoneService', 'message.phoneService.phoneServiceVendor'],
     });
+  });
+
+  test('RequiredEntityData requires required properties, and allows null only if explicitly used in the property type', async () => {
+    interface User {
+      id: number;
+      email: string;
+      foo?: string;
+      bar: string | null;
+    }
+
+    let email: RequiredEntityData<User>['email'];
+    email = '';
+    // @ts-expect-error should not allow `null` on required props
+    email = null;
+
+    let foo: RequiredEntityData<User>['foo'];
+    foo = '';
+    // @ts-expect-error should not allow `null` on required props
+    foo = null;
+
+    let bar: RequiredEntityData<User>['bar'];
+    bar = '';
+    bar = null;
   });
 
   test('FilterQueryOrPrimary ok assignments', async () => {

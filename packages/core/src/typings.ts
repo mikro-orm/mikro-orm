@@ -183,7 +183,7 @@ type IsOptional<T, K extends keyof T> = T[K] extends Collection<any, any>
         : false;
 type RequiredKeys<T, K extends keyof T> = IsOptional<T, K> extends false ? K : never;
 export type EntityData<T> = { [K in keyof T as ExcludeFunctions<T, K>]?: EntityDataItem<T[K]> };
-export type RequiredEntityData<T> = EntityData<T> & { [K in keyof T as RequiredKeys<T, K>]: EntityDataItem<T[K]> };
+export type RequiredEntityData<T> = EntityData<T> & { [K in keyof T as RequiredKeys<T, K>]: T[K] | EntityDataProp<T[K]> };
 export type EntityDictionary<T> = EntityData<T> & Dictionary;
 
 type Relation<T> = {
