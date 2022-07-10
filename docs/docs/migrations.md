@@ -5,7 +5,7 @@ title: Migrations
 > To use migrations we need to first install `@mikro-orm/migrations` package.
 
 MikroORM has integrated support for migrations via [umzug](https://github.com/sequelize/umzug).
-It allows we to generate migrations with current schema differences.
+It allows us to generate migrations with current schema differences.
 
 > Since v5, migrations are stored without extension.
 
