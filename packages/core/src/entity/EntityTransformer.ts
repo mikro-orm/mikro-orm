@@ -112,7 +112,7 @@ export class EntityTransformer {
     }
 
     [...keys]
-      .filter(prop => this.isVisible<T>(meta, prop, ignoreFields))
+      .filter(prop => raw ? meta.properties[prop] : this.isVisible<T>(meta, prop, ignoreFields))
       .map(prop => {
         const cycle = root!.visit(meta.className, prop);
 
