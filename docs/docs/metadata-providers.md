@@ -105,7 +105,7 @@ prop?: string;
 By default, enum is considered as numeric type. For string enums, we need to explicitly 
 provide one of:
 
-- reference to the enum (which will force we to define the enum before defining the entity)
+- reference to the enum (which will force us to define the enum before defining the entity)
   ```ts
   @Enum(() => UserRole)
   role: UserRole;
@@ -146,7 +146,7 @@ which requires `@types/mongodb` to be installed.
 > `JavaScriptMetadataProvider` is deprecated, [use `EntitySchema` instead](entity-schema.md).
 
 This provider should be used only if we are not using TypeScript at all and therefore we do 
-not use decorators to annotate our properties. It will require we to specify the whole schema 
+not use decorators to annotate our properties. It will require us to specify the whole schema 
 manually. 
 
 ```ts
