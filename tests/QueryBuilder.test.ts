@@ -2685,6 +2685,22 @@ describe('QueryBuilder', () => {
     expect(sql).toBe('select `e0`.*, `books`.`uuid_pk` as `books__uuid_pk`, `books`.`created_at` as `books__created_at`, `books`.`title` as `books__title`, `books`.`price` as `books__price`, `books`.price * 1.19 as `books__price_taxed`, `books`.`double` as `books__double`, `books`.`meta` as `books__meta`, `books`.`author_id` as `books__author_id`, `books`.`publisher_id` as `books__publisher_id` from `author2` as `e0` inner join `book2` as `books` on `e0`.`id` = `books`.`author_id` where `e0`.`id` in (select `e0`.`id` from (select `e0`.`id` from `author2` as `e0` inner join `book2` as `books` on `e0`.`id` = `books`.`author_id` group by `e0`.`id` order by min(`books`.price * 1.19) desc, min(`e0`.`id`) desc limit 10) as `e0`) order by `books`.price * 1.19 desc, `e0`.`id` desc');
   });
 
+  test('select via fulltext search', async () => {
+    const qb1 = orm.em.createQueryBuilder(Author2, 'a');
+    qb1.select('*').where({ name: { $fulltext: 'test' }  });
+    expect(qb1.getQuery()).toEqual('select `a`.* from `author2` as `a` where match(`name`) against (? in natural language mode)');
+  });
+
+  test('select via multiple where clauses with fulltext search', async () => {
+    const qb1 = orm.em.createQueryBuilder(Author2, 'a');
+    qb1.select('*').where({
+      termsAccepted: true,
+      name: { $fulltext: 'test' },
+      email: { $fulltext: 'test' },
+    });
+    expect(qb1.getQuery()).toEqual('select `a`.* from `author2` as `a` where `a`.`terms_accepted` = ? and match(`name`) against (? in natural language mode) and match(`email`) against (? in natural language mode)');
+  });
+
   afterAll(async () => orm.close(true));
 
 });

@@ -138,6 +138,10 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
       }
 
       if (index.type) {
+        if (index.type === 'fulltext') {
+          index.type = 'text';
+        }
+
         const spec: Dictionary<string> = {};
         properties.forEach(prop => spec[prop] = index.type!);
         fieldOrSpec = spec;

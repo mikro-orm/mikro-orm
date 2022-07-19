@@ -62,6 +62,7 @@ const res = await orm.em.find(Author, [1, 2, 7]);
 | `$nin`   | not contains       | Matches none of the values specified in an array. |
 | `$like`  | like               | Uses LIKE operator |
 | `$re`    | regexp             | Uses REGEXP operator |
+| `$fulltext` | full text | A driver specific full text search function. Requires an FTS5 table for SQLITE and an index with type 'fulltext' for other drivers.
 | `$ilike` | ilike              | (postgres only) |
 | `$overlap` | &&               | (postgres only) |
 | `$contains` | @>              | (postgres only) |

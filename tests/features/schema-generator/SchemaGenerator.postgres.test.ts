@@ -305,7 +305,7 @@ describe('SchemaGenerator [postgres]', () => {
     expect(diff).toMatchSnapshot('postgres-update-schema-add-index');
     await generator.execute(diff, { wrap: true });
 
-    meta.get('Book2').indexes[0].name = 'custom_idx_123';
+    meta.get('Book2').indexes[1].name = 'custom_idx_123';
 
     diff = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-alter-index');

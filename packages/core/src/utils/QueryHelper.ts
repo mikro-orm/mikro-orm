@@ -127,8 +127,8 @@ export class QueryHelper {
         return o;
       }
 
-      // wrap top level operators (except $not) with PK
-      if (Utils.isOperator(key) && root && meta && key !== '$not') {
+      // wrap top level operators (except platform allowed operators) with PK
+      if (Utils.isOperator(key) && root && meta && !options.platform.isAllowedTopLevelOperator(key)) {
         const rootPrimaryKey = Utils.getPrimaryKeyHash(meta.primaryKeys);
         o[rootPrimaryKey] = { [key]: QueryHelper.processWhere<T>({ ...options, where: value, root: false }) };
         return o;

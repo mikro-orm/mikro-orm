@@ -9,7 +9,7 @@ import { BookRepository } from '../repositories/BookRepository';
 
 @Entity({ tableName: 'books-table', customRepository: () => BookRepository })
 @Unique({ properties: ['title', 'author'] })
-@Index({ properties: 'title', type: 'text' })
+@Index({ properties: 'title', type: 'fulltext' })
 @Index({ options: { point: '2dsphere', title: -1 } })
 @Filter({ name: 'writtenBy', cond: args => ({ author: args.author }) })
 export class Book extends BaseEntity3<Book> {

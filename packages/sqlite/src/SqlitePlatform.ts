@@ -124,4 +124,8 @@ export class SqlitePlatform extends AbstractSqlPlatform {
     return false;
   }
 
+  getFullTextWhereClause(): string {
+    return `:column: match :query`;
+  }
+
 }

@@ -66,4 +66,16 @@ export class MySqlPlatform extends AbstractSqlPlatform {
     return 'PRIMARY'; // https://dev.mysql.com/doc/refman/8.0/en/create-table.html#create-table-indexes-keys
   }
 
+  supportsCreatingFullTextIndex(): boolean {
+    return true;
+  }
+
+  getFullTextWhereClause(): string {
+    return `match(:column:) against (:query in natural language mode)`;
+  }
+
+  getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columnName: string, columnType: string): string {
+    return `alter table ${this.quoteIdentifier(schemaName ? `${schemaName}.${tableName}` : tableName)} add fulltext index ${this.quoteIdentifier(indexName)}(${this.quoteIdentifier(columnName)})`;
+  }
+
 }

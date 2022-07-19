@@ -112,6 +112,20 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       this.inlineEmbeddables(meta, data, where);
     }
 
+    // move search terms from data['$fulltext'] to mongo's structure: data['$text']['search']
+    if ('$fulltext' in data) {
+      // eslint-disable-next-line dot-notation
+      data['$text'] = { $search: data['$fulltext'] };
+      // eslint-disable-next-line dot-notation
+      delete data['$fulltext'];
+    }
+
+    // mongo only allows the $text operator in the root of the object and will
+    // seach all documents where the field has a text index.
+    if (Utils.hasNestedKey(data, '$fulltext')) {
+      throw new Error('Full text search is only supported on the top level of the query object.');
+    }
+
     Object.keys(data).forEach(k => {
       if (Utils.isGroupOperator(k)) {
         /* istanbul ignore else */

@@ -822,6 +822,20 @@ export class Utils {
     return !!GroupOperator[key];
   }
 
+  static hasNestedKey(object: any, key: string): boolean {
+    if (!object) {
+      return false;
+    }
+
+    if (Array.isArray(object)) {
+      return object.some(o => this.hasNestedKey(o, key));
+    } else if (typeof object === 'object') {
+      return Object.entries(object).some(([k, v]) => k === key || this.hasNestedKey(v, key));
+    }
+
+    return false;
+  }
+
   static getGlobalStorage(namespace: string): Dictionary {
     const key = `mikro-orm-${namespace}`;
     global[key] = global[key] || {};

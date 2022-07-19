@@ -186,7 +186,7 @@ export enum BaseUser2Type {
   OWNER = 'owner',
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { Publisher2 } from './Publisher2';
@@ -200,6 +200,7 @@ export class Book2 {
   @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date;
 
+  @Index({ name: 'book2_title_index' })
   @Property({ length: 255, nullable: true })
   title?: string;
 
@@ -1216,7 +1217,7 @@ export enum BaseUser2Type {
   OWNER = 'owner',
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
@@ -1232,6 +1233,7 @@ export class Book2 {
   @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date;
 
+  @Index({ name: 'book2_title_index' })
   @Property({ length: 255, nullable: true })
   title?: string;
 
@@ -1779,7 +1781,7 @@ export enum BaseUser2Type {
   OWNER = 'owner',
 }
 ",
-  "import { Collection, Entity, IdentifiedReference, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, IdentifiedReference, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
@@ -1795,6 +1797,7 @@ export class Book2 {
   @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date;
 
+  @Index({ name: 'book2_title_index' })
   @Property({ length: 255, nullable: true })
   title?: string;
 

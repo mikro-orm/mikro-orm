@@ -57,6 +57,7 @@ alter table \`author2\` add unique \`author2_name_email_unique\`(\`name\`, \`ema
 create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null default '', \`perex\` text null, \`price\` numeric(8,2) null, \`double\` double null, \`meta\` json null, \`author_id\` int unsigned not null, \`publisher_id\` int unsigned null, primary key (\`uuid_pk\`)) default character set utf8mb4 engine = InnoDB;
 alter table \`book2\` add index \`book2_author_id_index\`(\`author_id\`);
 alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);
+alter table \`book2\` add fulltext index \`book2_title_index\`(\`title\`);
 
 create table \`test2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) null, \`book_uuid_pk\` varchar(36) null, \`parent_id\` int unsigned null, \`version\` int not null default 1) default character set utf8mb4 engine = InnoDB;
 alter table \`test2\` add unique \`test2_book_uuid_pk_unique\`(\`book_uuid_pk\`);
@@ -271,6 +272,7 @@ alter table \`author2\` add unique \`author2_name_email_unique\`(\`name\`, \`ema
 create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null default '', \`perex\` text null, \`price\` numeric(8,2) null, \`double\` double null, \`meta\` json null, \`author_id\` int unsigned not null, \`publisher_id\` int unsigned null, primary key (\`uuid_pk\`)) default character set utf8mb4 engine = InnoDB;
 alter table \`book2\` add index \`book2_author_id_index\`(\`author_id\`);
 alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);
+alter table \`book2\` add fulltext index \`book2_title_index\`(\`title\`);
 
 create table \`test2\` (\`id\` int unsigned not null auto_increment primary key, \`name\` varchar(255) null, \`book_uuid_pk\` varchar(36) null, \`parent_id\` int unsigned null, \`version\` int not null default 1) default character set utf8mb4 engine = InnoDB;
 alter table \`test2\` add unique \`test2_book_uuid_pk_unique\`(\`book_uuid_pk\`);

@@ -2,7 +2,7 @@ import { clone } from '../utils/clone';
 import { EntityRepository } from '../entity';
 import type { NamingStrategy } from '../naming-strategy';
 import { UnderscoreNamingStrategy } from '../naming-strategy';
-import type { AnyEntity, Constructor, EntityProperty, IEntityGenerator, IMigrator, IPrimaryKey, ISchemaGenerator, PopulateOptions, Primary, EntityMetadata } from '../typings';
+import type { AnyEntity, Constructor, EntityProperty, IEntityGenerator, IMigrator, IPrimaryKey, ISchemaGenerator, PopulateOptions, Primary, EntityMetadata, Dictionary } from '../typings';
 import { ExceptionConverter } from './ExceptionConverter';
 import type { EntityManager } from '../EntityManager';
 import type { Configuration } from '../utils/Configuration';
@@ -127,6 +127,10 @@ export abstract class Platform {
 
   getRegExpOperator(): string {
     return 'regexp';
+  }
+
+  isAllowedTopLevelOperator(operator: string) {
+    return operator === '$not';
   }
 
   quoteVersionValue(value: Date | number, prop: EntityProperty): Date | string | number {
@@ -289,6 +293,18 @@ export abstract class Platform {
 
   getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
     return path.join('.');
+  }
+
+  getFullTextWhereClause(prop: EntityProperty<any>): string {
+    return `:column: match :query`;
+  }
+
+  supportsCreatingFullTextIndex(columnType: string) {
+    return false;
+  }
+
+  getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columnName: string, columnType: string): string {
+    throw new Error('Creating full text index is not supported.');
   }
 
   convertsJsonAutomatically(marshall = false): boolean {

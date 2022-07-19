@@ -79,4 +79,8 @@ export class MongoPlatform extends Platform {
     }
   }
 
+  isAllowedTopLevelOperator(operator: string) {
+    return operator === '$not' || operator === '$fulltext';
+  }
+
 }

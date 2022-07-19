@@ -97,6 +97,7 @@ create table `book2` (`uuid_pk` varchar(36) not null, `created_at` datetime(3) n
 alter table `book2` add primary key `book2_pkey`(`uuid_pk`);
 alter table `book2` add index `book2_author_id_index`(`author_id`);
 alter table `book2` add index `book2_publisher_id_index`(`publisher_id`);
+alter table `book2` add fulltext index `book2_title_index`(`title`);
 
 create table `test2` (`id` int(10) unsigned not null auto_increment primary key, `name` varchar(255) null, `book_uuid_pk` varchar(36) null, `parent_id` int(10) unsigned null, `version` int(11) not null default 1, `foo___bar` int(10) unsigned null, `foo___baz` int(10) unsigned null) default character set utf8mb4 engine = InnoDB;
 alter table `test2` add unique `test2_book_uuid_pk_unique`(`book_uuid_pk`);

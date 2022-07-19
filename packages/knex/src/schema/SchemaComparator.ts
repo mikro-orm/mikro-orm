@@ -463,8 +463,8 @@ export class SchemaComparator {
    * Compares index1 with index2 and returns index2 if there are any differences or false in case there are no differences.
    */
   diffIndex(index1: Index, index2: Index): boolean {
-    // if one of them is a custom expression, compare only by name
-    if (index1.expression || index2.expression) {
+    // if one of them is a custom expression or full text index, compare only by name
+    if (index1.expression || index2.expression || index1.type === 'fulltext' || index2.type === 'fulltext') {
       return index1.keyName !== index2.keyName;
     }
 

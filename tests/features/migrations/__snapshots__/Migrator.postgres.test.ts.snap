@@ -38,6 +38,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table \\"custom\\".\\"address2\\" add constraint \\"address2_pkey\\" primary key (\\"author_id\\");');
 
     this.addSql('create table \\"custom\\".\\"book2\\" (\\"uuid_pk\\" uuid not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null default \\\\'\\\\', \\"perex\\" text null, \\"price\\" numeric(8,2) null, \\"double\\" double precision null, \\"meta\\" jsonb null, \\"author_id\\" int not null, \\"publisher_id\\" int null);');
+    this.addSql('create index \\"book2_title_index\\" on \\"custom\\".\\"book2\\" using gin(to_tsvector(\\\\'simple\\\\', \\"title\\"));');
     this.addSql('alter table \\"custom\\".\\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\\");');
 
     this.addSql('create table \\"custom\\".\\"test2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) null, \\"book_uuid_pk\\" uuid null, \\"parent_id\\" int null, \\"version\\" int not null default 1);');
@@ -136,6 +137,7 @@ export class Migration20191013214813 extends Migration {
       "alter table \\"custom\\".\\"address2\\" add constraint \\"address2_pkey\\" primary key (\\"author_id\\");",
       "",
       "create table \\"custom\\".\\"book2\\" (\\"uuid_pk\\" uuid not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null default '', \\"perex\\" text null, \\"price\\" numeric(8,2) null, \\"double\\" double precision null, \\"meta\\" jsonb null, \\"author_id\\" int not null, \\"publisher_id\\" int null);",
+      "create index \\"book2_title_index\\" on \\"custom\\".\\"book2\\" using gin(to_tsvector('simple', \\"title\\"));",
       "alter table \\"custom\\".\\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\\");",
       "",
       "create table \\"custom\\".\\"test2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) null, \\"book_uuid_pk\\" uuid null, \\"parent_id\\" int null, \\"version\\" int not null default 1);",
@@ -240,6 +242,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table \\"custom\\".\\"address2\\" add constraint \\"address2_pkey\\" primary key (\\"author_id\\");');
 
     this.addSql('create table \\"custom\\".\\"book2\\" (\\"uuid_pk\\" uuid not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null default \\\\'\\\\', \\"perex\\" text null, \\"price\\" numeric(8,2) null, \\"double\\" double precision null, \\"meta\\" jsonb null, \\"author_id\\" int not null, \\"publisher_id\\" int null);');
+    this.addSql('create index \\"book2_title_index\\" on \\"custom\\".\\"book2\\" using gin(to_tsvector(\\\\'simple\\\\', \\"title\\"));');
     this.addSql('alter table \\"custom\\".\\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\\");');
 
     this.addSql('create table \\"custom\\".\\"test2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) null, \\"book_uuid_pk\\" uuid null, \\"parent_id\\" int null, \\"version\\" int not null default 1);');
@@ -338,6 +341,7 @@ export class Migration20191013214813 extends Migration {
       "alter table \\"custom\\".\\"address2\\" add constraint \\"address2_pkey\\" primary key (\\"author_id\\");",
       "",
       "create table \\"custom\\".\\"book2\\" (\\"uuid_pk\\" uuid not null, \\"created_at\\" timestamptz(3) not null default current_timestamp(3), \\"title\\" varchar(255) null default '', \\"perex\\" text null, \\"price\\" numeric(8,2) null, \\"double\\" double precision null, \\"meta\\" jsonb null, \\"author_id\\" int not null, \\"publisher_id\\" int null);",
+      "create index \\"book2_title_index\\" on \\"custom\\".\\"book2\\" using gin(to_tsvector('simple', \\"title\\"));",
       "alter table \\"custom\\".\\"book2\\" add constraint \\"book2_pkey\\" primary key (\\"uuid_pk\\");",
       "",
       "create table \\"custom\\".\\"test2\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) null, \\"book_uuid_pk\\" uuid null, \\"parent_id\\" int null, \\"version\\" int not null default 1);",
