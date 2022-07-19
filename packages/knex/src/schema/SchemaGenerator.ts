@@ -521,7 +521,6 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
 
       const columnName = index.columnNames[0];
       const columnType = tableDef.getColumn(columnName)!.type;
-      const schema = tableDef.schema;
 
       if (this.platform.supportsCreatingFullTextIndex(columnType)) {
         this.helper.pushTableQuery(table, this.platform.getFullTextIndexExpression(index.keyName, tableDef.schema, tableDef.name, columnName, columnType));

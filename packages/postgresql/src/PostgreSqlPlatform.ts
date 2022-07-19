@@ -1,5 +1,5 @@
 import { Client } from 'pg';
-import type { Dictionary, EntityProperty, Type } from '@mikro-orm/core';
+import type { EntityProperty, Type } from '@mikro-orm/core';
 import { expr, JsonProperty, Utils } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
