@@ -75,10 +75,10 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
   getFullTextWhereClause(prop: EntityProperty<any>): string {
     if (prop.type === 'tsvector') {
-      return `:column: @@ plainto_tsquery(:query)`;
+      return `:column: @@ plainto_tsquery('simple', :query)`;
     }
 
-    return `to_tsvector('simple', :column:) @@ plainto_tsquery(:query)`;
+    return `to_tsvector('simple', :column:) @@ plainto_tsquery('simple', :query)`;
   }
 
   supportsCreatingFullTextIndex(): boolean {

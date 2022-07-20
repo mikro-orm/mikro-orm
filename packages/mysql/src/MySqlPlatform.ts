@@ -71,7 +71,7 @@ export class MySqlPlatform extends AbstractSqlPlatform {
   }
 
   getFullTextWhereClause(): string {
-    return `match(:column:) against (:query in natural language mode)`;
+    return `match(:column:) against (:query in boolean mode)`;
   }
 
   getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
