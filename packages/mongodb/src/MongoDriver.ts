@@ -105,7 +105,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
   private renameFields<T>(entityName: string, data: T, where = false): T {
     // copy to new variable to prevent changing the T type or doing as unkown casts
-    const copiedData: Dictionary = Object.assign({}, data); // copy first
+    const copiedData: T & { $fulltext?: string; $text?: { $search: string } } = Object.assign({}, data); // copy first
     Utils.renameKey(copiedData, 'id', '_id');
     const meta = this.metadata.find(entityName);
 
@@ -115,7 +115,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
     // move search terms from data['$fulltext'] to mongo's structure: data['$text']['search']
     if ('$fulltext' in copiedData) {
-      copiedData.$text = { $search: copiedData.$fulltext };
+      copiedData.$text = { $search: copiedData.$fulltext! };
       delete copiedData.$fulltext;
     }
 
@@ -163,7 +163,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       }
     });
 
-    return copiedData as T;
+    return copiedData;
   }
 
   private convertObjectIds<T extends ObjectId | Dictionary | any[]>(data: T): T {
