@@ -822,7 +822,7 @@ export class Utils {
     return !!GroupOperator[key];
   }
 
-  static hasNestedKey(object: any, key: string): boolean {
+  static hasNestedKey(object: Dictionary, key: string): boolean {
     if (!object) {
       return false;
     }
