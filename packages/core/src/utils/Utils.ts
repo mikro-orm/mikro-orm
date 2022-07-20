@@ -829,7 +829,9 @@ export class Utils {
 
     if (Array.isArray(object)) {
       return object.some(o => this.hasNestedKey(o, key));
-    } else if (typeof object === 'object') {
+    }
+
+    if (typeof object === 'object') {
       return Object.entries(object).some(([k, v]) => k === key || this.hasNestedKey(v, key));
     }
 
