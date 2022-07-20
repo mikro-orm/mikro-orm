@@ -104,35 +104,34 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   }
 
   private renameFields<T>(entityName: string, data: T, where = false): T {
-    data = Object.assign({}, data); // copy first
-    Utils.renameKey(data, 'id', '_id');
+    // copy to new variable to prevent changing the T type or doing as unkown casts
+    const copiedData: Dictionary = Object.assign({}, data); // copy first
+    Utils.renameKey(copiedData, 'id', '_id');
     const meta = this.metadata.find(entityName);
 
     if (meta) {
-      this.inlineEmbeddables(meta, data, where);
+      this.inlineEmbeddables(meta, copiedData, where);
     }
 
     // move search terms from data['$fulltext'] to mongo's structure: data['$text']['search']
-    if ('$fulltext' in data) {
-      // eslint-disable-next-line dot-notation
-      data['$text'] = { $search: data['$fulltext'] };
-      // eslint-disable-next-line dot-notation
-      delete data['$fulltext'];
+    if ('$fulltext' in copiedData) {
+      copiedData.$text = { $search: copiedData.$fulltext };
+      delete copiedData.$fulltext;
     }
 
     // mongo only allows the $text operator in the root of the object and will
     // seach all documents where the field has a text index.
-    if (Utils.hasNestedKey(data, '$fulltext')) {
+    if (Utils.hasNestedKey(copiedData, '$fulltext')) {
       throw new Error('Full text search is only supported on the top level of the query object.');
     }
 
-    Object.keys(data).forEach(k => {
+    Object.keys(copiedData).forEach(k => {
       if (Utils.isGroupOperator(k)) {
         /* istanbul ignore else */
-        if (Array.isArray(data[k])) {
-          data[k] = data[k].map((v: any) => this.renameFields(entityName, v));
+        if (Array.isArray(copiedData[k])) {
+          copiedData[k] = copiedData[k].map((v: any) => this.renameFields(entityName, v));
         } else {
-          data[k] = this.renameFields(entityName, data[k]);
+          copiedData[k] = this.renameFields(entityName, copiedData[k]);
         }
 
         return;
@@ -151,20 +150,20 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
         }
 
         if (isObjectId) {
-          data[k] = this.convertObjectIds(data[k]);
+          copiedData[k] = this.convertObjectIds(copiedData[k]);
         }
 
         if (prop.fieldNames) {
-          Utils.renameKey(data, k, prop.fieldNames[0]);
+          Utils.renameKey(copiedData, k, prop.fieldNames[0]);
         }
       }
 
-      if (Utils.isPlainObject(data[k]) && '$re' in data[k]) {
-        data[k] = new RegExp(data[k].$re);
+      if (Utils.isPlainObject(copiedData[k]) && '$re' in copiedData[k]) {
+        copiedData[k] = new RegExp(copiedData[k].$re);
       }
     });
 
-    return data;
+    return copiedData as T;
   }
 
   private convertObjectIds<T extends ObjectId | Dictionary | any[]>(data: T): T {
