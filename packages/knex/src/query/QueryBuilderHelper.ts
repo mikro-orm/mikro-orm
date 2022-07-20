@@ -410,7 +410,7 @@ export class QueryBuilderHelper {
     }
 
     if (op === '$fulltext') {
-      const entityMetadata = this.metadata.get(this.entityName);
+      const meta = this.metadata.get(this.entityName);
       const columnName =  key.split('.')[1];
 
       qb[m](this.knex.raw(this.platform.getFullTextWhereClause(entityMetadata.properties[columnName]), {
