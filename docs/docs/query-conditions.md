@@ -94,6 +94,7 @@ defaultValue="as-column"
 values={[
 {label: 'reflect-metadata', value: 'as-column'},
 {label: 'ts-morph', value: 'in-query'},
+]
 }>
 <TabItem value="as-column">
 
