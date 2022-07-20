@@ -515,15 +515,10 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
     } else if (index.expression) {
       this.helper.pushTableQuery(table, index.expression);
     } else if (index.type === 'fulltext') {
-      if (index.columnNames.length !== 1) {
-        throw new Error('Full text index is only supported on one column.');
-      }
+      const columns = index.columnNames.map(name => ({ name, type: tableDef.getColumn(name)!.type }));
 
-      const columnName = index.columnNames[0];
-      const columnType = tableDef.getColumn(columnName)!.type;
-
-      if (this.platform.supportsCreatingFullTextIndex(columnType)) {
-        this.helper.pushTableQuery(table, this.platform.getFullTextIndexExpression(index.keyName, tableDef.schema, tableDef.name, columnName, columnType));
+      if (this.platform.supportsCreatingFullTextIndex()) {
+        this.helper.pushTableQuery(table, this.platform.getFullTextIndexExpression(index.keyName, tableDef.schema, tableDef.name, columns));
       }
     } else {
       table.index(index.columnNames, index.keyName, index.type as Dictionary);

@@ -297,6 +297,11 @@ describe('SchemaGenerator [postgres]', () => {
       properties: ['author', 'publisher'],
     });
 
+    meta.get('Author2').indexes.push({
+      properties: ['name', 'email'],
+      type: 'fulltext',
+    });
+
     meta.get('Book2').uniques.push({
       properties: ['author', 'publisher'],
     });
@@ -321,6 +326,39 @@ describe('SchemaGenerator [postgres]', () => {
 
     diff = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-drop-unique');
+    await generator.execute(diff, { wrap: true });
+
+    // test index on column with type tsvector
+    const tsVectorTestTableMeta = EntitySchema.fromMetadata({
+      properties: {
+        id: {
+          reference: ReferenceType.SCALAR,
+          primary: true,
+          name: 'id',
+          type: 'number',
+          fieldNames: ['id'],
+          columnTypes: ['int'],
+          autoincrement: true,
+        },
+        name: {
+          reference: ReferenceType.SCALAR,
+          name: 'name',
+          type: 'tsvector',
+          fieldNames: ['name'],
+          columnTypes: ['tsvector'],
+        },
+      },
+      name: 'TSVectorTest',
+      collection: 'tsvector_test',
+      primaryKey: 'id',
+      hooks: {},
+      indexes: [{ type: 'fulltext', properties: ['name'] }],
+      uniques: [],
+    } as any).init().meta;
+    meta.set('TSVectorTest', tsVectorTestTableMeta);
+
+    diff = await generator.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toMatchSnapshot('postgres-update-schema-add-fulltext-index-tsvector');
     await generator.execute(diff, { wrap: true });
 
     await orm.close(true);

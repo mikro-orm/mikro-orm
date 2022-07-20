@@ -416,6 +416,11 @@ export class EntityMetadata<T extends AnyEntity<T> = any> {
 
 }
 
+export interface SimpleColumnMeta {
+  name: string;
+  type: string;
+}
+
 export interface EntityMetadata<T extends AnyEntity<T> = any> {
   name?: string; // abstract classes do not have a name, but once discovery ends, we have only non-abstract classes stored
   className: string;

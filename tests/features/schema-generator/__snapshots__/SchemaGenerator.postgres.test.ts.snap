@@ -375,8 +375,17 @@ set session_replication_role = 'origin';
 "
 `;
 
+exports[`SchemaGenerator [postgres] update indexes [postgres]: postgres-update-schema-add-fulltext-index-tsvector 1`] = `
+"create table \\"tsvector_test\\" (\\"id\\" serial primary key, \\"name\\" tsvector not null);
+create index \\"tsvector_test_name_index\\" on \\"public\\".\\"tsvector_test\\" using gin(\\"name\\");
+
+"
+`;
+
 exports[`SchemaGenerator [postgres] update indexes [postgres]: postgres-update-schema-add-index 1`] = `
-"create index \\"book2_author_id_publisher_id_index\\" on \\"book2\\" (\\"author_id\\", \\"publisher_id\\");
+"create index \\"author2_name_email_index\\" on \\"public\\".\\"author2\\" using gin(to_tsvector('simple', \\"name\\" || ' ' || \\"email\\"));
+
+create index \\"book2_author_id_publisher_id_index\\" on \\"book2\\" (\\"author_id\\", \\"publisher_id\\");
 alter table \\"book2\\" add constraint \\"book2_author_id_publisher_id_unique\\" unique (\\"author_id\\", \\"publisher_id\\");
 
 "

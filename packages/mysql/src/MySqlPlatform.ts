@@ -1,7 +1,7 @@
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { MySqlSchemaHelper } from './MySqlSchemaHelper';
 import { MySqlExceptionConverter } from './MySqlExceptionConverter';
-import type { Type } from '@mikro-orm/core';
+import type { SimpleColumnMeta, Type } from '@mikro-orm/core';
 import { expr, Utils } from '@mikro-orm/core';
 
 export class MySqlPlatform extends AbstractSqlPlatform {
@@ -74,8 +74,8 @@ export class MySqlPlatform extends AbstractSqlPlatform {
     return `match(:column:) against (:query in natural language mode)`;
   }
 
-  getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columnName: string, columnType: string): string {
-    return `alter table ${this.quoteIdentifier(schemaName ? `${schemaName}.${tableName}` : tableName)} add fulltext index ${this.quoteIdentifier(indexName)}(${this.quoteIdentifier(columnName)})`;
+  getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
+    return `alter table ${this.quoteIdentifier(schemaName ? `${schemaName}.${tableName}` : tableName)} add fulltext index ${this.quoteIdentifier(indexName)}(${columns.map(c => this.quoteIdentifier(c.name)).join(',')})`;
   }
 
 }

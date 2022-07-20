@@ -413,8 +413,8 @@ export class QueryBuilderHelper {
       const meta = this.metadata.get(this.entityName);
       const columnName =  key.split('.')[1];
 
-      qb[m](this.knex.raw(this.platform.getFullTextWhereClause(entityMetadata.properties[columnName]), {
-        table: entityMetadata.tableName,
+      qb[m](this.knex.raw(this.platform.getFullTextWhereClause(meta.properties[columnName]), {
+        table: meta.tableName,
         column: key,
         query: value[op],
       }));

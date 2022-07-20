@@ -843,7 +843,9 @@ alter table \`author2\` add index \`author2_favourite_book_uuid_pk_index\`(\`fav
 `;
 
 exports[`SchemaGenerator update schema [mysql]: mysql-update-schema-add-index 1`] = `
-"alter table \`book2\` add index \`new_title_idx\`(\`title\`);
+"alter table \`author2\` add fulltext index \`author2_name_email_index\`(\`name\`,\`email\`);
+
+alter table \`book2\` add index \`new_title_idx\`(\`title\`);
 
 "
 `;
