@@ -34,7 +34,7 @@ beforeAll(async () => {
 
 afterAll(() => orm.close(true));
 
-describe('GH Issue #9999', () => {
+describe('GH Issue #3325', () => {
   test('update embedded with qb does not work as expected', async () => {
     const main = new MainEntity();
     await orm.em.fork().persistAndFlush(main);
