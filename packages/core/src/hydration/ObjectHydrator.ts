@@ -170,7 +170,7 @@ export class ObjectHydrator extends Hydrator {
       ret.push(`    if (newEntity) {`);
       ret.push(`      coll.setDirty();`);
       ret.push(`    } else {`);
-      ret.push(`      coll.takeSnapshot();`);
+      ret.push(`      coll.takeSnapshot(true);`);
       ret.push(`    }`);
       ret.push(`  } else if (!entity${entityKey} && data${dataKey} instanceof Collection) {`);
       ret.push(`    entity${entityKey} = data${dataKey};`);

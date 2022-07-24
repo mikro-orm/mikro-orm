@@ -1,4 +1,4 @@
-import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey } from '@mikro-orm/core';
+import { Collection, Entity, LoadStrategy, ManyToMany, MikroORM, PrimaryKey } from '@mikro-orm/core';
 
 @Entity()
 export class Group {
@@ -48,6 +48,47 @@ test('removing items from m:n (GH 3287)', async () => {
 
   const group = await orm.em.findOneOrFail(Group, group1, {
     populate: ['participants'],
+  });
+
+  orm.em.remove(group);
+
+  await orm.em.flush();
+});
+
+test('lazy loading M:N takes snapshot (GH 3323)', async () => {
+  const group = new Group();
+  const participant = new Participant();
+  group.participants.add(participant);
+  await orm.em.fork().persistAndFlush(group);
+
+  const g1 = await orm.em.findOneOrFail(Group, group, { populate: ['participants'] });
+  const p1 = await orm.em.findOneOrFail(Participant, participant);
+  g1.participants.add(participant);
+  await orm.em.flush();
+  orm.em.clear();
+
+  const g2 = await orm.em.findOneOrFail(Group, group);
+  await orm.em.populate(g2, ['participants']);
+  const p2 = await orm.em.findOneOrFail(Participant, participant);
+  g2.participants.add(participant);
+  await orm.em.flush();
+  orm.em.clear();
+
+  const g3 = await orm.em.findOneOrFail(Group, group);
+  const p3 = await orm.em.findOneOrFail(Participant, participant);
+  await g3.participants.init();
+  g3.participants.add(participant);
+  await orm.em.flush();
+});
+
+test('removing items from m:n loaded via joined strategy (GH 3287)', async () => {
+  const group1 = new Group();
+  group1.participants.add(new Participant());
+  await orm.em.fork().persistAndFlush(group1);
+
+  const group = await orm.em.findOneOrFail(Group, group1, {
+    populate: ['participants'],
+    strategy: LoadStrategy.JOINED,
   });
 
   orm.em.remove(group);
