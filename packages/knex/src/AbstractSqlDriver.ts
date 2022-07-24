@@ -5,7 +5,7 @@ import type {
   FindOneOptions, FindOptions, IDatabaseDriver, LockOptions, NativeInsertUpdateManyOptions, NativeInsertUpdateOptions,
   PopulateOptions, Primary, QueryOrderMap, QueryResult, RequiredEntityData, Transaction,
 } from '@mikro-orm/core';
-import { DatabaseDriver, EntityManagerType, LoadStrategy, QueryFlag, ReferenceType, Utils } from '@mikro-orm/core';
+import { DatabaseDriver, EntityManagerType, LoadStrategy, QueryFlag, QueryHelper, ReferenceType, Utils } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from './AbstractSqlConnection';
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform';
 import { QueryBuilder } from './query/QueryBuilder';
@@ -516,13 +516,14 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
    * 1:1 owner side needs to be marked for population so QB auto-joins the owner id
    */
   protected autoJoinOneToOneOwner<T, P extends string = never>(meta: EntityMetadata, populate: PopulateOptions<T>[], fields: readonly EntityField<T, P>[] = []): PopulateOptions<T>[] {
-    if (!this.config.get('autoJoinOneToOneOwner') || fields.length > 0) {
+    if (!this.config.get('autoJoinOneToOneOwner')) {
       return populate;
     }
 
     const relationsToPopulate = populate.map(({ field }) => field);
     const toPopulate: PopulateOptions<T>[] = meta.relations
       .filter(prop => prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner && !relationsToPopulate.includes(prop.name))
+      .filter(prop => fields.length === 0 || fields.some(f => prop.name === f || prop.name.startsWith(`${String(f)}.`)))
       .map(prop => ({ field: prop.name, strategy: prop.strategy }));
 
     return [...populate, ...toPopulate];
@@ -771,6 +772,18 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     } else if (fields) {
       for (const field of [...fields]) {
         if (Utils.isPlainObject(field) || field.toString().includes('.')) {
+          continue;
+        }
+
+        const prop = QueryHelper.findProperty(field.toString(), {
+          metadata: this.metadata,
+          platform: this.platform,
+          entityName: meta.className,
+          where: {},
+          aliasMap: qb.getAliasMap(),
+        });
+
+        if (prop?.reference === ReferenceType.ONE_TO_ONE && !prop.owner) {
           continue;
         }
 
