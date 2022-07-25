@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.2.4](https://github.com/mikro-orm/mikro-orm/compare/v5.2.3...v5.2.4) (2022-07-25)
+
+
+### Bug Fixes
+
+* **core:** do not allow passing `null` to required properties in `em.create()` ([e7843fb](https://github.com/mikro-orm/mikro-orm/commit/e7843fbe2f02ee8922d99a2f0209e4e261898a66)), closes [#3289](https://github.com/mikro-orm/mikro-orm/issues/3289)
+* **core:** do not run `onUpdate` before we know something changed ([6faa367](https://github.com/mikro-orm/mikro-orm/commit/6faa3673266abd2f6fec5620e4e3e9e32e223ffc)), closes [#3328](https://github.com/mikro-orm/mikro-orm/issues/3328)
+* **core:** ensure m:n collection is not dirty after hydration ([66e0a21](https://github.com/mikro-orm/mikro-orm/commit/66e0a21bb12a716afd2b0ba700ff7df14a5f0dc0)), closes [#3323](https://github.com/mikro-orm/mikro-orm/issues/3323) [#3287](https://github.com/mikro-orm/mikro-orm/issues/3287)
+* **core:** hidden properties are included in cache ([#3300](https://github.com/mikro-orm/mikro-orm/issues/3300)) ([f0bc261](https://github.com/mikro-orm/mikro-orm/commit/f0bc2610ee5b041fee9fc85e6cc5101169629298))
+* **core:** respect schema when lazy loading reference via `init` ([c876c9f](https://github.com/mikro-orm/mikro-orm/commit/c876c9f6b2c970530a8890fa14397c423d602c81)), closes [#3318](https://github.com/mikro-orm/mikro-orm/issues/3318)
+
+
+
+
+
 ## [5.2.3](https://github.com/mikro-orm/mikro-orm/compare/v5.2.2...v5.2.3) (2022-07-08)
 
 
