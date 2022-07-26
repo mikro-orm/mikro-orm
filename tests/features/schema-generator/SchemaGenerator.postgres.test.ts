@@ -323,6 +323,13 @@ describe('SchemaGenerator [postgres]', () => {
     expect(diff).toMatchSnapshot('postgres-update-schema-drop-unique');
     await generator.execute(diff, { wrap: true });
 
+    // test index on column with type tsvector
+    delete meta.get('Book2').properties.title.defaultRaw;
+    meta.get('Book2').properties.title.columnTypes[0] = 'tsvector';
+    diff = await generator.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toMatchSnapshot('postgres-update-schema-add-fulltext-index-tsvector');
+    await generator.execute(diff, { wrap: true });
+
     await orm.close(true);
   });
 

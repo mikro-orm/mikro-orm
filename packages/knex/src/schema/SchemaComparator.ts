@@ -397,8 +397,8 @@ export class SchemaComparator {
     const changedProperties = new Set<string>();
     const prop1 = this.mapColumnToProperty({ ...column1, autoincrement: false });
     const prop2 = this.mapColumnToProperty({ ...column2, autoincrement: false });
-    const columnType1 = column1.mappedType.getColumnType(prop1, this.platform);
-    const columnType2 = column2.mappedType.getColumnType(prop2, this.platform);
+    const columnType1 = column1.mappedType.getColumnType(prop1, this.platform).toLowerCase();
+    const columnType2 = column2.mappedType.getColumnType(prop2, this.platform).toLowerCase();
     const log = (msg: string, params: Dictionary) => {
       if (tableName) {
         this.log(msg, params);

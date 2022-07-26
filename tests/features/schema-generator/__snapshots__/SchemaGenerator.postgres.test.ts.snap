@@ -345,6 +345,13 @@ set session_replication_role = 'origin';
 "
 `;
 
+exports[`SchemaGenerator [postgres] update indexes [postgres]: postgres-update-schema-add-fulltext-index-tsvector 1`] = `
+"alter table \\"book2\\" alter column \\"title\\" drop default;
+alter table \\"book2\\" alter column \\"title\\" type tsvector using (\\"title\\"::tsvector);
+
+"
+`;
+
 exports[`SchemaGenerator [postgres] update indexes [postgres]: postgres-update-schema-add-index 1`] = `
 "create index \\"book2_author_id_publisher_id_index\\" on \\"book2\\" (\\"author_id\\", \\"publisher_id\\");
 alter table \\"book2\\" add constraint \\"book2_author_id_publisher_id_unique\\" unique (\\"author_id\\", \\"publisher_id\\");
