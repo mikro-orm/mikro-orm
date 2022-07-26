@@ -29,8 +29,10 @@ export class ChangeSetComputer {
 
     // Execute `onCreate` and `onUpdate` on properties recursively, saves `onUpdate` results
     // to the `map` as we want to apply those only if something else changed.
-    for (const prop of meta.hydrateProps) {
-      this.processPropertyInitializers(entity, prop, type, map);
+    if (type === ChangeSetType.CREATE) { // run update hooks only after we know there are other changes
+      for (const prop of meta.hydrateProps) {
+        this.processPropertyInitializers(entity, prop, type, map);
+      }
     }
 
     const changeSet = new ChangeSet(entity, type, this.computePayload(entity), meta);
@@ -46,6 +48,14 @@ export class ChangeSetComputer {
 
     if (changeSet.type === ChangeSetType.UPDATE && !Utils.hasObjectKeys(changeSet.payload)) {
       return null;
+    }
+
+    // Execute `onCreate` and `onUpdate` on properties recursively, saves `onUpdate` results
+    // to the `map` as we want to apply those only if something else changed.
+    if (type === ChangeSetType.UPDATE) {
+      for (const prop of meta.hydrateProps) {
+        this.processPropertyInitializers(entity, prop, type, map);
+      }
     }
 
     if (map.size > 0) {

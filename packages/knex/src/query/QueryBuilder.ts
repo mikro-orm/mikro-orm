@@ -439,6 +439,9 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.platform.formatQuery(query.sql, query.bindings);
   }
 
+  /**
+   * @internal
+   */
   getAliasForJoinPath(path?: string): string | undefined {
     if (!path || path === this.entityName) {
       return this.alias;
@@ -453,8 +456,18 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return join?.inverseAlias || join?.alias;
   }
 
+  /**
+   * @internal
+   */
   getNextAlias(entityName = 'e'): string {
     return this.driver.config.getNamingStrategy().aliasName(entityName, this.aliasCounter++);
+  }
+
+  /**
+   * @internal
+   */
+  getAliasMap(): Dictionary<string> {
+    return this._aliasMap;
   }
 
   /**

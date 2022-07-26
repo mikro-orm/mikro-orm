@@ -300,6 +300,21 @@ describe('EntityManagerMySql', () => {
     await orm.em.flush();
   });
 
+  test('partial loading of 1:1 owner from inverse side', async () => {
+    const bar = FooBar2.create('fb');
+    bar.baz = new FooBaz2('fz');
+    await orm.em.fork().persistAndFlush(bar);
+
+    const a1 = await orm.em.findOneOrFail(FooBaz2, bar.baz, {
+      fields: ['name', 'bar'],
+      populate: [],
+    });
+    expect(a1.name).toBe('fz');
+    expect(a1.bar).toBeInstanceOf(FooBar2);
+    expect(a1.version).toBeUndefined();
+    expect(wrap(a1.bar).isInitialized()).toBe(false);
+  });
+
   test('transactions', async () => {
     const god1 = new Author2('God1', 'hello@heaven1.god');
     await orm.em.begin();

@@ -24,8 +24,7 @@ exports[`GH issue 2930 postgresql (PK override) should not ignore custom pk name
 "set names 'utf8';
 set session_replication_role = 'replica';
 
-create table \\"a\\" (\\"id\\" serial, \\"prop\\" varchar(255) not null);
-alter table \\"a\\" add constraint \\"pk_a_id\\" primary key (\\"id\\");
+create table \\"a\\" (\\"id\\" serial, \\"prop\\" varchar(255) not null, constraint \\"pk_a_id\\" primary key (\\"id\\"));
 
 set session_replication_role = 'origin';
 "

@@ -80,7 +80,7 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
       throw ValidationError.entityNotManaged(this.entity);
     }
 
-    await this.__em.findOne(this.entity.constructor.name, this.entity, { refresh: true, lockMode, populate, connectionType });
+    await this.__em.findOne(this.entity.constructor.name, this.entity, { refresh: true, lockMode, populate, connectionType, schema: this.__schema });
     this.populated(populated);
     this.__lazyInitialized = true;
 

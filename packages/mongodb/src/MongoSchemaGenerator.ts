@@ -65,6 +65,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
       for (const index of indexes) {
         const isIdIndex = index.key._id === 1 && Utils.getObjectKeysSize(index.key) === 1;
 
+        /* istanbul ignore next */
         if (!isIdIndex && !options?.skipIndexes?.find(idx => idx.collection === collection.name && idx.indexName === index.name)) {
           promises.push(db.collection(collection.name).dropIndex(index.name));
         }

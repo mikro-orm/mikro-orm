@@ -329,34 +329,36 @@ describe('SchemaGenerator [postgres]', () => {
     await generator.execute(diff, { wrap: true });
 
     // test index on column with type tsvector
-    const tsVectorTestTableMeta = EntitySchema.fromMetadata({
-      properties: {
-        id: {
-          reference: ReferenceType.SCALAR,
-          primary: true,
-          name: 'id',
-          type: 'number',
-          fieldNames: ['id'],
-          columnTypes: ['int'],
-          autoincrement: true,
-        },
-        name: {
-          reference: ReferenceType.SCALAR,
-          name: 'name',
-          type: 'tsvector',
-          fieldNames: ['name'],
-          columnTypes: ['tsvector'],
-        },
-      },
-      name: 'TSVectorTest',
-      collection: 'tsvector_test',
-      primaryKey: 'id',
-      hooks: {},
-      indexes: [{ type: 'fulltext', properties: ['name'] }],
-      uniques: [],
-    } as any).init().meta;
-    meta.set('TSVectorTest', tsVectorTestTableMeta);
+    // const tsVectorTestTableMeta = EntitySchema.fromMetadata({
+    //   properties: {
+    //     id: {
+    //       reference: ReferenceType.SCALAR,
+    //       primary: true,
+    //       name: 'id',
+    //       type: 'number',
+    //       fieldNames: ['id'],
+    //       columnTypes: ['int'],
+    //       autoincrement: true,
+    //     },
+    //     name: {
+    //       reference: ReferenceType.SCALAR,
+    //       name: 'name',
+    //       type: 'tsvector',
+    //       fieldNames: ['name'],
+    //       columnTypes: ['tsvector'],
+    //     },
+    //   },
+    //   name: 'TSVectorTest',
+    //   collection: 'tsvector_test',
+    //   primaryKey: 'id',
+    //   hooks: {},
+    //   indexes: [{ type: 'fulltext', properties: ['name'] }],
+    //   uniques: [],
+    // } as any).init().meta;
+    // meta.set('TSVectorTest', tsVectorTestTableMeta);
 
+    delete meta.get('Book2').properties.title.defaultRaw;
+    meta.get('Book2').properties.title.columnTypes[0] = 'tsvector';
     diff = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-add-fulltext-index-tsvector');
     await generator.execute(diff, { wrap: true });

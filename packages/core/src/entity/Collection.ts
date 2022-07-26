@@ -89,7 +89,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     }
 
     if (options.store) {
-      this.hydrate(items);
+      this.hydrate(items, true);
       this.populated();
       this.readonly = true;
     }
@@ -202,7 +202,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
 
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
       const map = await em.getDriver().loadFromPivotTable(this.property, [this.owner.__helper!.__primaryKeys], options.where, options.orderBy, undefined, options);
-      this.hydrate(map[this.owner.__helper!.getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, { convertCustomTypes: true })));
+      this.hydrate(map[this.owner.__helper!.getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, { convertCustomTypes: true })), true);
       this._lazyInitialized = true;
 
       return this as unknown as LoadedCollection<Loaded<T, P>>;
