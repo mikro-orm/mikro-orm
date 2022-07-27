@@ -104,7 +104,7 @@ export class QueryBuilderHelper {
 
     const meta = this.metadata.find(this.entityName);
 
-    data = this.mapData(data, meta?.properties, { convertCustomTypes });
+    data = this.mapData(data, meta?.properties, convertCustomTypes);
 
     if (!Utils.hasObjectKeys(data) && meta && multi) {
       /* istanbul ignore next */
@@ -638,7 +638,7 @@ export class QueryBuilderHelper {
     return [QueryType.SELECT, QueryType.COUNT].includes(type);
   }
 
-  private mapData(data: Dictionary, properties: undefined | Record<string, EntityProperty>, options: {convertCustomTypes: boolean}) {
+  private mapData(data: Dictionary, properties?: Record<string, EntityProperty>, convertCustomTypes?: boolean) {
     if (!properties) {
       return data;
     }
@@ -655,7 +655,7 @@ export class QueryBuilderHelper {
       if (prop.embeddedProps && !prop.object) {
         const copy = data[k];
         delete data[k];
-        Object.assign(data, this.mapData(copy, prop.embeddedProps, options));
+        Object.assign(data, this.mapData(copy, prop.embeddedProps, convertCustomTypes));
 
         return;
       }
@@ -668,7 +668,7 @@ export class QueryBuilderHelper {
         return;
       }
 
-      if (prop.customType && options.convertCustomTypes && !this.platform.isRaw(data[k])) {
+      if (prop.customType && convertCustomTypes && !this.platform.isRaw(data[k])) {
         data[k] = prop.customType.convertToDatabaseValue(data[k], this.platform, true);
       }
 
