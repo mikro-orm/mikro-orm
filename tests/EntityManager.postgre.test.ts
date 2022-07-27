@@ -1,5 +1,5 @@
 import { v4 } from 'uuid';
-import type { EventSubscriber, ChangeSet, AnyEntity, FlushEventArgs, FilterQuery, EntityDTO } from '@mikro-orm/core';
+import type { EventSubscriber, ChangeSet, AnyEntity, FlushEventArgs, FilterQuery } from '@mikro-orm/core';
 import {
   Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, ValidationError, ChangeSetType, wrap, expr,
   UniqueConstraintViolationException, TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException,

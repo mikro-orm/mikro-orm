@@ -99,6 +99,8 @@ values={[
 <TabItem value="as-column">
 
 ```ts title="./entities/Book.ts"
+import { FullTextType } from '@mikro-orm/postgresql';
+
 @Entity()
 export class Book {
 
@@ -106,7 +108,7 @@ export class Book {
   title!: string;
 
   @Index({ type: 'fulltext' })
-  @Property({ type: 'tsvector', onUpdate: (book) => book.title })
+  @Property({ type: FullTextType, onUpdate: (book) => book.title })
   searchableTitle!: string;
 
 }

@@ -3,6 +3,7 @@ import { BASE_DIR, initORMPostgreSql } from '../../bootstrap';
 import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from '../../entities-sql';
 import { BaseEntity22 } from '../../entities-sql/BaseEntity22';
 import { BaseEntity2 } from '../../entities-sql/BaseEntity2';
+import { FullTextType } from '@mikro-orm/postgresql';
 
 describe('SchemaGenerator [postgres]', () => {
 
@@ -328,37 +329,12 @@ describe('SchemaGenerator [postgres]', () => {
     expect(diff).toMatchSnapshot('postgres-update-schema-drop-unique');
     await generator.execute(diff, { wrap: true });
 
-    // test index on column with type tsvector
-    // const tsVectorTestTableMeta = EntitySchema.fromMetadata({
-    //   properties: {
-    //     id: {
-    //       reference: ReferenceType.SCALAR,
-    //       primary: true,
-    //       name: 'id',
-    //       type: 'number',
-    //       fieldNames: ['id'],
-    //       columnTypes: ['int'],
-    //       autoincrement: true,
-    //     },
-    //     name: {
-    //       reference: ReferenceType.SCALAR,
-    //       name: 'name',
-    //       type: 'tsvector',
-    //       fieldNames: ['name'],
-    //       columnTypes: ['tsvector'],
-    //     },
-    //   },
-    //   name: 'TSVectorTest',
-    //   collection: 'tsvector_test',
-    //   primaryKey: 'id',
-    //   hooks: {},
-    //   indexes: [{ type: 'fulltext', properties: ['name'] }],
-    //   uniques: [],
-    // } as any).init().meta;
-    // meta.set('TSVectorTest', tsVectorTestTableMeta);
+    // test changing a column to tsvector and adding an index
+    meta.get('Book2').properties.title.defaultRaw = undefined;
+    meta.get('Book2').properties.title.customType = Type.getType(FullTextType);
+    meta.get('Book2').properties.title.columnTypes[0] = Type.getType(FullTextType).getColumnType(meta.get('Book2').properties.title, orm.em.getPlatform());
+    meta.get('Book2').indexes.push({ type: 'fulltext', properties: ['title'] });
 
-    delete meta.get('Book2').properties.title.defaultRaw;
-    meta.get('Book2').properties.title.columnTypes[0] = 'tsvector';
     diff = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-add-fulltext-index-tsvector');
     await generator.execute(diff, { wrap: true });

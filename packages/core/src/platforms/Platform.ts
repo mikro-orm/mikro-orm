@@ -295,14 +295,17 @@ export abstract class Platform {
     return path.join('.');
   }
 
+  /* istanbul ignore next */
   getFullTextWhereClause(prop: EntityProperty<any>): string {
     return `:column: match :query`;
   }
 
+  /* istanbul ignore next */
   supportsCreatingFullTextIndex() {
     return false;
   }
 
+  /* istanbul ignore next */
   getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
     throw new Error('Creating full text index is not supported.');
   }

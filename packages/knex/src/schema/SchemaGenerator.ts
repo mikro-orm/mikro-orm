@@ -390,17 +390,17 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
       }
 
       for (const index of Object.values(diff.addedIndexes)) {
-        this.createIndex(table, index, diff.fromTable);
+        this.createIndex(table, index, diff.toTable);
       }
 
       for (const index of Object.values(diff.changedIndexes)) {
-        this.createIndex(table, index, diff.fromTable, true);
+        this.createIndex(table, index, diff.toTable, true);
       }
 
       for (const [oldIndexName, index] of Object.entries(diff.renamedIndexes)) {
         if (index.unique) {
           this.dropIndex(table, index, oldIndexName);
-          this.createIndex(table, index, diff.fromTable);
+          this.createIndex(table, index, diff.toTable);
         } else {
           this.helper.pushTableQuery(table, this.helper.getRenameIndexSQL(diff.name, index, oldIndexName));
         }

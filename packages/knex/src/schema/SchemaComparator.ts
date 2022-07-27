@@ -130,6 +130,7 @@ export class SchemaComparator {
       renamedColumns: {},
       renamedIndexes: {},
       fromTable,
+      toTable,
     };
 
     if (this.diffComment(fromTable.comment, toTable.comment)) {

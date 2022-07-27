@@ -411,11 +411,10 @@ export class QueryBuilderHelper {
 
     if (op === '$fulltext') {
       const meta = this.metadata.get(this.entityName);
-      const columnName =  key.split('.')[1];
+      const columnName = key.includes('.') ?  key.split('.')[1] : key;
 
       qb[m](this.knex.raw(this.platform.getFullTextWhereClause(meta.properties[columnName]), {
-        table: meta.tableName,
-        column: key,
+        column: this.mapper(key, type, undefined, null),
         query: value[op],
       }));
     } else {
