@@ -2,6 +2,7 @@ import type { Dictionary, DriverException } from '@mikro-orm/core';
 import {
   ConnectionException, ExceptionConverter, InvalidFieldNameException, LockWaitTimeoutException, NonUniqueFieldNameException, CheckConstraintViolationException,
   NotNullConstraintViolationException, ReadOnlyException, SyntaxErrorException, TableExistsException, TableNotFoundException, UniqueConstraintViolationException,
+  ForeignKeyConstraintViolationException,
 } from '@mikro-orm/core';
 
 export class BetterSqliteExceptionConverter extends ExceptionConverter {
@@ -60,6 +61,10 @@ export class BetterSqliteExceptionConverter extends ExceptionConverter {
 
     if (exception.message.includes('unable to open database file')) {
       return new ConnectionException(exception);
+    }
+
+    if (exception.message.includes('FOREIGN KEY constraint failed')) {
+      return new ForeignKeyConstraintViolationException(exception);
     }
 
     return super.convertException(exception);
