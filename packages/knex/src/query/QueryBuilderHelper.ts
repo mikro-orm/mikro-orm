@@ -102,41 +102,9 @@ export class QueryBuilderHelper {
       return data.map(d => this.processData(d, convertCustomTypes, true));
     }
 
-    data = Object.assign({}, data); // copy first
     const meta = this.metadata.find(this.entityName);
 
-    Object.keys(data).forEach(k => {
-      if (!meta?.properties[k]) {
-        return;
-      }
-
-      const prop = meta.properties[k];
-
-      if (prop.joinColumns && Array.isArray(data[k])) {
-        const copy = data[k];
-        delete data[k];
-        prop.joinColumns.forEach((joinColumn, idx) => data[joinColumn] = copy[idx]);
-
-        return;
-      }
-
-      if (prop.customType && convertCustomTypes && !this.platform.isRaw(data[k])) {
-        data[k] = prop.customType.convertToDatabaseValue(data[k], this.platform, true);
-      }
-
-      if (prop.customType && 'convertToDatabaseValueSQL' in prop.customType && !this.platform.isRaw(data[k])) {
-        const quoted = this.platform.quoteValue(data[k]);
-        data[k] = this.knex.raw(prop.customType.convertToDatabaseValueSQL!(quoted, this.platform));
-      }
-
-      if (!prop.customType && (Array.isArray(data[k]) || Utils.isPlainObject(data[k]))) {
-        data[k] = JSON.stringify(data[k]);
-      }
-
-      if (prop.fieldNames) {
-        Utils.renameKey(data, k, prop.fieldNames[0]);
-      }
-    });
+    data = this.mapData(data, meta?.properties, { convertCustomTypes });
 
     if (!Utils.hasObjectKeys(data) && meta && multi) {
       /* istanbul ignore next */
@@ -668,6 +636,57 @@ export class QueryBuilderHelper {
 
   isTableNameAliasRequired(type: QueryType): boolean {
     return [QueryType.SELECT, QueryType.COUNT].includes(type);
+  }
+
+  private mapData(data: Dictionary, properties: undefined | Record<string, EntityProperty>, options: {convertCustomTypes: boolean}) {
+    if (!properties) {
+      return data;
+    }
+
+    data = Object.assign({}, data); // copy first
+
+    Object.keys(data).forEach(k => {
+      const prop = properties[k];
+
+      if (!prop) {
+        return;
+      }
+
+      if (prop.embeddedProps && !prop.object) {
+        const copy = data[k];
+        delete data[k];
+        Object.assign(data, this.mapData(copy, prop.embeddedProps, options));
+
+        return;
+      }
+
+      if (prop.joinColumns && Array.isArray(data[k])) {
+        const copy = data[k];
+        delete data[k];
+        prop.joinColumns.forEach((joinColumn, idx) => data[joinColumn] = copy[idx]);
+
+        return;
+      }
+
+      if (prop.customType && options.convertCustomTypes && !this.platform.isRaw(data[k])) {
+        data[k] = prop.customType.convertToDatabaseValue(data[k], this.platform, true);
+      }
+
+      if (prop.customType && 'convertToDatabaseValueSQL' in prop.customType && !this.platform.isRaw(data[k])) {
+        const quoted = this.platform.quoteValue(data[k]);
+        data[k] = this.knex.raw(prop.customType.convertToDatabaseValueSQL!(quoted, this.platform));
+      }
+
+      if (!prop.customType && (Array.isArray(data[k]) || Utils.isPlainObject(data[k]))) {
+        data[k] = JSON.stringify(data[k]);
+      }
+
+      if (prop.fieldNames) {
+        Utils.renameKey(data, k, prop.fieldNames[0]);
+      }
+    });
+
+    return data;
   }
 
 }
