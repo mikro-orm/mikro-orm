@@ -378,7 +378,7 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
       }
 
       for (const [oldColumnName, column] of Object.entries(diff.renamedColumns)) {
-        this.helper.pushTableQuery(table, this.helper.getRenameColumnSQL(tableName, oldColumnName, column));
+        this.helper.pushTableQuery(table, this.helper.getRenameColumnSQL(tableName, oldColumnName, column, schemaName));
       }
 
       for (const foreignKey of Object.values(diff.addedForeignKeys)) {
