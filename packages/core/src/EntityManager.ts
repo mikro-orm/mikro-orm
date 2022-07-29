@@ -881,7 +881,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Returns new EntityManager instance with its own identity map
    */
   fork(options: ForkOptions = {}): D[typeof EntityManagerType] {
-    const em = this.getContext(false);
+    const em = options.disableContextResolution ? this : this.getContext(false);
     options.clear ??= true;
     options.useContext ??= false;
     options.freshEventManager ??= false;
@@ -1197,5 +1197,7 @@ export interface ForkOptions {
   useContext?: boolean;
   /** do we want to use fresh EventManager instance? defaults to false (global instance) */
   freshEventManager?: boolean;
+  /** use this flag to ignore current async context - this is required if we want to call `em.fork()` inside the `getContext` handler */
+  disableContextResolution?: boolean;
   flushMode?: FlushMode;
 }

@@ -438,9 +438,16 @@ describe('EntityManagerMongo', () => {
     expect(fork.getMetadata()).toBe(orm.em.getMetadata());
     expect(fork.getUnitOfWork().getIdentityMap()).toEqual(new IdentityMap());
 
-    // request context is not started so we can use UoW and EF getters
+    // request context is not started, so we can use UoW and EF getters
     expect(fork.getUnitOfWork().getIdentityMap()).not.toBe(orm.em.getUnitOfWork().getIdentityMap());
     expect(fork.getEntityFactory()).not.toBe(orm.em.getEntityFactory());
+
+    const spy = jest.spyOn(EntityManager.prototype, 'getContext');
+    const fork2 = orm.em.fork({ disableContextResolution: true });
+    expect(spy).toBeCalledTimes(2);
+
+    const fork3 = orm.em.fork({ disableContextResolution: false });
+    expect(spy).toBeCalledTimes(5);
   });
 
   test('findOne with empty where will throw', async () => {
