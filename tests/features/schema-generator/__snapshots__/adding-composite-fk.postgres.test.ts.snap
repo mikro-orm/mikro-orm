@@ -10,18 +10,18 @@ drop table if exists \\"country\\" cascade;
 
 drop table if exists \\"state\\" cascade;
 
-drop table if exists \\"user\\" cascade;
-
 drop table if exists \\"city\\" cascade;
+
+drop table if exists \\"user\\" cascade;
 
 ",
   "up": "create table \\"country\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"currency\\" varchar(255) not null, \\"currency_symbol\\" varchar(255) not null);
 
 create table \\"state\\" (\\"country_id\\" int not null, \\"id\\" int not null, \\"name\\" varchar(255) not null, constraint \\"state_pkey\\" primary key (\\"country_id\\", \\"id\\"));
 
-create table \\"user\\" (\\"id\\" varchar(255) not null, \\"email\\" varchar(255) not null, \\"first_name\\" varchar(255) null, \\"last_name\\" varchar(255) null, \\"date_of_birth\\" date null, \\"created\\" timestamptz not null, \\"modified\\" timestamptz not null, constraint \\"user_pkey\\" primary key (\\"id\\"));
-
 create table \\"city\\" (\\"state_country_id\\" int not null, \\"state_id\\" int not null, \\"id\\" int not null, \\"name\\" varchar(255) not null, constraint \\"city_pkey\\" primary key (\\"state_country_id\\", \\"state_id\\", \\"id\\"));
+
+create table \\"user\\" (\\"id\\" varchar(255) not null, \\"email\\" varchar(255) not null, \\"first_name\\" varchar(255) null, \\"last_name\\" varchar(255) null, \\"date_of_birth\\" date null, \\"created\\" timestamptz not null, \\"modified\\" timestamptz not null, constraint \\"user_pkey\\" primary key (\\"id\\"));
 
 alter table \\"state\\" add constraint \\"state_country_id_foreign\\" foreign key (\\"country_id\\") references \\"country\\" (\\"id\\") on update cascade;
 
