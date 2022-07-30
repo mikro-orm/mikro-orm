@@ -71,6 +71,7 @@
     "@mikro-orm/entity-generator": "^5.0.0",
     "@mikro-orm/mariadb": "^5.0.0",
     "@mikro-orm/migrations": "^5.0.0",
+    "@mikro-orm/migrations-mongodb": "^5.0.0",
     "@mikro-orm/mongodb": "^5.0.0",
     "@mikro-orm/mysql": "^5.0.0",
     "@mikro-orm/postgresql": "^5.0.0",
@@ -85,6 +86,9 @@
       "optional": true
     },
     "@mikro-orm/migrations": {
+      "optional": true
+    },
+    "@mikro-orm/migrations-mongodb": {
       "optional": true
     },
     "@mikro-orm/mongodb": {
