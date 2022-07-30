@@ -577,6 +577,28 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['123']);
   });
 
+  test('GH #1668', async () => {
+    const qb1 = orm.em.createQueryBuilder(Author2, 'a');
+    qb1.select([
+      'floor(`a`.`age`) as `books_total`',
+    ])
+    .groupBy('booksTotal')
+    .orderBy({ booksTotal: QueryOrder.ASC });
+
+    expect(qb1.getQuery()).toEqual('select floor(`a`.`age`) as `books_total` from `author2` as `a` group by `books_total` order by `books_total` asc');
+    expect(qb1.getParams()).toEqual([]);
+
+    const qb2 = orm.em.createQueryBuilder(Author2, 'a');
+    qb2.select([
+      'floor(`a`.`age`) as `code`',
+    ])
+    .groupBy('code')
+    .orderBy({ code: QueryOrder.ASC });
+
+    expect(qb2.getQuery()).toEqual('select floor(`a`.`age`) as `code` from `author2` as `a` group by `code` order by `code` asc');
+    expect(qb2.getParams()).toEqual([]);
+  });
+
   test('select by 1:m', async () => {
     const qb = orm.em.createQueryBuilder(Author2);
     qb.select('*').where({ books: { $in: ['123', '321'] } });
