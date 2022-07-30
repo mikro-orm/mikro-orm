@@ -44,9 +44,13 @@ Then run this script via `ts-node` (or compile it to plain JS and use `node`):
 $ ts-node generate-entities
 ```
 
-## Advanced
+## Advanced configuration
 
-By default, the `EntityGenerator` generates only owning sides of relations (e.g. M:1). We can configure it via `entityGenerator: { bidirectionalRelations: true }` to generate also the inverse sides for them. To generate M:1 and 1:1 relations as wrapped references, use `entityGenerator: { identifiedReferences: true }`.
+By default, the `EntityGenerator` generates only owning sides of relations (e.g. M:1) and uses decorators for the entity definition. We can adjust its behaviour via `entityGenerator` section in the ORM config. Available options: 
+
+- `bidirectionalRelations` to generate also the inverse sides for them
+- `identifiedReferences` to generate M:1 and 1:1 relations as wrapped references
+- `entitySchema` to generate the entities using `EntitySchema` instead of decorators
 
 ## Current limitations
 

@@ -3,12 +3,12 @@ import { ReferenceType, UnknownType, Utils } from '@mikro-orm/core';
 
 export class SourceFile {
 
-  private readonly coreImports = new Set<string>();
-  private readonly entityImports = new Set<string>();
+  protected readonly coreImports = new Set<string>();
+  protected readonly entityImports = new Set<string>();
 
-  constructor(private readonly meta: EntityMetadata,
-              private readonly namingStrategy: NamingStrategy,
-              private readonly platform: Platform) { }
+  constructor(protected readonly meta: EntityMetadata,
+              protected readonly namingStrategy: NamingStrategy,
+              protected readonly platform: Platform) { }
 
   generate(): string {
     this.coreImports.add('Entity');
@@ -65,29 +65,17 @@ export class SourceFile {
     return this.meta.className + '.ts';
   }
 
-  private getCollectionDecl() {
-    const options: EntityOptions<unknown> = {};
-
-    if (this.meta.collection !== this.namingStrategy.classToTableName(this.meta.className)) {
-      options.tableName = this.quote(this.meta.collection);
-    }
-
-    if (this.meta.schema && this.meta.schema !== this.platform.getDefaultSchemaName()) {
-      options.schema = this.quote(this.meta.schema);
-    }
-
-    if (!Utils.hasObjectKeys(options)) {
-      return '';
-    }
-
-    return `{ ${Object.entries(options).map(([opt, val]) => `${opt}: ${val}`).join(', ')} }`;
+  protected quote(val: string) {
+    /* istanbul ignore next */
+    return val.startsWith(`'`) ? `\`${val}\`` : `'${val}'`;
   }
 
-  private getPropertyDefinition(prop: EntityProperty, padLeft: number): string {
+  protected getPropertyDefinition(prop: EntityProperty, padLeft: number): string {
     const padding = ' '.repeat(padLeft);
 
     if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference)) {
       this.coreImports.add('Collection');
+      this.entityImports.add(prop.type);
       return `${padding}${prop.name} = new Collection<${prop.type}>(this);\n`;
     }
 
@@ -98,6 +86,7 @@ export class SourceFile {
 
     if (prop.wrappedReference) {
       this.coreImports.add('IdentifiedReference');
+      this.entityImports.add(prop.type);
       return `${padding}${prop.name}${optional}: IdentifiedReference<${prop.type}>;\n`;
     }
 
@@ -114,7 +103,7 @@ export class SourceFile {
     return `${padding}${ret} = ${prop.default};\n`;
   }
 
-  private getEnumClassDefinition(enumClassName: string, enumValues: string[], padLeft: number): string {
+  protected getEnumClassDefinition(enumClassName: string, enumValues: string[], padLeft: number): string {
     const padding = ' '.repeat(padLeft);
     let ret = `export enum ${enumClassName} {\n`;
 
@@ -125,6 +114,24 @@ export class SourceFile {
     ret += '}\n';
 
     return ret;
+  }
+
+  private getCollectionDecl() {
+    const options: EntityOptions<unknown> = {};
+
+    if (this.meta.collection !== this.namingStrategy.classToTableName(this.meta.className)) {
+      options.tableName = this.quote(this.meta.collection);
+    }
+
+    if (this.meta.schema && this.meta.schema !== this.platform.getDefaultSchemaName()) {
+      options.schema = this.quote(this.meta.schema);
+    }
+
+    if (!Utils.hasObjectKeys(options)) {
+      return '';
+    }
+
+    return `{ ${Object.entries(options).map(([opt, val]) => `${opt}: ${val}`).join(', ')} }`;
   }
 
   private getPropertyDecorator(prop: EntityProperty, padLeft: number): string {
@@ -158,7 +165,7 @@ export class SourceFile {
     return `${decorator}({ ${Object.entries(options).map(([opt, val]) => `${opt}: ${val}`).join(', ')} })\n`;
   }
 
-  private getPropertyIndexes(prop: EntityProperty, options: Dictionary): string[] {
+  protected getPropertyIndexes(prop: EntityProperty, options: Dictionary): string[] {
     if (prop.reference === ReferenceType.SCALAR) {
       const ret: string[] = [];
 
@@ -198,7 +205,7 @@ export class SourceFile {
     return [];
   }
 
-  private getCommonDecoratorOptions(options: Dictionary, prop: EntityProperty): void {
+  protected getCommonDecoratorOptions(options: Dictionary, prop: EntityProperty): void {
     if (prop.nullable && !prop.mappedBy) {
       options.nullable = true;
     }
@@ -221,7 +228,7 @@ export class SourceFile {
     }
   }
 
-  private getScalarPropertyDecoratorOptions(options: Dictionary, prop: EntityProperty): void {
+  protected getScalarPropertyDecoratorOptions(options: Dictionary, prop: EntityProperty): void {
     let t = prop.type.toLowerCase();
 
     if (t === 'date') {
@@ -252,7 +259,7 @@ export class SourceFile {
     }
   }
 
-  private getManyToManyDecoratorOptions(options: Dictionary, prop: EntityProperty) {
+  protected getManyToManyDecoratorOptions(options: Dictionary, prop: EntityProperty) {
     this.entityImports.add(prop.type);
     options.entity = `() => ${prop.type}`;
 
@@ -278,13 +285,13 @@ export class SourceFile {
     }
   }
 
-  private getOneToManyDecoratorOptions(options: Dictionary, prop: EntityProperty) {
+  protected getOneToManyDecoratorOptions(options: Dictionary, prop: EntityProperty) {
     this.entityImports.add(prop.type);
     options.entity = `() => ${prop.type}`;
     options.mappedBy = this.quote(prop.mappedBy);
   }
 
-  private getForeignKeyDecoratorOptions(options: Dictionary, prop: EntityProperty) {
+  protected getForeignKeyDecoratorOptions(options: Dictionary, prop: EntityProperty) {
     const parts = prop.referencedTableName.split('.', 2);
     const className = this.namingStrategy.getClassName(parts.length > 1 ? parts[1] : parts[0], '_');
     this.entityImports.add(className);
@@ -316,12 +323,7 @@ export class SourceFile {
     }
   }
 
-  private quote(val: string) {
-    /* istanbul ignore next */
-    return val.startsWith(`'`) ? `\`${val}\`` : `'${val}'`;
-  }
-
-  private getDecoratorType(prop: EntityProperty): string {
+  protected getDecoratorType(prop: EntityProperty): string {
     if (prop.reference === ReferenceType.ONE_TO_ONE) {
       return '@OneToOne';
     }

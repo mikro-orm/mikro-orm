@@ -4,6 +4,7 @@ import { ReferenceType, Utils } from '@mikro-orm/core';
 import type { EntityManager } from '@mikro-orm/knex';
 import { DatabaseSchema } from '@mikro-orm/knex';
 import { SourceFile } from './SourceFile';
+import { EntitySchemaSourceFile } from './EntitySchemaSourceFile';
 
 export class EntityGenerator {
 
@@ -37,7 +38,11 @@ export class EntityGenerator {
 
     for (const meta of metadata) {
       if (!meta.pivotTable) {
-        this.sources.push(new SourceFile(meta, this.namingStrategy, this.platform));
+        if (this.config.get('entityGenerator').entitySchema) {
+          this.sources.push(new EntitySchemaSourceFile(meta, this.namingStrategy, this.platform));
+        } else {
+          this.sources.push(new SourceFile(meta, this.namingStrategy, this.platform));
+        }
       }
     }
 
