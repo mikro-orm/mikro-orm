@@ -195,14 +195,14 @@ describe('Migrator (postgres)', () => {
     const migrator = orm.getMigrator();
     expect(migrator.getStorage()).toBeInstanceOf(MigrationStorage);
 
-    expect(migrator.getStorage().getTableName()).toEqual({
+    expect(migrator.getStorage().getTableName!()).toEqual({
       schemaName: 'custom',
       tableName: 'mikro_orm_migrations',
     });
 
     // @ts-expect-error private property
     migrator.options.tableName = 'custom.mikro_orm_migrations';
-    expect(migrator.getStorage().getTableName()).toEqual({
+    expect(migrator.getStorage().getTableName!()).toEqual({
       schemaName: 'custom',
       tableName: 'mikro_orm_migrations',
     });
@@ -246,12 +246,12 @@ describe('Migrator (postgres)', () => {
     const migrator = orm.getMigrator();
     const storage = migrator.getStorage();
 
-    await storage.ensureTable(); // creates the table
+    await storage.ensureTable!(); // creates the table
     await storage.logMigration({ name: 'test', context: null });
     await expect(storage.getExecutedMigrations()).resolves.toMatchObject([{ name: 'test' }]);
     await expect(storage.executed()).resolves.toEqual(['test']);
 
-    await storage.ensureTable(); // table exists, no-op
+    await storage.ensureTable!(); // table exists, no-op
     await storage.unlogMigration({ name: 'test', context: null });
     await expect(storage.executed()).resolves.toEqual([]);
 
@@ -261,7 +261,7 @@ describe('Migrator (postgres)', () => {
   test('runner', async () => {
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!).withSchema('custom');
     const migrator = orm.getMigrator();
-    await migrator.getStorage().ensureTable();
+    await migrator.getStorage().ensureTable!();
     // @ts-ignore
     const runner = migrator.runner;
 
@@ -416,7 +416,7 @@ test('ensureTable when the schema does not exist', async () => {
   const storage = orm.getMigrator().getStorage();
 
   const mock = mockLogger(orm);
-  await storage.ensureTable(); // ensures the schema first
+  await storage.ensureTable!(); // ensures the schema first
   expect(mock.mock.calls[0][0]).toMatch(`select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name`);
   expect(mock.mock.calls[1][0]).toMatch(`select schema_name from information_schema.schemata where "schema_name" not like 'pg_%' and "schema_name" not like 'crdb_%' and "schema_name" not in ('information_schema', 'tiger', 'topology') order by schema_name`);
   expect(mock.mock.calls[2][0]).toMatch(`create schema "custom2"`);

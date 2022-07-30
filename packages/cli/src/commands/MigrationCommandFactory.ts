@@ -1,8 +1,6 @@
 import type { ArgumentsCamelCase, Argv, CommandModule } from 'yargs';
 import type { Configuration, MikroORM, MikroORMOptions, IMigrator } from '@mikro-orm/core';
 import { Utils, colors } from '@mikro-orm/core';
-import type { AbstractSqlDriver } from '@mikro-orm/knex';
-import { SchemaGenerator } from '@mikro-orm/knex';
 import type { MigrateOptions } from '@mikro-orm/migrations';
 import { CLIHelper } from '../CLIHelper';
 
@@ -85,9 +83,8 @@ export class MigrationCommandFactory {
 
   static async handleMigrationCommand(args: ArgumentsCamelCase<Options>, method: MigratorMethod): Promise<void> {
     const options = { pool: { min: 1, max: 1 } } as Partial<MikroORMOptions>;
-    const orm = await CLIHelper.getORM(undefined, options) as MikroORM<AbstractSqlDriver>;
-    const { Migrator } = await import('@mikro-orm/migrations');
-    const migrator = new Migrator(orm.em);
+    const orm = await CLIHelper.getORM(undefined, options);
+    const migrator = orm.getMigrator();
 
     switch (method) {
       case 'create':
@@ -167,8 +164,8 @@ export class MigrationCommandFactory {
     CLIHelper.dump(colors.green(`${ret.fileName} successfully created`));
   }
 
-  private static async handleFreshCommand(args: ArgumentsCamelCase<Options>, migrator: IMigrator, orm: MikroORM<AbstractSqlDriver>) {
-    const generator = new SchemaGenerator(orm.em);
+  private static async handleFreshCommand(args: ArgumentsCamelCase<Options>, migrator: IMigrator, orm: MikroORM) {
+    const generator = orm.getSchemaGenerator();
     await generator.dropSchema({ dropMigrationsTable: true });
     CLIHelper.dump(colors.green('Dropped schema successfully'));
     const opts = MigrationCommandFactory.getUpDownOptions(args);

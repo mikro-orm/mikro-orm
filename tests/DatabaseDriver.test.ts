@@ -18,7 +18,7 @@ import {
   DatabaseDriver,
   EntityManager,
   EntityRepository,
-  LockMode,
+  LockMode, MikroORM,
   Platform,
 } from '@mikro-orm/core';
 
@@ -65,9 +65,10 @@ class Driver extends DatabaseDriver<Connection> implements IDatabaseDriver {
 
 describe('DatabaseDriver', () => {
 
+  const config = new Configuration({ type: 'mongo', allowGlobalContext: true } as any, false);
+  const driver = new Driver(config, []);
+
   test('default validations', async () => {
-    const config = new Configuration({ type: 'mongo', allowGlobalContext: true } as any, false);
-    const driver = new Driver(config, []);
     expect(driver.createEntityManager()).toBeInstanceOf(EntityManager);
     expect(driver.getPlatform().getRepositoryClass()).toBe(EntityRepository);
     expect(driver.getPlatform().quoteValue('a')).toBe('a');
@@ -78,6 +79,10 @@ describe('DatabaseDriver', () => {
     const e2 = driver.convertException(e1);
     expect(e1).toBe(e2);
     expect(() => driver.getPlatform().getSchemaGenerator(driver)).toThrowError('Driver does not support SchemaGenerator');
+  });
+
+  test('not supported', async () => {
+    expect(() => driver.getPlatform().getMigrator({} as any)).toThrowError('Platform1 does not support Migrator');
   });
 
 });
