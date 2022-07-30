@@ -548,6 +548,28 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['^c.o.*l-te.*st.c.m$']);
   });
 
+  test('$exists operator', async () => {
+    let qb = orm.em.createQueryBuilder(Publisher2);
+    qb.select('*').where({ name: { $exists: true } });
+    expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` is not null');
+    expect(qb.getParams()).toEqual([]);
+
+    qb = orm.em.createQueryBuilder(Publisher2);
+    qb.select('*').where({ name: { $exists: false } });
+    expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` is null');
+    expect(qb.getParams()).toEqual([]);
+
+    qb = orm.em.createQueryBuilder(Publisher2);
+    qb.select('*').where({ books: { title: { $exists: true } } });
+    expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` left join `book2` as `e1` on `e0`.`id` = `e1`.`publisher_id` where `e1`.`title` is not null');
+    expect(qb.getParams()).toEqual([]);
+
+    qb = orm.em.createQueryBuilder(Publisher2);
+    qb.select('*').where({ books: { title: { $exists: false } } });
+    expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` left join `book2` as `e1` on `e0`.`id` = `e1`.`publisher_id` where `e1`.`title` is null');
+    expect(qb.getParams()).toEqual([]);
+  });
+
   test('select by m:1', async () => {
     const qb = orm.em.createQueryBuilder(Author2);
     qb.select('*').where({ favouriteBook: '123' });

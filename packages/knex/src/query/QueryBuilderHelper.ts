@@ -383,6 +383,11 @@ export class QueryBuilderHelper {
   private getOperatorReplacement(op: string, value: Dictionary): string {
     let replacement = QueryOperator[op];
 
+    if (op === '$exists') {
+      replacement = value[op] ? 'is not' : 'is';
+      value[op] = null;
+    }
+
     if (value[op] === null && ['$eq', '$ne'].includes(op)) {
       replacement = op === '$eq' ? 'is' : 'is not';
     }

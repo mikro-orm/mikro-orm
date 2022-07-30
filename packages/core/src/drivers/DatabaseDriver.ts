@@ -150,7 +150,8 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         let unknownProp = false;
 
         Object.keys(data[prop.name]).forEach(kk => {
-          const operator = Object.keys(data[prop.name]).some(f => Utils.isOperator(f));
+          // explicitly allow `$exists` operator here as it cant be misused this way
+          const operator = Object.keys(data[prop.name]).some(f => Utils.isOperator(f) && f !== '$exists');
 
           if (operator) {
             throw ValidationError.cannotUseOperatorsInsideEmbeddables(meta.name!, prop.name, data);

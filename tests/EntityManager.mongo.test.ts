@@ -620,6 +620,11 @@ describe('EntityManagerMongo', () => {
     });
   });
 
+  test('using $exists operator', async () => {
+    await orm.em.nativeInsert(Author, { name: 'n', email: 'e' });
+    await orm.em.findOneOrFail(Author, { foo: { $exists: false } });
+  });
+
   test('connection returns correct URL', async () => {
     const conn1 = new MongoConnection(new Configuration({
       type: 'mongo',
