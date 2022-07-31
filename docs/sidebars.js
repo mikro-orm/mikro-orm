@@ -54,6 +54,7 @@ module.exports = {
         'events',
         'composite-keys',
         'custom-types',
+        'virtual-entities',
         'embeddables',
         'entity-schema',
         'json-properties',

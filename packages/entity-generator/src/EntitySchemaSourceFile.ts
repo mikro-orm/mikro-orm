@@ -140,6 +140,7 @@ export class EntitySchemaSourceFile extends SourceFile {
       }
 
       const defaultName = this.platform.getIndexName(this.meta.collection, prop.fieldNames, type);
+      /* istanbul ignore next */
       options[type] = defaultName === prop[type] ? 'true' : `'${prop[type]}'`;
       const expected = {
         index: this.platform.indexForeignKeys(),

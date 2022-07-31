@@ -10,6 +10,7 @@ import { Utils } from './utils/Utils';
 import { EntityComparator } from './utils/EntityComparator';
 import type { EntityManager } from './EntityManager';
 import type { EventSubscriber } from './events';
+import type { FindOptions } from './drivers';
 
 export type Constructor<T = unknown> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
@@ -361,6 +362,10 @@ export class EntityMetadata<T extends AnyEntity<T> = any> {
     this.selfReferencing = this.relations.some(prop => [this.className, this.root.className].includes(prop.type));
     this.virtual = !!this.expression;
 
+    if (this.virtual) {
+      this.readonly = true;
+    }
+
     if (initIndexes && this.name) {
       this.props.forEach(prop => this.initIndexes(prop));
     }
@@ -427,7 +432,9 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   schema?: string;
   pivotTable?: boolean;
   virtual?: boolean;
-  expression?: string | ((em: EntityManager) => Promise<T[]>);
+  // we need to use `em: any` here otherwise an expression would not be assignable with more narrow type like `SqlEntityManager`
+  // also return type is unknown as it can be either QB instance (which we cannot type here) or array of POJOs (e.g. for mongodb)
+  expression?: string | ((em: any, where: FilterQuery<T>, options: FindOptions<T, any>) => object);
   discriminatorColumn?: string;
   discriminatorValue?: number | string;
   discriminatorMap?: Dictionary<string>;

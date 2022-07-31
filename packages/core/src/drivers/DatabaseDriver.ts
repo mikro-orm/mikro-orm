@@ -49,6 +49,11 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return new EntityManager(this.config, this, this.metadata, useContext) as unknown as EntityManager<D>;
   }
 
+  /* istanbul ignore next */
+  async findVirtual<T>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any>): Promise<EntityData<T>[]> {
+    throw new Error(`Virtual entities are not supported by ${this.constructor.name} driver.`);
+  }
+
   async aggregate(entityName: string, pipeline: any[]): Promise<any[]> {
     throw new Error(`Aggregations are not supported by ${this.constructor.name} driver`);
   }

@@ -132,6 +132,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return [];
     }
 
+    const meta = this.metadata.get(entityName);
     const ret: T[] = [];
 
     for (const data of results) {
@@ -141,8 +142,19 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         schema: options.schema,
         convertCustomTypes: true,
       }) as T;
-      em.unitOfWork.registerManaged(entity, data, { refresh: options.refresh, loaded: true });
+
+      if (!meta.virtual) {
+        em.unitOfWork.registerManaged(entity, data, { refresh: options.refresh, loaded: true });
+      }
+
       ret.push(entity);
+    }
+
+    if (meta.virtual) {
+      await em.unitOfWork.dispatchOnLoadEvent();
+      await em.storeCache(options.cache, cached!, () => ret.map(e => e.__helper!.toPOJO()));
+
+      return ret as Loaded<T, P>[];
     }
 
     const unique = Utils.unique(ret);
@@ -385,8 +397,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       schema: options.schema,
       convertCustomTypes: true,
     });
-    em.unitOfWork.registerManaged(entity, data, { refresh: options.refresh, loaded: true });
-    await em.lockAndPopulate(entityName, entity, where, options);
+
+    if (!meta.virtual) {
+      em.unitOfWork.registerManaged(entity, data, { refresh: options.refresh, loaded: true });
+      await em.lockAndPopulate(entityName, entity, where, options);
+    }
+
     await em.unitOfWork.dispatchOnLoadEvent();
     await em.storeCache(options.cache, cached!, () => entity!.__helper!.toPOJO());
 
