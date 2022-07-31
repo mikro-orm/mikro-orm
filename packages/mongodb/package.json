@@ -60,7 +60,7 @@
   },
   "dependencies": {
     "bson": "^4.6.5",
-    "mongodb": "4.8.0"
+    "mongodb": "4.8.1"
   },
   "devDependencies": {
     "@mikro-orm/core": "^5.2.4"
@@ -69,6 +69,7 @@
     "@mikro-orm/core": "^5.0.0",
     "@mikro-orm/entity-generator": "^5.0.0",
     "@mikro-orm/migrations": "^5.0.0",
+    "@mikro-orm/migrations-mongodb": "^5.0.0",
     "@mikro-orm/seeder": "^5.0.0"
   },
   "peerDependenciesMeta": {
@@ -76,6 +77,9 @@
       "optional": true
     },
     "@mikro-orm/migrations": {
+      "optional": true
+    },
+    "@mikro-orm/migrations-mongodb": {
       "optional": true
     },
     "@mikro-orm/seeder": {

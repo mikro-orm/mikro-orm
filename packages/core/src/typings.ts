@@ -73,6 +73,7 @@ export type OperatorMap<T> = {
   $overlap?: string[];
   $contains?: string[];
   $contained?: string[];
+  $exists?: boolean;
 };
 
 export type FilterValue2<T> = T | ExpandScalar<T> | Primary<T>;
@@ -502,11 +503,11 @@ export interface IMigratorStorage {
   logMigration(params: Dictionary): Promise<void>;
   unlogMigration(params: Dictionary): Promise<void>;
   getExecutedMigrations(): Promise<MigrationRow[]>;
-  ensureTable(): Promise<void>;
+  ensureTable?(): Promise<void>;
   setMasterMigration(trx: Transaction): void;
   unsetMasterMigration(): void;
   getMigrationName(name: string): string;
-  getTableName(): { schemaName: string; tableName: string };
+  getTableName?(): { schemaName?: string; tableName: string };
 }
 
 export interface IMigrator {

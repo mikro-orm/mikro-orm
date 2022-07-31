@@ -41,6 +41,7 @@ export class MetadataDiscovery {
 
     this.discovered
       .filter(meta => meta.name)
+      .sort((a, b) => b.name!.localeCompare(a.name!))
       .forEach(meta => {
         this.platform.validateMetadata(meta);
         discovered.set(meta.name!, meta);

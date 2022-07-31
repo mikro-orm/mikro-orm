@@ -334,8 +334,16 @@ export class UnitOfWork {
         await this.persistToDatabase(groups, this.em.getTransactionContext());
       }
       this.resetTransaction(oldTx);
+
+      // To allow working with the UoW in after flush handlers we need to unset the `working` flag early.
       this.working = false;
+
+      // To allow flushing via `Promise.all()` while still supporting queries inside after flush handler,
+      // we need to run the flush hooks in a separate async context, as we need to skip flush hooks if they
+      // would be triggered from inside another flush hook.
+      this.insideHooks = true;
       await this.eventManager.dispatchEvent(EventType.afterFlush, { em: this.em, uow: this });
+      this.insideHooks = false;
     } finally {
       this.resetTransaction(oldTx);
     }
@@ -515,7 +523,7 @@ export class UnitOfWork {
     const props = meta.relations.filter(prop => prop.reference === ReferenceType.ONE_TO_ONE);
 
     for (const prop of props) {
-      // check diff, if we had a value on 1:1 before and now it changed (nulled or replaced), we need to trigger orphan removal
+      // check diff, if we had a value on 1:1 before, and now it changed (nulled or replaced), we need to trigger orphan removal
       const wrapped = changeSet.entity.__helper!;
       const data = wrapped.__originalEntityData;
 

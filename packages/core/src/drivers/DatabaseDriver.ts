@@ -63,9 +63,9 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     await this.nativeUpdate<T>(coll.owner.constructor.name, coll.owner.__helper!.getPrimaryKey() as FilterQuery<T>, data, options);
   }
 
-  mapResult<T>(result: EntityDictionary<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[] = []): EntityData<T> | null {
+  mapResult<T>(result: EntityDictionary<T>, meta?: EntityMetadata<T>, populate: PopulateOptions<T>[] = []): EntityData<T> | null {
     if (!result || !meta) {
-      return null;
+      return result ?? null;
     }
 
     return this.comparator.mapResult(meta.className, result);
@@ -150,7 +150,8 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         let unknownProp = false;
 
         Object.keys(data[prop.name]).forEach(kk => {
-          const operator = Object.keys(data[prop.name]).some(f => Utils.isOperator(f));
+          // explicitly allow `$exists` operator here as it cant be misused this way
+          const operator = Object.keys(data[prop.name]).some(f => Utils.isOperator(f) && f !== '$exists');
 
           if (operator) {
             throw ValidationError.cannotUseOperatorsInsideEmbeddables(meta.name!, prop.name, data);

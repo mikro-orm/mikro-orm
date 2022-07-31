@@ -408,7 +408,7 @@ describe('EntityManagerMongo', () => {
   test('transactions', async () => {
     const god1 = new Author('God1', 'hello@heaven1.god');
     await orm.em.begin();
-    await orm.em.persist(god1);
+    await orm.em.persist(god1).flush();
     await orm.em.rollback();
     const res1 = await orm.em.findOne(Author, { name: 'God1' });
     expect(res1).toBeNull();
@@ -452,9 +452,16 @@ describe('EntityManagerMongo', () => {
     expect(fork.getMetadata()).toBe(orm.em.getMetadata());
     expect(fork.getUnitOfWork().getIdentityMap()).toEqual(new IdentityMap());
 
-    // request context is not started so we can use UoW and EF getters
+    // request context is not started, so we can use UoW and EF getters
     expect(fork.getUnitOfWork().getIdentityMap()).not.toBe(orm.em.getUnitOfWork().getIdentityMap());
     expect(fork.getEntityFactory()).not.toBe(orm.em.getEntityFactory());
+
+    const spy = jest.spyOn(EntityManager.prototype, 'getContext');
+    const fork2 = orm.em.fork({ disableContextResolution: true });
+    expect(spy).toBeCalledTimes(2);
+
+    const fork3 = orm.em.fork({ disableContextResolution: false });
+    expect(spy).toBeCalledTimes(5);
   });
 
   test('findOne with empty where will throw', async () => {
@@ -625,6 +632,11 @@ describe('EntityManagerMongo', () => {
     await expect(connection.getConnectionOptions()).toEqual({
       auth: { username: 'usr', password: 'pw' },
     });
+  });
+
+  test('using $exists operator', async () => {
+    await orm.em.nativeInsert(Author, { name: 'n', email: 'e' });
+    await orm.em.findOneOrFail(Author, { foo: { $exists: false } });
   });
 
   test('connection returns correct URL', async () => {

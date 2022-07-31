@@ -244,7 +244,7 @@ describe('embedded entities in mongo', () => {
     const createCollection = jest.spyOn(MongoConnection.prototype, 'createCollection');
     createCollection.mockResolvedValue({} as any);
     await orm.getSchemaGenerator().createSchema();
-    expect(createCollection.mock.calls.map(c => c[0])).toEqual(['parent', 'custom-user', 'user']);
+    expect(createCollection.mock.calls.map(c => c[0])).toEqual(['custom-user', 'parent', 'user']);
     createCollection.mockRestore();
   });
 

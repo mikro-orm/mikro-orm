@@ -33,7 +33,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     where = this.renameFields(entityName, where, true);
     const res = await this.rethrow(this.getConnection('read').find<T>(entityName, where, options.orderBy, options.limit, options.offset, fields, options.ctx));
 
-    return res.map(r => this.mapResult<T>(r, this.metadata.find(entityName)!)!);
+    return res.map(r => this.mapResult<T>(r, this.metadata.find(entityName))!);
   }
 
   async findOne<T extends AnyEntity<T>, P extends string = never>(entityName: string, where: FilterQuery<T>, options: FindOneOptions<T, P> = { populate: [], orderBy: {} }): Promise<EntityData<T> | null> {
@@ -199,7 +199,12 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   }
 
   protected buildFields<T extends AnyEntity<T>, P extends string = never>(entityName: string, populate: PopulateOptions<T>[], fields?: readonly EntityField<T, P>[]): string[] | undefined {
-    const meta = this.metadata.find<T>(entityName)!;
+    const meta = this.metadata.find<T>(entityName);
+
+    if (!meta) {
+      return fields as string[];
+    }
+
     const lazyProps = meta.props.filter(prop => prop.lazy && !populate.some(p => p.field === prop.name || p.all));
     const ret: string[] = [];
 

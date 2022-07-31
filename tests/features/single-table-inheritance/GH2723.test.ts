@@ -47,7 +47,7 @@ describe('GH 2723', () => {
     orm.em.clear();
 
     const u = await orm.em.findOneOrFail(User, { id: 'TestUser' });
-    orm.em.remove(u).flush();
+    await orm.em.remove(u).flush();
 
     const users = await orm.em.count(User, {});
     const cats = await orm.em.count(User, {});

@@ -52,12 +52,15 @@ export abstract class SchemaHelper {
     throw new Error('Not supported by given driver');
   }
 
-  getRenameColumnSQL(tableName: string, oldColumnName: string, to: Column): string {
+  getRenameColumnSQL(tableName: string, oldColumnName: string, to: Column, schemaName?: string): string {
     tableName = this.platform.quoteIdentifier(tableName);
     oldColumnName = this.platform.quoteIdentifier(oldColumnName);
     const columnName = this.platform.quoteIdentifier(to.name);
 
-    return `alter table ${tableName} rename column ${oldColumnName} to ${columnName}`;
+    const schemaReference = (schemaName !== undefined && schemaName !== 'public') ? ('"' + schemaName + '".') : '';
+    const tableReference = schemaReference + tableName;
+
+    return `alter table ${tableReference} rename column ${oldColumnName} to ${columnName}`;
   }
 
   getCreateIndexSQL(tableName: string, index: Index): string {

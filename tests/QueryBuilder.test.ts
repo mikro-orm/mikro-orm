@@ -548,11 +548,55 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['^c.o.*l-te.*st.c.m$']);
   });
 
+  test('$exists operator', async () => {
+    let qb = orm.em.createQueryBuilder(Publisher2);
+    qb.select('*').where({ name: { $exists: true } });
+    expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` is not null');
+    expect(qb.getParams()).toEqual([]);
+
+    qb = orm.em.createQueryBuilder(Publisher2);
+    qb.select('*').where({ name: { $exists: false } });
+    expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` is null');
+    expect(qb.getParams()).toEqual([]);
+
+    qb = orm.em.createQueryBuilder(Publisher2);
+    qb.select('*').where({ books: { title: { $exists: true } } });
+    expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` left join `book2` as `e1` on `e0`.`id` = `e1`.`publisher_id` where `e1`.`title` is not null');
+    expect(qb.getParams()).toEqual([]);
+
+    qb = orm.em.createQueryBuilder(Publisher2);
+    qb.select('*').where({ books: { title: { $exists: false } } });
+    expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` left join `book2` as `e1` on `e0`.`id` = `e1`.`publisher_id` where `e1`.`title` is null');
+    expect(qb.getParams()).toEqual([]);
+  });
+
   test('select by m:1', async () => {
     const qb = orm.em.createQueryBuilder(Author2);
     qb.select('*').where({ favouriteBook: '123' });
     expect(qb.getQuery()).toEqual('select `e0`.* from `author2` as `e0` where `e0`.`favourite_book_uuid_pk` = ?');
     expect(qb.getParams()).toEqual(['123']);
+  });
+
+  test('GH #1668', async () => {
+    const qb1 = orm.em.createQueryBuilder(Author2, 'a');
+    qb1.select([
+      'floor(`a`.`age`) as `books_total`',
+    ])
+    .groupBy('booksTotal')
+    .orderBy({ booksTotal: QueryOrder.ASC });
+
+    expect(qb1.getQuery()).toEqual('select floor(`a`.`age`) as `books_total` from `author2` as `a` group by `books_total` order by `books_total` asc');
+    expect(qb1.getParams()).toEqual([]);
+
+    const qb2 = orm.em.createQueryBuilder(Author2, 'a');
+    qb2.select([
+      'floor(`a`.`age`) as `code`',
+    ])
+    .groupBy('code')
+    .orderBy({ code: QueryOrder.ASC });
+
+    expect(qb2.getQuery()).toEqual('select floor(`a`.`age`) as `code` from `author2` as `a` group by `code` order by `code` asc');
+    expect(qb2.getParams()).toEqual([]);
   });
 
   test('select by 1:m', async () => {

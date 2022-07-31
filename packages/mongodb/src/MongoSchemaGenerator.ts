@@ -37,7 +37,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
   }
 
   async ensureDatabase(): Promise<boolean> {
-    return true;
+    return false;
   }
 
   async refreshDatabase(options: CreateSchemaOptions = {}): Promise<void> {
