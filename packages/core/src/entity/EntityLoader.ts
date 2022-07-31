@@ -43,6 +43,12 @@ export class EntityLoader {
       return;
     }
 
+    if (entities.some(e => !Utils.isEntity(e))) {
+      const entity = entities.find(e => !Utils.isEntity(e));
+      const meta = this.metadata.find(entityName)!;
+      throw ValidationError.notDiscoveredEntity(entity, meta, 'populate');
+    }
+
     options.where ??= {} as FilterQuery<T>;
     options.orderBy ??= {};
     options.filters ??= {};
@@ -503,12 +509,13 @@ export class EntityLoader {
   }
 
   private lookupEagerLoadedRelationships<T>(entityName: string, populate: PopulateOptions<T>[], strategy?: LoadStrategy, prefix = '', visited: string[] = []): PopulateOptions<T>[] {
-    if (visited.includes(entityName)) {
+    const meta = this.metadata.find(entityName);
+
+    if (visited.includes(entityName) || !meta) {
       return [];
     }
 
     visited.push(entityName);
-    const meta = this.metadata.find(entityName)!;
     const ret: PopulateOptions<T>[] = prefix === '' ? [...populate] : [];
 
     meta.relations

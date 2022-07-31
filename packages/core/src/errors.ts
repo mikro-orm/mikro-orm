@@ -49,10 +49,10 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError(`Entity of type ${prop.type} expected for property ${owner.constructor.name}.${prop.name}, ${inspect(data)} of type ${type} given. If you are using Object.assign(entity, data), use em.assign(entity, data) instead.`);
   }
 
-  static notDiscoveredEntity(data: any, meta?: EntityMetadata): ValidationError {
+  static notDiscoveredEntity(data: any, meta?: EntityMetadata, action = 'persist'): ValidationError {
     /* istanbul ignore next */
     const type = meta?.className ?? Object.prototype.toString.call(data).match(/\[object (\w+)]/)![1].toLowerCase();
-    let err = `Trying to persist not discovered entity of type ${type}.`;
+    let err = `Trying to ${action} not discovered entity of type ${type}.`;
 
     /* istanbul ignore else */
     if (meta) {

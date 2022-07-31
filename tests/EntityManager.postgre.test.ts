@@ -1,9 +1,9 @@
 import { v4 } from 'uuid';
-import type { EventSubscriber, ChangeSet, AnyEntity, FlushEventArgs, FilterQuery, EntityDTO } from '@mikro-orm/core';
+import type { EventSubscriber, ChangeSet, AnyEntity, FlushEventArgs, FilterQuery } from '@mikro-orm/core';
 import {
   Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, ValidationError, ChangeSetType, wrap, expr,
   UniqueConstraintViolationException, TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException,
-  NonUniqueFieldNameException, InvalidFieldNameException, LoadStrategy, IsolationLevel, PopulateHint, FlushMode,
+  NonUniqueFieldNameException, InvalidFieldNameException, LoadStrategy, IsolationLevel, PopulateHint,
 } from '@mikro-orm/core';
 import { PostgreSqlDriver, PostgreSqlConnection } from '@mikro-orm/postgresql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2, Label2 } from './entities-sql';
@@ -2119,6 +2119,13 @@ describe('EntityManagerPostgre', () => {
     const c = await orm.em.fork().findOne(FooBar2, bar);
     expect(c).toBeDefined();
     expect(c!.id).toBe(321);
+  });
+
+  test('validation in em.populate() for non discovered entities', async () => {
+    await expect(orm.em.populate({}, ['foo'] as never[])).rejects.toThrow(`Trying to populate not discovered entity of type object.`);
+    class Book2 {}
+    await expect(orm.em.populate(new Book2(), ['author'] as never[])).rejects.toThrow('Trying to populate not discovered entity of type Book2. ' +
+      'Entity with this name was discovered, but not the prototype you are passing to the ORM. If using EntitySchema, be sure to point to the implementation via `class`.');
   });
 
   test('changing PK (batch)', async () => {
