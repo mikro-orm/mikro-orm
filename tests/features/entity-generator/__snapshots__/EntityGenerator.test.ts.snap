@@ -110,12 +110,12 @@ export class Author2 {
   bornTime?: string;
   favouriteBook?: IdentifiedReference<Book2>;
   favouriteAuthor?: IdentifiedReference<Author2>;
-  following = new Collection<Author2>(this);
   authorToFriend = new Collection<Author2>(this);
+  following = new Collection<Author2>(this);
   authorInverse = new Collection<Book2>(this);
   favouriteAuthorInverse = new Collection<Author2>(this);
-  followingInverse = new Collection<Author2>(this);
   authorToFriendInverse = new Collection<Author2>(this);
+  followingInverse = new Collection<Author2>(this);
 }
 
 export const Author2Schema = new EntitySchema({
@@ -163,12 +163,6 @@ export const Author2Schema = new EntitySchema({
       onDelete: 'set null',
       nullable: true,
     },
-    following: {
-      reference: 'm:n',
-      entity: () => Author2,
-      joinColumn: 'author2_1_id',
-      inverseJoinColumn: 'author2_2_id',
-    },
     authorToFriend: {
       reference: 'm:n',
       entity: () => Author2,
@@ -176,10 +170,16 @@ export const Author2Schema = new EntitySchema({
       joinColumn: 'author2_1_id',
       inverseJoinColumn: 'author2_2_id',
     },
+    following: {
+      reference: 'm:n',
+      entity: () => Author2,
+      joinColumn: 'author2_1_id',
+      inverseJoinColumn: 'author2_2_id',
+    },
     authorInverse: { reference: '1:m', entity: () => Book2, mappedBy: 'author' },
     favouriteAuthorInverse: { reference: '1:m', entity: () => Author2, mappedBy: 'favouriteAuthor' },
-    followingInverse: { reference: 'm:n', entity: () => Author2, mappedBy: 'following' },
     authorToFriendInverse: { reference: 'm:n', entity: () => Author2, mappedBy: 'authorToFriend' },
+    followingInverse: { reference: 'm:n', entity: () => Author2, mappedBy: 'following' },
   },
 });
 ",
@@ -238,6 +238,27 @@ export const BaseUser2Schema = new EntitySchema({
       wrappedReference: true,
       mappedBy: 'favouriteManager',
     },
+  },
+});
+",
+  "import { Collection, EntitySchema } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { Book2Tags } from './Book2Tags';
+
+export class BookTag2 {
+  id!: string;
+  name!: string;
+  bookToTagUnorderedInverse = new Collection<Book2>(this);
+  bookTag2Inverse = new Collection<Book2Tags>(this);
+}
+
+export const BookTag2Schema = new EntitySchema({
+  class: BookTag2,
+  properties: {
+    id: { primary: true, type: 'string', columnType: 'bigint' },
+    name: { type: 'string', length: 50 },
+    bookToTagUnorderedInverse: { reference: 'm:n', entity: () => Book2, mappedBy: 'bookToTagUnordered' },
+    bookTag2Inverse: { reference: '1:m', entity: () => Book2Tags, mappedBy: 'bookTag2' },
   },
 });
 ",
@@ -335,24 +356,26 @@ export const Book2TagsSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema } from '@mikro-orm/core';
-import { Book2 } from './Book2';
-import { Book2Tags } from './Book2Tags';
+  "import { EntitySchema, IdentifiedReference } from '@mikro-orm/core';
+import { Car2 } from './Car2';
 
-export class BookTag2 {
-  id!: string;
+export class CarOwner2 {
+  id!: number;
   name!: string;
-  bookToTagUnorderedInverse = new Collection<Book2>(this);
-  bookTag2Inverse = new Collection<Book2Tags>(this);
+  car!: IdentifiedReference<Car2>;
 }
 
-export const BookTag2Schema = new EntitySchema({
-  class: BookTag2,
+export const CarOwner2Schema = new EntitySchema({
+  class: CarOwner2,
   properties: {
-    id: { primary: true, type: 'string', columnType: 'bigint' },
-    name: { type: 'string', length: 50 },
-    bookToTagUnorderedInverse: { reference: 'm:n', entity: () => Book2, mappedBy: 'bookToTagUnordered' },
-    bookTag2Inverse: { reference: '1:m', entity: () => Book2Tags, mappedBy: 'bookTag2' },
+    id: { primary: true, type: 'number' },
+    name: { type: 'string', length: 255 },
+    car: {
+      reference: 'm:1',
+      entity: () => Car2,
+      wrappedReference: true,
+      onUpdateIntegrity: 'cascade',
+    },
   },
 });
 ",
@@ -383,29 +406,6 @@ export const Car2Schema = new EntitySchema({
       mappedBy: 'favouriteCar',
     },
     carsInverse: { reference: 'm:n', entity: () => User2, mappedBy: 'cars' },
-  },
-});
-",
-  "import { EntitySchema, IdentifiedReference } from '@mikro-orm/core';
-import { Car2 } from './Car2';
-
-export class CarOwner2 {
-  id!: number;
-  name!: string;
-  car!: IdentifiedReference<Car2>;
-}
-
-export const CarOwner2Schema = new EntitySchema({
-  class: CarOwner2,
-  properties: {
-    id: { primary: true, type: 'number' },
-    name: { type: 'string', length: 255 },
-    car: {
-      reference: 'm:1',
-      entity: () => Car2,
-      wrappedReference: true,
-      onUpdateIntegrity: 'cascade',
-    },
   },
 });
 ",
@@ -840,11 +840,11 @@ export class Author2 {
   @ManyToOne({ entity: () => Author2, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
   favouriteAuthor?: Author2;
 
-  @ManyToMany({ entity: () => Author2, joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
-  following = new Collection<Author2>(this);
-
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
   authorToFriend = new Collection<Author2>(this);
+
+  @ManyToMany({ entity: () => Author2, joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
+  following = new Collection<Author2>(this);
 
 }
 ",
@@ -887,6 +887,19 @@ export enum BaseUser2Type {
   EMPLOYEE = 'employee',
   MANAGER = 'manager',
   OWNER = 'owner',
+}
+",
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class BookTag2 {
+
+  @PrimaryKey({ columnType: 'bigint' })
+  id!: string;
+
+  @Property({ length: 50 })
+  name!: string;
+
 }
 ",
   "import { Collection, Entity, Index, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
@@ -951,16 +964,20 @@ export class Book2Tags {
 
 }
 ",
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Car2 } from './Car2';
 
 @Entity()
-export class BookTag2 {
+export class CarOwner2 {
 
-  @PrimaryKey({ columnType: 'bigint' })
-  id!: string;
+  @PrimaryKey()
+  id!: number;
 
-  @Property({ length: 50 })
+  @Property({ length: 255 })
   name!: string;
+
+  @ManyToOne({ entity: () => Car2, onUpdateIntegrity: 'cascade' })
+  car!: Car2;
 
 }
 ",
@@ -979,23 +996,6 @@ export class Car2 {
 
   @Property()
   price!: number;
-
-}
-",
-  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { Car2 } from './Car2';
-
-@Entity()
-export class CarOwner2 {
-
-  @PrimaryKey()
-  id!: number;
-
-  @Property({ length: 255 })
-  name!: string;
-
-  @ManyToOne({ entity: () => Car2, onUpdateIntegrity: 'cascade' })
-  car!: Car2;
 
 }
 ",
@@ -1318,11 +1318,24 @@ export class Author2 {
   @ManyToOne({ entity: () => Author2, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
   favouriteAuthor?: Author2;
 
+  @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
+  authorToFriend = new Collection<Author2>(this);
+
   @ManyToMany({ entity: () => Author2, joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
   following = new Collection<Author2>(this);
 
-  @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
-  authorToFriend = new Collection<Author2>(this);
+}
+",
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class BookTag2 {
+
+  @PrimaryKey({ columnType: 'int8' })
+  id!: string;
+
+  @Property({ length: 50 })
+  name!: string;
 
 }
 ",
@@ -1384,19 +1397,6 @@ export class Book2Tags {
 
   @ManyToOne({ entity: () => BookTag2, onUpdateIntegrity: 'cascade', onDelete: 'cascade' })
   bookTag2!: BookTag2;
-
-}
-",
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
-
-@Entity()
-export class BookTag2 {
-
-  @PrimaryKey({ columnType: 'int8' })
-  id!: string;
-
-  @Property({ length: 50 })
-  name!: string;
 
 }
 ",
@@ -1670,6 +1670,22 @@ export class Author3 {
 
 }
 ",
+  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class BookTag3 {
+
+  @PrimaryKey()
+  id!: number;
+
+  @Property()
+  name!: string;
+
+  @Property({ defaultRaw: \`current_timestamp\` })
+  version!: Date;
+
+}
+",
   "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Author3 } from './Author3';
 import { Publisher3 } from './Publisher3';
@@ -1712,22 +1728,6 @@ export class Book3Tags {
 
   @ManyToOne({ entity: () => BookTag3, onUpdateIntegrity: 'cascade', onDelete: 'cascade' })
   bookTag3!: BookTag3;
-
-}
-",
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
-
-@Entity()
-export class BookTag3 {
-
-  @PrimaryKey()
-  id!: number;
-
-  @Property()
-  name!: string;
-
-  @Property({ defaultRaw: \`current_timestamp\` })
-  version!: Date;
 
 }
 ",
@@ -1853,11 +1853,11 @@ export class Author2 {
   @ManyToOne({ entity: () => Author2, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
   favouriteAuthor?: Author2;
 
-  @ManyToMany({ entity: () => Author2, joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
-  following = new Collection<Author2>(this);
-
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
   authorToFriend = new Collection<Author2>(this);
+
+  @ManyToMany({ entity: () => Author2, joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
+  following = new Collection<Author2>(this);
 
   @OneToMany({ entity: () => Book2, mappedBy: 'author' })
   authorInverse = new Collection<Book2>(this);
@@ -1865,11 +1865,11 @@ export class Author2 {
   @OneToMany({ entity: () => Author2, mappedBy: 'favouriteAuthor' })
   favouriteAuthorInverse = new Collection<Author2>(this);
 
-  @ManyToMany({ entity: () => Author2, mappedBy: 'following' })
-  followingInverse = new Collection<Author2>(this);
-
   @ManyToMany({ entity: () => Author2, mappedBy: 'authorToFriend' })
   authorToFriendInverse = new Collection<Author2>(this);
+
+  @ManyToMany({ entity: () => Author2, mappedBy: 'following' })
+  followingInverse = new Collection<Author2>(this);
 
 }
 ",
@@ -1918,6 +1918,27 @@ export enum BaseUser2Type {
   EMPLOYEE = 'employee',
   MANAGER = 'manager',
   OWNER = 'owner',
+}
+",
+  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { Book2Tags } from './Book2Tags';
+
+@Entity()
+export class BookTag2 {
+
+  @PrimaryKey({ columnType: 'bigint' })
+  id!: string;
+
+  @Property({ length: 50 })
+  name!: string;
+
+  @ManyToMany({ entity: () => Book2, mappedBy: 'bookToTagUnordered' })
+  bookToTagUnorderedInverse = new Collection<Book2>(this);
+
+  @OneToMany({ entity: () => Book2Tags, mappedBy: 'bookTag2' })
+  bookTag2Inverse = new Collection<Book2Tags>(this);
+
 }
 ",
   "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
@@ -1993,24 +2014,20 @@ export class Book2Tags {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import { Book2 } from './Book2';
-import { Book2Tags } from './Book2Tags';
+  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Car2 } from './Car2';
 
 @Entity()
-export class BookTag2 {
+export class CarOwner2 {
 
-  @PrimaryKey({ columnType: 'bigint' })
-  id!: string;
+  @PrimaryKey()
+  id!: number;
 
-  @Property({ length: 50 })
+  @Property({ length: 255 })
   name!: string;
 
-  @ManyToMany({ entity: () => Book2, mappedBy: 'bookToTagUnordered' })
-  bookToTagUnorderedInverse = new Collection<Book2>(this);
-
-  @OneToMany({ entity: () => Book2Tags, mappedBy: 'bookTag2' })
-  bookTag2Inverse = new Collection<Book2Tags>(this);
+  @ManyToOne({ entity: () => Car2, onUpdateIntegrity: 'cascade' })
+  car!: Car2;
 
 }
 ",
@@ -2040,23 +2057,6 @@ export class Car2 {
 
   @ManyToMany({ entity: () => User2, mappedBy: 'cars' })
   carsInverse = new Collection<User2>(this);
-
-}
-",
-  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { Car2 } from './Car2';
-
-@Entity()
-export class CarOwner2 {
-
-  @PrimaryKey()
-  id!: number;
-
-  @Property({ length: 255 })
-  name!: string;
-
-  @ManyToOne({ entity: () => Car2, onUpdateIntegrity: 'cascade' })
-  car!: Car2;
 
 }
 ",
@@ -2417,11 +2417,11 @@ export class Author2 {
   @ManyToOne({ entity: () => Author2, wrappedReference: true, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
   favouriteAuthor?: IdentifiedReference<Author2>;
 
-  @ManyToMany({ entity: () => Author2, joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
-  following = new Collection<Author2>(this);
-
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
   authorToFriend = new Collection<Author2>(this);
+
+  @ManyToMany({ entity: () => Author2, joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
+  following = new Collection<Author2>(this);
 
   @OneToMany({ entity: () => Book2, mappedBy: 'author' })
   authorInverse = new Collection<Book2>(this);
@@ -2429,11 +2429,11 @@ export class Author2 {
   @OneToMany({ entity: () => Author2, mappedBy: 'favouriteAuthor' })
   favouriteAuthorInverse = new Collection<Author2>(this);
 
-  @ManyToMany({ entity: () => Author2, mappedBy: 'following' })
-  followingInverse = new Collection<Author2>(this);
-
   @ManyToMany({ entity: () => Author2, mappedBy: 'authorToFriend' })
   authorToFriendInverse = new Collection<Author2>(this);
+
+  @ManyToMany({ entity: () => Author2, mappedBy: 'following' })
+  followingInverse = new Collection<Author2>(this);
 
 }
 ",
@@ -2484,7 +2484,28 @@ export enum BaseUser2Type {
   OWNER = 'owner',
 }
 ",
-  "import { Collection, Entity, IdentifiedReference, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { Book2 } from './Book2';
+import { Book2Tags } from './Book2Tags';
+
+@Entity()
+export class BookTag2 {
+
+  @PrimaryKey({ columnType: 'bigint' })
+  id!: string;
+
+  @Property({ length: 50 })
+  name!: string;
+
+  @ManyToMany({ entity: () => Book2, mappedBy: 'bookToTagUnordered' })
+  bookToTagUnorderedInverse = new Collection<Book2>(this);
+
+  @OneToMany({ entity: () => Book2Tags, mappedBy: 'bookTag2' })
+  bookTag2Inverse = new Collection<Book2Tags>(this);
+
+}
+",
+  "import { Collection, Entity, Index, IdentifiedReference, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
@@ -2557,24 +2578,20 @@ export class Book2Tags {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import { Book2 } from './Book2';
-import { Book2Tags } from './Book2Tags';
+  "import { Entity, IdentifiedReference, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Car2 } from './Car2';
 
 @Entity()
-export class BookTag2 {
+export class CarOwner2 {
 
-  @PrimaryKey({ columnType: 'bigint' })
-  id!: string;
+  @PrimaryKey()
+  id!: number;
 
-  @Property({ length: 50 })
+  @Property({ length: 255 })
   name!: string;
 
-  @ManyToMany({ entity: () => Book2, mappedBy: 'bookToTagUnordered' })
-  bookToTagUnorderedInverse = new Collection<Book2>(this);
-
-  @OneToMany({ entity: () => Book2Tags, mappedBy: 'bookTag2' })
-  bookTag2Inverse = new Collection<Book2Tags>(this);
+  @ManyToOne({ entity: () => Car2, wrappedReference: true, onUpdateIntegrity: 'cascade' })
+  car!: IdentifiedReference<Car2>;
 
 }
 ",
@@ -2604,23 +2621,6 @@ export class Car2 {
 
   @ManyToMany({ entity: () => User2, mappedBy: 'cars' })
   carsInverse = new Collection<User2>(this);
-
-}
-",
-  "import { Entity, IdentifiedReference, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { Car2 } from './Car2';
-
-@Entity()
-export class CarOwner2 {
-
-  @PrimaryKey()
-  id!: number;
-
-  @Property({ length: 255 })
-  name!: string;
-
-  @ManyToOne({ entity: () => Car2, wrappedReference: true, onUpdateIntegrity: 'cascade' })
-  car!: IdentifiedReference<Car2>;
 
 }
 ",
