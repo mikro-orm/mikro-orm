@@ -43,7 +43,7 @@ export class EntityLoader {
       return;
     }
 
-    if (entities.some(e => !Utils.isEntity(e))) {
+    if (entities.some(e => !e.__helper)) {
       const entity = entities.find(e => !Utils.isEntity(e));
       const meta = this.metadata.find(entityName)!;
       throw ValidationError.notDiscoveredEntity(entity, meta, 'populate');
