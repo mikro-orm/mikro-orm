@@ -83,6 +83,9 @@ describe('DatabaseDriver', () => {
 
   test('not supported', async () => {
     expect(() => driver.getPlatform().getMigrator({} as any)).toThrowError('Platform1 does not support Migrator');
+    expect(() => driver.getPlatform().getFullTextWhereClause({} as any)).toThrowError('Full text searching is not supported by this driver.');
+    expect(() => driver.getPlatform().supportsCreatingFullTextIndex()).toThrowError('Full text searching is not supported by this driver.');
+    expect(() => driver.getPlatform().getFullTextIndexExpression({} as any, {} as any, {} as any, {} as any)).toThrowError('Full text searching is not supported by this driver.');
   });
 
 });

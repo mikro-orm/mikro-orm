@@ -295,19 +295,16 @@ export abstract class Platform {
     return path.join('.');
   }
 
-  /* istanbul ignore next */
   getFullTextWhereClause(prop: EntityProperty<any>): string {
-    return `:column: match :query`;
+    throw new Error('Full text searching is not supported by this driver.');
   }
 
-  /* istanbul ignore next */
   supportsCreatingFullTextIndex() {
-    return false;
+    throw new Error('Full text searching is not supported by this driver.');
   }
 
-  /* istanbul ignore next */
   getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
-    throw new Error('Creating full text index is not supported.');
+    throw new Error('Full text searching is not supported by this driver.');
   }
 
   convertsJsonAutomatically(marshall = false): boolean {
