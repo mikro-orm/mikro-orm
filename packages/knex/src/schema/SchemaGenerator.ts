@@ -336,7 +336,7 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
 
       for (const column of Object.values(diff.addedColumns)) {
         const col = this.helper.createTableColumn(table, column, diff.fromTable);
-        this.configureColumn(column, col);
+        this.helper.configureColumn(column, col, this.knex);
         const foreignKey = Object.values(diff.addedForeignKeys).find(fk => fk.columnNames.length === 1 && fk.columnNames[0] === column.name);
 
         if (foreignKey && this.options.createForeignKeyConstraints) {
@@ -362,7 +362,7 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
         }
 
         const col = this.helper.createTableColumn(table, column, diff.fromTable, changedProperties).alter();
-        this.configureColumn(column, col, changedProperties);
+        this.helper.configureColumn(column, col, this.knex, changedProperties);
       }
 
       for (const { column } of Object.values(diff.changedColumns).filter(diff => diff.changedProperties.has('autoincrement'))) {
@@ -475,11 +475,11 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
     return this.createSchemaBuilder(tableDef.schema).createTable(tableDef.name, table => {
       tableDef.getColumns().forEach(column => {
         const col = this.helper.createTableColumn(table, column, tableDef);
-        this.configureColumn(column, col);
+        this.helper.configureColumn(column, col, this.knex);
       });
 
       for (const index of tableDef.getIndexes()) {
-        const createPrimary = !tableDef.getColumns().some(c => c.autoincrement) || this.helper.hasNonDefaultPrimaryKeyName(tableDef);
+        const createPrimary = !tableDef.getColumns().some(c => c.autoincrement && c.primary) || this.helper.hasNonDefaultPrimaryKeyName(tableDef);
         this.createIndex(table, index, tableDef, createPrimary);
       }
 
@@ -551,10 +551,6 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
     }
 
     return builder;
-  }
-
-  private configureColumn<T>(column: Column, col: Knex.ColumnBuilder, changedProperties?: Set<string>) {
-    return this.helper.configureColumn(column, col, this.knex, changedProperties);
   }
 
   private createForeignKeys(table: Knex.CreateTableBuilder, tableDef: DatabaseTable, schema?: string): void {

@@ -27,3 +27,17 @@ exports[`schema generator works with non-pk autoincrement columns (serial) 4`] =
 
 "
 `;
+
+exports[`schema generator works with non-pk autoincrement columns (serial) 5`] = `
+"alter table \\"something\\" add column \\"_id\\" serial;
+alter table \\"something\\" alter column \\"id\\" type varchar(255) using (\\"id\\"::varchar(255));
+alter table \\"something\\" alter column \\"id\\" drop default;
+
+"
+`;
+
+exports[`schema generator works with non-pk autoincrement columns (serial) 6`] = `
+"create table \\"something\\" (\\"id\\" varchar(255) not null, \\"_id\\" serial, \\"foo\\" varchar(255) not null, constraint \\"something_pkey\\" primary key (\\"id\\"));
+
+"
+`;

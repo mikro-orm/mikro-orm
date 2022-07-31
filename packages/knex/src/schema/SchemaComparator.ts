@@ -1,6 +1,6 @@
 import { inspect } from 'util';
 import type { Dictionary, EntityProperty } from '@mikro-orm/core';
-import { BooleanType, DateTimeType } from '@mikro-orm/core';
+import { BooleanType, DateTimeType, Utils } from '@mikro-orm/core';
 import type { Check, Column, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
 import type { DatabaseSchema } from './DatabaseSchema';
 import type { DatabaseTable } from './DatabaseTable';
@@ -402,7 +402,9 @@ export class SchemaComparator {
     const columnType2 = column2.mappedType.getColumnType(prop2, this.platform).toLowerCase();
     const log = (msg: string, params: Dictionary) => {
       if (tableName) {
-        this.log(msg, params);
+        const copy = Utils.copy(params);
+        Utils.dropUndefinedProperties(copy);
+        this.log(msg, copy);
       }
     };
 
