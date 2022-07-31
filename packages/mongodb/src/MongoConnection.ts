@@ -30,9 +30,16 @@ export class MongoConnection extends Connection {
   }
 
   async connect(): Promise<void> {
-    this.client = new MongoClient(this.config.getClientUrl(), this.getConnectionOptions());
+    const driverOptions = this.config.get('driverOptions');
 
-    await this.client.connect();
+    if (driverOptions instanceof MongoClient) {
+      this.logger.log('info', 'Reusing MongoClient provided via `driverOptions`');
+      this.client = driverOptions;
+    } else {
+      this.client = new MongoClient(this.config.getClientUrl(), this.getConnectionOptions());
+      await this.client.connect();
+    }
+
     this.db = this.client.db(this.config.get('dbName'));
     this.connected = true;
   }
@@ -44,6 +51,10 @@ export class MongoConnection extends Connection {
 
   async isConnected(): Promise<boolean> {
     return this.connected;
+  }
+
+  getClient(): MongoClient {
+    return this.client;
   }
 
   getCollection<T>(name: EntityName<T>): Collection<T> {
