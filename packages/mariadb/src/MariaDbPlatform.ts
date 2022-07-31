@@ -78,7 +78,11 @@ export class MariaDbPlatform extends AbstractSqlPlatform {
   }
 
   getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
-    return `alter table ${this.quoteIdentifier(schemaName ? `${schemaName}.${tableName}` : tableName)} add fulltext index ${this.quoteIdentifier(indexName)}(${columns.map(c => this.quoteIdentifier(c.name)).join(',')})`;
+    const quotedTableName = this.quoteIdentifier(schemaName ? `${schemaName}.${tableName}` : tableName);
+    const quotedColumnNames = columns.map(c => this.quoteIdentifier(c.name));
+    const quotedIndexName = this.quoteIdentifier(indexName);
+
+    return `alter table ${quotedTableName} add fulltext index ${quotedIndexName}(${quotedColumnNames.join(',')})`;
   }
 
 }

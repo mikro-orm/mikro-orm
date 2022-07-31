@@ -86,13 +86,15 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   }
 
   getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
-    const destination = schemaName ? `${schemaName}.${tableName}` : tableName;
+    const quotedTableName = this.quoteIdentifier(schemaName ? `${schemaName}.${tableName}` : tableName);
+    const quotedColumnNames = columns.map(c => this.quoteIdentifier(c.name));
+    const quotedIndexName = this.quoteIdentifier(indexName);
 
     if (columns.length === 1 && columns[0].type === 'tsvector') {
-      return `create index ${this.quoteIdentifier(indexName)} on ${this.quoteIdentifier(destination)} using gin(${this.quoteIdentifier(columns[0].name)})`;
+      return `create index ${quotedIndexName} on ${quotedTableName} using gin(${quotedColumnNames[0]})`;
     }
 
-    return `create index ${this.quoteIdentifier(indexName)} on ${this.quoteIdentifier(destination)} using gin(to_tsvector('simple', ${columns.map(c => this.quoteIdentifier(c.name)).join(` || ' ' || `)}))`;
+    return `create index ${quotedIndexName} on ${quotedTableName} using gin(to_tsvector('simple', ${quotedColumnNames.join(` || ' ' || `)}))`;
   }
 
   getRegExpOperator(): string {
