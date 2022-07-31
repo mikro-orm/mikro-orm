@@ -23,6 +23,20 @@ export class MetadataValidator {
   validateEntityDefinition(metadata: MetadataStorage, name: string): void {
     const meta = metadata.get(name);
 
+    if (meta.virtual || meta.expression) {
+      for (const prop of Object.values(meta.properties)) {
+        if (prop.reference !== ReferenceType.SCALAR) {
+          throw new MetadataError(`Only scalar properties are allowed inside virtual entity. Found '${prop.reference}' in ${meta.className}.${prop.name}`);
+        }
+
+        if (prop.primary) {
+          throw new MetadataError(`Virtual entity ${meta.className} cannot have primary key ${meta.className}.${prop.name}`);
+        }
+      }
+
+      return;
+    }
+
     // entities have PK
     if (!meta.embeddable && (!meta.primaryKeys || meta.primaryKeys.length === 0)) {
       throw MetadataError.fromMissingPrimaryKey(meta);

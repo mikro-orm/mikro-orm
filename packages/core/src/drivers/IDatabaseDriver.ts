@@ -38,6 +38,8 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
    */
   findOne<T extends AnyEntity<T>, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P>): Promise<EntityData<T> | null>;
 
+  findVirtual<T>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any>): Promise<EntityData<T>[]>;
+
   nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
 
   nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>): Promise<QueryResult<T>>;

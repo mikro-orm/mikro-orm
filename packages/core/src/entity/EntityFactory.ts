@@ -36,6 +36,14 @@ export class EntityFactory {
     entityName = Utils.className(entityName);
     const meta = this.metadata.get(entityName);
 
+    if (meta.virtual) {
+      data = { ...data };
+      const entity = this.createEntity<T>(data, meta, options);
+      this.hydrate(entity, meta, data, options);
+
+      return entity as New<T, P>;
+    }
+
     if (this.platform.usesDifferentSerializedPrimaryKey()) {
       meta.primaryKeys.forEach(pk => this.denormalizePrimaryKey(data, pk, meta.properties[pk]));
     }
@@ -161,7 +169,7 @@ export class EntityFactory {
   }
 
   private createEntity<T extends AnyEntity<T>>(data: EntityData<T>, meta: EntityMetadata<T>, options: FactoryOptions): T {
-    if (options.newEntity || meta.forceConstructor) {
+    if (options.newEntity || meta.forceConstructor || meta.virtual) {
       if (!meta.class) {
         throw new Error(`Cannot create entity ${meta.className}, class prototype is unknown`);
       }
@@ -173,6 +181,11 @@ export class EntityFactory {
 
       // creates new instance via constructor as this is the new entity
       const entity = new Entity(...params);
+
+      if (meta.virtual) {
+        return entity;
+      }
+
       entity.__helper!.__schema = this.driver.getSchemaName(meta, options);
 
       if (!options.newEntity) {
@@ -211,7 +224,7 @@ export class EntityFactory {
     } else {
       this.hydrator.hydrateReference(entity, meta, data, this, options.convertCustomTypes, this.driver.getSchemaName(meta, options));
     }
-    Object.keys(data).forEach(key => entity.__helper!.__loadedProperties.add(key));
+    Object.keys(data).forEach(key => entity.__helper?.__loadedProperties.add(key));
   }
 
   private findEntity<T>(data: EntityData<T>, meta: EntityMetadata<T>, options: FactoryOptions): T | undefined {

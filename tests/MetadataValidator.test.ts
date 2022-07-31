@@ -1,3 +1,4 @@
+import type { Dictionary } from '@mikro-orm/core';
 import { ReferenceType, MetadataStorage, MetadataValidator } from '@mikro-orm/core';
 
 describe('MetadataValidator', () => {
@@ -116,6 +117,27 @@ describe('MetadataValidator', () => {
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'Author')).toThrowError(`Entity Author has multiple version properties defined: 'version', 'version2'. Only one version property is allowed per entity.`);
     delete meta.Author.properties.version2;
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'Author')).not.toThrowError();
+  });
+
+  test('validates virtual entity definition', async () => {
+    const properties: Dictionary = {
+      id: { reference: 'scalar', primary: true, name: 'id', type: 'Foo' },
+      name: { reference: 'scalar', name: 'name', type: 'string' },
+      age: { reference: 'scalar', name: 'age', type: 'string' },
+      totalBooks: { reference: 'scalar', name: 'totalBooks', type: 'number' },
+      usedTags: { reference: 'scalar', name: 'usedTags', type: 'string[]' },
+      invalid1: { reference: 'embedded', name: 'invalid1', type: 'object' },
+      invalid2: { reference: '1:m', name: 'invalid2', type: 'Foo' },
+    };
+    const meta = { AuthorProfile: { expression: '...', name: 'AuthorProfile', className: 'AuthorProfile', properties } } as any;
+    meta.AuthorProfile.root = meta.AuthorProfile;
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'AuthorProfile')).toThrowError(`Virtual entity AuthorProfile cannot have primary key AuthorProfile.id`);
+    delete properties.id.primary;
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'AuthorProfile')).toThrowError(`Only scalar properties are allowed inside virtual entity. Found 'embedded' in AuthorProfile.invalid1`);
+    delete properties.invalid1;
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'AuthorProfile')).toThrowError(`Only scalar properties are allowed inside virtual entity. Found '1:m' in AuthorProfile.invalid2`);
+    delete properties.invalid2;
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'AuthorProfile')).not.toThrowError();
   });
 
   test('MetadataStorage.get throws when no metadata found', async () => {

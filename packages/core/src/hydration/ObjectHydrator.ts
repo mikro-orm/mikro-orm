@@ -316,7 +316,7 @@ export class ObjectHydrator extends Hydrator {
   }
 
   private createCollectionItemMapper<T>(prop: EntityProperty): string[] {
-    const meta = this.metadata.find(prop.type)!;
+    const meta = this.metadata.get(prop.type);
     const lines: string[] = [];
 
     lines.push(`  const createCollectionItem_${this.safeKey(prop.name)} = value => {`);

@@ -5,9 +5,7 @@ import type {
   QueryResult, Transaction, IDatabaseDriver, EntityManager, Dictionary, PopulateOptions,
   CountOptions, EntityDictionary, EntityField, NativeInsertUpdateOptions, NativeInsertUpdateManyOptions,
 } from '@mikro-orm/core';
-import {
-  DatabaseDriver, Utils, ReferenceType, EntityManagerType,
-} from '@mikro-orm/core';
+import { DatabaseDriver, EntityManagerType, ReferenceType, Utils } from '@mikro-orm/core';
 import { MongoConnection } from './MongoConnection';
 import { MongoPlatform } from './MongoPlatform';
 import { MongoEntityManager } from './MongoEntityManager';
@@ -29,6 +27,10 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   }
 
   async find<T extends AnyEntity<T>, P extends string = never>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, P> = {}): Promise<EntityData<T>[]> {
+    if (this.metadata.find(entityName)?.virtual) {
+      return this.findVirtual(entityName, where, options);
+    }
+
     const fields = this.buildFields(entityName, options.populate as unknown as PopulateOptions<T>[] || [], options.fields);
     where = this.renameFields(entityName, where, true);
     const res = await this.rethrow(this.getConnection('read').find<T>(entityName, where, options.orderBy, options.limit, options.offset, fields, options.ctx));
@@ -37,6 +39,11 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   }
 
   async findOne<T extends AnyEntity<T>, P extends string = never>(entityName: string, where: FilterQuery<T>, options: FindOneOptions<T, P> = { populate: [], orderBy: {} }): Promise<EntityData<T> | null> {
+    if (this.metadata.find(entityName)?.virtual) {
+      const [item] = await this.findVirtual(entityName, where, options as FindOptions<T, any>);
+      return item ?? null;
+    }
+
     if (Utils.isPrimaryKey(where)) {
       where = this.buildFilterById(entityName, where as string);
     }
@@ -46,6 +53,18 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     const res = await this.rethrow(this.getConnection('read').find<T>(entityName, where, options.orderBy, 1, undefined, fields, options.ctx));
 
     return this.mapResult<T>(res[0], this.metadata.find(entityName)!);
+  }
+
+  async findVirtual<T>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any>): Promise<EntityData<T>[]> {
+    const meta = this.metadata.find(entityName)!;
+
+    if (meta.expression instanceof Function) {
+      const em = this.createEntityManager<MongoDriver>(false);
+      return meta.expression(em, where, options) as EntityData<T>[];
+    }
+
+    /* istanbul ignore next */
+    return super.findVirtual(entityName, where, options);
   }
 
   async count<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options: CountOptions<T> = {}, ctx?: Transaction<ClientSession>): Promise<number> {

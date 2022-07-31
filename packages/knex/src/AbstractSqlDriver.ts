@@ -38,6 +38,11 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   async find<T, P extends string = never>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, P> = {}): Promise<EntityData<T>[]> {
     options = { populate: [], orderBy: [], ...options };
     const meta = this.metadata.find<T>(entityName)!;
+
+    if (meta?.virtual) {
+      return this.findVirtual<T>(entityName, where, options);
+    }
+
     const populate = this.autoJoinOneToOneOwner(meta, options.populate as unknown as PopulateOptions<T>[], options.fields);
     const joinedProps = this.joinedProps(meta, populate);
     const qb = this.createQueryBuilder<T>(entityName, options.ctx, options.connectionType, false);
@@ -92,6 +97,47 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const res = await this.find<T>(entityName, where, opts);
 
     return res[0] || null;
+  }
+
+  async findVirtual<T>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any>): Promise<EntityData<T>[]> {
+    const meta = this.metadata.get<T>(entityName);
+
+    /* istanbul ignore next */
+    if (!meta.expression) {
+      return [];
+    }
+
+    if (typeof meta.expression === 'string') {
+      return this.wrapVirtualExpressionInSubquery(meta, meta.expression, where, options);
+    }
+
+    const em = this.createEntityManager(false);
+    em.setTransactionContext(options.ctx);
+    const res = meta.expression(em, where, options);
+
+    if (res instanceof QueryBuilder<T[]>) {
+      return this.wrapVirtualExpressionInSubquery(meta, res.getFormattedQuery(), where, options);
+    }
+
+    return res as EntityData<T>[];
+  }
+
+  protected async wrapVirtualExpressionInSubquery<T>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any>) {
+    const qb = this.createQueryBuilder(meta.className, options?.ctx, options.connectionType, options.convertCustomTypes)
+      .limit(options?.limit, options?.offset);
+
+    if (options.orderBy) {
+      qb.orderBy(options.orderBy);
+    }
+
+    qb.where(where);
+
+    const kqb = qb.getKnexQuery();
+    kqb.clear('select').select('*');
+    kqb.fromRaw(`(${expression}) as ${this.platform.quoteIdentifier(qb.alias)}`);
+
+    const res = await this.execute<T[]>(kqb);
+    return res.map(row => this.mapResult(row, meta)!);
   }
 
   mapResult<T>(result: EntityData<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[] = [], qb?: QueryBuilder<T>, map: Dictionary = {}): EntityData<T> | null {
