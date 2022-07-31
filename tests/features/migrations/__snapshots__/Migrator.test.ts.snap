@@ -79,6 +79,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql('create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null default \\\\'\\\\', \`perex\` text null, \`price\` numeric(8,2) null, \`double\` double null, \`meta\` json null, \`author_id\` int unsigned not null, \`publisher_id\` int unsigned null, primary key (\`uuid_pk\`)) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`book2\` add index \`book2_author_id_index\`(\`author_id\`);');
     this.addSql('alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);');
+    this.addSql('alter table \`book2\` add fulltext index \`book2_title_index\`(\`title\`);');
 
     this.addSql('create table \`book2_tags\` (\`order\` int unsigned not null auto_increment primary key, \`book2_uuid_pk\` varchar(36) not null, \`book_tag2_id\` bigint unsigned not null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`book2_tags\` add index \`book2_tags_book2_uuid_pk_index\`(\`book2_uuid_pk\`);');
@@ -225,6 +226,7 @@ export class Migration20191013214813 extends Migration {
       "create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null default '', \`perex\` text null, \`price\` numeric(8,2) null, \`double\` double null, \`meta\` json null, \`author_id\` int unsigned not null, \`publisher_id\` int unsigned null, primary key (\`uuid_pk\`)) default character set utf8mb4 engine = InnoDB;",
       "alter table \`book2\` add index \`book2_author_id_index\`(\`author_id\`);",
       "alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);",
+      "alter table \`book2\` add fulltext index \`book2_title_index\`(\`title\`);",
       "",
       "create table \`book2_tags\` (\`order\` int unsigned not null auto_increment primary key, \`book2_uuid_pk\` varchar(36) not null, \`book_tag2_id\` bigint unsigned not null) default character set utf8mb4 engine = InnoDB;",
       "alter table \`book2_tags\` add index \`book2_tags_book2_uuid_pk_index\`(\`book2_uuid_pk\`);",
@@ -524,6 +526,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql('create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null default \\\\'\\\\', \`perex\` text null, \`price\` numeric(8,2) null, \`double\` double null, \`meta\` json null, \`author_id\` int unsigned not null, \`publisher_id\` int unsigned null, primary key (\`uuid_pk\`)) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`book2\` add index \`book2_author_id_index\`(\`author_id\`);');
     this.addSql('alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);');
+    this.addSql('alter table \`book2\` add fulltext index \`book2_title_index\`(\`title\`);');
 
     this.addSql('create table \`book2_tags\` (\`order\` int unsigned not null auto_increment primary key, \`book2_uuid_pk\` varchar(36) not null, \`book_tag2_id\` bigint unsigned not null) default character set utf8mb4 engine = InnoDB;');
     this.addSql('alter table \`book2_tags\` add index \`book2_tags_book2_uuid_pk_index\`(\`book2_uuid_pk\`);');
@@ -670,6 +673,7 @@ export class Migration20191013214813 extends Migration {
       "create table \`book2\` (\`uuid_pk\` varchar(36) not null, \`created_at\` datetime(3) not null default current_timestamp(3), \`title\` varchar(255) null default '', \`perex\` text null, \`price\` numeric(8,2) null, \`double\` double null, \`meta\` json null, \`author_id\` int unsigned not null, \`publisher_id\` int unsigned null, primary key (\`uuid_pk\`)) default character set utf8mb4 engine = InnoDB;",
       "alter table \`book2\` add index \`book2_author_id_index\`(\`author_id\`);",
       "alter table \`book2\` add index \`book2_publisher_id_index\`(\`publisher_id\`);",
+      "alter table \`book2\` add fulltext index \`book2_title_index\`(\`title\`);",
       "",
       "create table \`book2_tags\` (\`order\` int unsigned not null auto_increment primary key, \`book2_uuid_pk\` varchar(36) not null, \`book_tag2_id\` bigint unsigned not null) default character set utf8mb4 engine = InnoDB;",
       "alter table \`book2_tags\` add index \`book2_tags_book2_uuid_pk_index\`(\`book2_uuid_pk\`);",

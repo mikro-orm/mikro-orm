@@ -1,5 +1,5 @@
 import { Client } from 'pg';
-import type { EntityProperty, Type } from '@mikro-orm/core';
+import type { EntityProperty, Type, SimpleColumnMeta } from '@mikro-orm/core';
 import { expr, JsonProperty, Utils } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
@@ -71,6 +71,30 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
   getUuidTypeDeclarationSQL(column: { length?: number }): string {
     return `uuid`;
+  }
+
+  getFullTextWhereClause(prop: EntityProperty<any>): string {
+    if (prop.columnTypes[0] === 'tsvector') {
+      return `:column: @@ plainto_tsquery('simple', :query)`;
+    }
+
+    return `to_tsvector('simple', :column:) @@ plainto_tsquery('simple', :query)`;
+  }
+
+  supportsCreatingFullTextIndex(): boolean {
+    return true;
+  }
+
+  getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
+    const quotedTableName = this.quoteIdentifier(schemaName ? `${schemaName}.${tableName}` : tableName);
+    const quotedColumnNames = columns.map(c => this.quoteIdentifier(c.name));
+    const quotedIndexName = this.quoteIdentifier(indexName);
+
+    if (columns.length === 1 && columns[0].type === 'tsvector') {
+      return `create index ${quotedIndexName} on ${quotedTableName} using gin(${quotedColumnNames[0]})`;
+    }
+
+    return `create index ${quotedIndexName} on ${quotedTableName} using gin(to_tsvector('simple', ${quotedColumnNames.join(` || ' ' || `)}))`;
   }
 
   getRegExpOperator(): string {

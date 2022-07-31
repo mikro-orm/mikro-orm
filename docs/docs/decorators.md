@@ -181,7 +181,7 @@ See [Defining Entities](defining-entities.md#indexes).
 |--------------|----------|----------|-------------|
 | `name`       | `string` | yes      | index name  |
 | `properties` | `string` &#124; `string[]` | yes | list of properties, required when using on entity level |
-| `type`       | `string` | yes      | index type, not available for `@Unique()` |
+| `type`       | `string` | yes      | index type, not available for `@Unique()`. Use `fulltext` to enable support for the `$fulltext` operator |
 
 ```ts
 @Entity()

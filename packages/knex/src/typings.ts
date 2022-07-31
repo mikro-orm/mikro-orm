@@ -87,6 +87,7 @@ export interface TableDifference {
   name: string;
   changedComment?: string;
   fromTable: DatabaseTable;
+  toTable: DatabaseTable;
   addedColumns: Dictionary<Column>;
   changedColumns: Dictionary<ColumnDifference>;
   removedColumns: Dictionary<Column>;

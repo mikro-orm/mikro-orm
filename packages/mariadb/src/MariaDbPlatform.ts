@@ -1,7 +1,7 @@
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { MariaDbSchemaHelper } from './MariaDbSchemaHelper';
 import { MariaDbExceptionConverter } from './MariaDbExceptionConverter';
-import type { Type } from '@mikro-orm/core';
+import type { SimpleColumnMeta, Type } from '@mikro-orm/core';
 import { expr, Utils } from '@mikro-orm/core';
 
 export class MariaDbPlatform extends AbstractSqlPlatform {
@@ -67,6 +67,22 @@ export class MariaDbPlatform extends AbstractSqlPlatform {
 
   getDefaultPrimaryName(tableName: string, columns: string[]): string {
     return 'PRIMARY'; // https://dev.mysql.com/doc/refman/8.0/en/create-table.html#create-table-indexes-keys
+  }
+
+  supportsCreatingFullTextIndex(): boolean {
+    return true;
+  }
+
+  getFullTextWhereClause(): string {
+    return `match(:column:) against (:query in boolean mode)`;
+  }
+
+  getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
+    const quotedTableName = this.quoteIdentifier(schemaName ? `${schemaName}.${tableName}` : tableName);
+    const quotedColumnNames = columns.map(c => this.quoteIdentifier(c.name));
+    const quotedIndexName = this.quoteIdentifier(indexName);
+
+    return `alter table ${quotedTableName} add fulltext index ${quotedIndexName}(${quotedColumnNames.join(',')})`;
   }
 
 }

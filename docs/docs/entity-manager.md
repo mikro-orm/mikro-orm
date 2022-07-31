@@ -136,7 +136,7 @@ const user1 = await em.findOne(User, 1);
 ```
 
 As we can see in the fifth example, one can also use operators like `$and`, `$or`, `$gte`, 
-`$gt`, `$lte`, `$lt`, `$in`, `$nin`, `$eq`, `$ne`, `$like`, `$re`. More about that can be found in 
+`$gt`, `$lte`, `$lt`, `$in`, `$nin`, `$eq`, `$ne`, `$like`, `$re` and `$fulltext`. More about that can be found in 
 [Query Conditions](query-conditions.md) section.
 
 #### Using custom classes in `FilterQuery`

@@ -377,7 +377,17 @@ export class QueryBuilderHelper {
       return void qb[m](this.knex.raw(`(${this.subQueries[key]})`), replacement, value[op]);
     }
 
-    qb[m](this.mapper(key, type, undefined, null), replacement, value[op]);
+    if (op === '$fulltext') {
+      const meta = this.metadata.get(this.entityName);
+      const columnName = key.includes('.') ?  key.split('.')[1] : key;
+
+      qb[m](this.knex.raw(this.platform.getFullTextWhereClause(meta.properties[columnName]), {
+        column: this.mapper(key, type, undefined, null),
+        query: value[op],
+      }));
+    } else {
+      qb[m](this.mapper(key, type, undefined, null), replacement, value[op]);
+    }
   }
 
   private getOperatorReplacement(op: string, value: Dictionary): string {

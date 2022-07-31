@@ -172,6 +172,12 @@ describe('SchemaGenerator', () => {
     // add scalar property index
     const bookMeta = meta.get('Book2');
     bookMeta.properties.title.index = 'new_title_idx';
+
+    meta.get('Author2').indexes.push({
+      properties: ['name', 'email'],
+      type: 'fulltext',
+    });
+
     diff = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('mysql-update-schema-add-index');
     await generator.execute(diff);

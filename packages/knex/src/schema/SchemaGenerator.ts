@@ -390,17 +390,17 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
       }
 
       for (const index of Object.values(diff.addedIndexes)) {
-        this.createIndex(table, index, diff.fromTable);
+        this.createIndex(table, index, diff.toTable);
       }
 
       for (const index of Object.values(diff.changedIndexes)) {
-        this.createIndex(table, index, diff.fromTable, true);
+        this.createIndex(table, index, diff.toTable, true);
       }
 
       for (const [oldIndexName, index] of Object.entries(diff.renamedIndexes)) {
         if (index.unique) {
           this.dropIndex(table, index, oldIndexName);
-          this.createIndex(table, index, diff.fromTable);
+          this.createIndex(table, index, diff.toTable);
         } else {
           this.helper.pushTableQuery(table, this.helper.getRenameIndexSQL(diff.name, index, oldIndexName));
         }
@@ -514,6 +514,12 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
       table.unique(index.columnNames, { indexName: index.keyName });
     } else if (index.expression) {
       this.helper.pushTableQuery(table, index.expression);
+    } else if (index.type === 'fulltext') {
+      const columns = index.columnNames.map(name => ({ name, type: tableDef.getColumn(name)!.type }));
+
+      if (this.platform.supportsCreatingFullTextIndex()) {
+        this.helper.pushTableQuery(table, this.platform.getFullTextIndexExpression(index.keyName, tableDef.schema, tableDef.name, columns));
+      }
     } else {
       table.index(index.columnNames, index.keyName, index.type as Dictionary);
     }

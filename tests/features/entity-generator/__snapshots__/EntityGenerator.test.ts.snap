@@ -291,7 +291,7 @@ export const Book2Schema = new EntitySchema({
   properties: {
     uuidPk: { primary: true, type: 'string', length: 36 },
     createdAt: { type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` },
-    title: { type: 'string', length: 255, nullable: true },
+    title: { type: 'string', length: 255, nullable: true, index: \'book2_title_index\' },
     perex: { type: 'string', columnType: 'text', length: 65535, nullable: true },
     price: { type: 'string', columnType: 'decimal(8,2)', nullable: true },
     double: { type: 'string', columnType: 'double', nullable: true },
@@ -902,7 +902,7 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { Publisher2 } from './Publisher2';
@@ -916,6 +916,7 @@ export class Book2 {
   @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date;
 
+  @Index({ name: 'book2_title_index' })
   @Property({ length: 255, nullable: true })
   title?: string;
 
@@ -1940,7 +1941,7 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
@@ -1956,6 +1957,7 @@ export class Book2 {
   @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date;
 
+  @Index({ name: 'book2_title_index' })
   @Property({ length: 255, nullable: true })
   title?: string;
 
@@ -2503,7 +2505,7 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, IdentifiedReference, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, IdentifiedReference, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
@@ -2519,6 +2521,7 @@ export class Book2 {
   @Property({ length: 3, defaultRaw: \`current_timestamp(3)\` })
   createdAt!: Date;
 
+  @Index({ name: 'book2_title_index' })
   @Property({ length: 255, nullable: true })
   title?: string;
 

@@ -69,6 +69,7 @@ export type OperatorMap<T> = {
   $like?: string;
   $re?: string;
   $ilike?: string;
+  $fulltext?: string;
   $overlap?: string[];
   $contains?: string[];
   $contained?: string[];
@@ -418,6 +419,11 @@ export class EntityMetadata<T extends AnyEntity<T> = any> {
     }
   }
 
+}
+
+export interface SimpleColumnMeta {
+  name: string;
+  type: string;
 }
 
 export interface EntityMetadata<T extends AnyEntity<T> = any> {

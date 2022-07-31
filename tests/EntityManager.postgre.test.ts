@@ -372,6 +372,10 @@ describe('EntityManagerPostgre', () => {
     const authors = await authorRepository.findAll({ populate: ['books', 'favouriteBook'] });
     await expect(authorRepository.findOne({ email: 'not existing' })).resolves.toBeNull();
 
+    // full text search test
+    const fullTextBooks = (await booksRepository.find({ title: { $fulltext: 'life wall' } }))!;
+    expect(fullTextBooks.length).toBe(3);
+
     // count test
     const count = await authorRepository.count();
     expect(count).toBe(authors.length);

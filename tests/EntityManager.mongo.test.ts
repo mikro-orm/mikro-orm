@@ -28,6 +28,10 @@ describe('EntityManagerMongo', () => {
 
     const god = new Author('God', 'hello@heaven.god');
     const bible = new Book('Bible', god);
+
+    const bible2 = new Book('Bible of wall life', god);
+    orm.em.persist(bible2);
+
     await orm.em.persistAndFlush(bible);
 
     const author = new Author('Jon Snow', 'snow@wall.st');
@@ -72,6 +76,16 @@ describe('EntityManagerMongo', () => {
     const jon = (await authorRepository.findOne({ name: 'Jon Snow' }, { populate: ['books', 'favouriteBook'] }))!;
     const authors = await authorRepository.findAll({ populate: ['books', 'favouriteBook'] });
     expect(await authorRepository.findOne({ email: 'not existing' })).toBeNull();
+
+    // full text search test
+    const fullTextBooks2 = (await booksRepository.find({ author: god.id, $fulltext: 'life wall' }))!;
+    expect(fullTextBooks2.length).toBe(1);
+
+    const fullTextBooks = (await booksRepository.find({ $fulltext: 'life wall' }))!;
+    expect(fullTextBooks.length).toBe(4);
+
+    await expect(booksRepository.find({ title: { $fulltext: 'life wall' } })).rejects.toThrowError('Full text search is only supported on the top level of the query object.');
+    await expect(booksRepository.find({ author: { name: { $fulltext: 'god' } } })).rejects.toThrowError('Full text search is only supported on the top level of the query object.');
 
     // count test
     const count = await authorRepository.count();

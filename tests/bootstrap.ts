@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import type { Options } from '@mikro-orm/core';
-import { JavaScriptMetadataProvider, LoadStrategy, MikroORM, Utils } from '@mikro-orm/core';
+import { JavaScriptMetadataProvider, ReflectMetadataProvider, LoadStrategy, MikroORM, Utils } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { SqlEntityRepository } from '@mikro-orm/knex';
 import { SqliteDriver } from '@mikro-orm/sqlite';
@@ -20,6 +20,7 @@ import { Test2Subscriber } from './subscribers/Test2Subscriber';
 import { EverythingSubscriber } from './subscribers/EverythingSubscriber';
 import { FlushSubscriber } from './subscribers/FlushSubscriber';
 import { BASE_DIR } from './helpers';
+import { Book5 } from './entities-5';
 
 const { BaseEntity4, Author3, Book3, BookTag3, Publisher3, Test3 } = require('./entities-js/index');
 
@@ -184,6 +185,25 @@ export async function initORMSqlite2(type: 'sqlite' | 'better-sqlite' = 'sqlite'
   const schemaGenerator = orm.getSchemaGenerator();
   await schemaGenerator.dropSchema();
   await schemaGenerator.createSchema();
+
+  return orm;
+}
+
+export async function initORMSqlite3() {
+  const orm = await MikroORM.init<SqliteDriver>({
+    entities: [Book5],
+    dbName: ':memory:',
+    baseDir: BASE_DIR,
+    driver: SqliteDriver,
+    debug: ['query'],
+    forceUtcTimezone: true,
+    logger: i => i,
+    metadataProvider: ReflectMetadataProvider,
+    cache: { enabled: true, pretty: true },
+  });
+
+  const connection = orm.em.getConnection();
+  await connection.loadFile(__dirname + '/sqlite-schema-virtual.sql');
 
   return orm;
 }

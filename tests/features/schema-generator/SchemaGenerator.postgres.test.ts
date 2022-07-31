@@ -3,6 +3,7 @@ import { BASE_DIR, initORMPostgreSql } from '../../bootstrap';
 import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from '../../entities-sql';
 import { BaseEntity22 } from '../../entities-sql/BaseEntity22';
 import { BaseEntity2 } from '../../entities-sql/BaseEntity2';
+import { FullTextType } from '@mikro-orm/postgresql';
 
 describe('SchemaGenerator [postgres]', () => {
 
@@ -297,6 +298,11 @@ describe('SchemaGenerator [postgres]', () => {
       properties: ['author', 'publisher'],
     });
 
+    meta.get('Author2').indexes.push({
+      properties: ['name', 'email'],
+      type: 'fulltext',
+    });
+
     meta.get('Book2').uniques.push({
       properties: ['author', 'publisher'],
     });
@@ -305,7 +311,7 @@ describe('SchemaGenerator [postgres]', () => {
     expect(diff).toMatchSnapshot('postgres-update-schema-add-index');
     await generator.execute(diff, { wrap: true });
 
-    meta.get('Book2').indexes[0].name = 'custom_idx_123';
+    meta.get('Book2').indexes[1].name = 'custom_idx_123';
 
     diff = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-alter-index');
@@ -323,9 +329,12 @@ describe('SchemaGenerator [postgres]', () => {
     expect(diff).toMatchSnapshot('postgres-update-schema-drop-unique');
     await generator.execute(diff, { wrap: true });
 
-    // test index on column with type tsvector
-    delete meta.get('Book2').properties.title.defaultRaw;
-    meta.get('Book2').properties.title.columnTypes[0] = 'tsvector';
+    // test changing a column to tsvector and adding an index
+    meta.get('Book2').properties.title.defaultRaw = undefined;
+    meta.get('Book2').properties.title.customType = Type.getType(FullTextType);
+    meta.get('Book2').properties.title.columnTypes[0] = Type.getType(FullTextType).getColumnType(meta.get('Book2').properties.title, orm.em.getPlatform());
+    meta.get('Book2').indexes.push({ type: 'fulltext', properties: ['title'] });
+
     diff = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-update-schema-add-fulltext-index-tsvector');
     await generator.execute(diff, { wrap: true });
