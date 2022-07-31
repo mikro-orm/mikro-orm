@@ -120,7 +120,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     // mongo only allows the $text operator in the root of the object and will
-    // seach all documents where the field has a text index.
+    // search all documents where the field has a text index.
     if (Utils.hasNestedKey(copiedData, '$fulltext')) {
       throw new Error('Full text search is only supported on the top level of the query object.');
     }
