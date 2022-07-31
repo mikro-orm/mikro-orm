@@ -24,6 +24,7 @@ export class EntityGenerator {
 
     const metadata = schema.getTables()
       .filter(table => !options.schema || table.schema === options.schema)
+      .sort((a, b) => a.name!.localeCompare(b.name!))
       .map(table => table.getEntityDeclaration(this.namingStrategy, this.helper));
 
     this.detectManyToManyRelations(metadata);
