@@ -1,7 +1,7 @@
 import { ReferenceType } from '../enums';
 import type { OneToManyOptions } from './OneToMany';
 import { createOneToDecorator } from './OneToMany';
-import type { EntityName } from '../typings';
+import type { AnyString, EntityName } from '../typings';
 
 export function OneToOne<T, O>(
   entity?: OneToOneOptions<T, O> | string | ((e?: any) => EntityName<T>),
@@ -17,6 +17,6 @@ export interface OneToOneOptions<T, O> extends Partial<Omit<OneToManyOptions<T, 
   wrappedReference?: boolean;
   primary?: boolean;
   mapToPk?: boolean;
-  onDelete?: 'cascade' | 'no action' | 'set null' | 'set default' | string;
-  onUpdateIntegrity?: 'cascade' | 'no action' | 'set null' | 'set default' | string;
+  onDelete?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
+  onUpdateIntegrity?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
 }

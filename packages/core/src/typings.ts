@@ -3,7 +3,7 @@ import type { Cascade, EventType, LoadStrategy, LockMode, QueryOrderMap } from '
 import { ReferenceType } from './enums';
 import type { AssignOptions, Collection, EntityFactory, EntityIdentifier, EntityRepository, IdentifiedReference, Reference, SerializationContext } from './entity';
 import type { EntitySchema, MetadataStorage } from './metadata';
-import type { Type } from './types';
+import type { Type, types } from './types';
 import type { Platform } from './platforms';
 import type { Configuration } from './utils';
 import { Utils } from './utils/Utils';
@@ -213,10 +213,13 @@ export interface CheckConstraint<T extends AnyEntity<T> = any> {
   expression: string | CheckCallback<T>;
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type AnyString = string & {};
+
 export interface EntityProperty<T extends AnyEntity<T> = any> {
   name: string & keyof T;
   entity: () => EntityName<T>;
-  type: string;
+  type: keyof typeof types | AnyString;
   targetMeta?: EntityMetadata;
   columnTypes: string[];
   customType: Type<any>;
@@ -262,8 +265,8 @@ export interface EntityProperty<T extends AnyEntity<T> = any> {
   orphanRemoval?: boolean;
   onCreate?: (entity: T) => any;
   onUpdate?: (entity: T) => any;
-  onDelete?: 'cascade' | 'no action' | 'set null' | 'set default' | string;
-  onUpdateIntegrity?: 'cascade' | 'no action' | 'set null' | 'set default' | string;
+  onDelete?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
+  onUpdateIntegrity?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
   strategy?: LoadStrategy;
   owner: boolean;
   inversedBy: string;
@@ -356,6 +359,7 @@ export class EntityMetadata<T extends AnyEntity<T> = any> {
       return !prop.inherited && !discriminator && !prop.embedded && !onlyGetter;
     });
     this.selfReferencing = this.relations.some(prop => [this.className, this.root.className].includes(prop.type));
+    this.virtual = !!this.expression;
 
     if (initIndexes && this.name) {
       this.props.forEach(prop => this.initIndexes(prop));
@@ -421,7 +425,9 @@ export interface EntityMetadata<T extends AnyEntity<T> = any> {
   className: string;
   tableName: string;
   schema?: string;
-  pivotTable: boolean;
+  pivotTable?: boolean;
+  virtual?: boolean;
+  expression?: string | ((em: EntityManager) => Promise<T[]>);
   discriminatorColumn?: string;
   discriminatorValue?: number | string;
   discriminatorMap?: Dictionary<string>;

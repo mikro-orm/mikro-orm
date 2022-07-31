@@ -2,8 +2,8 @@ import { MetadataStorage, MetadataValidator } from '../metadata';
 import { Utils } from '../utils';
 import type { Cascade, LoadStrategy } from '../enums';
 import { ReferenceType } from '../enums';
-import type { EntityName, EntityProperty, Constructor, CheckCallback, Dictionary } from '../typings';
-import type { Type } from '../types';
+import type { EntityName, EntityProperty, Constructor, CheckCallback, Dictionary, AnyString, AnyEntity } from '../typings';
+import type { Type, types } from '../types';
 
 export function Property<T>(options: PropertyOptions<T> = {}) {
   return function (target: any, propertyName: string) {
@@ -46,7 +46,7 @@ export type PropertyOptions<T> = {
   fieldNames?: string[];
   customType?: Type<any>;
   columnType?: string;
-  type?: 'string' | 'number' | 'boolean' | 'bigint' | 'ObjectId' | string | unknown | bigint | Date | Constructor<Type<any>> | Type<any>;
+  type?: keyof typeof types | 'ObjectId' | Date | Constructor<AnyEntity> | Constructor<Type<any>> | Type<any> | (() => unknown) | AnyString;
   length?: number;
   precision?: number;
   scale?: number;
