@@ -3,6 +3,38 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.3.0](https://github.com/mikro-orm/mikro-orm/compare/v5.2.4...v5.3.0) (2022-08-01)
+
+
+### Bug Fixes
+
+* **core:** do not trigger auto flush from inside flush hooks ([e3f34aa](https://github.com/mikro-orm/mikro-orm/commit/e3f34aa52f7d76f12e51065f589f03454fba48f4)), closes [#3345](https://github.com/mikro-orm/mikro-orm/issues/3345)
+* **entity-generator:** ensure stable order of generated entities ([06e0e05](https://github.com/mikro-orm/mikro-orm/commit/06e0e05bf91d111a231a5d135add496928468498))
+* **postgres:** fix having non-PK serial column next to a non-serial PK ([6c589b0](https://github.com/mikro-orm/mikro-orm/commit/6c589b0c534b8fa5994363f5ed718b9be8840e8d)), closes [#3350](https://github.com/mikro-orm/mikro-orm/issues/3350)
+* **query-builder:** fix `qb.insert()/update()` on embeddables in inline mode ([#3340](https://github.com/mikro-orm/mikro-orm/issues/3340)) ([e611fa0](https://github.com/mikro-orm/mikro-orm/commit/e611fa060f392f60f239d53788d24b1ca7c36d7c))
+* **schema:** ensure stable order queries ([e56a259](https://github.com/mikro-orm/mikro-orm/commit/e56a259e5d7e2c29858a2c1568d7b901a923867a)), closes [#3330](https://github.com/mikro-orm/mikro-orm/issues/3330)
+* **schema:** respect explicit `columnType` when comparing columns ([f0a20fa](https://github.com/mikro-orm/mikro-orm/commit/f0a20fafa1425ca20f4f6fb2977eae7773d6ac6a)), closes [#3317](https://github.com/mikro-orm/mikro-orm/issues/3317)
+* **schema:** respect schema when renaming columns in postgres ([#3344](https://github.com/mikro-orm/mikro-orm/issues/3344)) ([f905336](https://github.com/mikro-orm/mikro-orm/commit/f9053368c0c3b2c771f1a3a273a19a4b8d374556))
+* **sqlite:** throw `ForeignKeyConstraintViolationException` where appropriate ([#3343](https://github.com/mikro-orm/mikro-orm/issues/3343)) ([508e262](https://github.com/mikro-orm/mikro-orm/commit/508e262abcb5302cb6831d3fab6920798a4f5477))
+
+
+### Features
+
+* add support for full text searches ([#3317](https://github.com/mikro-orm/mikro-orm/issues/3317)) ([8b8f140](https://github.com/mikro-orm/mikro-orm/commit/8b8f14071b92e91161a32aa272315a0ecce1bc0b))
+* **core:** add `$exists` mongodb operator with SQL fallback to `is not null` ([112f2be](https://github.com/mikro-orm/mikro-orm/commit/112f2be85fabefc8e9562962945d3bd13b64025e)), closes [#3295](https://github.com/mikro-orm/mikro-orm/issues/3295)
+* **core:** add `disableContextResolution` option to `em.fork()` ([94442f9](https://github.com/mikro-orm/mikro-orm/commit/94442f9a96d8a71f68d447f9e2018dd4bb84da4b)), closes [#3338](https://github.com/mikro-orm/mikro-orm/issues/3338)
+* **core:** add support for virtual entities ([#3351](https://github.com/mikro-orm/mikro-orm/issues/3351)) ([dcd62ac](https://github.com/mikro-orm/mikro-orm/commit/dcd62ac1155e20e7e58d7de4c5fe1a22a422e201))
+* **core:** add validation when using non-discovered entities in `em.populate()` ([ab93106](https://github.com/mikro-orm/mikro-orm/commit/ab93106fd104be3ae12efb7c2fa680ad6f348d27))
+* **core:** improve autocomplete for `columnType` ([6bf616d](https://github.com/mikro-orm/mikro-orm/commit/6bf616dd824bbd61831e74a901af29ff91eae61d))
+* **core:** improve autocomplete for `type`, `onUpdateIntegrity` and `onDelete` ([7ee2dcb](https://github.com/mikro-orm/mikro-orm/commit/7ee2dcb500db3fa22dac83e38831920056fa6ff4))
+* **entity-generator:** allow defining entities with `EntitySchema` instead of decorators ([b423c10](https://github.com/mikro-orm/mikro-orm/commit/b423c104d942bfdb4a875a64c52f98ec85899c6c))
+* **mongo:** add support for migrations in mongo driver ([#3347](https://github.com/mikro-orm/mikro-orm/issues/3347)) ([c5c6115](https://github.com/mikro-orm/mikro-orm/commit/c5c61152e0ad1b98fe9b00875ce0da9039b34d4a))
+* **mongo:** allow reusing mongo client via `driverOptions` ([df59ebf](https://github.com/mikro-orm/mikro-orm/commit/df59ebf6cc46121a81c008a0d174b1dff7256997)), closes [#3352](https://github.com/mikro-orm/mikro-orm/issues/3352)
+
+
+
+
+
 ## [5.2.4](https://github.com/mikro-orm/mikro-orm/compare/v5.2.3...v5.2.4) (2022-07-25)
 
 

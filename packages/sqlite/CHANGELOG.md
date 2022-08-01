@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.3.0](https://github.com/mikro-orm/mikro-orm/compare/v5.2.4...v5.3.0) (2022-08-01)
+
+
+### Bug Fixes
+
+* **sqlite:** throw `ForeignKeyConstraintViolationException` where appropriate ([#3343](https://github.com/mikro-orm/mikro-orm/issues/3343)) ([508e262](https://github.com/mikro-orm/mikro-orm/commit/508e262abcb5302cb6831d3fab6920798a4f5477))
+
+
+### Features
+
+* add support for full text searches ([#3317](https://github.com/mikro-orm/mikro-orm/issues/3317)) ([8b8f140](https://github.com/mikro-orm/mikro-orm/commit/8b8f14071b92e91161a32aa272315a0ecce1bc0b))
+
+
+
+
+
 ## [5.2.4](https://github.com/mikro-orm/mikro-orm/compare/v5.2.3...v5.2.4) (2022-07-25)
 
 **Note:** Version bump only for package @mikro-orm/sqlite
