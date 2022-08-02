@@ -63,7 +63,7 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   }
 
   toJSON(...args: any[]): EntityDictionary<T> {
-    // toJSON methods is added to thee prototype during discovery to support automatic serialization via JSON.stringify()
+    // toJSON methods is added to the prototype during discovery to support automatic serialization via JSON.stringify()
     return (this.entity as Dictionary).toJSON(...args);
   }
 

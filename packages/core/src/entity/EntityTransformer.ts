@@ -13,6 +13,8 @@ import { Utils } from '../utils/Utils';
 export class SerializationContext<T extends AnyEntity<T>> {
 
   readonly path: [string, string][] = [];
+  readonly visited = new Set<AnyEntity>();
+  private entities = new Set<AnyEntity>();
 
   constructor(private readonly populate: PopulateOptions<T>[]) { }
 
@@ -36,15 +38,21 @@ export class SerializationContext<T extends AnyEntity<T>> {
 
     /* istanbul ignore next */
     if (!last || last[0] !== entityName || last[1] !== prop) {
-      throw new Error(`Trying to leave wrong property: ${entityName}.${prop} instead of ${last}`);
+      throw new Error(`Trying to leave wrong property: ${entityName}.${prop} instead of ${last?.join('.')}`);
     }
+  }
+
+  close() {
+    this.entities.forEach(entity => {
+      delete entity.__helper!.__serializationContext.root;
+    });
   }
 
   /**
    * When initializing new context, we need to propagate it to the whole entity graph recursively.
    */
   static propagate(root: SerializationContext<AnyEntity>, entity: AnyEntity): void {
-    entity.__helper!.__serializationContext.root = root;
+    root.register(entity);
 
     const items: AnyEntity[] = [];
     Object.keys(entity).forEach(key => {
@@ -78,6 +86,11 @@ export class SerializationContext<T extends AnyEntity<T>> {
     return !!populate?.find(p => p.field === prop);
   }
 
+  private register(entity: AnyEntity) {
+    entity.__helper!.__serializationContext.root = this;
+    this.entities.add(entity);
+  }
+
 }
 
 export class EntityTransformer {
@@ -96,7 +109,7 @@ export class EntityTransformer {
       contextCreated = true;
     }
 
-    const root = wrapped.__serializationContext.root;
+    const root = wrapped.__serializationContext.root!;
     const meta = entity.__meta!;
     const ret = {} as EntityData<T>;
     const keys = new Set<string>();
@@ -111,22 +124,35 @@ export class EntityTransformer {
       Object.keys(entity).forEach(prop => keys.add(prop));
     }
 
+    const visited = root.visited.has(entity);
+
+    if (!visited) {
+      root.visited.add(entity);
+    }
+
     [...keys]
       .filter(prop => raw ? meta.properties[prop] : this.isVisible<T>(meta, prop, ignoreFields))
       .map(prop => {
-        const cycle = root!.visit(meta.className, prop);
+        const cycle = root.visit(meta.className, prop);
 
-        if (cycle) {
+        if (cycle && visited) {
           return [prop, undefined];
         }
 
         const val = EntityTransformer.processProperty<T>(prop as keyof T & string, entity, raw);
-        root!.leave(meta.className, prop);
+
+        if (!cycle) {
+          root.leave(meta.className, prop);
+        }
 
         return [prop, val];
       })
       .filter(([, value]) => typeof value !== 'undefined')
       .forEach(([prop, value]) => ret[this.propertyName(meta, prop as keyof T & string, entity.__platform)] = value as T[keyof T & string]);
+
+    if (!visited) {
+      root.visited.delete(entity);
+    }
 
     if (!wrapped.isInitialized() && wrapped.hasPrimaryKey()) {
       return ret;
@@ -143,7 +169,7 @@ export class EntityTransformer {
       .forEach(prop => ret[this.propertyName(meta, prop.name, entity.__platform)] = (entity[prop.getterName!] as unknown as () => T[keyof T & string])());
 
     if (contextCreated) {
-      delete wrapped.__serializationContext.root;
+      root.close();
     }
 
     return ret;
@@ -171,7 +197,6 @@ export class EntityTransformer {
 
   private static processProperty<T extends AnyEntity<T>>(prop: keyof T & string, entity: T, raw: boolean): T[keyof T] | undefined {
     const property = entity.__meta!.properties[prop];
-
     const serializer = property?.serializer;
 
     if (serializer) {
