@@ -954,7 +954,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return this;
     }
 
-    let em = TransactionContext.getEntityManager() as this; // prefer the tx context
+    let em = TransactionContext.getEntityManager(this.name) as this; // prefer the tx context
 
     if (em) {
       return em;

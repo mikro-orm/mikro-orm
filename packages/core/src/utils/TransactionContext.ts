@@ -27,9 +27,9 @@ export class TransactionContext {
   /**
    * Returns current EntityManager (if available).
    */
-  static getEntityManager(): EntityManager | undefined {
+  static getEntityManager(name = 'default'): EntityManager | undefined {
     const context = TransactionContext.currentTransactionContext();
-    return context ? context.em : undefined;
+    return context?.em.name === name ? context.em : undefined;
   }
 
 }

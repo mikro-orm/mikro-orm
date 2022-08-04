@@ -123,7 +123,7 @@ describe('MultiRequestContext', () => {
       expect(em2).not.toBe(orm2.em);
       expect(em2.name).toBe(orm2.em.name);
       expect(em1).not.toBe(em2);
-      // access UoW via property so we do not get the one from request context automatically
+      // access UoW via property, so we do not get the one from request context automatically
       // @ts-ignore
       expect(em2.unitOfWork.getIdentityMap()).not.toBe(orm2.em.unitOfWork.getIdentityMap());
 
