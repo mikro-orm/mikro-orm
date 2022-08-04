@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.3.1](https://github.com/mikro-orm/mikro-orm/compare/v5.3.0...v5.3.1) (2022-08-04)
+
+
+### Bug Fixes
+
+* **core:** copy orphan removal stack to forks when `clear: false` ([ab72144](https://github.com/mikro-orm/mikro-orm/commit/ab721442ad089bafd518bc442d04269a0717c44c)), closes [#3360](https://github.com/mikro-orm/mikro-orm/issues/3360)
+* **core:** improve check for global context usage ([6c906bf](https://github.com/mikro-orm/mikro-orm/commit/6c906bf3e66efdbb849c860ca31f0523c5cd61b8)), closes [#3361](https://github.com/mikro-orm/mikro-orm/issues/3361)
+* **core:** improve cycle detection when serializing (mainly via `toPOJO`) ([aa10802](https://github.com/mikro-orm/mikro-orm/commit/aa10802e53e0d6500a02230b01292de08f9fb9bc)), closes [#3354](https://github.com/mikro-orm/mikro-orm/issues/3354)
+* **core:** respect `contextName` in `TransactionContext` ([b2b6a7d](https://github.com/mikro-orm/mikro-orm/commit/b2b6a7d468431ff0a661fb081086f64cb70eac31)), closes [#3362](https://github.com/mikro-orm/mikro-orm/issues/3362)
+
+
+
+
+
 # [5.3.0](https://github.com/mikro-orm/mikro-orm/compare/v5.2.4...v5.3.0) (2022-08-01)
 
 
