@@ -466,6 +466,10 @@ export class UnitOfWork {
     this.cascade(entity, Cascade.CANCEL_ORPHAN_REMOVAL, visited);
   }
 
+  getOrphanRemoveStack(): Set<AnyEntity> {
+    return this.orphanRemoveStack;
+  }
+
   private findNewEntities<T extends AnyEntity<T>>(entity: T, visited = new Set<AnyEntity>(), idx = 0): void {
     if (visited.has(entity)) {
       return;

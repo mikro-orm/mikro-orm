@@ -917,6 +917,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       for (const entity of em.unitOfWork.getIdentityMap()) {
         fork.unitOfWork.registerManaged(entity);
       }
+
+      for (const entity of em.unitOfWork.getOrphanRemoveStack()) {
+        fork.unitOfWork.getOrphanRemoveStack().add(entity);
+      }
     }
 
     return fork;
