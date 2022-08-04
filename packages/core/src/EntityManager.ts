@@ -24,6 +24,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
   private static counter = 1;
   readonly _id = EntityManager.counter++;
+  readonly global = false;
   readonly name = this.config.get('contextName');
   private readonly validator = new EntityValidator(this.config.get('strict'));
   private readonly repositoryMap: Dictionary<EntityRepository<AnyEntity>> = {};
@@ -962,7 +963,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     // no explicit tx started
     em = this.config.get('context')(this.name) as this ?? this;
 
-    if (validate && !this.config.get('allowGlobalContext') && em._id === 1) {
+    if (validate && !this.config.get('allowGlobalContext') && em.global) {
       throw ValidationError.cannotUseGlobalContext();
     }
 

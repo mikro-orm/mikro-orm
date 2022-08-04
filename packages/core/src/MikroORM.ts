@@ -116,6 +116,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     this.metadata = await this.discovery.discover(this.config.get('tsNode'));
     this.driver.setMetadata(this.metadata);
     this.em = this.driver.createEntityManager<D>();
+    (this.em as { global: boolean }).global = true;
     this.metadata.decorate(this.em);
     this.driver.setMetadata(this.metadata);
   }
