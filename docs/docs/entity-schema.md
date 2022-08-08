@@ -65,6 +65,7 @@ export class Author extends CustomBaseEntity {
 
 export const schema = new EntitySchema<Author, CustomBaseEntity>({
   class: Author,
+  extends: 'CustomBaseEntity',
   properties: {
     name: { type: 'string' },
     email: { type: 'string', unique: true },
