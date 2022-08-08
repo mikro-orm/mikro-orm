@@ -430,7 +430,7 @@ foo!: number;
 @Property({ default: 'abc' })
 bar!: string;
 
-@Property({ defaultRaw: 'now' })
+@Property({ defaultRaw: 'now()' })
 baz!: Date;
 ```
 
@@ -444,7 +444,7 @@ foo!: number;
 @Property({ default: 'abc' })
 bar!: string;
 
-@Property({ defaultRaw: 'now' })
+@Property({ defaultRaw: 'now()' })
 baz!: Date;
 ```
 
@@ -455,7 +455,7 @@ baz!: Date;
 properties: {
   foo: { type: Number, default: 1 },
   bar: { type: String, default: 'abc' },
-  baz: { type: Date, defaultRaw: 'now' },
+  baz: { type: Date, defaultRaw: 'now()' },
 },
 ```
 
