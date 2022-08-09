@@ -296,6 +296,40 @@ const count = await qb.getCount();
 
 This will also remove any existing limit and offset from the query (the QB will be cloned under the hood, so calling `getCount()` does not mutate the original QB state).
 
+## Overriding FROM clause
+
+You can specify the table used in the `FROM` clause, replacing the current table name if one has already been specified. This is typically used to specify a sub-query expression in SQL. 
+
+```ts
+const qb = em.createQueryBuilder(Book2);
+qb.select('*').from(Author2).where({ id: { $gt: 2 } });
+
+console.log(qb.getQuery());
+// select `e0`.* from `author2` as `e0` where `e0`.`id` > 2;
+```
+
+You can also use sub-queries in the `FROM` like this:
+
+```ts
+const qb1 = em.createQueryBuilder(Book2).where({ id: { $lte: new Date() } }).orderBy({ id: 'DESC' }).limit(10);
+const qb2 = em.createQueryBuilder(qb1.clone())
+qb2.select('*').orderBy({ id: 'ASC' });
+
+console.log(qb2.getQuery());
+// select `e1`.* from (select `e0`.* from `book2` as `e0` where `e0`.`id` <= ? order by `e0`.`id` desc limit ?) as `e1` order by `e1`.`id`;
+```
+
+To set up an alias to refer to a table in a `SELECT` statement, pass the second argument as follows:
+
+```ts
+const qb1 = em.createQueryBuilder(Book2, 'b1').where({ id: { $lte: new Date() } }).orderBy({ id: 'DESC' }).limit(10);
+const qb2 = em.createQueryBuilder(qb1.clone(), 'b2')
+qb2.select('*').orderBy({ id: 'ASC' });
+
+console.log(qb2.getQuery());
+// select `b2`.* from (select `b1`.* from `book2` as `b1` where `b1`.`id` <= ? order by `b1`.`id` desc limit ?) as `b2` order by `b2`.`id`;
+```
+
 ## Using sub-queries
 
 You can filter using sub-queries in where conditions:

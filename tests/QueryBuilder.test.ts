@@ -1578,7 +1578,7 @@ describe('QueryBuilder', () => {
     // @ts-ignore
     expect(clone._joins).not.toBe(qb._joins);
     // @ts-ignore
-    expect(clone._aliasMap).not.toBe(qb._aliasMap);
+    expect(clone._aliases).not.toBe(qb._aliases);
     // @ts-ignore
     expect(clone._cond).not.toBe(qb._cond);
     // @ts-ignore
@@ -2772,6 +2772,69 @@ describe('QueryBuilder', () => {
         },
       }).getQuery();
     expect(sql).toBe('delete from `author2` as `u` where `u`.`created_at` < ?');
+  });
+
+  test('from an entity', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2);
+    qb.from(Author2);
+    expect(qb.getQuery()).toEqual('select `e0`.* from `author2` as `e0`');
+  });
+
+  test('update from', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2);
+    qb.update({ name: 'test' }).from(Author2);
+    expect(qb.getQuery()).toEqual('update `author2` set `name` = ?');
+  });
+
+  test('delete from', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2);
+    qb.delete().where({ id: 1 }).from(Author2);
+    expect(qb.getQuery()).toEqual('delete from `author2` where `id` = ?');
+  });
+
+  test('from an query builder on creation', async () => {
+    const qb1 = orm.em.createQueryBuilder(Publisher2);
+    const qb2 = orm.em.createQueryBuilder(qb1, 'p');
+    expect(qb2.getQuery()).toEqual('select `p`.* from (select `e0`.* from `publisher2` as `e0`) as `p`');
+  });
+
+  test('from an entity with alias', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2, 'p');
+    qb.from(Author2);
+    expect(qb.getQuery()).toEqual('select `p`.* from `author2` as `p`');
+  });
+
+  test('from an entity with alias', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2, 'p');
+    // @ts-expect-error the method does not accept an alias if the first argument is EntityName
+    expect(() => qb.from(Author2, 'a')).toThrow(`Cannot override the alias to 'a' since a query already contains references to 'p'`);
+  });
+
+  test('from a query builder with where and order by clauses', async () => {
+    const qb1 = orm.em.createQueryBuilder(Author2).where({ createdAt: { $lte: new Date() } }).orderBy({ createdAt: 'DESC' });
+    const qb2 = orm.em.createQueryBuilder(Author2);
+    qb2.from(qb1.clone()).orderBy({ createdAt: 'ASC' });
+    expect(qb2.getQuery()).toEqual('select `e1`.* from (select `e0`.* from `author2` as `e0` where `e0`.`created_at` <= ? order by `e0`.`created_at` desc) as `e1` order by `e1`.`created_at` asc');
+  });
+
+  test('from a query builder with joins', async () => {
+    const qb1 = orm.em.createQueryBuilder(Author2).where({ createdAt: { $lte: new Date() } }).leftJoin('books2', 'b').orderBy({ 'b.createdAt': 'DESC' });
+    const qb2 = orm.em.createQueryBuilder(Author2);
+    qb2.from(qb1.clone()).orderBy({ 'b.createdAt': 'ASC' });
+    expect(qb2.getQuery()).toEqual('select `e1`.* from (select `e0`.* from `author2` as `e0` left join `book2` as `b` on `e0`.`id` = `b`.`author_id` where `e0`.`created_at` <= ? order by `b`.`created_at` desc) as `e1` order by `b`.`created_at` asc');
+  });
+
+  test('from a string', async () => {
+    const qb = orm.em.createQueryBuilder(Publisher2);
+    qb.from('Author2');
+    expect(qb.getQuery()).toEqual('select `e0`.* from `author2` as `e0`');
+  });
+
+  test('from a query builder', async () => {
+    const qb1 = orm.em.createQueryBuilder(Author2);
+    const qb2 = orm.em.createQueryBuilder(Publisher2);
+    qb2.from(qb1);
+    expect(qb2.getQuery()).toEqual('select `e1`.* from (select `e0`.* from `author2` as `e0`) as `e1`');
   });
 
   afterAll(async () => orm.close(true));

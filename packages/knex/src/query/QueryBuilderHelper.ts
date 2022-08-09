@@ -5,6 +5,7 @@ import { LockMode, OptimisticLockError, QueryOperator, QueryOrderNumeric, Refere
 import { QueryType } from './enums';
 import type { Field, JoinOptions } from '../typings';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
+import type { Alias } from './Alias';
 
 /**
  * @internal
@@ -16,7 +17,7 @@ export class QueryBuilderHelper {
 
   constructor(private readonly entityName: string,
               private readonly alias: string,
-              private readonly aliasMap: Dictionary<string>,
+              private readonly aliasMap: Dictionary<Alias>,
               private readonly subQueries: Dictionary<string>,
               private readonly knex: Knex,
               private readonly driver: AbstractSqlDriver) { }
@@ -695,7 +696,7 @@ export class QueryBuilderHelper {
   }
 
   getProperty(field: string, alias?: string): EntityProperty | undefined {
-    const entityName = this.aliasMap[alias!] || this.entityName;
+    const entityName = this.aliasMap[alias!]?.entityName || this.entityName;
     const meta = this.metadata.find(entityName);
 
     // check if `alias` is not matching an embedded property name instead of alias, e.g. `address.city`
