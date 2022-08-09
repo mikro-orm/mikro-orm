@@ -71,7 +71,7 @@
     "@mikro-orm/entity-generator": "^5.0.0",
     "@mikro-orm/migrations": "^5.0.0",
     "better-sqlite3": "^7.0.0",
-    "mssql": "^7.0.0",
+    "mssql": "^9.0.0",
     "mysql": "^2.18.1",
     "mysql2": "^2.1.0",
     "pg": "^8.0.3",
