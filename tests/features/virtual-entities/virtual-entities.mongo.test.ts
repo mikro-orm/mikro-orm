@@ -49,7 +49,7 @@ describe('virtual entities (mongo)', () => {
       dbName: 'mikro_orm_virtual_entities',
       entities: [Author, schema, BookWithAuthor],
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.getSchemaGenerator().refreshDatabase();
   });
   beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
   afterAll(async () => orm.close(true));
