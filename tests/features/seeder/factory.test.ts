@@ -15,7 +15,7 @@ export class ProjectFactory extends Factory<Project> {
     return {
       name: 'Money vault',
       owner: {
-        name: faker.name.findName(),
+        name: faker.name.fullName(),
         email: faker.internet.email(),
         password: faker.internet.password(),
       } as User,
