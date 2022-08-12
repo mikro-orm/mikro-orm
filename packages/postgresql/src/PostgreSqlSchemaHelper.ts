@@ -299,7 +299,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       ) as index_def
       from pg_index idx
       left join pg_class AS i on i.oid = idx.indexrelid
-      where indrelid = '"${schemaName}"."${tableName}"'::regclass`;
+      where indrelid = '"${schemaName}"."${tableName}"'::regclass
+      order by relname`;
   }
 
   private getChecksSQL(tableName: string, schemaName: string): string {
@@ -308,7 +309,8 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       join pg_namespace nsp on nsp.oid = pgc.connamespace
       join pg_class cls on pgc.conrelid = cls.oid
       left join information_schema.constraint_column_usage ccu on pgc.conname = ccu.constraint_name and nsp.nspname = ccu.constraint_schema
-      where contype = 'c' and ccu.table_name = '${tableName}' and ccu.table_schema = '${schemaName}'`;
+      where contype = 'c' and ccu.table_name = '${tableName}' and ccu.table_schema = '${schemaName}'
+      order by pgc.conname`;
   }
 
 }

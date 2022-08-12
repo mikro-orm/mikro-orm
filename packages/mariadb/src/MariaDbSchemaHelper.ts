@@ -132,7 +132,8 @@ export class MariaDbSchemaHelper extends SchemaHelper {
     return `select tc.constraint_schema as table_schema, tc.table_name as table_name, tc.constraint_name as name, tc.check_clause as expression,
       case when tc.level = 'Column' then tc.constraint_name else null end as column_name
       from information_schema.check_constraints tc
-      where tc.table_name = '${tableName}' and tc.constraint_schema = database()`;
+      where tc.table_name = '${tableName}' and tc.constraint_schema = database()
+      order by tc.constraint_name`;
   }
 
   async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName: string, columns?: Column[]): Promise<Check[]> {

@@ -40,10 +40,10 @@ alter table \\"book\\" add constraint \\"book_isbn_unique\\" unique (\\"isbn\\")
 `;
 
 exports[`indexes on FKs in postgres (GH 1518) schema generator respect indexes on FKs on column update 4`] = `
-"drop index \\"lol41\\";
-drop index \\"custom_index_expr123\\";
+"drop index \\"custom_index_expr123\\";
 drop index \\"custom_index_expr2\\";
 drop index \\"lol31\\";
+drop index \\"lol41\\";
 create index \\"lol42\\" on \\"book\\" (\\"author3_id\\");
 create index \\"lol32\\" on \\"book\\" (\\"author3_id\\");
 

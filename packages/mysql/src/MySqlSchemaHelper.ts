@@ -211,7 +211,8 @@ export class MySqlSchemaHelper extends SchemaHelper {
         on tc.constraint_schema = cc.constraint_schema
         and tc.constraint_name = cc.constraint_name
         and constraint_type = 'CHECK'
-      where tc.table_name = '${tableName}' and tc.constraint_schema = database()`;
+      where tc.table_name = '${tableName}' and tc.constraint_schema = database()
+      order by tc.constraint_name`;
   }
 
   async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName: string, columns?: Column[]): Promise<Check[]> {
