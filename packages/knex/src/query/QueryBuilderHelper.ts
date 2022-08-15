@@ -459,6 +459,16 @@ export class QueryBuilderHelper {
         continue;
       }
 
+      if (cond[key][op] === null) {
+        if (replacement === QueryOperator.$ne) {
+          clause[m](this.knex.raw(`${this.knex.ref(this.mapper(key))} is not ?`, cond[key][op]));
+          continue;
+        } else if (replacement === QueryOperator.$eq) {
+          clause[m](this.knex.raw(`${this.knex.ref(this.mapper(key))} is ?`, cond[key][op]));
+          continue;
+        }
+      }
+
       clause[m](this.mapper(key), replacement, this.knex.raw('?', cond[key][op]));
 
       break;
