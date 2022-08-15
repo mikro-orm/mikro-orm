@@ -217,7 +217,7 @@ function beforeUpdate() {
   this.version++;
 }
 
-// Defined outsite, this available via args.
+// Defined outside, this available via args.
 const beforeUpdate2 = (args: EventArgs) => args.entity.version++;
 
 export const schema = new EntitySchema({

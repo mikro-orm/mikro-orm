@@ -100,7 +100,7 @@ marked by `inversedBy` attribute pointing to the inverse side:
 tags = new Collection<BookTag>(this);
 ```
 
-And on the inversed side we define it with `mappedBy` attribute poining back to the owner:
+And on the inversed side we define it with `mappedBy` attribute joining back to the owner:
 
 ```typescript
 @ManyToMany({ entity: () => Book, mappedBy: 'tags' })

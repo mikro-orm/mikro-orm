@@ -226,7 +226,7 @@ Since v5, we can also use the `type` map exported from the `core` package. It co
 import { Property, types } from '@mikro-orm/core';
 
 @Property({ type: types.bigint, nullable: true })
-largeNumber?: string; // bigints are mapped to strings so we dont loose precision
+largeNumber?: string; // bigints are mapped to strings so we don't loose precision
 ```
 
 > Same map is also exported shortcut `t`.

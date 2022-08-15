@@ -46,7 +46,7 @@ To clear the cached result, we need to load it with explicit cache key, and late
 on we can use `em.clearCache(cacheKey)` method.
 
 ```ts
-// set the cache key to 'book-cache-key', with experiation of 60s
+// set the cache key to 'book-cache-key', with expiration of 60s
 const res = await em.find(Book, { ... }, { cache: ['book-cache-key', 60_000] });
 
 // clear the cache key by name

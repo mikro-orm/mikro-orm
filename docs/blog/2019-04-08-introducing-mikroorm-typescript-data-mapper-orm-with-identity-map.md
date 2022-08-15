@@ -299,7 +299,7 @@ console.log(author.books.getIdentifiers()); // array of primary keys of all item
 author.books.removeAll();
 ```
 
-More informations about collections can be found [in the docs](https://b4nan.github.io/mikro-orm/collections/).
+More information about collections can be found [in the docs](https://b4nan.github.io/mikro-orm/collections/).
 
 ## What’s next?
 

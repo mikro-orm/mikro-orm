@@ -306,7 +306,7 @@ This will produce following query:
 select `e0`.* 
 from `user` as `e0`
 where lower(email) = 'foo@bar.baz'
-order by (point(loc_latitude, loclongitude) <@> point(0, 0)) asc
+order by (point(loc_latitude, loc_longitude) <@> point(0, 0)) asc
 ```
 
 ## Disabling identity map and change set tracking

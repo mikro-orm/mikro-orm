@@ -60,7 +60,7 @@ There are also some additional options how you can adjust the discovery process:
 MikroORM.init({
   discovery: {
     warnWhenNoEntities: false, // by default, discovery throws when no entity is processed
-    requireEntitiesArray: true, // force usage of class refrences in `entities` instead of paths
+    requireEntitiesArray: true, // force usage of class references in `entities` instead of paths
     alwaysAnalyseProperties: false, // do not analyse properties when not needed (with ts-morph)
   },
 });
@@ -263,7 +263,7 @@ Read more about this in [Repositories](repositories.md) section.
 > It has performance implications and usually should not be needed, as long as
 > you don't modify your entities via `Object.assign()`.
 
-`MirkoORM` will validate your properties before actual persisting happens. It will try to fix wrong 
+`MikroORM` will validate your properties before actual persisting happens. It will try to fix wrong 
 data types for you automatically. If automatic conversion fails, it will throw an error. You can 
 enable strict mode to disable this feature and let ORM throw errors instead. Validation is triggered 
 when persisting the entity. 
