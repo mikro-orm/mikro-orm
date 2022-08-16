@@ -368,6 +368,7 @@ describe('QueryBuilder', () => {
         'b.foo:gte': '123',
         'b.baz': { $gt: 1, $lte: 10 },
         'b.title': { $fulltext: 'test' },
+        'b.qux': {},
         '$or': [
           { 'b.foo': null, 'b.qux': { $ne: null }, 'b.quux': { $eq: null }, 'b.baz': 0, 'b.bar:ne': 1 },
           { 'b.bar': /321.*/ },

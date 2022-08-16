@@ -448,15 +448,11 @@ export class QueryBuilderHelper {
 
   private processObjectSubClause(cond: any, key: string, clause: Knex.JoinClause, m: 'andOn' | 'orOn'): void {
     // grouped condition for one field
-    let value = cond[key];
+    const value = cond[key];
 
     if (Utils.getObjectKeysSize(value) > 1) {
       const subCondition = Object.entries(value).map(([subKey, subValue]) => ({ [key]: { [subKey]: subValue } }));
       return void clause[m](inner => subCondition.map(sub => this.appendJoinClause(inner, sub, '$and')));
-    }
-
-    if (value instanceof RegExp) {
-      value = { $re: value.source };
     }
 
     // operators
