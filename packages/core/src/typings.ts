@@ -356,7 +356,7 @@ export class EntityMetadata<T extends AnyEntity<T> = any> {
     this.hydrateProps = this.props.filter(prop => {
       // `prop.userDefined` is either `undefined` or `false`
       const discriminator = this.root.discriminatorColumn === prop.name && prop.userDefined === false;
-      // even if we dont have a setter, do not ignore value from database!
+      // even if we don't have a setter, do not ignore value from database!
       const onlyGetter = prop.getter && !prop.setter && prop.persist === false;
       return !prop.inherited && !discriminator && !prop.embedded && !onlyGetter;
     });

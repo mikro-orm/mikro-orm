@@ -51,7 +51,7 @@ the [environment variable](configuration.md#using-environment-variables) `MIKRO_
 
 As an example we will look at a very basic seeder.
 
-> Note that the `EntityManager` availabe in seeders will have `persistOnCreate`
+> Note that the `EntityManager` available in seeders will have `persistOnCreate`
 > enabled, hence calling `em.create()` will automatically call `em.persist()`
 > on the created entity. If we use entity constructor instead, we need to call
 > `em.persist()` explicitly.

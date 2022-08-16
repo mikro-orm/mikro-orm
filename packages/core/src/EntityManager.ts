@@ -1171,7 +1171,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * we need to set the cache key explicitly when storing the cache.
    *
    * ```ts
-   * // set the cache key to 'book-cache-key', with experiation of 60s
+   * // set the cache key to 'book-cache-key', with expiration of 60s
    * const res = await em.find(Book, { ... }, { cache: ['book-cache-key', 60_000] });
    *
    * // clear the cache key by name

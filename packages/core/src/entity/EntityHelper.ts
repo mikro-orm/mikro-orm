@@ -84,7 +84,7 @@ export class EntityHelper {
   /**
    * Defines getter and setter for every owning side of m:1 and 1:1 relation. This is then used for propagation of
    * changes to the inverse side of bi-directional relations. Rest of the properties are also defined this way to
-   * achieve dirtyness, which is then used for fast checks whether we need to auto-flush because of managed entities.
+   * achieve dirtiness, which is then used for fast checks whether we need to auto-flush because of managed entities.
    *
    * First defines a setter on the prototype, once called, actual get/set handlers are registered on the instance rather
    * than on its prototype. Thanks to this we still have those properties enumerable (e.g. part of `Object.keys(entity)`).

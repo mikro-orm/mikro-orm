@@ -162,7 +162,7 @@ const router = AdminJSExpress.buildAuthenticatedRouter(admin, {
   authenticate: async (email, password) => {
     /* Your code for verifying email & password goes here */
     return email === ADMIN_EMAIL && password === ADMIN_PASSWORD
-      ? { email } // the function should return an object containg user's data if authenticated successfully
+      ? { email } // the function should return an object containing user's data if authenticated successfully
       : null;
   },
   cookiePassword: process.env.COOKIE_PASSWORD ?? 'makesurepasswordissecure',
@@ -191,7 +191,7 @@ const adminOptions = {
     authenticate: async (email, password) => {
       /* Your code for verifying email & password goes here */
       return email === ADMIN_EMAIL && password === ADMIN_PASSWORD
-        ? { email } // the function should return an object containg user's data if authenticated successfully
+        ? { email } // the function should return an object containing user's data if authenticated successfully
         : null;
     },
     strategy: 'session',

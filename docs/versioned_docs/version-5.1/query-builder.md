@@ -218,7 +218,7 @@ This will produce following query:
 select `e0`.* 
 from `user` as `e0`
 where lower(email) = 'foo@bar.baz'
-order by (point(loc_latitude, loclongitude) <@> point(0, 0)) asc
+order by (point(loc_latitude, loc_longitude) <@> point(0, 0)) asc
 ```
 
 ### Custom SQL in where
@@ -271,7 +271,7 @@ console.log(qb.getQuery());
 
 ## Count queries
 
-To create a count query, we can ue `qb.count()`, which will intialize a select clause with `count()` function. By default, it will use the primary key.
+To create a count query, we can ue `qb.count()`, which will initialize a select clause with `count()` function. By default, it will use the primary key.
 
 ```ts
 const qb = em.createQueryBuilder(Test);

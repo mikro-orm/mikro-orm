@@ -177,7 +177,7 @@ In SQLite, full text searches can only be executed on [FTS5 virtual tables](http
 
 `CREATE VIRTUAL TABLE <table name> USING fts5(<colum1>, <column2>, ...);`
 
-Afterwards an entity can created normally for the structure of this table. The `@Index` is not neccessary for full text searches in SQLite.
+Afterwards an entity can created normally for the structure of this table. The `@Index` is not necessary for full text searches in SQLite.
 
 Refer to the [SQLite documentation](https://www.sqlite.org/fts5.html#full_text_query_syntax) for possible queries.
 

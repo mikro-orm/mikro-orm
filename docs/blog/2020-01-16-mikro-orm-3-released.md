@@ -304,7 +304,7 @@ export class FooBar implements IdEntity<FooBar> {
 There are many more new features, see the [changelog](https://github.com/mikro-orm/mikro-orm/blob/master/CHANGELOG.md) to read the full list. Here are few of them worth mentioning:
 
 - [Improved support for References](https://mikro-orm.io/docs/entity-references/)
-- [Navite Enum support](https://mikro-orm.io/docs/defining-entities/#enums)
+- [Native Enum support](https://mikro-orm.io/docs/defining-entities/#enums)
 - [em.findAndCount()](https://mikro-orm.io/docs/entity-manager#fetching-paginated-results) and [em.findOneOrFail()](https://mikro-orm.io/docs/entity-manager#handling-not-found-entities) methods
 - [ReflectMetadataProvider](https://mikro-orm.io/docs/metadata-providers/#reflectmetadataprovider) as a fast alternative to ts-morph reflection
 - Improved logging with query highlighting
