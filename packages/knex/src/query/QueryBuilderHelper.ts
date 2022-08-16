@@ -448,30 +448,38 @@ export class QueryBuilderHelper {
 
   private processObjectSubClause(cond: any, key: string, clause: Knex.JoinClause, m: 'andOn' | 'orOn'): void {
     // grouped condition for one field
-    if (Utils.getObjectKeysSize(cond[key]) > 1) {
-      const subCondition = Object.entries(cond[key]).map(([subKey, subValue]) => ({ [key]: { [subKey]: subValue } }));
+    let value = cond[key];
+
+    if (Utils.getObjectKeysSize(value) > 1) {
+      const subCondition = Object.entries(value).map(([subKey, subValue]) => ({ [key]: { [subKey]: subValue } }));
       return void clause[m](inner => subCondition.map(sub => this.appendJoinClause(inner, sub, '$and')));
     }
 
+    if (value instanceof RegExp) {
+      value = { $re: value.source };
+    }
+
     // operators
-    for (const [op, replacement] of Object.entries(QueryOperator)) {
-      if (!(op in cond[key])) {
-        continue;
-      }
+    const op = Object.keys(QueryOperator).find(op => op in value);
 
-      if (cond[key][op] === null) {
-        if (replacement === QueryOperator.$ne) {
-          clause[m](this.knex.raw(`${this.knex.ref(this.mapper(key))} is not ?`, cond[key][op]));
-          continue;
-        } else if (replacement === QueryOperator.$eq) {
-          clause[m](this.knex.raw(`${this.knex.ref(this.mapper(key))} is ?`, cond[key][op]));
-          continue;
-        }
-      }
+    if (!op) {
+      return;
+    }
 
-      clause[m](this.mapper(key), replacement, this.knex.raw('?', cond[key][op]));
+    const replacement = this.getOperatorReplacement(op, value);
 
-      break;
+    if (op === '$fulltext') {
+      const meta = this.metadata.get(this.entityName);
+      const columnName = key.includes('.') ?  key.split('.')[1] : key;
+
+      clause[m](this.knex.raw(this.platform.getFullTextWhereClause(meta.properties[columnName]), {
+        column: this.mapper(key),
+        query: value[op],
+      }));
+    } else if (value[op] === null) {
+      clause[m](this.knex.raw(`${this.knex.ref(this.mapper(key))} ${replacement} ?`, value[op]));
+    } else {
+      clause[m](this.mapper(key), replacement, this.knex.raw('?', value[op]));
     }
   }
 
