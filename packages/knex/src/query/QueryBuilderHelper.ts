@@ -469,10 +469,11 @@ export class QueryBuilderHelper {
     const replacement = this.getOperatorReplacement(op, value);
 
     if (op === '$fulltext') {
-      const meta = this.metadata.get(this.entityName);
-      const columnName = key.includes('.') ?  key.split('.')[1] : key;
+      const [fromAlias, fromField] = this.splitField(key);
+      const entityName = this.aliasMap[fromAlias];
+      const meta = this.metadata.get(entityName);
 
-      clause[m](this.knex.raw(this.platform.getFullTextWhereClause(meta.properties[columnName]), {
+      clause[m](this.knex.raw(this.platform.getFullTextWhereClause(meta.properties[fromField]), {
         column: this.mapper(key),
         query: value[op],
       }));

@@ -367,7 +367,7 @@ describe('QueryBuilder', () => {
       .leftJoin('a.books', 'b', {
         'b.foo:gte': '123',
         'b.baz': { $gt: 1, $lte: 10 },
-        'b.bar': { $fulltext: 'test' },
+        'b.title': { $fulltext: 'test' },
         '$or': [
           { 'b.foo': null, 'b.qux': { $ne: null }, 'b.quux': { $eq: null }, 'b.baz': 0, 'b.bar:ne': 1 },
           { 'b.bar': /321.*/ },
@@ -380,7 +380,7 @@ describe('QueryBuilder', () => {
       })
       .where({ 'b.title': 'test 123' });
     const sql = 'select `a`.*, `b`.* from `author2` as `a` ' +
-      'left join `book2` as `b` on `a`.`id` = `b`.`author_id` and `b`.`foo` >= ? and (`b`.`baz` > ? and `b`.`baz` <= ?) and match(`b`.`bar`) against (? in boolean mode) and ((`b`.`foo` is ? and `b`.`qux` is not ? and `b`.`quux` is ? and `b`.`baz` = ? and `b`.`bar` != ?) or `b`.`bar` like ? or (json_contains(`a`.`meta`, ?) and json_contains(`a`.`meta`, ?) = ? and lower(b.bar) = ?)) ' +
+      'left join `book2` as `b` on `a`.`id` = `b`.`author_id` and `b`.`foo` >= ? and (`b`.`baz` > ? and `b`.`baz` <= ?) and match(`b`.`title`) against (? in boolean mode) and ((`b`.`foo` is ? and `b`.`qux` is not ? and `b`.`quux` is ? and `b`.`baz` = ? and `b`.`bar` != ?) or `b`.`bar` like ? or (json_contains(`a`.`meta`, ?) and json_contains(`a`.`meta`, ?) = ? and lower(b.bar) = ?)) ' +
       'where `b`.`title` = ?';
     expect(qb.getQuery()).toEqual(sql);
     expect(qb.getParams()).toEqual(['123', 1, 10, 'test', null, null, null, 0, 1, '%321%%', '{"b.foo":"bar"}', '{"b.foo":"bar"}', false, '321', 'test 123']);
