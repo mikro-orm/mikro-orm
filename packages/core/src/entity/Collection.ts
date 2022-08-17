@@ -174,9 +174,15 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     return super.contains(item);
   }
 
-  count(): number {
-    this.checkInitialized();
+  count(check = true): number {
+    if (check) {
+      this.checkInitialized();
+    }
     return super.count();
+  }
+
+  get length(): number {
+    return this.count(false);
   }
 
   shouldPopulate(): boolean {
