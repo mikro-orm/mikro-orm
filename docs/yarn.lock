@@ -2955,10 +2955,10 @@
   dependencies:
     "@types/node" "*"
 
-"@vscode/codicons@^0.0.31":
-  version "0.0.31"
-  resolved "https://registry.yarnpkg.com/@vscode/codicons/-/codicons-0.0.31.tgz#1dc56f9442c3928b1c851965cf360e7e051e6511"
-  integrity sha512-fldpXy7pHsQAMlU1pnGI23ypQ6xLk5u6SiABMFoAmlj4f2MR0iwg7C19IB1xvAEGG+dkxOfRSrbKF8ry7QqGQA==
+"@vscode/codicons@^0.0.32":
+  version "0.0.32"
+  resolved "https://registry.yarnpkg.com/@vscode/codicons/-/codicons-0.0.32.tgz#9e27de90d509c69762b073719ba3bf46c3cd2530"
+  integrity sha512-3lgSTWhAzzWN/EPURoY4ZDBEA80OPmnaknNujA3qnI4Iu7AONWd9xF3iE4L+4prIe8E3TUnLQ4pxoaFTEEZNwg==
 
 "@webassemblyjs/ast@1.11.1":
   version "1.11.1"
@@ -4287,17 +4287,17 @@ dns-packet@^5.2.2:
   dependencies:
     "@leichtgewicht/ip-codec" "^2.0.1"
 
-docusaurus-plugin-typedoc-api@2.3.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/docusaurus-plugin-typedoc-api/-/docusaurus-plugin-typedoc-api-2.3.0.tgz#a7ee1b66aca37476c11438a89650e3ec8a3aafb2"
-  integrity sha512-cQy1y0vwvlJ/Z+7aYblfR8FuwRRUGr0NlJ3NzpBiRz/xBcCsIGTJaGbZqv2Y64DQBMle/Mu6uBXjfhBojFZRxA==
+docusaurus-plugin-typedoc-api@2.4.0:
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/docusaurus-plugin-typedoc-api/-/docusaurus-plugin-typedoc-api-2.4.0.tgz#ebe358a8963b355eff1eb8bd5f237f3cda6ba6ba"
+  integrity sha512-eXHcS1gehUE/cvSnBYvb7l5wizd5lO82Lcu6eutofnvbWoNYSajJ9xHZVBBonfKyhGBlGlbk/as0fZieRr8H/g==
   dependencies:
     "@docusaurus/plugin-content-docs" "^2.0.1"
     "@docusaurus/types" "^2.0.1"
     "@docusaurus/utils" "^2.0.1"
-    "@vscode/codicons" "^0.0.31"
+    "@vscode/codicons" "^0.0.32"
     marked "^4.0.18"
-    typedoc "^0.23.8"
+    typedoc "^0.23.10"
 
 dom-converter@^0.2.0:
   version "0.2.0"
@@ -5828,11 +5828,6 @@ markdown-escapes@^1.0.0:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/markdown-escapes/-/markdown-escapes-1.0.4.tgz#c95415ef451499d7602b91095f3c8e8975f78535"
   integrity sha512-8z4efJYk43E0upd0NbVXwgSTQs6cT3T06etieCMEg7dRbzCbxUCK/GHlX8mhHRDcp+OLlHkPKsvqQTCvsRl2cg==
-
-marked@^4.0.16:
-  version "4.0.17"
-  resolved "https://registry.yarnpkg.com/marked/-/marked-4.0.17.tgz#1186193d85bb7882159cdcfc57d1dfccaffb3fe9"
-  integrity sha512-Wfk0ATOK5iPxM4ptrORkFemqroz0ZDxp5MWfYA7H/F+wO17NRWV5Ypxi6p3g2Xmw2bKeiYOl6oVnLHKxBA0VhA==
 
 marked@^4.0.18:
   version "4.0.18"
@@ -8010,13 +8005,13 @@ typedarray-to-buffer@^3.1.5:
   dependencies:
     is-typedarray "^1.0.0"
 
-typedoc@^0.23.8:
-  version "0.23.9"
-  resolved "https://registry.yarnpkg.com/typedoc/-/typedoc-0.23.9.tgz#fd94451abd039513ab4fda58208fa0e5631e080b"
-  integrity sha512-rvWci2KHwteVUufZjjtIy/4PIHiE66t4VW4Ob6pezV//GHZ9Px0CHE5iq032GZzKONJWnNb+EJsrQv32INRvxA==
+typedoc@^0.23.10:
+  version "0.23.10"
+  resolved "https://registry.yarnpkg.com/typedoc/-/typedoc-0.23.10.tgz#285d595a5f2e35ccdf6f38eba4dfe951d5bff461"
+  integrity sha512-03EUiu/ZuScUBMnY6p0lY+HTH8SwhzvRE3gImoemdPDWXPXlks83UGTx++lyquWeB1MTwm9D9Ca8RIjkK3AFfQ==
   dependencies:
     lunr "^2.3.9"
-    marked "^4.0.16"
+    marked "^4.0.18"
     minimatch "^5.1.0"
     shiki "^0.10.1"
 
