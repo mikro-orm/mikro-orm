@@ -27,7 +27,7 @@ export abstract class Migration {
     this.ctx = ctx;
   }
 
-  getCollection(entityName: EntityName<any>): Collection {
+  getCollection<T>(entityName: EntityName<any>): Collection<T> {
     return this.driver.getConnection().getCollection(entityName);
   }
 

@@ -17,7 +17,7 @@ export class MongoEntityManager<D extends MongoDriver = MongoDriver> extends Ent
     return this.getDriver().aggregate(entityName, pipeline);
   }
 
-  getCollection(entityName: EntityName<any>): Collection {
+  getCollection<T>(entityName: EntityName<any>): Collection<T> {
     return this.getConnection().getCollection(entityName);
   }
 
