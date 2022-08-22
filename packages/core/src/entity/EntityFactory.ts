@@ -52,14 +52,17 @@ export class EntityFactory {
     const exists = this.findEntity<T>(data, meta2, options);
 
     if (exists && exists.__helper!.__initialized && !options.refresh) {
+      exists.__helper!.__processing = true;
       exists.__helper!.__initialized = options.initialized;
       this.mergeData(meta2, exists, data, options);
+      exists.__helper!.__processing = false;
 
       return exists as New<T, P>;
     }
 
     data = { ...data };
     const entity = exists ?? this.createEntity<T>(data, meta2, options);
+    entity.__helper!.__processing = true;
     entity.__helper!.__initialized = options.initialized;
     this.hydrate(entity, meta2, data, options);
     entity.__helper!.__touched = false;
@@ -79,6 +82,8 @@ export class EntityFactory {
     if (this.eventManager.hasListeners(EventType.onInit, meta2)) {
       this.eventManager.dispatchEvent(EventType.onInit, { entity, em: this.em });
     }
+
+    entity.__helper!.__processing = false;
 
     return entity as New<T, P>;
   }
@@ -204,6 +209,7 @@ export class EntityFactory {
     // creates new entity instance, bypassing constructor call as its already persisted entity
     const entity = Object.create(meta.class.prototype) as T;
     entity.__helper!.__managed = true;
+    entity.__helper!.__processing = !meta.embeddable && !meta.virtual;
     entity.__helper!.__schema = this.driver.getSchemaName(meta, options);
 
     if (options.merge && !options.newEntity) {

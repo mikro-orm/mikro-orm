@@ -314,6 +314,9 @@ export class UnitOfWork {
     try {
       await this.eventManager.dispatchEvent(EventType.beforeFlush, { em: this.em, uow: this });
       this.computeChangeSets();
+      this.changeSets.forEach(cs => {
+        cs.entity.__helper.__processing = true;
+      });
       await this.eventManager.dispatchEvent(EventType.onFlush, { em: this.em, uow: this });
 
       // nothing to do, do not start transaction
@@ -335,8 +338,9 @@ export class UnitOfWork {
       }
       this.resetTransaction(oldTx);
 
-      // To allow working with the UoW in after flush handlers we need to unset the `working` flag early.
-      this.working = false;
+      this.changeSets.forEach(cs => {
+        cs.entity.__helper.__processing = false;
+      });
 
       // To allow flushing via `Promise.all()` while still supporting queries inside after flush handler,
       // we need to run the flush hooks in a separate async context, as we need to skip flush hooks if they
@@ -417,7 +421,9 @@ export class UnitOfWork {
     }
 
     for (const entity of this.orphanRemoveStack) {
-      this.removeStack.add(entity);
+      if (!entity.__helper!.__processing) {
+        this.removeStack.add(entity);
+      }
     }
 
     // Check insert stack if there are any entities matching something from delete stack. This can happen when recreating entities.
@@ -430,6 +436,10 @@ export class UnitOfWork {
     }
 
     for (const entity of this.removeStack) {
+      if (entity.__helper!.__processing) {
+        continue;
+      }
+
       const deletePkHash = [entity.__helper!.getSerializedPrimaryKey(), ...this.expandUniqueProps(entity)];
       let type = ChangeSetType.DELETE;
 
@@ -478,7 +488,7 @@ export class UnitOfWork {
     visited.add(entity);
     const wrapped = entity.__helper!;
 
-    if (!wrapped.__initialized || this.removeStack.has(entity) || this.orphanRemoveStack.has(entity)) {
+    if (!wrapped.__initialized || entity.__helper!.__processing || this.removeStack.has(entity) || this.orphanRemoveStack.has(entity)) {
       return;
     }
 
@@ -625,6 +635,7 @@ export class UnitOfWork {
   }
 
   private postCommitCleanup(): void {
+    this.changeSets.forEach(cs => cs.entity.__helper!.__processing = false);
     this.persistStack.clear();
     this.removeStack.clear();
     this.orphanRemoveStack.clear();

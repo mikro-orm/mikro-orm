@@ -25,6 +25,7 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   __serializationContext: { root?: SerializationContext<T>; populate?: PopulateOptions<T>[] } = {};
   __loadedProperties = new Set<string>();
   __data: Dictionary = {};
+  __processing = false;
 
   /** holds last entity data snapshot so we can compute changes when persisting managed entities */
   __originalEntityData?: EntityData<T>;

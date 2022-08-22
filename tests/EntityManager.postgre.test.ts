@@ -2072,12 +2072,13 @@ describe('EntityManagerPostgre', () => {
   });
 
   test('GH #2934', async () => {
-    const users = [
-      { name: 'A', email: 'A' },
-      { name: 'B', email: 'B' },
-      { name: 'C', email: 'C' },
-      { name: 'D', email: 'D' },
-    ];
+    // This test used to be flaky in CI where it runs with fewer resources. To mimic this behaviour, we can run it with
+    // larger payload and many times in a row via turning `heavy` to `true`.
+    const heavy = false; // heavy mode takes around 10 minutes to complete (half a million entities, each doing select + insert)
+    const length = heavy ? 50 : 4;
+    const runs = heavy ? 10000 : 3;
+
+    const users = Array.from({ length }).map((_, i) => ({ name: `name ${i}`, email: `email ${i}` }));
 
     async function saveUser(options: FilterQuery<Author2>): Promise<Author2> {
       let user = await orm.em.findOne(Author2, options);
@@ -2092,8 +2093,12 @@ describe('EntityManagerPostgre', () => {
       return user;
     }
 
-    const res = await Promise.all(users.map(userData => saveUser(userData)));
-    res.forEach(user => expect(user.id).toBeDefined());
+    for (let i = 0; i < runs; i++) {
+      await orm.em.nativeDelete(Author2, {});
+      orm.em.clear();
+      const res = await Promise.all(users.map(userData => saveUser(userData)));
+      res.forEach(user => expect(user.id).toBeDefined());
+    }
   });
 
   test('required fields validation', async () => {

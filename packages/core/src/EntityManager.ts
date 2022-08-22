@@ -454,7 +454,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return fork.getConnection().transactional(async trx => {
         fork.transactionContext = trx;
         fork.eventManager.registerSubscriber({
-          afterFlush: async (args: FlushEventArgs) => {
+          afterFlush(args: FlushEventArgs) {
             args.uow.getChangeSets()
               .filter(cs => [ChangeSetType.DELETE, ChangeSetType.DELETE_EARLY].includes(cs.type))
               .forEach(cs => em.unitOfWork.unsetIdentity(cs.entity));
