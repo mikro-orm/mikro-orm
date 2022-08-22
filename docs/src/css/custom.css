@@ -260,3 +260,7 @@ html a code {
 aside svg[class*=iconExternalLink] {
   display: none;
 }
+
+.apiItemContainer .tsd-readme h1:first-child {
+  display: none;
+}
