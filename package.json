@@ -107,7 +107,7 @@
     "@types/webpack-env": "1.18.0",
     "@typescript-eslint/eslint-plugin": "5.33.1",
     "@typescript-eslint/parser": "5.33.1",
-    "bson": "^4.6.5",
+    "bson": "^4.7.0",
     "conditional-type-checks": "1.0.6",
     "eslint": "8.22.0",
     "fs-extra": "10.1.0",
