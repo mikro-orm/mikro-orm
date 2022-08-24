@@ -594,7 +594,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ### BREAKING CHANGES
 
-Please see the [upgrading guide](docs/docs/upgrading-v4-to-v5.md).
+Please see the [upgrading guide](https://mikro-orm.io/docs/upgrading-v4-to-v5).
 
 
 
@@ -1465,7 +1465,7 @@ Please see the [upgrading guide](docs/docs/upgrading-v4-to-v5.md).
 
 ### BREAKING CHANGES
 
-Please see the [upgrading guide](docs/docs/upgrading-v3-to-v4.md).
+Please see the [upgrading guide](https://mikro-orm.io/docs/upgrading-v3-to-v4).
 
 
 
@@ -1991,7 +1991,7 @@ Please see the [upgrading guide](docs/docs/upgrading-v3-to-v4.md).
 
 ### BREAKING CHANGES
 
-Please see the [upgrading guide](docs/docs/upgrading-v2-to-v3.md).
+Please see the [upgrading guide](https://mikro-orm.io/docs/upgrading-v2-to-v3).
 
 
 
