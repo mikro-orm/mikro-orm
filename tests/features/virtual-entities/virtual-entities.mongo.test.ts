@@ -42,11 +42,13 @@ class BookWithAuthor {
 describe('virtual entities (mongo)', () => {
 
   let orm: MikroORM;
+  const id = Math.floor(Math.random() * 1000);
+  const dbName = `mikro_orm_virtual_entities_${id}`;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       type: 'mongo',
-      dbName: 'mikro_orm_virtual_entities',
+      dbName,
       entities: [Author, schema, BookWithAuthor],
     });
     await orm.getSchemaGenerator().refreshDatabase();
