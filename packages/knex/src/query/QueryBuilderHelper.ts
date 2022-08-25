@@ -428,41 +428,75 @@ export class QueryBuilderHelper {
   }
 
   private appendJoinSubClause(clause: Knex.JoinClause, cond: Dictionary, key: string, operator?: '$and' | '$or'): void {
-    const m = operator === '$or' ? 'orOn' : 'andOn';
+    const c = operator === '$or' ? 'or' : 'and';
+    const m = `${c}On`;
 
-    if (cond[key] instanceof RegExp) {
+    if (this.isSimpleRegExp(cond[key])) {
       return void clause[m](this.mapper(key), 'like', this.knex.raw('?', this.getRegExpParam(cond[key])));
     }
 
-    if (Utils.isPlainObject(cond[key])) {
-      return this.processObjectSubClause(cond, key, clause, m);
+    if (Utils.isPlainObject(cond[key]) || cond[key] instanceof RegExp) {
+      return this.processObjectSubClause(cond, key, clause, c);
     }
 
     if (QueryBuilderHelper.isCustomExpression(key)) {
       return this.processCustomExpression(clause, m, key, cond);
     }
 
-    const op = cond[key] === null ? 'is' : '=';
-    clause[m](this.knex.raw(`${this.knex.ref(this.mapper(key, QueryType.SELECT, cond[key]))} ${op} ?`, cond[key]));
+    if (cond[key] === null) {
+      clause[`${c}OnNull`](this.mapper(key));
+    } else {
+      clause[m](this.knex.raw(`${this.knex.ref(this.mapper(key, QueryType.SELECT, cond[key]))} = ?`, cond[key]));
+    }
   }
 
-  private processObjectSubClause(cond: any, key: string, clause: Knex.JoinClause, m: 'andOn' | 'orOn'): void {
+  private processObjectSubClause(cond: any, key: string, clause: Knex.JoinClause, c: 'and' | 'or'): void {
     // grouped condition for one field
-    if (Utils.getObjectKeysSize(cond[key]) > 1) {
-      const subCondition = Object.entries(cond[key]).map(([subKey, subValue]) => ({ [key]: { [subKey]: subValue } }));
-      return void clause[m](inner => subCondition.map(sub => this.appendJoinClause(inner, sub, '$and')));
+    let value = cond[key];
+
+    if (Utils.getObjectKeysSize(value) > 1) {
+      const subCondition = Object.entries(value).map(([subKey, subValue]) => ({ [key]: { [subKey]: subValue } }));
+      return void clause[`${c}On`](inner => subCondition.map(sub => this.appendJoinClause(inner, sub, '$and')));
     }
 
-    // operators
-    for (const [op, replacement] of Object.entries(QueryOperator)) {
-      if (!(op in cond[key])) {
-        continue;
-      }
-
-      clause[m](this.mapper(key), replacement, this.knex.raw('?', cond[key][op]));
-
-      break;
+    if (value instanceof RegExp) {
+      value = { $re: value.source };
     }
+
+    const op = Object.keys(QueryOperator).find(op => op in value);
+
+    if (!op) {
+      return;
+    }
+
+    if (['$eq', '$ne'].includes(op) && value[op] === null) {
+      return void clause[`${c}${op === '$eq' ? 'OnNull' : 'OnNotNull'}`](this.mapper(key));
+    }
+
+    if (op === '$exists') {
+      return void clause[`${c}${value[op] ? 'OnNotNull' : 'OnNull'}`](this.mapper(key));
+    }
+
+    if (op === '$in') {
+      return void clause[`${c}OnIn`](this.mapper(key), value[op]);
+    }
+
+    if (op === '$nin') {
+      return void clause[`${c}OnNotIn`](this.mapper(key), value[op]);
+    }
+
+    if (op === '$fulltext') {
+      const [fromAlias, fromField] = this.splitField(key);
+      const property = this.getProperty(fromField, fromAlias);
+
+      return void clause[`${c}On`](this.knex.raw(this.platform.getFullTextWhereClause(property!), {
+        column: this.mapper(key),
+        query: value[op],
+      }));
+    }
+
+    const replacement = this.getOperatorReplacement(op, value);
+    clause[`${c}On`](this.mapper(key), replacement, this.knex.raw('?', value[op]));
   }
 
   getQueryOrder(type: QueryType, orderBy: FlatQueryOrderMap | FlatQueryOrderMap[], populate: Dictionary<string>): string {

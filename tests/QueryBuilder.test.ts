@@ -367,22 +367,41 @@ describe('QueryBuilder', () => {
       .leftJoin('a.books', 'b', {
         'b.foo:gte': '123',
         'b.baz': { $gt: 1, $lte: 10 },
+        'b.title': { $fulltext: 'test' },
+        'b.qux': {},
         '$or': [
-          { 'b.foo': null, 'b.baz': 0, 'b.bar:ne': 1 },
-          { 'b.bar': /321.*/ },
-          { $and: [
-            { 'json_contains(`a`.`meta`, ?)': [{ 'b.foo': 'bar' }] },
-            { 'json_contains(`a`.`meta`, ?) = ?': [{ 'b.foo': 'bar' }, false] },
-            { 'lower(b.bar)': '321' },
-          ] },
+          {
+            'b.foo': null,
+            'b.qux': { $ne: null },
+            'b.quux': { $eq: null },
+            'b.baz': 0,
+            'b.bar:ne': 1,
+          },
+          {
+            'b.foo': { $nin: [0,1] },
+            'b.baz': { $in: [2,3] },
+            'b.qux': { $exists: true },
+            'b.bar': /test/,
+          },
+          {
+            'b.qux': { $exists: false },
+            'b.bar': /^(te){1,3}st$/,
+          },
+          {
+            $and: [
+              { 'json_contains(`a`.`meta`, ?)': [{ 'b.foo': 'bar' }] },
+              { 'json_contains(`a`.`meta`, ?) = ?': [{ 'b.foo': 'bar' }, false] },
+              { 'lower(b.bar)': '321' },
+            ],
+          },
         ],
       })
       .where({ 'b.title': 'test 123' });
     const sql = 'select `a`.*, `b`.* from `author2` as `a` ' +
-      'left join `book2` as `b` on `a`.`id` = `b`.`author_id` and `b`.`foo` >= ? and (`b`.`baz` > ? and `b`.`baz` <= ?) and ((`b`.`foo` is ? and `b`.`baz` = ? and `b`.`bar` != ?) or `b`.`bar` like ? or (json_contains(`a`.`meta`, ?) and json_contains(`a`.`meta`, ?) = ? and lower(b.bar) = ?)) ' +
+      'left join `book2` as `b` on `a`.`id` = `b`.`author_id` and `b`.`foo` >= ? and (`b`.`baz` > ? and `b`.`baz` <= ?) and match(`b`.`title`) against (? in boolean mode) and ((`b`.`foo` is null and `b`.`qux` is not null and `b`.`quux` is null and `b`.`baz` = ? and `b`.`bar` != ?) or (`b`.`foo` not in (?, ?) and `b`.`baz` in (?, ?) and `b`.`qux` is not null and `b`.`bar` like ?) or (`b`.`qux` is null and `b`.`bar` regexp ?) or (json_contains(`a`.`meta`, ?) and json_contains(`a`.`meta`, ?) = ? and lower(b.bar) = ?)) ' +
       'where `b`.`title` = ?';
     expect(qb.getQuery()).toEqual(sql);
-    expect(qb.getParams()).toEqual(['123', 1, 10, null, 0, 1, '%321%%', '{"b.foo":"bar"}', '{"b.foo":"bar"}', false, '321', 'test 123']);
+    expect(qb.getParams()).toEqual(['123', 1, 10, 'test', 0, 1, 0, 1, 2, 3, '%test%', '^(te){1,3}st$', '{"b.foo":"bar"}', '{"b.foo":"bar"}', false, '321', 'test 123']);
   });
 
   test('select leftJoin m:n owner', async () => {
