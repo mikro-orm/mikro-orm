@@ -864,17 +864,26 @@ export class Utils {
    * @see https://github.com/microsoft/TypeScript/issues/43329#issuecomment-922544562
    */
   static async dynamicImport<T = any>(id: string): Promise<T> {
-    if (!process.env.MIKRO_ORM_DYNAMIC_IMPORTS) {
+    /* istanbul ignore next */
+    if (platform() === 'win32') {
+      try {
+        id = pathToFileURL(id).toString();
+      } catch {
+        // ignore
+      }
+    }
+
+    if (id.endsWith('.ts')) {
+      id.replace(/\.ts$/, '.js');
+    }
+
+    if (process.env.TS_JEST) {
       return import(id);
     }
 
     /* istanbul ignore next */
-    if (platform() === 'win32') {
-      id = pathToFileURL(id).toString();
-    }
-
-    /* istanbul ignore next */
-    return Function(`return import('${id}')`)();
+    const ret = await Function(`return import('${id}')`)();
+    return ret.default ?? ret;
   }
 
   static getORMVersion(): string {
