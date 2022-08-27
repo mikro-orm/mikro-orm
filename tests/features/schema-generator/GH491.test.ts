@@ -38,13 +38,13 @@ describe('GH issue 491', () => {
       type: 'mariadb',
       port: 3309,
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(() => orm.close(true));
 
   test(`GH issue 491`, async () => {
-    expect(await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false })).toBe('');
+    expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
   });
 
 });

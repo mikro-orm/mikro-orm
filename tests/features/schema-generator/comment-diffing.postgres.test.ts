@@ -56,7 +56,7 @@ describe('comment diffing in postgres', () => {
       dbName: `mikro_orm_test_comments`,
       type: 'postgresql',
     });
-    generator = orm.getSchemaGenerator();
+    generator = orm.schema;
     await generator.ensureDatabase();
     await generator.execute('drop table if exists book');
     await generator.createSchema();

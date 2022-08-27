@@ -10,7 +10,7 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => orm = await initORMSqlite2(driver));
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
 
   test('isConnected()', async () => {
     expect(await orm.isConnected()).toBe(true);
@@ -20,7 +20,7 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     expect(await orm.isConnected()).toBe(true);
 
     // as the db lives only in memory, we need to re-create the schema after reconnection
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   test('should convert entity to PK when trying to search by entity', async () => {

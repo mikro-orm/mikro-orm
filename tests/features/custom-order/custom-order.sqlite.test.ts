@@ -94,8 +94,8 @@ describe('custom order [sqlite]', () => {
       type: 'sqlite',
       dbName: ':memory:',
     });
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.dropSchema();
+    await orm.schema.createSchema();
   });
 
   beforeEach(async () => {

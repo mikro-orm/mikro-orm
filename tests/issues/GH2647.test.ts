@@ -109,7 +109,7 @@ describe('GH #2647, #2742', () => {
       dbName: `:memory:`,
       type: 'sqlite',
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {

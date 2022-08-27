@@ -14,7 +14,7 @@ describe('events (mysql)', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql(undefined, undefined, true));
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
   afterEach(() => {
     Author2Subscriber.log.length = 0;
     EverythingSubscriber.log.length = 0;

@@ -48,7 +48,7 @@ describe('Migrator (sqlite)', () => {
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
     orm.config.set('migrations', { ...migrationsSettings, emit: 'js' }); // Set migration type to js
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-js-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
@@ -60,7 +60,7 @@ describe('Migrator (sqlite)', () => {
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
     orm.config.set('migrations', { ...migrationsSettings, fileName: time => `migration-${time}` });
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
     const upMock = jest.spyOn(Umzug.prototype, 'up');
@@ -311,7 +311,7 @@ describe('Migrator (sqlite)', () => {
       dbName: TEMP_DIR + '/test.db',
       baseDir: TEMP_DIR,
     });
-    await expect(orm.getMigrator().createMigration()).resolves.not.toThrow();
+    await expect(orm.migrator.createMigration()).resolves.not.toThrow();
     await orm.close();
   });
 

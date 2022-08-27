@@ -47,10 +47,10 @@ describe('GH issue 2810', () => {
       dbName: ':memory:',
       type: 'sqlite',
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
-  beforeEach(async () => await orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => await orm.schema.clearDatabase());
   afterAll(async () => await orm.close(true));
 
   test('create without existing parent', async () => {

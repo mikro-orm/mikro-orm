@@ -65,7 +65,7 @@ describe('changing PK column type [postgres] (GH 1480)', () => {
       dbName: 'mikro_orm_test_gh_1480',
       type: 'postgresql',
     });
-    generator = orm.getSchemaGenerator();
+    generator = orm.schema;
     await generator.ensureDatabase();
     await generator.dropSchema();
   });
@@ -73,7 +73,7 @@ describe('changing PK column type [postgres] (GH 1480)', () => {
   afterAll(() => orm.close(true));
 
   test('changing PK type', async () => {
-    const generator = orm.getSchemaGenerator();
+    const generator = orm.schema;
     const testMigration = async (e1: Constructor, e2: Constructor | undefined, snap: string) => {
       if (e2) {
         await orm.discoverEntity(e2);

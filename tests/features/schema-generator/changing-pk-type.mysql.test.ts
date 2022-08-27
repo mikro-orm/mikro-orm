@@ -66,7 +66,7 @@ describe('changing PK column type [mysql] (GH 1480)', () => {
       port: 3308,
       type: 'mysql',
     });
-    generator = orm.getSchemaGenerator();
+    generator = orm.schema;
     await generator.ensureDatabase();
     await generator.dropSchema();
   });
@@ -74,7 +74,7 @@ describe('changing PK column type [mysql] (GH 1480)', () => {
   afterAll(() => orm.close(true));
 
   test('changing PK type', async () => {
-    const generator = orm.getSchemaGenerator();
+    const generator = orm.schema;
     const testMigration = async (e1: Constructor, e2: Constructor | undefined, snap: string) => {
       if (e2) {
         await orm.discoverEntity(e2);

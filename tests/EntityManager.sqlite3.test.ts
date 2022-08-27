@@ -9,7 +9,7 @@ describe('EntityManagerSqlite fts5 table', () => {
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => orm = await initORMSqlite3());
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
 
   test('should load entities', async () => {
     expect(orm).toBeInstanceOf(MikroORM);

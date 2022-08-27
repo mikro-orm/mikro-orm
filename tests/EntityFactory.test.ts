@@ -16,7 +16,7 @@ describe('EntityFactory', () => {
     factory = orm.em.getEntityFactory();
     expect(orm.config.getNamingStrategy().referenceColumnName()).toBe('_id');
   });
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
 
   test('should load entities', async () => {
     const metadata = orm.getMetadata().getAll();

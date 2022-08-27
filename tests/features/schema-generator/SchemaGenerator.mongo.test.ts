@@ -10,14 +10,14 @@ describe('SchemaGenerator', () => {
 
   beforeAll(async () => orm = await initORMMongo());
   afterAll(async () => await orm.close(true));
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
 
   test('create/drop collection', async () => {
     const driver = orm.em.getDriver();
     await driver.getConnection().dropCollection(FooBar);
     let collections = await driver.getConnection().listCollections();
     expect(collections).not.toContain('foo-bar');
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
     collections = await driver.getConnection().listCollections();
     expect(collections).toContain('foo-bar');
   });
@@ -31,13 +31,13 @@ describe('SchemaGenerator', () => {
     dropCollections.mockResolvedValue();
     ensureIndexes.mockResolvedValue();
 
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
 
     expect(dropCollections).toBeCalledTimes(1);
     expect(createCollection).toBeCalledTimes(1);
     expect(ensureIndexes).toBeCalledTimes(1);
 
-    await orm.getSchemaGenerator().refreshDatabase({ ensureIndexes: false });
+    await orm.schema.refreshDatabase({ ensureIndexes: false });
 
     expect(dropCollections).toBeCalledTimes(2);
     expect(createCollection).toBeCalledTimes(2);
@@ -51,7 +51,7 @@ describe('SchemaGenerator', () => {
   test('updateSchema just forwards to createSchema', async () => {
     const spy = jest.spyOn(MongoSchemaGenerator.prototype, 'createSchema');
     spy.mockImplementation();
-    await orm.getSchemaGenerator().updateSchema();
+    await orm.schema.updateSchema();
     expect(spy).toBeCalledTimes(1);
     spy.mockRestore();
   });
@@ -61,9 +61,9 @@ describe('SchemaGenerator', () => {
     const ensureIndexesSpy = jest.spyOn(MongoSchemaGenerator.prototype, 'ensureIndexes');
     const meta = orm.getMetadata().get('FooBaz');
     meta.properties.name.nullable = false;
-    await orm.getSchemaGenerator().ensureIndexes();
+    await orm.schema.ensureIndexes();
     meta.properties.name.nullable = true;
-    await orm.getSchemaGenerator().ensureIndexes();
+    await orm.schema.ensureIndexes();
 
     expect(dropIndexesSpy).toBeCalledWith(
       expect.objectContaining({

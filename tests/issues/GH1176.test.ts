@@ -40,8 +40,8 @@ describe('GH issue 1176', () => {
 
   beforeAll(async () => {
     orm = await getOrmInstance();
-    await orm.getSchemaGenerator().dropDatabase('mikro_orm_test_gh_1176');
-    await orm.getSchemaGenerator().createDatabase('mikro_orm_test_gh_1176');
+    await orm.schema.dropDatabase('mikro_orm_test_gh_1176');
+    await orm.schema.createDatabase('mikro_orm_test_gh_1176');
   });
 
   afterAll(async () => {

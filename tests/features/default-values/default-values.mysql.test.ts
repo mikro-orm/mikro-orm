@@ -32,7 +32,7 @@ describe('default values in mysql', () => {
       type: 'mysql',
       port: 3308,
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(() => orm.close(true));

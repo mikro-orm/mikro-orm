@@ -9,7 +9,7 @@ describe('EntityHelperMySql', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
 
   test(`toObject allows to hide PK (GH issue 644)`, async () => {
     const bar = FooBar2.create('fb');

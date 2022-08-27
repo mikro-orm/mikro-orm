@@ -42,7 +42,7 @@ describe('GH issue 2803', () => {
       dbName: ':memory:',
       entities: [Book, Tag],
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {

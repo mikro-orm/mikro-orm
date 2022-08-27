@@ -94,7 +94,7 @@ describe('custom order [postgres]', () => {
       dbName: `mikro_orm_test_custom_order`,
       type: 'postgresql',
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   beforeEach(async () => {

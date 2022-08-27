@@ -166,10 +166,41 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     return this.driver.getPlatform().getMigrator(this.em) as T;
   }
 
+  /**
+   * Gets the SeedManager
+   */
   getSeeder<T extends ISeedManager = ISeedManager>(): T {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { SeedManager } = require('@mikro-orm/seeder');
     return this.config.getCachedService(SeedManager, this.em);
+  }
+
+  /**
+   * Shortcut for `orm.getSchemaGenerator()`
+   */
+  get schema() {
+    return this.getSchemaGenerator();
+  }
+
+  /**
+   * Shortcut for `orm.getSeeder()`
+   */
+  get seeder() {
+    return this.getSeeder();
+  }
+
+  /**
+   * Shortcut for `orm.getMigrator()`
+   */
+  get migrator() {
+    return this.getMigrator();
+  }
+
+  /**
+   * Shortcut for `orm.getEntityGenerator()`
+   */
+  get entityGenerator() {
+    return this.getEntityGenerator();
   }
 
 }

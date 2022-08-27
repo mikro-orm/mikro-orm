@@ -50,20 +50,20 @@ describe('GH issue 450', () => {
       type: 'postgresql',
       cache: { enabled: false },
     });
-    await orm.getSchemaGenerator().ensureDatabase();
+    await orm.schema.ensureDatabase();
 
     await orm.em.getConnection().execute('drop schema if exists auth');
     await orm.em.getConnection().execute('drop schema if exists operations');
     await orm.em.getConnection().execute('set search_path to auth, operations, public');
 
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.dropSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {
-    await orm.getSchemaGenerator().dropSchema({ wrap: true, dropMigrationsTable: true, dropDb: true });
-    await orm.getSchemaGenerator().dropDatabase('auth');
-    await orm.getSchemaGenerator().dropDatabase('operations');
+    await orm.schema.dropSchema({ wrap: true, dropMigrationsTable: true, dropDb: true });
+    await orm.schema.dropDatabase('auth');
+    await orm.schema.dropDatabase('operations');
     await orm.close(true);
   });
 

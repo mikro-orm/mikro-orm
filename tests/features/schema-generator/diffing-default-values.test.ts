@@ -52,9 +52,9 @@ describe('diffing default values (GH #2385)', () => {
       type: 'mysql',
       port: 3308,
     });
-    await orm.getSchemaGenerator().refreshDatabase();
-    expect(await orm.getSchemaGenerator().getCreateSchemaSQL()).toMatchSnapshot();
-    await expect(orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+    await orm.schema.refreshDatabase();
+    expect(await orm.schema.getCreateSchemaSQL()).toMatchSnapshot();
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
     await orm.close();
   });
 
@@ -65,9 +65,9 @@ describe('diffing default values (GH #2385)', () => {
       type: 'mariadb',
       port: 3309,
     });
-    await orm.getSchemaGenerator().refreshDatabase();
-    expect(await orm.getSchemaGenerator().getCreateSchemaSQL()).toMatchSnapshot();
-    await expect(orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+    await orm.schema.refreshDatabase();
+    expect(await orm.schema.getCreateSchemaSQL()).toMatchSnapshot();
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
     await orm.close();
   });
 
@@ -77,9 +77,9 @@ describe('diffing default values (GH #2385)', () => {
       dbName: 'mikro_orm_test_gh_2385',
       type: 'postgresql',
     });
-    await orm.getSchemaGenerator().refreshDatabase();
-    expect(await orm.getSchemaGenerator().getCreateSchemaSQL()).toMatchSnapshot();
-    await expect(orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+    await orm.schema.refreshDatabase();
+    expect(await orm.schema.getCreateSchemaSQL()).toMatchSnapshot();
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
     await orm.close();
   });
 
@@ -89,9 +89,9 @@ describe('diffing default values (GH #2385)', () => {
       dbName: ':memory:',
       type: 'sqlite',
     });
-    await orm.getSchemaGenerator().createSchema();
-    expect(await orm.getSchemaGenerator().getCreateSchemaSQL()).toMatchSnapshot();
-    await expect(orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+    await orm.schema.createSchema();
+    expect(await orm.schema.getCreateSchemaSQL()).toMatchSnapshot();
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
     await orm.close();
   });
 

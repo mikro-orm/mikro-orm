@@ -10,7 +10,7 @@ describe('Joined loading strategy', () => {
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => orm = await initORMPostgreSql(LoadStrategy.JOINED));
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
 
   afterAll(async () => orm.close(true));
 

@@ -45,7 +45,7 @@ describe('GH issue 2930', () => {
     afterAll(() => orm.close(true));
 
     test(`should not ignore custom pk name`, async () => {
-      const sql = await orm.getSchemaGenerator().getCreateSchemaSQL();
+      const sql = await orm.schema.getCreateSchemaSQL();
       expect(sql).toMatchSnapshot();
     });
   });
@@ -71,7 +71,7 @@ describe('GH issue 2930', () => {
     afterAll(() => orm.close(true));
 
     test(`should not generate a sql naming PK`, async () => {
-      const sql = await orm.getSchemaGenerator().getCreateSchemaSQL();
+      const sql = await orm.schema.getCreateSchemaSQL();
       expect(sql).toMatchSnapshot();
     });
   });
@@ -100,7 +100,7 @@ describe('GH issue 2930', () => {
     afterAll(() => orm.close(true));
 
     test(`should ignore custom pk name`, async () => {
-      const sql = await orm.getSchemaGenerator().getCreateSchemaSQL();
+      const sql = await orm.schema.getCreateSchemaSQL();
       expect(sql).toMatchSnapshot();
     });
   });

@@ -87,7 +87,7 @@ describe('GH issue 1009', () => {
       type: 'sqlite',
     });
 
-    const generator = orm.getSchemaGenerator();
+    const generator = orm.schema;
     await generator.createSchema();
   });
 

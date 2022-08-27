@@ -91,7 +91,7 @@ describe('GH issue 529', () => {
       dbName: `mikro_orm_test_gh_529`,
       type: 'postgresql',
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(async () => {
@@ -117,7 +117,7 @@ describe('GH issue 529', () => {
   });
 
   test(`GH issue 760`, async () => {
-    const sql = await orm.getSchemaGenerator().getCreateSchemaSQL();
+    const sql = await orm.schema.getCreateSchemaSQL();
     expect(sql).toMatchSnapshot();
   });
 

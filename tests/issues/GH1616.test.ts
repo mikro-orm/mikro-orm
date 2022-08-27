@@ -46,7 +46,7 @@ describe('GH issue 1616', () => {
       dbName: ':memory:',
       type: 'sqlite',
     });
-    const schema = await orm.getSchemaGenerator().getCreateSchemaSQL({ wrap: false });
+    const schema = await orm.schema.getCreateSchemaSQL({ wrap: false });
     expect(schema).toMatchSnapshot();
     await orm.close();
   });

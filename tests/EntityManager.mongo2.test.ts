@@ -10,7 +10,7 @@ describe('EntityManagerMongo2', () => {
   let orm: MikroORM<MongoDriver>;
 
   beforeAll(async () => orm = await initORMMongo());
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
 
   test('loaded references and collections', async () => {
     const pub = new Publisher('Publisher 123');

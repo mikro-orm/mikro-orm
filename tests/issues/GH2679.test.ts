@@ -23,7 +23,7 @@ describe('GH issue 2679', () => {
       type: 'postgresql',
     });
 
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   beforeEach(async () => {

@@ -33,7 +33,7 @@ describe('GH issue 2059', () => {
       dbName: ':memory:',
       type: 'sqlite',
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {

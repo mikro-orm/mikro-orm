@@ -42,7 +42,7 @@ describe('GH issue 940, 1117', () => {
       dbName: `:memory:`,
       type: 'sqlite',
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => await orm.close(true));

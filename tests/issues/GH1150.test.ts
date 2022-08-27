@@ -58,7 +58,7 @@ describe('GH issue 1150', () => {
       type: 'postgresql',
     });
 
-    const generator = orm.getSchemaGenerator();
+    const generator = orm.schema;
     await generator.ensureDatabase();
     await generator.dropSchema();
     await generator.createSchema();
@@ -85,7 +85,7 @@ describe('GH issue 1150', () => {
   });
 
   it('numeric enum diffing (GH issue #1096)', async () => {
-    const generator = orm.getSchemaGenerator();
+    const generator = orm.schema;
     await expect(generator.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
   });
 

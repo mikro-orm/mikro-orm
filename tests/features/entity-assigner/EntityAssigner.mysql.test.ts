@@ -9,7 +9,7 @@ describe('EntityAssignerMySql', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
 
   test('assign() should update entity values [mysql]', async () => {
     const god = new Author2('God', 'hello@heaven.god');

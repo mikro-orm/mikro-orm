@@ -19,7 +19,7 @@ describe('EntityManagerSqlite', () => {
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => orm = await initORMSqlite());
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
 
   test('isConnected()', async () => {
     expect(await orm.isConnected()).toBe(true);
@@ -29,7 +29,7 @@ describe('EntityManagerSqlite', () => {
     expect(await orm.isConnected()).toBe(true);
 
     // as the db lives only in memory, we need to re-create the schema after reconnection
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   test('onUpdate should be re-hydrated when loading metadata from cache', async () => {

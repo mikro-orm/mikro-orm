@@ -30,7 +30,7 @@ describe('result cache (postgres)', () => {
   }
 
   beforeAll(async () => orm = await initORMPostgreSql());
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
   afterAll(async () => orm.close(true));
 
   test('result caching (find)', async () => {

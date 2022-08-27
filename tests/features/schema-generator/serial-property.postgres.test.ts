@@ -89,7 +89,7 @@ test('schema generator works with non-pk autoincrement columns (serial)', async 
 
   const mock = mockLogger(orm, ['schema']);
 
-  const generator = orm.getSchemaGenerator();
+  const generator = orm.schema;
   await generator.refreshDatabase();
   await expect(generator.getUpdateSchemaSQL()).resolves.toBe('');
 
@@ -160,10 +160,10 @@ test('create schema dump with serial property', async () => {
     debug: ['schema'],
   });
 
-  await orm.getSchemaGenerator().refreshDatabase();
-  const create = await orm.getSchemaGenerator().getCreateSchemaSQL();
+  await orm.schema.refreshDatabase();
+  const create = await orm.schema.getCreateSchemaSQL();
   expect(create).toMatch('create table "something" ("id" serial primary key, "_id" serial, "foo" varchar(255) not null);');
-  const diff = await orm.getSchemaGenerator().getUpdateSchemaSQL();
+  const diff = await orm.schema.getUpdateSchemaSQL();
   expect(diff).toBe('');
 
   await orm.close(true);

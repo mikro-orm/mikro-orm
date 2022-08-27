@@ -98,7 +98,7 @@ describe('length diffing in mysql', () => {
       type: 'mysql',
       port: 3308,
     });
-    generator = orm.getSchemaGenerator();
+    generator = orm.schema;
     await generator.ensureDatabase();
     await generator.execute('drop table if exists book');
     await generator.createSchema();

@@ -34,11 +34,11 @@ describe('GH issue 2882', () => {
       dbName: ':memory:',
       entities: [Parent, Child],
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   beforeEach(async () => {
-    await orm.getSchemaGenerator().clearDatabase();
+    await orm.schema.clearDatabase();
   });
 
   afterAll(async () => {

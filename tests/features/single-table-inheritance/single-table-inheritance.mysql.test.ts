@@ -9,7 +9,7 @@ describe('single table inheritance in mysql', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
 
   async function createEntities() {
     const employee1 = new Employee2('Emp', '1');
@@ -234,7 +234,7 @@ describe('single table inheritance in mysql', () => {
       type: 'sqlite',
       dbName: ':memory:',
     });
-    const sql = await orm.getSchemaGenerator().getCreateSchemaSQL({ wrap: false });
+    const sql = await orm.schema.getCreateSchemaSQL({ wrap: false });
     expect(sql).toMatchSnapshot();
     await orm.close(true);
   });

@@ -120,7 +120,7 @@ describe('GH issue 1331', () => {
       entities: [A, B, C, D],
       loadStrategy: LoadStrategy.JOINED,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {

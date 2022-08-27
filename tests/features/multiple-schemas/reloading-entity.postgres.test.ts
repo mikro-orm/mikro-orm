@@ -35,7 +35,7 @@ beforeAll(async () => {
     type: 'postgresql',
     schema: 'myschema',
   });
-  await orm.getSchemaGenerator().refreshDatabase();
+  await orm.schema.refreshDatabase();
 });
 
 afterAll(() => orm.close(true));

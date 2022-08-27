@@ -158,10 +158,10 @@ describe('indexes on FKs in postgres (GH 1518)', () => {
       dbName: `mikro_orm_test_gh_1518`,
       type: 'postgresql',
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().execute('drop table if exists author cascade');
-    await orm.getSchemaGenerator().execute('drop table if exists book cascade');
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.ensureDatabase();
+    await orm.schema.execute('drop table if exists author cascade');
+    await orm.schema.execute('drop table if exists book cascade');
+    await orm.schema.createSchema();
   });
 
   afterAll(() => orm.close(true));
@@ -169,27 +169,27 @@ describe('indexes on FKs in postgres (GH 1518)', () => {
   test('schema generator respect indexes on FKs on column update', async () => {
     await orm.discoverEntity(Book1);
     orm.getMetadata().reset('Book0');
-    const diff1 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
-    await orm.getSchemaGenerator().execute(diff1);
+    await orm.schema.execute(diff1);
 
     orm.getMetadata().reset('Book1');
     await orm.discoverEntity(Book2);
-    const diff2 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    const diff2 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff2).toMatchSnapshot();
-    await orm.getSchemaGenerator().execute(diff2);
+    await orm.schema.execute(diff2);
 
     orm.getMetadata().reset('Book2');
     await orm.discoverEntity(Book3);
-    const diff3 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    const diff3 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff3).toMatchSnapshot();
-    await orm.getSchemaGenerator().execute(diff3);
+    await orm.schema.execute(diff3);
 
     orm.getMetadata().reset('Book3');
     await orm.discoverEntity(Book4);
-    const diff4 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    const diff4 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff4).toMatchSnapshot();
-    await orm.getSchemaGenerator().execute(diff4);
+    await orm.schema.execute(diff4);
   });
 
 });

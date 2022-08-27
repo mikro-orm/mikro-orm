@@ -55,7 +55,7 @@ describe('sqlite driver', () => {
       dbName: ':memory:',
       type: 'sqlite',
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
   afterAll(async () => await orm.close(true));
 
@@ -81,7 +81,7 @@ describe('better-sqlite driver', () => {
       dbName: ':memory:',
       type: 'better-sqlite',
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
   afterAll(async () => await orm.close(true));
 

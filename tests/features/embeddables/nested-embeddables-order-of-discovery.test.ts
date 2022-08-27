@@ -55,7 +55,7 @@ describe('GH issue 2242', () => {
       dbName: ':memory:',
       type: 'sqlite',
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
       id: '771309736129200140',
@@ -74,7 +74,7 @@ describe('GH issue 2242', () => {
       dbName: ':memory:',
       type: 'sqlite',
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
       id: '771309736129200140',
@@ -93,7 +93,7 @@ describe('GH issue 2242', () => {
       dbName: ':memory:',
       type: 'sqlite',
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
       id: '771309736129200140',
@@ -112,7 +112,7 @@ describe('GH issue 2242', () => {
       dbName: ':memory:',
       type: 'sqlite',
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
       id: '771309736129200140',
@@ -131,7 +131,7 @@ describe('GH issue 2242', () => {
       dbName: ':memory:',
       type: 'sqlite',
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
       id: '771309736129200140',
@@ -150,7 +150,7 @@ describe('GH issue 2242', () => {
       dbName: ':memory:',
       type: 'sqlite',
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
       id: '771309736129200140',
@@ -169,7 +169,7 @@ describe('GH issue 2242', () => {
       dbName: ':memory:',
       type: 'sqlite',
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
       id: '771309736129200140',
@@ -188,7 +188,7 @@ describe('GH issue 2242', () => {
       dbName: ':memory:',
       type: 'sqlite',
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
       id: '771309736129200140',
@@ -207,7 +207,7 @@ describe('GH issue 2242', () => {
       dbName: ':memory:',
       type: 'sqlite',
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
       id: '771309736129200140',
@@ -226,7 +226,7 @@ describe('GH issue 2242', () => {
       dbName: ':memory:',
       type: 'sqlite',
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
       id: '771309736129200140',

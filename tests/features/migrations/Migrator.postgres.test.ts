@@ -48,7 +48,7 @@ describe('Migrator (postgres)', () => {
       migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
     });
 
-    const schemaGenerator = orm.getSchemaGenerator();
+    const schemaGenerator = orm.schema;
     await schemaGenerator.refreshDatabase();
     await schemaGenerator.execute('alter table "custom"."book2" add column "foo" varchar null default \'lol\';');
     await schemaGenerator.execute('alter table "custom"."book2" alter column "double" type numeric using ("double"::numeric);');
@@ -63,7 +63,7 @@ describe('Migrator (postgres)', () => {
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
     orm.config.set('migrations', { ...migrationsSettings, emit: 'js' }); // Set migration type to js
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-js-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
@@ -89,7 +89,7 @@ describe('Migrator (postgres)', () => {
       }
 
     } });
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-ts-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
@@ -101,7 +101,7 @@ describe('Migrator (postgres)', () => {
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
     orm.config.set('migrations', { ...migrationsSettings, fileName: time => `migration-${time}` });
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
     const upMock = jest.spyOn(Umzug.prototype, 'up');
@@ -123,7 +123,7 @@ describe('Migrator (postgres)', () => {
   test('generate schema migration', async () => {
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
     await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
@@ -135,7 +135,7 @@ describe('Migrator (postgres)', () => {
 
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     const migration1 = await migrator.createMigration();
     expect(migration1).toMatchSnapshot('migration-snapshot-dump-1');
     await remove(process.cwd() + '/temp/migrations/' + migration1.fileName);
@@ -153,7 +153,7 @@ describe('Migrator (postgres)', () => {
     const getExecutedMigrationsMock = jest.spyOn<any, any>(Migrator.prototype, 'getExecutedMigrations');
     const getPendingMigrationsMock = jest.spyOn<any, any>(Migrator.prototype, 'getPendingMigrations');
     getExecutedMigrationsMock.mockResolvedValueOnce(['test.ts']);
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     const err = 'Initial migration cannot be created, as some migrations already exist';
     await expect(migrator.createMigration(undefined, false, true)).rejects.toThrowError(err);
 
@@ -192,7 +192,7 @@ describe('Migrator (postgres)', () => {
   });
 
   test('migration storage getter', async () => {
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     expect(migrator.getStorage()).toBeInstanceOf(MigrationStorage);
 
     expect(migrator.getStorage().getTableName!()).toEqual({
@@ -211,7 +211,7 @@ describe('Migrator (postgres)', () => {
   });
 
   test('migration is skipped when no diff', async () => {
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     const getSchemaDiffMock = jest.spyOn<any, any>(Migrator.prototype, 'getSchemaDiff');
     getSchemaDiffMock.mockResolvedValueOnce({ up: [], down: [] });
     const migration = await migrator.createMigration();
@@ -223,7 +223,7 @@ describe('Migrator (postgres)', () => {
     const downMock = jest.spyOn(Umzug.prototype, 'down');
     upMock.mockImplementationOnce(() => void 0 as any);
     downMock.mockImplementationOnce(() => void 0 as any);
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     await migrator.up();
     expect(upMock).toBeCalledTimes(1);
     expect(downMock).toBeCalledTimes(0);
@@ -237,13 +237,13 @@ describe('Migrator (postgres)', () => {
 
   test('run schema migration without existing migrations folder (GH #907)', async () => {
     await remove(process.cwd() + '/temp/migrations');
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     await migrator.up();
   });
 
   test('ensureTable and list executed migrations', async () => {
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!).withSchema('custom');
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     const storage = migrator.getStorage();
 
     await storage.ensureTable!(); // creates the table
@@ -260,7 +260,7 @@ describe('Migrator (postgres)', () => {
 
   test('runner', async () => {
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!).withSchema('custom');
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     await migrator.getStorage().ensureTable!();
     // @ts-ignore
     const runner = migrator.runner;
@@ -299,7 +299,7 @@ describe('Migrator (postgres)', () => {
 
   test('up/down params [all or nothing enabled]', async () => {
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!).withSchema('custom').withSchema('custom');
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     // @ts-ignore
     migrator.options.disableForeignKeys = false;
     const path = process.cwd() + '/temp/migrations';
@@ -330,7 +330,7 @@ describe('Migrator (postgres)', () => {
 
   test('up/down with explicit transaction', async () => {
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!).withSchema('custom').withSchema('custom');
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     const path = process.cwd() + '/temp/migrations';
 
     // @ts-ignore
@@ -370,7 +370,7 @@ describe('Migrator (postgres)', () => {
 
   test('up/down params [all or nothing disabled]', async () => {
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!).withSchema('custom');
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     // @ts-ignore
     migrator.options.disableForeignKeys = false;
     // @ts-ignore
@@ -411,9 +411,9 @@ test('ensureTable when the schema does not exist', async () => {
     schema: 'custom2',
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
   });
-  await orm.getSchemaGenerator().ensureDatabase();
-  await orm.getSchemaGenerator().execute('drop schema if exists "custom2" cascade');
-  const storage = orm.getMigrator().getStorage();
+  await orm.schema.ensureDatabase();
+  await orm.schema.execute('drop schema if exists "custom2" cascade');
+  const storage = orm.migrator.getStorage();
 
   const mock = mockLogger(orm);
   await storage.ensureTable!(); // ensures the schema first

@@ -320,7 +320,7 @@ describe('QueryBuilder', () => {
     expect(res[0].tests.getItems()).toHaveLength(0);
     expect(res[1].tests.isInitialized()).toBe(true);
     expect(res[1].tests.getItems()).toHaveLength(1);
-    await orm.getSchemaGenerator().clearDatabase();
+    await orm.schema.clearDatabase();
   });
 
   test('select leftJoin 1:1 inverse', async () => {

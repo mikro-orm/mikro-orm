@@ -21,7 +21,7 @@ beforeAll(async () => {
 afterAll(() => orm.close(true));
 
 test('changing default type mapping (GH 3066)', async () => {
-  await orm.getSchemaGenerator().ensureDatabase();
-  const diff0 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+  await orm.schema.ensureDatabase();
+  const diff0 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
   expect(diff0).toMatchSnapshot();
 });

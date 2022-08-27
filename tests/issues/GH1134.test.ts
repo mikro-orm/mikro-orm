@@ -121,7 +121,7 @@ describe('GH issue 1134', () => {
       dbName: ':memory:',
       type: 'sqlite',
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
     await createEntities(orm);
   });
 

@@ -173,7 +173,7 @@ describe('GH issue 1624, 1658 (postgres)', () => {
       dbName: 'mikro_orm_test_1624',
       type: 'postgresql',
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(async () => {
@@ -265,7 +265,7 @@ describe('GH issue 1624, 1658 (sqlite)', () => {
       dbName: ':memory:',
       type: 'sqlite',
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {

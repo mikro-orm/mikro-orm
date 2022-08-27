@@ -74,7 +74,7 @@ describe('GH issue 603', () => {
       type: 'mysql',
       port: 3308,
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
 
     const project = orm.em.create(ProjectProps, { name: 'Test project' });
     const task = orm.em.create(TaskProps, {});

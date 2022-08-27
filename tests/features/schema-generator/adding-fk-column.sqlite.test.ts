@@ -39,7 +39,7 @@ describe('adding FK column (GH 942)', () => {
       type: 'sqlite',
       dbName: ':memory:',
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(() => orm.close(true));
@@ -47,12 +47,12 @@ describe('adding FK column (GH 942)', () => {
   test('schema: adding 1:1 relation', async () => {
     await orm.discoverEntity(User2);
     orm.getMetadata().reset('User');
-    const diff1 = await orm.getSchemaGenerator().getUpdateSchemaSQL();
+    const diff1 = await orm.schema.getUpdateSchemaSQL();
     expect(diff1).toMatchSnapshot();
-    await orm.getSchemaGenerator().execute(diff1);
+    await orm.schema.execute(diff1);
 
     // sqlite does not support automatic down migrations
-    const diff2 = await orm.getSchemaGenerator().getUpdateSchemaMigrationSQL();
+    const diff2 = await orm.schema.getUpdateSchemaMigrationSQL();
     expect(diff2.down).toBe('');
   });
 

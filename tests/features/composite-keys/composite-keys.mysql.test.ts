@@ -10,7 +10,7 @@ describe('composite keys in mysql', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
 
   test('dynamic attributes', async () => {
     const test = Test2.create('t');

@@ -59,7 +59,7 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
       dbName: ':memory:',
       type: 'sqlite',
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {

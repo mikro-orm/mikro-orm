@@ -62,8 +62,7 @@ describe('Migrator', () => {
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
     orm.config.set('migrations', { ...migrationsSettings, emit: 'js' }); // Set migration type to js
-    const migrator = orm.getMigrator();
-    const migration = await migrator.createMigration();
+    const migration = await orm.migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-js-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
     await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
@@ -74,7 +73,7 @@ describe('Migrator', () => {
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
     orm.config.set('migrations', { ...migrationsSettings, fileName: time => `migration-${time}` });
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
     const upMock = jest.spyOn(Umzug.prototype, 'up');
@@ -175,7 +174,7 @@ describe('Migrator', () => {
   });
 
   test('migration is skipped when no diff', async () => {
-    await orm.getSchemaGenerator().updateSchema();
+    await orm.schema.updateSchema();
     const migrator = new Migrator(orm.em);
     const schemaGeneratorMock = jest.spyOn<any, any>(SchemaGenerator.prototype, 'getUpdateSchemaSQL');
     schemaGeneratorMock.mockResolvedValueOnce({ up: [], down: [] });

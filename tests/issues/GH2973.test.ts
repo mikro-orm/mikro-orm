@@ -19,7 +19,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     type: 'better-sqlite',
   });
-  await orm.getSchemaGenerator().createSchema();
+  await orm.schema.createSchema();
 });
 
 afterAll(async () => {

@@ -61,20 +61,20 @@ describe('multiple connected schemas in postgres', () => {
       dbName: `mikro_orm_test_multi_schemas`,
       type: 'postgresql',
     });
-    await orm.getSchemaGenerator().ensureDatabase();
+    await orm.schema.ensureDatabase();
 
     for (const ns of ['n1', 'n2', 'n3', 'n4', 'n5']) {
-      await orm.getSchemaGenerator().execute(`drop schema if exists ${ns} cascade`);
+      await orm.schema.execute(`drop schema if exists ${ns} cascade`);
     }
 
     // `*` schema will be ignored
-    await orm.getSchemaGenerator().updateSchema(); // `*` schema will be ignored
+    await orm.schema.updateSchema(); // `*` schema will be ignored
 
     // we need to pass schema for book
-    await orm.getSchemaGenerator().updateSchema({ schema: 'n2' });
-    await orm.getSchemaGenerator().updateSchema({ schema: 'n3' });
-    await orm.getSchemaGenerator().updateSchema({ schema: 'n4' });
-    await orm.getSchemaGenerator().updateSchema({ schema: 'n5' });
+    await orm.schema.updateSchema({ schema: 'n2' });
+    await orm.schema.updateSchema({ schema: 'n3' });
+    await orm.schema.updateSchema({ schema: 'n4' });
+    await orm.schema.updateSchema({ schema: 'n5' });
     orm.config.set('schema', 'n2'); // set the schema so we can work with book entities without options param
   });
 
@@ -346,22 +346,22 @@ describe('multiple connected schemas in postgres', () => {
 
   test(`schema diffing won't remove other schemas or tables`, async () => {
     // `*` schema is found in metadata, so no schema deletes should be triggered
-    const diff1 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toBe('');
 
     // should update only single schema, ignoring the rest
-    const diff2 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ schema: 'n2', wrap: false });
+    const diff2 = await orm.schema.getUpdateSchemaSQL({ schema: 'n2', wrap: false });
     expect(diff2).toBe('');
-    const diff3 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ schema: 'n3', wrap: false });
+    const diff3 = await orm.schema.getUpdateSchemaSQL({ schema: 'n3', wrap: false });
     expect(diff3).toBe('');
-    const diff4 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ schema: 'n4', wrap: false });
+    const diff4 = await orm.schema.getUpdateSchemaSQL({ schema: 'n4', wrap: false });
     expect(diff4).toBe('');
-    const diff5 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ schema: 'n5', wrap: false });
+    const diff5 = await orm.schema.getUpdateSchemaSQL({ schema: 'n5', wrap: false });
     expect(diff5).toBe('');
   });
 
   test('pessimistic locking', async () => {
-    await orm.getSchemaGenerator().updateSchema();
+    await orm.schema.updateSchema();
     const author = new Author();
     author.name = 'a1';
     await orm.em.persistAndFlush(author);

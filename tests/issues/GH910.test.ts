@@ -89,7 +89,7 @@ describe('GH issue 910', () => {
       type: 'sqlite',
       dbName: ':memory:',
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
 
     const mock = mockLogger(orm, ['query', 'query-params']);
 

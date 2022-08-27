@@ -43,7 +43,7 @@ describe('mapToPk works with flushing and cascades', () => {
       type: 'sqlite',
       forceUndefined: true,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {

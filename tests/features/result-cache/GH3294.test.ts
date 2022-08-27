@@ -23,11 +23,11 @@ beforeAll(async () => {
     dbName: ':memory:',
     type: 'better-sqlite',
   });
-  await orm.getSchemaGenerator().createSchema();
+  await orm.schema.createSchema();
 });
 
 beforeEach(async () => {
-  await orm.getSchemaGenerator().clearDatabase();
+  await orm.schema.clearDatabase();
 });
 
 afterAll(() => {

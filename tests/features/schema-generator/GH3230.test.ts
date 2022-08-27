@@ -38,16 +38,16 @@ beforeAll(async () => {
     type: 'mysql',
     port: 3308,
   });
-  await orm.getSchemaGenerator().ensureDatabase();
-  await orm.getSchemaGenerator().dropSchema();
+  await orm.schema.ensureDatabase();
+  await orm.schema.dropSchema();
 });
 
 afterAll(() => orm.close(true));
 
 test('mediumint column type in mysql as FK', async () => {
-  const sql = await orm.getSchemaGenerator().getCreateSchemaSQL();
+  const sql = await orm.schema.getCreateSchemaSQL();
   expect(sql).toMatchSnapshot();
-  await orm.getSchemaGenerator().execute(sql);
-  const diff = await orm.getSchemaGenerator().getUpdateSchemaSQL();
+  await orm.schema.execute(sql);
+  const diff = await orm.schema.getUpdateSchemaSQL();
   expect(diff).toBe('');
 });

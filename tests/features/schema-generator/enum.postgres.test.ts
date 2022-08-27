@@ -53,9 +53,9 @@ test('enum diffing with case sensitive column names (GH issue #2938)', async () 
     namingStrategy: EntityCaseNamingStrategy,
   });
 
-  await orm.getSchemaGenerator().refreshDatabase();
+  await orm.schema.refreshDatabase();
 
-  const diff = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+  const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
   expect(diff).toBe('');
 
   await orm.close(true);
@@ -68,9 +68,9 @@ test('numeric enum diffing (GH issue #2932)', async () => {
     type: 'postgresql',
   });
 
-  await orm.getSchemaGenerator().refreshDatabase();
+  await orm.schema.refreshDatabase();
 
-  const diff = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+  const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
   expect(diff).toBe('');
 
   await orm.close(true);

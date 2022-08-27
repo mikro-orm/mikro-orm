@@ -45,7 +45,7 @@ beforeAll(async () => {
     type: 'better-sqlite',
   });
 
-  const generator = orm.getSchemaGenerator();
+  const generator = orm.schema;
   await generator.ensureDatabase();
   await generator.dropSchema();
   await generator.createSchema();

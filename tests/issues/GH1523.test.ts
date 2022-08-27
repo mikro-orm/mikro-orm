@@ -46,7 +46,7 @@ describe('GH issue 1523', () => {
       type: 'sqlite',
       flushMode: FlushMode.COMMIT,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {

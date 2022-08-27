@@ -40,9 +40,9 @@ describe('GH issue 2909 & 3270', () => {
       type: 'postgresql',
     });
 
-    await orm.getSchemaGenerator().refreshDatabase();
-    await orm.getSchemaGenerator().updateSchema({ schema: 'test' });
-    await orm.getSchemaGenerator().clearDatabase({ schema: 'test' });
+    await orm.schema.refreshDatabase();
+    await orm.schema.updateSchema({ schema: 'test' });
+    await orm.schema.clearDatabase({ schema: 'test' });
   });
 
   afterAll(async () => {

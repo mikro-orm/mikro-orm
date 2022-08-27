@@ -88,7 +88,7 @@ describe('filters [postgres]', () => {
       dbName: `mikro_orm_test_gh_1232`,
       type: 'postgresql',
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   beforeEach(async () => {

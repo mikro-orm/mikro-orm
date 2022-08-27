@@ -45,7 +45,7 @@ describe('different schema from config', () => {
       dbName: 'mikro_orm_test_gh_2740',
       schema: 'privateschema',
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(async () => {

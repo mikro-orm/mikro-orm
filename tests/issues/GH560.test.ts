@@ -55,7 +55,7 @@ describe('GH issue 560', () => {
       type: 'postgresql',
       cache: { enabled: false },
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(async () => {

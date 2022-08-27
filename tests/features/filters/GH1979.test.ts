@@ -66,7 +66,7 @@ describe('GH issue 1979', () => {
       type: 'sqlite',
     });
 
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   beforeEach(async () => {

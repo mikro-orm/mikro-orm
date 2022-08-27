@@ -9,7 +9,7 @@ describe('EntityManagerMariaDb', () => {
   let orm: MikroORM<MariaDbDriver>;
 
   beforeAll(async () => orm = await initORMMySql<MariaDbDriver>('mariadb', {}, true));
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
 
   test('isConnected()', async () => {
     expect(await orm.isConnected()).toBe(true);

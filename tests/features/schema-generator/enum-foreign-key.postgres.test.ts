@@ -34,13 +34,13 @@ describe('using enum as a foreign key value', () => {
       type: 'postgresql',
     });
 
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().execute('drop table if exists brand cascade');
-    await orm.getSchemaGenerator().execute('drop table if exists product cascade');
+    await orm.schema.ensureDatabase();
+    await orm.schema.execute('drop table if exists brand cascade');
+    await orm.schema.execute('drop table if exists product cascade');
 
-    const diff = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot();
-    await orm.getSchemaGenerator().execute(diff);
+    await orm.schema.execute(diff);
 
     await orm.close(true);
   });

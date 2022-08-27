@@ -18,7 +18,7 @@ beforeAll(async () => {
     dbName: 'mikro-orm-test-gh3261',
     type: 'mongo',
   });
-  await orm.getSchemaGenerator().dropSchema();
+  await orm.schema.dropSchema();
 });
 
 afterAll(() => orm.close(true));
@@ -38,6 +38,6 @@ test('retry limit to 3 when ensureIndex() fails', async () => {
     properties: 'email',
   }];
   await expect(
-    orm.getSchemaGenerator().ensureIndexes(),
+    orm.schema.ensureIndexes(),
   ).rejects.toThrowError(/Failed to create indexes:/);
 });

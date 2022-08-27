@@ -61,11 +61,11 @@ beforeAll(async () => {
     type: 'postgresql',
     schema: 'tenant_01',
   });
-  await orm.getSchemaGenerator().ensureDatabase();
-  await orm.getSchemaGenerator().dropSchema();
-  await orm.getSchemaGenerator().dropSchema({ schema: 'tenant_01' });
-  await orm.getSchemaGenerator().updateSchema();
-  await orm.getSchemaGenerator().updateSchema({ schema: 'tenant_01' });
+  await orm.schema.ensureDatabase();
+  await orm.schema.dropSchema();
+  await orm.schema.dropSchema({ schema: 'tenant_01' });
+  await orm.schema.updateSchema();
+  await orm.schema.updateSchema({ schema: 'tenant_01' });
 });
 
 afterAll(async () => {

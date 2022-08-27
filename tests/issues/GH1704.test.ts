@@ -37,7 +37,7 @@ describe('GH issue 1704', () => {
       entities: [User, Profile],
       dbName: ':memory:',
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {

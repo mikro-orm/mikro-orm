@@ -41,12 +41,12 @@ describe('GH issue 1346', () => {
       type: 'postgresql',
     });
 
-    await orm.getSchemaGenerator().ensureDatabase();
+    await orm.schema.ensureDatabase();
   });
 
   beforeEach(async () => {
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.dropSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(() => orm.close(true));

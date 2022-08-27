@@ -58,7 +58,7 @@ beforeAll(async () => {
     dbName: ':memory:',
     type: 'better-sqlite',
   });
-  await orm.getSchemaGenerator().refreshDatabase();
+  await orm.schema.refreshDatabase();
 });
 
 afterAll(() => orm.close(true));

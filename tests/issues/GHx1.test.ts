@@ -38,7 +38,7 @@ test(`default value for relation property`, async () => {
     type: 'sqlite',
     dbName: ':memory:',
   });
-  await orm.getSchemaGenerator().refreshDatabase();
+  await orm.schema.refreshDatabase();
 
   const status = new Status();
   status.name = TaskStatus.OPENED;
@@ -59,7 +59,7 @@ test(`default value for relation property (postgres/returning)`, async () => {
     type: 'postgresql',
     dbName: 'mikro_orm_test_tmp',
   });
-  await orm.getSchemaGenerator().refreshDatabase();
+  await orm.schema.refreshDatabase();
 
   const status = new Status();
   status.name = TaskStatus.OPENED;

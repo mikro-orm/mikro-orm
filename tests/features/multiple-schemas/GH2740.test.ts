@@ -39,7 +39,7 @@ describe('GH #2740', () => {
       dbName: 'mikro_orm_test_gh_2740',
       entities: [PersonEntity, TaskEntity],
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(async () => {

@@ -31,7 +31,7 @@ describe('default values in postgres', () => {
       dbName: `mikro_orm_test_default_values`,
       type: 'postgresql',
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(() => orm.close(true));

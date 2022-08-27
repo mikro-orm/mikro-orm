@@ -51,7 +51,7 @@ describe('GH issue #2717', () => {
       type: 'sqlite',
       loadStrategy: LoadStrategy.JOINED,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {

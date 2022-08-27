@@ -12,7 +12,7 @@ describe('read-replicas', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql());
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
   afterEach(() => {
     orm.config.set('debug', false);
     Author2Subscriber.log.length = 0;

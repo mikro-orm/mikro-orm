@@ -54,13 +54,13 @@ describe('GH issue 1111', () => {
       cache: { enabled: false },
     });
     mockLogger(orm, ['query', 'query-params'], log);
-    await orm.getSchemaGenerator().ensureDatabase();
+    await orm.schema.ensureDatabase();
   });
 
 
   beforeEach(async () => {
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.dropSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(() => orm.close(true));

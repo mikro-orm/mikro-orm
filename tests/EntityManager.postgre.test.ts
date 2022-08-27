@@ -36,7 +36,7 @@ describe('EntityManagerPostgre', () => {
   }
 
   beforeAll(async () => orm = await initORMPostgreSql());
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
 
   test('isConnected()', async () => {
     await expect(orm.isConnected()).resolves.toBe(true);

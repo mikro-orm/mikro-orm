@@ -42,7 +42,7 @@ describe('GH issue 1041, 1043', () => {
       type: 'sqlite',
     });
     mockLogger(orm, ['query', 'query-params'], log);
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
 
     const user = orm.em.create(User, { id: 123, name: 'user' });
     const app1 = orm.em.create(App, { id: 1, name: 'app 1' });

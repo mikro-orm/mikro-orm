@@ -7,7 +7,7 @@ import { Author2, Book2 } from '../entities-sql';
 let orm: MikroORM;
 
 beforeAll(async () => orm = await initORMPostgreSql());
-beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+beforeEach(async () => orm.schema.clearDatabase());
 afterAll(() => orm.close(true));
 
 test('test nested find with repository', async () => {

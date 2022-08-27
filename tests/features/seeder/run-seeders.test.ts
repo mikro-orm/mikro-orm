@@ -14,7 +14,7 @@ describe('Run seeders', () => {
       type: 'sqlite',
       dbName: ':memory:',
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(() => orm.close(true));

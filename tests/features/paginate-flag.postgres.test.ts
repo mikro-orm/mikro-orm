@@ -173,9 +173,9 @@ describe('GH issue 2095', () => {
       type: 'postgresql',
     });
 
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.ensureDatabase();
+    await orm.schema.dropSchema();
+    await orm.schema.createSchema();
 
     const group1 = new Group('id-group-01', 'Group #1'); // RF
     const group2 = new Group('id-group-02', 'Group #2'); // admin

@@ -11,11 +11,11 @@ describe('automatic flushing when querying for overlapping entities via em.find/
 
   beforeAll(async () => {
     orm = await initORMPostgreSql(undefined, [CompanyOwner2, Employee2, Manager2, BaseUser2]);
-    await orm.getSchemaGenerator().updateSchema();
+    await orm.schema.updateSchema();
   });
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
   afterAll(async () => {
-    await orm.getSchemaGenerator().dropSchema();
+    await orm.schema.dropSchema();
     await orm.close(true);
   });
 

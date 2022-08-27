@@ -106,10 +106,10 @@ describe('GH issue 725', () => {
       dbName: `mikro_orm_test_gh_725`,
       type: 'postgresql',
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.ensureDatabase();
+    await orm.schema.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
+    await orm.schema.dropSchema();
+    await orm.schema.createSchema();
 
     const test = new Test();
     orm.em.persist(test);

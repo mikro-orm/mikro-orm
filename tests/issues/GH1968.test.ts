@@ -39,7 +39,7 @@ describe('GH issue 1968', () => {
       type: 'sqlite',
     });
 
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
     const author = orm.em.create(Author, {
       name: 'Stephen King',
       books: [{ name: 'b1' }, { name: 'b1' }, { name: 'b1' }],

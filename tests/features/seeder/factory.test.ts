@@ -49,7 +49,7 @@ describe('Factory', () => {
       type: 'sqlite',
       dbName: ':memory:',
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
     persistSpy = jest.spyOn(orm.em, 'persist');
     flushSpy = jest.spyOn(orm.em, 'flush');
   });

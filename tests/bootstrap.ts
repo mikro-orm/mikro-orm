@@ -96,7 +96,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
   }, additionalOptions));
 
-  const schemaGenerator = orm.getSchemaGenerator();
+  const schemaGenerator = orm.schema;
   await schemaGenerator.ensureDatabase();
   await schemaGenerator.dropSchema();
   const connection = orm.em.getConnection();
@@ -137,7 +137,7 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, e
     loadStrategy,
   });
 
-  const schemaGenerator = orm.getSchemaGenerator();
+  const schemaGenerator = orm.schema;
   await schemaGenerator.ensureDatabase();
   const connection = orm.em.getConnection();
   await connection.loadFile(__dirname + '/postgre-schema.sql');
@@ -182,7 +182,7 @@ export async function initORMSqlite2(type: 'sqlite' | 'better-sqlite' = 'sqlite'
     cache: { pretty: true },
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
   });
-  const schemaGenerator = orm.getSchemaGenerator();
+  const schemaGenerator = orm.schema;
   await schemaGenerator.dropSchema();
   await schemaGenerator.createSchema();
 

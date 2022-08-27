@@ -49,11 +49,11 @@ beforeAll(async () => {
     dbName: `mikro_orm_test_gh_372`,
     type: 'postgresql',
   });
-  await orm.getSchemaGenerator().refreshDatabase();
+  await orm.schema.refreshDatabase();
 });
 
 beforeEach(async () => {
-  await orm.getSchemaGenerator().clearDatabase();
+  await orm.schema.clearDatabase();
 });
 
 afterAll(async () => {

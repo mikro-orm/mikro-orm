@@ -22,7 +22,7 @@ import { Entity, ManyToOne, MikroORM, PrimaryKey } from '@mikro-orm/core';
 
 test('GH issue 2959', async () => {
   const orm = await MikroORM.init({ dbName: ':memory:', type: 'sqlite', entities: [Foo, Bar] });
-  await orm.getSchemaGenerator().updateSchema();
-  await orm.getSchemaGenerator().updateSchema();
+  await orm.schema.updateSchema();
+  await orm.schema.updateSchema();
   await orm.close();
 });

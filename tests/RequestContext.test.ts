@@ -9,7 +9,7 @@ describe('RequestContext', () => {
   let orm: MikroORM;
 
   beforeAll(async () => orm = await initORMMongo());
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
 
   test('create new context', async () => {
     expect(RequestContext.getEntityManager()).toBeUndefined();

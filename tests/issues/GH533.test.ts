@@ -52,7 +52,7 @@ describe('GH issue 533', () => {
       dbName: `mikro_orm_test_gh_533`,
       type: 'postgresql',
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(async () => {

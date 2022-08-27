@@ -110,8 +110,8 @@ describe('GH issue 1175', () => {
 
     beforeAll(async () => {
       orm = await getOrmInstance(testSubscriber);
-      await orm.getSchemaGenerator().dropDatabase('mikro_orm_test_gh_1175');
-      await orm.getSchemaGenerator().createDatabase('mikro_orm_test_gh_1175');
+      await orm.schema.dropDatabase('mikro_orm_test_gh_1175');
+      await orm.schema.createDatabase('mikro_orm_test_gh_1175');
     });
 
     afterAll(async () => {
@@ -605,7 +605,7 @@ describe('GH issue 1175', () => {
       });
       await orm.em.nativeDelete(Entity1175, {});
       await orm.em.nativeInsert(Entity1175, { username: 'test1' });
-      await orm.getSchemaGenerator().ensureIndexes();
+      await orm.schema.ensureIndexes();
     });
 
     afterAll(async () => {

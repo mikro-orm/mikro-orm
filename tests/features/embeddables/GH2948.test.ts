@@ -101,7 +101,7 @@ describe('GH issue 2948', () => {
       type: 'sqlite',
       namingStrategy: CustomNamingStrategy,
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(async () => {

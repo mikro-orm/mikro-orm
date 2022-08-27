@@ -30,16 +30,16 @@ describe('GH issue 2675', () => {
       dbName: 'mikro_orm_test_gh_2675',
       type: 'postgresql',
     });
-    await orm.getSchemaGenerator().ensureDatabase();
+    await orm.schema.ensureDatabase();
 
     // Create schema dynamically
-    await orm.getSchemaGenerator().execute(`drop schema if exists myschema cascade`);
-    await orm.getSchemaGenerator().execute(`create schema if not exists myschema`);
+    await orm.schema.execute(`drop schema if exists myschema cascade`);
+    await orm.schema.execute(`create schema if not exists myschema`);
 
     // Initialize DB for dynamic schema entity
-    await orm.getSchemaGenerator().execute(`create table "myschema"."a" ("id" serial primary key);`);
-    await orm.getSchemaGenerator().execute(`create table "myschema"."b" ("id" serial primary key, "a_id" int not null);`);
-    await orm.getSchemaGenerator().execute(`alter table "myschema"."b" add constraint "b_a_id_foreign" foreign key ("a_id") references "myschema"."a" ("id") on update cascade on delete cascade;`);
+    await orm.schema.execute(`create table "myschema"."a" ("id" serial primary key);`);
+    await orm.schema.execute(`create table "myschema"."b" ("id" serial primary key, "a_id" int not null);`);
+    await orm.schema.execute(`alter table "myschema"."b" add constraint "b_a_id_foreign" foreign key ("a_id") references "myschema"."a" ("id") on update cascade on delete cascade;`);
   });
 
   afterAll(() => orm.close(true));

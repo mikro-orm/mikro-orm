@@ -35,7 +35,7 @@ describe('Migrator (mongo)', () => {
   beforeAll(async () => {
     orm = await initORMMongo(true);
 
-    const schemaGenerator = orm.getSchemaGenerator();
+    const schemaGenerator = orm.schema;
     await schemaGenerator.refreshDatabase();
     await remove(process.cwd() + '/temp/migrations-mongo');
   });
@@ -52,7 +52,7 @@ describe('Migrator (mongo)', () => {
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
     orm.config.set('migrations', { ...migrationsSettings, emit: 'js' }); // Set migration type to js
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-js-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
@@ -64,7 +64,7 @@ describe('Migrator (mongo)', () => {
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
     orm.config.set('migrations', { ...migrationsSettings, fileName: time => `migration-${time}` });
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
     const upMock = jest.spyOn(Umzug.prototype, 'up');
@@ -86,14 +86,14 @@ describe('Migrator (mongo)', () => {
   test('generate blank migration', async () => {
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
     await remove(process.cwd() + '/temp/migrations-mongo/' + migration.fileName);
   });
 
   test('generate initial migration', async () => {
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     const spy = jest.spyOn(Migrator.prototype, 'createMigration');
     spy.mockImplementation();
     await migrator.createInitialMigration('abc');
@@ -106,7 +106,7 @@ describe('Migrator (mongo)', () => {
     const downMock = jest.spyOn(Umzug.prototype, 'down');
     upMock.mockImplementationOnce(() => void 0 as any);
     downMock.mockImplementationOnce(() => void 0 as any);
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     await migrator.up();
     expect(upMock).toBeCalledTimes(1);
     expect(downMock).toBeCalledTimes(0);
@@ -120,12 +120,12 @@ describe('Migrator (mongo)', () => {
 
   test('run schema migration without existing migrations folder (GH #907)', async () => {
     await remove(process.cwd() + '/temp/migrations-mongo');
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     await migrator.up();
   });
 
   test('list executed migrations', async () => {
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     const storage = migrator.getStorage();
 
     await storage.logMigration({ name: 'test', context: null });
@@ -139,7 +139,7 @@ describe('Migrator (mongo)', () => {
   });
 
   test('runner', async () => {
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     // @ts-ignore
     const runner = migrator.runner;
 
@@ -169,7 +169,7 @@ describe('Migrator (mongo)', () => {
   });
 
   test('up/down params [all or nothing enabled]', async () => {
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     const path = process.cwd() + '/temp/migrations-mongo';
 
     const migration = await migrator.createMigration(path, true);
@@ -197,7 +197,7 @@ describe('Migrator (mongo)', () => {
   });
 
   test('up/down with explicit transaction', async () => {
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     const path = process.cwd() + '/temp/migrations-mongo';
 
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
@@ -234,7 +234,7 @@ describe('Migrator (mongo)', () => {
   });
 
   test('up/down params [all or nothing disabled]', async () => {
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     // @ts-ignore
     migrator.options.allOrNothing = false;
     const path = process.cwd() + '/temp/migrations-mongo';

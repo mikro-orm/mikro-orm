@@ -32,7 +32,7 @@ beforeAll(async () => {
     dbName: 'mikro_orm_test_3258',
     type: 'mongo',
   });
-  await orm.getSchemaGenerator().refreshDatabase();
+  await orm.schema.refreshDatabase();
 });
 
 afterAll(() => orm.close(true));

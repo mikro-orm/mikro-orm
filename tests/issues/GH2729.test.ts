@@ -43,7 +43,7 @@ describe('GH #2729', () => {
       dbName: ':memory:',
       entities: [PersonEntity, TaskEntity],
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
 
     await orm.em.nativeInsert(TaskEntity, {
       description: 'person zero task',

@@ -35,7 +35,7 @@ describe('GH 2723', () => {
       type: 'sqlite',
       entities: [Cat, User],
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(() => orm.close(true));

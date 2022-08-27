@@ -65,7 +65,7 @@ describe('changing column in postgres (GH 2407)', () => {
       dbName: `mikro_orm_test_gh_2407`,
       type: 'postgresql',
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(() => orm.close(true));
@@ -73,30 +73,30 @@ describe('changing column in postgres (GH 2407)', () => {
   test('schema generator respect indexes on FKs on column update', async () => {
     await orm.discoverEntity(Book2);
     orm.getMetadata().reset('Book1');
-    const diff1 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toBe(`alter table "book" alter column "my_column" type boolean using ("my_column"::boolean);
 alter table "book" alter column "my_column" set default false;
 alter table "book" alter column "my_column" set not null;\n\n`);
-    await orm.getSchemaGenerator().execute(diff1);
+    await orm.schema.execute(diff1);
 
     await orm.discoverEntity(Book3);
     orm.getMetadata().reset('Book2');
-    const diff3 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    const diff3 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff3).toBe(`alter table "book" alter column "my_column" type boolean using ("my_column"::boolean);
 alter table "book" alter column "my_column" drop not null;\n\n`);
-    await orm.getSchemaGenerator().execute(diff3);
+    await orm.schema.execute(diff3);
 
     await orm.discoverEntity(Book4);
     orm.getMetadata().reset('Book3');
-    const diff4 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    const diff4 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff4).toBe(`comment on column "book"."my_column" is 'lalala';\n\n`);
-    await orm.getSchemaGenerator().execute(diff4);
+    await orm.schema.execute(diff4);
 
     await orm.discoverEntity(Book5);
     orm.getMetadata().reset('Book4');
-    const diff5 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    const diff5 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff5).toBe(`comment on column "book"."my_column" is 'lololo';\n\n`);
-    await orm.getSchemaGenerator().execute(diff5);
+    await orm.schema.execute(diff5);
   });
 
 });

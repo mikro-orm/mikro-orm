@@ -18,7 +18,7 @@ describe('SchemaGenerator (no FKs)', () => {
       schemaGenerator: { createForeignKeyConstraints: false, disableForeignKeys: false },
     });
 
-    const generator = orm.getSchemaGenerator();
+    const generator = orm.schema;
     await generator.ensureDatabase();
     await generator.dropDatabase(dbName);
     await orm.close(true);
@@ -36,7 +36,7 @@ describe('SchemaGenerator (no FKs)', () => {
       schemaGenerator: { createForeignKeyConstraints: false, disableForeignKeys: false },
     });
 
-    const generator = orm.getSchemaGenerator();
+    const generator = orm.schema;
     await generator.createSchema();
     await generator.dropSchema({ wrap: false, dropMigrationsTable: false, dropDb: true });
     await orm.close(true);
@@ -46,7 +46,7 @@ describe('SchemaGenerator (no FKs)', () => {
 
   test('generate schema from metadata [mysql]', async () => {
     const orm = await initORMMySql('mysql', { schemaGenerator: { createForeignKeyConstraints: false, disableForeignKeys: false } }, true);
-    const generator = orm.getSchemaGenerator();
+    const generator = orm.schema;
     await generator.ensureDatabase();
     const dump = await generator.generate();
     expect(dump).toMatchSnapshot('mysql-schema-dump');
@@ -66,7 +66,7 @@ describe('SchemaGenerator (no FKs)', () => {
   test('update schema [mysql]', async () => {
     const orm = await initORMMySql('mysql', { schemaGenerator: { createForeignKeyConstraints: false, disableForeignKeys: false } }, true);
     const meta = orm.getMetadata();
-    const generator = orm.getSchemaGenerator();
+    const generator = orm.schema;
 
     const newTableMeta = EntitySchema.fromMetadata({
       properties: {
@@ -204,7 +204,7 @@ describe('SchemaGenerator (no FKs)', () => {
   test('rename column [mysql]', async () => {
     const orm = await initORMMySql('mysql', { schemaGenerator: { createForeignKeyConstraints: false, disableForeignKeys: false } }, true);
     const meta = orm.getMetadata();
-    const generator = orm.getSchemaGenerator();
+    const generator = orm.schema;
 
     const authorMeta = meta.get('Author2');
     const ageProp = authorMeta.properties.age;
@@ -229,7 +229,7 @@ describe('SchemaGenerator (no FKs)', () => {
   test('update schema enums [mysql]', async () => {
     const orm = await initORMMySql('mysql', { schemaGenerator: { createForeignKeyConstraints: false, disableForeignKeys: false } }, true);
     const meta = orm.getMetadata();
-    const generator = orm.getSchemaGenerator();
+    const generator = orm.schema;
 
     const newTableMeta = new EntitySchema({
       properties: {
@@ -294,7 +294,7 @@ describe('SchemaGenerator (no FKs)', () => {
     dropSchema.mockImplementation(() => Promise.resolve());
     createSchema.mockImplementation(() => Promise.resolve());
 
-    const generator = orm.getSchemaGenerator();
+    const generator = orm.schema;
     await generator.refreshDatabase();
 
     expect(dropSchema).toBeCalledTimes(1);

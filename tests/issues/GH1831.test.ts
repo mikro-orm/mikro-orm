@@ -88,7 +88,7 @@ describe('GH issue 1831', () => {
       dbName: ':memory:',
       entities: [Project, Filter, FilterValue],
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {

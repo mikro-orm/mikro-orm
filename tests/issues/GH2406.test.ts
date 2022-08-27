@@ -34,7 +34,7 @@ describe('GH issue 2406', () => {
       forceEntityConstructor: true,
       type: 'sqlite',
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(() => orm.close(true));

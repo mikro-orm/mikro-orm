@@ -52,7 +52,7 @@ describe('GH issue 3339', () => {
       schema: 'gh3339',
       entities: [ Customer1 ],
     });
-    const generator = orm.getSchemaGenerator();
+    const generator = orm.schema;
     await generator.ensureDatabase();
     await generator.dropSchema();
     await generator.createSchema();
@@ -64,14 +64,14 @@ describe('GH issue 3339', () => {
   test('reference schema name when updating column names inside sql', async () => {
     await orm.discoverEntity(Customer2);
     orm.getMetadata().reset('Customer1');
-    const diff1 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toContain('"gh3339"."Customer"');
-    await orm.getSchemaGenerator().execute(diff1);
+    await orm.schema.execute(diff1);
 
     await orm.discoverEntity(Customer3);
     orm.getMetadata().reset('Customer2');
-    const diff2 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    const diff2 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff2).toContain('"gh3339"."Customer"');
-    await orm.getSchemaGenerator().execute(diff2);
+    await orm.schema.execute(diff2);
   });
 });

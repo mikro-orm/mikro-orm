@@ -25,7 +25,7 @@ test('batch insert and mapping of PKs with custom field name [sqlite]', async ()
     dbName: ':memory:',
     type: 'sqlite',
   });
-  await orm.getSchemaGenerator().refreshDatabase();
+  await orm.schema.refreshDatabase();
   const authors = [new Author(), new Author(), new Author()];
   const books = [new Book(), new Book(), new Book()];
   books.forEach((b, idx) => b.author = authors[idx]);
@@ -41,7 +41,7 @@ test('batch insert and mapping of PKs with custom field name [better-sqlite]', a
     dbName: ':memory:',
     type: 'better-sqlite',
   });
-  await orm.getSchemaGenerator().refreshDatabase();
+  await orm.schema.refreshDatabase();
   const authors = [new Author(), new Author(), new Author()];
   const books = [new Book(), new Book(), new Book()];
   books.forEach((b, idx) => b.author = authors[idx]);
@@ -57,7 +57,7 @@ test('batch insert and mapping of PKs with custom field name [postgres]', async 
     dbName: 'mikro_orm_test_2977',
     type: 'postgresql',
   });
-  await orm.getSchemaGenerator().refreshDatabase();
+  await orm.schema.refreshDatabase();
   const authors = [new Author(), new Author(), new Author()];
   const books = [new Book(), new Book(), new Book()];
   books.forEach((b, idx) => b.author = authors[idx]);
@@ -74,7 +74,7 @@ test('batch insert and mapping of PKs with custom field name [mysql]', async () 
     type: 'mysql',
     port: 3308,
   });
-  await orm.getSchemaGenerator().refreshDatabase();
+  await orm.schema.refreshDatabase();
   const authors = [new Author(), new Author(), new Author()];
   const books = [new Book(), new Book(), new Book()];
   books.forEach((b, idx) => b.author = authors[idx]);
@@ -91,7 +91,7 @@ test('batch insert and mapping of PKs with custom field name [mariadb]', async (
     type: 'mariadb',
     port: 3309,
   });
-  await orm.getSchemaGenerator().refreshDatabase();
+  await orm.schema.refreshDatabase();
   const authors = [new Author(), new Author(), new Author()];
   const books = [new Book(), new Book(), new Book()];
   books.forEach((b, idx) => b.author = authors[idx]);
