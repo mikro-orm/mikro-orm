@@ -376,6 +376,10 @@ export class Utils {
       ret.push(...params.map((p: any) => {
         switch (p.type) {
           case 'AssignmentPattern':
+            if (p.left.type === 'ObjectPattern') {
+              return ObjectBindingPattern;
+            }
+
             return p.left.name;
           case 'RestElement':
             return '...' + p.argument.name;
