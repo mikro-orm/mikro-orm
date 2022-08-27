@@ -68,6 +68,22 @@ describe('EntityGenerator', () => {
     await remove('./temp/entities');
   });
 
+  test('generate entities with reference wrappers and named import [mysql]', async () => {
+    const orm = await initORMMySql('mysql', {
+      entityGenerator: {
+        identifiedReferences: true,
+        importExtension: 'js',
+      },
+    }, true);
+    const generator = orm.getEntityGenerator();
+    const dump = await generator.generate({ save: true, baseDir: './temp/entities' });
+    expect(dump).toMatchSnapshot('mysql-entity-named-dump');
+    await expect(pathExists('./temp/entities/Author2.ts')).resolves.toBe(true);
+    await remove('./temp/entities');
+
+    await orm.close(true);
+  });
+
   test('generate entities from schema [sqlite]', async () => {
     const orm = await initORMSqlite();
     const generator = new EntityGenerator(orm.em);

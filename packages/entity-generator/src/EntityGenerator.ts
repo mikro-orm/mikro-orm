@@ -37,12 +37,14 @@ export class EntityGenerator {
       this.generateIdentifiedReferences(metadata);
     }
 
+    const importExtension = this.config.get('entityGenerator').importExtension ?? '';
+
     for (const meta of metadata) {
       if (!meta.pivotTable) {
         if (this.config.get('entityGenerator').entitySchema) {
-          this.sources.push(new EntitySchemaSourceFile(meta, this.namingStrategy, this.platform));
+          this.sources.push(new EntitySchemaSourceFile(meta, this.namingStrategy, this.platform, importExtension));
         } else {
-          this.sources.push(new SourceFile(meta, this.namingStrategy, this.platform));
+          this.sources.push(new SourceFile(meta, this.namingStrategy, this.platform, importExtension));
         }
       }
     }

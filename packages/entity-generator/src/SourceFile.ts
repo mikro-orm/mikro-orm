@@ -8,7 +8,8 @@ export class SourceFile {
 
   constructor(protected readonly meta: EntityMetadata,
               protected readonly namingStrategy: NamingStrategy,
-              protected readonly platform: Platform) { }
+              protected readonly platform: Platform,
+              protected readonly importExtension: '' | 'js' | 'mjs' | 'cjs') { }
 
   generate(): string {
     this.coreImports.add('Entity');
@@ -50,7 +51,10 @@ export class SourceFile {
     const imports = [`import { ${([...this.coreImports].sort().join(', '))} } from '@mikro-orm/core';`];
     const entityImports = [...this.entityImports].filter(e => e !== this.meta.className);
     entityImports.sort().forEach(entity => {
-      imports.push(`import { ${entity} } from './${entity}';`);
+      imports.push(
+        `import { ${entity} } from './${entity}${
+          this.importExtension ? `.${this.importExtension}` : ''
+        }';`);
     });
 
     ret = `${imports.join('\n')}\n\n${ret}`;
