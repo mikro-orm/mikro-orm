@@ -105,7 +105,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
   if (!simple) {
     orm.config.set('dbName', 'mikro_orm_test_schema_2');
     await schemaGenerator.ensureDatabase();
-    await orm.em.getDriver().reconnect();
+    await orm.reconnect();
     await schemaGenerator.dropSchema();
     await connection.loadFile(__dirname + '/mysql-schema.sql');
     await orm.close(true);
