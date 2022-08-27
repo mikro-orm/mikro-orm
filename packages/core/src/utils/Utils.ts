@@ -7,7 +7,9 @@ import type { URL } from 'url';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { pathExists } from 'fs-extra';
 import { createHash } from 'crypto';
-import { recovery } from 'escaya';
+// @ts-ignore
+import { parse } from 'acorn-loose';
+import { simple as walk } from 'acorn-walk';
 import { clone } from './clone';
 import type { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityName, EntityProperty, IMetadataStorage, Primary } from '../typings';
 import { GroupOperator, PlainObject, QueryOperator, ReferenceType } from '../enums';
@@ -363,23 +365,19 @@ export class Utils {
    */
   static getParamNames(func: { toString(): string } | string, methodName?: string): string[] {
     const ret: string[] = [];
-    const parsed = recovery(func.toString(), 'entity.js', { next: true, module: true });
+    const parsed = parse(func.toString(), { ecmaVersion: 2022 });
 
-    const checkNode = (node: Dictionary) => {
-      if (methodName && node.name?.name !== methodName) {
+    const checkNode = (node: any, methodName?: string) => {
+      if (methodName && !(node.key && (node.key as any).name === methodName)) {
         return;
       }
 
-      const params = node.uniqueFormalParameters ?? node.params;
+      const params = node.value ? node.value.params : node.params;
       ret.push(...params.map((p: any) => {
         switch (p.type) {
-          case 'BindingElement':
-            if (p.left.type === 'ObjectBindingPattern') {
-              return ObjectBindingPattern;
-            }
-
+          case 'AssignmentPattern':
             return p.left.name;
-          case 'BindingRestElement':
+          case 'RestElement':
             return '...' + p.argument.name;
           default:
             return p.name;
@@ -387,27 +385,12 @@ export class Utils {
       }));
     };
 
-    Utils.walkNode(parsed, checkNode);
+    walk(parsed, {
+      MethodDefinition: (node: any) => checkNode(node, methodName),
+      FunctionDeclaration: (node: any) => checkNode(node, methodName),
+    });
 
     return ret;
-  }
-
-  private static walkNode(node: Dictionary, checkNode: (node: Dictionary) => void): void {
-    if (['MethodDefinition', 'FunctionDeclaration'].includes(node.type!)) {
-      checkNode(node);
-    }
-
-    if (Array.isArray(node.leafs)) {
-      node.leafs.forEach((row: Dictionary) => Utils.walkNode(row, checkNode));
-    }
-
-    if (Array.isArray(node.elements)) {
-      node.elements.forEach(element => Utils.walkNode(element, checkNode));
-    }
-
-    if (node.method) {
-      Utils.walkNode(node.method, checkNode);
-    }
   }
 
   /**
