@@ -98,7 +98,8 @@ describe('virtual entities (sqlite)', () => {
     await createEntities(3);
 
     const mock = mockLogger(orm);
-    const profiles = await orm.em.find(AuthorProfile, {});
+    const [profiles, total] = await orm.em.findAndCount(AuthorProfile, {});
+    expect(total).toBe(3);
     expect(profiles).toEqual([
       {
         name: 'Jon Snow 1',
@@ -140,12 +141,13 @@ describe('virtual entities (sqlite)', () => {
     expect(someProfiles4).toHaveLength(2);
     expect(someProfiles4.map(p => p.name)).toEqual(['Jon Snow 2', 'Jon Snow 3']);
 
-    expect(mock.mock.calls).toHaveLength(5);
-    expect(mock.mock.calls[0][0]).toMatch(`select * from (${authorProfilesSQL}) as \`a0\``);
-    expect(mock.mock.calls[1][0]).toMatch(`select * from (${authorProfilesSQL}) as \`a0\` order by \`a0\`.\`name\` asc limit 2 offset 1`);
-    expect(mock.mock.calls[2][0]).toMatch(`select * from (${authorProfilesSQL}) as \`a0\` order by \`a0\`.\`name\` asc limit 2`);
-    expect(mock.mock.calls[3][0]).toMatch(`select * from (${authorProfilesSQL}) as \`a0\` where \`a0\`.\`name\` like 'Jon%' and \`a0\`.\`age\` >= 0 order by \`a0\`.\`name\` asc limit 2`);
-    expect(mock.mock.calls[4][0]).toMatch(`select * from (${authorProfilesSQL}) as \`a0\` where \`a0\`.\`name\` in ('Jon Snow 2', 'Jon Snow 3')`);
+    expect(mock.mock.calls).toHaveLength(6);
+    expect(mock.mock.calls[0][0]).toMatch(`select count(*) as count from (${authorProfilesSQL}) as \`a0\``);
+    expect(mock.mock.calls[1][0]).toMatch(`select * from (${authorProfilesSQL}) as \`a0\``);
+    expect(mock.mock.calls[2][0]).toMatch(`select * from (${authorProfilesSQL}) as \`a0\` order by \`a0\`.\`name\` asc limit 2 offset 1`);
+    expect(mock.mock.calls[3][0]).toMatch(`select * from (${authorProfilesSQL}) as \`a0\` order by \`a0\`.\`name\` asc limit 2`);
+    expect(mock.mock.calls[4][0]).toMatch(`select * from (${authorProfilesSQL}) as \`a0\` where \`a0\`.\`name\` like 'Jon%' and \`a0\`.\`age\` >= 0 order by \`a0\`.\`name\` asc limit 2`);
+    expect(mock.mock.calls[5][0]).toMatch(`select * from (${authorProfilesSQL}) as \`a0\` where \`a0\`.\`name\` in ('Jon Snow 2', 'Jon Snow 3')`);
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toHaveLength(0);
   });
 
@@ -155,7 +157,8 @@ describe('virtual entities (sqlite)', () => {
     await createEntities(3);
 
     const mock = mockLogger(orm);
-    const books = await orm.em.find(BookWithAuthor, {});
+    const [books, total] = await orm.em.findAndCount(BookWithAuthor, {});
+    expect(total).toBe(9);
     expect(books).toEqual([
       {
         title: 'My Life on the Wall, part 1/1',
@@ -230,12 +233,13 @@ describe('virtual entities (sqlite)', () => {
       'inner join `tags_ordered` as `t1` on `b`.`id` = `t1`.`book4_id` ' +
       'inner join `book_tag4` as `t` on `t1`.`book_tag4_id` = `t`.`id` ' +
       'group by `b`.`id`';
-    expect(mock.mock.calls).toHaveLength(5);
-    expect(mock.mock.calls[0][0]).toMatch(`select * from (${sql}) as \`b0\``);
-    expect(mock.mock.calls[1][0]).toMatch(`select * from (${sql}) as \`b0\` order by \`b0\`.\`title\` asc limit 2 offset 1`);
-    expect(mock.mock.calls[2][0]).toMatch(`select * from (${sql}) as \`b0\` order by \`b0\`.\`title\` asc limit 2`);
-    expect(mock.mock.calls[3][0]).toMatch(`select * from (${sql}) as \`b0\` where \`b0\`.\`title\` like 'My Life%' and \`b0\`.\`author_name\` is not null order by \`b0\`.\`title\` asc limit 2`);
-    expect(mock.mock.calls[4][0]).toMatch(`select * from (${sql}) as \`b0\` where \`b0\`.\`title\` in ('My Life on the Wall, part 1/2', 'My Life on the Wall, part 1/3')`);
+    expect(mock.mock.calls).toHaveLength(6);
+    expect(mock.mock.calls[0][0]).toMatch(`select count(*) as count from (${sql}) as \`b0\``);
+    expect(mock.mock.calls[1][0]).toMatch(`select * from (${sql}) as \`b0\``);
+    expect(mock.mock.calls[2][0]).toMatch(`select * from (${sql}) as \`b0\` order by \`b0\`.\`title\` asc limit 2 offset 1`);
+    expect(mock.mock.calls[3][0]).toMatch(`select * from (${sql}) as \`b0\` order by \`b0\`.\`title\` asc limit 2`);
+    expect(mock.mock.calls[4][0]).toMatch(`select * from (${sql}) as \`b0\` where \`b0\`.\`title\` like 'My Life%' and \`b0\`.\`author_name\` is not null order by \`b0\`.\`title\` asc limit 2`);
+    expect(mock.mock.calls[5][0]).toMatch(`select * from (${sql}) as \`b0\` where \`b0\`.\`title\` in ('My Life on the Wall, part 1/2', 'My Life on the Wall, part 1/3')`);
 
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toHaveLength(0);
     expect(mock.mock.calls[0][0]).toMatch(sql);

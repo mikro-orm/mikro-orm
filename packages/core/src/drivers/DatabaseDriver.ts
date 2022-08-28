@@ -54,6 +54,11 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     throw new Error(`Virtual entities are not supported by ${this.constructor.name} driver.`);
   }
 
+  /* istanbul ignore next */
+  async countVirtual<T>(entityName: string, where: FilterQuery<T>, options: CountOptions<T>): Promise<number> {
+    throw new Error(`Counting virtual entities is not supported by ${this.constructor.name} driver.`);
+  }
+
   async aggregate(entityName: string, pipeline: any[]): Promise<any[]> {
     throw new Error(`Aggregations are not supported by ${this.constructor.name} driver`);
   }

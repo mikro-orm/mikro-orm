@@ -11,6 +11,7 @@ import type { AbstractSqlPlatform } from './AbstractSqlPlatform';
 import { QueryBuilder } from './query/QueryBuilder';
 import { SqlEntityManager } from './SqlEntityManager';
 import type { Field } from './typings';
+import { QueryType } from './query';
 
 export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = AbstractSqlConnection> extends DatabaseDriver<C> {
 
@@ -122,7 +123,33 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return res as EntityData<T>[];
   }
 
-  protected async wrapVirtualExpressionInSubquery<T>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any>) {
+  async countVirtual<T>(entityName: string, where: FilterQuery<T>, options: CountOptions<T>): Promise<number> {
+    const meta = this.metadata.get<T>(entityName);
+
+    /* istanbul ignore next */
+    if (!meta.expression) {
+      return 0;
+    }
+
+    if (typeof meta.expression === 'string') {
+      return this.wrapVirtualExpressionInSubquery(meta, meta.expression, where, options as Dictionary, QueryType.COUNT);
+    }
+
+    const em = this.createEntityManager(false);
+    em.setTransactionContext(options.ctx);
+    const res = meta.expression(em, where, options as Dictionary);
+
+    if (res instanceof QueryBuilder<T[]>) {
+      return this.wrapVirtualExpressionInSubquery(meta, res.getFormattedQuery(), where, options as Dictionary, QueryType.COUNT);
+    }
+
+    return res as any;
+  }
+
+  protected async wrapVirtualExpressionInSubquery<T>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any>, type: QueryType.COUNT): Promise<number>;
+  protected async wrapVirtualExpressionInSubquery<T>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any>, type: QueryType.SELECT): Promise<T[]>;
+  protected async wrapVirtualExpressionInSubquery<T>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any>): Promise<T[]>;
+  protected async wrapVirtualExpressionInSubquery<T>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any>, type = QueryType.SELECT): Promise<unknown> {
     const qb = this.createQueryBuilder(meta.className, options?.ctx, options.connectionType, options.convertCustomTypes)
       .limit(options?.limit, options?.offset);
 
@@ -132,11 +159,21 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     qb.where(where);
 
-    const kqb = qb.getKnexQuery();
-    kqb.clear('select').select('*');
-    kqb.fromRaw(`(${expression}) as ${this.platform.quoteIdentifier(qb.alias)}`);
+    const kqb = qb.getKnexQuery().clear('select');
 
+    if (type === QueryType.COUNT) {
+      kqb.select(qb.raw('count(*) as count'));
+    } else { // select
+      kqb.select('*');
+    }
+
+    kqb.fromRaw(`(${expression}) as ${this.platform.quoteIdentifier(qb.alias)}`);
     const res = await this.execute<T[]>(kqb);
+
+    if (type === QueryType.COUNT) {
+      return (res[0] as Dictionary).count;
+    }
+
     return res.map(row => this.mapResult(row, meta)!);
   }
 
@@ -235,6 +272,11 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
   async count<T extends AnyEntity<T>>(entityName: string, where: any, options: CountOptions<T> = {}): Promise<number> {
     const meta = this.metadata.find(entityName);
+
+    if (meta?.virtual) {
+      return this.countVirtual<T>(entityName, where, options);
+    }
+
     const qb = this.createQueryBuilder(entityName, options.ctx, options.connectionType, false)
       .groupBy(options.groupBy!)
       .having(options.having!)
