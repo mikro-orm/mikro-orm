@@ -39,7 +39,7 @@ export class EntityLoader {
    * Loads specified relations in batch. This will execute one query for each relation, that will populate it on all of the specified entities.
    */
   async populate<T extends AnyEntity<T>, P extends string = never>(entityName: string, entities: T[], populate: PopulateOptions<T>[] | boolean, options: EntityLoaderOptions<T, P>): Promise<void> {
-    if (entities.length === 0 || populate === false) {
+    if (entities.length === 0 || Utils.isEmpty(populate)) {
       return;
     }
 
@@ -56,7 +56,7 @@ export class EntityLoader {
     options.validate ??= true;
     options.refresh ??= false;
     options.convertCustomTypes ??= true;
-    populate = this.normalizePopulate<T>(entityName, populate, options.strategy, options.lookup);
+    populate = this.normalizePopulate<T>(entityName, populate as true, options.strategy, options.lookup);
     const invalid = populate.find(({ field }) => !this.em.canPopulate(entityName, field));
 
     /* istanbul ignore next */

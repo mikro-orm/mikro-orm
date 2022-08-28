@@ -98,7 +98,12 @@ describe('virtual entities (sqlite)', () => {
     await createEntities(3);
 
     const mock = mockLogger(orm);
-    const [profiles, total] = await orm.em.findAndCount(AuthorProfile, {});
+    const [profiles, total] = await orm.em.findAndCount(AuthorProfile, {}, { cache: 50 });
+    expect(mock.mock.calls).toHaveLength(2);
+    const res2 = await orm.em.findAndCount(AuthorProfile, {}, { cache: 50 });
+    expect(res2).toEqual([profiles, total]);
+    expect(mock.mock.calls).toHaveLength(2); // from cache, no additional queries
+
     expect(total).toBe(3);
     expect(profiles).toEqual([
       {

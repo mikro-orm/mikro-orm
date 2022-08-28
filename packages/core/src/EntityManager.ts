@@ -153,7 +153,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     if (meta.virtual) {
       await em.unitOfWork.dispatchOnLoadEvent();
-      await em.storeCache(options.cache, cached!, () => ret.map(e => e.__helper!.toPOJO()));
+      await em.storeCache(options.cache, cached!, () => ret);
 
       return ret as Loaded<T, P>[];
     }
