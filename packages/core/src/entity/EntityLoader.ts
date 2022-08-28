@@ -512,7 +512,7 @@ export class EntityLoader {
     const meta = this.metadata.find(entityName);
 
     if (visited.includes(entityName) || !meta) {
-      return [];
+      return populate;
     }
 
     visited.push(entityName);

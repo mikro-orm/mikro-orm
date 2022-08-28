@@ -862,15 +862,20 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   canPopulate<T extends AnyEntity<T>>(entityName: EntityName<T>, property: string): boolean {
     entityName = Utils.className(entityName);
     const [p, ...parts] = property.split('.');
-    const props = this.metadata.get(entityName).properties;
-    const ret = p in props;
+    const meta = this.metadata.find(entityName);
+
+    if (!meta) {
+      return true;
+    }
+
+    const ret = p in meta.properties;
 
     if (!ret) {
       return !!this.metadata.find(property)?.pivotTable;
     }
 
     if (parts.length > 0) {
-      return this.canPopulate(props[p].type, parts.join('.'));
+      return this.canPopulate((meta.properties)[p].type, parts.join('.'));
     }
 
     return ret;
