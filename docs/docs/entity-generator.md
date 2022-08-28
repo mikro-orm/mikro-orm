@@ -51,7 +51,7 @@ By default, the `EntityGenerator` generates only owning sides of relations (e.g.
 - `bidirectionalRelations` to generate also the inverse sides for them
 - `identifiedReferences` to generate M:1 and 1:1 relations as wrapped references
 - `entitySchema` to generate the entities using `EntitySchema` instead of decorators
-- `importExtension` one of `'js' | 'cjs' | 'mjs'` that can be added as a extenstion to imported entities e.x. when `importExtension=js`, generated entities include `import Author from './Author.js'`
+- `esmImport` to use esm style import for imported entities e.x. when `esmImport=true`, generated entities include `import Author from './Author.js'`
 
 ## Current limitations
 

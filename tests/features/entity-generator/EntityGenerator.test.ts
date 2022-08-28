@@ -72,7 +72,7 @@ describe('EntityGenerator', () => {
     const orm = await initORMMySql('mysql', {
       entityGenerator: {
         identifiedReferences: true,
-        importExtension: 'js',
+        esmImport: true,
       },
     }, true);
     const generator = orm.getEntityGenerator();

@@ -17,6 +17,7 @@ export class ConfigurationLoader {
     this.registerDotenv(options);
     const paths = await this.getConfigPaths();
     const env = this.loadEnvironmentVars();
+    const isESM = (await this.getModuleFormatFromPackage()) === 'module';
 
     for (let path of paths) {
       path = Utils.absolutePath(path);
@@ -35,7 +36,9 @@ export class ConfigurationLoader {
           tmp = await tmp;
         }
 
-        return new Configuration({ ...tmp, ...options, ...env }, validate);
+        const esmConfigOptions = isESM ? { entityGenerator: { esmImport: true } } : {};
+
+        return new Configuration({ ...esmConfigOptions, ...tmp, ...options, ...env }, validate);
       }
     }
 
@@ -98,6 +101,11 @@ export class ConfigurationLoader {
     const tsNode = Utils.detectTsNode();
 
     return paths.filter(p => p.endsWith('.js') || tsNode);
+  }
+
+  static async getModuleFormatFromPackage(): Promise<string> {
+    const config = await ConfigurationLoader.getPackageConfig();
+    return config?.type ?? '';
   }
 
   static async registerTsNode(configPath = 'tsconfig.json'): Promise<boolean> {
