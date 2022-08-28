@@ -419,6 +419,13 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     packageSpy.mockResolvedValue({ type: 'module' });
     const esmModulePackage = await ConfigurationLoader.getModuleFormatFromPackage();
     expect(esmModulePackage).toEqual('module');
+    const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
+    pathExistsMock.mockResolvedValue(true);
+    const conf = await CLIHelper.getConfiguration();
+    expect(conf).toBeInstanceOf(Configuration);
+    expect(conf.get('entityGenerator')?.esmImport).toEqual(true);
+    pathExistsMock.mockRestore();
+    packageSpy.mockRestore();
   });
 
   test('dumpTable', async () => {
