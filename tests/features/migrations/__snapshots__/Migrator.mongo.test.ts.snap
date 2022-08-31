@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Migrator (mongo) generate blank migration: migration-dump 1`] = `
-Object {
+{
   "code": "import { Migration } from '@mikro-orm/migrations-mongodb';
 
 export class Migration20191013214813 extends Migration {
@@ -11,16 +11,16 @@ export class Migration20191013214813 extends Migration {
 
 }
 ",
-  "diff": Object {
-    "down": Array [],
-    "up": Array [],
+  "diff": {
+    "down": [],
+    "up": [],
   },
   "fileName": "Migration20191013214813.ts",
 }
 `;
 
 exports[`Migrator (mongo) generate js schema migration: migration-js-dump 1`] = `
-Object {
+{
   "code": "'use strict';
 Object.defineProperty(exports, '__esModule', { value: true });
 const { Migration } = require('@mikro-orm/migrations-mongodb');
@@ -33,16 +33,16 @@ class Migration20191013214813 extends Migration {
 }
 exports.Migration20191013214813 = Migration20191013214813;
 ",
-  "diff": Object {
-    "down": Array [],
-    "up": Array [],
+  "diff": {
+    "down": [],
+    "up": [],
   },
   "fileName": "Migration20191013214813.js",
 }
 `;
 
 exports[`Migrator (mongo) generate migration with custom name: migration-dump 1`] = `
-Object {
+{
   "code": "import { Migration } from '@mikro-orm/migrations-mongodb';
 
 export class Migration20191013214813 extends Migration {
@@ -52,16 +52,16 @@ export class Migration20191013214813 extends Migration {
 
 }
 ",
-  "diff": Object {
-    "down": Array [],
-    "up": Array [],
+  "diff": {
+    "down": [],
+    "up": [],
   },
   "fileName": "migration-20191013214813.ts",
 }
 `;
 
 exports[`Migrator (mongo) up/down params [all or nothing disabled]: all-or-nothing-disabled 1`] = `
-Array [
+[
   "db.getCollection('mikro_orm_migrations').find({}, { session: undefined }).sort([ [ '_id', 1 ] ]).toArray();",
   "db.begin();",
   "db.commit();",
@@ -91,7 +91,7 @@ Array [
 `;
 
 exports[`Migrator (mongo) up/down params [all or nothing enabled]: all-or-nothing 1`] = `
-Array [
+[
   "db.begin();",
   "db.getCollection('mikro_orm_migrations').find({}, { session: '[ClientSession]' }).sort([ [ '_id', 1 ] ]).toArray();",
   "db.getCollection('mikro_orm_migrations').insertOne({ name: 'Migration20191013214813', created_at: ISODate('2019-10-13T21:48:13.382Z') }, { session: '[ClientSession]' });",
@@ -123,7 +123,7 @@ Array [
 `;
 
 exports[`Migrator (mongo) up/down with explicit transaction: explicit-tx 1`] = `
-Array [
+[
   "db.begin();",
   "db.getCollection('mikro_orm_migrations').find({}, { session: '[ClientSession]' }).sort([ [ '_id', 1 ] ]).toArray();",
   "db.getCollection('mikro_orm_migrations').insertOne({ name: 'Migration20200922100001', created_at: ISODate(...) }, { session: '[ClientSession]' });",

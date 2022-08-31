@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`multiple connected schemas in postgres generate entities for given schema only 1`] = `
-Array [
+[
   "import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Author } from './Author';
 import { BookTag } from './BookTag';

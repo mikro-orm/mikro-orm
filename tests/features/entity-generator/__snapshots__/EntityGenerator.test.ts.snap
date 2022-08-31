@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`EntityGenerator enum with default value [mysql]: mysql-entity-dump-enum-default-value 1`] = `
-Array [
+[
   "import { Entity, Enum, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
@@ -35,7 +35,7 @@ export enum Publisher2Type2 {
 `;
 
 exports[`EntityGenerator enum with default value [postgres]: postgres-entity-dump-enum-default-value 1`] = `
-Array [
+[
   "import { Entity, Enum, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
@@ -69,7 +69,7 @@ export enum Publisher2Type2 {
 `;
 
 exports[`EntityGenerator generate EntitySchema with bidirectional relations and reference wrappers [mysql]: mysql-entity-schema-bidirectional-dump 1`] = `
-Array [
+[
   "import { EntitySchema, IdentifiedReference } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
@@ -772,7 +772,7 @@ export const User2Schema = new EntitySchema({
 `;
 
 exports[`EntityGenerator generate entities from schema [mysql]: mysql-entity-dump 1`] = `
-Array [
+[
   "import { Entity, OneToOne, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
@@ -1250,7 +1250,7 @@ export class User2 {
 `;
 
 exports[`EntityGenerator generate entities from schema [postgres]: postgres-entity-dump 1`] = `
-Array [
+[
   "import { Entity, OneToOne, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
@@ -1626,7 +1626,7 @@ export class Test2 {
 `;
 
 exports[`EntityGenerator generate entities from schema [sqlite]: sqlite-entity-dump 1`] = `
-Array [
+[
   "import { Entity, Index, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book3 } from './Book3';
 
@@ -1785,7 +1785,7 @@ export class Test3 {
 `;
 
 exports[`EntityGenerator generate entities with bidirectional relations [mysql]: mysql-entity-bidirectional-dump 1`] = `
-Array [
+[
   "import { Entity, OneToOne, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
@@ -2349,7 +2349,7 @@ export class User2 {
 `;
 
 exports[`EntityGenerator generate entities with bidirectional relations and reference wrappers [mysql]: mysql-entity-bidirectional-dump 1`] = `
-Array [
+[
   "import { Entity, IdentifiedReference, OneToOne, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
@@ -3391,7 +3391,7 @@ export class User2 {
 `;
 
 exports[`EntityGenerator numeric nullable columns with null default [mariadb]: mariadb-entity-gh-3285 1`] = `
-Array [
+[
   "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
@@ -3418,7 +3418,7 @@ export class Vrf {
 `;
 
 exports[`EntityGenerator numeric nullable columns with null default [mysql]: mysql-entity-gh-3285 1`] = `
-Array [
+[
   "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
@@ -3445,7 +3445,7 @@ export class Vrf {
 `;
 
 exports[`EntityGenerator table name starting with number [mysql]: mysql-entity-dump-number 1`] = `
-Array [
+[
   "import { Entity, PrimaryKey } from '@mikro-orm/core';
 
 @Entity({ tableName: '123_table_name' })
