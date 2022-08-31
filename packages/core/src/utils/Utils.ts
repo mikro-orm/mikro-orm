@@ -852,7 +852,7 @@ export class Utils {
    * @see https://github.com/microsoft/TypeScript/issues/43329#issuecomment-922544562
    */
   static async dynamicImport<T = any>(id: string): Promise<T> {
-    if (process.env.TS_JEST) {
+    if (process.env.TS_JEST || id.endsWith('.json')) {
       return require(id);
     }
 
