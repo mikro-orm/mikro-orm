@@ -486,6 +486,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
     bidirectionalRelations?: boolean;
     identifiedReferences?: boolean;
     entitySchema?: boolean;
+    esmImport?: boolean;
   };
   cache: {
     enabled?: boolean;
