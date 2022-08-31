@@ -50,7 +50,7 @@ export class ConfigurationLoader {
     if (await pathExists(`${basePath}/package.json`)) {
       /* istanbul ignore next */
       try {
-        return await import(`${basePath}/package.json`);
+        return await Utils.dynamicImport(`${basePath}/package.json`);
       } catch {
         return {};
       }

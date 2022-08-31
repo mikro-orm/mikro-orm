@@ -860,16 +860,12 @@ export class Utils {
       }
     }
 
-    if (id.endsWith('.ts')) {
-      id.replace(/\.ts$/, '.js');
-    }
-
     if (process.env.TS_JEST) {
-      return import(id);
+      return require(id);
     }
 
     /* istanbul ignore next */
-    const ret = await Function(`return import('${id}')`)();
+    const ret = await import(id);
     return ret.default ?? ret;
   }
 
