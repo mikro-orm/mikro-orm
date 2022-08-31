@@ -3,7 +3,7 @@ import { inspect } from 'util';
 import type { NamingStrategy } from '../naming-strategy';
 import type { CacheAdapter } from '../cache';
 import { FileCacheAdapter, NullCacheAdapter } from '../cache';
-import type { EntityRepository } from '../entity';
+import type { EntityRepository } from '../entity/EntityRepository';
 import type {
   AnyEntity,
   Constructor,

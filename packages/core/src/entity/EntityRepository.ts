@@ -5,7 +5,8 @@ import type { CountOptions, DeleteOptions, FindOneOptions, FindOneOrFailOptions,
 import type { IdentifiedReference, Reference } from './Reference';
 import type { EntityLoaderOptions } from './EntityLoader';
 
-export class EntityRepository<T extends AnyEntity<T>> {
+// eslint-disable-next-line @typescript-eslint/ban-types
+export class EntityRepository<T extends {}> {
 
   constructor(protected readonly _em: EntityManager,
               protected readonly entityName: EntityName<T>) { }
@@ -207,7 +208,7 @@ export class EntityRepository<T extends AnyEntity<T>> {
    * Returns total number of entities matching your `where` query.
    */
   async count<P extends string = never>(where: FilterQuery<T> = {} as FilterQuery<T>, options: CountOptions<T, P> = {}): Promise<number> {
-    return this.em.count(this.entityName, where, options);
+    return this.em.count<T, P>(this.entityName, where, options);
   }
 
   protected get em(): EntityManager {

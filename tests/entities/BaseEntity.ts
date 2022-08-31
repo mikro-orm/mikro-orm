@@ -3,7 +3,7 @@ import { BeforeCreate, PrimaryKey, Property, SerializedPrimaryKey, BaseEntity as
 
 export type BaseEntityOptional = 'updatedAt' | 'hookTest';
 
-export abstract class BaseEntity<T extends BaseEntity<T, any>, Optional extends keyof T = never> extends MikroBaseEntity<T, 'id' | '_id'> {
+export abstract class BaseEntity<T extends { id: unknown; _id: unknown }, Optional extends keyof T = never> extends MikroBaseEntity<T, 'id' | '_id'> {
 
   [OptionalProps]?: BaseEntityOptional | Optional;
 

@@ -57,11 +57,11 @@ export class MongoConnection extends Connection {
     return this.client;
   }
 
-  getCollection<T>(name: EntityName<T>): Collection<T> {
+  getCollection<T extends object>(name: EntityName<T>): Collection<T> {
     return this.db.collection<T>(this.getCollectionName(name));
   }
 
-  async createCollection<T>(name: EntityName<T>): Promise<Collection<T>> {
+  async createCollection<T extends object>(name: EntityName<T>): Promise<Collection<T>> {
     return this.db.createCollection(this.getCollectionName(name));
   }
 
@@ -119,7 +119,7 @@ export class MongoConnection extends Connection {
     throw new Error(`${this.constructor.name} does not support generic execute method`);
   }
 
-  async find<T extends AnyEntity<T>>(collection: string, where: FilterQuery<T>, orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[], limit?: number, offset?: number, fields?: string[], ctx?: Transaction<ClientSession>): Promise<EntityData<T>[]> {
+  async find<T extends object>(collection: string, where: FilterQuery<T>, orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[], limit?: number, offset?: number, fields?: string[], ctx?: Transaction<ClientSession>): Promise<EntityData<T>[]> {
     collection = this.getCollectionName(collection);
     const options: Dictionary = { session: ctx };
 
@@ -163,27 +163,27 @@ export class MongoConnection extends Connection {
     return res as EntityData<T>[];
   }
 
-  async insertOne<T>(collection: string, data: Partial<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult<T>> {
+  async insertOne<T extends object>(collection: string, data: Partial<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult<T>> {
     return this.runQuery<T>('insertOne', collection, data, undefined, ctx);
   }
 
-  async insertMany<T>(collection: string, data: Partial<T>[], ctx?: Transaction<ClientSession>): Promise<QueryResult<T>> {
+  async insertMany<T extends object>(collection: string, data: Partial<T>[], ctx?: Transaction<ClientSession>): Promise<QueryResult<T>> {
     return this.runQuery<T>('insertMany', collection, data, undefined, ctx);
   }
 
-  async updateMany<T>(collection: string, where: FilterQuery<T>, data: Partial<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult<T>> {
+  async updateMany<T extends object>(collection: string, where: FilterQuery<T>, data: Partial<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult<T>> {
     return this.runQuery<T>('updateMany', collection, data, where, ctx);
   }
 
-  async bulkUpdateMany<T>(collection: string, where: FilterQuery<T>[], data: Partial<T>[], ctx?: Transaction<ClientSession>): Promise<QueryResult<T>> {
+  async bulkUpdateMany<T extends object>(collection: string, where: FilterQuery<T>[], data: Partial<T>[], ctx?: Transaction<ClientSession>): Promise<QueryResult<T>> {
     return this.runQuery<T>('bulkUpdateMany', collection, data, where, ctx);
   }
 
-  async deleteMany<T>(collection: string, where: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult<T>> {
+  async deleteMany<T extends object>(collection: string, where: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult<T>> {
     return this.runQuery<T>('deleteMany', collection, undefined, where, ctx);
   }
 
-  async aggregate<T = any>(collection: string, pipeline: any[], ctx?: Transaction<ClientSession>): Promise<T[]> {
+  async aggregate<T extends object = any>(collection: string, pipeline: any[], ctx?: Transaction<ClientSession>): Promise<T[]> {
     collection = this.getCollectionName(collection);
     const options: Dictionary = { session: ctx };
     const query = `db.getCollection('${collection}').aggregate(${this.logObject(pipeline)}, ${this.logObject(options)}).toArray();`;
@@ -194,7 +194,7 @@ export class MongoConnection extends Connection {
     return res;
   }
 
-  async countDocuments<T>(collection: string, where: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<number> {
+  async countDocuments<T extends object>(collection: string, where: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<number> {
     return this.runQuery<T, number>('countDocuments', collection, undefined, where, ctx);
   }
 
@@ -241,7 +241,7 @@ export class MongoConnection extends Connection {
     await eventBroadcaster?.dispatchEvent(EventType.afterTransactionRollback, ctx);
   }
 
-  private async runQuery<T, U extends QueryResult<T> | number = QueryResult<T>>(method: 'insertOne' | 'insertMany' | 'updateMany' | 'bulkUpdateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T> | Partial<T>[], where?: FilterQuery<T> | FilterQuery<T>[], ctx?: Transaction<ClientSession>): Promise<U> {
+  private async runQuery<T extends object, U extends QueryResult<T> | number = QueryResult<T>>(method: 'insertOne' | 'insertMany' | 'updateMany' | 'bulkUpdateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T> | Partial<T>[], where?: FilterQuery<T> | FilterQuery<T>[], ctx?: Transaction<ClientSession>): Promise<U> {
     collection = this.getCollectionName(collection);
     const logger = this.config.getLogger();
     const options: Dictionary = { session: ctx };
@@ -262,7 +262,7 @@ export class MongoConnection extends Connection {
         res = await this.getCollection<T>(collection).insertMany(data as OptionalUnlessRequiredId<T>[], options);
         break;
       case 'updateMany': {
-        const payload = Object.keys(data!).some(k => k.startsWith('$')) ? data : this.createUpdatePayload(data);
+        const payload = Object.keys(data!).some(k => k.startsWith('$')) ? data : this.createUpdatePayload(data as object);
         query = log(() => `db.getCollection('${collection}').updateMany(${this.logObject(where)}, ${this.logObject(payload)}, ${this.logObject(options)});`);
         res = await this.getCollection<T>(collection).updateMany(where as Filter<T>, payload as UpdateFilter<T>, options) as UpdateResult;
         break;
@@ -298,7 +298,7 @@ export class MongoConnection extends Connection {
     return this.transformResult<T>(res!) as U;
   }
 
-  private createUpdatePayload<T>(row: T): { $set?: unknown[]; $unset?: unknown[] } {
+  private createUpdatePayload<T extends object>(row: T): { $set?: unknown[]; $unset?: unknown[] } {
     const doc: Dictionary = { $set: row };
     const keys = Object.keys(row);
     const $unset: { $set?: unknown[]; $unset?: unknown[] } = {};

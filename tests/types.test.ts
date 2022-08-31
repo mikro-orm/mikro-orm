@@ -5,7 +5,7 @@ import { assert } from 'conditional-type-checks';
 import type { ObjectId } from 'bson';
 import type { EntityData, EntityDTO, FilterQuery, FilterValue, Loaded, OperatorMap, Primary, PrimaryKeyType, Query } from '../packages/core/src/typings';
 import type { Author2, Book2, BookTag2, Car2, FooBar2, FooParam2, Publisher2, User2 } from './entities-sql';
-import type { Author } from './entities';
+import type { Author, Book } from './entities';
 
 type IsAssignable<T, Expected> = Expected extends T ? true : false;
 
@@ -77,7 +77,7 @@ describe('check typings', () => {
   });
 
   test('EntityDTO', async () => {
-    const b = { author: { books: [{}], identities: [''] } } as EntityDTO<Book2>;
+    const b = { author: { books: [{}], identities: [''] } } as unknown as EntityDTO<Loaded<Book2, 'publisher'>>;
     const b1 = b.author.name;
     const b2 = b.test?.name;
     const b3 = b.test?.book?.author.books2;
@@ -98,7 +98,7 @@ describe('check typings', () => {
     // @ts-expect-error
     b.test?.getConfiguration?.();
 
-    const a = { books: [{ tags: [{}] }] } as EntityDTO<Loaded<Author2, 'books.tags' | 'books.publisher'>>;
+    const a = { books: [{ tags: [{}] }] } as unknown as EntityDTO<Loaded<Author2, 'books.tags' | 'books.publisher'>>;
     const a11 = a.books;
     const a12 = a.books[0];
     const a1 = a.books[0].tags;
@@ -433,6 +433,55 @@ describe('check typings', () => {
     fail02 = { author: { born: [123] } };
     // @ts-expect-error
     fail02 = { author: { born: { $in: [123] } } };
+  });
+
+  test('Loaded<T> type is assignable to T', async () => {
+    let b1 = {} as Book2;
+    b1 = {} as Loaded<Book2>;
+    let b2 = {} as Book2;
+    b2 = {} as Loaded<Book2, 'publisher'>;
+
+    function test<T>() {
+      let b3 = {} as T;
+      b3 = {} as Loaded<T, 'publisher'>;
+    }
+  });
+
+  function createEntity<T>(): T {
+    const ret = {} as any;
+    ret.__helper = ret;
+    ret.toObject = () => ({});
+
+    return ret;
+  }
+
+  test('Loaded type with EntityDTO (no base entities)', async () => {
+    const b1 = createEntity<Loaded<Book2>>();
+    const o1 = wrap(b1).toObject();
+    // @ts-expect-error o1.publisher is now just number, as it's not populated
+    const id1 = o1.publisher?.id;
+    const b2 = createEntity<Loaded<Book2, 'publisher'>>();
+    const o2 = wrap(b2).toObject();
+    const id2 = o2.publisher?.id;
+    // @ts-expect-error Book2 should not have methods from base entity
+    const o22 = b2.toObject();
+  });
+
+  test('Loaded type with EntityDTO (with ORM base entities)', async () => {
+    const b1 = createEntity<Loaded<Book>>();
+    const o11 = wrap(b1).toObject();
+    const o12 = b1.toObject();
+    // @ts-expect-error o11.publisher is now just number, as it's not populated
+    const id11 = o11.publisher?.id;
+    // @ts-expect-error o12.publisher is now just number, as it's not populated
+    const id12 = o12.publisher?.id;
+    const b2 = createEntity<Loaded<Book, 'publisher'>>();
+    const o21 = wrap(b2).toObject();
+    const o22 = b2.toObject();
+    const id21 = o21.publisher?.id;
+    const id22 = o22.publisher?.id;
+    assert<IsExact<typeof id21, string | undefined>>(true);
+    assert<IsExact<typeof id22, string | undefined>>(true);
   });
 
 });

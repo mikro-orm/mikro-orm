@@ -922,7 +922,7 @@ describe('EntityManagerMongo', () => {
     });
     orm.em.clear();
 
-    a = (await orm.em.findOne(Author, a.id, { populate: ['books'] }))!;
+    a = await orm.em.findOneOrFail(Author, a.id, { populate: ['books'] });
     expect(a.toJSON()).toMatchObject({
       books: [],
     });

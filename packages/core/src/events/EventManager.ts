@@ -23,15 +23,15 @@ export class EventManager {
       });
   }
 
-  dispatchEvent<T extends AnyEntity<T>>(event: TransactionEventType, args: TransactionEventArgs): unknown;
-  dispatchEvent<T extends AnyEntity<T>>(event: EventType.onInit, args: Partial<EventArgs<T>>): unknown;
-  dispatchEvent<T extends AnyEntity<T>>(event: EventType, args: Partial<EventArgs<T> | FlushEventArgs>): Promise<unknown>;
-  dispatchEvent<T extends AnyEntity<T>>(event: EventType, args: Partial<AnyEventArgs<T>>): Promise<unknown> | unknown {
+  dispatchEvent<T>(event: TransactionEventType, args: TransactionEventArgs): unknown;
+  dispatchEvent<T>(event: EventType.onInit, args: Partial<EventArgs<T>>): unknown;
+  dispatchEvent<T>(event: EventType, args: Partial<EventArgs<T> | FlushEventArgs>): Promise<unknown>;
+  dispatchEvent<T>(event: EventType, args: Partial<AnyEventArgs<T>>): Promise<unknown> | unknown {
     const listeners: AsyncFunction[] = [];
     const entity = (args as EventArgs<T>).entity;
 
     // execute lifecycle hooks first
-    const hooks = (entity?.__meta!.hooks[event] || []) as AsyncFunction[];
+    const hooks = ((entity as AnyEntity)?.__meta!.hooks[event] || []) as AsyncFunction[];
     listeners.push(...hooks.map(hook => {
       const handler = typeof hook === 'function' ? hook : entity[hook!] as AsyncFunction;
       return handler!.bind(entity);
@@ -52,7 +52,7 @@ export class EventManager {
     return Utils.runSerial(listeners, listener => listener(args));
   }
 
-  hasListeners<T extends AnyEntity<T>>(event: EventType, meta: EntityMetadata<T>): boolean {
+  hasListeners<T>(event: EventType, meta: EntityMetadata<T>): boolean {
     const hasHooks = meta.hooks[event]?.length;
 
     if (hasHooks) {
@@ -80,4 +80,4 @@ export class EventManager {
 
 }
 
-type AnyEventArgs<T extends AnyEntity<T>> = EventArgs<T> | FlushEventArgs | TransactionEventArgs;
+type AnyEventArgs<T> = EventArgs<T> | FlushEventArgs | TransactionEventArgs;

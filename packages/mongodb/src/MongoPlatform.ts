@@ -16,8 +16,8 @@ export class MongoPlatform extends Platform {
     return MongoNamingStrategy;
   }
 
-  getRepositoryClass<T>(): Constructor<EntityRepository<T>> {
-    return MongoEntityRepository;
+  getRepositoryClass<T extends object>(): Constructor<EntityRepository<T>> {
+    return MongoEntityRepository as Constructor<EntityRepository<T>>;
   }
 
   getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): MongoSchemaGenerator {

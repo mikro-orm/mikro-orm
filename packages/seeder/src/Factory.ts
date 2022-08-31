@@ -2,7 +2,7 @@ import type { Faker } from '@faker-js/faker';
 import { faker } from '@faker-js/faker';
 import type { RequiredEntityData, EntityData, EntityManager, Constructor } from '@mikro-orm/core';
 
-export abstract class Factory<T> {
+export abstract class Factory<T extends object> {
 
   abstract readonly model: Constructor<T>;
   private eachFunction?: (entity: T) => void;

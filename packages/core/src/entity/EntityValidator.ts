@@ -1,13 +1,14 @@
-import type { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery } from '../typings';
+import type { Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery } from '../typings';
 import { ReferenceType } from '../enums';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
+import { helper } from './wrap';
 
 export class EntityValidator {
 
   constructor(private strict: boolean) { }
 
-  validate<T extends AnyEntity<T>>(entity: T, payload: any, meta: EntityMetadata): void {
+  validate<T extends object>(entity: T, payload: any, meta: EntityMetadata): void {
     meta.props.forEach(prop => {
       if (prop.inherited) {
         return;
@@ -38,8 +39,10 @@ export class EntityValidator {
     });
   }
 
-  validateRequired<T extends AnyEntity<T>>(entity: T): void {
-    for (const prop of entity.__meta!.props) {
+  validateRequired<T extends object>(entity: T): void {
+    const wrapped = helper(entity);
+
+    for (const prop of wrapped.__meta.props) {
       if (
         !prop.nullable &&
         !prop.autoincrement &&
@@ -47,7 +50,7 @@ export class EntityValidator {
         !prop.defaultRaw &&
         !prop.onCreate &&
         !prop.embedded &&
-        prop.name !== entity.__meta!.root.discriminatorColumn &&
+        prop.name !== wrapped.__meta.root.discriminatorColumn &&
         prop.type.toLowerCase() !== 'objectid' &&
         prop.persist !== false &&
         entity[prop.name] == null
@@ -57,7 +60,7 @@ export class EntityValidator {
     }
   }
 
-  validateProperty<T extends AnyEntity<T>>(prop: EntityProperty, givenValue: any, entity: T) {
+  validateProperty<T extends object>(prop: EntityProperty, givenValue: any, entity: T) {
     if (givenValue === null || givenValue === undefined) {
       return givenValue;
     }
@@ -84,7 +87,7 @@ export class EntityValidator {
     }
 
     if (Array.isArray(params)) {
-      return params.forEach((item: any) => this.validateParams(item, type, field));
+      return (params as unknown[]).forEach(item => this.validateParams(item, type, field));
     }
 
     if (Utils.isPlainObject(params)) {
@@ -94,7 +97,7 @@ export class EntityValidator {
     }
   }
 
-  validatePrimaryKey<T extends AnyEntity<T>>(entity: EntityData<T>, meta: EntityMetadata): void {
+  validatePrimaryKey<T>(entity: EntityData<T>, meta: EntityMetadata): void {
     const pkExists = meta.primaryKeys.every(pk => entity[pk] != null) || entity[meta.serializedPrimaryKey] != null;
 
     if (!entity || !pkExists) {
@@ -102,7 +105,7 @@ export class EntityValidator {
     }
   }
 
-  validateEmptyWhere<T extends AnyEntity<T>>(where: FilterQuery<T>): void {
+  validateEmptyWhere<T>(where: FilterQuery<T>): void {
     if (Utils.isEmpty(where)) {
       throw new Error(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
     }
@@ -125,8 +128,8 @@ export class EntityValidator {
     o[prop.name] = v;
   }
 
-  private validateCollection<T extends AnyEntity<T>>(entity: T, prop: EntityProperty): void {
-    if (entity.__helper!.__initialized && !entity[prop.name as keyof T]) {
+  private validateCollection<T extends object>(entity: T, prop: EntityProperty): void {
+    if (helper(entity).__initialized && !entity[prop.name as keyof T]) {
       throw ValidationError.fromCollectionNotInitialized(entity, prop);
     }
   }

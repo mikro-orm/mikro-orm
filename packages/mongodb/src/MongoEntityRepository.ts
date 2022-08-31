@@ -2,7 +2,8 @@ import type { EntityName } from '@mikro-orm/core';
 import { EntityRepository } from '@mikro-orm/core';
 import type { MongoEntityManager } from './MongoEntityManager';
 
-export class MongoEntityRepository<T> extends EntityRepository<T> {
+// eslint-disable-next-line @typescript-eslint/ban-types
+export class MongoEntityRepository<T extends {}> extends EntityRepository<T> {
 
   constructor(protected readonly _em: MongoEntityManager,
               protected readonly entityName: EntityName<T>) {

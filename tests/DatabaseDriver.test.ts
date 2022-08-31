@@ -18,7 +18,7 @@ import {
   DatabaseDriver,
   EntityManager,
   EntityRepository,
-  LockMode, MikroORM,
+  LockMode,
   Platform,
 } from '@mikro-orm/core';
 
@@ -33,15 +33,15 @@ class Driver extends DatabaseDriver<Connection> implements IDatabaseDriver {
     super(config, dependencies);
   }
 
-  async count<T>(entityName: string, where: ObjectQuery<T>, options: CountOptions<T>): Promise<number> {
+  async count<T extends object>(entityName: string, where: ObjectQuery<T>, options: CountOptions<T>): Promise<number> {
     return 0;
   }
 
-  async find<T, P extends string = never>(entityName: string, where: ObjectQuery<T>, options: FindOptions<T, P> | undefined): Promise<EntityData<T>[]> {
+  async find<T extends object, P extends string = never>(entityName: string, where: ObjectQuery<T>, options: FindOptions<T, P> | undefined): Promise<EntityData<T>[]> {
     return [];
   }
 
-  async findOne<T, P extends string = never>(entityName: string, where: ObjectQuery<T>, options: FindOneOptions<T, P> | undefined): Promise<EntityData<T> | null> {
+  async findOne<T extends object, P extends string = never>(entityName: string, where: ObjectQuery<T>, options: FindOneOptions<T, P> | undefined): Promise<EntityData<T> | null> {
     return null;
   }
 

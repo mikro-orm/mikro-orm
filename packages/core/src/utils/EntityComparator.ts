@@ -1,5 +1,5 @@
 import { clone } from './clone';
-import type { AnyEntity, EntityData, EntityDictionary, EntityMetadata, EntityProperty, IMetadataStorage, Primary } from '../typings';
+import type { Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityProperty, IMetadataStorage, Primary } from '../typings';
 import { ReferenceType } from '../enums';
 import type { Platform } from '../platforms';
 import { compareArrays, compareBuffers, compareObjects, equals, Utils } from './Utils';
@@ -35,15 +35,15 @@ export class EntityComparator {
    * Removes ORM specific code from entities and prepares it for serializing. Used before change set computation.
    * References will be mapped to primary keys, collections to arrays of primary keys.
    */
-  prepareEntity<T extends AnyEntity<T>>(entity: T): EntityData<T> {
-    const generator = this.getSnapshotGenerator<T>(entity.constructor.name);
+  prepareEntity<T>(entity: T): EntityData<T> {
+    const generator = this.getSnapshotGenerator<T>((entity as Dictionary).constructor.name);
     return Utils.callCompiledFunction(generator, entity);
   }
 
   /**
    * Maps database columns to properties.
    */
-  mapResult<T extends AnyEntity<T>>(entityName: string, result: EntityDictionary<T>): EntityData<T> | null {
+  mapResult<T>(entityName: string, result: EntityDictionary<T>): EntityData<T> | null {
     const mapper = this.getResultMapper<T>(entityName);
     return Utils.callCompiledFunction(mapper, result);
   }
@@ -51,7 +51,7 @@ export class EntityComparator {
   /**
    * @internal Highly performance-sensitive method.
    */
-  getPkGetter<T extends AnyEntity<T>>(meta: EntityMetadata<T>) {
+  getPkGetter<T>(meta: EntityMetadata<T>) {
     const exists = this.pkGetters.get(meta.className);
 
     /* istanbul ignore next */
@@ -95,7 +95,7 @@ export class EntityComparator {
   /**
    * @internal Highly performance-sensitive method.
    */
-  getPkGetterConverted<T extends AnyEntity<T>>(meta: EntityMetadata<T>) {
+  getPkGetterConverted<T>(meta: EntityMetadata<T>) {
     const exists = this.pkGettersConverted.get(meta.className);
 
     /* istanbul ignore next */
@@ -144,7 +144,7 @@ export class EntityComparator {
   /**
    * @internal Highly performance-sensitive method.
    */
-  getPkSerializer<T extends AnyEntity<T>>(meta: EntityMetadata<T>) {
+  getPkSerializer<T>(meta: EntityMetadata<T>) {
     const exists = this.pkSerializers.get(meta.className);
 
     /* istanbul ignore next */
@@ -187,7 +187,7 @@ export class EntityComparator {
   /**
    * @internal Highly performance-sensitive method.
    */
-  getSnapshotGenerator<T extends AnyEntity<T>>(entityName: string): SnapshotGenerator<T> {
+  getSnapshotGenerator<T>(entityName: string): SnapshotGenerator<T> {
     const exists = this.snapshotGenerators.get(entityName);
 
     if (exists) {
@@ -224,7 +224,7 @@ export class EntityComparator {
   /**
    * @internal Highly performance-sensitive method.
    */
-  getResultMapper<T extends AnyEntity<T>>(entityName: string): ResultMapper<T> {
+  getResultMapper<T>(entityName: string): ResultMapper<T> {
     const exists = this.mappers.get(entityName);
 
     if (exists) {
@@ -460,7 +460,7 @@ export class EntityComparator {
   /**
    * @internal Highly performance-sensitive method.
    */
-  getEntityComparator<T>(entityName: string): Comparator<T> {
+  getEntityComparator<T extends object>(entityName: string): Comparator<T> {
     const exists = this.comparators.get(entityName);
 
     if (exists) {
@@ -555,7 +555,7 @@ export class EntityComparator {
   /**
    * perf: used to generate list of comparable properties during discovery, so we speed up the runtime comparison
    */
-  static isComparable<T extends AnyEntity<T>>(prop: EntityProperty<T>, root: EntityMetadata) {
+  static isComparable<T>(prop: EntityProperty<T>, root: EntityMetadata) {
     const virtual = prop.persist === false;
     const inverse = prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner;
     const discriminator = prop.name === root.discriminatorColumn;

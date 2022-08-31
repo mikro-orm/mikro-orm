@@ -13,7 +13,7 @@ export class SqlEntityManager<D extends AbstractSqlDriver = AbstractSqlDriver> e
   /**
    * Creates a QueryBuilder instance
    */
-  createQueryBuilder<T>(entityName: EntityName<T>, alias?: string, type?: ConnectionType): QueryBuilder<T> {
+  createQueryBuilder<T extends object>(entityName: EntityName<T>, alias?: string, type?: ConnectionType): QueryBuilder<T> {
     entityName = Utils.className(entityName);
     const context = this.getContext();
 
@@ -23,7 +23,7 @@ export class SqlEntityManager<D extends AbstractSqlDriver = AbstractSqlDriver> e
   /**
    * Shortcut for `createQueryBuilder()`
    */
-  qb<T>(entityName: EntityName<T>, alias?: string, type?: ConnectionType) {
+  qb<T extends object>(entityName: EntityName<T>, alias?: string, type?: ConnectionType) {
     return this.createQueryBuilder(entityName, alias, type);
   }
 
@@ -48,7 +48,7 @@ export class SqlEntityManager<D extends AbstractSqlDriver = AbstractSqlDriver> e
     return this.getDriver().execute(queryOrKnex, params, method, this.getTransactionContext());
   }
 
-  getRepository<T extends AnyEntity<T>, U extends EntityRepository<T> = SqlEntityRepository<T>>(entityName: EntityName<T>): GetRepository<T, U> {
+  getRepository<T extends object, U extends EntityRepository<T> = SqlEntityRepository<T>>(entityName: EntityName<T>): GetRepository<T, U> {
     return super.getRepository<T, U>(entityName);
   }
 

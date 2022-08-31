@@ -4,10 +4,11 @@ import type {
   EntityData, EntityFactory, EntityMetadata,
   EntityProperty,
   MetadataStorage,
-  Platform, Primary } from '@mikro-orm/core';
+  Platform, Primary,
+} from '@mikro-orm/core';
 import {
   Collection,
-  Entity, EntityAssigner,
+  Entity, EntityAssigner, helper,
   MikroORM,
   PrimaryKey,
   Property, Reference,
@@ -60,7 +61,7 @@ export class ObjectHydratorOld {
     return meta.hydrateProps;
   }
 
-  protected hydrateProperty<T>(entity: T, prop: EntityProperty, data: EntityData<T>, factory: EntityFactory, newEntity: boolean, convertCustomTypes: boolean): void {
+  protected hydrateProperty<T extends object>(entity: T, prop: EntityProperty, data: EntityData<T>, factory: EntityFactory, newEntity: boolean, convertCustomTypes: boolean): void {
     if (prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE) {
       this.hydrateToOne(data[prop.name], entity, prop, factory);
     } else if (prop.reference === ReferenceType.ONE_TO_MANY || prop.reference === ReferenceType.MANY_TO_MANY) {
@@ -94,7 +95,7 @@ export class ObjectHydratorOld {
   private hydrateEmbeddable<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, data: EntityData<T>): void {
     const value: Dictionary = {};
 
-    entity.__meta!.props.filter(p => p.embedded?.[0] === prop.name).forEach(childProp => {
+    helper(entity).__meta.props.filter(p => p.embedded?.[0] === prop.name).forEach(childProp => {
       value[childProp.embedded![1]] = data[childProp.name as any];
     });
 
@@ -102,27 +103,27 @@ export class ObjectHydratorOld {
     Object.keys(value).forEach(k => entity[prop.name][k] = value[k]);
   }
 
-  private hydrateToMany<T>(entity: T, prop: EntityProperty<T>, value: any, factory: EntityFactory, newEntity?: boolean): void {
+  private hydrateToMany<T extends object>(entity: T, prop: EntityProperty<T>, value: any, factory: EntityFactory, newEntity?: boolean): void {
     if (Array.isArray(value)) {
       const items = value.map((value: Primary<T> | EntityData<T>) => this.createCollectionItem(prop, value, factory, newEntity));
-      const coll = Collection.create<AnyEntity>(entity, prop.name, items, !!newEntity);
+      const coll = Collection.create(entity, prop.name, items, !!newEntity);
       coll.setDirty(!!newEntity);
     } else if (!entity[prop.name]) {
       const items = this.platform.usesPivotTable() || !prop.owner ? undefined : [];
-      const coll = Collection.create<AnyEntity>(entity, prop.name, items, !!(value || newEntity));
+      const coll = Collection.create(entity, prop.name, items, !!(value || newEntity));
       coll.setDirty(false);
     }
   }
 
-  private hydrateToOne<T>(value: any, entity: T, prop: EntityProperty, factory: EntityFactory): void {
+  private hydrateToOne<T extends object>(value: any, entity: T, prop: EntityProperty, factory: EntityFactory): void {
     if (typeof value === 'undefined') {
       return;
     }
 
     if (Utils.isPrimaryKey<T[keyof T]>(value, true)) {
-      entity[prop.name] = Reference.wrapReference(factory.createReference<T[keyof T]>(prop.type, value, { merge: true }), prop) as T[keyof T];
+      entity[prop.name] = Reference.wrapReference(factory.createReference(prop.type, value, { merge: true }), prop);
     } else if (Utils.isObject<EntityData<T[keyof T]>>(value)) {
-      entity[prop.name] = Reference.wrapReference(factory.create(prop.type, value, { initialized: true, merge: true }), prop) as T[keyof T];
+      entity[prop.name] = Reference.wrapReference(factory.create(prop.type, value, { initialized: true, merge: true }), prop);
     } else if (value === null) {
       entity[prop.name] = null;
     }
@@ -132,7 +133,7 @@ export class ObjectHydratorOld {
     }
   }
 
-  private createCollectionItem<T>(prop: EntityProperty, value: Primary<T> | EntityData<T> | T, factory: EntityFactory, newEntity?: boolean): T {
+  private createCollectionItem<T extends object>(prop: EntityProperty, value: Primary<T> | EntityData<T> | T, factory: EntityFactory, newEntity?: boolean): T {
     const meta = this.metadata.find(prop.type)!;
 
     if (Utils.isPrimaryKey(value, meta.compositePK)) {
@@ -150,7 +151,7 @@ export class ObjectHydratorOld {
 
 export class EntityComparatorOld {
 
-  prepareEntity<T extends AnyEntity<T>>(entity: T, metadata: MetadataStorage, platform: Platform): EntityData<T> {
+  prepareEntity<T extends object>(entity: T, metadata: MetadataStorage, platform: Platform): EntityData<T> {
     const meta = metadata.get<T>(entity.constructor.name);
     const ret = {} as EntityData<T>;
 
@@ -197,13 +198,13 @@ export class EntityComparatorOld {
   /**
    * should be used only for `meta.comparableProps` that are defined based on the static `isComparable` helper
    */
-  private shouldIgnoreProperty<T extends AnyEntity<T>>(entity: T, prop: EntityProperty<T>) {
+  private shouldIgnoreProperty<T>(entity: T, prop: EntityProperty<T>) {
     if (!(prop.name in entity)) {
       return true;
     }
 
-    const value = entity[prop.name];
-    const noPkRef = Utils.isEntity<T>(value, true) && !value.__helper!.hasPrimaryKey();
+    const value = entity[prop.name] as object;
+    const noPkRef = Utils.isEntity<T>(value, true) && !helper(value).hasPrimaryKey();
     const noPkProp = prop.primary && value == null;
 
     // bidirectional 1:1 and m:1 fields are defined as setters, we need to check for `undefined` explicitly

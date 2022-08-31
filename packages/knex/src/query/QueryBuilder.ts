@@ -30,7 +30,7 @@ import type { Field, JoinOptions } from '../typings';
  * const publisher = await qb.getSingleResult();
  * ```
  */
-export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
+export class QueryBuilder<T extends object = AnyEntity> {
 
   readonly alias: string;
 
@@ -175,7 +175,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return this.joinAndSelect(field, alias, cond, 'leftJoin');
   }
 
-  protected getFieldsForJoinedLoad<U extends AnyEntity<U>>(prop: EntityProperty<U>, alias: string): Field<U>[] {
+  protected getFieldsForJoinedLoad<U extends object>(prop: EntityProperty<U>, alias: string): Field<U>[] {
     const fields: Field<U>[] = [];
     prop.targetMeta!.props
       .filter(prop => this.platform.shouldHaveColumn(prop, this._populate))
@@ -503,7 +503,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
       return mapped;
     }
 
-    const mapped = this.driver.mapResult(res as unknown as T, meta, this._populate, this) as unknown as U;
+    const mapped = this.driver.mapResult(res, meta, this._populate, this) as unknown as U;
     await this.em?.storeCache(this._cache, cached!, mapped);
 
     return mapped;
@@ -684,7 +684,7 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
     return prop;
   }
 
-  private prepareFields<T extends AnyEntity<T>, U extends string | Knex.Raw>(fields: Field<T>[], type: 'where' | 'groupBy' | 'sub-query' = 'where'): U[] {
+  private prepareFields<T, U extends string | Knex.Raw>(fields: Field<T>[], type: 'where' | 'groupBy' | 'sub-query' = 'where'): U[] {
     const ret: Field<T>[] = [];
 
     fields.forEach(field => {
@@ -953,13 +953,13 @@ export class QueryBuilder<T extends AnyEntity<T> = AnyEntity> {
 
 }
 
-export interface RunQueryBuilder<T> extends Omit<QueryBuilder<T>, 'getResult' | 'getSingleResult' | 'getResultList' | 'where'> {
+export interface RunQueryBuilder<T extends object> extends Omit<QueryBuilder<T>, 'getResult' | 'getSingleResult' | 'getResultList' | 'where'> {
   where(cond: QBFilterQuery<T> | string, params?: keyof typeof GroupOperator | any[], operator?: keyof typeof GroupOperator): this;
   execute<U = QueryResult<T>>(method?: 'all' | 'get' | 'run', mapResults?: boolean): Promise<U>;
   then<TResult1 = QueryResult<T>, TResult2 = never>(onfulfilled?: ((value: QueryResult<T>) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<QueryResult<T>>;
 }
 
-export interface SelectQueryBuilder<T> extends QueryBuilder<T> {
+export interface SelectQueryBuilder<T extends object> extends QueryBuilder<T> {
   execute<U = T[]>(method?: 'all' | 'get' | 'run', mapResults?: boolean): Promise<U>;
   execute<U = T[]>(method: 'all', mapResults?: boolean): Promise<U>;
   execute<U = T>(method: 'get', mapResults?: boolean): Promise<U>;
@@ -967,7 +967,7 @@ export interface SelectQueryBuilder<T> extends QueryBuilder<T> {
   then<TResult1 = T[], TResult2 = never>(onfulfilled?: ((value: T[]) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<T[]>;
 }
 
-export interface CountQueryBuilder<T> extends QueryBuilder<T> {
+export interface CountQueryBuilder<T extends object> extends QueryBuilder<T> {
   execute<U = { count: number }[]>(method?: 'all' | 'get' | 'run', mapResults?: boolean): Promise<U>;
   execute<U = { count: number }[]>(method: 'all', mapResults?: boolean): Promise<U>;
   execute<U = { count: number }>(method: 'get', mapResults?: boolean): Promise<U>;
@@ -975,10 +975,10 @@ export interface CountQueryBuilder<T> extends QueryBuilder<T> {
   then<TResult1 = number, TResult2 = never>(onfulfilled?: ((value: number) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<number>;
 }
 
-export interface InsertQueryBuilder<T> extends RunQueryBuilder<T> {}
+export interface InsertQueryBuilder<T extends object> extends RunQueryBuilder<T> {}
 
-export interface UpdateQueryBuilder<T> extends RunQueryBuilder<T> {}
+export interface UpdateQueryBuilder<T extends object> extends RunQueryBuilder<T> {}
 
-export interface DeleteQueryBuilder<T> extends RunQueryBuilder<T> {}
+export interface DeleteQueryBuilder<T extends object> extends RunQueryBuilder<T> {}
 
-export interface TruncateQueryBuilder<T> extends RunQueryBuilder<T> {}
+export interface TruncateQueryBuilder<T extends object> extends RunQueryBuilder<T> {}

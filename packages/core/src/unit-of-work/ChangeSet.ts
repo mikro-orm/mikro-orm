@@ -1,6 +1,7 @@
-import type { EntityData, AnyEntity, EntityMetadata, EntityDictionary, Primary } from '../typings';
+import type { EntityData, EntityMetadata, EntityDictionary, Primary } from '../typings';
+import { helper } from '../entity/wrap';
 
-export class ChangeSet<T extends AnyEntity<T>> {
+export class ChangeSet<T> {
 
   private primaryKey?: Primary<T> | null;
   private serializedPrimaryKey?: string;
@@ -8,16 +9,16 @@ export class ChangeSet<T extends AnyEntity<T>> {
   constructor(public entity: T,
               public type: ChangeSetType,
               public payload: EntityDictionary<T>,
-              private meta: EntityMetadata<T>) {
+              public meta: EntityMetadata<T>) {
     this.name = meta.className;
     this.rootName = meta.root.className;
     this.collection = meta.root.collection;
-    this.schema = entity.__helper!.__schema ?? meta.root.schema;
+    this.schema = helper(entity).__schema ?? meta.root.schema;
   }
 
   getPrimaryKey(object = false): Primary<T> | null {
     if (!this.originalEntity) {
-      this.primaryKey ??= this.entity.__helper!.getPrimaryKey(true);
+      this.primaryKey ??= helper(this.entity).getPrimaryKey(true);
     } else if (this.meta.compositePK || object) {
       this.primaryKey = this.meta.primaryKeys.reduce((o, pk) => {
         o[pk] = (this.originalEntity as T)[pk];
@@ -31,13 +32,13 @@ export class ChangeSet<T extends AnyEntity<T>> {
   }
 
   getSerializedPrimaryKey(): string | null {
-    this.serializedPrimaryKey ??= this.entity.__helper!.getSerializedPrimaryKey();
+    this.serializedPrimaryKey ??= helper(this.entity).getSerializedPrimaryKey();
     return this.serializedPrimaryKey;
   }
 
 }
 
-export interface ChangeSet<T extends AnyEntity<T>> {
+export interface ChangeSet<T> {
   name: string;
   rootName: string;
   collection: string;

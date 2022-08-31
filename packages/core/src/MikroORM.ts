@@ -5,7 +5,7 @@ import type { Logger } from './logging';
 import { Configuration, ConfigurationLoader, Utils } from './utils';
 import { NullCacheAdapter } from './cache';
 import type { EntityManager } from './EntityManager';
-import type { AnyEntity, Constructor, IEntityGenerator, IMigrator, ISeedManager } from './typings';
+import type { Constructor, IEntityGenerator, IMigrator, ISeedManager } from './typings';
 import { colors } from './logging';
 
 /**
@@ -136,7 +136,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Allows dynamically discovering new entity by reference, handy for testing schema diffing.
    */
-  async discoverEntity<T>(entities: Constructor<T> | Constructor<AnyEntity>[]): Promise<void> {
+  async discoverEntity(entities: Constructor | Constructor[]): Promise<void> {
     entities = Utils.asArray(entities);
     const tmp = await this.discovery.discoverReferences(entities);
     new MetadataValidator().validateDiscovered([...Object.values(this.metadata.getAll()), ...tmp], this.config.get('discovery').warnWhenNoEntities!);

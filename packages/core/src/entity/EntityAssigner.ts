@@ -1,25 +1,26 @@
 import { inspect } from 'util';
 import type { Collection } from './Collection';
 import type { EntityManager } from '../EntityManager';
-import type { AnyEntity, EntityData, EntityDTO, EntityMetadata, EntityProperty, Primary, RequiredEntityData } from '../typings';
+import type { AnyEntity, Dictionary, EntityData, EntityDTO, EntityMetadata, EntityProperty, Primary, RequiredEntityData } from '../typings';
 import { Utils } from '../utils/Utils';
 import { Reference } from './Reference';
 import { ReferenceType, SCALAR_TYPES } from '../enums';
 import { EntityValidator } from './EntityValidator';
-import { wrap } from './wrap';
+import { helper, wrap } from './wrap';
 
 const validator = new EntityValidator(false);
 
 export class EntityAssigner {
 
-  static assign<T extends AnyEntity<T>>(entity: T, data: EntityData<T> | Partial<EntityDTO<T>>, options: AssignOptions = {}): T {
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  static assign<T extends {}>(entity: T, data: EntityData<T> | Partial<EntityDTO<T>>, options: AssignOptions = {}): T {
     if (options.visited?.has(entity)) {
       return entity;
     }
 
     options.visited ??= new Set();
     options.visited.add(entity);
-    const wrapped = entity.__helper!;
+    const wrapped = helper(entity);
     options = {
       updateNestedEntities: true,
       updateByPrimaryKey: true,
@@ -27,7 +28,7 @@ export class EntityAssigner {
       schema: wrapped.__schema,
       ...options, // allow overriding the defaults
     };
-    const meta = entity.__meta!;
+    const meta = wrapped.__meta;
     const em = options.em || wrapped.__em;
     const props = meta.properties;
 
@@ -39,7 +40,7 @@ export class EntityAssigner {
       let value = data[prop];
 
       if (props[prop] && !props[prop].nullable && value == null) {
-        throw new Error(`You must pass a non-${value} value to the property ${prop} of entity ${entity.constructor.name}.`);
+        throw new Error(`You must pass a non-${value} value to the property ${prop} of entity ${(entity as Dictionary).constructor.name}.`);
       }
 
       if (props[prop] && Utils.isCollection(entity[prop as keyof T]) && Array.isArray(value) && EntityAssigner.validateEM(em)) {
@@ -49,12 +50,12 @@ export class EntityAssigner {
       const customType = props[prop]?.customType;
 
       if (options.convertCustomTypes && customType && props[prop].reference === ReferenceType.SCALAR && !Utils.isEntity(data)) {
-        value = props[prop].customType.convertToJSValue(value, entity.__platform);
+        value = props[prop].customType.convertToJSValue(value, wrapped.__platform);
       }
 
       if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(props[prop]?.reference) && value != null && EntityAssigner.validateEM(em)) {
         // eslint-disable-next-line no-prototype-builtins
-        if (options.updateNestedEntities && entity.hasOwnProperty(prop) && Utils.isEntity(entity[prop], true) && Utils.isPlainObject(value)) {
+        if (options.updateNestedEntities && (entity as object).hasOwnProperty(prop) && Utils.isEntity(entity[prop], true) && Utils.isPlainObject(value)) {
           const unwrappedEntity = Reference.unwrapReference(entity[prop]);
 
           if (options.updateByPrimaryKey) {
@@ -105,7 +106,7 @@ export class EntityAssigner {
    * also makes sure the link is bidirectional when creating new entities from nested structures
    * @internal
    */
-  static autoWireOneToOne<T extends AnyEntity<T>>(prop: EntityProperty, entity: T): void {
+  static autoWireOneToOne<T>(prop: EntityProperty, entity: T): void {
     if (prop.reference !== ReferenceType.ONE_TO_ONE || !Utils.isEntity(entity[prop.name])) {
       return;
     }
@@ -131,7 +132,7 @@ export class EntityAssigner {
     return true;
   }
 
-  private static assignReference<T extends AnyEntity<T>>(entity: T, value: any, prop: EntityProperty, em: EntityManager, options: AssignOptions): void {
+  private static assignReference<T extends object>(entity: T, value: any, prop: EntityProperty, em: EntityManager, options: AssignOptions): void {
     if (Utils.isEntity(value, true)) {
       entity[prop.name] = Reference.wrapReference(value, prop);
     } else if (Utils.isPrimaryKey(value, true)) {
@@ -141,14 +142,14 @@ export class EntityAssigner {
     } else if (Utils.isPlainObject(value)) {
       entity[prop.name] = Reference.wrapReference(em.create(prop.type, value, options), prop);
     } else {
-      const name = entity.constructor.name;
+      const name = (entity as object).constructor.name;
       throw new Error(`Invalid reference value provided for '${name}.${prop.name}' in ${name}.assign(): ${JSON.stringify(value)}`);
     }
 
     EntityAssigner.autoWireOneToOne(prop, entity);
   }
 
-  private static assignCollection<T extends AnyEntity<T>, U extends AnyEntity<U> = AnyEntity>(entity: T, collection: Collection<U>, value: any[], prop: EntityProperty, em: EntityManager, options: AssignOptions): void {
+  private static assignCollection<T extends object, U extends object = AnyEntity>(entity: T, collection: Collection<U>, value: any[], prop: EntityProperty, em: EntityManager, options: AssignOptions): void {
     const invalid: any[] = [];
     const items = value.map((item: any, idx) => {
       if (options.updateNestedEntities && options.updateByPrimaryKey && Utils.isPlainObject(item)) {
@@ -158,7 +159,7 @@ export class EntityAssigner {
           const ref = em.getReference(prop.type, pk as Primary<U>, options) as U;
 
           /* istanbul ignore else */
-          if (ref.__helper!.isInitialized()) {
+          if (helper(ref).isInitialized()) {
             return EntityAssigner.assign(ref, item as U, options);
           }
         }
@@ -167,7 +168,7 @@ export class EntityAssigner {
       }
 
       /* istanbul ignore next */
-      if (options.updateNestedEntities && !options.updateByPrimaryKey && collection[idx]?.__helper!.isInitialized()) {
+      if (options.updateNestedEntities && !options.updateByPrimaryKey && helper(collection[idx])?.isInitialized()) {
         return EntityAssigner.assign(collection[idx], item, options);
       }
 
@@ -175,14 +176,14 @@ export class EntityAssigner {
     });
 
     if (invalid.length > 0) {
-      const name = entity.constructor.name;
+      const name = (entity as object).constructor.name;
       throw new Error(`Invalid collection values provided for '${name}.${prop.name}' in ${name}.assign(): ${inspect(invalid)}`);
     }
 
     collection.set(items);
   }
 
-  private static assignEmbeddable<T extends AnyEntity<T>>(entity: T, value: any, prop: EntityProperty, em: EntityManager | undefined, options: AssignOptions): void {
+  private static assignEmbeddable<T extends object>(entity: T, value: any, prop: EntityProperty, em: EntityManager | undefined, options: AssignOptions): void {
     const propName = prop.embedded ? prop.embedded[1] : prop.name;
 
     if (!value) {
@@ -220,7 +221,7 @@ export class EntityAssigner {
     });
   }
 
-  private static createCollectionItem<T extends AnyEntity<T>>(item: any, em: EntityManager, prop: EntityProperty, invalid: any[], options: AssignOptions): T {
+  private static createCollectionItem<T extends object>(item: any, em: EntityManager, prop: EntityProperty, invalid: any[], options: AssignOptions): T {
     if (Utils.isEntity<T>(item)) {
       return item;
     }

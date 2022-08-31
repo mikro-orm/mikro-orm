@@ -1,10 +1,11 @@
 import { Reference } from '../entity/Reference';
 import { Utils } from './Utils';
-import type { AnyEntity, Dictionary, EntityMetadata, EntityProperty, FilterDef, ObjectQuery, FilterQuery } from '../typings';
+import type { Dictionary, EntityMetadata, EntityProperty, FilterDef, ObjectQuery, FilterQuery } from '../typings';
 import { ARRAY_OPERATORS, GroupOperator, ReferenceType } from '../enums';
 import type { Platform } from '../platforms';
 import type { MetadataStorage } from '../metadata/MetadataStorage';
 import { JsonType } from '../types/JsonType';
+import { helper } from '../entity/wrap';
 
 export class QueryHelper {
 
@@ -16,11 +17,11 @@ export class QueryHelper {
     }
 
     if (Utils.isEntity(params)) {
-      if (params.__meta!.compositePK) {
-        return params.__helper!.__primaryKeys;
+      if (helper(params).__meta.compositePK) {
+        return helper(params).__primaryKeys;
       }
 
-      return params.__helper!.getPrimaryKey();
+      return helper(params).getPrimaryKey();
     }
 
     if (params === undefined) {
@@ -28,7 +29,7 @@ export class QueryHelper {
     }
 
     if (Array.isArray(params)) {
-      return params.map(item => QueryHelper.processParams(item));
+      return (params as unknown[]).map(item => QueryHelper.processParams(item));
     }
 
     if (Utils.isPlainObject(params)) {
@@ -46,7 +47,7 @@ export class QueryHelper {
     return params;
   }
 
-  static inlinePrimaryKeyObjects<T extends AnyEntity<T>>(where: Dictionary, meta: EntityMetadata<T>, metadata: MetadataStorage, key?: string): boolean {
+  static inlinePrimaryKeyObjects<T extends object>(where: Dictionary, meta: EntityMetadata<T>, metadata: MetadataStorage, key?: string): boolean {
     if (Array.isArray(where)) {
       where.forEach((item, i) => {
         if (this.inlinePrimaryKeyObjects(item, meta, metadata, key)) {
@@ -84,7 +85,7 @@ export class QueryHelper {
     return false;
   }
 
-  static processWhere<T>(options: ProcessWhereOptions<T>): FilterQuery<T> {
+  static processWhere<T extends object>(options: ProcessWhereOptions<T>): FilterQuery<T> {
     // eslint-disable-next-line prefer-const
     let { where, entityName, metadata, platform, aliased = true, convertCustomTypes = true, root = true } = options;
     const meta = metadata.find<T>(entityName);

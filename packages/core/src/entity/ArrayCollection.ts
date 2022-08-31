@@ -1,12 +1,12 @@
 import { inspect } from 'util';
-import type { AnyEntity, EntityDTO, EntityProperty, IPrimaryKey, Primary } from '../typings';
+import type { EntityDTO, EntityProperty, IPrimaryKey, Primary } from '../typings';
 import { Reference } from './Reference';
-import { wrap } from './wrap';
+import { helper, wrap } from './wrap';
 import { ReferenceType } from '../enums';
 import { MetadataError } from '../errors';
 import { Utils } from '../utils/Utils';
 
-export class ArrayCollection<T, O> {
+export class ArrayCollection<T extends object, O extends object> {
 
   protected readonly items = new Set<T>();
   protected initialized = true;
@@ -14,7 +14,7 @@ export class ArrayCollection<T, O> {
   protected _count?: number;
   private _property?: EntityProperty;
 
-  constructor(readonly owner: O & AnyEntity<O>, items?: T[]) {
+  constructor(readonly owner: O, items?: T[]) {
     /* istanbul ignore next */
     if (items) {
       let i = 0;
@@ -66,7 +66,7 @@ export class ArrayCollection<T, O> {
 
   add(...items: (T | Reference<T>)[]): void {
     for (const item of items) {
-      const entity = Reference.unwrapReference(item);
+      const entity = Reference.unwrapReference(item) as T;
 
       if (!this.contains(entity, false)) {
         this.incrementCount(1);
@@ -107,7 +107,7 @@ export class ArrayCollection<T, O> {
         continue;
       }
 
-      const entity = Reference.unwrapReference(item);
+      const entity = Reference.unwrapReference(item) as T;
 
       if (this.items.delete(entity)) {
         this.incrementCount(-1);
@@ -142,7 +142,7 @@ export class ArrayCollection<T, O> {
   }
 
   contains(item: T | Reference<T>, check?: boolean): boolean {
-    const entity = Reference.unwrapReference(item);
+    const entity = Reference.unwrapReference(item) as T;
     return this.items.has(entity);
   }
 
@@ -152,7 +152,7 @@ export class ArrayCollection<T, O> {
 
   isInitialized(fully = false): boolean {
     if (fully) {
-      return this.initialized && [...this.items].every((item: AnyEntity<T>) => item.__helper!.__initialized);
+      return this.initialized && [...this.items].every((item: T) => helper(item).__initialized);
     }
 
     return this.initialized;
@@ -181,11 +181,11 @@ export class ArrayCollection<T, O> {
    */
   get property(): EntityProperty<T> {
     if (!this._property) {
-      const meta = this.owner.__meta;
+      const meta = helper(this.owner).__meta;
 
       /* istanbul ignore if */
       if (!meta) {
-        throw MetadataError.missingMetadata(this.owner.constructor.name);
+        throw MetadataError.fromUnknownEntity((this.owner as object).constructor.name, 'Collection.property getter, maybe you just forgot to initialize the ORM?');
       }
 
       const field = Object.keys(meta.properties).find(k => this.owner[k] === this);
@@ -220,7 +220,7 @@ export class ArrayCollection<T, O> {
       }
     } else if (this.property.reference === ReferenceType.ONE_TO_MANY && method !== 'takeSnapshot' && !(this.property.orphanRemoval && method === 'remove')) {
       const prop2 = this.property.targetMeta!.properties[this.property.mappedBy];
-      const owner = prop2.mapToPk ? this.owner.__helper!.getPrimaryKey() : this.owner;
+      const owner = prop2.mapToPk ? helper(this.owner).getPrimaryKey() : this.owner;
       const value = method === 'add' ? owner : null;
 
       // skip if already propagated
