@@ -126,7 +126,7 @@ const equalsFn = equals;
 export class Utils {
 
   static readonly PK_SEPARATOR = '~~~';
-  static dynamicImportProvider = (id: string) => import(id);
+  static dynamicImportProvider: (id: string) => Promise<any>;
 
   /**
    * Checks if the argument is not undefined

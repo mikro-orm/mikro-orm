@@ -123,6 +123,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       fileName: (className: string) => className,
     },
     preferReadReplicas: true,
+    dynamicImportProvider: (id: string) => import(id),
   };
 
   static readonly PLATFORMS = {
@@ -141,6 +142,10 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   private readonly cache = new Map<string, any>();
 
   constructor(options: Options, validate = true) {
+    if (options.dynamicImportProvider) {
+      Utils.setDynamicImportProvider(options.dynamicImportProvider);
+    }
+
     this.options = Utils.merge({}, Configuration.DEFAULTS, options);
     this.options.baseDir = Utils.absolutePath(this.options.baseDir);
 
@@ -502,6 +507,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   metadataProvider: { new(config: Configuration): MetadataProvider };
   seeder: SeederOptions;
   preferReadReplicas: boolean;
+  dynamicImportProvider: (id: string) => Promise<unknown>;
 }
 
 export type Options<D extends IDatabaseDriver = IDatabaseDriver> =
