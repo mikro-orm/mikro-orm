@@ -151,8 +151,7 @@ export type EntityClassGroup<T> = { entity: EntityClass<T>; schema: EntityMetada
 export type EntityName<T> = string | EntityClass<T> | EntitySchema<T, any>;
 
 // we need to restrict the type in the generic argument, otherwise inference don't work, so we use two types here
-export type InferRepository<Entity extends { [k: PropertyKey]: any }, Fallback> = Entity[typeof EntityRepositoryType] extends EntityRepository<Entity> | undefined ? NonNullable<Entity[typeof EntityRepositoryType]> : Fallback;
-export type GetRepository<Entity, Fallback> = Entity extends { [k: PropertyKey]: any } ? InferRepository<Entity, Fallback> : Fallback;
+export type GetRepository<Entity extends { [k: PropertyKey]: any }, Fallback> = Entity[typeof EntityRepositoryType] extends EntityRepository<Entity> | undefined ? NonNullable<Entity[typeof EntityRepositoryType]> : Fallback;
 
 export type EntityDataPropValue<T> = T | Primary<T>;
 type ExpandEntityProp<T> = T extends Record<string, any>
