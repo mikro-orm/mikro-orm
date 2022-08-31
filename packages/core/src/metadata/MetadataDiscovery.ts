@@ -184,11 +184,11 @@ export class MetadataDiscovery {
     }
   }
 
-  async discoverReferences(refs: Constructor<AnyEntity>[]): Promise<EntityMetadata[]> {
-    const found: Constructor<AnyEntity>[] = [];
+  async discoverReferences<T>(refs: Constructor<T>[]): Promise<EntityMetadata<T>[]> {
+    const found: Constructor<T>[] = [];
 
     for (const entity of refs) {
-      const schema = this.getSchema(this.prepare(entity) as Constructor<AnyEntity>);
+      const schema = this.getSchema(this.prepare(entity) as Constructor<T>);
       const meta = schema.init().meta;
       this.metadata.set(meta.className, meta);
       found.push(entity);
@@ -214,7 +214,7 @@ export class MetadataDiscovery {
     return this.discovered.filter(meta => found.find(m => m.name === meta.className));
   }
 
-  private prepare<T extends AnyEntity<T>>(entity: EntityClass<T> | EntityClassGroup<T> | EntitySchema<T>): EntityClass<T> | EntitySchema<T> {
+  private prepare<T>(entity: EntityClass<T> | EntityClassGroup<T> | EntitySchema<T>): EntityClass<T> | EntitySchema<T> {
     if ('schema' in entity && entity.schema instanceof EntitySchema) {
       return entity.schema;
     }
@@ -230,7 +230,7 @@ export class MetadataDiscovery {
     return entity;
   }
 
-  private getSchema<T extends AnyEntity<T>>(entity: Constructor<T> | EntitySchema<T>): EntitySchema<T> {
+  private getSchema<T>(entity: Constructor<T> | EntitySchema<T>): EntitySchema<T> {
     if (entity instanceof EntitySchema) {
       return entity;
     }
@@ -253,7 +253,7 @@ export class MetadataDiscovery {
     return schema;
   }
 
-  private async discoverEntity<T extends AnyEntity<T>>(entity: EntityClass<T> | EntityClassGroup<T> | EntitySchema<T>, path?: string): Promise<void> {
+  private async discoverEntity<T>(entity: EntityClass<T> | EntityClassGroup<T> | EntitySchema<T>, path?: string): Promise<void> {
     entity = this.prepare(entity);
     this.logger.log('discovery', `- processing entity ${colors.cyan((entity as EntityClass<T>).name)}${colors.grey(path ? ` (${path})` : '')}`);
     const schema = this.getSchema(entity as Constructor<T>);
@@ -287,7 +287,7 @@ export class MetadataDiscovery {
     this.discovered.push(meta);
   }
 
-  private async saveToCache<T extends AnyEntity<T>>(meta: EntityMetadata): Promise<void> {
+  private async saveToCache<T>(meta: EntityMetadata): Promise<void> {
     if (!meta.useCache) {
       return;
     }

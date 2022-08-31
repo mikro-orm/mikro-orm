@@ -2,7 +2,7 @@ import { clone } from '../utils/clone';
 import { EntityRepository } from '../entity';
 import type { NamingStrategy } from '../naming-strategy';
 import { UnderscoreNamingStrategy } from '../naming-strategy';
-import type { AnyEntity, Constructor, EntityProperty, IEntityGenerator, IMigrator, IPrimaryKey, ISchemaGenerator, PopulateOptions, Primary, EntityMetadata, SimpleColumnMeta } from '../typings';
+import type { Constructor, EntityProperty, IEntityGenerator, IMigrator, IPrimaryKey, ISchemaGenerator, PopulateOptions, Primary, EntityMetadata, SimpleColumnMeta } from '../typings';
 import { ExceptionConverter } from './ExceptionConverter';
 import type { EntityManager } from '../EntityManager';
 import type { Configuration } from '../utils/Configuration';
@@ -311,7 +311,7 @@ export abstract class Platform {
     return !marshall;
   }
 
-  getRepositoryClass<T>(): Constructor<EntityRepository<T>> {
+  getRepositoryClass<T extends object>(): Constructor<EntityRepository<T>> {
     return EntityRepository;
   }
 
@@ -394,7 +394,7 @@ export abstract class Platform {
     return false;
   }
 
-  shouldHaveColumn<T extends AnyEntity<T>>(prop: EntityProperty<T>, populate: PopulateOptions<T>[] | boolean, includeFormulas = true): boolean {
+  shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[] | boolean, includeFormulas = true): boolean {
     if (prop.formula) {
       return includeFormulas && (!prop.lazy || populate === true || (populate !== false && populate.some(p => p.field === prop.name)));
     }

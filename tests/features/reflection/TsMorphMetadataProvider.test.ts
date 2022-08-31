@@ -6,9 +6,9 @@ import { Author, Book, Publisher, BaseEntity, BaseEntity3, BookTagSchema, Test, 
 import FooBar from './entities/FooBar';
 
 // we need to define those to get around typescript issues with reflection (ts-morph would return `any` for the type otherwise)
-export class Collection<T> extends Collection_<T> { }
-export class Reference<T> extends Reference_<T> { }
-export type IdentifiedReference<T extends AnyEntity<T>, PK extends keyof T | unknown = PrimaryProperty<T>> = true extends IsUnknown<PK> ? Reference<T> : ({ [K in Cast<PK, keyof T>]?: T[K] } & Reference<T>);
+export class Collection<T extends object> extends Collection_<T> { }
+export class Reference<T extends object> extends Reference_<T> { }
+export type IdentifiedReference<T extends object, PK extends keyof T | unknown = PrimaryProperty<T>> = true extends IsUnknown<PK> ? Reference<T> : ({ [K in Cast<PK, keyof T>]?: T[K] } & Reference<T>);
 
 describe('TsMorphMetadataProvider', () => {
 

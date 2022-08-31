@@ -1,4 +1,5 @@
-import { BaseEntity, Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/core';
+import type { IdentifiedReference } from '@mikro-orm/core';
+import { BaseEntity, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()

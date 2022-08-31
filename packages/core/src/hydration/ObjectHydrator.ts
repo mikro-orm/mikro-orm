@@ -1,4 +1,4 @@
-import type { AnyEntity, EntityData, EntityMetadata, EntityProperty } from '../typings';
+import type { EntityData, EntityMetadata, EntityProperty } from '../typings';
 import { Hydrator } from './Hydrator';
 import { Collection } from '../entity/Collection';
 import { Reference } from '../entity/Reference';
@@ -21,7 +21,7 @@ export class ObjectHydrator extends Hydrator {
   /**
    * @inheritDoc
    */
-  hydrate<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'returning' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string): void {
+  hydrate<T>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'returning' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string): void {
     const hydrate = this.getEntityHydrator(meta, type);
     Utils.callCompiledFunction(hydrate, entity, data, factory, newEntity, convertCustomTypes, schema);
   }
@@ -29,7 +29,7 @@ export class ObjectHydrator extends Hydrator {
   /**
    * @inheritDoc
    */
-  hydrateReference<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes = false, schema?: string): void {
+  hydrateReference<T>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes = false, schema?: string): void {
     const hydrate = this.getEntityHydrator(meta, 'reference');
     Utils.callCompiledFunction(hydrate, entity, data, factory, false, convertCustomTypes, schema);
   }
@@ -37,7 +37,7 @@ export class ObjectHydrator extends Hydrator {
   /**
    * @internal Highly performance-sensitive method.
    */
-  getEntityHydrator<T extends AnyEntity<T>>(meta: EntityMetadata<T>, type: 'full' | 'returning' | 'reference'): EntityHydrator<T> {
+  getEntityHydrator<T>(meta: EntityMetadata<T>, type: 'full' | 'returning' | 'reference'): EntityHydrator<T> {
     const exists = this.hydrators[type].get(meta.className);
 
     if (exists) {

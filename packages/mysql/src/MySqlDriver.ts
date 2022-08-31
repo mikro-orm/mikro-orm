@@ -1,4 +1,4 @@
-import type { AnyEntity, Configuration, EntityDictionary, NativeInsertUpdateManyOptions, QueryResult } from '@mikro-orm/core';
+import type { Configuration, EntityDictionary, NativeInsertUpdateManyOptions, QueryResult } from '@mikro-orm/core';
 import { AbstractSqlDriver } from '@mikro-orm/knex';
 import { MySqlConnection } from './MySqlConnection';
 import { MySqlPlatform } from './MySqlPlatform';
@@ -9,7 +9,7 @@ export class MySqlDriver extends AbstractSqlDriver<MySqlConnection> {
     super(config, new MySqlPlatform(), MySqlConnection, ['knex', 'mysql2']);
   }
 
-  async nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
+  async nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
     options.processCollections ??= true;
     const res = await super.nativeInsertMany(entityName, data, options);
     const pks = this.getPrimaryKeyFields(entityName);

@@ -1,5 +1,5 @@
-import type { AnyEntity, EntityData, EntityMetadata, EntityProperty, IHydrator } from '../typings';
-import type { EntityFactory } from '../entity';
+import type { EntityData, EntityMetadata, EntityProperty, IHydrator } from '../typings';
+import type { EntityFactory } from '../entity/EntityFactory';
 import type { Platform } from '../platforms/Platform';
 import type { MetadataStorage } from '../metadata/MetadataStorage';
 import type { Configuration } from '../utils/Configuration';
@@ -14,7 +14,7 @@ export abstract class Hydrator implements IHydrator {
   /**
    * @inheritDoc
    */
-  hydrate<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'returning' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string): void {
+  hydrate<T>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'returning' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string): void {
     const props = this.getProperties(meta, type);
 
     for (const prop of props) {
@@ -25,13 +25,13 @@ export abstract class Hydrator implements IHydrator {
   /**
    * @inheritDoc
    */
-  hydrateReference<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes?: boolean, schema?: string): void {
+  hydrateReference<T>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes?: boolean, schema?: string): void {
     meta.primaryKeys.forEach(pk => {
       this.hydrateProperty<T>(entity, meta.properties[pk], data, factory, false, convertCustomTypes);
     });
   }
 
-  protected getProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>, type: 'full' | 'returning' | 'reference'): EntityProperty<T>[] {
+  protected getProperties<T>(meta: EntityMetadata<T>, type: 'full' | 'returning' | 'reference'): EntityProperty<T>[] {
     if (type === 'reference') {
       return meta.primaryKeys.map(pk => meta.properties[pk]);
     }
@@ -43,7 +43,7 @@ export abstract class Hydrator implements IHydrator {
     return meta.hydrateProps;
   }
 
-  protected hydrateProperty<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, data: EntityData<T>, factory: EntityFactory, newEntity?: boolean, convertCustomTypes?: boolean): void {
+  protected hydrateProperty<T>(entity: T, prop: EntityProperty, data: EntityData<T>, factory: EntityFactory, newEntity?: boolean, convertCustomTypes?: boolean): void {
     entity[prop.name] = data[prop.name];
   }
 

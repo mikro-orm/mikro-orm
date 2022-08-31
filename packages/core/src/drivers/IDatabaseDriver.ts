@@ -1,12 +1,12 @@
 import type {
-  ConnectionType, EntityData, EntityMetadata, EntityProperty, AnyEntity, FilterQuery, Primary, Dictionary, QBFilterQuery,
+  ConnectionType, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary, Dictionary, QBFilterQuery,
   IPrimaryKey, PopulateOptions, EntityDictionary, ExpandProperty, AutoPath, ObjectQuery,
 } from '../typings';
 import type { Connection, QueryResult, Transaction } from '../connections';
 import type { FlushMode, LockMode, QueryOrderMap, QueryFlag, LoadStrategy, PopulateHint } from '../enums';
 import type { Platform } from '../platforms';
 import type { MetadataStorage } from '../metadata';
-import type { Collection } from '../entity';
+import type { Collection } from '../entity/Collection';
 import type { EntityManager } from '../EntityManager';
 import type { DriverException } from '../exceptions';
 import type { Configuration } from '../utils/Configuration';
@@ -31,37 +31,37 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   /**
    * Finds selection of entities
    */
-  find<T extends AnyEntity<T>, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T, P>): Promise<EntityData<T>[]>;
+  find<T extends object, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T, P>): Promise<EntityData<T>[]>;
 
   /**
    * Finds single entity (table row, document)
    */
-  findOne<T extends AnyEntity<T>, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P>): Promise<EntityData<T> | null>;
+  findOne<T extends object, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P>): Promise<EntityData<T> | null>;
 
-  findVirtual<T>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any>): Promise<EntityData<T>[]>;
+  findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any>): Promise<EntityData<T>[]>;
 
-  nativeInsert<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
+  nativeInsert<T extends object>(entityName: string, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
 
-  nativeInsertMany<T extends AnyEntity<T>>(entityName: string, data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>): Promise<QueryResult<T>>;
+  nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>): Promise<QueryResult<T>>;
 
-  nativeUpdate<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
+  nativeUpdate<T extends object>(entityName: string, where: FilterQuery<T>, data: EntityDictionary<T>, options?: NativeInsertUpdateOptions<T>): Promise<QueryResult<T>>;
 
-  nativeUpdateMany<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>): Promise<QueryResult<T>>;
+  nativeUpdateMany<T extends object>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options?: NativeInsertUpdateManyOptions<T>): Promise<QueryResult<T>>;
 
-  nativeDelete<T extends AnyEntity<T>>(entityName: string, where: FilterQuery<T>, options?: NativeDeleteOptions<T>): Promise<QueryResult<T>>;
+  nativeDelete<T extends object>(entityName: string, where: FilterQuery<T>, options?: NativeDeleteOptions<T>): Promise<QueryResult<T>>;
 
-  syncCollection<T, O>(collection: Collection<T, O>, options?: DriverMethodOptions): Promise<void>;
+  syncCollection<T extends object, O extends object>(collection: Collection<T, O>, options?: DriverMethodOptions): Promise<void>;
 
-  count<T extends AnyEntity<T>, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T, P>): Promise<number>;
+  count<T extends object, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: CountOptions<T, P>): Promise<number>;
 
   aggregate(entityName: string, pipeline: any[]): Promise<any[]>;
 
-  mapResult<T>(result: EntityDictionary<T>, meta: EntityMetadata<T>, populate?: PopulateOptions<T>[]): EntityData<T> | null;
+  mapResult<T extends object>(result: EntityDictionary<T>, meta: EntityMetadata<T>, populate?: PopulateOptions<T>[]): EntityData<T> | null;
 
   /**
    * When driver uses pivot tables for M:N, this method will load identifiers for given collections from them
    */
-  loadFromPivotTable<T extends AnyEntity<T>, O extends AnyEntity<O>>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<T>, orderBy?: QueryOrderMap<T>[], ctx?: Transaction, options?: FindOptions<T>): Promise<Dictionary<T[]>>;
+  loadFromPivotTable<T extends object, O extends object>(prop: EntityProperty, owners: Primary<O>[][], where?: FilterQuery<T>, orderBy?: QueryOrderMap<T>[], ctx?: Transaction, options?: FindOptions<T, any>): Promise<Dictionary<T[]>>;
 
   getPlatform(): Platform;
 
@@ -77,7 +77,7 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
    */
   getDependencies(): string[];
 
-  lockPessimistic<T extends AnyEntity<T>>(entity: T, options: LockOptions): Promise<void>;
+  lockPessimistic<T extends object>(entity: T, options: LockOptions): Promise<void>;
 
   /**
    * Converts native db errors to standardized driver exceptions
@@ -118,12 +118,12 @@ export interface FindOptions<T, P extends string = never> {
   connectionType?: ConnectionType;
 }
 
-export interface FindOneOptions<T, P extends string = never> extends Omit<FindOptions<T, P>, 'limit' | 'offset' | 'lockMode'> {
+export interface FindOneOptions<T extends object, P extends string = never> extends Omit<FindOptions<T, P>, 'limit' | 'offset' | 'lockMode'> {
   lockMode?: LockMode;
   lockVersion?: number | Date;
 }
 
-export interface FindOneOrFailOptions<T, P extends string = never> extends FindOneOptions<T, P> {
+export interface FindOneOrFailOptions<T extends object, P extends string = never> extends FindOneOptions<T, P> {
   failHandler?: (entityName: string, where: Dictionary | IPrimaryKey | any) => Error;
   strict?: boolean;
 }
@@ -138,7 +138,7 @@ export interface NativeInsertUpdateManyOptions<T> extends NativeInsertUpdateOpti
   processCollections?: boolean;
 }
 
-export interface CountOptions<T, P extends string = never>  {
+export interface CountOptions<T extends object, P extends string = never>  {
   filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
   schema?: string;
   groupBy?: string | readonly string[];

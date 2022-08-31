@@ -11,10 +11,11 @@ import { createHash } from 'crypto';
 import { parse } from 'acorn-loose';
 import { simple as walk } from 'acorn-walk';
 import { clone } from './clone';
-import type { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityName, EntityProperty, IMetadataStorage, Primary } from '../typings';
+import type { Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityName, EntityProperty, IMetadataStorage, Primary } from '../typings';
 import { GroupOperator, PlainObject, QueryOperator, ReferenceType } from '../enums';
 import type { Collection } from '../entity';
 import type { Platform } from '../platforms';
+import { helper } from '../entity/wrap';
 
 export const ObjectBindingPattern = Symbol('ObjectBindingPattern');
 
@@ -345,7 +346,7 @@ export class Utils {
       return Array.from(data);
     }
 
-    return Array.isArray(data!) ? data : [data!];
+    return Array.isArray(data!) ? data : [data as T];
   }
 
   /**
@@ -356,7 +357,7 @@ export class Utils {
       Object.keys(payload).forEach(key => {
         const value = payload[key];
         delete payload[key];
-        payload[from === key ? to : key] = value;
+        payload[from === key ? to : key as keyof T] = value;
       }, payload);
     }
   }
@@ -416,13 +417,13 @@ export class Utils {
   /**
    * Extracts primary key from `data`. Accepts objects or primary keys directly.
    */
-  static extractPK<T extends AnyEntity<T>>(data: any, meta?: EntityMetadata<T>, strict = false): Primary<T> | string | null {
+  static extractPK<T>(data: any, meta?: EntityMetadata<T>, strict = false): Primary<T> | string | null {
     if (Utils.isPrimaryKey(data)) {
       return data as Primary<T>;
     }
 
     if (Utils.isEntity<T>(data, true)) {
-      return data.__helper!.getPrimaryKey();
+      return helper(data).getPrimaryKey();
     }
 
     if (strict && meta && Utils.getObjectKeysSize(data) !== meta.primaryKeys.length) {
@@ -440,7 +441,7 @@ export class Utils {
     return null;
   }
 
-  static getCompositeKeyHash<T extends AnyEntity<T>>(data: EntityData<T>, meta: EntityMetadata<T>, convertCustomTypes = false, platform?: Platform): string {
+  static getCompositeKeyHash<T>(data: EntityData<T>, meta: EntityMetadata<T>, convertCustomTypes = false, platform?: Platform): string {
     const pks = meta.primaryKeys.map(pk => {
       const value = data[pk as string];
       const prop = meta.properties[pk];
@@ -467,7 +468,7 @@ export class Utils {
     return key.split(this.PK_SEPARATOR);
   }
 
-  static getPrimaryKeyValues<T extends AnyEntity<T>>(entity: T, primaryKeys: string[], allowScalar = false, convertCustomTypes = false) {
+  static getPrimaryKeyValues<T>(entity: T, primaryKeys: string[], allowScalar = false, convertCustomTypes = false) {
     if (allowScalar && primaryKeys.length === 1) {
       if (Utils.isEntity(entity[primaryKeys[0]], true)) {
         return entity[primaryKeys[0]].__helper!.getPrimaryKey(convertCustomTypes);
@@ -493,7 +494,7 @@ export class Utils {
     }, [] as Primary<T>[]);
   }
 
-  static getPrimaryKeyCond<T extends AnyEntity<T>>(entity: T, primaryKeys: string[]): Record<string, Primary<T>> | null {
+  static getPrimaryKeyCond<T>(entity: T, primaryKeys: string[]): Record<string, Primary<T>> | null {
     const cond = primaryKeys.reduce((o, pk) => {
       o[pk] = Utils.extractPK(entity[pk]);
       return o;
@@ -506,7 +507,7 @@ export class Utils {
     return cond;
   }
 
-  static getPrimaryKeyCondFromArray<T extends AnyEntity<T>>(pks: Primary<T>[], meta: EntityMetadata<T>): Record<string, Primary<T>> {
+  static getPrimaryKeyCondFromArray<T>(pks: Primary<T>[], meta: EntityMetadata<T>): Record<string, Primary<T>> {
     return meta.getPrimaryProps().reduce((o, pk, idx) => {
       if (Array.isArray(pks[idx]) && pk.targetMeta) {
         o[pk.name] = pks[idx];
@@ -518,7 +519,7 @@ export class Utils {
     }, {} as any);
   }
 
-  static getOrderedPrimaryKeys<T extends AnyEntity<T>>(id: Primary<T> | Record<string, Primary<T>>, meta: EntityMetadata<T>, platform?: Platform, convertCustomTypes?: boolean): Primary<T>[] {
+  static getOrderedPrimaryKeys<T>(id: Primary<T> | Record<string, Primary<T>>, meta: EntityMetadata<T>, platform?: Platform, convertCustomTypes?: boolean): Primary<T>[] {
     const data = (Utils.isPrimaryKey(id) ? { [meta.primaryKeys[0]]: id } : id) as Record<string, Primary<T>>;
     const pks = meta.primaryKeys.map((pk, idx) => {
       const prop = meta.properties[pk];
@@ -545,7 +546,7 @@ export class Utils {
   /**
    * Checks whether given object is an entity instance.
    */
-  static isEntity<T = AnyEntity>(data: any, allowReference = false): data is T {
+  static isEntity<T = unknown>(data: any, allowReference = false): data is T {
     if (!Utils.isObject(data)) {
       return false;
     }
@@ -663,7 +664,7 @@ export class Utils {
     return ret;
   }
 
-  static isCollection<T, O = unknown>(item: any): item is Collection<T, O> {
+  static isCollection<T extends object, O extends object = object>(item: any): item is Collection<T, O> {
     return item?.__collection;
   }
 
@@ -981,7 +982,7 @@ export class Utils {
         ret.push([target, i]);
       }
     };
-    follow(entity);
+    follow(entity as Dictionary);
 
     return ret;
   }
@@ -1031,7 +1032,7 @@ export class Utils {
     });
   }
 
-  static tryRequire<T = any>({ module, from, allowError, warning }: { module: string; warning: string; from?: string; allowError?: string }): T | undefined {
+  static tryRequire<T extends Dictionary = any>({ module, from, allowError, warning }: { module: string; warning: string; from?: string; allowError?: string }): T | undefined {
     allowError ??= `Cannot find module '${module}'`;
     from ??= process.cwd();
 

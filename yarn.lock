@@ -1672,19 +1672,19 @@
     read-package-json-fast "^2.0.3"
     which "^2.0.2"
 
-"@nrwl/cli@14.6.0":
-  version "14.6.0"
-  resolved "https://registry.yarnpkg.com/@nrwl/cli/-/cli-14.6.0.tgz#b037720898b4eba0fb5b57c84cb5897ded3f57a8"
-  integrity sha512-EzJLMA8ovQImkRjKfHt2PwzUFTkO9lsDadbnM7it6WP7RTgfy7y8x0quL+L+7CvDbo3xY7RJDtummWl/ytDRxw==
+"@nrwl/cli@14.6.1":
+  version "14.6.1"
+  resolved "https://registry.yarnpkg.com/@nrwl/cli/-/cli-14.6.1.tgz#1da38bd3f29b85cbe2254c6c87a182a99607ad76"
+  integrity sha512-iPs5LL+yI8ER8+XVOD+mqjuOW6nozwMvsik/FAQ0cfaD1dTGM4//i9BXZVdVIZYiRgN1keumjPSOo7vucJYU/g==
   dependencies:
-    nx "14.6.0"
+    nx "14.6.1"
 
-"@nrwl/tao@14.6.0":
-  version "14.6.0"
-  resolved "https://registry.yarnpkg.com/@nrwl/tao/-/tao-14.6.0.tgz#777b74e32812d1d5b6e5433e74bda2385992268e"
-  integrity sha512-BUf1b0mzocL61quw9JIX8EHzLlwDbLdKZEyAXbGusJIvwZEZS+4r6qEiigE5HfU4Oi+7AOfWBd1bZf0bPqyjvg==
+"@nrwl/tao@14.6.1":
+  version "14.6.1"
+  resolved "https://registry.yarnpkg.com/@nrwl/tao/-/tao-14.6.1.tgz#88b9be0c4c47a2350e29df02f8ca89399b37b52d"
+  integrity sha512-dxeKotjrAIgByCaa8x1zMvoyZQH4MvCN3QZ2JqfFwRja8dJMGrsrfZcZu+3J+rStRzvVZHDa+joLuy1u7tXl+w==
   dependencies:
-    nx "14.6.0"
+    nx "14.6.1"
 
 "@octokit/auth-token@^3.0.0":
   version "3.0.1"
@@ -1816,9 +1816,9 @@
   integrity sha512-YlbLreG6Gs9zrVHQWzv+AbYH78J311yPaDpUZpAiNsSCeNmc/gbXNRK/AlzlX3UoR/X9CLZjHhsJt9htb1/vaQ==
 
 "@sinclair/typebox@^0.24.1":
-  version "0.24.32"
-  resolved "https://registry.yarnpkg.com/@sinclair/typebox/-/typebox-0.24.32.tgz#214a03e430122d239a6414a5d5412c23964cafbd"
-  integrity sha512-NWNTW284AOFhxgYofPef5IqDq6Y7ghZkZAkWJcUBp1r9ljfrFOKBDsiQJnLNp9tLcaSXFK9OgsS72W4RXe0jvw==
+  version "0.24.34"
+  resolved "https://registry.yarnpkg.com/@sinclair/typebox/-/typebox-0.24.34.tgz#35b799cf98a203d1940c8ce06688f9a09fbc0f50"
+  integrity sha512-x3ejWKw7rpy30Bvm6U0AQMOHdjqe2E3YJrBHlTxH0KFsp77bBa+MH324nJxtXZFpnTy/JW2h5HPYVm0vG2WPnw==
 
 "@sinonjs/commons@^1.7.0":
   version "1.8.3"
@@ -4960,10 +4960,10 @@ kleur@^3.0.3:
   resolved "https://registry.yarnpkg.com/kleur/-/kleur-3.0.3.tgz#a79c9ecc86ee1ce3fa6206d1216c501f147fc07e"
   integrity sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==
 
-knex@2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/knex/-/knex-2.2.0.tgz#86a3176924d37303b3f9ff7f70087418c263ce7a"
-  integrity sha512-yhm1Qe9Ok0TeXBq3nNHqZYJPrQ4Iw2tq9k/HxjrZ/EWec2ifOjJlkNHr26v8cQrWtk5iG3iwfUazTIWy+VKG5g==
+knex@2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/knex/-/knex-2.3.0.tgz#87fa2a9553d7cafb125d7a0645256fbe29ef5967"
+  integrity sha512-WMizPaq9wRMkfnwKXKXgBZeZFOSHGdtoSz5SaLAVNs3WRDfawt9O89T4XyH52PETxjV8/kRk0Yf+8WBEP/zbYw==
   dependencies:
     colorette "2.0.19"
     commander "^9.1.0"
@@ -5533,10 +5533,22 @@ mongodb-memory-server@^8.8.0:
     mongodb-memory-server-core "8.9.0"
     tslib "^2.4.0"
 
-mongodb@4.9.0, mongodb@~4.9.0:
+mongodb@4.9.0:
   version "4.9.0"
   resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-4.9.0.tgz#58618439b721f2d6f7d38bb10a4612e29d7f1c8a"
   integrity sha512-tJJEFJz7OQTQPZeVHZJIeSOjMRqc5eSyXTt86vSQENEErpkiG7279tM/GT5AVZ7TgXNh9HQxoa2ZkbrANz5GQw==
+  dependencies:
+    bson "^4.7.0"
+    denque "^2.1.0"
+    mongodb-connection-string-url "^2.5.3"
+    socks "^2.7.0"
+  optionalDependencies:
+    saslprep "^1.0.3"
+
+mongodb@~4.9.0:
+  version "4.9.1"
+  resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-4.9.1.tgz#0c769448228bcf9a6aa7d16daa3625b48312479e"
+  integrity sha512-ZhgI/qBf84fD7sI4waZBoLBNJYPQN5IOC++SBCiPiyhzpNKOxN/fi0tBHvH2dEC42HXtNEbFB0zmNz4+oVtorQ==
   dependencies:
     bson "^4.7.0"
     denque "^2.1.0"
@@ -5854,13 +5866,13 @@ npmlog@^6.0.0, npmlog@^6.0.2:
     gauge "^4.0.3"
     set-blocking "^2.0.0"
 
-nx@14.6.0, "nx@>=14.5.4 < 16":
-  version "14.6.0"
-  resolved "https://registry.yarnpkg.com/nx/-/nx-14.6.0.tgz#deaa4be4fc736babee5f2cc53a4c3f46efe1aa16"
-  integrity sha512-7f7MixBpcX4+v+JAioJfWrvNTzQOq2vaSizjeFIMfOh37hxdgI4JuxNJbfJyUM5ti/hWuM4ZaQp59oWTDoNSyg==
+nx@14.6.1, "nx@>=14.5.4 < 16":
+  version "14.6.1"
+  resolved "https://registry.yarnpkg.com/nx/-/nx-14.6.1.tgz#57b1bd19c018cc125330e91a05523e6a081c2dce"
+  integrity sha512-dJH6A2ff7AO3hXYkjh7qRBZjCEvmjoJ5IQaoi7aEDcLQES5ujePmSS5TZK7NokrdrekDs3MYw3ecPZcVw7lCyg==
   dependencies:
-    "@nrwl/cli" "14.6.0"
-    "@nrwl/tao" "14.6.0"
+    "@nrwl/cli" "14.6.1"
+    "@nrwl/tao" "14.6.1"
     "@parcel/watcher" "2.0.4"
     chalk "4.1.0"
     chokidar "^3.5.1"
@@ -7460,12 +7472,7 @@ typedarray@^0.0.6:
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
   integrity sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==
 
-typescript@4.7.4:
-  version "4.7.4"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.7.4.tgz#1a88596d1cf47d59507a1bcdfb5b9dfe4d488235"
-  integrity sha512-C0WQT0gezHuw6AdY1M2jxUO83Rjf0HP7Sk1DtXj6j1EwkQNZrHAg2XPWlq62oqEhYvONq5pkC2Y9oPljWToLmQ==
-
-typescript@^4.6.4:
+typescript@4.8.2, typescript@^4.6.4:
   version "4.8.2"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.8.2.tgz#e3b33d5ccfb5914e4eeab6699cf208adee3fd790"
   integrity sha512-C0I1UsrrDHo2fYI5oaCGbSejwX4ch+9Y5jTQELvovfmFkK3HHSZJB8MSJcWLmCUBzQBchCrZ9rMRV6GuNrvGtw==

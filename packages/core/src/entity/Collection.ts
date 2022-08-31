@@ -7,14 +7,15 @@ import { QueryOrder, ReferenceType } from '../enums';
 import { Reference } from './Reference';
 import type { Transaction } from '../connections/Connection';
 import type { FindOptions } from '../drivers/IDatabaseDriver';
+import { helper } from './wrap';
 
-export interface MatchingOptions<T, P extends string = never> extends FindOptions<T, P> {
+export interface MatchingOptions<T extends object, P extends string = never> extends FindOptions<T, P> {
   where?: FilterQuery<T>;
   store?: boolean;
   ctx?: Transaction;
 }
 
-export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
+export class Collection<T extends object, O extends object = object> extends ArrayCollection<T, O> {
 
   private snapshot: T[] | undefined = []; // used to create a diff of the collection at commit time, undefined marks overridden values so we need to wipe when flushing
   private readonly?: boolean;
@@ -23,14 +24,14 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   private _em?: unknown;
 
   constructor(owner: O, items?: T[], initialized = true) {
-    super(owner, items);
+    super(owner as unknown as O & AnyEntity, items);
     this.initialized = !!items || initialized;
   }
 
   /**
    * Creates new Collection instance, assigns it to the owning entity and sets the items to it (propagating them to their inverse sides)
    */
-  static create<T, O = any>(owner: O, prop: keyof O, items: undefined | T[], initialized: boolean): Collection<T, O> {
+  static create<T extends object, O extends object = object>(owner: O, prop: keyof O, items: undefined | T[], initialized: boolean): Collection<T, O> {
     const coll = new Collection<T, O>(owner, undefined, initialized);
     owner[prop] = coll as unknown as O[keyof O];
 
@@ -82,8 +83,8 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     let items: Loaded<T, P>[];
 
     if (this.property.reference === ReferenceType.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
-      const map = await em.getDriver().loadFromPivotTable(this.property, [this.owner.__helper!.__primaryKeys], where, opts.orderBy, ctx, options);
-      items = map[this.owner.__helper!.getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, { convertCustomTypes: true }));
+      const map = await em.getDriver().loadFromPivotTable(this.property, [helper(this.owner).__primaryKeys], where, opts.orderBy, ctx, options);
+      items = map[helper(this.owner).getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, { convertCustomTypes: true }));
     } else {
       items = await em.find(this.property.type, this.createCondition(where), opts);
     }
@@ -116,14 +117,14 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     return super.toJSON();
   }
 
-  add(...items: (T | Reference<T>)[]): void {
-    const unwrapped = items.map(i => Reference.unwrapReference(i));
+  add(...items: (T | Reference<T & AnyEntity>)[]): void {
+    const unwrapped = items.map(i => Reference.unwrapReference(i as AnyEntity)) as T[];
     unwrapped.forEach(item => this.validateItemType(item));
     this.modify('add', unwrapped);
     this.cancelOrphanRemoval(unwrapped);
   }
 
-  set(items: (T | Reference<T>)[]): void {
+  set(items: (T | Reference<T & AnyEntity>)[]): void {
     if (!this.initialized) {
       this.initialized = true;
       this.snapshot = undefined;
@@ -144,7 +145,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   /**
    * @inheritDoc
    */
-  remove(...items: (T | Reference<T> | ((item: T) => boolean))[]): void {
+  remove(...items: (T | Reference<T & AnyEntity> | ((item: T) => boolean))[]): void {
     if (items[0] instanceof Function) {
       for (const item of this.items) {
         if (items[0](item)) {
@@ -155,7 +156,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
       return;
     }
 
-    const unwrapped = items.map(i => Reference.unwrapReference(i as T));
+    const unwrapped = items.map(i => Reference.unwrapReference(i as AnyEntity)) as T[];
     this.modify('remove', unwrapped);
     const em = this.getEntityManager(unwrapped, false);
 
@@ -166,7 +167,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     }
   }
 
-  contains(item: (T | Reference<T>), check = true): boolean {
+  contains(item: (T | Reference<T & AnyEntity>), check = true): boolean {
     if (check) {
       this.checkInitialized();
     }
@@ -201,8 +202,8 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     const em = this.getEntityManager();
 
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
-      const map = await em.getDriver().loadFromPivotTable(this.property, [this.owner.__helper!.__primaryKeys], options.where, options.orderBy, undefined, options);
-      this.hydrate(map[this.owner.__helper!.getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, { convertCustomTypes: true })), true);
+      const map = await em.getDriver().loadFromPivotTable(this.property, [helper(this.owner).__primaryKeys], options.where, options.orderBy, undefined, options);
+      this.hydrate(map[helper(this.owner).getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, { convertCustomTypes: true })), true);
       this._lazyInitialized = true;
 
       return this as unknown as LoadedCollection<Loaded<T, P>>;
@@ -226,7 +227,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
       orderBy: this.createOrderBy(options.orderBy),
       connectionType: options.connectionType,
       schema: this.property.targetMeta!.schema === '*'
-        ? this.owner.__helper!.__schema
+        ? helper(this.owner).__schema
         : this.property.targetMeta!.schema,
     });
 
@@ -270,10 +271,10 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
   }
 
   private getEntityManager(items: T[] = [], required = true) {
-    let em = this._em ?? this.owner.__helper!.__em;
+    let em = this._em ?? helper(this.owner).__em;
 
     if (!em) {
-      for (const i of items as AnyEntity<T>[]) {
+      for (const i of items as AnyEntity[]) {
         if (i?.__helper!.__em) {
           em = i?.__helper!.__em;
           break;
@@ -294,7 +295,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
 
   private createCondition(cond: FilterQuery<T> = {} as FilterQuery<T>): FilterQuery<T> {
     if (this.property.reference === ReferenceType.ONE_TO_MANY) {
-      cond[this.property.mappedBy] = this.owner.__helper!.getPrimaryKey();
+      cond[this.property.mappedBy] = helper(this.owner).getPrimaryKey();
     } else { // MANY_TO_MANY
       this.createManyToManyCondition(cond);
     }
@@ -307,7 +308,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
       const defaultOrder = this.property.referencedColumnNames.map(name => {
         return { [name]: QueryOrder.ASC };
       });
-      orderBy = this.property.orderBy || defaultOrder;
+      orderBy = this.property.orderBy as QueryOrderMap<T> || defaultOrder;
     }
 
     return Utils.asArray(orderBy);
@@ -318,14 +319,15 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
       // we know there is at least one item as it was checked in load method
       const pk = this.property.targetMeta!.primaryKeys[0];
       cond[pk] = { $in: [] };
-      this.items.forEach((item: AnyEntity<T>) => cond[pk].$in.push(item.__helper!.getPrimaryKey()));
+      this.items.forEach(item => cond[pk].$in.push((item as AnyEntity).__helper!.getPrimaryKey()));
     } else {
-      cond[this.property.mappedBy] = this.owner.__helper!.getPrimaryKey();
+      cond[this.property.mappedBy] = helper(this.owner).getPrimaryKey();
     }
   }
 
   private createLoadCountCondition(cond: FilterQuery<T>, pivotMeta?: EntityMetadata) {
-    const val = this.owner.__meta!.compositePK ? { $in: this.owner.__helper!.__primaryKeys } : this.owner.__helper!.getPrimaryKey();
+    const wrapped = helper(this.owner);
+    const val = wrapped.__meta.compositePK ? { $in: wrapped.__primaryKeys } : wrapped.getPrimaryKey();
 
     if (this.property.reference === ReferenceType.ONE_TO_MANY) {
       cond[this.property.mappedBy] = val;
@@ -352,7 +354,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
 
   private checkInitialized(): void {
     if (!this.isInitialized()) {
-      throw new Error(`Collection<${this.property.type}> of entity ${this.owner.constructor.name}[${this.owner.__helper!.getPrimaryKey()}] not initialized`);
+      throw new Error(`Collection<${this.property.type}> of entity ${this.owner.constructor.name}[${helper(this.owner).getPrimaryKey()}] not initialized`);
     }
   }
 
@@ -393,8 +395,8 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
       return;
     }
 
-    const check = (item: T & AnyEntity<T>) => {
-      if (!item || item.__helper!.__initialized) {
+    const check = (item: AnyEntity) => {
+      if (!item || helper(item).__initialized) {
         return false;
       }
 
@@ -402,7 +404,7 @@ export class Collection<T, O = unknown> extends ArrayCollection<T, O> {
     };
 
     // throw if we are modifying inverse side of M:N collection when owning side is initialized (would be ignored when persisting)
-    if (items.find(item => check(item))) {
+    if (items.find(item => check(item as AnyEntity))) {
       throw ValidationError.cannotModifyInverseCollection(this.owner, this.property);
     }
   }

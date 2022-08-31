@@ -4,8 +4,8 @@ import type {
   EmbeddedOptions, EnumOptions, IndexOptions, ManyToManyOptions, ManyToOneOptions, OneToManyOptions, OneToOneOptions, PrimaryKeyOptions, PropertyOptions,
   SerializedPrimaryKeyOptions, UniqueOptions,
 } from '../decorators';
-import type { EntityRepository } from '../entity';
-import { BaseEntity } from '../entity';
+import type { EntityRepository } from '../entity/EntityRepository';
+import { BaseEntity } from '../entity/BaseEntity';
 import { Cascade, ReferenceType } from '../enums';
 import { Type } from '../types';
 import { Utils } from '../utils';
@@ -26,7 +26,7 @@ type Metadata<T, U> =
   & ({ name: string } | { class: Constructor<T>; name?: string })
   & { properties?: { [K in keyof Omit<T, keyof U> as ExcludeFunctions<Omit<T, keyof U>, K>]-?: Property<ExpandProperty<NonNullable<T[K]>>, T> } };
 
-export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntity<U> | undefined = undefined> {
+export class EntitySchema<T = any, U = never> {
 
   private readonly _meta: EntityMetadata<T> = new EntityMetadata<T>();
   private internal = false;
@@ -44,7 +44,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     this._meta.root ??= this._meta;
   }
 
-  static fromMetadata<T extends AnyEntity<T> = AnyEntity, U extends AnyEntity<U> | undefined = undefined>(meta: EntityMetadata<T> | DeepPartial<EntityMetadata<T>>): EntitySchema<T, U> {
+  static fromMetadata<T = AnyEntity, U = never>(meta: EntityMetadata<T> | DeepPartial<EntityMetadata<T>>): EntitySchema<T, U> {
     const schema = new EntitySchema<T, U>(meta as unknown as Metadata<T, U>);
     schema.internal = true;
 
@@ -88,7 +88,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
       options.items = Utils.extractEnumValues(options.items());
     }
 
-    // enum arrays are simple numeric/string arrays, the constrain is enforced in the custom type only
+    // enum arrays are simple numeric/string arrays, the constraint is enforced in the custom type only
     if (options.array && !options.customType) {
       options.customType = new EnumArrayType(`${this._meta.className}.${name}`, options.items);
       (options as EntityProperty).enum = false;
@@ -116,7 +116,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     this.addProperty(name, type, options);
   }
 
-  addEmbedded<K = unknown>(name: string & keyof T, options: EmbeddedOptions): void {
+  addEmbedded<K = AnyEntity>(name: string & keyof T, options: EmbeddedOptions): void {
     Utils.defaultValue(options, 'prefix', true);
 
     if (options.array) {
@@ -131,7 +131,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     } as EntityProperty<T>;
   }
 
-  addManyToOne<K = unknown>(name: string & keyof T, type: TypeType, options: ManyToOneOptions<K, T>): void {
+  addManyToOne<K = AnyEntity>(name: string & keyof T, type: TypeType, options: ManyToOneOptions<K, T>): void {
     const prop = this.createProperty(ReferenceType.MANY_TO_ONE, options);
     Utils.defaultValue(prop, 'nullable', prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL));
 
@@ -146,7 +146,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     this.addProperty(name, type, prop);
   }
 
-  addManyToMany<K = unknown>(name: string & keyof T, type: TypeType, options: ManyToManyOptions<K, T>): void {
+  addManyToMany<K = AnyEntity>(name: string & keyof T, type: TypeType, options: ManyToManyOptions<K, T>): void {
     options.fixedOrder = options.fixedOrder || !!options.fixedOrderColumn;
 
     if (!options.owner && !options.mappedBy) {
@@ -161,12 +161,12 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     this.addProperty(name, type, prop);
   }
 
-  addOneToMany<K = unknown>(name: string & keyof T, type: TypeType, options: OneToManyOptions<K, T>): void {
+  addOneToMany<K = AnyEntity>(name: string & keyof T, type: TypeType, options: OneToManyOptions<K, T>): void {
     const prop = this.createProperty<T>(ReferenceType.ONE_TO_MANY, options);
     this.addProperty(name, type, prop);
   }
 
-  addOneToOne<K = unknown>(name: string & keyof T, type: TypeType, options: OneToOneOptions<K, T>): void {
+  addOneToOne<K = AnyEntity>(name: string & keyof T, type: TypeType, options: OneToOneOptions<K, T>): void {
     const prop = this.createProperty(ReferenceType.ONE_TO_ONE, options) as EntityProperty;
     Utils.defaultValue(prop, 'owner', !!prop.inversedBy || !prop.mappedBy);
     Utils.defaultValue(prop, 'nullable', !prop.owner || prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL));
@@ -195,7 +195,7 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
     this._meta.uniques.push(options as any);
   }
 
-  setCustomRepository(repository: () => Constructor<EntityRepository<T>>): void {
+  setCustomRepository(repository: () => Constructor<EntityRepository<any>>): void {
     this._meta.customRepository = repository;
   }
 
@@ -264,16 +264,16 @@ export class EntitySchema<T extends AnyEntity<T> = AnyEntity, U extends AnyEntit
 
       switch ((options as EntityProperty).reference) {
         case ReferenceType.ONE_TO_ONE:
-          this.addOneToOne(name as keyof T & string, options.type as string, options as OneToOneOptions<T, AnyEntity>);
+          this.addOneToOne(name as keyof T & string, options.type as string, options as OneToOneOptions<T, T>);
           break;
         case ReferenceType.ONE_TO_MANY:
-          this.addOneToMany(name as keyof T & string, options.type as string, options as OneToManyOptions<T, AnyEntity>);
+          this.addOneToMany(name as keyof T & string, options.type as string, options as OneToManyOptions<T, T>);
           break;
         case ReferenceType.MANY_TO_ONE:
-          this.addManyToOne(name as keyof T & string, options.type as string, options as ManyToOneOptions<T, AnyEntity>);
+          this.addManyToOne(name as keyof T & string, options.type as string, options as ManyToOneOptions<T, T>);
           break;
         case ReferenceType.MANY_TO_MANY:
-          this.addManyToMany(name as keyof T & string, options.type as string, options as ManyToManyOptions<T, AnyEntity>);
+          this.addManyToMany(name as keyof T & string, options.type as string, options as ManyToManyOptions<T, T>);
           break;
         case ReferenceType.EMBEDDED:
           this.addEmbedded(name as keyof T & string, options as EmbeddedOptions);

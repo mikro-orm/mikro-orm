@@ -1,4 +1,4 @@
-import type { AnyEntity, Dictionary, EntityData } from '../typings';
+import type { Dictionary, EntityData } from '../typings';
 import { EntityMetadata } from '../typings';
 import { Utils } from '../utils/Utils';
 import { MetadataError } from '../errors';
@@ -17,8 +17,8 @@ export class MetadataStorage {
   }
 
   static getMetadata(): Dictionary<EntityMetadata>;
-  static getMetadata<T extends AnyEntity<T> = any>(entity: string, path: string): EntityMetadata<T>;
-  static getMetadata<T extends AnyEntity<T> = any>(entity?: string, path?: string): Dictionary<EntityMetadata> | EntityMetadata<T> {
+  static getMetadata<T = any>(entity: string, path: string): EntityMetadata<T>;
+  static getMetadata<T = any>(entity?: string, path?: string): Dictionary<EntityMetadata> | EntityMetadata<T> {
     const key = entity && path ? entity + '-' + Utils.hash(path) : null;
 
     if (key && !MetadataStorage.metadata[key]) {
@@ -73,7 +73,7 @@ export class MetadataStorage {
     return this.metadata[type];
   }
 
-  get<T extends AnyEntity<T> = any>(entity: string, init = false, validate = true): EntityMetadata<T> {
+  get<T = any>(entity: string, init = false, validate = true): EntityMetadata<T> {
     if (validate && !init && !this.has(entity)) {
       throw MetadataError.missingMetadata(entity);
     }
@@ -85,7 +85,7 @@ export class MetadataStorage {
     return this.metadata[entity];
   }
 
-  find<T extends AnyEntity<T> = any>(entity: string): EntityMetadata<T> | undefined {
+  find<T = any>(entity: string): EntityMetadata<T> | undefined {
     return this.metadata[entity];
   }
 

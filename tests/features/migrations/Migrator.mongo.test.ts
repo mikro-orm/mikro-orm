@@ -9,7 +9,7 @@ import { closeReplSets, initORMMongo, mockLogger } from '../../bootstrap';
 class MigrationTest1 extends Migration {
 
   async up(): Promise<void> {
-    await this.getCollection('Book').updateMany({}, { $set: { updatedAt: new Date() } });
+    await this.getCollection<any>('Book').updateMany({}, { $set: { updatedAt: new Date() } });
     await this.driver.nativeDelete('Book', { foo: true }, { ctx: this.ctx });
   }
 

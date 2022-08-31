@@ -6,7 +6,7 @@ export class DatabaseSeedCommand<T> implements CommandModule<T, { class: string 
 
   command = 'seeder:run';
   describe = 'Seed the database using the seeder class';
-  builder = (args: Argv) => {
+  builder = (args: Argv<T>) => {
     args.option('c', {
       alias: 'class',
       type: 'string',
