@@ -2913,7 +2913,7 @@ export class User2 {
 `;
 
 exports[`EntityGenerator generate entities with reference wrappers and named import [mysql]: mysql-entity-named-dump 1`] = `
-Array [
+[
   "import { Entity, IdentifiedReference, OneToOne, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2.js';
 
