@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "Node16",
     "target": "es2020",
     "lib": ["es2020"],
-    "moduleResolution": "node",
+    "moduleResolution": "Node16",
     "declaration": true,
     "sourceMap": false,
     "strict": true,

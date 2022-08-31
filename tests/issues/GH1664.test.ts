@@ -1,5 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql/src';
+import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../helpers';
 
 @Entity()

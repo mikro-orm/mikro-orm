@@ -233,7 +233,7 @@ export class Migrator implements IMigrator {
       return DatabaseSchema.create(this.driver.getConnection(), this.driver.getPlatform(), this.config);
     }
 
-    const data = await import(this.snapshotPath);
+    const data = await Utils.dynamicImport(this.snapshotPath);
     const schema = new DatabaseSchema(this.driver.getPlatform(), this.config.get('schema'));
     const { tables, namespaces, ...rest } = data;
     const tableInstances = tables.map((tbl: Dictionary) => {
