@@ -108,6 +108,9 @@ describe('virtual entities (sqlite)', () => {
     expect(mock.mock.calls).toHaveLength(2); // from cache, no additional queries
 
     expect(total).toBe(3);
+    expect(JSON.parse(JSON.stringify(profiles[0])).identity).toEqual({
+      fooBar: 'foo 123',
+    });
     expect(profiles).toEqual([
       {
         name: 'Jon Snow 1',

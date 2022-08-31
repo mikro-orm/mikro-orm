@@ -19,11 +19,7 @@ export function wrap<T, PK extends keyof T | unknown = PrimaryProperty<T>>(entit
     return entity as unknown as IWrappedEntity<T, PK>;
   }
 
-  if (entity) {
-    return entity.__helper!;
-  }
-
-  return entity as unknown as IWrappedEntity<T, PK>;
+  return entity?.__helper ?? entity;
 }
 
 /**

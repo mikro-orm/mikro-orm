@@ -1,6 +1,6 @@
 import { RequestContext, MikroORM, wrap } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
-import { Author4, BaseEntity5, Book4, BookTag4, FooBar4, FooBaz4, Publisher4, Test4 } from './entities-schema';
+import { Author4, BaseEntity5, Book4, BookTag4, FooBar4, FooBaz4, Publisher4, Test4, IdentitySchema } from './entities-schema';
 import { initORMMongo } from './bootstrap';
 import { Author, Book } from './entities';
 
@@ -72,7 +72,7 @@ describe('MultiRequestContext', () => {
 
   beforeAll(async () => {
     orm1 = await MikroORM.init<SqliteDriver>({
-      entities: [Author4, Book4, BookTag4, Publisher4, Test4, BaseEntity5],
+      entities: [Author4, Book4, BookTag4, Publisher4, Test4, BaseEntity5, IdentitySchema],
       dbName: ':memory:',
       driver: SqliteDriver,
       contextName: 'orm1',

@@ -14,7 +14,7 @@ import {
   Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2, Label2, Configuration2, Address2, FooParam2,
 } from './entities-sql';
 import FooBar from './entities/FooBar';
-import { Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5 } from './entities-schema';
+import { Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5, IdentitySchema } from './entities-schema';
 import { Author2Subscriber } from './subscribers/Author2Subscriber';
 import { Test2Subscriber } from './subscribers/Test2Subscriber';
 import { EverythingSubscriber } from './subscribers/EverythingSubscriber';
@@ -170,7 +170,7 @@ export async function initORMSqlite() {
 
 export async function initORMSqlite2(type: 'sqlite' | 'better-sqlite' = 'sqlite') {
   const orm = await MikroORM.init<SqliteDriver>({
-    entities: [Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5],
+    entities: [Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5, IdentitySchema],
     dbName: ':memory:',
     baseDir: BASE_DIR,
     type,

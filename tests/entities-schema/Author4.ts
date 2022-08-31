@@ -1,5 +1,5 @@
 import type { Collection, EventArgs } from '@mikro-orm/core';
-import { EntitySchema, DateType, TimeType, BooleanType, t, ReferenceType } from '@mikro-orm/core';
+import { EntitySchema, DateType, TimeType, BooleanType, t, ReferenceType, wrap } from '@mikro-orm/core';
 import type { IBaseEntity5 } from './BaseEntity5';
 import type { IBook4 } from './Book4';
 
@@ -35,8 +35,8 @@ export const IdentitySchema = new EntitySchema({
   class: Identity,
   embeddable: true,
   properties: {
-    foo: { type: 'string', nullable: true },
-    bar: { type: 'number', nullable: true },
+    foo: { type: 'string', hidden: true },
+    bar: { type: 'number', hidden: true },
     fooBar: { type: 'string', getter: true, persist: false },
   },
 });

@@ -16,20 +16,18 @@ export class EntityHelper {
 
   static decorate<T extends object>(meta: EntityMetadata<T>, em: EntityManager): void {
     const fork = em.fork(); // use fork so we can access `EntityFactory`
-
-    if (meta.embeddable) {
-      EntityHelper.defineBaseProperties(meta, meta.prototype, fork);
-      return;
-    }
-
     const pk = meta.properties[meta.primaryKeys[0]];
 
-    if (pk.name === '_id' && meta.serializedPrimaryKey === 'id') {
+    if (pk?.name === '_id' && meta.serializedPrimaryKey === 'id') {
       EntityHelper.defineIdProperty(meta, em.getPlatform());
     }
 
     EntityHelper.defineBaseProperties(meta, meta.prototype, fork);
-    EntityHelper.defineProperties(meta);
+
+    if (!meta.embeddable) {
+      EntityHelper.defineProperties(meta);
+    }
+
     const prototype = meta.prototype as Dictionary;
 
     if (!prototype.toJSON) { // toJSON can be overridden

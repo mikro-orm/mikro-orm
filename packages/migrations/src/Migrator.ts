@@ -140,7 +140,7 @@ export class Migrator implements IMigrator {
     const expected = new Set<string>();
 
     Object.values(this.em.getMetadata().getAll())
-      .filter(meta => meta.collection)
+      .filter(meta => meta.tableName && !meta.embeddable && !meta.virtual)
       .forEach(meta => {
         const schema = meta.schema ?? this.config.get('schema', this.em.getPlatform().getDefaultSchemaName());
         expected.add(schema ? `${schema}.${meta.collection}` : meta.collection);

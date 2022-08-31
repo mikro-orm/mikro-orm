@@ -126,17 +126,14 @@ describe('MetadataValidator', () => {
       age: { reference: 'scalar', name: 'age', type: 'string' },
       totalBooks: { reference: 'scalar', name: 'totalBooks', type: 'number' },
       usedTags: { reference: 'scalar', name: 'usedTags', type: 'string[]' },
-      invalid1: { reference: 'embedded', name: 'invalid1', type: 'object' },
-      invalid2: { reference: '1:m', name: 'invalid2', type: 'Foo' },
+      invalid1: { reference: '1:m', name: 'invalid1', type: 'Foo' },
     };
     const meta = { AuthorProfile: { expression: '...', name: 'AuthorProfile', className: 'AuthorProfile', properties } } as any;
     meta.AuthorProfile.root = meta.AuthorProfile;
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'AuthorProfile')).toThrowError(`Virtual entity AuthorProfile cannot have primary key AuthorProfile.id`);
     delete properties.id.primary;
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'AuthorProfile')).toThrowError(`Only scalar properties are allowed inside virtual entity. Found 'embedded' in AuthorProfile.invalid1`);
+    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'AuthorProfile')).toThrowError(`Only scalar and embedded properties are allowed inside virtual entity. Found '1:m' in AuthorProfile.invalid1`);
     delete properties.invalid1;
-    expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'AuthorProfile')).toThrowError(`Only scalar properties are allowed inside virtual entity. Found '1:m' in AuthorProfile.invalid2`);
-    delete properties.invalid2;
     expect(() => validator.validateEntityDefinition(new MetadataStorage(meta as any), 'AuthorProfile')).not.toThrowError();
   });
 
