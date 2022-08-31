@@ -61,7 +61,7 @@
   "dependencies": {
     "@mikro-orm/mongodb": "^5.3.1",
     "fs-extra": "10.1.0",
-    "mongodb": "4.9.0",
+    "mongodb": "4.9.1",
     "umzug": "3.2.1"
   },
   "devDependencies": {
