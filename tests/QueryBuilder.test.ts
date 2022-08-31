@@ -2764,6 +2764,16 @@ describe('QueryBuilder', () => {
     expect(qb1.getQuery()).toEqual('select `a`.* from `author2` as `a` where `a`.`terms_accepted` = ? and match(`a`.`name`) against (? in boolean mode) and match(`a`.`email`) against (? in boolean mode)');
   });
 
+  test('delete query with alias', async () => {
+    const sql = orm.em.createQueryBuilder(Author2, 'u')
+      .delete({
+        'u.createdAt': {
+          $lt: new Date(),
+        },
+      }).getQuery();
+    expect(sql).toBe('delete from `author2` as `u` where `u`.`created_at` < ?');
+  });
+
   afterAll(async () => orm.close(true));
 
 });

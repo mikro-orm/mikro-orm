@@ -50,6 +50,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   private finalized = false;
   private _joins: Dictionary<JoinOptions> = {};
   private _aliasMap: Dictionary<string> = {};
+  private _explicitAlias = false;
   private _schema?: string;
   private _cond: Dictionary = {};
   private _data!: Dictionary;
@@ -83,6 +84,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
               private readonly em?: SqlEntityManager) {
     if (alias) {
       this.aliasCounter++;
+      this._explicitAlias = true;
     }
 
     this.alias = alias ?? this.getNextAlias(this.entityName);
@@ -621,7 +623,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   }
 
   getKnex(): Knex.QueryBuilder {
-    const tableName = this.helper.getTableName(this.entityName) + (this.finalized && this.helper.isTableNameAliasRequired(this.type) ? ` as ${this.alias}` : '');
+    const tableName = this.helper.getTableName(this.entityName) + (this.finalized && (this._explicitAlias || this.helper.isTableNameAliasRequired(this.type)) ? ` as ${this.alias}` : '');
     const qb = this.knex(tableName);
 
     if (this._schema) {
