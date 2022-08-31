@@ -126,6 +126,7 @@ const equalsFn = equals;
 export class Utils {
 
   static readonly PK_SEPARATOR = '~~~';
+  static dynamicImportProvider = (id: string) => import(id);
 
   /**
    * Checks if the argument is not undefined
@@ -851,6 +852,10 @@ export class Utils {
    * @see https://github.com/microsoft/TypeScript/issues/43329#issuecomment-922544562
    */
   static async dynamicImport<T = any>(id: string): Promise<T> {
+    if (process.env.TS_JEST) {
+      return require(id);
+    }
+
     /* istanbul ignore next */
     if (platform() === 'win32') {
       try {
@@ -860,13 +865,14 @@ export class Utils {
       }
     }
 
-    if (process.env.TS_JEST) {
-      return require(id);
-    }
-
     /* istanbul ignore next */
-    const ret = await import(id);
+    const ret = await this.dynamicImportProvider(id);
     return ret.default ?? ret;
+  }
+
+  /* istanbul ignore next */
+  static setDynamicImportProvider(provider: (id: string) => Promise<unknown>): void {
+    this.dynamicImportProvider = provider;
   }
 
   static getORMVersion(): string {
