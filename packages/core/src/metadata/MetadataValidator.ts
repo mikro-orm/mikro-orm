@@ -25,8 +25,8 @@ export class MetadataValidator {
 
     if (meta.virtual || meta.expression) {
       for (const prop of Object.values(meta.properties)) {
-        if (prop.reference !== ReferenceType.SCALAR) {
-          throw new MetadataError(`Only scalar properties are allowed inside virtual entity. Found '${prop.reference}' in ${meta.className}.${prop.name}`);
+        if (![ReferenceType.SCALAR, ReferenceType.EMBEDDED].includes(prop.reference)) {
+          throw new MetadataError(`Only scalar and embedded properties are allowed inside virtual entity. Found '${prop.reference}' in ${meta.className}.${prop.name}`);
         }
 
         if (prop.primary) {

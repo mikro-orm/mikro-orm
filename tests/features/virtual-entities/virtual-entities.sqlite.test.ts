@@ -1,8 +1,8 @@
-import { EntitySchema, MikroORM } from '@mikro-orm/core';
+import { EntitySchema, MikroORM, ReferenceType } from '@mikro-orm/core';
 import type { EntityManager } from '@mikro-orm/better-sqlite';
 import { mockLogger } from '../../bootstrap';
 import type { IAuthor4 } from '../../entities-schema';
-import { Author4, BaseEntity5, Book4, BookTag4, FooBar4, FooBaz4, Publisher4, Test4 } from '../../entities-schema';
+import { Author4, BaseEntity5, Book4, BookTag4, FooBar4, FooBaz4, Publisher4, Test4, Identity, IdentitySchema } from '../../entities-schema';
 
 class AuthorProfile {
 
@@ -10,10 +10,11 @@ class AuthorProfile {
   age!: number;
   totalBooks!: number;
   usedTags!: string[];
+  identity!: Identity;
 
 }
 
-const authorProfilesSQL = 'select name, age, ' +
+const authorProfilesSQL = 'select name, age, identity, ' +
   '(select count(*) from book4 b where b.author_id = a.id) as total_books, ' +
   '(select group_concat(distinct t.name) from book4 b join tags_ordered bt on bt.book4_id = b.id join book_tag4 t on t.id = bt.book_tag4_id where b.author_id = a.id group by b.author_id) as used_tags ' +
   'from author4 a group by a.id';
@@ -26,6 +27,7 @@ const AuthorProfileSchema = new EntitySchema({
     age: { type: 'string' },
     totalBooks: { type: 'number' },
     usedTags: { type: 'string[]' },
+    identity: { type: 'Identity', reference: ReferenceType.EMBEDDED, object: true },
   },
 });
 
@@ -59,7 +61,7 @@ describe('virtual entities (sqlite)', () => {
     orm = await MikroORM.init({
       type: 'better-sqlite',
       dbName: ':memory:',
-      entities: [Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5, AuthorProfileSchema, BookWithAuthor],
+      entities: [Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5, AuthorProfileSchema, BookWithAuthor, IdentitySchema],
     });
     await orm.schema.createSchema();
   });
@@ -68,6 +70,7 @@ describe('virtual entities (sqlite)', () => {
 
   async function createEntities(index: number): Promise<IAuthor4> {
     const author = orm.em.create(Author4, { name: 'Jon Snow ' + index, email: 'snow@wall.st-' + index, age: Math.floor(Math.random() * 100) });
+    author.identity = new Identity('foo', 123);
     const book1 = orm.em.create(Book4, { title: 'My Life on the Wall, part 1/' + index, author });
     const book2 = orm.em.create(Book4, { title: 'My Life on the Wall, part 2/' + index, author });
     const book3 = orm.em.create(Book4, { title: 'My Life on the Wall, part 3/' + index, author });
@@ -108,18 +111,21 @@ describe('virtual entities (sqlite)', () => {
     expect(profiles).toEqual([
       {
         name: 'Jon Snow 1',
+        identity: { foo: 'foo', bar: 123 },
         age: expect.any(Number),
         totalBooks: 3,
         usedTags: ['silly-1', 'sick-1', 'funny-1', 'sexy-1', 'strange-1'],
       },
       {
         name: 'Jon Snow 2',
+        identity: { foo: 'foo', bar: 123 },
         age: expect.any(Number),
         totalBooks: 3,
         usedTags: ['silly-2', 'sick-2', 'funny-2', 'sexy-2', 'strange-2'],
       },
       {
         name: 'Jon Snow 3',
+        identity: { foo: 'foo', bar: 123 },
         age: expect.any(Number),
         totalBooks: 3,
         usedTags: ['silly-3', 'sick-3', 'funny-3', 'sexy-3', 'strange-3'],
@@ -128,6 +134,7 @@ describe('virtual entities (sqlite)', () => {
 
     for (const profile of profiles) {
       expect(profile).toBeInstanceOf(AuthorProfile);
+      expect(profile.identity).toBeInstanceOf(Identity);
     }
 
     const someProfiles1 = await orm.em.find(AuthorProfile, {}, { limit: 2, offset: 1, orderBy: { name: 'asc' } });
