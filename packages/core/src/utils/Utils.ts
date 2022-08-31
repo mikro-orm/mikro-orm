@@ -911,13 +911,13 @@ export class Utils {
 
         if (position) {
           const lines = code.split('\n').map((line, idx) => {
-            if (idx === +position[1] - 4) {
+            if (idx === +position[1] - 5) {
               return '> ' + line;
             }
 
             return '  ' + line;
           });
-          lines.splice(+position[1] - 3, 0, ' '.repeat(+position[2] - 4) + '^');
+          lines.splice(+position[1] - 4, 0, ' '.repeat(+position[2]) + '^');
           code = lines.join('\n');
         }
 

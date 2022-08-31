@@ -330,7 +330,7 @@ export class ChangeSetPersister {
     }
 
     const pk = Utils.getPrimaryKeyHash(meta.primaryKeys);
-    const pks = changeSets.map(cs => helper(cs.entity).getPrimaryKey());
+    const pks = changeSets.map(cs => helper(cs.entity).getPrimaryKey(true));
     options = this.propagateSchemaFromMetadata(meta, options, {
       fields: reloadProps.map(prop => prop.fieldNames[0]),
     });
