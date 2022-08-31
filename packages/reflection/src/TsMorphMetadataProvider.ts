@@ -120,6 +120,10 @@ export class TsMorphMetadataProvider extends MetadataProvider {
       .replace(/\[]$/, '')          // remove array suffix
       .replace(/\((.*)\)/, '$1');   // unwrap union types
 
+    if (prop.array && !type.endsWith('[]') && !type.includes(' | ')) {
+      type += '[]';
+    }
+
     return { type, optional };
   }
 
