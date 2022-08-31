@@ -297,17 +297,20 @@ describe('embedded entities in mongo', () => {
     expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('user'\)\.updateMany\({ _id: .* }, { '\$set': { addr_postalCode: '111', address4: { street: 'Downing street 13', postalCode: '999', city: 'London 4', country: 'UK 4' } } }, { session: undefined }\);/);
     orm.em.clear();
 
+    const u0 = await orm.em.findOneOrFail(User, { address4: { $ne: null } });
+    expect(u0.address4).not.toBeNull();
+    expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\('user'\)\.find\({ address4: \{ '\$ne': null } }, { session: undefined }\)\.limit\(1\).toArray\(\);/);
     const u1 = await orm.em.findOneOrFail(User, { address1: { city: 'London 1', postalCode: '123' } });
-    expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\('user'\)\.find\({ address1_city: 'London 1', address1_postalCode: '123' }, { session: undefined }\)\.limit\(1\).toArray\(\);/);
+    expect(mock.mock.calls[4][0]).toMatch(/db\.getCollection\('user'\)\.find\({ address1_city: 'London 1', address1_postalCode: '123' }, { session: undefined }\)\.limit\(1\).toArray\(\);/);
     expect(u1.address1.city).toBe('London 1');
     expect(u1.address1.postalCode).toBe('123');
     const u2 = await orm.em.findOneOrFail(User, { address1: { city: /^London/ } });
-    expect(mock.mock.calls[4][0]).toMatch(/db\.getCollection\('user'\)\.find\({ address1_city: \/\^London\/ }, { session: undefined }\)\.limit\(1\).toArray\(\);/);
+    expect(mock.mock.calls[5][0]).toMatch(/db\.getCollection\('user'\)\.find\({ address1_city: \/\^London\/ }, { session: undefined }\)\.limit\(1\).toArray\(\);/);
     expect(u2.address1.city).toBe('London 1');
     expect(u2.address1.postalCode).toBe('123');
     expect(u2).toBe(u1);
     const u3 = await orm.em.findOneOrFail(User, { $or: [{ address1: { city: 'London 1' } }, { address1: { city: 'Berlin' } }] });
-    expect(mock.mock.calls[5][0]).toMatch(/db\.getCollection\('user'\)\.find\({ '\$or': \[ { address1_city: 'London 1' }, { address1_city: 'Berlin' } ] }, { session: undefined }\)\.limit\(1\).toArray\(\);/);
+    expect(mock.mock.calls[6][0]).toMatch(/db\.getCollection\('user'\)\.find\({ '\$or': \[ { address1_city: 'London 1' }, { address1_city: 'Berlin' } ] }, { session: undefined }\)\.limit\(1\).toArray\(\);/);
     expect(u3).toBe(u1);
     const err = `Using operators inside embeddables is not allowed, move the operator above. (property: User.address1, payload: { address1: { '$or': [ [Object], [Object] ] } })`;
     await expect(orm.em.findOneOrFail(User, { address1: { $or: [{ city: 'London 1' }, { city: 'Berlin' }] } })).rejects.toThrowError(err);
@@ -319,7 +322,7 @@ describe('embedded entities in mongo', () => {
       },
     });
     expect(u5).toBe(u1);
-    expect(mock.mock.calls[7][0]).toMatch(/db\.getCollection\('user'\)\.find\({ address4: { '\$exists': true } }, { session: undefined }\)\.limit\(1\).toArray\(\);/);
+    expect(mock.mock.calls[8][0]).toMatch(/db\.getCollection\('user'\)\.find\({ address4: { '\$exists': true } }, { session: undefined }\)\.limit\(1\).toArray\(\);/);
   });
 
   test('validation of object embeddables (GH issue #466)', async () => {
