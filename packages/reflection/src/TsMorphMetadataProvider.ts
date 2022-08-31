@@ -66,7 +66,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     prop.type = type;
 
     if (optional) {
-      prop.nullable = true;
+      prop.nullable ??= true;
     }
 
     this.processWrapper(prop, 'IdentifiedReference');
