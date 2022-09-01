@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.4.0](https://github.com/mikro-orm/mikro-orm/compare/v5.3.1...v5.4.0) (2022-09-01)
+
+
+### Bug Fixes
+
+* **postgres:** fix escaping of special chars in string arrays ([#3405](https://github.com/mikro-orm/mikro-orm/issues/3405)) ([cd7c42f](https://github.com/mikro-orm/mikro-orm/commit/cd7c42f242c5c957e5e81e406881ddcc0a17e5d0))
+
+
+
+
+
 ## [5.3.1](https://github.com/mikro-orm/mikro-orm/compare/v5.3.0...v5.3.1) (2022-08-04)
 
 **Note:** Version bump only for package @mikro-orm/postgresql

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.4.0](https://github.com/mikro-orm/mikro-orm/compare/v5.3.1...v5.4.0) (2022-09-01)
+
+
+### Bug Fixes
+
+* **reflection:** do not override user defined `nullable` attribute ([75a6487](https://github.com/mikro-orm/mikro-orm/commit/75a6487cc45eefd5ca7e4bd530b0522222e632ee))
+* **reflection:** fix array property type inference ([4a69871](https://github.com/mikro-orm/mikro-orm/commit/4a6987127c3fd487d9b4c4b1db597fac17a41fd8))
+
+
+
+
+
 ## [5.3.1](https://github.com/mikro-orm/mikro-orm/compare/v5.3.0...v5.3.1) (2022-08-04)
 
 **Note:** Version bump only for package @mikro-orm/reflection

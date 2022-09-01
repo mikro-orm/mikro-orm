@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.4.0](https://github.com/mikro-orm/mikro-orm/compare/v5.3.1...v5.4.0) (2022-09-01)
+
+
+### Bug Fixes
+
+* **core:** allow embedded properties inside virtual entities ([541d62d](https://github.com/mikro-orm/mikro-orm/commit/541d62d45f297790cbbf911e7b9d6a18a3950ef5))
+* **core:** allow using `$ne` operator on embedded properties ([89706b6](https://github.com/mikro-orm/mikro-orm/commit/89706b66ea6c8fb96768814a50987fc46bb5681d)), closes [#3430](https://github.com/mikro-orm/mikro-orm/issues/3430)
+* **core:** always use dynamic import, don't depend on `MIKRO_ORM_DYNAMIC_IMPORTS` ([ba7eac6](https://github.com/mikro-orm/mikro-orm/commit/ba7eac6c7a60c2b70a02e7dedeaa0e0b76c6fe78))
+* **core:** compile with `module: 'Node16'` to have real dynamic imports ([#3439](https://github.com/mikro-orm/mikro-orm/issues/3439)) ([50347ef](https://github.com/mikro-orm/mikro-orm/commit/50347efd909dafd0bceae09dc35019010cab8329))
+* **core:** fix optimistic locking for entities with custom type on PK ([e36bac5](https://github.com/mikro-orm/mikro-orm/commit/e36bac52969b6ee329c8c0c46e43be1132235848)), closes [#3440](https://github.com/mikro-orm/mikro-orm/issues/3440)
+* **core:** lock entities in `flush()` to get around race conditions with `Promise.all` ([b62799a](https://github.com/mikro-orm/mikro-orm/commit/b62799a2ee4e0b1dc57207c4fe2700a70e3eb0dc)), closes [#2934](https://github.com/mikro-orm/mikro-orm/issues/2934) [#3383](https://github.com/mikro-orm/mikro-orm/issues/3383)
+* **core:** respect serialization options like `hidden` on embeddables ([d198e44](https://github.com/mikro-orm/mikro-orm/commit/d198e44a243bda8dec3d58e9f21d8194570a67d6)), closes [#3429](https://github.com/mikro-orm/mikro-orm/issues/3429)
+* **core:** support result caching on virtual entities ([ce2b051](https://github.com/mikro-orm/mikro-orm/commit/ce2b05123ee7b27a6f9d3a3ee7706b0df36cf06a))
+* **core:** update to TypeScript 4.8 and improve `EntityDTO` type ([#3389](https://github.com/mikro-orm/mikro-orm/issues/3389)) ([f2957fb](https://github.com/mikro-orm/mikro-orm/commit/f2957fb14141294cfdffebf6cce6eaa937538cfb))
+* **core:** use acorn instead of escaya for extraction of method params ([c5c09c5](https://github.com/mikro-orm/mikro-orm/commit/c5c09c57016158d6e7f09410d2ab67adbadbd0ce))
+* **knex:** support `em.count()` on virtual entities ([5bb4ebe](https://github.com/mikro-orm/mikro-orm/commit/5bb4ebedfcb5df4d2e27dce66bcdc644e6d7d611))
+
+
+### Features
+
+* **core:** add `MikroORM.reconnect()` method ([53b836e](https://github.com/mikro-orm/mikro-orm/commit/53b836e75b21b42935f0ced9dfa30d350b1a5b71))
+* **core:** add `schema/migrator/seeder` shortcuts to `MikroORM` class ([95c8dd5](https://github.com/mikro-orm/mikro-orm/commit/95c8dd5ca4f795c7be5950c4ce02b0cf725a49ff))
+* **entity-generator:** add import extension for referenced entities ([#3420](https://github.com/mikro-orm/mikro-orm/issues/3420)) ([f80809a](https://github.com/mikro-orm/mikro-orm/commit/f80809a7bade25f30c8ae1aff3aa85d04249d853))
+* **knex:** add options params to `create` + `assign` methods within EntityRepository ([#3431](https://github.com/mikro-orm/mikro-orm/issues/3431)) ([cf7e9e1](https://github.com/mikro-orm/mikro-orm/commit/cf7e9e15bb29c762844b6167c54cb1200f9e4f9e))
+
+
+
+
+
 ## [5.3.1](https://github.com/mikro-orm/mikro-orm/compare/v5.3.0...v5.3.1) (2022-08-04)
 
 
