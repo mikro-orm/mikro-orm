@@ -2,7 +2,7 @@ import { MikroORM } from '../MikroORM';
 import { RequestContext } from '../utils/RequestContext';
 
 export function UseRequestContext(getContext?: MikroORM | (() => MikroORM)) {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
     descriptor.value = async function (this: { orm: MikroORM }, ...args: any[]) {
       /* istanbul ignore next */
