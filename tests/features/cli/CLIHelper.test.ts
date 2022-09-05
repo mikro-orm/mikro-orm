@@ -411,14 +411,12 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     pathExistsMock.mockRestore();
   });
 
-  test('getModuleFormatFromPackage gets the type from package.json', async () => {
-    const mikroPackage = await ConfigurationLoader.getModuleFormatFromPackage();
-    expect(mikroPackage).toEqual('');
+  test('isESM', async () => {
+    await expect(ConfigurationLoader.isESM()).resolves.toEqual(false);
 
     const packageSpy = jest.spyOn(ConfigurationLoader, 'getPackageConfig');
     packageSpy.mockResolvedValue({ type: 'module' });
-    const esmModulePackage = await ConfigurationLoader.getModuleFormatFromPackage();
-    expect(esmModulePackage).toEqual('module');
+    await expect(ConfigurationLoader.isESM()).resolves.toEqual(true);
     const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
     pathExistsMock.mockResolvedValue(true);
     const conf = await CLIHelper.getConfiguration();

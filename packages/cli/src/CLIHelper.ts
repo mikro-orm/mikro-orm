@@ -20,6 +20,11 @@ export class CLIHelper {
   }
 
   static async getORM(warnWhenNoEntities?: boolean, opts: Partial<Options> = {}): Promise<MikroORM> {
+    if (!(await ConfigurationLoader.isESM())) {
+      opts.dynamicImportProvider ??= id => Utils.requireFrom(id, process.cwd());
+      Utils.setDynamicImportProvider(opts.dynamicImportProvider);
+    }
+
     const options = await CLIHelper.getConfiguration(warnWhenNoEntities, opts);
     options.set('allowGlobalContext', true);
     options.set('debug', !!process.env.MIKRO_ORM_VERBOSE);
