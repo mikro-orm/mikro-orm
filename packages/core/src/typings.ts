@@ -297,6 +297,7 @@ export interface EntityProperty<T = any> {
   /** mysql only */
   extra?: string;
   userDefined?: boolean;
+  optional?: boolean; // for ts-morph
 }
 
 export class EntityMetadata<T = any> {

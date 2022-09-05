@@ -309,6 +309,18 @@ export class MetadataDiscovery {
     }
   }
 
+  private initNullability(prop: EntityProperty): void {
+    if (prop.reference === ReferenceType.MANY_TO_ONE) {
+      return Utils.defaultValue(prop, 'nullable', prop.optional || prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL));
+    }
+
+    if (prop.reference === ReferenceType.ONE_TO_ONE) {
+      return Utils.defaultValue(prop, 'nullable', prop.optional || !prop.owner || prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL));
+    }
+
+    return Utils.defaultValue(prop, 'nullable', prop.optional);
+  }
+
   private applyNamingStrategy(meta: EntityMetadata, prop: EntityProperty): void {
     if (!prop.fieldNames) {
       this.initFieldName(prop);
@@ -435,6 +447,7 @@ export class MetadataDiscovery {
     this.validator.validateEntityDefinition(this.metadata, meta.name!);
 
     for (const prop of Object.values(meta.properties)) {
+      this.initNullability(prop);
       this.applyNamingStrategy(meta, prop);
       this.initDefaultValue(prop);
       this.initVersionProperty(meta, prop);
