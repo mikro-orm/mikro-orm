@@ -723,7 +723,7 @@ export class QueryBuilderHelper {
 
       if (prop.customType && 'convertToDatabaseValueSQL' in prop.customType && !this.platform.isRaw(data[k])) {
         const quoted = this.platform.quoteValue(data[k]);
-        data[k] = this.knex.raw(prop.customType.convertToDatabaseValueSQL!(quoted, this.platform));
+        data[k] = this.knex.raw(prop.customType.convertToDatabaseValueSQL!(quoted, this.platform).replace(/\?/, '\\?'));
       }
 
       if (!prop.customType && (Array.isArray(data[k]) || Utils.isPlainObject(data[k]))) {
