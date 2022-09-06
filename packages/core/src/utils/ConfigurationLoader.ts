@@ -172,6 +172,7 @@ export class ConfigurationLoader {
     read(ret, 'MIKRO_ORM_USER', 'user');
     read(ret, 'MIKRO_ORM_PASSWORD', 'password');
     read(ret, 'MIKRO_ORM_DB_NAME', 'dbName');
+    read(ret, 'MIKRO_ORM_SCHEMA', 'schema');
     read(ret, 'MIKRO_ORM_LOAD_STRATEGY', 'loadStrategy');
     read(ret, 'MIKRO_ORM_BATCH_SIZE', 'batchSize', num);
     read(ret, 'MIKRO_ORM_USE_BATCH_INSERTS', 'useBatchInserts', bool);
