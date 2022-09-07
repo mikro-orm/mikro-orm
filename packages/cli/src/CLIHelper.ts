@@ -1,6 +1,7 @@
 import { pathExists } from 'fs-extra';
 import yargs from 'yargs';
-
+import { platform } from 'os';
+import { fileURLToPath } from 'url';
 import type { Configuration, IDatabaseDriver, Options } from '@mikro-orm/core';
 import { colors, ConfigurationLoader, MikroORM, Utils } from '@mikro-orm/core';
 
@@ -11,7 +12,18 @@ export class CLIHelper {
 
   static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true, options: Partial<Options> = {}): Promise<Configuration<D>> {
     if (!(await ConfigurationLoader.isESM())) {
-      options.dynamicImportProvider ??= id => Utils.requireFrom(id, process.cwd());
+      options.dynamicImportProvider ??= id => {
+        /* istanbul ignore next */
+        if (platform() === 'win32') {
+          try {
+            id = fileURLToPath(id);
+          } catch {
+            // ignore
+          }
+        }
+
+        return Utils.requireFrom(id, process.cwd());
+      };
       Utils.setDynamicImportProvider(options.dynamicImportProvider);
     }
 

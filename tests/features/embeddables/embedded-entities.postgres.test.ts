@@ -256,6 +256,12 @@ describe('embedded entities in postgresql', () => {
     const u5 = await orm.em.findOneOrFail(User, { address4: { number: { $gt: 2 } } });
     expect(u5).toBe(u1);
     expect(mock.mock.calls[11][0]).toMatch('select "u0".* from "user" as "u0" where ("u0"."address4"->>\'number\')::float8 > $1 limit $2');
+
+    // await orm.em.fork().findOneOrFail(User, { address1: { city: 'London 1' } }, { fields: ['address1.city'] });
+    // expect(mock.mock.calls[12][0]).toMatch('select "u0"."id", "u0"."address1_city" from "user" as "u0" where "u0"."address1_city" = $1 limit $2');
+    //
+    // await orm.em.fork().findOneOrFail(User, { address1: { city: 'London 1' } }, { fields: ['address1'] });
+    // expect(mock.mock.calls[13][0]).toMatch('select "u0".* from "user" as "u0" where ("u0"."address4"->>\'number\')::float8 > $1 limit $2');
   });
 
   test('assign', async () => {
