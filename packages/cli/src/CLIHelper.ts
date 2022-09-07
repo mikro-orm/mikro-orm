@@ -10,6 +10,11 @@ import { colors, ConfigurationLoader, MikroORM, Utils } from '@mikro-orm/core';
 export class CLIHelper {
 
   static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true, options: Partial<Options> = {}): Promise<Configuration<D>> {
+    if (!(await ConfigurationLoader.isESM())) {
+      options.dynamicImportProvider ??= id => Utils.requireFrom(id, process.cwd());
+      Utils.setDynamicImportProvider(options.dynamicImportProvider);
+    }
+
     const deps = await ConfigurationLoader.getORMPackages();
 
     if (!deps.has('@mikro-orm/cli') && !process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI) {
@@ -20,11 +25,6 @@ export class CLIHelper {
   }
 
   static async getORM(warnWhenNoEntities?: boolean, opts: Partial<Options> = {}): Promise<MikroORM> {
-    if (!(await ConfigurationLoader.isESM())) {
-      opts.dynamicImportProvider ??= id => Utils.requireFrom(id, process.cwd());
-      Utils.setDynamicImportProvider(opts.dynamicImportProvider);
-    }
-
     const options = await CLIHelper.getConfiguration(warnWhenNoEntities, opts);
     options.set('allowGlobalContext', true);
     options.set('debug', !!process.env.MIKRO_ORM_VERBOSE);
