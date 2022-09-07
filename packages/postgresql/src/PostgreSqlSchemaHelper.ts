@@ -147,7 +147,14 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       const m2 = item.definition?.match(/\(array\[(.*)]\)/i) || item.definition?.match(/ = (.*)\)/i);
 
       if (item.columnName && m1 && m2) {
-        o[item.columnName] = m2[1].split(',').map((item: string) => item.trim().match(/^\(?'(.*)'/)![1]);
+        const m3 = m2[1].match(/('[^']+'::text)/g);
+
+        if (m3) {
+          o[item.columnName] = m3.map((item: string) => item.trim().match(/^\(?'(.*)'/)![1]);
+        } else {
+          o[item.columnName] = m2[1].split(',').map((item: string) => item.trim().match(/^\(?'(.*)'/)![1]);
+        }
+
         found.push(index);
       }
 
