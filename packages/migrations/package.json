@@ -59,13 +59,13 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/knex": "^5.4.0",
+    "@mikro-orm/knex": "~5.4.0",
     "fs-extra": "10.1.0",
     "knex": "2.3.0",
     "umzug": "3.2.1"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^5.4.0"
+    "@mikro-orm/core": "~5.4.0"
   },
   "peerDependencies": {
     "@mikro-orm/core": "^5.0.0"

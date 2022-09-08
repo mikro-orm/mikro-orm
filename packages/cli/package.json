@@ -62,17 +62,17 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/core": "^5.4.0",
-    "@mikro-orm/knex": "^5.4.0",
+    "@mikro-orm/core": "~5.4.0",
+    "@mikro-orm/knex": "~5.4.0",
     "fs-extra": "10.1.0",
     "tsconfig-paths": "4.1.0",
     "yargonaut": "1.1.4",
     "yargs": "15.4.1"
   },
   "devDependencies": {
-    "@mikro-orm/entity-generator": "^5.4.0",
-    "@mikro-orm/migrations": "^5.4.0",
-    "@mikro-orm/seeder": "^5.4.0"
+    "@mikro-orm/entity-generator": "~5.4.0",
+    "@mikro-orm/migrations": "~5.4.0",
+    "@mikro-orm/seeder": "~5.4.0"
   },
   "peerDependencies": {
     "@mikro-orm/better-sqlite": "^5.0.0",
