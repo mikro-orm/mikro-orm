@@ -11,22 +11,6 @@ import { colors, ConfigurationLoader, MikroORM, Utils } from '@mikro-orm/core';
 export class CLIHelper {
 
   static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true, options: Partial<Options> = {}): Promise<Configuration<D>> {
-    if (!(await ConfigurationLoader.isESM())) {
-      options.dynamicImportProvider ??= id => {
-        /* istanbul ignore next */
-        if (platform() === 'win32') {
-          try {
-            id = fileURLToPath(id);
-          } catch {
-            // ignore
-          }
-        }
-
-        return Utils.requireFrom(id, process.cwd());
-      };
-      Utils.setDynamicImportProvider(options.dynamicImportProvider);
-    }
-
     const deps = await ConfigurationLoader.getORMPackages();
 
     if (!deps.has('@mikro-orm/cli') && !process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI) {
@@ -102,7 +86,7 @@ export class CLIHelper {
 
   static async getModuleVersion(name: string): Promise<string> {
     try {
-      const pkg = Utils.requireFrom<{ version: string }>(`${name}/package.json`, process.cwd());
+      const pkg = Utils.requireFrom<{ version: string }>(`${name}/package.json`);
       return colors.green(pkg.version);
     } catch {
       return colors.red('not-found');

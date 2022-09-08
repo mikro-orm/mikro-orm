@@ -1,6 +1,8 @@
 import dotenv from 'dotenv';
 import { pathExists, realpath } from 'fs-extra';
 import { isAbsolute, join } from 'path';
+import { platform } from 'os';
+import { fileURLToPath } from 'url';
 import type { IDatabaseDriver } from '../drivers';
 import type { Options } from './Configuration';
 import { Configuration } from './Configuration';
@@ -13,7 +15,23 @@ import { colors } from '../logging/colors';
  */
 export class ConfigurationLoader {
 
-  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true, options?: Partial<Options>): Promise<Configuration<D>> {
+  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true, options: Partial<Options> = {}): Promise<Configuration<D>> {
+    if (!(await this.isESM())) {
+      options.dynamicImportProvider ??= id => {
+        /* istanbul ignore next */
+        if (platform() === 'win32') {
+          try {
+            id = fileURLToPath(id);
+          } catch {
+            // ignore
+          }
+        }
+
+        return Utils.requireFrom(id);
+      };
+      Utils.setDynamicImportProvider(options.dynamicImportProvider);
+    }
+
     this.registerDotenv(options);
     const paths = await this.getConfigPaths();
     const env = this.loadEnvironmentVars();
@@ -239,7 +257,7 @@ export class ConfigurationLoader {
   static async getORMPackageVersion(name: string): Promise<string | undefined> {
     /* istanbul ignore next */
     try {
-      const pkg = Utils.requireFrom(`${name}/package.json`, process.cwd());
+      const pkg = Utils.requireFrom(`${name}/package.json`);
       return pkg?.version;
     } catch (e) {
       return undefined;
