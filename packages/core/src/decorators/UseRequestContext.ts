@@ -1,7 +1,7 @@
 import { MikroORM } from '../MikroORM';
 import { RequestContext } from '../utils/RequestContext';
 
-export function UseRequestContext<T>(getContext?: MikroORM | ((type: T) => MikroORM)): MethodDecorator {
+export function UseRequestContext<T>(getContext?: MikroORM | ((type?: T) => MikroORM)): MethodDecorator {
   return function (target: any, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
     descriptor.value = async function (this: T, ...args: any[]) {
