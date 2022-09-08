@@ -16,22 +16,7 @@ import { colors } from '../logging/colors';
 export class ConfigurationLoader {
 
   static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true, options: Partial<Options> = {}): Promise<Configuration<D>> {
-    if (!(await this.isESM())) {
-      options.dynamicImportProvider ??= id => {
-        /* istanbul ignore next */
-        if (platform() === 'win32') {
-          try {
-            id = fileURLToPath(id);
-          } catch {
-            // ignore
-          }
-        }
-
-        return Utils.requireFrom(id);
-      };
-      Utils.setDynamicImportProvider(options.dynamicImportProvider);
-    }
-
+    await this.commonJSCompat(options);
     this.registerDotenv(options);
     const paths = await this.getConfigPaths();
     const env = this.loadEnvironmentVars();
@@ -252,6 +237,28 @@ export class ConfigurationLoader {
       ...Object.keys(pkg.dependencies ?? {}),
       ...Object.keys(pkg.devDependencies ?? {}),
     ]);
+  }
+
+  /** @internal */
+  static async commonJSCompat(options: Partial<Options> = {}): Promise<void> {
+    if (await this.isESM()) {
+      return;
+    }
+
+    options.dynamicImportProvider ??= id => {
+      /* istanbul ignore next */
+      if (platform() === 'win32') {
+        try {
+          id = fileURLToPath(id);
+        } catch {
+          // ignore
+        }
+      }
+
+      return Utils.requireFrom(id);
+    };
+
+    Utils.setDynamicImportProvider(options.dynamicImportProvider);
   }
 
   static async getORMPackageVersion(name: string): Promise<string | undefined> {
