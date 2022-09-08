@@ -64,7 +64,7 @@
     "sqlstring": "2.3.3"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^5.4.1"
+    "@mikro-orm/core": "~5.4.1"
   },
   "peerDependencies": {
     "@mikro-orm/core": "^5.0.0",

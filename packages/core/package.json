@@ -64,7 +64,7 @@
     "dotenv": "16.0.2",
     "fs-extra": "10.1.0",
     "globby": "11.0.4",
-    "mikro-orm": "^5.4.1",
+    "mikro-orm": "~5.4.1",
     "reflect-metadata": "0.1.13"
   },
   "peerDependencies": {
