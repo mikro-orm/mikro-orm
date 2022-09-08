@@ -860,6 +860,25 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       ret.push(...this.getFieldsForJoinedLoad(qb, meta, fields, populate));
     } else if (fields) {
       for (const field of [...fields]) {
+        if (field.toString().includes('.')) {
+          const parts = fields.toString().split('.');
+          const rootPropName = parts.shift()!; // first one is the `prop`
+          const prop = QueryHelper.findProperty(rootPropName, {
+            metadata: this.metadata,
+            platform: this.platform,
+            entityName: meta.className,
+            where: {},
+            aliasMap: qb.getAliasMap(),
+          });
+
+          if (prop?.reference === ReferenceType.EMBEDDED) {
+            const nest = (p: EntityProperty): EntityProperty => parts.length > 0 ? nest(p.embeddedProps[parts.shift()!]) : p;
+            const childProp = nest(prop);
+            ret.push(childProp.fieldNames[0]);
+            continue;
+          }
+        }
+
         if (Utils.isPlainObject(field) || field.toString().includes('.')) {
           continue;
         }

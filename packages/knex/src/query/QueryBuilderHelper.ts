@@ -52,6 +52,12 @@ export class QueryBuilderHelper {
     const customExpression = QueryBuilderHelper.isCustomExpression(field, !!alias);
     const [a, f] = this.splitField(field);
     const prop = this.getProperty(f, a);
+
+    // embeddable nested path instead of a regular property with table alias, reset alias
+    if (prop?.name === a && prop.embeddedProps[f]) {
+      return this.alias + '.' + prop.fieldNames[0];
+    }
+
     const noPrefix = prop && prop.persist === false;
 
     if (prop?.fieldNameRaw) {
@@ -522,7 +528,7 @@ export class QueryBuilderHelper {
       }
 
       // eslint-disable-next-line prefer-const
-      let [alias, field] = this.splitField(k);
+      let [alias, field] = this.splitField(k, true);
       alias = populate[alias] || alias;
 
       Utils.splitPrimaryKeys(field).forEach(f => {
@@ -553,10 +559,21 @@ export class QueryBuilderHelper {
     }
   }
 
-  splitField(field: string): [string, string] {
+  splitField(field: string, greedyAlias = false): [string, string] {
     const parts = field.split('.');
-    const fromField = parts.pop()!;
-    const fromAlias = parts.length > 0 ? parts.join('.') : this.alias;
+
+    if (parts.length === 1) {
+      return [this.alias, parts[0]];
+    }
+
+    if (greedyAlias) {
+      const fromField = parts.pop()!;
+      const fromAlias = parts.join('.');
+      return [fromAlias, fromField];
+    }
+
+    const fromAlias = parts.shift()!;
+    const fromField = parts.join('.');
 
     return [fromAlias, fromField];
   }
@@ -615,7 +632,8 @@ export class QueryBuilderHelper {
 
       ret = alias + fieldName;
     } else {
-      const [a, f] = field.split('.');
+      const [a, ...rest] = field.split('.');
+      const f = rest.join('.');
       ret = a + '.' + this.fieldName(f, a);
     }
 
@@ -673,14 +691,30 @@ export class QueryBuilderHelper {
     }
 
     /* istanbul ignore next */
-    return prop.fieldNames[0] ?? field;
+    return prop.fieldNames?.[0] ?? field;
   }
 
   getProperty(field: string, alias?: string): EntityProperty | undefined {
     const entityName = this.aliasMap[alias!] || this.entityName;
     const meta = this.metadata.find(entityName);
 
-    return meta ? meta.properties[field] : undefined;
+    // check if `alias` is not matching an embedded property name instead of alias, e.g. `address.city`
+    if (alias && meta) {
+      const prop = meta.properties[alias];
+
+      if (prop?.reference === ReferenceType.EMBEDDED) {
+        // we want to select the full object property so hydration works as expected
+        if (prop.object) {
+          return prop;
+        }
+
+        const parts = field.split('.');
+        const nest = (p: EntityProperty): EntityProperty => parts.length > 0 ? nest(p.embeddedProps[parts.shift()!]) : p;
+        return nest(prop);
+      }
+    }
+
+    return meta?.properties[field];
   }
 
   isTableNameAliasRequired(type: QueryType): boolean {
