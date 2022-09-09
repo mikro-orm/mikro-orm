@@ -1,9 +1,9 @@
 import type { Knex } from 'knex';
 import type {
-  AnyEntity, ConnectionType, Dictionary, EntityData, EntityMetadata, EntityProperty, FlatQueryOrderMap, RequiredEntityData, ObjectQuery,
-  GroupOperator, MetadataStorage, PopulateOptions, QBFilterQuery, QueryOrderMap, QueryResult, FlushMode, FilterQuery, QBQueryOrderMap,
+  AnyEntity, ConnectionType, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, FlatQueryOrderMap, FlushMode, GroupOperator,
+  MetadataStorage, ObjectQuery, PopulateOptions, QBFilterQuery, QBQueryOrderMap, QueryOrderMap, QueryResult, RequiredEntityData,
 } from '@mikro-orm/core';
-import { LoadStrategy, LockMode, PopulateHint, QueryFlag, QueryHelper, ReferenceType, Utils, ValidationError } from '@mikro-orm/core';
+import { LoadStrategy, LockMode, PopulateHint, QueryFlag, QueryHelper, ReferenceType, Utils, ValidationError, helper } from '@mikro-orm/core';
 import { QueryType } from './enums';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
 import { QueryBuilderHelper } from './QueryBuilderHelper';
@@ -280,9 +280,9 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return this;
   }
 
-  onConflict(fields: string | string[] = []): this {
+  onConflict(fields: Field<T> | Field<T>[] = []): this {
     this._onConflict = this._onConflict || [];
-    this._onConflict.push({ fields: Utils.asArray(fields) });
+    this._onConflict.push({ fields: Utils.asArray(fields).map(f => f.toString()) });
     return this;
   }
 
@@ -707,6 +707,31 @@ export class QueryBuilder<T extends object = AnyEntity> {
         return;
       }
 
+      if (prop?.embedded) {
+        const fieldName = this.helper.mapper(prop.fieldNames[0], this.type) as string;
+        ret.push(fieldName);
+        return;
+      }
+
+      if (prop?.reference === ReferenceType.EMBEDDED) {
+        if (prop.object) {
+          ret.push(this.helper.mapper(prop.fieldNames[0], this.type) as string);
+        } else {
+          const nest = (prop: EntityProperty): void => {
+            for (const childProp of Object.values(prop.embeddedProps)) {
+              if (childProp.fieldNames) {
+                ret.push(this.helper.mapper(childProp.fieldNames[0], this.type) as string);
+              } else {
+                nest(childProp);
+              }
+            }
+          };
+          nest(prop);
+        }
+
+        return;
+      }
+
       ret.push(this.helper.mapper(field, this.type) as string);
     });
 
@@ -720,7 +745,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
     Object.keys(this._populateMap).forEach(f => {
       if (!fields.includes(f.replace(/#\w+$/, '')) && type === 'where') {
-        ret.push(...this.helper.mapJoinColumns(this.type, this._joins[f]) as string[]);
+        const cols = this.helper.mapJoinColumns(this.type, this._joins[f]);
+        ret.push(...cols as string[]);
       }
 
       if (this._joins[f].prop.reference !== ReferenceType.ONE_TO_ONE && this._joins[f].inverseJoinColumns) {
@@ -746,6 +772,10 @@ export class QueryBuilder<T extends object = AnyEntity> {
     }
 
     if (data) {
+      if (Utils.isEntity(data)) {
+        data = helper(data).toJSON();
+      }
+
       this._data = this.helper.processData(data, this.flags.has(QueryFlag.CONVERT_CUSTOM_TYPES));
     }
 

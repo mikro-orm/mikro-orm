@@ -312,16 +312,17 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   async nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
     options.processCollections ??= true;
     options.convertCustomTypes ??= true;
-    const meta = this.metadata.get<T>(entityName);
+    const meta = this.metadata.find<T>(entityName);
     const collections = options.processCollections ? data.map(d => this.extractManyToMany(entityName, d)) : [];
     const pks = this.getPrimaryKeyFields(entityName);
     const set = new Set<string>();
     data.forEach(row => Object.keys(row).forEach(k => set.add(k)));
-    const props = [...set].map(name => meta.properties[name] ?? { name, fieldNames: [name] }) as EntityProperty<T>[];
+    const props = [...set].map(name => meta?.properties[name] ?? { name, fieldNames: [name] }) as EntityProperty<T>[];
     const fields = Utils.flatten(props.map(prop => prop.fieldNames));
     const params: unknown[] = [];
 
-    let sql = `insert into ${this.getTableName(meta, options)} `;
+    const tableName = meta ? this.getTableName(meta, options) : this.platform.quoteIdentifier(entityName);
+    let sql = `insert into ${tableName} `;
     sql += fields.length > 0 ? '(' + fields.map(k => this.platform.quoteIdentifier(k)).join(', ') + ')' : `(${this.platform.quoteIdentifier(pks[0])})`;
 
     if (fields.length > 0 || this.platform.usesDefaultKeyword()) {
@@ -859,6 +860,25 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       ret.push(...this.getFieldsForJoinedLoad(qb, meta, fields, populate));
     } else if (fields) {
       for (const field of [...fields]) {
+        if (field.toString().includes('.')) {
+          const parts = fields.toString().split('.');
+          const rootPropName = parts.shift()!; // first one is the `prop`
+          const prop = QueryHelper.findProperty(rootPropName, {
+            metadata: this.metadata,
+            platform: this.platform,
+            entityName: meta.className,
+            where: {},
+            aliasMap: qb.getAliasMap(),
+          });
+
+          if (prop?.reference === ReferenceType.EMBEDDED) {
+            const nest = (p: EntityProperty): EntityProperty => parts.length > 0 ? nest(p.embeddedProps[parts.shift()!]) : p;
+            const childProp = nest(prop);
+            ret.push(childProp.fieldNames[0]);
+            continue;
+          }
+        }
+
         if (Utils.isPlainObject(field) || field.toString().includes('.')) {
           continue;
         }

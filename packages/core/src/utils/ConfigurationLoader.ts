@@ -1,6 +1,8 @@
 import dotenv from 'dotenv';
 import { pathExists, realpath } from 'fs-extra';
 import { isAbsolute, join } from 'path';
+import { platform } from 'os';
+import { fileURLToPath } from 'url';
 import type { IDatabaseDriver } from '../drivers';
 import type { Options } from './Configuration';
 import { Configuration } from './Configuration';
@@ -13,11 +15,11 @@ import { colors } from '../logging/colors';
  */
 export class ConfigurationLoader {
 
-  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true, options?: Partial<Options>): Promise<Configuration<D>> {
+  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true, options: Partial<Options> = {}): Promise<Configuration<D>> {
+    await this.commonJSCompat(options);
     this.registerDotenv(options);
     const paths = await this.getConfigPaths();
     const env = this.loadEnvironmentVars();
-    const isESM = (await this.getModuleFormatFromPackage()) === 'module';
 
     for (let path of paths) {
       path = Utils.absolutePath(path);
@@ -36,7 +38,7 @@ export class ConfigurationLoader {
           tmp = await tmp;
         }
 
-        const esmConfigOptions = isESM ? { entityGenerator: { esmImport: true } } : {};
+        const esmConfigOptions = await this.isESM() ? { entityGenerator: { esmImport: true } } : {};
 
         return new Configuration({ ...esmConfigOptions, ...tmp, ...options, ...env }, validate);
       }
@@ -103,9 +105,11 @@ export class ConfigurationLoader {
     return paths.filter(p => p.endsWith('.js') || tsNode);
   }
 
-  static async getModuleFormatFromPackage(): Promise<string> {
+  static async isESM(): Promise<boolean> {
     const config = await ConfigurationLoader.getPackageConfig();
-    return config?.type ?? '';
+    const type = config?.type ?? '';
+
+    return type === 'module';
   }
 
   static async registerTsNode(configPath = 'tsconfig.json'): Promise<boolean> {
@@ -171,6 +175,7 @@ export class ConfigurationLoader {
     read(ret, 'MIKRO_ORM_USER', 'user');
     read(ret, 'MIKRO_ORM_PASSWORD', 'password');
     read(ret, 'MIKRO_ORM_DB_NAME', 'dbName');
+    read(ret, 'MIKRO_ORM_SCHEMA', 'schema');
     read(ret, 'MIKRO_ORM_LOAD_STRATEGY', 'loadStrategy');
     read(ret, 'MIKRO_ORM_BATCH_SIZE', 'batchSize', num);
     read(ret, 'MIKRO_ORM_USE_BATCH_INSERTS', 'useBatchInserts', bool);
@@ -234,10 +239,32 @@ export class ConfigurationLoader {
     ]);
   }
 
+  /** @internal */
+  static async commonJSCompat(options: Partial<Options> = {}): Promise<void> {
+    if (await this.isESM()) {
+      return;
+    }
+
+    options.dynamicImportProvider ??= id => {
+      /* istanbul ignore next */
+      if (platform() === 'win32') {
+        try {
+          id = fileURLToPath(id);
+        } catch {
+          // ignore
+        }
+      }
+
+      return Utils.requireFrom(id);
+    };
+
+    Utils.setDynamicImportProvider(options.dynamicImportProvider);
+  }
+
   static async getORMPackageVersion(name: string): Promise<string | undefined> {
     /* istanbul ignore next */
     try {
-      const pkg = Utils.requireFrom(`${name}/package.json`, process.cwd());
+      const pkg = Utils.requireFrom(`${name}/package.json`);
       return pkg?.version;
     } catch (e) {
       return undefined;

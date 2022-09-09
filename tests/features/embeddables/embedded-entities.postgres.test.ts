@@ -63,6 +63,9 @@ class User {
   @PrimaryKey()
   id!: number;
 
+  @Property({ unique: true })
+  email!: string;
+
   @Embedded()
   address1!: Address1;
 
@@ -147,6 +150,7 @@ describe('embedded entities in postgresql', () => {
 
   test('assigning to array embeddables (GH #1699)', async () => {
     const user = new User();
+    user.email = 'test';
     expect(user.addresses).toEqual([]);
     const address1 = new Address1('Downing street 13A', 10, '10A', 'London 4A', 'UK 4A');
     const address2 = { street: 'Downing street 23A', number: 20, postalCode: '20A', city: 'London 24A', country: 'UK 24A' };
@@ -170,8 +174,9 @@ describe('embedded entities in postgresql', () => {
     expect(user.addresses).toHaveLength(2);
   });
 
-  test('persist and load', async () => {
-    const user = orm.em.create(User, {
+  function createUser() {
+    return orm.em.create(User, {
+      email: `test-${Math.random()}`,
       address1: { street: 'Downing street 10', number: 10, postalCode: '123', city: 'London 1', country: 'UK 1' },
       address2: { street: 'Downing street 11', city: 'London 2', country: 'UK 2' },
       address3: { street: 'Downing street 12', number: 10, postalCode: '789', city: 'London 3', country: 'UK 3' },
@@ -181,12 +186,15 @@ describe('embedded entities in postgresql', () => {
         { street: 'Downing street 13B', number: 10, postalCode: '10B', city: 'London 4B', country: 'UK 4B' },
       ],
     });
+  }
 
+  test('persist and load', async () => {
     const mock = mockLogger(orm, ['query']);
+    const user = createUser();
     await orm.em.persistAndFlush(user);
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into "user" ("addr_city", "addr_country", "addr_postal_code", "addr_street", "address1_city", "address1_country", "address1_number", "address1_postal_code", "address1_rank", "address1_street", "address4", "addresses", "city", "country", "number", "postal_code", "rank", "street") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18) returning "id"');
+    expect(mock.mock.calls[1][0]).toMatch('insert into "user" ("addr_city", "addr_country", "addr_postal_code", "addr_street", "address1_city", "address1_country", "address1_number", "address1_postal_code", "address1_rank", "address1_street", "address4", "addresses", "city", "country", "email", "number", "postal_code", "rank", "street") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) returning "id"');
     expect(mock.mock.calls[2][0]).toMatch('commit');
 
     const u = await orm.em.findOneOrFail(User, user.id);
@@ -258,8 +266,57 @@ describe('embedded entities in postgresql', () => {
     expect(mock.mock.calls[11][0]).toMatch('select "u0".* from "user" as "u0" where ("u0"."address4"->>\'number\')::float8 > $1 limit $2');
   });
 
+  test('partial loading', async () => {
+    const mock = mockLogger(orm, ['query']);
+
+    await orm.em.fork().qb(User).select('address1.city').where({ address1: { city: 'London 1' } }).execute();
+    expect(mock.mock.calls[0][0]).toMatch('select "u0"."address1_city" from "user" as "u0" where "u0"."address1_city" = $1');
+
+    await orm.em.fork().findOne(User, { address1: { city: 'London 1' } }, { fields: ['address1.city'] });
+    expect(mock.mock.calls[1][0]).toMatch('select "u0"."id", "u0"."address1_city" from "user" as "u0" where "u0"."address1_city" = $1 limit $2');
+
+    await orm.em.fork().qb(User).select('address1').where({ address1: { city: 'London 1' } }).execute();
+    expect(mock.mock.calls[2][0]).toMatch('select "u0"."address1_street", "u0"."address1_number", "u0"."address1_rank", "u0"."address1_postal_code", "u0"."address1_city", "u0"."address1_country" from "user" as "u0" where "u0"."address1_city" = $1');
+
+    await orm.em.fork().findOne(User, { address1: { city: 'London 1' } }, { fields: ['address1'] });
+    expect(mock.mock.calls[3][0]).toMatch('select "u0"."id", "u0"."address1_street", "u0"."address1_number", "u0"."address1_rank", "u0"."address1_postal_code", "u0"."address1_city", "u0"."address1_country" from "user" as "u0" where "u0"."address1_city" = $1 limit $2');
+
+    mock.mockReset();
+
+    await orm.em.fork().qb(User).select('address4.city').where({ address4: { city: 'London 1' } }).execute(); // object embedded prop does not support nested partial loading
+    expect(mock.mock.calls[0][0]).toMatch(`select "u0"."address4" from "user" as "u0" where "u0"."address4"->>'city' = $1`);
+
+    await orm.em.fork().findOne(User, { address4: { city: 'London 1' } }, { fields: ['address4.city'] }); // object embedded prop does not support nested partial loading
+    expect(mock.mock.calls[1][0]).toMatch(`select "u0"."id", "u0"."address4" from "user" as "u0" where "u0"."address4"->>'city' = $1 limit $2`);
+
+    await orm.em.fork().qb(User).select('address4').where({ address4: { city: 'London 1' } }).execute();
+    expect(mock.mock.calls[2][0]).toMatch(`select "u0"."address4" from "user" as "u0" where "u0"."address4"->>'city' = $1`);
+
+    await orm.em.fork().findOne(User, { address4: { city: 'London 1' } }, { fields: ['address4'] });
+    expect(mock.mock.calls[3][0]).toMatch(`select "u0"."id", "u0"."address4" from "user" as "u0" where "u0"."address4"->>'city' = $1 limit $2`);
+
+    mock.mockReset();
+
+    await orm.em.fork().qb(User).select('addresses.city').where({ addresses: { city: 'London 1' } }).execute(); // object embedded prop does not support nested partial loading
+    expect(mock.mock.calls[0][0]).toMatch(`select "u0"."addresses" from "user" as "u0" where "u0"."addresses"->>'city' = $1`);
+
+    await orm.em.fork().findOne(User, { addresses: { city: 'London 1' } }, { fields: ['addresses.city'] }); // object embedded prop does not support nested partial loading
+    expect(mock.mock.calls[1][0]).toMatch(`select "u0"."id", "u0"."addresses" from "user" as "u0" where "u0"."addresses"->>'city' = $1 limit $2`);
+
+    await orm.em.fork().qb(User).select('addresses').where({ addresses: { city: 'London 1' } }).execute();
+    expect(mock.mock.calls[2][0]).toMatch(`select "u0"."addresses" from "user" as "u0" where "u0"."addresses"->>'city' = $1`);
+
+    await orm.em.fork().findOne(User, { addresses: { city: 'London 1' } }, { fields: ['addresses'] });
+    expect(mock.mock.calls[3][0]).toMatch(`select "u0"."id", "u0"."addresses" from "user" as "u0" where "u0"."addresses"->>'city' = $1 limit $2`);
+
+    const user = createUser();
+    await orm.em.fork().qb(User).insert(user).onConflict(['email']).merge(['email', 'address1.city']);
+    expect(mock.mock.calls[4][0]).toMatch(`insert into "user" ("addr_city", "addr_country", "addr_street", "address1_city", "address1_country", "address1_number", "address1_postal_code", "address1_street", "address4", "addresses", "city", "country", "email", "number", "postal_code", "street") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) on conflict ("email") do update set "email" = excluded."email", "address1_city" = excluded."address1_city" returning "id"`);
+  });
+
   test('assign', async () => {
     const user = new User();
+    user.email = `test-${Math.random()}`;
     orm.em.assign(user, {
       address1: { street: 'Downing street 10', postalCode: '123', city: 'London 1', country: 'UK 1' },
       address2: { street: 'Downing street 11', city: 'London 2', country: 'UK 2' },
@@ -293,6 +350,7 @@ describe('embedded entities in postgresql', () => {
   test('native update entity', async () => {
     const user = new User();
     orm.em.assign(user, {
+      email: 'test',
       address1: { street: 'Downing street 10', number: 3, postalCode: '123', city: 'London 1', country: 'UK 1' },
       address2: { street: 'Downing street 11', city: 'London 2', country: 'UK 2' },
       address3: { street: 'Downing street 12', number: 3, postalCode: '789', city: 'London 3', country: 'UK 3' },
@@ -318,6 +376,7 @@ describe('embedded entities in postgresql', () => {
 
   test('query by complex custom expressions with JSON operator and casting (GH issue 1261)', async () => {
     const user = new User();
+    user.email = `test-${Math.random()}`;
     user.address1 = new Address1('Test', 10, '12000', 'Prague', 'CZ');
     user.address3 = new Address1('Test', 10, '12000', 'Prague', 'CZ');
     user.address4 = new Address1('Test', 10, '12000', 'Prague', 'CZ');

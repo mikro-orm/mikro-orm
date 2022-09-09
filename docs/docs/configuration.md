@@ -594,6 +594,7 @@ Full list of supported options:
 | `MIKRO_ORM_USER` | `user` |
 | `MIKRO_ORM_PASSWORD` | `password` |
 | `MIKRO_ORM_DB_NAME` | `dbName` |
+| `MIKRO_ORM_SCHEMA`  | `schema` |
 | `MIKRO_ORM_LOAD_STRATEGY` | `loadStrategy` |
 | `MIKRO_ORM_BATCH_SIZE` | `batchSize` |
 | `MIKRO_ORM_USE_BATCH_INSERTS` | `useBatchInserts` |

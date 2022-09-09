@@ -837,9 +837,9 @@ export class Utils {
   /**
    * Require a module from a specific location
    * @param id The module to require
-   * @param from Location to start the node resolution
+   * @param [from] Location to start the node resolution
    */
-  static requireFrom<T extends Dictionary>(id: string, from: string): T {
+  static requireFrom<T extends Dictionary>(id: string, from = process.cwd()): T {
     if (!extname(from)) {
       from = join(from, '__fake.js');
     }

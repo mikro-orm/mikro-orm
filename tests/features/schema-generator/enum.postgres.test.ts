@@ -4,6 +4,7 @@ enum Food {
   Waffles = 'Waffles',
   Pancakes = 'Pancakes',
   Muffins = 'Muffins',
+  MuffinsOrPancakes = 'Muffins,Pancakes',
 }
 
 @Entity()

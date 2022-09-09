@@ -13,7 +13,10 @@ export type KnexStringRef = Knex.Ref<string, {
   [alias: string]: string;
 }>;
 
-export type Field<T> = string | keyof T | KnexStringRef | Knex.QueryBuilder;
+// eslint-disable-next-line @typescript-eslint/ban-types
+type AnyString = string & {};
+
+export type Field<T> = AnyString | keyof T | KnexStringRef | Knex.QueryBuilder;
 
 export interface JoinOptions {
   table: string;

@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.4.1](https://github.com/mikro-orm/mikro-orm/compare/v5.4.0...v5.4.1) (2022-09-08)
+
+
+### Bug Fixes
+
+* **cli:** only use dynamic imports for ESM projects ([b3e43d0](https://github.com/mikro-orm/mikro-orm/commit/b3e43d0fd98c090a47059597b719924260573e3b)), closes [#3442](https://github.com/mikro-orm/mikro-orm/issues/3442)
+* **core:** add missing `MIKRO_ORM_SCHEMA` env var ([#3464](https://github.com/mikro-orm/mikro-orm/issues/3464)) ([47fccac](https://github.com/mikro-orm/mikro-orm/commit/47fccacfbeab319d60d0ef7b53b9d7694d1e7d0f))
+* **core:** allow symbol as propertyKey in `@UseRequestContext` decorator ([#3444](https://github.com/mikro-orm/mikro-orm/issues/3444)) ([6a60295](https://github.com/mikro-orm/mikro-orm/commit/6a60295235dfcf417d1b3381c1570ae4d47c7d97))
+* **core:** change internal dependencies to use `~` instead of `^` ([fdbf67c](https://github.com/mikro-orm/mikro-orm/commit/fdbf67c53055a6a4b455208dec3b815736a55e3b)), closes [#3468](https://github.com/mikro-orm/mikro-orm/issues/3468)
+* **core:** support partial loading of inlined embeddables ([9654e6e](https://github.com/mikro-orm/mikro-orm/commit/9654e6e9685afb686eacda9ea84916e9ca0962c5)), closes [#3365](https://github.com/mikro-orm/mikro-orm/issues/3365)
+* **postgres:** fix inserting values with `?` into `FullTextType` properties ([5095ddb](https://github.com/mikro-orm/mikro-orm/commit/5095ddb2a95cf4183e08a6a9f509ca442783136e)), closes [#3457](https://github.com/mikro-orm/mikro-orm/issues/3457)
+* **reflection:** fix inference of nullability ([5f57ee1](https://github.com/mikro-orm/mikro-orm/commit/5f57ee1c8b15940d208c0d3b84955561b38f9889)), closes [#3447](https://github.com/mikro-orm/mikro-orm/issues/3447)
+
+
+### Features
+
+* **core:** allow custom ORM prop name in `@UseRequestContext()` ([#3475](https://github.com/mikro-orm/mikro-orm/issues/3475)) ([d87219e](https://github.com/mikro-orm/mikro-orm/commit/d87219e04a359cafa2223e8e1f6bdb2ee2cfff72))
+
+
+
+
+
 # [5.4.0](https://github.com/mikro-orm/mikro-orm/compare/v5.3.1...v5.4.0) (2022-09-01)
 
 

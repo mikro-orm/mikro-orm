@@ -1,6 +1,7 @@
 import { pathExists } from 'fs-extra';
 import yargs from 'yargs';
-
+import { platform } from 'os';
+import { fileURLToPath } from 'url';
 import type { Configuration, IDatabaseDriver, Options } from '@mikro-orm/core';
 import { colors, ConfigurationLoader, MikroORM, Utils } from '@mikro-orm/core';
 
@@ -85,7 +86,7 @@ export class CLIHelper {
 
   static async getModuleVersion(name: string): Promise<string> {
     try {
-      const pkg = Utils.requireFrom<{ version: string }>(`${name}/package.json`, process.cwd());
+      const pkg = Utils.requireFrom<{ version: string }>(`${name}/package.json`);
       return colors.green(pkg.version);
     } catch {
       return colors.red('not-found');

@@ -177,6 +177,23 @@ export class OrderItem {
 }
 ```
 
+Alternatively, we can work with the pivot entity directly:
+
+```ts
+// create new item
+const item = em.create(OrderItem, { 
+  order: 123,
+  product: 321,
+  amount: 999,
+});
+await em.persist(item).flush();
+
+// or remove an item via delete query
+const em.nativeDelete(OrderItem, { order: 123, product: 321 });
+```
+
+We can as well define the 1:m properties targeting the pivot entity as in the previous example, and use that for modifying the collection, while using the M:N property for easier reading and filtering purposes.
+
 ### Forcing fixed order of collection items
 
 > Since v3 many to many collections does not require having auto increment primary key, that

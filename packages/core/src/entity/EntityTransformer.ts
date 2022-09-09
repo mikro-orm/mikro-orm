@@ -4,6 +4,7 @@ import type { Reference } from './Reference';
 import { helper, wrap } from './wrap';
 import type { Platform } from '../platforms';
 import { Utils } from '../utils/Utils';
+import { ReferenceType } from '../enums';
 
 /**
  * Helper that allows to keep track of where we are currently at when serializing complex entity graph with cycles.
@@ -210,6 +211,16 @@ export class EntityTransformer {
 
     if (Utils.isEntity(entity[prop], true)) {
       return EntityTransformer.processEntity(prop, entity, wrapped.__platform, raw);
+    }
+
+    if (property.reference === ReferenceType.EMBEDDED) {
+      if (Array.isArray(entity[prop])) {
+        return (entity[prop] as object[]).map(item => helper(item).toJSON()) as T[keyof T];
+      }
+
+      if (Utils.isObject(entity[prop])) {
+        return helper(entity[prop]).toJSON() as T[keyof T];
+      }
     }
 
     const customType = property?.customType;

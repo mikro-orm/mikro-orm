@@ -133,7 +133,6 @@ export class EntitySchema<T = any, U = never> {
 
   addManyToOne<K = AnyEntity>(name: string & keyof T, type: TypeType, options: ManyToOneOptions<K, T>): void {
     const prop = this.createProperty(ReferenceType.MANY_TO_ONE, options);
-    Utils.defaultValue(prop, 'nullable', prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL));
 
     if (prop.joinColumns && !prop.fieldNames) {
       prop.fieldNames = prop.joinColumns;
@@ -169,7 +168,6 @@ export class EntitySchema<T = any, U = never> {
   addOneToOne<K = AnyEntity>(name: string & keyof T, type: TypeType, options: OneToOneOptions<K, T>): void {
     const prop = this.createProperty(ReferenceType.ONE_TO_ONE, options) as EntityProperty;
     Utils.defaultValue(prop, 'owner', !!prop.inversedBy || !prop.mappedBy);
-    Utils.defaultValue(prop, 'nullable', !prop.owner || prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL));
     Utils.defaultValue(prop, 'unique', prop.owner);
 
     if (prop.owner && options.mappedBy) {
