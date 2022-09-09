@@ -215,11 +215,11 @@ export class EntityTransformer {
 
     if (property.reference === ReferenceType.EMBEDDED) {
       if (Array.isArray(entity[prop])) {
-        return (entity[prop] as object[]).map(item => helper(item).toPOJO()) as T[keyof T];
+        return (entity[prop] as object[]).map(item => helper(item).toJSON()) as T[keyof T];
       }
 
       if (Utils.isObject(entity[prop])) {
-        return helper(entity[prop]).toPOJO() as T[keyof T];
+        return helper(entity[prop]).toJSON() as T[keyof T];
       }
     }
 
