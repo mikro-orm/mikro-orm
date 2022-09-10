@@ -7,7 +7,7 @@ exports[`EntityGenerator enum with default value [mysql]: mysql-entity-dump-enum
 @Entity()
 export class Publisher2 {
 
-  [OptionalProps]: 'type';
+  [OptionalProps]?: 'type';
 
   @PrimaryKey()
   id!: number;
@@ -43,7 +43,7 @@ exports[`EntityGenerator enum with default value [postgres]: postgres-entity-dum
 @Entity()
 export class Publisher2 {
 
-  [OptionalProps]: 'type';
+  [OptionalProps]?: 'type';
 
   @PrimaryKey()
   id!: number;
@@ -782,7 +782,7 @@ exports[`EntityGenerator generate OptionalProps and include properties for colum
 @Entity()
 export class Account {
 
-  [OptionalProps]: 'active' | 'receiveEmailNotifications';
+  [OptionalProps]?: 'active' | 'receiveEmailNotifications';
 
   @PrimaryKey({ columnType: 'bigint' })
   id!: string;
@@ -822,7 +822,7 @@ import { Book2 } from './Book2';
 @Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
 export class Author2 {
 
-  [OptionalProps]: 'createdAt' | 'termsAccepted' | 'updatedAt';
+  [OptionalProps]?: 'createdAt' | 'termsAccepted' | 'updatedAt';
 
   @PrimaryKey()
   id!: number;
@@ -939,7 +939,7 @@ import { Publisher2 } from './Publisher2';
 @Entity()
 export class Book2 {
 
-  [OptionalProps]: 'createdAt';
+  [OptionalProps]?: 'createdAt';
 
   @PrimaryKey({ length: 36 })
   uuidPk!: string;
@@ -1063,7 +1063,7 @@ import { FooBaz2 } from './FooBaz2';
 @Entity()
 export class FooBar2 {
 
-  [OptionalProps]: 'version';
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -1099,7 +1099,7 @@ export class FooBar2 {
 @Entity()
 export class FooBaz2 {
 
-  [OptionalProps]: 'version';
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -1119,7 +1119,7 @@ import { FooBaz2 } from './FooBaz2';
 @Entity()
 export class FooParam2 {
 
-  [OptionalProps]: 'version';
+  [OptionalProps]?: 'version';
 
   @ManyToOne({ entity: () => FooBar2, onUpdateIntegrity: 'cascade', primary: true })
   bar!: FooBar2;
@@ -1230,7 +1230,7 @@ import { FooBar2 } from './FooBar2';
 @Entity()
 export class Test2 {
 
-  [OptionalProps]: 'version';
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -1312,7 +1312,7 @@ import { Book2 } from './Book2';
 @Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
 export class Author2 {
 
-  [OptionalProps]: 'createdAt' | 'termsAccepted' | 'updatedAt';
+  [OptionalProps]?: 'createdAt' | 'termsAccepted' | 'updatedAt';
 
   @PrimaryKey()
   id!: number;
@@ -1388,7 +1388,7 @@ import { Publisher2 } from './Publisher2';
 @Entity()
 export class Book2 {
 
-  [OptionalProps]: 'createdAt';
+  [OptionalProps]?: 'createdAt';
 
   @PrimaryKey({ columnType: 'uuid' })
   uuidPk!: string;
@@ -1466,7 +1466,7 @@ import { FooBaz2 } from './FooBaz2';
 @Entity()
 export class FooBar2 {
 
-  [OptionalProps]: 'version';
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -1502,7 +1502,7 @@ export class FooBar2 {
 @Entity()
 export class FooBaz2 {
 
-  [OptionalProps]: 'version';
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -1522,7 +1522,7 @@ import { FooBaz2 } from './FooBaz2';
 @Entity()
 export class FooParam2 {
 
-  [OptionalProps]: 'version';
+  [OptionalProps]?: 'version';
 
   @ManyToOne({ entity: () => FooBar2, onUpdateIntegrity: 'cascade', primary: true })
   bar!: FooBar2;
@@ -1648,7 +1648,7 @@ import { FooBar2 } from './FooBar2';
 @Entity()
 export class Test2 {
 
-  [OptionalProps]: 'version';
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -1685,7 +1685,7 @@ import { Book3 } from './Book3';
 @Index({ name: 'author3_name_favourite_book_id_index', properties: ['name', 'favouriteBook'] })
 export class Author3 {
 
-  [OptionalProps]: 'termsAccepted';
+  [OptionalProps]?: 'termsAccepted';
 
   @PrimaryKey()
   id!: number;
@@ -1728,7 +1728,7 @@ export class Author3 {
 @Entity()
 export class BookTag3 {
 
-  [OptionalProps]: 'version';
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -1748,7 +1748,7 @@ import { Publisher3 } from './Publisher3';
 @Entity()
 export class Book3 {
 
-  [OptionalProps]: 'title';
+  [OptionalProps]?: 'title';
 
   @PrimaryKey()
   id!: number;
@@ -1827,7 +1827,7 @@ export class Publisher3Tests {
 @Entity()
 export class Test3 {
 
-  [OptionalProps]: 'version';
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -1867,7 +1867,7 @@ import { Book2 } from './Book2';
 @Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
 export class Author2 {
 
-  [OptionalProps]: 'createdAt' | 'termsAccepted' | 'updatedAt';
+  [OptionalProps]?: 'createdAt' | 'termsAccepted' | 'updatedAt';
 
   @PrimaryKey()
   id!: number;
@@ -2012,7 +2012,7 @@ import { Test2 } from './Test2';
 @Entity()
 export class Book2 {
 
-  [OptionalProps]: 'createdAt';
+  [OptionalProps]?: 'createdAt';
 
   @PrimaryKey({ length: 36 })
   uuidPk!: string;
@@ -2158,7 +2158,7 @@ import { Test2 } from './Test2';
 @Entity()
 export class FooBar2 {
 
-  [OptionalProps]: 'version';
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -2204,7 +2204,7 @@ import { FooParam2 } from './FooParam2';
 @Entity()
 export class FooBaz2 {
 
-  [OptionalProps]: 'version';
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -2227,7 +2227,7 @@ import { FooBaz2 } from './FooBaz2';
 @Entity()
 export class FooParam2 {
 
-  [OptionalProps]: 'version';
+  [OptionalProps]?: 'version';
 
   @ManyToOne({ entity: () => FooBar2, onUpdateIntegrity: 'cascade', primary: true })
   bar!: FooBar2;
@@ -2352,7 +2352,7 @@ import { Publisher2Tests } from './Publisher2Tests';
 @Entity()
 export class Test2 {
 
-  [OptionalProps]: 'version';
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -2443,7 +2443,7 @@ import { Book2 } from './Book2';
 @Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
 export class Author2 {
 
-  [OptionalProps]: 'createdAt' | 'termsAccepted' | 'updatedAt';
+  [OptionalProps]?: 'createdAt' | 'termsAccepted' | 'updatedAt';
 
   @PrimaryKey()
   id!: number;
@@ -2588,7 +2588,7 @@ import { Test2 } from './Test2';
 @Entity()
 export class Book2 {
 
-  [OptionalProps]: 'createdAt';
+  [OptionalProps]?: 'createdAt';
 
   @PrimaryKey({ length: 36 })
   uuidPk!: string;
@@ -2734,7 +2734,7 @@ import { Test2 } from './Test2';
 @Entity()
 export class FooBar2 {
 
-  [OptionalProps]: 'version';
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -2780,7 +2780,7 @@ import { FooParam2 } from './FooParam2';
 @Entity()
 export class FooBaz2 {
 
-  [OptionalProps]: 'version';
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -2803,7 +2803,7 @@ import { FooBaz2 } from './FooBaz2';
 @Entity()
 export class FooParam2 {
 
-  [OptionalProps]: 'version';
+  [OptionalProps]?: 'version';
 
   @ManyToOne({ entity: () => FooBar2, wrappedReference: true, onUpdateIntegrity: 'cascade', primary: true })
   bar!: IdentifiedReference<FooBar2>;
@@ -2928,7 +2928,7 @@ import { Publisher2Tests } from './Publisher2Tests';
 @Entity()
 export class Test2 {
 
-  [OptionalProps]: 'version';
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -3019,7 +3019,7 @@ import { Book2 } from './Book2.js';
 @Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
 export class Author2 {
 
-  [OptionalProps]: 'createdAt' | 'termsAccepted' | 'updatedAt';
+  [OptionalProps]?: 'createdAt' | 'termsAccepted' | 'updatedAt';
 
   @PrimaryKey()
   id!: number;
@@ -3136,7 +3136,7 @@ import { Publisher2 } from './Publisher2.js';
 @Entity()
 export class Book2 {
 
-  [OptionalProps]: 'createdAt';
+  [OptionalProps]?: 'createdAt';
 
   @PrimaryKey({ length: 36 })
   uuidPk!: string;
@@ -3260,7 +3260,7 @@ import { FooBaz2 } from './FooBaz2.js';
 @Entity()
 export class FooBar2 {
 
-  [OptionalProps]: 'version';
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -3296,7 +3296,7 @@ export class FooBar2 {
 @Entity()
 export class FooBaz2 {
 
-  [OptionalProps]: 'version';
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -3316,7 +3316,7 @@ import { FooBaz2 } from './FooBaz2.js';
 @Entity()
 export class FooParam2 {
 
-  [OptionalProps]: 'version';
+  [OptionalProps]?: 'version';
 
   @ManyToOne({ entity: () => FooBar2, wrappedReference: true, onUpdateIntegrity: 'cascade', primary: true })
   bar!: IdentifiedReference<FooBar2>;
@@ -3427,7 +3427,7 @@ import { FooBar2 } from './FooBar2.js';
 @Entity()
 export class Test2 {
 
-  [OptionalProps]: 'version';
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;

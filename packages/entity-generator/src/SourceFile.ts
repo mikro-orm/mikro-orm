@@ -52,10 +52,11 @@ export class SourceFile {
           optionalProperties.push(prop);
       }
     });
+
     if (optionalProperties.length > 0) {
         this.coreImports.add('OptionalProps');
         const optionalPropertyNames = optionalProperties.map(prop => `'${prop.name}'`).sort();
-        ret += `\n\n${' '.repeat(2)}[OptionalProps]: ${optionalPropertyNames.join(' | ')};`;
+        ret += `\n\n${' '.repeat(2)}[OptionalProps]?: ${optionalPropertyNames.join(' | ')};`;
     }
     ret += `${classBody}}\n`;
     const imports = [`import { ${([...this.coreImports].sort().join(', '))} } from '@mikro-orm/core';`];
