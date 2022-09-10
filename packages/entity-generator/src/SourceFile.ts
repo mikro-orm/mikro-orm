@@ -27,27 +27,37 @@ export class SourceFile {
       ret += `@Unique({ name: '${index.name}', properties: [${properties.join(', ')}] })\n`;
     });
 
-    ret += `export class ${this.meta.className} {\n`;
+    ret += `export class ${this.meta.className} {`;
     const enumDefinitions: string[] = [];
+    const optionalProperties: EntityProperty<any>[] = [];
+    let classBody = '\n';
     Object.values(this.meta.properties).forEach(prop => {
       const decorator = this.getPropertyDecorator(prop, 2);
       const definition = this.getPropertyDefinition(prop, 2);
 
-      if (!ret.endsWith('\n\n')) {
-        ret += '\n';
+      if (!classBody.endsWith('\n\n')) {
+        classBody += '\n';
       }
 
-      ret += decorator;
-      ret += definition;
-      ret += '\n';
+      classBody += decorator;
+      classBody += definition;
+      classBody += '\n';
 
       if (prop.enum) {
         const enumClassName = this.namingStrategy.getClassName(this.meta.collection + '_' + prop.fieldNames[0], '_');
         enumDefinitions.push(this.getEnumClassDefinition(enumClassName, prop.items as string[], 2));
       }
-    });
-    ret += '}\n';
 
+      if (!prop.nullable && typeof prop.default !== 'undefined') {
+          optionalProperties.push(prop);
+      }
+    });
+    if (optionalProperties.length > 0) {
+        this.coreImports.add('OptionalProps');
+        const optionalPropertyNames = optionalProperties.map(prop => `'${prop.name}'`).sort();
+        ret += `\n\n${' '.repeat(2)}[OptionalProps]: ${optionalPropertyNames.join(' | ')};`;
+    }
+    ret += `${classBody}}\n`;
     const imports = [`import { ${([...this.coreImports].sort().join(', '))} } from '@mikro-orm/core';`];
     const entityImportExtension = this.esmImport ? '.js' : '';
     const entityImports = [...this.entityImports].filter(e => e !== this.meta.className);
