@@ -2,10 +2,12 @@
 
 exports[`EntityGenerator enum with default value [mysql]: mysql-entity-dump-enum-default-value 1`] = `
 [
-  "import { Entity, Enum, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Publisher2 {
+
+  [OptionalProps]?: 'type';
 
   @PrimaryKey()
   id!: number;
@@ -36,10 +38,12 @@ export enum Publisher2Type2 {
 
 exports[`EntityGenerator enum with default value [postgres]: postgres-entity-dump-enum-default-value 1`] = `
 [
-  "import { Entity, Enum, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Publisher2 {
+
+  [OptionalProps]?: 'type';
 
   @PrimaryKey()
   id!: number;
@@ -771,6 +775,29 @@ export const User2Schema = new EntitySchema({
 ]
 `;
 
+exports[`EntityGenerator generate OptionalProps and include properties for columns that are not nullable, but have defaults: generate-OptionalProps 1`] = `
+[
+  "import { Entity, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity()
+export class Account {
+
+  [OptionalProps]?: 'active' | 'receiveEmailNotifications';
+
+  @PrimaryKey({ columnType: 'bigint' })
+  id!: string;
+
+  @Property({ default: false })
+  active: boolean = false;
+
+  @Property({ default: true })
+  receiveEmailNotifications: boolean = true;
+
+}
+",
+]
+`;
+
 exports[`EntityGenerator generate entities from schema [mysql]: mysql-entity-dump 1`] = `
 [
   "import { Entity, OneToOne, Property } from '@mikro-orm/core';
@@ -787,13 +814,15 @@ export class Address2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OptionalProps, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 @Entity()
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
 @Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
 export class Author2 {
+
+  [OptionalProps]?: 'createdAt' | 'termsAccepted' | 'updatedAt';
 
   @PrimaryKey()
   id!: number;
@@ -902,13 +931,15 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { Publisher2 } from './Publisher2';
 
 @Entity()
 export class Book2 {
+
+  [OptionalProps]?: 'createdAt';
 
   @PrimaryKey({ length: 36 })
   uuidPk!: string;
@@ -1026,11 +1057,13 @@ export class Dummy2 {
 
 }
 ",
-  "import { Entity, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 
 @Entity()
 export class FooBar2 {
+
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -1061,10 +1094,12 @@ export class FooBar2 {
 
 }
 ",
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class FooBaz2 {
+
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -1077,12 +1112,14 @@ export class FooBaz2 {
 
 }
 ",
-  "import { Entity, ManyToOne, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, OptionalProps, Property } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
 @Entity()
 export class FooParam2 {
+
+  [OptionalProps]?: 'version';
 
   @ManyToOne({ entity: () => FooBar2, onUpdateIntegrity: 'cascade', primary: true })
   bar!: FooBar2;
@@ -1186,12 +1223,14 @@ export class Sandwich {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
 
 @Entity()
 export class Test2 {
+
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -1265,13 +1304,15 @@ export class Address2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OptionalProps, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 @Entity()
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
 @Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
 export class Author2 {
+
+  [OptionalProps]?: 'createdAt' | 'termsAccepted' | 'updatedAt';
 
   @PrimaryKey()
   id!: number;
@@ -1339,13 +1380,15 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
 import { Publisher2 } from './Publisher2';
 
 @Entity()
 export class Book2 {
+
+  [OptionalProps]?: 'createdAt';
 
   @PrimaryKey({ columnType: 'uuid' })
   uuidPk!: string;
@@ -1417,11 +1460,13 @@ export class Configuration2 {
 
 }
 ",
-  "import { Entity, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OneToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 
 @Entity()
 export class FooBar2 {
+
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -1452,10 +1497,12 @@ export class FooBar2 {
 
 }
 ",
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class FooBaz2 {
+
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -1468,12 +1515,14 @@ export class FooBaz2 {
 
 }
 ",
-  "import { Entity, ManyToOne, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, OptionalProps, Property } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
 @Entity()
 export class FooParam2 {
+
+  [OptionalProps]?: 'version';
 
   @ManyToOne({ entity: () => FooBar2, onUpdateIntegrity: 'cascade', primary: true })
   bar!: FooBar2;
@@ -1592,12 +1641,14 @@ export class Publisher2Tests {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, OneToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { FooBar2 } from './FooBar2';
 
 @Entity()
 export class Test2 {
+
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -1627,12 +1678,14 @@ export class Test2 {
 
 exports[`EntityGenerator generate entities from schema [sqlite]: sqlite-entity-dump 1`] = `
 [
-  "import { Entity, Index, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Entity, Index, ManyToOne, OptionalProps, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book3 } from './Book3';
 
 @Entity()
 @Index({ name: 'author3_name_favourite_book_id_index', properties: ['name', 'favouriteBook'] })
 export class Author3 {
+
+  [OptionalProps]?: 'termsAccepted';
 
   @PrimaryKey()
   id!: number;
@@ -1670,10 +1723,12 @@ export class Author3 {
 
 }
 ",
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class BookTag3 {
+
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -1686,12 +1741,14 @@ export class BookTag3 {
 
 }
 ",
-  "import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { Author3 } from './Author3';
 import { Publisher3 } from './Publisher3';
 
 @Entity()
 export class Book3 {
+
+  [OptionalProps]?: 'title';
 
   @PrimaryKey()
   id!: number;
@@ -1765,10 +1822,12 @@ export class Publisher3Tests {
 
 }
 ",
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class Test3 {
+
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -1800,13 +1859,15 @@ export class Address2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OptionalProps, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 @Entity()
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
 @Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
 export class Author2 {
+
+  [OptionalProps]?: 'createdAt' | 'termsAccepted' | 'updatedAt';
 
   @PrimaryKey()
   id!: number;
@@ -1941,7 +2002,7 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
@@ -1950,6 +2011,8 @@ import { Test2 } from './Test2';
 
 @Entity()
 export class Book2 {
+
+  [OptionalProps]?: 'createdAt';
 
   @PrimaryKey({ length: 36 })
   uuidPk!: string;
@@ -2087,13 +2150,15 @@ export class Dummy2 {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, OneToMany, OneToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
 import { Test2 } from './Test2';
 
 @Entity()
 export class FooBar2 {
+
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -2133,11 +2198,13 @@ export class FooBar2 {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, OneToMany, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { FooParam2 } from './FooParam2';
 
 @Entity()
 export class FooBaz2 {
+
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -2153,12 +2220,14 @@ export class FooBaz2 {
 
 }
 ",
-  "import { Entity, ManyToOne, Property } from '@mikro-orm/core';
+  "import { Entity, ManyToOne, OptionalProps, Property } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
 @Entity()
 export class FooParam2 {
+
+  [OptionalProps]?: 'version';
 
   @ManyToOne({ entity: () => FooBar2, onUpdateIntegrity: 'cascade', primary: true })
   bar!: FooBar2;
@@ -2274,7 +2343,7 @@ export class Sandwich {
 
 }
 ",
-  "import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Configuration2 } from './Configuration2';
 import { FooBar2 } from './FooBar2';
@@ -2282,6 +2351,8 @@ import { Publisher2Tests } from './Publisher2Tests';
 
 @Entity()
 export class Test2 {
+
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -2364,13 +2435,15 @@ export class Address2 {
 
 }
 ",
-  "import { Collection, Entity, IdentifiedReference, Index, ManyToMany, ManyToOne, OneToMany, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, IdentifiedReference, Index, ManyToMany, ManyToOne, OneToMany, OptionalProps, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 @Entity()
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
 @Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
 export class Author2 {
+
+  [OptionalProps]?: 'createdAt' | 'termsAccepted' | 'updatedAt';
 
   @PrimaryKey()
   id!: number;
@@ -2505,7 +2578,7 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, IdentifiedReference, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, IdentifiedReference, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
@@ -2514,6 +2587,8 @@ import { Test2 } from './Test2';
 
 @Entity()
 export class Book2 {
+
+  [OptionalProps]?: 'createdAt';
 
   @PrimaryKey({ length: 36 })
   uuidPk!: string;
@@ -2651,13 +2726,15 @@ export class Dummy2 {
 
 }
 ",
-  "import { Collection, Entity, IdentifiedReference, ManyToMany, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, IdentifiedReference, ManyToMany, OneToMany, OneToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
 import { Test2 } from './Test2';
 
 @Entity()
 export class FooBar2 {
+
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -2697,11 +2774,13 @@ export class FooBar2 {
 
 }
 ",
-  "import { Collection, Entity, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, OneToMany, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { FooParam2 } from './FooParam2';
 
 @Entity()
 export class FooBaz2 {
+
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -2717,12 +2796,14 @@ export class FooBaz2 {
 
 }
 ",
-  "import { Entity, IdentifiedReference, ManyToOne, Property } from '@mikro-orm/core';
+  "import { Entity, IdentifiedReference, ManyToOne, OptionalProps, Property } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
 @Entity()
 export class FooParam2 {
+
+  [OptionalProps]?: 'version';
 
   @ManyToOne({ entity: () => FooBar2, wrappedReference: true, onUpdateIntegrity: 'cascade', primary: true })
   bar!: IdentifiedReference<FooBar2>;
@@ -2838,7 +2919,7 @@ export class Sandwich {
 
 }
 ",
-  "import { Collection, Entity, IdentifiedReference, ManyToMany, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, IdentifiedReference, ManyToMany, ManyToOne, OneToMany, OneToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Configuration2 } from './Configuration2';
 import { FooBar2 } from './FooBar2';
@@ -2846,6 +2927,8 @@ import { Publisher2Tests } from './Publisher2Tests';
 
 @Entity()
 export class Test2 {
+
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -2928,13 +3011,15 @@ export class Address2 {
 
 }
 ",
-  "import { Collection, Entity, IdentifiedReference, Index, ManyToMany, ManyToOne, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, IdentifiedReference, Index, ManyToMany, ManyToOne, OptionalProps, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2.js';
 
 @Entity()
 @Index({ name: 'author2_name_age_index', properties: ['name', 'age'] })
 @Unique({ name: 'author2_name_email_unique', properties: ['name', 'email'] })
 export class Author2 {
+
+  [OptionalProps]?: 'createdAt' | 'termsAccepted' | 'updatedAt';
 
   @PrimaryKey()
   id!: number;
@@ -3043,13 +3128,15 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, IdentifiedReference, Index, ManyToMany, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, IdentifiedReference, Index, ManyToMany, ManyToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2.js';
 import { BookTag2 } from './BookTag2.js';
 import { Publisher2 } from './Publisher2.js';
 
 @Entity()
 export class Book2 {
+
+  [OptionalProps]?: 'createdAt';
 
   @PrimaryKey({ length: 36 })
   uuidPk!: string;
@@ -3167,11 +3254,13 @@ export class Dummy2 {
 
 }
 ",
-  "import { Entity, IdentifiedReference, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, IdentifiedReference, OneToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2.js';
 
 @Entity()
 export class FooBar2 {
+
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -3202,10 +3291,12 @@ export class FooBar2 {
 
 }
 ",
-  "import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class FooBaz2 {
+
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;
@@ -3218,12 +3309,14 @@ export class FooBaz2 {
 
 }
 ",
-  "import { Entity, IdentifiedReference, ManyToOne, Property } from '@mikro-orm/core';
+  "import { Entity, IdentifiedReference, ManyToOne, OptionalProps, Property } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2.js';
 import { FooBaz2 } from './FooBaz2.js';
 
 @Entity()
 export class FooParam2 {
+
+  [OptionalProps]?: 'version';
 
   @ManyToOne({ entity: () => FooBar2, wrappedReference: true, onUpdateIntegrity: 'cascade', primary: true })
   bar!: IdentifiedReference<FooBar2>;
@@ -3327,12 +3420,14 @@ export class Sandwich {
 
 }
 ",
-  "import { Collection, Entity, IdentifiedReference, ManyToMany, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, IdentifiedReference, ManyToMany, ManyToOne, OneToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2.js';
 import { FooBar2 } from './FooBar2.js';
 
 @Entity()
 export class Test2 {
+
+  [OptionalProps]?: 'version';
 
   @PrimaryKey()
   id!: number;

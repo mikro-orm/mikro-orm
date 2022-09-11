@@ -199,4 +199,14 @@ describe('EntityGenerator', () => {
     await orm.close(true);
   });
 
+  test('generate OptionalProps and include properties for columns that are not nullable, but have defaults', async () => {
+    const orm = await initORMMySql('mysql', {}, true);
+    await orm.schema.dropSchema();
+    const schema = "create table if not exists `account` (`id` bigint(20) unsigned NOT NULL AUTO_INCREMENT, `active` tinyint(1) NOT NULL DEFAULT '0', `receive_email_notifications` tinyint(1) NOT NULL DEFAULT '1', PRIMARY KEY (`id`)) default character set utf8mb4 engine = InnoDB;";
+    await orm.schema.execute(schema);
+    const dump = await orm.entityGenerator.generate({ save: false, baseDir: './temp/entities' });
+    expect(dump).toMatchSnapshot('generate-OptionalProps');
+    await orm.schema.execute('drop table if exists `account`');
+    await orm.close(true);
+  });
 });
