@@ -101,10 +101,15 @@ export class EntityLoader {
   }
 
   /**
-   * merge multiple populates for the same entity with different children
+   * Merge multiple populates for the same entity with different children. Also skips `*` fields, those can come from
+   * partial loading hints (`fields`) that are used to infer the `populate` hint if missing.
    */
   private mergeNestedPopulate<T>(populate: PopulateOptions<T>[]): PopulateOptions<T>[] {
     const tmp = populate.reduce((ret, item) => {
+      if (item.field === '*') {
+        return ret;
+      }
+
       if (!ret[item.field]) {
         ret[item.field] = item;
         return ret;
