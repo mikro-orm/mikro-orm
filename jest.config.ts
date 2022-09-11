@@ -20,6 +20,7 @@ const config: Config.InitialOptions = {
   ],
   coveragePathIgnorePatterns: [
     '<rootDir>/packages/cli/src/cli.ts',
+    '<rootDir>/packages/cli/src/esm.ts',
     '<rootDir>/packages/better-sqlite',
   ],
   setupFiles: [
