@@ -9,6 +9,7 @@ import { Utils } from '../utils/Utils';
 import { WrappedEntity } from './WrappedEntity';
 import { ReferenceType } from '../enums';
 import { helper } from './wrap';
+import { EntityRepositoryType, OptionalProps, PrimaryKeyProp, PrimaryKeyType } from '../typings';
 
 const entityHelperSymbol = Symbol('helper');
 
@@ -129,6 +130,8 @@ export class EntityHelper {
 
     meta.prototype[inspect.custom] ??= function (this: T, depth: number) {
       const object = { ...this };
+      // ensure we dont have internal symbols in the POJO
+      [OptionalProps, EntityRepositoryType, PrimaryKeyType, PrimaryKeyProp].forEach(sym => delete object[sym]);
       const ret = inspect(object, { depth });
       let name = (this as object).constructor.name;
 
