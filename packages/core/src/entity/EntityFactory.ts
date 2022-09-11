@@ -302,7 +302,12 @@ export class EntityFactory {
           return data[k];
         }
 
-        return this.createReference(meta.properties[k].type, data[k], options);
+        if (Utils.isObject(data[k]) && !Utils.extractPK(data[k], meta.properties[k].targetMeta, true)) {
+          return this.create(meta.properties[k].type, data[k], options);
+        }
+
+        const { newEntity, initialized, ...rest } = options;
+        return this.createReference(meta.properties[k].type, data[k], rest);
       }
 
       if (meta.properties[k]?.reference === ReferenceType.EMBEDDED && data[k]) {

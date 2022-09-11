@@ -519,6 +519,11 @@ describe('EntityManagerPostgre', () => {
     expect(b2.nameWithSpace).toBe('456');
   });
 
+  test('em.create and reference property in constructor parameters', async () => {
+    const book = orm.em.create(Book2, { title: 'b', author: 1 });
+    expect(wrap(book.author).isInitialized()).toBe(false);
+  });
+
   test('unsetting 1:1 inverse (GH #1872)', async () => {
     const author = orm.em.create(Author2, { name: 'a', email: 'e' });
     const fb1 = orm.em.create(Test2, { name: 'fb 1' });
