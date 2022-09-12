@@ -59,7 +59,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/knex": "^5.4.2",
+    "@mikro-orm/knex": "~5.4.2",
     "fs-extra": "10.1.0"
   },
   "devDependencies": {
