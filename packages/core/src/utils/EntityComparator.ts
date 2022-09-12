@@ -3,6 +3,7 @@ import type { Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityPr
 import { ReferenceType } from '../enums';
 import type { Platform } from '../platforms';
 import { compareArrays, compareBuffers, compareObjects, equals, Utils } from './Utils';
+import { JsonType } from '../types/JsonType';
 
 type Comparator<T> = (a: T, b: T) => EntityData<T>;
 type ResultMapper<T> = (result: EntityData<T>) => EntityData<T> | null;
@@ -383,7 +384,7 @@ export class EntityComparator {
           .split('\n').map(l => padding + l).join('\n');
       }
 
-      if (childProp.customType) {
+      if (childProp.customType && !(childProp.customType instanceof JsonType)) {
         context.set(`convertToDatabaseValue_${childProp.name}`, (val: any) => childProp.customType.convertToDatabaseValue(val, this.platform));
 
         if (['number', 'string', 'boolean'].includes(childProp.customType.compareAsType().toLowerCase())) {
