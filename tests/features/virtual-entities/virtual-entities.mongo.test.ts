@@ -1,5 +1,5 @@
 import type { Dictionary } from '@mikro-orm/core';
-import { Entity, MikroORM, Property } from '@mikro-orm/core';
+import { Entity, MikroORM, Property, wrap } from '@mikro-orm/core';
 import type { EntityManager } from '@mikro-orm/mongodb';
 import { mockLogger } from '../../bootstrap';
 import { Author, Book, schema } from '../../entities';
@@ -31,10 +31,10 @@ import { Author, Book, schema } from '../../entities';
 })
 class BookWithAuthor {
 
-  @Property()
+  @Property({ hidden: true })
   title!: string;
 
-  @Property()
+  @Property({ serializedName: 'author', serializer: val => `The value is: ${val}` })
   authorName!: string;
 
 }
@@ -145,6 +145,32 @@ describe('virtual entities (mongo)', () => {
     expect(mock.mock.calls[5][0]).toMatch(`db.getCollection('books-table').aggregate([ { '$project': { _id: 0, title: 1, author: 1 } }, { '$sort': { _id: 1 } }, { '$match': { title: { '$in': [ 'My Life on the Wall, part 1/2', 'My Life on the Wall, part 1/3' ] } } }, { '$lookup': { from: 'author', localField: 'author', foreignField: '_id', as: 'author', pipeline: [ { '$project': { name: 1 } } ] } }, { '$unwind': '$author' }, { '$set': { authorName: '$author.name' } }, { '$unset': [ 'author' ] } ], { session: undefined }).toArray();`);
 
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toHaveLength(0);
+
+    // serialization
+    const pojos1 = someBooks4.map(b => JSON.stringify(b));
+    expect(pojos1).toEqual([
+      '{"author":"The value is: Jon Snow 2"}',
+      '{"author":"The value is: Jon Snow 3"}',
+    ]);
+
+    // toJSON and toObject works the same
+    const pojos2 = someBooks4.map(b => wrap(b).toJSON());
+    expect(pojos2).toEqual([
+      { author: 'The value is: Jon Snow 2' },
+      { author: 'The value is: Jon Snow 3' },
+    ]);
+    const pojos3 = someBooks4.map(b => wrap(b).toObject());
+    expect(pojos3).toEqual([
+      { author: 'The value is: Jon Snow 2' },
+      { author: 'The value is: Jon Snow 3' },
+    ]);
+
+    // toPOJO ignores `hidden` flag
+    const pojos4 = someBooks4.map(b => wrap(b).toPOJO());
+    expect(pojos4).toEqual([
+      { author: 'The value is: Jon Snow 2', title: 'My Life on the Wall, part 1/2' },
+      { author: 'The value is: Jon Snow 3', title: 'My Life on the Wall, part 1/3' },
+    ]);
   });
 
 });

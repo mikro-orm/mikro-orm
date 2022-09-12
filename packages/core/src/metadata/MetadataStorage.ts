@@ -103,7 +103,7 @@ export class MetadataStorage {
 
   decorate(em: EntityManager): void {
     Object.values(this.metadata)
-      .filter(meta => meta.prototype && !meta.prototype.__meta && !meta.virtual)
+      .filter(meta => meta.prototype && !meta.prototype.__meta)
       .forEach(meta => EntityHelper.decorate(meta, em));
   }
 

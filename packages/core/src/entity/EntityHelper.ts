@@ -25,7 +25,7 @@ export class EntityHelper {
 
     EntityHelper.defineBaseProperties(meta, meta.prototype, fork);
 
-    if (!meta.embeddable) {
+    if (!meta.embeddable && !meta.virtual) {
       EntityHelper.defineProperties(meta);
     }
 
@@ -59,7 +59,7 @@ export class EntityHelper {
    * property on the entity instance, so shadowing the prototype setter.
    */
   private static defineBaseProperties<T extends object>(meta: EntityMetadata<T>, prototype: T, em: EntityManager) {
-    const helperParams = meta.embeddable ? [] : [em.getComparator().getPkGetter(meta), em.getComparator().getPkSerializer(meta), em.getComparator().getPkGetterConverted(meta)];
+    const helperParams = meta.embeddable || meta.virtual ? [] : [em.getComparator().getPkGetter(meta), em.getComparator().getPkSerializer(meta), em.getComparator().getPkGetterConverted(meta)];
     Object.defineProperties(prototype, {
       __entity: { value: !meta.embeddable },
       __meta: { value: meta },
