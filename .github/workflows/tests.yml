@@ -209,6 +209,11 @@ jobs:
       - name: Release dev version for testing
         if: steps.changed_packages.outputs.changed_packages != '0'
         run: |
+          git config --global user.name 'MikroORM Release Bot'
+          git config --global user.email 'noreply@mikro-orm.io'
+          yarn lerna run copy -- -- --canary
+          git commit -am 'chore: bump canary versions [skip ci]'
+
           echo "access=public" >> .npmrc
           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
           git fetch --depth=1 origin +refs/tags/*:refs/tags/*

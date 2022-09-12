@@ -57,7 +57,7 @@
     "postbuild": "yarn gen-esm-wrapper dist/index.js dist/index.mjs",
     "clean": "rimraf ./dist",
     "compile": "tsc -p tsconfig.build.json",
-    "copy": "ts-node -T ../../scripts/copy.ts"
+    "copy": "node ../../scripts/copy.mjs"
   },
   "publishConfig": {
     "access": "public"

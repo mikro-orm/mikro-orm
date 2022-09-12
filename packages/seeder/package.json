@@ -42,7 +42,7 @@
     "build": "yarn clean && yarn compile && yarn copy",
     "clean": "rimraf ./dist",
     "compile": "tsc -p tsconfig.build.json",
-    "copy": "ts-node -T ../../scripts/copy.ts"
+    "copy": "node ../../scripts/copy.mjs"
   },
   "publishConfig": {
     "access": "public"
