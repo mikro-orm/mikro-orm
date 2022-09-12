@@ -34,17 +34,16 @@ function rewrite(path, replacer) {
 
 let rootVersion;
 
-async function getRootVersion() {
+async function getRootVersion(increment = true) {
   if (rootVersion) {
     return rootVersion;
   }
-
 
   const pkg = require(resolve(root, './lerna.json'), { assert: { type: 'json' } });
   rootVersion = pkg.version.replace(/^(\d+\.\d+\.\d+)-?.*$/, '$1');
 
   const parts = rootVersion.split('.');
-  parts[2] = `${+parts[2] + 1}`;
+  parts[2] = `${+parts[2] + (increment ? 1 : 0)}`;
   rootVersion = parts.join('.');
 
   return rootVersion;
@@ -85,7 +84,6 @@ async function getNextVersion() {
 if (options.canary) {
   const pkgJson = require(pkgPath);
   const nextVersion = await getNextVersion();
-  console.log(pkgJson, nextVersion);
   pkgJson.version = nextVersion;
 
   for (const dep of Object.keys(pkgJson.dependencies ?? {})) {
@@ -95,8 +93,30 @@ if (options.canary) {
     }
   }
 
+  for (const dep of Object.keys(pkgJson.peerDependencies ?? {})) {
+    if (dep.startsWith('@mikro-orm/') || dep === 'mikro-orm') {
+      pkgJson.peerDependencies[dep] = '~' + nextVersion;
+    }
+  }
+
   // eslint-disable-next-line no-console
   console.info(`canary: setting version to ${nextVersion}`);
+
+  writeFileSync(pkgPath, `${JSON.stringify(pkgJson, null, 2)}\n`);
+}
+
+if (options.tilde) {
+  const pkgJson = require(pkgPath);
+  const version = await getRootVersion(false);
+
+  for (const dep of Object.keys(pkgJson.dependencies ?? {})) {
+    if (dep.startsWith('@mikro-orm/') || dep === 'mikro-orm' && pkgJson.dependencies[dep].startsWith('^')) {
+      pkgJson.dependencies[dep] = '~' + version;
+    }
+  }
+
+  // eslint-disable-next-line no-console
+  console.info(`tilde: changing ^ to ~ in dependencies for version ${version}`, pkgJson.dependencies);
 
   writeFileSync(pkgPath, `${JSON.stringify(pkgJson, null, 2)}\n`);
 }
