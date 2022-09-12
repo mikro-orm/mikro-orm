@@ -2,7 +2,14 @@ import { copyFileSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { Utils } from '@mikro-orm/core';
+import { createRequire } from 'module';
+
+// as we publish only the dist folder, we need to copy some meta files inside (readme/license/package.json)
+// also changes paths inside the copied `package.json` (`dist/index.js` -> `index.js`)
+const root = resolve(fileURLToPath(import.meta.url), '../..');
+const target = resolve(process.cwd(), 'dist');
+const pkgPath = resolve(process.cwd(), 'package.json');
+const require = createRequire(resolve(root));
 
 const options = process.argv.slice(2).reduce((args, arg) => {
   const [key, value] = arg.split('=');
@@ -32,7 +39,8 @@ async function getRootVersion() {
     return rootVersion;
   }
 
-  const pkg = await Utils.dynamicImport(resolve(root, './lerna.json'));
+
+  const pkg = require(resolve(root, './lerna.json'), { assert: { type: 'json' } });
   rootVersion = pkg.version.replace(/^(\d+\.\d+\.\d+)-?.*$/, '$1');
 
   const parts = rootVersion.split('.');
@@ -74,14 +82,8 @@ async function getNextVersion() {
   return `${version}-${preid}.${lastPrereleaseNumber + 1}`;
 }
 
-// as we publish only the dist folder, we need to copy some meta files inside (readme/license/package.json)
-// also changes paths inside the copied `package.json` (`dist/index.js` -> `index.js`)
-const root = resolve(fileURLToPath(import.meta.url), '../..');
-const target = resolve(process.cwd(), 'dist');
-const pkgPath = resolve(process.cwd(), 'package.json');
-
 if (options.canary) {
-  const pkgJson = await Utils.dynamicImport(pkgPath);
+  const pkgJson = require(pkgPath);
   const nextVersion = await getNextVersion();
   console.log(pkgJson, nextVersion);
   pkgJson.version = nextVersion;
