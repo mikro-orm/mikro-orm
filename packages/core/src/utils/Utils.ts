@@ -867,8 +867,7 @@ export class Utils {
     }
 
     /* istanbul ignore next */
-    const ret = await this.dynamicImportProvider(id);
-    return ret.default ?? ret;
+    return this.dynamicImportProvider(id);
   }
 
   /* istanbul ignore next */
