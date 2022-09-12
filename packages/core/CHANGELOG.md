@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.4.2](https://github.com/mikro-orm/mikro-orm/compare/v5.4.1...v5.4.2) (2022-09-12)
+
+
+### Bug Fixes
+
+* **core:** do not double serialize nested JSON properties in embedded arrays ([11112c6](https://github.com/mikro-orm/mikro-orm/commit/11112c6662925fc88e88699273bf0653aa6b627a)), closes [#3327](https://github.com/mikro-orm/mikro-orm/issues/3327)
+* **core:** fix dynamic loading of entities with default export ([14f88cc](https://github.com/mikro-orm/mikro-orm/commit/14f88ccbe1da7666c203ff26d54818fce0689dc9)), closes [#3491](https://github.com/mikro-orm/mikro-orm/issues/3491)
+* **core:** fix extracting entity reference for constructor params in `em.create()` ([797cc3a](https://github.com/mikro-orm/mikro-orm/commit/797cc3add4aec590a5ff03b7e042af008a0788ba))
+* **core:** fix populating of self referencing relationships ([e3c835a](https://github.com/mikro-orm/mikro-orm/commit/e3c835a67a39f5bc085733b131be0729bc73903c)), closes [#3490](https://github.com/mikro-orm/mikro-orm/issues/3490)
+* **core:** fix serialization of virtual entities ([a15fc13](https://github.com/mikro-orm/mikro-orm/commit/a15fc1355bc2dbb131fc12f4eec01db544d323a4)), closes [#3493](https://github.com/mikro-orm/mikro-orm/issues/3493)
+* **core:** ignore `*` populate hints inferred from `fields` ([c11bda6](https://github.com/mikro-orm/mikro-orm/commit/c11bda61e1ac7114fa351b5e711aa24558f3c136))
+* **core:** omit internal symbols from logged entities ([29c430c](https://github.com/mikro-orm/mikro-orm/commit/29c430c3f158af22d897caa32ae3e12bf1426edd))
+* **core:** respect serialization flags on embedded properties ([8e9f6d9](https://github.com/mikro-orm/mikro-orm/commit/8e9f6d9820bb5d48b715862b920d9735659839c4)), closes [#3429](https://github.com/mikro-orm/mikro-orm/issues/3429)
+
+
+
+
+
 ## [5.4.1](https://github.com/mikro-orm/mikro-orm/compare/v5.4.0...v5.4.1) (2022-09-08)
 
 

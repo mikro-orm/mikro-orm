@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.4.2](https://github.com/mikro-orm/mikro-orm/compare/v5.4.1...v5.4.2) (2022-09-12)
+
+
+### Features
+
+* **cli:** add `mikro-orm-esm` CLI script with registered ts-node/esm loader ([443f0c8](https://github.com/mikro-orm/mikro-orm/commit/443f0c81f1a882cbba944522eb77d10c946f5e4b)), closes [#3485](https://github.com/mikro-orm/mikro-orm/issues/3485)
+
+
+
+
+
 ## [5.4.1](https://github.com/mikro-orm/mikro-orm/compare/v5.4.0...v5.4.1) (2022-09-08)
 
 
