@@ -4,7 +4,7 @@ import { QueryHelper } from '../utils/QueryHelper';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
 import type { Collection } from './Collection';
-import type { LockMode, QueryOrderMap, PopulateHint } from '../enums';
+import type { LockMode, PopulateHint, QueryOrderMap } from '../enums';
 import { LoadStrategy, QueryOrder, ReferenceType } from '../enums';
 import { Reference } from './Reference';
 import type { EntityField, FindOptions } from '../drivers/IDatabaseDriver';
@@ -516,8 +516,12 @@ export class EntityLoader {
   private lookupEagerLoadedRelationships<T>(entityName: string, populate: PopulateOptions<T>[], strategy?: LoadStrategy, prefix = '', visited: string[] = []): PopulateOptions<T>[] {
     const meta = this.metadata.find(entityName);
 
-    if (visited.includes(entityName) || !meta) {
+    if (!meta && !prefix) {
       return populate;
+    }
+
+    if (visited.includes(entityName) || !meta) {
+      return [];
     }
 
     visited.push(entityName);
