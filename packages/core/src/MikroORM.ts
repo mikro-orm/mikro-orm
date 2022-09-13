@@ -34,11 +34,15 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
       options = await ConfigurationLoader.getConfiguration<D>();
     }
 
-    options = options instanceof Configuration ? options.getAll() : options;
-    options = Utils.merge(options, env);
-    await ConfigurationLoader.commonJSCompat(options as object);
+    let opts = options instanceof Configuration ? options.getAll() : options;
+    opts = Utils.merge(opts, env);
+    await ConfigurationLoader.commonJSCompat(opts as object);
 
-    const orm = new MikroORM<D>(options as Options<D>);
+    if ('DRIVER' in this && !opts.driver && !opts.type) {
+      (opts as Options).driver = (this as unknown as { DRIVER: Constructor<IDatabaseDriver> }).DRIVER;
+    }
+
+    const orm = new MikroORM(opts);
     orm.logger.log('info', `MikroORM version: ${colors.green(coreVersion)}`);
 
     // we need to allow global context here as we are not in a scope of requests yet

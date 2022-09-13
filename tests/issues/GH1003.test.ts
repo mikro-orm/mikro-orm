@@ -1,6 +1,6 @@
 import type { IdentifiedReference } from '@mikro-orm/core';
-import { BaseEntity, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { BaseEntity, Collection, Entity, ManyToOne, OneToMany, PrimaryKey } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Parent extends BaseEntity<Parent, 'id'> {
@@ -31,7 +31,7 @@ export class Child extends BaseEntity<Parent, 'id'> {
 
 describe('GH issue 1003', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
