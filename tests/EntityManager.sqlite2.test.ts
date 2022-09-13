@@ -1,13 +1,13 @@
 import type { EntityName } from '@mikro-orm/core';
-import { ArrayCollection, Collection, EntityManager, LockMode, MikroORM, QueryOrder, ValidationError, wrap } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { ArrayCollection, Collection, EntityManager, LockMode, QueryOrder, ValidationError, wrap } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/sqlite';
 import { initORMSqlite2, mockLogger } from './bootstrap';
 import type { IAuthor4, IPublisher4, ITest4 } from './entities-schema';
 import { Author4, Book4, BookTag4, FooBar4, Publisher4, PublisherType, Test4 } from './entities-schema';
 
 describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => orm = await initORMSqlite2(driver));
   beforeEach(async () => orm.schema.clearDatabase());
@@ -165,7 +165,6 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
   });
 
   test('should load entities', async () => {
-    expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.em).toBeInstanceOf(EntityManager);
 
     const god = orm.em.create(Author4, { name: 'God', email: 'hello@heaven.god' });

@@ -39,7 +39,7 @@ async function getRootVersion(increment = true) {
     return rootVersion;
   }
 
-  const pkg = require(resolve(root, './lerna.json'), { assert: { type: 'json' } });
+  const pkg = require(resolve(root, './lerna.json'));
   rootVersion = pkg.version.replace(/^(\d+\.\d+\.\d+)-?.*$/, '$1');
 
   const parts = rootVersion.split('.');

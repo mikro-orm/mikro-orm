@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson';
 import type { EntityProperty } from '@mikro-orm/core';
-import { Collection, Configuration, MikroORM, QueryOrder, Reference, wrap, UniqueConstraintViolationException, IdentityMap, EntitySchema, NullHighlighter } from '@mikro-orm/core';
-import { EntityManager, MongoConnection, MongoDriver, MongoPlatform } from '@mikro-orm/mongodb';
+import { Collection, Configuration, QueryOrder, Reference, wrap, UniqueConstraintViolationException, IdentityMap, EntitySchema, NullHighlighter } from '@mikro-orm/core';
+import { EntityManager, MongoConnection, MongoDriver, MongoPlatform, MikroORM } from '@mikro-orm/mongodb';
 import { MongoHighlighter } from '@mikro-orm/mongo-highlighter';
 
 import { Author, Book, BookTag, Publisher, PublisherType, Test } from './entities';
@@ -12,7 +12,7 @@ import { FooBaz } from './entities/FooBaz';
 
 describe('EntityManagerMongo', () => {
 
-  let orm: MikroORM<MongoDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => orm = await initORMMongo(true));
   beforeEach(async () => orm.schema.clearDatabase());
@@ -23,7 +23,6 @@ describe('EntityManagerMongo', () => {
   });
 
   test('should load entities', async () => {
-    expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.em).toBeInstanceOf(EntityManager);
 
     const god = new Author('God', 'hello@heaven.god');

@@ -1,5 +1,5 @@
-import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers';
 
 @Embeddable()
@@ -97,7 +97,7 @@ class User {
 
 describe('embedded entities in postgres', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({

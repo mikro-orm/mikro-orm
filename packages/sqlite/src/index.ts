@@ -4,3 +4,4 @@ export * from './SqliteDriver';
 export * from './SqlitePlatform';
 export * from './SqliteSchemaHelper';
 export * from './SqliteExceptionConverter';
+export { SqliteMikroORM as MikroORM, SqliteOptions as Options } from './SqliteMikroORM';
