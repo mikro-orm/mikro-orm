@@ -1,4 +1,4 @@
-import { MikroORM } from '@mikro-orm/core';
+import { defineConfig, MikroORM } from '@mikro-orm/core';
 import type { Options } from '@mikro-orm/core';
 import { MariaDbDriver } from './MariaDbDriver';
 
@@ -12,3 +12,7 @@ export class MariaDbMikroORM extends MikroORM<MariaDbDriver> {
 }
 
 export type MariaDbOptions = Options<MariaDbDriver>;
+
+export function defineMariaDbConfig(options: MariaDbOptions) {
+  return defineConfig({ driver: MariaDbDriver, ...options });
+}

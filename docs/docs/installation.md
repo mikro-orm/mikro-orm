@@ -255,6 +255,28 @@ export default {
 };
 ```
 
+To have the config type-safe, we can define the options variable first, with the `Options` type:
+
+```ts
+import { Options } from '@mikro-orm/core';
+
+const config: Options = {
+  // ...
+};
+
+export default config;
+```
+
+Alternatively, we can use the `defineConfig` helper that should provide intellisense even in JavaScript files, without the need for type hints via jsdoc:
+
+```ts
+import { defineConfig } from '@mikro-orm/core';
+
+export default defineConfig({
+  // ...
+});
+```
+
 When we have `useTsNode` disabled and `ts-node` is not already registered and detected,
 TS config files will be ignored.
 

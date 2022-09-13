@@ -396,6 +396,13 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
 }
 
+/**
+ * Type helper to make it easier to use `mikro-orm.config.js`.
+ */
+export function defineConfig<D extends IDatabaseDriver>(options: Options<D>) {
+  return options;
+}
+
 export interface DynamicPassword {
   password: string;
   expirationChecker?: () => boolean;
