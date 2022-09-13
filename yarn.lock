@@ -1974,10 +1974,10 @@
   dependencies:
     "@types/istanbul-lib-report" "*"
 
-"@types/jest@29.0.1":
-  version "29.0.1"
-  resolved "https://registry.yarnpkg.com/@types/jest/-/jest-29.0.1.tgz#b5610ae1a1c5f6e0f6beb132941722da7c493c28"
-  integrity sha512-CAZrjLRZs4xEdIrfrdV74xK1Vo/BKQZwUcjJv3gp6gMeV3BsVxMnXTcgtYOKyphT4DPPo7jxVEVhuwJTQn3oPQ==
+"@types/jest@29.0.2":
+  version "29.0.2"
+  resolved "https://registry.yarnpkg.com/@types/jest/-/jest-29.0.2.tgz#05dcb2d78d2fcc444be89f95b7389f2c3601d336"
+  integrity sha512-TaklkwSEtvwJpleiKBHgEBySIQlcZ08gYP/s5wdtdLnjz9uxjnDd7U+Y0JWACebkqBc+jtbol2PEtEW0wQV2zQ==
   dependencies:
     expect "^29.0.0"
     pretty-format "^29.0.0"
