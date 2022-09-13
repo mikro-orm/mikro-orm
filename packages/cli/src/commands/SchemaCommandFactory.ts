@@ -99,7 +99,13 @@ export class SchemaCommandFactory {
     if (args.dump) {
       const m = `get${method.substr(0, 1).toUpperCase()}${method.substr(1)}SchemaSQL` as 'getCreateSchemaSQL' | 'getUpdateSchemaSQL' | 'getDropSchemaSQL';
       const dump = await generator[m](params);
-      CLIHelper.dump(dump, orm.config);
+
+      if (dump) {
+        CLIHelper.dump(dump, orm.config);
+        successMessage = '';
+      } else {
+        successMessage = 'Schema is up-to-date';
+      }
     } else if (method === 'fresh') {
       await generator.dropSchema(params);
       await generator.createSchema(params);
