@@ -1,4 +1,4 @@
-import { MikroORM } from '@mikro-orm/core';
+import { defineConfig, MikroORM } from '@mikro-orm/core';
 import type { Options } from '@mikro-orm/core';
 import { PostgreSqlDriver } from './PostgreSqlDriver';
 
@@ -12,3 +12,7 @@ export class PostgreSqlMikroORM extends MikroORM<PostgreSqlDriver> {
 }
 
 export type PostgreSqlOptions = Options<PostgreSqlDriver>;
+
+export function definePostgreSqlConfig(options: PostgreSqlOptions) {
+  return defineConfig({ driver: PostgreSqlDriver, ...options });
+}

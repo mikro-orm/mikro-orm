@@ -1,4 +1,4 @@
-import { MikroORM } from '@mikro-orm/core';
+import { defineConfig, MikroORM } from '@mikro-orm/core';
 import type { Options } from '@mikro-orm/core';
 import { MongoDriver } from './MongoDriver';
 
@@ -12,3 +12,7 @@ export class MongoMikroORM extends MikroORM<MongoDriver> {
 }
 
 export type MongoOptions = Options<MongoDriver>;
+
+export function defineMongoConfig(options: MongoOptions) {
+  return defineConfig({ driver: MongoDriver, ...options });
+}

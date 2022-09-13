@@ -1,4 +1,4 @@
-import { MikroORM } from '@mikro-orm/core';
+import { defineConfig, MikroORM } from '@mikro-orm/core';
 import type { Options } from '@mikro-orm/core';
 import { BetterSqliteDriver } from './BetterSqliteDriver';
 
@@ -12,3 +12,7 @@ export class BetterSqliteMikroORM extends MikroORM<BetterSqliteDriver> {
 }
 
 export type BetterSqliteOptions = Options<BetterSqliteDriver>;
+
+export function defineBetterSqliteConfig(options: BetterSqliteOptions) {
+  return defineConfig({ driver: BetterSqliteDriver, ...options });
+}
