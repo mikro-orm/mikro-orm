@@ -33,7 +33,7 @@ describe('MikroORM', () => {
 
   test('should work with Configuration object instance', async () => {
     expect(() => new MikroORM(new Configuration({ type: 'mongo', dbName: 'test', entities: [Author], clientUrl: 'test' }))).not.toThrowError();
-    expect(() => new MikroORM(new Configuration({ type: 'mongo', dbName: 'test', entities: ['entities'], clientUrl: 'test' }))).not.toThrowError();
+    expect(() => new MikroORM(new Configuration({ type: 'mongo', dbName: 'test', baseDir: __dirname + '/../packages/core', entities: [__dirname + '/entities'], clientUrl: 'test' }))).not.toThrowError();
   });
 
   test('should throw when no entity discovered', async () => {
@@ -77,7 +77,7 @@ describe('MikroORM', () => {
       discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json', alwaysAnalyseProperties: false },
     };
     const pathExistsMock = jest.spyOn(fs as any, 'pathExists');
-    pathExistsMock.mockResolvedValue(true);
+    pathExistsMock.mockImplementation(async path => (path as string).endsWith('.json') || (path as string).includes('/mikro-orm/mikro-orm.config.ts'));
     jest.mock('../mikro-orm.config.ts', () => options, { virtual: true });
     const pkg = { 'mikro-orm': { useTsNode: true } } as any;
     jest.mock('../package.json', () => pkg, { virtual: true });
@@ -94,6 +94,8 @@ describe('MikroORM', () => {
 
     await orm.close();
     expect(await orm.isConnected()).toBe(false);
+
+    pathExistsMock.mockRestore();
   });
 
   test('CLI config can export async function', async () => {

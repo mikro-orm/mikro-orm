@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { pathExists, realpath } from 'fs-extra';
+import { pathExists, pathExistsSync, realpath } from 'fs-extra';
 import { isAbsolute, join } from 'path';
 import { platform } from 'os';
 import { fileURLToPath } from 'url';
@@ -96,9 +96,14 @@ export class ConfigurationLoader {
     paths.push(...(settings.configPaths || []));
 
     if (settings.useTsNode) {
+      paths.push('./src/mikro-orm.config.ts');
       paths.push('./mikro-orm.config.ts');
     }
 
+    const distDir = pathExistsSync(process.cwd() + '/dist');
+    const buildDir = pathExistsSync(process.cwd() + '/build');
+    const path = distDir ? 'dist' : (buildDir ? 'build' : 'src');
+    paths.push(`./${path}/mikro-orm.config.js`);
     paths.push('./mikro-orm.config.js');
     const tsNode = Utils.detectTsNode();
 
