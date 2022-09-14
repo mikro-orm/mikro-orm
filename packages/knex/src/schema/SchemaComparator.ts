@@ -408,7 +408,13 @@ export class SchemaComparator {
       }
     };
 
-    if (columnType1 !== columnType2) {
+    if (
+      columnType1 !== columnType2 &&
+      !(
+        column1.ignoreSchemaChanges?.includes('type') ||
+        column2.ignoreSchemaChanges?.includes('type')
+      )
+    ) {
       log(`'type' changed for column ${tableName}.${column1.name}`, { columnType1, columnType2 });
       changedProperties.add('type');
     }
@@ -443,7 +449,13 @@ export class SchemaComparator {
       changedProperties.add('enumItems');
     }
 
-    if ((column1.extra || '').toLowerCase() !== (column2.extra || '').toLowerCase()) {
+    if (
+      (column1.extra || '').toLowerCase() !== (column2.extra || '').toLowerCase() &&
+      !(
+        column1.ignoreSchemaChanges?.includes('extra') ||
+        column2.ignoreSchemaChanges?.includes('extra')
+      )
+    ) {
       log(`'extra' changed for column ${tableName}.${column1.name}`, { column1, column2 });
       changedProperties.add('extra');
     }

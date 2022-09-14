@@ -98,6 +98,7 @@ export class DatabaseTable {
         enumItems: prop.items?.every(Utils.isString) ? prop.items as string[] : undefined,
         comment: prop.comment,
         extra: prop.extra,
+        ignoreSchemaChanges: prop.ignoreSchemaChanges,
       };
       this.columns[field].unsigned ||= this.columns[field].autoincrement;
       const defaultValue = this.platform.getSchemaHelper()!.normalizeDefaultValue(prop.defaultRaw!, prop.length);
