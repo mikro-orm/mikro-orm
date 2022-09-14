@@ -298,6 +298,7 @@ export interface EntityProperty<T = any> {
   extra?: string;
   userDefined?: boolean;
   optional?: boolean; // for ts-morph
+  ignoreSchemaChanges?: ('type' | 'extra')[];
 }
 
 export class EntityMetadata<T = any> {

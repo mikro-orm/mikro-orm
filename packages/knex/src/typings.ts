@@ -50,6 +50,7 @@ export interface Column {
   unique?: boolean;
   /** mysql only */
   extra?: string;
+  ignoreSchemaChanges?: ('type' | 'extra')[];
 }
 
 export interface ForeignKey {

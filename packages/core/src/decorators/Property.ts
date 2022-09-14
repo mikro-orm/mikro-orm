@@ -77,6 +77,7 @@ export type PropertyOptions<T> = {
   comment?: string;
   /** mysql only */
   extra?: string;
+  ignoreSchemaChanges?: ('type' | 'extra')[];
 };
 
 export interface ReferenceOptions<T, O> extends PropertyOptions<O> {

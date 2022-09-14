@@ -114,6 +114,12 @@ Then run this script via `ts-node` (or compile it to plain JS and use `node`):
 $ ts-node create-schema
 ```
 
+## Ignoring specific column changes
+
+When using generated columns, we'll get a perpetual diff on every `SchemaGenerator` run unless we set `ignoreSchemaChanges` to ignore changes to `type` and `extra`.
+
+See the [SQL Generated columns](defining-entities.md#SQL Generated columns) section for more details.
+
 ## Limitations of SQLite
 
 There are limitations of SQLite database because of which it behaves differently 
