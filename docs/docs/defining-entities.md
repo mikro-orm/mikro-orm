@@ -1281,6 +1281,80 @@ export abstract class CustomBaseEntity {
 }
 ```
 
+## SQL Generated columns
+
+Knex currently does not support generated columns, so the schema generator
+cannot properly diff them. To work around this, we can set `ignoreSchemaChanges`
+on a property to avoid a perpetual diff from the schema generator
+
+<Tabs
+groupId="entity-def"
+defaultValue="reflect-metadata"
+values={[
+{label: 'reflect-metadata', value: 'reflect-metadata'},
+{label: 'ts-morph', value: 'ts-morph'},
+{label: 'EntitySchema', value: 'entity-schema'},
+]
+}>
+<TabItem value="reflect-metadata">
+
+```ts title="./entities/Book.ts"
+@Entity
+export class Book {
+
+  @Property()
+  title!: string;
+
+  @Property({
+    columnType: 'VARCHAR GENERATED ALWAYS AS (LOWER(`title`)) VIRTUAL',
+    ignoreSchemaChanges: ['type', 'extra'],
+  })
+  titleLower!: string;
+
+}
+```
+
+  </TabItem>
+  <TabItem value="ts-morph">
+
+```ts title="./entities/Book.ts"
+@Entity
+export class Book {
+
+  @Property()
+  title!: string;
+
+  @Property({
+    columnType: 'VARCHAR GENERATED ALWAYS AS (LOWER(`title`)) VIRTUAL',
+    ignoreSchemaChanges: ['type', 'extra'],
+  })
+  titleLower!: string;
+
+}
+```
+
+  </TabItem>
+  <TabItem value="entity-schema">
+
+```ts title="./entities/Book.ts"
+export interface IBook {
+  title: string;
+  titleLower: string;
+}
+
+export const Book = new EntitySchema<IBook>({
+  name: 'Book',
+  properties: {
+    title: { type: String },
+    titleLower: { type: String, columnType: 'VARCHAR GENERATED ALWAYS AS (LOWER(`title`)) VIRTUAL', ignoreSchemaChanges: ['type', 'extra'] },
+  },
+});
+```
+
+  </TabItem>
+</Tabs>
+```
+
 ## Examples of entity definition with various primary keys
 
 ### Using id as primary key (SQL drivers)
