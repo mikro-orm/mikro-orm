@@ -1353,7 +1353,6 @@ export const Book = new EntitySchema<IBook>({
 
   </TabItem>
 </Tabs>
-```
 
 ## Examples of entity definition with various primary keys
 
