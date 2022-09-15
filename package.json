@@ -99,7 +99,7 @@
     "@mikro-orm/sql-highlighter": "1.0.1",
     "@side/jest-runtime": "^1.0.0",
     "@types/fs-extra": "9.0.13",
-    "@types/jest": "29.0.2",
+    "@types/jest": "29.0.3",
     "@types/mysql2": "types/mysql2#89378b2cb3974ea8cdd1d633b8f056e54e5d2384",
     "@types/node": "17.0.18",
     "@types/pg": "8.6.5",
