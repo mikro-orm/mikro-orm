@@ -259,6 +259,24 @@ await em.flush();
 
 This is a rough equivalent to calling `em.nativeUpdate()`, with one significant difference - we use the flush operation which handles event execution, so all life cycle hooks as well as flush events will be fired.
 
+### Refreshing entity state
+
+We can use `em.refresh(entity)` to synchronize the entity state with database. This is a shortcut for calling `em.findOne()` with `refresh: true` and disabled auto-flush.
+
+> This results in loss of any changes done to that entity.
+
+```ts
+const author = await em.findOneOrFail(Author, { name: 'Jon' });
+console.log(author.name); // 'Jon'
+
+// changes to entity will be lost!
+author.name = '123';
+
+// refresh the value, ignore any changes
+await em.refresh(author);
+console.log(author.name); // 'Jon'
+```
+
 ### Fetching Paginated Results
 
 If we are going to paginate our results, we can use `em.findAndCount()` that will return

@@ -1115,6 +1115,34 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     expect(res[0].count).toBe(1);
   });
 
+  test('em.refresh', async () => {
+    const e = orm.em.create(Author4, { name: 'lalala', email: '123' });
+    await orm.em.persistAndFlush(e);
+    expect(e.name).toBe('lalala');
+    e.name = '123';
+
+    // refresh the value, ignore changes
+    expect(e.name).toBe('123');
+    await orm.em.refresh(e);
+    expect(e.name).toBe('lalala');
+
+    // no queries as we dropped the state by refreshing
+    const mock = mockLogger(orm);
+    await orm.em.flush();
+    expect(mock).not.toBeCalled();
+
+    orm.em.clear();
+
+    const e2 = await orm.em.findOneOrFail(Author4, { email: '123' });
+    expect(e2.name).toBe('lalala');
+    e2.name = '123';
+
+    // refresh the value, ignore changes
+    expect(e2.name).toBe('123');
+    await orm.em.refresh(e2);
+    expect(e2.name).toBe('lalala');
+  });
+
   test('qb.getCount()`', async () => {
     for (let i = 1; i <= 50; i++) {
       const author = orm.em.create(Author4, {

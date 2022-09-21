@@ -343,6 +343,20 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
+   * Refreshes the persistent state of an entity from the database, overriding any local changes that have not yet been persisted.
+   */
+  async refresh<T extends object, P extends string = never>(entity: T, options: FindOneOptions<T, P> = {}): Promise<T> {
+    await this.findOne(entity.constructor.name, entity, {
+      schema: helper(entity).__schema,
+      ...options,
+      refresh: true,
+      flushMode: FlushMode.COMMIT,
+    });
+
+    return entity;
+  }
+
+  /**
    * Finds first entity matching your `where` query.
    */
   async findOne<T extends object, P extends string = never>(entityName: EntityName<T>, where: FilterQuery<T>, options: FindOneOptions<T, P> = {}): Promise<Loaded<T, P> | null> {
