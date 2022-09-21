@@ -246,6 +246,19 @@ const author = await em.findOne(Author, '...', { fields: ['name', { books: ['tit
 > Same problem can occur in mongo with M:N collections - those are stored as array property 
 > on the owning entity, so we need to make sure to mark such properties too.
 
+### Updating references (not loaded entities)
+
+Since v5.4.3, we can update references via Unit of Work, just like if it was a loaded entity. This way it is possible to issue update queries without loading the entity.
+
+```ts
+const ref = em.getReference(Author, 123);
+ref.name = 'new name';
+ref.email = 'new email';
+await em.flush();
+```
+
+This is a rough equivalent to calling `em.nativeUpdate()`, with one significant difference - we use the flush operation which handles event execution, so all life cycle hooks as well as flush events will be fired.
+
 ### Fetching Paginated Results
 
 If we are going to paginate our results, we can use `em.findAndCount()` that will return

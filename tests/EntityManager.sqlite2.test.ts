@@ -939,6 +939,66 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     expect(b1.virtual).toBe('123');
   });
 
+  test('merging detached entity', async () => {
+    const author = orm.em.create(Author4, {
+      name: 'Jon Snow',
+      email: 'snow@wall.st',
+      books: [
+        { title: 'My Life on The Wall, part 1', tags: [{ id: 1, name: 'silly' }, { id: 3, name: 'sick' }] },
+        { title: 'My Life on The Wall, part 2', tags: [{ id: 1, name: 'silly' }, { id: 2, name: 'funny' }, { id: 5, name: 'sexy' }] },
+        { title: 'My Life on The Wall, part 3', tags: [{ id: 2, name: 'funny' }, { id: 4, name: 'strange' }, { id: 5, name: 'sexy' }] },
+      ],
+    });
+    author.favouriteBook = author.books[0];
+    await orm.em.persistAndFlush(author);
+    orm.em.clear();
+
+    // cache author with favouriteBook and its tags
+    const jon = await orm.em.findOneOrFail(Author4, author.id, { populate: ['favouriteBook.tags'] });
+    const cache = wrap(jon).toObject();
+
+    // merge cached author with his references
+    orm.em.clear();
+    const cachedAuthor = orm.em.merge(Author4, cache);
+    expect(cachedAuthor).toBe(cachedAuthor.favouriteBook?.author);
+    expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toEqual([
+      'Author4-' + author.id,
+      'Book4-' + author.books[0].id,
+      'BookTag4-1',
+      'BookTag4-3',
+    ]);
+    expect(author).not.toBe(cachedAuthor);
+    expect(author.id).toBe(cachedAuthor.id);
+    const book4 = orm.em.create(Book4, {
+      title: 'My Life on The Wall, part 4',
+      author: cachedAuthor,
+    });
+    await orm.em.persistAndFlush(book4);
+
+    // merge detached author
+    orm.em.clear();
+    const cachedAuthor2 = orm.em.merge(author);
+    expect(cachedAuthor2).toBe(cachedAuthor2.favouriteBook?.author);
+    expect([...orm.em.getUnitOfWork().getIdentityMap().keys()]).toEqual([
+      'Author4-' + author.id,
+      'Book4-' + author.books[0].id,
+      'Book4-' + author.books[1].id,
+      'Book4-' + author.books[2].id,
+      'BookTag4-1',
+      'BookTag4-2',
+      'BookTag4-4',
+      'BookTag4-5',
+      'BookTag4-3',
+    ]);
+    expect(author).toBe(cachedAuthor2);
+    expect(author.id).toBe(cachedAuthor2.id);
+    const book5 = orm.em.create(Book4, {
+      title: 'My Life on The Wall, part 5',
+      author: cachedAuthor2,
+    });
+    await orm.em.persistAndFlush(book5);
+  });
+
   test('batch update with changing OneToOne relation (GH issue #1025)', async () => {
     const bar1 = orm.em.create(FooBar4, { name: 'bar 1' });
     const bar2 = orm.em.create(FooBar4, { name: 'bar 2' });
@@ -1087,6 +1147,28 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     const e = orm.em.create(Author4, { name: 'name', email: 'email' });
     expect(() => e.books.remove(null as any)).not.toThrow();
     expect(() => e.books.remove(undefined as any)).not.toThrow();
+  });
+
+  test('changing reference will issue update query', async () => {
+    const e = orm.em.create(Author4, { name: 'name', email: 'email' });
+    await orm.em.persistAndFlush(e);
+    orm.em.clear();
+
+    const ref = orm.em.getReference(Author4, e.id);
+
+    const mock = mockLogger(orm, ['query']);
+    await orm.em.flush();
+    expect(mock).not.toBeCalled();
+
+    ref.name = 'new name';
+    ref.email = 'new email';
+    expect(wrap(ref).isInitialized()).toBe(false);
+    await orm.em.flush();
+    expect(wrap(ref).isInitialized()).toBe(true);
+
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('update `author4` set `name` = ?, `email` = ?, `updated_at` = ? where `id` = ?');
+    expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
   // this should run in ~600ms (when running single test locally)

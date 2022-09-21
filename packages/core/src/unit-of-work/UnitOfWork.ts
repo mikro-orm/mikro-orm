@@ -33,6 +33,7 @@ export class UnitOfWork {
   private readonly queuedActions = new Set<string>();
   private readonly loadedEntities = new Set<AnyEntity>();
   private readonly flushQueue: (() => Promise<void>)[] = [];
+  private readonly snapshotQueue: (() => void)[] = [];
   private working = false;
   private insideHooks = false;
 
@@ -70,7 +71,18 @@ export class UnitOfWork {
   /**
    * @internal
    */
-  registerManaged<T extends object>(entity: T, data?: EntityData<T>, options?: { refresh?: boolean; newEntity?: boolean; loaded?: boolean }): T {
+  saveSnapshots() {
+    for (const callback of this.snapshotQueue) {
+      callback();
+    }
+
+    this.snapshotQueue.length = 0;
+  }
+
+  /**
+   * @internal
+   */
+  registerManaged<T extends object>(entity: T, data?: EntityData<T>, options?: RegisterManagedOptions): T {
     this.identityMap.store(entity);
 
     if (options?.newEntity) {
@@ -84,12 +96,22 @@ export class UnitOfWork {
     const wrapped = helper(entity);
     wrapped.__em ??= this.em;
 
-    if (data && wrapped!.__initialized && (options?.refresh || !wrapped!.__originalEntityData)) {
-      // we can't use the `data` directly here as it can contain fetch joined data, that can't be used for diffing the state
-      wrapped!.__originalEntityData = this.comparator.prepareEntity(entity);
+    if (data && (options?.refresh || !wrapped.__originalEntityData)) {
+      const callback = () => {
+        // we can't use the `data` directly here as it can contain fetch joined data, that can't be used for diffing the state
+        wrapped.__originalEntityData = this.comparator.prepareEntity(entity);
+        wrapped.__touched = false;
+      };
+
       Object.keys(data).forEach(key => helper(entity).__loadedProperties.add(key));
       this.queuedActions.delete(wrapped.__meta.className);
-      wrapped.__touched = false;
+      callback();
+
+      // schedule re-snapshotting in case it's a reference, as there might be some updates made via propagation
+      // we need to have in the snapshot in case the entity reference gets modified
+      if (!wrapped.__initialized) {
+        this.snapshotQueue.push(callback);
+      }
     }
 
     return entity;
@@ -99,6 +121,8 @@ export class UnitOfWork {
    * @internal
    */
   async dispatchOnLoadEvent(): Promise<void> {
+    this.saveSnapshots();
+
     for (const entity of this.loadedEntities) {
       if (this.eventManager.hasListeners(EventType.onLoad, entity.__meta!)) {
         await this.eventManager.dispatchEvent(EventType.onLoad, { entity, em: this.em });
@@ -488,7 +512,7 @@ export class UnitOfWork {
     visited.add(entity);
     const wrapped = helper(entity);
 
-    if (!wrapped.__initialized || wrapped.__processing || this.removeStack.has(entity) || this.orphanRemoveStack.has(entity)) {
+    if (wrapped.__processing || this.removeStack.has(entity) || this.orphanRemoveStack.has(entity)) {
       return;
     }
 
@@ -822,6 +846,8 @@ export class UnitOfWork {
     for (const changeSet of this.changeSets.values()) {
       this.takeCollectionSnapshots(changeSet.entity, visited);
     }
+
+    this.saveSnapshots();
   }
 
   private async commitCreateChangeSets<T extends object>(changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
@@ -844,6 +870,8 @@ export class UnitOfWork {
       this.registerManaged<T>(changeSet.entity, changeSet.payload, { refresh: true });
       await this.runHooks(EventType.afterCreate, changeSet);
     }
+
+    this.saveSnapshots();
   }
 
   private findExtraUpdates<T extends object>(changeSet: ChangeSet<T>, props: EntityProperty<T>[]): void {
@@ -875,6 +903,7 @@ export class UnitOfWork {
     for (const changeSet of changeSets) {
       helper(changeSet.entity).__originalEntityData = this.comparator.prepareEntity(changeSet.entity);
       helper(changeSet.entity).__touched = false;
+      helper(changeSet.entity).__initialized = true;
       await this.runHooks(EventType.afterUpdate, changeSet);
     }
   }
@@ -966,4 +995,10 @@ export class UnitOfWork {
     });
   }
 
+}
+
+export interface RegisterManagedOptions {
+  refresh?: boolean;
+  newEntity?: boolean;
+  loaded?: boolean;
 }

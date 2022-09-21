@@ -381,6 +381,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         ignoreLazyScalarProperties: true,
         lookup: false,
       });
+      em.unitOfWork.saveSnapshots();
 
       return cached.data;
     }
@@ -632,6 +633,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     entity = Utils.isEntity<T>(data) ? data : em.entityFactory.create<T>(entityName, data as EntityData<T>, { merge: true, ...options });
     em.validator.validate(entity, data, childMeta ?? meta);
     em.unitOfWork.merge(entity);
+    em.unitOfWork.saveSnapshots();
 
     return entity!;
   }

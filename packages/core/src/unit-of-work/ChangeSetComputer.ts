@@ -4,9 +4,9 @@ import type { MetadataStorage } from '../metadata';
 import type { AnyEntity, EntityData, EntityProperty } from '../typings';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import type { Collection, EntityValidator } from '../entity';
+import { helper } from '../entity';
 import type { Platform } from '../platforms';
 import { ReferenceType } from '../enums';
-import { helper } from '../entity';
 
 export class ChangeSetComputer {
 
@@ -25,7 +25,8 @@ export class ChangeSetComputer {
       return null;
     }
 
-    const type = helper(entity).__originalEntityData ? ChangeSetType.UPDATE : ChangeSetType.CREATE;
+    const wrapped = helper(entity);
+    const type = wrapped.__originalEntityData ? ChangeSetType.UPDATE : ChangeSetType.CREATE;
     const map = new Map<T, [string, unknown][]>();
 
     // Execute `onCreate` and `onUpdate` on properties recursively, saves `onUpdate` results
@@ -36,8 +37,12 @@ export class ChangeSetComputer {
       }
     }
 
+    if (type === ChangeSetType.UPDATE && !wrapped.__initialized && !wrapped.isTouched()) {
+      return null;
+    }
+
     const changeSet = new ChangeSet(entity, type, this.computePayload(entity), meta);
-    changeSet.originalEntity = helper(entity).__originalEntityData;
+    changeSet.originalEntity = wrapped.__originalEntityData;
 
     if (this.config.get('validate')) {
       this.validator.validate(changeSet.entity, changeSet.payload, meta);
