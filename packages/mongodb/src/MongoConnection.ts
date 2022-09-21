@@ -171,8 +171,8 @@ export class MongoConnection extends Connection {
     return this.runQuery<T>('insertMany', collection, data, undefined, ctx);
   }
 
-  async updateMany<T extends object>(collection: string, where: FilterQuery<T>, data: Partial<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult<T>> {
-    return this.runQuery<T>('updateMany', collection, data, where, ctx);
+  async updateMany<T extends object>(collection: string, where: FilterQuery<T>, data: Partial<T>, ctx?: Transaction<ClientSession>, upsert?: boolean): Promise<QueryResult<T>> {
+    return this.runQuery<T>('updateMany', collection, data, where, ctx, upsert);
   }
 
   async bulkUpdateMany<T extends object>(collection: string, where: FilterQuery<T>[], data: Partial<T>[], ctx?: Transaction<ClientSession>): Promise<QueryResult<T>> {
@@ -241,7 +241,7 @@ export class MongoConnection extends Connection {
     await eventBroadcaster?.dispatchEvent(EventType.afterTransactionRollback, ctx);
   }
 
-  private async runQuery<T extends object, U extends QueryResult<T> | number = QueryResult<T>>(method: 'insertOne' | 'insertMany' | 'updateMany' | 'bulkUpdateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T> | Partial<T>[], where?: FilterQuery<T> | FilterQuery<T>[], ctx?: Transaction<ClientSession>): Promise<U> {
+  private async runQuery<T extends object, U extends QueryResult<T> | number = QueryResult<T>>(method: 'insertOne' | 'insertMany' | 'updateMany' | 'bulkUpdateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T> | Partial<T>[], where?: FilterQuery<T> | FilterQuery<T>[], ctx?: Transaction<ClientSession>, upsert?: boolean): Promise<U> {
     collection = this.getCollectionName(collection);
     const logger = this.config.getLogger();
     const options: Dictionary = { session: ctx };
@@ -254,17 +254,21 @@ export class MongoConnection extends Connection {
       case 'insertOne':
         Object.keys(data as Dictionary).filter(k => typeof (data as Dictionary)[k] === 'undefined').forEach(k => delete (data as Dictionary)[k]);
         query = log(() => `db.getCollection('${collection}').insertOne(${this.logObject(data)}, ${this.logObject(options)});`);
-        res = await this.getCollection<T>(collection).insertOne(data as OptionalUnlessRequiredId<T>, options);
+        res = await this.rethrow(this.getCollection<T>(collection).insertOne(data as OptionalUnlessRequiredId<T>, options), query);
         break;
       case 'insertMany':
         (data as Dictionary[]).forEach(data => Object.keys(data).filter(k => typeof data[k] === 'undefined').forEach(k => delete data[k]));
         query = log(() => `db.getCollection('${collection}').insertMany(${this.logObject(data)}, ${this.logObject(options)});`);
-        res = await this.getCollection<T>(collection).insertMany(data as OptionalUnlessRequiredId<T>[], options);
+        res = await this.rethrow(this.getCollection<T>(collection).insertMany(data as OptionalUnlessRequiredId<T>[], options), query);
         break;
       case 'updateMany': {
+        if (upsert) {
+          options.upsert = true;
+        }
+
         const payload = Object.keys(data!).some(k => k.startsWith('$')) ? data : this.createUpdatePayload(data as object);
         query = log(() => `db.getCollection('${collection}').updateMany(${this.logObject(where)}, ${this.logObject(payload)}, ${this.logObject(options)});`);
-        res = await this.getCollection<T>(collection).updateMany(where as Filter<T>, payload as UpdateFilter<T>, options) as UpdateResult;
+        res = await this.rethrow(this.getCollection<T>(collection).updateMany(where as Filter<T>, payload as UpdateFilter<T>, options), query) as UpdateResult;
         break;
       }
       case 'bulkUpdateMany': {
@@ -279,13 +283,13 @@ export class MongoConnection extends Connection {
         });
 
         query += log(() => `bulk.execute()`);
-        res = await bulk.execute()!;
+        res = await this.rethrow(bulk.execute()!, query);
         break;
       }
       case 'deleteMany':
       case 'countDocuments':
         query = log(() => `db.getCollection('${collection}').${method}(${this.logObject(where)}, ${this.logObject(options)});`);
-        res = await this.getCollection<T>(collection)[method](where as Filter<T>, options);
+        res = await this.rethrow(this.getCollection<T>(collection)[method](where as Filter<T>, options) as Promise<number>, query);
         break;
     }
 
@@ -296,6 +300,14 @@ export class MongoConnection extends Connection {
     }
 
     return this.transformResult<T>(res!) as U;
+  }
+
+  private rethrow<T>(promise: Promise<T>, query: string): Promise<T> {
+    return promise.catch(e => {
+      this.logQuery(query, { level: 'error' });
+      e.message += '\nQuery: ' + query;
+      throw e;
+    });
   }
 
   private createUpdatePayload<T extends object>(row: T): { $set?: unknown[]; $unset?: unknown[] } {

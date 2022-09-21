@@ -390,7 +390,7 @@ export class EntityMetadata<T = any> {
 
       o[prop.name] = {
         get() {
-          return this.__helper.__data[prop.name];
+          return this.__helper?.__data[prop.name];
         },
         set(val: unknown) {
           this.__helper.__data[prop.name] = val;

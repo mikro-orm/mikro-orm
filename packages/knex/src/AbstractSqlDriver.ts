@@ -386,14 +386,21 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     let res = { affectedRows: 0, insertId: 0, row: {} } as QueryResult<T>;
 
     if (Utils.isPrimaryKey(where) && pks.length === 1) {
-      where = { [pks[0]]: where } as FilterQuery<T>;
+      where = { [meta?.primaryKeys[0] ?? pks[0]]: where } as FilterQuery<T>;
     }
 
     if (Utils.hasObjectKeys(data)) {
       const qb = this.createQueryBuilder<T>(entityName, options.ctx, 'write', options.convertCustomTypes)
-        .update(data)
-        .withSchema(this.getSchemaName(meta, options))
-        .where(where);
+        .withSchema(this.getSchemaName(meta, options));
+
+      if (options.upsert) {
+        const uniqueFields = Utils.isPlainObject(where) ? Object.keys(where) : meta!.primaryKeys;
+        qb.insert(data as T)
+          .onConflict(uniqueFields.map(p => meta?.properties[p]?.fieldNames[0] ?? p))
+          .merge(Object.keys(data).filter(f => !uniqueFields.includes(f)));
+      } else {
+        qb.update(data).where(where);
+      }
 
       res = await this.rethrow(qb.execute('run', false));
     }

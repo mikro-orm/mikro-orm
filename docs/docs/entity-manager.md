@@ -259,6 +259,27 @@ await em.flush();
 
 This is a rough equivalent to calling `em.nativeUpdate()`, with one significant difference - we use the flush operation which handles event execution, so all life cycle hooks as well as flush events will be fired.
 
+### Upsert
+
+We can use `em.upsert()` create or update the entity, based on whether it is already present in the database. This method performs an `insert on conflict merge` query ensuring the database is in sync, returning a managed entity instance. The method accepts either `entityName` together with the entity `data`, or just entity instance. 
+
+```ts
+// insert into "author" ("age", "email") values (33, 'foo@bar.com') on conflict ("email") do update set "age" = 41
+const author = await em.upsert(Author, { email: 'foo@bar.com', age: 33 });
+```
+
+The entity data needs to contain either the primary key, or any other unique property. Let's consider the following example, where `Author.email` is a unique property:
+
+```ts
+// insert into "author" ("age", "email") values (33, 'foo@bar.com') on conflict ("email") do update set "age" = 41
+// select "id" from "author" where "email" = 'foo@bar.com'
+const author = await em.upsert(Author, { email: 'foo@bar.com', age: 33 });
+```
+
+Depending on the driver support, this will either use a returning query, or a separate select query, to fetch the primary key if it's missing from the `data`.
+
+If the entity is already present in current context, there won't be any queries - instead, the entity data will be assigned and an explicit `flush` will be required for those changes to be persisted.
+
 ### Refreshing entity state
 
 We can use `em.refresh(entity)` to synchronize the entity state with database. This is a shortcut for calling `em.findOne()` with `refresh: true` and disabled auto-flush.

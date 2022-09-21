@@ -454,6 +454,108 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
+   * Creates or updates the entity, based on whether it is already present in the database.
+   * This method performs an `insert on conflict merge` query ensuring the database is in sync, returning a managed
+   * entity instance. The method accepts either `entityName` together with the entity `data`, or just entity instance.
+   *
+   * ```ts
+   * // insert into "author" ("age", "email") values (33, 'foo@bar.com') on conflict ("email") do update set "age" = 41
+   * const author = await em.upsert(Author, { email: 'foo@bar.com', age: 33 });
+   * ```
+   *
+   * The entity data needs to contain either the primary key, or any other unique property. Let's consider the following example, where `Author.email` is a unique property:
+   *
+   * ```ts
+   * // insert into "author" ("age", "email") values (33, 'foo@bar.com') on conflict ("email") do update set "age" = 41
+   * // select "id" from "author" where "email" = 'foo@bar.com'
+   * const author = await em.upsert(Author, { email: 'foo@bar.com', age: 33 });
+   * ```
+   *
+   * Depending on the driver support, this will either use a returning query, or a separate select query, to fetch the primary key if it's missing from the `data`.
+   *
+   * If the entity is already present in current context, there won't be any queries - instead, the entity data will be assigned and an explicit `flush` will be required for those changes to be persisted.
+   */
+  async upsert<T extends object>(entityNameOrEntity: EntityName<T> | T, data?: EntityData<T> | T, options: NativeInsertUpdateOptions<T> = {}): Promise<T> {
+    const em = this.getContext(false);
+
+    let entityName: EntityName<T>;
+    let where: FilterQuery<T>;
+    let entity: T;
+
+    if (data === undefined) {
+      entityName = (entityNameOrEntity as Dictionary).constructor.name;
+      data = entityNameOrEntity as T;
+    } else {
+      entityName = Utils.className(entityNameOrEntity as EntityName<T>);
+    }
+
+    const meta = this.metadata.get(entityName);
+
+    if (Utils.isEntity(data)) {
+      entity = data as T;
+
+      if (helper(entity).__managed && helper(entity).__em === em) {
+        em.entityFactory.mergeData(meta, entity, data);
+        return entity;
+      }
+
+      where = helper(entity).getPrimaryKey() as FilterQuery<T>;
+      data = em.comparator.prepareEntity(entity);
+    } else {
+      where = Utils.extractPK(data, meta) as FilterQuery<T>;
+
+      if (where) {
+        const exists = em.unitOfWork.getById<T>(entityName, where as Primary<T>, options.schema);
+        if (exists) {
+          em.entityFactory.mergeData(meta, exists, where);
+          return exists;
+        }
+      }
+    }
+
+    const unique = meta.props.filter(p => p.unique).map(p => p.name);
+    const propIndex = unique.findIndex(p => data![p] != null);
+
+    if (where == null && propIndex >= 0) {
+      where = { [unique[propIndex]]: data[unique[propIndex]] } as FilterQuery<T>;
+    }
+
+    if (where == null) {
+      throw new Error(`Unique property value required for upsert, provide one of: ${meta.primaryKeys.concat(...unique)}`);
+    }
+
+    data = QueryHelper.processObjectParams(data) as EntityData<T>;
+    em.validator.validateParams(data, 'insert data');
+    const ret = await em.driver.nativeUpdate(entityName, where, data, { ctx: em.transactionContext, upsert: true, ...options });
+
+    if (ret.row) {
+      const prop = meta.getPrimaryProps()[0];
+      const value = ret.row[prop.fieldNames[0]];
+      data[prop.name] = prop.customType ? prop.customType.convertToJSValue(value, this.getPlatform()) : value;
+    }
+
+    entity ??= em.entityFactory.create(entityName, data, {
+      refresh: true,
+      initialized: true,
+      schema: options.schema,
+      convertCustomTypes: true,
+    });
+
+    if (!helper(entity).hasPrimaryKey()) {
+      const pk = await this.driver.findOne(meta.className, where, {
+        fields: meta.primaryKeys as [],
+        ctx: em.transactionContext,
+        convertCustomTypes: true,
+      });
+      em.entityFactory.mergeData(meta, entity, pk!);
+    }
+
+    em.unitOfWork.registerManaged(entity, data, { refresh: true });
+
+    return entity;
+  }
+
+  /**
    * Runs your callback wrapped inside a database transaction.
    */
   async transactional<T>(cb: (em: D[typeof EntityManagerType]) => Promise<T>, options: TransactionOptions = {}): Promise<T> {
