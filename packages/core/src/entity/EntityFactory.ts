@@ -51,28 +51,31 @@ export class EntityFactory {
 
     const meta2 = this.processDiscriminatorColumn<T>(meta, data);
     const exists = this.findEntity<T>(data, meta2, options);
+    let wrapped = exists && helper(exists);
 
-    if (exists && helper(exists).__initialized && !options.refresh) {
-      helper(exists).__processing = true;
-      helper(exists).__initialized = options.initialized;
-      this.mergeData(meta2, exists, data, options);
-      helper(exists).__processing = false;
+    if (wrapped && !options.refresh) {
+      wrapped.__processing = true;
+      this.mergeData(meta2, exists!, data, options);
+      wrapped.__processing = false;
 
-      return exists as New<T, P>;
+      if (wrapped.isInitialized()) {
+        return exists as New<T, P>;
+      }
     }
 
     data = { ...data };
     const entity = exists ?? this.createEntity<T>(data, meta2, options);
-    helper(entity).__processing = true;
-    helper(entity).__initialized = options.initialized;
+    wrapped = helper(entity);
+    wrapped.__processing = true;
+    wrapped.__initialized = options.initialized;
     this.hydrate(entity, meta2, data, options);
-    helper(entity).__touched = false;
+    wrapped.__touched = false;
 
     if (exists && meta.discriminatorColumn && !(entity instanceof meta2.class)) {
       Object.setPrototypeOf(entity, meta2.prototype as object);
     }
 
-    if (options.merge && helper(entity).hasPrimaryKey()) {
+    if (options.merge && wrapped.hasPrimaryKey()) {
       this.unitOfWork.registerManaged(entity, data, {
         refresh: options.refresh && options.initialized,
         newEntity: options.newEntity,
@@ -84,7 +87,7 @@ export class EntityFactory {
       this.eventManager.dispatchEvent(EventType.onInit, { entity, em: this.em });
     }
 
-    helper(entity).__processing = false;
+    wrapped.__processing = false;
 
     return entity as New<T, P>;
   }

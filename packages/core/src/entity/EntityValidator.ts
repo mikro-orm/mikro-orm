@@ -50,6 +50,7 @@ export class EntityValidator {
         !prop.defaultRaw &&
         !prop.onCreate &&
         !prop.embedded &&
+        ![ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference) &&
         prop.name !== wrapped.__meta.root.discriminatorColumn &&
         prop.type.toLowerCase() !== 'objectid' &&
         prop.persist !== false &&

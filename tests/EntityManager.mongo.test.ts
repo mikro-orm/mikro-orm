@@ -1,6 +1,6 @@
 import { ObjectId } from 'bson';
 import type { EntityProperty } from '@mikro-orm/core';
-import { Collection, Configuration, QueryOrder, Reference, wrap, UniqueConstraintViolationException, IdentityMap, EntitySchema, NullHighlighter } from '@mikro-orm/core';
+import { Collection, Configuration, QueryOrder, Reference, wrap, UniqueConstraintViolationException, IdentityMap, EntitySchema, NullHighlighter, FlushMode } from '@mikro-orm/core';
 import { EntityManager, MongoConnection, MongoDriver, MongoPlatform, MikroORM } from '@mikro-orm/mongodb';
 import { MongoHighlighter } from '@mikro-orm/mongo-highlighter';
 
@@ -950,7 +950,7 @@ describe('EntityManagerMongo', () => {
 
     // merge cached author with his references
     orm.em.clear();
-    const cachedAuthor = orm.em.merge<Author>(Author, cache);
+    const cachedAuthor = orm.em.merge(Author, cache);
     expect(cachedAuthor).toBe(cachedAuthor.favouriteBook?.author);
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toEqual([
       'Author-' + author.id,
@@ -1723,6 +1723,7 @@ describe('EntityManagerMongo', () => {
   test('loading connected entity will not update identity map for associations', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
     author.favouriteBook = new Book('b1', author);
+    orm.em.setFlushMode(FlushMode.COMMIT);
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 
@@ -1730,17 +1731,25 @@ describe('EntityManagerMongo', () => {
     expect(a).not.toBe(author);
     a.name = 'test 1';
     a.favouriteBook!.title = 'test 2';
-    const a1 = (await orm.em.findOne(Author, { favouriteBook: a.favouriteBook }))!;
-    const b1 = (await orm.em.findOne(Book, { author }))!;
+    expect(wrap(a, true).__originalEntityData).toMatchObject({ name: 'Jon Snow' });
+    expect(wrap(a.favouriteBook, true).__originalEntityData).toMatchObject({ title: 'b1' });
+    const a1 = await orm.em.findOneOrFail(Author, { favouriteBook: a.favouriteBook });
+    expect(wrap(a, true).__originalEntityData).toMatchObject({ name: 'Jon Snow' });
+    expect(wrap(a.favouriteBook, true).__originalEntityData).toMatchObject({ title: 'b1' });
+    const b1 = await orm.em.findOneOrFail(Book, { author });
     expect(a.name).toBe('test 1');
     expect(a.favouriteBook?.title).toBe('test 2');
     expect(a1.name).toBe('test 1');
     expect(b1.title).toBe('test 2');
-    await orm.em.persistAndFlush(a);
+    expect(wrap(a, true).__originalEntityData).toMatchObject({ name: 'Jon Snow' });
+    expect(wrap(a.favouriteBook, true).__originalEntityData).toMatchObject({ title: 'b1' });
+    await orm.em.flush();
+    expect(wrap(a, true).__originalEntityData).toMatchObject({ name: 'test 1' });
+    expect(wrap(a.favouriteBook, true).__originalEntityData).toMatchObject({ title: 'test 2' });
     orm.em.clear();
 
-    const a2 = (await orm.em.findOne(Author, author))!;
-    const b2 = (await orm.em.findOne(Book, { author }))!;
+    const a2 = await orm.em.findOneOrFail(Author, author);
+    const b2 = await orm.em.findOneOrFail(Book, { author });
     expect(a2.name).toBe('test 1');
     expect(b2.title).toBe('test 2');
   });

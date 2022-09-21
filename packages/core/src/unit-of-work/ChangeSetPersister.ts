@@ -104,7 +104,6 @@ export class ChangeSetPersister {
     options = this.propagateSchemaFromMetadata(meta, options, {
       convertCustomTypes: false,
     });
-    // const res = await this.driver.nativeInsertMany(meta.className, [changeSet.payload], options);
     const res = await this.driver.nativeInsert(changeSet.name, changeSet.payload, options);
 
     if (!wrapped.hasPrimaryKey()) {
