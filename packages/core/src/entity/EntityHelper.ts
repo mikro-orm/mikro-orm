@@ -113,7 +113,7 @@ export class EntityHelper {
           set(val) {
             Object.defineProperty(this, prop.name, {
               get() {
-                return this.__helper.__data[prop.name];
+                return this.__helper?.__data[prop.name];
               },
               set(val) {
                 this.__helper.__data[prop.name] = val;

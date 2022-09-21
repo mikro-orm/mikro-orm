@@ -92,7 +92,7 @@ export class EntityFactory {
     return entity as New<T, P>;
   }
 
-  mergeData<T extends object>(meta: EntityMetadata<T>, entity: T, data: EntityData<T>, options: FactoryOptions): void {
+  mergeData<T extends object>(meta: EntityMetadata<T>, entity: T, data: EntityData<T>, options: FactoryOptions = {}): void {
     // merge unchanged properties automatically
     data = { ...data };
     const existsData = this.comparator.prepareEntity(entity);

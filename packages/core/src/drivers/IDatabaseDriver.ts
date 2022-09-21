@@ -132,6 +132,8 @@ export interface NativeInsertUpdateOptions<T> {
   convertCustomTypes?: boolean;
   ctx?: Transaction;
   schema?: string;
+  /** `nativeUpdate()` only option */
+  upsert?: boolean;
 }
 
 export interface NativeInsertUpdateManyOptions<T> extends NativeInsertUpdateOptions<T> {

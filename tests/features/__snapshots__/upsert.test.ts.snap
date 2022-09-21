@@ -1,0 +1,298 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`em.upsert [better-sqlite] em.upsert(Type, data) with PK 1`] = `
+[
+  [
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (1, 41, 'a1') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\`",
+  ],
+  [
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (2, 42, 'a2') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\`",
+  ],
+  [
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (3, 43, 'a3') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\`",
+  ],
+]
+`;
+
+exports[`em.upsert [better-sqlite] em.upsert(Type, data) with unique property 1`] = `
+[
+  [
+    "[query] insert into \`author\` (\`current_age\`, \`email\`) values (41, 'a1') on conflict (\`email\`) do update set \`current_age\` = excluded.\`current_age\`",
+  ],
+  [
+    "[query] select \`a0\`.\`_id\` from \`author\` as \`a0\` where \`a0\`.\`email\` = 'a1' limit 1",
+  ],
+  [
+    "[query] insert into \`author\` (\`current_age\`, \`email\`) values (42, 'a2') on conflict (\`email\`) do update set \`current_age\` = excluded.\`current_age\`",
+  ],
+  [
+    "[query] select \`a0\`.\`_id\` from \`author\` as \`a0\` where \`a0\`.\`email\` = 'a2' limit 1",
+  ],
+  [
+    "[query] insert into \`author\` (\`current_age\`, \`email\`) values (43, 'a3') on conflict (\`email\`) do update set \`current_age\` = excluded.\`current_age\`",
+  ],
+  [
+    "[query] select \`a0\`.\`_id\` from \`author\` as \`a0\` where \`a0\`.\`email\` = 'a3' limit 1",
+  ],
+]
+`;
+
+exports[`em.upsert [better-sqlite] em.upsert(entity) 1`] = `
+[
+  [
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (1, 41, 'a1') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\`",
+  ],
+  [
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (2, 42, 'a2') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\`",
+  ],
+  [
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (3, 43, 'a3') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\`",
+  ],
+]
+`;
+
+exports[`em.upsert [mariadb] em.upsert(Type, data) with PK 1`] = `
+[
+  [
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (1, 41, 'a1') on duplicate key update \`email\` = values(\`email\`), \`current_age\` = values(\`current_age\`)",
+  ],
+  [
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (2, 42, 'a2') on duplicate key update \`email\` = values(\`email\`), \`current_age\` = values(\`current_age\`)",
+  ],
+  [
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (3, 43, 'a3') on duplicate key update \`email\` = values(\`email\`), \`current_age\` = values(\`current_age\`)",
+  ],
+]
+`;
+
+exports[`em.upsert [mariadb] em.upsert(Type, data) with unique property 1`] = `
+[
+  [
+    "[query] insert into \`author\` (\`current_age\`, \`email\`) values (41, 'a1') on duplicate key update \`current_age\` = values(\`current_age\`)",
+  ],
+  [
+    "[query] select \`a0\`.\`_id\` from \`author\` as \`a0\` where \`a0\`.\`email\` = 'a1' limit 1",
+  ],
+  [
+    "[query] insert into \`author\` (\`current_age\`, \`email\`) values (42, 'a2') on duplicate key update \`current_age\` = values(\`current_age\`)",
+  ],
+  [
+    "[query] select \`a0\`.\`_id\` from \`author\` as \`a0\` where \`a0\`.\`email\` = 'a2' limit 1",
+  ],
+  [
+    "[query] insert into \`author\` (\`current_age\`, \`email\`) values (43, 'a3') on duplicate key update \`current_age\` = values(\`current_age\`)",
+  ],
+  [
+    "[query] select \`a0\`.\`_id\` from \`author\` as \`a0\` where \`a0\`.\`email\` = 'a3' limit 1",
+  ],
+]
+`;
+
+exports[`em.upsert [mariadb] em.upsert(entity) 1`] = `
+[
+  [
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (1, 41, 'a1') on duplicate key update \`email\` = values(\`email\`), \`current_age\` = values(\`current_age\`)",
+  ],
+  [
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (2, 42, 'a2') on duplicate key update \`email\` = values(\`email\`), \`current_age\` = values(\`current_age\`)",
+  ],
+  [
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (3, 43, 'a3') on duplicate key update \`email\` = values(\`email\`), \`current_age\` = values(\`current_age\`)",
+  ],
+]
+`;
+
+exports[`em.upsert [mongo] em.upsert(Type, data) with PK 1`] = `
+[
+  [
+    "[query] db.getCollection('author').updateMany({ _id: 1 }, { '$set': { _id: 1, email: 'a1', current_age: 41 } }, { session: undefined, upsert: true });",
+  ],
+  [
+    "[query] db.getCollection('author').updateMany({ _id: 2 }, { '$set': { _id: 2, email: 'a2', current_age: 42 } }, { session: undefined, upsert: true });",
+  ],
+  [
+    "[query] db.getCollection('author').updateMany({ _id: 3 }, { '$set': { _id: 3, email: 'a3', current_age: 43 } }, { session: undefined, upsert: true });",
+  ],
+]
+`;
+
+exports[`em.upsert [mongo] em.upsert(Type, data) with unique property 1`] = `
+[
+  [
+    "[query] db.getCollection('author').updateMany({ email: 'a1' }, { '$set': { email: 'a1', current_age: 41 } }, { session: undefined, upsert: true });",
+  ],
+  [
+    "[query] db.getCollection('author').find({ email: 'a1' }, { session: undefined, projection: { _id: 1 } }).limit(1).toArray();",
+  ],
+  [
+    "[query] db.getCollection('author').updateMany({ email: 'a2' }, { '$set': { email: 'a2', current_age: 42 } }, { session: undefined, upsert: true });",
+  ],
+  [
+    "[query] db.getCollection('author').find({ email: 'a2' }, { session: undefined, projection: { _id: 1 } }).limit(1).toArray();",
+  ],
+  [
+    "[query] db.getCollection('author').updateMany({ email: 'a3' }, { '$set': { email: 'a3', current_age: 43 } }, { session: undefined, upsert: true });",
+  ],
+  [
+    "[query] db.getCollection('author').find({ email: 'a3' }, { session: undefined, projection: { _id: 1 } }).limit(1).toArray();",
+  ],
+]
+`;
+
+exports[`em.upsert [mongo] em.upsert(entity) 1`] = `
+[
+  [
+    "[query] db.getCollection('author').updateMany({ _id: 1 }, { '$set': { _id: 1, email: 'a1', current_age: 41 } }, { session: undefined, upsert: true });",
+  ],
+  [
+    "[query] db.getCollection('author').updateMany({ _id: 2 }, { '$set': { _id: 2, email: 'a2', current_age: 42 } }, { session: undefined, upsert: true });",
+  ],
+  [
+    "[query] db.getCollection('author').updateMany({ _id: 3 }, { '$set': { _id: 3, email: 'a3', current_age: 43 } }, { session: undefined, upsert: true });",
+  ],
+]
+`;
+
+exports[`em.upsert [mysql] em.upsert(Type, data) with PK 1`] = `
+[
+  [
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (1, 41, 'a1') on duplicate key update \`email\` = values(\`email\`), \`current_age\` = values(\`current_age\`)",
+  ],
+  [
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (2, 42, 'a2') on duplicate key update \`email\` = values(\`email\`), \`current_age\` = values(\`current_age\`)",
+  ],
+  [
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (3, 43, 'a3') on duplicate key update \`email\` = values(\`email\`), \`current_age\` = values(\`current_age\`)",
+  ],
+]
+`;
+
+exports[`em.upsert [mysql] em.upsert(Type, data) with unique property 1`] = `
+[
+  [
+    "[query] insert into \`author\` (\`current_age\`, \`email\`) values (41, 'a1') on duplicate key update \`current_age\` = values(\`current_age\`)",
+  ],
+  [
+    "[query] select \`a0\`.\`_id\` from \`author\` as \`a0\` where \`a0\`.\`email\` = 'a1' limit 1",
+  ],
+  [
+    "[query] insert into \`author\` (\`current_age\`, \`email\`) values (42, 'a2') on duplicate key update \`current_age\` = values(\`current_age\`)",
+  ],
+  [
+    "[query] select \`a0\`.\`_id\` from \`author\` as \`a0\` where \`a0\`.\`email\` = 'a2' limit 1",
+  ],
+  [
+    "[query] insert into \`author\` (\`current_age\`, \`email\`) values (43, 'a3') on duplicate key update \`current_age\` = values(\`current_age\`)",
+  ],
+  [
+    "[query] select \`a0\`.\`_id\` from \`author\` as \`a0\` where \`a0\`.\`email\` = 'a3' limit 1",
+  ],
+]
+`;
+
+exports[`em.upsert [mysql] em.upsert(entity) 1`] = `
+[
+  [
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (1, 41, 'a1') on duplicate key update \`email\` = values(\`email\`), \`current_age\` = values(\`current_age\`)",
+  ],
+  [
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (2, 42, 'a2') on duplicate key update \`email\` = values(\`email\`), \`current_age\` = values(\`current_age\`)",
+  ],
+  [
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (3, 43, 'a3') on duplicate key update \`email\` = values(\`email\`), \`current_age\` = values(\`current_age\`)",
+  ],
+]
+`;
+
+exports[`em.upsert [postgresql] em.upsert(Type, data) with PK 1`] = `
+[
+  [
+    "[query] insert into "author" ("_id", "current_age", "email") values (1, 41, 'a1') on conflict ("_id") do update set "email" = excluded."email", "current_age" = excluded."current_age" returning "_id"",
+  ],
+  [
+    "[query] insert into "author" ("_id", "current_age", "email") values (2, 42, 'a2') on conflict ("_id") do update set "email" = excluded."email", "current_age" = excluded."current_age" returning "_id"",
+  ],
+  [
+    "[query] insert into "author" ("_id", "current_age", "email") values (3, 43, 'a3') on conflict ("_id") do update set "email" = excluded."email", "current_age" = excluded."current_age" returning "_id"",
+  ],
+]
+`;
+
+exports[`em.upsert [postgresql] em.upsert(Type, data) with unique property 1`] = `
+[
+  [
+    "[query] insert into "author" ("current_age", "email") values (41, 'a1') on conflict ("email") do update set "current_age" = excluded."current_age" returning "_id"",
+  ],
+  [
+    "[query] insert into "author" ("current_age", "email") values (42, 'a2') on conflict ("email") do update set "current_age" = excluded."current_age" returning "_id"",
+  ],
+  [
+    "[query] insert into "author" ("current_age", "email") values (43, 'a3') on conflict ("email") do update set "current_age" = excluded."current_age" returning "_id"",
+  ],
+]
+`;
+
+exports[`em.upsert [postgresql] em.upsert(entity) 1`] = `
+[
+  [
+    "[query] insert into "author" ("_id", "current_age", "email") values (1, 41, 'a1') on conflict ("_id") do update set "email" = excluded."email", "current_age" = excluded."current_age" returning "_id"",
+  ],
+  [
+    "[query] insert into "author" ("_id", "current_age", "email") values (2, 42, 'a2') on conflict ("_id") do update set "email" = excluded."email", "current_age" = excluded."current_age" returning "_id"",
+  ],
+  [
+    "[query] insert into "author" ("_id", "current_age", "email") values (3, 43, 'a3') on conflict ("_id") do update set "email" = excluded."email", "current_age" = excluded."current_age" returning "_id"",
+  ],
+]
+`;
+
+exports[`em.upsert [sqlite] em.upsert(Type, data) with PK 1`] = `
+[
+  [
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (1, 41, 'a1') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\`",
+  ],
+  [
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (2, 42, 'a2') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\`",
+  ],
+  [
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (3, 43, 'a3') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\`",
+  ],
+]
+`;
+
+exports[`em.upsert [sqlite] em.upsert(Type, data) with unique property 1`] = `
+[
+  [
+    "[query] insert into \`author\` (\`current_age\`, \`email\`) values (41, 'a1') on conflict (\`email\`) do update set \`current_age\` = excluded.\`current_age\`",
+  ],
+  [
+    "[query] select \`a0\`.\`_id\` from \`author\` as \`a0\` where \`a0\`.\`email\` = 'a1' limit 1",
+  ],
+  [
+    "[query] insert into \`author\` (\`current_age\`, \`email\`) values (42, 'a2') on conflict (\`email\`) do update set \`current_age\` = excluded.\`current_age\`",
+  ],
+  [
+    "[query] select \`a0\`.\`_id\` from \`author\` as \`a0\` where \`a0\`.\`email\` = 'a2' limit 1",
+  ],
+  [
+    "[query] insert into \`author\` (\`current_age\`, \`email\`) values (43, 'a3') on conflict (\`email\`) do update set \`current_age\` = excluded.\`current_age\`",
+  ],
+  [
+    "[query] select \`a0\`.\`_id\` from \`author\` as \`a0\` where \`a0\`.\`email\` = 'a3' limit 1",
+  ],
+]
+`;
+
+exports[`em.upsert [sqlite] em.upsert(entity) 1`] = `
+[
+  [
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (1, 41, 'a1') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\`",
+  ],
+  [
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (2, 42, 'a2') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\`",
+  ],
+  [
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (3, 43, 'a3') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\`",
+  ],
+]
+`;

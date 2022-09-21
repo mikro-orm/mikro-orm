@@ -5,9 +5,9 @@ import { colors } from './colors';
 export class DefaultLogger implements Logger {
 
   public debugMode = this.options.debugMode ?? false;
+  readonly writer = this.options.writer;
   private readonly usesReplicas = this.options.usesReplicas;
   private readonly highlighter = this.options.highlighter;
-  private readonly writer = this.options.writer;
 
   constructor(private readonly options: LoggerOptions) {}
 
