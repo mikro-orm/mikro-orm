@@ -402,13 +402,18 @@ export class UnitOfWork {
     const wrapped = helper(entity);
 
     wrapped.__meta.bidirectionalRelations
-      .map(prop => [prop.name, prop.mappedBy || prop.inversedBy])
-      .forEach(([name, inverse]) => {
+      .map(prop => [prop.name, prop.reference, prop.mappedBy || prop.inversedBy] as const)
+      .forEach(([name, kind, inverse]) => {
         const rel = Reference.unwrapReference(entity[name]);
-
-        // there is a value, and it is still a self-reference (e.g. not replaced by user manually)
-        if (rel?.[inverse] && entity === rel?.[inverse]) {
-          delete rel[inverse];
+        if ([ReferenceType.MANY_TO_MANY, ReferenceType.ONE_TO_MANY].includes(kind)) {
+          if ((rel as Collection<any>)?.isInitialized()) {
+            (rel as Collection<any>).removeAll();
+          }
+        } else {
+          // there is a value, and it is still a self-reference (e.g. not replaced by user manually)
+          if (rel?.[inverse] && entity === rel?.[inverse]) {
+            delete rel[inverse];
+          }
         }
       });
 
@@ -575,7 +580,7 @@ export class UnitOfWork {
   private initIdentifier<T extends object>(entity: T): void {
     const wrapped = helper(entity);
 
-    if (wrapped.__identifier || wrapped.hasPrimaryKey()) {
+    if (!wrapped || wrapped.__identifier || wrapped.hasPrimaryKey()) {
       return;
     }
 
@@ -585,7 +590,7 @@ export class UnitOfWork {
       wrapped.__identifier = new EntityIdentifier();
     } else {
       this.initIdentifier(entity[pk.name] as object);
-      wrapped.__identifier = (entity[pk.name] as AnyEntity).__helper?.__identifier;
+      wrapped.__identifier = helper(entity[pk.name] as AnyEntity)?.__identifier;
     }
   }
 
