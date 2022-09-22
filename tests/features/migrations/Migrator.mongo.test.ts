@@ -165,7 +165,7 @@ describe('Migrator (mongo)', () => {
     const migration2 = new MigrationTest2(orm.em.getDriver(), orm.config);
     await runner.run(migration2, 'up');
     expect(mock.mock.calls).toHaveLength(1);
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('books-table').deleteMany({ foo: false }, { session: undefined })`);
+    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('books-table').deleteMany({ foo: false }, {})`);
   });
 
   test('up/down params [all or nothing enabled]', async () => {

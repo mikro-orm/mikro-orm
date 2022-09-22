@@ -96,13 +96,13 @@ exports[`em.upsert [mariadb] em.upsert(entity) 1`] = `
 exports[`em.upsert [mongo] em.upsert(Type, data) with PK 1`] = `
 [
   [
-    "[query] db.getCollection('author').updateMany({ _id: 1 }, { '$set': { _id: 1, email: 'a1', current_age: 41 } }, { session: undefined, upsert: true });",
+    "[query] db.getCollection('author').updateMany({ _id: 1 }, { '$set': { _id: 1, email: 'a1', current_age: 41 } }, { upsert: true });",
   ],
   [
-    "[query] db.getCollection('author').updateMany({ _id: 2 }, { '$set': { _id: 2, email: 'a2', current_age: 42 } }, { session: undefined, upsert: true });",
+    "[query] db.getCollection('author').updateMany({ _id: 2 }, { '$set': { _id: 2, email: 'a2', current_age: 42 } }, { upsert: true });",
   ],
   [
-    "[query] db.getCollection('author').updateMany({ _id: 3 }, { '$set': { _id: 3, email: 'a3', current_age: 43 } }, { session: undefined, upsert: true });",
+    "[query] db.getCollection('author').updateMany({ _id: 3 }, { '$set': { _id: 3, email: 'a3', current_age: 43 } }, { upsert: true });",
   ],
 ]
 `;
@@ -110,22 +110,22 @@ exports[`em.upsert [mongo] em.upsert(Type, data) with PK 1`] = `
 exports[`em.upsert [mongo] em.upsert(Type, data) with unique property 1`] = `
 [
   [
-    "[query] db.getCollection('author').updateMany({ email: 'a1' }, { '$set': { email: 'a1', current_age: 41 } }, { session: undefined, upsert: true });",
+    "[query] db.getCollection('author').updateMany({ email: 'a1' }, { '$set': { email: 'a1', current_age: 41 } }, { upsert: true });",
   ],
   [
-    "[query] db.getCollection('author').find({ email: 'a1' }, { session: undefined, projection: { _id: 1 } }).limit(1).toArray();",
+    "[query] db.getCollection('author').find({ email: 'a1' }, { projection: { _id: 1 } }).limit(1).toArray();",
   ],
   [
-    "[query] db.getCollection('author').updateMany({ email: 'a2' }, { '$set': { email: 'a2', current_age: 42 } }, { session: undefined, upsert: true });",
+    "[query] db.getCollection('author').updateMany({ email: 'a2' }, { '$set': { email: 'a2', current_age: 42 } }, { upsert: true });",
   ],
   [
-    "[query] db.getCollection('author').find({ email: 'a2' }, { session: undefined, projection: { _id: 1 } }).limit(1).toArray();",
+    "[query] db.getCollection('author').find({ email: 'a2' }, { projection: { _id: 1 } }).limit(1).toArray();",
   ],
   [
-    "[query] db.getCollection('author').updateMany({ email: 'a3' }, { '$set': { email: 'a3', current_age: 43 } }, { session: undefined, upsert: true });",
+    "[query] db.getCollection('author').updateMany({ email: 'a3' }, { '$set': { email: 'a3', current_age: 43 } }, { upsert: true });",
   ],
   [
-    "[query] db.getCollection('author').find({ email: 'a3' }, { session: undefined, projection: { _id: 1 } }).limit(1).toArray();",
+    "[query] db.getCollection('author').find({ email: 'a3' }, { projection: { _id: 1 } }).limit(1).toArray();",
   ],
 ]
 `;
@@ -133,13 +133,13 @@ exports[`em.upsert [mongo] em.upsert(Type, data) with unique property 1`] = `
 exports[`em.upsert [mongo] em.upsert(entity) 1`] = `
 [
   [
-    "[query] db.getCollection('author').updateMany({ _id: 1 }, { '$set': { _id: 1, email: 'a1', current_age: 41 } }, { session: undefined, upsert: true });",
+    "[query] db.getCollection('author').updateMany({ _id: 1 }, { '$set': { _id: 1, email: 'a1', current_age: 41 } }, { upsert: true });",
   ],
   [
-    "[query] db.getCollection('author').updateMany({ _id: 2 }, { '$set': { _id: 2, email: 'a2', current_age: 42 } }, { session: undefined, upsert: true });",
+    "[query] db.getCollection('author').updateMany({ _id: 2 }, { '$set': { _id: 2, email: 'a2', current_age: 42 } }, { upsert: true });",
   ],
   [
-    "[query] db.getCollection('author').updateMany({ _id: 3 }, { '$set': { _id: 3, email: 'a3', current_age: 43 } }, { session: undefined, upsert: true });",
+    "[query] db.getCollection('author').updateMany({ _id: 3 }, { '$set': { _id: 3, email: 'a3', current_age: 43 } }, { upsert: true });",
   ],
 ]
 `;

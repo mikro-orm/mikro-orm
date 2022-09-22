@@ -121,7 +121,7 @@ export class MongoConnection extends Connection {
 
   async find<T extends object>(collection: string, where: FilterQuery<T>, orderBy?: QueryOrderMap<T> | QueryOrderMap<T>[], limit?: number, offset?: number, fields?: string[], ctx?: Transaction<ClientSession>): Promise<EntityData<T>[]> {
     collection = this.getCollectionName(collection);
-    const options: Dictionary = { session: ctx };
+    const options: Dictionary = ctx ? { session: ctx } : {};
 
     if (fields) {
       options.projection = fields.reduce((o, k) => ({ ...o, [k]: 1 }), {});
@@ -185,7 +185,7 @@ export class MongoConnection extends Connection {
 
   async aggregate<T extends object = any>(collection: string, pipeline: any[], ctx?: Transaction<ClientSession>): Promise<T[]> {
     collection = this.getCollectionName(collection);
-    const options: Dictionary = { session: ctx };
+    const options: Dictionary = ctx ? { session: ctx } : {};
     const query = `db.getCollection('${collection}').aggregate(${this.logObject(pipeline)}, ${this.logObject(options)}).toArray();`;
     const now = Date.now();
     const res = this.getCollection(collection).aggregate<T>(pipeline, options).toArray();
@@ -244,7 +244,12 @@ export class MongoConnection extends Connection {
   private async runQuery<T extends object, U extends QueryResult<T> | number = QueryResult<T>>(method: 'insertOne' | 'insertMany' | 'updateMany' | 'bulkUpdateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T> | Partial<T>[], where?: FilterQuery<T> | FilterQuery<T>[], ctx?: Transaction<ClientSession>, upsert?: boolean): Promise<U> {
     collection = this.getCollectionName(collection);
     const logger = this.config.getLogger();
-    const options: Dictionary = { session: ctx };
+    const options: Dictionary = ctx ? { session: ctx, upsert } : { upsert };
+
+    if (options.upsert === undefined) {
+      delete options.upsert;
+    }
+
     const now = Date.now();
     let res: InsertOneResult<T> | InsertManyResult<T> | UpdateResult | DeleteResult | BulkWriteResult | number;
     let query: string;
@@ -262,10 +267,6 @@ export class MongoConnection extends Connection {
         res = await this.rethrow(this.getCollection<T>(collection).insertMany(data as OptionalUnlessRequiredId<T>[], options), query);
         break;
       case 'updateMany': {
-        if (upsert) {
-          options.upsert = true;
-        }
-
         const payload = Object.keys(data!).some(k => k.startsWith('$')) ? data : this.createUpdatePayload(data as object);
         query = log(() => `db.getCollection('${collection}').updateMany(${this.logObject(where)}, ${this.logObject(payload)}, ${this.logObject(options)});`);
         res = await this.rethrow(this.getCollection<T>(collection).updateMany(where as Filter<T>, payload as UpdateFilter<T>, options), query) as UpdateResult;
