@@ -139,7 +139,7 @@ export class ObjectHydrator extends Hydrator {
         const meta2 = this.metadata.get(prop.type);
         const prop2 = meta2.properties[prop.inversedBy || prop.mappedBy];
 
-        if (prop2) {
+        if (prop2 && !prop2.mapToPk) {
           ret.push(`  if (entity${entityKey} && !entity${entityKey}.${prop2.name}) {`);
           ret.push(`    entity${entityKey}.${prop.wrappedReference ? 'unwrap().' : ''}${prop2.name} = ${prop2.wrappedReference ? 'new Reference(entity)' : 'entity'};`);
           ret.push(`  }`);

@@ -188,6 +188,8 @@ export class EntityHelper {
 
     if (Reference.isReference(inverse)) {
       inverse.set(owner);
+    } else if (prop2.mapToPk) {
+      entity[prop2.name] = helper(owner).getPrimaryKey() as T[keyof T & string];
     } else {
       entity[prop2.name] = Reference.wrapReference(owner, prop) as unknown as T[keyof T & string];
     }
