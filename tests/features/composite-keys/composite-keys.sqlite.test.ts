@@ -469,10 +469,10 @@ describe('composite keys in sqlite', () => {
     expect(c1).toBe(u2.cars[0]);
 
     await orm.em.remove(u2).flush();
+    expect(u2.cars[0]).toBeUndefined();
     const o3 = await orm.em.findOne(User2, u1);
     expect(o3).toBeNull();
     const c2 = await orm.em.findOneOrFail(Car2, car1);
-    expect(c2).toBe(u2.cars[0]);
     await orm.em.remove(c2).flush();
     const c3 = await orm.em.findOne(Car2, car1);
     expect(c3).toBeNull();
@@ -542,7 +542,6 @@ describe('composite keys in sqlite', () => {
     const o3 = await orm.em.findOne(User2, u1);
     expect(o3).toBeNull();
     const c2 = await orm.em.findOneOrFail(Sandwich, sandwich1, { populate: ['users'] });
-    expect(c2).toBe(u2.sandwiches[0]);
     await orm.em.remove(c2).flush();
     const c3 = await orm.em.findOne(Sandwich, sandwich1);
     expect(c3).toBeNull();

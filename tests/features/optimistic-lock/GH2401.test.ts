@@ -10,7 +10,7 @@ export class Versioned {
   @Property()
   name!: string;
 
-  @Property({ version: true, fieldName: 'versionId' })
+  @Property({ version: true, default: 0 })
   version: number = 0;
 
 }
@@ -25,9 +25,7 @@ describe('GH issue 2401', () => {
       dbName: `mikro_orm_test_gh_2401`,
       type: 'postgresql',
     });
-    await orm.schema.ensureDatabase();
-    await orm.schema.dropSchema();
-    await orm.schema.createSchema();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(() => orm.close(true));

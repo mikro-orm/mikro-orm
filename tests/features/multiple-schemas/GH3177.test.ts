@@ -91,8 +91,8 @@ test(`GH issue 3177`, async () => {
   expect(u2.accessProfile.permissions.getItems()).toHaveLength(3);
 
   expect(mock.mock.calls[0][0]).toMatch(`begin`);
-  expect(mock.mock.calls[1][0]).toMatch(`insert into "tenant_01"."user_access_profile" default values returning "id"`);
-  expect(mock.mock.calls[2][0]).toMatch(`insert into "tenant_01"."user" ("access_profile_id", "id") values (1, 1) returning "id"`);
+  expect(mock.mock.calls[1][0]).toMatch(`insert into "tenant_01"."user_access_profile" ("id") values (default) returning "id"`);
+  expect(mock.mock.calls[2][0]).toMatch(`insert into "tenant_01"."user" ("id", "access_profile_id") values (1, 1) returning "id"`);
   expect(mock.mock.calls[3][0]).toMatch(`insert into "public"."permission" ("id") values (default), (default), (default) returning "id"`);
   expect(mock.mock.calls[4][0]).toMatch(`insert into "tenant_01"."user_access_profile_permissions" ("user_access_profile_id", "permission_id") values (1, 1), (1, 2), (1, 3) returning "user_access_profile_id", "permission_id"`);
   expect(mock.mock.calls[5][0]).toMatch(`commit`);

@@ -53,7 +53,7 @@ describe('optimistic locking - concurrency check (postgres)', () => {
 
     await orm.em.persistAndFlush(test);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into "concurrency_check_user" ("age", "first_name", "last_name", "other") values (20, \'Jakub\', \'Smith\', \'dsa\')');
+    expect(mock.mock.calls[1][0]).toMatch('insert into "concurrency_check_user" ("first_name", "last_name", "age", "other") values (\'Jakub\', \'Smith\', 20, \'dsa\')');
     expect(mock.mock.calls[2][0]).toMatch('commit');
 
     mock.mockReset();

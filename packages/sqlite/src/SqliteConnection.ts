@@ -8,6 +8,7 @@ import { Utils } from '@mikro-orm/core';
 export class SqliteConnection extends AbstractSqlConnection {
 
   static readonly RUN_QUERY_RE = /^insert into|^update|^delete|^truncate/;
+  static readonly RUN_QUERY_RETURNING = /^insert into .* returning .*/;
 
   async connect(): Promise<void> {
     await ensureDir(dirname(this.config.get('dbName')!));
@@ -49,6 +50,15 @@ export class SqliteConnection extends AbstractSqlConnection {
       return res;
     }
 
+    if (Array.isArray(res)) {
+      return {
+        insertId: res[res.length - 1]?.id ?? 0,
+        affectedRows: res.length,
+        row: res[0],
+        rows: res,
+      } as T;
+    }
+
     return {
       insertId: res.lastID,
       affectedRows: res.changes,
@@ -69,7 +79,7 @@ export class SqliteConnection extends AbstractSqlConnection {
     Sqlite3Dialect.prototype.__patched = true;
     Sqlite3Dialect.prototype.processResponse = (obj: any, runner: any) => {
       if (obj.method === 'raw' && obj.sql.trim().match(SqliteConnection.RUN_QUERY_RE)) {
-        return obj.context;
+        return obj.response ?? obj.context;
       }
 
       return processResponse(obj, runner);
@@ -150,6 +160,10 @@ export class SqliteConnection extends AbstractSqlConnection {
   }
 
   private getCallMethod(obj: any): string {
+    if (obj.method === 'raw' && obj.sql.trim().match(SqliteConnection.RUN_QUERY_RETURNING)) {
+      return 'all';
+    }
+
     if (obj.method === 'raw' && obj.sql.trim().match(SqliteConnection.RUN_QUERY_RE)) {
       return 'run';
     }
@@ -158,6 +172,7 @@ export class SqliteConnection extends AbstractSqlConnection {
     switch (obj.method) {
       case 'insert':
       case 'update':
+        return obj.returning ? 'all' : 'run';
       case 'counter':
       case 'del':
         return 'run';

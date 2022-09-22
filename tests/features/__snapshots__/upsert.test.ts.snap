@@ -3,13 +3,13 @@
 exports[`em.upsert [better-sqlite] em.upsert(Type, data) with PK 1`] = `
 [
   [
-    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (1, 41, 'a1') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\`",
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (1, 41, 'a1') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\` returning \`_id\`",
   ],
   [
-    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (2, 42, 'a2') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\`",
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (2, 42, 'a2') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\` returning \`_id\`",
   ],
   [
-    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (3, 43, 'a3') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\`",
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (3, 43, 'a3') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\` returning \`_id\`",
   ],
 ]
 `;
@@ -17,22 +17,13 @@ exports[`em.upsert [better-sqlite] em.upsert(Type, data) with PK 1`] = `
 exports[`em.upsert [better-sqlite] em.upsert(Type, data) with unique property 1`] = `
 [
   [
-    "[query] insert into \`author\` (\`current_age\`, \`email\`) values (41, 'a1') on conflict (\`email\`) do update set \`current_age\` = excluded.\`current_age\`",
+    "[query] insert into \`author\` (\`current_age\`, \`email\`) values (41, 'a1') on conflict (\`email\`) do update set \`current_age\` = excluded.\`current_age\` returning \`_id\`",
   ],
   [
-    "[query] select \`a0\`.\`_id\` from \`author\` as \`a0\` where \`a0\`.\`email\` = 'a1' limit 1",
+    "[query] insert into \`author\` (\`current_age\`, \`email\`) values (42, 'a2') on conflict (\`email\`) do update set \`current_age\` = excluded.\`current_age\` returning \`_id\`",
   ],
   [
-    "[query] insert into \`author\` (\`current_age\`, \`email\`) values (42, 'a2') on conflict (\`email\`) do update set \`current_age\` = excluded.\`current_age\`",
-  ],
-  [
-    "[query] select \`a0\`.\`_id\` from \`author\` as \`a0\` where \`a0\`.\`email\` = 'a2' limit 1",
-  ],
-  [
-    "[query] insert into \`author\` (\`current_age\`, \`email\`) values (43, 'a3') on conflict (\`email\`) do update set \`current_age\` = excluded.\`current_age\`",
-  ],
-  [
-    "[query] select \`a0\`.\`_id\` from \`author\` as \`a0\` where \`a0\`.\`email\` = 'a3' limit 1",
+    "[query] insert into \`author\` (\`current_age\`, \`email\`) values (43, 'a3') on conflict (\`email\`) do update set \`current_age\` = excluded.\`current_age\` returning \`_id\`",
   ],
 ]
 `;
@@ -40,13 +31,13 @@ exports[`em.upsert [better-sqlite] em.upsert(Type, data) with unique property 1`
 exports[`em.upsert [better-sqlite] em.upsert(entity) 1`] = `
 [
   [
-    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (1, 41, 'a1') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\`",
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (1, 41, 'a1') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\` returning \`_id\`",
   ],
   [
-    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (2, 42, 'a2') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\`",
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (2, 42, 'a2') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\` returning \`_id\`",
   ],
   [
-    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (3, 43, 'a3') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\`",
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (3, 43, 'a3') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\` returning \`_id\`",
   ],
 ]
 `;
@@ -249,13 +240,13 @@ exports[`em.upsert [postgresql] em.upsert(entity) 1`] = `
 exports[`em.upsert [sqlite] em.upsert(Type, data) with PK 1`] = `
 [
   [
-    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (1, 41, 'a1') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\`",
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (1, 41, 'a1') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\` returning \`_id\`",
   ],
   [
-    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (2, 42, 'a2') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\`",
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (2, 42, 'a2') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\` returning \`_id\`",
   ],
   [
-    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (3, 43, 'a3') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\`",
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (3, 43, 'a3') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\` returning \`_id\`",
   ],
 ]
 `;
@@ -263,22 +254,13 @@ exports[`em.upsert [sqlite] em.upsert(Type, data) with PK 1`] = `
 exports[`em.upsert [sqlite] em.upsert(Type, data) with unique property 1`] = `
 [
   [
-    "[query] insert into \`author\` (\`current_age\`, \`email\`) values (41, 'a1') on conflict (\`email\`) do update set \`current_age\` = excluded.\`current_age\`",
+    "[query] insert into \`author\` (\`current_age\`, \`email\`) values (41, 'a1') on conflict (\`email\`) do update set \`current_age\` = excluded.\`current_age\` returning \`_id\`",
   ],
   [
-    "[query] select \`a0\`.\`_id\` from \`author\` as \`a0\` where \`a0\`.\`email\` = 'a1' limit 1",
+    "[query] insert into \`author\` (\`current_age\`, \`email\`) values (42, 'a2') on conflict (\`email\`) do update set \`current_age\` = excluded.\`current_age\` returning \`_id\`",
   ],
   [
-    "[query] insert into \`author\` (\`current_age\`, \`email\`) values (42, 'a2') on conflict (\`email\`) do update set \`current_age\` = excluded.\`current_age\`",
-  ],
-  [
-    "[query] select \`a0\`.\`_id\` from \`author\` as \`a0\` where \`a0\`.\`email\` = 'a2' limit 1",
-  ],
-  [
-    "[query] insert into \`author\` (\`current_age\`, \`email\`) values (43, 'a3') on conflict (\`email\`) do update set \`current_age\` = excluded.\`current_age\`",
-  ],
-  [
-    "[query] select \`a0\`.\`_id\` from \`author\` as \`a0\` where \`a0\`.\`email\` = 'a3' limit 1",
+    "[query] insert into \`author\` (\`current_age\`, \`email\`) values (43, 'a3') on conflict (\`email\`) do update set \`current_age\` = excluded.\`current_age\` returning \`_id\`",
   ],
 ]
 `;
@@ -286,13 +268,13 @@ exports[`em.upsert [sqlite] em.upsert(Type, data) with unique property 1`] = `
 exports[`em.upsert [sqlite] em.upsert(entity) 1`] = `
 [
   [
-    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (1, 41, 'a1') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\`",
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (1, 41, 'a1') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\` returning \`_id\`",
   ],
   [
-    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (2, 42, 'a2') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\`",
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (2, 42, 'a2') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\` returning \`_id\`",
   ],
   [
-    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (3, 43, 'a3') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\`",
+    "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (3, 43, 'a3') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\` returning \`_id\`",
   ],
 ]
 `;

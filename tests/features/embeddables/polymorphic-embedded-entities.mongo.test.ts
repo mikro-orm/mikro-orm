@@ -223,7 +223,7 @@ describe('polymorphic embeddables in mongo', () => {
 
     const mock = mockLogger(orm, ['query']);
     await orm.em.persistAndFlush(owner);
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('owner').insertOne({ _id: ObjectId('600000000000000000000004'), name: 'o1', pet_canMeow: true, pet_type: 0, pet_name: 'cat', pet2: { type: 1, name: 'dog', canBark: true } }, { session: undefined });`);
+    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('owner').insertMany([ { _id: ObjectId('600000000000000000000004'), name: 'o1', pet_canMeow: true, pet_type: 0, pet_name: 'cat', pet2: { type: 1, name: 'dog', canBark: true } } ], { session: undefined });`);
 
     orm.em.assign(owner, {
       pet: { name: 'cat name' },

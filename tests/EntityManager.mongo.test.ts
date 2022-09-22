@@ -768,7 +768,7 @@ describe('EntityManagerMongo', () => {
     // ensure we don't have separate update queries for collection sync
     expect(mock.mock.calls).toHaveLength(5);
     expect(mock.mock.calls[1][0]).toMatch(`db.getCollection('book-tag').insertMany(`);
-    expect(mock.mock.calls[2][0]).toMatch(`db.getCollection('author').insertOne(`);
+    expect(mock.mock.calls[2][0]).toMatch(`db.getCollection('author').insertMany(`);
     expect(mock.mock.calls[3][0]).toMatch(`db.getCollection('books-table').insertMany(`);
     orm.em.clear();
 
@@ -1633,7 +1633,7 @@ describe('EntityManagerMongo', () => {
     // check fired queries
     expect(mock.mock.calls.length).toBe(6);
     expect(mock.mock.calls[0][0]).toMatch(/db\.begin\(\);/);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('author'\)\.insertOne\({ createdAt: ISODate\('.*'\), updatedAt: ISODate\('.*'\), foo: '.*', name: '.*', email: '.*', termsAccepted: .* }, { session: '\[ClientSession]' }\);/);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('author'\)\.insertMany\(\[ { createdAt: ISODate\('.*'\), updatedAt: ISODate\('.*'\), foo: '.*', name: '.*', email: '.*', termsAccepted: .* } ], { session: '\[ClientSession]' }\);/);
     expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('books-table'\)\.insertMany\(\[ { createdAt: ISODate\('.*'\), title: 'b1', author: ObjectId\('.*'\) }, { createdAt: ISODate\('.*'\), title: 'b2', author: ObjectId\('.*'\) }, { createdAt: ISODate\('.*'\), title: 'b3', author: ObjectId\('.*'\) } ], { session: '\[ClientSession]' }\);/);
     expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\('author'\)\.updateMany\({ _id: ObjectId\('.*'\) }, { '\$set': { favouriteAuthor: ObjectId\('.*'\), updatedAt: ISODate\('.*'\) } }, { session: '\[ClientSession]' }\);/);
     expect(mock.mock.calls[4][0]).toMatch(/db\.commit\(\);/);
@@ -1827,8 +1827,8 @@ describe('EntityManagerMongo', () => {
 
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch(/db\.begin\(\);/);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('author'\)\.insertOne\({ createdAt: ISODate\(.*\), updatedAt: ISODate\(.*\), foo: 'bar', name: 'Jon Snow', email: 'snow@wall\.st', termsAccepted: false }, { session: '\[ClientSession]' }\);/);
-    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('books-table'\)\.insertOne\({ createdAt: ISODate\('.*'\), title: 'B123', author: ObjectId\('.*'\) }, { session: '\[ClientSession]' }\);/);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('author'\)\.insertMany\(\[ { createdAt: ISODate\(.*\), updatedAt: ISODate\(.*\), foo: 'bar', name: 'Jon Snow', email: 'snow@wall\.st', termsAccepted: false } ], { session: '\[ClientSession]' }\);/);
+    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('books-table'\)\.insertMany\(\[ { createdAt: ISODate\('.*'\), title: 'B123', author: ObjectId\('.*'\) } ], { session: '\[ClientSession]' }\);/);
     expect(mock.mock.calls[3][0]).toMatch(/db\.commit\(\);/);
     expect(mock.mock.calls[4][0]).toMatch(/db\.begin\(\);/);
     expect(mock.mock.calls[5][0]).toMatch(/db\.getCollection\('books-table'\)\.updateMany\({ _id: ObjectId\('.*'\) }, { '\$set': { tags: \[ ObjectId\('0000007b5c9c61c332380f78'\), ObjectId\('0000007b5c9c61c332380f79'\) ] } }, { session: '\[ClientSession]' }\);/);
@@ -1953,7 +1953,7 @@ describe('EntityManagerMongo', () => {
     await orm.em.persistAndFlush(author);
 
     expect(mock.mock.calls.length).toBe(3);
-    expect(mock.mock.calls[1][0]).toMatch(/\[39mdb\[0m\.\[0mgetCollection\(\[33m'author'\[39m\)\[0m\.\[0minsertOne\({ \[36mcreatedAt\[39m\[0m:\[0m ISODate\(\[33m'.*'\[39m\)\[0m,\[0m \[36mupdatedAt\[39m\[0m:\[0m ISODate\(\[33m'.*'\[39m\)\[0m,\[0m \[36mfoo\[39m\[0m:\[0m \[33m'bar'\[39m\[0m,\[0m \[36mname\[39m\[0m:\[0m \[33m'Jon Snow'\[39m\[0m,\[0m \[36memail\[39m\[0m:\[0m \[33m'snow@wall.st'\[39m\[0m,\[0m \[36mage\[39m\[0m:\[0m \[32m30\[39m\[0m,\[0m \[36mtermsAccepted\[39m\[0m:\[0m \[32mfalse\[39m }\[0m,\[0m { \[36msession\[39m\[0m:\[0m \[33m'\[ClientSession]'\[39m }\)\[0m;\[0m/);
+    expect(mock.mock.calls[1][0]).toMatch(/\[90m\[query] \[39mdb\[0m.\[0mgetCollection\(\[33m'author'\[39m\)\[0m.\[0minsertMany\(\[ \{ createdAt: ISODate\('.*'\), updatedAt: ISODate\(.*\), foo: 'bar', name: 'Jon Snow', email: 'snow@wall.st', age: 30, termsAccepted: false } ], \{ session: '\[ClientSession]' }\);\[90m \[took \d+ ms]\[39m/);
 
     Object.assign(orm.config.getLogger(), { highlighter: new NullHighlighter() });
   });

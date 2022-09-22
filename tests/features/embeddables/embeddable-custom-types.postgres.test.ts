@@ -140,7 +140,7 @@ describe('embedded entities with custom types', () => {
     await orm.em.persistAndFlush(parent);
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
-    expect(mock.mock.calls[1][0]).toMatch(`insert into "parent" ("nested2", "nested_deep_some_value", "nested_some_value", "some_value") values ('{"someValue":"abc","deep":{"someValue":"abc"}}', 'abc', 'abc', 'abc') returning "id"`);
+    expect(mock.mock.calls[1][0]).toMatch(`insert into "parent" ("nested_some_value", "nested_deep_some_value", "nested2", "some_value") values ('abc', 'abc', '{"someValue":"abc","deep":{"someValue":"abc"}}', 'abc') returning "id"`);
     expect(mock.mock.calls[2][0]).toMatch(`commit`);
 
     const p = await orm.em.findOneOrFail(Parent, parent.id);

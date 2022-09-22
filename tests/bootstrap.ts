@@ -61,7 +61,6 @@ export async function initORMMongo(replicaSet = false) {
     tsNode: false,
     clientUrl,
     baseDir: BASE_DIR,
-    debug: true,
     logger: i => i,
     type: 'mongo',
     ensureIndexes,

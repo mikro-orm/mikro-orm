@@ -194,7 +194,7 @@ describe('embedded entities in postgresql', () => {
     await orm.em.persistAndFlush(user);
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into "user" ("addr_city", "addr_country", "addr_postal_code", "addr_street", "address1_city", "address1_country", "address1_number", "address1_postal_code", "address1_rank", "address1_street", "address4", "addresses", "city", "country", "email", "number", "postal_code", "rank", "street") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) returning "id"');
+    expect(mock.mock.calls[1][0]).toMatch('insert into "user" ("email", "address1_street", "address1_number", "address1_rank", "address1_postal_code", "address1_city", "address1_country", "addr_street", "addr_postal_code", "addr_city", "addr_country", "street", "number", "rank", "postal_code", "city", "country", "address4", "addresses") values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19) returning "id"');
     expect(mock.mock.calls[2][0]).toMatch('commit');
 
     const u = await orm.em.findOneOrFail(User, user.id);

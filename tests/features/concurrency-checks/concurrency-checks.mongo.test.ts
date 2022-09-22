@@ -55,7 +55,7 @@ describe('optimistic locking - concurrency check (mongo)', () => {
     test.other = 'dsa';
 
     await orm.em.persistAndFlush(test);
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('concurrency-check-user').insertOne({ _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 20, other: 'dsa' }, { session: undefined });`);
+    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('concurrency-check-user').insertMany([ { _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 20, other: 'dsa' } ], { session: undefined });`);
 
     mock.mockReset();
 

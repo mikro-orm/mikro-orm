@@ -57,19 +57,13 @@ describe('GH issue 1626', () => {
     await orm.em.removeAndFlush(author);
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch(
-      'insert into `author` default values',
-    );
+    expect(mock.mock.calls[1][0]).toMatch('insert into `author` (`id`) select null as `id` returning `id`');
     expect(mock.mock.calls[2][0]).toMatch('commit');
     expect(mock.mock.calls[3][0]).toMatch('begin');
-    expect(mock.mock.calls[4][0]).toMatch(
-      'update `author` set `name` = ? where `id` = ?',
-    );
+    expect(mock.mock.calls[4][0]).toMatch('update `author` set `name` = ? where `id` = ?');
     expect(mock.mock.calls[5][0]).toMatch('commit');
     expect(mock.mock.calls[6][0]).toMatch('begin');
-    expect(mock.mock.calls[7][0]).toMatch(
-      'delete from `author` where `id` in (?)',
-    );
+    expect(mock.mock.calls[7][0]).toMatch('delete from `author` where `id` in (?)');
     expect(mock.mock.calls[8][0]).toMatch('commit');
     expect(mock.mock.calls.length).toBe(9);
   });

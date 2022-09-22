@@ -365,7 +365,7 @@ describe('EntityManagerMySql', () => {
 
     expect(mock.mock.calls[0][0]).toMatch('set transaction isolation level read uncommitted');
     expect(mock.mock.calls[1][0]).toMatch('begin');
-    expect(mock.mock.calls[2][0]).toMatch('insert into `author2` (`created_at`, `email`, `name`, `terms_accepted`, `updated_at`) values (?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[2][0]).toMatch('insert into `author2` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values (?, ?, ?, ?, ?)');
     expect(mock.mock.calls[3][0]).toMatch('rollback');
   });
 
@@ -414,9 +414,9 @@ describe('EntityManagerMySql', () => {
     expect(mock.mock.calls.length).toBe(6);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('savepoint trx');
-    expect(mock.mock.calls[2][0]).toMatch('insert into `author2` (`created_at`, `email`, `name`, `terms_accepted`, `updated_at`) values (?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[2][0]).toMatch('insert into `author2` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values (?, ?, ?, ?, ?)');
     expect(mock.mock.calls[3][0]).toMatch('rollback to savepoint trx');
-    expect(mock.mock.calls[4][0]).toMatch('insert into `author2` (`created_at`, `email`, `name`, `terms_accepted`, `updated_at`) values (?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[4][0]).toMatch('insert into `author2` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values (?, ?, ?, ?, ?)');
     expect(mock.mock.calls[5][0]).toMatch('commit');
     await expect(orm.em.findOne(Author2, { name: 'God Persisted!' })).resolves.not.toBeNull();
   });
@@ -1734,7 +1734,7 @@ describe('EntityManagerMySql', () => {
     // check fired queries
     expect(mock.mock.calls.length).toBe(6);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into `author2` (`created_at`, `email`, `name`, `terms_accepted`, `updated_at`) values (?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[1][0]).toMatch('insert into `author2` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values (?, ?, ?, ?, ?)');
     expect(mock.mock.calls[2][0]).toMatch('insert into `book2` (`uuid_pk`, `created_at`, `title`, `author_id`) values (?, ?, ?, ?), (?, ?, ?, ?), (?, ?, ?, ?)');
     expect(mock.mock.calls[3][0]).toMatch('update `author2` set `favourite_author_id` = ?, `updated_at` = ? where `id` = ?');
     expect(mock.mock.calls[4][0]).toMatch('commit');
@@ -1950,7 +1950,7 @@ describe('EntityManagerMySql', () => {
 
     expect(mock.mock.calls.length).toBe(3);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('[37m[1minsert[22m[39m [37m[1minto[22m[39m [33m`author2`[39m ([33m`created_at`[39m[0m,[0m [33m`email`[39m[0m,[0m [33m`name`[39m[0m,[0m [33m`terms_accepted`[39m[0m,[0m [33m`updated_at`[39m) [37m[1mvalues[22m[39m (?[0m,[0m ?[0m,[0m ?[0m,[0m ?[0m,[0m ?)');
+    expect(mock.mock.calls[1][0]).toMatch('[37m[1minsert[22m[39m [37m[1minto[22m[39m [33m`author2`[39m ([33m`created_at`[39m[0m,[0m [33m`updated_at`[39m[0m,[0m [33m`name`[39m[0m,[0m [33m`email`[39m[0m,[0m [33m`terms_accepted`[39m) [37m[1mvalues[22m[39m (?[0m,[0m ?[0m,[0m ?[0m,[0m ?[0m,[0m ?)');
     expect(mock.mock.calls[2][0]).toMatch('commit');
 
     Object.assign(orm.config.getLogger(), { highlighter: new NullHighlighter() });

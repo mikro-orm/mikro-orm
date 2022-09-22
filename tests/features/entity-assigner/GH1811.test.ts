@@ -110,7 +110,7 @@ describe('GH issue 1811', () => {
     await orm.em.flush();
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into `ingredient` (`id`, `name`, `recipe_id`) values (?, ?, ?)');
+    expect(mock.mock.calls[1][0]).toMatch('insert into `ingredient` (`id`, `recipe_id`, `name`) values (?, ?, ?)');
     expect(mock.mock.calls[2][0]).toMatch('delete from `ingredient` where `id` in (?)');
     expect(mock.mock.calls[3][0]).toMatch('commit');
 

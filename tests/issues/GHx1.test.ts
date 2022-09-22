@@ -53,6 +53,27 @@ test(`default value for relation property`, async () => {
   await orm.close(true);
 });
 
+test(`default value for relation property (sqlite/returning)`, async () => {
+  const orm = await MikroORM.init({
+    entities: [Task, Status],
+    type: 'sqlite',
+    dbName: ':memory:',
+  });
+  await orm.schema.refreshDatabase();
+
+  const status = new Status();
+  status.name = TaskStatus.OPENED;
+  status.displayName = 'opened';
+  await orm.em.persist(status).flush();
+  const task = new Task();
+  await orm.em.persist(task).flush();
+  expect(task.status).toBeInstanceOf(Status);
+  const t1 = await orm.em.fork().findOneOrFail(Task, task);
+  expect(t1.status).toBeInstanceOf(Status);
+
+  await orm.close(true);
+});
+
 test(`default value for relation property (postgres/returning)`, async () => {
   const orm = await MikroORM.init({
     entities: [Task, Status],
