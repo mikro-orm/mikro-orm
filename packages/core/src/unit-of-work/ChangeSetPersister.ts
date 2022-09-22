@@ -262,7 +262,7 @@ export class ChangeSetPersister {
       convertCustomTypes: false,
     });
 
-    if (meta.concurrencyCheckKeys.size === 0 && (!meta.versionProperty || !changeSet.entity[meta.versionProperty])) {
+    if (meta.concurrencyCheckKeys.size === 0 && (!meta.versionProperty || changeSet.entity[meta.versionProperty] == null)) {
       return this.driver.nativeUpdate(changeSet.name, changeSet.getPrimaryKey() as Dictionary, changeSet.payload, options);
     }
 
@@ -278,7 +278,7 @@ export class ChangeSetPersister {
   }
 
   private async checkOptimisticLocks<T extends object>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], options?: DriverMethodOptions): Promise<void> {
-    if (meta.concurrencyCheckKeys.size === 0 && (!meta.versionProperty || changeSets.every(cs => !cs.entity[meta.versionProperty]))) {
+    if (meta.concurrencyCheckKeys.size === 0 && (!meta.versionProperty || changeSets.every(cs => cs.entity[meta.versionProperty] == null))) {
       return;
     }
 
