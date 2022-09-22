@@ -307,7 +307,7 @@ afterAll(async () => {
 });
 ```
 
-## Running migrations in production
+## Running seeders in production
 
 In production environment we might want to use compiled seeder files. All we need to do is to configure the seeder path accordingly:
 
