@@ -898,6 +898,10 @@ export class MetadataDiscovery {
       return prop.defaultRaw;
     }
 
+    if (prop.default != null) {
+      return '' + this.platform.quoteVersionValue(prop.default as number, prop);
+    }
+
     if (prop.type.toLowerCase() === 'date') {
       prop.length ??= this.platform.getDefaultVersionLength();
       return this.platform.getCurrentTimestampSQL(prop.length);
