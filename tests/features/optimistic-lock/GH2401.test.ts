@@ -10,7 +10,7 @@ export class Versioned {
   @Property()
   name!: string;
 
-  @Property({ version: true, default: 0 })
+  @Property({ version: true })
   version: number = 0;
 
 }

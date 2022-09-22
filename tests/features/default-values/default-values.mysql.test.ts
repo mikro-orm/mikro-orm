@@ -37,6 +37,10 @@ describe('default values in mysql', () => {
 
   afterAll(() => orm.close(true));
 
+  test(`runtime default values are inferred if the entity can be created without any constructor parameters`, async () => {
+    expect(await orm.schema.getCreateSchemaSQL()).toMatchSnapshot();
+  });
+
   test(`database defaults will be available after flush`, async () => {
     const mock = mockLogger(orm, ['query']);
 

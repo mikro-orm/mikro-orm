@@ -6,7 +6,7 @@ set session_replication_role = 'replica';
 
 create table "customer" ("id" serial primary key);
 
-create table "order" ("id" serial primary key, "customer_id" int not null, "paid" boolean not null, "shipped" boolean not null, "created" timestamptz(0) not null);
+create table "order" ("id" serial primary key, "customer_id" int not null, "paid" boolean not null default false, "shipped" boolean not null default false, "created" timestamptz(0) not null);
 
 create table "product" ("id" serial primary key, "name" varchar(255) not null, "current_price" int not null);
 

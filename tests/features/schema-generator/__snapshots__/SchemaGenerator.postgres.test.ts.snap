@@ -18,7 +18,7 @@ create table "foo_param2" ("bar_id" int not null, "baz_id" int not null, "value"
 
 create table "label2" ("uuid" uuid not null, "name" varchar(255) not null, constraint "label2_pkey" primary key ("uuid"));
 
-create table "publisher2" ("id" serial primary key, "name" varchar(255) not null, "type" text check ("type" in ('local', 'global')) not null, "type2" text check ("type2" in ('LOCAL', 'GLOBAL')) not null, "enum1" smallint null, "enum2" smallint null, "enum3" smallint null, "enum4" text check ("enum4" in ('a', 'b', 'c')) null, "enum5" text check ("enum5" in ('a')) null);
+create table "publisher2" ("id" serial primary key, "name" varchar(255) not null default 'asd', "type" text check ("type" in ('local', 'global')) not null default 'local', "type2" text check ("type2" in ('LOCAL', 'GLOBAL')) not null default 'LOCAL', "enum1" smallint null, "enum2" smallint null, "enum3" smallint null, "enum4" text check ("enum4" in ('a', 'b', 'c')) null, "enum5" text check ("enum5" in ('a')) null);
 
 create table "author2" ("id" serial primary key, "created_at" timestamptz(3) not null default current_timestamp(3), "updated_at" timestamptz(3) not null default current_timestamp(3), "name" varchar(255) not null, "email" varchar(255) not null, "age" int null default null, "terms_accepted" boolean not null default false, "optional" boolean null, "identities" text[] null, "born" date null, "born_time" time(0) null, "favourite_book_uuid_pk" uuid null, "favourite_author_id" int null);
 create index "custom_email_index_name" on "author2" ("email");
@@ -164,7 +164,7 @@ create table "foo_param2" ("bar_id" int not null, "baz_id" int not null, "value"
 
 create table "label2" ("uuid" uuid not null, "name" varchar(255) not null, constraint "label2_pkey" primary key ("uuid"));
 
-create table "publisher2" ("id" serial primary key, "name" varchar(255) not null, "type" text check ("type" in ('local', 'global')) not null, "type2" text check ("type2" in ('LOCAL', 'GLOBAL')) not null, "enum1" smallint null, "enum2" smallint null, "enum3" smallint null, "enum4" text check ("enum4" in ('a', 'b', 'c')) null, "enum5" text check ("enum5" in ('a')) null);
+create table "publisher2" ("id" serial primary key, "name" varchar(255) not null default 'asd', "type" text check ("type" in ('local', 'global')) not null default 'local', "type2" text check ("type2" in ('LOCAL', 'GLOBAL')) not null default 'LOCAL', "enum1" smallint null, "enum2" smallint null, "enum3" smallint null, "enum4" text check ("enum4" in ('a', 'b', 'c')) null, "enum5" text check ("enum5" in ('a')) null);
 
 create table "author2" ("id" serial primary key, "created_at" timestamptz(3) not null default current_timestamp(3), "updated_at" timestamptz(3) not null default current_timestamp(3), "name" varchar(255) not null, "email" varchar(255) not null, "age" int null default null, "terms_accepted" boolean not null default false, "optional" boolean null, "identities" text[] null, "born" date null, "born_time" time(0) null, "favourite_book_uuid_pk" uuid null, "favourite_author_id" int null);
 create index "custom_email_index_name" on "author2" ("email");
@@ -266,7 +266,7 @@ create table "foo_param2" ("bar_id" int not null, "baz_id" int not null, "value"
 
 create table "label2" ("uuid" uuid not null, "name" varchar(255) not null, constraint "label2_pkey" primary key ("uuid"));
 
-create table "publisher2" ("id" serial primary key, "name" varchar(255) not null, "type" text check ("type" in ('local', 'global')) not null, "type2" text check ("type2" in ('LOCAL', 'GLOBAL')) not null, "enum1" smallint null, "enum2" smallint null, "enum3" smallint null, "enum4" text check ("enum4" in ('a', 'b', 'c')) null, "enum5" text check ("enum5" in ('a')) null);
+create table "publisher2" ("id" serial primary key, "name" varchar(255) not null default 'asd', "type" text check ("type" in ('local', 'global')) not null default 'local', "type2" text check ("type2" in ('LOCAL', 'GLOBAL')) not null default 'LOCAL', "enum1" smallint null, "enum2" smallint null, "enum3" smallint null, "enum4" text check ("enum4" in ('a', 'b', 'c')) null, "enum5" text check ("enum5" in ('a')) null);
 
 create table "author2" ("id" serial primary key, "created_at" timestamptz(3) not null default current_timestamp(3), "updated_at" timestamptz(3) not null default current_timestamp(3), "name" varchar(255) not null, "email" varchar(255) not null, "age" int null default null, "terms_accepted" boolean not null default false, "optional" boolean null, "identities" text[] null, "born" date null, "born_time" time(0) null, "favourite_book_uuid_pk" uuid null, "favourite_author_id" int null);
 create index "custom_email_index_name" on "author2" ("email");

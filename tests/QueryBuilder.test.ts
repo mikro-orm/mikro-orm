@@ -2409,7 +2409,7 @@ describe('QueryBuilder', () => {
 
     const qb9 = pg.em.createQueryBuilder(Author2);
     qb9.insert({ email: 'ignore@example.com', name: 'John Doe' }).onConflict('email').ignore();
-    expect(qb9.getQuery()).toEqual('insert into "author2" ("email", "name") values ($1, $2) on conflict ("email") do nothing returning "id", "created_at", "updated_at", "age", "terms_accepted"');
+    expect(qb9.getQuery()).toEqual('insert into "author2" ("email", "name") values ($1, $2) on conflict ("email") do nothing returning "id", "hook_test", "created_at", "updated_at", "age", "terms_accepted"');
     expect(qb9.getParams()).toEqual(['ignore@example.com', 'John Doe']);
 
     const timestamp = new Date();
@@ -2427,7 +2427,7 @@ describe('QueryBuilder', () => {
       })
       .where({ updatedAt: { $lt: timestamp } });
 
-    expect(qb10.getQuery()).toEqual('insert into "author2" ("created_at", "email", "name", "updated_at") values ($1, $2, $3, $4) on conflict ("email") do update set "name" = $5,"updated_at" = $6 where "updated_at" < $7 returning "id", "created_at", "updated_at", "age", "terms_accepted"');
+    expect(qb10.getQuery()).toEqual('insert into "author2" ("created_at", "email", "name", "updated_at") values ($1, $2, $3, $4) on conflict ("email") do update set "name" = $5,"updated_at" = $6 where "updated_at" < $7 returning "id", "hook_test", "created_at", "updated_at", "age", "terms_accepted"');
     expect(qb10.getParams()).toEqual([timestamp, 'ignore@example.com', 'John Doe', timestamp, 'John Doe', timestamp, timestamp]);
 
     const qb11 = pg.em.createQueryBuilder(Book2).where({ meta: { foo: 123 } });
