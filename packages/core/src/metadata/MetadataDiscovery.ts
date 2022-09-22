@@ -121,7 +121,7 @@ export class MetadataDiscovery {
     }));
 
     for (const prop of missing) {
-      const target = (prop.entity instanceof Function ? prop.entity() : prop.type) as Constructor<AnyEntity>;
+      const target = (typeof prop.entity === 'function' ? prop.entity() : prop.type) as Constructor<AnyEntity>;
       await this.tryDiscoverTargets(Utils.asArray(target));
     }
   }
@@ -449,7 +449,7 @@ export class MetadataDiscovery {
     for (const prop of Object.values(meta.properties)) {
       this.initNullability(prop);
       this.applyNamingStrategy(meta, prop);
-      this.initDefaultValue(prop);
+      this.initDefaultValue(meta, prop);
       this.initVersionProperty(meta, prop);
       this.initCustomType(meta, prop);
       await this.initColumnType(prop, meta.path);
@@ -910,7 +910,20 @@ export class MetadataDiscovery {
     return '1';
   }
 
-  private initDefaultValue(prop: EntityProperty): void {
+  private initDefaultValue(meta: EntityMetadata, prop: EntityProperty): void {
+    try {
+      // try to create two entity instances to detect the value is stable
+      const entity1 = new meta.class();
+      const entity2 = new meta.class();
+
+      // we compare the two values by reference, this will discard things like `new Date()`
+      if (entity1[prop.name] != null && entity1[prop.name] === entity2[prop.name]) {
+        prop.default ??= entity1[prop.name];
+      }
+    } catch {
+      // ignore
+    }
+
     if (prop.defaultRaw || !('default' in prop)) {
       return;
     }
@@ -926,6 +939,7 @@ export class MetadataDiscovery {
 
   private initVersionProperty(meta: EntityMetadata, prop: EntityProperty): void {
     if (prop.version) {
+      this.initDefaultValue(meta, prop);
       meta.versionProperty = prop.name;
       prop.defaultRaw = this.getDefaultVersionValue(prop);
     }
