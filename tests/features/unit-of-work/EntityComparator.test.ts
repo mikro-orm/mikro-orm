@@ -198,7 +198,7 @@ export class EntityComparatorOld {
   /**
    * should be used only for `meta.comparableProps` that are defined based on the static `isComparable` helper
    */
-  private shouldIgnoreProperty<T>(entity: T, prop: EntityProperty<T>) {
+  private shouldIgnoreProperty<T extends object>(entity: T, prop: EntityProperty<T>) {
     if (!(prop.name in entity)) {
       return true;
     }

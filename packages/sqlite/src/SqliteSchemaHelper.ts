@@ -48,7 +48,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
     const sql = `select sql from sqlite_master where type = ? and name = ?`;
     const tableDefinition = await connection.execute<{ sql: string }>(sql, ['table', tableName], 'get');
 
-    const checkConstraints = tableDefinition.sql.match(/[`["'][^`\]"']+[`\]"'] text check \(.*?\)/gi) ?? [];
+    const checkConstraints = [...tableDefinition.sql.match(/[`["'][^`\]"']+[`\]"'] text check \(.*?\)/gi) ?? []];
     return checkConstraints.reduce((o, item) => {
       // check constraints are defined as (note that last closing paren is missing):
       // `type` text check (`type` in ('local', 'global')
