@@ -371,6 +371,18 @@ export class EntityComparator {
       ret += `${padding}  ret${dataKey} = {};\n`;
     }
 
+    function shouldProcessCustomType(childProp: EntityProperty) {
+      if (!childProp.customType) {
+        return false;
+      }
+
+      if (childProp.customType instanceof JsonType) {
+        return !prop.object;
+      }
+
+      return true;
+    }
+
     ret += meta.props.filter(p => p.embedded?.[0] === prop.name).map(childProp => {
       const childDataKey = prop.object ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
       const childEntityKey = [...path, childProp.embedded![1]].map(k => this.wrap(k)).join('');
@@ -384,7 +396,7 @@ export class EntityComparator {
           .split('\n').map(l => padding + l).join('\n');
       }
 
-      if (childProp.customType && !(childProp.customType instanceof JsonType)) {
+      if (shouldProcessCustomType(childProp)) {
         context.set(`convertToDatabaseValue_${childProp.name}`, (val: any) => childProp.customType.convertToDatabaseValue(val, this.platform));
 
         if (['number', 'string', 'boolean'].includes(childProp.customType.compareAsType().toLowerCase())) {

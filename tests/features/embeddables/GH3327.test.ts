@@ -3,11 +3,14 @@ import { Embeddable, Embedded, Entity, MikroORM, Options, PrimaryKey, Property, 
 @Embeddable()
 class FieldValue {
 
-  @Property({ type: t.json })
+  @Property({ type: t.json, nullable: true })
   primitive?: string | number | boolean | null;
 
-  @Property({ type: t.json })
+  @Property({ type: t.json, nullable: true })
   object?: Record<string, boolean>;
+
+  @Property({ type: t.json, nullable: true })
+  array?: string[];
 
 }
 
@@ -22,6 +25,9 @@ class Field {
 
   @Embedded({ entity: () => FieldValue, object: true })
   value?: FieldValue;
+
+  @Embedded({ entity: () => FieldValue, object: false })
+  inline?: FieldValue;
 
 }
 
@@ -53,11 +59,13 @@ describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mongo'] as con
     const value = new FieldValue();
     value.primitive = 1;
     value.object = { field: true };
+    value.array = ['1', '2', '3'];
     const value2 = new FieldValue();
     value2.primitive = null;
     value2.object = { field: false };
+    value2.array = ['4', '5', '6'];
 
-    const entity = orm.em.create(Field, { values: [value, value2], value });
+    const entity = orm.em.create(Field, { values: [value, value2], value, inline: value2 });
 
     await orm.em.persistAndFlush(entity);
 
@@ -66,14 +74,16 @@ describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mongo'] as con
     const [result] = await orm.em.find(Field, {});
 
     expect(result.value).toBeInstanceOf(FieldValue);
+    expect(result.inline).toBeInstanceOf(FieldValue);
     expect(result.values[0]).toBeInstanceOf(FieldValue);
     expect(result).toEqual({
       id: result.id,
-      value: { primitive: 1, object: { field: true } },
+      value: { primitive: 1, object: { field: true }, array: ['1', '2', '3'] },
       values: [
-        { primitive: 1, object: { field: true } },
-        { primitive: null, object: { field: false } },
+        { primitive: 1, object: { field: true }, array: ['1', '2', '3'] },
+        { primitive: null, object: { field: false }, array: ['4', '5', '6'] },
       ],
+      inline: { primitive: null, object: { field: false }, array: ['4', '5', '6'] },
     });
   });
 
