@@ -248,7 +248,7 @@ const author = await em.findOne(Author, '...', { fields: ['name', { books: ['tit
 
 ### Updating references (not loaded entities)
 
-Since v5.4.3, we can update references via Unit of Work, just like if it was a loaded entity. This way it is possible to issue update queries without loading the entity.
+Since v5.5, we can update references via Unit of Work, just like if it was a loaded entity. This way it is possible to issue update queries without loading the entity.
 
 ```ts
 const ref = em.getReference(Author, 123);
@@ -264,14 +264,14 @@ This is a rough equivalent to calling `em.nativeUpdate()`, with one significant 
 We can use `em.upsert()` create or update the entity, based on whether it is already present in the database. This method performs an `insert on conflict merge` query ensuring the database is in sync, returning a managed entity instance. The method accepts either `entityName` together with the entity `data`, or just entity instance. 
 
 ```ts
-// insert into "author" ("age", "email") values (33, 'foo@bar.com') on conflict ("email") do update set "age" = 41
+// insert into "author" ("age", "email") values (33, 'foo@bar.com') on conflict ("email") do update set "age" = 33
 const author = await em.upsert(Author, { email: 'foo@bar.com', age: 33 });
 ```
 
 The entity data needs to contain either the primary key, or any other unique property. Let's consider the following example, where `Author.email` is a unique property:
 
 ```ts
-// insert into "author" ("age", "email") values (33, 'foo@bar.com') on conflict ("email") do update set "age" = 41
+// insert into "author" ("age", "email") values (33, 'foo@bar.com') on conflict ("email") do update set "age" = 33
 // select "id" from "author" where "email" = 'foo@bar.com'
 const author = await em.upsert(Author, { email: 'foo@bar.com', age: 33 });
 ```
