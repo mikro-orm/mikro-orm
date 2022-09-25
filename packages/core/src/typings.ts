@@ -58,7 +58,7 @@ export type ExpandScalar<T> = null | (T extends string
 export type OperatorMap<T> = {
   $and?: Query<T>[];
   $or?: Query<T>[];
-  $eq?: ExpandScalar<T>;
+  $eq?: ExpandScalar<T> | ExpandScalar<T>[];
   $ne?: ExpandScalar<T>;
   $in?: ExpandScalar<T>[];
   $nin?: ExpandScalar<T>[];

@@ -1,7 +1,7 @@
 ﻿import type { Knex } from 'knex';
 import type { Dictionary, EntityMetadata } from '@mikro-orm/core';
 import { AbstractSchemaGenerator } from '@mikro-orm/core';
-import type { Check, Column, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
+import type { Check, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
 import { DatabaseSchema } from './DatabaseSchema';
 import type { DatabaseTable } from './DatabaseTable';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
