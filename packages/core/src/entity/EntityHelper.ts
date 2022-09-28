@@ -147,12 +147,12 @@ export class EntityHelper {
   static defineReferenceProperty<T extends object>(meta: EntityMetadata<T>, prop: EntityProperty<T>, ref: T): void {
     Object.defineProperty(ref, prop.name, {
       get() {
-        return this.__helper.__data[prop.name];
+        return helper(ref).__data[prop.name];
       },
       set(val: AnyEntity | Reference<AnyEntity>) {
-        const entity = Reference.unwrapReference(val ?? this.__helper.__data[prop.name]);
-        this.__helper.__data[prop.name] = Reference.wrapReference(val as T, prop);
-        this.__helper.__touched = true;
+        const entity = Reference.unwrapReference(val ?? helper(ref).__data[prop.name]);
+        helper(ref).__data[prop.name] = Reference.wrapReference(val as T, prop);
+        helper(ref).__touched = true;
         EntityHelper.propagate(meta, entity, this, prop, Reference.unwrapReference(val));
       },
       enumerable: true,

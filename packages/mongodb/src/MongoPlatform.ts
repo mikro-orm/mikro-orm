@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson';
 import type {
   IPrimaryKey, Primary, NamingStrategy, Constructor, EntityRepository, EntityProperty,
-  PopulateOptions, EntityMetadata, IDatabaseDriver , EntityManager,
+  PopulateOptions, EntityMetadata, IDatabaseDriver, EntityManager, Configuration,
 } from '@mikro-orm/core';
 import { Platform, MongoNamingStrategy, Utils, ReferenceType, MetadataError } from '@mikro-orm/core';
 import { MongoExceptionConverter } from './MongoExceptionConverter';
@@ -11,6 +11,11 @@ import { MongoSchemaGenerator } from './MongoSchemaGenerator';
 export class MongoPlatform extends Platform {
 
   protected readonly exceptionConverter = new MongoExceptionConverter();
+
+  setConfig(config: Configuration) {
+    config.set('autoJoinOneToOneOwner', false);
+    super.setConfig(config);
+  }
 
   getNamingStrategy(): { new(): NamingStrategy} {
     return MongoNamingStrategy;
