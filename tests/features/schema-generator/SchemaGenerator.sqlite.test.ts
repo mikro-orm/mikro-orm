@@ -4,37 +4,35 @@ describe('SchemaGenerator [sqlite]', () => {
 
   test('generate schema from metadata [sqlite]', async () => {
     const orm = await initORMSqlite();
-    const generator = orm.schema;
-    const dump = await generator.generate();
+    const dump = await orm.schema.generate();
     expect(dump).toMatchSnapshot('sqlite-schema-dump');
 
-    const dropDump = await generator.getDropSchemaSQL({ wrap: false, dropMigrationsTable: true });
+    const dropDump = await orm.schema.getDropSchemaSQL({ wrap: false, dropMigrationsTable: true });
     expect(dropDump).toMatchSnapshot('sqlite-drop-schema-dump-1');
-    await generator.execute(dropDump, { wrap: true });
+    await orm.schema.execute(dropDump, { wrap: true });
 
-    const dropDump2 = await generator.getDropSchemaSQL();
+    const dropDump2 = await orm.schema.getDropSchemaSQL();
     expect(dropDump2).toMatchSnapshot('sqlite-drop-schema-dump-2');
-    await generator.execute(dropDump, { wrap: true });
+    await orm.schema.execute(dropDump, { wrap: true });
 
-    const createDump = await generator.getCreateSchemaSQL();
+    const createDump = await orm.schema.getCreateSchemaSQL();
     expect(createDump).toMatchSnapshot('sqlite-create-schema-dump');
-    await generator.execute(createDump, { wrap: true });
+    await orm.schema.execute(createDump, { wrap: true });
 
-    const updateDump = await generator.getUpdateSchemaSQL();
+    const updateDump = await orm.schema.getUpdateSchemaSQL();
     expect(updateDump).toMatchSnapshot('sqlite-update-schema-dump');
-    await generator.execute(updateDump, { wrap: true });
+    await orm.schema.execute(updateDump, { wrap: true });
 
     await orm.close(true);
   });
 
   test('update empty schema from metadata [sqlite]', async () => {
     const orm = await initORMSqlite();
-    const generator = orm.schema;
-    await generator.dropSchema();
+    await orm.schema.dropSchema();
 
-    const updateDump = await generator.getUpdateSchemaSQL();
+    const updateDump = await orm.schema.getUpdateSchemaSQL();
     expect(updateDump).toMatchSnapshot('sqlite-update-empty-schema-dump');
-    await generator.execute(updateDump, { wrap: true });
+    await orm.schema.execute(updateDump, { wrap: true });
 
     await orm.close(true);
   });

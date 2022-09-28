@@ -185,6 +185,7 @@ export class MongoConnection extends Connection {
 
   async aggregate<T extends object = any>(collection: string, pipeline: any[], ctx?: Transaction<ClientSession>): Promise<T[]> {
     collection = this.getCollectionName(collection);
+    /* istanbul ignore next */
     const options: Dictionary = ctx ? { session: ctx } : {};
     const query = `db.getCollection('${collection}').aggregate(${this.logObject(pipeline)}, ${this.logObject(options)}).toArray();`;
     const now = Date.now();

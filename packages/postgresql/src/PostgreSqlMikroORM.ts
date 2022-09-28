@@ -13,6 +13,7 @@ export class PostgreSqlMikroORM extends MikroORM<PostgreSqlDriver> {
 
 export type PostgreSqlOptions = Options<PostgreSqlDriver>;
 
+/* istanbul ignore next */
 export function definePostgreSqlConfig(options: PostgreSqlOptions) {
   return defineConfig({ driver: PostgreSqlDriver, ...options });
 }

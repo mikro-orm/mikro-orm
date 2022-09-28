@@ -13,6 +13,7 @@ export class MariaDbMikroORM extends MikroORM<MariaDbDriver> {
 
 export type MariaDbOptions = Options<MariaDbDriver>;
 
+/* istanbul ignore next */
 export function defineMariaDbConfig(options: MariaDbOptions) {
   return defineConfig({ driver: MariaDbDriver, ...options });
 }

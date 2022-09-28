@@ -491,6 +491,7 @@ export interface EntityMetadata<T = any> {
 }
 
 export interface ISchemaGenerator {
+  /** @deprecated use `dropSchema` and `createSchema` commands respectively */
   generate(): Promise<string>;
   createSchema(options?: { wrap?: boolean; schema?: string }): Promise<void>;
   ensureDatabase(): Promise<boolean>;

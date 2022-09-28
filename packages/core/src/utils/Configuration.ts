@@ -42,7 +42,7 @@ import type { Type } from '../types/Type';
 
 export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
-  static readonly DEFAULTS = {
+  static readonly DEFAULTS: MikroORMOptions = {
     pool: {},
     entities: [],
     entitiesTs: [],
@@ -124,6 +124,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       fileName: (className: string) => className,
     },
     preferReadReplicas: true,
+    /* istanbul ignore next */
     dynamicImportProvider: (id: string) => import(id),
   };
 
@@ -491,6 +492,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   namingStrategy?: { new(): NamingStrategy };
   implicitTransactions?: boolean;
   connect: boolean;
+  verbose: boolean;
   autoJoinOneToOneOwner: boolean;
   propagateToOneOwner: boolean;
   populateAfterFlush: boolean;

@@ -51,11 +51,8 @@ import type { Alias } from './Alias';
 export class QueryBuilder<T extends object = AnyEntity> {
 
   get mainAlias(): Alias {
-    if (!this._mainAlias) {
-      this.throwNoFromClauseError();
-    }
-
-    return this._mainAlias;
+    this.ensureFromClause();
+    return this._mainAlias!;
   }
 
   get alias(): string {
@@ -63,11 +60,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
   }
 
   get helper(): QueryBuilderHelper {
-    if (!this._helper) {
-      this.throwNoFromClauseError();
-    }
-
-    return this._helper;
+    this.ensureFromClause();
+    return this._helper!;
   }
 
   /** @internal */
@@ -1085,8 +1079,11 @@ export class QueryBuilder<T extends object = AnyEntity> {
     return new QueryBuilderHelper(this.mainAlias.entityName, this.mainAlias.aliasName, this._aliases, this.subQueries, this.knex, this.driver);
   }
 
-  private throwNoFromClauseError(): never {
-    throw new Error(`Cannot proceed to build a query because the main alias is not set.`);
+  private ensureFromClause(): void {
+    /* istanbul ignore next */
+    if (!this._mainAlias) {
+      throw new Error(`Cannot proceed to build a query because the main alias is not set.`);
+    }
   }
 
 }

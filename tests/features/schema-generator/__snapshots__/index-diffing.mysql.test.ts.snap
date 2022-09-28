@@ -34,10 +34,8 @@ alter table \`book\` rename index \`book_author5_id_index\` to \`auth_idx5\`;
 `;
 
 exports[`indexes on FKs in postgres (GH 1518) schema generator respect indexes on FKs on column update 4`] = `
-"alter table \`book\` drop index \`lol41\`;
-alter table \`book\` drop index \`lol31\`;
+"alter table \`book\` add index \`lol32\`(\`author3_id\`);
 alter table \`book\` add index \`lol42\`(\`author3_id\`);
-alter table \`book\` add index \`lol32\`(\`author3_id\`);
-
-"
+alter table \`book\` drop index \`lol31\`;
+alter table \`book\` drop index \`lol41\`;"
 `;

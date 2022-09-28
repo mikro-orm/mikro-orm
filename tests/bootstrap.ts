@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import type { Options } from '@mikro-orm/core';
-import { JavaScriptMetadataProvider, ReflectMetadataProvider, LoadStrategy, MikroORM, Utils } from '@mikro-orm/core';
+import { JavaScriptMetadataProvider, LoadStrategy, MikroORM, ReflectMetadataProvider, Utils } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { SqlEntityRepository } from '@mikro-orm/knex';
 import { SqliteDriver } from '@mikro-orm/sqlite';
@@ -95,17 +95,14 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
   }, additionalOptions));
 
-  const schemaGenerator = orm.schema;
-  await schemaGenerator.ensureDatabase();
-  await schemaGenerator.dropSchema();
+  await orm.schema.ensureDatabase();
   const connection = orm.em.getConnection();
   await connection.loadFile(__dirname + '/mysql-schema.sql');
 
   if (!simple) {
     orm.config.set('dbName', 'mikro_orm_test_schema_2');
-    await schemaGenerator.ensureDatabase();
+    await orm.schema.ensureDatabase();
     await orm.reconnect();
-    await schemaGenerator.dropSchema();
     await connection.loadFile(__dirname + '/mysql-schema.sql');
     await orm.close(true);
     orm.config.set('dbName', 'mikro_orm_test');
@@ -136,8 +133,7 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, e
     loadStrategy,
   });
 
-  const schemaGenerator = orm.schema;
-  await schemaGenerator.ensureDatabase();
+  await orm.schema.ensureDatabase();
   const connection = orm.em.getConnection();
   await connection.loadFile(__dirname + '/postgre-schema.sql');
   Author2Subscriber.log.length = 0;
@@ -181,9 +177,7 @@ export async function initORMSqlite2(type: 'sqlite' | 'better-sqlite' = 'sqlite'
     cache: { pretty: true },
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
   });
-  const schemaGenerator = orm.schema;
-  await schemaGenerator.dropSchema();
-  await schemaGenerator.createSchema();
+  await orm.schema.refreshDatabase();
 
   return orm;
 }

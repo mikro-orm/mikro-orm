@@ -13,6 +13,7 @@ export class MySqlMikroORM extends MikroORM<MySqlDriver> {
 
 export type MySqlOptions = Options<MySqlDriver>;
 
+/* istanbul ignore next */
 export function defineMySqlConfig(options: MySqlOptions) {
   return defineConfig({ driver: MySqlDriver, ...options });
 }

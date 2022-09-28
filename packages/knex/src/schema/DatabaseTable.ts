@@ -39,7 +39,7 @@ export class DatabaseTable {
     return this.checks;
   }
 
-  init(cols: Column[], indexes: Index[], checks: Check[], pks: string[], fks: Dictionary<ForeignKey>, enums: Dictionary<string[]>): void {
+  init(cols: Column[], indexes: Index[] = [], checks: Check[] = [], pks: string[], fks: Dictionary<ForeignKey> = {}, enums: Dictionary<string[]> = {}): void {
     this.indexes = indexes;
     this.checks = checks;
     this.foreignKeys = fks;
