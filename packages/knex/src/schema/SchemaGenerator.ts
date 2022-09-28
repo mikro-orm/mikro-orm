@@ -1,6 +1,6 @@
 ﻿import type { Knex } from 'knex';
 import type { Dictionary, EntityMetadata } from '@mikro-orm/core';
-import { AbstractSchemaGenerator } from '@mikro-orm/core';
+import { AbstractSchemaGenerator, Utils } from '@mikro-orm/core';
 import type { Check, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
 import { DatabaseSchema } from './DatabaseSchema';
 import type { DatabaseTable } from './DatabaseTable';
@@ -16,6 +16,7 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
   private readonly knex = this.connection.getKnex();
   private readonly options = this.config.get('schemaGenerator');
 
+  /** @deprecated use `dropSchema` and `createSchema` commands respectively */
   async generate(): Promise<string> {
     const [dropSchema, createSchema] = await Promise.all([
       this.getDropSchemaSQL({ wrap: false }),
@@ -442,9 +443,16 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
     options.wrap ??= false;
     const lines = this.wrapSchema(sql, options).split('\n').filter(i => i.trim());
 
-    for (const line of lines) {
-      await this.driver.execute(line);
+    if (lines.length === 0) {
+      return;
     }
+
+    if (this.platform.supportsMultipleStatements()) {
+      const query = lines.join('\n');
+      return void await this.driver.execute(query);
+    }
+
+    await Utils.runSerial(lines, line => this.driver.execute(line));
   }
 
   private wrapSchema(sql: string, options: { wrap?: boolean } = {}): string {

@@ -23,6 +23,7 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
     this.connection = this.driver.getConnection() as ReturnType<D['getConnection']>;
   }
 
+  /** @deprecated use `dropSchema` and `createSchema` commands respectively */
   async generate(): Promise<string> {
     this.notImplemented();
   }

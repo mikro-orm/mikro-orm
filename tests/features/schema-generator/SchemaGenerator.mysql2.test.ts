@@ -16,11 +16,11 @@ describe('SchemaGenerator (no FKs)', () => {
       baseDir: BASE_DIR,
       type: 'mysql',
       schemaGenerator: { createForeignKeyConstraints: false, disableForeignKeys: false },
+      multipleStatements: true,
     });
 
-    const generator = orm.schema;
-    await generator.ensureDatabase();
-    await generator.dropDatabase(dbName);
+    await orm.schema.ensureDatabase();
+    await orm.schema.dropDatabase(dbName);
     await orm.close(true);
   });
 
@@ -34,11 +34,11 @@ describe('SchemaGenerator (no FKs)', () => {
       type: 'mysql',
       migrations: { path: BASE_DIR + '/../temp/migrations' },
       schemaGenerator: { createForeignKeyConstraints: false, disableForeignKeys: false },
+      multipleStatements: true,
     });
 
-    const generator = orm.schema;
-    await generator.createSchema();
-    await generator.dropSchema({ wrap: false, dropMigrationsTable: false, dropDb: true });
+    await orm.schema.createSchema();
+    await orm.schema.dropSchema({ wrap: false, dropMigrationsTable: false, dropDb: true });
     await orm.close(true);
 
     await orm.isConnected();
@@ -46,18 +46,17 @@ describe('SchemaGenerator (no FKs)', () => {
 
   test('generate schema from metadata [mysql]', async () => {
     const orm = await initORMMySql('mysql', { schemaGenerator: { createForeignKeyConstraints: false, disableForeignKeys: false } }, true);
-    const generator = orm.schema;
-    await generator.ensureDatabase();
-    const dump = await generator.generate();
+    await orm.schema.ensureDatabase();
+    const dump = await orm.schema.generate();
     expect(dump).toMatchSnapshot('mysql-schema-dump');
 
-    const dropDump = await generator.getDropSchemaSQL();
+    const dropDump = await orm.schema.getDropSchemaSQL();
     expect(dropDump).toMatchSnapshot('mysql-drop-schema-dump');
 
-    const createDump = await generator.getCreateSchemaSQL();
+    const createDump = await orm.schema.getCreateSchemaSQL();
     expect(createDump).toMatchSnapshot('mysql-create-schema-dump');
 
-    const updateDump = await generator.getUpdateSchemaSQL();
+    const updateDump = await orm.schema.getUpdateSchemaSQL();
     expect(updateDump).toMatchSnapshot('mysql-update-schema-dump');
 
     await orm.close(true);
@@ -66,7 +65,6 @@ describe('SchemaGenerator (no FKs)', () => {
   test('update schema [mysql]', async () => {
     const orm = await initORMMySql('mysql', { schemaGenerator: { createForeignKeyConstraints: false, disableForeignKeys: false } }, true);
     const meta = orm.getMetadata();
-    const generator = orm.schema;
 
     const newTableMeta = EntitySchema.fromMetadata({
       properties: {
@@ -113,9 +111,9 @@ describe('SchemaGenerator (no FKs)', () => {
       primaryKey: 'id',
     } as any).init().meta;
     meta.set('NewTable', newTableMeta);
-    let diff = await generator.getUpdateSchemaSQL();
+    let diff = await orm.schema.getUpdateSchemaSQL();
     expect(diff).toMatchSnapshot('mysql-update-schema-create-table');
-    await generator.execute(diff);
+    await orm.schema.execute(diff);
 
     // add scalar property index
     const bookMeta = meta.get('Book2');
@@ -126,21 +124,21 @@ describe('SchemaGenerator (no FKs)', () => {
       type: 'fulltext',
     });
 
-    diff = await generator.getUpdateSchemaSQL();
+    diff = await orm.schema.getUpdateSchemaSQL();
     expect(diff).toMatchSnapshot('mysql-update-schema-add-index');
-    await generator.execute(diff);
+    await orm.schema.execute(diff);
     bookMeta.properties.title.unique = true;
-    diff = await generator.getUpdateSchemaSQL();
+    diff = await orm.schema.getUpdateSchemaSQL();
     expect(diff).toMatchSnapshot('mysql-update-schema-add-unique');
-    await generator.execute(diff);
+    await orm.schema.execute(diff);
     bookMeta.properties.title.index = false;
-    diff = await generator.getUpdateSchemaSQL();
+    diff = await orm.schema.getUpdateSchemaSQL();
     expect(diff).toMatchSnapshot('mysql-update-schema-drop-index');
-    await generator.execute(diff);
+    await orm.schema.execute(diff);
     bookMeta.properties.title.unique = false;
-    diff = await generator.getUpdateSchemaSQL();
+    diff = await orm.schema.getUpdateSchemaSQL();
     expect(diff).toMatchSnapshot('mysql-update-schema-drop-unique');
-    await generator.execute(diff);
+    await orm.schema.execute(diff);
 
     const authorMeta = meta.get('Author2');
     const favouriteBookProp = Utils.copy(authorMeta.properties.favouriteBook);
@@ -152,35 +150,35 @@ describe('SchemaGenerator (no FKs)', () => {
     authorMeta.properties.age.defaultRaw = '42';
     authorMeta.properties.favouriteAuthor.type = 'FooBar2';
     authorMeta.properties.favouriteAuthor.referencedTableName = 'foo_bar2';
-    diff = await generator.getUpdateSchemaSQL();
+    diff = await orm.schema.getUpdateSchemaSQL();
     expect(diff).toMatchSnapshot('mysql-update-schema-alter-column');
-    await generator.execute(diff);
+    await orm.schema.execute(diff);
 
     const idProp = newTableMeta.properties.id;
     const updatedAtProp = newTableMeta.properties.updatedAt;
     newTableMeta.removeProperty('id');
     newTableMeta.removeProperty('updatedAt');
     authorMeta.removeProperty('favouriteBook');
-    diff = await generator.getUpdateSchemaSQL();
+    diff = await orm.schema.getUpdateSchemaSQL();
     expect(diff).toMatchSnapshot('mysql-update-schema-drop-column');
-    await generator.execute(diff);
+    await orm.schema.execute(diff);
 
     newTableMeta.addProperty(idProp);
     newTableMeta.addProperty(updatedAtProp);
     authorMeta.addProperty(favouriteBookProp);
-    diff = await generator.getUpdateSchemaSQL();
+    diff = await orm.schema.getUpdateSchemaSQL();
     expect(diff).toMatchSnapshot('mysql-update-schema-add-column');
-    await generator.execute(diff);
+    await orm.schema.execute(diff);
 
     meta.reset('Author2');
     meta.reset('NewTable');
-    diff = await generator.getUpdateSchemaSQL({ wrap: false, safe: true });
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false, safe: true });
     expect(diff).toMatchSnapshot('mysql-update-schema-drop-table-safe');
-    diff = await generator.getUpdateSchemaSQL({ wrap: false, safe: false, dropTables: false });
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false, safe: false, dropTables: false });
     expect(diff).toMatchSnapshot('mysql-update-schema-drop-table-disabled');
-    diff = await generator.getUpdateSchemaSQL();
+    diff = await orm.schema.getUpdateSchemaSQL();
     expect(diff).toMatchSnapshot('mysql-update-schema-drop-table');
-    await generator.execute(diff);
+    await orm.schema.execute(diff);
 
     // clean up old references manually (they would not be valid if we did a full meta sync)
     meta.get('author2_following').props.forEach(prop => prop.reference = ReferenceType.SCALAR);
@@ -194,9 +192,9 @@ describe('SchemaGenerator (no FKs)', () => {
     const fooBazMeta = meta.get('FooBaz2');
     fooBarMeta.removeProperty('baz');
     fooBazMeta.removeProperty('bar');
-    diff = await generator.getUpdateSchemaSQL();
+    diff = await orm.schema.getUpdateSchemaSQL();
     expect(diff).toMatchSnapshot('mysql-update-schema-drop-1:1');
-    await generator.execute(diff);
+    await orm.schema.execute(diff);
 
     await orm.close(true);
   });
@@ -204,7 +202,6 @@ describe('SchemaGenerator (no FKs)', () => {
   test('rename column [mysql]', async () => {
     const orm = await initORMMySql('mysql', { schemaGenerator: { createForeignKeyConstraints: false, disableForeignKeys: false } }, true);
     const meta = orm.getMetadata();
-    const generator = orm.schema;
 
     const authorMeta = meta.get('Author2');
     const ageProp = authorMeta.properties.age;
@@ -220,8 +217,8 @@ describe('SchemaGenerator (no FKs)', () => {
     favouriteAuthorProp.joinColumns = ['favourite_writer_id'];
     authorMeta.removeProperty('favouriteAuthor');
     authorMeta.addProperty(favouriteAuthorProp);
-    await expect(generator.getUpdateSchemaSQL()).resolves.toMatchSnapshot('mysql-update-schema-rename-column');
-    await generator.updateSchema();
+    await expect(orm.schema.getUpdateSchemaSQL()).resolves.toMatchSnapshot('mysql-update-schema-rename-column');
+    await orm.schema.updateSchema();
 
     await orm.close(true);
   });
@@ -229,7 +226,6 @@ describe('SchemaGenerator (no FKs)', () => {
   test('update schema enums [mysql]', async () => {
     const orm = await initORMMySql('mysql', { schemaGenerator: { createForeignKeyConstraints: false, disableForeignKeys: false } }, true);
     const meta = orm.getMetadata();
-    const generator = orm.schema;
 
     const newTableMeta = new EntitySchema({
       properties: {
@@ -251,26 +247,26 @@ describe('SchemaGenerator (no FKs)', () => {
       tableName: 'new_table',
     }).init().meta;
     meta.set('NewTable', newTableMeta);
-    let diff = await generator.getUpdateSchemaSQL();
+    let diff = await orm.schema.getUpdateSchemaSQL();
     expect(diff).toMatchSnapshot('mysql-update-schema-enums-1');
-    await generator.execute(diff);
+    await orm.schema.execute(diff);
 
     newTableMeta.properties.enumTest.items = ['a', 'b'];
     newTableMeta.properties.enumTest.columnTypes[0] = Type.getType(EnumType).getColumnType(newTableMeta.properties.enumTest, orm.em.getPlatform());
     newTableMeta.properties.enumTest.enum = true;
     newTableMeta.properties.enumTest.type = 'object';
-    diff = await generator.getUpdateSchemaSQL();
+    diff = await orm.schema.getUpdateSchemaSQL();
     expect(diff).toMatchSnapshot('mysql-update-schema-enums-2');
-    await generator.execute(diff);
+    await orm.schema.execute(diff);
 
     newTableMeta.properties.enumTest.items = ['a', 'b', 'c'];
     newTableMeta.properties.enumTest.columnTypes[0] = Type.getType(EnumType).getColumnType(newTableMeta.properties.enumTest, orm.em.getPlatform());
-    diff = await generator.getUpdateSchemaSQL();
+    diff = await orm.schema.getUpdateSchemaSQL();
     expect(diff).toMatchSnapshot('mysql-update-schema-enums-3');
-    await generator.execute(diff);
+    await orm.schema.execute(diff);
 
     // check that we do not produce anything as the schema should be up to date
-    diff = await generator.getUpdateSchemaSQL();
+    diff = await orm.schema.getUpdateSchemaSQL();
     expect(diff).toBe('');
 
     // change the type from enum to int
@@ -278,9 +274,9 @@ describe('SchemaGenerator (no FKs)', () => {
     newTableMeta.properties.enumTest.columnTypes[0] = 'int';
     newTableMeta.properties.enumTest.enum = false;
     newTableMeta.properties.enumTest.type = 'number';
-    diff = await generator.getUpdateSchemaSQL();
+    diff = await orm.schema.getUpdateSchemaSQL();
     expect(diff).toMatchSnapshot('mysql-update-schema-enums-4');
-    await generator.execute(diff);
+    await orm.schema.execute(diff);
 
     await orm.close(true);
   });
@@ -294,8 +290,7 @@ describe('SchemaGenerator (no FKs)', () => {
     dropSchema.mockImplementation(() => Promise.resolve());
     createSchema.mockImplementation(() => Promise.resolve());
 
-    const generator = orm.schema;
-    await generator.refreshDatabase();
+    await orm.schema.refreshDatabase();
 
     expect(dropSchema).toBeCalledTimes(1);
     expect(createSchema).toBeCalledTimes(1);

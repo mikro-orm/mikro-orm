@@ -263,6 +263,10 @@ export abstract class Platform {
     }
   }
 
+  supportsMultipleStatements(): boolean {
+    return this.config.get('multipleStatements');
+  }
+
   getArrayDeclarationSQL(): string {
     return 'text';
   }

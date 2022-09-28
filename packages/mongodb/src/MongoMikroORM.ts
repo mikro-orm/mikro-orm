@@ -13,6 +13,7 @@ export class MongoMikroORM extends MikroORM<MongoDriver> {
 
 export type MongoOptions = Options<MongoDriver>;
 
+/* istanbul ignore next */
 export function defineMongoConfig(options: MongoOptions) {
   return defineConfig({ driver: MongoDriver, ...options });
 }

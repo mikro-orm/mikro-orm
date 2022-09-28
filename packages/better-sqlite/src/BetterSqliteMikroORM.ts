@@ -13,6 +13,7 @@ export class BetterSqliteMikroORM extends MikroORM<BetterSqliteDriver> {
 
 export type BetterSqliteOptions = Options<BetterSqliteDriver>;
 
+/* istanbul ignore next */
 export function defineBetterSqliteConfig(options: BetterSqliteOptions) {
   return defineConfig({ driver: BetterSqliteDriver, ...options });
 }

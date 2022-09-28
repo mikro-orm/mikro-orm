@@ -125,6 +125,10 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return `smallint`;
   }
 
+  supportsMultipleStatements(): boolean {
+    return true;
+  }
+
   marshallArray(values: string[]): string {
     const quote = (v: string) => v === '' || v.match(/["{}]/) ? JSON.stringify(v) : v;
     return `{${values.map(v => quote('' + v)).join(',')}}`;

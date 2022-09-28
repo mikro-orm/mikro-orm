@@ -119,6 +119,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       return this.wrapVirtualExpressionInSubquery(meta, res.getFormattedQuery(), where, options);
     }
 
+    /* istanbul ignore next */
     return res as EntityData<T>[];
   }
 
@@ -142,6 +143,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       return this.wrapVirtualExpressionInSubquery(meta, res.getFormattedQuery(), where, options as Dictionary, QueryType.COUNT);
     }
 
+    /* istanbul ignore next */
     return res as any;
   }
 

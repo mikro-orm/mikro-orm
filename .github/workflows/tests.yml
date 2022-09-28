@@ -156,7 +156,7 @@ jobs:
 
       - name: Codecov
         if: steps.changed_packages.outputs.changed_packages != '0'
-        uses: codecov/codecov-action@master
+        uses: codecov/codecov-action@v3
 
       - name: Codeclimate
         if: steps.changed_packages.outputs.changed_packages != '0'

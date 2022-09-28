@@ -176,7 +176,7 @@ describe('indexes on FKs in postgres (GH 1518)', () => {
     orm.getMetadata().reset('Book3');
     await orm.discoverEntity(Book4);
     const diff4 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-    expect(diff4).toMatchSnapshot();
+    expect(diff4.split('\n').filter(i => i).sort().join('\n')).toMatchSnapshot();
     await orm.schema.execute(diff4);
   });
 

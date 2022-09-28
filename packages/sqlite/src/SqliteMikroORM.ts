@@ -13,6 +13,7 @@ export class SqliteMikroORM extends MikroORM<SqliteDriver> {
 
 export type SqliteOptions = Options<SqliteDriver>;
 
+/* istanbul ignore next */
 export function defineSqliteConfig(options: SqliteOptions) {
   return defineConfig({ driver: SqliteDriver, ...options });
 }

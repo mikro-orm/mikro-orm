@@ -250,8 +250,8 @@ export class ConfigurationLoader {
       return;
     }
 
+    /* istanbul ignore next */
     options.dynamicImportProvider ??= id => {
-      /* istanbul ignore next */
       if (platform() === 'win32') {
         try {
           id = fileURLToPath(id);
