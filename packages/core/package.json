@@ -61,7 +61,7 @@
   "dependencies": {
     "acorn-loose": "8.3.0",
     "acorn-walk": "8.2.0",
-    "dotenv": "16.0.2",
+    "dotenv": "16.0.3",
     "fs-extra": "10.1.0",
     "globby": "11.0.4",
     "mikro-orm": "~5.4.2",
