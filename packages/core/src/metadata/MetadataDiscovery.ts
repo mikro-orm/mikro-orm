@@ -75,7 +75,7 @@ export class MetadataDiscovery {
 
     for (const meta of filtered) {
       for (const prop of Object.values(meta.properties)) {
-        await this.initColumnType(prop, meta.path);
+        await this.initColumnType(meta, prop, meta.path);
       }
     }
 
@@ -452,7 +452,7 @@ export class MetadataDiscovery {
       this.initDefaultValue(meta, prop);
       this.initVersionProperty(meta, prop);
       this.initCustomType(meta, prop);
-      await this.initColumnType(prop, meta.path);
+      await this.initColumnType(meta, prop, meta.path);
       this.initRelation(prop);
     }
 
@@ -531,7 +531,7 @@ export class MetadataDiscovery {
     prop.pivotEntity = data.className;
 
     if (prop.fixedOrder) {
-      const primaryProp = await this.defineFixedOrderProperty(prop, targetType);
+      const primaryProp = await this.defineFixedOrderProperty(meta, prop, targetType);
       data.properties[primaryProp.name] = primaryProp;
     } else {
       data.compositePK = true;
@@ -555,7 +555,7 @@ export class MetadataDiscovery {
     return this.metadata.set(data.className, data);
   }
 
-  private async defineFixedOrderProperty(prop: EntityProperty, targetType: string): Promise<EntityProperty> {
+  private async defineFixedOrderProperty(meta: EntityMetadata, prop: EntityProperty, targetType: string): Promise<EntityProperty> {
     const pk = prop.fixedOrderColumn || this.namingStrategy.referenceColumnName();
     const primaryProp = {
       name: pk,
@@ -566,7 +566,7 @@ export class MetadataDiscovery {
       unsigned: this.platform.supportsUnsigned(),
     } as EntityProperty;
     this.initFieldName(primaryProp);
-    await this.initColumnType(primaryProp);
+    await this.initColumnType(meta, primaryProp);
     prop.fixedOrderColumn = pk;
 
     if (prop.inversedBy) {
@@ -626,7 +626,7 @@ export class MetadataDiscovery {
       });
     }
 
-    await this.initColumnType(ret);
+    await this.initColumnType(meta, ret);
 
     return ret;
   }
@@ -1001,7 +1001,7 @@ export class MetadataDiscovery {
     prop.targetMeta = meta2;
   }
 
-  private async initColumnType(prop: EntityProperty, path?: string): Promise<void> {
+  private async initColumnType(meta: EntityMetadata, prop: EntityProperty, path?: string): Promise<void> {
     this.initUnsigned(prop);
     this.metadata.find(prop.type)?.getPrimaryProps().map(pk => {
       prop.length ??= pk.length;
@@ -1014,7 +1014,7 @@ export class MetadataDiscovery {
     }
 
     if (prop.enum && !prop.items && prop.type && path) {
-      await this.initEnumValues(prop, path);
+      await this.initEnumValues(meta, prop, path);
     }
 
     if (prop.reference === ReferenceType.SCALAR) {
@@ -1028,12 +1028,12 @@ export class MetadataDiscovery {
       return;
     }
 
-    const meta = this.metadata.get(prop.type);
+    const targetMeta = this.metadata.get(prop.type);
     prop.columnTypes = [];
 
-    for (const pk of meta.getPrimaryProps()) {
-      this.initCustomType(meta, pk);
-      await this.initColumnType(pk);
+    for (const pk of targetMeta.getPrimaryProps()) {
+      this.initCustomType(targetMeta, pk);
+      await this.initColumnType(targetMeta, pk);
 
       const mappedType = this.getMappedType(pk);
       let columnTypes = pk.columnTypes;
@@ -1044,7 +1044,7 @@ export class MetadataDiscovery {
 
       prop.columnTypes.push(...columnTypes);
 
-      if (!meta.compositePK) {
+      if (!targetMeta.compositePK) {
         prop.customType = pk.customType;
       }
     }
@@ -1064,9 +1064,16 @@ export class MetadataDiscovery {
     return prop.customType ?? this.platform.getMappedType(t);
   }
 
-  private async initEnumValues(prop: EntityProperty, path: string): Promise<void> {
+  private async initEnumValues(meta: EntityMetadata, prop: EntityProperty, path: string): Promise<void> {
     path = Utils.normalizePath(this.config.get('baseDir'), path);
-    const exports = await Utils.dynamicImport(path);
+    const exports: Dictionary = {};
+
+    try {
+      Object.assign(exports, await Utils.dynamicImport(path));
+    } catch (e) {
+      throw new Error(`Unable to discover enum values for ${meta.className}.${prop.name}, specify the type via decorator options: @Enum({ items: () => YourEnumType })`);
+    }
+
     /* istanbul ignore next */
     const target = exports[prop.type] || exports.default;
 
