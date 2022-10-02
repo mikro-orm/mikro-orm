@@ -5,22 +5,32 @@ import type {
   Dictionary,
   EntityData,
   EntityMetadata,
+  EntityName,
   EntityProperty,
+  FilterQuery,
   FlatQueryOrderMap,
-  RequiredEntityData,
-  ObjectQuery,
+  FlushMode,
   GroupOperator,
   MetadataStorage,
+  ObjectQuery,
   PopulateOptions,
   QBFilterQuery,
+  QBQueryOrderMap,
   QueryOrderMap,
   QueryResult,
-  FlushMode,
-  FilterQuery,
-  QBQueryOrderMap,
-  EntityName,
+  RequiredEntityData,
 } from '@mikro-orm/core';
-import { LoadStrategy, LockMode, PopulateHint, QueryFlag, QueryHelper, ReferenceType, Utils, ValidationError, helper } from '@mikro-orm/core';
+import {
+  helper,
+  LoadStrategy,
+  LockMode,
+  PopulateHint,
+  QueryFlag,
+  QueryHelper,
+  ReferenceType,
+  Utils,
+  ValidationError,
+} from '@mikro-orm/core';
 import { QueryType } from './enums';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
 import { QueryBuilderHelper } from './QueryBuilderHelper';
@@ -89,6 +99,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   private _onConflict?: { fields: string[]; ignore?: boolean; merge?: EntityData<T> | Field<T>[]; where?: QBFilterQuery<T> }[];
   private _limit?: number;
   private _offset?: number;
+  private _distinctOn?: string[];
   private _joinedProps = new Map<string, PopulateOptions<any>>();
   private _cache?: boolean | number | [string, number];
   private _indexHint?: string;
@@ -138,6 +149,16 @@ export class QueryBuilder<T extends object = AnyEntity> {
     }
 
     return this.select([...Utils.asArray(this._fields), ...Utils.asArray(fields)]);
+  }
+
+  distinct(): SelectQueryBuilder<T> {
+    return this.setFlag(QueryFlag.DISTINCT) as SelectQueryBuilder<T>;
+  }
+
+  /** postgres only */
+  distinctOn(fields: string | string[]): SelectQueryBuilder<T> {
+    this._distinctOn = Utils.asArray(fields);
+    return this as SelectQueryBuilder<T>;
   }
 
   insert(data: RequiredEntityData<T> | RequiredEntityData<T>[]): InsertQueryBuilder<T> {
@@ -866,7 +887,9 @@ export class QueryBuilder<T extends object = AnyEntity> {
       case QueryType.SELECT:
         qb.select(this.prepareFields(this._fields!));
 
-        if (this.flags.has(QueryFlag.DISTINCT)) {
+        if (this._distinctOn) {
+          qb.distinctOn(this._distinctOn as string[]);
+        } else if (this.flags.has(QueryFlag.DISTINCT)) {
           qb.distinct();
         }
 
