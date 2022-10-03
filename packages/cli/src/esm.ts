@@ -1,4 +1,4 @@
-#!/usr/bin/env node --loader ts-node/esm --no-warnings
+#!/usr/bin/env -S node --loader ts-node/esm --no-warnings
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('yargonaut')
