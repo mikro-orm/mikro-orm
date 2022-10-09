@@ -435,6 +435,7 @@ export type MigrationsOptions = {
   dropTables?: boolean;
   safe?: boolean;
   snapshot?: boolean;
+  snapshotName?: string;
   emit?: 'js' | 'ts';
   generator?: Constructor<IMigrationGenerator>;
   fileName?: (timestamp: string) => string;

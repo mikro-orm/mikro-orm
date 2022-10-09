@@ -35,7 +35,8 @@ export class Migrator implements IMigrator {
     const snapshotPath = this.options.emit === 'ts' && this.options.pathTs ? this.options.pathTs : this.options.path!;
     const absoluteSnapshotPath = Utils.absolutePath(snapshotPath, this.config.get('baseDir'));
     const dbName = basename(this.config.get('dbName'));
-    this.snapshotPath = Utils.normalizePath(absoluteSnapshotPath, `.snapshot-${dbName}.json`);
+    const snapshotName = this.options.snapshotName ?? `.snapshot-${dbName}`;
+    this.snapshotPath = Utils.normalizePath(absoluteSnapshotPath, `${snapshotName}.json`);
     this.createUmzug();
   }
 
