@@ -950,7 +950,7 @@ describe('EntityManagerMongo', () => {
 
     // merge cached author with his references
     orm.em.clear();
-    const cachedAuthor = orm.em.merge(Author, cache);
+    const cachedAuthor = orm.em.create(Author, cache, { managed: true });
     expect(cachedAuthor).toBe(cachedAuthor.favouriteBook?.author);
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toEqual([
       'Author-' + author.id,

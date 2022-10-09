@@ -764,7 +764,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   create<T extends object>(entityName: EntityName<T>, data: RequiredEntityData<T>, options: CreateOptions = {}): T {
     const em = this.getContext();
-    const entity = em.entityFactory.create(entityName, data, { ...options, newEntity: !options.managed });
+    const entity = em.entityFactory.create(entityName, data, {
+      ...options,
+      newEntity: !options.managed,
+      merge: options.managed,
+    });
     options.persist ??= em.config.get('persistOnCreate');
 
     if (options.persist) {
