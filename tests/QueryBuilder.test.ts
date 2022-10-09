@@ -43,6 +43,9 @@ describe('QueryBuilder', () => {
       .where({ name: 'test 123', type: PublisherType.GLOBAL })
       .orderBy({ [`(point(location_latitude, location_longitude) <@> point(${53.46}, ${9.90}))`]: 'ASC' });
     expect(qb2.getFormattedQuery()).toBe('select `e0`.* from `publisher2` as `e0` where `e0`.`name` = \'test 123\' and `e0`.`type` = \'global\' order by (point(location_latitude, location_longitude) <@> point(53.46, 9.9)) asc');
+
+    // trying to modify finalized QB will throw
+    expect(() => qb2.where('foo = 123')).toThrowError('This QueryBuilder instance is already finalized, clone it first if you want to modify it.');
   });
 
   test('select query picks read replica', async () => {

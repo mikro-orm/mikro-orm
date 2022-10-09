@@ -134,6 +134,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   }
 
   select(fields: Field<T> | Field<T>[], distinct = false): SelectQueryBuilder<T> {
+    this.ensureNotFinalized();
     this._fields = Utils.asArray(fields);
 
     if (distinct) {
@@ -144,6 +145,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
   }
 
   addSelect(fields: Field<T> | Field<T>[]): SelectQueryBuilder<T> {
+    this.ensureNotFinalized();
+
     if (this.type && this.type !== QueryType.SELECT) {
       return this as SelectQueryBuilder<T>;
     }
@@ -152,11 +155,13 @@ export class QueryBuilder<T extends object = AnyEntity> {
   }
 
   distinct(): SelectQueryBuilder<T> {
+    this.ensureNotFinalized();
     return this.setFlag(QueryFlag.DISTINCT) as SelectQueryBuilder<T>;
   }
 
   /** postgres only */
   distinctOn(fields: string | string[]): SelectQueryBuilder<T> {
+    this.ensureNotFinalized();
     this._distinctOn = Utils.asArray(fields);
     return this as SelectQueryBuilder<T>;
   }
@@ -238,6 +243,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   }
 
   withSubQuery(subQuery: Knex.QueryBuilder, alias: string): this {
+    this.ensureNotFinalized();
     this.subQueries[alias] = subQuery.toString();
     return this;
   }
@@ -245,6 +251,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
   where(cond: QBFilterQuery<T>, operator?: keyof typeof GroupOperator): this;
   where(cond: string, params?: any[], operator?: keyof typeof GroupOperator): this;
   where(cond: QBFilterQuery<T> | string, params?: keyof typeof GroupOperator | any[], operator?: keyof typeof GroupOperator): this {
+    this.ensureNotFinalized();
+
     if (Utils.isString(cond)) {
       cond = { [`(${cond})`]: Utils.asArray(params) };
       operator = operator || '$and';
@@ -300,6 +308,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   }
 
   orderBy(orderBy: QBQueryOrderMap<T> | QBQueryOrderMap<T>[]): this {
+    this.ensureNotFinalized();
     this._orderBy = [];
     Utils.asArray(orderBy).forEach(o => {
       const processed = QueryHelper.processWhere({
@@ -318,11 +327,14 @@ export class QueryBuilder<T extends object = AnyEntity> {
   }
 
   groupBy(fields: (string | keyof T) | readonly (string | keyof T)[]): this {
+    this.ensureNotFinalized();
     this._groupBy = Utils.asArray(fields);
     return this;
   }
 
   having(cond: QBFilterQuery | string = {}, params?: any[]): this {
+    this.ensureNotFinalized();
+
     if (Utils.isString(cond)) {
       cond = { [`(${cond})`]: Utils.asArray(params) };
     }
@@ -332,6 +344,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   }
 
   onConflict(fields: Field<T> | Field<T>[] = []): this {
+    this.ensureNotFinalized();
     this._onConflict = this._onConflict || [];
     this._onConflict.push({ fields: Utils.asArray(fields).map(f => f.toString()) });
     return this;
@@ -359,6 +372,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
    * @internal
    */
   populate(populate: PopulateOptions<T>[], populateWhere?: ObjectQuery<T> | PopulateHint): this {
+    this.ensureNotFinalized();
     this._populate = populate;
     this._populateWhere = populateWhere;
 
@@ -380,6 +394,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   }
 
   limit(limit?: number, offset = 0): this {
+    this.ensureNotFinalized();
     this._limit = limit;
 
     if (offset) {
@@ -390,17 +405,21 @@ export class QueryBuilder<T extends object = AnyEntity> {
   }
 
   offset(offset?: number): this {
+    this.ensureNotFinalized();
     this._offset = offset;
     return this;
   }
 
   withSchema(schema?: string): this {
+    this.ensureNotFinalized();
     this._schema = schema;
 
     return this;
   }
 
   setLockMode(mode?: LockMode, tables?: string[]): this {
+    this.ensureNotFinalized();
+
     if (mode != null && mode !== LockMode.OPTIMISTIC && !this.context) {
       throw ValidationError.transactionRequired();
     }
@@ -412,21 +431,25 @@ export class QueryBuilder<T extends object = AnyEntity> {
   }
 
   setFlushMode(flushMode?: FlushMode): this {
+    this.ensureNotFinalized();
     this.flushMode = flushMode;
     return this;
   }
 
   setFlag(flag: QueryFlag): this {
+    this.ensureNotFinalized();
     this.flags.add(flag);
     return this;
   }
 
   unsetFlag(flag: QueryFlag): this {
+    this.ensureNotFinalized();
     this.flags.delete(flag);
     return this;
   }
 
   cache(config: boolean | number | [string, number] = true): this {
+    this.ensureNotFinalized();
     this._cache = config;
     return this;
   }
@@ -435,6 +458,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
    * Adds index hint to the FROM clause.
    */
   indexHint(sql: string): this {
+    this.ensureNotFinalized();
     this._indexHint = sql;
     return this;
   }
@@ -446,6 +470,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
   from<T extends AnyEntity<T> = AnyEntity>(target: QueryBuilder<T>, aliasName?: string): QueryBuilder<T>;
   from<T extends AnyEntity<T> = AnyEntity>(target: EntityName<T>): QueryBuilder<T>;
   from<T extends AnyEntity<T> = AnyEntity>(target: EntityName<T> | QueryBuilder<T>, aliasName?: string): QueryBuilder<T> {
+    this.ensureNotFinalized();
+
     if (target instanceof QueryBuilder) {
       this.fromSubQuery(target, aliasName);
     } else  {
@@ -721,6 +747,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   }
 
   private joinReference(field: string, alias: string, cond: Dictionary, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', path?: string): EntityProperty {
+    this.ensureNotFinalized();
     const [fromAlias, fromField] = this.helper.splitField(field);
     const entityName = this._aliases[fromAlias]?.entityName;
     const meta = this.metadata.get(entityName);
@@ -843,6 +870,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   }
 
   private init(type: QueryType, data?: any, cond?: any): this {
+    this.ensureNotFinalized();
     this.type = type;
 
     if ([QueryType.UPDATE, QueryType.DELETE].includes(type) && Utils.hasObjectKeys(this._cond)) {
@@ -973,7 +1001,6 @@ export class QueryBuilder<T extends object = AnyEntity> {
     QueryHelper.processObjectParams(this._data);
     QueryHelper.processObjectParams(this._cond);
     QueryHelper.processObjectParams(this._having);
-    this.finalized = true;
 
     // automatically enable paginate flag when we detect to-many joins
     if (!this.flags.has(QueryFlag.DISABLE_PAGINATE) && this.hasToManyJoins()) {
@@ -987,6 +1014,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
     if (meta && (this.flags.has(QueryFlag.UPDATE_SUB_QUERY) || this.flags.has(QueryFlag.DELETE_SUB_QUERY))) {
       this.wrapModifySubQuery(meta);
     }
+
+    this.finalized = true;
   }
 
   private hasToManyJoins(): boolean {
@@ -1106,6 +1135,12 @@ export class QueryBuilder<T extends object = AnyEntity> {
     /* istanbul ignore next */
     if (!this._mainAlias) {
       throw new Error(`Cannot proceed to build a query because the main alias is not set.`);
+    }
+  }
+
+  private ensureNotFinalized(): void {
+    if (this.finalized) {
+      throw new Error('This QueryBuilder instance is already finalized, clone it first if you want to modify it.');
     }
   }
 

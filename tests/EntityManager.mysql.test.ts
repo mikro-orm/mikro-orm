@@ -861,7 +861,7 @@ describe('EntityManagerMySql', () => {
     const qb2 = orm.em.createQueryBuilder(Book2);
     const res2 = await qb2.select('*').where({ title: 'not exists' }).getSingleResult();
     expect(res2).toBeNull();
-    const res3 = await qb1.select('*').getResult();
+    const res3 = await qb1.clone().select('*').getResult();
     expect(res3).toHaveLength(1);
   });
 
