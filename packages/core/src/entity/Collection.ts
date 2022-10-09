@@ -117,14 +117,15 @@ export class Collection<T extends object, O extends object = object> extends Arr
     return super.toJSON();
   }
 
-  add(...items: (T | Reference<T & AnyEntity>)[]): void {
-    const unwrapped = items.map(i => Reference.unwrapReference(i as AnyEntity)) as T[];
-    unwrapped.forEach(item => this.validateItemType(item));
+  add(entity: T | Reference<T> | T[], ...entities: (T | Reference<T>)[]): void {
+    entities = Utils.asArray(entity).concat(entities);
+    const unwrapped = entities.map(i => Reference.unwrapReference(i)) as T[];
+    unwrapped.forEach(entity => this.validateItemType(entity));
     this.modify('add', unwrapped);
     this.cancelOrphanRemoval(unwrapped);
   }
 
-  set(items: (T | Reference<T & AnyEntity>)[]): void {
+  set(items: (T | Reference<T>)[]): void {
     if (!this.initialized) {
       this.initialized = true;
       this.snapshot = undefined;
@@ -145,10 +146,10 @@ export class Collection<T extends object, O extends object = object> extends Arr
   /**
    * @inheritDoc
    */
-  remove(...items: (T | Reference<T & AnyEntity> | ((item: T) => boolean))[]): void {
-    if (items[0] instanceof Function) {
+  remove(entity: T | Reference<T> | (T | Reference<T>)[] | ((item: T) => boolean), ...entities: (T | Reference<T>)[]): void {
+    if (entity instanceof Function) {
       for (const item of this.items) {
-        if (items[0](item)) {
+        if (entity(item)) {
           this.remove(item);
         }
       }
@@ -156,7 +157,8 @@ export class Collection<T extends object, O extends object = object> extends Arr
       return;
     }
 
-    const unwrapped = items.map(i => Reference.unwrapReference(i as AnyEntity)) as T[];
+    entities = Utils.asArray(entity).concat(entities);
+    const unwrapped = entities.map(i => Reference.unwrapReference(i)) as T[];
     this.modify('remove', unwrapped);
     const em = this.getEntityManager(unwrapped, false);
 
@@ -167,7 +169,18 @@ export class Collection<T extends object, O extends object = object> extends Arr
     }
   }
 
-  contains(item: (T | Reference<T & AnyEntity>), check = true): boolean {
+  /**
+   * @inheritDoc
+   */
+  removeAll(): void {
+    this.checkInitialized();
+
+    for (const item of this.items) {
+      this.remove(item);
+    }
+  }
+
+  contains(item: T | Reference<T>, check = true): boolean {
     if (check) {
       this.checkInitialized();
     }
@@ -274,9 +287,9 @@ export class Collection<T extends object, O extends object = object> extends Arr
     let em = this._em ?? helper(this.owner).__em;
 
     if (!em) {
-      for (const i of items as AnyEntity[]) {
-        if (i?.__helper!.__em) {
-          em = i?.__helper!.__em;
+      for (const i of items) {
+        if (helper(i)?.__em) {
+          em = helper(i).__em;
           break;
         }
       }
@@ -319,7 +332,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
       // we know there is at least one item as it was checked in load method
       const pk = this.property.targetMeta!.primaryKeys[0];
       cond[pk] = { $in: [] };
-      this.items.forEach(item => cond[pk].$in.push((item as AnyEntity).__helper!.getPrimaryKey()));
+      this.items.forEach(item => cond[pk].$in.push(helper(item).getPrimaryKey()));
     } else {
       cond[this.property.mappedBy] = helper(this.owner).getPrimaryKey();
     }
@@ -348,7 +361,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
     }
 
     this.validateModification(items);
-    super[method](...items);
+    super[method](items);
     this.setDirty();
   }
 
@@ -404,7 +417,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
     };
 
     // throw if we are modifying inverse side of M:N collection when owning side is initialized (would be ignored when persisting)
-    if (items.find(item => check(item as AnyEntity))) {
+    if (items.find(item => check(item))) {
       throw ValidationError.cannotModifyInverseCollection(this.owner, this.property);
     }
   }

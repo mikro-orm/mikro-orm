@@ -10,6 +10,7 @@ import { Reference } from './Reference';
 import type { EntityField, FindOptions } from '../drivers/IDatabaseDriver';
 import type { MetadataStorage } from '../metadata/MetadataStorage';
 import type { Platform } from '../platforms/Platform';
+import { helper } from './wrap';
 
 export type EntityLoaderOptions<T, P extends string = never> = {
   where?: FilterQuery<T>;
@@ -220,10 +221,10 @@ export class EntityLoader {
   }
 
   private initializeOneToMany<T>(filtered: T[], children: AnyEntity[], prop: EntityProperty, field: keyof T): void {
-    for (const entity of (filtered as (T & AnyEntity)[])) {
+    for (const entity of filtered) {
       const items = children.filter(child => {
         if (prop.targetMeta!.properties[prop.mappedBy].mapToPk) {
-          return child[prop.mappedBy] as unknown === entity.__helper!.getPrimaryKey();
+          return child[prop.mappedBy] as unknown === helper(entity).getPrimaryKey();
         }
 
         return Reference.unwrapReference(child[prop.mappedBy]) as unknown === entity;
@@ -234,8 +235,8 @@ export class EntityLoader {
   }
 
   private initializeManyToMany<T>(filtered: T[], children: AnyEntity[], prop: EntityProperty, field: keyof T): void {
-    for (const entity of (filtered as (T & AnyEntity)[])) {
-      const items = children.filter(child => (child[prop.mappedBy] as unknown as Collection<AnyEntity>).contains(entity));
+    for (const entity of filtered) {
+      const items = children.filter(child => (child[prop.mappedBy] as unknown as Collection<AnyEntity>).contains(entity as AnyEntity));
       (entity[field] as unknown as Collection<AnyEntity>).hydrate(items, true);
     }
   }

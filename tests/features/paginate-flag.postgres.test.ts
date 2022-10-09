@@ -35,7 +35,7 @@ export class User {
   constructor(id: string, name: string, groups: Group[]) {
     this.id = id;
     this.name = name;
-    this.groups.add(...groups);
+    this.groups.add(groups);
   }
 
 }

@@ -43,7 +43,7 @@ export class Cart {
 
   constructor(id: string, items: CartItem[]) {
     this.id = id;
-    this.items.add(...items);
+    this.items.add(items);
   }
 
   addItem(item: CartItem): void {
