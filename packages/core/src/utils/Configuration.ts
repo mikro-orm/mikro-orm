@@ -73,7 +73,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     autoJoinOneToOneOwner: true,
     propagateToOneOwner: true,
     populateAfterFlush: true,
-    persistOnCreate: false,
+    persistOnCreate: true,
     forceEntityConstructor: false,
     forceUndefined: false,
     forceUtcTimezone: false,

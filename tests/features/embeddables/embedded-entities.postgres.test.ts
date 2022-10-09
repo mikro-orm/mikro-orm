@@ -99,6 +99,7 @@ describe('embedded entities in postgresql', () => {
     await orm.schema.refreshDatabase();
   });
 
+  beforeEach(() => orm.schema.clearDatabase());
   afterAll(() => orm.close(true));
 
   test('metadata', async () => {

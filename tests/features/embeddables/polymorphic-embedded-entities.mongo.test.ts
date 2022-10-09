@@ -124,7 +124,7 @@ describe('polymorphic embeddables in mongo', () => {
 
     const mock = mockLogger(orm, ['query']);
     await orm.em.persistAndFlush([ent1, ent2, ent3]);
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('owner').insertMany([ { _id: ObjectId('600000000000000000000001'), name: 'o1', pet_type: 1, pet_name: 'd1', pet_canBark: true, pet2: { canMeow: true, type: 0, name: 'c3' } }, { _id: ObjectId('600000000000000000000002'), name: 'o2', pet_canMeow: true, pet_type: 0, pet_name: 'c1', pet2: { type: 1, name: 'd4', canBark: true } }, { _id: ObjectId('600000000000000000000003'), name: 'o3', pet_type: 1, pet_name: 'd2', pet_canBark: true, pet2: { canMeow: true, type: 0, name: 'c4' } } ], {});`);
+    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('owner').insertMany([ { _id: ObjectId('600000000000000000000002'), name: 'o2', pet_canMeow: true, pet_type: 0, pet_name: 'c1', pet2: { type: 1, name: 'd4', canBark: true } }, { _id: ObjectId('600000000000000000000003'), name: 'o3', pet_type: 1, pet_name: 'd2', pet_canBark: true, pet2: { canMeow: true, type: 0, name: 'c4' } }, { _id: ObjectId('600000000000000000000001'), name: 'o1', pet_type: 1, pet_name: 'd1', pet_canBark: true, pet2: { canMeow: true, type: 0, name: 'c3' } } ], {});`);
     orm.em.clear();
 
     const owners = await orm.em.find(Owner, {}, { orderBy: { name: 1 } });

@@ -527,13 +527,11 @@ MikroORM.init({
 
 ## Persist created entities automatically 
 
-If we create new entity via `em.create()`, we still need to mark it via 
-`em.persist()` to make the `EntityManager` aware of it. Alternatively we
-can enable `persistOnCreate` flag, which will make this work automatically.
+> Since v5.5 `persistOnCreate` defaults to `true`.
 
-> This flag affects only `em.create()`, entities created via constructors
-> still need explicit `em.persist()` call or they need to be part of entity 
-> graph of some already managed entity.
+If we create new entity via `em.create()`, we still need to mark it via `em.persist()` to make the `EntityManager` aware of it. Alternatively we can enable `persistOnCreate` flag, which will make this work automatically.
+
+> This flag affects only `em.create()`, entities created via constructors still need explicit `em.persist()` call or they need to be part of entity graph of some already managed entity.
 
 ```ts
 MikroORM.init({

@@ -81,14 +81,14 @@ describe('Factory', () => {
   test('that a factory can make multiple instances of an entity without saving them in the database', async () => {
     const projects = new ProjectFactory(orm.em).make(5);
     expect(projects).toBeInstanceOf(Array);
-    expect(persistSpy).toBeCalledTimes(1);
+    expect(persistSpy).toBeCalledTimes(6);
     expect(flushSpy).not.toBeCalled();
     expect(projects.length).toBe(5);
   });
 
   test('that a factory can create multiple instances of an entity and save them in the database', async () => {
     const projectSaved = await new ProjectFactory(orm.em).create(5);
-    expect(persistSpy).toBeCalledTimes(1);
+    expect(persistSpy).toBeCalledTimes(6);
     expect(flushSpy).toBeCalledTimes(1);
     expect(projectSaved).toBeInstanceOf(Array);
     expect(projectSaved.length).toBe(5);

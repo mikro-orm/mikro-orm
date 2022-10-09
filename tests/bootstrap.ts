@@ -155,6 +155,7 @@ export async function initORMSqlite() {
     logger: i => i,
     metadataProvider: JavaScriptMetadataProvider,
     cache: { enabled: true, pretty: true },
+    persistOnCreate: false,
   });
 
   const connection = orm.em.getConnection();
@@ -172,7 +173,6 @@ export async function initORMSqlite2(type: 'sqlite' | 'better-sqlite' = 'sqlite'
     debug: ['query'],
     propagateToOneOwner: false,
     forceUndefined: true,
-    persistOnCreate: true,
     logger: i => i,
     cache: { pretty: true },
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
