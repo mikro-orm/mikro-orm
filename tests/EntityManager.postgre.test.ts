@@ -1882,7 +1882,7 @@ describe('EntityManagerPostgre', () => {
     expect(author.books.getItems().every(b => b.uuid)).toBe(true);
   });
 
-  // this should run in ~150ms (when running single test locally)
+  // this should run in ~70ms (when running single test locally)
   test('perf: one to many via em.create()', async () => {
     const books = [] as Book2[];
     for (let i = 1; i <= 10000; i++) {

@@ -1275,7 +1275,7 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     // n:m relations
     let taggedBook = orm.em.create(Book4, { title: 'FullyTagged' });
     await orm.em.persistAndFlush(taggedBook);
-    const tags = [orm.em.create(BookTag4, { name: 'science-fiction' }), orm.em.create(BookTag4, { name: 'adventure' }), orm.em.create(BookTag4, { name: 'horror' })];
+    const tags = [orm.em.create(BookTag4, { name: 'science-fiction' }), orm.em.create(BookTag4, { name: 'adventure' }), orm.em.create(BookTag4, { name: 'horror' })] as const;
     taggedBook.tags.add(...tags);
     await expect(taggedBook.tags.loadCount()).resolves.toEqual(0);
     await orm.em.flush();

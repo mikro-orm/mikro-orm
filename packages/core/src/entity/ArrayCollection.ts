@@ -64,8 +64,10 @@ export class ArrayCollection<T extends object, O extends object> {
     }) as unknown as U[];
   }
 
-  add(...items: (T | Reference<T>)[]): void {
-    for (const item of items) {
+  add(entity: T | Reference<T> | (T | Reference<T>)[], ...entities: (T | Reference<T>)[]): void {
+    entities = Utils.asArray(entity).concat(entities);
+
+    for (const item of entities) {
       const entity = Reference.unwrapReference(item) as T;
 
       if (!this.contains(entity, false)) {
@@ -78,8 +80,8 @@ export class ArrayCollection<T extends object, O extends object> {
   }
 
   set(items: (T | Reference<T>)[]): void {
-    this.remove(...this.items);
-    this.add(...items);
+    this.removeAll();
+    this.add(items);
   }
 
   /**
@@ -92,7 +94,7 @@ export class ArrayCollection<T extends object, O extends object> {
 
     this.items.clear();
     this._count = 0;
-    this.add(...items);
+    this.add(items);
   }
 
   /**
@@ -101,8 +103,11 @@ export class ArrayCollection<T extends object, O extends object> {
    * is not the same as `em.remove()`. If we want to delete the entity by removing it from collection, we need to enable `orphanRemoval: true`,
    * which tells the ORM we don't want orphaned entities to exist, so we know those should be removed.
    */
-  remove(...items: (T | Reference<T>)[]): void {
-    for (const item of items) {
+  remove(entity: T | Reference<T> | (T | Reference<T>)[], ...entities: (T | Reference<T>)[]): void {
+    entities = Utils.asArray(entity).concat(entities);
+    let modified = false;
+
+    for (const item of entities) {
       if (!item) {
         continue;
       }
@@ -112,9 +117,13 @@ export class ArrayCollection<T extends object, O extends object> {
       if (this.items.delete(entity)) {
         this.incrementCount(-1);
         delete this[this.items.size]; // remove last item
-        Object.assign(this, [...this.items]); // reassign array access
         this.propagate(entity, 'remove');
+        modified ??= true;
       }
+    }
+
+    if (modified) {
+      Object.assign(this, [...this.items]); // reassign array access
     }
   }
 
@@ -125,7 +134,9 @@ export class ArrayCollection<T extends object, O extends object> {
    * which tells the ORM we don't want orphaned entities to exist, so we know those should be removed.
    */
   removeAll(): void {
-    this.remove(...this.items);
+    for (const item of this.items) {
+      this.remove(item);
+    }
   }
 
   /**
@@ -151,11 +162,17 @@ export class ArrayCollection<T extends object, O extends object> {
   }
 
   isInitialized(fully = false): boolean {
-    if (fully) {
-      return this.initialized && [...this.items].every((item: T) => helper(item).__initialized);
+    if (!this.initialized || !fully) {
+      return this.initialized;
     }
 
-    return this.initialized;
+    for (const item of this.items) {
+      if (!helper(item).__initialized) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   isDirty(): boolean {
