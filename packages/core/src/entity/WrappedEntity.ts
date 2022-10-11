@@ -31,10 +31,13 @@ export class WrappedEntity<T extends object, PK extends keyof T> {
   __data: Dictionary = {};
   __processing = false;
 
-  /** holds last entity data snapshot so we can compute changes when persisting managed entities */
+  /** holds the reference wrapper instance (if created), so we can maintain the identity on reference wrappers too */
+  __reference?: Reference<T>;
+
+  /** holds last entity data snapshot, so we can compute changes when persisting managed entities */
   __originalEntityData?: EntityData<T>;
 
-  /** holds wrapped primary key so we can compute change set without eager commit */
+  /** holds wrapped primary key, so we can compute change set without eager commit */
   __identifier?: EntityIdentifier;
 
   constructor(private readonly entity: T,
@@ -56,7 +59,8 @@ export class WrappedEntity<T extends object, PK extends keyof T> {
   }
 
   toReference(): IdentifiedReference<T, PK> {
-    return Reference.create<T, PK>(this.entity);
+    this.__reference ??= new Reference(this.entity);
+    return this.__reference as IdentifiedReference<T, PK>;
   }
 
   toObject(ignoreFields: string[] = []): EntityData<T> {

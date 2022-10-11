@@ -117,7 +117,7 @@ export class ObjectHydrator extends Hydrator {
       if (prop.mapToPk) {
         ret.push(`      entity${entityKey} = data${dataKey};`);
       } else if (prop.wrappedReference) {
-        ret.push(`      entity${entityKey} = new Reference(factory.createReference('${prop.type}', data${dataKey}, { merge: true, convertCustomTypes, schema }));`);
+        ret.push(`      entity${entityKey} = Reference.create(factory.createReference('${prop.type}', data${dataKey}, { merge: true, convertCustomTypes, schema }));`);
       } else {
         ret.push(`      entity${entityKey} = factory.createReference('${prop.type}', data${dataKey}, { merge: true, convertCustomTypes, schema });`);
       }
@@ -127,7 +127,7 @@ export class ObjectHydrator extends Hydrator {
       if (prop.mapToPk) {
         ret.push(`      entity${entityKey} = data${dataKey};`);
       } else if (prop.wrappedReference) {
-        ret.push(`      entity${entityKey} = new Reference(factory.create('${prop.type}', data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, schema }));`);
+        ret.push(`      entity${entityKey} = Reference.create(factory.create('${prop.type}', data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, schema }));`);
       } else {
         ret.push(`      entity${entityKey} = factory.create('${prop.type}', data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });`);
       }
@@ -141,7 +141,7 @@ export class ObjectHydrator extends Hydrator {
 
         if (prop2 && !prop2.mapToPk) {
           ret.push(`  if (entity${entityKey} && !entity${entityKey}.${prop2.name}) {`);
-          ret.push(`    entity${entityKey}.${prop.wrappedReference ? 'unwrap().' : ''}${prop2.name} = ${prop2.wrappedReference ? 'new Reference(entity)' : 'entity'};`);
+          ret.push(`    entity${entityKey}.${prop.wrappedReference ? 'unwrap().' : ''}${prop2.name} = ${prop2.wrappedReference ? 'Reference.create(entity)' : 'entity'};`);
           ret.push(`  }`);
         }
       }

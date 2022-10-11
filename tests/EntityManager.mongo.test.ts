@@ -1872,7 +1872,7 @@ describe('EntityManagerMongo', () => {
 
     const ref = orm.em.getReference<Author, 'id' | '_id'>(Author, author.id, { wrapped: true });
     const ref1 = orm.em.getRepository(Author).getReference<'id' | '_id'>(author.id, { wrapped: true });
-    expect(ref).not.toBe(ref1);
+    expect(ref).toBe(ref1);
     expect(ref.unwrap()).toBe(ref1.unwrap());
     // @ts-expect-error private getter
     expect(ref.__platform).toBeInstanceOf(MongoPlatform);

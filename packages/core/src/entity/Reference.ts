@@ -1,6 +1,13 @@
 import type {
-  Populate, Cast, Constructor, Dictionary, EntityProperty, IsUnknown, Primary,
-  PrimaryProperty, ConnectionType,
+  Cast,
+  ConnectionType,
+  Constructor,
+  Dictionary,
+  EntityProperty,
+  IsUnknown,
+  Populate,
+  Primary,
+  PrimaryProperty,
 } from '../typings';
 import type { EntityFactory } from './EntityFactory';
 import type { LockMode } from '../enums';
@@ -32,16 +39,19 @@ export class Reference<T> {
   }
 
   static create<T extends object, PK extends keyof T | unknown = PrimaryProperty<T>>(entity: T | IdentifiedReference<T, PK>): IdentifiedReference<T, PK> {
-    if (Reference.isReference(entity)) {
-      return entity as IdentifiedReference<T, PK>;
+    const unwrapped = Reference.unwrapReference(entity);
+    const ref = helper(entity).toReference() as IdentifiedReference<T, PK>;
+
+    if (unwrapped !== ref.unwrap()) {
+      ref.set(unwrapped);
     }
 
-    return new Reference(entity as T) as IdentifiedReference<T, PK>;
+    return ref;
   }
 
   static createFromPK<T extends object, PK extends keyof T | unknown = PrimaryProperty<T>>(entityType: Constructor<T>, pk: Primary<T>): IdentifiedReference<T, PK> {
     const ref = this.createNakedFromPK(entityType, pk);
-    return new Reference(ref) as IdentifiedReference<T, PK>;
+    return helper(ref).toReference();
   }
 
   static createNakedFromPK<T extends object, PK extends keyof T | unknown = PrimaryProperty<T>>(entityType: Constructor<T>, pk: Primary<T>): T {
@@ -105,11 +115,8 @@ export class Reference<T> {
   }
 
   set(entity: T | IdentifiedReference<T>): void {
-    if (entity instanceof Reference) {
-      entity = entity.unwrap();
-    }
-
-    this.entity = entity;
+    this.entity = Reference.unwrapReference(entity as T & object);
+    delete helper(this.entity).__reference;
   }
 
   unwrap(): T {
