@@ -118,7 +118,7 @@ export interface FindOptions<T, P extends string = never> {
   connectionType?: ConnectionType;
 }
 
-export interface FindOneOptions<T extends object, P extends string = never> extends Omit<FindOptions<T, P>, 'limit' | 'offset' | 'lockMode'> {
+export interface FindOneOptions<T extends object, P extends string = never> extends Omit<FindOptions<T, P>, 'limit' | 'lockMode'> {
   lockMode?: LockMode;
   lockVersion?: number | Date;
 }
