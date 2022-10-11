@@ -316,8 +316,7 @@ This is possible via `disableIdentityMap` option. Behind the scenes, it will cre
 context, load the entities inside that, and clear it afterwards, so the main identity map
 will stay clean.
 
-> As opposed to _managed_ entities, such entities are called _detached_. 
-> To be able to work with them, we first need to merge them via `em.registerManaged()`. 
+> As opposed to _managed_ entities, such entities are called _detached_. To be able to work with them, we first need to merge them via `em.merge()`. 
 
 ```ts
 const users = await em.find(User, { email: 'foo@bar.baz' }, {
