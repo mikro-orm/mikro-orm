@@ -313,6 +313,14 @@ and `stringify` only when needed).
 object?: { foo: string; bar: number };
 ```
 
+The default `stringify` will output diffs for changes in object key order.  
+If you want to minimize diffs, you can use a slower, more precise, serialization function that will serialize `{a: 1, b: 2}` and `{b: 2, a: 1}` in identical ways.
+
+```ts
+@Property({ type: new JsonType({ useStableStringify: true }) })
+object: { foo: string; bar: number };
+```
+
 ### DateType
 
 To store dates without time information, we can use `DateType`. It does use `date`
