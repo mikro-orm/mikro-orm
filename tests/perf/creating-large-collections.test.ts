@@ -1,5 +1,6 @@
-import { Collection, Entity, ManyToOne, OneToMany, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
 import type { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
+import { performance } from 'perf_hooks';
 
 @Entity()
 class TestRunEntity {
@@ -43,10 +44,13 @@ afterAll(() => orm.close(true));
 // should run around 50-100ms
 test('perf: create large 1:m collection', async () => {
   console.time('perf: create large 1:m collection (10k entities)');
+  const start = performance.now();
   const entity = orm.em.create(TestRunEntity, {
     cases: Array(10_000).fill(undefined).map((_, index) => ({
       title: `Test Case #${index}`,
     })),
   });
+  const end = performance.now();
   console.timeEnd('perf: create large 1:m collection (10k entities)');
+  expect(end - start).toBeLessThan(100);
 });
