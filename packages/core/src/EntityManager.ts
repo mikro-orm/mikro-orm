@@ -14,6 +14,7 @@ import type { FlushEventArgs } from './events';
 import { EventManager, TransactionEventBroadcaster } from './events';
 import type { EntityComparator } from './utils/EntityComparator';
 import { OptimisticLockError, ValidationError } from './errors';
+import type { CommitOptions } from './unit-of-work/UnitOfWork';
 
 /**
  * The EntityManager is the central access point to ORM functionality. It is a facade to all different ORM subsystems
@@ -949,8 +950,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Flushes all changes to objects that have been queued up to now to the database.
    * This effectively synchronizes the in-memory state of managed objects with the database.
    */
-  async flush(): Promise<void> {
-    await this.getUnitOfWork().commit();
+  async flush(opts?: CommitOptions): Promise<void> {
+    await this.getUnitOfWork().commit(opts);
   }
 
   /**

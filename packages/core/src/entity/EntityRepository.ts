@@ -4,6 +4,7 @@ import type { EntityData, EntityName, AnyEntity, Primary, Loaded, FilterQuery, E
 import type { CountOptions, DeleteOptions, FindOneOptions, FindOneOrFailOptions, FindOptions, GetReferenceOptions, NativeInsertUpdateOptions, UpdateOptions } from '../drivers/IDatabaseDriver';
 import type { IdentifiedReference, Reference } from './Reference';
 import type { EntityLoaderOptions } from './EntityLoader';
+import type { CommitOptions } from '../unit-of-work/UnitOfWork';
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export class EntityRepository<T extends {}> {
@@ -109,8 +110,8 @@ export class EntityRepository<T extends {}> {
    * This method is a shortcut for `em.flush()`, in other words, it will flush the whole UoW,
    * not just entities registered via this particular repository.
    */
-  async flush(): Promise<void> {
-    return this.em.flush();
+  async flush(opts?: CommitOptions): Promise<void> {
+    return this.em.flush(opts);
   }
 
   /**
