@@ -1,10 +1,9 @@
-import { MikroORM } from '@mikro-orm/core';
-import type { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
+import { MikroORM } from '@mikro-orm/better-sqlite';
+import { performance } from 'perf_hooks';
 import { Filter, FilterValue, Project, Risk } from './entities';
 import { DatabaseSeeder } from './seeder';
-import { performance } from 'perf_hooks';
 
-let orm: MikroORM<BetterSqliteDriver>;
+let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
@@ -21,7 +20,7 @@ beforeAll(async () => {
 afterAll(() => orm.close(true));
 
 test('perf: serialize nested entities', async () => {
-  const risks = await orm.em.find(Risk, {});
+  const risks = await orm.em.find(Risk, {}, { populate: true });
   const project = await orm.em.findOneOrFail(Project, { id: 1 });
 
   // Serialize a collection of 150 entities
@@ -44,6 +43,7 @@ test('perf: serialize nested entities', async () => {
   expect(stringRisks1).toBe(stringRisks2);
 
   // Expect the timings to be about the same
-  expect(end1 - start1).toBeLessThan(25);
-  expect(end2 - start2).toBeLessThan(25);
+  const d1 = end1 - start1;
+  const d2 = end2 - start2;
+  expect(Math.abs(d1 - d2)).toBeLessThan(5);
 });

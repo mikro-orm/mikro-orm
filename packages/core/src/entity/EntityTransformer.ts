@@ -6,6 +6,14 @@ import type { Platform } from '../platforms';
 import { Utils } from '../utils/Utils';
 import { ReferenceType } from '../enums';
 
+function isVisible<T>(meta: EntityMetadata<T>, propName: string, ignoreFields: string[]): boolean {
+  const prop = meta.properties[propName];
+  const visible = prop && !prop.hidden;
+  const prefixed = prop && !prop.primary && propName.startsWith('_'); // ignore prefixed properties, if it's not a PK
+
+  return visible && !prefixed && !ignoreFields.includes(propName);
+}
+
 /**
  * Helper that allows to keep track of where we are currently at when serializing complex entity graph with cycles.
  * Before we process a property, we call `visit` that checks if it is not a cycle path (but allows to pass cycles that
@@ -52,21 +60,25 @@ export class SerializationContext<T> {
   /**
    * When initializing new context, we need to propagate it to the whole entity graph recursively.
    */
-  static propagate(root: SerializationContext<AnyEntity>, entity: AnyEntity): void {
+  static propagate(root: SerializationContext<AnyEntity>, entity: AnyEntity, raw: boolean): void {
     root.register(entity);
+    const wrapped = helper(entity);
+    const meta = wrapped.__meta;
 
     const items: AnyEntity[] = [];
-    Object.keys(entity).forEach(key => {
-      if (Utils.isEntity(entity[key], true)) {
-        items.push(entity[key]);
-      } else if (Utils.isCollection(entity[key])) {
-        items.push(...(entity[key] as Collection<any>).getItems(false));
-      }
-    });
+    Object.keys(entity)
+      .filter(prop => raw ? meta.properties[prop] : isVisible(meta, prop, []))
+      .forEach(key => {
+        if (Utils.isEntity(entity[key], true)) {
+          items.push(entity[key]);
+        } else if (Utils.isCollection(entity[key])) {
+          items.push(...(entity[key] as Collection<any>).getItems(false));
+        }
+      });
 
     items
       .filter(item => !item.__helper!.__serializationContext.root)
-      .forEach(item => this.propagate(root, item));
+      .forEach(item => this.propagate(root, item, raw));
   }
 
   private isMarkedAsPopulated(prop: string): boolean {
@@ -106,7 +118,7 @@ export class EntityTransformer {
 
     if (!wrapped.__serializationContext.root) {
       const root = new SerializationContext<T>(wrapped.__serializationContext.populate ?? []);
-      SerializationContext.propagate(root, entity);
+      SerializationContext.propagate(root, entity, raw);
       contextCreated = true;
     }
 
@@ -132,7 +144,7 @@ export class EntityTransformer {
     }
 
     [...keys]
-      .filter(prop => raw ? meta.properties[prop] : this.isVisible<T>(meta, prop, ignoreFields))
+      .filter(prop => raw ? meta.properties[prop] : isVisible<T>(meta, prop, ignoreFields))
       .map(prop => {
         const cycle = root.visit(meta.className, prop);
 
@@ -174,14 +186,6 @@ export class EntityTransformer {
     }
 
     return ret;
-  }
-
-  private static isVisible<T>(meta: EntityMetadata<T>, propName: string, ignoreFields: string[]): boolean {
-    const prop = meta.properties[propName];
-    const visible = prop && !prop.hidden;
-    const prefixed = prop && !prop.primary && propName.startsWith('_'); // ignore prefixed properties, if it's not a PK
-
-    return visible && !prefixed && !ignoreFields.includes(propName);
   }
 
   private static propertyName<T>(meta: EntityMetadata<T>, prop: keyof T & string, platform?: Platform): string {
