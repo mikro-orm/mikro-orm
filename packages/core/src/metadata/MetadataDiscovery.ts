@@ -446,11 +446,20 @@ export class MetadataDiscovery {
     meta.forceConstructor = this.shouldForceConstructorUsage(meta);
     this.validator.validateEntityDefinition(this.metadata, meta.name!);
 
+    let entity1: any | undefined;
+    let entity2: any | undefined;
+    try {
+      // try to create two entity instances to detect if initialized values are stable
+       entity1 = new meta.class();
+       entity2 = new meta.class();
+    } catch {
+      // ignore
+    }
     for (const prop of Object.values(meta.properties)) {
       this.initNullability(prop);
       this.applyNamingStrategy(meta, prop);
-      this.initDefaultValue(meta, prop);
-      this.initVersionProperty(meta, prop);
+      this.initDefaultValue(meta, prop, entity1, entity2);
+      this.initVersionProperty(meta, prop, entity1, entity2);
       this.initCustomType(meta, prop);
       await this.initColumnType(meta, prop, meta.path);
       this.initRelation(prop);
@@ -910,14 +919,10 @@ export class MetadataDiscovery {
     return '1';
   }
 
-  private initDefaultValue(meta: EntityMetadata, prop: EntityProperty): void {
+  private initDefaultValue(meta: EntityMetadata, prop: EntityProperty, entity1: any, entity2: any): void {
     try {
-      // try to create two entity instances to detect the value is stable
-      const entity1 = new meta.class();
-      const entity2 = new meta.class();
-
       // we compare the two values by reference, this will discard things like `new Date()`
-      if (entity1[prop.name] != null && entity1[prop.name] === entity2[prop.name]) {
+      if (entity1 != null && entity2 != null && entity1[prop.name] != null && entity1[prop.name] === entity2[prop.name]) {
         prop.default ??= entity1[prop.name];
       }
     } catch {
@@ -937,9 +942,9 @@ export class MetadataDiscovery {
     prop.defaultRaw = typeof val === 'string' ? `'${val}'` : '' + val;
   }
 
-  private initVersionProperty(meta: EntityMetadata, prop: EntityProperty): void {
+  private initVersionProperty(meta: EntityMetadata, prop: EntityProperty, entity1?: any, entity2?: any): void {
     if (prop.version) {
-      this.initDefaultValue(meta, prop);
+      this.initDefaultValue(meta, prop, entity1, entity2);
       meta.versionProperty = prop.name;
       prop.defaultRaw = this.getDefaultVersionValue(prop);
     }
