@@ -83,7 +83,8 @@ export class Collection<T extends object, O extends object = object> extends Arr
     let items: Loaded<T, P>[];
 
     if (this.property.reference === ReferenceType.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
-      const map = await em.getDriver().loadFromPivotTable(this.property, [helper(this.owner).__primaryKeys], where, opts.orderBy, ctx, options);
+      const cond = await em.applyFilters(this.property.type, where, options.filters ?? {}, 'read');
+      const map = await em.getDriver().loadFromPivotTable(this.property, [helper(this.owner).__primaryKeys], cond, opts.orderBy, ctx, options);
       items = map[helper(this.owner).getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, { convertCustomTypes: true }));
     } else {
       items = await em.find(this.property.type, this.createCondition(where), opts);
@@ -212,7 +213,8 @@ export class Collection<T extends object, O extends object = object> extends Arr
     const em = this.getEntityManager();
 
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
-      const map = await em.getDriver().loadFromPivotTable(this.property, [helper(this.owner).__primaryKeys], options.where, options.orderBy, undefined, options);
+      const cond = await em.applyFilters(this.property.type, options.where, {}, 'read');
+      const map = await em.getDriver().loadFromPivotTable(this.property, [helper(this.owner).__primaryKeys], cond, options.orderBy, undefined, options);
       this.hydrate(map[helper(this.owner).getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, { convertCustomTypes: true })), true);
       this._lazyInitialized = true;
 

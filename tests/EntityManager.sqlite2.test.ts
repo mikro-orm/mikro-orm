@@ -718,6 +718,11 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     expect(wrap(books[0]).toObject()).toMatchObject({
       tags: books[0].tags.getItems().map(t => ({ name: t.name })),
     });
+
+    orm.em.addFilter('testFilter', { name: 'tag 11-08' }, BookTag4, false);
+    const filteredTags = await books[0].tags.matching({ filters: { testFilter: true } });
+    expect(filteredTags).toHaveLength(1);
+    expect(filteredTags[0].name).toBe('tag 11-08');
   });
 
   test('disabling identity map', async () => {
