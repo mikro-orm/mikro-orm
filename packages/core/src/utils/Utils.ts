@@ -432,7 +432,7 @@ export class Utils {
 
     if (Utils.isPlainObject(data) && meta) {
       if (meta.compositePK) {
-        return Utils.getCompositeKeyHash(data as T, meta);
+        return this.getCompositeKeyValue(data as T, meta) as Primary<T>;
       }
 
       return data[meta.primaryKeys[0]] || data[meta.serializedPrimaryKey] || null;
@@ -441,8 +441,8 @@ export class Utils {
     return null;
   }
 
-  static getCompositeKeyHash<T>(data: EntityData<T>, meta: EntityMetadata<T>, convertCustomTypes = false, platform?: Platform): string {
-    const pks = meta.primaryKeys.map(pk => {
+  static getCompositeKeyValue<T>(data: EntityData<T>, meta: EntityMetadata<T>, convertCustomTypes = false, platform?: Platform) {
+    return meta.primaryKeys.map(pk => {
       const value = data[pk as string];
       const prop = meta.properties[pk];
 
@@ -456,6 +456,10 @@ export class Utils {
 
       return value;
     });
+  }
+
+  static getCompositeKeyHash<T>(data: EntityData<T>, meta: EntityMetadata<T>, convertCustomTypes = false, platform?: Platform): string {
+    const pks = this.getCompositeKeyValue(data, meta, convertCustomTypes, platform);
 
     return Utils.getPrimaryKeyHash(pks as string[]);
   }
