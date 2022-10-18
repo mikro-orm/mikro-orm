@@ -20,31 +20,6 @@ export class SimpleLogger extends DefaultLogger {
   /**
    * @inheritDoc
    */
-  error(namespace: LoggerNamespace, message: string, context?: LogContext): void {
-    this.log(namespace, message, { ...context, level: 'error' });
-  }
-
-  /**
-   * @inheritDoc
-   */
-  warn(namespace: LoggerNamespace, message: string, context?: LogContext): void {
-    this.log(namespace, message, { ...context, level: 'warning' });
-  }
-
-  /**
-   * @inheritDoc
-   */
-  setDebugMode(debugMode: boolean | LoggerNamespace[]): void {
-    this.debugMode = debugMode;
-  }
-
-  isEnabled(namespace: LoggerNamespace): boolean {
-    return !!this.debugMode && (!Array.isArray(this.debugMode) || this.debugMode.includes(namespace));
-  }
-
-  /**
-   * @inheritDoc
-   */
   logQuery(context: { query: string } & LogContext): void {
     if (!this.isEnabled('query')) {
       return;

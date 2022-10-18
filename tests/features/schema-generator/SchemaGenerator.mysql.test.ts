@@ -112,9 +112,7 @@ describe('SchemaGenerator', () => {
   });
 
   test('update schema [mysql]', async () => {
-    console.time('1');
     const orm = await initORMMySql('mysql', {}, true);
-    console.timeEnd('1');
     const meta = orm.getMetadata();
 
     const newTableMeta = EntitySchema.fromMetadata({

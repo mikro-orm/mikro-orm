@@ -37,7 +37,6 @@ describe('GH issue 1003', () => {
     orm = await MikroORM.init({
       entities: [Child, Parent],
       dbName: ':memory:',
-      type: 'sqlite',
     });
     await orm.schema.createSchema();
   });

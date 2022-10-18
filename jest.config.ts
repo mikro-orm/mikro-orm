@@ -2,7 +2,12 @@ import type { Config } from '@jest/types';
 
 const config: Config.InitialOptions = {
   testTimeout: 30000,
-  preset: 'ts-jest',
+  transform: {
+    '^.+\\.tsx?$': ['ts-jest', {
+      tsconfig: 'tests/tsconfig.json',
+      isolatedModules: true,
+    }],
+  },
   runtime: '@side/jest-runtime',
   collectCoverage: false,
   collectCoverageFrom: [
@@ -26,12 +31,6 @@ const config: Config.InitialOptions = {
   setupFiles: [
     '<rootDir>/tests/setup.ts',
   ],
-  globals: {
-    'ts-jest': {
-      tsconfig: 'tests/tsconfig.json',
-      isolatedModules: true,
-    },
-  },
 };
 
 export default config;
