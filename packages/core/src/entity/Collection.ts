@@ -174,10 +174,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
    */
   removeAll(): void {
     this.checkInitialized();
-
-    for (const item of this.items) {
-      this.remove(item);
-    }
+    super.removeAll();
   }
 
   contains(item: T | Reference<T>, check = true): boolean {

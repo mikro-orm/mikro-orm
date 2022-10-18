@@ -73,7 +73,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return `uuid`;
   }
 
-  getFullTextWhereClause(prop: EntityProperty<any>): string {
+  getFullTextWhereClause(prop: EntityProperty): string {
     if (prop.columnTypes[0] === 'tsvector') {
       return `:column: @@ plainto_tsquery('simple', :query)`;
     }

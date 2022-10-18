@@ -299,7 +299,7 @@ export abstract class Platform {
     return path.join('.');
   }
 
-  getFullTextWhereClause(prop: EntityProperty<any>): string {
+  getFullTextWhereClause(prop: EntityProperty): string {
     throw new Error('Full text searching is not supported by this driver.');
   }
 

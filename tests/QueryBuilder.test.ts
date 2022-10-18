@@ -364,6 +364,35 @@ describe('QueryBuilder', () => {
     expect(qb.getParams()).toEqual(['test 123']);
   });
 
+  test('select leftJoin 1:m with $not in extra condition (GH #3504)', async () => {
+    const qb = orm.em.createQueryBuilder(Author2, 'a');
+    qb.select(['a.*', 'b.*'])
+      .leftJoin('a.books', 'b', { $not: { 'b.title': '456' } })
+      .where({ 'b.title': 'test 123' });
+    const sql = 'select `a`.*, `b`.* from `author2` as `a` ' +
+      'left join `book2` as `b` on `a`.`id` = `b`.`author_id` and not `b`.`title` = ? ' +
+      'where `b`.`title` = ?';
+    expect(qb.getQuery()).toEqual(sql);
+    expect(qb.getParams()).toEqual(['456', 'test 123']);
+    await qb;
+  });
+
+  test('select leftJoin 1:m with custom sql fragments', async () => {
+    const qb = orm.em.createQueryBuilder(Author2, 'a');
+    qb.select(['a.*', 'b.*'])
+      .leftJoin('a.books', 'b', {
+        'json_contains(`a`.`meta`, ?)': [{ 'b.foo': 'bar' }],
+        'json_contains(`a`.`meta`, ?) = ?': [{ 'b.foo': 'bar' }, false],
+        'lower(b.bar)': '321',
+      })
+      .where({ 'b.title': 'test 123' });
+    const sql = 'select `a`.*, `b`.* from `author2` as `a` ' +
+      'left join `book2` as `b` on `a`.`id` = `b`.`author_id` and json_contains(`a`.`meta`, ?) and json_contains(`a`.`meta`, ?) = ? and lower(b.bar) = ? ' +
+      'where `b`.`title` = ?';
+    expect(qb.getQuery()).toEqual(sql);
+    expect(qb.getParams()).toEqual(['{"b.foo":"bar"}', '{"b.foo":"bar"}', false, '321', 'test 123']);
+  });
+
   test('select leftJoin 1:m with multiple conditions', async () => {
     const qb = orm.em.createQueryBuilder(Author2, 'a');
     qb.select(['a.*', 'b.*'])
@@ -371,7 +400,6 @@ describe('QueryBuilder', () => {
         'b.foo:gte': '123',
         'b.baz': { $gt: 1, $lte: 10 },
         'b.title': { $fulltext: 'test' },
-        'b.qux': {},
         '$or': [
           {
             'b.foo': null,
@@ -381,8 +409,8 @@ describe('QueryBuilder', () => {
             'b.bar:ne': 1,
           },
           {
-            'b.foo': { $nin: [0,1] },
-            'b.baz': { $in: [2,3] },
+            'b.foo': { $nin: [0, 1] },
+            'b.baz': { $in: [2, 3] },
             'b.qux': { $exists: true },
             'b.bar': /test/,
           },

@@ -432,7 +432,7 @@ export class Utils {
 
     if (Utils.isPlainObject(data) && meta) {
       if (meta.compositePK) {
-        return Utils.getCompositeKeyHash(data as T, meta);
+        return this.getCompositeKeyHash(data as T, meta);
       }
 
       return data[meta.primaryKeys[0]] || data[meta.serializedPrimaryKey] || null;

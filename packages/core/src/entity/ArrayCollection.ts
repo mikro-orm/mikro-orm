@@ -118,7 +118,7 @@ export class ArrayCollection<T extends object, O extends object> {
         this.incrementCount(-1);
         delete this[this.items.size]; // remove last item
         this.propagate(entity, 'remove');
-        modified ??= true;
+        modified = true;
       }
     }
 
