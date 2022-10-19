@@ -272,9 +272,8 @@ export class MetadataDiscovery {
       return;
     }
 
-    if (!(entity instanceof EntitySchema)) {
-      await this.metadataProvider.loadEntityMetadata(meta, meta.className);
-    }
+    // if the definition is using EntitySchema we still want it to go through the metadata provider to validate no types are missing
+    await this.metadataProvider.loadEntityMetadata(meta, meta.className);
 
     if (!meta.collection && meta.name) {
       const entityName = root.discriminatorColumn ? root.name : meta.name;

@@ -10,7 +10,7 @@ export class JavaScriptMetadataProvider extends MetadataProvider {
 
   async loadEntityMetadata(meta: EntityMetadata, name: string): Promise<void> {
     const schema = this.getSchema(meta);
-    Object.entries(schema.properties).forEach(([name, prop]) => {
+    Object.entries(schema.properties ?? {}).forEach(([name, prop]) => {
       if (Utils.isString(prop)) {
         schema.properties[name] = { type: prop };
       }

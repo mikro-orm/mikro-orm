@@ -80,6 +80,10 @@ export class EntitySchema<T = any, U = never> {
       prop.formula = () => formula;
     }
 
+    if (prop.formula) {
+      prop.persist ??= false;
+    }
+
     this._meta.properties[name] = prop;
   }
 

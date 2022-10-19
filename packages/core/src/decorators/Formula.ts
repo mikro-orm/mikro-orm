@@ -7,7 +7,7 @@ import type { PropertyOptions } from './Property';
 export function Formula<T>(formula: string | ((alias: string) => string), options: FormulaOptions<T> = {}) {
   return function (target: AnyEntity, propertyName: string) {
     const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
-    meta.properties[propertyName] = Object.assign({ name: propertyName, reference: ReferenceType.SCALAR, persist: false, formula }, options) as EntityProperty;
+    meta.properties[propertyName] = Object.assign({ name: propertyName, reference: ReferenceType.SCALAR, formula }, options) as EntityProperty;
 
     return Utils.propertyDecoratorReturnValue();
   };
