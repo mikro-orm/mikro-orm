@@ -235,7 +235,7 @@ export class ArrayCollection<T extends object, O extends object> {
       if (this.shouldPropagateToCollection(collection, method)) {
         collection[method](this.owner);
       }
-    } else if (this.property.reference === ReferenceType.ONE_TO_MANY && method !== 'takeSnapshot' && !(this.property.orphanRemoval && method === 'remove')) {
+    } else if (this.property.reference === ReferenceType.ONE_TO_MANY && method !== 'takeSnapshot') {
       const prop2 = this.property.targetMeta!.properties[this.property.mappedBy];
       const owner = prop2.mapToPk ? helper(this.owner).getPrimaryKey() : this.owner;
       const value = method === 'add' ? owner : null;
