@@ -1,6 +1,7 @@
 import { Utils } from '../utils/Utils';
 import type { Dictionary, EntityData, EntityMetadata, EntityName, EntityProperty, New, Primary } from '../typings';
 import type { EntityManager } from '../EntityManager';
+import { QueryHelper } from '../utils/QueryHelper';
 import { EventType, ReferenceType } from '../enums';
 import { Reference } from './Reference';
 import { helper } from './wrap';
@@ -94,7 +95,7 @@ export class EntityFactory {
 
   mergeData<T extends object>(meta: EntityMetadata<T>, entity: T, data: EntityData<T>, options: FactoryOptions = {}): void {
     // merge unchanged properties automatically
-    data = { ...data };
+    data = QueryHelper.processParams({ ...data });
     const existsData = this.comparator.prepareEntity(entity);
     const originalEntityData = helper(entity).__originalEntityData ?? {} as EntityData<T>;
     const diff = this.comparator.diffEntities(meta.className, originalEntityData, existsData);

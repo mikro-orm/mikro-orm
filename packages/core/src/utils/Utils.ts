@@ -115,11 +115,7 @@ export function equals(a: any, b: any): boolean {
     return compareObjects(a, b);
   }
 
-  if (Number.isNaN(a) && Number.isNaN(b)) {
-    return true;
-  }
-
-  return false;
+  return Number.isNaN(a) && Number.isNaN(b);
 }
 
 const equalsFn = equals;
@@ -403,7 +399,7 @@ export class Utils {
    * Checks whether the argument looks like primary key (string, number or ObjectId).
    */
   static isPrimaryKey<T>(key: any, allowComposite = false): key is Primary<T> {
-    if (allowComposite && Array.isArray(key) && key.every((v, i) => Utils.isPrimaryKey(v, true))) {
+    if (allowComposite && Array.isArray(key) && key.every(v => Utils.isPrimaryKey(v, true))) {
       return true;
     }
 
@@ -432,7 +428,7 @@ export class Utils {
 
     if (Utils.isPlainObject(data) && meta) {
       if (meta.compositePK) {
-        return this.getCompositeKeyHash(data as T, meta);
+        return this.getCompositeKeyValue(data as T, meta);
       }
 
       return data[meta.primaryKeys[0]] || data[meta.serializedPrimaryKey] || null;
@@ -441,8 +437,8 @@ export class Utils {
     return null;
   }
 
-  static getCompositeKeyHash<T>(data: EntityData<T>, meta: EntityMetadata<T>, convertCustomTypes = false, platform?: Platform): string {
-    const pks = meta.primaryKeys.map(pk => {
+  static getCompositeKeyValue<T>(data: EntityData<T>, meta: EntityMetadata<T>, convertCustomTypes = false, platform?: Platform): Primary<T> {
+    return meta.primaryKeys.map(pk => {
       const value = data[pk as string];
       const prop = meta.properties[pk];
 
@@ -455,7 +451,11 @@ export class Utils {
       }
 
       return value;
-    });
+    }) as Primary<T>;
+  }
+
+  static getCompositeKeyHash<T>(data: EntityData<T>, meta: EntityMetadata<T>, convertCustomTypes = false, platform?: Platform): string {
+    const pks = this.getCompositeKeyValue(data, meta, convertCustomTypes, platform);
 
     return Utils.getPrimaryKeyHash(pks as string[]);
   }
