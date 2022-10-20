@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`mikroOrm schema 1`] = `
+"pragma foreign_keys = off;
+
+create table \`Task\` (\`id\` integer not null primary key autoincrement);
+
+create table \`User\` (\`id\` integer not null primary key autoincrement, \`role\` text not null default 'CREATOR');
+create index \`User_role_index\` on \`User\` (\`role\`);
+
+create table \`CreatorsOnTasks\` (\`creatorId\` integer not null, \`taskId\` integer not null, constraint \`CreatorsOnTasks_creatorId_foreign\` foreign key(\`creatorId\`) references \`User\`(\`id\`) on update cascade, primary key (\`creatorId\`, \`taskId\`));
+create index \`CreatorsOnTasks_creatorId_index\` on \`CreatorsOnTasks\` (\`creatorId\`);
+
+create table \`CreatorsOnTasks_task\` (\`creatorsOnTasks_creatorId\` integer not null, \`creatorsOnTasks_taskId\` integer not null, \`task\` integer not null, constraint \`CreatorsOnTasks_task_creatorsOnTasks_creatorId_creatorsOnTasks_taskId_foreign\` foreign key(\`creatorsOnTasks_creatorId\`, \`creatorsOnTasks_taskId\`) references \`CreatorsOnTasks\`(\`creatorId\`, \`taskId\`) on delete cascade on update cascade, constraint \`CreatorsOnTasks_task_task_foreign\` foreign key(\`task\`) references \`Task\`(\`id\`) on delete cascade on update cascade, primary key (\`creatorsOnTasks_creatorId\`, \`creatorsOnTasks_taskId\`, \`task\`));
+create index \`CreatorsOnTasks_task_task_index\` on \`CreatorsOnTasks_task\` (\`task\`);
+create index \`CreatorsOnTasks_task_creatorsOnTasks_creatorId_creatorsOnTasks_taskId_index\` on \`CreatorsOnTasks_task\` (\`creatorsOnTasks_creatorId\`, \`creatorsOnTasks_taskId\`);
+
+pragma foreign_keys = on;
+"
+`;
