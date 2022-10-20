@@ -96,10 +96,7 @@ describe('mikroOrm', () => {
     await orm.schema.createSchema();
   });
 
-  afterAll(async () => {
-    await orm.schema.dropSchema();
-    await orm.close(true);
-  });
+  afterAll(async () => await orm.close(true));
 
   beforeEach(() => orm.schema.clearDatabase());
 
