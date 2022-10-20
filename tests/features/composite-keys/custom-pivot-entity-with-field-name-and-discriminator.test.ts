@@ -13,7 +13,7 @@ import {
 export abstract class AbstractEntity {
 
   @PrimaryKey()
-  public id!: number;
+  id!: number;
 
 }
 
@@ -26,7 +26,7 @@ export abstract class AbstractEntity {
 class User extends AbstractEntity {
 
   @Property({ default: 'CREATOR' })
-  public role: 'CREATOR' = 'CREATOR' as const;
+  role: 'CREATOR' = 'CREATOR' as const;
 
 }
 
@@ -35,7 +35,7 @@ class Creator extends User {
 
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToMany({ entity: () => Task, pivotEntity: () => CreatorsOnTasks })
-  public tasks = new Collection<Task>(this);
+  tasks = new Collection<Task>(this);
 
 }
 
@@ -43,7 +43,7 @@ class Creator extends User {
 class Task extends AbstractEntity {
 
   @ManyToMany(() => Creator, c => c.tasks)
-  public creators = new Collection<Creator>(this);
+  creators = new Collection<Creator>(this);
 
 }
 
@@ -51,10 +51,10 @@ class Task extends AbstractEntity {
 class CreatorsOnTasks {
 
   @ManyToOne({ primary: true, fieldName: 'creatorId', entity: () => Creator })
-  public creator!: Creator;
+  creator!: Creator;
 
   @ManyToMany({ primary: true, fieldName: 'taskId', entity: () => Task })
-  public task!: Task;
+  task!: Task;
 
 }
 
