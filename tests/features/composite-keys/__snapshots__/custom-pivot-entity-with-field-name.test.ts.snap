@@ -1,0 +1,16 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`mikroOrm schema 1`] = `
+"pragma foreign_keys = off;
+
+create table \`Order\` (\`id\` integer not null primary key autoincrement, \`paid\` integer not null default false, \`shipped\` integer not null default false, \`created\` datetime not null);
+
+create table \`Product\` (\`id\` integer not null primary key autoincrement, \`name\` text not null, \`currentPrice\` integer not null);
+
+create table \`OrderItem\` (\`orderId\` integer not null, \`productId\` integer not null, \`amount\` integer not null default 1, \`offeredPrice\` integer not null default 0, constraint \`OrderItem_orderId_foreign\` foreign key(\`orderId\`) references \`Order\`(\`id\`) on update cascade, constraint \`OrderItem_productId_foreign\` foreign key(\`productId\`) references \`Product\`(\`id\`) on update cascade, primary key (\`orderId\`, \`productId\`));
+create index \`OrderItem_orderId_index\` on \`OrderItem\` (\`orderId\`);
+create index \`OrderItem_productId_index\` on \`OrderItem\` (\`productId\`);
+
+pragma foreign_keys = on;
+"
+`;
