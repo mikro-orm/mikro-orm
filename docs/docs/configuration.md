@@ -419,7 +419,7 @@ Read more about this in [Debugging](logging.md) section.
 
 ## Custom Fail Handler
 
-When no entity is found during `em.findOneOrFail()` call, `new Error()` will be thrown. 
+When no entity is found during `em.findOneOrFail()` call, `new NotFoundError()` will be thrown. 
 You can customize how the `Error` instance is created via `findOneOrFailHandler`:
 
 ```ts
