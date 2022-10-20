@@ -420,7 +420,7 @@ Read more about this in [Debugging](logging.md) section.
 ## Custom Fail Handler
 
 When no entity is found during `em.findOneOrFail()` call, `new NotFoundError()` will be thrown. 
-You can customize how the `Error` instance is created via `findOneOrFailHandler`:
+You can customize how the `Error` instance is created via `findOneOrFailHandler` (or `findExactlyOneOrFailHandler` if [strict mode](#strict-mode-and-property-validation) is enabled):
 
 ```ts
 MikroORM.init({
