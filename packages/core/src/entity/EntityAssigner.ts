@@ -156,10 +156,10 @@ export class EntityAssigner {
         const pk = Utils.extractPK(item, prop.targetMeta);
 
         if (pk && EntityAssigner.validateEM(em)) {
-          const ref = em.getReference(prop.type, pk as Primary<U>, options) as U;
+          const ref = em.getUnitOfWork().getById(prop.type, pk as Primary<U>, options.schema);
 
           /* istanbul ignore else */
-          if (helper(ref).isInitialized()) {
+          if (ref) {
             return EntityAssigner.assign(ref, item as U, options);
           }
         }

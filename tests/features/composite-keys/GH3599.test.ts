@@ -1,36 +1,19 @@
-import {
-  Cascade,
-  Collection,
-  Entity,
-  EntityData,
-  IdentifiedReference,
-  ManyToOne,
-  MikroORM,
-  OneToMany,
-  PrimaryKey,
-  PrimaryKeyProp,
-  PrimaryKeyType, wrap,
-} from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { Cascade, Collection, Entity, IdentifiedReference, ManyToOne, OneToMany, PrimaryKey } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/sqlite';
 import { v4 } from 'uuid';
 import { mockLogger } from '../../helpers';
 
 @Entity()
 export class Group {
 
-  @PrimaryKey({ columnType: 'uuid' })
-  public id: string = v4();
+  @PrimaryKey({ type: 'uuid' })
+  id: string = v4();
 
   @OneToMany({
     entity: 'GroupMember',
     mappedBy: (gm: GroupMember) => gm.group,
   })
-  public members = new Collection<GroupMember>(this);
-
-
-  constructor(params: EntityData<Group>) {
-    Object.assign(this, params);
-  }
+  members = new Collection<GroupMember>(this);
 
 }
 
@@ -43,7 +26,7 @@ export class GroupMember {
     primary: true,
     wrappedReference: true,
   })
-  public member!: IdentifiedReference<Member>;
+  member!: IdentifiedReference<Member>;
 
   @ManyToOne({
     entity: 'Group',
@@ -51,22 +34,15 @@ export class GroupMember {
     primary: true,
     wrappedReference: true,
   })
-  public group!: IdentifiedReference<Group>;
-
-  public [PrimaryKeyType]!: [string, string];
-  public [PrimaryKeyProp]!: 'member' | 'group';
-
-  constructor(params: EntityData<GroupMember>) {
-    Object.assign(this, params);
-  }
+  group!: IdentifiedReference<Group>;
 
 }
 
 @Entity()
 export class Member {
 
-  @PrimaryKey({ columnType: 'uuid' })
-  public id: string = v4();
+  @PrimaryKey({ type: 'uuid' })
+  id: string = v4();
 
   @OneToMany({
     entity: 'GroupMember',
@@ -74,106 +50,128 @@ export class Member {
     cascade: [Cascade.ALL],
     orphanRemoval: true,
   })
-  public groups = new Collection<GroupMember>(this);
-
-  constructor(params: EntityData<Member>) {
-    Object.assign(this, params);
-  }
+  groups = new Collection<GroupMember>(this);
 
 }
 
+let orm: MikroORM;
+
+beforeAll(async () => {
+  orm = await MikroORM.init({
+    dbName: ':memory:',
+    type: 'sqlite',
+    entities: [Group, Member, GroupMember],
+  });
+  await orm.schema.createSchema();
+});
+
+beforeEach(async () => {
+  await orm.schema.clearDatabase();
+});
+
+afterAll(async () => {
+  await orm.close(true);
+});
+
 const createEntities = async (orm: MikroORM): Promise<{ member: Member; group2: Group; group1: Group }> => {
-  const group1 = new Group({});
-  const group2 = new Group({});
-  const member = new Member({});
+  const group1 = new Group();
+  const group2 = new Group();
+  const member = new Member();
 
   await orm.em.persistAndFlush([group1, group2, member]);
   return { group1, group2, member };
 };
 
-describe('GH 3599', () => {
-  let orm: MikroORM<SqliteDriver>;
+test('GH 3599 with explicit collection API', async () => {
+  const { group1, group2, member } = await createEntities(orm);
+  const mock = mockLogger(orm, ['query']);
 
-  beforeAll(async () => {
-    orm = await MikroORM.init({
-      dbName: 'mikro_orm_test_3599',
-      type: 'postgresql',
-      entities: [Group, Member, GroupMember],
-    });
-    await orm.schema.refreshDatabase();
-  });
+  // adding a row to the pivot table
+  member.groups.set([orm.em.create(GroupMember, { group: group1, member })]);
 
-  afterAll(async () => {
-    await orm.close(true);
-  });
+  await orm.em.flush();
 
-  test('GH 3599', async () => {
-    const { group1, group2, member } = await createEntities(orm);
-    const mock = mockLogger(orm, ['query']);
+  // adding a new row to the pivot table
+  member.groups.set([
+    orm.em.create(GroupMember, { group: group1, member }),
+    orm.em.create(GroupMember, { group: group2, member }),
+  ]);
 
-    // adding a row to the pivot table
-    orm.em.assign(member, {
-      groups: [
-        {
-          group: group1.id,
-          member: member.id,
-        },
-      ],
-    });
+  await orm.em.flush();
 
-    await orm.em.persistAndFlush(member);
+  // removing a row from the pivot table
+  member.groups.set([orm.em.create(GroupMember, { group: group1, member })]);
 
-    // adding a new row to the pivot table
-    orm.em.assign(member, {
-      groups: [
-        {
-          group: group1.id,
-          member: member.id,
-        },
-        {
-          group: group2.id,
-          member: member.id,
-        },
-      ],
-    });
+  await orm.em.flush();
+  const queries = mock.mock.calls.map(c => c[0]);
 
-    await orm.em.persistAndFlush(member);
+  expect(queries[0]).toMatch('begin');
+  expect(queries[1]).toMatch('insert into `group_member` (`member_id`, `group_id`) values (?, ?)');
+  expect(queries[2]).toMatch('commit');
 
-    // removing a row from the pivot table
-    orm.em.assign(member, {
-      groups: [
-        {
-          group: group1.id,
-          member: member.id,
-        },
-      ],
-    });
+  expect(queries[3]).toMatch('begin');
+  expect(queries[4]).toMatch('insert into `group_member` (`member_id`, `group_id`) values (?, ?)');
+  expect(queries[5]).toMatch('commit');
 
-    await orm.em.persistAndFlush(member);
-    const queries: string[] = mock.mock.calls.map(c => c[0]);
+  expect(queries[6]).toMatch('begin');
+  expect(queries[7]).toMatch('delete from `group_member` where (`member_id`, `group_id`) in ( values (?, ?))');
+  expect(queries[8]).toMatch('commit');
+});
 
-    expect(queries[0]).toMatch('begin');
-    expect(queries[1]).toMatch('insert into "group_member" ("group_id", "member_id") values ($1, $2)');
-    expect(queries[2]).toMatch('commit');
+test('GH 3599 with assign helper', async () => {
+  const { group1, group2, member } = await createEntities(orm);
+  const mock = mockLogger(orm, ['query']);
 
-    expect(queries[3]).toMatch('begin');
-    expect(queries[4]).toMatch('insert into "group_member" ("group_id", "member_id") values ($1, $2)');
-    expect(queries[5]).toMatch('commit');
-
-    expect(queries[6]).toMatch('begin');
-    expect(queries[7]).toMatch('delete from "group_member" where ("member_id", "group_id") in (($1, $2))');
-    expect(queries[8]).toMatch('commit');
-
-    const result = (await orm.em.findOne(Member, member.id))!;
-
-    expect(result.groups).toHaveLength(1);
-    expect(wrap(result.groups[0]).toJSON()).toMatchObject({
-      member: {
-        id: member.id,
+  // adding a row to the pivot table
+  orm.em.assign(member, {
+    groups: [
+      {
+        group: group1.id,
+        member: member.id,
       },
-      group: {
-        id: group1.id,
-      },
-    });
+    ],
   });
+
+  await orm.em.flush();
+
+  // adding a new row to the pivot table
+  orm.em.assign(member, {
+    groups: [
+      {
+        group: group1.id,
+        member: member.id,
+      },
+      {
+        group: group2.id,
+        member: member.id,
+      },
+    ],
+  });
+
+  await orm.em.flush();
+
+  // removing a row from the pivot table
+  orm.em.assign(member, {
+    groups: [
+      {
+        group: group1.id,
+        member: member.id,
+      },
+    ],
+  });
+
+  await orm.em.flush();
+  const queries = mock.mock.calls.map(c => c[0]);
+
+  expect(queries[0]).toMatch('begin');
+  expect(queries[1]).toMatch('insert into `group_member` (`member_id`, `group_id`) values (?, ?)');
+  expect(queries[2]).toMatch('commit');
+
+  expect(queries[3]).toMatch('begin');
+  expect(queries[4]).toMatch('insert into `group_member` (`member_id`, `group_id`) values (?, ?)');
+  expect(queries[5]).toMatch('commit');
+
+  expect(queries[6]).toMatch('begin');
+  expect(queries[7]).toMatch('delete from `group_member` where (`member_id`, `group_id`) in ( values (?, ?))');
+  expect(queries[8]).toMatch('commit');
 });
