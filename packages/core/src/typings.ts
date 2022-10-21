@@ -140,6 +140,7 @@ export interface IWrappedEntityInternal<
   __onLoadFired: boolean;
   __reference?: Reference<T>;
   __lazyInitialized: boolean;
+  __pk?: Primary<T>;
   __primaryKeys: Primary<T>[];
   __serializationContext: { root?: SerializationContext<T>; populate?: PopulateOptions<T>[] };
 }

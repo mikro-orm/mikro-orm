@@ -175,6 +175,7 @@ export class EntityHelper {
       }
 
       if (prop.reference === ReferenceType.ONE_TO_ONE && entity && helper(entity).__initialized && entity[prop2.name] != null && value == null) {
+        helper(entity).__pk = helper(entity).getPrimaryKey()!;
         entity[prop2.name] = value;
         if (prop.orphanRemoval) {
           helper(entity).__em?.getUnitOfWork().scheduleOrphanRemoval(entity);

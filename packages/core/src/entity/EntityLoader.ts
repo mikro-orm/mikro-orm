@@ -65,7 +65,7 @@ export class EntityLoader {
       throw ValidationError.invalidPropertyName(entityName, invalid.field);
     }
 
-    (entities as AnyEntity[]).forEach(e => e.__helper!.__serializationContext.populate = e.__helper!.__serializationContext.populate ?? populate as PopulateOptions<T>[]);
+    entities.forEach(e => helper(e).__serializationContext.populate ??= populate as PopulateOptions<T>[]);
 
     for (const pop of populate) {
       await this.populateField<T>(entityName, entities, pop, options as Required<EntityLoaderOptions<T>>);

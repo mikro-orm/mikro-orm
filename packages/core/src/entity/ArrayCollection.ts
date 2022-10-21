@@ -235,10 +235,15 @@ export class ArrayCollection<T extends object, O extends object> {
       if (this.shouldPropagateToCollection(collection, method)) {
         collection[method](this.owner);
       }
-    } else if (this.property.reference === ReferenceType.ONE_TO_MANY && method !== 'takeSnapshot' && !(this.property.orphanRemoval && method === 'remove')) {
+    } else if (this.property.reference === ReferenceType.ONE_TO_MANY && method !== 'takeSnapshot') {
       const prop2 = this.property.targetMeta!.properties[this.property.mappedBy];
       const owner = prop2.mapToPk ? helper(this.owner).getPrimaryKey() : this.owner;
       const value = method === 'add' ? owner : null;
+
+      if (this.property.orphanRemoval && method === 'remove') {
+        // cache the PK before we propagate, as its value might be needed when flushing
+        helper(item).__pk = helper(item).getPrimaryKey()!;
+      }
 
       // skip if already propagated
       if (Reference.unwrapReference(item[this.property.mappedBy]) !== value) {

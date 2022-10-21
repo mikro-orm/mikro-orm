@@ -155,9 +155,10 @@ export class EntityComparator {
 
     const lines: string[] = [];
     const context = new Map<string, any>();
+    context.set('getCompositeKeyValue', (val: any) => Utils.getCompositeKeyValue(val, meta, true, this.platform));
 
     if (meta.primaryKeys.length > 1) {
-      lines.push(`  const pks = [`);
+      lines.push(`  const pks = entity.__helper.__pk ? getCompositeKeyValue(entity.__helper.__pk) : [`);
       meta.primaryKeys.forEach(pk => {
         if (meta.properties[pk].reference !== ReferenceType.SCALAR) {
           lines.push(`    (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) ? entity${this.wrap(pk)}.__helper.getSerializedPrimaryKey() : entity${this.wrap(pk)},`);

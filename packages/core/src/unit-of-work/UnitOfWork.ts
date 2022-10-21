@@ -664,7 +664,11 @@ export class UnitOfWork {
   }
 
   private postCommitCleanup(): void {
-    this.changeSets.forEach(cs => helper(cs.entity).__processing = false);
+    this.changeSets.forEach(cs => {
+      const wrapped = helper(cs.entity);
+      wrapped.__processing = false;
+      delete wrapped.__pk;
+    });
     this.persistStack.clear();
     this.removeStack.clear();
     this.orphanRemoveStack.clear();

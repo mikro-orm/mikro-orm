@@ -4,21 +4,17 @@ import type { AbstractSqlDriver } from '@mikro-orm/sqlite';
 @Entity()
 export class Category {
 
+  @PrimaryKey()
+  id!: number;
+
   constructor(id: number) {
     this.id = id;
   }
-
-  @PrimaryKey()
-  id!: number;
 
 }
 
 @Entity()
 export class Site {
-
-  constructor(id: number) {
-    this.id = id;
-  }
 
   @PrimaryKey()
   id!: number;
@@ -26,6 +22,10 @@ export class Site {
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany({ entity: () => SiteCategory, mappedBy: 'site', orphanRemoval: true })
   siteCategories = new Collection<SiteCategory>(this);
+
+  constructor(id: number) {
+    this.id = id;
+  }
 
 }
 

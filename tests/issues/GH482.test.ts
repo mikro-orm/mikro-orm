@@ -1,5 +1,5 @@
-import { Entity, PrimaryKey, MikroORM, BigIntType, OneToMany, Collection, Enum, ManyToOne, Property } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, BigIntType, OneToMany, Collection, Enum, ManyToOne, Property } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
 export enum LevelType {
@@ -49,7 +49,7 @@ class Level {
 
 describe('GH issue 482', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({

@@ -31,6 +31,9 @@ export class WrappedEntity<T extends object, PK extends keyof T> {
   __data: Dictionary = {};
   __processing = false;
 
+  /** stores last known primary key, as its current state might be broken due to propagation/orphan removal, but we need to know the PK to be able t remove the entity */
+  __pk?: Primary<T>;
+
   /** holds the reference wrapper instance (if created), so we can maintain the identity on reference wrappers too */
   __reference?: Reference<T>;
 
@@ -103,10 +106,10 @@ export class WrappedEntity<T extends object, PK extends keyof T> {
 
   getPrimaryKey(convertCustomTypes = false): Primary<T> | null {
     if (convertCustomTypes) {
-      return this.pkGetterConverted!(this.entity);
+      return this.__pk ?? this.pkGetterConverted!(this.entity);
     }
 
-    return this.pkGetter!(this.entity);
+    return this.__pk ?? this.pkGetter!(this.entity);
   }
 
   getPrimaryKeys(convertCustomTypes = false): Primary<T>[] | null {
@@ -144,6 +147,7 @@ export class WrappedEntity<T extends object, PK extends keyof T> {
 
   setPrimaryKey(id: Primary<T> | null) {
     this.entity[this.__meta!.primaryKeys[0] as string] = id;
+    this.__pk = id!;
   }
 
   getSerializedPrimaryKey(): string {
