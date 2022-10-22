@@ -11,6 +11,10 @@ const closeSpy = jest.spyOn(MikroORM.prototype, 'close');
 jest.spyOn(CLIHelper, 'showHelp').mockImplementation(() => void 0);
 const up = jest.spyOn(Migrator.prototype, 'up');
 up.mockResolvedValue([]);
+const down = jest.spyOn(Migrator.prototype, 'down');
+down.mockResolvedValue([]);
+const createMigrationMock = jest.spyOn(Migrator.prototype, 'createMigration');
+createMigrationMock.mockResolvedValue({ fileName: '1', code: '2', diff: { up: ['3'], down: [] } });
 const dumpMock = jest.spyOn(CLIHelper, 'dump');
 dumpMock.mockImplementation(() => void 0);
 jest.spyOn(CLIHelper, 'dumpTable').mockImplementation(() => void 0);
@@ -43,13 +47,13 @@ describe('RollupCommand', () => {
     const cmd = MigrationCommandFactory.create('rollup');
 
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
-    expect(up.mock.calls.length).toBe(1);
-    expect(up.mock.calls[0][0]).toEqual({});
+    expect(down.mock.calls.length).toBe(1);
+    expect(down.mock.calls[0][0]).toEqual({});
     expect(closeSpy).toBeCalledTimes(1);
     await expect(cmd.handler({ to: 'a' } as any)).resolves.toBeUndefined();
-    expect(up.mock.calls.length).toBe(5);
-    expect(up.mock.calls[4][0]).toEqual({ to: 'a' });
-    expect(closeSpy).toBeCalledTimes(5);
+    expect(down.mock.calls.length).toBe(2);
+    expect(down.mock.calls[1][0]).toEqual({ to: 'a' });
+    expect(closeSpy).toBeCalledTimes(2);
   });
 
 });

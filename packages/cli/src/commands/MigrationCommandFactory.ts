@@ -219,11 +219,14 @@ export class MigrationCommandFactory {
       await remove(snapshotPath);
     }
 
+    // Delete migrations
+    // TODO(marek)
+
     // Create the rollup
     await this.handleCreateCommand(migrator, { seed: args.seed, $0: args.$0, _: args._  }, orm.config);
 
-    // Execute the rollup
-    await this.handleUpDownCommand({ seed: args.seed, $0: args.$0, _: args._  }, migrator, 'up');
+    // Execute the rollup? Perhaps optionally if --migrate or --up are provided?
+    // await this.handleUpDownCommand({ seed: args.seed, $0: args.$0, _: args._  }, migrator, 'up');
 
     CLIHelper.dump(colors.green('Rollup migration created successfully'));
   }
