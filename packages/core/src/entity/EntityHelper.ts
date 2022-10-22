@@ -185,14 +185,10 @@ export class EntityHelper {
   }
 
   private static propagateOneToOne<T extends object, O extends object>(entity: T, owner: O, prop: EntityProperty<O>, prop2: EntityProperty<T>): void {
-    const inverse = entity[prop2.name];
-
-    if (Reference.isReference(inverse)) {
-      inverse.set(owner);
-    } else if (prop2.mapToPk) {
+    if (prop2.mapToPk) {
       entity[prop2.name] = helper(owner).getPrimaryKey() as T[keyof T & string];
     } else {
-      entity[prop2.name] = Reference.wrapReference(owner, prop) as unknown as T[keyof T & string];
+      entity[prop2.name] = Reference.wrapReference(owner, prop) as T[keyof T & string];
     }
   }
 
