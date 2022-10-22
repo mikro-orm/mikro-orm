@@ -14,7 +14,6 @@ export class Author {
   @OneToOne(() => Author, undefined, { nullable: true })
   mentor?: Author;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => Book, e => e.author, { cascade: [Cascade.REMOVE, Cascade.PERSIST] })
   books = new Collection<Book>(this);
 

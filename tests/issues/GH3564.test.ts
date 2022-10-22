@@ -10,7 +10,6 @@ class Part {
   @Property()
   value!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToOne(() => Car, {
     wrappedReference: true,
     nullable: true,

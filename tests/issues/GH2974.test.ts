@@ -9,7 +9,6 @@ export class SomeMany {
   @Property()
   arrVal!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToOne(() => Test)
   ref!: any;
 

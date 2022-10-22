@@ -9,7 +9,6 @@ export class A {
   @Property()
   name!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToOne({ entity: () => B, nullable: true, orphanRemoval: true })
   b?: any;
 

@@ -11,7 +11,6 @@ export class PersonEntity {
   @Property()
   name!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => TaskEntity, task => task.person)
   tasks = new Collection<TaskEntity>(this);
 

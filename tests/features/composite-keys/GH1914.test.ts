@@ -19,7 +19,6 @@ export class Site {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany({ entity: () => SiteCategory, mappedBy: 'site', orphanRemoval: true })
   siteCategories = new Collection<SiteCategory>(this);
 

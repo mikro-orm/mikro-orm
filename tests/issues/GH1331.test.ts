@@ -24,8 +24,7 @@ export class D {
   order!: number;
 
   @ManyToOne({
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    entity: () => C,
+      entity: () => C,
     wrappedReference: true,
     nullable: true,
   })
@@ -43,8 +42,7 @@ export class C {
   order!: number;
 
   @ManyToOne({
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    entity: () => B,
+      entity: () => B,
     wrappedReference: true,
     nullable: true,
   })
@@ -72,8 +70,7 @@ export class B {
   order!: number;
 
   @ManyToOne({
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    entity: () => A,
+      entity: () => A,
     wrappedReference: true,
     nullable: true,
   })

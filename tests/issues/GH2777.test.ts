@@ -6,7 +6,6 @@ export class Image {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToOne(() => Customer)
   customer!: any;
 
@@ -28,7 +27,6 @@ export class Product {
   })
   image?: Image;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToOne(() => Customer)
   customer!: any;
 
@@ -43,7 +41,6 @@ export class Comment {
   @Property()
   title!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToOne(() => Customer)
   customer!: any;
 

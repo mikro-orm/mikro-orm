@@ -26,7 +26,6 @@ class User {
   @Property()
   name!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => Task, ({ owner }) => owner)
   tasks = new Collection<Task>(this);
 

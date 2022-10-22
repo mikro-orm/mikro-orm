@@ -70,7 +70,6 @@ export class Session {
   @ManyToOne(() => Member, { eager: true })
   owner: Member;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToOne(() => Participant, { nullable: true, default: null, eager: true })
   lastActionBy: Participant | null = null;
 

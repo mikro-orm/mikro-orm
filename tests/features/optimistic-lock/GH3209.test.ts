@@ -50,7 +50,6 @@ export class Author {
   @Property({ version: true, default: 1 })
   version: number = 1;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => Book, book => book.author)
   books = new Collection<Book>(this);
 

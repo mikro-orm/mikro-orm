@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-use-before-define */
-
 import { Collection, Entity, Enum, Filter, LoadStrategy, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PopulateHint, PrimaryKey, Property } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';

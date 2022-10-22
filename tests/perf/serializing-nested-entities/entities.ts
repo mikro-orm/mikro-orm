@@ -18,11 +18,9 @@ export class Project {
   @Property()
   name!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => Filter, filters => filters.project)
   filters = new Collection<Filter>(this);
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => Risk, e => e.project)
   risks = new Collection<Risk>(this);
 
@@ -41,8 +39,7 @@ export class Risk {
   project!: IdentifiedReference<Project>;
 
   @ManyToMany({
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    entity: () => FilterValue,
+      entity: () => FilterValue,
     pivotTable: 'risk_filter_values',
     joinColumn: 'risk_id',
     inverseJoinColumn: 'filter_value_id',
@@ -60,7 +57,6 @@ export class Filter {
   @Property()
   name!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => FilterValue, values => values.filter)
   values = new Collection<FilterValue>(this);
 

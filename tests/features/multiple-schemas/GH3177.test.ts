@@ -7,11 +7,9 @@ class UserAccessProfile {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => User, user => user.accessProfile)
   users = new Collection<User>(this);
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToMany({ entity: () => Permission, pivotEntity: () => AccessProfilePermission })
   permissions = new Collection<Permission>(this);
 
@@ -23,7 +21,6 @@ class User {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToOne(() => UserAccessProfile)
   accessProfile!: UserAccessProfile;
 
@@ -35,7 +32,6 @@ class Permission {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToMany({ entity: () => UserAccessProfile, mappedBy: p => p.permissions })
   accessProfiles = new Collection<UserAccessProfile>(this);
 

@@ -6,7 +6,6 @@ export class Checkout {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToOne(() => Discount, discount => discount.checkout, {
     nullable: true,
   })
@@ -41,7 +40,6 @@ export class Checkout2 {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToOne(() => Discount2, discount => discount.checkout, {
     nullable: true,
     orphanRemoval: true,

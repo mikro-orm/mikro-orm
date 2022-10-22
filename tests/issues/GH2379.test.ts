@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-use-before-define */
 import { BigIntType, Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { performance } from 'perf_hooks';

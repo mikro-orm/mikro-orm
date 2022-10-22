@@ -7,7 +7,6 @@ export class A {
   @PrimaryKey({ type: 'number' })
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToOne(() => B)
   b!: any;
 
@@ -25,7 +24,6 @@ export class C {
   @OneToOne(() => A)
   a!: A;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => B, b => b.c, { eager: true })
   bCollection = new Collection<B>(this);
 

@@ -20,7 +20,6 @@ export class ElementEntity {
   @OneToOne({ entity: () => NodeEntity, primary: true, onDelete: 'cascade', onUpdateIntegrity: 'cascade' })
   node!: NodeEntity;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany({ entity: () => DependentEntity, mappedBy: 'element', cascade: [Cascade.ALL] })
   dependents = new Collection<DependentEntity>(this);
 

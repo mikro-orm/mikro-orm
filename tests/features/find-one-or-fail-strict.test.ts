@@ -9,7 +9,6 @@ class Author {
   @Property()
   name!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany({ entity: () => Book, mappedBy: (book: Book) => book.author, orphanRemoval: true })
   books: Collection<Book> = new Collection<Book>(this);
 

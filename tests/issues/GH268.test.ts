@@ -11,7 +11,6 @@ export class A {
   @Property()
   name!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToMany(() => B, b => b.aCollection)
   bCollection = new Collection<B>(this);
 

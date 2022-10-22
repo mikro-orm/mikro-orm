@@ -11,7 +11,6 @@ export class Author {
   @Property({ length: 42 })
   name!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => Book, book => book.author)
   books = new Collection<Book>(this);
 

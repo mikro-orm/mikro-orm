@@ -23,7 +23,6 @@ export class Person extends BasePerson {
 @Entity()
 export class Employee extends BasePerson {
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToMany({ entity: () => PhotoFile, inversedBy: 'employees' })
   photos = new Collection<PhotoFile>(this);
 

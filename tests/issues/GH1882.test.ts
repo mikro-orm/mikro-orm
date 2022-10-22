@@ -8,7 +8,6 @@ export class Foo {
   @PrimaryKey({ type: BigIntType })
   id!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => Bar, bar => bar.foo)
   barItems = new Collection<Bar>(this);
 

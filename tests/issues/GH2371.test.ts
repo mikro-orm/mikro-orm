@@ -7,7 +7,6 @@ class Vehicle {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToOne(() => Garage, { wrappedReference: true })
   garage!: IdentifiedReference<Garage>;
 

@@ -9,7 +9,6 @@ export class A {
   @Property()
   prop!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => B, b => b)
   coll = new Collection<B>(this);
 

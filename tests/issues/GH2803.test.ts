@@ -12,8 +12,7 @@ export class Book {
   name?: string;
 
   @OneToMany({
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    entity: () => Tag,
+      entity: () => Tag,
     mappedBy: t => t.book,
     strategy: LoadStrategy.JOINED,
   })

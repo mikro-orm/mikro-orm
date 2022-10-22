@@ -7,7 +7,6 @@ export class Brand {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany({ entity: () => BrandSiteRestriction, mappedBy: 'brand' })
   brandSiteRestrictions = new Collection<BrandSiteRestriction>(this);
 
@@ -19,7 +18,6 @@ export class BrandSiteRestriction {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToOne({ entity: () => Site })
   site!: any;
 
@@ -34,11 +32,9 @@ export class Placement {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToOne({ entity: () => Publisher, nullable: true })
   publisher?: any;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToOne({ entity: () => Site })
   site!: any;
 
@@ -47,7 +43,6 @@ export class Placement {
 @Entity({ tableName: 'publishers' })
 export class Publisher {
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany({ entity: () => Site, mappedBy: 'publisher' })
   sites = new Collection<Site>(this);
 

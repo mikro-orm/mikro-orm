@@ -7,7 +7,6 @@ export class First {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToOne(() => Second, second => second.first)
   second?: any;
 

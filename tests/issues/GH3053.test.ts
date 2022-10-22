@@ -7,7 +7,6 @@ class Book {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => Author, c => c.book)
   children = new Collection<Author>(this);
 

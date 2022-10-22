@@ -8,7 +8,6 @@ class A {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => B, b => b.a)
   bItems = new Collection<B>(this);
 

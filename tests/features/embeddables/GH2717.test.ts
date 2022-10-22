@@ -6,7 +6,6 @@ export class Cat {
   @PrimaryKey()
   name!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToOne(() => User, { wrappedReference: true })
   user!: IdentifiedReference<User>;
 

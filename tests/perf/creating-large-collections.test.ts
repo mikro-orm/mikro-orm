@@ -7,7 +7,6 @@ class TestRunEntity {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => TestCaseEntity, e => e.testRun)
   cases = new Collection<TestCaseEntity>(this);
 

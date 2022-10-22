@@ -10,7 +10,6 @@ export class A {
   @Property()
   name: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToOne({ entity: () => B, inversedBy: 'a', wrappedReference: true, nullable: true })
   b?: IdentifiedReference<B>;
 

@@ -14,7 +14,6 @@ export class UserEntity {
   @Property({ type: 'string' })
   email!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => UserTenantEntity, item => item.user)
   items = new Collection<UserTenantEntity>(this);
 
@@ -38,7 +37,6 @@ export class TenantEntity {
   @Property({ type: 'boolean', fieldName: 'isEnabled' })
   isEnabled: boolean = true;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => UserTenantEntity, item => item.tenant)
   items = new Collection<UserTenantEntity>(this);
 

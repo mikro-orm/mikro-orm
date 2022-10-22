@@ -2,7 +2,6 @@ import { Cascade, Collection, Entity, EntityRepositoryType, ManyToOne, MikroORM,
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { EntityRepository } from '@mikro-orm/postgresql';
 
-// eslint-disable-next-line @typescript-eslint/no-use-before-define
 @Entity({ tableName: 'teachers', customRepository: () => TeacherRepository })
 class Teacher {
 

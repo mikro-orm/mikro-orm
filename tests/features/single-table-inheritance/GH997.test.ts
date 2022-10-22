@@ -18,7 +18,6 @@ class Parent extends Base {
   @Property()
   type!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => Relation1, e => e.parent)
   qaInfo = new Collection<Relation1>(this);
 
@@ -35,7 +34,6 @@ class Relation1 extends Base {
 @Entity({ discriminatorValue: 'Child1' })
 class Child1 extends Parent {
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => Child1Specific, e => e.child1)
   rel = new Collection<Child1Specific>(this);
 

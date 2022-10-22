@@ -12,11 +12,9 @@ export class Recipe {
   @Property()
   name!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany({ entity: () => Ingredient, mappedBy: 'recipe', orphanRemoval: true })
   ingredients = new Collection<Ingredient>(this);
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToMany({ entity: () => User })
   authors = new Collection<User>(this);
 

@@ -6,7 +6,6 @@ class A {
   @PrimaryKey({ fieldName: 'prc_id' })
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => B, b => b.a)
   b = new Collection<B>(this);
 

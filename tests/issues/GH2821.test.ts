@@ -7,11 +7,9 @@ export class Position {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToOne(() => Leg, (leg: Leg) => leg.purchasePosition, { owner: true, nullable: true })
   purchase?: any;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToOne(() => Leg, (leg: Leg) => leg.salePosition, { owner: true, nullable: true })
   sale?: any;
 

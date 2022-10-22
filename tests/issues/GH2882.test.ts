@@ -7,7 +7,6 @@ export class Parent {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => Child, child => child.parent)
   children = new Collection<Child>(this);
 

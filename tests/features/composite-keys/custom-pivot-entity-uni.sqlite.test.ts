@@ -6,11 +6,9 @@ export class Order {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => OrderItem, item => item.order)
   items = new Collection<OrderItem>(this);
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToMany({ entity: () => Product, pivotEntity: () => OrderItem })
   products = new Collection<Product>(this);
 

@@ -11,7 +11,6 @@ class Customer {
   @Property()
   name: string = 'Foo';
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => Order, order => order.customer)
   orders = new Collection<Order>(this);
 

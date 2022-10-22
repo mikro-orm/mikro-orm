@@ -7,7 +7,6 @@ export class A {
   @PrimaryKey({ type: 'number' })
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToOne({ entity: () => B, inversedBy: 'a', wrappedReference: true, nullable: true })
   b?: IdentifiedReference<B>;
 

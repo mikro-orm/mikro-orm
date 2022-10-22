@@ -8,7 +8,6 @@ export class User {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => Order, ({ user }) => user)
   orders: Collection<Order> = new Collection<Order>(this);
 
