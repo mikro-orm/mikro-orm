@@ -201,7 +201,7 @@ export class MigrationCommandFactory {
 
   private static async handleRollupCommand(args: ArgumentsCamelCase<Options>, migrator: IMigrator, orm: MikroORM) {
     // First roll back to the first migration that is included in the rollup
-    await this.handleUpDownCommand(args, migrator, 'down');
+    await this.handleUpDownCommand({ seed: args.seed, $0: args.$0, _: args._, to: args.to  }, migrator, 'down');
 
     const options = orm.config.get('migrations');
     const snapshot = options.snapshot;
@@ -220,10 +220,10 @@ export class MigrationCommandFactory {
     }
 
     // Create the rollup
-    await this.handleCreateCommand(migrator, args, orm.config);
+    await this.handleCreateCommand(migrator, { seed: args.seed, $0: args.$0, _: args._  }, orm.config);
 
     // Execute the rollup
-    await this.handleUpDownCommand(args, migrator, 'up');
+    await this.handleUpDownCommand({ seed: args.seed, $0: args.$0, _: args._  }, migrator, 'up');
 
     CLIHelper.dump(colors.green('Rollup migration created successfully'));
   }
