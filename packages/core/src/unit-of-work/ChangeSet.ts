@@ -54,5 +54,6 @@ export enum ChangeSetType {
   CREATE = 'create',
   UPDATE = 'update',
   DELETE = 'delete',
+  UPDATE_EARLY = 'update_early',
   DELETE_EARLY = 'delete_early',
 }

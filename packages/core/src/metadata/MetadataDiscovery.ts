@@ -897,6 +897,7 @@ export class MetadataDiscovery {
       return prop.defaultRaw;
     }
 
+    /* istanbul ignore next */
     if (prop.default != null) {
       return '' + this.platform.quoteVersionValue(prop.default as number, prop);
     }
@@ -1067,6 +1068,7 @@ export class MetadataDiscovery {
     path = Utils.normalizePath(this.config.get('baseDir'), path);
     const exports: Dictionary = {};
 
+    /* istanbul ignore next */
     try {
       Object.assign(exports, await Utils.dynamicImport(path));
     } catch (e) {

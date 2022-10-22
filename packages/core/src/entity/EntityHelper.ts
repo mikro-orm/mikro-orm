@@ -150,17 +150,19 @@ export class EntityHelper {
         return helper(ref).__data[prop.name];
       },
       set(val: AnyEntity | Reference<AnyEntity>) {
-        const entity = Reference.unwrapReference(val ?? helper(ref).__data[prop.name]);
-        helper(ref).__data[prop.name] = Reference.wrapReference(val as T, prop);
-        helper(ref).__touched = true;
-        EntityHelper.propagate(meta, entity, this, prop, Reference.unwrapReference(val));
+        const wrapped = helper(ref);
+        const entity = Reference.unwrapReference(val ?? wrapped.__data[prop.name]);
+        const old = Reference.unwrapReference(wrapped.__data[prop.name]);
+        wrapped.__data[prop.name] = Reference.wrapReference(val as T, prop);
+        wrapped.__touched = true;
+        EntityHelper.propagate(meta, entity, this, prop, Reference.unwrapReference(val), old);
       },
       enumerable: true,
       configurable: true,
     });
   }
 
-  private static propagate<T extends object, O extends object>(meta: EntityMetadata<O>, entity: T, owner: O, prop: EntityProperty<O>, value?: O[keyof O]): void {
+  private static propagate<T extends object, O extends object>(meta: EntityMetadata<O>, entity: T, owner: O, prop: EntityProperty<O>, value?: T[keyof T & string], old?: object): void {
     const inverseProps = prop.targetMeta!.relations.filter(prop2 => (prop2.inversedBy || prop2.mappedBy) === prop.name && prop2.targetMeta!.root.className === meta.root.className);
 
     for (const prop2 of inverseProps) {
@@ -171,24 +173,32 @@ export class EntityHelper {
       }
 
       if (prop.reference === ReferenceType.ONE_TO_ONE && entity && helper(entity).__initialized && Reference.unwrapReference(inverse) !== owner && value != null) {
-        EntityHelper.propagateOneToOne(entity, owner, prop, prop2);
+        EntityHelper.propagateOneToOne(entity, owner, prop, prop2, value, old);
       }
 
       if (prop.reference === ReferenceType.ONE_TO_ONE && entity && helper(entity).__initialized && entity[prop2.name] != null && value == null) {
-        helper(entity).__pk = helper(entity).getPrimaryKey()!;
-        entity[prop2.name] = value;
-        if (prop.orphanRemoval) {
-          helper(entity).__em?.getUnitOfWork().scheduleOrphanRemoval(entity);
-        }
+        EntityHelper.propagateOneToOne(entity, owner, prop, prop2, value, old);
       }
     }
   }
 
-  private static propagateOneToOne<T extends object, O extends object>(entity: T, owner: O, prop: EntityProperty<O>, prop2: EntityProperty<T>): void {
-    if (prop2.mapToPk) {
+  private static propagateOneToOne<T extends object, O extends object>(entity: T, owner: O, prop: EntityProperty<O>, prop2: EntityProperty<T>, value?: T[keyof T & string], old?: T): void {
+    helper(entity).__pk = helper(entity).getPrimaryKey()!;
+
+    if (value == null) {
+      entity[prop2.name] = value as T[keyof T & string];
+    } else if (prop2.mapToPk) {
       entity[prop2.name] = helper(owner).getPrimaryKey() as T[keyof T & string];
     } else {
       entity[prop2.name] = Reference.wrapReference(owner, prop) as T[keyof T & string];
+    }
+
+    if (old && prop.orphanRemoval) {
+      helper(old).__em?.getUnitOfWork().scheduleOrphanRemoval(old);
+    }
+
+    if (old?.[prop2.name] != null) {
+      delete helper(old).__data[prop2.name];
     }
   }
 

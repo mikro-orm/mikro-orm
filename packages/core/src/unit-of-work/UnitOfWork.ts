@@ -242,7 +242,6 @@ export class UnitOfWork {
     }
 
     this.initIdentifier(entity);
-    this.checkOrphanRemoval(cs);
     this.changeSets.set(entity, cs);
     this.persistStack.delete(entity);
     this.queuedActions.delete(cs.name);
@@ -261,7 +260,6 @@ export class UnitOfWork {
 
     /* istanbul ignore else */
     if (cs && !this.checkUniqueProps(changeSet)) {
-      this.checkOrphanRemoval(cs);
       Object.assign(changeSet.payload, cs.payload);
       helper(entity).__originalEntityData = this.comparator.prepareEntity(entity);
       helper(entity).__touched = false;
@@ -401,21 +399,20 @@ export class UnitOfWork {
     this.identityMap.delete(entity);
     const wrapped = helper(entity);
 
-    wrapped.__meta.bidirectionalRelations
-      .map(prop => [prop.name, prop.reference, prop.mappedBy || prop.inversedBy] as const)
-      .forEach(([name, kind, inverse]) => {
-        const rel = Reference.unwrapReference(entity[name]);
-        if ([ReferenceType.MANY_TO_MANY, ReferenceType.ONE_TO_MANY].includes(kind)) {
-          if ((rel as Collection<any>)?.isInitialized()) {
-            (rel as Collection<any>).removeAll();
-          }
-        } else {
-          // there is a value, and it is still a self-reference (e.g. not replaced by user manually)
-          if (rel?.[inverse] && entity === rel?.[inverse]) {
-            delete rel[inverse];
-          }
-        }
-      });
+    for (const prop of wrapped.__meta.bidirectionalRelations) {
+      const inverse = prop.mappedBy || prop.inversedBy;
+      const rel = Reference.unwrapReference(entity[prop.name]);
+
+      if (Utils.isCollection(rel) && rel.isInitialized()) {
+        rel.removeAll();
+        continue;
+      }
+
+      // there is a value, and it is still a self-reference (e.g. not replaced by user manually)
+      if (rel?.[inverse] && entity === rel[inverse]) {
+        delete helper(rel).__data[inverse];
+      }
+    }
 
     delete wrapped.__identifier;
     delete wrapped.__originalEntityData;
@@ -464,7 +461,14 @@ export class UnitOfWork {
       }
     }
 
+    for (const cs of this.changeSets.values()) {
+      if (cs.type === ChangeSetType.UPDATE) {
+        this.findEarlyUpdates(cs, inserts);
+      }
+    }
+
     for (const entity of this.removeStack) {
+      /* istanbul ignore next */
       if (helper(entity).__processing) {
         continue;
       }
@@ -534,11 +538,13 @@ export class UnitOfWork {
     const changeSet = this.changeSetComputer.computeChangeSet(entity);
 
     if (changeSet && !this.checkUniqueProps(changeSet)) {
-      this.checkOrphanRemoval(changeSet);
       this.changeSets.set(entity, changeSet);
     }
   }
 
+  /**
+   * Returns `true` when the change set should be skipped as it will be empty after the extra update.
+   */
   private checkUniqueProps<T extends object>(changeSet: ChangeSet<T>): boolean {
     if (this.platform.allowsUniqueBatchUpdates() || changeSet.type !== ChangeSetType.UPDATE) {
       return false;
@@ -559,22 +565,6 @@ export class UnitOfWork {
 
       return undefined;
     }).filter(i => i) as string[];
-  }
-
-  private checkOrphanRemoval<T extends object>(changeSet: ChangeSet<T>): void {
-    const meta = this.metadata.find(changeSet.name)!;
-    const props = meta.relations.filter(prop => prop.reference === ReferenceType.ONE_TO_ONE);
-
-    for (const prop of props) {
-      // check diff, if we had a value on 1:1 before, and now it changed (nulled or replaced), we need to trigger orphan removal
-      const wrapped = helper(changeSet.entity);
-      const data = wrapped.__originalEntityData;
-
-      if (prop.orphanRemoval && data && data[prop.name] && prop.name in changeSet.payload) {
-        const orphan = this.getById(prop.type, data[prop.name], wrapped.__schema);
-        this.scheduleOrphanRemoval(orphan as AnyEntity);
-      }
-    }
   }
 
   private initIdentifier<T extends object>(entity: T): void {
@@ -810,17 +800,22 @@ export class UnitOfWork {
       await this.commitDeleteChangeSets(groups[ChangeSetType.DELETE_EARLY].get(name) ?? [], ctx);
     }
 
-    // 2. create
+    // 2. early update - when we recreate entity in the same UoW, we need to issue those delete queries before inserts
+    for (const name of commitOrder) {
+      await this.commitUpdateChangeSets(groups[ChangeSetType.UPDATE_EARLY].get(name) ?? [], ctx);
+    }
+
+    // 3. create
     for (const name of commitOrder) {
       await this.commitCreateChangeSets(groups[ChangeSetType.CREATE].get(name) ?? [], ctx);
     }
 
-    // 3. update
+    // 4. update
     for (const name of commitOrder) {
       await this.commitUpdateChangeSets(groups[ChangeSetType.UPDATE].get(name) ?? [], ctx);
     }
 
-    // 4. extra updates
+    // 5. extra updates
     const extraUpdates: ChangeSet<any>[] = [];
 
     for (const extraUpdate of this.extraUpdates) {
@@ -839,19 +834,20 @@ export class UnitOfWork {
 
     await this.commitUpdateChangeSets(extraUpdates, ctx, false);
 
-    // 5. collection updates
+    // 6. collection updates
     for (const coll of this.collectionUpdates) {
       await this.em.getDriver().syncCollection(coll, { ctx });
       coll.takeSnapshot();
     }
 
-    // 6. delete - entity deletions need to be in reverse commit order
+    // 7. delete - entity deletions need to be in reverse commit order
     for (const name of commitOrderReversed) {
       await this.commitDeleteChangeSets(groups[ChangeSetType.DELETE].get(name) ?? [], ctx);
     }
 
-    // 7. take snapshots of all persisted collections
+    // 8. take snapshots of all persisted collections
     const visited = new Set<object>();
+
     for (const changeSet of this.changeSets.values()) {
       this.takeCollectionSnapshots(changeSet.entity, visited);
     }
@@ -894,6 +890,16 @@ export class UnitOfWork {
 
       if (isScheduledForInsert) {
         this.scheduleExtraUpdate(changeSet, [prop]);
+      }
+    }
+  }
+
+  private findEarlyUpdates<T extends object>(changeSet: ChangeSet<T>, inserts: ChangeSet<T>[]): void {
+    const props = changeSet.meta.uniqueProps;
+
+    for (const prop of props) {
+      if (prop.name in changeSet.payload && inserts.find(c => Utils.equals(c.payload[prop.name], changeSet.originalEntity![prop.name as string]))) {
+        changeSet.type = ChangeSetType.UPDATE_EARLY;
       }
     }
   }
@@ -942,6 +948,7 @@ export class UnitOfWork {
       [ChangeSetType.CREATE]: new Map<string, ChangeSet<any>[]>(),
       [ChangeSetType.UPDATE]: new Map<string, ChangeSet<any>[]>(),
       [ChangeSetType.DELETE]: new Map<string, ChangeSet<any>[]>(),
+      [ChangeSetType.UPDATE_EARLY]: new Map<string, ChangeSet<any>[]>(),
       [ChangeSetType.DELETE_EARLY]: new Map<string, ChangeSet<any>[]>(),
     };
 
