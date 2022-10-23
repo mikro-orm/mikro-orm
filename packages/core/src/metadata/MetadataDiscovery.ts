@@ -956,7 +956,7 @@ export class MetadataDiscovery {
 
     // `string[]` can be returned via ts-morph, while reflect metadata will give us just `array`
     if (!prop.customType && !prop.columnTypes && ['string[]', 'array'].includes(prop.type)) {
-      prop.customType = Type.getType(ArrayType);
+      prop.customType = new ArrayType();
     }
 
     // for number arrays we make sure to convert the items to numbers
@@ -965,11 +965,11 @@ export class MetadataDiscovery {
     }
 
     if (!prop.customType && !prop.columnTypes && prop.type === 'Buffer') {
-      prop.customType = Type.getType(BlobType);
+      prop.customType = new BlobType();
     }
 
     if (!prop.customType && !prop.columnTypes && prop.type === 'json') {
-      prop.customType = Type.getType(JsonType);
+      prop.customType = new JsonType();
     }
 
     // `prop.type` might be actually instance of custom type class
@@ -979,10 +979,12 @@ export class MetadataDiscovery {
 
     // `prop.type` might also be custom type class (not instance), so `typeof MyType` will give us `function`, not `object`
     if (typeof prop.type === 'function' && Type.isMappedType((prop.type as Constructor).prototype) && !prop.customType) {
-      prop.customType = Type.getType(prop.type as unknown as Constructor<Type>);
+      prop.customType = new (prop.type as Constructor<Type>)();
     }
 
     if (prop.customType) {
+      prop.customType.meta = meta;
+      prop.customType.prop = prop;
       prop.columnTypes = prop.columnTypes ?? [prop.customType.getColumnType(prop, this.platform)];
     }
 

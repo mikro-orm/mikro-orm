@@ -1,9 +1,12 @@
 import type { Platform } from '../platforms';
-import type { Constructor, EntityProperty } from '../typings';
+import type { Constructor, EntityMetadata, EntityProperty } from '../typings';
 
 export abstract class Type<JSType = string, DBType = JSType> {
 
   private static readonly types = new Map();
+
+  meta?: EntityMetadata;
+  prop?: EntityProperty;
 
   /**
    * Converts a value from its JS representation to its database representation of this type.
