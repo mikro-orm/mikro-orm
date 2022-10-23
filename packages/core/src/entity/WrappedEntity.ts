@@ -105,6 +105,10 @@ export class WrappedEntity<T extends object, PK extends keyof T> {
   }
 
   getPrimaryKey(convertCustomTypes = false): Primary<T> | null {
+    if (this.__pk && this.__meta.compositePK) {
+      return Utils.getCompositeKeyValue(this.__pk, this.__meta, convertCustomTypes, this.__platform);
+    }
+
     if (convertCustomTypes) {
       return this.__pk ?? this.pkGetterConverted!(this.entity);
     }
@@ -112,6 +116,7 @@ export class WrappedEntity<T extends object, PK extends keyof T> {
     return this.__pk ?? this.pkGetter!(this.entity);
   }
 
+  // this method is currently used only in `Driver.syncCollection` and can be probably removed
   getPrimaryKeys(convertCustomTypes = false): Primary<T>[] | null {
     const pk = this.getPrimaryKey(convertCustomTypes);
 

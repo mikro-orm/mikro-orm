@@ -443,7 +443,7 @@ export class Utils {
       const prop = meta.properties[pk];
 
       if (prop.targetMeta && Utils.isPlainObject(value)) {
-        return this.getCompositeKeyHash(value, prop.targetMeta);
+        return this.getCompositeKeyValue(value, prop.targetMeta);
       }
 
       if (prop.customType && platform && convertCustomTypes) {

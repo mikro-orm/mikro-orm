@@ -441,7 +441,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
               sql += '?';
             }
 
-            params.push(...pks, prop.fieldNames.length > 1 ? data[idx][key][fieldNameIdx] : data[idx][key]);
+            params.push(...pks, prop.fieldNames.length > 1 ? data[idx][key]?.[fieldNameIdx] : data[idx][key]);
           }
         });
         sql += ` else ${this.platform.quoteIdentifier(fieldName)} end, `;
@@ -471,7 +471,13 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     const conds = where.map(cond => {
       if (pks.length > 1) {
-        pkProps.forEach(pk => params.push(cond![pk as string]));
+        pkProps.forEach(pk => {
+          if (Array.isArray(cond![pk as string])) {
+            params.push(...Utils.flatten(cond![pk as string]));
+          } else {
+            params.push(cond![pk as string]);
+          }
+        });
         return `(${new Array(pks.length).fill('?').join(', ')})`;
       }
 
