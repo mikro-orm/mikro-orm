@@ -345,15 +345,22 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Refreshes the persistent state of an entity from the database, overriding any local changes that have not yet been persisted.
    */
-  async refresh<T extends object, P extends string = never>(entity: T, options: FindOneOptions<T, P> = {}): Promise<T> {
-    await this.findOne(entity.constructor.name, entity, {
+  async refresh<T extends object, P extends string = never>(entity: T, options: FindOneOptions<T, P> = {}): Promise<T | null> {
+    const fork = this.fork();
+    const entityName = entity.constructor.name;
+    const reloaded = await fork.findOne(entityName, entity, {
       schema: helper(entity).__schema,
       ...options,
-      refresh: true,
       flushMode: FlushMode.COMMIT,
     });
 
-    return entity;
+    if (reloaded) {
+      this.config.getHydrator(this.metadata).hydrate(entity, helper(entity).__meta, helper(reloaded).toPOJO() as object, this.getEntityFactory(), 'full');
+    } else {
+      this.getUnitOfWork().unsetIdentity(entity);
+    }
+
+    return reloaded;
   }
 
   /**
