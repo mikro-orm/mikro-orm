@@ -2,7 +2,7 @@ import { clone } from './clone';
 import type { Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityProperty, IMetadataStorage, Primary } from '../typings';
 import { ReferenceType } from '../enums';
 import type { Platform } from '../platforms';
-import { compareArrays, compareBuffers, compareObjects, equals, Utils } from './Utils';
+import { compareArrays, compareBooleans, compareBuffers, compareObjects, equals, Utils } from './Utils';
 import { JsonType } from '../types/JsonType';
 
 type Comparator<T> = (a: T, b: T) => EntityData<T>;
@@ -485,6 +485,7 @@ export class EntityComparator {
     const lines: string[] = [];
     const context = new Map<string, any>();
     context.set('compareArrays', compareArrays);
+    context.set('compareBooleans', compareBooleans);
     context.set('compareBuffers', compareBuffers);
     context.set('compareObjects', compareObjects);
     context.set('equals', equals);
@@ -531,8 +532,12 @@ export class EntityComparator {
       type = 'array';
     }
 
-    if (['string', 'number', 'boolean'].includes(type)) {
+    if (['string', 'number'].includes(type)) {
       return this.getGenericComparator(this.wrap(prop.name), `last${this.wrap(prop.name)} !== current${this.wrap(prop.name)}`);
+    }
+
+    if (type === 'boolean') {
+      return this.getGenericComparator(this.wrap(prop.name), `!compareBooleans(last${this.wrap(prop.name)}, current${this.wrap(prop.name)})`);
     }
 
     if (['array'].includes(type) || type.endsWith('[]')) {

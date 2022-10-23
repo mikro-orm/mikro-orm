@@ -79,6 +79,13 @@ export function compareArrays(a: any[], b: any[]) {
   return true;
 }
 
+export function compareBooleans(a: unknown, b: unknown): boolean {
+  a = typeof a === 'number' ? Boolean(a) : a;
+  b = typeof b === 'number' ? Boolean(b) : b;
+
+  return a === b;
+}
+
 export function compareBuffers(a: Buffer, b: Buffer): boolean {
   const length = a.length;
 
