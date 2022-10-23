@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.5.0](https://github.com/mikro-orm/mikro-orm/compare/v5.4.2...v5.5.0) (2022-10-23)
+
+
+### Bug Fixes
+
+* **cli:** fix using `npx --workspace` with `mikro-orm-esm` ([#3560](https://github.com/mikro-orm/mikro-orm/issues/3560)) ([64777af](https://github.com/mikro-orm/mikro-orm/commit/64777af47619435808dfe3aeb492cb97701d1b74))
+* **cli:** improve success message of `schema:update/drop` commands ([11d0fd9](https://github.com/mikro-orm/mikro-orm/commit/11d0fd961b98db14517aae53d8d82756b0b54312))
+* **core:** fix changing 1:1 relations value ([7b6e6f7](https://github.com/mikro-orm/mikro-orm/commit/7b6e6f799fbf6a4915ffc5fbf873382f6d9baf8b)), closes [#3614](https://github.com/mikro-orm/mikro-orm/issues/3614)
+
+
+
+
+
 ## [5.4.2](https://github.com/mikro-orm/mikro-orm/compare/v5.4.1...v5.4.2) (2022-09-12)
 
 
