@@ -58,11 +58,10 @@ beforeAll(async () => {
     entities: [Project, User],
     dbName: ':memory:',
   });
-  await orm.schema.refreshDatabase();
 });
 
 beforeEach(async () => {
-  await orm.schema.clearDatabase();
+  await orm.schema.refreshDatabase();
 });
 
 async function createProject() {
@@ -86,7 +85,7 @@ afterAll(async () => {
   await orm.close(true);
 });
 
-test('change a 1:1 relation with a new entity and delete the old one', async () => {
+test('change a 1:1 relation with a new entity and delete the old one 1', async () => {
   const project = await createProject();
   const oldOwner = project.owner!;
   const newOwner = orm.em.create(User, { name: 'Johnny' });
@@ -122,9 +121,10 @@ test('change a 1:1 relation with a new entity and not delete the old one', async
   expect(oldOwner2).not.toBeNull();
 });
 
-test('change a 1:1 relation with a new entity and delete the old one', async () => {
+test('change a 1:1 relation by setting the FK on the new entity', async () => {
   const project = await createProject();
   const oldOwner = project.owner!;
+  // the project1 is being set right ahead on the new user instance, which propagates to replacing `Project.owner`
   orm.em.create(User, { name: 'Johnny', project1: 1 });
   expect(oldOwner.unwrap().project1).toBeUndefined();
 
