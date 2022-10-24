@@ -185,6 +185,16 @@ export class EntityHelper {
   private static propagateOneToOne<T extends object, O extends object>(entity: T, owner: O, prop: EntityProperty<O>, prop2: EntityProperty<T>, value?: T[keyof T & string], old?: T): void {
     helper(entity).__pk = helper(entity).getPrimaryKey()!;
 
+    // the inverse side will be changed on the `value` too, so we need to clean-up and schedule orphan removal there too
+    if (value?.[prop2.name as string] != null && value?.[prop2.name as string] !== entity) {
+      const other = Reference.unwrapReference(value![prop2.name as string]);
+      delete helper(other).__data[prop.name];
+
+      if (prop2.orphanRemoval) {
+        helper(other).__em?.getUnitOfWork().scheduleOrphanRemoval(other);
+      }
+    }
+
     if (value == null) {
       entity[prop2.name] = value as T[keyof T & string];
     } else if (prop2.mapToPk) {

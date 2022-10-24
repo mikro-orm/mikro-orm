@@ -121,3 +121,21 @@ test('change a 1:1 relation with a new entity and not delete the old one', async
   const oldOwner2 = await orm.em.fork().findOne(User, oldOwner.id);
   expect(oldOwner2).not.toBeNull();
 });
+
+test('change a 1:1 relation with a new entity and delete the old one', async () => {
+  const project = await createProject();
+  const oldOwner = project.owner!;
+  orm.em.create(User, { name: 'Johnny', project1: 1 });
+  expect(oldOwner.unwrap().project1).toBeUndefined();
+
+  const mock = mockLogger(orm, ['query']);
+  await orm.em.flush();
+  const queries = mock.mock.calls.map(q => q[0]);
+
+  expect(queries[1]).toMatch('delete from `user` where `id` in (?)');
+  expect(queries[2]).toMatch('insert into `user` (`name`, `project1_id`) values (?, ?)');
+
+  const oldOwner2 = await orm.em.fork().findOne(User, oldOwner.id);
+  expect(oldOwner2).toBeNull();
+});
+
