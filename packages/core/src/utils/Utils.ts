@@ -620,13 +620,27 @@ export class Utils {
     // In some situations (e.g. swc 1.3.4+), the presence of a source map can obscure the call to
     // __decorate(), replacing it with the constructor name. To support these cases we look for
     // Reflect.decorate() as well.
-    let line = stack.findIndex(line => line.includes('__decorate') || line.includes('Reflect.decorate'))!;
+    let line = -1;
+    for (let i = 0; i < stack.length; i++) {
+      if (
+        (stack[i].includes('__decorate') ||
+          stack[i].includes('Reflect.decorate')) &&
+        line < 0
+      ) {
+        line = i;
+      }
+      if (
+        line > -1 &&
+        (stack[line].includes('Reflect.decorate') ||
+          Utils.normalizePath(stack[line]).includes('node_modules/tslib/tslib'))
+      ) {
+        line++;
+      }
+    }
     if (line === -1) {
       return name;
     }
-    if (stack[line].includes('Reflect.decorate') || Utils.normalizePath(stack[line]).includes('node_modules/tslib/tslib')) {
-      line++;
-    }
+
 
     try {
       const re = stack[line].match(/\(.+\)/i) ? /\((.*):\d+:\d+\)/ : /at\s*(.*):\d+:\d+$/;
