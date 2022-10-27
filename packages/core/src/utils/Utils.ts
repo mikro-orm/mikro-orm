@@ -630,7 +630,7 @@ export class Utils {
         line = i;
       }
       if (
-        line > -1 &&
+        i >= line &&
         (stack[line].includes('Reflect.decorate') ||
           Utils.normalizePath(stack[line]).includes('node_modules/tslib/tslib'))
       ) {
