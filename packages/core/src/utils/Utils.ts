@@ -445,8 +445,8 @@ export class Utils {
   }
 
   static getCompositeKeyValue<T>(data: EntityData<T>, meta: EntityMetadata<T>, convertCustomTypes = false, platform?: Platform): Primary<T> {
-    return meta.primaryKeys.map(pk => {
-      const value = data[pk as string];
+    return meta.primaryKeys.map((pk, idx) => {
+      const value = Array.isArray(data) ? data[idx] : data[pk as string];
       const prop = meta.properties[pk];
 
       if (prop.targetMeta && Utils.isPlainObject(value)) {
