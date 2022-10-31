@@ -29,6 +29,11 @@ export class Author {
   @Property({ nullable: true })
   name?: string;
 
+  @Property({ persist: false })
+  get nickname(): string {
+    return this.name ?? '~';
+  }
+
 }
 
 describe('GH issue 1626', () => {
