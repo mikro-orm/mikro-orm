@@ -627,6 +627,7 @@ export class Utils {
     if (stack[line].includes('Reflect.decorate') || Utils.normalizePath(stack[line]).includes('node_modules/tslib/tslib')) {
       line++;
     }
+
     if (stack[line].includes('Reflect.decorate') || Utils.normalizePath(stack[line]).includes('node_modules/tslib/tslib')) {
       line++;
     }
