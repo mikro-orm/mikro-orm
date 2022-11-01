@@ -137,6 +137,7 @@ export class EntitySchema<T = any, U = never> {
 
   addManyToOne<K = AnyEntity>(name: string & keyof T, type: TypeType, options: ManyToOneOptions<K, T>): void {
     const prop = this.createProperty(ReferenceType.MANY_TO_ONE, options);
+    prop.owner = true;
 
     if (prop.joinColumns && !prop.fieldNames) {
       prop.fieldNames = prop.joinColumns;

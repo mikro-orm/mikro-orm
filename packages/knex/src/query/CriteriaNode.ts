@@ -79,7 +79,7 @@ export class CriteriaNode implements ICriteriaNode {
       return Utils.getPrimaryKeyHash(this.prop!.inverseJoinColumns.map(col => `${alias}.${col}`));
     }
 
-    if (this.prop!.joinColumns.length > 1) {
+    if (this.prop!.owner && this.prop!.joinColumns.length > 1) {
       return Utils.getPrimaryKeyHash(this.prop!.joinColumns.map(col => `${alias}.${col}`));
     }
 
