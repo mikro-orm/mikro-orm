@@ -1,5 +1,5 @@
 import { MikroORM, Entity, PrimaryKey, ManyToOne, Property, SimpleLogger } from '@mikro-orm/core';
-import { mockLogger } from '../helpers';
+import { mockLogger } from '../../helpers';
 
 @Entity()
 export class Author {

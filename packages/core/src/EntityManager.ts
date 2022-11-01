@@ -520,9 +520,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
       if (where) {
         const exists = em.unitOfWork.getById<T>(entityName, where as Primary<T>, options.schema);
+
         if (exists) {
-          em.entityFactory.mergeData(meta, exists, where);
-          return exists;
+          return em.assign(exists, data);
         }
       }
     }
