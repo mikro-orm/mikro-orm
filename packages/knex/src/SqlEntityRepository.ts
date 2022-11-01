@@ -4,8 +4,7 @@ import { EntityRepository } from '@mikro-orm/core';
 import type { SqlEntityManager } from './SqlEntityManager';
 import type { QueryBuilder } from './query';
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export class SqlEntityRepository<T extends {}> extends EntityRepository<T> {
+export class SqlEntityRepository<T extends object> extends EntityRepository<T> {
 
   constructor(protected readonly _em: SqlEntityManager,
               protected readonly entityName: EntityName<T>) {

@@ -5,8 +5,7 @@ import type { CountOptions, DeleteOptions, FindOneOptions, FindOneOrFailOptions,
 import type { IdentifiedReference, Reference } from './Reference';
 import type { EntityLoaderOptions } from './EntityLoader';
 
-// eslint-disable-next-line @typescript-eslint/ban-types
-export class EntityRepository<T extends {}> {
+export class EntityRepository<T extends object> {
 
   constructor(protected readonly _em: EntityManager,
               protected readonly entityName: EntityName<T>) { }

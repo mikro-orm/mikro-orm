@@ -12,8 +12,7 @@ const validator = new EntityValidator(false);
 
 export class EntityAssigner {
 
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  static assign<T extends {}>(entity: T, data: EntityData<T> | Partial<EntityDTO<T>>, options: AssignOptions = {}): T {
+  static assign<T extends object>(entity: T, data: EntityData<T> | Partial<EntityDTO<T>>, options: AssignOptions = {}): T {
     if (options.visited?.has(entity)) {
       return entity;
     }
