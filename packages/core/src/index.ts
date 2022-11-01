@@ -7,7 +7,7 @@ export {
   Constructor, ConnectionType, Dictionary, PrimaryKeyType, PrimaryKeyProp, Primary, IPrimaryKey, ObjectQuery, FilterQuery, IWrappedEntity, EntityName, EntityData, Highlighter,
   AnyEntity, EntityClass, EntityProperty, EntityMetadata, QBFilterQuery, PopulateOptions, Populate, Loaded, New, LoadedReference, LoadedCollection, IMigrator, IMigrationGenerator,
   GetRepository, EntityRepositoryType, MigrationObject, DeepPartial, PrimaryProperty, Cast, IsUnknown, EntityDictionary, EntityDTO, MigrationDiff,
-  IEntityGenerator, ISeedManager, EntityClassGroup, OptionalProps, RequiredEntityData, CheckCallback, SimpleColumnMeta,
+  IEntityGenerator, ISeedManager, EntityClassGroup, OptionalProps, RequiredEntityData, CheckCallback, SimpleColumnMeta, Rel, Ref,
 } from './typings';
 export * from './enums';
 export * from './errors';

@@ -199,6 +199,13 @@ export type EntityDictionary<T> = EntityData<T> & Dictionary;
 type Relation<T> = {
   [P in keyof T as T[P] extends unknown[] | Record<string | number | symbol, unknown> ? P : never]?: T[P]
 };
+
+/** Identity type that can be used to get around issues with cycles in bidirectional relations. */
+export type Rel<T> = T;
+
+/** Shortcut for `IdentifiedReference`. */
+export type Ref<T, PK extends keyof T | unknown = PrimaryProperty<T>> = IdentifiedReference<T, PK>;
+
 export type EntityDTOProp<T> = T extends Scalar
   ? T
   : T extends LoadedReference<infer U>
