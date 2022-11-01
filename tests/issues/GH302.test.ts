@@ -1,4 +1,4 @@
-import { Entity, IdentifiedReference, MikroORM, PrimaryKey, Property, Reference, ManyToOne, OneToMany, Collection } from '@mikro-orm/core';
+import { Entity, Ref, MikroORM, PrimaryKey, Property, Reference, ManyToOne, OneToMany, Collection } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -10,8 +10,8 @@ export class A {
   @Property()
   name: string;
 
-  @ManyToOne({ entity: () => B, inversedBy: 'a', wrappedReference: true, nullable: true })
-  b?: IdentifiedReference<B>;
+  @ManyToOne({ entity: () => B, inversedBy: 'a', ref: true, nullable: true })
+  b?: Ref<B>;
 
   constructor(id: number, name: string) {
     this.id = id;

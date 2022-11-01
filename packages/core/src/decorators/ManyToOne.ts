@@ -22,6 +22,8 @@ export function ManyToOne<T, O>(
 export interface ManyToOneOptions<T, O> extends ReferenceOptions<T, O> {
   inversedBy?: (string & keyof T) | ((e: T) => any);
   wrappedReference?: boolean;
+  /** alias for `wrappedReference` */
+  ref?: boolean;
   primary?: boolean;
   mapToPk?: boolean;
   joinColumn?: string;

@@ -64,6 +64,7 @@ export class EntitySchema<T = any, U = never> {
     }
 
     rename(options, 'fieldName', 'fieldNames');
+    rename(options, 'ref', 'wrappedReference');
     rename(options, 'joinColumn', 'joinColumns');
     rename(options, 'inverseJoinColumn', 'inverseJoinColumns');
     rename(options, 'referenceColumnName', 'referencedColumnNames');
