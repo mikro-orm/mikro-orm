@@ -17,6 +17,7 @@ import type {
   IHydrator,
   IMigrationGenerator,
   IPrimaryKey,
+  ITenantHelperGenerator,
   MaybePromise,
   MigrationObject,
 } from '../typings';
@@ -39,6 +40,8 @@ import { FlushMode, LoadStrategy, PopulateHint } from '../enums';
 import { MemoryCacheAdapter } from '../cache/MemoryCacheAdapter';
 import { EntityComparator } from './EntityComparator';
 import type { Type } from '../types/Type';
+import type { DatabaseDriver } from '../drivers/DatabaseDriver';
+import type { Connection, Transaction } from '../connections/Connection';
 
 export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
@@ -384,6 +387,11 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     if (this.options.entities.length === 0 && this.options.discovery.warnWhenNoEntities) {
       throw new Error('No entities found, please use `entities` option');
     }
+
+    if (this.options.migrations?.multitenancy) {
+      if (this.options.type !== 'postgresql') { throw new Error('Multitenancy only available on postgres platform. Please remove `multitenancy` option or switch to postgres platform.'); }
+      if (this.options.migrations.snapshot === false) { throw new Error('Please enable `snapshot` option to use multitenancy.'); }
+    }
   }
 
   private initDriver(): D {
@@ -440,6 +448,14 @@ export type MigrationsOptions = {
   generator?: Constructor<IMigrationGenerator>;
   fileName?: (timestamp: string) => string;
   migrationsList?: MigrationObject[];
+  multitenancy?: {
+    tenants: (driver: DatabaseDriver<Connection>, ctx: Transaction) => Promise<string[]>;
+    tenantEntity?: string;
+    tenantHelperPath?: string;
+    tenantHelperPathTs?: string;
+    tenantHelperClassName?: string;
+    tenantHelperGenerator?: Constructor<ITenantHelperGenerator>;
+  };
 };
 
 export type SeederOptions = {

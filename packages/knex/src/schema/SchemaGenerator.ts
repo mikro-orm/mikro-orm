@@ -52,15 +52,15 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
     return false;
   }
 
-  getTargetSchema(schema?: string): DatabaseSchema {
-    const metadata = this.getOrderedMetadata(schema);
+  async getTargetSchema(schema?: string): Promise<DatabaseSchema> {
+    const metadata = await this.getOrderedMetadata(schema);
     const schemaName = schema ?? this.config.get('schema') ?? this.platform.getDefaultSchemaName();
     return DatabaseSchema.fromMetadata(metadata, this.platform, this.config, schemaName);
   }
 
   async getCreateSchemaSQL(options: { wrap?: boolean; schema?: string } = {}): Promise<string> {
     const wrap = options.wrap ?? this.options.disableForeignKeys;
-    const toSchema = this.getTargetSchema(options.schema);
+    const toSchema = await this.getTargetSchema(options.schema);
     let ret = '';
 
     for (const namespace of toSchema.getNamespaces()) {
@@ -101,7 +101,8 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
 
     await this.execute(this.helper.disableForeignKeysSQL());
 
-    for (const meta of this.getOrderedMetadata(options?.schema).reverse()) {
+    const metadata = await this.getOrderedMetadata(options?.schema);
+    for (const meta of metadata.reverse()) {
       await this.driver.createQueryBuilder(meta.className, this.em?.getTransactionContext(), 'write', false)
         .withSchema(options?.schema)
         .truncate();
@@ -119,7 +120,7 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
 
   async getDropSchemaSQL(options: { wrap?: boolean; dropMigrationsTable?: boolean; schema?: string } = {}): Promise<string> {
     const wrap = options.wrap ?? this.options.disableForeignKeys;
-    const metadata = this.getOrderedMetadata(options.schema).reverse();
+    const metadata = (await this.getOrderedMetadata(options.schema)).reverse();
     const schema = await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema);
     let ret = '';
 
@@ -183,7 +184,7 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
     options.wrap ??= this.options.disableForeignKeys;
     options.safe ??= false;
     options.dropTables ??= true;
-    const toSchema = this.getTargetSchema(options.schema);
+    const toSchema = await this.getTargetSchema(options.schema);
     const fromSchema = options.fromSchema ?? await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema);
     const wildcardSchemaTables = Object.values(this.metadata.getAll()).filter(meta => meta.schema === '*').map(meta => meta.tableName);
     fromSchema.prune(options.schema, wildcardSchemaTables);

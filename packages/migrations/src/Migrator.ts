@@ -12,6 +12,8 @@ import { MigrationStorage } from './MigrationStorage';
 import type { MigrateOptions, MigrationResult, MigrationRow, UmzugMigration } from './typings';
 import { TSMigrationGenerator } from './TSMigrationGenerator';
 import { JSMigrationGenerator } from './JSMigrationGenerator';
+import { TSTenantHelperGenerator } from './TSTenantHelperGenerator';
+import { JSTenantHelperGenerator } from './JSTenantHelperGenerator';
 
 export class Migrator implements IMigrator {
 
@@ -57,6 +59,22 @@ export class Migrator implements IMigrator {
 
     await this.storeCurrentSchema();
     const migration = await this.generator.generate(diff, path);
+
+    if (this.options.multitenancy) {
+      // Generating TenantHelper class file. This file should be re-generated right after each created migration to make sure
+      // tenant creation code is in sync.
+
+      let tenantHelperGenerator;
+      if (this.options.multitenancy.tenantHelperGenerator) {
+          tenantHelperGenerator = new this.options.multitenancy.tenantHelperGenerator(this.schemaGenerator, this.options);
+      } else if (this.options.emit === 'js') {
+          tenantHelperGenerator = new JSTenantHelperGenerator(this.schemaGenerator, this.config);
+      } else {
+          tenantHelperGenerator = new TSTenantHelperGenerator(this.schemaGenerator, this.config);
+      }
+
+      await tenantHelperGenerator.generate();
+    }
 
     return {
       fileName: migration[1],
@@ -260,7 +278,7 @@ export class Migrator implements IMigrator {
       return;
     }
 
-    const schema = this.schemaGenerator.getTargetSchema();
+    const schema = await this.schemaGenerator.getTargetSchema();
     await writeJSON(this.snapshotPath, schema, { spaces: 2 });
   }
 

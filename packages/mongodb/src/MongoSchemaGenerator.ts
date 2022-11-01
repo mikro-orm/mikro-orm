@@ -7,7 +7,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
   async createSchema(options: CreateSchemaOptions = {}): Promise<void> {
     options.ensureIndexes ??= true;
     const existing = await this.connection.listCollections();
-    const metadata = this.getOrderedMetadata();
+    const metadata = await this.getOrderedMetadata();
 
     const promises = metadata
       .filter(meta => !existing.includes(meta.collection))
@@ -24,7 +24,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     const db = this.connection.getDb();
     const collections = await db.listCollections().toArray();
     const existing = collections.map(c => c.name);
-    const metadata = this.getOrderedMetadata();
+    const metadata = await this.getOrderedMetadata();
     const promises = metadata
       .filter(meta => existing.includes(meta.collection))
       .map(meta => this.connection.dropCollection(meta.collection));

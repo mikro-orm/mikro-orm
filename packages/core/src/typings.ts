@@ -746,3 +746,8 @@ export interface Seeder<T extends Dictionary = Dictionary> {
 export type MaybePromise<T> = T | Promise<T>;
 
 export type ConnectionType = 'read' | 'write';
+
+export interface ITenantHelperGenerator {
+  generate(): Promise<void>;
+  generateTenantHelperFile(className: string, tenantCreateSql: string[], tenantDropSql: string[]): string;
+}

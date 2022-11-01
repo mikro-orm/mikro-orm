@@ -1,7 +1,7 @@
 import type { EntityMetadata, ISchemaGenerator } from '../typings';
 import { CommitOrderCalculator } from '../unit-of-work/CommitOrderCalculator';
 import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
-import type { MetadataStorage } from '../metadata/MetadataStorage';
+import { MetadataStorage, MetadataDiscovery } from '../metadata';
 import type { Configuration } from './Configuration';
 import { EntityManager } from '../EntityManager';
 
@@ -46,7 +46,8 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
   }
 
   async clearDatabase(options?: { schema?: string }): Promise<void> {
-    for (const meta of this.getOrderedMetadata(options?.schema).reverse()) {
+    const metadata = await this.getOrderedMetadata(options?.schema);
+    for (const meta of metadata.reverse()) {
       await this.driver.nativeDelete(meta.className, {}, options);
     }
 
@@ -101,8 +102,21 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
     this.notImplemented();
   }
 
-  protected getOrderedMetadata(schema?: string): EntityMetadata[] {
-    const metadata = Object.values(this.metadata.getAll()).filter(meta => {
+  protected async getOrderedMetadata(schema?: string): Promise<EntityMetadata[]> {
+    let metadataStorage = this.metadata;
+
+    const options = this.config.get('migrations');
+    if (options?.multitenancy) {
+        const cloneMetadataForMultinenancy = async () => {
+            const discovery = new MetadataDiscovery(new MetadataStorage(), this.driver.getPlatform(), this.config);
+            metadataStorage = await discovery.discover(this.config.get('tsNode'));
+            Object.values(metadataStorage.getAll()).forEach(m => m.schema === '*' ? m.schema = '${tenant}': m.schema);
+        };
+
+        await cloneMetadataForMultinenancy();
+    }
+
+    const metadata = Object.values(metadataStorage.getAll()).filter(meta => {
       const isRootEntity = meta.root.className === meta.className;
       return isRootEntity && !meta.embeddable && !meta.virtual;
     });
@@ -119,7 +133,7 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
     }
 
     return calc.sort()
-      .map(cls => this.metadata.find(cls)!)
+      .map(cls => metadataStorage.find(cls)!)
       .filter(meta => schema ? [schema, '*'].includes(meta.schema!) : meta.schema !== '*');
   }
 
