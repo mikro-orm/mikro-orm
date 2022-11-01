@@ -85,6 +85,13 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
+   * Shortcut for `em.getRepository()`.
+   */
+  repo<T extends object, U extends EntityRepository<T> = EntityRepository<T>>(entityName: EntityName<T>): GetRepository<T, U> {
+    return this.getRepository(entityName);
+  }
+
+  /**
    * Gets EntityValidator instance
    */
   getValidator(): EntityValidator {
