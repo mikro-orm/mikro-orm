@@ -266,6 +266,56 @@ describe('embedded entities in postgres', () => {
     await expect(orm.em.findOneOrFail(User, { profile2: { identity: { city: 'London 1' } as any } })).rejects.toThrowError(err2);
   });
 
+  test('partial loading', async () => {
+    const user1 = new User();
+    user1.name = 'Uwe';
+    user1.profile1 = new Profile('u1', new Identity('e1', new IdentityMeta('f1', 'b1')));
+    user1.profile2 = new Profile('u2', new Identity('e2', new IdentityMeta('f2', 'b2')));
+
+    const user2 = new User();
+    user2.name = 'Uschi';
+    user2.profile1 = new Profile('u3', new Identity('e3'));
+    user2.profile1.identity.links.push(new IdentityLink('l1'), new IdentityLink('l2'));
+    user2.profile2 = new Profile('u4', new Identity('e4', new IdentityMeta('f4')));
+    user2.profile2.identity.links.push(new IdentityLink('l3'), new IdentityLink('l4'));
+
+    await orm.em.persistAndFlush([user1, user2]);
+    orm.em.clear();
+
+    const mock = mockLogger(orm, ['query']);
+
+    await orm.em.fork().find(User, {}, { fields: ['profile1'] });
+    await orm.em.fork().find(User, {}, { fields: ['profile2'] });
+
+    await orm.em.fork().find(User, {}, { fields: ['profile1.username'] });
+    await orm.em.fork().find(User, {}, { fields: ['profile2.username'] });
+
+    await orm.em.fork().find(User, {}, { fields: ['profile1.identity'] });
+    await orm.em.fork().find(User, {}, { fields: ['profile2.identity'] });
+
+    await orm.em.fork().find(User, {}, { fields: ['profile1.identity.email'] });
+    await orm.em.fork().find(User, {}, { fields: ['profile2.identity.email'] });
+
+    await orm.em.fork().find(User, {}, { fields: ['profile1.identity.meta.foo'] });
+    await orm.em.fork().find(User, {}, { fields: ['profile2.identity.meta.foo'] });
+
+    await orm.em.fork().find(User, {}, { fields: [{ profile1: ['identity'] }] });
+    await orm.em.fork().find(User, {}, { fields: [{ profile2: ['identity'] }] });
+
+    expect(mock.mock.calls[0][0]).toMatch('select "u0"."id", "u0"."profile1_username", "u0"."profile1_identity_email", "u0"."profile1_identity_meta_foo", "u0"."profile1_identity_meta_bar", "u0"."profile1_identity_links" from "user" as "u0"');
+    expect(mock.mock.calls[1][0]).toMatch('select "u0"."id", "u0"."profile2" from "user" as "u0"');
+    expect(mock.mock.calls[2][0]).toMatch('select "u0"."id", "u0"."profile1_username" from "user" as "u0"');
+    expect(mock.mock.calls[3][0]).toMatch('select "u0"."id", "u0"."profile2" from "user" as "u0"');
+    expect(mock.mock.calls[4][0]).toMatch('select "u0"."id", "u0"."profile1_identity_email", "u0"."profile1_identity_meta_foo", "u0"."profile1_identity_meta_bar", "u0"."profile1_identity_links" from "user" as "u0"');
+    expect(mock.mock.calls[5][0]).toMatch('select "u0"."id", "u0"."profile2" from "user" as "u0"');
+    expect(mock.mock.calls[6][0]).toMatch('select "u0"."id", "u0"."profile1_identity_email" from "user" as "u0"');
+    expect(mock.mock.calls[7][0]).toMatch('select "u0"."id", "u0"."profile2" from "user" as "u0"');
+    expect(mock.mock.calls[8][0]).toMatch('select "u0"."id", "u0"."profile1_identity_meta_foo" from "user" as "u0"');
+    expect(mock.mock.calls[9][0]).toMatch('select "u0"."id", "u0"."profile2" from "user" as "u0"');
+    expect(mock.mock.calls[10][0]).toMatch('select "u0"."id", "u0"."profile1_identity_email", "u0"."profile1_identity_meta_foo", "u0"."profile1_identity_meta_bar", "u0"."profile1_identity_links" from "user" as "u0"');
+    expect(mock.mock.calls[11][0]).toMatch('select "u0"."id", "u0"."profile2" from "user" as "u0"');
+  });
+
   test('#assign() works with nested embeddables', async () => {
     const jon = new User();
 

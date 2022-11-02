@@ -863,6 +863,53 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return orderBy;
   }
 
+  protected normalizeFields<T extends object>(fields: Field<T>[], prefix = ''): string[] {
+    const ret: string[] = [];
+
+    for (const field of fields) {
+      if (typeof field === 'string') {
+        ret.push(prefix + field);
+        continue;
+      }
+
+      if (Utils.isPlainObject(field)) {
+        for (const key of Object.keys(field)) {
+          ret.push(...this.normalizeFields(field[key], key + '.'));
+        }
+      }
+    }
+
+    return ret;
+  }
+
+  protected processField<T extends object>(meta: EntityMetadata<T>, prop: EntityProperty<T> | undefined, field: string, ret: Field<T>[], populate: PopulateOptions<T>[], joinedProps: PopulateOptions<T>[], qb: QueryBuilder<T>): void {
+    if (!prop || (prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner)) {
+      return;
+    }
+
+    if (prop.reference === ReferenceType.EMBEDDED) {
+      if (prop.object) {
+        ret.push(prop.fieldNames[0]);
+        return;
+      }
+
+      const parts = field.split('.');
+      const top = parts.shift();
+
+      for (const key of Object.keys(prop.embeddedProps)) {
+        if (!top || key === top) {
+          this.processField(meta, prop.embeddedProps[key], parts.join('.'), ret, populate, joinedProps, qb);
+        }
+      }
+
+      return;
+    }
+
+    if (prop.fieldNames) {
+      ret.push(prop.fieldNames[0]);
+    }
+  }
+
   protected buildFields<T extends object>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], joinedProps: PopulateOptions<T>[], qb: QueryBuilder<T>, fields?: Field<T>[]): Field<T>[] {
     const lazyProps = meta.props.filter(prop => prop.lazy && !populate.some(p => p.field === prop.name || p.all));
     const hasLazyFormulas = meta.props.some(p => p.lazy && p.formula);
@@ -873,43 +920,23 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     if (joinedProps.length > 0) {
       ret.push(...this.getFieldsForJoinedLoad(qb, meta, fields, populate));
     } else if (fields) {
-      for (const field of [...fields]) {
-        if (field.toString().includes('.')) {
-          const parts = fields.toString().split('.');
-          const rootPropName = parts.shift()!; // first one is the `prop`
-          const prop = QueryHelper.findProperty(rootPropName, {
-            metadata: this.metadata,
-            platform: this.platform,
-            entityName: meta.className,
-            where: {},
-            aliasMap: qb.getAliasMap(),
-          });
-
-          if (prop?.reference === ReferenceType.EMBEDDED) {
-            const nest = (p: EntityProperty): EntityProperty => parts.length > 0 ? nest(p.embeddedProps[parts.shift()!]) : p;
-            const childProp = nest(prop);
-            ret.push(childProp.fieldNames[0]);
-            continue;
-          }
-        }
-
-        if (Utils.isPlainObject(field) || field.toString().includes('.')) {
+      for (const field of this.normalizeFields(fields)) {
+        if (field === '*') {
+          ret.push('*');
           continue;
         }
 
-        const prop = QueryHelper.findProperty(field.toString(), {
+        const parts = field.split('.');
+        const rootPropName = parts.shift()!; // first one is the `prop`
+        const prop = QueryHelper.findProperty<T>(rootPropName, {
           metadata: this.metadata,
           platform: this.platform,
           entityName: meta.className,
-          where: {},
+          where: {} as FilterQuery<T>,
           aliasMap: qb.getAliasMap(),
         });
 
-        if (prop?.reference === ReferenceType.ONE_TO_ONE && !prop.owner) {
-          continue;
-        }
-
-        ret.push(field);
+        this.processField(meta, prop, parts.join('.'), ret, populate, joinedProps, qb);
       }
 
       ret.unshift(...meta.primaryKeys.filter(pk => !fields.includes(pk)));
@@ -934,7 +961,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
         .forEach(prop => ret.push(prop.name));
     }
 
-    return ret.length > 0 ? ret : ['*'];
+    return ret.length > 0 ? Utils.unique(ret) : ['*'];
   }
 
 }
