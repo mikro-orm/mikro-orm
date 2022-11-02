@@ -13,7 +13,7 @@ class ParticipantRepository extends EntityRepository<Participant> {
 
 }
 
-@Entity({ customRepository: () => ProviderRepository })
+@Entity({ repository: () => ProviderRepository })
 export class Provider {
 
   [EntityRepositoryType]?: ProviderRepository;
@@ -27,7 +27,7 @@ export class Provider {
 
 }
 
-@Entity({ customRepository: () => UserRepository })
+@Entity({ repository: () => UserRepository })
 export class User {
 
   [EntityRepositoryType]?: UserRepository;
@@ -41,7 +41,7 @@ export class User {
 
 }
 
-@Entity({ customRepository: () => MemberRepository })
+@Entity({ repository: () => MemberRepository })
 export class Member {
 
   [EntityRepositoryType]?: MemberRepository;
@@ -59,7 +59,7 @@ export class Member {
 
 }
 
-@Entity({ customRepository: () => SessionRepository })
+@Entity({ repository: () => SessionRepository })
 export class Session {
 
   [EntityRepositoryType]?: SessionRepository;
@@ -80,7 +80,7 @@ export class Session {
 
 }
 
-@Entity({ customRepository: () => ParticipantRepository })
+@Entity({ repository: () => ParticipantRepository })
 export class Participant {
 
   [EntityRepositoryType]?: ParticipantRepository;

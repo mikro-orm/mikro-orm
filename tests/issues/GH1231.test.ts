@@ -2,7 +2,7 @@ import { Cascade, Collection, Entity, EntityRepositoryType, ManyToOne, MikroORM,
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { EntityRepository } from '@mikro-orm/postgresql';
 
-@Entity({ tableName: 'teachers', customRepository: () => TeacherRepository })
+@Entity({ tableName: 'teachers', repository: () => TeacherRepository })
 class Teacher {
 
   constructor(firstName: string, lastName: string) {

@@ -32,4 +32,6 @@ export type EntityOptions<T> = {
   // also return type is unknown as it can be either QB instance (which we cannot type here) or array of POJOs (e.g. for mongodb)
   expression?: string | ((em: any, where: FilterQuery<T>, options: FindOptions<T, any>) => object);
   customRepository?: () => Constructor;
+  /** shortcut for `customRepository` */
+  repository?: () => Constructor;
 };

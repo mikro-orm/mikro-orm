@@ -6,7 +6,7 @@ import { BookTag } from './book-tag';
 import { BaseEntity3 } from './BaseEntity3';
 import { BookRepository } from '../repositories/BookRepository';
 
-@Entity({ tableName: 'books-table', customRepository: () => BookRepository })
+@Entity({ tableName: 'books-table', repository: () => BookRepository })
 @Unique({ properties: ['title', 'author'] })
 @Index({ properties: 'title', type: 'fulltext' })
 @Index({ options: { point: '2dsphere', title: -1 } })

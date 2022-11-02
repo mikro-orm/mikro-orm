@@ -8,7 +8,7 @@ import { Book } from './Book';
 import { AuthorRepository } from '../repositories/AuthorRepository';
 import { BaseEntity } from './BaseEntity';
 
-@Entity({ customRepository: () => AuthorRepository })
+@Entity({ repository: () => AuthorRepository })
 @Index({ name: 'custom_idx_1', properties: ['name', 'email'] })
 @Filter({
   name: 'withoutParams1',

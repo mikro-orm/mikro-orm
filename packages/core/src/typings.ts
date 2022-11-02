@@ -363,6 +363,10 @@ export class EntityMetadata<T = any> {
     this.collection = name;
   }
 
+  set repository(repo: () => Constructor<EntityRepository<any>>) {
+    this.customRepository = repo;
+  }
+
   sync(initIndexes = false) {
     this.root ??= this;
     const props = Object.values<EntityProperty<T>>(this.properties).sort((a, b) => this.propertyOrder.get(a.name)! - this.propertyOrder.get(b.name)!);
