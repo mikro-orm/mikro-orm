@@ -1,4 +1,4 @@
-import { Entity, IdentifiedReference, OneToOne, PrimaryKey, Property, wrap } from '@mikro-orm/core';
+import { Entity, Ref, OneToOne, PrimaryKey, Property, wrap } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
@@ -14,15 +14,15 @@ class Project {
   @OneToOne(() => User, u => u.project1, {
     eager: true,
     orphanRemoval: true,
-    wrappedReference: true,
+    ref: true,
   })
-  owner?: IdentifiedReference<User>;
+  owner?: Ref<User>;
 
   @OneToOne(() => User, u => u.project2, {
     eager: true,
-    wrappedReference: true,
+    ref: true,
   })
-  secondaryOwner?: IdentifiedReference<User>;
+  secondaryOwner?: Ref<User>;
 
 }
 
@@ -37,17 +37,17 @@ class User {
 
   @OneToOne({
     entity: () => Project,
-    wrappedReference: true,
+    ref: true,
     nullable: true,
   })
-  project1?: IdentifiedReference<Project>;
+  project1?: Ref<Project>;
 
   @OneToOne({
     entity: () => Project,
-    wrappedReference: true,
+    ref: true,
     nullable: true,
   })
-  project2?: IdentifiedReference<Project>;
+  project2?: Ref<Project>;
 
 }
 
@@ -101,6 +101,32 @@ test('change a 1:1 relation with a new entity and delete the old one 1', async (
 
   const oldOwner2 = await orm.em.fork().findOne(User, oldOwner.id);
   expect(oldOwner2).toBeNull();
+});
+
+test('change a 1:1 relation twice with a new entity and delete the old one 1', async () => {
+  const project = await createProject();
+  const oldOwner = project.owner!;
+  const newOwner = orm.em.create(User, { name: 'Johnny' });
+  project.owner = wrap(newOwner).toReference();
+  expect(oldOwner.unwrap().project1).toBeUndefined();
+  const mock = mockLogger(orm, ['query']);
+  await orm.em.flush();
+
+  expect(mock.mock.calls[1][0]).toMatch('delete from `user` where `id` in (?)');
+  expect(mock.mock.calls[2][0]).toMatch('insert into `user` (`name`, `project1_id`) values (?, ?)');
+
+  const oldOwner2 = await orm.em.refresh(oldOwner.unwrap());
+  expect(oldOwner2).toBeNull();
+
+  const oldOwner3 = project.owner!;
+  const newOwner2 = orm.em.create(User, { name: 'Hank' });
+  project.owner = wrap(newOwner2).toReference();
+  expect(oldOwner3.unwrap().project1).toBeUndefined();
+  await orm.em.flush();
+
+  expect(mock.mock.calls[4][0]).toMatch('select `u0`.* from `user` as `u0` where `u0`.`id` = ? limit ?');
+  expect(mock.mock.calls[6][0]).toMatch('delete from `user` where `id` in (?)');
+  expect(mock.mock.calls[7][0]).toMatch('insert into `user` (`name`, `project1_id`) values (?, ?)');
 });
 
 test('change a 1:1 relation with a new entity and not delete the old one', async () => {

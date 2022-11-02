@@ -558,9 +558,15 @@ export class UnitOfWork {
   }
 
   private expandUniqueProps<T extends object>(entity: T): string[] {
-    return helper(entity).__meta.uniqueProps.map(prop => {
+    const wrapped = helper(entity);
+
+    return wrapped.__meta.uniqueProps.map(prop => {
       if (entity[prop.name]) {
-        return prop.reference === ReferenceType.SCALAR  || prop.mapToPk ? entity[prop.name] : helper(entity[prop.name]).getSerializedPrimaryKey();
+        return prop.reference === ReferenceType.SCALAR || prop.mapToPk ? entity[prop.name] : helper(entity[prop.name]).getSerializedPrimaryKey();
+      }
+
+      if (wrapped.__originalEntityData?.[prop.name as string]) {
+        return Utils.getPrimaryKeyHash(Utils.asArray(wrapped.__originalEntityData![prop.name as string]));
       }
 
       return undefined;
