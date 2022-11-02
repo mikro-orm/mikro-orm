@@ -1,3 +1,4 @@
+import { inspect } from 'util';
 import type { EntityData, EntityMetadata, EntityDictionary, Primary } from '../typings';
 import { helper } from '../entity/wrap';
 
@@ -34,6 +35,16 @@ export class ChangeSet<T> {
   getSerializedPrimaryKey(): string | null {
     this.serializedPrimaryKey ??= helper(this.entity).getSerializedPrimaryKey();
     return this.serializedPrimaryKey;
+  }
+
+  [inspect.custom](depth: number) {
+    const object = { ...this };
+    const hidden = ['meta', 'serializedPrimaryKey'];
+    hidden.forEach(k => delete object[k]);
+    const ret = inspect(object, { depth });
+    const name = `${this.constructor.name}<${this.meta.className}>`;
+
+    return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
   }
 
 }

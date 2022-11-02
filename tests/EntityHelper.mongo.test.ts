@@ -223,7 +223,7 @@ describe('EntityHelperMongo', () => {
       '      tags: [Collection<BookTag>],\n' +
       "      title: 'Bible',\n" +
       '      author: [Author],\n' +
-      '      publisher: [Reference]\n' +
+      '      publisher: [Ref<Publisher>]\n' +
       '    },\n' +
       '    initialized: true,\n' +
       '    dirty: true\n' +

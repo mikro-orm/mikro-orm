@@ -130,6 +130,8 @@ const equalsFn = equals;
 export class Utils {
 
   static readonly PK_SEPARATOR = '~~~';
+
+  /* istanbul ignore next */
   static dynamicImportProvider = (id: string) => import(id);
 
   /**

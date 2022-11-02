@@ -1,3 +1,4 @@
+import { inspect } from 'util';
 import type {
   Cast,
   ConnectionType,
@@ -145,6 +146,19 @@ export class Reference<T> {
 
   toJSON(...args: any[]): Dictionary {
     return wrap(this.entity).toJSON!(...args);
+  }
+
+  [inspect.custom](depth: number) {
+    const object = { ...this };
+    const hidden = ['meta'];
+    hidden.forEach(k => delete object[k]);
+    const ret = inspect(object, { depth });
+    const wrapped = helper(this.entity);
+    const meta = wrapped.__meta;
+    const pk = wrapped.hasPrimaryKey() ? '<' + wrapped.getSerializedPrimaryKey() + '>' : '';
+    const name = `Ref<${meta.className}${pk}>`;
+
+    return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
   }
 
 }
