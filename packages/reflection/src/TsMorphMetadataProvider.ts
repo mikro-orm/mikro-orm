@@ -71,6 +71,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
     this.processWrapper(prop, 'IdentifiedReference');
     this.processWrapper(prop, 'Reference');
+    this.processWrapper(prop, 'Ref');
     this.processWrapper(prop, 'Collection');
   }
 
@@ -156,7 +157,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
     prop.type = m[1];
 
-    if (['Reference', 'IdentifiedReference'].includes(wrapper)) {
+    if (['Ref', 'Reference', 'IdentifiedReference'].includes(wrapper)) {
       prop.wrappedReference = true;
     }
   }
