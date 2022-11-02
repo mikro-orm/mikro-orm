@@ -237,7 +237,7 @@ export class QueryHelper {
       return (cond as ObjectQuery<T>[]).map(v => QueryHelper.processCustomType(prop, v, platform, key, fromQuery)) as unknown as ObjectQuery<T>;
     }
 
-    return prop.customType.convertToDatabaseValue(cond, platform, fromQuery);
+    return prop.customType.convertToDatabaseValue(cond, platform, { fromQuery, key, mode: 'query' });
   }
 
   private static processExpression<T>(expr: string, value: T): Dictionary<T> {

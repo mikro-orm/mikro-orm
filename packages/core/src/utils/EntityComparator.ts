@@ -127,7 +127,7 @@ export class EntityComparator {
       }
 
       if (meta.properties[pk].customType) {
-        context.set(`convertToDatabaseValue_${pk}`, (val: any) => meta.properties[pk].customType.convertToDatabaseValue(val, this.platform));
+        context.set(`convertToDatabaseValue_${pk}`, (val: any) => meta.properties[pk].customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
         lines.push(`  return convertToDatabaseValue_${pk}(entity${this.wrap(pk)});`);
       } else {
         lines.push(`  return entity${this.wrap(pk)};`);
@@ -398,7 +398,7 @@ export class EntityComparator {
       }
 
       if (shouldProcessCustomType(childProp)) {
-        context.set(`convertToDatabaseValue_${childProp.name}`, (val: any) => childProp.customType.convertToDatabaseValue(val, this.platform));
+        context.set(`convertToDatabaseValue_${childProp.name}`, (val: any) => childProp.customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
 
         if (['number', 'string', 'boolean'].includes(childProp.customType.compareAsType().toLowerCase())) {
           return `${padding}  ret${childDataKey} = convertToDatabaseValue_${childProp.name}(entity${childEntityKey});`;
@@ -441,7 +441,7 @@ export class EntityComparator {
       }
 
       if (prop.customType) {
-        context.set(`convertToDatabaseValue_${prop.name}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform));
+        context.set(`convertToDatabaseValue_${prop.name}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
 
         if (['number', 'string', 'boolean'].includes(prop.customType.compareAsType().toLowerCase())) {
           return ret + `    ret${dataKey} = convertToDatabaseValue_${prop.name}(ret${dataKey});\n  }\n`;
@@ -454,7 +454,7 @@ export class EntityComparator {
     }
 
     if (prop.customType) {
-      context.set(`convertToDatabaseValue_${prop.name}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform));
+      context.set(`convertToDatabaseValue_${prop.name}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
 
       if (['number', 'string', 'boolean'].includes(prop.customType.compareAsType().toLowerCase())) {
         return ret + `    ret${dataKey} = convertToDatabaseValue_${prop.name}(entity${entityKey});\n  }\n`;

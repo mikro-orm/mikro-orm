@@ -85,7 +85,7 @@ export class ObjectHydrator extends Hydrator {
         );
       } else if (prop.customType) {
         context.set(`convertToJSValue_${convertorKey}`, (val: any) => prop.customType.convertToJSValue(val, this.platform));
-        context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform));
+        context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'hydration' }));
 
         ret.push(
           `  if (${preCond}typeof data${dataKey} !== 'undefined') {`,
@@ -147,7 +147,7 @@ export class ObjectHydrator extends Hydrator {
       }
 
       if (prop.customType) {
-        context.set(`convertToDatabaseValue_${this.safeKey(prop.name)}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform));
+        context.set(`convertToDatabaseValue_${this.safeKey(prop.name)}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'hydration' }));
 
         ret.push(`  if (data${dataKey} != null && convertCustomTypes) {`);
         ret.push(`    data${dataKey} = convertToDatabaseValue_${this.safeKey(prop.name)}(entity${entityKey}.__helper.getPrimaryKey());`); // make sure the value is comparable

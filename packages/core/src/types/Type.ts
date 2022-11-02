@@ -1,6 +1,12 @@
 import type { Platform } from '../platforms';
 import type { Constructor, EntityMetadata, EntityProperty } from '../typings';
 
+export interface TransformContext {
+  fromQuery?: boolean;
+  key?: string;
+  mode?: 'hydration' | 'query' | 'discovery' | 'serialization';
+}
+
 export abstract class Type<JSType = string, DBType = JSType> {
 
   private static readonly types = new Map();
@@ -11,7 +17,7 @@ export abstract class Type<JSType = string, DBType = JSType> {
   /**
    * Converts a value from its JS representation to its database representation of this type.
    */
-  convertToDatabaseValue(value: JSType | DBType, platform: Platform, fromQuery?: boolean): DBType {
+  convertToDatabaseValue(value: JSType | DBType, platform: Platform, context?: TransformContext | boolean): DBType {
     return value as DBType;
   }
 

@@ -1,3 +1,4 @@
+import type { TransformContext } from './Type';
 import { Type } from './Type';
 import { Utils } from '../utils';
 import type { EntityProperty } from '../typings';
@@ -10,7 +11,7 @@ export class ArrayType<T extends string | number = string> extends Type<T[] | nu
     super();
   }
 
-  convertToDatabaseValue(value: T[] | null, platform: Platform, fromQuery?: boolean): string | null {
+  convertToDatabaseValue(value: T[] | null, platform: Platform, context?: TransformContext | boolean): string | null {
     if (!value) {
       return value as null;
     }
@@ -19,7 +20,7 @@ export class ArrayType<T extends string | number = string> extends Type<T[] | nu
       return platform.marshallArray(value as string[]);
     }
 
-    if (fromQuery) {
+    if (typeof context === 'boolean' ? context : context?.fromQuery) {
       return value;
     }
 

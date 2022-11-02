@@ -2,6 +2,7 @@ import { inspect } from 'util';
 import { ArrayType } from './ArrayType';
 import type { Platform } from '../platforms';
 import { ValidationError } from '../errors';
+import type { TransformContext } from './Type';
 
 function mapHydrator<T>(items: T[] | undefined, hydrate: (i: string) => T): (i: string) => T {
   if (items && items.length > 0 && typeof items[0] === 'number') {
@@ -19,7 +20,7 @@ export class EnumArrayType<T extends string | number = string> extends ArrayType
     super(mapHydrator(items, hydrate));
   }
 
-  convertToDatabaseValue(value: T[] | null, platform: Platform, fromQuery?: boolean): string | null {
+  convertToDatabaseValue(value: T[] | null, platform: Platform, context: TransformContext | boolean): string | null {
     /* istanbul ignore else */
     if (Array.isArray(value) && Array.isArray(this.items)) {
       const invalid = value.filter(v => !this.items!.includes(v));
@@ -29,7 +30,7 @@ export class EnumArrayType<T extends string | number = string> extends ArrayType
       }
     }
 
-    return super.convertToDatabaseValue(value, platform, fromQuery);
+    return super.convertToDatabaseValue(value, platform, context);
   }
 
 }
