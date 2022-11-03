@@ -364,6 +364,10 @@ export class QueryBuilder<T extends object = AnyEntity> {
       throw new Error('You need to call `qb.onConflict()` first to use `qb.merge()`');
     }
 
+    if (Array.isArray(data) && data.length === 0) {
+      return this.ignore();
+    }
+
     this._onConflict[this._onConflict.length - 1].merge = data;
     return this;
   }
