@@ -1,4 +1,4 @@
-import { Cascade, Collection, Entity, IdentifiedReference, ManyToOne, OneToMany, PrimaryKey } from '@mikro-orm/core';
+import { Cascade, Collection, Entity, Ref, ManyToOne, OneToMany, PrimaryKey } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { v4 } from 'uuid';
 import { mockLogger } from '../../helpers';
@@ -10,7 +10,7 @@ export class Group {
   id: string = v4();
 
   @OneToMany({
-    entity: 'GroupMember',
+    entity: () => GroupMember,
     mappedBy: (gm: GroupMember) => gm.group,
   })
   members = new Collection<GroupMember>(this);
@@ -21,20 +21,20 @@ export class Group {
 export class GroupMember {
 
   @ManyToOne({
-    entity: 'Member',
+    entity: () => Member,
     inversedBy: (member: Member) => member.groups,
     primary: true,
-    wrappedReference: true,
+    ref: true,
   })
-  member!: IdentifiedReference<Member>;
+  member!: Ref<Member>;
 
   @ManyToOne({
-    entity: 'Group',
+    entity: () => Group,
     inversedBy: (group: Group) => group.members,
     primary: true,
-    wrappedReference: true,
+    ref: true,
   })
-  group!: IdentifiedReference<Group>;
+  group!: Ref<Group>;
 
 }
 
@@ -45,7 +45,7 @@ export class Member {
   id: string = v4();
 
   @OneToMany({
-    entity: 'GroupMember',
+    entity: () => GroupMember,
     mappedBy: (group: GroupMember) => group.member,
     cascade: [Cascade.ALL],
     orphanRemoval: true,
@@ -125,10 +125,7 @@ test('GH 3599 with assign helper', async () => {
   // adding a row to the pivot table
   orm.em.assign(member, {
     groups: [
-      {
-        group: group1.id,
-        member: member.id,
-      },
+      { group: group1.id },
     ],
   });
 
@@ -137,14 +134,8 @@ test('GH 3599 with assign helper', async () => {
   // adding a new row to the pivot table
   orm.em.assign(member, {
     groups: [
-      {
-        group: group1.id,
-        member: member.id,
-      },
-      {
-        group: group2.id,
-        member: member.id,
-      },
+      { group: group1.id },
+      { group: group2.id },
     ],
   });
 
@@ -153,10 +144,7 @@ test('GH 3599 with assign helper', async () => {
   // removing a row from the pivot table
   orm.em.assign(member, {
     groups: [
-      {
-        group: group1.id,
-        member: member.id,
-      },
+      { group: group1.id },
     ],
   });
 

@@ -151,6 +151,13 @@ export class EntityAssigner {
   private static assignCollection<T extends object, U extends object = AnyEntity>(entity: T, collection: Collection<U>, value: unknown, prop: EntityProperty, em: EntityManager | undefined, options: AssignOptions): void {
     const invalid: any[] = [];
     const items = Utils.asArray(value).map((item: any, idx) => {
+      // try to propagate missing owning side reference to the payload first
+      const prop2 = prop.targetMeta?.properties[prop.mappedBy];
+
+      if (Utils.isPlainObject(item) && prop2 && item[prop2.name] == null) {
+        item = { ...item, [prop2.name]: Reference.wrapReference(entity, prop2) };
+      }
+
       if (options.updateNestedEntities && options.updateByPrimaryKey && Utils.isPlainObject(item)) {
         const pk = Utils.extractPK(item, prop.targetMeta);
 
