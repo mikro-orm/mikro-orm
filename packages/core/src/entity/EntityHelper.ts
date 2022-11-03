@@ -137,7 +137,7 @@ export class EntityHelper {
 
       // distinguish not initialized entities
       if (!helper(this).__initialized) {
-        name = `Ref<${name}>`;
+        name = `(${name})`;
       }
 
       return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;

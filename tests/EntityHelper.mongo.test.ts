@@ -202,7 +202,7 @@ describe('EntityHelperMongo', () => {
     expect(actual).toBe('FooBar {\n' +
       '  meta: { onCreateCalled: false, onUpdateCalled: false },\n' +
       "  name: 'bar',\n" +
-      "  baz: Ref<FooBaz> { _id: ObjectId('5b0ff0619fbec620008d2414') }\n" +
+      "  baz: (FooBaz) { _id: ObjectId('5b0ff0619fbec620008d2414') }\n" +
       '}');
 
     const god = new Author('God', 'hello@heaven.god');
