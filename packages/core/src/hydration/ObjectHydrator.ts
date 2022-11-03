@@ -165,7 +165,7 @@ export class ObjectHydrator extends Hydrator {
       ret.push(`    data${dataKey} = [data${dataKey}];`);
       ret.push(`  }`);
       ret.push(`  if (Array.isArray(data${dataKey})) {`);
-      ret.push(`    const items = data${dataKey}.map(value => createCollectionItem_${this.safeKey(prop.name)}(value));`);
+      ret.push(`    const items = data${dataKey}.map(value => createCollectionItem_${this.safeKey(prop.name)}(value, entity));`);
       ret.push(`    const coll = Collection.create(entity, '${prop.name}', items, newEntity);`);
       ret.push(`    if (newEntity) {`);
       ret.push(`      coll.setDirty();`);
@@ -319,9 +319,24 @@ export class ObjectHydrator extends Hydrator {
     const meta = this.metadata.get(prop.type);
     const lines: string[] = [];
 
-    lines.push(`  const createCollectionItem_${this.safeKey(prop.name)} = value => {`);
+    lines.push(`  const createCollectionItem_${this.safeKey(prop.name)} = (value, entity) => {`);
+    const prop2 = prop.targetMeta?.properties[prop.mappedBy];
+
+    if (prop2?.primary) {
+      lines.push(`    if (typeof value === 'object' && value?.['${prop2.name}'] == null) {`);
+      lines.push(`      value = { ...value, ['${prop2.name}']: Reference.wrapReference(entity, { wrappedReference: ${prop2.wrappedReference} }) };`);
+      lines.push(`    }`);
+    }
+
     lines.push(`    if (isPrimaryKey(value, ${meta.compositePK})) return factory.createReference('${prop.type}', value, { convertCustomTypes, schema, merge: true });`);
     lines.push(`    if (value && value.__entity) return value;`);
+
+    if (prop2 && !prop2.primary) {
+      lines.push(`    if (typeof value === 'object' && value?.['${prop2.name}'] == null) {`);
+      lines.push(`      value = { ...value, ['${prop2.name}']: Reference.wrapReference(entity, { wrappedReference: ${prop2.wrappedReference} }) };`);
+      lines.push(`    }`);
+    }
+
     lines.push(`    return factory.create('${prop.type}', value, { newEntity, convertCustomTypes, schema, merge: true });`);
     lines.push(`  }`);
 
