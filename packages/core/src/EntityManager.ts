@@ -530,12 +530,26 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const unique = meta.props.filter(p => p.unique).map(p => p.name);
     const propIndex = unique.findIndex(p => data![p] != null);
 
-    if (where == null && propIndex >= 0) {
-      where = { [unique[propIndex]]: data[unique[propIndex]] } as FilterQuery<T>;
+    if (where == null) {
+      if (propIndex >= 0) {
+        where = { [unique[propIndex]]: data[unique[propIndex]] } as FilterQuery<T>;
+      } else if (meta.uniques.length > 0) {
+        for (const u of meta.uniques) {
+          if (Utils.asArray(u.properties).every(p => data![p])) {
+            where = Utils.asArray(u.properties).reduce((o, key) => {
+              o[key] = data![key];
+              return o;
+            }, {} as FilterQuery<T>);
+            break;
+          }
+        }
+      }
     }
 
     if (where == null) {
-      throw new Error(`Unique property value required for upsert, provide one of: ${meta.primaryKeys.concat(...unique)}`);
+      const compositeUniqueProps = meta.uniques.map(u => Utils.asArray(u.properties).join(' + '));
+      const uniqueProps = meta.primaryKeys.concat(...unique).concat(compositeUniqueProps);
+      throw new Error(`Unique property value required for upsert, provide one of: ${uniqueProps.join(', ')}`);
     }
 
     data = QueryHelper.processObjectParams(data) as EntityData<T>;

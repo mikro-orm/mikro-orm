@@ -14,6 +14,37 @@ exports[`em.upsert [better-sqlite] em.upsert(Type, data) with PK 1`] = `
 ]
 `;
 
+exports[`em.upsert [better-sqlite] em.upsert(Type, data) with unique composite property (no additional props) 1`] = `
+[
+  [
+    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`) values (1, 'fb1') on conflict (\`author__id\`, \`name\`) do nothing returning \`_id\`",
+  ],
+  [
+    "[query] select \`f0\`.\`_id\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 1 and \`f0\`.\`name\` = 'fb1' limit 1",
+  ],
+  [
+    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`) values (2, 'fb2') on conflict (\`author__id\`, \`name\`) do nothing returning \`_id\`",
+  ],
+  [
+    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`) values (3, 'fb3') on conflict (\`author__id\`, \`name\`) do nothing returning \`_id\`",
+  ],
+]
+`;
+
+exports[`em.upsert [better-sqlite] em.upsert(Type, data) with unique composite property (update additional prop) 1`] = `
+[
+  [
+    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`, \`prop\`) values (1, 'fb1', 'val 1') on conflict (\`author__id\`, \`name\`) do update set \`prop\` = excluded.\`prop\` returning \`_id\`",
+  ],
+  [
+    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`, \`prop\`) values (2, 'fb2', 'val 2') on conflict (\`author__id\`, \`name\`) do update set \`prop\` = excluded.\`prop\` returning \`_id\`",
+  ],
+  [
+    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`, \`prop\`) values (3, 'fb3', 'val 3') on conflict (\`author__id\`, \`name\`) do update set \`prop\` = excluded.\`prop\` returning \`_id\`",
+  ],
+]
+`;
+
 exports[`em.upsert [better-sqlite] em.upsert(Type, data) with unique property 1`] = `
 [
   [
@@ -42,6 +73,20 @@ exports[`em.upsert [better-sqlite] em.upsert(entity) 1`] = `
 ]
 `;
 
+exports[`em.upsert [better-sqlite] em.upsert(entity) with unique composite property 1`] = `
+[
+  [
+    "[query] insert into \`foo_bar\` (\`_id\`, \`author__id\`, \`name\`, \`prop\`) values (1, 1, 'fb1', 'val 1') on conflict (\`_id\`) do update set \`author__id\` = excluded.\`author__id\`, \`name\` = excluded.\`name\`, \`prop\` = excluded.\`prop\` returning \`_id\`",
+  ],
+  [
+    "[query] insert into \`foo_bar\` (\`_id\`, \`author__id\`, \`name\`, \`prop\`) values (2, 2, 'fb2', 'val 2') on conflict (\`_id\`) do update set \`author__id\` = excluded.\`author__id\`, \`name\` = excluded.\`name\`, \`prop\` = excluded.\`prop\` returning \`_id\`",
+  ],
+  [
+    "[query] insert into \`foo_bar\` (\`_id\`, \`author__id\`, \`name\`, \`prop\`) values (3, 3, 'fb3', 'val 3') on conflict (\`_id\`) do update set \`author__id\` = excluded.\`author__id\`, \`name\` = excluded.\`name\`, \`prop\` = excluded.\`prop\` returning \`_id\`",
+  ],
+]
+`;
+
 exports[`em.upsert [mariadb] em.upsert(Type, data) with PK 1`] = `
 [
   [
@@ -52,6 +97,52 @@ exports[`em.upsert [mariadb] em.upsert(Type, data) with PK 1`] = `
   ],
   [
     "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (3, 43, 'a3') on duplicate key update \`email\` = values(\`email\`), \`current_age\` = values(\`current_age\`)",
+  ],
+]
+`;
+
+exports[`em.upsert [mariadb] em.upsert(Type, data) with unique composite property (no additional props) 1`] = `
+[
+  [
+    "[query] insert ignore into \`foo_bar\` (\`author__id\`, \`name\`) values (1, 'fb1')",
+  ],
+  [
+    "[query] select \`f0\`.\`_id\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 1 and \`f0\`.\`name\` = 'fb1' limit 1",
+  ],
+  [
+    "[query] insert ignore into \`foo_bar\` (\`author__id\`, \`name\`) values (2, 'fb2')",
+  ],
+  [
+    "[query] select \`f0\`.\`_id\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 2 and \`f0\`.\`name\` = 'fb2' limit 1",
+  ],
+  [
+    "[query] insert ignore into \`foo_bar\` (\`author__id\`, \`name\`) values (3, 'fb3')",
+  ],
+  [
+    "[query] select \`f0\`.\`_id\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 3 and \`f0\`.\`name\` = 'fb3' limit 1",
+  ],
+]
+`;
+
+exports[`em.upsert [mariadb] em.upsert(Type, data) with unique composite property (update additional prop) 1`] = `
+[
+  [
+    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`, \`prop\`) values (1, 'fb1', 'val 1') on duplicate key update \`prop\` = values(\`prop\`)",
+  ],
+  [
+    "[query] select \`f0\`.\`_id\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 1 and \`f0\`.\`name\` = 'fb1' limit 1",
+  ],
+  [
+    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`, \`prop\`) values (2, 'fb2', 'val 2') on duplicate key update \`prop\` = values(\`prop\`)",
+  ],
+  [
+    "[query] select \`f0\`.\`_id\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 2 and \`f0\`.\`name\` = 'fb2' limit 1",
+  ],
+  [
+    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`, \`prop\`) values (3, 'fb3', 'val 3') on duplicate key update \`prop\` = values(\`prop\`)",
+  ],
+  [
+    "[query] select \`f0\`.\`_id\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 3 and \`f0\`.\`name\` = 'fb3' limit 1",
   ],
 ]
 `;
@@ -93,6 +184,20 @@ exports[`em.upsert [mariadb] em.upsert(entity) 1`] = `
 ]
 `;
 
+exports[`em.upsert [mariadb] em.upsert(entity) with unique composite property 1`] = `
+[
+  [
+    "[query] insert into \`foo_bar\` (\`_id\`, \`author__id\`, \`name\`, \`prop\`) values (1, 1, 'fb1', 'val 1') on duplicate key update \`author__id\` = values(\`author__id\`), \`name\` = values(\`name\`), \`prop\` = values(\`prop\`)",
+  ],
+  [
+    "[query] insert into \`foo_bar\` (\`_id\`, \`author__id\`, \`name\`, \`prop\`) values (2, 2, 'fb2', 'val 2') on duplicate key update \`author__id\` = values(\`author__id\`), \`name\` = values(\`name\`), \`prop\` = values(\`prop\`)",
+  ],
+  [
+    "[query] insert into \`foo_bar\` (\`_id\`, \`author__id\`, \`name\`, \`prop\`) values (3, 3, 'fb3', 'val 3') on duplicate key update \`author__id\` = values(\`author__id\`), \`name\` = values(\`name\`), \`prop\` = values(\`prop\`)",
+  ],
+]
+`;
+
 exports[`em.upsert [mongo] em.upsert(Type, data) with PK 1`] = `
 [
   [
@@ -103,6 +208,52 @@ exports[`em.upsert [mongo] em.upsert(Type, data) with PK 1`] = `
   ],
   [
     "[query] db.getCollection('author').updateMany({ _id: 3 }, { '$set': { _id: 3, email: 'a3', current_age: 43 } }, { upsert: true });",
+  ],
+]
+`;
+
+exports[`em.upsert [mongo] em.upsert(Type, data) with unique composite property (no additional props) 1`] = `
+[
+  [
+    "[query] db.getCollection('foo-bar').updateMany({ author: 1, name: 'fb1' }, { '$set': { name: 'fb1', author: 1 } }, { upsert: true });",
+  ],
+  [
+    "[query] db.getCollection('foo-bar').find({ author: 1, name: 'fb1' }, { projection: { _id: 1 } }).limit(1).toArray();",
+  ],
+  [
+    "[query] db.getCollection('foo-bar').updateMany({ author: 2, name: 'fb2' }, { '$set': { name: 'fb2', author: 2 } }, { upsert: true });",
+  ],
+  [
+    "[query] db.getCollection('foo-bar').find({ author: 2, name: 'fb2' }, { projection: { _id: 1 } }).limit(1).toArray();",
+  ],
+  [
+    "[query] db.getCollection('foo-bar').updateMany({ author: 3, name: 'fb3' }, { '$set': { name: 'fb3', author: 3 } }, { upsert: true });",
+  ],
+  [
+    "[query] db.getCollection('foo-bar').find({ author: 3, name: 'fb3' }, { projection: { _id: 1 } }).limit(1).toArray();",
+  ],
+]
+`;
+
+exports[`em.upsert [mongo] em.upsert(Type, data) with unique composite property (update additional prop) 1`] = `
+[
+  [
+    "[query] db.getCollection('foo-bar').updateMany({ author: 1, name: 'fb1' }, { '$set': { name: 'fb1', author: 1, prop: 'val 1' } }, { upsert: true });",
+  ],
+  [
+    "[query] db.getCollection('foo-bar').find({ author: 1, name: 'fb1' }, { projection: { _id: 1 } }).limit(1).toArray();",
+  ],
+  [
+    "[query] db.getCollection('foo-bar').updateMany({ author: 2, name: 'fb2' }, { '$set': { name: 'fb2', author: 2, prop: 'val 2' } }, { upsert: true });",
+  ],
+  [
+    "[query] db.getCollection('foo-bar').find({ author: 2, name: 'fb2' }, { projection: { _id: 1 } }).limit(1).toArray();",
+  ],
+  [
+    "[query] db.getCollection('foo-bar').updateMany({ author: 3, name: 'fb3' }, { '$set': { name: 'fb3', author: 3, prop: 'val 3' } }, { upsert: true });",
+  ],
+  [
+    "[query] db.getCollection('foo-bar').find({ author: 3, name: 'fb3' }, { projection: { _id: 1 } }).limit(1).toArray();",
   ],
 ]
 `;
@@ -144,6 +295,20 @@ exports[`em.upsert [mongo] em.upsert(entity) 1`] = `
 ]
 `;
 
+exports[`em.upsert [mongo] em.upsert(entity) with unique composite property 1`] = `
+[
+  [
+    "[query] db.getCollection('foo-bar').updateMany({ _id: 1 }, { '$set': { _id: 1, author: 1, name: 'fb1', prop: 'val 1' } }, { upsert: true });",
+  ],
+  [
+    "[query] db.getCollection('foo-bar').updateMany({ _id: 2 }, { '$set': { _id: 2, author: 2, name: 'fb2', prop: 'val 2' } }, { upsert: true });",
+  ],
+  [
+    "[query] db.getCollection('foo-bar').updateMany({ _id: 3 }, { '$set': { _id: 3, author: 3, name: 'fb3', prop: 'val 3' } }, { upsert: true });",
+  ],
+]
+`;
+
 exports[`em.upsert [mysql] em.upsert(Type, data) with PK 1`] = `
 [
   [
@@ -154,6 +319,52 @@ exports[`em.upsert [mysql] em.upsert(Type, data) with PK 1`] = `
   ],
   [
     "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (3, 43, 'a3') on duplicate key update \`email\` = values(\`email\`), \`current_age\` = values(\`current_age\`)",
+  ],
+]
+`;
+
+exports[`em.upsert [mysql] em.upsert(Type, data) with unique composite property (no additional props) 1`] = `
+[
+  [
+    "[query] insert ignore into \`foo_bar\` (\`author__id\`, \`name\`) values (1, 'fb1')",
+  ],
+  [
+    "[query] select \`f0\`.\`_id\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 1 and \`f0\`.\`name\` = 'fb1' limit 1",
+  ],
+  [
+    "[query] insert ignore into \`foo_bar\` (\`author__id\`, \`name\`) values (2, 'fb2')",
+  ],
+  [
+    "[query] select \`f0\`.\`_id\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 2 and \`f0\`.\`name\` = 'fb2' limit 1",
+  ],
+  [
+    "[query] insert ignore into \`foo_bar\` (\`author__id\`, \`name\`) values (3, 'fb3')",
+  ],
+  [
+    "[query] select \`f0\`.\`_id\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 3 and \`f0\`.\`name\` = 'fb3' limit 1",
+  ],
+]
+`;
+
+exports[`em.upsert [mysql] em.upsert(Type, data) with unique composite property (update additional prop) 1`] = `
+[
+  [
+    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`, \`prop\`) values (1, 'fb1', 'val 1') on duplicate key update \`prop\` = values(\`prop\`)",
+  ],
+  [
+    "[query] select \`f0\`.\`_id\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 1 and \`f0\`.\`name\` = 'fb1' limit 1",
+  ],
+  [
+    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`, \`prop\`) values (2, 'fb2', 'val 2') on duplicate key update \`prop\` = values(\`prop\`)",
+  ],
+  [
+    "[query] select \`f0\`.\`_id\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 2 and \`f0\`.\`name\` = 'fb2' limit 1",
+  ],
+  [
+    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`, \`prop\`) values (3, 'fb3', 'val 3') on duplicate key update \`prop\` = values(\`prop\`)",
+  ],
+  [
+    "[query] select \`f0\`.\`_id\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 3 and \`f0\`.\`name\` = 'fb3' limit 1",
   ],
 ]
 `;
@@ -195,6 +406,20 @@ exports[`em.upsert [mysql] em.upsert(entity) 1`] = `
 ]
 `;
 
+exports[`em.upsert [mysql] em.upsert(entity) with unique composite property 1`] = `
+[
+  [
+    "[query] insert into \`foo_bar\` (\`_id\`, \`author__id\`, \`name\`, \`prop\`) values (1, 1, 'fb1', 'val 1') on duplicate key update \`author__id\` = values(\`author__id\`), \`name\` = values(\`name\`), \`prop\` = values(\`prop\`)",
+  ],
+  [
+    "[query] insert into \`foo_bar\` (\`_id\`, \`author__id\`, \`name\`, \`prop\`) values (2, 2, 'fb2', 'val 2') on duplicate key update \`author__id\` = values(\`author__id\`), \`name\` = values(\`name\`), \`prop\` = values(\`prop\`)",
+  ],
+  [
+    "[query] insert into \`foo_bar\` (\`_id\`, \`author__id\`, \`name\`, \`prop\`) values (3, 3, 'fb3', 'val 3') on duplicate key update \`author__id\` = values(\`author__id\`), \`name\` = values(\`name\`), \`prop\` = values(\`prop\`)",
+  ],
+]
+`;
+
 exports[`em.upsert [postgresql] em.upsert(Type, data) with PK 1`] = `
 [
   [
@@ -205,6 +430,37 @@ exports[`em.upsert [postgresql] em.upsert(Type, data) with PK 1`] = `
   ],
   [
     "[query] insert into "author" ("_id", "current_age", "email") values (3, 43, 'a3') on conflict ("_id") do update set "email" = excluded."email", "current_age" = excluded."current_age" returning "_id"",
+  ],
+]
+`;
+
+exports[`em.upsert [postgresql] em.upsert(Type, data) with unique composite property (no additional props) 1`] = `
+[
+  [
+    "[query] insert into "foo_bar" ("author__id", "name") values (1, 'fb1') on conflict ("author__id", "name") do nothing returning "_id"",
+  ],
+  [
+    "[query] select "f0"."_id" from "foo_bar" as "f0" where "f0"."author__id" = 1 and "f0"."name" = 'fb1' limit 1",
+  ],
+  [
+    "[query] insert into "foo_bar" ("author__id", "name") values (2, 'fb2') on conflict ("author__id", "name") do nothing returning "_id"",
+  ],
+  [
+    "[query] insert into "foo_bar" ("author__id", "name") values (3, 'fb3') on conflict ("author__id", "name") do nothing returning "_id"",
+  ],
+]
+`;
+
+exports[`em.upsert [postgresql] em.upsert(Type, data) with unique composite property (update additional prop) 1`] = `
+[
+  [
+    "[query] insert into "foo_bar" ("author__id", "name", "prop") values (1, 'fb1', 'val 1') on conflict ("author__id", "name") do update set "prop" = excluded."prop" returning "_id"",
+  ],
+  [
+    "[query] insert into "foo_bar" ("author__id", "name", "prop") values (2, 'fb2', 'val 2') on conflict ("author__id", "name") do update set "prop" = excluded."prop" returning "_id"",
+  ],
+  [
+    "[query] insert into "foo_bar" ("author__id", "name", "prop") values (3, 'fb3', 'val 3') on conflict ("author__id", "name") do update set "prop" = excluded."prop" returning "_id"",
   ],
 ]
 `;
@@ -237,6 +493,20 @@ exports[`em.upsert [postgresql] em.upsert(entity) 1`] = `
 ]
 `;
 
+exports[`em.upsert [postgresql] em.upsert(entity) with unique composite property 1`] = `
+[
+  [
+    "[query] insert into "foo_bar" ("_id", "author__id", "name", "prop") values (1, 1, 'fb1', 'val 1') on conflict ("_id") do update set "author__id" = excluded."author__id", "name" = excluded."name", "prop" = excluded."prop" returning "_id"",
+  ],
+  [
+    "[query] insert into "foo_bar" ("_id", "author__id", "name", "prop") values (2, 2, 'fb2', 'val 2') on conflict ("_id") do update set "author__id" = excluded."author__id", "name" = excluded."name", "prop" = excluded."prop" returning "_id"",
+  ],
+  [
+    "[query] insert into "foo_bar" ("_id", "author__id", "name", "prop") values (3, 3, 'fb3', 'val 3') on conflict ("_id") do update set "author__id" = excluded."author__id", "name" = excluded."name", "prop" = excluded."prop" returning "_id"",
+  ],
+]
+`;
+
 exports[`em.upsert [sqlite] em.upsert(Type, data) with PK 1`] = `
 [
   [
@@ -247,6 +517,37 @@ exports[`em.upsert [sqlite] em.upsert(Type, data) with PK 1`] = `
   ],
   [
     "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (3, 43, 'a3') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\` returning \`_id\`",
+  ],
+]
+`;
+
+exports[`em.upsert [sqlite] em.upsert(Type, data) with unique composite property (no additional props) 1`] = `
+[
+  [
+    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`) values (1, 'fb1') on conflict (\`author__id\`, \`name\`) do nothing returning \`_id\`",
+  ],
+  [
+    "[query] select \`f0\`.\`_id\` from \`foo_bar\` as \`f0\` where \`f0\`.\`author__id\` = 1 and \`f0\`.\`name\` = 'fb1' limit 1",
+  ],
+  [
+    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`) values (2, 'fb2') on conflict (\`author__id\`, \`name\`) do nothing returning \`_id\`",
+  ],
+  [
+    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`) values (3, 'fb3') on conflict (\`author__id\`, \`name\`) do nothing returning \`_id\`",
+  ],
+]
+`;
+
+exports[`em.upsert [sqlite] em.upsert(Type, data) with unique composite property (update additional prop) 1`] = `
+[
+  [
+    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`, \`prop\`) values (1, 'fb1', 'val 1') on conflict (\`author__id\`, \`name\`) do update set \`prop\` = excluded.\`prop\` returning \`_id\`",
+  ],
+  [
+    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`, \`prop\`) values (2, 'fb2', 'val 2') on conflict (\`author__id\`, \`name\`) do update set \`prop\` = excluded.\`prop\` returning \`_id\`",
+  ],
+  [
+    "[query] insert into \`foo_bar\` (\`author__id\`, \`name\`, \`prop\`) values (3, 'fb3', 'val 3') on conflict (\`author__id\`, \`name\`) do update set \`prop\` = excluded.\`prop\` returning \`_id\`",
   ],
 ]
 `;
@@ -275,6 +576,20 @@ exports[`em.upsert [sqlite] em.upsert(entity) 1`] = `
   ],
   [
     "[query] insert into \`author\` (\`_id\`, \`current_age\`, \`email\`) values (3, 43, 'a3') on conflict (\`_id\`) do update set \`email\` = excluded.\`email\`, \`current_age\` = excluded.\`current_age\` returning \`_id\`",
+  ],
+]
+`;
+
+exports[`em.upsert [sqlite] em.upsert(entity) with unique composite property 1`] = `
+[
+  [
+    "[query] insert into \`foo_bar\` (\`_id\`, \`author__id\`, \`name\`, \`prop\`) values (1, 1, 'fb1', 'val 1') on conflict (\`_id\`) do update set \`author__id\` = excluded.\`author__id\`, \`name\` = excluded.\`name\`, \`prop\` = excluded.\`prop\` returning \`_id\`",
+  ],
+  [
+    "[query] insert into \`foo_bar\` (\`_id\`, \`author__id\`, \`name\`, \`prop\`) values (2, 2, 'fb2', 'val 2') on conflict (\`_id\`) do update set \`author__id\` = excluded.\`author__id\`, \`name\` = excluded.\`name\`, \`prop\` = excluded.\`prop\` returning \`_id\`",
+  ],
+  [
+    "[query] insert into \`foo_bar\` (\`_id\`, \`author__id\`, \`name\`, \`prop\`) values (3, 3, 'fb3', 'val 3') on conflict (\`_id\`) do update set \`author__id\` = excluded.\`author__id\`, \`name\` = excluded.\`name\`, \`prop\` = excluded.\`prop\` returning \`_id\`",
   ],
 ]
 `;

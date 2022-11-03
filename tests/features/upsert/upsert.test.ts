@@ -1,4 +1,4 @@
-import { MikroORM, Entity, PrimaryKey, ManyToOne, Property, SimpleLogger } from '@mikro-orm/core';
+import { MikroORM, Entity, PrimaryKey, ManyToOne, Property, SimpleLogger, Unique } from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
 
 @Entity()
@@ -43,6 +43,31 @@ export class Book {
 
 }
 
+@Entity()
+@Unique({ properties: ['author', 'name'] })
+export class FooBar {
+
+  static id = 1;
+
+  @PrimaryKey({ name: '_id' })
+  id: number = FooBar.id++;
+
+  @ManyToOne(() => Author)
+  author: Author;
+
+  @Property()
+  name: string;
+
+  @Property({ nullable: true })
+  prop?: string;
+
+  constructor(name: string, author: Author) {
+    this.name = name;
+    this.author = author;
+  }
+
+}
+
 const options = {
   'sqlite': { dbName: ':memory:' },
   'better-sqlite': { dbName: ':memory:' },
@@ -57,7 +82,7 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      entities: [Author, Book],
+      entities: [Author, Book, FooBar],
       type,
       loggerFactory: options => new SimpleLogger(options),
       ...options[type],
@@ -67,7 +92,7 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
 
   beforeEach(async () => {
     await orm.schema.clearDatabase();
-    Author.id = Book.id = 1;
+    Author.id = Book.id = FooBar.id = 1;
   });
 
   afterAll(() => orm.close());
@@ -78,9 +103,16 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
       new Book('b2', new Author('a2', 32)),
       new Book('b3', new Author('a3', 33)),
     ];
-    await orm.em.persist(books).flush();
+    const fooBars = [
+      new FooBar('fb1', books[0].author),
+      new FooBar('fb2', books[1].author),
+      new FooBar('fb3', books[2].author),
+    ];
+    await orm.em.persist(books).persist(fooBars).flush();
     expect(books.map(b => b.id)).toEqual([1, 2, 3]);
     expect(books.map(b => b.author.id)).toEqual([1, 2, 3]);
+    expect(fooBars.map(fb => fb.id)).toEqual([1, 2, 3]);
+    expect(fooBars.map(fb => fb.author.id)).toEqual([1, 2, 3]);
 
     return books;
   }
@@ -112,6 +144,35 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     await orm.em.flush();
     await orm.em.refresh(author22);
     expect(author22.age).toBe(321);
+  }
+
+  async function assertFooBars(fooBars: FooBar[], mock: jest.Mock) {
+    expect(mock.mock.calls).toMatchSnapshot();
+    mock.mockReset();
+    await orm.em.flush();
+    expect(mock).not.toBeCalled();
+
+    fooBars[0].prop = '12345';
+    await orm.em.flush();
+    expect(mock).toBeCalled();
+
+    orm.em.clear();
+    const fooBarsReloaded = await orm.em.find(FooBar, {}, { orderBy: { name: 'asc' } });
+    expect(fooBarsReloaded).toHaveLength(3);
+
+    mock.mockReset();
+    fooBarsReloaded[1].prop = '12345';
+    const fooBar12 = await orm.em.upsert(fooBarsReloaded[0]); // exists
+    const fooBar22 = await orm.em.upsert(fooBarsReloaded[1]); // exists
+    const fooBar32 = await orm.em.upsert(fooBarsReloaded[2]); // exists
+    expect(fooBar12).toBe(fooBarsReloaded[0]);
+    expect(fooBar22).toBe(fooBarsReloaded[1]);
+    expect(fooBar32).toBe(fooBarsReloaded[2]);
+    expect(fooBar22.prop).toBe('12345');
+    expect(mock).not.toBeCalled();
+    await orm.em.flush();
+    await orm.em.refresh(fooBar22);
+    expect(fooBar22.prop).toBe('12345');
   }
 
   test('em.upsert(Type, data) with PK', async () => {
@@ -161,4 +222,53 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
 
     await assert(author2, mock);
   });
+
+  test('em.upsert(Type, data) with unique composite property (no additional props)', async () => {
+    await createEntities();
+
+    await orm.em.nativeDelete(FooBar, [2, 3]);
+    orm.em.clear();
+
+    const mock = mockLogger(orm);
+    const fooBar1 = await orm.em.upsert(FooBar, { name: 'fb1', author: 1 }); // exists
+    const fooBar2 = await orm.em.upsert(FooBar, { name: 'fb2', author: 2 }); // inserts
+    const fooBar3 = await orm.em.upsert(FooBar, { name: 'fb3', author: 3 }); // inserts
+
+    await assertFooBars([fooBar1, fooBar2, fooBar3], mock);
+  });
+
+  test('em.upsert(Type, data) with unique composite property (update additional prop)', async () => {
+    await createEntities();
+
+    await orm.em.nativeDelete(FooBar, [2, 3]);
+    orm.em.clear();
+
+    const mock = mockLogger(orm);
+    const fooBar1 = await orm.em.upsert(FooBar, { name: 'fb1', author: 1, prop: 'val 1' }); // exists
+    const fooBar2 = await orm.em.upsert(FooBar, { name: 'fb2', author: 2, prop: 'val 2' }); // inserts
+    const fooBar3 = await orm.em.upsert(FooBar, { name: 'fb3', author: 3, prop: 'val 3' }); // inserts
+
+    await assertFooBars([fooBar1, fooBar2, fooBar3], mock);
+  });
+
+  test('em.upsert(entity) with unique composite property', async () => {
+    await createEntities();
+
+    await orm.em.nativeDelete(FooBar, [2, 3]);
+    orm.em.clear();
+
+    const mock = mockLogger(orm);
+    const fb1 = orm.em.create(FooBar, { id: 1, name: 'fb1', author: 1, prop: 'val 1' });
+    const fb2 = orm.em.create(FooBar, { id: 2, name: 'fb2', author: 2, prop: 'val 2' });
+    const fb3 = orm.em.create(FooBar, { id: 3, name: 'fb3', author: 3, prop: 'val 3' });
+    const fooBar1 = await orm.em.upsert(FooBar, fb1); // exists
+    const fooBar2 = await orm.em.upsert(FooBar, fb2); // inserts
+    const fooBar3 = await orm.em.upsert(FooBar, fb3); // inserts
+    expect(fb1).toBe(fooBar1);
+    expect(fb2).toBe(fooBar2);
+    expect(fb3).toBe(fooBar3);
+
+    await assertFooBars([fooBar1, fooBar2, fooBar3], mock);
+  });
+
 });
