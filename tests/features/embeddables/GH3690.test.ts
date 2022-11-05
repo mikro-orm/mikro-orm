@@ -57,10 +57,16 @@ test('GH issue 3690', async () => {
       titles: [{ name: 't1' }, { name: 't2' }],
     },
   });
+  console.log(e);
+  console.log(e.bp);
   await orm.em.flush();
+  console.log(e);
+  console.log(e.bp);
   orm.em.clear();
 
   const e1 = await orm.em.findOneOrFail(P, e, { populate: ['bp'] });
+  console.log(e1);
+  console.log(e1.bp);
   expect(e1.bp?.$.titles).toEqual([
     { name: 't1' },
     { name: 't2' },
