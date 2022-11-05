@@ -301,6 +301,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     if (pks.length > 1) { // owner has composite pk
       pk = Utils.getPrimaryKeyCond(data as T, pks);
     } else {
+      /* istanbul ignore next */
       res.insertId = data[pks[0]] ?? res.insertId ?? res.row[pks[0]];
       pk = [res.insertId];
     }
@@ -322,6 +323,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const fields = Utils.flatten(props.map(prop => prop.fieldNames));
     const params: unknown[] = [];
 
+    /* istanbul ignore next */
     const tableName = meta ? this.getTableName(meta, options) : this.platform.quoteIdentifier(entityName);
     let sql = `insert into ${tableName} `;
     sql += fields.length > 0 ? '(' + fields.map(k => this.platform.quoteIdentifier(k)).join(', ') + ')' : `(${this.platform.quoteIdentifier(pks[0])})`;
@@ -388,6 +390,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     let res = { affectedRows: 0, insertId: 0, row: {} } as QueryResult<T>;
 
     if (Utils.isPrimaryKey(where) && pks.length === 1) {
+      /* istanbul ignore next */
       where = { [meta?.primaryKeys[0] ?? pks[0]]: where } as FilterQuery<T>;
     }
 
@@ -396,7 +399,9 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
         .withSchema(this.getSchemaName(meta, options));
 
       if (options.upsert) {
+        /* istanbul ignore next */
         const uniqueFields = Utils.isPlainObject(where) ? Object.keys(where) : meta!.primaryKeys;
+        /* istanbul ignore next */
         qb.insert(data as T)
           .onConflict(uniqueFields.map(p => meta?.properties[p]?.fieldNames[0] ?? p))
           .merge(Object.keys(data).filter(f => !uniqueFields.includes(f)));

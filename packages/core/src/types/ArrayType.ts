@@ -20,6 +20,7 @@ export class ArrayType<T extends string | number = string> extends Type<T[] | nu
       return platform.marshallArray(value as string[]);
     }
 
+    /* istanbul ignore next */
     if (typeof context === 'boolean' ? context : context?.fromQuery) {
       return value;
     }

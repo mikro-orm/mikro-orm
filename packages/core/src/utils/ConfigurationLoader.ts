@@ -102,6 +102,7 @@ export class ConfigurationLoader {
 
     const distDir = pathExistsSync(process.cwd() + '/dist');
     const buildDir = pathExistsSync(process.cwd() + '/build');
+    /* istanbul ignore next */
     const path = distDir ? 'dist' : (buildDir ? 'build' : 'src');
     paths.push(`./${path}/mikro-orm.config.js`);
     paths.push('./mikro-orm.config.js');
@@ -245,7 +246,7 @@ export class ConfigurationLoader {
   }
 
   /** @internal */
-  static async commonJSCompat(options: Partial<Options> = {}): Promise<void> {
+  static async commonJSCompat(options: Partial<Options>): Promise<void> {
     if (await this.isESM()) {
       return;
     }

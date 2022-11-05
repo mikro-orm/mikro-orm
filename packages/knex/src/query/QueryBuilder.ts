@@ -817,6 +817,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
       const [a, f] = this.helper.splitField(field);
       const prop = this.helper.getProperty(f, a);
 
+      /* istanbul ignore next */
       if (prop && [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference)) {
         return;
       }

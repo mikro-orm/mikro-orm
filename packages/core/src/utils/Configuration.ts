@@ -124,8 +124,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       fileName: (className: string) => className,
     },
     preferReadReplicas: true,
-    /* istanbul ignore next */
-    dynamicImportProvider: (id: string) => import(id),
+    dynamicImportProvider: /* istanbul ignore next */ (id: string) => import(id),
   };
 
   static readonly PLATFORMS = {

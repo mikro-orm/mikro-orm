@@ -87,6 +87,7 @@ export abstract class Type<JSType = string, DBType = JSType> {
     const ret = inspect(object, { depth });
     const name = (this as object).constructor.name;
 
+    /* istanbul ignore next */
     return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
   }
 

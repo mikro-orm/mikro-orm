@@ -44,6 +44,7 @@ export class ChangeSet<T> {
     const ret = inspect(object, { depth });
     const name = `${this.constructor.name}<${this.meta.className}>`;
 
+    /* istanbul ignore next */
     return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
   }
 

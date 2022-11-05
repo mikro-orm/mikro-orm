@@ -261,6 +261,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
+  /* istanbul ignore next kept for BC */
   getForeignKeysSQL(tableName: string, schemaName?: string): string {
     return `select distinct k.constraint_name as constraint_name, k.column_name as column_name, k.referenced_table_name as referenced_table_name, k.referenced_column_name as referenced_column_name, c.update_rule as update_rule, c.delete_rule as delete_rule `
       + `from information_schema.key_column_usage k `

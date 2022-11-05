@@ -78,6 +78,7 @@ export class MariaDbPlatform extends AbstractSqlPlatform {
   }
 
   getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
+    /* istanbul ignore next */
     const quotedTableName = this.quoteIdentifier(schemaName ? `${schemaName}.${tableName}` : tableName);
     const quotedColumnNames = columns.map(c => this.quoteIdentifier(c.name));
     const quotedIndexName = this.quoteIdentifier(indexName);

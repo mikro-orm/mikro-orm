@@ -148,6 +148,7 @@ export class Reference<T> {
     return wrap(this.entity).toJSON!(...args);
   }
 
+  /* istanbul ignore next */
   [inspect.custom](depth: number) {
     const object = { ...this };
     const hidden = ['meta'];
