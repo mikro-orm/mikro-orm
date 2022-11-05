@@ -187,12 +187,12 @@ module.exports = {
             to: '/docs/next/installation',
           },
           {
-            from: '/docs/next/lifecycle-hooks',
-            to: '/docs/next/events',
+            from: '/docs/debugging',
+            to: '/docs/logging',
           },
           {
-            from: '/docs/next/debugging',
-            to: '/docs/next/logging',
+            from: '/docs/entity-references',
+            to: '/docs/type-safe-relations',
           },
         ],
       },

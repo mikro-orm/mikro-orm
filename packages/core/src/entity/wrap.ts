@@ -1,4 +1,4 @@
-import type { Dictionary, IWrappedEntity, IWrappedEntityInternal, PrimaryProperty } from '../typings';
+import type { Dictionary, IWrappedEntity, IWrappedEntityInternal, PrimaryProperty, Ref } from '../typings';
 
 /**
  * returns WrappedEntity instance associated with this entity. This includes all the internal properties like `__meta` or `__em`.
@@ -20,6 +20,13 @@ export function wrap<T, PK extends keyof T | unknown = PrimaryProperty<T>>(entit
   }
 
   return entity?.__helper ?? entity;
+}
+
+/**
+ * shortcut for `wrap(entity).toReference()`
+ */
+export function ref<T, PK extends keyof T | unknown = PrimaryProperty<T>>(entity?: T): Ref<T, PK> {
+  return (entity as Dictionary)?.__helper.toReference();
 }
 
 /**

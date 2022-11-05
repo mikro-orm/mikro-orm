@@ -49,6 +49,50 @@ em.persist(book3);
 await em.flush(); // flush everything to database at once
 ```
 
+## Entity references
+
+MikroORM represents every entity as an object, even those that are not fully loaded. Those are called entity references - they are in fact regular entity class instances, but only with their primary key available. This makes it possible to create them without querying the database. References are stored in the identity map just like any other entity.
+
+```ts
+const userRef = em.getReference(User, 1);
+console.log(userRef);
+```
+
+This will log something like `(User) { id: 1 }`, note the class name being wrapped in parens - this tells you the entity is not-initialized state and represents just the primary key.
+
+Here is an example of common actions you can do with a reference instead of a fully loaded entity:
+
+```ts
+// setting relation properties 
+author.favouriteBook = em.getReference(Book, 1);
+
+// removing entity by reference
+em.remove(em.getReference(Book, 2));
+
+// adding entity to collection by reference
+author.books.add(em.getReference(Book, 3));
+```
+
+The concept can be combined with the so-called `Reference` wrapper for added type safety as described in the [Type-safe Relations section](./type-safe-relations.md).
+
+## Entity state and `WrappedEntity`
+
+During entity discovery (which happens when you call `MikroORM.init()`), the ORM will patch the entity prototype and generate a lazy getter for the `WrappedEntity` - a class holding various metadata and state information about the entity. Each entity instance will have one, available under a hidden `__helper` property - to access its API in a type-safe way, use the `wrap()` helper:
+
+```ts
+import { wrap } from '@mikro-orm/core';
+
+const userRef = em.getReference(User, 1);
+console.log('userRef is initialized:', wrap(userRef).isInitialized());
+
+await wrap(userRef).init();
+console.log('userRef is initialized:', wrap(userRef).isInitialized());
+```
+
+> You can also extend the `BaseEntity` provided by MikroORM. It defines all the public methods available via `wrap()` helper, so you could do `userRef.isInitialized()` or `userRef.init()`.
+
+The `WrappedEntity` instance also holds the state of the entity at the time it was loaded or flushed - this state is then used by the Unit of Work during flush to compute the differences. Another use case is serialization, we can use the `toObject()`, `toPOJO()` and `toJSON()` methods to convert the entity instance to a plain JavaScript object.
+
 ## Removing entities
 
 To delete entities via `EntityManager`, we have two possibilities:

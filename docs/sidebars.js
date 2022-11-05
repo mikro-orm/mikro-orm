@@ -22,8 +22,8 @@ module.exports = {
       },
       items: [
         'identity-map',
-        'entity-references',
         'collections',
+        'type-safe-relations',
         'repositories',
         'transactions',
         'inheritance-mapping',
