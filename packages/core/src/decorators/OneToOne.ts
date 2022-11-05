@@ -5,9 +5,11 @@ import type { AnyString, EntityName } from '../typings';
 
 export function OneToOne<T, O>(
   entity?: OneToOneOptions<T, O> | string | ((e?: any) => EntityName<T>),
-  mappedBy?: (string & keyof T) | ((e: T) => any),
+  mappedByOrOptions?: (string & keyof T) | ((e: T) => any) | Partial<OneToOneOptions<T, O>>,
   options: Partial<OneToOneOptions<T, O>> = {},
 ) {
+  const mappedBy = typeof mappedByOrOptions === 'object' ? mappedByOrOptions.mappedBy : mappedByOrOptions;
+  options = typeof mappedByOrOptions === 'object' ? { ...mappedByOrOptions, ...options } : options;
   return createOneToDecorator<T, O>(entity as string, mappedBy, options, ReferenceType.ONE_TO_ONE);
 }
 
