@@ -356,7 +356,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     if (this.platform.usesReturningStatement()) {
       /* istanbul ignore next */
-      const returningProps = meta!.hydrateProps.filter(prop => prop.persist === false ? false : (prop.primary || prop.defaultRaw));
+      const returningProps = meta!.hydrateProps.filter(prop => prop.persist !== false && (prop.primary || prop.defaultRaw));
       const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
       /* istanbul ignore next */
       sql += returningFields.length > 0 ? ` returning ${returningFields.map(field => this.platform.quoteIdentifier(field)).join(', ')}` : '';
