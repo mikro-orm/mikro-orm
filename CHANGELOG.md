@@ -3,6 +3,43 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.5.1](https://github.com/mikro-orm/mikro-orm/compare/v5.5.0...v5.5.1) (2022-11-05)
+
+
+### Bug Fixes
+
+* **core:** compare original entity data when checking for unique props ([53ff984](https://github.com/mikro-orm/mikro-orm/commit/53ff984723c905a0f7dc5d27b2941b663d9d41cc)), closes [#3644](https://github.com/mikro-orm/mikro-orm/issues/3644)
+* **core:** fix `em.upsert()` when entity is already in context ([f590b79](https://github.com/mikro-orm/mikro-orm/commit/f590b796684cca88c055c8fd3234f3cb9ca85a10)), closes [#3667](https://github.com/mikro-orm/mikro-orm/issues/3667)
+* **core:** fix comparing empty arrays ([be4cdf3](https://github.com/mikro-orm/mikro-orm/commit/be4cdf312f25a01df686f5137340726e92924a0e)), closes [#3694](https://github.com/mikro-orm/mikro-orm/issues/3694)
+* **core:** fix orphan removal for collections of complex/nested composite keys ([925c1d2](https://github.com/mikro-orm/mikro-orm/commit/925c1d23ada128a8429223c14811d5357f43f2dc)), closes [#3666](https://github.com/mikro-orm/mikro-orm/issues/3666)
+* **core:** fix querying for a complex composite key via inverse side ([b99e7bb](https://github.com/mikro-orm/mikro-orm/commit/b99e7bb4d6dd1c0657ea0ddf28fb0c3a1986e5b7)), closes [#3669](https://github.com/mikro-orm/mikro-orm/issues/3669)
+* **core:** handle `$fulltext` search correctly in nested queries ([9a2f535](https://github.com/mikro-orm/mikro-orm/commit/9a2f5350df3101f67c5609aaf4bde0cc6cd17a61)), closes [#3696](https://github.com/mikro-orm/mikro-orm/issues/3696)
+* **core:** improve detection of entity file path via stack trace ([d329d32](https://github.com/mikro-orm/mikro-orm/commit/d329d322f4264f5e97ddc658fdc4ce240f8c7526)), closes [#3668](https://github.com/mikro-orm/mikro-orm/issues/3668)
+* **core:** improve propagation of changes to 1:1 relations ([389b4a2](https://github.com/mikro-orm/mikro-orm/commit/389b4a2a750a45ecb9806640613de016132d2dfa)), closes [#3614](https://github.com/mikro-orm/mikro-orm/issues/3614)
+* **embeddables:** support partial loading hints ([0c33e00](https://github.com/mikro-orm/mikro-orm/commit/0c33e000082dc9f6c585648da3156825c38790cc)), closes [#3673](https://github.com/mikro-orm/mikro-orm/issues/3673)
+* **knex:** ensure virtual properties are never part of `returning` clause ([35d51fe](https://github.com/mikro-orm/mikro-orm/commit/35d51fecff9479f3d704bfcffa90d4fd5dcaf21a)), closes [#3664](https://github.com/mikro-orm/mikro-orm/issues/3664)
+* **postgres:** fix ensuring database exists when `postgres` database does not exist ([b1a867d](https://github.com/mikro-orm/mikro-orm/commit/b1a867d27697f0f2cf4d1a747c15d1773b8a0f86)), closes [#3671](https://github.com/mikro-orm/mikro-orm/issues/3671)
+* **reflection:** fix reflection of embedded array types ([786ba42](https://github.com/mikro-orm/mikro-orm/commit/786ba4281b12ebe089394ec64b32653bfaae5013)), closes [#3690](https://github.com/mikro-orm/mikro-orm/issues/3690)
+* **reflection:** improve detection of array properties ([8f8f820](https://github.com/mikro-orm/mikro-orm/commit/8f8f820ca6e60937e4da82825f9afba9087459ee)), closes [#3690](https://github.com/mikro-orm/mikro-orm/issues/3690)
+
+
+### Features
+
+* **core:** add `em.repo()` shortcut ([feebd7c](https://github.com/mikro-orm/mikro-orm/commit/feebd7c80096a0b497f025f4f909eccd0ae05e4c))
+* **core:** add `EntityOptions.repository` shortcut ([2cbb129](https://github.com/mikro-orm/mikro-orm/commit/2cbb129f5efab59d607908c891b55cc5e03f8020))
+* **core:** add `EntityRepository.upsert()` shortcut ([31d6d77](https://github.com/mikro-orm/mikro-orm/commit/31d6d77c65dcf9ad3bb782af59f3a919845e531c))
+* **core:** add `ref` alias for `wrappedReference` relation property option ([249a407](https://github.com/mikro-orm/mikro-orm/commit/249a4074e3367213898ed8c6fd26cc874ae1d7cf))
+* **core:** add `Rel<T>` and `Ref<T>` relation types ([44acefb](https://github.com/mikro-orm/mikro-orm/commit/44acefb6ca538788f2c8d89e43755571ad747cfd))
+* **core:** add context param to `Type.convertToDatabaseValue()` ([a933e98](https://github.com/mikro-orm/mikro-orm/commit/a933e98e98f366014e1a5af2c1444aaf330a09a0)), closes [#3567](https://github.com/mikro-orm/mikro-orm/issues/3567)
+* **core:** allow using second argument of `@OneToOne` as options ([115462d](https://github.com/mikro-orm/mikro-orm/commit/115462db343276fa3ae4ddcd68f8e27c2647b737))
+* **core:** propagate parent entity to collection item payload in `assign` ([6045511](https://github.com/mikro-orm/mikro-orm/commit/6045511700321d953035ddab21ac98b96640358f)), closes [#3654](https://github.com/mikro-orm/mikro-orm/issues/3654)
+* **core:** propagate parent entity to collection item payload in `create` ([bb9f8d9](https://github.com/mikro-orm/mikro-orm/commit/bb9f8d90ec695a941cc12382e43b3d5510be5fe0)), closes [#3654](https://github.com/mikro-orm/mikro-orm/issues/3654)
+* **core:** support composite unique keys in `em.upsert()` ([3cf79d6](https://github.com/mikro-orm/mikro-orm/commit/3cf79d6e583fc8c10549af0237d4d77e3eaa404d)), closes [#3656](https://github.com/mikro-orm/mikro-orm/issues/3656)
+
+
+
+
+
 # [5.5.0](https://github.com/mikro-orm/mikro-orm/compare/v5.4.2...v5.5.0) (2022-10-23)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.5.1](https://github.com/mikro-orm/mikro-orm/compare/v5.5.0...v5.5.1) (2022-11-05)
+
+
+### Bug Fixes
+
+* **postgres:** fix ensuring database exists when `postgres` database does not exist ([b1a867d](https://github.com/mikro-orm/mikro-orm/commit/b1a867d27697f0f2cf4d1a747c15d1773b8a0f86)), closes [#3671](https://github.com/mikro-orm/mikro-orm/issues/3671)
+
+
+
+
+
 # [5.5.0](https://github.com/mikro-orm/mikro-orm/compare/v5.4.2...v5.5.0) (2022-10-23)
 
 

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.5.1](https://github.com/mikro-orm/mikro-orm/compare/v5.5.0...v5.5.1) (2022-11-05)
+
+
+### Bug Fixes
+
+* **reflection:** fix reflection of embedded array types ([786ba42](https://github.com/mikro-orm/mikro-orm/commit/786ba4281b12ebe089394ec64b32653bfaae5013)), closes [#3690](https://github.com/mikro-orm/mikro-orm/issues/3690)
+* **reflection:** improve detection of array properties ([8f8f820](https://github.com/mikro-orm/mikro-orm/commit/8f8f820ca6e60937e4da82825f9afba9087459ee)), closes [#3690](https://github.com/mikro-orm/mikro-orm/issues/3690)
+
+
+
+
+
 # [5.5.0](https://github.com/mikro-orm/mikro-orm/compare/v5.4.2...v5.5.0) (2022-10-23)
 
 **Note:** Version bump only for package @mikro-orm/reflection
