@@ -21,7 +21,6 @@ export class Book extends BaseEntity3 {
   tags = new Collection<BookTag>(this);
 
   @Property()
-    // eslint-disable-next-line @typescript-eslint/ban-types
   metaObject?: object;
 
   @Property()

@@ -1,3 +1,4 @@
+import { inspect } from 'util';
 import type { Platform } from '../platforms';
 import type { Constructor, EntityMetadata, EntityProperty } from '../typings';
 
@@ -11,6 +12,7 @@ export abstract class Type<JSType = string, DBType = JSType> {
 
   private static readonly types = new Map();
 
+  platform?: Platform;
   meta?: EntityMetadata;
   prop?: EntityProperty;
 
@@ -76,6 +78,16 @@ export abstract class Type<JSType = string, DBType = JSType> {
    */
   static isMappedType(data: any): data is Type<any> {
     return !!data?.__mappedType;
+  }
+
+  [inspect.custom](depth: number) {
+    const object = { ...this };
+    const hidden = ['prop', 'platform', 'meta'];
+    hidden.forEach(k => delete object[k]);
+    const ret = inspect(object, { depth });
+    const name = (this as object).constructor.name;
+
+    return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
   }
 
 }

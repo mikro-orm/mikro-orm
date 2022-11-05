@@ -1,5 +1,5 @@
 import type { MongoDriver } from '@mikro-orm/mongodb';
-import type { AnyEntity, Options, PrimaryProperty, Cast, IsUnknown, EntityMetadata } from '@mikro-orm/core';
+import type { Options, PrimaryProperty, Cast, IsUnknown, EntityMetadata } from '@mikro-orm/core';
 import { Collection as Collection_, MikroORM, Reference as Reference_, ReferenceType, EnumArrayType } from '@mikro-orm/core';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { Author, Book, Publisher, BaseEntity, BaseEntity3, BookTagSchema, Test, FooBaz } from './entities';
@@ -75,12 +75,18 @@ describe('TsMorphMetadataProvider', () => {
     expect(metadata[Author.name].properties).toBeInstanceOf(Object);
     expect(metadata[Author.name].properties.books.type).toBe(Book.name);
     expect(metadata[Author.name].properties.books.reference).toBe(ReferenceType.ONE_TO_MANY);
+    expect(metadata[Author.name].properties.identities.array).toBe(true);
+    expect(metadata[Author.name].properties.identities.type).toBe('string[]');
     expect(metadata[Author.name].properties.foo.type).toBe('string');
     expect(metadata[Author.name].properties.age.type).toBe('number');
     expect(metadata[Author.name].properties.age.optional).toBe(true);
     expect(metadata[Author.name].properties.age.nullable).toBe(true); // nullable is sniffed via ts-morph too
     expect(metadata[Book.name].properties.author.type).toBe(Author.name);
     expect(metadata[Book.name].properties.author.reference).toBe(ReferenceType.MANY_TO_ONE);
+    expect(metadata[Book.name].properties.metaArray.type).toBe('any[]');
+    expect(metadata[Book.name].properties.metaArray.array).toBe(true);
+    expect(metadata[Book.name].properties.metaArrayOfStrings.type).toBe('string[]');
+    expect(metadata[Book.name].properties.metaArrayOfStrings.array).toBe(true);
     expect(metadata[Publisher.name].properties.tests.owner).toBe(true);
     expect(metadata[Publisher.name].properties.types.customType).toBeInstanceOf(EnumArrayType);
     expect(metadata[Publisher.name].properties.types2.customType).toBeInstanceOf(EnumArrayType);

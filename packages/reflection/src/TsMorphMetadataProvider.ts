@@ -116,12 +116,14 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     const optional = property.hasQuestionToken?.() || union.includes('null') || union.includes('undefined');
     type = union.filter(t => !['null', 'undefined'].includes(t)).join(' | ');
 
+    prop.array ??= type.endsWith('[]') || !!type.match(/Array<(.*)>/);
     type = type
       .replace(/Array<(.*)>/, '$1') // unwrap array
       .replace(/\[]$/, '')          // remove array suffix
       .replace(/\((.*)\)/, '$1');   // unwrap union types
 
-    if (prop.array && !type.endsWith('[]') && !type.includes(' | ')) {
+    // keep the array suffix in the type, it is needed in few places in discovery and comparator (`prop.array` is used only for enum arrays)
+    if (prop.array && !type.includes(' | ')) {
       type += '[]';
     }
 

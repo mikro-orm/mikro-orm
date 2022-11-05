@@ -950,18 +950,30 @@ export class MetadataDiscovery {
   }
 
   private initCustomType(meta: EntityMetadata, prop: EntityProperty): void {
-    if (!prop.customType && prop.array && prop.items) {
-      prop.customType = new EnumArrayType(`${meta.className}.${prop.name}`, prop.items);
+    // `prop.type` might be actually instance of custom type class
+    if (Type.isMappedType(prop.type) && !prop.customType) {
+      prop.customType = prop.type;
+      prop.type = prop.customType.constructor.name;
     }
 
-    // `string[]` can be returned via ts-morph, while reflect metadata will give us just `array`
-    if (!prop.customType && !prop.columnTypes && ['string[]', 'array'].includes(prop.type)) {
-      prop.customType = new ArrayType();
+    // `prop.type` might also be custom type class (not instance), so `typeof MyType` will give us `function`, not `object`
+    if (typeof prop.type === 'function' && Type.isMappedType((prop.type as Constructor).prototype) && !prop.customType) {
+      prop.customType = new (prop.type as Constructor<Type>)();
+      prop.type = prop.customType.constructor.name;
+    }
+
+    if (!prop.customType && prop.array && prop.items) {
+      prop.customType = new EnumArrayType(`${meta.className}.${prop.name}`, prop.items);
     }
 
     // for number arrays we make sure to convert the items to numbers
     if (!prop.customType && !prop.columnTypes && prop.type === 'number[]') {
       prop.customType = new ArrayType(i => +i);
+    }
+
+    // `string[]` can be returned via ts-morph, while reflect metadata will give us just `array`
+    if (!prop.customType && !prop.columnTypes && (prop.type === 'array' || prop.type?.toString().endsWith('[]'))) {
+      prop.customType = new ArrayType();
     }
 
     if (!prop.customType && !prop.columnTypes && prop.type === 'Buffer') {
@@ -972,23 +984,14 @@ export class MetadataDiscovery {
       prop.customType = new JsonType();
     }
 
-    // `prop.type` might be actually instance of custom type class
-    if (Type.isMappedType(prop.type)) {
-      prop.customType = prop.type;
-    }
-
-    // `prop.type` might also be custom type class (not instance), so `typeof MyType` will give us `function`, not `object`
-    if (typeof prop.type === 'function' && Type.isMappedType((prop.type as Constructor).prototype) && !prop.customType) {
-      prop.customType = new (prop.type as Constructor<Type>)();
-    }
-
     if (prop.customType) {
+      prop.customType.platform = this.platform;
       prop.customType.meta = meta;
       prop.customType.prop = prop;
-      prop.columnTypes = prop.columnTypes ?? [prop.customType.getColumnType(prop, this.platform)];
+      prop.columnTypes ??= [prop.customType.getColumnType(prop, this.platform)];
     }
 
-    if (Type.isMappedType(prop.customType) && prop.reference === ReferenceType.SCALAR) {
+    if (Type.isMappedType(prop.customType) && prop.reference === ReferenceType.SCALAR && !prop.type?.toString().endsWith('[]')) {
       prop.type = prop.customType.constructor.name;
     }
   }
