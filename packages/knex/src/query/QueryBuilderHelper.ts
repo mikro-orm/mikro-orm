@@ -486,10 +486,15 @@ export class QueryBuilderHelper {
     }
 
     if (op === '$fulltext') {
-      const meta = this.metadata.get(this.entityName);
-      const columnName = key.includes('.') ?  key.split('.')[1] : key;
+      const [a, f] = this.splitField(key);
+      const prop = this.getProperty(f, a);
 
-      qb[m](this.knex.raw(this.platform.getFullTextWhereClause(meta.properties[columnName]), {
+      /* istanbul ignore next */
+      if (!prop) {
+        throw new Error(`Cannot use $fulltext operator on ${key}, property not found`);
+      }
+
+      qb[m](this.knex.raw(this.platform.getFullTextWhereClause(prop), {
         column: this.mapper(key, type, undefined, null),
         query: value[op],
       }));
