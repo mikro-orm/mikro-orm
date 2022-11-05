@@ -34,6 +34,9 @@ export class Author {
     return this.name ?? '~';
   }
 
+  @Property({ persist: false })
+  foo?: string = '123';
+
 }
 
 describe('GH issue 1626', () => {
