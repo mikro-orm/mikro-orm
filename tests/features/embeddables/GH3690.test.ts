@@ -1,9 +1,13 @@
-import { Embeddable, Embedded, Entity, PrimaryKey, Property, OneToOne, Ref } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property, OneToOne, PrimaryProperty, Reference as Reference_, IsUnknown, Cast } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 
+// we need to define those to get around typescript issues with reflection (ts-morph would return `any` for the type otherwise)
+export class Reference<T extends object> extends Reference_<T> { }
+export type Ref<T extends object, PK extends keyof T | unknown = PrimaryProperty<T>> = true extends IsUnknown<PK> ? Reference<T> : ({ [K in Cast<PK, keyof T>]?: T[K] } & Reference<T>);
+
 @Embeddable()
-export class PTE {
+class PTE {
 
   @Property()
   name!: string;
@@ -11,12 +15,12 @@ export class PTE {
 }
 
 @Entity()
-export class BPE {
+class BPE {
 
   @PrimaryKey()
   id!: number;
 
-  @Embedded({ object: true })
+  @Embedded()
   titles!: PTE[];
 
   @OneToOne(() => P, p => p.bp, { orphanRemoval: true })
@@ -25,7 +29,7 @@ export class BPE {
 }
 
 @Entity()
-export class P {
+class P {
 
   @PrimaryKey()
   id!: number;
