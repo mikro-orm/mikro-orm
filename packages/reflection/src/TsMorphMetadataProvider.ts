@@ -1,7 +1,7 @@
 import type { PropertyDeclaration, SourceFile } from 'ts-morph';
-import { Project, ModuleKind } from 'ts-morph';
+import { ModuleKind, Project } from 'ts-morph';
 import type { EntityMetadata, EntityProperty } from '@mikro-orm/core';
-import { MetadataError, MetadataProvider, MetadataStorage, Utils } from '@mikro-orm/core';
+import { MetadataError, MetadataProvider, MetadataStorage, ReferenceType, Utils } from '@mikro-orm/core';
 
 export class TsMorphMetadataProvider extends MetadataProvider {
 
@@ -123,7 +123,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
       .replace(/\((.*)\)/, '$1');   // unwrap union types
 
     // keep the array suffix in the type, it is needed in few places in discovery and comparator (`prop.array` is used only for enum arrays)
-    if (prop.array && !type.includes(' | ')) {
+    if (prop.array && !type.includes(' | ') && prop.reference === ReferenceType.SCALAR) {
       type += '[]';
     }
 
