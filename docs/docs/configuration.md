@@ -66,8 +66,7 @@ MikroORM.init({
 });
 ```
 
-> If you disable `discovery.alwaysAnalyseProperties` option, you will need to explicitly 
-> provide `nullable` and `wrappedReference` parameters (where applicable).
+> If you disable `discovery.alwaysAnalyseProperties` option, you will need to explicitly provide `nullable` and `ref` parameters (where applicable).
 
 Read more about this in [Metadata Providers](metadata-providers.md) sections.
 

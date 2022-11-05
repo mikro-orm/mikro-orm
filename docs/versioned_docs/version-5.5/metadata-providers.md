@@ -87,8 +87,8 @@ We need to provide target entity type in `@OneToMany` and `@ManyToMany` decorato
 @OneToMany(() => Book, b => b.author)
 books = new Collection<Book>(this);
 
-@ManyToOne(() => Publisher, { wrappedReference: true })
-publisher!: IdentifiedReference<Publisher>;
+@ManyToOne(() => Publisher, { ref: true })
+publisher!: Ref<Publisher>;
 ```
 
 #### Optional properties

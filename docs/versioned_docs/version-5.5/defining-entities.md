@@ -64,8 +64,8 @@ export class Book extends CustomBaseEntity {
   @ManyToOne(() => Author)
   author!: Author;
 
-  @ManyToOne(() => Publisher, { wrappedReference: true, nullable: true })
-  publisher?: IdentifiedReference<Publisher>;
+  @ManyToOne(() => Publisher, { ref: true, nullable: true })
+  publisher?: Ref<Publisher>;
 
   @ManyToMany({ entity: 'BookTag', fixedOrder: true })
   tags = new Collection<BookTag>(this);
@@ -87,7 +87,7 @@ export class Book extends CustomBaseEntity {
   author!: Author;
 
   @ManyToOne()
-  publisher?: IdentifiedReference<Publisher>;
+  publisher?: Ref<Publisher>;
 
   @ManyToMany({ fixedOrder: true })
   tags = new Collection<BookTag>(this);
@@ -102,7 +102,7 @@ export class Book extends CustomBaseEntity {
 export interface IBook extends CustomBaseEntity {
   title: string;
   author: Author;
-  publisher?: IdentifiedReference<Publisher>;
+  publisher?: Ref<Publisher>;
   tags: Collection<BookTag>;
 }
 
@@ -112,7 +112,7 @@ export const Book = new EntitySchema<IBook, CustomBaseEntity>({
   properties: {
     title: { type: 'string' },
     author: { reference: 'm:1', entity: 'Author' },
-    publisher: { reference: 'm:1', entity: 'Publisher', wrappedReference: true, nullable: true },
+    publisher: { reference: 'm:1', entity: 'Publisher', ref: true, nullable: true },
     tags: { reference: 'm:n', entity: 'BookTag', fixedOrder: true },
   },
 });
@@ -121,7 +121,7 @@ export const Book = new EntitySchema<IBook, CustomBaseEntity>({
   </TabItem>
 </Tabs>
 
-> Including `{ wrappedEntity: true }` in your `IdentifiedReference` property definitions will wrap the reference, providing access to helper methods like `.load` and `.unwrap`, which can be helpful for loading data and changing the type of your references where you plan to use them.
+> Including `{ wrappedEntity: true }` in your `Ref` property definitions will wrap the reference, providing access to helper methods like `.load` and `.unwrap`, which can be helpful for loading data and changing the type of your references where you plan to use them.
 
 Here is another example of `Author` entity, that was referenced from the `Book` one, this
 time defined for mongo:
@@ -1382,8 +1382,8 @@ export class Book {
   @ManyToOne(() => Author)
   author!: Author;
 
-  @ManyToOne(() => Publisher, { wrappedReference: true, nullable: true })
-  publisher?: IdentifiedReference<Publisher>;
+  @ManyToOne(() => Publisher, { ref: true, nullable: true })
+  publisher?: Ref<Publisher>;
 
 }
 ```
@@ -1405,7 +1405,7 @@ export class Book {
   author!: Author;
 
   @ManyToOne()
-  publisher?: IdentifiedReference<Publisher>;
+  publisher?: Ref<Publisher>;
 
 }
 ```
@@ -1426,7 +1426,7 @@ export const BookSchema = new EntitySchema<Book>({
     id: { type: Number, primary: true },
     title: { type: String },
     author: { reference: 'm:1', entity: 'Author' },
-    publisher: { reference: 'm:1', entity: 'Publisher', wrappedReference: true, nullable: true },
+    publisher: { reference: 'm:1', entity: 'Publisher', ref: true, nullable: true },
   },
 });
 ```
