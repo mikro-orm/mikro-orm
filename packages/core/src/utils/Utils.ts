@@ -623,10 +623,16 @@ export class Utils {
     // __decorate(), replacing it with the constructor name. To support these cases we look for
     // Reflect.decorate() as well.
     let line = stack.findIndex(line => line.includes('__decorate') || line.includes('Reflect.decorate'))!;
+
     if (line === -1) {
       return name;
     }
-    if (stack[line].includes('Reflect.decorate') || Utils.normalizePath(stack[line]).includes('node_modules/tslib/tslib')) {
+
+    if (stack[line].includes('Reflect.decorate')) {
+      line++;
+    }
+
+    if (Utils.normalizePath(stack[line]).includes('node_modules/tslib/tslib')) {
       line++;
     }
 

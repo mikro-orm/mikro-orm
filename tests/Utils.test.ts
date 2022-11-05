@@ -412,7 +412,21 @@ describe('Utils', () => {
       '    at Object.Module._extensions..js (node:internal/modules/cjs/loader:1203:10)',
       '    at Module.load (node:internal/modules/cjs/loader:1027:32)',
     ])).toBe('/opt/app/packages/entity/dist/node/entity/AuthorizationTokenEntityFromReflectDecorate.js');
-  })
+
+    expect(Utils.lookupPathFromDecorator('Requirement', [
+      'Error',
+      '    at Function.lookupPathFromDecorator (/opt/app/node_modules/@mikro-orm/core/utils/Utils.js:508:26)',
+      '    at Function.getMetadataFromDecorator (/opt/app/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:26:36)',
+      '    at /opt/app/node_modules/@mikro-orm/core/decorators/Entity.js:8:49',
+      '    at DecorateConstructor (/opt/app/node_modules/reflect-metadata/Reflect.js:541:33)',
+      '    at Reflect.decorate (/opt/app/node_modules/reflect-metadata/Reflect.js:130:24)',
+      '    at Object.__decorate (/opt/app/node_modules/tslib/tslib.js:99:96)',
+      '    at Object.<anonymous> (/opt/app/entity/requirement.ts:23:23)',
+      '    at Module._compile (node:internal/modules/cjs/loader:1159:14)',
+      '    at Module.m._compile (/opt/app/node_modules/ts-node/src/index.ts:1618:23)',
+      '    at Module.m._compile (/opt/app/node_modules/ts-node/src/index.ts:1618:23)',
+    ])).toBe('/opt/app/entity/requirement.ts');
+  });
 
   test('lookup path from decorator on windows', () => {
     // with tslib, via ts-node
