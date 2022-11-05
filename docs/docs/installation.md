@@ -150,7 +150,7 @@ const orm = await MikroORM.init<PostgreSqlDriver>({
 We can also use different [metadata provider](metadata-providers.md) or even write custom one:
 
 - `ReflectMetadataProvider` that uses `reflect-metadata` instead of `ts-morph`
-- `JavaScriptMetadataProvider` that allows we to manually provide the entity schema (mainly for Vanilla JS)
+- `JavaScriptMetadataProvider` that allows us to manually provide the entity schema (mainly for Vanilla JS)
 
 > Using [`EntitySchema`](entity-schema.md) is another way to define our entities, which is better
 > suited than using `JavaScriptMetadataProvider`.
