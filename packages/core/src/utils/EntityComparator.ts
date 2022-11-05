@@ -504,7 +504,7 @@ export class EntityComparator {
 
   private getGenericComparator(prop: string, cond: string): string {
     return `  if (current${prop} == null && last${prop} == null) {\n\n` +
-      `  } else if ((current${prop} && last${prop} == null) || (current${prop} == null && last${prop})) {\n` +
+      `  } else if ((current${prop} != null && last${prop} == null) || (current${prop} == null && last${prop} != null)) {\n` +
       `    diff${prop} = current${prop};\n` +
       `  } else if (${cond}) {\n` +
       `    diff${prop} = current${prop};\n` +

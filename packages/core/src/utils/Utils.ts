@@ -62,7 +62,7 @@ export function compareObjects(a: any, b: any) {
   return true;
 }
 
-export function compareArrays(a: any[], b: any[]) {
+export function compareArrays(a: any[] | string, b: any[] | string) {
   const length = a.length;
 
   if (length !== b.length) {
