@@ -96,11 +96,11 @@ export class User {
   bestFriend1!: User;
 
   // side with `inversedBy` is the owning one, to define inverse side use `mappedBy`
-  @OneToOne({ inversedBy: 'bestFriend1', orphanRemoval: true })
+  @OneToOne({ inversedBy: 'bestFriend1' })
   bestFriend2!: User;
 
   // when defining it like this, you need to specifically mark the owning side with `owner: true`
-  @OneToOne(() => User, user => user.bestFriend2, { owner: true, orphanRemoval: true })
+  @OneToOne(() => User, user => user.bestFriend2, { owner: true })
   bestFriend3!: User;
 
 }
@@ -112,10 +112,10 @@ export class User {
 @Entity()
 export class User {
 
-  @OneToOne({ mappedBy: 'bestFriend1' })
+  @OneToOne({ mappedBy: 'bestFriend1', orphanRemoval: true })
   bestFriend1!: User;
 
-  @OneToOne(() => User, user => user.bestFriend2)
+  @OneToOne(() => User, user => user.bestFriend2, { orphanRemoval: true })
   bestFriend2!: User;
 
 }
