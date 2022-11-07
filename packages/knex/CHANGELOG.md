@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.5.2](https://github.com/mikro-orm/mikro-orm/compare/v5.5.1...v5.5.2) (2022-11-07)
+
+
+### Bug Fixes
+
+* **knex:** always skip virtual properties in returning clause ([#3699](https://github.com/mikro-orm/mikro-orm/issues/3699)) ([c084dde](https://github.com/mikro-orm/mikro-orm/commit/c084dde32860485f6d63872effcaa76b2d35aed1))
+
+
+
+
+
 ## [5.5.1](https://github.com/mikro-orm/mikro-orm/compare/v5.5.0...v5.5.1) (2022-11-05)
 
 
