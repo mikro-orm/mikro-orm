@@ -406,7 +406,7 @@ describe('EntityManagerMongo', () => {
 
   test('transactions', async () => {
     const god1 = new Author('God1', 'hello@heaven1.god');
-    await orm.em.begin();
+    await orm.em.begin({ readPreference: 'secondary' });
     await orm.em.persist(god1).flush();
     await orm.em.rollback();
     const res1 = await orm.em.findOne(Author, { name: 'God1' });

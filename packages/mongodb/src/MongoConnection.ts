@@ -1,6 +1,6 @@
 import type {
   Collection, Db, MongoClientOptions, ClientSession, BulkWriteResult, Filter, UpdateFilter, OptionalUnlessRequiredId, UpdateResult,
-  DeleteResult, InsertManyResult, InsertOneResult,
+  DeleteResult, InsertManyResult, InsertOneResult, TransactionOptions,
 } from 'mongodb';
 import { MongoClient } from 'mongodb';
 import { ObjectId } from 'bson';
@@ -199,7 +199,7 @@ export class MongoConnection extends Connection {
     return this.runQuery<T, number>('countDocuments', collection, undefined, where, ctx);
   }
 
-  async transactional<T>(cb: (trx: Transaction<ClientSession>) => Promise<T>, options: { isolationLevel?: IsolationLevel; ctx?: Transaction<ClientSession>; eventBroadcaster?: TransactionEventBroadcaster } = {}): Promise<T> {
+  async transactional<T>(cb: (trx: Transaction<ClientSession>) => Promise<T>, options: { isolationLevel?: IsolationLevel; ctx?: Transaction<ClientSession>; eventBroadcaster?: TransactionEventBroadcaster } & TransactionOptions = {}): Promise<T> {
     const session = await this.begin(options);
 
     try {
@@ -215,15 +215,16 @@ export class MongoConnection extends Connection {
     }
   }
 
-  async begin(options: { isolationLevel?: IsolationLevel; ctx?: ClientSession; eventBroadcaster?: TransactionEventBroadcaster } = {}): Promise<ClientSession> {
-    if (!options.ctx) {
-      await options.eventBroadcaster?.dispatchEvent(EventType.beforeTransactionStart);
-    }
+  async begin(options: { isolationLevel?: IsolationLevel; ctx?: ClientSession; eventBroadcaster?: TransactionEventBroadcaster } & TransactionOptions = {}): Promise<ClientSession> {
+    const { ctx, isolationLevel, eventBroadcaster, ...txOptions } = options;
 
-    const session = options.ctx || this.client.startSession();
-    session.startTransaction();
+    if (!ctx) {
+      await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionStart);
+    }
+    const session = ctx || this.client.startSession();
+    session.startTransaction(txOptions);
     this.logQuery('db.begin();');
-    await options.eventBroadcaster?.dispatchEvent(EventType.afterTransactionStart, session);
+    await eventBroadcaster?.dispatchEvent(EventType.afterTransactionStart, session);
 
     return session;
   }
