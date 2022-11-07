@@ -376,10 +376,15 @@ export class MetadataDiscovery {
     const meta2 = this.metadata.get(prop.type);
     Utils.defaultValue(prop, 'fixedOrder', !!prop.fixedOrderColumn);
     const pivotMeta = this.metadata.find(prop.pivotEntity);
+    const pks = Object.values(pivotMeta?.properties ?? {}).filter(p => p.primary);
 
-    if (pivotMeta) {
+    if (pivotMeta && pks.length === 2) {
+      const owner = prop.mappedBy ? meta2.properties[prop.mappedBy] : prop;
+      const [first, second] = this.ensureCorrectFKOrderInPivotEntity(pivotMeta, owner);
       pivotMeta.pivotTable = true;
       prop.pivotTable = pivotMeta.tableName;
+      prop.joinColumns = first.fieldNames;
+      prop.inverseJoinColumns = second.fieldNames;
     }
 
     if (!prop.pivotTable && prop.owner && this.platform.usesPivotTable()) {
@@ -491,8 +496,8 @@ export class MetadataDiscovery {
     });
   }
 
-  private ensureCorrectFKOrderInPivotEntity(meta: EntityMetadata, owner: EntityProperty): void {
-    const [first, second] = meta.relations;
+  private ensureCorrectFKOrderInPivotEntity(meta: EntityMetadata, owner: EntityProperty): [EntityProperty, EntityProperty] {
+    let [first, second] = Object.values(meta.properties).filter(p => p.primary);
 
     // wrong FK order, first FK needs to point to the owning side
     // (note that we can detect this only if the FKs target different types)
@@ -500,7 +505,10 @@ export class MetadataDiscovery {
       delete meta.properties[first.name];
       meta.removeProperty(first.name, false);
       meta.addProperty(first);
+      [first, second] = [second, first];
     }
+
+    return [first, second];
   }
 
   private async definePivotTableEntity(meta: EntityMetadata, prop: EntityProperty): Promise<EntityMetadata> {
