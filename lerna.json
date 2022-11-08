@@ -14,6 +14,7 @@
     "**/tests/**",
     "**/*.md"
   ],
+  "useNx": false,
   "npmClient": "yarn",
   "useWorkspaces": true
 }
