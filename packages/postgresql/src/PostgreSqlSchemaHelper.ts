@@ -334,7 +334,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   getManagementDbName(): string {
-    return undefined!;
+    return '';
   }
 
   disableForeignKeysSQL(): string {
