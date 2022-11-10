@@ -34,6 +34,6 @@ export function ref<T, PK extends keyof T | unknown = PrimaryProperty<T>>(entity
  * use `preferHelper = true` to have access to the internal `__` properties like `__meta` or `__em`
  * @internal
  */
-export function helper<T, PK extends keyof T | unknown = PrimaryProperty<T>>(entity?: T): IWrappedEntityInternal<T, PK> {
-  return (entity as Dictionary)?.__helper;
+export function helper<T, PK extends keyof T | unknown = PrimaryProperty<T>>(entity: T): IWrappedEntityInternal<T, PK> {
+  return (entity as Dictionary).__helper;
 }

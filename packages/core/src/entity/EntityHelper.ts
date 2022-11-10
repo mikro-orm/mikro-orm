@@ -11,8 +11,6 @@ import { ReferenceType } from '../enums';
 import { helper } from './wrap';
 import { EntityRepositoryType, OptionalProps, PrimaryKeyProp, PrimaryKeyType } from '../typings';
 
-const entityHelperSymbol = Symbol('helper');
-
 export class EntityHelper {
 
   static decorate<T extends object>(meta: EntityMetadata<T>, em: EntityManager): void {
@@ -65,17 +63,14 @@ export class EntityHelper {
       __meta: { value: meta },
       __platform: { value: em.getPlatform() },
       __factory: { value: em.getEntityFactory() },
-      [entityHelperSymbol]: { value: null, writable: true, enumerable: false },
       __helper: {
         get(): WrappedEntity<T, keyof T> {
-          if (!this[entityHelperSymbol]) {
-            Object.defineProperty(this, entityHelperSymbol, {
-              value: new WrappedEntity(this, ...helperParams),
-              enumerable: false,
-            });
-          }
+          Object.defineProperty(this, '__helper', {
+            value: new WrappedEntity(this, ...helperParams),
+            enumerable: false,
+          });
 
-          return this[entityHelperSymbol];
+          return this.__helper;
         },
       },
     });

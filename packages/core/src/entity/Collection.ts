@@ -287,7 +287,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
 
     if (!em) {
       for (const i of items) {
-        if (helper(i)?.__em) {
+        if (i && helper(i).__em) {
           em = helper(i).__em;
           break;
         }
