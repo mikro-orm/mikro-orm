@@ -14,6 +14,7 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
 
   private readonly helper = this.platform.getSchemaHelper()!;
   private readonly options = this.config.get('schemaGenerator');
+  protected lastEnsuredDatabase?: string;
 
   /** @deprecated use `dropSchema` and `createSchema` commands respectively */
   async generate(): Promise<string> {
@@ -36,7 +37,13 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
    */
   async ensureDatabase(): Promise<boolean> {
     const dbName = this.config.get('dbName')!;
+
+    if (this.lastEnsuredDatabase === dbName) {
+      return true;
+    }
+
     const exists = await this.helper.databaseExists(this.connection, dbName);
+    this.lastEnsuredDatabase = dbName;
 
     if (!exists) {
       this.config.set('dbName', this.helper.getManagementDbName());
@@ -87,7 +94,6 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
       return this.dropDatabase(name);
     }
 
-    await this.ensureDatabase();
     const sql = await this.getDropSchemaSQL(options);
     await this.execute(sql);
   }
@@ -118,6 +124,7 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
   }
 
   async getDropSchemaSQL(options: { wrap?: boolean; dropMigrationsTable?: boolean; schema?: string } = {}): Promise<string> {
+    await this.ensureDatabase();
     const wrap = options.wrap ?? this.options.disableForeignKeys;
     const metadata = this.getOrderedMetadata(options.schema).reverse();
     const schema = await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema);
@@ -160,6 +167,7 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
   }
 
   async getUpdateSchemaSQL(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema; schema?: string } = {}): Promise<string> {
+    await this.ensureDatabase();
     const { fromSchema, toSchema } = await this.prepareSchemaForComparison(options);
     const comparator = new SchemaComparator(this.platform);
     const diffUp = comparator.compare(fromSchema, toSchema);
@@ -168,6 +176,7 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
   }
 
   async getUpdateSchemaMigrationSQL(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema; schema?: string } = {}): Promise<{ up: string; down: string }> {
+    await this.ensureDatabase();
     const { fromSchema, toSchema } = await this.prepareSchemaForComparison(options);
     const comparator = new SchemaComparator(this.platform);
     const diffUp = comparator.compare(fromSchema, toSchema);
