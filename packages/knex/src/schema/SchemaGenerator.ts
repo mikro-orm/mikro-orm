@@ -13,7 +13,6 @@ import { SchemaComparator } from './SchemaComparator';
 export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> {
 
   private readonly helper = this.platform.getSchemaHelper()!;
-  private readonly knex = this.connection.getKnex();
   private readonly options = this.config.get('schemaGenerator');
 
   /** @deprecated use `dropSchema` and `createSchema` commands respectively */
@@ -584,6 +583,10 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
     const tmp = dump.replace(/pragma table_.+/ig, '').replace(/\n\n+/g, '\n').trim();
 
     return tmp ? tmp + append : '';
+  }
+
+  private get knex() {
+    return this.connection.getKnex();
   }
 
 }

@@ -7,7 +7,6 @@ import type { MigrationRow } from './typings';
 export class MigrationStorage implements UmzugStorage {
 
   private readonly connection = this.driver.getConnection();
-  private readonly knex = this.connection.getKnex();
   private readonly helper = this.driver.getPlatform().getSchemaHelper()!;
   private masterTransaction?: Transaction;
 
@@ -108,6 +107,10 @@ export class MigrationStorage implements UmzugStorage {
     const schemaName = parts.length > 1 ? parts[0] : this.driver.config.get('schema', this.driver.getPlatform().getDefaultSchemaName());
 
     return { tableName, schemaName };
+  }
+
+  private get knex() {
+    return this.connection.getKnex();
   }
 
 }
