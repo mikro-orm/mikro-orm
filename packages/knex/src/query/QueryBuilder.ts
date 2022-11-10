@@ -34,10 +34,10 @@ import {
 import { QueryType } from './enums';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
 import { QueryBuilderHelper } from './QueryBuilderHelper';
+import type { Alias } from './QueryBuilderHelper';
 import type { SqlEntityManager } from '../SqlEntityManager';
 import { CriteriaNodeFactory } from './CriteriaNodeFactory';
 import type { Field, JoinOptions } from '../typings';
-import type { Alias } from './Alias';
 
 /**
  * SQL query builder with fluent interface.
@@ -710,7 +710,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
     // clone array/object properties
     const properties = [
-      'flags', '_populate', '_populateWhere', '_populateMap', '_joins', '_joinedProps', '_aliases', '_cond', '_data', '_orderBy',
+      'flags', '_populate', '_populateWhere', '_populateMap', '_joins', '_joinedProps', '_cond', '_data', '_orderBy',
       '_schema', '_indexHint', '_cache', 'subQueries', 'lockMode', 'lockTables',
     ];
     properties.forEach(prop => (qb as any)[prop] = Utils.copy(this[prop]));
@@ -720,6 +720,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
       qb._fields = [...this._fields];
     }
 
+    qb._aliases = { ...this._aliases };
     qb.finalized = false;
 
     return qb;
@@ -728,8 +729,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   getKnex(): Knex.QueryBuilder {
     const qb = this.knex.queryBuilder();
     const { subQuery, aliasName, entityName } = this.mainAlias;
-    const ref =
-      subQuery ? subQuery : this.knex.ref(this.helper.getTableName(entityName));
+    const ref = subQuery ? subQuery : this.knex.ref(this.helper.getTableName(entityName));
 
     if (this.finalized && (this._explicitAlias || this.helper.isTableNameAliasRequired(this.type))) {
       ref.as(aliasName);

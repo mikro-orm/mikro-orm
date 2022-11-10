@@ -5,7 +5,6 @@ import { LockMode, OptimisticLockError, GroupOperator, QueryOperator, QueryOrder
 import { QueryType } from './enums';
 import type { Field, JoinOptions } from '../typings';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
-import type { Alias } from './Alias';
 
 /**
  * @internal
@@ -789,4 +788,11 @@ export class QueryBuilderHelper {
     return data;
   }
 
+}
+
+export interface Alias {
+  aliasName: string;
+  entityName: string;
+  metadata?: EntityMetadata;
+  subQuery?: Knex.QueryBuilder;
 }
