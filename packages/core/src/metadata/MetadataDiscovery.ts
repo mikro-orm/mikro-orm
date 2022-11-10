@@ -169,7 +169,7 @@ export class MetadataDiscovery {
           continue;
         }
 
-        this.metadata.set(name, Utils.copy(MetadataStorage.getMetadata(name, path)));
+        this.metadata.set(name, Utils.copy(MetadataStorage.getMetadata(name, path), false));
         const entity = this.prepare(target) as Constructor<AnyEntity>;
         const schema = this.getSchema(entity);
         const meta = schema.init().meta;
@@ -238,7 +238,7 @@ export class MetadataDiscovery {
     const path = (entity as Dictionary).__path;
 
     if (path) {
-      const meta = Utils.copy(MetadataStorage.getMetadata(entity.name, path));
+      const meta = Utils.copy(MetadataStorage.getMetadata(entity.name, path), false);
       meta.path = Utils.relativePath(path, this.config.get('baseDir'));
       this.metadata.set(entity.name, meta);
     }
@@ -291,7 +291,7 @@ export class MetadataDiscovery {
       return;
     }
 
-    const copy = Utils.copy(meta);
+    const copy = Utils.copy(meta, false);
     delete copy.prototype;
 
     copy.props
@@ -765,7 +765,7 @@ export class MetadataDiscovery {
         throw MetadataError.conflictingPropertyName(meta.className, name, embeddedProp.name);
       }
 
-      meta.properties[name] = Utils.copy(prop);
+      meta.properties[name] = Utils.copy(prop, false);
       meta.properties[name].name = name;
       meta.properties[name].embedded = [embeddedProp.name, prop.name];
       meta.propertyOrder.set(name, (order += 0.01));
@@ -847,7 +847,7 @@ export class MetadataDiscovery {
 
     Object.values(meta.properties).forEach(prop => {
       const exists = meta.root.properties[prop.name];
-      prop = Utils.copy(prop);
+      prop = Utils.copy(prop, false);
       prop.nullable = true;
 
       if (!exists) {

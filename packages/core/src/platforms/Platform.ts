@@ -448,4 +448,11 @@ export abstract class Platform {
     return '';
   }
 
+  /**
+   * @internal
+   */
+  clone() {
+    return this;
+  }
+
 }

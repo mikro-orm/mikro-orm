@@ -335,8 +335,8 @@ export class Utils {
   /**
    * Creates deep copy of given object.
    */
-  static copy<T>(entity: T): T {
-    return clone(entity);
+  static copy<T>(entity: T, respectCustomCloneMethod = true): T {
+    return clone(entity, respectCustomCloneMethod);
   }
 
   /**

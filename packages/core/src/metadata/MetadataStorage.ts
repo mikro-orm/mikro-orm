@@ -13,7 +13,7 @@ export class MetadataStorage {
   private readonly metadata: Dictionary<EntityMetadata>;
 
   constructor(metadata: Dictionary<EntityMetadata> = {}) {
-    this.metadata = Utils.copy(metadata);
+    this.metadata = Utils.copy(metadata, false);
   }
 
   static getMetadata(): Dictionary<EntityMetadata>;

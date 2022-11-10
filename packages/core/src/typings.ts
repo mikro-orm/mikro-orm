@@ -446,6 +446,11 @@ export class EntityMetadata<T = any> {
     }
   }
 
+  /** @internal */
+  clone() {
+    return this;
+  }
+
 }
 
 export interface SimpleColumnMeta {
