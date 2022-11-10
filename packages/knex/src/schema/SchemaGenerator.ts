@@ -88,6 +88,7 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
       return this.dropDatabase(name);
     }
 
+    await this.ensureDatabase();
     const sql = await this.getDropSchemaSQL(options);
     await this.execute(sql);
   }
