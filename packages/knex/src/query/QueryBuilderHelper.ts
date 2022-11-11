@@ -733,8 +733,8 @@ export class QueryBuilderHelper {
     return meta?.properties[field];
   }
 
-  isTableNameAliasRequired(type: QueryType): boolean {
-    return [QueryType.SELECT, QueryType.COUNT].includes(type);
+  isTableNameAliasRequired(type?: QueryType): boolean {
+    return [QueryType.SELECT, QueryType.COUNT].includes(type ?? QueryType.SELECT);
   }
 
   private mapData(data: Dictionary, properties?: Record<string, EntityProperty>, convertCustomTypes?: boolean) {

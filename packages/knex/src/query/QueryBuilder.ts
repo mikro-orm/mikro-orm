@@ -75,7 +75,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   }
 
   /** @internal */
-  type!: QueryType;
+  type?: QueryType;
   /** @internal */
   _fields?: Field<T>[];
   /** @internal */
@@ -110,7 +110,6 @@ export class QueryBuilder<T extends object = AnyEntity> {
   private _mainAlias?: Alias;
   private _aliases: Dictionary<Alias> = {};
   private _helper?: QueryBuilderHelper;
-  private innerPromise?: Promise<T[] | number | QueryResult<T>>;
   private readonly platform = this.driver.getPlatform();
   private readonly knex = this.driver.getConnection(this.connectionType).getKnex();
 
@@ -272,7 +271,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     const topLevel = !op || !Utils.hasObjectKeys(this._cond);
     const criteriaNode = CriteriaNodeFactory.createNode(this.metadata, this.mainAlias.entityName, cond);
 
-    if ([QueryType.UPDATE, QueryType.DELETE].includes(this.type) && criteriaNode.willAutoJoin(this)) {
+    if ([QueryType.UPDATE, QueryType.DELETE].includes(this.type!) && criteriaNode.willAutoJoin(this)) {
       // use sub-query to support joining
       this.setFlag(this.type === QueryType.UPDATE ? QueryFlag.UPDATE_SUB_QUERY : QueryFlag.DELETE_SUB_QUERY);
       this.select(this.mainAlias.metadata!.primaryKeys, true);
@@ -495,11 +494,11 @@ export class QueryBuilder<T extends object = AnyEntity> {
     this.finalize();
     const qb = this.getQueryBase();
 
-    Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, this._cond, qb), this._cond && !this._onConflict);
+    Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type ?? QueryType.SELECT, this._cond, qb), this._cond && !this._onConflict);
     Utils.runIfNotEmpty(() => qb.groupBy(this.prepareFields(this._groupBy, 'groupBy')), this._groupBy);
-    Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type, this._having, qb, undefined, 'having'), this._having);
+    Utils.runIfNotEmpty(() => this.helper.appendQueryCondition(this.type ?? QueryType.SELECT, this._having, qb, undefined, 'having'), this._having);
     Utils.runIfNotEmpty(() => {
-      const queryOrder = this.helper.getQueryOrder(this.type, this._orderBy as FlatQueryOrderMap[], this._populateMap);
+      const queryOrder = this.helper.getQueryOrder(this.type ?? QueryType.SELECT, this._orderBy as FlatQueryOrderMap[], this._populateMap);
 
       if (queryOrder) {
         return qb.orderByRaw(queryOrder);
@@ -507,7 +506,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     }, this._orderBy);
     Utils.runIfNotEmpty(() => qb.limit(this._limit!), this._limit != null);
     Utils.runIfNotEmpty(() => qb.offset(this._offset!), this._offset);
-    Utils.runIfNotEmpty(() => this.helper.appendOnConflictClause(this.type, this._onConflict!, qb), this._onConflict);
+    Utils.runIfNotEmpty(() => this.helper.appendOnConflictClause(this.type ?? QueryType.SELECT, this._onConflict!, qb), this._onConflict);
 
     if (this.type === QueryType.TRUNCATE && this.platform.usesCascadeStatement()) {
       return this.knex.raw(qb.toSQL().toNative().sql + ' cascade') as any;
@@ -517,7 +516,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
       this.helper.getLockSQL(qb, this.lockMode, this.lockTables);
     }
 
-    this.helper.finalize(this.type, qb, this.mainAlias.metadata);
+    this.helper.finalize(this.type ?? QueryType.SELECT, qb, this.mainAlias.metadata);
 
     return qb;
   }
@@ -580,7 +579,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
    * Use `method` to specify what kind of result you want to get (array/single/meta).
    */
   async execute<U = any>(method: 'all' | 'get' | 'run' = 'all', mapResults = true): Promise<U> {
-    if (!this.connectionType && method !== 'run' && [QueryType.INSERT, QueryType.UPDATE, QueryType.DELETE, QueryType.TRUNCATE].includes(this.type)) {
+    if (!this.connectionType && method !== 'run' && [QueryType.INSERT, QueryType.UPDATE, QueryType.DELETE, QueryType.TRUNCATE].includes(this.type ?? QueryType.SELECT)) {
       this.connectionType = 'write';
     }
 
@@ -664,27 +663,16 @@ export class QueryBuilder<T extends object = AnyEntity> {
    * Provides promise-like interface so we can await the QB instance.
    */
   then<TResult1 = any, TResult2 = never>(onfulfilled?: ((value: any) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<T[] | number | QueryResult<T>> {
-    return this.getInnerPromise().then(onfulfilled, onrejected) as any;
-  }
-
-  private getInnerPromise() {
-    if (!this.innerPromise) {
-      this.innerPromise = (async () => {
-        switch (this.type) {
-          case QueryType.INSERT:
-          case QueryType.UPDATE:
-          case QueryType.DELETE:
-          case QueryType.TRUNCATE:
-            return this.execute('run');
-          case QueryType.SELECT:
-            return this.getResultList();
-          case QueryType.COUNT:
-            return this.getCount();
-        }
-      })();
+    switch (this.type ?? QueryType.SELECT) {
+      case QueryType.INSERT:
+      case QueryType.UPDATE:
+      case QueryType.DELETE:
+      case QueryType.TRUNCATE:
+        return this.execute('run').then(onfulfilled, onrejected) as any;
+      case QueryType.COUNT:
+        return this.getCount().then(onfulfilled, onrejected) as any;
+      case QueryType.SELECT: return this.getResultList().then(onfulfilled, onrejected) as any;
     }
-
-    return this.innerPromise!;
   }
 
   /**
@@ -811,7 +799,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
       const join = Object.keys(this._joins).find(k => field === k.substring(0, k.indexOf('#')))!;
 
       if (join && type === 'where') {
-        return ret.push(...this.helper.mapJoinColumns(this.type, this._joins[join]) as string[]);
+        return ret.push(...this.helper.mapJoinColumns(this.type ?? QueryType.SELECT, this._joins[join]) as string[]);
       }
 
       const [a, f] = this.helper.splitField(field);
@@ -860,7 +848,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
     Object.keys(this._populateMap).forEach(f => {
       if (!fields.includes(f.replace(/#\w+$/, '')) && type === 'where') {
-        const cols = this.helper.mapJoinColumns(this.type, this._joins[f]);
+        const cols = this.helper.mapJoinColumns(this.type ?? QueryType.SELECT, this._joins[f]);
         ret.push(...cols as string[]);
       }
 

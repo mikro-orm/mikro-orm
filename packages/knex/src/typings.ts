@@ -120,7 +120,7 @@ export interface SchemaDifference {
 
 export interface IQueryBuilder<T> {
   readonly alias: string;
-  readonly type: QueryType;
+  readonly type?: QueryType;
   _fields?: Field<T>[];
   select(fields: Field<T> | Field<T>[], distinct?: boolean): this;
   addSelect(fields: string | string[]): this;
