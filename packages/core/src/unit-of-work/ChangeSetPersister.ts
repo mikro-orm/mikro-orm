@@ -208,7 +208,7 @@ export class ChangeSetPersister {
       convertCustomTypes: false,
       processCollections: false,
     });
-    const cond = changeSets.map(cs => cs.getPrimaryKey() as Dictionary);
+    const cond = changeSets.map(cs => cs.getPrimaryKey(true) as Dictionary);
 
     changeSets.forEach((changeSet, idx) => {
       this.checkConcurrencyKeys(meta, changeSet, cond[idx]);

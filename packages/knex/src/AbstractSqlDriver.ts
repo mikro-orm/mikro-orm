@@ -475,6 +475,10 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     sql += pks.length > 1 ? `(${pks.map(pk => `${this.platform.quoteIdentifier(pk)}`).join(', ')})` : this.platform.quoteIdentifier(pks[0]);
 
     const conds = where.map(cond => {
+      if (Utils.isPlainObject(cond) && Utils.getObjectKeysSize(cond) === 1) {
+        cond = Object.values(cond)[0];
+      }
+
       if (pks.length > 1) {
         pkProps.forEach(pk => {
           if (Array.isArray(cond![pk as string])) {

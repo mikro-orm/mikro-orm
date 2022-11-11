@@ -1,15 +1,38 @@
 import type {
-  Collection, Db, MongoClientOptions, ClientSession, BulkWriteResult, Filter, UpdateFilter, OptionalUnlessRequiredId, UpdateResult,
-  DeleteResult, InsertManyResult, InsertOneResult, TransactionOptions,
+  BulkWriteResult,
+  ClientSession,
+  Collection,
+  Db,
+  DeleteResult,
+  Filter,
+  InsertManyResult,
+  InsertOneResult,
+  MongoClientOptions,
+  OptionalUnlessRequiredId,
+  TransactionOptions,
+  UpdateFilter,
+  UpdateResult,
 } from 'mongodb';
 import { MongoClient } from 'mongodb';
 import { ObjectId } from 'bson';
 import { inspect } from 'util';
 import type {
-  ConnectionType, ConnectionConfig, QueryResult, Transaction, QueryOrderMap, FilterQuery, AnyEntity, EntityName, Dictionary,
-  EntityData, TransactionEventBroadcaster, IsolationLevel, Configuration, ConnectionOptions,
+  AnyEntity,
+  Configuration,
+  ConnectionConfig,
+  ConnectionOptions,
+  ConnectionType,
+  Dictionary,
+  EntityData,
+  EntityName,
+  FilterQuery,
+  IsolationLevel,
+  QueryOrderMap,
+  QueryResult,
+  Transaction,
+  TransactionEventBroadcaster,
 } from '@mikro-orm/core';
-import { Connection, Utils, QueryOrder, EventType, ValidationError } from '@mikro-orm/core';
+import { Connection, EventType, QueryOrder, Utils, ValidationError } from '@mikro-orm/core';
 
 export class MongoConnection extends Connection {
 
@@ -279,7 +302,8 @@ export class MongoConnection extends Connection {
         const bulk = this.getCollection<T>(collection).initializeUnorderedBulkOp(options);
 
         (data as T[]).forEach((row, idx) => {
-          const cond = { _id: (where as Dictionary[])[idx] };
+          const id = (where as Dictionary[])[idx];
+          const cond = Utils.isPlainObject(id) ? id : { _id: id };
           const doc = this.createUpdatePayload(row);
           query += log(() => `bulk.find(${this.logObject(cond)}).update(${this.logObject(doc)});\n`);
           bulk.find(cond).update(doc);

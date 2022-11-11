@@ -1,6 +1,7 @@
 import { inspect } from 'util';
 import type { EntityData, EntityMetadata, EntityDictionary, Primary } from '../typings';
 import { helper } from '../entity/wrap';
+import { Utils } from '../utils/Utils';
 
 export class ChangeSet<T> {
 
@@ -20,13 +21,19 @@ export class ChangeSet<T> {
   getPrimaryKey(object = false): Primary<T> | null {
     if (!this.originalEntity) {
       this.primaryKey ??= helper(this.entity).getPrimaryKey(true);
-    } else if (this.meta.compositePK || object) {
-      this.primaryKey = this.meta.primaryKeys.reduce((o, pk) => {
-        o[pk] = (this.originalEntity as T)[pk];
-        return o;
-      }, {} as T) as any;
+    } else if (this.meta.compositePK) {
+      this.primaryKey = this.meta.primaryKeys.map(pk => (this.originalEntity as T)[pk]) as Primary<T>;
     } else {
       this.primaryKey = (this.originalEntity as T)[this.meta.primaryKeys[0]] as Primary<T>;
+    }
+
+    if (object && this.primaryKey != null) {
+      const pks = Utils.asArray(this.primaryKey);
+      const ret = this.meta.primaryKeys.reduce((o, pk, idx) => {
+        o[pk] = pks[idx] as any;
+        return o;
+      }, {} as T);
+      return ret as any;
     }
 
     return this.primaryKey ?? null;
