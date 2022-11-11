@@ -6,8 +6,7 @@ import type {
 } from '../typings';
 import type { IdentifiedReference } from './Reference';
 import { Reference } from './Reference';
-import type { SerializationContext } from './EntityTransformer';
-import { EntityTransformer } from './EntityTransformer';
+import { EntityTransformer } from '../serialization/EntityTransformer';
 import type { AssignOptions } from './EntityAssigner';
 import { EntityAssigner } from './EntityAssigner';
 import { Utils } from '../utils/Utils';
@@ -15,6 +14,7 @@ import type { LockMode } from '../enums';
 import { ValidationError } from '../errors';
 import type { EntityIdentifier } from './EntityIdentifier';
 import { helper } from './wrap';
+import type { SerializationContext } from '../serialization/SerializationContext';
 
 export class WrappedEntity<T extends object, PK extends keyof T> {
 

@@ -1,109 +1,18 @@
-import type { Collection } from './Collection';
-import type { AnyEntity, EntityData, EntityMetadata, IPrimaryKey, PopulateOptions } from '../typings';
-import type { Reference } from './Reference';
-import { helper, wrap } from './wrap';
+import type { Collection } from '../entity/Collection';
+import type { AnyEntity, EntityData, EntityMetadata, IPrimaryKey } from '../typings';
+import { helper, wrap } from '../entity/wrap';
 import type { Platform } from '../platforms';
 import { Utils } from '../utils/Utils';
 import { ReferenceType } from '../enums';
+import type { Reference } from '../entity/Reference';
+import { SerializationContext } from './SerializationContext';
 
-function isVisible<T>(meta: EntityMetadata<T>, propName: string, ignoreFields: string[]): boolean {
+function isVisible<T extends object>(meta: EntityMetadata<T>, propName: string, ignoreFields: string[] = []): boolean {
   const prop = meta.properties[propName];
   const visible = prop && !prop.hidden;
   const prefixed = prop && !prop.primary && propName.startsWith('_'); // ignore prefixed properties, if it's not a PK
 
   return visible && !prefixed && !ignoreFields.includes(propName);
-}
-
-/**
- * Helper that allows to keep track of where we are currently at when serializing complex entity graph with cycles.
- * Before we process a property, we call `visit` that checks if it is not a cycle path (but allows to pass cycles that
- * are defined in populate hint). If not, we proceed and call `leave` afterwards.
- */
-export class SerializationContext<T> {
-
-  readonly path: [string, string][] = [];
-  readonly visited = new Set<AnyEntity>();
-  private entities = new Set<AnyEntity>();
-
-  constructor(private readonly populate: PopulateOptions<T>[]) { }
-
-  visit(entityName: string, prop: string): boolean {
-    if (!this.path.find(([cls, item]) => entityName === cls && prop === item)) {
-      this.path.push([entityName, prop]);
-      return false;
-    }
-
-    // check if the path is explicitly populated
-    if (!this.isMarkedAsPopulated(prop)) {
-      return true;
-    }
-
-    this.path.push([entityName, prop]);
-    return false;
-  }
-
-  leave<U>(entityName: string, prop: string) {
-    const last = this.path.pop();
-
-    /* istanbul ignore next */
-    if (!last || last[0] !== entityName || last[1] !== prop) {
-      throw new Error(`Trying to leave wrong property: ${entityName}.${prop} instead of ${last?.join('.')}`);
-    }
-  }
-
-  close() {
-    this.entities.forEach(entity => {
-      delete helper(entity).__serializationContext.root;
-    });
-  }
-
-  /**
-   * When initializing new context, we need to propagate it to the whole entity graph recursively.
-   */
-  static propagate(root: SerializationContext<AnyEntity>, entity: AnyEntity, raw: boolean): void {
-    root.register(entity);
-    const wrapped = helper(entity);
-    const meta = wrapped.__meta;
-
-    const items: AnyEntity[] = [];
-    Object.keys(entity)
-      .filter(prop => raw ? meta.properties[prop] : isVisible(meta, prop, []))
-      .forEach(key => {
-        if (Utils.isEntity(entity[key], true)) {
-          items.push(entity[key]);
-        } else if (Utils.isCollection(entity[key])) {
-          items.push(...(entity[key] as Collection<any>).getItems(false));
-        }
-      });
-
-    items
-      .filter(item => !item.__helper!.__serializationContext.root)
-      .forEach(item => this.propagate(root, item, raw));
-  }
-
-  private isMarkedAsPopulated(prop: string): boolean {
-    let populate: PopulateOptions<T>[] | undefined = this.populate;
-
-    for (const segment of this.path) {
-      if (!populate) {
-        return false;
-      }
-
-      const exists = populate.find(p => p.field === segment[1]) as PopulateOptions<T>;
-
-      if (exists) {
-        populate = exists.children;
-      }
-    }
-
-    return !!populate?.find(p => p.field === prop);
-  }
-
-  private register(entity: AnyEntity) {
-    helper(entity).__serializationContext.root = this;
-    this.entities.add(entity);
-  }
-
 }
 
 export class EntityTransformer {
@@ -118,7 +27,7 @@ export class EntityTransformer {
 
     if (!wrapped.__serializationContext.root) {
       const root = new SerializationContext<T>(wrapped.__serializationContext.populate ?? []);
-      SerializationContext.propagate(root, entity, raw);
+      SerializationContext.propagate(root, entity, isVisible);
       contextCreated = true;
     }
 

@@ -13,7 +13,7 @@ import { Address2 } from './Address2';
 @Unique({ properties: ['name', 'email'] })
 export class Author2 extends BaseEntity2 {
 
-  [OptionalProps]?: 'createdAt' | 'updatedAt' | 'termsAccepted' | 'version' | 'versionAsString' | 'code' | 'booksTotal' | 'hookParams' | 'hookTest' | 'onLoadCalled';
+  [OptionalProps]?: 'createdAt' | 'updatedAt' | 'termsAccepted' | 'version' | 'versionAsString' | 'code' | 'code2' | 'booksTotal' | 'hookParams' | 'hookTest' | 'onLoadCalled';
 
   static beforeDestroyCalled = 0;
   static afterDestroyCalled = 0;
@@ -138,6 +138,16 @@ export class Author2 extends BaseEntity2 {
   @AfterDelete()
   afterDelete() {
     Author2.afterDestroyCalled += 1;
+  }
+
+  @Property({ name: 'code' })
+  getCode() {
+    return `${this.email} - ${this.name}`;
+  }
+
+  @Property({ persist: false })
+  get code2() {
+    return `${this.email} - ${this.name}`;
   }
 
 }

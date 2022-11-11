@@ -1,7 +1,8 @@
 import type { Transaction } from './connections';
 import type { Cascade, EventType, LoadStrategy, LockMode, QueryOrderMap } from './enums';
 import { ReferenceType } from './enums';
-import type { AssignOptions, Collection, EntityFactory, EntityIdentifier, EntityRepository, IdentifiedReference, Reference, SerializationContext } from './entity';
+import type { AssignOptions, Collection, EntityFactory, EntityIdentifier, EntityRepository, IdentifiedReference, Reference } from './entity';
+import type { SerializationContext } from './serialization';
 import type { EntitySchema, MetadataStorage } from './metadata';
 import type { Type, types } from './types';
 import type { Platform } from './platforms';
