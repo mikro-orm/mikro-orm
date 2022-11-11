@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from 'async_hooks';
 import type { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, IPrimaryKeyValue, Primary } from '../typings';
 import { Collection, EntityIdentifier, helper, Reference } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
@@ -12,6 +13,9 @@ import type { Transaction } from '../connections';
 import { TransactionEventBroadcaster } from '../events';
 import { IdentityMap } from './IdentityMap';
 import type { LockOptions } from '../drivers/IDatabaseDriver';
+
+// to deal with validation for flush inside flush hooks and `Promise.all`
+const insideFlush = new AsyncLocalStorage<boolean>();
 
 export class UnitOfWork {
 
@@ -213,7 +217,7 @@ export class UnitOfWork {
   }
 
   shouldAutoFlush<T extends object>(meta: EntityMetadata<T>): boolean {
-    if (this.insideHooks) {
+    if (insideFlush.getStore()) {
       return false;
     }
 
@@ -308,18 +312,22 @@ export class UnitOfWork {
 
   async commit(): Promise<void> {
     if (this.working) {
-      if (this.insideHooks) {
+      if (insideFlush.getStore()) {
         throw ValidationError.cannotCommit();
       }
 
       return new Promise<void>((resolve, reject) => {
-        this.flushQueue.push(() => this.doCommit().then(resolve, reject));
+        this.flushQueue.push(() => {
+          return insideFlush.run(true, () => {
+            return this.doCommit().then(resolve, reject);
+          });
+        });
       });
     }
 
     try {
       this.working = true;
-      await this.doCommit();
+      await insideFlush.run(true, () => this.doCommit());
 
       while (this.flushQueue.length) {
         await this.flushQueue.shift()!();
@@ -364,12 +372,7 @@ export class UnitOfWork {
         cs.entity.__helper.__processing = false;
       });
 
-      // To allow flushing via `Promise.all()` while still supporting queries inside after flush handler,
-      // we need to run the flush hooks in a separate async context, as we need to skip flush hooks if they
-      // would be triggered from inside another flush hook.
-      this.insideHooks = true;
       await this.eventManager.dispatchEvent(EventType.afterFlush, { em: this.em, uow: this });
-      this.insideHooks = false;
     } finally {
       this.resetTransaction(oldTx);
     }

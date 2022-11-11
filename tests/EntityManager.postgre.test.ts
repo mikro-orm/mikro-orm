@@ -9,6 +9,7 @@ import { PostgreSqlDriver, PostgreSqlConnection } from '@mikro-orm/postgresql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2, Label2 } from './entities-sql';
 import { initORMPostgreSql, mockLogger } from './bootstrap';
 import { performance } from 'perf_hooks';
+import { Test2Subscriber } from './subscribers/Test2Subscriber';
 
 describe('EntityManagerPostgre', () => {
 
@@ -320,6 +321,34 @@ describe('EntityManagerPostgre', () => {
   test('em.commit/rollback validation', async () => {
     await expect(orm.em.commit()).rejects.toThrowError('An open transaction is required for this operation');
     await expect(orm.em.rollback()).rejects.toThrowError('An open transaction is required for this operation');
+  });
+
+  test('findOne supports optimistic locking [testMultipleFlushesDoIncrementalUpdates]', async () => {
+    expect(Test2Subscriber.log).toEqual([]);
+    const a = await orm.em.createQueryBuilder(Test2).insert({ name: '123' });
+    const r1 = await orm.em.createQueryBuilder(Test2).where({ name: '123' });
+    orm.em.clear();
+    const test = new Test2();
+
+    for (let i = 0; i < 5; i++) {
+      test.name = 'test' + i;
+      await orm.em.persistAndFlush(test);
+      expect(typeof test.version).toBe('number');
+      expect(test.version).toBe(i + 1);
+    }
+
+    expect(Test2Subscriber.log.map(r => r[0])).toEqual([
+      'onFlush',
+      'afterFlush',
+      'onFlush',
+      'afterFlush',
+      'onFlush',
+      'afterFlush',
+      'onFlush',
+      'afterFlush',
+      'onFlush',
+      'afterFlush',
+    ]);
   });
 
   test('should load entities', async () => {

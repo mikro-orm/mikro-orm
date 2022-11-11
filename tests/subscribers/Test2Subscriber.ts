@@ -18,7 +18,10 @@ export class Test2Subscriber implements EventSubscriber<Test2> {
     }
 
     const em = args.em as SqlEntityManager;
+    // test we can run queries via QB
     await em.createQueryBuilder(Test2).where({ name: '' + Math.random() }).execute('all');
+    // test we can run queries via EM that touch context
+    await em.findOne(Test2, { name: '' + Math.random() });
     Test2Subscriber.log.push([method, args]);
   }
 
