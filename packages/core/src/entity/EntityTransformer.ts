@@ -9,7 +9,7 @@ import { ReferenceType } from '../enums';
 function isVisible<T>(meta: EntityMetadata<T>, propName: string, ignoreFields: string[]): boolean {
   const prop = meta.properties[propName];
   const visible = prop && !prop.hidden;
-  const prefixed = prop && !prop.primary && propName.startsWith('_'); // ignore prefixed properties, if it's not a PK
+  const prefixed = prop && propName.startsWith('_'); // ignore prefixed properties, if it's not a PK
 
   return visible && !prefixed && !ignoreFields.includes(propName);
 }
