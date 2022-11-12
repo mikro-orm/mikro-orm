@@ -84,9 +84,6 @@
     "@mikro-orm/migrations": {
       "optional": true
     },
-    "sqlite3": {
-      "optional": true
-    },
     "better-sqlite3": {
       "optional": true
     },
@@ -100,6 +97,9 @@
       "optional": true
     },
     "pg": {
+      "optional": true
+    },
+    "sqlite3": {
       "optional": true
     }
   }
