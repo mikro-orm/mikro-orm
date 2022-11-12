@@ -26,27 +26,22 @@ describe('SchemaGenerator', () => {
   test('refresh collections', async () => {
     const createCollection = jest.spyOn(MongoSchemaGenerator.prototype, 'createSchema');
     const dropCollections = jest.spyOn(MongoSchemaGenerator.prototype, 'dropSchema');
-    const ensureIndexes = jest.spyOn(MongoSchemaGenerator.prototype, 'ensureIndexes');
 
     createCollection.mockResolvedValue();
     dropCollections.mockResolvedValue();
-    ensureIndexes.mockResolvedValue();
 
     await orm.schema.refreshDatabase();
 
     expect(dropCollections).toBeCalledTimes(1);
     expect(createCollection).toBeCalledTimes(1);
-    expect(ensureIndexes).toBeCalledTimes(1);
 
     await orm.schema.refreshDatabase({ ensureIndexes: false });
 
     expect(dropCollections).toBeCalledTimes(2);
     expect(createCollection).toBeCalledTimes(2);
-    expect(ensureIndexes).toBeCalledTimes(1);
 
     createCollection.mockRestore();
     dropCollections.mockRestore();
-    ensureIndexes.mockRestore();
   });
 
   test('updateSchema just forwards to createSchema', async () => {

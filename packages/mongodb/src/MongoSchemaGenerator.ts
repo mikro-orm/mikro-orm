@@ -41,13 +41,9 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
   }
 
   async refreshDatabase(options: CreateSchemaOptions = {}): Promise<void> {
-    options.ensureIndexes ??= true;
-
-    await super.refreshDatabase();
-
-    if (options.ensureIndexes) {
-      await this.ensureIndexes();
-    }
+    await this.ensureDatabase();
+    await this.dropSchema();
+    await this.createSchema(options);
   }
 
   async dropIndexes(options?: { skipIndexes?: { collection: string; indexName: string }[]; collectionsWithFailedIndexes?: string[] }): Promise<void> {
