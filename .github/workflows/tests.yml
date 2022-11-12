@@ -59,6 +59,10 @@ jobs:
         with:
           node-version: 16
 
+      - name: Enable corepack
+        run: |
+          corepack enable
+
       - name: Cache node_modules
         uses: actions/cache@v3
         with:
@@ -67,7 +71,7 @@ jobs:
 
       - name: Install
         run: |
-          yarn config set ignore-engines true
+          corepack prepare yarn@stable --activate
           yarn
 
       - name: Build & deploy docs
@@ -89,6 +93,10 @@ jobs:
         with:
           node-version: 16
 
+      - name: Enable corepack
+        run: |
+          corepack enable
+
       - name: Cache node_modules
         uses: actions/cache@v3
         with:
@@ -100,7 +108,7 @@ jobs:
 
       - name: Install
         run: |
-          yarn config set ignore-engines true
+          corepack prepare yarn@stable --activate
           yarn
 
       - name: Lint
@@ -123,6 +131,10 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
+      - name: Enable corepack
+        run: |
+          corepack enable
+
       - name: Cache node_modules
         uses: actions/cache@v3
         with:
@@ -135,7 +147,7 @@ jobs:
 
       - name: Install
         run: |
-          yarn config set ignore-engines true
+          corepack prepare yarn@stable --activate
           yarn
 
       - name: Set CC Required env vars
