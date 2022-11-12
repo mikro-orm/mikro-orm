@@ -2,7 +2,7 @@ import { ObjectId } from 'bson';
 import { inspect } from 'util';
 
 import type { AnyEntity, MikroORM } from '@mikro-orm/core';
-import { Reference, wrap } from '@mikro-orm/core';
+import { Reference, serialize, wrap } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 import { Author, Book, Publisher, Test } from './entities';
 import { initORMMongo } from './bootstrap';
@@ -252,6 +252,25 @@ describe('EntityHelperMongo', () => {
       '    }\n' +
       '  }\n' +
       '}');
+  });
+
+  test('explicit serialization with not initialized properties', async () => {
+    const god = new Author('God', 'hello@heaven.god');
+    const bible = new Book('Bible', god);
+    god.favouriteAuthor = god;
+    bible.publisher = Reference.create(new Publisher('Publisher 1'));
+    await orm.em.persistAndFlush(bible);
+    orm.em.clear();
+
+    const jon = await orm.em.findOneOrFail(Author, god, { populate: true });
+    const o = serialize(jon, { populate: true });
+    expect(o).toMatchObject({
+      id: jon.id,
+      createdAt: jon.createdAt,
+      updatedAt: jon.updatedAt,
+      email: 'hello@heaven.god',
+      name: 'God',
+    });
   });
 
   afterAll(async () => orm.close(true));

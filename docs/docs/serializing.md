@@ -64,7 +64,7 @@ not persisted into database) can be solved by defining your property as `persist
 Such property can be assigned via one of `Entity.assign()`, `em.create()` and 
 `em.merge()`. It will be also part of serialized result. 
 
-This can be handle when dealing with additional values selected via `QueryBuilder` or 
+This can be handled when dealing with additional values selected via `QueryBuilder` or 
 MongoDB's aggregations.
 
 ```ts
@@ -100,3 +100,53 @@ const author = new Author('God')
 const book = new Book(author);
 console.log(wrap(book).toJSON().authorName); // 'God'
 ```
+
+## Explicit serialization
+
+The serialization process is normally driven by the `populate` hints. If you want to take control over this, you can use the `serialize()` helper:
+
+```ts
+import { serialize } from '@mikro-orm/core';
+
+const dto = serialize(user); // serialize single entity
+// { name: '...', books: [1, 2, 3], identity: 123 }
+
+const dtos = serialize(users); // supports arrays as well
+// [{ name: '...', books: [1, 2, 3], identity: 123 }, ...]
+```
+
+By default, every relation is considered as not populated - this will result in the foreign key values to be present. Loaded collections will be represented as arrays of the foreign keys. To control the shape of the serialized response we can use the second `options` parameter:
+
+```ts
+export interface SerializeOptions<T extends object, P extends string = never> {
+  /** Specify which relation should be serialized as populated and which as a FK. */
+  populate?: AutoPath<T, P>[] | boolean;
+
+  /** Specify which properties should be omitted. */
+  exclude?: AutoPath<T, P>[];
+
+  /** Enforce unpopulated references to be returned as objects, e.g. `{ author: { id: 1 } }` instead of `{ author: 1 }`. */
+  forceObject?: boolean;
+
+  /** Ignore custom property serializers. */
+  ignoreSerializers?: boolean;
+
+  /** Skip properties with `null` value. */
+  skipNull?: boolean;
+}
+```
+
+Here is a more complex example:
+
+```ts
+import { serialize } from '@mikro-orm/core';
+
+const dto = serialize(author, {
+  populate: ['books.author', 'books.publisher', 'favouriteBook'], // populate some relations
+  exclude: ['books.author.email'], // skip property of some relation
+  forceObject: true, // not populated or not initialized relations will result in object, e.g. `{ author: { id: 1 } }` 
+  skipNull: true, // properties with `null` value won't be part of the result
+});
+```
+
+If you try to populate a relation that is not initialized, it will have same effect as the `forceObject` option - the value will be represented as object with just the primary key available.

@@ -2,7 +2,7 @@ import { inspect } from 'util';
 
 import type { EntityManager } from '../EntityManager';
 import type { AnyEntity, Dictionary, EntityMetadata, EntityProperty } from '../typings';
-import { EntityTransformer } from './EntityTransformer';
+import { EntityTransformer } from '../serialization/EntityTransformer';
 import { Reference } from './Reference';
 import type { Platform } from '../platforms';
 import { Utils } from '../utils/Utils';
