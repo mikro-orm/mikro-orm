@@ -80,6 +80,9 @@
     "@mikro-orm/sqlite": "^5.0.0"
   },
   "peerDependenciesMeta": {
+    "@mikro-orm/better-sqlite": {
+      "optional": true
+    },
     "@mikro-orm/entity-generator": {
       "optional": true
     },
@@ -105,9 +108,6 @@
       "optional": true
     },
     "@mikro-orm/sqlite": {
-      "optional": true
-    },
-    "@mikro-orm/better-sqlite": {
       "optional": true
     }
   }
