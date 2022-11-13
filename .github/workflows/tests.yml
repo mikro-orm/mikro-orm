@@ -202,6 +202,10 @@ jobs:
         with:
           node-version: 16
 
+      - name: Enable corepack
+        run: |
+          corepack enable
+
       - name: Cache node_modules
         uses: actions/cache@v3
         with:
