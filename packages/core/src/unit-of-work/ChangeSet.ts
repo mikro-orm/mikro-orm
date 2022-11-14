@@ -28,7 +28,7 @@ export class ChangeSet<T> {
     }
 
     if (object && this.primaryKey != null) {
-      const pks = Utils.asArray(this.primaryKey);
+      const pks = this.meta.compositePK && Utils.isPlainObject(this.primaryKey) ? Object.values(this.primaryKey) : Utils.asArray(this.primaryKey);
       const ret = this.meta.primaryKeys.reduce((o, pk, idx) => {
         o[pk] = pks[idx] as any;
         return o;
