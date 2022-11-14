@@ -11,7 +11,14 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
 
     const promises = metadata
       .filter(meta => !existing.includes(meta.collection))
-      .map(meta => this.connection.createCollection(meta.collection));
+      .map(meta => this.connection.createCollection(meta.collection).catch(err => {
+        const existsErrorMessage = `Collection ${this.config.get('dbName')}.${meta.collection} already exists.`;
+
+        // ignore errors about the collection already existing
+        if (!(err.name === 'MongoServerError' && err.message.includes(existsErrorMessage))) {
+          throw err;
+        }
+      }));
 
     if (options.ensureIndexes) {
       await this.ensureIndexes({ ensureCollections: false });
