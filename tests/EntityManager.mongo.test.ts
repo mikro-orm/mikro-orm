@@ -18,7 +18,7 @@ describe('EntityManagerMongo', () => {
   beforeEach(async () => orm.schema.clearDatabase());
 
   afterAll(async () => {
-    await orm.close(true);
+    await orm.close();
     await closeReplSets();
   });
 

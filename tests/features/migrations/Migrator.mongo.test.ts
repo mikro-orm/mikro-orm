@@ -43,7 +43,7 @@ describe('Migrator (mongo)', () => {
   beforeEach(() => orm.config.resetServiceCache());
 
   afterAll(async () => {
-    await orm.close(true);
+    await orm.close();
     await closeReplSets();
   });
 
