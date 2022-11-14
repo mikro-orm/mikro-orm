@@ -11,7 +11,7 @@ import { EntitySchema } from './EntitySchema';
 import { Cascade, ReferenceType } from '../enums';
 import { MetadataError } from '../errors';
 import type { Platform } from '../platforms';
-import { ArrayType, BlobType, EnumArrayType, JsonType, Type } from '../types';
+import { ArrayType, BigIntType, BlobType, EnumArrayType, JsonType, Type } from '../types';
 import { colors } from '../logging/colors';
 
 export class MetadataDiscovery {
@@ -990,6 +990,10 @@ export class MetadataDiscovery {
 
     if (!prop.customType && !prop.columnTypes && prop.type === 'json') {
       prop.customType = new JsonType();
+    }
+
+    if (!prop.customType && this.getMappedType(prop) instanceof BigIntType) {
+      prop.customType = new BigIntType();
     }
 
     if (prop.customType) {
