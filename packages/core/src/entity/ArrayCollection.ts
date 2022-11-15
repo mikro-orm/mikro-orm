@@ -188,6 +188,8 @@ export class ArrayCollection<T extends object, O extends object> {
   }
 
   * [Symbol.iterator](): IterableIterator<T> {
+    this.checkInitialized();
+
     for (const item of this.items) {
       yield item;
     }
@@ -210,6 +212,12 @@ export class ArrayCollection<T extends object, O extends object> {
     }
 
     return this._property!;
+  }
+
+  protected checkInitialized(): void {
+    if (!this.isInitialized()) {
+      throw new Error(`Collection<${this.property.type}> of entity ${this.owner.constructor.name}[${helper(this.owner).getSerializedPrimaryKey()}] not initialized`);
+    }
   }
 
   protected propagate(item: T, method: 'add' | 'remove' | 'takeSnapshot'): void {

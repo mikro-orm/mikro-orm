@@ -364,12 +364,6 @@ export class Collection<T extends object, O extends object = object> extends Arr
     this.setDirty();
   }
 
-  private checkInitialized(): void {
-    if (!this.isInitialized()) {
-      throw new Error(`Collection<${this.property.type}> of entity ${this.owner.constructor.name}[${helper(this.owner).getSerializedPrimaryKey()}] not initialized`);
-    }
-  }
-
   /**
    * re-orders items after searching with `$in` operator
    */
