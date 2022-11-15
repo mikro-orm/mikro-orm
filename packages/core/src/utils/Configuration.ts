@@ -24,7 +24,7 @@ import { ObjectHydrator } from '../hydration';
 import { NullHighlighter } from '../utils/NullHighlighter';
 import type { Logger, LoggerNamespace, LoggerOptions } from '../logging';
 import { DefaultLogger, colors } from '../logging';
-import { Utils } from '../utils/Utils';
+import { requireAtRuntime, Utils } from '../utils/Utils';
 import type { EntityManager } from '../EntityManager';
 import type { Platform } from '../platforms';
 import type { EntitySchema } from '../metadata/EntitySchema';
@@ -128,12 +128,12 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   };
 
   static readonly PLATFORMS = {
-    'mongo': { className: 'MongoDriver', module: () => require('@mikro-orm/mongodb') },
-    'mysql': { className: 'MySqlDriver', module: () => require('@mikro-orm/mysql') },
-    'mariadb': { className: 'MariaDbDriver', module: () => require('@mikro-orm/mariadb') },
-    'postgresql': { className: 'PostgreSqlDriver', module: () => require('@mikro-orm/postgresql') },
-    'sqlite': { className: 'SqliteDriver', module: () => require('@mikro-orm/sqlite') },
-    'better-sqlite': { className: 'BetterSqliteDriver', module: () => require('@mikro-orm/better-sqlite') },
+    'mongo': { className: 'MongoDriver', module: () => requireAtRuntime('@mikro-orm/mongodb') },
+    'mysql': { className: 'MySqlDriver', module: () => requireAtRuntime('@mikro-orm/mysql') },
+    'mariadb': { className: 'MariaDbDriver', module: () => requireAtRuntime('@mikro-orm/mariadb') },
+    'postgresql': { className: 'PostgreSqlDriver', module: () => requireAtRuntime('@mikro-orm/postgresql') },
+    'sqlite': { className: 'SqliteDriver', module: () => requireAtRuntime('@mikro-orm/sqlite') },
+    'better-sqlite': { className: 'BetterSqliteDriver', module: () => requireAtRuntime('@mikro-orm/better-sqlite') },
   };
 
   private readonly options: MikroORMOptions<D>;

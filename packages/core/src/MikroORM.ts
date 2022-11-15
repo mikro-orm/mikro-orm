@@ -2,7 +2,7 @@ import type { EntityManagerType, IDatabaseDriver } from './drivers';
 import { MetadataDiscovery, MetadataStorage, MetadataValidator, ReflectMetadataProvider } from './metadata';
 import type { Options } from './utils';
 import type { Logger } from './logging';
-import { Configuration, ConfigurationLoader, Utils } from './utils';
+import { Configuration, ConfigurationLoader, requireAtRuntime, Utils } from './utils';
 import { NullCacheAdapter } from './cache';
 import type { EntityManager } from './EntityManager';
 import type { Constructor, IEntityGenerator, IMigrator, ISeedManager } from './typings';
@@ -177,8 +177,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets the SeedManager
    */
   getSeeder<T extends ISeedManager = ISeedManager>(): T {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { SeedManager } = require('@mikro-orm/seeder');
+    const { SeedManager } = requireAtRuntime('@mikro-orm/seeder');
     return this.config.getCachedService(SeedManager, this.em);
   }
 

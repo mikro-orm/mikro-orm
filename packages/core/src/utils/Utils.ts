@@ -19,6 +19,11 @@ import { helper } from '../entity/wrap';
 
 export const ObjectBindingPattern = Symbol('ObjectBindingPattern');
 
+export function requireAtRuntime(file: string) {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  return require(file);
+}
+
 export function compareObjects(a: any, b: any) {
   // eslint-disable-next-line eqeqeq
   if (a === b || (a == null && b == null)) {
