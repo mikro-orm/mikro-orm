@@ -5,7 +5,7 @@ import type {
   Constructor,
   Dictionary,
   EntityProperty,
-  IsUnknown,
+  IsUnknown, Loaded,
   Populate,
   Primary,
   PrimaryProperty,
@@ -89,7 +89,13 @@ export class Reference<T> {
    * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
    * Returns the entity.
    */
-  async load<K extends keyof T = never, P extends string = never>(options?: LoadReferenceOptions<T, P>): Promise<T>;
+  async load<K extends keyof T = never, P extends string = never>(options?: LoadReferenceOptions): Promise<T>;
+
+  /**
+   * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
+   * Returns the entity.
+   */
+  async load<K extends keyof T = never, P extends string = never>(options: LoadAndPopulateReferenceOptions<T, P>): Promise<Loaded<T, P>>;
 
   /**
    * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
@@ -101,7 +107,7 @@ export class Reference<T> {
    * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
    * Returns either the whole entity, or the requested property.
    */
-  async load<K extends keyof T = never, P extends string = never>(options?: LoadReferenceOptions<T, P> | K): Promise<T | T[K]> {
+  async load<K extends keyof T = never, P extends string = never>(options?: LoadAndPopulateReferenceOptions<T, P> | K): Promise<T | T[K]> {
     const opts: Dictionary = typeof options === 'object' ? options : { prop: options };
 
     if (!this.isInitialized()) {
@@ -173,8 +179,11 @@ Object.defineProperties(Reference.prototype, {
   get: { get() { return () => this.entity; } },
 });
 
-export interface LoadReferenceOptions<T, P extends string = never> {
-  populate?: Populate<T, P>;
+export interface LoadReferenceOptions {
   lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
   connectionType?: ConnectionType;
+}
+
+export interface LoadAndPopulateReferenceOptions<T, P extends string = never> extends LoadReferenceOptions{
+  populate?: Populate<T, P>;
 }
