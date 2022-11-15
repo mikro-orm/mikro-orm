@@ -4,8 +4,39 @@ import { QueryHelper, TransactionContext, Utils } from './utils';
 import type { AssignOptions, EntityLoaderOptions, EntityRepository, IdentifiedReference } from './entity';
 import { EntityAssigner, EntityFactory, EntityLoader, EntityValidator, helper, Reference } from './entity';
 import { ChangeSetType, UnitOfWork } from './unit-of-work';
-import type { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, LockOptions, NativeInsertUpdateOptions, UpdateOptions, GetReferenceOptions, EntityField } from './drivers';
-import type { AnyEntity, AutoPath, ConnectionType, Dictionary, EntityData, EntityDictionary, EntityDTO, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, Populate, PopulateOptions, Primary, RequiredEntityData } from './typings';
+import type {
+  CountOptions,
+  DeleteOptions,
+  EntityManagerType,
+  FindOneOptions,
+  FindOneOrFailOptions,
+  FindOptions,
+  IDatabaseDriver,
+  LockOptions,
+  NativeInsertUpdateOptions,
+  UpdateOptions,
+  GetReferenceOptions,
+  EntityField,
+} from './drivers';
+import type {
+  AnyEntity,
+  AutoPath,
+  ConnectionType,
+  Dictionary,
+  EntityData,
+  EntityDictionary,
+  EntityDTO,
+  EntityMetadata,
+  EntityName,
+  FilterDef,
+  FilterQuery,
+  GetRepository,
+  Loaded,
+  Populate,
+  PopulateOptions,
+  Primary,
+  RequiredEntityData,
+} from './typings';
 import { FlushMode, LoadStrategy, LockMode, PopulateHint, ReferenceType, SCALAR_TYPES } from './enums';
 import type { TransactionOptions } from './enums';
 import type { MetadataStorage } from './metadata';
@@ -37,6 +68,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   private filterParams: Dictionary<Dictionary> = {};
   private transactionContext?: Transaction;
   private flushMode?: FlushMode;
+  private ignoreNestedTransactions?: boolean;
 
   /**
    * @internal
@@ -45,7 +77,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
               private readonly driver: D,
               private readonly metadata: MetadataStorage,
               private readonly useContext = true,
-              private readonly eventManager = new EventManager(config.get('subscribers'))) { }
+              private readonly eventManager = new EventManager(config.get('subscribers'))) {
+  }
 
   /**
    * Gets the Driver instance used by this EntityManager.
@@ -240,6 +273,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
   setFlushMode(flushMode?: FlushMode): void {
     this.getContext(false).flushMode = flushMode;
+  }
+
+  setIgnoreNestedTransactions(ignore?: boolean): void {
+    this.getContext(false).ignoreNestedTransactions = ignore;
   }
 
   protected async processWhere<T extends object, P extends string = never>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, P> | FindOneOptions<T, P>, type: 'read' | 'update' | 'delete'): Promise<FilterQuery<T>> {
@@ -554,7 +591,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     data = QueryHelper.processObjectParams(data) as EntityData<T>;
     em.validator.validateParams(data, 'insert data');
-    const ret = await em.driver.nativeUpdate(entityName, where, data, { ctx: em.transactionContext, upsert: true, ...options });
+    const ret = await em.driver.nativeUpdate(entityName, where, data, {
+      ctx: em.transactionContext,
+      upsert: true, ...options,
+    });
 
     if (ret.row) {
       const prop = meta.getPrimaryProps()[0];
@@ -588,11 +628,17 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async transactional<T>(cb: (em: D[typeof EntityManagerType]) => Promise<T>, options: TransactionOptions = {}): Promise<T> {
     const em = this.getContext(false);
+
+    if (this.ignoreNestedTransactions) {
+      return cb(em);
+    }
+
     const fork = em.fork({
       clear: false, // state will be merged once resolves
       flushMode: options.flushMode,
       freshEventManager: true,
     });
+    fork.setIgnoreNestedTransactions(options.ignoreNestedTransactions);
     options.ctx ??= em.transactionContext;
 
     return TransactionContext.createAsync(fork, async () => {
@@ -624,7 +670,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async begin(options: TransactionOptions = {}): Promise<void> {
     const em = this.getContext(false);
-    em.transactionContext = await em.getConnection('write').begin({ ...options, eventBroadcaster: new TransactionEventBroadcaster(em) });
+    em.transactionContext = await em.getConnection('write').begin({
+      ...options,
+      eventBroadcaster: new TransactionEventBroadcaster(em),
+    });
   }
 
   /**
@@ -1295,9 +1344,17 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       let data: R;
 
       if (Array.isArray(cached) && merge) {
-        data = cached.map(item => em.entityFactory.create<T>(entityName, item, { merge: true, convertCustomTypes: true, refresh })) as unknown as R;
+        data = cached.map(item => em.entityFactory.create<T>(entityName, item, {
+          merge: true,
+          convertCustomTypes: true,
+          refresh,
+        })) as unknown as R;
       } else if (Utils.isObject<EntityData<T>>(cached) && merge) {
-        data = em.entityFactory.create<T>(entityName, cached, { merge: true, convertCustomTypes: true, refresh }) as unknown as R;
+        data = em.entityFactory.create<T>(entityName, cached, {
+          merge: true,
+          convertCustomTypes: true,
+          refresh,
+        }) as unknown as R;
       } else {
         data = cached;
       }

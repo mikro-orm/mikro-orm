@@ -169,6 +169,7 @@ export interface TransactionOptions {
   ctx?: Transaction;
   isolationLevel?: IsolationLevel;
   flushMode?: FlushMode;
+  ignoreNestedTransactions?: boolean;
 }
 
 export abstract class PlainObject {
