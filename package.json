@@ -49,7 +49,8 @@
     "test": "jest --runInBand",
     "tsc-check-tests": "tsc --noEmit --project tests/tsconfig.json",
     "coverage": "rimraf temp tests/generated-entities && yarn test --coverage",
-    "lint": "eslint packages/**/*.ts"
+    "format": "prettier --write .",
+    "lint": "eslint packages/**/*.ts && prettier --check ."
   },
   "commitlint": {
     "extends": [
@@ -122,6 +123,7 @@
     "mongodb": "4.11.0",
     "mongodb-memory-server": "^8.8.0",
     "node-gyp": "^9.0.0",
+    "prettier": "2.7.1",
     "rimraf": "3.0.2",
     "sql-formatter": "8.0.2",
     "ts-jest": "29.0.3",
@@ -129,5 +131,5 @@
     "typescript": "4.8.4",
     "uuid": "9.0.0"
   },
-  "packageManager": "yarn@3.2.4"
+  "packageManager": "yarn@3.3.0"
 }
