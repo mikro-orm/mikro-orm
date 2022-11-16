@@ -92,34 +92,6 @@ export class AuthorSubscriber implements EventSubscriber<Author> {
 }
 ```
 
-Note: for NestJS you should use `@Injectable` and register subscriber manually instead of `@Subscriber` decorator.
-
-```typescript
-import { Injectable } from '@nestjs/common';
-import { EntityName, EventArgs, EventSubscriber } from '@mikro-orm/core';
-
-@Injectable()
-export class AuthorSubscriber implements EventSubscriber<Author> {
-
-  constructor(em: EntityManager) {
-    em.getEventManager().registerSubscriber(this);
-  }
-
-  getSubscribedEntities(): EntityName<Author>[] {
-    return [Author];
-  }
-
-  async afterCreate(args: EventArgs<Author>): Promise<void> {
-    // ...
-  }
-
-  async afterUpdate(args: EventArgs<Author>): Promise<void> {
-    // ... 
-  }
-
-}
-```
-
 Another example, where we register to all the events and all entities: 
 
 ```typescript
