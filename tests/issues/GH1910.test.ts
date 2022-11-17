@@ -4,17 +4,14 @@ import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 export class A {
-
   @PrimaryKey({ type: 'number' })
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 describe('GH issue 1910', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
@@ -40,19 +37,19 @@ describe('GH issue 1910', () => {
       await em.persistAndFlush(a);
     }
 
-    const [id1, id2, id3, id4] = await em.transactional(async em => {
+    const [id1, id2, id3, id4] = await em.transactional(async (em) => {
       await createA(em, 1);
 
-      await em.fork().transactional(async em => {
+      await em.fork().transactional(async (em) => {
         await createA(em, 2);
       });
 
-      await em.fork().transactional(async em => {
+      await em.fork().transactional(async (em) => {
         await createA(em, 3);
         await em.rollback();
       });
 
-      await em.fork().transactional(async em => {
+      await em.fork().transactional(async (em) => {
         await createA(em, 4);
       });
 
@@ -66,5 +63,4 @@ describe('GH issue 1910', () => {
     await expect(em.fork().findOne(A, id3)).resolves.toBeNull();
     await expect(em.fork().findOne(A, id4)).resolves.not.toBeNull();
   });
-
 });

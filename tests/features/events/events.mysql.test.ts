@@ -10,10 +10,9 @@ import { Test2Subscriber } from '../../subscribers/Test2Subscriber';
 import { ManualAuthor2Subscriber } from '../../subscribers/ManualAuthor2Subscriber';
 
 describe('events (mysql)', () => {
-
   let orm: MikroORM<MySqlDriver>;
 
-  beforeAll(async () => orm = await initORMMySql(undefined, undefined, true));
+  beforeAll(async () => (orm = await initORMMySql(undefined, undefined, true)));
   beforeEach(async () => orm.schema.clearDatabase());
   afterEach(() => {
     Author2Subscriber.log.length = 0;
@@ -62,14 +61,23 @@ describe('events (mysql)', () => {
     expect(author.version).toBe(1);
     expect(author.versionAsString).toBe('v1');
     expect(author.hookParams[0].em).toBe(orm.em);
-    expect(author.hookParams[0].changeSet).toMatchObject({ entity: author, type: 'create', payload: { name: 'Jon Snow' } });
+    expect(author.hookParams[0].changeSet).toMatchObject({
+      entity: author,
+      type: 'create',
+      payload: { name: 'Jon Snow' },
+    });
 
     author.name = 'John Snow';
     await repo.persistAndFlush(author);
     expect(author.version).toBe(2);
     expect(author.versionAsString).toBe('v2');
     expect(author.hookParams[2].em).toBe(orm.em);
-    expect(author.hookParams[2].changeSet).toMatchObject({ entity: author, type: 'update', payload: { name: 'John Snow' }, originalEntity: { name: 'Jon Snow' } });
+    expect(author.hookParams[2].changeSet).toMatchObject({
+      entity: author,
+      type: 'update',
+      payload: { name: 'John Snow' },
+      originalEntity: { name: 'Jon Snow' },
+    });
 
     expect(Author2.beforeDestroyCalled).toBe(0);
     expect(Author2.afterDestroyCalled).toBe(0);
@@ -83,7 +91,7 @@ describe('events (mysql)', () => {
     expect(Author2.beforeDestroyCalled).toBe(2);
     expect(Author2.afterDestroyCalled).toBe(2);
 
-    expect(Author2Subscriber.log.map(l => [l[0], l[1].entity.constructor.name])).toEqual([
+    expect(Author2Subscriber.log.map((l) => [l[0], l[1].entity.constructor.name])).toEqual([
       ['beforeCreate', 'Author2'],
       ['afterCreate', 'Author2'],
       ['beforeUpdate', 'Author2'],
@@ -122,7 +130,7 @@ describe('events (mysql)', () => {
     orm.em.remove(god);
     await orm.em.flush();
 
-    expect(Author2Subscriber.log.map(l => [l[0], l[1].entity.constructor.name])).toEqual([
+    expect(Author2Subscriber.log.map((l) => [l[0], l[1].entity.constructor.name])).toEqual([
       ['beforeCreate', 'Author2'],
       ['beforeCreate', 'Author2'],
       ['afterCreate', 'Author2'],
@@ -133,7 +141,7 @@ describe('events (mysql)', () => {
       ['afterDelete', 'Author2'],
     ]);
 
-    expect(EverythingSubscriber.log.map(l => [l[0], l[1].entity.constructor.name])).toEqual([
+    expect(EverythingSubscriber.log.map((l) => [l[0], l[1].entity.constructor.name])).toEqual([
       ['beforeCreate', 'Publisher2'],
       ['afterCreate', 'Publisher2'],
       ['beforeCreate', 'Author2'],
@@ -162,7 +170,7 @@ describe('events (mysql)', () => {
       ['afterDelete', 'Publisher2'],
     ]);
 
-    expect(FlushSubscriber.log.map(l => [l[0], Object.keys(l[1])])).toEqual([
+    expect(FlushSubscriber.log.map((l) => [l[0], Object.keys(l[1])])).toEqual([
       ['beforeFlush', ['em', 'uow']],
       ['onFlush', ['em', 'uow']],
       ['afterFlush', ['em', 'uow']],
@@ -180,11 +188,11 @@ describe('events (mysql)', () => {
 
   test('onLoad event', async () => {
     await createBooksWithTags();
-    expect(EverythingSubscriber.log.map(l => [l[0], l[1].entity.constructor.name]).filter(a => a[0] === EventType.onLoad)).toEqual([]);
+    expect(EverythingSubscriber.log.map((l) => [l[0], l[1].entity.constructor.name]).filter((a) => a[0] === EventType.onLoad)).toEqual([]);
 
     const books1 = await orm.em.fork().find(Book2, {});
     expect(books1).toHaveLength(3);
-    expect(EverythingSubscriber.log.map(l => [l[0], l[1].entity.constructor.name]).filter(a => a[0] === EventType.onLoad)).toEqual([
+    expect(EverythingSubscriber.log.map((l) => [l[0], l[1].entity.constructor.name]).filter((a) => a[0] === EventType.onLoad)).toEqual([
       ['onLoad', 'Book2'],
       ['onLoad', 'Book2'],
       ['onLoad', 'Book2'],
@@ -193,14 +201,12 @@ describe('events (mysql)', () => {
 
     const authors1 = await orm.em.fork().find(Author2, {});
     expect(authors1).toHaveLength(1);
-    expect(EverythingSubscriber.log.map(l => [l[0], l[1].entity.constructor.name]).filter(a => a[0] === EventType.onLoad)).toEqual([
-      ['onLoad', 'Author2'],
-    ]);
+    expect(EverythingSubscriber.log.map((l) => [l[0], l[1].entity.constructor.name]).filter((a) => a[0] === EventType.onLoad)).toEqual([['onLoad', 'Author2']]);
     EverythingSubscriber.log.length = 0;
 
     const authors2 = await orm.em.fork().find(Author2, {}, { populate: ['books'] });
     expect(authors2).toHaveLength(1);
-    expect(EverythingSubscriber.log.map(l => [l[0], l[1].entity.constructor.name]).filter(a => a[0] === EventType.onLoad)).toEqual([
+    expect(EverythingSubscriber.log.map((l) => [l[0], l[1].entity.constructor.name]).filter((a) => a[0] === EventType.onLoad)).toEqual([
       ['onLoad', 'Author2'],
       ['onLoad', 'Book2'],
       ['onLoad', 'Book2'],
@@ -210,7 +216,7 @@ describe('events (mysql)', () => {
 
     const authors3 = await orm.em.fork().find(Author2, {}, { populate: true });
     expect(authors3).toHaveLength(1);
-    expect(EverythingSubscriber.log.map(l => [l[0], l[1].entity.constructor.name]).filter(a => a[0] === EventType.onLoad)).toEqual([
+    expect(EverythingSubscriber.log.map((l) => [l[0], l[1].entity.constructor.name]).filter((a) => a[0] === EventType.onLoad)).toEqual([
       ['onLoad', 'Author2'],
       ['onLoad', 'Book2'],
       ['onLoad', 'Book2'],
@@ -227,7 +233,12 @@ describe('events (mysql)', () => {
     const authors4 = await orm.em.fork().find(Author2, {}, { populate: ['books.tags'], strategy: LoadStrategy.JOINED });
     expect(authors4).toHaveLength(1);
     expect(wrap(authors4[0], true).__onLoadFired).toBe(true);
-    expect(EverythingSubscriber.log.map(l => [l[0], l[1].entity.constructor.name]).filter(a => a[0] === EventType.onLoad).sort()).toEqual([
+    expect(
+      EverythingSubscriber.log
+        .map((l) => [l[0], l[1].entity.constructor.name])
+        .filter((a) => a[0] === EventType.onLoad)
+        .sort()
+    ).toEqual([
       ['onLoad', 'Author2'],
       ['onLoad', 'Book2'],
       ['onLoad', 'Book2'],
@@ -273,7 +284,7 @@ describe('events (mysql)', () => {
     forkedEm.remove(forkedGod);
     await forkedEm.flush();
 
-    expect(Author2Subscriber.log.map(l => [l[0], l[1].entity.constructor.name])).toEqual([
+    expect(Author2Subscriber.log.map((l) => [l[0], l[1].entity.constructor.name])).toEqual([
       ['beforeCreate', 'Author2'],
       ['beforeCreate', 'Author2'],
       ['afterCreate', 'Author2'],
@@ -285,7 +296,7 @@ describe('events (mysql)', () => {
       ['afterDelete', 'Author2'],
     ]);
 
-    expect(ManualAuthor2Subscriber.log.map(l => [l[0], l[1].entity.constructor.name])).toEqual([
+    expect(ManualAuthor2Subscriber.log.map((l) => [l[0], l[1].entity.constructor.name])).toEqual([
       ['onInit', 'Author2'],
       ['beforeUpdate', 'Author2'],
       ['afterUpdate', 'Author2'],
@@ -293,5 +304,4 @@ describe('events (mysql)', () => {
       ['afterDelete', 'Author2'],
     ]);
   });
-
 });

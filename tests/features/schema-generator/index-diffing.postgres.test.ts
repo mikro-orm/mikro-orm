@@ -3,18 +3,15 @@ import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 export class Author {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 @Entity({ tableName: 'book' })
 export class Book1 {
-
   @PrimaryKey()
   id!: number;
 
@@ -38,15 +35,16 @@ export class Book1 {
 
   @Property({ unique: true })
   isbn!: string;
-
 }
 
 @Entity({ tableName: 'book' })
 @Index({ properties: 'author1' })
 @Index({ properties: 'author3' })
-@Index({ name: 'custom_index_expr123', expression: 'create  index  "custom_index_expr123" on "book" ("isbn")' })
+@Index({
+  name: 'custom_index_expr123',
+  expression: 'create  index  "custom_index_expr123" on "book" ("isbn")',
+})
 export class Book2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -73,16 +71,17 @@ export class Book2 {
 
   @Property({ unique: 'isbn_unique_constr' })
   isbn!: string;
-
 }
 
 @Entity({ tableName: 'book' })
 @Index({ properties: 'author1' })
 @Index({ properties: 'author3', name: 'lol31' })
 @Index({ properties: 'author3', name: 'lol41' })
-@Index({ name: 'custom_index_expr123', expression: 'create  index  "custom_index_expr123" on "book" ("isbn")' })
+@Index({
+  name: 'custom_index_expr123',
+  expression: 'create  index  "custom_index_expr123" on "book" ("isbn")',
+})
 export class Book3 {
-
   @PrimaryKey()
   id!: number;
 
@@ -103,14 +102,16 @@ export class Book3 {
   @ManyToOne(() => Author, { index: 'auth_idx5' })
   author5!: Author;
 
-  @Index({ name: 'custom_index_expr2', expression: 'create index "custom_index_expr2" on "book" ("title")' })
+  @Index({
+    name: 'custom_index_expr2',
+    expression: 'create index "custom_index_expr2" on "book" ("title")',
+  })
   @Property()
   title!: string;
 
   @Property()
   @Unique()
   isbn!: string;
-
 }
 
 @Entity({ tableName: 'book' })
@@ -118,7 +119,6 @@ export class Book3 {
 @Index({ properties: 'author3', name: 'lol32' })
 @Index({ properties: 'author3', name: 'lol42' })
 export class Book4 {
-
   @PrimaryKey()
   id!: number;
 
@@ -145,11 +145,9 @@ export class Book4 {
   @Property()
   @Unique()
   isbn!: string;
-
 }
 
 describe('indexes on FKs in postgres (GH 1518)', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
@@ -191,5 +189,4 @@ describe('indexes on FKs in postgres (GH 1518)', () => {
     expect(diff4).toMatchSnapshot();
     await orm.schema.execute(diff4);
   });
-
 });

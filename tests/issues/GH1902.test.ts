@@ -3,7 +3,6 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity({ tableName: 'users' })
 export class UserEntity {
-
   @PrimaryKey({ type: 'number' })
   id!: number;
 
@@ -14,14 +13,12 @@ export class UserEntity {
   @Property({ type: 'string' })
   email!: string;
 
-  @OneToMany(() => UserTenantEntity, item => item.user)
+  @OneToMany(() => UserTenantEntity, (item) => item.user)
   items = new Collection<UserTenantEntity>(this);
-
 }
 
 @Entity({ tableName: 'tenants' })
 export class TenantEntity {
-
   [OptionalProps]?: 'isEnabled';
 
   @PrimaryKey({ type: 'number' })
@@ -37,20 +34,28 @@ export class TenantEntity {
   @Property({ type: 'boolean', fieldName: 'isEnabled' })
   isEnabled: boolean = true;
 
-  @OneToMany(() => UserTenantEntity, item => item.tenant)
+  @OneToMany(() => UserTenantEntity, (item) => item.tenant)
   items = new Collection<UserTenantEntity>(this);
-
 }
 
 @Entity({ tableName: 'user_tenant' })
-@Filter({ name: 'byUser', cond: args => ({ user: { id: args.id } }) })
-@Filter({ name: 'byTenant', cond: args => ({ tenant: { id: args.id } }) })
+@Filter({ name: 'byUser', cond: (args) => ({ user: { id: args.id } }) })
+@Filter({ name: 'byTenant', cond: (args) => ({ tenant: { id: args.id } }) })
 class UserTenantEntity {
-
-  @ManyToOne({ primary: true, entity: () => UserEntity, fieldName: 'userId', cascade: [] })
+  @ManyToOne({
+    primary: true,
+    entity: () => UserEntity,
+    fieldName: 'userId',
+    cascade: [],
+  })
   user!: UserEntity;
 
-  @ManyToOne({ primary: true, entity: () => TenantEntity, fieldName: 'tenantId', cascade: [] })
+  @ManyToOne({
+    primary: true,
+    entity: () => TenantEntity,
+    fieldName: 'tenantId',
+    cascade: [],
+  })
   tenant!: TenantEntity;
 
   [PrimaryKeyType]?: [number, number];
@@ -58,11 +63,9 @@ class UserTenantEntity {
 
   @Property({ type: 'boolean', fieldName: 'isActive' })
   isActive: boolean = true;
-
 }
 
 describe('GH issue 1902', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -80,19 +83,36 @@ describe('GH issue 1902', () => {
 
   test(`GH issue 1902`, async () => {
     const repoUser = orm.em.getRepository(UserEntity);
-    const user = orm.em.create(UserEntity, { name: 'user one', email: 'one@email' });
+    const user = orm.em.create(UserEntity, {
+      name: 'user one',
+      email: 'one@email',
+    });
     await repoUser.persistAndFlush(user);
 
     const repoTenant = orm.em.getRepository(TenantEntity);
-    const tenant1 = orm.em.create(TenantEntity, { name: 'tenant one', schema: 'tenant_one' });
+    const tenant1 = orm.em.create(TenantEntity, {
+      name: 'tenant one',
+      schema: 'tenant_one',
+    });
     await repoTenant.persistAndFlush(tenant1);
-    const tenant2 = orm.em.create(TenantEntity, { name: 'tenant two', schema: 'tenant_two' });
+    const tenant2 = orm.em.create(TenantEntity, {
+      name: 'tenant two',
+      schema: 'tenant_two',
+    });
     await repoTenant.persistAndFlush(tenant2);
 
     const repoUserTenant = orm.em.getRepository(UserTenantEntity);
-    const ut1 = orm.em.create(UserTenantEntity, { user, tenant: tenant1, isActive: true });
+    const ut1 = orm.em.create(UserTenantEntity, {
+      user,
+      tenant: tenant1,
+      isActive: true,
+    });
     await repoTenant.persistAndFlush(ut1);
-    const ut2 = orm.em.create(UserTenantEntity, { user, tenant: tenant2, isActive: false });
+    const ut2 = orm.em.create(UserTenantEntity, {
+      user,
+      tenant: tenant2,
+      isActive: false,
+    });
     await repoTenant.persistAndFlush(ut2);
     orm.em.clear();
 
@@ -103,13 +123,15 @@ describe('GH issue 1902', () => {
       populate: ['tenant'] as const,
     };
     const f1 = await repoUserTenant.findAll(findOpts);
-    expect(f1.length).toBe(2);	// succeeds
+    expect(f1.length).toBe(2); // succeeds
     orm.em.clear();
 
-    const f2 = await repoUserTenant.findAll({ ...findOpts, strategy: LoadStrategy.JOINED });
-    expect(f2.length).toBe(2);	// fails
+    const f2 = await repoUserTenant.findAll({
+      ...findOpts,
+      strategy: LoadStrategy.JOINED,
+    });
+    expect(f2.length).toBe(2); // fails
 
     return;
   });
-
 });

@@ -23,7 +23,6 @@ const dumpMock = jest.spyOn(CLIHelper, 'dump');
 dumpMock.mockImplementation(() => void 0);
 
 describe('FreshSchemaCommand', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -68,5 +67,4 @@ describe('FreshSchemaCommand', () => {
     expect(seed).toBeCalledWith('UsersSeeder');
     expect(closeSpy).toBeCalledTimes(3);
   });
-
 });

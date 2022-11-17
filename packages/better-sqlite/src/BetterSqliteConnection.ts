@@ -6,7 +6,6 @@ import type { Dictionary } from '@mikro-orm/core';
 import { Utils } from '@mikro-orm/core';
 
 export class BetterSqliteConnection extends AbstractSqlConnection {
-
   static readonly RUN_QUERY_RE = /^insert into|^update|^delete|^truncate/;
   static readonly RUN_QUERY_RETURNING = /^insert into .* returning .*/;
 
@@ -32,14 +31,17 @@ export class BetterSqliteConnection extends AbstractSqlConnection {
   }
 
   protected getKnexOptions(type: string): Knex.Config {
-    return Utils.merge({
-      client: type,
-      connection: {
-        filename: this.config.get('dbName'),
+    return Utils.merge(
+      {
+        client: type,
+        connection: {
+          filename: this.config.get('dbName'),
+        },
+        pool: this.config.get('pool'),
+        useNullAsDefault: true,
       },
-      pool: this.config.get('pool'),
-      useNullAsDefault: true,
-    }, this.config.get('driverOptions'));
+      this.config.get('driverOptions')
+    );
   }
 
   protected transformRawResult<T>(res: any, method: 'all' | 'get' | 'run'): T {
@@ -111,22 +113,11 @@ export class BetterSqliteConnection extends AbstractSqlConnection {
     /* istanbul ignore next */
     Sqlite3DialectTableCompiler.prototype.foreign = function (this: typeof Sqlite3DialectTableCompiler, foreignInfo: Dictionary) {
       foreignInfo.column = this.formatter.columnize(foreignInfo.column);
-      foreignInfo.column = Array.isArray(foreignInfo.column)
-        ? foreignInfo.column
-        : [foreignInfo.column];
-      foreignInfo.column = foreignInfo.column.map((column: unknown) =>
-        this.client.customWrapIdentifier(column, (a: unknown) => a),
-      );
-      foreignInfo.inTable = this.client.customWrapIdentifier(
-        foreignInfo.inTable,
-        (a: unknown) => a,
-      );
-      foreignInfo.references = Array.isArray(foreignInfo.references)
-        ? foreignInfo.references
-        : [foreignInfo.references];
-      foreignInfo.references = foreignInfo.references.map((column: unknown) =>
-        this.client.customWrapIdentifier(column, (a: unknown) => a),
-      );
+      foreignInfo.column = Array.isArray(foreignInfo.column) ? foreignInfo.column : [foreignInfo.column];
+      foreignInfo.column = foreignInfo.column.map((column: unknown) => this.client.customWrapIdentifier(column, (a: unknown) => a));
+      foreignInfo.inTable = this.client.customWrapIdentifier(foreignInfo.inTable, (a: unknown) => a);
+      foreignInfo.references = Array.isArray(foreignInfo.references) ? foreignInfo.references : [foreignInfo.references];
+      foreignInfo.references = foreignInfo.references.map((column: unknown) => this.client.customWrapIdentifier(column, (a: unknown) => a));
       // quoted versions
       const column = this.formatter.columnize(foreignInfo.column);
       const inTable = this.formatter.columnize(foreignInfo.inTable);
@@ -150,9 +141,7 @@ export class BetterSqliteConnection extends AbstractSqlConnection {
         this.pushQuery({
           sql: `PRAGMA table_info(${this.tableName()})`,
           statementsProducer(pragma: any, connection: any) {
-            return compiler.client
-              .ddl(compiler, pragma, connection)
-              .foreign(foreignInfo);
+            return compiler.client.ddl(compiler, pragma, connection).foreign(foreignInfo);
           },
         });
       }
@@ -182,5 +171,4 @@ export class BetterSqliteConnection extends AbstractSqlConnection {
         return 'all';
     }
   }
-
 }

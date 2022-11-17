@@ -5,9 +5,7 @@ import type { SqlEntityManager } from './SqlEntityManager';
 import type { QueryBuilder } from './query';
 
 export class SqlEntityRepository<T extends object> extends EntityRepository<T> {
-
-  constructor(protected readonly _em: SqlEntityManager,
-              protected readonly entityName: EntityName<T>) {
+  constructor(protected readonly _em: SqlEntityManager, protected readonly entityName: EntityName<T>) {
     super(_em, entityName);
   }
 
@@ -35,5 +33,4 @@ export class SqlEntityRepository<T extends object> extends EntityRepository<T> {
   protected get em(): SqlEntityManager {
     return this._em.getContext(false);
   }
-
 }

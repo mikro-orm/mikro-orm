@@ -4,13 +4,11 @@ import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 
 @Entity()
 export class A {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   types!: string[];
-
 }
 
 let orm: MikroORM;

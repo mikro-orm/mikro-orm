@@ -3,7 +3,6 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class A {
-
   @PrimaryKey({ type: 'number' })
   id!: number;
 
@@ -12,30 +11,26 @@ export class A {
 
   @Property({ type: String })
   prop!: string;
-
 }
 
 @Entity()
 export class C {
-
   @PrimaryKey({ type: Number })
   id!: number;
 
   @OneToOne(() => A)
   a!: A;
 
-  @OneToMany(() => B, b => b.c, { eager: true })
+  @OneToMany(() => B, (b) => b.c, { eager: true })
   bCollection = new Collection<B>(this);
-
 }
 
 @Entity()
 export class B {
-
   @PrimaryKey({ type: Number })
   id!: number;
 
-  @OneToOne(() => A, a => a.b, { eager: true })
+  @OneToOne(() => A, (a) => a.b, { eager: true })
   a!: A;
 
   @ManyToOne(() => C, { nullable: true })
@@ -43,11 +38,9 @@ export class B {
 
   @Property({ type: String })
   prop!: string;
-
 }
 
 describe('GH issue 222', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -102,5 +95,4 @@ describe('GH issue 222', () => {
     const ccJson = wrap(cc).toJSON();
     expect(ccJson.a.prop).toEqual(ccJson.bCollection[0].a.prop);
   });
-
 });

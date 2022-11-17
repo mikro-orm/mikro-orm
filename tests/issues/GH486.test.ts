@@ -3,7 +3,6 @@ import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,22 +11,18 @@ class A {
 
   @Property()
   prop: string = 'foo';
-
 }
 
 @Entity()
 class B {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => A)
   a!: A;
-
 }
 
 describe('GH issue 486', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
@@ -67,7 +62,9 @@ describe('GH issue 486', () => {
 
     // Clear the context and fetch the real DB state
     orm.em.clear();
-    const dbState = await orm.em.findOneOrFail(A, fixture.id, { populate: ['bs'] });
+    const dbState = await orm.em.findOneOrFail(A, fixture.id, {
+      populate: ['bs'],
+    });
     expect(dbState.bs).toHaveLength(2);
     expect(dbState.prop).toBe('bar');
   });

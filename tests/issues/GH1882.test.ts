@@ -4,21 +4,18 @@ import { mockLogger } from '../helpers';
 
 @Entity()
 export class Foo {
-
   @PrimaryKey({ type: BigIntType })
   id!: string;
 
-  @OneToMany(() => Bar, bar => bar.foo)
+  @OneToMany(() => Bar, (bar) => bar.foo)
   barItems = new Collection<Bar>(this);
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 export class Bar {
-
   @PrimaryKey({ type: BigIntType })
   id!: string;
 
@@ -27,11 +24,9 @@ export class Bar {
 
   @Property()
   name!: string;
-
 }
 
 describe('GH issue 1882', () => {
-
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => {
@@ -59,9 +54,12 @@ describe('GH issue 1882', () => {
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
-    const cond =  { $or: [{ barItems: '5678' }, { name: 'fooName' }] };
+    const cond = { $or: [{ barItems: '5678' }, { name: 'fooName' }] };
 
-    await orm.em.fork().find(Foo, cond, { populate: ['barItems'], populateWhere: PopulateHint.INFER });
+    await orm.em.fork().find(Foo, cond, {
+      populate: ['barItems'],
+      populateWhere: PopulateHint.INFER,
+    });
     expect(mock.mock.calls[0][0]).toMatch('select `f0`.* from `foo` as `f0` left join `bar` as `b1` on `f0`.`id` = `b1`.`foo_id` where (`b1`.`id` = ? or `f0`.`name` = ?)');
     expect(mock.mock.calls[1][0]).toMatch('select `b0`.* from `bar` as `b0` where `b0`.`foo_id` in (?) and `b0`.`id` = ? order by `b0`.`foo_id` asc');
     mock.mockReset();
@@ -85,9 +83,12 @@ describe('GH issue 1882', () => {
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
-    const cond =  { $and: [{ barItems: '3456' }] };
+    const cond = { $and: [{ barItems: '3456' }] };
 
-    await orm.em.find(Foo, cond, { populate: ['barItems'], populateWhere: PopulateHint.INFER });
+    await orm.em.find(Foo, cond, {
+      populate: ['barItems'],
+      populateWhere: PopulateHint.INFER,
+    });
     orm.em.clear();
 
     expect(mock.mock.calls[0][0]).toMatch('select `f0`.* from `foo` as `f0` left join `bar` as `b1` on `f0`.`id` = `b1`.`foo_id` where `b1`.`id` = ?');
@@ -100,5 +101,4 @@ describe('GH issue 1882', () => {
     expect(mock.mock.calls[0][0]).toMatch('select `f0`.* from `foo` as `f0` left join `bar` as `b1` on `f0`.`id` = `b1`.`foo_id` where `b1`.`id` = ?');
     expect(mock.mock.calls[1][0]).toMatch('select `b0`.* from `bar` as `b0` where `b0`.`foo_id` in (?) order by `b0`.`foo_id` asc');
   });
-
 });

@@ -3,7 +3,6 @@ import { Utils } from '../utils/Utils';
 import { colors } from './colors';
 
 export class DefaultLogger implements Logger {
-
   public debugMode = this.options.debugMode ?? false;
   readonly writer = this.options.writer;
   private readonly usesReplicas = this.options.usesReplicas;
@@ -78,5 +77,4 @@ export class DefaultLogger implements Logger {
 
     return this.log('query', msg, context);
   }
-
 }

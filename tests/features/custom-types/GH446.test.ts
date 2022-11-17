@@ -3,7 +3,6 @@ import { Entity, LoadStrategy, ManyToOne, MikroORM, OneToOne, PrimaryKey, Primar
 import type { MySqlDriver } from '@mikro-orm/mysql';
 
 export class UuidBinaryType extends Type<string, Buffer> {
-
   convertToDatabaseValue(value: string): Buffer {
     return Buffer.from(parse(value) as number[]);
   }
@@ -15,51 +14,41 @@ export class UuidBinaryType extends Type<string, Buffer> {
   getColumnType(): string {
     return 'binary(16)';
   }
-
 }
 
 @Entity()
 class A {
-
   @PrimaryKey({ type: UuidBinaryType })
   id: string = v4();
 
   @Property({ nullable: true })
   name?: string;
-
 }
 
 @Entity()
 class B {
-
   @OneToOne({ primary: true })
   a!: A;
-
 }
 
 @Entity()
 class C {
-
   @OneToOne({ primary: true })
   b!: B;
 
   [PrimaryKeyType]?: B | A | string;
-
 }
 
 @Entity()
 class D {
-
   @PrimaryKey({ type: UuidBinaryType })
   id: string = v4();
 
   @ManyToOne({ onDelete: 'cascade' })
   a!: A;
-
 }
 
 describe('GH issue 446', () => {
-
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => {
@@ -100,7 +89,10 @@ describe('GH issue 446', () => {
     expect(c1.b.a.id).toBe(a.id);
 
     orm.em.clear();
-    const c2 = await orm.em.findOneOrFail(C, c.b.a.id, { populate: ['b.a'], strategy: LoadStrategy.JOINED });
+    const c2 = await orm.em.findOneOrFail(C, c.b.a.id, {
+      populate: ['b.a'],
+      strategy: LoadStrategy.JOINED,
+    });
     expect(c2).toBeInstanceOf(C);
     expect(c2.b).toBeInstanceOf(B);
     expect(wrap(c2.b).isInitialized()).toBe(true);
@@ -123,8 +115,8 @@ describe('GH issue 446', () => {
     orm.em.clear();
 
     const as = await orm.em.find(A, {}, { orderBy: { name: 1 } });
-    expect(as.map(a => a.name)).toEqual(['a1 v3', 'a2 v3']);
-    as.forEach(a => orm.em.remove(a));
+    expect(as.map((a) => a.name)).toEqual(['a1 v3', 'a2 v3']);
+    as.forEach((a) => orm.em.remove(a));
     await orm.em.flush();
     orm.em.clear();
 
@@ -134,7 +126,14 @@ describe('GH issue 446', () => {
 
   test(`assign with custom types`, async () => {
     const d = new D();
-    orm.em.assign<any>(d, { id: Buffer.from(parse(v4()) as number[]) as any, a: Buffer.from(parse(v4()) as number[]) }, { convertCustomTypes: true });
+    orm.em.assign<any>(
+      d,
+      {
+        id: Buffer.from(parse(v4()) as number[]) as any,
+        a: Buffer.from(parse(v4()) as number[]),
+      },
+      { convertCustomTypes: true }
+    );
     expect(typeof d.id).toBe('string');
     expect(typeof d.a.id).toBe('string');
     orm.em.assign(d, { id: v4(), a: v4() });
@@ -157,5 +156,4 @@ describe('GH issue 446', () => {
     expect(typeof a2.id).toBe('string');
     expect(a2.name).toBe('test');
   });
-
 });

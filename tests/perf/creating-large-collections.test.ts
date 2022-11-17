@@ -3,18 +3,15 @@ import type { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
 
 @Entity()
 class TestRunEntity {
-
   @PrimaryKey()
   id!: number;
 
-  @OneToMany(() => TestCaseEntity, e => e.testRun)
+  @OneToMany(() => TestCaseEntity, (e) => e.testRun)
   cases = new Collection<TestCaseEntity>(this);
-
 }
 
 @Entity()
 class TestCaseEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -23,7 +20,6 @@ class TestCaseEntity {
 
   @ManyToOne(() => TestRunEntity)
   testRun!: TestRunEntity;
-
 }
 
 let orm: MikroORM<BetterSqliteDriver>;
@@ -43,9 +39,11 @@ afterAll(() => orm.close(true));
 test('perf: create large 1:m collection', async () => {
   console.time('perf: create large 1:m collection (10k entities)');
   const entity = orm.em.create(TestRunEntity, {
-    cases: Array(10_000).fill(undefined).map((_, index) => ({
-      title: `Test Case #${index}`,
-    })),
+    cases: Array(10_000)
+      .fill(undefined)
+      .map((_, index) => ({
+        title: `Test Case #${index}`,
+      })),
   });
   console.timeEnd('perf: create large 1:m collection (10k entities)');
 });

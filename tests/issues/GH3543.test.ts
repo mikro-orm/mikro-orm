@@ -1,19 +1,9 @@
-import {
-  Collection,
-  Entity,
-  ManyToOne,
-  NotNullConstraintViolationException,
-  OneToMany,
-  OptionalProps,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/core';
+import { Collection, Entity, ManyToOne, NotNullConstraintViolationException, OneToMany, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
 
 @Entity()
 class Order {
-
   [OptionalProps]?: 'orderId';
 
   @PrimaryKey()
@@ -25,14 +15,14 @@ class Order {
   @PrimaryKey()
   companyId!: string;
 
-  @OneToMany(() => OrderEvent, orderEvent => orderEvent.order, { orphanRemoval: true })
+  @OneToMany(() => OrderEvent, (orderEvent) => orderEvent.order, {
+    orphanRemoval: true,
+  })
   events = new Collection<OrderEvent>(this);
-
 }
 
 @Entity({ tableName: 'order' })
 class Order2 {
-
   [OptionalProps]?: 'orderId';
 
   @PrimaryKey()
@@ -44,14 +34,12 @@ class Order2 {
   @PrimaryKey()
   companyId!: string;
 
-  @OneToMany(() => OrderEvent, orderEvent => orderEvent.order)
+  @OneToMany(() => OrderEvent, (orderEvent) => orderEvent.order)
   events = new Collection<OrderEvent>(this);
-
 }
 
 @Entity()
 class OrderEvent {
-
   [OptionalProps]?: 'orderEventId' | 'order';
 
   @PrimaryKey()
@@ -62,7 +50,6 @@ class OrderEvent {
 
   @ManyToOne(() => Order, { primary: true })
   order!: Order;
-
 }
 
 let orm: MikroORM;
@@ -93,21 +80,29 @@ test('GH issue 3543', async () => {
   await orm.em.persistAndFlush(order);
   orm.em.clear();
 
-  order = await orm.em.findOneOrFail(Order, {
-    customerId: '456',
-    companyId: '789',
-    orderId: order.orderId,
-  }, { populate: true });
+  order = await orm.em.findOneOrFail(
+    Order,
+    {
+      customerId: '456',
+      companyId: '789',
+      orderId: order.orderId,
+    },
+    { populate: true }
+  );
 
   order.events.removeAll();
   await orm.em.flush();
   orm.em.clear();
 
-  order = await orm.em.findOneOrFail(Order, {
-    customerId: '456',
-    companyId: '789',
-    orderId: order.orderId,
-  }, { populate: true });
+  order = await orm.em.findOneOrFail(
+    Order,
+    {
+      customerId: '456',
+      companyId: '789',
+      orderId: order.orderId,
+    },
+    { populate: true }
+  );
 
   expect(order.events).toHaveLength(0);
 });
@@ -125,11 +120,15 @@ test('GH issue 3543 without orphan removal builds correct query', async () => {
   await orm.em.persistAndFlush(order);
   orm.em.clear();
 
-  order = await orm.em.findOneOrFail(Order, {
-    customerId: '456',
-    companyId: '789',
-    orderId: order.orderId,
-  }, { populate: true });
+  order = await orm.em.findOneOrFail(
+    Order,
+    {
+      customerId: '456',
+      companyId: '789',
+      orderId: order.orderId,
+    },
+    { populate: true }
+  );
 
   // disconnecting the relation without orphan removal means nulling it on the owning side, which fails as it is a non-null PK column
   order.events.removeAll();

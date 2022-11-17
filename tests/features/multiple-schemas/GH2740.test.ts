@@ -6,13 +6,11 @@ import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
   schema: 'foo',
 })
 export class PersonEntity {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 @Entity({
@@ -20,17 +18,14 @@ export class PersonEntity {
   schema: 'bar',
 })
 export class TaskEntity {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => PersonEntity)
   person!: PersonEntity;
-
 }
 
 describe('GH #2740', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
@@ -53,5 +48,4 @@ describe('GH #2740', () => {
 
     expect(qb.getQuery()).toBe(`select "t0".* from "bar"."task" as "t0" left join "foo"."person" as "p1" on "t0"."person_id" = "p1"."id" where "p1"."name" = $1`);
   });
-
 });

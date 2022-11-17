@@ -3,7 +3,6 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class A {
-
   @PrimaryKey({ type: 'number' })
   id: number;
 
@@ -17,12 +16,10 @@ export class A {
     this.id = id;
     this.name = name;
   }
-
 }
 
 @Entity()
 export class B {
-
   @PrimaryKey({ type: 'number' })
   id!: number;
 
@@ -31,11 +28,9 @@ export class B {
 
   @OneToMany({ entity: () => A, mappedBy: 'b', nullable: true })
   a = new Collection<A>(this);
-
 }
 
 describe('GH issue 302', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -69,5 +64,4 @@ describe('GH issue 302', () => {
     expect(bb.a[1].name).toBe('a2');
     expect(bb.a[2].name).toBe('a3');
   });
-
 });

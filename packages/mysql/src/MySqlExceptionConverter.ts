@@ -1,12 +1,21 @@
 import type { Dictionary, DriverException } from '@mikro-orm/core';
 import {
-  DeadlockException, LockWaitTimeoutException, TableExistsException, TableNotFoundException,
-  ForeignKeyConstraintViolationException, UniqueConstraintViolationException, InvalidFieldNameException, NonUniqueFieldNameException,
-  SyntaxErrorException, ConnectionException, NotNullConstraintViolationException, ExceptionConverter, CheckConstraintViolationException,
+  DeadlockException,
+  LockWaitTimeoutException,
+  TableExistsException,
+  TableNotFoundException,
+  ForeignKeyConstraintViolationException,
+  UniqueConstraintViolationException,
+  InvalidFieldNameException,
+  NonUniqueFieldNameException,
+  SyntaxErrorException,
+  ConnectionException,
+  NotNullConstraintViolationException,
+  ExceptionConverter,
+  CheckConstraintViolationException,
 } from '@mikro-orm/core';
 
 export class MySqlExceptionConverter extends ExceptionConverter {
-
   /* istanbul ignore next */
   /**
    * @link http://dev.mysql.com/doc/refman/5.7/en/error-messages-client.html
@@ -84,5 +93,4 @@ export class MySqlExceptionConverter extends ExceptionConverter {
 
     return super.convertException(exception);
   }
-
 }

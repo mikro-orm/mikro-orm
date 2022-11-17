@@ -1,9 +1,6 @@
 import { inspect } from 'util';
 import type { EntityManager } from '../EntityManager';
-import type {
-  AnyEntity, ConnectionType, Dictionary, EntityData, EntityDictionary, EntityMetadata,
-  IWrappedEntityInternal, Populate, PopulateOptions, Primary,
-} from '../typings';
+import type { AnyEntity, ConnectionType, Dictionary, EntityData, EntityDictionary, EntityMetadata, IWrappedEntityInternal, Populate, PopulateOptions, Primary } from '../typings';
 import type { IdentifiedReference } from './Reference';
 import { Reference } from './Reference';
 import { EntityTransformer } from '../serialization/EntityTransformer';
@@ -17,7 +14,6 @@ import { helper } from './wrap';
 import type { SerializationContext } from '../serialization/SerializationContext';
 
 export class WrappedEntity<T extends object, PK extends keyof T> {
-
   __initialized = true;
   __touched = false;
   __populated?: boolean;
@@ -26,7 +22,10 @@ export class WrappedEntity<T extends object, PK extends keyof T> {
   __onLoadFired?: boolean;
   __schema?: string;
   __em?: EntityManager;
-  __serializationContext: { root?: SerializationContext<T>; populate?: PopulateOptions<T>[] } = {};
+  __serializationContext: {
+    root?: SerializationContext<T>;
+    populate?: PopulateOptions<T>[];
+  } = {};
   __loadedProperties = new Set<string>();
   __data: Dictionary = {};
   __processing = false;
@@ -43,10 +42,7 @@ export class WrappedEntity<T extends object, PK extends keyof T> {
   /** holds wrapped primary key, so we can compute change set without eager commit */
   __identifier?: EntityIdentifier;
 
-  constructor(private readonly entity: T,
-              private readonly pkGetter?: (e: T) => Primary<T>,
-              private readonly pkSerializer?: (e: T) => string,
-              private readonly pkGetterConverted?: (e: T) => Primary<T>) { }
+  constructor(private readonly entity: T, private readonly pkGetter?: (e: T) => Primary<T>, private readonly pkSerializer?: (e: T) => string, private readonly pkGetterConverted?: (e: T) => Primary<T>) {}
 
   isInitialized(): boolean {
     return this.__initialized;
@@ -92,7 +88,13 @@ export class WrappedEntity<T extends object, PK extends keyof T> {
       throw ValidationError.entityNotManaged(this.entity);
     }
 
-    await this.__em.findOne(this.entity.constructor.name, this.entity, { refresh: true, lockMode, populate, connectionType, schema: this.__schema });
+    await this.__em.findOne(this.entity.constructor.name, this.entity, {
+      refresh: true,
+      lockMode,
+      populate,
+      connectionType,
+      schema: this.__schema,
+    });
     this.populated(populated);
     this.__lazyInitialized = true;
 
@@ -174,5 +176,4 @@ export class WrappedEntity<T extends object, PK extends keyof T> {
   [inspect.custom]() {
     return `[WrappedEntity<${this.__meta!.className}>]`;
   }
-
 }

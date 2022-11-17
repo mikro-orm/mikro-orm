@@ -2,36 +2,29 @@ import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property } from '@m
 
 @Embeddable()
 export class Nested {
-
   @Property({ nullable: true })
   value: string | null = null;
-
 }
 
 @Embeddable()
 export class Name {
-
   @Property({ nullable: true })
   value: string | null = null;
 
   @Embedded()
   nested!: Nested;
-
 }
 
 @Entity()
 export class User {
-
   @PrimaryKey()
   id!: number;
 
   @Embedded()
   name!: Name;
-
 }
 
 describe('GH issue 2774', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -55,5 +48,4 @@ describe('GH issue 2774', () => {
     expect(user.name).toBeDefined();
     expect(user.name.value).toBeNull();
   });
-
 });

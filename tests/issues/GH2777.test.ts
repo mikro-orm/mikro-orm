@@ -2,18 +2,15 @@ import { Entity, LoadStrategy, ManyToOne, MikroORM, OneToOne, PrimaryKey, Proper
 
 @Entity()
 export class Image {
-
   @PrimaryKey()
   id!: number;
 
   @OneToOne(() => Customer)
   customer!: any;
-
 }
 
 @Entity()
 export class Product {
-
   @PrimaryKey()
   id!: number;
 
@@ -29,12 +26,10 @@ export class Product {
 
   @OneToOne(() => Customer)
   customer!: any;
-
 }
 
 @Entity()
 export class Comment {
-
   @PrimaryKey()
   id!: number;
 
@@ -43,28 +38,24 @@ export class Comment {
 
   @OneToOne(() => Customer)
   customer!: any;
-
 }
 
 @Entity()
 export class Customer {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
 
-  @OneToOne(() => Product, product => product.customer, { eager: true })
+  @OneToOne(() => Product, (product) => product.customer, { eager: true })
   product!: Product;
 
-  @OneToOne(() => Comment, comment => comment.customer, { eager: true })
+  @OneToOne(() => Comment, (comment) => comment.customer, { eager: true })
   comment!: Comment;
-
 }
 
 describe('GH issue 2777', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -96,5 +87,4 @@ describe('GH issue 2777', () => {
     expect(wrap(ret[0].product.image).isInitialized()).toBe(true);
     expect(wrap(ret[0].product.image!.customer).isInitialized()).toBe(true);
   });
-
 });

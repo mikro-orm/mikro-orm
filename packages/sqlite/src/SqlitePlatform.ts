@@ -7,7 +7,6 @@ import { SqliteSchemaHelper } from './SqliteSchemaHelper';
 import { SqliteExceptionConverter } from './SqliteExceptionConverter';
 
 export class SqlitePlatform extends AbstractSqlPlatform {
-
   protected readonly schemaHelper: SqliteSchemaHelper = new SqliteSchemaHelper(this);
   protected readonly exceptionConverter = new SqliteExceptionConverter();
 
@@ -28,7 +27,7 @@ export class SqlitePlatform extends AbstractSqlPlatform {
   }
 
   getEnumTypeDeclarationSQL(column: { items?: unknown[]; fieldNames: string[]; length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
-    if (column.items?.every(item => Utils.isString(item))) {
+    if (column.items?.every((item) => Utils.isString(item))) {
       return 'text';
     }
 
@@ -106,7 +105,7 @@ export class SqlitePlatform extends AbstractSqlPlatform {
     const [a, ...b] = path;
 
     if (aliased) {
-      return expr(alias => `json_extract(${this.quoteIdentifier(`${alias}.${a}`)}, '$.${b.join('.')}')`);
+      return expr((alias) => `json_extract(${this.quoteIdentifier(`${alias}.${a}`)}, '$.${b.join('.')}')`);
     }
 
     return `json_extract(${this.quoteIdentifier(a)}, '$.${b.join('.')}')`;
@@ -131,5 +130,4 @@ export class SqlitePlatform extends AbstractSqlPlatform {
   getFullTextWhereClause(): string {
     return `:column: match :query`;
   }
-
 }

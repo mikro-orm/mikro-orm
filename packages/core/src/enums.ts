@@ -40,17 +40,7 @@ export enum QueryOperator {
   $contained = '<@', // postgres only
 }
 
-export const ARRAY_OPERATORS = [
-  '$eq',
-  '$gt',
-  '$gte',
-  '$lt',
-  '$lte',
-  '$ne',
-  '$overlap',
-  '$contains',
-  '$contained',
-];
+export const ARRAY_OPERATORS = ['$eq', '$gt', '$gte', '$lt', '$lte', '$ne', '$overlap', '$contains', '$contained'];
 
 export enum QueryOrder {
   ASC = 'ASC',
@@ -121,7 +111,7 @@ export enum Cascade {
 
 export enum LoadStrategy {
   SELECT_IN = 'select-in',
-  JOINED = 'joined'
+  JOINED = 'joined',
 }
 
 export enum LockMode {
@@ -171,5 +161,4 @@ export interface TransactionOptions {
   flushMode?: FlushMode;
 }
 
-export abstract class PlainObject {
-}
+export abstract class PlainObject {}

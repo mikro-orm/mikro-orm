@@ -5,7 +5,6 @@ import type { SimpleColumnMeta, Type } from '@mikro-orm/core';
 import { expr, Utils } from '@mikro-orm/core';
 
 export class MySqlPlatform extends AbstractSqlPlatform {
-
   protected readonly schemaHelper: MySqlSchemaHelper = new MySqlSchemaHelper(this);
   protected readonly exceptionConverter = new MySqlExceptionConverter();
 
@@ -17,7 +16,7 @@ export class MySqlPlatform extends AbstractSqlPlatform {
     const [a, ...b] = path;
 
     if (aliased) {
-      return expr(alias => `${this.quoteIdentifier(`${alias}.${a}`)}->'$.${b.join('.')}'`);
+      return expr((alias) => `${this.quoteIdentifier(`${alias}.${a}`)}->'$.${b.join('.')}'`);
     }
 
     return `${this.quoteIdentifier(a)}->'$.${b.join('.')}'`;
@@ -77,10 +76,9 @@ export class MySqlPlatform extends AbstractSqlPlatform {
   getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
     /* istanbul ignore next */
     const quotedTableName = this.quoteIdentifier(schemaName ? `${schemaName}.${tableName}` : tableName);
-    const quotedColumnNames = columns.map(c => this.quoteIdentifier(c.name));
+    const quotedColumnNames = columns.map((c) => this.quoteIdentifier(c.name));
     const quotedIndexName = this.quoteIdentifier(indexName);
 
     return `alter table ${quotedTableName} add fulltext index ${quotedIndexName}(${quotedColumnNames.join(',')})`;
   }
-
 }

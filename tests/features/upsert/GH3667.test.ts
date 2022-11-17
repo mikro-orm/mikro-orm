@@ -4,13 +4,11 @@ import { mockLogger } from '../../helpers';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ nullable: true })
   name?: string;
-
 }
 
 let orm: MikroORM;
@@ -19,7 +17,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     dbName: ':memory:',
     entities: [User],
-    loggerFactory: options => new SimpleLogger(options),
+    loggerFactory: (options) => new SimpleLogger(options),
   });
   await orm.schema.createSchema();
 });

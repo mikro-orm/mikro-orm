@@ -5,7 +5,6 @@ type SquadType = 'GROUND' | 'AIR';
 
 @Entity()
 export class Soldier {
-
   @PrimaryKey()
   id!: number;
 
@@ -17,12 +16,10 @@ export class Soldier {
 
   @ManyToMany({ entity: 'Squad' })
   squads = new Collection<Squad>(this);
-
 }
 
 @Entity()
 export class Squad {
-
   @PrimaryKey()
   id!: number;
 
@@ -37,7 +34,6 @@ export class Squad {
 
   @ManyToMany({ entity: 'Soldier', mappedBy: 'squads' })
   soldiers = new Collection<Soldier>(this);
-
 }
 
 let orm: MikroORM<SqliteDriver>;
@@ -80,11 +76,7 @@ test(`GH issue 3240`, async () => {
   await orm.em.persistAndFlush(squad);
   orm.em.clear();
 
-  const fetchedSquad = await orm.em.findOneOrFail(
-    Squad,
-    { type: 'AIR' },
-    { populate: ['soldiers'] },
-  );
+  const fetchedSquad = await orm.em.findOneOrFail(Squad, { type: 'AIR' }, { populate: ['soldiers'] });
   expect(fetchedSquad.soldiers).toHaveLength(2);
 
   await orm.close();

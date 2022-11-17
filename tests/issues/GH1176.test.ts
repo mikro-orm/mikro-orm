@@ -1,17 +1,10 @@
-import type {
-  EntityManager } from '@mikro-orm/core';
-import {
-  Entity,
-  MikroORM,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/core';
+import type { EntityManager } from '@mikro-orm/core';
+import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 as uuid } from 'uuid';
 
 @Entity({ tableName: 'users' })
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -21,7 +14,6 @@ class User {
   constructor(username: string) {
     this.username = username;
   }
-
 }
 
 async function getOrmInstance(): Promise<MikroORM<PostgreSqlDriver>> {
@@ -62,7 +54,7 @@ describe('GH issue 1176', () => {
             id serial primary key,
             username varchar(50) not null unique deferrable initially immediate
           );
-          `,
+          `
       );
       await orm.close();
     });
@@ -79,16 +71,14 @@ describe('GH issue 1176', () => {
         const user = new User(username);
         em.persist(user);
 
-        await expect(em.flush()).rejects.toThrowError(
-          /^insert.+duplicate key value/,
-        );
+        await expect(em.flush()).rejects.toThrowError(/^insert.+duplicate key value/);
       });
     });
 
     describe('explicit transactions with "transactional()"', () => {
       let username: string;
       it('creating a new user succeeds', async () => {
-        const work = em.transactional(async em => {
+        const work = em.transactional(async (em) => {
           username = uuid();
           const user = new User(username);
           em.persist(user);
@@ -97,7 +87,7 @@ describe('GH issue 1176', () => {
         await expect(work).resolves.toBeUndefined();
       });
       it('transactional throws when a database constraint fails', async () => {
-        const work = em.transactional(async em => {
+        const work = em.transactional(async (em) => {
           const user = new User(username);
           em.persist(user);
         });
@@ -144,7 +134,7 @@ describe('GH issue 1176', () => {
           id serial primary key,
           username varchar(50) not null unique deferrable initially deferred
         );
-          `,
+          `
       );
       await orm.close();
     });
@@ -162,16 +152,14 @@ describe('GH issue 1176', () => {
         const user = new User(username);
         em.persist(user);
 
-        await expect(em.flush()).rejects.toThrowError(
-          /^COMMIT.+duplicate key value/,
-        );
+        await expect(em.flush()).rejects.toThrowError(/^COMMIT.+duplicate key value/);
       });
     });
 
     describe('explicit transactions with "transactional()"', () => {
       let username: string;
       it('creating a new user succeeds', async () => {
-        const work = em.transactional(async em => {
+        const work = em.transactional(async (em) => {
           username = uuid();
           const user = new User(username);
           em.persist(user);
@@ -181,7 +169,7 @@ describe('GH issue 1176', () => {
       });
       it('transactional throws when a database constraint fails', async () => {
         const work = async () => {
-          await em.transactional(async em => {
+          await em.transactional(async (em) => {
             const user = new User(username);
             em.persist(user);
           });

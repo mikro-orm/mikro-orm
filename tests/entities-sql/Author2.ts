@@ -1,7 +1,4 @@
-import {
-  AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate, Collection, Entity, OneToMany, Property, ManyToOne,
-  QueryOrder, OnInit, ManyToMany, Index, Unique, OneToOne, Cascade, LoadStrategy, EventArgs, t, OnLoad, OptionalProps,
-} from '@mikro-orm/core';
+import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate, Collection, Entity, OneToMany, Property, ManyToOne, QueryOrder, OnInit, ManyToMany, Index, Unique, OneToOne, Cascade, LoadStrategy, EventArgs, t, OnLoad, OptionalProps } from '@mikro-orm/core';
 
 import { Book2 } from './Book2';
 import { BaseEntity2 } from './BaseEntity2';
@@ -12,7 +9,6 @@ import { Address2 } from './Address2';
 @Index({ name: 'custom_idx_name_123', properties: ['name'] })
 @Unique({ properties: ['name', 'email'] })
 export class Author2 extends BaseEntity2 {
-
   [OptionalProps]?: 'createdAt' | 'updatedAt' | 'termsAccepted' | 'version' | 'versionAsString' | 'code' | 'code2' | 'booksTotal' | 'hookParams' | 'hookTest' | 'onLoadCalled';
 
   static beforeDestroyCalled = 0;
@@ -21,7 +17,11 @@ export class Author2 extends BaseEntity2 {
   @Property({ length: 3, defaultRaw: 'current_timestamp(3)' })
   createdAt: Date = new Date();
 
-  @Property({ onUpdate: () => new Date(), length: 3, defaultRaw: 'current_timestamp(3)' })
+  @Property({
+    onUpdate: () => new Date(),
+    length: 3,
+    defaultRaw: 'current_timestamp(3)',
+  })
   updatedAt: Date = new Date();
 
   @Property()
@@ -50,13 +50,26 @@ export class Author2 extends BaseEntity2 {
   @Property({ type: t.time, index: 'born_time_idx', nullable: true })
   bornTime?: string;
 
-  @OneToMany({ entity: () => Book2, mappedBy: 'author', orderBy: { title: QueryOrder.ASC } })
+  @OneToMany({
+    entity: () => Book2,
+    mappedBy: 'author',
+    orderBy: { title: QueryOrder.ASC },
+  })
   books!: Collection<Book2>;
 
-  @OneToMany({ entity: () => Book2, mappedBy: 'author', strategy: LoadStrategy.JOINED, orderBy: { title: QueryOrder.ASC } })
+  @OneToMany({
+    entity: () => Book2,
+    mappedBy: 'author',
+    strategy: LoadStrategy.JOINED,
+    orderBy: { title: QueryOrder.ASC },
+  })
   books2!: Collection<Book2>;
 
-  @OneToOne({ entity: () => Address2, mappedBy: address => address.author, cascade: [Cascade.ALL] })
+  @OneToOne({
+    entity: () => Address2,
+    mappedBy: (address) => address.author,
+    cascade: [Cascade.ALL],
+  })
   address?: Address2;
 
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend' })
@@ -65,10 +78,14 @@ export class Author2 extends BaseEntity2 {
   @ManyToMany(() => Author2)
   following = new Collection<Author2>(this);
 
-  @ManyToMany(() => Author2, a => a.following)
+  @ManyToMany(() => Author2, (a) => a.following)
   followers = new Collection<Author2>(this);
 
-  @ManyToOne({ nullable: true, onUpdateIntegrity: 'no action', onDelete: 'cascade' })
+  @ManyToOne({
+    nullable: true,
+    onUpdateIntegrity: 'no action',
+    onDelete: 'cascade',
+  })
   favouriteBook?: Book2;
 
   @ManyToOne({ nullable: true })
@@ -149,5 +166,4 @@ export class Author2 extends BaseEntity2 {
   get code2() {
     return `${this.email} - ${this.name}`;
   }
-
 }

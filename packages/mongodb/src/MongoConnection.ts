@@ -1,41 +1,11 @@
-import type {
-  BulkWriteResult,
-  ClientSession,
-  Collection,
-  Db,
-  DeleteResult,
-  Filter,
-  InsertManyResult,
-  InsertOneResult,
-  MongoClientOptions,
-  OptionalUnlessRequiredId,
-  TransactionOptions,
-  UpdateFilter,
-  UpdateResult,
-} from 'mongodb';
+import type { BulkWriteResult, ClientSession, Collection, Db, DeleteResult, Filter, InsertManyResult, InsertOneResult, MongoClientOptions, OptionalUnlessRequiredId, TransactionOptions, UpdateFilter, UpdateResult } from 'mongodb';
 import { MongoClient } from 'mongodb';
 import { ObjectId } from 'bson';
 import { inspect } from 'util';
-import type {
-  AnyEntity,
-  Configuration,
-  ConnectionConfig,
-  ConnectionOptions,
-  ConnectionType,
-  Dictionary,
-  EntityData,
-  EntityName,
-  FilterQuery,
-  IsolationLevel,
-  QueryOrderMap,
-  QueryResult,
-  Transaction,
-  TransactionEventBroadcaster,
-} from '@mikro-orm/core';
+import type { AnyEntity, Configuration, ConnectionConfig, ConnectionOptions, ConnectionType, Dictionary, EntityData, EntityName, FilterQuery, IsolationLevel, QueryOrderMap, QueryResult, Transaction, TransactionEventBroadcaster } from '@mikro-orm/core';
 import { Connection, EventType, QueryOrder, Utils, ValidationError } from '@mikro-orm/core';
 
 export class MongoConnection extends Connection {
-
   protected client!: MongoClient;
   protected db!: Db;
   private connected = false;
@@ -90,7 +60,7 @@ export class MongoConnection extends Connection {
 
   async listCollections(): Promise<string[]> {
     const collections = await this.db.listCollections({}, { nameOnly: true }).toArray();
-    return collections.map(c => c.name);
+    return collections.map((c) => c.name);
   }
 
   async dropCollection(name: EntityName<AnyEntity>): Promise<boolean> {
@@ -156,10 +126,10 @@ export class MongoConnection extends Connection {
 
     if (Array.isArray(orderBy) && orderBy.length > 0) {
       const orderByTuples: [string, number][] = [];
-      orderBy.forEach(o => {
-        Object.keys(o).forEach(k => {
+      orderBy.forEach((o) => {
+        Object.keys(o).forEach((k) => {
           const direction = o[k];
-          orderByTuples.push([k, Utils.isString(direction) ? direction.toUpperCase() === QueryOrder.ASC ? 1 : -1 : direction]);
+          orderByTuples.push([k, Utils.isString(direction) ? (direction.toUpperCase() === QueryOrder.ASC ? 1 : -1) : direction]);
         });
       });
       if (orderByTuples.length > 0) {
@@ -222,7 +192,14 @@ export class MongoConnection extends Connection {
     return this.runQuery<T, number>('countDocuments', collection, undefined, where, ctx);
   }
 
-  async transactional<T>(cb: (trx: Transaction<ClientSession>) => Promise<T>, options: { isolationLevel?: IsolationLevel; ctx?: Transaction<ClientSession>; eventBroadcaster?: TransactionEventBroadcaster } & TransactionOptions = {}): Promise<T> {
+  async transactional<T>(
+    cb: (trx: Transaction<ClientSession>) => Promise<T>,
+    options: {
+      isolationLevel?: IsolationLevel;
+      ctx?: Transaction<ClientSession>;
+      eventBroadcaster?: TransactionEventBroadcaster;
+    } & TransactionOptions = {}
+  ): Promise<T> {
     const session = await this.begin(options);
 
     try {
@@ -238,7 +215,13 @@ export class MongoConnection extends Connection {
     }
   }
 
-  async begin(options: { isolationLevel?: IsolationLevel; ctx?: ClientSession; eventBroadcaster?: TransactionEventBroadcaster } & TransactionOptions = {}): Promise<ClientSession> {
+  async begin(
+    options: {
+      isolationLevel?: IsolationLevel;
+      ctx?: ClientSession;
+      eventBroadcaster?: TransactionEventBroadcaster;
+    } & TransactionOptions = {}
+  ): Promise<ClientSession> {
     const { ctx, isolationLevel, eventBroadcaster, ...txOptions } = options;
 
     if (!ctx) {
@@ -266,7 +249,14 @@ export class MongoConnection extends Connection {
     await eventBroadcaster?.dispatchEvent(EventType.afterTransactionRollback, ctx);
   }
 
-  private async runQuery<T extends object, U extends QueryResult<T> | number = QueryResult<T>>(method: 'insertOne' | 'insertMany' | 'updateMany' | 'bulkUpdateMany' | 'deleteMany' | 'countDocuments', collection: string, data?: Partial<T> | Partial<T>[], where?: FilterQuery<T> | FilterQuery<T>[], ctx?: Transaction<ClientSession>, upsert?: boolean): Promise<U> {
+  private async runQuery<T extends object, U extends QueryResult<T> | number = QueryResult<T>>(
+    method: 'insertOne' | 'insertMany' | 'updateMany' | 'bulkUpdateMany' | 'deleteMany' | 'countDocuments',
+    collection: string,
+    data?: Partial<T> | Partial<T>[],
+    where?: FilterQuery<T> | FilterQuery<T>[],
+    ctx?: Transaction<ClientSession>,
+    upsert?: boolean
+  ): Promise<U> {
     collection = this.getCollectionName(collection);
     const logger = this.config.getLogger();
     const options: Dictionary = ctx ? { session: ctx, upsert } : { upsert };
@@ -278,23 +268,29 @@ export class MongoConnection extends Connection {
     const now = Date.now();
     let res: InsertOneResult<T> | InsertManyResult<T> | UpdateResult | DeleteResult | BulkWriteResult | number;
     let query: string;
-    const log = (msg: () => string) => logger.isEnabled('query') ? msg() : '';
+    const log = (msg: () => string) => (logger.isEnabled('query') ? msg() : '');
 
     switch (method) {
       case 'insertOne':
-        Object.keys(data as Dictionary).filter(k => typeof (data as Dictionary)[k] === 'undefined').forEach(k => delete (data as Dictionary)[k]);
+        Object.keys(data as Dictionary)
+          .filter((k) => typeof (data as Dictionary)[k] === 'undefined')
+          .forEach((k) => delete (data as Dictionary)[k]);
         query = log(() => `db.getCollection('${collection}').insertOne(${this.logObject(data)}, ${this.logObject(options)});`);
         res = await this.rethrow(this.getCollection<T>(collection).insertOne(data as OptionalUnlessRequiredId<T>, options), query);
         break;
       case 'insertMany':
-        (data as Dictionary[]).forEach(data => Object.keys(data).filter(k => typeof data[k] === 'undefined').forEach(k => delete data[k]));
+        (data as Dictionary[]).forEach((data) =>
+          Object.keys(data)
+            .filter((k) => typeof data[k] === 'undefined')
+            .forEach((k) => delete data[k])
+        );
         query = log(() => `db.getCollection('${collection}').insertMany(${this.logObject(data)}, ${this.logObject(options)});`);
         res = await this.rethrow(this.getCollection<T>(collection).insertMany(data as OptionalUnlessRequiredId<T>[], options), query);
         break;
       case 'updateMany': {
-        const payload = Object.keys(data!).some(k => k.startsWith('$')) ? data : this.createUpdatePayload(data as object);
+        const payload = Object.keys(data!).some((k) => k.startsWith('$')) ? data : this.createUpdatePayload(data as object);
         query = log(() => `db.getCollection('${collection}').updateMany(${this.logObject(where)}, ${this.logObject(payload)}, ${this.logObject(options)});`);
-        res = await this.rethrow(this.getCollection<T>(collection).updateMany(where as Filter<T>, payload as UpdateFilter<T>, options), query) as UpdateResult;
+        res = (await this.rethrow(this.getCollection<T>(collection).updateMany(where as Filter<T>, payload as UpdateFilter<T>, options), query)) as UpdateResult;
         break;
       }
       case 'bulkUpdateMany': {
@@ -330,7 +326,7 @@ export class MongoConnection extends Connection {
   }
 
   private rethrow<T>(promise: Promise<T>, query: string): Promise<T> {
-    return promise.catch(e => {
+    return promise.catch((e) => {
       this.logQuery(query, { level: 'error' });
       e.message += '\nQuery: ' + query;
       throw e;
@@ -342,10 +338,12 @@ export class MongoConnection extends Connection {
     const keys = Object.keys(row);
     const $unset: { $set?: unknown[]; $unset?: unknown[] } = {};
 
-    keys.filter(k => typeof row[k] === 'undefined').forEach(k => {
-      $unset[k] = '';
-      delete row[k];
-    });
+    keys
+      .filter((k) => typeof row[k] === 'undefined')
+      .forEach((k) => {
+        $unset[k] = '';
+        delete row[k];
+      });
 
     if (Utils.hasObjectKeys($unset)) {
       doc.$unset = $unset;
@@ -380,5 +378,4 @@ export class MongoConnection extends Connection {
 
     return inspect(o, { depth: 5, compact: true, breakLength: 300 });
   }
-
 }

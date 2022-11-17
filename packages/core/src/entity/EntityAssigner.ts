@@ -11,7 +11,6 @@ import { helper, wrap } from './wrap';
 const validator = new EntityValidator(false);
 
 export class EntityAssigner {
-
   static assign<T extends object>(entity: T, data: EntityData<T> | Partial<EntityDTO<T>>, options: AssignOptions = {}): T {
     if (options.visited?.has(entity)) {
       return entity;
@@ -31,7 +30,7 @@ export class EntityAssigner {
     const em = options.em || wrapped.__em;
     const props = meta.properties;
 
-    Object.keys(data).forEach(prop => {
+    Object.keys(data).forEach((prop) => {
       if (options.onlyProperties && !(prop in props)) {
         return;
       }
@@ -82,7 +81,7 @@ export class EntityAssigner {
       }
 
       if (props[prop]?.reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(props[prop].type) && (props[prop].setter || !props[prop].getter)) {
-        return entity[prop as keyof T] = validator.validateProperty(props[prop], value, entity);
+        return (entity[prop as keyof T] = validator.validateProperty(props[prop], value, entity));
       }
 
       if (props[prop]?.reference === ReferenceType.EMBEDDED && EntityAssigner.validateEM(em)) {
@@ -155,7 +154,10 @@ export class EntityAssigner {
       const prop2 = prop.targetMeta?.properties[prop.mappedBy];
 
       if (Utils.isPlainObject(item) && prop2 && item[prop2.name] == null) {
-        item = { ...item, [prop2.name]: Reference.wrapReference(entity, prop2) };
+        item = {
+          ...item,
+          [prop2.name]: Reference.wrapReference(entity, prop2),
+        };
       }
 
       if (options.updateNestedEntities && options.updateByPrimaryKey && Utils.isPlainObject(item)) {
@@ -188,7 +190,8 @@ export class EntityAssigner {
 
     if (Array.isArray(value)) {
       collection.set(items);
-    } else { // append to the collection in case of assigning a single value instead of array
+    } else {
+      // append to the collection in case of assigning a single value instead of array
       collection.add(items);
     }
   }
@@ -207,20 +210,22 @@ export class EntityAssigner {
     }
 
     if (prop.array) {
-      return Utils.asArray(value).forEach(item => {
+      return Utils.asArray(value).forEach((item) => {
         const tmp = {};
         this.assignEmbeddable(tmp, item, { ...prop, array: false }, em, options);
         entity[propName].push(...Object.values(tmp));
       });
     }
 
-    const create = () => EntityAssigner.validateEM(em) && em!.getEntityFactory().createEmbeddable<T>(prop.type, value, {
-      convertCustomTypes: options.convertCustomTypes,
-      newEntity: options.mergeObjects ? !entity[propName] : true,
-    });
-    entity[propName] = options.mergeObjects ? (entity[propName] || create()) : create();
+    const create = () =>
+      EntityAssigner.validateEM(em) &&
+      em!.getEntityFactory().createEmbeddable<T>(prop.type, value, {
+        convertCustomTypes: options.convertCustomTypes,
+        newEntity: options.mergeObjects ? !entity[propName] : true,
+      });
+    entity[propName] = options.mergeObjects ? entity[propName] || create() : create();
 
-    Object.keys(value).forEach(key => {
+    Object.keys(value).forEach((key) => {
       const childProp = prop.embeddedProps[key];
 
       if (childProp && childProp.reference === ReferenceType.EMBEDDED) {
@@ -252,7 +257,6 @@ export class EntityAssigner {
 
     return item;
   }
-
 }
 
 export const assign = EntityAssigner.assign;

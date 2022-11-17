@@ -2,9 +2,8 @@ import { Check, Entity, EntitySchema, MikroORM, PrimaryKey, Property } from '@mi
 import { initORMPostgreSql } from '../../bootstrap';
 
 @Entity()
-@Check<FooEntity>({ expression: columns => `${columns.price} >= 0` })
+@Check<FooEntity>({ expression: (columns) => `${columns.price} >= 0` })
 export class FooEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,16 +11,14 @@ export class FooEntity {
   price!: number;
 
   @Property()
-  @Check<FooEntity>({ expression: columns => `${columns.price2} >= 0` })
+  @Check<FooEntity>({ expression: (columns) => `${columns.price2} >= 0` })
   price2!: number;
 
   @Property({ check: 'price3 >= 0' })
   price3!: number;
-
 }
 
 describe('check constraint [postgres]', () => {
-
   test('check constraint is generated for decorator [postgres]', async () => {
     const orm = await MikroORM.init({
       entities: [FooEntity],
@@ -59,9 +56,7 @@ describe('check constraint [postgres]', () => {
       },
       name: 'NewTable',
       tableName: 'new_table',
-      checks: [
-        { name: 'foo', expression: 'price >= 0' },
-      ],
+      checks: [{ name: 'foo', expression: 'price >= 0' }],
     }).init().meta;
     meta.set('NewTable', newTableMeta);
 
@@ -94,5 +89,4 @@ describe('check constraint [postgres]', () => {
 
     await orm.close();
   });
-
 });

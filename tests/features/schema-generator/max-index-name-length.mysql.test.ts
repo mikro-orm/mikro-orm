@@ -1,10 +1,10 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 
-
-@Entity({ tableName: 'very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' })
+@Entity({
+  tableName: 'very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+})
 class ChildEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,18 +13,15 @@ class ChildEntity {
 
   @Property({ unique: true })
   key!: string;
-
 }
 
 @Entity()
 class ParentEntity {
-
   @PrimaryKey()
   id!: number;
 
   @OneToMany({ entity: () => ChildEntity, mappedBy: 'parent' })
   children = new Collection<ChildEntity>(this);
-
 }
 
 describe('index and FK names should be a max of 64 chars in mysql (GH 1271)', () => {
@@ -48,5 +45,4 @@ describe('index and FK names should be a max of 64 chars in mysql (GH 1271)', ()
     expect(sql).toMatchSnapshot();
     await orm.schema.execute(sql);
   });
-
 });

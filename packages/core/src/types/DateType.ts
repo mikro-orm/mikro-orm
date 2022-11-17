@@ -4,7 +4,6 @@ import type { EntityProperty } from '../typings';
 import { ValidationError } from '../errors';
 
 export class DateType extends Type<Date, string> {
-
   convertToDatabaseValue(value: Date | string | undefined | null, platform: Platform): string {
     if (value instanceof Date) {
       return value.toISOString().substr(0, 10);
@@ -42,5 +41,4 @@ export class DateType extends Type<Date, string> {
   toJSON(value: Date, platform: Platform): Date | string {
     return this.convertToDatabaseValue(value, platform);
   }
-
 }

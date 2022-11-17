@@ -10,18 +10,15 @@ enum AnimalType {
 
 @Embeddable({ abstract: true, discriminatorColumn: 'type' })
 abstract class Animal {
-
   @Enum()
   type!: AnimalType;
 
   @Property()
   name!: string;
-
 }
 
 @Embeddable({ discriminatorValue: AnimalType.CAT })
 class Cat extends Animal {
-
   @Property()
   canMeow? = true;
 
@@ -30,12 +27,10 @@ class Cat extends Animal {
     this.type = AnimalType.CAT;
     this.name = name;
   }
-
 }
 
 @Embeddable({ discriminatorValue: AnimalType.DOG })
 class Dog extends Animal {
-
   @Property()
   canBark? = true;
 
@@ -44,12 +39,10 @@ class Dog extends Animal {
     this.type = AnimalType.DOG;
     this.name = name;
   }
-
 }
 
 @Entity()
 class Owner {
-
   [OptionalProps]?: 'pets';
 
   @PrimaryKey()
@@ -70,11 +63,9 @@ class Owner {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 describe('polymorphic embeddables in sqlite', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -198,7 +189,9 @@ describe('polymorphic embeddables in sqlite', () => {
     await orm.em.flush();
     expect(mock.mock.calls).toHaveLength(3);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('update `owner` set `pet_can_bark` = case when (`id` = ?) then ? when (`id` = ?) then ? else `pet_can_bark` end, `pet_type` = case when (`id` = ?) then ? when (`id` = ?) then ? else `pet_type` end, `pet_name` = case when (`id` = ?) then ? when (`id` = ?) then ? when (`id` = ?) then ? else `pet_name` end, `pet_can_meow` = case when (`id` = ?) then ? when (`id` = ?) then ? else `pet_can_meow` end, `pets` = case when (`id` = ?) then ? else `pets` end where `id` in (?, ?, ?)');
+    expect(mock.mock.calls[1][0]).toMatch(
+      'update `owner` set `pet_can_bark` = case when (`id` = ?) then ? when (`id` = ?) then ? else `pet_can_bark` end, `pet_type` = case when (`id` = ?) then ? when (`id` = ?) then ? else `pet_type` end, `pet_name` = case when (`id` = ?) then ? when (`id` = ?) then ? when (`id` = ?) then ? else `pet_name` end, `pet_can_meow` = case when (`id` = ?) then ? when (`id` = ?) then ? else `pet_can_meow` end, `pets` = case when (`id` = ?) then ? else `pets` end where `id` in (?, ?, ?)'
+    );
     expect(mock.mock.calls[2][0]).toMatch('commit');
     orm.em.clear();
 
@@ -234,10 +227,13 @@ describe('polymorphic embeddables in sqlite', () => {
     mock.mock.calls.length = 0;
     const dogOwners = await orm.em.find(Owner, { pet: { name: ['d3', 'old dog'] } }, { orderBy: { name: 1 } });
     const dogOwners2 = await orm.em.find(Owner, { pet2: { name: ['d4', 'c4'] } }, { orderBy: { name: 1 } });
-    const dogOwners3 = await orm.em.find(Owner, { $or: [
-      { pet: { name: ['d3', 'old dog'] } },
-      { pet2: { name: ['d4', 'c4'] } },
-    ] }, { orderBy: { name: 1 } });
+    const dogOwners3 = await orm.em.find(
+      Owner,
+      {
+        $or: [{ pet: { name: ['d3', 'old dog'] } }, { pet2: { name: ['d4', 'c4'] } }],
+      },
+      { orderBy: { name: 1 } }
+    );
 
     const check = (items: Owner[]) => {
       expect(items).toHaveLength(2);
@@ -255,8 +251,8 @@ describe('polymorphic embeddables in sqlite', () => {
     check(dogOwners3);
 
     expect(mock.mock.calls[0][0]).toMatch('select `o0`.* from `owner` as `o0` where `o0`.`pet_name` in (?, ?) order by `o0`.`name` asc');
-    expect(mock.mock.calls[1][0]).toMatch('select `o0`.* from `owner` as `o0` where json_extract(`o0`.`pet2`, \'$.name\') in (?, ?) order by `o0`.`name` asc');
-    expect(mock.mock.calls[2][0]).toMatch('select `o0`.* from `owner` as `o0` where (`o0`.`pet_name` in (?, ?) or json_extract(`o0`.`pet2`, \'$.name\') in (?, ?)) order by `o0`.`name` asc');
+    expect(mock.mock.calls[1][0]).toMatch("select `o0`.* from `owner` as `o0` where json_extract(`o0`.`pet2`, '$.name') in (?, ?) order by `o0`.`name` asc");
+    expect(mock.mock.calls[2][0]).toMatch("select `o0`.* from `owner` as `o0` where (`o0`.`pet_name` in (?, ?) or json_extract(`o0`.`pet2`, '$.name') in (?, ?)) order by `o0`.`name` asc");
   });
 
   test('assign and serialization', async () => {
@@ -273,9 +269,15 @@ describe('polymorphic embeddables in sqlite', () => {
     expect(owner.pet).toBeInstanceOf(Cat);
     expect(owner.pet2).toMatchObject({ name: 'dog', type: AnimalType.DOG });
     expect(owner.pet2).toBeInstanceOf(Dog);
-    expect(owner.pets[0]).toMatchObject({ name: 'dog in array', type: AnimalType.DOG });
+    expect(owner.pets[0]).toMatchObject({
+      name: 'dog in array',
+      type: AnimalType.DOG,
+    });
     expect(owner.pets[0]).toBeInstanceOf(Dog);
-    expect(owner.pets[1]).toMatchObject({ name: 'cat in array', type: AnimalType.CAT });
+    expect(owner.pets[1]).toMatchObject({
+      name: 'cat in array',
+      type: AnimalType.CAT,
+    });
     expect(owner.pets[1]).toBeInstanceOf(Cat);
 
     const mock = mockLogger(orm, ['query']);
@@ -288,7 +290,7 @@ describe('polymorphic embeddables in sqlite', () => {
       pet: { name: 'cat name' },
       pet2: { name: 'dog name' },
     });
-    expect(() => orm.em.assign(owner, { pets: [{ name: '...' } ] })).toThrow('Cannot create entity Cat | Dog, class prototype is unknown');
+    expect(() => orm.em.assign(owner, { pets: [{ name: '...' }] })).toThrow('Cannot create entity Cat | Dog, class prototype is unknown');
     orm.em.assign(owner, {
       pets: [
         { name: 'cat in array', type: AnimalType.CAT },
@@ -321,5 +323,4 @@ describe('polymorphic embeddables in sqlite', () => {
       ],
     });
   });
-
 });

@@ -3,7 +3,6 @@ import { mockLogger } from '../../helpers';
 
 @Entity()
 export class ConcurrencyCheckUser {
-
   @PrimaryKey()
   _id!: string;
 
@@ -25,11 +24,9 @@ export class ConcurrencyCheckUser {
     this.lastName = lastName;
     this.age = age;
   }
-
 }
 
 describe('optimistic locking - concurrency check (mongo)', () => {
-
   let orm: MikroORM;
   let mock: jest.Mock;
 
@@ -115,16 +112,24 @@ describe('optimistic locking - concurrency check (mongo)', () => {
     test1.age = 30;
     test2.age = 35;
     await orm.em.flush();
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('concurrency-check-user').find({ '$or': [ { _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 20 }, { _id: '2', firstName: 'John', lastName: 'Smith', age: 25 } ] }, { projection: { _id: 1, firstName: 1, lastName: 1, age: 1 } }).toArray();`);
-    expect(mock.mock.calls[1][0]).toMatch(`bulk = db.getCollection('concurrency-check-user').initializeUnorderedBulkOp({});bulk.find({ _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 20 }).update({ '$set': { age: 30 } });bulk.find({ _id: '2', firstName: 'John', lastName: 'Smith', age: 25 }).update({ '$set': { age: 35 } });bulk.execute()`);
+    expect(mock.mock.calls[0][0]).toMatch(
+      `db.getCollection('concurrency-check-user').find({ '$or': [ { _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 20 }, { _id: '2', firstName: 'John', lastName: 'Smith', age: 25 } ] }, { projection: { _id: 1, firstName: 1, lastName: 1, age: 1 } }).toArray();`
+    );
+    expect(mock.mock.calls[1][0]).toMatch(
+      `bulk = db.getCollection('concurrency-check-user').initializeUnorderedBulkOp({});bulk.find({ _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 20 }).update({ '$set': { age: 30 } });bulk.find({ _id: '2', firstName: 'John', lastName: 'Smith', age: 25 }).update({ '$set': { age: 35 } });bulk.execute()`
+    );
 
     mock.mockReset();
 
     test1.age = 40;
     test2.age = 45;
     await orm.em.flush();
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('concurrency-check-user').find({ '$or': [ { _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 30 }, { _id: '2', firstName: 'John', lastName: 'Smith', age: 35 } ] }, { projection: { _id: 1, firstName: 1, lastName: 1, age: 1 } }).toArray();`);
-    expect(mock.mock.calls[1][0]).toMatch(`bulk = db.getCollection('concurrency-check-user').initializeUnorderedBulkOp({});bulk.find({ _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 30 }).update({ '$set': { age: 40 } });bulk.find({ _id: '2', firstName: 'John', lastName: 'Smith', age: 35 }).update({ '$set': { age: 45 } });bulk.execute()`);
+    expect(mock.mock.calls[0][0]).toMatch(
+      `db.getCollection('concurrency-check-user').find({ '$or': [ { _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 30 }, { _id: '2', firstName: 'John', lastName: 'Smith', age: 35 } ] }, { projection: { _id: 1, firstName: 1, lastName: 1, age: 1 } }).toArray();`
+    );
+    expect(mock.mock.calls[1][0]).toMatch(
+      `bulk = db.getCollection('concurrency-check-user').initializeUnorderedBulkOp({});bulk.find({ _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 30 }).update({ '$set': { age: 40 } });bulk.find({ _id: '2', firstName: 'John', lastName: 'Smith', age: 35 }).update({ '$set': { age: 45 } });bulk.execute()`
+    );
 
     mock.mockReset();
 
@@ -137,8 +142,12 @@ describe('optimistic locking - concurrency check (mongo)', () => {
     test1.age = 41;
     test2.age = 46;
     await orm.em.flush();
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('concurrency-check-user').find({ '$or': [ { _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 40 }, { _id: '2', firstName: 'John', lastName: 'Smith', age: 45 } ] }, { projection: { _id: 1, firstName: 1, lastName: 1, age: 1 } }).toArray();`);
-    expect(mock.mock.calls[1][0]).toMatch(`bulk = db.getCollection('concurrency-check-user').initializeUnorderedBulkOp({});bulk.find({ _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 40 }).update({ '$set': { age: 41, other: 'asd' } });bulk.find({ _id: '2', firstName: 'John', lastName: 'Smith', age: 45 }).update({ '$set': { age: 46, other: 'lololol' } });bulk.execute()`);
+    expect(mock.mock.calls[0][0]).toMatch(
+      `db.getCollection('concurrency-check-user').find({ '$or': [ { _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 40 }, { _id: '2', firstName: 'John', lastName: 'Smith', age: 45 } ] }, { projection: { _id: 1, firstName: 1, lastName: 1, age: 1 } }).toArray();`
+    );
+    expect(mock.mock.calls[1][0]).toMatch(
+      `bulk = db.getCollection('concurrency-check-user').initializeUnorderedBulkOp({});bulk.find({ _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 40 }).update({ '$set': { age: 41, other: 'asd' } });bulk.find({ _id: '2', firstName: 'John', lastName: 'Smith', age: 45 }).update({ '$set': { age: 46, other: 'lololol' } });bulk.execute()`
+    );
   });
 
   test('throws when someone changed the state in the meantime (batch update)', async () => {
@@ -166,5 +175,4 @@ describe('optimistic locking - concurrency check (mongo)', () => {
       expect((e as OptimisticLockError).getEntity()).toBe(tests[0]);
     }
   });
-
 });

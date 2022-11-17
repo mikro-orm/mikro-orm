@@ -3,18 +3,15 @@ import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 export class Author {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 @Entity({ tableName: 'book' })
 export class Book1 {
-
   @PrimaryKey()
   id!: number;
 
@@ -35,14 +32,12 @@ export class Book1 {
 
   @Property()
   title!: string;
-
 }
 
 @Entity({ tableName: 'book' })
 @Index({ properties: 'author1' })
 @Index({ properties: 'author3' })
 export class Book2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -63,10 +58,11 @@ export class Book2 {
   @ManyToOne(() => Author, { index: true })
   author5!: Author;
 
-  @Index({ expression: 'alter table `book` add index `custom_index_expr`(`title`)' })
+  @Index({
+    expression: 'alter table `book` add index `custom_index_expr`(`title`)',
+  })
   @Property()
   title!: string;
-
 }
 
 @Entity({ tableName: 'book' })
@@ -74,7 +70,6 @@ export class Book2 {
 @Index({ properties: 'author3', name: 'lol31' })
 @Index({ properties: 'author3', name: 'lol41' })
 export class Book3 {
-
   @PrimaryKey()
   id!: number;
 
@@ -95,10 +90,12 @@ export class Book3 {
   @ManyToOne(() => Author, { index: 'auth_idx5' })
   author5!: Author;
 
-  @Index({ name: 'custom_index_expr2', expression: 'alter table `book` add index `custom_index_expr2`(`title`)' })
+  @Index({
+    name: 'custom_index_expr2',
+    expression: 'alter table `book` add index `custom_index_expr2`(`title`)',
+  })
   @Property()
   title!: string;
-
 }
 
 @Entity({ tableName: 'book' })
@@ -106,7 +103,6 @@ export class Book3 {
 @Index({ properties: 'author3', name: 'lol32' })
 @Index({ properties: 'author3', name: 'lol42' })
 export class Book4 {
-
   @PrimaryKey()
   id!: number;
 
@@ -127,14 +123,15 @@ export class Book4 {
   @ManyToOne(() => Author, { index: 'auth_idx5' })
   author5!: Author;
 
-  @Index({ name: 'custom_index_expr2', expression: 'alter table `book` add index `custom_index_expr2`(`title`)' })
+  @Index({
+    name: 'custom_index_expr2',
+    expression: 'alter table `book` add index `custom_index_expr2`(`title`)',
+  })
   @Property()
   title!: string;
-
 }
 
 describe('indexes on FKs in postgres (GH 1518)', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
@@ -176,8 +173,13 @@ describe('indexes on FKs in postgres (GH 1518)', () => {
     orm.getMetadata().reset('Book3');
     await orm.discoverEntity(Book4);
     const diff4 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
-    expect(diff4.split('\n').filter(i => i).sort().join('\n')).toMatchSnapshot();
+    expect(
+      diff4
+        .split('\n')
+        .filter((i) => i)
+        .sort()
+        .join('\n')
+    ).toMatchSnapshot();
     await orm.schema.execute(diff4);
   });
-
 });

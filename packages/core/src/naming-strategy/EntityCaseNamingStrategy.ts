@@ -4,7 +4,6 @@ import { AbstractNamingStrategy } from './AbstractNamingStrategy';
  * This strategy keeps original entity/property names for table/column.
  */
 export class EntityCaseNamingStrategy extends AbstractNamingStrategy {
-
   classToTableName(entityName: string): string {
     return entityName;
   }
@@ -34,5 +33,4 @@ export class EntityCaseNamingStrategy extends AbstractNamingStrategy {
   referenceColumnName(): string {
     return 'id';
   }
-
 }

@@ -4,18 +4,15 @@ import { mockLogger } from '../../helpers';
 
 @Entity()
 export class Order {
-
   @PrimaryKey()
   id!: string;
 
   @Property()
   status!: string;
-
 }
 
 @Entity()
 export class Team {
-
   @PrimaryKey()
   id!: string;
 
@@ -29,11 +26,9 @@ export class Team {
 
   @Property()
   status!: string;
-
 }
 
 describe('mapToPk works with flushing and cascades', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -88,5 +83,4 @@ describe('mapToPk works with flushing and cascades', () => {
     expect(mock.mock.calls[8][0]).toMatch("update `team` set `current_order_id` = NULL where `id` = 'team1'");
     expect(mock.mock.calls[9][0]).toMatch('commit');
   });
-
 });

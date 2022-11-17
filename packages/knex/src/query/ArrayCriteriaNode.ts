@@ -5,7 +5,6 @@ import type { IQueryBuilder } from '../typings';
  * @internal
  */
 export class ArrayCriteriaNode extends CriteriaNode {
-
   process<T>(qb: IQueryBuilder<T>, alias?: string): any {
     return this.payload.map((node: CriteriaNode) => {
       return node.process(qb, alias);
@@ -17,5 +16,4 @@ export class ArrayCriteriaNode extends CriteriaNode {
       return node.willAutoJoin(qb, alias);
     });
   }
-
 }

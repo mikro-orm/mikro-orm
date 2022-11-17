@@ -2,7 +2,6 @@ import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -18,11 +17,9 @@ export class User {
   get upperName() {
     return this.name.toUpperCase();
   }
-
 }
 
 describe('GH issue 2760', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -45,5 +42,4 @@ describe('GH issue 2760', () => {
     expect(user.lowerName).toBe('abc');
     expect(user.upperName).toBe('ABC');
   });
-
 });

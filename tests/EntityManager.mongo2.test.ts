@@ -6,10 +6,9 @@ import { Author, Book, BookTag, Publisher } from './entities';
 import { initORMMongo } from './bootstrap';
 
 describe('EntityManagerMongo2', () => {
-
   let orm: MikroORM<MongoDriver>;
 
-  beforeAll(async () => orm = await initORMMongo());
+  beforeAll(async () => (orm = await initORMMongo()));
   beforeEach(async () => orm.schema.clearDatabase());
 
   test('loaded references and collections', async () => {
@@ -24,21 +23,29 @@ describe('EntityManagerMongo2', () => {
     const book0 = await orm.em.findOne(Book, { author: { books: { publisher: ['1', '2'] } } }, { populate: ['publisher', 'tags'] });
     expect(book0).toBeNull();
 
-    const book1 = await orm.em.findOneOrFail(Book, bible, { populate: ['publisher', 'tags'] });
+    const book1 = await orm.em.findOneOrFail(Book, bible, {
+      populate: ['publisher', 'tags'],
+    });
     expect(book1.publisher!.$.name).toBe('Publisher 123');
     expect(book1.tags.$[0].name).toBe('t1');
     expect(book1.tags.$[1].name).toBe('t2');
     expect(book1.tags.$[2].name).toBe('t3');
     orm.em.clear();
 
-    const books = await orm.em.find(Book, { id: bible.id }, {
-      populate: ['publisher.books.publisher'],
-      fields: ['*', 'publisher.name'],
-    });
+    const books = await orm.em.find(
+      Book,
+      { id: bible.id },
+      {
+        populate: ['publisher.books.publisher'],
+        fields: ['*', 'publisher.name'],
+      }
+    );
     expect(books[0].publisher!.get().books.get()[0].publisher!.$.name).toBe('Publisher 123');
     expect(books[0].publisher!.$.type).toBeUndefined();
 
-    const book5 = await orm.em.findOneOrFail(Book, bible, { populate: ['publisher', 'tags', 'perex'] });
+    const book5 = await orm.em.findOneOrFail(Book, bible, {
+      populate: ['publisher', 'tags', 'perex'],
+    });
     expect(book5.publisher!.$.name).toBe('Publisher 123');
     expect(book5.tags.$[0].name).toBe('t1');
 
@@ -75,5 +82,4 @@ describe('EntityManagerMongo2', () => {
   });
 
   afterAll(async () => orm.close(true));
-
 });

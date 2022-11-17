@@ -5,7 +5,6 @@ import { TEMP_DIR } from '../helpers';
 
 @Entity({ tableName: 'user' })
 class UserBefore {
-
   @PrimaryKey()
   id!: string;
 
@@ -17,12 +16,10 @@ class UserBefore {
 
   @Property()
   deleted: Date = new Date();
-
 }
 
 @Entity({ tableName: 'user' })
 class UserAfter {
-
   @PrimaryKey()
   id!: string;
 
@@ -34,11 +31,9 @@ class UserAfter {
 
   @Property()
   deletedAt: Date = new Date();
-
 }
 
 describe('GH issue 1262', () => {
-
   async function createAndRunMigration(entities: any[]) {
     const db = await MikroORM.init({
       type: 'sqlite',
@@ -58,5 +53,4 @@ describe('GH issue 1262', () => {
     await createAndRunMigration([UserAfter]);
     await remove(TEMP_DIR + '/gh_1262.db');
   });
-
 });

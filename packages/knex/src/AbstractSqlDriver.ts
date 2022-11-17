@@ -1,9 +1,34 @@
 import type { Knex } from 'knex';
 import type {
-  AnyEntity, Collection, ConnectionType, Configuration, Constructor, CountOptions, DeleteOptions, Dictionary,
-  DriverMethodOptions, EntityData, EntityDictionary, EntityField, EntityManager, EntityMetadata, EntityName, EntityProperty, FilterQuery,
-  FindOneOptions, FindOptions, IDatabaseDriver, LockOptions, NativeInsertUpdateManyOptions, NativeInsertUpdateOptions,
-  PopulateOptions, Primary, QueryOrderMap, QueryResult, RequiredEntityData, Transaction,
+  AnyEntity,
+  Collection,
+  ConnectionType,
+  Configuration,
+  Constructor,
+  CountOptions,
+  DeleteOptions,
+  Dictionary,
+  DriverMethodOptions,
+  EntityData,
+  EntityDictionary,
+  EntityField,
+  EntityManager,
+  EntityMetadata,
+  EntityName,
+  EntityProperty,
+  FilterQuery,
+  FindOneOptions,
+  FindOptions,
+  IDatabaseDriver,
+  LockOptions,
+  NativeInsertUpdateManyOptions,
+  NativeInsertUpdateOptions,
+  PopulateOptions,
+  Primary,
+  QueryOrderMap,
+  QueryResult,
+  RequiredEntityData,
+  Transaction,
 } from '@mikro-orm/core';
 import { DatabaseDriver, EntityManagerType, helper, LoadStrategy, QueryFlag, QueryHelper, ReferenceType, Utils } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from './AbstractSqlConnection';
@@ -13,7 +38,6 @@ import { SqlEntityManager } from './SqlEntityManager';
 import type { Field } from './typings';
 
 export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = AbstractSqlConnection> extends DatabaseDriver<C> {
-
   [EntityManagerType]!: SqlEntityManager<this>;
 
   protected readonly connection: C;
@@ -23,7 +47,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   protected constructor(config: Configuration, platform: AbstractSqlPlatform, connection: Constructor<C>, connector: string[]) {
     super(config, connector);
     this.connection = new connection(this.config);
-    this.replicas = this.createReplicas(conf => new connection(this.config, conf, 'read'));
+    this.replicas = this.createReplicas((conf) => new connection(this.config, conf, 'read'));
     this.platform = platform;
   }
 
@@ -50,7 +74,9 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const joinedPropsOrderBy = this.buildJoinedPropsOrderBy(entityName, qb, meta, joinedProps);
 
     if (Utils.isPrimaryKey(where, meta.compositePK)) {
-      where = { [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where } as FilterQuery<T>;
+      where = {
+        [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where,
+      } as FilterQuery<T>;
     }
 
     qb.select(fields)
@@ -69,7 +95,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       qb.setLockMode(options.lockMode, options.lockTableAliases);
     }
 
-    Utils.asArray(options.flags).forEach(flag => qb.setFlag(flag));
+    Utils.asArray(options.flags).forEach((flag) => qb.setFlag(flag));
     const result = await this.rethrow(qb.execute('all'));
 
     if (joinedProps.length > 0) {
@@ -151,8 +177,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   protected async wrapVirtualExpressionInSubquery<T extends object>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any>, type: QueryType.SELECT): Promise<T[]>;
   protected async wrapVirtualExpressionInSubquery<T extends object>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any>): Promise<T[]>;
   protected async wrapVirtualExpressionInSubquery<T extends object>(meta: EntityMetadata<T>, expression: string, where: FilterQuery<T>, options: FindOptions<T, any>, type = QueryType.SELECT): Promise<unknown> {
-    const qb = this.createQueryBuilder(meta.className, options?.ctx, options.connectionType, options.convertCustomTypes)
-      .limit(options?.limit, options?.offset);
+    const qb = this.createQueryBuilder(meta.className, options?.ctx, options.connectionType, options.convertCustomTypes).limit(options?.limit, options?.offset);
 
     if (options.orderBy) {
       qb.orderBy(options.orderBy);
@@ -164,7 +189,8 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     if (type === QueryType.COUNT) {
       kqb.select(qb.raw('count(*) as count'));
-    } else { // select
+    } else {
+      // select
       kqb.select('*');
     }
 
@@ -175,7 +201,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       return (res[0] as Dictionary).count;
     }
 
-    return res.map(row => this.mapResult(row, meta)!);
+    return res.map((row) => this.mapResult(row, meta)!);
   }
 
   mapResult<T extends object>(result: EntityData<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[] = [], qb?: QueryBuilder<T>, map: Dictionary = {}): EntityData<T> | null {
@@ -196,7 +222,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   private mapJoinedProps<T extends object>(result: EntityData<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[], qb: QueryBuilder<T>, root: EntityData<T>, map: Dictionary, parentJoinPath?: string) {
     const joinedProps = this.joinedProps(meta, populate);
 
-    joinedProps.forEach(p => {
+    joinedProps.forEach((p) => {
       const relation = meta.properties[p.field];
 
       /* istanbul ignore next */
@@ -211,25 +237,28 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
       // If the primary key value for the relation is null, we know we haven't joined to anything
       // and therefore we don't return any record (since all values would be null)
-      const hasPK = meta2.primaryKeys.every(pk => meta2.properties[pk].fieldNames.every(name => {
-        return root![`${relationAlias}__${name}`] != null;
-      }));
+      const hasPK = meta2.primaryKeys.every((pk) =>
+        meta2.properties[pk].fieldNames.every((name) => {
+          return root![`${relationAlias}__${name}`] != null;
+        })
+      );
 
       if (!hasPK) {
         // initialize empty collections
         if ([ReferenceType.MANY_TO_MANY, ReferenceType.ONE_TO_MANY].includes(relation.reference)) {
-          result[relation.name] = result[relation.name] || [] as unknown as T[keyof T & string];
+          result[relation.name] = result[relation.name] || ([] as unknown as T[keyof T & string]);
         }
 
         return;
       }
 
       meta2.props
-        .filter(prop => this.platform.shouldHaveColumn(prop, p.children || []))
-        .forEach(prop => {
-          if (prop.fieldNames.length > 1) { // composite keys
-            relationPojo[prop.name] = prop.fieldNames.map(name => root![`${relationAlias}__${name}`]);
-            prop.fieldNames.map(name => delete root![`${relationAlias}__${name}`]);
+        .filter((prop) => this.platform.shouldHaveColumn(prop, p.children || []))
+        .forEach((prop) => {
+          if (prop.fieldNames.length > 1) {
+            // composite keys
+            relationPojo[prop.name] = prop.fieldNames.map((name) => root![`${relationAlias}__${name}`]);
+            prop.fieldNames.map((name) => delete root![`${relationAlias}__${name}`]);
           } else {
             const alias = `${relationAlias}__${prop.fieldNames[0]}`;
             relationPojo[prop.name] = root![alias];
@@ -237,7 +266,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
           }
         });
 
-      const key = `${meta.name}-${(Utils.getCompositeKeyHash(result, meta))}`;
+      const key = `${meta.name}-${Utils.getCompositeKeyHash(result, meta)}`;
 
       if (map[key]) {
         result[relation.name] = map[key][relation.name];
@@ -246,7 +275,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       }
 
       if ([ReferenceType.MANY_TO_MANY, ReferenceType.ONE_TO_MANY].includes(relation.reference)) {
-        result[relation.name] = result[relation.name] || [] as unknown as T[keyof T & string];
+        result[relation.name] = result[relation.name] || ([] as unknown as T[keyof T & string]);
         this.appendToCollection(meta2, result[relation.name] as Dictionary[], relationPojo);
       } else {
         result[relation.name] = relationPojo as T[keyof T & string];
@@ -281,7 +310,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const qb = this.createQueryBuilder(entityName, options.ctx, options.connectionType, false)
       .groupBy(options.groupBy!)
       .having(options.having!)
-      .populate(options.populate as unknown as PopulateOptions<T>[] ?? [])
+      .populate((options.populate as unknown as PopulateOptions<T>[]) ?? [])
       .withSchema(this.getSchemaName(meta, options))
       .where(where);
 
@@ -298,7 +327,8 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     res.row = res.row || {};
     let pk: any;
 
-    if (pks.length > 1) { // owner has composite pk
+    if (pks.length > 1) {
+      // owner has composite pk
       pk = Utils.getPrimaryKeyCond(data as T, pks);
     } else {
       /* istanbul ignore next */
@@ -315,18 +345,18 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     options.processCollections ??= true;
     options.convertCustomTypes ??= true;
     const meta = this.metadata.find<T>(entityName);
-    const collections = options.processCollections ? data.map(d => this.extractManyToMany(entityName, d)) : [];
+    const collections = options.processCollections ? data.map((d) => this.extractManyToMany(entityName, d)) : [];
     const pks = this.getPrimaryKeyFields(entityName);
     const set = new Set<string>();
-    data.forEach(row => Object.keys(row).forEach(k => set.add(k)));
-    const props = [...set].map(name => meta?.properties[name] ?? { name, fieldNames: [name] }) as EntityProperty<T>[];
-    const fields = Utils.flatten(props.map(prop => prop.fieldNames));
+    data.forEach((row) => Object.keys(row).forEach((k) => set.add(k)));
+    const props = [...set].map((name) => meta?.properties[name] ?? { name, fieldNames: [name] }) as EntityProperty<T>[];
+    const fields = Utils.flatten(props.map((prop) => prop.fieldNames));
     const params: unknown[] = [];
 
     /* istanbul ignore next */
     const tableName = meta ? this.getTableName(meta, options) : this.platform.quoteIdentifier(entityName);
     let sql = `insert into ${tableName} `;
-    sql += fields.length > 0 ? '(' + fields.map(k => this.platform.quoteIdentifier(k)).join(', ') + ')' : `(${this.platform.quoteIdentifier(pks[0])})`;
+    sql += fields.length > 0 ? '(' + fields.map((k) => this.platform.quoteIdentifier(k)).join(', ') + ')' : `(${this.platform.quoteIdentifier(pks[0])})`;
 
     if (fields.length > 0 || this.platform.usesDefaultKeyword()) {
       sql += ' values ';
@@ -335,43 +365,46 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
 
     if (fields.length > 0 || this.platform.usesDefaultKeyword()) {
-      sql += data.map(row => {
-        const keys: string[] = [];
-        props.forEach(prop => {
-          if (prop.fieldNames.length > 1) {
-            params.push(...(row[prop.name] as unknown[] ?? prop.fieldNames.map(() => null)));
-            keys.push(...prop.fieldNames.map(_ => '?'));
-          } else if (prop.customType && 'convertToDatabaseValueSQL' in prop.customType && !this.platform.isRaw(row[prop.name])) {
-            keys.push(prop.customType.convertToDatabaseValueSQL!('?', this.platform));
-            params.push(row[prop.name]);
-          } else {
-            params.push(row[prop.name]);
-            keys.push('?');
-          }
-        });
+      sql += data
+        .map((row) => {
+          const keys: string[] = [];
+          props.forEach((prop) => {
+            if (prop.fieldNames.length > 1) {
+              params.push(...((row[prop.name] as unknown[]) ?? prop.fieldNames.map(() => null)));
+              keys.push(...prop.fieldNames.map((_) => '?'));
+            } else if (prop.customType && 'convertToDatabaseValueSQL' in prop.customType && !this.platform.isRaw(row[prop.name])) {
+              keys.push(prop.customType.convertToDatabaseValueSQL!('?', this.platform));
+              params.push(row[prop.name]);
+            } else {
+              params.push(row[prop.name]);
+              keys.push('?');
+            }
+          });
 
-        return '(' + (keys.join(', ') || 'default') + ')';
-      }).join(', ');
+          return '(' + (keys.join(', ') || 'default') + ')';
+        })
+        .join(', ');
     }
 
     if (this.platform.usesReturningStatement()) {
       /* istanbul ignore next */
-      const returningProps = meta!.hydrateProps.filter(prop => prop.persist !== false && (prop.primary || prop.defaultRaw));
-      const returningFields = Utils.flatten(returningProps.map(prop => prop.fieldNames));
+      const returningProps = meta!.hydrateProps.filter((prop) => prop.persist !== false && (prop.primary || prop.defaultRaw));
+      const returningFields = Utils.flatten(returningProps.map((prop) => prop.fieldNames));
       /* istanbul ignore next */
-      sql += returningFields.length > 0 ? ` returning ${returningFields.map(field => this.platform.quoteIdentifier(field)).join(', ')}` : '';
+      sql += returningFields.length > 0 ? ` returning ${returningFields.map((field) => this.platform.quoteIdentifier(field)).join(', ')}` : '';
     }
 
     const res = await this.execute<QueryResult<T>>(sql, params, 'run', options.ctx);
     let pk: any[];
 
     /* istanbul ignore next */
-    if (pks.length > 1) { // owner has composite pk
-      pk = data.map(d => Utils.getPrimaryKeyCond(d as T, pks));
+    if (pks.length > 1) {
+      // owner has composite pk
+      pk = data.map((d) => Utils.getPrimaryKeyCond(d as T, pks));
     } else {
       res.row ??= {};
       res.rows ??= [];
-      pk = data.map((d, i) => d[pks[0]] ?? res.rows![i]?.[pks[0]]).map(d => [d]);
+      pk = data.map((d, i) => d[pks[0]] ?? res.rows![i]?.[pks[0]]).map((d) => [d]);
       res.insertId = res.insertId || res.row![pks[0]];
     }
 
@@ -395,16 +428,15 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
 
     if (Utils.hasObjectKeys(data)) {
-      const qb = this.createQueryBuilder<T>(entityName, options.ctx, 'write', options.convertCustomTypes)
-        .withSchema(this.getSchemaName(meta, options));
+      const qb = this.createQueryBuilder<T>(entityName, options.ctx, 'write', options.convertCustomTypes).withSchema(this.getSchemaName(meta, options));
 
       if (options.upsert) {
         /* istanbul ignore next */
         const uniqueFields = Utils.isPlainObject(where) ? Object.keys(where) : meta!.primaryKeys;
         /* istanbul ignore next */
         qb.insert(data as T)
-          .onConflict(uniqueFields.map(p => meta?.properties[p]?.fieldNames[0] ?? p))
-          .merge(Object.keys(data).filter(f => !uniqueFields.includes(f)));
+          .onConflict(uniqueFields.map((p) => meta?.properties[p]?.fieldNames[0] ?? p))
+          .merge(Object.keys(data).filter((f) => !uniqueFields.includes(f)));
       } else {
         qb.update(data).where(where);
       }
@@ -413,7 +445,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
 
     /* istanbul ignore next */
-    const pk = pks.map(pk => Utils.extractPK<T>(data[pk] || where, meta)!) as Primary<T>[];
+    const pk = pks.map((pk) => Utils.extractPK<T>(data[pk] || where, meta)!) as Primary<T>[];
     await this.processManyToMany<T>(meta, pk, collections, true, options);
 
     return res;
@@ -423,14 +455,16 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     options.processCollections ??= true;
     options.convertCustomTypes ??= true;
     const meta = this.metadata.get<T>(entityName);
-    const collections = options.processCollections ? data.map(d => this.extractManyToMany(entityName, d)) : [];
+    const collections = options.processCollections ? data.map((d) => this.extractManyToMany(entityName, d)) : [];
     const keys = new Set<string>();
-    data.forEach(row => Object.keys(row).forEach(k => keys.add(k)));
-    const pkCond = Utils.flatten(meta.primaryKeys.map(pk => meta.properties[pk].fieldNames)).map(pk => `${this.platform.quoteIdentifier(pk)} = ?`).join(' and ');
+    data.forEach((row) => Object.keys(row).forEach((k) => keys.add(k)));
+    const pkCond = Utils.flatten(meta.primaryKeys.map((pk) => meta.properties[pk].fieldNames))
+      .map((pk) => `${this.platform.quoteIdentifier(pk)} = ?`)
+      .join(' and ');
     const params: any[] = [];
     let sql = `update ${this.getTableName(meta, options)} set `;
 
-    keys.forEach(key => {
+    keys.forEach((key) => {
       const prop = meta.properties[key];
 
       prop.fieldNames.forEach((fieldName: string, fieldNameIdx: number) => {
@@ -471,16 +505,16 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     sql = sql.substring(0, sql.length - 2) + ' where ';
     const pkProps = meta.primaryKeys.concat(...meta.concurrencyCheckKeys);
-    const pks = Utils.flatten(pkProps.map(pk => meta.properties[pk].fieldNames));
-    sql += pks.length > 1 ? `(${pks.map(pk => `${this.platform.quoteIdentifier(pk)}`).join(', ')})` : this.platform.quoteIdentifier(pks[0]);
+    const pks = Utils.flatten(pkProps.map((pk) => meta.properties[pk].fieldNames));
+    sql += pks.length > 1 ? `(${pks.map((pk) => `${this.platform.quoteIdentifier(pk)}`).join(', ')})` : this.platform.quoteIdentifier(pks[0]);
 
-    const conds = where.map(cond => {
+    const conds = where.map((cond) => {
       if (Utils.isPlainObject(cond) && Utils.getObjectKeysSize(cond) === 1) {
         cond = Object.values(cond)[0];
       }
 
       if (pks.length > 1) {
-        pkProps.forEach(pk => {
+        pkProps.forEach((pk) => {
           if (Array.isArray(cond![pk as string])) {
             params.push(...Utils.flatten(cond![pk as string]));
           } else {
@@ -521,12 +555,12 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const meta = wrapped.__meta;
     const pks = wrapped.getPrimaryKeys(true)!;
     const snap = coll.getSnapshot();
-    const includes = <T>(arr: T[], item: T) => !!arr.find(i => Utils.equals(i, item));
-    const snapshot = snap ? snap.map(item => helper(item).getPrimaryKeys(true)!) : [];
-    const current = coll.getItems(false).map(item => helper(item).getPrimaryKeys(true)!);
-    const deleteDiff = snap ? snapshot.filter(item => !includes(current, item)) : true;
-    const insertDiff = current.filter(item => !includes(snapshot, item));
-    const target = snapshot.filter(item => includes(current, item)).concat(...insertDiff);
+    const includes = <T>(arr: T[], item: T) => !!arr.find((i) => Utils.equals(i, item));
+    const snapshot = snap ? snap.map((item) => helper(item).getPrimaryKeys(true)!) : [];
+    const current = coll.getItems(false).map((item) => helper(item).getPrimaryKeys(true)!);
+    const deleteDiff = snap ? snapshot.filter((item) => !includes(current, item)) : true;
+    const insertDiff = current.filter((item) => !includes(snapshot, item));
+    const target = snapshot.filter((item) => includes(current, item)).concat(...insertDiff);
     const equals = Utils.equals(current, target);
     const ctx = options?.ctx;
 
@@ -565,19 +599,21 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const pivotProp2 = this.getPivotInverseProperty(prop);
     const ownerMeta = this.metadata.find(pivotProp2.type)!;
     const pivotMeta = this.metadata.find(prop.pivotEntity)!;
-    const cond = { [`${prop.pivotEntity}.${pivotProp2.name}`]: { $in: ownerMeta.compositePK ? owners : owners.map(o => o[0]) } };
+    const cond = {
+      [`${prop.pivotEntity}.${pivotProp2.name}`]: {
+        $in: ownerMeta.compositePK ? owners : owners.map((o) => o[0]),
+      },
+    };
 
     /* istanbul ignore if */
-    if (!Utils.isEmpty(where) && Object.keys(where as Dictionary).every(k => Utils.isOperator(k, false))) {
+    if (!Utils.isEmpty(where) && Object.keys(where as Dictionary).every((k) => Utils.isOperator(k, false))) {
       where = cond as FilterQuery<T>;
     } else {
       where = { ...(where as Dictionary), ...cond } as FilterQuery<T>;
     }
 
     orderBy = this.getPivotOrderBy(prop, orderBy);
-    const qb = this.createQueryBuilder<T>(prop.type, ctx, options?.connectionType)
-      .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES)
-      .withSchema(this.getSchemaName(prop.targetMeta, options));
+    const qb = this.createQueryBuilder<T>(prop.type, ctx, options?.connectionType).unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES).withSchema(this.getSchemaName(prop.targetMeta, options));
     const populate = this.autoJoinOneToOneOwner(prop.targetMeta!, [{ field: prop.pivotEntity }]);
     const fields = this.buildFields(prop.targetMeta!, (options?.populate ?? []) as unknown as PopulateOptions<T>[], [], qb, options?.fields as Field<T>[]);
     qb.select(fields).populate(populate).where(where).orderBy(orderBy!).setLockMode(options?.lockMode, options?.lockTableAliases);
@@ -590,7 +626,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       // eslint-disable-next-line dot-notation
       qb['finalize']();
       // eslint-disable-next-line dot-notation
-      Object.values(qb['_joins']).forEach(join => {
+      Object.values(qb['_joins']).forEach((join) => {
         join.schema = options.schema;
       });
     }
@@ -599,22 +635,26 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     const map: Dictionary<T[]> = {};
     const pkProps = ownerMeta.getPrimaryProps();
-    owners.forEach(owner => {
-      const key = Utils.getPrimaryKeyHash(prop.joinColumns.map((col, idx) => {
-        const pkProp = pkProps[idx];
-        return pkProp.customType ? pkProp.customType.convertToJSValue(owner[idx], this.platform) : owner[idx];
-      }));
+    owners.forEach((owner) => {
+      const key = Utils.getPrimaryKeyHash(
+        prop.joinColumns.map((col, idx) => {
+          const pkProp = pkProps[idx];
+          return pkProp.customType ? pkProp.customType.convertToJSValue(owner[idx], this.platform) : owner[idx];
+        })
+      );
 
-      return map[key] = [];
+      return (map[key] = []);
     });
     items.forEach((item: any) => {
-      const key = Utils.getPrimaryKeyHash(prop.joinColumns.map((col, idx) => {
-        const pkProp = pkProps[idx];
-        return pkProp.customType ? pkProp.customType.convertToJSValue(item[`fk__${col}`], this.platform) : item[`fk__${col}`];
-      }));
+      const key = Utils.getPrimaryKeyHash(
+        prop.joinColumns.map((col, idx) => {
+          const pkProp = pkProps[idx];
+          return pkProp.customType ? pkProp.customType.convertToJSValue(item[`fk__${col}`], this.platform) : item[`fk__${col}`];
+        })
+      );
       map[key].push(item);
-      prop.joinColumns.forEach(col => delete item[`fk__${col}`]);
-      prop.inverseJoinColumns.forEach(col => delete item[`fk__${col}`]);
+      prop.joinColumns.forEach((col) => delete item[`fk__${col}`]);
+      prop.inverseJoinColumns.forEach((col) => delete item[`fk__${col}`]);
     });
 
     return map;
@@ -634,15 +674,15 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     const relationsToPopulate = populate.map(({ field }) => field);
     const toPopulate: PopulateOptions<T>[] = meta.relations
-      .filter(prop => prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner && !relationsToPopulate.includes(prop.name))
-      .filter(prop => fields.length === 0 || fields.some(f => prop.name === f || prop.name.startsWith(`${String(f)}.`)))
-      .map(prop => ({ field: prop.name, strategy: prop.strategy }));
+      .filter((prop) => prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner && !relationsToPopulate.includes(prop.name))
+      .filter((prop) => fields.length === 0 || fields.some((f) => prop.name === f || prop.name.startsWith(`${String(f)}.`)))
+      .map((prop) => ({ field: prop.name, strategy: prop.strategy }));
 
     return [...populate, ...toPopulate];
   }
 
   protected joinedProps<T>(meta: EntityMetadata, populate: PopulateOptions<T>[]): PopulateOptions<T>[] {
-    return populate.filter(p => {
+    return populate.filter((p) => {
       const prop = meta.properties[p.field] || {};
       return (p.strategy || prop.strategy || this.config.get('loadStrategy')) === LoadStrategy.JOINED && prop.reference !== ReferenceType.SCALAR;
     });
@@ -655,7 +695,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     // group by the root entity primary key first
     const map: Dictionary = {};
     const res: EntityData<T>[] = [];
-    rawResults.forEach(item => {
+    rawResults.forEach((item) => {
       const pk = Utils.getCompositeKeyHash(item, meta);
 
       if (map[pk]) {
@@ -686,20 +726,18 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     };
 
     // alias all fields in the primary table
-    meta.props
-      .filter(prop => shouldHaveColumn(prop, populate, explicitFields))
-      .forEach(prop => fields.push(...this.mapPropToFieldNames(qb, prop, parentTableAlias)));
+    meta.props.filter((prop) => shouldHaveColumn(prop, populate, explicitFields)).forEach((prop) => fields.push(...this.mapPropToFieldNames(qb, prop, parentTableAlias)));
 
-    joinedProps.forEach(relation => {
+    joinedProps.forEach((relation) => {
       const prop = meta.properties[relation.field];
       const meta2 = this.metadata.find<T>(prop.type)!;
       const tableAlias = qb.getNextAlias(prop.name);
       const field = parentTableAlias ? `${parentTableAlias}.${prop.name}` : prop.name;
       const path = parentJoinPath ? `${parentJoinPath}.${prop.name}` : `${meta.name}.${prop.name}`;
       qb.join(field, tableAlias, {}, 'leftJoin', path);
-      const childExplicitFields = explicitFields?.filter(f => Utils.isPlainObject(f)).map(o => o[prop.name])[0] || [];
+      const childExplicitFields = explicitFields?.filter((f) => Utils.isPlainObject(f)).map((o) => o[prop.name])[0] || [];
 
-      explicitFields?.forEach(f => {
+      explicitFields?.forEach((f) => {
         if (typeof f === 'string' && f.startsWith(`${prop.name}.`)) {
           childExplicitFields.push(f.substring(prop.name.length + 1));
         }
@@ -728,7 +766,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
 
     if (tableAlias) {
-      return prop.fieldNames.map(fieldName => qb.ref(fieldName).withSchema(tableAlias).as(`${tableAlias}__${fieldName}`));
+      return prop.fieldNames.map((fieldName) => qb.ref(fieldName).withSchema(tableAlias).as(`${tableAlias}__${fieldName}`));
     }
 
     return prop.fieldNames;
@@ -736,7 +774,10 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
   /** @internal */
   createQueryBuilder<T extends object>(entityName: EntityName<T> | QueryBuilder<T>, ctx?: Transaction<Knex.Transaction>, preferredConnectionType?: ConnectionType, convertCustomTypes?: boolean): QueryBuilder<T> {
-    const connectionType = this.resolveConnectionType({ ctx, connectionType: preferredConnectionType });
+    const connectionType = this.resolveConnectionType({
+      ctx,
+      connectionType: preferredConnectionType,
+    });
     const qb = new QueryBuilder<T>(entityName, this.metadata, this, ctx, undefined, connectionType);
 
     if (!convertCustomTypes) {
@@ -746,7 +787,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     return qb;
   }
 
-  protected resolveConnectionType(args: { ctx?: Transaction<Knex.Transaction>; connectionType?: ConnectionType}) {
+  protected resolveConnectionType(args: { ctx?: Transaction<Knex.Transaction>; connectionType?: ConnectionType }) {
     if (args.ctx) {
       return 'write';
     } else if (args.connectionType) {
@@ -765,7 +806,7 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
 
     const ret: EntityData<T> = {};
 
-    this.metadata.find(entityName)!.relations.forEach(prop => {
+    this.metadata.find(entityName)!.relations.forEach((prop) => {
       if (prop.reference === ReferenceType.MANY_TO_MANY && data[prop.name]) {
         ret[prop.name] = data[prop.name].map((item: Primary<T>) => Utils.asArray(item));
         delete data[prop.name];
@@ -787,22 +828,13 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     }
   }
 
-  protected async updateCollectionDiff<T extends object, O extends object>(
-    meta: EntityMetadata<O>,
-    prop: EntityProperty<T>,
-    pks: Primary<O>[],
-    deleteDiff: Primary<T>[][] | boolean,
-    insertDiff: Primary<T>[][],
-    options?: DriverMethodOptions & { ownerSchema?: string },
-  ): Promise<void> {
+  protected async updateCollectionDiff<T extends object, O extends object>(meta: EntityMetadata<O>, prop: EntityProperty<T>, pks: Primary<O>[], deleteDiff: Primary<T>[][] | boolean, insertDiff: Primary<T>[][], options?: DriverMethodOptions & { ownerSchema?: string }): Promise<void> {
     if (!deleteDiff) {
       deleteDiff = [];
     }
 
     if (deleteDiff === true || deleteDiff.length > 0) {
-      const qb1 = this.createQueryBuilder(prop.pivotEntity, options?.ctx, 'write')
-        .withSchema(this.getSchemaName(meta, options))
-        .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);
+      const qb1 = this.createQueryBuilder(prop.pivotEntity, options?.ctx, 'write').withSchema(this.getSchemaName(meta, options)).unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES);
       const knex = qb1.getKnex();
 
       if (Array.isArray(deleteDiff)) {
@@ -817,10 +849,10 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
       return;
     }
 
-    const items = insertDiff.map(item => {
+    const items = insertDiff.map((item) => {
       const cond = {} as Dictionary<Primary<T | O>>;
-      prop.joinColumns.forEach((joinColumn, idx) => cond[joinColumn] = pks[idx]);
-      prop.inverseJoinColumns.forEach((inverseJoinColumn, idx) => cond[inverseJoinColumn] = item[idx]);
+      prop.joinColumns.forEach((joinColumn, idx) => (cond[joinColumn] = pks[idx]));
+      prop.inverseJoinColumns.forEach((inverseJoinColumn, idx) => (cond[inverseJoinColumn] = item[idx]));
 
       return cond;
     });
@@ -829,19 +861,17 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     if (this.platform.allowsMultiInsert()) {
       await this.nativeInsertMany<T>(prop.pivotEntity, items as EntityData<T>[], { ...options, convertCustomTypes: false, processCollections: false });
     } else {
-      await Utils.runSerial(items, item => {
-        return this.createQueryBuilder(prop.pivotEntity, options?.ctx, 'write')
-          .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES)
-          .withSchema(this.getSchemaName(meta, options))
-          .insert(item)
-          .execute('run', false);
+      await Utils.runSerial(items, (item) => {
+        return this.createQueryBuilder(prop.pivotEntity, options?.ctx, 'write').unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES).withSchema(this.getSchemaName(meta, options)).insert(item).execute('run', false);
       });
     }
   }
 
   async lockPessimistic<T>(entity: T, options: LockOptions): Promise<void> {
     const meta = helper(entity).__meta;
-    const qb = this.createQueryBuilder((entity as object).constructor.name, options.ctx).unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES).withSchema(options.schema ?? meta.schema);
+    const qb = this.createQueryBuilder((entity as object).constructor.name, options.ctx)
+      .unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES)
+      .withSchema(options.schema ?? meta.schema);
     const cond = Utils.getPrimaryKeyCond(entity, meta.primaryKeys);
     qb.select('1').where(cond!).setLockMode(options.lockMode, options.lockTableAliases);
     await this.rethrow(qb.execute());
@@ -851,15 +881,17 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     const orderBy: QueryOrderMap<T>[] = [];
     const joinedProps = this.joinedProps(meta, populate);
 
-    joinedProps.forEach(relation => {
+    joinedProps.forEach((relation) => {
       const prop = meta.properties[relation.field];
       const propOrderBy = prop.orderBy;
       const path = `${parentPath ? parentPath : entityName}.${relation.field}`;
       const propAlias = qb.getAliasForJoinPath(path);
 
       if (propOrderBy) {
-        Object.keys(propOrderBy).forEach(field => {
-          orderBy.push({ [`${propAlias}.${field}`]: propOrderBy[field] } as QueryOrderMap<T>);
+        Object.keys(propOrderBy).forEach((field) => {
+          orderBy.push({
+            [`${propAlias}.${field}`]: propOrderBy[field],
+          } as QueryOrderMap<T>);
         });
       }
 
@@ -920,9 +952,9 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
   }
 
   protected buildFields<T extends object>(meta: EntityMetadata<T>, populate: PopulateOptions<T>[], joinedProps: PopulateOptions<T>[], qb: QueryBuilder<T>, fields?: Field<T>[]): Field<T>[] {
-    const lazyProps = meta.props.filter(prop => prop.lazy && !populate.some(p => p.field === prop.name || p.all));
-    const hasLazyFormulas = meta.props.some(p => p.lazy && p.formula);
-    const requiresSQLConversion = meta.props.some(p => p.customType?.convertToJSValueSQL);
+    const lazyProps = meta.props.filter((prop) => prop.lazy && !populate.some((p) => p.field === prop.name || p.all));
+    const hasLazyFormulas = meta.props.some((p) => p.lazy && p.formula);
+    const requiresSQLConversion = meta.props.some((p) => p.customType?.convertToJSValueSQL);
     const hasExplicitFields = !!fields;
     const ret: Field<T>[] = [];
 
@@ -948,29 +980,26 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
         this.processField(meta, prop, parts.join('.'), ret, populate, joinedProps, qb);
       }
 
-      ret.unshift(...meta.primaryKeys.filter(pk => !fields.includes(pk)));
-    } else if (lazyProps.filter(p => !p.formula).length > 0) {
-      const props = meta.props.filter(prop => this.platform.shouldHaveColumn(prop, populate, false));
-      ret.push(...Utils.flatten(props.filter(p => !lazyProps.includes(p)).map(p => p.fieldNames)));
+      ret.unshift(...meta.primaryKeys.filter((pk) => !fields.includes(pk)));
+    } else if (lazyProps.filter((p) => !p.formula).length > 0) {
+      const props = meta.props.filter((prop) => this.platform.shouldHaveColumn(prop, populate, false));
+      ret.push(...Utils.flatten(props.filter((p) => !lazyProps.includes(p)).map((p) => p.fieldNames)));
     } else if (hasLazyFormulas || requiresSQLConversion) {
       ret.push('*');
     }
 
     if (ret.length > 0 && !hasExplicitFields) {
       meta.props
-        .filter(prop => prop.formula && !lazyProps.includes(prop))
-        .forEach(prop => {
+        .filter((prop) => prop.formula && !lazyProps.includes(prop))
+        .forEach((prop) => {
           const alias = qb.ref(qb.alias).toString();
           const aliased = qb.ref(prop.fieldNames[0]).toString();
           ret.push(`${prop.formula!(alias)} as ${aliased}`);
         });
 
-      meta.props
-        .filter(prop => prop.customType?.convertToDatabaseValueSQL || prop.customType?.convertToJSValueSQL)
-        .forEach(prop => ret.push(prop.name));
+      meta.props.filter((prop) => prop.customType?.convertToDatabaseValueSQL || prop.customType?.convertToJSValueSQL).forEach((prop) => ret.push(prop.name));
     }
 
     return ret.length > 0 ? Utils.unique(ret) : ['*'];
   }
-
 }

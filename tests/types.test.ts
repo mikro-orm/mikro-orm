@@ -10,7 +10,6 @@ import type { Author, Book } from './entities';
 type IsAssignable<T, Expected> = Expected extends T ? true : false;
 
 describe('check typings', () => {
-
   test('Primary', async () => {
     assert<IsExact<Primary<Book2>, string>>(true);
     assert<IsExact<Primary<Book2>, number>>(false);
@@ -19,7 +18,12 @@ describe('check typings', () => {
     assert<IsExact<Primary<Author2>, string>>(false);
 
     // PrimaryKeyType symbol has priority
-    type Test = { _id: ObjectId; id: string; uuid: number; [PrimaryKeyType]?: Date };
+    type Test = {
+      _id: ObjectId;
+      id: string;
+      uuid: number;
+      [PrimaryKeyType]?: Date;
+    };
     assert<IsExact<Primary<Test>, Date>>(true);
     assert<IsExact<Primary<Test>, ObjectId>>(false);
     assert<IsExact<Primary<Test>, string>>(false);
@@ -53,23 +57,45 @@ describe('check typings', () => {
     // @ts-expect-error
     b = { author: { name: 'a', books: [{ name: 'b' }] } };
     // @ts-expect-error
-    b = { author: { name: 'a', books: [{ title: 'b', tags: { title: 't' } }] } };
+    b = {
+      author: { name: 'a', books: [{ title: 'b', tags: { title: 't' } }] },
+    };
 
     let c: EntityData<Car2>;
     c = {};
     c = {} as Car2;
     c = { name: 'n', price: 123, year: 2021 };
-    c = { name: 'n', price: 123, year: 2021, users: { firstName: 'f', lastName: 'l' } };
-    c = { name: 'n', price: 123, year: 2021, users: [{ firstName: 'f', lastName: 'l' }] };
+    c = {
+      name: 'n',
+      price: 123,
+      year: 2021,
+      users: { firstName: 'f', lastName: 'l' },
+    };
+    c = {
+      name: 'n',
+      price: 123,
+      year: 2021,
+      users: [{ firstName: 'f', lastName: 'l' }],
+    };
     c = { name: 'n', price: 123, year: 2021, users: [{} as User2] };
     c = { name: 'n', price: 123, year: 2021, users: [['f', 'l']] };
 
     // @ts-expect-error
     c = { name: 'n', price: 123, year: '2021' };
     // @ts-expect-error
-    c = { name: 'n', price: 123, year: 2021, users: { firstName: 321, lastName: 'l' } };
+    c = {
+      name: 'n',
+      price: 123,
+      year: 2021,
+      users: { firstName: 321, lastName: 'l' },
+    };
     // @ts-expect-error
-    c = { name: 'n', price: 123, year: 2021, users: [{ firstName: 'f', lastName: 123 }] };
+    c = {
+      name: 'n',
+      price: 123,
+      year: 2021,
+      users: [{ firstName: 'f', lastName: 123 }],
+    };
     // @ts-expect-error
     c = { name: 'n', price: 123, year: 2021, users: [{} as Car2] };
     // @ts-expect-error
@@ -77,7 +103,9 @@ describe('check typings', () => {
   });
 
   test('EntityDTO', async () => {
-    const b = { author: { books: [{}], identities: [''] } } as unknown as EntityDTO<Loaded<Book2, 'publisher'>>;
+    const b = {
+      author: { books: [{}], identities: [''] },
+    } as unknown as EntityDTO<Loaded<Book2, 'publisher'>>;
     const b1 = b.author.name;
     const b2 = b.test?.name;
     const b3 = b.test?.book?.author.books2;
@@ -87,7 +115,7 @@ describe('check typings', () => {
     const b7 = b.author.favouriteBook?.tags[0].name;
     const b8: number = b.author.identities!.length;
     const b9: string[] = b.author.identities!.slice();
-    const b10: string[] = b.author.identities!.filter(i => i);
+    const b10: string[] = b.author.identities!.filter((i) => i);
 
     // @ts-expect-error
     b.author.afterDelete?.();
@@ -104,16 +132,16 @@ describe('check typings', () => {
     const a1 = a.books[0].tags;
     const a2 = a.books[0].publisher?.type;
     const a3 = a.books;
-    const a4 = a.books.map(b => b.title);
-    const a5 = a.books[0].tags.map(t => t.name);
+    const a4 = a.books.map((b) => b.title);
+    const a5 = a.books[0].tags.map((t) => t.name);
     const a6 = a.books[0].tags[0].name;
 
     // @ts-expect-error
-    a.books.map(b => b.name);
+    a.books.map((b) => b.name);
     // @ts-expect-error
     a.books[0].publisher?.title;
     // @ts-expect-error
-    a.books[0].tags.map(t => t.title);
+    a.books[0].tags.map((t) => t.title);
   });
 
   test('FilterValue', async () => {
@@ -232,7 +260,16 @@ describe('check typings', () => {
     // assert<IsAssignable<FilterQueryOrPrimary<Author2>, { age: { $gta: ['1'] } }>>(false); // hard to test failures
 
     assert<IsAssignable<FilterQuery<Author2>, { age: { $gte: number } }>>(true);
-    assert<IsAssignable<FilterQuery<Author2>, { age: { $gte: number }; born: { $lt: Date }; $and: [{ name: { $ne: 'John' } }, { name: { $in: ['Ben', 'Paul'] } }] }>>(true);
+    assert<
+      IsAssignable<
+        FilterQuery<Author2>,
+        {
+          age: { $gte: number };
+          born: { $lt: Date };
+          $and: [{ name: { $ne: 'John' } }, { name: { $in: ['Ben', 'Paul'] } }];
+        }
+      >
+    >(true);
     assert<Has<FilterQuery<Author2>, { favouriteBook?: Book2 }>>(true);
     assert<IsAssignable<FilterQuery<Author2>, { $and: [{ favouriteBook: Book2 }, { name: string }] }>>(true);
     assert<IsAssignable<FilterQuery<Author2>, { $and: [{ favouriteBook: { title: string } }, { name: string }] }>>(true);
@@ -264,8 +301,14 @@ describe('check typings', () => {
     }
 
     // simulate usage of ORM base entity so `wrap` will return its parameter
-    const book = { __baseEntity: true, toReference: () => ({} as any) } as unknown as Book;
-    const publisher = { __baseEntity: true, toReference: () => ({} as any) } as unknown as Publisher;
+    const book = {
+      __baseEntity: true,
+      toReference: () => ({} as any),
+    } as unknown as Book;
+    const publisher = {
+      __baseEntity: true,
+      toReference: () => ({} as any),
+    } as unknown as Publisher;
 
     book.publisher = publisher;
     // @ts-expect-error
@@ -356,8 +399,14 @@ describe('check typings', () => {
     ok01 = { favouriteBook: null };
     ok01 = { books: { author: { born: new Date() } }, favouriteBook: null };
     ok01 = { books: { author: { born: new Date() } } };
-    ok01 = { books: { author: { born: new Date() } }, favouriteBook: {} as Book2 };
-    ok01 = { books: { author: { born: '2020-01-01' } }, favouriteBook: {} as Book2 };
+    ok01 = {
+      books: { author: { born: new Date() } },
+      favouriteBook: {} as Book2,
+    };
+    ok01 = {
+      books: { author: { born: '2020-01-01' } },
+      favouriteBook: {} as Book2,
+    };
     ok01 = { books: { tags: { name: 'asd' } } };
     ok01 = { books: { tags: '1' } };
     ok01 = { books: { tags: { books: { title: 'asd' } } } };
@@ -483,5 +532,4 @@ describe('check typings', () => {
     assert<IsExact<typeof id21, string | undefined>>(true);
     assert<IsExact<typeof id22, string | undefined>>(true);
   });
-
 });

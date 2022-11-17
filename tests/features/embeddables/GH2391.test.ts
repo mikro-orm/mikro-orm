@@ -4,7 +4,6 @@ import { mockLogger } from '../../helpers';
 
 @Embeddable()
 export class NestedAudit {
-
   @Property({ nullable: true })
   archived?: Date;
 
@@ -13,12 +12,10 @@ export class NestedAudit {
 
   @Property({ onCreate: () => new Date() })
   created!: Date;
-
 }
 
 @Embeddable()
 export class Audit {
-
   @Property({ nullable: true })
   archived?: Date;
 
@@ -30,12 +27,10 @@ export class Audit {
 
   @Embedded(() => NestedAudit)
   nestedAudit1 = new NestedAudit();
-
 }
 
 @Entity()
 export class MyEntity {
-
   [OptionalProps]?: 'audit1' | 'audit2';
 
   @PrimaryKey()
@@ -46,11 +41,9 @@ export class MyEntity {
 
   @Embedded(() => Audit, { object: true })
   audit2 = new Audit();
-
 }
 
 describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -85,19 +78,19 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
     await orm.em.flush();
     expect(mock).not.toBeCalled();
 
-    const tmp1 = line.audit1.archived = new Date();
+    const tmp1 = (line.audit1.archived = new Date());
     await orm.em.flush();
     expect(mock).toBeCalledTimes(3);
     expect(mock.mock.calls[1][0]).toMatch('update `my_entity` set `audit1_archived` = ?, `audit1_updated` = ?, `audit1_nested_audit1_updated` = ?, `audit2` = ? where `id` = ?');
     mock.mockReset();
 
-    const tmp2 = line.audit2.archived = new Date();
+    const tmp2 = (line.audit2.archived = new Date());
     await orm.em.flush();
     expect(mock).toBeCalledTimes(3);
     expect(mock.mock.calls[1][0]).toMatch('update `my_entity` set `audit2` = ?, `audit1_updated` = ?, `audit1_nested_audit1_updated` = ? where `id` = ?');
     mock.mockReset();
 
-    const tmp3 = line.audit2.nestedAudit1.archived = new Date();
+    const tmp3 = (line.audit2.nestedAudit1.archived = new Date());
     await orm.em.flush();
     expect(mock).toBeCalledTimes(3);
     expect(mock.mock.calls[1][0]).toMatch('update `my_entity` set `audit2` = ?, `audit1_updated` = ?, `audit1_nested_audit1_updated` = ? where `id` = ?');
@@ -108,5 +101,4 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
     expect(line2.audit2.archived).toEqual(tmp2);
     expect(line2.audit2.nestedAudit1.archived).toEqual(tmp3);
   });
-
 });

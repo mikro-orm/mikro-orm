@@ -5,7 +5,6 @@ import type { Seeder } from './Seeder';
 import { ensureDir, writeFile } from 'fs-extra';
 
 export class SeedManager implements ISeedManager {
-
   private readonly config = this.em.config;
   private readonly options = this.config.get('seeder');
   private readonly absolutePath: string;
@@ -14,7 +13,7 @@ export class SeedManager implements ISeedManager {
     this.em = this.em.fork();
     this.config.set('persistOnCreate', true);
     /* istanbul ignore next */
-    const key = (this.config.get('tsNode', Utils.detectTsNode()) && this.options.pathTs) ? 'pathTs' : 'path';
+    const key = this.config.get('tsNode', Utils.detectTsNode()) && this.options.pathTs ? 'pathTs' : 'path';
     this.absolutePath = Utils.absolutePath(this.options[key]!, this.config.get('baseDir'));
   }
 
@@ -88,5 +87,4 @@ export class SeedManager implements ISeedManager {
 
     return filePath;
   }
-
 }

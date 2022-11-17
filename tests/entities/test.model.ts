@@ -2,7 +2,6 @@ import { Entity, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/c
 
 @Entity()
 export class Test {
-
   @PrimaryKey({ type: 'ObjectId' })
   _id: any;
 
@@ -30,5 +29,4 @@ export class Test {
 
     return t;
   }
-
 }

@@ -1,5 +1,4 @@
 export interface CacheAdapter {
-
   /**
    * Gets the items under `name` key from the cache.
    */
@@ -24,5 +23,4 @@ export interface CacheAdapter {
    * Called inside `MikroORM.close()` Allows graceful shutdowns (e.g. for redis).
    */
   close?(): Promise<void>;
-
 }

@@ -4,7 +4,6 @@ import { FullTextType } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'book' })
 export class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,17 +11,20 @@ export class Book {
   title!: string | null;
 
   @Index({ type: 'fulltext' })
-  @Property({ type: FullTextType, nullable: true, onUpdate: (book: Book) => book.title, onCreate: (book: Book) => book.title })
+  @Property({
+    type: FullTextType,
+    nullable: true,
+    onUpdate: (book: Book) => book.title,
+    onCreate: (book: Book) => book.title,
+  })
   searchableTitle!: string;
 
   constructor(title: string | null) {
     this.title = title;
   }
-
 }
 
 describe('full text search tsvector in postgres', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
   let generator: SchemaGenerator;
 
@@ -47,7 +49,9 @@ describe('full text search tsvector in postgres', () => {
     const book1 = new Book('My Life on The ? Wall, part 1');
     await repo.persist(book1).flush();
 
-    const fullTextBooks = (await repo.find({ searchableTitle: { $fulltext: 'life wall' } }))!;
+    const fullTextBooks = (await repo.find({
+      searchableTitle: { $fulltext: 'life wall' },
+    }))!;
     expect(fullTextBooks.length).toBe(1);
   });
 
@@ -64,8 +68,9 @@ describe('full text search tsvector in postgres', () => {
     repo.persist([book1, book2, book3, book4, book5, book6]);
     await repo.flush();
 
-    const fullTextBooks = (await repo.find({ searchableTitle: { $fulltext: 'life wall' } }))!;
+    const fullTextBooks = (await repo.find({
+      searchableTitle: { $fulltext: 'life wall' },
+    }))!;
     expect(fullTextBooks).toHaveLength(3);
   });
-
 });

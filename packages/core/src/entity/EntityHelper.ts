@@ -12,7 +12,6 @@ import { helper } from './wrap';
 import { EntityRepositoryType, OptionalProps, PrimaryKeyProp, PrimaryKeyType } from '../typings';
 
 export class EntityHelper {
-
   static decorate<T extends object>(meta: EntityMetadata<T>, em: EntityManager): void {
     const fork = em.fork(); // use fork so we can access `EntityFactory`
     const pk = meta.properties[meta.primaryKeys[0]];
@@ -29,7 +28,8 @@ export class EntityHelper {
 
     const prototype = meta.prototype as Dictionary;
 
-    if (!prototype.toJSON) { // toJSON can be overridden
+    if (!prototype.toJSON) {
+      // toJSON can be overridden
       prototype.toJSON = function (this: T, ...args: any[]) {
         return EntityTransformer.toObject<T>(this, ...args.slice(meta.toJsonParams.length));
       };
@@ -85,48 +85,46 @@ export class EntityHelper {
    * than on its prototype. Thanks to this we still have those properties enumerable (e.g. part of `Object.keys(entity)`).
    */
   private static defineProperties<T>(meta: EntityMetadata<T>): void {
-    Object
-      .values<EntityProperty<T>>(meta.properties)
-      .forEach(prop => {
-        const isCollection = [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference);
-        const isReference = [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk;
+    Object.values<EntityProperty<T>>(meta.properties).forEach((prop) => {
+      const isCollection = [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference);
+      const isReference = [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk;
 
-        if (isReference) {
-          return Object.defineProperty(meta.prototype, prop.name, {
-            set(val: AnyEntity) {
-              EntityHelper.defineReferenceProperty(meta, prop, this);
-              this[prop.name] = val;
-            },
-          });
-        }
-
-        if (prop.inherited || prop.primary || prop.persist === false || prop.trackChanges === false || prop.embedded || isCollection) {
-          return;
-        }
-
-        Object.defineProperty(meta.prototype, prop.name, {
-          set(val) {
-            Object.defineProperty(this, prop.name, {
-              get() {
-                return this.__helper?.__data[prop.name];
-              },
-              set(val) {
-                this.__helper.__data[prop.name] = val;
-                this.__helper.__touched = true;
-              },
-              enumerable: true,
-              configurable: true,
-            });
-            this.__helper.__data[prop.name] = val;
-            this.__helper.__touched = true;
+      if (isReference) {
+        return Object.defineProperty(meta.prototype, prop.name, {
+          set(val: AnyEntity) {
+            EntityHelper.defineReferenceProperty(meta, prop, this);
+            this[prop.name] = val;
           },
         });
+      }
+
+      if (prop.inherited || prop.primary || prop.persist === false || prop.trackChanges === false || prop.embedded || isCollection) {
+        return;
+      }
+
+      Object.defineProperty(meta.prototype, prop.name, {
+        set(val) {
+          Object.defineProperty(this, prop.name, {
+            get() {
+              return this.__helper?.__data[prop.name];
+            },
+            set(val) {
+              this.__helper.__data[prop.name] = val;
+              this.__helper.__touched = true;
+            },
+            enumerable: true,
+            configurable: true,
+          });
+          this.__helper.__data[prop.name] = val;
+          this.__helper.__touched = true;
+        },
       });
+    });
 
     meta.prototype[inspect.custom] ??= function (this: T, depth: number) {
       const object = { ...this };
       // ensure we dont have internal symbols in the POJO
-      [OptionalProps, EntityRepositoryType, PrimaryKeyType, PrimaryKeyProp].forEach(sym => delete object[sym]);
+      [OptionalProps, EntityRepositoryType, PrimaryKeyType, PrimaryKeyProp].forEach((sym) => delete object[sym]);
       const ret = inspect(object, { depth });
       let name = (this as object).constructor.name;
 
@@ -158,7 +156,7 @@ export class EntityHelper {
   }
 
   private static propagate<T extends object, O extends object>(meta: EntityMetadata<O>, entity: T, owner: O, prop: EntityProperty<O>, value?: T[keyof T & string], old?: object): void {
-    const inverseProps = prop.targetMeta!.relations.filter(prop2 => (prop2.inversedBy || prop2.mappedBy) === prop.name && prop2.targetMeta!.root.className === meta.root.className);
+    const inverseProps = prop.targetMeta!.relations.filter((prop2) => (prop2.inversedBy || prop2.mappedBy) === prop.name && prop2.targetMeta!.root.className === meta.root.className);
 
     for (const prop2 of inverseProps) {
       const inverse = value?.[prop2.name as string];
@@ -206,5 +204,4 @@ export class EntityHelper {
       delete helper(old).__data[prop2.name];
     }
   }
-
 }

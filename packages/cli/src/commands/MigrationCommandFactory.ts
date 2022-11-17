@@ -5,7 +5,6 @@ import type { MigrateOptions } from '@mikro-orm/migrations';
 import { CLIHelper } from '../CLIHelper';
 
 export class MigrationCommandFactory {
-
   static readonly DESCRIPTIONS = {
     create: 'Create new migration with current schema diff',
     up: 'Migrate up to the latest version',
@@ -15,7 +14,12 @@ export class MigrationCommandFactory {
     fresh: 'Clear the database and rerun all migrations',
   };
 
-  static create<U extends Options = Options>(command: MigratorMethod): CommandModule<unknown, U> & { builder: (args: Argv) => Argv<U>; handler: (args: ArgumentsCamelCase<U>) => Promise<void> } {
+  static create<U extends Options = Options>(
+    command: MigratorMethod
+  ): CommandModule<unknown, U> & {
+    builder: (args: Argv) => Argv<U>;
+    handler: (args: ArgumentsCamelCase<U>) => Promise<void>;
+  } {
     return {
       command: `migration:${command}`,
       describe: MigrationCommandFactory.DESCRIPTIONS[command],
@@ -125,7 +129,7 @@ export class MigrationCommandFactory {
     const pending = await migrator.getPendingMigrations();
     CLIHelper.dumpTable({
       columns: ['Name'],
-      rows: pending.map(row => [row.name]),
+      rows: pending.map((row) => [row.name]),
       empty: 'No pending migrations',
     });
   }
@@ -135,7 +139,7 @@ export class MigrationCommandFactory {
 
     CLIHelper.dumpTable({
       columns: ['Name', 'Executed at'],
-      rows: executed.map(row => [row.name.replace(/\.[jt]s$/, ''), row.executed_at.toISOString()]),
+      rows: executed.map((row) => [row.name.replace(/\.[jt]s$/, ''), row.executed_at.toISOString()]),
       empty: 'No migrations executed yet',
     });
   }
@@ -150,12 +154,12 @@ export class MigrationCommandFactory {
     if (args.dump) {
       CLIHelper.dump(colors.green('Creating migration with following queries:'));
       CLIHelper.dump(colors.green('up:'));
-      CLIHelper.dump(ret.diff.up.map(sql => '  ' + sql).join('\n'), config);
+      CLIHelper.dump(ret.diff.up.map((sql) => '  ' + sql).join('\n'), config);
 
       /* istanbul ignore next */
       if (config.getDriver().getPlatform().supportsDownMigrations()) {
         CLIHelper.dump(colors.green('down:'));
-        CLIHelper.dump(ret.diff.down.map(sql => '  ' + sql).join('\n'), config);
+        CLIHelper.dump(ret.diff.down.map((sql) => '  ' + sql).join('\n'), config);
       } else {
         CLIHelper.dump(colors.yellow(`(${config.getDriver().constructor.name} does not support automatic down migrations)`));
       }
@@ -188,7 +192,7 @@ export class MigrationCommandFactory {
 
     const ret: MigrateOptions = {};
 
-    ['from', 'to'].filter(k => flags[k]).forEach(k => ret[k] = flags[k] === '0' ? 0 : flags[k]);
+    ['from', 'to'].filter((k) => flags[k]).forEach((k) => (ret[k] = flags[k] === '0' ? 0 : flags[k]));
 
     return ret;
   }
@@ -219,10 +223,20 @@ export class MigrationCommandFactory {
 
     return msg;
   }
-
 }
 
 type MigratorMethod = 'create' | 'up' | 'down' | 'list' | 'pending' | 'fresh';
-type CliUpDownOptions = { to?: string | number; from?: string | number; only?: string };
-type GenerateOptions = { dump?: boolean; blank?: boolean; initial?: boolean; path?: string; disableFkChecks?: boolean; seed: string };
+type CliUpDownOptions = {
+  to?: string | number;
+  from?: string | number;
+  only?: string;
+};
+type GenerateOptions = {
+  dump?: boolean;
+  blank?: boolean;
+  initial?: boolean;
+  path?: string;
+  disableFkChecks?: boolean;
+  seed: string;
+};
 type Options = GenerateOptions & CliUpDownOptions;

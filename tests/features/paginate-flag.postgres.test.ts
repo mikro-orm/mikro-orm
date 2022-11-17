@@ -4,7 +4,6 @@ import { v4 } from 'uuid';
 
 @Entity()
 export class Group {
-
   @PrimaryKey()
   id: string;
 
@@ -15,12 +14,10 @@ export class Group {
     this.id = id;
     this.name = name;
   }
-
 }
 
 @Entity()
 export class User {
-
   @PrimaryKey()
   id: string;
 
@@ -35,30 +32,27 @@ export class User {
     this.name = name;
     this.groups.add(groups);
   }
-
 }
 
 enum Status {
   LIVE = 'LIVE',
   DRAFT = 'DRAFT',
-  CLOSED = 'CLOSED'
+  CLOSED = 'CLOSED',
 }
 
 @Entity()
 export class C {
-
   @PrimaryKey()
   id!: number;
 
-  @OneToMany(() => TC, b => b.c)
+  @OneToMany(() => TC, (b) => b.c)
   tc = new Collection<TC>(this);
 
-  @OneToMany(() => T, b => b.init)
+  @OneToMany(() => T, (b) => b.init)
   t = new Collection<T>(this);
 
-  @OneToMany(() => B, b => b.sub, { nullable: true })
+  @OneToMany(() => B, (b) => b.sub, { nullable: true })
   bs? = new Collection<B>(this);
-
 }
 
 @Filter({
@@ -83,7 +77,6 @@ export class C {
 })
 @Entity()
 export class T {
-
   @PrimaryKey({ type: 'uuid' })
   id: string = v4();
 
@@ -96,15 +89,12 @@ export class T {
   @ManyToOne(() => C)
   init!: C;
 
-  @OneToMany(() => TC, b => b.t)
+  @OneToMany(() => TC, (b) => b.t)
   tc = new Collection<TC>(this);
-
 }
-
 
 @Entity()
 export class TC {
-
   @PrimaryKey({ type: 'uuid' })
   id: string = v4();
 
@@ -117,14 +107,12 @@ export class TC {
   @ManyToOne(() => T, { nullable: true })
   t?: T;
 
-  @OneToMany(() => A, a => a.tc, { eager: true })
+  @OneToMany(() => A, (a) => a.tc, { eager: true })
   as? = new Collection<A>(this);
-
 }
 
 @Entity()
 export class A {
-
   @PrimaryKey()
   id!: number;
 
@@ -136,32 +124,27 @@ export class A {
 
   @OneToOne(() => B, undefined, {
     nullable: true,
-    inversedBy: b => b.a,
+    inversedBy: (b) => b.a,
     onDelete: 'set null',
     eager: true,
   })
   b?: any;
-
 }
-
 
 @Entity()
 export class B {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => C)
   sub!: C;
 
-  @OneToOne(() => A, a => a.b, { nullable: true, onDelete: 'set null' })
+  @OneToOne(() => A, (a) => a.b, { nullable: true, onDelete: 'set null' })
   a?: A;
-
 }
 
 // paginate flag is enabled automatically so no need to provide it in the find options
 describe('GH issue 2095', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
@@ -233,23 +216,31 @@ describe('GH issue 2095', () => {
 
     orm.em.setFilterParams('vis', { u: { c: { id: c.id } } });
 
-    const firstResults = await orm.em.find(T, {}, {
-      limit: 20,
-      orderBy: { end: 'ASC' },
-      populate: ['tc.c'],
-    });
+    const firstResults = await orm.em.find(
+      T,
+      {},
+      {
+        limit: 20,
+        orderBy: { end: 'ASC' },
+        populate: ['tc.c'],
+      }
+    );
 
     orm.em.clear();
 
-    const secondResults = await orm.em.find(T, {}, {
-      limit: 20,
-      offset: 20,
-      orderBy: { end: 'ASC' },
-      populate: ['tc.c'],
-    });
+    const secondResults = await orm.em.find(
+      T,
+      {},
+      {
+        limit: 20,
+        offset: 20,
+        orderBy: { end: 'ASC' },
+        populate: ['tc.c'],
+      }
+    );
 
-    const firstMaxDate = new Date(Math.max(...firstResults.map(e => e.end.getTime())));
-    const secondMinDate = new Date(Math.min(...secondResults.map(e => e.end.getTime())));
+    const firstMaxDate = new Date(Math.max(...firstResults.map((e) => e.end.getTime())));
+    const secondMinDate = new Date(Math.min(...secondResults.map((e) => e.end.getTime())));
 
     expect(firstResults.length).toBe(20);
     expect(secondResults.length).toBe(20);
@@ -263,11 +254,7 @@ describe('GH issue 2095', () => {
   });
 
   test('getting users with limit 3. must be: [id-user-03, id-user-02, id-user-01]', async () => {
-    const [users, total] = await orm.em.findAndCount(
-      User,
-      { groups: { $in: ['id-group-01', 'id-group-02', 'id-group-03'] } },
-      { limit: 3, offset: 0, orderBy: { id: 'desc' } },
-    );
+    const [users, total] = await orm.em.findAndCount(User, { groups: { $in: ['id-group-01', 'id-group-02', 'id-group-03'] } }, { limit: 3, offset: 0, orderBy: { id: 'desc' } });
     expect(users).toHaveLength(3);
     expect(total).toBe(3);
     expect(users[0].id).toBe('id-user-03');
@@ -285,7 +272,7 @@ describe('GH issue 2095', () => {
         populate: ['groups'],
         strategy: LoadStrategy.SELECT_IN,
         populateWhere: PopulateHint.ALL,
-      },
+      }
     );
     expect(users1).toHaveLength(2);
     expect(users1[0].id).toBe('id-user-03');
@@ -303,7 +290,7 @@ describe('GH issue 2095', () => {
         populate: ['groups'],
         strategy: LoadStrategy.SELECT_IN,
         populateWhere: PopulateHint.INFER,
-      },
+      }
     );
     expect(users2).toHaveLength(2);
     expect(users2[0].id).toBe('id-user-03');
@@ -320,7 +307,7 @@ describe('GH issue 2095', () => {
         populate: ['groups'],
         strategy: LoadStrategy.JOINED,
         populateWhere: PopulateHint.ALL,
-      },
+      }
     );
     expect(users3).toHaveLength(2);
     expect(users3[0].id).toBe('id-user-03');
@@ -338,7 +325,7 @@ describe('GH issue 2095', () => {
         populate: ['groups'],
         strategy: LoadStrategy.JOINED,
         populateWhere: PopulateHint.INFER,
-      },
+      }
     );
     expect(users4).toHaveLength(2);
     expect(users4[0].id).toBe('id-user-03');
@@ -355,7 +342,7 @@ describe('GH issue 2095', () => {
         populate: ['groups'],
         strategy: LoadStrategy.SELECT_IN,
         populateWhere: { groups: { name: ['Group #1'] } },
-      },
+      }
     );
     expect(users5).toHaveLength(2);
     expect(users5[0].id).toBe('id-user-03');
@@ -372,7 +359,7 @@ describe('GH issue 2095', () => {
         populate: ['groups'],
         strategy: LoadStrategy.JOINED,
         populateWhere: { groups: { name: ['Group #1'] } },
-      },
+      }
     );
     // with joined strategy the populateWhere condition is AND-ed with the base query
     expect(users6).toHaveLength(1);
@@ -382,11 +369,7 @@ describe('GH issue 2095', () => {
   });
 
   test('getting users with limit 2, offset 1. must be: [id-user-02, id-user-01]', async () => {
-    const [users, total] = await orm.em.findAndCount(
-      User,
-      { groups: { $in: ['id-group-01', 'id-group-02', 'id-group-03'] } },
-      { limit: 2, offset: 1, orderBy: { id: 'desc' } },
-    );
+    const [users, total] = await orm.em.findAndCount(User, { groups: { $in: ['id-group-01', 'id-group-02', 'id-group-03'] } }, { limit: 2, offset: 1, orderBy: { id: 'desc' } });
     expect(users).toHaveLength(2);
     expect(total).toBe(3);
     expect(users[0].id).toBe('id-user-02');
@@ -394,11 +377,7 @@ describe('GH issue 2095', () => {
   });
 
   test('getting users with limit 2, offset 0. must be: [id-user-03, id-user-02]', async () => {
-    const [users, total] = await orm.em.findAndCount(
-      User,
-      { groups: { $in: ['id-group-01', 'id-group-02', 'id-group-03'] } },
-      { limit: 2, offset: 0, orderBy: { id: 'desc' } },
-    );
+    const [users, total] = await orm.em.findAndCount(User, { groups: { $in: ['id-group-01', 'id-group-02', 'id-group-03'] } }, { limit: 2, offset: 0, orderBy: { id: 'desc' } });
     expect(users).toHaveLength(2);
     expect(total).toBe(3);
     expect(users[0].id).toBe('id-user-03');
@@ -406,14 +385,9 @@ describe('GH issue 2095', () => {
   });
 
   test('getting users with limit 2, offset 2. must be: [id-user-01]', async () => {
-    const [users, total] = await orm.em.findAndCount(
-      User,
-      { groups: { $in: ['id-group-01', 'id-group-02', 'id-group-03'] } },
-      { limit: 2, offset: 2, orderBy: { id: 'desc' } },
-    );
+    const [users, total] = await orm.em.findAndCount(User, { groups: { $in: ['id-group-01', 'id-group-02', 'id-group-03'] } }, { limit: 2, offset: 2, orderBy: { id: 'desc' } });
     expect(users).toHaveLength(1);
     expect(total).toBe(3);
     expect(users[0].id).toBe('id-user-01');
   });
-
 });

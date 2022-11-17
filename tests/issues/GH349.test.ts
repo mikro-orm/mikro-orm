@@ -4,7 +4,6 @@ import type { MongoDriver } from '@mikro-orm/mongodb';
 
 @Entity()
 class A {
-
   @PrimaryKey()
   _id!: string;
 
@@ -17,12 +16,10 @@ class A {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 class B {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -35,12 +32,10 @@ class B {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 class C {
-
   @PrimaryKey()
   _id!: Decimal128;
 
@@ -53,12 +48,9 @@ class C {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
-
 describe('GH issue 349', () => {
-
   let orm: MikroORM<MongoDriver>;
 
   beforeAll(async () => {
@@ -67,7 +59,7 @@ describe('GH issue 349', () => {
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
       type: 'mongo',
       debug: ['discovery'],
-      logger: i => i,
+      logger: (i) => i,
     });
   });
 
@@ -91,7 +83,7 @@ describe('GH issue 349', () => {
     expect(a._id).not.toBeInstanceOf(ObjectId);
     orm.em.clear();
 
-    const getA = await orm.em.findOneOrFail<A>(A,  a._id);
+    const getA = await orm.em.findOneOrFail<A>(A, a._id);
     expect(getA!._id).not.toBeInstanceOf(ObjectId);
     expect(getA!._id).toBe(uuid);
     expect(getA!.id).toBe(uuid);
@@ -147,5 +139,4 @@ describe('GH issue 349', () => {
     expect(getC._id).not.toBeInstanceOf(ObjectId);
     expect(getC._id).toStrictEqual(nrId);
   });
-
 });

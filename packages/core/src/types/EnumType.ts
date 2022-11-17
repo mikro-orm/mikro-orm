@@ -3,7 +3,6 @@ import type { Platform } from '../platforms';
 import type { EntityProperty } from '../typings';
 
 export class EnumType extends Type<string | null | undefined> {
-
   getColumnType(prop: EntityProperty, platform: Platform) {
     return platform.getEnumTypeDeclarationSQL(prop);
   }
@@ -11,5 +10,4 @@ export class EnumType extends Type<string | null | undefined> {
   compareAsType(): string {
     return 'string';
   }
-
 }

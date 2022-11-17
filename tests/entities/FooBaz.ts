@@ -5,7 +5,6 @@ import FooBar from './FooBar';
 
 @Entity()
 export class FooBaz {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -16,7 +15,7 @@ export class FooBaz {
   @Index()
   name!: string;
 
-  @OneToOne(() => FooBar, bar => bar.baz, { eager: true })
+  @OneToOne(() => FooBar, (bar) => bar.baz, { eager: true })
   bar!: FooBar;
 
   @ManyToOne({ eager: true, nullable: true })
@@ -28,5 +27,4 @@ export class FooBaz {
 
     return baz;
   }
-
 }

@@ -6,7 +6,6 @@ import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
 import { PostgreSqlExceptionConverter } from './PostgreSqlExceptionConverter';
 
 export class PostgreSqlPlatform extends AbstractSqlPlatform {
-
   protected readonly schemaHelper: PostgreSqlSchemaHelper = new PostgreSqlSchemaHelper(this);
   protected readonly exceptionConverter = new PostgreSqlExceptionConverter();
 
@@ -87,7 +86,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
   getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
     const quotedTableName = this.quoteIdentifier(schemaName ? `${schemaName}.${tableName}` : tableName);
-    const quotedColumnNames = columns.map(c => this.quoteIdentifier(c.name));
+    const quotedColumnNames = columns.map((c) => this.quoteIdentifier(c.name));
     const quotedIndexName = this.quoteIdentifier(indexName);
 
     if (columns.length === 1 && columns[0].type === 'tsvector') {
@@ -102,7 +101,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   }
 
   isBigIntProperty(prop: EntityProperty): boolean {
-    return super.isBigIntProperty(prop) || (['bigserial', 'int8'].includes(prop.columnTypes?.[0]));
+    return super.isBigIntProperty(prop) || ['bigserial', 'int8'].includes(prop.columnTypes?.[0]);
   }
 
   getArrayDeclarationSQL(): string {
@@ -118,7 +117,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   }
 
   getEnumTypeDeclarationSQL(column: { fieldNames: string[]; items?: unknown[] }): string {
-    if (column.items?.every(item => Utils.isString(item))) {
+    if (column.items?.every((item) => Utils.isString(item))) {
       return 'text';
     }
 
@@ -130,8 +129,8 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   }
 
   marshallArray(values: string[]): string {
-    const quote = (v: string) => v === '' || v.match(/["{}]/) ? JSON.stringify(v) : v;
-    return `{${values.map(v => quote('' + v)).join(',')}}`;
+    const quote = (v: string) => (v === '' || v.match(/["{}]/) ? JSON.stringify(v) : v);
+    return `{${values.map((v) => quote('' + v)).join(',')}}`;
   }
 
   unmarshallArray(value: string): string[] {
@@ -140,7 +139,10 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     }
 
     /* istanbul ignore next */
-    return value.substring(1, value.length - 1).split(',').map(v => v === `""` ? '' : v);
+    return value
+      .substring(1, value.length - 1)
+      .split(',')
+      .map((v) => (v === `""` ? '' : v));
   }
 
   getBlobDeclarationSQL(): string {
@@ -154,18 +156,18 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
     const first = path.shift();
     const last = path.pop();
-    const root = aliased ? expr(alias => this.quoteIdentifier(`${alias}.${first}`)) : this.quoteIdentifier(first!);
+    const root = aliased ? expr((alias) => this.quoteIdentifier(`${alias}.${first}`)) : this.quoteIdentifier(first!);
     const types = {
       number: 'float8',
       boolean: 'bool',
     };
-    const cast = (key: string) => type in types ? `(${key})::${types[type]}` : key;
+    const cast = (key: string) => (type in types ? `(${key})::${types[type]}` : key);
 
     if (path.length === 0) {
       return cast(`${root}->>'${last}'`);
     }
 
-    return cast(`${root}->${path.map(a => this.quoteValue(a)).join('->')}->>'${last}'`);
+    return cast(`${root}->${path.map((a) => this.quoteValue(a)).join('->')}->>'${last}'`);
   }
 
   quoteIdentifier(id: string, quote = '"'): string {
@@ -200,24 +202,24 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   getDefaultMappedType(type: string): Type<unknown> {
     const normalizedType = this.extractSimpleType(type);
     const map = {
-      'int2': 'smallint',
-      'smallserial': 'smallint',
-      'int': 'integer',
-      'int4': 'integer',
-      'serial': 'integer',
-      'serial4': 'integer',
-      'int8': 'bigint',
-      'bigserial': 'bigint',
-      'serial8': 'bigint',
-      'numeric': 'decimal',
-      'bool': 'boolean',
-      'real': 'float',
-      'float4': 'float',
-      'float8': 'double',
-      'timestamp': 'datetime',
-      'timestamptz': 'datetime',
-      'bytea': 'blob',
-      'jsonb': 'json',
+      int2: 'smallint',
+      smallserial: 'smallint',
+      int: 'integer',
+      int4: 'integer',
+      serial: 'integer',
+      serial4: 'integer',
+      int8: 'bigint',
+      bigserial: 'bigint',
+      serial8: 'bigint',
+      numeric: 'decimal',
+      bool: 'boolean',
+      real: 'float',
+      float4: 'float',
+      float8: 'double',
+      timestamp: 'datetime',
+      timestamptz: 'datetime',
+      bytea: 'blob',
+      jsonb: 'json',
       'character varying': 'varchar',
     };
 
@@ -259,10 +261,12 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
    */
   castColumn(prop?: EntityProperty): string {
     switch (prop?.columnTypes?.[0]) {
-      case this.getUuidTypeDeclarationSQL({}): return '::text';
-      case this.getBooleanTypeDeclarationSQL(): return '::int';
-      default: return '';
+      case this.getUuidTypeDeclarationSQL({}):
+        return '::text';
+      case this.getBooleanTypeDeclarationSQL():
+        return '::int';
+      default:
+        return '';
     }
   }
-
 }

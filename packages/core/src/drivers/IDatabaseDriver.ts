@@ -1,7 +1,4 @@
-import type {
-  ConnectionType, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary, Dictionary, QBFilterQuery,
-  IPrimaryKey, PopulateOptions, EntityDictionary, ExpandProperty, AutoPath, ObjectQuery,
-} from '../typings';
+import type { ConnectionType, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary, Dictionary, QBFilterQuery, IPrimaryKey, PopulateOptions, EntityDictionary, ExpandProperty, AutoPath, ObjectQuery } from '../typings';
 import type { Connection, QueryResult, Transaction } from '../connections';
 import type { FlushMode, LockMode, QueryOrderMap, QueryFlag, LoadStrategy, PopulateHint } from '../enums';
 import type { Platform } from '../platforms';
@@ -14,7 +11,6 @@ import type { Configuration } from '../utils/Configuration';
 export const EntityManagerType = Symbol('EntityManagerType');
 
 export interface IDatabaseDriver<C extends Connection = Connection> {
-
   [EntityManagerType]: EntityManager<this>;
   readonly config: Configuration;
 
@@ -88,10 +84,11 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
    * @internal
    */
   getSchemaName(meta?: EntityMetadata, options?: { schema?: string }): string | undefined;
-
 }
 
-type FieldsMap<T, P extends string = never> = { [K in keyof T]?: EntityField<ExpandProperty<T[K]>>[] };
+type FieldsMap<T, P extends string = never> = {
+  [K in keyof T]?: EntityField<ExpandProperty<T[K]>>[];
+};
 export type EntityField<T, P extends string = never> = keyof T | '*' | AutoPath<T, P, '*'> | FieldsMap<T, P>;
 
 export interface FindOptions<T, P extends string = never> {
@@ -140,7 +137,7 @@ export interface NativeInsertUpdateManyOptions<T> extends NativeInsertUpdateOpti
   processCollections?: boolean;
 }
 
-export interface CountOptions<T extends object, P extends string = never>  {
+export interface CountOptions<T extends object, P extends string = never> {
   filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
   schema?: string;
   groupBy?: string | readonly string[];
@@ -151,7 +148,7 @@ export interface CountOptions<T extends object, P extends string = never>  {
   connectionType?: ConnectionType;
 }
 
-export interface UpdateOptions<T>  {
+export interface UpdateOptions<T> {
   filters?: Dictionary<boolean | Dictionary> | string[] | boolean;
   schema?: string;
   ctx?: Transaction;

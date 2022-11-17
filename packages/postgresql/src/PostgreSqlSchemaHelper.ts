@@ -4,7 +4,6 @@ import type { AbstractSqlConnection, Check, Column, DatabaseSchema, DatabaseTabl
 import { SchemaHelper } from '@mikro-orm/knex';
 
 export class PostgreSqlSchemaHelper extends SchemaHelper {
-
   static readonly DEFAULT_VALUES = {
     'now()': ['now()', 'current_timestamp'],
     'current_timestamp(?)': ['current_timestamp(?)'],
@@ -20,32 +19,27 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   getListTablesSQL(): string {
-    return `select table_name, table_schema as schema_name, `
-      + `(select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c
-          where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment `
-      + `from information_schema.tables `
-      + `where ${this.getIgnoredNamespacesConditionSQL('table_schema')} `
-      + `and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' `
-      + `order by table_name`;
+    return (
+      `select table_name, table_schema as schema_name, ` +
+      `(select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c
+          where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment ` +
+      `from information_schema.tables ` +
+      `where ${this.getIgnoredNamespacesConditionSQL('table_schema')} ` +
+      `and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' ` +
+      `order by table_name`
+    );
   }
 
   async getNamespaces(connection: AbstractSqlConnection): Promise<string[]> {
-    const sql = `select schema_name from information_schema.schemata `
-      + `where ${this.getIgnoredNamespacesConditionSQL()} `
-      + `order by schema_name`;
+    const sql = `select schema_name from information_schema.schemata ` + `where ${this.getIgnoredNamespacesConditionSQL()} ` + `order by schema_name`;
     const res = await connection.execute<{ schema_name: string }[]>(sql);
 
-    return res.map(row => row.schema_name);
+    return res.map((row) => row.schema_name);
   }
 
   private getIgnoredNamespacesConditionSQL(column = 'schema_name'): string {
     /* istanbul ignore next */
-    const ignored = [
-      'information_schema',
-      'tiger',
-      'topology',
-      ...this.platform.getConfig().get('schemaGenerator').ignoreSchema ?? [],
-    ].map(s => this.platform.quoteValue(s)).join(', ');
+    const ignored = ['information_schema', 'tiger', 'topology', ...(this.platform.getConfig().get('schemaGenerator').ignoreSchema ?? [])].map((s) => this.platform.quoteValue(s)).join(', ');
 
     return `"${column}" not like 'pg_%' and "${column}" not like 'crdb_%' and "${column}" not in (${ignored})`;
   }
@@ -103,11 +97,11 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         from pg_catalog.pg_class c
         where c.oid = (select ('"' || cols.table_schema || '"."' || cols.table_name || '"')::regclass::oid) and c.relname = cols.table_name) as column_comment
       from information_schema.columns cols
-      where (${tables.map(t => `(table_schema = '${t.schema_name}' and table_name = '${t.table_name}')`).join(' or ')})
+      where (${tables.map((t) => `(table_schema = '${t.schema_name}' and table_name = '${t.table_name}')`).join(' or ')})
       order by ordinal_position`;
 
     const allColumns = await connection.execute<any[]>(sql);
-    const str = (val: string | number | undefined) => val != null ? '' + val : val;
+    const str = (val: string | number | undefined) => (val != null ? '' + val : val);
     const ret = {};
 
     for (const col of allColumns) {
@@ -135,7 +129,15 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
   async getAllChecks(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Check[]>> {
     const sql = this.getChecksSQL(tables);
-    const allChecks = await connection.execute<{ name: string; column_name: string; schema_name: string; table_name: string; expression: string }[]>(sql);
+    const allChecks = await connection.execute<
+      {
+        name: string;
+        column_name: string;
+        schema_name: string;
+        table_name: string;
+        expression: string;
+      }[]
+    >(sql);
     const ret = {};
 
     for (const check of allChecks) {
@@ -168,7 +170,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         on rco.unique_constraint_schema = rel_kcu.constraint_schema
         and rco.unique_constraint_name = rel_kcu.constraint_name
         and kcu.ordinal_position = rel_kcu.ordinal_position
-      where (${tables.map(t => `tco.table_name = '${t.table_name}' and tco.table_schema = '${t.schema_name}' and tco.constraint_schema = '${t.schema_name}'`).join(' or ')})
+      where (${tables.map((t) => `tco.table_name = '${t.table_name}' and tco.table_schema = '${t.schema_name}' and tco.constraint_schema = '${t.schema_name}'`).join(' or ')})
       and tco.constraint_type = 'FOREIGN KEY'
       order by kcu.table_schema, kcu.table_name, kcu.ordinal_position, kcu.constraint_name`;
     const allFks = await connection.execute<any[]>(sql);
@@ -180,7 +182,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       ret[key].push(fk);
     }
 
-    Object.keys(ret).forEach(key => {
+    Object.keys(ret).forEach((key) => {
       const [schemaName, tableName] = key.split('.');
       ret[key] = this.mapForeignKeys(ret[key], tableName, schemaName);
     });
@@ -216,7 +218,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       return o;
     }, {} as Dictionary<string[]>);
 
-    found.reverse().forEach(index => checks.splice(index, 1));
+    found.reverse().forEach((index) => checks.splice(index, 1));
 
     return enums;
   }
@@ -233,7 +235,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       return table.increments(column.name, { primaryKey });
     }
 
-    if (column.mappedType instanceof EnumType && column.enumItems?.every(item => Utils.isString(item))) {
+    if (column.mappedType instanceof EnumType && column.enumItems?.every((item) => Utils.isString(item))) {
       return table.enum(column.name, column.enumItems);
     }
 
@@ -268,7 +270,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const name = (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName;
 
     // detect that the column was an enum before and remove the check constraint in such case here
-    const changedEnums = Object.values(tableDiff.changedColumns).filter(col => col.fromColumn.mappedType instanceof EnumType);
+    const changedEnums = Object.values(tableDiff.changedColumns).filter((col) => col.fromColumn.mappedType instanceof EnumType);
 
     for (const col of changedEnums) {
       const constraintName = `${tableName}_${col.column.name}_check`;
@@ -276,7 +278,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     }
 
     // changing uuid column type requires to cast it to text first
-    const uuids = Object.values(tableDiff.changedColumns).filter(col => col.changedProperties.has('type') && col.fromColumn.type === 'uuid');
+    const uuids = Object.values(tableDiff.changedColumns).filter((col) => col.changedProperties.has('type') && col.fromColumn.type === 'uuid');
 
     for (const col of uuids) {
       ret.push(`alter table "${name}" alter column "${col.column.name}" type text using ("${col.column.name}"::text)`);
@@ -362,7 +364,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       from pg_index idx
       join pg_class as i on i.oid = idx.indexrelid
       join pg_namespace as ns on i.relnamespace = ns.oid
-      where indrelid in (${tables.map(t => `'"${t.schema_name}"."${t.table_name}"'::regclass`).join(', ')})
+      where indrelid in (${tables.map((t) => `'"${t.schema_name}"."${t.table_name}"'::regclass`).join(', ')})
       order by relname`;
   }
 
@@ -372,7 +374,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       join pg_namespace nsp on nsp.oid = pgc.connamespace
       join pg_class cls on pgc.conrelid = cls.oid
       join information_schema.constraint_column_usage ccu on pgc.conname = ccu.constraint_name and nsp.nspname = ccu.constraint_schema
-      where contype = 'c' and (${tables.map(t => `ccu.table_name = '${t.table_name}' and ccu.table_schema = '${t.schema_name}'`).join(' or ')})
+      where contype = 'c' and (${tables.map((t) => `ccu.table_name = '${t.table_name}' and ccu.table_schema = '${t.schema_name}'`).join(' or ')})
       order by pgc.conname`;
   }
 
@@ -393,5 +395,4 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const res = await this.getAllIndexes(connection, [{ table_name: tableName, schema_name: schemaName }]);
     return res[tableName];
   }
-
 }

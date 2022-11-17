@@ -9,14 +9,9 @@ import type { Platform } from '../platforms';
 import { ReferenceType } from '../enums';
 
 export class ChangeSetComputer {
-
   private readonly comparator = this.config.getComparator(this.metadata);
 
-  constructor(private readonly validator: EntityValidator,
-              private readonly collectionUpdates: Set<Collection<AnyEntity>>,
-              private readonly metadata: MetadataStorage,
-              private readonly platform: Platform,
-              private readonly config: Configuration) { }
+  constructor(private readonly validator: EntityValidator, private readonly collectionUpdates: Set<Collection<AnyEntity>>, private readonly metadata: MetadataStorage, private readonly platform: Platform, private readonly config: Configuration) {}
 
   computeChangeSet<T>(entity: T): ChangeSet<T> | null {
     const meta = this.metadata.get((entity as AnyEntity).constructor.name);
@@ -31,7 +26,8 @@ export class ChangeSetComputer {
 
     // Execute `onCreate` and `onUpdate` on properties recursively, saves `onUpdate` results
     // to the `map` as we want to apply those only if something else changed.
-    if (type === ChangeSetType.CREATE) { // run update hooks only after we know there are other changes
+    if (type === ChangeSetType.CREATE) {
+      // run update hooks only after we know there are other changes
       for (const prop of meta.hydrateProps) {
         this.processPropertyInitializers(entity, prop, type, map);
       }
@@ -111,8 +107,8 @@ export class ChangeSetComputer {
 
       if (ignoreUndefined) {
         Object.keys(diff)
-          .filter(k => diff[k] === undefined)
-          .forEach(k => delete diff[k]);
+          .filter((k) => diff[k] === undefined)
+          .forEach((k) => delete diff[k]);
       }
 
       return diff;
@@ -135,7 +131,8 @@ export class ChangeSetComputer {
       return;
     }
 
-    if (Utils.isCollection(target)) { // m:n or 1:m
+    if (Utils.isCollection(target)) {
+      // m:n or 1:m
       this.processToMany(prop, changeSet);
     }
 
@@ -167,7 +164,7 @@ export class ChangeSetComputer {
       return;
     }
 
-    if (prop.owner || target.getItems(false).filter(item => !item.__helper!.__initialized).length > 0) {
+    if (prop.owner || target.getItems(false).filter((item) => !item.__helper!.__initialized).length > 0) {
       if (this.platform.usesPivotTable()) {
         this.collectionUpdates.add(target);
       } else {
@@ -177,5 +174,4 @@ export class ChangeSetComputer {
       target.setDirty(false); // inverse side with only populated items, nothing to persist
     }
   }
-
 }

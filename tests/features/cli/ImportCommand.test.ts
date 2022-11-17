@@ -17,7 +17,6 @@ dumpMock.mockImplementation(() => void 0);
 import { ImportCommand } from '../../../packages/cli/src/commands/ImportCommand';
 
 describe('ImportDatabaseCommand', () => {
-
   test('handler', async () => {
     const cmd = new ImportCommand();
 
@@ -25,5 +24,4 @@ describe('ImportDatabaseCommand', () => {
     expect(close).toBeCalledTimes(1);
     expect(connection.loadFile.mock.calls.length).toBe(1);
   });
-
 });

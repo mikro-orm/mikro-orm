@@ -3,50 +3,41 @@ import type { PostgreSqlDriver, SchemaGenerator } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'book' })
 export class Book0 {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
-@Entity({ tableName: 'book', comment: 'this is book\'s table' })
+@Entity({ tableName: 'book', comment: "this is book's table" })
 export class Book1 {
-
-  @PrimaryKey({ comment: 'this is primary\'s key' })
+  @PrimaryKey({ comment: "this is primary's key" })
   id!: number;
 
   @Property({ comment: 'this is name of book' })
   name!: string;
-
 }
 
 @Entity({ tableName: 'book', comment: 'table comment' })
 export class Book2 {
-
   @PrimaryKey({ comment: 'new comment' })
   id!: number;
 
   @Property({ comment: '' })
   name!: string;
-
 }
 
 @Entity({ tableName: 'book' })
 export class Book3 {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 describe('comment diffing in postgres', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
   let generator: SchemaGenerator;
 
@@ -85,5 +76,4 @@ describe('comment diffing in postgres', () => {
 
     await expect(generator.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
   });
-
 });

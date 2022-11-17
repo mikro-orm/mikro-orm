@@ -1,35 +1,12 @@
-import type {
-  Connection,
-  CountOptions,
-  EntityData,
-  ObjectQuery,
-  FindOneOptions,
-  FindOptions, Primary,
-  QueryResult,
-  Transaction,
-  IDatabaseDriver,
-  AnyEntity,
-  EntityDictionary,
-  NativeInsertUpdateManyOptions,
-  NativeInsertUpdateOptions,
-} from '@mikro-orm/core';
-import {
-  Configuration,
-  DatabaseDriver,
-  EntityManager,
-  EntityRepository,
-  LockMode,
-  Platform,
-} from '@mikro-orm/core';
+import type { Connection, CountOptions, EntityData, ObjectQuery, FindOneOptions, FindOptions, Primary, QueryResult, Transaction, IDatabaseDriver, AnyEntity, EntityDictionary, NativeInsertUpdateManyOptions, NativeInsertUpdateOptions } from '@mikro-orm/core';
+import { Configuration, DatabaseDriver, EntityManager, EntityRepository, LockMode, Platform } from '@mikro-orm/core';
 
-class Platform1 extends Platform { }
+class Platform1 extends Platform {}
 
 class Driver extends DatabaseDriver<Connection> implements IDatabaseDriver {
-
   protected readonly platform = new Platform1();
 
-  constructor(readonly config: Configuration,
-              protected readonly dependencies: string[]) {
+  constructor(readonly config: Configuration, protected readonly dependencies: string[]) {
     super(config, dependencies);
   }
 
@@ -60,11 +37,9 @@ class Driver extends DatabaseDriver<Connection> implements IDatabaseDriver {
   async nativeUpdate<T>(entityName: string, where: ObjectQuery<T>, data: EntityData<T>, ctx: Transaction | undefined): Promise<QueryResult<T>> {
     return { affectedRows: 0, insertId: 0 as Primary<T> };
   }
-
 }
 
 describe('DatabaseDriver', () => {
-
   const config = new Configuration({ type: 'mongo', allowGlobalContext: true } as any, false);
   const driver = new Driver(config, []);
 
@@ -87,5 +62,4 @@ describe('DatabaseDriver', () => {
     expect(() => driver.getPlatform().supportsCreatingFullTextIndex()).toThrowError('Full text searching is not supported by this driver.');
     expect(() => driver.getPlatform().getFullTextIndexExpression({} as any, {} as any, {} as any, {} as any)).toThrowError('Full text searching is not supported by this driver.');
   });
-
 });

@@ -3,32 +3,31 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity({ tableName: 'user' })
 class User {
-
   @PrimaryKey({ type: BigIntType, fieldName: 'id' })
   id!: number;
 
-  @ManyToOne('Member', { fieldName: 'ownerMemberId', nullable: true, wrappedReference: true })
+  @ManyToOne('Member', {
+    fieldName: 'ownerMemberId',
+    nullable: true,
+    wrappedReference: true,
+  })
   ownerMember?: IdentifiedReference<Member>;
-
 }
 
 @Entity({ tableName: 'member' })
 class Member {
-
   @PrimaryKey({ type: BigIntType, fieldName: 'id' })
   id!: number;
 
-  @OneToMany(() => User, user => user.ownerMember, { cascade: [Cascade.ALL] })
+  @OneToMany(() => User, (user) => user.ownerMember, { cascade: [Cascade.ALL] })
   ownedUsers = new Collection<User>(this);
 
   @OneToMany('MemberUser', 'member', { orphanRemoval: true })
   users = new Collection<MemberUser>(this);
-
 }
 
 @Entity({ tableName: 'member_user' })
 class MemberUser {
-
   @PrimaryKey({ type: BigIntType, fieldName: 'id' })
   id!: number;
 
@@ -37,11 +36,9 @@ class MemberUser {
 
   @ManyToOne(() => User, { fieldName: 'userId', wrappedReference: true })
   user?: IdentifiedReference<User>;
-
 }
 
 describe('GH issue 2410', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -70,7 +67,7 @@ describe('GH issue 2410', () => {
     });
     await orm.em.persistAndFlush(mu);
 
-    await orm.em.transactional(async tx => {
+    await orm.em.transactional(async (tx) => {
       const member = await tx.findOne(Member, createdMember.id, {
         populate: ['ownedUsers'],
       });
@@ -81,5 +78,4 @@ describe('GH issue 2410', () => {
       }
     });
   });
-
 });

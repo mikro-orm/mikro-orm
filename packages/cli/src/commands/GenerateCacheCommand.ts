@@ -3,7 +3,6 @@ import { MetadataDiscovery, MetadataStorage, colors } from '@mikro-orm/core';
 import { CLIHelper } from '../CLIHelper';
 
 export class GenerateCacheCommand implements CommandModule {
-
   command = 'cache:generate';
   describe = 'Generate metadata cache for production';
 
@@ -24,5 +23,4 @@ export class GenerateCacheCommand implements CommandModule {
 
     CLIHelper.dump(colors.green('Metadata cache was successfully generated'));
   }
-
 }

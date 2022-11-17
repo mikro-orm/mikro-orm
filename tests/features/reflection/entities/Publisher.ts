@@ -12,7 +12,6 @@ export enum PublisherType2 {
 
 @Entity()
 export class Publisher {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -46,5 +45,4 @@ export class Publisher {
   beforeCreate() {
     // do sth
   }
-
 }

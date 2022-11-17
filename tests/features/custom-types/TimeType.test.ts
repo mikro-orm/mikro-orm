@@ -2,7 +2,6 @@ import { TimeType } from '@mikro-orm/core';
 import { MongoPlatform } from '@mikro-orm/mongodb';
 
 describe('TimeType', () => {
-
   const type = new TimeType();
   const platform = new MongoPlatform();
 
@@ -18,5 +17,4 @@ describe('TimeType', () => {
   test('getColumnType', () => {
     expect(type.getColumnType({ columnType: 'asd' } as any, platform)).toBe('time');
   });
-
 });

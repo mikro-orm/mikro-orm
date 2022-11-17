@@ -3,18 +3,15 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity({ tableName: 'brands' })
 export class Brand {
-
   @PrimaryKey()
   id!: number;
 
   @OneToMany({ entity: () => BrandSiteRestriction, mappedBy: 'brand' })
   brandSiteRestrictions = new Collection<BrandSiteRestriction>(this);
-
 }
 
 @Entity({ tableName: 'brand_site_restrictions' })
 export class BrandSiteRestriction {
-
   @PrimaryKey()
   id!: number;
 
@@ -23,12 +20,10 @@ export class BrandSiteRestriction {
 
   @ManyToOne({ entity: () => Brand })
   brand!: Brand;
-
 }
 
 @Entity({ tableName: 'placements' })
 export class Placement {
-
   @PrimaryKey()
   id!: number;
 
@@ -37,23 +32,19 @@ export class Placement {
 
   @ManyToOne({ entity: () => Site })
   site!: any;
-
 }
 
 @Entity({ tableName: 'publishers' })
 export class Publisher {
-
   @OneToMany({ entity: () => Site, mappedBy: 'publisher' })
   sites = new Collection<Site>(this);
 
   @PrimaryKey()
   id!: number;
-
 }
 
 @Entity({ tableName: 'sites' })
 export class Site {
-
   @ManyToOne({ entity: () => Publisher, nullable: true })
   publisher?: Publisher;
 
@@ -68,11 +59,9 @@ export class Site {
 
   @Property({ length: 191, nullable: true })
   name?: string;
-
 }
 
 describe('GH issue 1009', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -98,5 +87,4 @@ describe('GH issue 1009', () => {
     br.brand = brand;
     await expect(orm.em.persistAndFlush(br)).resolves.toBeUndefined();
   });
-
 });

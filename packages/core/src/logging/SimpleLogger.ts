@@ -2,7 +2,6 @@ import type { LogContext, LoggerNamespace } from './Logger';
 import { DefaultLogger } from './DefaultLogger';
 
 export class SimpleLogger extends DefaultLogger {
-
   /**
    * @inheritDoc
    */
@@ -27,5 +26,4 @@ export class SimpleLogger extends DefaultLogger {
 
     return this.log('query', context.query, context);
   }
-
 }

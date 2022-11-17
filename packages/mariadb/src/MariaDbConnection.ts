@@ -3,7 +3,6 @@ import type { Knex } from '@mikro-orm/knex';
 import { AbstractSqlConnection, MonkeyPatchable } from '@mikro-orm/knex';
 
 export class MariaDbConnection extends AbstractSqlConnection {
-
   async connect(): Promise<void> {
     this.client = this.createKnexClient(this.getPatchedDialect());
   }
@@ -58,5 +57,4 @@ export class MariaDbConnection extends AbstractSqlConnection {
 
     return res[0];
   }
-
 }

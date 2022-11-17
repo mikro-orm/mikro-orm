@@ -21,7 +21,6 @@ import { OptimisticLockError, ValidationError } from './errors';
  * @template {D} current driver type
  */
 export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
-
   private static counter = 1;
   readonly _id = EntityManager.counter++;
   readonly global = false;
@@ -41,11 +40,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * @internal
    */
-  constructor(readonly config: Configuration,
-              private readonly driver: D,
-              private readonly metadata: MetadataStorage,
-              private readonly useContext = true,
-              private readonly eventManager = new EventManager(config.get('subscribers'))) { }
+  constructor(readonly config: Configuration, private readonly driver: D, private readonly metadata: MetadataStorage, private readonly useContext = true, private readonly eventManager = new EventManager(config.get('subscribers'))) {}
 
   /**
    * Gets the Driver instance used by this EntityManager.
@@ -105,7 +100,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     if (options.disableIdentityMap) {
       const em = this.getContext(false);
       const fork = em.fork();
-      const ret = await fork.find<T, P>(entityName, where, { ...options, disableIdentityMap: false });
+      const ret = await fork.find<T, P>(entityName, where, {
+        ...options,
+        disableIdentityMap: false,
+      });
       fork.clear();
 
       return ret;
@@ -123,7 +121,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     if (cached?.data) {
       await em.entityLoader.populate<T, P>(entityName, cached.data as T[], populate, {
-        ...options as Dictionary,
+        ...(options as Dictionary),
         ...em.getPopulateWhere(where, options),
         convertCustomTypes: false,
         ignoreLazyScalarProperties: true,
@@ -133,7 +131,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return cached.data;
     }
 
-    const results = await em.driver.find<T, P>(entityName, where, { ctx: em.transactionContext, ...options });
+    const results = await em.driver.find<T, P>(entityName, where, {
+      ctx: em.transactionContext,
+      ...options,
+    });
 
     if (results.length === 0) {
       await em.storeCache(options.cache, cached!, []);
@@ -152,7 +153,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }) as T;
 
       if (!meta.virtual) {
-        em.unitOfWork.registerManaged(entity, data, { refresh: options.refresh, loaded: true });
+        em.unitOfWork.registerManaged(entity, data, {
+          refresh: options.refresh,
+          loaded: true,
+        });
       }
 
       ret.push(entity);
@@ -167,14 +171,14 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     const unique = Utils.unique(ret);
     await em.entityLoader.populate<T, P>(entityName, unique, populate, {
-      ...options as Dictionary,
+      ...(options as Dictionary),
       ...em.getPopulateWhere(where, options),
       convertCustomTypes: false,
       ignoreLazyScalarProperties: true,
       lookup: false,
     });
     await em.unitOfWork.dispatchOnLoadEvent();
-    await em.storeCache(options.cache, cached!, () => unique.map(e => helper(e).toPOJO()));
+    await em.storeCache(options.cache, cached!, () => unique.map((e) => helper(e).toPOJO()));
 
     return unique as Loaded<T, P>[];
   }
@@ -185,7 +189,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     if (options.populateWhere === PopulateHint.ALL) {
-      return { where: {} as FilterQuery<T>, populateWhere: options.populateWhere };
+      return {
+        where: {} as FilterQuery<T>,
+        populateWhere: options.populateWhere,
+      };
     }
 
     if (options.populateWhere === PopulateHint.INFER) {
@@ -217,7 +224,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const options: FilterDef = { name, cond, default: enabled };
 
     if (entityName) {
-      options.entity = Utils.asArray(entityName).map(n => Utils.className(n));
+      options.entity = Utils.asArray(entityName).map((n) => Utils.className(n));
     }
 
     this.getContext(false).filters[name] = options;
@@ -264,17 +271,22 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return where;
     }
 
-    const types = Object.values(meta.root.discriminatorMap!).map(cls => this.metadata.find(cls)!);
+    const types = Object.values(meta.root.discriminatorMap!).map((cls) => this.metadata.find(cls)!);
     const children: EntityMetadata[] = [];
     const lookUpChildren = (ret: EntityMetadata[], type: string) => {
-      const children = types.filter(meta2 => meta2.extends === type);
-      children.forEach(m => lookUpChildren(ret, m.className));
-      ret.push(...children.filter(c => c.discriminatorValue));
+      const children = types.filter((meta2) => meta2.extends === type);
+      children.forEach((m) => lookUpChildren(ret, m.className));
+      ret.push(...children.filter((c) => c.discriminatorValue));
 
       return children;
     };
     lookUpChildren(children, meta.className);
-    where![meta.root.discriminatorColumn!] = children.length > 0 ? { $in: [meta.discriminatorValue, ...children.map(c => c.discriminatorValue)] } : meta.discriminatorValue;
+    where![meta.root.discriminatorColumn!] =
+      children.length > 0
+        ? {
+            $in: [meta.discriminatorValue, ...children.map((c) => c.discriminatorValue)],
+          }
+        : meta.discriminatorValue;
 
     return where;
   }
@@ -293,11 +305,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     const active = new Set<string>();
     const push = (source: Dictionary<FilterDef>) => {
-      const activeFilters = QueryHelper
-        .getActiveFilters(entityName, options, source)
-        .filter(f => !active.has(f.name));
+      const activeFilters = QueryHelper.getActiveFilters(entityName, options, source).filter((f) => !active.has(f.name));
       filters.push(...activeFilters);
-      activeFilters.forEach(f => active.add(f.name));
+      activeFilters.forEach((f) => active.add(f.name));
     };
     push(this.config.get('filters'));
     push(this.filters);
@@ -322,18 +332,20 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         cond = filter.cond;
       }
 
-      ret.push(QueryHelper.processWhere({
-        where: cond,
-        entityName,
-        metadata: this.metadata,
-        platform: this.driver.getPlatform(),
-        aliased: type === 'read',
-      }));
+      ret.push(
+        QueryHelper.processWhere({
+          where: cond,
+          entityName,
+          metadata: this.metadata,
+          platform: this.driver.getPlatform(),
+          aliased: type === 'read',
+        })
+      );
     }
 
-    const conds = [...ret, where as Dictionary].filter(c => Utils.hasObjectKeys(c)) as FilterQuery<T>[];
+    const conds = [...ret, where as Dictionary].filter((c) => Utils.hasObjectKeys(c)) as FilterQuery<T>[];
 
-    return conds.length > 1 ? { $and: conds } as FilterQuery<T> : conds[0];
+    return conds.length > 1 ? ({ $and: conds } as FilterQuery<T>) : conds[0];
   }
 
   /**
@@ -341,10 +353,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * where first element is the array of entities and the second is the count.
    */
   async findAndCount<T extends object, P extends string = never>(entityName: EntityName<T>, where: FilterQuery<T>, options: FindOptions<T, P> = {}): Promise<[Loaded<T, P>[], number]> {
-    const [entities, count] = await Promise.all([
-      this.find<T, P>(entityName, where, options),
-      this.count(entityName, where, options),
-    ]);
+    const [entities, count] = await Promise.all([this.find<T, P>(entityName, where, options), this.count(entityName, where, options)]);
 
     return [entities, count];
   }
@@ -377,7 +386,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     if (options.disableIdentityMap) {
       const em = this.getContext(false);
       const fork = em.fork();
-      const ret = await fork.findOne<T, P>(entityName, where, { ...options, disableIdentityMap: false });
+      const ret = await fork.findOne<T, P>(entityName, where, {
+        ...options,
+        disableIdentityMap: false,
+      });
       fork.clear();
 
       return ret;
@@ -403,7 +415,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     if (cached?.data) {
       await em.entityLoader.populate<T, P>(entityName, [cached.data as T], options.populate as unknown as PopulateOptions<T>[], {
-        ...options as Dictionary,
+        ...(options as Dictionary),
         ...em.getPopulateWhere(where, options),
         convertCustomTypes: false,
         ignoreLazyScalarProperties: true,
@@ -414,7 +426,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return cached.data;
     }
 
-    const data = await em.driver.findOne<T, P>(entityName, where, { ctx: em.transactionContext, ...options });
+    const data = await em.driver.findOne<T, P>(entityName, where, {
+      ctx: em.transactionContext,
+      ...options,
+    });
 
     if (!data) {
       await em.storeCache(options.cache, cached!, null);
@@ -429,7 +444,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     });
 
     if (!meta.virtual) {
-      em.unitOfWork.registerManaged(entity, data, { refresh: options.refresh, loaded: true });
+      em.unitOfWork.registerManaged(entity, data, {
+        refresh: options.refresh,
+        loaded: true,
+      });
       await em.lockAndPopulate(entityName, entity, where, options);
     }
 
@@ -450,7 +468,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     let isStrictViolation = false;
 
     if (options.strict) {
-      const ret = await this.find(entityName, where, { ...options as FindOptions<T, P>, limit: 2 });
+      const ret = await this.find(entityName, where, {
+        ...(options as FindOptions<T, P>),
+        limit: 2,
+      });
       isStrictViolation = ret.length !== 1;
       entity = ret[0];
     } else {
@@ -527,15 +548,17 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }
     }
 
-    const unique = meta.props.filter(p => p.unique).map(p => p.name);
-    const propIndex = unique.findIndex(p => data![p] != null);
+    const unique = meta.props.filter((p) => p.unique).map((p) => p.name);
+    const propIndex = unique.findIndex((p) => data![p] != null);
 
     if (where == null) {
       if (propIndex >= 0) {
-        where = { [unique[propIndex]]: data[unique[propIndex]] } as FilterQuery<T>;
+        where = {
+          [unique[propIndex]]: data[unique[propIndex]],
+        } as FilterQuery<T>;
       } else if (meta.uniques.length > 0) {
         for (const u of meta.uniques) {
-          if (Utils.asArray(u.properties).every(p => data![p])) {
+          if (Utils.asArray(u.properties).every((p) => data![p])) {
             where = Utils.asArray(u.properties).reduce((o, key) => {
               o[key] = data![key];
               return o;
@@ -547,14 +570,18 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     if (where == null) {
-      const compositeUniqueProps = meta.uniques.map(u => Utils.asArray(u.properties).join(' + '));
+      const compositeUniqueProps = meta.uniques.map((u) => Utils.asArray(u.properties).join(' + '));
       const uniqueProps = meta.primaryKeys.concat(...unique).concat(compositeUniqueProps);
       throw new Error(`Unique property value required for upsert, provide one of: ${uniqueProps.join(', ')}`);
     }
 
     data = QueryHelper.processObjectParams(data) as EntityData<T>;
     em.validator.validateParams(data, 'insert data');
-    const ret = await em.driver.nativeUpdate(entityName, where, data, { ctx: em.transactionContext, upsert: true, ...options });
+    const ret = await em.driver.nativeUpdate(entityName, where, data, {
+      ctx: em.transactionContext,
+      upsert: true,
+      ...options,
+    });
 
     if (ret.row) {
       const prop = meta.getPrimaryProps()[0];
@@ -596,26 +623,30 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     options.ctx ??= em.transactionContext;
 
     return TransactionContext.createAsync(fork, async () => {
-      return fork.getConnection().transactional(async trx => {
-        fork.transactionContext = trx;
-        fork.eventManager.registerSubscriber({
-          afterFlush(args: FlushEventArgs) {
-            args.uow.getChangeSets()
-              .filter(cs => [ChangeSetType.DELETE, ChangeSetType.DELETE_EARLY].includes(cs.type))
-              .forEach(cs => em.unitOfWork.unsetIdentity(cs.entity));
-          },
-        });
-        const ret = await cb(fork);
-        await fork.flush();
+      return fork.getConnection().transactional(
+        async (trx) => {
+          fork.transactionContext = trx;
+          fork.eventManager.registerSubscriber({
+            afterFlush(args: FlushEventArgs) {
+              args.uow
+                .getChangeSets()
+                .filter((cs) => [ChangeSetType.DELETE, ChangeSetType.DELETE_EARLY].includes(cs.type))
+                .forEach((cs) => em.unitOfWork.unsetIdentity(cs.entity));
+            },
+          });
+          const ret = await cb(fork);
+          await fork.flush();
 
-        // ensure all entities from inner context are merged to the upper one
-        for (const entity of fork.unitOfWork.getIdentityMap()) {
-          em.unitOfWork.registerManaged(entity);
-          entity.__helper!.__em = em;
-        }
+          // ensure all entities from inner context are merged to the upper one
+          for (const entity of fork.unitOfWork.getIdentityMap()) {
+            em.unitOfWork.registerManaged(entity);
+            entity.__helper!.__em = em;
+          }
 
-        return ret;
-      }, { ...options, eventBroadcaster: new TransactionEventBroadcaster(fork) });
+          return ret;
+        },
+        { ...options, eventBroadcaster: new TransactionEventBroadcaster(fork) }
+      );
     });
   }
 
@@ -624,7 +655,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async begin(options: TransactionOptions = {}): Promise<void> {
     const em = this.getContext(false);
-    em.transactionContext = await em.getConnection('write').begin({ ...options, eventBroadcaster: new TransactionEventBroadcaster(em) });
+    em.transactionContext = await em.getConnection('write').begin({
+      ...options,
+      eventBroadcaster: new TransactionEventBroadcaster(em),
+    });
   }
 
   /**
@@ -661,7 +695,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Runs your callback wrapped inside a database transaction.
    */
   async lock<T extends object>(entity: T, lockMode: LockMode, options: LockOptions | number | Date = {}): Promise<void> {
-    options = Utils.isPlainObject(options) ? options as LockOptions : { lockVersion: options };
+    options = Utils.isPlainObject(options) ? (options as LockOptions) : { lockVersion: options };
     await this.getUnitOfWork().lock(entity, { lockMode, ...options });
   }
 
@@ -686,7 +720,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     data = QueryHelper.processObjectParams(data) as EntityData<T>;
     em.validator.validateParams(data, 'insert data');
-    const res = await em.driver.nativeInsert(entityName, data, { ctx: em.transactionContext, ...options });
+    const res = await em.driver.nativeInsert(entityName, data, {
+      ctx: em.transactionContext,
+      ...options,
+    });
 
     return res.insertId as Primary<T>;
   }
@@ -702,7 +739,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     where = await em.processWhere(entityName, where, options, 'update');
     em.validator.validateParams(data, 'update data');
     em.validator.validateParams(where, 'update condition');
-    const res = await em.driver.nativeUpdate(entityName, where, data, { ctx: em.transactionContext, ...options });
+    const res = await em.driver.nativeUpdate(entityName, where, data, {
+      ctx: em.transactionContext,
+      ...options,
+    });
 
     return res.affectedRows;
   }
@@ -716,7 +756,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     entityName = Utils.className(entityName);
     where = await em.processWhere(entityName, where, options, 'delete');
     em.validator.validateParams(where, 'delete condition');
-    const res = await em.driver.nativeDelete(entityName, where, { ctx: em.transactionContext, ...options });
+    const res = await em.driver.nativeDelete(entityName, where, {
+      ctx: em.transactionContext,
+      ...options,
+    });
 
     return res.affectedRows;
   }
@@ -729,7 +772,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const meta = this.metadata.get(entityName);
     const data = this.driver.mapResult(result, meta) as Dictionary;
 
-    Object.keys(data).forEach(k => {
+    Object.keys(data).forEach((k) => {
       const prop = meta.properties[k];
 
       if (prop && prop.reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(prop.type) && (prop.setter || !prop.getter)) {
@@ -737,7 +780,11 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }
     });
 
-    return this.merge<T>(entityName, data as EntityData<T>, { convertCustomTypes: true, refresh: true, ...options });
+    return this.merge<T>(entityName, data as EntityData<T>, {
+      convertCustomTypes: true,
+      refresh: true,
+      ...options,
+    });
   }
 
   /**
@@ -774,7 +821,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const meta = em.metadata.find(entityName)!;
     const childMeta = em.metadata.getByDiscriminatorColumn(meta, data as EntityData<T>);
 
-    entity = Utils.isEntity<T>(data) ? data : em.entityFactory.create<T>(entityName, data as EntityData<T>, { merge: true, ...options });
+    entity = Utils.isEntity<T>(data)
+      ? data
+      : em.entityFactory.create<T>(entityName, data as EntityData<T>, {
+          merge: true,
+          ...options,
+        });
     em.validator.validate(entity, data, childMeta ?? meta);
     em.unitOfWork.merge(entity);
     em.unitOfWork.saveSnapshots();
@@ -810,7 +862,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Shortcut for `wrap(entity).assign(data, { em })`
    */
   assign<T extends object>(entity: T, data: EntityData<T> | Partial<EntityDTO<T>>, options: AssignOptions = {}): T {
-    return EntityAssigner.assign(entity, data, { em: this.getContext(), ...options });
+    return EntityAssigner.assign(entity, data, {
+      em: this.getContext(),
+      ...options,
+    });
   }
 
   /**
@@ -848,7 +903,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       id = [id] as Primary<T>;
     }
 
-    const entity = this.getEntityFactory().createReference<T>(entityName, id, { merge: true, ...options });
+    const entity = this.getEntityFactory().createReference<T>(entityName, id, {
+      merge: true,
+      ...options,
+    });
 
     if (options.wrapped) {
       return Reference.create(entity);
@@ -873,7 +931,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return cached.data as number;
     }
 
-    const count = await em.driver.count<T, P>(entityName, where, { ctx: em.transactionContext, ...options });
+    const count = await em.driver.count<T, P>(entityName, where, {
+      ctx: em.transactionContext,
+      ...options,
+    });
     await em.storeCache(options.cache, cached!, () => count);
 
     return count;
@@ -902,7 +963,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       // do not cascade just yet, cascading of entities in persist stack is done when flushing
-      em.unitOfWork.persist(Reference.unwrapReference(ent), undefined, { cascade: false });
+      em.unitOfWork.persist(Reference.unwrapReference(ent), undefined, {
+        cascade: false,
+      });
     }
 
     return this;
@@ -949,7 +1012,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }
 
       // do not cascade just yet, cascading of entities in remove stack is done when flushing
-      em.unitOfWork.remove(Reference.unwrapReference(ent), undefined, { cascade: false });
+      em.unitOfWork.remove(Reference.unwrapReference(ent), undefined, {
+        cascade: false,
+      });
     }
 
     return em;
@@ -1025,7 +1090,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     if (parts.length > 0) {
-      return this.canPopulate((meta.properties)[p].type, parts.join('.'));
+      return this.canPopulate(meta.properties[p].type, parts.join('.'));
     }
 
     return ret;
@@ -1043,7 +1108,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     const em = this.getContext();
     const entityName = (entities[0] as Dictionary).constructor.name;
-    const preparedPopulate = em.preparePopulate<T>(entityName, { populate: populate as true });
+    const preparedPopulate = em.preparePopulate<T>(entityName, {
+      populate: populate as true,
+    });
     await em.entityLoader.populate(entityName, entities, preparedPopulate, options);
 
     return entities as Loaded<T, P>[];
@@ -1116,7 +1183,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     // no explicit tx started
-    em = this.config.get('context')(this.name) as this ?? this;
+    em = (this.config.get('context')(this.name) as this) ?? this;
 
     if (validate && !this.config.get('allowGlobalContext') && em.global) {
       throw ValidationError.cannotUseGlobalContext();
@@ -1195,7 +1262,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     const preparedPopulate = this.preparePopulate<T, P>(entityName, options);
     await this.entityLoader.populate(entityName, [entity], preparedPopulate, {
-      ...options as Dictionary,
+      ...(options as Dictionary),
       ...this.getPopulateWhere(where, options),
       convertCustomTypes: false,
       ignoreLazyScalarProperties: true,
@@ -1208,7 +1275,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   private buildFields<T extends object, P extends string>(fields: readonly EntityField<T, P>[]): readonly AutoPath<T, P>[] {
     return fields.reduce((ret, f) => {
       if (Utils.isPlainObject(f)) {
-        Object.keys(f).forEach(ff => ret.push(...this.buildFields(f[ff]).map(field => `${ff}.${field}` as never)));
+        Object.keys(f).forEach((ff) => ret.push(...this.buildFields(f[ff]).map((field) => `${ff}.${field}` as never)));
       } else {
         ret.push(f as never);
       }
@@ -1228,7 +1295,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     if (Array.isArray(options.populate)) {
-      options.populate = (options.populate as string[]).map(field => {
+      options.populate = (options.populate as string[]).map((field) => {
         if (Utils.isString(field)) {
           return { field, strategy: options.strategy };
         }
@@ -1244,9 +1311,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       throw ValidationError.invalidPropertyName(entityName, invalid.field);
     }
 
-    return ret.map(field => {
+    return ret.map((field) => {
       // force select-in strategy when populating all relations as otherwise we could cause infinite loops when self-referencing
-      field.strategy = options.populate === true ? LoadStrategy.SELECT_IN : (options.strategy ?? field.strategy);
+      field.strategy = options.populate === true ? LoadStrategy.SELECT_IN : options.strategy ?? field.strategy;
       return field;
     });
   }
@@ -1263,9 +1330,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     let autoRefresh: boolean;
 
     if (options.fields) {
-      autoRefresh = options.fields.some(field => !helper(entity).__loadedProperties.has(field as string));
+      autoRefresh = options.fields.some((field) => !helper(entity).__loadedProperties.has(field as string));
     } else {
-      autoRefresh = meta.comparableProps.some(prop => !prop.lazy && !helper(entity).__loadedProperties.has(prop.name));
+      autoRefresh = meta.comparableProps.some((prop) => !prop.lazy && !helper(entity).__loadedProperties.has(prop.name));
     }
 
     if (autoRefresh) {
@@ -1273,7 +1340,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     if (Array.isArray(options.populate)) {
-      return options.populate.some(field => !helper(entity).__loadedProperties.has(field as string));
+      return options.populate.some((field) => !helper(entity).__loadedProperties.has(field as string));
     }
 
     return !!options.populate;
@@ -1295,9 +1362,19 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       let data: R;
 
       if (Array.isArray(cached) && merge) {
-        data = cached.map(item => em.entityFactory.create<T>(entityName, item, { merge: true, convertCustomTypes: true, refresh })) as unknown as R;
+        data = cached.map((item) =>
+          em.entityFactory.create<T>(entityName, item, {
+            merge: true,
+            convertCustomTypes: true,
+            refresh,
+          })
+        ) as unknown as R;
       } else if (Utils.isObject<EntityData<T>>(cached) && merge) {
-        data = em.entityFactory.create<T>(entityName, cached, { merge: true, convertCustomTypes: true, refresh }) as unknown as R;
+        data = em.entityFactory.create<T>(entityName, cached, {
+          merge: true,
+          convertCustomTypes: true,
+          refresh,
+        }) as unknown as R;
       } else {
         data = cached;
       }
@@ -1316,7 +1393,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async storeCache(config: boolean | number | [string, number] | undefined, key: { key: string }, data: unknown | (() => unknown)) {
     if (config) {
       const em = this.getContext();
-      const expiration = Array.isArray(config) ? config[1] : (Utils.isNumber(config) ? config : undefined);
+      const expiration = Array.isArray(config) ? config[1] : Utils.isNumber(config) ? config : undefined;
       await em.resultCache.set(key.key, data instanceof Function ? data() : data, '', expiration);
     }
   }
@@ -1351,7 +1428,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   [inspect.custom]() {
     return `[EntityManager<${this.id}>]`;
   }
-
 }
 
 export interface CreateOptions {

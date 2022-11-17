@@ -1,9 +1,6 @@
 import type { AnyEntity, Constructor, DeepPartial, Dictionary, EntityName, EntityProperty, ExcludeFunctions, ExpandProperty } from '../typings';
 import { EntityMetadata } from '../typings';
-import type {
-  EmbeddedOptions, EnumOptions, IndexOptions, ManyToManyOptions, ManyToOneOptions, OneToManyOptions, OneToOneOptions, PrimaryKeyOptions, PropertyOptions,
-  SerializedPrimaryKeyOptions, UniqueOptions,
-} from '../decorators';
+import type { EmbeddedOptions, EnumOptions, IndexOptions, ManyToManyOptions, ManyToOneOptions, OneToManyOptions, OneToOneOptions, PrimaryKeyOptions, PropertyOptions, SerializedPrimaryKeyOptions, UniqueOptions } from '../decorators';
 import type { EntityRepository } from '../entity/EntityRepository';
 import { BaseEntity } from '../entity/BaseEntity';
 import { Cascade, ReferenceType } from '../enums';
@@ -21,13 +18,14 @@ type Property<T, O> =
   | ({ reference: ReferenceType.EMBEDDED | 'embedded' } & TypeDef<T> & EmbeddedOptions & PropertyOptions<O>)
   | ({ enum: true } & EnumOptions<O>)
   | (TypeDef<T> & PropertyOptions<O>);
-type Metadata<T, U> =
-  & Omit<Partial<EntityMetadata<T>>, 'name' | 'properties'>
-  & ({ name: string } | { class: Constructor<T>; name?: string })
-  & { properties?: { [K in keyof Omit<T, keyof U> as ExcludeFunctions<Omit<T, keyof U>, K>]-?: Property<ExpandProperty<NonNullable<T[K]>>, T> } };
+type Metadata<T, U> = Omit<Partial<EntityMetadata<T>>, 'name' | 'properties'> &
+  ({ name: string } | { class: Constructor<T>; name?: string }) & {
+    properties?: {
+      [K in keyof Omit<T, keyof U> as ExcludeFunctions<Omit<T, keyof U>, K>]-?: Property<ExpandProperty<NonNullable<T[K]>>, T>;
+    };
+  };
 
 export class EntitySchema<T = any, U = never> {
-
   private readonly _meta: EntityMetadata<T> = new EntityMetadata<T>();
   private internal = false;
   private initialized = false;
@@ -52,7 +50,7 @@ export class EntitySchema<T = any, U = never> {
   }
 
   addProperty(name: string & keyof T, type?: TypeType, options: PropertyOptions<T> | EntityProperty = {}): void {
-    const rename = <U> (data: U, from: string, to: string): void => {
+    const rename = <U>(data: U, from: string, to: string): void => {
       if (options[from] && !options[to]) {
         options[to] = [options[from]];
         delete options[from];
@@ -70,7 +68,12 @@ export class EntitySchema<T = any, U = never> {
     rename(options, 'referenceColumnName', 'referencedColumnNames');
     rename(options, 'columnType', 'columnTypes');
 
-    const prop = { name, reference: ReferenceType.SCALAR, ...options, type: this.normalizeType(options, type) } as EntityProperty<T>;
+    const prop = {
+      name,
+      reference: ReferenceType.SCALAR,
+      ...options,
+      type: this.normalizeType(options, type),
+    } as EntityProperty<T>;
 
     if (type && Type.isMappedType((type as Constructor).prototype)) {
       prop.type = type as string;
@@ -212,7 +215,7 @@ export class EntitySchema<T = any, U = never> {
     this._meta.prototype = proto.prototype;
     this._meta.className = proto.name;
     this._meta.constructorParams = Utils.getParamNames(proto, 'constructor');
-    this._meta.toJsonParams = Utils.getParamNames(proto, 'toJSON').filter(p => p !== '...args');
+    this._meta.toJsonParams = Utils.getParamNames(proto, 'toJSON').filter((p) => p !== '...args');
 
     if (Object.getPrototypeOf(proto) !== BaseEntity) {
       this._meta.extends = this._meta.extends || Object.getPrototypeOf(proto).name || undefined;
@@ -223,7 +226,7 @@ export class EntitySchema<T = any, U = never> {
     return this._meta;
   }
 
-  get name(): EntityName<T>  {
+  get name(): EntityName<T> {
     return this._meta.name!;
   }
 
@@ -237,7 +240,7 @@ export class EntitySchema<T = any, U = never> {
 
     if (!this._meta.class) {
       const name = this.name as string;
-      this._meta.class = ({ [name]: class {} })[name] as Constructor<T>;
+      this._meta.class = { [name]: class {} }[name] as Constructor<T>;
     }
 
     this.setClass(this._meta.class);
@@ -256,7 +259,7 @@ export class EntitySchema<T = any, U = never> {
     this.initProperties();
     this.initPrimaryKeys();
     this._meta.props = Object.values(this._meta.properties);
-    this._meta.relations = this._meta.props.filter(prop => prop.reference !== ReferenceType.SCALAR && prop.reference !== ReferenceType.EMBEDDED);
+    this._meta.relations = this._meta.props.filter((prop) => prop.reference !== ReferenceType.SCALAR && prop.reference !== ReferenceType.EMBEDDED);
     this.initialized = true;
 
     return this;
@@ -299,10 +302,10 @@ export class EntitySchema<T = any, U = never> {
   }
 
   private initPrimaryKeys(): void {
-    const pks = Object.values<EntityProperty<T>>(this._meta.properties).filter(prop => prop.primary);
+    const pks = Object.values<EntityProperty<T>>(this._meta.properties).filter((prop) => prop.primary);
 
     if (pks.length > 0) {
-      this._meta.primaryKeys = pks.map(prop => prop.name);
+      this._meta.primaryKeys = pks.map((prop) => prop.name);
       this._meta.compositePK = pks.length > 1;
     }
 
@@ -315,7 +318,7 @@ export class EntitySchema<T = any, U = never> {
       pks[0].autoincrement ??= true;
     }
 
-    const serializedPrimaryKey = Object.values<EntityProperty<T>>(this._meta.properties).find(prop => prop.serializedPrimaryKey);
+    const serializedPrimaryKey = Object.values<EntityProperty<T>>(this._meta.properties).find((prop) => prop.serializedPrimaryKey);
 
     if (serializedPrimaryKey) {
       this._meta.serializedPrimaryKey = serializedPrimaryKey.name;
@@ -328,7 +331,12 @@ export class EntitySchema<T = any, U = never> {
         type = options.type = options.entity;
       } else if (options.entity) {
         const tmp = options.entity();
-        type = options.type = Array.isArray(tmp) ? tmp.map(t => Utils.className(t)).sort().join(' | ') : Utils.className(tmp);
+        type = options.type = Array.isArray(tmp)
+          ? tmp
+              .map((t) => Utils.className(t))
+              .sort()
+              .join(' | ')
+          : Utils.className(tmp);
       }
     }
 
@@ -350,5 +358,4 @@ export class EntitySchema<T = any, U = never> {
       ...options,
     } as EntityProperty<T>;
   }
-
 }

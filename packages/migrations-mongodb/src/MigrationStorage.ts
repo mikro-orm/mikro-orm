@@ -5,11 +5,9 @@ import * as path from 'path';
 import type { MigrationRow } from './typings';
 
 export class MigrationStorage implements UmzugStorage {
-
   private masterTransaction?: Transaction;
 
-  constructor(protected readonly driver: MongoDriver,
-              protected readonly options: MigrationsOptions) { }
+  constructor(protected readonly driver: MongoDriver, protected readonly options: MigrationsOptions) {}
 
   async executed(): Promise<string[]> {
     const migrations = await this.getExecutedMigrations();
@@ -54,5 +52,4 @@ export class MigrationStorage implements UmzugStorage {
 
     return name;
   }
-
 }

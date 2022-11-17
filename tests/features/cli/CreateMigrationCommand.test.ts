@@ -10,12 +10,15 @@ import { initORMSqlite } from '../../bootstrap';
 const closeSpy = jest.spyOn(MikroORM.prototype, 'close');
 jest.spyOn(CLIHelper, 'showHelp').mockImplementation(() => void 0);
 const createMigrationMock = jest.spyOn(Migrator.prototype, 'createMigration');
-createMigrationMock.mockResolvedValue({ fileName: '1', code: '2', diff: { up: ['3'], down: [] } });
+createMigrationMock.mockResolvedValue({
+  fileName: '1',
+  code: '2',
+  diff: { up: ['3'], down: [] },
+});
 const dumpMock = jest.spyOn(CLIHelper, 'dump');
 dumpMock.mockImplementation(() => void 0);
 
 describe('CreateMigrationCommand', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -44,11 +47,14 @@ describe('CreateMigrationCommand', () => {
     expect(closeSpy).toBeCalledTimes(2);
     expect(dumpMock).toHaveBeenLastCalledWith('1 successfully created');
 
-    createMigrationMock.mockImplementationOnce(async () => ({ fileName: '', code: '', diff: { up: [], down: [] } }));
+    createMigrationMock.mockImplementationOnce(async () => ({
+      fileName: '',
+      code: '',
+      diff: { up: [], down: [] },
+    }));
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
     expect(createMigrationMock.mock.calls.length).toBe(3);
     expect(closeSpy).toBeCalledTimes(3);
     expect(dumpMock).toHaveBeenLastCalledWith('No changes required, schema is up-to-date');
   });
-
 });

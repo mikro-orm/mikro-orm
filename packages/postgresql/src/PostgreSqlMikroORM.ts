@@ -6,9 +6,7 @@ import { PostgreSqlDriver } from './PostgreSqlDriver';
  * @inheritDoc
  */
 export class PostgreSqlMikroORM extends MikroORM<PostgreSqlDriver> {
-
   private static DRIVER = PostgreSqlDriver;
-
 }
 
 export type PostgreSqlOptions = Options<PostgreSqlDriver>;

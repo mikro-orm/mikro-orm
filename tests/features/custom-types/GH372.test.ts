@@ -10,7 +10,6 @@ import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 type Point = { x: number; y: number };
 
 class PointType extends Type<Point, Knex.Raw> {
-
   convertToDatabaseValue(value: Point): Knex.Raw {
     return knex({ client: 'pg' }).raw(`point(?,?)`, [value.x, value.y]);
   }
@@ -27,18 +26,15 @@ class PointType extends Type<Point, Knex.Raw> {
   getColumnType() {
     return 'point';
   }
-
 }
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ type: PointType })
   prop!: Point;
-
 }
 
 let orm: MikroORM<PostgreSqlDriver>;

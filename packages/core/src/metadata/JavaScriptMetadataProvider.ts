@@ -7,7 +7,6 @@ import { Cascade, ReferenceType } from '../enums';
  * @deprecated use EntitySchema instead
  */
 export class JavaScriptMetadataProvider extends MetadataProvider {
-
   async loadEntityMetadata(meta: EntityMetadata, name: string): Promise<void> {
     const schema = this.getSchema(meta);
     Object.entries(schema.properties ?? {}).forEach(([name, prop]) => {
@@ -63,5 +62,4 @@ export class JavaScriptMetadataProvider extends MetadataProvider {
 
     return schema;
   }
-
 }

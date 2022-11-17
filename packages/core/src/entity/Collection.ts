@@ -16,7 +16,6 @@ export interface MatchingOptions<T extends object, P extends string = never> ext
 }
 
 export class Collection<T extends object, O extends object = object> extends ArrayCollection<T, O> {
-
   private snapshot: T[] | undefined = []; // used to create a diff of the collection at commit time, undefined marks overridden values so we need to wipe when flushing
   private readonly?: boolean;
   private _populated = false;
@@ -120,8 +119,8 @@ export class Collection<T extends object, O extends object = object> extends Arr
 
   add(entity: T | Reference<T> | T[], ...entities: (T | Reference<T>)[]): void {
     entities = Utils.asArray(entity).concat(entities);
-    const unwrapped = entities.map(i => Reference.unwrapReference(i)) as T[];
-    unwrapped.forEach(entity => this.validateItemType(entity));
+    const unwrapped = entities.map((i) => Reference.unwrapReference(i)) as T[];
+    unwrapped.forEach((entity) => this.validateItemType(entity));
     this.modify('add', unwrapped);
     this.cancelOrphanRemoval(unwrapped);
   }
@@ -159,7 +158,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
     }
 
     entities = Utils.asArray(entity).concat(entities);
-    const unwrapped = entities.map(i => Reference.unwrapReference(i)) as T[];
+    const unwrapped = entities.map((i) => Reference.unwrapReference(i)) as T[];
     this.modify('remove', unwrapped);
     const em = this.getEntityManager(unwrapped, false);
 
@@ -205,7 +204,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
       const items = [...this.items];
       this.dirty = false;
       await this.init(options);
-      items.forEach(i => this.add(i));
+      items.forEach((i) => this.add(i));
 
       return this as unknown as LoadedCollection<Loaded<T, P>>;
     }
@@ -215,7 +214,10 @@ export class Collection<T extends object, O extends object = object> extends Arr
     if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
       const cond = await em.applyFilters(this.property.type, options.where, {}, 'read');
       const map = await em.getDriver().loadFromPivotTable(this.property, [helper(this.owner).__primaryKeys], cond, options.orderBy, undefined, options);
-      this.hydrate(map[helper(this.owner).getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, { convertCustomTypes: true })), true);
+      this.hydrate(
+        map[helper(this.owner).getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, { convertCustomTypes: true })),
+        true
+      );
       this._lazyInitialized = true;
 
       return this as unknown as LoadedCollection<Loaded<T, P>>;
@@ -238,9 +240,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
       lockMode: options.lockMode,
       orderBy: this.createOrderBy(options.orderBy),
       connectionType: options.connectionType,
-      schema: this.property.targetMeta!.schema === '*'
-        ? helper(this.owner).__schema
-        : this.property.targetMeta!.schema,
+      schema: this.property.targetMeta!.schema === '*' ? helper(this.owner).__schema : this.property.targetMeta!.schema,
     });
 
     if (!customOrder) {
@@ -249,7 +249,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
 
     this.items.clear();
     let i = 0;
-    items.forEach(item => {
+    items.forEach((item) => {
       this.items.add(item);
       this[i++] = item;
     });
@@ -269,7 +269,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
     this.setDirty(false);
 
     if (this.property.owner || forcePropagate) {
-      this.items.forEach(item => {
+      this.items.forEach((item) => {
         this.propagate(item, 'takeSnapshot');
       });
     }
@@ -308,7 +308,8 @@ export class Collection<T extends object, O extends object = object> extends Arr
   private createCondition(cond: FilterQuery<T> = {} as FilterQuery<T>): FilterQuery<T> {
     if (this.property.reference === ReferenceType.ONE_TO_MANY) {
       cond[this.property.mappedBy] = helper(this.owner).getPrimaryKey();
-    } else { // MANY_TO_MANY
+    } else {
+      // MANY_TO_MANY
       this.createManyToManyCondition(cond);
     }
 
@@ -317,10 +318,10 @@ export class Collection<T extends object, O extends object = object> extends Arr
 
   private createOrderBy(orderBy: QueryOrderMap<T> | QueryOrderMap<T>[] = []): QueryOrderMap<T>[] {
     if (Utils.isEmpty(orderBy) && this.property.reference === ReferenceType.ONE_TO_MANY) {
-      const defaultOrder = this.property.referencedColumnNames.map(name => {
+      const defaultOrder = this.property.referencedColumnNames.map((name) => {
         return { [name]: QueryOrder.ASC };
       });
-      orderBy = this.property.orderBy as QueryOrderMap<T> || defaultOrder;
+      orderBy = (this.property.orderBy as QueryOrderMap<T>) || defaultOrder;
     }
 
     return Utils.asArray(orderBy);
@@ -331,7 +332,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
       // we know there is at least one item as it was checked in load method
       const pk = this.property.targetMeta!.primaryKeys[0];
       cond[pk] = { $in: [] };
-      this.items.forEach(item => cond[pk].$in.push(helper(item).getPrimaryKey()));
+      this.items.forEach((item) => cond[pk].$in.push(helper(item).getPrimaryKey()));
     } else {
       cond[this.property.mappedBy] = helper(this.owner).getPrimaryKey();
     }
@@ -416,16 +417,23 @@ export class Collection<T extends object, O extends object = object> extends Arr
     };
 
     // throw if we are modifying inverse side of M:N collection when owning side is initialized (would be ignored when persisting)
-    if (items.find(item => check(item))) {
+    if (items.find((item) => check(item))) {
       throw ValidationError.cannotModifyInverseCollection(this.owner, this.property);
     }
   }
-
 }
 
 Object.defineProperties(Collection.prototype, {
-  $: { get() { return this; } },
-  get: { get() { return () => this; } },
+  $: {
+    get() {
+      return this;
+    },
+  },
+  get: {
+    get() {
+      return () => this;
+    },
+  },
 });
 
 export interface InitOptions<T, P extends string = never> {

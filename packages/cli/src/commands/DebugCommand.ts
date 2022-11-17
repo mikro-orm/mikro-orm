@@ -4,7 +4,6 @@ import { ConfigurationLoader, Utils, colors } from '@mikro-orm/core';
 import { CLIHelper } from '../CLIHelper';
 
 export class DebugCommand implements CommandModule {
-
   command = 'debug';
   describe = 'Debug CLI configuration';
 
@@ -37,8 +36,8 @@ export class DebugCommand implements CommandModule {
       const entities = config.get('entities', []);
 
       if (entities.length > 0) {
-        const refs = entities.filter(p => !Utils.isString(p));
-        const paths = entities.filter(p => Utils.isString(p));
+        const refs = entities.filter((p) => !Utils.isString(p));
+        const paths = entities.filter((p) => Utils.isString(p));
         const will = !config.get('tsNode') ? 'will' : 'could';
         CLIHelper.dump(` - ${will} use \`entities\` array (contains ${refs.length} references and ${paths.length} paths)`);
 
@@ -50,8 +49,8 @@ export class DebugCommand implements CommandModule {
       const entitiesTs = config.get('entitiesTs', []);
 
       if (entitiesTs.length > 0) {
-        const refs = entitiesTs.filter(p => !Utils.isString(p));
-        const paths = entitiesTs.filter(p => Utils.isString(p));
+        const refs = entitiesTs.filter((p) => !Utils.isString(p));
+        const paths = entitiesTs.filter((p) => Utils.isString(p));
         /* istanbul ignore next */
         const will = config.get('tsNode') ? 'will' : 'could';
         CLIHelper.dump(` - ${will} use \`entitiesTs\` array (contains ${refs.length} references and ${paths.length} paths)`);
@@ -79,5 +78,4 @@ export class DebugCommand implements CommandModule {
       }
     }
   }
-
 }

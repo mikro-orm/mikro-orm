@@ -2,30 +2,25 @@ import { Entity, Index, ManyToOne, MikroORM, OneToOne, PrimaryKey, Property } fr
 
 @Entity()
 export class UserAction {
-
   @PrimaryKey()
   idUserAction!: string;
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 @Index({ properties: ['id', 'userAction'] })
 export class Step {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne({ primary: true, onDelete: 'cascade' })
   userAction!: UserAction;
-
 }
 
 @Entity()
 export class Component {
-
   @PrimaryKey()
   idComponent!: string;
 
@@ -39,11 +34,9 @@ export class Component {
     entity: () => Component,
   })
   resultComponent?: Component;
-
 }
 
 describe('complex FKs in mariadb (GH 2844)', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -64,5 +57,4 @@ describe('complex FKs in mariadb (GH 2844)', () => {
     expect(sql).toMatchSnapshot();
     await orm.schema.execute(sql);
   });
-
 });

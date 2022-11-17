@@ -3,11 +3,7 @@ import type { OneToManyOptions } from './OneToMany';
 import { createOneToDecorator } from './OneToMany';
 import type { AnyString, EntityName } from '../typings';
 
-export function OneToOne<T, O>(
-  entity?: OneToOneOptions<T, O> | string | ((e?: any) => EntityName<T>),
-  mappedByOrOptions?: (string & keyof T) | ((e: T) => any) | Partial<OneToOneOptions<T, O>>,
-  options: Partial<OneToOneOptions<T, O>> = {},
-) {
+export function OneToOne<T, O>(entity?: OneToOneOptions<T, O> | string | ((e?: any) => EntityName<T>), mappedByOrOptions?: (string & keyof T) | ((e: T) => any) | Partial<OneToOneOptions<T, O>>, options: Partial<OneToOneOptions<T, O>> = {}) {
   const mappedBy = typeof mappedByOrOptions === 'object' ? mappedByOrOptions.mappedBy : mappedByOrOptions;
   options = typeof mappedByOrOptions === 'object' ? { ...mappedByOrOptions, ...options } : options;
   return createOneToDecorator<T, O>(entity as string, mappedBy, options, ReferenceType.ONE_TO_ONE);

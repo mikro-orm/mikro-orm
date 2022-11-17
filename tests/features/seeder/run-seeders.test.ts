@@ -5,7 +5,6 @@ import { User } from './entities/user.entity';
 import { DatabaseSeeder } from '../../database/seeder/database.seeder';
 
 describe('Run seeders', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -29,5 +28,4 @@ describe('Run seeders', () => {
     const users = await orm.em.findAndCount(User, {});
     expect(users[1]).toBe(1);
   });
-
 });

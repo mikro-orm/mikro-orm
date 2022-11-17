@@ -4,7 +4,6 @@ import { mockLogger } from '../helpers';
 
 @Entity()
 export class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -18,12 +17,10 @@ export class Author {
     orphanRemoval: true,
   })
   books = new Collection<Book>(this);
-
 }
 
 @Entity()
 export class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -44,12 +41,10 @@ export class Book {
   constructor(title: string) {
     this.title = title;
   }
-
 }
 
 @Entity()
 export class Page {
-
   @PrimaryKey()
   id!: number;
 
@@ -62,7 +57,6 @@ export class Page {
   constructor(text: string) {
     this.text = text;
   }
-
 }
 
 async function createEntities(orm: MikroORM) {
@@ -79,7 +73,6 @@ async function createEntities(orm: MikroORM) {
 }
 
 describe('GH issue 1126', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -114,7 +107,9 @@ describe('GH issue 1126', () => {
       orm.em.clear();
     }
 
-    expect(mock.mock.calls[0][0]).toMatch('select `a0`.`id`, `a0`.`name`, `b1`.`id` as `b1__id`, `b1`.`title` as `b1__title`, `b1`.`author_id` as `b1__author_id`, `p2`.`id` as `p2__id`, `p2`.`book_id` as `p2__book_id`, `p2`.`text` as `p2__text` from `author` as `a0` left join `book` as `b1` on `a0`.`id` = `b1`.`author_id` left join `page` as `p2` on `b1`.`id` = `p2`.`book_id` where `a0`.`id` = ?');
+    expect(mock.mock.calls[0][0]).toMatch(
+      'select `a0`.`id`, `a0`.`name`, `b1`.`id` as `b1__id`, `b1`.`title` as `b1__title`, `b1`.`author_id` as `b1__author_id`, `p2`.`id` as `p2__id`, `p2`.`book_id` as `p2__book_id`, `p2`.`text` as `p2__text` from `author` as `a0` left join `book` as `b1` on `a0`.`id` = `b1`.`author_id` left join `page` as `p2` on `b1`.`id` = `p2`.`book_id` where `a0`.`id` = ?'
+    );
     expect(mock.mock.calls[1][0]).toMatch('begin');
     expect(mock.mock.calls[2][0]).toMatch('insert into `book` (`title`, `author_id`) values (?, ?)');
     expect(mock.mock.calls[3][0]).toMatch('update `page` set `book_id` = ? where `id` = ?');
@@ -142,7 +137,9 @@ describe('GH issue 1126', () => {
       orm.em.clear();
     }
 
-    expect(mock.mock.calls[0][0]).toMatch('select `a0`.`id`, `a0`.`name`, `b1`.`id` as `b1__id`, `b1`.`title` as `b1__title`, `b1`.`author_id` as `b1__author_id`, `p2`.`id` as `p2__id`, `p2`.`book_id` as `p2__book_id`, `p2`.`text` as `p2__text` from `author` as `a0` left join `book` as `b1` on `a0`.`id` = `b1`.`author_id` left join `page` as `p2` on `b1`.`id` = `p2`.`book_id` where `a0`.`id` = ?');
+    expect(mock.mock.calls[0][0]).toMatch(
+      'select `a0`.`id`, `a0`.`name`, `b1`.`id` as `b1__id`, `b1`.`title` as `b1__title`, `b1`.`author_id` as `b1__author_id`, `p2`.`id` as `p2__id`, `p2`.`book_id` as `p2__book_id`, `p2`.`text` as `p2__text` from `author` as `a0` left join `book` as `b1` on `a0`.`id` = `b1`.`author_id` left join `page` as `p2` on `b1`.`id` = `p2`.`book_id` where `a0`.`id` = ?'
+    );
     expect(mock.mock.calls[1][0]).toMatch('begin');
     expect(mock.mock.calls[2][0]).toMatch('insert into `book` (`title`, `author_id`) values (?, ?) returning `id`');
     expect(mock.mock.calls[3][0]).toMatch('insert into `page` (`text`, `book_id`) values (?, ?) returning `id`');
@@ -170,7 +167,9 @@ describe('GH issue 1126', () => {
       orm.em.clear();
     }
 
-    expect(mock.mock.calls[0][0]).toMatch('select `a0`.`id`, `a0`.`name`, `b1`.`id` as `b1__id`, `b1`.`title` as `b1__title`, `b1`.`author_id` as `b1__author_id`, `p2`.`id` as `p2__id`, `p2`.`book_id` as `p2__book_id`, `p2`.`text` as `p2__text` from `author` as `a0` left join `book` as `b1` on `a0`.`id` = `b1`.`author_id` left join `page` as `p2` on `b1`.`id` = `p2`.`book_id` where `a0`.`id` = ?');
+    expect(mock.mock.calls[0][0]).toMatch(
+      'select `a0`.`id`, `a0`.`name`, `b1`.`id` as `b1__id`, `b1`.`title` as `b1__title`, `b1`.`author_id` as `b1__author_id`, `p2`.`id` as `p2__id`, `p2`.`book_id` as `p2__book_id`, `p2`.`text` as `p2__text` from `author` as `a0` left join `book` as `b1` on `a0`.`id` = `b1`.`author_id` left join `page` as `p2` on `b1`.`id` = `p2`.`book_id` where `a0`.`id` = ?'
+    );
     expect(mock.mock.calls[1][0]).toMatch('begin');
     expect(mock.mock.calls[2][0]).toMatch('insert into `book` (`title`, `author_id`) values (?, ?)');
     expect(mock.mock.calls[3][0]).toMatch('insert into `page` (`text`, `book_id`) values (?, ?)');
@@ -183,5 +182,4 @@ describe('GH issue 1126', () => {
       expect(author.books[0].pages).toHaveLength(1);
     }
   });
-
 });

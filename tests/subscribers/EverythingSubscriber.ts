@@ -3,7 +3,6 @@ import { Subscriber } from '@mikro-orm/core';
 
 @Subscriber()
 export class EverythingSubscriber implements EventSubscriber {
-
   static readonly log: [string, EventArgs<any>][] = [];
 
   async afterCreate<T>(args: EventArgs<T>): Promise<void> {
@@ -37,5 +36,4 @@ export class EverythingSubscriber implements EventSubscriber {
   onInit<T>(args: EventArgs<T>): void {
     EverythingSubscriber.log.push(['onInit', args]);
   }
-
 }

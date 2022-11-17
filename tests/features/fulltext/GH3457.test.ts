@@ -1,20 +1,10 @@
-import {
-  ChangeSetType,
-  Entity,
-  EventSubscriber, FlushEventArgs,
-  Index,
-  MikroORM,
-  PrimaryKey,
-  Property,
-  Subscriber, wrap,
-} from '@mikro-orm/core';
+import { ChangeSetType, Entity, EventSubscriber, FlushEventArgs, Index, MikroORM, PrimaryKey, Property, Subscriber, wrap } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { FullTextType } from '@mikro-orm/postgresql';
 import { randomUUID } from 'crypto';
 
 @Entity()
 export class Test {
-
   @PrimaryKey({ autoincrement: true })
   id!: number;
 
@@ -31,18 +21,13 @@ export class Test {
   @Property({
     type: FullTextType,
     nullable: true,
-    onUpdate: (e: Test) =>
-      `${e.clientFirstName || ''} ${e.clientMiddleName || ''} ${e.clientLastName || ''}`
-        .replace(/\s+/g, ' ')
-        .trim(),
+    onUpdate: (e: Test) => `${e.clientFirstName || ''} ${e.clientMiddleName || ''} ${e.clientLastName || ''}`.replace(/\s+/g, ' ').trim(),
   })
   clientNameFull?: string;
-
 }
 
 @Entity()
 export class TestHistory {
-
   @PrimaryKey()
   id!: string;
 
@@ -58,12 +43,10 @@ export class TestHistory {
   @Index({ type: 'fulltext' })
   @Property({ type: FullTextType, nullable: true })
   clientNameFull?: string;
-
 }
 
 @Subscriber()
 export class CaseHistorySubscriber implements EventSubscriber<Test> {
-
   async onFlush(args: FlushEventArgs): Promise<void> {
     const changeSets = args.uow.getChangeSets();
 
@@ -77,7 +60,6 @@ export class CaseHistorySubscriber implements EventSubscriber<Test> {
       }
     }
   }
-
 }
 
 let orm: MikroORM<PostgreSqlDriver>;

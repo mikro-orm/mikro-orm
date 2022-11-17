@@ -4,68 +4,57 @@ import { v4 } from 'uuid';
 
 @Entity()
 export class A {
-
   @PrimaryKey()
   id: string = v4();
 
   @Property({ unique: true })
   value!: string;
-
 }
 
 @Entity()
 export class T {
-
   @PrimaryKey()
   id: string = v4();
 
   @Property({ unique: true })
   value!: string;
-
 }
 
 @Entity()
 export class I {
-
   @OneToOne({ entity: 'V', joinColumn: 'id', primary: true, mapToPk: true })
   id!: string;
 
   @Property({ unique: true })
   value!: number;
-
 }
 
 @Entity()
 export class V {
-
   @PrimaryKey()
   id: string = v4();
 
   @OneToOne({ entity: 'I', mappedBy: 'id', nullable: true })
   i?: I;
-
 }
 
 @Entity()
 export class E {
-
   @PrimaryKey()
   id: string = v4();
 
   @ManyToOne({ entity: 'A' })
   a!: A;
 
-  @ManyToOne({ entity: 'T'  })
+  @ManyToOne({ entity: 'T' })
   t!: T;
 
-  @ManyToOne({ entity: 'V'   })
+  @ManyToOne({ entity: 'V' })
   v!: V;
-
 }
 
 @Entity()
 export class M {
-
   @PrimaryKey()
   id: string = v4();
 
@@ -74,12 +63,10 @@ export class M {
 
   @ManyToOne({ entity: 'E' })
   e!: E;
-
 }
 
 @Entity()
 export class N {
-
   @OneToOne({ entity: 'E', joinColumn: 'id', primary: true })
   id!: E;
 
@@ -88,7 +75,6 @@ export class N {
 
   @OneToMany({ entity: 'M', mappedBy: 'n' })
   m = new Collection<M>(this);
-
 }
 
 async function createEntities(orm: MikroORM) {
@@ -112,7 +98,6 @@ async function createEntities(orm: MikroORM) {
 }
 
 describe('GH issue 1134', () => {
-
   let orm: MikroORM<AbstractSqlDriver>;
 
   beforeAll(async () => {
@@ -133,7 +118,7 @@ describe('GH issue 1134', () => {
     const json = JSON.parse(JSON.stringify(entity));
 
     // check both entity and DTO
-    [entity, json].forEach(item => {
+    [entity, json].forEach((item) => {
       expect(item[0].m[0].e).toMatchObject({
         a: {
           value: 'A2',
@@ -155,7 +140,7 @@ describe('GH issue 1134', () => {
     const json = JSON.parse(JSON.stringify(entity));
 
     // check both entity and DTO
-    [entity, json].forEach(item => {
+    [entity, json].forEach((item) => {
       expect(item[0].m[0].e).toMatchObject({
         a: {
           value: 'A2',
@@ -172,4 +157,3 @@ describe('GH issue 1134', () => {
     });
   });
 });
-

@@ -4,33 +4,26 @@ import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 class Profile {
-
   @PrimaryKey()
   id!: string;
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: string;
-
 }
 
 @Entity({ tableName: 'user' })
 class User2 {
-
   @PrimaryKey()
   id!: string;
 
   @OneToOne(() => Profile, undefined, { nullable: true })
   profile!: Profile;
-
 }
 
 describe('adding FK column (GH 942)', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
@@ -55,5 +48,4 @@ describe('adding FK column (GH 942)', () => {
     const diff2 = await orm.schema.getUpdateSchemaMigrationSQL();
     expect(diff2.down).toBe('');
   });
-
 });

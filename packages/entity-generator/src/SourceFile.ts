@@ -2,28 +2,24 @@ import type { Dictionary, EntityMetadata, EntityOptions, EntityProperty, NamingS
 import { ReferenceType, UnknownType, Utils } from '@mikro-orm/core';
 
 export class SourceFile {
-
   protected readonly coreImports = new Set<string>();
   protected readonly entityImports = new Set<string>();
 
-  constructor(protected readonly meta: EntityMetadata,
-              protected readonly namingStrategy: NamingStrategy,
-              protected readonly platform: Platform,
-              protected readonly esmImport: boolean) { }
+  constructor(protected readonly meta: EntityMetadata, protected readonly namingStrategy: NamingStrategy, protected readonly platform: Platform, protected readonly esmImport: boolean) {}
 
   generate(): string {
     this.coreImports.add('Entity');
     let ret = `@Entity(${this.getCollectionDecl()})\n`;
 
-    this.meta.indexes.forEach(index => {
+    this.meta.indexes.forEach((index) => {
       this.coreImports.add('Index');
-      const properties = Utils.asArray(index.properties).map(prop => `'${prop}'`);
+      const properties = Utils.asArray(index.properties).map((prop) => `'${prop}'`);
       ret += `@Index({ name: '${index.name}', properties: [${properties.join(', ')}] })\n`;
     });
 
-    this.meta.uniques.forEach(index => {
+    this.meta.uniques.forEach((index) => {
       this.coreImports.add('Unique');
-      const properties = Utils.asArray(index.properties).map(prop => `'${prop}'`);
+      const properties = Utils.asArray(index.properties).map((prop) => `'${prop}'`);
       ret += `@Unique({ name: '${index.name}', properties: [${properties.join(', ')}] })\n`;
     });
 
@@ -31,7 +27,7 @@ export class SourceFile {
     const enumDefinitions: string[] = [];
     const optionalProperties: EntityProperty<any>[] = [];
     let classBody = '\n';
-    Object.values(this.meta.properties).forEach(prop => {
+    Object.values(this.meta.properties).forEach((prop) => {
       const decorator = this.getPropertyDecorator(prop, 2);
       const definition = this.getPropertyDefinition(prop, 2);
 
@@ -49,20 +45,20 @@ export class SourceFile {
       }
 
       if (!prop.nullable && typeof prop.default !== 'undefined') {
-          optionalProperties.push(prop);
+        optionalProperties.push(prop);
       }
     });
 
     if (optionalProperties.length > 0) {
-        this.coreImports.add('OptionalProps');
-        const optionalPropertyNames = optionalProperties.map(prop => `'${prop.name}'`).sort();
-        ret += `\n\n${' '.repeat(2)}[OptionalProps]?: ${optionalPropertyNames.join(' | ')};`;
+      this.coreImports.add('OptionalProps');
+      const optionalPropertyNames = optionalProperties.map((prop) => `'${prop.name}'`).sort();
+      ret += `\n\n${' '.repeat(2)}[OptionalProps]?: ${optionalPropertyNames.join(' | ')};`;
     }
     ret += `${classBody}}\n`;
-    const imports = [`import { ${([...this.coreImports].sort().join(', '))} } from '@mikro-orm/core';`];
+    const imports = [`import { ${[...this.coreImports].sort().join(', ')} } from '@mikro-orm/core';`];
     const entityImportExtension = this.esmImport ? '.js' : '';
-    const entityImports = [...this.entityImports].filter(e => e !== this.meta.className);
-    entityImports.sort().forEach(entity => {
+    const entityImports = [...this.entityImports].filter((e) => e !== this.meta.className);
+    entityImports.sort().forEach((entity) => {
       imports.push(`import { ${entity} } from './${entity}${entityImportExtension}';`);
     });
 
@@ -95,7 +91,7 @@ export class SourceFile {
     // string defaults are usually things like SQL functions, but can be also enums, for that `useDefault` should be true
     const isEnumOrNonStringDefault = prop.enum || typeof prop.default !== 'string';
     const useDefault = prop.default != null && isEnumOrNonStringDefault;
-    const optional = prop.nullable ? '?' : (useDefault ? '' : '!');
+    const optional = prop.nullable ? '?' : useDefault ? '' : '!';
 
     if (prop.wrappedReference) {
       this.coreImports.add('IdentifiedReference');
@@ -144,7 +140,9 @@ export class SourceFile {
       return '';
     }
 
-    return `{ ${Object.entries(options).map(([opt, val]) => `${opt}: ${val}`).join(', ')} }`;
+    return `{ ${Object.entries(options)
+      .map(([opt, val]) => `${opt}: ${val}`)
+      .join(', ')} }`;
   }
 
   private getPropertyDecorator(prop: EntityProperty, padLeft: number): string {
@@ -169,13 +167,15 @@ export class SourceFile {
 
     this.getCommonDecoratorOptions(options, prop);
     const indexes = this.getPropertyIndexes(prop, options);
-    decorator = [...indexes.sort(), decorator].map(d => padding + d).join('\n');
+    decorator = [...indexes.sort(), decorator].map((d) => padding + d).join('\n');
 
     if (!Utils.hasObjectKeys(options)) {
       return `${decorator}()\n`;
     }
 
-    return `${decorator}({ ${Object.entries(options).map(([opt, val]) => `${opt}: ${val}`).join(', ')} })\n`;
+    return `${decorator}({ ${Object.entries(options)
+      .map(([opt, val]) => `${opt}: ${val}`)
+      .join(', ')} })\n`;
   }
 
   protected getPropertyIndexes(prop: EntityProperty, options: Dictionary): string[] {
@@ -263,7 +263,7 @@ export class SourceFile {
     const columnType1 = mappedType1.getColumnType({ ...prop, autoincrement: false }, this.platform);
     const columnType2 = mappedType2.getColumnType({ ...prop, autoincrement: false }, this.platform);
 
-    if (columnType1 !== columnType2 || [mappedType1, mappedType2].some(t => t instanceof UnknownType)) {
+    if (columnType1 !== columnType2 || [mappedType1, mappedType2].some((t) => t instanceof UnknownType)) {
       options.columnType = this.quote(prop.columnTypes[0]);
     }
 
@@ -363,5 +363,4 @@ export class SourceFile {
 
     return '@Property';
   }
-
 }

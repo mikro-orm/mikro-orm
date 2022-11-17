@@ -14,7 +14,6 @@ import { colors } from '../logging/colors';
  * @internal
  */
 export class ConfigurationLoader {
-
   static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true, options: Partial<Options> = {}): Promise<Configuration<D>> {
     await this.commonJSCompat(options);
     this.registerDotenv(options);
@@ -38,7 +37,7 @@ export class ConfigurationLoader {
           tmp = await tmp;
         }
 
-        const esmConfigOptions = await this.isESM() ? { entityGenerator: { esmImport: true } } : {};
+        const esmConfigOptions = (await this.isESM()) ? { entityGenerator: { esmImport: true } } : {};
 
         return new Configuration({ ...esmConfigOptions, ...tmp, ...options, ...env }, validate);
       }
@@ -103,12 +102,12 @@ export class ConfigurationLoader {
     const distDir = pathExistsSync(process.cwd() + '/dist');
     const buildDir = pathExistsSync(process.cwd() + '/build');
     /* istanbul ignore next */
-    const path = distDir ? 'dist' : (buildDir ? 'build' : 'src');
+    const path = distDir ? 'dist' : buildDir ? 'build' : 'src';
     paths.push(`./${path}/mikro-orm.config.js`);
     paths.push('./mikro-orm.config.js');
     const tsNode = Utils.detectTsNode();
 
-    return paths.filter(p => p.endsWith('.js') || tsNode);
+    return paths.filter((p) => p.endsWith('.js') || tsNode);
   }
 
   static async isESM(): Promise<boolean> {
@@ -152,16 +151,16 @@ export class ConfigurationLoader {
 
   static registerDotenv<D extends IDatabaseDriver>(options?: Options<D> | Configuration<D>): void {
     const baseDir = options instanceof Configuration ? options.get('baseDir') : options?.baseDir;
-    const path = process.env.MIKRO_ORM_ENV ?? ((baseDir ?? process.cwd()) + '/.env');
+    const path = process.env.MIKRO_ORM_ENV ?? (baseDir ?? process.cwd()) + '/.env';
     dotenv.config({ path });
   }
 
   static loadEnvironmentVars<D extends IDatabaseDriver>(): Partial<Options<D>> {
     const ret: Dictionary = {};
-    const array = (v: string) => v.split(',').map(vv => vv.trim());
+    const array = (v: string) => v.split(',').map((vv) => vv.trim());
     const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
     const num = (v: string) => +v;
-    const read = (o: Dictionary, envKey: string, key: string, mapper: (v: string) => unknown = v => v) => {
+    const read = (o: Dictionary, envKey: string, key: string, mapper: (v: string) => unknown = (v) => v) => {
       if (!(envKey in process.env)) {
         return;
       }
@@ -169,7 +168,7 @@ export class ConfigurationLoader {
       const val = process.env[envKey]!;
       o[key] = mapper(val);
     };
-    const cleanup = (o: Dictionary, k: string) => Utils.hasObjectKeys(o[k]) ? {} : delete o[k];
+    const cleanup = (o: Dictionary, k: string) => (Utils.hasObjectKeys(o[k]) ? {} : delete o[k]);
 
     read(ret, 'MIKRO_ORM_BASE_DIR', 'baseDir');
     read(ret, 'MIKRO_ORM_TYPE', 'type');
@@ -239,10 +238,7 @@ export class ConfigurationLoader {
 
   static async getORMPackages(): Promise<Set<string>> {
     const pkg = await this.getPackageConfig();
-    return new Set([
-      ...Object.keys(pkg.dependencies ?? {}),
-      ...Object.keys(pkg.devDependencies ?? {}),
-    ]);
+    return new Set([...Object.keys(pkg.dependencies ?? {}), ...Object.keys(pkg.devDependencies ?? {})]);
   }
 
   /** @internal */
@@ -252,7 +248,7 @@ export class ConfigurationLoader {
     }
 
     /* istanbul ignore next */
-    options.dynamicImportProvider ??= id => {
+    options.dynamicImportProvider ??= (id) => {
       if (platform() === 'win32') {
         try {
           id = fileURLToPath(id);
@@ -287,7 +283,7 @@ export class ConfigurationLoader {
 
     const deps = await this.getORMPackages();
     const exceptions = new Set(['nestjs', 'sql-highlighter', 'mongo-highlighter']);
-    const ormPackages = [...deps].filter(d => d.startsWith('@mikro-orm/') && d !== '@mikro-orm/core' && !exceptions.has(d.substring('@mikro-orm/'.length)));
+    const ormPackages = [...deps].filter((d) => d.startsWith('@mikro-orm/') && d !== '@mikro-orm/core' && !exceptions.has(d.substring('@mikro-orm/'.length)));
 
     for (const ormPackage of ormPackages) {
       const version = await this.getORMPackageVersion(ormPackage);
@@ -295,16 +291,15 @@ export class ConfigurationLoader {
       if (version != null && version !== coreVersion) {
         throw new Error(
           `Bad ${colors.cyan(ormPackage)} version ${colors.yellow('' + version)}.\n` +
-          `All official @mikro-orm/* packages need to have the exact same version as @mikro-orm/core (${colors.green(coreVersion)}).\n` +
-          `Only exceptions are packages that don't live in the 'mikro-orm' repository: ${[...exceptions].join(', ')}.\n` +
-          `Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?`,
+            `All official @mikro-orm/* packages need to have the exact same version as @mikro-orm/core (${colors.green(coreVersion)}).\n` +
+            `Only exceptions are packages that don't live in the 'mikro-orm' repository: ${[...exceptions].join(', ')}.\n` +
+            `Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?`
         );
       }
     }
 
     return coreVersion;
   }
-
 }
 
 export interface Settings {

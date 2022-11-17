@@ -1,32 +1,27 @@
 import { Entity, Enum, ManyToOne, MikroORM, PrimaryKey } from '@mikro-orm/core';
 
 export enum BrandType {
-    Foo = 'foo',
-    Bar = 'bar',
-    Baz = 'baz'
+  Foo = 'foo',
+  Bar = 'bar',
+  Baz = 'baz',
 }
 
 @Entity({ tableName: 'brand' })
 export class Brand {
-
   @Enum({ primary: true, items: () => BrandType })
   id!: BrandType;
-
 }
 
 @Entity({ tableName: 'product' })
 export class Product {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => Brand)
   brand!: Brand;
-
 }
 
 describe('using enum as a foreign key value', () => {
-
   test('schema generator creates the correct type', async () => {
     const orm = await MikroORM.init({
       entities: [Brand, Product],
@@ -44,5 +39,4 @@ describe('using enum as a foreign key value', () => {
 
     await orm.close(true);
   });
-
 });

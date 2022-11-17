@@ -7,7 +7,6 @@ import { FooBaz } from '../../entities/FooBaz';
 import { Dummy } from '../../entities/Dummy';
 
 describe('UnitOfWork', () => {
-
   let orm: MikroORM;
   let uow: UnitOfWork;
   let computer: ChangeSetComputer;
@@ -36,7 +35,12 @@ describe('UnitOfWork', () => {
     expect(() => computer.computeChangeSet(author)).toThrowError(`Trying to set Author.termsAccepted of type 'boolean' to '2' of type 'number'`);
 
     // string date with correct format will be auto-corrected
-    Object.assign(author, { name: '333', email: '444', createdAt: '2018-01-01', termsAccepted: 1 });
+    Object.assign(author, {
+      name: '333',
+      email: '444',
+      createdAt: '2018-01-01',
+      termsAccepted: 1,
+    });
     let changeSet = computer.computeChangeSet(author)!;
     expect(typeof changeSet.payload.name).toBe('string');
     expect(changeSet.payload.name).toBe('333');
@@ -82,12 +86,21 @@ describe('UnitOfWork', () => {
     const author = new Author('test', 'test');
 
     // string date with correct format will not be auto-corrected in strict mode
-    const payload = { name: '333', email: '444', createdAt: '2018-01-01', termsAccepted: 1 };
+    const payload = {
+      name: '333',
+      email: '444',
+      createdAt: '2018-01-01',
+      termsAccepted: 1,
+    };
     expect(() => validator.validate(author, payload, orm.getMetadata().get(Author.name))).toThrowError(`Trying to set Author.createdAt of type 'date' to '2018-01-01' of type 'string'`);
   });
 
   test('changeSet is null for empty payload', async () => {
-    const author = orm.em.create(Author, { id: '00000001885f0a3cc37dc9f0', name: 'test', email: 'test' });
+    const author = orm.em.create(Author, {
+      id: '00000001885f0a3cc37dc9f0',
+      name: 'test',
+      email: 'test',
+    });
     expect(uow.getIdentityMap().get('Author-00000001885f0a3cc37dc9f0')).toBeUndefined();
     uow.merge(author); // add entity to IM first
     const changeSet = await computer.computeChangeSet(author); // then try to persist it again
@@ -108,7 +121,11 @@ describe('UnitOfWork', () => {
   });
 
   test('persist and remove will add entity to given stack only once', async () => {
-    const author = orm.em.create(Author, { id: '00000001885f0a3cc37dc9f0', name: 'test', email: 'test' });
+    const author = orm.em.create(Author, {
+      id: '00000001885f0a3cc37dc9f0',
+      name: 'test',
+      email: 'test',
+    });
     uow.persist(author);
     expect(uow.getPersistStack().size).toBe(1);
     uow.persist(author);
@@ -143,10 +160,9 @@ describe('UnitOfWork', () => {
     let changeSets: ChangeSet<any>[] = [];
 
     class Subscriber implements EventSubscriber {
-
       async onFlush(args: FlushEventArgs): Promise<void> {
         const changeSets = args.uow.getChangeSets();
-        const cs = changeSets.find(cs => cs.type === ChangeSetType.CREATE && cs.entity instanceof FooBar);
+        const cs = changeSets.find((cs) => cs.type === ChangeSetType.CREATE && cs.entity instanceof FooBar);
 
         if (cs) {
           const baz = new FooBaz();
@@ -160,7 +176,6 @@ describe('UnitOfWork', () => {
       async afterFlush(args: FlushEventArgs): Promise<void> {
         changeSets = [...args.uow.getChangeSets()];
       }
-
     }
 
     const em = orm.em.fork();
@@ -173,12 +188,11 @@ describe('UnitOfWork', () => {
     expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('foo-baz').insertMany([ { name: 'dynamic' } ], {})`);
     expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('foo-bar'\)\.insertMany\(\[ { name: 'bar', onCreateTest: true, onUpdateTest: true, baz: ObjectId\('\w+'\) } ], {}\)/);
 
-    expect(changeSets.map(cs => [cs.type, cs.name])).toEqual([
+    expect(changeSets.map((cs) => [cs.type, cs.name])).toEqual([
       [ChangeSetType.CREATE, 'FooBar'],
       [ChangeSetType.CREATE, 'FooBaz'],
     ]);
   });
 
   afterAll(async () => orm.close(true));
-
 });

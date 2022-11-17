@@ -9,7 +9,6 @@ import { helper } from '../entity/wrap';
  * are defined in populate hint). If not, we proceed and call `leave` afterwards.
  */
 export class SerializationContext<T> {
-
   readonly path: [string, string][] = [];
   readonly visited = new Set<AnyEntity>();
   private entities = new Set<AnyEntity>();
@@ -41,7 +40,7 @@ export class SerializationContext<T> {
   }
 
   close() {
-    this.entities.forEach(entity => {
+    this.entities.forEach((entity) => {
       delete helper(entity).__serializationContext.root;
     });
   }
@@ -55,8 +54,8 @@ export class SerializationContext<T> {
 
     const items: AnyEntity[] = [];
     Object.keys(entity)
-      .filter(key => isVisible(meta, key))
-      .forEach(key => {
+      .filter((key) => isVisible(meta, key))
+      .forEach((key) => {
         if (Utils.isEntity(entity[key], true)) {
           items.push(entity[key]);
         } else if (Utils.isCollection(entity[key])) {
@@ -64,9 +63,7 @@ export class SerializationContext<T> {
         }
       });
 
-    items
-      .filter(item => !item.__helper!.__serializationContext.root)
-      .forEach(item => this.propagate(root, item, isVisible));
+    items.filter((item) => !item.__helper!.__serializationContext.root).forEach((item) => this.propagate(root, item, isVisible));
   }
 
   private isMarkedAsPopulated(prop: string): boolean {
@@ -77,19 +74,18 @@ export class SerializationContext<T> {
         return false;
       }
 
-      const exists = populate.find(p => p.field === segment[1]) as PopulateOptions<T>;
+      const exists = populate.find((p) => p.field === segment[1]) as PopulateOptions<T>;
 
       if (exists) {
         populate = exists.children;
       }
     }
 
-    return !!populate?.find(p => p.field === prop);
+    return !!populate?.find((p) => p.field === prop);
   }
 
   private register(entity: AnyEntity) {
     helper(entity).__serializationContext.root = this;
     this.entities.add(entity);
   }
-
 }

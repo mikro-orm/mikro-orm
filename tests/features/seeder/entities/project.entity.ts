@@ -4,7 +4,6 @@ import { User } from './user.entity';
 
 @Entity()
 export class Project {
-
   [OptionalProps]?: 'createdAt';
 
   @PrimaryKey()
@@ -19,7 +18,7 @@ export class Project {
   @Property()
   worth!: number;
 
-  @OneToMany(() => House, house => house.project)
+  @OneToMany(() => House, (house) => house.project)
   houses = new Collection<House>(this);
 
   @Property()
@@ -28,5 +27,4 @@ export class Project {
   constructor(name: string) {
     this.name = name;
   }
-
 }

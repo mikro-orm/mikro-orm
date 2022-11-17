@@ -4,7 +4,6 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Organization {
-
   @PrimaryKey({ type: 'uuid' })
   id: string = v4();
 
@@ -21,12 +20,10 @@ export class Organization {
   constructor(value: Partial<Organization> = {}) {
     Object.assign(this, value);
   }
-
 }
 
 @Entity()
 export class User {
-
   @PrimaryKey({ columnType: 'varchar' })
   id!: string;
 
@@ -57,12 +54,10 @@ export class User {
   constructor(value: Partial<User> = {}) {
     Object.assign(this, value);
   }
-
 }
 
 @Entity()
 export class Role {
-
   @PrimaryKey({ columnType: 'varchar' })
   id!: string;
 
@@ -75,15 +70,13 @@ export class Role {
   constructor(value: Partial<Role> = {}) {
     Object.assign(this, value);
   }
-
 }
 
 @Entity()
 export class UserRole {
-
   @ManyToOne({
     entity: () => User,
-    inversedBy: x => x.userRoles,
+    inversedBy: (x) => x.userRoles,
     primary: true,
     wrappedReference: true,
     cascade: [],
@@ -93,7 +86,7 @@ export class UserRole {
 
   @ManyToOne({
     entity: () => Role,
-    inversedBy: x => x.userRoles,
+    inversedBy: (x) => x.userRoles,
     primary: true,
     wrappedReference: true,
     cascade: [],
@@ -106,12 +99,10 @@ export class UserRole {
   constructor(value: Partial<UserRole> = {}) {
     Object.assign(this, value);
   }
-
 }
 
 @Entity()
 export class Program {
-
   @PrimaryKey({ columnType: 'varchar' })
   id!: string;
 
@@ -132,12 +123,10 @@ export class Program {
   constructor(value: Partial<Program> = {}) {
     Object.assign(this, value);
   }
-
 }
 
 @Entity()
 export class Site {
-
   @PrimaryKey({ columnType: 'varchar' })
   id!: string;
 
@@ -160,11 +149,9 @@ export class Site {
   constructor(value: Partial<Site> = {}) {
     Object.assign(this, value);
   }
-
 }
 
 describe('GH issue 1624, 1658 (postgres)', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -186,8 +173,17 @@ describe('GH issue 1624, 1658 (postgres)', () => {
     const orgId = v4();
     const role = new Role({ id: roleId, name: 'r' });
     const org = new Organization({ id: orgId, name: 'on' });
-    const user = new User({ email: 'e', firstName: 'f', lastName: 'l', organization: wrap(org).toReference(), id: userId });
-    const userRole = new UserRole({ role: wrap(role).toReference(), user: wrap(user).toReference() });
+    const user = new User({
+      email: 'e',
+      firstName: 'f',
+      lastName: 'l',
+      organization: wrap(org).toReference(),
+      id: userId,
+    });
+    const userRole = new UserRole({
+      role: wrap(role).toReference(),
+      user: wrap(user).toReference(),
+    });
     user.userRoles.add(userRole);
     await orm.em.persistAndFlush(user);
     orm.em.clear();
@@ -211,11 +207,7 @@ describe('GH issue 1624, 1658 (postgres)', () => {
     orm.em.clear();
 
     // or try to populate it
-    const b = await orm.em.findOneOrFail(
-      User,
-      { id: { $eq: userId }, organization: { $eq: orgId } },
-      { populate: ['userRoles'], strategy: LoadStrategy.JOINED },
-    );
+    const b = await orm.em.findOneOrFail(User, { id: { $eq: userId }, organization: { $eq: orgId } }, { populate: ['userRoles'], strategy: LoadStrategy.JOINED });
     expect(b.organization).toBeInstanceOf(Reference);
     expect(b.organization.id).toBe(orgId);
     expect(b.userRoles).toHaveLength(1);
@@ -227,7 +219,10 @@ describe('GH issue 1624, 1658 (postgres)', () => {
   });
 
   test(`GH issue 1658`, async () => {
-    const org = new Organization({ id: 'e3dca7ae-6389-49dc-931d-419716828a79', name: 'Organization' });
+    const org = new Organization({
+      id: 'e3dca7ae-6389-49dc-931d-419716828a79',
+      name: 'Organization',
+    });
     const program = new Program({
       id: 'cc455d1f-f4c7-4b57-b833-e6ca88239b61',
       organization: Reference.create(org),
@@ -252,11 +247,9 @@ describe('GH issue 1624, 1658 (postgres)', () => {
     const updatedSite = await orm.em.findOneOrFail(Site, { id: site.id });
     expect(updatedSite.name).toBe(createdSite.name);
   });
-
 });
 
 describe('GH issue 1624, 1658 (sqlite)', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -278,8 +271,17 @@ describe('GH issue 1624, 1658 (sqlite)', () => {
     const orgId = v4();
     const role = new Role({ id: roleId, name: 'r' });
     const org = new Organization({ id: orgId, name: 'on' });
-    const user = new User({ email: 'e', firstName: 'f', lastName: 'l', organization: wrap(org).toReference(), id: userId });
-    const userRole = new UserRole({ role: wrap(role).toReference(), user: wrap(user).toReference() });
+    const user = new User({
+      email: 'e',
+      firstName: 'f',
+      lastName: 'l',
+      organization: wrap(org).toReference(),
+      id: userId,
+    });
+    const userRole = new UserRole({
+      role: wrap(role).toReference(),
+      user: wrap(user).toReference(),
+    });
     user.userRoles.add(userRole);
     await orm.em.persistAndFlush(user);
     orm.em.clear();
@@ -303,11 +305,7 @@ describe('GH issue 1624, 1658 (sqlite)', () => {
     orm.em.clear();
 
     // or try to populate it
-    const b = await orm.em.findOneOrFail(
-      User,
-      { id: { $eq: userId }, organization: { $eq: orgId } },
-      { populate: ['userRoles'], strategy: LoadStrategy.JOINED },
-    );
+    const b = await orm.em.findOneOrFail(User, { id: { $eq: userId }, organization: { $eq: orgId } }, { populate: ['userRoles'], strategy: LoadStrategy.JOINED });
     expect(b.organization).toBeInstanceOf(Reference);
     expect(b.organization.id).toBe(orgId);
     expect(b.userRoles).toHaveLength(1);
@@ -319,7 +317,10 @@ describe('GH issue 1624, 1658 (sqlite)', () => {
   });
 
   test(`GH issue 1658`, async () => {
-    const org = new Organization({ id: 'e3dca7ae-6389-49dc-931d-419716828a79', name: 'Organization' });
+    const org = new Organization({
+      id: 'e3dca7ae-6389-49dc-931d-419716828a79',
+      name: 'Organization',
+    });
     const program = new Program({
       id: 'cc455d1f-f4c7-4b57-b833-e6ca88239b61',
       organization: Reference.create(org),
@@ -344,5 +345,4 @@ describe('GH issue 1624, 1658 (sqlite)', () => {
     const updatedSite = await orm.em.findOneOrFail(Site, { id: site.id });
     expect(updatedSite.name).toBe(createdSite.name);
   });
-
 });

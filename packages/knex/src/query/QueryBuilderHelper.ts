@@ -10,16 +10,10 @@ import type { AbstractSqlDriver } from '../AbstractSqlDriver';
  * @internal
  */
 export class QueryBuilderHelper {
-
   private readonly platform = this.driver.getPlatform();
   private readonly metadata = this.driver.getMetadata();
 
-  constructor(private readonly entityName: string,
-              private readonly alias: string,
-              private readonly aliasMap: Dictionary<Alias>,
-              private readonly subQueries: Dictionary<string>,
-              private readonly knex: Knex,
-              private readonly driver: AbstractSqlDriver) { }
+  constructor(private readonly entityName: string, private readonly alias: string, private readonly aliasMap: Dictionary<Alias>, private readonly subQueries: Dictionary<string>, private readonly knex: Knex, private readonly driver: AbstractSqlDriver) {}
 
   mapper(field: string | Knex.Raw, type?: QueryType): string;
   mapper(field: string | Knex.Raw, type?: QueryType, value?: any, alias?: string | null): string;
@@ -39,13 +33,13 @@ export class QueryBuilderHelper {
         const prop = this.getProperty(f, a);
 
         if (prop) {
-          parts.push(...prop.fieldNames.map(f => this.mapper(a !== this.alias ? `${a}.${f}` : f, type, value, alias)));
+          parts.push(...prop.fieldNames.map((f) => this.mapper(a !== this.alias ? `${a}.${f}` : f, type, value, alias)));
         } else {
           parts.push(this.mapper(a !== this.alias ? `${a}.${f}` : f, type, value, alias));
         }
       }
 
-      return this.knex.raw('(' + parts.map(part => this.knex.ref(part)).join(', ') + ')');
+      return this.knex.raw('(' + parts.map((part) => this.knex.ref(part)).join(', ') + ')');
     }
 
     let ret = field;
@@ -105,7 +99,7 @@ export class QueryBuilderHelper {
 
   processData(data: Dictionary, convertCustomTypes: boolean, multi = false): any {
     if (Array.isArray(data)) {
-      return data.map(d => this.processData(d, convertCustomTypes, true));
+      return data.map((d) => this.processData(d, convertCustomTypes, true));
     }
 
     const meta = this.metadata.find(this.entityName);
@@ -129,14 +123,26 @@ export class QueryBuilderHelper {
     const primaryKeys = prop.owner ? prop.joinColumns : prop2.referencedColumnNames;
 
     return {
-      prop, type, cond, ownerAlias, alias, table, schema,
-      joinColumns, inverseJoinColumns, primaryKeys,
+      prop,
+      type,
+      cond,
+      ownerAlias,
+      alias,
+      table,
+      schema,
+      joinColumns,
+      inverseJoinColumns,
+      primaryKeys,
     };
   }
 
   joinManyToOneReference(prop: EntityProperty, ownerAlias: string, alias: string, type: 'leftJoin' | 'innerJoin' | 'pivotJoin', cond: Dictionary = {}): JoinOptions {
     return {
-      prop, type, cond, ownerAlias, alias,
+      prop,
+      type,
+      cond,
+      ownerAlias,
+      alias,
       table: this.getTableName(prop.type),
       schema: this.driver.getSchemaName(prop.targetMeta),
       joinColumns: prop.referencedColumnNames,
@@ -148,7 +154,10 @@ export class QueryBuilderHelper {
     const pivotMeta = this.metadata.find(prop.pivotEntity)!;
     const ret = {
       [`${ownerAlias}.${prop.name}#${pivotAlias}`]: {
-        prop, type, cond, ownerAlias,
+        prop,
+        type,
+        cond,
+        ownerAlias,
         alias: pivotAlias,
         inverseAlias: alias,
         joinColumns: prop.joinColumns,
@@ -176,7 +185,11 @@ export class QueryBuilderHelper {
     const prop2 = pivotMeta.relations[0] === prop ? pivotMeta.relations[1] : pivotMeta.relations[0];
 
     return {
-      prop, type, cond, ownerAlias, alias,
+      prop,
+      type,
+      cond,
+      ownerAlias,
+      alias,
       table: pivotMeta.collection,
       schema: pivotMeta.schema,
       joinColumns: prop.joinColumns,
@@ -186,7 +199,7 @@ export class QueryBuilderHelper {
   }
 
   processJoins(qb: Knex.QueryBuilder, joins: Dictionary<JoinOptions>, schema?: string): void {
-    Object.values(joins).forEach(join => {
+    Object.values(joins).forEach((join) => {
       let table = `${join.table} as ${join.alias}`;
       const method = join.type === 'innerJoin' ? 'inner join' : 'left join';
       schema = join.schema && join.schema !== '*' ? join.schema : schema;
@@ -204,7 +217,7 @@ export class QueryBuilderHelper {
         conditions.push(`${this.knex.ref(left)} = ${this.knex.ref(right)}`);
       });
 
-      Object.keys(join.cond).forEach(key => {
+      Object.keys(join.cond).forEach((key) => {
         conditions.push(this.processJoinClause(key, join.cond[key], params));
       });
 
@@ -214,8 +227,8 @@ export class QueryBuilderHelper {
 
   private processJoinClause(key: string, value: unknown, params: Knex.Value[], operator = '$eq'): string {
     if (Utils.isGroupOperator(key) && Array.isArray(value)) {
-      const parts = value.map(sub => {
-        return this.wrapQueryGroup(Object.keys(sub).map(k => this.processJoinClause(k, sub[k], params)));
+      const parts = value.map((sub) => {
+        return this.wrapQueryGroup(Object.keys(sub).map((k) => this.processJoinClause(k, sub[k], params)));
       });
       return this.wrapQueryGroup(parts, key);
     }
@@ -230,13 +243,13 @@ export class QueryBuilderHelper {
     }
 
     if (Utils.isOperator(key, false) && Utils.isPlainObject(value)) {
-      const parts = Object.keys(value).map(k => this.processJoinClause(k, (value as Dictionary)[k], params, key));
+      const parts = Object.keys(value).map((k) => this.processJoinClause(k, (value as Dictionary)[k], params, key));
 
       return key === '$not' ? `not ${this.wrapQueryGroup(parts)}` : this.wrapQueryGroup(parts);
     }
 
-    if (Utils.isPlainObject(value) && Object.keys(value).every(k => Utils.isOperator(k, false))) {
-      const parts = Object.keys(value).map(op => this.processJoinClause(key, (value as Dictionary)[op], params, op));
+    if (Utils.isPlainObject(value) && Object.keys(value).every((k) => Utils.isOperator(k, false))) {
+      const parts = Object.keys(value).map((op) => this.processJoinClause(key, (value as Dictionary)[op], params, op));
 
       return this.wrapQueryGroup(parts);
     }
@@ -250,19 +263,24 @@ export class QueryBuilderHelper {
     if (operator === '$fulltext') {
       const [fromAlias, fromField] = this.splitField(key);
       const property = this.getProperty(fromField, fromAlias);
-      const query = this.knex.raw(this.platform.getFullTextWhereClause(property!), {
-        column: this.mapper(key),
-        query: this.knex.raw('?'),
-      }).toSQL().toNative();
+      const query = this.knex
+        .raw(this.platform.getFullTextWhereClause(property!), {
+          column: this.mapper(key),
+          query: this.knex.raw('?'),
+        })
+        .toSQL()
+        .toNative();
       params.push(value as Knex.Value);
 
       return query.sql;
     }
 
-    const replacement = this.getOperatorReplacement(operator, { [operator]: value });
+    const replacement = this.getOperatorReplacement(operator, {
+      [operator]: value,
+    });
 
     if (['$in', '$nin'].includes(operator) && Array.isArray(value)) {
-      params.push(...value as Knex.Value[]);
+      params.push(...(value as Knex.Value[]));
       return `${this.knex.ref(this.mapper(key))} ${replacement} (${value.map(() => '?').join(', ')})`;
     }
 
@@ -274,14 +292,14 @@ export class QueryBuilderHelper {
       // unwind parameters when ? found in field name
       const count = key.concat('?').match(/\?/g)!.length - 1;
       const values = Utils.asArray(value);
-      const params1 = values.slice(0, count).map((c: any) => Utils.isObject(c) ? JSON.stringify(c) : c);
+      const params1 = values.slice(0, count).map((c: any) => (Utils.isObject(c) ? JSON.stringify(c) : c));
       const params2 = values.slice(count);
       const k = this.mapper(key, QueryType.SELECT, params1);
       const { sql, bindings } = (k as unknown as Knex.QueryBuilder).toSQL().toNative();
 
       if (params2.length > 0) {
         params.push(...bindings);
-        params.push(...params2 as Knex.Value[]);
+        params.push(...(params2 as Knex.Value[]));
         return sql + ' = ?';
       }
 
@@ -314,10 +332,7 @@ export class QueryBuilderHelper {
       });
     }
 
-    return [
-      ...join.joinColumns!.map(col => this.mapper(`${join.alias}.${col}`, type, undefined, `fk__${col}`)),
-      ...join.inverseJoinColumns!.map(col => this.mapper(`${join.alias}.${col}`, type, undefined, `fk__${col}`)),
-    ];
+    return [...join.joinColumns!.map((col) => this.mapper(`${join.alias}.${col}`, type, undefined, `fk__${col}`)), ...join.inverseJoinColumns!.map((col) => this.mapper(`${join.alias}.${col}`, type, undefined, `fk__${col}`))];
   }
 
   isOneToOneInverse(field: string): boolean {
@@ -347,10 +362,10 @@ export class QueryBuilderHelper {
   getRegExpParam(re: RegExp): string {
     const value = re.source
       .replace(/\.\*/g, '%') // .* -> %
-      .replace(/\./g, '_')   // .  -> _
-      .replace(/\\_/g, '.')  // \. -> .
-      .replace(/^\^/g, '')   // remove ^ from start
-      .replace(/\$$/g, '');  // remove $ from end
+      .replace(/\./g, '_') // .  -> _
+      .replace(/\\_/g, '.') // \. -> .
+      .replace(/^\^/g, '') // remove ^ from start
+      .replace(/\$$/g, ''); // remove $ from end
 
     if (re.source.startsWith('^') && re.source.endsWith('$')) {
       return value;
@@ -367,8 +382,17 @@ export class QueryBuilderHelper {
     return `%${value}%`;
   }
 
-  appendOnConflictClause<T>(type: QueryType, onConflict: { fields: string[]; ignore?: boolean; merge?: EntityData<T> | Field<T>[]; where?: QBFilterQuery<T> }[], qb: Knex.QueryBuilder): void {
-    onConflict.forEach(item => {
+  appendOnConflictClause<T>(
+    type: QueryType,
+    onConflict: {
+      fields: string[];
+      ignore?: boolean;
+      merge?: EntityData<T> | Field<T>[];
+      where?: QBFilterQuery<T>;
+    }[],
+    qb: Knex.QueryBuilder
+  ): void {
+    onConflict.forEach((item) => {
       const sub = qb.onConflict(item.fields);
       Utils.runIfNotEmpty(() => sub.ignore(), item.ignore);
       Utils.runIfNotEmpty(() => {
@@ -376,14 +400,14 @@ export class QueryBuilderHelper {
 
         if (Utils.isObject(item.merge)) {
           mergeParam = {};
-          Object.keys(item.merge).forEach(key => {
+          Object.keys(item.merge).forEach((key) => {
             const k = this.mapper(key, type) as string;
             mergeParam[k] = item.merge![key];
           });
         }
 
         if (Array.isArray(item.merge)) {
-          mergeParam = (item.merge as string[]).map(key => this.mapper(key, type));
+          mergeParam = (item.merge as string[]).map((key) => this.mapper(key, type));
         }
 
         const sub2 = sub.merge(mergeParam);
@@ -395,10 +419,10 @@ export class QueryBuilderHelper {
   appendQueryCondition(type: QueryType, cond: any, qb: Knex.QueryBuilder, operator?: '$and' | '$or', method: 'where' | 'having' = 'where'): void {
     const m = operator === '$or' ? 'orWhere' : 'andWhere';
 
-    Object.keys(cond).forEach(k => {
+    Object.keys(cond).forEach((k) => {
       if (k === '$and' || k === '$or') {
         if (operator) {
-          return qb[m](inner => this.appendGroupCondition(type, inner, k, method, cond[k]));
+          return qb[m]((inner) => this.appendGroupCondition(type, inner, k, method, cond[k]));
         }
 
         return this.appendGroupCondition(type, qb, k, method, cond[k]);
@@ -406,7 +430,7 @@ export class QueryBuilderHelper {
 
       if (k === '$not') {
         const m = operator === '$or' ? 'orWhereNot' : 'whereNot';
-        return qb[m](inner => this.appendQueryCondition(type, cond[k], inner));
+        return qb[m]((inner) => this.appendQueryCondition(type, cond[k], inner));
       }
 
       this.appendQuerySubCondition(qb, type, method, cond, k, operator);
@@ -441,7 +465,7 @@ export class QueryBuilderHelper {
     // unwind parameters when ? found in field name
     const count = key.concat('?').match(/\?/g)!.length - 1;
     const value = Utils.asArray(cond[key]);
-    const params1 = value.slice(0, count).map((c: any) => Utils.isObject(c) ? JSON.stringify(c) : c);
+    const params1 = value.slice(0, count).map((c: any) => (Utils.isObject(c) ? JSON.stringify(c) : c));
     const params2 = value.slice(count);
     const k = this.mapper(key, type, params1);
 
@@ -458,8 +482,10 @@ export class QueryBuilderHelper {
     let value = cond[key];
 
     if (Utils.getObjectKeysSize(value) > 1) {
-      const subCondition = Object.entries(value).map(([subKey, subValue]) => ({ [key]: { [subKey]: subValue } }));
-      return subCondition.forEach(sub => this.appendQueryCondition(type, sub, qb, '$and', method));
+      const subCondition = Object.entries(value).map(([subKey, subValue]) => ({
+        [key]: { [subKey]: subValue },
+      }));
+      return subCondition.forEach((sub) => this.appendQueryCondition(type, sub, qb, '$and', method));
     }
 
     if (value instanceof RegExp) {
@@ -467,7 +493,7 @@ export class QueryBuilderHelper {
     }
 
     // operators
-    const op = Object.keys(QueryOperator).find(op => op in value);
+    const op = Object.keys(QueryOperator).find((op) => op in value);
 
     if (!op) {
       throw new Error(`Invalid query condition: ${inspect(cond)}`);
@@ -493,10 +519,12 @@ export class QueryBuilderHelper {
         throw new Error(`Cannot use $fulltext operator on ${key}, property not found`);
       }
 
-      qb[m](this.knex.raw(this.platform.getFullTextWhereClause(prop), {
-        column: this.mapper(key, type, undefined, null),
-        query: value[op],
-      }));
+      qb[m](
+        this.knex.raw(this.platform.getFullTextWhereClause(prop), {
+          column: this.mapper(key, type, undefined, null),
+          query: value[op],
+        })
+      );
     } else {
       qb[m](this.mapper(key, type, undefined, null), replacement, value[op]);
     }
@@ -524,8 +552,8 @@ export class QueryBuilderHelper {
   getQueryOrder(type: QueryType, orderBy: FlatQueryOrderMap | FlatQueryOrderMap[], populate: Dictionary<string>): string {
     if (Array.isArray(orderBy)) {
       return orderBy
-        .map(o => this.getQueryOrder(type, o, populate))
-        .filter(o => o)
+        .map((o) => this.getQueryOrder(type, o, populate))
+        .filter((o) => o)
         .join(', ');
     }
 
@@ -534,7 +562,7 @@ export class QueryBuilderHelper {
 
   getQueryOrderFromObject(type: QueryType, orderBy: FlatQueryOrderMap, populate: Dictionary<string>): string {
     const ret: string[] = [];
-    Object.keys(orderBy).forEach(k => {
+    Object.keys(orderBy).forEach((k) => {
       const direction = orderBy[k];
       const order = Utils.isNumber<QueryOrderNumeric>(direction) ? QueryOrderNumeric[direction] : direction;
 
@@ -547,17 +575,20 @@ export class QueryBuilderHelper {
       let [alias, field] = this.splitField(k, true);
       alias = populate[alias] || alias;
 
-      Utils.splitPrimaryKeys(field).forEach(f => {
+      Utils.splitPrimaryKeys(field).forEach((f) => {
         const prop = this.getProperty(f, alias);
         const noPrefix = (prop && prop.persist === false && !prop.formula) || QueryBuilderHelper.isCustomExpression(f);
         const column = this.mapper(noPrefix ? f : `${alias}.${f}`, type, undefined, null);
         /* istanbul ignore next */
-        const rawColumn = Utils.isString(column) ? column.split('.').map(e => this.knex.ref(e)).join('.') : column;
+        const rawColumn = Utils.isString(column)
+          ? column
+              .split('.')
+              .map((e) => this.knex.ref(e))
+              .join('.')
+          : column;
         const customOrder = prop?.customOrder;
 
-        const colPart = customOrder
-          ? this.platform.generateCustomOrder(rawColumn, customOrder)
-          : rawColumn;
+        const colPart = customOrder ? this.platform.generateCustomOrder(rawColumn, customOrder) : rawColumn;
 
         ret.push(`${colPart} ${order.toLowerCase()}`);
       });
@@ -570,8 +601,8 @@ export class QueryBuilderHelper {
     const useReturningStatement = type === QueryType.INSERT && this.platform.usesReturningStatement() && meta && !meta.compositePK;
 
     if (useReturningStatement) {
-      const returningProps = meta!.hydrateProps.filter(prop => prop.persist !== false && (prop.primary || prop.defaultRaw));
-      qb.returning(Utils.flatten(returningProps.map(prop => prop.fieldNames)));
+      const returningProps = meta!.hydrateProps.filter((prop) => prop.persist !== false && (prop.primary || prop.defaultRaw));
+      qb.returning(Utils.flatten(returningProps.map((prop) => prop.fieldNames)));
     }
   }
 
@@ -602,12 +633,18 @@ export class QueryBuilderHelper {
     }
 
     switch (lockMode) {
-      case LockMode.PESSIMISTIC_READ: return void qb.forShare(...lockTables);
-      case LockMode.PESSIMISTIC_WRITE: return void qb.forUpdate(...lockTables);
-      case LockMode.PESSIMISTIC_PARTIAL_WRITE: return void qb.forUpdate(...lockTables).skipLocked();
-      case LockMode.PESSIMISTIC_WRITE_OR_FAIL: return void qb.forUpdate(...lockTables).noWait();
-      case LockMode.PESSIMISTIC_PARTIAL_READ: return void qb.forShare(...lockTables).skipLocked();
-      case LockMode.PESSIMISTIC_READ_OR_FAIL: return void qb.forShare(...lockTables).noWait();
+      case LockMode.PESSIMISTIC_READ:
+        return void qb.forShare(...lockTables);
+      case LockMode.PESSIMISTIC_WRITE:
+        return void qb.forUpdate(...lockTables);
+      case LockMode.PESSIMISTIC_PARTIAL_WRITE:
+        return void qb.forUpdate(...lockTables).skipLocked();
+      case LockMode.PESSIMISTIC_WRITE_OR_FAIL:
+        return void qb.forUpdate(...lockTables).noWait();
+      case LockMode.PESSIMISTIC_PARTIAL_READ:
+        return void qb.forShare(...lockTables).skipLocked();
+      case LockMode.PESSIMISTIC_READ_OR_FAIL:
+        return void qb.forShare(...lockTables).noWait();
     }
   }
 
@@ -663,21 +700,23 @@ export class QueryBuilderHelper {
   private appendGroupCondition(type: QueryType, qb: Knex.QueryBuilder, operator: '$and' | '$or', method: 'where' | 'having', subCondition: any[]): void {
     // single sub-condition can be ignored to reduce nesting of parens
     if (subCondition.length === 1 || operator === '$and') {
-      return subCondition.forEach(sub => this.appendQueryCondition(type, sub, qb, undefined, method));
+      return subCondition.forEach((sub) => this.appendQueryCondition(type, sub, qb, undefined, method));
     }
 
-    qb[method](outer => subCondition.forEach(sub => {
-      // skip nesting parens if the value is simple = scalar or object without operators or with only single key, being the operator
-      const keys = Object.keys(sub);
-      const val = sub[keys[0]];
-      const simple = !Utils.isPlainObject(val) || Utils.getObjectKeysSize(val) === 1 || Object.keys(val).every(k => !Utils.isOperator(k));
+    qb[method]((outer) =>
+      subCondition.forEach((sub) => {
+        // skip nesting parens if the value is simple = scalar or object without operators or with only single key, being the operator
+        const keys = Object.keys(sub);
+        const val = sub[keys[0]];
+        const simple = !Utils.isPlainObject(val) || Utils.getObjectKeysSize(val) === 1 || Object.keys(val).every((k) => !Utils.isOperator(k));
 
-      if (keys.length === 1 && simple) {
-        return this.appendQueryCondition(type, sub, outer, operator);
-      }
+        if (keys.length === 1 && simple) {
+          return this.appendQueryCondition(type, sub, outer, operator);
+        }
 
-      outer.orWhere(inner => this.appendQueryCondition(type, sub, inner));
-    }));
+        outer.orWhere((inner) => this.appendQueryCondition(type, sub, inner));
+      })
+    );
   }
 
   private isPrefixed(field: string): boolean {
@@ -693,9 +732,7 @@ export class QueryBuilderHelper {
 
     if (prop.fieldNameRaw) {
       if (!always) {
-        return prop.fieldNameRaw
-          .replace(/\[::alias::]\.?/g, '')
-          .replace(this.platform.quoteIdentifier('') + '.', '');
+        return prop.fieldNameRaw.replace(/\[::alias::]\.?/g, '').replace(this.platform.quoteIdentifier('') + '.', '');
       }
 
       if (alias) {
@@ -725,7 +762,7 @@ export class QueryBuilderHelper {
         }
 
         const parts = field.split('.');
-        const nest = (p: EntityProperty): EntityProperty => parts.length > 0 ? nest(p.embeddedProps[parts.shift()!]) : p;
+        const nest = (p: EntityProperty): EntityProperty => (parts.length > 0 ? nest(p.embeddedProps[parts.shift()!]) : p);
         return nest(prop);
       }
     }
@@ -744,7 +781,7 @@ export class QueryBuilderHelper {
 
     data = Object.assign({}, data); // copy first
 
-    Object.keys(data).forEach(k => {
+    Object.keys(data).forEach((k) => {
       const prop = properties[k];
 
       if (!prop) {
@@ -762,7 +799,7 @@ export class QueryBuilderHelper {
       if (prop.joinColumns && Array.isArray(data[k])) {
         const copy = data[k];
         delete data[k];
-        prop.joinColumns.forEach((joinColumn, idx) => data[joinColumn] = copy[idx]);
+        prop.joinColumns.forEach((joinColumn, idx) => (data[joinColumn] = copy[idx]));
 
         return;
       }
@@ -787,7 +824,6 @@ export class QueryBuilderHelper {
 
     return data;
   }
-
 }
 
 export interface Alias {

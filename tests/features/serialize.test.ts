@@ -5,7 +5,7 @@ import { Author2, Book2, Publisher2, PublisherType } from '../entities-sql';
 
 let orm: MikroORM;
 
-beforeAll(async () => orm = await initORMPostgreSql());
+beforeAll(async () => (orm = await initORMPostgreSql()));
 beforeEach(() => orm.schema.clearDatabase());
 afterAll(() => orm.close(true));
 
@@ -65,9 +65,21 @@ test('explicit serialization', async () => {
     createdAt: jon.createdAt,
     updatedAt: jon.updatedAt,
     books: [
-      { author: jon.id, publisher: publisher.id, title: 'My Life on The Wall, part 1' },
-      { author: jon.id, publisher: publisher.id, title: 'My Life on The Wall, part 2' },
-      { author: jon.id, publisher: publisher.id, title: 'My Life on The Wall, part 3' },
+      {
+        author: jon.id,
+        publisher: publisher.id,
+        title: 'My Life on The Wall, part 1',
+      },
+      {
+        author: jon.id,
+        publisher: publisher.id,
+        title: 'My Life on The Wall, part 2',
+      },
+      {
+        author: jon.id,
+        publisher: publisher.id,
+        title: 'My Life on The Wall, part 3',
+      },
     ],
     favouriteBook: jon.favouriteBook!.uuid,
     born: '1990-03-23',
@@ -82,9 +94,21 @@ test('explicit serialization', async () => {
     createdAt: jon.createdAt,
     updatedAt: jon.updatedAt,
     books: [
-      { author: jon.id, publisher: publisher.id, title: 'My Life on The Wall, part 1' },
-      { author: jon.id, publisher: publisher.id, title: 'My Life on The Wall, part 2' },
-      { author: jon.id, publisher: publisher.id, title: 'My Life on The Wall, part 3' },
+      {
+        author: jon.id,
+        publisher: publisher.id,
+        title: 'My Life on The Wall, part 1',
+      },
+      {
+        author: jon.id,
+        publisher: publisher.id,
+        title: 'My Life on The Wall, part 2',
+      },
+      {
+        author: jon.id,
+        publisher: publisher.id,
+        title: 'My Life on The Wall, part 3',
+      },
     ],
     favouriteBook: { author: god.id, title: 'Bible' },
     born: '1990-03-23',
@@ -98,9 +122,21 @@ test('explicit serialization', async () => {
     createdAt: jon.createdAt,
     updatedAt: jon.updatedAt,
     books: [
-      { author: { id: jon.id, name: 'Jon Snow', email: 'snow@wall.st' }, publisher: publisher.id, title: 'My Life on The Wall, part 1' },
-      { author: { id: jon.id, name: 'Jon Snow', email: 'snow@wall.st' }, publisher: publisher.id, title: 'My Life on The Wall, part 2' },
-      { author: { id: jon.id, name: 'Jon Snow', email: 'snow@wall.st' }, publisher: publisher.id, title: 'My Life on The Wall, part 3' },
+      {
+        author: { id: jon.id, name: 'Jon Snow', email: 'snow@wall.st' },
+        publisher: publisher.id,
+        title: 'My Life on The Wall, part 1',
+      },
+      {
+        author: { id: jon.id, name: 'Jon Snow', email: 'snow@wall.st' },
+        publisher: publisher.id,
+        title: 'My Life on The Wall, part 2',
+      },
+      {
+        author: { id: jon.id, name: 'Jon Snow', email: 'snow@wall.st' },
+        publisher: publisher.id,
+        title: 'My Life on The Wall, part 3',
+      },
     ],
     favouriteBook: { author: god.id, title: 'Bible' },
     born: '1990-03-23',
@@ -108,15 +144,30 @@ test('explicit serialization', async () => {
     name: 'Jon Snow',
   });
 
-  const o5 = serialize(jon, { populate: ['books.author', 'favouriteBook'], forceObject: true });
+  const o5 = serialize(jon, {
+    populate: ['books.author', 'favouriteBook'],
+    forceObject: true,
+  });
   expect(o5).toMatchObject({
     id: jon.id,
     createdAt: jon.createdAt,
     updatedAt: jon.updatedAt,
     books: [
-      { author: { id: jon.id, name: 'Jon Snow', email: 'snow@wall.st' }, publisher: { id: publisher.id }, title: 'My Life on The Wall, part 1' },
-      { author: { id: jon.id, name: 'Jon Snow', email: 'snow@wall.st' }, publisher: { id: publisher.id }, title: 'My Life on The Wall, part 2' },
-      { author: { id: jon.id, name: 'Jon Snow', email: 'snow@wall.st' }, publisher: { id: publisher.id }, title: 'My Life on The Wall, part 3' },
+      {
+        author: { id: jon.id, name: 'Jon Snow', email: 'snow@wall.st' },
+        publisher: { id: publisher.id },
+        title: 'My Life on The Wall, part 1',
+      },
+      {
+        author: { id: jon.id, name: 'Jon Snow', email: 'snow@wall.st' },
+        publisher: { id: publisher.id },
+        title: 'My Life on The Wall, part 2',
+      },
+      {
+        author: { id: jon.id, name: 'Jon Snow', email: 'snow@wall.st' },
+        publisher: { id: publisher.id },
+        title: 'My Life on The Wall, part 3',
+      },
     ],
     favouriteBook: { author: { id: god.id }, title: 'Bible' },
     born: '1990-03-23',
@@ -124,15 +175,29 @@ test('explicit serialization', async () => {
     name: 'Jon Snow',
   });
 
-  const o6 = serialize(jon, { populate: ['books.author', 'books.publisher', 'favouriteBook'] });
+  const o6 = serialize(jon, {
+    populate: ['books.author', 'books.publisher', 'favouriteBook'],
+  });
   expect(o6).toMatchObject({
     id: jon.id,
     createdAt: jon.createdAt,
     updatedAt: jon.updatedAt,
     books: [
-      { author: { id: jon.id, name: 'Jon Snow', email: 'snow@wall.st' }, publisher: { id: publisher.id, name: publisher.name }, title: 'My Life on The Wall, part 1' },
-      { author: { id: jon.id, name: 'Jon Snow', email: 'snow@wall.st' }, publisher: { id: publisher.id, name: publisher.name }, title: 'My Life on The Wall, part 2' },
-      { author: { id: jon.id, name: 'Jon Snow', email: 'snow@wall.st' }, publisher: { id: publisher.id, name: publisher.name }, title: 'My Life on The Wall, part 3' },
+      {
+        author: { id: jon.id, name: 'Jon Snow', email: 'snow@wall.st' },
+        publisher: { id: publisher.id, name: publisher.name },
+        title: 'My Life on The Wall, part 1',
+      },
+      {
+        author: { id: jon.id, name: 'Jon Snow', email: 'snow@wall.st' },
+        publisher: { id: publisher.id, name: publisher.name },
+        title: 'My Life on The Wall, part 2',
+      },
+      {
+        author: { id: jon.id, name: 'Jon Snow', email: 'snow@wall.st' },
+        publisher: { id: publisher.id, name: publisher.name },
+        title: 'My Life on The Wall, part 3',
+      },
     ],
     favouriteBook: { author: god.id, title: 'Bible' },
     born: '1990-03-23',
@@ -152,9 +217,21 @@ test('explicit serialization', async () => {
     createdAt: jon.createdAt,
     updatedAt: jon.updatedAt,
     books: [
-      { author: { id: jon.id, name: 'Jon Snow' }, publisher: { id: publisher.id, name: publisher.name }, title: 'My Life on The Wall, part 1' },
-      { author: { id: jon.id, name: 'Jon Snow' }, publisher: { id: publisher.id, name: publisher.name }, title: 'My Life on The Wall, part 2' },
-      { author: { id: jon.id, name: 'Jon Snow' }, publisher: { id: publisher.id, name: publisher.name }, title: 'My Life on The Wall, part 3' },
+      {
+        author: { id: jon.id, name: 'Jon Snow' },
+        publisher: { id: publisher.id, name: publisher.name },
+        title: 'My Life on The Wall, part 1',
+      },
+      {
+        author: { id: jon.id, name: 'Jon Snow' },
+        publisher: { id: publisher.id, name: publisher.name },
+        title: 'My Life on The Wall, part 2',
+      },
+      {
+        author: { id: jon.id, name: 'Jon Snow' },
+        publisher: { id: publisher.id, name: publisher.name },
+        title: 'My Life on The Wall, part 3',
+      },
     ],
     favouriteBook: { author: god.id, title: 'Bible' },
     born: '1990-03-23',
@@ -173,11 +250,26 @@ test('explicit serialization with populate: true', async () => {
     createdAt: jon.createdAt,
     updatedAt: jon.updatedAt,
     books: [
-      { author: { id: jon.id, name: 'Jon Snow' }, publisher: { id: publisher.id, name: publisher.name }, title: 'My Life on The Wall, part 1' },
-      { author: { id: jon.id, name: 'Jon Snow' }, publisher: { id: publisher.id, name: publisher.name }, title: 'My Life on The Wall, part 2' },
-      { author: { id: jon.id, name: 'Jon Snow' }, publisher: { id: publisher.id, name: publisher.name }, title: 'My Life on The Wall, part 3' },
+      {
+        author: { id: jon.id, name: 'Jon Snow' },
+        publisher: { id: publisher.id, name: publisher.name },
+        title: 'My Life on The Wall, part 1',
+      },
+      {
+        author: { id: jon.id, name: 'Jon Snow' },
+        publisher: { id: publisher.id, name: publisher.name },
+        title: 'My Life on The Wall, part 2',
+      },
+      {
+        author: { id: jon.id, name: 'Jon Snow' },
+        publisher: { id: publisher.id, name: publisher.name },
+        title: 'My Life on The Wall, part 3',
+      },
     ],
-    favouriteBook: { author: { id: god.id, name: 'God', books: [{ title: 'Bible' }] }, title: 'Bible' },
+    favouriteBook: {
+      author: { id: god.id, name: 'God', books: [{ title: 'Bible' }] },
+      title: 'Bible',
+    },
     born: '1990-03-23',
     email: 'snow@wall.st',
     name: 'Jon Snow',

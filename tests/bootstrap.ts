@@ -10,9 +10,7 @@ import type { MySqlDriver } from '@mikro-orm/mysql';
 import type { MariaDbDriver } from '@mikro-orm/mariadb';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
-import {
-  Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2, Label2, Configuration2, Address2, FooParam2,
-} from './entities-sql';
+import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2, Label2, Configuration2, Address2, FooParam2 } from './entities-sql';
 import FooBar from './entities/FooBar';
 import { Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5, IdentitySchema } from './entities-schema';
 import { Author2Subscriber } from './subscribers/Author2Subscriber';
@@ -39,7 +37,7 @@ export async function initMongoReplSet(db?: string): Promise<string> {
 
   await rs.start();
   await rs.waitUntilRunning();
-  await new Promise(resolve => setTimeout(resolve, 3e3));
+  await new Promise((resolve) => setTimeout(resolve, 3e3));
   replicaSets.push(rs);
 
   return rs.getUri(db);
@@ -52,21 +50,25 @@ export async function closeReplSets(): Promise<void> {
 }
 
 export async function initORMMongo(replicaSet = false) {
-  const clientUrl = replicaSet
-    ? await initMongoReplSet('mikro-orm-test')
-    : 'mongodb://localhost:27017/mikro-orm-test';
+  const clientUrl = replicaSet ? await initMongoReplSet('mikro-orm-test') : 'mongodb://localhost:27017/mikro-orm-test';
 
   const orm = await MikroORM.init<MongoDriver>({
     entities: ['entities'],
     tsNode: false,
     clientUrl,
     baseDir: BASE_DIR,
-    logger: i => i,
+    logger: (i) => i,
     type: 'mongo',
     ensureIndexes,
     implicitTransactions: replicaSet,
     validate: true,
-    filters: { allowedFooBars: { cond: args => ({ id: { $in: args.allowed } }), entity: ['FooBar'], default: false } },
+    filters: {
+      allowedFooBars: {
+        cond: (args) => ({ id: { $in: args.allowed } }),
+        entity: ['FooBar'],
+        default: false,
+      },
+    },
     pool: { min: 1, max: 3 },
     migrations: { path: BASE_DIR + '/../temp/migrations-mongo' },
   });
@@ -77,23 +79,28 @@ export async function initORMMongo(replicaSet = false) {
 }
 
 export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySqlDriver>(type: 'mysql' | 'mariadb' = 'mysql', additionalOptions: Partial<Options> = {}, simple?: boolean) {
-  let orm = await MikroORM.init<AbstractSqlDriver>(Utils.merge({
-    entities: ['entities-sql/**/*.js', '!**/Label2.js'],
-    entitiesTs: ['entities-sql/**/*.ts', '!**/Label2.ts'],
-    clientUrl: `mysql://root@127.0.0.1:3306/mikro_orm_test`,
-    port: type === 'mysql' ? 3308 : 3309,
-    baseDir: BASE_DIR,
-    debug: ['query', 'query-params'],
-    timezone: 'Z',
-    charset: 'utf8mb4',
-    logger: (i: any) => i,
-    multipleStatements: true,
-    populateAfterFlush: false,
-    entityRepository: SqlEntityRepository,
-    type,
-    replicas: [{ name: 'read-1' }, { name: 'read-2' }], // create two read replicas with same configuration, just for testing purposes
-    migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
-  }, additionalOptions));
+  let orm = await MikroORM.init<AbstractSqlDriver>(
+    Utils.merge(
+      {
+        entities: ['entities-sql/**/*.js', '!**/Label2.js'],
+        entitiesTs: ['entities-sql/**/*.ts', '!**/Label2.ts'],
+        clientUrl: `mysql://root@127.0.0.1:3306/mikro_orm_test`,
+        port: type === 'mysql' ? 3308 : 3309,
+        baseDir: BASE_DIR,
+        debug: ['query', 'query-params'],
+        timezone: 'Z',
+        charset: 'utf8mb4',
+        logger: (i: any) => i,
+        multipleStatements: true,
+        populateAfterFlush: false,
+        entityRepository: SqlEntityRepository,
+        type,
+        replicas: [{ name: 'read-1' }, { name: 'read-2' }], // create two read replicas with same configuration, just for testing purposes
+        migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
+      },
+      additionalOptions
+    )
+  );
 
   await orm.schema.ensureDatabase();
   const connection = orm.em.getConnection();
@@ -126,7 +133,7 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, e
     debug: ['query', 'query-params'],
     forceUtcTimezone: true,
     autoJoinOneToOneOwner: false,
-    logger: i => i,
+    logger: (i) => i,
     cache: { enabled: true },
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
     forceEntityConstructor: [FooBar2],
@@ -152,7 +159,7 @@ export async function initORMSqlite() {
     driver: SqliteDriver,
     debug: ['query'],
     forceUtcTimezone: true,
-    logger: i => i,
+    logger: (i) => i,
     metadataProvider: JavaScriptMetadataProvider,
     cache: { enabled: true, pretty: true },
     persistOnCreate: false,
@@ -173,7 +180,7 @@ export async function initORMSqlite2(type: 'sqlite' | 'better-sqlite' = 'sqlite'
     debug: ['query'],
     propagateToOneOwner: false,
     forceUndefined: true,
-    logger: i => i,
+    logger: (i) => i,
     cache: { pretty: true },
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
   });
@@ -190,7 +197,7 @@ export async function initORMSqlite3() {
     driver: SqliteDriver,
     debug: ['query'],
     forceUtcTimezone: true,
-    logger: i => i,
+    logger: (i) => i,
     metadataProvider: ReflectMetadataProvider,
     cache: { enabled: true, pretty: true },
   });

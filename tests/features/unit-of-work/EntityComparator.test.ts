@@ -1,29 +1,12 @@
-import type {
-  AnyEntity,
-  Dictionary,
-  EntityData, EntityFactory, EntityMetadata,
-  EntityProperty,
-  MetadataStorage,
-  Platform, Primary,
-} from '@mikro-orm/core';
-import {
-  Collection,
-  Entity, EntityAssigner, helper,
-  MikroORM,
-  PrimaryKey,
-  Property, Reference,
-  ReferenceType,
-  Utils,
-} from '@mikro-orm/core';
+import type { AnyEntity, Dictionary, EntityData, EntityFactory, EntityMetadata, EntityProperty, MetadataStorage, Platform, Primary } from '@mikro-orm/core';
+import { Collection, Entity, EntityAssigner, helper, MikroORM, PrimaryKey, Property, Reference, ReferenceType, Utils } from '@mikro-orm/core';
 import { performance } from 'perf_hooks';
 import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from '../../entities-sql';
 import { BaseEntity2 } from '../../entities-sql/BaseEntity2';
 import { BaseEntity22 } from '../../entities-sql/BaseEntity22';
 
 export class ObjectHydratorOld {
-
-  constructor(protected readonly metadata: MetadataStorage,
-              protected readonly platform: Platform) { }
+  constructor(protected readonly metadata: MetadataStorage, protected readonly platform: Platform) {}
 
   /**
    * @inheritDoc
@@ -40,14 +23,14 @@ export class ObjectHydratorOld {
    * @inheritDoc
    */
   hydrateReference<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes = false): void {
-    meta.primaryKeys.forEach(pk => {
+    meta.primaryKeys.forEach((pk) => {
       this.hydrateProperty<T>(entity, meta.properties[pk], data, factory, false, convertCustomTypes);
     });
   }
 
   protected getProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>, entity: T, returning?: boolean, reference?: boolean): EntityProperty<T>[] {
     if (reference) {
-      return meta.primaryKeys.map(pk => meta.properties[pk]);
+      return meta.primaryKeys.map((pk) => meta.properties[pk]);
     }
 
     if (meta.root.discriminatorColumn) {
@@ -55,7 +38,7 @@ export class ObjectHydratorOld {
     }
 
     if (returning) {
-      return meta.hydrateProps.filter(prop => prop.primary || prop.defaultRaw);
+      return meta.hydrateProps.filter((prop) => prop.primary || prop.defaultRaw);
     }
 
     return meta.hydrateProps;
@@ -68,7 +51,8 @@ export class ObjectHydratorOld {
       this.hydrateToMany(entity, prop, data[prop.name], factory, newEntity);
     } else if (prop.reference === ReferenceType.EMBEDDED) {
       this.hydrateEmbeddable(entity, prop, data);
-    } else { // ReferenceType.SCALAR
+    } else {
+      // ReferenceType.SCALAR
       this.hydrateScalar(entity, prop, data, convertCustomTypes);
     }
   }
@@ -95,12 +79,14 @@ export class ObjectHydratorOld {
   private hydrateEmbeddable<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, data: EntityData<T>): void {
     const value: Dictionary = {};
 
-    helper(entity).__meta.props.filter(p => p.embedded?.[0] === prop.name).forEach(childProp => {
-      value[childProp.embedded![1]] = data[childProp.name as any];
-    });
+    helper(entity)
+      .__meta.props.filter((p) => p.embedded?.[0] === prop.name)
+      .forEach((childProp) => {
+        value[childProp.embedded![1]] = data[childProp.name as any];
+      });
 
     entity[prop.name] = Object.create(prop.embeddable.prototype);
-    Object.keys(value).forEach(k => entity[prop.name][k] = value[k]);
+    Object.keys(value).forEach((k) => (entity[prop.name][k] = value[k]));
   }
 
   private hydrateToMany<T extends object>(entity: T, prop: EntityProperty<T>, value: any, factory: EntityFactory, newEntity?: boolean): void {
@@ -144,13 +130,14 @@ export class ObjectHydratorOld {
       return value;
     }
 
-    return factory.create(prop.type, value as EntityData<T>, { newEntity, merge: true });
+    return factory.create(prop.type, value as EntityData<T>, {
+      newEntity,
+      merge: true,
+    });
   }
-
 }
 
 export class EntityComparatorOld {
-
   prepareEntity<T extends object>(entity: T, metadata: MetadataStorage, platform: Platform): EntityData<T> {
     const meta = metadata.get<T>(entity.constructor.name);
     const ret = {} as EntityData<T>;
@@ -160,33 +147,35 @@ export class EntityComparatorOld {
     }
 
     // copy all comparable props, ignore collections and references, process custom types
-    meta.comparableProps.forEach(prop => {
+    meta.comparableProps.forEach((prop) => {
       if (this.shouldIgnoreProperty(entity, prop)) {
         return;
       }
 
       if (prop.reference === ReferenceType.EMBEDDED) {
-        return meta.props.filter(p => p.embedded?.[0] === prop.name).forEach(childProp => {
-          ret[childProp.name as any] = Utils.copy(entity[prop.name][childProp.embedded![1]]);
-        });
+        return meta.props
+          .filter((p) => p.embedded?.[0] === prop.name)
+          .forEach((childProp) => {
+            ret[childProp.name as any] = Utils.copy(entity[prop.name][childProp.embedded![1]]);
+          });
       }
 
       if (Utils.isEntity(entity[prop.name], true)) {
         ret[prop.name as any] = Utils.getPrimaryKeyValues(entity[prop.name], metadata.find(prop.type)!.primaryKeys, true);
 
         if (prop.customType) {
-          return ret[prop.name as any] = Utils.copy(prop.customType.convertToDatabaseValue(ret[prop.name as any], platform));
+          return (ret[prop.name as any] = Utils.copy(prop.customType.convertToDatabaseValue(ret[prop.name as any], platform)));
         }
 
         return;
       }
 
       if (prop.customType) {
-        return ret[prop.name as any] = Utils.copy(prop.customType.convertToDatabaseValue(entity[prop.name], platform));
+        return (ret[prop.name as any] = Utils.copy(prop.customType.convertToDatabaseValue(entity[prop.name], platform)));
       }
 
       if (prop.type.toLowerCase() === 'date') {
-        return ret[prop.name as any] = Utils.copy(platform.processDateProperty(entity[prop.name])) as any;
+        return (ret[prop.name as any] = Utils.copy(platform.processDateProperty(entity[prop.name])) as any);
       }
 
       ret[prop.name as any] = Utils.copy(entity[prop.name]);
@@ -213,7 +202,6 @@ export class EntityComparatorOld {
 
     return noPkProp || noPkRef || emptyRef || prop.version;
   }
-
 }
 
 /**
@@ -223,7 +211,7 @@ export class EntityComparatorOld {
 function diffOld(a: Dictionary, b: Dictionary): Record<keyof (typeof a & typeof b), any> {
   const ret: Dictionary = {};
 
-  Object.keys(b).forEach(k => {
+  Object.keys(b).forEach((k) => {
     if (Utils.equals(a[k], b[k])) {
       return;
     }
@@ -236,7 +224,6 @@ function diffOld(a: Dictionary, b: Dictionary): Record<keyof (typeof a & typeof 
 
 @Entity()
 export class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -255,18 +242,19 @@ export class User {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 describe('EntityComparator', () => {
-
   let orm: MikroORM;
 
-  beforeAll(async () => orm = await MikroORM.init({
-    type: 'sqlite',
-    dbName: ':memory:',
-    entities: [Author2, Book2, BookTag2, Publisher2, Address2, Test2, Configuration2, FooBar2, FooBaz2, BaseEntity2, BaseEntity22, User],
-  }));
+  beforeAll(
+    async () =>
+      (orm = await MikroORM.init({
+        type: 'sqlite',
+        dbName: ':memory:',
+        entities: [Author2, Book2, BookTag2, Publisher2, Address2, Test2, Configuration2, FooBar2, FooBaz2, BaseEntity2, BaseEntity22, User],
+      }))
+  );
 
   test('prepareEntity changes entity to number id', async () => {
     const author1 = new Author2('Name 1', 'e-mail1');
@@ -382,5 +370,4 @@ describe('EntityComparator', () => {
   });
 
   afterAll(async () => orm.close(true));
-
 });

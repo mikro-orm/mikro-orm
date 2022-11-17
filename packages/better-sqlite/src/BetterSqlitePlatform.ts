@@ -7,7 +7,6 @@ import { BetterSqliteSchemaHelper } from './BetterSqliteSchemaHelper';
 import { BetterSqliteExceptionConverter } from './BetterSqliteExceptionConverter';
 
 export class BetterSqlitePlatform extends AbstractSqlPlatform {
-
   protected readonly schemaHelper: BetterSqliteSchemaHelper = new BetterSqliteSchemaHelper(this);
   protected readonly exceptionConverter = new BetterSqliteExceptionConverter();
 
@@ -28,7 +27,7 @@ export class BetterSqlitePlatform extends AbstractSqlPlatform {
   }
 
   getEnumTypeDeclarationSQL(column: { items?: unknown[]; fieldNames: string[]; length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
-    if (column.items?.every(item => Utils.isString(item))) {
+    if (column.items?.every((item) => Utils.isString(item))) {
       return 'text';
     }
 
@@ -106,7 +105,7 @@ export class BetterSqlitePlatform extends AbstractSqlPlatform {
     const [a, ...b] = path;
 
     if (aliased) {
-      return expr(alias => `json_extract(${this.quoteIdentifier(`${alias}.${a}`)}, '$.${b.join('.')}')`);
+      return expr((alias) => `json_extract(${this.quoteIdentifier(`${alias}.${a}`)}, '$.${b.join('.')}')`);
     }
 
     return `json_extract(${this.quoteIdentifier(a)}, '$.${b.join('.')}')`;
@@ -127,5 +126,4 @@ export class BetterSqlitePlatform extends AbstractSqlPlatform {
   supportsDownMigrations(): boolean {
     return false;
   }
-
 }

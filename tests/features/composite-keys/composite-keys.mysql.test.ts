@@ -6,10 +6,9 @@ import { Author2, Configuration2, FooBar2, FooBaz2, FooParam2, Test2, Address2, 
 import { initORMMySql, mockLogger } from '../../bootstrap';
 
 describe('composite keys in mysql', () => {
-
   let orm: MikroORM<MySqlDriver>;
 
-  beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
+  beforeAll(async () => (orm = await initORMMySql('mysql', {}, true)));
   beforeEach(async () => orm.schema.clearDatabase());
 
   test('dynamic attributes', async () => {
@@ -20,7 +19,9 @@ describe('composite keys in mysql', () => {
     await orm.em.persistAndFlush(test);
     orm.em.clear();
 
-    const t = await orm.em.findOneOrFail(Test2, test.id, { populate: ['config'] });
+    const t = await orm.em.findOneOrFail(Test2, test.id, {
+      populate: ['config'],
+    });
     expect(t.getConfiguration()).toEqual({
       foo: '1',
       bar: '2',
@@ -50,17 +51,26 @@ describe('composite keys in mysql', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const p2 = await orm.em.findOneOrFail(FooParam2, { bar: param.bar.id, baz: param.baz.id });
+    const p2 = await orm.em.findOneOrFail(FooParam2, {
+      bar: param.bar.id,
+      baz: param.baz.id,
+    });
     expect(p2.bar.id).toBe(bar.id);
     expect(p2.baz.id).toBe(baz.id);
     expect(p2.value).toBe('val2');
     expect(orm.em.getUnitOfWork().getIdentityMap().keys().sort()).toEqual(['FooBar2-7', 'FooBaz2-3', 'FooParam2-7~~~3']);
 
-    const p3 = await orm.em.findOneOrFail(FooParam2, { bar: param.bar.id, baz: param.baz.id });
+    const p3 = await orm.em.findOneOrFail(FooParam2, {
+      bar: param.bar.id,
+      baz: param.baz.id,
+    });
     expect(p3).toBe(p2);
 
     await orm.em.remove(p3).flush();
-    const p4 = await orm.em.findOne(FooParam2, { bar: param.bar.id, baz: param.baz.id });
+    const p4 = await orm.em.findOne(FooParam2, {
+      bar: param.bar.id,
+      baz: param.baz.id,
+    });
     expect(p4).toBeNull();
   });
 
@@ -71,7 +81,9 @@ describe('composite keys in mysql', () => {
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 
-    const a1 = await orm.em.findOneOrFail(Author2, author.id, { populate: ['address'] });
+    const a1 = await orm.em.findOneOrFail(Author2, author.id, {
+      populate: ['address'],
+    });
     expect(a1.address!.value).toBe('v1');
     expect(a1.address!.author).toBe(a1);
 
@@ -79,7 +91,9 @@ describe('composite keys in mysql', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const a2 = await orm.em.findOneOrFail(Author2, author.id, { populate: ['address'] });
+    const a2 = await orm.em.findOneOrFail(Author2, author.id, {
+      populate: ['address'],
+    });
     expect(a2.address!.value).toBe('v2');
     expect(a2.address!.author).toBe(a2);
 
@@ -101,7 +115,10 @@ describe('composite keys in mysql', () => {
     await orm.em.persistAndFlush(owner);
     orm.em.clear();
 
-    const o1 = await orm.em.findOneOrFail(CarOwner2, owner.id, { populate: ['car'], strategy: LoadStrategy.JOINED });
+    const o1 = await orm.em.findOneOrFail(CarOwner2, owner.id, {
+      populate: ['car'],
+      strategy: LoadStrategy.JOINED,
+    });
     expect(o1.car.price).toBe(200_000);
     expect(wrap(o1).toJSON()).toEqual({
       id: 1,
@@ -128,7 +145,10 @@ describe('composite keys in mysql', () => {
     await wrap(o2.car).init();
     expect(o2.car.price).toBe(150_000);
 
-    const c1 = await orm.em.findOneOrFail(Car2, { name: car.name, year: car.year });
+    const c1 = await orm.em.findOneOrFail(Car2, {
+      name: car.name,
+      year: car.year,
+    });
     expect(c1).toBe(o2.car);
 
     await orm.em.remove(o2).flush();
@@ -148,7 +168,10 @@ describe('composite keys in mysql', () => {
     orm.em.clear();
 
     const connMock = jest.spyOn(AbstractSqlConnection.prototype, 'execute');
-    const cc = await orm.em.findOneOrFail(Car2, car11, { populate: ['users'], strategy: LoadStrategy.JOINED });
+    const cc = await orm.em.findOneOrFail(Car2, car11, {
+      populate: ['users'],
+      strategy: LoadStrategy.JOINED,
+    });
     expect(cc.users[0].foo).toBe(42);
     expect(connMock).toBeCalledTimes(1);
   });
@@ -186,7 +209,10 @@ describe('composite keys in mysql', () => {
     await orm.em.persistAndFlush([user1, user2, user3]);
     orm.em.clear();
 
-    const u1 = await orm.em.findOneOrFail(User2, user1, { populate: ['cars'], strategy: LoadStrategy.JOINED });
+    const u1 = await orm.em.findOneOrFail(User2, user1, {
+      populate: ['cars'],
+      strategy: LoadStrategy.JOINED,
+    });
     expect(u1.cars.isDirty()).toBe(false);
     expect(u1.cars.getItems()).toMatchObject([
       { name: 'Audi A8', price: 100_000, year: 2011 },
@@ -212,7 +238,10 @@ describe('composite keys in mysql', () => {
     const u2 = await orm.em.findOneOrFail(User2, u1, { populate: ['cars'] });
     expect(u2.cars[0].price).toBe(350_000);
 
-    const c1 = await orm.em.findOneOrFail(Car2, { name: car1.name, year: car1.year });
+    const c1 = await orm.em.findOneOrFail(Car2, {
+      name: car1.name,
+      year: car1.year,
+    });
     expect(c1).toBe(u2.cars[0]);
 
     await orm.em.remove(u2).flush();
@@ -237,7 +266,9 @@ describe('composite keys in mysql', () => {
     await orm.em.persistAndFlush([user1, user2, user3]);
     orm.em.clear();
 
-    const u1 = await orm.em.findOneOrFail(User2, user1, { populate: ['sandwiches'] });
+    const u1 = await orm.em.findOneOrFail(User2, user1, {
+      populate: ['sandwiches'],
+    });
     expect(u1.sandwiches.getItems()).toMatchObject([
       { name: 'Fish Sandwich', price: 100 },
       { name: 'Grilled Cheese Sandwich', price: 300 },
@@ -257,7 +288,9 @@ describe('composite keys in mysql', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const u2 = await orm.em.findOneOrFail(User2, u1, { populate: ['sandwiches'] });
+    const u2 = await orm.em.findOneOrFail(User2, u1, {
+      populate: ['sandwiches'],
+    });
     expect(u2.sandwiches[0].price).toBe(200);
 
     const c1 = await orm.em.findOneOrFail(Sandwich, { id: sandwich1.id });
@@ -266,7 +299,9 @@ describe('composite keys in mysql', () => {
     await orm.em.remove(u2).flush();
     const o3 = await orm.em.findOne(User2, u1);
     expect(o3).toBeNull();
-    const c2 = await orm.em.findOneOrFail(Sandwich, sandwich1, { populate: ['users'] });
+    const c2 = await orm.em.findOneOrFail(Sandwich, sandwich1, {
+      populate: ['users'],
+    });
     await orm.em.remove(c2).flush();
     const c3 = await orm.em.findOne(Sandwich, sandwich1);
     expect(c3).toBeNull();
@@ -289,7 +324,11 @@ describe('composite keys in mysql', () => {
 
     // managed entity have an internal __em reference, so that is what we are testing here
     expect(wrap(c1, true).__em).toBeUndefined();
-    const u1 = orm.em.create(User2, { firstName: 'f', lastName: 'l', cars: [c1, c2, c3] });
+    const u1 = orm.em.create(User2, {
+      firstName: 'f',
+      lastName: 'l',
+      cars: [c1, c2, c3],
+    });
     expect(wrap(u1, true).__em).toBeUndefined();
     expect(wrap(u1.cars[0], true).__em).toBeUndefined();
     expect(wrap(u1.cars[1], true).__em).toBeUndefined();
@@ -328,7 +367,9 @@ describe('composite keys in mysql', () => {
     await orm.em.flush();
 
     try {
-      await orm.em.nativeUpdate(FooParam2, param2, { version: new Date('2020-01-01T00:00:00Z') }); // simulate concurrent update
+      await orm.em.nativeUpdate(FooParam2, param2, {
+        version: new Date('2020-01-01T00:00:00Z'),
+      }); // simulate concurrent update
       param1.value += ' changed!!';
       param2.value += ' changed!!';
       param3.value += ' changed!!';
@@ -364,10 +405,7 @@ describe('composite keys in mysql', () => {
   });
 
   test('changing PK (batch)', async () => {
-    const cars = [
-      new Car2('Audi A8 a', 2011, 200_000),
-      new Car2('Audi A8 b', 2012, 200_000),
-    ];
+    const cars = [new Car2('Audi A8 a', 2011, 200_000), new Car2('Audi A8 b', 2012, 200_000)];
     await orm.em.persistAndFlush(cars);
     cars[0].year = 2015;
     cars[1].year = 2016;
@@ -396,22 +434,14 @@ describe('composite keys in mysql', () => {
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 
-    const addr1 = await orm.em.createQueryBuilder(Address2, 'addr')
-      .select('addr.*')
-      .leftJoinAndSelect('addr.author', 'a')
-      .where({ 'a.id': author.id })
-      .getSingleResult();
+    const addr1 = await orm.em.createQueryBuilder(Address2, 'addr').select('addr.*').leftJoinAndSelect('addr.author', 'a').where({ 'a.id': author.id }).getSingleResult();
     expect(addr1!.value).toBe('v1');
     expect(addr1!.author.id).toBe(5);
     expect(addr1!.author.name).toBe('n');
     expect(addr1!.author.email).toBe('e');
     orm.em.clear();
 
-    const a1 = await orm.em.createQueryBuilder(Author2, 'a')
-      .select('a.*')
-      .leftJoinAndSelect('a.address', 'addr')
-      .where({ id: author.id })
-      .getSingleResult();
+    const a1 = await orm.em.createQueryBuilder(Author2, 'a').select('a.*').leftJoinAndSelect('a.address', 'addr').where({ id: author.id }).getSingleResult();
     expect(a1!.id).toBe(5);
     expect(a1!.name).toBe('n');
     expect(a1!.email).toBe('e');
@@ -420,5 +450,4 @@ describe('composite keys in mysql', () => {
   });
 
   afterAll(async () => orm.close(true));
-
 });

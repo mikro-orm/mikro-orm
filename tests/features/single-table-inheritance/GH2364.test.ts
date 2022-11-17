@@ -3,12 +3,11 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 export enum EntityType {
   TYPE_1 = 'type_1',
-  TYPE_2 = 'type_2'
+  TYPE_2 = 'type_2',
 }
 
 @Entity({ discriminatorColumn: 'type', abstract: true })
 abstract class BaseEntity {
-
   @PrimaryKey({ type: BigIntType })
   id!: string;
 
@@ -17,21 +16,15 @@ abstract class BaseEntity {
 
   @Enum({ type: () => EntityType })
   type!: EntityType;
-
 }
 
 @Entity({ discriminatorValue: EntityType.TYPE_1 })
-export class Type1Entity extends BaseEntity {
-
-}
+export class Type1Entity extends BaseEntity {}
 
 @Entity({ discriminatorValue: EntityType.TYPE_2 })
-export class Type2Entity extends BaseEntity {
-
-}
+export class Type2Entity extends BaseEntity {}
 
 describe('GH issue 2364', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -62,17 +55,16 @@ describe('GH issue 2364', () => {
 
     fork1.clear();
 
-    const asc = await orm.em.fork({ clear:true }).find(BaseEntity, {}, { orderBy: { id: QueryOrder.ASC } });
+    const asc = await orm.em.fork({ clear: true }).find(BaseEntity, {}, { orderBy: { id: QueryOrder.ASC } });
 
     expect(asc).toHaveLength(2);
     expect(asc[0]).toBeInstanceOf(Type1Entity);
     expect(asc[1]).toBeInstanceOf(Type2Entity);
 
-    const desc = await orm.em.fork({ clear:true }).find(BaseEntity, {}, { orderBy: { id: QueryOrder.DESC } });
+    const desc = await orm.em.fork({ clear: true }).find(BaseEntity, {}, { orderBy: { id: QueryOrder.DESC } });
 
     expect(desc).toHaveLength(2);
     expect(desc[0]).toBeInstanceOf(Type2Entity);
     expect(desc[1]).toBeInstanceOf(Type1Entity);
   });
-
 });

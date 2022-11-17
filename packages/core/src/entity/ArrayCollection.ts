@@ -7,7 +7,6 @@ import { MetadataError } from '../errors';
 import { Utils } from '../utils/Utils';
 
 export class ArrayCollection<T extends object, O extends object> {
-
   protected readonly items = new Set<T>();
   protected initialized = true;
   protected dirty = false;
@@ -19,7 +18,7 @@ export class ArrayCollection<T extends object, O extends object> {
     if (items) {
       let i = 0;
       this.items = new Set(items);
-      this.items.forEach(item => this[i++] = item);
+      this.items.forEach((item) => (this[i++] = item));
     }
   }
 
@@ -39,7 +38,7 @@ export class ArrayCollection<T extends object, O extends object> {
     const meta = this.property.targetMeta!;
     const args = [...meta.toJsonParams.map(() => undefined)];
 
-    return this.getItems().map(item => wrap(item).toJSON(...args));
+    return this.getItems().map((item) => wrap(item).toJSON(...args));
   }
 
   toJSON(): EntityDTO<T>[] {
@@ -55,7 +54,7 @@ export class ArrayCollection<T extends object, O extends object> {
 
     field ??= this.property.targetMeta!.serializedPrimaryKey;
 
-    return items.map(i => {
+    return items.map((i) => {
       if (Utils.isEntity(i[field as keyof T], true)) {
         return wrap(i[field as keyof T], true).getPrimaryKey();
       }
@@ -187,7 +186,7 @@ export class ArrayCollection<T extends object, O extends object> {
     return this.count();
   }
 
-  * [Symbol.iterator](): IterableIterator<T> {
+  *[Symbol.iterator](): IterableIterator<T> {
     for (const item of this.items) {
       yield item;
     }
@@ -205,7 +204,7 @@ export class ArrayCollection<T extends object, O extends object> {
         throw MetadataError.fromUnknownEntity((this.owner as object).constructor.name, 'Collection.property getter, maybe you just forgot to initialize the ORM?');
       }
 
-      const field = Object.keys(meta.properties).find(k => this.owner[k] === this);
+      const field = Object.keys(meta.properties).find((k) => this.owner[k] === this);
       this._property = meta.properties[field!];
     }
 
@@ -276,13 +275,12 @@ export class ArrayCollection<T extends object, O extends object> {
   [inspect.custom](depth: number) {
     const object = { ...this };
     const hidden = ['items', 'owner', '_property', '_count', 'snapshot', '_populated', '_lazyInitialized'];
-    hidden.forEach(k => delete object[k]);
+    hidden.forEach((k) => delete object[k]);
     const ret = inspect(object, { depth });
     const name = `${this.constructor.name}<${this.property.type}>`;
 
     return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
   }
-
 }
 
 Object.defineProperties(ArrayCollection.prototype, {

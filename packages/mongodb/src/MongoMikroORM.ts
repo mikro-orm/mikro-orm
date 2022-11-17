@@ -6,9 +6,7 @@ import { MongoDriver } from './MongoDriver';
  * @inheritDoc
  */
 export class MongoMikroORM extends MikroORM<MongoDriver> {
-
   private static DRIVER = MongoDriver;
-
 }
 
 export type MongoOptions = Options<MongoDriver>;

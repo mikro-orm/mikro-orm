@@ -21,11 +21,7 @@ import { UuidType } from './UuidType';
 import { TextType } from './TextType';
 import { UnknownType } from './UnknownType';
 
-export {
-  Type, DateType, TimeType, DateTimeType, BigIntType, BlobType, ArrayType, EnumArrayType, EnumType,
-  JsonType, IntegerType, SmallIntType, TinyIntType, MediumIntType, FloatType, DoubleType, BooleanType, DecimalType,
-  StringType, UuidType, TextType, UnknownType,
-};
+export { Type, DateType, TimeType, DateTimeType, BigIntType, BlobType, ArrayType, EnumArrayType, EnumType, JsonType, IntegerType, SmallIntType, TinyIntType, MediumIntType, FloatType, DoubleType, BooleanType, DecimalType, StringType, UuidType, TextType, UnknownType };
 
 export const types = {
   date: DateType,

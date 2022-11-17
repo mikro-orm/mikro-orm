@@ -4,7 +4,6 @@ import { AuthorWp } from './index';
 
 @Entity({ tableName: 'book2' })
 export class BookWp {
-
   @PrimaryKey({ type: t.uuid, fieldName: 'uuid_pk', length: 36 })
   uuid = uuid();
 
@@ -17,5 +16,4 @@ export class BookWp {
   constructor(title: string) {
     this.title = title;
   }
-
 }

@@ -6,7 +6,6 @@ import { initORMPostgreSql, mockLogger } from '../bootstrap';
 import { Author2, BaseUser2, Book2, CompanyOwner2, Employee2, Manager2 } from '../entities-sql';
 
 describe('automatic flushing when querying for overlapping entities via em.find/One', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
@@ -91,9 +90,11 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     expect(books).toHaveLength(3);
     books[0].price = 1000;
 
-    const ret = await Promise.all(books.map(async () => {
-      return orm.em.find(Book2, { price: { $gt: 500 } });
-    }));
+    const ret = await Promise.all(
+      books.map(async () => {
+        return orm.em.find(Book2, { price: { $gt: 500 } });
+      })
+    );
     expect(ret[0]).toHaveLength(2);
     expect(ret[1]).toHaveLength(2);
     expect(ret[2]).toHaveLength(2);
@@ -109,9 +110,11 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     expect(books).toHaveLength(3);
     books[0].price = 1000;
 
-    const ret = await Promise.all(books.map(async () => {
-      return em.find(Book2, { price: { $gt: 500 } });
-    }));
+    const ret = await Promise.all(
+      books.map(async () => {
+        return em.find(Book2, { price: { $gt: 500 } });
+      })
+    );
     expect(ret[0]).toHaveLength(1);
     expect(ret[1]).toHaveLength(1);
     expect(ret[2]).toHaveLength(1);
@@ -122,18 +125,23 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     await createEntities();
     const mock = mockLogger(orm, ['query']);
 
-    await orm.em.transactional(async () => {
-      const books = await orm.em.find(Book2, {});
-      expect(books).toHaveLength(3);
-      books[0].price = 1000;
+    await orm.em.transactional(
+      async () => {
+        const books = await orm.em.find(Book2, {});
+        expect(books).toHaveLength(3);
+        books[0].price = 1000;
 
-      const ret = await Promise.all(books.map(async () => {
-        return orm.em.find(Book2, { price: { $gt: 500 } });
-      }));
-      expect(ret[0]).toHaveLength(1);
-      expect(ret[1]).toHaveLength(1);
-      expect(ret[2]).toHaveLength(1);
-    }, { flushMode: FlushMode.COMMIT });
+        const ret = await Promise.all(
+          books.map(async () => {
+            return orm.em.find(Book2, { price: { $gt: 500 } });
+          })
+        );
+        expect(ret[0]).toHaveLength(1);
+        expect(ret[1]).toHaveLength(1);
+        expect(ret[2]).toHaveLength(1);
+      },
+      { flushMode: FlushMode.COMMIT }
+    );
 
     // update will be still triggered at the end of transaction, so as the last query before `commit`
     expect(mock.mock.calls).toHaveLength(7);
@@ -154,9 +162,14 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     expect(books).toHaveLength(3);
     books[0].price = 1000;
 
-    const ret = await Promise.all(books.map(async () => {
-      return orm.em.qb(Book2).select('*').where({ price: { $gt: 500 } });
-    }));
+    const ret = await Promise.all(
+      books.map(async () => {
+        return orm.em
+          .qb(Book2)
+          .select('*')
+          .where({ price: { $gt: 500 } });
+      })
+    );
     expect(ret[0]).toHaveLength(2);
     expect(ret[1]).toHaveLength(2);
     expect(ret[2]).toHaveLength(2);
@@ -171,9 +184,11 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     expect(books).toHaveLength(3);
     books[0].price = 1000;
 
-    const ret = await Promise.all(books.map(async () => {
-      return orm.em.find(Book2, { price: { $gt: 500 } }, { flushMode: FlushMode.COMMIT });
-    }));
+    const ret = await Promise.all(
+      books.map(async () => {
+        return orm.em.find(Book2, { price: { $gt: 500 } }, { flushMode: FlushMode.COMMIT });
+      })
+    );
     expect(ret[0]).toHaveLength(1);
     expect(ret[1]).toHaveLength(1);
     expect(ret[2]).toHaveLength(1);
@@ -188,9 +203,15 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     expect(books).toHaveLength(3);
     books[0].price = 1000;
 
-    const ret = await Promise.all(books.map(async () => {
-      return orm.em.qb(Book2).select('*').where({ price: { $gt: 500 } }).setFlushMode(FlushMode.COMMIT);
-    }));
+    const ret = await Promise.all(
+      books.map(async () => {
+        return orm.em
+          .qb(Book2)
+          .select('*')
+          .where({ price: { $gt: 500 } })
+          .setFlushMode(FlushMode.COMMIT);
+      })
+    );
     expect(ret[0]).toHaveLength(1);
     expect(ret[1]).toHaveLength(1);
     expect(ret[2]).toHaveLength(1);
@@ -225,9 +246,11 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     expect(books).toHaveLength(900);
     books[0].price = 1000;
 
-    const ret = await Promise.all(books.slice(0, 3).map(async () => {
-      return orm.em.find(Book2, { price: { $gt: 500 } });
-    }));
+    const ret = await Promise.all(
+      books.slice(0, 3).map(async () => {
+        return orm.em.find(Book2, { price: { $gt: 500 } });
+      })
+    );
     expect(ret[0]).toHaveLength(301);
     expect(ret[1]).toHaveLength(301);
     expect(ret[2]).toHaveLength(301);
@@ -255,13 +278,14 @@ describe('automatic flushing when querying for overlapping entities via em.find/
     expect(users).toHaveLength(4);
     users[0].lastName = '...';
 
-    const ret = await Promise.all(users.slice(0, 3).map(async () => {
-      return orm.em.find(BaseUser2, { lastName: '...' });
-    }));
+    const ret = await Promise.all(
+      users.slice(0, 3).map(async () => {
+        return orm.em.find(BaseUser2, { lastName: '...' });
+      })
+    );
     expect(ret[0]).toHaveLength(1);
     expect(ret[1]).toHaveLength(1);
     expect(ret[2]).toHaveLength(1);
     expect(mock.mock.calls).toHaveLength(7);
   });
-
 });

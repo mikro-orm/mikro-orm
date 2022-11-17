@@ -3,25 +3,20 @@ import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 export class A {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 @Entity()
 export class B {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne({ entity: () => A, onDelete: 'cascade' })
   a!: A;
-
 }
 
 describe('GH issue 2675', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
@@ -46,27 +41,38 @@ describe('GH issue 2675', () => {
 
   test('should query with specified schema without throwing sql exception', async () => {
     // Create sample data
-    const a = orm.em.create(A, {}, {
-      schema: 'myschema',
-    });
+    const a = orm.em.create(
+      A,
+      {},
+      {
+        schema: 'myschema',
+      }
+    );
     expect(wrap(a).getSchema()).toBe('myschema');
     orm.em.persist(a);
 
-    const b = orm.em.create(B, { a }, {
-      schema: 'myschema',
-    });
+    const b = orm.em.create(
+      B,
+      { a },
+      {
+        schema: 'myschema',
+      }
+    );
     expect(wrap(b).getSchema()).toBe('myschema');
     orm.em.persist(b);
 
     await orm.em.flush();
 
-    const r = await orm.em.fork().findOne(B, b.id, {
-      populate: ['a'],
-      strategy: LoadStrategy.SELECT_IN,
-      schema: 'myschema',
-    }).catch(() => {
-      // Undefined if exception thrown
-    });
+    const r = await orm.em
+      .fork()
+      .findOne(B, b.id, {
+        populate: ['a'],
+        strategy: LoadStrategy.SELECT_IN,
+        schema: 'myschema',
+      })
+      .catch(() => {
+        // Undefined if exception thrown
+      });
 
     expect(r?.a?.id).not.toEqual(undefined);
   });

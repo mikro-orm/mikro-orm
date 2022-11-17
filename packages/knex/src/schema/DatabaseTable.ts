@@ -8,16 +8,13 @@ import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
  * @internal
  */
 export class DatabaseTable {
-
   private columns: Dictionary<Column> = {};
   private indexes: Index[] = [];
   private checks: Check[] = [];
   private foreignKeys: Dictionary<ForeignKey> = {};
   public comment?: string;
 
-  constructor(private readonly platform: AbstractSqlPlatform,
-              readonly name: string,
-              readonly schema?: string) {
+  constructor(private readonly platform: AbstractSqlPlatform, readonly name: string, readonly schema?: string) {
     Object.defineProperties(this, {
       platform: { enumerable: false, writable: true },
     });
@@ -45,9 +42,9 @@ export class DatabaseTable {
     this.foreignKeys = fks;
 
     this.columns = cols.reduce((o, v) => {
-      const index = indexes.filter(i => i.columnNames[0] === v.name);
+      const index = indexes.filter((i) => i.columnNames[0] === v.name);
       v.primary = v.primary || pks.includes(v.name);
-      v.unique = index.some(i => i.unique && !i.primary);
+      v.unique = index.some((i) => i.unique && !i.primary);
       const type = v.name in enums ? 'enum' : v.type;
       v.mappedType = this.platform.getMappedType(type);
       v.default = v.default?.toString().startsWith('nextval(') ? null : v.default;
@@ -95,7 +92,7 @@ export class DatabaseTable {
         precision: prop.precision,
         scale: prop.scale,
         default: prop.defaultRaw,
-        enumItems: prop.items?.every(Utils.isString) ? prop.items as string[] : undefined,
+        enumItems: prop.items?.every(Utils.isString) ? (prop.items as string[]) : undefined,
         comment: prop.comment,
         extra: prop.extra,
         ignoreSchemaChanges: prop.ignoreSchemaChanges,
@@ -164,12 +161,16 @@ export class DatabaseTable {
   getEntityDeclaration(namingStrategy: NamingStrategy, schemaHelper: SchemaHelper): EntityMetadata {
     let name = namingStrategy.getClassName(this.name, '_');
     name = name.match(/^\d/) ? 'E' + name : name;
-    const schema = new EntitySchema({ name, collection: this.name, schema: this.schema });
+    const schema = new EntitySchema({
+      name,
+      collection: this.name,
+      schema: this.schema,
+    });
     const compositeFkIndexes: Dictionary<{ keyName: string }> = {};
     const compositeFkUniques: Dictionary<{ keyName: string }> = {};
 
-    for (const index of this.indexes.filter(index => index.columnNames.length > 1)) {
-      const properties = index.columnNames.map(col => this.getPropertyName(namingStrategy, this.getColumn(col)!));
+    for (const index of this.indexes.filter((index) => index.columnNames.length > 1)) {
+      const properties = index.columnNames.map((col) => this.getPropertyName(namingStrategy, this.getColumn(col)!));
       const ret = { name: index.keyName, properties: Utils.unique(properties) };
 
       if (ret.properties.length === 1) {
@@ -193,9 +194,7 @@ export class DatabaseTable {
     }
 
     const meta = schema.init().meta;
-    meta.relations
-      .filter(prop => prop.primary && prop.reference === ReferenceType.MANY_TO_ONE && !meta.compositePK)
-      .forEach(prop => prop.reference = ReferenceType.ONE_TO_ONE);
+    meta.relations.filter((prop) => prop.primary && prop.reference === ReferenceType.MANY_TO_ONE && !meta.compositePK).forEach((prop) => (prop.reference = ReferenceType.ONE_TO_ONE));
 
     return meta;
   }
@@ -220,7 +219,7 @@ export class DatabaseTable {
   }
 
   getIndex(indexName: string) {
-    return this.indexes.find(i => i.keyName === indexName);
+    return this.indexes.find((i) => i.keyName === indexName);
   }
 
   hasIndex(indexName: string) {
@@ -228,7 +227,7 @@ export class DatabaseTable {
   }
 
   getCheck(checkName: string) {
-    return this.checks.find(i => i.name === checkName);
+    return this.checks.find((i) => i.name === checkName);
   }
 
   hasCheck(checkName: string) {
@@ -236,24 +235,18 @@ export class DatabaseTable {
   }
 
   getPrimaryKey() {
-    return this.indexes.find(i => i.primary);
+    return this.indexes.find((i) => i.primary);
   }
 
   hasPrimaryKey() {
     return !!this.getPrimaryKey();
   }
 
-  private getPropertyDeclaration(
-    column: Column,
-    namingStrategy: NamingStrategy,
-    schemaHelper: SchemaHelper,
-    compositeFkIndexes: Dictionary<{ keyName: string }>,
-    compositeFkUniques: Dictionary<{ keyName: string }>,
-  ) {
-    const fk = Object.values(this.foreignKeys).find(fk => fk.columnNames.includes(column.name));
+  private getPropertyDeclaration(column: Column, namingStrategy: NamingStrategy, schemaHelper: SchemaHelper, compositeFkIndexes: Dictionary<{ keyName: string }>, compositeFkUniques: Dictionary<{ keyName: string }>) {
+    const fk = Object.values(this.foreignKeys).find((fk) => fk.columnNames.includes(column.name));
     const prop = this.getPropertyName(namingStrategy, column);
-    const index = compositeFkIndexes[prop] || this.indexes.find(idx => idx.columnNames[0] === column.name && !idx.composite && !idx.unique && !idx.primary);
-    const unique = compositeFkUniques[prop] || this.indexes.find(idx => idx.columnNames[0] === column.name && !idx.composite && idx.unique && !idx.primary);
+    const index = compositeFkIndexes[prop] || this.indexes.find((idx) => idx.columnNames[0] === column.name && !idx.composite && !idx.unique && !idx.primary);
+    const unique = compositeFkUniques[prop] || this.indexes.find((idx) => idx.columnNames[0] === column.name && !idx.composite && idx.unique && !idx.primary);
     const reference = this.getReferenceType(fk, unique);
     const type = this.getPropertyType(namingStrategy, column, fk);
     const fkOptions: Partial<EntityProperty> = {};
@@ -298,7 +291,7 @@ export class DatabaseTable {
   }
 
   private getPropertyName(namingStrategy: NamingStrategy, column: Column): string {
-    const fk = Object.values(this.foreignKeys).find(fk => fk.columnNames.includes(column.name));
+    const fk = Object.values(this.foreignKeys).find((fk) => fk.columnNames.includes(column.name));
     let field = column.name;
 
     if (fk) {
@@ -355,8 +348,18 @@ export class DatabaseTable {
     return '' + val;
   }
 
-  addIndex(meta: EntityMetadata, index: { properties: string | string[]; name?: string; type?: string; expression?: string; options?: Dictionary }, type: 'index' | 'unique' | 'primary') {
-    const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
+  addIndex(
+    meta: EntityMetadata,
+    index: {
+      properties: string | string[];
+      name?: string;
+      type?: string;
+      expression?: string;
+      options?: Dictionary;
+    },
+    type: 'index' | 'unique' | 'primary'
+  ) {
+    const properties = Utils.flatten(Utils.asArray(index.properties).map((prop) => meta.properties[prop].fieldNames));
 
     if (properties.length === 0 && !index.expression) {
       return;
@@ -383,12 +386,11 @@ export class DatabaseTable {
     const columnsMapped = Object.keys(columns).reduce((o, col) => {
       const { mappedType, ...restCol } = columns[col];
       o[col] = restCol;
-      o[col].mappedType = Object.keys(t).find(k => t[k] === mappedType.constructor);
+      o[col].mappedType = Object.keys(t).find((k) => t[k] === mappedType.constructor);
 
       return o;
     }, {} as Dictionary);
 
     return { columns: columnsMapped, ...rest };
   }
-
 }

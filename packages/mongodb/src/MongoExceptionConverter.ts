@@ -2,7 +2,6 @@ import type { Dictionary, DriverException } from '@mikro-orm/core';
 import { UniqueConstraintViolationException, ExceptionConverter, TableExistsException } from '@mikro-orm/core';
 
 export class MongoExceptionConverter extends ExceptionConverter {
-
   /* istanbul ignore next */
   /**
    * @link https://gist.github.com/rluvaton/a97a8da46ab6541a3e5702e83b9d357b
@@ -17,5 +16,4 @@ export class MongoExceptionConverter extends ExceptionConverter {
 
     return super.convertException(exception);
   }
-
 }

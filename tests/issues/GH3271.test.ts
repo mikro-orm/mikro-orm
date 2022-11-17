@@ -6,7 +6,7 @@ import { Author2, Book2 } from '../entities-sql';
 
 let orm: MikroORM;
 
-beforeAll(async () => orm = await initORMPostgreSql());
+beforeAll(async () => (orm = await initORMPostgreSql()));
 beforeEach(async () => orm.schema.clearDatabase());
 afterAll(() => orm.close(true));
 
@@ -26,7 +26,7 @@ test('test nested find with repository', async () => {
     return b.title;
   }
 
-  const { titleA, titleB } = await reqEm.transactional(async em => {
+  const { titleA, titleB } = await reqEm.transactional(async (em) => {
     const b = await em.findOneOrFail(Book2, book.uuid);
     wrap(b).assign({
       title: 'New title',
@@ -56,7 +56,7 @@ test('test nested find with EM 1', async () => {
     return b.title;
   }
 
-  const { titleA, titleB } = await reqEm.transactional(async em => {
+  const { titleA, titleB } = await reqEm.transactional(async (em) => {
     const b = await em.findOneOrFail(Book2, book.uuid);
     wrap(b).assign({
       title: 'New title',

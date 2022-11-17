@@ -6,7 +6,6 @@ import { PublisherType } from './PublisherType';
 
 @Entity()
 export class Publisher {
-
   [OptionalProps]?: 'type';
 
   @PrimaryKey()
@@ -39,5 +38,4 @@ export class Publisher {
   beforeCreate() {
     // do sth
   }
-
 }

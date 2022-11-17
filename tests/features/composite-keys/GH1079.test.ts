@@ -5,15 +5,12 @@ import { mockLogger } from '../../helpers';
 
 @Entity()
 class User {
-
   @PrimaryKey({ type: BigIntType })
   _id!: string;
-
 }
 
 @Entity()
 class Wallet {
-
   [PrimaryKeyType]?: [string, string];
 
   @PrimaryKey()
@@ -24,11 +21,9 @@ class Wallet {
 
   @Property({ type: String, nullable: false, default: '0' })
   mainBalance!: string;
-
 }
 
 class AbstractDeposit<Optional> {
-
   [OptionalProps]?: 'createdAt' | 'updatedAt' | Optional;
 
   @Property({ type: String, nullable: false })
@@ -42,20 +37,17 @@ class AbstractDeposit<Optional> {
 
   @Property({ onUpdate: () => new Date() })
   updatedAt: Date = new Date();
-
 }
 
 enum DepositStatus {
   UNPAID = 'UNPAID',
   PENDING = 'PENDING',
   COMPLETED = 'COMPLETED',
-  FAILED = 'FAILED'
+  FAILED = 'FAILED',
 }
-
 
 @Entity()
 export class Deposit extends AbstractDeposit<'status'> {
-
   [PrimaryKeyType]?: [string, string, string];
 
   @PrimaryKey()
@@ -69,11 +61,9 @@ export class Deposit extends AbstractDeposit<'status'> {
     items: () => DepositStatus,
   })
   status: DepositStatus = DepositStatus.UNPAID;
-
 }
 
 describe('GH issue 1079', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
@@ -119,7 +109,7 @@ describe('GH issue 1079', () => {
     });
     await orm.em.persistAndFlush(deposit2);
 
-    const queries: string[] = mock.mock.calls.map(c => c[0]);
+    const queries: string[] = mock.mock.calls.map((c) => c[0]);
     expect(queries[0]).toMatch(`begin`);
     expect(queries[1]).toMatch(`insert into "user" ("_id") values ($1) returning "_id"`);
     expect(queries[2]).toMatch(`insert into "wallet" ("currency_ref", "owner__id", "main_balance") values ($1, $2, $3)`);
@@ -130,5 +120,4 @@ describe('GH issue 1079', () => {
     expect(queries[7]).toMatch(`insert into "deposit" ("tx_ref", "wallet_currency_ref", "wallet_owner__id", "amount", "gateway_key", "created_at", "updated_at", "status") values ($1, $2, $3, $4, $5, $6, $7, $8)`);
     expect(queries[8]).toMatch(`commit`);
   });
-
 });

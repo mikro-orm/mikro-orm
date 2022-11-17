@@ -3,30 +3,26 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Contract {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne('Customer')
   customer!: any;
-
 }
 
 @Entity()
 export class Customer {
-
   @PrimaryKey()
   id!: number;
 
-  @OneToMany(() => Contract, contract => contract.customer)
+  @OneToMany(() => Contract, (contract) => contract.customer)
   contracts = new Collection<Contract>(this);
 
   @ManyToOne({ entity: 'Customer', nullable: true })
   parentCustomer?: Customer;
 
-  @OneToMany(() => Customer, customer => customer.parentCustomer)
+  @OneToMany(() => Customer, (customer) => customer.parentCustomer)
   childCustomers = new Collection<Customer>(this);
-
 }
 
 let orm: MikroORM<SqliteDriver>;
@@ -50,11 +46,7 @@ test(`GH issue 3490`, async () => {
     customer: {
       childCustomers: [
         {
-          contracts: [
-            { id: 2 },
-            { id: 3 },
-            { id: 4 },
-          ],
+          contracts: [{ id: 2 }, { id: 3 }, { id: 4 }],
         },
       ],
     },
@@ -62,9 +54,9 @@ test(`GH issue 3490`, async () => {
   await orm.em.persist(c).flush();
   orm.em.clear();
 
-  const contract = await orm.em.findOneOrFail(Contract, c.id,
-    { populate: ['customer.childCustomers.contracts'] },
-  );
+  const contract = await orm.em.findOneOrFail(Contract, c.id, {
+    populate: ['customer.childCustomers.contracts'],
+  });
 
   expect(contract.customer.childCustomers[0].contracts).toHaveLength(3);
   expect(contract.customer.childCustomers[0].contracts[0].id).toBe(2);

@@ -1,5 +1,4 @@
 export interface NamingStrategy {
-
   /**
    * Return a name of the class based on its file name
    */
@@ -55,5 +54,4 @@ export interface NamingStrategy {
    * ensured via appended index parameter. It is optional to use it as long as you ensure it will be unique.
    */
   aliasName(entityName: string, index: number): string;
-
 }

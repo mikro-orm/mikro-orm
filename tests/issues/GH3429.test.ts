@@ -3,7 +3,6 @@ import { MikroORM, Embeddable, Embedded, Entity, PrimaryKey, Property } from '@m
 
 @Embeddable()
 class Address {
-
   @Property({ hidden: true })
   addressLine1!: string;
 
@@ -20,18 +19,15 @@ class Address {
 
   @Property()
   country!: string;
-
 }
 
 @Entity()
 export class Organization {
-
   @PrimaryKey()
   id!: number;
 
   @Embedded(() => Address, { object: true })
   address!: Address;
-
 }
 
 let orm: MikroORM<SqliteDriver>;

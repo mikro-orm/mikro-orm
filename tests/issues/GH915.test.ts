@@ -2,24 +2,19 @@ import { Entity, MikroORM, OneToOne, PrimaryKey, PrimaryKeyType } from '@mikro-o
 
 @Entity()
 export class A {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 @Entity()
 export class B {
-
   [PrimaryKeyType]?: number;
 
   @OneToOne({ primary: true, cascade: [] })
   object!: A;
-
 }
 
 describe('GH issue 915', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -42,5 +37,4 @@ describe('GH issue 915', () => {
     const a1 = await orm.em.fork().findOne(A, a);
     expect(a1).not.toBeNull();
   });
-
 });

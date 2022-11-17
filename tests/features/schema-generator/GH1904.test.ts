@@ -3,29 +3,24 @@ import type { MySqlDriver } from '@mikro-orm/mysql';
 
 @Entity({ tableName: 'book' })
 export class Book1 {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ columnType: 'int' })
   changingField!: number;
-
 }
 
 @Entity({ tableName: 'book' })
 export class Book2 {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ columnType: 'timestamp', ignoreSchemaChanges: ['type'] })
   changingField!: Date;
-
 }
 
 @Entity({ tableName: 'book' })
 export class Book3 {
-
   @PrimaryKey()
   id!: number;
 
@@ -35,12 +30,10 @@ export class Book3 {
     ignoreSchemaChanges: ['extra'],
   })
   changingField!: number;
-
 }
 
 @Entity({ tableName: 'book' })
 export class Book4 {
-
   @PrimaryKey()
   id!: number;
 
@@ -50,18 +43,15 @@ export class Book4 {
     ignoreSchemaChanges: ['extra', 'type'],
   })
   changingField!: Date;
-
 }
 
 @Entity({ tableName: 'book' })
 export class Book5 {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ columnType: 'timestamp' })
   changingField!: Date;
-
 }
 
 describe('ignore specific schema changes (GH 1904)', () => {

@@ -3,7 +3,6 @@ import type { Platform } from '../platforms';
 import type { EntityProperty } from '../typings';
 
 export class TinyIntType extends Type<number | null | undefined, number | null | undefined> {
-
   getColumnType(prop: EntityProperty, platform: Platform) {
     return platform.getTinyIntTypeDeclarationSQL(prop);
   }
@@ -11,5 +10,4 @@ export class TinyIntType extends Type<number | null | undefined, number | null |
   compareAsType(): string {
     return 'number';
   }
-
 }

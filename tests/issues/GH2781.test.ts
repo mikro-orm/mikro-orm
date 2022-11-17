@@ -2,7 +2,6 @@ import { Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/co
 
 @Entity()
 export class Address {
-
   @PrimaryKey()
   id!: number;
 
@@ -18,12 +17,10 @@ export class Address {
   constructor(companyName: string) {
     this.companyName = companyName;
   }
-
 }
 
 @Entity()
 export class Customer {
-
   @PrimaryKey()
   id!: number;
 
@@ -43,11 +40,9 @@ export class Customer {
     this.customerNumber = customerNumber;
     this.companyAddress = companyAddress;
   }
-
 }
 
 describe('GH issue 2781', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -72,5 +67,4 @@ describe('GH issue 2781', () => {
     customer.companyAddress = new Address('test2');
     await orm.em.flush();
   });
-
 });

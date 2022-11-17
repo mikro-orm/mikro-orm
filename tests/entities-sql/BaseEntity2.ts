@@ -1,7 +1,6 @@
 import { BeforeCreate, Collection, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
 
 export abstract class BaseEntity2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -11,7 +10,7 @@ export abstract class BaseEntity2 {
   protected constructor() {
     const props = wrap(this, true).__meta.properties;
 
-    Object.keys(props).forEach(prop => {
+    Object.keys(props).forEach((prop) => {
       if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(props[prop].reference)) {
         (this as any)[prop] = new Collection(this);
       }
@@ -22,5 +21,4 @@ export abstract class BaseEntity2 {
   baseBeforeCreate() {
     this.hookTest = true;
   }
-
 }

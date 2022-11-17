@@ -2,21 +2,22 @@ import { BigIntType, Collection, Entity, ManyToOne, MikroORM, OneToMany, Primary
 
 @Entity()
 class Author {
-
   @PrimaryKey({ type: BigIntType })
   id?: string;
 
   @Property()
   name!: string;
 
-  @OneToMany({ entity: () => Book, mappedBy: (book: Book) => book.author, orphanRemoval: true })
+  @OneToMany({
+    entity: () => Book,
+    mappedBy: (book: Book) => book.author,
+    orphanRemoval: true,
+  })
   books: Collection<Book> = new Collection<Book>(this);
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey({ type: BigIntType })
   id?: string;
 
@@ -25,7 +26,6 @@ class Book {
 
   @ManyToOne({ entity: () => Author })
   author!: Author;
-
 }
 
 describe('GH issue 3051', () => {
@@ -56,10 +56,28 @@ describe('GH issue 3051', () => {
     expect(jonSnow).not.toBeNull();
 
     await expect(orm.em.findOneOrFail(Book, { author: jonSnow }, { strict: true })).rejects.toThrowError(`Wrong number of Book entities found for query { author: '${jonSnow.id}' }, expected exactly one`);
-    await expect(orm.em.findOneOrFail(Book, { title: 'b4' })).rejects.toThrowError('Book not found ({ title: \'b4\' })');
+    await expect(orm.em.findOneOrFail(Book, { title: 'b4' })).rejects.toThrowError("Book not found ({ title: 'b4' })");
     await expect(orm.em.findOneOrFail(Book, { author: jonSnow }, { strict: true, failHandler: () => new Error('Test') })).rejects.toThrowError('Test');
-    await expect(orm.em.findOneOrFail(Book, { author: jonSnow }, { strict: true, failHandler: (entityName: string) => new Error(`Failed: ${entityName}`) })).rejects.toThrowError('Failed: Book');
+    await expect(
+      orm.em.findOneOrFail(
+        Book,
+        { author: jonSnow },
+        {
+          strict: true,
+          failHandler: (entityName: string) => new Error(`Failed: ${entityName}`),
+        }
+      )
+    ).rejects.toThrowError('Failed: Book');
     await expect(orm.em.findOneOrFail(Book, { title: 'b4' }, { strict: true, failHandler: () => new Error('Test') })).rejects.toThrowError('Test');
-    await expect(orm.em.findOneOrFail(Book, { title: 'b4' }, { strict: true, failHandler: (entityName: string) => new Error(`Failed: ${entityName}`) })).rejects.toThrowError('Failed: Book');
+    await expect(
+      orm.em.findOneOrFail(
+        Book,
+        { title: 'b4' },
+        {
+          strict: true,
+          failHandler: (entityName: string) => new Error(`Failed: ${entityName}`),
+        }
+      )
+    ).rejects.toThrowError('Failed: Book');
   });
 });

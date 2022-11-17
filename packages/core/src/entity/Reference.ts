@@ -1,28 +1,17 @@
 import { inspect } from 'util';
-import type {
-  Cast,
-  ConnectionType,
-  Constructor,
-  Dictionary,
-  EntityProperty,
-  IsUnknown,
-  Populate,
-  Primary,
-  PrimaryProperty,
-} from '../typings';
+import type { Cast, ConnectionType, Constructor, Dictionary, EntityProperty, IsUnknown, Populate, Primary, PrimaryProperty } from '../typings';
 import type { EntityFactory } from './EntityFactory';
 import type { LockMode } from '../enums';
 import { helper, wrap } from './wrap';
 
-export type IdentifiedReference<T, PK extends keyof T | unknown = PrimaryProperty<T>> = true extends IsUnknown<PK> ? Reference<T> : ({ [K in Cast<PK, keyof T>]: T[K] } & Reference<T>);
+export type IdentifiedReference<T, PK extends keyof T | unknown = PrimaryProperty<T>> = true extends IsUnknown<PK> ? Reference<T> : { [K in Cast<PK, keyof T>]: T[K] } & Reference<T>;
 
 export class Reference<T> {
-
   constructor(private entity: T) {
     this.set(entity);
     const meta = helper(this.entity).__meta;
 
-    meta.primaryKeys.forEach(primaryKey => {
+    meta.primaryKeys.forEach((primaryKey) => {
       Object.defineProperty(this, primaryKey, {
         get() {
           return this.entity[primaryKey];
@@ -152,7 +141,7 @@ export class Reference<T> {
   [inspect.custom](depth: number) {
     const object = { ...this };
     const hidden = ['meta'];
-    hidden.forEach(k => delete object[k]);
+    hidden.forEach((k) => delete object[k]);
     const ret = inspect(object, { depth });
     const wrapped = helper(this.entity);
     const meta = wrapped.__meta;
@@ -161,16 +150,35 @@ export class Reference<T> {
 
     return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
   }
-
 }
 
 Object.defineProperties(Reference.prototype, {
   __reference: { value: true, enumerable: false },
-  __meta: { get() { return this.entity.__meta!; } },
-  __platform: { get() { return this.entity.__platform!; } },
-  __helper: { get() { return this.entity.__helper!; } },
-  $: { get() { return this.entity; } },
-  get: { get() { return () => this.entity; } },
+  __meta: {
+    get() {
+      return this.entity.__meta!;
+    },
+  },
+  __platform: {
+    get() {
+      return this.entity.__platform!;
+    },
+  },
+  __helper: {
+    get() {
+      return this.entity.__helper!;
+    },
+  },
+  $: {
+    get() {
+      return this.entity;
+    },
+  },
+  get: {
+    get() {
+      return () => this.entity;
+    },
+  },
 });
 
 export interface LoadReferenceOptions<T, P extends string = never> {

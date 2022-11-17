@@ -5,10 +5,9 @@ import { BaseUser2, CompanyOwner2, Employee2, Manager2, Type } from '../../entit
 import { initORMMySql, mockLogger } from '../../bootstrap';
 
 describe('single table inheritance in mysql', () => {
-
   let orm: MikroORM<MySqlDriver>;
 
-  beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
+  beforeAll(async () => (orm = await initORMMySql('mysql', {}, true)));
   beforeEach(async () => orm.schema.clearDatabase());
 
   async function createEntities() {
@@ -60,24 +59,24 @@ describe('single table inheritance in mysql', () => {
     const mock = mockLogger(orm);
 
     const managers = await orm.em.find(Manager2, {});
-    expect(mock.mock.calls[0][0]).toMatch('select `m0`.* from `base_user2` as `m0` where `m0`.`type` in (\'manager\', \'owner\')');
+    expect(mock.mock.calls[0][0]).toMatch("select `m0`.* from `base_user2` as `m0` where `m0`.`type` in ('manager', 'owner')");
     expect(managers.length).toBe(2);
-    expect(managers.map(u => u.constructor.name)).toEqual(['Manager2', 'CompanyOwner2']);
+    expect(managers.map((u) => u.constructor.name)).toEqual(['Manager2', 'CompanyOwner2']);
 
     const owners = await orm.em.find(CompanyOwner2, {});
-    expect(mock.mock.calls[1][0]).toMatch('select `c0`.* from `base_user2` as `c0` where `c0`.`type` = \'owner\'');
+    expect(mock.mock.calls[1][0]).toMatch("select `c0`.* from `base_user2` as `c0` where `c0`.`type` = 'owner'");
     expect(owners.length).toBe(1);
-    expect(owners.map(u => u.constructor.name)).toEqual(['CompanyOwner2']);
+    expect(owners.map((u) => u.constructor.name)).toEqual(['CompanyOwner2']);
 
     const employees = await orm.em.find(Employee2, {});
-    expect(mock.mock.calls[2][0]).toMatch('select `e0`.* from `base_user2` as `e0` where `e0`.`type` = \'employee\'');
+    expect(mock.mock.calls[2][0]).toMatch("select `e0`.* from `base_user2` as `e0` where `e0`.`type` = 'employee'");
     expect(employees.length).toBe(2);
-    expect(employees.map(u => u.constructor.name)).toEqual(['Employee2', 'Employee2']);
+    expect(employees.map((u) => u.constructor.name)).toEqual(['Employee2', 'Employee2']);
 
     const users = await orm.em.find(BaseUser2, {});
     expect(mock.mock.calls[3][0]).toMatch('select `b0`.* from `base_user2` as `b0`');
     expect(users.length).toBe(4);
-    expect(users.map(u => u.constructor.name).sort()).toEqual(['CompanyOwner2', 'Employee2', 'Employee2', 'Manager2']);
+    expect(users.map((u) => u.constructor.name).sort()).toEqual(['CompanyOwner2', 'Employee2', 'Employee2', 'Manager2']);
   });
 
   test('persisting and loading STI entities', async () => {
@@ -139,7 +138,10 @@ describe('single table inheritance in mysql', () => {
     orm.em.clear();
 
     const users2 = await orm.em.find(BaseUser2, { type: Type.Employee }, { orderBy: { lastName: 'asc', firstName: 'asc' } });
-    expect(users2.map(u => [u.type, u.lastName])).toEqual([[Type.Employee, '1'], [Type.Employee, '2']]);
+    expect(users2.map((u) => [u.type, u.lastName])).toEqual([
+      [Type.Employee, '1'],
+      [Type.Employee, '2'],
+    ]);
   });
 
   test('generated discriminator column', async () => {
@@ -148,13 +150,18 @@ describe('single table inheritance in mysql', () => {
     await createEntities();
     prop.userDefined = false;
     const users = await orm.em.find(BaseUser2, { type: Type.Employee }, { orderBy: { lastName: 'asc', firstName: 'asc' } });
-    expect(users.map(u => [u.type, u.lastName])).toEqual([[undefined, '1'], [undefined, '2']]);
+    expect(users.map((u) => [u.type, u.lastName])).toEqual([
+      [undefined, '1'],
+      [undefined, '2'],
+    ]);
     prop.userDefined = undefined; // revert back
   });
 
   test('STI in m:1 and 1:1 relations', async () => {
     await createEntities();
-    const owner = await orm.em.findOneOrFail(CompanyOwner2, { firstName: 'Bruce' });
+    const owner = await orm.em.findOneOrFail(CompanyOwner2, {
+      firstName: 'Bruce',
+    });
     expect(owner).toBeInstanceOf(CompanyOwner2);
     expect(owner.favouriteEmployee).toBeInstanceOf(Employee2);
     expect(wrap(owner.favouriteEmployee).isInitialized()).toBe(false);
@@ -176,16 +183,38 @@ describe('single table inheritance in mysql', () => {
 
   test('generated discriminator map', async () => {
     const storage = new MetadataStorage({
-      A: { name: 'A', className: 'A', primaryKeys: ['id'], discriminatorColumn: 'type', properties: { id: { name: 'id', type: 'string', reference: ReferenceType.SCALAR } } },
-      B: { name: 'B', className: 'B', primaryKeys: ['id'], extends: 'A', properties: { id: { name: 'id', type: 'string', reference: ReferenceType.SCALAR } } },
-      C: { name: 'C', className: 'C', primaryKeys: ['id'], extends: 'A', properties: { id: { name: 'id', type: 'string', reference: ReferenceType.SCALAR } } },
+      A: {
+        name: 'A',
+        className: 'A',
+        primaryKeys: ['id'],
+        discriminatorColumn: 'type',
+        properties: {
+          id: { name: 'id', type: 'string', reference: ReferenceType.SCALAR },
+        },
+      },
+      B: {
+        name: 'B',
+        className: 'B',
+        primaryKeys: ['id'],
+        extends: 'A',
+        properties: {
+          id: { name: 'id', type: 'string', reference: ReferenceType.SCALAR },
+        },
+      },
+      C: {
+        name: 'C',
+        className: 'C',
+        primaryKeys: ['id'],
+        extends: 'A',
+        properties: {
+          id: { name: 'id', type: 'string', reference: ReferenceType.SCALAR },
+        },
+      },
     } as Dictionary);
     class A {
-
       toJSON(a: string, b: string) {
         //
       }
-
     }
     class B {}
     class C {}
@@ -193,7 +222,11 @@ describe('single table inheritance in mysql', () => {
     orm.config.set('entitiesTs', [A, B, C]);
     const discovery = new MetadataDiscovery(storage, orm.em.getDriver().getPlatform(), orm.config);
     const discovered = await discovery.discover();
-    expect(discovered.get('A').discriminatorMap).toEqual({ a: 'A', b: 'B', c: 'C' });
+    expect(discovered.get('A').discriminatorMap).toEqual({
+      a: 'A',
+      b: 'B',
+      c: 'C',
+    });
     expect(discovered.get('A').properties.type).toMatchObject({
       name: 'type',
       enum: true,
@@ -215,18 +248,14 @@ describe('single table inheritance in mysql', () => {
       },
     })
     class Person {
-
       @PrimaryKey()
       id!: string;
-
     }
 
     @Entity()
     class Employee extends Person {
-
       @Property()
       number?: number;
-
     }
 
     const orm = await MikroORM.init({
@@ -240,5 +269,4 @@ describe('single table inheritance in mysql', () => {
   });
 
   afterAll(async () => orm.close(true));
-
 });

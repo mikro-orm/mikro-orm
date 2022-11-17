@@ -3,7 +3,6 @@ import { Author } from './entities/Author'; // explicit import to fix circular d
 import { AuthorRepository } from './repositories/AuthorRepository';
 
 describe('EntitySchema', () => {
-
   test('create schema', async () => {
     const schema = new EntitySchema<Author>({ class: Author });
     schema.addPrimaryKey('_id', 'ObjectId');
@@ -17,7 +16,10 @@ describe('EntitySchema', () => {
     schema.addEnum('identities', Number);
     schema.addVersion('identities', Number);
     schema.addProperty('age', Number, { nullable: true });
-    schema.addOneToOne('favouriteBook', 'Book', { owner: true, mappedBy: 'author' });
+    schema.addOneToOne('favouriteBook', 'Book', {
+      owner: true,
+      mappedBy: 'author',
+    });
     schema.setCustomRepository(() => AuthorRepository);
     schema.addIndex({ properties: 'name' });
     schema.addUnique({ properties: ['name', 'email'] });
@@ -38,5 +40,4 @@ describe('EntitySchema', () => {
     expect(meta.indexes).toEqual([{ properties: 'name' }]);
     expect(meta.uniques).toEqual([{ properties: ['name', 'email'] }]);
   });
-
 });

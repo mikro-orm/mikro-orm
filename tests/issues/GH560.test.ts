@@ -3,16 +3,12 @@ import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
 
 class Base {
-
   id?: string;
-
 }
 
 class A extends Base {
-
   childrenA?: A;
   type!: string;
-
 }
 
 const BaseSchema = new EntitySchema<Base>({
@@ -45,7 +41,6 @@ const ASchema = new EntitySchema<A, Base>({
 });
 
 describe('GH issue 560', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {

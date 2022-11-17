@@ -4,9 +4,8 @@ import { MetadataProvider } from './MetadataProvider';
 import { ReferenceType } from '../enums';
 
 export class ReflectMetadataProvider extends MetadataProvider {
-
   async loadEntityMetadata(meta: EntityMetadata, name: string): Promise<void> {
-    await this.initProperties(meta, prop => this.initPropertyType(meta, prop));
+    await this.initProperties(meta, (prop) => this.initPropertyType(meta, prop));
   }
 
   protected initPropertyType(meta: EntityMetadata, prop: EntityProperty) {
@@ -22,5 +21,4 @@ export class ReflectMetadataProvider extends MetadataProvider {
       prop.type = prop.type.toLowerCase();
     }
   }
-
 }

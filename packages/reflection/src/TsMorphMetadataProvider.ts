@@ -4,7 +4,6 @@ import type { EntityMetadata, EntityProperty } from '@mikro-orm/core';
 import { MetadataError, MetadataProvider, MetadataStorage, ReferenceType, Utils } from '@mikro-orm/core';
 
 export class TsMorphMetadataProvider extends MetadataProvider {
-
   private readonly project = new Project({
     compilerOptions: {
       strictNullChecks: true,
@@ -28,7 +27,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
   async getExistingSourceFile(path: string, ext?: string, validate = true): Promise<SourceFile> {
     if (!ext) {
-      return await this.getExistingSourceFile(path, '.d.ts', false) || await this.getExistingSourceFile(path, '.ts');
+      return (await this.getExistingSourceFile(path, '.d.ts', false)) || (await this.getExistingSourceFile(path, '.ts'));
     }
 
     const tsPath = path.match(/.*\/[^/]+$/)![0].replace(/\.js$/, ext);
@@ -85,7 +84,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     }
 
     const properties = cls.getInstanceProperties();
-    const property = properties.find(v => v.getName() === prop.name) as PropertyDeclaration;
+    const property = properties.find((v) => v.getName() === prop.name) as PropertyDeclaration;
 
     if (!property) {
       return { type: prop.type, optional: prop.nullable };
@@ -95,7 +94,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     const typeName = tsType.getText(property);
 
     if (prop.enum && tsType.isEnum()) {
-      prop.items = tsType.getUnionTypes().map(t => t.getLiteralValueOrThrow()) as string[];
+      prop.items = tsType.getUnionTypes().map((t) => t.getLiteralValueOrThrow()) as string[];
     }
 
     if (tsType.isArray()) {
@@ -103,7 +102,10 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
       /* istanbul ignore else */
       if (tsType.getArrayElementType()!.isEnum()) {
-        prop.items = tsType.getArrayElementType()!.getUnionTypes().map(t => t.getLiteralValueOrThrow()) as string[];
+        prop.items = tsType
+          .getArrayElementType()!
+          .getUnionTypes()
+          .map((t) => t.getLiteralValueOrThrow()) as string[];
       }
     }
 
@@ -114,13 +116,13 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     let type = typeName;
     const union = type.split(' | ');
     const optional = property.hasQuestionToken?.() || union.includes('null') || union.includes('undefined');
-    type = union.filter(t => !['null', 'undefined'].includes(t)).join(' | ');
+    type = union.filter((t) => !['null', 'undefined'].includes(t)).join(' | ');
 
     prop.array ??= type.endsWith('[]') || !!type.match(/Array<(.*)>/);
     type = type
       .replace(/Array<(.*)>/, '$1') // unwrap array
-      .replace(/\[]$/, '')          // remove array suffix
-      .replace(/\((.*)\)/, '$1');   // unwrap union types
+      .replace(/\[]$/, '') // remove array suffix
+      .replace(/\((.*)\)/, '$1'); // unwrap union types
 
     // keep the array suffix in the type, it is needed in few places in discovery and comparator (`prop.array` is used only for enum arrays)
     if (prop.array && !type.includes(' | ') && prop.reference === ReferenceType.SCALAR) {
@@ -135,7 +137,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
       await this.initSourceFiles();
     }
 
-    const source = this.sources.find(s => s.getFilePath().endsWith(tsPath.replace(/^\.+/, '')));
+    const source = this.sources.find((s) => s.getFilePath().endsWith(tsPath.replace(/^\.+/, '')));
 
     if (!source && validate) {
       throw new MetadataError(`Source file '${tsPath}' not found. Check your 'entitiesTs' option and verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`);
@@ -169,8 +171,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     // metadata storage. We know the path thanks the the decorators being executed. In case we are running via ts-node, the extension
     // will be already `.ts`, so no change needed. `.js` files will get renamed to `.d.ts` files as they will be used as a source for
     // the ts-morph reflection.
-    const paths = Object.values(MetadataStorage.getMetadata()).map(m => m.path.replace(/\.js$/, '.d.ts'));
+    const paths = Object.values(MetadataStorage.getMetadata()).map((m) => m.path.replace(/\.js$/, '.d.ts'));
     this.sources = this.project.addSourceFilesAtPaths(paths);
   }
-
 }

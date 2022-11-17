@@ -6,7 +6,6 @@ import { mockLogger } from '../../helpers';
 
 @Entity()
 class Source {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -16,12 +15,10 @@ class Source {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Embeddable()
 class IdentityMeta {
-
   @Property()
   foo?: string;
 
@@ -35,12 +32,10 @@ class IdentityMeta {
     this.foo = foo;
     this.bar = bar;
   }
-
 }
 
 @Embeddable()
 class IdentityLink {
-
   @Property({ nullable: true })
   url?: string;
 
@@ -63,12 +58,10 @@ class IdentityLink {
     this.metas.push(new IdentityMeta('f3', 'b3'));
     this.metas.push(new IdentityMeta('f4', 'b4'));
   }
-
 }
 
 @Embeddable()
 class Identity {
-
   @Property()
   email: string;
 
@@ -85,12 +78,10 @@ class Identity {
     this.email = email;
     this.meta = meta;
   }
-
 }
 
 @Embeddable()
 class Profile {
-
   @Property()
   username: string;
 
@@ -104,12 +95,10 @@ class Profile {
     this.username = username;
     this.identity = identity;
   }
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -121,11 +110,9 @@ class User {
 
   @Embedded(() => Profile, { object: true })
   profile2!: Profile;
-
 }
 
 describe('embedded entities in mongo', () => {
-
   let orm: MikroORM<MongoDriver>;
 
   beforeAll(async () => {
@@ -164,9 +151,15 @@ describe('embedded entities in mongo', () => {
           meta: {
             foo: 'f1',
             bar: 'b1',
-            source: { _id: new ObjectId('600000000000000000000002'), name: 'ims1' },
+            source: {
+              _id: new ObjectId('600000000000000000000002'),
+              name: 'ims1',
+            },
           },
-          source: { _id: new ObjectId('600000000000000000000003'), name: 'is1' },
+          source: {
+            _id: new ObjectId('600000000000000000000003'),
+            name: 'is1',
+          },
           links: [],
         },
         source: { _id: new ObjectId('600000000000000000000004'), name: 's1' },
@@ -178,9 +171,15 @@ describe('embedded entities in mongo', () => {
           meta: {
             foo: 'f2',
             bar: 'b2',
-            source: { _id: new ObjectId('600000000000000000000005'), name: 'ims2' },
+            source: {
+              _id: new ObjectId('600000000000000000000005'),
+              name: 'ims2',
+            },
           },
-          source: { _id: new ObjectId('600000000000000000000006'), name: 'is2' },
+          source: {
+            _id: new ObjectId('600000000000000000000006'),
+            name: 'is2',
+          },
           links: [],
         },
         source: { _id: new ObjectId('600000000000000000000007'), name: 's2' },
@@ -232,8 +231,12 @@ describe('embedded entities in mongo', () => {
   test('persist and load', async () => {
     const mock = mockLogger(orm);
     const { user1, user2 } = await createUsers();
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('source').insertMany([ { _id: ObjectId('600000000000000000000004'), name: 's1' }, { _id: ObjectId('600000000000000000000003'), name: 'is1' }, { _id: ObjectId('600000000000000000000002'), name: 'ims1' }, { _id: ObjectId('600000000000000000000007'), name: 's2' }, { _id: ObjectId('600000000000000000000006'), name: 'is2' }, { _id: ObjectId('600000000000000000000005'), name: 'ims2' }, { _id: ObjectId('600000000000000000000012'), name: 's3' }, { _id: ObjectId('600000000000000000000013'), name: 'is3' }, { _id: ObjectId('600000000000000000000014'), name: 'ils31' }, { _id: ObjectId('600000000000000000000015'), name: 'ils32' }, { _id: ObjectId('600000000000000000000016'), name: 'ilms311' }, { _id: ObjectId('600000000000000000000017'), name: 'ilms312' }, { _id: ObjectId('600000000000000000000018'), name: 'ilms313' }, { _id: ObjectId('600000000000000000000019'), name: 'ilms321' }, { _id: ObjectId('60000000000000000000001a'), name: 'ilms322' }, { _id: ObjectId('60000000000000000000001b'), name: 'ilms323' }, { _id: ObjectId('60000000000000000000001c'), name: 's4' }, { _id: ObjectId('60000000000000000000001d'), name: 'is4' }, { _id: ObjectId('60000000000000000000001e'), name: 'ils41' }, { _id: ObjectId('60000000000000000000001f'), name: 'ils42' } ], {});`);
-    expect(mock.mock.calls[1][0]).toMatch(`db.getCollection('user').insertMany([ { _id: ObjectId('600000000000000000000001'), name: 'Uwe', profile1_username: 'u1', profile1_identity_email: 'e1', profile1_identity_meta_foo: 'f1', profile1_identity_meta_bar: 'b1', profile1_identity_meta_source: ObjectId('600000000000000000000002'), profile1_identity_links: [], profile1_identity_source: ObjectId('600000000000000000000003'), profile1_source: ObjectId('600000000000000000000004'), profile2: { username: 'u2', identity: { email: 'e2', meta: { foo: 'f2', bar: 'b2', source: ObjectId('600000000000000000000005') }, links: [], source: ObjectId('600000000000000000000006') }, source: ObjectId('600000000000000000000007') } }, { _id: ObjectId('600000000000000000000011'), name: 'Uschi', profile1_username: 'u3', profile1_identity_email: 'e3', profile1_identity_links: [ { url: 'l1', meta: { foo: 'f1', bar: 'b1' }, metas: [ { foo: 'f2', bar: 'b2', source: ObjectId('600000000000000000000016') }, { foo: 'f3', bar: 'b3', source: ObjectId('600000000000000000000017') }, { foo: 'f4', bar: 'b4', source: ObjectId('600000000000000000000018') } ], source: ObjectId('600000000000000000000014') }, { url: 'l2', meta: { foo: 'f1', bar: 'b1' }, metas: [ { foo: 'f2', bar: 'b2', source: ObjectId('600000000000000000000019') }, { foo: 'f3', bar: 'b3', source: ObjectId('60000000000000000000001a') }, { foo: 'f4', bar: 'b4', source: ObjectId('60000000000000000000001b') } ], source: ObjectId('600000000000000000000015') } ], profile1_identity_source: ObjectId('600000000000000000000013'), profile1_source: ObjectId('600000000000000000000012'), profile2: { username: 'u4', identity: { email: 'e4', meta: { foo: 'f4' }, links: [ { url: 'l3', meta: [Object], metas: [Array], source: ObjectId('60000000000000000000001e') }, { url: 'l4', meta: [Object], metas: [Array], source: ObjectId('60000000000000000000001f') } ], source: ObjectId('60000000000000000000001d') }, source: ObjectId('60000000000000000000001c') } } ], {});`);
+    expect(mock.mock.calls[0][0]).toMatch(
+      `db.getCollection('source').insertMany([ { _id: ObjectId('600000000000000000000004'), name: 's1' }, { _id: ObjectId('600000000000000000000003'), name: 'is1' }, { _id: ObjectId('600000000000000000000002'), name: 'ims1' }, { _id: ObjectId('600000000000000000000007'), name: 's2' }, { _id: ObjectId('600000000000000000000006'), name: 'is2' }, { _id: ObjectId('600000000000000000000005'), name: 'ims2' }, { _id: ObjectId('600000000000000000000012'), name: 's3' }, { _id: ObjectId('600000000000000000000013'), name: 'is3' }, { _id: ObjectId('600000000000000000000014'), name: 'ils31' }, { _id: ObjectId('600000000000000000000015'), name: 'ils32' }, { _id: ObjectId('600000000000000000000016'), name: 'ilms311' }, { _id: ObjectId('600000000000000000000017'), name: 'ilms312' }, { _id: ObjectId('600000000000000000000018'), name: 'ilms313' }, { _id: ObjectId('600000000000000000000019'), name: 'ilms321' }, { _id: ObjectId('60000000000000000000001a'), name: 'ilms322' }, { _id: ObjectId('60000000000000000000001b'), name: 'ilms323' }, { _id: ObjectId('60000000000000000000001c'), name: 's4' }, { _id: ObjectId('60000000000000000000001d'), name: 'is4' }, { _id: ObjectId('60000000000000000000001e'), name: 'ils41' }, { _id: ObjectId('60000000000000000000001f'), name: 'ils42' } ], {});`
+    );
+    expect(mock.mock.calls[1][0]).toMatch(
+      `db.getCollection('user').insertMany([ { _id: ObjectId('600000000000000000000001'), name: 'Uwe', profile1_username: 'u1', profile1_identity_email: 'e1', profile1_identity_meta_foo: 'f1', profile1_identity_meta_bar: 'b1', profile1_identity_meta_source: ObjectId('600000000000000000000002'), profile1_identity_links: [], profile1_identity_source: ObjectId('600000000000000000000003'), profile1_source: ObjectId('600000000000000000000004'), profile2: { username: 'u2', identity: { email: 'e2', meta: { foo: 'f2', bar: 'b2', source: ObjectId('600000000000000000000005') }, links: [], source: ObjectId('600000000000000000000006') }, source: ObjectId('600000000000000000000007') } }, { _id: ObjectId('600000000000000000000011'), name: 'Uschi', profile1_username: 'u3', profile1_identity_email: 'e3', profile1_identity_links: [ { url: 'l1', meta: { foo: 'f1', bar: 'b1' }, metas: [ { foo: 'f2', bar: 'b2', source: ObjectId('600000000000000000000016') }, { foo: 'f3', bar: 'b3', source: ObjectId('600000000000000000000017') }, { foo: 'f4', bar: 'b4', source: ObjectId('600000000000000000000018') } ], source: ObjectId('600000000000000000000014') }, { url: 'l2', meta: { foo: 'f1', bar: 'b1' }, metas: [ { foo: 'f2', bar: 'b2', source: ObjectId('600000000000000000000019') }, { foo: 'f3', bar: 'b3', source: ObjectId('60000000000000000000001a') }, { foo: 'f4', bar: 'b4', source: ObjectId('60000000000000000000001b') } ], source: ObjectId('600000000000000000000015') } ], profile1_identity_source: ObjectId('600000000000000000000013'), profile1_source: ObjectId('600000000000000000000012'), profile2: { username: 'u4', identity: { email: 'e4', meta: { foo: 'f4' }, links: [ { url: 'l3', meta: [Object], metas: [Array], source: ObjectId('60000000000000000000001e') }, { url: 'l4', meta: [Object], metas: [Array], source: ObjectId('60000000000000000000001f') } ], source: ObjectId('60000000000000000000001d') }, source: ObjectId('60000000000000000000001c') } } ], {});`
+    );
 
     const u1 = await orm.em.findOneOrFail(User, user1._id);
     const u2 = await orm.em.findOneOrFail(User, user2._id);
@@ -291,16 +294,66 @@ describe('embedded entities in mongo', () => {
       identity: {
         email: 'e3',
         links: [
-          { url: 'l1', meta: { bar: 'b1', foo: 'f1' }, source: { id: u2.profile1.identity.links[0].source!._id.toHexString() }, metas: [
-            { bar: 'b2', foo: 'f2', source: { id: u2.profile1.identity.links[0].metas[0].source!._id.toHexString() } },
-            { bar: 'b3', foo: 'f3', source: { id: u2.profile1.identity.links[0].metas[1].source!._id.toHexString() } },
-            { bar: 'b4', foo: 'f4', source: { id: u2.profile1.identity.links[0].metas[2].source!._id.toHexString() } },
-          ] },
-          { url: 'l2', meta: { bar: 'b1', foo: 'f1' }, source: { id: u2.profile1.identity.links[1].source!._id.toHexString() }, metas: [
-            { bar: 'b2', foo: 'f2', source: { id: u2.profile1.identity.links[1].metas[0].source!._id.toHexString() } },
-            { bar: 'b3', foo: 'f3', source: { id: u2.profile1.identity.links[1].metas[1].source!._id.toHexString() } },
-            { bar: 'b4', foo: 'f4', source: { id: u2.profile1.identity.links[1].metas[2].source!._id.toHexString() } },
-          ] },
+          {
+            url: 'l1',
+            meta: { bar: 'b1', foo: 'f1' },
+            source: {
+              id: u2.profile1.identity.links[0].source!._id.toHexString(),
+            },
+            metas: [
+              {
+                bar: 'b2',
+                foo: 'f2',
+                source: {
+                  id: u2.profile1.identity.links[0].metas[0].source!._id.toHexString(),
+                },
+              },
+              {
+                bar: 'b3',
+                foo: 'f3',
+                source: {
+                  id: u2.profile1.identity.links[0].metas[1].source!._id.toHexString(),
+                },
+              },
+              {
+                bar: 'b4',
+                foo: 'f4',
+                source: {
+                  id: u2.profile1.identity.links[0].metas[2].source!._id.toHexString(),
+                },
+              },
+            ],
+          },
+          {
+            url: 'l2',
+            meta: { bar: 'b1', foo: 'f1' },
+            source: {
+              id: u2.profile1.identity.links[1].source!._id.toHexString(),
+            },
+            metas: [
+              {
+                bar: 'b2',
+                foo: 'f2',
+                source: {
+                  id: u2.profile1.identity.links[1].metas[0].source!._id.toHexString(),
+                },
+              },
+              {
+                bar: 'b3',
+                foo: 'f3',
+                source: {
+                  id: u2.profile1.identity.links[1].metas[1].source!._id.toHexString(),
+                },
+              },
+              {
+                bar: 'b4',
+                foo: 'f4',
+                source: {
+                  id: u2.profile1.identity.links[1].metas[2].source!._id.toHexString(),
+                },
+              },
+            ],
+          },
         ],
         source: { id: u2.profile1.identity.source!._id.toHexString() },
       },
@@ -319,16 +372,30 @@ describe('embedded entities in mongo', () => {
       identity: {
         email: 'e4',
         links: [
-          { url: 'l3', meta: { bar: 'b1', foo: 'f1' }, source: { id: u2.profile2.identity.links[0].source!._id.toHexString() }, metas: [
+          {
+            url: 'l3',
+            meta: { bar: 'b1', foo: 'f1' },
+            source: {
+              id: u2.profile2.identity.links[0].source!._id.toHexString(),
+            },
+            metas: [
               { bar: 'b2', foo: 'f2' },
               { bar: 'b3', foo: 'f3' },
               { bar: 'b4', foo: 'f4' },
-            ] },
-          { url: 'l4', meta: { bar: 'b1', foo: 'f1' }, source: { id: u2.profile2.identity.links[1].source!._id.toHexString() }, metas: [
+            ],
+          },
+          {
+            url: 'l4',
+            meta: { bar: 'b1', foo: 'f1' },
+            source: {
+              id: u2.profile2.identity.links[1].source!._id.toHexString(),
+            },
+            metas: [
               { bar: 'b2', foo: 'f2' },
               { bar: 'b3', foo: 'f3' },
               { bar: 'b4', foo: 'f4' },
-            ] },
+            ],
+          },
         ],
         meta: {
           foo: 'f4',
@@ -350,13 +417,17 @@ describe('embedded entities in mongo', () => {
     u2.profile1!.identity.links = [new IdentityLink('l6'), new IdentityLink('l7')];
     u2.profile2!.identity.links.push(new IdentityLink('l8'));
     await orm.em.flush();
-    expect(mock.mock.calls[0][0]).toMatch(`bulk = db.getCollection('user').initializeUnorderedBulkOp({});bulk.find({ _id: ObjectId('600000000000000000000001') }).update({ '$set': { profile1_identity_email: 'e123', profile1_identity_meta_foo: 'foooooooo', profile2: { username: 'u2', identity: { email: 'e2', meta: { foo: 'f2', bar: 'bababar', source: ObjectId('600000000000000000000005') }, links: [ { url: 'l5', meta: [Object], metas: [Array] } ], source: ObjectId('600000000000000000000006') }, source: ObjectId('600000000000000000000007') } } });bulk.find({ _id: ObjectId('600000000000000000000011') }).update({ '$set': { profile1_identity_links: [ { url: 'l6', meta: { foo: 'f1', bar: 'b1' }, metas: [ { foo: 'f2', bar: 'b2' }, { foo: 'f3', bar: 'b3' }, { foo: 'f4', bar: 'b4' } ] }, { url: 'l7', meta: { foo: 'f1', bar: 'b1' }, metas: [ { foo: 'f2', bar: 'b2' }, { foo: 'f3', bar: 'b3' }, { foo: 'f4', bar: 'b4' } ] } ], profile2: { username: 'u4', identity: { email: 'e4', meta: { foo: 'f4' }, links: [ { url: 'l3', meta: [Object], metas: [Array], source: ObjectId('60000000000000000000001e') }, { url: 'l4', meta: [Object], metas: [Array], source: ObjectId('60000000000000000000001f') }, { url: 'l8', meta: [Object], metas: [Array] } ], source: ObjectId('60000000000000000000001d') }, source: ObjectId('60000000000000000000001c') } } });bulk.execute()`);
+    expect(mock.mock.calls[0][0]).toMatch(
+      `bulk = db.getCollection('user').initializeUnorderedBulkOp({});bulk.find({ _id: ObjectId('600000000000000000000001') }).update({ '$set': { profile1_identity_email: 'e123', profile1_identity_meta_foo: 'foooooooo', profile2: { username: 'u2', identity: { email: 'e2', meta: { foo: 'f2', bar: 'bababar', source: ObjectId('600000000000000000000005') }, links: [ { url: 'l5', meta: [Object], metas: [Array] } ], source: ObjectId('600000000000000000000006') }, source: ObjectId('600000000000000000000007') } } });bulk.find({ _id: ObjectId('600000000000000000000011') }).update({ '$set': { profile1_identity_links: [ { url: 'l6', meta: { foo: 'f1', bar: 'b1' }, metas: [ { foo: 'f2', bar: 'b2' }, { foo: 'f3', bar: 'b3' }, { foo: 'f4', bar: 'b4' } ] }, { url: 'l7', meta: { foo: 'f1', bar: 'b1' }, metas: [ { foo: 'f2', bar: 'b2' }, { foo: 'f3', bar: 'b3' }, { foo: 'f4', bar: 'b4' } ] } ], profile2: { username: 'u4', identity: { email: 'e4', meta: { foo: 'f4' }, links: [ { url: 'l3', meta: [Object], metas: [Array], source: ObjectId('60000000000000000000001e') }, { url: 'l4', meta: [Object], metas: [Array], source: ObjectId('60000000000000000000001f') }, { url: 'l8', meta: [Object], metas: [Array] } ], source: ObjectId('60000000000000000000001d') }, source: ObjectId('60000000000000000000001c') } } });bulk.execute()`
+    );
     orm.em.clear();
     mock.mock.calls.length = 0;
 
     const u3 = await orm.em.findOneOrFail(User, {
       profile1: { identity: { email: 'e123', meta: { foo: 'foooooooo' } } },
-      profile2: { identity: { email: 'e2', meta: { foo: 'f2', bar: 'bababar' } } },
+      profile2: {
+        identity: { email: 'e2', meta: { foo: 'f2', bar: 'bababar' } },
+      },
     });
     expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('user').find({ profile1_identity_email: 'e123', profile1_identity_meta_foo: 'foooooooo', 'profile2.identity.email': 'e2', 'profile2.identity.meta.foo': 'f2', 'profile2.identity.meta.bar': 'bababar' }, {}).limit(1).toArray();`);
     expect(u3._id.toHexString()).toEqual(u1._id.toHexString());
@@ -365,22 +436,34 @@ describe('embedded entities in mongo', () => {
 
     const u4 = await orm.em.findOneOrFail(User, {
       profile1: { identity: { email: 'e123', meta: { foo: { $re: 'fo+' } } } },
-      profile2: { identity: { email: 'e2', meta: { foo: 'f2', bar: { $re: '(ba)+r' } } } },
+      profile2: {
+        identity: { email: 'e2', meta: { foo: 'f2', bar: { $re: '(ba)+r' } } },
+      },
     });
     expect(u4._id.toHexString()).toEqual(u1._id.toHexString());
     expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('user').find({ profile1_identity_email: 'e123', profile1_identity_meta_foo: /fo+/, 'profile2.identity.email': 'e2', 'profile2.identity.meta.foo': 'f2', 'profile2.identity.meta.bar': /(ba)+r/ }, {}).limit(1).toArray();`);
     orm.em.clear();
     mock.mock.calls.length = 0;
 
-    const u5 = await orm.em.findOneOrFail(User, { $or: [{ profile1: { identity: { meta: { foo: 'foooooooo' } } } }, { profile2: { identity: { meta: { bar: 'bababar' } } } }] });
+    const u5 = await orm.em.findOneOrFail(User, {
+      $or: [{ profile1: { identity: { meta: { foo: 'foooooooo' } } } }, { profile2: { identity: { meta: { bar: 'bababar' } } } }],
+    });
     expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('user').find({ '$or': [ { profile1_identity_meta_foo: 'foooooooo' }, { 'profile2.identity.meta.bar': 'bababar' } ] }, {}).limit(1).toArray();`);
     expect(u5._id.toHexString()).toEqual(u1._id.toHexString());
 
     const err1 = `Invalid query for entity 'User', property 'city' does not exist in embeddable 'Identity'`;
-    await expect(orm.em.findOneOrFail(User, { profile1: { identity: { city: 'London 1' } as any } })).rejects.toThrowError(err1);
+    await expect(
+      orm.em.findOneOrFail(User, {
+        profile1: { identity: { city: 'London 1' } as any },
+      })
+    ).rejects.toThrowError(err1);
 
     const err2 = `Invalid query for entity 'User', property 'city' does not exist in embeddable 'Identity'`;
-    await expect(orm.em.findOneOrFail(User, { profile2: { identity: { city: 'London 1' } as any } })).rejects.toThrowError(err2);
+    await expect(
+      orm.em.findOneOrFail(User, {
+        profile2: { identity: { city: 'London 1' } as any },
+      })
+    ).rejects.toThrowError(err2);
   });
 
   test('populating entities in embeddables', async () => {
@@ -388,24 +471,23 @@ describe('embedded entities in mongo', () => {
 
     const mock = mockLogger(orm);
 
-
-    const users = await orm.em.find(User, {}, {
-      populate: [
-        'profile1.source',
-        'profile1.identity.source',
-        'profile1.identity.meta.source',
-        'profile1.identity.links.source',
-        'profile1.identity.links.metas.source',
-      ],
-      orderBy: { name: 'desc' },
-    });
+    const users = await orm.em.find(
+      User,
+      {},
+      {
+        populate: ['profile1.source', 'profile1.identity.source', 'profile1.identity.meta.source', 'profile1.identity.links.source', 'profile1.identity.links.metas.source'],
+        orderBy: { name: 'desc' },
+      }
+    );
 
     expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('user').find({}, {}).sort([ [ 'name', -1 ] ]).toArray();`);
     expect(mock.mock.calls[1][0]).toMatch(`db.getCollection('source').find({ _id: { '$in': [ ObjectId('600000000000000000000004'), ObjectId('600000000000000000000012') ] } }, {}).sort([ [ '_id', 1 ] ]).toArray();`);
     expect(mock.mock.calls[2][0]).toMatch(`db.getCollection('source').find({ _id: { '$in': [ ObjectId('600000000000000000000003'), ObjectId('600000000000000000000013') ] } }, {}).sort([ [ '_id', 1 ] ]).toArray();`);
     expect(mock.mock.calls[3][0]).toMatch(`db.getCollection('source').find({ _id: { '$in': [ ObjectId('600000000000000000000002') ] } }, {}).sort([ [ '_id', 1 ] ]).toArray();`);
     expect(mock.mock.calls[4][0]).toMatch(`db.getCollection('source').find({ _id: { '$in': [ ObjectId('600000000000000000000014'), ObjectId('600000000000000000000015') ] } }, {}).sort([ [ '_id', 1 ] ]).toArray();`);
-    expect(mock.mock.calls[5][0]).toMatch(`db.getCollection('source').find({ _id: { '$in': [ ObjectId('600000000000000000000016'), ObjectId('600000000000000000000017'), ObjectId('600000000000000000000018'), ObjectId('600000000000000000000019'), ObjectId('60000000000000000000001a'), ObjectId('60000000000000000000001b') ] } }, {}).sort([ [ '_id', 1 ] ]).toArray();`);
+    expect(mock.mock.calls[5][0]).toMatch(
+      `db.getCollection('source').find({ _id: { '$in': [ ObjectId('600000000000000000000016'), ObjectId('600000000000000000000017'), ObjectId('600000000000000000000018'), ObjectId('600000000000000000000019'), ObjectId('60000000000000000000001a'), ObjectId('60000000000000000000001b') ] } }, {}).sort([ [ '_id', 1 ] ]).toArray();`
+    );
     expect(wrap(users[0].profile1.source).isInitialized()).toBe(true);
     expect(users[0].profile1.source!.name).toBe('s1');
     expect(wrap(users[1].profile1.identity.links[1].source).isInitialized()).toBe(true);
@@ -429,8 +511,12 @@ describe('embedded entities in mongo', () => {
         identity: {
           source: { name: 'is3' },
           links: [
-            { metas: [{ source: { name: 'ilms311' } }, { source: { name: 'ilms312' } }, { source: { name: 'ilms313' } }] },
-            { metas: [{ source: { name: 'ilms321' } }, { source: { name: 'ilms322' } }, { source: { name: 'ilms323' } }] },
+            {
+              metas: [{ source: { name: 'ilms311' } }, { source: { name: 'ilms312' } }, { source: { name: 'ilms313' } }],
+            },
+            {
+              metas: [{ source: { name: 'ilms321' } }, { source: { name: 'ilms322' } }, { source: { name: 'ilms323' } }],
+            },
           ],
         },
       },
@@ -441,14 +527,26 @@ describe('embedded entities in mongo', () => {
     const jon = new User();
 
     orm.em.assign(jon, {
-      profile1: { username: 'u1', identity: { email: 'e1', meta: { bar: 'b1', foo: 'f1' } } },
-      profile2: { username: 'u2', identity: { email: 'e2', meta: { bar: 'b2', foo: 'f2' } } },
+      profile1: {
+        username: 'u1',
+        identity: { email: 'e1', meta: { bar: 'b1', foo: 'f1' } },
+      },
+      profile2: {
+        username: 'u2',
+        identity: { email: 'e2', meta: { bar: 'b2', foo: 'f2' } },
+      },
     });
-    expect(jon.profile1).toMatchObject({ username: 'u1', identity: { email: 'e1', meta: { bar: 'b1', foo: 'f1' } } });
+    expect(jon.profile1).toMatchObject({
+      username: 'u1',
+      identity: { email: 'e1', meta: { bar: 'b1', foo: 'f1' } },
+    });
     expect(jon.profile1).toBeInstanceOf(Profile);
     expect(jon.profile1.identity).toBeInstanceOf(Identity);
     expect(jon.profile1.identity.meta).toBeInstanceOf(IdentityMeta);
-    expect(jon.profile2).toMatchObject({ username: 'u2', identity: { email: 'e2', meta: { bar: 'b2', foo: 'f2' } } });
+    expect(jon.profile2).toMatchObject({
+      username: 'u2',
+      identity: { email: 'e2', meta: { bar: 'b2', foo: 'f2' } },
+    });
     expect(jon.profile2).toBeInstanceOf(Profile);
     expect(jon.profile2.identity).toBeInstanceOf(Identity);
     expect(jon.profile2.identity.meta).toBeInstanceOf(IdentityMeta);
@@ -468,5 +566,4 @@ describe('embedded entities in mongo', () => {
     expect(jon.profile1.identity.email).toBe('e4');
     expect(jon.profile1.identity.meta).toBeUndefined();
   });
-
 });

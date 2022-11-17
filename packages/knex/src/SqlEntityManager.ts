@@ -9,7 +9,6 @@ import type { SqlEntityRepository } from './SqlEntityRepository';
  * @inheritDoc
  */
 export class SqlEntityManager<D extends AbstractSqlDriver = AbstractSqlDriver> extends EntityManager<D> {
-
   /**
    * Creates a QueryBuilder instance
    */
@@ -50,5 +49,4 @@ export class SqlEntityManager<D extends AbstractSqlDriver = AbstractSqlDriver> e
   getRepository<T extends object, U extends EntityRepository<T> = SqlEntityRepository<T>>(entityName: EntityName<T>): GetRepository<T, U> {
     return super.getRepository<T, U>(entityName);
   }
-
 }

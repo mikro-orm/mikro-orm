@@ -3,7 +3,6 @@ import type { AbstractSqlDriver } from '@mikro-orm/knex';
 
 @Entity({ tableName: 'name' })
 class Name {
-
   @PrimaryKey()
   id!: number;
 
@@ -16,22 +15,23 @@ class Name {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity({ tableName: 'user' })
 class User {
-
   @PrimaryKey()
   id!: number;
 
-  @ManyToMany({ entity: 'Name', pivotTable: 'userNames', joinColumn: 'name', inverseJoinColumn: 'user' })
+  @ManyToMany({
+    entity: 'Name',
+    pivotTable: 'userNames',
+    joinColumn: 'name',
+    inverseJoinColumn: 'user',
+  })
   names = new Collection<Name>(this);
-
 }
 
 describe('GH issue 1346', () => {
-
   let orm: MikroORM<AbstractSqlDriver>;
 
   beforeAll(async () => {
@@ -58,8 +58,9 @@ describe('GH issue 1346', () => {
     await orm.em.persistAndFlush([user, name]);
     orm.em.clear();
 
-    const entity = await orm.em.findOneOrFail(User, user, { populate: ['names'] });
+    const entity = await orm.em.findOneOrFail(User, user, {
+      populate: ['names'],
+    });
     expect(entity.names[0].name).toEqual('this is my name');
   });
-
 });

@@ -3,34 +3,39 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class A {
-
   @PrimaryKey({ type: 'number' })
   id!: number;
 
-  @OneToOne({ entity: () => B, inversedBy: 'a', wrappedReference: true, nullable: true })
+  @OneToOne({
+    entity: () => B,
+    inversedBy: 'a',
+    wrappedReference: true,
+    nullable: true,
+  })
   b?: IdentifiedReference<B>;
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 export class B {
-
   @PrimaryKey({ type: 'number' })
   id!: number;
 
-  @OneToOne({ entity: () => A, mappedBy: 'b', wrappedReference: true, nullable: true })
+  @OneToOne({
+    entity: () => A,
+    mappedBy: 'b',
+    wrappedReference: true,
+    nullable: true,
+  })
   a?: IdentifiedReference<A>;
 
   @Property()
   name!: string;
-
 }
 
 describe('GH issue 269', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -123,5 +128,4 @@ describe('GH issue 269', () => {
     expect(aa.b!.unwrap().a).toBeInstanceOf(Reference);
     expect(aa.b!.unwrap().a!.isInitialized()).toBe(true);
   });
-
 });

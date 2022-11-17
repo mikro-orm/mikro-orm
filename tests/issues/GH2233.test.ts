@@ -3,15 +3,12 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Embeddable()
 export class Lock {
-
   @Property()
   createdAt: Date = new Date();
-
 }
 
 @Entity()
 export class File {
-
   @PrimaryKey()
   id!: number;
 
@@ -20,11 +17,9 @@ export class File {
     object: true, // error only throws with object mode
   })
   lock?: Lock;
-
 }
 
 describe('GH issue 2233', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -42,15 +37,9 @@ describe('GH issue 2233', () => {
     const file = new File();
     await orm.em.fork().persistAndFlush(file);
 
-    const [raw] = await orm.em
-      .createQueryBuilder(File)
-      .select('*')
-      .where({ id: file.id })
-      .limit(1)
-      .getKnexQuery();
+    const [raw] = await orm.em.createQueryBuilder(File).select('*').where({ id: file.id }).limit(1).getKnexQuery();
 
     const mapped = orm.em.map(File, raw);
     expect(mapped).toEqual({ id: 1, lock: null });
   });
-
 });

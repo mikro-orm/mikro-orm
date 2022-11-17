@@ -1,14 +1,13 @@
 import { Collection, EntityManager, MikroORM, QueryOrder } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 
-import {  initORMSqlite3 } from './bootstrap';
+import { initORMSqlite3 } from './bootstrap';
 import { Book5 } from './entities-5';
 
 describe('EntityManagerSqlite fts5 table', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
-  beforeAll(async () => orm = await initORMSqlite3());
+  beforeAll(async () => (orm = await initORMSqlite3()));
   beforeEach(async () => orm.schema.clearDatabase());
 
   test('should load entities', async () => {
@@ -33,13 +32,13 @@ describe('EntityManagerSqlite fts5 table', () => {
     expect((await repo.count())!).toBe(5);
 
     // full text search test
-    const fullTextBooks = (await repo.find({ title: { $fulltext: 'life wall' } }))!;
+    const fullTextBooks = (await repo.find({
+      title: { $fulltext: 'life wall' },
+    }))!;
     expect(fullTextBooks.length).toBe(3);
   });
-
 
   afterAll(async () => {
     await orm.close(true);
   });
-
 });

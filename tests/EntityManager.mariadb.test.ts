@@ -5,10 +5,9 @@ import { Author2, Book2, BookTag2, Publisher2, PublisherType } from './entities-
 import { initORMMySql } from './bootstrap';
 
 describe('EntityManagerMariaDb', () => {
-
   let orm: MikroORM<MariaDbDriver>;
 
-  beforeAll(async () => orm = await initORMMySql<MariaDbDriver>('mariadb', {}, true));
+  beforeAll(async () => (orm = await initORMMySql<MariaDbDriver>('mariadb', {}, true)));
   beforeEach(async () => orm.schema.clearDatabase());
 
   test('isConnected()', async () => {
@@ -20,15 +19,18 @@ describe('EntityManagerMariaDb', () => {
   });
 
   test('getConnectionOptions()', async () => {
-    const config = new Configuration({
-      type: 'mysql',
-      clientUrl: 'mysql://root@127.0.0.1:3308/db_name',
-      host: '127.0.0.10',
-      password: 'secret',
-      user: 'user',
-      logger: jest.fn(),
-      forceUtcTimezone: true,
-    } as any, false);
+    const config = new Configuration(
+      {
+        type: 'mysql',
+        clientUrl: 'mysql://root@127.0.0.1:3308/db_name',
+        host: '127.0.0.10',
+        password: 'secret',
+        user: 'user',
+        logger: jest.fn(),
+        forceUtcTimezone: true,
+      } as any,
+      false
+    );
     const driver = new MariaDbDriver(config);
     expect(driver.getConnection().getConnectionOptions()).toEqual({
       database: 'db_name',
@@ -47,9 +49,20 @@ describe('EntityManagerMariaDb', () => {
     const driver = orm.em.getDriver();
     expect(driver).toBeInstanceOf(MariaDbDriver);
     await expect(driver.findOne(Book2.name, { double: 123 })).resolves.toBeNull();
-    const author = await driver.nativeInsert(Author2.name, { name: 'name', email: 'email' });
+    const author = await driver.nativeInsert(Author2.name, {
+      name: 'name',
+      email: 'email',
+    });
     const tag = await driver.nativeInsert(BookTag2.name, { name: 'tag name' });
-    expect((await driver.nativeInsert(Book2.name, { uuid: v4(), author: author.insertId, tags: [tag.insertId] })).insertId).not.toBeNull();
+    expect(
+      (
+        await driver.nativeInsert(Book2.name, {
+          uuid: v4(),
+          author: author.insertId,
+          tags: [tag.insertId],
+        })
+      ).insertId
+    ).not.toBeNull();
     await expect(driver.getConnection().execute('select 1 as count')).resolves.toEqual([{ count: 1 }]);
     await expect(driver.getConnection().execute('select 1 as count', [], 'get')).resolves.toEqual({ count: 1 });
     await expect(driver.getConnection().execute('select 1 as count', [], 'run')).resolves.toEqual([{ count: 1 }]);
@@ -80,7 +93,12 @@ describe('EntityManagerMariaDb', () => {
     ]);
 
     // mysql returns the first inserted id
-    expect(res).toMatchObject({ insertId: 1, affectedRows: 3, row: {}, rows: [{ id: 1 }, { id: 2 }, { id: 3 }] });
+    expect(res).toMatchObject({
+      insertId: 1,
+      affectedRows: 3,
+      row: {},
+      rows: [{ id: 1 }, { id: 2 }, { id: 3 }],
+    });
     const res2 = await driver.find(Publisher2.name, {});
     expect(res2).toMatchObject([
       { id: 1, name: 'test 1', type: PublisherType.GLOBAL },
@@ -147,11 +165,15 @@ describe('EntityManagerMariaDb', () => {
     orm.em.clear();
 
     const jon = (await authorRepository.findOne({ name: 'Jon Snow' }, { populate: ['books', 'favouriteBook'] }))!;
-    const authors = await authorRepository.findAll({ populate: ['books', 'favouriteBook'] });
+    const authors = await authorRepository.findAll({
+      populate: ['books', 'favouriteBook'],
+    });
     expect(await authorRepository.findOne({ email: 'not existing' })).toBeNull();
 
     // full text search test
-    const fullTextBooks = (await booksRepository.find({ title: { $fulltext: 'life wall' } }))!;
+    const fullTextBooks = (await booksRepository.find({
+      title: { $fulltext: 'life wall' },
+    }))!;
     expect(fullTextBooks.length).toBe(3);
 
     // count test
@@ -170,9 +192,21 @@ describe('EntityManagerMariaDb', () => {
       createdAt: jon.createdAt,
       updatedAt: jon.updatedAt,
       books: [
-        { author: jon.id, publisher: publisher.id, title: 'My Life on The Wall, part 1' },
-        { author: jon.id, publisher: publisher.id, title: 'My Life on The Wall, part 2' },
-        { author: jon.id, publisher: publisher.id, title: 'My Life on The Wall, part 3' },
+        {
+          author: jon.id,
+          publisher: publisher.id,
+          title: 'My Life on The Wall, part 1',
+        },
+        {
+          author: jon.id,
+          publisher: publisher.id,
+          title: 'My Life on The Wall, part 2',
+        },
+        {
+          author: jon.id,
+          publisher: publisher.id,
+          title: 'My Life on The Wall, part 3',
+        },
       ],
       favouriteBook: { author: god.id, title: 'Bible' },
       // born: '1990-03-23', // mariadb driver currently does not work with forced UTC timezone
@@ -214,12 +248,15 @@ describe('EntityManagerMariaDb', () => {
     expect(twoBooks[0].title).toBe('My Life on The Wall, part 3');
     expect(twoBooks[1].title).toBe('My Life on The Wall, part 2');
 
-    const lastBook = await booksRepository.find({ author: jon.id }, {
-      populate: ['author'],
-      orderBy: { title: QueryOrder.DESC },
-      limit: 2,
-      offset: 2,
-    });
+    const lastBook = await booksRepository.find(
+      { author: jon.id },
+      {
+        populate: ['author'],
+        orderBy: { title: QueryOrder.DESC },
+        limit: 2,
+        offset: 2,
+      }
+    );
     expect(lastBook.length).toBe(1);
     expect(lastBook[0].title).toBe('My Life on The Wall, part 1');
     expect(lastBook[0].author).toBeInstanceOf(Author2);
@@ -228,5 +265,4 @@ describe('EntityManagerMariaDb', () => {
   });
 
   afterAll(async () => orm.close(true));
-
 });

@@ -12,11 +12,11 @@ function isVisible<T extends object>(meta: EntityMetadata<T>, propName: string, 
     return options.populate;
   }
 
-  if (Array.isArray(options.populate) && options.populate?.find(item => item === propName || item.startsWith(propName + '.'))) {
+  if (Array.isArray(options.populate) && options.populate?.find((item) => item === propName || item.startsWith(propName + '.'))) {
     return true;
   }
 
-  if (options.exclude?.find(item => item === propName)) {
+  if (options.exclude?.find((item) => item === propName)) {
     return false;
   }
 
@@ -28,7 +28,7 @@ function isVisible<T extends object>(meta: EntityMetadata<T>, propName: string, 
 }
 
 function isPopulated<T extends object>(entity: T, propName: string, options: SerializeOptions<T, any>): boolean {
-  if (typeof options.populate !== 'boolean' && options.populate?.find(item => item === propName || item.startsWith(propName + '.'))) {
+  if (typeof options.populate !== 'boolean' && options.populate?.find((item) => item === propName || item.startsWith(propName + '.'))) {
     return true;
   }
 
@@ -40,7 +40,6 @@ function isPopulated<T extends object>(entity: T, propName: string, options: Ser
 }
 
 export class EntitySerializer {
-
   static serialize<T extends object, P extends string = never>(entity: T, options: SerializeOptions<T, P> = {}): EntityDTO<Loaded<T, P>> {
     const wrapped = helper(entity);
     const meta = wrapped.__meta;
@@ -55,7 +54,7 @@ export class EntitySerializer {
     const root = wrapped.__serializationContext.root!;
     const ret = {} as EntityDTO<Loaded<T, P>>;
     const keys = new Set<string>(meta.primaryKeys);
-    Object.keys(entity).forEach(prop => keys.add(prop));
+    Object.keys(entity).forEach((prop) => keys.add(prop));
     const visited = root.visited.has(entity);
 
     if (!visited) {
@@ -63,8 +62,8 @@ export class EntitySerializer {
     }
 
     [...keys]
-      .filter(prop => isVisible<T>(meta, prop, options))
-      .map(prop => {
+      .filter((prop) => isVisible<T>(meta, prop, options))
+      .map((prop) => {
         const cycle = root.visit(meta.className, prop);
 
         if (cycle && visited) {
@@ -80,7 +79,7 @@ export class EntitySerializer {
         return [prop, val];
       })
       .filter(([, value]) => typeof value !== 'undefined' && !(value === null && options.skipNull))
-      .forEach(([prop, value]) => ret[this.propertyName(meta, prop as keyof T & string, wrapped.__platform)] = value as T[keyof T & string]);
+      .forEach(([prop, value]) => (ret[this.propertyName(meta, prop as keyof T & string, wrapped.__platform)] = value as T[keyof T & string]));
 
     if (contextCreated) {
       root.close();
@@ -91,14 +90,10 @@ export class EntitySerializer {
     }
 
     // decorated getters
-    meta.props
-      .filter(prop => prop.getter && typeof entity[prop.name] !== 'undefined' && isVisible(meta, prop.name, options))
-      .forEach(prop => ret[this.propertyName(meta, prop.name, wrapped.__platform)] = entity[prop.name]);
+    meta.props.filter((prop) => prop.getter && typeof entity[prop.name] !== 'undefined' && isVisible(meta, prop.name, options)).forEach((prop) => (ret[this.propertyName(meta, prop.name, wrapped.__platform)] = entity[prop.name]));
 
     // decorated get methods
-    meta.props
-      .filter(prop => prop.getterName && entity[prop.getterName] as unknown instanceof Function && isVisible(meta, prop.name, options))
-      .forEach(prop => ret[this.propertyName(meta, prop.name, wrapped.__platform)] = (entity[prop.getterName!] as unknown as () => T[keyof T & string])());
+    meta.props.filter((prop) => prop.getterName && (entity[prop.getterName] as unknown) instanceof Function && isVisible(meta, prop.name, options)).forEach((prop) => (ret[this.propertyName(meta, prop.name, wrapped.__platform)] = (entity[prop.getterName!] as unknown as () => T[keyof T & string])()));
 
     return ret;
   }
@@ -139,7 +134,7 @@ export class EntitySerializer {
     /* istanbul ignore next */
     if (property?.reference === ReferenceType.EMBEDDED) {
       if (Array.isArray(entity[prop])) {
-        return (entity[prop] as object[]).map(item => helper(item).toJSON()) as T[keyof T];
+        return (entity[prop] as object[]).map((item) => helper(item).toJSON()) as T[keyof T];
       }
 
       if (Utils.isObject(entity[prop])) {
@@ -158,9 +153,7 @@ export class EntitySerializer {
 
   private static extractChildOptions<T extends object, U extends object>(options: SerializeOptions<T, any>, prop: keyof T & string): SerializeOptions<U, any> {
     const extractChildElements = (items: string[]) => {
-      return items
-        .filter(field => field.startsWith(`${prop}.`))
-        .map(field => field.substring(prop.length + 1));
+      return items.filter((field) => field.startsWith(`${prop}.`)).map((field) => field.substring(prop.length + 1));
     };
 
     return {
@@ -193,7 +186,7 @@ export class EntitySerializer {
       return undefined;
     }
 
-    return col.getItems(false).map(item => {
+    return col.getItems(false).map((item) => {
       if (isPopulated(item, prop, options)) {
         return this.serialize(item, this.extractChildOptions(options, prop));
       }
@@ -201,7 +194,6 @@ export class EntitySerializer {
       return helper(item).getPrimaryKey();
     }) as unknown as T[keyof T];
   }
-
 }
 
 export interface SerializeOptions<T extends object, P extends string = never> {
@@ -235,7 +227,7 @@ export function serialize<T extends object, P extends string = never>(entities: 
  * Converts entity instance to POJO, converting the `Collection`s to arrays and unwrapping the `Reference` wrapper, while respecting the serialization options.
  */
 export function serialize<T extends object, P extends string = never>(entities: T | T[], options?: SerializeOptions<T, P>): EntityDTO<Loaded<T, P>> | EntityDTO<Loaded<T, P>>[] {
-  const ret = Utils.asArray(entities).map(e => EntitySerializer.serialize(e, options));
+  const ret = Utils.asArray(entities).map((e) => EntitySerializer.serialize(e, options));
 
   if (Array.isArray(entities)) {
     return ret;

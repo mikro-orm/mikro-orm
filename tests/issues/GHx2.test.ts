@@ -1,27 +1,23 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
 
-
 @Entity()
 export class Author {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name: string;
 
-  @OneToMany(() => Book, b => b.author)
+  @OneToMany(() => Book, (b) => b.author)
   books = new Collection<Book>(this);
 
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 export class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -35,7 +31,6 @@ export class Book {
     this.title = title;
     this.author = author;
   }
-
 }
 
 test(`default value for relation property`, async () => {

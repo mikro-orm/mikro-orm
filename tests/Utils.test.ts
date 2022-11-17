@@ -11,10 +11,9 @@ import { pathToFileURL } from 'url';
 class Test {}
 
 describe('Utils', () => {
-
   let orm: MikroORM;
 
-  beforeAll(async () => orm = await initORMMongo());
+  beforeAll(async () => (orm = await initORMMongo()));
   beforeEach(async () => orm.schema.clearDatabase());
 
   test('isDefined', () => {
@@ -35,7 +34,11 @@ describe('Utils', () => {
     expect(Utils.isObject(['a'])).toBe(false);
     expect(Utils.isObject(null)).toBe(false);
     expect(Utils.isObject(() => 1)).toBe(false);
-    expect(Utils.isObject(function () { return 1; })).toBe(false);
+    expect(
+      Utils.isObject(function () {
+        return 1;
+      })
+    ).toBe(false);
     expect(Utils.isObject({})).toBe(true);
     expect(Utils.isObject(new Test())).toBe(true);
     expect(Utils.isObject(new Date())).toBe(true);
@@ -83,15 +86,36 @@ describe('Utils', () => {
   });
 
   test('merge', () => {
-    expect(Utils.merge({ a: 'a', b: 'c' }, { a: 'b', b: 'c' })).toEqual({ a: 'b', b: 'c' });
+    expect(Utils.merge({ a: 'a', b: 'c' }, { a: 'b', b: 'c' })).toEqual({
+      a: 'b',
+      b: 'c',
+    });
     expect(Utils.merge({ a: 'a', b: 'c', c: { d: 'e', f: ['i', 'h'] } }, { a: 'b', b: 'c', c: { d: 'e', f: ['g', 'h'] } })).toEqual({ a: 'b', b: 'c', c: { d: 'e', f: ['g', 'h'] } });
-    expect(Utils.merge({ a: 'a', b: 'c' }, { a: 'a', b: 'c' })).toEqual({ a: 'a', b: 'c' });
+    expect(Utils.merge({ a: 'a', b: 'c' }, { a: 'a', b: 'c' })).toEqual({
+      a: 'a',
+      b: 'c',
+    });
     expect(Utils.merge({ a: 'a', b: 'c', c: { a: 'u', f: ['g', 'h'] } }, { a: 'b', b: 'c', c: { d: 'e', f: ['g', 'h'] } })).toEqual({ a: 'b', b: 'c', c: { a: 'u', d: 'e', f: ['g', 'h'] } });
-    expect(Utils.merge({ a: 'a' }, { a: 'b', b: ['c'] })).toEqual({ a: 'b', b: ['c'] });
-    expect(Utils.merge({ a: 'a', b: ['c'] }, { b: [] })).toEqual({ a: 'a', b: [] });
-    expect(Utils.merge({ a: 'a', b: ['c'] }, { a: 'b' })).toEqual({ a: 'b', b: ['c'] });
-    expect(Utils.merge({ a: 'a', b: ['c'] }, { a: null })).toEqual({ a: null, b: ['c'] });
-    expect(Utils.merge({ a: 'a', b: ['c'] }, { a: undefined })).toEqual({ a: 'a', b: ['c'] });
+    expect(Utils.merge({ a: 'a' }, { a: 'b', b: ['c'] })).toEqual({
+      a: 'b',
+      b: ['c'],
+    });
+    expect(Utils.merge({ a: 'a', b: ['c'] }, { b: [] })).toEqual({
+      a: 'a',
+      b: [],
+    });
+    expect(Utils.merge({ a: 'a', b: ['c'] }, { a: 'b' })).toEqual({
+      a: 'b',
+      b: ['c'],
+    });
+    expect(Utils.merge({ a: 'a', b: ['c'] }, { a: null })).toEqual({
+      a: null,
+      b: ['c'],
+    });
+    expect(Utils.merge({ a: 'a', b: ['c'] }, { a: undefined })).toEqual({
+      a: 'a',
+      b: ['c'],
+    });
     expect(Utils.merge('a', 'b')).toEqual('a');
   });
 
@@ -101,14 +125,21 @@ describe('Utils', () => {
   });
 
   test('diff', () => {
-    expect(Utils.diff({ a: 'a', b: 'c' }, { a: 'b', b: 'c' })).toEqual({ a: 'b' });
+    expect(Utils.diff({ a: 'a', b: 'c' }, { a: 'b', b: 'c' })).toEqual({
+      a: 'b',
+    });
     expect(Utils.diff({ a: 'a', b: 'c', c: { d: 'e', f: ['i', 'h'] } }, { a: 'b', b: 'c', c: { d: 'e', f: ['g', 'h'] } })).toEqual({ a: 'b', c: { d: 'e', f: ['g', 'h'] } });
     expect(Utils.diff({ a: 'a', b: 'c' }, { a: 'a', b: 'c' })).toEqual({});
     expect(Utils.diff({ a: 'a', b: 'c', c: { d: 'e', f: ['g', 'h'] } }, { a: 'b', b: 'c', c: { d: 'e', f: ['g', 'h'] } })).toEqual({ a: 'b' });
-    expect(Utils.diff({ a: 'a' }, { a: 'b', b: ['c'] })).toEqual({ a: 'b', b: ['c'] });
+    expect(Utils.diff({ a: 'a' }, { a: 'b', b: ['c'] })).toEqual({
+      a: 'b',
+      b: ['c'],
+    });
     expect(Utils.diff({ a: 'a', b: ['c'] }, { b: [] })).toEqual({ b: [] });
     expect(Utils.diff({ a: 'a', b: ['c'] }, { a: 'b' })).toEqual({ a: 'b' });
-    expect(Utils.diff({ a: 'a', b: ['c'] }, { a: undefined })).toEqual({ a: undefined });
+    expect(Utils.diff({ a: 'a', b: ['c'] }, { a: undefined })).toEqual({
+      a: undefined,
+    });
     expect(Utils.diff({ a: new Date() }, { a: new Date('2018-01-01') })).toEqual({ a: new Date('2018-01-01') });
     expect(Utils.diff({ a: new ObjectId('00000001885f0a3cc37dc9f0') }, { a: new ObjectId('00000001885f0a3cc37dc9f0') })).toEqual({});
   });
@@ -127,7 +158,11 @@ describe('Utils', () => {
     expect(Utils.copy(re)).toEqual(re);
     expect(Utils.copy(re).lastIndex).toEqual(re.lastIndex);
 
-    const c = { a: 'a', b: 'c', inner: { foo: 'bar', p: Promise.resolve() } } as any;
+    const c = {
+      a: 'a',
+      b: 'c',
+      inner: { foo: 'bar', p: Promise.resolve() },
+    } as any;
     const d = Utils.copy(c);
     d.inner.lol = 'new';
     expect(c.inner.lol).toBeUndefined();
@@ -145,13 +180,13 @@ describe('Utils', () => {
     expect(Utils.getParamNames('')).toEqual([]);
 
     const func = `function (email, organization, role=(cov_1a0rd1emyt.b[13][0]++, Test.TEST)) {}`;
-    expect(Utils.getParamNames(func)).toEqual([ 'email', 'organization', 'role' ]);
+    expect(Utils.getParamNames(func)).toEqual(['email', 'organization', 'role']);
 
     const func2 = `function toJSON(strict = true, strip = ['id', 'email'], a =1) {}`;
-    expect(Utils.getParamNames(func2)).toEqual([ 'strict', 'strip', 'a' ]);
+    expect(Utils.getParamNames(func2)).toEqual(['strict', 'strip', 'a']);
 
     const func3 = `function toJSON(strict = true, strip = { test: ['id', 'email'] }, a = 1) {}`;
-    expect(Utils.getParamNames(func3)).toEqual([ 'strict', 'strip', 'a' ]);
+    expect(Utils.getParamNames(func3)).toEqual(['strict', 'strip', 'a']);
   });
 
   test('defaultValue', () => {
@@ -196,7 +231,7 @@ describe('Utils', () => {
 
   describe('posix', () => {
     let spy: jest.SpyInstance<string, [string | URL]>;
-    beforeAll(() => spy = jest.spyOn(Utils, 'fileURLToPath'));
+    beforeAll(() => (spy = jest.spyOn(Utils, 'fileURLToPath')));
     test('normalizePath', () => {
       spy.mockImplementation(() => '/test');
       expect(Utils.normalizePath('file:///test')).toBe('/test');
@@ -207,7 +242,7 @@ describe('Utils', () => {
 
   describe('windows', () => {
     let spy: jest.SpyInstance<string, [string | URL]>;
-    beforeAll(() => spy = jest.spyOn(Utils, 'fileURLToPath'));
+    beforeAll(() => (spy = jest.spyOn(Utils, 'fileURLToPath')));
     test('normalizePath', () => {
       spy.mockImplementation(() => 'C:/test');
       expect(Utils.normalizePath('file:///C:/test')).toBe('C:/test');
@@ -243,7 +278,7 @@ describe('Utils', () => {
 
   test('isPlainObject', async () => {
     expect(Utils.isPlainObject({ foo: 'bar' })).toBe(true);
-    class Foo { }
+    class Foo {}
     expect(Utils.isPlainObject(new Foo())).toBe(false);
     expect(Utils.isPlainObject(Object.create(null))).toBe(true);
   });
@@ -361,71 +396,76 @@ describe('Utils', () => {
     expect(Utils.lookupPathFromDecorator('Customer', stack5)).toBe('Customer');
 
     // unknown type of stack trace fallback
-    expect(Utils.lookupPathFromDecorator('Customer', [
-      '    at Object.__decorate (/usr/local/var/www/my-project/node_modules/tslib/tslib.js:92:96)',
-      '    at Object.<anonymous> ( ... )',
-    ])).toBe('Customer');
+    expect(Utils.lookupPathFromDecorator('Customer', ['    at Object.__decorate (/usr/local/var/www/my-project/node_modules/tslib/tslib.js:92:96)', '    at Object.<anonymous> ( ... )'])).toBe('Customer');
 
     // no decorated line found
     expect(Utils.lookupPathFromDecorator('Customer')).toBe('Customer');
 
     // when the constructor name is used in place of `__decorate` then try `Reflect.decorate`
-    expect(Utils.lookupPathFromDecorator('AuthorizationTokenEntity', [
-      '    at Function.lookupPathFromDecorator (/opt/app/node_modules/@mikro-orm/core/utils/Utils.js:502:26)',
-      '    at Function.getMetadataFromDecorator (/opt/app/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:33:36)',
-      '    at /opt/app/node_modules/@mikro-orm/core/decorators/Entity.js:8:49',
-      '    at DecorateConstructor (/opt/app/node_modules/reflect-metadata/Reflect.js:541:33)',
-      '    at Reflect.decorate (/opt/app/node_modules/reflect-metadata/Reflect.js:130:24)',
-      '    at AuthorizationTokenEntity (/opt/app/packages/entity/dist/node/entity/AuthorizationTokenEntity.js:19:92)',
-      '    at Object.<anonymous> (/opt/app/packages/entity/src/entity/AuthorizationTokenEntity.ts:14:38)',
-      '    at Module._compile (node:internal/modules/cjs/loader:1149:14)',
-      '    at Object.Module._extensions..js (node:internal/modules/cjs/loader:1203:10)',
-      '    at Module.load (node:internal/modules/cjs/loader:1027:32)',
-    ])).toBe('/opt/app/packages/entity/dist/node/entity/AuthorizationTokenEntity.js');
+    expect(
+      Utils.lookupPathFromDecorator('AuthorizationTokenEntity', [
+        '    at Function.lookupPathFromDecorator (/opt/app/node_modules/@mikro-orm/core/utils/Utils.js:502:26)',
+        '    at Function.getMetadataFromDecorator (/opt/app/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:33:36)',
+        '    at /opt/app/node_modules/@mikro-orm/core/decorators/Entity.js:8:49',
+        '    at DecorateConstructor (/opt/app/node_modules/reflect-metadata/Reflect.js:541:33)',
+        '    at Reflect.decorate (/opt/app/node_modules/reflect-metadata/Reflect.js:130:24)',
+        '    at AuthorizationTokenEntity (/opt/app/packages/entity/dist/node/entity/AuthorizationTokenEntity.js:19:92)',
+        '    at Object.<anonymous> (/opt/app/packages/entity/src/entity/AuthorizationTokenEntity.ts:14:38)',
+        '    at Module._compile (node:internal/modules/cjs/loader:1149:14)',
+        '    at Object.Module._extensions..js (node:internal/modules/cjs/loader:1203:10)',
+        '    at Module.load (node:internal/modules/cjs/loader:1027:32)',
+      ])
+    ).toBe('/opt/app/packages/entity/dist/node/entity/AuthorizationTokenEntity.js');
 
     // when both `__decorate` and `Reflect.decorator` exist in the stack (`__decorate` first)
-    expect(Utils.lookupPathFromDecorator('AuthorizationTokenEntity', [
-      '    at Function.lookupPathFromDecorator (/opt/app/node_modules/@mikro-orm/core/utils/Utils.js:502:26)',
-      '    at Function.getMetadataFromDecorator (/opt/app/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:33:36)',
-      '    at /opt/app/node_modules/@mikro-orm/core/decorators/Entity.js:8:49',
-      '    at DecorateConstructor (/opt/app/node_modules/reflect-metadata/Reflect.js:541:33)',
-      '    at __decorate (/opt/app/packages/entity/dist/node/entity/AuthorizationTokenEntityFromDecorate.js:14:38)',
-      '    at Reflect.decorate (/opt/app/node_modules/reflect-metadata/Reflect.js:130:24)',
-      '    at AuthorizationTokenEntity (/opt/app/packages/entity/dist/node/entity/AuthorizationTokenEntityFromReflectDecorate.js:19:92)',
-      '    at Object.<anonymous> (/opt/app/packages/entity/src/entity/AuthorizationTokenEntity.ts:14:38)',
-      '    at Module._compile (node:internal/modules/cjs/loader:1149:14)',
-      '    at Object.Module._extensions..js (node:internal/modules/cjs/loader:1203:10)',
-      '    at Module.load (node:internal/modules/cjs/loader:1027:32)',
-    ])).toBe('/opt/app/packages/entity/dist/node/entity/AuthorizationTokenEntityFromDecorate.js');
+    expect(
+      Utils.lookupPathFromDecorator('AuthorizationTokenEntity', [
+        '    at Function.lookupPathFromDecorator (/opt/app/node_modules/@mikro-orm/core/utils/Utils.js:502:26)',
+        '    at Function.getMetadataFromDecorator (/opt/app/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:33:36)',
+        '    at /opt/app/node_modules/@mikro-orm/core/decorators/Entity.js:8:49',
+        '    at DecorateConstructor (/opt/app/node_modules/reflect-metadata/Reflect.js:541:33)',
+        '    at __decorate (/opt/app/packages/entity/dist/node/entity/AuthorizationTokenEntityFromDecorate.js:14:38)',
+        '    at Reflect.decorate (/opt/app/node_modules/reflect-metadata/Reflect.js:130:24)',
+        '    at AuthorizationTokenEntity (/opt/app/packages/entity/dist/node/entity/AuthorizationTokenEntityFromReflectDecorate.js:19:92)',
+        '    at Object.<anonymous> (/opt/app/packages/entity/src/entity/AuthorizationTokenEntity.ts:14:38)',
+        '    at Module._compile (node:internal/modules/cjs/loader:1149:14)',
+        '    at Object.Module._extensions..js (node:internal/modules/cjs/loader:1203:10)',
+        '    at Module.load (node:internal/modules/cjs/loader:1027:32)',
+      ])
+    ).toBe('/opt/app/packages/entity/dist/node/entity/AuthorizationTokenEntityFromDecorate.js');
 
     // when both `__decorate` and `Reflect.decorator` exist in the stack (`__decorate` last)
-    expect(Utils.lookupPathFromDecorator('AuthorizationTokenEntity', [
-      '    at Function.lookupPathFromDecorator (/opt/app/node_modules/@mikro-orm/core/utils/Utils.js:502:26)',
-      '    at Function.getMetadataFromDecorator (/opt/app/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:33:36)',
-      '    at /opt/app/node_modules/@mikro-orm/core/decorators/Entity.js:8:49',
-      '    at DecorateConstructor (/opt/app/node_modules/reflect-metadata/Reflect.js:541:33)',
-      '    at Reflect.decorate (/opt/app/node_modules/reflect-metadata/Reflect.js:130:24)',
-      '    at AuthorizationTokenEntity (/opt/app/packages/entity/dist/node/entity/AuthorizationTokenEntityFromReflectDecorate.js:19:92)',
-      '    at __decorate (/opt/app/packages/entity/dist/node/entity/AuthorizationTokenEntityFromDecorate.js:14:38)',
-      '    at Object.<anonymous> (/opt/app/packages/entity/src/entity/AuthorizationTokenEntity.ts:14:38)',
-      '    at Module._compile (node:internal/modules/cjs/loader:1149:14)',
-      '    at Object.Module._extensions..js (node:internal/modules/cjs/loader:1203:10)',
-      '    at Module.load (node:internal/modules/cjs/loader:1027:32)',
-    ])).toBe('/opt/app/packages/entity/dist/node/entity/AuthorizationTokenEntityFromReflectDecorate.js');
+    expect(
+      Utils.lookupPathFromDecorator('AuthorizationTokenEntity', [
+        '    at Function.lookupPathFromDecorator (/opt/app/node_modules/@mikro-orm/core/utils/Utils.js:502:26)',
+        '    at Function.getMetadataFromDecorator (/opt/app/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:33:36)',
+        '    at /opt/app/node_modules/@mikro-orm/core/decorators/Entity.js:8:49',
+        '    at DecorateConstructor (/opt/app/node_modules/reflect-metadata/Reflect.js:541:33)',
+        '    at Reflect.decorate (/opt/app/node_modules/reflect-metadata/Reflect.js:130:24)',
+        '    at AuthorizationTokenEntity (/opt/app/packages/entity/dist/node/entity/AuthorizationTokenEntityFromReflectDecorate.js:19:92)',
+        '    at __decorate (/opt/app/packages/entity/dist/node/entity/AuthorizationTokenEntityFromDecorate.js:14:38)',
+        '    at Object.<anonymous> (/opt/app/packages/entity/src/entity/AuthorizationTokenEntity.ts:14:38)',
+        '    at Module._compile (node:internal/modules/cjs/loader:1149:14)',
+        '    at Object.Module._extensions..js (node:internal/modules/cjs/loader:1203:10)',
+        '    at Module.load (node:internal/modules/cjs/loader:1027:32)',
+      ])
+    ).toBe('/opt/app/packages/entity/dist/node/entity/AuthorizationTokenEntityFromReflectDecorate.js');
 
-    expect(Utils.lookupPathFromDecorator('Requirement', [
-      'Error',
-      '    at Function.lookupPathFromDecorator (/opt/app/node_modules/@mikro-orm/core/utils/Utils.js:508:26)',
-      '    at Function.getMetadataFromDecorator (/opt/app/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:26:36)',
-      '    at /opt/app/node_modules/@mikro-orm/core/decorators/Entity.js:8:49',
-      '    at DecorateConstructor (/opt/app/node_modules/reflect-metadata/Reflect.js:541:33)',
-      '    at Reflect.decorate (/opt/app/node_modules/reflect-metadata/Reflect.js:130:24)',
-      '    at Object.__decorate (/opt/app/node_modules/tslib/tslib.js:99:96)',
-      '    at Object.<anonymous> (/opt/app/entity/requirement.ts:23:23)',
-      '    at Module._compile (node:internal/modules/cjs/loader:1159:14)',
-      '    at Module.m._compile (/opt/app/node_modules/ts-node/src/index.ts:1618:23)',
-      '    at Module.m._compile (/opt/app/node_modules/ts-node/src/index.ts:1618:23)',
-    ])).toBe('/opt/app/entity/requirement.ts');
+    expect(
+      Utils.lookupPathFromDecorator('Requirement', [
+        'Error',
+        '    at Function.lookupPathFromDecorator (/opt/app/node_modules/@mikro-orm/core/utils/Utils.js:508:26)',
+        '    at Function.getMetadataFromDecorator (/opt/app/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:26:36)',
+        '    at /opt/app/node_modules/@mikro-orm/core/decorators/Entity.js:8:49',
+        '    at DecorateConstructor (/opt/app/node_modules/reflect-metadata/Reflect.js:541:33)',
+        '    at Reflect.decorate (/opt/app/node_modules/reflect-metadata/Reflect.js:130:24)',
+        '    at Object.__decorate (/opt/app/node_modules/tslib/tslib.js:99:96)',
+        '    at Object.<anonymous> (/opt/app/entity/requirement.ts:23:23)',
+        '    at Module._compile (node:internal/modules/cjs/loader:1159:14)',
+        '    at Module.m._compile (/opt/app/node_modules/ts-node/src/index.ts:1618:23)',
+        '    at Module.m._compile (/opt/app/node_modules/ts-node/src/index.ts:1618:23)',
+      ])
+    ).toBe('/opt/app/entity/requirement.ts');
   });
 
   test('lookup path from decorator on windows', () => {
@@ -447,7 +487,7 @@ describe('Utils', () => {
 
   describe('posix', () => {
     let spy: jest.SpyInstance<string, [string | URL]>;
-    beforeAll(() => spy = jest.spyOn(Utils, 'fileURLToPath'));
+    beforeAll(() => (spy = jest.spyOn(Utils, 'fileURLToPath')));
     test('lookup path from decorator loaded from an ES module', () => {
       // with tslib, via ts-node
       const stack1 = [
@@ -470,7 +510,7 @@ describe('Utils', () => {
 
   describe('windows', () => {
     let spy: jest.SpyInstance<string, [string | URL]>;
-    beforeAll(() => spy = jest.spyOn(Utils, 'fileURLToPath'));
+    beforeAll(() => (spy = jest.spyOn(Utils, 'fileURLToPath')));
     test('lookup path from decorator loaded from an ES module', () => {
       // with tslib, via ts-node
       const stack1 = [
@@ -498,15 +538,24 @@ describe('Utils', () => {
 
   test('tryRequire', () => {
     const warnSpy = jest.spyOn(console, 'warn');
-    warnSpy.mockImplementationOnce(i => i);
-    const ret = Utils.tryRequire({ module: 'not-existing-dep', warning: 'not found' });
+    warnSpy.mockImplementationOnce((i) => i);
+    const ret = Utils.tryRequire({
+      module: 'not-existing-dep',
+      warning: 'not found',
+    });
     expect(ret).toBeUndefined();
     expect(warnSpy).toBeCalledWith('not found');
 
     const requireFromSpy = jest.spyOn(Utils, 'requireFrom');
-    requireFromSpy.mockImplementationOnce(() => { throw new Error('some other issue'); });
+    requireFromSpy.mockImplementationOnce(() => {
+      throw new Error('some other issue');
+    });
     expect(() => {
-      return Utils.tryRequire({ module: 'not-existing-dep', warning: 'not found', allowError: 'Cannot find module' });
+      return Utils.tryRequire({
+        module: 'not-existing-dep',
+        warning: 'not found',
+        allowError: 'Cannot find module',
+      });
     }).toThrowError('some other issue');
   });
 
@@ -526,12 +575,11 @@ describe('Utils', () => {
   });
 
   test('hasObjectKeys', () => {
-    expect(Utils.hasObjectKeys({  })).toEqual(false);
-    expect(Utils.hasObjectKeys({  __proto__: null })).toEqual(false);
+    expect(Utils.hasObjectKeys({})).toEqual(false);
+    expect(Utils.hasObjectKeys({ __proto__: null })).toEqual(false);
     expect(Utils.hasObjectKeys({ a: 'a' })).toEqual(true);
     expect(Utils.hasObjectKeys({ a: 'a', __proto__: null })).toEqual(true);
   });
 
   afterAll(async () => orm.close(true));
-
 });

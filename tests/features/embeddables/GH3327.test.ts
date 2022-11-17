@@ -2,7 +2,6 @@ import { Embeddable, Embedded, Entity, MikroORM, Options, PrimaryKey, Property, 
 
 @Embeddable()
 class FieldValue {
-
   @Property({ type: t.json, nullable: true })
   primitive?: string | number | boolean | null;
 
@@ -11,12 +10,10 @@ class FieldValue {
 
   @Property({ type: t.json, nullable: true })
   array?: string[];
-
 }
 
 @Entity()
 class Field {
-
   @PrimaryKey({ name: '_id' })
   id: number = 1;
 
@@ -28,11 +25,9 @@ class Field {
 
   @Embedded({ entity: () => FieldValue, object: false })
   inline?: FieldValue;
-
 }
 
-describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mongo'] as const)('GH #3327 (%s)', type => {
-
+describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mongo'] as const)('GH #3327 (%s)', (type) => {
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -65,7 +60,11 @@ describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mongo'] as con
     value2.object = { field: false };
     value2.array = ['4', '5', '6'];
 
-    const entity = orm.em.create(Field, { values: [value, value2], value, inline: value2 });
+    const entity = orm.em.create(Field, {
+      values: [value, value2],
+      value,
+      inline: value2,
+    });
 
     await orm.em.persistAndFlush(entity);
 
@@ -83,8 +82,11 @@ describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mongo'] as con
         { primitive: 1, object: { field: true }, array: ['1', '2', '3'] },
         { primitive: null, object: { field: false }, array: ['4', '5', '6'] },
       ],
-      inline: { primitive: null, object: { field: false }, array: ['4', '5', '6'] },
+      inline: {
+        primitive: null,
+        object: { field: false },
+        array: ['4', '5', '6'],
+      },
     });
   });
-
 });

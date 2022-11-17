@@ -6,7 +6,6 @@ import type { Configuration } from './Configuration';
 import { EntityManager } from '../EntityManager';
 
 export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> implements ISchemaGenerator {
-
   protected readonly em?: ReturnType<D['createEntityManager']>;
   protected readonly driver: D;
   protected readonly config: Configuration;
@@ -16,7 +15,7 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
 
   constructor(em: D | ReturnType<D['createEntityManager']>) {
     this.em = em instanceof EntityManager ? em : undefined;
-    this.driver = em instanceof EntityManager ? em.getDriver() as D : em;
+    this.driver = em instanceof EntityManager ? (em.getDriver() as D) : em;
     this.config = this.driver.config;
     this.metadata = this.driver.getMetadata();
     this.platform = this.driver.getPlatform() as ReturnType<D['getPlatform']>;
@@ -102,12 +101,12 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
   }
 
   protected getOrderedMetadata(schema?: string): EntityMetadata[] {
-    const metadata = Object.values(this.metadata.getAll()).filter(meta => {
+    const metadata = Object.values(this.metadata.getAll()).filter((meta) => {
       const isRootEntity = meta.root.className === meta.className;
       return isRootEntity && !meta.embeddable && !meta.virtual;
     });
     const calc = new CommitOrderCalculator();
-    metadata.forEach(meta => calc.addNode(meta.root.className));
+    metadata.forEach((meta) => calc.addNode(meta.root.className));
     let meta = metadata.pop();
 
     while (meta) {
@@ -118,13 +117,13 @@ export abstract class AbstractSchemaGenerator<D extends IDatabaseDriver> impleme
       meta = metadata.pop();
     }
 
-    return calc.sort()
-      .map(cls => this.metadata.find(cls)!)
-      .filter(meta => schema ? [schema, '*'].includes(meta.schema!) : meta.schema !== '*');
+    return calc
+      .sort()
+      .map((cls) => this.metadata.find(cls)!)
+      .filter((meta) => (schema ? [schema, '*'].includes(meta.schema!) : meta.schema !== '*'));
   }
 
   protected notImplemented(): never {
     throw new Error(`This method is not supported by ${this.driver.constructor.name} driver`);
   }
-
 }

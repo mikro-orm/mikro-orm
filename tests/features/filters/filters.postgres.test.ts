@@ -8,32 +8,26 @@ import { mockLogger } from '../../helpers';
   default: true,
 })
 class BaseBenefit {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   benefitStatus!: string;
-
 }
 
 @Entity()
 class Benefit extends BaseBenefit {
-
   @Property({ nullable: true })
   name?: string;
-
 }
 
 @Entity()
 class Employee {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToMany(() => Benefit)
   benefits = new Collection<Benefit>(this);
-
 }
 
 @Entity()
@@ -43,7 +37,6 @@ class Employee {
   default: true,
 })
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -55,18 +48,20 @@ class User {
 
   @Property()
   age!: number;
-
 }
 
 @Entity()
 @Filter({
   name: 'user',
-  cond: (_args, _type, em: EntityManager) => ({ user: { $or: [{ firstName: 'name' }, { lastName: 'name' }, { age: em.raw('(select 1 + 1)') }] } }),
+  cond: (_args, _type, em: EntityManager) => ({
+    user: {
+      $or: [{ firstName: 'name' }, { lastName: 'name' }, { age: em.raw('(select 1 + 1)') }],
+    },
+  }),
   default: true,
   args: false,
 })
 class Membership {
-
   @PrimaryKey()
   id!: number;
 
@@ -75,11 +70,9 @@ class Membership {
 
   @Property()
   role!: string;
-
 }
 
 describe('filters [postgres]', () => {
-
   let orm: MikroORM<AbstractSqlDriver>;
 
   beforeAll(async () => {
@@ -112,7 +105,9 @@ describe('filters [postgres]', () => {
     expect(b1).toHaveLength(0);
     orm.em.clear();
 
-    const e1 = await orm.em.findOneOrFail(Employee, employee.id, { populate: ['benefits'] });
+    const e1 = await orm.em.findOneOrFail(Employee, employee.id, {
+      populate: ['benefits'],
+    });
     expect(e1.benefits).toHaveLength(0);
 
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
@@ -128,24 +123,25 @@ describe('filters [postgres]', () => {
   test('merging $or conditions', async () => {
     const mock = mockLogger(orm, ['query']);
 
-    await orm.em.find(User, { $or: [{ firstName: 'name' }, { lastName: 'name' }] });
-    await orm.em.find(Membership, { $or: [{ role: 'admin' }, { role: 'moderator' }] });
+    await orm.em.find(User, {
+      $or: [{ firstName: 'name' }, { lastName: 'name' }],
+    });
     await orm.em.find(Membership, {
-      $or: [
-        { role: 'admin' },
-        { role: 'moderator' },
-      ],
-      user: {
-        $or: [
-          { firstName: 'John' },
-          { lastName: 'Doe' },
-        ],
+      $or: [{ role: 'admin' }, { role: 'moderator' }],
+    });
+    await orm.em.find(
+      Membership,
+      {
+        $or: [{ role: 'admin' }, { role: 'moderator' }],
+        user: {
+          $or: [{ firstName: 'John' }, { lastName: 'Doe' }],
+        },
       },
-    }, { filters: false });
+      { filters: false }
+    );
 
     expect(mock.mock.calls[0][0]).toMatch(`select "u0".* from "user" as "u0" where ("u0"."age" = $1 or "u0"."age" = $2) and ("u0"."first_name" = $3 or "u0"."last_name" = $4)`);
     expect(mock.mock.calls[1][0]).toMatch(`select "m0".* from "membership" as "m0" left join "user" as "u1" on "m0"."user_id" = "u1"."id" where ("u1"."first_name" = $1 or "u1"."last_name" = $2 or "u1"."age" = (select 1 + 1)) and ("m0"."role" = $3 or "m0"."role" = $4)`);
     expect(mock.mock.calls[2][0]).toMatch(`select "m0".* from "membership" as "m0" left join "user" as "u1" on "m0"."user_id" = "u1"."id" where ("m0"."role" = $1 or "m0"."role" = $2) and ("u1"."first_name" = $3 or "u1"."last_name" = $4)`);
   });
-
 });

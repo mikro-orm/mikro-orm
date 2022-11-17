@@ -3,7 +3,6 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Embeddable()
 export class Metadata {
-
   @Property()
   id?: string;
 
@@ -15,12 +14,10 @@ export class Metadata {
 
   @Property()
   createdAt?: string;
-
 }
 
 @Entity()
 export class Example {
-
   @PrimaryKey()
   id!: number;
 
@@ -100,11 +97,9 @@ export class Example {
     object: true,
   })
   eleven: Metadata[] = [];
-
 }
 
 describe('GH issue 1912', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -128,5 +123,4 @@ describe('GH issue 1912', () => {
     const e1 = await orm.em.findOne(Example, e);
     expect(e1).not.toBeNull();
   });
-
 });

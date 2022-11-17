@@ -3,7 +3,6 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Parent {
-
   @PrimaryKey()
   id!: number;
 
@@ -15,44 +14,36 @@ export class Parent {
 
   @OneToMany('Child3', 'parent', { orphanRemoval: true })
   children3 = new Collection<Child>(this);
-
 }
 
 @Entity()
 export class Child {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => Parent, { wrappedReference: true })
   parent!: IdentifiedReference<Parent>;
-
 }
 
 @Entity()
 export class Child2 {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => Parent, { wrappedReference: true, cascade: [Cascade.ALL] })
   parent!: IdentifiedReference<Parent>;
-
 }
 
 @Entity()
 export class Child3 {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => Parent, { wrappedReference: true })
   parent!: IdentifiedReference<Parent>;
-
 }
 
 describe('GH issue 2395', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -116,5 +107,4 @@ describe('GH issue 2395', () => {
     const found = await orm.em.find(Child3, {});
     expect(found).toHaveLength(0);
   });
-
 });

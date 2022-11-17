@@ -3,21 +3,22 @@ import type { MySqlDriver } from '@mikro-orm/mysql';
 
 @Entity({ tableName: 'book' })
 export class Book1 {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ columnType: 'timestamp', defaultRaw: `current_timestamp` })
   createdAt!: Date;
 
-  @Property({ columnType: 'timestamp', defaultRaw: `current_timestamp`, extra: `on update current_timestamp` })
+  @Property({
+    columnType: 'timestamp',
+    defaultRaw: `current_timestamp`,
+    extra: `on update current_timestamp`,
+  })
   updatedAt!: Date;
-
 }
 
 @Entity({ tableName: 'book' })
 export class Book2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,25 +27,25 @@ export class Book2 {
 
   @Property({ columnType: 'timestamp', defaultRaw: `current_timestamp` })
   updatedAt!: Date;
-
 }
 
 @Entity({ tableName: 'book' })
 export class Book3 {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ columnType: 'timestamp', defaultRaw: `current_timestamp` })
   createdAt!: Date;
 
-  @Property({ columnType: 'timestamp', defaultRaw: `current_timestamp`, extra: `on update current_timestamp` })
+  @Property({
+    columnType: 'timestamp',
+    defaultRaw: `current_timestamp`,
+    extra: `on update current_timestamp`,
+  })
   updatedAt!: Date;
-
 }
 
 describe('changing column in mysql (GH 2386)', () => {
-
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => {
@@ -74,5 +75,4 @@ describe('changing column in mysql (GH 2386)', () => {
     expect(diff3).toBe('alter table `book` modify `updated_at` timestamp not null default current_timestamp on update current_timestamp;\n\n');
     await orm.schema.execute(diff3);
   });
-
 });

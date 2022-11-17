@@ -12,7 +12,6 @@ import { colors } from './logging';
  * Helper class for bootstrapping the MikroORM.
  */
 export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
-
   /** The global EntityManager instance. If you are using `RequestContext` helper, it will automatically pick the request specific context under the hood */
   em!: D[typeof EntityManagerType] & EntityManager;
   readonly config: Configuration<D>;
@@ -72,7 +71,11 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     if (this.config.get('discovery').disableDynamicFileAccess) {
       this.config.set('metadataProvider', ReflectMetadataProvider);
       this.config.set('cache', { adapter: NullCacheAdapter });
-      this.config.set('discovery', { disableDynamicFileAccess: true, requireEntitiesArray: true, alwaysAnalyseProperties: false });
+      this.config.set('discovery', {
+        disableDynamicFileAccess: true,
+        requireEntitiesArray: true,
+        alwaysAnalyseProperties: false,
+      });
     }
 
     this.driver = this.config.getDriver();
@@ -148,7 +151,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     const tmp = await this.discovery.discoverReferences(entities);
     new MetadataValidator().validateDiscovered([...Object.values(this.metadata.getAll()), ...tmp], this.config.get('discovery').warnWhenNoEntities!);
     const metadata = await this.discovery.processDiscoveredEntities(tmp);
-    metadata.forEach(meta => this.metadata.set(meta.className, meta));
+    metadata.forEach((meta) => this.metadata.set(meta.className, meta));
     this.metadata.decorate(this.em);
   }
 
@@ -209,5 +212,4 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
   get entityGenerator() {
     return this.getEntityGenerator();
   }
-
 }

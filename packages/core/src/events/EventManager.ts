@@ -5,19 +5,18 @@ import type { TransactionEventType } from '../enums';
 import { EventType } from '../enums';
 
 export class EventManager {
-
   private readonly listeners: { [K in EventType]?: EventSubscriber[] } = {};
   private readonly entities: Map<EventSubscriber, string[]> = new Map();
 
   constructor(subscribers: EventSubscriber[]) {
-    subscribers.forEach(subscriber => this.registerSubscriber(subscriber));
+    subscribers.forEach((subscriber) => this.registerSubscriber(subscriber));
   }
 
   registerSubscriber(subscriber: EventSubscriber): void {
     this.entities.set(subscriber, this.getSubscribedEntities(subscriber));
     Object.keys(EventType)
-      .filter(event => event in subscriber)
-      .forEach(event => {
+      .filter((event) => event in subscriber)
+      .forEach((event) => {
         this.listeners[event] = this.listeners[event] || [];
         this.listeners[event].push(subscriber);
       });
@@ -32,10 +31,12 @@ export class EventManager {
 
     // execute lifecycle hooks first
     const hooks = ((entity as AnyEntity)?.__meta!.hooks[event] || []) as AsyncFunction[];
-    listeners.push(...hooks.map(hook => {
-      const handler = typeof hook === 'function' ? hook : entity[hook!] as AsyncFunction;
-      return handler!.bind(entity);
-    }));
+    listeners.push(
+      ...hooks.map((hook) => {
+        const handler = typeof hook === 'function' ? hook : (entity[hook!] as AsyncFunction);
+        return handler!.bind(entity);
+      })
+    );
 
     for (const listener of this.listeners[event] || []) {
       const entities = this.entities.get(listener)!;
@@ -46,10 +47,10 @@ export class EventManager {
     }
 
     if (event === EventType.onInit) {
-      return listeners.forEach(listener => listener(args));
+      return listeners.forEach((listener) => listener(args));
     }
 
-    return Utils.runSerial(listeners, listener => listener(args));
+    return Utils.runSerial(listeners, (listener) => listener(args));
   }
 
   hasListeners<T>(event: EventType, meta: EntityMetadata<T>): boolean {
@@ -75,9 +76,8 @@ export class EventManager {
       return [];
     }
 
-    return listener.getSubscribedEntities().map(name => Utils.className(name));
+    return listener.getSubscribedEntities().map((name) => Utils.className(name));
   }
-
 }
 
 type AnyEventArgs<T> = EventArgs<T> | FlushEventArgs | TransactionEventArgs;

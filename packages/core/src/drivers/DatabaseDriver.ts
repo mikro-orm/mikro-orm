@@ -15,7 +15,6 @@ import { DriverException } from '../exceptions';
 import { helper } from '../entity/wrap';
 
 export abstract class DatabaseDriver<C extends Connection> implements IDatabaseDriver<C> {
-
   [EntityManagerType]!: EntityManager<this>;
 
   protected readonly connection!: C;
@@ -25,8 +24,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   protected comparator!: EntityComparator;
   protected metadata!: MetadataStorage;
 
-  protected constructor(readonly config: Configuration,
-                        protected readonly dependencies: string[]) { }
+  protected constructor(readonly config: Configuration, protected readonly dependencies: string[]) {}
 
   abstract find<T extends object, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T, P>): Promise<EntityData<T>[]>;
 
@@ -70,7 +68,9 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   async syncCollection<T extends object, O extends object>(coll: Collection<T, O>, options?: DriverMethodOptions): Promise<void> {
     const pk = coll.property.targetMeta!.primaryKeys[0];
-    const data = { [coll.property.name]: coll.getIdentifiers(pk) } as EntityData<T>;
+    const data = {
+      [coll.property.name]: coll.getIdentifiers(pk),
+    } as EntityData<T>;
     await this.nativeUpdate<T>(coll.owner.constructor.name, helper(coll.owner).getPrimaryKey() as FilterQuery<T>, data, options);
   }
 
@@ -84,7 +84,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   async connect(): Promise<C> {
     await this.connection.connect();
-    await Promise.all(this.replicas.map(replica => replica.connect()));
+    await Promise.all(this.replicas.map((replica) => replica.connect()));
 
     return this.connection;
   }
@@ -105,7 +105,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   }
 
   async close(force?: boolean): Promise<void> {
-    await Promise.all(this.replicas.map(replica => replica.close(force)));
+    await Promise.all(this.replicas.map((replica) => replica.close(force)));
     await this.connection.close(force);
 
     if (this.config.getCacheAdapter()?.close) {
@@ -126,7 +126,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     this.comparator = new EntityComparator(this.metadata, this.platform);
     this.connection.setMetadata(metadata);
     this.connection.setPlatform(this.platform);
-    this.replicas.forEach(replica => {
+    this.replicas.forEach((replica) => {
       replica.setMetadata(metadata);
       replica.setPlatform(this.platform);
     });
@@ -145,13 +145,13 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   }
 
   protected inlineEmbeddables<T>(meta: EntityMetadata<T>, data: T, where?: boolean): void {
-    Object.keys(data as Dictionary).forEach(k => {
+    Object.keys(data as Dictionary).forEach((k) => {
       if (Utils.isOperator(k)) {
-        Utils.asArray(data[k]).forEach(payload => this.inlineEmbeddables(meta, payload, where));
+        Utils.asArray(data[k]).forEach((payload) => this.inlineEmbeddables(meta, payload, where));
       }
     });
 
-    meta.props.forEach(prop => {
+    meta.props.forEach((prop) => {
       if (prop.reference === ReferenceType.EMBEDDED && prop.object && !where && Utils.isObject(data[prop.name])) {
         return;
       }
@@ -160,9 +160,9 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         const props = prop.embeddedProps;
         let unknownProp = false;
 
-        Object.keys(data[prop.name] as Dictionary).forEach(kk => {
+        Object.keys(data[prop.name] as Dictionary).forEach((kk) => {
           // explicitly allow `$exists`, `$eq` and `$ne` operators here as they can't be misused this way
-          const operator = Object.keys(data[prop.name] as Dictionary).some(f => Utils.isOperator(f) && !['$exists', '$ne', '$eq'].includes(f));
+          const operator = Object.keys(data[prop.name] as Dictionary).some((f) => Utils.isOperator(f) && !['$exists', '$ne', '$eq'].includes(f));
 
           if (operator) {
             throw ValidationError.cannotUseOperatorsInsideEmbeddables(meta.name!, prop.name, data);
@@ -171,7 +171,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
           if (prop.object && where) {
             const inline: (payload: any, sub: EntityProperty, path: string[]) => void = (payload: any, sub: EntityProperty, path: string[]) => {
               if (sub.reference === ReferenceType.EMBEDDED && Utils.isObject(payload[sub.embedded![1]])) {
-                return Object.keys(payload[sub.embedded![1]]).forEach(kkk => {
+                return Object.keys(payload[sub.embedded![1]]).forEach((kkk) => {
                   if (!sub.embeddedProps[kkk]) {
                     throw ValidationError.invalidEmbeddableQuery(meta.className, kkk, sub.type);
                   }
@@ -213,7 +213,11 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     }
 
     if (prop.fixedOrder) {
-      return [{ [`${prop.pivotEntity}.${prop.fixedOrderColumn}`]: QueryOrder.ASC } as QueryOrderMap<T>];
+      return [
+        {
+          [`${prop.pivotEntity}.${prop.fixedOrderColumn}`]: QueryOrder.ASC,
+        } as QueryOrderMap<T>,
+      ];
     }
 
     return [];
@@ -221,7 +225,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   protected getPrimaryKeyFields(entityName: string): string[] {
     const meta = this.metadata.find(entityName);
-    return meta ? Utils.flatten(meta.getPrimaryProps().map(pk => pk.fieldNames)) : [this.config.getNamingStrategy().referenceColumnName()];
+    return meta ? Utils.flatten(meta.getPrimaryProps().map((pk) => pk.fieldNames)) : [this.config.getNamingStrategy().referenceColumnName()];
   }
 
   protected getPivotInverseProperty(prop: EntityProperty): EntityProperty {
@@ -240,7 +244,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     const props = ['dbName', 'clientUrl', 'host', 'port', 'user', 'password', 'multipleStatements', 'pool', 'name'] as const;
 
     replicas.forEach((conf: Partial<ConnectionOptions>) => {
-      props.forEach(prop => (conf[prop] as any) = prop in conf ? conf[prop] : this.config.get(prop));
+      props.forEach((prop) => ((conf[prop] as any) = prop in conf ? conf[prop] : this.config.get(prop)));
       ret.push(cb(conf as ConnectionOptions));
     });
 
@@ -263,7 +267,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   }
 
   protected rethrow<T>(promise: Promise<T>): Promise<T> {
-    return promise.catch(e => {
+    return promise.catch((e) => {
       throw this.convertException(e);
     });
   }
@@ -298,5 +302,4 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
     return options?.schema ?? schemaName ?? this.config.get('schema');
   }
-
 }

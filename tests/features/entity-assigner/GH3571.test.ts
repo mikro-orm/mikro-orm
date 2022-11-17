@@ -3,15 +3,12 @@ import { BaseEntity, Entity, PrimaryKey, ManyToOne, ManyToMany, Collection } fro
 
 @Entity()
 export class Car extends BaseEntity<User, 'id'> {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 @Entity()
 export class User extends BaseEntity<User, 'id'> {
-
   @PrimaryKey()
   id!: number;
 
@@ -20,7 +17,6 @@ export class User extends BaseEntity<User, 'id'> {
 
   @ManyToMany(() => Car)
   cars = new Collection<Car>(this);
-
 }
 
 let orm: MikroORM;

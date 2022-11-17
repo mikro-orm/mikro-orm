@@ -30,7 +30,6 @@ export interface Edge {
  * @internal
  */
 export class CommitOrderCalculator {
-
   /** Matrix of nodes, keys are provided hashes and values are the node definition objects. */
   private nodes: Dictionary<Node> = {};
 
@@ -109,13 +108,17 @@ export class CommitOrderCalculator {
       const target = this.nodes[edge.to];
 
       switch (target.state) {
-        case NodeState.VISITED: break; // Do nothing, since node was already visited
-        case NodeState.IN_PROGRESS: this.visitOpenNode(node, target, edge); break;
-        case NodeState.NOT_VISITED: this.visit(target);
+        case NodeState.VISITED:
+          break; // Do nothing, since node was already visited
+        case NodeState.IN_PROGRESS:
+          this.visitOpenNode(node, target, edge);
+          break;
+        case NodeState.NOT_VISITED:
+          this.visit(target);
       }
     }
 
-    if (node.state as unknown !== NodeState.VISITED) {
+    if ((node.state as unknown) !== NodeState.VISITED) {
       node.state = NodeState.VISITED;
       this.sortedNodeList.push(node.hash);
     }
@@ -140,5 +143,4 @@ export class CommitOrderCalculator {
     target.state = NodeState.VISITED;
     this.sortedNodeList.push(target.hash);
   }
-
 }

@@ -3,7 +3,6 @@ import { mockLogger } from '../../helpers';
 
 @Entity()
 export class Author {
-
   static id = 1;
 
   @PrimaryKey({ name: '_id' })
@@ -19,12 +18,10 @@ export class Author {
     this.email = email;
     this.age = age;
   }
-
 }
 
 @Entity()
 export class Book {
-
   static id = 1;
 
   @PrimaryKey({ name: '_id' })
@@ -40,13 +37,11 @@ export class Book {
     this.name = name;
     this.author = author;
   }
-
 }
 
 @Entity()
 @Unique({ properties: ['author', 'name'] })
 export class FooBar {
-
   static id = 1;
 
   @PrimaryKey({ name: '_id' })
@@ -65,26 +60,25 @@ export class FooBar {
     this.name = name;
     this.author = author;
   }
-
 }
 
 const options = {
-  'sqlite': { dbName: ':memory:' },
+  sqlite: { dbName: ':memory:' },
   'better-sqlite': { dbName: ':memory:' },
-  'mysql': { dbName: 'mikro_orm_upsert', port: 3308 },
-  'mariadb': { dbName: 'mikro_orm_upsert', port: 3309 },
-  'postgresql': { dbName: 'mikro_orm_upsert' },
-  'mongo': { dbName: 'mikro_orm_upsert' },
+  mysql: { dbName: 'mikro_orm_upsert', port: 3308 },
+  mariadb: { dbName: 'mikro_orm_upsert', port: 3309 },
+  postgresql: { dbName: 'mikro_orm_upsert' },
+  mongo: { dbName: 'mikro_orm_upsert' },
 };
 
-describe.each(Object.keys(options))('em.upsert [%s]',  type => {
+describe.each(Object.keys(options))('em.upsert [%s]', (type) => {
   let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Author, Book, FooBar],
       type,
-      loggerFactory: options => new SimpleLogger(options),
+      loggerFactory: (options) => new SimpleLogger(options),
       ...options[type],
     });
     await orm.schema.refreshDatabase();
@@ -98,21 +92,13 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
   afterAll(() => orm.close());
 
   async function createEntities() {
-    const books = [
-      new Book('b1', new Author('a1', 31)),
-      new Book('b2', new Author('a2', 32)),
-      new Book('b3', new Author('a3', 33)),
-    ];
-    const fooBars = [
-      new FooBar('fb1', books[0].author),
-      new FooBar('fb2', books[1].author),
-      new FooBar('fb3', books[2].author),
-    ];
+    const books = [new Book('b1', new Author('a1', 31)), new Book('b2', new Author('a2', 32)), new Book('b3', new Author('a3', 33))];
+    const fooBars = [new FooBar('fb1', books[0].author), new FooBar('fb2', books[1].author), new FooBar('fb3', books[2].author)];
     await orm.em.persist(books).persist(fooBars).flush();
-    expect(books.map(b => b.id)).toEqual([1, 2, 3]);
-    expect(books.map(b => b.author.id)).toEqual([1, 2, 3]);
-    expect(fooBars.map(fb => fb.id)).toEqual([1, 2, 3]);
-    expect(fooBars.map(fb => fb.author.id)).toEqual([1, 2, 3]);
+    expect(books.map((b) => b.id)).toEqual([1, 2, 3]);
+    expect(books.map((b) => b.author.id)).toEqual([1, 2, 3]);
+    expect(fooBars.map((fb) => fb.id)).toEqual([1, 2, 3]);
+    expect(fooBars.map((fb) => fb.author.id)).toEqual([1, 2, 3]);
 
     return books;
   }
@@ -182,9 +168,21 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     orm.em.clear();
 
     const mock = mockLogger(orm);
-    const author1 = await orm.em.upsert(Author, { id: 1, email: 'a1', age: 41 }); // exists
-    const author2 = await orm.em.upsert(Author, { id: 2, email: 'a2', age: 42 }); // inserts
-    const author3 = await orm.em.upsert(Author, { id: 3, email: 'a3', age: 43 }); // inserts
+    const author1 = await orm.em.upsert(Author, {
+      id: 1,
+      email: 'a1',
+      age: 41,
+    }); // exists
+    const author2 = await orm.em.upsert(Author, {
+      id: 2,
+      email: 'a2',
+      age: 42,
+    }); // inserts
+    const author3 = await orm.em.upsert(Author, {
+      id: 3,
+      email: 'a3',
+      age: 43,
+    }); // inserts
 
     await assert(author2, mock);
   });
@@ -244,9 +242,21 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     orm.em.clear();
 
     const mock = mockLogger(orm);
-    const fooBar1 = await orm.em.upsert(FooBar, { name: 'fb1', author: 1, prop: 'val 1' }); // exists
-    const fooBar2 = await orm.em.upsert(FooBar, { name: 'fb2', author: 2, prop: 'val 2' }); // inserts
-    const fooBar3 = await orm.em.upsert(FooBar, { name: 'fb3', author: 3, prop: 'val 3' }); // inserts
+    const fooBar1 = await orm.em.upsert(FooBar, {
+      name: 'fb1',
+      author: 1,
+      prop: 'val 1',
+    }); // exists
+    const fooBar2 = await orm.em.upsert(FooBar, {
+      name: 'fb2',
+      author: 2,
+      prop: 'val 2',
+    }); // inserts
+    const fooBar3 = await orm.em.upsert(FooBar, {
+      name: 'fb3',
+      author: 3,
+      prop: 'val 3',
+    }); // inserts
 
     await assertFooBars([fooBar1, fooBar2, fooBar3], mock);
   });
@@ -258,9 +268,24 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     orm.em.clear();
 
     const mock = mockLogger(orm);
-    const fb1 = orm.em.create(FooBar, { id: 1, name: 'fb1', author: 1, prop: 'val 1' });
-    const fb2 = orm.em.create(FooBar, { id: 2, name: 'fb2', author: 2, prop: 'val 2' });
-    const fb3 = orm.em.create(FooBar, { id: 3, name: 'fb3', author: 3, prop: 'val 3' });
+    const fb1 = orm.em.create(FooBar, {
+      id: 1,
+      name: 'fb1',
+      author: 1,
+      prop: 'val 1',
+    });
+    const fb2 = orm.em.create(FooBar, {
+      id: 2,
+      name: 'fb2',
+      author: 2,
+      prop: 'val 2',
+    });
+    const fb3 = orm.em.create(FooBar, {
+      id: 3,
+      name: 'fb3',
+      author: 3,
+      prop: 'val 3',
+    });
     const fooBar1 = await orm.em.upsert(FooBar, fb1); // exists
     const fooBar2 = await orm.em.upsert(FooBar, fb2); // inserts
     const fooBar3 = await orm.em.upsert(FooBar, fb3); // inserts
@@ -270,5 +295,4 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
 
     await assertFooBars([fooBar1, fooBar2, fooBar3], mock);
   });
-
 });

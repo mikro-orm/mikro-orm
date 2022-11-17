@@ -3,7 +3,6 @@ import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
@@ -19,12 +18,10 @@ class A {
   get calcProp() {
     return this.b.getEntity().prop;
   }
-
 }
 
 @Entity()
 class B {
-
   @PrimaryKey()
   id!: number;
 
@@ -33,11 +30,9 @@ class B {
 
   @Property()
   prop: string = 'foo';
-
 }
 
 describe('GH issue 535', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
@@ -54,7 +49,6 @@ describe('GH issue 535', () => {
   });
 
   test(`GH issue 535`, async () => {
-
     const a = new A();
     const b = new B();
     a.b = wrap(b).toReference();

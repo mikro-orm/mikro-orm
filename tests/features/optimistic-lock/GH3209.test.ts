@@ -4,17 +4,16 @@ import { Collection, Entity, ManyToOne, MikroORM, OneToMany, OptionalProps, Prim
 import { mockLogger } from '../../helpers';
 
 class TransformType extends Type<0 | number | Date> {
-
   getColumnType() {
     return 'integer';
   }
 
   convertToJSValue(value: 0 | number | Date): 0 | number | Date {
-    return (value as unknown == '0' || value == null || value == 0) ? 0 : new Date(value);
+    return (value as unknown) == '0' || value == null || value == 0 ? 0 : new Date(value);
   }
 
   convertToDatabaseValue(value: 0 | number | Date): 0 | number | Date {
-    if (value == null || value as unknown == '0' || value == 0) {
+    if (value == null || (value as unknown) == '0' || value == 0) {
       return 0;
     }
 
@@ -28,12 +27,10 @@ class TransformType extends Type<0 | number | Date> {
   toJSON(value: 0 | number | Date, platform: Platform): 0 | number | Date {
     return super.convertToDatabaseValue(value, platform);
   }
-
 }
 
 @Entity()
 export class Author {
-
   @PrimaryKey({ length: 30 })
   id!: string;
 
@@ -50,14 +47,12 @@ export class Author {
   @Property({ version: true, default: 1 })
   version: number = 1;
 
-  @OneToMany(() => Book, book => book.author)
+  @OneToMany(() => Book, (book) => book.author)
   books = new Collection<Book>(this);
-
 }
 
 @Entity()
 export class Book {
-
   @PrimaryKey()
   bookId!: number;
 
@@ -66,7 +61,6 @@ export class Book {
 
   @ManyToOne(() => Author)
   author!: Author;
-
 }
 
 let orm: MikroORM;
@@ -88,11 +82,7 @@ test('custom date like mapped type in composite PK (GH 3209)', async () => {
   const author = orm.em.create(Author, {
     id: 'a1',
     name: 'John',
-    books: [
-      { title: 'b1' },
-      { title: 'b2' },
-      { title: 'b3' },
-    ],
+    books: [{ title: 'b1' }, { title: 'b2' }, { title: 'b3' }],
   });
   await orm.em.persist(author).flush();
   author.deletedDate = new Date();
@@ -114,7 +104,9 @@ test('custom date like mapped type in composite PK (GH 3209)', async () => {
   expect(mock.mock.calls[4][0]).toMatch(`begin`);
   expect(mock.mock.calls[5][0]).toMatch(/update `author` set `deleted_date` = \d+, `version` = `version` \+ 1 where `id` = 'a1' and `deleted_date` = 0 and `version` = 1/);
   expect(mock.mock.calls[6][0]).toMatch(/select `a0`.`id`, `a0`.`deleted_date`, `a0`.`version` from `author` as `a0` where \(`a0`.`id`, `a0`.`deleted_date`\) in \( values \('a1', \d+\)\)/);
-  expect(mock.mock.calls[7][0]).toMatch(/update `book` set `author_id` = case when \(`book_id` = 1\) then 'a1' when \(`book_id` = 2\) then 'a1' when \(`book_id` = 3\) then 'a1' else `author_id` end, `author_deleted_date` = case when \(`book_id` = 1\) then \d+ when \(`book_id` = 2\) then \d+ when \(`book_id` = 3\) then \d+ else `author_deleted_date` end where `book_id` in \(1, 2, 3\)/);
+  expect(mock.mock.calls[7][0]).toMatch(
+    /update `book` set `author_id` = case when \(`book_id` = 1\) then 'a1' when \(`book_id` = 2\) then 'a1' when \(`book_id` = 3\) then 'a1' else `author_id` end, `author_deleted_date` = case when \(`book_id` = 1\) then \d+ when \(`book_id` = 2\) then \d+ when \(`book_id` = 3\) then \d+ else `author_deleted_date` end where `book_id` in \(1, 2, 3\)/
+  );
   expect(mock.mock.calls[8][0]).toMatch(`commit`);
   expect(mock.mock.calls[9][0]).toMatch(/select `a0`.* from `author` as `a0` where \(`a0`.`id`, `a0`.`deleted_date`\) in \(\('a1', \d+\)\) limit 1/);
   expect(mock.mock.calls[10][0]).toMatch(`begin`);

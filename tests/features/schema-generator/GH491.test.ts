@@ -3,7 +3,6 @@ import type { MariaDbDriver } from '@mikro-orm/mariadb';
 
 @Entity()
 export class FooEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -24,11 +23,9 @@ export class FooEntity {
 
   @Property({ nullable: true })
   nullableNumberProperty?: number;
-
 }
 
 describe('GH issue 491', () => {
-
   let orm: MikroORM<MariaDbDriver>;
 
   beforeAll(async () => {
@@ -46,5 +43,4 @@ describe('GH issue 491', () => {
   test(`GH issue 491`, async () => {
     expect(await orm.schema.getUpdateSchemaSQL({ wrap: false })).toBe('');
   });
-
 });

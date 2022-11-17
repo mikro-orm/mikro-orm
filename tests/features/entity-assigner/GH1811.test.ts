@@ -5,24 +5,25 @@ import { mockLogger } from '../../helpers';
 
 @Entity()
 export class Recipe {
-
   @PrimaryKey({ type: t.uuid })
   id: string = v4();
 
   @Property()
   name!: string;
 
-  @OneToMany({ entity: () => Ingredient, mappedBy: 'recipe', orphanRemoval: true })
+  @OneToMany({
+    entity: () => Ingredient,
+    mappedBy: 'recipe',
+    orphanRemoval: true,
+  })
   ingredients = new Collection<Ingredient>(this);
 
   @ManyToMany({ entity: () => User })
   authors = new Collection<User>(this);
-
 }
 
 @Entity()
 export class Ingredient {
-
   @PrimaryKey({ type: t.uuid })
   id: string = v4();
 
@@ -31,22 +32,18 @@ export class Ingredient {
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 export class User {
-
   @PrimaryKey({ type: t.uuid })
   id: string = v4();
 
   @Property()
   name!: string;
-
 }
 
 describe('GH issue 1811', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -90,7 +87,9 @@ describe('GH issue 1811', () => {
 
   test('assigning to 1:m with nested entities', async () => {
     const r = await createRecipe();
-    const recipe = await orm.em.findOneOrFail(Recipe, r, { populate: ['ingredients'] });
+    const recipe = await orm.em.findOneOrFail(Recipe, r, {
+      populate: ['ingredients'],
+    });
 
     wrap(recipe).assign({
       ingredients: [
@@ -100,8 +99,16 @@ describe('GH issue 1811', () => {
       ],
     });
     expect(recipe.ingredients.toArray()).toEqual([
-      { id: '16e443a7-b527-493f-ab8a-63012514b719', name: 'Spinach', recipe: recipe.id },
-      { id: expect.stringMatching(/[\w-]{36}/), name: 'Onion', recipe: recipe.id },
+      {
+        id: '16e443a7-b527-493f-ab8a-63012514b719',
+        name: 'Spinach',
+        recipe: recipe.id,
+      },
+      {
+        id: expect.stringMatching(/[\w-]{36}/),
+        name: 'Onion',
+        recipe: recipe.id,
+      },
     ]);
 
     const mock = mockLogger(orm, ['query']);
@@ -114,14 +121,24 @@ describe('GH issue 1811', () => {
 
     const r1 = await orm.em.fork().findOneOrFail(Recipe, recipe, { populate: ['ingredients'] });
     expect(r1.ingredients.toArray()).toEqual([
-      { id: '16e443a7-b527-493f-ab8a-63012514b719', name: 'Spinach', recipe: recipe.id },
-      { id: expect.stringMatching(/[\w-]{36}/), name: 'Onion', recipe: recipe.id },
+      {
+        id: '16e443a7-b527-493f-ab8a-63012514b719',
+        name: 'Spinach',
+        recipe: recipe.id,
+      },
+      {
+        id: expect.stringMatching(/[\w-]{36}/),
+        name: 'Onion',
+        recipe: recipe.id,
+      },
     ]);
   });
 
   test('assigning to m:1 with nested entities', async () => {
     const r = await createRecipe();
-    const recipe = await orm.em.findOneOrFail(Recipe, r, { populate: ['ingredients'] });
+    const recipe = await orm.em.findOneOrFail(Recipe, r, {
+      populate: ['ingredients'],
+    });
     const onion = wrap(recipe.ingredients[1]).assign({
       name: 'Onion',
       recipe: { name: 'Scrambled eggs' }, // should create new recipe entity
@@ -135,13 +152,15 @@ describe('GH issue 1811', () => {
     expect(mock.mock.calls[3][0]).toMatch('commit');
 
     const r2 = await orm.em.fork().find(Recipe, {}, { populate: ['ingredients'] });
-    expect(r2.map(r => r.name)).toEqual(['Salad', 'Scrambled eggs']);
+    expect(r2.map((r) => r.name)).toEqual(['Salad', 'Scrambled eggs']);
     expect(r2[0].ingredients.toArray()).toEqual([
-      { id: '16e443a7-b527-493f-ab8a-63012514b719', name: 'Spinach', recipe: recipe.id },
+      {
+        id: '16e443a7-b527-493f-ab8a-63012514b719',
+        name: 'Spinach',
+        recipe: recipe.id,
+      },
     ]);
-    expect(r2[1].ingredients.toArray()).toEqual([
-      { id: onion.id, name: 'Onion', recipe: r2[1].id },
-    ]);
+    expect(r2[1].ingredients.toArray()).toEqual([{ id: onion.id, name: 'Onion', recipe: r2[1].id }]);
 
     wrap(onion).assign({
       name: 'Spring Onion',
@@ -157,18 +176,22 @@ describe('GH issue 1811', () => {
     expect(mock.mock.calls[3][0]).toMatch('commit');
 
     const r3 = await orm.em.fork().find(Recipe, {}, { populate: ['ingredients'] });
-    expect(r3.map(r => r.name)).toEqual(['Salad', 'Poached eggs']);
+    expect(r3.map((r) => r.name)).toEqual(['Salad', 'Poached eggs']);
     expect(r3[0].ingredients.toArray()).toEqual([
-      { id: '16e443a7-b527-493f-ab8a-63012514b719', name: 'Spinach', recipe: recipe.id },
+      {
+        id: '16e443a7-b527-493f-ab8a-63012514b719',
+        name: 'Spinach',
+        recipe: recipe.id,
+      },
     ]);
-    expect(r3[1].ingredients.toArray()).toEqual([
-      { id: onion.id, name: 'Spring Onion', recipe: r3[1].id },
-    ]);
+    expect(r3[1].ingredients.toArray()).toEqual([{ id: onion.id, name: 'Spring Onion', recipe: r3[1].id }]);
   });
 
   test('assigning to m:m with nested entities', async () => {
     const r = await createRecipe();
-    const recipe = await orm.em.findOneOrFail(Recipe, r, { populate: ['authors'] });
+    const recipe = await orm.em.findOneOrFail(Recipe, r, {
+      populate: ['authors'],
+    });
 
     wrap(recipe).assign({
       authors: [
@@ -192,11 +215,13 @@ describe('GH issue 1811', () => {
     expect(mock.mock.calls[4][0]).toMatch('insert into `recipe_authors` (`recipe_id`, `user_id`) values (?, ?)');
     expect(mock.mock.calls[5][0]).toMatch('commit');
 
-    const r1 = await orm.em.fork().findOneOrFail(Recipe, recipe, { populate: ['authors'], orderBy: { authors: { name: 'asc' } } });
+    const r1 = await orm.em.fork().findOneOrFail(Recipe, recipe, {
+      populate: ['authors'],
+      orderBy: { authors: { name: 'asc' } },
+    });
     expect(r1.authors.toArray()).toEqual([
       { id: '22222222-0000-493f-ab8a-03012514b719', name: 'Malice' },
       { id: expect.stringMatching(/[\w-]{36}/), name: 'Tom' },
     ]);
   });
-
 });

@@ -3,13 +3,11 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: string;
 
   @Property({ type: 'json' })
   data!: { id: string };
-
 }
 
 let orm: MikroORM<SqliteDriver>;

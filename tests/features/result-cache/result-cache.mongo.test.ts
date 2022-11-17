@@ -5,7 +5,6 @@ import { Author, Book, BookTag, Publisher } from '../../entities';
 import { initORMMongo, mockLogger } from '../../bootstrap';
 
 describe('result cache (mongo)', () => {
-
   let orm: MikroORM<MongoDriver>;
 
   async function createBooksWithTags() {
@@ -31,7 +30,7 @@ describe('result cache (mongo)', () => {
     return author;
   }
 
-  beforeAll(async () => orm = await initORMMongo());
+  beforeAll(async () => (orm = await initORMMongo()));
   beforeEach(async () => orm.schema.clearDatabase());
   afterAll(async () => orm.close(true));
 
@@ -46,30 +45,35 @@ describe('result cache (mongo)', () => {
 
     const res2 = await orm.em.find(Book, { author: a.id }, { populate: ['author', 'tags', 'publisher'], cache: 50 });
     expect(mock.mock.calls).toHaveLength(4); // cache hit, no new query fired
-    expect(res1.map(e => wrap(e).toObject())).toEqual(res2.map(e => wrap(e).toObject()));
+    expect(res1.map((e) => wrap(e).toObject())).toEqual(res2.map((e) => wrap(e).toObject()));
     orm.em.clear();
 
     const res3 = await orm.em.find(Book, { author: a.id }, { populate: ['author', 'tags', 'publisher'], cache: 50 });
     expect(mock.mock.calls).toHaveLength(4); // cache hit, no new query fired
-    expect(res1.map(e => wrap(e).toObject())).toEqual(res3.map(e => wrap(e).toObject()));
+    expect(res1.map((e) => wrap(e).toObject())).toEqual(res3.map((e) => wrap(e).toObject()));
     orm.em.clear();
 
-    await new Promise(r => setTimeout(r, 100)); // wait for cache to expire
+    await new Promise((r) => setTimeout(r, 100)); // wait for cache to expire
     const res4 = await orm.em.find(Book, { author: a.id }, { populate: ['author', 'tags', 'publisher'], cache: 50 });
     expect(mock.mock.calls).toHaveLength(8); // cache miss, new query fired
-    expect(res1.map(e => wrap(e).toObject())).toEqual(res4.map(e => wrap(e).toObject()));
+    expect(res1.map((e) => wrap(e).toObject())).toEqual(res4.map((e) => wrap(e).toObject()));
   });
 
   test('result caching (findOne)', async () => {
     const a = await createBooksWithTags();
 
     const mock = mockLogger(orm, ['query']);
-    const call = () => orm.em.findOneOrFail(Book, {
-      author: a.id,
-    }, {
-      populate: ['author', 'tags'],
-      cache: ['abc', 50],
-    });
+    const call = () =>
+      orm.em.findOneOrFail(
+        Book,
+        {
+          author: a.id,
+        },
+        {
+          populate: ['author', 'tags'],
+          cache: ['abc', 50],
+        }
+      );
 
     const res1 = await call();
     expect(mock.mock.calls).toHaveLength(3);
@@ -85,7 +89,7 @@ describe('result cache (mongo)', () => {
     expect(wrap(res1).toObject()).toEqual(wrap(res3).toObject());
     orm.em.clear();
 
-    await new Promise(r => setTimeout(r, 100)); // wait for cache to expire
+    await new Promise((r) => setTimeout(r, 100)); // wait for cache to expire
     const res4 = await call();
     expect(mock.mock.calls).toHaveLength(6); // cache miss, new query fired
     expect(wrap(res1).toObject()).toEqual(wrap(res4).toObject());
@@ -121,10 +125,9 @@ describe('result cache (mongo)', () => {
     expect(res1).toEqual(res3);
     orm.em.clear();
 
-    await new Promise(r => setTimeout(r, 100)); // wait for cache to expire
+    await new Promise((r) => setTimeout(r, 100)); // wait for cache to expire
     const res4 = await orm.em.count(Book, { author: a.id }, { cache: 50 });
     expect(mock.mock.calls).toHaveLength(2); // cache miss, new query fired
     expect(res1).toEqual(res4);
   });
-
 });

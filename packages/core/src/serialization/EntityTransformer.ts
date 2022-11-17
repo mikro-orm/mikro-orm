@@ -16,7 +16,6 @@ function isVisible<T extends object>(meta: EntityMetadata<T>, propName: string, 
 }
 
 export class EntityTransformer {
-
   static toObject<T extends object>(entity: T, ignoreFields: string[] = [], raw = false): EntityData<T> {
     if (!Array.isArray(ignoreFields)) {
       ignoreFields = [];
@@ -39,11 +38,11 @@ export class EntityTransformer {
     if (meta.serializedPrimaryKey && !meta.compositePK) {
       keys.add(meta.serializedPrimaryKey);
     } else {
-      meta.primaryKeys.forEach(pk => keys.add(pk));
+      meta.primaryKeys.forEach((pk) => keys.add(pk));
     }
 
     if (wrapped.isInitialized() || !wrapped.hasPrimaryKey()) {
-      Object.keys(entity as object).forEach(prop => keys.add(prop));
+      Object.keys(entity as object).forEach((prop) => keys.add(prop));
     }
 
     const visited = root.visited.has(entity);
@@ -53,8 +52,8 @@ export class EntityTransformer {
     }
 
     [...keys]
-      .filter(prop => raw ? meta.properties[prop] : isVisible<T>(meta, prop, ignoreFields))
-      .map(prop => {
+      .filter((prop) => (raw ? meta.properties[prop] : isVisible<T>(meta, prop, ignoreFields)))
+      .map((prop) => {
         const cycle = root.visit(meta.className, prop);
 
         if (cycle && visited) {
@@ -70,7 +69,7 @@ export class EntityTransformer {
         return [prop, val];
       })
       .filter(([, value]) => typeof value !== 'undefined')
-      .forEach(([prop, value]) => ret[this.propertyName(meta, prop as keyof T & string, wrapped.__platform)] = value as T[keyof T & string]);
+      .forEach(([prop, value]) => (ret[this.propertyName(meta, prop as keyof T & string, wrapped.__platform)] = value as T[keyof T & string]));
 
     if (!visited) {
       root.visited.delete(entity);
@@ -81,14 +80,10 @@ export class EntityTransformer {
     }
 
     // decorated getters
-    meta.props
-      .filter(prop => prop.getter && !prop.hidden && typeof entity[prop.name] !== 'undefined')
-      .forEach(prop => ret[this.propertyName(meta, prop.name, wrapped.__platform)] = entity[prop.name]);
+    meta.props.filter((prop) => prop.getter && !prop.hidden && typeof entity[prop.name] !== 'undefined').forEach((prop) => (ret[this.propertyName(meta, prop.name, wrapped.__platform)] = entity[prop.name]));
 
     // decorated get methods
-    meta.props
-      .filter(prop => prop.getterName && !prop.hidden && entity[prop.getterName] as unknown instanceof Function)
-      .forEach(prop => ret[this.propertyName(meta, prop.name, wrapped.__platform)] = (entity[prop.getterName!] as unknown as () => T[keyof T & string])());
+    meta.props.filter((prop) => prop.getterName && !prop.hidden && (entity[prop.getterName] as unknown) instanceof Function).forEach((prop) => (ret[this.propertyName(meta, prop.name, wrapped.__platform)] = (entity[prop.getterName!] as unknown as () => T[keyof T & string])()));
 
     if (contextCreated) {
       root.close();
@@ -128,7 +123,7 @@ export class EntityTransformer {
 
     if (property.reference === ReferenceType.EMBEDDED) {
       if (Array.isArray(entity[prop])) {
-        return (entity[prop] as object[]).map(item => helper(item).toJSON()) as T[keyof T];
+        return (entity[prop] as object[]).map((item) => helper(item).toJSON()) as T[keyof T];
       }
 
       if (Utils.isObject(entity[prop])) {
@@ -165,7 +160,7 @@ export class EntityTransformer {
     const col = entity[prop] as unknown as Collection<AnyEntity>;
 
     if (raw && col.isInitialized(true)) {
-      return col.getItems().map(item => wrap(item).toPOJO()) as unknown as T[keyof T];
+      return col.getItems().map((item) => wrap(item).toPOJO()) as unknown as T[keyof T];
     }
 
     if (col.isInitialized(true) && col.shouldPopulate()) {
@@ -176,5 +171,4 @@ export class EntityTransformer {
       return col.getIdentifiers() as unknown as T[keyof T];
     }
   }
-
 }

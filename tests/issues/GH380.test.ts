@@ -3,7 +3,6 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,11 +11,9 @@ class A {
 
   @Property({ default: 'baz' })
   bar!: string;
-
 }
 
 describe('GH issue 380', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -37,5 +34,4 @@ describe('GH issue 380', () => {
     const dump = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(dump).toBe('');
   });
-
 });

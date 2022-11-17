@@ -3,13 +3,11 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 class Book {
-
   @PrimaryKey()
   id!: number;
 
-  @OneToMany(() => Author, c => c.book)
+  @OneToMany(() => Author, (c) => c.book)
   children = new Collection<Author>(this);
-
 }
 
 enum AuthorType {
@@ -19,7 +17,6 @@ enum AuthorType {
 
 @Entity()
 class Author {
-
   @Property({ primary: true })
   id!: string;
 
@@ -28,7 +25,6 @@ class Author {
 
   @ManyToOne(() => Book)
   book!: Book;
-
 }
 let orm: MikroORM<SqliteDriver>;
 
@@ -46,11 +42,14 @@ afterAll(async () => {
 });
 
 test(`GH issue 3053`, async () => {
-  const sql = orm.em.qb(Book).where({
-    children: {
-      id: '123ABC',
-      type: AuthorType.Apple,
-    },
-  }).getFormattedQuery();
+  const sql = orm.em
+    .qb(Book)
+    .where({
+      children: {
+        id: '123ABC',
+        type: AuthorType.Apple,
+      },
+    })
+    .getFormattedQuery();
   expect(sql).toBe("select `b0`.* from `book` as `b0` left join `author` as `a1` on `b0`.`id` = `a1`.`book_id` where (`a1`.`id`, `a1`.`type`) in (('123ABC', 'Apple'))");
 });

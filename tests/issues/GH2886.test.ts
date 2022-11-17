@@ -2,31 +2,26 @@ import { Entity, ManyToOne, OneToMany, Collection, MikroORM, PrimaryKey } from '
 
 @Entity()
 export class Provider {
-
   @PrimaryKey()
   id: number;
 
   constructor(id: number) {
     this.id = id;
   }
-
 }
 
 @Entity()
 export class User {
-
   @PrimaryKey()
   id: number;
 
   constructor(id: number) {
     this.id = id;
   }
-
 }
 
 @Entity()
 export class Member {
-
   @ManyToOne(() => Provider, { eager: true, primary: true })
   provider: Provider;
 
@@ -37,12 +32,10 @@ export class Member {
     this.provider = a;
     this.user = b;
   }
-
 }
 
 @Entity()
 export class Session {
-
   @PrimaryKey()
   id: number;
 
@@ -56,12 +49,10 @@ export class Session {
     this.id = id;
     this.owner = owner;
   }
-
 }
 
 @Entity()
 export class Participant {
-
   @ManyToOne(() => Session, { eager: true, primary: true })
   session: Session;
 
@@ -72,11 +63,9 @@ export class Participant {
     this.session = session;
     this.member = member;
   }
-
 }
 
 describe('GH #2886', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -110,5 +99,4 @@ describe('GH #2886', () => {
     const session = await orm.em.findOneOrFail(Session, { id: sessionId });
     await session.participants.init();
   });
-
 });

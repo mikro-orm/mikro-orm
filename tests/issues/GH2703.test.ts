@@ -4,28 +4,23 @@ import { mockLogger } from '../helpers';
 
 @Entity()
 export class User {
-
   @PrimaryKey()
   id!: number;
 
   @OneToMany(() => Order, ({ user }) => user)
   orders: Collection<Order> = new Collection<Order>(this);
-
 }
 
 @Entity()
 export class Order {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne({ onDelete: 'cascade' })
   user!: User;
-
 }
 
 describe('GH issue 2703', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -53,5 +48,4 @@ describe('GH issue 2703', () => {
     expect(mock.mock.calls[1][0]).toMatch('delete from `user` where `id` in (1)');
     expect(mock.mock.calls[2][0]).toMatch('commit');
   });
-
 });

@@ -8,7 +8,6 @@ import { JsonType } from '../types/JsonType';
 import { helper } from '../entity/wrap';
 
 export class QueryHelper {
-
   static readonly SUPPORTED_OPERATORS = ['>', '<', '<=', '>=', '!', '!=', ':in', ':nin', ':gt', ':gte', ':lt', ':lte', ':ne', ':not'];
 
   static processParams(params: any): any {
@@ -29,7 +28,7 @@ export class QueryHelper {
     }
 
     if (Array.isArray(params)) {
-      return (params as unknown[]).map(item => QueryHelper.processParams(item));
+      return (params as unknown[]).map((item) => QueryHelper.processParams(item));
     }
 
     if (Utils.isPlainObject(params)) {
@@ -40,7 +39,7 @@ export class QueryHelper {
   }
 
   static processObjectParams(params: Dictionary = {}): any {
-    Object.keys(params).forEach(k => {
+    Object.keys(params).forEach((k) => {
       params[k] = QueryHelper.processParams(params[k]);
     });
 
@@ -60,21 +59,28 @@ export class QueryHelper {
       return false;
     }
 
-    if (meta.primaryKeys.every(pk => pk in where) && Utils.getObjectKeysSize(where) === meta.primaryKeys.length) {
-      return !GroupOperator[key as string] && Object.keys(where).every(k => !Utils.isPlainObject(where[k]) || Object.keys(where[k]).every(v => {
-        if (Utils.isOperator(v, false)) {
-          return false;
-        }
+    if (meta.primaryKeys.every((pk) => pk in where) && Utils.getObjectKeysSize(where) === meta.primaryKeys.length) {
+      return (
+        !GroupOperator[key as string] &&
+        Object.keys(where).every(
+          (k) =>
+            !Utils.isPlainObject(where[k]) ||
+            Object.keys(where[k]).every((v) => {
+              if (Utils.isOperator(v, false)) {
+                return false;
+              }
 
-        if ([ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(meta.properties[k].reference)) {
-          return this.inlinePrimaryKeyObjects(where[k], meta.properties[k].targetMeta, metadata, v);
-        }
+              if ([ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(meta.properties[k].reference)) {
+                return this.inlinePrimaryKeyObjects(where[k], meta.properties[k].targetMeta, metadata, v);
+              }
 
-        return true;
-      }));
+              return true;
+            })
+        )
+      );
     }
 
-    Object.keys(where).forEach(k => {
+    Object.keys(where).forEach((k) => {
       const meta2 = metadata.find(meta.properties[k]?.type) || meta;
 
       if (this.inlinePrimaryKeyObjects(where[k], meta2, metadata, k)) {
@@ -103,7 +109,9 @@ export class QueryHelper {
     }
 
     if (meta && Utils.isPrimaryKey(where, meta.compositePK)) {
-      where = { [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where } as FilterQuery<T>;
+      where = {
+        [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where,
+      } as FilterQuery<T>;
     }
 
     if (Array.isArray(where) && root) {
@@ -131,7 +139,13 @@ export class QueryHelper {
       // wrap top level operators (except platform allowed operators) with PK
       if (Utils.isOperator(key) && root && meta && !options.platform.isAllowedTopLevelOperator(key)) {
         const rootPrimaryKey = Utils.getPrimaryKeyHash(meta.primaryKeys);
-        o[rootPrimaryKey] = { [key]: QueryHelper.processWhere<T>({ ...options, where: value, root: false }) };
+        o[rootPrimaryKey] = {
+          [key]: QueryHelper.processWhere<T>({
+            ...options,
+            where: value,
+            root: false,
+          }),
+        };
         return o;
       }
 
@@ -146,10 +160,10 @@ export class QueryHelper {
       if (Array.isArray(value) && !Utils.isOperator(key) && !QueryHelper.isSupportedOperator(key) && !key.includes('?')) {
         if (platform.allowsComparingTuples()) {
           // comparing single composite key - use $eq instead of $in
-          const op = !value.every(v => Array.isArray(v)) && composite ? '$eq' : '$in';
+          const op = !value.every((v) => Array.isArray(v)) && composite ? '$eq' : '$in';
           o[key] = { [op]: value };
         } else {
-          if (!value.every(v => Array.isArray(v)) && composite) {
+          if (!value.every((v) => Array.isArray(v)) && composite) {
             o[key] = { $in: [value] };
           } else {
             o[key] = { $in: value };
@@ -159,7 +173,12 @@ export class QueryHelper {
         return o;
       }
 
-      const re = '[^:]+(' + this.SUPPORTED_OPERATORS.filter(op => op.startsWith(':')).map(op => `${op}`).join('|') + ')$';
+      const re =
+        '[^:]+(' +
+        this.SUPPORTED_OPERATORS.filter((op) => op.startsWith(':'))
+          .map((op) => `${op}`)
+          .join('|') +
+        ')$';
       const operatorExpression = new RegExp(re).exec(key);
 
       if (Utils.isPlainObject(value)) {
@@ -195,14 +214,14 @@ export class QueryHelper {
     const opts: Dictionary<boolean | Dictionary> = {};
 
     if (Array.isArray(options)) {
-      options.forEach(filter => opts[filter] = true);
+      options.forEach((filter) => (opts[filter] = true));
     } else if (Utils.isPlainObject(options)) {
-      Object.keys(options).forEach(filter => opts[filter] = options[filter]);
+      Object.keys(options).forEach((filter) => (opts[filter] = options[filter]));
     }
 
     return Object.keys(filters)
-      .filter(f => QueryHelper.isFilterActive(entityName, f, filters[f], opts))
-      .map(f => {
+      .filter((f) => QueryHelper.isFilterActive(entityName, f, filters[f], opts))
+      .map((f) => {
         filters[f].name = f;
         return filters[f];
       });
@@ -234,31 +253,42 @@ export class QueryHelper {
     }
 
     if (Array.isArray(cond) && !(key && ARRAY_OPERATORS.includes(key))) {
-      return (cond as ObjectQuery<T>[]).map(v => QueryHelper.processCustomType(prop, v, platform, key, fromQuery)) as unknown as ObjectQuery<T>;
+      return (cond as ObjectQuery<T>[]).map((v) => QueryHelper.processCustomType(prop, v, platform, key, fromQuery)) as unknown as ObjectQuery<T>;
     }
 
-    return prop.customType.convertToDatabaseValue(cond, platform, { fromQuery, key, mode: 'query' });
+    return prop.customType.convertToDatabaseValue(cond, platform, {
+      fromQuery,
+      key,
+      mode: 'query',
+    });
   }
 
   private static processExpression<T>(expr: string, value: T): Dictionary<T> {
     switch (expr) {
-      case '>': return { $gt: value };
-      case '<': return { $lt: value };
-      case '>=': return { $gte: value };
-      case '<=': return { $lte: value };
-      case '!=': return { $ne: value };
-      case '!': return { $not: value };
-      default: return { ['$' + expr]: value };
+      case '>':
+        return { $gt: value };
+      case '<':
+        return { $lt: value };
+      case '>=':
+        return { $gte: value };
+      case '<=':
+        return { $lte: value };
+      case '!=':
+        return { $ne: value };
+      case '!':
+        return { $not: value };
+      default:
+        return { ['$' + expr]: value };
     }
   }
 
   private static isSupportedOperator(key: string): boolean {
-    return !!QueryHelper.SUPPORTED_OPERATORS.find(op => key.includes(op));
+    return !!QueryHelper.SUPPORTED_OPERATORS.find((op) => key.includes(op));
   }
 
   private static processJsonCondition<T>(o: ObjectQuery<T>, value: Dictionary, path: string[], platform: Platform, alias: boolean) {
-    if (Utils.isPlainObject(value) && !Object.keys(value).some(k => Utils.isOperator(k))) {
-      Object.keys(value).forEach(k => {
+    if (Utils.isPlainObject(value) && !Object.keys(value).some((k) => Utils.isOperator(k))) {
+      Object.keys(value).forEach((k) => {
         this.processJsonCondition(o, value[k], [...path, k], platform, alias);
       });
 
@@ -270,7 +300,7 @@ export class QueryHelper {
       return o;
     }
 
-    const operatorObject = Utils.isPlainObject(value) && Object.keys(value).every(k => Utils.isOperator(k));
+    const operatorObject = Utils.isPlainObject(value) && Object.keys(value).every((k) => Utils.isOperator(k));
     const type = operatorObject ? typeof Object.values(value)[0] : typeof value;
     const k = platform.getSearchJsonPropertyKey(path, type, alias);
     o[k] = value;
@@ -287,7 +317,6 @@ export class QueryHelper {
 
     return meta?.properties[propName];
   }
-
 }
 
 interface ProcessWhereOptions<T> {

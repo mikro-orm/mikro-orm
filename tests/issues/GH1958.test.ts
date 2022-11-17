@@ -2,26 +2,21 @@ import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property } from '@m
 
 @Embeddable()
 export class LoopOptions {
-
   @Property()
   'enabled-prop' = false;
 
   @Property()
   'type-prop' = 'a';
-
 }
 
 @Embeddable()
 export class Options {
-
   @Embedded(() => LoopOptions, { object: true })
   'loop-prop' = new LoopOptions();
-
 }
 
 @Entity()
 export class PlayerEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -30,11 +25,9 @@ export class PlayerEntity {
 
   @Property({ name: 'name-with-hyphens' })
   test: string = 'abc';
-
 }
 
 describe('GH issue 1958', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -65,5 +58,4 @@ describe('GH issue 1958', () => {
     expect(e1['options-prop']['loop-prop']['enabled-prop']).toBe(false);
     expect(e1['options-prop']['loop-prop']['type-prop']).toBe('a');
   });
-
 });

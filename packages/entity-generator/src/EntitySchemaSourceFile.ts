@@ -3,7 +3,6 @@ import { ReferenceType, Utils } from '@mikro-orm/core';
 import { SourceFile } from './SourceFile';
 
 export class EntitySchemaSourceFile extends SourceFile {
-
   generate(): string {
     this.coreImports.add('EntitySchema');
     let ret = `export class ${this.meta.className} {`;
@@ -26,9 +25,9 @@ export class EntitySchemaSourceFile extends SourceFile {
 
     ret += '}\n';
 
-    const imports = [`import { ${([...this.coreImports].sort().join(', '))} } from '@mikro-orm/core';`];
-    const entityImports = [...this.entityImports].filter(e => e !== this.meta.className);
-    entityImports.sort().forEach(entity => {
+    const imports = [`import { ${[...this.coreImports].sort().join(', ')} } from '@mikro-orm/core';`];
+    const entityImports = [...this.entityImports].filter((e) => e !== this.meta.className);
+    entityImports.sort().forEach((entity) => {
       imports.push(`import { ${entity} } from './${entity}';`);
     });
 
@@ -52,8 +51,8 @@ export class EntitySchemaSourceFile extends SourceFile {
 
     if (this.meta.indexes.length > 0) {
       ret += `  indexes: [\n`;
-      this.meta.indexes.forEach(index => {
-        const properties = Utils.asArray(index.properties).map(prop => `'${prop}'`);
+      this.meta.indexes.forEach((index) => {
+        const properties = Utils.asArray(index.properties).map((prop) => `'${prop}'`);
         ret += `    { name: '${index.name}', properties: [${properties.join(', ')}] },\n`;
       });
       ret += `  ],\n`;
@@ -61,20 +60,30 @@ export class EntitySchemaSourceFile extends SourceFile {
 
     if (this.meta.indexes.length > 0) {
       ret += `  uniques: [\n`;
-      this.meta.uniques.forEach(index => {
-        const properties = Utils.asArray(index.properties).map(prop => `'${prop}'`);
+      this.meta.uniques.forEach((index) => {
+        const properties = Utils.asArray(index.properties).map((prop) => `'${prop}'`);
         ret += `    { name: '${index.name}', properties: [${properties.join(', ')}] },\n`;
       });
       ret += `  ],\n`;
     }
 
     ret += `  properties: {\n`;
-    Object.values(this.meta.properties).forEach(prop => {
+    Object.values(this.meta.properties).forEach((prop) => {
       const options = this.getPropertyOptions(prop);
-      let def = '{ ' + Object.entries(options).map(([opt, val]) => `${opt}: ${val}`).join(', ') + ' }';
+      let def =
+        '{ ' +
+        Object.entries(options)
+          .map(([opt, val]) => `${opt}: ${val}`)
+          .join(', ') +
+        ' }';
 
       if (def.length > 80) {
-        def = '{\n' + Object.entries(options).map(([opt, val]) => `      ${opt}: ${val}`).join(',\n') + ',\n    }';
+        def =
+          '{\n' +
+          Object.entries(options)
+            .map(([opt, val]) => `      ${opt}: ${val}`)
+            .join(',\n') +
+          ',\n    }';
       }
       //
       ret += `    ${prop.name}: ${def},\n`;
@@ -163,5 +172,4 @@ export class EntitySchemaSourceFile extends SourceFile {
 
     super.getScalarPropertyDecoratorOptions(options, prop);
   }
-
 }

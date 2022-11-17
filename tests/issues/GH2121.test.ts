@@ -3,18 +3,15 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Tag {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   slug!: string;
-
 }
 
 @Entity()
 export class Product {
-
   @PrimaryKey()
   id!: number;
 
@@ -23,11 +20,9 @@ export class Product {
 
   @ManyToMany(() => Tag)
   tags = new Collection<Tag>(this);
-
 }
 
 describe('GH issue 2121', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -55,21 +50,28 @@ describe('GH issue 2121', () => {
 
     await orm.em.flush();
     await orm.em.clear();
-    const result = await orm.em.find(Product, { tags: { slug: ['slug0'] } }, {
-      populate: ['tags'],
-      limit: 10,
-      offset: 8,
-    });
+    const result = await orm.em.find(
+      Product,
+      { tags: { slug: ['slug0'] } },
+      {
+        populate: ['tags'],
+        limit: 10,
+        offset: 8,
+      }
+    );
     expect(result[0].tags).toHaveLength(2);
     await orm.em.clear();
 
-    const result2 = await orm.em.find(Product, { tags: { slug: ['slug0'] } }, {
-      populate: ['tags'],
-      limit: 10,
-      offset: 9,
-    });
+    const result2 = await orm.em.find(
+      Product,
+      { tags: { slug: ['slug0'] } },
+      {
+        populate: ['tags'],
+        limit: 10,
+        offset: 9,
+      }
+    );
     expect(result2[0].tags).toHaveLength(2);
     await result2[0].tags.init();
   });
-
 });

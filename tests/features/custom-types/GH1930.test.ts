@@ -3,7 +3,6 @@ import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property, Type } 
 import type { MySqlDriver } from '@mikro-orm/mysql';
 
 export class UuidBinaryType extends Type<string, Buffer> {
-
   convertToDatabaseValue(value: string): Buffer {
     return Buffer.from(parse(value) as number[]);
   }
@@ -15,12 +14,10 @@ export class UuidBinaryType extends Type<string, Buffer> {
   getColumnType(): string {
     return 'binary(16)';
   }
-
 }
 
 @Entity()
 class B {
-
   @PrimaryKey({ type: UuidBinaryType, name: 'uuid' })
   id: string = v4();
 
@@ -30,12 +27,10 @@ class B {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 class A {
-
   @PrimaryKey({ type: UuidBinaryType, name: 'uuid' })
   id: string = v4();
 
@@ -48,11 +43,9 @@ class A {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 describe('GH issue 1930', () => {
-
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => {
@@ -90,5 +83,4 @@ describe('GH issue 1930', () => {
     expect(a1.fields[1].id).toBe(a.fields[1].id);
     expect(a1.fields[2].id).toBe(a.fields[2].id);
   });
-
 });

@@ -3,7 +3,6 @@ import { mockLogger } from '../helpers';
 
 @Entity()
 export class Author {
-
   @PrimaryKey()
   id!: string;
 
@@ -12,12 +11,10 @@ export class Author {
     mappedBy: 'author',
   })
   books = new Collection<Book>(this);
-
 }
 
 @Entity()
 export class Book {
-
   @PrimaryKey()
   id!: string;
 
@@ -26,11 +23,9 @@ export class Book {
 
   @ManyToOne(() => Author)
   author!: Author;
-
 }
 
 describe('aliasing of nested JSON queries (GH 3242)', () => {
-
   test('sqlite', async () => {
     const orm = await MikroORM.init({
       entities: [Book],
@@ -91,5 +86,4 @@ describe('aliasing of nested JSON queries (GH 3242)', () => {
 
     await orm.close(true);
   });
-
 });

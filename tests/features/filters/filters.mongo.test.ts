@@ -5,17 +5,16 @@ import type { MongoDriver } from '@mikro-orm/mongodb';
 import { BASE_DIR, initORMMongo, mockLogger } from '../../bootstrap';
 
 describe('filters [mongo]', () => {
-
   let orm: MikroORM<MongoDriver>;
 
-  beforeAll(async () => orm = await initORMMongo());
+  beforeAll(async () => (orm = await initORMMongo()));
   beforeEach(async () => orm.schema.clearDatabase());
   afterAll(async () => orm.close(true));
 
   test('global filters', async () => {
     const em = orm.em.fork();
-    em.addFilter('writtenBy', args => ({ author: args.author }), Book, false);
-    em.addFilter('tenant', args => ({ tenant: args.tenant }));
+    em.addFilter('writtenBy', (args) => ({ author: args.author }), Book, false);
+    em.addFilter('tenant', (args) => ({ tenant: args.tenant }));
     em.addFilter('withoutParams2', () => ({}));
     em.addFilter('fresh', { createdAt: { $gte: new Date('2020-01-01') } }, [Author, Book], false);
 
@@ -41,7 +40,9 @@ describe('filters [mongo]', () => {
     em.setFilterParams('writtenBy', { author: book1.author });
 
     expect(em.getFilterParams('tenant')).toMatchObject({ tenant: 123 });
-    expect(em.getFilterParams('writtenBy')).toMatchObject({ author: book1.author });
+    expect(em.getFilterParams('writtenBy')).toMatchObject({
+      author: book1.author,
+    });
 
     const mock = mockLogger(orm);
 
@@ -54,7 +55,14 @@ describe('filters [mongo]', () => {
     expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ tenant: 123 }, {}\)/);
     await em.find(Book, {}, { filters: ['writtenBy'], populate: ['perex'] });
     expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ '\$and': \[ { author: ObjectId\('.*'\) }, { tenant: 123 } ] }, {}\)/);
-    await em.find(Book, {}, { filters: { writtenBy: { author: '123' }, tenant: false }, populate: ['perex'] });
+    await em.find(
+      Book,
+      {},
+      {
+        filters: { writtenBy: { author: '123' }, tenant: false },
+        populate: ['perex'],
+      }
+    );
     expect(mock.mock.calls[4][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({ author: '123' }, {}\)/);
     await em.find(Book, {}, { filters: false, populate: ['perex'] });
     expect(mock.mock.calls[5][0]).toMatch(/db\.getCollection\('books-table'\)\.find\({}, {}\)/);
@@ -64,23 +72,30 @@ describe('filters [mongo]', () => {
   });
 
   test('that filters in the config are enabled by default', async () => {
-    const orm = await MikroORM.init({
-      type: 'mongo', dbName: 'test', baseDir: BASE_DIR, entities: ['entities'], filters: {
-        needsTermsAccepted: {
-          cond: () => ({ termsAccepted: true }),
-          entity: ['Author'],
-        },
-        hasBirthday: {
-          cond: () => ({
-            birthday: {
-              $ne: null,
-            },
-          }),
-          entity: ['Author'],
-          default: false,
+    const orm = await MikroORM.init(
+      {
+        type: 'mongo',
+        dbName: 'test',
+        baseDir: BASE_DIR,
+        entities: ['entities'],
+        filters: {
+          needsTermsAccepted: {
+            cond: () => ({ termsAccepted: true }),
+            entity: ['Author'],
+          },
+          hasBirthday: {
+            cond: () => ({
+              birthday: {
+                $ne: null,
+              },
+            }),
+            entity: ['Author'],
+            default: false,
+          },
         },
       },
-    }, false);
+      false
+    );
     expect(Object.keys(orm.config.get('filters')).length).toEqual(2);
     expect(Object.keys(orm.config.get('filters'))[0]).toEqual('needsTermsAccepted');
     expect(Object.keys(orm.config.get('filters'))[1]).toEqual('hasBirthday');
@@ -88,5 +103,4 @@ describe('filters [mongo]', () => {
     expect(orm.config.get('filters').hasBirthday.default).toEqual(false);
     await orm.close();
   });
-
 });

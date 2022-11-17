@@ -4,21 +4,18 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity({ tableName: 'customers' })
 class Customer {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name: string = 'Foo';
 
-  @OneToMany(() => Order, order => order.customer)
+  @OneToMany(() => Order, (order) => order.customer)
   orders = new Collection<Order>(this);
-
 }
 
 @Entity({ tableName: 'orders' })
 class Order {
-
   @PrimaryKey()
   id!: number;
 
@@ -27,12 +24,10 @@ class Order {
 
   @ManyToOne(() => Customer)
   customer!: Customer;
-
 }
 
 @Subscriber()
 class OrdersSubscriber implements EventSubscriber<Order> {
-
   static emptyChangelogs: boolean[] = [];
 
   async afterFlush(args: FlushEventArgs): Promise<void> {
@@ -46,7 +41,6 @@ class OrdersSubscriber implements EventSubscriber<Order> {
       }
     }
   }
-
 }
 
 let orm: MikroORM<SqliteDriver>;
@@ -65,7 +59,10 @@ afterAll(async () => {
 });
 
 test(`GH issue 3345`, async () => {
-  const parent = orm.em.create(Customer, { name: 'asd', orders: [{ value: 123 }, { value: 456 }] });
+  const parent = orm.em.create(Customer, {
+    name: 'asd',
+    orders: [{ value: 123 }, { value: 456 }],
+  });
   await orm.em.persist(parent).flush();
 
   parent.orders[0].value = 666;

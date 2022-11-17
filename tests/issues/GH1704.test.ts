@@ -4,18 +4,15 @@ import { mockLogger } from '../helpers';
 
 @Entity()
 export class Profile {
-
   @PrimaryKey()
   id!: number;
 
   @OneToOne('User', 'profile')
   user: any;
-
 }
 
 @Entity()
 export class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -24,11 +21,9 @@ export class User {
 
   @OneToOne(() => Profile)
   profile!: Profile;
-
 }
 
 describe('GH issue 1704', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -65,5 +60,4 @@ describe('GH issue 1704', () => {
     await getAndFlush(2); // no cache hit
     await getAndFlush(3); // cache hit, so 2 previous + 1 new query
   });
-
 });

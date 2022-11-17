@@ -5,10 +5,9 @@ import { initORMMongo } from '../../bootstrap';
 import FooBar from '../../entities/FooBar';
 
 describe('SchemaGenerator', () => {
-
   let orm: MikroORM<MongoDriver>;
 
-  beforeAll(async () => orm = await initORMMongo());
+  beforeAll(async () => (orm = await initORMMongo()));
   afterAll(async () => await orm.close(true));
   beforeEach(async () => orm.schema.clearDatabase());
 
@@ -62,8 +61,9 @@ describe('SchemaGenerator', () => {
 
     expect(dropIndexesSpy).toBeCalledWith(
       expect.objectContaining({
-      collectionsWithFailedIndexes: ['foo-baz'],
-    }));
+        collectionsWithFailedIndexes: ['foo-baz'],
+      })
+    );
 
     expect(ensureIndexesSpy).toBeCalledTimes(3);
 
@@ -98,5 +98,4 @@ describe('SchemaGenerator', () => {
     refreshDatabaseSpy.mockRestore();
     ensureIndexesSpy.mockRestore();
   });
-
 });

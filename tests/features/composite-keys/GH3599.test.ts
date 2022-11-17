@@ -5,7 +5,6 @@ import { mockLogger } from '../../helpers';
 
 @Entity()
 export class Group {
-
   @PrimaryKey({ type: 'uuid' })
   id: string = v4();
 
@@ -14,12 +13,10 @@ export class Group {
     mappedBy: (gm: GroupMember) => gm.group,
   })
   members = new Collection<GroupMember>(this);
-
 }
 
 @Entity()
 export class Member {
-
   @PrimaryKey({ type: 'uuid' })
   id: string = v4();
 
@@ -30,12 +27,10 @@ export class Member {
     orphanRemoval: true,
   })
   groups = new Collection<GroupMember>(this);
-
 }
 
 @Entity()
 export class GroupMember {
-
   @ManyToOne({
     entity: () => Member,
     inversedBy: (member: Member) => member.groups,
@@ -56,7 +51,6 @@ export class GroupMember {
     this.member = wrap(member).toReference();
     this.group = wrap(group).toReference();
   }
-
 }
 
 let orm: MikroORM;
@@ -97,10 +91,7 @@ test('GH 3599 with explicit collection API', async () => {
   await orm.em.flush();
 
   // adding a new row to the pivot table
-  member.groups.set([
-    orm.em.create(GroupMember, { group: group1, member }),
-    orm.em.create(GroupMember, { group: group2, member }),
-  ]);
+  member.groups.set([orm.em.create(GroupMember, { group: group1, member }), orm.em.create(GroupMember, { group: group2, member })]);
 
   await orm.em.flush();
 
@@ -108,7 +99,7 @@ test('GH 3599 with explicit collection API', async () => {
   member.groups.set([orm.em.create(GroupMember, { group: group1, member })]);
 
   await orm.em.flush();
-  const queries = mock.mock.calls.map(c => c[0]);
+  const queries = mock.mock.calls.map((c) => c[0]);
 
   expect(queries[0]).toMatch('begin');
   expect(queries[1]).toMatch('insert into `group_member` (`member_id`, `group_id`) values (?, ?)');
@@ -129,32 +120,25 @@ test('GH 3599 with assign helper', async () => {
 
   // adding a row to the pivot table
   orm.em.assign(member, {
-    groups: [
-      { group: group1.id },
-    ],
+    groups: [{ group: group1.id }],
   });
 
   await orm.em.flush();
 
   // adding a new row to the pivot table
   orm.em.assign(member, {
-    groups: [
-      { group: group1.id },
-      { group: group2.id },
-    ],
+    groups: [{ group: group1.id }, { group: group2.id }],
   });
 
   await orm.em.flush();
 
   // removing a row from the pivot table
   orm.em.assign(member, {
-    groups: [
-      { group: group1.id },
-    ],
+    groups: [{ group: group1.id }],
   });
 
   await orm.em.flush();
-  const queries = mock.mock.calls.map(c => c[0]);
+  const queries = mock.mock.calls.map((c) => c[0]);
 
   expect(queries[0]).toMatch('begin');
   expect(queries[1]).toMatch('insert into `group_member` (`member_id`, `group_id`) values (?, ?)');
@@ -177,32 +161,25 @@ test('em.create and composite PK propagation', async () => {
   const mock = mockLogger(orm, ['query']);
 
   const member = orm.em.create(Member, {
-    groups: [
-      { group: group1.id },
-    ],
+    groups: [{ group: group1.id }],
   });
 
   await orm.em.flush();
 
   // adding a new row to the pivot table
   orm.em.assign(member, {
-    groups: [
-      { group: group1.id },
-      { group: group2.id },
-    ],
+    groups: [{ group: group1.id }, { group: group2.id }],
   });
 
   await orm.em.flush();
 
   // removing a row from the pivot table
   orm.em.assign(member, {
-    groups: [
-      { group: group1.id },
-    ],
+    groups: [{ group: group1.id }],
   });
 
   await orm.em.flush();
-  const queries = mock.mock.calls.map(c => c[0]);
+  const queries = mock.mock.calls.map((c) => c[0]);
 
   expect(queries[0]).toMatch('begin');
   expect(queries[1]).toMatch('insert into `member` (`id`) values (?)');

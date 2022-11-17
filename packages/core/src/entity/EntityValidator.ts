@@ -5,11 +5,10 @@ import { ValidationError } from '../errors';
 import { helper } from './wrap';
 
 export class EntityValidator {
-
-  constructor(private strict: boolean) { }
+  constructor(private strict: boolean) {}
 
   validate<T extends object>(entity: T, payload: any, meta: EntityMetadata): void {
-    meta.props.forEach(prop => {
+    meta.props.forEach((prop) => {
       if (prop.inherited) {
         return;
       }
@@ -88,18 +87,18 @@ export class EntityValidator {
     }
 
     if (Array.isArray(params)) {
-      return (params as unknown[]).forEach(item => this.validateParams(item, type, field));
+      return (params as unknown[]).forEach((item) => this.validateParams(item, type, field));
     }
 
     if (Utils.isPlainObject(params)) {
-      Object.keys(params).forEach(k => {
+      Object.keys(params).forEach((k) => {
         this.validateParams(params[k], type, k);
       });
     }
   }
 
   validatePrimaryKey<T>(entity: EntityData<T>, meta: EntityMetadata): void {
-    const pkExists = meta.primaryKeys.every(pk => entity[pk] != null) || entity[meta.serializedPrimaryKey] != null;
+    const pkExists = meta.primaryKeys.every((pk) => entity[pk] != null) || entity[meta.serializedPrimaryKey] != null;
 
     if (!entity || !pkExists) {
       throw ValidationError.fromMergeWithoutPK(meta);
@@ -123,7 +122,7 @@ export class EntityValidator {
   private setValue(o: Dictionary, prop: EntityProperty, v: any) {
     /* istanbul ignore next */
     if (prop.embedded && prop.embedded[0] in o) {
-      return o[prop.embedded[0]][prop.embedded[1]] = v;
+      return (o[prop.embedded[0]][prop.embedded[1]] = v);
     }
 
     o[prop.name] = v;
@@ -172,5 +171,4 @@ export class EntityValidator {
     const bool = !!givenValue;
     return +bool === givenValue ? bool : givenValue;
   }
-
 }

@@ -7,7 +7,6 @@ import { EntityHelper } from '../entity/EntityHelper';
 import type { EventSubscriber } from '../events';
 
 export class MetadataStorage {
-
   private static readonly metadata: Dictionary<EntityMetadata> = Utils.getGlobalStorage('metadata');
   private static readonly subscribers: Dictionary<EventSubscriber> = Utils.getGlobalStorage('subscribers');
   private readonly metadata: Dictionary<EntityMetadata>;
@@ -22,7 +21,10 @@ export class MetadataStorage {
     const key = entity && path ? entity + '-' + Utils.hash(path) : null;
 
     if (key && !MetadataStorage.metadata[key]) {
-      MetadataStorage.metadata[key] = new EntityMetadata({ className: entity, path });
+      MetadataStorage.metadata[key] = new EntityMetadata({
+        className: entity,
+        path,
+      });
     }
 
     if (key) {
@@ -33,7 +35,7 @@ export class MetadataStorage {
   }
 
   static isKnownEntity(name: string): boolean {
-    return !!Object.values(this.metadata).find(meta => meta.className === name);
+    return !!Object.values(this.metadata).find((meta) => meta.className === name);
   }
 
   static getMetadataFromDecorator<T = any>(target: T & Dictionary): EntityMetadata<T> {
@@ -53,8 +55,8 @@ export class MetadataStorage {
   }
 
   static clear(): void {
-    Object.keys(this.metadata).forEach(k => delete this.metadata[k]);
-    Object.keys(this.subscribers).forEach(k => delete this.subscribers[k]);
+    Object.keys(this.metadata).forEach((k) => delete this.metadata[k]);
+    Object.keys(this.subscribers).forEach((k) => delete this.subscribers[k]);
   }
 
   getAll(): Dictionary<EntityMetadata> {
@@ -94,7 +96,7 @@ export class MetadataStorage {
   }
 
   set(entity: string, meta: EntityMetadata): EntityMetadata {
-    return this.metadata[entity] = meta;
+    return (this.metadata[entity] = meta);
   }
 
   reset(entity: string): void {
@@ -103,8 +105,7 @@ export class MetadataStorage {
 
   decorate(em: EntityManager): void {
     Object.values(this.metadata)
-      .filter(meta => meta.prototype && !meta.prototype.__meta)
-      .forEach(meta => EntityHelper.decorate(meta, em));
+      .filter((meta) => meta.prototype && !meta.prototype.__meta)
+      .forEach((meta) => EntityHelper.decorate(meta, em));
   }
-
 }

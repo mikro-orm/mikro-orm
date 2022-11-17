@@ -7,8 +7,7 @@ export interface IConfiguration {
 }
 
 export abstract class MetadataProvider {
-
-  constructor(protected readonly config: IConfiguration) { }
+  constructor(protected readonly config: IConfiguration) {}
 
   abstract loadEntityMetadata(meta: EntityMetadata, name: string): Promise<void>;
 
@@ -16,7 +15,7 @@ export abstract class MetadataProvider {
    * Re-hydrates missing attributes like `customType` (functions/instances are lost when caching to JSON)
    */
   loadFromCache(meta: EntityMetadata, cache: EntityMetadata): void {
-    Object.values(cache.properties).forEach(prop => {
+    Object.values(cache.properties).forEach((prop) => {
       if (prop.customType) {
         prop.customType = meta.properties[prop.name].customType;
       }
@@ -36,11 +35,15 @@ export abstract class MetadataProvider {
         prop.type = prop.entity;
       } else if (prop.entity) {
         const tmp = prop.entity();
-        prop.type = Array.isArray(tmp) ? tmp.map(t => Utils.className(t)).sort().join(' | ') : Utils.className(tmp);
+        prop.type = Array.isArray(tmp)
+          ? tmp
+              .map((t) => Utils.className(t))
+              .sort()
+              .join(' | ')
+          : Utils.className(tmp);
       } else if (!prop.type) {
         await fallback(prop);
       }
     }
   }
-
 }

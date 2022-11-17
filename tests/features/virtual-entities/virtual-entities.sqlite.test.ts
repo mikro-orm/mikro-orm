@@ -5,16 +5,15 @@ import type { IAuthor4 } from '../../entities-schema';
 import { Author4, BaseEntity5, Book4, BookTag4, FooBar4, FooBaz4, Publisher4, Test4, Identity, IdentitySchema } from '../../entities-schema';
 
 class AuthorProfile {
-
   name!: string;
   age!: number;
   totalBooks!: number;
   usedTags!: string[];
   identity!: Identity;
-
 }
 
-const authorProfilesSQL = 'select name, age, identity, ' +
+const authorProfilesSQL =
+  'select name, age, identity, ' +
   '(select count(*) from book4 b where b.author_id = a.id) as total_books, ' +
   '(select group_concat(distinct t.name) from book4 b join tags_ordered bt on bt.book4_id = b.id join book_tag4 t on t.id = bt.book_tag4_id where b.author_id = a.id group by b.author_id) as used_tags ' +
   'from author4 a group by a.id';
@@ -27,11 +26,15 @@ const AuthorProfileSchema = new EntitySchema({
     age: { type: 'string' },
     totalBooks: { type: 'number' },
     usedTags: { type: 'string[]' },
-    identity: { type: 'Identity', reference: ReferenceType.EMBEDDED, object: true },
+    identity: {
+      type: 'Identity',
+      reference: ReferenceType.EMBEDDED,
+      object: true,
+    },
   },
 });
 
-interface IBookWithAuthor{
+interface IBookWithAuthor {
   title: string;
   authorName: string;
   tags: string[];
@@ -40,11 +43,7 @@ interface IBookWithAuthor{
 const BookWithAuthor = new EntitySchema<IBookWithAuthor>({
   name: 'BookWithAuthor',
   expression: (em: EntityManager) => {
-    return em.createQueryBuilder(Book4, 'b')
-      .select(['b.title', 'a.name as author_name', 'group_concat(t.name) as tags'])
-      .join('b.author', 'a')
-      .join('b.tags', 't')
-      .groupBy('b.id');
+    return em.createQueryBuilder(Book4, 'b').select(['b.title', 'a.name as author_name', 'group_concat(t.name) as tags']).join('b.author', 'a').join('b.tags', 't').groupBy('b.id');
   },
   properties: {
     title: { type: 'string' },
@@ -54,7 +53,6 @@ const BookWithAuthor = new EntitySchema<IBookWithAuthor>({
 });
 
 describe('virtual entities (sqlite)', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -69,11 +67,24 @@ describe('virtual entities (sqlite)', () => {
   afterAll(async () => orm.close(true));
 
   async function createEntities(index: number): Promise<IAuthor4> {
-    const author = orm.em.create(Author4, { name: 'Jon Snow ' + index, email: 'snow@wall.st-' + index, age: Math.floor(Math.random() * 100) });
+    const author = orm.em.create(Author4, {
+      name: 'Jon Snow ' + index,
+      email: 'snow@wall.st-' + index,
+      age: Math.floor(Math.random() * 100),
+    });
     author.identity = new Identity('foo', 123);
-    const book1 = orm.em.create(Book4, { title: 'My Life on the Wall, part 1/' + index, author });
-    const book2 = orm.em.create(Book4, { title: 'My Life on the Wall, part 2/' + index, author });
-    const book3 = orm.em.create(Book4, { title: 'My Life on the Wall, part 3/' + index, author });
+    const book1 = orm.em.create(Book4, {
+      title: 'My Life on the Wall, part 1/' + index,
+      author,
+    });
+    const book2 = orm.em.create(Book4, {
+      title: 'My Life on the Wall, part 2/' + index,
+      author,
+    });
+    const book3 = orm.em.create(Book4, {
+      title: 'My Life on the Wall, part 3/' + index,
+      author,
+    });
     const tag1 = orm.em.create(BookTag4, { name: 'silly-' + index });
     const tag2 = orm.em.create(BookTag4, { name: 'funny-' + index });
     const tag3 = orm.em.create(BookTag4, { name: 'sick-' + index });
@@ -142,19 +153,21 @@ describe('virtual entities (sqlite)', () => {
 
     const someProfiles1 = await orm.em.find(AuthorProfile, {}, { limit: 2, offset: 1, orderBy: { name: 'asc' } });
     expect(someProfiles1).toHaveLength(2);
-    expect(someProfiles1.map(p => p.name)).toEqual(['Jon Snow 2', 'Jon Snow 3']);
+    expect(someProfiles1.map((p) => p.name)).toEqual(['Jon Snow 2', 'Jon Snow 3']);
 
     const someProfiles2 = await orm.em.find(AuthorProfile, {}, { limit: 2, orderBy: { name: 'asc' } });
     expect(someProfiles2).toHaveLength(2);
-    expect(someProfiles2.map(p => p.name)).toEqual(['Jon Snow 1', 'Jon Snow 2']);
+    expect(someProfiles2.map((p) => p.name)).toEqual(['Jon Snow 1', 'Jon Snow 2']);
 
     const someProfiles3 = await orm.em.find(AuthorProfile, { $and: [{ name: { $like: 'Jon%' } }, { age: { $gte: 0 } }] }, { limit: 2, orderBy: { name: 'asc' } });
     expect(someProfiles3).toHaveLength(2);
-    expect(someProfiles3.map(p => p.name)).toEqual(['Jon Snow 1', 'Jon Snow 2']);
+    expect(someProfiles3.map((p) => p.name)).toEqual(['Jon Snow 1', 'Jon Snow 2']);
 
-    const someProfiles4 = await orm.em.find(AuthorProfile, { name: ['Jon Snow 2', 'Jon Snow 3'] });
+    const someProfiles4 = await orm.em.find(AuthorProfile, {
+      name: ['Jon Snow 2', 'Jon Snow 3'],
+    });
     expect(someProfiles4).toHaveLength(2);
-    expect(someProfiles4.map(p => p.name)).toEqual(['Jon Snow 2', 'Jon Snow 3']);
+    expect(someProfiles4.map((p) => p.name)).toEqual(['Jon Snow 2', 'Jon Snow 3']);
 
     expect(mock.mock.calls).toHaveLength(6);
     expect(mock.mock.calls[0][0]).toMatch(`select count(*) as count from (${authorProfilesSQL}) as \`a0\``);
@@ -228,21 +241,30 @@ describe('virtual entities (sqlite)', () => {
 
     const someBooks1 = await orm.em.find(BookWithAuthor, {}, { limit: 2, offset: 1, orderBy: { title: 'asc' } });
     expect(someBooks1).toHaveLength(2);
-    expect(someBooks1.map(p => p.title)).toEqual(['My Life on the Wall, part 1/2', 'My Life on the Wall, part 1/3']);
+    expect(someBooks1.map((p) => p.title)).toEqual(['My Life on the Wall, part 1/2', 'My Life on the Wall, part 1/3']);
 
     const someBooks2 = await orm.em.find(BookWithAuthor, {}, { limit: 2, orderBy: { title: 'asc' } });
     expect(someBooks2).toHaveLength(2);
-    expect(someBooks2.map(p => p.title)).toEqual(['My Life on the Wall, part 1/1', 'My Life on the Wall, part 1/2']);
+    expect(someBooks2.map((p) => p.title)).toEqual(['My Life on the Wall, part 1/1', 'My Life on the Wall, part 1/2']);
 
-    const someBooks3 = await orm.em.find(BookWithAuthor, { $and: [{ title: { $like: 'My Life%' } }, { authorName: { $ne: null } }] }, { limit: 2, orderBy: { title: 'asc' } });
+    const someBooks3 = await orm.em.find(
+      BookWithAuthor,
+      {
+        $and: [{ title: { $like: 'My Life%' } }, { authorName: { $ne: null } }],
+      },
+      { limit: 2, orderBy: { title: 'asc' } }
+    );
     expect(someBooks3).toHaveLength(2);
-    expect(someBooks3.map(p => p.title)).toEqual(['My Life on the Wall, part 1/1', 'My Life on the Wall, part 1/2']);
+    expect(someBooks3.map((p) => p.title)).toEqual(['My Life on the Wall, part 1/1', 'My Life on the Wall, part 1/2']);
 
-    const someBooks4 = await orm.em.find(BookWithAuthor, { title: ['My Life on the Wall, part 1/2', 'My Life on the Wall, part 1/3'] });
+    const someBooks4 = await orm.em.find(BookWithAuthor, {
+      title: ['My Life on the Wall, part 1/2', 'My Life on the Wall, part 1/3'],
+    });
     expect(someBooks4).toHaveLength(2);
-    expect(someBooks4.map(p => p.title)).toEqual(['My Life on the Wall, part 1/2', 'My Life on the Wall, part 1/3']);
+    expect(someBooks4.map((p) => p.title)).toEqual(['My Life on the Wall, part 1/2', 'My Life on the Wall, part 1/3']);
 
-    const sql = 'select `b`.`title`, `a`.`name` as `author_name`, group_concat(t.name) as tags ' +
+    const sql =
+      'select `b`.`title`, `a`.`name` as `author_name`, group_concat(t.name) as tags ' +
       'from `book4` as `b` ' +
       'inner join `author4` as `a` on `b`.`author_id` = `a`.`id` ' +
       'inner join `tags_ordered` as `t1` on `b`.`id` = `t1`.`book4_id` ' +
@@ -260,5 +282,4 @@ describe('virtual entities (sqlite)', () => {
     expect(mock.mock.calls[0][0]).toMatch(sql);
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toHaveLength(0);
   });
-
 });

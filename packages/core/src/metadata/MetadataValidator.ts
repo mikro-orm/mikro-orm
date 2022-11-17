@@ -8,7 +8,6 @@ import type { MetadataStorage } from './MetadataStorage';
  * @internal
  */
 export class MetadataValidator {
-
   /**
    * Validate there is only one property decorator. This disallows using `@Property()` together with e.g. `@ManyToOne()`
    * on the same property. One should use only `@ManyToOne()` in such case.
@@ -45,7 +44,7 @@ export class MetadataValidator {
     this.validateVersionField(meta);
     this.validateIndexes(meta, meta.indexes ?? [], 'index');
     this.validateIndexes(meta, meta.uniques ?? [], 'unique');
-    const references = Object.values(meta.properties).filter(prop => prop.reference !== ReferenceType.SCALAR);
+    const references = Object.values(meta.properties).filter((prop) => prop.reference !== ReferenceType.SCALAR);
 
     for (const prop of references) {
       this.validateReference(meta, prop, metadata);
@@ -58,28 +57,36 @@ export class MetadataValidator {
       throw MetadataError.noEntityDiscovered();
     }
 
-    const duplicates = Utils.findDuplicates(discovered.map(meta => meta.className));
+    const duplicates = Utils.findDuplicates(discovered.map((meta) => meta.className));
 
     if (duplicates.length > 0) {
       throw MetadataError.duplicateEntityDiscovered(duplicates);
     }
 
     // validate we found at least one entity (not just abstract/base entities)
-    if (discovered.filter(meta => meta.name).length === 0 && warnWhenNoEntities) {
+    if (discovered.filter((meta) => meta.name).length === 0 && warnWhenNoEntities) {
       throw MetadataError.onlyAbstractEntitiesDiscovered();
     }
 
-    const unwrap = (type: string) => type
-      .replace(/Array<(.*)>/, '$1') // unwrap array
-      .replace(/\[]$/, '')          // remove array suffix
-      .replace(/\((.*)\)/, '$1');   // unwrap union types
+    const unwrap = (type: string) =>
+      type
+        .replace(/Array<(.*)>/, '$1') // unwrap array
+        .replace(/\[]$/, '') // remove array suffix
+        .replace(/\((.*)\)/, '$1'); // unwrap union types
 
     // check for not discovered entities
-    discovered.forEach(meta => Object.values(meta.properties).forEach(prop => {
-      if (prop.reference !== ReferenceType.SCALAR && !unwrap(prop.type).split(/ ?\| ?/).every(type => discovered.find(m => m.className === type))) {
-        throw MetadataError.fromUnknownEntity(prop.type, `${meta.className}.${prop.name}`);
-      }
-    }));
+    discovered.forEach((meta) =>
+      Object.values(meta.properties).forEach((prop) => {
+        if (
+          prop.reference !== ReferenceType.SCALAR &&
+          !unwrap(prop.type)
+            .split(/ ?\| ?/)
+            .every((type) => discovered.find((m) => m.className === type))
+        ) {
+          throw MetadataError.fromUnknownEntity(prop.type, `${meta.className}.${prop.name}`);
+        }
+      })
+    );
   }
 
   private validateReference(meta: EntityMetadata, prop: EntityProperty, metadata: MetadataStorage): void {
@@ -142,11 +149,14 @@ export class MetadataValidator {
     // owning side is not defined as inverse
     const valid = [
       { owner: ReferenceType.MANY_TO_ONE, inverse: ReferenceType.ONE_TO_MANY },
-      { owner: ReferenceType.MANY_TO_MANY, inverse: ReferenceType.MANY_TO_MANY },
+      {
+        owner: ReferenceType.MANY_TO_MANY,
+        inverse: ReferenceType.MANY_TO_MANY,
+      },
       { owner: ReferenceType.ONE_TO_ONE, inverse: ReferenceType.ONE_TO_ONE },
     ];
 
-    if (!valid.find(spec => spec.owner === owner.reference && spec.inverse === prop.reference)) {
+    if (!valid.find((spec) => spec.owner === owner.reference && spec.inverse === prop.reference)) {
       throw MetadataError.fromWrongReferenceType(meta, owner, prop);
     }
   }
@@ -166,10 +176,13 @@ export class MetadataValidator {
       return;
     }
 
-    const props = Object.values(meta.properties).filter(p => p.version);
+    const props = Object.values(meta.properties).filter((p) => p.version);
 
     if (props.length > 1) {
-      throw MetadataError.multipleVersionFields(meta, props.map(p => p.name));
+      throw MetadataError.multipleVersionFields(
+        meta,
+        props.map((p) => p.name)
+      );
     }
 
     const prop = meta.properties[meta.versionProperty];
@@ -179,5 +192,4 @@ export class MetadataValidator {
       throw MetadataError.invalidVersionFieldType(meta);
     }
   }
-
 }

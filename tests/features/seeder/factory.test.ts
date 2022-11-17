@@ -8,7 +8,6 @@ import { User } from './entities/user.entity';
 import SpyInstance = jest.SpyInstance;
 
 export class ProjectFactory extends Factory<Project> {
-
   model = Project;
 
   definition(faker: Faker): EntityData<Project> {
@@ -22,11 +21,9 @@ export class ProjectFactory extends Factory<Project> {
       worth: 120000,
     };
   }
-
 }
 
 export class HouseFactory extends Factory<House> {
-
   model = House;
 
   definition(faker: Faker): Partial<House> {
@@ -34,11 +31,9 @@ export class HouseFactory extends Factory<House> {
       address: faker.address.city(),
     };
   }
-
 }
 
 describe('Factory', () => {
-
   let orm: MikroORM;
   let persistSpy: SpyInstance;
   let flushSpy: SpyInstance;
@@ -98,10 +93,9 @@ describe('Factory', () => {
     const projectDefault = new ProjectFactory(orm.em).makeOne();
     expect(projectDefault.worth).toBe(120000);
 
-    const project = new ProjectFactory(orm.em)
-      .makeOne({
-        worth: 36,
-      });
+    const project = new ProjectFactory(orm.em).makeOne({
+      worth: 36,
+    });
     expect(project.worth).toBe(36);
   });
 

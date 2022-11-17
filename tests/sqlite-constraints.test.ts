@@ -2,22 +2,17 @@ import { Entity, type EntityManager, ManyToOne, MikroORM, PrimaryKey, Property, 
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 import type { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
 
-
 @Entity()
 export class Author {
-
   @PrimaryKey({ type: 'string' })
   id!: string;
 
   @Property({ type: 'string' })
   name!: string;
-
 }
-
 
 @Entity()
 export class Book {
-
   @PrimaryKey({ type: 'string' })
   id!: string;
 
@@ -26,9 +21,7 @@ export class Book {
 
   @ManyToOne(() => Author, { wrappedReference: true })
   author!: IdentifiedReference<Author>;
-
 }
-
 
 async function createEntities(em: EntityManager) {
   const author = new Author();
@@ -44,9 +37,7 @@ async function createEntities(em: EntityManager) {
   return author;
 }
 
-
 describe('sqlite driver', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -70,9 +61,7 @@ describe('sqlite driver', () => {
   });
 });
 
-
 describe('better-sqlite driver', () => {
-
   let orm: MikroORM<BetterSqliteDriver>;
 
   beforeAll(async () => {
@@ -95,4 +84,3 @@ describe('better-sqlite driver', () => {
     }
   });
 });
-

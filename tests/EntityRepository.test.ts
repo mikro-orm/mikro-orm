@@ -44,7 +44,6 @@ const emMongo = new MongoMock();
 const repoMongo = new MongoEntityRepository(emMongo, Publisher);
 
 describe('EntityRepository', () => {
-
   test('should forward calls to EntityManager', async () => {
     repo.getReference('bar');
     expect(methods.getReference.mock.calls[0]).toEqual([Publisher, 'bar', undefined]);
@@ -125,5 +124,4 @@ describe('EntityRepository', () => {
     await repo.findOneOrFail({ name: 'bar' }, options);
     expect(methods.findOneOrFail.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, options]);
   });
-
 });

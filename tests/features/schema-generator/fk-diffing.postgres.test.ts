@@ -2,29 +2,24 @@ import { Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/co
 
 @Entity({ tableName: 'author' })
 export class Author0 {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
-
 }
 
 @Entity({ tableName: 'author' })
 export class Author1 {
-
   @PrimaryKey()
   pk!: number;
 
   @Property()
   name!: string;
-
 }
 
 @Entity({ tableName: 'book' })
 export class Book0 {
-
   @PrimaryKey()
   id!: number;
 
@@ -36,23 +31,19 @@ export class Book0 {
 
   @ManyToOne(() => Book0, { nullable: true })
   basedOn?: Book0;
-
 }
 
 @Entity({ tableName: 'book' })
 export class Book11 {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => Author0)
   author1!: Author0;
-
 }
 
 @Entity({ tableName: 'book' })
 export class Book1 {
-
   @PrimaryKey()
   id!: number;
 
@@ -64,12 +55,10 @@ export class Book1 {
 
   @ManyToOne(() => Book1, { nullable: true })
   basedOn?: Book1;
-
 }
 
 @Entity({ tableName: 'book' })
 export class Book2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -81,22 +70,18 @@ export class Book2 {
 
   @ManyToOne(() => Book2, { nullable: true })
   basedOn?: Book2;
-
 }
 
 @Entity({ tableName: 'book' })
 export class Book3 {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => Author1)
   author1!: Author1;
-
 }
 
 describe('dropping tables with FKs in postgres', () => {
-
   test('schema generator removes stale FKs on target table dropping 1', async () => {
     const orm = await MikroORM.init({
       entities: [Author0, Book0],
@@ -151,5 +136,4 @@ describe('dropping tables with FKs in postgres', () => {
 
     await orm.close(true);
   });
-
 });

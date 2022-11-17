@@ -7,16 +7,13 @@ import { remove } from 'fs-extra';
 import { closeReplSets, initORMMongo, mockLogger } from '../../bootstrap';
 
 class MigrationTest1 extends Migration {
-
   async up(): Promise<void> {
     await this.getCollection<any>('Book').updateMany({}, { $set: { updatedAt: new Date() } });
     await this.driver.nativeDelete('Book', { foo: true }, { ctx: this.ctx });
   }
-
 }
 
 class MigrationTest2 extends Migration {
-
   async up(): Promise<void> {
     await this.getCollection('Book').updateMany({}, { $unset: { title: 1 } }, { session: this.ctx });
     await this.driver.nativeDelete('Book', { foo: false }, { ctx: this.ctx });
@@ -25,11 +22,9 @@ class MigrationTest2 extends Migration {
   isTransactional(): boolean {
     return false;
   }
-
 }
 
 describe('Migrator (mongo)', () => {
-
   let orm: MikroORM<MongoDriver>;
 
   beforeAll(async () => {
@@ -63,7 +58,10 @@ describe('Migrator (mongo)', () => {
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
-    orm.config.set('migrations', { ...migrationsSettings, fileName: time => `migration-${time}` });
+    orm.config.set('migrations', {
+      ...migrationsSettings,
+      fileName: (time) => `migration-${time}`,
+    });
     const migrator = orm.migrator;
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
@@ -187,7 +185,7 @@ describe('Migrator (mongo)', () => {
     await migrator.down();
 
     await remove(path + '/' + migration.fileName);
-    const calls = mock.mock.calls.map(call => {
+    const calls = mock.mock.calls.map((call) => {
       return call[0]
         .replace(/ \[took \d+ ms]/, '')
         .replace(/\[query] /, '')
@@ -210,11 +208,19 @@ describe('Migrator (mongo)', () => {
 
     const mock = mockLogger(orm, ['query']);
 
-    await orm.em.transactional(async em => {
-      const ret1 = await migrator.up({ transaction: em.getTransactionContext() });
-      const ret2 = await migrator.down({ transaction: em.getTransactionContext() });
-      const ret3 = await migrator.down({ transaction: em.getTransactionContext() });
-      const ret4 = await migrator.down({ transaction: em.getTransactionContext() });
+    await orm.em.transactional(async (em) => {
+      const ret1 = await migrator.up({
+        transaction: em.getTransactionContext(),
+      });
+      const ret2 = await migrator.down({
+        transaction: em.getTransactionContext(),
+      });
+      const ret3 = await migrator.down({
+        transaction: em.getTransactionContext(),
+      });
+      const ret4 = await migrator.down({
+        transaction: em.getTransactionContext(),
+      });
       expect(ret1).toHaveLength(2);
       expect(ret2).toHaveLength(1);
       expect(ret3).toHaveLength(1);
@@ -223,7 +229,7 @@ describe('Migrator (mongo)', () => {
 
     await remove(path + '/' + migration1.fileName);
     await remove(path + '/' + migration2.fileName);
-    const calls = mock.mock.calls.map(call => {
+    const calls = mock.mock.calls.map((call) => {
       return call[0]
         .replace(/ \[took \d+ ms]/, '')
         .replace(/\[query] /, '')
@@ -254,7 +260,7 @@ describe('Migrator (mongo)', () => {
     await migrator.down();
 
     await remove(path + '/' + migration.fileName);
-    const calls = mock.mock.calls.map(call => {
+    const calls = mock.mock.calls.map((call) => {
       return call[0]
         .replace(/ \[took \d+ ms]/, '')
         .replace(/\[query] /, '')
@@ -263,5 +269,4 @@ describe('Migrator (mongo)', () => {
     });
     expect(calls).toMatchSnapshot('all-or-nothing-disabled');
   });
-
 });

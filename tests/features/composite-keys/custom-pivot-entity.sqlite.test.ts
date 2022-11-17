@@ -2,11 +2,10 @@ import { Entity, PrimaryKey, MikroORM, ManyToOne, PrimaryKeyType, Property, wrap
 
 @Entity()
 export class Order {
-
   @PrimaryKey()
   id!: number;
 
-  @OneToMany(() => OrderItem, item => item.order)
+  @OneToMany(() => OrderItem, (item) => item.order)
   items = new Collection<OrderItem>(this);
 
   @ManyToMany({ entity: () => Product, pivotEntity: () => OrderItem })
@@ -20,12 +19,10 @@ export class Order {
 
   @Property()
   created: Date = new Date();
-
 }
 
 @Entity()
 export class Product {
-
   @PrimaryKey()
   id!: number;
 
@@ -35,19 +32,17 @@ export class Product {
   @Property()
   currentPrice: number;
 
-  @ManyToMany(() => Order, o => o.products)
+  @ManyToMany(() => Order, (o) => o.products)
   orders = new Collection<Order>(this);
 
   constructor(name: string, currentPrice: number) {
     this.name = name;
     this.currentPrice = currentPrice;
   }
-
 }
 
 @Entity()
 export class OrderItem {
-
   @ManyToOne({ primary: true })
   order: Order;
 
@@ -67,11 +62,9 @@ export class OrderItem {
     this.product = product;
     this.offeredPrice = product.currentPrice;
   }
-
 }
 
 describe('custom pivot entity for m:n with additional properties (bidirectional)', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -161,7 +154,9 @@ describe('custom pivot entity for m:n with additional properties (bidirectional)
     expect(products[0].orders.isInitialized()).toBe(true);
     const old = products[0];
     expect(products[1].orders.isInitialized()).toBe(false);
-    products = await productRepository.findAll({ populate: ['orders'] as const });
+    products = await productRepository.findAll({
+      populate: ['orders'] as const,
+    });
     expect(products[1].orders.isInitialized()).toBe(true);
     expect(products[0].id).toBe(old.id);
     expect(products[0]).toBe(old);
@@ -181,10 +176,12 @@ describe('custom pivot entity for m:n with additional properties (bidirectional)
     // test collection CRUD
     // remove
     expect(order.products.count()).toBe(2);
-    order.products.remove(t => t.id === product1.id); // we need to get reference as product1 is detached from current EM
+    order.products.remove((t) => t.id === product1.id); // we need to get reference as product1 is detached from current EM
     await orm.em.persistAndFlush(order);
     orm.em.clear();
-    order = (await orm.em.findOne(Order, order.id, { populate: ['products'] as const }))!;
+    order = (await orm.em.findOne(Order, order.id, {
+      populate: ['products'] as const,
+    }))!;
     expect(order.products.count()).toBe(1);
 
     // add
@@ -193,7 +190,9 @@ describe('custom pivot entity for m:n with additional properties (bidirectional)
     order.products.add(product6);
     await orm.em.persistAndFlush(order);
     orm.em.clear();
-    order = (await orm.em.findOne(Order, order.id, { populate: ['products'] as const }))!;
+    order = (await orm.em.findOne(Order, order.id, {
+      populate: ['products'] as const,
+    }))!;
     expect(order.products.count()).toBe(3);
 
     // contains
@@ -208,7 +207,9 @@ describe('custom pivot entity for m:n with additional properties (bidirectional)
     order.products.removeAll();
     await orm.em.persistAndFlush(order);
     orm.em.clear();
-    order = (await orm.em.findOne(Order, order.id, { populate: ['products'] as const }))!;
+    order = (await orm.em.findOne(Order, order.id, {
+      populate: ['products'] as const,
+    }))!;
     expect(order.products.count()).toBe(0);
   });
 
@@ -219,5 +220,4 @@ describe('custom pivot entity for m:n with additional properties (bidirectional)
     const count = await res[0].products.loadCount();
     expect(count).toBe(2);
   });
-
 });

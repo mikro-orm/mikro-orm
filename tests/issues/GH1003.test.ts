@@ -4,18 +4,15 @@ import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Parent extends BaseEntity<Parent, 'id'> {
-
   @PrimaryKey()
   id!: string;
 
   @OneToMany({ entity: 'Child', mappedBy: 'parent' })
   children = new Collection<Child>(this);
-
 }
 
 @Entity()
 export class Child extends BaseEntity<Parent, 'id'> {
-
   @PrimaryKey()
   id!: string;
 
@@ -26,11 +23,9 @@ export class Child extends BaseEntity<Parent, 'id'> {
     onDelete: 'cascade',
   })
   parent!: IdentifiedReference<Parent>;
-
 }
 
 describe('GH issue 1003', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -54,14 +49,19 @@ describe('GH issue 1003', () => {
     orm.em.clear();
 
     const removeStack = orm.em.getUnitOfWork().getRemoveStack();
-    const storedParent = await orm.em.findOneOrFail(Parent, 'parentId', { populate: ['children'] });
+    const storedParent = await orm.em.findOneOrFail(Parent, 'parentId', {
+      populate: ['children'],
+    });
     const removeChild = storedParent.children[0];
     expect(removeStack.size).toBe(0);
     orm.em.remove(removeChild); // Remove child
     expect(removeStack.size).toBe(1);
 
     // Add unrelated child to same parent
-    const newChild = orm.em.create(Child, { id: 'newChildId', parent: storedParent });
+    const newChild = orm.em.create(Child, {
+      id: 'newChildId',
+      parent: storedParent,
+    });
     expect(removeStack.size).toBe(1);
     orm.em.persist(newChild);
     expect(removeStack.size).toBe(1);
@@ -70,12 +70,8 @@ describe('GH issue 1003', () => {
       id: 'newChildId',
       parent: {
         id: 'parentId',
-        children: [
-          { id: 'childId2', parent: { id: 'parentId' } },
-          { id: 'newChildId' },
-        ],
+        children: [{ id: 'childId2', parent: { id: 'parentId' } }, { id: 'newChildId' }],
       },
     });
   });
-
 });

@@ -5,13 +5,11 @@ import * as path from 'path';
 import type { MigrationRow } from './typings';
 
 export class MigrationStorage implements UmzugStorage {
-
   private readonly connection = this.driver.getConnection();
   private readonly helper = this.driver.getPlatform().getSchemaHelper()!;
   private masterTransaction?: Transaction;
 
-  constructor(protected readonly driver: AbstractSqlDriver,
-              protected readonly options: MigrationsOptions) { }
+  constructor(protected readonly driver: AbstractSqlDriver, protected readonly options: MigrationsOptions) {}
 
   async executed(): Promise<string[]> {
     const migrations = await this.getExecutedMigrations();
@@ -46,7 +44,7 @@ export class MigrationStorage implements UmzugStorage {
 
     const res = await this.connection.execute<MigrationRow[]>(qb);
 
-    return res.map(row => {
+    return res.map((row) => {
       if (typeof row.executed_at === 'string') {
         row.executed_at = new Date(row.executed_at);
       }
@@ -59,7 +57,7 @@ export class MigrationStorage implements UmzugStorage {
     const tables = await this.connection.execute<Table[]>(this.helper.getListTablesSQL(), [], 'all', this.masterTransaction);
     const { tableName, schemaName } = this.getTableName();
 
-    if (tables.find(t => t.table_name === tableName && (!t.schema_name || t.schema_name === schemaName))) {
+    if (tables.find((t) => t.table_name === tableName && (!t.schema_name || t.schema_name === schemaName))) {
       return;
     }
 
@@ -69,11 +67,13 @@ export class MigrationStorage implements UmzugStorage {
       await this.knex.schema.createSchema(schemaName);
     }
 
-    await this.knex.schema.createTable(tableName, table => {
-      table.increments();
-      table.string('name');
-      table.dateTime('executed_at').defaultTo(this.knex.fn.now());
-    }).withSchema(schemaName);
+    await this.knex.schema
+      .createTable(tableName, (table) => {
+        table.increments();
+        table.string('name');
+        table.dateTime('executed_at').defaultTo(this.knex.fn.now());
+      })
+      .withSchema(schemaName);
   }
 
   setMasterMigration(trx: Transaction) {
@@ -112,5 +112,4 @@ export class MigrationStorage implements UmzugStorage {
   private get knex() {
     return this.connection.getKnex();
   }
-
 }

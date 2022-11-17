@@ -4,31 +4,28 @@ import { mockLogger } from '../helpers';
 
 @Entity()
 class Project {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
 
-  @OneToOne(() => User, u => u.project1, {
+  @OneToOne(() => User, (u) => u.project1, {
     eager: true,
     orphanRemoval: true,
     ref: true,
   })
   owner?: Ref<User>;
 
-  @OneToOne(() => User, u => u.project2, {
+  @OneToOne(() => User, (u) => u.project2, {
     eager: true,
     ref: true,
   })
   secondaryOwner?: Ref<User>;
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -48,7 +45,6 @@ class User {
     nullable: true,
   })
   project2?: Ref<Project>;
-
 }
 
 let orm: MikroORM;
@@ -94,7 +90,7 @@ test('change a 1:1 relation with a new entity and delete the old one 1', async (
   const mock = mockLogger(orm, ['query']);
   await orm.em.flush();
 
-  const queries = mock.mock.calls.map(q => q[0]);
+  const queries = mock.mock.calls.map((q) => q[0]);
 
   expect(queries[1]).toMatch('delete from `user` where `id` in (?)');
   expect(queries[2]).toMatch('insert into `user` (`name`, `project1_id`) values (?, ?)');
@@ -138,7 +134,7 @@ test('change a 1:1 relation with a new entity and not delete the old one', async
   const mock = mockLogger(orm, ['query']);
   await orm.em.flush();
 
-  const queries = mock.mock.calls.map(q => q[0]);
+  const queries = mock.mock.calls.map((q) => q[0]);
 
   expect(queries[1]).toMatch('update `user` set `project2_id` = ? where `id` = ?');
   expect(queries[2]).toMatch('insert into `user` (`name`, `project2_id`) values (?, ?)');
@@ -156,7 +152,7 @@ test('change a 1:1 relation by setting the FK on the new entity', async () => {
 
   const mock = mockLogger(orm, ['query']);
   await orm.em.flush();
-  const queries = mock.mock.calls.map(q => q[0]);
+  const queries = mock.mock.calls.map((q) => q[0]);
 
   expect(queries[1]).toMatch('delete from `user` where `id` in (?)');
   expect(queries[2]).toMatch('insert into `user` (`name`, `project1_id`) values (?, ?)');
@@ -164,4 +160,3 @@ test('change a 1:1 relation by setting the FK on the new entity', async () => {
   const oldOwner2 = await orm.em.fork().findOne(User, oldOwner.id);
   expect(oldOwner2).toBeNull();
 });
-

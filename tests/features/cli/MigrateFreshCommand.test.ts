@@ -22,7 +22,6 @@ seed.mockImplementation(async () => void 0);
 jest.spyOn(CLIHelper, 'dumpTable').mockImplementation(() => void 0);
 
 describe('MigrateUpCommand', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -62,5 +61,4 @@ describe('MigrateUpCommand', () => {
     expect(seed).toBeCalledWith('UsersSeeder');
     expect(closeSpy).toBeCalledTimes(3);
   });
-
 });

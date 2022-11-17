@@ -19,11 +19,16 @@ export const FooBar4 = new EntitySchema<IFooBar4, IBaseEntity5>({
   extends: 'BaseEntity5',
   properties: {
     name: { type: 'string', default: 'asd' },
-    baz: { reference: '1:1', entity: 'FooBaz4', orphanRemoval: true, nullable: true },
+    baz: {
+      reference: '1:1',
+      entity: 'FooBaz4',
+      orphanRemoval: true,
+      nullable: true,
+    },
     fooBar: { reference: '1:1', entity: 'FooBar4', nullable: true },
     version: { type: 'number', version: true },
     blob: { type: BlobType, nullable: true },
-    array: { customType: new ArrayType(i => +i), nullable: true },
+    array: { customType: new ArrayType((i) => +i), nullable: true },
     object: { type: JsonType, nullable: true },
     virtual: { type: String, persist: false },
   },

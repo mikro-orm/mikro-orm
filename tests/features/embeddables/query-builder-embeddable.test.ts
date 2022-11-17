@@ -1,28 +1,18 @@
 import type { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
-import {
-  Entity,
-  MikroORM,
-  PrimaryKey,
-  Embedded,
-  Embeddable,
-  Property,
-} from '@mikro-orm/core';
+import { Entity, MikroORM, PrimaryKey, Embedded, Embeddable, Property } from '@mikro-orm/core';
 
 @Embeddable()
 export class Settings {
-
   @Property()
   name: string;
 
   constructor(settings: Settings) {
     this.name = settings.name;
   }
-
 }
 
 @Entity()
 export class User {
-
   @PrimaryKey()
   id: number;
 
@@ -33,7 +23,6 @@ export class User {
     this.id = user.id;
     this.settings = new Settings(user.settings);
   }
-
 }
 
 let orm: MikroORM<BetterSqliteDriver>;

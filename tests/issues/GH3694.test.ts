@@ -7,11 +7,10 @@ enum Enum1 {
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id: number;
 
-  @OneToMany(() => UserAccount, u => u.user)
+  @OneToMany(() => UserAccount, (u) => u.user)
   userAccounts = new Collection<UserAccount>(this);
 
   @Enum({ items: () => Enum1, array: true })
@@ -21,12 +20,10 @@ class User {
     this.id = init.id;
     this.enum1 = init.enum1 ?? [];
   }
-
 }
 
 @Entity()
 class UserAccount {
-
   @PrimaryKey()
   id: number;
 
@@ -37,7 +34,6 @@ class UserAccount {
     this.id = init.id;
     this.user = init.user;
   }
-
 }
 
 let orm: MikroORM;

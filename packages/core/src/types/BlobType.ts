@@ -3,13 +3,12 @@ import type { Platform } from '../platforms';
 import type { EntityProperty } from '../typings';
 
 export class BlobType extends Type<Buffer | null> {
-
   convertToDatabaseValue(value: Buffer): Buffer {
     return value;
   }
 
   convertToJSValue(value: Buffer): Buffer | null {
-    if (value as unknown instanceof Buffer || !value) {
+    if ((value as unknown) instanceof Buffer || !value) {
       return value;
     }
 
@@ -29,5 +28,4 @@ export class BlobType extends Type<Buffer | null> {
   getColumnType(prop: EntityProperty, platform: Platform): string {
     return platform.getBlobDeclarationSQL();
   }
-
 }

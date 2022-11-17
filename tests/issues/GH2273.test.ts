@@ -2,24 +2,21 @@ import { Entity, LoadStrategy, MikroORM, OneToOne, PrimaryKey, Property } from '
 
 @Entity()
 export class Checkout {
-
   @PrimaryKey()
   id!: number;
 
-  @OneToOne(() => Discount, discount => discount.checkout, {
+  @OneToOne(() => Discount, (discount) => discount.checkout, {
     nullable: true,
   })
   discount?: any;
-
 }
 
 @Entity()
 export class Discount {
-
   @PrimaryKey()
   id!: number;
 
-  @OneToOne(() => Checkout, checkout => checkout.discount, {
+  @OneToOne(() => Checkout, (checkout) => checkout.discount, {
     nullable: true,
     owner: true,
   })
@@ -31,26 +28,22 @@ export class Discount {
   constructor(amount: number) {
     this.amount = amount;
   }
-
 }
 
 @Entity()
 export class Checkout2 {
-
   @PrimaryKey()
   id!: number;
 
-  @OneToOne(() => Discount2, discount => discount.checkout, {
+  @OneToOne(() => Discount2, (discount) => discount.checkout, {
     nullable: true,
     orphanRemoval: true,
   })
   discount?: any;
-
 }
 
 @Entity()
 export class Discount2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -63,7 +56,6 @@ export class Discount2 {
   constructor(amount: number) {
     this.amount = amount;
   }
-
 }
 
 describe('Remove entity issue (GH 2273)', () => {
@@ -92,7 +84,9 @@ describe('Remove entity issue (GH 2273)', () => {
     checkout.discount = new Discount(1000);
     await orm.em.fork().persistAndFlush([checkout]);
 
-    checkout = await orm.em.findOneOrFail(Checkout, checkout.id, { populate: ['discount'] });
+    checkout = await orm.em.findOneOrFail(Checkout, checkout.id, {
+      populate: ['discount'],
+    });
     expect(checkout.discount?.amount).toBe(1000);
 
     orm.em.remove(checkout.discount!);
@@ -108,7 +102,9 @@ describe('Remove entity issue (GH 2273)', () => {
     checkout.discount = new Discount(1000);
     await orm.em.fork().persistAndFlush([checkout]);
 
-    checkout = await orm.em.findOneOrFail(Checkout, checkout.id, { populate: ['discount'] });
+    checkout = await orm.em.findOneOrFail(Checkout, checkout.id, {
+      populate: ['discount'],
+    });
     expect(checkout.discount?.amount).toBe(1000);
 
     orm.em.remove(checkout.discount!);
@@ -116,7 +112,9 @@ describe('Remove entity issue (GH 2273)', () => {
     await orm.em.flush();
 
     const newEm = orm.em.fork();
-    checkout = await newEm.findOneOrFail(Checkout, checkout.id, { populate: ['discount'] });
+    checkout = await newEm.findOneOrFail(Checkout, checkout.id, {
+      populate: ['discount'],
+    });
     const discounts = await newEm.find(Discount, {});
 
     expect(checkout.discount?.amount).toBe(2000);
@@ -155,5 +153,4 @@ describe('Remove entity issue (GH 2273)', () => {
       expect(discounts).toHaveLength(0);
     }
   });
-
 });

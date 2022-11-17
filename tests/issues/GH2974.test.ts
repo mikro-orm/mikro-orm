@@ -2,7 +2,6 @@ import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Propert
 
 @Entity()
 export class SomeMany {
-
   @PrimaryKey()
   id!: number;
 
@@ -11,21 +10,18 @@ export class SomeMany {
 
   @ManyToOne(() => Test)
   ref!: any;
-
 }
 
 @Entity()
 export class Test {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   savedValue!: string;
 
-  @OneToMany(() => SomeMany, ent => ent.ref)
+  @OneToMany(() => SomeMany, (ent) => ent.ref)
   coll = new Collection<SomeMany>(this);
-
 }
 
 let orm: MikroORM;

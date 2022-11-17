@@ -10,15 +10,12 @@ import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, F
 import { BASE_DIR, mockLogger } from '../../bootstrap';
 
 class MigrationTest1 extends Migration {
-
   async up(): Promise<void> {
     this.addSql('select 1 + 1');
   }
-
 }
 
 class MigrationTest2 extends Migration {
-
   async up(): Promise<void> {
     this.addSql('select 1 + 1');
     const knex = this.getKnex();
@@ -31,11 +28,9 @@ class MigrationTest2 extends Migration {
   isTransactional(): boolean {
     return false;
   }
-
 }
 
 describe('Migrator (postgres)', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
@@ -74,21 +69,25 @@ describe('Migrator (postgres)', () => {
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
-    orm.config.set('migrations', { ...migrationsSettings, generator: class extends TSMigrationGenerator {
+    orm.config.set('migrations', {
+      ...migrationsSettings,
+      generator: class extends TSMigrationGenerator {
+        generateMigrationFile(className: string, diff: { up: string[]; down: string[] }): string {
+          const comment = '// this file was generated via custom migration generator\n\n';
+          return comment + super.generateMigrationFile(className, diff);
+        }
 
-      generateMigrationFile(className: string, diff: { up: string[]; down: string[] }): string {
-        const comment = '// this file was generated via custom migration generator\n\n';
-        return comment + super.generateMigrationFile(className, diff);
-      }
+        createStatement(sql: string, padLeft: number): string {
+          sql = format(sql, { language: 'postgresql' });
+          sql = sql
+            .split('\n')
+            .map((l, i) => (i === 0 ? l : `${' '.repeat(padLeft + 13)}${l}`))
+            .join('\n');
 
-      createStatement(sql: string, padLeft: number): string {
-        sql = format(sql, { language: 'postgresql' });
-        sql = sql.split('\n').map((l, i) => i === 0 ? l : `${' '.repeat(padLeft + 13)}${l}`).join('\n');
-
-        return super.createStatement(sql, padLeft);
-      }
-
-    } });
+          return super.createStatement(sql, padLeft);
+        }
+      },
+    });
     const migrator = orm.migrator;
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-ts-dump');
@@ -100,7 +99,10 @@ describe('Migrator (postgres)', () => {
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
-    orm.config.set('migrations', { ...migrationsSettings, fileName: time => `migration-${time}` });
+    orm.config.set('migrations', {
+      ...migrationsSettings,
+      fileName: (time) => `migration-${time}`,
+    });
     const migrator = orm.migrator;
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
@@ -159,16 +161,13 @@ describe('Migrator (postgres)', () => {
 
     getExecutedMigrationsMock.mockResolvedValueOnce([]);
     const logMigrationMock = jest.spyOn<any, any>(MigrationStorage.prototype, 'logMigration');
-    logMigrationMock.mockImplementationOnce(i => i);
+    logMigrationMock.mockImplementationOnce((i) => i);
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
 
     const metadataMock = jest.spyOn(MetadataStorage.prototype, 'getAll');
     const schemaMock = jest.spyOn(DatabaseSchema.prototype, 'getTables');
-    schemaMock.mockReturnValueOnce([
-      { name: 'author2', schema: 'custom' } as DatabaseTable,
-      { name: 'book2', schema: 'custom' } as DatabaseTable,
-    ]);
+    schemaMock.mockReturnValueOnce([{ name: 'author2', schema: 'custom' } as DatabaseTable, { name: 'book2', schema: 'custom' } as DatabaseTable]);
     getPendingMigrationsMock.mockResolvedValueOnce([]);
     const err2 = `Some tables already exist in your schema, remove them first to create the initial migration: custom.author2, custom.book2`;
     await expect(migrator.createInitialMigration(undefined)).rejects.toThrowError(err2);
@@ -186,7 +185,10 @@ describe('Migrator (postgres)', () => {
 
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!).withSchema('custom');
     const migration2 = await migrator.createInitialMigration(undefined);
-    expect(logMigrationMock).toBeCalledWith({ name: 'Migration20191013214813.ts', context: null });
+    expect(logMigrationMock).toBeCalledWith({
+      name: 'Migration20191013214813.ts',
+      context: null,
+    });
     expect(migration2).toMatchSnapshot('initial-migration-dump');
     await remove(process.cwd() + '/temp/migrations/' + migration2.fileName);
   });
@@ -215,7 +217,11 @@ describe('Migrator (postgres)', () => {
     const getSchemaDiffMock = jest.spyOn<any, any>(Migrator.prototype, 'getSchemaDiff');
     getSchemaDiffMock.mockResolvedValueOnce({ up: [], down: [] });
     const migration = await migrator.createMigration();
-    expect(migration).toEqual({ fileName: '', code: '', diff: { up: [], down: [] } });
+    expect(migration).toEqual({
+      fileName: '',
+      code: '',
+      diff: { up: [], down: [] },
+    });
   });
 
   test('run schema migration', async () => {
@@ -274,10 +280,10 @@ describe('Migrator (postgres)', () => {
     expect(spy1).toBeCalledWith('select 1 + 1');
     expect(mock.mock.calls.length).toBe(6);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('set names \'utf8\';');
-    expect(mock.mock.calls[2][0]).toMatch('set session_replication_role = \'replica\';');
+    expect(mock.mock.calls[1][0]).toMatch("set names 'utf8';");
+    expect(mock.mock.calls[2][0]).toMatch("set session_replication_role = 'replica';");
     expect(mock.mock.calls[3][0]).toMatch('select 1 + 1');
-    expect(mock.mock.calls[4][0]).toMatch('set session_replication_role = \'origin\';');
+    expect(mock.mock.calls[4][0]).toMatch("set session_replication_role = 'origin';");
     expect(mock.mock.calls[5][0]).toMatch('commit');
     mock.mock.calls.length = 0;
 
@@ -319,7 +325,7 @@ describe('Migrator (postgres)', () => {
     await migrator.down();
 
     await remove(path + '/' + migration.fileName);
-    const calls = mock.mock.calls.map(call => {
+    const calls = mock.mock.calls.map((call) => {
       return call[0]
         .replace(/ \[took \d+ ms]/, '')
         .replace(/\[query] /, '')
@@ -346,11 +352,19 @@ describe('Migrator (postgres)', () => {
 
     const mock = mockLogger(orm, ['query']);
 
-    await orm.em.transactional(async em => {
-      const ret1 = await migrator.up({ transaction: em.getTransactionContext() });
-      const ret2 = await migrator.down({ transaction: em.getTransactionContext() });
-      const ret3 = await migrator.down({ transaction: em.getTransactionContext() });
-      const ret4 = await migrator.down({ transaction: em.getTransactionContext() });
+    await orm.em.transactional(async (em) => {
+      const ret1 = await migrator.up({
+        transaction: em.getTransactionContext(),
+      });
+      const ret2 = await migrator.down({
+        transaction: em.getTransactionContext(),
+      });
+      const ret3 = await migrator.down({
+        transaction: em.getTransactionContext(),
+      });
+      const ret4 = await migrator.down({
+        transaction: em.getTransactionContext(),
+      });
       expect(ret1).toHaveLength(2);
       expect(ret2).toHaveLength(1);
       expect(ret3).toHaveLength(1);
@@ -359,7 +373,7 @@ describe('Migrator (postgres)', () => {
 
     await remove(path + '/' + migration1.fileName);
     await remove(path + '/' + migration2.fileName);
-    const calls = mock.mock.calls.map(call => {
+    const calls = mock.mock.calls.map((call) => {
       return call[0]
         .replace(/ \[took \d+ ms]/, '')
         .replace(/\[query] /, '')
@@ -392,7 +406,7 @@ describe('Migrator (postgres)', () => {
     await migrator.down();
 
     await remove(path + '/' + migration.fileName);
-    const calls = mock.mock.calls.map(call => {
+    const calls = mock.mock.calls.map((call) => {
       return call[0]
         .replace(/ \[took \d+ ms]/, '')
         .replace(/\[query] /, '')
@@ -400,7 +414,6 @@ describe('Migrator (postgres)', () => {
     });
     expect(calls).toMatchSnapshot('all-or-nothing-disabled');
   });
-
 });
 
 test('ensureTable when the schema does not exist', async () => {
@@ -417,7 +430,9 @@ test('ensureTable when the schema does not exist', async () => {
 
   const mock = mockLogger(orm);
   await storage.ensureTable!(); // ensures the schema first
-  expect(mock.mock.calls[0][0]).toMatch(`select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name`);
+  expect(mock.mock.calls[0][0]).toMatch(
+    `select table_name, table_schema as schema_name, (select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment from information_schema.tables where "table_schema" not like 'pg_%' and "table_schema" not like 'crdb_%' and "table_schema" not in ('information_schema', 'tiger', 'topology') and table_name != 'geometry_columns' and table_name != 'spatial_ref_sys' and table_type != 'VIEW' order by table_name`
+  );
   expect(mock.mock.calls[1][0]).toMatch(`select schema_name from information_schema.schemata where "schema_name" not like 'pg_%' and "schema_name" not like 'crdb_%' and "schema_name" not in ('information_schema', 'tiger', 'topology') order by schema_name`);
   expect(mock.mock.calls[2][0]).toMatch(`create schema "custom2"`);
   expect(mock.mock.calls[3][0]).toMatch(`create table "custom2"."mikro_orm_migrations" ("id" serial primary key, "name" varchar(255), "executed_at" timestamptz default current_timestamp)`);

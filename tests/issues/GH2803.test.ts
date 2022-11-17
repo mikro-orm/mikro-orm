@@ -4,7 +4,6 @@ import { mockLogger } from '../helpers';
 
 @Entity()
 export class Book {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,27 +11,23 @@ export class Book {
   name?: string;
 
   @OneToMany({
-      entity: () => Tag,
-    mappedBy: t => t.book,
+    entity: () => Tag,
+    mappedBy: (t) => t.book,
     strategy: LoadStrategy.JOINED,
   })
   tags = new Collection<Tag>(this);
-
 }
 
 @Entity()
 export class Tag {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => Book)
   book!: Book;
-
 }
 
 describe('GH issue 2803', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -60,5 +55,4 @@ describe('GH issue 2803', () => {
     expect(ret[0].tags).toHaveLength(3);
     expect(mock).toBeCalledTimes(1);
   });
-
 });

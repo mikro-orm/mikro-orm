@@ -3,7 +3,6 @@ import { FileCacheAdapter } from '@mikro-orm/core';
 import { TEMP_DIR } from './helpers';
 
 describe('FileCacheAdapter', () => {
-
   test('should ignore old cache', async () => {
     const origin = TEMP_DIR + '/.origin';
     const cache = new FileCacheAdapter({ cacheDir: TEMP_DIR }, TEMP_DIR);
@@ -11,7 +10,7 @@ describe('FileCacheAdapter', () => {
     await cache.set('cache-test-handle-1', 123, origin);
     await expect(cache.get('cache-test-handle-1')).resolves.toBe(123);
 
-    await new Promise(resolve => setTimeout(resolve, 10));
+    await new Promise((resolve) => setTimeout(resolve, 10));
     writeFileSync(origin, '321');
     await expect(cache.get('cache-test-handle-1')).resolves.toBeNull();
 
@@ -29,5 +28,4 @@ describe('FileCacheAdapter', () => {
     await expect(cache.get('cache-test-handle-2')).resolves.toBeNull();
     await cache.clear();
   });
-
 });

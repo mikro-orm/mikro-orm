@@ -3,7 +3,6 @@ import type { PostgreSqlDriver, SchemaGenerator } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'book' })
 export class Book0 {
-
   @PrimaryKey()
   id!: number;
 
@@ -15,12 +14,10 @@ export class Book0 {
 
   @Property({ type: t.decimal })
   price!: string;
-
 }
 
 @Entity({ tableName: 'book' })
 export class Book1 {
-
   @PrimaryKey({ type: t.bigint })
   id!: string;
 
@@ -32,12 +29,10 @@ export class Book1 {
 
   @Property({ type: t.decimal, precision: 16 })
   price!: string;
-
 }
 
 @Entity({ tableName: 'book' })
 export class Book2 {
-
   @PrimaryKey({ type: t.bigint })
   id!: string;
 
@@ -49,12 +44,10 @@ export class Book2 {
 
   @Property({ type: t.decimal, precision: 16, scale: 4 })
   price!: number;
-
 }
 
 @Entity({ tableName: 'book' })
 export class Book3 {
-
   @PrimaryKey({ type: t.bigint })
   id!: string;
 
@@ -66,12 +59,10 @@ export class Book3 {
 
   @Property({ columnType: 'decimal(16,4)' })
   price!: number;
-
 }
 
 @Entity({ tableName: 'book' })
 export class Book4 {
-
   @PrimaryKey({ type: t.bigint })
   id!: string;
 
@@ -83,11 +74,9 @@ export class Book4 {
 
   @Property({ columnType: 'decimal(16,4)' })
   price!: number;
-
 }
 
 describe('length diffing in mysql', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
   let generator: SchemaGenerator;
 
@@ -130,5 +119,4 @@ describe('length diffing in mysql', () => {
 
     await expect(generator.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
   });
-
 });

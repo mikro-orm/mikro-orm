@@ -1,18 +1,9 @@
-import {
-  Collection,
-  Entity,
-  LoadStrategy,
-  ManyToOne,
-  OneToMany, OptionalProps,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/core';
+import { Collection, Entity, LoadStrategy, ManyToOne, OneToMany, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/postgresql';
 import { randomUUID } from 'crypto';
 
 @Entity()
 export class Question {
-
   [OptionalProps]?: 'createdAt';
 
   @PrimaryKey({ type: 'uuid' })
@@ -21,17 +12,15 @@ export class Question {
   @PrimaryKey({ length: 6 })
   createdAt: Date = new Date();
 
-  @OneToMany(() => Answer, answer => answer.question)
+  @OneToMany(() => Answer, (answer) => answer.question)
   answers: Collection<Answer> = new Collection<Answer>(this);
 
   @Property({ length: 255 })
   name!: string;
-
 }
 
 @Entity()
 export class Answer {
-
   [OptionalProps]?: 'createdAt';
 
   @PrimaryKey({ type: 'uuid' })
@@ -42,11 +31,9 @@ export class Answer {
 
   @ManyToOne({ entity: () => Question })
   question!: Question;
-
 }
 
 describe('GH issue 3738', () => {
-
   let orm: MikroORM;
   let question: Question;
 
@@ -59,7 +46,10 @@ describe('GH issue 3738', () => {
     });
     await orm.schema.createSchema();
 
-    question = orm.em.create(Question, { answers: [{}], name: 'test question' });
+    question = orm.em.create(Question, {
+      answers: [{}],
+      name: 'test question',
+    });
     await orm.em.flush();
   });
 

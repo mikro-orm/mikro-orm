@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/c
 
 @Entity()
 export class Dup1 {
-
   @PrimaryKey({ type: 'ObjectId' })
   _id!: ObjectId;
 
@@ -12,5 +11,4 @@ export class Dup1 {
 
   @Property({ type: 'string' })
   name2?: string;
-
 }

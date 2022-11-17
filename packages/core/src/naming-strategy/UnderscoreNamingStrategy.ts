@@ -1,7 +1,6 @@
 import { AbstractNamingStrategy } from './AbstractNamingStrategy';
 
 export class UnderscoreNamingStrategy extends AbstractNamingStrategy {
-
   classToTableName(entityName: string): string {
     return this.underscore(entityName);
   }
@@ -29,5 +28,4 @@ export class UnderscoreNamingStrategy extends AbstractNamingStrategy {
   private underscore(name: string): string {
     return name.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
   }
-
 }

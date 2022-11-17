@@ -3,7 +3,6 @@ import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'author', schema: 'n1' })
 export class Author0 {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,12 +11,10 @@ export class Author0 {
 
   @OneToOne(() => Author0, undefined, { nullable: true })
   mentor?: Author0;
-
 }
 
 @Entity({ tableName: 'book', schema: 'n2' })
 export class Book0 {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,12 +23,10 @@ export class Book0 {
 
   @ManyToOne(() => Book0, { nullable: true })
   basedOn?: Book0;
-
 }
 
 @Entity({ tableName: 'book', schema: 'n2' })
 export class Book1 {
-
   @PrimaryKey()
   id!: number;
 
@@ -40,11 +35,9 @@ export class Book1 {
 
   @ManyToOne(() => Book1)
   basedOn!: Book1;
-
 }
 
 describe('multiple connected schemas in postgres', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
@@ -76,5 +69,4 @@ describe('multiple connected schemas in postgres', () => {
     const diff2 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff2).toBe('');
   });
-
 });

@@ -6,9 +6,7 @@ import type { IdentifiedReference, Reference } from './Reference';
 import type { EntityLoaderOptions } from './EntityLoader';
 
 export class EntityRepository<T extends object> {
-
-  constructor(protected readonly _em: EntityManager,
-              protected readonly entityName: EntityName<T>) { }
+  constructor(protected readonly _em: EntityManager, protected readonly entityName: EntityName<T>) {}
 
   /**
    * Tells the EntityManager to make an instance managed and persistent.
@@ -239,5 +237,4 @@ export class EntityRepository<T extends object> {
   protected get em(): EntityManager {
     return this._em.getContext(false);
   }
-
 }

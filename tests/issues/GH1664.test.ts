@@ -4,7 +4,6 @@ import { mockLogger } from '../helpers';
 
 @Entity()
 class MultipleUniqueNullableProperties {
-
   @PrimaryKey()
   id!: number;
 
@@ -18,7 +17,6 @@ class MultipleUniqueNullableProperties {
     this.first = first;
     this.second = second;
   }
-
 }
 
 describe('embedded entities in postgresql', () => {
@@ -80,5 +78,4 @@ describe('embedded entities in postgresql', () => {
     expect(mock.mock.calls[2][0]).toMatch('update "multiple_unique_nullable_properties" set "first" = $1, "second" = $2 where "id" = $3');
     expect(mock.mock.calls[3][0]).toMatch('commit');
   });
-
 });

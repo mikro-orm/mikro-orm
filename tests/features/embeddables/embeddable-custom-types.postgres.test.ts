@@ -4,7 +4,6 @@ import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers';
 
 export class AlwaysConvertsToAbc extends Type<string, string> {
-
   convertToDatabaseValue(value: string, platform: Platform): string {
     return 'abc';
   }
@@ -16,24 +15,20 @@ export class AlwaysConvertsToAbc extends Type<string, string> {
   getColumnType(): string {
     return 'varchar';
   }
-
 }
 
 @Embeddable()
 class Inner {
-
   @Property({ type: AlwaysConvertsToAbc })
   someValue: string;
 
   constructor(someValue: string) {
     this.someValue = someValue;
   }
-
 }
 
 @Embeddable()
 class Nested {
-
   @Property({ type: AlwaysConvertsToAbc })
   someValue: string;
 
@@ -44,12 +39,10 @@ class Nested {
     this.someValue = someValue;
     this.deep = new Inner(someValue);
   }
-
 }
 
 @Entity()
 class Parent {
-
   @PrimaryKey()
   id!: number;
 
@@ -64,11 +57,9 @@ class Parent {
 
   @Property({ type: AlwaysConvertsToAbc, nullable: true })
   someValue?: string;
-
 }
 
 export class Numeric extends Type<number, string> {
-
   convertToDatabaseValue(value: number): string {
     return value.toString();
   }
@@ -80,24 +71,20 @@ export class Numeric extends Type<number, string> {
   getColumnType(prop: EntityProperty, platform: Platform): string {
     return 'numeric(14,2)';
   }
-
 }
 
 @Embeddable()
 class Savings {
-
   @Property({ type: Numeric })
   amount: number;
 
   constructor(amount: number) {
     this.amount = amount;
   }
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey()
   id!: number;
 
@@ -106,11 +93,9 @@ class User {
 
   @Property({ nullable: true })
   after?: number; // property after embeddables to verify order props in resulting schema
-
 }
 
 describe('embedded entities with custom types', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
@@ -194,5 +179,4 @@ describe('embedded entities with custom types', () => {
     expect(mock.mock.calls[0][0]).toMatch('select "u0".* from "user" as "u0" where "u0"."savings_amount" = $1 limit $2');
     expect(u1.savings.amount).toBe(15200.23);
   });
-
 });

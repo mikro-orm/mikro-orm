@@ -1,7 +1,6 @@
 import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 
 export class Foo {
-
   @PrimaryKey()
   id!: number;
 
@@ -10,41 +9,33 @@ export class Foo {
 
   @Property({ default: 'test' })
   bar1!: string;
-
 }
 
 @Entity()
 export class Foo1 extends Foo {
-
   @Property({ defaultRaw: 'now()' })
   bar2!: Date;
 
   @Property({ defaultRaw: 'now(6)', length: 6 })
   bar3!: Date;
-
 }
 
 @Entity()
 export class Foo2 extends Foo {
-
   @Property({ defaultRaw: 'now()' })
   bar2!: Date;
 
   @Property({ defaultRaw: 'now()', length: 6 })
   bar3!: Date;
-
 }
 
 @Entity()
 export class Foo3 extends Foo {
-
   @Property({ defaultRaw: 'now' })
   bar2!: Date;
-
 }
 
 describe('diffing default values (GH #2385)', () => {
-
   test('string defaults do not produce additional diffs [mysql]', async () => {
     const orm = await MikroORM.init({
       entities: [Foo1],
@@ -94,5 +85,4 @@ describe('diffing default values (GH #2385)', () => {
     await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
     await orm.close();
   });
-
 });

@@ -1,7 +1,6 @@
 import type { CacheAdapter } from './CacheAdapter';
 
 export class NullCacheAdapter implements CacheAdapter {
-
   /**
    * @inheritDoc
    */
@@ -29,5 +28,4 @@ export class NullCacheAdapter implements CacheAdapter {
   async clear(): Promise<void> {
     // ignore
   }
-
 }

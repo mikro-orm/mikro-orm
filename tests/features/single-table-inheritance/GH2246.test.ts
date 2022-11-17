@@ -6,13 +6,11 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
   discriminatorMap: { person: 'Person', employee: 'Employee' },
 })
 export abstract class BasePerson {
-
   @PrimaryKey()
   id!: number;
 
   @Enum()
   type!: 'person' | 'employee';
-
 }
 
 @Entity()
@@ -22,10 +20,8 @@ export class Person extends BasePerson {
 
 @Entity()
 export class Employee extends BasePerson {
-
   @ManyToMany({ entity: () => PhotoFile, inversedBy: 'employees' })
   photos = new Collection<PhotoFile>(this);
-
 }
 
 @Entity({
@@ -33,13 +29,11 @@ export class Employee extends BasePerson {
   discriminatorMap: { custom: 'CustomFile', photo: 'PhotoFile' },
 })
 export abstract class File {
-
   @PrimaryKey()
   id!: number;
 
   @Enum()
   type!: 'custom' | 'photo';
-
 }
 
 @Entity()
@@ -49,14 +43,11 @@ export class CustomFile extends File {
 
 @Entity()
 export class PhotoFile extends File {
-
   @ManyToMany({ entity: () => Employee, mappedBy: 'photos' })
   employees = new Collection<Employee>(this);
-
 }
 
 describe('bidirectional many to many with multiple STI entities', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -75,9 +66,13 @@ describe('bidirectional many to many with multiple STI entities', () => {
     await orm.em.persistAndFlush(b);
     orm.em.clear();
 
-    await orm.em.findOne(Employee, { id: 1 }, {
-      populate: ['photos'],
-    });
+    await orm.em.findOne(
+      Employee,
+      { id: 1 },
+      {
+        populate: ['photos'],
+      }
+    );
   });
 
   test('Inversed side', async () => {
@@ -85,9 +80,12 @@ describe('bidirectional many to many with multiple STI entities', () => {
     await orm.em.persistAndFlush(a);
     orm.em.clear();
 
-    await orm.em.findOne(PhotoFile, { id: 1 }, {
-      populate: ['employees'],
-    });
+    await orm.em.findOne(
+      PhotoFile,
+      { id: 1 },
+      {
+        populate: ['employees'],
+      }
+    );
   });
-
 });

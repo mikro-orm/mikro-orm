@@ -4,7 +4,6 @@ import { Test2 } from './Test2';
 
 @Entity()
 export class Car2 {
-
   @Index({ name: 'car2_name_index' })
   @PrimaryKey({ length: 100 })
   name: string;
@@ -16,7 +15,7 @@ export class Car2 {
   @Property({ type: t.integer })
   price: number;
 
-  @ManyToMany(() => User2, u => u.cars)
+  @ManyToMany(() => User2, (u) => u.cars)
   users = new Collection<User2>(this);
 
   [PrimaryKeyType]?: [string, number];
@@ -26,5 +25,4 @@ export class Car2 {
     this.year = year;
     this.price = price;
   }
-
 }

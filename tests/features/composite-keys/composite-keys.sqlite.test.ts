@@ -1,14 +1,10 @@
-import {
-  Cascade, Collection, Entity, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey,
-  PrimaryKeyType, Property, ValidationError, wrap, LoadStrategy,
-} from '@mikro-orm/core';
+import { Cascade, Collection, Entity, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, PrimaryKeyType, Property, ValidationError, wrap, LoadStrategy } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { AbstractSqlConnection } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers';
 
 @Entity()
 export class FooBar2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -18,12 +14,10 @@ export class FooBar2 {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 export class FooBaz2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -33,12 +27,10 @@ export class FooBaz2 {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 export class FooParam2 {
-
   @ManyToOne(() => FooBar2, { primary: true })
   bar!: FooBar2;
 
@@ -58,12 +50,10 @@ export class FooParam2 {
     this.baz = baz;
     this.value = value;
   }
-
 }
 
 @Entity()
 export class Configuration2 {
-
   @PrimaryKey()
   property: string;
 
@@ -78,19 +68,17 @@ export class Configuration2 {
     this.property = property;
     this.value = value;
   }
-
 }
 
 @Entity()
 export class Test2 {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ nullable: true })
   name?: string;
 
-  @OneToMany(() => Configuration2, config => config.test)
+  @OneToMany(() => Configuration2, (config) => config.test)
   config = new Collection<Configuration2>(this);
 
   @Property({ version: true })
@@ -101,14 +89,15 @@ export class Test2 {
   }
 
   getConfiguration(): Record<string, string> {
-    return this.config.getItems().reduce((c, v) => { c[v.property] = v.value; return c; }, {});
+    return this.config.getItems().reduce((c, v) => {
+      c[v.property] = v.value;
+      return c;
+    }, {});
   }
-
 }
 
 @Entity()
 export class Author2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -121,13 +110,16 @@ export class Author2 {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity({ comment: 'This is address table' })
 export class Address2 {
-
-  @OneToOne({ entity: () => Author2, primary: true, joinColumn: 'author_id', unique: 'address2_author_id_unique' })
+  @OneToOne({
+    entity: () => Author2,
+    primary: true,
+    joinColumn: 'author_id',
+    unique: 'address2_author_id_unique',
+  })
   author: Author2;
 
   @Property({ comment: 'This is address property' })
@@ -137,12 +129,10 @@ export class Address2 {
     this.author = author;
     this.value = value;
   }
-
 }
 
 @Entity()
 export class Car2 {
-
   @PrimaryKey({ length: 100 })
   name: string;
 
@@ -162,12 +152,10 @@ export class Car2 {
     this.year = year;
     this.price = price;
   }
-
 }
 
 @Entity()
 export class User2 {
-
   @PrimaryKey({ length: 100 })
   firstName: string;
 
@@ -192,12 +180,10 @@ export class User2 {
     this.firstName = firstName;
     this.lastName = lastName;
   }
-
 }
 
 @Entity()
 export class Sandwich {
-
   @PrimaryKey()
   id!: number;
 
@@ -207,19 +193,17 @@ export class Sandwich {
   @Property()
   price: number;
 
-  @ManyToMany(() => User2, u => u.sandwiches)
+  @ManyToMany(() => User2, (u) => u.sandwiches)
   users = new Collection<User2>(this);
 
   constructor(name: string, price: number) {
     this.name = name;
     this.price = price;
   }
-
 }
 
 @Entity()
 export class CarOwner2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -232,11 +216,9 @@ export class CarOwner2 {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 describe('composite keys in sqlite', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -273,7 +255,9 @@ describe('composite keys in sqlite', () => {
     await orm.em.persistAndFlush(test);
     orm.em.clear();
 
-    const t = await orm.em.findOneOrFail(Test2, test.id, { populate: ['config'] });
+    const t = await orm.em.findOneOrFail(Test2, test.id, {
+      populate: ['config'],
+    });
     expect(t.getConfiguration()).toEqual({
       foo: '1',
       bar: '2',
@@ -303,17 +287,26 @@ describe('composite keys in sqlite', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const p2 = await orm.em.findOneOrFail(FooParam2, { bar: param.bar.id, baz: param.baz.id });
+    const p2 = await orm.em.findOneOrFail(FooParam2, {
+      bar: param.bar.id,
+      baz: param.baz.id,
+    });
     expect(p2.bar.id).toBe(bar.id);
     expect(p2.baz.id).toBe(baz.id);
     expect(p2.value).toBe('val2');
     expect([...orm.em.getUnitOfWork().getIdentityMap().keys()].sort()).toEqual(['FooBar2-7', 'FooBaz2-3', 'FooParam2-7~~~3']);
 
-    const p3 = await orm.em.findOneOrFail(FooParam2, { bar: param.bar.id, baz: param.baz.id });
+    const p3 = await orm.em.findOneOrFail(FooParam2, {
+      bar: param.bar.id,
+      baz: param.baz.id,
+    });
     expect(p3).toBe(p2);
 
     await orm.em.remove(p3).flush();
-    const p4 = await orm.em.findOne(FooParam2, { bar: param.bar.id, baz: param.baz.id });
+    const p4 = await orm.em.findOne(FooParam2, {
+      bar: param.bar.id,
+      baz: param.baz.id,
+    });
     expect(p4).toBeNull();
   });
 
@@ -324,7 +317,9 @@ describe('composite keys in sqlite', () => {
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 
-    const a1 = await orm.em.findOneOrFail(Author2, author.id, { populate: ['address'] });
+    const a1 = await orm.em.findOneOrFail(Author2, author.id, {
+      populate: ['address'],
+    });
     expect(a1.address!.value).toBe('v1');
     expect(a1.address!.author).toBe(a1);
 
@@ -332,7 +327,9 @@ describe('composite keys in sqlite', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const a2 = await orm.em.findOneOrFail(Author2, author.id, { populate: ['address'] });
+    const a2 = await orm.em.findOneOrFail(Author2, author.id, {
+      populate: ['address'],
+    });
     expect(a2.address!.value).toBe('v2');
     expect(a2.address!.author).toBe(a2);
 
@@ -354,7 +351,10 @@ describe('composite keys in sqlite', () => {
     await orm.em.persistAndFlush(owner);
     orm.em.clear();
 
-    const o1 = await orm.em.findOneOrFail(CarOwner2, owner.id, { populate: ['car'], strategy: LoadStrategy.JOINED });
+    const o1 = await orm.em.findOneOrFail(CarOwner2, owner.id, {
+      populate: ['car'],
+      strategy: LoadStrategy.JOINED,
+    });
     expect(o1.car.price).toBe(200_000);
     expect(wrap(o1).toJSON()).toEqual({
       id: 1,
@@ -381,7 +381,10 @@ describe('composite keys in sqlite', () => {
     await wrap(o2.car).init();
     expect(o2.car.price).toBe(150_000);
 
-    const c1 = await orm.em.findOneOrFail(Car2, { name: car.name, year: car.year });
+    const c1 = await orm.em.findOneOrFail(Car2, {
+      name: car.name,
+      year: car.year,
+    });
     expect(c1).toBe(o2.car);
 
     await orm.em.remove(o2).flush();
@@ -401,7 +404,10 @@ describe('composite keys in sqlite', () => {
     orm.em.clear();
 
     const connMock = jest.spyOn(AbstractSqlConnection.prototype, 'execute');
-    const cc = await orm.em.findOneOrFail(Car2, car11, { populate: ['users'], strategy: LoadStrategy.JOINED });
+    const cc = await orm.em.findOneOrFail(Car2, car11, {
+      populate: ['users'],
+      strategy: LoadStrategy.JOINED,
+    });
     expect(cc.users[0].foo).toBe(42);
     expect(connMock).toBeCalledTimes(1);
   });
@@ -439,7 +445,10 @@ describe('composite keys in sqlite', () => {
     await orm.em.persistAndFlush([user1, user2, user3]);
     orm.em.clear();
 
-    const u1 = await orm.em.findOneOrFail(User2, user1, { populate: ['cars'], strategy: LoadStrategy.JOINED });
+    const u1 = await orm.em.findOneOrFail(User2, user1, {
+      populate: ['cars'],
+      strategy: LoadStrategy.JOINED,
+    });
     expect(u1.cars.isDirty()).toBe(false);
     expect(u1.cars.getItems()).toMatchObject([
       { name: 'Audi A8', price: 100_000, year: 2011 },
@@ -465,7 +474,10 @@ describe('composite keys in sqlite', () => {
     const u2 = await orm.em.findOneOrFail(User2, u1, { populate: ['cars'] });
     expect(u2.cars[0].price).toBe(350_000);
 
-    const c1 = await orm.em.findOneOrFail(Car2, { name: car1.name, year: car1.year });
+    const c1 = await orm.em.findOneOrFail(Car2, {
+      name: car1.name,
+      year: car1.year,
+    });
     expect(c1).toBe(u2.cars[0]);
 
     await orm.em.remove(u2).flush();
@@ -495,7 +507,7 @@ describe('composite keys in sqlite', () => {
     await orm.em.flush();
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('delete from `user2_sandwiches` where (`sandwich_id`) in ( values (2), (3)) and `user2_first_name` = \'Henry\' and `user2_last_name` = \'Doe 2\'');
+    expect(mock.mock.calls[1][0]).toMatch("delete from `user2_sandwiches` where (`sandwich_id`) in ( values (2), (3)) and `user2_first_name` = 'Henry' and `user2_last_name` = 'Doe 2'");
     expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
@@ -512,7 +524,9 @@ describe('composite keys in sqlite', () => {
     await orm.em.persistAndFlush([user1, user2, user3]);
     orm.em.clear();
 
-    const u1 = await orm.em.findOneOrFail(User2, user1, { populate: ['sandwiches'] });
+    const u1 = await orm.em.findOneOrFail(User2, user1, {
+      populate: ['sandwiches'],
+    });
     expect(u1.sandwiches.getItems()).toMatchObject([
       { name: 'Fish Sandwich', price: 100 },
       { name: 'Grilled Cheese Sandwich', price: 300 },
@@ -532,7 +546,9 @@ describe('composite keys in sqlite', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const u2 = await orm.em.findOneOrFail(User2, u1, { populate: ['sandwiches'] });
+    const u2 = await orm.em.findOneOrFail(User2, u1, {
+      populate: ['sandwiches'],
+    });
     expect(u2.sandwiches[0].price).toBe(200);
 
     const c1 = await orm.em.findOneOrFail(Sandwich, { id: sandwich1.id });
@@ -541,7 +557,9 @@ describe('composite keys in sqlite', () => {
     await orm.em.remove(u2).flush();
     const o3 = await orm.em.findOne(User2, u1);
     expect(o3).toBeNull();
-    const c2 = await orm.em.findOneOrFail(Sandwich, sandwich1, { populate: ['users'] });
+    const c2 = await orm.em.findOneOrFail(Sandwich, sandwich1, {
+      populate: ['users'],
+    });
     await orm.em.remove(c2).flush();
     const c3 = await orm.em.findOne(Sandwich, sandwich1);
     expect(c3).toBeNull();
@@ -564,7 +582,11 @@ describe('composite keys in sqlite', () => {
 
     // managed entity have an internal __em reference, so that is what we are testing here
     expect(wrap(c1, true).__em).toBeUndefined();
-    const u1 = orm.em.create(User2, { firstName: 'f', lastName: 'l', cars: [c1, c2, c3] });
+    const u1 = orm.em.create(User2, {
+      firstName: 'f',
+      lastName: 'l',
+      cars: [c1, c2, c3],
+    });
     expect(wrap(u1, true).__em).toBeUndefined();
     expect(wrap(u1.cars[0], true).__em).toBeUndefined();
     expect(wrap(u1.cars[1], true).__em).toBeUndefined();
@@ -603,7 +625,9 @@ describe('composite keys in sqlite', () => {
     await orm.em.flush();
 
     try {
-      await orm.em.nativeUpdate(FooParam2, param2, { version: new Date('2020-01-01T00:00:00Z') }); // simulate concurrent update
+      await orm.em.nativeUpdate(FooParam2, param2, {
+        version: new Date('2020-01-01T00:00:00Z'),
+      }); // simulate concurrent update
       param1.value += ' changed!!';
       param2.value += ' changed!!';
       param3.value += ' changed!!';
@@ -628,6 +652,4 @@ describe('composite keys in sqlite', () => {
   });
 
   afterAll(async () => orm.close(true));
-
 });
-

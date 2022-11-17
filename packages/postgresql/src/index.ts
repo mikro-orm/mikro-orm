@@ -5,8 +5,4 @@ export * from './PostgreSqlPlatform';
 export * from './PostgreSqlSchemaHelper';
 export * from './PostgreSqlExceptionConverter';
 export * from './types';
-export {
-  PostgreSqlMikroORM as MikroORM,
-  PostgreSqlOptions as Options,
-  definePostgreSqlConfig as defineConfig,
-} from './PostgreSqlMikroORM';
+export { PostgreSqlMikroORM as MikroORM, PostgreSqlOptions as Options, definePostgreSqlConfig as defineConfig } from './PostgreSqlMikroORM';

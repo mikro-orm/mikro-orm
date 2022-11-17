@@ -3,7 +3,6 @@ import { mockLogger } from '../../helpers';
 
 @Entity()
 export class ConcurrencyCheckUser {
-
   @PrimaryKey({ length: 100 })
   firstName: string;
 
@@ -21,11 +20,9 @@ export class ConcurrencyCheckUser {
     this.lastName = lastName;
     this.age = age;
   }
-
 }
 
 describe('optimistic locking - concurrency check (postgres)', () => {
-
   let orm: MikroORM;
   let mock: jest.Mock;
 
@@ -123,8 +120,12 @@ describe('optimistic locking - concurrency check (postgres)', () => {
     test2.age = 35;
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch(`select "c0"."first_name", "c0"."last_name", "c0"."age" from "concurrency_check_user" as "c0" where (("c0"."first_name" = 'Jakub' and "c0"."last_name" = 'Smith' and "c0"."age" = 20) or ("c0"."first_name" = 'John' and "c0"."last_name" = 'Smith' and "c0"."age" = 25))`);
-    expect(mock.mock.calls[2][0]).toMatch(`update "concurrency_check_user" set "age" = case when ("first_name" = 'Jakub' and "last_name" = 'Smith') then 30 when ("first_name" = 'John' and "last_name" = 'Smith') then 35 else "age" end where ("first_name", "last_name", "age") in (('Jakub', 'Smith', 20), ('John', 'Smith', 25))`);
+    expect(mock.mock.calls[1][0]).toMatch(
+      `select "c0"."first_name", "c0"."last_name", "c0"."age" from "concurrency_check_user" as "c0" where (("c0"."first_name" = 'Jakub' and "c0"."last_name" = 'Smith' and "c0"."age" = 20) or ("c0"."first_name" = 'John' and "c0"."last_name" = 'Smith' and "c0"."age" = 25))`
+    );
+    expect(mock.mock.calls[2][0]).toMatch(
+      `update "concurrency_check_user" set "age" = case when ("first_name" = 'Jakub' and "last_name" = 'Smith') then 30 when ("first_name" = 'John' and "last_name" = 'Smith') then 35 else "age" end where ("first_name", "last_name", "age") in (('Jakub', 'Smith', 20), ('John', 'Smith', 25))`
+    );
     expect(mock.mock.calls[3][0]).toMatch('commit');
 
     mock.mockReset();
@@ -133,8 +134,12 @@ describe('optimistic locking - concurrency check (postgres)', () => {
     test2.age = 45;
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch(`select "c0"."first_name", "c0"."last_name", "c0"."age" from "concurrency_check_user" as "c0" where (("c0"."first_name" = 'Jakub' and "c0"."last_name" = 'Smith' and "c0"."age" = 30) or ("c0"."first_name" = 'John' and "c0"."last_name" = 'Smith' and "c0"."age" = 35))`);
-    expect(mock.mock.calls[2][0]).toMatch(`update "concurrency_check_user" set "age" = case when ("first_name" = 'Jakub' and "last_name" = 'Smith') then 40 when ("first_name" = 'John' and "last_name" = 'Smith') then 45 else "age" end where ("first_name", "last_name", "age") in (('Jakub', 'Smith', 30), ('John', 'Smith', 35))`);
+    expect(mock.mock.calls[1][0]).toMatch(
+      `select "c0"."first_name", "c0"."last_name", "c0"."age" from "concurrency_check_user" as "c0" where (("c0"."first_name" = 'Jakub' and "c0"."last_name" = 'Smith' and "c0"."age" = 30) or ("c0"."first_name" = 'John' and "c0"."last_name" = 'Smith' and "c0"."age" = 35))`
+    );
+    expect(mock.mock.calls[2][0]).toMatch(
+      `update "concurrency_check_user" set "age" = case when ("first_name" = 'Jakub' and "last_name" = 'Smith') then 40 when ("first_name" = 'John' and "last_name" = 'Smith') then 45 else "age" end where ("first_name", "last_name", "age") in (('Jakub', 'Smith', 30), ('John', 'Smith', 35))`
+    );
     expect(mock.mock.calls[3][0]).toMatch('commit');
 
     mock.mockReset();
@@ -149,8 +154,12 @@ describe('optimistic locking - concurrency check (postgres)', () => {
     test2.age = 46;
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch(`select "c0"."first_name", "c0"."last_name", "c0"."age" from "concurrency_check_user" as "c0" where (("c0"."first_name" = 'Jakub' and "c0"."last_name" = 'Smith' and "c0"."age" = 40) or ("c0"."first_name" = 'John' and "c0"."last_name" = 'Smith' and "c0"."age" = 45))`);
-    expect(mock.mock.calls[2][0]).toMatch(`update "concurrency_check_user" set "age" = case when ("first_name" = 'Jakub' and "last_name" = 'Smith') then 41 when ("first_name" = 'John' and "last_name" = 'Smith') then 46 else "age" end, "other" = case when ("first_name" = 'Jakub' and "last_name" = 'Smith') then 'asd' when ("first_name" = 'John' and "last_name" = 'Smith') then 'lololol' else "other" end where ("first_name", "last_name", "age") in (('Jakub', 'Smith', 40), ('John', 'Smith', 45))`);
+    expect(mock.mock.calls[1][0]).toMatch(
+      `select "c0"."first_name", "c0"."last_name", "c0"."age" from "concurrency_check_user" as "c0" where (("c0"."first_name" = 'Jakub' and "c0"."last_name" = 'Smith' and "c0"."age" = 40) or ("c0"."first_name" = 'John' and "c0"."last_name" = 'Smith' and "c0"."age" = 45))`
+    );
+    expect(mock.mock.calls[2][0]).toMatch(
+      `update "concurrency_check_user" set "age" = case when ("first_name" = 'Jakub' and "last_name" = 'Smith') then 41 when ("first_name" = 'John' and "last_name" = 'Smith') then 46 else "age" end, "other" = case when ("first_name" = 'Jakub' and "last_name" = 'Smith') then 'asd' when ("first_name" = 'John' and "last_name" = 'Smith') then 'lololol' else "other" end where ("first_name", "last_name", "age") in (('Jakub', 'Smith', 40), ('John', 'Smith', 45))`
+    );
     expect(mock.mock.calls[3][0]).toMatch('commit');
   });
 
@@ -179,5 +188,4 @@ describe('optimistic locking - concurrency check (postgres)', () => {
       expect((e as OptimisticLockError).getEntity()).toBe(tests[0]);
     }
   });
-
 });

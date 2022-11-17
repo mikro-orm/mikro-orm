@@ -20,7 +20,6 @@ import { DatabaseSeedCommand } from '../../../packages/cli/src/commands/Database
 import { initORMSqlite } from '../../bootstrap';
 
 describe('DatabaseSeedCommand', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -44,13 +43,12 @@ describe('DatabaseSeedCommand', () => {
     });
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
     expect(seed).toBeCalledTimes(1);
-    expect(seed).toBeCalledWith((orm.config.get('seeder').defaultSeeder));
+    expect(seed).toBeCalledWith(orm.config.get('seeder').defaultSeeder);
     expect(closeSpy).toBeCalledTimes(1);
 
     await expect(cmd.handler({ class: 'TestSeeder' } as any)).resolves.toBeUndefined();
     expect(seed).toBeCalledTimes(2);
-    expect(seed).toBeCalledWith(('TestSeeder'));
+    expect(seed).toBeCalledWith('TestSeeder');
     expect(closeSpy).toBeCalledTimes(2);
   });
-
 });

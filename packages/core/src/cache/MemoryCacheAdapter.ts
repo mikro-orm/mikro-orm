@@ -1,10 +1,9 @@
 import type { CacheAdapter } from './CacheAdapter';
 
 export class MemoryCacheAdapter implements CacheAdapter {
-
   private readonly data = new Map<string, { data: any; expiration: number }>();
 
-  constructor(private readonly options: { expiration: number }) { }
+  constructor(private readonly options: { expiration: number }) {}
 
   /**
    * @inheritDoc
@@ -27,7 +26,10 @@ export class MemoryCacheAdapter implements CacheAdapter {
    * @inheritDoc
    */
   async set(name: string, data: any, origin: string, expiration?: number): Promise<void> {
-    this.data.set(name, { data, expiration: Date.now() + (expiration ?? this.options.expiration) });
+    this.data.set(name, {
+      data,
+      expiration: Date.now() + (expiration ?? this.options.expiration),
+    });
   }
 
   /**
@@ -43,5 +45,4 @@ export class MemoryCacheAdapter implements CacheAdapter {
   async clear(): Promise<void> {
     this.data.clear();
   }
-
 }

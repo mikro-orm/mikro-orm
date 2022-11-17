@@ -3,7 +3,6 @@ import type { AbstractSqlConnection, Index, Check } from '@mikro-orm/knex';
 import { SchemaHelper } from '@mikro-orm/knex';
 
 export class BetterSqliteSchemaHelper extends SchemaHelper {
-
   disableForeignKeysSQL(): string {
     return 'pragma foreign_keys = off;';
   }
@@ -17,8 +16,7 @@ export class BetterSqliteSchemaHelper extends SchemaHelper {
   }
 
   getListTablesSQL(): string {
-    return `select name as table_name from sqlite_master where type = 'table' and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' `
-      + `union all select name as table_name from sqlite_temp_master where type = 'table' order by name`;
+    return `select name as table_name from sqlite_master where type = 'table' and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' ` + `union all select name as table_name from sqlite_temp_master where type = 'table' order by name`;
   }
 
   async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<any[]> {
@@ -29,7 +27,7 @@ export class BetterSqliteSchemaHelper extends SchemaHelper {
     // there can be only one, so naive check like this should be enough
     const hasAutoincrement = tableDefinition.sql.toLowerCase().includes('autoincrement');
 
-    return columns.map(col => {
+    return columns.map((col) => {
       const mappedType = connection.getPlatform().getMappedType(col.type);
       return {
         name: col.name,
@@ -48,7 +46,7 @@ export class BetterSqliteSchemaHelper extends SchemaHelper {
     const sql = `select sql from sqlite_master where type = ? and name = ?`;
     const tableDefinition = await connection.execute<{ sql: string }>(sql, ['table', tableName], 'get');
 
-    const checkConstraints = [...tableDefinition.sql.match(/[`["'][^`\]"']+[`\]"'] text check \(.*?\)/gi) ?? []];
+    const checkConstraints = [...(tableDefinition.sql.match(/[`["'][^`\]"']+[`\]"'] text check \(.*?\)/gi) ?? [])];
     return checkConstraints.reduce((o, item) => {
       // check constraints are defined as (note that last closing paren is missing):
       // `type` text check (`type` in ('local', 'global')
@@ -67,7 +65,7 @@ export class BetterSqliteSchemaHelper extends SchemaHelper {
     const sql = `pragma table_info(\`${tableName}\`)`;
     const cols = await connection.execute<{ pk: number; name: string }[]>(sql);
 
-    return cols.filter(col => !!col.pk).map(col => col.name);
+    return cols.filter((col) => !!col.pk).map((col) => col.name);
   }
 
   async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Index[]> {
@@ -76,7 +74,7 @@ export class BetterSqliteSchemaHelper extends SchemaHelper {
     const indexes = await connection.execute<any[]>(`pragma index_list(\`${tableName}\`)`);
     const ret: Index[] = [];
 
-    for (const col of cols.filter(c => c.pk)) {
+    for (const col of cols.filter((c) => c.pk)) {
       ret.push({
         columnNames: [col.name],
         keyName: 'primary',
@@ -85,14 +83,16 @@ export class BetterSqliteSchemaHelper extends SchemaHelper {
       });
     }
 
-    for (const index of indexes.filter(index => !this.isImplicitIndex(index.name))) {
+    for (const index of indexes.filter((index) => !this.isImplicitIndex(index.name))) {
       const res = await connection.execute<{ name: string }[]>(`pragma index_info(\`${index.name}\`)`);
-      ret.push(...res.map(row => ({
-        columnNames: [row.name],
-        keyName: index.name,
-        unique: !!index.unique,
-        primary: false,
-      })));
+      ret.push(
+        ...res.map((row) => ({
+          columnNames: [row.name],
+          keyName: index.name,
+          unique: !!index.unique,
+          primary: false,
+        }))
+      );
     }
 
     return this.mapIndexes(ret);
@@ -136,5 +136,4 @@ export class BetterSqliteSchemaHelper extends SchemaHelper {
     // Ignore indexes with reserved names, e.g. autoindexes
     return name.startsWith('sqlite_');
   }
-
 }

@@ -5,17 +5,14 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
   tableName: 'test.DEVICES',
 })
 export class Device {
-
   @PrimaryKey({ fieldName: 'ID', type: 'number' })
   id!: number;
 
   @Property({ fieldName: 'TOKEN' })
   token!: string;
-
 }
 
 describe('GH issue 1143', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -41,5 +38,4 @@ describe('GH issue 1143', () => {
     const sql = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(sql).toBe('');
   });
-
 });

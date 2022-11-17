@@ -3,7 +3,6 @@ import type { Platform } from '../platforms';
 import type { EntityProperty } from '../typings';
 
 export class UuidType extends Type<string | null | undefined> {
-
   getColumnType(prop: EntityProperty, platform: Platform) {
     return platform.getUuidTypeDeclarationSQL(prop);
   }
@@ -11,5 +10,4 @@ export class UuidType extends Type<string | null | undefined> {
   compareAsType(): string {
     return 'string';
   }
-
 }

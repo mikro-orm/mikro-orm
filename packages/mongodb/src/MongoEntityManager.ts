@@ -8,7 +8,6 @@ import type { Collection, Document, TransactionOptions as MongoTransactionOption
  * @inheritDoc
  */
 export class MongoEntityManager<D extends MongoDriver = MongoDriver> extends EntityManager<D> {
-
   /**
    * Shortcut to driver's aggregate method. Available in MongoDriver only.
    */
@@ -41,5 +40,4 @@ export class MongoEntityManager<D extends MongoDriver = MongoDriver> extends Ent
   async transactional<T>(cb: (em: D[typeof EntityManagerType]) => Promise<T>, options: TransactionOptions & MongoTransactionOptions = {}): Promise<T> {
     return super.transactional(cb, options);
   }
-
 }

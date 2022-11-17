@@ -2,61 +2,50 @@ import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity({ tableName: 'book' })
 export class Book1 {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ default: true, nullable: true, comment: 'this is a comment' })
   myColumn: boolean = true;
-
 }
 
 @Entity({ tableName: 'book' })
 export class Book2 {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ default: false, nullable: false, comment: 'this is a comment' })
   myColumn: boolean = false;
-
 }
 
 @Entity({ tableName: 'book' })
 export class Book3 {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ default: false, nullable: true })
   myColumn: boolean = false;
-
 }
 
 @Entity({ tableName: 'book' })
 export class Book4 {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ default: false, nullable: true, comment: 'lalala' })
   myColumn: boolean = false;
-
 }
 
 @Entity({ tableName: 'book' })
 export class Book5 {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ default: false, nullable: true, comment: 'lololo' })
   myColumn: boolean = false;
-
 }
 
 describe('changing column in postgres (GH 2407)', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -98,5 +87,4 @@ alter table "book" alter column "my_column" drop not null;\n\n`);
     expect(diff5).toBe(`comment on column "book"."my_column" is 'lololo';\n\n`);
     await orm.schema.execute(diff5);
   });
-
 });

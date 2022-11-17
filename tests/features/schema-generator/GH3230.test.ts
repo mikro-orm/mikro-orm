@@ -2,21 +2,18 @@ import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Propert
 
 @Entity()
 export class Author {
-
   @PrimaryKey({ columnType: 'mediumint' })
   id!: number;
 
   @Property()
   name!: string;
 
-  @OneToMany(() => Book, book => book.author)
+  @OneToMany(() => Book, (book) => book.author)
   books = new Collection<Book>(this);
-
 }
 
 @Entity()
 export class Book {
-
   @PrimaryKey({ columnType: 'mediumint' })
   bookId!: number;
 
@@ -25,7 +22,6 @@ export class Book {
 
   @ManyToOne(() => Author)
   author!: Author;
-
 }
 
 let orm: MikroORM;

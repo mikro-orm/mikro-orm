@@ -4,18 +4,15 @@ import { v4 } from 'uuid';
 
 @Entity()
 export class Address {
-
   @PrimaryKey({ type: 'uuid' })
   id = v4();
 
   @Property({ type: 'string' })
   name!: string;
-
 }
 
 @Entity()
 export class Contact {
-
   @PrimaryKey({ type: 'uuid' })
   id = v4();
 
@@ -24,12 +21,10 @@ export class Contact {
 
   @OneToOne({ type: Address, nullable: true })
   address?: Address;
-
 }
 
 @Entity()
 export class Employee {
-
   @PrimaryKey({ type: 'uuid' })
   id = v4();
 
@@ -38,11 +33,9 @@ export class Employee {
 
   @OneToOne({ type: Contact, nullable: true })
   contact?: Contact;
-
 }
 
 describe('GH issue 811', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
@@ -84,9 +77,7 @@ describe('GH issue 811', () => {
     contact.address = address;
 
     // Find my previously created employee
-    expect(orm.em.getUnitOfWork().getOriginalEntityData()).toEqual([
-      { id: contact.id, name: 'My Contact', address: null },
-    ]);
+    expect(orm.em.getUnitOfWork().getOriginalEntityData()).toEqual([{ id: contact.id, name: 'My Contact', address: null }]);
     const employee = await orm.em.findOneOrFail(Employee, employeeCreate.id);
 
     // previously the `Employee.contact.address` was accidentally cascade merged
@@ -98,5 +89,4 @@ describe('GH issue 811', () => {
 
     expect(employee).toBeInstanceOf(Employee);
   });
-
 });

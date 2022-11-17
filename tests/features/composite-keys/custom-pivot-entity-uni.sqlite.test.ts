@@ -2,11 +2,10 @@ import { Entity, PrimaryKey, MikroORM, ManyToOne, PrimaryKeyType, Property, wrap
 
 @Entity()
 export class Order {
-
   @PrimaryKey()
   id!: number;
 
-  @OneToMany(() => OrderItem, item => item.order)
+  @OneToMany(() => OrderItem, (item) => item.order)
   items = new Collection<OrderItem>(this);
 
   @ManyToMany({ entity: () => Product, pivotEntity: () => OrderItem })
@@ -20,12 +19,10 @@ export class Order {
 
   @Property()
   created: Date = new Date();
-
 }
 
 @Entity()
 export class Product {
-
   @PrimaryKey()
   id!: number;
 
@@ -39,12 +36,10 @@ export class Product {
     this.name = name;
     this.currentPrice = currentPrice;
   }
-
 }
 
 @Entity()
 export class OrderItem {
-
   @ManyToOne({ primary: true })
   order: Order;
 
@@ -64,11 +59,9 @@ export class OrderItem {
     this.product = product;
     this.offeredPrice = product.currentPrice;
   }
-
 }
 
 describe('custom pivot entity for m:n with additional properties (unidirectional)', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -140,10 +133,12 @@ describe('custom pivot entity for m:n with additional properties (unidirectional
     // test collection CRUD
     // remove
     expect(order.products.count()).toBe(2);
-    order.products.remove(t => t.id === product1.id); // we need to get reference as product1 is detached from current EM
+    order.products.remove((t) => t.id === product1.id); // we need to get reference as product1 is detached from current EM
     await orm.em.persistAndFlush(order);
     orm.em.clear();
-    order = (await orm.em.findOne(Order, order.id, { populate: ['products'] as const }))!;
+    order = (await orm.em.findOne(Order, order.id, {
+      populate: ['products'] as const,
+    }))!;
     expect(order.products.count()).toBe(1);
 
     // add
@@ -152,7 +147,9 @@ describe('custom pivot entity for m:n with additional properties (unidirectional
     order.products.add(product6);
     await orm.em.persistAndFlush(order);
     orm.em.clear();
-    order = (await orm.em.findOne(Order, order.id, { populate: ['products'] as const }))!;
+    order = (await orm.em.findOne(Order, order.id, {
+      populate: ['products'] as const,
+    }))!;
     expect(order.products.count()).toBe(3);
 
     // contains
@@ -167,7 +164,9 @@ describe('custom pivot entity for m:n with additional properties (unidirectional
     order.products.removeAll();
     await orm.em.persistAndFlush(order);
     orm.em.clear();
-    order = (await orm.em.findOne(Order, order.id, { populate: ['products'] as const }))!;
+    order = (await orm.em.findOne(Order, order.id, {
+      populate: ['products'] as const,
+    }))!;
     expect(order.products.count()).toBe(0);
   });
 
@@ -178,5 +177,4 @@ describe('custom pivot entity for m:n with additional properties (unidirectional
     const count = await res[0].products.loadCount();
     expect(count).toBe(2);
   });
-
 });

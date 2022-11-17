@@ -3,28 +3,23 @@ import type { AbstractSqlDriver } from '@mikro-orm/knex';
 
 @Entity()
 export class B {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   property!: string;
-
 }
 
 @Entity()
 export class A {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => B)
   property!: B;
-
 }
 
 describe('GH issue 1115', () => {
-
   let orm: MikroORM<AbstractSqlDriver>;
 
   beforeAll(async () => {

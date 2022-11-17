@@ -3,7 +3,6 @@ import { colors } from '@mikro-orm/core';
 import { CLIHelper } from '../CLIHelper';
 
 export class CreateSeederCommand<T> implements CommandModule<T, { seeder: string }> {
-
   command = 'seeder:create <seeder>';
   describe = 'Create a new seeder class';
   builder = (args: Argv<T>) => {
@@ -33,7 +32,6 @@ export class CreateSeederCommand<T> implements CommandModule<T, { seeder: string
     name = name.match(/(.+)seeder/i)?.[1] ?? name;
     const parts = name.split('-');
 
-    return parts.map(name => name.charAt(0).toUpperCase() + name.slice(1)).join('') + 'Seeder';
+    return parts.map((name) => name.charAt(0).toUpperCase() + name.slice(1)).join('') + 'Seeder';
   }
-
 }

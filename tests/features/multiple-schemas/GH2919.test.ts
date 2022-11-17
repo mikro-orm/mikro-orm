@@ -5,16 +5,14 @@ import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property, t } fro
   tableName: 'account',
 })
 class Account {
-
   @PrimaryKey({ type: t.bigint })
   id!: string;
 
-  @ManyToMany({ entity: () => Customer, mappedBy: c => c.accounts })
+  @ManyToMany({ entity: () => Customer, mappedBy: (c) => c.accounts })
   customers: Collection<Customer> = new Collection<Customer>(this);
 
-  @ManyToMany({ entity: () => Company, mappedBy: c => c.accounts })
+  @ManyToMany({ entity: () => Company, mappedBy: (c) => c.accounts })
   companies: Collection<Company> = new Collection<Company>(this);
-
 }
 
 @Entity({
@@ -22,7 +20,6 @@ class Account {
   tableName: 'customer',
 })
 class Customer {
-
   @PrimaryKey({ type: t.bigint })
   id!: string;
 
@@ -36,7 +33,6 @@ class Customer {
     inverseJoinColumn: 'account_id',
   })
   accounts = new Collection<Account>(this);
-
 }
 
 @Entity({
@@ -44,7 +40,6 @@ class Customer {
   tableName: 'company',
 })
 class Company {
-
   @PrimaryKey({ type: t.bigint })
   id!: string;
 
@@ -58,11 +53,9 @@ class Company {
     inverseJoinColumn: 'account_id',
   })
   accounts = new Collection<Account>(this);
-
 }
 
 describe('GH issue 2919', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -94,5 +87,4 @@ describe('GH issue 2919', () => {
     });
     expect(companyAccounts).toHaveLength(1);
   });
-
 });

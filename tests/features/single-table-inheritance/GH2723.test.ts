@@ -2,30 +2,29 @@ import { Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany
 
 @Entity()
 export class Cat {
-
   [PrimaryKeyType]?: [string, string];
 
   @PrimaryKey()
   name!: string;
 
-  @ManyToOne(() => User, { primary: true, onDelete: 'CASCADE', wrappedReference: true })
+  @ManyToOne(() => User, {
+    primary: true,
+    onDelete: 'CASCADE',
+    wrappedReference: true,
+  })
   user!: IdentifiedReference<User>;
-
 }
 
 @Entity()
 export class User {
-
   @PrimaryKey()
   id!: string;
 
-  @OneToMany(() => Cat, c => c.user, { eager: true, orphanRemoval: true })
+  @OneToMany(() => Cat, (c) => c.user, { eager: true, orphanRemoval: true })
   cats = new Collection<Cat>(this);
-
 }
 
 describe('GH 2723', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -52,5 +51,4 @@ describe('GH 2723', () => {
     const cats = await orm.em.count(User, {});
     expect(users + cats).toBe(0);
   });
-
 });

@@ -9,15 +9,12 @@ import { initORMSqlite2, mockLogger, TEMP_DIR } from '../../bootstrap';
 import { BaseEntity5, FooBar4, FooBaz4 } from '../../entities-schema';
 
 class MigrationTest1 extends Migration {
-
   async up(): Promise<void> {
     this.addSql('select 1 + 1');
   }
-
 }
 
 class MigrationTest2 extends Migration {
-
   async up(): Promise<void> {
     this.addSql('select 1 + 1');
     const knex = this.getKnex();
@@ -30,11 +27,9 @@ class MigrationTest2 extends Migration {
   isTransactional(): boolean {
     return false;
   }
-
 }
 
 describe('Migrator (sqlite)', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -59,7 +54,10 @@ describe('Migrator (sqlite)', () => {
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
-    orm.config.set('migrations', { ...migrationsSettings, fileName: time => `migration-${time}` });
+    orm.config.set('migrations', {
+      ...migrationsSettings,
+      fileName: (time) => `migration-${time}`,
+    });
     const migrator = orm.migrator;
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
@@ -118,7 +116,7 @@ describe('Migrator (sqlite)', () => {
 
     getExecutedMigrationsMock.mockResolvedValueOnce([]);
     const logMigrationMock = jest.spyOn<any, any>(MigrationStorage.prototype, 'logMigration');
-    logMigrationMock.mockImplementationOnce(i => i);
+    logMigrationMock.mockImplementationOnce((i) => i);
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
 
@@ -142,7 +140,10 @@ describe('Migrator (sqlite)', () => {
 
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migration2 = await migrator.createInitialMigration(undefined);
-    expect(logMigrationMock).toBeCalledWith({ name: 'Migration20191013214813.ts', context: null });
+    expect(logMigrationMock).toBeCalledWith({
+      name: 'Migration20191013214813.ts',
+      context: null,
+    });
     expect(migration2).toMatchSnapshot('initial-migration-dump');
     await remove(process.cwd() + '/temp/migrations/' + migration2.fileName);
   });
@@ -157,7 +158,11 @@ describe('Migrator (sqlite)', () => {
     const getSchemaDiffMock = jest.spyOn<any, any>(Migrator.prototype, 'getSchemaDiff');
     getSchemaDiffMock.mockResolvedValueOnce({ up: [], down: [] });
     const migration = await migrator.createMigration();
-    expect(migration).toEqual({ fileName: '', code: '', diff: { up: [], down: [] } });
+    expect(migration).toEqual({
+      fileName: '',
+      code: '',
+      diff: { up: [], down: [] },
+    });
   });
 
   test('run schema migration', async () => {
@@ -262,7 +267,7 @@ describe('Migrator (sqlite)', () => {
     await migrator.down();
 
     await remove(path + '/' + migration.fileName);
-    const calls = mock.mock.calls.map(call => {
+    const calls = mock.mock.calls.map((call) => {
       return call[0]
         .replace(/ \[took \d+ ms]/, '')
         .replace(/\[query] /, '')
@@ -295,7 +300,7 @@ describe('Migrator (sqlite)', () => {
     await migrator.down();
 
     await remove(path + '/' + migration.fileName);
-    const calls = mock.mock.calls.map(call => {
+    const calls = mock.mock.calls.map((call) => {
       return call[0]
         .replace(/ \[took \d+ ms]/, '')
         .replace(/\[query] /, '')
@@ -314,5 +319,4 @@ describe('Migrator (sqlite)', () => {
     await expect(orm.migrator.createMigration()).resolves.not.toThrow();
     await orm.close();
   });
-
 });

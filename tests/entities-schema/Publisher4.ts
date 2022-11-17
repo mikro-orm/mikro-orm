@@ -1,4 +1,4 @@
-import type { Collection , OptionalProps } from '@mikro-orm/core';
+import type { Collection, OptionalProps } from '@mikro-orm/core';
 import { EntitySchema } from '@mikro-orm/core';
 import type { IBaseEntity5 } from './BaseEntity5';
 import type { IBook4 } from './Book4';
@@ -23,9 +23,13 @@ export const Publisher4 = new EntitySchema<IPublisher4, IBaseEntity5>({
   extends: 'BaseEntity5',
   properties: {
     name: { type: 'string', default: 'asd' },
-    type: { enum: true, items: () => PublisherType, default: PublisherType.LOCAL },
+    type: {
+      enum: true,
+      items: () => PublisherType,
+      default: PublisherType.LOCAL,
+    },
     enum3: { enum: true, items: [1, 2, 3], nullable: true },
     books: { reference: '1:m', entity: 'Book4', mappedBy: 'publisher' },
-    tests: { reference: 'm:n', entity:  'Test4', fixedOrder: true },
+    tests: { reference: 'm:n', entity: 'Test4', fixedOrder: true },
   },
 });

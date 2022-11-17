@@ -3,7 +3,6 @@ import { colors } from '@mikro-orm/core';
 import { CLIHelper } from '../CLIHelper';
 
 export class ClearCacheCommand implements CommandModule {
-
   command = 'cache:clear';
   describe = 'Clear metadata cache';
 
@@ -23,5 +22,4 @@ export class ClearCacheCommand implements CommandModule {
 
     CLIHelper.dump(colors.green('Metadata cache was successfully cleared'));
   }
-
 }

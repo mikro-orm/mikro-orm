@@ -5,16 +5,18 @@ import { initORMMySql } from './bootstrap';
 import { FooBar2, FooBaz2 } from './entities-sql';
 
 describe('EntityHelperMySql', () => {
-
   let orm: MikroORM<MySqlDriver>;
 
-  beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
+  beforeAll(async () => (orm = await initORMMySql('mysql', {}, true)));
   beforeEach(async () => orm.schema.clearDatabase());
 
   test(`toObject allows to hide PK (GH issue 644)`, async () => {
     const bar = FooBar2.create('fb');
     await orm.em.persistAndFlush(bar);
-    expect(wrap(bar).toObject(['id'])).not.toMatchObject({ id: bar.id, name: 'fb' });
+    expect(wrap(bar).toObject(['id'])).not.toMatchObject({
+      id: bar.id,
+      name: 'fb',
+    });
   });
 
   test(`toObject handles recursion in 1:1`, async () => {
@@ -57,5 +59,4 @@ describe('EntityHelperMySql', () => {
   });
 
   afterAll(async () => orm.close(true));
-
 });

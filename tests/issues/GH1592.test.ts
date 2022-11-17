@@ -3,7 +3,6 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class RadioOption {
-
   @PrimaryKey()
   id!: number;
 
@@ -19,25 +18,24 @@ export class RadioOption {
   constructor(enabled: boolean) {
     this.enabled = enabled;
   }
-
 }
 
 @Entity()
 export class Radio {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
-  question: string = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 10);
+  question: string = Math.random()
+    .toString(36)
+    .replace(/[^a-z]+/g, '')
+    .substr(0, 10);
 
   @OneToOne({ entity: () => RadioOption, wrappedReference: true, eager: true })
   option!: IdentifiedReference<RadioOption>;
-
 }
 
 describe('GH issue 1592', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -64,5 +62,4 @@ describe('GH issue 1592', () => {
     expect(radio.option.getEntity().createdAt).toBeDefined();
     await orm.em.persistAndFlush(radio);
   });
-
 });

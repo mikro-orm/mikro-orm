@@ -7,17 +7,13 @@ import { ExceptionConverter } from './ExceptionConverter';
 import type { EntityManager } from '../EntityManager';
 import type { Configuration } from '../utils/Configuration';
 import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
-import {
-  ArrayType, BigIntType, BlobType, BooleanType, DateType, DecimalType, DoubleType, JsonType, SmallIntType, TimeType,
-  TinyIntType, Type, UuidType, StringType, IntegerType, FloatType, DateTimeType, TextType, EnumType, UnknownType, MediumIntType,
-} from '../types';
+import { ArrayType, BigIntType, BlobType, BooleanType, DateType, DecimalType, DoubleType, JsonType, SmallIntType, TimeType, TinyIntType, Type, UuidType, StringType, IntegerType, FloatType, DateTimeType, TextType, EnumType, UnknownType, MediumIntType } from '../types';
 import { Utils } from '../utils/Utils';
 import { ReferenceType } from '../enums';
 
 export const JsonProperty = Symbol('JsonProperty');
 
 export abstract class Platform {
-
   protected readonly exceptionConverter = new ExceptionConverter();
   protected config!: Configuration;
   protected namingStrategy!: NamingStrategy;
@@ -35,7 +31,7 @@ export abstract class Platform {
     return true;
   }
 
-  getNamingStrategy(): { new(): NamingStrategy } {
+  getNamingStrategy(): { new (): NamingStrategy } {
     return UnderscoreNamingStrategy;
   }
 
@@ -194,7 +190,7 @@ export abstract class Platform {
   }
 
   getEnumTypeDeclarationSQL(column: { items?: unknown[]; fieldNames: string[]; length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
-    if (column.items?.every(item => Utils.isString(item))) {
+    if (column.items?.every((item) => Utils.isString(item))) {
       return `enum('${column.items.join("', '")}')`;
     }
 
@@ -236,30 +232,51 @@ export abstract class Platform {
     }
 
     switch (this.extractSimpleType(type)) {
-      case 'string': return Type.getType(StringType);
-      case 'varchar': return Type.getType(StringType);
-      case 'text': return Type.getType(TextType);
-      case 'number': return Type.getType(IntegerType);
-      case 'bigint': return Type.getType(BigIntType);
-      case 'smallint': return Type.getType(SmallIntType);
-      case 'tinyint': return Type.getType(TinyIntType);
-      case 'mediumint': return Type.getType(MediumIntType);
-      case 'float': return Type.getType(FloatType);
-      case 'double': return Type.getType(DoubleType);
-      case 'integer': return Type.getType(IntegerType);
+      case 'string':
+        return Type.getType(StringType);
+      case 'varchar':
+        return Type.getType(StringType);
+      case 'text':
+        return Type.getType(TextType);
+      case 'number':
+        return Type.getType(IntegerType);
+      case 'bigint':
+        return Type.getType(BigIntType);
+      case 'smallint':
+        return Type.getType(SmallIntType);
+      case 'tinyint':
+        return Type.getType(TinyIntType);
+      case 'mediumint':
+        return Type.getType(MediumIntType);
+      case 'float':
+        return Type.getType(FloatType);
+      case 'double':
+        return Type.getType(DoubleType);
+      case 'integer':
+        return Type.getType(IntegerType);
       case 'decimal':
-      case 'numeric': return Type.getType(DecimalType);
-      case 'boolean': return Type.getType(BooleanType);
+      case 'numeric':
+        return Type.getType(DecimalType);
+      case 'boolean':
+        return Type.getType(BooleanType);
       case 'blob':
-      case 'buffer': return Type.getType(BlobType);
-      case 'uuid': return Type.getType(UuidType);
-      case 'date': return Type.getType(DateType);
-      case 'datetime': return Type.getType(DateTimeType);
-      case 'time': return Type.getType(TimeType);
+      case 'buffer':
+        return Type.getType(BlobType);
+      case 'uuid':
+        return Type.getType(UuidType);
+      case 'date':
+        return Type.getType(DateType);
+      case 'datetime':
+        return Type.getType(DateTimeType);
+      case 'time':
+        return Type.getType(TimeType);
       case 'object':
-      case 'json': return Type.getType(JsonType);
-      case 'enum': return Type.getType(EnumType);
-      default: return Type.getType(UnknownType);
+      case 'json':
+        return Type.getType(JsonType);
+      case 'enum':
+        return Type.getType(EnumType);
+      default:
+        return Type.getType(UnknownType);
     }
   }
 
@@ -354,7 +371,10 @@ export abstract class Platform {
   cloneEmbeddable<T>(data: T): T {
     const copy = clone(data);
     // tag the copy so we know it should be stringified when quoting (so we know how to treat JSON arrays)
-    Object.defineProperty(copy, JsonProperty, { enumerable: false, value: true });
+    Object.defineProperty(copy, JsonProperty, {
+      enumerable: false,
+      value: true,
+    });
 
     return copy;
   }
@@ -375,7 +395,7 @@ export abstract class Platform {
   }
 
   isNumericColumn(mappedType: Type<unknown>): boolean {
-    return [IntegerType, SmallIntType, BigIntType].some(t => mappedType instanceof t);
+    return [IntegerType, SmallIntType, BigIntType].some((t) => mappedType instanceof t);
   }
 
   supportsUnsigned(): boolean {
@@ -400,14 +420,14 @@ export abstract class Platform {
 
   shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[] | boolean, includeFormulas = true): boolean {
     if (prop.formula) {
-      return includeFormulas && (!prop.lazy || populate === true || (populate !== false && populate.some(p => p.field === prop.name)));
+      return includeFormulas && (!prop.lazy || populate === true || (populate !== false && populate.some((p) => p.field === prop.name)));
     }
 
     if (prop.persist === false) {
       return false;
     }
 
-    if (prop.lazy && (populate === false || (populate !== true && !populate.some(p => p.field === prop.name)))) {
+    if (prop.lazy && (populate === false || (populate !== true && !populate.some((p) => p.field === prop.name)))) {
       return false;
     }
 
@@ -454,5 +474,4 @@ export abstract class Platform {
   clone() {
     return this;
   }
-
 }

@@ -1,7 +1,6 @@
 import { Configuration, DefaultLogger } from '@mikro-orm/core';
 
 describe('Logger', () => {
-
   test('should have debug mode disabled by default', async () => {
     const mock = jest.fn();
     const logger = new DefaultLogger({ writer: mock });
@@ -39,5 +38,4 @@ describe('Logger', () => {
     logger.warn('query', 'test warning msg');
     expect(mock.mock.calls.length).toBe(3);
   });
-
 });

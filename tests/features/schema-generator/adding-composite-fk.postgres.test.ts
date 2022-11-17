@@ -3,7 +3,6 @@ import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 export class Country {
-
   @PrimaryKey()
   id!: number;
 
@@ -18,12 +17,10 @@ export class Country {
 
   @OneToMany('State', 'country', { cascade: [Cascade.ALL], nullable: true })
   states = new Collection<State>(this);
-
 }
 
 @Entity()
 export class State {
-
   @ManyToOne(() => Country, { primary: true })
   country!: Country;
 
@@ -35,12 +32,10 @@ export class State {
 
   @OneToMany('City', 'state', { cascade: [Cascade.ALL], nullable: true })
   cities = new Collection<City>(this);
-
 }
 
 @Entity()
 export class City {
-
   @ManyToOne(() => State, { primary: true })
   state!: State;
 
@@ -49,12 +44,10 @@ export class City {
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 export class User {
-
   @PrimaryKey()
   id!: string;
 
@@ -73,14 +66,15 @@ export class User {
   @Property({ columnType: 'timestamptz', nullable: false })
   created = new Date();
 
-  @Property({ columnType: 'timestamptz', onUpdate: () => new Date().toISOString() })
+  @Property({
+    columnType: 'timestamptz',
+    onUpdate: () => new Date().toISOString(),
+  })
   modified = new Date();
-
 }
 
 @Entity({ tableName: 'user' })
 export class User1 {
-
   @PrimaryKey()
   id!: string;
 
@@ -99,16 +93,17 @@ export class User1 {
   @Property({ columnType: 'timestamptz', nullable: false })
   created = new Date();
 
-  @Property({ columnType: 'timestamptz', onUpdate: () => new Date().toISOString() })
+  @Property({
+    columnType: 'timestamptz',
+    onUpdate: () => new Date().toISOString(),
+  })
   modified = new Date();
 
   @ManyToOne()
   city!: City;
-
 }
 
 describe('adding m:1 with composite PK (FK as PK + scalar PK) (GH 1687)', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
@@ -138,5 +133,4 @@ describe('adding m:1 with composite PK (FK as PK + scalar PK) (GH 1687)', () => 
     await orm.schema.execute(diff1.down);
     await orm.schema.execute(diff0.down);
   });
-
 });

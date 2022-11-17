@@ -4,7 +4,6 @@ import type { EntityProperty } from '../typings';
 import { Utils } from '../utils';
 
 export class JsonType extends Type<unknown, string | null> {
-
   convertToDatabaseValue(value: unknown, platform: Platform): string | null {
     if (platform.convertsJsonAutomatically(true) || value === null) {
       return value as string;
@@ -24,5 +23,4 @@ export class JsonType extends Type<unknown, string | null> {
   getColumnType(prop: EntityProperty, platform: Platform): string {
     return platform.getJsonDeclarationSQL();
   }
-
 }

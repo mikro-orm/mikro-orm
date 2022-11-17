@@ -5,10 +5,9 @@ import { initORMMySql } from '../../bootstrap';
 import { Author2, Book2, BookTag2, FooBar2, Publisher2, PublisherType } from '../../entities-sql';
 
 describe('EntityAssignerMySql', () => {
-
   let orm: MikroORM<MySqlDriver>;
 
-  beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
+  beforeAll(async () => (orm = await initORMMySql('mysql', {}, true)));
   beforeEach(async () => orm.schema.clearDatabase());
 
   test('assign() should update entity values [mysql]', async () => {
@@ -19,7 +18,11 @@ describe('EntityAssignerMySql', () => {
     expect(book.title).toBe('Book2');
     expect(book.author).toBe(jon);
     // @ts-expect-error
-    wrap(book).assign({ title: 'Better Book2 1', author: god, notExisting: true });
+    wrap(book).assign({
+      title: 'Better Book2 1',
+      author: god,
+      notExisting: true,
+    });
     expect(book.author).toBe(god);
     expect((book as any).notExisting).toBe(true);
     await orm.em.persistAndFlush(god);
@@ -124,7 +127,13 @@ describe('EntityAssignerMySql', () => {
 
     const value = Reference.unwrapReference(book2.publisher!);
 
-    wrap(book2).assign({ author: { name: 'Jon Snow2' }, publisher: { name: 'Better Books LLC' } }, { updateNestedEntities: true });
+    wrap(book2).assign(
+      {
+        author: { name: 'Jon Snow2' },
+        publisher: { name: 'Better Books LLC' },
+      },
+      { updateNestedEntities: true }
+    );
 
     expect(book2.author).not.toEqual(originalAuthorRef);
     expect(book2.publisher).not.toEqual(originalPublisherWrappedRef);
@@ -154,7 +163,13 @@ describe('EntityAssignerMySql', () => {
     const originalRef = book2.publisher!;
     expect(originalValue.name).toEqual('Good Books LLC');
 
-    wrap(book2).assign({ author: { name: 'Jon Snow2' }, publisher: { name: 'Better Books LLC' } }, { updateByPrimaryKey: false });
+    wrap(book2).assign(
+      {
+        author: { name: 'Jon Snow2' },
+        publisher: { name: 'Better Books LLC' },
+      },
+      { updateByPrimaryKey: false }
+    );
 
     // this means that the original object has been replaced, something updateNestedEntities does not do
     expect(book2.publisher).toEqual(originalRef);
@@ -179,7 +194,9 @@ describe('EntityAssignerMySql', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const book2 = await orm.em.findOneOrFail(Book2, book.uuid, { populate: ['tags'] });
+    const book2 = await orm.em.findOneOrFail(Book2, book.uuid, {
+      populate: ['tags'],
+    });
     expect(book2.tags.getIdentifiers()).toMatchObject([tag1.id, other.id]);
   });
 
@@ -222,10 +239,7 @@ describe('EntityAssignerMySql', () => {
     const entity = orm.em.create(Author2, {
       name: 'god',
       email: 'e',
-      books: [
-        { title: 'b1' },
-        { title: 'b2' },
-      ],
+      books: [{ title: 'b1' }, { title: 'b2' }],
     });
     entity.books.populated();
     const updated = wrap(entity).toObject();
@@ -235,5 +249,4 @@ describe('EntityAssignerMySql', () => {
   });
 
   afterAll(async () => orm.close(true));
-
 });

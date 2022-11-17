@@ -3,7 +3,6 @@ import { MikroORM, ObjectId } from '@mikro-orm/mongodb';
 
 @Entity()
 export class Author {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -12,25 +11,22 @@ export class Author {
 
   @OneToOne('AuthorDetail', 'author', { owner: true })
   authorDetail!: any;
-
 }
 
 @Entity()
 export class AuthorDetail {
-
   @PrimaryKey()
   _id!: ObjectId;
 
   @Property()
   name!: string;
 
-  @OneToOne(() => Author, b => b.authorDetail)
+  @OneToOne(() => Author, (b) => b.authorDetail)
   author!: Author;
 
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 let orm: MikroORM;

@@ -3,7 +3,6 @@ import { mockLogger } from '../helpers';
 
 @Entity()
 export class Ingredient {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,12 +11,10 @@ export class Ingredient {
 
   @OneToMany('RecipeIngredient', 'ingredient')
   recipeIngredients = new Collection<RecipeIngredient>(this);
-
 }
 
 @Entity()
 export class Recipe {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,12 +23,10 @@ export class Recipe {
 
   @OneToMany('RecipeIngredient', 'recipe', { eager: true, orphanRemoval: true })
   ingredients = new Collection<RecipeIngredient>(this);
-
 }
 
 @Entity()
 export class RecipeIngredient {
-
   @PrimaryKey()
   id!: number;
 
@@ -43,7 +38,6 @@ export class RecipeIngredient {
 
   @ManyToOne(() => Recipe)
   recipe!: Recipe;
-
 }
 
 let orm: MikroORM;

@@ -6,8 +6,7 @@ import type { Platform } from '../platforms';
 import { ValidationError } from '../errors';
 
 export class ArrayType<T extends string | number = string> extends Type<T[] | null, string | null> {
-
-  constructor(private readonly hydrate: (i: string) => T = i => i as T) {
+  constructor(private readonly hydrate: (i: string) => T = (i) => i as T) {
     super();
   }
 
@@ -37,7 +36,7 @@ export class ArrayType<T extends string | number = string> extends Type<T[] | nu
       value = platform.unmarshallArray(value) as T[];
     }
 
-    return value.map(i => this.hydrate(i as string));
+    return value.map((i) => this.hydrate(i as string));
   }
 
   compareAsType(): string {
@@ -51,5 +50,4 @@ export class ArrayType<T extends string | number = string> extends Type<T[] | nu
   getColumnType(prop: EntityProperty, platform: Platform): string {
     return platform.getArrayDeclarationSQL();
   }
-
 }

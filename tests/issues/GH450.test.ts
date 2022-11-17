@@ -4,7 +4,6 @@ import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'auth.users' })
 class TaskAssignee {
-
   @Property()
   avatar: string;
 
@@ -22,13 +21,14 @@ class TaskAssignee {
     this.firstName = firstName;
     this.lastName = lastName;
   }
-
 }
 
 @Entity({ tableName: 'operations.tasks' })
 class Task {
-
-  @ManyToMany({ entity: () => TaskAssignee, pivotTable: 'operations.task_assignees' })
+  @ManyToMany({
+    entity: () => TaskAssignee,
+    pivotTable: 'operations.task_assignees',
+  })
   assignees = new Collection<TaskAssignee>(this);
 
   @ManyToOne(() => TaskAssignee, { nullable: true })
@@ -36,11 +36,9 @@ class Task {
 
   @PrimaryKey()
   id!: number;
-
 }
 
 describe('GH issue 450', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
@@ -61,7 +59,11 @@ describe('GH issue 450', () => {
   });
 
   afterAll(async () => {
-    await orm.schema.dropSchema({ wrap: true, dropMigrationsTable: true, dropDb: true });
+    await orm.schema.dropSchema({
+      wrap: true,
+      dropMigrationsTable: true,
+      dropDb: true,
+    });
     await orm.schema.dropDatabase('auth');
     await orm.schema.dropDatabase('operations');
     await orm.close(true);
@@ -73,7 +75,9 @@ describe('GH issue 450', () => {
     await orm.em.persistAndFlush(t);
     orm.em.clear();
 
-    const t1 = await orm.em.findOneOrFail(Task, t.id, { populate: ['assignees'] });
+    const t1 = await orm.em.findOneOrFail(Task, t.id, {
+      populate: ['assignees'],
+    });
     expect(t1.assignees.count()).toBe(1);
     expect(t1.assignees[0]).toBeInstanceOf(TaskAssignee);
     expect(wrap(t1.assignees[0]).isInitialized()).toBe(true);
@@ -82,9 +86,10 @@ describe('GH issue 450', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const t2 = await orm.em.findOneOrFail(Task, t.id, { populate: ['assignee'] });
+    const t2 = await orm.em.findOneOrFail(Task, t.id, {
+      populate: ['assignee'],
+    });
     expect(t2.assignee).toBeInstanceOf(TaskAssignee);
     expect(wrap(t2.assignee).isInitialized()).toBe(true);
   });
-
 });

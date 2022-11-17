@@ -10,9 +10,8 @@ import { BookRepository } from '../repositories/BookRepository';
 @Unique({ properties: ['title', 'author'] })
 @Index({ properties: 'title', type: 'fulltext' })
 @Index({ options: { point: '2dsphere', title: -1 } })
-@Filter({ name: 'writtenBy', cond: args => ({ author: args.author }) })
+@Filter({ name: 'writtenBy', cond: (args) => ({ author: args.author }) })
 export class Book extends BaseEntity3<Book> {
-
   [OptionalProps]?: 'createdAt';
 
   @PrimaryKey()
@@ -30,7 +29,11 @@ export class Book extends BaseEntity3<Book> {
   @ManyToOne(() => Author)
   author: Author;
 
-  @ManyToOne(() => Publisher, { wrappedReference: true, cascade: [Cascade.PERSIST, Cascade.REMOVE], nullable: true })
+  @ManyToOne(() => Publisher, {
+    wrappedReference: true,
+    cascade: [Cascade.PERSIST, Cascade.REMOVE],
+    nullable: true,
+  })
   @Index({ name: 'publisher_idx' })
   publisher!: IdentifiedReference<Publisher, '_id' | 'id'> | null;
 
@@ -63,10 +66,9 @@ export class Book extends BaseEntity3<Book> {
     const o = wrap(this).toObject(...args);
 
     if (strict) {
-      strip.forEach(k => delete o[k]);
+      strip.forEach((k) => delete o[k]);
     }
 
     return o;
   }
-
 }

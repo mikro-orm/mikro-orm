@@ -3,23 +3,18 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class First {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 @Entity()
 export class Second {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 @Entity()
 export class Third {
-
   @ManyToOne({ primary: true, entity: () => First, wrappedReference: true })
   first: IdentifiedReference<First>;
 
@@ -30,11 +25,9 @@ export class Third {
     this.first = Reference.create(first);
     this.second = Reference.create(second);
   }
-
 }
 
 describe('GH issue 2148', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -61,5 +54,4 @@ describe('GH issue 2148', () => {
     });
     await orm.em.remove(cc).flush();
   });
-
 });

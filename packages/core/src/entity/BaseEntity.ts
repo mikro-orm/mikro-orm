@@ -6,7 +6,6 @@ import { EntityAssigner } from './EntityAssigner';
 import { helper } from './wrap';
 
 export abstract class BaseEntity<Entity extends object, Primary extends keyof Entity, Populate extends string = string> {
-
   isInitialized(): boolean {
     return helper(this).__initialized;
   }
@@ -51,7 +50,10 @@ export abstract class BaseEntity<Entity extends object, Primary extends keyof En
   setSchema(schema?: string): void {
     helper(this).setSchema(schema);
   }
-
 }
 
-Object.defineProperty(BaseEntity.prototype, '__baseEntity', { value: true, writable: false, enumerable: false });
+Object.defineProperty(BaseEntity.prototype, '__baseEntity', {
+  value: true,
+  writable: false,
+  enumerable: false,
+});

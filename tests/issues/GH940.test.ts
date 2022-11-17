@@ -4,18 +4,15 @@ import { mockLogger } from '../helpers';
 
 @Entity()
 class User {
-
   @PrimaryKey({ type: BigIntType })
   id!: string;
 
   @OneToMany('UserOrganization', 'user')
   organizations = new Collection<UserOrganization>(this);
-
 }
 
 @Entity()
 class UserOrganization {
-
   @PrimaryKey({ type: BigIntType })
   id!: string;
 
@@ -29,11 +26,9 @@ class UserOrganization {
     this.user = user;
     this.isAdmin = isAdmin;
   }
-
 }
 
 describe('GH issue 940, 1117', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -80,5 +75,4 @@ describe('GH issue 940, 1117', () => {
     await orm.em.flush();
     expect(mock.mock.calls).toHaveLength(0);
   });
-
 });

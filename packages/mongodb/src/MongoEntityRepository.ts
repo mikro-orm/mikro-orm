@@ -3,9 +3,7 @@ import { EntityRepository } from '@mikro-orm/core';
 import type { MongoEntityManager } from './MongoEntityManager';
 
 export class MongoEntityRepository<T extends object> extends EntityRepository<T> {
-
-  constructor(protected readonly _em: MongoEntityManager,
-              protected readonly entityName: EntityName<T>) {
+  constructor(protected readonly _em: MongoEntityManager, protected readonly entityName: EntityName<T>) {
     super(_em, entityName);
   }
 
@@ -19,5 +17,4 @@ export class MongoEntityRepository<T extends object> extends EntityRepository<T>
   protected get em(): MongoEntityManager {
     return this._em.getContext(false);
   }
-
 }

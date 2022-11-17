@@ -18,7 +18,6 @@ const dumpMock = jest.spyOn(CLIHelper, 'dump');
 dumpMock.mockImplementation(() => void 0);
 
 describe('UpdateSchemaCommand', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -47,5 +46,4 @@ describe('UpdateSchemaCommand', () => {
     expect(getUpdateSchemaSQL.mock.calls.length).toBe(1);
     expect(closeSpy).toBeCalledTimes(2);
   });
-
 });

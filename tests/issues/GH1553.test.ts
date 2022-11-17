@@ -1,19 +1,8 @@
-import {
-  Entity,
-  MikroORM,
-  PrimaryKey,
-  Property,
-  ManyToOne,
-  IdentifiedReference,
-  OneToMany,
-  Collection,
-  LoadStrategy,
-} from '@mikro-orm/core';
+import { Entity, MikroORM, PrimaryKey, Property, ManyToOne, IdentifiedReference, OneToMany, Collection, LoadStrategy } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Owner {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,12 +15,10 @@ export class Owner {
   constructor(name: string) {
     this.name = name;
   }
-
 }
 
 @Entity()
 export class RadioOption {
-
   @PrimaryKey()
   id!: number;
 
@@ -41,44 +28,34 @@ export class RadioOption {
   @ManyToOne('Radio', { wrappedReference: true })
   radio!: IdentifiedReference<Radio>;
 
-
   constructor(enabled: boolean) {
     this.enabled = enabled;
   }
-
 }
 
 @Entity()
 export class Radio {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
-  question: string = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 10);
+  question: string = Math.random()
+    .toString(36)
+    .replace(/[^a-z]+/g, '')
+    .substr(0, 10);
 
-  @OneToMany(
-    () => RadioOption,
-    option => option.radio,
-    {
-      eager: true,
-    },
-  )
+  @OneToMany(() => RadioOption, (option) => option.radio, {
+    eager: true,
+  })
   options = new Collection<RadioOption>(this);
 
-  @OneToMany(
-    () => Owner,
-    option => option.radio,
-    {
-      eager: true,
-    },
-  )
+  @OneToMany(() => Owner, (option) => option.radio, {
+    eager: true,
+  })
   owners = new Collection<Owner>(this);
-
 }
 
 describe('GH issue 1553', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -110,8 +87,9 @@ describe('GH issue 1553', () => {
     expect(fetchedRadio1.options.getItems()[0].enabled).toBe(true);
     orm.em.clear();
 
-    const fetchedRadio2 = await orm.em.findOneOrFail(Radio, radio.id, { populate: ['owners'] });
+    const fetchedRadio2 = await orm.em.findOneOrFail(Radio, radio.id, {
+      populate: ['owners'],
+    });
     expect(fetchedRadio2.options.getItems()[0].enabled).toBe(true);
   });
-
 });

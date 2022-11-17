@@ -9,7 +9,6 @@ import type { EntityFactory } from '../entity/EntityFactory';
 type EntityHydrator<T> = (entity: T, data: EntityData<T>, factory: EntityFactory, newEntity: boolean, convertCustomTypes: boolean, schema?: string) => void;
 
 export class ObjectHydrator extends Hydrator {
-
   private readonly hydrators = {
     full: new Map<string, EntityHydrator<any>>(),
     reference: new Map<string, EntityHydrator<any>>(),
@@ -73,19 +72,23 @@ export class ObjectHydrator extends Hydrator {
     };
 
     const hydrateScalar = <T, U>(prop: EntityProperty<T>, object: boolean | undefined, path: string[], dataKey: string): string[] => {
-      const entityKey = path.map(k => this.wrap(k)).join('');
+      const entityKey = path.map((k) => this.wrap(k)).join('');
       const preCond = preCondition(dataKey);
-      const convertorKey = path.filter(k => !k.match(/\[idx_\d+]/)).map(k => this.safeKey(k)).join('_');
+      const convertorKey = path
+        .filter((k) => !k.match(/\[idx_\d+]/))
+        .map((k) => this.safeKey(k))
+        .join('_');
       const ret: string[] = [];
 
       if (prop.type.toLowerCase() === 'date') {
-        ret.push(
-          `  if (${preCond}data${dataKey}) entity${entityKey} = new Date(data${dataKey});`,
-          `  else if (${preCond}data${dataKey} === null) entity${entityKey} = null;`,
-        );
+        ret.push(`  if (${preCond}data${dataKey}) entity${entityKey} = new Date(data${dataKey});`, `  else if (${preCond}data${dataKey} === null) entity${entityKey} = null;`);
       } else if (prop.customType) {
         context.set(`convertToJSValue_${convertorKey}`, (val: any) => prop.customType.convertToJSValue(val, this.platform));
-        context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'hydration' }));
+        context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) =>
+          prop.customType.convertToDatabaseValue(val, this.platform, {
+            mode: 'hydration',
+          })
+        );
 
         ret.push(
           `  if (${preCond}typeof data${dataKey} !== 'undefined') {`,
@@ -96,7 +99,7 @@ export class ObjectHydrator extends Hydrator {
           `    } else {`,
           `      entity${entityKey} = data${dataKey};`,
           `    }`,
-          `  }`,
+          `  }`
         );
       } else if (prop.type.toLowerCase() === 'boolean') {
         ret.push(`  if (${preCond}typeof data${dataKey} !== 'undefined') entity${entityKey} = data${dataKey} === null ? null : !!data${dataKey};`);
@@ -147,7 +150,11 @@ export class ObjectHydrator extends Hydrator {
       }
 
       if (prop.customType) {
-        context.set(`convertToDatabaseValue_${this.safeKey(prop.name)}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'hydration' }));
+        context.set(`convertToDatabaseValue_${this.safeKey(prop.name)}`, (val: any) =>
+          prop.customType.convertToDatabaseValue(val, this.platform, {
+            mode: 'hydration',
+          })
+        );
 
         ret.push(`  if (data${dataKey} != null && convertCustomTypes) {`);
         ret.push(`    data${dataKey} = convertToDatabaseValue_${this.safeKey(prop.name)}(entity${entityKey}.__helper.getPrimaryKey());`); // make sure the value is comparable
@@ -184,10 +191,13 @@ export class ObjectHydrator extends Hydrator {
     };
 
     const registerEmbeddedPrototype = (prop: EntityProperty, path: string[]): void => {
-      const convertorKey = path.filter(k => !k.match(/\[idx_\d+]/)).map(k => this.safeKey(k)).join('_');
+      const convertorKey = path
+        .filter((k) => !k.match(/\[idx_\d+]/))
+        .map((k) => this.safeKey(k))
+        .join('_');
 
       if (prop.targetMeta?.polymorphs) {
-        prop.targetMeta.polymorphs.forEach(meta => {
+        prop.targetMeta.polymorphs.forEach((meta) => {
           context.set(`prototype_${convertorKey}_${meta.className}`, meta.prototype);
         });
       } else {
@@ -197,16 +207,12 @@ export class ObjectHydrator extends Hydrator {
 
     const parseObjectEmbeddable = (prop: EntityProperty, dataKey: string, ret: string[]): void => {
       if (!this.platform.convertsJsonAutomatically() && (prop.object || prop.array)) {
-        ret.push(
-          `  if (typeof data${dataKey} === 'string') {`,
-          `    data${dataKey} = JSON.parse(data${dataKey});`,
-          `  }`,
-        );
+        ret.push(`  if (typeof data${dataKey} === 'string') {`, `    data${dataKey} = JSON.parse(data${dataKey});`, `  }`);
       }
     };
 
     const hydrateEmbedded = (prop: EntityProperty, path: string[], dataKey: string): string[] => {
-      const entityKey = path.map(k => this.wrap(k)).join('');
+      const entityKey = path.map((k) => this.wrap(k)).join('');
       const ret: string[] = [];
       const conds: string[] = [];
       registerEmbeddedPrototype(prop, path);
@@ -216,15 +222,13 @@ export class ObjectHydrator extends Hydrator {
         conds.push(`data${dataKey} != null`);
       } else {
         const notNull = prop.nullable ? '!= null' : '!== undefined';
-        meta.props
-          .filter(p => p.embedded?.[0] === prop.name)
-          .forEach(p => conds.push(`data${this.wrap(p.name)} ${notNull}`));
+        meta.props.filter((p) => p.embedded?.[0] === prop.name).forEach((p) => conds.push(`data${this.wrap(p.name)} ${notNull}`));
       }
 
       ret.push(`  if (${conds.join(' || ')}) {`);
 
       if (prop.targetMeta?.polymorphs) {
-        prop.targetMeta.polymorphs!.forEach(meta => {
+        prop.targetMeta.polymorphs!.forEach((meta) => {
           const childProp = prop.embeddedProps[prop.targetMeta!.discriminatorColumn!];
           const childDataKey = prop.object ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
           // weak comparison as we can have numbers that might have been converted to strings due to being object keys
@@ -239,11 +243,11 @@ export class ObjectHydrator extends Hydrator {
       }
 
       meta.props
-        .filter(p => p.embedded?.[0] === prop.name)
-        .forEach(childProp => {
+        .filter((p) => p.embedded?.[0] === prop.name)
+        .forEach((childProp) => {
           const childDataKey = prop.object ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
           // eslint-disable-next-line @typescript-eslint/no-use-before-define
-          ret.push(...hydrateProperty(childProp, prop.object, [...path, childProp.embedded![1]], childDataKey).map(l => '  ' + l));
+          ret.push(...hydrateProperty(childProp, prop.object, [...path, childProp.embedded![1]], childDataKey).map((l) => '  ' + l));
         });
 
       /* istanbul ignore next */
@@ -256,7 +260,7 @@ export class ObjectHydrator extends Hydrator {
     };
 
     const hydrateEmbeddedArray = (prop: EntityProperty, path: string[], dataKey: string): string[] => {
-      const entityKey = path.map(k => this.wrap(k)).join('');
+      const entityKey = path.map((k) => this.wrap(k)).join('');
       const ret: string[] = [];
       const idx = this.tmpIndex++;
       registerEmbeddedPrototype(prop, path);
@@ -265,7 +269,7 @@ export class ObjectHydrator extends Hydrator {
       ret.push(`  if (Array.isArray(data${dataKey})) {`);
       ret.push(`    entity${entityKey} = [];`);
       ret.push(`    data${dataKey}.forEach((_, idx_${idx}) => {`);
-      ret.push(...hydrateEmbedded(prop, [...path, `[idx_${idx}]`], `${dataKey}[idx_${idx}]`).map(l => '    ' + l));
+      ret.push(...hydrateEmbedded(prop, [...path, `[idx_${idx}]`], `${dataKey}[idx_${idx}]`).map((l) => '    ' + l));
       ret.push(`    });`);
       ret.push(`  }`);
 
@@ -273,7 +277,7 @@ export class ObjectHydrator extends Hydrator {
     };
 
     const hydrateProperty = (prop: EntityProperty, object = prop.object, path: string[] = [prop.name], dataKey?: string): string[] => {
-      const entityKey = path.map(k => this.wrap(k)).join('');
+      const entityKey = path.map((k) => this.wrap(k)).join('');
       dataKey = dataKey ?? (object ? entityKey : this.wrap(prop.name));
       const ret: string[] = [];
 
@@ -291,7 +295,8 @@ export class ObjectHydrator extends Hydrator {
             ret.push(...hydrateEmbedded({ ...prop, object: true }, path, dataKey));
           }
         }
-      } else { // ReferenceType.SCALAR
+      } else {
+        // ReferenceType.SCALAR
         ret.push(...hydrateScalar(prop, object, path, dataKey));
       }
 
@@ -306,9 +311,7 @@ export class ObjectHydrator extends Hydrator {
       lines.push(...hydrateProperty(prop));
     }
 
-    const code = `// compiled hydrator for entity ${meta.className} (${type})\n`
-      + `return function(entity, data, factory, newEntity, convertCustomTypes, schema) {\n`
-      + `${lines.join('\n')}\n}`;
+    const code = `// compiled hydrator for entity ${meta.className} (${type})\n` + `return function(entity, data, factory, newEntity, convertCustomTypes, schema) {\n` + `${lines.join('\n')}\n}`;
     const hydrator = Utils.createFunction(context, code);
     this.hydrators[type].set(meta.className, hydrator);
 
@@ -354,5 +357,4 @@ export class ObjectHydrator extends Hydrator {
   private safeKey(key: string): string {
     return key.replace(/[^\w]/g, '_');
   }
-
 }

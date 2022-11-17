@@ -1,10 +1,6 @@
 import type { ClientSession } from 'mongodb';
 import { ObjectId } from 'bson';
-import type {
-  EntityData, FilterQuery, Configuration, FindOneOptions, FindOptions,
-  QueryResult, Transaction, IDatabaseDriver, EntityManager, Dictionary, PopulateOptions,
-  CountOptions, EntityDictionary, EntityField, NativeInsertUpdateOptions, NativeInsertUpdateManyOptions,
-} from '@mikro-orm/core';
+import type { EntityData, FilterQuery, Configuration, FindOneOptions, FindOptions, QueryResult, Transaction, IDatabaseDriver, EntityManager, Dictionary, PopulateOptions, CountOptions, EntityDictionary, EntityField, NativeInsertUpdateOptions, NativeInsertUpdateManyOptions } from '@mikro-orm/core';
 import { DatabaseDriver, EntityManagerType, ReferenceType, Utils } from '@mikro-orm/core';
 import { MongoConnection } from './MongoConnection';
 import { MongoPlatform } from './MongoPlatform';
@@ -12,7 +8,6 @@ import { MongoEntityManager } from './MongoEntityManager';
 import type { CreateSchemaOptions } from './MongoSchemaGenerator';
 
 export class MongoDriver extends DatabaseDriver<MongoConnection> {
-
   [EntityManagerType]!: MongoEntityManager<this>;
 
   protected readonly connection = new MongoConnection(this.config);
@@ -31,11 +26,11 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       return this.findVirtual(entityName, where, options);
     }
 
-    const fields = this.buildFields(entityName, options.populate as unknown as PopulateOptions<T>[] || [], options.fields);
+    const fields = this.buildFields(entityName, (options.populate as unknown as PopulateOptions<T>[]) || [], options.fields);
     where = this.renameFields(entityName, where, true);
     const res = await this.rethrow(this.getConnection('read').find(entityName, where as Dictionary, options.orderBy, options.limit, options.offset, fields, options.ctx));
 
-    return res.map(r => this.mapResult<T>(r, this.metadata.find<T>(entityName))!);
+    return res.map((r) => this.mapResult<T>(r, this.metadata.find<T>(entityName))!);
   }
 
   async findOne<T extends object, P extends string = never>(entityName: string, where: FilterQuery<T>, options: FindOneOptions<T, P> = { populate: [], orderBy: {} }): Promise<EntityData<T> | null> {
@@ -49,7 +44,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       where = this.buildFilterById(entityName, where as string);
     }
 
-    const fields = this.buildFields(entityName, options.populate as unknown as PopulateOptions<T>[] || [], options.fields);
+    const fields = this.buildFields(entityName, (options.populate as unknown as PopulateOptions<T>[]) || [], options.fields);
     where = this.renameFields(entityName, where, true);
     const res = await this.rethrow(this.getConnection('read').find(entityName, where as Dictionary, options.orderBy, 1, undefined, fields, options.ctx));
 
@@ -84,12 +79,12 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   }
 
   async nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
-    data = data.map(d => this.renameFields(entityName, d));
+    data = data.map((d) => this.renameFields(entityName, d));
     const meta = this.metadata.find(entityName);
     /* istanbul ignore next */
     const pk = meta?.getPrimaryProps()[0].fieldNames[0] ?? '_id';
     const res = await this.rethrow(this.getConnection('write').insertMany(entityName, data as any[], options.ctx));
-    res.rows = res.insertedIds!.map(id => ({ [pk]: id }));
+    res.rows = res.insertedIds!.map((id) => ({ [pk]: id }));
 
     return res as QueryResult<T>;
   }
@@ -106,7 +101,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   }
 
   async nativeUpdateMany<T extends object>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateOptions<T> = {}): Promise<QueryResult<T>> {
-    data = data.map(row => this.renameFields(entityName, row));
+    data = data.map((row) => this.renameFields(entityName, row));
     return this.rethrow(this.getConnection('write').bulkUpdateMany(entityName, where as FilterQuery<any>, data as object[], options.ctx)) as Promise<QueryResult<T>>;
   }
 
@@ -150,7 +145,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       throw new Error('Full text search is only supported on the top level of the query object.');
     }
 
-    Object.keys(copiedData).forEach(k => {
+    Object.keys(copiedData).forEach((k) => {
       if (Utils.isGroupOperator(k)) {
         /* istanbul ignore else */
         if (Array.isArray(copiedData[k])) {
@@ -205,7 +200,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     }
 
     if (Utils.isObject(data)) {
-      Object.keys(data).forEach(k => {
+      Object.keys(data).forEach((k) => {
         data[k] = this.convertObjectIds(data[k]);
       });
     }
@@ -230,7 +225,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       return fields as string[];
     }
 
-    const lazyProps = meta.props.filter(prop => prop.lazy && !populate.some(p => p.field === prop.name || p.all));
+    const lazyProps = meta.props.filter((prop) => prop.lazy && !populate.some((p) => p.field === prop.name || p.all));
     const ret: string[] = [];
 
     if (fields) {
@@ -246,17 +241,17 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
           prop = prop.serializedPrimaryKey ? meta.getPrimaryProps()[0] : prop;
           ret.push(prop.fieldNames[0]);
         } else if (field === '*') {
-          const props = meta.props.filter(prop => this.platform.shouldHaveColumn(prop, populate));
-          ret.push(...Utils.flatten(props.filter(p => !lazyProps.includes(p)).map(p => p.fieldNames)));
+          const props = meta.props.filter((prop) => this.platform.shouldHaveColumn(prop, populate));
+          ret.push(...Utils.flatten(props.filter((p) => !lazyProps.includes(p)).map((p) => p.fieldNames)));
         } else {
           ret.push(field as keyof T & string);
         }
       }
 
-      ret.unshift(...meta.primaryKeys.filter(pk => !fields.includes(pk)));
-    } else if (lazyProps.filter(p => !p.formula).length > 0) {
-      const props = meta.props.filter(prop => this.platform.shouldHaveColumn(prop, populate));
-      ret.push(...Utils.flatten(props.filter(p => !lazyProps.includes(p)).map(p => p.fieldNames)));
+      ret.unshift(...meta.primaryKeys.filter((pk) => !fields.includes(pk)));
+    } else if (lazyProps.filter((p) => !p.formula).length > 0) {
+      const props = meta.props.filter((prop) => this.platform.shouldHaveColumn(prop, populate));
+      ret.push(...Utils.flatten(props.filter((p) => !lazyProps.includes(p)).map((p) => p.fieldNames)));
     }
 
     return ret.length > 0 ? ret : undefined;
@@ -289,5 +284,4 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
   async ensureIndexes(): Promise<void> {
     await this.platform.getSchemaGenerator(this).ensureIndexes();
   }
-
 }

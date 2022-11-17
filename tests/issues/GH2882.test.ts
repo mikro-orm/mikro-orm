@@ -3,28 +3,23 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Parent {
-
   @PrimaryKey()
   id!: number;
 
-  @OneToMany(() => Child, child => child.parent)
+  @OneToMany(() => Child, (child) => child.parent)
   children = new Collection<Child>(this);
-
 }
 
 @Entity()
 export default class Child {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => Parent)
   parent!: Parent;
-
 }
 
 describe('GH issue 2882', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -48,10 +43,12 @@ describe('GH issue 2882', () => {
     const p = new Parent();
     await orm.em.fork().persistAndFlush(p);
 
-    const parent = await orm.em.findOneOrFail(Parent, p.id, { populate: ['children'] });
+    const parent = await orm.em.findOneOrFail(Parent, p.id, {
+      populate: ['children'],
+    });
     expect(wrap(parent, true).__em.id).toBe(1);
 
-    await orm.em.transactional(async em => {
+    await orm.em.transactional(async (em) => {
       const parent = await em.findOneOrFail(Parent, p.id);
       em.create(Child, { parent });
     });
@@ -63,5 +60,4 @@ describe('GH issue 2882', () => {
     expect(parent.children).toHaveLength(1);
     expect(wrap(parent.children[0], true).__em.id).toBe(1);
   });
-
 });

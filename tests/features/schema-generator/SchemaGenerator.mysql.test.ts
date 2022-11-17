@@ -6,7 +6,6 @@ import { BaseEntity22 } from '../../entities-sql/BaseEntity22';
 import { BaseEntity2 } from '../../entities-sql/BaseEntity2';
 
 describe('SchemaGenerator', () => {
-
   test('create/drop database [mysql]', async () => {
     const dbName = `mikro_orm_test_${Date.now()}`;
     const orm = await MikroORM.init({
@@ -34,7 +33,11 @@ describe('SchemaGenerator', () => {
     });
 
     await orm.schema.createSchema();
-    await orm.schema.dropSchema({ wrap: false, dropMigrationsTable: false, dropDb: true });
+    await orm.schema.dropSchema({
+      wrap: false,
+      dropMigrationsTable: false,
+      dropDb: true,
+    });
     await orm.close(true);
 
     await orm.isConnected();
@@ -70,7 +73,11 @@ describe('SchemaGenerator', () => {
     });
 
     await orm.schema.createSchema();
-    await orm.schema.dropSchema({ wrap: false, dropMigrationsTable: false, dropDb: true });
+    await orm.schema.dropSchema({
+      wrap: false,
+      dropMigrationsTable: false,
+      dropDb: true,
+    });
     await orm.close(true);
     await expect(orm.schema.ensureDatabase()).rejects.toThrow('Unable to acquire a connection');
   });
@@ -223,15 +230,19 @@ describe('SchemaGenerator', () => {
     meta.reset('NewTable');
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false, safe: true });
     expect(diff).toMatchSnapshot('mysql-update-schema-drop-table-safe');
-    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false, safe: false, dropTables: false });
+    diff = await orm.schema.getUpdateSchemaSQL({
+      wrap: false,
+      safe: false,
+      dropTables: false,
+    });
     expect(diff).toMatchSnapshot('mysql-update-schema-drop-table-disabled');
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('mysql-update-schema-drop-table');
     await orm.schema.execute(diff);
 
     // clean up old references manually (they would not be valid if we did a full meta sync)
-    meta.get('author2_following').props.forEach(prop => prop.reference = ReferenceType.SCALAR);
-    meta.get('author_to_friend').props.forEach(prop => prop.reference = ReferenceType.SCALAR);
+    meta.get('author2_following').props.forEach((prop) => (prop.reference = ReferenceType.SCALAR));
+    meta.get('author_to_friend').props.forEach((prop) => (prop.reference = ReferenceType.SCALAR));
     meta.get('Book2').properties.author.reference = ReferenceType.SCALAR;
     meta.get('Address2').properties.author.reference = ReferenceType.SCALAR;
     meta.get('Address2').properties.author.autoincrement = false;
@@ -255,7 +266,7 @@ describe('SchemaGenerator', () => {
     const ageProp = authorMeta.properties.age;
     ageProp.name = 'ageInYears';
     ageProp.fieldNames = ['age_in_years'];
-    const index = authorMeta.indexes.find(i => Utils.asArray(i.properties).join() === 'name,age')!;
+    const index = authorMeta.indexes.find((i) => Utils.asArray(i.properties).join() === 'name,age')!;
     index.properties = ['name', 'ageInYears'];
     authorMeta.removeProperty('age');
     authorMeta.addProperty(ageProp);

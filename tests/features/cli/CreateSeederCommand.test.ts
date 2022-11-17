@@ -14,7 +14,6 @@ const createSeederMock = jest.spyOn(SeedManager.prototype, 'createSeeder');
 createSeederMock.mockResolvedValue('database/seeders/database.seeder.ts');
 
 describe('CreateSeederCommand', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {

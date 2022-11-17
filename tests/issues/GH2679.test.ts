@@ -3,17 +3,14 @@ import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 export class User {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ type: ArrayType })
   groups!: readonly string[];
-
 }
 
 describe('GH issue 2679', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {

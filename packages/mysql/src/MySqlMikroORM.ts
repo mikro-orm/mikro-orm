@@ -6,9 +6,7 @@ import { MySqlDriver } from './MySqlDriver';
  * @inheritDoc
  */
 export class MySqlMikroORM extends MikroORM<MySqlDriver> {
-
   private static DRIVER = MySqlDriver;
-
 }
 
 export type MySqlOptions = Options<MySqlDriver>;

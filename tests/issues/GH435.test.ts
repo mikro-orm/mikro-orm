@@ -2,7 +2,6 @@ import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 class MyType extends Type<string, number> {
-
   convertToDatabaseValue(jsValue: string): number {
     return Number.parseInt(jsValue);
   }
@@ -14,22 +13,18 @@ class MyType extends Type<string, number> {
   getColumnType() {
     return 'integer';
   }
-
 }
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ type: MyType })
   prop!: string;
-
 }
 
 describe('GH issue 435', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -67,5 +62,4 @@ describe('GH issue 435', () => {
     expect(convertToDatabaseValueSpy.mock.calls[0][0]).toBe('123');
     expect(convertToJSValueSpy.mock.calls[0][0]).toBe(123);
   });
-
 });

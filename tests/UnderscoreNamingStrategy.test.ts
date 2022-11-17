@@ -1,7 +1,6 @@
 import { UnderscoreNamingStrategy } from '@mikro-orm/core';
 
 describe('UnderscoreNamingStrategy', () => {
-
   test('should convert camel case to snake case', async () => {
     const ns = new UnderscoreNamingStrategy();
     expect(ns.classToTableName('BookTag')).toBe('book_tag');
@@ -21,5 +20,4 @@ describe('UnderscoreNamingStrategy', () => {
     expect(ns.columnNameToProperty('book-tag')).toBe('bookTag');
     expect(ns.columnNameToProperty('Book__--  _- tag')).toBe('BookTag');
   });
-
 });

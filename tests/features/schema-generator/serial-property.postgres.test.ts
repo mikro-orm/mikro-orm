@@ -1,20 +1,17 @@
-import { Entity,  MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
 
 @Entity({ tableName: 'something' })
 export class Something0 {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   foo!: string;
-
 }
 
 @Entity({ tableName: 'something' })
 export class Something1 {
-
   @PrimaryKey()
   id!: number;
 
@@ -23,12 +20,10 @@ export class Something1 {
 
   @Property()
   foo!: string;
-
 }
 
 @Entity({ tableName: 'something' })
 export class Something2 {
-
   @PrimaryKey()
   id!: number;
 
@@ -37,12 +32,10 @@ export class Something2 {
 
   @Property()
   foo!: string;
-
 }
 
 @Entity({ tableName: 'something' })
 export class Something3 {
-
   @PrimaryKey()
   id!: number;
 
@@ -51,23 +44,19 @@ export class Something3 {
 
   @Property()
   foo!: string;
-
 }
 
 @Entity({ tableName: 'something' })
 export class Something4 {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   foo!: string;
-
 }
 
 @Entity({ tableName: 'something' })
 export class Something5 {
-
   @PrimaryKey({ primary: true })
   id!: string;
 
@@ -76,7 +65,6 @@ export class Something5 {
 
   @Property()
   foo!: string;
-
 }
 
 test('schema generator works with non-pk autoincrement columns (serial)', async () => {
@@ -140,14 +128,20 @@ test('schema generator works with non-pk autoincrement columns (serial)', async 
 
   expect(mock.mock.calls).toHaveLength(10);
   expect(mock.mock.calls[0][0]).toMatch(`column public.something._id of type serial added`);
-  expect(mock.mock.calls[1][0]).toMatch(`'autoincrement' changed for column public.something._id { column1: { name: '_id', type: 'int4', mappedType: IntegerType {}, length: null, precision: 32, scale: 0, nullable: false, default: null, unsigned: true, autoincrement: true, comment: null, primary: false, unique: false, enumItems: [] }, column2: { name: '_id', type: 'int', mappedType: IntegerType {}, unsigned: false, autoincrement: false, primary: false, nullable: false }}`);
+  expect(mock.mock.calls[1][0]).toMatch(
+    `'autoincrement' changed for column public.something._id { column1: { name: '_id', type: 'int4', mappedType: IntegerType {}, length: null, precision: 32, scale: 0, nullable: false, default: null, unsigned: true, autoincrement: true, comment: null, primary: false, unique: false, enumItems: [] }, column2: { name: '_id', type: 'int', mappedType: IntegerType {}, unsigned: false, autoincrement: false, primary: false, nullable: false }}`
+  );
   expect(mock.mock.calls[2][0]).toMatch(`column public.something._id changed { changedProperties: Set(1) { 'autoincrement' } }`);
-  expect(mock.mock.calls[3][0]).toMatch(`'autoincrement' changed for column public.something._id { column1: { name: '_id', type: 'int4', mappedType: IntegerType {}, length: null, precision: 32, scale: 0, nullable: false, default: null, comment: null, primary: false, unique: false, enumItems: [] }, column2: { name: '_id', type: 'serial', mappedType: IntegerType {}, unsigned: true, autoincrement: true, primary: false, nullable: false }}`);
+  expect(mock.mock.calls[3][0]).toMatch(
+    `'autoincrement' changed for column public.something._id { column1: { name: '_id', type: 'int4', mappedType: IntegerType {}, length: null, precision: 32, scale: 0, nullable: false, default: null, comment: null, primary: false, unique: false, enumItems: [] }, column2: { name: '_id', type: 'serial', mappedType: IntegerType {}, unsigned: true, autoincrement: true, primary: false, nullable: false }}`
+  );
   expect(mock.mock.calls[4][0]).toMatch(`column public.something._id changed { changedProperties: Set(1) { 'autoincrement' } }`);
   expect(mock.mock.calls[5][0]).toMatch(`column public.something._id removed`);
   expect(mock.mock.calls[6][0]).toMatch(`column public.something._id of type serial added`);
   expect(mock.mock.calls[7][0]).toMatch(`'type' changed for column public.something.id { columnType1: 'int', columnType2: 'varchar(255)' }`);
-  expect(mock.mock.calls[8][0]).toMatch(`'autoincrement' changed for column public.something.id { column1: { name: 'id', type: 'int4', mappedType: IntegerType {}, length: null, precision: 32, scale: 0, nullable: false, default: null, unsigned: true, autoincrement: true, comment: null, primary: true, unique: false, enumItems: [] }, column2: { name: 'id', type: 'varchar(255)', mappedType: StringType {}, unsigned: false, autoincrement: false, primary: false, nullable: false }}`);
+  expect(mock.mock.calls[8][0]).toMatch(
+    `'autoincrement' changed for column public.something.id { column1: { name: 'id', type: 'int4', mappedType: IntegerType {}, length: null, precision: 32, scale: 0, nullable: false, default: null, unsigned: true, autoincrement: true, comment: null, primary: true, unique: false, enumItems: [] }, column2: { name: 'id', type: 'varchar(255)', mappedType: StringType {}, unsigned: false, autoincrement: false, primary: false, nullable: false }}`
+  );
   expect(mock.mock.calls[9][0]).toMatch(`column public.something.id changed { changedProperties: Set(2) { 'type', 'autoincrement' } }`);
 });
 

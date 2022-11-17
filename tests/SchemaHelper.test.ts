@@ -2,10 +2,9 @@ import type { Column } from '@mikro-orm/sqlite';
 import { SchemaHelper, SqlitePlatform } from '@mikro-orm/sqlite';
 import { MySqlPlatform } from '@mikro-orm/mysql';
 
-class SchemaHelperTest extends SchemaHelper { }
+class SchemaHelperTest extends SchemaHelper {}
 
 describe('SchemaHelper', () => {
-
   test('default schema helpers', async () => {
     const helper = new SchemaHelperTest(new MySqlPlatform());
     expect(helper.getSchemaBeginning('utf8')).toBe('\n\n');
@@ -38,7 +37,10 @@ describe('SchemaHelper', () => {
 
   test('sqlite schema helper', async () => {
     const helper = new SqlitePlatform().getSchemaHelper()!;
-    expect(helper.getRenameColumnSQL('table', 'test1', { name: 'test_123' } as Column)).toBe('alter table `table` rename column `test1` to `test_123`');
+    expect(
+      helper.getRenameColumnSQL('table', 'test1', {
+        name: 'test_123',
+      } as Column)
+    ).toBe('alter table `table` rename column `test1` to `test_123`');
   });
-
 });

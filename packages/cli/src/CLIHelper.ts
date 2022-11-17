@@ -9,7 +9,6 @@ import { colors, ConfigurationLoader, MikroORM, Utils } from '@mikro-orm/core';
  * @internal
  */
 export class CLIHelper {
-
   static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true, options: Partial<Options> = {}): Promise<Configuration<D>> {
     const deps = await ConfigurationLoader.getORMPackages();
 
@@ -100,20 +99,20 @@ export class CLIHelper {
 
     const data = [options.columns, ...options.rows];
     const lengths = options.columns.map(() => 0);
-    data.forEach(row => {
+    data.forEach((row) => {
       row.forEach((cell, idx) => {
         lengths[idx] = Math.max(lengths[idx], cell.length + 2);
       });
     });
 
     let ret = '';
-    ret += colors.grey('┌' + lengths.map(length => '─'.repeat(length)).join('┬') + '┐\n');
+    ret += colors.grey('┌' + lengths.map((length) => '─'.repeat(length)).join('┬') + '┐\n');
     ret += colors.grey('│') + lengths.map((length, idx) => ' ' + colors.red(options.columns[idx]) + ' '.repeat(length - options.columns[idx].length - 1)).join(colors.grey('│')) + colors.grey('│\n');
-    ret += colors.grey('├' + lengths.map(length => '─'.repeat(length)).join('┼') + '┤\n');
-    options.rows.forEach(row => {
+    ret += colors.grey('├' + lengths.map((length) => '─'.repeat(length)).join('┼') + '┤\n');
+    options.rows.forEach((row) => {
       ret += colors.grey('│') + lengths.map((length, idx) => ' ' + row[idx] + ' '.repeat(length - row[idx].length - 1)).join(colors.grey('│')) + colors.grey('│\n');
     });
-    ret += colors.grey('└' + lengths.map(length => '─'.repeat(length)).join('┴') + '┘');
+    ret += colors.grey('└' + lengths.map((length) => '─'.repeat(length)).join('┴') + '┘');
 
     CLIHelper.dump(ret);
   }
@@ -122,5 +121,4 @@ export class CLIHelper {
   static showHelp() {
     yargs.showHelp();
   }
-
 }

@@ -8,7 +8,6 @@ export interface EmailMessageTest {
 
 @Entity()
 export class TestTemplate {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -25,11 +24,9 @@ export class TestTemplate {
     width: number;
     height: number;
   };
-
 }
 
 describe('GH issue 1395', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -104,7 +101,10 @@ describe('GH issue 1395', () => {
     });
     expect(item1).toMatchObject({
       name: 'test',
-      messages: [{ html: 'aaa', language: 'en' }, { html: 'bbb', language: 'fr' }],
+      messages: [
+        { html: 'aaa', language: 'en' },
+        { html: 'bbb', language: 'fr' },
+      ],
       geometry: { top: 0, left: 0, width: 640, height: 480 },
     });
 
@@ -123,9 +123,11 @@ describe('GH issue 1395', () => {
     });
     expect(item2).toMatchObject({
       name: 'test',
-      messages: [{ html: 'aaa', language: 'en' }, { html: 'bbb', language: 'fr' }],
+      messages: [
+        { html: 'aaa', language: 'en' },
+        { html: 'bbb', language: 'fr' },
+      ],
       geometry: { top: 0, left: 0, width: 640, height: 480 },
     });
   });
-
 });

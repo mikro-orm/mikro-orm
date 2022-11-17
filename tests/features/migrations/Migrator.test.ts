@@ -9,7 +9,6 @@ import { remove } from 'fs-extra';
 import { initORMMySql, mockLogger } from '../../bootstrap';
 
 class MigrationTest1 extends Migration {
-
   async up(): Promise<void> {
     this.addSql('select 1 + 1');
   }
@@ -17,11 +16,9 @@ class MigrationTest1 extends Migration {
   async down(): Promise<void> {
     this.addSql('select 1 - 1');
   }
-
 }
 
 class MigrationTest2 extends Migration {
-
   async up(): Promise<void> {
     this.addSql('select 1 + 1');
     const knex = this.getKnex();
@@ -43,11 +40,9 @@ class MigrationTest2 extends Migration {
   isTransactional(): boolean {
     return false;
   }
-
 }
 
 describe('Migrator', () => {
-
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => {
@@ -72,7 +67,10 @@ describe('Migrator', () => {
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
-    orm.config.set('migrations', { ...migrationsSettings, fileName: time => `migration-${time}` });
+    orm.config.set('migrations', {
+      ...migrationsSettings,
+      fileName: (time) => `migration-${time}`,
+    });
     const migrator = orm.migrator;
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
@@ -117,7 +115,7 @@ describe('Migrator', () => {
     const getPendingMigrationsMock = jest.spyOn<any, any>(Migrator.prototype, 'getPendingMigrations');
     getExecutedMigrationsMock.mockResolvedValueOnce([]);
     const logMigrationMock = jest.spyOn<any, any>(MigrationStorage.prototype, 'logMigration');
-    logMigrationMock.mockImplementationOnce(i => i);
+    logMigrationMock.mockImplementationOnce((i) => i);
 
     const schemaMock = jest.spyOn(DatabaseSchema.prototype, 'getTables');
     schemaMock.mockReturnValueOnce([{ name: 'author2' } as DatabaseTable, { name: 'book2' } as DatabaseTable]);
@@ -163,7 +161,10 @@ describe('Migrator', () => {
 
     await orm.em.getKnex().schema.dropTableIfExists(orm.config.get('migrations').tableName!);
     const migration2 = await migrator.createInitialMigration(undefined);
-    expect(logMigrationMock).toBeCalledWith({ name: 'Migration20191013214813.ts', context: null });
+    expect(logMigrationMock).toBeCalledWith({
+      name: 'Migration20191013214813.ts',
+      context: null,
+    });
     expect(migration2).toMatchSnapshot('initial-migration-dump');
     await remove(process.cwd() + '/temp/migrations/' + migration2.fileName);
   });
@@ -179,7 +180,11 @@ describe('Migrator', () => {
     const schemaGeneratorMock = jest.spyOn<any, any>(SchemaGenerator.prototype, 'getUpdateSchemaSQL');
     schemaGeneratorMock.mockResolvedValueOnce({ up: [], down: [] });
     const migration = await migrator.createMigration();
-    expect(migration).toEqual({ fileName: '', code: '', diff: { up: [], down: [] } });
+    expect(migration).toEqual({
+      fileName: '',
+      code: '',
+      diff: { up: [], down: [] },
+    });
   });
 
   test('run schema migration', async () => {
@@ -302,7 +307,7 @@ describe('Migrator', () => {
     await migrator.down();
 
     await remove(path + '/' + migration.fileName);
-    const calls = mock.mock.calls.map(call => {
+    const calls = mock.mock.calls.map((call) => {
       return call[0]
         .replace(/ \[took \d+ ms]/, '')
         .replace(/\[query] /, '')
@@ -329,11 +334,19 @@ describe('Migrator', () => {
 
     const mock = mockLogger(orm, ['query']);
 
-    await orm.em.transactional(async em => {
-      const ret1 = await migrator.up({ transaction: em.getTransactionContext() });
-      const ret2 = await migrator.down({ transaction: em.getTransactionContext() });
-      const ret3 = await migrator.down({ transaction: em.getTransactionContext() });
-      const ret4 = await migrator.down({ transaction: em.getTransactionContext() });
+    await orm.em.transactional(async (em) => {
+      const ret1 = await migrator.up({
+        transaction: em.getTransactionContext(),
+      });
+      const ret2 = await migrator.down({
+        transaction: em.getTransactionContext(),
+      });
+      const ret3 = await migrator.down({
+        transaction: em.getTransactionContext(),
+      });
+      const ret4 = await migrator.down({
+        transaction: em.getTransactionContext(),
+      });
       expect(ret1).toHaveLength(2);
       expect(ret2).toHaveLength(1);
       expect(ret3).toHaveLength(1);
@@ -342,7 +355,7 @@ describe('Migrator', () => {
 
     await remove(path + '/' + migration1.fileName);
     await remove(path + '/' + migration2.fileName);
-    const calls = mock.mock.calls.map(call => {
+    const calls = mock.mock.calls.map((call) => {
       return call[0]
         .replace(/ \[took \d+ ms]/, '')
         .replace(/\[query] /, '')
@@ -375,7 +388,7 @@ describe('Migrator', () => {
     await migrator.down();
 
     await remove(path + '/' + migration.fileName);
-    const calls = mock.mock.calls.map(call => {
+    const calls = mock.mock.calls.map((call) => {
       return call[0]
         .replace(/ \[took \d+ ms]/, '')
         .replace(/\[query] /, '')
@@ -383,24 +396,26 @@ describe('Migrator', () => {
     });
     expect(calls).toMatchSnapshot('all-or-nothing-disabled');
   });
-
 });
 
 describe('Migrator - with explicit migrations', () => {
-
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => {
-    orm = await initORMMySql(undefined, {
-      migrations: {
-        migrationsList: [
-          {
-            name: 'test.ts',
-            class: MigrationTest1,
-          },
-        ],
+    orm = await initORMMySql(
+      undefined,
+      {
+        migrations: {
+          migrationsList: [
+            {
+              name: 'test.ts',
+              class: MigrationTest1,
+            },
+          ],
+        },
       },
-    }, true);
+      true
+    );
   });
   afterAll(async () => orm.close(true));
 
@@ -417,7 +432,7 @@ describe('Migrator - with explicit migrations', () => {
     expect(spy1).toBeCalledWith('select 1 + 1');
     await migrator.down();
     expect(spy1).toBeCalledWith('select 1 - 1');
-    const calls = mock.mock.calls.map(call => {
+    const calls = mock.mock.calls.map((call) => {
       return call[0]
         .replace(/ \[took \d+ ms]/, '')
         .replace(/\[query] /, '')
@@ -425,5 +440,4 @@ describe('Migrator - with explicit migrations', () => {
     });
     expect(calls).toMatchSnapshot('migrator-migrations-list');
   });
-
 });

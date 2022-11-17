@@ -1,15 +1,7 @@
-import {
-  BigIntType,
-  Entity,
-  DefaultLogger,
-  MikroORM,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/core';
+import { BigIntType, Entity, DefaultLogger, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 export class NativeBigIntType extends BigIntType {
-
   convertToJSValue(value: any): any {
     if (!value) {
       return value;
@@ -17,12 +9,10 @@ export class NativeBigIntType extends BigIntType {
 
     return BigInt(value);
   }
-
 }
 
 @Entity()
 export class Author {
-
   @PrimaryKey({ type: NativeBigIntType, comment: 'PK' })
   id!: bigint;
 
@@ -36,7 +26,6 @@ export class Author {
 
   @Property({ persist: false })
   foo?: string = '123';
-
 }
 
 describe('GH issue 1626', () => {
@@ -90,19 +79,13 @@ describe('GH issue 1626', () => {
     await orm.em.removeAndFlush(authors);
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch(
-      'insert into `author` (`name`) values (?), (?)',
-    );
+    expect(mock.mock.calls[1][0]).toMatch('insert into `author` (`name`) values (?), (?)');
     expect(mock.mock.calls[2][0]).toMatch('commit');
     expect(mock.mock.calls[3][0]).toMatch('begin');
-    expect(mock.mock.calls[4][0]).toMatch(
-      'update `author` set `name` = case when (`id` = ?) then ? when (`id` = ?) then ? else `name` end where `id` in (?, ?)',
-    );
+    expect(mock.mock.calls[4][0]).toMatch('update `author` set `name` = case when (`id` = ?) then ? when (`id` = ?) then ? else `name` end where `id` in (?, ?)');
     expect(mock.mock.calls[5][0]).toMatch('commit');
     expect(mock.mock.calls[6][0]).toMatch('begin');
-    expect(mock.mock.calls[7][0]).toMatch(
-      'delete from `author` where `id` in (?, ?)',
-    );
+    expect(mock.mock.calls[7][0]).toMatch('delete from `author` where `id` in (?, ?)');
     expect(mock.mock.calls[8][0]).toMatch('commit');
     expect(mock.mock.calls.length).toBe(9);
   });

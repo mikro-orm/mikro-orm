@@ -14,7 +14,6 @@ export enum NumLevelType {
 
 @Entity()
 class Job {
-
   @PrimaryKey({ type: BigIntType })
   id!: string;
 
@@ -23,12 +22,10 @@ class Job {
 
   @OneToMany('Level', 'job', { orphanRemoval: true })
   levels = new Collection<Level>(this);
-
 }
 
 @Entity()
 class Level {
-
   @Enum({ items: () => LevelType, primary: true })
   type: LevelType;
 
@@ -44,11 +41,9 @@ class Level {
   constructor(type: LevelType) {
     this.type = type;
   }
-
 }
 
 describe('GH issue 482', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -131,7 +126,9 @@ describe('GH issue 482', () => {
     expect(a.numTypes).toEqual([1, 2]);
     orm.em.clear();
 
-    const a1 = await orm.em.findOneOrFail(Level, { types: { $contains: [LevelType.A, LevelType.B] } });
+    const a1 = await orm.em.findOneOrFail(Level, {
+      types: { $contains: [LevelType.A, LevelType.B] },
+    });
     expect(a1.types).toEqual([LevelType.A, LevelType.B]);
     expect(a1.numTypes).toEqual([NumLevelType.A, NumLevelType.B]);
     a1.types = [LevelType.B, LevelType.A];
@@ -139,7 +136,9 @@ describe('GH issue 482', () => {
     await orm.em.flush();
     orm.em.clear();
 
-    const a2 = await orm.em.findOneOrFail(Level, { types: { $contains: [LevelType.A, LevelType.B] } });
+    const a2 = await orm.em.findOneOrFail(Level, {
+      types: { $contains: [LevelType.A, LevelType.B] },
+    });
     expect(a2.types).toEqual([LevelType.B, LevelType.A]);
     expect(a2.numTypes).toEqual([NumLevelType.B, NumLevelType.A]);
 
@@ -150,5 +149,4 @@ describe('GH issue 482', () => {
     a2.numTypes = [NumLevelType.B, 3];
     await expect(orm.em.flush()).rejects.toThrowError(`Invalid enum array items provided in Level.numTypes: [ 3 ]`);
   });
-
 });

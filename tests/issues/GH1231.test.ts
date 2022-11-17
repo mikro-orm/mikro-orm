@@ -4,7 +4,6 @@ import { EntityRepository } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'teachers', repository: () => TeacherRepository })
 class Teacher {
-
   constructor(firstName: string, lastName: string) {
     this.firstName = firstName;
     this.lastName = lastName;
@@ -21,14 +20,17 @@ class Teacher {
   @Property()
   lastName!: string;
 
-  @OneToMany({ entity: 'Student', mappedBy: 'teacher', orphanRemoval: true, cascade: [Cascade.ALL] })
+  @OneToMany({
+    entity: 'Student',
+    mappedBy: 'teacher',
+    orphanRemoval: true,
+    cascade: [Cascade.ALL],
+  })
   students = new Collection<Student>(this);
-
 }
 
 @Entity({ tableName: 'students' })
 class Student {
-
   constructor(firstName: string, lastName: string) {
     this.firstName = firstName;
     this.lastName = lastName;
@@ -45,26 +47,16 @@ class Student {
 
   @ManyToOne(() => Teacher, { name: 'teacherId' })
   teacher!: Teacher;
-
 }
 
 class TeacherRepository extends EntityRepository<Teacher> {
-
   async getOneWithStudents(id: number): Promise<Teacher | null> {
-    return this.createQueryBuilder('teacher')
-      .select('*')
-      .leftJoinAndSelect('teacher.students', 'students')
-      .where({ id })
-      .getSingleResult();
+    return this.createQueryBuilder('teacher').select('*').leftJoinAndSelect('teacher.students', 'students').where({ id }).getSingleResult();
   }
 
   async getAllWithStudents(): Promise<Teacher[]> {
-    return this.createQueryBuilder('teacher')
-      .select('*')
-      .leftJoinAndSelect('teacher.students', 'students')
-      .getResult();
+    return this.createQueryBuilder('teacher').select('*').leftJoinAndSelect('teacher.students', 'students').getResult();
   }
-
 }
 
 describe('one to many relations read with query builder in postgresql (GH issue 1231)', () => {
@@ -92,7 +84,9 @@ describe('one to many relations read with query builder in postgresql (GH issue 
 
   test('load relations by populate', async () => {
     const repository = orm.em.getRepository(Teacher);
-    const teacher = await repository.findOneOrFail(1, { populate: ['students'] });
+    const teacher = await repository.findOneOrFail(1, {
+      populate: ['students'],
+    });
     expect(teacher).toHaveProperty('students');
     expect(teacher.students).toHaveLength(2);
   });
@@ -121,5 +115,4 @@ describe('one to many relations read with query builder in postgresql (GH issue 
     expect(teachers[1].students[0].firstName).toBe('Lina 2');
     expect(teachers[1].students[1].firstName).toBe('Artur 2');
   });
-
 });

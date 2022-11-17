@@ -12,7 +12,12 @@ export const FooBaz4 = new EntitySchema<IFooBaz4, IBaseEntity5>({
   extends: 'BaseEntity5',
   properties: {
     name: { type: 'string' },
-    bar: { reference: '1:1', entity: 'FooBar4', mappedBy: 'baz', nullable: true },
+    bar: {
+      reference: '1:1',
+      entity: 'FooBar4',
+      mappedBy: 'baz',
+      nullable: true,
+    },
     version: { type: 'Date', version: true, length: 0 },
   },
 });

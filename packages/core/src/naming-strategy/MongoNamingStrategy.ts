@@ -1,7 +1,6 @@
 import { AbstractNamingStrategy } from './AbstractNamingStrategy';
 
 export class MongoNamingStrategy extends AbstractNamingStrategy {
-
   classToTableName(entityName: string): string {
     return entityName.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
   }
@@ -25,5 +24,4 @@ export class MongoNamingStrategy extends AbstractNamingStrategy {
   referenceColumnName(): string {
     return '_id';
   }
-
 }

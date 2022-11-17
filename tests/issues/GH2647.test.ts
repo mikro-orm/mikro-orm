@@ -6,16 +6,13 @@ class UserRepository extends EntityRepository<User> {}
 class MemberRepository extends EntityRepository<Member> {}
 class SessionRepository extends EntityRepository<Session> {}
 class ParticipantRepository extends EntityRepository<Participant> {
-
   async get(session: Session, member: Member) {
     return this.findOne({ session, member });
   }
-
 }
 
 @Entity({ repository: () => ProviderRepository })
 export class Provider {
-
   [EntityRepositoryType]?: ProviderRepository;
 
   @PrimaryKey()
@@ -24,12 +21,10 @@ export class Provider {
   constructor(id: number) {
     this.id = id;
   }
-
 }
 
 @Entity({ repository: () => UserRepository })
 export class User {
-
   [EntityRepositoryType]?: UserRepository;
 
   @PrimaryKey()
@@ -38,12 +33,10 @@ export class User {
   constructor(id: number) {
     this.id = id;
   }
-
 }
 
 @Entity({ repository: () => MemberRepository })
 export class Member {
-
   [EntityRepositoryType]?: MemberRepository;
 
   @ManyToOne(() => Provider, { eager: true, primary: true })
@@ -56,12 +49,10 @@ export class Member {
     this.provider = a;
     this.user = b;
   }
-
 }
 
 @Entity({ repository: () => SessionRepository })
 export class Session {
-
   [EntityRepositoryType]?: SessionRepository;
 
   @PrimaryKey()
@@ -77,12 +68,10 @@ export class Session {
     this.id = id;
     this.owner = owner;
   }
-
 }
 
 @Entity({ repository: () => ParticipantRepository })
 export class Participant {
-
   [EntityRepositoryType]?: ParticipantRepository;
 
   @ManyToOne(() => Session, { eager: true, primary: true })
@@ -95,11 +84,9 @@ export class Participant {
     this.session = session;
     this.member = member;
   }
-
 }
 
 describe('GH #2647, #2742', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -158,5 +145,4 @@ describe('GH #2647, #2742', () => {
     expect(res[1]).toBe(res[1].session.lastActionBy);
     expect(res[2]).toBe(res[2].session.lastActionBy);
   });
-
 });

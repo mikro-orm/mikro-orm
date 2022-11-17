@@ -5,7 +5,6 @@ import { Test2 } from './Test2';
 
 @Entity()
 export class FooBar2 extends BaseEntity22 {
-
   [OptionalProps]?: 'version';
 
   @PrimaryKey()
@@ -41,7 +40,7 @@ export class FooBar2 extends BaseEntity22 {
   @Formula(`(select 456)`, { lazy: true })
   lazyRandom?: number;
 
-  @ManyToMany(() => Test2, t => t.bars)
+  @ManyToMany(() => Test2, (t) => t.bars)
   tests = new Collection<Test2>(this);
 
   static create(name: string) {
@@ -50,5 +49,4 @@ export class FooBar2 extends BaseEntity22 {
 
     return bar;
   }
-
 }

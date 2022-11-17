@@ -5,7 +5,7 @@ import { Utils } from '../utils/Utils';
 function createDecorator<T>(options: IndexOptions<T> | UniqueOptions<T>, unique: boolean) {
   return function (target: AnyEntity, propertyName?: string) {
     const meta = MetadataStorage.getMetadataFromDecorator(propertyName ? target.constructor : target);
-    options.properties = options.properties || propertyName as keyof T;
+    options.properties = options.properties || (propertyName as keyof T);
     const key = unique ? 'uniques' : 'indexes';
     meta[key].push(options as any);
 

@@ -3,7 +3,6 @@ import { mockLogger } from '../helpers';
 
 @Entity()
 export class Driver {
-
   @PrimaryKey()
   id!: number;
 
@@ -12,12 +11,10 @@ export class Driver {
 
   @OneToMany('License', 'driver')
   licenses = new Collection<License>(this);
-
 }
 
 @Entity()
 export class LicenseType {
-
   @PrimaryKey()
   id!: number;
 
@@ -26,12 +23,10 @@ export class LicenseType {
 
   @OneToMany('License', 'licenseType')
   licenses = new Collection<License>(this);
-
 }
 
 @Entity()
 export class License {
-
   @PrimaryKey()
   id!: number;
 
@@ -43,11 +38,9 @@ export class License {
 
   @ManyToOne('LicenseType', { inversedBy: 'licenses', wrappedReference: true })
   licenseType!: IdentifiedReference<LicenseType>;
-
 }
 
 describe('GH issue 1326', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -68,12 +61,14 @@ describe('GH issue 1326', () => {
     orm.em.clear();
     const newDriver = orm.em.create(Driver, {
       name: 'Martin Adámek',
-      licenses: [{
-        expiresAt: new Date(2050, 0, 1),
-        licenseType: {
-          name: 'Standard Driver License',
+      licenses: [
+        {
+          expiresAt: new Date(2050, 0, 1),
+          licenseType: {
+            name: 'Standard Driver License',
+          },
         },
-      }],
+      ],
     });
     const mock = mockLogger(orm, ['query']);
     await orm.em.persistAndFlush(newDriver);
@@ -93,12 +88,14 @@ describe('GH issue 1326', () => {
     const newDriver = new Driver();
     orm.em.assign(newDriver, {
       name: 'Martin Adámek',
-      licenses: [{
-        expiresAt: new Date(2050, 0, 1),
-        licenseType: {
-          name: 'Standard Driver License',
+      licenses: [
+        {
+          expiresAt: new Date(2050, 0, 1),
+          licenseType: {
+            name: 'Standard Driver License',
+          },
         },
-      }],
+      ],
     });
     const mock = mockLogger(orm, ['query']);
     await orm.em.persistAndFlush(newDriver);
@@ -112,5 +109,4 @@ describe('GH issue 1326', () => {
     expect(newDriver.licenses[0].id).toBeDefined();
     expect(newDriver.licenses[0].licenseType.id).toBeDefined();
   });
-
 });

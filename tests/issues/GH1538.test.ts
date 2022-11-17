@@ -3,7 +3,6 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Author {
-
   @PrimaryKey({ type: BigIntType, comment: 'PK' })
   id!: string;
 
@@ -17,12 +16,10 @@ export class Author {
 
   @Property({ persist: false })
   postTotal?: number;
-
 }
 
 @Entity()
 export class Post {
-
   @PrimaryKey({ type: BigIntType, comment: 'PK' })
   id!: string;
 
@@ -34,11 +31,9 @@ export class Post {
 
   @ManyToOne(() => Author)
   author!: Author;
-
 }
 
 describe('GH issue 1538', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -54,7 +49,8 @@ describe('GH issue 1538', () => {
 
   test(`sub-queries with custom type PK (bigint)`, async () => {
     const knex = orm.em.getKnex();
-    const qb1 = orm.em.createQueryBuilder(Post, 'b')
+    const qb1 = orm.em
+      .createQueryBuilder(Post, 'b')
       .count('b.id', true)
       .where({ author: knex.ref('a.id') })
       .as('Author.postTotal');
@@ -62,5 +58,4 @@ describe('GH issue 1538', () => {
     qb2.select(['*', qb1]).orderBy({ postTotal: 'desc' });
     expect(qb2.getFormattedQuery()).toBe('select `a`.*, (select count(distinct `b`.`id`) as `count` from `post` as `b` where `b`.`author_id` = `a`.`id`) as `post_total` from `author` as `a` order by `post_total` desc');
   });
-
 });

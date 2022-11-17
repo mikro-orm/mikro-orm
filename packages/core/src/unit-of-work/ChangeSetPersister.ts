@@ -12,15 +12,9 @@ import { OptimisticLockError } from '../errors';
 import { ReferenceType } from '../enums';
 
 export class ChangeSetPersister {
-
   private readonly platform = this.driver.getPlatform();
 
-  constructor(private readonly driver: IDatabaseDriver,
-              private readonly metadata: MetadataStorage,
-              private readonly hydrator: IHydrator,
-              private readonly factory: EntityFactory,
-              private readonly validator: EntityValidator,
-              private readonly config: Configuration) { }
+  constructor(private readonly driver: IDatabaseDriver, private readonly metadata: MetadataStorage, private readonly hydrator: IHydrator, private readonly factory: EntityFactory, private readonly validator: EntityValidator, private readonly config: Configuration) {}
 
   async executeInserts<T extends object>(changeSets: ChangeSet<T>[], options?: DriverMethodOptions, withSchema?: boolean): Promise<void> {
     if (!withSchema) {
@@ -28,7 +22,7 @@ export class ChangeSetPersister {
     }
 
     const meta = this.metadata.find(changeSets[0].name)!;
-    changeSets.forEach(changeSet => this.processProperties(changeSet));
+    changeSets.forEach((changeSet) => this.processProperties(changeSet));
 
     if (changeSets.length > 1 && this.config.get('useBatchInserts', this.platform.usesBatchInserts())) {
       return this.persistNewEntities(meta, changeSets, options);
@@ -45,7 +39,7 @@ export class ChangeSetPersister {
     }
 
     const meta = this.metadata.find(changeSets[0].name)!;
-    changeSets.forEach(changeSet => this.processProperties(changeSet));
+    changeSets.forEach((changeSet) => this.processProperties(changeSet));
 
     if (batched && changeSets.length > 1 && this.config.get('useBatchUpdates', this.platform.usesBatchUpdates())) {
       return this.persistManagedEntities(meta, changeSets, options);
@@ -67,7 +61,7 @@ export class ChangeSetPersister {
 
     for (let i = 0; i < changeSets.length; i += size) {
       const chunk = changeSets.slice(i, i + size);
-      const pks = chunk.map(cs => cs.getPrimaryKey());
+      const pks = chunk.map((cs) => cs.getPrimaryKey());
       options = this.propagateSchemaFromMetadata(meta, options);
       await this.driver.nativeDelete(meta.className, { [pk]: { $in: pks } } as FilterQuery<T>, options);
     }
@@ -75,7 +69,7 @@ export class ChangeSetPersister {
 
   private async runForEachSchema<T extends object>(changeSets: ChangeSet<T>[], method: string, options?: DriverMethodOptions, ...args: unknown[]): Promise<void> {
     const groups = new Map<string, ChangeSet<T>[]>();
-    changeSets.forEach(cs => {
+    changeSets.forEach((cs) => {
       const group = groups.get(cs.schema!) ?? [];
       group.push(cs);
       groups.set(cs.schema!, group);
@@ -148,7 +142,11 @@ export class ChangeSetPersister {
       convertCustomTypes: false,
       processCollections: false,
     });
-    const res = await this.driver.nativeInsertMany(meta.className, changeSets.map(cs => cs.payload), options);
+    const res = await this.driver.nativeInsertMany(
+      meta.className,
+      changeSets.map((cs) => cs.payload),
+      options
+    );
 
     for (let i = 0; i < changeSets.length; i++) {
       const changeSet = changeSets[i];
@@ -208,14 +206,19 @@ export class ChangeSetPersister {
       convertCustomTypes: false,
       processCollections: false,
     });
-    const cond = changeSets.map(cs => cs.getPrimaryKey(true) as Dictionary);
+    const cond = changeSets.map((cs) => cs.getPrimaryKey(true) as Dictionary);
 
     changeSets.forEach((changeSet, idx) => {
       this.checkConcurrencyKeys(meta, changeSet, cond[idx]);
     });
 
-    await this.driver.nativeUpdateMany(meta.className, cond, changeSets.map(cs => cs.payload), options);
-    changeSets.forEach(cs => cs.persisted = true);
+    await this.driver.nativeUpdateMany(
+      meta.className,
+      cond,
+      changeSets.map((cs) => cs.payload),
+      options
+    );
+    changeSets.forEach((cs) => (cs.persisted = true));
   }
 
   private mapPrimaryKey<T extends object>(meta: EntityMetadata<T>, value: IPrimaryKey, changeSet: ChangeSet<T>): void {
@@ -230,7 +233,11 @@ export class ChangeSetPersister {
     // some drivers might be returning bigint PKs as numbers when the number is small enough,
     // but we need to have it as string so comparison works in change set tracking, so instead
     // of using the raw value from db, we convert it back to the db value explicitly
-    value = prop.customType ? prop.customType.convertToDatabaseValue(insertId, this.platform, { mode: 'serialization' }) : value;
+    value = prop.customType
+      ? prop.customType.convertToDatabaseValue(insertId, this.platform, {
+          mode: 'serialization',
+        })
+      : value;
     changeSet.payload[wrapped.__meta.primaryKeys[0]] = value;
     wrapped.__identifier!.setValue(value);
   }
@@ -246,7 +253,7 @@ export class ChangeSetPersister {
     }
 
     helper(changeSet.entity).populated();
-    meta.relations.forEach(prop => {
+    meta.relations.forEach((prop) => {
       const value = changeSet.entity[prop.name];
 
       if (Utils.isEntity(value, true)) {
@@ -278,11 +285,11 @@ export class ChangeSetPersister {
   }
 
   private async checkOptimisticLocks<T extends object>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], options?: DriverMethodOptions): Promise<void> {
-    if (meta.concurrencyCheckKeys.size === 0 && (!meta.versionProperty || changeSets.every(cs => cs.entity[meta.versionProperty] == null))) {
+    if (meta.concurrencyCheckKeys.size === 0 && (!meta.versionProperty || changeSets.every((cs) => cs.entity[meta.versionProperty] == null))) {
       return;
     }
 
-    const $or = changeSets.map(cs => {
+    const $or = changeSets.map((cs) => {
       const cond = Utils.getPrimaryKeyCond<T>(cs.originalEntity as T, meta.primaryKeys.concat(...meta.concurrencyCheckKeys)) as FilterQuery<T>;
 
       if (meta.versionProperty) {
@@ -299,9 +306,9 @@ export class ChangeSetPersister {
     const res = await this.driver.find<T>(meta.className, { $or } as FilterQuery<T>, options);
 
     if (res.length !== changeSets.length) {
-      const compare = (a: Dictionary, b: Dictionary, keys: string[]) => keys.every(k => a[k] === b[k]);
-      const entity = changeSets.find(cs => {
-        return !res.some(row => compare(Utils.getPrimaryKeyCond(cs.entity, primaryKeys)!, row, primaryKeys));
+      const compare = (a: Dictionary, b: Dictionary, keys: string[]) => keys.every((k) => a[k] === b[k]);
+      const entity = changeSets.find((cs) => {
+        return !res.some((row) => compare(Utils.getPrimaryKeyCond(cs.entity, primaryKeys)!, row, primaryKeys));
       })!.entity;
       throw OptimisticLockError.lockFailed(entity);
     }
@@ -322,7 +329,7 @@ export class ChangeSetPersister {
 
     if (changeSets[0].type === ChangeSetType.CREATE) {
       // do not reload things that already had a runtime value
-      reloadProps.push(...meta.props.filter(prop => prop.defaultRaw && prop.defaultRaw.toLowerCase() !== 'null' && changeSets[0].entity[prop.name] == null));
+      reloadProps.push(...meta.props.filter((prop) => prop.defaultRaw && prop.defaultRaw.toLowerCase() !== 'null' && changeSets[0].entity[prop.name] == null));
     }
 
     if (reloadProps.length === 0) {
@@ -330,13 +337,13 @@ export class ChangeSetPersister {
     }
 
     const pk = Utils.getPrimaryKeyHash(meta.primaryKeys);
-    const pks = changeSets.map(cs => helper(cs.entity).getPrimaryKey(true));
+    const pks = changeSets.map((cs) => helper(cs.entity).getPrimaryKey(true));
     options = this.propagateSchemaFromMetadata(meta, options, {
-      fields: reloadProps.map(prop => prop.fieldNames[0]),
+      fields: reloadProps.map((prop) => prop.fieldNames[0]),
     });
     const data = await this.driver.find<T>(meta.name!, { [pk]: { $in: pks } } as FilterQuery<T>, options);
     const map = new Map<string, Dictionary>();
-    data.forEach(item => map.set(Utils.getCompositeKeyHash(item, meta, true, this.platform), item));
+    data.forEach((item) => map.set(Utils.getCompositeKeyHash(item, meta, true, this.platform), item));
 
     for (const changeSet of changeSets) {
       const data = map.get(helper(changeSet.entity).getSerializedPrimaryKey());
@@ -350,7 +357,7 @@ export class ChangeSetPersister {
     const value = changeSet.payload[prop.name] as unknown; // for inline embeddables
 
     if (prop.reference === ReferenceType.MANY_TO_MANY && Array.isArray(value)) {
-      changeSet.payload[prop.name] = value.map(val => val instanceof EntityIdentifier ? val.getValue() : val);
+      changeSet.payload[prop.name] = value.map((val) => (val instanceof EntityIdentifier ? val.getValue() : val));
     }
 
     if (value instanceof EntityIdentifier) {
@@ -389,5 +396,4 @@ export class ChangeSetPersister {
       }
     }
   }
-
 }

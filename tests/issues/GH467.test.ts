@@ -3,28 +3,23 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: string;
 
   @ManyToOne({ entity: 'B', wrappedReference: true, nullable: true })
   b?: IdentifiedReference<B>;
-
 }
 
 @Entity()
 class B {
-
   @PrimaryKey()
   id!: string;
 
-  @OneToMany(() => A, a => a.b)
+  @OneToMany(() => A, (a) => a.b)
   as = new Collection<A>(this);
-
 }
 
 describe('GH issue 467', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -88,5 +83,4 @@ describe('GH issue 467', () => {
     const b2 = await orm.em.findOneOrFail(B, 'b3', { populate: ['as'] });
     expect(b2.as.getIdentifiers()).toEqual(['a3']);
   });
-
 });

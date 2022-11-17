@@ -4,7 +4,6 @@ import { mockLogger } from '../helpers';
 
 @Entity()
 class Order {
-
   @PrimaryKey()
   id: number;
 
@@ -17,12 +16,10 @@ class Order {
   constructor(id: number) {
     this.id = id;
   }
-
 }
 
 @Entity()
 class OrderItem {
-
   @PrimaryKey()
   id: number;
 
@@ -44,11 +41,9 @@ class OrderItem {
   constructor(id: number) {
     this.id = id;
   }
-
 }
 
 describe('GH issue 1657', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -85,5 +80,4 @@ describe('GH issue 1657', () => {
 
     expect(mock.mock.calls).toHaveLength(2);
   });
-
 });

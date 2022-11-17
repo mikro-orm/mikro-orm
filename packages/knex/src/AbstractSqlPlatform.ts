@@ -6,7 +6,6 @@ import type { SchemaHelper } from './schema';
 import { SchemaGenerator } from './schema';
 
 export abstract class AbstractSqlPlatform extends Platform {
-
   protected readonly schemaHelper?: SchemaHelper;
 
   usesPivotTable(): boolean {
@@ -27,7 +26,7 @@ export abstract class AbstractSqlPlatform extends Platform {
 
   getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): SchemaGenerator {
     /* istanbul ignore next */
-    return this.config.getCachedService(SchemaGenerator, em ?? driver as any); // cast as `any` to get around circular dependencies
+    return this.config.getCachedService(SchemaGenerator, em ?? (driver as any)); // cast as `any` to get around circular dependencies
   }
 
   getEntityGenerator(em: EntityManager) {
@@ -109,5 +108,4 @@ export abstract class AbstractSqlPlatform extends Platform {
     });
     return ret + 'else null end)';
   }
-
 }

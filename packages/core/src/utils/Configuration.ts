@@ -5,21 +5,7 @@ import type { NamingStrategy } from '../naming-strategy';
 import type { CacheAdapter } from '../cache';
 import { FileCacheAdapter, NullCacheAdapter } from '../cache';
 import type { EntityRepository } from '../entity/EntityRepository';
-import type {
-  AnyEntity,
-  Constructor,
-  Dictionary,
-  EntityClass,
-  EntityClassGroup,
-  FilterDef,
-  Highlighter,
-  HydratorConstructor,
-  IHydrator,
-  IMigrationGenerator,
-  IPrimaryKey,
-  MaybePromise,
-  MigrationObject,
-} from '../typings';
+import type { AnyEntity, Constructor, Dictionary, EntityClass, EntityClassGroup, FilterDef, Highlighter, HydratorConstructor, IHydrator, IMigrationGenerator, IPrimaryKey, MaybePromise, MigrationObject } from '../typings';
 import { ObjectHydrator } from '../hydration';
 import { NullHighlighter } from '../utils/NullHighlighter';
 import type { Logger, LoggerNamespace, LoggerOptions } from '../logging';
@@ -41,7 +27,6 @@ import { EntityComparator } from './EntityComparator';
 import type { Type } from '../types/Type';
 
 export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
-
   static readonly DEFAULTS: MikroORMOptions = {
     pool: {},
     entities: [],
@@ -128,12 +113,30 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   };
 
   static readonly PLATFORMS = {
-    'mongo': { className: 'MongoDriver', module: () => require('@mikro-orm/mongodb') },
-    'mysql': { className: 'MySqlDriver', module: () => require('@mikro-orm/mysql') },
-    'mariadb': { className: 'MariaDbDriver', module: () => require('@mikro-orm/mariadb') },
-    'postgresql': { className: 'PostgreSqlDriver', module: () => require('@mikro-orm/postgresql') },
-    'sqlite': { className: 'SqliteDriver', module: () => require('@mikro-orm/sqlite') },
-    'better-sqlite': { className: 'BetterSqliteDriver', module: () => require('@mikro-orm/better-sqlite') },
+    mongo: {
+      className: 'MongoDriver',
+      module: () => require('@mikro-orm/mongodb'),
+    },
+    mysql: {
+      className: 'MySqlDriver',
+      module: () => require('@mikro-orm/mysql'),
+    },
+    mariadb: {
+      className: 'MariaDbDriver',
+      module: () => require('@mikro-orm/mariadb'),
+    },
+    postgresql: {
+      className: 'PostgreSqlDriver',
+      module: () => require('@mikro-orm/postgresql'),
+    },
+    sqlite: {
+      className: 'SqliteDriver',
+      module: () => require('@mikro-orm/sqlite'),
+    },
+    'better-sqlite': {
+      className: 'BetterSqliteDriver',
+      module: () => require('@mikro-orm/better-sqlite'),
+    },
   };
 
   private readonly options: MikroORMOptions<D>;
@@ -261,7 +264,10 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets instance of CacheAdapter for result cache. (cached)
    */
   getResultCacheAdapter(): CacheAdapter {
-    return this.getCachedService(this.options.resultCache.adapter!, { expiration: this.options.resultCache.expiration, ...this.options.resultCache.options });
+    return this.getCachedService(this.options.resultCache.adapter!, {
+      expiration: this.options.resultCache.expiration,
+      ...this.options.resultCache.options,
+    });
   }
 
   /**
@@ -282,9 +288,9 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Creates instance of given service and caches it.
    */
-  getCachedService<T extends { new(...args: any[]): InstanceType<T> }>(cls: T, ...args: ConstructorParameters<T>): InstanceType<T> {
+  getCachedService<T extends { new (...args: any[]): InstanceType<T> }>(cls: T, ...args: ConstructorParameters<T>): InstanceType<T> {
     if (!this.cache.has(cls.name)) {
-      const Class = cls as { new(...args: any[]): T };
+      const Class = cls as { new (...args: any[]): T };
       this.cache.set(cls.name, new Class(...args));
     }
 
@@ -322,7 +328,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       this.options.charset = this.platform.getDefaultCharset();
     }
 
-    Object.keys(this.options.filters).forEach(key => {
+    Object.keys(this.options.filters).forEach((key) => {
       this.options.filters[key].default ??= true;
     });
 
@@ -352,7 +358,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     const distDir = pathExistsSync(this.options.baseDir + '/dist');
     const buildDir = pathExistsSync(this.options.baseDir + '/build');
     // if neither `dist` nor `build` exist, we use the `src` folder as it might be a JS project without building, but with `src` folder
-    const path = distDir ? './dist' : (buildDir ? './build' : './src');
+    const path = distDir ? './dist' : buildDir ? './build' : './src';
 
     // only if the user did not provide any values and if the default path does not exist
     if (!options.migrations?.path && !options.migrations?.pathTs && !migrationsPathExists) {
@@ -393,7 +399,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
     return new this.options.driver!(this);
   }
-
 }
 
 /**
@@ -487,9 +492,9 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
     getMappedType?: (type: string, platform: Platform) => Type<unknown> | undefined;
   };
   type?: keyof typeof Configuration.PLATFORMS;
-  driver?: { new(config: Configuration): D };
+  driver?: { new (config: Configuration): D };
   driverOptions: Dictionary;
-  namingStrategy?: { new(): NamingStrategy };
+  namingStrategy?: { new (): NamingStrategy };
   implicitTransactions?: boolean;
   connect: boolean;
   verbose: boolean;
@@ -540,20 +545,18 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   cache: {
     enabled?: boolean;
     pretty?: boolean;
-    adapter?: { new(...params: any[]): CacheAdapter };
+    adapter?: { new (...params: any[]): CacheAdapter };
     options?: Dictionary;
   };
   resultCache: {
     expiration?: number;
-    adapter?: { new(...params: any[]): CacheAdapter };
+    adapter?: { new (...params: any[]): CacheAdapter };
     options?: Dictionary;
   };
-  metadataProvider: { new(config: Configuration): MetadataProvider };
+  metadataProvider: { new (config: Configuration): MetadataProvider };
   seeder: SeederOptions;
   preferReadReplicas: boolean;
   dynamicImportProvider: (id: string) => Promise<unknown>;
 }
 
-export type Options<D extends IDatabaseDriver = IDatabaseDriver> =
-  Pick<MikroORMOptions<D>, Exclude<keyof MikroORMOptions<D>, keyof typeof Configuration.DEFAULTS>>
-  & Partial<MikroORMOptions<D>>;
+export type Options<D extends IDatabaseDriver = IDatabaseDriver> = Pick<MikroORMOptions<D>, Exclude<keyof MikroORMOptions<D>, keyof typeof Configuration.DEFAULTS>> & Partial<MikroORMOptions<D>>;

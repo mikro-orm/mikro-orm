@@ -8,7 +8,6 @@ import { QueryType } from './enums';
  * @internal
  */
 export class ObjectCriteriaNode extends CriteriaNode {
-
   process<T>(qb: IQueryBuilder<T>, alias?: string): any {
     const nestedAlias = qb.getAliasForJoinPath(this.getPath());
     const ownerAlias = alias || qb.alias;
@@ -58,7 +57,7 @@ export class ObjectCriteriaNode extends CriteriaNode {
       return true;
     }
 
-    return Object.keys(this.payload).some(field => {
+    return Object.keys(this.payload).some((field) => {
       const childNode = this.payload[field] as CriteriaNode;
       return childNode.willAutoJoin(qb, this.prop ? alias : ownerAlias);
     });
@@ -67,7 +66,7 @@ export class ObjectCriteriaNode extends CriteriaNode {
   shouldInline(payload: any): boolean {
     const customExpression = ObjectCriteriaNode.isCustomExpression(this.key!);
     const scalar = Utils.isPrimaryKey(payload) || payload instanceof RegExp || payload instanceof Date || customExpression;
-    const operator = Utils.isObject(payload) && Object.keys(payload).every(k => Utils.isOperator(k, false));
+    const operator = Utils.isObject(payload) && Object.keys(payload).every((k) => Utils.isOperator(k, false));
 
     return !!this.prop && this.prop.reference !== ReferenceType.SCALAR && !scalar && !operator;
   }
@@ -79,7 +78,10 @@ export class ObjectCriteriaNode extends CriteriaNode {
       if (Utils.isOperator(k, false)) {
         const tmp = payload[k];
         delete payload[k];
-        o[`${alias}.${field}`] = { [k]: tmp, ...(o[`${alias}.${field}`] || {}) };
+        o[`${alias}.${field}`] = {
+          [k]: tmp,
+          ...(o[`${alias}.${field}`] || {}),
+        };
       } else if (this.isPrefixed(k) || Utils.isOperator(k) || !childAlias) {
         const idx = prop.referencedPKs.indexOf(k);
         const key = idx !== -1 && !childAlias ? prop.joinColumns[idx] : k;
@@ -90,13 +92,13 @@ export class ObjectCriteriaNode extends CriteriaNode {
           delete o[key];
           o.$and = $and;
         } else if (Utils.isOperator(k) && Array.isArray(payload[k])) {
-            o[key] = payload[k].map((child: Dictionary) => Object.keys(child).reduce((o, childKey) => {
-              const key = (this.isPrefixed(childKey) || Utils.isOperator(childKey))
-                ? childKey
-                : `${childAlias}.${childKey}`;
+          o[key] = payload[k].map((child: Dictionary) =>
+            Object.keys(child).reduce((o, childKey) => {
+              const key = this.isPrefixed(childKey) || Utils.isOperator(childKey) ? childKey : `${childAlias}.${childKey}`;
               o[key] = child[childKey];
               return o;
-            }, {}));
+            }, {})
+          );
         } else {
           o[key] = payload[k];
         }
@@ -115,17 +117,19 @@ export class ObjectCriteriaNode extends CriteriaNode {
 
     const embeddable = this.prop.reference === ReferenceType.EMBEDDED;
     const knownKey = [ReferenceType.SCALAR, ReferenceType.MANY_TO_ONE, ReferenceType.EMBEDDED].includes(this.prop.reference) || (this.prop.reference === ReferenceType.ONE_TO_ONE && this.prop.owner);
-    const operatorKeys = knownKey && Object.keys(this.payload).every(key => Utils.isOperator(key, false));
-    const primaryKeys = knownKey && Object.keys(this.payload).every(key => {
-      const meta = this.metadata.find(this.entityName)!;
-      if (!meta.primaryKeys.includes(key)) {
-        return false;
-      }
-      if (!Utils.isPlainObject(this.payload[key].payload) || ![ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(meta.properties[key].reference)) {
-        return true;
-      }
-      return Object.keys(this.payload[key].payload).every(k => meta.properties[key].targetMeta!.primaryKeys.includes(k));
-    });
+    const operatorKeys = knownKey && Object.keys(this.payload).every((key) => Utils.isOperator(key, false));
+    const primaryKeys =
+      knownKey &&
+      Object.keys(this.payload).every((key) => {
+        const meta = this.metadata.find(this.entityName)!;
+        if (!meta.primaryKeys.includes(key)) {
+          return false;
+        }
+        if (!Utils.isPlainObject(this.payload[key].payload) || ![ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(meta.properties[key].reference)) {
+          return true;
+        }
+        return Object.keys(this.payload[key].payload).every((k) => meta.properties[key].targetMeta!.primaryKeys.includes(k));
+      });
 
     return !primaryKeys && !nestedAlias && !operatorKeys && !embeddable;
   }
@@ -134,7 +138,7 @@ export class ObjectCriteriaNode extends CriteriaNode {
     const nestedAlias = qb.getNextAlias(this.prop?.pivotTable ?? this.entityName);
     const customExpression = ObjectCriteriaNode.isCustomExpression(this.key!);
     const scalar = Utils.isPrimaryKey(this.payload) || this.payload instanceof RegExp || this.payload instanceof Date || customExpression;
-    const operator = Utils.isPlainObject(this.payload) && Object.keys(this.payload).every(k => Utils.isOperator(k, false));
+    const operator = Utils.isPlainObject(this.payload) && Object.keys(this.payload).every((k) => Utils.isOperator(k, false));
     const field = `${alias}.${this.prop!.name}`;
 
     if (this.prop!.reference === ReferenceType.MANY_TO_MANY && (scalar || operator)) {
@@ -151,5 +155,4 @@ export class ObjectCriteriaNode extends CriteriaNode {
   private isPrefixed(field: string): boolean {
     return !!field.match(/\w+\./);
   }
-
 }

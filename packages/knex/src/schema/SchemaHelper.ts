@@ -8,7 +8,6 @@ import type { DatabaseTable } from './DatabaseTable';
 import type { DatabaseSchema } from './DatabaseSchema';
 
 export abstract class SchemaHelper {
-
   constructor(protected readonly platform: AbstractSqlPlatform) {}
 
   getSchemaBeginning(charset: string): string {
@@ -36,7 +35,7 @@ export abstract class SchemaHelper {
   }
 
   async getPrimaryKeys(connection: AbstractSqlConnection, indexes: Index[] = [], tableName: string, schemaName?: string): Promise<string[]> {
-    const pks = indexes.filter(i => i.primary).map(pk => pk.columnNames);
+    const pks = indexes.filter((i) => i.primary).map((pk) => pk.columnNames);
     return Utils.flatten(pks);
   }
 
@@ -87,7 +86,7 @@ export abstract class SchemaHelper {
     oldColumnName = this.platform.quoteIdentifier(oldColumnName);
     const columnName = this.platform.quoteIdentifier(to.name);
 
-    const schemaReference = (schemaName !== undefined && schemaName !== 'public') ? ('"' + schemaName + '".') : '';
+    const schemaReference = schemaName !== undefined && schemaName !== 'public' ? '"' + schemaName + '".' : '';
     const tableReference = schemaReference + tableName;
 
     return `alter table ${tableReference} rename column ${oldColumnName} to ${columnName}`;
@@ -102,7 +101,7 @@ export abstract class SchemaHelper {
     tableName = this.platform.quoteIdentifier(tableName);
     const keyName = this.platform.quoteIdentifier(index.keyName);
 
-    return `create index ${keyName} on ${tableName} (${index.columnNames.map(c => this.platform.quoteIdentifier(c)).join(', ')})`;
+    return `create index ${keyName} on ${tableName} (${index.columnNames.map((c) => this.platform.quoteIdentifier(c)).join(', ')})`;
   }
 
   getDropIndexSQL(tableName: string, index: Index): string {
@@ -138,7 +137,7 @@ export abstract class SchemaHelper {
       return table.increments(column.name, { primaryKey });
     }
 
-    if (column.mappedType instanceof EnumType && column.enumItems?.every(item => Utils.isString(item))) {
+    if (column.mappedType instanceof EnumType && column.enumItems?.every((item) => Utils.isString(item))) {
       return table.enum(column.name, column.enumItems);
     }
 
@@ -200,7 +199,7 @@ export abstract class SchemaHelper {
   protected async mapIndexes(indexes: Index[]): Promise<Index[]> {
     const map = {} as Dictionary;
 
-    indexes.forEach(index => {
+    indexes.forEach((index) => {
       if (map[index.keyName]) {
         map[index.keyName].composite = true;
         map[index.keyName].columnNames.push(index.columnNames[0]);
@@ -293,7 +292,10 @@ export abstract class SchemaHelper {
    * Uses `raw` method injected in `AbstractSqlConnection` to allow adding custom queries inside alter statements.
    */
   pushTableQuery(table: Knex.TableBuilder, expression: string, grouping = 'alterTable'): void {
-    (table as Dictionary)._statements.push({ grouping, method: 'raw', args: [expression] });
+    (table as Dictionary)._statements.push({
+      grouping,
+      method: 'raw',
+      args: [expression],
+    });
   }
-
 }

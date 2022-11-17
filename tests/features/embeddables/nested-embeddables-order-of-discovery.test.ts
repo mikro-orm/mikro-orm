@@ -7,18 +7,15 @@ export enum RestrictionMode {
 
 @Embeddable()
 export class RestrictionItem {
-
   @Enum(() => RestrictionMode)
   mode!: RestrictionMode;
 
   @Property({ type: ArrayType })
   value: string[] = [];
-
 }
 
 @Embeddable()
 export class Restriction {
-
   @Property({ type: BigIntType })
   permissions!: string;
 
@@ -27,12 +24,10 @@ export class Restriction {
 
   @Embedded(() => RestrictionItem)
   channel!: RestrictionItem;
-
 }
 
 @Entity({ abstract: true })
 export class PluginSettings {
-
   @PrimaryKey({ type: BigIntType })
   id!: string;
 
@@ -41,14 +36,12 @@ export class PluginSettings {
 
   @Property({ nullable: true })
   enabled?: boolean;
-
 }
 
 @Entity()
 export class PluginTestSettings extends PluginSettings {}
 
 describe('GH issue 2242', () => {
-
   test(`order: [PluginTestSettings, PluginSettings, Restriction, RestrictionItem]`, async () => {
     const orm = await MikroORM.init({
       entities: [PluginTestSettings, PluginSettings, Restriction, RestrictionItem],
@@ -238,5 +231,4 @@ describe('GH issue 2242', () => {
     expect(item.enabled).toBe(true);
     await orm.close();
   });
-
 });

@@ -2,18 +2,15 @@ import { Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany
 
 @Entity()
 export class Customer {
-
   @PrimaryKey()
   id!: number;
 
   @OneToMany({ entity: 'License', mappedBy: 'customer' })
   licenses = new Collection<License>(this);
-
 }
 
 @Entity()
 export class License {
-
   @PrimaryKey()
   id!: number;
 
@@ -23,7 +20,6 @@ export class License {
   constructor(customer: Customer | IdentifiedReference<Customer>) {
     this.customer = Reference.create(customer);
   }
-
 }
 
 let orm: MikroORM;
@@ -49,7 +45,9 @@ test('entity is retrieved from identity map', async () => {
   expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toEqual(['Customer-myschema:1']);
   expect(check1).toBe(customer);
 
-  const check2 = await orm.em.findOneOrFail(Customer, customer.id, { refresh: true });
+  const check2 = await orm.em.findOneOrFail(Customer, customer.id, {
+    refresh: true,
+  });
   expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toEqual(['Customer-myschema:1']);
   expect(check2).toBe(customer);
 });

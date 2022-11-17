@@ -5,7 +5,6 @@ import { Collection } from '../TsMorphMetadataProvider.test';
 
 @Entity()
 export class Author extends BaseEntity {
-
   @Property()
   name: string;
 
@@ -27,7 +26,11 @@ export class Author extends BaseEntity {
   @Property({ type: new DateType() })
   born?: Date;
 
-  @OneToMany('Book', 'author', { referenceColumnName: '_id', cascade: [Cascade.PERSIST], orphanRemoval: true })
+  @OneToMany('Book', 'author', {
+    referenceColumnName: '_id',
+    cascade: [Cascade.PERSIST],
+    orphanRemoval: true,
+  })
   books = new Collection<Book>(this);
 
   @ManyToMany()
@@ -56,5 +59,4 @@ export class Author extends BaseEntity {
   getCode() {
     return `${this.email} - ${this.name}`;
   }
-
 }

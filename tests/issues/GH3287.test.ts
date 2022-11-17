@@ -2,7 +2,6 @@ import { Collection, Entity, LoadStrategy, ManyToMany, MikroORM, PrimaryKey } fr
 
 @Entity()
 export class Group {
-
   @PrimaryKey()
   id!: number;
 
@@ -11,12 +10,10 @@ export class Group {
     mappedBy: 'groups',
   })
   participants = new Collection<Participant>(this);
-
 }
 
 @Entity()
 export class Participant {
-
   @PrimaryKey()
   id!: number;
 
@@ -25,7 +22,6 @@ export class Participant {
     inversedBy: 'participants',
   })
   groups = new Collection<Group>(this);
-
 }
 
 let orm: MikroORM;
@@ -61,7 +57,9 @@ test('lazy loading M:N takes snapshot (GH 3323)', async () => {
   group.participants.add(participant);
   await orm.em.fork().persistAndFlush(group);
 
-  const g1 = await orm.em.findOneOrFail(Group, group, { populate: ['participants'] });
+  const g1 = await orm.em.findOneOrFail(Group, group, {
+    populate: ['participants'],
+  });
   const p1 = await orm.em.findOneOrFail(Participant, participant);
   g1.participants.add(participant);
   await orm.em.flush();

@@ -2,7 +2,6 @@ import { inspect } from 'util';
 import type { AnyEntity, Constructor, Dictionary, EntityMetadata, EntityProperty, IPrimaryKey } from './typings';
 
 export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
-
   constructor(message: string, readonly entity?: T) {
     super(message);
     Error.captureStackTrace(this, this.constructor);
@@ -45,13 +44,21 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
   }
 
   static notEntity(owner: AnyEntity, prop: EntityProperty, data: any): ValidationError {
-    const type = Object.prototype.toString.call(data).match(/\[object (\w+)]/)![1].toLowerCase();
+    const type = Object.prototype.toString
+      .call(data)
+      .match(/\[object (\w+)]/)![1]
+      .toLowerCase();
     return new ValidationError(`Entity of type ${prop.type} expected for property ${owner.constructor.name}.${prop.name}, ${inspect(data)} of type ${type} given. If you are using Object.assign(entity, data), use em.assign(entity, data) instead.`);
   }
 
   static notDiscoveredEntity(data: any, meta?: EntityMetadata, action = 'persist'): ValidationError {
     /* istanbul ignore next */
-    const type = meta?.className ?? Object.prototype.toString.call(data).match(/\[object (\w+)]/)![1].toLowerCase();
+    const type =
+      meta?.className ??
+      Object.prototype.toString
+        .call(data)
+        .match(/\[object (\w+)]/)![1]
+        .toLowerCase();
     let err = `Trying to ${action} not discovered entity of type ${type}.`;
 
     /* istanbul ignore else */
@@ -67,7 +74,10 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
   }
 
   static invalidType(type: Constructor<any>, value: any, mode: string): ValidationError {
-    const valueType = Object.prototype.toString.call(value).match(/\[object (\w+)]/)![1].toLowerCase();
+    const valueType = Object.prototype.toString
+      .call(value)
+      .match(/\[object (\w+)]/)![1]
+      .toLowerCase();
 
     if (value instanceof Date) {
       value = value.toISOString();
@@ -84,8 +94,7 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
   static cannotModifyInverseCollection(owner: AnyEntity, property: EntityProperty): ValidationError {
     const inverseCollection = `${owner.constructor.name}.${property.name}`;
     const ownerCollection = `${property.type}.${property.mappedBy}`;
-    const error = `You cannot modify inverse side of M:N collection ${inverseCollection} when the owning side is not initialized. `
-      + `Consider working with the owning side instead (${ownerCollection}).`;
+    const error = `You cannot modify inverse side of M:N collection ${inverseCollection} when the owning side is not initialized. ` + `Consider working with the owning side instead (${ownerCollection}).`;
 
     return new ValidationError(error, owner);
   }
@@ -103,7 +112,7 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
   }
 
   static cannotUseGlobalContext(): ValidationError {
-    return new ValidationError('Using global EntityManager instance methods for context specific actions is disallowed. If you need to work with the global instance\'s identity map, use `allowGlobalContext` configuration option or `fork()` instead.');
+    return new ValidationError("Using global EntityManager instance methods for context specific actions is disallowed. If you need to work with the global instance's identity map, use `allowGlobalContext` configuration option or `fork()` instead.");
   }
 
   static cannotUseOperatorsInsideEmbeddables(className: string, propName: string, payload: unknown): ValidationError {
@@ -113,11 +122,9 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
   static invalidEmbeddableQuery(className: string, propName: string, embeddableType: string): ValidationError {
     return new ValidationError(`Invalid query for entity '${className}', property '${propName}' does not exist in embeddable '${embeddableType}'`);
   }
-
 }
 
 export class OptimisticLockError<T extends AnyEntity = AnyEntity> extends ValidationError<T> {
-
   static notVersioned(meta: EntityMetadata): OptimisticLockError {
     return new OptimisticLockError(`Cannot obtain optimistic lock on unversioned entity ${meta.className}`);
   }
@@ -135,11 +142,9 @@ export class OptimisticLockError<T extends AnyEntity = AnyEntity> extends Valida
 
     return new OptimisticLockError(`The optimistic lock failed, version ${expectedLockVersion} was expected, but is actually ${actualLockVersion}`, entity);
   }
-
 }
 
 export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationError<T> {
-
   static fromMissingPrimaryKey(meta: EntityMetadata): MetadataError {
     return new MetadataError(`${meta.className} entity is missing @PrimaryKey()`);
   }
@@ -181,7 +186,7 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
   }
 
   static multipleVersionFields(meta: EntityMetadata, fields: string[]): MetadataError {
-    return new MetadataError(`Entity ${meta.className} has multiple version properties defined: '${fields.join('\', \'')}'. Only one version property is allowed per entity.`);
+    return new MetadataError(`Entity ${meta.className} has multiple version properties defined: '${fields.join("', '")}'. Only one version property is allowed per entity.`);
   }
 
   static invalidVersionFieldType(meta: EntityMetadata): MetadataError {
@@ -224,11 +229,9 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
   private static fromMessage(meta: EntityMetadata, prop: EntityProperty, message: string): MetadataError {
     return new MetadataError(`${meta.className}.${prop.name} ${message}`);
   }
-
 }
 
 export class NotFoundError<T extends AnyEntity = AnyEntity> extends ValidationError<T> {
-
   static findOneFailed(name: string, where: Dictionary | IPrimaryKey): NotFoundError {
     return new NotFoundError(`${name} not found (${inspect(where)})`);
   }
@@ -236,5 +239,4 @@ export class NotFoundError<T extends AnyEntity = AnyEntity> extends ValidationEr
   static findExactlyOneFailed(name: string, where: Dictionary | IPrimaryKey): NotFoundError {
     return new NotFoundError(`Wrong number of ${name} entities found for query ${inspect(where)}, expected exactly one`);
   }
-
 }

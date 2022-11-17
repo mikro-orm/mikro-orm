@@ -4,7 +4,6 @@ import type { Knex } from '@mikro-orm/knex';
 import { AbstractSqlConnection, MonkeyPatchable } from '@mikro-orm/knex';
 
 export class PostgreSqlConnection extends AbstractSqlConnection {
-
   async connect(): Promise<void> {
     this.patchKnex();
     this.client = this.createKnexClient('pg');
@@ -16,10 +15,10 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
 
   getConnectionOptions(): Knex.PgConnectionConfig {
     const ret = super.getConnectionOptions() as Knex.PgConnectionConfig;
-    [1082].forEach(oid => types.setTypeParser(oid, str => str)); // date type
+    [1082].forEach((oid) => types.setTypeParser(oid, (str) => str)); // date type
 
     if (this.config.get('forceUtcTimezone')) {
-      [1114].forEach(oid => types.setTypeParser(oid, str => new Date(str + 'Z'))); // timestamp w/o TZ type
+      [1114].forEach((oid) => types.setTypeParser(oid, (str) => new Date(str + 'Z'))); // timestamp w/o TZ type
       (defaults as any).parseInputDatesAsUTC = true;
     }
 
@@ -72,17 +71,32 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
     that.dropColumnDefault.call(this, col, colName);
 
     if (col.type === 'enu') {
-      this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} type text using (${colName}::text)`, bindings: [] });
+      this.pushQuery({
+        sql: `alter table ${quotedTableName} alter column ${colName} type text using (${colName}::text)`,
+        bindings: [],
+      });
       /* istanbul ignore else */
       if (options.createForeignKeyConstraints) {
-        this.pushQuery({ sql: `alter table ${quotedTableName} add constraint "${constraintName}" ${type.replace(/^text /, '')}`, bindings: [] });
+        this.pushQuery({
+          sql: `alter table ${quotedTableName} add constraint "${constraintName}" ${type.replace(/^text /, '')}`,
+          bindings: [],
+        });
       }
     } else if (type === 'uuid') {
       // we need to drop the default as it would be invalid
-      this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} drop default`, bindings: [] });
-      this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} type ${type} using (${colName}::text::uuid)`, bindings: [] });
+      this.pushQuery({
+        sql: `alter table ${quotedTableName} alter column ${colName} drop default`,
+        bindings: [],
+      });
+      this.pushQuery({
+        sql: `alter table ${quotedTableName} alter column ${colName} type ${type} using (${colName}::text::uuid)`,
+        bindings: [],
+      });
     } else {
-      this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} type ${type} using (${colName}::${type})`, bindings: [] });
+      this.pushQuery({
+        sql: `alter table ${quotedTableName} alter column ${colName} type ${type} using (${colName}::${type})`,
+        bindings: [],
+      });
     }
 
     that.addColumnDefault.call(this, col, colName);
@@ -98,9 +112,15 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
     }
 
     if (nullable[0] === false) {
-      this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} set not null`, bindings: [] });
+      this.pushQuery({
+        sql: `alter table ${quotedTableName} alter column ${colName} set not null`,
+        bindings: [],
+      });
     } else {
-      this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} drop not null`, bindings: [] });
+      this.pushQuery({
+        sql: `alter table ${quotedTableName} alter column ${colName} drop not null`,
+        bindings: [],
+      });
     }
   }
 
@@ -114,7 +134,10 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
 
     if (defaultTo[0] !== null) {
       const modifier = col.defaultTo(...defaultTo);
-      this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} set ${modifier}`, bindings: [] });
+      this.pushQuery({
+        sql: `alter table ${quotedTableName} alter column ${colName} set ${modifier}`,
+        bindings: [],
+      });
     }
   }
 
@@ -127,8 +150,10 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
     }
 
     if (defaultTo[0] === null) {
-      this.pushQuery({ sql: `alter table ${quotedTableName} alter column ${colName} drop default`, bindings: [] });
+      this.pushQuery({
+        sql: `alter table ${quotedTableName} alter column ${colName} drop default`,
+        bindings: [],
+      });
     }
   }
-
 }

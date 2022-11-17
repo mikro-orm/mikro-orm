@@ -3,7 +3,6 @@ import { Entity, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/c
 
 @Entity()
 export class Test {
-
   @PrimaryKey()
   _id!: ObjectId;
 
@@ -15,5 +14,4 @@ export class Test {
 
   @Property({ hidden: true })
   hiddenField? = Date.now();
-
 }

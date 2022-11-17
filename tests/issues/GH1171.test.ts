@@ -4,24 +4,20 @@ import { v4 } from 'uuid';
 
 @Entity()
 export class B {
-
   @PrimaryKey()
   id: string = v4();
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 export class A {
-
   @PrimaryKey()
   id!: string;
 
   @OneToOne(() => B)
   b!: B;
-
 }
 
 describe('GH issue 1171', () => {
@@ -47,15 +43,9 @@ describe('GH issue 1171', () => {
     const a3 = orm.em.create(A, { id: '3', b: b3 });
     await orm.em.persistAndFlush([a1, a2, a3]);
     orm.em.clear();
-    const orderedAs = await orm.em
-      .createQueryBuilder(A)
-      .select('*')
-      .leftJoinAndSelect('b', 'b')
-      .orderBy({ 'b.name': 'asc' })
-      .getResult();
+    const orderedAs = await orm.em.createQueryBuilder(A).select('*').leftJoinAndSelect('b', 'b').orderBy({ 'b.name': 'asc' }).getResult();
 
-    expect(orderedAs.map(e => e.id)).toEqual([a3.id, a2.id, a1.id]);
-    expect(orderedAs.map(e => e.b.name)).toEqual([b3.name, b2.name, b1.name]);
+    expect(orderedAs.map((e) => e.id)).toEqual([a3.id, a2.id, a1.id]);
+    expect(orderedAs.map((e) => e.b.name)).toEqual([b3.name, b2.name, b1.name]);
   });
-
 });

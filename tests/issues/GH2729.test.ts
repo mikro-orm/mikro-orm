@@ -4,23 +4,20 @@ import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property, MikroOR
   tableName: 'person',
 })
 export class PersonEntity {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
 
-  @OneToMany(() => TaskEntity, task => task.person)
+  @OneToMany(() => TaskEntity, (task) => task.person)
   tasks = new Collection<TaskEntity>(this);
-
 }
 
 @Entity({
   tableName: 'task',
 })
 export class TaskEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -29,11 +26,9 @@ export class TaskEntity {
 
   @ManyToOne(() => PersonEntity)
   person!: PersonEntity;
-
 }
 
 describe('GH #2729', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -90,5 +85,4 @@ describe('GH #2729', () => {
     expect(tasks2[0].person.id).toBe(0);
     expect(tasks2[0].person.name).toBe('zero');
   });
-
 });

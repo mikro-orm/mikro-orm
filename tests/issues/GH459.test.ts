@@ -2,36 +2,27 @@ import { Entity, PrimaryKey, Property, MikroORM } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 abstract class A {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 abstract class B extends A {
-
   @Property()
   foo!: string;
-
 }
 
 abstract class C extends B {
-
   @Property()
   bar!: string;
-
 }
 
 @Entity()
 class D extends C {
-
   @Property()
   name!: string;
-
 }
 
 describe('GH issue 459', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -58,7 +49,11 @@ describe('GH issue 459', () => {
     orm.em.clear();
 
     const d1 = await orm.em.findOneOrFail(D, d.id);
-    expect(d1).toMatchObject({ id: d.id, foo: 'foo', bar: 'bar', name: 'name' });
+    expect(d1).toMatchObject({
+      id: d.id,
+      foo: 'foo',
+      bar: 'bar',
+      name: 'name',
+    });
   });
-
 });

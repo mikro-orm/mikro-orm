@@ -4,7 +4,6 @@ import { mockLogger } from '../helpers';
 
 @Entity()
 export class App {
-
   @PrimaryKey()
   id!: number;
 
@@ -13,25 +12,21 @@ export class App {
 
   @ManyToMany('User', 'apps')
   users = new Collection<User>(this);
-
 }
 
 @Entity()
 export class User {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   name!: string;
 
-  @ManyToMany(() => App, a => a.users, { owner: true })
+  @ManyToMany(() => App, (a) => a.users, { owner: true })
   apps = new Collection<App>(this);
-
 }
 
 describe('GH issue 1041, 1043', () => {
-
   let orm: MikroORM<AbstractSqlDriver>;
   const log = jest.fn();
 
@@ -61,7 +56,7 @@ describe('GH issue 1041, 1043', () => {
 
   test('select-in strategy: populate with apps and remove one app', async () => {
     const user = await orm.em.findOneOrFail(User, { id: 123 }, { populate: ['apps'], strategy: LoadStrategy.SELECT_IN });
-    const app = user.apps.getItems().find(i => i.id === 2);
+    const app = user.apps.getItems().find((i) => i.id === 2);
 
     user.apps.remove(app!);
     log.mockReset();
@@ -74,7 +69,7 @@ describe('GH issue 1041, 1043', () => {
 
   test('joined strategy: populate with apps and remove one app', async () => {
     const user = await orm.em.findOneOrFail(User, { id: 123 }, { populate: ['apps'], strategy: LoadStrategy.JOINED });
-    const app = user.apps.getItems().find(i => i.id === 3);
+    const app = user.apps.getItems().find((i) => i.id === 3);
     user.apps.remove(app!);
     log.mockReset();
 
@@ -99,7 +94,15 @@ describe('GH issue 1041, 1043', () => {
   });
 
   test('select-in strategy: find by many-to-many relation IDs (PopulateHint.INFER)', async () => {
-    const findPromise = orm.em.findOne(User, { apps: [1, 2, 3] }, { populate: ['apps'], strategy: LoadStrategy.SELECT_IN, populateWhere: PopulateHint.INFER });
+    const findPromise = orm.em.findOne(
+      User,
+      { apps: [1, 2, 3] },
+      {
+        populate: ['apps'],
+        strategy: LoadStrategy.SELECT_IN,
+        populateWhere: PopulateHint.INFER,
+      }
+    );
     await expect(findPromise).resolves.toBeInstanceOf(User);
     expect(log.mock.calls[0][0]).toMatch('select `u0`.* from `user` as `u0` left join `user_apps` as `u1` on `u0`.`id` = `u1`.`user_id` where `u1`.`app_id` in (1, 2, 3) limit 1');
     expect(log.mock.calls[1][0]).toMatch('select `a0`.*, `u1`.`app_id` as `fk__app_id`, `u1`.`user_id` as `fk__user_id` from `app` as `a0` left join `user_apps` as `u1` on `a0`.`id` = `u1`.`app_id` where `a0`.`id` in (1, 2, 3) and `u1`.`user_id` in (123)');
@@ -117,5 +120,4 @@ describe('GH issue 1041, 1043', () => {
     await expect(findPromise).resolves.toBeInstanceOf(User);
     expect(log.mock.calls[0][0]).toMatch('select `u0`.`id`, `u0`.`name`, `a1`.`id` as `a1__id`, `a1`.`name` as `a1__name` from `user` as `u0` left join `user_apps` as `u2` on `u0`.`id` = `u2`.`user_id` left join `app` as `a1` on `u2`.`app_id` = `a1`.`id` where `u2`.`app_id` in (1, 2, 3)');
   });
-
 });

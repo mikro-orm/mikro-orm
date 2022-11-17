@@ -2,21 +2,22 @@ import { BigIntType, Collection, Entity, ManyToOne, MikroORM, OneToMany, Primary
 
 @Entity()
 class Author {
-
   @PrimaryKey({ type: BigIntType })
   id?: string;
 
   @Property()
   name!: string;
 
-  @OneToMany({ entity: () => Book, mappedBy: (book: Book) => book.author, orphanRemoval: true })
+  @OneToMany({
+    entity: () => Book,
+    mappedBy: (book: Book) => book.author,
+    orphanRemoval: true,
+  })
   books: Collection<Book> = new Collection<Book>(this);
-
 }
 
 @Entity()
 class Book {
-
   @PrimaryKey({ type: BigIntType })
   id?: string;
 
@@ -25,7 +26,6 @@ class Book {
 
   @ManyToOne({ entity: () => Author })
   author!: Author;
-
 }
 
 describe('GH issue 1968', () => {
@@ -54,5 +54,4 @@ describe('GH issue 1968', () => {
     const stephenKing = await orm.em.findOne(Author, { name: 'Stephen King' }, { populate: ['books'] });
     expect(JSON.stringify(stephenKing)).toBe('{"id":"1","name":"Stephen King","books":[{"id":"1","name":"b1","author":"1"},{"id":"2","name":"b1","author":"1"},{"id":"3","name":"b1","author":"1"}]}');
   });
-
 });

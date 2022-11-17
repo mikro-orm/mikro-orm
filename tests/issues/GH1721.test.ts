@@ -4,7 +4,6 @@ import { Guid } from 'guid-typescript';
 import { mockLogger } from '../helpers';
 
 export class GuidType extends Type<Guid | undefined, string | undefined> {
-
   convertToDatabaseValue(value: Guid | undefined): string | undefined {
     if (!value) {
       return value;
@@ -24,12 +23,10 @@ export class GuidType extends Type<Guid | undefined, string | undefined> {
   getColumnType(): string {
     return 'text';
   }
-
 }
 
 @Entity()
 export class Couch {
-
   @PrimaryKey({ type: GuidType })
   id!: Guid;
 
@@ -38,11 +35,9 @@ export class Couch {
 
   @Property()
   name!: string;
-
 }
 
 describe('GH issue 1721', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -80,5 +75,4 @@ describe('GH issue 1721', () => {
     expect(mock.mock.calls[5][0]).toMatch("update `couch` set `name` = 'n2' where `id` = 'aaaaaaaa-c65f-42b8-408a-034a6948448f'");
     expect(mock.mock.calls[6][0]).toMatch('commit');
   });
-
 });

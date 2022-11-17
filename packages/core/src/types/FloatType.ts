@@ -3,7 +3,6 @@ import type { Platform } from '../platforms';
 import type { EntityProperty } from '../typings';
 
 export class FloatType extends Type<number | null | undefined, number | null | undefined> {
-
   getColumnType(prop: EntityProperty, platform: Platform) {
     return platform.getFloatDeclarationSQL();
   }
@@ -11,5 +10,4 @@ export class FloatType extends Type<number | null | undefined, number | null | u
   compareAsType(): string {
     return 'number';
   }
-
 }

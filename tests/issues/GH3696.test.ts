@@ -4,7 +4,6 @@ import { FullTextType, MikroORM } from '@mikro-orm/postgresql';
 @Entity()
 @Unique({ properties: ['name'] })
 export class Artist {
-
   @PrimaryKey()
   id!: number;
 
@@ -20,12 +19,10 @@ export class Artist {
     this.name = artist.name;
     this.searchableName = artist.name;
   }
-
 }
 
 @Entity()
 export class Song {
-
   @PrimaryKey()
   id!: number;
 
@@ -44,7 +41,6 @@ export class Song {
     this.title = song.title;
     this.searchableTitle = song.title;
   }
-
 }
 
 let orm: MikroORM;
@@ -74,10 +70,14 @@ test('GH issue 3696', async () => {
   await orm.em.flush();
   orm.em.clear();
 
-  const results = await orm.em.find(Song, {
-    searchableTitle: { $fulltext: 'anti' },
-    artists: { searchableName: { $fulltext: 'taylor' } },
-  }, { populate: ['artists'] });
+  const results = await orm.em.find(
+    Song,
+    {
+      searchableTitle: { $fulltext: 'anti' },
+      artists: { searchableName: { $fulltext: 'taylor' } },
+    },
+    { populate: ['artists'] }
+  );
   expect(results).toHaveLength(1);
   expect(results[0]).toMatchObject({
     title: 'Anti-Hero',

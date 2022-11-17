@@ -4,7 +4,6 @@ import type { Options } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/core';
 
 describe('Webpack', () => {
-
   test('should create entity', async () => {
     const orm = await MikroORM.init({
       dbName: `mikro_orm_test`,
@@ -45,5 +44,4 @@ describe('Webpack', () => {
     const err = `[requireEntitiesArray] Explicit list of entities is required, please use the 'entities' option.`;
     await expect(MikroORM.init(options)).rejects.toThrowError(err);
   });
-
 });

@@ -44,13 +44,13 @@ export function compareObjects(a: any, b: any) {
     return false;
   }
 
-  for (let i = length; i-- !== 0;) {
+  for (let i = length; i-- !== 0; ) {
     if (!Object.prototype.hasOwnProperty.call(b, keys[i])) {
       return false;
     }
   }
 
-  for (let i = length; i-- !== 0;) {
+  for (let i = length; i-- !== 0; ) {
     const key = keys[i];
 
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
@@ -69,7 +69,7 @@ export function compareArrays(a: any[] | string, b: any[] | string) {
     return false;
   }
 
-  for (let i = length; i-- !== 0;) {
+  for (let i = length; i-- !== 0; ) {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     if (!equals(a[i], b[i])) {
       return false;
@@ -93,7 +93,7 @@ export function compareBuffers(a: Buffer, b: Buffer): boolean {
     return false;
   }
 
-  for (let i = length; i-- !== 0;) {
+  for (let i = length; i-- !== 0; ) {
     if (a[i] !== b[i]) {
       return false;
     }
@@ -128,7 +128,6 @@ export function equals(a: any, b: any): boolean {
 const equalsFn = equals;
 
 export class Utils {
-
   static readonly PK_SEPARATOR = '~~~';
 
   /* istanbul ignore next */
@@ -171,9 +170,8 @@ export class Utils {
 
     // validate only first parameter is used if its an option object
     const empty = (v: unknown) => v == null || (Utils.isPlainObject(v) && !Utils.hasObjectKeys(v));
-    if (values.slice(1).some(v => !empty(v))) {
-      throw new Error('Mixing first decorator parameter as options object with other parameters is forbidden. ' +
-        'If you want to use the options parameter at first position, provide all options inside it.');
+    if (values.slice(1).some((v) => !empty(v))) {
+      throw new Error('Mixing first decorator parameter as options object with other parameters is forbidden. ' + 'If you want to use the options parameter at first position, provide all options inside it.');
     }
 
     return values[0] as T;
@@ -183,7 +181,7 @@ export class Utils {
    * Checks if the argument is instance of `Object`, but not one of the blacklisted types. Returns false for arrays.
    */
   static isNotObject<T = Dictionary>(o: any, not: any[]): o is T {
-    return this.isObject(o) && !not.some(cls => o instanceof cls);
+    return this.isObject(o) && !not.some((cls) => o instanceof cls);
   }
 
   /**
@@ -198,7 +196,7 @@ export class Utils {
       return;
     }
 
-    Object.keys(o).forEach(key => {
+    Object.keys(o).forEach((key) => {
       if (o[key] === undefined) {
         delete o[key];
         return;
@@ -302,7 +300,8 @@ export class Utils {
   static getRootEntity(metadata: IMetadataStorage, meta: EntityMetadata): EntityMetadata {
     const base = meta.extends && metadata.find(meta.extends);
 
-    if (!base || base === meta) { // make sure we do not fall into infinite loop
+    if (!base || base === meta) {
+      // make sure we do not fall into infinite loop
       return meta;
     }
 
@@ -321,7 +320,7 @@ export class Utils {
   static diff(a: Dictionary, b: Dictionary): Record<keyof (typeof a & typeof b), any> {
     const ret: Dictionary = {};
 
-    Object.keys(b).forEach(k => {
+    Object.keys(b).forEach((k) => {
       if (Utils.equals(a[k], b[k])) {
         return;
       }
@@ -359,10 +358,10 @@ export class Utils {
    */
   static renameKey<T>(payload: T, from: string | keyof T, to: string): void {
     if (Utils.isObject(payload) && (from as string) in payload && !(to in payload)) {
-      Object.keys(payload).forEach(key => {
+      Object.keys(payload).forEach((key) => {
         const value = payload[key];
         delete payload[key];
-        payload[from === key ? to : key as keyof T] = value;
+        payload[from === key ? to : (key as keyof T)] = value;
       }, payload);
     }
   }
@@ -380,20 +379,22 @@ export class Utils {
       }
 
       const params = node.value ? node.value.params : node.params;
-      ret.push(...params.map((p: any) => {
-        switch (p.type) {
-          case 'AssignmentPattern':
-            if (p.left.type === 'ObjectPattern') {
-              return ObjectBindingPattern;
-            }
+      ret.push(
+        ...params.map((p: any) => {
+          switch (p.type) {
+            case 'AssignmentPattern':
+              if (p.left.type === 'ObjectPattern') {
+                return ObjectBindingPattern;
+              }
 
-            return p.left.name;
-          case 'RestElement':
-            return '...' + p.argument.name;
-          default:
-            return p.name;
-        }
-      }));
+              return p.left.name;
+            case 'RestElement':
+              return '...' + p.argument.name;
+            default:
+              return p.name;
+          }
+        })
+      );
     };
 
     walk(parsed, {
@@ -408,7 +409,7 @@ export class Utils {
    * Checks whether the argument looks like primary key (string, number or ObjectId).
    */
   static isPrimaryKey<T>(key: any, allowComposite = false): key is Primary<T> {
-    if (allowComposite && Array.isArray(key) && key.every(v => Utils.isPrimaryKey(v, true))) {
+    if (allowComposite && Array.isArray(key) && key.every((v) => Utils.isPrimaryKey(v, true))) {
       return true;
     }
 
@@ -491,7 +492,7 @@ export class Utils {
         const childPk = entity[pk].__helper!.getPrimaryKey(convertCustomTypes);
 
         if (entity[pk].__meta.compositePK) {
-          ret.push(...Object.values(childPk) as Primary<T>[]);
+          ret.push(...(Object.values(childPk) as Primary<T>[]));
         } else {
           ret.push(childPk);
         }
@@ -509,7 +510,7 @@ export class Utils {
       return o;
     }, {} as any);
 
-    if (Object.values(cond).some(v => v === null)) {
+    if (Object.values(cond).some((v) => v === null)) {
       return null;
     }
 
@@ -605,11 +606,13 @@ export class Utils {
    */
   static detectTsNode(): boolean {
     /* istanbul ignore next */
-    return process.argv[0].endsWith('ts-node') // running via ts-node directly
-      || !!process[Symbol.for('ts-node.register.instance')] // check if internal ts-node symbol exists
-      || !!process.env.TS_JEST // check if ts-jest is used (works only with v27.0.4+)
-      || process.argv.slice(1).some(arg => arg.includes('ts-node')) // registering ts-node runner
-      || (require.extensions && !!require.extensions['.ts']); // check if the extension is registered
+    return (
+      process.argv[0].endsWith('ts-node') || // running via ts-node directly
+      !!process[Symbol.for('ts-node.register.instance')] || // check if internal ts-node symbol exists
+      !!process.env.TS_JEST || // check if ts-jest is used (works only with v27.0.4+)
+      process.argv.slice(1).some((arg) => arg.includes('ts-node')) || // registering ts-node runner
+      (require.extensions && !!require.extensions['.ts'])
+    ); // check if the extension is registered
   }
 
   /**
@@ -622,7 +625,7 @@ export class Utils {
     // In some situations (e.g. swc 1.3.4+), the presence of a source map can obscure the call to
     // __decorate(), replacing it with the constructor name. To support these cases we look for
     // Reflect.decorate() as well.
-    let line = stack.findIndex(line => line.includes('__decorate') || line.includes('Reflect.decorate'))!;
+    let line = stack.findIndex((line) => line.includes('__decorate') || line.includes('Reflect.decorate'))!;
 
     if (line === -1) {
       return name;
@@ -657,14 +660,14 @@ export class Utils {
    */
   static isPlainObject(value: any): value is Dictionary {
     return (
-      value !== null
-      && typeof value === 'object'
-      && typeof value.constructor === 'function'
-      // eslint-disable-next-line no-prototype-builtins
-      && (value.constructor.prototype.hasOwnProperty('isPrototypeOf') || Object.getPrototypeOf(value.constructor.prototype) === null)
-    )
-      || (value && Object.getPrototypeOf(value) === null)
-      || value instanceof PlainObject;
+      (value !== null &&
+        typeof value === 'object' &&
+        typeof value.constructor === 'function' &&
+        // eslint-disable-next-line no-prototype-builtins
+        (value.constructor.prototype.hasOwnProperty('isPrototypeOf') || Object.getPrototypeOf(value.constructor.prototype) === null)) ||
+      (value && Object.getPrototypeOf(value) === null) ||
+      value instanceof PlainObject
+    );
   }
 
   /**
@@ -714,7 +717,7 @@ export class Utils {
     let path = parts.join('/').replace(/\\/g, '/').replace(/\/$/, '');
     path = normalize(path).replace(/\\/g, '/');
 
-    return (path.match(/^[/.]|[a-zA-Z]:/) || path.startsWith('!')) ? path : './' + path;
+    return path.match(/^[/.]|[a-zA-Z]:/) || path.startsWith('!') ? path : './' + path;
   }
 
   /**
@@ -798,14 +801,21 @@ export class Utils {
   static extractEnumValues(target: Dictionary): (string | number)[] {
     const keys = Object.keys(target);
     const values = Object.values<string | number>(target);
-    const numeric = !!values.find(v => typeof v === 'number');
-    const constEnum = values.length % 2 === 0 // const enum will have even number of items
-      && values.slice(0, values.length / 2).every(v => typeof v === 'string') // first half are strings
-      && values.slice(values.length / 2).every(v => typeof v === 'number') // second half are numbers
-      && this.equals(keys, values.slice(values.length / 2).concat(values.slice(0, values.length / 2)).map(v => '' + v)); // and when swapped, it will match the keys
+    const numeric = !!values.find((v) => typeof v === 'number');
+    const constEnum =
+      values.length % 2 === 0 && // const enum will have even number of items
+      values.slice(0, values.length / 2).every((v) => typeof v === 'string') && // first half are strings
+      values.slice(values.length / 2).every((v) => typeof v === 'number') && // second half are numbers
+      this.equals(
+        keys,
+        values
+          .slice(values.length / 2)
+          .concat(values.slice(0, values.length / 2))
+          .map((v) => '' + v)
+      ); // and when swapped, it will match the keys
 
     if (numeric || constEnum) {
-      return values.filter(val => !keys.includes(val as string));
+      return values.filter((val) => !keys.includes(val as string));
     }
 
     return values;
@@ -833,7 +843,7 @@ export class Utils {
     }
 
     if (Array.isArray(object)) {
-      return object.some(o => this.hasNestedKey(o, key));
+      return object.some((o) => this.hasNestedKey(o, key));
     }
 
     if (typeof object === 'object') {
@@ -920,7 +930,7 @@ export class Utils {
     try {
       return fn(...args);
     } catch (e: any) {
-      if ([SyntaxError, TypeError, EvalError, ReferenceError].some(t => e instanceof t)) {
+      if ([SyntaxError, TypeError, EvalError, ReferenceError].some((t) => e instanceof t)) {
         const position = e.stack.match(/<anonymous>:(\d+):(\d+)/);
         let code = fn.toString();
 
@@ -1062,7 +1072,5 @@ export class Utils {
 
       throw err;
     }
-
   }
-
 }

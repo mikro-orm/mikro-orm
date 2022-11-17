@@ -22,7 +22,6 @@ const dumpMock = jest.spyOn(CLIHelper, 'dump');
 dumpMock.mockImplementation(() => void 0);
 
 describe('CreateSchemaCommand', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -63,7 +62,12 @@ describe('CreateSchemaCommand', () => {
     expect(seed.mock.calls.length).toBe(0);
     await expect(cmd.handler({ run: true, fkChecks: true, seed: '' } as any)).resolves.toBeUndefined();
     expect(createSchema.mock.calls.length).toBe(2);
-    expect(createSchema).toBeCalledWith({ run: true, wrap: false, seed: '', fkChecks: true });
+    expect(createSchema).toBeCalledWith({
+      run: true,
+      wrap: false,
+      seed: '',
+      fkChecks: true,
+    });
     expect(seed.mock.calls.length).toBe(1);
     expect(seed).toBeCalledWith(orm.config.get('seeder').defaultSeeder);
     expect(closeSpy).toBeCalledTimes(3);
@@ -74,5 +78,4 @@ describe('CreateSchemaCommand', () => {
     expect(seed).toBeCalledWith('UsersSeeder');
     expect(closeSpy).toBeCalledTimes(4);
   });
-
 });

@@ -4,18 +4,21 @@ import { mockLogger } from '../helpers';
 
 @Entity()
 class Node {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 @Entity()
 class A {
-
   [PrimaryKeyType]?: number;
   [PrimaryKeyProp]?: 'node';
-  @OneToOne({ entity: () => Node, wrappedReference: true, primary: true, onDelete: 'cascade', onUpdateIntegrity: 'cascade' })
+  @OneToOne({
+    entity: () => Node,
+    wrappedReference: true,
+    primary: true,
+    onDelete: 'cascade',
+    onUpdateIntegrity: 'cascade',
+  })
   node!: IdentifiedReference<Node>;
 
   @OneToMany('B', 'a', { eager: true, orphanRemoval: true })
@@ -23,12 +26,10 @@ class A {
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 class B {
-
   @PrimaryKey()
   id!: number;
 
@@ -37,12 +38,9 @@ class B {
 
   @Property()
   type!: number;
-
 }
 
-
 describe('GH issue 1111', () => {
-
   let orm: MikroORM<AbstractSqlDriver>;
   const log = jest.fn();
 
@@ -56,7 +54,6 @@ describe('GH issue 1111', () => {
     mockLogger(orm, ['query', 'query-params'], log);
     await orm.schema.ensureDatabase();
   });
-
 
   beforeEach(async () => {
     await orm.schema.dropSchema();
@@ -107,5 +104,4 @@ describe('GH issue 1111', () => {
     const a2 = await orm.em.findOneOrFail(A, { name: 'test' }, { populate: ['bs'] });
     expect(a2.bs.count()).toBe(2);
   });
-
 });

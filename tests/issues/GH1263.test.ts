@@ -3,7 +3,6 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { parse, stringify, v4 as uuid } from 'uuid';
 
 class UUID extends Type<string, Buffer> {
-
   convertToJSValue(value: Buffer) {
     return stringify(value);
   }
@@ -15,23 +14,18 @@ class UUID extends Type<string, Buffer> {
   getColumnType() {
     return 'binary(16)';
   }
-
 }
 
 @Entity()
 class User {
-
   @PrimaryKey({ type: UUID })
   id = uuid();
 
   @Property({ nullable: true })
   name?: string;
-
 }
 
-
 describe('GH issue 1263', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -49,12 +43,12 @@ describe('GH issue 1263', () => {
 
   test(`GH issue 1263`, async () => {
     const testCases: ((id: string) => Promise<any>)[] = [
-      async id => orm.em.nativeDelete(User, await orm.em.findOneOrFail(User, id)),
-      async id => orm.em.removeAndFlush(await orm.em.findOneOrFail(User, id)),
-      id => orm.em.nativeDelete(User, id),
-      id => orm.em.nativeDelete(User, { id }),
-      id => orm.em.nativeDelete(User, [id]),
-      id => orm.em.nativeDelete(User, [id, { id }]),
+      async (id) => orm.em.nativeDelete(User, await orm.em.findOneOrFail(User, id)),
+      async (id) => orm.em.removeAndFlush(await orm.em.findOneOrFail(User, id)),
+      (id) => orm.em.nativeDelete(User, id),
+      (id) => orm.em.nativeDelete(User, { id }),
+      (id) => orm.em.nativeDelete(User, [id]),
+      (id) => orm.em.nativeDelete(User, [id, { id }]),
     ];
 
     for (const testCase of testCases) {
@@ -81,5 +75,4 @@ describe('GH issue 1263', () => {
       expect(userCount).toBe(1);
     }
   });
-
 });

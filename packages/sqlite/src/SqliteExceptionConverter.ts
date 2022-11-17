@@ -1,11 +1,21 @@
 import type { Dictionary, DriverException } from '@mikro-orm/core';
 import {
-  ConnectionException, ExceptionConverter, InvalidFieldNameException, LockWaitTimeoutException, NonUniqueFieldNameException, CheckConstraintViolationException,
-  NotNullConstraintViolationException, ReadOnlyException, SyntaxErrorException, TableExistsException, TableNotFoundException, UniqueConstraintViolationException, ForeignKeyConstraintViolationException,
+  ConnectionException,
+  ExceptionConverter,
+  InvalidFieldNameException,
+  LockWaitTimeoutException,
+  NonUniqueFieldNameException,
+  CheckConstraintViolationException,
+  NotNullConstraintViolationException,
+  ReadOnlyException,
+  SyntaxErrorException,
+  TableExistsException,
+  TableNotFoundException,
+  UniqueConstraintViolationException,
+  ForeignKeyConstraintViolationException,
 } from '@mikro-orm/core';
 
 export class SqliteExceptionConverter extends ExceptionConverter {
-
   /* istanbul ignore next */
   /**
    * @inheritDoc
@@ -17,12 +27,7 @@ export class SqliteExceptionConverter extends ExceptionConverter {
       return new LockWaitTimeoutException(exception);
     }
 
-    if (
-      exception.message.includes('must be unique') ||
-      exception.message.includes('is not unique') ||
-      exception.message.includes('are not unique') ||
-      exception.message.includes('UNIQUE constraint failed')
-    ) {
+    if (exception.message.includes('must be unique') || exception.message.includes('is not unique') || exception.message.includes('are not unique') || exception.message.includes('UNIQUE constraint failed')) {
       return new UniqueConstraintViolationException(exception);
     }
 
@@ -68,5 +73,4 @@ export class SqliteExceptionConverter extends ExceptionConverter {
 
     return super.convertException(exception);
   }
-
 }

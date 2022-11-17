@@ -3,36 +3,29 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Embeddable()
 export class Z {
-
   @Property()
   name!: string;
-
 }
 
 @Entity()
 export class A {
-
   @PrimaryKey()
   id!: number;
 
   @Embedded({ entity: () => Z, object: true })
   z!: Z;
-
 }
 
 @Entity()
 export class B {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne({ entity: () => A, onDelete: 'cascade' })
   a!: A;
-
 }
 
 describe('GH issue 2663', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {

@@ -3,7 +3,6 @@ import { BookWp } from './index';
 
 @Entity({ tableName: 'author2' })
 export class AuthorWp {
-
   @PrimaryKey({ type: 'number' })
   id!: number;
 
@@ -16,7 +15,6 @@ export class AuthorWp {
   @Property({ type: 'number', nullable: true })
   age?: number;
 
-  @OneToMany(() => BookWp, book => book.author)
+  @OneToMany(() => BookWp, (book) => book.author)
   books = new Collection<BookWp>(this);
-
 }

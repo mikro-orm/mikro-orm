@@ -3,49 +3,47 @@ import { mockLogger } from '../../helpers';
 
 @Entity({ schema: '*' })
 class UserAccessProfile {
-
   @PrimaryKey()
   id!: number;
 
-  @OneToMany(() => User, user => user.accessProfile)
+  @OneToMany(() => User, (user) => user.accessProfile)
   users = new Collection<User>(this);
 
-  @ManyToMany({ entity: () => Permission, pivotEntity: () => AccessProfilePermission })
+  @ManyToMany({
+    entity: () => Permission,
+    pivotEntity: () => AccessProfilePermission,
+  })
   permissions = new Collection<Permission>(this);
-
 }
 
 @Entity({ schema: '*' })
 class User {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => UserAccessProfile)
   accessProfile!: UserAccessProfile;
-
 }
 
 @Entity({ schema: 'public' })
 class Permission {
-
   @PrimaryKey()
   id!: number;
 
-  @ManyToMany({ entity: () => UserAccessProfile, mappedBy: p => p.permissions })
+  @ManyToMany({
+    entity: () => UserAccessProfile,
+    mappedBy: (p) => p.permissions,
+  })
   accessProfiles = new Collection<UserAccessProfile>(this);
-
 }
 
 @Entity({ schema: '*' })
 class AccessProfilePermission {
-
   @ManyToOne(() => UserAccessProfile, { primary: true })
   accessProfile!: UserAccessProfile;
 
   @ManyToOne(() => Permission, { primary: true })
   permission!: Permission;
-
 }
 
 let orm: MikroORM;
@@ -77,13 +75,17 @@ test(`GH issue 3177`, async () => {
 
   const mock = mockLogger(orm);
 
-  const u1 = await orm.em.findOneOrFail(User, 1, { populate: ['accessProfile'] });
+  const u1 = await orm.em.findOneOrFail(User, 1, {
+    populate: ['accessProfile'],
+  });
   const permissions = await u1.accessProfile.permissions.init();
 
   expect(permissions.getItems()).toHaveLength(3);
   orm.em.clear();
 
-  const u2 = await orm.em.findOneOrFail(User, 1, { populate: ['accessProfile.permissions'] });
+  const u2 = await orm.em.findOneOrFail(User, 1, {
+    populate: ['accessProfile.permissions'],
+  });
   expect(u2.accessProfile.permissions.getItems()).toHaveLength(3);
 
   expect(mock.mock.calls[0][0]).toMatch(`begin`);
@@ -96,5 +98,7 @@ test(`GH issue 3177`, async () => {
   expect(mock.mock.calls[7][0]).toMatch(`select "p0".* from "public"."permission" as "p0" where "p0"."id" in (1, 2, 3)`);
   expect(mock.mock.calls[8][0]).toMatch(`select "u0".* from "tenant_01"."user" as "u0" where "u0"."id" = 1 limit 1`);
   expect(mock.mock.calls[9][0]).toMatch(`select "u0".* from "tenant_01"."user_access_profile" as "u0" where "u0"."id" in (1) order by "u0"."id" asc`);
-  expect(mock.mock.calls[10][0]).toMatch(`select "p0".*, "u1"."permission_id" as "fk__permission_id", "u1"."user_access_profile_id" as "fk__user_access_profile_id" from "public"."permission" as "p0" left join "tenant_01"."user_access_profile_permissions" as "u1" on "p0"."id" = "u1"."permission_id" where "u1"."user_access_profile_id" in (1)`);
+  expect(mock.mock.calls[10][0]).toMatch(
+    `select "p0".*, "u1"."permission_id" as "fk__permission_id", "u1"."user_access_profile_id" as "fk__user_access_profile_id" from "public"."permission" as "p0" left join "tenant_01"."user_access_profile_permissions" as "u1" on "p0"."id" = "u1"."permission_id" where "u1"."user_access_profile_id" in (1)`
+  );
 });

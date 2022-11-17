@@ -20,17 +20,7 @@ import type {
   QueryResult,
   RequiredEntityData,
 } from '@mikro-orm/core';
-import {
-  helper,
-  LoadStrategy,
-  LockMode,
-  PopulateHint,
-  QueryFlag,
-  QueryHelper,
-  ReferenceType,
-  Utils,
-  ValidationError,
-} from '@mikro-orm/core';
+import { helper, LoadStrategy, LockMode, PopulateHint, QueryFlag, QueryHelper, ReferenceType, Utils, ValidationError } from '@mikro-orm/core';
 import { QueryType } from './enums';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
 import { QueryBuilderHelper } from './QueryBuilderHelper';
@@ -59,7 +49,6 @@ import type { Field, JoinOptions } from '../typings';
  * ```
  */
 export class QueryBuilder<T extends object = AnyEntity> {
-
   get mainAlias(): Alias {
     this.ensureFromClause();
     return this._mainAlias!;
@@ -96,7 +85,12 @@ export class QueryBuilder<T extends object = AnyEntity> {
   private _orderBy: QueryOrderMap<T>[] = [];
   private _groupBy: Field<T>[] = [];
   private _having: Dictionary = {};
-  private _onConflict?: { fields: string[]; ignore?: boolean; merge?: EntityData<T> | Field<T>[]; where?: QBFilterQuery<T> }[];
+  private _onConflict?: {
+    fields: string[];
+    ignore?: boolean;
+    merge?: EntityData<T> | Field<T>[];
+    where?: QBFilterQuery<T>;
+  }[];
   private _limit?: number;
   private _offset?: number;
   private _distinctOn?: string[];
@@ -116,13 +110,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   /**
    * @internal
    */
-  constructor(entityName: EntityName<T> | QueryBuilder<T>,
-              private readonly metadata: MetadataStorage,
-              private readonly driver: AbstractSqlDriver,
-              private readonly context?: Knex.Transaction,
-              alias?: string,
-              private connectionType?: ConnectionType,
-              private readonly em?: SqlEntityManager) {
+  constructor(entityName: EntityName<T> | QueryBuilder<T>, private readonly metadata: MetadataStorage, private readonly driver: AbstractSqlDriver, private readonly context?: Knex.Transaction, alias?: string, private connectionType?: ConnectionType, private readonly em?: SqlEntityManager) {
     if (alias) {
       this.aliasCounter++;
       this._explicitAlias = true;
@@ -215,11 +203,16 @@ export class QueryBuilder<T extends object = AnyEntity> {
     this.addSelect(this.getFieldsForJoinedLoad<T>(prop, alias));
     const [fromAlias] = this.helper.splitField(field);
     const populate = this._joinedProps.get(fromAlias);
-    const item = { field: prop.name, strategy: LoadStrategy.JOINED, children: [] };
+    const item = {
+      field: prop.name,
+      strategy: LoadStrategy.JOINED,
+      children: [],
+    };
 
     if (populate) {
       populate.children!.push(item);
-    } else { // root entity
+    } else {
+      // root entity
       this._populate.push(item);
     }
 
@@ -234,9 +227,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
   protected getFieldsForJoinedLoad<U extends object>(prop: EntityProperty<U>, alias: string): Field<U>[] {
     const fields: Field<U>[] = [];
-    prop.targetMeta!.props
-      .filter(prop => this.platform.shouldHaveColumn(prop, this._populate))
-      .forEach(prop => fields.push(...this.driver.mapPropToFieldNames<U>(this as unknown as QueryBuilder<U>, prop, alias)));
+    prop.targetMeta!.props.filter((prop) => this.platform.shouldHaveColumn(prop, this._populate)).forEach((prop) => fields.push(...this.driver.mapPropToFieldNames<U>(this as unknown as QueryBuilder<U>, prop, alias)));
 
     return fields;
   }
@@ -267,7 +258,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
       }) as FilterQuery<T>;
     }
 
-    const op = operator || params as keyof typeof GroupOperator;
+    const op = operator || (params as keyof typeof GroupOperator);
     const topLevel = !op || !Utils.hasObjectKeys(this._cond);
     const criteriaNode = CriteriaNodeFactory.createNode(this.metadata, this.mainAlias.entityName, cond);
 
@@ -309,7 +300,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   orderBy(orderBy: QBQueryOrderMap<T> | QBQueryOrderMap<T>[]): this {
     this.ensureNotFinalized();
     this._orderBy = [];
-    Utils.asArray(orderBy).forEach(o => {
+    Utils.asArray(orderBy).forEach((o) => {
       const processed = QueryHelper.processWhere({
         where: o as Dictionary,
         entityName: this.mainAlias.entityName,
@@ -345,7 +336,9 @@ export class QueryBuilder<T extends object = AnyEntity> {
   onConflict(fields: Field<T> | Field<T>[] = []): this {
     this.ensureNotFinalized();
     this._onConflict = this._onConflict || [];
-    this._onConflict.push({ fields: Utils.asArray(fields).map(f => f.toString()) });
+    this._onConflict.push({
+      fields: Utils.asArray(fields).map((f) => f.toString()),
+    });
     return this;
   }
 
@@ -477,7 +470,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
     if (target instanceof QueryBuilder) {
       this.fromSubQuery(target, aliasName);
-    } else  {
+    } else {
       const entityName = Utils.className(target);
 
       if (aliasName && this._mainAlias && entityName !== this._mainAlias.aliasName) {
@@ -551,7 +544,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
       return this.mainAlias.aliasName;
     }
 
-    const join = Object.values(this._joins).find(j => j.path === path);
+    const join = Object.values(this._joins).find((j) => j.path === path);
 
     if (path.endsWith('[pivot]') && join) {
       return join.alias;
@@ -601,7 +594,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
     if (method === 'all' && Array.isArray(res)) {
       const map: Dictionary = {};
-      const mapped = res.map(r => this.driver.mapResult(r, meta, this._populate, this, map)) as unknown as U;
+      const mapped = res.map((r) => this.driver.mapResult(r, meta, this._populate, this, map)) as unknown as U;
       await this.em?.storeCache(this._cache, cached!, mapped);
 
       return mapped;
@@ -624,14 +617,16 @@ export class QueryBuilder<T extends object = AnyEntity> {
    * Executes the query, returning array of results
    */
   async getResultList(): Promise<T[]> {
-    await this.em!.tryFlush(this.mainAlias.entityName, { flushMode: this.flushMode });
+    await this.em!.tryFlush(this.mainAlias.entityName, {
+      flushMode: this.flushMode,
+    });
     let res = await this.execute<EntityData<T>[]>('all', true);
 
     if (this._joinedProps.size > 0) {
       res = this.driver.mergeJoinedResult(res, this.mainAlias.metadata!);
     }
 
-    return res.map(r => this.em!.map<T>(this.mainAlias.entityName, r, { schema: this._schema }));
+    return res.map((r) => this.em!.map<T>(this.mainAlias.entityName, r, { schema: this._schema }));
   }
 
   /**
@@ -652,7 +647,10 @@ export class QueryBuilder<T extends object = AnyEntity> {
       res = await this.execute<{ count: number }>('get', false);
     } else {
       const qb = this.clone();
-      qb.count(field, distinct ?? qb.hasToManyJoins()).limit(undefined).offset(undefined).orderBy([]);
+      qb.count(field, distinct ?? qb.hasToManyJoins())
+        .limit(undefined)
+        .offset(undefined)
+        .orderBy([]);
       res = await qb.execute<{ count: number }>('get', false);
     }
 
@@ -671,7 +669,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
         return this.execute('run').then(onfulfilled, onrejected) as any;
       case QueryType.COUNT:
         return this.getCount().then(onfulfilled, onrejected) as any;
-      case QueryType.SELECT: return this.getResultList().then(onfulfilled, onrejected) as any;
+      case QueryType.SELECT:
+        return this.getResultList().then(onfulfilled, onrejected) as any;
     }
   }
 
@@ -697,11 +696,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
     Object.assign(qb, this);
 
     // clone array/object properties
-    const properties = [
-      'flags', '_populate', '_populateWhere', '_populateMap', '_joins', '_joinedProps', '_cond', '_data', '_orderBy',
-      '_schema', '_indexHint', '_cache', 'subQueries', 'lockMode', 'lockTables',
-    ];
-    properties.forEach(prop => (qb as any)[prop] = Utils.copy(this[prop]));
+    const properties = ['flags', '_populate', '_populateWhere', '_populateMap', '_joins', '_joinedProps', '_cond', '_data', '_orderBy', '_schema', '_indexHint', '_cache', 'subQueries', 'lockMode', 'lockTables'];
+    properties.forEach((prop) => ((qb as any)[prop] = Utils.copy(this[prop])));
 
     /* istanbul ignore else */
     if (this._fields) {
@@ -759,7 +755,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
       aliased: !this.type || [QueryType.SELECT, QueryType.COUNT].includes(this.type),
     })!;
     let aliasedName = `${fromAlias}.${prop.name}#${alias}`;
-    path ??= `${(Object.values(this._joins).find(j => j.alias === fromAlias)?.path ?? entityName)}.${prop.name}`;
+    path ??= `${Object.values(this._joins).find((j) => j.alias === fromAlias)?.path ?? entityName}.${prop.name}`;
 
     if (prop.reference === ReferenceType.ONE_TO_MANY) {
       this._joins[aliasedName] = this.helper.joinOneToReference(prop, fromAlias, alias, type, cond);
@@ -777,7 +773,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
       this.createAlias(prop.pivotEntity, pivotAlias);
     } else if (prop.reference === ReferenceType.ONE_TO_ONE) {
       this._joins[aliasedName] = this.helper.joinOneToReference(prop, fromAlias, alias, type, cond);
-    } else { // MANY_TO_ONE
+    } else {
+      // MANY_TO_ONE
       this._joins[aliasedName] = this.helper.joinManyToOneReference(prop, fromAlias, alias, type, cond);
     }
 
@@ -791,15 +788,15 @@ export class QueryBuilder<T extends object = AnyEntity> {
   private prepareFields<T, U extends string | Knex.Raw>(fields: Field<T>[], type: 'where' | 'groupBy' | 'sub-query' = 'where'): U[] {
     const ret: Field<T>[] = [];
 
-    fields.forEach(field => {
+    fields.forEach((field) => {
       if (!Utils.isString(field)) {
         return ret.push(field);
       }
 
-      const join = Object.keys(this._joins).find(k => field === k.substring(0, k.indexOf('#')))!;
+      const join = Object.keys(this._joins).find((k) => field === k.substring(0, k.indexOf('#')))!;
 
       if (join && type === 'where') {
-        return ret.push(...this.helper.mapJoinColumns(this.type ?? QueryType.SELECT, this._joins[join]) as string[]);
+        return ret.push(...(this.helper.mapJoinColumns(this.type ?? QueryType.SELECT, this._joins[join]) as string[]));
       }
 
       const [a, f] = this.helper.splitField(field);
@@ -840,20 +837,20 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
     const meta = this.mainAlias.metadata;
     /* istanbul ignore next */
-    const requiresSQLConversion = meta?.props.filter(p => p.customType?.convertToJSValueSQL) ?? [];
+    const requiresSQLConversion = meta?.props.filter((p) => p.customType?.convertToJSValueSQL) ?? [];
 
     if (this.flags.has(QueryFlag.CONVERT_CUSTOM_TYPES) && (fields.includes('*') || fields.includes(`${this.mainAlias.aliasName}.*`)) && requiresSQLConversion.length > 0) {
-      requiresSQLConversion.forEach(p => ret.push(this.helper.mapper(p.name, this.type)));
+      requiresSQLConversion.forEach((p) => ret.push(this.helper.mapper(p.name, this.type)));
     }
 
-    Object.keys(this._populateMap).forEach(f => {
+    Object.keys(this._populateMap).forEach((f) => {
       if (!fields.includes(f.replace(/#\w+$/, '')) && type === 'where') {
         const cols = this.helper.mapJoinColumns(this.type ?? QueryType.SELECT, this._joins[f]);
-        ret.push(...cols as string[]);
+        ret.push(...(cols as string[]));
       }
 
       if (this._joins[f].prop.reference !== ReferenceType.ONE_TO_ONE && this._joins[f].inverseJoinColumns) {
-        this._joins[f].inverseJoinColumns!.forEach(inverseJoinColumn => {
+        this._joins[f].inverseJoinColumns!.forEach((inverseJoinColumn) => {
           Utils.renameKey(this._cond, inverseJoinColumn, `${this._joins[f].alias}.${inverseJoinColumn!}`);
         });
       }
@@ -918,7 +915,9 @@ export class QueryBuilder<T extends object = AnyEntity> {
         break;
       case QueryType.COUNT: {
         const m = this.flags.has(QueryFlag.DISTINCT) ? 'countDistinct' : 'count';
-        qb[m]({ count: this._fields!.map(f => this.helper.mapper(f as string, this.type)) });
+        qb[m]({
+          count: this._fields!.map((f) => this.helper.mapper(f as string, this.type)),
+        });
         this.helper.processJoins(qb, this._joins, schema);
         break;
       }
@@ -954,21 +953,22 @@ export class QueryBuilder<T extends object = AnyEntity> {
     if (meta && this.flags.has(QueryFlag.AUTO_JOIN_ONE_TO_ONE_OWNER)) {
       const relationsToPopulate = this._populate.map(({ field }) => field);
       meta.relations
-        .filter(prop => prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner && !relationsToPopulate.includes(prop.name))
-        .map(prop => ({ field: prop.name }))
-        .forEach(item => this._populate.push(item));
+        .filter((prop) => prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner && !relationsToPopulate.includes(prop.name))
+        .map((prop) => ({ field: prop.name }))
+        .forEach((item) => this._populate.push(item));
     }
 
     this._populate.forEach(({ field }) => {
       const [fromAlias, fromField] = this.helper.splitField(field);
       const aliasedField = `${fromAlias}.${fromField}`;
-      const join = Object.keys(this._joins).find(k => `${aliasedField}#${this._joins[k].alias}` === k);
+      const join = Object.keys(this._joins).find((k) => `${aliasedField}#${this._joins[k].alias}` === k);
 
       if (join && this._joins[join] && this.helper.isOneToOneInverse(fromField)) {
-        return this._populateMap[join] = this._joins[join].alias;
+        return (this._populateMap[join] = this._joins[join].alias);
       }
 
-      if (this.metadata.find(field)?.pivotTable) { // pivot table entity
+      if (this.metadata.find(field)?.pivotTable) {
+        // pivot table entity
         this.autoJoinPivotTable(field);
       } else if (meta && this.helper.isOneToOneInverse(fromField)) {
         const prop = meta.properties[fromField];
@@ -981,14 +981,14 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
     if (meta && (this._fields?.includes('*') || this._fields?.includes(`${this.mainAlias.aliasName}.*`))) {
       meta.props
-        .filter(prop => prop.formula && (!prop.lazy || this.flags.has(QueryFlag.INCLUDE_LAZY_FORMULAS)))
-        .map(prop => {
+        .filter((prop) => prop.formula && (!prop.lazy || this.flags.has(QueryFlag.INCLUDE_LAZY_FORMULAS)))
+        .map((prop) => {
           const alias = this.knex.ref(this.mainAlias.aliasName).toString();
           const aliased = this.knex.ref(prop.fieldNames[0]).toString();
           return `${prop.formula!(alias)} as ${aliased}`;
         })
-        .filter(field => !this._fields!.includes(field))
-        .forEach(field => this.addSelect(field));
+        .filter((field) => !this._fields!.includes(field))
+        .forEach((field) => this.addSelect(field));
     }
 
     QueryHelper.processObjectParams(this._data);
@@ -1012,7 +1012,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
   }
 
   private hasToManyJoins(): boolean {
-    return Object.values(this._joins).some(join => {
+    return Object.values(this._joins).some((join) => {
       return [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(join.prop.reference);
     });
   }
@@ -1050,7 +1050,9 @@ export class QueryBuilder<T extends object = AnyEntity> {
     this._limit = undefined;
     this._offset = undefined;
     const cond = this._cond;
-    this.select(this._fields!).where({ [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubQuery } });
+    this.select(this._fields!).where({
+      [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubQuery },
+    });
 
     if (this._populateWhere === PopulateHint.INFER) {
       this.andWhere(cond);
@@ -1082,8 +1084,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
     const pivotAlias = this.getNextAlias(pivotMeta.name!);
 
     this._joins[field] = this.helper.joinPivotTable(field, prop, this.mainAlias.aliasName, pivotAlias, 'leftJoin');
-    Utils.renameKey(this._cond, `${field}.${owner.name}`, Utils.getPrimaryKeyHash(owner.fieldNames.map(fieldName => `${pivotAlias}.${fieldName}`)));
-    Utils.renameKey(this._cond, `${field}.${inverse.name}`, Utils.getPrimaryKeyHash(inverse.fieldNames.map(fieldName => `${pivotAlias}.${fieldName}`)));
+    Utils.renameKey(this._cond, `${field}.${owner.name}`, Utils.getPrimaryKeyHash(owner.fieldNames.map((fieldName) => `${pivotAlias}.${fieldName}`)));
+    Utils.renameKey(this._cond, `${field}.${inverse.name}`, Utils.getPrimaryKeyHash(inverse.fieldNames.map((fieldName) => `${pivotAlias}.${fieldName}`)));
     this._populateMap[field] = this._joins[field].alias;
   }
 
@@ -1136,7 +1138,6 @@ export class QueryBuilder<T extends object = AnyEntity> {
       throw new Error('This QueryBuilder instance is already finalized, clone it first if you want to modify it.');
     }
   }
-
 }
 
 export interface RunQueryBuilder<T extends object> extends Omit<QueryBuilder<T>, 'getResult' | 'getSingleResult' | 'getResultList' | 'where'> {

@@ -10,10 +10,9 @@ import FooBar from './entities/FooBar';
 import { FooBaz } from './entities/FooBaz';
 
 describe('EntityHelperMongo', () => {
-
   let orm: MikroORM<MongoDriver>;
 
-  beforeAll(async () => orm = await initORMMongo());
+  beforeAll(async () => (orm = await initORMMongo()));
   beforeEach(async () => orm.schema.clearDatabase());
 
   test('#toObject() should return DTO', async () => {
@@ -37,7 +36,10 @@ describe('EntityHelperMongo', () => {
     expect(author.toJSON()).toBeInstanceOf(Object);
     expect(author.toJSON()).toMatchObject({ fooBar: 123 });
     expect(author.toJSON().email).toBeUndefined();
-    expect(author.toJSON(false)).toMatchObject({ fooBar: 123, email: author.email });
+    expect(author.toJSON(false)).toMatchObject({
+      fooBar: 123,
+      email: author.email,
+    });
   });
 
   test('#toJSON properly calls child entity toJSON with correct params', async () => {
@@ -48,7 +50,9 @@ describe('EntityHelperMongo', () => {
     await orm.em.persistAndFlush([bible, bible2, bible3]);
     orm.em.clear();
 
-    const newGod = await orm.em.findOneOrFail(Author, god.id, { populate: ['books.author'] });
+    const newGod = await orm.em.findOneOrFail(Author, god.id, {
+      populate: ['books.author'],
+    });
 
     for (const book of newGod.books) {
       expect(book.toJSON()).toMatchObject({
@@ -65,7 +69,9 @@ describe('EntityHelperMongo', () => {
     await orm.em.persistAndFlush(bible);
     orm.em.clear();
 
-    const author = await orm.em.findOneOrFail(Author, god.id, { populate: ['favouriteAuthor', 'books.author.books', 'books.publisher'] });
+    const author = await orm.em.findOneOrFail(Author, god.id, {
+      populate: ['favouriteAuthor', 'books.author.books', 'books.publisher'],
+    });
     const json = wrap(author).toObject();
     expect(json.termsAccepted).toBe(false);
     expect(json.favouriteAuthor).toBe(god.id); // self reference will be ignored even when explicitly populated
@@ -186,24 +192,13 @@ describe('EntityHelperMongo', () => {
     bar.baz = FooBaz.create('baz');
     let actual = inspect(bar);
 
-    expect(actual).toBe('FooBar {\n' +
-      '  meta: { onCreateCalled: false, onUpdateCalled: false },\n' +
-      "  name: 'bar',\n" +
-      '  baz: FooBaz {\n' +
-      "    name: 'baz',\n" +
-      "    bar: FooBar { meta: [Object], name: 'bar', baz: [FooBaz] }\n" +
-      '  }\n' +
-      '}');
+    expect(actual).toBe('FooBar {\n' + '  meta: { onCreateCalled: false, onUpdateCalled: false },\n' + "  name: 'bar',\n" + '  baz: FooBaz {\n' + "    name: 'baz',\n" + "    bar: FooBar { meta: [Object], name: 'bar', baz: [FooBaz] }\n" + '  }\n' + '}');
 
     expect(inspect((bar as AnyEntity).__helper)).toBe('[WrappedEntity<FooBar>]');
     bar.baz = orm.em.getReference(FooBaz, '5b0ff0619fbec620008d2414');
     actual = inspect(bar);
 
-    expect(actual).toBe('FooBar {\n' +
-      '  meta: { onCreateCalled: false, onUpdateCalled: false },\n' +
-      "  name: 'bar',\n" +
-      "  baz: (FooBaz) { _id: ObjectId('5b0ff0619fbec620008d2414') }\n" +
-      '}');
+    expect(actual).toBe('FooBar {\n' + '  meta: { onCreateCalled: false, onUpdateCalled: false },\n' + "  name: 'bar',\n" + "  baz: (FooBaz) { _id: ObjectId('5b0ff0619fbec620008d2414') }\n" + '}');
 
     const god = new Author('God', 'hello@heaven.god');
     const bible = new Book('Bible', god);
@@ -214,44 +209,46 @@ describe('EntityHelperMongo', () => {
     bible.publisher = Reference.create(new Publisher('Publisher 1'));
     actual = inspect(god);
 
-    expect(actual).toBe('Author {\n' +
-      '  hookTest: false,\n' +
-      '  termsAccepted: false,\n' +
-      '  books: Collection<Book> {\n' +
-      "    '0': Book {\n" +
-      '      createdAt: ISODate(\'2020-07-18T17:31:08.535Z\'),\n' +
-      '      tags: [Collection<BookTag>],\n' +
-      "      title: 'Bible',\n" +
-      '      author: [Author],\n' +
-      '      publisher: [Ref<Publisher>]\n' +
-      '    },\n' +
-      '    initialized: true,\n' +
-      '    dirty: true\n' +
-      '  },\n' +
-      '  friends: Collection<Author> { initialized: true, dirty: false },\n' +
-      "  name: 'God',\n" +
-      "  email: 'hello@heaven.god',\n" +
-      "  foo: 'bar',\n" +
-      '  favouriteAuthor: Author {\n' +
-      '    hookTest: false,\n' +
-      '    termsAccepted: false,\n' +
-      "    books: Collection<Book> { '0': [Book], initialized: true, dirty: true },\n" +
-      '    friends: Collection<Author> { initialized: true, dirty: false },\n' +
-      "    name: 'God',\n" +
-      "    email: 'hello@heaven.god',\n" +
-      "    foo: 'bar',\n" +
-      '    favouriteAuthor: Author {\n' +
-      '      hookTest: false,\n' +
-      '      termsAccepted: false,\n' +
-      '      books: [Collection<Book>],\n' +
-      '      friends: [Collection<Author>],\n' +
-      "      name: 'God',\n" +
-      "      email: 'hello@heaven.god',\n" +
-      "      foo: 'bar',\n" +
-      '      favouriteAuthor: [Author]\n' +
-      '    }\n' +
-      '  }\n' +
-      '}');
+    expect(actual).toBe(
+      'Author {\n' +
+        '  hookTest: false,\n' +
+        '  termsAccepted: false,\n' +
+        '  books: Collection<Book> {\n' +
+        "    '0': Book {\n" +
+        "      createdAt: ISODate('2020-07-18T17:31:08.535Z'),\n" +
+        '      tags: [Collection<BookTag>],\n' +
+        "      title: 'Bible',\n" +
+        '      author: [Author],\n' +
+        '      publisher: [Ref<Publisher>]\n' +
+        '    },\n' +
+        '    initialized: true,\n' +
+        '    dirty: true\n' +
+        '  },\n' +
+        '  friends: Collection<Author> { initialized: true, dirty: false },\n' +
+        "  name: 'God',\n" +
+        "  email: 'hello@heaven.god',\n" +
+        "  foo: 'bar',\n" +
+        '  favouriteAuthor: Author {\n' +
+        '    hookTest: false,\n' +
+        '    termsAccepted: false,\n' +
+        "    books: Collection<Book> { '0': [Book], initialized: true, dirty: true },\n" +
+        '    friends: Collection<Author> { initialized: true, dirty: false },\n' +
+        "    name: 'God',\n" +
+        "    email: 'hello@heaven.god',\n" +
+        "    foo: 'bar',\n" +
+        '    favouriteAuthor: Author {\n' +
+        '      hookTest: false,\n' +
+        '      termsAccepted: false,\n' +
+        '      books: [Collection<Book>],\n' +
+        '      friends: [Collection<Author>],\n' +
+        "      name: 'God',\n" +
+        "      email: 'hello@heaven.god',\n" +
+        "      foo: 'bar',\n" +
+        '      favouriteAuthor: [Author]\n' +
+        '    }\n' +
+        '  }\n' +
+        '}'
+    );
   });
 
   test('explicit serialization with not initialized properties', async () => {
@@ -274,5 +271,4 @@ describe('EntityHelperMongo', () => {
   });
 
   afterAll(async () => orm.close(true));
-
 });

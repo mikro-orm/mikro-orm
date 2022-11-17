@@ -3,7 +3,6 @@ import { colors } from '@mikro-orm/core';
 import { CLIHelper } from '../CLIHelper';
 
 export class SchemaCommandFactory {
-
   static readonly DESCRIPTIONS = {
     create: 'Create database schema based on current metadata',
     update: 'Update database schema based on current metadata',
@@ -18,7 +17,12 @@ export class SchemaCommandFactory {
     fresh: 'Schema successfully dropped and recreated',
   };
 
-  static create<U extends Options = Options>(command: SchemaMethod): CommandModule<unknown, U> & { builder: (args: Argv) => Argv<U>; handler: (args: ArgumentsCamelCase<U>) => Promise<void> } {
+  static create<U extends Options = Options>(
+    command: SchemaMethod
+  ): CommandModule<unknown, U> & {
+    builder: (args: Argv) => Argv<U>;
+    handler: (args: ArgumentsCamelCase<U>) => Promise<void>;
+  } {
     const successMessage = SchemaCommandFactory.SUCCESS_MESSAGES[command];
 
     return {
@@ -94,7 +98,10 @@ export class SchemaCommandFactory {
 
     const orm = await CLIHelper.getORM();
     const generator = orm.getSchemaGenerator();
-    const params = { wrap: args.fkChecks == null ? undefined : !args.fkChecks, ...args };
+    const params = {
+      wrap: args.fkChecks == null ? undefined : !args.fkChecks,
+      ...args,
+    };
 
     if (args.dump) {
       const m = `get${method.substr(0, 1).toUpperCase()}${method.substr(1)}SchemaSQL` as 'getCreateSchemaSQL' | 'getUpdateSchemaSQL' | 'getDropSchemaSQL';
@@ -123,7 +130,6 @@ export class SchemaCommandFactory {
     CLIHelper.dump(colors.green(successMessage));
     await orm.close(true);
   }
-
 }
 
 type SchemaMethod = 'create' | 'update' | 'drop' | 'fresh';

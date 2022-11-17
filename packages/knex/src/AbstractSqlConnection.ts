@@ -1,11 +1,8 @@
 import type { Knex } from 'knex';
 import { knex } from 'knex';
 import { readFile } from 'fs-extra';
-import type {
-  AnyEntity, Configuration, ConnectionOptions, EntityData, IsolationLevel, QueryResult,
-  Transaction, TransactionEventBroadcaster } from '@mikro-orm/core';
-import { Connection, EventType, Utils,
-} from '@mikro-orm/core';
+import type { AnyEntity, Configuration, ConnectionOptions, EntityData, IsolationLevel, QueryResult, Transaction, TransactionEventBroadcaster } from '@mikro-orm/core';
+import { Connection, EventType, Utils } from '@mikro-orm/core';
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform';
 import { MonkeyPatchable } from './MonkeyPatchable';
 
@@ -16,7 +13,6 @@ function isRootTransaction<T>(trx: Transaction<T>) {
 }
 
 export abstract class AbstractSqlConnection extends Connection {
-
   private static __patched = false;
   protected platform!: AbstractSqlPlatform;
   protected client!: Knex;
@@ -44,7 +40,14 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
-  async transactional<T>(cb: (trx: Transaction<Knex.Transaction>) => Promise<T>, options: { isolationLevel?: IsolationLevel; ctx?: Knex.Transaction; eventBroadcaster?: TransactionEventBroadcaster } = {}): Promise<T> {
+  async transactional<T>(
+    cb: (trx: Transaction<Knex.Transaction>) => Promise<T>,
+    options: {
+      isolationLevel?: IsolationLevel;
+      ctx?: Knex.Transaction;
+      eventBroadcaster?: TransactionEventBroadcaster;
+    } = {}
+  ): Promise<T> {
     const trx = await this.begin(options);
 
     try {
@@ -58,12 +61,20 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
-  async begin(options: { isolationLevel?: IsolationLevel; ctx?: Knex.Transaction; eventBroadcaster?: TransactionEventBroadcaster } = {}): Promise<Knex.Transaction> {
+  async begin(
+    options: {
+      isolationLevel?: IsolationLevel;
+      ctx?: Knex.Transaction;
+      eventBroadcaster?: TransactionEventBroadcaster;
+    } = {}
+  ): Promise<Knex.Transaction> {
     if (!options.ctx) {
       await options.eventBroadcaster?.dispatchEvent(EventType.beforeTransactionStart);
     }
 
-    const trx = await (options.ctx || this.client).transaction(null, { isolationLevel: options.isolationLevel });
+    const trx = await (options.ctx || this.client).transaction(null, {
+      isolationLevel: options.isolationLevel,
+    });
 
     if (!options.ctx) {
       await options.eventBroadcaster?.dispatchEvent(EventType.afterTransactionStart, trx);
@@ -105,7 +116,7 @@ export abstract class AbstractSqlConnection extends Connection {
 
   async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | Knex.QueryBuilder | Knex.Raw, params: unknown[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction): Promise<T> {
     if (Utils.isObject<Knex.QueryBuilder | Knex.Raw>(queryOrKnex)) {
-      ctx ??= ((queryOrKnex as any).client.transacting ? queryOrKnex : null);
+      ctx ??= (queryOrKnex as any).client.transacting ? queryOrKnex : null;
       const q = queryOrKnex.toSQL();
       queryOrKnex = q.sql;
       params = q.bindings as any[];
@@ -113,15 +124,19 @@ export abstract class AbstractSqlConnection extends Connection {
 
     const formatted = this.platform.formatQuery(queryOrKnex, params);
     const sql = this.getSql(queryOrKnex, formatted);
-    const res = await this.executeQuery<any>(sql, () => {
-      const query = this.client.raw(formatted);
+    const res = await this.executeQuery<any>(
+      sql,
+      () => {
+        const query = this.client.raw(formatted);
 
-      if (ctx) {
-        query.transacting(ctx);
-      }
+        if (ctx) {
+          query.transacting(ctx);
+        }
 
-      return query;
-    }, { query: queryOrKnex, params });
+        return query;
+      },
+      { query: queryOrKnex, params }
+    );
 
     return this.transformRawResult<T>(res, method);
   }
@@ -142,20 +157,22 @@ export abstract class AbstractSqlConnection extends Connection {
       return driverOptions as Knex;
     }
 
-    return knex<any, any>(this.getKnexOptions(type))
-      .on('query', data => {
-        if (!data.__knexQueryUid) {
-          this.logQuery(data.sql.toLowerCase().replace(/;$/, ''));
-        }
-      });
+    return knex<any, any>(this.getKnexOptions(type)).on('query', (data) => {
+      if (!data.__knexQueryUid) {
+        this.logQuery(data.sql.toLowerCase().replace(/;$/, ''));
+      }
+    });
   }
 
   protected getKnexOptions(type: string): Knex.Config {
-    const config = Utils.merge({
-      client: type,
-      connection: this.getConnectionOptions(),
-      pool: this.config.get('pool'),
-    }, this.config.get('driverOptions'));
+    const config = Utils.merge(
+      {
+        client: type,
+        connection: this.getConnectionOptions(),
+        pool: this.config.get('pool'),
+      },
+      this.config.get('driverOptions')
+    );
     const options = config.connection as ConnectionOptions;
     const password = options.password;
 
@@ -231,5 +248,4 @@ export abstract class AbstractSqlConnection extends Connection {
   }
 
   protected abstract transformRawResult<T>(res: any, method: 'all' | 'get' | 'run'): T;
-
 }

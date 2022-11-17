@@ -1,9 +1,8 @@
 import { Check, Entity, EntitySchema, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
-@Check<FooEntity>({ expression: columns => `${columns.price} >= 0` })
+@Check<FooEntity>({ expression: (columns) => `${columns.price} >= 0` })
 export class FooEntity {
-
   @PrimaryKey()
   id!: number;
 
@@ -11,16 +10,14 @@ export class FooEntity {
   price!: number;
 
   @Property()
-  @Check<FooEntity>({ expression: columns => `${columns.price2} >= 0` })
+  @Check<FooEntity>({ expression: (columns) => `${columns.price2} >= 0` })
   price2!: number;
 
   @Property({ check: 'price3 >= 0' })
   price3!: number;
-
 }
 
 describe('check constraint [mysql8]', () => {
-
   test('check constraint is generated for decorator [mysql8]', async () => {
     const orm = await MikroORM.init({
       entities: [FooEntity],
@@ -66,9 +63,7 @@ describe('check constraint [mysql8]', () => {
       },
       name: 'NewTable',
       tableName: 'new_table',
-      checks: [
-        { name: 'foo', expression: 'priceColumn >= 0' },
-      ],
+      checks: [{ name: 'foo', expression: 'priceColumn >= 0' }],
     }).init().meta;
     meta.set('NewTable', newTableMeta);
 
@@ -101,5 +96,4 @@ describe('check constraint [mysql8]', () => {
 
     await orm.close();
   });
-
 });

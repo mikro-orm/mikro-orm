@@ -1,7 +1,6 @@
 import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
 
 export class IntegerArrayType extends Type<number[], string> {
-
   constructor(private readonly length?: number) {
     super();
   }
@@ -33,22 +32,18 @@ export class IntegerArrayType extends Type<number[], string> {
   getColumnType(): string {
     return 'int4[]';
   }
-
 }
 
 @Entity()
 export class Test {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ type: new IntegerArrayType() })
   numArray = [1, 2, 3];
-
 }
 
 describe('GH issue 2489', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -74,5 +69,4 @@ describe('GH issue 2489', () => {
     const e1 = await orm.em.findOneOrFail(Test, e);
     expect(e1.numArray).toEqual([1, 2, 3]);
   });
-
 });

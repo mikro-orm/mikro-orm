@@ -2,7 +2,6 @@ import type { Knex } from '@mikro-orm/knex';
 import { AbstractSqlConnection, MonkeyPatchable } from '@mikro-orm/knex';
 
 export class MySqlConnection extends AbstractSqlConnection {
-
   async connect(): Promise<void> {
     this.patchKnex();
     this.client = this.createKnexClient('mysql2');
@@ -62,5 +61,4 @@ export class MySqlConnection extends AbstractSqlConnection {
 
     return res[0];
   }
-
 }

@@ -9,9 +9,12 @@ export interface Table {
   table_comment?: string;
 }
 
-export type KnexStringRef = Knex.Ref<string, {
-  [alias: string]: string;
-}>;
+export type KnexStringRef = Knex.Ref<
+  string,
+  {
+    [alias: string]: string;
+  }
+>;
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 type AnyString = string & {};
@@ -70,7 +73,13 @@ export interface Index {
   primary: boolean;
   composite?: boolean;
   expression?: string; // allows using custom sql expressions
-  type?: string | Readonly<{ indexType?: string; storageEngineIndexType?: 'hash' | 'btree'; predicate?: Knex.QueryBuilder }>; // for back compatibility mainly, to allow using knex's `index.type` option (e.g. gin index)
+  type?:
+    | string
+    | Readonly<{
+        indexType?: string;
+        storageEngineIndexType?: 'hash' | 'btree';
+        predicate?: Knex.QueryBuilder;
+      }>; // for back compatibility mainly, to allow using knex's `index.type` option (e.g. gin index)
 }
 
 export interface Check<T = unknown> {

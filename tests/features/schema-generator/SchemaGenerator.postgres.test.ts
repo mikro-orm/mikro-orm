@@ -6,7 +6,6 @@ import { BaseEntity22 } from '../../entities-sql/BaseEntity22';
 import { BaseEntity2 } from '../../entities-sql/BaseEntity2';
 
 describe('SchemaGenerator [postgres]', () => {
-
   test('update schema - entity in different namespace [postgres] (GH #1215)', async () => {
     const orm = await initORMPostgreSql();
     const meta = orm.getMetadata();
@@ -128,12 +127,19 @@ describe('SchemaGenerator [postgres]', () => {
       dbName,
       baseDir: BASE_DIR,
       type: 'postgresql',
-      migrations: { path: BASE_DIR + '/../temp/migrations', tableName: 'public.mikro_orm_migrations' },
+      migrations: {
+        path: BASE_DIR + '/../temp/migrations',
+        tableName: 'public.mikro_orm_migrations',
+      },
     });
 
     await orm.schema.createSchema();
     await orm.schema.updateSchema();
-    await orm.schema.dropSchema({ wrap: false, dropMigrationsTable: false, dropDb: true });
+    await orm.schema.dropSchema({
+      wrap: false,
+      dropMigrationsTable: false,
+      dropDb: true,
+    });
     await orm.close(true);
 
     await orm.isConnected();
@@ -345,5 +351,4 @@ describe('SchemaGenerator [postgres]', () => {
 
     await orm.close(true);
   });
-
 });

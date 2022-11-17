@@ -9,9 +9,11 @@ import { Test2 } from './Test2';
 @Filter({ name: 'expensive', cond: { price: { $gt: 1000 } } })
 @Filter({ name: 'long', cond: { 'length(perex)': { $gt: 10000 } } })
 @Filter({ name: 'hasAuthor', cond: { author: { $ne: null } }, default: true })
-@Filter({ name: 'writtenBy', cond: args => ({ author: { name: args.name } }) })
+@Filter({
+  name: 'writtenBy',
+  cond: (args) => ({ author: { name: args.name } }),
+})
 export class Book2 {
-
   [OptionalProps]?: 'createdAt';
 
   @PrimaryKey({ name: 'uuid_pk', type: t.uuid })
@@ -30,7 +32,7 @@ export class Book2 {
   @Property({ type: t.decimal, precision: 8, scale: 2, nullable: true })
   price?: number;
 
-  @Formula(alias => `${alias}.price * 1.19`)
+  @Formula((alias) => `${alias}.price * 1.19`)
   priceTaxed?: string;
 
   @Property({ type: t.double, nullable: true })
@@ -42,16 +44,27 @@ export class Book2 {
   @ManyToOne({ entity: 'Author2', cascade: [] })
   author: Author2;
 
-  @ManyToOne(() => Publisher2, { cascade: [Cascade.PERSIST, Cascade.REMOVE], nullable: true, wrappedReference: true })
+  @ManyToOne(() => Publisher2, {
+    cascade: [Cascade.PERSIST, Cascade.REMOVE],
+    nullable: true,
+    wrappedReference: true,
+  })
   publisher?: IdentifiedReference<Publisher2>;
 
   @OneToOne({ cascade: [], mappedBy: 'book', nullable: true })
   test?: Test2;
 
-  @ManyToMany({ entity: () => BookTag2, cascade: [], fixedOrderColumn: 'order' })
+  @ManyToMany({
+    entity: () => BookTag2,
+    cascade: [],
+    fixedOrderColumn: 'order',
+  })
   tags = new Collection<BookTag2>(this);
 
-  @ManyToMany(() => BookTag2, undefined, { pivotTable: 'book_to_tag_unordered', orderBy: { name: QueryOrder.ASC } })
+  @ManyToMany(() => BookTag2, undefined, {
+    pivotTable: 'book_to_tag_unordered',
+    orderBy: { name: QueryOrder.ASC },
+  })
   tagsUnordered = new Collection<BookTag2>(this);
 
   constructor(title: string, author: Author2, price?: number) {
@@ -62,7 +75,6 @@ export class Book2 {
       this.price = price;
     }
   }
-
 }
 
 export interface Book2Meta {

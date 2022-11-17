@@ -9,7 +9,6 @@ export interface TransformContext {
 }
 
 export abstract class Type<JSType = string, DBType = JSType> {
-
   private static readonly types = new Map();
 
   platform?: Platform;
@@ -83,14 +82,13 @@ export abstract class Type<JSType = string, DBType = JSType> {
   [inspect.custom](depth: number) {
     const object = { ...this };
     const hidden = ['prop', 'platform', 'meta'];
-    hidden.forEach(k => delete object[k]);
+    hidden.forEach((k) => delete object[k]);
     const ret = inspect(object, { depth });
     const name = (this as object).constructor.name;
 
     /* istanbul ignore next */
     return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
   }
-
 }
 
 Object.defineProperties(Type.prototype, {

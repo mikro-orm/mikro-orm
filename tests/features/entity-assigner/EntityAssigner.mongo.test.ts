@@ -6,10 +6,9 @@ import { Author, Book, BookTag } from '../../entities';
 import { initORMMongo } from '../../bootstrap';
 
 describe('EntityAssignerMongo', () => {
-
   let orm: MikroORM<MongoDriver>;
 
-  beforeAll(async () => orm = await initORMMongo());
+  beforeAll(async () => (orm = await initORMMongo()));
   beforeEach(async () => orm.schema.clearDatabase());
 
   test('#assign() should update entity values', async () => {
@@ -19,7 +18,11 @@ describe('EntityAssignerMongo', () => {
     await orm.em.persistAndFlush(book);
     expect(book.title).toBe('Book2');
     expect(book.author).toBe(jon);
-    book.assign({ title: 'Better Book2 1', author: god, [expr('notExisting')]: true });
+    book.assign({
+      title: 'Better Book2 1',
+      author: god,
+      [expr('notExisting')]: true,
+    });
     expect(book.author).toBe(god);
     expect((book as any).notExisting).toBe(true);
     await orm.em.persistAndFlush(god);
@@ -104,5 +107,4 @@ describe('EntityAssignerMongo', () => {
   });
 
   afterAll(async () => orm.close(true));
-
 });

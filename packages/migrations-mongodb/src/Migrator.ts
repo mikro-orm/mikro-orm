@@ -13,7 +13,6 @@ import { TSMigrationGenerator } from './TSMigrationGenerator';
 import { JSMigrationGenerator } from './JSMigrationGenerator';
 
 export class Migrator implements IMigrator {
-
   private umzug!: Umzug;
   private runner!: MigrationRunner;
   private storage!: MigrationStorage;
@@ -25,7 +24,7 @@ export class Migrator implements IMigrator {
 
   constructor(private readonly em: EntityManager) {
     /* istanbul ignore next */
-    const key = (this.config.get('tsNode', Utils.detectTsNode()) && this.options.pathTs) ? 'pathTs' : 'path';
+    const key = this.config.get('tsNode', Utils.detectTsNode()) && this.options.pathTs ? 'pathTs' : 'path';
     this.absolutePath = Utils.absolutePath(this.options[key]!, this.config.get('baseDir'));
     this.createUmzug();
   }
@@ -63,7 +62,7 @@ export class Migrator implements IMigrator {
 
     /* istanbul ignore next */
     if (this.options.migrationsList) {
-      migrations = this.options.migrationsList.map(migration => this.initialize(migration.class as Constructor<Migration>, migration.name));
+      migrations = this.options.migrationsList.map((migration) => this.initialize(migration.class as Constructor<Migration>, migration.name));
     }
 
     this.umzug = new Umzug({
@@ -73,10 +72,10 @@ export class Migrator implements IMigrator {
     });
 
     const logger = this.config.get('logger');
-    this.umzug.on('migrating', event => logger(`Processing '${event.name}'`));
-    this.umzug.on('migrated', event => logger(`Applied '${event.name}'`));
-    this.umzug.on('reverting', event => logger(`Processing '${event.name}'`));
-    this.umzug.on('reverted', event => logger(`Reverted '${event.name}'`));
+    this.umzug.on('migrating', (event) => logger(`Processing '${event.name}'`));
+    this.umzug.on('migrated', (event) => logger(`Applied '${event.name}'`));
+    this.umzug.on('reverting', (event) => logger(`Processing '${event.name}'`));
+    this.umzug.on('reverted', (event) => logger(`Reverted '${event.name}'`));
 
     /* istanbul ignore next */
     if (this.options.generator) {
@@ -154,9 +153,21 @@ export class Migrator implements IMigrator {
     return name.match(/^\d{14}$/) ? this.options.fileName!(name) : name;
   }
 
-  private prefix<T extends string | string[] | { from?: string | number; to?: string | number; migrations?: string[]; transaction?: Transaction }>(options?: T): MigrateUpOptions & MigrateDownOptions {
+  private prefix<
+    T extends
+      | string
+      | string[]
+      | {
+          from?: string | number;
+          to?: string | number;
+          migrations?: string[];
+          transaction?: Transaction;
+        }
+  >(options?: T): MigrateUpOptions & MigrateDownOptions {
     if (Utils.isString(options) || Array.isArray(options)) {
-      return { migrations: Utils.asArray(options).map(name => this.getMigrationFilename(name)) };
+      return {
+        migrations: Utils.asArray(options).map((name) => this.getMigrationFilename(name)),
+      };
     }
 
     if (!options) {
@@ -164,14 +175,14 @@ export class Migrator implements IMigrator {
     }
 
     if (options.migrations) {
-      options.migrations = options.migrations.map(name => this.getMigrationFilename(name));
+      options.migrations = options.migrations.map((name) => this.getMigrationFilename(name));
     }
 
     if (options.transaction) {
       delete options.transaction;
     }
 
-    ['from', 'to'].filter(k => options[k]).forEach(k => options[k] = this.getMigrationFilename(options[k]));
+    ['from', 'to'].filter((k) => options[k]).forEach((k) => (options[k] = this.getMigrationFilename(options[k])));
 
     return options as MigrateUpOptions;
   }
@@ -187,7 +198,7 @@ export class Migrator implements IMigrator {
       return this.runInTransaction(options.transaction, method, options);
     }
 
-    return this.driver.getConnection().transactional(trx => this.runInTransaction(trx, method, options));
+    return this.driver.getConnection().transactional((trx) => this.runInTransaction(trx, method, options));
   }
 
   private async runInTransaction(trx: Transaction, method: 'up' | 'down', options: string | string[] | undefined | MigrateOptions) {
@@ -205,5 +216,4 @@ export class Migrator implements IMigrator {
       await ensureDir(this.absolutePath);
     }
   }
-
 }

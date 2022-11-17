@@ -10,7 +10,6 @@ import type { ICriteriaNode } from '../typings';
  * @internal
  */
 export class CriteriaNodeFactory {
-
   static createNode(metadata: MetadataStorage, entityName: string, payload: any, parent?: ICriteriaNode, key?: string): ICriteriaNode {
     const customExpression = CriteriaNode.isCustomExpression(key || '');
     const scalar = Utils.isPrimaryKey(payload) || payload instanceof RegExp || payload instanceof Date || customExpression;
@@ -48,7 +47,7 @@ export class CriteriaNodeFactory {
   static createObjectNode(metadata: MetadataStorage, entityName: string, payload: Dictionary, parent?: ICriteriaNode, key?: string): ICriteriaNode {
     const meta = metadata.find(entityName);
 
-    if (!parent && Object.keys(payload).every(k => meta?.properties[k]?.reference === ReferenceType.SCALAR)) {
+    if (!parent && Object.keys(payload).every((k) => meta?.properties[k]?.reference === ReferenceType.SCALAR)) {
       return this.createScalarNode(metadata, entityName, payload, parent, key);
     }
 
@@ -69,7 +68,7 @@ export class CriteriaNodeFactory {
       return this.createNode(metadata, childEntity, payload[item], node, item);
     }
 
-    const operator = Object.keys(payload[item]).some(f => Utils.isOperator(f));
+    const operator = Object.keys(payload[item]).some((f) => Utils.isOperator(f));
 
     if (operator) {
       throw ValidationError.cannotUseOperatorsInsideEmbeddables(entityName, prop.name, payload);
@@ -86,5 +85,4 @@ export class CriteriaNodeFactory {
 
     return this.createNode(metadata, entityName, map, node, item);
   }
-
 }

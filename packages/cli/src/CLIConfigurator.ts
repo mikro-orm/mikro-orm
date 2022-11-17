@@ -17,7 +17,6 @@ import { CreateDatabaseCommand } from './commands/CreateDatabaseCommand';
  * @internal
  */
 export class CLIConfigurator {
-
   static async configure(): Promise<Argv> {
     await ConfigurationLoader.checkPackageVersion();
     const settings = await ConfigurationLoader.getSettings();
@@ -61,5 +60,4 @@ export class CLIConfigurator {
       .recommendCommands()
       .strict();
   }
-
 }

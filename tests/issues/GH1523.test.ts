@@ -2,41 +2,32 @@ import { Collection, Entity, FlushMode, ManyToOne, MikroORM, OneToMany, PrimaryK
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 abstract class Base {
-
   @PrimaryKey()
   id!: number;
-
 }
 
 @Entity()
 class Param extends Base {
-
   @ManyToOne({ type: 'Child', nullable: true })
   child?: any;
-
 }
 
 @Entity()
 class Child extends Base {
-
   @ManyToOne({ type: 'Parent', nullable: true })
   parent?: any;
 
-  @OneToMany(() => Param, entity => entity.child)
+  @OneToMany(() => Param, (entity) => entity.child)
   params: Collection<Param> = new Collection<Param>(this);
-
 }
 
 @Entity()
 class Parent extends Base {
-
-  @OneToMany(() => Child, entity => entity.parent)
+  @OneToMany(() => Child, (entity) => entity.parent)
   children: Collection<Child> = new Collection<Child>(this);
-
 }
 
 describe('GH issue 1523', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -81,5 +72,4 @@ describe('GH issue 1523', () => {
     const fetchedParamsAgain = await orm.em.createQueryBuilder(Param, 'param').where({ child: true }).getResult();
     expect(wrap(param1, true).__originalEntityData!.child).toBeUndefined();
   });
-
 });

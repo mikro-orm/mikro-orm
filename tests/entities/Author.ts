@@ -1,8 +1,5 @@
 import type { EntityDTO, Dictionary } from '@mikro-orm/core';
-import {
-  AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate, DateType, Collection, Filter,
-  Cascade, Entity, ManyToMany, ManyToOne, OneToMany, Property, Index, Unique, EntityAssigner, EntityRepositoryType,
-} from '@mikro-orm/core';
+import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeDelete, BeforeUpdate, DateType, Collection, Filter, Cascade, Entity, ManyToMany, ManyToOne, OneToMany, Property, Index, Unique, EntityAssigner, EntityRepositoryType } from '@mikro-orm/core';
 
 import { Book } from './Book';
 import { AuthorRepository } from '../repositories/AuthorRepository';
@@ -20,7 +17,6 @@ import { BaseEntity } from './BaseEntity';
   default: true,
 })
 export class Author extends BaseEntity<Author, 'termsAccepted' | 'code2' | 'version' | 'versionAsString'> {
-
   [EntityRepositoryType]?: AuthorRepository;
 
   static beforeDestroyCalled = 0;
@@ -34,7 +30,10 @@ export class Author extends BaseEntity<Author, 'termsAccepted' | 'code2' | 'vers
   email: string;
 
   @Property({ nullable: true })
-  @Unique({ name: 'age_uniq', options: { partialFilterExpression: { age: { $exists: true } } } })
+  @Unique({
+    name: 'age_uniq',
+    options: { partialFilterExpression: { age: { $exists: true } } },
+  })
   age?: number;
 
   @Property()
@@ -50,7 +49,11 @@ export class Author extends BaseEntity<Author, 'termsAccepted' | 'code2' | 'vers
   @Index()
   born?: Date;
 
-  @OneToMany(() => Book, book => book.author, { referenceColumnName: '_id', cascade: [Cascade.PERSIST], orphanRemoval: true })
+  @OneToMany(() => Book, (book) => book.author, {
+    referenceColumnName: '_id',
+    cascade: [Cascade.PERSIST],
+    orphanRemoval: true,
+  })
   books = new Collection<Book>(this);
 
   @ManyToMany(() => Author)
@@ -132,10 +135,9 @@ export class Author extends BaseEntity<Author, 'termsAccepted' | 'code2' | 'vers
     (o as Dictionary).fooBar = 123;
 
     if (strict) {
-      strip.forEach(k => delete o[k]);
+      strip.forEach((k) => delete o[k]);
     }
 
     return o;
   }
-
 }

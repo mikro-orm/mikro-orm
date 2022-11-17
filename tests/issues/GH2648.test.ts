@@ -3,60 +3,49 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class A {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ type: 'string' })
   test!: string;
-
 }
 
 @Entity()
 export class B1 {
-
   [PrimaryKeyType]?: number;
   @ManyToOne({ entity: () => A, primary: true, wrappedReference: true })
   a!: IdentifiedReference<A>;
-
 }
 
 @Entity()
 export class B2 {
-
   @PrimaryKey()
   id!: number;
 
   [PrimaryKeyType]?: number;
   @OneToOne({ entity: () => A, primary: true, wrappedReference: true })
   a!: IdentifiedReference<A>;
-
 }
 
 @Entity()
 export class B3 {
-
   [PrimaryKeyType]?: number;
   @OneToOne({ entity: () => A, primary: true, wrappedReference: true })
   a!: IdentifiedReference<A>;
-
 }
 
 @Entity()
 export class B4 {
-
   @PrimaryKey()
   id!: number;
 
   [PrimaryKeyType]?: number;
   @OneToOne({ entity: () => A, primary: true, wrappedReference: true })
   a!: IdentifiedReference<A>;
-
 }
 
 @Entity()
 export class C {
-
   @PrimaryKey({ type: Number })
   id!: number;
 
@@ -71,7 +60,6 @@ export class C {
 
   @ManyToOne({ entity: () => B4, wrappedReference: true })
   b4!: IdentifiedReference<B4>;
-
 }
 
 interface Test {
@@ -81,14 +69,11 @@ interface Test {
 
 @Entity()
 export class D {
-
   @PrimaryKey({ type: JsonType })
   id!: Test;
-
 }
 
 describe('GH issue 2648', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -126,5 +111,4 @@ describe('GH issue 2648', () => {
     const r = await orm.em.findOne(C, { b4: { a: { test: 'test' } } });
     expect(r).toBeNull();
   });
-
 });

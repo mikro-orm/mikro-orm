@@ -2,35 +2,29 @@ import { Entity, MikroORM, PrimaryKey, Property, t } from '@mikro-orm/core';
 
 @Entity()
 export class Asset1 {
-
   @PrimaryKey({ columnType: 'bigint' })
   id!: string;
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 export class Asset2 {
-
   @PrimaryKey({ type: 'bigint' })
   id!: string;
 
   @Property()
   name!: string;
-
 }
 
 @Entity()
 export class Asset3 {
-
   @PrimaryKey({ type: t.bigint })
   id!: string;
 
   @Property()
   name!: string;
-
 }
 
 test('bigint in mysql 1/3', async () => {

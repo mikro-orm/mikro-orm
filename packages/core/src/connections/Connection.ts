@@ -8,16 +8,13 @@ import type { TransactionEventBroadcaster } from '../events/TransactionEventBroa
 import type { IsolationLevel } from '../enums';
 
 export abstract class Connection {
-
   protected metadata!: MetadataStorage;
   protected platform!: Platform;
   protected readonly options: ConnectionOptions;
   protected abstract client: unknown;
   protected readonly logger = this.config.getLogger();
 
-  constructor(protected readonly config: Configuration,
-              options?: ConnectionOptions,
-              protected readonly type: ConnectionType = 'write') {
+  constructor(protected readonly config: Configuration, options?: ConnectionOptions, protected readonly type: ConnectionType = 'write') {
     if (options) {
       this.options = options;
     } else {
@@ -44,8 +41,8 @@ export abstract class Connection {
    */
   async close(force?: boolean): Promise<void> {
     Object.keys(this.options)
-      .filter(k => k !== 'name')
-      .forEach(k => delete this.options[k]);
+      .filter((k) => k !== 'name')
+      .forEach((k) => delete this.options[k]);
   }
 
   /**
@@ -53,7 +50,14 @@ export abstract class Connection {
    */
   abstract getDefaultClientUrl(): string;
 
-  async transactional<T>(cb: (trx: Transaction) => Promise<T>, options?: { isolationLevel?: IsolationLevel; ctx?: Transaction; eventBroadcaster?: TransactionEventBroadcaster }): Promise<T> {
+  async transactional<T>(
+    cb: (trx: Transaction) => Promise<T>,
+    options?: {
+      isolationLevel?: IsolationLevel;
+      ctx?: Transaction;
+      eventBroadcaster?: TransactionEventBroadcaster;
+    }
+  ): Promise<T> {
     throw new Error(`Transactions are not supported by current driver`);
   }
 
@@ -111,7 +115,11 @@ export abstract class Connection {
 
       return res;
     } catch (e) {
-      this.logQuery(query, { ...context, took: Date.now() - now, level: 'error' });
+      this.logQuery(query, {
+        ...context,
+        took: Date.now() - now,
+        level: 'error',
+      });
       throw e;
     }
   }
@@ -127,7 +135,6 @@ export abstract class Connection {
       query,
     });
   }
-
 }
 
 export interface QueryResult<T = { id: number }> {

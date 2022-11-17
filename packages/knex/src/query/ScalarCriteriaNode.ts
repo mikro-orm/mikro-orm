@@ -6,7 +6,6 @@ import type { IQueryBuilder } from '../typings';
  * @internal
  */
 export class ScalarCriteriaNode extends CriteriaNode {
-
   process<T>(qb: IQueryBuilder<T>, alias?: string): any {
     if (this.shouldJoin()) {
       const path = this.getPath();
@@ -31,11 +30,14 @@ export class ScalarCriteriaNode extends CriteriaNode {
     }
 
     switch (this.prop.reference) {
-      case ReferenceType.ONE_TO_MANY: return true;
-      case ReferenceType.MANY_TO_MANY: return true;
-      case ReferenceType.ONE_TO_ONE: return !this.prop.owner;
-      default: return false; // SCALAR, MANY_TO_ONE
+      case ReferenceType.ONE_TO_MANY:
+        return true;
+      case ReferenceType.MANY_TO_MANY:
+        return true;
+      case ReferenceType.ONE_TO_ONE:
+        return !this.prop.owner;
+      default:
+        return false; // SCALAR, MANY_TO_ONE
     }
   }
-
 }

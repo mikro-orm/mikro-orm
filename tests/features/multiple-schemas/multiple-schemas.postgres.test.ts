@@ -4,7 +4,6 @@ import { mockLogger } from '../../helpers';
 
 @Entity({ schema: 'n1' })
 export class Author {
-
   @PrimaryKey()
   id!: number;
 
@@ -14,25 +13,23 @@ export class Author {
   @OneToOne(() => Author, undefined, { nullable: true })
   mentor?: Author;
 
-  @OneToMany(() => Book, e => e.author, { cascade: [Cascade.REMOVE, Cascade.PERSIST] })
+  @OneToMany(() => Book, (e) => e.author, {
+    cascade: [Cascade.REMOVE, Cascade.PERSIST],
+  })
   books = new Collection<Book>(this);
-
 }
 
 @Entity({ schema: '*' })
 export class BookTag extends BaseEntity<BookTag, 'id'> {
-
   @PrimaryKey()
   id!: number;
 
   @Property({ nullable: true })
   name?: string;
-
 }
 
 @Entity({ schema: '*' })
 export class Book extends BaseEntity<Book, 'id'> {
-
   @PrimaryKey()
   id!: number;
 
@@ -47,11 +44,9 @@ export class Book extends BaseEntity<Book, 'id'> {
 
   @ManyToMany(() => BookTag, undefined, { cascade: [Cascade.ALL] })
   tags = new Collection<BookTag>(this);
-
 }
 
 describe('multiple connected schemas in postgres', () => {
-
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
@@ -123,21 +118,7 @@ describe('multiple connected schemas in postgres', () => {
     orm.em.clear();
     author = await orm.em.findOneOrFail(Author, author, { populate: true });
 
-    expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toEqual([
-      'Author-n1:1',
-      'Book-n2:1',
-      'Book-n2:2',
-      'Book-n2:3',
-      'BookTag-n2:1',
-      'BookTag-n2:2',
-      'BookTag-n2:3',
-      'BookTag-n2:4',
-      'BookTag-n2:5',
-      'BookTag-n2:6',
-      'BookTag-n2:7',
-      'BookTag-n2:8',
-      'BookTag-n2:9',
-    ]);
+    expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toEqual(['Author-n1:1', 'Book-n2:1', 'Book-n2:2', 'Book-n2:3', 'BookTag-n2:1', 'BookTag-n2:2', 'BookTag-n2:3', 'BookTag-n2:4', 'BookTag-n2:5', 'BookTag-n2:6', 'BookTag-n2:7', 'BookTag-n2:8', 'BookTag-n2:9']);
 
     expect(wrap(author).getSchema()).toBe('n1');
     expect(wrap(author.books[0]).getSchema()).toBe('n2');
@@ -204,12 +185,7 @@ describe('multiple connected schemas in postgres', () => {
     book51.setSchema('n5');
     const book52 = orm.em.create(Book, {});
     wrap(book52).setSchema('n5');
-    author.books.add(
-      orm.em.create(Book, {}, { schema: 'n3' }),
-      orm.em.create(Book, {}, { schema: 'n4' }),
-      book51,
-      book52,
-    );
+    author.books.add(orm.em.create(Book, {}, { schema: 'n3' }), orm.em.create(Book, {}, { schema: 'n4' }), book51, book52);
     author.books[0].tags.add(new BookTag(), new BookTag(), new BookTag());
     author.books[1].basedOn = author.books[0];
     author.books[1].tags.add(new BookTag(), new BookTag(), new BookTag());
@@ -299,17 +275,7 @@ describe('multiple connected schemas in postgres', () => {
     expect(mock.mock.calls[2][0]).toMatch(`select "b0".*, "b1"."book_tag_id" as "fk__book_tag_id", "b1"."book_id" as "fk__book_id" from "n5"."book_tag" as "b0" left join "n5"."book_tags" as "b1" on "b0"."id" = "b1"."book_tag_id" where "b1"."book_id" in (2, 1)`);
     mock.mockReset();
 
-    expect(fork.getUnitOfWork().getIdentityMap().keys()).toEqual([
-      'Author-n1:1',
-      'Book-n5:2',
-      'Book-n5:1',
-      'BookTag-n5:5',
-      'BookTag-n5:6',
-      'BookTag-n5:4',
-      'BookTag-n5:2',
-      'BookTag-n5:3',
-      'BookTag-n5:1',
-    ]);
+    expect(fork.getUnitOfWork().getIdentityMap().keys()).toEqual(['Author-n1:1', 'Book-n5:2', 'Book-n5:1', 'BookTag-n5:5', 'BookTag-n5:6', 'BookTag-n5:4', 'BookTag-n5:2', 'BookTag-n5:3', 'BookTag-n5:1']);
 
     // remove entity
     orm.em.remove(author);
@@ -349,13 +315,25 @@ describe('multiple connected schemas in postgres', () => {
     expect(diff1).toBe('');
 
     // should update only single schema, ignoring the rest
-    const diff2 = await orm.schema.getUpdateSchemaSQL({ schema: 'n2', wrap: false });
+    const diff2 = await orm.schema.getUpdateSchemaSQL({
+      schema: 'n2',
+      wrap: false,
+    });
     expect(diff2).toBe('');
-    const diff3 = await orm.schema.getUpdateSchemaSQL({ schema: 'n3', wrap: false });
+    const diff3 = await orm.schema.getUpdateSchemaSQL({
+      schema: 'n3',
+      wrap: false,
+    });
     expect(diff3).toBe('');
-    const diff4 = await orm.schema.getUpdateSchemaSQL({ schema: 'n4', wrap: false });
+    const diff4 = await orm.schema.getUpdateSchemaSQL({
+      schema: 'n4',
+      wrap: false,
+    });
     expect(diff4).toBe('');
-    const diff5 = await orm.schema.getUpdateSchemaSQL({ schema: 'n5', wrap: false });
+    const diff5 = await orm.schema.getUpdateSchemaSQL({
+      schema: 'n5',
+      wrap: false,
+    });
     expect(diff5).toBe('');
   });
 
@@ -365,9 +343,12 @@ describe('multiple connected schemas in postgres', () => {
     author.name = 'a1';
     await orm.em.persistAndFlush(author);
 
-    await orm.em.transactional(async em => {
+    await orm.em.transactional(async (em) => {
       await orm.em.lock(author, LockMode.PESSIMISTIC_PARTIAL_WRITE);
-      await orm.em.getDriver().lockPessimistic(author, { lockMode: LockMode.PESSIMISTIC_PARTIAL_WRITE, ctx: em.getTransactionContext() });
+      await orm.em.getDriver().lockPessimistic(author, {
+        lockMode: LockMode.PESSIMISTIC_PARTIAL_WRITE,
+        ctx: em.getTransactionContext(),
+      });
     });
   });
 
@@ -376,5 +357,4 @@ describe('multiple connected schemas in postgres', () => {
     const entities = await generator.generate({ schema: 'n2' });
     expect(entities).toMatchSnapshot();
   });
-
 });

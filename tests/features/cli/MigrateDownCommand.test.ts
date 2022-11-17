@@ -16,7 +16,6 @@ dumpMock.mockImplementation(() => void 0);
 jest.spyOn(CLIHelper, 'dumpTable').mockImplementation(() => void 0);
 
 describe('MigrateDownCommand', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -52,5 +51,4 @@ describe('MigrateDownCommand', () => {
     expect(down.mock.calls.length).toBe(5);
     expect(closeSpy).toBeCalledTimes(5);
   });
-
 });

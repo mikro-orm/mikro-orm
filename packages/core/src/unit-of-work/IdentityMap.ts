@@ -1,7 +1,6 @@
 import type { AnyEntity, Constructor, EntityMetadata } from '../typings';
 
 export class IdentityMap {
-
   private readonly registry = new Map<Constructor<AnyEntity>, Map<string, AnyEntity>>();
 
   store<T>(item: T) {
@@ -44,7 +43,7 @@ export class IdentityMap {
     return ret;
   }
 
-  * [Symbol.iterator](): IterableIterator<AnyEntity> {
+  *[Symbol.iterator](): IterableIterator<AnyEntity> {
     for (const store of this.registry.values()) {
       for (const item of store.values()) {
         yield item;
@@ -56,7 +55,7 @@ export class IdentityMap {
     const ret: string[] = [];
 
     for (const [cls, store] of this.registry) {
-      ret.push(...[...store.keys()].map(hash => `${cls.name}-${hash}`));
+      ret.push(...[...store.keys()].map((hash) => `${cls.name}-${hash}`));
     }
 
     return ret;
@@ -67,7 +66,7 @@ export class IdentityMap {
    */
   get<T>(hash: string): T | undefined {
     const [name, id] = hash.split('-', 2);
-    const cls = [...this.registry.keys()].find(k => k.name === name);
+    const cls = [...this.registry.keys()].find((k) => k.name === name);
 
     if (!cls) {
       return undefined;
@@ -87,5 +86,4 @@ export class IdentityMap {
 
     return pkHash;
   }
-
 }

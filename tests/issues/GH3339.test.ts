@@ -1,48 +1,40 @@
 import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 
-
 @Entity({
   tableName: 'gh3339.Customer',
 })
 export class Customer1 {
-
   @PrimaryKey({ fieldName: 'ID', type: 'number' })
   id!: number;
 
   @Property()
   customerName?: string;
-
 }
 
 @Entity({
   tableName: 'gh3339.Customer',
 })
 export class Customer2 {
-
   @PrimaryKey({ fieldName: 'ID', type: 'number' })
   id!: number;
 
   @Property()
   name?: string;
-
 }
 
 @Entity({
   tableName: 'gh3339.Customer',
 })
 export class Customer3 {
-
   @PrimaryKey({ fieldName: 'ID', type: 'number' })
   id!: number;
 
   @Property()
   c_name?: string;
-
 }
 
 describe('GH issue 3339', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -50,7 +42,7 @@ describe('GH issue 3339', () => {
       dbName: `mikro_orm_test_gh_3339`,
       type: 'postgresql',
       schema: 'gh3339',
-      entities: [ Customer1 ],
+      entities: [Customer1],
     });
     const generator = orm.schema;
     await generator.ensureDatabase();

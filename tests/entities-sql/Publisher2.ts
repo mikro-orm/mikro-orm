@@ -25,16 +25,22 @@ export enum Enum2 {
 
 @Entity()
 export class Publisher2 extends BaseEntity2 {
-
   [OptionalProps]?: 'type' | 'type2' | 'hookTest';
 
   @Property({ fieldName: 'name' })
   name: string;
 
-  @OneToMany(() => Book2, 'publisher', { joinColumn: 'book_uuid', inverseJoinColumn: 'publisher_id' })
+  @OneToMany(() => Book2, 'publisher', {
+    joinColumn: 'book_uuid',
+    inverseJoinColumn: 'publisher_id',
+  })
   books!: Collection<Book2>;
 
-  @ManyToMany({ entity: () => Test2, pivotTable: 'publisher2_tests', fixedOrder: true })
+  @ManyToMany({
+    entity: () => Test2,
+    pivotTable: 'publisher2_tests',
+    fixedOrder: true,
+  })
   tests!: Collection<Test2>;
 
   @Enum(() => PublisherType)
@@ -63,5 +69,4 @@ export class Publisher2 extends BaseEntity2 {
     this.name = name;
     this.type = type;
   }
-
 }

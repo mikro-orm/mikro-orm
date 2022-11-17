@@ -1,15 +1,11 @@
 import { ObjectId } from 'bson';
-import type {
-  IPrimaryKey, Primary, NamingStrategy, Constructor, EntityRepository, EntityProperty,
-  PopulateOptions, EntityMetadata, IDatabaseDriver, EntityManager, Configuration,
-} from '@mikro-orm/core';
+import type { IPrimaryKey, Primary, NamingStrategy, Constructor, EntityRepository, EntityProperty, PopulateOptions, EntityMetadata, IDatabaseDriver, EntityManager, Configuration } from '@mikro-orm/core';
 import { Platform, MongoNamingStrategy, Utils, ReferenceType, MetadataError } from '@mikro-orm/core';
 import { MongoExceptionConverter } from './MongoExceptionConverter';
 import { MongoEntityRepository } from './MongoEntityRepository';
 import { MongoSchemaGenerator } from './MongoSchemaGenerator';
 
 export class MongoPlatform extends Platform {
-
   protected readonly exceptionConverter = new MongoExceptionConverter();
 
   setConfig(config: Configuration) {
@@ -17,7 +13,7 @@ export class MongoPlatform extends Platform {
     super.setConfig(config);
   }
 
-  getNamingStrategy(): { new(): NamingStrategy} {
+  getNamingStrategy(): { new (): NamingStrategy } {
     return MongoNamingStrategy;
   }
 
@@ -26,7 +22,7 @@ export class MongoPlatform extends Platform {
   }
 
   getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): MongoSchemaGenerator {
-    return new MongoSchemaGenerator(em ?? driver as any);
+    return new MongoSchemaGenerator(em ?? (driver as any));
   }
 
   getMigrator(em: EntityManager) {
@@ -93,5 +89,4 @@ export class MongoPlatform extends Platform {
   isAllowedTopLevelOperator(operator: string) {
     return ['$not', '$fulltext'].includes(operator);
   }
-
 }

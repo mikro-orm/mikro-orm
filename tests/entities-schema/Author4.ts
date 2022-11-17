@@ -22,13 +22,11 @@ function randomHook(args: EventArgs<IAuthor4>) {
 }
 
 export class Identity {
-
   constructor(public foo: string, public bar: number) {}
 
   get fooBar() {
     return this.foo + ' ' + this.bar;
   }
-
 }
 
 export const IdentitySchema = new EntitySchema({
@@ -52,10 +50,15 @@ export const Author4 = new EntitySchema<IAuthor4, IBaseEntity5>({
     identities: { type: 'string[]', nullable: true },
     born: { type: DateType, nullable: true, length: 3 },
     bornTime: { type: TimeType, nullable: true, length: 3 },
-    books: { reference: '1:m', type: 'Book4', mappedBy: book => book.author },
+    books: { reference: '1:m', type: 'Book4', mappedBy: (book) => book.author },
     favouriteBook: { reference: 'm:1', type: 'Book4', nullable: true },
     version: { type: 'number', persist: false },
-    identity: { type: 'Identity', reference: ReferenceType.EMBEDDED, nullable: true, object: true },
+    identity: {
+      type: 'Identity',
+      reference: ReferenceType.EMBEDDED,
+      nullable: true,
+      object: true,
+    },
   },
   hooks: {
     onLoad: [randomHook],

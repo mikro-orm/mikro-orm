@@ -1,26 +1,17 @@
-import {
-  Entity,
-  PrimaryKey,
-  Property,
-  MikroORM,
-  UnderscoreNamingStrategy,
-} from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, MikroORM, UnderscoreNamingStrategy } from '@mikro-orm/core';
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import type { MySqlDriver } from '@mikro-orm/mysql';
 
 @Entity()
 class A {
-
   @PrimaryKey()
   id!: number;
 
   @Property()
   prop?: string;
-
 }
 
 describe('GH issue 2930', () => {
-
   describe('postgresql (PK override)', () => {
     let orm: MikroORM<PostgreSqlDriver>;
 
@@ -30,14 +21,12 @@ describe('GH issue 2930', () => {
         dbName: 'mikro_orm_test_gh2930',
         type: 'postgresql',
         namingStrategy: class extends UnderscoreNamingStrategy {
-
           indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check'): string {
             if (type === 'primary') {
               return `pk_${tableName}_${columns.join('_')}`;
             }
             return super.indexName(tableName, columns, type);
           }
-
         },
       });
     });
@@ -59,11 +48,9 @@ describe('GH issue 2930', () => {
         dbName: 'mikro_orm_test_gh2930',
         type: 'postgresql',
         namingStrategy: class extends UnderscoreNamingStrategy {
-
           indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check'): string {
             return super.indexName(tableName, columns, type);
           }
-
         },
       });
     });
@@ -85,14 +72,12 @@ describe('GH issue 2930', () => {
         dbName: 'mikro_orm_test_gh2930',
         type: 'mysql',
         namingStrategy: class extends UnderscoreNamingStrategy {
-
           indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check'): string {
             if (type === 'primary') {
               return `pk_${tableName}_${columns.join('_')}`;
             }
             return super.indexName(tableName, columns, type);
           }
-
         },
       });
     });

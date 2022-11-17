@@ -2,7 +2,6 @@ import { Entity, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class User {
-
   [OptionalProps]?: 'createdAt';
 
   @PrimaryKey()
@@ -19,5 +18,4 @@ export class User {
 
   @Property()
   createdAt: Date = new Date();
-
 }

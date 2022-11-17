@@ -9,7 +9,10 @@ export function Embedded(type: EmbeddedOptions | (() => AnyEntity) = {}, options
     MetadataValidator.validateSingleDecorator(meta, propertyName, ReferenceType.EMBEDDED);
     options = type instanceof Function ? { entity: type, ...options } : { ...type, ...options };
     Utils.defaultValue(options, 'prefix', true);
-    const property = { name: propertyName, reference: ReferenceType.EMBEDDED } as EntityProperty;
+    const property = {
+      name: propertyName,
+      reference: ReferenceType.EMBEDDED,
+    } as EntityProperty;
     meta.properties[propertyName] = Object.assign(property, options);
 
     return Utils.propertyDecoratorReturnValue();

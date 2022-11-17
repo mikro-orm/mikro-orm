@@ -2,42 +2,49 @@ import { Cascade, Collection, Entity, ManyToOne, MikroORM, OneToMany, OneToOne, 
 
 @Entity()
 export class NodeEntity {
-
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => NodeEntity, onDelete: 'cascade', onUpdateIntegrity: 'cascade', nullable: true })
+  @ManyToOne({
+    entity: () => NodeEntity,
+    onDelete: 'cascade',
+    onUpdateIntegrity: 'cascade',
+    nullable: true,
+  })
   parent?: NodeEntity | null;
-
 }
 
 @Entity()
 export class ElementEntity {
-
   [PrimaryKeyType]?: number;
   [PrimaryKeyProp]?: 'node';
 
-  @OneToOne({ entity: () => NodeEntity, primary: true, onDelete: 'cascade', onUpdateIntegrity: 'cascade' })
+  @OneToOne({
+    entity: () => NodeEntity,
+    primary: true,
+    onDelete: 'cascade',
+    onUpdateIntegrity: 'cascade',
+  })
   node!: NodeEntity;
 
-  @OneToMany({ entity: () => DependentEntity, mappedBy: 'element', cascade: [Cascade.ALL] })
+  @OneToMany({
+    entity: () => DependentEntity,
+    mappedBy: 'element',
+    cascade: [Cascade.ALL],
+  })
   dependents = new Collection<DependentEntity>(this);
-
 }
 
 @Entity()
 export class DependentEntity {
-
   @PrimaryKey()
   id!: number;
 
   @ManyToOne(() => ElementEntity, { onDelete: 'cascade' })
   element!: ElementEntity;
-
 }
 
 describe('GH issue 2810', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -78,5 +85,4 @@ describe('GH issue 2810', () => {
 
     await orm.em.persistAndFlush(element);
   });
-
 });

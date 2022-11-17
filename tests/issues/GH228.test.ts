@@ -4,18 +4,15 @@ import { mockLogger } from '../helpers';
 
 @Entity()
 export class B {
-
   @PrimaryKey({ type: 'number' })
   id!: number;
 
   @Property({ type: 'string' })
   name!: string;
-
 }
 
 @Entity()
 export class A {
-
   @PrimaryKey({ type: 'number' })
   id!: number;
 
@@ -24,11 +21,9 @@ export class A {
 
   @ManyToOne(() => B)
   type!: B;
-
 }
 
 describe('GH issue 228', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -52,15 +47,18 @@ describe('GH issue 228', () => {
     orm.em.clear();
 
     const mock = mockLogger(orm, ['query']);
-    await orm.em.findAndCount(A, {}, {
-      orderBy: { type: 'asc' },
-      populate: true,
-    });
+    await orm.em.findAndCount(
+      A,
+      {},
+      {
+        orderBy: { type: 'asc' },
+        populate: true,
+      }
+    );
 
-    const queries: string[] = mock.mock.calls.map(c => c[0]).sort();
+    const queries: string[] = mock.mock.calls.map((c) => c[0]).sort();
     expect(queries).toHaveLength(3);
     expect(queries[0]).toMatch('select `a0`.* from `a` as `a0` order by `a0`.`type_id` asc');
     expect(queries[1]).toMatch('select `b0`.* from `b` as `b0` where `b0`.`id` in (?)');
   });
-
 });

@@ -7,7 +7,6 @@ import { AuthorRepository } from './repositories/AuthorRepository';
 import { BookRepository } from './repositories/BookRepository';
 
 describe('EntityFactory', () => {
-
   let orm: MikroORM;
   let factory: EntityFactory;
 
@@ -48,7 +47,12 @@ describe('EntityFactory', () => {
   });
 
   test('should return entity', async () => {
-    const entity = factory.create(Author, { id: '5b0d19b28b21c648c2c8a600', name: 'test', email: 'mail@test.com', books: { title: 'asd' } });
+    const entity = factory.create(Author, {
+      id: '5b0d19b28b21c648c2c8a600',
+      name: 'test',
+      email: 'mail@test.com',
+      books: { title: 'asd' },
+    });
     expect(entity).toBeInstanceOf(Author);
     expect(entity.id).toBe('5b0d19b28b21c648c2c8a600');
     expect(entity.name).toBe('test');
@@ -60,7 +64,12 @@ describe('EntityFactory', () => {
 
   test('should return embeddable', async () => {
     // we are testing this on Author entity as it does not really matter whether it is an embeddable type or not
-    const data = { id: '5b0d19b28b21c648c2c8a600', name: 'test', email: 'mail@test.com', books: { title: 'asd' } };
+    const data = {
+      id: '5b0d19b28b21c648c2c8a600',
+      name: 'test',
+      email: 'mail@test.com',
+      books: { title: 'asd' },
+    };
     const managedEntity = factory.createEmbeddable(Author, data);
     expect(managedEntity).toBeInstanceOf(Author);
     expect(managedEntity._id).toBeUndefined();
@@ -69,7 +78,9 @@ describe('EntityFactory', () => {
     expect(managedEntity.books).toBeUndefined();
     expect(managedEntity.books).toBeUndefined();
 
-    const newEntity = factory.createEmbeddable(Author, data, { newEntity: true });
+    const newEntity = factory.createEmbeddable(Author, data, {
+      newEntity: true,
+    });
     expect(newEntity).toBeInstanceOf(Author);
     // not available, as we are not hydrating here, just filling constructor parameters
     expect(newEntity._id).toBeUndefined();
@@ -88,7 +99,11 @@ describe('EntityFactory', () => {
   });
 
   test('should return entity without id', async () => {
-    const author = factory.create(Author, { name: 'test', favouriteBook: '5b0d19b28b21c648c2c8a600', email: 'mail@test.com' });
+    const author = factory.create(Author, {
+      name: 'test',
+      favouriteBook: '5b0d19b28b21c648c2c8a600',
+      email: 'mail@test.com',
+    });
     expect(author).toBeInstanceOf(Author);
     expect(author.id).toBeNull();
     expect(author.name).toBe('test');
@@ -101,14 +116,20 @@ describe('EntityFactory', () => {
     // we need to use normal entity manager to have working identity map
     const author = orm.em.getReference(Author, '5b0d19b28b21c648c2c8a600');
     expect(author.id).toBe('5b0d19b28b21c648c2c8a600');
-    const book = orm.em.create(Book, { title: 'book title', author: author.id });
+    const book = orm.em.create(Book, {
+      title: 'book title',
+      author: author.id,
+    });
     expect(book).toBeInstanceOf(Book);
     expect(book.id).toBeNull();
     expect(book.title).toBe('book title');
     expect(book.author).toBe(author);
 
     // try with id of entity that is not managed
-    const book2 = orm.em.create(Book, { title: 'book title', author: '5b0d19b28b21c648c2c8a601' });
+    const book2 = orm.em.create(Book, {
+      title: 'book title',
+      author: '5b0d19b28b21c648c2c8a601',
+    });
     expect(book2).toBeInstanceOf(Book);
     expect(book2.id).toBeNull();
     expect(book2.title).toBe('book title');
@@ -127,7 +148,10 @@ describe('EntityFactory', () => {
     expect(p2.name).toBeUndefined();
     expect(p2.books).toBeInstanceOf(Collection);
     expect(p2.tests).toBeInstanceOf(Collection);
-    const p3 = factory.create(Publisher, { id: '5b0d19b28b21c648c2c8a602', name: 'test' });
+    const p3 = factory.create(Publisher, {
+      id: '5b0d19b28b21c648c2c8a602',
+      name: 'test',
+    });
     expect(p3).toBeInstanceOf(Publisher);
     expect(p3.name).toBe('test');
     expect(p3.books).toBeInstanceOf(Collection);
@@ -195,9 +219,17 @@ describe('EntityFactory', () => {
 
   test('create entity from nested object', async () => {
     const repo = orm.em.getRepository(Author);
-    const a1 = repo.create({ name: 'Jon', email: 'jon@snow.com', books: [
-      { title: 'B1', publisher: '5b0d19b28b21c648c2c8a600', tags: [{ name: 't1' }, '5b0d19b28b21c648c2c8a601'] },
-    ] });
+    const a1 = repo.create({
+      name: 'Jon',
+      email: 'jon@snow.com',
+      books: [
+        {
+          title: 'B1',
+          publisher: '5b0d19b28b21c648c2c8a600',
+          tags: [{ name: 't1' }, '5b0d19b28b21c648c2c8a601'],
+        },
+      ],
+    });
 
     expect(a1.name).toBe('Jon');
     expect(a1.email).toBe('jon@snow.com');
@@ -226,9 +258,15 @@ describe('EntityFactory', () => {
     mock.mock.calls.length = 0;
 
     const a2 = repo.create({ name: 'Jon', email: 'jon2@snow.com' });
-    repo.assign(a2, { books: [
-      { title: 'B1', publisher: '5b0d19b28b21c648c2c8a600', tags: [{ name: 't1' }, '5b0d19b28b21c648c2c8a601'] },
-    ] });
+    repo.assign(a2, {
+      books: [
+        {
+          title: 'B1',
+          publisher: '5b0d19b28b21c648c2c8a600',
+          tags: [{ name: 't1' }, '5b0d19b28b21c648c2c8a601'],
+        },
+      ],
+    });
 
     expect(a2.name).toBe('Jon');
     expect(a2.email).toBe('jon2@snow.com');
@@ -266,7 +304,5 @@ describe('EntityFactory', () => {
     expect(entity.age).toEqual(21);
   });
 
-
   afterAll(async () => orm.close(true));
-
 });

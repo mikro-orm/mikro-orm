@@ -13,4 +13,4 @@ export function Formula<T>(formula: string | ((alias: string) => string), option
   };
 }
 
-export interface FormulaOptions<T> extends PropertyOptions<T> { }
+export interface FormulaOptions<T> extends PropertyOptions<T> {}

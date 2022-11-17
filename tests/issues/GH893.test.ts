@@ -3,7 +3,6 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { v4 } from 'uuid';
 
 abstract class Base {
-
   @PrimaryKey()
   id!: string;
 
@@ -11,27 +10,21 @@ abstract class Base {
   definePrimaryKey() {
     this.id = v4();
   }
-
 }
 
 @Entity()
 class Publisher extends Base {
-
   @OneToMany('Book', (b: Book) => b.publisher)
   books = new Collection<Book>(this);
-
 }
 
 @Entity()
 class Book extends Base {
-
   @ManyToOne(() => Publisher, { nullable: true })
   publisher?: Publisher;
-
 }
 
 describe('GH issue 893', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -56,5 +49,4 @@ describe('GH issue 893', () => {
     const reloadedBook = await orm.em.findOne(Book, { id: book.id });
     expect(reloadedBook?.publisher).not.toBeNull();
   });
-
 });

@@ -1,13 +1,15 @@
 import { initORMSqlite } from '../../bootstrap';
 
 describe('SchemaGenerator [sqlite]', () => {
-
   test('generate schema from metadata [sqlite]', async () => {
     const orm = await initORMSqlite();
     const dump = await orm.schema.generate();
     expect(dump).toMatchSnapshot('sqlite-schema-dump');
 
-    const dropDump = await orm.schema.getDropSchemaSQL({ wrap: false, dropMigrationsTable: true });
+    const dropDump = await orm.schema.getDropSchemaSQL({
+      wrap: false,
+      dropMigrationsTable: true,
+    });
     expect(dropDump).toMatchSnapshot('sqlite-drop-schema-dump-1');
     await orm.schema.execute(dropDump, { wrap: true });
 
@@ -36,5 +38,4 @@ describe('SchemaGenerator [sqlite]', () => {
 
     await orm.close(true);
   });
-
 });

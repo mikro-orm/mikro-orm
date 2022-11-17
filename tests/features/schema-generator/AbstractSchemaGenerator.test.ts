@@ -1,10 +1,9 @@
 import { AbstractSchemaGenerator, Configuration } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
-class MySchemaGenerator extends AbstractSchemaGenerator<any> { }
+class MySchemaGenerator extends AbstractSchemaGenerator<any> {}
 
 describe('AbstractSchemaGenerator', () => {
-
   test('default validations for not implemented methods', async () => {
     const config = new Configuration({ type: 'sqlite' }, false);
     const driver = new SqliteDriver(config);
@@ -23,5 +22,4 @@ describe('AbstractSchemaGenerator', () => {
     await expect(generator.execute('')).rejects.toThrowError('This method is not supported by SqliteDriver driver');
     await expect(generator.ensureIndexes()).rejects.toThrowError('This method is not supported by SqliteDriver driver');
   });
-
 });

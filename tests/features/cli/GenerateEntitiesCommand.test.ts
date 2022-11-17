@@ -14,7 +14,6 @@ const dumpMock = jest.spyOn(CLIHelper, 'dump');
 dumpMock.mockImplementation(() => void 0);
 
 describe('GenerateEntitiesCommand', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -32,11 +31,20 @@ describe('GenerateEntitiesCommand', () => {
     cmd.builder(args as any);
     expect(args.option.mock.calls.length).toBe(4);
     expect(args.option.mock.calls[0][0]).toBe('s');
-    expect(args.option.mock.calls[0][1]).toMatchObject({ alias: 'save', type: 'boolean' });
+    expect(args.option.mock.calls[0][1]).toMatchObject({
+      alias: 'save',
+      type: 'boolean',
+    });
     expect(args.option.mock.calls[1][0]).toBe('d');
-    expect(args.option.mock.calls[1][1]).toMatchObject({ alias: 'dump', type: 'boolean' });
+    expect(args.option.mock.calls[1][1]).toMatchObject({
+      alias: 'dump',
+      type: 'boolean',
+    });
     expect(args.option.mock.calls[2][0]).toBe('p');
-    expect(args.option.mock.calls[2][1]).toMatchObject({ alias: 'path', type: 'string' });
+    expect(args.option.mock.calls[2][1]).toMatchObject({
+      alias: 'path',
+      type: 'string',
+    });
   });
 
   test('handler', async () => {
@@ -56,5 +64,4 @@ describe('GenerateEntitiesCommand', () => {
     expect(generate.mock.calls.length).toBe(2);
     expect(closeSpy).toBeCalledTimes(2);
   });
-
 });

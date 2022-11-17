@@ -3,7 +3,6 @@ import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Embeddable()
 export class Fiz {
-
   constructor(name: string, baz: any) {
     this.name = name;
     this._baz = baz;
@@ -14,12 +13,10 @@ export class Fiz {
 
   @ManyToOne({ entity: () => BazEntity, eager: true })
   _baz: any;
-
 }
 
 @Embeddable()
 export class Bar {
-
   constructor(name: string, fiz: Fiz[]) {
     this.name = name;
     this._fiz = fiz;
@@ -30,12 +27,10 @@ export class Bar {
 
   @Embedded(() => Fiz, { array: true })
   _fiz: Fiz[] = [];
-
 }
 
 @Entity()
 export class BazEntity {
-
   constructor(name: string) {
     this.name = name;
   }
@@ -45,12 +40,10 @@ export class BazEntity {
 
   @Property()
   name: string;
-
 }
 
 @Entity()
 export class FooEntity {
-
   constructor(bar: Bar[]) {
     this._bar = bar;
   }
@@ -60,7 +53,6 @@ export class FooEntity {
 
   @Embedded(() => Bar, { array: true })
   _bar: Bar[] = [];
-
 }
 
 function removeUnderscorePrefix(value: string): string {
@@ -70,7 +62,6 @@ function removeUnderscorePrefix(value: string): string {
 }
 
 export class CustomNamingStrategy extends UnderscoreNamingStrategy {
-
   joinColumnName(propertyName: string): string {
     return removeUnderscorePrefix(super.joinColumnName(propertyName));
   }
@@ -86,11 +77,9 @@ export class CustomNamingStrategy extends UnderscoreNamingStrategy {
   referenceColumnName(): string {
     return removeUnderscorePrefix(super.referenceColumnName());
   }
-
 }
 
 describe('GH issue 2948', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -108,16 +97,7 @@ describe('GH issue 2948', () => {
   });
 
   test(`GH issue 2948`, async () => {
-    const foo = new FooEntity([
-      new Bar('bar1', [
-        new Fiz('fiz-1-1', new BazEntity('baz-1-1-1')),
-        new Fiz('fiz-1-2', new BazEntity('baz-1-2-1')),
-      ]),
-      new Bar('bar2', [
-        new Fiz('fiz-2-1', new BazEntity('baz-2-1-1')),
-        new Fiz('fiz-2-2', new BazEntity('baz-2-2-1')),
-      ]),
-    ]);
+    const foo = new FooEntity([new Bar('bar1', [new Fiz('fiz-1-1', new BazEntity('baz-1-1-1')), new Fiz('fiz-1-2', new BazEntity('baz-1-2-1'))]), new Bar('bar2', [new Fiz('fiz-2-1', new BazEntity('baz-2-1-1')), new Fiz('fiz-2-2', new BazEntity('baz-2-2-1'))])]);
     await orm.em.fork().persist(foo).flush();
 
     const [foo2] = await orm.em.find(FooEntity, {}, { populate: true });
@@ -133,5 +113,4 @@ describe('GH issue 2948', () => {
     expect(foo1._bar[1]._fiz[0]._baz.name).toBeDefined();
     await expect(foo1._bar[1]._fiz[1]._baz.name).toBeDefined();
   });
-
 });

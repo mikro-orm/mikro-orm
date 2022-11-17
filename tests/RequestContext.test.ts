@@ -5,10 +5,9 @@ import { initORMMongo } from './bootstrap';
 import { Author, Book } from './entities';
 
 describe('RequestContext', () => {
-
   let orm: MikroORM;
 
-  beforeAll(async () => orm = await initORMMongo());
+  beforeAll(async () => (orm = await initORMMongo()));
   beforeEach(async () => orm.schema.clearDatabase());
 
   test('create new context', async () => {
@@ -49,10 +48,12 @@ describe('RequestContext', () => {
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 
-    await new Promise<void>(resolve => {
+    await new Promise<void>((resolve) => {
       RequestContext.create(orm.em, async () => {
         const em = RequestContext.getEntityManager()!;
-        const jon = await em.findOne(Author, author.id, { populate: ['favouriteBook'] });
+        const jon = await em.findOne(Author, author.id, {
+          populate: ['favouriteBook'],
+        });
         expect(jon!.favouriteBook).toBeInstanceOf(Book);
         expect(wrap(jon!.favouriteBook).isInitialized()).toBe(true);
         expect(jon!.favouriteBook!.title).toBe('Bible');
@@ -62,11 +63,9 @@ describe('RequestContext', () => {
   });
 
   afterAll(async () => orm.close(true));
-
 });
 
 describe('MultiRequestContext', () => {
-
   let orm1: MikroORM<SqliteDriver>;
   let orm2: MikroORM<SqliteDriver>;
 
@@ -136,5 +135,4 @@ describe('MultiRequestContext', () => {
     await orm1.close(true);
     await orm2.close(true);
   });
-
 });

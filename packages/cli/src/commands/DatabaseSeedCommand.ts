@@ -3,7 +3,6 @@ import { colors } from '@mikro-orm/core';
 import { CLIHelper } from '../CLIHelper';
 
 export class DatabaseSeedCommand<T> implements CommandModule<T, { class: string }> {
-
   command = 'seeder:run';
   describe = 'Seed the database using the seeder class';
   builder = (args: Argv<T>) => {
@@ -25,5 +24,4 @@ export class DatabaseSeedCommand<T> implements CommandModule<T, { class: string 
     CLIHelper.dump(colors.green(`Seeder ${className} successfully executed`));
     await orm.close(true);
   }
-
 }

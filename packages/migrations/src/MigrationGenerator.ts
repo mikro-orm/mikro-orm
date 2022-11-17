@@ -4,10 +4,7 @@ import { Utils } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 
 export abstract class MigrationGenerator implements IMigrationGenerator {
-
-  constructor(protected readonly driver: AbstractSqlDriver,
-              protected readonly namingStrategy: NamingStrategy,
-              protected readonly options: MigrationsOptions) { }
+  constructor(protected readonly driver: AbstractSqlDriver, protected readonly namingStrategy: NamingStrategy, protected readonly options: MigrationsOptions) {}
 
   /**
    * @inheritDoc
@@ -17,7 +14,7 @@ export abstract class MigrationGenerator implements IMigrationGenerator {
     const defaultPath = this.options.emit === 'ts' && this.options.pathTs ? this.options.pathTs : this.options.path!;
     path = Utils.normalizePath(this.driver.config.get('baseDir'), path ?? defaultPath);
     await ensureDir(path);
-    const timestamp = new Date().toISOString().replace(/[-T:]|\.\d{3}z$/ig, '');
+    const timestamp = new Date().toISOString().replace(/[-T:]|\.\d{3}z$/gi, '');
     const className = this.namingStrategy.classToMigrationName(timestamp);
     const fileName = `${this.options.fileName!(timestamp)}.${this.options.emit}`;
     const ret = this.generateMigrationFile(className, diff);
@@ -32,7 +29,7 @@ export abstract class MigrationGenerator implements IMigrationGenerator {
   createStatement(sql: string, padLeft: number): string {
     if (sql) {
       const padding = ' '.repeat(padLeft);
-      return `${padding}this.addSql('${sql.replace(/['\\]/g, '\\\'')}');\n`;
+      return `${padding}this.addSql('${sql.replace(/['\\]/g, "\\'")}');\n`;
     }
 
     return '\n';
@@ -42,5 +39,4 @@ export abstract class MigrationGenerator implements IMigrationGenerator {
    * @inheritDoc
    */
   abstract generateMigrationFile(className: string, diff: { up: string[]; down: string[] }): string;
-
 }

@@ -2,8 +2,7 @@ import { EntitySchema, MikroORM, Type, ValidationError } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 
 export class DateTime {
-
-  constructor(private readonly date = new Date()) { }
+  constructor(private readonly date = new Date()) {}
 
   toDate() {
     return this.date;
@@ -12,7 +11,6 @@ export class DateTime {
   static fromString(d: string) {
     return new DateTime(new Date(d));
   }
-
 }
 
 type Maybe<T> = T | null | undefined;
@@ -22,7 +20,6 @@ export type TimestampTypeOptions = {
 };
 
 export class DateTimeType extends Type<Maybe<DateTime>, Maybe<Date>> {
-
   convertToDatabaseValue(value: unknown): Maybe<Date> {
     if (value === undefined || value === null || value instanceof Date) {
       return value;
@@ -50,15 +47,12 @@ export class DateTimeType extends Type<Maybe<DateTime>, Maybe<Date>> {
   getColumnType(): string {
     return 'timestamptz';
   }
-
 }
 
 export class Test {
-
   id!: string;
   createdAt!: DateTime;
   updatedAt!: DateTime;
-
 }
 
 export const TestSchema = new EntitySchema<Test>({
@@ -83,9 +77,7 @@ export const TestSchema = new EntitySchema<Test>({
 });
 
 export class Test2 {
-
   id!: string;
-
 }
 
 export const TestSchema2 = new EntitySchema<Test2>({
@@ -99,7 +91,6 @@ export const TestSchema2 = new EntitySchema<Test2>({
 });
 
 describe('GH issue 725', () => {
-
   test('mapping values from returning statement to custom types', async () => {
     const orm = await MikroORM.init<AbstractSqlDriver>({
       entities: [TestSchema],
@@ -144,5 +135,4 @@ describe('GH issue 725', () => {
     expect(() => orm.em.persist(test)).toThrowError(err);
     await orm.close();
   });
-
 });

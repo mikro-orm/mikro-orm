@@ -1,20 +1,8 @@
-import {
-  Collection,
-  Entity,
-  IdentifiedReference,
-  LoadStrategy,
-  ManyToOne,
-  MikroORM,
-  OneToMany, OptionalProps,
-  PrimaryKey,
-  Property,
-  QueryOrder,
-} from '@mikro-orm/core';
+import { Collection, Entity, IdentifiedReference, LoadStrategy, ManyToOne, MikroORM, OneToMany, OptionalProps, PrimaryKey, Property, QueryOrder } from '@mikro-orm/core';
 import type { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class D {
-
   [OptionalProps]?: 'c';
 
   @PrimaryKey()
@@ -24,17 +12,15 @@ export class D {
   order!: number;
 
   @ManyToOne({
-      entity: () => C,
+    entity: () => C,
     wrappedReference: true,
     nullable: true,
   })
   c?: IdentifiedReference<C>;
-
 }
 
 @Entity()
 export class C {
-
   @PrimaryKey()
   id!: number;
 
@@ -42,27 +28,21 @@ export class C {
   order!: number;
 
   @ManyToOne({
-      entity: () => B,
+    entity: () => B,
     wrappedReference: true,
     nullable: true,
   })
   b?: IdentifiedReference<B>;
 
-  @OneToMany(
-    () => D,
-    optionOption => optionOption.c,
-    {
-      eager: true,
-      orderBy: { order: QueryOrder.ASC, id: QueryOrder.ASC },
-    },
-  )
+  @OneToMany(() => D, (optionOption) => optionOption.c, {
+    eager: true,
+    orderBy: { order: QueryOrder.ASC, id: QueryOrder.ASC },
+  })
   ds = new Collection<D>(this);
-
 }
 
 @Entity()
 export class B {
-
   @PrimaryKey()
   id!: number;
 
@@ -70,44 +50,32 @@ export class B {
   order!: number;
 
   @ManyToOne({
-      entity: () => A,
+    entity: () => A,
     wrappedReference: true,
     nullable: true,
   })
   a?: IdentifiedReference<A>;
 
-  @OneToMany(
-    () => C,
-    option => option.b,
-    {
-      eager: true,
-      orderBy: { order: QueryOrder.ASC, id: QueryOrder.ASC },
-    },
-  )
+  @OneToMany(() => C, (option) => option.b, {
+    eager: true,
+    orderBy: { order: QueryOrder.ASC, id: QueryOrder.ASC },
+  })
   cs = new Collection<C>(this);
-
 }
 
 @Entity()
 export class A {
-
   @PrimaryKey()
   id!: number;
 
-  @OneToMany(
-    () => B,
-    radio => radio.a,
-    {
-      eager: true,
-      orderBy: { order: QueryOrder.ASC, id: QueryOrder.ASC },
-    },
-  )
+  @OneToMany(() => B, (radio) => radio.a, {
+    eager: true,
+    orderBy: { order: QueryOrder.ASC, id: QueryOrder.ASC },
+  })
   bs = new Collection<B>(this);
-
 }
 
 describe('GH issue 1331', () => {
-
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
@@ -156,11 +124,10 @@ describe('GH issue 1331', () => {
     orm.em.clear();
 
     const loadedA = await orm.em.findOneOrFail(A, a.id);
-    expect(loadedA.bs.getItems().map(b => b.order)).toStrictEqual([0, 1, 2]);
-    expect(loadedA.bs[0].cs.getIdentifiers('order')).toEqual([1,  3, 4]);
+    expect(loadedA.bs.getItems().map((b) => b.order)).toStrictEqual([0, 1, 2]);
+    expect(loadedA.bs[0].cs.getIdentifiers('order')).toEqual([1, 3, 4]);
     expect(loadedA.bs[2].cs.getIdentifiers('order')).toEqual([2, 5, 11]);
     expect(loadedA.bs[1].cs.getIdentifiers('order')).toEqual([0, 1, 4]);
     expect(loadedA.bs[0].cs[1].ds.getIdentifiers('order')).toEqual([2, 5, 11]);
   });
-
 });

@@ -7,7 +7,6 @@ import { Book3Seeder } from '../../database/seeder/book3.seeder';
 import { Author3Seeder } from '../../database/seeder/author3.seeder';
 
 describe('Seeder', () => {
-
   let orm: MikroORM;
 
   beforeAll(async () => {
@@ -80,5 +79,4 @@ describe('Seeder', () => {
     expect(fileContents).toContain('exports.Publisher3Seeder = Publisher3Seeder;');
     await remove(seederFile);
   });
-
 });
