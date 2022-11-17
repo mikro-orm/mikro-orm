@@ -334,7 +334,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   getManagementDbName(): string {
-    return '';
+    return this.platform.getConfig().get('schemaGenerator', {} as Dictionary).managementDbName ?? 'postgres';
   }
 
   disableForeignKeysSQL(): string {

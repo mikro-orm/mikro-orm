@@ -530,6 +530,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
     disableForeignKeys?: boolean;
     createForeignKeyConstraints?: boolean;
     ignoreSchema?: string[];
+    managementDbName?: string;
   };
   entityGenerator: {
     bidirectionalRelations?: boolean;
