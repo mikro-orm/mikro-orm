@@ -3016,6 +3016,7 @@ __metadata:
     mongodb-memory-server: ^8.8.0
     node-gyp: ^9.0.0
     rimraf: 3.0.2
+    rome: 10.0.1
     sql-formatter: 8.0.2
     ts-jest: 29.0.3
     ts-node: 10.9.1
@@ -3471,6 +3472,48 @@ __metadata:
   peerDependencies:
     typescript: ^3 || ^4
   checksum: 64eb6d90aafa889f62fe73d128b7be2b3295dffde4d5dff63bad75d512b6bc1d8419d8fc784a1a60b45aba4cda2eaf6e233bf59797a1d91b26fac27d99dae047
+  languageName: node
+  linkType: hard
+
+"@rometools/cli-darwin-arm64@npm:10.0.1":
+  version: 10.0.1
+  resolution: "@rometools/cli-darwin-arm64@npm:10.0.1"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@rometools/cli-darwin-x64@npm:10.0.1":
+  version: 10.0.1
+  resolution: "@rometools/cli-darwin-x64@npm:10.0.1"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@rometools/cli-linux-arm64@npm:10.0.1":
+  version: 10.0.1
+  resolution: "@rometools/cli-linux-arm64@npm:10.0.1"
+  conditions: os=linux & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@rometools/cli-linux-x64@npm:10.0.1":
+  version: 10.0.1
+  resolution: "@rometools/cli-linux-x64@npm:10.0.1"
+  conditions: os=linux & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@rometools/cli-win32-arm64@npm:10.0.1":
+  version: 10.0.1
+  resolution: "@rometools/cli-win32-arm64@npm:10.0.1"
+  conditions: os=win32 & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@rometools/cli-win32-x64@npm:10.0.1":
+  version: 10.0.1
+  resolution: "@rometools/cli-win32-x64@npm:10.0.1"
+  conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
@@ -6236,7 +6279,7 @@ __metadata:
 
 "fsevents@patch:fsevents@^2.3.2#~builtin<compat/fsevents>, fsevents@patch:fsevents@~2.3.2#~builtin<compat/fsevents>":
   version: 2.3.2
-  resolution: "fsevents@patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=18f3a7"
+  resolution: "fsevents@patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=df0bf1"
   dependencies:
     node-gyp: latest
   conditions: os=darwin
@@ -10181,7 +10224,7 @@ __metadata:
 
 "resolve@patch:resolve@^1.10.0#~builtin<compat/resolve>, resolve@patch:resolve@^1.20.0#~builtin<compat/resolve>":
   version: 1.22.1
-  resolution: "resolve@patch:resolve@npm%3A1.22.1#~builtin<compat/resolve>::version=1.22.1&hash=07638b"
+  resolution: "resolve@patch:resolve@npm%3A1.22.1#~builtin<compat/resolve>::version=1.22.1&hash=c3c19d"
   dependencies:
     is-core-module: ^2.9.0
     path-parse: ^1.0.7
@@ -10242,6 +10285,35 @@ __metadata:
   bin:
     rimraf: ./bin.js
   checksum: cdc7f6eacb17927f2a075117a823e1c5951792c6498ebcce81ca8203454a811d4cf8900314154d3259bb8f0b42ab17f67396a8694a54cae3283326e57ad250cd
+  languageName: node
+  linkType: hard
+
+"rome@npm:10.0.1":
+  version: 10.0.1
+  resolution: "rome@npm:10.0.1"
+  dependencies:
+    "@rometools/cli-darwin-arm64": 10.0.1
+    "@rometools/cli-darwin-x64": 10.0.1
+    "@rometools/cli-linux-arm64": 10.0.1
+    "@rometools/cli-linux-x64": 10.0.1
+    "@rometools/cli-win32-arm64": 10.0.1
+    "@rometools/cli-win32-x64": 10.0.1
+  dependenciesMeta:
+    "@rometools/cli-darwin-arm64":
+      optional: true
+    "@rometools/cli-darwin-x64":
+      optional: true
+    "@rometools/cli-linux-arm64":
+      optional: true
+    "@rometools/cli-linux-x64":
+      optional: true
+    "@rometools/cli-win32-arm64":
+      optional: true
+    "@rometools/cli-win32-x64":
+      optional: true
+  bin:
+    rome: bin/rome
+  checksum: 330dddb82b86c9f57601f8c8182553fd9bdcae886c2a392bed3cd7a1e879e64a7371d270db6e1aee81137f3ee7d2c902ab447fb6e16f7436ecb5d34a81cf194f
   languageName: node
   linkType: hard
 
@@ -11298,7 +11370,7 @@ __metadata:
 
 "typescript@patch:typescript@4.8.4#~builtin<compat/typescript>, typescript@patch:typescript@^3 || ^4#~builtin<compat/typescript>, typescript@patch:typescript@^4.6.4#~builtin<compat/typescript>":
   version: 4.8.4
-  resolution: "typescript@patch:typescript@npm%3A4.8.4#~builtin<compat/typescript>::version=4.8.4&hash=701156"
+  resolution: "typescript@patch:typescript@npm%3A4.8.4#~builtin<compat/typescript>::version=4.8.4&hash=0102e9"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
