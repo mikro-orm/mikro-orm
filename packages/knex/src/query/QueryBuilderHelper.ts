@@ -614,7 +614,7 @@ export class QueryBuilderHelper {
   updateVersionProperty(qb: Knex.QueryBuilder, data: Dictionary): void {
     const meta = this.metadata.find(this.entityName);
 
-    if (!meta || !meta.versionProperty || meta.versionProperty in data) {
+    if (!meta?.versionProperty || meta.versionProperty in data) {
       return;
     }
 

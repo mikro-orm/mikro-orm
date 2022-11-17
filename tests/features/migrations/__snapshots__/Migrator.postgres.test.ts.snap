@@ -431,7 +431,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table
                    "custom"."book2"
                  alter column
-                   "double" type double precision using ("double" :: double precision);');
+                   "double" type double precision using ("double"::double precision);');
     this.addSql('alter table
                    "custom"."book2" drop column "foo";');
 
@@ -447,7 +447,7 @@ export class Migration20191013214813 extends Migration {
     this.addSql('alter table
                    "custom"."book2"
                  alter column
-                   "double" type numeric using ("double" :: numeric);');
+                   "double" type numeric using ("double"::numeric);');
 
     this.addSql('alter table
                    "custom"."test2"

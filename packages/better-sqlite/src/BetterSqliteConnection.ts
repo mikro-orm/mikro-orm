@@ -91,7 +91,7 @@ export class BetterSqliteConnection extends AbstractSqlConnection {
 
       return new Promise((resolve: any, reject: any) => {
         /* istanbul ignore if */
-        if (!connection || !connection[callMethod]) {
+        if (!connection?.[callMethod]) {
           return reject(new Error(`Error calling ${callMethod} on connection.`));
         }
 

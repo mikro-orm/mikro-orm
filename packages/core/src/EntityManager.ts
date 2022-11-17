@@ -260,7 +260,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   protected applyDiscriminatorCondition<T extends object>(entityName: string, where: FilterQuery<T>): FilterQuery<T> {
     const meta = this.metadata.find(entityName);
 
-    if (!meta || !meta.discriminatorValue) {
+    if (!meta?.discriminatorValue) {
       return where;
     }
 
