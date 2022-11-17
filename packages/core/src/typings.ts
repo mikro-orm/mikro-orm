@@ -683,6 +683,7 @@ type LoadedLoadable<T, E extends object> = T extends Collection<any, any>
   : (T extends Reference<any> ? T & LoadedReference<E> : T & E);
 
 type Prefix<K> = K extends `${infer S}.${string}` ? S : K;
+type IsPrefixed<K, L extends string> = K extends Prefix<L> ? K : never;
 type Suffix<K> = K extends `${string}.${infer S}` ? S : never;
 type Defined<T> = Exclude<T, null | undefined>;
 
@@ -690,9 +691,7 @@ type Defined<T> = Exclude<T, null | undefined>;
 //   1. It yes, mark the collection or reference loaded and resolve its inner type recursively (passing suffix).
 //   2. If no, just return it as-is (scalars will be included, loadables too but not loaded).
 export type Loaded<T, L extends string = never> = T & {
-  [K in keyof T]: K extends Prefix<L>
-    ? LoadedLoadable<T[K], Loaded<ExtractType<T[K]>, Suffix<L>>>
-    : T[K]
+  [K in keyof T as IsPrefixed<K, L>]: LoadedLoadable<T[K], Loaded<ExtractType<T[K]>, Suffix<L>>>;
 };
 
 export interface LoadedReference<T> extends Reference<Defined<T>> {
