@@ -4,20 +4,18 @@ import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { CLIHelper } from '../CLIHelper';
 
 export class CreateDatabaseCommand implements CommandModule {
+	command = 'database:create';
+	describe = 'Create your database if it does not exist';
 
-  command = 'database:create';
-  describe = 'Create your database if it does not exist';
+	/**
+	 * @inheritDoc
+	 */
+	async handler(args: ArgumentsCamelCase) {
+		const orm = (await CLIHelper.getORM()) as MikroORM<AbstractSqlDriver>;
 
-  /**
-   * @inheritDoc
-   */
-  async handler(args: ArgumentsCamelCase) {
-    const orm = await CLIHelper.getORM() as MikroORM<AbstractSqlDriver>;
+		const schemaGenerator = orm.getSchemaGenerator();
+		await schemaGenerator.ensureDatabase();
 
-    const schemaGenerator = orm.getSchemaGenerator();
-    await schemaGenerator.ensureDatabase();
-
-    await orm.close(true);
-  }
-
+		await orm.close(true);
+	}
 }

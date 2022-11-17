@@ -5,7 +5,7 @@ export * from './MariaDbPlatform';
 export * from './MariaDbDriver';
 export * from './MariaDbExceptionConverter';
 export {
-  MariaDbMikroORM as MikroORM,
-  MariaDbOptions as Options,
-  defineMariaDbConfig as defineConfig,
+	MariaDbMikroORM as MikroORM,
+	MariaDbOptions as Options,
+	defineMariaDbConfig as defineConfig,
 } from './MariaDbMikroORM';

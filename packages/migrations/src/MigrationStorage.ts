@@ -5,112 +5,111 @@ import * as path from 'path';
 import type { MigrationRow } from './typings';
 
 export class MigrationStorage implements UmzugStorage {
+	private readonly connection = this.driver.getConnection();
+	private readonly helper = this.driver.getPlatform().getSchemaHelper()!;
+	private masterTransaction?: Transaction;
 
-  private readonly connection = this.driver.getConnection();
-  private readonly helper = this.driver.getPlatform().getSchemaHelper()!;
-  private masterTransaction?: Transaction;
+	constructor(protected readonly driver: AbstractSqlDriver, protected readonly options: MigrationsOptions) {}
 
-  constructor(protected readonly driver: AbstractSqlDriver,
-              protected readonly options: MigrationsOptions) { }
+	async executed(): Promise<string[]> {
+		const migrations = await this.getExecutedMigrations();
+		return migrations.map(({ name }) => `${this.getMigrationName(name)}`);
+	}
 
-  async executed(): Promise<string[]> {
-    const migrations = await this.getExecutedMigrations();
-    return migrations.map(({ name }) => `${this.getMigrationName(name)}`);
-  }
+	async logMigration(params: MigrationParams<any>): Promise<void> {
+		const { tableName, schemaName } = this.getTableName();
+		const name = this.getMigrationName(params.name);
+		await this.driver.nativeInsert(tableName, { name }, { schema: schemaName, ctx: this.masterTransaction });
+	}
 
-  async logMigration(params: MigrationParams<any>): Promise<void> {
-    const { tableName, schemaName } = this.getTableName();
-    const name = this.getMigrationName(params.name);
-    await this.driver.nativeInsert(tableName, { name }, { schema: schemaName, ctx: this.masterTransaction });
-  }
+	async unlogMigration(params: MigrationParams<any>): Promise<void> {
+		const { tableName, schemaName } = this.getTableName();
+		const withoutExt = this.getMigrationName(params.name);
+		const qb = this.knex.delete().from(tableName).withSchema(schemaName).where('name', 'in', [params.name, withoutExt]);
 
-  async unlogMigration(params: MigrationParams<any>): Promise<void> {
-    const { tableName, schemaName } = this.getTableName();
-    const withoutExt = this.getMigrationName(params.name);
-    const qb = this.knex.delete().from(tableName).withSchema(schemaName).where('name', 'in', [params.name, withoutExt]);
+		if (this.masterTransaction) {
+			qb.transacting(this.masterTransaction);
+		}
 
-    if (this.masterTransaction) {
-      qb.transacting(this.masterTransaction);
-    }
+		await this.connection.execute(qb);
+	}
 
-    await this.connection.execute(qb);
-  }
+	async getExecutedMigrations(): Promise<MigrationRow[]> {
+		const { tableName, schemaName } = this.getTableName();
+		const qb = this.knex.select('*').from(tableName).withSchema(schemaName).orderBy('id', 'asc');
 
-  async getExecutedMigrations(): Promise<MigrationRow[]> {
-    const { tableName, schemaName } = this.getTableName();
-    const qb = this.knex.select('*').from(tableName).withSchema(schemaName).orderBy('id', 'asc');
+		if (this.masterTransaction) {
+			qb.transacting(this.masterTransaction);
+		}
 
-    if (this.masterTransaction) {
-      qb.transacting(this.masterTransaction);
-    }
+		const res = await this.connection.execute<MigrationRow[]>(qb);
 
-    const res = await this.connection.execute<MigrationRow[]>(qb);
+		return res.map((row) => {
+			if (typeof row.executed_at === 'string') {
+				row.executed_at = new Date(row.executed_at);
+			}
 
-    return res.map(row => {
-      if (typeof row.executed_at === 'string') {
-        row.executed_at = new Date(row.executed_at);
-      }
+			return row;
+		});
+	}
 
-      return row;
-    });
-  }
+	async ensureTable(): Promise<void> {
+		const tables = await this.connection.execute<Table[]>(this.helper.getListTablesSQL(), [], 'all', this.masterTransaction);
+		const { tableName, schemaName } = this.getTableName();
 
-  async ensureTable(): Promise<void> {
-    const tables = await this.connection.execute<Table[]>(this.helper.getListTablesSQL(), [], 'all', this.masterTransaction);
-    const { tableName, schemaName } = this.getTableName();
+		if (tables.find((t) => t.table_name === tableName && (!t.schema_name || t.schema_name === schemaName))) {
+			return;
+		}
 
-    if (tables.find(t => t.table_name === tableName && (!t.schema_name || t.schema_name === schemaName))) {
-      return;
-    }
+		const schemas = await this.helper.getNamespaces(this.connection);
 
-    const schemas = await this.helper.getNamespaces(this.connection);
+		if (schemaName && !schemas.includes(schemaName)) {
+			await this.knex.schema.createSchema(schemaName);
+		}
 
-    if (schemaName && !schemas.includes(schemaName)) {
-      await this.knex.schema.createSchema(schemaName);
-    }
+		await this.knex.schema
+			.createTable(tableName, (table) => {
+				table.increments();
+				table.string('name');
+				table.dateTime('executed_at').defaultTo(this.knex.fn.now());
+			})
+			.withSchema(schemaName);
+	}
 
-    await this.knex.schema.createTable(tableName, table => {
-      table.increments();
-      table.string('name');
-      table.dateTime('executed_at').defaultTo(this.knex.fn.now());
-    }).withSchema(schemaName);
-  }
+	setMasterMigration(trx: Transaction) {
+		this.masterTransaction = trx;
+	}
 
-  setMasterMigration(trx: Transaction) {
-    this.masterTransaction = trx;
-  }
+	unsetMasterMigration() {
+		delete this.masterTransaction;
+	}
 
-  unsetMasterMigration() {
-    delete this.masterTransaction;
-  }
+	/**
+	 * @internal
+	 */
+	getMigrationName(name: string) {
+		const parsedName = path.parse(name);
 
-  /**
-   * @internal
-   */
-  getMigrationName(name: string) {
-    const parsedName = path.parse(name);
+		if (['.js', '.ts'].includes(parsedName.ext)) {
+			// strip extension
+			return parsedName.name;
+		}
 
-    if (['.js', '.ts'].includes(parsedName.ext)) {
-      // strip extension
-      return parsedName.name;
-    }
+		return name;
+	}
 
-    return name;
-  }
+	/**
+	 * @internal
+	 */
+	getTableName(): { tableName: string; schemaName: string } {
+		const parts = this.options.tableName!.split('.');
+		const tableName = parts.length > 1 ? parts[1] : parts[0];
+		const schemaName = parts.length > 1 ? parts[0] : this.driver.config.get('schema', this.driver.getPlatform().getDefaultSchemaName());
 
-  /**
-   * @internal
-   */
-  getTableName(): { tableName: string; schemaName: string } {
-    const parts = this.options.tableName!.split('.');
-    const tableName = parts.length > 1 ? parts[1] : parts[0];
-    const schemaName = parts.length > 1 ? parts[0] : this.driver.config.get('schema', this.driver.getPlatform().getDefaultSchemaName());
+		return { tableName, schemaName };
+	}
 
-    return { tableName, schemaName };
-  }
-
-  private get knex() {
-    return this.connection.getKnex();
-  }
-
+	private get knex() {
+		return this.connection.getKnex();
+	}
 }

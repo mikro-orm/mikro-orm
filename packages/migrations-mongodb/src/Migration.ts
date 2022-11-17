@@ -3,32 +3,29 @@ import type { MongoDriver } from '@mikro-orm/mongodb';
 import type { Collection, ClientSession, Document } from 'mongodb';
 
 export abstract class Migration {
+	protected ctx?: Transaction<ClientSession>;
 
-  protected ctx?: Transaction<ClientSession>;
+	constructor(protected readonly driver: MongoDriver, protected readonly config: Configuration) {}
 
-  constructor(protected readonly driver: MongoDriver,
-              protected readonly config: Configuration) { }
+	abstract up(): Promise<void>;
 
-  abstract up(): Promise<void>;
+	async down(): Promise<void> {
+		throw new Error('This migration cannot be reverted');
+	}
 
-  async down(): Promise<void> {
-    throw new Error('This migration cannot be reverted');
-  }
+	isTransactional(): boolean {
+		return true;
+	}
 
-  isTransactional(): boolean {
-    return true;
-  }
+	reset(): void {
+		this.ctx = undefined;
+	}
 
-  reset(): void {
-    this.ctx = undefined;
-  }
+	setTransactionContext(ctx: Transaction): void {
+		this.ctx = ctx;
+	}
 
-  setTransactionContext(ctx: Transaction): void {
-    this.ctx = ctx;
-  }
-
-  getCollection<T extends Document>(entityName: EntityName<any>): Collection<T> {
-    return this.driver.getConnection().getCollection(entityName);
-  }
-
+	getCollection<T extends Document>(entityName: EntityName<any>): Collection<T> {
+		return this.driver.getConnection().getCollection(entityName);
+	}
 }

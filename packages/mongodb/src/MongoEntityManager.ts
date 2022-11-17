@@ -7,39 +7,37 @@ import type { Collection, Document, TransactionOptions as MongoTransactionOption
 /**
  * @inheritDoc
  */
-export class MongoEntityManager<D extends MongoDriver = MongoDriver> extends EntityManager<D> {
+export class MongoEntityManager<D extends MongoDriver = MongoDriver,> extends EntityManager<D> {
+	/**
+	 * Shortcut to driver's aggregate method. Available in MongoDriver only.
+	 */
+	async aggregate(entityName: EntityName<any>, pipeline: any[]): Promise<any[]> {
+		entityName = Utils.className(entityName);
+		return this.getDriver().aggregate(entityName, pipeline);
+	}
 
-  /**
-   * Shortcut to driver's aggregate method. Available in MongoDriver only.
-   */
-  async aggregate(entityName: EntityName<any>, pipeline: any[]): Promise<any[]> {
-    entityName = Utils.className(entityName);
-    return this.getDriver().aggregate(entityName, pipeline);
-  }
+	getCollection<T extends Document>(entityName: EntityName<any>): Collection<T> {
+		return this.getConnection().getCollection(entityName);
+	}
 
-  getCollection<T extends Document>(entityName: EntityName<any>): Collection<T> {
-    return this.getConnection().getCollection(entityName);
-  }
+	/**
+	 * @inheritDoc
+	 */
+	getRepository<T extends object, U extends EntityRepository<T> = MongoEntityRepository<T>>(entityName: EntityName<T>): GetRepository<T, U> {
+		return super.getRepository<T, U>(entityName);
+	}
 
-  /**
-   * @inheritDoc
-   */
-  getRepository<T extends object, U extends EntityRepository<T> = MongoEntityRepository<T>>(entityName: EntityName<T>): GetRepository<T, U> {
-    return super.getRepository<T, U>(entityName);
-  }
+	/**
+	 * @inheritDoc
+	 */
+	async begin(options: TransactionOptions & MongoTransactionOptions = {}): Promise<void> {
+		return super.begin(options);
+	}
 
-  /**
-   * @inheritDoc
-   */
-  async begin(options: TransactionOptions & MongoTransactionOptions = {}): Promise<void> {
-    return super.begin(options);
-  }
-
-  /**
-   * @inheritDoc
-   */
-  async transactional<T>(cb: (em: D[typeof EntityManagerType]) => Promise<T>, options: TransactionOptions & MongoTransactionOptions = {}): Promise<T> {
-    return super.transactional(cb, options);
-  }
-
+	/**
+	 * @inheritDoc
+	 */
+	async transactional<T>(cb: (em: D[typeof EntityManagerType]) => Promise<T>, options: TransactionOptions & MongoTransactionOptions = {}): Promise<T> {
+		return super.transactional(cb, options);
+	}
 }

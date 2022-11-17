@@ -20,12 +20,12 @@ import TableCompiler from 'knex/lib/schema/tablecompiler';
 // monkey patch are the same version as our overall knex instance
 // which is why we need to import them in this package.
 export const MonkeyPatchable = {
-  Client,
-  QueryExecutioner,
-  MySqlDialect,
-  MySqlColumnCompiler,
-  PostgresDialectTableCompiler,
-  Sqlite3Dialect,
-  Sqlite3DialectTableCompiler,
-  TableCompiler,
+	Client,
+	QueryExecutioner,
+	MySqlDialect,
+	MySqlColumnCompiler,
+	PostgresDialectTableCompiler,
+	Sqlite3Dialect,
+	Sqlite3DialectTableCompiler,
+	TableCompiler,
 };

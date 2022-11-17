@@ -5,18 +5,16 @@ import type { ArgumentsCamelCase, CommandModule } from 'yargs';
 import { CLIHelper } from '../CLIHelper';
 
 export class ImportCommand implements CommandModule {
+	command = 'database:import <file>';
+	describe = 'Imports the SQL file to the database';
 
-  command = 'database:import <file>';
-  describe = 'Imports the SQL file to the database';
-
-  /**
-   * @inheritDoc
-   */
-  async handler(args: ArgumentsCamelCase) {
-    const orm = await CLIHelper.getORM() as MikroORM<AbstractSqlDriver>;
-    await orm.em.getConnection().loadFile(args.file as string);
-    CLIHelper.dump(colors.green(`File ${args.file} successfully imported`));
-    await orm.close(true);
-  }
-
+	/**
+	 * @inheritDoc
+	 */
+	async handler(args: ArgumentsCamelCase) {
+		const orm = (await CLIHelper.getORM()) as MikroORM<AbstractSqlDriver>;
+		await orm.em.getConnection().loadFile(args.file as string);
+		CLIHelper.dump(colors.green(`File ${args.file} successfully imported`));
+		await orm.close(true);
+	}
 }

@@ -6,45 +6,41 @@ import type { Configuration } from '../utils/Configuration';
 
 /* istanbul ignore next */
 export abstract class Hydrator implements IHydrator {
+	constructor(protected readonly metadata: MetadataStorage, protected readonly platform: Platform, protected readonly config: Configuration) {}
 
-  constructor(protected readonly metadata: MetadataStorage,
-              protected readonly platform: Platform,
-              protected readonly config: Configuration) { }
+	/**
+	 * @inheritDoc
+	 */
+	hydrate<T>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'returning' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string): void {
+		const props = this.getProperties(meta, type);
 
-  /**
-   * @inheritDoc
-   */
-  hydrate<T>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'returning' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string): void {
-    const props = this.getProperties(meta, type);
+		for (const prop of props) {
+			this.hydrateProperty(entity, prop, data, factory, newEntity, convertCustomTypes);
+		}
+	}
 
-    for (const prop of props) {
-      this.hydrateProperty(entity, prop, data, factory, newEntity, convertCustomTypes);
-    }
-  }
+	/**
+	 * @inheritDoc
+	 */
+	hydrateReference<T>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes?: boolean, schema?: string): void {
+		meta.primaryKeys.forEach((pk) => {
+			this.hydrateProperty<T>(entity, meta.properties[pk], data, factory, false, convertCustomTypes);
+		});
+	}
 
-  /**
-   * @inheritDoc
-   */
-  hydrateReference<T>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes?: boolean, schema?: string): void {
-    meta.primaryKeys.forEach(pk => {
-      this.hydrateProperty<T>(entity, meta.properties[pk], data, factory, false, convertCustomTypes);
-    });
-  }
+	protected getProperties<T>(meta: EntityMetadata<T>, type: 'full' | 'returning' | 'reference'): EntityProperty<T>[] {
+		if (type === 'reference') {
+			return meta.primaryKeys.map((pk) => meta.properties[pk]);
+		}
 
-  protected getProperties<T>(meta: EntityMetadata<T>, type: 'full' | 'returning' | 'reference'): EntityProperty<T>[] {
-    if (type === 'reference') {
-      return meta.primaryKeys.map(pk => meta.properties[pk]);
-    }
+		if (type === 'returning') {
+			return meta.hydrateProps.filter((prop) => prop.primary || prop.defaultRaw);
+		}
 
-    if (type === 'returning') {
-      return meta.hydrateProps.filter(prop => prop.primary || prop.defaultRaw);
-    }
+		return meta.hydrateProps;
+	}
 
-    return meta.hydrateProps;
-  }
-
-  protected hydrateProperty<T>(entity: T, prop: EntityProperty, data: EntityData<T>, factory: EntityFactory, newEntity?: boolean, convertCustomTypes?: boolean): void {
-    entity[prop.name] = data[prop.name];
-  }
-
+	protected hydrateProperty<T>(entity: T, prop: EntityProperty, data: EntityData<T>, factory: EntityFactory, newEntity?: boolean, convertCustomTypes?: boolean): void {
+		entity[prop.name] = data[prop.name];
+	}
 }

@@ -2,51 +2,51 @@ import { MetadataStorage } from '../metadata';
 import { EventType } from '../enums';
 
 function hook(type: EventType) {
-  return function (target: any, method: string) {
-    const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
+	return function (target: any, method: string) {
+		const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
 
-    if (!meta.hooks[type]) {
-      meta.hooks[type] = [];
-    }
+		if (!meta.hooks[type]) {
+			meta.hooks[type] = [];
+		}
 
-    meta.hooks[type]!.push(method);
-  };
+		meta.hooks[type]!.push(method);
+	};
 }
 
 export function BeforeCreate() {
-  return hook(EventType.beforeCreate);
+	return hook(EventType.beforeCreate);
 }
 
 export function AfterCreate() {
-  return hook(EventType.afterCreate);
+	return hook(EventType.afterCreate);
 }
 
 export function BeforeUpdate() {
-  return hook(EventType.beforeUpdate);
+	return hook(EventType.beforeUpdate);
 }
 
 export function AfterUpdate() {
-  return hook(EventType.afterUpdate);
+	return hook(EventType.afterUpdate);
 }
 
 export function OnInit() {
-  return hook(EventType.onInit);
+	return hook(EventType.onInit);
 }
 
 export function OnLoad() {
-  return hook(EventType.onLoad);
+	return hook(EventType.onLoad);
 }
 
 /**
  * Called before deleting entity, but only when providing initialized entity to EM#remove()
  */
 export function BeforeDelete() {
-  return hook(EventType.beforeDelete);
+	return hook(EventType.beforeDelete);
 }
 
 /**
  * Called after deleting entity, but only when providing initialized entity to EM#remove()
  */
 export function AfterDelete() {
-  return hook(EventType.afterDelete);
+	return hook(EventType.afterDelete);
 }

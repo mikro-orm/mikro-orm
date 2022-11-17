@@ -5,54 +5,51 @@ import * as path from 'path';
 import type { MigrationRow } from './typings';
 
 export class MigrationStorage implements UmzugStorage {
+	private masterTransaction?: Transaction;
 
-  private masterTransaction?: Transaction;
+	constructor(protected readonly driver: MongoDriver, protected readonly options: MigrationsOptions) {}
 
-  constructor(protected readonly driver: MongoDriver,
-              protected readonly options: MigrationsOptions) { }
+	async executed(): Promise<string[]> {
+		const migrations = await this.getExecutedMigrations();
+		return migrations.map(({ name }) => `${this.getMigrationName(name)}`);
+	}
 
-  async executed(): Promise<string[]> {
-    const migrations = await this.getExecutedMigrations();
-    return migrations.map(({ name }) => `${this.getMigrationName(name)}`);
-  }
+	async logMigration(params: MigrationParams<any>): Promise<void> {
+		const tableName = this.options.tableName!;
+		const name = this.getMigrationName(params.name);
+		await this.driver.nativeInsert(tableName, { name, created_at: new Date() }, { ctx: this.masterTransaction });
+	}
 
-  async logMigration(params: MigrationParams<any>): Promise<void> {
-    const tableName = this.options.tableName!;
-    const name = this.getMigrationName(params.name);
-    await this.driver.nativeInsert(tableName, { name, created_at: new Date() }, { ctx: this.masterTransaction });
-  }
+	async unlogMigration(params: MigrationParams<any>): Promise<void> {
+		const tableName = this.options.tableName!;
+		const withoutExt = this.getMigrationName(params.name);
+		await this.driver.nativeDelete(tableName, { name: { $in: [params.name, withoutExt] } }, { ctx: this.masterTransaction });
+	}
 
-  async unlogMigration(params: MigrationParams<any>): Promise<void> {
-    const tableName = this.options.tableName!;
-    const withoutExt = this.getMigrationName(params.name);
-    await this.driver.nativeDelete(tableName, { name: { $in: [params.name, withoutExt] } }, { ctx: this.masterTransaction });
-  }
+	async getExecutedMigrations(): Promise<MigrationRow[]> {
+		const tableName = this.options.tableName!;
+		return this.driver.find(tableName, {}, { ctx: this.masterTransaction, orderBy: { _id: 'asc' } as Dictionary }) as Promise<MigrationRow[]>;
+	}
 
-  async getExecutedMigrations(): Promise<MigrationRow[]> {
-    const tableName = this.options.tableName!;
-    return this.driver.find(tableName, {}, { ctx: this.masterTransaction, orderBy: { _id: 'asc' } as Dictionary }) as Promise<MigrationRow[]>;
-  }
+	setMasterMigration(trx: Transaction) {
+		this.masterTransaction = trx;
+	}
 
-  setMasterMigration(trx: Transaction) {
-    this.masterTransaction = trx;
-  }
+	unsetMasterMigration() {
+		delete this.masterTransaction;
+	}
 
-  unsetMasterMigration() {
-    delete this.masterTransaction;
-  }
+	/**
+	 * @internal
+	 */
+	getMigrationName(name: string) {
+		const parsedName = path.parse(name);
 
-  /**
-   * @internal
-   */
-  getMigrationName(name: string) {
-    const parsedName = path.parse(name);
+		if (['.js', '.ts'].includes(parsedName.ext)) {
+			// strip extension
+			return parsedName.name;
+		}
 
-    if (['.js', '.ts'].includes(parsedName.ext)) {
-      // strip extension
-      return parsedName.name;
-    }
-
-    return name;
-  }
-
+		return name;
+	}
 }
