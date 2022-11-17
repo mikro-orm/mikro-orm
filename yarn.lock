@@ -3016,7 +3016,7 @@ __metadata:
     mongodb-memory-server: ^8.10.0
     node-gyp: ^9.3.0
     rimraf: 3.0.2
-    sql-formatter: 8.2.0
+    sql-formatter: 8.0.2
     ts-jest: 29.0.3
     ts-node: 10.9.1
     typescript: 4.9.3
@@ -10605,14 +10605,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sql-formatter@npm:8.2.0":
-  version: 8.2.0
-  resolution: "sql-formatter@npm:8.2.0"
+"sql-formatter@npm:8.0.2":
+  version: 8.0.2
+  resolution: "sql-formatter@npm:8.0.2"
   dependencies:
     argparse: ^2.0.1
   bin:
     sql-formatter: bin/sql-formatter-cli.js
-  checksum: 1a0bc206ec277f555ccab2ed6608066d5ea72a95e772cfb73d507e14dccc44f6c483cf7af9390c16e56ed45287228f444b1154e13b7f07e01a4817d9511c10db
+  checksum: f4141ce525ac6f38e9cf2d99ae1595b9b98adddaaa108771a9851d47eb267536275d9fdc21a09b70a0a4096ca6139cd2f28e79cec5f97e96845976107fc7b5c4
   languageName: node
   linkType: hard
 
