@@ -363,8 +363,11 @@ export class EntityComparator {
     const padding = ' '.repeat(level * 2);
     let ret = `${level === 1 ? '' : '\n'}`;
 
-    const nullCond = `entity${path.map(k => this.wrap(k)).join('')} === null`;
-    ret += `${padding}if (${nullCond}) ret${dataKey} = null;\n`;
+    if (object) {
+      const nullCond = `entity${path.map(k => this.wrap(k)).join('')} === null`;
+      ret += `${padding}if (${nullCond}) ret${dataKey} = null;\n`;
+    }
+
     const cond = `entity${path.map(k => this.wrap(k)).join('')} != null`;
     ret += `${padding}if (${cond}) {\n`;
 
