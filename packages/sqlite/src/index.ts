@@ -5,7 +5,7 @@ export * from './SqlitePlatform';
 export * from './SqliteSchemaHelper';
 export * from './SqliteExceptionConverter';
 export {
-	SqliteMikroORM as MikroORM,
-	SqliteOptions as Options,
-	defineSqliteConfig as defineConfig,
+  SqliteMikroORM as MikroORM,
+  SqliteOptions as Options,
+  defineSqliteConfig as defineConfig,
 } from './SqliteMikroORM';

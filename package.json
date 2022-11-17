@@ -47,7 +47,7 @@
     "release:next": "lerna run compile && yarn publish:next",
     "release:tilde": "lerna run copy -- -- --tilde",
     "test": "jest --runInBand",
-    "format": "rome format --write --quote-style --line-width 300 single packages",
+    "format": "rome format --write --quote-style --indent-style space --line-width 300 single packages",
     "tsc-check-tests": "tsc --noEmit --project tests/tsconfig.json",
     "coverage": "rimraf temp tests/generated-entities && yarn test --coverage",
     "lint": "eslint packages/**/*.ts"

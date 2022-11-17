@@ -5,7 +5,7 @@ export * from './BetterSqlitePlatform';
 export * from './BetterSqliteSchemaHelper';
 export * from './BetterSqliteExceptionConverter';
 export {
-	BetterSqliteMikroORM as MikroORM,
-	BetterSqliteOptions as Options,
-	defineBetterSqliteConfig as defineConfig,
+  BetterSqliteMikroORM as MikroORM,
+  BetterSqliteOptions as Options,
+  defineBetterSqliteConfig as defineConfig,
 } from './BetterSqliteMikroORM';

@@ -4,33 +4,35 @@ import { AbstractNamingStrategy } from './AbstractNamingStrategy';
  * This strategy keeps original entity/property names for table/column.
  */
 export class EntityCaseNamingStrategy extends AbstractNamingStrategy {
-	classToTableName(entityName: string): string {
-		return entityName;
-	}
 
-	joinColumnName(propertyName: string): string {
-		return propertyName;
-	}
+  classToTableName(entityName: string): string {
+    return entityName;
+  }
 
-	joinKeyColumnName(entityName: string, referencedColumnName?: string, composite = false): string {
-		const name = entityName.substr(0, 1).toLowerCase() + entityName.substr(1);
+  joinColumnName(propertyName: string): string {
+    return propertyName;
+  }
 
-		if (composite && referencedColumnName) {
-			return name + '_' + referencedColumnName;
-		}
+  joinKeyColumnName(entityName: string, referencedColumnName?: string, composite = false): string {
+    const name = entityName.substr(0, 1).toLowerCase() + entityName.substr(1);
 
-		return name;
-	}
+    if (composite && referencedColumnName) {
+      return name + '_' + referencedColumnName;
+    }
 
-	joinTableName(sourceEntity: string, targetEntity: string, propertyName: string): string {
-		return this.classToTableName(sourceEntity) + '_' + this.propertyToColumnName(propertyName);
-	}
+    return name;
+  }
 
-	propertyToColumnName(propertyName: string): string {
-		return propertyName;
-	}
+  joinTableName(sourceEntity: string, targetEntity: string, propertyName: string): string {
+    return this.classToTableName(sourceEntity) + '_' + this.propertyToColumnName(propertyName);
+  }
 
-	referenceColumnName(): string {
-		return 'id';
-	}
+  propertyToColumnName(propertyName: string): string {
+    return propertyName;
+  }
+
+  referenceColumnName(): string {
+    return 'id';
+  }
+
 }

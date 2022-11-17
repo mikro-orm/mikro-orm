@@ -2,18 +2,20 @@
  * Base class for all errors detected in the driver.
  */
 export class DriverException extends Error {
-	code?: string;
-	errno?: number;
-	sqlState?: string;
-	sqlMessage?: string;
-	errmsg?: string;
 
-	constructor(previous: Error) {
-		super(previous.message);
-		Object.assign(this, previous);
-		this.name = this.constructor.name;
-		this.stack += '\n\n' + 'previous ' + previous.stack;
-	}
+  code?: string;
+  errno?: number;
+  sqlState?: string;
+  sqlMessage?: string;
+  errmsg?: string;
+
+  constructor(previous: Error) {
+    super(previous.message);
+    Object.assign(this, previous);
+    this.name = this.constructor.name;
+    this.stack += '\n\n' + 'previous ' + previous.stack;
+  }
+
 }
 
 /**

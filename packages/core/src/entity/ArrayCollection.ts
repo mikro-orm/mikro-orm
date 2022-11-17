@@ -7,286 +7,288 @@ import { MetadataError } from '../errors';
 import { Utils } from '../utils/Utils';
 
 export class ArrayCollection<T extends object, O extends object> {
-	protected readonly items = new Set<T>();
-	protected initialized = true;
-	protected dirty = false;
-	protected _count?: number;
-	private _property?: EntityProperty;
 
-	constructor(readonly owner: O, items?: T[]) {
-		/* istanbul ignore next */
-		if (items) {
-			let i = 0;
-			this.items = new Set(items);
-			this.items.forEach((item) => (this[i++] = item));
-		}
-	}
+  protected readonly items = new Set<T>();
+  protected initialized = true;
+  protected dirty = false;
+  protected _count?: number;
+  private _property?: EntityProperty;
 
-	async loadCount(): Promise<number> {
-		return this.items.size;
-	}
+  constructor(readonly owner: O, items?: T[]) {
+    /* istanbul ignore next */
+    if (items) {
+      let i = 0;
+      this.items = new Set(items);
+      this.items.forEach(item => (this[i++] = item));
+    }
+  }
 
-	getItems(): T[] {
-		return [...this.items];
-	}
+  async loadCount(): Promise<number> {
+    return this.items.size;
+  }
 
-	toArray(): EntityDTO<T>[] {
-		if (this.items.size === 0) {
-			return [];
-		}
+  getItems(): T[] {
+    return [...this.items];
+  }
 
-		const meta = this.property.targetMeta!;
-		const args = [...meta.toJsonParams.map(() => undefined)];
+  toArray(): EntityDTO<T>[] {
+    if (this.items.size === 0) {
+      return [];
+    }
 
-		return this.getItems().map((item) => wrap(item).toJSON(...args));
-	}
+    const meta = this.property.targetMeta!;
+    const args = [...meta.toJsonParams.map(() => undefined)];
 
-	toJSON(): EntityDTO<T>[] {
-		return this.toArray();
-	}
+    return this.getItems().map(item => wrap(item).toJSON(...args));
+  }
 
-	getIdentifiers<U extends IPrimaryKey = Primary<T> & IPrimaryKey>(field?: string): U[] {
-		const items = this.getItems();
+  toJSON(): EntityDTO<T>[] {
+    return this.toArray();
+  }
 
-		if (items.length === 0) {
-			return [];
-		}
+  getIdentifiers<U extends IPrimaryKey = Primary<T> & IPrimaryKey>(field?: string): U[] {
+    const items = this.getItems();
 
-		field ??= this.property.targetMeta!.serializedPrimaryKey;
+    if (items.length === 0) {
+      return [];
+    }
 
-		return items.map((i) => {
-			if (Utils.isEntity(i[field as keyof T], true)) {
-				return wrap(i[field as keyof T], true).getPrimaryKey();
-			}
+    field ??= this.property.targetMeta!.serializedPrimaryKey;
 
-			return i[field as keyof T];
-		}) as unknown as U[];
-	}
+    return items.map(i => {
+      if (Utils.isEntity(i[field as keyof T], true)) {
+        return wrap(i[field as keyof T], true).getPrimaryKey();
+      }
 
-	add(entity: T | Reference<T> | (T | Reference<T>)[], ...entities: (T | Reference<T>)[]): void {
-		entities = Utils.asArray(entity).concat(entities);
+      return i[field as keyof T];
+    }) as unknown as U[];
+  }
 
-		for (const item of entities) {
-			const entity = Reference.unwrapReference(item) as T;
+  add(entity: T | Reference<T> | (T | Reference<T>)[], ...entities: (T | Reference<T>)[]): void {
+    entities = Utils.asArray(entity).concat(entities);
 
-			if (!this.contains(entity, false)) {
-				this.incrementCount(1);
-				this[this.items.size] = entity;
-				this.items.add(entity);
-				this.propagate(entity, 'add');
-			}
-		}
-	}
+    for (const item of entities) {
+      const entity = Reference.unwrapReference(item) as T;
 
-	set(items: (T | Reference<T>)[]): void {
-		this.removeAll();
-		this.add(items);
-	}
+      if (!this.contains(entity, false)) {
+        this.incrementCount(1);
+        this[this.items.size] = entity;
+        this.items.add(entity);
+        this.propagate(entity, 'add');
+      }
+    }
+  }
 
-	/**
-	 * @internal
-	 */
-	hydrate(items: T[]): void {
-		for (let i = 0; i < this.items.size; i++) {
-			delete this[i];
-		}
+  set(items: (T | Reference<T>)[]): void {
+    this.removeAll();
+    this.add(items);
+  }
 
-		this.items.clear();
-		this._count = 0;
-		this.add(items);
-	}
+  /**
+   * @internal
+   */
+  hydrate(items: T[]): void {
+    for (let i = 0; i < this.items.size; i++) {
+      delete this[i];
+    }
 
-	/**
-	 * Remove specified item(s) from the collection. Note that removing item from collection does necessarily imply deleting the target entity,
-	 * it means we are disconnecting the relation - removing items from collection, not removing entities from database - `Collection.remove()`
-	 * is not the same as `em.remove()`. If we want to delete the entity by removing it from collection, we need to enable `orphanRemoval: true`,
-	 * which tells the ORM we don't want orphaned entities to exist, so we know those should be removed.
-	 */
-	remove(entity: T | Reference<T> | (T | Reference<T>)[], ...entities: (T | Reference<T>)[]): void {
-		entities = Utils.asArray(entity).concat(entities);
-		let modified = false;
+    this.items.clear();
+    this._count = 0;
+    this.add(items);
+  }
 
-		for (const item of entities) {
-			if (!item) {
-				continue;
-			}
+  /**
+   * Remove specified item(s) from the collection. Note that removing item from collection does necessarily imply deleting the target entity,
+   * it means we are disconnecting the relation - removing items from collection, not removing entities from database - `Collection.remove()`
+   * is not the same as `em.remove()`. If we want to delete the entity by removing it from collection, we need to enable `orphanRemoval: true`,
+   * which tells the ORM we don't want orphaned entities to exist, so we know those should be removed.
+   */
+  remove(entity: T | Reference<T> | (T | Reference<T>)[], ...entities: (T | Reference<T>)[]): void {
+    entities = Utils.asArray(entity).concat(entities);
+    let modified = false;
 
-			const entity = Reference.unwrapReference(item) as T;
+    for (const item of entities) {
+      if (!item) {
+        continue;
+      }
 
-			if (this.items.delete(entity)) {
-				this.incrementCount(-1);
-				delete this[this.items.size]; // remove last item
-				this.propagate(entity, 'remove');
-				modified = true;
-			}
-		}
+      const entity = Reference.unwrapReference(item) as T;
 
-		if (modified) {
-			Object.assign(this, [...this.items]); // reassign array access
-		}
-	}
+      if (this.items.delete(entity)) {
+        this.incrementCount(-1);
+        delete this[this.items.size]; // remove last item
+        this.propagate(entity, 'remove');
+        modified = true;
+      }
+    }
 
-	/**
-	 * Remove all items from the collection. Note that removing items from collection does necessarily imply deleting the target entity,
-	 * it means we are disconnecting the relation - removing items from collection, not removing entities from database - `Collection.remove()`
-	 * is not the same as `em.remove()`. If we want to delete the entity by removing it from collection, we need to enable `orphanRemoval: true`,
-	 * which tells the ORM we don't want orphaned entities to exist, so we know those should be removed.
-	 */
-	removeAll(): void {
-		for (const item of this.items) {
-			this.remove(item);
-		}
-	}
+    if (modified) {
+      Object.assign(this, [...this.items]); // reassign array access
+    }
+  }
 
-	/**
-	 * @internal
-	 */
-	removeWithoutPropagation(entity: T): void {
-		if (!this.items.delete(entity)) {
-			return;
-		}
+  /**
+   * Remove all items from the collection. Note that removing items from collection does necessarily imply deleting the target entity,
+   * it means we are disconnecting the relation - removing items from collection, not removing entities from database - `Collection.remove()`
+   * is not the same as `em.remove()`. If we want to delete the entity by removing it from collection, we need to enable `orphanRemoval: true`,
+   * which tells the ORM we don't want orphaned entities to exist, so we know those should be removed.
+   */
+  removeAll(): void {
+    for (const item of this.items) {
+      this.remove(item);
+    }
+  }
 
-		this.incrementCount(-1);
-		delete this[this.items.size];
-		Object.assign(this, [...this.items]);
-	}
+  /**
+   * @internal
+   */
+  removeWithoutPropagation(entity: T): void {
+    if (!this.items.delete(entity)) {
+      return;
+    }
 
-	contains(item: T | Reference<T>, check?: boolean): boolean {
-		const entity = Reference.unwrapReference(item) as T;
-		return this.items.has(entity);
-	}
+    this.incrementCount(-1);
+    delete this[this.items.size];
+    Object.assign(this, [...this.items]);
+  }
 
-	count(): number {
-		return this.items.size;
-	}
+  contains(item: T | Reference<T>, check?: boolean): boolean {
+    const entity = Reference.unwrapReference(item) as T;
+    return this.items.has(entity);
+  }
 
-	isInitialized(fully = false): boolean {
-		if (!this.initialized || !fully) {
-			return this.initialized;
-		}
+  count(): number {
+    return this.items.size;
+  }
 
-		for (const item of this.items) {
-			if (!helper(item).__initialized) {
-				return false;
-			}
-		}
+  isInitialized(fully = false): boolean {
+    if (!this.initialized || !fully) {
+      return this.initialized;
+    }
 
-		return true;
-	}
+    for (const item of this.items) {
+      if (!helper(item).__initialized) {
+        return false;
+      }
+    }
 
-	isDirty(): boolean {
-		return this.dirty;
-	}
+    return true;
+  }
 
-	setDirty(dirty = true): void {
-		this.dirty = dirty;
-	}
+  isDirty(): boolean {
+    return this.dirty;
+  }
 
-	get length(): number {
-		return this.count();
-	}
+  setDirty(dirty = true): void {
+    this.dirty = dirty;
+  }
 
-	*[Symbol.iterator](): IterableIterator<T> {
-		for (const item of this.items) {
-			yield item;
-		}
-	}
+  get length(): number {
+    return this.count();
+  }
 
-	/**
-	 * @internal
-	 */
-	get property(): EntityProperty<T> {
-		if (!this._property) {
-			const meta = helper(this.owner).__meta;
+  *[Symbol.iterator](): IterableIterator<T> {
+    for (const item of this.items) {
+      yield item;
+    }
+  }
 
-			/* istanbul ignore if */
-			if (!meta) {
-				throw MetadataError.fromUnknownEntity((this.owner as object).constructor.name, 'Collection.property getter, maybe you just forgot to initialize the ORM?');
-			}
+  /**
+   * @internal
+   */
+  get property(): EntityProperty<T> {
+    if (!this._property) {
+      const meta = helper(this.owner).__meta;
 
-			const field = Object.keys(meta.properties).find((k) => this.owner[k] === this);
-			this._property = meta.properties[field!];
-		}
+      /* istanbul ignore if */
+      if (!meta) {
+        throw MetadataError.fromUnknownEntity((this.owner as object).constructor.name, 'Collection.property getter, maybe you just forgot to initialize the ORM?');
+      }
 
-		return this._property!;
-	}
+      const field = Object.keys(meta.properties).find(k => this.owner[k] === this);
+      this._property = meta.properties[field!];
+    }
 
-	protected propagate(item: T, method: 'add' | 'remove' | 'takeSnapshot'): void {
-		if (this.property.owner && this.property.inversedBy) {
-			this.propagateToInverseSide(item, method);
-		} else if (!this.property.owner && this.property.mappedBy) {
-			this.propagateToOwningSide(item, method);
-		}
-	}
+    return this._property!;
+  }
 
-	protected propagateToInverseSide(item: T, method: 'add' | 'remove' | 'takeSnapshot'): void {
-		const collection = item[this.property.inversedBy as keyof T] as unknown as ArrayCollection<O, T>;
+  protected propagate(item: T, method: 'add' | 'remove' | 'takeSnapshot'): void {
+    if (this.property.owner && this.property.inversedBy) {
+      this.propagateToInverseSide(item, method);
+    } else if (!this.property.owner && this.property.mappedBy) {
+      this.propagateToOwningSide(item, method);
+    }
+  }
 
-		if (this.shouldPropagateToCollection(collection, method)) {
-			collection[method](this.owner);
-		}
-	}
+  protected propagateToInverseSide(item: T, method: 'add' | 'remove' | 'takeSnapshot'): void {
+    const collection = item[this.property.inversedBy as keyof T] as unknown as ArrayCollection<O, T>;
 
-	protected propagateToOwningSide(item: T, method: 'add' | 'remove' | 'takeSnapshot'): void {
-		const collection = item[this.property.mappedBy as keyof T] as unknown as ArrayCollection<O, T>;
+    if (this.shouldPropagateToCollection(collection, method)) {
+      collection[method](this.owner);
+    }
+  }
 
-		if (this.property.reference === ReferenceType.MANY_TO_MANY) {
-			if (this.shouldPropagateToCollection(collection, method)) {
-				collection[method](this.owner);
-			}
-		} else if (this.property.reference === ReferenceType.ONE_TO_MANY && method !== 'takeSnapshot') {
-			const prop2 = this.property.targetMeta!.properties[this.property.mappedBy];
-			const owner = prop2.mapToPk ? helper(this.owner).getPrimaryKey() : this.owner;
-			const value = method === 'add' ? owner : null;
+  protected propagateToOwningSide(item: T, method: 'add' | 'remove' | 'takeSnapshot'): void {
+    const collection = item[this.property.mappedBy as keyof T] as unknown as ArrayCollection<O, T>;
 
-			if (this.property.orphanRemoval && method === 'remove') {
-				// cache the PK before we propagate, as its value might be needed when flushing
-				helper(item).__pk = helper(item).getPrimaryKey()!;
-			}
+    if (this.property.reference === ReferenceType.MANY_TO_MANY) {
+      if (this.shouldPropagateToCollection(collection, method)) {
+        collection[method](this.owner);
+      }
+    } else if (this.property.reference === ReferenceType.ONE_TO_MANY && method !== 'takeSnapshot') {
+      const prop2 = this.property.targetMeta!.properties[this.property.mappedBy];
+      const owner = prop2.mapToPk ? helper(this.owner).getPrimaryKey() : this.owner;
+      const value = method === 'add' ? owner : null;
 
-			// skip if already propagated
-			if (Reference.unwrapReference(item[this.property.mappedBy]) !== value) {
-				item[this.property.mappedBy] = value;
-			}
-		}
-	}
+      if (this.property.orphanRemoval && method === 'remove') {
+        // cache the PK before we propagate, as its value might be needed when flushing
+        helper(item).__pk = helper(item).getPrimaryKey()!;
+      }
 
-	protected shouldPropagateToCollection(collection: ArrayCollection<O, T>, method: 'add' | 'remove' | 'takeSnapshot'): boolean {
-		if (!collection) {
-			return false;
-		}
+      // skip if already propagated
+      if (Reference.unwrapReference(item[this.property.mappedBy]) !== value) {
+        item[this.property.mappedBy] = value;
+      }
+    }
+  }
 
-		switch (method) {
-			case 'add':
-				return !collection.contains(this.owner, false);
-			case 'remove':
-				return collection.isInitialized() && collection.contains(this.owner, false);
-			case 'takeSnapshot':
-				return collection.isDirty();
-		}
-	}
+  protected shouldPropagateToCollection(collection: ArrayCollection<O, T>, method: 'add' | 'remove' | 'takeSnapshot'): boolean {
+    if (!collection) {
+      return false;
+    }
 
-	protected incrementCount(value: number) {
-		if (typeof this._count === 'number') {
-			this._count += value;
-		}
-	}
+    switch (method) {
+      case 'add':
+        return !collection.contains(this.owner, false);
+      case 'remove':
+        return collection.isInitialized() && collection.contains(this.owner, false);
+      case 'takeSnapshot':
+        return collection.isDirty();
+    }
+  }
 
-	[inspect.custom](depth: number) {
-		const object = { ...this };
-		const hidden = ['items', 'owner', '_property', '_count', 'snapshot', '_populated', '_lazyInitialized'];
-		hidden.forEach((k) => delete object[k]);
-		const ret = inspect(object, { depth });
-		const name = `${this.constructor.name}<${this.property.type}>`;
+  protected incrementCount(value: number) {
+    if (typeof this._count === 'number') {
+      this._count += value;
+    }
+  }
 
-		return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
-	}
+  [inspect.custom](depth: number) {
+    const object = { ...this };
+    const hidden = ['items', 'owner', '_property', '_count', 'snapshot', '_populated', '_lazyInitialized'];
+    hidden.forEach(k => delete object[k]);
+    const ret = inspect(object, { depth });
+    const name = `${this.constructor.name}<${this.property.type}>`;
+
+    return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
+  }
+
 }
 
 Object.defineProperties(ArrayCollection.prototype, {
-	__collection: { value: true, enumerable: false, writable: false },
+  __collection: { value: true, enumerable: false, writable: false },
 });
 
 export interface ArrayCollection<T, O> {
-	[k: number]: T;
+  [k: number]: T;
 }

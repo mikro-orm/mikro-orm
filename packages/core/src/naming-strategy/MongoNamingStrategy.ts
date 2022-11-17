@@ -1,27 +1,29 @@
 import { AbstractNamingStrategy } from './AbstractNamingStrategy';
 
 export class MongoNamingStrategy extends AbstractNamingStrategy {
-	classToTableName(entityName: string): string {
-		return entityName.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
-	}
 
-	joinColumnName(propertyName: string): string {
-		return propertyName;
-	}
+  classToTableName(entityName: string): string {
+    return entityName.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
+  }
 
-	joinKeyColumnName(entityName: string, referencedColumnName?: string): string {
-		return entityName;
-	}
+  joinColumnName(propertyName: string): string {
+    return propertyName;
+  }
 
-	joinTableName(sourceEntity: string, targetEntity: string, propertyName: string): string {
-		return this.classToTableName(sourceEntity) + '_' + this.propertyToColumnName(propertyName);
-	}
+  joinKeyColumnName(entityName: string, referencedColumnName?: string): string {
+    return entityName;
+  }
 
-	propertyToColumnName(propertyName: string): string {
-		return propertyName;
-	}
+  joinTableName(sourceEntity: string, targetEntity: string, propertyName: string): string {
+    return this.classToTableName(sourceEntity) + '_' + this.propertyToColumnName(propertyName);
+  }
 
-	referenceColumnName(): string {
-		return '_id';
-	}
+  propertyToColumnName(propertyName: string): string {
+    return propertyName;
+  }
+
+  referenceColumnName(): string {
+    return '_id';
+  }
+
 }

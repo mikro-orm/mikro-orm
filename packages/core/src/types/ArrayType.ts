@@ -6,48 +6,50 @@ import type { Platform } from '../platforms';
 import { ValidationError } from '../errors';
 
 export class ArrayType<T extends string | number = string> extends Type<T[] | null, string | null> {
-	constructor(private readonly hydrate: (i: string) => T = (i) => i as T) {
-		super();
-	}
 
-	convertToDatabaseValue(value: T[] | null, platform: Platform, context?: TransformContext | boolean): string | null {
-		if (!value) {
-			return value as null;
-		}
+  constructor(private readonly hydrate: (i: string) => T = i => i as T) {
+    super();
+  }
 
-		if (Array.isArray(value)) {
-			return platform.marshallArray(value as string[]);
-		}
+  convertToDatabaseValue(value: T[] | null, platform: Platform, context?: TransformContext | boolean): string | null {
+    if (!value) {
+      return value as null;
+    }
 
-		/* istanbul ignore next */
-		if (typeof context === 'boolean' ? context : context?.fromQuery) {
-			return value;
-		}
+    if (Array.isArray(value)) {
+      return platform.marshallArray(value as string[]);
+    }
 
-		throw ValidationError.invalidType(ArrayType, value, 'JS');
-	}
+    /* istanbul ignore next */
+    if (typeof context === 'boolean' ? context : context?.fromQuery) {
+      return value;
+    }
 
-	convertToJSValue(value: T[] | string | null, platform: Platform): T[] | null {
-		if (value == null) {
-			return value as null;
-		}
+    throw ValidationError.invalidType(ArrayType, value, 'JS');
+  }
 
-		if (Utils.isString(value)) {
-			value = platform.unmarshallArray(value) as T[];
-		}
+  convertToJSValue(value: T[] | string | null, platform: Platform): T[] | null {
+    if (value == null) {
+      return value as null;
+    }
 
-		return value.map((i) => this.hydrate(i as string));
-	}
+    if (Utils.isString(value)) {
+      value = platform.unmarshallArray(value) as T[];
+    }
 
-	compareAsType(): string {
-		return 'string[]';
-	}
+    return value.map(i => this.hydrate(i as string));
+  }
 
-	toJSON(value: T[]): T[] {
-		return value;
-	}
+  compareAsType(): string {
+    return 'string[]';
+  }
 
-	getColumnType(prop: EntityProperty, platform: Platform): string {
-		return platform.getArrayDeclarationSQL();
-	}
+  toJSON(value: T[]): T[] {
+    return value;
+  }
+
+  getColumnType(prop: EntityProperty, platform: Platform): string {
+    return platform.getArrayDeclarationSQL();
+  }
+
 }

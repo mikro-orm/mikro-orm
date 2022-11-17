@@ -8,167 +8,169 @@ import type { Reference } from '../entity/Reference';
 import { SerializationContext } from './SerializationContext';
 
 function isVisible<T extends object>(meta: EntityMetadata<T>, propName: string, ignoreFields: string[] = []): boolean {
-	const prop = meta.properties[propName];
-	const visible = prop && !prop.hidden;
-	const prefixed = prop && !prop.primary && propName.startsWith('_'); // ignore prefixed properties, if it's not a PK
+  const prop = meta.properties[propName];
+  const visible = prop && !prop.hidden;
+  const prefixed = prop && !prop.primary && propName.startsWith('_'); // ignore prefixed properties, if it's not a PK
 
-	return visible && !prefixed && !ignoreFields.includes(propName);
+  return visible && !prefixed && !ignoreFields.includes(propName);
 }
 
 export class EntityTransformer {
-	static toObject<T extends object>(entity: T, ignoreFields: string[] = [], raw = false): EntityData<T> {
-		if (!Array.isArray(ignoreFields)) {
-			ignoreFields = [];
-		}
 
-		const wrapped = helper(entity);
-		let contextCreated = false;
+  static toObject<T extends object>(entity: T, ignoreFields: string[] = [], raw = false): EntityData<T> {
+    if (!Array.isArray(ignoreFields)) {
+      ignoreFields = [];
+    }
 
-		if (!wrapped.__serializationContext.root) {
-			const root = new SerializationContext<T>(wrapped.__serializationContext.populate ?? []);
-			SerializationContext.propagate(root, entity, isVisible);
-			contextCreated = true;
-		}
+    const wrapped = helper(entity);
+    let contextCreated = false;
 
-		const root = wrapped.__serializationContext.root!;
-		const meta = wrapped.__meta;
-		const ret = {} as EntityData<T>;
-		const keys = new Set<string>();
+    if (!wrapped.__serializationContext.root) {
+      const root = new SerializationContext<T>(wrapped.__serializationContext.populate ?? []);
+      SerializationContext.propagate(root, entity, isVisible);
+      contextCreated = true;
+    }
 
-		if (meta.serializedPrimaryKey && !meta.compositePK) {
-			keys.add(meta.serializedPrimaryKey);
-		} else {
-			meta.primaryKeys.forEach((pk) => keys.add(pk));
-		}
+    const root = wrapped.__serializationContext.root!;
+    const meta = wrapped.__meta;
+    const ret = {} as EntityData<T>;
+    const keys = new Set<string>();
 
-		if (wrapped.isInitialized() || !wrapped.hasPrimaryKey()) {
-			Object.keys(entity as object).forEach((prop) => keys.add(prop));
-		}
+    if (meta.serializedPrimaryKey && !meta.compositePK) {
+      keys.add(meta.serializedPrimaryKey);
+    } else {
+      meta.primaryKeys.forEach(pk => keys.add(pk));
+    }
 
-		const visited = root.visited.has(entity);
+    if (wrapped.isInitialized() || !wrapped.hasPrimaryKey()) {
+      Object.keys(entity as object).forEach(prop => keys.add(prop));
+    }
 
-		if (!visited) {
-			root.visited.add(entity);
-		}
+    const visited = root.visited.has(entity);
 
-		[...keys]
-			.filter((prop) => (raw ? meta.properties[prop] : isVisible<T>(meta, prop, ignoreFields)))
-			.map((prop) => {
-				const cycle = root.visit(meta.className, prop);
+    if (!visited) {
+      root.visited.add(entity);
+    }
 
-				if (cycle && visited) {
-					return [prop, undefined];
-				}
+    [...keys]
+      .filter(prop => (raw ? meta.properties[prop] : isVisible<T>(meta, prop, ignoreFields)))
+      .map(prop => {
+        const cycle = root.visit(meta.className, prop);
 
-				const val = EntityTransformer.processProperty<T>(prop as keyof T & string, entity, raw);
+        if (cycle && visited) {
+          return [prop, undefined];
+        }
 
-				if (!cycle) {
-					root.leave(meta.className, prop);
-				}
+        const val = EntityTransformer.processProperty<T>(prop as keyof T & string, entity, raw);
 
-				return [prop, val];
-			})
-			.filter(([, value]) => typeof value !== 'undefined')
-			.forEach(([prop, value]) => (ret[this.propertyName(meta, prop as keyof T & string, wrapped.__platform)] = value as T[keyof T & string]));
+        if (!cycle) {
+          root.leave(meta.className, prop);
+        }
 
-		if (!visited) {
-			root.visited.delete(entity);
-		}
+        return [prop, val];
+      })
+      .filter(([, value]) => typeof value !== 'undefined')
+      .forEach(([prop, value]) => (ret[this.propertyName(meta, prop as keyof T & string, wrapped.__platform)] = value as T[keyof T & string]));
 
-		if (!wrapped.isInitialized() && wrapped.hasPrimaryKey()) {
-			return ret;
-		}
+    if (!visited) {
+      root.visited.delete(entity);
+    }
 
-		// decorated getters
-		meta.props.filter((prop) => prop.getter && !prop.hidden && typeof entity[prop.name] !== 'undefined').forEach((prop) => (ret[this.propertyName(meta, prop.name, wrapped.__platform)] = entity[prop.name]));
+    if (!wrapped.isInitialized() && wrapped.hasPrimaryKey()) {
+      return ret;
+    }
 
-		// decorated get methods
-		meta.props.filter((prop) => prop.getterName && !prop.hidden && (entity[prop.getterName] as unknown) instanceof Function).forEach((prop) => (ret[this.propertyName(meta, prop.name, wrapped.__platform)] = (entity[prop.getterName!] as unknown as () => T[keyof T & string])()));
+    // decorated getters
+    meta.props.filter(prop => prop.getter && !prop.hidden && typeof entity[prop.name] !== 'undefined').forEach(prop => (ret[this.propertyName(meta, prop.name, wrapped.__platform)] = entity[prop.name]));
 
-		if (contextCreated) {
-			root.close();
-		}
+    // decorated get methods
+    meta.props.filter(prop => prop.getterName && !prop.hidden && (entity[prop.getterName] as unknown) instanceof Function).forEach(prop => (ret[this.propertyName(meta, prop.name, wrapped.__platform)] = (entity[prop.getterName!] as unknown as () => T[keyof T & string])()));
 
-		return ret;
-	}
+    if (contextCreated) {
+      root.close();
+    }
 
-	private static propertyName<T>(meta: EntityMetadata<T>, prop: keyof T & string, platform?: Platform): string {
-		if (meta.properties[prop].serializedName) {
-			return meta.properties[prop].serializedName as keyof T & string;
-		}
+    return ret;
+  }
 
-		if (meta.properties[prop].primary && platform) {
-			return platform.getSerializedPrimaryKeyField(prop) as keyof T & string;
-		}
+  private static propertyName<T>(meta: EntityMetadata<T>, prop: keyof T & string, platform?: Platform): string {
+    if (meta.properties[prop].serializedName) {
+      return meta.properties[prop].serializedName as keyof T & string;
+    }
 
-		return prop;
-	}
+    if (meta.properties[prop].primary && platform) {
+      return platform.getSerializedPrimaryKeyField(prop) as keyof T & string;
+    }
 
-	private static processProperty<T extends object>(prop: keyof T & string, entity: T, raw: boolean): T[keyof T] | undefined {
-		const wrapped = helper(entity);
-		const property = wrapped.__meta.properties[prop];
-		const serializer = property?.serializer;
+    return prop;
+  }
 
-		if (serializer) {
-			return serializer(entity[prop]);
-		}
+  private static processProperty<T extends object>(prop: keyof T & string, entity: T, raw: boolean): T[keyof T] | undefined {
+    const wrapped = helper(entity);
+    const property = wrapped.__meta.properties[prop];
+    const serializer = property?.serializer;
 
-		if (Utils.isCollection(entity[prop])) {
-			return EntityTransformer.processCollection(prop, entity, raw);
-		}
+    if (serializer) {
+      return serializer(entity[prop]);
+    }
 
-		if (Utils.isEntity(entity[prop], true)) {
-			return EntityTransformer.processEntity(prop, entity, wrapped.__platform, raw);
-		}
+    if (Utils.isCollection(entity[prop])) {
+      return EntityTransformer.processCollection(prop, entity, raw);
+    }
 
-		if (property.reference === ReferenceType.EMBEDDED) {
-			if (Array.isArray(entity[prop])) {
-				return (entity[prop] as object[]).map((item) => helper(item).toJSON()) as T[keyof T];
-			}
+    if (Utils.isEntity(entity[prop], true)) {
+      return EntityTransformer.processEntity(prop, entity, wrapped.__platform, raw);
+    }
 
-			if (Utils.isObject(entity[prop])) {
-				return helper(entity[prop]).toJSON() as T[keyof T];
-			}
-		}
+    if (property.reference === ReferenceType.EMBEDDED) {
+      if (Array.isArray(entity[prop])) {
+        return (entity[prop] as object[]).map(item => helper(item).toJSON()) as T[keyof T];
+      }
 
-		const customType = property?.customType;
+      if (Utils.isObject(entity[prop])) {
+        return helper(entity[prop]).toJSON() as T[keyof T];
+      }
+    }
 
-		if (customType) {
-			return customType.toJSON(entity[prop], wrapped.__platform);
-		}
+    const customType = property?.customType;
 
-		return wrapped.__platform.normalizePrimaryKey(entity[prop] as unknown as IPrimaryKey) as unknown as T[keyof T];
-	}
+    if (customType) {
+      return customType.toJSON(entity[prop], wrapped.__platform);
+    }
 
-	private static processEntity<T extends object>(prop: keyof T, entity: T, platform: Platform, raw: boolean): T[keyof T] | undefined {
-		const child = entity[prop] as unknown as T | Reference<T>;
-		const wrapped = helper(child);
+    return wrapped.__platform.normalizePrimaryKey(entity[prop] as unknown as IPrimaryKey) as unknown as T[keyof T];
+  }
 
-		if (raw && wrapped.isInitialized() && child !== entity) {
-			return wrapped.toPOJO() as unknown as T[keyof T];
-		}
+  private static processEntity<T extends object>(prop: keyof T, entity: T, platform: Platform, raw: boolean): T[keyof T] | undefined {
+    const child = entity[prop] as unknown as T | Reference<T>;
+    const wrapped = helper(child);
 
-		if (wrapped.isInitialized() && wrapped.__populated && child !== entity && !wrapped.__lazyInitialized) {
-			const args = [...wrapped.__meta.toJsonParams.map(() => undefined)];
-			return wrap(child).toJSON(...args) as T[keyof T];
-		}
+    if (raw && wrapped.isInitialized() && child !== entity) {
+      return wrapped.toPOJO() as unknown as T[keyof T];
+    }
 
-		return platform.normalizePrimaryKey(wrapped.getPrimaryKey() as IPrimaryKey) as unknown as T[keyof T];
-	}
+    if (wrapped.isInitialized() && wrapped.__populated && child !== entity && !wrapped.__lazyInitialized) {
+      const args = [...wrapped.__meta.toJsonParams.map(() => undefined)];
+      return wrap(child).toJSON(...args) as T[keyof T];
+    }
 
-	private static processCollection<T>(prop: keyof T, entity: T, raw: boolean): T[keyof T] | undefined {
-		const col = entity[prop] as unknown as Collection<AnyEntity>;
+    return platform.normalizePrimaryKey(wrapped.getPrimaryKey() as IPrimaryKey) as unknown as T[keyof T];
+  }
 
-		if (raw && col.isInitialized(true)) {
-			return col.getItems().map((item) => wrap(item).toPOJO()) as unknown as T[keyof T];
-		}
+  private static processCollection<T>(prop: keyof T, entity: T, raw: boolean): T[keyof T] | undefined {
+    const col = entity[prop] as unknown as Collection<AnyEntity>;
 
-		if (col.isInitialized(true) && col.shouldPopulate()) {
-			return col.toArray() as unknown as T[keyof T];
-		}
+    if (raw && col.isInitialized(true)) {
+      return col.getItems().map(item => wrap(item).toPOJO()) as unknown as T[keyof T];
+    }
 
-		if (col.isInitialized()) {
-			return col.getIdentifiers() as unknown as T[keyof T];
-		}
-	}
+    if (col.isInitialized(true) && col.shouldPopulate()) {
+      return col.toArray() as unknown as T[keyof T];
+    }
+
+    if (col.isInitialized()) {
+      return col.getIdentifiers() as unknown as T[keyof T];
+    }
+  }
+
 }

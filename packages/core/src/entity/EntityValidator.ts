@@ -5,170 +5,172 @@ import { ValidationError } from '../errors';
 import { helper } from './wrap';
 
 export class EntityValidator {
-	constructor(private strict: boolean) {}
 
-	validate<T extends object>(entity: T, payload: any, meta: EntityMetadata): void {
-		meta.props.forEach((prop) => {
-			if (prop.inherited) {
-				return;
-			}
+  constructor(private strict: boolean) {}
 
-			if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference)) {
-				this.validateCollection(entity, prop);
-			}
+  validate<T extends object>(entity: T, payload: any, meta: EntityMetadata): void {
+    meta.props.forEach(prop => {
+      if (prop.inherited) {
+        return;
+      }
 
-			const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date'];
+      if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference)) {
+        this.validateCollection(entity, prop);
+      }
 
-			if (prop.reference !== ReferenceType.SCALAR || !SCALAR_TYPES.includes(prop.type)) {
-				return;
-			}
+      const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date'];
 
-			const newValue = this.validateProperty(prop, this.getValue(payload, prop), entity);
+      if (prop.reference !== ReferenceType.SCALAR || !SCALAR_TYPES.includes(prop.type)) {
+        return;
+      }
 
-			if (this.getValue(payload, prop) === newValue) {
-				return;
-			}
+      const newValue = this.validateProperty(prop, this.getValue(payload, prop), entity);
 
-			this.setValue(payload, prop, newValue);
+      if (this.getValue(payload, prop) === newValue) {
+        return;
+      }
 
-			/* istanbul ignore else */
-			if (entity[prop.name]) {
-				entity[prop.name] = payload[prop.name];
-			}
-		});
-	}
+      this.setValue(payload, prop, newValue);
 
-	validateRequired<T extends object>(entity: T): void {
-		const wrapped = helper(entity);
+      /* istanbul ignore else */
+      if (entity[prop.name]) {
+        entity[prop.name] = payload[prop.name];
+      }
+    });
+  }
 
-		for (const prop of wrapped.__meta.props) {
-			if (
-				!prop.nullable &&
-				!prop.autoincrement &&
-				!prop.default &&
-				!prop.defaultRaw &&
-				!prop.onCreate &&
-				!prop.embedded &&
-				![ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference) &&
-				prop.name !== wrapped.__meta.root.discriminatorColumn &&
-				prop.type.toLowerCase() !== 'objectid' &&
-				prop.persist !== false &&
-				entity[prop.name] == null
-			) {
-				throw ValidationError.propertyRequired(entity, prop);
-			}
-		}
-	}
+  validateRequired<T extends object>(entity: T): void {
+    const wrapped = helper(entity);
 
-	validateProperty<T extends object>(prop: EntityProperty, givenValue: any, entity: T) {
-		if (givenValue === null || givenValue === undefined) {
-			return givenValue;
-		}
+    for (const prop of wrapped.__meta.props) {
+      if (
+        !prop.nullable &&
+        !prop.autoincrement &&
+        !prop.default &&
+        !prop.defaultRaw &&
+        !prop.onCreate &&
+        !prop.embedded &&
+        ![ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference) &&
+        prop.name !== wrapped.__meta.root.discriminatorColumn &&
+        prop.type.toLowerCase() !== 'objectid' &&
+        prop.persist !== false &&
+        entity[prop.name] == null
+      ) {
+        throw ValidationError.propertyRequired(entity, prop);
+      }
+    }
+  }
 
-		const expectedType = prop.type.toLowerCase();
-		let givenType = Utils.getObjectType(givenValue);
-		let ret = givenValue;
+  validateProperty<T extends object>(prop: EntityProperty, givenValue: any, entity: T) {
+    if (givenValue === null || givenValue === undefined) {
+      return givenValue;
+    }
 
-		if (!this.strict) {
-			ret = this.fixTypes(expectedType, givenType, givenValue);
-			givenType = Utils.getObjectType(ret);
-		}
+    const expectedType = prop.type.toLowerCase();
+    let givenType = Utils.getObjectType(givenValue);
+    let ret = givenValue;
 
-		if (givenType !== expectedType) {
-			throw ValidationError.fromWrongPropertyType(entity, prop.name, expectedType, givenType, givenValue);
-		}
+    if (!this.strict) {
+      ret = this.fixTypes(expectedType, givenType, givenValue);
+      givenType = Utils.getObjectType(ret);
+    }
 
-		return ret;
-	}
+    if (givenType !== expectedType) {
+      throw ValidationError.fromWrongPropertyType(entity, prop.name, expectedType, givenType, givenValue);
+    }
 
-	validateParams(params: any, type = 'search condition', field?: string): void {
-		if (Utils.isPrimaryKey(params) || Utils.isEntity(params)) {
-			return;
-		}
+    return ret;
+  }
 
-		if (Array.isArray(params)) {
-			return (params as unknown[]).forEach((item) => this.validateParams(item, type, field));
-		}
+  validateParams(params: any, type = 'search condition', field?: string): void {
+    if (Utils.isPrimaryKey(params) || Utils.isEntity(params)) {
+      return;
+    }
 
-		if (Utils.isPlainObject(params)) {
-			Object.keys(params).forEach((k) => {
-				this.validateParams(params[k], type, k);
-			});
-		}
-	}
+    if (Array.isArray(params)) {
+      return (params as unknown[]).forEach(item => this.validateParams(item, type, field));
+    }
 
-	validatePrimaryKey<T>(entity: EntityData<T>, meta: EntityMetadata): void {
-		const pkExists = meta.primaryKeys.every((pk) => entity[pk] != null) || entity[meta.serializedPrimaryKey] != null;
+    if (Utils.isPlainObject(params)) {
+      Object.keys(params).forEach(k => {
+        this.validateParams(params[k], type, k);
+      });
+    }
+  }
 
-		if (!entity || !pkExists) {
-			throw ValidationError.fromMergeWithoutPK(meta);
-		}
-	}
+  validatePrimaryKey<T>(entity: EntityData<T>, meta: EntityMetadata): void {
+    const pkExists = meta.primaryKeys.every(pk => entity[pk] != null) || entity[meta.serializedPrimaryKey] != null;
 
-	validateEmptyWhere<T>(where: FilterQuery<T>): void {
-		if (Utils.isEmpty(where)) {
-			throw new Error(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
-		}
-	}
+    if (!entity || !pkExists) {
+      throw ValidationError.fromMergeWithoutPK(meta);
+    }
+  }
 
-	private getValue(o: Dictionary, prop: EntityProperty) {
-		if (prop.embedded && prop.embedded[0] in o) {
-			return o[prop.embedded[0]]?.[prop.embedded[1]];
-		}
+  validateEmptyWhere<T>(where: FilterQuery<T>): void {
+    if (Utils.isEmpty(where)) {
+      throw new Error(`You cannot call 'EntityManager.findOne()' with empty 'where' parameter`);
+    }
+  }
 
-		return o[prop.name];
-	}
+  private getValue(o: Dictionary, prop: EntityProperty) {
+    if (prop.embedded && prop.embedded[0] in o) {
+      return o[prop.embedded[0]]?.[prop.embedded[1]];
+    }
 
-	private setValue(o: Dictionary, prop: EntityProperty, v: any) {
-		/* istanbul ignore next */
-		if (prop.embedded && prop.embedded[0] in o) {
-			return (o[prop.embedded[0]][prop.embedded[1]] = v);
-		}
+    return o[prop.name];
+  }
 
-		o[prop.name] = v;
-	}
+  private setValue(o: Dictionary, prop: EntityProperty, v: any) {
+    /* istanbul ignore next */
+    if (prop.embedded && prop.embedded[0] in o) {
+      return (o[prop.embedded[0]][prop.embedded[1]] = v);
+    }
 
-	private validateCollection<T extends object>(entity: T, prop: EntityProperty): void {
-		if (helper(entity).__initialized && !entity[prop.name as keyof T]) {
-			throw ValidationError.fromCollectionNotInitialized(entity, prop);
-		}
-	}
+    o[prop.name] = v;
+  }
 
-	private fixTypes(expectedType: string, givenType: string, givenValue: any): any {
-		if (expectedType === 'date' && ['string', 'number'].includes(givenType)) {
-			givenValue = this.fixDateType(givenValue);
-		}
+  private validateCollection<T extends object>(entity: T, prop: EntityProperty): void {
+    if (helper(entity).__initialized && !entity[prop.name as keyof T]) {
+      throw ValidationError.fromCollectionNotInitialized(entity, prop);
+    }
+  }
 
-		if (expectedType === 'number' && givenType === 'string') {
-			givenValue = this.fixNumberType(givenValue);
-		}
+  private fixTypes(expectedType: string, givenType: string, givenValue: any): any {
+    if (expectedType === 'date' && ['string', 'number'].includes(givenType)) {
+      givenValue = this.fixDateType(givenValue);
+    }
 
-		if (expectedType === 'boolean' && givenType === 'number') {
-			givenValue = this.fixBooleanType(givenValue);
-		}
+    if (expectedType === 'number' && givenType === 'string') {
+      givenValue = this.fixNumberType(givenValue);
+    }
 
-		return givenValue;
-	}
+    if (expectedType === 'boolean' && givenType === 'number') {
+      givenValue = this.fixBooleanType(givenValue);
+    }
 
-	private fixDateType(givenValue: string): Date | string {
-		let date: Date;
+    return givenValue;
+  }
 
-		if (Utils.isString(givenValue) && givenValue.match(/^-?\d+(\.\d+)?$/)) {
-			date = new Date(+givenValue);
-		} else {
-			date = new Date(givenValue);
-		}
+  private fixDateType(givenValue: string): Date | string {
+    let date: Date;
 
-		return date.toString() !== 'Invalid Date' ? date : givenValue;
-	}
+    if (Utils.isString(givenValue) && givenValue.match(/^-?\d+(\.\d+)?$/)) {
+      date = new Date(+givenValue);
+    } else {
+      date = new Date(givenValue);
+    }
 
-	private fixNumberType(givenValue: string): number | string {
-		const num = +givenValue;
-		return '' + num === givenValue ? num : givenValue;
-	}
+    return date.toString() !== 'Invalid Date' ? date : givenValue;
+  }
 
-	private fixBooleanType(givenValue: number): boolean | number {
-		const bool = !!givenValue;
-		return +bool === givenValue ? bool : givenValue;
-	}
+  private fixNumberType(givenValue: string): number | string {
+    const num = +givenValue;
+    return '' + num === givenValue ? num : givenValue;
+  }
+
+  private fixBooleanType(givenValue: number): boolean | number {
+    const bool = !!givenValue;
+    return +bool === givenValue ? bool : givenValue;
+  }
+
 }

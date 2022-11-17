@@ -6,12 +6,14 @@ import { BetterSqliteDriver } from './BetterSqliteDriver';
  * @inheritDoc
  */
 export class BetterSqliteMikroORM extends MikroORM<BetterSqliteDriver> {
-	private static DRIVER = BetterSqliteDriver;
+
+  private static DRIVER = BetterSqliteDriver;
+
 }
 
 export type BetterSqliteOptions = Options<BetterSqliteDriver>;
 
 /* istanbul ignore next */
 export function defineBetterSqliteConfig(options: BetterSqliteOptions) {
-	return defineConfig({ driver: BetterSqliteDriver, ...options });
+  return defineConfig({ driver: BetterSqliteDriver, ...options });
 }

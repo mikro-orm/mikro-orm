@@ -4,174 +4,176 @@ import type { EntityMetadata, EntityProperty } from '@mikro-orm/core';
 import { MetadataError, MetadataProvider, MetadataStorage, ReferenceType, Utils } from '@mikro-orm/core';
 
 export class TsMorphMetadataProvider extends MetadataProvider {
-	private readonly project = new Project({
-		compilerOptions: {
-			strictNullChecks: true,
-			module: ModuleKind.Node16,
-		},
-	});
 
-	private sources!: SourceFile[];
+  private readonly project = new Project({
+    compilerOptions: {
+      strictNullChecks: true,
+      module: ModuleKind.Node16,
+    },
+  });
 
-	useCache(): boolean {
-		return this.config.get('cache').enabled ?? true;
-	}
+  private sources!: SourceFile[];
 
-	async loadEntityMetadata(meta: EntityMetadata, name: string): Promise<void> {
-		if (!meta.path) {
-			return;
-		}
+  useCache(): boolean {
+    return this.config.get('cache').enabled ?? true;
+  }
 
-		await this.initProperties(meta);
-	}
+  async loadEntityMetadata(meta: EntityMetadata, name: string): Promise<void> {
+    if (!meta.path) {
+      return;
+    }
 
-	async getExistingSourceFile(path: string, ext?: string, validate = true): Promise<SourceFile> {
-		if (!ext) {
-			return (await this.getExistingSourceFile(path, '.d.ts', false)) || (await this.getExistingSourceFile(path, '.ts'));
-		}
+    await this.initProperties(meta);
+  }
 
-		const tsPath = path.match(/.*\/[^/]+$/)![0].replace(/\.js$/, ext);
+  async getExistingSourceFile(path: string, ext?: string, validate = true): Promise<SourceFile> {
+    if (!ext) {
+      return (await this.getExistingSourceFile(path, '.d.ts', false)) || (await this.getExistingSourceFile(path, '.ts'));
+    }
 
-		return (await this.getSourceFile(tsPath, validate))!;
-	}
+    const tsPath = path.match(/.*\/[^/]+$/)![0].replace(/\.js$/, ext);
 
-	protected async initProperties(meta: EntityMetadata): Promise<void> {
-		// load types and column names
-		for (const prop of Object.values(meta.properties)) {
-			const type = this.extractType(prop);
+    return (await this.getSourceFile(tsPath, validate))!;
+  }
 
-			if (!type || this.config.get('discovery').alwaysAnalyseProperties) {
-				await this.initPropertyType(meta, prop);
-			}
+  protected async initProperties(meta: EntityMetadata): Promise<void> {
+    // load types and column names
+    for (const prop of Object.values(meta.properties)) {
+      const type = this.extractType(prop);
 
-			prop.type = type || prop.type;
-		}
-	}
+      if (!type || this.config.get('discovery').alwaysAnalyseProperties) {
+        await this.initPropertyType(meta, prop);
+      }
 
-	private extractType(prop: EntityProperty): string {
-		if (Utils.isString(prop.entity)) {
-			return prop.entity;
-		}
+      prop.type = type || prop.type;
+    }
+  }
 
-		if (prop.entity) {
-			return Utils.className(prop.entity());
-		}
+  private extractType(prop: EntityProperty): string {
+    if (Utils.isString(prop.entity)) {
+      return prop.entity;
+    }
 
-		return prop.type;
-	}
+    if (prop.entity) {
+      return Utils.className(prop.entity());
+    }
 
-	private async initPropertyType(meta: EntityMetadata, prop: EntityProperty): Promise<void> {
-		const { type, optional } = await this.readTypeFromSource(meta, prop);
-		prop.type = type;
+    return prop.type;
+  }
 
-		if (optional) {
-			prop.optional = true;
-		}
+  private async initPropertyType(meta: EntityMetadata, prop: EntityProperty): Promise<void> {
+    const { type, optional } = await this.readTypeFromSource(meta, prop);
+    prop.type = type;
 
-		this.processWrapper(prop, 'IdentifiedReference');
-		this.processWrapper(prop, 'Reference');
-		this.processWrapper(prop, 'Ref');
-		this.processWrapper(prop, 'Collection');
-	}
+    if (optional) {
+      prop.optional = true;
+    }
 
-	private async readTypeFromSource(meta: EntityMetadata, prop: EntityProperty): Promise<{ type: string; optional?: boolean }> {
-		const source = await this.getExistingSourceFile(meta.path);
-		const cls = source.getClass(meta.className);
+    this.processWrapper(prop, 'IdentifiedReference');
+    this.processWrapper(prop, 'Reference');
+    this.processWrapper(prop, 'Ref');
+    this.processWrapper(prop, 'Collection');
+  }
 
-		/* istanbul ignore next */
-		if (!cls) {
-			throw new MetadataError(`Source class for entity ${meta.className} not found. Verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`);
-		}
+  private async readTypeFromSource(meta: EntityMetadata, prop: EntityProperty): Promise<{ type: string; optional?: boolean }> {
+    const source = await this.getExistingSourceFile(meta.path);
+    const cls = source.getClass(meta.className);
 
-		const properties = cls.getInstanceProperties();
-		const property = properties.find((v) => v.getName() === prop.name) as PropertyDeclaration;
+    /* istanbul ignore next */
+    if (!cls) {
+      throw new MetadataError(`Source class for entity ${meta.className} not found. Verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`);
+    }
 
-		if (!property) {
-			return { type: prop.type, optional: prop.nullable };
-		}
+    const properties = cls.getInstanceProperties();
+    const property = properties.find(v => v.getName() === prop.name) as PropertyDeclaration;
 
-		const tsType = property.getType();
-		const typeName = tsType.getText(property);
+    if (!property) {
+      return { type: prop.type, optional: prop.nullable };
+    }
 
-		if (prop.enum && tsType.isEnum()) {
-			prop.items = tsType.getUnionTypes().map((t) => t.getLiteralValueOrThrow()) as string[];
-		}
+    const tsType = property.getType();
+    const typeName = tsType.getText(property);
 
-		if (tsType.isArray()) {
-			prop.array = true;
+    if (prop.enum && tsType.isEnum()) {
+      prop.items = tsType.getUnionTypes().map(t => t.getLiteralValueOrThrow()) as string[];
+    }
 
-			/* istanbul ignore else */
-			if (tsType.getArrayElementType()!.isEnum()) {
-				prop.items = tsType
-					.getArrayElementType()!
-					.getUnionTypes()
-					.map((t) => t.getLiteralValueOrThrow()) as string[];
-			}
-		}
+    if (tsType.isArray()) {
+      prop.array = true;
 
-		if (prop.array && prop.enum) {
-			prop.enum = false;
-		}
+      /* istanbul ignore else */
+      if (tsType.getArrayElementType()!.isEnum()) {
+        prop.items = tsType
+          .getArrayElementType()!
+          .getUnionTypes()
+          .map(t => t.getLiteralValueOrThrow()) as string[];
+      }
+    }
 
-		let type = typeName;
-		const union = type.split(' | ');
-		const optional = property.hasQuestionToken?.() || union.includes('null') || union.includes('undefined');
-		type = union.filter((t) => !['null', 'undefined'].includes(t)).join(' | ');
+    if (prop.array && prop.enum) {
+      prop.enum = false;
+    }
 
-		prop.array ??= type.endsWith('[]') || !!type.match(/Array<(.*)>/);
-		type = type
-			.replace(/Array<(.*)>/, '$1') // unwrap array
-			.replace(/\[]$/, '') // remove array suffix
-			.replace(/\((.*)\)/, '$1'); // unwrap union types
+    let type = typeName;
+    const union = type.split(' | ');
+    const optional = property.hasQuestionToken?.() || union.includes('null') || union.includes('undefined');
+    type = union.filter(t => !['null', 'undefined'].includes(t)).join(' | ');
 
-		// keep the array suffix in the type, it is needed in few places in discovery and comparator (`prop.array` is used only for enum arrays)
-		if (prop.array && !type.includes(' | ') && prop.reference === ReferenceType.SCALAR) {
-			type += '[]';
-		}
+    prop.array ??= type.endsWith('[]') || !!type.match(/Array<(.*)>/);
+    type = type
+      .replace(/Array<(.*)>/, '$1') // unwrap array
+      .replace(/\[]$/, '') // remove array suffix
+      .replace(/\((.*)\)/, '$1'); // unwrap union types
 
-		return { type, optional };
-	}
+    // keep the array suffix in the type, it is needed in few places in discovery and comparator (`prop.array` is used only for enum arrays)
+    if (prop.array && !type.includes(' | ') && prop.reference === ReferenceType.SCALAR) {
+      type += '[]';
+    }
 
-	private async getSourceFile(tsPath: string, validate: boolean): Promise<SourceFile | undefined> {
-		if (!this.sources) {
-			await this.initSourceFiles();
-		}
+    return { type, optional };
+  }
 
-		const source = this.sources.find((s) => s.getFilePath().endsWith(tsPath.replace(/^\.+/, '')));
+  private async getSourceFile(tsPath: string, validate: boolean): Promise<SourceFile | undefined> {
+    if (!this.sources) {
+      await this.initSourceFiles();
+    }
 
-		if (!source && validate) {
-			throw new MetadataError(`Source file '${tsPath}' not found. Check your 'entitiesTs' option and verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`);
-		}
+    const source = this.sources.find(s => s.getFilePath().endsWith(tsPath.replace(/^\.+/, '')));
 
-		return source;
-	}
+    if (!source && validate) {
+      throw new MetadataError(`Source file '${tsPath}' not found. Check your 'entitiesTs' option and verify you have 'compilerOptions.declaration' enabled in your 'tsconfig.json'. If you are using webpack, see https://bit.ly/35pPDNn`);
+    }
 
-	private processWrapper(prop: EntityProperty, wrapper: string): void {
-		// type can be sometimes in form of:
-		// `'({ object?: Entity | undefined; } & import("...").Reference<Entity>)'`
-		// `{ object?: import("...").Entity | undefined; } & import("...").Reference<Entity>`
-		// `{ node?: ({ id?: number | undefined; } & import("...").Reference<import("...").Entity>) | undefined; } & import("...").Reference<Entity>`
-		// the regexp is looking for the `wrapper`, possible prefixed with `.` or wrapped in parens.
-		const type = prop.type.replace(/import\(.*\)\./g, '');
-		const m = type.match(new RegExp(`(?:^|[.( ])${wrapper}<(\\w+),?.*>(?:$|[) ])`));
+    return source;
+  }
 
-		if (!m) {
-			return;
-		}
+  private processWrapper(prop: EntityProperty, wrapper: string): void {
+    // type can be sometimes in form of:
+    // `'({ object?: Entity | undefined; } & import("...").Reference<Entity>)'`
+    // `{ object?: import("...").Entity | undefined; } & import("...").Reference<Entity>`
+    // `{ node?: ({ id?: number | undefined; } & import("...").Reference<import("...").Entity>) | undefined; } & import("...").Reference<Entity>`
+    // the regexp is looking for the `wrapper`, possible prefixed with `.` or wrapped in parens.
+    const type = prop.type.replace(/import\(.*\)\./g, '');
+    const m = type.match(new RegExp(`(?:^|[.( ])${wrapper}<(\\w+),?.*>(?:$|[) ])`));
 
-		prop.type = m[1];
+    if (!m) {
+      return;
+    }
 
-		if (['Ref', 'Reference', 'IdentifiedReference'].includes(wrapper)) {
-			prop.wrappedReference = true;
-		}
-	}
+    prop.type = m[1];
 
-	private async initSourceFiles(): Promise<void> {
-		// All entity files are first required during the discovery, before we reach here, so it is safe to get the parts from the global
-		// metadata storage. We know the path thanks the the decorators being executed. In case we are running via ts-node, the extension
-		// will be already `.ts`, so no change needed. `.js` files will get renamed to `.d.ts` files as they will be used as a source for
-		// the ts-morph reflection.
-		const paths = Object.values(MetadataStorage.getMetadata()).map((m) => m.path.replace(/\.js$/, '.d.ts'));
-		this.sources = this.project.addSourceFilesAtPaths(paths);
-	}
+    if (['Ref', 'Reference', 'IdentifiedReference'].includes(wrapper)) {
+      prop.wrappedReference = true;
+    }
+  }
+
+  private async initSourceFiles(): Promise<void> {
+    // All entity files are first required during the discovery, before we reach here, so it is safe to get the parts from the global
+    // metadata storage. We know the path thanks the the decorators being executed. In case we are running via ts-node, the extension
+    // will be already `.ts`, so no change needed. `.js` files will get renamed to `.d.ts` files as they will be used as a source for
+    // the ts-morph reflection.
+    const paths = Object.values(MetadataStorage.getMetadata()).map(m => m.path.replace(/\.js$/, '.d.ts'));
+    this.sources = this.project.addSourceFilesAtPaths(paths);
+  }
+
 }

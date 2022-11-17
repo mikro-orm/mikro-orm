@@ -9,243 +9,245 @@ import { MonkeyPatchable } from './MonkeyPatchable';
 const parentTransactionSymbol = Symbol('parentTransaction');
 
 function isRootTransaction<T>(trx: Transaction<T>) {
-	return !Object.getOwnPropertySymbols(trx).includes(parentTransactionSymbol);
+  return !Object.getOwnPropertySymbols(trx).includes(parentTransactionSymbol);
 }
 
 export abstract class AbstractSqlConnection extends Connection {
-	private static __patched = false;
-	protected platform!: AbstractSqlPlatform;
-	protected client!: Knex;
 
-	constructor(config: Configuration, options?: ConnectionOptions, type?: 'read' | 'write') {
-		super(config, options, type);
-		this.patchKnexClient();
-	}
+  private static __patched = false;
+  protected platform!: AbstractSqlPlatform;
+  protected client!: Knex;
 
-	getKnex(): Knex {
-		return this.client;
-	}
+  constructor(config: Configuration, options?: ConnectionOptions, type?: 'read' | 'write') {
+    super(config, options, type);
+    this.patchKnexClient();
+  }
 
-	async close(force?: boolean): Promise<void> {
-		await super.close(force);
-		await this.client.destroy();
-	}
+  getKnex(): Knex {
+    return this.client;
+  }
 
-	async isConnected(): Promise<boolean> {
-		try {
-			await this.client.raw('select 1');
-			return true;
-		} catch {
-			return false;
-		}
-	}
+  async close(force?: boolean): Promise<void> {
+    await super.close(force);
+    await this.client.destroy();
+  }
 
-	async transactional<T>(
-		cb: (trx: Transaction<Knex.Transaction>) => Promise<T>,
-		options: {
-			isolationLevel?: IsolationLevel;
-			ctx?: Knex.Transaction;
-			eventBroadcaster?: TransactionEventBroadcaster;
-		} = {},
-	): Promise<T> {
-		const trx = await this.begin(options);
+  async isConnected(): Promise<boolean> {
+    try {
+      await this.client.raw('select 1');
+      return true;
+    } catch {
+      return false;
+    }
+  }
 
-		try {
-			const ret = await cb(trx);
-			await this.commit(trx, options.eventBroadcaster);
+  async transactional<T>(
+    cb: (trx: Transaction<Knex.Transaction>) => Promise<T>,
+    options: {
+      isolationLevel?: IsolationLevel;
+      ctx?: Knex.Transaction;
+      eventBroadcaster?: TransactionEventBroadcaster;
+    } = {},
+  ): Promise<T> {
+    const trx = await this.begin(options);
 
-			return ret;
-		} catch (error) {
-			await this.rollback(trx, options.eventBroadcaster);
-			throw error;
-		}
-	}
+    try {
+      const ret = await cb(trx);
+      await this.commit(trx, options.eventBroadcaster);
 
-	async begin(
-		options: {
-			isolationLevel?: IsolationLevel;
-			ctx?: Knex.Transaction;
-			eventBroadcaster?: TransactionEventBroadcaster;
-		} = {},
-	): Promise<Knex.Transaction> {
-		if (!options.ctx) {
-			await options.eventBroadcaster?.dispatchEvent(EventType.beforeTransactionStart);
-		}
+      return ret;
+    } catch (error) {
+      await this.rollback(trx, options.eventBroadcaster);
+      throw error;
+    }
+  }
 
-		const trx = await (options.ctx || this.client).transaction(null, {
-			isolationLevel: options.isolationLevel,
-		});
+  async begin(
+    options: {
+      isolationLevel?: IsolationLevel;
+      ctx?: Knex.Transaction;
+      eventBroadcaster?: TransactionEventBroadcaster;
+    } = {},
+  ): Promise<Knex.Transaction> {
+    if (!options.ctx) {
+      await options.eventBroadcaster?.dispatchEvent(EventType.beforeTransactionStart);
+    }
 
-		if (!options.ctx) {
-			await options.eventBroadcaster?.dispatchEvent(EventType.afterTransactionStart, trx);
-		} else {
-			trx[parentTransactionSymbol] = options.ctx;
-		}
+    const trx = await (options.ctx || this.client).transaction(null, {
+      isolationLevel: options.isolationLevel,
+    });
 
-		return trx;
-	}
+    if (!options.ctx) {
+      await options.eventBroadcaster?.dispatchEvent(EventType.afterTransactionStart, trx);
+    } else {
+      trx[parentTransactionSymbol] = options.ctx;
+    }
 
-	async commit(ctx: Knex.Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
-		const runTrxHooks = isRootTransaction(ctx);
+    return trx;
+  }
 
-		if (runTrxHooks) {
-			await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionCommit, ctx);
-		}
+  async commit(ctx: Knex.Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
+    const runTrxHooks = isRootTransaction(ctx);
 
-		ctx.commit();
-		await ctx.executionPromise; // https://github.com/knex/knex/issues/3847#issuecomment-626330453
+    if (runTrxHooks) {
+      await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionCommit, ctx);
+    }
 
-		if (runTrxHooks) {
-			await eventBroadcaster?.dispatchEvent(EventType.afterTransactionCommit, ctx);
-		}
-	}
+    ctx.commit();
+    await ctx.executionPromise; // https://github.com/knex/knex/issues/3847#issuecomment-626330453
 
-	async rollback(ctx: Knex.Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
-		const runTrxHooks = isRootTransaction(ctx);
+    if (runTrxHooks) {
+      await eventBroadcaster?.dispatchEvent(EventType.afterTransactionCommit, ctx);
+    }
+  }
 
-		if (runTrxHooks) {
-			await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionRollback, ctx);
-		}
+  async rollback(ctx: Knex.Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
+    const runTrxHooks = isRootTransaction(ctx);
 
-		await ctx.rollback();
+    if (runTrxHooks) {
+      await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionRollback, ctx);
+    }
 
-		if (runTrxHooks) {
-			await eventBroadcaster?.dispatchEvent(EventType.afterTransactionRollback, ctx);
-		}
-	}
+    await ctx.rollback();
 
-	async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[],>(queryOrKnex: string | Knex.QueryBuilder | Knex.Raw, params: unknown[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction): Promise<T> {
-		if (Utils.isObject<Knex.QueryBuilder | Knex.Raw>(queryOrKnex)) {
-			ctx ??= (queryOrKnex as any).client.transacting ? queryOrKnex : null;
-			const q = queryOrKnex.toSQL();
-			queryOrKnex = q.sql;
-			params = q.bindings as any[];
-		}
+    if (runTrxHooks) {
+      await eventBroadcaster?.dispatchEvent(EventType.afterTransactionRollback, ctx);
+    }
+  }
 
-		const formatted = this.platform.formatQuery(queryOrKnex, params);
-		const sql = this.getSql(queryOrKnex, formatted);
-		const res = await this.executeQuery<any>(
-			sql,
-			() => {
-				const query = this.client.raw(formatted);
+  async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[],>(queryOrKnex: string | Knex.QueryBuilder | Knex.Raw, params: unknown[] = [], method: 'all' | 'get' | 'run' = 'all', ctx?: Transaction): Promise<T> {
+    if (Utils.isObject<Knex.QueryBuilder | Knex.Raw>(queryOrKnex)) {
+      ctx ??= (queryOrKnex as any).client.transacting ? queryOrKnex : null;
+      const q = queryOrKnex.toSQL();
+      queryOrKnex = q.sql;
+      params = q.bindings as any[];
+    }
 
-				if (ctx) {
-					query.transacting(ctx);
-				}
+    const formatted = this.platform.formatQuery(queryOrKnex, params);
+    const sql = this.getSql(queryOrKnex, formatted);
+    const res = await this.executeQuery<any>(
+      sql,
+      () => {
+        const query = this.client.raw(formatted);
 
-				return query;
-			},
-			{ query: queryOrKnex, params },
-		);
+        if (ctx) {
+          query.transacting(ctx);
+        }
 
-		return this.transformRawResult<T>(res, method);
-	}
+        return query;
+      },
+      { query: queryOrKnex, params },
+    );
 
-	/**
-	 * Execute raw SQL queries from file
-	 */
-	async loadFile(path: string): Promise<void> {
-		const buf = await readFile(path);
-		await this.client.raw(buf.toString());
-	}
+    return this.transformRawResult<T>(res, method);
+  }
 
-	protected createKnexClient(type: string): Knex {
-		const driverOptions = this.config.get('driverOptions');
+  /**
+   * Execute raw SQL queries from file
+   */
+  async loadFile(path: string): Promise<void> {
+    const buf = await readFile(path);
+    await this.client.raw(buf.toString());
+  }
 
-		if (driverOptions.context?.client instanceof knex.Client) {
-			this.logger.log('info', 'Reusing knex client provided via `driverOptions`');
-			return driverOptions as Knex;
-		}
+  protected createKnexClient(type: string): Knex {
+    const driverOptions = this.config.get('driverOptions');
 
-		return knex<any, any>(this.getKnexOptions(type)).on('query', (data) => {
-			if (!data.__knexQueryUid) {
-				this.logQuery(data.sql.toLowerCase().replace(/;$/, ''));
-			}
-		});
-	}
+    if (driverOptions.context?.client instanceof knex.Client) {
+      this.logger.log('info', 'Reusing knex client provided via `driverOptions`');
+      return driverOptions as Knex;
+    }
 
-	protected getKnexOptions(type: string): Knex.Config {
-		const config = Utils.merge(
-			{
-				client: type,
-				connection: this.getConnectionOptions(),
-				pool: this.config.get('pool'),
-			},
-			this.config.get('driverOptions'),
-		);
-		const options = config.connection as ConnectionOptions;
-		const password = options.password;
+    return knex<any, any>(this.getKnexOptions(type)).on('query', data => {
+      if (!data.__knexQueryUid) {
+        this.logQuery(data.sql.toLowerCase().replace(/;$/, ''));
+      }
+    });
+  }
 
-		if (!(password instanceof Function)) {
-			return config;
-		}
+  protected getKnexOptions(type: string): Knex.Config {
+    const config = Utils.merge(
+      {
+        client: type,
+        connection: this.getConnectionOptions(),
+        pool: this.config.get('pool'),
+      },
+      this.config.get('driverOptions'),
+    );
+    const options = config.connection as ConnectionOptions;
+    const password = options.password;
 
-		config.connection = async () => {
-			const pw = await password();
+    if (!(password instanceof Function)) {
+      return config;
+    }
 
-			if (typeof pw === 'string') {
-				return { ...options, password: pw };
-			}
+    config.connection = async () => {
+      const pw = await password();
 
-			return {
-				...options,
-				password: pw.password,
-				expirationChecker: pw.expirationChecker,
-			};
-		};
+      if (typeof pw === 'string') {
+        return { ...options, password: pw };
+      }
 
-		return config;
-	}
+      return {
+        ...options,
+        password: pw.password,
+        expirationChecker: pw.expirationChecker,
+      };
+    };
 
-	private getSql(query: string, formatted: string): string {
-		const logger = this.config.getLogger();
+    return config;
+  }
 
-		if (!logger.isEnabled('query')) {
-			return query;
-		}
+  private getSql(query: string, formatted: string): string {
+    const logger = this.config.getLogger();
 
-		if (logger.isEnabled('query-params')) {
-			return formatted;
-		}
+    if (!logger.isEnabled('query')) {
+      return query;
+    }
 
-		return this.client.client.positionBindings(query);
-	}
+    if (logger.isEnabled('query-params')) {
+      return formatted;
+    }
 
-	/**
-	 * do not call `positionBindings` when there are no bindings - it was messing up with
-	 * already interpolated strings containing `?`, and escaping that was not enough to
-	 * support edge cases like `\\?` strings (as `positionBindings` was removing the `\\`)
-	 */
-	private patchKnexClient(): void {
-		const { Client, TableCompiler } = MonkeyPatchable;
-		const query = Client.prototype.query;
+    return this.client.client.positionBindings(query);
+  }
 
-		if (AbstractSqlConnection.__patched) {
-			return;
-		}
+  /**
+   * do not call `positionBindings` when there are no bindings - it was messing up with
+   * already interpolated strings containing `?`, and escaping that was not enough to
+   * support edge cases like `\\?` strings (as `positionBindings` was removing the `\\`)
+   */
+  private patchKnexClient(): void {
+    const { Client, TableCompiler } = MonkeyPatchable;
+    const query = Client.prototype.query;
 
-		AbstractSqlConnection.__patched = true;
+    if (AbstractSqlConnection.__patched) {
+      return;
+    }
 
-		Client.prototype.query = function (this: any, connection: any, obj: any) {
-			if (typeof obj === 'string') {
-				obj = { sql: obj };
-			}
+    AbstractSqlConnection.__patched = true;
 
-			if ((obj.bindings ?? []).length > 0) {
-				return query.call(this, connection, obj);
-			}
+    Client.prototype.query = function (this: any, connection: any, obj: any) {
+      if (typeof obj === 'string') {
+        obj = { sql: obj };
+      }
 
-			// eslint-disable-next-line @typescript-eslint/naming-convention
-			const { __knexUid, __knexTxId } = connection;
-			this.emit('query', Object.assign({ __knexUid, __knexTxId }, obj));
+      if ((obj.bindings ?? []).length > 0) {
+        return query.call(this, connection, obj);
+      }
 
-			return MonkeyPatchable.QueryExecutioner.executeQuery(connection, obj, this);
-		};
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      const { __knexUid, __knexTxId } = connection;
+      this.emit('query', Object.assign({ __knexUid, __knexTxId }, obj));
 
-		TableCompiler.prototype.raw = function (this: any, query: string) {
-			this.pushQuery(query);
-		};
-	}
+      return MonkeyPatchable.QueryExecutioner.executeQuery(connection, obj, this);
+    };
 
-	protected abstract transformRawResult<T>(res: any, method: 'all' | 'get' | 'run'): T;
+    TableCompiler.prototype.raw = function (this: any, query: string) {
+      this.pushQuery(query);
+    };
+  }
+
+  protected abstract transformRawResult<T>(res: any, method: 'all' | 'get' | 'run'): T;
+
 }

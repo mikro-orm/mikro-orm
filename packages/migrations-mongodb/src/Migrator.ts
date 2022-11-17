@@ -13,207 +13,209 @@ import { TSMigrationGenerator } from './TSMigrationGenerator';
 import { JSMigrationGenerator } from './JSMigrationGenerator';
 
 export class Migrator implements IMigrator {
-	private umzug!: Umzug;
-	private runner!: MigrationRunner;
-	private storage!: MigrationStorage;
-	private generator!: IMigrationGenerator;
-	private readonly driver = this.em.getDriver();
-	private readonly config = this.em.config;
-	private readonly options = this.config.get('migrations');
-	private readonly absolutePath: string;
 
-	constructor(private readonly em: EntityManager) {
-		/* istanbul ignore next */
-		const key = this.config.get('tsNode', Utils.detectTsNode()) && this.options.pathTs ? 'pathTs' : 'path';
-		this.absolutePath = Utils.absolutePath(this.options[key]!, this.config.get('baseDir'));
-		this.createUmzug();
-	}
+  private umzug!: Umzug;
+  private runner!: MigrationRunner;
+  private storage!: MigrationStorage;
+  private generator!: IMigrationGenerator;
+  private readonly driver = this.em.getDriver();
+  private readonly config = this.em.config;
+  private readonly options = this.config.get('migrations');
+  private readonly absolutePath: string;
 
-	/**
-	 * @inheritDoc
-	 */
-	async createMigration(path?: string): Promise<MigrationResult> {
-		await this.ensureMigrationsDirExists();
-		const diff = { up: [], down: [] };
-		const migration = await this.generator.generate(diff, path);
+  constructor(private readonly em: EntityManager) {
+    /* istanbul ignore next */
+    const key = this.config.get('tsNode', Utils.detectTsNode()) && this.options.pathTs ? 'pathTs' : 'path';
+    this.absolutePath = Utils.absolutePath(this.options[key]!, this.config.get('baseDir'));
+    this.createUmzug();
+  }
 
-		return {
-			fileName: migration[1],
-			code: migration[0],
-			diff,
-		};
-	}
+  /**
+   * @inheritDoc
+   */
+  async createMigration(path?: string): Promise<MigrationResult> {
+    await this.ensureMigrationsDirExists();
+    const diff = { up: [], down: [] };
+    const migration = await this.generator.generate(diff, path);
 
-	/**
-	 * @inheritDoc
-	 */
-	async createInitialMigration(path?: string): Promise<MigrationResult> {
-		return this.createMigration(path);
-	}
+    return {
+      fileName: migration[1],
+      code: migration[0],
+      diff,
+    };
+  }
 
-	private createUmzug(): void {
-		this.runner = new MigrationRunner(this.driver, this.options);
-		this.storage = new MigrationStorage(this.driver, this.options);
+  /**
+   * @inheritDoc
+   */
+  async createInitialMigration(path?: string): Promise<MigrationResult> {
+    return this.createMigration(path);
+  }
 
-		let migrations: InputMigrations<any> = {
-			glob: join(this.absolutePath, this.options.glob!),
-			resolve: (params: MigrationParams<any>) => this.resolve(params),
-		};
+  private createUmzug(): void {
+    this.runner = new MigrationRunner(this.driver, this.options);
+    this.storage = new MigrationStorage(this.driver, this.options);
 
-		/* istanbul ignore next */
-		if (this.options.migrationsList) {
-			migrations = this.options.migrationsList.map((migration) => this.initialize(migration.class as Constructor<Migration>, migration.name));
-		}
+    let migrations: InputMigrations<any> = {
+      glob: join(this.absolutePath, this.options.glob!),
+      resolve: (params: MigrationParams<any>) => this.resolve(params),
+    };
 
-		this.umzug = new Umzug({
-			storage: this.storage,
-			logger: undefined,
-			migrations,
-		});
+    /* istanbul ignore next */
+    if (this.options.migrationsList) {
+      migrations = this.options.migrationsList.map(migration => this.initialize(migration.class as Constructor<Migration>, migration.name));
+    }
 
-		const logger = this.config.get('logger');
-		this.umzug.on('migrating', (event) => logger(`Processing '${event.name}'`));
-		this.umzug.on('migrated', (event) => logger(`Applied '${event.name}'`));
-		this.umzug.on('reverting', (event) => logger(`Processing '${event.name}'`));
-		this.umzug.on('reverted', (event) => logger(`Reverted '${event.name}'`));
+    this.umzug = new Umzug({
+      storage: this.storage,
+      logger: undefined,
+      migrations,
+    });
 
-		/* istanbul ignore next */
-		if (this.options.generator) {
-			this.generator = new this.options.generator(this.driver, this.config.getNamingStrategy(), this.options);
-		} else if (this.options.emit === 'js') {
-			this.generator = new JSMigrationGenerator(this.driver, this.config.getNamingStrategy(), this.options);
-		} else {
-			this.generator = new TSMigrationGenerator(this.driver, this.config.getNamingStrategy(), this.options);
-		}
-	}
+    const logger = this.config.get('logger');
+    this.umzug.on('migrating', event => logger(`Processing '${event.name}'`));
+    this.umzug.on('migrated', event => logger(`Applied '${event.name}'`));
+    this.umzug.on('reverting', event => logger(`Processing '${event.name}'`));
+    this.umzug.on('reverted', event => logger(`Reverted '${event.name}'`));
 
-	/**
-	 * @inheritDoc
-	 */
-	async getExecutedMigrations(): Promise<MigrationRow[]> {
-		await this.ensureMigrationsDirExists();
-		return this.storage.getExecutedMigrations();
-	}
+    /* istanbul ignore next */
+    if (this.options.generator) {
+      this.generator = new this.options.generator(this.driver, this.config.getNamingStrategy(), this.options);
+    } else if (this.options.emit === 'js') {
+      this.generator = new JSMigrationGenerator(this.driver, this.config.getNamingStrategy(), this.options);
+    } else {
+      this.generator = new TSMigrationGenerator(this.driver, this.config.getNamingStrategy(), this.options);
+    }
+  }
 
-	/**
-	 * @inheritDoc
-	 */
-	async getPendingMigrations(): Promise<UmzugMigration[]> {
-		await this.ensureMigrationsDirExists();
-		return this.umzug.pending();
-	}
+  /**
+   * @inheritDoc
+   */
+  async getExecutedMigrations(): Promise<MigrationRow[]> {
+    await this.ensureMigrationsDirExists();
+    return this.storage.getExecutedMigrations();
+  }
 
-	/**
-	 * @inheritDoc
-	 */
-	async up(options?: string | string[] | MigrateOptions): Promise<UmzugMigration[]> {
-		return this.runMigrations('up', options);
-	}
+  /**
+   * @inheritDoc
+   */
+  async getPendingMigrations(): Promise<UmzugMigration[]> {
+    await this.ensureMigrationsDirExists();
+    return this.umzug.pending();
+  }
 
-	/**
-	 * @inheritDoc
-	 */
-	async down(options?: string | string[] | MigrateOptions): Promise<UmzugMigration[]> {
-		return this.runMigrations('down', options);
-	}
+  /**
+   * @inheritDoc
+   */
+  async up(options?: string | string[] | MigrateOptions): Promise<UmzugMigration[]> {
+    return this.runMigrations('up', options);
+  }
 
-	getStorage(): MigrationStorage {
-		return this.storage;
-	}
+  /**
+   * @inheritDoc
+   */
+  async down(options?: string | string[] | MigrateOptions): Promise<UmzugMigration[]> {
+    return this.runMigrations('down', options);
+  }
 
-	protected resolve(params: MigrationParams<any>): RunnableMigration<any> {
-		const createMigrationHandler = async (method: 'up' | 'down') => {
-			const migration = await Utils.dynamicImport(params.path!);
-			const MigrationClass = Object.values(migration)[0] as Constructor<Migration>;
-			const instance = new MigrationClass(this.driver, this.config);
+  getStorage(): MigrationStorage {
+    return this.storage;
+  }
 
-			await this.runner.run(instance, method);
-		};
+  protected resolve(params: MigrationParams<any>): RunnableMigration<any> {
+    const createMigrationHandler = async (method: 'up' | 'down') => {
+      const migration = await Utils.dynamicImport(params.path!);
+      const MigrationClass = Object.values(migration)[0] as Constructor<Migration>;
+      const instance = new MigrationClass(this.driver, this.config);
 
-		return {
-			name: this.storage.getMigrationName(params.name),
-			up: () => createMigrationHandler('up'),
-			down: () => createMigrationHandler('down'),
-		};
-	}
+      await this.runner.run(instance, method);
+    };
 
-	/* istanbul ignore next */
-	protected initialize(MigrationClass: Constructor<Migration>, name: string): RunnableMigration<any> {
-		const instance = new MigrationClass(this.driver, this.config);
+    return {
+      name: this.storage.getMigrationName(params.name),
+      up: () => createMigrationHandler('up'),
+      down: () => createMigrationHandler('down'),
+    };
+  }
 
-		return {
-			name: this.storage.getMigrationName(name),
-			up: () => this.runner.run(instance, 'up'),
-			down: () => this.runner.run(instance, 'down'),
-		};
-	}
+  /* istanbul ignore next */
+  protected initialize(MigrationClass: Constructor<Migration>, name: string): RunnableMigration<any> {
+    const instance = new MigrationClass(this.driver, this.config);
 
-	private getMigrationFilename(name: string): string {
-		name = name.replace(/\.[jt]s$/, '');
-		return name.match(/^\d{14}$/) ? this.options.fileName!(name) : name;
-	}
+    return {
+      name: this.storage.getMigrationName(name),
+      up: () => this.runner.run(instance, 'up'),
+      down: () => this.runner.run(instance, 'down'),
+    };
+  }
 
-	private prefix<
-		T extends
-			| string
-			| string[]
-			| {
-					from?: string | number;
-					to?: string | number;
-					migrations?: string[];
-					transaction?: Transaction;
-			  },
-	>(options?: T): MigrateUpOptions & MigrateDownOptions {
-		if (Utils.isString(options) || Array.isArray(options)) {
-			return {
-				migrations: Utils.asArray(options).map((name) => this.getMigrationFilename(name)),
-			};
-		}
+  private getMigrationFilename(name: string): string {
+    name = name.replace(/\.[jt]s$/, '');
+    return name.match(/^\d{14}$/) ? this.options.fileName!(name) : name;
+  }
 
-		if (!options) {
-			return {};
-		}
+  private prefix<
+    T extends
+      | string
+      | string[]
+      | {
+          from?: string | number;
+          to?: string | number;
+          migrations?: string[];
+          transaction?: Transaction;
+        },
+  >(options?: T): MigrateUpOptions & MigrateDownOptions {
+    if (Utils.isString(options) || Array.isArray(options)) {
+      return {
+        migrations: Utils.asArray(options).map(name => this.getMigrationFilename(name)),
+      };
+    }
 
-		if (options.migrations) {
-			options.migrations = options.migrations.map((name) => this.getMigrationFilename(name));
-		}
+    if (!options) {
+      return {};
+    }
 
-		if (options.transaction) {
-			delete options.transaction;
-		}
+    if (options.migrations) {
+      options.migrations = options.migrations.map(name => this.getMigrationFilename(name));
+    }
 
-		['from', 'to'].filter((k) => options[k]).forEach((k) => (options[k] = this.getMigrationFilename(options[k])));
+    if (options.transaction) {
+      delete options.transaction;
+    }
 
-		return options as MigrateUpOptions;
-	}
+    ['from', 'to'].filter(k => options[k]).forEach(k => (options[k] = this.getMigrationFilename(options[k])));
 
-	private async runMigrations(method: 'up' | 'down', options?: string | string[] | MigrateOptions) {
-		await this.ensureMigrationsDirExists();
+    return options as MigrateUpOptions;
+  }
 
-		if (!this.options.transactional || !this.options.allOrNothing) {
-			return this.umzug[method](this.prefix(options as string[]));
-		}
+  private async runMigrations(method: 'up' | 'down', options?: string | string[] | MigrateOptions) {
+    await this.ensureMigrationsDirExists();
 
-		if (Utils.isObject<MigrateOptions>(options) && options.transaction) {
-			return this.runInTransaction(options.transaction, method, options);
-		}
+    if (!this.options.transactional || !this.options.allOrNothing) {
+      return this.umzug[method](this.prefix(options as string[]));
+    }
 
-		return this.driver.getConnection().transactional((trx) => this.runInTransaction(trx, method, options));
-	}
+    if (Utils.isObject<MigrateOptions>(options) && options.transaction) {
+      return this.runInTransaction(options.transaction, method, options);
+    }
 
-	private async runInTransaction(trx: Transaction, method: 'up' | 'down', options: string | string[] | undefined | MigrateOptions) {
-		this.runner.setMasterMigration(trx);
-		this.storage.setMasterMigration(trx);
-		const ret = await this.umzug[method](this.prefix(options));
-		this.runner.unsetMasterMigration();
-		this.storage.unsetMasterMigration();
+    return this.driver.getConnection().transactional(trx => this.runInTransaction(trx, method, options));
+  }
 
-		return ret;
-	}
+  private async runInTransaction(trx: Transaction, method: 'up' | 'down', options: string | string[] | undefined | MigrateOptions) {
+    this.runner.setMasterMigration(trx);
+    this.storage.setMasterMigration(trx);
+    const ret = await this.umzug[method](this.prefix(options));
+    this.runner.unsetMasterMigration();
+    this.storage.unsetMasterMigration();
 
-	private async ensureMigrationsDirExists() {
-		if (!this.options.migrationsList) {
-			await ensureDir(this.absolutePath);
-		}
-	}
+    return ret;
+  }
+
+  private async ensureMigrationsDirExists() {
+    if (!this.options.migrationsList) {
+      await ensureDir(this.absolutePath);
+    }
+  }
+
 }

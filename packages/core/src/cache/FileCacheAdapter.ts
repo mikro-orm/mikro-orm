@@ -5,71 +5,73 @@ import type { CacheAdapter } from './CacheAdapter';
 import { Utils } from '../utils/Utils';
 
 export class FileCacheAdapter implements CacheAdapter {
-	private readonly VERSION = Utils.getORMVersion();
 
-	constructor(private readonly options: { cacheDir: string }, private readonly baseDir: string, private readonly pretty = false) {}
+  private readonly VERSION = Utils.getORMVersion();
 
-	/**
-	 * @inheritDoc
-	 */
-	async get(name: string): Promise<any> {
-		const path = await this.path(name);
+  constructor(private readonly options: { cacheDir: string }, private readonly baseDir: string, private readonly pretty = false) {}
 
-		if (!(await pathExists(path))) {
-			return null;
-		}
+  /**
+   * @inheritDoc
+   */
+  async get(name: string): Promise<any> {
+    const path = await this.path(name);
 
-		const payload = await readJSON(path);
-		const hash = await this.getHash(payload.origin);
+    if (!(await pathExists(path))) {
+      return null;
+    }
 
-		if (!hash || payload.hash !== hash) {
-			return null;
-		}
+    const payload = await readJSON(path);
+    const hash = await this.getHash(payload.origin);
 
-		return payload.data;
-	}
+    if (!hash || payload.hash !== hash) {
+      return null;
+    }
 
-	/**
-	 * @inheritDoc
-	 */
-	async set(name: string, data: any, origin: string): Promise<void> {
-		const [path, hash] = await Promise.all([this.path(name), this.getHash(origin)]);
+    return payload.data;
+  }
 
-		const opts = this.pretty ? { spaces: 2 } : {};
-		await writeJSON(path!, { data, origin, hash, version: this.VERSION }, opts);
-	}
+  /**
+   * @inheritDoc
+   */
+  async set(name: string, data: any, origin: string): Promise<void> {
+    const [path, hash] = await Promise.all([this.path(name), this.getHash(origin)]);
 
-	/**
-	 * @inheritDoc
-	 */
-	async remove(name: string): Promise<void> {
-		const path = await this.path(name);
-		await unlink(path);
-	}
+    const opts = this.pretty ? { spaces: 2 } : {};
+    await writeJSON(path!, { data, origin, hash, version: this.VERSION }, opts);
+  }
 
-	/**
-	 * @inheritDoc
-	 */
-	async clear(): Promise<void> {
-		const path = await this.path('*');
-		const files = await globby(path);
-		await Promise.all(files.map((file) => unlink(file)));
-	}
+  /**
+   * @inheritDoc
+   */
+  async remove(name: string): Promise<void> {
+    const path = await this.path(name);
+    await unlink(path);
+  }
 
-	private async path(name: string): Promise<string> {
-		await ensureDir(this.options.cacheDir);
-		return `${this.options.cacheDir}/${name}.json`;
-	}
+  /**
+   * @inheritDoc
+   */
+  async clear(): Promise<void> {
+    const path = await this.path('*');
+    const files = await globby(path);
+    await Promise.all(files.map(file => unlink(file)));
+  }
 
-	private async getHash(origin: string): Promise<string | null> {
-		origin = Utils.absolutePath(origin, this.baseDir);
+  private async path(name: string): Promise<string> {
+    await ensureDir(this.options.cacheDir);
+    return `${this.options.cacheDir}/${name}.json`;
+  }
 
-		if (!(await pathExists(origin))) {
-			return null;
-		}
+  private async getHash(origin: string): Promise<string | null> {
+    origin = Utils.absolutePath(origin, this.baseDir);
 
-		const contents = await readFile(origin);
+    if (!(await pathExists(origin))) {
+      return null;
+    }
 
-		return Utils.hash(contents.toString() + this.VERSION);
-	}
+    const contents = await readFile(origin);
+
+    return Utils.hash(contents.toString() + this.VERSION);
+  }
+
 }

@@ -6,106 +6,108 @@ import type { SchemaHelper } from './schema';
 import { SchemaGenerator } from './schema';
 
 export abstract class AbstractSqlPlatform extends Platform {
-	protected readonly schemaHelper?: SchemaHelper;
 
-	usesPivotTable(): boolean {
-		return true;
-	}
+  protected readonly schemaHelper?: SchemaHelper;
 
-	indexForeignKeys() {
-		return true;
-	}
+  usesPivotTable(): boolean {
+    return true;
+  }
 
-	getRepositoryClass<T extends object>(): Constructor<EntityRepository<T>> {
-		return SqlEntityRepository as Constructor<EntityRepository<T>>;
-	}
+  indexForeignKeys() {
+    return true;
+  }
 
-	getSchemaHelper(): SchemaHelper | undefined {
-		return this.schemaHelper;
-	}
+  getRepositoryClass<T extends object>(): Constructor<EntityRepository<T>> {
+    return SqlEntityRepository as Constructor<EntityRepository<T>>;
+  }
 
-	getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): SchemaGenerator {
-		/* istanbul ignore next */
-		return this.config.getCachedService(SchemaGenerator, em ?? (driver as any)); // cast as `any` to get around circular dependencies
-	}
+  getSchemaHelper(): SchemaHelper | undefined {
+    return this.schemaHelper;
+  }
 
-	getEntityGenerator(em: EntityManager) {
-		// eslint-disable-next-line @typescript-eslint/no-var-requires
-		const { EntityGenerator } = require('@mikro-orm/entity-generator');
-		return this.config.getCachedService(EntityGenerator, em);
-	}
+  getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): SchemaGenerator {
+    /* istanbul ignore next */
+    return this.config.getCachedService(SchemaGenerator, em ?? (driver as any)); // cast as `any` to get around circular dependencies
+  }
 
-	getMigrator(em: EntityManager) {
-		// eslint-disable-next-line @typescript-eslint/no-var-requires
-		const { Migrator } = require('@mikro-orm/migrations');
-		return this.config.getCachedService(Migrator, em);
-	}
+  getEntityGenerator(em: EntityManager) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { EntityGenerator } = require('@mikro-orm/entity-generator');
+    return this.config.getCachedService(EntityGenerator, em);
+  }
 
-	quoteValue(value: any): string {
-		if (this.isRaw(value)) {
-			return value;
-		}
+  getMigrator(em: EntityManager) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { Migrator } = require('@mikro-orm/migrations');
+    return this.config.getCachedService(Migrator, em);
+  }
 
-		/* istanbul ignore if */
-		if (Utils.isPlainObject(value) || value?.[JsonProperty]) {
-			return escape(JSON.stringify(value));
-		}
+  quoteValue(value: any): string {
+    if (this.isRaw(value)) {
+      return value;
+    }
 
-		// @ts-ignore
-		return escape(value, true, this.timezone);
-	}
+    /* istanbul ignore if */
+    if (Utils.isPlainObject(value) || value?.[JsonProperty]) {
+      return escape(JSON.stringify(value));
+    }
 
-	formatQuery(sql: string, params: readonly any[]): string {
-		if (params.length === 0) {
-			return sql;
-		}
+    // @ts-ignore
+    return escape(value, true, this.timezone);
+  }
 
-		// fast string replace without regexps
-		let j = 0;
-		let pos = 0;
-		let ret = '';
+  formatQuery(sql: string, params: readonly any[]): string {
+    if (params.length === 0) {
+      return sql;
+    }
 
-		while (pos < sql.length) {
-			const idx = sql.indexOf('?', pos + 1);
+    // fast string replace without regexps
+    let j = 0;
+    let pos = 0;
+    let ret = '';
 
-			if (idx === -1) {
-				ret += sql.substring(pos, sql.length);
-				break;
-			}
+    while (pos < sql.length) {
+      const idx = sql.indexOf('?', pos + 1);
 
-			if (sql.substr(idx - 1, 2) === '\\?') {
-				ret += sql.substr(pos, idx - pos - 1) + '?';
-				pos = idx + 1;
-			} else if (sql.substr(idx, 2) === '??') {
-				ret += sql.substr(pos, idx - pos) + this.quoteIdentifier(params[j++]);
-				pos = idx + 2;
-			} else {
-				ret += sql.substr(pos, idx - pos) + this.quoteValue(params[j++]);
-				pos = idx + 1;
-			}
-		}
+      if (idx === -1) {
+        ret += sql.substring(pos, sql.length);
+        break;
+      }
 
-		return ret;
-	}
+      if (sql.substr(idx - 1, 2) === '\\?') {
+        ret += sql.substr(pos, idx - pos - 1) + '?';
+        pos = idx + 1;
+      } else if (sql.substr(idx, 2) === '??') {
+        ret += sql.substr(pos, idx - pos) + this.quoteIdentifier(params[j++]);
+        pos = idx + 2;
+      } else {
+        ret += sql.substr(pos, idx - pos) + this.quoteValue(params[j++]);
+        pos = idx + 1;
+      }
+    }
 
-	getSearchJsonPropertySQL(path: string, type: string, aliased: boolean): string {
-		return this.getSearchJsonPropertyKey(path.split('->'), type, aliased);
-	}
+    return ret;
+  }
 
-	isRaw(value: any): boolean {
-		return super.isRaw(value) || (typeof value === 'object' && value !== null && value.client && ['Ref', 'Raw'].includes(value.constructor.name));
-	}
+  getSearchJsonPropertySQL(path: string, type: string, aliased: boolean): string {
+    return this.getSearchJsonPropertyKey(path.split('->'), type, aliased);
+  }
 
-	supportsSchemas(): boolean {
-		return false;
-	}
+  isRaw(value: any): boolean {
+    return super.isRaw(value) || (typeof value === 'object' && value !== null && value.client && ['Ref', 'Raw'].includes(value.constructor.name));
+  }
 
-	/** @inheritDoc */
-	generateCustomOrder(escapedColumn: string, values: unknown[]): string {
-		let ret = '(case ';
-		values.forEach((v, i) => {
-			ret += `when ${escapedColumn} = ${this.quoteValue(v)} then ${i} `;
-		});
-		return ret + 'else null end)';
-	}
+  supportsSchemas(): boolean {
+    return false;
+  }
+
+  /** @inheritDoc */
+  generateCustomOrder(escapedColumn: string, values: unknown[]): string {
+    let ret = '(case ';
+    values.forEach((v, i) => {
+      ret += `when ${escapedColumn} = ${this.quoteValue(v)} then ${i} `;
+    });
+    return ret + 'else null end)';
+  }
+
 }

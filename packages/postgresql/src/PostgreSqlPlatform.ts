@@ -6,277 +6,279 @@ import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
 import { PostgreSqlExceptionConverter } from './PostgreSqlExceptionConverter';
 
 export class PostgreSqlPlatform extends AbstractSqlPlatform {
-	protected readonly schemaHelper: PostgreSqlSchemaHelper = new PostgreSqlSchemaHelper(this);
-	protected readonly exceptionConverter = new PostgreSqlExceptionConverter();
 
-	usesReturningStatement(): boolean {
-		return true;
-	}
+  protected readonly schemaHelper: PostgreSqlSchemaHelper = new PostgreSqlSchemaHelper(this);
+  protected readonly exceptionConverter = new PostgreSqlExceptionConverter();
 
-	usesCascadeStatement(): boolean {
-		return true;
-	}
+  usesReturningStatement(): boolean {
+    return true;
+  }
 
-	supportsCustomPrimaryKeyNames(): boolean {
-		return true;
-	}
+  usesCascadeStatement(): boolean {
+    return true;
+  }
 
-	/**
-	 * Postgres will complain if we try to batch update uniquely constrained property (moving the value from one entity to another).
-	 * This flag will result in postponing 1:1 updates (removing them from the batched query).
-	 * @see https://stackoverflow.com/questions/5403437/atomic-multi-row-update-with-a-unique-constraint
-	 */
-	allowsUniqueBatchUpdates() {
-		return false;
-	}
+  supportsCustomPrimaryKeyNames(): boolean {
+    return true;
+  }
 
-	getCurrentTimestampSQL(length: number): string {
-		return `current_timestamp(${length})`;
-	}
+  /**
+   * Postgres will complain if we try to batch update uniquely constrained property (moving the value from one entity to another).
+   * This flag will result in postponing 1:1 updates (removing them from the batched query).
+   * @see https://stackoverflow.com/questions/5403437/atomic-multi-row-update-with-a-unique-constraint
+   */
+  allowsUniqueBatchUpdates() {
+    return false;
+  }
 
-	getDateTimeTypeDeclarationSQL(column: { length?: number }): string {
-		/* istanbul ignore next */
-		return 'timestamptz' + (column.length != null ? `(${column.length})` : '');
-	}
+  getCurrentTimestampSQL(length: number): string {
+    return `current_timestamp(${length})`;
+  }
 
-	getDefaultDateTimeLength(): number {
-		return 6; // timestamptz actually means timestamptz(6)
-	}
+  getDateTimeTypeDeclarationSQL(column: { length?: number }): string {
+    /* istanbul ignore next */
+    return 'timestamptz' + (column.length != null ? `(${column.length})` : '');
+  }
 
-	getTimeTypeDeclarationSQL(): string {
-		return 'time(0)';
-	}
+  getDefaultDateTimeLength(): number {
+    return 6; // timestamptz actually means timestamptz(6)
+  }
 
-	getIntegerTypeDeclarationSQL(column: {
-		length?: number;
-		autoincrement?: boolean;
-	}): string {
-		if (column.autoincrement) {
-			return `serial`;
-		}
+  getTimeTypeDeclarationSQL(): string {
+    return 'time(0)';
+  }
 
-		return `int`;
-	}
+  getIntegerTypeDeclarationSQL(column: {
+    length?: number;
+    autoincrement?: boolean;
+  }): string {
+    if (column.autoincrement) {
+      return `serial`;
+    }
 
-	getBigIntTypeDeclarationSQL(column: { autoincrement?: boolean }): string {
-		/* istanbul ignore next */
-		if (column.autoincrement) {
-			return `bigserial`;
-		}
+    return `int`;
+  }
 
-		return 'bigint';
-	}
+  getBigIntTypeDeclarationSQL(column: { autoincrement?: boolean }): string {
+    /* istanbul ignore next */
+    if (column.autoincrement) {
+      return `bigserial`;
+    }
 
-	getTinyIntTypeDeclarationSQL(column: {
-		length?: number;
-		unsigned?: boolean;
-		autoincrement?: boolean;
-	}): string {
-		return 'smallint';
-	}
+    return 'bigint';
+  }
 
-	getUuidTypeDeclarationSQL(column: { length?: number }): string {
-		return `uuid`;
-	}
+  getTinyIntTypeDeclarationSQL(column: {
+    length?: number;
+    unsigned?: boolean;
+    autoincrement?: boolean;
+  }): string {
+    return 'smallint';
+  }
 
-	getFullTextWhereClause(prop: EntityProperty): string {
-		if (prop.columnTypes[0] === 'tsvector') {
-			return `:column: @@ plainto_tsquery('simple', :query)`;
-		}
+  getUuidTypeDeclarationSQL(column: { length?: number }): string {
+    return `uuid`;
+  }
 
-		return `to_tsvector('simple', :column:) @@ plainto_tsquery('simple', :query)`;
-	}
+  getFullTextWhereClause(prop: EntityProperty): string {
+    if (prop.columnTypes[0] === 'tsvector') {
+      return `:column: @@ plainto_tsquery('simple', :query)`;
+    }
 
-	supportsCreatingFullTextIndex(): boolean {
-		return true;
-	}
+    return `to_tsvector('simple', :column:) @@ plainto_tsquery('simple', :query)`;
+  }
 
-	getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
-		const quotedTableName = this.quoteIdentifier(schemaName ? `${schemaName}.${tableName}` : tableName);
-		const quotedColumnNames = columns.map((c) => this.quoteIdentifier(c.name));
-		const quotedIndexName = this.quoteIdentifier(indexName);
+  supportsCreatingFullTextIndex(): boolean {
+    return true;
+  }
 
-		if (columns.length === 1 && columns[0].type === 'tsvector') {
-			return `create index ${quotedIndexName} on ${quotedTableName} using gin(${quotedColumnNames[0]})`;
-		}
+  getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
+    const quotedTableName = this.quoteIdentifier(schemaName ? `${schemaName}.${tableName}` : tableName);
+    const quotedColumnNames = columns.map(c => this.quoteIdentifier(c.name));
+    const quotedIndexName = this.quoteIdentifier(indexName);
 
-		return `create index ${quotedIndexName} on ${quotedTableName} using gin(to_tsvector('simple', ${quotedColumnNames.join(` || ' ' || `)}))`;
-	}
+    if (columns.length === 1 && columns[0].type === 'tsvector') {
+      return `create index ${quotedIndexName} on ${quotedTableName} using gin(${quotedColumnNames[0]})`;
+    }
 
-	getRegExpOperator(): string {
-		return '~';
-	}
+    return `create index ${quotedIndexName} on ${quotedTableName} using gin(to_tsvector('simple', ${quotedColumnNames.join(` || ' ' || `)}))`;
+  }
 
-	isBigIntProperty(prop: EntityProperty): boolean {
-		return super.isBigIntProperty(prop) || ['bigserial', 'int8'].includes(prop.columnTypes?.[0]);
-	}
+  getRegExpOperator(): string {
+    return '~';
+  }
 
-	getArrayDeclarationSQL(): string {
-		return 'text[]';
-	}
+  isBigIntProperty(prop: EntityProperty): boolean {
+    return super.isBigIntProperty(prop) || ['bigserial', 'int8'].includes(prop.columnTypes?.[0]);
+  }
 
-	getFloatDeclarationSQL(): string {
-		return 'real';
-	}
+  getArrayDeclarationSQL(): string {
+    return 'text[]';
+  }
 
-	getDoubleDeclarationSQL(): string {
-		return 'double precision';
-	}
+  getFloatDeclarationSQL(): string {
+    return 'real';
+  }
 
-	getEnumTypeDeclarationSQL(column: {
-		fieldNames: string[];
-		items?: unknown[];
-	}): string {
-		if (column.items?.every((item) => Utils.isString(item))) {
-			return 'text';
-		}
+  getDoubleDeclarationSQL(): string {
+    return 'double precision';
+  }
 
-		return `smallint`;
-	}
+  getEnumTypeDeclarationSQL(column: {
+    fieldNames: string[];
+    items?: unknown[];
+  }): string {
+    if (column.items?.every(item => Utils.isString(item))) {
+      return 'text';
+    }
 
-	supportsMultipleStatements(): boolean {
-		return true;
-	}
+    return `smallint`;
+  }
 
-	marshallArray(values: string[]): string {
-		const quote = (v: string) => (v === '' || v.match(/["{}]/) ? JSON.stringify(v) : v);
-		return `{${values.map((v) => quote('' + v)).join(',')}}`;
-	}
+  supportsMultipleStatements(): boolean {
+    return true;
+  }
 
-	unmarshallArray(value: string): string[] {
-		if (value === '{}') {
-			return [];
-		}
+  marshallArray(values: string[]): string {
+    const quote = (v: string) => (v === '' || v.match(/["{}]/) ? JSON.stringify(v) : v);
+    return `{${values.map(v => quote('' + v)).join(',')}}`;
+  }
 
-		/* istanbul ignore next */
-		return value
-			.substring(1, value.length - 1)
-			.split(',')
-			.map((v) => (v === `""` ? '' : v));
-	}
+  unmarshallArray(value: string): string[] {
+    if (value === '{}') {
+      return [];
+    }
 
-	getBlobDeclarationSQL(): string {
-		return 'bytea';
-	}
+    /* istanbul ignore next */
+    return value
+      .substring(1, value.length - 1)
+      .split(',')
+      .map(v => (v === `""` ? '' : v));
+  }
 
-	getJsonDeclarationSQL(): string {
-		return 'jsonb';
-	}
+  getBlobDeclarationSQL(): string {
+    return 'bytea';
+  }
 
-	getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
-		const first = path.shift();
-		const last = path.pop();
-		const root = aliased ? expr((alias) => this.quoteIdentifier(`${alias}.${first}`)) : this.quoteIdentifier(first!);
-		const types = {
-			number: 'float8',
-			boolean: 'bool',
-		};
-		const cast = (key: string) => (type in types ? `(${key})::${types[type]}` : key);
+  getJsonDeclarationSQL(): string {
+    return 'jsonb';
+  }
 
-		if (path.length === 0) {
-			return cast(`${root}->>'${last}'`);
-		}
+  getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
+    const first = path.shift();
+    const last = path.pop();
+    const root = aliased ? expr(alias => this.quoteIdentifier(`${alias}.${first}`)) : this.quoteIdentifier(first!);
+    const types = {
+      number: 'float8',
+      boolean: 'bool',
+    };
+    const cast = (key: string) => (type in types ? `(${key})::${types[type]}` : key);
 
-		return cast(`${root}->${path.map((a) => this.quoteValue(a)).join('->')}->>'${last}'`);
-	}
+    if (path.length === 0) {
+      return cast(`${root}->>'${last}'`);
+    }
 
-	quoteIdentifier(id: string, quote = '"'): string {
-		return `${quote}${id.replace('.', `${quote}.${quote}`)}${quote}`;
-	}
+    return cast(`${root}->${path.map(a => this.quoteValue(a)).join('->')}->>'${last}'`);
+  }
 
-	quoteValue(value: any): string {
-		/* istanbul ignore if */
-		if (Utils.isPlainObject(value) || value?.[JsonProperty]) {
-			value = JSON.stringify(value);
-		}
+  quoteIdentifier(id: string, quote = '"'): string {
+    return `${quote}${id.replace('.', `${quote}.${quote}`)}${quote}`;
+  }
 
-		if (typeof value === 'string') {
-			return Client.prototype.escapeLiteral(value);
-		}
+  quoteValue(value: any): string {
+    /* istanbul ignore if */
+    if (Utils.isPlainObject(value) || value?.[JsonProperty]) {
+      value = JSON.stringify(value);
+    }
 
-		if (value instanceof Date) {
-			return `'${value.toISOString()}'`;
-		}
+    if (typeof value === 'string') {
+      return Client.prototype.escapeLiteral(value);
+    }
 
-		if (ArrayBuffer.isView(value)) {
-			return `E'\\\\x${(value as Buffer).toString('hex')}'`;
-		}
+    if (value instanceof Date) {
+      return `'${value.toISOString()}'`;
+    }
 
-		return super.quoteValue(value);
-	}
+    if (ArrayBuffer.isView(value)) {
+      return `E'\\\\x${(value as Buffer).toString('hex')}'`;
+    }
 
-	indexForeignKeys() {
-		return false;
-	}
+    return super.quoteValue(value);
+  }
 
-	getDefaultMappedType(type: string): Type<unknown> {
-		const normalizedType = this.extractSimpleType(type);
-		const map = {
-			int2: 'smallint',
-			smallserial: 'smallint',
-			int: 'integer',
-			int4: 'integer',
-			serial: 'integer',
-			serial4: 'integer',
-			int8: 'bigint',
-			bigserial: 'bigint',
-			serial8: 'bigint',
-			numeric: 'decimal',
-			bool: 'boolean',
-			real: 'float',
-			float4: 'float',
-			float8: 'double',
-			timestamp: 'datetime',
-			timestamptz: 'datetime',
-			bytea: 'blob',
-			jsonb: 'json',
-			'character varying': 'varchar',
-		};
+  indexForeignKeys() {
+    return false;
+  }
 
-		return super.getDefaultMappedType(map[normalizedType] ?? type);
-	}
+  getDefaultMappedType(type: string): Type<unknown> {
+    const normalizedType = this.extractSimpleType(type);
+    const map = {
+      'int2': 'smallint',
+      'smallserial': 'smallint',
+      'int': 'integer',
+      'int4': 'integer',
+      'serial': 'integer',
+      'serial4': 'integer',
+      'int8': 'bigint',
+      'bigserial': 'bigint',
+      'serial8': 'bigint',
+      'numeric': 'decimal',
+      'bool': 'boolean',
+      'real': 'float',
+      'float4': 'float',
+      'float8': 'double',
+      'timestamp': 'datetime',
+      'timestamptz': 'datetime',
+      'bytea': 'blob',
+      'jsonb': 'json',
+      'character varying': 'varchar',
+    };
 
-	supportsSchemas(): boolean {
-		return true;
-	}
+    return super.getDefaultMappedType(map[normalizedType] ?? type);
+  }
 
-	getDefaultSchemaName(): string | undefined {
-		return 'public';
-	}
+  supportsSchemas(): boolean {
+    return true;
+  }
 
-	/**
-	 * Returns the default name of index for the given columns
-	 * cannot go past 64 character length for identifiers in MySQL
-	 */
-	getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
-		const indexName = super.getIndexName(tableName, columns, type);
-		if (indexName.length > 64) {
-			return `${indexName.substring(0, 56 - type.length)}_${Utils.hash(indexName, 5)}_${type}`;
-		}
+  getDefaultSchemaName(): string | undefined {
+    return 'public';
+  }
 
-		return indexName;
-	}
+  /**
+   * Returns the default name of index for the given columns
+   * cannot go past 64 character length for identifiers in MySQL
+   */
+  getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
+    const indexName = super.getIndexName(tableName, columns, type);
+    if (indexName.length > 64) {
+      return `${indexName.substring(0, 56 - type.length)}_${Utils.hash(indexName, 5)}_${type}`;
+    }
 
-	getDefaultPrimaryName(tableName: string, columns: string[]): string {
-		const indexName = `${tableName}_pkey`;
-		if (indexName.length > 64) {
-			return `${indexName.substring(0, 56 - 'primary'.length)}_${Utils.hash(indexName, 5)}_primary`;
-		}
+    return indexName;
+  }
 
-		return indexName;
-	}
+  getDefaultPrimaryName(tableName: string, columns: string[]): string {
+    const indexName = `${tableName}_pkey`;
+    if (indexName.length > 64) {
+      return `${indexName.substring(0, 56 - 'primary'.length)}_${Utils.hash(indexName, 5)}_primary`;
+    }
 
-	/**
-	 * @inheritDoc
-	 */
-	castColumn(prop?: EntityProperty): string {
-		switch (prop?.columnTypes?.[0]) {
-			case this.getUuidTypeDeclarationSQL({}):
-				return '::text';
-			case this.getBooleanTypeDeclarationSQL():
-				return '::int';
-			default:
-				return '';
-		}
-	}
+    return indexName;
+  }
+
+  /**
+   * @inheritDoc
+   */
+  castColumn(prop?: EntityProperty): string {
+    switch (prop?.columnTypes?.[0]) {
+      case this.getUuidTypeDeclarationSQL({}):
+        return '::text';
+      case this.getBooleanTypeDeclarationSQL():
+        return '::int';
+      default:
+        return '';
+    }
+  }
+
 }

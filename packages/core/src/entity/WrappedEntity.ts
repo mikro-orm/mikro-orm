@@ -14,166 +14,169 @@ import { helper } from './wrap';
 import type { SerializationContext } from '../serialization/SerializationContext';
 
 export class WrappedEntity<T extends object, PK extends keyof T> {
-	__initialized = true;
-	__touched = false;
-	__populated?: boolean;
-	__lazyInitialized?: boolean;
-	__managed?: boolean;
-	__onLoadFired?: boolean;
-	__schema?: string;
-	__em?: EntityManager;
-	__serializationContext: {
-		root?: SerializationContext<T>;
-		populate?: PopulateOptions<T>[];
-	} = {};
-	__loadedProperties = new Set<string>();
-	__data: Dictionary = {};
-	__processing = false;
 
-	/** stores last known primary key, as its current state might be broken due to propagation/orphan removal, but we need to know the PK to be able t remove the entity */
-	__pk?: Primary<T>;
+  __initialized = true;
+  __touched = false;
+  __populated?: boolean;
+  __lazyInitialized?: boolean;
+  __managed?: boolean;
+  __onLoadFired?: boolean;
+  __schema?: string;
+  __em?: EntityManager;
+  __serializationContext: {
+    root?: SerializationContext<T>;
+    populate?: PopulateOptions<T>[];
+  } = {};
 
-	/** holds the reference wrapper instance (if created), so we can maintain the identity on reference wrappers too */
-	__reference?: Reference<T>;
+  __loadedProperties = new Set<string>();
+  __data: Dictionary = {};
+  __processing = false;
 
-	/** holds last entity data snapshot, so we can compute changes when persisting managed entities */
-	__originalEntityData?: EntityData<T>;
+  /** stores last known primary key, as its current state might be broken due to propagation/orphan removal, but we need to know the PK to be able t remove the entity */
+  __pk?: Primary<T>;
 
-	/** holds wrapped primary key, so we can compute change set without eager commit */
-	__identifier?: EntityIdentifier;
+  /** holds the reference wrapper instance (if created), so we can maintain the identity on reference wrappers too */
+  __reference?: Reference<T>;
 
-	constructor(private readonly entity: T, private readonly pkGetter?: (e: T) => Primary<T>, private readonly pkSerializer?: (e: T) => string, private readonly pkGetterConverted?: (e: T) => Primary<T>) {}
+  /** holds last entity data snapshot, so we can compute changes when persisting managed entities */
+  __originalEntityData?: EntityData<T>;
 
-	isInitialized(): boolean {
-		return this.__initialized;
-	}
+  /** holds wrapped primary key, so we can compute change set without eager commit */
+  __identifier?: EntityIdentifier;
 
-	isTouched(): boolean {
-		return this.__touched;
-	}
+  constructor(private readonly entity: T, private readonly pkGetter?: (e: T) => Primary<T>, private readonly pkSerializer?: (e: T) => string, private readonly pkGetterConverted?: (e: T) => Primary<T>) {}
 
-	populated(populated = true): void {
-		this.__populated = populated;
-		this.__lazyInitialized = false;
-	}
+  isInitialized(): boolean {
+    return this.__initialized;
+  }
 
-	toReference(): IdentifiedReference<T, PK> {
-		this.__reference ??= new Reference(this.entity);
-		return this.__reference as IdentifiedReference<T, PK>;
-	}
+  isTouched(): boolean {
+    return this.__touched;
+  }
 
-	toObject(ignoreFields: string[] = []): EntityData<T> {
-		return EntityTransformer.toObject(this.entity, ignoreFields) as EntityData<T>;
-	}
+  populated(populated = true): void {
+    this.__populated = populated;
+    this.__lazyInitialized = false;
+  }
 
-	toPOJO(): EntityData<T> {
-		return EntityTransformer.toObject(this.entity, [], true);
-	}
+  toReference(): IdentifiedReference<T, PK> {
+    this.__reference ??= new Reference(this.entity);
+    return this.__reference as IdentifiedReference<T, PK>;
+  }
 
-	toJSON(...args: any[]): EntityDictionary<T> {
-		// toJSON methods is added to the prototype during discovery to support automatic serialization via JSON.stringify()
-		return (this.entity as Dictionary).toJSON(...args);
-	}
+  toObject(ignoreFields: string[] = []): EntityData<T> {
+    return EntityTransformer.toObject(this.entity, ignoreFields) as EntityData<T>;
+  }
 
-	assign(data: EntityData<T>, options?: AssignOptions): T {
-		if ('assign' in this.entity) {
-			return (this.entity as Dictionary).assign(data, options);
-		}
+  toPOJO(): EntityData<T> {
+    return EntityTransformer.toObject(this.entity, [], true);
+  }
 
-		return EntityAssigner.assign(this.entity, data, options);
-	}
+  toJSON(...args: any[]): EntityDictionary<T> {
+    // toJSON methods is added to the prototype during discovery to support automatic serialization via JSON.stringify()
+    return (this.entity as Dictionary).toJSON(...args);
+  }
 
-	async init<P extends Populate<T> = Populate<T>>(populated = true, populate?: P, lockMode?: LockMode, connectionType?: ConnectionType): Promise<T> {
-		if (!this.__em) {
-			throw ValidationError.entityNotManaged(this.entity);
-		}
+  assign(data: EntityData<T>, options?: AssignOptions): T {
+    if ('assign' in this.entity) {
+      return (this.entity as Dictionary).assign(data, options);
+    }
 
-		await this.__em.findOne(this.entity.constructor.name, this.entity, {
-			refresh: true,
-			lockMode,
-			populate,
-			connectionType,
-			schema: this.__schema,
-		});
-		this.populated(populated);
-		this.__lazyInitialized = true;
+    return EntityAssigner.assign(this.entity, data, options);
+  }
 
-		return this.entity;
-	}
+  async init<P extends Populate<T> = Populate<T>>(populated = true, populate?: P, lockMode?: LockMode, connectionType?: ConnectionType): Promise<T> {
+    if (!this.__em) {
+      throw ValidationError.entityNotManaged(this.entity);
+    }
 
-	hasPrimaryKey(): boolean {
-		const pk = this.getPrimaryKey();
-		return pk != null;
-	}
+    await this.__em.findOne(this.entity.constructor.name, this.entity, {
+      refresh: true,
+      lockMode,
+      populate,
+      connectionType,
+      schema: this.__schema,
+    });
+    this.populated(populated);
+    this.__lazyInitialized = true;
 
-	getPrimaryKey(convertCustomTypes = false): Primary<T> | null {
-		if (this.__pk && this.__meta.compositePK) {
-			return Utils.getCompositeKeyValue(this.__pk, this.__meta, convertCustomTypes, this.__platform);
-		}
+    return this.entity;
+  }
 
-		if (convertCustomTypes) {
-			return this.__pk ?? this.pkGetterConverted!(this.entity);
-		}
+  hasPrimaryKey(): boolean {
+    const pk = this.getPrimaryKey();
+    return pk != null;
+  }
 
-		return this.__pk ?? this.pkGetter!(this.entity);
-	}
+  getPrimaryKey(convertCustomTypes = false): Primary<T> | null {
+    if (this.__pk && this.__meta.compositePK) {
+      return Utils.getCompositeKeyValue(this.__pk, this.__meta, convertCustomTypes, this.__platform);
+    }
 
-	// this method is currently used only in `Driver.syncCollection` and can be probably removed
-	getPrimaryKeys(convertCustomTypes = false): Primary<T>[] | null {
-		const pk = this.getPrimaryKey(convertCustomTypes);
+    if (convertCustomTypes) {
+      return this.__pk ?? this.pkGetterConverted!(this.entity);
+    }
 
-		if (pk == null) {
-			return null;
-		}
+    return this.__pk ?? this.pkGetter!(this.entity);
+  }
 
-		if (this.__meta.compositePK) {
-			return this.__meta.primaryKeys.reduce((ret, pk) => {
-				const child = this.entity[pk] as AnyEntity<T> | Primary<unknown>;
+  // this method is currently used only in `Driver.syncCollection` and can be probably removed
+  getPrimaryKeys(convertCustomTypes = false): Primary<T>[] | null {
+    const pk = this.getPrimaryKey(convertCustomTypes);
 
-				if (Utils.isEntity(child, true)) {
-					const childPk = helper(child).getPrimaryKeys(convertCustomTypes);
-					ret.push(...childPk!);
-				} else {
-					ret.push(child as Primary<unknown>);
-				}
+    if (pk == null) {
+      return null;
+    }
 
-				return ret;
-			}, [] as Primary<T>[]);
-		}
+    if (this.__meta.compositePK) {
+      return this.__meta.primaryKeys.reduce((ret, pk) => {
+        const child = this.entity[pk] as AnyEntity<T> | Primary<unknown>;
 
-		return [pk];
-	}
+        if (Utils.isEntity(child, true)) {
+          const childPk = helper(child).getPrimaryKeys(convertCustomTypes);
+          ret.push(...childPk!);
+        } else {
+          ret.push(child as Primary<unknown>);
+        }
 
-	getSchema(): string | undefined {
-		return this.__schema;
-	}
+        return ret;
+      }, [] as Primary<T>[]);
+    }
 
-	setSchema(schema?: string): void {
-		this.__schema = schema;
-	}
+    return [pk];
+  }
 
-	setPrimaryKey(id: Primary<T> | null) {
-		this.entity[this.__meta!.primaryKeys[0] as string] = id;
-		this.__pk = id!;
-	}
+  getSchema(): string | undefined {
+    return this.__schema;
+  }
 
-	getSerializedPrimaryKey(): string {
-		return this.pkSerializer!(this.entity);
-	}
+  setSchema(schema?: string): void {
+    this.__schema = schema;
+  }
 
-	get __meta(): EntityMetadata<T> {
-		return (this.entity as IWrappedEntityInternal<T>).__meta!;
-	}
+  setPrimaryKey(id: Primary<T> | null) {
+    this.entity[this.__meta!.primaryKeys[0] as string] = id;
+    this.__pk = id!;
+  }
 
-	get __platform() {
-		return (this.entity as IWrappedEntityInternal<T>).__platform!;
-	}
+  getSerializedPrimaryKey(): string {
+    return this.pkSerializer!(this.entity);
+  }
 
-	get __primaryKeys(): Primary<T>[] {
-		return Utils.getPrimaryKeyValues(this.entity, this.__meta!.primaryKeys);
-	}
+  get __meta(): EntityMetadata<T> {
+    return (this.entity as IWrappedEntityInternal<T>).__meta!;
+  }
 
-	[inspect.custom]() {
-		return `[WrappedEntity<${this.__meta!.className}>]`;
-	}
+  get __platform() {
+    return (this.entity as IWrappedEntityInternal<T>).__platform!;
+  }
+
+  get __primaryKeys(): Primary<T>[] {
+    return Utils.getPrimaryKeyValues(this.entity, this.__meta!.primaryKeys);
+  }
+
+  [inspect.custom]() {
+    return `[WrappedEntity<${this.__meta!.className}>]`;
+  }
+
 }

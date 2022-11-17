@@ -7,145 +7,147 @@ import { SqliteSchemaHelper } from './SqliteSchemaHelper';
 import { SqliteExceptionConverter } from './SqliteExceptionConverter';
 
 export class SqlitePlatform extends AbstractSqlPlatform {
-	protected readonly schemaHelper: SqliteSchemaHelper = new SqliteSchemaHelper(this);
-	protected readonly exceptionConverter = new SqliteExceptionConverter();
 
-	usesDefaultKeyword(): boolean {
-		return false;
-	}
+  protected readonly schemaHelper: SqliteSchemaHelper = new SqliteSchemaHelper(this);
+  protected readonly exceptionConverter = new SqliteExceptionConverter();
 
-	usesReturningStatement(): boolean {
-		return true;
-	}
+  usesDefaultKeyword(): boolean {
+    return false;
+  }
 
-	getCurrentTimestampSQL(length: number): string {
-		return super.getCurrentTimestampSQL(0);
-	}
+  usesReturningStatement(): boolean {
+    return true;
+  }
 
-	getDateTimeTypeDeclarationSQL(column: { length: number }): string {
-		return 'datetime';
-	}
+  getCurrentTimestampSQL(length: number): string {
+    return super.getCurrentTimestampSQL(0);
+  }
 
-	getEnumTypeDeclarationSQL(column: {
-		items?: unknown[];
-		fieldNames: string[];
-		length?: number;
-		unsigned?: boolean;
-		autoincrement?: boolean;
-	}): string {
-		if (column.items?.every((item) => Utils.isString(item))) {
-			return 'text';
-		}
+  getDateTimeTypeDeclarationSQL(column: { length: number }): string {
+    return 'datetime';
+  }
 
-		return this.getTinyIntTypeDeclarationSQL(column);
-	}
+  getEnumTypeDeclarationSQL(column: {
+    items?: unknown[];
+    fieldNames: string[];
+    length?: number;
+    unsigned?: boolean;
+    autoincrement?: boolean;
+  }): string {
+    if (column.items?.every(item => Utils.isString(item))) {
+      return 'text';
+    }
 
-	getTinyIntTypeDeclarationSQL(column: {
-		length?: number;
-		unsigned?: boolean;
-		autoincrement?: boolean;
-	}): string {
-		return this.getIntegerTypeDeclarationSQL(column);
-	}
+    return this.getTinyIntTypeDeclarationSQL(column);
+  }
 
-	getSmallIntTypeDeclarationSQL(column: {
-		length?: number;
-		unsigned?: boolean;
-		autoincrement?: boolean;
-	}): string {
-		return this.getIntegerTypeDeclarationSQL(column);
-	}
+  getTinyIntTypeDeclarationSQL(column: {
+    length?: number;
+    unsigned?: boolean;
+    autoincrement?: boolean;
+  }): string {
+    return this.getIntegerTypeDeclarationSQL(column);
+  }
 
-	getIntegerTypeDeclarationSQL(column: {
-		length?: number;
-		unsigned?: boolean;
-		autoincrement?: boolean;
-	}): string {
-		return 'integer';
-	}
+  getSmallIntTypeDeclarationSQL(column: {
+    length?: number;
+    unsigned?: boolean;
+    autoincrement?: boolean;
+  }): string {
+    return this.getIntegerTypeDeclarationSQL(column);
+  }
 
-	getFloatDeclarationSQL(): string {
-		return 'real';
-	}
+  getIntegerTypeDeclarationSQL(column: {
+    length?: number;
+    unsigned?: boolean;
+    autoincrement?: boolean;
+  }): string {
+    return 'integer';
+  }
 
-	getBooleanTypeDeclarationSQL(): string {
-		return 'integer';
-	}
+  getFloatDeclarationSQL(): string {
+    return 'real';
+  }
 
-	getVarcharTypeDeclarationSQL(column: { length?: number }): string {
-		return 'text';
-	}
+  getBooleanTypeDeclarationSQL(): string {
+    return 'integer';
+  }
 
-	convertsJsonAutomatically(): boolean {
-		return false;
-	}
+  getVarcharTypeDeclarationSQL(column: { length?: number }): string {
+    return 'text';
+  }
 
-	allowsComparingTuples() {
-		return false;
-	}
+  convertsJsonAutomatically(): boolean {
+    return false;
+  }
 
-	/**
-	 * This is used to narrow the value of Date properties as they will be stored as timestamps in sqlite.
-	 * We use this method to convert Dates to timestamps when computing the changeset, so we have the right
-	 * data type in the payload as well as in original entity data. Without that, we would end up with diffs
-	 * including all Date properties, as we would be comparing Date object with timestamp.
-	 */
-	processDateProperty(value: unknown): string | number | Date {
-		if (value instanceof Date) {
-			return +value;
-		}
+  allowsComparingTuples() {
+    return false;
+  }
 
-		return value as number;
-	}
+  /**
+   * This is used to narrow the value of Date properties as they will be stored as timestamps in sqlite.
+   * We use this method to convert Dates to timestamps when computing the changeset, so we have the right
+   * data type in the payload as well as in original entity data. Without that, we would end up with diffs
+   * including all Date properties, as we would be comparing Date object with timestamp.
+   */
+  processDateProperty(value: unknown): string | number | Date {
+    if (value instanceof Date) {
+      return +value;
+    }
 
-	quoteVersionValue(value: Date | number, prop: EntityProperty): Date | string | number {
-		if (prop.type.toLowerCase() === 'date') {
-			return escape(value, true, this.timezone).replace(/^'|\.\d{3}'$/g, '');
-		}
+    return value as number;
+  }
 
-		return value;
-	}
+  quoteVersionValue(value: Date | number, prop: EntityProperty): Date | string | number {
+    if (prop.type.toLowerCase() === 'date') {
+      return escape(value, true, this.timezone).replace(/^'|\.\d{3}'$/g, '');
+    }
 
-	quoteValue(value: any): string {
-		/* istanbul ignore if */
-		if (Utils.isPlainObject(value) || value?.[JsonProperty]) {
-			return escape(JSON.stringify(value), true, this.timezone);
-		}
+    return value;
+  }
 
-		if (value instanceof Date) {
-			return '' + +value;
-		}
+  quoteValue(value: any): string {
+    /* istanbul ignore if */
+    if (Utils.isPlainObject(value) || value?.[JsonProperty]) {
+      return escape(JSON.stringify(value), true, this.timezone);
+    }
 
-		return escape(value, true, this.timezone);
-	}
+    if (value instanceof Date) {
+      return '' + +value;
+    }
 
-	getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
-		const [a, ...b] = path;
+    return escape(value, true, this.timezone);
+  }
 
-		if (aliased) {
-			return expr((alias) => `json_extract(${this.quoteIdentifier(`${alias}.${a}`)}, '$.${b.join('.')}')`);
-		}
+  getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
+    const [a, ...b] = path;
 
-		return `json_extract(${this.quoteIdentifier(a)}, '$.${b.join('.')}')`;
-	}
+    if (aliased) {
+      return expr(alias => `json_extract(${this.quoteIdentifier(`${alias}.${a}`)}, '$.${b.join('.')}')`);
+    }
 
-	getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
-		if (type === 'primary') {
-			return this.getDefaultPrimaryName(tableName, columns);
-		}
+    return `json_extract(${this.quoteIdentifier(a)}, '$.${b.join('.')}')`;
+  }
 
-		return super.getIndexName(tableName, columns, type);
-	}
+  getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
+    if (type === 'primary') {
+      return this.getDefaultPrimaryName(tableName, columns);
+    }
 
-	getDefaultPrimaryName(tableName: string, columns: string[]): string {
-		return 'primary';
-	}
+    return super.getIndexName(tableName, columns, type);
+  }
 
-	supportsDownMigrations(): boolean {
-		return false;
-	}
+  getDefaultPrimaryName(tableName: string, columns: string[]): string {
+    return 'primary';
+  }
 
-	getFullTextWhereClause(): string {
-		return `:column: match :query`;
-	}
+  supportsDownMigrations(): boolean {
+    return false;
+  }
+
+  getFullTextWhereClause(): string {
+    return `:column: match :query`;
+  }
+
 }

@@ -6,87 +6,89 @@ import { MongoEntityRepository } from './MongoEntityRepository';
 import { MongoSchemaGenerator } from './MongoSchemaGenerator';
 
 export class MongoPlatform extends Platform {
-	protected readonly exceptionConverter = new MongoExceptionConverter();
 
-	setConfig(config: Configuration) {
-		config.set('autoJoinOneToOneOwner', false);
-		super.setConfig(config);
-	}
+  protected readonly exceptionConverter = new MongoExceptionConverter();
 
-	getNamingStrategy(): { new (): NamingStrategy } {
-		return MongoNamingStrategy;
-	}
+  setConfig(config: Configuration) {
+    config.set('autoJoinOneToOneOwner', false);
+    super.setConfig(config);
+  }
 
-	getRepositoryClass<T extends object>(): Constructor<EntityRepository<T>> {
-		return MongoEntityRepository as Constructor<EntityRepository<T>>;
-	}
+  getNamingStrategy(): { new (): NamingStrategy } {
+    return MongoNamingStrategy;
+  }
 
-	getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): MongoSchemaGenerator {
-		return new MongoSchemaGenerator(em ?? (driver as any));
-	}
+  getRepositoryClass<T extends object>(): Constructor<EntityRepository<T>> {
+    return MongoEntityRepository as Constructor<EntityRepository<T>>;
+  }
 
-	getMigrator(em: EntityManager) {
-		// eslint-disable-next-line @typescript-eslint/no-var-requires
-		const { Migrator } = require('@mikro-orm/migrations-mongodb');
-		return this.config.getCachedService(Migrator, em);
-	}
+  getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): MongoSchemaGenerator {
+    return new MongoSchemaGenerator(em ?? (driver as any));
+  }
 
-	normalizePrimaryKey<T extends number | string = number | string>(data: Primary<T> | IPrimaryKey | ObjectId): T {
-		if (data instanceof ObjectId) {
-			return data.toHexString() as T;
-		}
+  getMigrator(em: EntityManager) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { Migrator } = require('@mikro-orm/migrations-mongodb');
+    return this.config.getCachedService(Migrator, em);
+  }
 
-		return data as T;
-	}
+  normalizePrimaryKey<T extends number | string = number | string>(data: Primary<T> | IPrimaryKey | ObjectId): T {
+    if (data instanceof ObjectId) {
+      return data.toHexString() as T;
+    }
 
-	denormalizePrimaryKey(data: number | string): IPrimaryKey {
-		return new ObjectId(data);
-	}
+    return data as T;
+  }
 
-	getSerializedPrimaryKeyField(field: string): string {
-		return 'id';
-	}
+  denormalizePrimaryKey(data: number | string): IPrimaryKey {
+    return new ObjectId(data);
+  }
 
-	usesDifferentSerializedPrimaryKey(): boolean {
-		return true;
-	}
+  getSerializedPrimaryKeyField(field: string): string {
+    return 'id';
+  }
 
-	usesImplicitTransactions(): boolean {
-		return false;
-	}
+  usesDifferentSerializedPrimaryKey(): boolean {
+    return true;
+  }
 
-	convertsJsonAutomatically(marshall = false): boolean {
-		return true;
-	}
+  usesImplicitTransactions(): boolean {
+    return false;
+  }
 
-	marshallArray(values: string[]): string {
-		return values as unknown as string;
-	}
+  convertsJsonAutomatically(marshall = false): boolean {
+    return true;
+  }
 
-	cloneEmbeddable<T>(data: T): T {
-		const ret = super.cloneEmbeddable(data);
-		Utils.dropUndefinedProperties(ret);
+  marshallArray(values: string[]): string {
+    return values as unknown as string;
+  }
 
-		return ret;
-	}
+  cloneEmbeddable<T>(data: T): T {
+    const ret = super.cloneEmbeddable(data);
+    Utils.dropUndefinedProperties(ret);
 
-	shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[]): boolean {
-		if (super.shouldHaveColumn(prop, populate)) {
-			return true;
-		}
+    return ret;
+  }
 
-		return prop.reference === ReferenceType.MANY_TO_MANY && prop.owner;
-	}
+  shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[]): boolean {
+    if (super.shouldHaveColumn(prop, populate)) {
+      return true;
+    }
 
-	validateMetadata(meta: EntityMetadata): void {
-		const pk = meta.getPrimaryProps()[0];
+    return prop.reference === ReferenceType.MANY_TO_MANY && prop.owner;
+  }
 
-		if (pk && pk.fieldNames?.[0] !== '_id') {
-			throw MetadataError.invalidPrimaryKey(meta, pk, '_id');
-		}
-	}
+  validateMetadata(meta: EntityMetadata): void {
+    const pk = meta.getPrimaryProps()[0];
 
-	isAllowedTopLevelOperator(operator: string) {
-		return ['$not', '$fulltext'].includes(operator);
-	}
+    if (pk && pk.fieldNames?.[0] !== '_id') {
+      throw MetadataError.invalidPrimaryKey(meta, pk, '_id');
+    }
+  }
+
+  isAllowedTopLevelOperator(operator: string) {
+    return ['$not', '$fulltext'].includes(operator);
+  }
+
 }

@@ -1,31 +1,33 @@
 import { AbstractNamingStrategy } from './AbstractNamingStrategy';
 
 export class UnderscoreNamingStrategy extends AbstractNamingStrategy {
-	classToTableName(entityName: string): string {
-		return this.underscore(entityName);
-	}
 
-	joinColumnName(propertyName: string): string {
-		return this.underscore(propertyName) + '_' + this.referenceColumnName();
-	}
+  classToTableName(entityName: string): string {
+    return this.underscore(entityName);
+  }
 
-	joinKeyColumnName(entityName: string, referencedColumnName?: string): string {
-		return this.classToTableName(entityName) + '_' + (referencedColumnName || this.referenceColumnName());
-	}
+  joinColumnName(propertyName: string): string {
+    return this.underscore(propertyName) + '_' + this.referenceColumnName();
+  }
 
-	joinTableName(sourceEntity: string, targetEntity: string, propertyName: string): string {
-		return this.classToTableName(sourceEntity) + '_' + this.classToTableName(propertyName);
-	}
+  joinKeyColumnName(entityName: string, referencedColumnName?: string): string {
+    return this.classToTableName(entityName) + '_' + (referencedColumnName || this.referenceColumnName());
+  }
 
-	propertyToColumnName(propertyName: string): string {
-		return this.underscore(propertyName);
-	}
+  joinTableName(sourceEntity: string, targetEntity: string, propertyName: string): string {
+    return this.classToTableName(sourceEntity) + '_' + this.classToTableName(propertyName);
+  }
 
-	referenceColumnName(): string {
-		return 'id';
-	}
+  propertyToColumnName(propertyName: string): string {
+    return this.underscore(propertyName);
+  }
 
-	private underscore(name: string): string {
-		return name.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
-	}
+  referenceColumnName(): string {
+    return 'id';
+  }
+
+  private underscore(name: string): string {
+    return name.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
+  }
+
 }

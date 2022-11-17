@@ -4,64 +4,66 @@ import type { EntityManager } from '@mikro-orm/knex';
 import { CLIHelper } from '../CLIHelper';
 
 export type Options = {
-	dump: boolean;
-	save: boolean;
-	path: string;
-	schema: string;
+  dump: boolean;
+  save: boolean;
+  path: string;
+  schema: string;
 };
 
 export class GenerateEntitiesCommand<U extends Options = Options> implements CommandModule<unknown, U> {
-	command = 'generate-entities';
-	describe = 'Generate entities based on current database schema';
 
-	/**
-	 * @inheritDoc
-	 */
-	builder(args: Argv) {
-		args.option('s', {
-			alias: 'save',
-			type: 'boolean',
-			desc: 'Saves entities to directory defined by --path',
-		});
-		args.option('d', {
-			alias: 'dump',
-			type: 'boolean',
-			desc: 'Dumps all entities to console',
-		});
-		args.option('p', {
-			alias: 'path',
-			type: 'string',
-			desc: 'Sets path to directory where to save entities',
-		});
-		args.option('schema', {
-			type: 'string',
-			desc: 'Generates entities only for given schema',
-		});
+  command = 'generate-entities';
+  describe = 'Generate entities based on current database schema';
 
-		return args as unknown as Argv<U>;
-	}
+  /**
+   * @inheritDoc
+   */
+  builder(args: Argv) {
+    args.option('s', {
+      alias: 'save',
+      type: 'boolean',
+      desc: 'Saves entities to directory defined by --path',
+    });
+    args.option('d', {
+      alias: 'dump',
+      type: 'boolean',
+      desc: 'Dumps all entities to console',
+    });
+    args.option('p', {
+      alias: 'path',
+      type: 'string',
+      desc: 'Sets path to directory where to save entities',
+    });
+    args.option('schema', {
+      type: 'string',
+      desc: 'Generates entities only for given schema',
+    });
 
-	/**
-	 * @inheritDoc
-	 */
-	async handler(args: ArgumentsCamelCase<U>): Promise<void> {
-		if (!args.save && !args.dump) {
-			return CLIHelper.showHelp();
-		}
+    return args as unknown as Argv<U>;
+  }
 
-		const orm = await CLIHelper.getORM(false);
-		const { EntityGenerator } = await Utils.dynamicImport('@mikro-orm/entity-generator');
-		const generator = new EntityGenerator(orm.em as EntityManager);
-		const dump = await generator.generate({
-			save: args.save,
-			baseDir: args.path,
-			schema: args.schema,
-		});
+  /**
+   * @inheritDoc
+   */
+  async handler(args: ArgumentsCamelCase<U>): Promise<void> {
+    if (!args.save && !args.dump) {
+      return CLIHelper.showHelp();
+    }
 
-		if (args.dump) {
-			CLIHelper.dump(dump.join('\n\n'));
-		}
+    const orm = await CLIHelper.getORM(false);
+    const { EntityGenerator } = await Utils.dynamicImport('@mikro-orm/entity-generator');
+    const generator = new EntityGenerator(orm.em as EntityManager);
+    const dump = await generator.generate({
+      save: args.save,
+      baseDir: args.path,
+      schema: args.schema,
+    });
 
-		await orm.close(true);
-	}
+    if (args.dump) {
+      CLIHelper.dump(dump.join('\n\n'));
+    }
+
+    await orm.close(true);
+  }
+
 }

@@ -7,9 +7,9 @@ import { CLIHelper } from './CLIHelper';
 import { CLIConfigurator } from './CLIConfigurator';
 
 (async () => {
-	const args = (await CLIConfigurator.configure()).parse(process.argv.slice(2)) as { _: string[] };
+  const args = (await CLIConfigurator.configure()).parse(process.argv.slice(2)) as { _: string[] };
 
-	if (args._.length === 0) {
-		CLIHelper.showHelp();
-	}
+  if (args._.length === 0) {
+    CLIHelper.showHelp();
+  }
 })();

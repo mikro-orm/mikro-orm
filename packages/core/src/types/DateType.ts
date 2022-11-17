@@ -4,41 +4,43 @@ import type { EntityProperty } from '../typings';
 import { ValidationError } from '../errors';
 
 export class DateType extends Type<Date, string> {
-	convertToDatabaseValue(value: Date | string | undefined | null, platform: Platform): string {
-		if (value instanceof Date) {
-			return value.toISOString().substr(0, 10);
-		}
 
-		if (!value || value.toString().match(/^\d{4}-\d{2}-\d{2}$/)) {
-			return value as string;
-		}
+  convertToDatabaseValue(value: Date | string | undefined | null, platform: Platform): string {
+    if (value instanceof Date) {
+      return value.toISOString().substr(0, 10);
+    }
 
-		throw ValidationError.invalidType(DateType, value, 'JS');
-	}
+    if (!value || value.toString().match(/^\d{4}-\d{2}-\d{2}$/)) {
+      return value as string;
+    }
 
-	convertToJSValue(value: Date | string | null | undefined, platform: Platform): Date {
-		if (!value || value instanceof Date) {
-			return value as Date;
-		}
+    throw ValidationError.invalidType(DateType, value, 'JS');
+  }
 
-		const date = new Date(value);
+  convertToJSValue(value: Date | string | null | undefined, platform: Platform): Date {
+    if (!value || value instanceof Date) {
+      return value as Date;
+    }
 
-		if (date.toString() === 'Invalid Date') {
-			throw ValidationError.invalidType(DateType, value, 'database');
-		}
+    const date = new Date(value);
 
-		return date;
-	}
+    if (date.toString() === 'Invalid Date') {
+      throw ValidationError.invalidType(DateType, value, 'database');
+    }
 
-	compareAsType(): string {
-		return 'string';
-	}
+    return date;
+  }
 
-	getColumnType(prop: EntityProperty, platform: Platform): string {
-		return platform.getDateTypeDeclarationSQL(prop.length);
-	}
+  compareAsType(): string {
+    return 'string';
+  }
 
-	toJSON(value: Date, platform: Platform): Date | string {
-		return this.convertToDatabaseValue(value, platform);
-	}
+  getColumnType(prop: EntityProperty, platform: Platform): string {
+    return platform.getDateTypeDeclarationSQL(prop.length);
+  }
+
+  toJSON(value: Date, platform: Platform): Date | string {
+    return this.convertToDatabaseValue(value, platform);
+  }
+
 }

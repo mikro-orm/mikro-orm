@@ -1,89 +1,91 @@
 import type { AnyEntity, Constructor, EntityMetadata } from '../typings';
 
 export class IdentityMap {
-	private readonly registry = new Map<Constructor<AnyEntity>, Map<string, AnyEntity>>();
 
-	store<T>(item: T) {
-		this.getStore((item as AnyEntity).__meta!.root).set(this.getPkHash(item), item);
-	}
+  private readonly registry = new Map<Constructor<AnyEntity>, Map<string, AnyEntity>>();
 
-	delete<T>(item: T) {
-		this.getStore((item as AnyEntity).__meta!.root).delete(this.getPkHash(item));
-	}
+  store<T>(item: T) {
+    this.getStore((item as AnyEntity).__meta!.root).set(this.getPkHash(item), item);
+  }
 
-	getByHash<T>(meta: EntityMetadata<T>, hash: string): T | undefined {
-		const store = this.getStore(meta);
-		return store.has(hash) ? store.get(hash) : undefined;
-	}
+  delete<T>(item: T) {
+    this.getStore((item as AnyEntity).__meta!.root).delete(this.getPkHash(item));
+  }
 
-	getStore<T>(meta: EntityMetadata<T>): Map<string, T> {
-		const store = this.registry.get(meta.class as Constructor<AnyEntity>) as Map<string, T>;
+  getByHash<T>(meta: EntityMetadata<T>, hash: string): T | undefined {
+    const store = this.getStore(meta);
+    return store.has(hash) ? store.get(hash) : undefined;
+  }
 
-		if (store) {
-			return store;
-		}
+  getStore<T>(meta: EntityMetadata<T>): Map<string, T> {
+    const store = this.registry.get(meta.class as Constructor<AnyEntity>) as Map<string, T>;
 
-		const newStore = new Map();
-		this.registry.set(meta.class as Constructor<AnyEntity>, newStore);
+    if (store) {
+      return store;
+    }
 
-		return newStore;
-	}
+    const newStore = new Map();
+    this.registry.set(meta.class as Constructor<AnyEntity>, newStore);
 
-	clear() {
-		this.registry.clear();
-	}
+    return newStore;
+  }
 
-	values(): AnyEntity[] {
-		const ret: AnyEntity[] = [];
+  clear() {
+    this.registry.clear();
+  }
 
-		for (const store of this.registry.values()) {
-			ret.push(...store.values());
-		}
+  values(): AnyEntity[] {
+    const ret: AnyEntity[] = [];
 
-		return ret;
-	}
+    for (const store of this.registry.values()) {
+      ret.push(...store.values());
+    }
 
-	*[Symbol.iterator](): IterableIterator<AnyEntity> {
-		for (const store of this.registry.values()) {
-			for (const item of store.values()) {
-				yield item;
-			}
-		}
-	}
+    return ret;
+  }
 
-	keys(): string[] {
-		const ret: string[] = [];
+  *[Symbol.iterator](): IterableIterator<AnyEntity> {
+    for (const store of this.registry.values()) {
+      for (const item of store.values()) {
+        yield item;
+      }
+    }
+  }
 
-		for (const [cls, store] of this.registry) {
-			ret.push(...[...store.keys()].map((hash) => `${cls.name}-${hash}`));
-		}
+  keys(): string[] {
+    const ret: string[] = [];
 
-		return ret;
-	}
+    for (const [cls, store] of this.registry) {
+      ret.push(...[...store.keys()].map(hash => `${cls.name}-${hash}`));
+    }
 
-	/**
-	 * For back compatibility only.
-	 */
-	get<T>(hash: string): T | undefined {
-		const [name, id] = hash.split('-', 2);
-		const cls = [...this.registry.keys()].find((k) => k.name === name);
+    return ret;
+  }
 
-		if (!cls) {
-			return undefined;
-		}
+  /**
+   * For back compatibility only.
+   */
+  get<T>(hash: string): T | undefined {
+    const [name, id] = hash.split('-', 2);
+    const cls = [...this.registry.keys()].find(k => k.name === name);
 
-		const store = this.registry.get(cls) as Map<string, T>;
-		return store.has(id) ? store.get(id) : undefined;
-	}
+    if (!cls) {
+      return undefined;
+    }
 
-	private getPkHash<T>(item: T): string {
-		const pkHash = (item as AnyEntity).__helper!.getSerializedPrimaryKey();
-		const schema = (item as AnyEntity).__helper!.__schema || (item as AnyEntity).__meta!.root.schema;
+    const store = this.registry.get(cls) as Map<string, T>;
+    return store.has(id) ? store.get(id) : undefined;
+  }
 
-		if (schema) {
-			return schema + ':' + pkHash;
-		}
+  private getPkHash<T>(item: T): string {
+    const pkHash = (item as AnyEntity).__helper!.getSerializedPrimaryKey();
+    const schema = (item as AnyEntity).__helper!.__schema || (item as AnyEntity).__meta!.root.schema;
 
-		return pkHash;
-	}
+    if (schema) {
+      return schema + ':' + pkHash;
+    }
+
+    return pkHash;
+  }
+
 }

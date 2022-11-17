@@ -3,29 +3,31 @@ import type { Platform } from '../platforms';
 import type { EntityProperty } from '../typings';
 
 export class BlobType extends Type<Buffer | null> {
-	convertToDatabaseValue(value: Buffer): Buffer {
-		return value;
-	}
 
-	convertToJSValue(value: Buffer): Buffer | null {
-		if ((value as unknown) instanceof Buffer || !value) {
-			return value;
-		}
+  convertToDatabaseValue(value: Buffer): Buffer {
+    return value;
+  }
 
-		/* istanbul ignore else */
-		if (value.buffer instanceof Buffer) {
-			return value.buffer;
-		}
+  convertToJSValue(value: Buffer): Buffer | null {
+    if ((value as unknown) instanceof Buffer || !value) {
+      return value;
+    }
 
-		/* istanbul ignore next */
-		return Buffer.from(value);
-	}
+    /* istanbul ignore else */
+    if (value.buffer instanceof Buffer) {
+      return value.buffer;
+    }
 
-	compareAsType(): string {
-		return 'Buffer';
-	}
+    /* istanbul ignore next */
+    return Buffer.from(value);
+  }
 
-	getColumnType(prop: EntityProperty, platform: Platform): string {
-		return platform.getBlobDeclarationSQL();
-	}
+  compareAsType(): string {
+    return 'Buffer';
+  }
+
+  getColumnType(prop: EntityProperty, platform: Platform): string {
+    return platform.getBlobDeclarationSQL();
+  }
+
 }

@@ -6,54 +6,56 @@ import { EntityAssigner } from './EntityAssigner';
 import { helper } from './wrap';
 
 export abstract class BaseEntity<Entity extends object, Primary extends keyof Entity, Populate extends string = string> {
-	isInitialized(): boolean {
-		return helper(this).__initialized;
-	}
 
-	isTouched(): boolean {
-		return helper(this).__touched;
-	}
+  isInitialized(): boolean {
+    return helper(this).__initialized;
+  }
 
-	populated(populated = true): void {
-		helper(this).populated(populated);
-	}
+  isTouched(): boolean {
+    return helper(this).__touched;
+  }
 
-	toReference(): IdentifiedReference<Entity, Primary> {
-		return Reference.create(this as unknown as Entity);
-	}
+  populated(populated = true): void {
+    helper(this).populated(populated);
+  }
 
-	toObject(ignoreFields: string[] = []): EntityDTO<this> {
-		return helper(this).toObject(ignoreFields);
-	}
+  toReference(): IdentifiedReference<Entity, Primary> {
+    return Reference.create(this as unknown as Entity);
+  }
 
-	toJSON(...args: any[]): EntityDTO<this> {
-		return this.toObject(...args);
-	}
+  toObject(ignoreFields: string[] = []): EntityDTO<this> {
+    return helper(this).toObject(ignoreFields);
+  }
 
-	toPOJO(): EntityDTO<this> {
-		return helper(this).toPOJO();
-	}
+  toJSON(...args: any[]): EntityDTO<this> {
+    return this.toObject(...args);
+  }
 
-	assign(data: EntityData<Entity>, options?: AssignOptions): Entity {
-		return EntityAssigner.assign(this as object, data, options) as Entity;
-	}
+  toPOJO(): EntityDTO<this> {
+    return helper(this).toPOJO();
+  }
 
-	init<Populate extends string = never>(populated = true): Promise<Loaded<Entity, Populate>> {
-		// using `Loaded<this>` results in issues with assignability unfortunately
-		return helper(this as unknown as Entity).init<Populate>(populated);
-	}
+  assign(data: EntityData<Entity>, options?: AssignOptions): Entity {
+    return EntityAssigner.assign(this as object, data, options) as Entity;
+  }
 
-	getSchema(): string | undefined {
-		return helper(this).getSchema();
-	}
+  init<Populate extends string = never>(populated = true): Promise<Loaded<Entity, Populate>> {
+    // using `Loaded<this>` results in issues with assignability unfortunately
+    return helper(this as unknown as Entity).init<Populate>(populated);
+  }
 
-	setSchema(schema?: string): void {
-		helper(this).setSchema(schema);
-	}
+  getSchema(): string | undefined {
+    return helper(this).getSchema();
+  }
+
+  setSchema(schema?: string): void {
+    helper(this).setSchema(schema);
+  }
+
 }
 
 Object.defineProperty(BaseEntity.prototype, '__baseEntity', {
-	value: true,
-	writable: false,
-	enumerable: false,
+  value: true,
+  writable: false,
+  enumerable: false,
 });

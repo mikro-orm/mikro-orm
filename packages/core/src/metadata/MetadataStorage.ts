@@ -7,105 +7,107 @@ import { EntityHelper } from '../entity/EntityHelper';
 import type { EventSubscriber } from '../events';
 
 export class MetadataStorage {
-	private static readonly metadata: Dictionary<EntityMetadata> = Utils.getGlobalStorage('metadata');
-	private static readonly subscribers: Dictionary<EventSubscriber> = Utils.getGlobalStorage('subscribers');
-	private readonly metadata: Dictionary<EntityMetadata>;
 
-	constructor(metadata: Dictionary<EntityMetadata> = {}) {
-		this.metadata = Utils.copy(metadata, false);
-	}
+  private static readonly metadata: Dictionary<EntityMetadata> = Utils.getGlobalStorage('metadata');
+  private static readonly subscribers: Dictionary<EventSubscriber> = Utils.getGlobalStorage('subscribers');
+  private readonly metadata: Dictionary<EntityMetadata>;
 
-	static getMetadata(): Dictionary<EntityMetadata>;
-	static getMetadata<T = any>(entity: string, path: string): EntityMetadata<T>;
-	static getMetadata<T = any>(entity?: string, path?: string): Dictionary<EntityMetadata> | EntityMetadata<T> {
-		const key = entity && path ? entity + '-' + Utils.hash(path) : null;
+  constructor(metadata: Dictionary<EntityMetadata> = {}) {
+    this.metadata = Utils.copy(metadata, false);
+  }
 
-		if (key && !MetadataStorage.metadata[key]) {
-			MetadataStorage.metadata[key] = new EntityMetadata({
-				className: entity,
-				path,
-			});
-		}
+  static getMetadata(): Dictionary<EntityMetadata>;
+  static getMetadata<T = any>(entity: string, path: string): EntityMetadata<T>;
+  static getMetadata<T = any>(entity?: string, path?: string): Dictionary<EntityMetadata> | EntityMetadata<T> {
+    const key = entity && path ? entity + '-' + Utils.hash(path) : null;
 
-		if (key) {
-			return MetadataStorage.metadata[key];
-		}
+    if (key && !MetadataStorage.metadata[key]) {
+      MetadataStorage.metadata[key] = new EntityMetadata({
+        className: entity,
+        path,
+      });
+    }
 
-		return MetadataStorage.metadata;
-	}
+    if (key) {
+      return MetadataStorage.metadata[key];
+    }
 
-	static isKnownEntity(name: string): boolean {
-		return !!Object.values(this.metadata).find((meta) => meta.className === name);
-	}
+    return MetadataStorage.metadata;
+  }
 
-	static getMetadataFromDecorator<T = any>(target: T & Dictionary): EntityMetadata<T> {
-		const path = Utils.lookupPathFromDecorator(target.name);
-		const meta = MetadataStorage.getMetadata(target.name, path);
-		Object.defineProperty(target, '__path', { value: path, writable: true });
+  static isKnownEntity(name: string): boolean {
+    return !!Object.values(this.metadata).find(meta => meta.className === name);
+  }
 
-		return meta;
-	}
+  static getMetadataFromDecorator<T = any>(target: T & Dictionary): EntityMetadata<T> {
+    const path = Utils.lookupPathFromDecorator(target.name);
+    const meta = MetadataStorage.getMetadata(target.name, path);
+    Object.defineProperty(target, '__path', { value: path, writable: true });
 
-	static getSubscriberMetadata(): Dictionary<EventSubscriber> {
-		return MetadataStorage.subscribers;
-	}
+    return meta;
+  }
 
-	static init(): MetadataStorage {
-		return new MetadataStorage(MetadataStorage.metadata);
-	}
+  static getSubscriberMetadata(): Dictionary<EventSubscriber> {
+    return MetadataStorage.subscribers;
+  }
 
-	static clear(): void {
-		Object.keys(this.metadata).forEach((k) => delete this.metadata[k]);
-		Object.keys(this.subscribers).forEach((k) => delete this.subscribers[k]);
-	}
+  static init(): MetadataStorage {
+    return new MetadataStorage(MetadataStorage.metadata);
+  }
 
-	getAll(): Dictionary<EntityMetadata> {
-		return this.metadata;
-	}
+  static clear(): void {
+    Object.keys(this.metadata).forEach(k => delete this.metadata[k]);
+    Object.keys(this.subscribers).forEach(k => delete this.subscribers[k]);
+  }
 
-	getByDiscriminatorColumn<T>(meta: EntityMetadata<T>, data: EntityData<T>): EntityMetadata<T> | undefined {
-		const value = data[meta.root.discriminatorColumn!];
+  getAll(): Dictionary<EntityMetadata> {
+    return this.metadata;
+  }
 
-		if (!value) {
-			return undefined;
-		}
+  getByDiscriminatorColumn<T>(meta: EntityMetadata<T>, data: EntityData<T>): EntityMetadata<T> | undefined {
+    const value = data[meta.root.discriminatorColumn!];
 
-		const type = meta.root.discriminatorMap![value];
+    if (!value) {
+      return undefined;
+    }
 
-		return this.metadata[type];
-	}
+    const type = meta.root.discriminatorMap![value];
 
-	get<T = any>(entity: string, init = false, validate = true): EntityMetadata<T> {
-		if (validate && !init && !this.has(entity)) {
-			throw MetadataError.missingMetadata(entity);
-		}
+    return this.metadata[type];
+  }
 
-		if (init && !this.has(entity)) {
-			this.metadata[entity] = new EntityMetadata();
-		}
+  get<T = any>(entity: string, init = false, validate = true): EntityMetadata<T> {
+    if (validate && !init && !this.has(entity)) {
+      throw MetadataError.missingMetadata(entity);
+    }
 
-		return this.metadata[entity];
-	}
+    if (init && !this.has(entity)) {
+      this.metadata[entity] = new EntityMetadata();
+    }
 
-	find<T = any>(entity: string): EntityMetadata<T> | undefined {
-		return this.metadata[entity];
-	}
+    return this.metadata[entity];
+  }
 
-	has(entity: string): boolean {
-		return entity in this.metadata;
-	}
+  find<T = any>(entity: string): EntityMetadata<T> | undefined {
+    return this.metadata[entity];
+  }
 
-	set(entity: string, meta: EntityMetadata): EntityMetadata {
-		return (this.metadata[entity] = meta);
-	}
+  has(entity: string): boolean {
+    return entity in this.metadata;
+  }
 
-	reset(entity: string): void {
-		delete this.metadata[entity];
-	}
+  set(entity: string, meta: EntityMetadata): EntityMetadata {
+    return (this.metadata[entity] = meta);
+  }
 
-	decorate(em: EntityManager): void {
-		Object.values(this.metadata)
-			.filter((meta) => meta.prototype && !meta.prototype.__meta)
-			.forEach((meta) => EntityHelper.decorate(meta, em));
-	}
+  reset(entity: string): void {
+    delete this.metadata[entity];
+  }
+
+  decorate(em: EntityManager): void {
+    Object.values(this.metadata)
+      .filter(meta => meta.prototype && !meta.prototype.__meta)
+      .forEach(meta => EntityHelper.decorate(meta, em));
+  }
+
 }

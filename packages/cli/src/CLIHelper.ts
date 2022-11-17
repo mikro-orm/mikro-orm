@@ -9,120 +9,122 @@ import { colors, ConfigurationLoader, MikroORM, Utils } from '@mikro-orm/core';
  * @internal
  */
 export class CLIHelper {
-	static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true, options: Partial<Options> = {}): Promise<Configuration<D>> {
-		const deps = await ConfigurationLoader.getORMPackages();
 
-		if (!deps.has('@mikro-orm/cli') && !process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI) {
-			throw new Error('@mikro-orm/cli needs to be installed as a local dependency!');
-		}
+  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true, options: Partial<Options> = {}): Promise<Configuration<D>> {
+    const deps = await ConfigurationLoader.getORMPackages();
 
-		return ConfigurationLoader.getConfiguration(validate, options);
-	}
+    if (!deps.has('@mikro-orm/cli') && !process.env.MIKRO_ORM_ALLOW_GLOBAL_CLI) {
+      throw new Error('@mikro-orm/cli needs to be installed as a local dependency!');
+    }
 
-	static async getORM(warnWhenNoEntities?: boolean, opts: Partial<Options> = {}): Promise<MikroORM> {
-		const options = await CLIHelper.getConfiguration(warnWhenNoEntities, opts);
-		options.set('allowGlobalContext', true);
-		options.set('debug', !!process.env.MIKRO_ORM_VERBOSE);
-		const settings = await ConfigurationLoader.getSettings();
-		options.getLogger().setDebugMode(false);
+    return ConfigurationLoader.getConfiguration(validate, options);
+  }
 
-		if (settings.useTsNode) {
-			options.set('tsNode', true);
-		}
+  static async getORM(warnWhenNoEntities?: boolean, opts: Partial<Options> = {}): Promise<MikroORM> {
+    const options = await CLIHelper.getConfiguration(warnWhenNoEntities, opts);
+    options.set('allowGlobalContext', true);
+    options.set('debug', !!process.env.MIKRO_ORM_VERBOSE);
+    const settings = await ConfigurationLoader.getSettings();
+    options.getLogger().setDebugMode(false);
 
-		if (Utils.isDefined(warnWhenNoEntities)) {
-			options.get('discovery').warnWhenNoEntities = warnWhenNoEntities;
-		}
+    if (settings.useTsNode) {
+      options.set('tsNode', true);
+    }
 
-		return MikroORM.init(options);
-	}
+    if (Utils.isDefined(warnWhenNoEntities)) {
+      options.get('discovery').warnWhenNoEntities = warnWhenNoEntities;
+    }
 
-	static getNodeVersion(): string {
-		return process.versions.node;
-	}
+    return MikroORM.init(options);
+  }
 
-	static async getDriverDependencies(): Promise<string[]> {
-		try {
-			const config = await CLIHelper.getConfiguration();
-			return config.getDriver().getDependencies();
-		} catch {
-			return [];
-		}
-	}
+  static getNodeVersion(): string {
+    return process.versions.node;
+  }
 
-	static dump(text: string, config?: Configuration): void {
-		if (config?.get('highlighter')) {
-			text = config.get('highlighter').highlight(text);
-		}
+  static async getDriverDependencies(): Promise<string[]> {
+    try {
+      const config = await CLIHelper.getConfiguration();
+      return config.getDriver().getDependencies();
+    } catch {
+      return [];
+    }
+  }
 
-		// eslint-disable-next-line no-console
-		console.log(text);
-	}
+  static dump(text: string, config?: Configuration): void {
+    if (config?.get('highlighter')) {
+      text = config.get('highlighter').highlight(text);
+    }
 
-	static async getConfigPaths(): Promise<string[]> {
-		return ConfigurationLoader.getConfigPaths();
-	}
+    // eslint-disable-next-line no-console
+    console.log(text);
+  }
 
-	static async dumpDependencies() {
-		const version = Utils.getORMVersion();
-		CLIHelper.dump(' - dependencies:');
-		CLIHelper.dump(`   - mikro-orm ${colors.green(version)}`);
-		CLIHelper.dump(`   - node ${colors.green(CLIHelper.getNodeVersion())}`);
+  static async getConfigPaths(): Promise<string[]> {
+    return ConfigurationLoader.getConfigPaths();
+  }
 
-		if (await pathExists(process.cwd() + '/package.json')) {
-			const drivers = await CLIHelper.getDriverDependencies();
+  static async dumpDependencies() {
+    const version = Utils.getORMVersion();
+    CLIHelper.dump(' - dependencies:');
+    CLIHelper.dump(`   - mikro-orm ${colors.green(version)}`);
+    CLIHelper.dump(`   - node ${colors.green(CLIHelper.getNodeVersion())}`);
 
-			for (const driver of drivers) {
-				CLIHelper.dump(`   - ${driver} ${await CLIHelper.getModuleVersion(driver)}`);
-			}
+    if (await pathExists(process.cwd() + '/package.json')) {
+      const drivers = await CLIHelper.getDriverDependencies();
 
-			CLIHelper.dump(`   - typescript ${await CLIHelper.getModuleVersion('typescript')}`);
-			CLIHelper.dump(' - package.json ' + colors.green('found'));
-		} else {
-			CLIHelper.dump(' - package.json ' + colors.red('not found'));
-		}
-	}
+      for (const driver of drivers) {
+        CLIHelper.dump(`   - ${driver} ${await CLIHelper.getModuleVersion(driver)}`);
+      }
 
-	static async getModuleVersion(name: string): Promise<string> {
-		try {
-			const pkg = Utils.requireFrom<{ version: string }>(`${name}/package.json`);
-			return colors.green(pkg.version);
-		} catch {
-			return colors.red('not-found');
-		}
-	}
+      CLIHelper.dump(`   - typescript ${await CLIHelper.getModuleVersion('typescript')}`);
+      CLIHelper.dump(' - package.json ' + colors.green('found'));
+    } else {
+      CLIHelper.dump(' - package.json ' + colors.red('not found'));
+    }
+  }
 
-	static dumpTable(options: {
-		columns: string[];
-		rows: string[][];
-		empty: string;
-	}): void {
-		if (options.rows.length === 0) {
-			return CLIHelper.dump(options.empty);
-		}
+  static async getModuleVersion(name: string): Promise<string> {
+    try {
+      const pkg = Utils.requireFrom<{ version: string }>(`${name}/package.json`);
+      return colors.green(pkg.version);
+    } catch {
+      return colors.red('not-found');
+    }
+  }
 
-		const data = [options.columns, ...options.rows];
-		const lengths = options.columns.map(() => 0);
-		data.forEach((row) => {
-			row.forEach((cell, idx) => {
-				lengths[idx] = Math.max(lengths[idx], cell.length + 2);
-			});
-		});
+  static dumpTable(options: {
+    columns: string[];
+    rows: string[][];
+    empty: string;
+  }): void {
+    if (options.rows.length === 0) {
+      return CLIHelper.dump(options.empty);
+    }
 
-		let ret = '';
-		ret += colors.grey('┌' + lengths.map((length) => '─'.repeat(length)).join('┬') + '┐\n');
-		ret += colors.grey('│') + lengths.map((length, idx) => ' ' + colors.red(options.columns[idx]) + ' '.repeat(length - options.columns[idx].length - 1)).join(colors.grey('│')) + colors.grey('│\n');
-		ret += colors.grey('├' + lengths.map((length) => '─'.repeat(length)).join('┼') + '┤\n');
-		options.rows.forEach((row) => {
-			ret += colors.grey('│') + lengths.map((length, idx) => ' ' + row[idx] + ' '.repeat(length - row[idx].length - 1)).join(colors.grey('│')) + colors.grey('│\n');
-		});
-		ret += colors.grey('└' + lengths.map((length) => '─'.repeat(length)).join('┴') + '┘');
+    const data = [options.columns, ...options.rows];
+    const lengths = options.columns.map(() => 0);
+    data.forEach(row => {
+      row.forEach((cell, idx) => {
+        lengths[idx] = Math.max(lengths[idx], cell.length + 2);
+      });
+    });
 
-		CLIHelper.dump(ret);
-	}
+    let ret = '';
+    ret += colors.grey('┌' + lengths.map(length => '─'.repeat(length)).join('┬') + '┐\n');
+    ret += colors.grey('│') + lengths.map((length, idx) => ' ' + colors.red(options.columns[idx]) + ' '.repeat(length - options.columns[idx].length - 1)).join(colors.grey('│')) + colors.grey('│\n');
+    ret += colors.grey('├' + lengths.map(length => '─'.repeat(length)).join('┼') + '┤\n');
+    options.rows.forEach(row => {
+      ret += colors.grey('│') + lengths.map((length, idx) => ' ' + row[idx] + ' '.repeat(length - row[idx].length - 1)).join(colors.grey('│')) + colors.grey('│\n');
+    });
+    ret += colors.grey('└' + lengths.map(length => '─'.repeat(length)).join('┴') + '┘');
 
-	/* istanbul ignore next */
-	static showHelp() {
-		yargs.showHelp();
-	}
+    CLIHelper.dump(ret);
+  }
+
+  /* istanbul ignore next */
+  static showHelp() {
+    yargs.showHelp();
+  }
+
 }

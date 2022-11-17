@@ -9,352 +9,354 @@ import type { EntityFactory } from '../entity/EntityFactory';
 type EntityHydrator<T> = (entity: T, data: EntityData<T>, factory: EntityFactory, newEntity: boolean, convertCustomTypes: boolean, schema?: string) => void;
 
 export class ObjectHydrator extends Hydrator {
-	private readonly hydrators = {
-		full: new Map<string, EntityHydrator<any>>(),
-		reference: new Map<string, EntityHydrator<any>>(),
-		returning: new Map<string, EntityHydrator<any>>(),
-	};
 
-	private tmpIndex = 0;
+  private readonly hydrators = {
+    full: new Map<string, EntityHydrator<any>>(),
+    reference: new Map<string, EntityHydrator<any>>(),
+    returning: new Map<string, EntityHydrator<any>>(),
+  };
 
-	/**
-	 * @inheritDoc
-	 */
-	hydrate<T>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'returning' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string): void {
-		const hydrate = this.getEntityHydrator(meta, type);
-		Utils.callCompiledFunction(hydrate, entity, data, factory, newEntity, convertCustomTypes, schema);
-	}
+  private tmpIndex = 0;
 
-	/**
-	 * @inheritDoc
-	 */
-	hydrateReference<T>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes = false, schema?: string): void {
-		const hydrate = this.getEntityHydrator(meta, 'reference');
-		Utils.callCompiledFunction(hydrate, entity, data, factory, false, convertCustomTypes, schema);
-	}
+  /**
+   * @inheritDoc
+   */
+  hydrate<T>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'returning' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string): void {
+    const hydrate = this.getEntityHydrator(meta, type);
+    Utils.callCompiledFunction(hydrate, entity, data, factory, newEntity, convertCustomTypes, schema);
+  }
 
-	/**
-	 * @internal Highly performance-sensitive method.
-	 */
-	getEntityHydrator<T>(meta: EntityMetadata<T>, type: 'full' | 'returning' | 'reference'): EntityHydrator<T> {
-		const exists = this.hydrators[type].get(meta.className);
+  /**
+   * @inheritDoc
+   */
+  hydrateReference<T>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes = false, schema?: string): void {
+    const hydrate = this.getEntityHydrator(meta, 'reference');
+    Utils.callCompiledFunction(hydrate, entity, data, factory, false, convertCustomTypes, schema);
+  }
 
-		if (exists) {
-			return exists;
-		}
+  /**
+   * @internal Highly performance-sensitive method.
+   */
+  getEntityHydrator<T>(meta: EntityMetadata<T>, type: 'full' | 'returning' | 'reference'): EntityHydrator<T> {
+    const exists = this.hydrators[type].get(meta.className);
 
-		const lines: string[] = [];
-		const context = new Map<string, any>();
-		const props = this.getProperties(meta, type);
-		context.set('isPrimaryKey', Utils.isPrimaryKey);
-		context.set('Collection', Collection);
-		context.set('Reference', Reference);
+    if (exists) {
+      return exists;
+    }
 
-		const preCondition = (dataKey: string) => {
-			/* istanbul ignore next */
-			const path = dataKey.match(/\[[^\]]+]|\.\w+/g) ?? [];
-			path.pop();
+    const lines: string[] = [];
+    const context = new Map<string, any>();
+    const props = this.getProperties(meta, type);
+    context.set('isPrimaryKey', Utils.isPrimaryKey);
+    context.set('Collection', Collection);
+    context.set('Reference', Reference);
 
-			if (path.length === 0) {
-				return '';
-			}
+    const preCondition = (dataKey: string) => {
+      /* istanbul ignore next */
+      const path = dataKey.match(/\[[^\]]+]|\.\w+/g) ?? [];
+      path.pop();
 
-			let ret = '';
-			let prev = '';
+      if (path.length === 0) {
+        return '';
+      }
 
-			for (const p of path) {
-				const key = prev ? prev + p : p;
-				ret += `data${key} && `;
-				prev = key;
-			}
+      let ret = '';
+      let prev = '';
 
-			return ret;
-		};
+      for (const p of path) {
+        const key = prev ? prev + p : p;
+        ret += `data${key} && `;
+        prev = key;
+      }
 
-		const hydrateScalar = <T, U>(prop: EntityProperty<T>, object: boolean | undefined, path: string[], dataKey: string): string[] => {
-			const entityKey = path.map((k) => this.wrap(k)).join('');
-			const preCond = preCondition(dataKey);
-			const convertorKey = path
-				.filter((k) => !k.match(/\[idx_\d+]/))
-				.map((k) => this.safeKey(k))
-				.join('_');
-			const ret: string[] = [];
+      return ret;
+    };
 
-			if (prop.type.toLowerCase() === 'date') {
-				ret.push(`  if (${preCond}data${dataKey}) entity${entityKey} = new Date(data${dataKey});`, `  else if (${preCond}data${dataKey} === null) entity${entityKey} = null;`);
-			} else if (prop.customType) {
-				context.set(`convertToJSValue_${convertorKey}`, (val: any) => prop.customType.convertToJSValue(val, this.platform));
-				context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) =>
-					prop.customType.convertToDatabaseValue(val, this.platform, {
-						mode: 'hydration',
-					}),
-				);
+    const hydrateScalar = <T, U>(prop: EntityProperty<T>, object: boolean | undefined, path: string[], dataKey: string): string[] => {
+      const entityKey = path.map(k => this.wrap(k)).join('');
+      const preCond = preCondition(dataKey);
+      const convertorKey = path
+        .filter(k => !k.match(/\[idx_\d+]/))
+        .map(k => this.safeKey(k))
+        .join('_');
+      const ret: string[] = [];
 
-				ret.push(
-					`  if (${preCond}typeof data${dataKey} !== 'undefined') {`,
-					`    if (convertCustomTypes) {`,
-					`      const value = convertToJSValue_${convertorKey}(data${dataKey});`,
-					`      data${dataKey} = convertToDatabaseValue_${convertorKey}(value);`, // make sure the value is comparable
-					`      entity${entityKey} = value;`,
-					`    } else {`,
-					`      entity${entityKey} = data${dataKey};`,
-					`    }`,
-					`  }`,
-				);
-			} else if (prop.type.toLowerCase() === 'boolean') {
-				ret.push(`  if (${preCond}typeof data${dataKey} !== 'undefined') entity${entityKey} = data${dataKey} === null ? null : !!data${dataKey};`);
-			} else {
-				ret.push(`  if (${preCond}typeof data${dataKey} !== 'undefined') entity${entityKey} = data${dataKey};`);
-			}
+      if (prop.type.toLowerCase() === 'date') {
+        ret.push(`  if (${preCond}data${dataKey}) entity${entityKey} = new Date(data${dataKey});`, `  else if (${preCond}data${dataKey} === null) entity${entityKey} = null;`);
+      } else if (prop.customType) {
+        context.set(`convertToJSValue_${convertorKey}`, (val: any) => prop.customType.convertToJSValue(val, this.platform));
+        context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) =>
+          prop.customType.convertToDatabaseValue(val, this.platform, {
+            mode: 'hydration',
+          }),
+        );
 
-			return ret;
-		};
+        ret.push(
+          `  if (${preCond}typeof data${dataKey} !== 'undefined') {`,
+          `    if (convertCustomTypes) {`,
+          `      const value = convertToJSValue_${convertorKey}(data${dataKey});`,
+          `      data${dataKey} = convertToDatabaseValue_${convertorKey}(value);`, // make sure the value is comparable
+          `      entity${entityKey} = value;`,
+          `    } else {`,
+          `      entity${entityKey} = data${dataKey};`,
+          `    }`,
+          `  }`,
+        );
+      } else if (prop.type.toLowerCase() === 'boolean') {
+        ret.push(`  if (${preCond}typeof data${dataKey} !== 'undefined') entity${entityKey} = data${dataKey} === null ? null : !!data${dataKey};`);
+      } else {
+        ret.push(`  if (${preCond}typeof data${dataKey} !== 'undefined') entity${entityKey} = data${dataKey};`);
+      }
 
-		const hydrateToOne = (prop: EntityProperty, dataKey: string, entityKey: string) => {
-			const ret: string[] = [];
+      return ret;
+    };
 
-			ret.push(`  if (data${dataKey} === null) {\n    entity${entityKey} = null;`);
-			ret.push(`  } else if (typeof data${dataKey} !== 'undefined') {`);
-			ret.push(`    if (isPrimaryKey(data${dataKey}, true)) {`);
+    const hydrateToOne = (prop: EntityProperty, dataKey: string, entityKey: string) => {
+      const ret: string[] = [];
 
-			if (prop.mapToPk) {
-				ret.push(`      entity${entityKey} = data${dataKey};`);
-			} else if (prop.wrappedReference) {
-				ret.push(`      entity${entityKey} = Reference.create(factory.createReference('${prop.type}', data${dataKey}, { merge: true, convertCustomTypes, schema }));`);
-			} else {
-				ret.push(`      entity${entityKey} = factory.createReference('${prop.type}', data${dataKey}, { merge: true, convertCustomTypes, schema });`);
-			}
+      ret.push(`  if (data${dataKey} === null) {\n    entity${entityKey} = null;`);
+      ret.push(`  } else if (typeof data${dataKey} !== 'undefined') {`);
+      ret.push(`    if (isPrimaryKey(data${dataKey}, true)) {`);
 
-			ret.push(`    } else if (data${dataKey} && typeof data${dataKey} === 'object') {`);
+      if (prop.mapToPk) {
+        ret.push(`      entity${entityKey} = data${dataKey};`);
+      } else if (prop.wrappedReference) {
+        ret.push(`      entity${entityKey} = Reference.create(factory.createReference('${prop.type}', data${dataKey}, { merge: true, convertCustomTypes, schema }));`);
+      } else {
+        ret.push(`      entity${entityKey} = factory.createReference('${prop.type}', data${dataKey}, { merge: true, convertCustomTypes, schema });`);
+      }
 
-			if (prop.mapToPk) {
-				ret.push(`      entity${entityKey} = data${dataKey};`);
-			} else if (prop.wrappedReference) {
-				ret.push(`      entity${entityKey} = Reference.create(factory.create('${prop.type}', data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, schema }));`);
-			} else {
-				ret.push(`      entity${entityKey} = factory.create('${prop.type}', data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });`);
-			}
+      ret.push(`    } else if (data${dataKey} && typeof data${dataKey} === 'object') {`);
 
-			ret.push(`    }`);
-			ret.push(`  }`);
+      if (prop.mapToPk) {
+        ret.push(`      entity${entityKey} = data${dataKey};`);
+      } else if (prop.wrappedReference) {
+        ret.push(`      entity${entityKey} = Reference.create(factory.create('${prop.type}', data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, schema }));`);
+      } else {
+        ret.push(`      entity${entityKey} = factory.create('${prop.type}', data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });`);
+      }
 
-			if (prop.reference === ReferenceType.ONE_TO_ONE && !prop.mapToPk) {
-				const meta2 = this.metadata.get(prop.type);
-				const prop2 = meta2.properties[prop.inversedBy || prop.mappedBy];
+      ret.push(`    }`);
+      ret.push(`  }`);
 
-				if (prop2 && !prop2.mapToPk) {
-					ret.push(`  if (entity${entityKey} && !entity${entityKey}.${prop2.name}) {`);
-					ret.push(`    entity${entityKey}.${prop.wrappedReference ? 'unwrap().' : ''}${prop2.name} = ${prop2.wrappedReference ? 'Reference.create(entity)' : 'entity'};`);
-					ret.push(`  }`);
-				}
-			}
+      if (prop.reference === ReferenceType.ONE_TO_ONE && !prop.mapToPk) {
+        const meta2 = this.metadata.get(prop.type);
+        const prop2 = meta2.properties[prop.inversedBy || prop.mappedBy];
 
-			if (prop.customType) {
-				context.set(`convertToDatabaseValue_${this.safeKey(prop.name)}`, (val: any) =>
-					prop.customType.convertToDatabaseValue(val, this.platform, {
-						mode: 'hydration',
-					}),
-				);
+        if (prop2 && !prop2.mapToPk) {
+          ret.push(`  if (entity${entityKey} && !entity${entityKey}.${prop2.name}) {`);
+          ret.push(`    entity${entityKey}.${prop.wrappedReference ? 'unwrap().' : ''}${prop2.name} = ${prop2.wrappedReference ? 'Reference.create(entity)' : 'entity'};`);
+          ret.push(`  }`);
+        }
+      }
 
-				ret.push(`  if (data${dataKey} != null && convertCustomTypes) {`);
-				ret.push(`    data${dataKey} = convertToDatabaseValue_${this.safeKey(prop.name)}(entity${entityKey}.__helper.getPrimaryKey());`); // make sure the value is comparable
-				ret.push(`  }`);
-			}
+      if (prop.customType) {
+        context.set(`convertToDatabaseValue_${this.safeKey(prop.name)}`, (val: any) =>
+          prop.customType.convertToDatabaseValue(val, this.platform, {
+            mode: 'hydration',
+          }),
+        );
 
-			return ret;
-		};
+        ret.push(`  if (data${dataKey} != null && convertCustomTypes) {`);
+        ret.push(`    data${dataKey} = convertToDatabaseValue_${this.safeKey(prop.name)}(entity${entityKey}.__helper.getPrimaryKey());`); // make sure the value is comparable
+        ret.push(`  }`);
+      }
 
-		const hydrateToMany = (prop: EntityProperty, dataKey: string, entityKey: string) => {
-			const ret: string[] = [];
+      return ret;
+    };
 
-			ret.push(...this.createCollectionItemMapper(prop));
-			ret.push(`  if (data${dataKey} && !Array.isArray(data${dataKey}) && typeof data${dataKey} === 'object') {`);
-			ret.push(`    data${dataKey} = [data${dataKey}];`);
-			ret.push(`  }`);
-			ret.push(`  if (Array.isArray(data${dataKey})) {`);
-			ret.push(`    const items = data${dataKey}.map(value => createCollectionItem_${this.safeKey(prop.name)}(value, entity));`);
-			ret.push(`    const coll = Collection.create(entity, '${prop.name}', items, newEntity);`);
-			ret.push(`    if (newEntity) {`);
-			ret.push(`      coll.setDirty();`);
-			ret.push(`    } else {`);
-			ret.push(`      coll.takeSnapshot(true);`);
-			ret.push(`    }`);
-			ret.push(`  } else if (!entity${entityKey} && data${dataKey} instanceof Collection) {`);
-			ret.push(`    entity${entityKey} = data${dataKey};`);
-			ret.push(`  } else if (!entity${entityKey}) {`);
-			const items = this.platform.usesPivotTable() || !prop.owner ? 'undefined' : '[]';
-			ret.push(`    const coll = Collection.create(entity, '${prop.name}', ${items}, !!data${dataKey} || newEntity);`);
-			ret.push(`    coll.setDirty(false);`);
-			ret.push(`  }`);
+    const hydrateToMany = (prop: EntityProperty, dataKey: string, entityKey: string) => {
+      const ret: string[] = [];
 
-			return ret;
-		};
+      ret.push(...this.createCollectionItemMapper(prop));
+      ret.push(`  if (data${dataKey} && !Array.isArray(data${dataKey}) && typeof data${dataKey} === 'object') {`);
+      ret.push(`    data${dataKey} = [data${dataKey}];`);
+      ret.push(`  }`);
+      ret.push(`  if (Array.isArray(data${dataKey})) {`);
+      ret.push(`    const items = data${dataKey}.map(value => createCollectionItem_${this.safeKey(prop.name)}(value, entity));`);
+      ret.push(`    const coll = Collection.create(entity, '${prop.name}', items, newEntity);`);
+      ret.push(`    if (newEntity) {`);
+      ret.push(`      coll.setDirty();`);
+      ret.push(`    } else {`);
+      ret.push(`      coll.takeSnapshot(true);`);
+      ret.push(`    }`);
+      ret.push(`  } else if (!entity${entityKey} && data${dataKey} instanceof Collection) {`);
+      ret.push(`    entity${entityKey} = data${dataKey};`);
+      ret.push(`  } else if (!entity${entityKey}) {`);
+      const items = this.platform.usesPivotTable() || !prop.owner ? 'undefined' : '[]';
+      ret.push(`    const coll = Collection.create(entity, '${prop.name}', ${items}, !!data${dataKey} || newEntity);`);
+      ret.push(`    coll.setDirty(false);`);
+      ret.push(`  }`);
 
-		const registerEmbeddedPrototype = (prop: EntityProperty, path: string[]): void => {
-			const convertorKey = path
-				.filter((k) => !k.match(/\[idx_\d+]/))
-				.map((k) => this.safeKey(k))
-				.join('_');
+      return ret;
+    };
 
-			if (prop.targetMeta?.polymorphs) {
-				prop.targetMeta.polymorphs.forEach((meta) => {
-					context.set(`prototype_${convertorKey}_${meta.className}`, meta.prototype);
-				});
-			} else {
-				context.set(`prototype_${convertorKey}`, prop.embeddable.prototype);
-			}
-		};
+    const registerEmbeddedPrototype = (prop: EntityProperty, path: string[]): void => {
+      const convertorKey = path
+        .filter(k => !k.match(/\[idx_\d+]/))
+        .map(k => this.safeKey(k))
+        .join('_');
 
-		const parseObjectEmbeddable = (prop: EntityProperty, dataKey: string, ret: string[]): void => {
-			if (!this.platform.convertsJsonAutomatically() && (prop.object || prop.array)) {
-				ret.push(`  if (typeof data${dataKey} === 'string') {`, `    data${dataKey} = JSON.parse(data${dataKey});`, `  }`);
-			}
-		};
+      if (prop.targetMeta?.polymorphs) {
+        prop.targetMeta.polymorphs.forEach(meta => {
+          context.set(`prototype_${convertorKey}_${meta.className}`, meta.prototype);
+        });
+      } else {
+        context.set(`prototype_${convertorKey}`, prop.embeddable.prototype);
+      }
+    };
 
-		const hydrateEmbedded = (prop: EntityProperty, path: string[], dataKey: string): string[] => {
-			const entityKey = path.map((k) => this.wrap(k)).join('');
-			const ret: string[] = [];
-			const conds: string[] = [];
-			registerEmbeddedPrototype(prop, path);
-			parseObjectEmbeddable(prop, dataKey, ret);
+    const parseObjectEmbeddable = (prop: EntityProperty, dataKey: string, ret: string[]): void => {
+      if (!this.platform.convertsJsonAutomatically() && (prop.object || prop.array)) {
+        ret.push(`  if (typeof data${dataKey} === 'string') {`, `    data${dataKey} = JSON.parse(data${dataKey});`, `  }`);
+      }
+    };
 
-			if (prop.object) {
-				conds.push(`data${dataKey} != null`);
-			} else {
-				const notNull = prop.nullable ? '!= null' : '!== undefined';
-				meta.props.filter((p) => p.embedded?.[0] === prop.name).forEach((p) => conds.push(`data${this.wrap(p.name)} ${notNull}`));
-			}
+    const hydrateEmbedded = (prop: EntityProperty, path: string[], dataKey: string): string[] => {
+      const entityKey = path.map(k => this.wrap(k)).join('');
+      const ret: string[] = [];
+      const conds: string[] = [];
+      registerEmbeddedPrototype(prop, path);
+      parseObjectEmbeddable(prop, dataKey, ret);
 
-			ret.push(`  if (${conds.join(' || ')}) {`);
+      if (prop.object) {
+        conds.push(`data${dataKey} != null`);
+      } else {
+        const notNull = prop.nullable ? '!= null' : '!== undefined';
+        meta.props.filter(p => p.embedded?.[0] === prop.name).forEach(p => conds.push(`data${this.wrap(p.name)} ${notNull}`));
+      }
 
-			if (prop.targetMeta?.polymorphs) {
-				prop.targetMeta.polymorphs!.forEach((meta) => {
-					const childProp = prop.embeddedProps[prop.targetMeta!.discriminatorColumn!];
-					const childDataKey = prop.object ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
-					// weak comparison as we can have numbers that might have been converted to strings due to being object keys
-					ret.push(`    if (data${childDataKey} == '${meta.discriminatorValue}' && entity${entityKey} == null) {`);
-					ret.push(`      entity${entityKey} = factory.createEmbeddable('${meta.className}', data${prop.object ? dataKey : ''}, { newEntity, convertCustomTypes });`);
-					ret.push(`    }`);
-				});
-			} else {
-				ret.push(`    if (entity${entityKey} == null) {`);
-				ret.push(`      entity${entityKey} = factory.createEmbeddable('${prop.targetMeta!.className}', data${prop.object ? dataKey : ''}, { newEntity, convertCustomTypes });`);
-				ret.push(`    }`);
-			}
+      ret.push(`  if (${conds.join(' || ')}) {`);
 
-			meta.props
-				.filter((p) => p.embedded?.[0] === prop.name)
-				.forEach((childProp) => {
-					const childDataKey = prop.object ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
-					// eslint-disable-next-line @typescript-eslint/no-use-before-define
-					ret.push(...hydrateProperty(childProp, prop.object, [...path, childProp.embedded![1]], childDataKey).map((l) => '  ' + l));
-				});
+      if (prop.targetMeta?.polymorphs) {
+        prop.targetMeta.polymorphs!.forEach(meta => {
+          const childProp = prop.embeddedProps[prop.targetMeta!.discriminatorColumn!];
+          const childDataKey = prop.object ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
+          // weak comparison as we can have numbers that might have been converted to strings due to being object keys
+          ret.push(`    if (data${childDataKey} == '${meta.discriminatorValue}' && entity${entityKey} == null) {`);
+          ret.push(`      entity${entityKey} = factory.createEmbeddable('${meta.className}', data${prop.object ? dataKey : ''}, { newEntity, convertCustomTypes });`);
+          ret.push(`    }`);
+        });
+      } else {
+        ret.push(`    if (entity${entityKey} == null) {`);
+        ret.push(`      entity${entityKey} = factory.createEmbeddable('${prop.targetMeta!.className}', data${prop.object ? dataKey : ''}, { newEntity, convertCustomTypes });`);
+        ret.push(`    }`);
+      }
 
-			/* istanbul ignore next */
-			const nullVal = this.config.get('forceUndefined') ? 'undefined' : 'null';
-			ret.push(`  } else if (data${dataKey} === null) {`);
-			ret.push(`    entity${entityKey} = ${nullVal};`);
-			ret.push(`  }`);
+      meta.props
+        .filter(p => p.embedded?.[0] === prop.name)
+        .forEach(childProp => {
+          const childDataKey = prop.object ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
+          // eslint-disable-next-line @typescript-eslint/no-use-before-define
+          ret.push(...hydrateProperty(childProp, prop.object, [...path, childProp.embedded![1]], childDataKey).map(l => '  ' + l));
+        });
 
-			return ret;
-		};
+      /* istanbul ignore next */
+      const nullVal = this.config.get('forceUndefined') ? 'undefined' : 'null';
+      ret.push(`  } else if (data${dataKey} === null) {`);
+      ret.push(`    entity${entityKey} = ${nullVal};`);
+      ret.push(`  }`);
 
-		const hydrateEmbeddedArray = (prop: EntityProperty, path: string[], dataKey: string): string[] => {
-			const entityKey = path.map((k) => this.wrap(k)).join('');
-			const ret: string[] = [];
-			const idx = this.tmpIndex++;
-			registerEmbeddedPrototype(prop, path);
-			parseObjectEmbeddable(prop, dataKey, ret);
+      return ret;
+    };
 
-			ret.push(`  if (Array.isArray(data${dataKey})) {`);
-			ret.push(`    entity${entityKey} = [];`);
-			ret.push(`    data${dataKey}.forEach((_, idx_${idx}) => {`);
-			ret.push(...hydrateEmbedded(prop, [...path, `[idx_${idx}]`], `${dataKey}[idx_${idx}]`).map((l) => '    ' + l));
-			ret.push(`    });`);
-			ret.push(`  }`);
+    const hydrateEmbeddedArray = (prop: EntityProperty, path: string[], dataKey: string): string[] => {
+      const entityKey = path.map(k => this.wrap(k)).join('');
+      const ret: string[] = [];
+      const idx = this.tmpIndex++;
+      registerEmbeddedPrototype(prop, path);
+      parseObjectEmbeddable(prop, dataKey, ret);
 
-			return ret;
-		};
+      ret.push(`  if (Array.isArray(data${dataKey})) {`);
+      ret.push(`    entity${entityKey} = [];`);
+      ret.push(`    data${dataKey}.forEach((_, idx_${idx}) => {`);
+      ret.push(...hydrateEmbedded(prop, [...path, `[idx_${idx}]`], `${dataKey}[idx_${idx}]`).map(l => '    ' + l));
+      ret.push(`    });`);
+      ret.push(`  }`);
 
-		const hydrateProperty = (prop: EntityProperty, object = prop.object, path: string[] = [prop.name], dataKey?: string): string[] => {
-			const entityKey = path.map((k) => this.wrap(k)).join('');
-			dataKey = dataKey ?? (object ? entityKey : this.wrap(prop.name));
-			const ret: string[] = [];
+      return ret;
+    };
 
-			if (prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE) {
-				ret.push(...hydrateToOne(prop, dataKey, entityKey));
-			} else if (prop.reference === ReferenceType.ONE_TO_MANY || prop.reference === ReferenceType.MANY_TO_MANY) {
-				ret.push(...hydrateToMany(prop, dataKey, entityKey));
-			} else if (prop.reference === ReferenceType.EMBEDDED) {
-				if (prop.array) {
-					ret.push(...hydrateEmbeddedArray(prop, path, dataKey));
-				} else {
-					ret.push(...hydrateEmbedded(prop, path, dataKey));
+    const hydrateProperty = (prop: EntityProperty, object = prop.object, path: string[] = [prop.name], dataKey?: string): string[] => {
+      const entityKey = path.map(k => this.wrap(k)).join('');
+      dataKey = dataKey ?? (object ? entityKey : this.wrap(prop.name));
+      const ret: string[] = [];
 
-					if (!prop.object) {
-						ret.push(...hydrateEmbedded({ ...prop, object: true }, path, dataKey));
-					}
-				}
-			} else {
-				// ReferenceType.SCALAR
-				ret.push(...hydrateScalar(prop, object, path, dataKey));
-			}
+      if (prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE) {
+        ret.push(...hydrateToOne(prop, dataKey, entityKey));
+      } else if (prop.reference === ReferenceType.ONE_TO_MANY || prop.reference === ReferenceType.MANY_TO_MANY) {
+        ret.push(...hydrateToMany(prop, dataKey, entityKey));
+      } else if (prop.reference === ReferenceType.EMBEDDED) {
+        if (prop.array) {
+          ret.push(...hydrateEmbeddedArray(prop, path, dataKey));
+        } else {
+          ret.push(...hydrateEmbedded(prop, path, dataKey));
 
-			if (this.config.get('forceUndefined')) {
-				ret.push(`  if (data${dataKey} === null) entity${entityKey} = undefined;`);
-			}
+          if (!prop.object) {
+            ret.push(...hydrateEmbedded({ ...prop, object: true }, path, dataKey));
+          }
+        }
+      } else {
+        // ReferenceType.SCALAR
+        ret.push(...hydrateScalar(prop, object, path, dataKey));
+      }
 
-			return ret;
-		};
+      if (this.config.get('forceUndefined')) {
+        ret.push(`  if (data${dataKey} === null) entity${entityKey} = undefined;`);
+      }
 
-		for (const prop of props) {
-			lines.push(...hydrateProperty(prop));
-		}
+      return ret;
+    };
 
-		const code = `// compiled hydrator for entity ${meta.className} (${type})\n` + `return function(entity, data, factory, newEntity, convertCustomTypes, schema) {\n` + `${lines.join('\n')}\n}`;
-		const hydrator = Utils.createFunction(context, code);
-		this.hydrators[type].set(meta.className, hydrator);
+    for (const prop of props) {
+      lines.push(...hydrateProperty(prop));
+    }
 
-		return hydrator;
-	}
+    const code = `// compiled hydrator for entity ${meta.className} (${type})\n` + `return function(entity, data, factory, newEntity, convertCustomTypes, schema) {\n` + `${lines.join('\n')}\n}`;
+    const hydrator = Utils.createFunction(context, code);
+    this.hydrators[type].set(meta.className, hydrator);
 
-	private createCollectionItemMapper<T>(prop: EntityProperty): string[] {
-		const meta = this.metadata.get(prop.type);
-		const lines: string[] = [];
+    return hydrator;
+  }
 
-		lines.push(`  const createCollectionItem_${this.safeKey(prop.name)} = (value, entity) => {`);
-		const prop2 = prop.targetMeta?.properties[prop.mappedBy];
+  private createCollectionItemMapper<T>(prop: EntityProperty): string[] {
+    const meta = this.metadata.get(prop.type);
+    const lines: string[] = [];
 
-		if (prop2?.primary) {
-			lines.push(`    if (typeof value === 'object' && value?.['${prop2.name}'] == null) {`);
-			lines.push(`      value = { ...value, ['${prop2.name}']: Reference.wrapReference(entity, { wrappedReference: ${prop2.wrappedReference} }) };`);
-			lines.push(`    }`);
-		}
+    lines.push(`  const createCollectionItem_${this.safeKey(prop.name)} = (value, entity) => {`);
+    const prop2 = prop.targetMeta?.properties[prop.mappedBy];
 
-		lines.push(`    if (isPrimaryKey(value, ${meta.compositePK})) return factory.createReference('${prop.type}', value, { convertCustomTypes, schema, merge: true });`);
-		lines.push(`    if (value && value.__entity) return value;`);
+    if (prop2?.primary) {
+      lines.push(`    if (typeof value === 'object' && value?.['${prop2.name}'] == null) {`);
+      lines.push(`      value = { ...value, ['${prop2.name}']: Reference.wrapReference(entity, { wrappedReference: ${prop2.wrappedReference} }) };`);
+      lines.push(`    }`);
+    }
 
-		if (prop2 && !prop2.primary) {
-			lines.push(`    if (typeof value === 'object' && value?.['${prop2.name}'] == null) {`);
-			lines.push(`      value = { ...value, ['${prop2.name}']: Reference.wrapReference(entity, { wrappedReference: ${prop2.wrappedReference} }) };`);
-			lines.push(`    }`);
-		}
+    lines.push(`    if (isPrimaryKey(value, ${meta.compositePK})) return factory.createReference('${prop.type}', value, { convertCustomTypes, schema, merge: true });`);
+    lines.push(`    if (value && value.__entity) return value;`);
 
-		lines.push(`    return factory.create('${prop.type}', value, { newEntity, convertCustomTypes, schema, merge: true });`);
-		lines.push(`  }`);
+    if (prop2 && !prop2.primary) {
+      lines.push(`    if (typeof value === 'object' && value?.['${prop2.name}'] == null) {`);
+      lines.push(`      value = { ...value, ['${prop2.name}']: Reference.wrapReference(entity, { wrappedReference: ${prop2.wrappedReference} }) };`);
+      lines.push(`    }`);
+    }
 
-		return lines;
-	}
+    lines.push(`    return factory.create('${prop.type}', value, { newEntity, convertCustomTypes, schema, merge: true });`);
+    lines.push(`  }`);
 
-	private wrap(key: string): string {
-		if (key.match(/^\[.*]$/)) {
-			return key;
-		}
+    return lines;
+  }
 
-		return key.match(/^\w+$/) ? `.${key}` : `['${key}']`;
-	}
+  private wrap(key: string): string {
+    if (key.match(/^\[.*]$/)) {
+      return key;
+    }
 
-	private safeKey(key: string): string {
-		return key.replace(/[^\w]/g, '_');
-	}
+    return key.match(/^\w+$/) ? `.${key}` : `['${key}']`;
+  }
+
+  private safeKey(key: string): string {
+    return key.replace(/[^\w]/g, '_');
+  }
+
 }

@@ -3,94 +3,96 @@ import type { Platform } from '../platforms';
 import type { Constructor, EntityMetadata, EntityProperty } from '../typings';
 
 export interface TransformContext {
-	fromQuery?: boolean;
-	key?: string;
-	mode?: 'hydration' | 'query' | 'discovery' | 'serialization';
+  fromQuery?: boolean;
+  key?: string;
+  mode?: 'hydration' | 'query' | 'discovery' | 'serialization';
 }
 
 export abstract class Type<JSType = string, DBType = JSType> {
-	private static readonly types = new Map();
 
-	platform?: Platform;
-	meta?: EntityMetadata;
-	prop?: EntityProperty;
+  private static readonly types = new Map();
 
-	/**
-	 * Converts a value from its JS representation to its database representation of this type.
-	 */
-	convertToDatabaseValue(value: JSType | DBType, platform: Platform, context?: TransformContext | boolean): DBType {
-		return value as DBType;
-	}
+  platform?: Platform;
+  meta?: EntityMetadata;
+  prop?: EntityProperty;
 
-	/**
-	 * Converts a value from its database representation to its JS representation of this type.
-	 */
-	convertToJSValue(value: JSType | DBType, platform: Platform): JSType {
-		return value as JSType;
-	}
+  /**
+   * Converts a value from its JS representation to its database representation of this type.
+   */
+  convertToDatabaseValue(value: JSType | DBType, platform: Platform, context?: TransformContext | boolean): DBType {
+    return value as DBType;
+  }
 
-	/**
-	 * Converts a value from its JS representation to its database representation of this type.
-	 */
-	convertToDatabaseValueSQL?(key: string, platform: Platform): string;
+  /**
+   * Converts a value from its database representation to its JS representation of this type.
+   */
+  convertToJSValue(value: JSType | DBType, platform: Platform): JSType {
+    return value as JSType;
+  }
 
-	/**
-	 * Modifies the SQL expression (identifier, parameter) to convert to a JS value.
-	 */
-	convertToJSValueSQL?(key: string, platform: Platform): string;
+  /**
+   * Converts a value from its JS representation to its database representation of this type.
+   */
+  convertToDatabaseValueSQL?(key: string, platform: Platform): string;
 
-	/**
-	 * How should the raw database values be compared? Used in `EntityComparator`.
-	 * Possible values: string | number | boolean | date | any | buffer | array
-	 */
-	compareAsType(): string {
-		return 'any';
-	}
+  /**
+   * Modifies the SQL expression (identifier, parameter) to convert to a JS value.
+   */
+  convertToJSValueSQL?(key: string, platform: Platform): string;
 
-	/**
-	 * Converts a value from its JS representation to its serialized JSON form of this type.
-	 * By default uses the runtime value.
-	 */
-	toJSON(value: JSType, platform: Platform): JSType | DBType {
-		return value;
-	}
+  /**
+   * How should the raw database values be compared? Used in `EntityComparator`.
+   * Possible values: string | number | boolean | date | any | buffer | array
+   */
+  compareAsType(): string {
+    return 'any';
+  }
 
-	/**
-	 * Gets the SQL declaration snippet for a field of this type.
-	 */
-	getColumnType(prop: EntityProperty, platform: Platform): string {
-		return prop.columnTypes?.[0] ?? platform.getTextTypeDeclarationSQL(prop);
-	}
+  /**
+   * Converts a value from its JS representation to its serialized JSON form of this type.
+   * By default uses the runtime value.
+   */
+  toJSON(value: JSType, platform: Platform): JSType | DBType {
+    return value;
+  }
 
-	static getType<JSType, DBType = JSType>(cls: Constructor<Type<JSType, DBType>>): Type<JSType, DBType> {
-		const key = cls.name;
+  /**
+   * Gets the SQL declaration snippet for a field of this type.
+   */
+  getColumnType(prop: EntityProperty, platform: Platform): string {
+    return prop.columnTypes?.[0] ?? platform.getTextTypeDeclarationSQL(prop);
+  }
 
-		if (!Type.types.has(key)) {
-			Type.types.set(key, new cls());
-		}
+  static getType<JSType, DBType = JSType>(cls: Constructor<Type<JSType, DBType>>): Type<JSType, DBType> {
+    const key = cls.name;
 
-		return Type.types.get(key);
-	}
+    if (!Type.types.has(key)) {
+      Type.types.set(key, new cls());
+    }
 
-	/**
-	 * Checks whether the argument is instance of `Type`.
-	 */
-	static isMappedType(data: any): data is Type<any> {
-		return !!data?.__mappedType;
-	}
+    return Type.types.get(key);
+  }
 
-	[inspect.custom](depth: number) {
-		const object = { ...this };
-		const hidden = ['prop', 'platform', 'meta'];
-		hidden.forEach((k) => delete object[k]);
-		const ret = inspect(object, { depth });
-		const name = (this as object).constructor.name;
+  /**
+   * Checks whether the argument is instance of `Type`.
+   */
+  static isMappedType(data: any): data is Type<any> {
+    return !!data?.__mappedType;
+  }
 
-		/* istanbul ignore next */
-		return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
-	}
+  [inspect.custom](depth: number) {
+    const object = { ...this };
+    const hidden = ['prop', 'platform', 'meta'];
+    hidden.forEach(k => delete object[k]);
+    const ret = inspect(object, { depth });
+    const name = (this as object).constructor.name;
+
+    /* istanbul ignore next */
+    return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
+  }
+
 }
 
 Object.defineProperties(Type.prototype, {
-	__mappedType: { value: true, enumerable: false, writable: false },
+  __mappedType: { value: true, enumerable: false, writable: false },
 });

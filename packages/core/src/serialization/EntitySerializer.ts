@@ -8,209 +8,211 @@ import { Reference } from '../entity/Reference';
 import { SerializationContext } from './SerializationContext';
 
 function isVisible<T extends object>(meta: EntityMetadata<T>, propName: string, options: SerializeOptions<T, any>): boolean {
-	if (options.populate === true) {
-		return options.populate;
-	}
+  if (options.populate === true) {
+    return options.populate;
+  }
 
-	if (Array.isArray(options.populate) && options.populate?.find((item) => item === propName || item.startsWith(propName + '.'))) {
-		return true;
-	}
+  if (Array.isArray(options.populate) && options.populate?.find(item => item === propName || item.startsWith(propName + '.'))) {
+    return true;
+  }
 
-	if (options.exclude?.find((item) => item === propName)) {
-		return false;
-	}
+  if (options.exclude?.find(item => item === propName)) {
+    return false;
+  }
 
-	const prop = meta.properties[propName];
-	const visible = prop && !prop.hidden;
-	const prefixed = prop && !prop.primary && propName.startsWith('_'); // ignore prefixed properties, if it's not a PK
+  const prop = meta.properties[propName];
+  const visible = prop && !prop.hidden;
+  const prefixed = prop && !prop.primary && propName.startsWith('_'); // ignore prefixed properties, if it's not a PK
 
-	return visible && !prefixed;
+  return visible && !prefixed;
 }
 
 function isPopulated<T extends object>(entity: T, propName: string, options: SerializeOptions<T, any>): boolean {
-	if (typeof options.populate !== 'boolean' && options.populate?.find((item) => item === propName || item.startsWith(propName + '.'))) {
-		return true;
-	}
+  if (typeof options.populate !== 'boolean' && options.populate?.find(item => item === propName || item.startsWith(propName + '.'))) {
+    return true;
+  }
 
-	if (typeof options.populate === 'boolean') {
-		return options.populate;
-	}
+  if (typeof options.populate === 'boolean') {
+    return options.populate;
+  }
 
-	return false;
+  return false;
 }
 
 export class EntitySerializer {
-	static serialize<T extends object, P extends string = never>(entity: T, options: SerializeOptions<T, P> = {}): EntityDTO<Loaded<T, P>> {
-		const wrapped = helper(entity);
-		const meta = wrapped.__meta;
-		let contextCreated = false;
 
-		if (!wrapped.__serializationContext.root) {
-			const root = new SerializationContext<T>();
-			SerializationContext.propagate(root, entity, (meta, prop) => meta.properties[prop]?.reference !== ReferenceType.SCALAR);
-			contextCreated = true;
-		}
+  static serialize<T extends object, P extends string = never>(entity: T, options: SerializeOptions<T, P> = {}): EntityDTO<Loaded<T, P>> {
+    const wrapped = helper(entity);
+    const meta = wrapped.__meta;
+    let contextCreated = false;
 
-		const root = wrapped.__serializationContext.root!;
-		const ret = {} as EntityDTO<Loaded<T, P>>;
-		const keys = new Set<string>(meta.primaryKeys);
-		Object.keys(entity).forEach((prop) => keys.add(prop));
-		const visited = root.visited.has(entity);
+    if (!wrapped.__serializationContext.root) {
+      const root = new SerializationContext<T>();
+      SerializationContext.propagate(root, entity, (meta, prop) => meta.properties[prop]?.reference !== ReferenceType.SCALAR);
+      contextCreated = true;
+    }
 
-		if (!visited) {
-			root.visited.add(entity);
-		}
+    const root = wrapped.__serializationContext.root!;
+    const ret = {} as EntityDTO<Loaded<T, P>>;
+    const keys = new Set<string>(meta.primaryKeys);
+    Object.keys(entity).forEach(prop => keys.add(prop));
+    const visited = root.visited.has(entity);
 
-		[...keys]
-			.filter((prop) => isVisible<T>(meta, prop, options))
-			.map((prop) => {
-				const cycle = root.visit(meta.className, prop);
+    if (!visited) {
+      root.visited.add(entity);
+    }
 
-				if (cycle && visited) {
-					return [prop, undefined];
-				}
+    [...keys]
+      .filter(prop => isVisible<T>(meta, prop, options))
+      .map(prop => {
+        const cycle = root.visit(meta.className, prop);
 
-				const val = this.processProperty<T>(prop as keyof T & string, entity, options);
+        if (cycle && visited) {
+          return [prop, undefined];
+        }
 
-				if (!cycle) {
-					root.leave(meta.className, prop);
-				}
+        const val = this.processProperty<T>(prop as keyof T & string, entity, options);
 
-				return [prop, val];
-			})
-			.filter(([, value]) => typeof value !== 'undefined' && !(value === null && options.skipNull))
-			.forEach(([prop, value]) => (ret[this.propertyName(meta, prop as keyof T & string, wrapped.__platform)] = value as T[keyof T & string]));
+        if (!cycle) {
+          root.leave(meta.className, prop);
+        }
 
-		if (contextCreated) {
-			root.close();
-		}
+        return [prop, val];
+      })
+      .filter(([, value]) => typeof value !== 'undefined' && !(value === null && options.skipNull))
+      .forEach(([prop, value]) => (ret[this.propertyName(meta, prop as keyof T & string, wrapped.__platform)] = value as T[keyof T & string]));
 
-		if (!wrapped.isInitialized()) {
-			return ret;
-		}
+    if (contextCreated) {
+      root.close();
+    }
 
-		// decorated getters
-		meta.props.filter((prop) => prop.getter && typeof entity[prop.name] !== 'undefined' && isVisible(meta, prop.name, options)).forEach((prop) => (ret[this.propertyName(meta, prop.name, wrapped.__platform)] = entity[prop.name]));
+    if (!wrapped.isInitialized()) {
+      return ret;
+    }
 
-		// decorated get methods
-		meta.props.filter((prop) => prop.getterName && (entity[prop.getterName] as unknown) instanceof Function && isVisible(meta, prop.name, options)).forEach((prop) => (ret[this.propertyName(meta, prop.name, wrapped.__platform)] = (entity[prop.getterName!] as unknown as () => T[keyof T & string])()));
+    // decorated getters
+    meta.props.filter(prop => prop.getter && typeof entity[prop.name] !== 'undefined' && isVisible(meta, prop.name, options)).forEach(prop => (ret[this.propertyName(meta, prop.name, wrapped.__platform)] = entity[prop.name]));
 
-		return ret;
-	}
+    // decorated get methods
+    meta.props.filter(prop => prop.getterName && (entity[prop.getterName] as unknown) instanceof Function && isVisible(meta, prop.name, options)).forEach(prop => (ret[this.propertyName(meta, prop.name, wrapped.__platform)] = (entity[prop.getterName!] as unknown as () => T[keyof T & string])()));
 
-	private static propertyName<T>(meta: EntityMetadata<T>, prop: keyof T & string, platform?: Platform): string {
-		/* istanbul ignore next */
-		if (meta.properties[prop]?.serializedName) {
-			return meta.properties[prop].serializedName as keyof T & string;
-		}
+    return ret;
+  }
 
-		if (meta.properties[prop]?.primary && platform) {
-			return platform.getSerializedPrimaryKeyField(prop) as keyof T & string;
-		}
+  private static propertyName<T>(meta: EntityMetadata<T>, prop: keyof T & string, platform?: Platform): string {
+    /* istanbul ignore next */
+    if (meta.properties[prop]?.serializedName) {
+      return meta.properties[prop].serializedName as keyof T & string;
+    }
 
-		return prop;
-	}
+    if (meta.properties[prop]?.primary && platform) {
+      return platform.getSerializedPrimaryKeyField(prop) as keyof T & string;
+    }
 
-	private static processProperty<T extends object>(prop: keyof T & string, entity: T, options: SerializeOptions<T, any>): T[keyof T] | undefined {
-		const parts = prop.split('.');
-		prop = parts[0] as string & keyof T;
-		const wrapped = helper(entity);
-		const property = wrapped.__meta.properties[prop];
-		const serializer = property?.serializer;
+    return prop;
+  }
 
-		/* istanbul ignore next */
-		if (!options.ignoreSerializers && serializer) {
-			return serializer(entity[prop]);
-		}
+  private static processProperty<T extends object>(prop: keyof T & string, entity: T, options: SerializeOptions<T, any>): T[keyof T] | undefined {
+    const parts = prop.split('.');
+    prop = parts[0] as string & keyof T;
+    const wrapped = helper(entity);
+    const property = wrapped.__meta.properties[prop];
+    const serializer = property?.serializer;
 
-		if (Utils.isCollection(entity[prop])) {
-			return this.processCollection(prop, entity, options);
-		}
+    /* istanbul ignore next */
+    if (!options.ignoreSerializers && serializer) {
+      return serializer(entity[prop]);
+    }
 
-		if (Utils.isEntity(entity[prop], true)) {
-			return this.processEntity(prop, entity, wrapped.__platform, options);
-		}
+    if (Utils.isCollection(entity[prop])) {
+      return this.processCollection(prop, entity, options);
+    }
 
-		/* istanbul ignore next */
-		if (property?.reference === ReferenceType.EMBEDDED) {
-			if (Array.isArray(entity[prop])) {
-				return (entity[prop] as object[]).map((item) => helper(item).toJSON()) as T[keyof T];
-			}
+    if (Utils.isEntity(entity[prop], true)) {
+      return this.processEntity(prop, entity, wrapped.__platform, options);
+    }
 
-			if (Utils.isObject(entity[prop])) {
-				return helper(entity[prop]).toJSON() as T[keyof T];
-			}
-		}
+    /* istanbul ignore next */
+    if (property?.reference === ReferenceType.EMBEDDED) {
+      if (Array.isArray(entity[prop])) {
+        return (entity[prop] as object[]).map(item => helper(item).toJSON()) as T[keyof T];
+      }
 
-		const customType = property?.customType;
+      if (Utils.isObject(entity[prop])) {
+        return helper(entity[prop]).toJSON() as T[keyof T];
+      }
+    }
 
-		if (customType) {
-			return customType.toJSON(entity[prop], wrapped.__platform);
-		}
+    const customType = property?.customType;
 
-		return wrapped.__platform.normalizePrimaryKey(entity[prop] as unknown as IPrimaryKey) as unknown as T[keyof T];
-	}
+    if (customType) {
+      return customType.toJSON(entity[prop], wrapped.__platform);
+    }
 
-	private static extractChildOptions<T extends object, U extends object>(options: SerializeOptions<T, any>, prop: keyof T & string): SerializeOptions<U, any> {
-		const extractChildElements = (items: string[]) => {
-			return items.filter((field) => field.startsWith(`${prop}.`)).map((field) => field.substring(prop.length + 1));
-		};
+    return wrapped.__platform.normalizePrimaryKey(entity[prop] as unknown as IPrimaryKey) as unknown as T[keyof T];
+  }
 
-		return {
-			...options,
-			populate: Array.isArray(options.populate) ? extractChildElements(options.populate) : options.populate,
-			exclude: Array.isArray(options.exclude) ? extractChildElements(options.exclude) : options.exclude,
-		} as SerializeOptions<U, any>;
-	}
+  private static extractChildOptions<T extends object, U extends object>(options: SerializeOptions<T, any>, prop: keyof T & string): SerializeOptions<U, any> {
+    const extractChildElements = (items: string[]) => {
+      return items.filter(field => field.startsWith(`${prop}.`)).map(field => field.substring(prop.length + 1));
+    };
 
-	private static processEntity<T extends object>(prop: keyof T & string, entity: T, platform: Platform, options: SerializeOptions<T, any>): T[keyof T] | undefined {
-		const child = Reference.unwrapReference(entity[prop] as T);
-		const wrapped = helper(child);
+    return {
+      ...options,
+      populate: Array.isArray(options.populate) ? extractChildElements(options.populate) : options.populate,
+      exclude: Array.isArray(options.exclude) ? extractChildElements(options.exclude) : options.exclude,
+    } as SerializeOptions<U, any>;
+  }
 
-		if (isPopulated(child, prop, options) && wrapped.isInitialized()) {
-			const childOptions = this.extractChildOptions(options, prop);
-			return this.serialize(child, childOptions) as T[keyof T];
-		}
+  private static processEntity<T extends object>(prop: keyof T & string, entity: T, platform: Platform, options: SerializeOptions<T, any>): T[keyof T] | undefined {
+    const child = Reference.unwrapReference(entity[prop] as T);
+    const wrapped = helper(child);
 
-		if (options.forceObject) {
-			return this.serialize(child, this.extractChildOptions(options, prop)) as T[keyof T];
-		}
+    if (isPopulated(child, prop, options) && wrapped.isInitialized()) {
+      const childOptions = this.extractChildOptions(options, prop);
+      return this.serialize(child, childOptions) as T[keyof T];
+    }
 
-		return platform.normalizePrimaryKey(wrapped.getPrimaryKey() as IPrimaryKey) as T[keyof T];
-	}
+    if (options.forceObject) {
+      return this.serialize(child, this.extractChildOptions(options, prop)) as T[keyof T];
+    }
 
-	private static processCollection<T extends object>(prop: keyof T & string, entity: T, options: SerializeOptions<T, any>): T[keyof T] | undefined {
-		const col = entity[prop] as unknown as Collection<T>;
+    return platform.normalizePrimaryKey(wrapped.getPrimaryKey() as IPrimaryKey) as T[keyof T];
+  }
 
-		if (!col.isInitialized()) {
-			return undefined;
-		}
+  private static processCollection<T extends object>(prop: keyof T & string, entity: T, options: SerializeOptions<T, any>): T[keyof T] | undefined {
+    const col = entity[prop] as unknown as Collection<T>;
 
-		return col.getItems(false).map((item) => {
-			if (isPopulated(item, prop, options)) {
-				return this.serialize(item, this.extractChildOptions(options, prop));
-			}
+    if (!col.isInitialized()) {
+      return undefined;
+    }
 
-			return helper(item).getPrimaryKey();
-		}) as unknown as T[keyof T];
-	}
+    return col.getItems(false).map(item => {
+      if (isPopulated(item, prop, options)) {
+        return this.serialize(item, this.extractChildOptions(options, prop));
+      }
+
+      return helper(item).getPrimaryKey();
+    }) as unknown as T[keyof T];
+  }
+
 }
 
 export interface SerializeOptions<T extends object, P extends string = never> {
-	/** Specify which relation should be serialized as populated and which as a FK. */
-	populate?: AutoPath<T, P>[] | boolean;
+  /** Specify which relation should be serialized as populated and which as a FK. */
+  populate?: AutoPath<T, P>[] | boolean;
 
-	/** Specify which properties should be omitted. */
-	exclude?: AutoPath<T, P>[];
+  /** Specify which properties should be omitted. */
+  exclude?: AutoPath<T, P>[];
 
-	/** Enforce unpopulated references to be returned as objects, e.g. `{ author: { id: 1 } }` instead of `{ author: 1 }`. */
-	forceObject?: boolean;
+  /** Enforce unpopulated references to be returned as objects, e.g. `{ author: { id: 1 } }` instead of `{ author: 1 }`. */
+  forceObject?: boolean;
 
-	/** Ignore custom property serializers. */
-	ignoreSerializers?: boolean;
+  /** Ignore custom property serializers. */
+  ignoreSerializers?: boolean;
 
-	/** Skip properties with `null` value. */
-	skipNull?: boolean;
+  /** Skip properties with `null` value. */
+  skipNull?: boolean;
 }
 
 /**
@@ -227,11 +229,11 @@ export function serialize<T extends object, P extends string = never>(entities: 
  * Converts entity instance to POJO, converting the `Collection`s to arrays and unwrapping the `Reference` wrapper, while respecting the serialization options.
  */
 export function serialize<T extends object, P extends string = never>(entities: T | T[], options?: SerializeOptions<T, P>): EntityDTO<Loaded<T, P>> | EntityDTO<Loaded<T, P>>[] {
-	const ret = Utils.asArray(entities).map((e) => EntitySerializer.serialize(e, options));
+  const ret = Utils.asArray(entities).map(e => EntitySerializer.serialize(e, options));
 
-	if (Array.isArray(entities)) {
-		return ret;
-	}
+  if (Array.isArray(entities)) {
+    return ret;
+  }
 
-	return ret[0];
+  return ret[0];
 }

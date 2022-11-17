@@ -15,18 +15,18 @@ export function wrap<T, PK extends keyof T | unknown = PrimaryProperty<T>>(entit
  * use `preferHelper = true` to have access to the internal `__` properties like `__meta` or `__em`
  */
 export function wrap<T, PK extends keyof T | unknown = PrimaryProperty<T>>(entity: T & Dictionary, preferHelper = false): IWrappedEntity<T, PK> | IWrappedEntityInternal<T, PK> {
-	if (entity?.__baseEntity && !preferHelper) {
-		return entity as unknown as IWrappedEntity<T, PK>;
-	}
+  if (entity?.__baseEntity && !preferHelper) {
+    return entity as unknown as IWrappedEntity<T, PK>;
+  }
 
-	return entity?.__helper ?? entity;
+  return entity?.__helper ?? entity;
 }
 
 /**
  * shortcut for `wrap(entity).toReference()`
  */
 export function ref<T, PK extends keyof T | unknown = PrimaryProperty<T>>(entity?: T): Ref<T, PK> {
-	return (entity as Dictionary)?.__helper.toReference();
+  return (entity as Dictionary)?.__helper.toReference();
 }
 
 /**
@@ -35,5 +35,5 @@ export function ref<T, PK extends keyof T | unknown = PrimaryProperty<T>>(entity
  * @internal
  */
 export function helper<T, PK extends keyof T | unknown = PrimaryProperty<T>>(entity: T): IWrappedEntityInternal<T, PK> {
-	return (entity as Dictionary).__helper;
+  return (entity as Dictionary).__helper;
 }

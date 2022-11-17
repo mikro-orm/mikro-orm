@@ -4,43 +4,45 @@ import type { AbstractSqlDriver, Knex } from '@mikro-orm/knex';
 export type Query = string | Knex.QueryBuilder | Knex.Raw;
 
 export abstract class Migration {
-	private readonly queries: Query[] = [];
-	protected ctx?: Transaction<Knex.Transaction>;
 
-	constructor(protected readonly driver: AbstractSqlDriver, protected readonly config: Configuration) {}
+  private readonly queries: Query[] = [];
+  protected ctx?: Transaction<Knex.Transaction>;
 
-	abstract up(): Promise<void>;
+  constructor(protected readonly driver: AbstractSqlDriver, protected readonly config: Configuration) {}
 
-	async down(): Promise<void> {
-		throw new Error('This migration cannot be reverted');
-	}
+  abstract up(): Promise<void>;
 
-	isTransactional(): boolean {
-		return true;
-	}
+  async down(): Promise<void> {
+    throw new Error('This migration cannot be reverted');
+  }
 
-	addSql(sql: Query): void {
-		this.queries.push(sql);
-	}
+  isTransactional(): boolean {
+    return true;
+  }
 
-	reset(): void {
-		this.queries.length = 0;
-		this.ctx = undefined;
-	}
+  addSql(sql: Query): void {
+    this.queries.push(sql);
+  }
 
-	setTransactionContext(ctx: Transaction): void {
-		this.ctx = ctx;
-	}
+  reset(): void {
+    this.queries.length = 0;
+    this.ctx = undefined;
+  }
 
-	async execute(sql: Query) {
-		return this.driver.execute(sql, undefined, 'all', this.ctx);
-	}
+  setTransactionContext(ctx: Transaction): void {
+    this.ctx = ctx;
+  }
 
-	getKnex() {
-		return this.driver.getConnection('write').getKnex();
-	}
+  async execute(sql: Query) {
+    return this.driver.execute(sql, undefined, 'all', this.ctx);
+  }
 
-	getQueries(): Query[] {
-		return this.queries;
-	}
+  getKnex() {
+    return this.driver.getConnection('write').getKnex();
+  }
+
+  getQueries(): Query[] {
+    return this.queries;
+  }
+
 }

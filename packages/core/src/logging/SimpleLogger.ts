@@ -2,28 +2,30 @@ import type { LogContext, LoggerNamespace } from './Logger';
 import { DefaultLogger } from './DefaultLogger';
 
 export class SimpleLogger extends DefaultLogger {
-	/**
-	 * @inheritDoc
-	 */
-	log(namespace: LoggerNamespace, message: string, context?: LogContext): void {
-		if (!this.isEnabled(namespace)) {
-			return;
-		}
 
-		// clean up the whitespace
-		message = message.replace(/\n/g, '').replace(/ +/g, ' ').trim();
+  /**
+   * @inheritDoc
+   */
+  log(namespace: LoggerNamespace, message: string, context?: LogContext): void {
+    if (!this.isEnabled(namespace)) {
+      return;
+    }
 
-		this.writer(`[${namespace}] ${message}`);
-	}
+    // clean up the whitespace
+    message = message.replace(/\n/g, '').replace(/ +/g, ' ').trim();
 
-	/**
-	 * @inheritDoc
-	 */
-	logQuery(context: { query: string } & LogContext): void {
-		if (!this.isEnabled('query')) {
-			return;
-		}
+    this.writer(`[${namespace}] ${message}`);
+  }
 
-		return this.log('query', context.query, context);
-	}
+  /**
+   * @inheritDoc
+   */
+  logQuery(context: { query: string } & LogContext): void {
+    if (!this.isEnabled('query')) {
+      return;
+    }
+
+    return this.log('query', context.query, context);
+  }
+
 }
