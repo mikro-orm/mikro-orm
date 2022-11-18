@@ -70,7 +70,25 @@ MikroORM.init({
 
 Read more about this in [Metadata Providers](metadata-providers.md) sections.
 
-### Adjusting the default type mapping
+## Extensions
+
+Since v5.6, the ORM extensions like `SchemaGenerator`, `Migrator` or `EntityGenerator` can be registered via the `extensions` config option. This will be the only supported way to have the shortcuts like `orm.migrator` available in v6, so we no longer need to dynamically require those dependencies or specify them as optional peer dependencies (both of those things cause issues with various bundling tools like Webpack, or those used in Remix or Next.js).
+
+```ts
+import { defineConfig } from '@mikro-orm/postgres';
+import { Migrator } from '@mikro-orm/migrations';
+import { EntityGenerator } from '@mikro-orm/entity-generator';
+import { SeedManager } from '@mikro-orm/seeder';
+
+export default defineConfig({
+  dbName: 'test',
+  extensions: [Migrator, EntityGenerator, SeedManager],
+});
+```
+
+> The `SchemaGenerator` (as well as `MongoSchemaGenerator`) is registered automatically as it does not require any 3rd party dependencies to be installed.
+
+## Adjusting default type mapping
 
 Since v5.2 we can alter how the ORM picks the default mapped type representation based on the inferred type of a property. One example is a mapping of `foo: string` to `varchar(255)`. If we wanted to change this default to a `text` type in postgres, we can use the `discover.getMappedType` callback:
 

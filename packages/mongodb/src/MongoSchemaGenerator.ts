@@ -1,14 +1,19 @@
-import type { Dictionary, EntityMetadata, EntityProperty } from '@mikro-orm/core';
+import type { Dictionary, EntityMetadata, EntityProperty, MikroORM } from '@mikro-orm/core';
 import { AbstractSchemaGenerator, Utils } from '@mikro-orm/core';
 import type { MongoDriver } from './MongoDriver';
 
 export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
+
+  static register(orm: MikroORM): void {
+    orm.config.registerExtension('@mikro-orm/schema-generator', new MongoSchemaGenerator(orm.em));
+  }
 
   async createSchema(options: CreateSchemaOptions = {}): Promise<void> {
     options.ensureIndexes ??= true;
     const existing = await this.connection.listCollections();
     const metadata = this.getOrderedMetadata();
 
+    /* istanbul ignore next */
     const promises = metadata
       .filter(meta => !existing.includes(meta.collection))
       .map(meta => this.connection.createCollection(meta.collection).catch(err => {

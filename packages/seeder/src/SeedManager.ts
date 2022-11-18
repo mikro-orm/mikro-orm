@@ -1,5 +1,5 @@
 import globby from 'globby';
-import type { Constructor, EntityManager, ISeedManager } from '@mikro-orm/core';
+import type { Constructor, EntityManager, ISeedManager , MikroORM } from '@mikro-orm/core';
 import { Utils } from '@mikro-orm/core';
 import type { Seeder } from './Seeder';
 import { ensureDir, writeFile } from 'fs-extra';
@@ -16,6 +16,10 @@ export class SeedManager implements ISeedManager {
     /* istanbul ignore next */
     const key = (this.config.get('tsNode', Utils.detectTsNode()) && this.options.pathTs) ? 'pathTs' : 'path';
     this.absolutePath = Utils.absolutePath(this.options[key]!, this.config.get('baseDir'));
+  }
+
+  static register(orm: MikroORM): void {
+    orm.config.registerExtension('@mikro-orm/seeder', new SeedManager(orm.em));
   }
 
   async seed(...classNames: Constructor<Seeder>[]): Promise<void> {

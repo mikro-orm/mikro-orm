@@ -13,6 +13,7 @@ import {
 } from '../types';
 import { Utils } from '../utils/Utils';
 import { ReferenceType } from '../enums';
+import type { MikroORM } from '../MikroORM';
 
 export const JsonProperty = Symbol('JsonProperty');
 
@@ -325,6 +326,13 @@ export abstract class Platform {
 
   getExceptionConverter(): ExceptionConverter {
     return this.exceptionConverter;
+  }
+
+  /**
+   * Allows to register extensions of the driver automatically (e.g. `SchemaGenerator` extension in SQL drivers).
+   */
+  lookupExtensions(orm: MikroORM): void {
+    // no extensions by default
   }
 
   getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): ISchemaGenerator {

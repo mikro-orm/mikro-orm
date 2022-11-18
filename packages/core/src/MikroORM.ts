@@ -50,13 +50,20 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     orm.config.set('allowGlobalContext', true);
     await orm.discoverEntities();
     orm.config.set('allowGlobalContext', allowGlobalContext);
+    orm.driver.getPlatform().lookupExtensions(orm);
 
-    if (connect && orm.config.get('connect')) {
+    connect &&= orm.config.get('connect');
+
+    if (connect) {
       await orm.connect();
+    }
 
-      if (orm.config.get('ensureIndexes')) {
-        await orm.getSchemaGenerator().ensureIndexes();
-      }
+    for (const extension of orm.config.get('extensions')) {
+      extension.register(orm);
+    }
+
+    if (connect && orm.config.get('ensureIndexes')) {
+      await orm.getSchemaGenerator().ensureIndexes();
     }
 
     return orm;
@@ -156,6 +163,14 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets the SchemaGenerator.
    */
   getSchemaGenerator(): ReturnType<ReturnType<D['getPlatform']>['getSchemaGenerator']> {
+    const extension = this.config.getExtension<ReturnType<ReturnType<D['getPlatform']>['getSchemaGenerator']>>('@mikro-orm/schema-generator');
+
+    if (extension) {
+      return extension;
+    }
+
+    // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
+    /* istanbul ignore next */
     return this.driver.getPlatform().getSchemaGenerator(this.driver, this.em) as any;
   }
 
@@ -163,6 +178,13 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets the EntityGenerator.
    */
   getEntityGenerator<T extends IEntityGenerator = IEntityGenerator>(): T {
+    const extension = this.config.getExtension<T>('@mikro-orm/entity-generator');
+
+    if (extension) {
+      return extension;
+    }
+
+    // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
     return this.driver.getPlatform().getEntityGenerator(this.em) as T;
   }
 
@@ -170,6 +192,13 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets the Migrator.
    */
   getMigrator<T extends IMigrator = IMigrator>(): T {
+    const extension = this.config.getExtension<T>('@mikro-orm/migrator');
+
+    if (extension) {
+      return extension;
+    }
+
+    // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
     return this.driver.getPlatform().getMigrator(this.em) as T;
   }
 
@@ -177,6 +206,13 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets the SeedManager
    */
   getSeeder<T extends ISeedManager = ISeedManager>(): T {
+    const extension = this.config.getExtension<T>('@mikro-orm/seeder');
+
+    if (extension) {
+      return extension;
+    }
+
+    // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { SeedManager } = require('@mikro-orm/seeder');
     return this.config.getCachedService(SeedManager, this.em);

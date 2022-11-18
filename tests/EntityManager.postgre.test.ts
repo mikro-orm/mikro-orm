@@ -3,7 +3,7 @@ import type { EventSubscriber, ChangeSet, AnyEntity, FlushEventArgs, FilterQuery
 import {
   Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, ValidationError, ChangeSetType, wrap, expr,
   UniqueConstraintViolationException, TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException,
-  NonUniqueFieldNameException, InvalidFieldNameException, LoadStrategy, IsolationLevel, PopulateHint,
+  NonUniqueFieldNameException, InvalidFieldNameException, LoadStrategy, IsolationLevel, PopulateHint, ref,
 } from '@mikro-orm/core';
 import { PostgreSqlDriver, PostgreSqlConnection } from '@mikro-orm/postgresql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2, Label2 } from './entities-sql';
@@ -21,9 +21,9 @@ describe('EntityManagerPostgre', () => {
     const book2 = new Book2('My Life on The Wall, part 2', author);
     const book3 = new Book2('My Life on The Wall, part 3', author);
     const publisher = new Publisher2();
-    book1.publisher = wrap(publisher).toReference();
-    book2.publisher = wrap(publisher).toReference();
-    book3.publisher = wrap(publisher).toReference();
+    book1.publisher = ref(publisher);
+    book2.publisher = ref(publisher);
+    book3.publisher = ref(publisher);
     const tag1 = new BookTag2('silly');
     const tag2 = new BookTag2('funny');
     const tag3 = new BookTag2('sick');

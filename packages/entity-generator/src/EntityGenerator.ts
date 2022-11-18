@@ -1,5 +1,5 @@
 import { ensureDir, writeFile } from 'fs-extra';
-import type { EntityProperty , EntityMetadata } from '@mikro-orm/core';
+import type { EntityProperty, EntityMetadata, MikroORM } from '@mikro-orm/core';
 import { ReferenceType, Utils } from '@mikro-orm/core';
 import type { EntityManager } from '@mikro-orm/knex';
 import { DatabaseSchema } from '@mikro-orm/knex';
@@ -17,6 +17,10 @@ export class EntityGenerator {
   private readonly sources: SourceFile[] = [];
 
   constructor(private readonly em: EntityManager) { }
+
+  static register(orm: MikroORM): void {
+    orm.config.registerExtension('@mikro-orm/entity-generator', new EntityGenerator(orm.em as EntityManager));
+  }
 
   async generate(options: { baseDir?: string; save?: boolean; schema?: string } = {}): Promise<string[]> {
     const baseDir = Utils.normalizePath(options.baseDir ?? (this.config.get('baseDir') + '/generated-entities'));
