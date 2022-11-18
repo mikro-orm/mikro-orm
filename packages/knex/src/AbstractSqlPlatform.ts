@@ -1,5 +1,5 @@
 import { escape } from 'sqlstring';
-import type { Constructor, EntityManager, EntityRepository, IDatabaseDriver } from '@mikro-orm/core';
+import type { Constructor, EntityManager, EntityRepository, IDatabaseDriver, MikroORM } from '@mikro-orm/core';
 import { JsonProperty, Platform, Utils } from '@mikro-orm/core';
 import { SqlEntityRepository } from './SqlEntityRepository';
 import type { SchemaHelper } from './schema';
@@ -25,17 +25,25 @@ export abstract class AbstractSqlPlatform extends Platform {
     return this.schemaHelper;
   }
 
+  /** @inheritDoc */
+  lookupExtensions(orm: MikroORM): void {
+    SchemaGenerator.register(orm);
+  }
+
+  // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
   getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): SchemaGenerator {
     /* istanbul ignore next */
     return this.config.getCachedService(SchemaGenerator, em ?? driver as any); // cast as `any` to get around circular dependencies
   }
 
+  // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
   getEntityGenerator(em: EntityManager) {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { EntityGenerator } = require('@mikro-orm/entity-generator');
     return this.config.getCachedService(EntityGenerator, em);
   }
 
+  // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
   getMigrator(em: EntityManager) {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { Migrator } = require('@mikro-orm/migrations');

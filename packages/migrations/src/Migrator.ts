@@ -2,7 +2,7 @@ import type { InputMigrations, MigrateDownOptions, MigrateUpOptions, MigrationPa
 import { Umzug } from 'umzug';
 import { basename, join } from 'path';
 import { ensureDir, pathExists, writeJSON } from 'fs-extra';
-import type { Constructor, Dictionary, IMigrationGenerator, IMigrator, Transaction } from '@mikro-orm/core';
+import type { Constructor, Dictionary, IMigrationGenerator, IMigrator, MikroORM, Transaction } from '@mikro-orm/core';
 import { t, Type, UnknownType, Utils } from '@mikro-orm/core';
 import type { EntityManager } from '@mikro-orm/knex';
 import { DatabaseSchema, DatabaseTable, SchemaGenerator } from '@mikro-orm/knex';
@@ -38,6 +38,10 @@ export class Migrator implements IMigrator {
     const snapshotName = this.options.snapshotName ?? `.snapshot-${dbName}`;
     this.snapshotPath = Utils.normalizePath(absoluteSnapshotPath, `${snapshotName}.json`);
     this.createUmzug();
+  }
+
+  static register(orm: MikroORM): void {
+    orm.config.registerExtension('@mikro-orm/migrator', new Migrator(orm.em as EntityManager));
   }
 
   /**

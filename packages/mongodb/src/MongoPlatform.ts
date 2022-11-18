@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson';
 import type {
   IPrimaryKey, Primary, NamingStrategy, Constructor, EntityRepository, EntityProperty,
-  PopulateOptions, EntityMetadata, IDatabaseDriver, EntityManager, Configuration,
+  PopulateOptions, EntityMetadata, IDatabaseDriver, EntityManager, Configuration, MikroORM,
 } from '@mikro-orm/core';
 import { Platform, MongoNamingStrategy, Utils, ReferenceType, MetadataError } from '@mikro-orm/core';
 import { MongoExceptionConverter } from './MongoExceptionConverter';
@@ -25,10 +25,17 @@ export class MongoPlatform extends Platform {
     return MongoEntityRepository as Constructor<EntityRepository<T>>;
   }
 
+  /** @inheritDoc */
+  lookupExtensions(orm: MikroORM): void {
+    MongoSchemaGenerator.register(orm);
+  }
+
+  // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
   getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): MongoSchemaGenerator {
     return new MongoSchemaGenerator(em ?? driver as any);
   }
 
+  // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
   getMigrator(em: EntityManager) {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { Migrator } = require('@mikro-orm/migrations-mongodb');

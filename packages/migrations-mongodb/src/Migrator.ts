@@ -2,7 +2,7 @@ import type { InputMigrations, MigrateDownOptions, MigrateUpOptions, MigrationPa
 import { Umzug } from 'umzug';
 import { join } from 'path';
 import { ensureDir } from 'fs-extra';
-import type { Constructor, IMigrationGenerator, IMigrator, Transaction } from '@mikro-orm/core';
+import type { Constructor, IMigrationGenerator, IMigrator, MikroORM, Transaction } from '@mikro-orm/core';
 import { Utils } from '@mikro-orm/core';
 import type { EntityManager } from '@mikro-orm/mongodb';
 import type { Migration } from './Migration';
@@ -28,6 +28,10 @@ export class Migrator implements IMigrator {
     const key = (this.config.get('tsNode', Utils.detectTsNode()) && this.options.pathTs) ? 'pathTs' : 'path';
     this.absolutePath = Utils.absolutePath(this.options[key]!, this.config.get('baseDir'));
     this.createUmzug();
+  }
+
+  static register(orm: MikroORM): void {
+    orm.config.registerExtension('@mikro-orm/migrator', new Migrator(orm.em as EntityManager));
   }
 
   /**

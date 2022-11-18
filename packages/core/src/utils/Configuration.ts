@@ -39,6 +39,7 @@ import { FlushMode, LoadStrategy, PopulateHint } from '../enums';
 import { MemoryCacheAdapter } from '../cache/MemoryCacheAdapter';
 import { EntityComparator } from './EntityComparator';
 import type { Type } from '../types/Type';
+import type { MikroORM } from '../MikroORM';
 
 export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
@@ -46,6 +47,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     pool: {},
     entities: [],
     entitiesTs: [],
+    extensions: [],
     subscribers: [],
     filters: {},
     discovery: {
@@ -127,6 +129,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     dynamicImportProvider: /* istanbul ignore next */ (id: string) => import(id),
   };
 
+  // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
   static readonly PLATFORMS = {
     'mongo': { className: 'MongoDriver', module: () => require('@mikro-orm/mongodb') },
     'mysql': { className: 'MySqlDriver', module: () => require('@mikro-orm/mysql') },
@@ -141,6 +144,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   private readonly driver: D;
   private readonly platform: Platform;
   private readonly cache = new Map<string, any>();
+  private readonly extensions = new Map<string, unknown>();
 
   constructor(options: Options, validate = true) {
     if (options.dynamicImportProvider) {
@@ -220,6 +224,14 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   getDriver(): D {
     return this.driver;
+  }
+
+  registerExtension(name: string, instance: unknown): void {
+    this.extensions.set(name, instance);
+  }
+
+  getExtension<T>(name: string): T | undefined {
+    return this.extensions.get(name) as T;
   }
 
   /**
@@ -477,6 +489,7 @@ export interface PoolConfig {
 export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> extends ConnectionOptions {
   entities: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[]; // `any` required here for some TS weirdness
   entitiesTs: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[]; // `any` required here for some TS weirdness
+  extensions: { register: (orm: MikroORM) => void }[];
   subscribers: EventSubscriber[];
   filters: Dictionary<{ name?: string } & Omit<FilterDef, 'name'>>;
   discovery: {
