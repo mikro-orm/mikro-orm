@@ -38,7 +38,7 @@ We can still disable this check via `allowGlobalContext` configuration, or a con
 
 ## <a name="request-context"></a> `RequestContext` helper
 
-If we use dependency injection container like `inversify` or the one in `nestjs` framework, it can be hard to achieve this, because we usually want to access our repositories via DI container, but it will always provide we with the same instance, rather than new one for each request. 
+If we use dependency injection container like `inversify` or the one in `nestjs` framework, it can be hard to achieve this, because we usually want to access our repositories via DI container, but it will always provide us with the same instance, rather than new one for each request. 
 
 To solve this, we can use `RequestContext` helper, that will use `node`'s [`AsyncLocalStorage`](https://nodejs.org/api/async_context.html#class-asynclocalstorage) in the background to isolate the request context. MikroORM will always use request specific (forked) entity manager if available, so all we need to do is to create new request context preferably as a middleware:
 
