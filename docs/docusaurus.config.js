@@ -187,6 +187,10 @@ module.exports = {
             to: '/docs/next/installation',
           },
           {
+            from: '/docs/lifecycle-hooks',
+            to: '/docs/events',
+          },
+          {
             from: '/docs/debugging',
             to: '/docs/logging',
           },
