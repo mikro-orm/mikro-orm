@@ -83,10 +83,10 @@ During entity discovery (which happens when you call `MikroORM.init()`), the ORM
 import { wrap } from '@mikro-orm/core';
 
 const userRef = em.getReference(User, 1);
-console.log('userRef is initialized:', wrap(userRef).isInitialized());
+console.log('userRef is initialized:', wrap(userRef).isInitialized()); // false
 
 await wrap(userRef).init();
-console.log('userRef is initialized:', wrap(userRef).isInitialized());
+console.log('userRef is initialized:', wrap(userRef).isInitialized()); // true
 ```
 
 > You can also extend the `BaseEntity` provided by MikroORM. It defines all the public methods available via `wrap()` helper, so you could do `userRef.isInitialized()` or `userRef.init()`.
