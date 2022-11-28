@@ -41,9 +41,10 @@ Before you submit your pull request consider the following guidelines:
 - Search [GitHub](https://github.com/mikro-orm/mikro-orm/pulls) for an open or closed PR
   that relates to your submission. You don't want to duplicate effort.
 
-- Fork the project, install NPM dependencies and start docker to have all databases ready. You will also need to adjust your `/etc/hosts` file or equivalent (e.g: `C:\Windows\System32\drivers\etc` on Windows).
+- Fork the project, install NPM dependencies and start docker to have all databases ready. This project uses `yarn/berry`, so you will need to install it, preferably by [enabling `corepack`](https://yarnpkg.com/getting-started/install). You will also need to adjust your `/etc/hosts` file or equivalent (e.g: `C:\Windows\System32\drivers\etc` on Windows).
 
     ```sh
+    corepack enable
     yarn
     docker-compose up -d
     echo '127.0.0.1 mongo1' | sudo tee -a /etc/hosts
