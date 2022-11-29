@@ -2685,7 +2685,7 @@ __metadata:
     "@mikro-orm/core": ^5.5.3
     "@mikro-orm/knex": ^5.5.3
     better-sqlite3: 8.0.0
-    fs-extra: 10.1.0
+    fs-extra: 11.0.0
     sqlstring-sqlite: 0.1.1
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
@@ -2711,7 +2711,7 @@ __metadata:
     "@mikro-orm/knex": ^5.5.3
     "@mikro-orm/migrations": ^5.5.3
     "@mikro-orm/seeder": ^5.5.3
-    fs-extra: 10.1.0
+    fs-extra: 11.0.0
     tsconfig-paths: 4.1.0
     yargonaut: 1.1.4
     yargs: 15.4.1
@@ -2760,7 +2760,7 @@ __metadata:
     acorn-loose: 8.3.0
     acorn-walk: 8.2.0
     dotenv: 16.0.3
-    fs-extra: 10.1.0
+    fs-extra: 11.0.0
     globby: 11.1.0
     mikro-orm: ^5.5.3
     reflect-metadata: 0.1.13
@@ -2805,7 +2805,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": ^5.5.3
     "@mikro-orm/knex": ^5.5.3
-    fs-extra: 10.1.0
+    fs-extra: 11.0.0
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
   languageName: unknown
@@ -2816,7 +2816,7 @@ __metadata:
   resolution: "@mikro-orm/knex@workspace:packages/knex"
   dependencies:
     "@mikro-orm/core": ^5.5.3
-    fs-extra: 10.1.0
+    fs-extra: 11.0.0
     knex: 2.3.0
     sqlstring: 2.3.3
   peerDependencies:
@@ -2877,7 +2877,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": ^5.5.3
     "@mikro-orm/mongodb": ^5.5.3
-    fs-extra: 10.1.0
+    fs-extra: 11.0.0
     mongodb: 4.12.1
     umzug: 3.2.1
   peerDependencies:
@@ -2891,7 +2891,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": ^5.5.3
     "@mikro-orm/knex": ^5.5.3
-    fs-extra: 10.1.0
+    fs-extra: 11.0.0
     knex: 2.3.0
     umzug: 3.2.1
   peerDependencies:
@@ -3011,7 +3011,7 @@ __metadata:
     bson: ^4.7.0
     conditional-type-checks: 1.0.6
     eslint: 8.28.0
-    fs-extra: 10.1.0
+    fs-extra: 11.0.0
     gen-esm-wrapper: 1.1.3
     guid-typescript: 1.0.9
     husky: 8.0.2
@@ -3036,7 +3036,7 @@ __metadata:
   dependencies:
     "@faker-js/faker": 7.6.0
     "@mikro-orm/core": ^5.5.3
-    fs-extra: 10.1.0
+    fs-extra: 11.0.0
     globby: 11.1.0
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
@@ -3058,7 +3058,7 @@ __metadata:
   dependencies:
     "@mikro-orm/core": ^5.5.3
     "@mikro-orm/knex": ^5.5.3
-    fs-extra: 10.1.0
+    fs-extra: 11.0.0
     sqlite3: 5.1.2
     sqlstring-sqlite: 0.1.1
   peerDependencies:
@@ -6181,7 +6181,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fs-extra@npm:10.1.0, fs-extra@npm:^10.0.0, fs-extra@npm:^10.1.0":
+"fs-extra@npm:11.0.0":
+  version: 11.0.0
+  resolution: "fs-extra@npm:11.0.0"
+  dependencies:
+    graceful-fs: ^4.2.0
+    jsonfile: ^6.0.1
+    universalify: ^2.0.0
+  checksum: fd29fc5b4f26f91f8adfd3c6e5e87eb73df92630c132765d63a62a3cf41ee706a45533dda75e6be9e2e4d1fc3667e0dcdfcc20e44f957d71cdcf138a4369ce4a
+  languageName: node
+  linkType: hard
+
+"fs-extra@npm:^10.0.0, fs-extra@npm:^10.1.0":
   version: 10.1.0
   resolution: "fs-extra@npm:10.1.0"
   dependencies:
