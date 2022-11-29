@@ -65,7 +65,7 @@
   "dependencies": {
     "@mikro-orm/core": "^5.5.3",
     "@mikro-orm/knex": "^5.5.3",
-    "fs-extra": "10.1.0",
+    "fs-extra": "11.0.0",
     "tsconfig-paths": "4.1.0",
     "yargonaut": "1.1.4",
     "yargs": "15.4.1"
