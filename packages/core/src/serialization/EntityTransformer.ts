@@ -153,7 +153,7 @@ export class EntityTransformer {
       return wrapped.toPOJO() as unknown as T[keyof T];
     }
 
-    if (wrapped.isInitialized() && wrapped.__populated && child !== entity && !wrapped.__lazyInitialized) {
+    if (wrapped.isInitialized() && (wrapped.__populated || !wrapped.__managed) && child !== entity && !wrapped.__lazyInitialized) {
       const args = [...wrapped.__meta.toJsonParams.map(() => undefined)];
       return wrap(child).toJSON(...args) as T[keyof T];
     }

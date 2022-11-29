@@ -99,6 +99,7 @@ export class UnitOfWork {
 
     const wrapped = helper(entity);
     wrapped.__em ??= this.em;
+    wrapped.__managed = true;
 
     if (data && (options?.refresh || !wrapped.__originalEntityData)) {
       const callback = () => {
@@ -420,6 +421,7 @@ export class UnitOfWork {
     delete wrapped.__identifier;
     delete wrapped.__originalEntityData;
     wrapped.__touched = false;
+    wrapped.__managed = false;
   }
 
   computeChangeSets(): void {

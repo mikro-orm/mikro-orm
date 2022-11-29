@@ -173,13 +173,10 @@ export class EntitySerializer {
   private static processEntity<T extends object>(prop: keyof T & string, entity: T, platform: Platform, options: SerializeOptions<T, any>): T[keyof T] | undefined {
     const child = Reference.unwrapReference(entity[prop] as T);
     const wrapped = helper(child);
+    const populated = isPopulated(child, prop, options) && wrapped.isInitialized();
+    const expand = populated || options.forceObject || !wrapped.__managed;
 
-    if (isPopulated(child, prop, options) && wrapped.isInitialized()) {
-      const childOptions = this.extractChildOptions(options, prop);
-      return this.serialize(child, childOptions) as T[keyof T];
-    }
-
-    if (options.forceObject) {
+    if (expand) {
       return this.serialize(child, this.extractChildOptions(options, prop)) as T[keyof T];
     }
 
