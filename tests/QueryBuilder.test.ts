@@ -596,6 +596,16 @@ describe('QueryBuilder', () => {
     qb.select('*').where({ name: { $re: '^c.o.*l-te.*st.c.m$' } });
     expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` regexp ?');
     expect(qb.getParams()).toEqual(['^c.o.*l-te.*st.c.m$']);
+
+    qb = orm.em.createQueryBuilder(Publisher2);
+    qb.select('*').where({ name: new RegExp('^c.o.*l-te.*st.c.m$', 'i') });
+    expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` regexp ?');
+    expect(qb.getParams()).toEqual(['(?i)^c.o.*l-te.*st.c.m$']);
+
+    qb = orm.em.createQueryBuilder(Publisher2);
+    qb.select('*').where({ name: /^c.o.*l-te.*st.c.m$/i });
+    expect(qb.getQuery()).toEqual('select `e0`.* from `publisher2` as `e0` where `e0`.`name` regexp ?');
+    expect(qb.getParams()).toEqual(['(?i)^c.o.*l-te.*st.c.m$']);
   });
 
   test('$exists operator', async () => {
@@ -2601,6 +2611,40 @@ describe('QueryBuilder', () => {
       ') as "b")';
     expect(qb.getQuery()).toEqual(sql);
     expect(qb.getParams()).toEqual(['tag name', 20, 1]);
+
+
+    // select by regexp operator
+    {
+      let qb = pg.em.createQueryBuilder(Publisher2);
+      qb.select('*').where({ name: { $re: 'test' } });
+      expect(qb.getQuery()).toEqual('select "p0".* from "publisher2" as "p0" where "p0"."name" ~ $1');
+      expect(qb.getParams()).toEqual(['test']);
+
+      qb = pg.em.createQueryBuilder(Publisher2);
+      qb.select('*').where({ name: { $re: '^test' } });
+      expect(qb.getQuery()).toEqual('select "p0".* from "publisher2" as "p0" where "p0"."name" ~ $1');
+      expect(qb.getParams()).toEqual(['^test']);
+
+      qb = pg.em.createQueryBuilder(Publisher2);
+      qb.select('*').where({ name: { $re: 't.st$' } });
+      expect(qb.getQuery()).toEqual('select "p0".* from "publisher2" as "p0" where "p0"."name" ~ $1');
+      expect(qb.getParams()).toEqual(['t.st$']);
+
+      qb = pg.em.createQueryBuilder(Publisher2);
+      qb.select('*').where({ name: { $re: '^c.o.*l-te.*st.c.m$' } });
+      expect(qb.getQuery()).toEqual('select "p0".* from "publisher2" as "p0" where "p0"."name" ~ $1');
+      expect(qb.getParams()).toEqual(['^c.o.*l-te.*st.c.m$']);
+
+      qb = pg.em.createQueryBuilder(Publisher2);
+      qb.select('*').where({ name: new RegExp('^c.o.*l-te.*st.c.m$', 'i') });
+      expect(qb.getQuery()).toEqual('select "p0".* from "publisher2" as "p0" where "p0"."name" ~* $1');
+      expect(qb.getParams()).toEqual(['^c.o.*l-te.*st.c.m$']);
+
+      qb = pg.em.createQueryBuilder(Publisher2);
+      qb.select('*').where({ name: /^c.o.*l-te.*st.c.m$/i });
+      expect(qb.getQuery()).toEqual('select "p0".* from "publisher2" as "p0" where "p0"."name" ~* $1');
+      expect(qb.getParams()).toEqual(['^c.o.*l-te.*st.c.m$']);
+    }
 
     await pg.close(true);
   });

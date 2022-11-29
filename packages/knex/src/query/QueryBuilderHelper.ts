@@ -226,7 +226,7 @@ export class QueryBuilderHelper {
     }
 
     if (value instanceof RegExp) {
-      value = { $re: value.source };
+      value = this.platform.getRegExpValue(value);
     }
 
     if (Utils.isOperator(key, false) && Utils.isPlainObject(value)) {
@@ -337,6 +337,10 @@ export class QueryBuilderHelper {
    */
   isSimpleRegExp(re: any): re is RegExp {
     if (!(re instanceof RegExp)) {
+      return false;
+    }
+
+    if (re.flags.includes('i')) {
       return false;
     }
 
@@ -463,7 +467,7 @@ export class QueryBuilderHelper {
     }
 
     if (value instanceof RegExp) {
-      value = { $re: value.source };
+      value = this.platform.getRegExpValue(value);
     }
 
     // operators
@@ -515,7 +519,7 @@ export class QueryBuilderHelper {
     }
 
     if (op === '$re') {
-      replacement = this.platform.getRegExpOperator();
+      replacement = this.platform.getRegExpOperator(value[op], value.$flags);
     }
 
     return replacement;

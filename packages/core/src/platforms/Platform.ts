@@ -126,8 +126,16 @@ export abstract class Platform {
     return 'time' + (length ? `(${length})` : '');
   }
 
-  getRegExpOperator(): string {
+  getRegExpOperator(val?: unknown, flags?: string): string {
     return 'regexp';
+  }
+
+  getRegExpValue(val: RegExp): { $re: string; $flags?: string } {
+    if (val.flags.includes('i')) {
+      return { $re: `(?i)${val.source}` };
+    }
+
+    return { $re: val.source };
   }
 
   isAllowedTopLevelOperator(operator: string) {

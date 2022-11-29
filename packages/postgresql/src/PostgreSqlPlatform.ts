@@ -97,8 +97,20 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return `create index ${quotedIndexName} on ${quotedTableName} using gin(to_tsvector('simple', ${quotedColumnNames.join(` || ' ' || `)}))`;
   }
 
-  getRegExpOperator(): string {
+  getRegExpOperator(val?: unknown, flags?: string): string {
+    if ((val instanceof RegExp && val.flags.includes('i')) || flags?.includes('i')) {
+      return '~*';
+    }
+
     return '~';
+  }
+
+  getRegExpValue(val: RegExp): { $re: string; $flags?: string } {
+    if (val.flags.includes('i')) {
+      return { $re: val.source, $flags: val.flags };
+    }
+
+    return { $re: val.source };
   }
 
   isBigIntProperty(prop: EntityProperty): boolean {
