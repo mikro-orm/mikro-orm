@@ -24,10 +24,10 @@ describe('GenerateCacheCommand', () => {
     const mockOption = jest.fn();
     const args = { option: mockOption };
     cmd.builder(args as any);
-    expect(mockOption).toBeCalledWith('ts', {
-      alias: 'tsNode',
+    expect(mockOption).toBeCalledWith('ts-node', {
+      alias: 'ts',
       type: 'boolean',
-      desc: 'Use tsNode to generate `.ts` cache',
+      desc: `Use ts-node to generate '.ts' cache`,
     });
 
     expect(discoverMock.mock.calls.length).toBe(0);
@@ -35,7 +35,7 @@ describe('GenerateCacheCommand', () => {
     expect(discoverMock.mock.calls.length).toBe(1);
     expect(discoverMock.mock.calls[0][0]).toBe(false);
 
-    await expect(cmd.handler({ tsNode: true } as any)).resolves.toBeUndefined();
+    await expect(cmd.handler({ ts: true } as any)).resolves.toBeUndefined();
     expect(discoverMock.mock.calls.length).toBe(2);
     expect(discoverMock.mock.calls[1][0]).toBe(true);
   });
