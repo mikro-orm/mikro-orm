@@ -5,7 +5,7 @@ import { CLIHelper } from '../CLIHelper';
 export class GenerateCacheCommand<T> implements CommandModule<T, {tsNode?: boolean}> {
 
   command = 'cache:generate';
-  describe = 'Generate metadata cache for production or test use';
+  describe = 'Generate metadata cache';
   builder = (args: Argv<T>) => {
     args.option('ts', {
       alias: 'tsNode',
