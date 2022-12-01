@@ -464,11 +464,11 @@ properties: {
 
 ## Enums
 
-To define enum property, use `@Enum()` decorator. Enums can be either numeric or string valued.
+To define an enum property, use `@Enum()` decorator. Enums can be either numeric or string values.
 
 For schema generator to work properly in case of string enums, we need to define the enum
-is same file as where it is used, so its values can be automatically discovered. If we want
-to define the enum in another file, we should reexport it also in place where we use it.
+in the same file as where it is used, so its values can be automatically discovered. If we want
+to define the enum in another file, we should re-export it also in place where we use it.
 
 Another possibility is to provide the reference to the enum implementation in the decorator
 via `@Enum(() => UserRole)`.
