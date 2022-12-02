@@ -142,7 +142,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   }
 
   marshallArray(values: string[]): string {
-    const quote = (v: string) => v === '' || v.match(/["{}]/) ? JSON.stringify(v) : v;
+    const quote = (v: string) => v === '' || v.match(/["{},]/) ? JSON.stringify(v) : v;
     return `{${values.map(v => quote('' + v)).join(',')}}`;
   }
 
