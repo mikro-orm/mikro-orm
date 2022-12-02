@@ -1,5 +1,5 @@
 import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
-import type { MySqlDriver } from '@mikro-orm/mysql';
+import { MySqlDriver } from '@mikro-orm/mysql';
 import { mockLogger } from '../../helpers';
 
 @Embeddable()
@@ -98,7 +98,7 @@ describe('embedded entities in mysql', () => {
     orm = await MikroORM.init({
       entities: [User],
       dbName: `mikro_orm_test_embeddables`,
-      type: 'mysql',
+      driver: MySqlDriver,
       port: 3308,
     });
     await orm.schema.refreshDatabase();
@@ -300,7 +300,7 @@ describe('embedded entities in mysql', () => {
     await expect(MikroORM.init({
       entities: [Address1, UserWithCity],
       dbName: `mikro_orm_test_embeddables`,
-      type: 'mysql',
+      driver: MySqlDriver,
       port: 3308,
     })).rejects.toThrow(err);
   });

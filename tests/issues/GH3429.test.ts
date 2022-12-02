@@ -38,7 +38,7 @@ let orm: MikroORM<SqliteDriver>;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    type: 'sqlite',
+    driver: SqliteDriver,
     dbName: ':memory:',
     entities: [Organization],
   });

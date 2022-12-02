@@ -1,6 +1,6 @@
 import type { EntityManager } from '@mikro-orm/core';
 import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 export class A {
@@ -21,7 +21,7 @@ describe('GH issue 1910', () => {
     orm = await MikroORM.init({
       entities: [A],
       dbName: 'mikro_orm_test_gh_1910',
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
     await orm.schema.ensureDatabase();
     await orm.schema.dropSchema();

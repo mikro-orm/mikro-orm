@@ -8,7 +8,6 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Project, Risk, Filter, FilterValue],
     dbName: ':memory:',
-    type: 'better-sqlite',
   });
   await orm.schema.createSchema();
   const seeder = new DatabaseSeeder();

@@ -49,7 +49,7 @@ describe('EntityManagerPostgre', () => {
 
   test('getConnectionOptions()', async () => {
     const config = new Configuration({
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
       clientUrl: 'postgre://root@127.0.0.1:1234/db_name',
       host: '127.0.0.10',
       password: 'secret',
@@ -154,14 +154,14 @@ describe('EntityManagerPostgre', () => {
 
   test('connection returns correct URL', async () => {
     const conn1 = new PostgreSqlConnection(new Configuration({
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
       clientUrl: 'postgre://example.host.com',
       port: 1234,
       user: 'usr',
       password: 'pw',
     } as any, false));
     await expect(conn1.getClientUrl()).toBe('postgre://usr:*****@example.host.com:1234');
-    const conn2 = new PostgreSqlConnection(new Configuration({ type: 'postgresql', port: 5433 } as any, false));
+    const conn2 = new PostgreSqlConnection(new Configuration({ driver: PostgreSqlDriver, port: 5433 } as any, false));
     await expect(conn2.getClientUrl()).toBe('postgresql://postgres@127.0.0.1:5433');
   });
 
@@ -1869,7 +1869,7 @@ describe('EntityManagerPostgre', () => {
 
   test('getConnection() with replicas (GH issue #1963)', async () => {
     const config = new Configuration({
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
       clientUrl: 'postgre://root@127.0.0.1:1234/db_name',
       host: '127.0.0.10',
       password: 'secret',

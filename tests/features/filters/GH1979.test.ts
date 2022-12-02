@@ -1,5 +1,6 @@
 import { Entity, MikroORM, PrimaryKey, Property, Filter, Index } from '@mikro-orm/core';
 import type { AbstractSqlDriver, EntityManager } from '@mikro-orm/knex';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity({ discriminatorColumn: 'type', abstract: true })
 @Filter({
@@ -63,7 +64,7 @@ describe('GH issue 1979', () => {
     orm = await MikroORM.init({
       entities: [Benefit, Profit, Lost],
       dbName: `:memory:`,
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
 
     await orm.schema.createSchema();

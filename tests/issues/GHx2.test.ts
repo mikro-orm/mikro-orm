@@ -1,4 +1,5 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 
 @Entity()
@@ -41,7 +42,7 @@ export class Book {
 test(`default value for relation property`, async () => {
   const orm = await MikroORM.init({
     entities: [Author, Book],
-    type: 'sqlite',
+    driver: SqliteDriver,
     dbName: ':memory:',
   });
   await orm.schema.refreshDatabase();

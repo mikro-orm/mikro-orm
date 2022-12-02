@@ -1,6 +1,6 @@
 import { Collection, Entity, LoadStrategy, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { v4 } from 'uuid';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class A {
@@ -113,13 +113,13 @@ async function createEntities(orm: MikroORM) {
 
 describe('GH issue 1134', () => {
 
-  let orm: MikroORM<AbstractSqlDriver>;
+  let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [E, T, A, V, I, N, M],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
     await createEntities(orm);

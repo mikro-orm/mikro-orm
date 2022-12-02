@@ -1,6 +1,5 @@
-import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import type { MongoDriver } from '@mikro-orm/mongodb';
-import { ObjectId, MongoConnection } from '@mikro-orm/mongodb';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { MikroORM, ObjectId, MongoConnection } from '@mikro-orm/mongodb';
 import { mockLogger } from '../../helpers';
 
 @Embeddable()
@@ -70,13 +69,12 @@ class User {
 
 describe('embedded entities in mongo', () => {
 
-  let orm: MikroORM<MongoDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [User],
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test-nested-embeddables',
-      type: 'mongo',
     });
   });
 

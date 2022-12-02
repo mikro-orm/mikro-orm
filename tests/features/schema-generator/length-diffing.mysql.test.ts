@@ -1,5 +1,6 @@
 import { Entity, MikroORM, PrimaryKey, Property, t } from '@mikro-orm/core';
 import type { PostgreSqlDriver, SchemaGenerator } from '@mikro-orm/postgresql';
+import { MySqlDriver } from '@mikro-orm/mysql';
 
 @Entity({ tableName: 'book' })
 export class Book0 {
@@ -88,14 +89,14 @@ export class Book4 {
 
 describe('length diffing in mysql', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM<MySqlDriver>;
   let generator: SchemaGenerator;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Book0],
       dbName: `mikro_orm_test_length_diffing`,
-      type: 'mysql',
+      driver: MySqlDriver,
       port: 3308,
     });
     generator = orm.schema;

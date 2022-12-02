@@ -1,4 +1,5 @@
-import { Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/better-sqlite';
 
 @Entity()
 export class Door {
@@ -84,7 +85,6 @@ describe('dropping tables with FKs in postgres', () => {
     const orm = await MikroORM.init({
       entities: [Sequence0, Door],
       dbName: `:memory:`,
-      type: 'better-sqlite',
       cache: { enabled: false },
     });
     await orm.schema.refreshDatabase();

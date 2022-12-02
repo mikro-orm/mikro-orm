@@ -1,5 +1,7 @@
 import { EntitySchema, MikroORM, Type, ValidationError } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import { SqliteDriver } from '@mikro-orm/sqlite';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 export class DateTime {
 
@@ -104,7 +106,7 @@ describe('GH issue 725', () => {
     const orm = await MikroORM.init<AbstractSqlDriver>({
       entities: [TestSchema],
       dbName: `mikro_orm_test_gh_725`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
     await orm.schema.ensureDatabase();
     await orm.schema.execute('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
@@ -136,7 +138,7 @@ describe('GH issue 725', () => {
     const orm = await MikroORM.init<AbstractSqlDriver>({
       entities: [TestSchema2],
       dbName: `:memory:`,
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
 
     const test = new Test2();

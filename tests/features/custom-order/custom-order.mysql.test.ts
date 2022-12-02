@@ -1,5 +1,5 @@
-import { Collection, Entity, Enum, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, QueryOrder } from '@mikro-orm/core';
-import type { MySqlDriver } from '@mikro-orm/mysql';
+import { Collection, Entity, Enum, ManyToOne, OneToMany, PrimaryKey, Property, QueryOrder } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/mysql';
 import { mockLogger } from '../../bootstrap';
 
 type Rating = 'bad' | 'ok' | 'good';
@@ -85,13 +85,12 @@ const createWithDifficulty = (label: string, difficulty?: Difficulty) => {
 
 describe('custom order [mysql]', () => {
 
-  let orm: MikroORM<MySqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
-    orm = await MikroORM.init<MySqlDriver>({
+    orm = await MikroORM.init({
       entities: [Task, User],
       dbName: `mikro_orm_test_custom_order`,
-      type: 'mysql',
       port: 3308,
     });
 

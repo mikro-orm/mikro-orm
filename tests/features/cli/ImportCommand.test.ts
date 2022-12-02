@@ -1,8 +1,9 @@
 import { Configuration } from '@mikro-orm/core';
 import { CLIHelper } from '@mikro-orm/cli';
+import { MongoDriver } from '@mikro-orm/mongodb';
 
 const close = jest.fn();
-const config = new Configuration({ type: 'mongo' } as any, false);
+const config = new Configuration({ driver: MongoDriver } as any, false);
 const connection = { loadFile: jest.fn() };
 const em = { getConnection: () => connection };
 const showHelpMock = jest.spyOn(CLIHelper, 'showHelp');

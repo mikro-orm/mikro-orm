@@ -1,4 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 export class IntegerArrayType extends Type<number[], string> {
 
@@ -55,7 +56,7 @@ describe('GH issue 2489', () => {
     orm = await MikroORM.init({
       entities: [Test],
       dbName: 'mikro_orm_test_2489',
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
       cache: { enabled: true },
     });
     await orm.schema.refreshDatabase();

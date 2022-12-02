@@ -1,5 +1,5 @@
 import { Collection, Entity, ManyToMany, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, t, wrap } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 import { v4 } from 'uuid';
 import { mockLogger } from '../../helpers';
 
@@ -53,7 +53,7 @@ describe('GH issue 1811', () => {
     orm = await MikroORM.init({
       entities: [Ingredient, Recipe, User],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });

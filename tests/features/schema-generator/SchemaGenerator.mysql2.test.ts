@@ -4,6 +4,7 @@ import { BASE_DIR, initORMMySql } from '../../bootstrap';
 import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from '../../entities-sql';
 import { BaseEntity22 } from '../../entities-sql/BaseEntity22';
 import { BaseEntity2 } from '../../entities-sql/BaseEntity2';
+import { MySqlDriver } from '@mikro-orm/mysql';
 
 describe('SchemaGenerator (no FKs)', () => {
 
@@ -14,7 +15,7 @@ describe('SchemaGenerator (no FKs)', () => {
       dbName,
       port: 3308,
       baseDir: BASE_DIR,
-      type: 'mysql',
+      driver: MySqlDriver,
       schemaGenerator: { createForeignKeyConstraints: false, disableForeignKeys: false },
       multipleStatements: true,
     });
@@ -31,7 +32,7 @@ describe('SchemaGenerator (no FKs)', () => {
       dbName,
       port: 3308,
       baseDir: BASE_DIR,
-      type: 'mysql',
+      driver: MySqlDriver,
       migrations: { path: BASE_DIR + '/../temp/migrations' },
       schemaGenerator: { createForeignKeyConstraints: false, disableForeignKeys: false },
       multipleStatements: true,

@@ -1,4 +1,8 @@
 import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { MySqlDriver } from '@mikro-orm/mysql';
+import { MariaDbDriver } from '@mikro-orm/mariadb';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 export class Foo {
 
@@ -49,7 +53,7 @@ describe('diffing default values (GH #2385)', () => {
     const orm = await MikroORM.init({
       entities: [Foo1],
       dbName: 'mikro_orm_test_gh_2385',
-      type: 'mysql',
+      driver: MySqlDriver,
       port: 3308,
     });
     await orm.schema.refreshDatabase();
@@ -62,7 +66,7 @@ describe('diffing default values (GH #2385)', () => {
     const orm = await MikroORM.init({
       entities: [Foo1],
       dbName: 'mikro_orm_test_gh_2385',
-      type: 'mariadb',
+      driver: MariaDbDriver,
       port: 3309,
     });
     await orm.schema.refreshDatabase();
@@ -75,7 +79,7 @@ describe('diffing default values (GH #2385)', () => {
     const orm = await MikroORM.init({
       entities: [Foo2],
       dbName: 'mikro_orm_test_gh_2385',
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
     await orm.schema.refreshDatabase();
     expect(await orm.schema.getCreateSchemaSQL()).toMatchSnapshot();
@@ -87,7 +91,7 @@ describe('diffing default values (GH #2385)', () => {
     const orm = await MikroORM.init({
       entities: [Foo3],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
     expect(await orm.schema.getCreateSchemaSQL()).toMatchSnapshot();

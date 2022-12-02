@@ -6,7 +6,7 @@ import {
   PrimaryKey,
   Property,
 } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 export class NativeBigIntType extends BigIntType {
 
@@ -46,7 +46,7 @@ describe('GH issue 1626', () => {
     orm = await MikroORM.init({
       entities: [Author],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });

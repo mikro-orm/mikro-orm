@@ -21,6 +21,7 @@ import {
   LockMode,
   Platform,
 } from '@mikro-orm/core';
+import { MongoDriver } from '@mikro-orm/mongodb';
 
 class Platform1 extends Platform { }
 
@@ -65,7 +66,7 @@ class Driver extends DatabaseDriver<Connection> implements IDatabaseDriver {
 
 describe('DatabaseDriver', () => {
 
-  const config = new Configuration({ type: 'mongo', allowGlobalContext: true } as any, false);
+  const config = new Configuration({ driver: MongoDriver, allowGlobalContext: true } as any, false);
   const driver = new Driver(config, []);
 
   test('default validations', async () => {

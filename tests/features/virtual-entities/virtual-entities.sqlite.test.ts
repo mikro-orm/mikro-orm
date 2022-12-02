@@ -3,6 +3,7 @@ import type { EntityManager } from '@mikro-orm/better-sqlite';
 import { mockLogger } from '../../bootstrap';
 import type { IAuthor4 } from '../../entities-schema';
 import { Author4, BaseEntity5, Book4, BookTag4, FooBar4, FooBaz4, Publisher4, Test4, Identity, IdentitySchema } from '../../entities-schema';
+import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
 
 class AuthorProfile {
 
@@ -59,7 +60,7 @@ describe('virtual entities (sqlite)', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      type: 'better-sqlite',
+      driver: BetterSqliteDriver,
       dbName: ':memory:',
       entities: [Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5, AuthorProfileSchema, BookWithAuthor, IdentitySchema],
     });

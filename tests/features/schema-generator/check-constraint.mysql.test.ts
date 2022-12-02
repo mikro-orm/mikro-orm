@@ -1,4 +1,5 @@
 import { Check, Entity, EntitySchema, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { MySqlDriver } from '@mikro-orm/mysql';
 
 @Entity()
 @Check<FooEntity>({ expression: columns => `${columns.price} >= 0` })
@@ -25,7 +26,7 @@ describe('check constraint [mysql8]', () => {
     const orm = await MikroORM.init({
       entities: [FooEntity],
       dbName: `mikro_orm_test_checks`,
-      type: 'mysql',
+      driver: MySqlDriver,
       port: 3308,
     });
 
@@ -39,7 +40,7 @@ describe('check constraint [mysql8]', () => {
     const orm = await MikroORM.init({
       entities: [FooEntity],
       dbName: `mikro_orm_test_checks`,
-      type: 'mysql',
+      driver: MySqlDriver,
       port: 3308,
     });
 

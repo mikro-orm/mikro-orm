@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import { Entity, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 interface BookData {
   title: string;
@@ -19,7 +20,7 @@ class Book {
 test(`GH issue 3221`, async () => {
   const orm = await MikroORM.init({
     entities: [Book],
-    type: 'sqlite',
+    driver: SqliteDriver,
     dbName: ':memory:',
   });
 

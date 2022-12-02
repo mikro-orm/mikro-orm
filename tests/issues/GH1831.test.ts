@@ -9,7 +9,7 @@ import {
   Property,
   PlainObject,
 } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class FilterValue {
@@ -84,7 +84,7 @@ describe('GH issue 1831', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      type: 'sqlite',
+      driver: SqliteDriver,
       dbName: ':memory:',
       entities: [Project, Filter, FilterValue],
     });

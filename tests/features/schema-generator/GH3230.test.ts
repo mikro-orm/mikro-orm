@@ -1,4 +1,5 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { MySqlDriver } from '@mikro-orm/mysql';
 
 @Entity()
 export class Author {
@@ -34,7 +35,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Author, Book],
     dbName: `mikro_orm_test_gh_3230`,
-    type: 'mysql',
+    driver: MySqlDriver,
     port: 3308,
   });
   await orm.schema.ensureDatabase();

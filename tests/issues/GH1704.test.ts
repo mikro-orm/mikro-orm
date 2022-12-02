@@ -1,5 +1,5 @@
 import { Entity, PrimaryKey, Property, OneToOne, MikroORM } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -33,7 +33,7 @@ describe('GH issue 1704', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      type: 'sqlite',
+      driver: SqliteDriver,
       entities: [User, Profile],
       dbName: ':memory:',
     });

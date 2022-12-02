@@ -1,7 +1,6 @@
 import type { MikroORM, ValidationError } from '@mikro-orm/core';
 import { LoadStrategy, wrap } from '@mikro-orm/core';
-import type { MySqlDriver } from '@mikro-orm/mysql';
-import { AbstractSqlConnection } from '@mikro-orm/mysql';
+import { AbstractSqlConnection, MySqlDriver } from '@mikro-orm/mysql';
 import { Author2, Configuration2, FooBar2, FooBaz2, FooParam2, Test2, Address2, Car2, CarOwner2, User2, Sandwich } from '../../entities-sql';
 import { initORMMySql, mockLogger } from '../../bootstrap';
 

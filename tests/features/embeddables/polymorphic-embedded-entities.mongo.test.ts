@@ -1,5 +1,5 @@
-import { Embeddable, Embedded, Entity, Enum, MikroORM, PrimaryKey, Property, SerializedPrimaryKey, wrap } from '@mikro-orm/core';
-import type { MongoDriver } from '@mikro-orm/mongodb';
+import { Embeddable, Embedded, Entity, Enum, PrimaryKey, Property, SerializedPrimaryKey, wrap } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/mongodb';
 import { ObjectId } from 'bson';
 import { mockLogger } from '../../helpers';
 
@@ -69,13 +69,12 @@ class Owner {
 
 describe('polymorphic embeddables in mongo', () => {
 
-  let orm: MikroORM<MongoDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Owner],
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test-poly-embeddables',
-      type: 'mongo',
       validate: true,
       ensureIndexes: true,
     });

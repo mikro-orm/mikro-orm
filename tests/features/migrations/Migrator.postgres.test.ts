@@ -3,8 +3,8 @@ import { Umzug } from 'umzug';
 import { format } from 'sql-formatter';
 import { MetadataStorage, MikroORM } from '@mikro-orm/core';
 import { Migration, MigrationStorage, Migrator, TSMigrationGenerator } from '@mikro-orm/migrations';
-import type { DatabaseTable, PostgreSqlDriver } from '@mikro-orm/postgresql';
-import { DatabaseSchema } from '@mikro-orm/postgresql';
+import type { DatabaseTable } from '@mikro-orm/postgresql';
+import { DatabaseSchema, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { remove } from 'fs-extra';
 import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, FooParam2, Publisher2, Test2 } from '../../entities-sql';
 import { BASE_DIR, mockLogger } from '../../bootstrap';
@@ -42,7 +42,7 @@ describe('Migrator (postgres)', () => {
     orm = await MikroORM.init<PostgreSqlDriver>({
       entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Configuration2],
       dbName: `mikro_orm_test_migrations`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
       schema: 'custom',
       logger: () => void 0,
       migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
@@ -407,7 +407,7 @@ test('ensureTable when the schema does not exist', async () => {
   const orm = await MikroORM.init<PostgreSqlDriver>({
     entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Configuration2],
     dbName: `mikro_orm_test_migrations2`,
-    type: 'postgresql',
+    driver: PostgreSqlDriver,
     schema: 'custom2',
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
   });

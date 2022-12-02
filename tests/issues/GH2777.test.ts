@@ -1,4 +1,5 @@
 import { Entity, LoadStrategy, ManyToOne, MikroORM, OneToOne, PrimaryKey, Property, wrap } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Image {
@@ -71,7 +72,7 @@ describe('GH issue 2777', () => {
     orm = await MikroORM.init({
       entities: [Customer, Comment, Product, Image],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });

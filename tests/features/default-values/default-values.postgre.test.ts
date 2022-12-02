@@ -1,5 +1,6 @@
 import { Entity, PrimaryKey, Property, MikroORM } from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 class A {
@@ -29,7 +30,7 @@ describe('default values in postgres', () => {
     orm = await MikroORM.init({
       entities: [A],
       dbName: `mikro_orm_test_default_values`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
     await orm.schema.refreshDatabase();
   });

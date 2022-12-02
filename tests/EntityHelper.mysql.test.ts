@@ -1,6 +1,6 @@
 import type { MikroORM } from '@mikro-orm/core';
 import { wrap } from '@mikro-orm/core';
-import type { MySqlDriver } from '@mikro-orm/mysql';
+import { MySqlDriver } from '@mikro-orm/mysql';
 import { initORMMySql } from './bootstrap';
 import { FooBar2, FooBaz2 } from './entities-sql';
 

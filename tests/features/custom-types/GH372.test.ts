@@ -5,7 +5,7 @@ import { mockLogger } from '../../helpers';
 import type { Knex } from 'knex';
 import { knex } from 'knex';
 import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 type Point = { x: number; y: number };
 
@@ -47,7 +47,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [A],
     dbName: `mikro_orm_test_gh_372`,
-    type: 'postgresql',
+    driver: PostgreSqlDriver,
   });
   await orm.schema.refreshDatabase();
 });

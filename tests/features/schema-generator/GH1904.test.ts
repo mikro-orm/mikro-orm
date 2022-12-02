@@ -1,5 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import type { MySqlDriver } from '@mikro-orm/mysql';
+import { MySqlDriver } from '@mikro-orm/mysql';
 
 @Entity({ tableName: 'book' })
 export class Book1 {
@@ -71,7 +71,7 @@ describe('ignore specific schema changes (GH 1904)', () => {
     orm = await MikroORM.init({
       entities: [Book1],
       dbName: `mikro_orm_test_gh_1904`,
-      type: 'mysql',
+      driver: MySqlDriver,
       port: 3308,
     });
     await orm.schema.refreshDatabase();

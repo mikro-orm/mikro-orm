@@ -1,4 +1,5 @@
 import { Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'author' })
 export class Author0 {
@@ -101,7 +102,7 @@ describe('dropping tables with FKs in postgres', () => {
     const orm = await MikroORM.init({
       entities: [Author0, Book0],
       dbName: `mikro_orm_test_fk_diffing`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
     await orm.schema.ensureDatabase();
     await orm.schema.execute('drop table if exists author cascade');
@@ -135,7 +136,7 @@ describe('dropping tables with FKs in postgres', () => {
     const orm = await MikroORM.init({
       entities: [Author0, Book0],
       dbName: `mikro_orm_test_fk_diffing`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
     await orm.schema.ensureDatabase();
     await orm.schema.execute('drop table if exists author cascade');

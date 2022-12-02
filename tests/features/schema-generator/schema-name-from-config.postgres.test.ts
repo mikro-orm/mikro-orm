@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { Entity, MikroORM, PrimaryKey, ManyToMany, Collection } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 
 @Entity()
@@ -30,7 +30,7 @@ describe('adding FK column', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [User, Profile],
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
       dbName: 'fk-column-postgres-schema',
       schema: 'test',
     });

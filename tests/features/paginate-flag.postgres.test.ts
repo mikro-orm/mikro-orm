@@ -1,5 +1,5 @@
 import { Collection, Entity, Enum, Filter, LoadStrategy, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PopulateHint, PrimaryKey, Property } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
 
 @Entity()
@@ -168,7 +168,7 @@ describe('GH issue 2095', () => {
     orm = await MikroORM.init({
       entities: [C, T, TC, B, A, User, Group],
       dbName: 'mikro_orm_issue_2095',
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
 
     await orm.schema.ensureDatabase();

@@ -19,6 +19,7 @@ import { performance } from 'perf_hooks';
 import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from '../../entities-sql';
 import { BaseEntity2 } from '../../entities-sql/BaseEntity2';
 import { BaseEntity22 } from '../../entities-sql/BaseEntity22';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 export class ObjectHydratorOld {
 
@@ -263,7 +264,7 @@ describe('EntityComparator', () => {
   let orm: MikroORM;
 
   beforeAll(async () => orm = await MikroORM.init({
-    type: 'sqlite',
+    driver: SqliteDriver,
     dbName: ':memory:',
     entities: [Author2, Book2, BookTag2, Publisher2, Address2, Test2, Configuration2, FooBar2, FooBaz2, BaseEntity2, BaseEntity22, User],
   }));

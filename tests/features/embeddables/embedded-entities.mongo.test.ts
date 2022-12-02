@@ -1,7 +1,6 @@
 import type { Dictionary, Platform } from '@mikro-orm/core';
-import { Embeddable, Embedded, Entity, EntitySchema, expr, MikroORM, PrimaryKey, Property, ReferenceType, SerializedPrimaryKey, Type } from '@mikro-orm/core';
-import type { MongoDriver } from '@mikro-orm/mongodb';
-import { ObjectId, MongoConnection, MongoPlatform } from '@mikro-orm/mongodb';
+import { Embeddable, Embedded, Entity, EntitySchema, expr, PrimaryKey, Property, ReferenceType, SerializedPrimaryKey, Type } from '@mikro-orm/core';
+import { MikroORM, ObjectId, MongoConnection, MongoPlatform } from '@mikro-orm/mongodb';
 import { mockLogger } from '../../helpers';
 
 @Embeddable()
@@ -189,13 +188,12 @@ const childSchema = new EntitySchema({
 
 describe('embedded entities in mongo', () => {
 
-  let orm: MikroORM<MongoDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [User, CustomUser, childSchema, parentSchema],
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test-embeddables',
-      type: 'mongo',
       validate: true,
     });
   });

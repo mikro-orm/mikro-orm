@@ -1,4 +1,5 @@
 import { Cascade, Collection, Entity, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, PrimaryKeyType } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class NodeEntity {
@@ -44,7 +45,7 @@ describe('GH issue 2810', () => {
     orm = await MikroORM.init({
       entities: [ElementEntity, DependentEntity, NodeEntity],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });

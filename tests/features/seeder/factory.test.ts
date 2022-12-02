@@ -6,6 +6,7 @@ import { House } from './entities/house.entity';
 import { Project } from './entities/project.entity';
 import { User } from './entities/user.entity';
 import SpyInstance = jest.SpyInstance;
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 export class ProjectFactory extends Factory<Project> {
 
@@ -46,7 +47,7 @@ describe('Factory', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Project, House, User],
-      type: 'sqlite',
+      driver: SqliteDriver,
       dbName: ':memory:',
     });
     await orm.schema.createSchema();

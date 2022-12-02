@@ -1,4 +1,5 @@
 import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property, t } from '@mikro-orm/core';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity({
   schema: 'accounting',
@@ -69,7 +70,7 @@ describe('GH issue 2919', () => {
     orm = await MikroORM.init({
       entities: [Account, Customer, Company],
       dbName: 'mikro_orm_test_2919',
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
     await orm.schema.refreshDatabase();
   });

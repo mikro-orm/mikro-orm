@@ -1,5 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, OneToMany, ManyToOne, Collection, BeforeCreate } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 import { v4 } from 'uuid';
 
 abstract class Base {
@@ -38,7 +38,7 @@ describe('GH issue 893', () => {
     orm = await MikroORM.init({
       entities: [Base, Book, Publisher],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });

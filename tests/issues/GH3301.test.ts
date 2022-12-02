@@ -1,5 +1,5 @@
 import { Collection, Entity, OneToMany, ManyToOne, MikroORM, PrimaryKey } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
 
 @Entity()
 export class Collector {
@@ -43,7 +43,7 @@ export class Collect {
 
 }
 
-let orm: MikroORM<SqliteDriver>;
+let orm: MikroORM<BetterSqliteDriver>;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
@@ -53,7 +53,7 @@ beforeAll(async () => {
       Collectable,
     ],
     dbName: ':memory:',
-    type: 'better-sqlite',
+    driver: BetterSqliteDriver,
   });
   await orm.schema.createSchema();
 });

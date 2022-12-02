@@ -1,4 +1,5 @@
-import { Check, Entity, EntitySchema, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { Check, Entity, EntitySchema, PrimaryKey, Property } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/mariadb';
 
 @Entity()
 @Check<FooEntity>({ expression: columns => `${columns.price} >= 0` })
@@ -25,7 +26,6 @@ describe('check constraint [mariadb]', () => {
     const orm = await MikroORM.init({
       entities: [FooEntity],
       dbName: `mikro_orm_test_checks`,
-      type: 'mariadb',
       port: 3309,
     });
 
@@ -39,7 +39,6 @@ describe('check constraint [mariadb]', () => {
     const orm = await MikroORM.init({
       entities: [FooEntity],
       dbName: `mikro_orm_test_checks`,
-      type: 'mariadb',
       port: 3309,
     });
 

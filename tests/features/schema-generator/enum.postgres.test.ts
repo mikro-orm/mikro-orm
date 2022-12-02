@@ -1,4 +1,5 @@
 import { Entity, EntityCaseNamingStrategy, Enum, MikroORM, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 enum Food {
   Waffles = 'Waffles',
@@ -50,7 +51,7 @@ test('enum diffing with case sensitive column names (GH issue #2938)', async () 
   const orm = await MikroORM.init({
     entities: [Something],
     dbName: `mikro_orm_test_enum1`,
-    type: 'postgresql',
+    driver: PostgreSqlDriver,
     namingStrategy: EntityCaseNamingStrategy,
   });
 
@@ -66,7 +67,7 @@ test('numeric enum diffing (GH issue #2932)', async () => {
   const orm = await MikroORM.init({
     entities: [MessageThread],
     dbName: 'mikro_orm_test_enum2',
-    type: 'postgresql',
+    driver: PostgreSqlDriver,
   });
 
   await orm.schema.refreshDatabase();

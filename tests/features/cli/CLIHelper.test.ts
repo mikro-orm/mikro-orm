@@ -1,8 +1,8 @@
 import { SqlHighlighter } from '@mikro-orm/sql-highlighter';
 
-jest.mock(process.cwd() + '/mikro-orm.config.js', () => ({ type: 'mongo', dbName: 'foo_bar', entities: ['tests/foo'] }), { virtual: true });
-jest.mock(process.cwd() + '/mikro-orm.config.ts', () => ({ type: 'mongo', dbName: 'foo_bar', entities: ['tests/foo'] }), { virtual: true });
-jest.mock(process.cwd() + '/mikro-orm-async.config.js', () => (Promise.resolve({ type: 'mongo', dbName: 'foo_bar', entities: ['tests/foo'] })), { virtual: true });
+jest.mock(process.cwd() + '/mikro-orm.config.js', () => ({ driver: MongoDriver, dbName: 'foo_bar', entities: ['tests/foo'] }), { virtual: true });
+jest.mock(process.cwd() + '/mikro-orm.config.ts', () => ({ driver: MongoDriver, dbName: 'foo_bar', entities: ['tests/foo'] }), { virtual: true });
+jest.mock(process.cwd() + '/mikro-orm-async.config.js', () => (Promise.resolve({ driver: MongoDriver, dbName: 'foo_bar', entities: ['tests/foo'] })), { virtual: true });
 jest.mock(process.cwd() + '/mikro-orm-async-catch.config.js', () => (Promise.reject('FooError')), { virtual: true });
 const pkg = { 'mikro-orm': {} } as any;
 jest.mock(process.cwd() + '/package.json', () => pkg, { virtual: true });
@@ -22,6 +22,8 @@ jest.mock(process.cwd() + '/tsconfig.json', () => tsc, { virtual: true });
 import { ConfigurationLoader, Configuration, Utils, MikroORM } from '@mikro-orm/core';
 import { CLIConfigurator, CLIHelper } from '@mikro-orm/cli';
 import { SchemaCommandFactory } from '../../../packages/cli/src/commands/SchemaCommandFactory';
+import { MongoDriver } from '@mikro-orm/mongodb';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 process.env.FORCE_COLOR = '0';
 
@@ -307,7 +309,7 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     expect(logSpy.mock.calls[0][0]).toBe('test');
 
     process.env.FORCE_COLOR = '1';
-    CLIHelper.dump('select 1 + 1', new Configuration({ type: 'sqlite', highlighter: new SqlHighlighter() }, false));
+    CLIHelper.dump('select 1 + 1', new Configuration({ driver: SqliteDriver, highlighter: new SqlHighlighter() }, false));
     process.env.FORCE_COLOR = '0';
 
     expect(logSpy.mock.calls[1][0]).toMatch('[37m[1mselect[22m[39m [32m1[39m [0m+[0m [32m1[39m');

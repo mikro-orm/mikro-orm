@@ -1,5 +1,5 @@
 import { Entity, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
 
 @Entity()
@@ -49,7 +49,7 @@ describe('GH issue 811', () => {
     orm = await MikroORM.init({
       entities: [Contact, Employee, Address],
       dbName: 'mikro_orm_test_gh811',
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
     await orm.schema.refreshDatabase();
   });

@@ -1,6 +1,6 @@
 import { v4, parse, stringify } from 'uuid';
-import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
-import type { MySqlDriver } from '@mikro-orm/mysql';
+import { Collection, Entity, ManyToMany, PrimaryKey, Property, Type } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/mysql';
 
 export class UuidBinaryType extends Type<string, Buffer> {
 
@@ -53,13 +53,12 @@ class A {
 
 describe('GH issue 1930', () => {
 
-  let orm: MikroORM<MySqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A, B],
       dbName: `mikro_orm_test_gh_1930`,
-      type: 'mysql',
       port: 3308,
     });
     await orm.schema.refreshDatabase();

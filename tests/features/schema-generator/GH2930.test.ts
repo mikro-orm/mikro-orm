@@ -5,8 +5,8 @@ import {
   MikroORM,
   UnderscoreNamingStrategy,
 } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
-import type { MySqlDriver } from '@mikro-orm/mysql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { MySqlDriver } from '@mikro-orm/mysql';
 
 @Entity()
 class A {
@@ -28,7 +28,7 @@ describe('GH issue 2930', () => {
       orm = await MikroORM.init({
         entities: [A],
         dbName: 'mikro_orm_test_gh2930',
-        type: 'postgresql',
+        driver: PostgreSqlDriver,
         namingStrategy: class extends UnderscoreNamingStrategy {
 
           indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check'): string {
@@ -57,7 +57,7 @@ describe('GH issue 2930', () => {
       orm = await MikroORM.init({
         entities: [A],
         dbName: 'mikro_orm_test_gh2930',
-        type: 'postgresql',
+        driver: PostgreSqlDriver,
         namingStrategy: class extends UnderscoreNamingStrategy {
 
           indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check'): string {
@@ -83,7 +83,7 @@ describe('GH issue 2930', () => {
       orm = await MikroORM.init({
         entities: [A],
         dbName: 'mikro_orm_test_gh2930',
-        type: 'mysql',
+        driver: MySqlDriver,
         namingStrategy: class extends UnderscoreNamingStrategy {
 
           indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check'): string {

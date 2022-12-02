@@ -1,5 +1,6 @@
-import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property } from '@mikro-orm/core';
 import { ObjectId } from 'bson';
+import { MikroORM } from '@mikro-orm/mongodb';
 
 @Embeddable()
 export class TradeVessel {
@@ -30,7 +31,6 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Trade],
     dbName: 'mikro_orm_test_3258',
-    type: 'mongo',
   });
   await orm.schema.refreshDatabase();
 });

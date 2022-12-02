@@ -1,8 +1,6 @@
 import { inspect } from 'util';
 import { expr, LockMode, MikroORM, QueryFlag, QueryOrder, UnderscoreNamingStrategy } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
-import { QueryBuilder } from '@mikro-orm/postgresql';
-import { CriteriaNode } from '@mikro-orm/knex';
+import { CriteriaNode, QueryBuilder, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { Address2, Author2, Book2, BookTag2, Car2, CarOwner2, Configuration2, FooBar2, FooBaz2, FooParam2, Publisher2, PublisherType, Test2, User2 } from './entities-sql';
 import { initORMMySql, mockLogger } from './bootstrap';
@@ -2405,7 +2403,7 @@ describe('QueryBuilder', () => {
     const pg = await MikroORM.init<PostgreSqlDriver>({
       entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, BaseEntity2, BaseEntity22, Configuration2],
       dbName: `mikro_orm_test`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
     await pg.schema.ensureDatabase();
 

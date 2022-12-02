@@ -1,5 +1,6 @@
 import { Entity, EntityRepositoryType, ManyToOne, MikroORM, PrimaryKey } from '@mikro-orm/core';
 import { EntityRepository } from '@mikro-orm/knex';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 class ProviderRepository extends EntityRepository<Provider> {}
 class UserRepository extends EntityRepository<User> {}
@@ -106,7 +107,7 @@ describe('GH #2647, #2742', () => {
     orm = await MikroORM.init({
       entities: [Provider, User, Member, Session, Participant],
       dbName: `:memory:`,
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });

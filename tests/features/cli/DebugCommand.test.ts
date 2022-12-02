@@ -1,3 +1,5 @@
+import { MongoDriver } from '@mikro-orm/mongodb';
+
 (global as any).process.env.FORCE_COLOR = 0;
 
 import { Configuration, ConfigurationLoader, Utils } from '@mikro-orm/core';
@@ -22,7 +24,7 @@ describe('DebugCommand', () => {
     const globbyMock = jest.spyOn(Utils, 'pathExists');
     globbyMock.mockResolvedValue(true);
     getSettings.mockResolvedValue({});
-    getConfiguration.mockResolvedValue(new Configuration({ type: 'mongo' } as any, false));
+    getConfiguration.mockResolvedValue(new Configuration({ driver: MongoDriver } as any, false));
     getConfigPaths.mockResolvedValue(['./path/orm-config.ts']);
     await expect(cmd.handler()).resolves.toBeUndefined();
     expect(dumpDependencies).toBeCalledTimes(1);
@@ -35,7 +37,7 @@ describe('DebugCommand', () => {
 
     getSettings.mockResolvedValue({ useTsNode: true });
     globbyMock.mockImplementation(async (path: string) => path.endsWith('entities-1') || path.endsWith('orm-config.ts'));
-    getConfiguration.mockResolvedValue(new Configuration({ type: 'mongo', tsNode: true, entities: ['./dist/entities-1', './dist/entities-2'], entitiesTs: ['./src/entities-1', './src/entities-2'] } as any, false));
+    getConfiguration.mockResolvedValue(new Configuration({ driver: MongoDriver, tsNode: true, entities: ['./dist/entities-1', './dist/entities-2'], entitiesTs: ['./src/entities-1', './src/entities-2'] } as any, false));
     dump.mock.calls.length = 0;
     await expect(cmd.handler()).resolves.toBeUndefined();
     expect(dumpDependencies).toBeCalledTimes(2);
@@ -54,7 +56,7 @@ describe('DebugCommand', () => {
       [`   - ${Utils.normalizePath(process.cwd() + '/src/entities-2') } (not found)`],
     ]);
 
-    getConfiguration.mockResolvedValue(new Configuration({ type: 'mongo', tsNode: false, entities: [FooBar, FooBaz] } as any, false));
+    getConfiguration.mockResolvedValue(new Configuration({ driver: MongoDriver, tsNode: false, entities: [FooBar, FooBaz] } as any, false));
     dump.mock.calls.length = 0;
     await expect(cmd.handler()).resolves.toBeUndefined();
     expect(dumpDependencies).toBeCalledTimes(3);

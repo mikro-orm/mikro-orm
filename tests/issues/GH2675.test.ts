@@ -1,5 +1,5 @@
 import { Entity, LoadStrategy, ManyToOne, MikroORM, PrimaryKey, wrap } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 export class A {
@@ -28,7 +28,7 @@ describe('GH issue 2675', () => {
     orm = await MikroORM.init({
       entities: [A, B],
       dbName: 'mikro_orm_test_gh_2675',
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
     await orm.schema.ensureDatabase();
 

@@ -1,4 +1,5 @@
 import { Entity, PrimaryKey, MikroORM, ManyToOne, PrimaryKeyType, Property, wrap, OneToMany, Collection, ManyToMany } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Order {
@@ -75,7 +76,7 @@ describe('custom pivot entity for m:n with additional properties (unidirectional
     orm = await MikroORM.init({
       entities: [Product, OrderItem, Order],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });

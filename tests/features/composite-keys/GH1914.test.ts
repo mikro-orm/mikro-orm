@@ -1,5 +1,6 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Category {
@@ -53,7 +54,7 @@ describe('GH #1914', () => {
     orm = await MikroORM.init<AbstractSqlDriver>({
       entities: [Site, Category, SiteCategory],
       dbName: `:memory:`,
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });

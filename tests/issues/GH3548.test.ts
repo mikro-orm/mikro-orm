@@ -39,7 +39,6 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [AuthorDetail],
     clientUrl: 'mongodb://localhost:27017/mikro-orm-3548',
-    type: 'mongo',
   });
   await orm.schema.clearDatabase();
 });

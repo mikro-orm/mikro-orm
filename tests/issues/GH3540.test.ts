@@ -19,7 +19,6 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Foo],
     dbName: `mikro_orm_test_3540`,
-    type: 'mysql',
     port: 3308,
     loggerFactory: options => new SimpleLogger(options),
   });

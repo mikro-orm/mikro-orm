@@ -1,5 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property, Enum, QueryOrder, OneToMany, Collection, ManyToOne } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../bootstrap';
 
 type Rating = 'bad' | 'ok' | 'good';
@@ -90,7 +90,7 @@ describe('custom order [sqlite]', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [User, Task],
-      type: 'sqlite',
+      driver: SqliteDriver,
       dbName: ':memory:',
     });
     await orm.schema.dropSchema();

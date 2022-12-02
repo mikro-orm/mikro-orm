@@ -1,4 +1,5 @@
-import { Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { Collection, Entity, IdentifiedReference, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/mysql';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -52,7 +53,6 @@ describe('GH issue 1326', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      type: 'mysql',
       dbName: `mikro_orm_test_gh_1326`,
       port: 3308,
       entities: [Driver, License, LicenseType],

@@ -2,6 +2,7 @@ import type { ObjectHydrator } from '@mikro-orm/core';
 import { Embeddable, Embedded, Entity, Enum, MikroORM, OptionalProps, PrimaryKey, Property, wrap } from '@mikro-orm/core';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { mockLogger } from '../../helpers';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 enum AnimalType {
   CAT,
@@ -81,7 +82,7 @@ describe('polymorphic embeddables in sqlite', () => {
     orm = await MikroORM.init({
       entities: [Dog, Cat, Owner],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
       metadataProvider: TsMorphMetadataProvider,
     });
     await orm.schema.createSchema();

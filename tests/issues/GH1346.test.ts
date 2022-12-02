@@ -1,5 +1,6 @@
 import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'name' })
 class Name {
@@ -38,7 +39,7 @@ describe('GH issue 1346', () => {
     orm = await MikroORM.init({
       entities: [User, Name],
       dbName: `mikro_orm_test_pivot_fields`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
 
     await orm.schema.ensureDatabase();

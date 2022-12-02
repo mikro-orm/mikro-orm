@@ -2,8 +2,8 @@
 import { Umzug } from 'umzug';
 import { MetadataStorage, MikroORM } from '@mikro-orm/core';
 import { Migration, MigrationStorage, Migrator } from '@mikro-orm/migrations';
-import type { DatabaseTable, SqliteDriver } from '@mikro-orm/sqlite';
-import { DatabaseSchema } from '@mikro-orm/sqlite';
+import type { DatabaseTable } from '@mikro-orm/sqlite';
+import { DatabaseSchema, SqliteDriver } from '@mikro-orm/sqlite';
 import { remove } from 'fs-extra';
 import { initORMSqlite2, mockLogger, TEMP_DIR } from '../../bootstrap';
 import { BaseEntity5, FooBar4, FooBaz4 } from '../../entities-schema';
@@ -306,7 +306,7 @@ describe('Migrator (sqlite)', () => {
 
   test('snapshots with absolute path to database', async () => {
     const orm = await MikroORM.init({
-      type: 'sqlite',
+      driver: SqliteDriver,
       entities: [FooBar4, FooBaz4, BaseEntity5],
       dbName: TEMP_DIR + '/test.db',
       baseDir: TEMP_DIR,

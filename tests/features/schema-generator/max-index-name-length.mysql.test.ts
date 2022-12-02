@@ -1,5 +1,6 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import { MySqlDriver } from '@mikro-orm/mysql';
 
 
 @Entity({ tableName: 'very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' })
@@ -35,7 +36,7 @@ describe('index and FK names should be a max of 64 chars in mysql (GH 1271)', ()
       entities: [ParentEntity, ChildEntity],
       dbName: `mikro_orm_test_gh_1271`,
       port: 3308,
-      type: 'mysql',
+      driver: MySqlDriver,
     });
     await orm.schema.ensureDatabase();
     await orm.schema.dropSchema();

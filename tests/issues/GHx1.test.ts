@@ -1,4 +1,6 @@
 import { Entity, Enum, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 enum TaskStatus {
   OPENED = 'OPENED',
@@ -35,7 +37,7 @@ class Task {
 test(`default value for relation property`, async () => {
   const orm = await MikroORM.init({
     entities: [Task, Status],
-    type: 'sqlite',
+    driver: SqliteDriver,
     dbName: ':memory:',
   });
   await orm.schema.refreshDatabase();
@@ -56,7 +58,7 @@ test(`default value for relation property`, async () => {
 test(`default value for relation property (sqlite/returning)`, async () => {
   const orm = await MikroORM.init({
     entities: [Task, Status],
-    type: 'sqlite',
+    driver: SqliteDriver,
     dbName: ':memory:',
   });
   await orm.schema.refreshDatabase();
@@ -77,7 +79,7 @@ test(`default value for relation property (sqlite/returning)`, async () => {
 test(`default value for relation property (postgres/returning)`, async () => {
   const orm = await MikroORM.init({
     entities: [Task, Status],
-    type: 'postgresql',
+    driver: PostgreSqlDriver,
     dbName: 'mikro_orm_test_tmp',
   });
   await orm.schema.refreshDatabase();

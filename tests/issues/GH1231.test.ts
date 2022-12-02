@@ -1,6 +1,5 @@
 import { Cascade, Collection, Entity, EntityRepositoryType, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
-import { EntityRepository } from '@mikro-orm/postgresql';
+import { EntityRepository, PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'teachers', repository: () => TeacherRepository })
 class Teacher {
@@ -74,7 +73,7 @@ describe('one to many relations read with query builder in postgresql (GH issue 
     orm = await MikroORM.init({
       entities: [Teacher, Student],
       dbName: 'mikro_orm_test_1231',
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
     await orm.schema.refreshDatabase();
 

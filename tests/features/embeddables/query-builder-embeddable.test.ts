@@ -1,4 +1,4 @@
-import type { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
+import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
 import {
   Entity,
   MikroORM,
@@ -42,7 +42,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [User, Settings],
     dbName: ':memory:',
-    type: 'better-sqlite',
+    driver: BetterSqliteDriver,
   });
 
   const generator = orm.schema;

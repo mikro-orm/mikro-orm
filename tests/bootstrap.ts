@@ -5,10 +5,11 @@ import { JavaScriptMetadataProvider, LoadStrategy, MikroORM, ReflectMetadataProv
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { SqlEntityRepository } from '@mikro-orm/knex';
 import { SqliteDriver } from '@mikro-orm/sqlite';
-import type { MongoDriver } from '@mikro-orm/mongodb';
-import type { MySqlDriver } from '@mikro-orm/mysql';
-import type { MariaDbDriver } from '@mikro-orm/mariadb';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { MongoDriver } from '@mikro-orm/mongodb';
+import { MySqlDriver } from '@mikro-orm/mysql';
+import { MariaDbDriver } from '@mikro-orm/mariadb';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
 
 import {
   Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2, Label2, Configuration2, Address2, FooParam2,
@@ -56,13 +57,13 @@ export async function initORMMongo(replicaSet = false) {
     ? await initMongoReplSet('mikro-orm-test')
     : 'mongodb://localhost:27017/mikro-orm-test';
 
-  const orm = await MikroORM.init<MongoDriver>({
+  const orm = await MikroORM.init({
     entities: ['entities'],
     tsNode: false,
     clientUrl,
     baseDir: BASE_DIR,
     logger: i => i,
-    type: 'mongo',
+    driver: MongoDriver,
     ensureIndexes,
     implicitTransactions: replicaSet,
     validate: true,
@@ -90,7 +91,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     multipleStatements: true,
     populateAfterFlush: false,
     entityRepository: SqlEntityRepository,
-    type,
+    driver: type === 'mysql' ? MySqlDriver : MariaDbDriver,
     replicas: [{ name: 'read-1' }, { name: 'read-2' }], // create two read replicas with same configuration, just for testing purposes
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
   }, additionalOptions));
@@ -118,11 +119,11 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
 }
 
 export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, entities: any[] = []) {
-  const orm = await MikroORM.init<PostgreSqlDriver>({
+  const orm = await MikroORM.init({
     entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Label2, Configuration2, ...entities],
     dbName: `mikro_orm_test`,
     baseDir: BASE_DIR,
-    type: 'postgresql',
+    driver: PostgreSqlDriver,
     debug: ['query', 'query-params'],
     forceUtcTimezone: true,
     autoJoinOneToOneOwner: false,
@@ -165,11 +166,11 @@ export async function initORMSqlite() {
 }
 
 export async function initORMSqlite2(type: 'sqlite' | 'better-sqlite' = 'sqlite') {
-  const orm = await MikroORM.init<SqliteDriver>({
+  const orm = await MikroORM.init<any>({
     entities: [Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5, IdentitySchema],
     dbName: ':memory:',
     baseDir: BASE_DIR,
-    type,
+    driver: type === 'sqlite' ? SqliteDriver : BetterSqliteDriver,
     debug: ['query'],
     propagateToOneOwner: false,
     forceUndefined: true,

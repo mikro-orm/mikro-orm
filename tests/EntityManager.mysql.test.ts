@@ -37,7 +37,7 @@ describe('EntityManagerMySql', () => {
 
   test('getConnectionOptions()', async () => {
     const config = new Configuration({
-      type: 'mysql',
+      driver: MySqlDriver,
       clientUrl: 'mysql://root@127.0.0.1:3308/db_name',
       host: '127.0.0.10',
       password: 'secret',
@@ -147,14 +147,14 @@ describe('EntityManagerMySql', () => {
 
   test('connection returns correct URL', async () => {
     const conn1 = new MySqlConnection(new Configuration({
-      type: 'mysql',
+      driver: MySqlDriver,
       clientUrl: 'mysql://example.host.com',
       port: 1234,
       user: 'usr',
       password: 'pw',
     } as any, false));
     await expect(conn1.getClientUrl()).toBe('mysql://usr:*****@example.host.com:1234');
-    const conn2 = new MySqlConnection(new Configuration({ type: 'mysql', port: 3307 } as any, false));
+    const conn2 = new MySqlConnection(new Configuration({ driver: MySqlDriver, port: 3307 } as any, false));
     await expect(conn2.getClientUrl()).toBe('mysql://root@127.0.0.1:3307');
   });
 

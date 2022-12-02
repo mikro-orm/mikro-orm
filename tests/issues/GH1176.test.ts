@@ -6,7 +6,7 @@ import {
   PrimaryKey,
   Property,
 } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 as uuid } from 'uuid';
 
 @Entity({ tableName: 'users' })
@@ -28,7 +28,7 @@ async function getOrmInstance(): Promise<MikroORM<PostgreSqlDriver>> {
   const orm = await MikroORM.init({
     entities: [User],
     dbName: 'mikro_orm_test_gh_1176',
-    type: 'postgresql',
+    driver: PostgreSqlDriver,
   });
 
   return orm as MikroORM<PostgreSqlDriver>;

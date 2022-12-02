@@ -1,5 +1,5 @@
 import { EntitySchema, ReferenceType, Utils, MikroORM, Type, EnumType } from '@mikro-orm/core';
-import { FullTextType } from '@mikro-orm/postgresql';
+import { FullTextType, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { BASE_DIR, initORMPostgreSql } from '../../bootstrap';
 import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from '../../entities-sql';
 import { BaseEntity22 } from '../../entities-sql/BaseEntity22';
@@ -113,7 +113,7 @@ describe('SchemaGenerator [postgres]', () => {
       entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName,
       baseDir: BASE_DIR,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
 
     await orm.schema.ensureDatabase();
@@ -127,7 +127,7 @@ describe('SchemaGenerator [postgres]', () => {
       entities: [FooBar2, FooBaz2, Test2, Book2, Author2, Configuration2, Publisher2, BookTag2, Address2, BaseEntity2, BaseEntity22],
       dbName,
       baseDir: BASE_DIR,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
       migrations: { path: BASE_DIR + '/../temp/migrations', tableName: 'public.mikro_orm_migrations' },
     });
 

@@ -1,5 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 export class Versioned {
@@ -23,7 +23,7 @@ describe('GH issue 2401', () => {
     orm = await MikroORM.init({
       entities: [Versioned],
       dbName: `mikro_orm_test_gh_2401`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
     await orm.schema.refreshDatabase();
   });

@@ -1,5 +1,5 @@
 import { Collection, Entity, ManyToOne, OneToMany, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import type { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
+import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
 
 @Entity()
 class TestRunEntity {
@@ -32,7 +32,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [TestCaseEntity],
     dbName: ':memory:',
-    type: 'better-sqlite',
+    driver: BetterSqliteDriver,
   });
   await orm.schema.createSchema();
 });

@@ -1,5 +1,5 @@
 import { Cascade, Collection, Entity, Ref, ManyToOne, OneToMany, PrimaryKey, wrap } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/sqlite';
+import { MikroORM, SqliteDriver } from '@mikro-orm/sqlite';
 import { v4 } from 'uuid';
 import { mockLogger } from '../../helpers';
 
@@ -64,7 +64,7 @@ let orm: MikroORM;
 beforeAll(async () => {
   orm = await MikroORM.init({
     dbName: ':memory:',
-    type: 'sqlite',
+    driver: SqliteDriver,
     entities: [Group, Member, GroupMember],
   });
   await orm.schema.createSchema();

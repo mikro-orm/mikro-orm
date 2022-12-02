@@ -1,6 +1,7 @@
 import { Entity, MikroORM, PrimaryKey, Property, Enum, QueryOrder, Collection, OneToMany, ManyToOne } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { mockLogger } from '../../bootstrap';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 type Rating = 'bad' | 'ok' | 'good';
 
@@ -91,7 +92,7 @@ describe('custom order [postgres]', () => {
     orm = await MikroORM.init({
       entities: [User, Task],
       dbName: `mikro_orm_test_custom_order`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
     await orm.schema.refreshDatabase();
   });

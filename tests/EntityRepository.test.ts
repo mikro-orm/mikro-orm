@@ -4,7 +4,7 @@ import type { EntityManager } from '@mikro-orm/knex';
 import { EntityRepository } from '@mikro-orm/knex';
 import { Publisher } from './entities';
 import type { MongoEntityManager } from '@mikro-orm/mongodb';
-import { MongoEntityRepository } from '@mikro-orm/mongodb';
+import { MongoDriver, MongoEntityRepository } from '@mikro-orm/mongodb';
 
 const methods = {
   getReference: jest.fn(),
@@ -31,7 +31,7 @@ const methods = {
   nativeUpdate: jest.fn(),
   nativeDelete: jest.fn(),
   aggregate: jest.fn(),
-  config: new Configuration({ type: 'mongo' } as any, false),
+  config: new Configuration({ driver: MongoDriver }, false),
   getContext: () => undefined as any,
 };
 const Mock = jest.fn<EntityManager, any>(() => methods as any);

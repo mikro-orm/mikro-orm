@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property, t } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, t } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/mysql';
 
 @Entity()
 export class Asset1 {
@@ -35,7 +36,6 @@ export class Asset3 {
 
 test('bigint in mysql 1/3', async () => {
   const orm = await MikroORM.init({
-    type: 'mysql',
     dbName: `mikro_orm_test_gh_3739`,
     port: 3308,
     entities: [Asset1],
@@ -61,7 +61,6 @@ test('bigint in mysql 1/3', async () => {
 
 test('bigint in mysql 2/3', async () => {
   const orm = await MikroORM.init({
-    type: 'mysql',
     dbName: `mikro_orm_test_gh_3739`,
     port: 3308,
     entities: [Asset2],
@@ -81,7 +80,6 @@ test('bigint in mysql 2/3', async () => {
 
 test('bigint in mysql 3/3', async () => {
   const orm = await MikroORM.init({
-    type: 'mysql',
     dbName: `mikro_orm_test_gh_3739`,
     port: 3308,
     entities: [Asset3],

@@ -1,6 +1,6 @@
 import { Entity, PrimaryKey, BigIntType, OneToMany, Collection, Enum, ManyToOne, Property } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
+import { MikroORM } from '@mikro-orm/postgresql';
 
 export enum LevelType {
   A = 'a',
@@ -55,7 +55,6 @@ describe('GH issue 482', () => {
     orm = await MikroORM.init({
       entities: [Job, Level],
       dbName: 'mikro_orm_test_gh482',
-      type: 'postgresql',
     });
     await orm.schema.refreshDatabase();
   });

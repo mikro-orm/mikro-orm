@@ -1,4 +1,5 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/mongodb';
 
 @Entity()
 export class User {
@@ -16,7 +17,6 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [User],
     dbName: 'mikro-orm-test-gh3261',
-    type: 'mongo',
   });
   await orm.schema.dropSchema();
 });

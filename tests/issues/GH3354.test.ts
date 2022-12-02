@@ -1,5 +1,5 @@
 import { BaseEntity, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Group extends BaseEntity<Group, 'id'> {
@@ -24,7 +24,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Group],
     dbName: ':memory:',
-    type: 'sqlite',
+    driver: SqliteDriver,
   });
   await orm.schema.createSchema();
 });

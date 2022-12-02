@@ -1,6 +1,7 @@
 import { Collection, Entity, LoadStrategy, ManyToMany, MikroORM, PopulateHint, PrimaryKey, Property } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { mockLogger } from '../helpers';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class App {
@@ -39,7 +40,7 @@ describe('GH issue 1041, 1043', () => {
     orm = await MikroORM.init({
       entities: [User, App],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
     mockLogger(orm, ['query', 'query-params'], log);
     await orm.schema.createSchema();

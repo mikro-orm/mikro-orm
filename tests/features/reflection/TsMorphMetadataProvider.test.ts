@@ -1,6 +1,6 @@
-import type { MongoDriver } from '@mikro-orm/mongodb';
+import { MikroORM } from '@mikro-orm/mongodb';
 import type { Options, PrimaryProperty, Cast, IsUnknown, EntityMetadata } from '@mikro-orm/core';
-import { Collection as Collection_, MikroORM, Reference as Reference_, ReferenceType, EnumArrayType } from '@mikro-orm/core';
+import { Collection as Collection_, Reference as Reference_, ReferenceType, EnumArrayType } from '@mikro-orm/core';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { Author, Book, Publisher, BaseEntity, BaseEntity3, BookTagSchema, Test, FooBaz } from './entities';
 import FooBar from './entities/FooBar';
@@ -17,7 +17,6 @@ describe('TsMorphMetadataProvider', () => {
       entities: [Author, Book, Publisher, BaseEntity, BaseEntity3, BookTagSchema, Test, FooBaz, FooBar],
       baseDir: __dirname,
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
-      type: 'mongo',
       cache: { enabled: false },
       discovery: { alwaysAnalyseProperties: false },
       metadataProvider: TsMorphMetadataProvider,
@@ -33,7 +32,6 @@ describe('TsMorphMetadataProvider', () => {
       tsNode: false,
       baseDir: __dirname,
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
-      type: 'mongo',
       cache: { enabled: false },
       discovery: { alwaysAnalyseProperties: false },
       metadataProvider: TsMorphMetadataProvider,
@@ -50,7 +48,6 @@ describe('TsMorphMetadataProvider', () => {
       tsNode: false,
       baseDir: __dirname,
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
-      type: 'mongo',
       cache: { enabled: false },
       metadataProvider: TsMorphMetadataProvider,
     };
@@ -59,11 +56,10 @@ describe('TsMorphMetadataProvider', () => {
   });
 
   test('should load entities', async () => {
-    const orm = await MikroORM.init<MongoDriver>({
+    const orm = await MikroORM.init({
       entities: ['entities'],
       baseDir: __dirname,
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
-      type: 'mongo',
       cache: { pretty: true },
       metadataProvider: TsMorphMetadataProvider,
     });

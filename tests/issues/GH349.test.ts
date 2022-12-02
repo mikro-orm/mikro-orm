@@ -1,6 +1,6 @@
-import { Entity, PrimaryKey, Property, MikroORM, SerializedPrimaryKey } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
 import { Decimal128, ObjectId } from 'bson';
-import type { MongoDriver } from '@mikro-orm/mongodb';
+import { MikroORM } from '@mikro-orm/mongodb';
 
 @Entity()
 class A {
@@ -59,13 +59,12 @@ class C {
 
 describe('GH issue 349', () => {
 
-  let orm: MikroORM<MongoDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A, B, C],
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
-      type: 'mongo',
       debug: ['discovery'],
       logger: i => i,
     });

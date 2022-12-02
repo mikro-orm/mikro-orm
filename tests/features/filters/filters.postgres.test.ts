@@ -1,6 +1,7 @@
 import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property, Filter, ManyToOne } from '@mikro-orm/core';
 import type { AbstractSqlDriver, EntityManager } from '@mikro-orm/knex';
 import { mockLogger } from '../../helpers';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Filter({
   name: 'isActive',
@@ -86,7 +87,7 @@ describe('filters [postgres]', () => {
     orm = await MikroORM.init({
       entities: [Employee, Benefit, User, Membership],
       dbName: `mikro_orm_test_gh_1232`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
     await orm.schema.refreshDatabase();
   });

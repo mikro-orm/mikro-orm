@@ -1,6 +1,6 @@
 import type { EntityProperty, Platform } from '@mikro-orm/core';
 import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers';
 
 export class AlwaysConvertsToAbc extends Type<string, string> {
@@ -117,7 +117,7 @@ describe('embedded entities with custom types', () => {
     orm = await MikroORM.init({
       entities: [Parent, User],
       dbName: 'mikro_orm_test_embeddables_custom_types',
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
     await orm.schema.refreshDatabase();
   });

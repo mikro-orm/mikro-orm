@@ -10,6 +10,7 @@ import {
   PrimaryKey,
   Property,
 } from '@mikro-orm/core';
+import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
 
 @Entity()
 class Project {
@@ -93,7 +94,7 @@ let orm: MikroORM;
 beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Project, User],
-    type: 'better-sqlite',
+    driver: BetterSqliteDriver,
     dbName: ':memory:',
     subscribers: [new ProjectUsersSubscriber()],
   });

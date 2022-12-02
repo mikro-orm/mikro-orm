@@ -1,5 +1,5 @@
 import { Entity, PrimaryKey, MikroORM, ManyToOne, Enum, PrimaryKeyType, Property, BigIntType, wrap, OptionalProps } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
 import { mockLogger } from '../../helpers';
 
@@ -80,7 +80,7 @@ describe('GH issue 1079', () => {
     orm = await MikroORM.init({
       entities: [User, Wallet, Deposit, AbstractDeposit],
       dbName: `mikro_orm_test_gh_1079`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
     await orm.schema.refreshDatabase();
   });

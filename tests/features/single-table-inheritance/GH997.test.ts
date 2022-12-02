@@ -1,5 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property, OneToMany, ManyToOne, Collection, QueryOrder } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 abstract class Base {
 
@@ -59,7 +59,7 @@ describe('GH issue 997', () => {
     orm = await MikroORM.init({
       entities: [Base, Relation1, Child1Specific, Parent, Child1, Child2],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
     await orm.schema.refreshDatabase();
   });

@@ -1,5 +1,5 @@
 import { Entity, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers';
 
 @Entity()
@@ -40,7 +40,7 @@ describe('mapToPk works with flushing and cascades', () => {
     orm = await MikroORM.init({
       entities: [Order, Team],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
       forceUndefined: true,
     });
     await orm.schema.createSchema();

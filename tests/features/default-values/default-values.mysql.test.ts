@@ -1,5 +1,6 @@
 import { Entity, PrimaryKey, Property, MikroORM } from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
+import { MySqlDriver } from '@mikro-orm/mysql';
 
 @Entity()
 class A {
@@ -29,7 +30,7 @@ describe('default values in mysql', () => {
     orm = await MikroORM.init({
       entities: [A],
       dbName: `mikro_orm_test_default_values`,
-      type: 'mysql',
+      driver: MySqlDriver,
       port: 3308,
     });
     await orm.schema.refreshDatabase();

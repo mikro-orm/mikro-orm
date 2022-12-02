@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import type { Constructor } from '@mikro-orm/core';
-import { Entity, MikroORM, PrimaryKey, t } from '@mikro-orm/core';
-import type { PostgreSqlDriver, SchemaGenerator } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, t } from '@mikro-orm/core';
+import { MikroORM, SchemaGenerator } from '@mikro-orm/mysql';
 
 @Entity({ tableName: 'user' })
 class User0 {
@@ -56,7 +56,7 @@ class User5 {
 
 describe('changing PK column type [mysql] (GH 1480)', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
   let generator: SchemaGenerator;
 
   beforeAll(async () => {
@@ -64,7 +64,6 @@ describe('changing PK column type [mysql] (GH 1480)', () => {
       entities: [User0],
       dbName: 'mikro_orm_test_gh_1480',
       port: 3308,
-      type: 'mysql',
     });
     generator = orm.schema;
     await generator.ensureDatabase();

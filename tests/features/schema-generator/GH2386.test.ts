@@ -1,5 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import type { MySqlDriver } from '@mikro-orm/mysql';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/mysql';
 
 @Entity({ tableName: 'book' })
 export class Book1 {
@@ -45,13 +45,12 @@ export class Book3 {
 
 describe('changing column in mysql (GH 2386)', () => {
 
-  let orm: MikroORM<MySqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Book1],
       dbName: `mikro_orm_test_gh_2386`,
-      type: 'mysql',
       port: 3308,
     });
     await orm.schema.refreshDatabase();

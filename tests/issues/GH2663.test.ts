@@ -1,5 +1,5 @@
 import { Embeddable, Embedded, Entity, LoadStrategy, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Embeddable()
 export class Z {
@@ -39,7 +39,7 @@ describe('GH issue 2663', () => {
     orm = await MikroORM.init({
       entities: [A, B, Z],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });

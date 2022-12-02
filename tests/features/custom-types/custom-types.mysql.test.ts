@@ -1,5 +1,5 @@
 import { Entity, LoadStrategy, ManyToOne, MikroORM, PrimaryKey, Property, t, Type } from '@mikro-orm/core';
-import type { MySqlDriver } from '@mikro-orm/mysql';
+import { MySqlDriver } from '@mikro-orm/mysql';
 import { mockLogger } from '../../helpers';
 
 export class Point {
@@ -85,7 +85,7 @@ describe('custom types [mysql]', () => {
     orm = await MikroORM.init<MySqlDriver>({
       entities: [Location, Address],
       dbName: `mikro_orm_test_custom_types`,
-      type: 'mysql',
+      driver: MySqlDriver,
       port: 3308,
     });
 

@@ -49,7 +49,7 @@
     "test": "jest --runInBand",
     "tsc-check-tests": "tsc --noEmit --project tests/tsconfig.json",
     "coverage": "rimraf temp tests/generated-entities && yarn test --coverage",
-    "lint": "eslint \"packages/**/*.ts\""
+    "lint": "eslint \"packages/**/*.ts\" \"tests/**/*.ts\""
   },
   "commitlint": {
     "extends": [
@@ -58,7 +58,7 @@
   },
   "lint-staged": {
     "*.ts": [
-      "eslint packages/**/*.ts --fix"
+      "eslint \"packages/**/*.ts\" \"tests/**/*.ts\" --fix"
     ]
   },
   "renovate": {

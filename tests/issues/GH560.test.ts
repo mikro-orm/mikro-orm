@@ -1,5 +1,5 @@
 import { EntitySchema, MikroORM } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
 
 class Base {
@@ -52,7 +52,7 @@ describe('GH issue 560', () => {
     orm = await MikroORM.init({
       entities: [ASchema, BaseSchema],
       dbName: `mikro_orm_test_gh_560`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
       cache: { enabled: false },
     });
     await orm.schema.refreshDatabase();

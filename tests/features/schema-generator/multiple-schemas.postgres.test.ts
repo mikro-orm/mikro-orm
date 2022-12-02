@@ -1,5 +1,5 @@
 import { Entity, ManyToOne, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'author', schema: 'n1' })
 export class Author0 {
@@ -51,7 +51,7 @@ describe('multiple connected schemas in postgres', () => {
     orm = await MikroORM.init({
       entities: [Author0, Book0],
       dbName: `mikro_orm_test_schemas`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
     await orm.schema.ensureDatabase();
     await orm.schema.execute('drop schema if exists n1 cascade');

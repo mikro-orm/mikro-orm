@@ -4,6 +4,8 @@ import { BASE_DIR, initORMMySql } from '../../bootstrap';
 import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from '../../entities-sql';
 import { BaseEntity22 } from '../../entities-sql/BaseEntity22';
 import { BaseEntity2 } from '../../entities-sql/BaseEntity2';
+import { MySqlDriver } from '@mikro-orm/mysql';
+import { MariaDbDriver } from '@mikro-orm/mariadb';
 
 describe('SchemaGenerator', () => {
 
@@ -14,7 +16,7 @@ describe('SchemaGenerator', () => {
       dbName,
       port: 3308,
       baseDir: BASE_DIR,
-      type: 'mysql',
+      driver: MySqlDriver,
     });
 
     await orm.schema.ensureDatabase();
@@ -29,7 +31,7 @@ describe('SchemaGenerator', () => {
       dbName,
       port: 3308,
       baseDir: BASE_DIR,
-      type: 'mysql',
+      driver: MySqlDriver,
       migrations: { path: BASE_DIR + '/../temp/migrations' },
     });
 
@@ -47,7 +49,7 @@ describe('SchemaGenerator', () => {
       dbName,
       port: 3308,
       baseDir: BASE_DIR,
-      type: 'mariadb',
+      driver: MariaDbDriver,
       multipleStatements: true,
     });
 
@@ -64,7 +66,7 @@ describe('SchemaGenerator', () => {
       dbName,
       port: 3308,
       baseDir: BASE_DIR,
-      type: 'mariadb',
+      driver: MariaDbDriver,
       migrations: { path: BASE_DIR + '/../temp/migrations' },
       multipleStatements: true,
     });

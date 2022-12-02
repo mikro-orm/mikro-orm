@@ -1,6 +1,7 @@
 import type { Platform } from '@mikro-orm/core';
 import { Cascade, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType, Property, Type } from '@mikro-orm/core';
 import { mockLogger } from '../helpers';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 export class Sku {
 
@@ -86,7 +87,7 @@ describe('GH issue 910', () => {
   test(`composite keys with custom type PK that uses object value`, async () => {
     const orm = await MikroORM.init({
       entities: [Cart, CartItem],
-      type: 'sqlite',
+      driver: SqliteDriver,
       dbName: ':memory:',
     });
     await orm.schema.createSchema();

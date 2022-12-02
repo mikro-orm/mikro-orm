@@ -1,5 +1,5 @@
 import { Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Parent {
@@ -32,7 +32,7 @@ describe('GH issue 2406', () => {
       entities: [Parent, Child],
       dbName: ':memory:',
       forceEntityConstructor: true,
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });

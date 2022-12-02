@@ -1,5 +1,5 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property, wrap } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Author {
@@ -43,7 +43,7 @@ describe('GH issue 2829', () => {
     orm = await MikroORM.init({
       entities: [Author, Book],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
       connect: false,
     });
   });

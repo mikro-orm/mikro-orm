@@ -2,6 +2,7 @@ import { BookWp, AuthorWp } from './entities-webpack';
 import { BookWpI, AuthorWpI } from './entities-webpack-invalid';
 import type { Options } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/core';
+import { MySqlDriver } from '@mikro-orm/mysql';
 
 describe('Webpack', () => {
 
@@ -10,7 +11,7 @@ describe('Webpack', () => {
       dbName: `mikro_orm_test`,
       port: 3308,
       multipleStatements: true,
-      type: 'mysql',
+      driver: MySqlDriver,
       discovery: { disableDynamicFileAccess: true },
       entities: [AuthorWp, BookWp],
     });
@@ -27,7 +28,7 @@ describe('Webpack', () => {
   test('should throw error for invalid entities', async () => {
     const options = {
       dbName: `mikro_orm_test`,
-      type: 'mysql',
+      driver: MySqlDriver,
       entities: [AuthorWpI, BookWpI],
       discovery: { disableDynamicFileAccess: true },
     } as Options;
@@ -38,7 +39,7 @@ describe('Webpack', () => {
   test('should throw error if entities is not defined', async () => {
     const options = {
       dbName: `mikro_orm_test`,
-      type: 'mysql',
+      driver: MySqlDriver,
       entities: ['not/existing'],
       discovery: { disableDynamicFileAccess: true },
     } as Options;

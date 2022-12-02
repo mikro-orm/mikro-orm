@@ -1,4 +1,5 @@
 import { Collection, Entity, ManyToMany, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity({
   discriminatorColumn: 'role',
@@ -53,7 +54,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [User, Creator, CreatorsOnTasks, Task],
     dbName: ':memory:',
-    type: 'sqlite',
+    driver: SqliteDriver,
   });
   await orm.schema.createSchema();
 });

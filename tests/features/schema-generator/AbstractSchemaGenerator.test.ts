@@ -6,7 +6,7 @@ class MySchemaGenerator extends AbstractSchemaGenerator<any> { }
 describe('AbstractSchemaGenerator', () => {
 
   test('default validations for not implemented methods', async () => {
-    const config = new Configuration({ type: 'sqlite' }, false);
+    const config = new Configuration({ driver: SqliteDriver }, false);
     const driver = new SqliteDriver(config);
     const generator = new MySchemaGenerator(driver);
     await expect(generator.generate()).rejects.toThrowError('This method is not supported by SqliteDriver driver');

@@ -1,4 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property, ManyToOne, PrimaryKeyType } from '@mikro-orm/core';
+import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
 
 @Entity()
 class Main {
@@ -50,7 +51,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    type: 'better-sqlite',
+    driver: BetterSqliteDriver,
     dbName: ':memory:',
     entities: [LogEntry],
   });

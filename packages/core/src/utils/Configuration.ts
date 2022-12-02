@@ -499,6 +499,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
     disableDynamicFileAccess?: boolean;
     getMappedType?: (type: string, platform: Platform) => Type<unknown> | undefined;
   };
+  /** @deprecated type option will be removed in v6, use `defineConfig` exported from the driver package to define your ORM config */
   type?: keyof typeof Configuration.PLATFORMS;
   driver?: { new(config: Configuration): D };
   driverOptions: Dictionary;

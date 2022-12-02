@@ -3,6 +3,7 @@ import { Collection, Configuration, EntityManager, MikroORM, QueryOrder, Referen
 import { MariaDbDriver } from '@mikro-orm/mariadb';
 import { Author2, Book2, BookTag2, Publisher2, PublisherType } from './entities-sql';
 import { initORMMySql } from './bootstrap';
+import { MySqlDriver } from '@mikro-orm/mysql';
 
 describe('EntityManagerMariaDb', () => {
 
@@ -21,7 +22,7 @@ describe('EntityManagerMariaDb', () => {
 
   test('getConnectionOptions()', async () => {
     const config = new Configuration({
-      type: 'mysql',
+      driver: MySqlDriver,
       clientUrl: 'mysql://root@127.0.0.1:3308/db_name',
       host: '127.0.0.10',
       password: 'secret',

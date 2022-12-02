@@ -1,6 +1,6 @@
 import { Entity, LoadStrategy, OneToOne, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/mysql';
 import { mockLogger } from '../helpers';
+import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class User {
@@ -40,7 +40,6 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    type: 'sqlite',
     dbName: ':memory:',
     entities: [Customer, User],
     loadStrategy: LoadStrategy.JOINED,

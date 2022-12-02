@@ -1,6 +1,6 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
+import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
 
 @Entity()
 export class Author {
@@ -50,11 +50,11 @@ async function createEntities(orm: MikroORM) {
   orm.em.clear();
 }
 
-let orm: MikroORM<SqliteDriver>;
+let orm: MikroORM<BetterSqliteDriver>;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    type: 'better-sqlite',
+    driver: BetterSqliteDriver,
     dbName: ':memory:',
     entities: [Book],
   });

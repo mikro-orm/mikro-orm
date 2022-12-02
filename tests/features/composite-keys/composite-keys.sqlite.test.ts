@@ -2,8 +2,7 @@ import {
   Cascade, Collection, Entity, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey,
   PrimaryKeyType, Property, ValidationError, wrap, LoadStrategy,
 } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
-import { AbstractSqlConnection } from '@mikro-orm/sqlite';
+import { AbstractSqlConnection, SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers';
 
 @Entity()
@@ -241,7 +240,7 @@ describe('composite keys in sqlite', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      type: 'sqlite',
+      driver: SqliteDriver,
       dbName: ':memory:',
       entities: [Author2, Address2, FooBar2, FooBaz2, FooParam2, Configuration2, Test2, User2, Car2, CarOwner2, Sandwich],
     });

@@ -1,5 +1,6 @@
 import { Entity, PrimaryKey, Property, MikroORM } from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 class A {
@@ -29,7 +30,7 @@ describe('default values in sqlite', () => {
     orm = await MikroORM.init({
       entities: [A],
       dbName: `:memory:`,
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });

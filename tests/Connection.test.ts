@@ -1,5 +1,7 @@
 import type { QueryResult } from '@mikro-orm/core';
 import { Configuration, Connection } from '@mikro-orm/core';
+import { MongoDriver } from '@mikro-orm/mongodb';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 class CustomConnection extends Connection {
 
@@ -30,7 +32,7 @@ class CustomConnection extends Connection {
 describe('Connection', () => {
 
   test('by default it throws when trying to use transactions', async () => {
-    const conn = new CustomConnection(new Configuration({ type: 'mongo' }, false));
+    const conn = new CustomConnection(new Configuration({ driver: MongoDriver }, false));
     await expect(conn.transactional(async () => void 0)).rejects.toThrowError('Transactions are not supported by current driver');
     await expect(conn.begin()).rejects.toThrowError('Transactions are not supported by current driver');
     await expect(conn.commit({} as any)).rejects.toThrowError('Transactions are not supported by current driver');
@@ -38,7 +40,7 @@ describe('Connection', () => {
   });
 
   test('special characters in username and password', async () => {
-    const options = { type: 'postgresql', clientUrl: 'pg://user%40:passw%40rd@host:1234/db%40name' } as const;
+    const options = { driver: PostgreSqlDriver, clientUrl: 'pg://user%40:passw%40rd@host:1234/db%40name' } as const;
     const conn = new CustomConnection(new Configuration(options, false));
     expect(conn.getConnectionOptions()).toMatchObject({
       host: 'host',

@@ -1,6 +1,6 @@
 import type { MikroORM } from '@mikro-orm/core';
 import { FlushMode, LoadStrategy, wrap } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 import { initORMPostgreSql, mockLogger } from '../bootstrap';
 import { Author2, Book2, FooBar2, FooBaz2 } from '../entities-sql';

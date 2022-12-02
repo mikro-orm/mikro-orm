@@ -1,5 +1,6 @@
 import { MikroORM, Entity, PrimaryKey, Property, OptimisticLockError } from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 export class ConcurrencyCheckUser {
@@ -33,7 +34,7 @@ describe('optimistic locking - concurrency check (postgres)', () => {
     orm = await MikroORM.init({
       entities: [ConcurrencyCheckUser],
       dbName: `mikro_orm_test_concurrency_check`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
     await orm.schema.refreshDatabase();
     mock = mockLogger(orm, ['query', 'query-params']);

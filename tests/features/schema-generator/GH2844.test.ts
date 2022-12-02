@@ -1,4 +1,5 @@
-import { Entity, Index, ManyToOne, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/mariadb';
 
 @Entity()
 export class UserAction {
@@ -50,7 +51,6 @@ describe('complex FKs in mariadb (GH 2844)', () => {
     orm = await MikroORM.init({
       entities: [Component, Step, UserAction],
       dbName: `mikro_orm_test_gh_2844`,
-      type: 'mariadb',
       port: 3309,
     });
     await orm.schema.ensureDatabase();

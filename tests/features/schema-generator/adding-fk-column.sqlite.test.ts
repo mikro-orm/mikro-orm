@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { Entity, MikroORM, OneToOne, PrimaryKey } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 class Profile {
@@ -31,12 +31,12 @@ class User2 {
 
 describe('adding FK column (GH 942)', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [User, Profile],
-      type: 'sqlite',
+      driver: SqliteDriver,
       dbName: ':memory:',
     });
     await orm.schema.createSchema();

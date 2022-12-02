@@ -1,5 +1,5 @@
 import { Collection, Entity, Enum, ManyToMany, MikroORM, PrimaryKey } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity({
   discriminatorColumn: 'type',
@@ -63,7 +63,7 @@ describe('bidirectional many to many with multiple STI entities', () => {
     orm = await MikroORM.init({
       entities: [BasePerson, Employee, Person, File, CustomFile, PhotoFile],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });

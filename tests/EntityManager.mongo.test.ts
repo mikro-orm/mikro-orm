@@ -626,7 +626,7 @@ describe('EntityManagerMongo', () => {
   });
 
   test('should use user and password as connection options', async () => {
-    const config = new Configuration({ type: 'mongo', user: 'usr', password: 'pw' } as any, false);
+    const config = new Configuration({ driver: MongoDriver, user: 'usr', password: 'pw' } as any, false);
     const connection = new MongoConnection(config);
     await expect(connection.getConnectionOptions()).toEqual({
       auth: { username: 'usr', password: 'pw' },
@@ -640,19 +640,19 @@ describe('EntityManagerMongo', () => {
 
   test('connection returns correct URL', async () => {
     const conn1 = new MongoConnection(new Configuration({
-      type: 'mongo',
+      driver: MongoDriver,
       clientUrl: 'mongodb://example.host.com:34500',
       dbName: 'test-db-name',
       user: 'usr',
       password: 'pw',
     } as any, false));
     await expect(conn1.getClientUrl()).toBe('mongodb://usr:*****@example.host.com:34500');
-    const conn2 = new MongoConnection(new Configuration({ type: 'mongo' } as any, false));
+    const conn2 = new MongoConnection(new Configuration({ driver: MongoDriver } as any, false));
     await expect(conn2.getClientUrl()).toBe('mongodb://127.0.0.1:27017');
     const clientUrl = 'mongodb://user:Q#ais@2d-Aa_43:ui!0d.ai6d@mongodb-replicaset-0.cluster.local:27017,mongodb-replicaset-1.cluster.local:27018,...';
-    const conn3 = new MongoConnection(new Configuration({ type: 'mongo', clientUrl } as any, false));
+    const conn3 = new MongoConnection(new Configuration({ driver: MongoDriver, clientUrl } as any, false));
     await expect(conn3.getClientUrl()).toBe('mongodb://user:*****@mongodb-replicaset-0.cluster.local:27017,mongodb-replicaset-1.cluster.local:27018,...');
-    const conn4 = new MongoConnection(new Configuration({ type: 'mongo', clientUrl: 'invalid-url-that-was-not-properly-parsed' } as any, false));
+    const conn4 = new MongoConnection(new Configuration({ driver: MongoDriver, clientUrl: 'invalid-url-that-was-not-properly-parsed' } as any, false));
     await expect(conn4.getClientUrl()).toBe('invalid-url-that-was-not-properly-parsed');
   });
 
@@ -2212,7 +2212,7 @@ describe('EntityManagerMongo', () => {
       entities: [Author, Book, Publisher, BookTag, Test],
       host: 'foo',
       dbName: 'bar',
-      type: 'mongo',
+      driver: MongoDriver,
     })).rejects.toThrowError('Mongo driver does not support `host` options, use `clientUrl` instead!');
   });
 
@@ -2221,7 +2221,7 @@ describe('EntityManagerMongo', () => {
     await expect(MikroORM.init({
       entities: [schema],
       dbName: 'bar',
-      type: 'mongo',
+      driver: MongoDriver,
     })).rejects.toThrowError(`WrongPrimaryKeyEntity.id has wrong field name, '_id' is required in current driver`);
   });
 

@@ -1,4 +1,5 @@
 import { Entity, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class A {
@@ -36,7 +37,7 @@ describe('GH issue 2806', () => {
     orm = await MikroORM.init({
       entities: [A, B],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
     await orm.schema.refreshDatabase();
   });

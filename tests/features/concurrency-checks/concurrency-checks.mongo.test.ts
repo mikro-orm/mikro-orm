@@ -1,5 +1,6 @@
 import { MikroORM, Entity, PrimaryKey, Property, OptimisticLockError } from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
+import { MongoDriver } from '@mikro-orm/mongodb';
 
 @Entity()
 export class ConcurrencyCheckUser {
@@ -37,7 +38,7 @@ describe('optimistic locking - concurrency check (mongo)', () => {
     orm = await MikroORM.init({
       entities: [ConcurrencyCheckUser],
       clientUrl: 'mongodb://localhost:27017/mikro_orm_test_concurrency_check',
-      type: 'mongo',
+      driver: MongoDriver,
     });
     mock = mockLogger(orm, ['query', 'query-params']);
   });

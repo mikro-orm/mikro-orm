@@ -1,5 +1,5 @@
-import { Entity, PrimaryKey, Property, MikroORM } from '@mikro-orm/core';
-import type { MariaDbDriver } from '@mikro-orm/mariadb';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/mariadb';
 
 @Entity()
 export class FooEntity {
@@ -29,13 +29,12 @@ export class FooEntity {
 
 describe('GH issue 491', () => {
 
-  let orm: MikroORM<MariaDbDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [FooEntity],
       dbName: `mikro_orm_test_gh_491`,
-      type: 'mariadb',
       port: 3309,
     });
     await orm.schema.refreshDatabase();

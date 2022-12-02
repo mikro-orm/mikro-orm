@@ -1,5 +1,5 @@
 import { Entity, ManyToOne, PrimaryKey, Property, MikroORM } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity({
   tableName: 'person',
@@ -35,7 +35,7 @@ describe('GH #2740', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
       dbName: 'mikro_orm_test_gh_2740',
       entities: [PersonEntity, TaskEntity],
     });

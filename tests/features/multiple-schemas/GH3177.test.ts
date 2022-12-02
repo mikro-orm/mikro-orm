@@ -1,5 +1,6 @@
 import { Collection, Entity, ManyToMany, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, Reference, t } from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity({ schema: '*' })
 class UserAccessProfile {
@@ -54,7 +55,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [User],
     dbName: 'mikro_orm_test_3177',
-    type: 'postgresql',
+    driver: PostgreSqlDriver,
     schema: 'tenant_01',
   });
   await orm.schema.ensureDatabase();

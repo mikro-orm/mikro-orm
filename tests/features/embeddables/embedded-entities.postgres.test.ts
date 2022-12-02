@@ -1,5 +1,5 @@
 import { Embeddable, Embedded, Entity, expr, MikroORM, PrimaryKey, Property, ReferenceType, t } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers';
 
 @Embeddable()
@@ -94,7 +94,7 @@ describe('embedded entities in postgresql', () => {
     orm = await MikroORM.init({
       entities: [User],
       dbName: 'mikro_orm_test_embeddables',
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
     await orm.schema.refreshDatabase();
   });

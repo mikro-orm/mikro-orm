@@ -1,5 +1,6 @@
 import { ObjectId } from 'bson';
-import { Entity, MikroORM, PrimaryKey, Property, t, wrap } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, t, wrap } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/mongodb';
 
 export interface EmailMessageTest {
   html?: string;
@@ -36,7 +37,6 @@ describe('GH issue 1395', () => {
     orm = await MikroORM.init({
       entities: [TestTemplate],
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
-      type: 'mongo',
     });
     await orm.em.nativeDelete(TestTemplate, {});
   });

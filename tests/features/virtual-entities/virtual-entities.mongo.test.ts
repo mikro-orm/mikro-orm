@@ -1,6 +1,6 @@
 import type { Dictionary } from '@mikro-orm/core';
-import { Entity, MikroORM, Property, wrap } from '@mikro-orm/core';
-import type { EntityManager } from '@mikro-orm/mongodb';
+import { Entity, Property, wrap } from '@mikro-orm/core';
+import { EntityManager, MikroORM } from '@mikro-orm/mongodb';
 import { mockLogger } from '../../bootstrap';
 import { Author, Book, schema } from '../../entities';
 
@@ -45,7 +45,6 @@ describe('virtual entities (mongo)', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      type: 'mongo',
       dbName: 'mikro_orm_virtual_entities',
       entities: [Author, schema, BookWithAuthor],
     });

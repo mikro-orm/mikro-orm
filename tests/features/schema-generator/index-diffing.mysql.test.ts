@@ -1,5 +1,5 @@
 import { Entity, IdentifiedReference, Index, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { MySqlDriver } from '@mikro-orm/mysql';
 
 @Entity()
 export class Author {
@@ -133,15 +133,15 @@ export class Book4 {
 
 }
 
-describe('indexes on FKs in postgres (GH 1518)', () => {
+describe('indexes on FKs in mysql (GH 1518)', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Author],
       dbName: `mikro_orm_test_gh_1518`,
-      type: 'mysql',
+      driver: MySqlDriver,
       port: 3308,
     });
     await orm.schema.ensureDatabase();

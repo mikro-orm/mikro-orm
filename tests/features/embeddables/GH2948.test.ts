@@ -1,5 +1,5 @@
 import { Embeddable, Embedded, Entity, ManyToOne, MikroORM, PrimaryKey, Property, UnderscoreNamingStrategy } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Embeddable()
 export class Fiz {
@@ -97,7 +97,7 @@ describe('GH issue 2948', () => {
     orm = await MikroORM.init({
       entities: [FooEntity],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
       namingStrategy: CustomNamingStrategy,
     });
     await orm.schema.refreshDatabase();

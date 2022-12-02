@@ -1,5 +1,5 @@
 import { Collection, EntityManager, MikroORM, QueryOrder } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 import {  initORMSqlite3 } from './bootstrap';
 import { Book5 } from './entities-5';

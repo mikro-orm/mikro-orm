@@ -1,4 +1,5 @@
 import { Entity, ManyToOne, MikroORM, PrimaryKey } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity() export class Foo {
 
@@ -21,7 +22,7 @@ import { Entity, ManyToOne, MikroORM, PrimaryKey } from '@mikro-orm/core';
 }
 
 test('GH issue 2959', async () => {
-  const orm = await MikroORM.init({ dbName: ':memory:', type: 'sqlite', entities: [Foo, Bar] });
+  const orm = await MikroORM.init({ dbName: ':memory:', driver: SqliteDriver, entities: [Foo, Bar] });
   await orm.schema.updateSchema();
   await orm.schema.updateSchema();
   await orm.close();

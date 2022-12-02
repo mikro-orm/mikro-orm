@@ -1,4 +1,5 @@
 import { Entity, LoadStrategy, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Checkout {
@@ -71,7 +72,7 @@ describe('Remove entity issue (GH 2273)', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      type: 'sqlite',
+      driver: SqliteDriver,
       dbName: ':memory:',
       entities: [Discount, Checkout, Discount2, Checkout2],
     });

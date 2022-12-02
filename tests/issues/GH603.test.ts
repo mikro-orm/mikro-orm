@@ -1,5 +1,5 @@
-import { Collection, EntitySchema, MikroORM, OptionalProps } from '@mikro-orm/core';
-import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import { Collection, EntitySchema, OptionalProps } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/mysql';
 import { v4 } from 'uuid';
 
 class TaskProps {
@@ -63,7 +63,7 @@ const ProjectSchema = new EntitySchema<ProjectProps>({
 
 describe('GH issue 603', () => {
 
-  let orm: MikroORM<AbstractSqlDriver>;
+  let orm: MikroORM;
   let projectId: string;
   let taskId: string;
 
@@ -71,7 +71,6 @@ describe('GH issue 603', () => {
     orm = await MikroORM.init({
       entities: [TaskSchema, ProjectSchema],
       dbName: `mikro_orm_test_gh_603`,
-      type: 'mysql',
       port: 3308,
     });
     await orm.schema.refreshDatabase();

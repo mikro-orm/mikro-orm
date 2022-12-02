@@ -1,5 +1,5 @@
 import { Entity, IdentifiedReference, Index, ManyToOne, MikroORM, PrimaryKey, Property, Unique } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 export class Author {
@@ -156,7 +156,7 @@ describe('indexes on FKs in postgres (GH 1518)', () => {
     orm = await MikroORM.init({
       entities: [Author],
       dbName: `mikro_orm_test_gh_1518`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
     await orm.schema.ensureDatabase();
     await orm.schema.execute('drop table if exists author cascade');

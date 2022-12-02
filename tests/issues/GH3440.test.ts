@@ -1,4 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property, Type, ValidationError } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, Type, ValidationError } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/mysql';
 import { mockLogger } from '../helpers';
 
 export function toBinaryUuid(uuid: string): Buffer {
@@ -64,7 +65,6 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Couch],
     dbName: 'mikro_orm_test_3440',
-    type: 'mysql',
     port: 3308,
   });
   await orm.schema.refreshDatabase();

@@ -1,4 +1,5 @@
 import { Entity, Enum, ManyToOne, MikroORM, PrimaryKey } from '@mikro-orm/core';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 export enum BrandType {
     Foo = 'foo',
@@ -31,7 +32,7 @@ describe('using enum as a foreign key value', () => {
     const orm = await MikroORM.init({
       entities: [Brand, Product],
       dbName: `mikro_orm_test_enum_foreign_key`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
 
     await orm.schema.ensureDatabase();

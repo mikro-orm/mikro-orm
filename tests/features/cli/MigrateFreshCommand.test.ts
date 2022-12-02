@@ -3,8 +3,7 @@
 import { Migrator } from '@mikro-orm/migrations';
 import { MikroORM } from '@mikro-orm/core';
 import { SeedManager } from '@mikro-orm/seeder';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
-import { SchemaGenerator } from '@mikro-orm/sqlite';
+import { SchemaGenerator, SqliteDriver } from '@mikro-orm/sqlite';
 import { CLIHelper } from '@mikro-orm/cli';
 import { MigrationCommandFactory } from '../../../packages/cli/src/commands/MigrationCommandFactory';
 import { initORMSqlite } from '../../bootstrap';

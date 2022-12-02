@@ -1,5 +1,6 @@
 import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 
 @Entity({
@@ -48,7 +49,7 @@ describe('GH issue 3339', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       dbName: `mikro_orm_test_gh_3339`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
       schema: 'gh3339',
       entities: [ Customer1 ],
     });

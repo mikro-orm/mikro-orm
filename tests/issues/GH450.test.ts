@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { Collection, Entity, ManyToMany, ManyToOne, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'auth.users' })
 class TaskAssignee {
@@ -47,7 +47,7 @@ describe('GH issue 450', () => {
     orm = await MikroORM.init({
       entities: [Task, TaskAssignee],
       dbName: `mikro_orm_test_gh_450`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
       cache: { enabled: false },
     });
     await orm.schema.ensureDatabase();

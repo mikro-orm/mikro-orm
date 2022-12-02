@@ -1,6 +1,7 @@
 import { Entity, PrimaryKey, ManyToOne, IdentifiedReference, Property, MikroORM, wrap, ObjectBindingPattern } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { mockLogger } from '../helpers';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Test {
@@ -28,7 +29,7 @@ describe('GH issue 610', () => {
     orm = await MikroORM.init({
       entities: [Test],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
     await orm.schema.dropSchema();
     await orm.schema.createSchema();

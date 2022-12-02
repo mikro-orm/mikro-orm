@@ -8,8 +8,7 @@ import {
   Property,
   Subscriber, wrap,
 } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
-import { FullTextType } from '@mikro-orm/postgresql';
+import { FullTextType, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { randomUUID } from 'crypto';
 
 @Entity()
@@ -86,7 +85,7 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Test, TestHistory],
     dbName: `mikro_orm_test_3457`,
-    type: 'postgresql',
+    driver: PostgreSqlDriver,
   });
   await orm.schema.refreshDatabase();
 });

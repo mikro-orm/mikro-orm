@@ -1,6 +1,5 @@
 import { Entity, Index, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import type { PostgreSqlDriver, SchemaGenerator } from '@mikro-orm/postgresql';
-import { FullTextType } from '@mikro-orm/postgresql';
+import { FullTextType, PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'book' })
 export class Book {
@@ -24,18 +23,16 @@ export class Book {
 describe('full text search tsvector in postgres', () => {
 
   let orm: MikroORM<PostgreSqlDriver>;
-  let generator: SchemaGenerator;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Book],
       dbName: `mikro_orm_test_tsvector`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
-    generator = orm.schema;
-    await generator.ensureDatabase();
-    await generator.execute('drop table if exists book');
-    await generator.createSchema();
+    await orm.schema.ensureDatabase();
+    await orm.schema.execute('drop table if exists book');
+    await orm.schema.createSchema();
   });
 
   beforeEach(() => orm.schema.clearDatabase());

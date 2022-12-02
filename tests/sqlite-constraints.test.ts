@@ -1,6 +1,6 @@
 import { Entity, type EntityManager, ManyToOne, MikroORM, PrimaryKey, Property, IdentifiedReference, Reference, ForeignKeyConstraintViolationException } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
-import type { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
+import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
 
 
 @Entity()
@@ -53,7 +53,7 @@ describe('sqlite driver', () => {
     orm = await MikroORM.init({
       entities: [Author, Book],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });
@@ -79,7 +79,7 @@ describe('better-sqlite driver', () => {
     orm = await MikroORM.init({
       entities: [Author, Book],
       dbName: ':memory:',
-      type: 'better-sqlite',
+      driver: BetterSqliteDriver,
     });
     await orm.schema.createSchema();
   });

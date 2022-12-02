@@ -1,5 +1,5 @@
 import { Entity, PrimaryKey, Property, MikroORM, wrap, ManyToOne } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 class A {
@@ -50,7 +50,7 @@ describe('GH issue 533', () => {
     orm = await MikroORM.init({
       entities: [A, B, C],
       dbName: `mikro_orm_test_gh_533`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
     await orm.schema.refreshDatabase();
   });

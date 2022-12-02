@@ -1,4 +1,4 @@
-import { MikroORM } from '@mikro-orm/sqlite';
+import { MikroORM, SqliteDriver } from '@mikro-orm/sqlite';
 import { BaseEntity, Entity, PrimaryKey, ManyToOne, ManyToMany, Collection } from '@mikro-orm/core';
 
 @Entity()
@@ -27,7 +27,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    type: 'sqlite',
+    driver: SqliteDriver,
     dbName: ':memory:',
     entities: [User, Car],
   });

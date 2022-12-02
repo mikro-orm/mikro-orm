@@ -1,5 +1,5 @@
 import { BigIntType, Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity({ abstract: true })
 abstract class BaseEntity {
@@ -63,7 +63,7 @@ describe('GH issue 1038', () => {
     orm = await MikroORM.init({
       entities: [BaseEntity, User, Position, PositionBookmark],
       dbName: `:memory:`,
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });
