@@ -1,5 +1,5 @@
 ﻿import type { Knex } from 'knex';
-import { AbstractSchemaGenerator, Utils, type Dictionary, type EntityMetadata, type MikroORM } from '@mikro-orm/core';
+import { AbstractSchemaGenerator, Utils, type Dictionary, type EntityMetadata, type MikroORM, ISchemaGenerator } from '@mikro-orm/core';
 import type { Check, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
 import { DatabaseSchema } from './DatabaseSchema';
 import type { DatabaseTable } from './DatabaseTable';
@@ -9,14 +9,14 @@ import { SchemaComparator } from './SchemaComparator';
 /**
  * Should be renamed to `SqlSchemaGenerator` in v6
  */
-export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> {
+export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> implements ISchemaGenerator {
 
   private readonly helper = this.platform.getSchemaHelper()!;
   private readonly options = this.config.get('schemaGenerator');
   protected lastEnsuredDatabase?: string;
 
   static register(orm: MikroORM): void {
-    orm.config.registerExtension('@mikro-orm/schema-generator', new SchemaGenerator(orm.em));
+    orm.config.registerExtension('@mikro-orm/schema-generator', () => new SchemaGenerator(orm.em));
   }
 
   /** @deprecated use `dropSchema` and `createSchema` commands respectively */

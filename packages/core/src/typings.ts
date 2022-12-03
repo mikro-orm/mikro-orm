@@ -587,7 +587,7 @@ export interface ISchemaGenerator {
   dropDatabase(name?: string): Promise<void>;
   execute(sql: string, options?: { wrap?: boolean }): Promise<void>;
   ensureIndexes(): Promise<void>;
-  refreshDatabase(): Promise<void>;
+  refreshDatabase(options?: { ensureIndexes?: boolean }): Promise<void>;
   clearDatabase(options?: { schema?: string }): Promise<void>;
 }
 
@@ -603,10 +603,10 @@ export interface IEntityGenerator {
   generate(options?: GenerateOptions): Promise<string[]>;
 }
 
-type UmzugMigration = { name: string; path?: string };
-type MigrateOptions = { from?: string | number; to?: string | number; migrations?: string[]; transaction?: Transaction };
-type MigrationResult = { fileName: string; code: string; diff: MigrationDiff };
-type MigrationRow = { name: string; executed_at: Date };
+export type UmzugMigration = { name: string; path?: string };
+export type MigrateOptions = { from?: string | number; to?: string | number; migrations?: string[]; transaction?: Transaction };
+export type MigrationResult = { fileName: string; code: string; diff: MigrationDiff };
+export type MigrationRow = { name: string; executed_at: Date };
 
 /**
  * @internal
