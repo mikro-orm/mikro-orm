@@ -1,5 +1,4 @@
-import { Collection, Entity, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Collection, Entity, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -80,11 +79,10 @@ async function createEntities(orm: MikroORM) {
 
 describe('GH issue 1126', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      driver: SqliteDriver,
       dbName: ':memory:',
       entities: [Author, Book, Page],
       loadStrategy: LoadStrategy.JOINED,

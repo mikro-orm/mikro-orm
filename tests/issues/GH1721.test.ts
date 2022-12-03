@@ -1,5 +1,4 @@
-import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/sqlite';
 import { Guid } from 'guid-typescript';
 import { mockLogger } from '../helpers';
 
@@ -43,13 +42,12 @@ export class Couch {
 
 describe('GH issue 1721', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Couch],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });
