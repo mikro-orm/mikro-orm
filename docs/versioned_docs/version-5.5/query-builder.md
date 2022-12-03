@@ -96,17 +96,17 @@ console.log(res2.map(p => p.name));
 
 const res3 = await em.qb(Publisher).count().where({ name: 'p1' });
 // res3 is number
-console.log(res3 > 0);
+console.log(res3 > 0); // true
 
 const res4 = await em.qb(Publisher)
   .update({ type: PublisherType.LOCAL })
   .where({ name: 'p1' });
 // res4 is QueryResult<Publisher>
-console.log(res4.affectedRows > 0);
+console.log(res4.affectedRows > 0); // true
 
 const res5 = await em.qb(Publisher).delete().where({ name: 'p1' });
 // res5 is QueryResult<Publisher>
-console.log(res4.affectedRows > 0);
+console.log(res4.affectedRows > 0); // true
 expect(res5.affectedRows > 0).toBe(true); // test the type
 ```
 
