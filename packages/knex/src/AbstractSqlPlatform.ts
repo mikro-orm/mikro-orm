@@ -28,24 +28,9 @@ export abstract class AbstractSqlPlatform extends Platform {
     SchemaGenerator.register(orm);
   }
 
-  // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
+  /* istanbul ignore next: kept for type inference only */
   getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): SchemaGenerator {
-    /* istanbul ignore next */
-    return this.config.getCachedService(SchemaGenerator, em ?? driver as any); // cast as `any` to get around circular dependencies
-  }
-
-  // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
-  getEntityGenerator(em: EntityManager) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { EntityGenerator } = require('@mikro-orm/entity-generator');
-    return this.config.getCachedService(EntityGenerator, em);
-  }
-
-  // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
-  getMigrator(em: EntityManager) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { Migrator } = require('@mikro-orm/migrations');
-    return this.config.getCachedService(Migrator, em);
+    return new SchemaGenerator(em ?? driver as any);
   }
 
   quoteValue(value: any): string {

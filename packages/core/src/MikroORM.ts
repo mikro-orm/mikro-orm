@@ -23,24 +23,23 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    * Initialize the ORM, load entity metadata, create EntityManager and connect to the database.
    * If you omit the `options` parameter, your CLI config will be used.
    */
-  static async init<D extends IDatabaseDriver = IDatabaseDriver>(options?: Options<D> | Configuration<D>, connect = true): Promise<MikroORM<D>> {
+  static async init<D extends IDatabaseDriver = IDatabaseDriver>(options?: Options<D>, connect = true): Promise<MikroORM<D>> {
     ConfigurationLoader.registerDotenv(options);
     const coreVersion = await ConfigurationLoader.checkPackageVersion();
     const env = ConfigurationLoader.loadEnvironmentVars<D>();
 
     if (!options) {
-      options = await ConfigurationLoader.getConfiguration<D>();
+      options = (await ConfigurationLoader.getConfiguration<D>()).getAll();
     }
 
-    let opts = options instanceof Configuration ? options.getAll() : options;
-    opts = Utils.mergeConfig(opts, env);
-    await ConfigurationLoader.commonJSCompat(opts as object);
+    options = Utils.mergeConfig(options, env);
+    await ConfigurationLoader.commonJSCompat(options!);
 
-    if ('DRIVER' in this && !opts.driver && !opts.type) {
-      (opts as Options).driver = (this as unknown as { DRIVER: Constructor<IDatabaseDriver> }).DRIVER;
+    if ('DRIVER' in this && !options!.driver) {
+      (options as Options).driver = (this as unknown as { DRIVER: Constructor<IDatabaseDriver> }).DRIVER;
     }
 
-    const orm = new MikroORM(opts);
+    const orm = new MikroORM(options!);
     orm.logger.log('info', `MikroORM version: ${colors.green(coreVersion)}`);
 
     // we need to allow global context here as we are not in a scope of requests yet
@@ -191,9 +190,8 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
       return extension;
     }
 
-    // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
     /* istanbul ignore next */
-    return this.driver.getPlatform().getSchemaGenerator(this.driver, this.em) as any;
+    throw new Error(`SchemaGenerator extension not registered.`);
   }
 
   /**
@@ -206,8 +204,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
       return extension;
     }
 
-    // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
-    return this.driver.getPlatform().getEntityGenerator(this.em) as T;
+    throw new Error(`EntityGenerator extension not registered.`);
   }
 
   /**
@@ -220,8 +217,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
       return extension;
     }
 
-    // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
-    return this.driver.getPlatform().getMigrator(this.em) as T;
+    throw new Error(`Migrator extension not registered.`);
   }
 
   /**
@@ -234,10 +230,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
       return extension;
     }
 
-    // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { SeedManager } = require('@mikro-orm/seeder');
-    return this.config.getCachedService(SeedManager, this.em);
+    throw new Error(`SeedManager extension not registered.`);
   }
 
   /**
