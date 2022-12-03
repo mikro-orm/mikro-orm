@@ -9,6 +9,7 @@ const config = defineConfig({
   dbName: './mikro_orm_test.db',
   baseDir: BASE_DIR,
   metadataProvider: JavaScriptMetadataProvider,
+  connect: false,
 });
 
 export default async () => config;

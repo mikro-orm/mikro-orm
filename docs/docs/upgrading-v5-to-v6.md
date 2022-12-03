@@ -66,6 +66,10 @@ export default defineConfig({
 
 The options always needs to be plain JS object now. This was always only an internal way, partially useful in tests, never meant to be a user API (while many people since the infamous Ben Awad video mistakenly complicated their typings with it).
 
+## `MikroORM.init()` no longer accepts second `connect` parameter
+
+Use the `connect` option instead.
+
 ## Removed `MongoDriver` methods
 
 - `createCollections` in favour of `orm.schema.createSchema()`
