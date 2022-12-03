@@ -1,6 +1,7 @@
 import { BaseEntity, Cascade, Collection, Entity, LockMode, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property, wrap } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers';
+import { EntityGenerator } from '@mikro-orm/entity-generator';
 
 @Entity({ schema: 'n1' })
 export class Author {
@@ -59,6 +60,7 @@ describe('multiple connected schemas in postgres', () => {
       entities: [Author, Book, BookTag],
       dbName: `mikro_orm_test_multi_schemas`,
       driver: PostgreSqlDriver,
+      extensions: [EntityGenerator],
     });
     await orm.schema.ensureDatabase();
 
