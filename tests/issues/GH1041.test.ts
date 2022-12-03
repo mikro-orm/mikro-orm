@@ -1,7 +1,5 @@
-import { Collection, Entity, LoadStrategy, ManyToMany, MikroORM, PopulateHint, PrimaryKey, Property } from '@mikro-orm/core';
-import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import { Collection, Entity, LoadStrategy, ManyToMany, MikroORM, PopulateHint, PrimaryKey, Property } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
-import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class App {
@@ -33,14 +31,13 @@ export class User {
 
 describe('GH issue 1041, 1043', () => {
 
-  let orm: MikroORM<AbstractSqlDriver>;
+  let orm: MikroORM;
   const log = jest.fn();
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [User, App],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
     mockLogger(orm, ['query', 'query-params'], log);
     await orm.schema.createSchema();

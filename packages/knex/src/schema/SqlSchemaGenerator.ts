@@ -1,7 +1,7 @@
 ﻿import type { Knex } from 'knex';
 import type { Dictionary, EntityMetadata, MikroORM, ISchemaGenerator } from '@mikro-orm/core';
 import { AbstractSchemaGenerator, Utils } from '@mikro-orm/core';
-import type { Check, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
+import type { CheckDef, ForeignKey, IndexDef, SchemaDifference, TableDifference } from '../typings';
 import { DatabaseSchema } from './DatabaseSchema';
 import type { DatabaseTable } from './DatabaseTable';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
@@ -524,7 +524,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     });
   }
 
-  private createIndex(table: Knex.CreateTableBuilder, index: Index, tableDef: DatabaseTable, createPrimary = false) {
+  private createIndex(table: Knex.CreateTableBuilder, index: IndexDef, tableDef: DatabaseTable, createPrimary = false) {
     if (index.primary && !createPrimary) {
       return;
     }
@@ -547,7 +547,7 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     }
   }
 
-  private dropIndex(table: Knex.CreateTableBuilder, index: Index, oldIndexName = index.keyName) {
+  private dropIndex(table: Knex.CreateTableBuilder, index: IndexDef, oldIndexName = index.keyName) {
     if (index.primary) {
       table.dropPrimary(oldIndexName);
     } else if (index.unique) {
@@ -557,11 +557,11 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     }
   }
 
-  private createCheck(table: Knex.CreateTableBuilder, check: Check) {
+  private createCheck(table: Knex.CreateTableBuilder, check: CheckDef) {
     table.check(check.expression as string, {}, check.name);
   }
 
-  private dropCheck(table: Knex.CreateTableBuilder, check: Check) {
+  private dropCheck(table: Knex.CreateTableBuilder, check: CheckDef) {
     table.dropChecks(check.name);
   }
 
