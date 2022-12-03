@@ -5,7 +5,18 @@ import { Migration, MigrationStorage, Migrator, TSMigrationGenerator } from '@mi
 import type { DatabaseTable } from '@mikro-orm/postgresql';
 import { DatabaseSchema, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { remove } from 'fs-extra';
-import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, FooParam2, Publisher2, Test2 } from '../../entities-sql';
+import {
+  Address2,
+  Author2,
+  Book2,
+  BookTag2,
+  Configuration2,
+  FooBar2,
+  FooBaz2,
+  FooParam2,
+  Publisher2,
+  Test2,
+} from '../../entities-sql';
 import { BASE_DIR, mockLogger } from '../../bootstrap';
 
 class MigrationTest1 extends Migration {
@@ -45,6 +56,7 @@ describe('Migrator (postgres)', () => {
       schema: 'custom',
       logger: () => void 0,
       migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
+      extensions: [Migrator],
     });
 
     const schemaGenerator = orm.schema;
@@ -62,8 +74,7 @@ describe('Migrator (postgres)', () => {
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
     orm.config.set('migrations', { ...migrationsSettings, emit: 'js' }); // Set migration type to js
-    const migrator = orm.migrator;
-    const migration = await migrator.createMigration();
+    const migration = await orm.migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-js-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
     await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
@@ -432,6 +443,7 @@ test('ensureTable when the schema does not exist', async () => {
     driver: PostgreSqlDriver,
     schema: 'custom2',
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
+    extensions: [Migrator],
   });
   await orm.schema.ensureDatabase();
   await orm.schema.execute('drop schema if exists "custom2" cascade');
