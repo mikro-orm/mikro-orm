@@ -71,8 +71,6 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
   getMetadata(): MetadataStorage;
 
-  ensureIndexes(): Promise<void>;
-
   /**
    * Returns name of the underlying database dependencies (e.g. `mongodb` or `mysql2`)
    * for SQL drivers it also returns `knex` in the array as connectors are not used directly there

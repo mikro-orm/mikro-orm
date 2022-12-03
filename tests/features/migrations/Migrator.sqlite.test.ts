@@ -310,6 +310,7 @@ describe('Migrator (sqlite)', () => {
       entities: [FooBar4, FooBaz4, BaseEntity5],
       dbName: TEMP_DIR + '/test.db',
       baseDir: TEMP_DIR,
+      extensions: [Migrator],
     });
     await expect(orm.migrator.createMigration()).resolves.not.toThrow();
     await orm.close();
