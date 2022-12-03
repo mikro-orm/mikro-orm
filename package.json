@@ -43,7 +43,7 @@
     "clean": "lerna run clean",
     "build": "lerna run build",
     "release": "yarn build && lerna publish from-package --contents dist --force-publish",
-    "publish:next": "lerna publish from-package --contents dist --dist-tag next --force-publish",
+    "publish:next": "lerna publish from-package --contents dist --dist-tag next-6-x --force-publish",
     "release:next": "lerna run compile && yarn publish:next",
     "release:tilde": "lerna run copy -- -- --tilde",
     "test": "jest --runInBand",
