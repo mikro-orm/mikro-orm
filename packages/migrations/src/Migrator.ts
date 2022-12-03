@@ -38,7 +38,7 @@ export class Migrator implements IMigrator {
   }
 
   static register(orm: MikroORM): void {
-    orm.config.registerExtension('@mikro-orm/migrator', new Migrator(orm.em as EntityManager));
+    orm.config.registerExtension('@mikro-orm/migrator', () => new Migrator(orm.em as EntityManager));
   }
 
   /**
