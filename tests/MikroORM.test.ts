@@ -45,7 +45,7 @@ describe('MikroORM', () => {
   });
 
   test('should work with absolute paths (GH issue #1073)', async () => {
-    await expect(MikroORM.init({ driver: MongoDriver, dbName: 'test', entities: [process.cwd() + '/tests/entities'] }, false)).resolves.not.toBeUndefined();
+    await expect(MikroORM.init({ driver: MongoDriver, dbName: 'test', entities: [process.cwd() + '/tests/entities'], connect: false })).resolves.not.toBeUndefined();
   });
 
   test('should throw when multiple entities with same file name discovered', async () => {
@@ -76,7 +76,7 @@ describe('MikroORM', () => {
   });
 
   test('folder based discover with multiple entities in single file', async () => {
-    const orm = await MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: BASE_DIR, entities: ['entities'] }, false);
+    const orm = await MikroORM.init({ driver: MongoDriver, dbName: 'test', baseDir: BASE_DIR, entities: ['entities'], connect: false });
     expect(Object.keys(orm.getMetadata().getAll()).sort()).toEqual(['Author', 'Book', 'BookTag', 'Dummy', 'Foo1', 'Foo2',  'Foo3', 'FooBar', 'FooBaz', 'Publisher', 'Test']);
     await orm.close();
   });
@@ -87,6 +87,7 @@ describe('MikroORM', () => {
       driver: MongoDriver,
       dbName: 'mikro-orm-test',
       discovery: { tsConfigPath: BASE_DIR + '/tsconfig.test.json', alwaysAnalyseProperties: false },
+      connect: false,
     };
     const pathExistsMock = jest.spyOn(fs as any, 'pathExists');
     pathExistsMock.mockImplementation(async path => {
@@ -97,7 +98,7 @@ describe('MikroORM', () => {
     const pkg = { 'mikro-orm': { useTsNode: true } } as any;
     jest.mock('../package.json', () => pkg, { virtual: true });
 
-    const orm = await MikroORM.init(undefined, false);
+    const orm = await MikroORM.init();
 
     expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.em).toBeInstanceOf(EntityManager);
@@ -115,7 +116,7 @@ describe('MikroORM', () => {
 
   test('CLI config can export async function', async () => {
     process.env.MIKRO_ORM_CLI = __dirname + '/cli-config.ts';
-    const orm = await MikroORM.init(undefined, false);
+    const orm = await MikroORM.init();
 
     expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.em).toBeInstanceOf(EntityManager);
@@ -127,7 +128,7 @@ describe('MikroORM', () => {
 
   test('should prefer environment variables', async () => {
     process.env.MIKRO_ORM_ENV = __dirname + '/mikro-orm.env';
-    const orm = await MikroORM.init({ driver: SqliteDriver, host: '123.0.0.321' }, false);
+    const orm = await MikroORM.init({ driver: SqliteDriver, host: '123.0.0.321', connect: false });
     Object.keys(process.env).filter(k => k.startsWith('MIKRO_ORM_')).forEach(k => delete process.env[k]);
 
     expect(orm).toBeInstanceOf(MikroORM);
@@ -241,7 +242,8 @@ describe('MikroORM', () => {
       entities: [Car2, CarOwner2, User2, Sandwich],
       cache: { adapter: Adapter, enabled: true },
       resultCache: { adapter: Adapter },
-    }, true);
+      connect: false,
+    });
     expect(closed).toBe(0);
     await orm.close();
     expect(closed).toBe(2);
