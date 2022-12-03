@@ -1,5 +1,4 @@
-import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Embeddable()
 export class Nested {
@@ -39,7 +38,6 @@ describe('GH issue 2774', () => {
     orm = await MikroORM.init({
       entities: [User, Name, Nested],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });
