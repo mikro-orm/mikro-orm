@@ -1,6 +1,4 @@
-import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import type { AbstractSqlDriver } from '@mikro-orm/knex';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'name' })
 class Name {
@@ -33,13 +31,12 @@ class User {
 
 describe('GH issue 1346', () => {
 
-  let orm: MikroORM<AbstractSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [User, Name],
       dbName: `mikro_orm_test_pivot_fields`,
-      driver: PostgreSqlDriver,
     });
 
     await orm.schema.ensureDatabase();

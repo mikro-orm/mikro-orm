@@ -1,6 +1,5 @@
 import 'reflect-metadata';
-import { Collection, Entity, ManyToMany, ManyToOne, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Collection, Entity, ManyToMany, ManyToOne, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'auth.users' })
 class TaskAssignee {
@@ -41,13 +40,12 @@ class Task {
 
 describe('GH issue 450', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Task, TaskAssignee],
       dbName: `mikro_orm_test_gh_450`,
-      driver: PostgreSqlDriver,
       cache: { enabled: false },
     });
     await orm.schema.ensureDatabase();
