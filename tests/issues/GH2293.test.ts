@@ -1,5 +1,4 @@
-import { Entity, MikroORM, PrimaryKey, Property, t } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Entity, MikroORM, PrimaryKey, Property, t } from '@mikro-orm/sqlite';
 
 @Entity()
 export class TestEntity {
@@ -14,13 +13,12 @@ export class TestEntity {
 
 describe('GH issue 2293', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [TestEntity],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
     await orm.schema.ensureDatabase();
     await orm.schema.dropSchema();

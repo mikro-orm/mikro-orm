@@ -1,5 +1,4 @@
-import { Entity, IdentifiedReference, MikroORM, OneToOne, PrimaryKey, Property, wrap, Reference } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Entity, IdentifiedReference, MikroORM, OneToOne, PrimaryKey, Property, wrap, Reference } from '@mikro-orm/sqlite';
 
 @Entity()
 export class A {
@@ -31,13 +30,12 @@ export class B {
 
 describe('GH issue 269', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A, B],
       dbName: ':memory:',
-      driver: SqliteDriver,
       autoJoinOneToOneOwner: false,
     });
     await orm.schema.dropSchema();

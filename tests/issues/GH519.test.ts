@@ -1,5 +1,4 @@
-import { Entity, PrimaryKey, MikroORM, ManyToOne, Collection, OneToMany } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, MikroORM, ManyToOne, Collection, OneToMany } from '@mikro-orm/postgresql';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -42,13 +41,12 @@ class Registration {
 
 describe('GH issue 519', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Competition, User, Registration],
       dbName: `mikro_orm_test_gh_519`,
-      driver: PostgreSqlDriver,
     });
     await orm.schema.refreshDatabase();
   });

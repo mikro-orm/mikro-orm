@@ -1,5 +1,4 @@
-import { Collection, Entity, FlushMode, ManyToOne, MikroORM, OneToMany, PrimaryKey, wrap } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Collection, Entity, FlushMode, ManyToOne, MikroORM, OneToMany, PrimaryKey, wrap } from '@mikro-orm/sqlite';
 
 abstract class Base {
 
@@ -37,13 +36,12 @@ class Parent extends Base {
 
 describe('GH issue 1523', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Base, Parent, Child, Param],
       dbName: ':memory:',
-      driver: SqliteDriver,
       flushMode: FlushMode.COMMIT,
     });
     await orm.schema.createSchema();

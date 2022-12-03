@@ -1,5 +1,4 @@
-import { MikroORM, Entity, PrimaryKey, PrimaryKeyType, Unique, Collection, ManyToOne, OneToMany, Property, Filter, LoadStrategy, OptionalProps } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { MikroORM, Entity, PrimaryKey, PrimaryKeyType, Unique, Collection, ManyToOne, OneToMany, Property, Filter, LoadStrategy, OptionalProps } from '@mikro-orm/sqlite';
 
 @Entity({ tableName: 'users' })
 export class UserEntity {
@@ -63,13 +62,12 @@ class UserTenantEntity {
 
 describe('GH issue 1902', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [UserEntity, TenantEntity, UserTenantEntity],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });

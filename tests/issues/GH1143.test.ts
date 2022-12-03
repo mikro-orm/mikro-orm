@@ -1,5 +1,4 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
 
 @Entity({
   tableName: 'test.DEVICES',
@@ -16,13 +15,12 @@ export class Device {
 
 describe('GH issue 1143', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Device],
       dbName: `mikro_orm_test_gh_1143`,
-      driver: PostgreSqlDriver,
     });
 
     const generator = orm.schema;

@@ -2,12 +2,13 @@ import {
   Collection,
   Entity,
   LoadStrategy,
+  MikroORM,
   ManyToOne,
-  OneToMany, OptionalProps,
+  OneToMany,
+  OptionalProps,
   PrimaryKey,
   Property,
-} from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/sqlite';
+} from '@mikro-orm/sqlite';
 import { randomUUID } from 'crypto';
 
 @Entity()
