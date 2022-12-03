@@ -1,5 +1,4 @@
-import { Entity, PrimaryKey, Property, MikroORM, EntityCaseNamingStrategy } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, Property, MikroORM, EntityCaseNamingStrategy } from '@mikro-orm/postgresql';
 
 @Entity()
 class A {
@@ -14,13 +13,12 @@ class A {
 
 describe('GH issue 472', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A],
       dbName: 'mikro_orm_test_gh472',
-      driver: PostgreSqlDriver,
       namingStrategy: EntityCaseNamingStrategy,
     });
     await orm.schema.refreshDatabase();
