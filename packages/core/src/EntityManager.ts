@@ -554,7 +554,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     data = QueryHelper.processObjectParams(data) as EntityData<T>;
     em.validator.validateParams(data, 'insert data');
-    const ret = await em.driver.nativeUpdate(entityName, where, data, { ctx: em.transactionContext, upsert: true, ...options });
+    const ret = await em.driver.nativeUpdate(entityName, where, data, {
+      ctx: em.transactionContext,
+      upsert: true,
+      convertCustomTypes: false,
+      ...options,
+    });
 
     if (ret.row) {
       const prop = meta.getPrimaryProps()[0];
