@@ -1,5 +1,4 @@
-import type { MikroORM } from '@mikro-orm/core';
-import { wrap } from '@mikro-orm/core';
+import { MikroORM, wrap } from '@mikro-orm/postgresql';
 import { mockLogger } from '../helpers';
 import { initORMPostgreSql } from '../bootstrap';
 import { Author2, Book2 } from '../entities-sql';

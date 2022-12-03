@@ -1,5 +1,4 @@
-import { Entity, MikroORM, PrimaryKey, Property, IdentifiedReference, LoadStrategy, OneToOne } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Entity, MikroORM, PrimaryKey, Property, IdentifiedReference, LoadStrategy, OneToOne } from '@mikro-orm/sqlite';
 
 @Entity()
 export class RadioOption {
@@ -38,12 +37,11 @@ export class Radio {
 
 describe('GH issue 1592', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       dbName: `:memory:`,
-      driver: SqliteDriver,
       entities: [Radio, RadioOption],
       loadStrategy: LoadStrategy.JOINED,
     });

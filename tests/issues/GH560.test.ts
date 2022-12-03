@@ -1,5 +1,4 @@
-import { EntitySchema, MikroORM } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { EntitySchema, MikroORM } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
 
 class Base {
@@ -46,13 +45,12 @@ const ASchema = new EntitySchema<A, Base>({
 
 describe('GH issue 560', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [ASchema, BaseSchema],
       dbName: `mikro_orm_test_gh_560`,
-      driver: PostgreSqlDriver,
       cache: { enabled: false },
     });
     await orm.schema.refreshDatabase();
