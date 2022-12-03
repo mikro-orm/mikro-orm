@@ -1,5 +1,4 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property, wrap } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Author {
@@ -37,13 +36,12 @@ export class Book {
 
 describe('GH issue 2829', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Author, Book],
       dbName: ':memory:',
-      driver: SqliteDriver,
       connect: false,
     });
   });

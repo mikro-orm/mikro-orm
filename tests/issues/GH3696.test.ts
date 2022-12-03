@@ -1,5 +1,4 @@
-import { Collection, Entity, Index, ManyToMany, PrimaryKey, Property, Unique } from '@mikro-orm/core';
-import { FullTextType, MikroORM } from '@mikro-orm/postgresql';
+import { FullTextType, MikroORM, Collection, Entity, Index, ManyToMany, PrimaryKey, Property, Unique } from '@mikro-orm/postgresql';
 
 @Entity()
 @Unique({ properties: ['name'] })

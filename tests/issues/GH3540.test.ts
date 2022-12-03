@@ -1,5 +1,4 @@
-import { ArrayType, Entity, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/mysql';
+import { MikroORM, ArrayType, Entity, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/mysql';
 import { mockLogger } from '../helpers';
 
 @Entity()

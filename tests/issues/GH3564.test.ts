@@ -1,5 +1,4 @@
-import { Collection, Entity, IdentifiedReference, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import { MikroORM, SqliteDriver } from '@mikro-orm/sqlite';
+import { MikroORM, Collection, Entity, IdentifiedReference, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Entity()
 class Part {
@@ -53,7 +52,6 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Car, Part],
     dbName: ':memory:',
-    driver: SqliteDriver,
   });
   await orm.getSchemaGenerator().createSchema();
 });
