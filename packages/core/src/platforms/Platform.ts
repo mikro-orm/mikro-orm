@@ -343,16 +343,9 @@ export abstract class Platform {
     // no extensions by default
   }
 
+  /* istanbul ignore next: kept for type inference only */
   getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): ISchemaGenerator {
     throw new Error(`${driver.constructor.name} does not support SchemaGenerator`);
-  }
-
-  getEntityGenerator(em: EntityManager): IEntityGenerator {
-    throw new Error(`${this.constructor.name} does not support EntityGenerator`);
-  }
-
-  getMigrator(em: EntityManager): IMigrator {
-    throw new Error(`${this.constructor.name} does not support Migrator`);
   }
 
   processDateProperty(value: unknown): string | number | Date {

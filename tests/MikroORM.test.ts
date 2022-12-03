@@ -23,10 +23,8 @@ import { MongoDriver } from '@mikro-orm/mongodb';
 describe('MikroORM', () => {
 
   test('should throw when not enough config provided', async () => {
-    const err = `No platform type specified, please fill in \`type\` or provide custom driver class in \`driver\` option. Available platforms types: [\n  'mongo',\n  'mysql',\n  'mariadb',\n  'postgresql',\n  'sqlite',\n  'better-sqlite'\n]`;
+    const err = `No driver specified, please fill in the \`driver\` option or use \`defineConfig\` helper (to define your ORM config) or \`MikroORM\` class (to call the \`init\` method) exported from the driver package (e.g. \`import { defineConfig } from '@mikro-orm/mysql'; export defineConfig({ ... })\`).`;
     expect(() => new MikroORM({ entities: ['entities'], clientUrl: '' })).toThrowError(err);
-    const err2 = `Invalid platform type specified: 'wut', please fill in valid \`type\` or provide custom driver class in \`driver\` option. Available platforms types: [\n  'mongo',\n  'mysql',\n  'mariadb',\n  'postgresql',\n  'sqlite',\n  'better-sqlite'\n]`;
-    expect(() => new MikroORM({ type: 'wut' as any, entities: ['entities'], clientUrl: '' })).toThrowError(err2);
     expect(() => new MikroORM({ driver: MongoDriver, entities: ['entities'], dbName: '' })).toThrowError('No database specified, please fill in `dbName` or `clientUrl` option');
     expect(() => new MikroORM({ driver: MongoDriver, entities: [], dbName: 'test' })).toThrowError('No entities found, please use `entities` option');
     expect(() => new MikroORM({ driver: MongoDriver, entities: ['entities/*.js'], dbName: 'test' })).not.toThrowError();
@@ -116,15 +114,15 @@ describe('MikroORM', () => {
 
   test('should prefer environment variables', async () => {
     process.env.MIKRO_ORM_ENV = __dirname + '/mikro-orm.env';
-    const orm = await MikroORM.init({ type: 'mongo' }, false);
+    const orm = await MikroORM.init({ driver: SqliteDriver, host: '123.0.0.321' }, false);
     Object.keys(process.env).filter(k => k.startsWith('MIKRO_ORM_')).forEach(k => delete process.env[k]);
 
     expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.em).toBeInstanceOf(EntityManager);
     expect(orm.config.getAll()).toMatchObject({
-      type: 'sqlite', // env vars have preference
+      driver: SqliteDriver,
       entities: [ './entities-schema' ],
-      host: '123.0.0.4',
+      host: '123.0.0.4', // env vars have preference
       port: 1234,
       user: 'string',
       password: 'lol',
