@@ -1,5 +1,4 @@
-import { Entity, PrimaryKey, Property, OneToOne } from '@mikro-orm/core';
-import { MikroORM, ObjectId } from '@mikro-orm/mongodb';
+import { MikroORM, ObjectId, Entity, PrimaryKey, Property, OneToOne } from '@mikro-orm/mongodb';
 
 @Entity()
 export class Author {

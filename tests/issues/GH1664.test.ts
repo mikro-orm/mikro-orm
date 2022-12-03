@@ -1,5 +1,4 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -22,13 +21,12 @@ class MultipleUniqueNullableProperties {
 }
 
 describe('embedded entities in postgresql', () => {
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [MultipleUniqueNullableProperties],
       dbName: 'mikro_orm_test_unique_nullable_insert',
-      driver: PostgreSqlDriver,
     });
     await orm.schema.refreshDatabase();
   });

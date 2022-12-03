@@ -1,5 +1,4 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType, Property } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType, Property } from '@mikro-orm/postgresql';
 
 @Entity()
 export class Customer {
@@ -83,13 +82,12 @@ export class OrderItem {
 
 describe('GH issue 529', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Customer, Order, OrderItem, Product],
       dbName: `mikro_orm_test_gh_529`,
-      driver: PostgreSqlDriver,
     });
     await orm.schema.refreshDatabase();
   });

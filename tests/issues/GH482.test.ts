@@ -1,6 +1,5 @@
-import { Entity, PrimaryKey, BigIntType, OneToMany, Collection, Enum, ManyToOne, Property } from '@mikro-orm/core';
+import { Entity, MikroORM, PrimaryKey, BigIntType, OneToMany, Collection, Enum, ManyToOne, Property } from '@mikro-orm/postgresql';
 import { mockLogger } from '../helpers';
-import { MikroORM } from '@mikro-orm/postgresql';
 
 export enum LevelType {
   A = 'a',

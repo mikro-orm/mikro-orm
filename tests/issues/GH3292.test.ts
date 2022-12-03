@@ -1,4 +1,4 @@
-import type { MikroORM } from '@mikro-orm/core';
+import type { MikroORM } from '@mikro-orm/postgresql';
 import { initORMPostgreSql } from '../bootstrap';
 import { Author2, Book2 } from '../entities-sql';
 

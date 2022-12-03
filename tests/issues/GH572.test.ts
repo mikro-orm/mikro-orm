@@ -1,6 +1,5 @@
-import { Entity, IdentifiedReference, MikroORM, OneToOne, PrimaryKey, Property, QueryOrder } from '@mikro-orm/core';
+import { Entity, IdentifiedReference, MikroORM, OneToOne, PrimaryKey, Property, QueryOrder } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
-import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class A {
@@ -29,13 +28,12 @@ export class B {
 
 describe('GH issue 572', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A, B],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
     await orm.schema.dropSchema();
     await orm.schema.createSchema();
