@@ -1,6 +1,5 @@
-import { Entity, LoadStrategy, OneToOne, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/core';
+import { MikroORM, Entity, LoadStrategy, OneToOne, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
-import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class User {
