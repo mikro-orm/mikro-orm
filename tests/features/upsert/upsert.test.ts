@@ -1,5 +1,6 @@
 import { MikroORM, Entity, PrimaryKey, ManyToOne, Property, SimpleLogger, Unique, Ref, ref, EventSubscriber, EventArgs } from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
+import { PLATFORMS } from '../../bootstrap';
 
 @Entity()
 export class Author {
@@ -101,7 +102,7 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Author, Book, FooBar],
-      type,
+      driver: PLATFORMS[type],
       loggerFactory: options => new SimpleLogger(options),
       subscribers: [new Subscriber()],
       ...options[type],
