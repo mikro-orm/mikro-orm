@@ -1,5 +1,4 @@
-import { Entity, Ref, OneToOne, PrimaryKey, Property, wrap } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/sqlite';
+import { Entity, MikroORM, Ref, OneToOne, PrimaryKey, Property, wrap } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
 @Entity()

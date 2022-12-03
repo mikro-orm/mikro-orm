@@ -1,5 +1,4 @@
-import { Entity, MikroORM, PrimaryKey, OneToMany, ManyToOne, Collection, BeforeCreate } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Entity, MikroORM, PrimaryKey, OneToMany, ManyToOne, Collection, BeforeCreate } from '@mikro-orm/sqlite';
 import { v4 } from 'uuid';
 
 abstract class Base {
@@ -32,13 +31,12 @@ class Book extends Base {
 
 describe('GH issue 893', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Base, Book, Publisher],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });
