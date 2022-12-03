@@ -1,5 +1,5 @@
 import type { ArgumentsCamelCase, Argv, CommandModule } from 'yargs';
-import { Utils, colors, type Configuration, type Dictionary, type MikroORM, type MikroORMOptions, type IMigrator, MigrateOptions } from '@mikro-orm/core';
+import { Utils, colors, type Configuration, type Dictionary, type MikroORM, type Options, type IMigrator, MigrateOptions } from '@mikro-orm/core';
 import { CLIHelper } from '../CLIHelper';
 
 export class MigrationCommandFactory {
@@ -14,7 +14,7 @@ export class MigrationCommandFactory {
     fresh: 'Clear the database and rerun all migrations',
   };
 
-  static create<U extends Options = Options>(command: MigratorMethod): CommandModule<unknown, U> & { builder: (args: Argv) => Argv<U>; handler: (args: ArgumentsCamelCase<U>) => Promise<void> } {
+  static create<U extends Opts = Opts>(command: MigratorMethod): CommandModule<unknown, U> & { builder: (args: Argv) => Argv<U>; handler: (args: ArgumentsCamelCase<U>) => Promise<void> } {
     return {
       command: `migration:${command}`,
       describe: MigrationCommandFactory.DESCRIPTIONS[command],
@@ -85,9 +85,9 @@ export class MigrationCommandFactory {
     });
   }
 
-  static async handleMigrationCommand(args: ArgumentsCamelCase<Options>, method: MigratorMethod): Promise<void> {
+  static async handleMigrationCommand(args: ArgumentsCamelCase<Opts>, method: MigratorMethod): Promise<void> {
     // to be able to run have a master transaction, but run marked migrations outside of it, we need a second connection
-    const options = { pool: { min: 1, max: 2 } } as Partial<MikroORMOptions>;
+    const options = { pool: { min: 1, max: 2 } } as Options;
     const orm = await CLIHelper.getORM(undefined, options);
     const migrator = orm.getMigrator();
 
@@ -126,7 +126,7 @@ export class MigrationCommandFactory {
     });
   }
 
-  private static async handleUpDownCommand(args: ArgumentsCamelCase<Options>, migrator: IMigrator, method: MigratorMethod) {
+  private static async handleUpDownCommand(args: ArgumentsCamelCase<Opts>, migrator: IMigrator, method: MigratorMethod) {
     const opts = MigrationCommandFactory.getUpDownOptions(args);
     await migrator[method](opts as string[]);
     const message = this.getUpDownSuccessMessage(method as 'up' | 'down', opts);
@@ -156,7 +156,7 @@ export class MigrationCommandFactory {
     });
   }
 
-  private static async handleCreateCommand(migrator: IMigrator, args: ArgumentsCamelCase<Options>, config: Configuration): Promise<void> {
+  private static async handleCreateCommand(migrator: IMigrator, args: ArgumentsCamelCase<Opts>, config: Configuration): Promise<void> {
     const ret = await migrator.createMigration(args.path, args.blank, args.initial, args.name);
 
     if (ret.diff.up.length === 0) {
@@ -189,7 +189,7 @@ export class MigrationCommandFactory {
     process.exit(1);
   }
 
-  private static async handleFreshCommand(args: ArgumentsCamelCase<Options>, migrator: IMigrator, orm: MikroORM) {
+  private static async handleFreshCommand(args: ArgumentsCamelCase<Opts>, migrator: IMigrator, orm: MikroORM) {
     const generator = orm.getSchemaGenerator();
     await generator.dropSchema({ dropMigrationsTable: true, dropDb: args.dropDb });
     CLIHelper.dump(colors.green('Dropped schema successfully'));
@@ -250,4 +250,4 @@ export class MigrationCommandFactory {
 type MigratorMethod = 'create' | 'check' | 'up' | 'down' | 'list' | 'pending' | 'fresh';
 type CliUpDownOptions = { to?: string | number; from?: string | number; only?: string };
 type GenerateOptions = { dump?: boolean; blank?: boolean; initial?: boolean; path?: string; disableFkChecks?: boolean; seed: string; name?: string };
-type Options = GenerateOptions & CliUpDownOptions & { dropDb?: boolean };
+type Opts = GenerateOptions & CliUpDownOptions & { dropDb?: boolean };

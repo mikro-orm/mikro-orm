@@ -1,6 +1,5 @@
-import type { EntityManager } from '@mikro-orm/core';
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { EntityManager } from '@mikro-orm/postgresql';
+import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
 
 @Entity()
 export class A {
@@ -15,13 +14,12 @@ export class A {
 
 describe('GH issue 1910', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A],
       dbName: 'mikro_orm_test_gh_1910',
-      driver: PostgreSqlDriver,
     });
     await orm.schema.ensureDatabase();
     await orm.schema.dropSchema();

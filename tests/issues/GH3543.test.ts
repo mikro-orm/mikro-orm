@@ -7,8 +7,8 @@ import {
   OptionalProps,
   PrimaryKey,
   Property,
-} from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/postgresql';
+  MikroORM,
+} from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
 
 @Entity()

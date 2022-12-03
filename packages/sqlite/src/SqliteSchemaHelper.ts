@@ -1,5 +1,5 @@
 import type { Connection, Dictionary } from '@mikro-orm/core';
-import { SchemaHelper, type AbstractSqlConnection, type Index, type Check } from '@mikro-orm/knex';
+import { SchemaHelper, type AbstractSqlConnection, type IndexDef, type CheckDef } from '@mikro-orm/knex';
 
 export class SqliteSchemaHelper extends SchemaHelper {
 
@@ -43,7 +43,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
     });
   }
 
-  async getEnumDefinitions(connection: AbstractSqlConnection, checks: Check[], tableName: string, schemaName: string): Promise<Dictionary<string[]>> {
+  async getEnumDefinitions(connection: AbstractSqlConnection, checks: CheckDef[], tableName: string, schemaName: string): Promise<Dictionary<string[]>> {
     const sql = `select sql from sqlite_master where type = ? and name = ?`;
     const tableDefinition = await connection.execute<{ sql: string }>(sql, ['table', tableName], 'get');
 
@@ -62,18 +62,18 @@ export class SqliteSchemaHelper extends SchemaHelper {
     }, {} as Dictionary<string[]>);
   }
 
-  async getPrimaryKeys(connection: AbstractSqlConnection, indexes: Index[], tableName: string, schemaName?: string): Promise<string[]> {
+  async getPrimaryKeys(connection: AbstractSqlConnection, indexes: IndexDef[], tableName: string, schemaName?: string): Promise<string[]> {
     const sql = `pragma table_info(\`${tableName}\`)`;
     const cols = await connection.execute<{ pk: number; name: string }[]>(sql);
 
     return cols.filter(col => !!col.pk).map(col => col.name);
   }
 
-  async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Index[]> {
+  async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<IndexDef[]> {
     const sql = `pragma table_info(\`${tableName}\`)`;
     const cols = await connection.execute<{ pk: number; name: string }[]>(sql);
     const indexes = await connection.execute<any[]>(`pragma index_list(\`${tableName}\`)`);
-    const ret: Index[] = [];
+    const ret: IndexDef[] = [];
 
     for (const col of cols.filter(c => c.pk)) {
       ret.push({
@@ -97,7 +97,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
     return this.mapIndexes(ret);
   }
 
-  async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Check[]> {
+  async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<CheckDef[]> {
     // Not supported at the moment.
     return [];
   }

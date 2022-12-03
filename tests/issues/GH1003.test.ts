@@ -1,6 +1,5 @@
-import type { IdentifiedReference } from '@mikro-orm/core';
-import { BaseEntity, Collection, Entity, ManyToOne, OneToMany, PrimaryKey } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/sqlite';
+import { BaseEntity, Collection, MikroORM, Entity, ManyToOne, OneToMany, PrimaryKey } from '@mikro-orm/sqlite';
+import type { IdentifiedReference } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Parent extends BaseEntity<Parent, 'id'> {

@@ -1,6 +1,4 @@
-import { ObjectId } from 'bson';
-import { Entity, PrimaryKey, Property, t, wrap } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/mongodb';
+import { Entity, MikroORM, PrimaryKey, Property, t, wrap, ObjectId } from '@mikro-orm/mongodb';
 
 export interface EmailMessageTest {
   html?: string;
