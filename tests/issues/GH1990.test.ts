@@ -1,5 +1,4 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/postgresql';
 
 @Entity()
 class A {
@@ -31,7 +30,6 @@ describe('GH issue 1990', () => {
     orm = await MikroORM.init({
       entities: [A, B],
       dbName: 'mikro_orm_test_1990',
-      driver: PostgreSqlDriver,
     });
     await orm.schema.refreshDatabase();
   });

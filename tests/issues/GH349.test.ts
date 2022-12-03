@@ -1,6 +1,5 @@
-import { Entity, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
+import { Entity, MikroORM, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/mongodb';
 import { Decimal128, ObjectId } from 'bson';
-import { MikroORM } from '@mikro-orm/mongodb';
 
 @Entity()
 class A {
