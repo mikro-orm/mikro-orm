@@ -19,7 +19,7 @@ export class SeedManager implements ISeedManager {
   }
 
   static register(orm: MikroORM): void {
-    orm.config.registerExtension('@mikro-orm/seeder', new SeedManager(orm.em));
+    orm.config.registerExtension('@mikro-orm/seeder', () => new SeedManager(orm.em));
   }
 
   async seed(...classNames: Constructor<Seeder>[]): Promise<void> {

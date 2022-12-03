@@ -68,54 +68,5 @@
     "fs-extra": "11.1.0",
     "tsconfig-paths": "4.1.2",
     "yargs": "15.4.1"
-  },
-  "devDependencies": {
-    "@mikro-orm/entity-generator": "^5.6.15",
-    "@mikro-orm/migrations": "^5.6.15",
-    "@mikro-orm/seeder": "^5.6.15"
-  },
-  "peerDependencies": {
-    "@mikro-orm/better-sqlite": "^5.0.0",
-    "@mikro-orm/entity-generator": "^5.0.0",
-    "@mikro-orm/mariadb": "^5.0.0",
-    "@mikro-orm/migrations": "^5.0.0",
-    "@mikro-orm/migrations-mongodb": "^5.0.0",
-    "@mikro-orm/mongodb": "^5.0.0",
-    "@mikro-orm/mysql": "^5.0.0",
-    "@mikro-orm/postgresql": "^5.0.0",
-    "@mikro-orm/seeder": "^5.0.0",
-    "@mikro-orm/sqlite": "^5.0.0"
-  },
-  "peerDependenciesMeta": {
-    "@mikro-orm/better-sqlite": {
-      "optional": true
-    },
-    "@mikro-orm/entity-generator": {
-      "optional": true
-    },
-    "@mikro-orm/mariadb": {
-      "optional": true
-    },
-    "@mikro-orm/migrations": {
-      "optional": true
-    },
-    "@mikro-orm/migrations-mongodb": {
-      "optional": true
-    },
-    "@mikro-orm/mongodb": {
-      "optional": true
-    },
-    "@mikro-orm/mysql": {
-      "optional": true
-    },
-    "@mikro-orm/postgresql": {
-      "optional": true
-    },
-    "@mikro-orm/seeder": {
-      "optional": true
-    },
-    "@mikro-orm/sqlite": {
-      "optional": true
-    }
   }
 }

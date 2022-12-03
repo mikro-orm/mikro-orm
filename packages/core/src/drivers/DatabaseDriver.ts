@@ -147,10 +147,6 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return this.dependencies;
   }
 
-  async ensureIndexes(): Promise<void> {
-    throw new Error(`${this.constructor.name} does not use ensureIndexes`);
-  }
-
   protected inlineEmbeddables<T>(meta: EntityMetadata<T>, data: T, where?: boolean): void {
     Object.keys(data as Dictionary).forEach(k => {
       if (Utils.isOperator(k)) {
