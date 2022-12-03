@@ -1,5 +1,4 @@
-import { Entity, Enum, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Entity, Enum, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/postgresql';
 
 @Entity()
 export class Person {
@@ -49,13 +48,12 @@ export class User {
 
 describe('GH issue 1150', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [User, Person],
       dbName: `mikro_orm_test_gh_1150`,
-      driver: PostgreSqlDriver,
     });
 
     const generator = orm.schema;

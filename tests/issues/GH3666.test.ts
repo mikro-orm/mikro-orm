@@ -1,5 +1,4 @@
-import { Entity, PrimaryKey, ManyToOne, Collection, OneToMany } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/sqlite';
+import { MikroORM, Entity, PrimaryKey, ManyToOne, Collection, OneToMany } from '@mikro-orm/sqlite';
 
 @Entity()
 class Competition {

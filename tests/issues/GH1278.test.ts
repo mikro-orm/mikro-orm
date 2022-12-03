@@ -1,5 +1,4 @@
-import { Entity, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Entity, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -29,11 +28,10 @@ export class Group {
 
 describe('GH issue 1278', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      driver: SqliteDriver,
       dbName: ':memory:',
       entities: [Group, GroupCode],
     });

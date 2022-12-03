@@ -1,5 +1,4 @@
-import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/sqlite';
 
 class MyType extends Type<string, number> {
 
@@ -30,13 +29,12 @@ class A {
 
 describe('GH issue 435', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
     await orm.schema.ensureDatabase();
     await orm.schema.dropSchema();
