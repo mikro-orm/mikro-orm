@@ -195,7 +195,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0 # we need to pull everything to have correct dev version suffix
-          ref: master
 
       - name: Use Node.js 16
         uses: actions/setup-node@v3
