@@ -19,7 +19,7 @@ export class EntityGenerator {
   constructor(private readonly em: EntityManager) { }
 
   static register(orm: MikroORM): void {
-    orm.config.registerExtension('@mikro-orm/entity-generator', new EntityGenerator(orm.em as EntityManager));
+    orm.config.registerExtension('@mikro-orm/entity-generator', () => new EntityGenerator(orm.em as EntityManager));
   }
 
   async generate(options: { baseDir?: string; save?: boolean; schema?: string } = {}): Promise<string[]> {
