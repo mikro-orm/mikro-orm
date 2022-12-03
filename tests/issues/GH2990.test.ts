@@ -1,5 +1,4 @@
-import { Entity, EntityLoader, ManyToOne, MikroORM, PrimaryKey } from '@mikro-orm/core';
-import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
+import { Entity, EntityLoader, ManyToOne, MikroORM, PrimaryKey } from '@mikro-orm/better-sqlite';
 
 @Entity()
 export class Provider {
@@ -68,7 +67,6 @@ describe('GH issue 2990', () => {
     orm = await MikroORM.init({
       entities: [Provider, User, Member, Session],
       dbName: `:memory:`,
-      driver: BetterSqliteDriver,
     });
   });
 

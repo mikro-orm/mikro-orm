@@ -13,3 +13,4 @@ export {
   defineMongoConfig as defineConfig,
 } from './MongoMikroORM';
 export { ObjectId } from 'bson';
+export * from '@mikro-orm/core';
