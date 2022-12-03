@@ -1,7 +1,7 @@
 import { escape } from 'sqlstring';
 import { expr, JsonProperty, Platform, Utils, type Constructor, type EntityManager, type EntityRepository, type IDatabaseDriver, type MikroORM } from '@mikro-orm/core';
 import { SqlEntityRepository } from './SqlEntityRepository';
-import { SchemaGenerator, type SchemaHelper } from './schema';
+import { SqlSchemaGenerator, type SchemaHelper } from './schema';
 
 export abstract class AbstractSqlPlatform extends Platform {
 
@@ -25,12 +25,12 @@ export abstract class AbstractSqlPlatform extends Platform {
 
   /** @inheritDoc */
   lookupExtensions(orm: MikroORM): void {
-    SchemaGenerator.register(orm);
+    SqlSchemaGenerator.register(orm);
   }
 
   /* istanbul ignore next: kept for type inference only */
-  getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): SchemaGenerator {
-    return new SchemaGenerator(em ?? driver as any);
+  getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): SqlSchemaGenerator {
+    return new SqlSchemaGenerator(em ?? driver as any);
   }
 
   quoteValue(value: any): string {
