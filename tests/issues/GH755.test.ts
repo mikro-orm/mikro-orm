@@ -1,6 +1,4 @@
-import type { Options } from '@mikro-orm/core';
-import { EntitySchema, MikroORM } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { EntitySchema, MikroORM } from '@mikro-orm/sqlite';
 
 export class Test {
 
@@ -33,8 +31,7 @@ describe('GH issue 755', () => {
     const options = {
       entities: [TestSchema],
       dbName: ':memory:',
-      driver: SqliteDriver,
-    } as Options;
+    };
     const err = `Entity Test has wrong index definition: 'created_at' does not exist. You need to use property name, not column name.`;
     await expect(MikroORM.init(options)).rejects.toThrowError(err);
   });
