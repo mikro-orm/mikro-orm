@@ -7,17 +7,14 @@ import type { DatabaseTable } from './DatabaseTable';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
 import { SchemaComparator } from './SchemaComparator';
 
-/**
- * Should be renamed to `SqlSchemaGenerator` in v6
- */
-export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> implements ISchemaGenerator {
+export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> implements ISchemaGenerator {
 
   private readonly helper = this.platform.getSchemaHelper()!;
   private readonly options = this.config.get('schemaGenerator');
   protected lastEnsuredDatabase?: string;
 
   static register(orm: MikroORM): void {
-    orm.config.registerExtension('@mikro-orm/schema-generator', () => new SchemaGenerator(orm.em));
+    orm.config.registerExtension('@mikro-orm/schema-generator', () => new SqlSchemaGenerator(orm.em));
   }
 
   /** @deprecated use `dropSchema` and `createSchema` commands respectively */
@@ -607,3 +604,6 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
   }
 
 }
+
+// for back compatibility
+export { SqlSchemaGenerator as SchemaGenerator };
