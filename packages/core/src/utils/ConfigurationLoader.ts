@@ -157,9 +157,21 @@ export class ConfigurationLoader {
 
   static loadEnvironmentVars<D extends IDatabaseDriver>(): Partial<Options<D>> {
     const ret: Dictionary = {};
+
+    // only to keep some sort of back compatibility with those using env vars only, to support `MIKRO_ORM_TYPE`
+    const PLATFORMS = {
+      'mongo': { className: 'MongoDriver', module: '@mikro-orm/mongodb' },
+      'mysql': { className: 'MySqlDriver', module: '@mikro-orm/mysql' },
+      'mariadb': { className: 'MariaDbDriver', module: '@mikro-orm/mariadb' },
+      'postgresql': { className: 'PostgreSqlDriver', module: '@mikro-orm/postgresql' },
+      'sqlite': { className: 'SqliteDriver', module: '@mikro-orm/sqlite' },
+      'better-sqlite': { className: 'BetterSqliteDriver', module: '@mikro-orm/better-sqlite' },
+    };
+
     const array = (v: string) => v.split(',').map(vv => vv.trim());
     const bool = (v: string) => ['true', 't', '1'].includes(v.toLowerCase());
     const num = (v: string) => +v;
+    const driver = (v: string) => Utils.requireFrom(PLATFORMS[v].module)[PLATFORMS[v].className];
     const read = (o: Dictionary, envKey: string, key: string, mapper: (v: string) => unknown = v => v) => {
       if (!(envKey in process.env)) {
         return;
@@ -171,7 +183,7 @@ export class ConfigurationLoader {
     const cleanup = (o: Dictionary, k: string) => Utils.hasObjectKeys(o[k]) ? {} : delete o[k];
 
     read(ret, 'MIKRO_ORM_BASE_DIR', 'baseDir');
-    read(ret, 'MIKRO_ORM_TYPE', 'type');
+    read(ret, 'MIKRO_ORM_TYPE', 'driver', driver);
     read(ret, 'MIKRO_ORM_ENTITIES', 'entities', array);
     read(ret, 'MIKRO_ORM_ENTITIES_TS', 'entitiesTs', array);
     read(ret, 'MIKRO_ORM_CLIENT_URL', 'clientUrl');

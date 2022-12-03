@@ -3,6 +3,7 @@ import {
   Unique, Ref, ref, EventSubscriber, EventArgs, OneToMany, Collection, Embeddable, Embedded, OptionalProps,
 } from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
+import { PLATFORMS } from '../../bootstrap';
 
 @Entity()
 export class Author {
@@ -136,7 +137,7 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Author, Book, FooBar, FooBarWithEmbeddable],
-      type,
+      driver: PLATFORMS[type],
       loggerFactory: options => new SimpleLogger(options),
       subscribers: [new Subscriber()],
       ...options[type],
