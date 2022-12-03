@@ -30,16 +30,9 @@ export class MongoPlatform extends Platform {
     MongoSchemaGenerator.register(orm);
   }
 
-  // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
+  /* istanbul ignore next: kept for type inference only */
   getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): MongoSchemaGenerator {
     return new MongoSchemaGenerator(em ?? driver as any);
-  }
-
-  // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
-  getMigrator(em: EntityManager) {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { Migrator } = require('@mikro-orm/migrations-mongodb');
-    return this.config.getCachedService(Migrator, em);
   }
 
   normalizePrimaryKey<T extends number | string = number | string>(data: Primary<T> | IPrimaryKey | ObjectId): T {

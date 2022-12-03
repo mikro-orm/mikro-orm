@@ -139,7 +139,7 @@ describe('EntityGenerator', () => {
 
   test('not supported [mongodb]', async () => {
     const orm = await MikroORM.init({ driver: MongoDriver, dbName: 'mikro-orm-test', discovery: { warnWhenNoEntities: false } }, false);
-    expect(() => orm.entityGenerator).toThrowError('MongoPlatform does not support EntityGenerator');
+    expect(() => orm.entityGenerator).toThrowError('EntityGenerator extension not registered.');
   });
 
   test('table name starting with number [mysql]', async () => {
