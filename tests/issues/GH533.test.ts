@@ -1,5 +1,4 @@
-import { Entity, PrimaryKey, Property, MikroORM, wrap, ManyToOne } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, Property, MikroORM, wrap, ManyToOne } from '@mikro-orm/postgresql';
 
 @Entity()
 class A {
@@ -44,13 +43,12 @@ class C {
 
 describe('GH issue 533', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A, B, C],
       dbName: `mikro_orm_test_gh_533`,
-      driver: PostgreSqlDriver,
     });
     await orm.schema.refreshDatabase();
   });

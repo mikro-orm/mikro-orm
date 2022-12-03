@@ -1,5 +1,4 @@
-import { Entity, PrimaryKey, Property, t } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/mysql';
+import { Entity, MikroORM, PrimaryKey, Property, t } from '@mikro-orm/mysql';
 
 @Entity()
 export class Asset1 {
