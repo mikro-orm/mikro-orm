@@ -1,5 +1,4 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType, Reference, IdentifiedReference } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType, Reference, IdentifiedReference } from '@mikro-orm/postgresql';
 
 @Entity()
 export class User {
@@ -35,13 +34,12 @@ export class Chat {
 
 describe('GH issue 589', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [User, Chat],
       dbName: `mikro_orm_test_gh_589`,
-      driver: PostgreSqlDriver,
     });
     await orm.schema.refreshDatabase();
   });

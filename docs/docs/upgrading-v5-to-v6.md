@@ -70,6 +70,16 @@ The options always needs to be plain JS object now. This was always only an inte
 
 Use the `connect` option instead.
 
+## All drivers now re-export the `@mikro-orm/core` package
+
+This means we no longer have to think about what package to use for imports, the driver package should be always preferred.
+
+```diff
+-import { Entity, PrimaryKey } from '@mikro-orm/core';
+-import { MikroORM, EntityManager } from '@mikro-orm/mysql';
++import { Entity, PrimaryKey, MikroORM, EntityManager } from '@mikro-orm/mysql';
+```
+
 ## Removed `MongoDriver` methods
 
 - `createCollections` in favour of `orm.schema.createSchema()`
