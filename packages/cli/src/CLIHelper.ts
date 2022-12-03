@@ -1,7 +1,5 @@
 import { pathExists } from 'fs-extra';
 import yargs from 'yargs';
-import { platform } from 'os';
-import { fileURLToPath } from 'url';
 import type { Configuration, IDatabaseDriver, Options } from '@mikro-orm/core';
 import { colors, ConfigurationLoader, MikroORM, Utils } from '@mikro-orm/core';
 
@@ -35,7 +33,7 @@ export class CLIHelper {
       options.get('discovery').warnWhenNoEntities = warnWhenNoEntities;
     }
 
-    return MikroORM.init(options);
+    return MikroORM.init(options.getAll());
   }
 
   static async isDBConnected(): Promise<boolean> {

@@ -5,7 +5,7 @@ import type { MongoDriver } from './MongoDriver';
 export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
 
   static register(orm: MikroORM): void {
-    orm.config.registerExtension('@mikro-orm/schema-generator', new MongoSchemaGenerator(orm.em));
+    orm.config.registerExtension('@mikro-orm/schema-generator', () => new MongoSchemaGenerator(orm.em));
   }
 
   async createSchema(options: CreateSchemaOptions = {}): Promise<void> {

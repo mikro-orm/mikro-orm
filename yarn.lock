@@ -2032,16 +2032,6 @@ __metadata:
     sqlstring-sqlite: 0.1.1
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
-    "@mikro-orm/entity-generator": ^5.0.0
-    "@mikro-orm/migrations": ^5.0.0
-    "@mikro-orm/seeder": ^5.0.0
-  peerDependenciesMeta:
-    "@mikro-orm/entity-generator":
-      optional: true
-    "@mikro-orm/migrations":
-      optional: true
-    "@mikro-orm/seeder":
-      optional: true
   languageName: unknown
   linkType: soft
 
@@ -2051,45 +2041,10 @@ __metadata:
   dependencies:
     "@jercle/yargonaut": 1.1.5
     "@mikro-orm/core": ~5.7.2
-    "@mikro-orm/entity-generator": ^5.7.2
     "@mikro-orm/knex": ~5.7.2
-    "@mikro-orm/migrations": ^5.7.2
-    "@mikro-orm/seeder": ^5.7.2
     fs-extra: 11.1.1
     tsconfig-paths: 4.2.0
     yargs: 17.7.1
-  peerDependencies:
-    "@mikro-orm/better-sqlite": ^5.0.0
-    "@mikro-orm/entity-generator": ^5.0.0
-    "@mikro-orm/mariadb": ^5.0.0
-    "@mikro-orm/migrations": ^5.0.0
-    "@mikro-orm/migrations-mongodb": ^5.0.0
-    "@mikro-orm/mongodb": ^5.0.0
-    "@mikro-orm/mysql": ^5.0.0
-    "@mikro-orm/postgresql": ^5.0.0
-    "@mikro-orm/seeder": ^5.0.0
-    "@mikro-orm/sqlite": ^5.0.0
-  peerDependenciesMeta:
-    "@mikro-orm/better-sqlite":
-      optional: true
-    "@mikro-orm/entity-generator":
-      optional: true
-    "@mikro-orm/mariadb":
-      optional: true
-    "@mikro-orm/migrations":
-      optional: true
-    "@mikro-orm/migrations-mongodb":
-      optional: true
-    "@mikro-orm/mongodb":
-      optional: true
-    "@mikro-orm/mysql":
-      optional: true
-    "@mikro-orm/postgresql":
-      optional: true
-    "@mikro-orm/seeder":
-      optional: true
-    "@mikro-orm/sqlite":
-      optional: true
   bin:
     mikro-orm: ./dist/cli.js
     mikro-orm-esm: ./dist/esm.js
@@ -2107,42 +2062,10 @@ __metadata:
     globby: 11.1.0
     mikro-orm: ~5.7.2
     reflect-metadata: 0.1.13
-  peerDependencies:
-    "@mikro-orm/better-sqlite": ^5.0.0
-    "@mikro-orm/entity-generator": ^5.0.0
-    "@mikro-orm/mariadb": ^5.0.0
-    "@mikro-orm/migrations": ^5.0.0
-    "@mikro-orm/migrations-mongodb": ^5.0.0
-    "@mikro-orm/mongodb": ^5.0.0
-    "@mikro-orm/mysql": ^5.0.0
-    "@mikro-orm/postgresql": ^5.0.0
-    "@mikro-orm/seeder": ^5.0.0
-    "@mikro-orm/sqlite": ^5.0.0
-  peerDependenciesMeta:
-    "@mikro-orm/better-sqlite":
-      optional: true
-    "@mikro-orm/entity-generator":
-      optional: true
-    "@mikro-orm/mariadb":
-      optional: true
-    "@mikro-orm/migrations":
-      optional: true
-    "@mikro-orm/migrations-mongodb":
-      optional: true
-    "@mikro-orm/mongodb":
-      optional: true
-    "@mikro-orm/mysql":
-      optional: true
-    "@mikro-orm/postgresql":
-      optional: true
-    "@mikro-orm/seeder":
-      optional: true
-    "@mikro-orm/sqlite":
-      optional: true
   languageName: unknown
   linkType: soft
 
-"@mikro-orm/entity-generator@^5.7.2, @mikro-orm/entity-generator@workspace:packages/entity-generator":
+"@mikro-orm/entity-generator@workspace:packages/entity-generator":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/entity-generator@workspace:packages/entity-generator"
   dependencies:
@@ -2164,31 +2087,6 @@ __metadata:
     sqlstring: 2.3.3
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
-    "@mikro-orm/entity-generator": ^5.0.0
-    "@mikro-orm/migrations": ^5.0.0
-    better-sqlite3: ^8.0.0
-    mssql: ^7.0.0
-    mysql: ^2.18.1
-    mysql2: ^2.1.0
-    pg: ^8.0.3
-    sqlite3: ^5.0.0
-  peerDependenciesMeta:
-    "@mikro-orm/entity-generator":
-      optional: true
-    "@mikro-orm/migrations":
-      optional: true
-    better-sqlite3:
-      optional: true
-    mssql:
-      optional: true
-    mysql:
-      optional: true
-    mysql2:
-      optional: true
-    pg:
-      optional: true
-    sqlite3:
-      optional: true
   languageName: unknown
   linkType: soft
 
@@ -2201,16 +2099,6 @@ __metadata:
     mariadb: 2.5.6
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
-    "@mikro-orm/entity-generator": ^5.0.0
-    "@mikro-orm/migrations": ^5.0.0
-    "@mikro-orm/seeder": ^5.0.0
-  peerDependenciesMeta:
-    "@mikro-orm/entity-generator":
-      optional: true
-    "@mikro-orm/migrations":
-      optional: true
-    "@mikro-orm/seeder":
-      optional: true
   languageName: unknown
   linkType: soft
 
@@ -2228,7 +2116,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mikro-orm/migrations@^5.7.2, @mikro-orm/migrations@workspace:packages/migrations":
+"@mikro-orm/migrations@workspace:packages/migrations":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/migrations@workspace:packages/migrations"
   dependencies:
@@ -2260,19 +2148,6 @@ __metadata:
     mongodb: 5.3.0
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
-    "@mikro-orm/entity-generator": ^5.0.0
-    "@mikro-orm/migrations": ^5.0.0
-    "@mikro-orm/migrations-mongodb": ^5.0.0
-    "@mikro-orm/seeder": ^5.0.0
-  peerDependenciesMeta:
-    "@mikro-orm/entity-generator":
-      optional: true
-    "@mikro-orm/migrations":
-      optional: true
-    "@mikro-orm/migrations-mongodb":
-      optional: true
-    "@mikro-orm/seeder":
-      optional: true
   languageName: unknown
   linkType: soft
 
@@ -2285,16 +2160,6 @@ __metadata:
     mysql2: 3.2.3
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
-    "@mikro-orm/entity-generator": ^5.0.0
-    "@mikro-orm/migrations": ^5.0.0
-    "@mikro-orm/seeder": ^5.0.0
-  peerDependenciesMeta:
-    "@mikro-orm/entity-generator":
-      optional: true
-    "@mikro-orm/migrations":
-      optional: true
-    "@mikro-orm/seeder":
-      optional: true
   languageName: unknown
   linkType: soft
 
@@ -2307,16 +2172,6 @@ __metadata:
     pg: 8.10.0
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
-    "@mikro-orm/entity-generator": ^5.0.0
-    "@mikro-orm/migrations": ^5.0.0
-    "@mikro-orm/seeder": ^5.0.0
-  peerDependenciesMeta:
-    "@mikro-orm/entity-generator":
-      optional: true
-    "@mikro-orm/migrations":
-      optional: true
-    "@mikro-orm/seeder":
-      optional: true
   languageName: unknown
   linkType: soft
 
@@ -2372,7 +2227,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mikro-orm/seeder@^5.7.2, @mikro-orm/seeder@workspace:packages/seeder":
+"@mikro-orm/seeder@workspace:packages/seeder":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/seeder@workspace:packages/seeder"
   dependencies:
@@ -2405,16 +2260,6 @@ __metadata:
     sqlstring-sqlite: 0.1.1
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
-    "@mikro-orm/entity-generator": ^5.0.0
-    "@mikro-orm/migrations": ^5.0.0
-    "@mikro-orm/seeder": ^5.0.0
-  peerDependenciesMeta:
-    "@mikro-orm/entity-generator":
-      optional: true
-    "@mikro-orm/migrations":
-      optional: true
-    "@mikro-orm/seeder":
-      optional: true
   languageName: unknown
   linkType: soft
 
