@@ -1,5 +1,4 @@
-import { Entity, PrimaryKey, Ref, OneToMany, Collection, ManyToOne, Enum, wrap, compareArrays } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Ref, OneToMany, Collection, ManyToOne, Enum, wrap, MikroORM } from '@mikro-orm/sqlite';
 
 enum Enum1 {
   A = 'A',

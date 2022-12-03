@@ -1,6 +1,5 @@
-import type { EventSubscriber, FlushEventArgs } from '@mikro-orm/core';
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, Subscriber } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import type { EventSubscriber, FlushEventArgs } from '@mikro-orm/sqlite';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, Subscriber } from '@mikro-orm/sqlite';
 
 @Entity({ tableName: 'customers' })
 class Customer {
@@ -49,13 +48,12 @@ class OrdersSubscriber implements EventSubscriber<Order> {
 
 }
 
-let orm: MikroORM<SqliteDriver>;
+let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Customer],
     dbName: ':memory:',
-    driver: SqliteDriver,
   });
   await orm.schema.createSchema();
 });

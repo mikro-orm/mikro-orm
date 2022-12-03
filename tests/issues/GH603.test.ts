@@ -1,5 +1,4 @@
-import { Collection, EntitySchema, OptionalProps } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/mysql';
+import { Collection, EntitySchema, MikroORM, OptionalProps } from '@mikro-orm/mysql';
 import { v4 } from 'uuid';
 
 class TaskProps {
