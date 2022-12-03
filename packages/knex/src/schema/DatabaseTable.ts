@@ -1,7 +1,7 @@
 import type { Dictionary, EntityMetadata, EntityProperty, NamingStrategy } from '@mikro-orm/core';
 import { Cascade, DateTimeType, DecimalType, EntitySchema, ReferenceType, t, Utils } from '@mikro-orm/core';
 import type { SchemaHelper } from './SchemaHelper';
-import type { Check, Column, ForeignKey, Index } from '../typings';
+import type { CheckDef, Column, ForeignKey, IndexDef } from '../typings';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
 
 /**
@@ -10,8 +10,8 @@ import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
 export class DatabaseTable {
 
   private columns: Dictionary<Column> = {};
-  private indexes: Index[] = [];
-  private checks: Check[] = [];
+  private indexes: IndexDef[] = [];
+  private checks: CheckDef[] = [];
   private foreignKeys: Dictionary<ForeignKey> = {};
   public comment?: string;
 
@@ -31,15 +31,15 @@ export class DatabaseTable {
     return this.columns[name];
   }
 
-  getIndexes(): Index[] {
+  getIndexes(): IndexDef[] {
     return this.indexes;
   }
 
-  getChecks(): Check[] {
+  getChecks(): CheckDef[] {
     return this.checks;
   }
 
-  init(cols: Column[], indexes: Index[] = [], checks: Check[] = [], pks: string[], fks: Dictionary<ForeignKey> = {}, enums: Dictionary<string[]> = {}): void {
+  init(cols: Column[], indexes: IndexDef[] = [], checks: CheckDef[] = [], pks: string[], fks: Dictionary<ForeignKey> = {}, enums: Dictionary<string[]> = {}): void {
     this.indexes = indexes;
     this.checks = checks;
     this.foreignKeys = fks;
@@ -374,7 +374,7 @@ export class DatabaseTable {
     });
   }
 
-  addCheck(check: Check) {
+  addCheck(check: CheckDef) {
     this.checks.push(check);
   }
 

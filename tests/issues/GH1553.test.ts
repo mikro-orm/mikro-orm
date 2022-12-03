@@ -8,8 +8,7 @@ import {
   OneToMany,
   Collection,
   LoadStrategy,
-} from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+} from '@mikro-orm/sqlite';
 
 @Entity()
 export class Owner {
@@ -79,11 +78,10 @@ export class Radio {
 
 describe('GH issue 1553', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      driver: SqliteDriver,
       dbName: ':memory:',
       entities: [Radio, RadioOption, Owner],
       loadStrategy: LoadStrategy.JOINED,
