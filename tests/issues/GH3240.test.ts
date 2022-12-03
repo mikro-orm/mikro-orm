@@ -1,5 +1,4 @@
-import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 type SquadType = 'GROUND' | 'AIR';
 
@@ -40,13 +39,12 @@ export class Squad {
 
 }
 
-let orm: MikroORM<SqliteDriver>;
+let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Soldier, Squad],
     dbName: ':memory:',
-    driver: SqliteDriver,
   });
   await orm.schema.createSchema();
 });

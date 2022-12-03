@@ -10,8 +10,7 @@ import {
   PrimaryKey,
   Property,
   QueryOrder,
-} from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+} from '@mikro-orm/sqlite';
 
 @Entity()
 export class D {
@@ -109,11 +108,10 @@ export class A {
 
 describe('GH issue 1331', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      driver: SqliteDriver,
       dbName: ':memory:',
       entities: [A, B, C, D],
       loadStrategy: LoadStrategy.JOINED,

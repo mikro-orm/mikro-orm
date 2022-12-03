@@ -1,5 +1,4 @@
-import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property, MikroORM } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property, MikroORM } from '@mikro-orm/sqlite';
 
 @Entity({
   tableName: 'person',
@@ -39,7 +38,6 @@ describe('GH #2729', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      driver: SqliteDriver,
       dbName: ':memory:',
       entities: [PersonEntity, TaskEntity],
     });

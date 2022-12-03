@@ -1,5 +1,4 @@
-import { Entity, MikroORM, PrimaryKey, Enum } from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Entity, MikroORM, PrimaryKey, Enum } from '@mikro-orm/postgresql';
 
 export enum WithEnumArrayValue {
   First = 'first',
@@ -19,13 +18,12 @@ export class WithEnumArray {
 }
 
 describe('enum array with native PG enums (GH issue 2583)', () => {
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
-    orm = await MikroORM.init<PostgreSqlDriver>({
+    orm = await MikroORM.init({
       entities: [WithEnumArray],
       dbName: 'mikro_orm_test_2583',
-      driver: PostgreSqlDriver,
     });
     await orm.schema.dropDatabase('mikro_orm_test_2583');
     await orm.schema.createDatabase('mikro_orm_test_2583');

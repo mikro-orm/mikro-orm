@@ -1,8 +1,7 @@
 import 'reflect-metadata';
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
 import { remove } from 'fs-extra';
 import { TEMP_DIR } from '../helpers';
-import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity({ tableName: 'user' })
 class UserBefore {
@@ -42,7 +41,6 @@ describe('GH issue 1262', () => {
 
   async function createAndRunMigration(entities: any[]) {
     const db = await MikroORM.init({
-      driver: SqliteDriver,
       entities,
       dbName: TEMP_DIR + '/gh_1262.db',
     });

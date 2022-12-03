@@ -1,6 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
 import { v4 as uuid } from 'uuid';
-import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 class A {
@@ -28,7 +27,6 @@ describe('GH issue 1444', () => {
     orm = await MikroORM.init({
       entities: [A],
       dbName: `:memory:`,
-      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });

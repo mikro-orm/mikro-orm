@@ -8,8 +8,7 @@ import {
   PrimaryKey,
   Property,
   PlainObject,
-} from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+} from '@mikro-orm/sqlite';
 
 @Entity()
 export class FilterValue {
@@ -80,11 +79,10 @@ export class ProjectDto extends PlainObject {
 
 describe('GH issue 1831', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      driver: SqliteDriver,
       dbName: ':memory:',
       entities: [Project, Filter, FilterValue],
     });
