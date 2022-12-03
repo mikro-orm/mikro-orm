@@ -66,7 +66,7 @@ export interface ForeignKey {
   deleteRule?: string;
 }
 
-export interface Index {
+export interface IndexDef {
   columnNames: string[];
   keyName: string;
   unique: boolean;
@@ -76,7 +76,7 @@ export interface Index {
   type?: string | Readonly<{ indexType?: string; storageEngineIndexType?: 'hash' | 'btree'; predicate?: Knex.QueryBuilder }>; // for back compatibility mainly, to allow using knex's `index.type` option (e.g. gin index)
 }
 
-export interface Check<T = unknown> {
+export interface CheckDef<T = unknown> {
   name: string;
   expression: string | CheckCallback<T>;
   definition?: string;
@@ -99,13 +99,13 @@ export interface TableDifference {
   changedColumns: Dictionary<ColumnDifference>;
   removedColumns: Dictionary<Column>;
   renamedColumns: Dictionary<Column>;
-  addedIndexes: Dictionary<Index>;
-  changedIndexes: Dictionary<Index>;
-  removedIndexes: Dictionary<Index>;
-  renamedIndexes: Dictionary<Index>;
-  addedChecks: Dictionary<Check>;
-  changedChecks: Dictionary<Check>;
-  removedChecks: Dictionary<Check>;
+  addedIndexes: Dictionary<IndexDef>;
+  changedIndexes: Dictionary<IndexDef>;
+  removedIndexes: Dictionary<IndexDef>;
+  renamedIndexes: Dictionary<IndexDef>;
+  addedChecks: Dictionary<CheckDef>;
+  changedChecks: Dictionary<CheckDef>;
+  removedChecks: Dictionary<CheckDef>;
   addedForeignKeys: Dictionary<ForeignKey>;
   changedForeignKeys: Dictionary<ForeignKey>;
   removedForeignKeys: Dictionary<ForeignKey>;

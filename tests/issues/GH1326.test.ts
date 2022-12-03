@@ -1,5 +1,4 @@
-import { Collection, Entity, IdentifiedReference, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/mysql';
+import { Collection, Entity, IdentifiedReference, MikroORM, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/mysql';
 import { mockLogger } from '../helpers';
 
 @Entity()

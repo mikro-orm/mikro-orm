@@ -1,12 +1,5 @@
-import type {
-  EntityManager } from '@mikro-orm/core';
-import {
-  Entity,
-  MikroORM,
-  PrimaryKey,
-  Property,
-} from '@mikro-orm/core';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import type { EntityManager } from '@mikro-orm/postgresql';
+import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/postgresql';
 import { v4 as uuid } from 'uuid';
 
 @Entity({ tableName: 'users' })
@@ -24,18 +17,17 @@ class User {
 
 }
 
-async function getOrmInstance(): Promise<MikroORM<PostgreSqlDriver>> {
+async function getOrmInstance(): Promise<MikroORM> {
   const orm = await MikroORM.init({
     entities: [User],
     dbName: 'mikro_orm_test_gh_1176',
-    driver: PostgreSqlDriver,
   });
 
-  return orm as MikroORM<PostgreSqlDriver>;
+  return orm as MikroORM;
 }
 
 describe('GH issue 1176', () => {
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM;
   let em: EntityManager;
 
   beforeAll(async () => {

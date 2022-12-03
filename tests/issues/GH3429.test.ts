@@ -1,5 +1,4 @@
-import { SqliteDriver } from '@mikro-orm/sqlite';
-import { MikroORM, Embeddable, Embedded, Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { MikroORM, Embeddable, Embedded, Entity, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Embeddable()
 class Address {
@@ -34,11 +33,10 @@ export class Organization {
 
 }
 
-let orm: MikroORM<SqliteDriver>;
+let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    driver: SqliteDriver,
     dbName: ':memory:',
     entities: [Organization],
   });
