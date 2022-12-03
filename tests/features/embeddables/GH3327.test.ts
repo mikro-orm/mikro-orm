@@ -1,4 +1,5 @@
 import { Embeddable, Embedded, Entity, MikroORM, Options, PrimaryKey, Property, t } from '@mikro-orm/core';
+import { PLATFORMS } from '../../bootstrap';
 
 @Embeddable()
 class FieldValue {
@@ -45,7 +46,7 @@ describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mongo'] as con
     orm = await MikroORM.init({
       entities: [Field],
       dbName: type.includes('sqlite') ? ':memory:' : 'mikro_orm_3327',
-      type,
+      driver: PLATFORMS[type],
       ...options,
     });
     await orm.schema.refreshDatabase();

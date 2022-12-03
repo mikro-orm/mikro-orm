@@ -7,7 +7,7 @@ import {
   PrimaryKey,
   Property,
 } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/postgresql';
+import { MikroORM } from '@mikro-orm/sqlite';
 import { randomUUID } from 'crypto';
 
 @Entity()
@@ -54,7 +54,6 @@ describe('GH issue 3738', () => {
     orm = await MikroORM.init({
       entities: [Answer, Question],
       dbName: ':memory:',
-      type: 'sqlite',
       loadStrategy: LoadStrategy.JOINED,
     });
     await orm.schema.createSchema();

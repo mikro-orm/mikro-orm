@@ -76,32 +76,4 @@ describe('SchemaGenerator', () => {
     ensureIndexesSpy.mockRestore();
   });
 
-  test('deprecated driver methods that are now in MongoSchemaGenerator', async () => {
-    const driver = orm.em.getDriver();
-    const createSchemaSpy = jest.spyOn(MongoSchemaGenerator.prototype, 'createSchema');
-    const dropSchemaSpy = jest.spyOn(MongoSchemaGenerator.prototype, 'dropSchema');
-    const refreshDatabaseSpy = jest.spyOn(MongoSchemaGenerator.prototype, 'refreshDatabase');
-    const ensureIndexesSpy = jest.spyOn(MongoSchemaGenerator.prototype, 'ensureIndexes');
-    createSchemaSpy.mockImplementation();
-    dropSchemaSpy.mockImplementation();
-    refreshDatabaseSpy.mockImplementation();
-
-    await driver.createCollections();
-    expect(createSchemaSpy).toBeCalledTimes(1);
-
-    await driver.dropCollections();
-    expect(dropSchemaSpy).toBeCalledTimes(1);
-
-    await driver.refreshCollections();
-    expect(refreshDatabaseSpy).toBeCalledTimes(1);
-
-    await driver.ensureIndexes();
-    expect(ensureIndexesSpy).toBeCalledTimes(1);
-
-    createSchemaSpy.mockRestore();
-    dropSchemaSpy.mockRestore();
-    refreshDatabaseSpy.mockRestore();
-    ensureIndexesSpy.mockRestore();
-  });
-
 });

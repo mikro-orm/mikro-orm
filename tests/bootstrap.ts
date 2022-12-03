@@ -6,6 +6,10 @@ import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { SqlEntityRepository } from '@mikro-orm/knex';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { MongoDriver } from '@mikro-orm/mongodb';
+import { Migrator } from '@mikro-orm/migrations';
+import { Migrator as MongoMigrator } from '@mikro-orm/migrations-mongodb';
+import { SeedManager } from '@mikro-orm/seeder';
+import { EntityGenerator } from '@mikro-orm/entity-generator';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { MariaDbDriver } from '@mikro-orm/mariadb';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
@@ -23,6 +27,15 @@ import { BASE_DIR } from './helpers';
 import { Book5 } from './entities-5';
 
 const { BaseEntity4, Author3, Book3, BookTag3, Publisher3, Test3 } = require('./entities-js/index');
+
+export const PLATFORMS = {
+  'mongo': MongoDriver,
+  'mysql': MySqlDriver,
+  'mariadb': MariaDbDriver,
+  'postgresql': PostgreSqlDriver,
+  'sqlite': SqliteDriver,
+  'better-sqlite': BetterSqliteDriver,
+};
 
 let ensureIndexes = true; // ensuring indexes is slow, and it is enough to make it once
 
@@ -69,6 +82,7 @@ export async function initORMMongo(replicaSet = false) {
     filters: { allowedFooBars: { cond: args => ({ id: { $in: args.allowed } }), entity: ['FooBar'], default: false } },
     pool: { min: 1, max: 3 },
     migrations: { path: BASE_DIR + '/../temp/migrations-mongo' },
+    extensions: [MongoMigrator, SeedManager, EntityGenerator],
   });
 
   ensureIndexes = false;
@@ -94,6 +108,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     driver: type === 'mysql' ? MySqlDriver : MariaDbDriver,
     replicas: [{ name: 'read-1' }, { name: 'read-2' }], // create two read replicas with same configuration, just for testing purposes
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
+    extensions: [Migrator, SeedManager, EntityGenerator],
   }, additionalOptions));
 
   await orm.schema.ensureDatabase();
@@ -107,7 +122,7 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     await connection.loadFile(__dirname + '/mysql-schema.sql');
     await orm.close(true);
     orm.config.set('dbName', dbName);
-    orm = await MikroORM.init(orm.config);
+    orm = await MikroORM.init(orm.config.getAll());
   }
 
   Author2Subscriber.log.length = 0;
@@ -133,6 +148,7 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, e
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
     forceEntityConstructor: [FooBar2],
     loadStrategy,
+    extensions: [Migrator, SeedManager, EntityGenerator],
   });
 
   await orm.schema.ensureDatabase();
@@ -160,6 +176,7 @@ export async function initORMSqlite() {
     cache: { enabled: true, pretty: true },
     persistOnCreate: false,
     ignoreUndefinedInQuery: true,
+    extensions: [Migrator, SeedManager, EntityGenerator],
   });
 
   const connection = orm.em.getConnection();
@@ -180,6 +197,7 @@ export async function initORMSqlite2(type: 'sqlite' | 'better-sqlite' = 'sqlite'
     logger: i => i,
     cache: { pretty: true },
     migrations: { path: BASE_DIR + '/../temp/migrations-2', snapshot: false },
+    extensions: [Migrator, SeedManager, EntityGenerator],
   });
   await orm.schema.refreshDatabase();
 
@@ -197,6 +215,7 @@ export async function initORMSqlite3() {
     logger: i => i,
     metadataProvider: ReflectMetadataProvider,
     cache: { enabled: true, pretty: true },
+    extensions: [Migrator, SeedManager, EntityGenerator],
   });
 
   const connection = orm.em.getConnection();
