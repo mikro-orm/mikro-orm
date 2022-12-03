@@ -1,6 +1,4 @@
-import { inspect } from 'util';
 import { pathExistsSync } from 'fs-extra';
-
 import type { NamingStrategy } from '../naming-strategy';
 import type { CacheAdapter } from '../cache';
 import { FileCacheAdapter, NullCacheAdapter } from '../cache';
@@ -130,22 +128,12 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     dynamicImportProvider: /* istanbul ignore next */ (id: string) => import(id),
   };
 
-  // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
-  static readonly PLATFORMS = {
-    'mongo': { className: 'MongoDriver', module: () => require('@mikro-orm/mongodb') },
-    'mysql': { className: 'MySqlDriver', module: () => require('@mikro-orm/mysql') },
-    'mariadb': { className: 'MariaDbDriver', module: () => require('@mikro-orm/mariadb') },
-    'postgresql': { className: 'PostgreSqlDriver', module: () => require('@mikro-orm/postgresql') },
-    'sqlite': { className: 'SqliteDriver', module: () => require('@mikro-orm/sqlite') },
-    'better-sqlite': { className: 'BetterSqliteDriver', module: () => require('@mikro-orm/better-sqlite') },
-  };
-
   private readonly options: MikroORMOptions<D>;
   private readonly logger: Logger;
   private readonly driver: D;
   private readonly platform: Platform;
   private readonly cache = new Map<string, any>();
-  private readonly extensions = new Map<string, unknown>();
+  private readonly extensions = new Map<string, () => unknown>();
 
   constructor(options: Options, validate = true) {
     if (options.dynamicImportProvider) {
@@ -166,7 +154,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       highlighter: this.options.highlighter,
       writer: this.options.logger,
     });
-    this.driver = this.initDriver();
+    this.driver = new this.options.driver!(this);
     this.platform = this.driver.getPlatform();
     this.platform.setConfig(this);
     this.detectSourceFolder(options);
@@ -227,12 +215,23 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     return this.driver;
   }
 
-  registerExtension(name: string, instance: unknown): void {
-    this.extensions.set(name, instance);
+  registerExtension(name: string, cb: () => unknown): void {
+    this.extensions.set(name, cb);
   }
 
   getExtension<T>(name: string): T | undefined {
-    return this.extensions.get(name) as T;
+    if (this.cache.has(name)) {
+      return this.cache.get(name);
+    }
+
+    const ext = this.extensions.get(name);
+
+    if (ext) {
+      this.cache.set(name, ext());
+      return this.cache.get(name);
+    }
+
+    return undefined;
   }
 
   /**
@@ -381,12 +380,12 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   private validateOptions(): void {
-    if (!this.options.type && !this.options.driver) {
-      throw new Error('No platform type specified, please fill in `type` or provide custom driver class in `driver` option. Available platforms types: ' + inspect(Object.keys(Configuration.PLATFORMS)));
+    if ('type' in this.options) {
+      throw new Error('The `type` option has been removed in v6, please fill in the `driver` option instead or use `defineConfig` helper (to define your ORM config) or `MikroORM` class (to call the `init` method) exported from the driver package (e.g. `import { defineConfig } from \'@mikro-orm/mysql\'; export default defineConfig({ ... })`).');
     }
 
-    if (this.options.type && !(this.options.type in Configuration.PLATFORMS)) {
-      throw new Error(`Invalid platform type specified: '${this.options.type}', please fill in valid \`type\` or provide custom driver class in \`driver\` option. Available platforms types: ${inspect(Object.keys(Configuration.PLATFORMS))}`);
+    if (!this.options.driver) {
+      throw new Error('No driver specified, please fill in the `driver` option or use `defineConfig` helper (to define your ORM config) or `MikroORM` class (to call the `init` method) exported from the driver package (e.g. `import { defineConfig } from \'@mikro-orm/mysql\'; export defineConfig({ ... })`).');
     }
 
     if (!this.options.dbName && !this.options.clientUrl) {
@@ -396,15 +395,6 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     if (this.options.entities.length === 0 && this.options.discovery.warnWhenNoEntities) {
       throw new Error('No entities found, please use `entities` option');
     }
-  }
-
-  private initDriver(): D {
-    if (!this.options.driver) {
-      const { className, module } = Configuration.PLATFORMS[this.options.type!];
-      this.options.driver = module()[className];
-    }
-
-    return new this.options.driver!(this);
   }
 
 }
@@ -500,8 +490,6 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
     disableDynamicFileAccess?: boolean;
     getMappedType?: (type: string, platform: Platform) => Type<unknown> | undefined;
   };
-  /** @deprecated type option will be removed in v6, use `defineConfig` exported from the driver package to define your ORM config */
-  type?: keyof typeof Configuration.PLATFORMS;
   driver?: { new(config: Configuration): D };
   driverOptions: Dictionary;
   namingStrategy?: { new(): NamingStrategy };
