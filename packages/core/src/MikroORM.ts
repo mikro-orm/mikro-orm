@@ -1,12 +1,12 @@
 import type { EntityManagerType, IDatabaseDriver } from './drivers';
 import { MetadataDiscovery, MetadataStorage, MetadataValidator, ReflectMetadataProvider } from './metadata';
 import type { Options } from './utils';
-import type { Logger } from './logging';
 import { Configuration, ConfigurationLoader, Utils } from './utils';
+import type { Logger } from './logging';
+import { colors } from './logging';
 import { NullCacheAdapter } from './cache';
 import type { EntityManager } from './EntityManager';
 import type { Constructor, IEntityGenerator, IMigrator, ISeedManager } from './typings';
-import { colors } from './logging';
 
 /**
  * Helper class for bootstrapping the MikroORM.
@@ -25,7 +25,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    * Initialize the ORM, load entity metadata, create EntityManager and connect to the database.
    * If you omit the `options` parameter, your CLI config will be used.
    */
-  static async init<D extends IDatabaseDriver = IDatabaseDriver>(options?: Options<D>, connect = true): Promise<MikroORM<D>> {
+  static async init<D extends IDatabaseDriver = IDatabaseDriver>(options?: Options<D>): Promise<MikroORM<D>> {
     ConfigurationLoader.registerDotenv(options);
     const coreVersion = await ConfigurationLoader.checkPackageVersion();
     const env = ConfigurationLoader.loadEnvironmentVars<D>();
@@ -51,9 +51,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     orm.config.set('allowGlobalContext', allowGlobalContext);
     orm.driver.getPlatform().lookupExtensions(orm);
 
-    connect &&= orm.config.get('connect');
-
-    if (connect) {
+    if (orm.config.get('connect')) {
       await orm.connect();
     }
 
@@ -61,7 +59,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
       extension.register(orm);
     }
 
-    if (connect && orm.config.get('ensureIndexes')) {
+    if (orm.config.get('connect') && orm.config.get('ensureIndexes')) {
       await orm.getSchemaGenerator().ensureIndexes();
     }
 
@@ -127,7 +125,18 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    * Closes the database connection.
    */
   async close(force = false): Promise<void> {
-    return this.driver.close(force);
+    if (await this.isConnected()) {
+      await this.driver.close(force);
+    }
+
+    if (this.config.getCacheAdapter()?.close) {
+      await this.config.getCacheAdapter().close!();
+    }
+
+    if (this.config.getResultCacheAdapter()?.close) {
+      await this.config.getResultCacheAdapter().close!();
+    }
+
   }
 
   /**
