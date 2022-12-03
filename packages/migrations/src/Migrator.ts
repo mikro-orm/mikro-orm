@@ -2,7 +2,7 @@ import { Umzug, type InputMigrations, type MigrateDownOptions, type MigrateUpOpt
 import { basename, join } from 'path';
 import { ensureDir, pathExists, writeJSON } from 'fs-extra';
 import { t, Type, UnknownType, Utils, type Constructor, type Dictionary, type IMigrationGenerator, type IMigrator, type MikroORM, type Transaction } from '@mikro-orm/core';
-import { DatabaseSchema, DatabaseTable, SchemaGenerator, type EntityManager } from '@mikro-orm/knex';
+import { DatabaseSchema, DatabaseTable, SqlSchemaGenerator, type EntityManager } from '@mikro-orm/knex';
 import type { Migration } from './Migration';
 import { MigrationRunner } from './MigrationRunner';
 import { MigrationStorage } from './MigrationStorage';
@@ -17,7 +17,7 @@ export class Migrator implements IMigrator {
   private storage!: MigrationStorage;
   private generator!: IMigrationGenerator;
   private readonly driver = this.em.getDriver();
-  private readonly schemaGenerator = new SchemaGenerator(this.em);
+  private readonly schemaGenerator = new SqlSchemaGenerator(this.em);
   private readonly config = this.em.config;
   private readonly options = this.config.get('migrations');
   private readonly absolutePath: string;
