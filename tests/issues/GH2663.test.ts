@@ -1,5 +1,4 @@
-import { Embeddable, Embedded, Entity, LoadStrategy, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Embeddable, Embedded, Entity, LoadStrategy, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Embeddable()
 export class Z {
@@ -33,13 +32,12 @@ export class B {
 
 describe('GH issue 2663', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A, B, Z],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });

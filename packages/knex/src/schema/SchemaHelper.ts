@@ -3,7 +3,7 @@ import type { Connection, Dictionary } from '@mikro-orm/core';
 import { BigIntType, EnumType, Utils } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
-import type { Check, Column, Index, Table, TableDifference } from '../typings';
+import type { CheckDef, Column, IndexDef, Table, TableDifference } from '../typings';
 import type { DatabaseTable } from './DatabaseTable';
 import type { DatabaseSchema } from './DatabaseSchema';
 
@@ -35,7 +35,7 @@ export abstract class SchemaHelper {
     return true;
   }
 
-  async getPrimaryKeys(connection: AbstractSqlConnection, indexes: Index[] = [], tableName: string, schemaName?: string): Promise<string[]> {
+  async getPrimaryKeys(connection: AbstractSqlConnection, indexes: IndexDef[] = [], tableName: string, schemaName?: string): Promise<string[]> {
     const pks = indexes.filter(i => i.primary).map(pk => pk.columnNames);
     return Utils.flatten(pks);
   }
@@ -60,7 +60,7 @@ export abstract class SchemaHelper {
     return unquote(t.table_name);
   }
 
-  async getEnumDefinitions(connection: AbstractSqlConnection, checks: Check[], tableName: string, schemaName?: string): Promise<Dictionary<string[]>> {
+  async getEnumDefinitions(connection: AbstractSqlConnection, checks: CheckDef[], tableName: string, schemaName?: string): Promise<Dictionary<string[]>> {
     return {};
   }
 
@@ -93,7 +93,7 @@ export abstract class SchemaHelper {
     return `alter table ${tableReference} rename column ${oldColumnName} to ${columnName}`;
   }
 
-  getCreateIndexSQL(tableName: string, index: Index): string {
+  getCreateIndexSQL(tableName: string, index: IndexDef): string {
     /* istanbul ignore if */
     if (index.expression) {
       return index.expression;
@@ -105,11 +105,11 @@ export abstract class SchemaHelper {
     return `create index ${keyName} on ${tableName} (${index.columnNames.map(c => this.platform.quoteIdentifier(c)).join(', ')})`;
   }
 
-  getDropIndexSQL(tableName: string, index: Index): string {
+  getDropIndexSQL(tableName: string, index: IndexDef): string {
     return `drop index ${this.platform.quoteIdentifier(index.keyName)}`;
   }
 
-  getRenameIndexSQL(tableName: string, index: Index, oldIndexName: string): string {
+  getRenameIndexSQL(tableName: string, index: IndexDef, oldIndexName: string): string {
     return [this.getDropIndexSQL(tableName, { ...index, keyName: oldIndexName }), this.getCreateIndexSQL(tableName, index)].join(';\n');
   }
 
@@ -189,15 +189,15 @@ export abstract class SchemaHelper {
     throw new Error('Not supported by given driver');
   }
 
-  async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Index[]> {
+  async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<IndexDef[]> {
     throw new Error('Not supported by given driver');
   }
 
-  async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName?: string, columns?: Column[]): Promise<Check[]> {
+  async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName?: string, columns?: Column[]): Promise<CheckDef[]> {
     throw new Error('Not supported by given driver');
   }
 
-  protected async mapIndexes(indexes: Index[]): Promise<Index[]> {
+  protected async mapIndexes(indexes: IndexDef[]): Promise<IndexDef[]> {
     const map = {} as Dictionary;
 
     indexes.forEach(index => {

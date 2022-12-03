@@ -1,5 +1,4 @@
-import { Entity, PrimaryKey, Property, Type, ValidationError } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/mysql';
+import { MikroORM, Entity, PrimaryKey, Property, Type, ValidationError } from '@mikro-orm/mysql';
 import { mockLogger } from '../helpers';
 
 export function toBinaryUuid(uuid: string): Buffer {
