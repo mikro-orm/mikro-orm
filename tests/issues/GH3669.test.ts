@@ -1,5 +1,4 @@
-import { Entity, ManyToOne, OneToOne, PrimaryKey, PrimaryKeyType, Property, Rel, SimpleLogger } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/postgresql';
+import { Entity, MikroORM, ManyToOne, OneToOne, PrimaryKey, PrimaryKeyType, Property, Rel, SimpleLogger } from '@mikro-orm/postgresql';
 import { mockLogger } from '../helpers';
 
 @Entity()

@@ -1,6 +1,6 @@
 import { inspect } from 'util';
 import { BooleanType, DateTimeType, JsonType, parseJsonSafe, Utils, type Dictionary, type EntityProperty } from '@mikro-orm/core';
-import type { Check, Column, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
+import type { CheckDef, Column, ForeignKey, IndexDef, SchemaDifference, TableDifference } from '../typings';
 import type { DatabaseSchema } from './DatabaseSchema';
 import type { DatabaseTable } from './DatabaseTable';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
@@ -331,7 +331,7 @@ export class SchemaComparator {
    * however ambiguities between different possibilities should not lead to renaming at all.
    */
   private detectIndexRenamings(tableDifferences: TableDifference): void {
-    const renameCandidates: Dictionary<[Index, Index][]> = {};
+    const renameCandidates: Dictionary<[IndexDef, IndexDef][]> = {};
 
     // Gather possible rename candidates by comparing each added and removed index based on semantics.
     for (const addedIndex of Object.values(tableDifferences.addedIndexes)) {
@@ -476,7 +476,7 @@ export class SchemaComparator {
    * Finds the difference between the indexes index1 and index2.
    * Compares index1 with index2 and returns index2 if there are any differences or false in case there are no differences.
    */
-  diffIndex(index1: Index, index2: Index): boolean {
+  diffIndex(index1: IndexDef, index2: IndexDef): boolean {
     // if one of them is a custom expression or full text index, compare only by name
     if (index1.expression || index2.expression || index1.type === 'fulltext' || index2.type === 'fulltext') {
       return index1.keyName !== index2.keyName;
@@ -488,7 +488,7 @@ export class SchemaComparator {
   /**
    * Checks if the other index already fulfills all the indexing and constraint needs of the current one.
    */
-  isIndexFulfilledBy(index1: Index, index2: Index): boolean {
+  isIndexFulfilledBy(index1: IndexDef, index2: IndexDef): boolean {
     // allow the other index to be equally large only. It being larger is an option but it creates a problem with scenarios of the kind PRIMARY KEY(foo,bar) UNIQUE(foo)
     if (index1.columnNames.length !== index2.columnNames.length) {
       return false;
@@ -522,7 +522,7 @@ export class SchemaComparator {
     return index1.primary === index2.primary && index1.unique === index2.unique;
   }
 
-  diffCheck(check1: Check, check2: Check): boolean {
+  diffCheck(check1: CheckDef, check2: CheckDef): boolean {
     // check constraint definition might be normalized by the driver,
     // e.g. quotes might be added (https://github.com/mikro-orm/mikro-orm/issues/3827)
     const simplify = (str?: string) => str?.replace(/['"`()]/g, '').toLowerCase();

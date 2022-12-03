@@ -1,5 +1,4 @@
-import { BigIntType, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { BigIntType, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -34,13 +33,12 @@ class UserOrganization {
 
 describe('GH issue 940, 1117', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [User, UserOrganization],
       dbName: `:memory:`,
-      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });

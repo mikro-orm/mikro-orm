@@ -1,4 +1,4 @@
-import { SchemaHelper, type AbstractSqlConnection, type Check, type Column, type Index, type Knex, type TableDifference, type DatabaseTable, type DatabaseSchema, type Table, type ForeignKey } from '@mikro-orm/knex';
+import { SchemaHelper, type AbstractSqlConnection, type CheckDef, type Column, type IndexDef, type Knex, type TableDifference, type DatabaseTable, type DatabaseSchema, type Table, type ForeignKey } from '@mikro-orm/knex';
 import { EnumType, StringType, TextType, MediumIntType, type Dictionary, type Type } from '@mikro-orm/core';
 
 export class MySqlSchemaHelper extends SchemaHelper {
@@ -55,7 +55,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
     }
   }
 
-  async getAllIndexes(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Index[]>> {
+  async getAllIndexes(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<IndexDef[]>> {
     const sql = `select table_name as table_name, nullif(table_schema, schema()) as schema_name, index_name as index_name, non_unique as non_unique, column_name as column_name
         from information_schema.statistics where table_schema = database()
         and table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(', ')})`;
@@ -127,7 +127,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  async getAllChecks(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Check[]>> {
+  async getAllChecks(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<CheckDef[]>> {
     /* istanbul ignore next */
     if (!await this.supportsCheckConstraints(connection)) {
       return {};
@@ -211,7 +211,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return `alter table ${tableName} change ${oldColumnName} ${columnName} ${this.getColumnDeclarationSQL(to)}`;
   }
 
-  getRenameIndexSQL(tableName: string, index: Index, oldIndexName: string): string {
+  getRenameIndexSQL(tableName: string, index: IndexDef, oldIndexName: string): string {
     tableName = this.platform.quoteIdentifier(tableName);
     oldIndexName = this.platform.quoteIdentifier(oldIndexName);
     const keyName = this.platform.quoteIdentifier(index.keyName);
@@ -303,13 +303,13 @@ export class MySqlSchemaHelper extends SchemaHelper {
   }
 
   /* istanbul ignore next */
-  async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName: string, columns?: Column[]): Promise<Check[]> {
+  async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName: string, columns?: Column[]): Promise<CheckDef[]> {
     const res = await this.getAllChecks(connection, [{ table_name: tableName, schema_name: schemaName }]);
     return res[tableName];
   }
 
   /* istanbul ignore next */
-  async getEnumDefinitions(connection: AbstractSqlConnection, checks: Check[], tableName: string, schemaName?: string): Promise<Dictionary<string[]>> {
+  async getEnumDefinitions(connection: AbstractSqlConnection, checks: CheckDef[], tableName: string, schemaName?: string): Promise<Dictionary<string[]>> {
     const res = await this.getAllEnumDefinitions(connection, [{ table_name: tableName, schema_name: schemaName }]);
     return res[tableName];
   }
@@ -321,7 +321,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
   }
 
   /* istanbul ignore next */
-  async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Index[]> {
+  async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<IndexDef[]> {
     const res = await this.getAllIndexes(connection, [{ table_name: tableName, schema_name: schemaName }]);
     return res[tableName];
   }

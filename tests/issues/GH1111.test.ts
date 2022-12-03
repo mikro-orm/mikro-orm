@@ -1,7 +1,5 @@
-import { Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, PrimaryKeyType, Property, Reference } from '@mikro-orm/core';
-import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import { Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, PrimaryKeyType, Property, Reference } from '@mikro-orm/postgresql';
 import { mockLogger } from '../helpers';
-import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 class Node {
@@ -44,14 +42,13 @@ class B {
 
 describe('GH issue 1111', () => {
 
-  let orm: MikroORM<AbstractSqlDriver>;
+  let orm: MikroORM;
   const log = jest.fn();
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Node, A, B],
       dbName: `mikro_orm_test_gh_1111`,
-      driver: PostgreSqlDriver,
       cache: { enabled: false },
     });
     mockLogger(orm, ['query', 'query-params'], log);
