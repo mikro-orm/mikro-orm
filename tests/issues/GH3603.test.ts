@@ -1,5 +1,4 @@
-import { EntitySchema } from '@mikro-orm/core';
-import { MikroORM } from '@mikro-orm/sqlite';
+import { MikroORM, EntitySchema } from '@mikro-orm/sqlite';
 
 interface MyEntity {
   _id: number;

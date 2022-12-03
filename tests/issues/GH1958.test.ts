@@ -1,5 +1,4 @@
-import { Embeddable, Embedded, Entity, MikroORM, OneToOne, PrimaryKey, Property, Rel } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Embeddable, Embedded, Entity, MikroORM, OneToOne, PrimaryKey, Property, Rel } from '@mikro-orm/sqlite';
 
 @Embeddable()
 class LoopOptions {
@@ -56,7 +55,6 @@ describe('GH issue 1958', () => {
     orm = await MikroORM.init({
       entities: [PlayerEntity, Options, LoopOptions],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
     await orm.schema.createSchema();
   });

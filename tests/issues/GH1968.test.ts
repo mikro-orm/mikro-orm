@@ -1,5 +1,4 @@
-import { BigIntType, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { BigIntType, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Entity()
 class Author {
@@ -36,7 +35,6 @@ describe('GH issue 1968', () => {
     orm = await MikroORM.init({
       entities: [Author, Book],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
 
     await orm.schema.createSchema();

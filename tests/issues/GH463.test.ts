@@ -1,5 +1,4 @@
-import { Entity, PrimaryKey, Property, MikroORM, Index, Unique } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, MikroORM, Index, Unique } from '@mikro-orm/sqlite';
 
 abstract class A {
 
@@ -26,13 +25,12 @@ class B extends A {
 
 describe('GH issue 463', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A, B],
       dbName: ':memory:',
-      driver: SqliteDriver,
     });
     await orm.schema.dropSchema();
     await orm.schema.createSchema();
