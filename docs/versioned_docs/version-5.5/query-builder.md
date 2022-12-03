@@ -105,7 +105,7 @@ const res4 = await em.qb(Publisher)
 console.log(res4.affectedRows > 0);
 
 const res5 = await em.qb(Publisher).delete().where({ name: 'p1' });
-// res4 is QueryResult<Publisher>
+// res5 is QueryResult<Publisher>
 console.log(res4.affectedRows > 0);
 expect(res5.affectedRows > 0).toBe(true); // test the type
 ```
