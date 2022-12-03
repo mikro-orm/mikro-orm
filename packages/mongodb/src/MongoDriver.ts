@@ -343,32 +343,4 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return ret.length > 0 ? ret : undefined;
   }
 
-  /**
-   * @deprecated use `orm.getSchemaGenerator().createSchema()` instead
-   */
-  async createCollections(): Promise<void> {
-    await this.platform.getSchemaGenerator(this).createSchema();
-  }
-
-  /**
-   * @deprecated use `orm.getSchemaGenerator().dropSchema()` instead
-   */
-  async dropCollections(): Promise<void> {
-    await this.platform.getSchemaGenerator(this).dropSchema();
-  }
-
-  /**
-   * @deprecated use `orm.getSchemaGenerator().refreshDatabase()` instead
-   */
-  async refreshCollections(options: CreateSchemaOptions = {}): Promise<void> {
-    await this.platform.getSchemaGenerator(this).refreshDatabase(options);
-  }
-
-  /**
-   * @deprecated use `orm.getSchemaGenerator().ensureIndexes()` instead
-   */
-  async ensureIndexes(): Promise<void> {
-    await this.platform.getSchemaGenerator(this).ensureIndexes();
-  }
-
 }

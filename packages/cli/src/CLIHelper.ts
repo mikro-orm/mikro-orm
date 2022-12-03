@@ -32,7 +32,7 @@ export class CLIHelper {
       options.get('discovery').warnWhenNoEntities = warnWhenNoEntities;
     }
 
-    return MikroORM.init(options);
+    return MikroORM.init(options.getAll());
   }
 
   static async isDBConnected(): Promise<boolean> {
