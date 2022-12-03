@@ -2,7 +2,7 @@ import { copyFileSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { execSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { createRequire } from 'module';
+import { createRequire } from 'node:module';
 
 // as we publish only the dist folder, we need to copy some meta files inside (readme/license/package.json)
 // also changes paths inside the copied `package.json` (`dist/index.js` -> `index.js`)
@@ -44,7 +44,24 @@ async function getRootVersion(bump = true) {
 
   if (bump) {
     const parts = rootVersion.split('.');
-    parts[2] = `${+parts[2] + 1}`;
+    const inc = bump ? 1 : 0;
+
+    switch (options.canary?.toLowerCase()) {
+      case 'major': {
+        parts[0] = `${+parts[0] + inc}`;
+        parts[1] = 0;
+        parts[2] = 0;
+        break;
+      }
+      case 'minor': {
+        parts[1] = `${+parts[0] + inc}`;
+        parts[2] = 0;
+        break;
+      }
+      case 'patch':
+      default: parts[2] = `${+parts[2] + inc}`;
+    }
+
     rootVersion = parts.join('.');
   }
 
