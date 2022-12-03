@@ -1,6 +1,4 @@
 import type { ArgumentsCamelCase, Argv, CommandModule } from 'yargs';
-import { Utils } from '@mikro-orm/core';
-import type { EntityManager } from '@mikro-orm/knex';
 import { CLIHelper } from '../CLIHelper';
 
 export type Options = { dump: boolean; save: boolean; path: string; schema: string };
@@ -46,9 +44,11 @@ export class GenerateEntitiesCommand<U extends Options = Options> implements Com
     }
 
     const orm = await CLIHelper.getORM(false);
-    const { EntityGenerator } = await Utils.dynamicImport('@mikro-orm/entity-generator');
-    const generator = new EntityGenerator(orm.em as EntityManager);
-    const dump = await generator.generate({ save: args.save, baseDir: args.path, schema: args.schema });
+    const dump = await orm.entityGenerator.generate({
+      save: args.save,
+      baseDir: args.path,
+      schema: args.schema,
+    });
 
     if (args.dump) {
       CLIHelper.dump(dump.join('\n\n'));

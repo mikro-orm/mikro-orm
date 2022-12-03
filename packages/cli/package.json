@@ -70,9 +70,9 @@
     "yargs": "17.7.2"
   },
   "devDependencies": {
-    "@mikro-orm/entity-generator": "^5.8.1",
-    "@mikro-orm/migrations": "^5.8.1",
-    "@mikro-orm/seeder": "^5.8.1"
+    "@mikro-orm/entity-generator": "^5.8.0",
+    "@mikro-orm/migrations": "^5.8.0",
+    "@mikro-orm/seeder": "^5.8.0"
   },
   "peerDependencies": {
     "@mikro-orm/better-sqlite": "^5.0.0",
