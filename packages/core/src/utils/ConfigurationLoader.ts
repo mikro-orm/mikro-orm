@@ -108,7 +108,7 @@ export class ConfigurationLoader {
     paths.push('./mikro-orm.config.js');
     const tsNode = Utils.detectTsNode();
 
-    return paths.filter(p => p.endsWith('.js') || tsNode);
+    return Utils.unique(paths).filter(p => p.endsWith('.js') || tsNode);
   }
 
   static async isESM(): Promise<boolean> {
