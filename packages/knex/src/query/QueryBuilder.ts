@@ -1,3 +1,4 @@
+import { inspect } from 'util';
 import type { Knex } from 'knex';
 import type {
   AnyEntity,
@@ -1135,6 +1136,34 @@ export class QueryBuilder<T extends object = AnyEntity> {
     if (this.finalized) {
       throw new Error('This QueryBuilder instance is already finalized, clone it first if you want to modify it.');
     }
+  }
+
+  /* istanbul ignore next */
+  [inspect.custom](depth: number) {
+    const object = { ...this } as Dictionary;
+    const hidden = ['metadata', 'driver', 'context', 'platform', 'knex', 'type'];
+    Object.keys(object).filter(k => k.startsWith('_')).forEach(k => delete object[k]);
+    Object.keys(object).filter(k => object[k] == null).forEach(k => delete object[k]);
+    hidden.forEach(k => delete object[k]);
+    let prefix = this.type ? this.type.substring(0, 1) + this.type.toLowerCase().substring(1) : '';
+
+    if (this._data) {
+      object.data = this._data;
+    }
+
+    if (!Utils.isEmpty(this._cond)) {
+      object.where = this._cond;
+    }
+
+    if (this._onConflict?.[0]) {
+      prefix = 'Upsert';
+      object.onConflict = this._onConflict[0];
+    }
+
+    const name = this._mainAlias ? `${prefix}QueryBuilder<${this._mainAlias?.entityName}>` : 'QueryBuilder';
+    const ret = inspect(object, { depth });
+
+    return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
   }
 
 }

@@ -25,7 +25,7 @@ export function wrap<T, PK extends keyof T | unknown = PrimaryProperty<T>>(entit
 /**
  * shortcut for `wrap(entity).toReference()`
  */
-export function ref<T, PK extends keyof T | unknown = PrimaryProperty<T>>(entity?: T): Ref<T, PK> {
+export function ref<T, PK extends keyof T | unknown = PrimaryProperty<T>>(entity?: T | Ref<T, any>): Ref<T, PK> {
   return (entity as Dictionary)?.__helper.toReference();
 }
 

@@ -72,6 +72,7 @@ export class EntityHelper {
 
           return this.__helper;
         },
+        configurable: true, // otherwise jest fails when trying to compare entities ¯\_(ツ)_/¯
       },
     });
   }

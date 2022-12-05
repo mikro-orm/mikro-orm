@@ -367,6 +367,23 @@ Depending on the driver support, this will either use a returning query, or a se
 
 If the entity is already present in current context, there won't be any queries - instead, the entity data will be assigned and an explicit `flush` will be required for those changes to be persisted.
 
+You can also use detached entity instance, after the `em.upsert()` call it will become managed.
+
+```ts
+const author = em.create(Author, { email: 'foo@bar.com', age: 33 });
+await em.upsert(author);
+```
+
+Since v5.6 there is also `em.upsertMany()` with similar signature:
+
+```ts
+const [author1, author2, author3] = await em.upsertMany(Author, [
+  { email: 'a1', age: 41 },
+  { email: 'a2', age: 42 },
+  { email: 'a3', age: 43 },
+]);
+```
+
 ## Refreshing entity state
 
 We can use `em.refresh(entity)` to synchronize the entity state with database. This is a shortcut for calling `em.findOne()` with `refresh: true` and disabled auto-flush.

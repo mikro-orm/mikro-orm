@@ -198,8 +198,8 @@ export class MongoConnection extends Connection {
     return this.runQuery<T>('updateMany', collection, data, where, ctx, upsert);
   }
 
-  async bulkUpdateMany<T extends object>(collection: string, where: FilterQuery<T>[], data: Partial<T>[], ctx?: Transaction<ClientSession>): Promise<QueryResult<T>> {
-    return this.runQuery<T>('bulkUpdateMany', collection, data, where, ctx);
+  async bulkUpdateMany<T extends object>(collection: string, where: FilterQuery<T>[], data: Partial<T>[], ctx?: Transaction<ClientSession>, upsert?: boolean): Promise<QueryResult<T>> {
+    return this.runQuery<T>('bulkUpdateMany', collection, data, where, ctx, upsert);
   }
 
   async deleteMany<T extends object>(collection: string, where: FilterQuery<T>, ctx?: Transaction<ClientSession>): Promise<QueryResult<T>> {
@@ -304,7 +304,15 @@ export class MongoConnection extends Connection {
         (data as T[]).forEach((row, idx) => {
           const id = (where as Dictionary[])[idx];
           const cond = Utils.isPlainObject(id) ? id : { _id: id };
-          const doc = this.createUpdatePayload(row);
+          const doc = this.createUpdatePayload(row) as Dictionary;
+
+          if (upsert) {
+            delete doc.$set._id;
+            query += log(() => `bulk.find(${this.logObject(cond)}).upsert().update(${this.logObject(doc)});\n`);
+            bulk.find(cond).upsert().update(doc);
+            return;
+          }
+
           query += log(() => `bulk.find(${this.logObject(cond)}).update(${this.logObject(doc)});\n`);
           bulk.find(cond).update(doc);
         });
