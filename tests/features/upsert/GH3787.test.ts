@@ -1,4 +1,4 @@
-import { Entity, MikroORM, OptionalProps, PrimaryKey, Property, t } from '@mikro-orm/core';
+import { Entity, MikroORM, OptionalProps, PrimaryKey, Property, t } from '@mikro-orm/better-sqlite';
 
 @Entity()
 export class Asset1 {
@@ -15,7 +15,6 @@ export class Asset1 {
 
 test('upsert and insert both correctly serialize json', async () => {
   const orm = await MikroORM.init({
-    type: 'better-sqlite',
     dbName: ':memory:',
     entities: [Asset1],
   });
