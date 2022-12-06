@@ -48,7 +48,6 @@ describe('EntityAssignerMySql', () => {
     expect(god.createdAt).toEqual(new Date('2018-01-01'));
 
     const d2 = +new Date('2018-01-01 00:00:00.123');
-    // @ts-expect-error
     wrap(god).assign({ createdAt: '' + d2 });
     expect(god.createdAt).toEqual(new Date('2018-01-01 00:00:00.123'));
 
