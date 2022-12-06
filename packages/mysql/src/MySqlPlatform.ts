@@ -1,4 +1,3 @@
-import type { AbstractSqlConnection } from '@mikro-orm/knex';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { MySqlSchemaHelper } from './MySqlSchemaHelper';
 import { MySqlExceptionConverter } from './MySqlExceptionConverter';
@@ -9,15 +8,6 @@ export class MySqlPlatform extends AbstractSqlPlatform {
 
   protected readonly schemaHelper: MySqlSchemaHelper = new MySqlSchemaHelper(this);
   protected readonly exceptionConverter = new MySqlExceptionConverter();
-
-  /**
-   * the increment may differ when running a cluster, see https://github.com/mikro-orm/mikro-orm/issues/3828
-   * @internal
-   */
-  async getAutoIncrementIncrement(con: AbstractSqlConnection): Promise<number> {
-    const res = await con.execute(`show variables like 'auto_increment_increment'`);
-    return res[0]?.auto_increment_increment ? +res[0]?.auto_increment_increment : 1;
-  }
 
   getDefaultCharset(): string {
     return 'utf8mb4';
