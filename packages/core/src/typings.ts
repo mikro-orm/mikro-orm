@@ -161,15 +161,17 @@ type ExpandEntityProp<T> = T extends Record<string, any>
   ? { [K in keyof T]?: EntityDataProp<ExpandProperty<T[K]>> | EntityDataPropValue<ExpandProperty<T[K]>> | null } | EntityDataPropValue<ExpandProperty<T>>
   : T;
 
-export type EntityDataProp<T> = T extends Scalar
-  ? T
-  : T extends Reference<infer U>
-    ? EntityDataNested<U>
-    : T extends Collection<infer U, any>
-        ? U | U[] | EntityDataNested<U> | EntityDataNested<U>[]
-        : T extends readonly (infer U)[]
-            ? U | U[] | EntityDataNested<U> | EntityDataNested<U>[]
-            : EntityDataNested<T>;
+export type EntityDataProp<T> = T extends Date
+  ? string | Date
+  : T extends Scalar
+    ? T
+    : T extends Reference<infer U>
+      ? EntityDataNested<U>
+      : T extends Collection<infer U, any>
+          ? U | U[] | EntityDataNested<U> | EntityDataNested<U>[]
+          : T extends readonly (infer U)[]
+              ? U | U[] | EntityDataNested<U> | EntityDataNested<U>[]
+              : EntityDataNested<T>;
 
 export type EntityDataNested<T> = T extends undefined
   ? never
