@@ -28,7 +28,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   protected constructor(readonly config: Configuration,
                         protected readonly dependencies: string[]) { }
 
-  init(): void {
+  async init(): Promise<void> {
     // do nothing on this level
   }
 
