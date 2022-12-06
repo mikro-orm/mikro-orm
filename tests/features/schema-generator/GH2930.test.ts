@@ -84,6 +84,7 @@ describe('GH issue 2930', () => {
         entities: [A],
         dbName: 'mikro_orm_test_gh2930',
         driver: MySqlDriver,
+        port: 3308,
         namingStrategy: class extends UnderscoreNamingStrategy {
 
           indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check'): string {

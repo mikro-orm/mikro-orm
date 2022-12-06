@@ -143,6 +143,7 @@ describe('MikroORM', () => {
       entities: [Test],
       driver: PostgreSqlDriver,
       dbName: 'mikro-orm-test',
+      ensureDatabase: false,
     };
 
     await MikroORM.init({
