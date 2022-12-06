@@ -423,6 +423,16 @@ export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = Abstra
     options.processCollections ??= true;
     options.convertCustomTypes ??= true;
     const meta = this.metadata.get<T>(entityName);
+
+    if (options.upsert) {
+      const uniqueFields = Utils.isPlainObject(where[0]) ? Object.keys(where[0]) : meta.primaryKeys;
+      const qb = this.createQueryBuilder(entityName, options.ctx, 'write', options.convertCustomTypes).withSchema(this.getSchemaName(meta, options));
+      qb.insert(data)
+        .onConflict(uniqueFields.map(p => meta?.properties[p]?.fieldNames[0] ?? p))
+        .merge(Object.keys(data[0]).filter(f => !uniqueFields.includes(f)));
+      return qb.execute('run', false);
+    }
+
     const collections = options.processCollections ? data.map(d => this.extractManyToMany(entityName, d)) : [];
     const keys = new Set<string>();
     data.forEach(row => Object.keys(row).forEach(k => keys.add(k)));

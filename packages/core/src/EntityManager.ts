@@ -4,10 +4,41 @@ import { QueryHelper, TransactionContext, Utils } from './utils';
 import type { AssignOptions, EntityLoaderOptions, EntityRepository, IdentifiedReference } from './entity';
 import { EntityAssigner, EntityFactory, EntityLoader, EntityValidator, helper, Reference } from './entity';
 import { ChangeSetType, UnitOfWork } from './unit-of-work';
-import type { CountOptions, DeleteOptions, EntityManagerType, FindOneOptions, FindOneOrFailOptions, FindOptions, IDatabaseDriver, LockOptions, NativeInsertUpdateOptions, UpdateOptions, GetReferenceOptions, EntityField } from './drivers';
-import type { AnyEntity, AutoPath, ConnectionType, Dictionary, EntityData, EntityDictionary, EntityDTO, EntityMetadata, EntityName, FilterDef, FilterQuery, GetRepository, Loaded, Populate, PopulateOptions, Primary, RequiredEntityData } from './typings';
-import { FlushMode, LoadStrategy, LockMode, PopulateHint, ReferenceType, SCALAR_TYPES } from './enums';
+import type {
+  CountOptions,
+  DeleteOptions,
+  EntityField,
+  EntityManagerType,
+  FindOneOptions,
+  FindOneOrFailOptions,
+  FindOptions,
+  GetReferenceOptions,
+  IDatabaseDriver,
+  LockOptions,
+  NativeInsertUpdateOptions,
+  UpdateOptions,
+} from './drivers';
+import type {
+  AnyEntity,
+  AutoPath,
+  ConnectionType,
+  Dictionary,
+  EntityData,
+  EntityDictionary,
+  EntityDTO,
+  EntityMetadata,
+  EntityName,
+  FilterDef,
+  FilterQuery,
+  GetRepository,
+  Loaded,
+  Populate,
+  PopulateOptions,
+  Primary,
+  RequiredEntityData,
+} from './typings';
 import type { TransactionOptions } from './enums';
+import { FlushMode, LoadStrategy, LockMode, PopulateHint, ReferenceType, SCALAR_TYPES } from './enums';
 import type { MetadataStorage } from './metadata';
 import type { Transaction } from './connections';
 import type { FlushEventArgs } from './events';
@@ -586,6 +617,168 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     em.unitOfWork.registerManaged(entity, data, { refresh: true });
 
     return entity;
+  }
+
+  /**
+   * Creates or updates the entity, based on whether it is already present in the database.
+   * This method performs an `insert on conflict merge` query ensuring the database is in sync, returning a managed
+   * entity instance. The method accepts either `entityName` together with the entity `data`, or just entity instance.
+   *
+   * ```ts
+   * // insert into "author" ("age", "email") values (33, 'foo@bar.com') on conflict ("email") do update set "age" = 41
+   * const author = await em.upsert(Author, { email: 'foo@bar.com', age: 33 });
+   * ```
+   *
+   * The entity data needs to contain either the primary key, or any other unique property. Let's consider the following example, where `Author.email` is a unique property:
+   *
+   * ```ts
+   * // insert into "author" ("age", "email") values (33, 'foo@bar.com'), (666, 'lol@lol.lol') on conflict ("email") do update set "age" = excluded."age"
+   * // select "id" from "author" where "email" = 'foo@bar.com'
+   * const author = await em.upsertMany(Author, [
+   *   { email: 'foo@bar.com', age: 33 },
+   *   { email: 'lol@lol.lol', age: 666 },
+   * ]);
+   * ```
+   *
+   * Depending on the driver support, this will either use a returning query, or a separate select query, to fetch the primary key if it's missing from the `data`.
+   *
+   * If the entity is already present in current context, there won't be any queries - instead, the entity data will be assigned and an explicit `flush` will be required for those changes to be persisted.
+   */
+  async upsertMany<T extends object>(entityNameOrEntity: EntityName<T> | T[], data?: (EntityData<T> | T)[], options: NativeInsertUpdateOptions<T> = {}): Promise<T[]> {
+    const em = this.getContext(false);
+
+    let entityName: string;
+    let propIndex: number;
+
+    if (data === undefined) {
+      entityName = entityNameOrEntity[0].constructor.name;
+      data = entityNameOrEntity as T[];
+    } else {
+      entityName = Utils.className(entityNameOrEntity as EntityName<T>);
+    }
+
+    const meta = this.metadata.get(entityName);
+    const allData: EntityData<T>[] = [];
+    const allWhere: FilterQuery<T>[] = [];
+    const entities = new Map<T, EntityData<T>>();
+
+    for (let row of data) {
+      let where: FilterQuery<T>;
+
+      if (Utils.isEntity(row)) {
+        const entity = row as T;
+
+        if (helper(entity).__managed && helper(entity).__em === em) {
+          em.entityFactory.mergeData(meta, entity, row);
+          entities.set(entity, row);
+          continue;
+        }
+
+        where = helper(entity).getPrimaryKey() as FilterQuery<T>;
+        row = em.comparator.prepareEntity(entity);
+      } else {
+        where = Utils.extractPK(row, meta) as FilterQuery<T>;
+
+        if (where) {
+          const exists = em.unitOfWork.getById<T>(entityName, where as Primary<T>, options.schema);
+
+          if (exists) {
+            em.assign(exists, row);
+            entities.set(exists, row);
+            continue;
+          }
+        }
+      }
+
+      const unique = meta.props.filter(p => p.unique).map(p => p.name);
+      propIndex = unique.findIndex(p => row![p] != null);
+
+      if (where == null) {
+        if (propIndex >= 0) {
+          where = { [unique[propIndex]]: row[unique[propIndex]] } as FilterQuery<T>;
+        } else if (meta.uniques.length > 0) {
+          for (const u of meta.uniques) {
+            if (Utils.asArray(u.properties).every(p => row![p])) {
+              where = Utils.asArray(u.properties).reduce((o, key) => {
+                o[key] = row![key];
+                return o;
+              }, {} as FilterQuery<T>);
+              break;
+            }
+          }
+        }
+      }
+
+      if (where == null) {
+        const compositeUniqueProps = meta.uniques.map(u => Utils.asArray(u.properties).join(' + '));
+        const uniqueProps = meta.primaryKeys.concat(...unique).concat(compositeUniqueProps);
+        throw new Error(`Unique property value required for upsert, provide one of: ${uniqueProps.join(', ')}`);
+      }
+
+      row = QueryHelper.processObjectParams(row) as EntityData<T>;
+      em.validator.validateParams(row, 'insert data');
+      allData.push(row);
+      allWhere.push(where);
+    }
+
+    if (entities.size === data.length) {
+      return [...entities.keys()];
+    }
+
+    const ret = await em.driver.nativeUpdateMany(entityName, allWhere, allData, { ctx: em.transactionContext, upsert: true, ...options });
+
+    if (ret.rows?.length) {
+      const prop = meta.getPrimaryProps()[0];
+      ret.rows.forEach((row, idx) => {
+        const value = row[prop.fieldNames[0]];
+        allData[idx][prop.name] = prop.customType ? prop.customType.convertToJSValue(value, this.getPlatform()) : value;
+
+        if (Utils.isEntity(data![idx])) {
+          em.entityFactory.mergeData(meta, data![idx], { [prop.name]: value });
+        }
+      });
+    }
+
+    entities.clear();
+    const loadPK = new Map<T, FilterQuery<T>>();
+
+    allData.forEach((row, i) => {
+      const entity = Utils.isEntity(data![i]) ? data![i] as T : em.entityFactory.create(entityName, row, {
+        refresh: true,
+        initialized: true,
+        schema: options.schema,
+        convertCustomTypes: true,
+      });
+
+      if (!helper(entity).hasPrimaryKey()) {
+        loadPK.set(entity, allWhere[i]);
+      }
+
+      entities.set(entity, row);
+    });
+
+    // skip if we got the PKs via returning statement (`rows`)
+    if (!ret.rows?.length && loadPK.size > 0) {
+      const unique = meta.props.filter(p => p.unique).map(p => p.name);
+      const add = propIndex! >= 0 ? [unique[propIndex!]] : [];
+      const pks = await this.driver.find(meta.className, { $or: [...loadPK.values()] as Dictionary[] }, {
+        fields: meta.primaryKeys.concat(...add),
+        ctx: em.transactionContext,
+        convertCustomTypes: true,
+      });
+
+      let i = 0;
+      for (const entity of loadPK.keys()) {
+        em.entityFactory.mergeData(meta, entity, pks[i]);
+        i++;
+      }
+    }
+
+    for (const [entity, data] of entities) {
+      em.unitOfWork.registerManaged(entity, data, { refresh: true });
+    }
+
+    return [...entities.keys()];
   }
 
   /**

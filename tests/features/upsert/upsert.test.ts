@@ -1,4 +1,4 @@
-import { MikroORM, Entity, PrimaryKey, ManyToOne, Property, SimpleLogger, Unique } from '@mikro-orm/core';
+import { MikroORM, Entity, PrimaryKey, ManyToOne, Property, SimpleLogger, Unique, Ref, ref } from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
 
 @Entity()
@@ -30,15 +30,15 @@ export class Book {
   @PrimaryKey({ name: '_id' })
   id: number = Book.id++;
 
-  @ManyToOne(() => Author)
-  author: Author;
+  @ManyToOne(() => Author, { ref: true })
+  author: Ref<Author>;
 
   @Property()
   name: string;
 
   constructor(name: string, author: Author) {
     this.name = name;
-    this.author = author;
+    this.author = ref(author);
   }
 
 }
@@ -52,8 +52,8 @@ export class FooBar {
   @PrimaryKey({ name: '_id' })
   id: number = FooBar.id++;
 
-  @ManyToOne(() => Author)
-  author: Author;
+  @ManyToOne(() => Author, { ref: true })
+  author: Ref<Author>;
 
   @Property()
   name: string;
@@ -61,9 +61,9 @@ export class FooBar {
   @Property({ nullable: true })
   prop?: string;
 
-  constructor(name: string, author: Author) {
+  constructor(name: string, author: Author | Ref<Author>) {
     this.name = name;
-    this.author = author;
+    this.author = ref(author);
   }
 
 }
@@ -84,6 +84,7 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     orm = await MikroORM.init({
       entities: [Author, Book, FooBar],
       type,
+      debug: true,
       loggerFactory: options => new SimpleLogger(options),
       ...options[type],
     });
@@ -203,22 +204,37 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     await assert(author2, mock);
   });
 
-  test('em.upsert(entity)', async () => {
+  test('em.upsertMany(Type, [data1, data2, data3]) with PK', async () => {
     await createEntities();
 
     await orm.em.nativeDelete(Book, [2, 3]);
     orm.em.clear();
 
     const mock = mockLogger(orm);
-    const a1 = orm.em.create(Author, { id: 1, email: 'a1', age: 41 });
-    const a2 = orm.em.create(Author, { id: 2, email: 'a2', age: 42 });
-    const a3 = orm.em.create(Author, { id: 3, email: 'a3', age: 43 });
-    const author1 = await orm.em.upsert(a1); // exists
-    const author2 = await orm.em.upsert(a2); // inserts
-    const author3 = await orm.em.upsert(a3); // inserts
-    expect(a1).toBe(author1);
-    expect(a2).toBe(author2);
-    expect(a3).toBe(author3);
+    const [author1, author2, author3] = await orm.em.upsertMany(Author, [
+      { id: 1, email: 'a1', age: 41 }, // exists
+      { id: 2, email: 'a2', age: 42 }, // inserts
+      { id: 3, email: 'a3', age: 43 }, // inserts
+    ]);
+
+    await assert(author2, mock);
+  });
+
+  test('em.upsertMany(Type, [data1, data2, data3]) with unique property', async () => {
+    await createEntities();
+
+    await orm.em.nativeDelete(Book, [2, 3]);
+    orm.em.clear();
+
+    const mock = mockLogger(orm);
+    const [author1, author2, author3] = await orm.em.upsertMany(Author, [
+      { email: 'a1', age: 41 }, // exists
+      { email: 'a2', age: 42 }, // inserts
+      { email: 'a3', age: 43 }, // inserts
+    ]);
+    expect(author1.id).toBeDefined();
+    expect(author2.id).toBeDefined();
+    expect(author3.id).toBeDefined();
 
     await assert(author2, mock);
   });
@@ -249,6 +265,68 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     const fooBar3 = await orm.em.upsert(FooBar, { name: 'fb3', author: 3, prop: 'val 3' }); // inserts
 
     await assertFooBars([fooBar1, fooBar2, fooBar3], mock);
+  });
+
+  test('em.upsert(entity)', async () => {
+    await createEntities();
+
+    await orm.em.nativeDelete(Book, [2, 3]);
+    orm.em.clear();
+
+    const mock = mockLogger(orm);
+    const a1 = orm.em.create(Author, { id: 1, email: 'a1', age: 41 });
+    const a2 = orm.em.create(Author, { id: 2, email: 'a2', age: 42 });
+    const a3 = orm.em.create(Author, { id: 3, email: 'a3', age: 43 });
+    const author1 = await orm.em.upsert(a1); // exists
+    const author2 = await orm.em.upsert(a2); // inserts
+    const author3 = await orm.em.upsert(a3); // inserts
+    expect(a1).toBe(author1);
+    expect(a2).toBe(author2);
+    expect(a3).toBe(author3);
+
+    await assert(author2, mock);
+  });
+
+  test('em.upsertMany([entity1, entity2, entity3]) with PK', async () => {
+    await createEntities();
+
+    await orm.em.nativeDelete(Book, [2, 3]);
+    orm.em.clear();
+
+    const mock = mockLogger(orm);
+    const a1 = orm.em.create(Author, { id: 1, email: 'a1', age: 41 }); // exists
+    const a2 = orm.em.create(Author, { id: 2, email: 'a2', age: 42 }); // inserts
+    const a3 = orm.em.create(Author, { id: 3, email: 'a3', age: 43 }); // inserts
+    const [author1, author2, author3] = await orm.em.upsertMany([a1, a2, a3]);
+    expect(a1).toBe(author1);
+    expect(a2).toBe(author2);
+    expect(a3).toBe(author3);
+
+    await assert(author2, mock);
+  });
+
+  test('em.upsertMany([entity1, entity2, entity3]) with unique property', async () => {
+    await createEntities();
+
+    await orm.em.nativeDelete(Book, [2, 3]);
+    orm.em.clear();
+
+    const mock = mockLogger(orm);
+    const a1 = orm.em.create(Author, { email: 'a1', age: 41 }); // exists
+    delete (a1 as any).id; // simulate unknown pk
+    const a2 = orm.em.create(Author, { email: 'a2', age: 42 }); // inserts
+    delete (a2 as any).id; // simulate unknown pk
+    const a3 = orm.em.create(Author, { email: 'a3', age: 43 }); // inserts
+    delete (a3 as any).id; // simulate unknown pk
+    const [author1, author2, author3] = await orm.em.upsertMany([a1, a2, a3]);
+    expect(a1).toBe(author1);
+    expect(a1.id).toBeDefined();
+    expect(a2).toBe(author2);
+    expect(a2.id).toBeDefined();
+    expect(a3).toBe(author3);
+    expect(a3.id).toBeDefined();
+
+    await assert(author2, mock);
   });
 
   test('em.upsert(entity) with unique composite property', async () => {

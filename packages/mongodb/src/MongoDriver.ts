@@ -107,7 +107,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
   async nativeUpdateMany<T extends object>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateOptions<T> = {}): Promise<QueryResult<T>> {
     data = data.map(row => this.renameFields(entityName, row));
-    return this.rethrow(this.getConnection('write').bulkUpdateMany(entityName, where as FilterQuery<any>, data as object[], options.ctx)) as Promise<QueryResult<T>>;
+    return this.rethrow(this.getConnection('write').bulkUpdateMany(entityName, where as FilterQuery<any>, data as object[], options.ctx, options.upsert)) as Promise<QueryResult<T>>;
   }
 
   async nativeDelete<T extends object>(entityName: string, where: FilterQuery<T>, options: { ctx?: Transaction<ClientSession> } = {}): Promise<QueryResult<T>> {
