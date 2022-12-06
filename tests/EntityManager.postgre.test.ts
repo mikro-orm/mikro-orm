@@ -1612,7 +1612,7 @@ describe('EntityManagerPostgre', () => {
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 
-    const res = await orm.em.getConnection().execute<{ created_at: string }[]>(`select to_char(created_at, 'YYYY-MM-DD HH24:MI:SS.US') as created_at from author2 where id = ${author.id}`);
+    const res = await orm.em.getConnection().execute<{ created_at: string }[]>(`select to_char(created_at at time zone 'UTC', 'YYYY-MM-DD HH24:MI:SS.US') as created_at from author2 where id = ${author.id}`);
     expect(res[0].created_at).toBe('2000-01-01 00:00:00.000000');
     const a = await orm.em.findOneOrFail(Author2, author.id);
     expect(+a.createdAt!).toBe(+author.createdAt);
