@@ -25,6 +25,7 @@ exports[`diffing default values (GH #2385) string defaults do not produce additi
 set session_replication_role = 'replica';
 
 create table "foo2" ("id" serial primary key, "bar0" varchar(255) not null default 'test', "bar1" varchar(255) not null default 'test', "bar2" timestamptz not null default now(), "bar3" timestamptz(6) not null default now());
+
 set session_replication_role = 'origin';
 "
 `;
