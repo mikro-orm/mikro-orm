@@ -1,3 +1,4 @@
+import type { AbstractSqlConnection } from '@mikro-orm/knex';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { MariaDbSchemaHelper } from './MariaDbSchemaHelper';
 import { MariaDbExceptionConverter } from './MariaDbExceptionConverter';
@@ -8,6 +9,20 @@ export class MariaDbPlatform extends AbstractSqlPlatform {
 
   protected readonly schemaHelper: MariaDbSchemaHelper = new MariaDbSchemaHelper(this);
   protected readonly exceptionConverter = new MariaDbExceptionConverter();
+  protected autoIncrementIncrement?: number;
+
+  /**
+   * the increment may differ when running a cluster, see https://github.com/mikro-orm/mikro-orm/issues/3828
+   * @internal
+   */
+  async getAutoIncrementIncrement(con: AbstractSqlConnection) {
+    if (this.autoIncrementIncrement == null) {
+      const res = await con.execute(`show variables like 'auto_increment_increment'`);
+      this.autoIncrementIncrement = res[0]?.auto_increment_increment ?? 1;
+    }
+
+    return this.autoIncrementIncrement!;
+  }
 
   getDefaultCharset(): string {
     return 'utf8mb4';

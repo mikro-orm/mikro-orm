@@ -98,6 +98,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
 
     if (await this.isConnected()) {
       this.logger.log('info', `MikroORM successfully connected to database ${colors.green(db)}`);
+      await this.driver.init();
     } else {
       this.logger.error('info', `MikroORM failed to connect to database ${db}`);
     }

@@ -12,22 +12,22 @@ import { QueryBuilder, QueryType } from './query';
 import { SqlEntityManager } from './SqlEntityManager';
 import type { Field } from './typings';
 
-export abstract class AbstractSqlDriver<C extends AbstractSqlConnection = AbstractSqlConnection> extends DatabaseDriver<C> {
+export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection = AbstractSqlConnection, Platform extends AbstractSqlPlatform = AbstractSqlPlatform> extends DatabaseDriver<Connection> {
 
   [EntityManagerType]!: SqlEntityManager<this>;
 
-  protected readonly connection: C;
-  protected readonly replicas: C[] = [];
-  protected readonly platform: AbstractSqlPlatform;
+  protected readonly connection: Connection;
+  protected readonly replicas: Connection[] = [];
+  protected readonly platform: Platform;
 
-  protected constructor(config: Configuration, platform: AbstractSqlPlatform, connection: Constructor<C>, connector: string[]) {
+  protected constructor(config: Configuration, platform: Platform, connection: Constructor<Connection>, connector: string[]) {
     super(config, connector);
     this.connection = new connection(this.config);
     this.replicas = this.createReplicas(conf => new connection(this.config, conf, 'read'));
     this.platform = platform;
   }
 
-  getPlatform(): AbstractSqlPlatform {
+  getPlatform(): Platform {
     return this.platform;
   }
 

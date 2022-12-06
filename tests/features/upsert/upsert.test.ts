@@ -84,7 +84,6 @@ describe.each(Object.keys(options))('em.upsert [%s]',  type => {
     orm = await MikroORM.init({
       entities: [Author, Book, FooBar],
       type,
-      debug: true,
       loggerFactory: options => new SimpleLogger(options),
       ...options[type],
     });

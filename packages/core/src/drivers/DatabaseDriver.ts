@@ -28,6 +28,10 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   protected constructor(readonly config: Configuration,
                         protected readonly dependencies: string[]) { }
 
+  init(): void {
+    // do nothing on this level
+  }
+
   abstract find<T extends object, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T, P>): Promise<EntityData<T>[]>;
 
   abstract findOne<T extends object, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P>): Promise<EntityData<T> | null>;
