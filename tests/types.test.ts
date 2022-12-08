@@ -151,7 +151,7 @@ describe('check typings', () => {
   });
 
   test('Query', async () => {
-    // assert<Has<FilterQuery<Author['born']>, Date>>(true);
+    assert<Has<FilterQuery<Author['born']>, Date>>(true);
     assert<Has<Query<Author['born']>, number>>(false);
     // assert<Has<Query<Author['born']>, string>>(true);
     assert<Has<Query<Author>, { born?: Date }>>(true);
@@ -292,6 +292,38 @@ describe('check typings', () => {
     const baz = compositeRef.baz;
   });
 
+  test('ObjectQuery with readonly properties (#3836)', async () => {
+    interface Publisher {
+      readonly id: string;
+      readonly name: string;
+    }
+    interface User {
+      readonly id: number;
+      readonly name: string;
+      readonly age?: number;
+      readonly born?: Date;
+      readonly rel?: Publisher;
+      readonly relRef?: Reference<Publisher>;
+      readonly relIdRef?: IdentifiedReference<Publisher, 'id'>;
+      readonly rels?: Collection<Publisher>;
+    }
+
+    let ok01: FilterQuery<User>;
+    ok01 = {};
+    ok01 = { name: 'foo' };
+    ok01 = { born: { $gte: new Date() } };
+    ok01 = { age: { $gte: 1 } };
+    ok01 = { age: 1 };
+    ok01 = { rel: 'abc' };
+    ok01 = { rel: ['abc'] };
+    ok01 = { relRef: 'abc' };
+    ok01 = { relRef: ['abc'] };
+    ok01 = { relIdRef: 'abc' };
+    ok01 = { relIdRef: ['abc'] };
+    ok01 = { rels: 'abc' };
+    ok01 = { rels: ['abc'] };
+  });
+
   test('AutoPath with optional nullable properties', async () => {
     interface MessageRecipient {
       id: string;
@@ -345,12 +377,13 @@ describe('check typings', () => {
     bar = null;
   });
 
-  test('FilterQueryOrPrimary ok assignments', async () => {
+  test('FilterQuery ok assignments', async () => {
     let ok01: FilterQuery<Author2>;
     ok01 = {};
     ok01 = { born: new Date() };
     ok01 = { born: { $gte: new Date() } };
     ok01 = { age: { $gte: 1 } };
+    ok01 = { age: 1 };
     ok01 = { favouriteBook: '1' };
     ok01 = { favouriteBook: ['1', '2'] };
     ok01 = { favouriteBook: null };
@@ -397,7 +430,7 @@ describe('check typings', () => {
     ok07.$or = [{ name: '231' }];
   });
 
-  test('FilterQueryOrPrimary bad assignments', async () => {
+  test('FilterQuery bad assignments', async () => {
     let fail01: FilterQuery<Author2>;
     // @ts-expect-error
     fail01 = { born: 123 };
