@@ -46,7 +46,6 @@ export class UnitOfWork {
   merge<T extends object>(entity: T, visited?: Set<AnyEntity>): void {
     const wrapped = helper(entity);
     wrapped.__em = this.em;
-    wrapped.__populated = true;
 
     if (!wrapped.hasPrimaryKey()) {
       return;
@@ -59,7 +58,6 @@ export class UnitOfWork {
     }
 
     this.identityMap.store(entity);
-    wrapped.__populated = true;
 
     // if visited is available, we are cascading, and need to be careful when resetting the entity data
     // as there can be some entity with already changed state that is not yet flushed
