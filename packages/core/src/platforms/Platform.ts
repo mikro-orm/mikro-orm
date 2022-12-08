@@ -111,7 +111,7 @@ export abstract class Platform {
     return 'current_timestamp' + (length ? `(${length})` : '');
   }
 
-  getDateTimeTypeDeclarationSQL(column: { length?: number }): string {
+  getDateTimeTypeDeclarationSQL(column: { length?: number } = { length: 0 }): string {
     return 'datetime' + (column.length ? `(${column.length})` : '');
   }
 
