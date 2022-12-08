@@ -11,9 +11,19 @@ import { createHash } from 'crypto';
 import { parse } from 'acorn-loose';
 import { simple as walk } from 'acorn-walk';
 import { clone } from './clone';
-import type { Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityName, EntityProperty, IMetadataStorage, Primary } from '../typings';
+import type {
+  Dictionary,
+  EntityClass,
+  EntityData,
+  EntityDictionary,
+  EntityMetadata,
+  EntityName,
+  EntityProperty,
+  IMetadataStorage,
+  Primary,
+} from '../typings';
 import { GroupOperator, PlainObject, QueryOperator, ReferenceType } from '../enums';
-import type { Collection } from '../entity';
+import type { Collection } from '../entity/Collection';
 import type { Platform } from '../platforms';
 import { helper } from '../entity/wrap';
 
@@ -565,6 +575,21 @@ export class Utils {
     }
 
     return !!data.__entity;
+  }
+
+  /**
+   * Checks whether given object is an entity instance.
+   */
+  static isEntityClass<T = unknown>(data: any, allowReference = false): data is EntityClass<T> {
+    if (!('prototype' in data)) {
+      return false;
+    }
+
+    if (allowReference && !!data.prototype.__reference) {
+      return true;
+    }
+
+    return !!data.prototype.__entity;
   }
 
   /**
