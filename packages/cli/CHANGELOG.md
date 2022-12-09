@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.6.0](https://github.com/mikro-orm/mikro-orm/compare/v5.5.3...v5.6.0) (2022-12-09)
+
+
+### Features
+
+* **cli:** added option to generate cache via ts-node ([#3796](https://github.com/mikro-orm/mikro-orm/issues/3796)) ([268bd68](https://github.com/mikro-orm/mikro-orm/commit/268bd681993edd5a8fd754658a96c26d5c970350)), closes [/github.com/mikro-orm/mikro-orm/discussions/3795#discussioncomment-4253521](https://github.com//github.com/mikro-orm/mikro-orm/discussions/3795/issues/discussioncomment-4253521)
+
+
+
+
+
 ## [5.5.3](https://github.com/mikro-orm/mikro-orm/compare/v5.5.2...v5.5.3) (2022-11-10)
 
 **Note:** Version bump only for package @mikro-orm/cli
