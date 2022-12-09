@@ -6,6 +6,7 @@ import type {
   EntityClass,
   EntityProperty,
   IsUnknown,
+  LoadedReference,
   Populate,
   Primary,
   PrimaryProperty,
@@ -184,7 +185,7 @@ export interface LoadReferenceOptions<T, P extends string = never> {
 /**
  * shortcut for `wrap(entity).toReference()`
  */
-export function ref<T extends object, PK extends keyof T | unknown = PrimaryProperty<T>, PKV extends Primary<T> = Primary<T>>(entity: T | Ref<T, any> | PKV): Ref<T, PK>;
+export function ref<T extends object, PK extends keyof T | unknown = PrimaryProperty<T>>(entity: T | Ref<T, any>): Ref<T, PK> & LoadedReference<T>;
 
 /**
  * shortcut for `Reference.createFromPK(entityType, pk)`
