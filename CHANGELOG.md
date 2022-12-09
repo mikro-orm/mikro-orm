@@ -47,13 +47,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 * **core:** never clone Platform and EntityMetadata instances ([9e05104](https://github.com/mikro-orm/mikro-orm/commit/9e051043fafdbc415d7f6f1306261b351397a086)), closes [#3720](https://github.com/mikro-orm/mikro-orm/issues/3720)
 
 
-### Reverts
-
-* Revert "build: do not test on node 14" ([4d124d7](https://github.com/mikro-orm/mikro-orm/commit/4d124d752383dc492088728e83faad4d4c097715))
-
-
-
-
 
 ## [5.5.3](https://github.com/mikro-orm/mikro-orm/compare/v5.5.2...v5.5.3) (2022-11-10)
 
