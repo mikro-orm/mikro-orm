@@ -47,7 +47,13 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       ...this.platform.getConfig().get('schemaGenerator').ignoreSchema ?? [],
     ].map(s => this.platform.quoteValue(s)).join(', ');
 
-    return `"${column}" not like 'pg_%' and "${column}" not like 'crdb_%' and "${column}" not in (${ignored})`;
+    const ignoredPrefixes = [
+      'pg_',
+      'crdb_',
+      '_timescaledb_',
+    ].map(p => `"${column}" not like '${p}%'`).join(' and ');
+
+    return `${ignoredPrefixes} and "${column}" not in (${ignored})`;
   }
 
   async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[]): Promise<void> {
