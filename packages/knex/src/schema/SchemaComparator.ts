@@ -524,8 +524,10 @@ export class SchemaComparator {
   }
 
   diffCheck(check1: Check, check2: Check): boolean {
-    const unquote = (str?: string) => str?.replace(/['"`]/g, '');
-    return unquote(check1.expression as string) !== unquote(check2.expression as string);
+    // check constraint definition might be normalized by the driver,
+    // e.g. quotes might be added (https://github.com/mikro-orm/mikro-orm/issues/3827)
+    const simplify = (str?: string) => str?.replace(/['"`()]/g, '').toLowerCase();
+    return simplify(check1.expression as string) !== simplify(check2.expression as string);
   }
 
   hasSameDefaultValue(from: Column, to: Column): boolean {

@@ -83,10 +83,12 @@ describe('check constraint [postgres]', () => {
     await generator.execute(diff);
 
     // Add new check
-    newTableMeta.checks = [{ name: 'bar', expression: 'price > 0' }];
+    newTableMeta.checks = [{ name: 'bar', expression: 'price > 0 and price < 123' }];
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-check-constraint-diff-4');
     await generator.execute(diff);
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toBe('');
 
     // Skip existing check
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });

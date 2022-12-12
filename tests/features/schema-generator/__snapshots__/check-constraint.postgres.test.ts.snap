@@ -20,7 +20,7 @@ exports[`check constraint [postgres] check constraint diff [postgres]: postgres-
 `;
 
 exports[`check constraint [postgres] check constraint diff [postgres]: postgres-check-constraint-diff-4 1`] = `
-"alter table "new_table" add constraint bar check(price > 0);
+"alter table "new_table" add constraint bar check(price > 0 and price < 123);
 
 "
 `;
