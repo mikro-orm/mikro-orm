@@ -547,14 +547,14 @@ export class QueryBuilderHelper {
         return;
       }
 
-      // eslint-disable-next-line prefer-const
-      let [alias, field] = this.splitField(k, true);
-      alias = populate[alias] || alias;
+      Utils.splitPrimaryKeys(k).forEach(f => {
+        // eslint-disable-next-line prefer-const
+        let [alias, field] = this.splitField(f, true);
+        alias = populate[alias] || alias;
 
-      Utils.splitPrimaryKeys(field).forEach(f => {
-        const prop = this.getProperty(f, alias);
+        const prop = this.getProperty(field, alias);
         const noPrefix = (prop && prop.persist === false && !prop.formula) || QueryBuilderHelper.isCustomExpression(f);
-        const column = this.mapper(noPrefix ? f : `${alias}.${f}`, type, undefined, null);
+        const column = this.mapper(noPrefix ? field : `${alias}.${field}`, type, undefined, null);
         /* istanbul ignore next */
         const rawColumn = Utils.isString(column) ? column.split('.').map(e => this.knex.ref(e)).join('.') : column;
         const customOrder = prop?.customOrder;

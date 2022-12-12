@@ -22,13 +22,13 @@ import type {
   RequiredEntityData,
 } from '@mikro-orm/core';
 import {
-  helper,
   LoadStrategy,
   LockMode,
   PopulateHint,
   QueryFlag,
   QueryHelper,
   ReferenceType,
+  serialize,
   Utils,
   ValidationError,
 } from '@mikro-orm/core';
@@ -877,7 +877,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
     if (data) {
       if (Utils.isEntity(data)) {
-        data = helper(data).toJSON();
+        // data = helper(data).toJSON();
+        data = this.em?.getComparator().prepareEntity(data as T) ?? serialize(data as T);
       }
 
       this._data = this.helper.processData(data, this.flags.has(QueryFlag.CONVERT_CUSTOM_TYPES));

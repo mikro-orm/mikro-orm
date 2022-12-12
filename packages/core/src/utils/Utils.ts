@@ -531,7 +531,7 @@ export class Utils {
       if (Array.isArray(pks[idx]) && pk.targetMeta) {
         o[pk.name] = pks[idx];
       } else {
-        o[pk.name] = Utils.extractPK<T>(pks[idx]);
+        o[pk.name] = Utils.extractPK<T>(pks[idx], meta);
       }
 
       return o;

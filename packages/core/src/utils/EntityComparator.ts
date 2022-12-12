@@ -251,11 +251,7 @@ export class EntityComparator {
         idx += pk.fieldNames.length;
       }
 
-      if (parts.length > 1) {
-        return '[' + parts.join(', ') + ']';
-      }
-
-      return parts[0];
+      return '[' + parts.join(', ') + ']';
     };
 
     lines.push(`  const mapped = {};`);
