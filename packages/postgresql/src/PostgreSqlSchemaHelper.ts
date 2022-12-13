@@ -340,15 +340,15 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   getManagementDbName(): string {
-    return this.platform.getConfig().get('schemaGenerator', {} as Dictionary).managementDbName ?? 'postgres';
+    return this.platform.getConfig().get('schemaGenerator', {} as Dictionary).managementDbName ?? 'defaultdb';
   }
 
   disableForeignKeysSQL(): string {
-    return `set session_replication_role = 'replica';`;
+    return ``;
   }
 
   enableForeignKeysSQL(): string {
-    return `set session_replication_role = 'origin';`;
+    return ``;
   }
 
   getRenameIndexSQL(tableName: string, index: IndexDef, oldIndexName: string): string {

@@ -52,7 +52,9 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     orm.driver.getPlatform().lookupExtensions(orm);
 
     if (orm.config.get('connect')) {
+      console.log(1);
       await orm.connect();
+      console.log(1);
     }
 
     for (const extension of orm.config.get('extensions')) {
@@ -89,6 +91,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async connect(): Promise<D> {
     const connection = await this.driver.connect();
+    console.log(2);
     const clientUrl = connection.getClientUrl();
     const dbName = this.config.get('dbName')!;
     const db = dbName + (clientUrl ? ' on ' + clientUrl : '');

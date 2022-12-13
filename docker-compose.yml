@@ -38,6 +38,15 @@ services:
     environment:
       POSTGRES_HOST_AUTH_METHOD: trust
 
+  crdb:
+    image: cockroachdb/cockroach:latest-v22.2
+    ports:
+      - "26257:26257"
+    command: start-single-node --insecure
+    volumes:
+      - crdb:/cockroach/cockroach-data
+#      - "${PWD}/cockroach-data/crdb:/cockroach/cockroach-data"
+
 volumes:
   mysql8:
     driver_opts:
@@ -52,6 +61,10 @@ volumes:
       type: tmpfs
       device: tmpfs
   postgre:
+    driver_opts:
+      type: tmpfs
+      device: tmpfs
+  crdb:
     driver_opts:
       type: tmpfs
       device: tmpfs

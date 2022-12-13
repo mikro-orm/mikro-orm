@@ -281,6 +281,7 @@ export abstract class SchemaHelper {
       const res = await connection.execute(this.getDatabaseExistsSQL(name));
       return res.length > 0;
     } catch (e) {
+      console.log(e);
       if (e instanceof Error && e.message.includes(this.getDatabaseNotExistsError(name))) {
         return false;
       }

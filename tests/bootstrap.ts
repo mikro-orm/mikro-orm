@@ -136,7 +136,10 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
 export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, entities: any[] = []) {
   const orm = await MikroORM.init({
     entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Label2, Configuration2, ...entities],
-    dbName: `mikro_orm_test`,
+    // dbName: `mikro_orm_test`,
+    clientUrl: 'postgresql://root@127.0.0.1:26257/defaultdb?sslmode=disable',
+    // user: 'root',
+    // port: 26257,
     baseDir: BASE_DIR,
     driver: PostgreSqlDriver,
     debug: ['query', 'query-params'],

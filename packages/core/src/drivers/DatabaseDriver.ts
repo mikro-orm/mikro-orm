@@ -87,7 +87,9 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   }
 
   async connect(): Promise<C> {
+    console.log(3);
     await this.connection.connect();
+    console.log(3);
     await Promise.all(this.replicas.map(replica => replica.connect()));
 
     return this.connection;

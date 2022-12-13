@@ -37,9 +37,12 @@ export abstract class AbstractSqlConnection extends Connection {
 
   async isConnected(): Promise<boolean> {
     try {
+      console.log(4);
       await this.client.raw('select 1');
       return true;
-    } catch {
+    } catch (e) {
+      console.log(e);
+
       return false;
     }
   }
