@@ -907,7 +907,13 @@ export class UnitOfWork {
     const props = changeSet.meta.uniqueProps;
 
     for (const prop of props) {
-      if (prop.name in changeSet.payload && inserts.find(c => Utils.equals(c.payload[prop.name], changeSet.originalEntity![prop.name as string]))) {
+      const insert = inserts.find(c => Utils.equals(c.payload[prop.name], changeSet.originalEntity![prop.name as string]));
+
+      if (
+        prop.name in changeSet.payload &&
+        insert &&
+        insert.payload[prop.name]
+      ) {
         changeSet.type = ChangeSetType.UPDATE_EARLY;
       }
     }
