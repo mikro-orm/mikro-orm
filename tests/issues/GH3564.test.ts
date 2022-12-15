@@ -13,6 +13,7 @@ class Part {
   @ManyToOne(() => Car, {
     wrappedReference: true,
     nullable: true,
+    onDelete: 'cascade',
   })
   car?: IdentifiedReference<Car>;
 
