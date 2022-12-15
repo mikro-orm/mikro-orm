@@ -1,4 +1,4 @@
-import { Entity, OneToOne, PrimaryKey, Property, wrap } from '@mikro-orm/core';
+import { Entity, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
@@ -47,10 +47,10 @@ beforeEach(async () => {
   await orm.schema.refreshDatabase();
 });
 
-async function createUser(project?: Project) {
+async function createUser(props?: Partial<User>) {
   const u = orm.em.create(User, {
-    name: 'project name',
-    project,
+    name: 'User name',
+    ...props,
   });
 
   await orm.em.flush();
@@ -59,10 +59,10 @@ async function createUser(project?: Project) {
   return orm.em.findOneOrFail(User, u.id, { populate: ['project'] });
 }
 
-async function createProject(owner?: User) {
+async function createProject(props?: Partial<Project>) {
   const project = orm.em.create(Project, {
-    name: 'project name',
-    owner,
+    name: 'Project name',
+    ...props,
   });
 
   await orm.em.flush();
@@ -76,6 +76,7 @@ afterAll(async () => {
 });
 
 describe('GH3850 - Broken propagation with nullable 1-to-1 relation', () => {
+
   // Adding a new entity and linking to an existing entity via the relation
   test('can link new inverse entity to owner entity (from null)', async () => {
     let owner = await createUser();
@@ -131,7 +132,7 @@ describe('GH3850 - Broken propagation with nullable 1-to-1 relation', () => {
     let project1 = orm.em.create(Project, {
       name: 'Project 1',
     });
-    let owner = await createUser(project1);
+    let owner = await createUser({ project: project1 });
 
     // Create new project and assign to user
     let project2 = orm.em.create(Project, {
@@ -165,7 +166,7 @@ describe('GH3850 - Broken propagation with nullable 1-to-1 relation', () => {
     let owner1 = orm.em.create(User, {
       name: 'User 1',
     });
-    let project = await createProject(owner1);
+    let project = await createProject({ owner: owner1 });
 
     // Create new owner and assign to project
     let owner2 = orm.em.create(User, {
@@ -200,7 +201,7 @@ describe('GH3850 - Broken propagation with nullable 1-to-1 relation', () => {
     let project = orm.em.create(Project, {
       name: 'Project 1',
     });
-    let owner = await createUser(project);
+    let owner = await createUser({ project });
 
     project = owner.project as Project;
     owner.project = null;
@@ -224,7 +225,7 @@ describe('GH3850 - Broken propagation with nullable 1-to-1 relation', () => {
     let owner = orm.em.create(User, {
       name: 'User 1',
     });
-    let project = await createProject(owner);
+    let project = await createProject({ owner });
 
     owner = project.owner as User;
     project.owner = null;
@@ -249,7 +250,7 @@ describe('GH3850 - Broken propagation with nullable 1-to-1 relation', () => {
     const project = orm.em.create(Project, {
       name: 'Project 1',
     });
-    let owner = await createUser(project);
+    let owner = await createUser({ project });
 
     orm.em.remove(owner.project as Project);
     owner.project = null; // NOTE: we still have to unset the project here
@@ -272,7 +273,7 @@ describe('GH3850 - Broken propagation with nullable 1-to-1 relation', () => {
     const owner = orm.em.create(User, {
       name: 'User 1',
     });
-    let project = await createProject(owner);
+    let project = await createProject({ owner });
 
     orm.em.remove(project.owner as User);
     project.owner = null; // NOTE: we still have to unset the project here
