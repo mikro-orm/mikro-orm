@@ -38,7 +38,6 @@ export class MariaDbConnection extends AbstractSqlConnection {
 
     ret.bigNumberStrings = true;
     ret.supportBigNumbers = true;
-    ret.dateStrings = ['DATE'] as any;
 
     return ret;
   }
