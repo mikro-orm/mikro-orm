@@ -529,7 +529,7 @@ describe('EntityManagerSqlite', () => {
     orm.em.clear();
 
     const newGod = orm.em.getReference<any>(Author3, god.id);
-    const publisher = (await orm.em.findOne(Publisher3, pub.id, { populate: ['books'] }))!;
+    const publisher = (await orm.em.findOne(Publisher3, pub.id, { populate: ['books'] })) as any;
     await newGod.init();
 
     const json = publisher.toJSON().books;
