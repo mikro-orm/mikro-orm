@@ -634,7 +634,7 @@ export type FilterDef = {
   args?: boolean;
 };
 
-export type Populate<T, P extends string = never> = readonly AutoPath<T, P>[] | boolean;
+export type Populate<T, P extends string = never> = AutoPath<T, P>[] | boolean;
 
 export type PopulateOptions<T> = {
   field: string;
