@@ -907,7 +907,16 @@ export class UnitOfWork {
     const props = changeSet.meta.uniqueProps;
 
     for (const prop of props) {
-      if (prop.name in changeSet.payload && inserts.find(c => Utils.equals(c.payload[prop.name], changeSet.originalEntity![prop.name as string]))) {
+      const insert = inserts.find(c => Utils.equals(c.payload[prop.name], changeSet.originalEntity![prop.name as string]));
+      const propEmpty = changeSet.payload[prop.name] === null || changeSet.payload[prop.name] === undefined;
+
+      if (
+        prop.name in changeSet.payload &&
+        insert &&
+        // We only want to update early if the unique property on the changeset is going to be empty, so that
+        // the previous unique value can be set on a different entity without constraint issues
+        propEmpty
+      ) {
         changeSet.type = ChangeSetType.UPDATE_EARLY;
       }
     }
