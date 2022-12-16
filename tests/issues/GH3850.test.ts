@@ -14,7 +14,7 @@ class User {
     nullable: true,
     owner: true,
   })
-  public project!: Project | null;
+  project!: Project | null;
 
 }
 
@@ -30,7 +30,7 @@ class Project {
   @OneToOne(() => User, user => user.project, {
     nullable: true,
   })
-  public owner!: User | null;
+  owner!: User | null;
 
 }
 
@@ -46,6 +46,8 @@ beforeAll(async () => {
 beforeEach(async () => {
   await orm.schema.refreshDatabase();
 });
+
+afterAll(() => orm.close(true));
 
 async function createUser(props?: Partial<User>) {
   const u = orm.em.create(User, {
@@ -70,10 +72,6 @@ async function createProject(props?: Partial<Project>) {
 
   return orm.em.findOneOrFail(Project, project.id, { populate: ['owner'] });
 }
-
-afterAll(async () => {
-  await orm.close(true);
-});
 
 describe('GH3850 - Broken propagation with nullable 1-to-1 relation', () => {
 

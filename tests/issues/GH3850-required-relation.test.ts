@@ -14,7 +14,7 @@ class User {
     owner: true,
     nullable: false,
   })
-  public project!: Project | null;
+  project!: Project | null;
 
 }
 
@@ -28,7 +28,7 @@ class Project {
   name!: string;
 
   @OneToOne(() => User, user => user.project, { nullable: false })
-  public owner?: User;
+  owner?: User;
 
 }
 
@@ -44,6 +44,8 @@ beforeAll(async () => {
 beforeEach(async () => {
   await orm.schema.refreshDatabase();
 });
+
+afterAll(() => orm.close(true));
 
 async function createUser(props: RequiredEntityData<User>) {
   const u = orm.em.create(User, {
