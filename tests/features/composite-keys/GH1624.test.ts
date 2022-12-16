@@ -225,6 +225,7 @@ describe('GH issue 1624, 1658 (postgres)', () => {
     expect(b.userRoles[0].user.id).toBe(userId);
     expect(b.userRoles[0].role).toBeInstanceOf(Reference);
     expect(b.userRoles[0].role.id).toBe(roleId);
+    expect(b.userRoles[0].role.name).toBe('r');
   });
 
   test(`GH issue 1658`, async () => {
