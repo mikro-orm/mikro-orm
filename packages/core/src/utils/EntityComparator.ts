@@ -1,5 +1,13 @@
 import { clone } from './clone';
-import type { Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityProperty, IMetadataStorage, Primary } from '../typings';
+import type {
+  Dictionary,
+  EntityData,
+  EntityDictionary,
+  EntityMetadata,
+  EntityProperty,
+  IMetadataStorage,
+  Primary,
+} from '../typings';
 import { ReferenceType } from '../enums';
 import type { Platform } from '../platforms';
 import { compareArrays, compareBooleans, compareBuffers, compareObjects, equals, Utils } from './Utils';
@@ -127,8 +135,9 @@ export class EntityComparator {
       }
 
       if (meta.properties[pk].customType) {
-        context.set(`convertToDatabaseValue_${pk}`, (val: any) => meta.properties[pk].customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
-        lines.push(`  return convertToDatabaseValue_${pk}(entity${this.wrap(pk)});`);
+        const convertorKey = this.safeKey(pk);
+        context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => meta.properties[pk].customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
+        lines.push(`  return convertToDatabaseValue_${convertorKey}(entity${this.wrap(pk)});`);
       } else {
         lines.push(`  return entity${this.wrap(pk)};`);
       }
@@ -397,13 +406,14 @@ export class EntityComparator {
       }
 
       if (shouldProcessCustomType(childProp)) {
-        context.set(`convertToDatabaseValue_${childProp.name}`, (val: any) => childProp.customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
+        const convertorKey = this.safeKey(childProp.name);
+        context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => childProp.customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
 
         if (['number', 'string', 'boolean'].includes(childProp.customType.compareAsType().toLowerCase())) {
-          return `${padding}  ret${childDataKey} = convertToDatabaseValue_${childProp.name}(entity${childEntityKey});`;
+          return `${padding}  ret${childDataKey} = convertToDatabaseValue_${convertorKey}(entity${childEntityKey});`;
         }
 
-        return `${padding}  ret${childDataKey} = clone(convertToDatabaseValue_${childProp.name}(entity${childEntityKey}));`;
+        return `${padding}  ret${childDataKey} = clone(convertToDatabaseValue_${convertorKey}(entity${childEntityKey}));`;
       }
 
       return `${padding}  ret${childDataKey} = clone(entity${childEntityKey});`;
@@ -417,6 +427,7 @@ export class EntityComparator {
   }
 
   private getPropertySnapshot<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, context: Map<string, any>, dataKey: string, entityKey: string, path: string[], level = 1, object?: boolean): string {
+    const convertorKey = this.safeKey(prop.name);
     let ret = `  if (${this.getPropertyCondition(prop, entityKey, path)}) {\n`;
 
     if (['number', 'string', 'boolean'].includes(prop.type.toLowerCase())) {
@@ -435,31 +446,31 @@ export class EntityComparator {
       if (prop.mapToPk) {
         ret += `    ret${dataKey} = entity${entityKey};\n`;
       } else {
-        context.set(`getPrimaryKeyValues_${prop.name}`, (val: any) => val && Utils.getPrimaryKeyValues(val, this.metadata.find(prop.type)!.primaryKeys, true));
-        ret += `    ret${dataKey} = getPrimaryKeyValues_${prop.name}(entity${entityKey});\n`;
+        context.set(`getPrimaryKeyValues_${convertorKey}`, (val: any) => val && Utils.getPrimaryKeyValues(val, this.metadata.find(prop.type)!.primaryKeys, true));
+        ret += `    ret${dataKey} = getPrimaryKeyValues_${convertorKey}(entity${entityKey});\n`;
       }
 
       if (prop.customType) {
-        context.set(`convertToDatabaseValue_${prop.name}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
+        context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
 
         if (['number', 'string', 'boolean'].includes(prop.customType.compareAsType().toLowerCase())) {
-          return ret + `    ret${dataKey} = convertToDatabaseValue_${prop.name}(ret${dataKey});\n  }\n`;
+          return ret + `    ret${dataKey} = convertToDatabaseValue_${convertorKey}(ret${dataKey});\n  }\n`;
         }
 
-        return ret + `    ret${dataKey} = clone(convertToDatabaseValue_${prop.name}(ret${dataKey}));\n  }\n`;
+        return ret + `    ret${dataKey} = clone(convertToDatabaseValue_${convertorKey}(ret${dataKey}));\n  }\n`;
       }
 
       return ret + '  }\n';
     }
 
     if (prop.customType) {
-      context.set(`convertToDatabaseValue_${prop.name}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
+      context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
 
       if (['number', 'string', 'boolean'].includes(prop.customType.compareAsType().toLowerCase())) {
-        return ret + `    ret${dataKey} = convertToDatabaseValue_${prop.name}(entity${entityKey});\n  }\n`;
+        return ret + `    ret${dataKey} = convertToDatabaseValue_${convertorKey}(entity${entityKey});\n  }\n`;
       }
 
-      return ret + `    ret${dataKey} = clone(convertToDatabaseValue_${prop.name}(entity${entityKey}));\n  }\n`;
+      return ret + `    ret${dataKey} = clone(convertToDatabaseValue_${convertorKey}(entity${entityKey}));\n  }\n`;
     }
 
     if (prop.type.toLowerCase() === 'date') {
@@ -568,6 +579,10 @@ export class EntityComparator {
     }
 
     return key.match(/^\w+$/) ? `.${key}` : `['${key}']`;
+  }
+
+  private safeKey(key: string): string {
+    return key.replace(/[^\w]/g, '_');
   }
 
   /**
