@@ -126,12 +126,6 @@ export class ChangeSetComputer {
       const targets = Utils.unwrapProperty(changeSet.entity, changeSet.meta, prop);
       targets.forEach(([t]) => this.processProperty(changeSet, prop, t));
 
-      if (targets.length === 0) {
-        if (changeSet.type === ChangeSetType.UPDATE && changeSet.payload[prop.name] == null && prop.onDelete?.toLowerCase() === 'cascade') {
-          delete changeSet.payload[prop.name];
-        }
-      }
-
       return;
     }
 

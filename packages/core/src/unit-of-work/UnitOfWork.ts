@@ -288,13 +288,13 @@ export class UnitOfWork {
     this.queuedActions.add(helper(entity).__meta.className);
     this.persistStack.delete(entity);
 
-    // remove from referencing relations (but don't remove FKs as PKs)
+    // remove from referencing relations that are nullable
     for (const prop of helper(entity).__meta.bidirectionalRelations) {
       const inverseProp = prop.mappedBy || prop.inversedBy;
       const relation = Reference.unwrapReference(entity[prop.name] as object);
       const prop2 = prop.targetMeta!.properties[inverseProp];
 
-      if (prop.reference === ReferenceType.ONE_TO_MANY && !prop2.primary && Utils.isCollection<AnyEntity>(relation)) {
+      if (prop.reference === ReferenceType.ONE_TO_MANY && prop2.nullable && Utils.isCollection<AnyEntity>(relation)) {
         relation.getItems(false).forEach(item => delete item[inverseProp]);
         continue;
       }

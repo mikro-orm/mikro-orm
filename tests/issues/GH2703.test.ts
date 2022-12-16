@@ -24,34 +24,30 @@ export class Order {
 
 }
 
-describe('GH issue 2703', () => {
+let orm: MikroORM<SqliteDriver>;
 
-  let orm: MikroORM<SqliteDriver>;
-
-  beforeAll(async () => {
-    orm = await MikroORM.init({
-      entities: [User, Order],
-      dbName: ':memory:',
-      driver: SqliteDriver,
-    });
-    await orm.schema.createSchema();
+beforeAll(async () => {
+  orm = await MikroORM.init({
+    entities: [User, Order],
+    dbName: ':memory:',
+    driver: SqliteDriver,
   });
+  await orm.schema.createSchema();
+});
 
-  afterAll(async () => {
-    await orm.close(true);
-  });
+afterAll(async () => {
+  await orm.close(true);
+});
 
-  test(`GH issue 1003`, async () => {
-    const user = new User();
-    user.orders.add(new Order(), new Order(), new Order());
-    await orm.em.fork().persistAndFlush(user);
-    const u = await orm.em.findOneOrFail(User, user, { populate: ['orders'] });
-    const mock = mockLogger(orm);
-    await orm.em.removeAndFlush(u);
-    expect(mock).toBeCalledTimes(3);
-    expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('delete from `user` where `id` in (1)');
-    expect(mock.mock.calls[2][0]).toMatch('commit');
-  });
-
+test(`GH issue 2703`, async () => {
+  const user = new User();
+  user.orders.add(new Order(), new Order(), new Order());
+  await orm.em.fork().persistAndFlush(user);
+  const u = await orm.em.findOneOrFail(User, user, { populate: ['orders'] });
+  const mock = mockLogger(orm);
+  await orm.em.removeAndFlush(u);
+  expect(mock).toBeCalledTimes(3);
+  expect(mock.mock.calls[0][0]).toMatch('begin');
+  expect(mock.mock.calls[1][0]).toMatch('delete from `user` where `id` in (1)');
+  expect(mock.mock.calls[2][0]).toMatch('commit');
 });
