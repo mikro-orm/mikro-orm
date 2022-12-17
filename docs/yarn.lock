@@ -5973,28 +5973,28 @@ __metadata:
     "@docusaurus/plugin-client-redirects": 2.2.0
     "@docusaurus/preset-classic": 2.2.0
     classnames: 2.3.2
-    docusaurus-plugin-typedoc-api: 2.5.0
+    docusaurus-plugin-typedoc-api: 2.5.1
     react: 18.2.0
     react-dom: 18.2.0
     typescript: 4.9.4
   languageName: unknown
   linkType: soft
 
-"docusaurus-plugin-typedoc-api@npm:2.5.0":
-  version: 2.5.0
-  resolution: "docusaurus-plugin-typedoc-api@npm:2.5.0"
+"docusaurus-plugin-typedoc-api@npm:2.5.1":
+  version: 2.5.1
+  resolution: "docusaurus-plugin-typedoc-api@npm:2.5.1"
   dependencies:
     "@docusaurus/plugin-content-docs": ^2.2.0
     "@docusaurus/types": ^2.2.0
     "@docusaurus/utils": ^2.2.0
     "@vscode/codicons": ^0.0.32
-    marked: ^4.2.2
-    typedoc: ^0.23.20
+    marked: ^4.2.4
+    typedoc: ^0.23.22
   peerDependencies:
     "@docusaurus/core": ^2.0.0
     react: ">=16.0.0"
     typescript: ^4.0.0
-  checksum: 3de139f3baabce19f45109698e311d027815fd943f65018a526bb9ff582c9f0a1af55894554ff97b2e5e55485974eabc585af88184dfe1ac41ead24d73077ef3
+  checksum: c00a3f38a2514b28335156af100168e116b637ff9c76d9888fd37e05ab278cdd9757ae5933da3d711604552bc53a4cc1ed9dfd1fa39b36f3f27f9c70571ad716
   languageName: node
   linkType: hard
 
@@ -8231,12 +8231,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"marked@npm:^4.2.2":
-  version: 4.2.2
-  resolution: "marked@npm:4.2.2"
+"marked@npm:^4.2.4":
+  version: 4.2.4
+  resolution: "marked@npm:4.2.4"
   bin:
     marked: bin/marked.js
-  checksum: 1593e0632ff8dee1b9c8b669f26c8ce41e675bcb08ef75052845d4943db2c4d887edacd5b2120cf99a2cc06e9fbffc346ebaf98a7555273fda6a935adbfacf50
+  checksum: 5eb5bfa6ee4cf85712a3ccbe2a549c397e8886f5d18312a02696c7e3817625a6b91a8ad27a6ed43b06ddbdfb812f471b1270517c4b8fb068a6a9e5b4d555a5aa
   languageName: node
   linkType: hard
 
@@ -11460,19 +11460,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typedoc@npm:^0.23.20":
-  version: 0.23.20
-  resolution: "typedoc@npm:0.23.20"
+"typedoc@npm:^0.23.22":
+  version: 0.23.22
+  resolution: "typedoc@npm:0.23.22"
   dependencies:
     lunr: ^2.3.9
     marked: ^4.0.19
     minimatch: ^5.1.0
     shiki: ^0.11.1
   peerDependencies:
-    typescript: 4.6.x || 4.7.x || 4.8.x
+    typescript: 4.6.x || 4.7.x || 4.8.x || 4.9.x
   bin:
     typedoc: bin/typedoc
-  checksum: 8dbe046794a827b87e186523df86573673520ea5c706e1dfc2a820360bda5e998c23fd2ced91299ef060339f6ebba1086776e4e7423769da9b135a13edee10ec
+  checksum: ac3a015e72d5e2dc6a3a2cca64572932a6d9d0ea26ee08e87c05e2244795087371a12b103f5f4c4f72d006f8893cd4dccd9addfbbce18577e2fb36c9c1d71be4
   languageName: node
   linkType: hard
 
