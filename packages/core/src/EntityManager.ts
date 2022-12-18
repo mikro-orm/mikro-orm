@@ -820,7 +820,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const fork = em.fork({
       clear: false, // state will be merged once resolves
       flushMode: options.flushMode,
-      freshEventManager: true,
+      cloneEventManager: true,
     });
     options.ctx ??= em.transactionContext;
 
@@ -1293,7 +1293,13 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     options.clear ??= true;
     options.useContext ??= false;
     options.freshEventManager ??= false;
-    const eventManager = options.freshEventManager ? new EventManager(em.config.get('subscribers')) : em.eventManager;
+    options.cloneEventManager ??= false;
+
+    const eventManager = options.freshEventManager
+      ? new EventManager(em.config.get('subscribers'))
+      : options.cloneEventManager
+        ? em.eventManager.clone()
+        : em.eventManager;
 
     // we need to allow global context here as forking from global EM is fine
     const allowGlobalContext = em.config.get('allowGlobalContext');
@@ -1609,6 +1615,8 @@ export interface ForkOptions {
   useContext?: boolean;
   /** do we want to use fresh EventManager instance? defaults to false (global instance) */
   freshEventManager?: boolean;
+  /** do we want to clone current EventManager instance? defaults to false (global instance) */
+  cloneEventManager?: boolean;
   /** use this flag to ignore current async context - this is required if we want to call `em.fork()` inside the `getContext` handler */
   disableContextResolution?: boolean;
   flushMode?: FlushMode;

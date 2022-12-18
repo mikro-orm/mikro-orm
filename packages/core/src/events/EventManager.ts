@@ -8,12 +8,14 @@ export class EventManager {
 
   private readonly listeners: { [K in EventType]?: EventSubscriber[] } = {};
   private readonly entities: Map<EventSubscriber, string[]> = new Map();
+  private readonly subscribers: EventSubscriber[] = [];
 
   constructor(subscribers: EventSubscriber[]) {
     subscribers.forEach(subscriber => this.registerSubscriber(subscriber));
   }
 
   registerSubscriber(subscriber: EventSubscriber): void {
+    this.subscribers.push(subscriber);
     this.entities.set(subscriber, this.getSubscribedEntities(subscriber));
     Object.keys(EventType)
       .filter(event => event in subscriber)
@@ -68,6 +70,10 @@ export class EventManager {
     }
 
     return false;
+  }
+
+  clone() {
+    return new EventManager(this.subscribers);
   }
 
   private getSubscribedEntities(listener: EventSubscriber): string[] {
