@@ -2028,7 +2028,6 @@ __metadata:
     "@mikro-orm/core": ^5.6.12
     "@mikro-orm/knex": ~5.6.12
     fs-extra: 11.1.0
-    knex: 2.4.2
     umzug: 3.2.1
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
