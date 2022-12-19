@@ -1,7 +1,6 @@
 name: Release @latest
 
 on:
-  # Manual call from UI / automations(?)
   workflow_dispatch:
     inputs:
       version:
@@ -63,6 +62,10 @@ jobs:
         run: |
           corepack prepare yarn@3.2.4 --activate
           yarn
+
+      - name: Init docker
+        run: |
+          docker-compose up -d
 
       - name: Build
         run: yarn build
@@ -138,7 +141,7 @@ jobs:
           git commit --amend --no-edit
 
       - name: Publish packages
-        run: yarn publish --yes --no-verify-access
+        run: yarn publish:prod --yes --no-verify-access
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           GIT_USER: "banan23@gmail.com:${{ secrets.GH_TOKEN }}"
