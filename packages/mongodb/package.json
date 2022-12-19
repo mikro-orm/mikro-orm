@@ -59,7 +59,7 @@
   },
   "dependencies": {
     "bson": "^4.7.0",
-    "mongodb": "4.12.1"
+    "mongodb": "4.13.0"
   },
   "devDependencies": {
     "@mikro-orm/core": "^5.6.0"
