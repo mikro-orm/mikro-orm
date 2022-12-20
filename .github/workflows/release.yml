@@ -120,7 +120,7 @@ jobs:
 
       - name: Bump version to custom version
         if: ${{ github.event.inputs.version == 'custom' && github.event.inputs.custom_version != '' }}
-        run: yarn version ${{ github.event.inputs.custom_version}} --yes
+        run: yarn lerna version ${{ github.event.inputs.custom_version}} --force-publish --yes
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           GIT_USER: "banan23@gmail.com:${{ secrets.GH_TOKEN }}"
@@ -128,7 +128,7 @@ jobs:
 
       - name: Bump version to ${{ github.event.inputs.version }} version
         if: ${{ github.event.inputs.version != 'custom' }}
-        run: yarn version ${{ github.event.inputs.version}} --yes
+        run: yarn lerna version ${{ github.event.inputs.version}} --force-publish --yes
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           GIT_USER: "banan23@gmail.com:${{ secrets.GH_TOKEN }}"
