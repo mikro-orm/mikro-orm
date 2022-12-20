@@ -86,3 +86,7 @@ This means we no longer have to think about what package to use for imports, the
 - `dropCollections` in favour of `orm.schema.dropSchema()`
 - `refreshCollections` in favour of `orm.schema.refreshDatabase()`
 - `ensureIndexes` in favour of `orm.schema.ensureIndexes()`
+
+## Removed `JavaScriptMetadataProvider`
+
+Use `EntitySchema` instead, for easy migration there is `EntitySchema.fromMetadata()` factory, but the interface is very similar on its own.

@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import type { Options } from '@mikro-orm/core';
-import { JavaScriptMetadataProvider, LoadStrategy, MikroORM, ReflectMetadataProvider, Utils, SimpleLogger } from '@mikro-orm/core';
+import { LoadStrategy, MikroORM, ReflectMetadataProvider, Utils, SimpleLogger } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { SqlEntityRepository } from '@mikro-orm/knex';
 import { SqliteDriver } from '@mikro-orm/sqlite';
@@ -173,7 +173,6 @@ export async function initORMSqlite() {
     forceUtcTimezone: true,
     logger: i => i,
     loggerFactory: options => new SimpleLogger(options),
-    metadataProvider: JavaScriptMetadataProvider,
     cache: { enabled: true, pretty: true },
     persistOnCreate: false,
     ignoreUndefinedInQuery: true,
