@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.1](https://github.com/mikro-orm/mikro-orm/compare/v5.6.0...v5.6.1) (2022-12-20)
+
+
+### Bug Fixes
+
+* **mariadb:** do not force date strings ([8861354](https://github.com/mikro-orm/mikro-orm/commit/8861354ca378a70ec6ff2f1bf926c5fb110a7643)), closes [#3853](https://github.com/mikro-orm/mikro-orm/issues/3853)
+
+
+
+
+
 # [5.6.0](https://github.com/mikro-orm/mikro-orm/compare/v5.5.3...v5.6.0) (2022-12-09)
 
 

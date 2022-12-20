@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.1](https://github.com/mikro-orm/mikro-orm/compare/v5.6.0...v5.6.1) (2022-12-20)
+
+
+### Bug Fixes
+
+* **core:** allow adding array of refs to collection ([#3859](https://github.com/mikro-orm/mikro-orm/issues/3859)) ([0ce85e9](https://github.com/mikro-orm/mikro-orm/commit/0ce85e92caa9d115956237281f7bfaf43dd54139))
+* **core:** clone event manager when forking in `em.transactional` ([0e523b3](https://github.com/mikro-orm/mikro-orm/commit/0e523b3fa59a7e26faad9393465c6b2b609f9643)), closes [#3857](https://github.com/mikro-orm/mikro-orm/issues/3857)
+* **core:** do not unset non-null relations when propagating remove operation ([69a7f94](https://github.com/mikro-orm/mikro-orm/commit/69a7f9469250f2951e8e19b66bb92b444f2dd7fe)), closes [#3854](https://github.com/mikro-orm/mikro-orm/issues/3854)
+* **core:** fix compiled functions when relation property uses hyphens ([22350bd](https://github.com/mikro-orm/mikro-orm/commit/22350bdb1ce70163de8fe6dbd6a34cb3e372a2cc)), closes [#3813](https://github.com/mikro-orm/mikro-orm/issues/3813)
+* **core:** fix populating relation with composite FK as primary key ([b27578f](https://github.com/mikro-orm/mikro-orm/commit/b27578ffd1f6185022f249a69e33b86791809aaf)), closes [#3844](https://github.com/mikro-orm/mikro-orm/issues/3844)
+* **core:** improve inference in `em.findX()` methods ([fcb1739](https://github.com/mikro-orm/mikro-orm/commit/fcb17392ca8270926b6f725010c0f181243fb018))
+* **core:** propagation with nullable 1:1 relation ([#3851](https://github.com/mikro-orm/mikro-orm/issues/3851)) ([d77c370](https://github.com/mikro-orm/mikro-orm/commit/d77c3704561ee0e2a4cb01f40e1cb36f2e1f89e4)), closes [#3850](https://github.com/mikro-orm/mikro-orm/issues/3850)
+* **core:** remove `readonly` modifier from `Populate` type ([7b2dfb9](https://github.com/mikro-orm/mikro-orm/commit/7b2dfb91cd791fe3f3bcfc1d18520804dafe2907))
+
+
+
+
+
 # [5.6.0](https://github.com/mikro-orm/mikro-orm/compare/v5.5.3...v5.6.0) (2022-12-09)
 
 

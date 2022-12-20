@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.1](https://github.com/mikro-orm/mikro-orm/compare/v5.6.0...v5.6.1) (2022-12-20)
+
+
+### Bug Fixes
+
+* **postgres:** ignore internal timescale schemas automatically ([85d9083](https://github.com/mikro-orm/mikro-orm/commit/85d9083766ccff50680517289c2a28e0512e02e5))
+
+
+
+
+
 # [5.6.0](https://github.com/mikro-orm/mikro-orm/compare/v5.5.3...v5.6.0) (2022-12-09)
 
 
