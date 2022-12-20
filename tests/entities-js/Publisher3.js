@@ -1,4 +1,4 @@
-const { Collection } = require('@mikro-orm/core');
+const { Collection, EntitySchema } = require('@mikro-orm/core');
 const { BaseEntity4 } = require('./index').BaseEntity4;
 
 /**
@@ -18,8 +18,8 @@ class Publisher3 extends BaseEntity4 {
 
 }
 
-const schema = {
-  name: 'Publisher3',
+const schema = new EntitySchema({
+  class: Publisher3,
   extends: 'BaseEntity4',
   properties: {
     name: {
@@ -40,7 +40,7 @@ const schema = {
     },
   },
   path: __filename,
-};
+});
 
 module.exports.Publisher3 = Publisher3;
 module.exports.entity = Publisher3;
