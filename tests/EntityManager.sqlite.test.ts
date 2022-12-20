@@ -1,6 +1,5 @@
-import type { EntityMetadata } from '@mikro-orm/core';
 import {
-  Collection, EntityManager, JavaScriptMetadataProvider, LockMode, MikroORM, QueryOrder, ValidationError, wrap,
+  Collection, EntityManager, LockMode, MikroORM, QueryOrder, ValidationError, wrap,
   UniqueConstraintViolationException, TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException,
   NonUniqueFieldNameException, InvalidFieldNameException,
 } from '@mikro-orm/core';
@@ -30,16 +29,6 @@ describe('EntityManagerSqlite', () => {
 
     // as the db lives only in memory, we need to re-create the schema after reconnection
     await orm.schema.createSchema();
-  });
-
-  test('onUpdate should be re-hydrated when loading metadata from cache', async () => {
-    const provider = new JavaScriptMetadataProvider(orm.config);
-    const cacheAdapter = orm.config.getCacheAdapter();
-    const cache = await cacheAdapter.get('Book3.js');
-    const meta = {} as EntityMetadata;
-    provider.loadFromCache(meta, cache);
-    expect(meta.properties.updatedAt.onUpdate).toBeDefined();
-    expect(meta.properties.updatedAt.onUpdate!({})).toBeInstanceOf(Date);
   });
 
   test('should return sqlite driver', async () => {
