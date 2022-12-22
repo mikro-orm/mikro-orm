@@ -1,4 +1,4 @@
-import type { EntityMetadata, EntityProperty } from '../typings';
+import type { EntityName, EntityMetadata, EntityProperty } from '../typings';
 import { Utils } from '../utils';
 import { MetadataError } from '../errors';
 import { ReferenceType } from '../enums';
@@ -74,12 +74,35 @@ export class MetadataValidator {
       .replace(/\[]$/, '')          // remove array suffix
       .replace(/\((.*)\)/, '$1');   // unwrap union types
 
+    const name = <T> (p: EntityName<T> | (() => EntityName<T>)): string => {
+      if (typeof p === 'function') {
+        return Utils.className((p as () => EntityName<T>)());
+      }
+
+      return Utils.className(p);
+    };
+
+    const pivotProps = new Map<string, { prop: EntityProperty; meta: EntityMetadata }[]>();
+
     // check for not discovered entities
     discovered.forEach(meta => Object.values(meta.properties).forEach(prop => {
       if (prop.reference !== ReferenceType.SCALAR && !unwrap(prop.type).split(/ ?\| ?/).every(type => discovered.find(m => m.className === type))) {
         throw MetadataError.fromUnknownEntity(prop.type, `${meta.className}.${prop.name}`);
       }
+
+      if (prop.pivotEntity) {
+        const props = pivotProps.get(name(prop.pivotEntity)) ?? [];
+        props.push({ meta, prop });
+        pivotProps.set(name(prop.pivotEntity), props);
+      }
     }));
+
+    pivotProps.forEach(props => {
+      // if the pivot entity is used in more than one property, check if they are linked
+      if (props.length > 1 && props.every(p => !p.prop.mappedBy && !p.prop.inversedBy)) {
+        throw MetadataError.invalidManyToManyWithPivotEntity(props[0].meta, props[0].prop, props[1].meta, props[1].prop);
+      }
+    });
   }
 
   private validateReference(meta: EntityMetadata, prop: EntityProperty, metadata: MetadataStorage): void {

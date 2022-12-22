@@ -221,6 +221,12 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return this.fromMessage(meta, prop, `has wrong field name, '${requiredName}' is required in current driver`);
   }
 
+  static invalidManyToManyWithPivotEntity(meta1: EntityMetadata, prop1: EntityProperty, meta2: EntityMetadata, prop2: EntityProperty) {
+    const p1 = `${meta1.className}.${prop1.name}`;
+    const p2 = `${meta2.className}.${prop2.name}`;
+    return new MetadataError(`${p1} and ${p2} use the same 'pivotEntity', but don't form a bidirectional relation. Specify 'inversedBy' or 'mappedBy' to link them.`);
+  }
+
   private static fromMessage(meta: EntityMetadata, prop: EntityProperty, message: string): MetadataError {
     return new MetadataError(`${meta.className}.${prop.name} ${message}`);
   }

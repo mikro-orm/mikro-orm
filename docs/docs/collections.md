@@ -161,6 +161,18 @@ export class Order {
 }
 ```
 
+For bidirectional M:N relations, it is enough to specify the `pivotEntity` option only on the owning side. We still need to link the sides via `inversedBy` or `mappedBy` option.
+
+```ts
+@Entity()
+export class Product {
+
+  @ManyToMany({ entity: () => Order, mappedBy: o => o.products })
+  orders = new Collection<Order>(this);
+
+}
+```
+
 If we want to add new items to such M:N collection, we need to have all non-FK properties to define a database level default value.
 
 ```ts
