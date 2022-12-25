@@ -205,6 +205,24 @@ describe('partial loading (mysql)', () => {
       'left join `book2_tags` as `b2` on `b0`.`id` = `b2`.`book_tag2_id` ' +
       'left join `book2` as `b1` on `b2`.`book2_uuid_pk` = `b1`.`uuid_pk` ' +
       'left join `author2` as `a3` on `b1`.`author_id` = `a3`.`id`');
+
+    mock.mockReset();
+
+    const r2 = await orm.em.find(BookTag2, {}, {
+      fields: ['*', 'books.title', 'books.author', 'books.author.email'],
+      populate: ['books.author'],
+      filters: false,
+      strategy: LoadStrategy.JOINED,
+    });
+    expect(r2).toHaveLength(6);
+    expect(mock.mock.calls).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, ' +
+      '`b1`.`uuid_pk` as `b1__uuid_pk`, `b1`.`title` as `b1__title`, `b1`.`author_id` as `b1__author_id`, ' +
+      '`a3`.`id` as `a3__id`, `a3`.`email` as `a3__email` ' +
+      'from `book_tag2` as `b0` ' +
+      'left join `book2_tags` as `b2` on `b0`.`id` = `b2`.`book_tag2_id` ' +
+      'left join `book2` as `b1` on `b2`.`book2_uuid_pk` = `b1`.`uuid_pk` ' +
+      'left join `author2` as `a3` on `b1`.`author_id` = `a3`.`id`');
   });
 
   test('partial nested loading (object notation)', async () => {
