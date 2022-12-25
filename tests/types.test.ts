@@ -1,5 +1,5 @@
-import { wrap } from '@mikro-orm/core';
-import type { IdentifiedReference, Reference, Collection, EntityManager, EntityName, RequiredEntityData } from '@mikro-orm/core';
+import { Ref, wrap } from '@mikro-orm/core';
+import type { BaseEntity, IdentifiedReference, Reference, Collection, EntityManager, EntityName, RequiredEntityData } from '@mikro-orm/core';
 import type { Has, IsExact } from 'conditional-type-checks';
 import { assert } from 'conditional-type-checks';
 import type { ObjectId } from 'bson';
@@ -515,6 +515,19 @@ describe('check typings', () => {
     const id22 = o22.publisher?.id;
     assert<IsExact<typeof id21, string | undefined>>(true);
     assert<IsExact<typeof id22, string | undefined>>(true);
+  });
+
+  test('Loaded type and assignability with extending the ORM BaseEntity (#3865)', async () => {
+    interface MemberNotification extends BaseEntity<MemberNotification, 'id'> {
+      id: string;
+      notification?: Ref<Notification>;
+    }
+
+    interface Notification extends BaseEntity<Notification, 'id'> {
+      id: string;
+    }
+
+    const test: MemberNotification = {} as Loaded<MemberNotification, 'notification'>;
   });
 
 });
