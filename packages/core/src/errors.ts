@@ -171,6 +171,10 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return new MetadataError(`${meta.className}.${prop.name} is of type ${prop.reference} which is incompatible with its owning side ${prop.type}.${owner.name} of type ${owner.reference}`);
   }
 
+  static fromInversideSidePrimary(meta: EntityMetadata, owner: EntityProperty, prop: EntityProperty): MetadataError {
+    return new MetadataError(`${meta.className}.${prop.name} cannot be primary key as it is defined as inverse side. Maybe you should swap the use of 'inversedBy' and 'mappedBy'.`);
+  }
+
   /* istanbul ignore next */
   static entityNotFound(name: string, path: string): MetadataError {
     return new MetadataError(`Entity '${name}' not found in ${path}`);
