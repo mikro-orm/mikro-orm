@@ -172,6 +172,10 @@ export class MetadataValidator {
     if (!valid.find(spec => spec.owner === owner.reference && spec.inverse === prop.reference)) {
       throw MetadataError.fromWrongReferenceType(meta, owner, prop);
     }
+
+    if (prop.primary) {
+      throw MetadataError.fromInversideSidePrimary(meta, owner, prop);
+    }
   }
 
   private validateIndexes(meta: EntityMetadata, indexes: { properties: string | string[] }[], type: 'index' | 'unique'): void {

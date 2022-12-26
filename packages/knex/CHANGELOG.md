@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.2](https://github.com/mikro-orm/mikro-orm/compare/v5.6.1...v5.6.2) (2022-12-25)
+
+
+### Bug Fixes
+
+* **core:** respect `*` in partial loading with joined strategy ([7781f84](https://github.com/mikro-orm/mikro-orm/commit/7781f84537eac9a53d16ff2514bcaa051ece23c5)), closes [#3868](https://github.com/mikro-orm/mikro-orm/issues/3868)
+
+
+
+
+
 ## [5.6.1](https://github.com/mikro-orm/mikro-orm/compare/v5.6.0...v5.6.1) (2022-12-20)
 
 

@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.2](https://github.com/mikro-orm/mikro-orm/compare/v5.6.1...v5.6.2) (2022-12-25)
+
+
+### Bug Fixes
+
+* **core:** fix assignability of `Loaded` type to naked entity ([e574924](https://github.com/mikro-orm/mikro-orm/commit/e574924fa6a1559d1dd5a7331c29e5205b77921f)), closes [#3865](https://github.com/mikro-orm/mikro-orm/issues/3865)
+* **core:** respect `*` in partial loading with joined strategy ([7781f84](https://github.com/mikro-orm/mikro-orm/commit/7781f84537eac9a53d16ff2514bcaa051ece23c5)), closes [#3868](https://github.com/mikro-orm/mikro-orm/issues/3868)
+
+
+### Features
+
+* **core:** validate bidirectional M:N with `pivotEntity` ([5e793a2](https://github.com/mikro-orm/mikro-orm/commit/5e793a2ef956ea9bf324c950c5e975f5d75ceb99)), closes [#3860](https://github.com/mikro-orm/mikro-orm/issues/3860)
+* **core:** validate FK as PK is always an owning side ([330c4e2](https://github.com/mikro-orm/mikro-orm/commit/330c4e28b14df245d189d0e558cc5d68cfa348f2)), closes [#3869](https://github.com/mikro-orm/mikro-orm/issues/3869)
+
+
+
+
+
 ## [5.6.1](https://github.com/mikro-orm/mikro-orm/compare/v5.6.0...v5.6.1) (2022-12-20)
 
 

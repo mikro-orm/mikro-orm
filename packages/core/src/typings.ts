@@ -693,7 +693,11 @@ type Defined<T> = Exclude<T, null | undefined>;
 //   1. It yes, mark the collection or reference loaded and resolve its inner type recursively (passing suffix).
 //   2. If no, just return it as-is (scalars will be included, loadables too but not loaded).
 export type Loaded<T, L extends string = never> = T & {
-  [K in keyof T as IsPrefixed<K, L>]: LoadedLoadable<T[K], Loaded<ExtractType<T[K]>, Suffix<L>>>;
+  // this feels more correct, but breaks serialization methods on base entity, see #3865
+  // [K in keyof T as IsPrefixed<K, L>]: LoadedLoadable<T[K], Loaded<ExtractType<T[K]>, Suffix<L>>>;
+  [K in keyof T]: K extends Prefix<L>
+    ? LoadedLoadable<T[K], Loaded<ExtractType<T[K]>, Suffix<L>>>
+    : T[K]
 };
 
 export interface LoadedReference<T> extends Reference<Defined<T>> {
