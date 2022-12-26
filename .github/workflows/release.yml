@@ -137,6 +137,7 @@ jobs:
       - name: Use tilde in internal dependencies
         run: |
           yarn release:tilde
+          yarn
           git add .
           git commit -m 'chore(release): update internal dependencies to use tilde [skip ci]'
           git push
