@@ -11,8 +11,8 @@ import { Type } from '../types';
 import { Utils } from '../utils';
 import { EnumArrayType } from '../types/EnumArrayType';
 
-type TypeType = string | NumberConstructor | StringConstructor | BooleanConstructor | DateConstructor | ArrayConstructor | Constructor<Type<any>>;
-type TypeDef<T> = { type: TypeType } | { customType: Type<any> } | { entity: string | (() => string | EntityName<T>) };
+type TypeType = string | NumberConstructor | StringConstructor | BooleanConstructor | DateConstructor | ArrayConstructor | Constructor<Type<any>> | Type<any>;
+type TypeDef<T> = { type: TypeType } | { entity: string | (() => string | EntityName<T>) };
 type Property<T, O> =
   | ({ reference: ReferenceType.MANY_TO_ONE | 'm:1' } & TypeDef<T> & ManyToOneOptions<T, O>)
   | ({ reference: ReferenceType.ONE_TO_ONE | '1:1' } & TypeDef<T> & OneToOneOptions<T, O>)
@@ -108,8 +108,8 @@ export class EntitySchema<T = any, U = never> {
     }
 
     // enum arrays are simple numeric/string arrays, the constraint is enforced in the custom type only
-    if (options.array && !options.customType) {
-      options.customType = new EnumArrayType(`${this._meta.className}.${name}`, options.items);
+    if (options.array && !options.type) {
+      options.type = new EnumArrayType(`${this._meta.className}.${name}`, options.items);
       (options as EntityProperty).enum = false;
     }
 
@@ -282,7 +282,9 @@ export class EntitySchema<T = any, U = never> {
 
   private initProperties(): void {
     Object.entries<Property<T, unknown>>(this._meta.properties as Dictionary).forEach(([name, options]) => {
-      options.type ??= options.customType?.constructor.name;
+      if (Type.isMappedType(options.type)) {
+        options.type ??= options.type?.constructor.name;
+      }
 
       switch ((options as EntityProperty).reference) {
         case ReferenceType.ONE_TO_ONE:
