@@ -122,6 +122,10 @@ export class MetadataValidator {
     if (!metadata.find(prop.type)) {
       throw MetadataError.fromWrongTypeDefinition(meta, prop);
     }
+
+    if (metadata.find(prop.type)!.abstract && !metadata.find(prop.type)!.discriminatorColumn) {
+      throw MetadataError.targetIsAbstract(meta, prop);
+    }
   }
 
   private validateBidirectional(meta: EntityMetadata, prop: EntityProperty, metadata: MetadataStorage): void {
