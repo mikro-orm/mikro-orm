@@ -1,5 +1,5 @@
 import type { CommandModule } from 'yargs';
-import type { IDatabaseDriver } from '@mikro-orm/core';
+import type { Configuration } from '@mikro-orm/core';
 import { colors, ConfigurationLoader, MikroORM, Utils } from '@mikro-orm/core';
 
 import { CLIHelper } from '../CLIHelper';
@@ -16,7 +16,6 @@ export class DebugCommand implements CommandModule {
     CLIHelper.dump(`Current ${colors.cyan('MikroORM')} CLI configuration`);
     await CLIHelper.dumpDependencies();
     const settings = await ConfigurationLoader.getSettings();
-    let isConnected = false;
 
     if (settings.useTsNode) {
       CLIHelper.dump(' - ts-node ' + colors.green('enabled'));
@@ -29,10 +28,12 @@ export class DebugCommand implements CommandModule {
     try {
       const config = await CLIHelper.getConfiguration();
 
-      const mikroOrm = new MikroORM(config);
-      await DebugCommand.connect(mikroOrm);
-      CLIHelper.dump(` - Database Connection ${colors.green('connected')}`);
-      isConnected = true;
+      const isConnected = await DebugCommand.isConnected(config);
+      if (isConnected) {
+        CLIHelper.dump(` - Database Connection ${colors.green('connected')}`);
+      } else {
+        CLIHelper.dump(` - Database Connection ${colors.green('failed')}`);
+      }
 
       CLIHelper.dump(` - configuration ${colors.green('found')}`);
       const tsNode = config.get('tsNode');
@@ -69,13 +70,8 @@ export class DebugCommand implements CommandModule {
           await DebugCommand.checkPaths(paths, 'red', config.get('baseDir'));
         }
       }
-      isConnected = false;
     } catch (e: any) {
-      if (!isConnected) {
-        CLIHelper.dump(` - Database Connection ${colors.green('failed')}`);
-      } else {
-        CLIHelper.dump(`- configuration ${colors.red('not found')} ${colors.red(`(${e.message})`)}`);
-      }
+      CLIHelper.dump(`- configuration ${colors.red('not found')} ${colors.red(`(${e.message})`)}`);
     }
   }
 
@@ -93,8 +89,8 @@ export class DebugCommand implements CommandModule {
     }
   }
 
-  static connect(mikroOrm: MikroORM): Promise<IDatabaseDriver> {
-    return mikroOrm.connect();
+  static async isConnected(config: Configuration): Promise<boolean> {
+    return new MikroORM(config).isConnected();
   }
 
 }

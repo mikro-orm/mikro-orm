@@ -1,4 +1,4 @@
-import { Configuration, Connection, IDatabaseDriver, Utils } from '@mikro-orm/core';
+import { Configuration, Utils } from '@mikro-orm/core';
 import { CLIHelper } from '@mikro-orm/cli';
 import { DebugCommand } from '../../packages/cli/src/commands/DebugCommand';
 import { MongoDriver } from '../../packages/mongodb/src/MongoDriver';
@@ -7,22 +7,45 @@ import { MongoDriver } from '../../packages/mongodb/src/MongoDriver';
 
 describe('Issue #3855', () => {
   const dump = jest.spyOn(CLIHelper, 'dump');
-  dump.mockImplementation(() => void 0);
 
-  ignoreDependencies();
-  stubConfigPaths();
-  stubConfig();
+  beforeAll(() => {
+    dump.mockImplementation(() => void 0);
+    ignoreDependencies();
+    stubConfigPaths();
+    stubConfig();
+  });
+
+  afterEach(() => {
+    dump.mockClear();
+  });
 
   it('should print error message when fail to connect', async () => {
     const cmd = new DebugCommand();
 
     simulateFailedConnection();
+
     await expect(cmd.handler()).resolves.toBeUndefined();
     expect(dump.mock.calls).toEqual([
       ['Current MikroORM CLI configuration'],
       [' - searched config paths:'],
       [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts')} (not found)`],
       [' - Database Connection failed'],
+      [' - configuration found'],
+    ]);
+  });
+
+  it('should print success message when connected to DB', async () => {
+    const cmd = new DebugCommand();
+
+    simulateDBConnection();
+
+    await expect(cmd.handler()).resolves.toBeUndefined();
+    expect(dump.mock.calls).toEqual([
+      [ 'Current MikroORM CLI configuration' ],
+      [ ' - searched config paths:' ],
+      [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts')} (not found)`],
+      [ ' - Database Connection connected' ],
+      [ ' - configuration found' ],
     ]);
   });
 });
@@ -39,10 +62,14 @@ function stubConfigPaths() {
 }
 
 function simulateFailedConnection() {
-  const connection = jest.spyOn(DebugCommand, 'connect');
-  connection.mockImplementation(() => {
-    throw new Error('Connection Error');
-  });
+  const connection = jest.spyOn(DebugCommand, 'isConnected');
+  connection.mockImplementation(() => Promise.resolve(false));
+}
+
+function simulateDBConnection() {
+  const connection = jest.spyOn(DebugCommand, 'isConnected');
+  connection.mockClear();
+  connection.mockImplementation(() => Promise.resolve(true));
 }
 
 function stubConfig() {
