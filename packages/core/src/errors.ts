@@ -235,6 +235,12 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return this.fromMessage(meta, prop, `targets abstract entity ${prop.type}. Maybe you forgot to put @Entity() decorator on the ${prop.type} class?`);
   }
 
+  static propertyTargetsEntityType(meta: EntityMetadata, prop: EntityProperty, target: EntityMetadata) {
+    /* istanbul ignore next */
+    const suggestion = target.embeddable ? 'Embedded' : 'ManyToOne';
+    return this.fromMessage(meta, prop, `is defined as scalar @Property(), but its type is a discovered entity ${target.className}. Maybe you want to use @${suggestion}() decorator instead?`);
+  }
+
   private static fromMessage(meta: EntityMetadata, prop: EntityProperty, message: string): MetadataError {
     return new MetadataError(`${meta.className}.${prop.name} ${message}`);
   }
