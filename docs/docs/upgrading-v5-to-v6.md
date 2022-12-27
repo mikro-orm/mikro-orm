@@ -90,3 +90,11 @@ This means we no longer have to think about what package to use for imports, the
 ## Removed `JavaScriptMetadataProvider`
 
 Use `EntitySchema` instead, for easy migration there is `EntitySchema.fromMetadata()` factory, but the interface is very similar on its own.
+
+## Removed `PropertyOptions.customType` in favour of just `type`
+
+```diff
+-@Property({ customType: new ArrayType() })
++@Property({ type: new ArrayType() })
+foo: string[];
+```
