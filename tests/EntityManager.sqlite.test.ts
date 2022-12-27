@@ -845,30 +845,6 @@ describe('EntityManagerSqlite', () => {
     expect(res5).toBe(1);
   });
 
-  test('EM supports smart search conditions', async () => {
-    const author = new Author3('name', 'email');
-    const b1 = new Book3('b1', author);
-    const b2 = new Book3('b2', author);
-    const b3 = new Book3('b3', author);
-    await orm.em.persist([b1, b2, b3]).flush();
-    orm.em.clear();
-
-    const a1 = (await orm.em.findOne<any>(Author3, { 'id:ne': 10 }))!;
-    expect(a1).not.toBeNull();
-    expect(a1.id).toBe(author.id);
-    const a2 = (await orm.em.findOne<any>(Author3, { 'id>=': 1 }))!;
-    expect(a2).not.toBeNull();
-    expect(a2.id).toBe(author.id);
-    const a3 = (await orm.em.findOne<any>(Author3, { 'id:nin': [2, 3, 4] }))!;
-    expect(a3).not.toBeNull();
-    expect(a3.id).toBe(author.id);
-    const a4 = (await orm.em.findOne<any>(Author3, { 'id:in': [] }))!;
-    expect(a4).toBeNull();
-    const a5 = (await orm.em.findOne<any>(Author3, { 'id:nin': [] }))!;
-    expect(a5).not.toBeNull();
-    expect(a5.id).toBe(author.id);
-  });
-
   test('datetime is stored in correct timezone', async () => {
     const author = new Author3('n', 'e');
     author.createdAt = new Date('2000-01-01T00:00:00Z');
