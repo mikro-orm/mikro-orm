@@ -44,7 +44,6 @@ export type PropertyOptions<T> = {
   name?: string;
   fieldName?: string;
   fieldNames?: string[];
-  customType?: Type<any>;
   columnType?: ColumnType | AnyString;
   type?: keyof typeof types | 'ObjectId' | Date | Constructor<AnyEntity> | Constructor<Type<any>> | Type<any> | (() => unknown) | ColumnType | AnyString;
   length?: number;
