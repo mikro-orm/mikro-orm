@@ -58,12 +58,6 @@ export type PropertyOptions<T> = {
    */
   fieldNames?: string[];
   /**
-   * Explicitly specify the mapped type instance for this property.
-   *
-   * @see https://mikro-orm.io/docs/custom-types
-   */
-  customType?: Type<any>;
-  /**
    * Specify exact database column type for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}. (SQL only)
    */
   columnType?: ColumnType | AnyString;
