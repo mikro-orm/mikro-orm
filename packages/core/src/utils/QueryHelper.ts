@@ -9,7 +9,7 @@ import { helper } from '../entity/wrap';
 
 export class QueryHelper {
 
-  static readonly SUPPORTED_OPERATORS = ['>', '<', '<=', '>=', '!', '!=', ':in', ':nin', ':gt', ':gte', ':lt', ':lte', ':ne', ':not'];
+  static readonly SUPPORTED_OPERATORS = ['>', '<', '<=', '>=', '!', '!='];
 
   static processParams(params: any): any {
     if (Reference.isReference(params)) {
@@ -164,9 +164,6 @@ export class QueryHelper {
         return o;
       }
 
-      const re = '[^:]+(' + this.SUPPORTED_OPERATORS.filter(op => op.startsWith(':')).map(op => `${op}`).join('|') + ')$';
-      const operatorExpression = new RegExp(re).exec(key);
-
       if (Utils.isPlainObject(value)) {
         o[key] = QueryHelper.processWhere({
           ...options,
@@ -174,18 +171,8 @@ export class QueryHelper {
           entityName: prop?.type ?? entityName,
           root: false,
         });
-      } else if (!QueryHelper.isSupportedOperator(key)) {
-        o[key] = value;
-      } else if (operatorExpression) {
-        const [k, expr] = key.split(':');
-        o[k] = QueryHelper.processExpression(expr, value);
       } else {
-        const m = key.match(/([\w-]+) ?([<>=!]+)$/)!;
-        if (m) {
-          o[m[1]] = QueryHelper.processExpression(m[2], value);
-        } else {
-          o[key] = value;
-        }
+        o[key] = value;
       }
 
       return o;
