@@ -638,6 +638,24 @@ describe('EntityManagerMongo', () => {
     await orm.em.findOneOrFail(Author, { foo: { $exists: false } });
   });
 
+  test('using geospatial operators', async () => {
+    await orm.em.findOneOrFail(Author, {
+      identities: {
+        $geoWithin: {
+          $geometry: {
+            type: 'Polygon',
+            coordinates: [
+              [0, 0],
+              [0, 100],
+              [100, 0],
+              [100, 100],
+            ],
+          },
+        },
+      },
+    });
+  });
+
   test('connection returns correct URL', async () => {
     const conn1 = new MongoConnection(new Configuration({
       driver: MongoDriver,

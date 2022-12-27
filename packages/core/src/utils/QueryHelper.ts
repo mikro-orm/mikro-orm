@@ -9,8 +9,6 @@ import { helper } from '../entity/wrap';
 
 export class QueryHelper {
 
-  static readonly SUPPORTED_OPERATORS = ['>', '<', '<=', '>=', '!', '!='];
-
   static processParams(params: any): any {
     if (Reference.isReference(params)) {
       params = params.unwrap();
@@ -143,7 +141,7 @@ export class QueryHelper {
         return this.processJsonCondition(o, value, [prop.fieldNames[0]], platform, aliased);
       }
 
-      if (Array.isArray(value) && !Utils.isOperator(key) && !QueryHelper.isSupportedOperator(key) && !key.includes('?')) {
+      if (Array.isArray(value) && !Utils.isOperator(key) && !options.platform.isSupportedOperator() && !key.includes('?')) {
         if (platform.allowsComparingTuples()) {
           // comparing single composite key - use $eq instead of $in
           const op = !value.every(v => Array.isArray(v)) && composite ? '$eq' : '$in';
@@ -225,22 +223,6 @@ export class QueryHelper {
     }
 
     return prop.customType.convertToDatabaseValue(cond, platform, { fromQuery, key, mode: 'query' });
-  }
-
-  private static processExpression<T>(expr: string, value: T): Dictionary<T> {
-    switch (expr) {
-      case '>': return { $gt: value };
-      case '<': return { $lt: value };
-      case '>=': return { $gte: value };
-      case '<=': return { $lte: value };
-      case '!=': return { $ne: value };
-      case '!': return { $not: value };
-      default: return { ['$' + expr]: value };
-    }
-  }
-
-  private static isSupportedOperator(key: string): boolean {
-    return !!QueryHelper.SUPPORTED_OPERATORS.find(op => key.includes(op));
   }
 
   private static processJsonCondition<T>(o: ObjectQuery<T>, value: Dictionary, path: string[], platform: Platform, alias: boolean) {

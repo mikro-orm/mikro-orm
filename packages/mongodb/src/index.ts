@@ -1,4 +1,5 @@
 /* istanbul ignore file */
+export * from './operators';
 export * from './MongoConnection';
 export * from './MongoDriver';
 export * from './MongoPlatform';

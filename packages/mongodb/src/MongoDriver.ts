@@ -9,7 +9,6 @@ import { DatabaseDriver, EntityManagerType, ReferenceType, Utils } from '@mikro-
 import { MongoConnection } from './MongoConnection';
 import { MongoPlatform } from './MongoPlatform';
 import { MongoEntityManager } from './MongoEntityManager';
-import type { CreateSchemaOptions } from './MongoSchemaGenerator';
 
 export class MongoDriver extends DatabaseDriver<MongoConnection> {
 

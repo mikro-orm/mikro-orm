@@ -841,6 +841,7 @@ export class Utils {
   }
 
   static isOperator(key: string, includeGroupOperators = true): boolean {
+    console.log(key, QueryOperator);
     if (!includeGroupOperators) {
       return !!QueryOperator[key];
     }

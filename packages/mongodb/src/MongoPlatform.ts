@@ -94,4 +94,29 @@ export class MongoPlatform extends Platform {
     return ['$not', '$fulltext'].includes(operator);
   }
 
+  isSupportedOperator(): string[] {
+    return [
+      '$geoWithin',
+      '$geometry',
+      '$geoIntersects',
+      '$near',
+      '$nearSphere',
+      '$type',
+      '$expr',
+      '$jsonSchema',
+      '$mod',
+      '$regex',
+      '$text',
+      '$where',
+      '$all',
+      '$elemMatch',
+      '$size',
+      '$bitsAllClear',
+      '$bitsAllSet',
+      '$bitsAnyClear',
+      '$bitsAnySet',
+      '$comment',
+    ];
+  }
+
 }

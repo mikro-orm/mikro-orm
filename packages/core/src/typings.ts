@@ -56,7 +56,7 @@ export type ExpandScalar<T> = null | (T extends string
     ? Date | string
     : T);
 
-export type OperatorMap<T> = {
+export interface OperatorMap<T> {
   $and?: Query<T>[];
   $or?: Query<T>[];
   $eq?: ExpandScalar<T> | ExpandScalar<T>[];
@@ -76,7 +76,7 @@ export type OperatorMap<T> = {
   $contains?: string[];
   $contained?: string[];
   $exists?: boolean;
-};
+}
 
 export type FilterValue2<T> = T | ExpandScalar<T> | Primary<T>;
 export type FilterValue<T> = OperatorMap<FilterValue2<T>> | FilterValue2<T> | FilterValue2<T>[] | null;

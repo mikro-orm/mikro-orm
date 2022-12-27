@@ -457,6 +457,10 @@ export abstract class Platform {
     return '';
   }
 
+  isSupportedOperator(): string[] {
+    return [];
+  }
+
   /**
    * @internal
    */
