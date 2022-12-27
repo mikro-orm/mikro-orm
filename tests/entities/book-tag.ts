@@ -15,7 +15,7 @@ export class BookTag {
 
 }
 
-export const schema = new EntitySchema<BookTag>({
+export const schema = new EntitySchema({
   class: BookTag,
   properties: {
     _id: { type: 'ObjectId', primary: true },
