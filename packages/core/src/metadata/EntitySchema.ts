@@ -28,12 +28,26 @@ type Metadata<T, U> =
 
 export class EntitySchema<T = any, U = never> {
 
+  /**
+   * When schema links the entity class via `class` option, this registry allows the lookup from opposite side,
+   * so we can use the class in `entities` option just like the EntitySchema instance.
+   */
+  static REGISTRY = new Map<AnyEntity, EntitySchema>();
+
   private readonly _meta: EntityMetadata<T> = new EntityMetadata<T>();
   private internal = false;
   private initialized = false;
 
   constructor(meta: Metadata<T, U>) {
     meta.name = meta.class ? meta.class.name : meta.name;
+
+    if (meta.name) {
+      meta.abstract ??= false;
+    }
+
+    if (meta.class && !(meta as Dictionary).internal) {
+      EntitySchema.REGISTRY.set(meta.class, this);
+    }
 
     if (meta.tableName || meta.collection) {
       Utils.renameKey(meta, 'tableName', 'collection');
@@ -45,7 +59,7 @@ export class EntitySchema<T = any, U = never> {
   }
 
   static fromMetadata<T = AnyEntity, U = never>(meta: EntityMetadata<T> | DeepPartial<EntityMetadata<T>>): EntitySchema<T, U> {
-    const schema = new EntitySchema<T, U>(meta as unknown as Metadata<T, U>);
+    const schema = new EntitySchema<T, U>({ ...meta, internal: true } as unknown as Metadata<T, U>);
     schema.internal = true;
 
     return schema;
@@ -214,6 +228,10 @@ export class EntitySchema<T = any, U = never> {
     this._meta.constructorParams = Utils.getParamNames(proto, 'constructor');
     this._meta.toJsonParams = Utils.getParamNames(proto, 'toJSON').filter(p => p !== '...args');
 
+    if (!this.internal) {
+      EntitySchema.REGISTRY.set(proto, this);
+    }
+
     if (Object.getPrototypeOf(proto) !== BaseEntity) {
       this._meta.extends = this._meta.extends || Object.getPrototypeOf(proto).name || undefined;
     }
@@ -264,7 +282,7 @@ export class EntitySchema<T = any, U = never> {
 
   private initProperties(): void {
     Object.entries<Property<T, unknown>>(this._meta.properties as Dictionary).forEach(([name, options]) => {
-      options.type = options.customType != null ? options.customType.constructor.name : options.type;
+      options.type ??= options.customType?.constructor.name;
 
       switch ((options as EntityProperty).reference) {
         case ReferenceType.ONE_TO_ONE:
