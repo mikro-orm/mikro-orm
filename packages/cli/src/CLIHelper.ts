@@ -38,6 +38,18 @@ export class CLIHelper {
     return MikroORM.init(options);
   }
 
+  static async isDBConnected(): Promise<boolean> {
+    try {
+      const config = await CLIHelper.getConfiguration();
+      await config.getDriver().connect();
+      const isConnected = await config.getDriver().getConnection().isConnected();
+      await config.getDriver().close();
+      return isConnected;
+    } catch {
+      return false;
+    }
+  }
+
   static getNodeVersion(): string {
     return process.versions.node;
   }

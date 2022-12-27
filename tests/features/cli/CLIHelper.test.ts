@@ -452,4 +452,11 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
     dumpSpy.mockRestore();
   });
 
+  test('isDBConnected', async () => {
+    await expect(CLIHelper.isDBConnected()).resolves.toEqual(false);
+    const pathExistsMock = jest.spyOn(require('fs-extra'), 'pathExists');
+    pathExistsMock.mockImplementation(async path => (path as string).endsWith('mikro-orm/mikro-orm.config.js'));
+    await expect(CLIHelper.isDBConnected()).resolves.toEqual(true);
+    pathExistsMock.mockRestore();
+  });
 });

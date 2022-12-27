@@ -2,7 +2,12 @@ import { MongoConnection, MongoDriver } from '@mikro-orm/mongodb';
 
 (global as any).process.env.FORCE_COLOR = 0;
 
-import { Configuration, ConfigurationLoader, Connection, DatabaseDriver, Utils } from '@mikro-orm/core';
+import {
+  Configuration,
+  ConfigurationLoader,
+  IDatabaseDriver,
+  Utils,
+} from '@mikro-orm/core';
 import { CLIHelper } from '@mikro-orm/cli';
 import { DebugCommand } from '../../../packages/cli/src/commands/DebugCommand';
 import FooBar from '../../entities/FooBar';
@@ -105,8 +110,8 @@ describe('DebugCommand', () => {
     getSettings.mockResolvedValue({});
     getConfiguration.mockResolvedValue(new Configuration({ driver: MongoDriver } as any, false));
     getConfigPaths.mockResolvedValue(['./path/orm-config.ts']);
-    const connectionMock = jest.spyOn(MongoConnection.prototype, 'isConnected');
-    connectionMock.mockResolvedValue(false);
+    const connectionMock = jest.spyOn(CLIHelper, 'isDBConnected');
+    connectionMock.mockImplementation(async () => false);
     await expect(cmd.handler()).resolves.toBeUndefined();
     expect(dumpDependencies).toBeCalledTimes(6);
     expect(dump.mock.calls).toEqual([

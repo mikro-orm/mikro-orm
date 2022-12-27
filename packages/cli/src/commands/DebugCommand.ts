@@ -28,10 +28,15 @@ export class DebugCommand implements CommandModule {
     try {
       const config = await CLIHelper.getConfiguration();
       CLIHelper.dump(` - configuration ${colors.green('found')}`);
+
+      const isConnected = await CLIHelper.isDBConnected();
+      if (isConnected) {
+        CLIHelper.dump(`   - ${colors.green('database connected')}`);
+      } else {
+        CLIHelper.dump(`   - ${colors.yellow('database not found')}`);
+      }
+
       const tsNode = config.get('tsNode');
-
-      await DebugCommand.checkDBConnection(config, 'yellow');
-
       if ([true, false].includes(tsNode as boolean)) {
         const warning = tsNode ? ' (this value should be set to `false` when running compiled code!)' : '';
         CLIHelper.dump(` - \`tsNode\` flag explicitly set to ${tsNode}, will use \`entities${tsNode ? 'Ts' : ''}\` array${warning}`);
@@ -80,18 +85,6 @@ export class DebugCommand implements CommandModule {
       } else {
         CLIHelper.dump(`   - ${path} (${colors[failedColor]('not found')})`);
       }
-    }
-  }
-
-  private static async checkDBConnection(config: Configuration, failedColor: 'red' | 'yellow'): Promise<void> {
-    await config.getDriver().connect();
-    const isConnected = await config.getDriver().getConnection().isConnected();
-    await config.getDriver().close();
-
-    if (isConnected) {
-      CLIHelper.dump(`   - ${colors.green('database connected')}`);
-    } else {
-      CLIHelper.dump(`   - ${colors[failedColor]('database not found')}`);
     }
   }
 
