@@ -2997,6 +2997,7 @@ __metadata:
     "@commitlint/config-conventional": 17.3.0
     "@mikro-orm/mongo-highlighter": 1.0.0
     "@mikro-orm/sql-highlighter": 1.0.1
+    "@side/jest-runtime": ^1.1.0
     "@types/fs-extra": 9.0.13
     "@types/jest": 29.2.4
     "@types/mysql2": "https://github.com/types/mysql2.git#commit=89378b2cb3974ea8cdd1d633b8f056e54e5d2384"
@@ -3488,6 +3489,17 @@ __metadata:
     colors: ~1.2.1
     string-argv: ~0.3.1
   checksum: a5b488d51f5d06bdb1e4aa03d6826049187adc00ddb5aad4e7559f48981d036fb5811f03572831f8026e87c262422ef9afb7c90a0d05130bdb80b239db02f415
+  languageName: node
+  linkType: hard
+
+"@side/jest-runtime@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "@side/jest-runtime@npm:1.1.0"
+  peerDependencies:
+    "@jest/transform": ">=28"
+    jest: ">=28"
+    jest-runtime: ">=28"
+  checksum: 48f44e610c1946f3d4a80d14e11e653147b04d932915c85a796574c32f99bb7c636fe40fb0760c86d8aa6ee955c65ddec09c730ddae2def8ac9b812ffe008100
   languageName: node
   linkType: hard
 

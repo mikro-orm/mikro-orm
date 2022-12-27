@@ -6,6 +6,7 @@ module.exports = {
       isolatedModules: true,
     }],
   },
+  runtime: '@side/jest-runtime',
   collectCoverage: false,
   collectCoverageFrom: [
     '<rootDir>/packages/*/src/**/*.ts',
