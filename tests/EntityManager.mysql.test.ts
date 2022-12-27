@@ -1789,33 +1789,6 @@ describe('EntityManagerMySql', () => {
     expect(a1.books.count()).toBe(3);
   });
 
-  test('EM supports smart search conditions', async () => {
-    const author = new Author2('name', 'email');
-    const b1 = new Book2('b1', author);
-    const b2 = new Book2('b2', author);
-    const b3 = new Book2('b3', author);
-    await orm.em.persistAndFlush([b1, b2, b3]);
-    orm.em.clear();
-
-    const a1 = (await orm.em.findOne(Author2, { 'id:ne': 10 } as any))!;
-    expect(a1).not.toBeNull();
-    expect(a1.id).toBe(author.id);
-    const a2 = (await orm.em.findOne(Author2, { 'id>=': 1 } as any))!;
-    expect(a2).not.toBeNull();
-    expect(a2.id).toBe(author.id);
-    const a3 = (await orm.em.findOne(Author2, { 'id:nin': [2, 3, 4] } as any))!;
-    expect(a3).not.toBeNull();
-    expect(a3.id).toBe(author.id);
-    const a4 = (await orm.em.findOne(Author2, { 'id:in': [] } as any))!;
-    expect(a4).toBeNull();
-    const a5 = (await orm.em.findOne(Author2, { 'id:nin': [] } as any))!;
-    expect(a5).not.toBeNull();
-    expect(a5.id).toBe(author.id);
-    const a6 = (await orm.em.findOne(Author2, { $and: [{ 'id:nin': [] }, { email: 'email' }] } as any))!;
-    expect(a6).not.toBeNull();
-    expect(a6.id).toBe(author.id);
-  });
-
   test('lookup by array', async () => {
     const author = new Author2('Jon Snow', 'snow@wall.st');
     const book1 = new Book2('My Life on The Wall, part 1', author);
