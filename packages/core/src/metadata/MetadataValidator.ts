@@ -45,11 +45,14 @@ export class MetadataValidator {
     this.validateVersionField(meta);
     this.validateIndexes(meta, meta.indexes ?? [], 'index');
     this.validateIndexes(meta, meta.uniques ?? [], 'unique');
-    const references = Object.values(meta.properties).filter(prop => prop.reference !== ReferenceType.SCALAR);
 
-    for (const prop of references) {
-      this.validateReference(meta, prop, metadata);
-      this.validateBidirectional(meta, prop, metadata);
+    for (const prop of Object.values(meta.properties)) {
+      if (prop.reference !== ReferenceType.SCALAR) {
+        this.validateReference(meta, prop, metadata);
+        this.validateBidirectional(meta, prop, metadata);
+      } else if (metadata.has(prop.type)) {
+        throw MetadataError.propertyTargetsEntityType(meta, prop, metadata.get(prop.type));
+      }
     }
   }
 
