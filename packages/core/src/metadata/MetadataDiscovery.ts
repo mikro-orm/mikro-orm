@@ -248,6 +248,10 @@ export class MetadataDiscovery {
       return entity;
     }
 
+    if (EntitySchema.REGISTRY.has(entity)) {
+      return EntitySchema.REGISTRY.get(entity)!;
+    }
+
     const path = (entity as Dictionary).__path;
 
     if (path) {
