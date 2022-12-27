@@ -25,7 +25,7 @@ export const FooBar4 = new EntitySchema<IFooBar4, IBaseEntity5>({
     version: { type: 'number', version: true },
     blob: { type: BlobType, nullable: true },
     blob2: { type: Uint8ArrayType, nullable: true },
-    array: { customType: new ArrayType(i => +i), nullable: true },
+    array: { type: new ArrayType(i => +i), nullable: true },
     object: { type: JsonType, nullable: true },
     virtual: { type: String, persist: false },
   },
