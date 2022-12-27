@@ -1,5 +1,6 @@
 import type { CommandModule } from 'yargs';
-import { ConfigurationLoader, Utils, colors } from '@mikro-orm/core';
+import type { Configuration } from '@mikro-orm/core';
+import { ConfigurationLoader, Utils, colors, MikroORM } from '@mikro-orm/core';
 
 import { CLIHelper } from '../CLIHelper';
 
@@ -28,6 +29,8 @@ export class DebugCommand implements CommandModule {
       const config = await CLIHelper.getConfiguration();
       CLIHelper.dump(` - configuration ${colors.green('found')}`);
       const tsNode = config.get('tsNode');
+
+      await DebugCommand.checkDBConnection(config, 'yellow');
 
       if ([true, false].includes(tsNode as boolean)) {
         const warning = tsNode ? ' (this value should be set to `false` when running compiled code!)' : '';
@@ -77,6 +80,18 @@ export class DebugCommand implements CommandModule {
       } else {
         CLIHelper.dump(`   - ${path} (${colors[failedColor]('not found')})`);
       }
+    }
+  }
+
+  private static async checkDBConnection(config: Configuration, failedColor: 'red' | 'yellow'): Promise<void> {
+    await config.getDriver().connect();
+    const isConnected = await config.getDriver().getConnection().isConnected();
+    await config.getDriver().close();
+
+    if (isConnected) {
+      CLIHelper.dump(`   - ${colors.green('database connected')}`);
+    } else {
+      CLIHelper.dump(`   - ${colors[failedColor]('database not found')}`);
     }
   }
 
