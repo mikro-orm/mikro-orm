@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.3](https://github.com/mikro-orm/mikro-orm/compare/v5.6.2...v5.6.3) (2022-12-28)
+
+
+### Bug Fixes
+
+* **core:** delay snapshotting of entity state to fix differences with joined strategy ([cbf62fa](https://github.com/mikro-orm/mikro-orm/commit/cbf62faa61c376c9065ff30005ada442c90fb158)), closes [#3876](https://github.com/mikro-orm/mikro-orm/issues/3876)
+* **core:** do not convert custom mapped type twice in `Reference.createFromPK` ([7dfff45](https://github.com/mikro-orm/mikro-orm/commit/7dfff45cb09cedee994070fe432f1b4821b73494)), closes [#3878](https://github.com/mikro-orm/mikro-orm/issues/3878)
+
+
+
+
+
 ## [5.6.2](https://github.com/mikro-orm/mikro-orm/compare/v5.6.1...v5.6.2) (2022-12-25)
 
 
