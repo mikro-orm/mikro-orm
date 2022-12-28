@@ -100,21 +100,22 @@ export class UnitOfWork {
     wrapped.__managed = true;
 
     if (data && (options?.refresh || !wrapped.__originalEntityData)) {
-      const callback = () => {
+      Object.keys(data).forEach(key => helper(entity).__loadedProperties.add(key));
+      this.queuedActions.delete(wrapped.__meta.className);
+
+      // assign the data early, delay recompute via snapshot queue unless we refresh the state
+      if (options?.refresh) {
+        wrapped.__originalEntityData = this.comparator.prepareEntity(entity);
+      } else {
+        wrapped.__originalEntityData = data;
+      }
+
+      wrapped.__touched = false;
+      this.snapshotQueue.push(() => {
         // we can't use the `data` directly here as it can contain fetch joined data, that can't be used for diffing the state
         wrapped.__originalEntityData = this.comparator.prepareEntity(entity);
         wrapped.__touched = false;
-      };
-
-      Object.keys(data).forEach(key => helper(entity).__loadedProperties.add(key));
-      this.queuedActions.delete(wrapped.__meta.className);
-      callback();
-
-      // schedule re-snapshotting in case it's a reference, as there might be some updates made via propagation
-      // we need to have in the snapshot in case the entity reference gets modified
-      if (!wrapped.__initialized) {
-        this.snapshotQueue.push(callback);
-      }
+      });
     }
 
     return entity;
