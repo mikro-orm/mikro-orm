@@ -60,7 +60,11 @@ export class Reference<T> {
 
   static createNakedFromPK<T extends object, PK extends keyof T | unknown = PrimaryProperty<T>>(entityType: EntityClass<T>, pk: Primary<T>, options?: { schema?: string }): T {
     const factory = entityType.prototype.__factory as EntityFactory;
-    return factory.createReference(entityType, pk, { merge: false, ...options });
+    return factory.createReference(entityType, pk, {
+      merge: false,
+      convertCustomTypes: false,
+      ...options,
+    });
   }
 
   /**

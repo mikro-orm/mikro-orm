@@ -1,5 +1,5 @@
 import { v4, parse, stringify } from 'uuid';
-import { Collection, Entity, ManyToMany, PrimaryKey, Property, Type } from '@mikro-orm/core';
+import { Collection, Entity, ManyToMany, ManyToOne, PrimaryKey, Property, ref, Ref, Type } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/mysql';
 
 export class UuidBinaryType extends Type<string, Buffer> {
@@ -45,8 +45,12 @@ class A {
   @ManyToMany(() => B)
   fields = new Collection<B>(this);
 
-  constructor(name: string) {
+  @ManyToOne(() => B, { ref: true })
+  b: Ref<B>;
+
+  constructor(name: string, b: string) {
     this.name = name;
+    this.b = ref(B, b);
   }
 
 }
@@ -69,14 +73,14 @@ describe('GH issue 1930', () => {
   });
 
   afterEach(async () => {
-    await orm.em.nativeDelete(B, {});
-    await orm.em.nativeDelete(A, {});
+    await orm.schema.clearDatabase();
   });
 
   test(`M:N with custom type PKs`, async () => {
-    const a = new A('a1');
+    const b = orm.em.create(B, { name: 'b' });
+    const a = new A('a1', b.id);
     a.fields.add(new B('b1'), new B('b2'), new B('b3'));
-    await orm.em.persistAndFlush(a);
+    await orm.em.persistAndFlush([a, b]);
     orm.em.clear();
 
     const a1 = await orm.em.findOneOrFail(A, a.id, {
