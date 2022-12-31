@@ -1,5 +1,5 @@
 import { defineConfig, MikroORM } from '@mikro-orm/core';
-import type { Options } from '@mikro-orm/core';
+import type { Options, Configuration, IDatabaseDriver } from '@mikro-orm/core';
 import { MongoDriver } from './MongoDriver';
 
 /**
@@ -8,6 +8,13 @@ import { MongoDriver } from './MongoDriver';
 export class MongoMikroORM extends MikroORM<MongoDriver> {
 
   private static DRIVER = MongoDriver;
+
+  /**
+   * @inheritDoc
+   */
+  static async init<D extends IDatabaseDriver = MongoDriver>(options?: Options<D> | Configuration<D>, connect = true): Promise<MikroORM<D>> {
+    return MikroORM.init(options, connect);
+  }
 
 }
 

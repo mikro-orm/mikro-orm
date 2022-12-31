@@ -1,5 +1,5 @@
 import { defineConfig, MikroORM } from '@mikro-orm/core';
-import type { Options } from '@mikro-orm/core';
+import type { Options, Configuration, IDatabaseDriver } from '@mikro-orm/core';
 import { MariaDbDriver } from './MariaDbDriver';
 
 /**
@@ -8,6 +8,13 @@ import { MariaDbDriver } from './MariaDbDriver';
 export class MariaDbMikroORM extends MikroORM<MariaDbDriver> {
 
   private static DRIVER = MariaDbDriver;
+
+  /**
+   * @inheritDoc
+   */
+  static async init<D extends IDatabaseDriver = MariaDbDriver>(options?: Options<D> | Configuration<D>, connect = true): Promise<MikroORM<D>> {
+    return MikroORM.init(options, connect);
+  }
 
 }
 
