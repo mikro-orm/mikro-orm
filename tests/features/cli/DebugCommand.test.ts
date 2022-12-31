@@ -38,7 +38,7 @@ describe('DebugCommand', () => {
       [' - searched config paths:'],
       [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
       [' - configuration found'],
-      ['   - database connected'],
+      [' - database connection succesful'],
     ]);
 
     getSettings.mockResolvedValue({ useTsNode: true });
@@ -53,7 +53,7 @@ describe('DebugCommand', () => {
       [' - searched config paths:'],
       [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
       [' - configuration found'],
-      ['   - database connected'],
+      [' - database connection succesful'],
       [' - `tsNode` flag explicitly set to true, will use `entitiesTs` array (this value should be set to `false` when running compiled code!)'],
       [' - could use `entities` array (contains 0 references and 2 paths)'],
       [`   - ${Utils.normalizePath(process.cwd() + '/dist/entities-1') } (found)`],
@@ -73,7 +73,7 @@ describe('DebugCommand', () => {
       [' - searched config paths:'],
       [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
       [' - configuration found'],
-      ['   - database connected'],
+      [' - database connection succesful'],
       [' - `tsNode` flag explicitly set to false, will use `entities` array'],
       [' - will use `entities` array (contains 2 references and 0 paths)'],
     ]);
@@ -100,7 +100,7 @@ describe('DebugCommand', () => {
       [' - searched config paths:'],
       [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (not found)`],
       [' - configuration found'],
-      ['   - database connected'],
+      [' - database connection succesful'],
       [' - `tsNode` flag explicitly set to false, will use `entities` array'],
       [' - will use `entities` array (contains 2 references and 0 paths)'],
     ]);
@@ -119,7 +119,7 @@ describe('DebugCommand', () => {
       [' - searched config paths:'],
       [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (not found)`],
       [' - configuration found'],
-      ['   - database not found'],
+      [' - database connection failed'],
     ]);
     globbyMock.mockRestore();
   });

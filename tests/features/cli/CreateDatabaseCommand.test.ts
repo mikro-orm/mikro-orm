@@ -7,8 +7,7 @@ import { CreateDatabaseCommand } from '../../../packages/cli/src/commands/Create
 import { initORMSqlite } from '../../bootstrap';
 
 const closeSpy = jest.spyOn(MikroORM.prototype, 'close');
-const showHelpMock =
-  jest.spyOn(CLIHelper, 'showHelp');
+const showHelpMock = jest.spyOn(CLIHelper, 'showHelp');
 showHelpMock.mockImplementation(() => void 0);
 const ensureDatabase = jest.spyOn(SchemaGenerator.prototype, 'ensureDatabase');
 ensureDatabase.mockImplementation(async () => false);
