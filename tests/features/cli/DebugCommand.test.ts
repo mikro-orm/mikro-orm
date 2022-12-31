@@ -1,8 +1,13 @@
-import { MongoDriver } from '@mikro-orm/mongodb';
+import { MongoConnection, MongoDriver } from '@mikro-orm/mongodb';
 
 (global as any).process.env.FORCE_COLOR = 0;
 
-import { Configuration, ConfigurationLoader, Utils } from '@mikro-orm/core';
+import {
+  Configuration,
+  ConfigurationLoader,
+  IDatabaseDriver,
+  Utils,
+} from '@mikro-orm/core';
 import { CLIHelper } from '@mikro-orm/cli';
 import { DebugCommand } from '../../../packages/cli/src/commands/DebugCommand';
 import FooBar from '../../entities/FooBar';
@@ -33,6 +38,7 @@ describe('DebugCommand', () => {
       [' - searched config paths:'],
       [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
       [' - configuration found'],
+      [' - database connection succesful'],
     ]);
 
     getSettings.mockResolvedValue({ useTsNode: true });
@@ -47,6 +53,7 @@ describe('DebugCommand', () => {
       [' - searched config paths:'],
       [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
       [' - configuration found'],
+      [' - database connection succesful'],
       [' - `tsNode` flag explicitly set to true, will use `entitiesTs` array (this value should be set to `false` when running compiled code!)'],
       [' - could use `entities` array (contains 0 references and 2 paths)'],
       [`   - ${Utils.normalizePath(process.cwd() + '/dist/entities-1') } (found)`],
@@ -66,6 +73,7 @@ describe('DebugCommand', () => {
       [' - searched config paths:'],
       [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (found)`],
       [' - configuration found'],
+      [' - database connection succesful'],
       [' - `tsNode` flag explicitly set to false, will use `entities` array'],
       [' - will use `entities` array (contains 2 references and 0 paths)'],
     ]);
@@ -92,10 +100,27 @@ describe('DebugCommand', () => {
       [' - searched config paths:'],
       [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (not found)`],
       [' - configuration found'],
+      [' - database connection succesful'],
       [' - `tsNode` flag explicitly set to false, will use `entities` array'],
       [' - will use `entities` array (contains 2 references and 0 paths)'],
     ]);
+
+    globbyMock.mockResolvedValue(false);
+    dump.mock.calls.length = 0;
+    getSettings.mockResolvedValue({});
+    getConfiguration.mockResolvedValue(new Configuration({ driver: MongoDriver } as any, false));
+    getConfigPaths.mockResolvedValue(['./path/orm-config.ts']);
+    const connectionMock = jest.spyOn(CLIHelper, 'isDBConnected');
+    connectionMock.mockImplementation(async () => false);
+    await expect(cmd.handler()).resolves.toBeUndefined();
+    expect(dumpDependencies).toBeCalledTimes(6);
+    expect(dump.mock.calls).toEqual([
+      ['Current MikroORM CLI configuration'],
+      [' - searched config paths:'],
+      [`   - ${Utils.normalizePath(process.cwd() + '/path/orm-config.ts') } (not found)`],
+      [' - configuration found'],
+      [' - database connection failed'],
+    ]);
     globbyMock.mockRestore();
   });
-
 });

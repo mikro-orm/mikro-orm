@@ -1,5 +1,6 @@
 import type { CommandModule } from 'yargs';
-import { ConfigurationLoader, Utils, colors } from '@mikro-orm/core';
+import type { Configuration } from '@mikro-orm/core';
+import { ConfigurationLoader, Utils, colors, MikroORM } from '@mikro-orm/core';
 
 import { CLIHelper } from '../CLIHelper';
 
@@ -27,8 +28,15 @@ export class DebugCommand implements CommandModule {
     try {
       const config = await CLIHelper.getConfiguration();
       CLIHelper.dump(` - configuration ${colors.green('found')}`);
-      const tsNode = config.get('tsNode');
 
+      const isConnected = await CLIHelper.isDBConnected();
+      if (isConnected) {
+        CLIHelper.dump(` - ${colors.green('database connection succesful')}`);
+      } else {
+        CLIHelper.dump(` - ${colors.yellow('database connection failed')}`);
+      }
+
+      const tsNode = config.get('tsNode');
       if ([true, false].includes(tsNode as boolean)) {
         const warning = tsNode ? ' (this value should be set to `false` when running compiled code!)' : '';
         CLIHelper.dump(` - \`tsNode\` flag explicitly set to ${tsNode}, will use \`entities${tsNode ? 'Ts' : ''}\` array${warning}`);
