@@ -31,9 +31,9 @@ export class DebugCommand implements CommandModule {
 
       const isConnected = await CLIHelper.isDBConnected();
       if (isConnected) {
-        CLIHelper.dump(`   - ${colors.green('database connected')}`);
+        CLIHelper.dump(` - ${colors.green('database connection succesful')}`);
       } else {
-        CLIHelper.dump(`   - ${colors.yellow('database not found')}`);
+        CLIHelper.dump(` - ${colors.yellow('database connection failed')}`);
       }
 
       const tsNode = config.get('tsNode');
