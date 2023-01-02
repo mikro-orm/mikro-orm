@@ -13,7 +13,7 @@ export class MariaDbMikroORM extends MikroORM<MariaDbDriver> {
    * @inheritDoc
    */
   static async init<D extends IDatabaseDriver = MariaDbDriver>(options?: Options<D> | Configuration<D>, connect = true): Promise<MikroORM<D>> {
-    return MikroORM.init(options, connect);
+    return super.init(options, connect);
   }
 
 }
