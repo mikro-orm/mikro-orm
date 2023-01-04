@@ -1,4 +1,4 @@
-import { defineConfig, MikroORM, type Options, type Configuration, type IDatabaseDriver } from '@mikro-orm/core';
+import { defineConfig, MikroORM, type Options, type IDatabaseDriver } from '@mikro-orm/core';
 import { BetterSqliteDriver } from './BetterSqliteDriver';
 
 /**
@@ -11,8 +11,8 @@ export class BetterSqliteMikroORM extends MikroORM<BetterSqliteDriver> {
   /**
    * @inheritDoc
    */
-  static async init<D extends IDatabaseDriver = BetterSqliteDriver>(options?: Options<D> | Configuration<D>, connect = true): Promise<MikroORM<D>> {
-    return super.init(options, connect);
+  static async init<D extends IDatabaseDriver = BetterSqliteDriver>(options?: Options<D>): Promise<MikroORM<D>> {
+    return super.init(options);
   }
 
 }
