@@ -661,6 +661,16 @@ export class QueryBuilder<T extends object = AnyEntity> {
   }
 
   /**
+   * Executes the query, returning both array of results and total count query (without offset and limit).
+   */
+  async getResultAndCount(): Promise<[T[], number]> {
+    return Promise.all([
+      this.getResultList(),
+      this.getCount(),
+    ]);
+  }
+
+  /**
    * Provides promise-like interface so we can await the QB instance.
    */
   then<TResult1 = any, TResult2 = never>(onfulfilled?: ((value: any) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<T[] | number | QueryResult<T>> {
