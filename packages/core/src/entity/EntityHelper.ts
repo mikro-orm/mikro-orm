@@ -15,10 +15,17 @@ export class EntityHelper {
 
   static decorate<T extends object>(meta: EntityMetadata<T>, em: EntityManager): void {
     const fork = em.fork(); // use fork so we can access `EntityFactory`
-    const pk = meta.properties[meta.primaryKeys[0]];
+    const serializedPrimaryKey = meta.props.find(p => p.serializedPrimaryKey);
 
-    if (pk?.name === '_id' && meta.serializedPrimaryKey === 'id') {
-      EntityHelper.defineIdProperty(meta, em.getPlatform());
+    if (serializedPrimaryKey) {
+      Object.defineProperty(meta.prototype, serializedPrimaryKey.name, {
+        get(): string | null {
+          return this._id ? em.getPlatform().normalizePrimaryKey<string>(this._id) : null;
+        },
+        set(id: string): void {
+          this._id = id ? em.getPlatform().denormalizePrimaryKey(id) : null;
+        },
+      });
     }
 
     EntityHelper.defineBaseProperties(meta, meta.prototype, fork);
@@ -34,20 +41,6 @@ export class EntityHelper {
         return EntityTransformer.toObject<T>(this, ...args.slice(meta.toJsonParams.length));
       };
     }
-  }
-
-  /**
-   * defines magic id property getter/setter if PK property is `_id` and there is no `id` property defined
-   */
-  private static defineIdProperty<T>(meta: EntityMetadata<T>, platform: Platform): void {
-    Object.defineProperty(meta.prototype, 'id', {
-      get(): string | null {
-        return this._id ? platform.normalizePrimaryKey<string>(this._id) : null;
-      },
-      set(id: string): void {
-        this._id = id ? platform.denormalizePrimaryKey(id) : null;
-      },
-    });
   }
 
   /**

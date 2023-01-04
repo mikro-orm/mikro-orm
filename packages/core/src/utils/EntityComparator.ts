@@ -184,7 +184,13 @@ export class EntityComparator {
         lines.push(`  if (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) return entity${this.wrap(pk)}.__helper.getSerializedPrimaryKey();`);
       }
 
-      lines.push(`  return '' + entity.${meta.serializedPrimaryKey};`);
+      const serializedPrimaryKey = meta.props.find(p => p.serializedPrimaryKey);
+
+      if (serializedPrimaryKey) {
+        lines.push(`  return '' + entity.${serializedPrimaryKey.name};`);
+      }
+
+      lines.push(`  return '' + entity.${meta.primaryKeys[0]};`);
     }
 
     const code = `// compiled pk serializer for entity ${meta.className}\n`

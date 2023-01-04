@@ -252,10 +252,10 @@ describe('embedded entities in mongo', () => {
         meta: {
           bar: 'b1',
           foo: 'f1',
-          source: { id: u1.profile1.identity.meta!.source!._id.toHexString() },
+          source: { _id: u1.profile1.identity.meta!.source!._id },
         },
       },
-      source: { id: u1.profile1.source!._id.toHexString() },
+      source: { _id: u1.profile1.source!._id },
     });
     expect(u1.profile2).toBeInstanceOf(Profile);
     expect(u1.profile2.identity).toBeInstanceOf(Identity);
@@ -270,11 +270,11 @@ describe('embedded entities in mongo', () => {
         meta: {
           bar: 'b2',
           foo: 'f2',
-          source: { id: u1.profile2.identity.meta!.source!._id.toHexString() },
+          source: { _id: u1.profile2.identity.meta!.source!._id },
         },
-        source: { id: u1.profile2.identity.source!._id.toHexString() },
+        source: { _id: u1.profile2.identity.source!._id },
       },
-      source: { id: u1.profile2.source!._id.toHexString() },
+      source: { _id: u1.profile2.source!._id },
     });
     expect(u2.profile1).toBeInstanceOf(Profile);
     expect(u2.profile1.identity).toBeInstanceOf(Identity);
@@ -289,20 +289,20 @@ describe('embedded entities in mongo', () => {
       identity: {
         email: 'e3',
         links: [
-          { url: 'l1', meta: { bar: 'b1', foo: 'f1' }, source: { id: u2.profile1.identity.links[0].source!._id.toHexString() }, metas: [
-            { bar: 'b2', foo: 'f2', source: { id: u2.profile1.identity.links[0].metas[0].source!._id.toHexString() } },
-            { bar: 'b3', foo: 'f3', source: { id: u2.profile1.identity.links[0].metas[1].source!._id.toHexString() } },
-            { bar: 'b4', foo: 'f4', source: { id: u2.profile1.identity.links[0].metas[2].source!._id.toHexString() } },
+          { url: 'l1', meta: { bar: 'b1', foo: 'f1' }, source: { _id: u2.profile1.identity.links[0].source!._id }, metas: [
+            { bar: 'b2', foo: 'f2', source: { _id: u2.profile1.identity.links[0].metas[0].source!._id } },
+            { bar: 'b3', foo: 'f3', source: { _id: u2.profile1.identity.links[0].metas[1].source!._id } },
+            { bar: 'b4', foo: 'f4', source: { _id: u2.profile1.identity.links[0].metas[2].source!._id } },
           ] },
-          { url: 'l2', meta: { bar: 'b1', foo: 'f1' }, source: { id: u2.profile1.identity.links[1].source!._id.toHexString() }, metas: [
-            { bar: 'b2', foo: 'f2', source: { id: u2.profile1.identity.links[1].metas[0].source!._id.toHexString() } },
-            { bar: 'b3', foo: 'f3', source: { id: u2.profile1.identity.links[1].metas[1].source!._id.toHexString() } },
-            { bar: 'b4', foo: 'f4', source: { id: u2.profile1.identity.links[1].metas[2].source!._id.toHexString() } },
+          { url: 'l2', meta: { bar: 'b1', foo: 'f1' }, source: { _id: u2.profile1.identity.links[1].source!._id }, metas: [
+            { bar: 'b2', foo: 'f2', source: { _id: u2.profile1.identity.links[1].metas[0].source!._id } },
+            { bar: 'b3', foo: 'f3', source: { _id: u2.profile1.identity.links[1].metas[1].source!._id } },
+            { bar: 'b4', foo: 'f4', source: { _id: u2.profile1.identity.links[1].metas[2].source!._id } },
           ] },
         ],
-        source: { id: u2.profile1.identity.source!._id.toHexString() },
+        source: { _id: u2.profile1.identity.source!._id },
       },
-      source: { id: u2.profile1.source!._id.toHexString() },
+      source: { _id: u2.profile1.source!._id },
     });
     expect(u2.profile2).toBeInstanceOf(Profile);
     expect(u2.profile2.identity).toBeInstanceOf(Identity);
@@ -317,12 +317,12 @@ describe('embedded entities in mongo', () => {
       identity: {
         email: 'e4',
         links: [
-          { url: 'l3', meta: { bar: 'b1', foo: 'f1' }, source: { id: u2.profile2.identity.links[0].source!._id.toHexString() }, metas: [
+          { url: 'l3', meta: { bar: 'b1', foo: 'f1' }, source: { _id: u2.profile2.identity.links[0].source!._id }, metas: [
               { bar: 'b2', foo: 'f2' },
               { bar: 'b3', foo: 'f3' },
               { bar: 'b4', foo: 'f4' },
             ] },
-          { url: 'l4', meta: { bar: 'b1', foo: 'f1' }, source: { id: u2.profile2.identity.links[1].source!._id.toHexString() }, metas: [
+          { url: 'l4', meta: { bar: 'b1', foo: 'f1' }, source: { _id: u2.profile2.identity.links[1].source!._id }, metas: [
               { bar: 'b2', foo: 'f2' },
               { bar: 'b3', foo: 'f3' },
               { bar: 'b4', foo: 'f4' },
@@ -331,9 +331,9 @@ describe('embedded entities in mongo', () => {
         meta: {
           foo: 'f4',
         },
-        source: { id: u2.profile2.identity.source!._id.toHexString() },
+        source: { _id: u2.profile2.identity.source!._id },
       },
-      source: { id: u2.profile2.source!._id.toHexString() },
+      source: { _id: u2.profile2.source!._id },
     });
 
     mock.mock.calls.length = 0;
@@ -357,7 +357,7 @@ describe('embedded entities in mongo', () => {
       profile2: { identity: { email: 'e2', meta: { foo: 'f2', bar: 'bababar' } } },
     });
     expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('user').find({ profile1_identity_email: 'e123', profile1_identity_meta_foo: 'foooooooo', 'profile2.identity.email': 'e2', 'profile2.identity.meta.foo': 'f2', 'profile2.identity.meta.bar': 'bababar' }, {}).limit(1).toArray();`);
-    expect(u3._id.toHexString()).toEqual(u1._id.toHexString());
+    expect(u3._id).toEqual(u1._id);
     orm.em.clear();
     mock.mock.calls.length = 0;
 
@@ -365,14 +365,14 @@ describe('embedded entities in mongo', () => {
       profile1: { identity: { email: 'e123', meta: { foo: { $re: 'fo+' } } } },
       profile2: { identity: { email: 'e2', meta: { foo: 'f2', bar: { $re: '(ba)+r' } } } },
     });
-    expect(u4._id.toHexString()).toEqual(u1._id.toHexString());
+    expect(u4._id).toEqual(u1._id);
     expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('user').find({ profile1_identity_email: 'e123', profile1_identity_meta_foo: /fo+/, 'profile2.identity.email': 'e2', 'profile2.identity.meta.foo': 'f2', 'profile2.identity.meta.bar': /(ba)+r/ }, {}).limit(1).toArray();`);
     orm.em.clear();
     mock.mock.calls.length = 0;
 
     const u5 = await orm.em.findOneOrFail(User, { $or: [{ profile1: { identity: { meta: { foo: 'foooooooo' } } } }, { profile2: { identity: { meta: { bar: 'bababar' } } } }] });
     expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('user').find({ '$or': [ { profile1_identity_meta_foo: 'foooooooo' }, { 'profile2.identity.meta.bar': 'bababar' } ] }, {}).limit(1).toArray();`);
-    expect(u5._id.toHexString()).toEqual(u1._id.toHexString());
+    expect(u5._id).toEqual(u1._id);
 
     const err1 = `Invalid query for entity 'User', property 'city' does not exist in embeddable 'Identity'`;
     await expect(orm.em.findOneOrFail(User, { profile1: { identity: { city: 'London 1' } as any } })).rejects.toThrowError(err1);
