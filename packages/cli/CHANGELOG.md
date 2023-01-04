@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.4](https://github.com/mikro-orm/mikro-orm/compare/v5.6.3...v5.6.4) (2023-01-04)
+
+
+### Features
+
+* **cli:** check database connection in debug command ([#3875](https://github.com/mikro-orm/mikro-orm/issues/3875)) ([3523410](https://github.com/mikro-orm/mikro-orm/commit/35234100b68cc1e56e4149821f2cd664f09eb32a)), closes [#3855](https://github.com/mikro-orm/mikro-orm/issues/3855)
+
+
+
+
+
 ## [5.6.3](https://github.com/mikro-orm/mikro-orm/compare/v5.6.2...v5.6.3) (2022-12-28)
 
 **Note:** Version bump only for package @mikro-orm/cli

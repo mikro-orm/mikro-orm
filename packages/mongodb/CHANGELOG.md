@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.4](https://github.com/mikro-orm/mikro-orm/compare/v5.6.3...v5.6.4) (2023-01-04)
+
+
+### Bug Fixes
+
+* **core:** improve inference of driver exported `MikroORM.init()` ([497f274](https://github.com/mikro-orm/mikro-orm/commit/497f27451bbca37c7dd9222716257692724d3a0d))
+* **mongo:** respect field names in batch update conditions ([3466c86](https://github.com/mikro-orm/mikro-orm/commit/3466c86e9bf6bbffea1f661186c854b9d1c976e9)), closes [#3897](https://github.com/mikro-orm/mikro-orm/issues/3897)
+
+
+
+
+
 ## [5.6.3](https://github.com/mikro-orm/mikro-orm/compare/v5.6.2...v5.6.3) (2022-12-28)
 
 **Note:** Version bump only for package @mikro-orm/mongodb
