@@ -1,4 +1,4 @@
-import { defineConfig, MikroORM, type Options, type Configuration, type IDatabaseDriver } from '@mikro-orm/core';
+import { defineConfig, MikroORM, type Options, type IDatabaseDriver } from '@mikro-orm/core';
 import { MySqlDriver } from './MySqlDriver';
 
 /**
@@ -11,8 +11,8 @@ export class MySqlMikroORM extends MikroORM<MySqlDriver> {
   /**
    * @inheritDoc
    */
-  static async init<D extends IDatabaseDriver = MySqlDriver>(options?: Options<D> | Configuration<D>, connect = true): Promise<MikroORM<D>> {
-    return super.init(options, connect);
+  static async init<D extends IDatabaseDriver = MySqlDriver>(options?: Options<D>): Promise<MikroORM<D>> {
+    return super.init(options);
   }
 
 }
