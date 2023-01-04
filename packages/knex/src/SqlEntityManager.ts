@@ -44,7 +44,7 @@ export class SqlEntityManager<D extends AbstractSqlDriver = AbstractSqlDriver> e
   }
 
   async execute<T extends QueryResult | EntityData<AnyEntity> | EntityData<AnyEntity>[] = EntityData<AnyEntity>[]>(queryOrKnex: string | Knex.QueryBuilder | Knex.Raw, params: any[] = [], method: 'all' | 'get' | 'run' = 'all'): Promise<T> {
-    return this.getDriver().execute(queryOrKnex, params, method, this.getContext().getTransactionContext());
+    return this.getDriver().execute(queryOrKnex, params, method, this.getContext(false).getTransactionContext());
   }
 
   getRepository<T extends object, U extends EntityRepository<T> = SqlEntityRepository<T>>(entityName: EntityName<T>): GetRepository<T, U> {
