@@ -296,6 +296,21 @@ const count = await qb.getCount();
 
 This will also remove any existing limit and offset from the query (the QB will be cloned under the hood, so calling `getCount()` does not mutate the original QB state).
 
+## Pagination
+
+If we want to paginate the results of a QueryBuilder, we can use `qb.getResultAndCount()` method. It returns an ordered tuple, the first item being an array of results, and the second one being the total count of items, discarding the limit and offset clause.
+
+```ts
+const qb = em.createQueryBuilder(User);
+qb.select('*')
+  .where({ age: 18 })
+  .limit(10);
+const [results, count] = await qb.getResultAndCount();
+
+console.log(results.length); // max 10, as we used the limit clause
+console.log(count); // total count regardless limit and offset, e.g. 1327
+```
+
 ## Overriding FROM clause
 
 You can specify the table used in the `FROM` clause, replacing the current table name if one has already been specified. This is typically used to specify a sub-query expression in SQL. 

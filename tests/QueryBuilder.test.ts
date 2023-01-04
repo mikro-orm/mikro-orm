@@ -1734,6 +1734,26 @@ describe('QueryBuilder', () => {
     logger.mockRestore();
   });
 
+  test('qp.getResultAndCount()', async () => {
+    // given
+    const qb = orm.em.createQueryBuilder(FooBar2, 'fb');
+    qb.select('*')
+      .where({ name: 'fb 1' })
+      .limit(2);
+
+    await orm.em.nativeInsert(FooBar2, { id: 1, name: 'fb 1' });
+    await orm.em.nativeInsert(FooBar2, { id: 2, name: 'fb 2' });
+    await orm.em.nativeInsert(FooBar2, { id: 3, name: 'fb 1' });
+    await orm.em.nativeInsert(FooBar2, { id: 4, name: 'fb 1' });
+
+    // when
+    const [results, count] = await qb.getResultAndCount();
+
+    // then
+    expect(results).toHaveLength(2);
+    expect(count).toBe(3);
+  });
+
   test('qb.getNextAlias()', async () => {
     const qb1 = orm.em.createQueryBuilder(Author2);
     expect(qb1.alias).toBe('e0');
