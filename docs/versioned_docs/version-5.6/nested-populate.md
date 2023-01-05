@@ -80,7 +80,10 @@ const orm = await MikroORM.init({
 
 Or you can override this on a query by query basis:
 ```ts
-const books = await em.find(Book, { tags: { name: 'Fiction' } }, { populate: ['tags'], populateWhere: PopulateHint.INFER });
+const books = await em.find(Book, { tags: { name: 'Fiction' } }, {
+  populate: ['tags'],
+  populateWhere: PopulateHint.INFER,
+});
 ```
 
 Using `PopulateHint.INFER` in this case instructs MikroORM to interpret the find as per the second interpretation above.
