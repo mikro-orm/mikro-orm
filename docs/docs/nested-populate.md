@@ -56,6 +56,48 @@ db.getCollection("test").find({"_id":{"$in":[...]}}).toArray();
 db.getCollection("author").find({"_id":{"$in":[...]}}).toArray();
 ```
 
+## Filter on populated entities
+
+The request to populate can be ambiguous. For example, let's say as a hypothetical that there's a `Book` called `'One'` with tags `'Fiction'` and `'Hard Cover'`.
+
+Then you run the following:
+```ts
+const books = await em.find(Book, { tags: { name: 'Fiction' } }, {
+  populate: ['tags'],
+});
+```
+
+You're requesting books that have the tag of `'Fiction'` then asking to populate the tags on each book. Did you mean that you want to populate **all** tags on each book that matches the filter? If so, you'd expect that book `'One'` would have both `'Fiction'` and `'Hard Cover'` populated. Or did you mean that we should only populate the tags that match the outer filter? If so you'd expect that book `'One'` would only have `'Fiction'` in the populated collection because the outer filter specified that.
+
+Both behaviors are useful in different cases, so MikroORM provides an option that allows you to control this called `populateWhere`. There are two options, `INFER` and `ALL`. The default is `ALL` which will ensure that all possible members of the collection are fetched in the populate (e.g. the the first interpretation above).
+
+
+You can specify this globally:
+```ts
+const orm = await MikroORM.init({
+    // We want our populate fetches to respect the outer filter passed in a where condition.
+    populateWhere: PopulateHint.INFER,
+});
+```
+
+Or you can override this on a query by query basis:
+```ts
+const books = await em.find(Book, { tags: { name: 'Fiction' } }, {
+  populate: ['tags'],
+  populateWhere: PopulateHint.INFER,
+});
+```
+
+Using `PopulateHint.INFER` in this case instructs MikroORM to interpret the find as per the second interpretation above.
+
+A value provided on a specific query overrides whatever default is specified globally.
+
+## Loading strategies
+
+The way that MikroORM fetches the data in a populate is also configurable. By default MikroORM uses a "where in" strategy which runs one separate query for each level of a populate. If you're using an SQL database you can also ask MikroORM to use a join for all tables involved in the populate and run it as a single query. This is again configurable globally or per query.
+
+For more information see the [Loading Strategies section](./loading-strategies.md).
+
 ## Populating already loaded entities
 
 To populate existing entities, you can use `em.populate()`.
