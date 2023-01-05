@@ -62,7 +62,9 @@ The request to populate can be ambiguous. For example, let's say as a hypothetic
 
 Then you run the following:
 ```ts
-const books = await em.find(Book, { tags: { name: 'Fiction' } }, { populate: ['tags'] });
+const books = await em.find(Book, { tags: { name: 'Fiction' } }, {
+  populate: ['tags'],
+});
 ```
 
 You're requesting books that have the tag of `'Fiction'` then asking to populate the tags on each book. Did you mean that you want to populate **all** tags on each book that matches the filter? If so, you'd expect that book `'One'` would have both `'Fiction'` and `'Hard Cover'` populated. Or did you mean that we should only populate the tags that match the outer filter? If so you'd expect that book `'One'` would only have `'Fiction'` in the populated collection because the outer filter specified that.
