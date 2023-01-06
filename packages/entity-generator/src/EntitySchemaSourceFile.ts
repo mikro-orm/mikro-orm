@@ -42,7 +42,7 @@ export class EntitySchemaSourceFile extends SourceFile {
     ret += `  class: ${this.meta.className},\n`;
 
     if (this.meta.collection !== this.namingStrategy.classToTableName(this.meta.className)) {
-      ret += `  tableName: ${this.quote(this.meta.className)},\n`;
+      ret += `  tableName: ${this.quote(this.meta.tableName)},\n`;
     }
 
     /* istanbul ignore next */
