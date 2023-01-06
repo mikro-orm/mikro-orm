@@ -151,6 +151,23 @@ describe('EntityGenerator', () => {
     await orm.close(true);
   });
 
+  test('table name with underscore using entitySchema [mysql]', async () => {
+    const orm = await initORMMySql('mysql', {entityGenerator: {
+        entitySchema: true,
+        identifiedReferences: true,
+      }}, true);
+    await orm.schema.dropSchema();
+    await orm.schema.execute(`
+      create table if not exists \`123_table_name\` (\`id\` int(10) unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;
+    `);
+    const dump = await orm.entityGenerator.generate({ save: false, baseDir: './temp/entities' });
+    expect(dump).toMatchSnapshot('mysql-entity-dump-underscore-entity-schema');
+    await orm.schema.execute(`
+      drop table if exists \`123_table_name\`;
+    `);
+    await orm.close(true);
+  });
+
   test('numeric nullable columns with null default [mysql]', async () => {
     const orm = await initORMMySql('mysql', {}, true);
     await orm.schema.dropSchema();

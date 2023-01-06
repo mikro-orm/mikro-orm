@@ -3553,3 +3553,24 @@ export class E123TableName {
 ",
 ]
 `;
+
+exports[`EntityGenerator table name with underscore using entitySchema [mysql]: mysql-entity-dump-underscore-entity-schema 1`] = `
+[
+  "import { Entity, PrimaryKey } from '@mikro-orm/core';
+
+export class E123TableName {
+
+  id!: number;
+
+}
+
+export const E123TableNameSchema = new EntitySchema({
+  class: E123TableName,
+  tableName: '123_table_name',
+  properties: {
+    id: { primary: true, type: 'number' },
+  },
+});
+",
+]
+`;
