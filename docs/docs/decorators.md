@@ -48,12 +48,12 @@ extend the `@Property()` decorator, so you can also use its parameters there.
 | `columnType` | `string` | yes | Specify exact database column type for [Schema Generator](schema-generator.md). **(SQL only)** |
 | `length` | `number` | yes | Length/precision of database column, used for `datetime/timestamp/varchar` column types for [Schema Generator](schema-generator.md). **(SQL only)** |
 | `default` | `any` | yes | Specify default column value for [Schema Generator](schema-generator.md). **(SQL only)** |
-| `unique` | `boolean` | yes | Set column as unique for [Schema Generator](schema-generator.md).. **(SQL only)** |
-| `nullable` | `boolean` | yes | Set column as nullable for [Schema Generator](schema-generator.md).. **(SQL only)** |
-| `unsigned` | `boolean` | yes | Set column as unsigned for [Schema Generator](schema-generator.md).. **(SQL only)** |
-| `comment` | `string` | yes | Specify comment of column for [Schema Generator](schema-generator.md).. **(SQL only)** |
-| `version` | `boolean` | yes | Set to true to enable [Optimistic Locking] via version field (transactions.md#optimistic-locking). **(SQL only)** |
-| `concurrencyCheck` | `boolean` | yes | Set to true to enable [Optimistic Locking] via concurrency fields (transactions.md#concurrency-checks).|
+| `unique` | `boolean` | yes | Set column as unique for [Schema Generator](schema-generator.md). **(SQL only)** |
+| `nullable` | `boolean` | yes | Set column as nullable for [Schema Generator](schema-generator.md). **(SQL only)** |
+| `unsigned` | `boolean` | yes | Set column as unsigned for [Schema Generator](schema-generator.md). **(SQL only)** |
+| `comment` | `string` | yes | Specify comment of column for [Schema Generator](schema-generator.md). **(SQL only)** |
+| `version` | `boolean` | yes | Set to true to enable [Optimistic Locking](transactions.md#optimistic-locking) via version field. **(SQL only)** |
+| `concurrencyCheck` | `boolean` | yes | Set to true to enable [Concurrency Check](transactions.md#concurrency-checks) via concurrency fields. |
 | `customOrder` | `string[]` &#124; `number[]` &#124; `boolean[]` | yes | Specify a custom order for the column. **(SQL only)** |
 
 > You can use property initializers as usual.
