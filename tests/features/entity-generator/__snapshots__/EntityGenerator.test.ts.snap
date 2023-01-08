@@ -340,7 +340,7 @@ export class Book2Tags {
 
 export const Book2TagsSchema = new EntitySchema({
   class: Book2Tags,
-  tableName: 'Book2Tags',
+  tableName: 'book2_tags',
   properties: {
     order: { primary: true, type: 'number' },
     book2: {
@@ -627,7 +627,7 @@ export class Publisher2Tests {
 
 export const Publisher2TestsSchema = new EntitySchema({
   class: Publisher2Tests,
-  tableName: 'Publisher2Tests',
+  tableName: 'publisher2_tests',
   properties: {
     id: { primary: true, type: 'number' },
     publisher2: {
@@ -3550,6 +3550,25 @@ export class E123TableName {
   id!: number;
 
 }
+",
+]
+`;
+
+exports[`EntityGenerator table name with underscore using entitySchema [mysql]: mysql-entity-dump-underscore-entity-schema 1`] = `
+[
+  "import { EntitySchema } from '@mikro-orm/core';
+
+export class E123TableName {
+  id!: number;
+}
+
+export const E123TableNameSchema = new EntitySchema({
+  class: E123TableName,
+  tableName: '123_table_name',
+  properties: {
+    id: { primary: true, type: 'number' },
+  },
+});
 ",
 ]
 `;
