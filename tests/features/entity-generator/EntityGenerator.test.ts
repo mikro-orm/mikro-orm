@@ -156,7 +156,7 @@ describe('EntityGenerator', () => {
       entityGenerator: {
         entitySchema: true,
         identifiedReferences: true,
-      }
+      },
     }, true);
     await orm.schema.dropSchema();
     await orm.schema.execute(`
