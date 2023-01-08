@@ -45,6 +45,18 @@ export class QueryBuilderHelper {
         }
       }
 
+      // flatten the value if we see we are expanding nested composite key
+      // hackish, but cleaner solution would require quite a lot of refactoring
+      if (fields.length !== parts.length && Array.isArray(value)) {
+        value.forEach(row => {
+          if (Array.isArray(row)) {
+            const tmp = Utils.flatten(row);
+            row.length = 0;
+            row.push(...tmp);
+          }
+        });
+      }
+
       return this.knex.raw('(' + parts.map(part => this.knex.ref(part)).join(', ') + ')');
     }
 
@@ -93,7 +105,8 @@ export class QueryBuilderHelper {
     }
 
     if (customExpression) {
-      return this.knex.raw(ret, value);
+      const bindings = Utils.asArray(value).slice(0, ret.match(/\?/g)?.length ?? 0);
+      return this.knex.raw(ret, bindings);
     }
 
     if (!isTableNameAliasRequired || this.isPrefixed(ret) || noPrefix) {
@@ -502,7 +515,8 @@ export class QueryBuilderHelper {
         query: value[op],
       }));
     } else {
-      qb[m](this.mapper(key, type, undefined, null), replacement, value[op]);
+      const mappedKey = this.mapper(key, type, value[op], null);
+      qb[m](mappedKey, replacement, value[op]);
     }
   }
 
