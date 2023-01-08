@@ -137,12 +137,10 @@ jobs:
       - name: Use tilde in internal dependencies
         run: |
           yarn release:tilde
-          yarn
+          yarn install --no-immutable
           git add .
           git commit -m 'chore(release): update internal dependencies to use tilde [skip ci]'
           git push
-        env:
-          YARN_ENABLE_IMMUTABLE_INSTALLS: true
 
       - name: Publish packages
         run: yarn publish:prod --yes --no-verify-access
