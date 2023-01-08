@@ -42,7 +42,8 @@ test('null value instead of object inside embedded property', async () => {
     name: 'Peter Pan',
     profiles: [null as any],
   });
-  await orm.em.flush();
+  await orm.em.nativeInsert(user);
+  expect(user.id).toBeDefined();
 
   const u = await orm.em.fork().findOneOrFail(User, user);
   expect(JSON.stringify(u)).toBe('{"id":1,"name":"Peter Pan","profiles":[null]}');

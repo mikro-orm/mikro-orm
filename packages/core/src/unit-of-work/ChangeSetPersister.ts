@@ -232,7 +232,7 @@ export class ChangeSetPersister {
     // of using the raw value from db, we convert it back to the db value explicitly
     value = prop.customType ? prop.customType.convertToDatabaseValue(insertId, this.platform, { mode: 'serialization' }) : value;
     changeSet.payload[wrapped.__meta.primaryKeys[0]] = value;
-    wrapped.__identifier!.setValue(value);
+    wrapped.__identifier?.setValue(value);
   }
 
   /**

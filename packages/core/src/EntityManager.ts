@@ -3,7 +3,7 @@ import type { Configuration } from './utils';
 import { QueryHelper, TransactionContext, Utils } from './utils';
 import type { AssignOptions, EntityLoaderOptions, EntityRepository, IdentifiedReference } from './entity';
 import { EntityAssigner, EntityFactory, EntityLoader, EntityValidator, helper, Reference } from './entity';
-import { ChangeSetType, UnitOfWork } from './unit-of-work';
+import { ChangeSet, ChangeSetType, UnitOfWork } from './unit-of-work';
 import type {
   CountOptions,
   DeleteOptions,
@@ -895,9 +895,17 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
-   * Fires native insert query. Calling this has no side effects on the context (identity map).
+   * alias for `em.insert()`
+   * @deprecated use `em.insert()` instead
    */
   async nativeInsert<Entity extends object>(entityNameOrEntity: EntityName<Entity> | Entity, data?: EntityData<Entity> | Entity, options: NativeInsertUpdateOptions<Entity> = {}): Promise<Primary<Entity>> {
+    return this.insert(entityNameOrEntity, data, options);
+  }
+
+  /**
+   * Fires native insert query. Calling this has no side effects on the context (identity map).
+   */
+  async insert<Entity extends object>(entityNameOrEntity: EntityName<Entity> | Entity, data?: EntityData<Entity> | Entity, options: NativeInsertUpdateOptions<Entity> = {}): Promise<Primary<Entity>> {
     const em = this.getContext(false);
 
     let entityName;
@@ -909,15 +917,53 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       entityName = Utils.className(entityNameOrEntity as EntityName<Entity>);
     }
 
-    if (Utils.isEntity(data)) {
-      data = em.comparator.prepareEntity(data as Entity);
+    if (Utils.isEntity<Entity>(data)) {
+      const meta = helper(data).__meta;
+      const payload = em.comparator.prepareEntity(data);
+      const cs = new ChangeSet(data, ChangeSetType.CREATE, payload, meta);
+      await em.unitOfWork.getChangeSetPersister().executeInserts([cs], { ctx: em.transactionContext, ...options });
+
+      return cs.getPrimaryKey()!;
     }
 
     data = QueryHelper.processObjectParams(data) as EntityData<Entity>;
     em.validator.validateParams(data, 'insert data');
     const res = await em.driver.nativeInsert(entityName, data, { ctx: em.transactionContext, ...options });
 
-    return res.insertId as Primary<Entity>;
+    return res.insertId!;
+  }
+
+  /**
+   * Fires native multi-insert query. Calling this has no side effects on the context (identity map).
+   */
+  async insertMany<Entity extends object>(entityNameOrEntities: EntityName<Entity> | Entity[], data?: EntityData<Entity>[] | Entity[], options: NativeInsertUpdateOptions<Entity> = {}): Promise<Primary<Entity>[]> {
+    const em = this.getContext(false);
+
+    let entityName;
+
+    if (data === undefined) {
+      entityName = (entityNameOrEntities[0] as Dictionary).constructor.name;
+      data = entityNameOrEntities as Entity[];
+    } else {
+      entityName = Utils.className(entityNameOrEntities as EntityName<Entity>);
+    }
+
+    if (Utils.isEntity<Entity>(data[0])) {
+      const meta = helper<Entity>(data[0]).__meta;
+      const css = data.map(row => {
+        const payload = em.comparator.prepareEntity(row) as EntityData<Entity>;
+        return new ChangeSet<Entity>(row as Entity, ChangeSetType.CREATE, payload, meta);
+      });
+      await em.unitOfWork.getChangeSetPersister().executeInserts(css, { ctx: em.transactionContext, ...options });
+
+      return css.map(cs => cs.getPrimaryKey()!);
+    }
+
+    data = data.map(row => QueryHelper.processObjectParams(row));
+    data.forEach(row => em.validator.validateParams(row, 'insert data'));
+    const res = await em.driver.nativeInsertMany(entityName, data, { ctx: em.transactionContext, ...options });
+
+    return res.insertedIds!;
   }
 
   /**

@@ -144,6 +144,13 @@ describe('EntityManagerPostgre', () => {
     ]);
   });
 
+  test('multi insert maps PKs', async () => {
+    const tests = [1, 2, 3, 4, 5].map(n => orm.em.create(Test2, { name: `n${n}` }, { persist: false }));
+    await orm.em.insertMany(tests);
+    expect(tests.map(t => t.id)).toEqual([1, 2, 3, 4, 5]);
+    expect(orm.em.getUnitOfWork().getIdentityMap().values()).toHaveLength(0);
+  });
+
   test('driver appends errored query', async () => {
     const driver = orm.em.getDriver();
     const err1 = `insert into "not_existing" ("foo") values ('bar') - relation "not_existing" does not exist`;
@@ -513,13 +520,11 @@ describe('EntityManagerPostgre', () => {
   });
 
   test('order by json properties', async () => {
-    await orm.em.nativeDelete(Book2, {});
-    await orm.em.nativeDelete(Author2, {});
     await orm.em.nativeInsert(Author2, { name: 'n', email: 'e', id: 1 });
-    await orm.em.getDriver().nativeInsertMany(Book2.name, [
-      { uuid: '123e4567-e89b-12d3-a456-426614174001', title: 't1', author: 1, meta: { nested: { foo: 3, deep: { str: 'c', baz: 3 } } } },
-      { uuid: '123e4567-e89b-12d3-a456-426614174002', title: 't2', author: 1, meta: { nested: { foo: 2, deep: { str: 'b', baz: 1 } } } },
-      { uuid: '123e4567-e89b-12d3-a456-426614174003', title: 't3', author: 1, meta: { nested: { foo: 1, deep: { str: 'a', baz: 2 } } } },
+    await orm.em.insertMany(Book2, [
+      { uuid: '123e4567-e89b-12d3-a456-426614174001', title: 't1', author: 1, meta: { nested: { foo: '3', deep: { str: 'c', baz: 3 } } } },
+      { uuid: '123e4567-e89b-12d3-a456-426614174002', title: 't2', author: 1, meta: { nested: { foo: '2', deep: { str: 'b', baz: 1 } } } },
+      { uuid: '123e4567-e89b-12d3-a456-426614174003', title: 't3', author: 1, meta: { nested: { foo: '1', deep: { str: 'a', baz: 2 } } } },
     ]);
 
     const res14 = await orm.em.fork().find(Book2, {}, { orderBy: { meta: { nested: { foo: 'asc' } } } });

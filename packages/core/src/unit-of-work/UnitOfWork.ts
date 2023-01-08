@@ -517,6 +517,10 @@ export class UnitOfWork {
     return this.orphanRemoveStack;
   }
 
+  getChangeSetPersister(): ChangeSetPersister {
+    return this.changeSetPersister;
+  }
+
   private findNewEntities<T extends object>(entity: T, visited = new Set<AnyEntity>(), idx = 0): void {
     if (visited.has(entity)) {
       return;
