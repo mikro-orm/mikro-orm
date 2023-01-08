@@ -1,3 +1,5 @@
+import { basename } from 'path';
+import { pathExists, remove } from 'fs-extra';
 import type { ArgumentsCamelCase, Argv, CommandModule } from 'yargs';
 import type { Configuration, MikroORM, MikroORMOptions, IMigrator } from '@mikro-orm/core';
 import { Utils, colors } from '@mikro-orm/core';
@@ -13,6 +15,7 @@ export class MigrationCommandFactory {
     list: 'List all executed migrations',
     pending: 'List all pending migrations',
     fresh: 'Clear the database and rerun all migrations',
+    rollup: 'Roll up migrations',
   };
 
   static create<U extends Options = Options>(command: MigratorMethod): CommandModule<unknown, U> & { builder: (args: Argv) => Argv<U>; handler: (args: ArgumentsCamelCase<U>) => Promise<void> } {
@@ -35,6 +38,10 @@ export class MigrationCommandFactory {
 
     if (method === 'fresh') {
       this.configureFreshCommand(args);
+    }
+
+    if (method === 'rollup') {
+      this.configureRollupCommand(args);
     }
 
     return args;
@@ -81,6 +88,14 @@ export class MigrationCommandFactory {
     });
   }
 
+  private static configureRollupCommand(args: Argv) {
+    args.option('t', {
+      alias: 'to',
+      type: 'string',
+      desc: `Rollup to specific version`,
+    });
+  }
+
   static async handleMigrationCommand(args: ArgumentsCamelCase<Options>, method: MigratorMethod): Promise<void> {
     const options = { pool: { min: 1, max: 1 } } as Partial<MikroORMOptions>;
     const orm = await CLIHelper.getORM(undefined, options);
@@ -102,6 +117,9 @@ export class MigrationCommandFactory {
         break;
       case 'fresh':
         await this.handleFreshCommand(args, migrator, orm);
+        break;
+      case 'rollup':
+        await this.handleRollupCommand(args, migrator, orm);
     }
 
     await orm.close(true);
@@ -181,6 +199,38 @@ export class MigrationCommandFactory {
     }
   }
 
+  private static async handleRollupCommand(args: ArgumentsCamelCase<Options>, migrator: IMigrator, orm: MikroORM) {
+    // First roll back to the first migration that is included in the rollup
+    await this.handleUpDownCommand({ seed: args.seed, $0: args.$0, _: args._, to: args.to  }, migrator, 'down');
+
+    const options = orm.config.get('migrations');
+    const snapshot = options.snapshot;
+
+    // for snapshots, we always want to use the path based on `emit` option, regardless of whether we run in ts-node context
+    /* istanbul ignore next */
+    const snapshotDir = options.emit === 'ts' && options.pathTs ? options.pathTs : options.path!;
+    const absoluteSnapshotPath = Utils.absolutePath(snapshotDir, orm.config.get('baseDir'));
+    const dbName = basename(orm.config.get('dbName'));
+    const snapshotName = options.snapshotName ?? `.snapshot-${dbName}`;
+    const snapshotPath = Utils.normalizePath(absoluteSnapshotPath, `${snapshotName}.json`);
+
+    // Delete snapshot if exists so we start from a clean slate
+    if (snapshot && await pathExists(snapshotPath)) {
+      await remove(snapshotPath);
+    }
+
+    // Delete migrations
+    // TODO(marek)
+
+    // Create the rollup
+    await this.handleCreateCommand(migrator, { seed: args.seed, $0: args.$0, _: args._  }, orm.config);
+
+    // Execute the rollup? Perhaps optionally if --migrate or --up are provided?
+    // await this.handleUpDownCommand({ seed: args.seed, $0: args.$0, _: args._  }, migrator, 'up');
+
+    CLIHelper.dump(colors.green('Rollup migration created successfully'));
+  }
+
   private static getUpDownOptions(flags: CliUpDownOptions): MigrateOptions {
     if (!flags.to && !flags.from && flags.only) {
       return { migrations: flags.only.split(/[, ]+/) };
@@ -222,7 +272,7 @@ export class MigrationCommandFactory {
 
 }
 
-type MigratorMethod = 'create' | 'up' | 'down' | 'list' | 'pending' | 'fresh';
+type MigratorMethod = 'create' | 'up' | 'down' | 'list' | 'pending' | 'fresh' | 'rollup';
 type CliUpDownOptions = { to?: string | number; from?: string | number; only?: string };
 type GenerateOptions = { dump?: boolean; blank?: boolean; initial?: boolean; path?: string; disableFkChecks?: boolean; seed: string };
 type Options = GenerateOptions & CliUpDownOptions;
