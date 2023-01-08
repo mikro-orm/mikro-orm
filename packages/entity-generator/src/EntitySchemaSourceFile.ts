@@ -41,7 +41,7 @@ export class EntitySchemaSourceFile extends SourceFile {
     ret += `export const ${this.meta.className}Schema = new EntitySchema({\n`;
     ret += `  class: ${this.meta.className},\n`;
 
-    if (this.meta.collection !== this.namingStrategy.classToTableName(this.meta.className)) {
+    if (this.meta.tableName !== this.namingStrategy.classToTableName(this.meta.className)) {
       ret += `  tableName: ${this.quote(this.meta.tableName)},\n`;
     }
 
