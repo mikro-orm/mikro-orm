@@ -152,10 +152,12 @@ describe('EntityGenerator', () => {
   });
 
   test('table name with underscore using entitySchema [mysql]', async () => {
-    const orm = await initORMMySql('mysql', {entityGenerator: {
+    const orm = await initORMMySql('mysql', {
+      entityGenerator: {
         entitySchema: true,
         identifiedReferences: true,
-      }}, true);
+      }
+    }, true);
     await orm.schema.dropSchema();
     await orm.schema.execute(`
       create table if not exists \`123_table_name\` (\`id\` int(10) unsigned not null auto_increment primary key) default character set utf8mb4 engine = InnoDB;
