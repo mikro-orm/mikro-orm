@@ -52,8 +52,8 @@ export class Migrator implements IMigrator {
   /**
    * @inheritDoc
    */
-  async checkMigrationNeeded(): Promise<{ up: []; down: [] }> {
-    return { up: [], down: [] };
+  async checkMigrationNeeded(): Promise<boolean> {
+    return true;
   }
 
   /**

@@ -169,13 +169,12 @@ export class MigrationCommandFactory {
   }
 
   private static async handleCheckCommand(migrator: IMigrator, orm: MikroORM): Promise<void> {
-    const diff = await migrator.checkMigrationNeeded();
-
-    if (diff.up.length === 0) {
+    if (!await migrator.checkMigrationNeeded()) {
       return CLIHelper.dump(colors.green(`No changes required, schema is up-to-date`));
     }
     await orm.close(true);
-    throw new Error(`Changes detected. Please create migrations to update schema.`);
+    CLIHelper.dump(colors.yellow(`Changes detected. Please create migrations to update schema.`));
+    process.exit(1);
   }
 
   private static async handleFreshCommand(args: ArgumentsCamelCase<Options>, migrator: IMigrator, orm: MikroORM) {

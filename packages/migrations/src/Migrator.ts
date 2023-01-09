@@ -52,7 +52,8 @@ export class Migrator implements IMigrator {
       return this.createInitialMigration(path);
     }
 
-    const diff = await this.checkMigrationNeeded(blank, initial);
+    await this.ensureMigrationsDirExists();
+    const diff = await this.getSchemaDiff(blank, initial);
 
     if (diff.up.length === 0) {
       return { fileName: '', code: '', diff };
@@ -68,9 +69,10 @@ export class Migrator implements IMigrator {
     };
   }
 
-  async checkMigrationNeeded(blank = false, initial = false): Promise<{up: string[]; down: string[]}> {
+  async checkMigrationNeeded(): Promise<boolean> {
     await this.ensureMigrationsDirExists();
-    return this.getSchemaDiff(blank, blank);
+    const diff = await this.getSchemaDiff(false, false);
+    return diff.up.length > 0;
   }
 
   /**

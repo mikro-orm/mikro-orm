@@ -561,7 +561,7 @@ export interface IMigrator {
   /**
    * Checks current schema for changes.
    */
-  checkMigrationNeeded(): Promise<{up: string[]; down: string[]}>;
+  checkMigrationNeeded(): Promise<boolean>;
 
   /**
    * Creates initial migration. This generates the schema based on metadata, and checks whether all the tables

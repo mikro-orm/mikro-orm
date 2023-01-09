@@ -10,7 +10,7 @@ import { initORMSqlite } from '../../bootstrap';
 const closeSpy = jest.spyOn(MikroORM.prototype, 'close');
 jest.spyOn(CLIHelper, 'showHelp').mockImplementation(() => void 0);
 const checkMigrationMock = jest.spyOn(Migrator.prototype, 'checkMigrationNeeded');
-checkMigrationMock.mockResolvedValue({ up: ['3'], down: [] });
+checkMigrationMock.mockResolvedValue(true);
 const dumpMock = jest.spyOn(CLIHelper, 'dump');
 dumpMock.mockImplementation(() => void 0);
 
@@ -35,11 +35,15 @@ describe('CheckMigrationCommand', () => {
   test('handler', async () => {
     const cmd = MigrationCommandFactory.create('check');
 
-    await expect(cmd.handler({} as any)).rejects.toThrowError(`Changes detected. Please create migrations to update schema.`);
+    const mockExit = jest.spyOn(process, 'exit').mockImplementationOnce(() => { throw new Error('Mock'); });
+
+    await expect(cmd.handler({} as any)).rejects.toThrowError('Mock');
     expect(checkMigrationMock.mock.calls.length).toBe(1);
     expect(closeSpy).toBeCalledTimes(1);
+    expect(dumpMock).toHaveBeenLastCalledWith('Changes detected. Please create migrations to update schema.');
+    expect(mockExit).toBeCalledTimes(1);
 
-    checkMigrationMock.mockImplementationOnce(async () => ({ up: [], down: [] }));
+    checkMigrationMock.mockImplementationOnce(async () => false);
     await expect(cmd.handler({} as any)).resolves.toBeUndefined();
     expect(checkMigrationMock.mock.calls.length).toBe(2);
     expect(closeSpy).toBeCalledTimes(2);
