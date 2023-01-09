@@ -1244,13 +1244,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@commitlint/cli@npm:17.4.0":
-  version: 17.4.0
-  resolution: "@commitlint/cli@npm:17.4.0"
+"@commitlint/cli@npm:17.4.1":
+  version: 17.4.1
+  resolution: "@commitlint/cli@npm:17.4.1"
   dependencies:
     "@commitlint/format": ^17.4.0
     "@commitlint/lint": ^17.4.0
-    "@commitlint/load": ^17.4.0
+    "@commitlint/load": ^17.4.1
     "@commitlint/read": ^17.4.0
     "@commitlint/types": ^17.4.0
     execa: ^5.0.0
@@ -1260,7 +1260,7 @@ __metadata:
     yargs: ^17.0.0
   bin:
     commitlint: cli.js
-  checksum: ca4eea3264f2c1481378e1c9a70c6d0f499b7a0e49e22668bb0b61f808cc0277bae15555bb73fa9f9600618da453c94e6feb29020af6488ff2571e474f999b72
+  checksum: a0f3d26f06fa751be6009f76b76fee83e2394f6b528b38f375b3119be41a39c851a053e9dd93385a5274feff471bd0984e626bb23624d72e231f66125e222fd5
   languageName: node
   linkType: hard
 
@@ -1336,14 +1336,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@commitlint/load@npm:^17.4.0":
-  version: 17.4.0
-  resolution: "@commitlint/load@npm:17.4.0"
+"@commitlint/load@npm:^17.4.1":
+  version: 17.4.1
+  resolution: "@commitlint/load@npm:17.4.1"
   dependencies:
     "@commitlint/config-validator": ^17.4.0
     "@commitlint/execute-rule": ^17.4.0
     "@commitlint/resolve-extends": ^17.4.0
     "@commitlint/types": ^17.4.0
+    "@types/node": "*"
     chalk: ^4.1.0
     cosmiconfig: ^8.0.0
     cosmiconfig-typescript-loader: ^4.0.0
@@ -1353,7 +1354,7 @@ __metadata:
     resolve-from: ^5.0.0
     ts-node: ^10.8.1
     typescript: ^4.6.4
-  checksum: 2225030e2261c111bec1bd17a4e01e5466129bd4d12701019dd422f0b9ca8bab4d7c5b524aa13095115d3981acfc74ea5b9c7c2f7ddb8661ecefcb1406843ab6
+  checksum: 17bc9f2e339da480740138bb1f56d6a5c36ec6d70844a605f09b5ffcbe0bb18fd3ab0ad09d40ba3cfd095f26b0b3cf78a02d7b73d5980d9e58dbdcdfaeb252a2
   languageName: node
   linkType: hard
 
@@ -2993,7 +2994,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/root@workspace:."
   dependencies:
-    "@commitlint/cli": 17.4.0
+    "@commitlint/cli": 17.4.1
     "@commitlint/config-conventional": 17.4.0
     "@mikro-orm/mongo-highlighter": 1.0.0
     "@mikro-orm/sql-highlighter": 1.0.1
