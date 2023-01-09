@@ -40,7 +40,7 @@ describe('CheckMigrationCommand', () => {
     await expect(cmd.handler({} as any)).rejects.toThrowError('Mock');
     expect(checkMigrationMock.mock.calls.length).toBe(1);
     expect(closeSpy).toBeCalledTimes(1);
-    expect(dumpMock).toHaveBeenLastCalledWith('Changes detected. Please create migrations to update schema.');
+    expect(dumpMock).toHaveBeenLastCalledWith('Changes detected. Please create migration to update schema.');
     expect(mockExit).toBeCalledTimes(1);
 
     checkMigrationMock.mockImplementationOnce(async () => false);
