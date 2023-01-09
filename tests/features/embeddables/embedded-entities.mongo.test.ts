@@ -440,6 +440,22 @@ describe('embedded entities in mongo', () => {
     expect(retrievedUser.address.postalCode).toStrictEqual(123.02);
   });
 
+  test('serialization works even if used with POJO instead of embeddable class', async () => {
+    const user = new User();
+    user.email = 'test';
+    user.address1 = { street: 'Downing street 10', postalCode: '123', city: 'London 1', country: 'UK 1' };
+    user.address2 = { street: 'Downing street 11', postalCode: '223', city: 'London 2', country: 'UK 2' };
+    user.address3 = { street: 'Downing street 12', postalCode: '323', city: 'London 3', country: 'UK 3' };
+    user.address4 = { street: 'Downing street 13', postalCode: '423', city: 'London 4', country: 'UK 4' };
+    user.addresses = [
+      { street: 'Downing street 13A', postalCode: '10A', city: 'London 14A', country: 'UK 14A' },
+      { street: 'Downing street 23A', postalCode: '20A', city: 'London 24A', country: 'UK 24A' },
+    ];
+    await orm.em.persist(user).flush();
+
+    expect(() => JSON.stringify(user)).not.toThrow();
+  });
+
   test('assigning to array embeddables (GH #1699)', async () => {
     const user = new User();
     user.email = 'test';

@@ -128,12 +128,14 @@ export class EntityTransformer {
 
     if (property.reference === ReferenceType.EMBEDDED) {
       if (Array.isArray(entity[prop])) {
-        return (entity[prop] as object[]).map(item => Utils.isObject(item) ? helper(item).toJSON() : item) as T[keyof T];
+        return (entity[prop] as object[]).map(item => {
+          const wrapped = item && helper(item);
+          return wrapped ? wrapped.toJSON() : item;
+        }) as T[keyof T];
       }
 
-      if (Utils.isObject(entity[prop])) {
-        return helper(entity[prop]).toJSON() as T[keyof T];
-      }
+      const wrapped = entity[prop] && helper(entity[prop]);
+      return wrapped ? wrapped.toJSON() as T[keyof T] : entity[prop];
     }
 
     const customType = property?.customType;
