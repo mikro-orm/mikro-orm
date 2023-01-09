@@ -1140,4 +1140,25 @@ export class Utils {
 
   }
 
+  /**
+   * simple process.argv parser, supports only properties with long names, prefixed with `--`
+   */
+  static parseArgs<T extends Dictionary = Dictionary>(): T {
+    let lastKey: string | undefined;
+
+    return process.argv.slice(2).reduce((args, arg) => {
+      if (arg.includes('=')) {
+        const [key, value] = arg.split('=');
+        args[key.substring(2)] = value;
+      } else if (lastKey) {
+        args[lastKey] = arg;
+        lastKey = undefined;
+      } else if (arg.startsWith('--')) {
+        lastKey = arg.substring(2);
+      }
+
+      return args;
+    }, {} as Dictionary) as T;
+  }
+
 }
