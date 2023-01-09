@@ -8,10 +8,10 @@ export class MigrationCommandFactory {
 
   static readonly DESCRIPTIONS = {
     create: 'Create new migration with current schema diff',
-    check: 'Check if migrations are needed. Useful for bash scripts.',
     up: 'Migrate up to the latest version',
     down: 'Migrate one step down',
     list: 'List all executed migrations',
+    check: 'Check if migrations are needed. Useful for bash scripts.',
     pending: 'List all pending migrations',
     fresh: 'Clear the database and rerun all migrations',
   };
@@ -173,7 +173,7 @@ export class MigrationCommandFactory {
       return CLIHelper.dump(colors.green(`No changes required, schema is up-to-date`));
     }
     await orm.close(true);
-    CLIHelper.dump(colors.yellow(`Changes detected. Please create migrations to update schema.`));
+    CLIHelper.dump(colors.yellow(`Changes detected. Please create migration to update schema.`));
     process.exit(1);
   }
 
