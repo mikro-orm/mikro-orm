@@ -52,6 +52,13 @@ export class Migrator implements IMigrator {
   /**
    * @inheritDoc
    */
+  async checkMigrationNeeded(): Promise<{ up: []; down: [] }> {
+    return { up: [], down: [] };
+  }
+
+  /**
+   * @inheritDoc
+   */
   async createInitialMigration(path?: string): Promise<MigrationResult> {
     return this.createMigration(path);
   }

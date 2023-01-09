@@ -161,6 +161,7 @@ You can use it via CLI:
 
 ```sh
 npx mikro-orm migration:create   # Create new migration with current schema diff
+npx mikro-orm migration:check    # Check if schema is up to date
 npx mikro-orm migration:up       # Migrate up to the latest version
 npx mikro-orm migration:down     # Migrate one step down
 npx mikro-orm migration:list     # List all executed migrations
