@@ -32,12 +32,15 @@ export class CLIConfigurator {
       }
     }
 
-    // noinspection HtmlDeprecatedTag
     return yargs
       .scriptName('mikro-orm')
       .version(version)
       .usage('Usage: $0 <command> [options]')
       .example('$0 schema:update --run', 'Runs schema synchronization')
+      .option('config', {
+        type: 'string',
+        desc: `Set path to the ORM configuration file`,
+      })
       .alias('v', 'version')
       .alias('h', 'help')
       .command(new ClearCacheCommand())
