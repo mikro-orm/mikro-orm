@@ -188,12 +188,20 @@ For CLI to be able to access our database, we will need to create `mikro-orm.con
 
 TypeScript is also supported, just enable `useTsNode` flag in our `package.json` file. By default, when `useTsNode` is not enabled, CLI will ignore `.ts` files, so if you want to out-out of this behaviour, enable the `alwaysAllowTs` option. This would be useful if you want to use MikroORM with [Bun](https://bun.sh), which has TypeScript support out of the box. There we can also set up array of possible paths to `mikro-orm.config` file, as well as use different file name. The `package.json` file can be located in the current working directory, or in one of its parent folders.
 
-We can use these environment variables to override CLI settings:
+You can use these environment variables to override the CLI settings:
 
 - `MIKRO_ORM_CLI`: the path to ORM config file
 - `MIKRO_ORM_CLI_USE_TS_NODE`: register ts-node
 - `MIKRO_ORM_CLI_TS_CONFIG_PATH`: path to the tsconfig.json (for ts-node)
 - `MIKRO_ORM_CLI_ALWAYS_ALLOW_TS`: enable `.ts` files to use without ts-node
+
+Alternatively, you can also specify the config path via `--config` option:
+
+```sh
+$ npx mikro-orm debug --config ./my-config.ts
+```
+
+This option will be respected also when you run your app, not just when you use the CLI.
 
 > Do not forget to install `ts-node` when enabling `useTsNode` flag.
 
