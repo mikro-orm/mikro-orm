@@ -402,6 +402,13 @@ Maybe you want to check, or regenerate your yarn.lock or package-lock.json file?
   });
 
   test('getConfigPaths', async () => {
+    (global as any).process.argv = ['node', 'start.js', '--config', './override1/orm-config.ts'];
+    await expect(CLIHelper.getConfigPaths()).resolves.toEqual(['./override1/orm-config.ts']);
+    (global as any).process.argv = ['node', 'start.js', '--config=./override2/orm-config.ts'];
+    await expect(CLIHelper.getConfigPaths()).resolves.toEqual(['./override2/orm-config.ts']);
+    (global as any).process.argv = ['npx', 'mikro-orm', 'debug', '--config', './override3/orm-config.ts'];
+    await expect(CLIHelper.getConfigPaths()).resolves.toEqual(['./override3/orm-config.ts']);
+    (global as any).process.argv = ['node', 'start.js'];
     (global as any).process.env.MIKRO_ORM_CLI = './override/orm-config.ts';
     await expect(CLIHelper.getConfigPaths()).resolves.toEqual(['./override/orm-config.ts', './src/mikro-orm.config.ts', './mikro-orm.config.ts', './src/mikro-orm.config.js', './mikro-orm.config.js']);
     delete (global as any).process.env.MIKRO_ORM_CLI;

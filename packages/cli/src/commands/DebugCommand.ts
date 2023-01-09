@@ -1,5 +1,4 @@
 import type { CommandModule } from 'yargs';
-import type { Configuration } from '@mikro-orm/core';
 import { ConfigurationLoader, Utils, colors, MikroORM } from '@mikro-orm/core';
 
 import { CLIHelper } from '../CLIHelper';
