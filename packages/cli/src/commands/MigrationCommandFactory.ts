@@ -11,6 +11,7 @@ export class MigrationCommandFactory {
     up: 'Migrate up to the latest version',
     down: 'Migrate one step down',
     list: 'List all executed migrations',
+    check: 'Check if migrations are needed. Useful for bash scripts.',
     pending: 'List all pending migrations',
     fresh: 'Clear the database and rerun all migrations',
   };
@@ -90,6 +91,9 @@ export class MigrationCommandFactory {
       case 'create':
         await this.handleCreateCommand(migrator, args, orm.config);
         break;
+      case 'check':
+        await this.handleCheckCommand(migrator, orm);
+        break;
       case 'list':
         await this.handleListCommand(migrator);
         break;
@@ -164,6 +168,15 @@ export class MigrationCommandFactory {
     CLIHelper.dump(colors.green(`${ret.fileName} successfully created`));
   }
 
+  private static async handleCheckCommand(migrator: IMigrator, orm: MikroORM): Promise<void> {
+    if (!await migrator.checkMigrationNeeded()) {
+      return CLIHelper.dump(colors.green(`No changes required, schema is up-to-date`));
+    }
+    await orm.close(true);
+    CLIHelper.dump(colors.yellow(`Changes detected. Please create migration to update schema.`));
+    process.exit(1);
+  }
+
   private static async handleFreshCommand(args: ArgumentsCamelCase<Options>, migrator: IMigrator, orm: MikroORM) {
     const generator = orm.getSchemaGenerator();
     await generator.dropSchema({ dropMigrationsTable: true });
@@ -222,7 +235,7 @@ export class MigrationCommandFactory {
 
 }
 
-type MigratorMethod = 'create' | 'up' | 'down' | 'list' | 'pending' | 'fresh';
+type MigratorMethod = 'create' | 'check' | 'up' | 'down' | 'list' | 'pending' | 'fresh';
 type CliUpDownOptions = { to?: string | number; from?: string | number; only?: string };
 type GenerateOptions = { dump?: boolean; blank?: boolean; initial?: boolean; path?: string; disableFkChecks?: boolean; seed: string };
 type Options = GenerateOptions & CliUpDownOptions;

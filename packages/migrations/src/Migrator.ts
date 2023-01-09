@@ -69,6 +69,12 @@ export class Migrator implements IMigrator {
     };
   }
 
+  async checkMigrationNeeded(): Promise<boolean> {
+    await this.ensureMigrationsDirExists();
+    const diff = await this.getSchemaDiff(false, false);
+    return diff.up.length > 0;
+  }
+
   /**
    * @inheritDoc
    */

@@ -561,6 +561,11 @@ export interface IMigrator {
   createMigration(path?: string, blank?: boolean, initial?: boolean): Promise<MigrationResult>;
 
   /**
+   * Checks current schema for changes.
+   */
+  checkMigrationNeeded(): Promise<boolean>;
+
+  /**
    * Creates initial migration. This generates the schema based on metadata, and checks whether all the tables
    * are already present. If yes, it will also automatically log the migration as executed.
    * Initial migration can be created only if the schema is already aligned with the metadata, or when no schema
