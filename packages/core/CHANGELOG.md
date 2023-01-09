@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.5](https://github.com/mikro-orm/mikro-orm/compare/v5.6.4...v5.6.5) (2023-01-09)
+
+
+### Bug Fixes
+
+* **core:** do not fail on serialization when POJO instead of embeddable instance found ([c8de84b](https://github.com/mikro-orm/mikro-orm/commit/c8de84babe28c13eaf3efb62e27a0fea3337f9ac))
+* **core:** make serialization of embedded properties support `null` instead of value ([3006507](https://github.com/mikro-orm/mikro-orm/commit/3006507132b7ba465430af6e0f918179f08ab5c6)), closes [#3906](https://github.com/mikro-orm/mikro-orm/issues/3906)
+
+
+### Features
+
+* **cli:** add check for migrations command ([#3923](https://github.com/mikro-orm/mikro-orm/issues/3923)) ([a0ac946](https://github.com/mikro-orm/mikro-orm/commit/a0ac946be35e6dd5bebd263036ce10c068a81af6))
+* **core:** add `em.insertMany()` ([5d1565d](https://github.com/mikro-orm/mikro-orm/commit/5d1565dca46f91058720b6ad8df1b373bdb8ff65))
+
+
+
+
+
 ## [5.6.4](https://github.com/mikro-orm/mikro-orm/compare/v5.6.3...v5.6.4) (2023-01-04)
 
 
