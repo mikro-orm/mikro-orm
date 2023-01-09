@@ -85,6 +85,12 @@ export class ConfigurationLoader {
   }
 
   static async getConfigPaths(): Promise<string[]> {
+    const options = Utils.parseArgs();
+
+    if (options.config) {
+      return [options.config];
+    }
+
     const paths: string[] = [];
     const settings = await ConfigurationLoader.getSettings();
 
