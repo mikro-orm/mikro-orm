@@ -1,11 +1,11 @@
-import { Entity, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, MikroORM, OneToOne, PrimaryKey, Property, StringType } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers';
 
 @Entity()
 export class Order {
 
-  @PrimaryKey()
+  @PrimaryKey({ type: StringType })
   id!: string;
 
   @Property()
@@ -16,7 +16,7 @@ export class Order {
 @Entity()
 export class Team {
 
-  @PrimaryKey()
+  @PrimaryKey({ type: StringType })
   id!: string;
 
   @OneToOne({
