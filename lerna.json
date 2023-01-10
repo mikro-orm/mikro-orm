@@ -7,7 +7,7 @@
     "version": {
       "conventionalCommits": true,
       "createRelease": "github",
-      "message": "chore(release): %s"
+      "message": "chore(release): %s [skip ci]"
     }
   },
   "ignoreChanges": [
