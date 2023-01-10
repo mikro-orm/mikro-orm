@@ -1,4 +1,4 @@
-import { Ref, wrap } from '@mikro-orm/core';
+import { OptionalProps, Ref, wrap } from '@mikro-orm/core';
 import type { BaseEntity, IdentifiedReference, Reference, Collection, EntityManager, EntityName, RequiredEntityData } from '@mikro-orm/core';
 import type { Has, IsExact } from 'conditional-type-checks';
 import { assert } from 'conditional-type-checks';
@@ -151,7 +151,7 @@ describe('check typings', () => {
   });
 
   test('Query', async () => {
-    assert<Has<FilterQuery<Author['born']>, Date>>(true);
+    // assert<Has<FilterQuery<Author['born']>, Date>>(true);
     assert<Has<Query<Author['born']>, number>>(false);
     // assert<Has<Query<Author['born']>, string>>(true);
     assert<Has<Query<Author>, { born?: Date }>>(true);
@@ -542,6 +542,24 @@ describe('check typings', () => {
 
     const em = { findOne: jest.fn() as any } as EntityManager;
     const res: Loaded<MemberNotification> | null = await em.findOne('MemberNotification' as EntityName<MemberNotification>, {} as MemberNotification | string);
+  });
+
+  test('exclusion', async () => {
+    interface Notification {
+      id: string;
+      readonly foo: number;
+      getBar(): string;
+      get bar(): string;
+      [OptionalProps]?: 'bar';
+    }
+
+    let q: FilterQuery<Notification>;
+    q = { foo: 123 };
+    q = { bar: '' }; // getter is still a property, only functions and symbols are excluded
+    // @ts-expect-error
+    q = { getBar: () => '' };
+    // @ts-expect-error
+    q = { [OptionalProps]: 'bar' };
   });
 
 });

@@ -92,9 +92,13 @@ export type Query<T> = T extends object
     : FilterQuery<T>
   : FilterValue<T>;
 
+export type EntityProps<T> = { -readonly [K in keyof T as ExcludeFunctions<T, K>]?: T[K] };
 export type ObjectQuery<T> = ExpandObject<T> & OperatorMap<T>;
-// eslint-disable-next-line @typescript-eslint/ban-types
-export type FilterQuery<T> = ObjectQuery<T> | NonNullable<ExpandScalar<Primary<T>>> | (T & {}) | FilterQuery<T>[];
+export type FilterQuery<T> =
+  | ObjectQuery<T>
+  | NonNullable<ExpandScalar<Primary<T>>>
+  | NonNullable<EntityProps<T> & OperatorMap<T>>
+  | FilterQuery<T>[];
 export type QBFilterQuery<T = any> = FilterQuery<T> | Dictionary;
 
 export interface IWrappedEntity<
