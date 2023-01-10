@@ -62,8 +62,8 @@
     "access": "public"
   },
   "dependencies": {
-    "@mikro-orm/core": "^5.6.6",
-    "@mikro-orm/knex": "^5.6.6",
+    "@mikro-orm/core": "~5.6.6",
+    "@mikro-orm/knex": "~5.6.6",
     "fs-extra": "11.1.0",
     "tsconfig-paths": "4.1.2",
     "yargonaut": "1.1.4",
