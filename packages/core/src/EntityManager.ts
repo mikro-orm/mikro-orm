@@ -141,8 +141,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async find<
     Entity extends object,
     Hint extends string = never,
-    Query extends FilterQuery<Entity> = FilterQuery<Entity>,
-  >(entityName: EntityName<Entity>, where: Query, options: FindOptions<Entity, Hint> = {}): Promise<Loaded<Entity, Hint>[]> {
+  >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindOptions<Entity, Hint> = {}): Promise<Loaded<Entity, Hint>[]> {
     if (options.disableIdentityMap) {
       const em = this.getContext(false);
       const fork = em.fork();
@@ -155,7 +154,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const em = this.getContext();
     await em.tryFlush(entityName, options);
     entityName = Utils.className(entityName);
-    where = await em.processWhere(entityName, where as FilterQuery<Entity>, options, 'read') as Query;
+    where = await em.processWhere(entityName, where, options, 'read') as FilterQuery<Entity>;
     em.validator.validateParams(where);
     options.orderBy = options.orderBy || {};
     options.populate = em.preparePopulate<Entity, Hint>(entityName, options) as unknown as Populate<Entity, Hint>;
@@ -390,8 +389,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async findAndCount<
     Entity extends object,
     Hint extends string = never,
-    Query extends FilterQuery<Entity> = FilterQuery<Entity>,
-  >(entityName: EntityName<Entity>, where: Query, options: FindOptions<Entity, Hint> = {}): Promise<[Loaded<Entity, Hint>[], number]> {
+  >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindOptions<Entity, Hint> = {}): Promise<[Loaded<Entity, Hint>[], number]> {
     const [entities, count] = await Promise.all([
       this.find<Entity, Hint>(entityName, where, options),
       this.count(entityName, where, options),
@@ -430,8 +428,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async findOne<
     Entity extends object,
     Hint extends string = never,
-    Query extends FilterQuery<Entity> = FilterQuery<Entity>,
-  >(entityName: EntityName<Entity>, where: Query, options: FindOneOptions<Entity, Hint> = {}): Promise<Loaded<Entity, Hint> | null> {
+  >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindOneOptions<Entity, Hint> = {}): Promise<Loaded<Entity, Hint> | null> {
     if (options.disableIdentityMap) {
       const em = this.getContext(false);
       const fork = em.fork();
@@ -445,7 +442,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     await em.tryFlush(entityName, options);
     entityName = Utils.className(entityName);
     const meta = em.metadata.get<Entity>(entityName);
-    where = await em.processWhere(entityName, where as FilterQuery<Entity>, options, 'read') as Query;
+    where = await em.processWhere(entityName, where, options, 'read');
     em.validator.validateEmptyWhere(where);
     em.checkLockRequirements(options.lockMode, meta);
     let entity = em.unitOfWork.tryGetById<Entity>(entityName, where, options.schema);
@@ -506,8 +503,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async findOneOrFail<
     Entity extends object,
     Hint extends string = never,
-    Query extends FilterQuery<Entity> = FilterQuery<Entity>,
-  >(entityName: EntityName<Entity>, where: Query, options: FindOneOrFailOptions<Entity, Hint> = {}): Promise<Loaded<Entity, Hint>> {
+  >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindOneOrFailOptions<Entity, Hint> = {}): Promise<Loaded<Entity, Hint>> {
     let entity: Loaded<Entity, Hint> | null;
     let isStrictViolation = false;
 
@@ -1138,11 +1134,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   async count<
     Entity extends object,
     Hint extends string = never,
-    Query extends FilterQuery<Entity> = FilterQuery<Entity>,
-  >(entityName: EntityName<Entity>, where: Query = {} as Query, options: CountOptions<Entity, Hint> = {}): Promise<number> {
+  >(entityName: EntityName<Entity>, where: FilterQuery<Entity> = {} as FilterQuery<Entity>, options: CountOptions<Entity, Hint> = {}): Promise<number> {
     const em = this.getContext(false);
     entityName = Utils.className(entityName);
-    where = await em.processWhere(entityName, where as FilterQuery<Entity>, options as FindOptions<Entity, Hint>, 'read') as Query;
+    where = await em.processWhere(entityName, where, options as FindOptions<Entity, Hint>, 'read') as FilterQuery<Entity>;
     options.populate = em.preparePopulate(entityName, options) as unknown as Populate<Entity>;
     em.validator.validateParams(where);
 

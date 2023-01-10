@@ -258,7 +258,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
       operator = operator || '$and';
     } else {
       cond = QueryHelper.processWhere({
-        where: cond,
+        where: cond as FilterQuery<T>,
         entityName: this.mainAlias.entityName,
         metadata: this.metadata,
         platform: this.platform,

@@ -208,7 +208,7 @@ export class ChangeSetPersister {
       convertCustomTypes: false,
       processCollections: false,
     });
-    const cond = changeSets.map(cs => cs.getPrimaryKey(true) as Dictionary);
+    const cond = changeSets.map(cs => cs.getPrimaryKey(true) as FilterQuery<T>);
 
     changeSets.forEach((changeSet, idx) => {
       this.checkConcurrencyKeys(meta, changeSet, cond[idx]);
@@ -263,7 +263,7 @@ export class ChangeSetPersister {
     });
 
     if (meta.concurrencyCheckKeys.size === 0 && (!meta.versionProperty || changeSet.entity[meta.versionProperty] == null)) {
-      return this.driver.nativeUpdate(changeSet.name, changeSet.getPrimaryKey() as Dictionary, changeSet.payload, options);
+      return this.driver.nativeUpdate(changeSet.name, changeSet.getPrimaryKey() as FilterQuery<T>, changeSet.payload, options);
     }
 
     const cond = changeSet.getPrimaryKey(true) as Dictionary;

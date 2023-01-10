@@ -33,7 +33,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
     const fields = this.buildFields(entityName, options.populate as unknown as PopulateOptions<T>[] || [], options.fields);
     where = this.renameFields(entityName, where, true);
-    const res = await this.rethrow(this.getConnection('read').find(entityName, where as Dictionary, options.orderBy, options.limit, options.offset, fields, options.ctx));
+    const res = await this.rethrow(this.getConnection('read').find(entityName, where, options.orderBy, options.limit, options.offset, fields, options.ctx));
 
     return res.map(r => this.mapResult<T>(r, this.metadata.find<T>(entityName))!);
   }
@@ -51,7 +51,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
     const fields = this.buildFields(entityName, options.populate as unknown as PopulateOptions<T>[] || [], options.fields);
     where = this.renameFields(entityName, where, true);
-    const res = await this.rethrow(this.getConnection('read').find(entityName, where as Dictionary, options.orderBy, 1, undefined, fields, options.ctx));
+    const res = await this.rethrow(this.getConnection('read').find(entityName, where, options.orderBy, 1, undefined, fields, options.ctx));
 
     return this.mapResult<T>(res[0], this.metadata.find(entityName)!);
   }
@@ -221,7 +221,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return data;
   }
 
-  private buildFilterById<T>(entityName: string, id: string): FilterQuery<T> {
+  private buildFilterById<T extends { _id: any }>(entityName: string, id: string): FilterQuery<T> {
     const meta = this.metadata.find(entityName)!;
 
     if (meta.properties[meta.primaryKeys[0]].type.toLowerCase() === 'objectid') {

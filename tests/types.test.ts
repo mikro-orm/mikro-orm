@@ -530,4 +530,18 @@ describe('check typings', () => {
     const test: MemberNotification = {} as Loaded<MemberNotification, 'notification'>;
   });
 
+  test('inference of entity type', async () => {
+    interface MemberNotification {
+      id: string;
+      notification?: Ref<Notification>;
+    }
+
+    interface Notification {
+      id: string;
+    }
+
+    const em = { findOne: jest.fn() as any } as EntityManager;
+    const res: Loaded<MemberNotification> | null = await em.findOne('MemberNotification' as EntityName<MemberNotification>, {} as MemberNotification | string);
+  });
+
 });
