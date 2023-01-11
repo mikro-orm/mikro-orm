@@ -2999,7 +2999,7 @@ __metadata:
     "@mikro-orm/mongo-highlighter": 1.0.0
     "@mikro-orm/sql-highlighter": 1.0.1
     "@side/jest-runtime": ^1.1.0
-    "@types/fs-extra": 11.0.0
+    "@types/fs-extra": 11.0.1
     "@types/jest": 29.2.5
     "@types/mysql2": "https://github.com/types/mysql2.git#commit=89378b2cb3974ea8cdd1d633b8f056e54e5d2384"
     "@types/node": 18.11.18
@@ -3651,13 +3651,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/fs-extra@npm:11.0.0":
-  version: 11.0.0
-  resolution: "@types/fs-extra@npm:11.0.0"
+"@types/fs-extra@npm:11.0.1":
+  version: 11.0.1
+  resolution: "@types/fs-extra@npm:11.0.1"
   dependencies:
     "@types/jsonfile": "*"
     "@types/node": "*"
-  checksum: 00e706ad9fdcfd96aa15172e37e136075754256c7d52f5c33d04423f0ec786e5651526c7c90bab26a72cc882475e9c1687e33900a1176b6803b7b3fd6cdd35d8
+  checksum: 3e930346e5d84f419deb8ced1c582beef8cb20d0bd8a0eb145a37d75bab0572a1895f0e48a0d681d386b3a58b9a992b2d2acecc464bcaec2548f53ea00718651
   languageName: node
   linkType: hard
 
