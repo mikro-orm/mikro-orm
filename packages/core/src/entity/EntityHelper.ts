@@ -1,10 +1,9 @@
 import { inspect } from 'util';
 
 import type { EntityManager } from '../EntityManager';
-import type { AnyEntity, Dictionary, EntityMetadata, EntityProperty } from '../typings';
+import type { AnyEntity, Dictionary, EntityMetadata, EntityProperty, IHydrator } from '../typings';
 import { EntityTransformer } from '../serialization/EntityTransformer';
 import { Reference } from './Reference';
-import type { Platform } from '../platforms';
 import { Utils } from '../utils/Utils';
 import { WrappedEntity } from './WrappedEntity';
 import { ReferenceType } from '../enums';
@@ -31,7 +30,7 @@ export class EntityHelper {
     EntityHelper.defineBaseProperties(meta, meta.prototype, fork);
 
     if (!meta.embeddable && !meta.virtual) {
-      EntityHelper.defineProperties(meta);
+      EntityHelper.defineProperties(meta, fork);
     }
 
     const prototype = meta.prototype as Dictionary;
@@ -78,7 +77,8 @@ export class EntityHelper {
    * First defines a setter on the prototype, once called, actual get/set handlers are registered on the instance rather
    * than on its prototype. Thanks to this we still have those properties enumerable (e.g. part of `Object.keys(entity)`).
    */
-  private static defineProperties<T>(meta: EntityMetadata<T>): void {
+  private static defineProperties<T>(meta: EntityMetadata<T>, em: EntityManager): void {
+    const hydrator = em.config.getHydrator(em.getMetadata());
     Object
       .values<EntityProperty<T>>(meta.properties)
       .forEach(prop => {
@@ -88,7 +88,7 @@ export class EntityHelper {
         if (isReference) {
           return Object.defineProperty(meta.prototype, prop.name, {
             set(val: AnyEntity) {
-              EntityHelper.defineReferenceProperty(meta, prop, this);
+              EntityHelper.defineReferenceProperty(meta, prop, this, hydrator);
               this[prop.name] = val;
             },
           });
@@ -133,7 +133,7 @@ export class EntityHelper {
     };
   }
 
-  static defineReferenceProperty<T extends object>(meta: EntityMetadata<T>, prop: EntityProperty<T>, ref: T): void {
+  static defineReferenceProperty<T extends object>(meta: EntityMetadata<T>, prop: EntityProperty<T>, ref: T, hydrator: IHydrator): void {
     Object.defineProperty(ref, prop.name, {
       get() {
         return helper(ref).__data[prop.name];
@@ -143,7 +143,14 @@ export class EntityHelper {
         const entity = Reference.unwrapReference(val ?? wrapped.__data[prop.name]);
         const old = Reference.unwrapReference(wrapped.__data[prop.name]);
         wrapped.__data[prop.name] = Reference.wrapReference(val as T, prop);
-        wrapped.__touched = true;
+
+        // when propagation from inside hydration, we set the FK to the entity data immediately
+        if (val && hydrator.isRunning() && wrapped.__originalEntityData && prop.owner) {
+          wrapped.__originalEntityData[prop.name as string] = helper(wrapped.__data[prop.name]).getPrimaryKey(true);
+        } else {
+          wrapped.__touched = true;
+        }
+
         EntityHelper.propagate(meta, entity, this, prop, Reference.unwrapReference(val), old);
       },
       enumerable: true,

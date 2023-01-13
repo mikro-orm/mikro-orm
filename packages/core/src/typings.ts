@@ -758,6 +758,8 @@ export interface IHydrator {
    */
   hydrateReference<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes?: boolean, schema?: string): void;
 
+  isRunning(): boolean;
+
 }
 
 export interface HydratorConstructor {
