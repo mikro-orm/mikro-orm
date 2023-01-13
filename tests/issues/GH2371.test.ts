@@ -30,6 +30,9 @@ class Garage {
   @OneToMany(() => Car, v => v.garage)
   cars = new Collection<Car>(this);
 
+  @OneToMany(() => Truck, v => v.garage)
+  trucks = new Collection<Truck>(this);
+
 }
 
 describe('GH issue 2371', () => {
@@ -53,12 +56,13 @@ describe('GH issue 2371', () => {
 
     expect(garage.cars.contains(car)).toBe(true);
     expect(garage.vehicles.contains(car)).toBe(true);
+    expect(garage.trucks.length).toBe(0);
     await orm.em.fork().persistAndFlush(garage);
 
-    const g = await orm.em.findOneOrFail(Garage, garage, { populate: ['cars', 'vehicles'] });
+    const g = await orm.em.findOneOrFail(Garage, garage, { populate: ['cars', 'vehicles', 'trucks'] });
     const c = await orm.em.findOneOrFail(Car, car);
     expect(g.cars.contains(c)).toBe(true);
     expect(g.vehicles.contains(c)).toBe(true);
+    expect(g.trucks.length).toBe(0);
   });
-
 });
