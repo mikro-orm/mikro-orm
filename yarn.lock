@@ -3035,7 +3035,7 @@ __metadata:
     node-gyp: ^9.3.0
     rimraf: 4.0.4
     sql-formatter: 8.0.2
-    ts-jest: 29.0.4
+    ts-jest: 29.0.5
     ts-node: 10.9.1
     typescript: 4.9.4
     uuid: 9.0.0
@@ -11099,9 +11099,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-jest@npm:29.0.4":
-  version: 29.0.4
-  resolution: "ts-jest@npm:29.0.4"
+"ts-jest@npm:29.0.5":
+  version: 29.0.5
+  resolution: "ts-jest@npm:29.0.5"
   dependencies:
     bs-logger: 0.x
     fast-json-stable-stringify: 2.x
@@ -11128,7 +11128,7 @@ __metadata:
       optional: true
   bin:
     ts-jest: cli.js
-  checksum: c3daa71835fabd0c98eefc8611edc083cd2c78cbe9a02c1edea707a907afffafc1e61051f4746c0634904d4c68cd70736d0875ae644f55c6ed8beb950bf78689
+  checksum: f60f129c2287f4c963d9ee2677132496c5c5a5d39c27ad234199a1140c26318a7d5bda34890ab0e30636ec42a8de28f84487c09e9dcec639c9c67812b3a38373
   languageName: node
   linkType: hard
 
