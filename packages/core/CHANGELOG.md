@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.7](https://github.com/mikro-orm/mikro-orm/compare/v5.6.6...v5.6.7) (2023-01-13)
+
+
+### Bug Fixes
+
+* **core:** ensure propagation during hydration dont produce extra updates ([88595bd](https://github.com/mikro-orm/mikro-orm/commit/88595bdf450d2b93fd9a1c18449fc27ee7229738)), closes [#3941](https://github.com/mikro-orm/mikro-orm/issues/3941)
+* **core:** propagate ManyToOne only to matching collections (STI) ([#3940](https://github.com/mikro-orm/mikro-orm/issues/3940)) ([8ff7ed1](https://github.com/mikro-orm/mikro-orm/commit/8ff7ed193738cf518b54995eeb1f6a5bd59f052f)), closes [#3939](https://github.com/mikro-orm/mikro-orm/issues/3939)
+* **core:** respect `mapToPk` during hydration with custom type FK ([75d05ee](https://github.com/mikro-orm/mikro-orm/commit/75d05ee7ed57107072a44c29be24a64ff27e6db0)), closes [#3921](https://github.com/mikro-orm/mikro-orm/issues/3921)
+
+
+
+
+
 ## [5.6.6](https://github.com/mikro-orm/mikro-orm/compare/v5.6.5...v5.6.6) (2023-01-10)
 
 

@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.7](https://github.com/mikro-orm/mikro-orm/compare/v5.6.6...v5.6.7) (2023-01-13)
+
+
+### Features
+
+* **seeder:** expose `Factory.makeEntity` method that does not call `em.persist()` ([bb8f1b0](https://github.com/mikro-orm/mikro-orm/commit/bb8f1b03f7c25811f87311e997646bf793b52a13)), closes [#3932](https://github.com/mikro-orm/mikro-orm/issues/3932)
+
+
+
+
+
 ## [5.6.6](https://github.com/mikro-orm/mikro-orm/compare/v5.6.5...v5.6.6) (2023-01-10)
 
 **Note:** Version bump only for package @mikro-orm/seeder
