@@ -172,50 +172,22 @@ export class BookTag {
 Again, more information about how collections work can be found on [collections page](collections.md). 
 
 ## Relations in ESM projects
-If you use ESM in your TypeScript project, you should use the `Rel` wrapper type in relation properties to avoid circular dependency issues. Let's modify our entities:
+
+If you use ESM in your TypeScript project with `reflect-metadata`, you might fall into issues with circular dependencies, seeing errors like this:
+
+    ReferenceError: Cannot access 'Author' before initialization
+
+To get around them, use the `Rel` mapped type. It is an identity type, which disables the problematic inference from `reflect-metadata`, that causes ESM projects to fail.
 
 ```ts
-import { Rel } from "@mikro-orm/core";
+import { Rel } from '@mikro-orm/core';
 
 @Entity()
 export class Book {
 
-  @ManyToOne() // plain decorator is enough, type will be sniffer via reflection!
-  author1!: Rel<Author>;
-
-  @ManyToOne(() => Author) // you can specify type manually as a callback
-  author2!: Rel<Author>;
-
-  @ManyToOne('Author') // or as a string
-  author3!: Rel<Author>;
-
-  @ManyToOne({ entity: () => Author }) // or use options object
-  author4!: Rel<Author>;
+  @ManyToOne(() => Author)
+  author!: Rel<Author>;
 
 }
 ```
-
-
-```ts
-import { Rel } from "@mikro-orm/core";
-
-@Entity()
-export class User {
-
-  // when none of `owner/inverseBy/mappedBy` is provided, it will be considered owning side
-  @OneToOne()
-  bestFriend1!: Rel<User>;
-
-  // side with `inversedBy` is the owning one, to define inverse side use `mappedBy`
-  @OneToOne({ inversedBy: 'bestFriend1' })
-  bestFriend2!: Rel<User>;
-
-  // when defining it like this, you need to specifically mark the owning side with `owner: true`
-  @OneToOne(() => User, user => user.bestFriend2, { owner: true })
-  bestFriend3!: Rel<User>;
-
-}
-
-```
-
 
