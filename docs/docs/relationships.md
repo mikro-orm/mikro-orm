@@ -170,3 +170,24 @@ export class BookTag {
 ```
 
 Again, more information about how collections work can be found on [collections page](collections.md). 
+
+## Relations in ESM projects
+
+If you use ESM in your TypeScript project with `reflect-metadata`, you might fall into issues with circular dependencies, seeing errors like this:
+
+    ReferenceError: Cannot access 'Author' before initialization
+
+To get around them, use the `Rel` mapped type. It is an identity type, which disables the problematic inference from `reflect-metadata`, that causes ESM projects to fail.
+
+```ts
+import { Rel } from '@mikro-orm/core';
+
+@Entity()
+export class Book {
+
+  @ManyToOne(() => Author)
+  author!: Rel<Author>;
+
+}
+```
+
