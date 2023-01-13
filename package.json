@@ -123,7 +123,7 @@
     "mongodb": "4.13.0",
     "mongodb-memory-server": "^8.10.0",
     "node-gyp": "^9.3.0",
-    "rimraf": "3.0.2",
+    "rimraf": "4.0.4",
     "sql-formatter": "8.0.2",
     "ts-jest": "29.0.4",
     "ts-node": "10.9.1",
