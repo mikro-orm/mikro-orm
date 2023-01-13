@@ -60,5 +60,74 @@ describe('GH issue 2371', () => {
     expect(g.cars.contains(c)).toBe(true);
     expect(g.vehicles.contains(c)).toBe(true);
   });
+});
 
+
+class BaseEntity {
+
+  constructor(data = {}) {
+    Object.assign(this, data);
+  }
+
+  @PrimaryKey()
+  _id = +new Date() + Math.random();
+
+}
+
+@Entity({ tableName: 'basket' })
+class Basket extends BaseEntity {
+
+  @OneToMany(() => Apple, f => f.basket)
+  apples = new Collection<Apple>(this);
+
+  @OneToMany(() => Banana, f => f.basket)
+  bananas = new Collection<Banana>(this);
+
+}
+
+@Entity({ tableName: 'fruit', discriminatorColumn: 'type', abstract: true })
+class Fruit extends BaseEntity  {
+
+  @ManyToOne(() => Basket)
+  basket!: Basket;
+
+}
+
+@Entity({ discriminatorValue: 'apple' })
+class Apple extends Fruit {}
+
+@Entity({ discriminatorValue: 'banana' })
+class Banana extends Fruit {}
+
+describe('GH issue 2371 (M)', () => {
+  let orm: MikroORM<SqliteDriver>;
+
+  beforeAll(async () => {
+    orm = await MikroORM.init({
+      entities: [Fruit, Apple, Banana, Basket],
+      dbName: ':memory:',
+      driver: SqliteDriver,
+    });
+    await orm.schema.createSchema();
+  });
+
+  afterAll(() => orm.close(true));
+
+  it('should propagate setting m:1 property to matching collections only', async () => {
+    const basket = new Basket({});
+    const apple = new Apple({ basket });
+
+    expect(basket.apples.contains(apple)).toBe(true);
+    expect(basket.bananas.contains(apple)).toBe(false);
+    expect(basket.bananas.length).toBe(0);
+
+    await orm.em.fork().persistAndFlush(basket);
+
+    const b = await orm.em.findOneOrFail(Basket, { _id: basket._id }, { populate: ['apples', 'bananas'] });
+    const a = await orm.em.findOneOrFail(Apple, { _id: apple._id });
+    expect(b.apples.contains(a)).toBe(true);
+    expect(b.bananas.contains(a)).toBe(false);
+    expect(b.bananas.length).toBe(0);
+
+  });
 });

@@ -152,7 +152,7 @@ export class EntityHelper {
   }
 
   private static propagate<T extends object, O extends object>(meta: EntityMetadata<O>, entity: T, owner: O, prop: EntityProperty<O>, value?: T[keyof T & string], old?: object): void {
-    const inverseProps = prop.targetMeta!.relations.filter(prop2 => (prop2.inversedBy || prop2.mappedBy) === prop.name && prop2.targetMeta!.root.className === meta.root.className);
+    const inverseProps = prop.targetMeta!.relations.filter(prop2 => (prop2.inversedBy || prop2.mappedBy) === prop.name && (prop2.targetMeta!.abstract ? prop2.targetMeta!.root.className === meta.root.className : prop2.targetMeta!.className === meta.className));
 
     for (const prop2 of inverseProps) {
       const inverse = value?.[prop2.name as string];
