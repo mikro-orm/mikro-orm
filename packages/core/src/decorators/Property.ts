@@ -76,14 +76,20 @@ export type PropertyOptions<T> = {
    */
   type?: keyof typeof types | 'ObjectId' | Date | Constructor<AnyEntity> | Constructor<Type<any>> | Type<any> | (() => unknown) | ColumnType | AnyString;
   /**
-   * Length of database column, used for datetime/timestamp/varchar column types for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}. (SQL only)
+   * Set length of database column, used for datetime/timestamp/varchar column types for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}. (SQL only)
    */
   length?: number;
   /**
-   * Precision of database column, used for datetime/timestamp/varchar column types for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}. (SQL only)
+   * Set precision of database column to represent the number of significant digits. (SQL only)
    */
   precision?: number;
+  /**
+   * Set scale of database column to represents the number of digits after the decimal point. (SQL only)
+   */
   scale?: number;
+  /**
+   * Explicitly specify the auto increment of the primary key.
+   */
   autoincrement?: boolean;
   /**
    * Automatically set the property value when entity gets created, executed during flush operation.
@@ -161,9 +167,43 @@ export type PropertyOptions<T> = {
    * @see https://mikro-orm.io/docs/defining-entities#lazy-scalar-properties
    */
   lazy?: boolean;
+  /**
+   * Set true to define entity's unique primary key identifier.
+   * Alias for `@PrimaryKey()` decorator
+   *
+   * @see https://mikro-orm.io/docs/decorators#primarykey
+   */
   primary?: boolean;
+  /**
+   * Set true to define the properties as setter. (virtual)
+   *
+   * @example
+   * ```
+   * @Property({ setter: true })
+   * set address(value: string) {
+   *     this._address = value.toLocaleLowerCase();
+   * }
+   * ```
+   */
   setter?: boolean;
+  /**
+   * Set true to define the properties as getter. (virtual)
+   *
+   * @example
+   * ```
+   * @Property({ getter: true })
+   * get fullName() {
+   *   return this.firstName + this.lastName;
+   * }
+   * ```
+   */
   getter?: boolean;
+  /**
+   * Set to define serialized primary key for MongoDB. (virtual)
+   * Alias for `@SerializedPrimaryKey()` decorator.
+   *
+   * @see https://mikro-orm.io/docs/decorators#serializedprimarykey
+   */
   serializedPrimaryKey?: boolean;
   /**
    * Set to use serialize property. Allow to specify a callback that will be used when serializing a property.
