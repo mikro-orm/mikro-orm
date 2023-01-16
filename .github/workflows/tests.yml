@@ -104,7 +104,7 @@ jobs:
           key: ${{ runner.os }}-16-modules-${{ hashFiles('**/yarn.lock') }}
 
       - name: EditorConfig Lint
-        uses: docker://mstruebing/editorconfig-checker:2.4.0@sha256:8e977f26d3fdc3b719568f85f5e1b95ae9feb07f61f2db2ccdafd5d037fc5653
+        uses: docker://mstruebing/editorconfig-checker:2.7.0@sha256:0f8f8dd4f393d29755bef2aef4391d37c34e358d676e9d66ce195359a9c72ef3
 
       - name: Install
         run: |
