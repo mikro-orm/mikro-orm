@@ -3033,7 +3033,7 @@ __metadata:
     mongodb: 4.13.0
     mongodb-memory-server: ^8.10.0
     node-gyp: ^9.3.0
-    rimraf: 4.0.7
+    rimraf: 4.1.0
     sql-formatter: 8.0.2
     ts-jest: 29.0.5
     ts-node: 10.9.1
@@ -10273,12 +10273,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rimraf@npm:4.0.7":
-  version: 4.0.7
-  resolution: "rimraf@npm:4.0.7"
+"rimraf@npm:4.1.0":
+  version: 4.1.0
+  resolution: "rimraf@npm:4.1.0"
   bin:
     rimraf: dist/cjs/src/bin.js
-  checksum: 294ae526198eadac7b57e7b43782aaa0be5d5c2a606ee65c26d9cd2fdddc320d80cc43c3c1c0b9562e88aa265f67c4c00f70af2b4d065e76ce03d9d7a2a5c901
+  checksum: da4849802779a8c8cbe3aa1fbdf817b1ec41f7e95fb82074de3129e0030cd4e6e1f512a732344f0062c1cea59569c8113c78c3f50267cc469e8e9bfbe7622cb5
   languageName: node
   linkType: hard
 
