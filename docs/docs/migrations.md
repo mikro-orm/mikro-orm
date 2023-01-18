@@ -2,10 +2,9 @@
 title: Migrations
 ---
 
-> To use migrations we need to first install `@mikro-orm/migrations` package.
+> To use migrations we need to first install `@mikro-orm/migrations` package for SQL driver or `@mikro-orm/migrations-mongodb` for MongoDB.
 
-MikroORM has integrated support for migrations via [umzug](https://github.com/sequelize/umzug).
-It allows we to generate migrations with current schema differences.
+MikroORM has integrated support for migrations via [umzug](https://github.com/sequelize/umzug). It allows us to generate migrations with current schema differences.
 
 > Since v5, migrations are stored without extension.
 
@@ -165,6 +164,7 @@ npx mikro-orm migration:create   # Create new migration with current schema diff
 npx mikro-orm migration:up       # Migrate up to the latest version
 npx mikro-orm migration:down     # Migrate one step down
 npx mikro-orm migration:list     # List all executed migrations
+npx mikro-orm migration:check    # Check if schema is up to date
 npx mikro-orm migration:pending  # List all pending migrations
 npx mikro-orm migration:fresh    # Drop the database and migrate up to the latest version
 ```
@@ -284,6 +284,44 @@ await MikroORM.init({
 });
 ```
 
+## MongoDB support
+
+Support for migrations in MongoDB has been added in v5.3. It uses its own package: `@mikro-orm/migrations-mongodb`, and should be otherwise compatible with the current CLI commands. Use `this.driver` or `this.getCollection()` to manipulate with the database.
+
+### Transactions
+
+The default options for `Migrator` will use transactions, and those impose some additional requirements in mongo, namely the collections need to exist upfront and we need to run a replicaset. You might want to disable transactions for `migrations: { transactional: false }`.
+
+```ts
+await this.driver.nativeDelete('Book', { foo: true }, { ctx: this.ctx });
+```
+
+You need to provide the transaction context manually to your queries, either via the `ctx` option of the driver methods, or via the MongoDB `session` option when using the `this.getCollection()` method.
+
+```ts
+await this.getCollection('Book').updateMany({}, { $set: { updatedAt: new Date() } }, { session: this.ctx });
+```
+
+### Migration class
+
+Example migration in mongo:
+
+```ts
+import { Migration } from '@mikro-orm/migrations-mongodb';
+
+export class MigrationTest1 extends Migration {
+
+  async up(): Promise<void> {
+    // use `this.getCollection()` to work with the mongodb collection directly 
+    await this.getCollection('Book').updateMany({}, { $set: { updatedAt: new Date() } }, { session: this.ctx });
+    
+    // or use `this.driver` to work with the `MongoDriver` API instead
+    await this.driver.nativeDelete('Book', { foo: true }, { ctx: this.ctx });
+  }
+
+}
+```
+
 ## Limitations
 
 ### MySQL
@@ -293,3 +331,9 @@ queries automatically, so transactions are not working as expected.
 
 - https://github.com/mikro-orm/mikro-orm/issues/217
 - https://dev.mysql.com/doc/refman/5.7/en/implicit-commit.html
+
+### MongoDB
+
+- no nested transaction support
+- no schema diffing
+- only blank migrations are generated

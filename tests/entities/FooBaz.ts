@@ -1,7 +1,7 @@
+import { Entity, Index, ManyToOne, OneToOne, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
 import { ObjectId } from 'bson';
-import { Entity, ManyToOne, OneToOne, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
-import FooBar from './FooBar';
 import { Book } from './Book';
+import FooBar from './FooBar';
 
 @Entity()
 export class FooBaz {
@@ -13,6 +13,7 @@ export class FooBaz {
   id!: string;
 
   @Property()
+  @Index()
   name!: string;
 
   @OneToOne(() => FooBar, bar => bar.baz, { eager: true })

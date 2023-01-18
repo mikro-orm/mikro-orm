@@ -3,6 +3,203 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.7](https://github.com/mikro-orm/mikro-orm/compare/v5.6.6...v5.6.7) (2023-01-13)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.6.6](https://github.com/mikro-orm/mikro-orm/compare/v5.6.5...v5.6.6) (2023-01-10)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.6.5](https://github.com/mikro-orm/mikro-orm/compare/v5.6.4...v5.6.5) (2023-01-09)
+
+
+### Features
+
+* **cli:** add check for migrations command ([#3923](https://github.com/mikro-orm/mikro-orm/issues/3923)) ([a0ac946](https://github.com/mikro-orm/mikro-orm/commit/a0ac946be35e6dd5bebd263036ce10c068a81af6))
+
+
+
+
+
+## [5.6.4](https://github.com/mikro-orm/mikro-orm/compare/v5.6.3...v5.6.4) (2023-01-04)
+
+
+### Features
+
+* **cli:** check database connection in debug command ([#3875](https://github.com/mikro-orm/mikro-orm/issues/3875)) ([3523410](https://github.com/mikro-orm/mikro-orm/commit/35234100b68cc1e56e4149821f2cd664f09eb32a)), closes [#3855](https://github.com/mikro-orm/mikro-orm/issues/3855)
+
+
+
+
+
+## [5.6.3](https://github.com/mikro-orm/mikro-orm/compare/v5.6.2...v5.6.3) (2022-12-28)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.6.2](https://github.com/mikro-orm/mikro-orm/compare/v5.6.1...v5.6.2) (2022-12-25)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.6.1](https://github.com/mikro-orm/mikro-orm/compare/v5.6.0...v5.6.1) (2022-12-20)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+# [5.6.0](https://github.com/mikro-orm/mikro-orm/compare/v5.5.3...v5.6.0) (2022-12-09)
+
+
+### Features
+
+* **cli:** added option to generate cache via ts-node ([#3796](https://github.com/mikro-orm/mikro-orm/issues/3796)) ([268bd68](https://github.com/mikro-orm/mikro-orm/commit/268bd681993edd5a8fd754658a96c26d5c970350)), closes [/github.com/mikro-orm/mikro-orm/discussions/3795#discussioncomment-4253521](https://github.com//github.com/mikro-orm/mikro-orm/discussions/3795/issues/discussioncomment-4253521)
+
+
+
+
+
+## [5.5.3](https://github.com/mikro-orm/mikro-orm/compare/v5.5.2...v5.5.3) (2022-11-10)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.5.2](https://github.com/mikro-orm/mikro-orm/compare/v5.5.1...v5.5.2) (2022-11-07)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.5.1](https://github.com/mikro-orm/mikro-orm/compare/v5.5.0...v5.5.1) (2022-11-05)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+# [5.5.0](https://github.com/mikro-orm/mikro-orm/compare/v5.4.2...v5.5.0) (2022-10-23)
+
+
+### Bug Fixes
+
+* **cli:** fix using `npx --workspace` with `mikro-orm-esm` ([#3560](https://github.com/mikro-orm/mikro-orm/issues/3560)) ([64777af](https://github.com/mikro-orm/mikro-orm/commit/64777af47619435808dfe3aeb492cb97701d1b74))
+* **cli:** improve success message of `schema:update/drop` commands ([11d0fd9](https://github.com/mikro-orm/mikro-orm/commit/11d0fd961b98db14517aae53d8d82756b0b54312))
+* **core:** fix changing 1:1 relations value ([7b6e6f7](https://github.com/mikro-orm/mikro-orm/commit/7b6e6f799fbf6a4915ffc5fbf873382f6d9baf8b)), closes [#3614](https://github.com/mikro-orm/mikro-orm/issues/3614)
+
+
+
+
+
+## [5.4.2](https://github.com/mikro-orm/mikro-orm/compare/v5.4.1...v5.4.2) (2022-09-12)
+
+
+### Features
+
+* **cli:** add `mikro-orm-esm` CLI script with registered ts-node/esm loader ([443f0c8](https://github.com/mikro-orm/mikro-orm/commit/443f0c81f1a882cbba944522eb77d10c946f5e4b)), closes [#3485](https://github.com/mikro-orm/mikro-orm/issues/3485)
+
+
+
+
+
+## [5.4.1](https://github.com/mikro-orm/mikro-orm/compare/v5.4.0...v5.4.1) (2022-09-08)
+
+
+### Bug Fixes
+
+* **cli:** only use dynamic imports for ESM projects ([b3e43d0](https://github.com/mikro-orm/mikro-orm/commit/b3e43d0fd98c090a47059597b719924260573e3b)), closes [#3442](https://github.com/mikro-orm/mikro-orm/issues/3442)
+* **core:** change internal dependencies to use `~` instead of `^` ([fdbf67c](https://github.com/mikro-orm/mikro-orm/commit/fdbf67c53055a6a4b455208dec3b815736a55e3b)), closes [#3468](https://github.com/mikro-orm/mikro-orm/issues/3468)
+
+
+
+
+
+# [5.4.0](https://github.com/mikro-orm/mikro-orm/compare/v5.3.1...v5.4.0) (2022-09-01)
+
+
+### Bug Fixes
+
+* **cli:** allow working with mongo migrations via CLI ([14a07df](https://github.com/mikro-orm/mikro-orm/commit/14a07df05a3431ca8a81d8ddca30214533af6a25))
+* **core:** compile with `module: 'Node16'` to have real dynamic imports ([#3439](https://github.com/mikro-orm/mikro-orm/issues/3439)) ([50347ef](https://github.com/mikro-orm/mikro-orm/commit/50347efd909dafd0bceae09dc35019010cab8329))
+* **core:** update to TypeScript 4.8 and improve `EntityDTO` type ([#3389](https://github.com/mikro-orm/mikro-orm/issues/3389)) ([f2957fb](https://github.com/mikro-orm/mikro-orm/commit/f2957fb14141294cfdffebf6cce6eaa937538cfb))
+
+
+
+
+
+## [5.3.1](https://github.com/mikro-orm/mikro-orm/compare/v5.3.0...v5.3.1) (2022-08-04)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+# [5.3.0](https://github.com/mikro-orm/mikro-orm/compare/v5.2.4...v5.3.0) (2022-08-01)
+
+
+### Features
+
+* **mongo:** add support for migrations in mongo driver ([#3347](https://github.com/mikro-orm/mikro-orm/issues/3347)) ([c5c6115](https://github.com/mikro-orm/mikro-orm/commit/c5c61152e0ad1b98fe9b00875ce0da9039b34d4a))
+
+
+
+
+
+## [5.2.4](https://github.com/mikro-orm/mikro-orm/compare/v5.2.3...v5.2.4) (2022-07-25)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.2.3](https://github.com/mikro-orm/mikro-orm/compare/v5.2.2...v5.2.3) (2022-07-08)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.2.2](https://github.com/mikro-orm/mikro-orm/compare/v5.2.1...v5.2.2) (2022-07-03)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
+## [5.2.1](https://github.com/mikro-orm/mikro-orm/compare/v5.2.0...v5.2.1) (2022-06-21)
+
+**Note:** Version bump only for package @mikro-orm/cli
+
+
+
+
+
 # [5.2.0](https://github.com/mikro-orm/mikro-orm/compare/v5.1.5...v5.2.0) (2022-06-10)
 
 

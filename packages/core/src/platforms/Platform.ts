@@ -2,17 +2,18 @@ import { clone } from '../utils/clone';
 import { EntityRepository } from '../entity';
 import type { NamingStrategy } from '../naming-strategy';
 import { UnderscoreNamingStrategy } from '../naming-strategy';
-import type { AnyEntity, Constructor, EntityProperty, IEntityGenerator, IMigrator, IPrimaryKey, ISchemaGenerator, PopulateOptions, Primary, EntityMetadata } from '../typings';
+import type { Constructor, EntityProperty, IEntityGenerator, IMigrator, IPrimaryKey, ISchemaGenerator, PopulateOptions, Primary, EntityMetadata, SimpleColumnMeta } from '../typings';
 import { ExceptionConverter } from './ExceptionConverter';
 import type { EntityManager } from '../EntityManager';
 import type { Configuration } from '../utils/Configuration';
 import type { IDatabaseDriver } from '../drivers/IDatabaseDriver';
 import {
   ArrayType, BigIntType, BlobType, BooleanType, DateType, DecimalType, DoubleType, JsonType, SmallIntType, TimeType,
-  TinyIntType, Type, UuidType, StringType, IntegerType, FloatType, DateTimeType, TextType, EnumType, UnknownType,
+  TinyIntType, Type, UuidType, StringType, IntegerType, FloatType, DateTimeType, TextType, EnumType, UnknownType, MediumIntType,
 } from '../types';
 import { Utils } from '../utils/Utils';
 import { ReferenceType } from '../enums';
+import type { MikroORM } from '../MikroORM';
 
 export const JsonProperty = Symbol('JsonProperty');
 
@@ -125,8 +126,20 @@ export abstract class Platform {
     return 'time' + (length ? `(${length})` : '');
   }
 
-  getRegExpOperator(): string {
+  getRegExpOperator(val?: unknown, flags?: string): string {
     return 'regexp';
+  }
+
+  getRegExpValue(val: RegExp): { $re: string; $flags?: string } {
+    if (val.flags.includes('i')) {
+      return { $re: `(?i)${val.source}` };
+    }
+
+    return { $re: val.source };
+  }
+
+  isAllowedTopLevelOperator(operator: string) {
+    return operator === '$not';
   }
 
   quoteVersionValue(value: Date | number, prop: EntityProperty): Date | string | number {
@@ -167,6 +180,10 @@ export abstract class Platform {
 
   getSmallIntTypeDeclarationSQL(column: { length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
     return 'smallint';
+  }
+
+  getMediumIntTypeDeclarationSQL(column: { length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
+    return 'mediumint';
   }
 
   getTinyIntTypeDeclarationSQL(column: { length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
@@ -218,6 +235,11 @@ export abstract class Platform {
   }
 
   getMappedType(type: string): Type<unknown> {
+    const mappedType = this.config.get('discovery').getMappedType?.(type, this);
+    return mappedType ?? this.getDefaultMappedType(type);
+  }
+
+  getDefaultMappedType(type: string): Type<unknown> {
     if (type.endsWith('[]')) {
       return Type.getType(ArrayType);
     }
@@ -230,6 +252,7 @@ export abstract class Platform {
       case 'bigint': return Type.getType(BigIntType);
       case 'smallint': return Type.getType(SmallIntType);
       case 'tinyint': return Type.getType(TinyIntType);
+      case 'mediumint': return Type.getType(MediumIntType);
       case 'float': return Type.getType(FloatType);
       case 'double': return Type.getType(DoubleType);
       case 'integer': return Type.getType(IntegerType);
@@ -247,6 +270,10 @@ export abstract class Platform {
       case 'enum': return Type.getType(EnumType);
       default: return Type.getType(UnknownType);
     }
+  }
+
+  supportsMultipleStatements(): boolean {
+    return this.config.get('multipleStatements');
   }
 
   getArrayDeclarationSQL(): string {
@@ -281,11 +308,23 @@ export abstract class Platform {
     return path.join('.');
   }
 
+  getFullTextWhereClause(prop: EntityProperty): string {
+    throw new Error('Full text searching is not supported by this driver.');
+  }
+
+  supportsCreatingFullTextIndex(): boolean {
+    throw new Error('Full text searching is not supported by this driver.');
+  }
+
+  getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
+    throw new Error('Full text searching is not supported by this driver.');
+  }
+
   convertsJsonAutomatically(marshall = false): boolean {
     return !marshall;
   }
 
-  getRepositoryClass<T>(): Constructor<EntityRepository<T>> {
+  getRepositoryClass<T extends object>(): Constructor<EntityRepository<T>> {
     return EntityRepository;
   }
 
@@ -295,6 +334,13 @@ export abstract class Platform {
 
   getExceptionConverter(): ExceptionConverter {
     return this.exceptionConverter;
+  }
+
+  /**
+   * Allows to register extensions of the driver automatically (e.g. `SchemaGenerator` extension in SQL drivers).
+   */
+  lookupExtensions(orm: MikroORM): void {
+    // no extensions by default
   }
 
   getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): ISchemaGenerator {
@@ -368,7 +414,7 @@ export abstract class Platform {
     return false;
   }
 
-  shouldHaveColumn<T extends AnyEntity<T>>(prop: EntityProperty<T>, populate: PopulateOptions<T>[] | boolean, includeFormulas = true): boolean {
+  shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[] | boolean, includeFormulas = true): boolean {
     if (prop.formula) {
       return includeFormulas && (!prop.lazy || populate === true || (populate !== false && populate.some(p => p.field === prop.name)));
     }
@@ -416,6 +462,13 @@ export abstract class Platform {
    */
   castColumn(prop?: EntityProperty): string {
     return '';
+  }
+
+  /**
+   * @internal
+   */
+  clone() {
+    return this;
   }
 
 }

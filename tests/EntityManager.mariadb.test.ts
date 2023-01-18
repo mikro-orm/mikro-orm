@@ -3,13 +3,14 @@ import { Collection, Configuration, EntityManager, MikroORM, QueryOrder, Referen
 import { MariaDbDriver } from '@mikro-orm/mariadb';
 import { Author2, Book2, BookTag2, Publisher2, PublisherType } from './entities-sql';
 import { initORMMySql } from './bootstrap';
+import { MySqlDriver } from '@mikro-orm/mysql';
 
 describe('EntityManagerMariaDb', () => {
 
   let orm: MikroORM<MariaDbDriver>;
 
   beforeAll(async () => orm = await initORMMySql<MariaDbDriver>('mariadb', {}, true));
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
 
   test('isConnected()', async () => {
     expect(await orm.isConnected()).toBe(true);
@@ -21,7 +22,7 @@ describe('EntityManagerMariaDb', () => {
 
   test('getConnectionOptions()', async () => {
     const config = new Configuration({
-      type: 'mysql',
+      driver: MySqlDriver,
       clientUrl: 'mysql://root@127.0.0.1:3308/db_name',
       host: '127.0.0.10',
       password: 'secret',
@@ -39,7 +40,6 @@ describe('EntityManagerMariaDb', () => {
       timezone: 'Z',
       supportBigNumbers: true,
       bigNumberStrings: true,
-      dateStrings: ['DATE'],
     });
   });
 
@@ -149,6 +149,10 @@ describe('EntityManagerMariaDb', () => {
     const jon = (await authorRepository.findOne({ name: 'Jon Snow' }, { populate: ['books', 'favouriteBook'] }))!;
     const authors = await authorRepository.findAll({ populate: ['books', 'favouriteBook'] });
     expect(await authorRepository.findOne({ email: 'not existing' })).toBeNull();
+
+    // full text search test
+    const fullTextBooks = (await booksRepository.find({ title: { $fulltext: 'life wall' } }))!;
+    expect(fullTextBooks.length).toBe(3);
 
     // count test
     const count = await authorRepository.count();

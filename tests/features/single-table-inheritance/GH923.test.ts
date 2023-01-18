@@ -1,4 +1,5 @@
 import { Entity, Enum, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity({ discriminatorColumn: 'type', abstract: true })
 export abstract class Person {
@@ -40,7 +41,7 @@ describe('GH issue 923', () => {
   test(`discovery with STI is not dependent on order of entities 1`, async () => {
     const orm = await MikroORM.init({
       entities: [Person, Chef, Teacher, Gardener],
-      type: 'sqlite',
+      driver: SqliteDriver,
       dbName: ':memory:',
       connect: false,
     });
@@ -51,7 +52,7 @@ describe('GH issue 923', () => {
   test(`discovery with STI is not dependent on order of entities 2`, async () => {
     const orm = await MikroORM.init({
       entities: [Chef, Teacher, Gardener, Person],
-      type: 'sqlite',
+      driver: SqliteDriver,
       dbName: ':memory:',
       connect: false,
     });
@@ -62,7 +63,7 @@ describe('GH issue 923', () => {
   test(`discovery with STI is not dependent on order of entities 3`, async () => {
     const orm = await MikroORM.init({
       entities: [Chef, Teacher, Person, Gardener],
-      type: 'sqlite',
+      driver: SqliteDriver,
       dbName: ':memory:',
       connect: false,
     });
@@ -73,7 +74,7 @@ describe('GH issue 923', () => {
   test(`discovery with STI is not dependent on order of entities 4`, async () => {
     const orm = await MikroORM.init({
       entities: [Chef, Person, Teacher, Gardener],
-      type: 'sqlite',
+      driver: SqliteDriver,
       dbName: ':memory:',
       connect: false,
     });

@@ -15,7 +15,7 @@ describe('Utils', () => {
   let orm: MikroORM;
 
   beforeAll(async () => orm = await initORMMongo());
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
 
   test('isDefined', () => {
     let data;
@@ -79,6 +79,7 @@ describe('Utils', () => {
     expect(Utils.equals({ a: 'a', b: 'c', c: { d: 'e', f: ['g', 'h'] } }, { a: 'a', b: 'c', c: { d: 'e', f: ['g', 'h'] } })).toBe(true);
     expect(compareObjects(null, undefined)).toBe(true);
     expect(compareObjects(new Test(), new Author('n', 'e'))).toBe(false);
+    expect(Utils.equals(NaN, NaN)).toBe(true);
   });
 
   test('merge', () => {
@@ -89,7 +90,8 @@ describe('Utils', () => {
     expect(Utils.merge({ a: 'a' }, { a: 'b', b: ['c'] })).toEqual({ a: 'b', b: ['c'] });
     expect(Utils.merge({ a: 'a', b: ['c'] }, { b: [] })).toEqual({ a: 'a', b: [] });
     expect(Utils.merge({ a: 'a', b: ['c'] }, { a: 'b' })).toEqual({ a: 'b', b: ['c'] });
-    expect(Utils.merge({ a: 'a', b: ['c'] }, { a: undefined })).toEqual({ a: undefined, b: ['c'] });
+    expect(Utils.merge({ a: 'a', b: ['c'] }, { a: null })).toEqual({ a: null, b: ['c'] });
+    expect(Utils.merge({ a: 'a', b: ['c'] }, { a: undefined })).toEqual({ a: 'a', b: ['c'] });
     expect(Utils.merge('a', 'b')).toEqual('a');
   });
 
@@ -366,6 +368,64 @@ describe('Utils', () => {
 
     // no decorated line found
     expect(Utils.lookupPathFromDecorator('Customer')).toBe('Customer');
+
+    // when the constructor name is used in place of `__decorate` then try `Reflect.decorate`
+    expect(Utils.lookupPathFromDecorator('AuthorizationTokenEntity', [
+      '    at Function.lookupPathFromDecorator (/opt/app/node_modules/@mikro-orm/core/utils/Utils.js:502:26)',
+      '    at Function.getMetadataFromDecorator (/opt/app/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:33:36)',
+      '    at /opt/app/node_modules/@mikro-orm/core/decorators/Entity.js:8:49',
+      '    at DecorateConstructor (/opt/app/node_modules/reflect-metadata/Reflect.js:541:33)',
+      '    at Reflect.decorate (/opt/app/node_modules/reflect-metadata/Reflect.js:130:24)',
+      '    at AuthorizationTokenEntity (/opt/app/packages/entity/dist/node/entity/AuthorizationTokenEntity.js:19:92)',
+      '    at Object.<anonymous> (/opt/app/packages/entity/src/entity/AuthorizationTokenEntity.ts:14:38)',
+      '    at Module._compile (node:internal/modules/cjs/loader:1149:14)',
+      '    at Object.Module._extensions..js (node:internal/modules/cjs/loader:1203:10)',
+      '    at Module.load (node:internal/modules/cjs/loader:1027:32)',
+    ])).toBe('/opt/app/packages/entity/dist/node/entity/AuthorizationTokenEntity.js');
+
+    // when both `__decorate` and `Reflect.decorator` exist in the stack (`__decorate` first)
+    expect(Utils.lookupPathFromDecorator('AuthorizationTokenEntity', [
+      '    at Function.lookupPathFromDecorator (/opt/app/node_modules/@mikro-orm/core/utils/Utils.js:502:26)',
+      '    at Function.getMetadataFromDecorator (/opt/app/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:33:36)',
+      '    at /opt/app/node_modules/@mikro-orm/core/decorators/Entity.js:8:49',
+      '    at DecorateConstructor (/opt/app/node_modules/reflect-metadata/Reflect.js:541:33)',
+      '    at __decorate (/opt/app/packages/entity/dist/node/entity/AuthorizationTokenEntityFromDecorate.js:14:38)',
+      '    at Reflect.decorate (/opt/app/node_modules/reflect-metadata/Reflect.js:130:24)',
+      '    at AuthorizationTokenEntity (/opt/app/packages/entity/dist/node/entity/AuthorizationTokenEntityFromReflectDecorate.js:19:92)',
+      '    at Object.<anonymous> (/opt/app/packages/entity/src/entity/AuthorizationTokenEntity.ts:14:38)',
+      '    at Module._compile (node:internal/modules/cjs/loader:1149:14)',
+      '    at Object.Module._extensions..js (node:internal/modules/cjs/loader:1203:10)',
+      '    at Module.load (node:internal/modules/cjs/loader:1027:32)',
+    ])).toBe('/opt/app/packages/entity/dist/node/entity/AuthorizationTokenEntityFromDecorate.js');
+
+    // when both `__decorate` and `Reflect.decorator` exist in the stack (`__decorate` last)
+    expect(Utils.lookupPathFromDecorator('AuthorizationTokenEntity', [
+      '    at Function.lookupPathFromDecorator (/opt/app/node_modules/@mikro-orm/core/utils/Utils.js:502:26)',
+      '    at Function.getMetadataFromDecorator (/opt/app/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:33:36)',
+      '    at /opt/app/node_modules/@mikro-orm/core/decorators/Entity.js:8:49',
+      '    at DecorateConstructor (/opt/app/node_modules/reflect-metadata/Reflect.js:541:33)',
+      '    at Reflect.decorate (/opt/app/node_modules/reflect-metadata/Reflect.js:130:24)',
+      '    at AuthorizationTokenEntity (/opt/app/packages/entity/dist/node/entity/AuthorizationTokenEntityFromReflectDecorate.js:19:92)',
+      '    at __decorate (/opt/app/packages/entity/dist/node/entity/AuthorizationTokenEntityFromDecorate.js:14:38)',
+      '    at Object.<anonymous> (/opt/app/packages/entity/src/entity/AuthorizationTokenEntity.ts:14:38)',
+      '    at Module._compile (node:internal/modules/cjs/loader:1149:14)',
+      '    at Object.Module._extensions..js (node:internal/modules/cjs/loader:1203:10)',
+      '    at Module.load (node:internal/modules/cjs/loader:1027:32)',
+    ])).toBe('/opt/app/packages/entity/dist/node/entity/AuthorizationTokenEntityFromReflectDecorate.js');
+
+    expect(Utils.lookupPathFromDecorator('Requirement', [
+      'Error',
+      '    at Function.lookupPathFromDecorator (/opt/app/node_modules/@mikro-orm/core/utils/Utils.js:508:26)',
+      '    at Function.getMetadataFromDecorator (/opt/app/node_modules/@mikro-orm/core/metadata/MetadataStorage.js:26:36)',
+      '    at /opt/app/node_modules/@mikro-orm/core/decorators/Entity.js:8:49',
+      '    at DecorateConstructor (/opt/app/node_modules/reflect-metadata/Reflect.js:541:33)',
+      '    at Reflect.decorate (/opt/app/node_modules/reflect-metadata/Reflect.js:130:24)',
+      '    at Object.__decorate (/opt/app/node_modules/tslib/tslib.js:99:96)',
+      '    at Object.<anonymous> (/opt/app/entity/requirement.ts:23:23)',
+      '    at Module._compile (node:internal/modules/cjs/loader:1159:14)',
+      '    at Module.m._compile (/opt/app/node_modules/ts-node/src/index.ts:1618:23)',
+      '    at Module.m._compile (/opt/app/node_modules/ts-node/src/index.ts:1618:23)',
+    ])).toBe('/opt/app/entity/requirement.ts');
   });
 
   test('lookup path from decorator on windows', () => {
@@ -433,7 +493,7 @@ describe('Utils', () => {
 
   test('requireFrom can require a package.json file', () => {
     const { name } = Utils.requireFrom('', path.join(BASE_DIR, '..', 'package.json'));
-    expect(name).toEqual('@mikro-orm/core');
+    expect(name).toEqual('@mikro-orm/root');
   });
 
   test('tryRequire', () => {

@@ -1,5 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 import { Guid } from 'guid-typescript';
 import { mockLogger } from '../helpers';
 
@@ -49,9 +49,9 @@ describe('GH issue 1721', () => {
     orm = await MikroORM.init({
       entities: [Couch],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {
@@ -73,7 +73,7 @@ describe('GH issue 1721', () => {
 
     expect(mock.mock.calls).toHaveLength(7);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch("insert into `couch` (`id`, `name`, `user_id`) values ('aaaaaaaa-c65f-42b8-408a-034a6948448f', 'n1', 'bbbbbbbb-c65f-42b8-408a-034a6948448f')");
+    expect(mock.mock.calls[1][0]).toMatch("insert into `couch` (`id`, `user_id`, `name`) values ('aaaaaaaa-c65f-42b8-408a-034a6948448f', 'bbbbbbbb-c65f-42b8-408a-034a6948448f', 'n1')");
     expect(mock.mock.calls[2][0]).toMatch('commit');
     expect(mock.mock.calls[3][0]).toMatch("select `c0`.* from `couch` as `c0` where `c0`.`id` = 'aaaaaaaa-c65f-42b8-408a-034a6948448f' limit 1");
     expect(mock.mock.calls[4][0]).toMatch('begin');

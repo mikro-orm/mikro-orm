@@ -66,7 +66,7 @@ and `--only` (`-o`) options to run only a subset of migrations:
 ```sh
 npx mikro-orm migration:up --from 2019101911 --to 2019102117  # the same as above
 npx mikro-orm migration:up --only 2019101923                  # apply a single migration
-npx mikro-orm migration:down --to 0                           # migratee down all migrations
+npx mikro-orm migration:down --to 0                           # migrate down all migrations
 ```
 
 > To run TS migration files, you will need to [enable `useTsNode` flag](installation.md) 

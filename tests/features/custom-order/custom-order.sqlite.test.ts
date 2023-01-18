@@ -1,5 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property, Enum, QueryOrder, OneToMany, Collection, ManyToOne } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../bootstrap';
 
 type Rating = 'bad' | 'ok' | 'good';
@@ -26,7 +26,6 @@ class User {
   @Property()
   name!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => Task, ({ owner }) => owner)
   tasks = new Collection<Task>(this);
 
@@ -91,11 +90,11 @@ describe('custom order [sqlite]', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [User, Task],
-      type: 'sqlite',
+      driver: SqliteDriver,
       dbName: ':memory:',
     });
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.dropSchema();
+    await orm.schema.createSchema();
   });
 
   beforeEach(async () => {

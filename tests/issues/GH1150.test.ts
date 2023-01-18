@@ -1,5 +1,5 @@
 import { Entity, Enum, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 export class Person {
@@ -49,16 +49,16 @@ export class User {
 
 describe('GH issue 1150', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [User, Person],
       dbName: `mikro_orm_test_gh_1150`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
 
-    const generator = orm.getSchemaGenerator();
+    const generator = orm.schema;
     await generator.ensureDatabase();
     await generator.dropSchema();
     await generator.createSchema();
@@ -85,7 +85,7 @@ describe('GH issue 1150', () => {
   });
 
   it('numeric enum diffing (GH issue #1096)', async () => {
-    const generator = orm.getSchemaGenerator();
+    const generator = orm.schema;
     await expect(generator.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
   });
 

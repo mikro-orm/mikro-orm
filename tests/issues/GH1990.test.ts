@@ -1,4 +1,5 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/core';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 class A {
@@ -6,7 +7,6 @@ class A {
   @PrimaryKey({ fieldName: 'prc_id' })
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => B, b => b.a)
   b = new Collection<B>(this);
 
@@ -31,9 +31,9 @@ describe('GH issue 1990', () => {
     orm = await MikroORM.init({
       entities: [A, B],
       dbName: 'mikro_orm_test_1990',
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(async () => {

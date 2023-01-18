@@ -8,7 +8,7 @@ import { Book } from './Book';
 import { AuthorRepository } from '../repositories/AuthorRepository';
 import { BaseEntity } from './BaseEntity';
 
-@Entity({ customRepository: () => AuthorRepository })
+@Entity({ repository: () => AuthorRepository })
 @Index({ name: 'custom_idx_1', properties: ['name', 'email'] })
 @Filter({
   name: 'withoutParams1',
@@ -127,7 +127,7 @@ export class Author extends BaseEntity<Author, 'termsAccepted' | 'code2' | 'vers
     return EntityAssigner.assign<Author>(this, data);
   }
 
-  toJSON(strict = true, strip = ['id', 'email'], ...args: any[]): EntityDTO<Author> {
+  toJSON(strict = true, strip = ['id', 'email'], ...args: any[]): EntityDTO<this> {
     const o = this.toObject(...args);
     (o as Dictionary).fooBar = 123;
 

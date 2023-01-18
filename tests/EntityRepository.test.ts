@@ -4,7 +4,7 @@ import type { EntityManager } from '@mikro-orm/knex';
 import { EntityRepository } from '@mikro-orm/knex';
 import { Publisher } from './entities';
 import type { MongoEntityManager } from '@mikro-orm/mongodb';
-import { MongoEntityRepository } from '@mikro-orm/mongodb';
+import { MongoDriver, MongoEntityRepository } from '@mikro-orm/mongodb';
 
 const methods = {
   getReference: jest.fn(),
@@ -15,6 +15,7 @@ const methods = {
   qb: jest.fn(),
   findOne: jest.fn(),
   findOneOrFail: jest.fn(),
+  upsert: jest.fn(),
   find: jest.fn(),
   findAndCount: jest.fn(),
   remove: jest.fn(),
@@ -30,7 +31,7 @@ const methods = {
   nativeUpdate: jest.fn(),
   nativeDelete: jest.fn(),
   aggregate: jest.fn(),
-  config: new Configuration({ type: 'mongo' } as any, false),
+  config: new Configuration({ driver: MongoDriver }, false),
   getContext: () => undefined as any,
 };
 const Mock = jest.fn<EntityManager, any>(() => methods as any);
@@ -62,6 +63,8 @@ describe('EntityRepository', () => {
     expect(methods.findOne.mock.calls[0]).toEqual([Publisher, 'bar', undefined]);
     await repo.findOneOrFail('bar');
     expect(methods.findOneOrFail.mock.calls[0]).toEqual([Publisher, 'bar', undefined]);
+    await repo.upsert({ name: 'bar', id: '1' });
+    expect(methods.upsert.mock.calls[0]).toEqual([Publisher, { name: 'bar', id: '1' }, undefined]);
     await repo.createQueryBuilder();
     expect(methods.createQueryBuilder.mock.calls[0]).toEqual([Publisher, undefined]);
     await repo.qb();

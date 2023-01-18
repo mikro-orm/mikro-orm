@@ -1,5 +1,5 @@
 import { Entity, ManyToOne, OneToMany, PrimaryKey, Property, Collection, MikroORM } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -8,7 +8,6 @@ class A {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => B, b => b.a)
   bItems = new Collection<B>(this);
 
@@ -36,9 +35,9 @@ describe('GH issue 369', () => {
     orm = await MikroORM.init({
       entities: [A, B],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(() => orm.close(true));
@@ -52,8 +51,8 @@ describe('GH issue 369', () => {
     await orm.em.persistAndFlush(b);
     await orm.em.removeAndFlush(b);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into `a` default values');
-    expect(mock.mock.calls[2][0]).toMatch('insert into `b` (`a_id`, `foo`) values (?, ?)');
+    expect(mock.mock.calls[1][0]).toMatch('insert into `a` (`id`) select null as `id` returning `id`');
+    expect(mock.mock.calls[2][0]).toMatch('insert into `b` (`foo`, `a_id`) values (?, ?) returning `id`');
     expect(mock.mock.calls[3][0]).toMatch('commit');
     expect(mock.mock.calls[4][0]).toMatch('begin');
     expect(mock.mock.calls[5][0]).toMatch('delete from `b` where `id` in (?)');

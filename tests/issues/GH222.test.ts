@@ -1,5 +1,5 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, Property, wrap } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class A {
@@ -7,7 +7,6 @@ export class A {
   @PrimaryKey({ type: 'number' })
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToOne(() => B)
   b!: any;
 
@@ -25,7 +24,6 @@ export class C {
   @OneToOne(() => A)
   a!: A;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => B, b => b.c, { eager: true })
   bCollection = new Collection<B>(this);
 
@@ -56,10 +54,10 @@ describe('GH issue 222', () => {
     orm = await MikroORM.init({
       entities: [A, B, C],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.dropSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(() => orm.close(true));

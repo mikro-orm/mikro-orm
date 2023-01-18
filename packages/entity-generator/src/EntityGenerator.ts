@@ -1,9 +1,10 @@
 import { ensureDir, writeFile } from 'fs-extra';
-import type { EntityProperty , EntityMetadata } from '@mikro-orm/core';
+import type { EntityProperty, EntityMetadata, MikroORM } from '@mikro-orm/core';
 import { ReferenceType, Utils } from '@mikro-orm/core';
 import type { EntityManager } from '@mikro-orm/knex';
 import { DatabaseSchema } from '@mikro-orm/knex';
 import { SourceFile } from './SourceFile';
+import { EntitySchemaSourceFile } from './EntitySchemaSourceFile';
 
 export class EntityGenerator {
 
@@ -17,12 +18,17 @@ export class EntityGenerator {
 
   constructor(private readonly em: EntityManager) { }
 
+  static register(orm: MikroORM): void {
+    orm.config.registerExtension('@mikro-orm/entity-generator', new EntityGenerator(orm.em as EntityManager));
+  }
+
   async generate(options: { baseDir?: string; save?: boolean; schema?: string } = {}): Promise<string[]> {
     const baseDir = Utils.normalizePath(options.baseDir ?? (this.config.get('baseDir') + '/generated-entities'));
     const schema = await DatabaseSchema.create(this.connection, this.platform, this.config);
 
     const metadata = schema.getTables()
       .filter(table => !options.schema || table.schema === options.schema)
+      .sort((a, b) => a.name!.localeCompare(b.name!))
       .map(table => table.getEntityDeclaration(this.namingStrategy, this.helper));
 
     this.detectManyToManyRelations(metadata);
@@ -35,9 +41,15 @@ export class EntityGenerator {
       this.generateIdentifiedReferences(metadata);
     }
 
+    const esmImport = this.config.get('entityGenerator').esmImport ?? false;
+
     for (const meta of metadata) {
       if (!meta.pivotTable) {
-        this.sources.push(new SourceFile(meta, this.namingStrategy, this.platform));
+        if (this.config.get('entityGenerator').entitySchema) {
+          this.sources.push(new EntitySchemaSourceFile(meta, this.namingStrategy, this.platform, esmImport));
+        } else {
+          this.sources.push(new SourceFile(meta, this.namingStrategy, this.platform, esmImport));
+        }
       }
     }
 

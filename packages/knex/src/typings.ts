@@ -13,7 +13,10 @@ export type KnexStringRef = Knex.Ref<string, {
   [alias: string]: string;
 }>;
 
-export type Field<T> = string | keyof T | KnexStringRef | Knex.QueryBuilder;
+// eslint-disable-next-line @typescript-eslint/ban-types
+type AnyString = string & {};
+
+export type Field<T> = AnyString | keyof T | KnexStringRef | Knex.QueryBuilder;
 
 export interface JoinOptions {
   table: string;
@@ -47,6 +50,7 @@ export interface Column {
   unique?: boolean;
   /** mysql only */
   extra?: string;
+  ignoreSchemaChanges?: ('type' | 'extra')[];
 }
 
 export interface ForeignKey {
@@ -87,6 +91,7 @@ export interface TableDifference {
   name: string;
   changedComment?: string;
   fromTable: DatabaseTable;
+  toTable: DatabaseTable;
   addedColumns: Dictionary<Column>;
   changedColumns: Dictionary<ColumnDifference>;
   removedColumns: Dictionary<Column>;
@@ -115,7 +120,7 @@ export interface SchemaDifference {
 
 export interface IQueryBuilder<T> {
   readonly alias: string;
-  readonly type: QueryType;
+  readonly type?: QueryType;
   _fields?: Field<T>[];
   select(fields: Field<T> | Field<T>[], distinct?: boolean): this;
   addSelect(fields: string | string[]): this;

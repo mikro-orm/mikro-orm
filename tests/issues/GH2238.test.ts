@@ -1,5 +1,5 @@
 import { Entity, MikroORM, OneToOne, PrimaryKey } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class First {
@@ -7,7 +7,6 @@ export class First {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToOne(() => Second, second => second.first)
   second?: any;
 
@@ -35,9 +34,9 @@ describe('GH issue 2238', () => {
     orm = await MikroORM.init({
       entities: [First, Second],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(() => orm.close(true));

@@ -1,5 +1,5 @@
 import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Tag {
@@ -34,9 +34,9 @@ describe('GH issue 2121', () => {
     orm = await MikroORM.init({
       entities: [Tag, Product],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(() => orm.close(true));

@@ -1,14 +1,25 @@
+import { inspect } from 'util';
 import type { Platform } from '../platforms';
-import type { Constructor, EntityProperty } from '../typings';
+import type { Constructor, EntityMetadata, EntityProperty } from '../typings';
+
+export interface TransformContext {
+  fromQuery?: boolean;
+  key?: string;
+  mode?: 'hydration' | 'query' | 'discovery' | 'serialization';
+}
 
 export abstract class Type<JSType = string, DBType = JSType> {
 
   private static readonly types = new Map();
 
+  platform?: Platform;
+  meta?: EntityMetadata;
+  prop?: EntityProperty;
+
   /**
    * Converts a value from its JS representation to its database representation of this type.
    */
-  convertToDatabaseValue(value: JSType | DBType, platform: Platform, fromQuery?: boolean): DBType {
+  convertToDatabaseValue(value: JSType | DBType, platform: Platform, context?: TransformContext | boolean): DBType {
     return value as DBType;
   }
 
@@ -67,6 +78,17 @@ export abstract class Type<JSType = string, DBType = JSType> {
    */
   static isMappedType(data: any): data is Type<any> {
     return !!data?.__mappedType;
+  }
+
+  [inspect.custom](depth: number) {
+    const object = { ...this };
+    const hidden = ['prop', 'platform', 'meta'];
+    hidden.forEach(k => delete object[k]);
+    const ret = inspect(object, { depth });
+    const name = (this as object).constructor.name;
+
+    /* istanbul ignore next */
+    return ret === '[Object]' ? `[${name}]` : name + ' ' + ret;
   }
 
 }

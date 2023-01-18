@@ -1,5 +1,5 @@
 import { Entity, IdentifiedReference, MikroORM, OneToOne, PrimaryKey, Property, wrap, Reference } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class A {
@@ -7,7 +7,6 @@ export class A {
   @PrimaryKey({ type: 'number' })
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToOne({ entity: () => B, inversedBy: 'a', wrappedReference: true, nullable: true })
   b?: IdentifiedReference<B>;
 
@@ -38,11 +37,11 @@ describe('GH issue 269', () => {
     orm = await MikroORM.init({
       entities: [A, B],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
       autoJoinOneToOneOwner: false,
     });
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.dropSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(() => orm.close(true));
@@ -73,10 +72,9 @@ describe('GH issue 269', () => {
     a2.name = 'a2';
     b2.name = 'b2';
     b2.a = Reference.create(a2);
-    const spy = jest.spyOn(Reference.prototype, 'set');
     b.a = b2.a;
     expect(b.a!.unwrap().b!.unwrap()).toBe(b);
-    expect(spy).toBeCalledTimes(1);
+    expect(b.a!.unwrap().b).toBe(wrap(b).toReference());
   });
 
   test('1:1 populates owner even with autoJoinOneToOneOwner: false and when already loaded', async () => {

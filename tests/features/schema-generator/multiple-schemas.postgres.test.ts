@@ -1,5 +1,5 @@
 import { Entity, ManyToOne, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'author', schema: 'n1' })
 export class Author0 {
@@ -51,11 +51,11 @@ describe('multiple connected schemas in postgres', () => {
     orm = await MikroORM.init({
       entities: [Author0, Book0],
       dbName: `mikro_orm_test_schemas`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().execute('drop schema if exists n1 cascade');
-    await orm.getSchemaGenerator().execute('drop schema if exists n2 cascade');
+    await orm.schema.ensureDatabase();
+    await orm.schema.execute('drop schema if exists n1 cascade');
+    await orm.schema.execute('drop schema if exists n2 cascade');
   });
 
   afterAll(async () => {
@@ -63,17 +63,17 @@ describe('multiple connected schemas in postgres', () => {
   });
 
   test('schema generator allows creating FKs across different schemas', async () => {
-    const diff0 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    const diff0 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff0).toMatchSnapshot();
-    await orm.getSchemaGenerator().execute(diff0);
+    await orm.schema.execute(diff0);
 
     orm.getMetadata().reset('Book0');
     await orm.discoverEntity(Book1);
-    const diff1 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
-    await orm.getSchemaGenerator().execute(diff1);
+    await orm.schema.execute(diff1);
 
-    const diff2 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    const diff2 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff2).toBe('');
   });
 

@@ -11,7 +11,7 @@ import { EntitySchema } from './EntitySchema';
 import { Cascade, ReferenceType } from '../enums';
 import { MetadataError } from '../errors';
 import type { Platform } from '../platforms';
-import { ArrayType, BlobType, EnumArrayType, JsonType, Type } from '../types';
+import { ArrayType, BigIntType, BlobType, EnumArrayType, JsonType, Type } from '../types';
 import { colors } from '../logging/colors';
 
 export class MetadataDiscovery {
@@ -41,6 +41,7 @@ export class MetadataDiscovery {
 
     this.discovered
       .filter(meta => meta.name)
+      .sort((a, b) => b.name!.localeCompare(a.name!))
       .forEach(meta => {
         this.platform.validateMetadata(meta);
         discovered.set(meta.name!, meta);
@@ -74,7 +75,7 @@ export class MetadataDiscovery {
 
     for (const meta of filtered) {
       for (const prop of Object.values(meta.properties)) {
-        await this.initColumnType(prop, meta.path);
+        await this.initColumnType(meta, prop, meta.path);
       }
     }
 
@@ -120,7 +121,7 @@ export class MetadataDiscovery {
     }));
 
     for (const prop of missing) {
-      const target = (prop.entity?.() || prop.type) as Constructor<AnyEntity>;
+      const target = (typeof prop.entity === 'function' ? prop.entity() : prop.type) as Constructor<AnyEntity>;
       await this.tryDiscoverTargets(Utils.asArray(target));
     }
   }
@@ -168,7 +169,7 @@ export class MetadataDiscovery {
           continue;
         }
 
-        this.metadata.set(name, Utils.copy(MetadataStorage.getMetadata(name, path)));
+        this.metadata.set(name, Utils.copy(MetadataStorage.getMetadata(name, path), false));
         const entity = this.prepare(target) as Constructor<AnyEntity>;
         const schema = this.getSchema(entity);
         const meta = schema.init().meta;
@@ -183,11 +184,11 @@ export class MetadataDiscovery {
     }
   }
 
-  async discoverReferences(refs: Constructor<AnyEntity>[]): Promise<EntityMetadata[]> {
-    const found: Constructor<AnyEntity>[] = [];
+  async discoverReferences<T>(refs: Constructor<T>[]): Promise<EntityMetadata<T>[]> {
+    const found: Constructor<T>[] = [];
 
     for (const entity of refs) {
-      const schema = this.getSchema(this.prepare(entity) as Constructor<AnyEntity>);
+      const schema = this.getSchema(this.prepare(entity) as Constructor<T>);
       const meta = schema.init().meta;
       this.metadata.set(meta.className, meta);
       found.push(entity);
@@ -213,7 +214,7 @@ export class MetadataDiscovery {
     return this.discovered.filter(meta => found.find(m => m.name === meta.className));
   }
 
-  private prepare<T extends AnyEntity<T>>(entity: EntityClass<T> | EntityClassGroup<T> | EntitySchema<T>): EntityClass<T> | EntitySchema<T> {
+  private prepare<T>(entity: EntityClass<T> | EntityClassGroup<T> | EntitySchema<T>): EntityClass<T> | EntitySchema<T> {
     if ('schema' in entity && entity.schema instanceof EntitySchema) {
       return entity.schema;
     }
@@ -229,7 +230,7 @@ export class MetadataDiscovery {
     return entity;
   }
 
-  private getSchema<T extends AnyEntity<T>>(entity: Constructor<T> | EntitySchema<T>): EntitySchema<T> {
+  private getSchema<T>(entity: Constructor<T> | EntitySchema<T>): EntitySchema<T> {
     if (entity instanceof EntitySchema) {
       return entity;
     }
@@ -237,7 +238,7 @@ export class MetadataDiscovery {
     const path = (entity as Dictionary).__path;
 
     if (path) {
-      const meta = Utils.copy(MetadataStorage.getMetadata(entity.name, path));
+      const meta = Utils.copy(MetadataStorage.getMetadata(entity.name, path), false);
       meta.path = Utils.relativePath(path, this.config.get('baseDir'));
       this.metadata.set(entity.name, meta);
     }
@@ -252,7 +253,7 @@ export class MetadataDiscovery {
     return schema;
   }
 
-  private async discoverEntity<T extends AnyEntity<T>>(entity: EntityClass<T> | EntityClassGroup<T> | EntitySchema<T>, path?: string): Promise<void> {
+  private async discoverEntity<T>(entity: EntityClass<T> | EntityClassGroup<T> | EntitySchema<T>, path?: string): Promise<void> {
     entity = this.prepare(entity);
     this.logger.log('discovery', `- processing entity ${colors.cyan((entity as EntityClass<T>).name)}${colors.grey(path ? ` (${path})` : '')}`);
     const schema = this.getSchema(entity as Constructor<T>);
@@ -271,9 +272,8 @@ export class MetadataDiscovery {
       return;
     }
 
-    if (!(entity instanceof EntitySchema)) {
-      await this.metadataProvider.loadEntityMetadata(meta, meta.className);
-    }
+    // if the definition is using EntitySchema we still want it to go through the metadata provider to validate no types are missing
+    await this.metadataProvider.loadEntityMetadata(meta, meta.className);
 
     if (!meta.collection && meta.name) {
       const entityName = root.discriminatorColumn ? root.name : meta.name;
@@ -286,12 +286,12 @@ export class MetadataDiscovery {
     this.discovered.push(meta);
   }
 
-  private async saveToCache<T extends AnyEntity<T>>(meta: EntityMetadata): Promise<void> {
+  private async saveToCache<T>(meta: EntityMetadata): Promise<void> {
     if (!meta.useCache) {
       return;
     }
 
-    const copy = Utils.copy(meta);
+    const copy = Utils.copy(meta, false);
     delete copy.prototype;
 
     copy.props
@@ -306,6 +306,18 @@ export class MetadataDiscovery {
     if (meta.path) {
       await this.cache.set(meta.className + extname(meta.path), copy, meta.path);
     }
+  }
+
+  private initNullability(prop: EntityProperty): void {
+    if (prop.reference === ReferenceType.MANY_TO_ONE) {
+      return Utils.defaultValue(prop, 'nullable', prop.optional || prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL));
+    }
+
+    if (prop.reference === ReferenceType.ONE_TO_ONE) {
+      return Utils.defaultValue(prop, 'nullable', prop.optional || !prop.owner || prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL));
+    }
+
+    return Utils.defaultValue(prop, 'nullable', prop.optional);
   }
 
   private applyNamingStrategy(meta: EntityMetadata, prop: EntityProperty): void {
@@ -364,10 +376,15 @@ export class MetadataDiscovery {
     const meta2 = this.metadata.get(prop.type);
     Utils.defaultValue(prop, 'fixedOrder', !!prop.fixedOrderColumn);
     const pivotMeta = this.metadata.find(prop.pivotEntity);
+    const pks = Object.values(pivotMeta?.properties ?? {}).filter(p => p.primary);
 
-    if (pivotMeta) {
+    if (pivotMeta && pks.length === 2) {
+      const owner = prop.mappedBy ? meta2.properties[prop.mappedBy] : prop;
+      const [first, second] = this.ensureCorrectFKOrderInPivotEntity(pivotMeta, owner);
       pivotMeta.pivotTable = true;
       prop.pivotTable = pivotMeta.tableName;
+      prop.joinColumns = first.fieldNames;
+      prop.inverseJoinColumns = second.fieldNames;
     }
 
     if (!prop.pivotTable && prop.owner && this.platform.usesPivotTable()) {
@@ -434,11 +451,12 @@ export class MetadataDiscovery {
     this.validator.validateEntityDefinition(this.metadata, meta.name!);
 
     for (const prop of Object.values(meta.properties)) {
+      this.initNullability(prop);
       this.applyNamingStrategy(meta, prop);
-      this.initDefaultValue(prop);
+      this.initDefaultValue(meta, prop);
       this.initVersionProperty(meta, prop);
       this.initCustomType(meta, prop);
-      await this.initColumnType(prop, meta.path);
+      await this.initColumnType(meta, prop, meta.path);
       this.initRelation(prop);
     }
 
@@ -452,10 +470,12 @@ export class MetadataDiscovery {
     const ret: EntityMetadata[] = [];
 
     if (this.platform.usesPivotTable()) {
-      const promises = Object.values(meta.properties)
-        .filter(prop => prop.reference === ReferenceType.MANY_TO_MANY && prop.owner && prop.pivotTable)
-        .map(prop => this.definePivotTableEntity(meta, prop));
-      (await Promise.all(promises)).forEach(meta => ret.push(meta));
+      const pivotProps = Object.values(meta.properties).filter(prop => {
+        return prop.reference === ReferenceType.MANY_TO_MANY && prop.owner && prop.pivotTable;
+      });
+      await Utils.runSerial(pivotProps, async prop => {
+        return ret.push(await this.definePivotTableEntity(meta, prop));
+      });
     }
 
     return ret;
@@ -476,8 +496,8 @@ export class MetadataDiscovery {
     });
   }
 
-  private ensureCorrectFKOrderInPivotEntity(meta: EntityMetadata, owner: EntityProperty): void {
-    const [first, second] = meta.relations;
+  private ensureCorrectFKOrderInPivotEntity(meta: EntityMetadata, owner: EntityProperty): [EntityProperty, EntityProperty] {
+    let [first, second] = Object.values(meta.properties).filter(p => p.primary);
 
     // wrong FK order, first FK needs to point to the owning side
     // (note that we can detect this only if the FKs target different types)
@@ -485,7 +505,10 @@ export class MetadataDiscovery {
       delete meta.properties[first.name];
       meta.removeProperty(first.name, false);
       meta.addProperty(first);
+      [first, second] = [second, first];
     }
+
+    return [first, second];
   }
 
   private async definePivotTableEntity(meta: EntityMetadata, prop: EntityProperty): Promise<EntityMetadata> {
@@ -515,7 +538,7 @@ export class MetadataDiscovery {
     prop.pivotEntity = data.className;
 
     if (prop.fixedOrder) {
-      const primaryProp = await this.defineFixedOrderProperty(prop, targetType);
+      const primaryProp = await this.defineFixedOrderProperty(meta, prop, targetType);
       data.properties[primaryProp.name] = primaryProp;
     } else {
       data.compositePK = true;
@@ -539,7 +562,7 @@ export class MetadataDiscovery {
     return this.metadata.set(data.className, data);
   }
 
-  private async defineFixedOrderProperty(prop: EntityProperty, targetType: string): Promise<EntityProperty> {
+  private async defineFixedOrderProperty(meta: EntityMetadata, prop: EntityProperty, targetType: string): Promise<EntityProperty> {
     const pk = prop.fixedOrderColumn || this.namingStrategy.referenceColumnName();
     const primaryProp = {
       name: pk,
@@ -550,7 +573,7 @@ export class MetadataDiscovery {
       unsigned: this.platform.supportsUnsigned(),
     } as EntityProperty;
     this.initFieldName(primaryProp);
-    await this.initColumnType(primaryProp);
+    await this.initColumnType(meta, primaryProp);
     prop.fixedOrderColumn = pk;
 
     if (prop.inversedBy) {
@@ -610,7 +633,7 @@ export class MetadataDiscovery {
       });
     }
 
-    await this.initColumnType(ret);
+    await this.initColumnType(meta, ret);
 
     return ret;
   }
@@ -742,7 +765,7 @@ export class MetadataDiscovery {
         throw MetadataError.conflictingPropertyName(meta.className, name, embeddedProp.name);
       }
 
-      meta.properties[name] = Utils.copy(prop);
+      meta.properties[name] = Utils.copy(prop, false);
       meta.properties[name].name = name;
       meta.properties[name].embedded = [embeddedProp.name, prop.name];
       meta.propertyOrder.set(name, (order += 0.01));
@@ -824,7 +847,7 @@ export class MetadataDiscovery {
 
     Object.values(meta.properties).forEach(prop => {
       const exists = meta.root.properties[prop.name];
-      prop = Utils.copy(prop);
+      prop = Utils.copy(prop, false);
       prop.nullable = true;
 
       if (!exists) {
@@ -882,6 +905,11 @@ export class MetadataDiscovery {
       return prop.defaultRaw;
     }
 
+    /* istanbul ignore next */
+    if (prop.default != null) {
+      return '' + this.platform.quoteVersionValue(prop.default as number, prop);
+    }
+
     if (prop.type.toLowerCase() === 'date') {
       prop.length ??= this.platform.getDefaultVersionLength();
       return this.platform.getCurrentTimestampSQL(prop.length);
@@ -890,7 +918,20 @@ export class MetadataDiscovery {
     return '1';
   }
 
-  private initDefaultValue(prop: EntityProperty): void {
+  private initDefaultValue(meta: EntityMetadata, prop: EntityProperty): void {
+    try {
+      // try to create two entity instances to detect the value is stable
+      const entity1 = new meta.class();
+      const entity2 = new meta.class();
+
+      // we compare the two values by reference, this will discard things like `new Date()`
+      if (entity1[prop.name] != null && entity1[prop.name] === entity2[prop.name]) {
+        prop.default ??= entity1[prop.name];
+      }
+    } catch {
+      // ignore
+    }
+
     if (prop.defaultRaw || !('default' in prop)) {
       return;
     }
@@ -906,6 +947,7 @@ export class MetadataDiscovery {
 
   private initVersionProperty(meta: EntityMetadata, prop: EntityProperty): void {
     if (prop.version) {
+      this.initDefaultValue(meta, prop);
       meta.versionProperty = prop.name;
       prop.defaultRaw = this.getDefaultVersionValue(prop);
     }
@@ -916,13 +958,20 @@ export class MetadataDiscovery {
   }
 
   private initCustomType(meta: EntityMetadata, prop: EntityProperty): void {
-    if (!prop.customType && prop.array && prop.items) {
-      prop.customType = new EnumArrayType(`${meta.className}.${prop.name}`, prop.items);
+    // `prop.type` might be actually instance of custom type class
+    if (Type.isMappedType(prop.type) && !prop.customType) {
+      prop.customType = prop.type;
+      prop.type = prop.customType.constructor.name;
     }
 
-    // `string[]` can be returned via ts-morph, while reflect metadata will give us just `array`
-    if (!prop.customType && !prop.columnTypes && ['string[]', 'array'].includes(prop.type)) {
-      prop.customType = Type.getType(ArrayType);
+    // `prop.type` might also be custom type class (not instance), so `typeof MyType` will give us `function`, not `object`
+    if (typeof prop.type === 'function' && Type.isMappedType((prop.type as Constructor).prototype) && !prop.customType) {
+      prop.customType = new (prop.type as Constructor<Type>)();
+      prop.type = prop.customType.constructor.name;
+    }
+
+    if (!prop.customType && prop.array && prop.items) {
+      prop.customType = new EnumArrayType(`${meta.className}.${prop.name}`, prop.items);
     }
 
     // for number arrays we make sure to convert the items to numbers
@@ -930,29 +979,31 @@ export class MetadataDiscovery {
       prop.customType = new ArrayType(i => +i);
     }
 
+    // `string[]` can be returned via ts-morph, while reflect metadata will give us just `array`
+    if (!prop.customType && !prop.columnTypes && (prop.type === 'array' || prop.type?.toString().endsWith('[]'))) {
+      prop.customType = new ArrayType();
+    }
+
     if (!prop.customType && !prop.columnTypes && prop.type === 'Buffer') {
-      prop.customType = Type.getType(BlobType);
+      prop.customType = new BlobType();
     }
 
     if (!prop.customType && !prop.columnTypes && prop.type === 'json') {
-      prop.customType = Type.getType(JsonType);
+      prop.customType = new JsonType();
     }
 
-    // `prop.type` might be actually instance of custom type class
-    if (Type.isMappedType(prop.type)) {
-      prop.customType = prop.type;
-    }
-
-    // `prop.type` might also be custom type class (not instance), so `typeof MyType` will give us `function`, not `object`
-    if (typeof prop.type === 'function' && Type.isMappedType((prop.type as Constructor).prototype) && !prop.customType) {
-      prop.customType = Type.getType(prop.type as unknown as Constructor<Type>);
+    if (!prop.customType && this.getMappedType(prop) instanceof BigIntType) {
+      prop.customType = new BigIntType();
     }
 
     if (prop.customType) {
-      prop.columnTypes = prop.columnTypes ?? [prop.customType.getColumnType(prop, this.platform)];
+      prop.customType.platform = this.platform;
+      prop.customType.meta = meta;
+      prop.customType.prop = prop;
+      prop.columnTypes ??= [prop.customType.getColumnType(prop, this.platform)];
     }
 
-    if (Type.isMappedType(prop.customType) && prop.reference === ReferenceType.SCALAR) {
+    if (Type.isMappedType(prop.customType) && prop.reference === ReferenceType.SCALAR && !prop.type?.toString().endsWith('[]')) {
       prop.type = prop.customType.constructor.name;
     }
   }
@@ -967,7 +1018,7 @@ export class MetadataDiscovery {
     prop.targetMeta = meta2;
   }
 
-  private async initColumnType(prop: EntityProperty, path?: string): Promise<void> {
+  private async initColumnType(meta: EntityMetadata, prop: EntityProperty, path?: string): Promise<void> {
     this.initUnsigned(prop);
     this.metadata.find(prop.type)?.getPrimaryProps().map(pk => {
       prop.length ??= pk.length;
@@ -980,7 +1031,7 @@ export class MetadataDiscovery {
     }
 
     if (prop.enum && !prop.items && prop.type && path) {
-      await this.initEnumValues(prop, path);
+      await this.initEnumValues(meta, prop, path);
     }
 
     if (prop.reference === ReferenceType.SCALAR) {
@@ -994,12 +1045,12 @@ export class MetadataDiscovery {
       return;
     }
 
-    const meta = this.metadata.get(prop.type);
+    const targetMeta = this.metadata.get(prop.type);
     prop.columnTypes = [];
 
-    for (const pk of meta.getPrimaryProps()) {
-      this.initCustomType(meta, pk);
-      await this.initColumnType(pk);
+    for (const pk of targetMeta.getPrimaryProps()) {
+      this.initCustomType(targetMeta, pk);
+      await this.initColumnType(targetMeta, pk);
 
       const mappedType = this.getMappedType(pk);
       let columnTypes = pk.columnTypes;
@@ -1010,14 +1061,14 @@ export class MetadataDiscovery {
 
       prop.columnTypes.push(...columnTypes);
 
-      if (!meta.compositePK) {
+      if (!targetMeta.compositePK) {
         prop.customType = pk.customType;
       }
     }
   }
 
   private getMappedType(prop: EntityProperty): Type<unknown> {
-    let t = prop.type.toLowerCase();
+    let t = prop.columnTypes?.[0] ?? prop.type.toLowerCase();
 
     if (prop.enum) {
       t = prop.items?.every(item => Utils.isString(item)) ? 'enum' : 'tinyint';
@@ -1030,9 +1081,17 @@ export class MetadataDiscovery {
     return prop.customType ?? this.platform.getMappedType(t);
   }
 
-  private async initEnumValues(prop: EntityProperty, path: string): Promise<void> {
+  private async initEnumValues(meta: EntityMetadata, prop: EntityProperty, path: string): Promise<void> {
     path = Utils.normalizePath(this.config.get('baseDir'), path);
-    const exports = await Utils.dynamicImport(path);
+    const exports: Dictionary = {};
+
+    /* istanbul ignore next */
+    try {
+      Object.assign(exports, await Utils.dynamicImport(path));
+    } catch (e) {
+      throw new Error(`Unable to discover enum values for ${meta.className}.${prop.name}, specify the type via decorator options: @Enum({ items: () => YourEnumType })`);
+    }
+
     /* istanbul ignore next */
     const target = exports[prop.type] || exports.default;
 

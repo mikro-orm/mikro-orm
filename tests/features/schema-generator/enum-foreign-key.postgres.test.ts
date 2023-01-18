@@ -1,4 +1,5 @@
 import { Entity, Enum, ManyToOne, MikroORM, PrimaryKey } from '@mikro-orm/core';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 export enum BrandType {
     Foo = 'foo',
@@ -31,16 +32,16 @@ describe('using enum as a foreign key value', () => {
     const orm = await MikroORM.init({
       entities: [Brand, Product],
       dbName: `mikro_orm_test_enum_foreign_key`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
 
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().execute('drop table if exists brand cascade');
-    await orm.getSchemaGenerator().execute('drop table if exists product cascade');
+    await orm.schema.ensureDatabase();
+    await orm.schema.execute('drop table if exists brand cascade');
+    await orm.schema.execute('drop table if exists product cascade');
 
-    const diff = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot();
-    await orm.getSchemaGenerator().execute(diff);
+    await orm.schema.execute(diff);
 
     await orm.close(true);
   });

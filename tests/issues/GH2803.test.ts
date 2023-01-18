@@ -1,5 +1,5 @@
 import { Collection, Entity, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -12,8 +12,7 @@ export class Book {
   name?: string;
 
   @OneToMany({
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    entity: () => Tag,
+      entity: () => Tag,
     mappedBy: t => t.book,
     strategy: LoadStrategy.JOINED,
   })
@@ -38,11 +37,11 @@ describe('GH issue 2803', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      type: 'sqlite',
+      driver: SqliteDriver,
       dbName: ':memory:',
       entities: [Book, Tag],
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {

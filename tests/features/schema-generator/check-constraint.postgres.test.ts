@@ -1,5 +1,6 @@
 import { Check, Entity, EntitySchema, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import { initORMPostgreSql } from '../../bootstrap';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 @Check<FooEntity>({ expression: columns => `${columns.price} >= 0` })
@@ -26,10 +27,10 @@ describe('check constraint [postgres]', () => {
     const orm = await MikroORM.init({
       entities: [FooEntity],
       dbName: `mikro_orm_test`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
 
-    const diff = await orm.getSchemaGenerator().getCreateSchemaSQL({ wrap: false });
+    const diff = await orm.schema.getCreateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-check-constraint-decorator');
 
     await orm.close();
@@ -38,7 +39,7 @@ describe('check constraint [postgres]', () => {
   test('check constraint diff [postgres]', async () => {
     const orm = await initORMPostgreSql();
     const meta = orm.getMetadata();
-    const generator = orm.getSchemaGenerator();
+    const generator = orm.schema;
     await generator.updateSchema();
 
     const newTableMeta = new EntitySchema({
@@ -65,30 +66,32 @@ describe('check constraint [postgres]', () => {
     }).init().meta;
     meta.set('NewTable', newTableMeta);
 
-    let diff = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-check-constraint-diff-1');
     await generator.execute(diff);
 
     // Update a check expression
     newTableMeta.checks = [{ name: 'foo', expression: 'price > 0' }];
-    diff = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-check-constraint-diff-2');
     await generator.execute(diff);
 
     // Remove a check constraint
     newTableMeta.checks = [];
-    diff = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-check-constraint-diff-3');
     await generator.execute(diff);
 
     // Add new check
-    newTableMeta.checks = [{ name: 'bar', expression: 'price > 0' }];
-    diff = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    newTableMeta.checks = [{ name: 'bar', expression: 'price > 0 and price < 123' }];
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-check-constraint-diff-4');
     await generator.execute(diff);
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
+    expect(diff).toBe('');
 
     // Skip existing check
-    diff = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-check-constraint-diff-5');
     await generator.execute(diff);
 

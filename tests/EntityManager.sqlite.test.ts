@@ -19,7 +19,7 @@ describe('EntityManagerSqlite', () => {
   let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => orm = await initORMSqlite());
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
 
   test('isConnected()', async () => {
     expect(await orm.isConnected()).toBe(true);
@@ -29,7 +29,7 @@ describe('EntityManagerSqlite', () => {
     expect(await orm.isConnected()).toBe(true);
 
     // as the db lives only in memory, we need to re-create the schema after reconnection
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   test('onUpdate should be re-hydrated when loading metadata from cache', async () => {
@@ -196,11 +196,11 @@ describe('EntityManagerSqlite', () => {
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('savepoint trx');
     expect(mock.mock.calls[2][0]).toMatch('select `b0`.* from `book3` as `b0` where `b0`.`title` is not null limit ?'); // test from beforeCreate hook
-    expect(mock.mock.calls[3][0]).toMatch('insert into `author3` (`created_at`, `email`, `name`, `terms_accepted`, `updated_at`) values (?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[3][0]).toMatch('insert into `author3` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values (?, ?, ?, ?, ?)');
     expect(mock.mock.calls[4][0]).toMatch('select `b0`.* from `book3` as `b0` where `b0`.`title` not in (?) limit ?'); // test from afterCreate hook
     expect(mock.mock.calls[5][0]).toMatch('rollback to savepoint trx');
     expect(mock.mock.calls[6][0]).toMatch('select `b0`.* from `book3` as `b0` where `b0`.`title` is not null limit ?'); // test from beforeCreate hook
-    expect(mock.mock.calls[7][0]).toMatch('insert into `author3` (`created_at`, `email`, `name`, `terms_accepted`, `updated_at`) values (?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[7][0]).toMatch('insert into `author3` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values (?, ?, ?, ?, ?)');
     expect(mock.mock.calls[8][0]).toMatch('select `b0`.* from `book3` as `b0` where `b0`.`title` not in (?) limit ?'); // test from afterCreate hook
     expect(mock.mock.calls[9][0]).toMatch('commit');
     await expect(orm.em.findOne(Author3, { name: 'God Persisted!' })).resolves.not.toBeNull();
@@ -529,7 +529,7 @@ describe('EntityManagerSqlite', () => {
     orm.em.clear();
 
     const newGod = orm.em.getReference<any>(Author3, god.id);
-    const publisher = (await orm.em.findOne(Publisher3, pub.id, { populate: ['books'] }))!;
+    const publisher = (await orm.em.findOne(Publisher3, pub.id, { populate: ['books'] })) as any;
     await newGod.init();
 
     const json = publisher.toJSON().books;

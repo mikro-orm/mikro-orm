@@ -1,7 +1,7 @@
 import type { PropertyDeclaration, SourceFile } from 'ts-morph';
-import { Project, ModuleKind } from 'ts-morph';
+import { ModuleKind, Project } from 'ts-morph';
 import type { EntityMetadata, EntityProperty } from '@mikro-orm/core';
-import { MetadataError, MetadataProvider, MetadataStorage, Utils } from '@mikro-orm/core';
+import { MetadataError, MetadataProvider, MetadataStorage, ReferenceType, Utils } from '@mikro-orm/core';
 
 export class TsMorphMetadataProvider extends MetadataProvider {
 
@@ -66,11 +66,12 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     prop.type = type;
 
     if (optional) {
-      prop.nullable = true;
+      prop.optional = true;
     }
 
     this.processWrapper(prop, 'IdentifiedReference');
     this.processWrapper(prop, 'Reference');
+    this.processWrapper(prop, 'Ref');
     this.processWrapper(prop, 'Collection');
   }
 
@@ -115,10 +116,16 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     const optional = property.hasQuestionToken?.() || union.includes('null') || union.includes('undefined');
     type = union.filter(t => !['null', 'undefined'].includes(t)).join(' | ');
 
+    prop.array ??= type.endsWith('[]') || !!type.match(/Array<(.*)>/);
     type = type
       .replace(/Array<(.*)>/, '$1') // unwrap array
       .replace(/\[]$/, '')          // remove array suffix
       .replace(/\((.*)\)/, '$1');   // unwrap union types
+
+    // keep the array suffix in the type, it is needed in few places in discovery and comparator (`prop.array` is used only for enum arrays)
+    if (prop.array && !type.includes(' | ') && prop.reference === ReferenceType.SCALAR) {
+      type += '[]';
+    }
 
     return { type, optional };
   }
@@ -152,7 +159,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
     prop.type = m[1];
 
-    if (['Reference', 'IdentifiedReference'].includes(wrapper)) {
+    if (['Ref', 'Reference', 'IdentifiedReference'].includes(wrapper)) {
       prop.wrappedReference = true;
     }
   }

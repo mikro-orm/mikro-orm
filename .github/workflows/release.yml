@@ -1,0 +1,150 @@
+name: Release @latest
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: The version to bump (if you choose custom, please include it under custom version)
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - "patch"
+          - "minor"
+          - "major"
+          - "custom"
+      custom_version:
+        description: The custom version to bump to (only for "custom" type)
+        required: false
+        type: string
+        default: ''
+
+jobs:
+  # Test before releasing to ensure we don't release a broken version
+  build_and_test:
+    name: Build & Test
+    if: (!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, 'docs:'))
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ ubuntu-latest ]
+        node-version: [ 14, 16, 18 ]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Cancel Workflow Action
+        uses: styfle/cancel-workflow-action@0.11.0
+        with:
+          access_token: ${{ github.token }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'yarn'
+          cache-dependency-path: 'yarn.lock'
+
+      - name: Enable corepack
+        run: |
+          corepack enable
+
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-${{ matrix.node-version }}-modules-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Install Dependencies
+        run: |
+          corepack prepare yarn@3.2.4 --activate
+          yarn
+
+      - name: Init docker
+        run: |
+          docker-compose up -d
+
+      - name: Build
+        run: yarn build
+
+      - name: Tests
+        run: yarn test
+
+  release:
+    name: "Bump MikroORM: ${{ inputs.version }} version (${{ inputs.custom_version || 'n/a' }} custom version)"
+    if: (!contains(github.event.head_commit.message, '[skip ci]') && !contains(github.event.head_commit.message, 'docs:'))
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          fetch-depth: 0
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'yarn'
+          cache-dependency-path: 'yarn.lock'
+
+      - name: Enable corepack
+        run: |
+          corepack enable
+
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: '**/node_modules'
+          key: ${{ runner.os }}-${{ matrix.node-version }}-modules-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Install Dependencies
+        run: |
+          corepack prepare yarn@3.2.4 --activate
+          yarn
+
+      - name: Build
+        run: yarn build
+
+      - name: Setup git user and npm
+        run: |
+          git config --global user.name "Martin Adamek"
+          git config --global user.email "banan23@gmail.com"
+
+          echo "access=public" > .npmrc
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
+
+      - name: Bump version to custom version
+        if: ${{ github.event.inputs.version == 'custom' && github.event.inputs.custom_version != '' }}
+        run: yarn lerna version ${{ github.event.inputs.custom_version }} --force-publish --yes
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GIT_USER: "banan23@gmail.com:${{ secrets.GH_TOKEN }}"
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Bump version to ${{ github.event.inputs.version }} version
+        if: ${{ github.event.inputs.version != 'custom' }}
+        run: yarn lerna version ${{ github.event.inputs.version }} --force-publish --yes
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GIT_USER: "banan23@gmail.com:${{ secrets.GH_TOKEN }}"
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Use tilde in internal dependencies
+        run: |
+          yarn release:tilde
+          yarn install --no-immutable
+          git add .
+          git commit -m 'chore(release): update internal dependencies to use tilde [skip ci]'
+          git push
+
+      - name: Publish packages
+        run: yarn publish:prod --yes --no-verify-access
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GIT_USER: "banan23@gmail.com:${{ secrets.GH_TOKEN }}"
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}

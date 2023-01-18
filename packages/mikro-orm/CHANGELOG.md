@@ -3,6 +3,118 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.7](https://github.com/mikro-orm/mikro-orm/compare/v5.6.6...v5.6.7) (2023-01-13)
+
+**Note:** Version bump only for package mikro-orm
+
+
+
+
+
+## [5.6.6](https://github.com/mikro-orm/mikro-orm/compare/v5.6.5...v5.6.6) (2023-01-10)
+
+**Note:** Version bump only for package mikro-orm
+
+
+
+
+
+## [5.6.5](https://github.com/mikro-orm/mikro-orm/compare/v5.6.4...v5.6.5) (2023-01-09)
+
+**Note:** Version bump only for package mikro-orm
+
+
+
+
+
+## [5.6.4](https://github.com/mikro-orm/mikro-orm/compare/v5.6.3...v5.6.4) (2023-01-04)
+
+**Note:** Version bump only for package mikro-orm
+
+
+
+
+
+## [5.6.3](https://github.com/mikro-orm/mikro-orm/compare/v5.6.2...v5.6.3) (2022-12-28)
+
+**Note:** Version bump only for package mikro-orm
+
+
+
+
+
+## [5.6.2](https://github.com/mikro-orm/mikro-orm/compare/v5.6.1...v5.6.2) (2022-12-25)
+
+**Note:** Version bump only for package mikro-orm
+
+
+
+
+
+## [5.6.1](https://github.com/mikro-orm/mikro-orm/compare/v5.6.0...v5.6.1) (2022-12-20)
+
+**Note:** Version bump only for package mikro-orm
+
+
+
+
+
+# [5.6.0](https://github.com/mikro-orm/mikro-orm/compare/v5.5.3...v5.6.0) (2022-12-09)
+
+**Note:** Version bump only for package mikro-orm
+
+
+
+
+
+## [5.5.3](https://github.com/mikro-orm/mikro-orm/compare/v5.5.2...v5.5.3) (2022-11-10)
+
+**Note:** Version bump only for package mikro-orm
+
+
+
+
+
+## [5.5.1](https://github.com/mikro-orm/mikro-orm/compare/v5.5.0...v5.5.1) (2022-11-05)
+
+**Note:** Version bump only for package mikro-orm
+
+
+
+
+
+## [5.4.2](https://github.com/mikro-orm/mikro-orm/compare/v5.4.1...v5.4.2) (2022-09-12)
+
+**Note:** Version bump only for package mikro-orm
+
+
+
+
+
+## [5.4.1](https://github.com/mikro-orm/mikro-orm/compare/v5.4.0...v5.4.1) (2022-09-08)
+
+**Note:** Version bump only for package mikro-orm
+
+
+
+
+
+## [5.3.1](https://github.com/mikro-orm/mikro-orm/compare/v5.3.0...v5.3.1) (2022-08-04)
+
+**Note:** Version bump only for package mikro-orm
+
+
+
+
+
+## [5.2.4](https://github.com/mikro-orm/mikro-orm/compare/v5.2.3...v5.2.4) (2022-07-25)
+
+**Note:** Version bump only for package mikro-orm
+
+
+
+
+
 # [5.2.0](https://github.com/mikro-orm/mikro-orm/compare/v5.1.5...v5.2.0) (2022-06-10)
 
 

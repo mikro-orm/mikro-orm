@@ -15,6 +15,10 @@ export class SqlitePlatform extends AbstractSqlPlatform {
     return false;
   }
 
+  usesReturningStatement(): boolean {
+    return true;
+  }
+
   getCurrentTimestampSQL(length: number): string {
     return super.getCurrentTimestampSQL(0);
   }
@@ -122,6 +126,10 @@ export class SqlitePlatform extends AbstractSqlPlatform {
 
   supportsDownMigrations(): boolean {
     return false;
+  }
+
+  getFullTextWhereClause(): string {
+    return `:column: match :query`;
   }
 
 }

@@ -1,5 +1,23 @@
 import { v4 } from 'uuid';
-import { Cascade, Collection, Entity, Filter, Formula, IdentifiedReference, ManyToMany, ManyToOne, OneToOne, OptionalProps, PrimaryKey, Property, QueryOrder, t } from '@mikro-orm/core';
+import {
+  Cascade,
+  Collection,
+  Entity,
+  Filter,
+  Formula,
+  IdentifiedReference,
+  Index,
+  ManyToMany,
+  ManyToOne,
+  OneToOne,
+  OptionalProps,
+  PrimaryKey,
+  Property,
+  QueryOrder,
+  ref,
+  rel,
+  t,
+} from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2';
 import { Author2 } from './Author2';
 import { BookTag2 } from './BookTag2';
@@ -20,6 +38,7 @@ export class Book2 {
   @Property({ defaultRaw: 'current_timestamp(3)', length: 3 })
   createdAt: Date = new Date();
 
+  @Index({ type: 'fulltext' })
   @Property({ nullable: true, default: '' })
   title?: string;
 
@@ -53,9 +72,10 @@ export class Book2 {
   @ManyToMany(() => BookTag2, undefined, { pivotTable: 'book_to_tag_unordered', orderBy: { name: QueryOrder.ASC } })
   tagsUnordered = new Collection<BookTag2>(this);
 
-  constructor(title: string, author: Author2, price?: number) {
+  constructor(title: string, author: number | Author2, price?: number, publisher?: number | Publisher2) {
     this.title = title;
-    this.author = author;
+    this.author = rel(Author2, author);
+    this.publisher = ref(Publisher2, publisher);
 
     if (price) {
       this.price = price;

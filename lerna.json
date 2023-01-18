@@ -2,18 +2,19 @@
   "packages": [
     "packages/*"
   ],
-  "version": "5.2.0",
+  "version": "5.6.7",
   "command": {
     "version": {
       "conventionalCommits": true,
       "createRelease": "github",
-      "message": "chore(release): %s"
+      "message": "chore(release): %s [skip ci]"
     }
   },
   "ignoreChanges": [
     "**/tests/**",
     "**/*.md"
   ],
+  "useNx": false,
   "npmClient": "yarn",
   "useWorkspaces": true
 }

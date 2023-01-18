@@ -1,5 +1,5 @@
 import { Embeddable, Embedded, Entity, ManyToOne, MikroORM, PrimaryKey, Property, UnderscoreNamingStrategy } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Embeddable()
 export class Fiz {
@@ -12,7 +12,6 @@ export class Fiz {
   @Property()
   name: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToOne({ entity: () => BazEntity, eager: true })
   _baz: any;
 
@@ -98,10 +97,10 @@ describe('GH issue 2948', () => {
     orm = await MikroORM.init({
       entities: [FooEntity],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
       namingStrategy: CustomNamingStrategy,
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(async () => {

@@ -2,7 +2,7 @@ import type { InputMigrations, MigrateDownOptions, MigrateUpOptions, MigrationPa
 import { Umzug } from 'umzug';
 import { basename, join } from 'path';
 import { ensureDir, pathExists, writeJSON } from 'fs-extra';
-import type { Constructor, Dictionary, IMigrationGenerator, IMigrator, Transaction } from '@mikro-orm/core';
+import type { Constructor, Dictionary, IMigrationGenerator, IMigrator, MikroORM, Transaction } from '@mikro-orm/core';
 import { t, Type, UnknownType, Utils } from '@mikro-orm/core';
 import type { EntityManager } from '@mikro-orm/knex';
 import { DatabaseSchema, DatabaseTable, SchemaGenerator } from '@mikro-orm/knex';
@@ -35,8 +35,13 @@ export class Migrator implements IMigrator {
     const snapshotPath = this.options.emit === 'ts' && this.options.pathTs ? this.options.pathTs : this.options.path!;
     const absoluteSnapshotPath = Utils.absolutePath(snapshotPath, this.config.get('baseDir'));
     const dbName = basename(this.config.get('dbName'));
-    this.snapshotPath = Utils.normalizePath(absoluteSnapshotPath, `.snapshot-${dbName}.json`);
+    const snapshotName = this.options.snapshotName ?? `.snapshot-${dbName}`;
+    this.snapshotPath = Utils.normalizePath(absoluteSnapshotPath, `${snapshotName}.json`);
     this.createUmzug();
+  }
+
+  static register(orm: MikroORM): void {
+    orm.config.registerExtension('@mikro-orm/migrator', new Migrator(orm.em as EntityManager));
   }
 
   /**
@@ -62,6 +67,12 @@ export class Migrator implements IMigrator {
       code: migration[0],
       diff,
     };
+  }
+
+  async checkMigrationNeeded(): Promise<boolean> {
+    await this.ensureMigrationsDirExists();
+    const diff = await this.getSchemaDiff(false, false);
+    return diff.up.length > 0;
   }
 
   /**
@@ -90,7 +101,7 @@ export class Migrator implements IMigrator {
     this.storage = new MigrationStorage(this.driver, this.options);
 
     let migrations: InputMigrations<any> = {
-      glob: join(this.absolutePath, this.options.glob!),
+      glob: join(this.absolutePath, this.options.glob!).replace(/\\/g, '/'),
       resolve: (params: MigrationParams<any>) => this.resolve(params),
     };
 
@@ -140,7 +151,7 @@ export class Migrator implements IMigrator {
     const expected = new Set<string>();
 
     Object.values(this.em.getMetadata().getAll())
-      .filter(meta => meta.collection)
+      .filter(meta => meta.tableName && !meta.embeddable && !meta.virtual)
       .forEach(meta => {
         const schema = meta.schema ?? this.config.get('schema', this.em.getPlatform().getDefaultSchemaName());
         expected.add(schema ? `${schema}.${meta.collection}` : meta.collection);
@@ -233,7 +244,7 @@ export class Migrator implements IMigrator {
       return DatabaseSchema.create(this.driver.getConnection(), this.driver.getPlatform(), this.config);
     }
 
-    const data = await import(this.snapshotPath);
+    const data = await Utils.dynamicImport(this.snapshotPath);
     const schema = new DatabaseSchema(this.driver.getPlatform(), this.config.get('schema'));
     const { tables, namespaces, ...rest } = data;
     const tableInstances = tables.map((tbl: Dictionary) => {

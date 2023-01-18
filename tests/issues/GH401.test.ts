@@ -1,6 +1,6 @@
 import { ObjectId } from 'bson';
-import { Entity, PrimaryKey, Property, MikroORM, Dictionary } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, Property, Dictionary } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/mongodb';
 
 @Entity()
 class Entity401 {
@@ -22,13 +22,12 @@ class Entity401 {
 
 describe('GH issue 401', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Entity401],
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
-      type: 'mongo',
     });
     await orm.em.nativeDelete(Entity401, {});
   });

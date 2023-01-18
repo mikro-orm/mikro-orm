@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { Entity, MikroORM, OneToOne, PrimaryKey } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 class Profile {
@@ -31,15 +31,15 @@ class User2 {
 
 describe('adding FK column (GH 942)', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [User, Profile],
-      type: 'sqlite',
+      driver: SqliteDriver,
       dbName: ':memory:',
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(() => orm.close(true));
@@ -47,12 +47,12 @@ describe('adding FK column (GH 942)', () => {
   test('schema: adding 1:1 relation', async () => {
     await orm.discoverEntity(User2);
     orm.getMetadata().reset('User');
-    const diff1 = await orm.getSchemaGenerator().getUpdateSchemaSQL();
+    const diff1 = await orm.schema.getUpdateSchemaSQL();
     expect(diff1).toMatchSnapshot();
-    await orm.getSchemaGenerator().execute(diff1);
+    await orm.schema.execute(diff1);
 
     // sqlite does not support automatic down migrations
-    const diff2 = await orm.getSchemaGenerator().getUpdateSchemaMigrationSQL();
+    const diff2 = await orm.schema.getUpdateSchemaMigrationSQL();
     expect(diff2.down).toBe('');
   });
 

@@ -14,3 +14,4 @@
 .DS_Store
 COVERAGE_RESULT
 .npmrc
+.yarn

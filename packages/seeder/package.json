@@ -1,6 +1,6 @@
 {
   "name": "@mikro-orm/seeder",
-  "version": "5.2.0",
+  "version": "5.6.7",
   "description": "Seeder package for MikroORM.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -42,17 +42,18 @@
     "build": "yarn clean && yarn compile && yarn copy",
     "clean": "rimraf ./dist",
     "compile": "tsc -p tsconfig.build.json",
-    "copy": "ts-node -T ../../scripts/copy.ts"
+    "copy": "node ../../scripts/copy.mjs"
   },
   "publishConfig": {
     "access": "public"
   },
   "dependencies": {
-    "@faker-js/faker": "7.2.0",
-    "globby": "11.0.4"
+    "@faker-js/faker": "7.6.0",
+    "fs-extra": "11.1.0",
+    "globby": "11.1.0"
   },
   "devDependencies": {
-    "@mikro-orm/core": "^5.2.0"
+    "@mikro-orm/core": "^5.6.7"
   },
   "peerDependencies": {
     "@mikro-orm/core": "^5.0.0"

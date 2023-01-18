@@ -18,7 +18,7 @@ describe('UnitOfWork', () => {
     // @ts-ignore
     computer = uow.changeSetComputer;
   });
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
 
   test('entity validation when persisting [not strict]', async () => {
     // number instead of string will throw
@@ -170,8 +170,8 @@ describe('UnitOfWork', () => {
 
     const mock = mockLogger(orm);
     await em.persistAndFlush(bar);
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('foo-baz').insertOne({ name: 'dynamic' }, { session: undefined })`);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('foo-bar'\)\.insertOne\({ name: 'bar', onCreateTest: true, onUpdateTest: true, baz: ObjectId\('\w+'\) }, { session: undefined }\)/);
+    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('foo-baz').insertMany([ { name: 'dynamic' } ], {})`);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('foo-bar'\)\.insertMany\(\[ { name: 'bar', onCreateTest: true, onUpdateTest: true, baz: ObjectId\('\w+'\) } ], {}\)/);
 
     expect(changeSets.map(cs => [cs.type, cs.name])).toEqual([
       [ChangeSetType.CREATE, 'FooBar'],

@@ -1,5 +1,5 @@
 import { BigIntType, Entity, Enum, IdentifiedReference, ManyToOne, MikroORM, PrimaryKey, QueryOrder } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 export enum EntityType {
   TYPE_1 = 'type_1',
@@ -32,15 +32,15 @@ export class Type2Entity extends BaseEntity {
 
 describe('GH issue 2364', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [BaseEntity, Type1Entity, Type2Entity],
       dbName: 'mikro_orm_test_2364',
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(() => orm.close(true));

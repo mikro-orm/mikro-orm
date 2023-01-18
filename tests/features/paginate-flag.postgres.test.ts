@@ -1,7 +1,5 @@
-/* eslint-disable @typescript-eslint/no-use-before-define */
-
 import { Collection, Entity, Enum, Filter, LoadStrategy, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PopulateHint, PrimaryKey, Property } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
 
 @Entity()
@@ -35,7 +33,7 @@ export class User {
   constructor(id: string, name: string, groups: Group[]) {
     this.id = id;
     this.name = name;
-    this.groups.add(...groups);
+    this.groups.add(groups);
   }
 
 }
@@ -170,12 +168,12 @@ describe('GH issue 2095', () => {
     orm = await MikroORM.init({
       entities: [C, T, TC, B, A, User, Group],
       dbName: 'mikro_orm_issue_2095',
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
 
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.ensureDatabase();
+    await orm.schema.dropSchema();
+    await orm.schema.createSchema();
 
     const group1 = new Group('id-group-01', 'Group #1'); // RF
     const group2 = new Group('id-group-02', 'Group #2'); // admin

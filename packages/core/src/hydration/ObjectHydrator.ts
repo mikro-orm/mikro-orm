@@ -1,4 +1,4 @@
-import type { AnyEntity, EntityData, EntityMetadata, EntityProperty } from '../typings';
+import type { EntityData, EntityMetadata, EntityProperty } from '../typings';
 import { Hydrator } from './Hydrator';
 import { Collection } from '../entity/Collection';
 import { Reference } from '../entity/Reference';
@@ -21,23 +21,27 @@ export class ObjectHydrator extends Hydrator {
   /**
    * @inheritDoc
    */
-  hydrate<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'returning' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string): void {
+  hydrate<T>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'returning' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string): void {
     const hydrate = this.getEntityHydrator(meta, type);
+    this.running = true;
     Utils.callCompiledFunction(hydrate, entity, data, factory, newEntity, convertCustomTypes, schema);
+    this.running = false;
   }
 
   /**
    * @inheritDoc
    */
-  hydrateReference<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes = false, schema?: string): void {
+  hydrateReference<T>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes = false, schema?: string): void {
     const hydrate = this.getEntityHydrator(meta, 'reference');
+    this.running = true;
     Utils.callCompiledFunction(hydrate, entity, data, factory, false, convertCustomTypes, schema);
+    this.running = false;
   }
 
   /**
    * @internal Highly performance-sensitive method.
    */
-  getEntityHydrator<T extends AnyEntity<T>>(meta: EntityMetadata<T>, type: 'full' | 'returning' | 'reference'): EntityHydrator<T> {
+  getEntityHydrator<T>(meta: EntityMetadata<T>, type: 'full' | 'returning' | 'reference'): EntityHydrator<T> {
     const exists = this.hydrators[type].get(meta.className);
 
     if (exists) {
@@ -85,7 +89,7 @@ export class ObjectHydrator extends Hydrator {
         );
       } else if (prop.customType) {
         context.set(`convertToJSValue_${convertorKey}`, (val: any) => prop.customType.convertToJSValue(val, this.platform));
-        context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform));
+        context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'hydration' }));
 
         ret.push(
           `  if (${preCond}typeof data${dataKey} !== 'undefined') {`,
@@ -117,7 +121,7 @@ export class ObjectHydrator extends Hydrator {
       if (prop.mapToPk) {
         ret.push(`      entity${entityKey} = data${dataKey};`);
       } else if (prop.wrappedReference) {
-        ret.push(`      entity${entityKey} = new Reference(factory.createReference('${prop.type}', data${dataKey}, { merge: true, convertCustomTypes, schema }));`);
+        ret.push(`      entity${entityKey} = Reference.create(factory.createReference('${prop.type}', data${dataKey}, { merge: true, convertCustomTypes, schema }));`);
       } else {
         ret.push(`      entity${entityKey} = factory.createReference('${prop.type}', data${dataKey}, { merge: true, convertCustomTypes, schema });`);
       }
@@ -127,7 +131,7 @@ export class ObjectHydrator extends Hydrator {
       if (prop.mapToPk) {
         ret.push(`      entity${entityKey} = data${dataKey};`);
       } else if (prop.wrappedReference) {
-        ret.push(`      entity${entityKey} = new Reference(factory.create('${prop.type}', data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, schema }));`);
+        ret.push(`      entity${entityKey} = Reference.create(factory.create('${prop.type}', data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, schema }));`);
       } else {
         ret.push(`      entity${entityKey} = factory.create('${prop.type}', data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });`);
       }
@@ -139,18 +143,19 @@ export class ObjectHydrator extends Hydrator {
         const meta2 = this.metadata.get(prop.type);
         const prop2 = meta2.properties[prop.inversedBy || prop.mappedBy];
 
-        if (prop2) {
-          ret.push(`  if (entity${entityKey} && !entity${entityKey}.${prop2.name}) {`);
-          ret.push(`    entity${entityKey}.${prop.wrappedReference ? 'unwrap().' : ''}${prop2.name} = ${prop2.wrappedReference ? 'new Reference(entity)' : 'entity'};`);
+        if (prop2 && !prop2.mapToPk) {
+          ret.push(`  if (entity${entityKey} && !entity${entityKey}.${this.safeKey(prop2.name)}) {`);
+          ret.push(`    entity${entityKey}.${prop.wrappedReference ? 'unwrap().' : ''}${this.safeKey(prop2.name)} = ${prop2.wrappedReference ? 'Reference.create(entity)' : 'entity'};`);
           ret.push(`  }`);
         }
       }
 
       if (prop.customType) {
-        context.set(`convertToDatabaseValue_${this.safeKey(prop.name)}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform));
+        context.set(`convertToDatabaseValue_${this.safeKey(prop.name)}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'hydration' }));
 
         ret.push(`  if (data${dataKey} != null && convertCustomTypes) {`);
-        ret.push(`    data${dataKey} = convertToDatabaseValue_${this.safeKey(prop.name)}(entity${entityKey}.__helper.getPrimaryKey());`); // make sure the value is comparable
+        const pk = prop.mapToPk ? '' : '.__helper.getPrimaryKey()';
+        ret.push(`    data${dataKey} = convertToDatabaseValue_${this.safeKey(prop.name)}(entity${entityKey}${pk});`); // make sure the value is comparable
         ret.push(`  }`);
       }
 
@@ -165,15 +170,15 @@ export class ObjectHydrator extends Hydrator {
       ret.push(`    data${dataKey} = [data${dataKey}];`);
       ret.push(`  }`);
       ret.push(`  if (Array.isArray(data${dataKey})) {`);
-      ret.push(`     const items = data${dataKey}.map(value => createCollectionItem_${this.safeKey(prop.name)}(value));`);
-      ret.push(`     const coll = Collection.create(entity, '${prop.name}', items, newEntity);`);
-      ret.push(`     if (newEntity) {`);
-      ret.push(`       coll.setDirty();`);
-      ret.push(`     } else {`);
-      ret.push(`       coll.takeSnapshot();`);
-      ret.push(`     }`);
+      ret.push(`    const items = data${dataKey}.map(value => createCollectionItem_${this.safeKey(prop.name)}(value, entity));`);
+      ret.push(`    const coll = Collection.create(entity, '${prop.name}', items, newEntity);`);
+      ret.push(`    if (newEntity) {`);
+      ret.push(`      coll.setDirty();`);
+      ret.push(`    } else {`);
+      ret.push(`      coll.takeSnapshot(true);`);
+      ret.push(`    }`);
       ret.push(`  } else if (!entity${entityKey} && data${dataKey} instanceof Collection) {`);
-      ret.push(`     entity${entityKey} = data${dataKey};`);
+      ret.push(`    entity${entityKey} = data${dataKey};`);
       ret.push(`  } else if (!entity${entityKey}) {`);
       const items = this.platform.usesPivotTable() || !prop.owner ? 'undefined' : '[]';
       ret.push(`    const coll = Collection.create(entity, '${prop.name}', ${items}, !!data${dataKey} || newEntity);`);
@@ -316,12 +321,27 @@ export class ObjectHydrator extends Hydrator {
   }
 
   private createCollectionItemMapper<T>(prop: EntityProperty): string[] {
-    const meta = this.metadata.find(prop.type)!;
+    const meta = this.metadata.get(prop.type);
     const lines: string[] = [];
 
-    lines.push(`  const createCollectionItem_${this.safeKey(prop.name)} = value => {`);
+    lines.push(`  const createCollectionItem_${this.safeKey(prop.name)} = (value, entity) => {`);
+    const prop2 = prop.targetMeta?.properties[prop.mappedBy];
+
+    if (prop2?.primary) {
+      lines.push(`    if (typeof value === 'object' && value?.['${prop2.name}'] == null) {`);
+      lines.push(`      value = { ...value, ['${prop2.name}']: Reference.wrapReference(entity, { wrappedReference: ${prop2.wrappedReference} }) };`);
+      lines.push(`    }`);
+    }
+
     lines.push(`    if (isPrimaryKey(value, ${meta.compositePK})) return factory.createReference('${prop.type}', value, { convertCustomTypes, schema, merge: true });`);
     lines.push(`    if (value && value.__entity) return value;`);
+
+    if (prop2 && !prop2.primary) {
+      lines.push(`    if (typeof value === 'object' && value?.['${prop2.name}'] == null) {`);
+      lines.push(`      value = { ...value, ['${prop2.name}']: Reference.wrapReference(entity, { wrappedReference: ${prop2.wrappedReference} }) };`);
+      lines.push(`    }`);
+    }
+
     lines.push(`    return factory.create('${prop.type}', value, { newEntity, convertCustomTypes, schema, merge: true });`);
     lines.push(`  }`);
 

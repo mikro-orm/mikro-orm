@@ -1,7 +1,7 @@
 ﻿import type { Knex } from 'knex';
-import type { Dictionary, EntityMetadata } from '@mikro-orm/core';
-import { AbstractSchemaGenerator } from '@mikro-orm/core';
-import type { Check, Column, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
+import type { Dictionary, EntityMetadata, MikroORM } from '@mikro-orm/core';
+import { AbstractSchemaGenerator, Utils } from '@mikro-orm/core';
+import type { Check, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
 import { DatabaseSchema } from './DatabaseSchema';
 import type { DatabaseTable } from './DatabaseTable';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
@@ -13,9 +13,14 @@ import { SchemaComparator } from './SchemaComparator';
 export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> {
 
   private readonly helper = this.platform.getSchemaHelper()!;
-  private readonly knex = this.connection.getKnex();
   private readonly options = this.config.get('schemaGenerator');
+  protected lastEnsuredDatabase?: string;
 
+  static register(orm: MikroORM): void {
+    orm.config.registerExtension('@mikro-orm/schema-generator', new SchemaGenerator(orm.em));
+  }
+
+  /** @deprecated use `dropSchema` and `createSchema` commands respectively */
   async generate(): Promise<string> {
     const [dropSchema, createSchema] = await Promise.all([
       this.getDropSchemaSQL({ wrap: false }),
@@ -36,7 +41,13 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
    */
   async ensureDatabase(): Promise<boolean> {
     const dbName = this.config.get('dbName')!;
+
+    if (this.lastEnsuredDatabase === dbName) {
+      return true;
+    }
+
     const exists = await this.helper.databaseExists(this.connection, dbName);
+    this.lastEnsuredDatabase = dbName;
 
     if (!exists) {
       this.config.set('dbName', this.helper.getManagementDbName());
@@ -117,6 +128,7 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
   }
 
   async getDropSchemaSQL(options: { wrap?: boolean; dropMigrationsTable?: boolean; schema?: string } = {}): Promise<string> {
+    await this.ensureDatabase();
     const wrap = options.wrap ?? this.options.disableForeignKeys;
     const metadata = this.getOrderedMetadata(options.schema).reverse();
     const schema = await DatabaseSchema.create(this.connection, this.platform, this.config, options.schema);
@@ -159,6 +171,7 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
   }
 
   async getUpdateSchemaSQL(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema; schema?: string } = {}): Promise<string> {
+    await this.ensureDatabase();
     const { fromSchema, toSchema } = await this.prepareSchemaForComparison(options);
     const comparator = new SchemaComparator(this.platform);
     const diffUp = comparator.compare(fromSchema, toSchema);
@@ -167,6 +180,7 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
   }
 
   async getUpdateSchemaMigrationSQL(options: { wrap?: boolean; safe?: boolean; dropTables?: boolean; fromSchema?: DatabaseSchema; schema?: string } = {}): Promise<{ up: string; down: string }> {
+    await this.ensureDatabase();
     const { fromSchema, toSchema } = await this.prepareSchemaForComparison(options);
     const comparator = new SchemaComparator(this.platform);
     const diffUp = comparator.compare(fromSchema, toSchema);
@@ -336,7 +350,7 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
 
       for (const column of Object.values(diff.addedColumns)) {
         const col = this.helper.createTableColumn(table, column, diff.fromTable);
-        this.configureColumn(column, col);
+        this.helper.configureColumn(column, col, this.knex);
         const foreignKey = Object.values(diff.addedForeignKeys).find(fk => fk.columnNames.length === 1 && fk.columnNames[0] === column.name);
 
         if (foreignKey && this.options.createForeignKeyConstraints) {
@@ -362,7 +376,7 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
         }
 
         const col = this.helper.createTableColumn(table, column, diff.fromTable, changedProperties).alter();
-        this.configureColumn(column, col, changedProperties);
+        this.helper.configureColumn(column, col, this.knex, changedProperties);
       }
 
       for (const { column } of Object.values(diff.changedColumns).filter(diff => diff.changedProperties.has('autoincrement'))) {
@@ -378,7 +392,7 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
       }
 
       for (const [oldColumnName, column] of Object.entries(diff.renamedColumns)) {
-        this.helper.pushTableQuery(table, this.helper.getRenameColumnSQL(tableName, oldColumnName, column));
+        this.helper.pushTableQuery(table, this.helper.getRenameColumnSQL(tableName, oldColumnName, column, schemaName));
       }
 
       for (const foreignKey of Object.values(diff.addedForeignKeys)) {
@@ -390,17 +404,17 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
       }
 
       for (const index of Object.values(diff.addedIndexes)) {
-        this.createIndex(table, index, diff.fromTable);
+        this.createIndex(table, index, diff.toTable);
       }
 
       for (const index of Object.values(diff.changedIndexes)) {
-        this.createIndex(table, index, diff.fromTable, true);
+        this.createIndex(table, index, diff.toTable, true);
       }
 
       for (const [oldIndexName, index] of Object.entries(diff.renamedIndexes)) {
         if (index.unique) {
           this.dropIndex(table, index, oldIndexName);
-          this.createIndex(table, index, diff.fromTable);
+          this.createIndex(table, index, diff.toTable);
         } else {
           this.helper.pushTableQuery(table, this.helper.getRenameIndexSQL(diff.name, index, oldIndexName));
         }
@@ -442,9 +456,16 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
     options.wrap ??= false;
     const lines = this.wrapSchema(sql, options).split('\n').filter(i => i.trim());
 
-    for (const line of lines) {
-      await this.driver.execute(line);
+    if (lines.length === 0) {
+      return;
     }
+
+    if (this.platform.supportsMultipleStatements()) {
+      const query = lines.join('\n');
+      return void await this.driver.execute(query);
+    }
+
+    await Utils.runSerial(lines, line => this.driver.execute(line));
   }
 
   private wrapSchema(sql: string, options: { wrap?: boolean } = {}): string {
@@ -475,11 +496,11 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
     return this.createSchemaBuilder(tableDef.schema).createTable(tableDef.name, table => {
       tableDef.getColumns().forEach(column => {
         const col = this.helper.createTableColumn(table, column, tableDef);
-        this.configureColumn(column, col);
+        this.helper.configureColumn(column, col, this.knex);
       });
 
       for (const index of tableDef.getIndexes()) {
-        const createPrimary = !tableDef.getColumns().some(c => c.autoincrement) || this.helper.hasNonDefaultPrimaryKeyName(tableDef);
+        const createPrimary = !tableDef.getColumns().some(c => c.autoincrement && c.primary) || this.helper.hasNonDefaultPrimaryKeyName(tableDef);
         this.createIndex(table, index, tableDef, createPrimary);
       }
 
@@ -514,6 +535,12 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
       table.unique(index.columnNames, { indexName: index.keyName });
     } else if (index.expression) {
       this.helper.pushTableQuery(table, index.expression);
+    } else if (index.type === 'fulltext') {
+      const columns = index.columnNames.map(name => ({ name, type: tableDef.getColumn(name)!.type }));
+
+      if (this.platform.supportsCreatingFullTextIndex()) {
+        this.helper.pushTableQuery(table, this.platform.getFullTextIndexExpression(index.keyName, tableDef.schema, tableDef.name, columns));
+      }
     } else {
       table.index(index.columnNames, index.keyName, index.type as Dictionary);
     }
@@ -547,10 +574,6 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
     return builder;
   }
 
-  private configureColumn<T>(column: Column, col: Knex.ColumnBuilder, changedProperties?: Set<string>) {
-    return this.helper.configureColumn(column, col, this.knex, changedProperties);
-  }
-
   private createForeignKeys(table: Knex.CreateTableBuilder, tableDef: DatabaseTable, schema?: string): void {
     if (!this.helper.supportsSchemaConstraints()) {
       return;
@@ -573,6 +596,10 @@ export class SchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDriver> 
     const tmp = dump.replace(/pragma table_.+/ig, '').replace(/\n\n+/g, '\n').trim();
 
     return tmp ? tmp + append : '';
+  }
+
+  private get knex() {
+    return this.connection.getKnex();
   }
 
 }

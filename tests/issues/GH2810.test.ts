@@ -1,4 +1,5 @@
 import { Cascade, Collection, Entity, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, PrimaryKeyType } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class NodeEntity {
@@ -20,7 +21,6 @@ export class ElementEntity {
   @OneToOne({ entity: () => NodeEntity, primary: true, onDelete: 'cascade', onUpdateIntegrity: 'cascade' })
   node!: NodeEntity;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany({ entity: () => DependentEntity, mappedBy: 'element', cascade: [Cascade.ALL] })
   dependents = new Collection<DependentEntity>(this);
 
@@ -45,12 +45,12 @@ describe('GH issue 2810', () => {
     orm = await MikroORM.init({
       entities: [ElementEntity, DependentEntity, NodeEntity],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
-  beforeEach(async () => await orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => await orm.schema.clearDatabase());
   afterAll(async () => await orm.close(true));
 
   test('create without existing parent', async () => {

@@ -1,5 +1,5 @@
 import { BigIntType, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -40,9 +40,9 @@ describe('GH issue 940, 1117', () => {
     orm = await MikroORM.init({
       entities: [User, UserOrganization],
       dbName: `:memory:`,
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => await orm.close(true));

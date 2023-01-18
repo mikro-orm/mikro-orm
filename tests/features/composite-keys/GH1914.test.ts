@@ -1,31 +1,31 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Category {
 
+  @PrimaryKey()
+  id!: number;
+
   constructor(id: number) {
     this.id = id;
   }
-
-  @PrimaryKey()
-  id!: number;
 
 }
 
 @Entity()
 export class Site {
 
-  constructor(id: number) {
-    this.id = id;
-  }
-
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany({ entity: () => SiteCategory, mappedBy: 'site', orphanRemoval: true })
   siteCategories = new Collection<SiteCategory>(this);
+
+  constructor(id: number) {
+    this.id = id;
+  }
 
 }
 
@@ -54,9 +54,9 @@ describe('GH #1914', () => {
     orm = await MikroORM.init<AbstractSqlDriver>({
       entities: [Site, Category, SiteCategory],
       dbName: `:memory:`,
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {

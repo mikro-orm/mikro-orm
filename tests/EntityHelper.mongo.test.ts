@@ -2,7 +2,7 @@ import { ObjectId } from 'bson';
 import { inspect } from 'util';
 
 import type { AnyEntity, MikroORM } from '@mikro-orm/core';
-import { Reference, wrap } from '@mikro-orm/core';
+import { Reference, serialize, wrap } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 import { Author, Book, Publisher, Test } from './entities';
 import { initORMMongo } from './bootstrap';
@@ -14,7 +14,7 @@ describe('EntityHelperMongo', () => {
   let orm: MikroORM<MongoDriver>;
 
   beforeAll(async () => orm = await initORMMongo());
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
 
   test('#toObject() should return DTO', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
@@ -65,7 +65,7 @@ describe('EntityHelperMongo', () => {
     await orm.em.persistAndFlush(bible);
     orm.em.clear();
 
-    const author = (await orm.em.findOne(Author, god.id, { populate: ['favouriteAuthor', 'books.author.books', 'books.publisher'] }))!;
+    const author = await orm.em.findOneOrFail(Author, god.id, { populate: ['favouriteAuthor', 'books.author.books', 'books.publisher'] });
     const json = wrap(author).toObject();
     expect(json.termsAccepted).toBe(false);
     expect(json.favouriteAuthor).toBe(god.id); // self reference will be ignored even when explicitly populated
@@ -202,7 +202,7 @@ describe('EntityHelperMongo', () => {
     expect(actual).toBe('FooBar {\n' +
       '  meta: { onCreateCalled: false, onUpdateCalled: false },\n' +
       "  name: 'bar',\n" +
-      "  baz: Ref<FooBaz> { _id: ObjectId('5b0ff0619fbec620008d2414') }\n" +
+      "  baz: (FooBaz) { _id: ObjectId('5b0ff0619fbec620008d2414') }\n" +
       '}');
 
     const god = new Author('God', 'hello@heaven.god');
@@ -223,7 +223,7 @@ describe('EntityHelperMongo', () => {
       '      tags: [Collection<BookTag>],\n' +
       "      title: 'Bible',\n" +
       '      author: [Author],\n' +
-      '      publisher: [Reference]\n' +
+      '      publisher: [Ref<Publisher>]\n' +
       '    },\n' +
       '    initialized: true,\n' +
       '    dirty: true\n' +
@@ -252,6 +252,25 @@ describe('EntityHelperMongo', () => {
       '    }\n' +
       '  }\n' +
       '}');
+  });
+
+  test('explicit serialization with not initialized properties', async () => {
+    const god = new Author('God', 'hello@heaven.god');
+    const bible = new Book('Bible', god);
+    god.favouriteAuthor = god;
+    bible.publisher = Reference.create(new Publisher('Publisher 1'));
+    await orm.em.persistAndFlush(bible);
+    orm.em.clear();
+
+    const jon = await orm.em.findOneOrFail(Author, god, { populate: true });
+    const o = serialize(jon, { populate: true });
+    expect(o).toMatchObject({
+      id: jon.id,
+      createdAt: jon.createdAt,
+      updatedAt: jon.updatedAt,
+      email: 'hello@heaven.god',
+      name: 'God',
+    });
   });
 
   afterAll(async () => orm.close(true));

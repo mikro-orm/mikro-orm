@@ -1,16 +1,16 @@
 import type { EntityName } from '@mikro-orm/core';
-import { ArrayCollection, Collection, EntityManager, LockMode, MikroORM, QueryOrder, ValidationError, wrap } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { ArrayCollection, Collection, EntityManager, LockMode, QueryOrder, ValidationError, wrap } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/sqlite';
 import { initORMSqlite2, mockLogger } from './bootstrap';
 import type { IAuthor4, IPublisher4, ITest4 } from './entities-schema';
 import { Author4, Book4, BookTag4, FooBar4, Publisher4, PublisherType, Test4 } from './entities-schema';
 
 describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => orm = await initORMSqlite2(driver));
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
 
   test('isConnected()', async () => {
     expect(await orm.isConnected()).toBe(true);
@@ -20,7 +20,7 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     expect(await orm.isConnected()).toBe(true);
 
     // as the db lives only in memory, we need to re-create the schema after reconnection
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   test('should convert entity to PK when trying to search by entity', async () => {
@@ -157,15 +157,14 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     expect(mock.mock.calls.length).toBe(6);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('savepoint trx');
-    expect(mock.mock.calls[2][0]).toMatch('insert into `author4` (`created_at`, `email`, `name`, `terms_accepted`, `updated_at`) values (?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[2][0]).toMatch('insert into `author4` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values (?, ?, ?, ?, ?)');
     expect(mock.mock.calls[3][0]).toMatch('rollback to savepoint trx');
-    expect(mock.mock.calls[4][0]).toMatch('insert into `author4` (`created_at`, `email`, `name`, `terms_accepted`, `updated_at`) values (?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[4][0]).toMatch('insert into `author4` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values (?, ?, ?, ?, ?)');
     expect(mock.mock.calls[5][0]).toMatch('commit');
     await expect(orm.em.findOne(Author4, { name: 'God Persisted!' })).resolves.not.toBeNull();
   });
 
   test('should load entities', async () => {
-    expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.em).toBeInstanceOf(EntityManager);
 
     const god = orm.em.create(Author4, { name: 'God', email: 'hello@heaven.god' });
@@ -719,6 +718,11 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     expect(wrap(books[0]).toObject()).toMatchObject({
       tags: books[0].tags.getItems().map(t => ({ name: t.name })),
     });
+
+    orm.em.addFilter('testFilter', { name: 'tag 11-08' }, BookTag4, false);
+    const filteredTags = await books[0].tags.matching({ filters: { testFilter: true } });
+    expect(filteredTags).toHaveLength(1);
+    expect(filteredTags[0].name).toBe('tag 11-08');
   });
 
   test('disabling identity map', async () => {
@@ -940,6 +944,66 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     expect(b1.virtual).toBe('123');
   });
 
+  test('merging detached entity', async () => {
+    const author = orm.em.create(Author4, {
+      name: 'Jon Snow',
+      email: 'snow@wall.st',
+      books: [
+        { title: 'My Life on The Wall, part 1', tags: [{ id: 1, name: 'silly' }, { id: 3, name: 'sick' }] },
+        { title: 'My Life on The Wall, part 2', tags: [{ id: 1, name: 'silly' }, { id: 2, name: 'funny' }, { id: 5, name: 'sexy' }] },
+        { title: 'My Life on The Wall, part 3', tags: [{ id: 2, name: 'funny' }, { id: 4, name: 'strange' }, { id: 5, name: 'sexy' }] },
+      ],
+    });
+    author.favouriteBook = author.books[0];
+    await orm.em.persistAndFlush(author);
+    orm.em.clear();
+
+    // cache author with favouriteBook and its tags
+    const jon = await orm.em.findOneOrFail(Author4, author.id, { populate: ['favouriteBook.tags'] });
+    const cache = wrap(jon).toObject();
+
+    // merge cached author with his references
+    orm.em.clear();
+    const cachedAuthor = orm.em.merge(Author4, cache);
+    expect(cachedAuthor).toBe(cachedAuthor.favouriteBook?.author);
+    expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toEqual([
+      'Author4-' + author.id,
+      'Book4-' + author.books[0].id,
+      'BookTag4-1',
+      'BookTag4-3',
+    ]);
+    expect(author).not.toBe(cachedAuthor);
+    expect(author.id).toBe(cachedAuthor.id);
+    const book4 = orm.em.create(Book4, {
+      title: 'My Life on The Wall, part 4',
+      author: cachedAuthor,
+    });
+    await orm.em.persistAndFlush(book4);
+
+    // merge detached author
+    orm.em.clear();
+    const cachedAuthor2 = orm.em.merge(author);
+    expect(cachedAuthor2).toBe(cachedAuthor2.favouriteBook?.author);
+    expect([...orm.em.getUnitOfWork().getIdentityMap().keys()]).toEqual([
+      'Author4-' + author.id,
+      'Book4-' + author.books[0].id,
+      'Book4-' + author.books[1].id,
+      'Book4-' + author.books[2].id,
+      'BookTag4-1',
+      'BookTag4-2',
+      'BookTag4-4',
+      'BookTag4-5',
+      'BookTag4-3',
+    ]);
+    expect(author).toBe(cachedAuthor2);
+    expect(author.id).toBe(cachedAuthor2.id);
+    const book5 = orm.em.create(Book4, {
+      title: 'My Life on The Wall, part 5',
+      author: cachedAuthor2,
+    });
+    await orm.em.persistAndFlush(book5);
+  });
+
   test('batch update with changing OneToOne relation (GH issue #1025)', async () => {
     const bar1 = orm.em.create(FooBar4, { name: 'bar 1' });
     const bar2 = orm.em.create(FooBar4, { name: 'bar 2' });
@@ -1032,7 +1096,7 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
       .leftJoinAndSelect('b.tags', 't')
       .where({ 't.name': ['sick', 'sexy'] });
     const sql = 'select `a`.*, ' +
-      '`b`.`id` as `b__id`, `b`.`created_at` as `b__created_at`, `b`.`updated_at` as `b__updated_at`, `b`.`title` as `b__title`, `b`.`price` as `b__price`, `b`.`author_id` as `b__author_id`, `b`.`publisher_id` as `b__publisher_id`, `b`.`meta` as `b__meta`, ' +
+      '`b`.`id` as `b__id`, `b`.`created_at` as `b__created_at`, `b`.`updated_at` as `b__updated_at`, `b`.`title` as `b__title`, `b`.`price` as `b__price`, `b`.price * 1.19 as `b__price_taxed`, `b`.`author_id` as `b__author_id`, `b`.`publisher_id` as `b__publisher_id`, `b`.`meta` as `b__meta`, ' +
       '`t`.`id` as `t__id`, `t`.`created_at` as `t__created_at`, `t`.`updated_at` as `t__updated_at`, `t`.`name` as `t__name`, `t`.`version` as `t__version` ' +
       'from `author4` as `a` ' +
       'left join `book4` as `b` on `a`.`id` = `b`.`author_id` ' +
@@ -1054,6 +1118,34 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     expect(e2.name).toBe(`?baz? uh \\? ? wut? \\\\ wut`);
     const res = await orm.em.getKnex().raw('select ? as count', [1]);
     expect(res[0].count).toBe(1);
+  });
+
+  test('em.refresh', async () => {
+    const e = orm.em.create(Author4, { name: 'lalala', email: '123' });
+    await orm.em.persistAndFlush(e);
+    expect(e.name).toBe('lalala');
+    e.name = '123';
+
+    // refresh the value, ignore changes
+    expect(e.name).toBe('123');
+    await orm.em.refresh(e);
+    expect(e.name).toBe('lalala');
+
+    // no queries as we dropped the state by refreshing
+    const mock = mockLogger(orm);
+    await orm.em.flush();
+    expect(mock).not.toBeCalled();
+
+    orm.em.clear();
+
+    const e2 = await orm.em.findOneOrFail(Author4, { email: '123' });
+    expect(e2.name).toBe('lalala');
+    e2.name = '123';
+
+    // refresh the value, ignore changes
+    expect(e2.name).toBe('123');
+    await orm.em.refresh(e2);
+    expect(e2.name).toBe('lalala');
   });
 
   test('qb.getCount()`', async () => {
@@ -1088,6 +1180,28 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     const e = orm.em.create(Author4, { name: 'name', email: 'email' });
     expect(() => e.books.remove(null as any)).not.toThrow();
     expect(() => e.books.remove(undefined as any)).not.toThrow();
+  });
+
+  test('changing reference will issue update query', async () => {
+    const e = orm.em.create(Author4, { name: 'name', email: 'email' });
+    await orm.em.persistAndFlush(e);
+    orm.em.clear();
+
+    const ref = orm.em.getReference(Author4, e.id);
+
+    const mock = mockLogger(orm, ['query']);
+    await orm.em.flush();
+    expect(mock).not.toBeCalled();
+
+    ref.name = 'new name';
+    ref.email = 'new email';
+    expect(wrap(ref).isInitialized()).toBe(false);
+    await orm.em.flush();
+    expect(wrap(ref).isInitialized()).toBe(true);
+
+    expect(mock.mock.calls[0][0]).toMatch('begin');
+    expect(mock.mock.calls[1][0]).toMatch('update `author4` set `name` = ?, `email` = ?, `updated_at` = ? where `id` = ?');
+    expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
   // this should run in ~600ms (when running single test locally)
@@ -1166,7 +1280,7 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     // n:m relations
     let taggedBook = orm.em.create(Book4, { title: 'FullyTagged' });
     await orm.em.persistAndFlush(taggedBook);
-    const tags = [orm.em.create(BookTag4, { name: 'science-fiction' }), orm.em.create(BookTag4, { name: 'adventure' }), orm.em.create(BookTag4, { name: 'horror' })];
+    const tags = [orm.em.create(BookTag4, { name: 'science-fiction' }), orm.em.create(BookTag4, { name: 'adventure' }), orm.em.create(BookTag4, { name: 'horror' })] as const;
     taggedBook.tags.add(...tags);
     await expect(taggedBook.tags.loadCount()).resolves.toEqual(0);
     await orm.em.flush();
@@ -1240,7 +1354,7 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     const mock = mockLogger(orm);
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into `author4` (`created_at`, `email`, `name`, `terms_accepted`, `updated_at`) values');
+    expect(mock.mock.calls[1][0]).toMatch('insert into `author4` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values');
     expect(mock.mock.calls[2][0]).toMatch('insert into `book4` (`created_at`, `updated_at`, `title`, `author_id`) values');
     expect(mock.mock.calls[3][0]).toMatch('commit');
   });

@@ -1,9 +1,10 @@
 import { SeedManager } from '@mikro-orm/seeder';
 import { Configuration, MikroORM } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
+import { MongoDriver } from '@mikro-orm/mongodb';
 import { CLIHelper } from '@mikro-orm/cli';
 
-const config = new Configuration({ type: 'mongo' } as any, false);
+const config = new Configuration({ driver: MongoDriver } as any, false);
 const showHelpMock = jest.spyOn(CLIHelper, 'showHelp');
 showHelpMock.mockImplementation(() => void 0);
 const closeSpy = jest.spyOn(MikroORM.prototype, 'close');

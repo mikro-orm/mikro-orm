@@ -5,8 +5,8 @@ import {
   MikroORM,
   UnderscoreNamingStrategy,
 } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
-import type { MySqlDriver } from '@mikro-orm/mysql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { MySqlDriver } from '@mikro-orm/mysql';
 
 @Entity()
 class A {
@@ -28,7 +28,7 @@ describe('GH issue 2930', () => {
       orm = await MikroORM.init({
         entities: [A],
         dbName: 'mikro_orm_test_gh2930',
-        type: 'postgresql',
+        driver: PostgreSqlDriver,
         namingStrategy: class extends UnderscoreNamingStrategy {
 
           indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check'): string {
@@ -45,7 +45,7 @@ describe('GH issue 2930', () => {
     afterAll(() => orm.close(true));
 
     test(`should not ignore custom pk name`, async () => {
-      const sql = await orm.getSchemaGenerator().getCreateSchemaSQL();
+      const sql = await orm.schema.getCreateSchemaSQL();
       expect(sql).toMatchSnapshot();
     });
   });
@@ -57,7 +57,7 @@ describe('GH issue 2930', () => {
       orm = await MikroORM.init({
         entities: [A],
         dbName: 'mikro_orm_test_gh2930',
-        type: 'postgresql',
+        driver: PostgreSqlDriver,
         namingStrategy: class extends UnderscoreNamingStrategy {
 
           indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check'): string {
@@ -71,7 +71,7 @@ describe('GH issue 2930', () => {
     afterAll(() => orm.close(true));
 
     test(`should not generate a sql naming PK`, async () => {
-      const sql = await orm.getSchemaGenerator().getCreateSchemaSQL();
+      const sql = await orm.schema.getCreateSchemaSQL();
       expect(sql).toMatchSnapshot();
     });
   });
@@ -83,7 +83,8 @@ describe('GH issue 2930', () => {
       orm = await MikroORM.init({
         entities: [A],
         dbName: 'mikro_orm_test_gh2930',
-        type: 'mysql',
+        driver: MySqlDriver,
+        port: 3308,
         namingStrategy: class extends UnderscoreNamingStrategy {
 
           indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check'): string {
@@ -100,7 +101,7 @@ describe('GH issue 2930', () => {
     afterAll(() => orm.close(true));
 
     test(`should ignore custom pk name`, async () => {
-      const sql = await orm.getSchemaGenerator().getCreateSchemaSQL();
+      const sql = await orm.schema.getCreateSchemaSQL();
       expect(sql).toMatchSnapshot();
     });
   });

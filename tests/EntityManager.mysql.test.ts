@@ -17,7 +17,7 @@ describe('EntityManagerMySql', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql());
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
   afterEach(() => {
     orm.config.set('debug', false);
     Author2Subscriber.log.length = 0;
@@ -37,7 +37,7 @@ describe('EntityManagerMySql', () => {
 
   test('getConnectionOptions()', async () => {
     const config = new Configuration({
-      type: 'mysql',
+      driver: MySqlDriver,
       clientUrl: 'mysql://root@127.0.0.1:3308/db_name',
       host: '127.0.0.10',
       password: 'secret',
@@ -147,14 +147,14 @@ describe('EntityManagerMySql', () => {
 
   test('connection returns correct URL', async () => {
     const conn1 = new MySqlConnection(new Configuration({
-      type: 'mysql',
+      driver: MySqlDriver,
       clientUrl: 'mysql://example.host.com',
       port: 1234,
       user: 'usr',
       password: 'pw',
     } as any, false));
     await expect(conn1.getClientUrl()).toBe('mysql://usr:*****@example.host.com:1234');
-    const conn2 = new MySqlConnection(new Configuration({ type: 'mysql', port: 3307 } as any, false));
+    const conn2 = new MySqlConnection(new Configuration({ driver: MySqlDriver, port: 3307 } as any, false));
     await expect(conn2.getClientUrl()).toBe('mysql://root@127.0.0.1:3307');
   });
 
@@ -300,6 +300,21 @@ describe('EntityManagerMySql', () => {
     await orm.em.flush();
   });
 
+  test('partial loading of 1:1 owner from inverse side', async () => {
+    const bar = FooBar2.create('fb');
+    bar.baz = new FooBaz2('fz');
+    await orm.em.fork().persistAndFlush(bar);
+
+    const a1 = await orm.em.findOneOrFail(FooBaz2, bar.baz, {
+      fields: ['name', 'bar'],
+      populate: [],
+    });
+    expect(a1.name).toBe('fz');
+    expect(a1.bar).toBeInstanceOf(FooBar2);
+    expect(a1.version).toBeUndefined();
+    expect(wrap(a1.bar).isInitialized()).toBe(false);
+  });
+
   test('transactions', async () => {
     const god1 = new Author2('God1', 'hello@heaven1.god');
     await orm.em.begin();
@@ -350,7 +365,7 @@ describe('EntityManagerMySql', () => {
 
     expect(mock.mock.calls[0][0]).toMatch('set transaction isolation level read uncommitted');
     expect(mock.mock.calls[1][0]).toMatch('begin');
-    expect(mock.mock.calls[2][0]).toMatch('insert into `author2` (`created_at`, `email`, `name`, `terms_accepted`, `updated_at`) values (?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[2][0]).toMatch('insert into `author2` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values (?, ?, ?, ?, ?)');
     expect(mock.mock.calls[3][0]).toMatch('rollback');
   });
 
@@ -399,9 +414,9 @@ describe('EntityManagerMySql', () => {
     expect(mock.mock.calls.length).toBe(6);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('savepoint trx');
-    expect(mock.mock.calls[2][0]).toMatch('insert into `author2` (`created_at`, `email`, `name`, `terms_accepted`, `updated_at`) values (?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[2][0]).toMatch('insert into `author2` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values (?, ?, ?, ?, ?)');
     expect(mock.mock.calls[3][0]).toMatch('rollback to savepoint trx');
-    expect(mock.mock.calls[4][0]).toMatch('insert into `author2` (`created_at`, `email`, `name`, `terms_accepted`, `updated_at`) values (?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[4][0]).toMatch('insert into `author2` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values (?, ?, ?, ?, ?)');
     expect(mock.mock.calls[5][0]).toMatch('commit');
     await expect(orm.em.findOne(Author2, { name: 'God Persisted!' })).resolves.not.toBeNull();
   });
@@ -462,6 +477,10 @@ describe('EntityManagerMySql', () => {
     await orm.em.populate(authors, ['books', 'favouriteBook'], { where: { books: '123' } });
     expect(await authorRepository.findOne({ email: 'not existing' })).toBeNull();
     await expect(orm.em.populate([] as Author2[], ['books', 'favouriteBook'])).resolves.toEqual([]);
+
+    // full text search test
+    const fullTextBooks = (await booksRepository.find({ title: { $fulltext: 'life wall' } }))!;
+    expect(fullTextBooks.length).toBe(3);
 
     // count test
     const count = await authorRepository.count();
@@ -842,7 +861,7 @@ describe('EntityManagerMySql', () => {
     const qb2 = orm.em.createQueryBuilder(Book2);
     const res2 = await qb2.select('*').where({ title: 'not exists' }).getSingleResult();
     expect(res2).toBeNull();
-    const res3 = await qb1.select('*').getResult();
+    const res3 = await qb1.clone().select('*').getResult();
     expect(res3).toHaveLength(1);
   });
 
@@ -1110,7 +1129,6 @@ describe('EntityManagerMySql', () => {
     expect(tags[0].books.isDirty()).toBe(false);
     expect(() => tags[0].books.getItems()).toThrowError(/Collection<Book2> of entity BookTag2\[\d+] not initialized/);
     expect(() => tags[0].books.remove(book1, book2)).toThrowError(/Collection<Book2> of entity BookTag2\[\d+] not initialized/);
-    expect(() => tags[0].books.removeAll()).toThrowError(/Collection<Book2> of entity BookTag2\[\d+] not initialized/);
     expect(() => tags[0].books.contains(book1)).toThrowError(/Collection<Book2> of entity BookTag2\[\d+] not initialized/);
 
     // test M:N lazy load
@@ -1715,7 +1733,7 @@ describe('EntityManagerMySql', () => {
     // check fired queries
     expect(mock.mock.calls.length).toBe(6);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into `author2` (`created_at`, `email`, `name`, `terms_accepted`, `updated_at`) values (?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[1][0]).toMatch('insert into `author2` (`created_at`, `updated_at`, `name`, `email`, `terms_accepted`) values (?, ?, ?, ?, ?)');
     expect(mock.mock.calls[2][0]).toMatch('insert into `book2` (`uuid_pk`, `created_at`, `title`, `author_id`) values (?, ?, ?, ?), (?, ?, ?, ?), (?, ?, ?, ?)');
     expect(mock.mock.calls[3][0]).toMatch('update `author2` set `favourite_author_id` = ?, `updated_at` = ? where `id` = ?');
     expect(mock.mock.calls[4][0]).toMatch('commit');
@@ -1931,7 +1949,7 @@ describe('EntityManagerMySql', () => {
 
     expect(mock.mock.calls.length).toBe(3);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('[37m[1minsert[22m[39m [37m[1minto[22m[39m [33m`author2`[39m ([33m`created_at`[39m[0m,[0m [33m`email`[39m[0m,[0m [33m`name`[39m[0m,[0m [33m`terms_accepted`[39m[0m,[0m [33m`updated_at`[39m) [37m[1mvalues[22m[39m (?[0m,[0m ?[0m,[0m ?[0m,[0m ?[0m,[0m ?)');
+    expect(mock.mock.calls[1][0]).toMatch('[37m[1minsert[22m[39m [37m[1minto[22m[39m [33m`author2`[39m ([33m`created_at`[39m[0m,[0m [33m`updated_at`[39m[0m,[0m [33m`name`[39m[0m,[0m [33m`email`[39m[0m,[0m [33m`terms_accepted`[39m) [37m[1mvalues[22m[39m (?[0m,[0m ?[0m,[0m ?[0m,[0m ?[0m,[0m ?)');
     expect(mock.mock.calls[2][0]).toMatch('commit');
 
     Object.assign(orm.config.getLogger(), { highlighter: new NullHighlighter() });
@@ -2183,7 +2201,7 @@ describe('EntityManagerMySql', () => {
     await orm.em.findOneOrFail(FooBar2, { random: { $gt: 0.5 } }, { having: { random: { $gt: 0.5 } } });
     expect(mock.mock.calls[1][0]).toMatch('begin');
     expect(mock.mock.calls[2][0]).toMatch('insert into `foo_bar2` (`name`) values (?)');
-    expect(mock.mock.calls[3][0]).toMatch('select `f0`.`id`, `f0`.`version`, `f0`.`version` from `foo_bar2` as `f0` where `f0`.`id` in (?)');
+    expect(mock.mock.calls[3][0]).toMatch('select `f0`.`id`, `f0`.`version` from `foo_bar2` as `f0` where `f0`.`id` in (?)');
     expect(mock.mock.calls[4][0]).toMatch('commit');
     expect(mock.mock.calls[5][0]).toMatch('select `f0`.*, (select 123) as `random` from `foo_bar2` as `f0` where (select 123) > ? having (select 123) > ? limit ?');
   });

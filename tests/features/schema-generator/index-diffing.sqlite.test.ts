@@ -1,5 +1,6 @@
 import { Entity, IdentifiedReference, Index, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Author {
@@ -120,15 +121,15 @@ export class Book4 {
 
 describe('indexes on FKs in postgres (GH 1518)', () => {
 
-  let orm: MikroORM<PostgreSqlDriver>;
+  let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Author],
       dbName: `:memory:`,
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(() => orm.close(true));
@@ -136,27 +137,27 @@ describe('indexes on FKs in postgres (GH 1518)', () => {
   test('schema generator respect indexes on FKs on column update', async () => {
     await orm.discoverEntity(Book1);
     orm.getMetadata().reset('Book0');
-    const diff1 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toMatchSnapshot();
-    await orm.getSchemaGenerator().execute(diff1);
+    await orm.schema.execute(diff1);
 
     orm.getMetadata().reset('Book1');
     await orm.discoverEntity(Book2);
-    const diff2 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    const diff2 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff2).toMatchSnapshot();
-    await orm.getSchemaGenerator().execute(diff2);
+    await orm.schema.execute(diff2);
 
     orm.getMetadata().reset('Book2');
     await orm.discoverEntity(Book3);
-    const diff3 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    const diff3 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff3).toMatchSnapshot();
-    await orm.getSchemaGenerator().execute(diff3);
+    await orm.schema.execute(diff3);
 
     orm.getMetadata().reset('Book3');
     await orm.discoverEntity(Book4);
-    const diff4 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    const diff4 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff4).toMatchSnapshot();
-    await orm.getSchemaGenerator().execute(diff4);
+    await orm.schema.execute(diff4);
   });
 
 });

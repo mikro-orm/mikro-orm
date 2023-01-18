@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { Entity, MikroORM, PrimaryKey, ManyToMany, Collection } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 
 @Entity()
@@ -30,32 +30,32 @@ describe('adding FK column', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [User, Profile],
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
       dbName: 'fk-column-postgres-schema',
       schema: 'test',
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
+    await orm.schema.ensureDatabase();
+    await orm.schema.dropSchema();
   });
 
   afterAll(() => orm.close(true));
 
   test('schema: adding 1:1 relation', async () => {
-    const diff1 = await orm.getSchemaGenerator().getCreateSchemaSQL();
+    const diff1 = await orm.schema.getCreateSchemaSQL();
     expect(diff1).toMatchSnapshot();
-    const diff2 = await orm.getSchemaGenerator().getUpdateSchemaSQL();
+    const diff2 = await orm.schema.getUpdateSchemaSQL();
     expect(diff2).toMatchSnapshot();
-    const diff3 = await orm.getSchemaGenerator().getDropSchemaSQL();
+    const diff3 = await orm.schema.getDropSchemaSQL();
     expect(diff3).toMatchSnapshot();
 
-    await orm.getSchemaGenerator().execute(diff1); // create
-    await orm.getSchemaGenerator().execute(diff3); // drop
-    await orm.getSchemaGenerator().execute(diff2); // update from scratch
+    await orm.schema.execute(diff1); // create
+    await orm.schema.execute(diff3); // drop
+    await orm.schema.execute(diff2); // update from scratch
 
-    const diff4 = await orm.getSchemaGenerator().getUpdateSchemaSQL();
+    const diff4 = await orm.schema.getUpdateSchemaSQL();
     expect(diff4).toBe('');
 
-    await orm.getSchemaGenerator().execute(diff3); // drop
+    await orm.schema.execute(diff3); // drop
   });
 
 });

@@ -3,6 +3,214 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.7](https://github.com/mikro-orm/mikro-orm/compare/v5.6.6...v5.6.7) (2023-01-13)
+
+**Note:** Version bump only for package @mikro-orm/mysql
+
+
+
+
+
+## [5.6.6](https://github.com/mikro-orm/mikro-orm/compare/v5.6.5...v5.6.6) (2023-01-10)
+
+**Note:** Version bump only for package @mikro-orm/mysql
+
+
+
+
+
+## [5.6.5](https://github.com/mikro-orm/mikro-orm/compare/v5.6.4...v5.6.5) (2023-01-09)
+
+**Note:** Version bump only for package @mikro-orm/mysql
+
+
+
+
+
+## [5.6.4](https://github.com/mikro-orm/mikro-orm/compare/v5.6.3...v5.6.4) (2023-01-04)
+
+
+### Bug Fixes
+
+* **core:** improve inference of driver exported `MikroORM.init()` ([497f274](https://github.com/mikro-orm/mikro-orm/commit/497f27451bbca37c7dd9222716257692724d3a0d))
+
+
+
+
+
+## [5.6.3](https://github.com/mikro-orm/mikro-orm/compare/v5.6.2...v5.6.3) (2022-12-28)
+
+**Note:** Version bump only for package @mikro-orm/mysql
+
+
+
+
+
+## [5.6.2](https://github.com/mikro-orm/mikro-orm/compare/v5.6.1...v5.6.2) (2022-12-25)
+
+**Note:** Version bump only for package @mikro-orm/mysql
+
+
+
+
+
+## [5.6.1](https://github.com/mikro-orm/mikro-orm/compare/v5.6.0...v5.6.1) (2022-12-20)
+
+**Note:** Version bump only for package @mikro-orm/mysql
+
+
+
+
+
+# [5.6.0](https://github.com/mikro-orm/mikro-orm/compare/v5.5.3...v5.6.0) (2022-12-09)
+
+
+### Bug Fixes
+
+* **mysql:** respect `auto_increment_increment` when batch inserting ([516db6d](https://github.com/mikro-orm/mikro-orm/commit/516db6d3e97b6309d55e8a73a73bb85144af1196)), closes [#3828](https://github.com/mikro-orm/mikro-orm/issues/3828)
+
+
+### Features
+
+* **core:** ensure database exists automatically ([#3830](https://github.com/mikro-orm/mikro-orm/issues/3830)) ([f92da01](https://github.com/mikro-orm/mikro-orm/commit/f92da01101fbb212dec5d8648a51068da7122ea8))
+
+
+
+
+
+## [5.5.3](https://github.com/mikro-orm/mikro-orm/compare/v5.5.2...v5.5.3) (2022-11-10)
+
+**Note:** Version bump only for package @mikro-orm/mysql
+
+
+
+
+
+## [5.5.2](https://github.com/mikro-orm/mikro-orm/compare/v5.5.1...v5.5.2) (2022-11-07)
+
+**Note:** Version bump only for package @mikro-orm/mysql
+
+
+
+
+
+## [5.5.1](https://github.com/mikro-orm/mikro-orm/compare/v5.5.0...v5.5.1) (2022-11-05)
+
+**Note:** Version bump only for package @mikro-orm/mysql
+
+
+
+
+
+# [5.5.0](https://github.com/mikro-orm/mikro-orm/compare/v5.4.2...v5.5.0) (2022-10-23)
+
+
+### Features
+
+* **core:** add `defineConfig` helper ([#3500](https://github.com/mikro-orm/mikro-orm/issues/3500)) ([67d3c68](https://github.com/mikro-orm/mikro-orm/commit/67d3c682bf11d8e9369e351da6e4ee20958b9581))
+* **core:** add `MikroORM` and `Options` exports to each driver package ([#3499](https://github.com/mikro-orm/mikro-orm/issues/3499)) ([b68ed47](https://github.com/mikro-orm/mikro-orm/commit/b68ed47acac2da8b845ec33d6f30692b88c04acd))
+
+
+### Performance Improvements
+
+* **schema:** improve schema inspection speed in SQL drivers ([#3549](https://github.com/mikro-orm/mikro-orm/issues/3549)) ([74dc3b1](https://github.com/mikro-orm/mikro-orm/commit/74dc3b1aba07666911fb6fc74b55f6547b2c5b4b))
+
+
+
+
+
+## [5.4.2](https://github.com/mikro-orm/mikro-orm/compare/v5.4.1...v5.4.2) (2022-09-12)
+
+**Note:** Version bump only for package @mikro-orm/mysql
+
+
+
+
+
+## [5.4.1](https://github.com/mikro-orm/mikro-orm/compare/v5.4.0...v5.4.1) (2022-09-08)
+
+
+### Bug Fixes
+
+* **core:** change internal dependencies to use `~` instead of `^` ([fdbf67c](https://github.com/mikro-orm/mikro-orm/commit/fdbf67c53055a6a4b455208dec3b815736a55e3b)), closes [#3468](https://github.com/mikro-orm/mikro-orm/issues/3468)
+
+
+
+
+
+# [5.4.0](https://github.com/mikro-orm/mikro-orm/compare/v5.3.1...v5.4.0) (2022-09-01)
+
+
+### Bug Fixes
+
+* **core:** update to TypeScript 4.8 and improve `EntityDTO` type ([#3389](https://github.com/mikro-orm/mikro-orm/issues/3389)) ([f2957fb](https://github.com/mikro-orm/mikro-orm/commit/f2957fb14141294cfdffebf6cce6eaa937538cfb))
+
+
+
+
+
+## [5.3.1](https://github.com/mikro-orm/mikro-orm/compare/v5.3.0...v5.3.1) (2022-08-04)
+
+**Note:** Version bump only for package @mikro-orm/mysql
+
+
+
+
+
+# [5.3.0](https://github.com/mikro-orm/mikro-orm/compare/v5.2.4...v5.3.0) (2022-08-01)
+
+
+### Features
+
+* add support for full text searches ([#3317](https://github.com/mikro-orm/mikro-orm/issues/3317)) ([8b8f140](https://github.com/mikro-orm/mikro-orm/commit/8b8f14071b92e91161a32aa272315a0ecce1bc0b))
+
+
+
+
+
+## [5.2.4](https://github.com/mikro-orm/mikro-orm/compare/v5.2.3...v5.2.4) (2022-07-25)
+
+**Note:** Version bump only for package @mikro-orm/mysql
+
+
+
+
+
+## [5.2.3](https://github.com/mikro-orm/mikro-orm/compare/v5.2.2...v5.2.3) (2022-07-08)
+
+
+### Bug Fixes
+
+* **mariadb:** backport some fixes from the mysql driver ([9a57386](https://github.com/mikro-orm/mikro-orm/commit/9a57386af03a268302b88aa70b20038911bd0cc3))
+
+
+
+
+
+## [5.2.2](https://github.com/mikro-orm/mikro-orm/compare/v5.2.1...v5.2.2) (2022-07-03)
+
+**Note:** Version bump only for package @mikro-orm/mysql
+
+
+
+
+
+## [5.2.1](https://github.com/mikro-orm/mikro-orm/compare/v5.2.0...v5.2.1) (2022-06-21)
+
+
+### Bug Fixes
+
+* **mysql:** handle mediumint PKs correctly ([0bbbe5c](https://github.com/mikro-orm/mikro-orm/commit/0bbbe5c7827875a88a199b94add9ae81776dce42)), closes [#3230](https://github.com/mikro-orm/mikro-orm/issues/3230)
+
+
+### Features
+
+* **core:** allow to adjust default type mapping ([ca8ce57](https://github.com/mikro-orm/mikro-orm/commit/ca8ce5721f0d547ceec1cf645443b6ae00deaf09)), closes [#3066](https://github.com/mikro-orm/mikro-orm/issues/3066)
+
+
+
+
+
 # [5.2.0](https://github.com/mikro-orm/mikro-orm/compare/v5.1.5...v5.2.0) (2022-06-10)
 
 

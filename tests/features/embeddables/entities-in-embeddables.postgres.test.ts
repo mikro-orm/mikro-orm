@@ -1,6 +1,6 @@
 import type { ObjectHydrator } from '@mikro-orm/core';
 import { Embeddable, Embedded, Entity, ManyToOne, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers';
 
 @Entity()
@@ -130,10 +130,10 @@ describe('embedded entities in postgres', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [User],
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
       dbName: `mikro_orm_test_entities_in_embedddables`,
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   beforeEach(async () => {
@@ -151,9 +151,9 @@ describe('embedded entities in postgres', () => {
   });
 
   test('schema', async () => {
-    await expect(orm.getSchemaGenerator().getCreateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('nested embeddables 1');
-    await expect(orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('nested embeddables 2');
-    await expect(orm.getSchemaGenerator().getDropSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('nested embeddables 3');
+    await expect(orm.schema.getCreateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('nested embeddables 1');
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('nested embeddables 2');
+    await expect(orm.schema.getDropSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('nested embeddables 3');
   });
 
   test('diffing', async () => {

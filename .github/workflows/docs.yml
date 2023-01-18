@@ -16,6 +16,10 @@ jobs:
       with:
         node-version: 16
 
+    - name: Enable corepack
+      run: |
+        corepack enable
+
     - name: Cache node_modules
       uses: actions/cache@v3
       with:
@@ -35,7 +39,7 @@ jobs:
 
     - name: Install
       run: |
-        yarn config set ignore-engines true
+        corepack prepare yarn@stable --activate
         yarn
 
     - name: Build & deploy docs

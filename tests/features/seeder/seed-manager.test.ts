@@ -1,4 +1,4 @@
-import { remove, readFile } from 'fs-extra';
+import { readFile, remove } from 'fs-extra';
 import { MikroORM } from '@mikro-orm/core';
 import { SeedManager } from '@mikro-orm/seeder';
 import { SchemaGenerator } from '@mikro-orm/sqlite';
@@ -28,15 +28,14 @@ describe('Seeder', () => {
   });
 
   test('seed', async () => {
-    const seeder = orm.getSeeder();
     const bookRunMock = jest.spyOn(Book3Seeder.prototype, 'run');
     bookRunMock.mockImplementation(async () => void 0);
     const authorRunMock = jest.spyOn(Author3Seeder.prototype, 'run');
     authorRunMock.mockImplementation(async () => void 0);
 
-    await seeder.seed(Book3Seeder);
+    await orm.seeder.seed(Book3Seeder);
     expect(bookRunMock).toHaveBeenCalledTimes(1);
-    await seeder.seed(Book3Seeder, Author3Seeder);
+    await orm.seeder.seed(Book3Seeder, Author3Seeder);
     expect(bookRunMock).toHaveBeenCalledTimes(2);
     expect(authorRunMock).toHaveBeenCalledTimes(1);
   });
@@ -46,16 +45,15 @@ describe('Seeder', () => {
     options.path = './database/seeder';
     options.defaultSeeder = 'DatabaseSeeder';
     orm.config.set('seeder', options);
-    const seeder = orm.getSeeder();
     const seedMock = jest.spyOn(SeedManager.prototype, 'seed');
 
-    await seeder.seedString('Book3Seeder');
+    await orm.seeder.seedString('Book3Seeder');
     expect(seedMock).toHaveBeenCalledTimes(1);
-    await seeder.seedString('Book3Seeder', 'Author3Seeder');
+    await orm.seeder.seedString('Book3Seeder', 'Author3Seeder');
     expect(seedMock).toHaveBeenCalledTimes(3);
 
     const re = 'Seeder class Unknown not found in ./tests/database/seeder/!(*.d).{js,ts}';
-    await expect(seeder.seedString('Unknown')).rejects.toThrow(re);
+    await expect(orm.seeder.seedString('Unknown')).rejects.toThrow(re);
   });
 
   test('createSeeder (TS)', async () => {
@@ -63,9 +61,7 @@ describe('Seeder', () => {
     options.path = process.cwd() + '/temp/seeders';
     options.defaultSeeder = 'DatabaseSeeder';
     orm.config.set('seeder', options);
-    const seeder = orm.getSeeder();
-
-    const seederFile = await seeder.createSeeder('Publisher3Seeder');
+    const seederFile = await orm.seeder.createSeeder('Publisher3Seeder');
     expect(seederFile).toBe(process.cwd() + `/temp/seeders/Publisher3Seeder.ts`);
     const fileContents = await readFile(seederFile, 'utf8');
     expect(fileContents).toContain('export class Publisher3Seeder extends Seeder {');
@@ -78,9 +74,7 @@ describe('Seeder', () => {
     options.emit = 'js';
     options.defaultSeeder = 'DatabaseSeeder';
     orm.config.set('seeder', options);
-    const seeder = orm.getSeeder();
-
-    const seederFile = await seeder.createSeeder('Publisher3Seeder');
+    const seederFile = await orm.seeder.createSeeder('Publisher3Seeder');
     expect(seederFile).toBe(process.cwd() + `/temp/seeders/Publisher3Seeder.js`);
     const fileContents = await readFile(seederFile, 'utf8');
     expect(fileContents).toContain('exports.Publisher3Seeder = Publisher3Seeder;');

@@ -1,4 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 export class Address {
@@ -38,10 +39,10 @@ describe('GH issue 2784', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Address],
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
       dbName: 'mikro_orm_test_2781',
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(async () => {

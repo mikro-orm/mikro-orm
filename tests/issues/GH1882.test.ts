@@ -1,6 +1,6 @@
 import { BigIntType, Collection, Entity, ManyToOne, MikroORM, OneToMany, PopulateHint, PrimaryKey, Property } from '@mikro-orm/core';
-import type { MySqlDriver } from '@mikro-orm/mysql';
 import { mockLogger } from '../helpers';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Foo {
@@ -8,7 +8,6 @@ export class Foo {
   @PrimaryKey({ type: BigIntType })
   id!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => Bar, bar => bar.foo)
   barItems = new Collection<Bar>(this);
 
@@ -33,15 +32,15 @@ export class Bar {
 
 describe('GH issue 1882', () => {
 
-  let orm: MikroORM<MySqlDriver>;
+  let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Foo, Bar],
       dbName: `:memory:`,
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(() => orm.close(true));

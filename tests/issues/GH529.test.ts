@@ -1,5 +1,5 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType, Property } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 export class Customer {
@@ -89,9 +89,9 @@ describe('GH issue 529', () => {
     orm = await MikroORM.init({
       entities: [Customer, Order, OrderItem, Product],
       dbName: `mikro_orm_test_gh_529`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(async () => {
@@ -117,7 +117,7 @@ describe('GH issue 529', () => {
   });
 
   test(`GH issue 760`, async () => {
-    const sql = await orm.getSchemaGenerator().getCreateSchemaSQL();
+    const sql = await orm.schema.getCreateSchemaSQL();
     expect(sql).toMatchSnapshot();
   });
 

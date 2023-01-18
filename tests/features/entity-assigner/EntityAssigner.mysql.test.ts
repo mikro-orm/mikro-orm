@@ -1,6 +1,6 @@
 import type { MikroORM } from '@mikro-orm/core';
 import { Reference, wrap } from '@mikro-orm/core';
-import type { MySqlDriver } from '@mikro-orm/mysql';
+import { MySqlDriver } from '@mikro-orm/mysql';
 import { initORMMySql } from '../../bootstrap';
 import { Author2, Book2, BookTag2, FooBar2, Publisher2, PublisherType } from '../../entities-sql';
 
@@ -9,7 +9,7 @@ describe('EntityAssignerMySql', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
 
   test('assign() should update entity values [mysql]', async () => {
     const god = new Author2('God', 'hello@heaven.god');
@@ -48,7 +48,6 @@ describe('EntityAssignerMySql', () => {
     expect(god.createdAt).toEqual(new Date('2018-01-01'));
 
     const d2 = +new Date('2018-01-01 00:00:00.123');
-    // @ts-expect-error
     wrap(god).assign({ createdAt: '' + d2 });
     expect(god.createdAt).toEqual(new Date('2018-01-01 00:00:00.123'));
 

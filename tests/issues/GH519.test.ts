@@ -1,5 +1,5 @@
 import { Entity, PrimaryKey, MikroORM, ManyToOne, Collection, OneToMany } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -48,9 +48,9 @@ describe('GH issue 519', () => {
     orm = await MikroORM.init({
       entities: [Competition, User, Registration],
       dbName: `mikro_orm_test_gh_519`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(() => orm.close(true));

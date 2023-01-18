@@ -1,5 +1,6 @@
 import { MikroORM, Entity, PrimaryKey, Property, OptimisticLockError } from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
+import { MongoDriver } from '@mikro-orm/mongodb';
 
 @Entity()
 export class ConcurrencyCheckUser {
@@ -37,7 +38,7 @@ describe('optimistic locking - concurrency check (mongo)', () => {
     orm = await MikroORM.init({
       entities: [ConcurrencyCheckUser],
       clientUrl: 'mongodb://localhost:27017/mikro_orm_test_concurrency_check',
-      type: 'mongo',
+      driver: MongoDriver,
     });
     mock = mockLogger(orm, ['query', 'query-params']);
   });
@@ -55,19 +56,19 @@ describe('optimistic locking - concurrency check (mongo)', () => {
     test.other = 'dsa';
 
     await orm.em.persistAndFlush(test);
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('concurrency-check-user').insertOne({ _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 20, other: 'dsa' }, { session: undefined });`);
+    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('concurrency-check-user').insertMany([ { _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 20, other: 'dsa' } ], {});`);
 
     mock.mockReset();
 
     test.age = 30;
     await orm.em.flush();
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('concurrency-check-user').updateMany({ _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 20 }, { '$set': { age: 30 } }, { session: undefined });`);
+    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('concurrency-check-user').updateMany({ _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 20 }, { '$set': { age: 30 } }, {});`);
 
     mock.mockReset();
 
     test.age = 40;
     await orm.em.flush();
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('concurrency-check-user').updateMany({ _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 30 }, { '$set': { age: 40 } }, { session: undefined });`);
+    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('concurrency-check-user').updateMany({ _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 30 }, { '$set': { age: 40 } }, {});`);
 
     mock.mockReset();
 
@@ -78,7 +79,7 @@ describe('optimistic locking - concurrency check (mongo)', () => {
 
     test.age = 41;
     await orm.em.flush();
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('concurrency-check-user').updateMany({ _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 40 }, { '$set': { age: 41, other: 'asd' } }, { session: undefined });`);
+    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('concurrency-check-user').updateMany({ _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 40 }, { '$set': { age: 41, other: 'asd' } }, {});`);
   });
 
   test('throws when someone changed the state in the meantime', async () => {
@@ -108,23 +109,23 @@ describe('optimistic locking - concurrency check (mongo)', () => {
     test2.other = 'lol';
 
     await orm.em.persistAndFlush([test1, test2]);
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('concurrency-check-user').insertMany([ { _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 20, other: 'dsa' }, { _id: '2', firstName: 'John', lastName: 'Smith', age: 25, other: 'lol' } ], { session: undefined });`);
+    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('concurrency-check-user').insertMany([ { _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 20, other: 'dsa' }, { _id: '2', firstName: 'John', lastName: 'Smith', age: 25, other: 'lol' } ], {});`);
 
     mock.mockReset();
 
     test1.age = 30;
     test2.age = 35;
     await orm.em.flush();
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('concurrency-check-user').find({ '$or': [ { _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 20 }, { _id: '2', firstName: 'John', lastName: 'Smith', age: 25 } ] }, { session: undefined, projection: { _id: 1, firstName: 1, lastName: 1, age: 1 } }).toArray();`);
-    expect(mock.mock.calls[1][0]).toMatch(`bulk = db.getCollection('concurrency-check-user').initializeUnorderedBulkOp({ session: undefined });bulk.find({ _id: '1' }).update({ '$set': { age: 30 } });bulk.find({ _id: '2' }).update({ '$set': { age: 35 } });bulk.execute()`);
+    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('concurrency-check-user').find({ '$or': [ { _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 20 }, { _id: '2', firstName: 'John', lastName: 'Smith', age: 25 } ] }, { projection: { _id: 1, firstName: 1, lastName: 1, age: 1 } }).toArray();`);
+    expect(mock.mock.calls[1][0]).toMatch(`bulk = db.getCollection('concurrency-check-user').initializeUnorderedBulkOp({});bulk.find({ _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 20 }).update({ '$set': { age: 30 } });bulk.find({ _id: '2', firstName: 'John', lastName: 'Smith', age: 25 }).update({ '$set': { age: 35 } });bulk.execute()`);
 
     mock.mockReset();
 
     test1.age = 40;
     test2.age = 45;
     await orm.em.flush();
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('concurrency-check-user').find({ '$or': [ { _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 30 }, { _id: '2', firstName: 'John', lastName: 'Smith', age: 35 } ] }, { session: undefined, projection: { _id: 1, firstName: 1, lastName: 1, age: 1 } }).toArray();`);
-    expect(mock.mock.calls[1][0]).toMatch(`bulk = db.getCollection('concurrency-check-user').initializeUnorderedBulkOp({ session: undefined });bulk.find({ _id: '1' }).update({ '$set': { age: 40 } });bulk.find({ _id: '2' }).update({ '$set': { age: 45 } });bulk.execute()`);
+    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('concurrency-check-user').find({ '$or': [ { _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 30 }, { _id: '2', firstName: 'John', lastName: 'Smith', age: 35 } ] }, { projection: { _id: 1, firstName: 1, lastName: 1, age: 1 } }).toArray();`);
+    expect(mock.mock.calls[1][0]).toMatch(`bulk = db.getCollection('concurrency-check-user').initializeUnorderedBulkOp({});bulk.find({ _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 30 }).update({ '$set': { age: 40 } });bulk.find({ _id: '2', firstName: 'John', lastName: 'Smith', age: 35 }).update({ '$set': { age: 45 } });bulk.execute()`);
 
     mock.mockReset();
 
@@ -137,8 +138,8 @@ describe('optimistic locking - concurrency check (mongo)', () => {
     test1.age = 41;
     test2.age = 46;
     await orm.em.flush();
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('concurrency-check-user').find({ '$or': [ { _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 40 }, { _id: '2', firstName: 'John', lastName: 'Smith', age: 45 } ] }, { session: undefined, projection: { _id: 1, firstName: 1, lastName: 1, age: 1 } }).toArray();`);
-    expect(mock.mock.calls[1][0]).toMatch(`bulk = db.getCollection('concurrency-check-user').initializeUnorderedBulkOp({ session: undefined });bulk.find({ _id: '1' }).update({ '$set': { age: 41, other: 'asd' } });bulk.find({ _id: '2' }).update({ '$set': { age: 46, other: 'lololol' } });bulk.execute()`);
+    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('concurrency-check-user').find({ '$or': [ { _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 40 }, { _id: '2', firstName: 'John', lastName: 'Smith', age: 45 } ] }, { projection: { _id: 1, firstName: 1, lastName: 1, age: 1 } }).toArray();`);
+    expect(mock.mock.calls[1][0]).toMatch(`bulk = db.getCollection('concurrency-check-user').initializeUnorderedBulkOp({});bulk.find({ _id: '1', firstName: 'Jakub', lastName: 'Smith', age: 40 }).update({ '$set': { age: 41, other: 'asd' } });bulk.find({ _id: '2', firstName: 'John', lastName: 'Smith', age: 45 }).update({ '$set': { age: 46, other: 'lololol' } });bulk.execute()`);
   });
 
   test('throws when someone changed the state in the meantime (batch update)', async () => {

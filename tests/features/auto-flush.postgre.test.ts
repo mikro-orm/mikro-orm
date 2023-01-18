@@ -1,6 +1,6 @@
 import type { MikroORM } from '@mikro-orm/core';
 import { FlushMode, wrap } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 import { initORMPostgreSql, mockLogger } from '../bootstrap';
 import { Author2, BaseUser2, Book2, CompanyOwner2, Employee2, Manager2 } from '../entities-sql';
@@ -11,11 +11,11 @@ describe('automatic flushing when querying for overlapping entities via em.find/
 
   beforeAll(async () => {
     orm = await initORMPostgreSql(undefined, [CompanyOwner2, Employee2, Manager2, BaseUser2]);
-    await orm.getSchemaGenerator().updateSchema();
+    await orm.schema.updateSchema();
   });
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
   afterAll(async () => {
-    await orm.getSchemaGenerator().dropSchema();
+    await orm.schema.dropSchema();
     await orm.close(true);
   });
 

@@ -1,4 +1,5 @@
 import { Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Cat {
@@ -8,7 +9,6 @@ export class Cat {
   @PrimaryKey()
   name!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToOne(() => User, { primary: true, onDelete: 'CASCADE', wrappedReference: true })
   user!: IdentifiedReference<User>;
 
@@ -32,10 +32,10 @@ describe('GH 2723', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
       entities: [Cat, User],
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(() => orm.close(true));
@@ -47,7 +47,7 @@ describe('GH 2723', () => {
     orm.em.clear();
 
     const u = await orm.em.findOneOrFail(User, { id: 'TestUser' });
-    orm.em.remove(u).flush();
+    await orm.em.remove(u).flush();
 
     const users = await orm.em.count(User, {});
     const cats = await orm.em.count(User, {});

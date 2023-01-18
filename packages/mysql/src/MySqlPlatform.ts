@@ -1,7 +1,7 @@
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { MySqlSchemaHelper } from './MySqlSchemaHelper';
 import { MySqlExceptionConverter } from './MySqlExceptionConverter';
-import type { Type } from '@mikro-orm/core';
+import type { SimpleColumnMeta, Type } from '@mikro-orm/core';
 import { expr, Utils } from '@mikro-orm/core';
 
 export class MySqlPlatform extends AbstractSqlPlatform {
@@ -27,9 +27,9 @@ export class MySqlPlatform extends AbstractSqlPlatform {
     return 'tinyint(1)';
   }
 
-  getMappedType(type: string): Type<unknown> {
+  getDefaultMappedType(type: string): Type<unknown> {
     if (type === 'tinyint(1)') {
-      return super.getMappedType('boolean');
+      return super.getDefaultMappedType('boolean');
     }
 
     const normalizedType = this.extractSimpleType(type);
@@ -38,7 +38,7 @@ export class MySqlPlatform extends AbstractSqlPlatform {
       timestamp: 'datetime',
     };
 
-    return super.getMappedType(map[normalizedType] ?? type);
+    return super.getDefaultMappedType(map[normalizedType] ?? type);
   }
 
   supportsUnsigned(): boolean {
@@ -64,6 +64,23 @@ export class MySqlPlatform extends AbstractSqlPlatform {
 
   getDefaultPrimaryName(tableName: string, columns: string[]): string {
     return 'PRIMARY'; // https://dev.mysql.com/doc/refman/8.0/en/create-table.html#create-table-indexes-keys
+  }
+
+  supportsCreatingFullTextIndex(): boolean {
+    return true;
+  }
+
+  getFullTextWhereClause(): string {
+    return `match(:column:) against (:query in boolean mode)`;
+  }
+
+  getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
+    /* istanbul ignore next */
+    const quotedTableName = this.quoteIdentifier(schemaName ? `${schemaName}.${tableName}` : tableName);
+    const quotedColumnNames = columns.map(c => this.quoteIdentifier(c.name));
+    const quotedIndexName = this.quoteIdentifier(indexName);
+
+    return `alter table ${quotedTableName} add fulltext index ${quotedIndexName}(${quotedColumnNames.join(',')})`;
   }
 
 }

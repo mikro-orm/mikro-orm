@@ -1,7 +1,6 @@
 import type { MikroORM } from '@mikro-orm/core';
 import { LoadStrategy, QueryFlag, QueryOrder, Reference, wrap } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
-import { AbstractSqlConnection } from '@mikro-orm/postgresql';
+import { AbstractSqlConnection, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { initORMPostgreSql, mockLogger } from '../bootstrap';
 import { Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2 } from '../entities-sql';
 
@@ -10,7 +9,7 @@ describe('Joined loading strategy', () => {
   let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => orm = await initORMPostgreSql(LoadStrategy.JOINED));
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
 
   afterAll(async () => orm.close(true));
 
@@ -229,7 +228,7 @@ describe('Joined loading strategy', () => {
     const books = await orm.em.find(Book2, {}, { populate: ['tags'], strategy: LoadStrategy.JOINED, orderBy: { tags: { name: 'desc' } } });
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."price", "b0".price * 1.19 as "price_taxed", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", ' +
-      '"t1"."id" as "t1__id", "t1"."name" as "t1__name", "b0".price * 1.19 as "price_taxed" ' +
+      '"t1"."id" as "t1__id", "t1"."name" as "t1__name" ' +
       'from "book2" as "b0" ' +
       'left join "book2_tags" as "b2" on "b0"."uuid_pk" = "b2"."book2_uuid_pk" ' +
       'left join "book_tag2" as "t1" on "b2"."book_tag2_id" = "t1"."id" ' +
@@ -475,7 +474,7 @@ describe('Joined loading strategy', () => {
     expect(res1[0].test).toBeUndefined();
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."perex", "b0"."price", "b0".price * 1.19 as "price_taxed", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", ' +
-      '"a1"."id" as "a1__id", "a1"."created_at" as "a1__created_at", "a1"."updated_at" as "a1__updated_at", "a1"."name" as "a1__name", "a1"."email" as "a1__email", "a1"."age" as "a1__age", "a1"."terms_accepted" as "a1__terms_accepted", "a1"."optional" as "a1__optional", "a1"."identities" as "a1__identities", "a1"."born" as "a1__born", "a1"."born_time" as "a1__born_time", "a1"."favourite_book_uuid_pk" as "a1__favourite_book_uuid_pk", "a1"."favourite_author_id" as "a1__favourite_author_id", "b0".price * 1.19 as "price_taxed" ' +
+      '"a1"."id" as "a1__id", "a1"."created_at" as "a1__created_at", "a1"."updated_at" as "a1__updated_at", "a1"."name" as "a1__name", "a1"."email" as "a1__email", "a1"."age" as "a1__age", "a1"."terms_accepted" as "a1__terms_accepted", "a1"."optional" as "a1__optional", "a1"."identities" as "a1__identities", "a1"."born" as "a1__born", "a1"."born_time" as "a1__born_time", "a1"."favourite_book_uuid_pk" as "a1__favourite_book_uuid_pk", "a1"."favourite_author_id" as "a1__favourite_author_id" ' +
       'from "book2" as "b0" ' +
       'left join "author2" as "a1" on "b0"."author_id" = "a1"."id" ' +
       'where "b0"."author_id" is not null and "a1"."name" = $1');
@@ -488,7 +487,7 @@ describe('Joined loading strategy', () => {
     expect(mock.mock.calls[0][0]).toMatch('select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."perex", "b0"."price", "b0".price * 1.19 as "price_taxed", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", ' +
       '"a1"."id" as "a1__id", "a1"."created_at" as "a1__created_at", "a1"."updated_at" as "a1__updated_at", "a1"."name" as "a1__name", "a1"."email" as "a1__email", "a1"."age" as "a1__age", "a1"."terms_accepted" as "a1__terms_accepted", "a1"."optional" as "a1__optional", "a1"."identities" as "a1__identities", "a1"."born" as "a1__born", "a1"."born_time" as "a1__born_time", "a1"."favourite_book_uuid_pk" as "a1__favourite_book_uuid_pk", "a1"."favourite_author_id" as "a1__favourite_author_id", ' +
       '"f2"."uuid_pk" as "f2__uuid_pk", "f2"."created_at" as "f2__created_at", "f2"."title" as "f2__title", "f2"."price" as "f2__price", "f2".price * 1.19 as "f2__price_taxed", "f2"."double" as "f2__double", "f2"."meta" as "f2__meta", "f2"."author_id" as "f2__author_id", "f2"."publisher_id" as "f2__publisher_id", ' +
-      '"a3"."id" as "a3__id", "a3"."created_at" as "a3__created_at", "a3"."updated_at" as "a3__updated_at", "a3"."name" as "a3__name", "a3"."email" as "a3__email", "a3"."age" as "a3__age", "a3"."terms_accepted" as "a3__terms_accepted", "a3"."optional" as "a3__optional", "a3"."identities" as "a3__identities", "a3"."born" as "a3__born", "a3"."born_time" as "a3__born_time", "a3"."favourite_book_uuid_pk" as "a3__favourite_book_uuid_pk", "a3"."favourite_author_id" as "a3__favourite_author_id", "b0".price * 1.19 as "price_taxed" ' +
+      '"a3"."id" as "a3__id", "a3"."created_at" as "a3__created_at", "a3"."updated_at" as "a3__updated_at", "a3"."name" as "a3__name", "a3"."email" as "a3__email", "a3"."age" as "a3__age", "a3"."terms_accepted" as "a3__terms_accepted", "a3"."optional" as "a3__optional", "a3"."identities" as "a3__identities", "a3"."born" as "a3__born", "a3"."born_time" as "a3__born_time", "a3"."favourite_book_uuid_pk" as "a3__favourite_book_uuid_pk", "a3"."favourite_author_id" as "a3__favourite_author_id" ' +
       'from "book2" as "b0" ' +
       'left join "author2" as "a1" on "b0"."author_id" = "a1"."id" ' +
       'left join "book2" as "f2" on "a1"."favourite_book_uuid_pk" = "f2"."uuid_pk" ' +
@@ -513,8 +512,7 @@ describe('Joined loading strategy', () => {
     expect(mock.mock.calls[0][0]).toMatch('select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."perex", "b0"."price", "b0".price * 1.19 as "price_taxed", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", ' +
       '"a1"."id" as "a1__id", "a1"."created_at" as "a1__created_at", "a1"."updated_at" as "a1__updated_at", "a1"."name" as "a1__name", "a1"."email" as "a1__email", "a1"."age" as "a1__age", "a1"."terms_accepted" as "a1__terms_accepted", "a1"."optional" as "a1__optional", "a1"."identities" as "a1__identities", "a1"."born" as "a1__born", "a1"."born_time" as "a1__born_time", "a1"."favourite_book_uuid_pk" as "a1__favourite_book_uuid_pk", "a1"."favourite_author_id" as "a1__favourite_author_id", ' +
       '"f2"."uuid_pk" as "f2__uuid_pk", "f2"."created_at" as "f2__created_at", "f2"."title" as "f2__title", "f2"."price" as "f2__price", "f2".price * 1.19 as "f2__price_taxed", "f2"."double" as "f2__double", "f2"."meta" as "f2__meta", "f2"."author_id" as "f2__author_id", "f2"."publisher_id" as "f2__publisher_id", ' +
-      '"a3"."id" as "a3__id", "a3"."created_at" as "a3__created_at", "a3"."updated_at" as "a3__updated_at", "a3"."name" as "a3__name", "a3"."email" as "a3__email", "a3"."age" as "a3__age", "a3"."terms_accepted" as "a3__terms_accepted", "a3"."optional" as "a3__optional", "a3"."identities" as "a3__identities", "a3"."born" as "a3__born", "a3"."born_time" as "a3__born_time", "a3"."favourite_book_uuid_pk" as "a3__favourite_book_uuid_pk", "a3"."favourite_author_id" as "a3__favourite_author_id", ' +
-      '"b0".price * 1.19 as "price_taxed" ' +
+      '"a3"."id" as "a3__id", "a3"."created_at" as "a3__created_at", "a3"."updated_at" as "a3__updated_at", "a3"."name" as "a3__name", "a3"."email" as "a3__email", "a3"."age" as "a3__age", "a3"."terms_accepted" as "a3__terms_accepted", "a3"."optional" as "a3__optional", "a3"."identities" as "a3__identities", "a3"."born" as "a3__born", "a3"."born_time" as "a3__born_time", "a3"."favourite_book_uuid_pk" as "a3__favourite_book_uuid_pk", "a3"."favourite_author_id" as "a3__favourite_author_id" ' +
       'from "book2" as "b0" left join "author2" as "a1" on "b0"."author_id" = "a1"."id" ' +
       'left join "book2" as "f2" on "a1"."favourite_book_uuid_pk" = "f2"."uuid_pk" ' +
       'left join "author2" as "a3" on "f2"."author_id" = "a3"."id" ' +

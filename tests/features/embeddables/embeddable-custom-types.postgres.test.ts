@@ -1,6 +1,6 @@
 import type { EntityProperty, Platform } from '@mikro-orm/core';
 import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers';
 
 export class AlwaysConvertsToAbc extends Type<string, string> {
@@ -117,17 +117,17 @@ describe('embedded entities with custom types', () => {
     orm = await MikroORM.init({
       entities: [Parent, User],
       dbName: 'mikro_orm_test_embeddables_custom_types',
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(() => orm.close(true));
 
   test('schema', async () => {
-    await expect(orm.getSchemaGenerator().getCreateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('embeddables custom types 1');
-    await expect(orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('embeddables custom types 2');
-    await expect(orm.getSchemaGenerator().getDropSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('embeddables custom types 3');
+    await expect(orm.schema.getCreateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('embeddables custom types 1');
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('embeddables custom types 2');
+    await expect(orm.schema.getDropSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('embeddables custom types 3');
   });
 
   test('persist and load', async () => {
@@ -140,7 +140,7 @@ describe('embedded entities with custom types', () => {
     await orm.em.persistAndFlush(parent);
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
-    expect(mock.mock.calls[1][0]).toMatch(`insert into "parent" ("nested2", "nested_deep_some_value", "nested_some_value", "some_value") values ('{"someValue":"abc","deep":{"someValue":"abc"}}', 'abc', 'abc', 'abc') returning "id"`);
+    expect(mock.mock.calls[1][0]).toMatch(`insert into "parent" ("nested_some_value", "nested_deep_some_value", "nested2", "some_value") values ('abc', 'abc', '{"someValue":"abc","deep":{"someValue":"abc"}}', 'abc') returning "id"`);
     expect(mock.mock.calls[2][0]).toMatch(`commit`);
 
     const p = await orm.em.findOneOrFail(Parent, parent.id);

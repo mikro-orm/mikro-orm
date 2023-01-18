@@ -323,6 +323,36 @@ app.use((req, res, next) => {
 });
 ```
 
+## Using `EventSubscriber`
+
+You should use `@Injectable` and register subscriber manually instead of `@Subscriber` decorator.
+
+```typescript
+import { Injectable } from '@nestjs/common';
+import { EntityName, EventArgs, EventSubscriber } from '@mikro-orm/core';
+
+@Injectable()
+export class AuthorSubscriber implements EventSubscriber<Author> {
+
+  constructor(em: EntityManager) {
+    em.getEventManager().registerSubscriber(this);
+  }
+
+  getSubscribedEntities(): EntityName<Author>[] {
+    return [Author];
+  }
+
+  async afterCreate(args: EventArgs<Author>): Promise<void> {
+    // ...
+  }
+
+  async afterUpdate(args: EventArgs<Author>): Promise<void> {
+    // ... 
+  }
+
+}
+```
+
 ## Testing
 
 The `@mikro-orm/nestjs` package exposes `getRepositoryToken()` function that returns prepared token based on a given entity to allow mocking the repository.

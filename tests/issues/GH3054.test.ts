@@ -1,5 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 class User {
@@ -18,9 +18,9 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [User],
     dbName: ':memory:',
-    type: 'sqlite',
+    driver: SqliteDriver,
   });
-  await orm.getSchemaGenerator().createSchema();
+  await orm.schema.createSchema();
 });
 
 afterAll(async () => {

@@ -1,6 +1,8 @@
 import dotenv from 'dotenv';
-import { pathExists, realpath } from 'fs-extra';
+import { pathExists, pathExistsSync, realpath } from 'fs-extra';
 import { isAbsolute, join } from 'path';
+import { platform } from 'os';
+import { fileURLToPath } from 'url';
 import type { IDatabaseDriver } from '../drivers';
 import type { Options } from './Configuration';
 import { Configuration } from './Configuration';
@@ -13,7 +15,8 @@ import { colors } from '../logging/colors';
  */
 export class ConfigurationLoader {
 
-  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true, options?: Partial<Options>): Promise<Configuration<D>> {
+  static async getConfiguration<D extends IDatabaseDriver = IDatabaseDriver>(validate = true, options: Partial<Options> = {}): Promise<Configuration<D>> {
+    await this.commonJSCompat(options);
     this.registerDotenv(options);
     const paths = await this.getConfigPaths();
     const env = this.loadEnvironmentVars();
@@ -35,7 +38,9 @@ export class ConfigurationLoader {
           tmp = await tmp;
         }
 
-        return new Configuration({ ...tmp, ...options, ...env }, validate);
+        const esmConfigOptions = await this.isESM() ? { entityGenerator: { esmImport: true } } : {};
+
+        return new Configuration({ ...esmConfigOptions, ...tmp, ...options, ...env }, validate);
       }
     }
 
@@ -50,7 +55,7 @@ export class ConfigurationLoader {
     if (await pathExists(`${basePath}/package.json`)) {
       /* istanbul ignore next */
       try {
-        return await import(`${basePath}/package.json`);
+        return await Utils.dynamicImport(`${basePath}/package.json`);
       } catch {
         return {};
       }
@@ -91,13 +96,26 @@ export class ConfigurationLoader {
     paths.push(...(settings.configPaths || []));
 
     if (settings.useTsNode) {
+      paths.push('./src/mikro-orm.config.ts');
       paths.push('./mikro-orm.config.ts');
     }
 
+    const distDir = pathExistsSync(process.cwd() + '/dist');
+    const buildDir = pathExistsSync(process.cwd() + '/build');
+    /* istanbul ignore next */
+    const path = distDir ? 'dist' : (buildDir ? 'build' : 'src');
+    paths.push(`./${path}/mikro-orm.config.js`);
     paths.push('./mikro-orm.config.js');
     const tsNode = Utils.detectTsNode();
 
-    return paths.filter(p => p.endsWith('.js') || tsNode);
+    return Utils.unique(paths).filter(p => p.endsWith('.js') || tsNode);
+  }
+
+  static async isESM(): Promise<boolean> {
+    const config = await ConfigurationLoader.getPackageConfig();
+    const type = config?.type ?? '';
+
+    return type === 'module';
   }
 
   static async registerTsNode(configPath = 'tsconfig.json'): Promise<boolean> {
@@ -163,6 +181,7 @@ export class ConfigurationLoader {
     read(ret, 'MIKRO_ORM_USER', 'user');
     read(ret, 'MIKRO_ORM_PASSWORD', 'password');
     read(ret, 'MIKRO_ORM_DB_NAME', 'dbName');
+    read(ret, 'MIKRO_ORM_SCHEMA', 'schema');
     read(ret, 'MIKRO_ORM_LOAD_STRATEGY', 'loadStrategy');
     read(ret, 'MIKRO_ORM_BATCH_SIZE', 'batchSize', num);
     read(ret, 'MIKRO_ORM_USE_BATCH_INSERTS', 'useBatchInserts', bool);
@@ -226,10 +245,32 @@ export class ConfigurationLoader {
     ]);
   }
 
+  /** @internal */
+  static async commonJSCompat(options: Partial<Options>): Promise<void> {
+    if (await this.isESM()) {
+      return;
+    }
+
+    /* istanbul ignore next */
+    options.dynamicImportProvider ??= id => {
+      if (platform() === 'win32') {
+        try {
+          id = fileURLToPath(id);
+        } catch {
+          // ignore
+        }
+      }
+
+      return Utils.requireFrom(id);
+    };
+
+    Utils.setDynamicImportProvider(options.dynamicImportProvider);
+  }
+
   static async getORMPackageVersion(name: string): Promise<string | undefined> {
     /* istanbul ignore next */
     try {
-      const pkg = Utils.requireFrom(`${name}/package.json`, process.cwd());
+      const pkg = Utils.requireFrom(`${name}/package.json`);
       return pkg?.version;
     } catch (e) {
       return undefined;

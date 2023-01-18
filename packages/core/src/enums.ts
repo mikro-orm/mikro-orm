@@ -32,6 +32,8 @@ export enum QueryOperator {
   $not = 'not',
   $like = 'like',
   $re = 'regexp',
+  $fulltext = 'fulltext',
+  $exists = 'not null',
   $ilike = 'ilike', // postgres only
   $overlap = '&&', // postgres only
   $contains = '@>', // postgres only

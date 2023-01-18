@@ -1,6 +1,6 @@
 import type { Dictionary } from '@mikro-orm/core';
 import { BigIntType, EnumType, Utils } from '@mikro-orm/core';
-import type { AbstractSqlConnection, Check, Column, DatabaseTable, Index, TableDifference, Knex } from '@mikro-orm/knex';
+import type { AbstractSqlConnection, Check, Column, DatabaseSchema, DatabaseTable, ForeignKey, Index, Table, TableDifference, Knex } from '@mikro-orm/knex';
 import { SchemaHelper } from '@mikro-orm/knex';
 
 export class PostgreSqlSchemaHelper extends SchemaHelper {
@@ -47,11 +47,57 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       ...this.platform.getConfig().get('schemaGenerator').ignoreSchema ?? [],
     ].map(s => this.platform.quoteValue(s)).join(', ');
 
-    return `"${column}" not like 'pg_%' and "${column}" not like 'crdb_%' and "${column}" not in (${ignored})`;
+    const ignoredPrefixes = [
+      'pg_',
+      'crdb_',
+      '_timescaledb_',
+    ].map(p => `"${column}" not like '${p}%'`).join(' and ');
+
+    return `${ignoredPrefixes} and "${column}" not in (${ignored})`;
   }
 
-  async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName: string): Promise<Column[]> {
-    const sql = `select column_name,
+  async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[]): Promise<void> {
+    if (tables.length === 0) {
+      return;
+    }
+
+    const columns = await this.getAllColumns(connection, tables);
+    const indexes = await this.getAllIndexes(connection, tables);
+    const checks = await this.getAllChecks(connection, tables);
+    const fks = await this.getAllForeignKeys(connection, tables);
+
+    for (const t of tables) {
+      const key = this.getTableKey(t);
+      const table = schema.addTable(t.table_name, t.schema_name, t.table_comment);
+      const pks = await this.getPrimaryKeys(connection, indexes[key], table.name, table.schema);
+      const enums = await this.getEnumDefinitions(connection, checks[key] ?? []);
+      table.init(columns[key], indexes[key], checks[key], pks, fks[key], enums);
+    }
+  }
+
+  async getAllIndexes(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Index[]>> {
+    const sql = this.getIndexesSQL(tables);
+    const unquote = (str: string) => str.replace(/['"`]/g, '');
+    const allIndexes = await connection.execute<any[]>(sql);
+    const ret = {};
+
+    for (const index of allIndexes) {
+      const key = this.getTableKey(index);
+      ret[key] ??= [];
+      ret[key].push({
+        columnNames: index.index_def.map((name: string) => unquote(name)),
+        composite: index.index_def.length > 1,
+        keyName: index.constraint_name,
+        unique: index.unique,
+        primary: index.primary,
+      });
+    }
+
+    return ret;
+  }
+
+  async getAllColumns(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Column[]>> {
+    const sql = `select table_schema as schema_name, table_name, column_name,
       column_default,
       is_nullable,
       udt_name,
@@ -62,17 +108,20 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       (select pg_catalog.col_description(c.oid, cols.ordinal_position::int)
         from pg_catalog.pg_class c
         where c.oid = (select ('"' || cols.table_schema || '"."' || cols.table_name || '"')::regclass::oid) and c.relname = cols.table_name) as column_comment
-      from information_schema.columns cols where table_schema = '${schemaName}' and table_name = '${tableName}'
+      from information_schema.columns cols
+      where (${tables.map(t => `(table_schema = '${t.schema_name}' and table_name = '${t.table_name}')`).join(' or ')})
       order by ordinal_position`;
 
-    const columns = await connection.execute<any[]>(sql);
+    const allColumns = await connection.execute<any[]>(sql);
     const str = (val: string | number | undefined) => val != null ? '' + val : val;
+    const ret = {};
 
-    return columns.map(col => {
+    for (const col of allColumns) {
       const mappedType = connection.getPlatform().getMappedType(col.data_type);
       const increments = col.column_default?.includes('nextval') && connection.getPlatform().isNumericColumn(mappedType);
-
-      return ({
+      const key = this.getTableKey(col);
+      ret[key] ??= [];
+      ret[key].push({
         name: col.column_name,
         type: col.data_type.toLowerCase() === 'array' ? col.udt_name.replace(/^_(.*)$/, '$1[]') : col.udt_name,
         mappedType,
@@ -85,37 +134,32 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         autoincrement: increments,
         comment: col.column_comment,
       });
-    });
+    }
+
+    return ret;
   }
 
-  async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName: string): Promise<Index[]> {
-    const sql = this.getIndexesSQL(tableName, schemaName);
-    const res = await connection.execute<any[]>(sql);
-    const unquote = (str: string) => str.replace(/['"`]/g, '');
+  async getAllChecks(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Check[]>> {
+    const sql = this.getChecksSQL(tables);
+    const allChecks = await connection.execute<{ name: string; column_name: string; schema_name: string; table_name: string; expression: string }[]>(sql);
+    const ret = {};
 
-    return res.map(index => ({
-      columnNames: index.index_def.map((name: string) => unquote(name)),
-      composite: index.index_def.length > 1,
-      keyName: index.constraint_name,
-      unique: index.unique,
-      primary: index.primary,
-    }), []);
+    for (const check of allChecks) {
+      const key = this.getTableKey(check);
+      ret[key] ??= [];
+      ret[key].push({
+        name: check.name,
+        columnName: check.column_name,
+        definition: check.expression,
+        expression: check.expression.replace(/^check \(\((.+)\)\)$/i, '$1'),
+      });
+    }
+
+    return ret;
   }
 
-  async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName: string): Promise<Check[]> {
-    const sql = this.getChecksSQL(tableName, schemaName);
-    const checks = await connection.execute<{ name: string; column_name: string; expression: string }[]>(sql);
-
-    return checks.map(check => ({
-      name: check.name,
-      columnName: check.column_name,
-      definition: check.expression,
-      expression: check.expression.replace(/^check \(\((.+)\)\)$/i, '$1'),
-    }));
-  }
-
-  getForeignKeysSQL(tableName: string, schemaName: string): string {
-    return `select kcu.table_name as table_name, rel_kcu.table_name as referenced_table_name,
+  async getAllForeignKeys(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<Dictionary<ForeignKey>>> {
+    const sql = `select tco.table_schema as schema_name, kcu.table_name as table_name, rel_kcu.table_name as referenced_table_name,
       rel_kcu.constraint_schema as referenced_schema_name,
       kcu.column_name as column_name,
       rel_kcu.column_name as referenced_column_name, kcu.constraint_name, rco.update_rule, rco.delete_rule
@@ -130,11 +174,27 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
         on rco.unique_constraint_schema = rel_kcu.constraint_schema
         and rco.unique_constraint_name = rel_kcu.constraint_name
         and kcu.ordinal_position = rel_kcu.ordinal_position
-      where tco.table_name = '${tableName}' and tco.table_schema = '${schemaName}' and tco.constraint_schema = '${schemaName}' and tco.constraint_type = 'FOREIGN KEY'
+      where (${tables.map(t => `tco.table_name = '${t.table_name}' and tco.table_schema = '${t.schema_name}' and tco.constraint_schema = '${t.schema_name}'`).join(' or ')})
+      and tco.constraint_type = 'FOREIGN KEY'
       order by kcu.table_schema, kcu.table_name, kcu.ordinal_position, kcu.constraint_name`;
+    const allFks = await connection.execute<any[]>(sql);
+    const ret = {};
+
+    for (const fk of allFks) {
+      const key = this.getTableKey(fk);
+      ret[key] ??= [];
+      ret[key].push(fk);
+    }
+
+    Object.keys(ret).forEach(key => {
+      const [schemaName, tableName] = key.split('.');
+      ret[key] = this.mapForeignKeys(ret[key], tableName, schemaName);
+    });
+
+    return ret;
   }
 
-  async getEnumDefinitions(connection: AbstractSqlConnection, checks: Check[], tableName: string, schemaName: string): Promise<Dictionary<string[]>> {
+  async getEnumDefinitions(connection: AbstractSqlConnection, checks: Check[], tableName?: string, schemaName?: string): Promise<Dictionary<string[]>> {
     const found: number[] = [];
     const enums = checks.reduce((o, item, index) => {
       // check constraints are defined as one of:
@@ -147,7 +207,15 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       const m2 = item.definition?.match(/\(array\[(.*)]\)/i) || item.definition?.match(/ = (.*)\)/i);
 
       if (item.columnName && m1 && m2) {
-        o[item.columnName] = m2[1].split(',').map((item: string) => item.trim().match(/^\(?'(.*)'/)![1]);
+        const m3 = m2[1].match(/('[^']+'::text)/g);
+
+        /* istanbul ignore else */
+        if (m3) {
+          o[item.columnName] = m3.map((item: string) => item.trim().match(/^\(?'(.*)'/)![1]);
+        } else {
+          o[item.columnName] = m2[1].split(',').map((item: string) => item.trim().match(/^\(?'(.*)'/)![1]);
+        }
+
         found.push(index);
       }
 
@@ -272,7 +340,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   getManagementDbName(): string {
-    return 'postgres';
+    return this.platform.getConfig().get('schemaGenerator', {} as Dictionary).managementDbName ?? 'postgres';
   }
 
   disableForeignKeysSQL(): string {
@@ -290,25 +358,46 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return `alter index ${oldIndexName} rename to ${keyName}`;
   }
 
-  private getIndexesSQL(tableName: string, schemaName: string): string {
-    return `select relname as constraint_name, idx.indisunique as unique, idx.indisprimary as primary,
+  private getIndexesSQL(tables: Table[]): string {
+    return `select indrelid::regclass as table_name, ns.nspname as schema_name, relname as constraint_name, idx.indisunique as unique, idx.indisprimary as primary,
       array(
         select pg_get_indexdef(idx.indexrelid, k + 1, true)
         from generate_subscripts(idx.indkey, 1) as k
         order by k
       ) as index_def
       from pg_index idx
-      left join pg_class AS i on i.oid = idx.indexrelid
-      where indrelid = '"${schemaName}"."${tableName}"'::regclass`;
+      join pg_class as i on i.oid = idx.indexrelid
+      join pg_namespace as ns on i.relnamespace = ns.oid
+      where indrelid in (${tables.map(t => `'"${t.schema_name}"."${t.table_name}"'::regclass`).join(', ')})
+      order by relname`;
   }
 
-  private getChecksSQL(tableName: string, schemaName: string): string {
-    return `select pgc.conname as name, conrelid::regclass as table_from, ccu.column_name as column_name, pg_get_constraintdef(pgc.oid) as expression
+  private getChecksSQL(tables: Table[]): string {
+    return `select ccu.table_name as table_name, ccu.table_schema as schema_name, pgc.conname as name, conrelid::regclass as table_from, ccu.column_name as column_name, pg_get_constraintdef(pgc.oid) as expression
       from pg_constraint pgc
       join pg_namespace nsp on nsp.oid = pgc.connamespace
       join pg_class cls on pgc.conrelid = cls.oid
-      left join information_schema.constraint_column_usage ccu on pgc.conname = ccu.constraint_name and nsp.nspname = ccu.constraint_schema
-      where contype = 'c' and ccu.table_name = '${tableName}' and ccu.table_schema = '${schemaName}'`;
+      join information_schema.constraint_column_usage ccu on pgc.conname = ccu.constraint_name and nsp.nspname = ccu.constraint_schema
+      where contype = 'c' and (${tables.map(t => `ccu.table_name = '${t.table_name}' and ccu.table_schema = '${t.schema_name}'`).join(' or ')})
+      order by pgc.conname`;
+  }
+
+  /* istanbul ignore next */
+  async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName: string, columns?: Column[]): Promise<Check[]> {
+    const res = await this.getAllChecks(connection, [{ table_name: tableName, schema_name: schemaName }]);
+    return res[tableName];
+  }
+
+  /* istanbul ignore next */
+  async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Column[]> {
+    const res = await this.getAllColumns(connection, [{ table_name: tableName, schema_name: schemaName }]);
+    return res[tableName];
+  }
+
+  /* istanbul ignore next */
+  async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Index[]> {
+    const res = await this.getAllIndexes(connection, [{ table_name: tableName, schema_name: schemaName }]);
+    return res[tableName];
   }
 
 }

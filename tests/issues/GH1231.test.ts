@@ -1,9 +1,7 @@
 import { Cascade, Collection, Entity, EntityRepositoryType, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
-import { EntityRepository } from '@mikro-orm/postgresql';
+import { EntityRepository, PostgreSqlDriver } from '@mikro-orm/postgresql';
 
-// eslint-disable-next-line @typescript-eslint/no-use-before-define
-@Entity({ tableName: 'teachers', customRepository: () => TeacherRepository })
+@Entity({ tableName: 'teachers', repository: () => TeacherRepository })
 class Teacher {
 
   constructor(firstName: string, lastName: string) {
@@ -75,9 +73,9 @@ describe('one to many relations read with query builder in postgresql (GH issue 
     orm = await MikroORM.init({
       entities: [Teacher, Student],
       dbName: 'mikro_orm_test_1231',
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
 
     const teacher1 = new Teacher('Jolene', 'Smith');
     teacher1.id = 1;

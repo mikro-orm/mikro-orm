@@ -1,10 +1,11 @@
-import type { EntityManager, MergeOptions } from '../EntityManager';
+import type { CreateOptions, EntityManager, MergeOptions } from '../EntityManager';
+import type { AssignOptions } from './EntityAssigner';
 import type { EntityData, EntityName, AnyEntity, Primary, Loaded, FilterQuery, EntityDictionary, AutoPath, RequiredEntityData } from '../typings';
 import type { CountOptions, DeleteOptions, FindOneOptions, FindOneOrFailOptions, FindOptions, GetReferenceOptions, NativeInsertUpdateOptions, UpdateOptions } from '../drivers/IDatabaseDriver';
 import type { IdentifiedReference, Reference } from './Reference';
 import type { EntityLoaderOptions } from './EntityLoader';
 
-export class EntityRepository<T extends AnyEntity<T>> {
+export class EntityRepository<T extends object> {
 
   constructor(protected readonly _em: EntityManager,
               protected readonly entityName: EntityName<T>) { }
@@ -49,6 +50,32 @@ export class EntityRepository<T extends AnyEntity<T>> {
    */
   async findOneOrFail<P extends string = never>(where: FilterQuery<T>, options?: FindOneOrFailOptions<T, P>): Promise<Loaded<T, P>> {
     return this.em.findOneOrFail<T, P>(this.entityName, where, options);
+  }
+
+  /**
+   * Creates or updates the entity, based on whether it is already present in the database.
+   * This method performs an `insert on conflict merge` query ensuring the database is in sync, returning a managed
+   * entity instance. The method accepts either `entityName` together with the entity `data`, or just entity instance.
+   *
+   * ```ts
+   * // insert into "author" ("age", "email") values (33, 'foo@bar.com') on conflict ("email") do update set "age" = 41
+   * const author = await em.getRepository(Author).upsert({ email: 'foo@bar.com', age: 33 });
+   * ```
+   *
+   * The entity data needs to contain either the primary key, or any other unique property. Let's consider the following example, where `Author.email` is a unique property:
+   *
+   * ```ts
+   * // insert into "author" ("age", "email") values (33, 'foo@bar.com') on conflict ("email") do update set "age" = 41
+   * // select "id" from "author" where "email" = 'foo@bar.com'
+   * const author = await em.getRepository(Author).upsert({ email: 'foo@bar.com', age: 33 });
+   * ```
+   *
+   * Depending on the driver support, this will either use a returning query, or a separate select query, to fetch the primary key if it's missing from the `data`.
+   *
+   * If the entity is already present in current context, there won't be any queries - instead, the entity data will be assigned and an explicit `flush` will be required for those changes to be persisted.
+   */
+  async upsert(entityOrData?: EntityData<T> | T, options?: NativeInsertUpdateOptions<T>): Promise<T> {
+    return this.em.upsert<T>(this.entityName, entityOrData, options);
   }
 
   /**
@@ -183,15 +210,15 @@ export class EntityRepository<T extends AnyEntity<T>> {
    * the whole `data` parameter will be passed. This means we can also define `constructor(data: Partial<T>)` and
    * `em.create()` will pass the data into it (unless we have a property named `data` too).
    */
-  create<P = never>(data: RequiredEntityData<T>): T {
-    return this.em.create(this.entityName, data);
+  create<P = never>(data: RequiredEntityData<T>, options?: CreateOptions): T {
+    return this.em.create(this.entityName, data, options);
   }
 
   /**
    * Shortcut for `wrap(entity).assign(data, { em })`
    */
-  assign(entity: T, data: EntityData<T>): T {
-    return this.em.assign(entity, data);
+  assign(entity: T, data: EntityData<T>, options?: AssignOptions): T {
+    return this.em.assign(entity, data, options);
   }
 
   /**
@@ -206,7 +233,7 @@ export class EntityRepository<T extends AnyEntity<T>> {
    * Returns total number of entities matching your `where` query.
    */
   async count<P extends string = never>(where: FilterQuery<T> = {} as FilterQuery<T>, options: CountOptions<T, P> = {}): Promise<number> {
-    return this.em.count(this.entityName, where, options);
+    return this.em.count<T, P>(this.entityName, where, options);
   }
 
   protected get em(): EntityManager {

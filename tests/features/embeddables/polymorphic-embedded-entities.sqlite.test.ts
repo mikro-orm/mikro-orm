@@ -2,6 +2,7 @@ import type { ObjectHydrator } from '@mikro-orm/core';
 import { Embeddable, Embedded, Entity, Enum, MikroORM, OptionalProps, PrimaryKey, Property, wrap } from '@mikro-orm/core';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { mockLogger } from '../../helpers';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 enum AnimalType {
   CAT,
@@ -81,10 +82,10 @@ describe('polymorphic embeddables in sqlite', () => {
     orm = await MikroORM.init({
       entities: [Dog, Cat, Owner],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
       metadataProvider: TsMorphMetadataProvider,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {
@@ -97,9 +98,9 @@ describe('polymorphic embeddables in sqlite', () => {
   });
 
   test(`schema`, async () => {
-    await expect(orm.getSchemaGenerator().getCreateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot();
-    await expect(orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot();
-    await expect(orm.getSchemaGenerator().getDropSchemaSQL({ wrap: false })).resolves.toMatchSnapshot();
+    await expect(orm.schema.getCreateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot();
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot();
+    await expect(orm.schema.getDropSchemaSQL({ wrap: false })).resolves.toMatchSnapshot();
   });
 
   test(`diffing`, async () => {
@@ -281,7 +282,7 @@ describe('polymorphic embeddables in sqlite', () => {
     const mock = mockLogger(orm, ['query']);
     await orm.em.persistAndFlush(owner);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into `owner` (`name`, `pet2`, `pet_can_bark`, `pet_can_meow`, `pet_name`, `pet_type`, `pets`) values (?, ?, ?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[1][0]).toMatch('insert into `owner` (`name`, `pet_can_bark`, `pet_type`, `pet_name`, `pet_can_meow`, `pet2`, `pets`) values (?, ?, ?, ?, ?, ?, ?)');
     expect(mock.mock.calls[2][0]).toMatch('commit');
 
     orm.em.assign(owner, {

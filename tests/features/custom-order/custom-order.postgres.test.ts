@@ -1,6 +1,7 @@
 import { Entity, MikroORM, PrimaryKey, Property, Enum, QueryOrder, Collection, OneToMany, ManyToOne } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { mockLogger } from '../../bootstrap';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 type Rating = 'bad' | 'ok' | 'good';
 
@@ -26,7 +27,6 @@ class User {
   @Property()
   name!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => Task, ({ owner }) => owner)
   tasks = new Collection<Task>(this);
 
@@ -92,9 +92,9 @@ describe('custom order [postgres]', () => {
     orm = await MikroORM.init({
       entities: [User, Task],
       dbName: `mikro_orm_test_custom_order`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   beforeEach(async () => {

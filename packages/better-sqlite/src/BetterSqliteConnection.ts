@@ -8,6 +8,7 @@ import { Utils } from '@mikro-orm/core';
 export class BetterSqliteConnection extends AbstractSqlConnection {
 
   static readonly RUN_QUERY_RE = /^insert into|^update|^delete|^truncate/;
+  static readonly RUN_QUERY_RETURNING = /^insert into .* returning .*/;
 
   async connect(): Promise<void> {
     await ensureDir(dirname(this.config.get('dbName')!));
@@ -50,8 +51,17 @@ export class BetterSqliteConnection extends AbstractSqlConnection {
       return res;
     }
 
+    if (Array.isArray(res)) {
+      return {
+        insertId: res[res.length - 1]?.id ?? 0,
+        affectedRows: res.length,
+        row: res[0],
+        rows: res,
+      } as T;
+    }
+
     return {
-      insertId: res.lastID,
+      insertId: res.lastInsertRowid,
       affectedRows: res.changes,
     } as unknown as T;
   }
@@ -70,7 +80,7 @@ export class BetterSqliteConnection extends AbstractSqlConnection {
     Sqlite3Dialect.prototype.__patched = true;
     Sqlite3Dialect.prototype.processResponse = (obj: any, runner: any) => {
       if (obj.method === 'raw' && obj.sql.trim().match(BetterSqliteConnection.RUN_QUERY_RE)) {
-        return obj.context;
+        return obj.response ?? obj.context;
       }
 
       return processResponse(obj, runner);
@@ -81,7 +91,7 @@ export class BetterSqliteConnection extends AbstractSqlConnection {
 
       return new Promise((resolve: any, reject: any) => {
         /* istanbul ignore if */
-        if (!connection || !connection[callMethod]) {
+        if (!connection?.[callMethod]) {
           return reject(new Error(`Error calling ${callMethod} on connection.`));
         }
 
@@ -104,16 +114,32 @@ export class BetterSqliteConnection extends AbstractSqlConnection {
       foreignInfo.column = Array.isArray(foreignInfo.column)
         ? foreignInfo.column
         : [foreignInfo.column];
-      foreignInfo.inTable = this.formatter.columnize(foreignInfo.inTable);
-      foreignInfo.references = this.formatter.columnize(foreignInfo.references);
+      foreignInfo.column = foreignInfo.column.map((column: unknown) =>
+        this.client.customWrapIdentifier(column, (a: unknown) => a),
+      );
+      foreignInfo.inTable = this.client.customWrapIdentifier(
+        foreignInfo.inTable,
+        (a: unknown) => a,
+      );
+      foreignInfo.references = Array.isArray(foreignInfo.references)
+        ? foreignInfo.references
+        : [foreignInfo.references];
+      foreignInfo.references = foreignInfo.references.map((column: unknown) =>
+        this.client.customWrapIdentifier(column, (a: unknown) => a),
+      );
+      // quoted versions
+      const column = this.formatter.columnize(foreignInfo.column);
+      const inTable = this.formatter.columnize(foreignInfo.inTable);
+      const references = this.formatter.columnize(foreignInfo.references);
+      const keyName = this.formatter.columnize(foreignInfo.keyName);
 
-      const addColumnQuery = this.sequence.find((query: { sql: string }) => query.sql.includes(`add column ${foreignInfo.column[0]}`));
+      const addColumnQuery = this.sequence.find((query: { sql: string }) => query.sql.includes(`add column ${column[0]}`));
 
       // no need for temp tables if we just add a column
       if (addColumnQuery) {
         const onUpdate = foreignInfo.onUpdate ? ` on update ${foreignInfo.onUpdate}` : '';
         const onDelete = foreignInfo.onDelete ? ` on delete ${foreignInfo.onDelete}` : '';
-        addColumnQuery.sql += ` constraint ${foreignInfo.keyName} references ${foreignInfo.inTable} (${foreignInfo.references})${onUpdate}${onDelete}`;
+        addColumnQuery.sql += ` constraint ${keyName} references ${inTable} (${references})${onUpdate}${onDelete}`;
         return;
       }
 
@@ -136,6 +162,10 @@ export class BetterSqliteConnection extends AbstractSqlConnection {
   }
 
   private getCallMethod(obj: any): string {
+    if (obj.method === 'raw' && obj.sql.trim().match(BetterSqliteConnection.RUN_QUERY_RETURNING)) {
+      return 'all';
+    }
+
     if (obj.method === 'raw' && obj.sql.trim().match(BetterSqliteConnection.RUN_QUERY_RE)) {
       return 'run';
     }
@@ -144,6 +174,7 @@ export class BetterSqliteConnection extends AbstractSqlConnection {
     switch (obj.method) {
       case 'insert':
       case 'update':
+        return obj.returning ? 'all' : 'run';
       case 'counter':
       case 'del':
         return 'run';

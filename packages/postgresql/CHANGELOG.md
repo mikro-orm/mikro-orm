@@ -3,6 +3,218 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.7](https://github.com/mikro-orm/mikro-orm/compare/v5.6.6...v5.6.7) (2023-01-13)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+## [5.6.6](https://github.com/mikro-orm/mikro-orm/compare/v5.6.5...v5.6.6) (2023-01-10)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+## [5.6.5](https://github.com/mikro-orm/mikro-orm/compare/v5.6.4...v5.6.5) (2023-01-09)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+## [5.6.4](https://github.com/mikro-orm/mikro-orm/compare/v5.6.3...v5.6.4) (2023-01-04)
+
+
+### Bug Fixes
+
+* **core:** improve inference of driver exported `MikroORM.init()` ([497f274](https://github.com/mikro-orm/mikro-orm/commit/497f27451bbca37c7dd9222716257692724d3a0d))
+
+
+
+
+
+## [5.6.3](https://github.com/mikro-orm/mikro-orm/compare/v5.6.2...v5.6.3) (2022-12-28)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+## [5.6.2](https://github.com/mikro-orm/mikro-orm/compare/v5.6.1...v5.6.2) (2022-12-25)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+## [5.6.1](https://github.com/mikro-orm/mikro-orm/compare/v5.6.0...v5.6.1) (2022-12-20)
+
+
+### Bug Fixes
+
+* **postgres:** ignore internal timescale schemas automatically ([85d9083](https://github.com/mikro-orm/mikro-orm/commit/85d9083766ccff50680517289c2a28e0512e02e5))
+
+
+
+
+
+# [5.6.0](https://github.com/mikro-orm/mikro-orm/compare/v5.5.3...v5.6.0) (2022-12-09)
+
+
+### Bug Fixes
+
+* **postgres:** quote array literal items containing a comma ([5ffa81c](https://github.com/mikro-orm/mikro-orm/commit/5ffa81c02ac01cc3420ca345b05835e331c879e9)), closes [#3810](https://github.com/mikro-orm/mikro-orm/issues/3810)
+* **postgres:** use `postgres` as the management db name + allow override ([eab1668](https://github.com/mikro-orm/mikro-orm/commit/eab16681681b13b40f183dc8ec6b26e3171edc11)), closes [#3769](https://github.com/mikro-orm/mikro-orm/issues/3769)
+* **query-builder:** respect case-insensitive regexp flag ([1a1d381](https://github.com/mikro-orm/mikro-orm/commit/1a1d381cfe30bd97a038109e7d2e5ea9ce660062)), closes [#3801](https://github.com/mikro-orm/mikro-orm/issues/3801)
+
+
+
+
+
+## [5.5.3](https://github.com/mikro-orm/mikro-orm/compare/v5.5.2...v5.5.3) (2022-11-10)
+
+
+### Bug Fixes
+
+* **postgres:** fix ensuring database exists ([d23dde0](https://github.com/mikro-orm/mikro-orm/commit/d23dde098b691741f76b17176d97a057d22c4c8a)), closes [#3713](https://github.com/mikro-orm/mikro-orm/issues/3713)
+
+
+
+
+
+## [5.5.2](https://github.com/mikro-orm/mikro-orm/compare/v5.5.1...v5.5.2) (2022-11-07)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+## [5.5.1](https://github.com/mikro-orm/mikro-orm/compare/v5.5.0...v5.5.1) (2022-11-05)
+
+
+### Bug Fixes
+
+* **postgres:** fix ensuring database exists when `postgres` database does not exist ([b1a867d](https://github.com/mikro-orm/mikro-orm/commit/b1a867d27697f0f2cf4d1a747c15d1773b8a0f86)), closes [#3671](https://github.com/mikro-orm/mikro-orm/issues/3671)
+
+
+
+
+
+# [5.5.0](https://github.com/mikro-orm/mikro-orm/compare/v5.4.2...v5.5.0) (2022-10-23)
+
+
+### Bug Fixes
+
+* **query-builder:** support top level `$not` operator in join condition ([#3609](https://github.com/mikro-orm/mikro-orm/issues/3609)) ([047504f](https://github.com/mikro-orm/mikro-orm/commit/047504f2404194ea969cca4f600005103c855e58))
+
+
+### Features
+
+* **core:** add `defineConfig` helper ([#3500](https://github.com/mikro-orm/mikro-orm/issues/3500)) ([67d3c68](https://github.com/mikro-orm/mikro-orm/commit/67d3c682bf11d8e9369e351da6e4ee20958b9581))
+* **core:** add `MikroORM` and `Options` exports to each driver package ([#3499](https://github.com/mikro-orm/mikro-orm/issues/3499)) ([b68ed47](https://github.com/mikro-orm/mikro-orm/commit/b68ed47acac2da8b845ec33d6f30692b88c04acd))
+
+
+### Performance Improvements
+
+* **schema:** improve schema inspection speed in SQL drivers ([#3549](https://github.com/mikro-orm/mikro-orm/issues/3549)) ([74dc3b1](https://github.com/mikro-orm/mikro-orm/commit/74dc3b1aba07666911fb6fc74b55f6547b2c5b4b))
+
+
+
+
+
+## [5.4.2](https://github.com/mikro-orm/mikro-orm/compare/v5.4.1...v5.4.2) (2022-09-12)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+## [5.4.1](https://github.com/mikro-orm/mikro-orm/compare/v5.4.0...v5.4.1) (2022-09-08)
+
+
+### Bug Fixes
+
+* **core:** change internal dependencies to use `~` instead of `^` ([fdbf67c](https://github.com/mikro-orm/mikro-orm/commit/fdbf67c53055a6a4b455208dec3b815736a55e3b)), closes [#3468](https://github.com/mikro-orm/mikro-orm/issues/3468)
+* **postgres:** fix parsing enum definition when one of the items has comma ([c8062cb](https://github.com/mikro-orm/mikro-orm/commit/c8062cb11d80161d8a2db4a3dfec09e199a99f5f)), closes [#3460](https://github.com/mikro-orm/mikro-orm/issues/3460)
+
+
+
+
+
+# [5.4.0](https://github.com/mikro-orm/mikro-orm/compare/v5.3.1...v5.4.0) (2022-09-01)
+
+
+### Bug Fixes
+
+* **postgres:** fix escaping of special chars in string arrays ([#3405](https://github.com/mikro-orm/mikro-orm/issues/3405)) ([cd7c42f](https://github.com/mikro-orm/mikro-orm/commit/cd7c42f242c5c957e5e81e406881ddcc0a17e5d0))
+
+
+
+
+
+## [5.3.1](https://github.com/mikro-orm/mikro-orm/compare/v5.3.0...v5.3.1) (2022-08-04)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+# [5.3.0](https://github.com/mikro-orm/mikro-orm/compare/v5.2.4...v5.3.0) (2022-08-01)
+
+
+### Features
+
+* add support for full text searches ([#3317](https://github.com/mikro-orm/mikro-orm/issues/3317)) ([8b8f140](https://github.com/mikro-orm/mikro-orm/commit/8b8f14071b92e91161a32aa272315a0ecce1bc0b))
+
+
+
+
+
+## [5.2.4](https://github.com/mikro-orm/mikro-orm/compare/v5.2.3...v5.2.4) (2022-07-25)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+## [5.2.3](https://github.com/mikro-orm/mikro-orm/compare/v5.2.2...v5.2.3) (2022-07-08)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+## [5.2.2](https://github.com/mikro-orm/mikro-orm/compare/v5.2.1...v5.2.2) (2022-07-03)
+
+**Note:** Version bump only for package @mikro-orm/postgresql
+
+
+
+
+
+## [5.2.1](https://github.com/mikro-orm/mikro-orm/compare/v5.2.0...v5.2.1) (2022-06-21)
+
+
+### Features
+
+* **core:** allow to adjust default type mapping ([ca8ce57](https://github.com/mikro-orm/mikro-orm/commit/ca8ce5721f0d547ceec1cf645443b6ae00deaf09)), closes [#3066](https://github.com/mikro-orm/mikro-orm/issues/3066)
+
+
+
+
+
 # [5.2.0](https://github.com/mikro-orm/mikro-orm/compare/v5.1.5...v5.2.0) (2022-06-10)
 
 

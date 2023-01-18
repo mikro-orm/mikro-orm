@@ -1,5 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, OneToMany, ManyToOne, Collection, ValidationError, ArrayCollection } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 class A {
@@ -7,7 +7,6 @@ class A {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => B, b => b.a)
   bItems = new Collection<B>(this);
 
@@ -30,9 +29,9 @@ describe('GH issue 949', () => {
     orm = await MikroORM.init({
       entities: [A, B],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {

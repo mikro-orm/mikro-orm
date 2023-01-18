@@ -1,5 +1,5 @@
 import { Client } from 'pg';
-import type { EntityProperty, Type } from '@mikro-orm/core';
+import type { EntityProperty, Type, SimpleColumnMeta } from '@mikro-orm/core';
 import { expr, JsonProperty, Utils } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
@@ -73,8 +73,44 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return `uuid`;
   }
 
-  getRegExpOperator(): string {
+  getFullTextWhereClause(prop: EntityProperty): string {
+    if (prop.columnTypes[0] === 'tsvector') {
+      return `:column: @@ plainto_tsquery('simple', :query)`;
+    }
+
+    return `to_tsvector('simple', :column:) @@ plainto_tsquery('simple', :query)`;
+  }
+
+  supportsCreatingFullTextIndex(): boolean {
+    return true;
+  }
+
+  getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
+    const quotedTableName = this.quoteIdentifier(schemaName ? `${schemaName}.${tableName}` : tableName);
+    const quotedColumnNames = columns.map(c => this.quoteIdentifier(c.name));
+    const quotedIndexName = this.quoteIdentifier(indexName);
+
+    if (columns.length === 1 && columns[0].type === 'tsvector') {
+      return `create index ${quotedIndexName} on ${quotedTableName} using gin(${quotedColumnNames[0]})`;
+    }
+
+    return `create index ${quotedIndexName} on ${quotedTableName} using gin(to_tsvector('simple', ${quotedColumnNames.join(` || ' ' || `)}))`;
+  }
+
+  getRegExpOperator(val?: unknown, flags?: string): string {
+    if ((val instanceof RegExp && val.flags.includes('i')) || flags?.includes('i')) {
+      return '~*';
+    }
+
     return '~';
+  }
+
+  getRegExpValue(val: RegExp): { $re: string; $flags?: string } {
+    if (val.flags.includes('i')) {
+      return { $re: val.source, $flags: val.flags };
+    }
+
+    return { $re: val.source };
   }
 
   isBigIntProperty(prop: EntityProperty): boolean {
@@ -101,8 +137,12 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return `smallint`;
   }
 
+  supportsMultipleStatements(): boolean {
+    return true;
+  }
+
   marshallArray(values: string[]): string {
-    const quote = (v: string) => v === '' || v.match(/["{}]/) ? `"${v}"` : v;
+    const quote = (v: string) => v === '' || v.match(/["{},]/) ? JSON.stringify(v) : v;
     return `{${values.map(v => quote('' + v)).join(',')}}`;
   }
 
@@ -169,7 +209,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return false;
   }
 
-  getMappedType(type: string): Type<unknown> {
+  getDefaultMappedType(type: string): Type<unknown> {
     const normalizedType = this.extractSimpleType(type);
     const map = {
       'int2': 'smallint',
@@ -193,7 +233,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
       'character varying': 'varchar',
     };
 
-    return super.getMappedType(map[normalizedType] ?? type);
+    return super.getDefaultMappedType(map[normalizedType] ?? type);
   }
 
   supportsSchemas(): boolean {

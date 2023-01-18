@@ -1,6 +1,7 @@
 import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property, Filter, ManyToOne } from '@mikro-orm/core';
 import type { AbstractSqlDriver, EntityManager } from '@mikro-orm/knex';
 import { mockLogger } from '../../helpers';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Filter({
   name: 'isActive',
@@ -86,9 +87,9 @@ describe('filters [postgres]', () => {
     orm = await MikroORM.init({
       entities: [Employee, Benefit, User, Membership],
       dbName: `mikro_orm_test_gh_1232`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   beforeEach(async () => {
@@ -116,7 +117,7 @@ describe('filters [postgres]', () => {
     expect(e1.benefits).toHaveLength(0);
 
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
-    expect(mock.mock.calls[1][0]).toMatch(`insert into "employee" default values returning "id"`);
+    expect(mock.mock.calls[1][0]).toMatch(`insert into "employee" ("id") values (default) returning "id"`);
     expect(mock.mock.calls[2][0]).toMatch(`insert into "benefit" ("benefit_status") values ($1) returning "id"`);
     expect(mock.mock.calls[3][0]).toMatch(`insert into "employee_benefits" ("employee_id", "benefit_id") values ($1, $2)`);
     expect(mock.mock.calls[4][0]).toMatch(`commit`);

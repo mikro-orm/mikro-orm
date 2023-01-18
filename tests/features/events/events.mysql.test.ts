@@ -1,6 +1,6 @@
 import type { MikroORM } from '@mikro-orm/core';
 import { EventType, LoadStrategy, wrap } from '@mikro-orm/core';
-import type { MySqlDriver } from '@mikro-orm/mysql';
+import { MySqlDriver } from '@mikro-orm/mysql';
 import { Author2, Book2, BookTag2, Publisher2 } from '../../entities-sql';
 import { initORMMySql } from '../../bootstrap';
 import { Author2Subscriber } from '../../subscribers/Author2Subscriber';
@@ -14,7 +14,7 @@ describe('events (mysql)', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql(undefined, undefined, true));
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
   afterEach(() => {
     Author2Subscriber.log.length = 0;
     EverythingSubscriber.log.length = 0;

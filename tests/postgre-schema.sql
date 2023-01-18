@@ -20,6 +20,7 @@ drop table if exists "foo_bar2" cascade;
 drop table if exists "foo_baz2" cascade;
 drop table if exists "label2" cascade;
 drop table if exists "new_table" cascade;
+drop table if exists "tsvector_test" cascade;
 
 drop table if exists "author2_to_author2" cascade;
 drop table if exists "book2_to_book_tag2" cascade;

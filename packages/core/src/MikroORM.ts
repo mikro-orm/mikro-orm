@@ -5,7 +5,7 @@ import type { Logger } from './logging';
 import { Configuration, ConfigurationLoader, Utils } from './utils';
 import { NullCacheAdapter } from './cache';
 import type { EntityManager } from './EntityManager';
-import type { AnyEntity, Constructor, IEntityGenerator, IMigrator, ISeedManager } from './typings';
+import type { Constructor, IEntityGenerator, IMigrator, ISeedManager } from './typings';
 import { colors } from './logging';
 
 /**
@@ -34,8 +34,15 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
       options = await ConfigurationLoader.getConfiguration<D>();
     }
 
-    options = options instanceof Configuration ? options.getAll() : options;
-    const orm = new MikroORM<D>(Utils.merge(options, env));
+    let opts = options instanceof Configuration ? options.getAll() : options;
+    opts = Utils.merge(opts, env);
+    await ConfigurationLoader.commonJSCompat(opts as object);
+
+    if ('DRIVER' in this && !opts.driver && !opts.type) {
+      (opts as Options).driver = (this as unknown as { DRIVER: Constructor<IDatabaseDriver> }).DRIVER;
+    }
+
+    const orm = new MikroORM(opts);
     orm.logger.log('info', `MikroORM version: ${colors.green(coreVersion)}`);
 
     // we need to allow global context here as we are not in a scope of requests yet
@@ -43,13 +50,20 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     orm.config.set('allowGlobalContext', true);
     await orm.discoverEntities();
     orm.config.set('allowGlobalContext', allowGlobalContext);
+    orm.driver.getPlatform().lookupExtensions(orm);
 
-    if (connect && orm.config.get('connect')) {
+    connect &&= orm.config.get('connect');
+
+    if (connect) {
       await orm.connect();
+    }
 
-      if (orm.config.get('ensureIndexes')) {
-        await orm.getSchemaGenerator().ensureIndexes();
-      }
+    for (const extension of orm.config.get('extensions')) {
+      extension.register(orm);
+    }
+
+    if (connect && orm.config.get('ensureIndexes')) {
+      await orm.getSchemaGenerator().ensureIndexes();
     }
 
     return orm;
@@ -84,11 +98,29 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
 
     if (await this.isConnected()) {
       this.logger.log('info', `MikroORM successfully connected to database ${colors.green(db)}`);
+
+      if (this.config.get('ensureDatabase')) {
+        await this.schema.ensureDatabase();
+      }
+
+      await this.driver.init();
     } else {
       this.logger.error('info', `MikroORM failed to connect to database ${db}`);
     }
 
     return this.driver;
+  }
+
+  /**
+   * Reconnects, possibly to a different database.
+   */
+  async reconnect(options: Options = {}): Promise<void> {
+    /* istanbul ignore next */
+    for (const key of Object.keys(options)) {
+      this.config.set(key as keyof Options, options[key]);
+    }
+
+    await this.driver.reconnect();
   }
 
   /**
@@ -116,6 +148,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
     this.metadata = await this.discovery.discover(this.config.get('tsNode'));
     this.driver.setMetadata(this.metadata);
     this.em = this.driver.createEntityManager<D>();
+    (this.em as { global: boolean }).global = true;
     this.metadata.decorate(this.em);
     this.driver.setMetadata(this.metadata);
   }
@@ -123,7 +156,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Allows dynamically discovering new entity by reference, handy for testing schema diffing.
    */
-  async discoverEntity<T>(entities: Constructor<T> | Constructor<AnyEntity>[]): Promise<void> {
+  async discoverEntity(entities: Constructor | Constructor[]): Promise<void> {
     entities = Utils.asArray(entities);
     const tmp = await this.discovery.discoverReferences(entities);
     new MetadataValidator().validateDiscovered([...Object.values(this.metadata.getAll()), ...tmp], this.config.get('discovery').warnWhenNoEntities!);
@@ -136,6 +169,14 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets the SchemaGenerator.
    */
   getSchemaGenerator(): ReturnType<ReturnType<D['getPlatform']>['getSchemaGenerator']> {
+    const extension = this.config.getExtension<ReturnType<ReturnType<D['getPlatform']>['getSchemaGenerator']>>('@mikro-orm/schema-generator');
+
+    if (extension) {
+      return extension;
+    }
+
+    // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
+    /* istanbul ignore next */
     return this.driver.getPlatform().getSchemaGenerator(this.driver, this.em) as any;
   }
 
@@ -143,6 +184,13 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets the EntityGenerator.
    */
   getEntityGenerator<T extends IEntityGenerator = IEntityGenerator>(): T {
+    const extension = this.config.getExtension<T>('@mikro-orm/entity-generator');
+
+    if (extension) {
+      return extension;
+    }
+
+    // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
     return this.driver.getPlatform().getEntityGenerator(this.em) as T;
   }
 
@@ -150,13 +198,58 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets the Migrator.
    */
   getMigrator<T extends IMigrator = IMigrator>(): T {
+    const extension = this.config.getExtension<T>('@mikro-orm/migrator');
+
+    if (extension) {
+      return extension;
+    }
+
+    // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
     return this.driver.getPlatform().getMigrator(this.em) as T;
   }
 
+  /**
+   * Gets the SeedManager
+   */
   getSeeder<T extends ISeedManager = ISeedManager>(): T {
+    const extension = this.config.getExtension<T>('@mikro-orm/seeder');
+
+    if (extension) {
+      return extension;
+    }
+
+    // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { SeedManager } = require('@mikro-orm/seeder');
     return this.config.getCachedService(SeedManager, this.em);
+  }
+
+  /**
+   * Shortcut for `orm.getSchemaGenerator()`
+   */
+  get schema() {
+    return this.getSchemaGenerator();
+  }
+
+  /**
+   * Shortcut for `orm.getSeeder()`
+   */
+  get seeder() {
+    return this.getSeeder();
+  }
+
+  /**
+   * Shortcut for `orm.getMigrator()`
+   */
+  get migrator() {
+    return this.getMigrator();
+  }
+
+  /**
+   * Shortcut for `orm.getEntityGenerator()`
+   */
+  get entityGenerator() {
+    return this.getEntityGenerator();
   }
 
 }

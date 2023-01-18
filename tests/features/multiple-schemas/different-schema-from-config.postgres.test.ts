@@ -1,5 +1,5 @@
 import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 export class BookTag {
@@ -40,12 +40,12 @@ describe('different schema from config', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
       entities: [Book, BookTag],
       dbName: 'mikro_orm_test_gh_2740',
       schema: 'privateschema',
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(async () => {

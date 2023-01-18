@@ -1,19 +1,21 @@
 import { inspect } from 'util';
-import type { AnyEntity, EntityDTO, EntityProperty, IPrimaryKey, Primary } from '../typings';
+import type { EntityDTO, EntityProperty, IPrimaryKey, Primary } from '../typings';
 import { Reference } from './Reference';
-import { wrap } from './wrap';
+import { helper, wrap } from './wrap';
 import { ReferenceType } from '../enums';
 import { MetadataError } from '../errors';
 import { Utils } from '../utils/Utils';
 
-export class ArrayCollection<T, O> {
+export class ArrayCollection<T extends object, O extends object> {
 
   protected readonly items = new Set<T>();
   protected initialized = true;
+  protected dirty = false;
   protected _count?: number;
   private _property?: EntityProperty;
 
-  constructor(readonly owner: O & AnyEntity<O>, items?: T[]) {
+  constructor(readonly owner: O, items?: T[]) {
+    /* istanbul ignore next */
     if (items) {
       let i = 0;
       this.items = new Set(items);
@@ -62,9 +64,11 @@ export class ArrayCollection<T, O> {
     }) as unknown as U[];
   }
 
-  add(...items: (T | Reference<T>)[]): void {
-    for (const item of items) {
-      const entity = Reference.unwrapReference(item);
+  add(entity: T | Reference<T> | (T | Reference<T>)[], ...entities: (T | Reference<T>)[]): void {
+    entities = Utils.asArray(entity).concat(entities);
+
+    for (const item of entities) {
+      const entity = Reference.unwrapReference(item) as T;
 
       if (!this.contains(entity, false)) {
         this.incrementCount(1);
@@ -76,8 +80,8 @@ export class ArrayCollection<T, O> {
   }
 
   set(items: (T | Reference<T>)[]): void {
-    this.remove(...this.items);
-    this.add(...items);
+    this.removeAll();
+    this.add(items);
   }
 
   /**
@@ -90,7 +94,7 @@ export class ArrayCollection<T, O> {
 
     this.items.clear();
     this._count = 0;
-    this.add(...items);
+    this.add(items);
   }
 
   /**
@@ -99,21 +103,27 @@ export class ArrayCollection<T, O> {
    * is not the same as `em.remove()`. If we want to delete the entity by removing it from collection, we need to enable `orphanRemoval: true`,
    * which tells the ORM we don't want orphaned entities to exist, so we know those should be removed.
    */
-  remove(...items: (T | Reference<T>)[]): void {
+  remove(entity: T | Reference<T> | (T | Reference<T>)[], ...entities: (T | Reference<T>)[]): void {
+    entities = Utils.asArray(entity).concat(entities);
+    let modified = false;
 
-    for (const item of items) {
+    for (const item of entities) {
       if (!item) {
         continue;
       }
 
-      const entity = Reference.unwrapReference(item);
+      const entity = Reference.unwrapReference(item) as T;
 
       if (this.items.delete(entity)) {
         this.incrementCount(-1);
         delete this[this.items.size]; // remove last item
-        Object.assign(this, [...this.items]); // reassign array access
         this.propagate(entity, 'remove');
+        modified = true;
       }
+    }
+
+    if (modified) {
+      Object.assign(this, [...this.items]); // reassign array access
     }
   }
 
@@ -124,7 +134,9 @@ export class ArrayCollection<T, O> {
    * which tells the ORM we don't want orphaned entities to exist, so we know those should be removed.
    */
   removeAll(): void {
-    this.remove(...this.items);
+    for (const item of this.items) {
+      this.remove(item);
+    }
   }
 
   /**
@@ -141,7 +153,7 @@ export class ArrayCollection<T, O> {
   }
 
   contains(item: T | Reference<T>, check?: boolean): boolean {
-    const entity = Reference.unwrapReference(item);
+    const entity = Reference.unwrapReference(item) as T;
     return this.items.has(entity);
   }
 
@@ -150,11 +162,25 @@ export class ArrayCollection<T, O> {
   }
 
   isInitialized(fully = false): boolean {
-    if (fully) {
-      return this.initialized && [...this.items].every((item: AnyEntity<T>) => item.__helper!.__initialized);
+    if (!this.initialized || !fully) {
+      return this.initialized;
     }
 
-    return this.initialized;
+    for (const item of this.items) {
+      if (!helper(item).__initialized) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  isDirty(): boolean {
+    return this.dirty;
+  }
+
+  setDirty(dirty = true): void {
+    this.dirty = dirty;
   }
 
   get length(): number {
@@ -172,11 +198,11 @@ export class ArrayCollection<T, O> {
    */
   get property(): EntityProperty<T> {
     if (!this._property) {
-      const meta = this.owner.__meta;
+      const meta = helper(this.owner).__meta;
 
       /* istanbul ignore if */
       if (!meta) {
-        throw MetadataError.missingMetadata(this.owner.constructor.name);
+        throw MetadataError.fromUnknownEntity((this.owner as object).constructor.name, 'Collection.property getter, maybe you just forgot to initialize the ORM?');
       }
 
       const field = Object.keys(meta.properties).find(k => this.owner[k] === this);
@@ -186,7 +212,7 @@ export class ArrayCollection<T, O> {
     return this._property!;
   }
 
-  protected propagate(item: T, method: 'add' | 'remove'): void {
+  protected propagate(item: T, method: 'add' | 'remove' | 'takeSnapshot'): void {
     if (this.property.owner && this.property.inversedBy) {
       this.propagateToInverseSide(item, method);
     } else if (!this.property.owner && this.property.mappedBy) {
@@ -194,7 +220,7 @@ export class ArrayCollection<T, O> {
     }
   }
 
-  protected propagateToInverseSide(item: T, method: 'add' | 'remove'): void {
+  protected propagateToInverseSide(item: T, method: 'add' | 'remove' | 'takeSnapshot'): void {
     const collection = item[this.property.inversedBy as keyof T] as unknown as ArrayCollection<O, T>;
 
     if (this.shouldPropagateToCollection(collection, method)) {
@@ -202,17 +228,22 @@ export class ArrayCollection<T, O> {
     }
   }
 
-  protected propagateToOwningSide(item: T, method: 'add' | 'remove'): void {
+  protected propagateToOwningSide(item: T, method: 'add' | 'remove' | 'takeSnapshot'): void {
     const collection = item[this.property.mappedBy as keyof T] as unknown as ArrayCollection<O, T>;
 
     if (this.property.reference === ReferenceType.MANY_TO_MANY) {
       if (this.shouldPropagateToCollection(collection, method)) {
         collection[method](this.owner);
       }
-    } else if (this.property.reference === ReferenceType.ONE_TO_MANY && !(this.property.orphanRemoval && method === 'remove')) {
+    } else if (this.property.reference === ReferenceType.ONE_TO_MANY && method !== 'takeSnapshot') {
       const prop2 = this.property.targetMeta!.properties[this.property.mappedBy];
-      const owner = prop2.mapToPk ? this.owner.__helper!.getPrimaryKey() : this.owner;
+      const owner = prop2.mapToPk ? helper(this.owner).getPrimaryKey() : this.owner;
       const value = method === 'add' ? owner : null;
+
+      if (this.property.orphanRemoval && method === 'remove') {
+        // cache the PK before we propagate, as its value might be needed when flushing
+        helper(item).__pk = helper(item).getPrimaryKey()!;
+      }
 
       // skip if already propagated
       if (Reference.unwrapReference(item[this.property.mappedBy]) !== value) {
@@ -221,17 +252,19 @@ export class ArrayCollection<T, O> {
     }
   }
 
-  protected shouldPropagateToCollection(collection: ArrayCollection<O, T>, method: 'add' | 'remove'): boolean {
-    if (!collection || !collection.isInitialized()) {
+  protected shouldPropagateToCollection(collection: ArrayCollection<O, T>, method: 'add' | 'remove' | 'takeSnapshot'): boolean {
+    if (!collection) {
       return false;
     }
 
-    if (method === 'add') {
-      return !collection.contains(this.owner, false);
+    switch (method) {
+      case 'add':
+        return !collection.contains(this.owner, false);
+      case 'remove':
+        return collection.isInitialized() && collection.contains(this.owner, false);
+      case 'takeSnapshot':
+        return collection.isDirty();
     }
-
-    // remove
-    return collection.contains(this.owner, false);
   }
 
   protected incrementCount(value: number) {

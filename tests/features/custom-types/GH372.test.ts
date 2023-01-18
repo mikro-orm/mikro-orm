@@ -5,7 +5,7 @@ import { mockLogger } from '../../helpers';
 import type { Knex } from 'knex';
 import { knex } from 'knex';
 import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 type Point = { x: number; y: number };
 
@@ -47,13 +47,13 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [A],
     dbName: `mikro_orm_test_gh_372`,
-    type: 'postgresql',
+    driver: PostgreSqlDriver,
   });
-  await orm.getSchemaGenerator().refreshDatabase();
+  await orm.schema.refreshDatabase();
 });
 
 beforeEach(async () => {
-  await orm.getSchemaGenerator().clearDatabase();
+  await orm.schema.clearDatabase();
 });
 
 afterAll(async () => {
@@ -80,7 +80,7 @@ test(`custom types with knex.raw()`, async () => {
   expect(a3.prop).toEqual({ x: 6, y: 10 });
 
   expect(mock.mock.calls[0][0]).toMatch('begin');
-  expect(mock.mock.calls[1][0]).toMatch('insert into "a" ("prop") values (point($1,$2)) returning "id"');
+  expect(mock.mock.calls[1][0]).toMatch('insert into "a" ("prop") values ($1) returning "id"');
   expect(mock.mock.calls[2][0]).toMatch('commit');
   expect(mock.mock.calls[3][0]).toMatch('select "a0".* from "a" as "a0" where "a0"."id" = $1 limit $2');
   expect(mock.mock.calls[4][0]).toMatch('begin');

@@ -1,8 +1,17 @@
 import { clone } from './clone';
-import type { AnyEntity, EntityData, EntityDictionary, EntityMetadata, EntityProperty, IMetadataStorage, Primary } from '../typings';
+import type {
+  Dictionary,
+  EntityData,
+  EntityDictionary,
+  EntityMetadata,
+  EntityProperty,
+  IMetadataStorage,
+  Primary,
+} from '../typings';
 import { ReferenceType } from '../enums';
 import type { Platform } from '../platforms';
-import { compareArrays, compareBuffers, compareObjects, equals, Utils } from './Utils';
+import { compareArrays, compareBooleans, compareBuffers, compareObjects, equals, Utils } from './Utils';
+import { JsonType } from '../types/JsonType';
 
 type Comparator<T> = (a: T, b: T) => EntityData<T>;
 type ResultMapper<T> = (result: EntityData<T>) => EntityData<T> | null;
@@ -35,15 +44,15 @@ export class EntityComparator {
    * Removes ORM specific code from entities and prepares it for serializing. Used before change set computation.
    * References will be mapped to primary keys, collections to arrays of primary keys.
    */
-  prepareEntity<T extends AnyEntity<T>>(entity: T): EntityData<T> {
-    const generator = this.getSnapshotGenerator<T>(entity.constructor.name);
+  prepareEntity<T>(entity: T): EntityData<T> {
+    const generator = this.getSnapshotGenerator<T>((entity as Dictionary).constructor.name);
     return Utils.callCompiledFunction(generator, entity);
   }
 
   /**
    * Maps database columns to properties.
    */
-  mapResult<T extends AnyEntity<T>>(entityName: string, result: EntityDictionary<T>): EntityData<T> | null {
+  mapResult<T>(entityName: string, result: EntityDictionary<T>): EntityData<T> | null {
     const mapper = this.getResultMapper<T>(entityName);
     return Utils.callCompiledFunction(mapper, result);
   }
@@ -51,7 +60,7 @@ export class EntityComparator {
   /**
    * @internal Highly performance-sensitive method.
    */
-  getPkGetter<T extends AnyEntity<T>>(meta: EntityMetadata<T>) {
+  getPkGetter<T>(meta: EntityMetadata<T>) {
     const exists = this.pkGetters.get(meta.className);
 
     /* istanbul ignore next */
@@ -95,7 +104,7 @@ export class EntityComparator {
   /**
    * @internal Highly performance-sensitive method.
    */
-  getPkGetterConverted<T extends AnyEntity<T>>(meta: EntityMetadata<T>) {
+  getPkGetterConverted<T>(meta: EntityMetadata<T>) {
     const exists = this.pkGettersConverted.get(meta.className);
 
     /* istanbul ignore next */
@@ -126,8 +135,9 @@ export class EntityComparator {
       }
 
       if (meta.properties[pk].customType) {
-        context.set(`convertToDatabaseValue_${pk}`, (val: any) => meta.properties[pk].customType.convertToDatabaseValue(val, this.platform));
-        lines.push(`  return convertToDatabaseValue_${pk}(entity${this.wrap(pk)});`);
+        const convertorKey = this.safeKey(pk);
+        context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => meta.properties[pk].customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
+        lines.push(`  return convertToDatabaseValue_${convertorKey}(entity${this.wrap(pk)});`);
       } else {
         lines.push(`  return entity${this.wrap(pk)};`);
       }
@@ -144,7 +154,7 @@ export class EntityComparator {
   /**
    * @internal Highly performance-sensitive method.
    */
-  getPkSerializer<T extends AnyEntity<T>>(meta: EntityMetadata<T>) {
+  getPkSerializer<T>(meta: EntityMetadata<T>) {
     const exists = this.pkSerializers.get(meta.className);
 
     /* istanbul ignore next */
@@ -154,9 +164,10 @@ export class EntityComparator {
 
     const lines: string[] = [];
     const context = new Map<string, any>();
+    context.set('getCompositeKeyValue', (val: any) => Utils.getCompositeKeyValue(val, meta, true, this.platform));
 
     if (meta.primaryKeys.length > 1) {
-      lines.push(`  const pks = [`);
+      lines.push(`  const pks = entity.__helper.__pk ? getCompositeKeyValue(entity.__helper.__pk) : [`);
       meta.primaryKeys.forEach(pk => {
         if (meta.properties[pk].reference !== ReferenceType.SCALAR) {
           lines.push(`    (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) ? entity${this.wrap(pk)}.__helper.getSerializedPrimaryKey() : entity${this.wrap(pk)},`);
@@ -173,7 +184,13 @@ export class EntityComparator {
         lines.push(`  if (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) return entity${this.wrap(pk)}.__helper.getSerializedPrimaryKey();`);
       }
 
-      lines.push(`  return '' + entity.${meta.serializedPrimaryKey};`);
+      const serializedPrimaryKey = meta.props.find(p => p.serializedPrimaryKey);
+
+      if (serializedPrimaryKey) {
+        lines.push(`  return '' + entity.${serializedPrimaryKey.name};`);
+      }
+
+      lines.push(`  return '' + entity.${meta.primaryKeys[0]};`);
     }
 
     const code = `// compiled pk serializer for entity ${meta.className}\n`
@@ -187,7 +204,7 @@ export class EntityComparator {
   /**
    * @internal Highly performance-sensitive method.
    */
-  getSnapshotGenerator<T extends AnyEntity<T>>(entityName: string): SnapshotGenerator<T> {
+  getSnapshotGenerator<T>(entityName: string): SnapshotGenerator<T> {
     const exists = this.snapshotGenerators.get(entityName);
 
     if (exists) {
@@ -224,7 +241,7 @@ export class EntityComparator {
   /**
    * @internal Highly performance-sensitive method.
    */
-  getResultMapper<T extends AnyEntity<T>>(entityName: string): ResultMapper<T> {
+  getResultMapper<T>(entityName: string): ResultMapper<T> {
     const exists = this.mappers.get(entityName);
 
     if (exists) {
@@ -249,11 +266,7 @@ export class EntityComparator {
         idx += pk.fieldNames.length;
       }
 
-      if (parts.length > 1) {
-        return '[' + parts.join(', ') + ']';
-      }
-
-      return parts[0];
+      return '[' + parts.join(', ') + ']';
     };
 
     lines.push(`  const mapped = {};`);
@@ -359,11 +372,30 @@ export class EntityComparator {
 
   private getEmbeddedPropertySnapshot<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, context: Map<string, any>, level: number, path: string[], dataKey: string, object = prop.object): string {
     const padding = ' '.repeat(level * 2);
+    let ret = `${level === 1 ? '' : '\n'}`;
+
+    if (object) {
+      const nullCond = `entity${path.map(k => this.wrap(k)).join('')} === null`;
+      ret += `${padding}if (${nullCond}) ret${dataKey} = null;\n`;
+    }
+
     const cond = `entity${path.map(k => this.wrap(k)).join('')} != null`;
-    let ret = `${level === 1 ? '' : '\n'}${padding}if (${cond}) {\n`;
+    ret += `${padding}if (${cond}) {\n`;
 
     if (object) {
       ret += `${padding}  ret${dataKey} = {};\n`;
+    }
+
+    function shouldProcessCustomType(childProp: EntityProperty) {
+      if (!childProp.customType) {
+        return false;
+      }
+
+      if (childProp.customType instanceof JsonType) {
+        return !prop.object;
+      }
+
+      return true;
     }
 
     ret += meta.props.filter(p => p.embedded?.[0] === prop.name).map(childProp => {
@@ -379,14 +411,15 @@ export class EntityComparator {
           .split('\n').map(l => padding + l).join('\n');
       }
 
-      if (childProp.customType) {
-        context.set(`convertToDatabaseValue_${childProp.name}`, (val: any) => childProp.customType.convertToDatabaseValue(val, this.platform));
+      if (shouldProcessCustomType(childProp)) {
+        const convertorKey = this.safeKey(childProp.name);
+        context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => childProp.customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
 
         if (['number', 'string', 'boolean'].includes(childProp.customType.compareAsType().toLowerCase())) {
-          return `${padding}  ret${childDataKey} = convertToDatabaseValue_${childProp.name}(entity${childEntityKey});`;
+          return `${padding}  ret${childDataKey} = convertToDatabaseValue_${convertorKey}(entity${childEntityKey});`;
         }
 
-        return `${padding}  ret${childDataKey} = clone(convertToDatabaseValue_${childProp.name}(entity${childEntityKey}));`;
+        return `${padding}  ret${childDataKey} = clone(convertToDatabaseValue_${convertorKey}(entity${childEntityKey}));`;
       }
 
       return `${padding}  ret${childDataKey} = clone(entity${childEntityKey});`;
@@ -400,6 +433,7 @@ export class EntityComparator {
   }
 
   private getPropertySnapshot<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>, context: Map<string, any>, dataKey: string, entityKey: string, path: string[], level = 1, object?: boolean): string {
+    const convertorKey = this.safeKey(prop.name);
     let ret = `  if (${this.getPropertyCondition(prop, entityKey, path)}) {\n`;
 
     if (['number', 'string', 'boolean'].includes(prop.type.toLowerCase())) {
@@ -418,31 +452,31 @@ export class EntityComparator {
       if (prop.mapToPk) {
         ret += `    ret${dataKey} = entity${entityKey};\n`;
       } else {
-        context.set(`getPrimaryKeyValues_${prop.name}`, (val: any) => val && Utils.getPrimaryKeyValues(val, this.metadata.find(prop.type)!.primaryKeys, true));
-        ret += `    ret${dataKey} = getPrimaryKeyValues_${prop.name}(entity${entityKey});\n`;
+        context.set(`getPrimaryKeyValues_${convertorKey}`, (val: any) => val && Utils.getPrimaryKeyValues(val, this.metadata.find(prop.type)!.primaryKeys, true));
+        ret += `    ret${dataKey} = getPrimaryKeyValues_${convertorKey}(entity${entityKey});\n`;
       }
 
       if (prop.customType) {
-        context.set(`convertToDatabaseValue_${prop.name}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform));
+        context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
 
         if (['number', 'string', 'boolean'].includes(prop.customType.compareAsType().toLowerCase())) {
-          return ret + `    ret${dataKey} = convertToDatabaseValue_${prop.name}(ret${dataKey});\n  }\n`;
+          return ret + `    ret${dataKey} = convertToDatabaseValue_${convertorKey}(ret${dataKey});\n  }\n`;
         }
 
-        return ret + `    ret${dataKey} = clone(convertToDatabaseValue_${prop.name}(ret${dataKey}));\n  }\n`;
+        return ret + `    ret${dataKey} = clone(convertToDatabaseValue_${convertorKey}(ret${dataKey}));\n  }\n`;
       }
 
       return ret + '  }\n';
     }
 
     if (prop.customType) {
-      context.set(`convertToDatabaseValue_${prop.name}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform));
+      context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
 
       if (['number', 'string', 'boolean'].includes(prop.customType.compareAsType().toLowerCase())) {
-        return ret + `    ret${dataKey} = convertToDatabaseValue_${prop.name}(entity${entityKey});\n  }\n`;
+        return ret + `    ret${dataKey} = convertToDatabaseValue_${convertorKey}(entity${entityKey});\n  }\n`;
       }
 
-      return ret + `    ret${dataKey} = clone(convertToDatabaseValue_${prop.name}(entity${entityKey}));\n  }\n`;
+      return ret + `    ret${dataKey} = clone(convertToDatabaseValue_${convertorKey}(entity${entityKey}));\n  }\n`;
     }
 
     if (prop.type.toLowerCase() === 'date') {
@@ -456,7 +490,7 @@ export class EntityComparator {
   /**
    * @internal Highly performance-sensitive method.
    */
-  getEntityComparator<T>(entityName: string): Comparator<T> {
+  getEntityComparator<T extends object>(entityName: string): Comparator<T> {
     const exists = this.comparators.get(entityName);
 
     if (exists) {
@@ -467,6 +501,7 @@ export class EntityComparator {
     const lines: string[] = [];
     const context = new Map<string, any>();
     context.set('compareArrays', compareArrays);
+    context.set('compareBooleans', compareBooleans);
     context.set('compareBuffers', compareBuffers);
     context.set('compareObjects', compareObjects);
     context.set('equals', equals);
@@ -485,7 +520,7 @@ export class EntityComparator {
 
   private getGenericComparator(prop: string, cond: string): string {
     return `  if (current${prop} == null && last${prop} == null) {\n\n` +
-      `  } else if ((current${prop} && last${prop} == null) || (current${prop} == null && last${prop})) {\n` +
+      `  } else if ((current${prop} != null && last${prop} == null) || (current${prop} == null && last${prop} != null)) {\n` +
       `    diff${prop} = current${prop};\n` +
       `  } else if (${cond}) {\n` +
       `    diff${prop} = current${prop};\n` +
@@ -513,8 +548,12 @@ export class EntityComparator {
       type = 'array';
     }
 
-    if (['string', 'number', 'boolean'].includes(type)) {
+    if (['string', 'number'].includes(type)) {
       return this.getGenericComparator(this.wrap(prop.name), `last${this.wrap(prop.name)} !== current${this.wrap(prop.name)}`);
+    }
+
+    if (type === 'boolean') {
+      return this.getGenericComparator(this.wrap(prop.name), `!compareBooleans(last${this.wrap(prop.name)}, current${this.wrap(prop.name)})`);
     }
 
     if (['array'].includes(type) || type.endsWith('[]')) {
@@ -548,10 +587,14 @@ export class EntityComparator {
     return key.match(/^\w+$/) ? `.${key}` : `['${key}']`;
   }
 
+  private safeKey(key: string): string {
+    return key.replace(/[^\w]/g, '_');
+  }
+
   /**
    * perf: used to generate list of comparable properties during discovery, so we speed up the runtime comparison
    */
-  static isComparable<T extends AnyEntity<T>>(prop: EntityProperty<T>, root: EntityMetadata) {
+  static isComparable<T>(prop: EntityProperty<T>, root: EntityMetadata) {
     const virtual = prop.persist === false;
     const inverse = prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner;
     const discriminator = prop.name === root.discriminatorColumn;

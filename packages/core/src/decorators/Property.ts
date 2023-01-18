@@ -2,8 +2,8 @@ import { MetadataStorage, MetadataValidator } from '../metadata';
 import { Utils } from '../utils';
 import type { Cascade, LoadStrategy } from '../enums';
 import { ReferenceType } from '../enums';
-import type { EntityName, EntityProperty, Constructor, CheckCallback, Dictionary } from '../typings';
-import type { Type } from '../types';
+import type { EntityName, EntityProperty, Constructor, CheckCallback, Dictionary, AnyString, AnyEntity } from '../typings';
+import type { Type, types } from '../types';
 
 export function Property<T>(options: PropertyOptions<T> = {}) {
   return function (target: any, propertyName: string) {
@@ -45,8 +45,8 @@ export type PropertyOptions<T> = {
   fieldName?: string;
   fieldNames?: string[];
   customType?: Type<any>;
-  columnType?: string;
-  type?: 'string' | 'number' | 'boolean' | 'bigint' | 'ObjectId' | string | unknown | bigint | Date | Constructor<Type<any>> | Type<any>;
+  columnType?: ColumnType | AnyString;
+  type?: keyof typeof types | 'ObjectId' | Date | Constructor<AnyEntity> | Constructor<Type<any>> | Type<any> | (() => unknown) | ColumnType | AnyString;
   length?: number;
   precision?: number;
   scale?: number;
@@ -59,6 +59,7 @@ export type PropertyOptions<T> = {
   nullable?: boolean;
   unsigned?: boolean;
   persist?: boolean;
+  trackChanges?: boolean;
   hidden?: boolean;
   version?: boolean;
   concurrencyCheck?: boolean;
@@ -76,6 +77,7 @@ export type PropertyOptions<T> = {
   comment?: string;
   /** mysql only */
   extra?: string;
+  ignoreSchemaChanges?: ('type' | 'extra')[];
 };
 
 export interface ReferenceOptions<T, O> extends PropertyOptions<O> {
@@ -84,3 +86,18 @@ export interface ReferenceOptions<T, O> extends PropertyOptions<O> {
   eager?: boolean;
   strategy?: LoadStrategy;
 }
+
+/**
+ * Inspired by https://github.com/typeorm/typeorm/blob/941b584ba135617e55d6685caef671172ec1dc03/src/driver/types/ColumnTypes.ts
+ * @ignore
+ */
+export type ColumnType =
+  | 'int' | 'int4' | 'integer' | 'bigint' | 'int8' | 'int2' | 'tinyint' | 'smallint' | 'mediumint'
+  | 'double' | 'double precision' | 'real' | 'float8' | 'decimal' | 'numeric' | 'float' | 'float4'
+  | 'datetime' | 'time' | 'time with time zone' | 'timestamp' | 'timestamp with time zone' | 'timetz' | 'timestamptz' | 'date' | 'interval'
+  | 'character varying'| 'varchar' | 'char' | 'character' | 'uuid' | 'text' | 'tinytext' | 'mediumtext' | 'longtext'
+  | 'boolean' | 'bool' | 'bit' | 'enum'
+  | 'blob' | 'tinyblob' | 'mediumblob' | 'longblob' | 'bytea'
+  | 'point' | 'line' | 'lseg' | 'box' | 'circle' | 'path' | 'polygon' | 'geometry'
+  | 'tsvector' | 'tsquery'
+  | 'json' | 'jsonb';

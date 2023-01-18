@@ -2,7 +2,7 @@ import { MetadataStorage } from '../metadata';
 import type { AnyEntity, Dictionary } from '../typings';
 import { Utils } from '../utils/Utils';
 
-function createDecorator<T extends AnyEntity<T>>(options: IndexOptions<T> | UniqueOptions<T>, unique: boolean) {
+function createDecorator<T>(options: IndexOptions<T> | UniqueOptions<T>, unique: boolean) {
   return function (target: AnyEntity, propertyName?: string) {
     const meta = MetadataStorage.getMetadataFromDecorator(propertyName ? target.constructor : target);
     options.properties = options.properties || propertyName as keyof T;
@@ -25,13 +25,13 @@ export function Unique<T>(options: UniqueOptions<T> = {}) {
   return createDecorator(options, true);
 }
 
-export interface UniqueOptions<T extends AnyEntity<T>> {
+export interface UniqueOptions<T> {
   name?: string;
   properties?: keyof T | (keyof T)[];
   options?: Dictionary;
 }
 
-export interface IndexOptions<T extends AnyEntity<T>> extends UniqueOptions<T> {
+export interface IndexOptions<T> extends UniqueOptions<T> {
   type?: string;
   expression?: string;
 }

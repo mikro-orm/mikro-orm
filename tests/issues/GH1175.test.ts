@@ -12,9 +12,8 @@ import {
   UnitOfWork,
   Unique,
 } from '@mikro-orm/core';
-import type { MongoDriver } from '@mikro-orm/mongodb';
-import { ObjectId } from '@mikro-orm/mongodb';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { MongoDriver, ObjectId } from '@mikro-orm/mongodb';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 as uuid } from 'uuid';
 import { closeReplSets, initMongoReplSet } from '../bootstrap';
 
@@ -99,7 +98,7 @@ describe('GH issue 1175', () => {
       const orm = await MikroORM.init({
         entities: [User],
         dbName: 'mikro_orm_test_gh_1175',
-        type: 'postgresql',
+        driver: PostgreSqlDriver,
         subscribers: subscriber ? [subscriber] : [],
       });
 
@@ -110,8 +109,8 @@ describe('GH issue 1175', () => {
 
     beforeAll(async () => {
       orm = await getOrmInstance(testSubscriber);
-      await orm.getSchemaGenerator().dropDatabase('mikro_orm_test_gh_1175');
-      await orm.getSchemaGenerator().createDatabase('mikro_orm_test_gh_1175');
+      await orm.schema.dropDatabase('mikro_orm_test_gh_1175');
+      await orm.schema.createDatabase('mikro_orm_test_gh_1175');
     });
 
     afterAll(async () => {
@@ -599,13 +598,13 @@ describe('GH issue 1175', () => {
       orm = await MikroORM.init({
         entities: [Entity1175],
         clientUrl: await initMongoReplSet('mikro-orm-test'),
-        type: 'mongo',
+        driver: MongoDriver,
         implicitTransactions: true,
         subscribers: [testSubscriber],
       });
       await orm.em.nativeDelete(Entity1175, {});
       await orm.em.nativeInsert(Entity1175, { username: 'test1' });
-      await orm.getSchemaGenerator().ensureIndexes();
+      await orm.schema.ensureIndexes();
     });
 
     afterAll(async () => {

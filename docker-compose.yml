@@ -2,7 +2,7 @@ version: "3.4"
 
 services:
   mongo:
-    image: mongo:5.0
+    image: mongo:6.0
     expose:
       - 27017
     ports:
@@ -21,7 +21,7 @@ services:
       - mysql8:/var/lib/mysql
 
   mariadb:
-    image: mariadb:10.8
+    image: mariadb:10.10
     ports:
       - "3309:3306"
     environment:
@@ -30,7 +30,7 @@ services:
       - mariadb:/var/lib/mysql
 
   postgre:
-    image: postgres:14.3
+    image: postgres:15.1
     ports:
       - "5432:5432"
     volumes:

@@ -1,5 +1,5 @@
 import { Entity, PrimaryKey, Property, MikroORM } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 abstract class A {
 
@@ -38,17 +38,17 @@ describe('GH issue 459', () => {
     orm = await MikroORM.init({
       entities: [A, B, C, D],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.dropSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(() => orm.close(true));
 
   test(`multiple inheritance`, async () => {
     const sql = 'create table `d` (`id` integer not null primary key autoincrement, `foo` text not null, `bar` text not null, `name` text not null);\n\n';
-    expect(await orm.getSchemaGenerator().getCreateSchemaSQL({ wrap: false })).toBe(sql);
+    expect(await orm.schema.getCreateSchemaSQL({ wrap: false })).toBe(sql);
 
     const d = new D();
     d.name = 'name';

@@ -1,18 +1,22 @@
 import { inspect } from 'util';
 import type { EntityManager } from '../EntityManager';
-import type { AnyEntity, ConnectionType, Dictionary, EntityData, EntityDictionary, EntityMetadata, Populate, PopulateOptions, Primary } from '../typings';
+import type {
+  AnyEntity, ConnectionType, Dictionary, EntityData, EntityDictionary, EntityMetadata,
+  IWrappedEntityInternal, Populate, PopulateOptions, Primary,
+} from '../typings';
 import type { IdentifiedReference } from './Reference';
 import { Reference } from './Reference';
-import type { SerializationContext } from './EntityTransformer';
-import { EntityTransformer } from './EntityTransformer';
+import { EntityTransformer } from '../serialization/EntityTransformer';
 import type { AssignOptions } from './EntityAssigner';
 import { EntityAssigner } from './EntityAssigner';
 import { Utils } from '../utils/Utils';
 import type { LockMode } from '../enums';
 import { ValidationError } from '../errors';
 import type { EntityIdentifier } from './EntityIdentifier';
+import { helper } from './wrap';
+import type { SerializationContext } from '../serialization/SerializationContext';
 
-export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
+export class WrappedEntity<T extends object, PK extends keyof T> {
 
   __initialized = true;
   __touched = false;
@@ -25,11 +29,18 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   __serializationContext: { root?: SerializationContext<T>; populate?: PopulateOptions<T>[] } = {};
   __loadedProperties = new Set<string>();
   __data: Dictionary = {};
+  __processing = false;
 
-  /** holds last entity data snapshot so we can compute changes when persisting managed entities */
+  /** stores last known primary key, as its current state might be broken due to propagation/orphan removal, but we need to know the PK to be able t remove the entity */
+  __pk?: Primary<T>;
+
+  /** holds the reference wrapper instance (if created), so we can maintain the identity on reference wrappers too */
+  __reference?: Reference<T>;
+
+  /** holds last entity data snapshot, so we can compute changes when persisting managed entities */
   __originalEntityData?: EntityData<T>;
 
-  /** holds wrapped primary key so we can compute change set without eager commit */
+  /** holds wrapped primary key, so we can compute change set without eager commit */
   __identifier?: EntityIdentifier;
 
   constructor(private readonly entity: T,
@@ -51,7 +62,8 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   }
 
   toReference(): IdentifiedReference<T, PK> {
-    return Reference.create<T, PK>(this.entity);
+    this.__reference ??= new Reference(this.entity);
+    return this.__reference as IdentifiedReference<T, PK>;
   }
 
   toObject(ignoreFields: string[] = []): EntityData<T> {
@@ -63,7 +75,7 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   }
 
   toJSON(...args: any[]): EntityDictionary<T> {
-    // toJSON methods is added to thee prototype during discovery to support automatic serialization via JSON.stringify()
+    // toJSON methods is added to the prototype during discovery to support automatic serialization via JSON.stringify()
     return (this.entity as Dictionary).toJSON(...args);
   }
 
@@ -80,7 +92,7 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
       throw ValidationError.entityNotManaged(this.entity);
     }
 
-    await this.__em.findOne(this.entity.constructor.name, this.entity, { refresh: true, lockMode, populate, connectionType });
+    await this.__em.findOne(this.entity.constructor.name, this.entity, { refresh: true, lockMode, populate, connectionType, schema: this.__schema });
     this.populated(populated);
     this.__lazyInitialized = true;
 
@@ -93,13 +105,18 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   }
 
   getPrimaryKey(convertCustomTypes = false): Primary<T> | null {
-    if (convertCustomTypes) {
-      return this.pkGetterConverted!(this.entity);
+    if (this.__pk && this.__meta.compositePK) {
+      return Utils.getCompositeKeyValue(this.__pk, this.__meta, convertCustomTypes, this.__platform);
     }
 
-    return this.pkGetter!(this.entity);
+    if (convertCustomTypes) {
+      return this.__pk ?? this.pkGetterConverted!(this.entity);
+    }
+
+    return this.__pk ?? this.pkGetter!(this.entity);
   }
 
+  // this method is currently used only in `Driver.syncCollection` and can be probably removed
   getPrimaryKeys(convertCustomTypes = false): Primary<T>[] | null {
     const pk = this.getPrimaryKey(convertCustomTypes);
 
@@ -112,7 +129,7 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
         const child = this.entity[pk] as AnyEntity<T> | Primary<unknown>;
 
         if (Utils.isEntity(child, true)) {
-          const childPk = child.__helper!.getPrimaryKeys(convertCustomTypes);
+          const childPk = helper(child).getPrimaryKeys(convertCustomTypes);
           ret.push(...childPk!);
         } else {
           ret.push(child as Primary<unknown>);
@@ -134,7 +151,8 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   }
 
   setPrimaryKey(id: Primary<T> | null) {
-    this.entity[this.entity.__meta!.primaryKeys[0] as string] = id;
+    this.entity[this.__meta!.primaryKeys[0] as string] = id;
+    this.__pk = id!;
   }
 
   getSerializedPrimaryKey(): string {
@@ -142,19 +160,19 @@ export class WrappedEntity<T extends AnyEntity<T>, PK extends keyof T> {
   }
 
   get __meta(): EntityMetadata<T> {
-    return this.entity.__meta!;
+    return (this.entity as IWrappedEntityInternal<T>).__meta!;
   }
 
   get __platform() {
-    return this.entity.__platform!;
+    return (this.entity as IWrappedEntityInternal<T>).__platform!;
   }
 
   get __primaryKeys(): Primary<T>[] {
-    return Utils.getPrimaryKeyValues(this.entity, this.entity.__meta!.primaryKeys);
+    return Utils.getPrimaryKeyValues(this.entity, this.__meta!.primaryKeys);
   }
 
   [inspect.custom]() {
-    return `[WrappedEntity<${this.entity.__meta!.className}>]`;
+    return `[WrappedEntity<${this.__meta!.className}>]`;
   }
 
 }

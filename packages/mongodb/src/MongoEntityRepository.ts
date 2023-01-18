@@ -2,7 +2,7 @@ import type { EntityName } from '@mikro-orm/core';
 import { EntityRepository } from '@mikro-orm/core';
 import type { MongoEntityManager } from './MongoEntityManager';
 
-export class MongoEntityRepository<T> extends EntityRepository<T> {
+export class MongoEntityRepository<T extends object> extends EntityRepository<T> {
 
   constructor(protected readonly _em: MongoEntityManager,
               protected readonly entityName: EntityName<T>) {

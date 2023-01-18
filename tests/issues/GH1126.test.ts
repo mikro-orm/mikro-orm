@@ -1,5 +1,5 @@
 import { Collection, Entity, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -84,7 +84,7 @@ describe('GH issue 1126', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      type: 'sqlite',
+      driver: SqliteDriver,
       dbName: ':memory:',
       entities: [Author, Book, Page],
       loadStrategy: LoadStrategy.JOINED,
@@ -96,8 +96,8 @@ describe('GH issue 1126', () => {
   });
 
   beforeEach(async () => {
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.dropSchema();
+    await orm.schema.createSchema();
   });
 
   test(`1/3`, async () => {
@@ -116,7 +116,7 @@ describe('GH issue 1126', () => {
 
     expect(mock.mock.calls[0][0]).toMatch('select `a0`.`id`, `a0`.`name`, `b1`.`id` as `b1__id`, `b1`.`title` as `b1__title`, `b1`.`author_id` as `b1__author_id`, `p2`.`id` as `p2__id`, `p2`.`book_id` as `p2__book_id`, `p2`.`text` as `p2__text` from `author` as `a0` left join `book` as `b1` on `a0`.`id` = `b1`.`author_id` left join `page` as `p2` on `b1`.`id` = `p2`.`book_id` where `a0`.`id` = ?');
     expect(mock.mock.calls[1][0]).toMatch('begin');
-    expect(mock.mock.calls[2][0]).toMatch('insert into `book` (`author_id`, `title`) values (?, ?)');
+    expect(mock.mock.calls[2][0]).toMatch('insert into `book` (`title`, `author_id`) values (?, ?)');
     expect(mock.mock.calls[3][0]).toMatch('update `page` set `book_id` = ? where `id` = ?');
     expect(mock.mock.calls[4][0]).toMatch('delete from `book` where `id` in (?)');
     expect(mock.mock.calls[5][0]).toMatch('commit');
@@ -144,8 +144,8 @@ describe('GH issue 1126', () => {
 
     expect(mock.mock.calls[0][0]).toMatch('select `a0`.`id`, `a0`.`name`, `b1`.`id` as `b1__id`, `b1`.`title` as `b1__title`, `b1`.`author_id` as `b1__author_id`, `p2`.`id` as `p2__id`, `p2`.`book_id` as `p2__book_id`, `p2`.`text` as `p2__text` from `author` as `a0` left join `book` as `b1` on `a0`.`id` = `b1`.`author_id` left join `page` as `p2` on `b1`.`id` = `p2`.`book_id` where `a0`.`id` = ?');
     expect(mock.mock.calls[1][0]).toMatch('begin');
-    expect(mock.mock.calls[2][0]).toMatch('insert into `book` (`author_id`, `title`) values (?, ?)');
-    expect(mock.mock.calls[3][0]).toMatch('insert into `page` (`book_id`, `text`) values (?, ?)');
+    expect(mock.mock.calls[2][0]).toMatch('insert into `book` (`title`, `author_id`) values (?, ?) returning `id`');
+    expect(mock.mock.calls[3][0]).toMatch('insert into `page` (`text`, `book_id`) values (?, ?) returning `id`');
     expect(mock.mock.calls[4][0]).toMatch('delete from `page` where `id` in (?)');
     expect(mock.mock.calls[5][0]).toMatch('delete from `book` where `id` in (?)');
     expect(mock.mock.calls[6][0]).toMatch('commit');
@@ -172,8 +172,8 @@ describe('GH issue 1126', () => {
 
     expect(mock.mock.calls[0][0]).toMatch('select `a0`.`id`, `a0`.`name`, `b1`.`id` as `b1__id`, `b1`.`title` as `b1__title`, `b1`.`author_id` as `b1__author_id`, `p2`.`id` as `p2__id`, `p2`.`book_id` as `p2__book_id`, `p2`.`text` as `p2__text` from `author` as `a0` left join `book` as `b1` on `a0`.`id` = `b1`.`author_id` left join `page` as `p2` on `b1`.`id` = `p2`.`book_id` where `a0`.`id` = ?');
     expect(mock.mock.calls[1][0]).toMatch('begin');
-    expect(mock.mock.calls[2][0]).toMatch('insert into `book` (`author_id`, `title`) values (?, ?)');
-    expect(mock.mock.calls[3][0]).toMatch('insert into `page` (`book_id`, `text`) values (?, ?)');
+    expect(mock.mock.calls[2][0]).toMatch('insert into `book` (`title`, `author_id`) values (?, ?)');
+    expect(mock.mock.calls[3][0]).toMatch('insert into `page` (`text`, `book_id`) values (?, ?)');
     expect(mock.mock.calls[4][0]).toMatch('delete from `page` where `id` in (?)');
     expect(mock.mock.calls[5][0]).toMatch('delete from `book` where `id` in (?)');
     expect(mock.mock.calls[6][0]).toMatch('commit');

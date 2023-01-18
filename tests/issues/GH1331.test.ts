@@ -10,7 +10,7 @@ import {
   Property,
   QueryOrder,
 } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class D {
@@ -24,8 +24,7 @@ export class D {
   order!: number;
 
   @ManyToOne({
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    entity: () => C,
+      entity: () => C,
     wrappedReference: true,
     nullable: true,
   })
@@ -43,8 +42,7 @@ export class C {
   order!: number;
 
   @ManyToOne({
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    entity: () => B,
+      entity: () => B,
     wrappedReference: true,
     nullable: true,
   })
@@ -72,8 +70,7 @@ export class B {
   order!: number;
 
   @ManyToOne({
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    entity: () => A,
+      entity: () => A,
     wrappedReference: true,
     nullable: true,
   })
@@ -115,12 +112,12 @@ describe('GH issue 1331', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      type: 'sqlite',
+      driver: SqliteDriver,
       dbName: ':memory:',
       entities: [A, B, C, D],
       loadStrategy: LoadStrategy.JOINED,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {

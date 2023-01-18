@@ -1,4 +1,5 @@
 import { Collection, Embeddable, Embedded, Entity, IdentifiedReference, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Cat {
@@ -6,7 +7,6 @@ export class Cat {
   @PrimaryKey()
   name!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToOne(() => User, { wrappedReference: true })
   user!: IdentifiedReference<User>;
 
@@ -48,10 +48,10 @@ describe('GH issue #2717', () => {
     orm = await MikroORM.init({
       entities: [User],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
       loadStrategy: LoadStrategy.JOINED,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {

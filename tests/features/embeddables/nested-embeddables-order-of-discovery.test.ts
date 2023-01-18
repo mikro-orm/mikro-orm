@@ -1,4 +1,5 @@
 import { ArrayType, BigIntType, Embeddable, Embedded, Entity, Enum, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 export enum RestrictionMode {
   Blacklist,
@@ -53,9 +54,9 @@ describe('GH issue 2242', () => {
     const orm = await MikroORM.init({
       entities: [PluginTestSettings, PluginSettings, Restriction, RestrictionItem],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
       id: '771309736129200140',
@@ -72,9 +73,9 @@ describe('GH issue 2242', () => {
     const orm = await MikroORM.init({
       entities: [PluginSettings, PluginTestSettings, Restriction, RestrictionItem],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
       id: '771309736129200140',
@@ -91,9 +92,9 @@ describe('GH issue 2242', () => {
     const orm = await MikroORM.init({
       entities: [PluginTestSettings, Restriction, RestrictionItem, PluginSettings],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
       id: '771309736129200140',
@@ -110,9 +111,9 @@ describe('GH issue 2242', () => {
     const orm = await MikroORM.init({
       entities: [RestrictionItem, PluginTestSettings, Restriction, PluginSettings],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
       id: '771309736129200140',
@@ -129,9 +130,9 @@ describe('GH issue 2242', () => {
     const orm = await MikroORM.init({
       entities: [PluginSettings, Restriction, RestrictionItem, PluginTestSettings],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
       id: '771309736129200140',
@@ -148,9 +149,9 @@ describe('GH issue 2242', () => {
     const orm = await MikroORM.init({
       entities: [Restriction, RestrictionItem, PluginSettings, PluginTestSettings],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
       id: '771309736129200140',
@@ -167,9 +168,9 @@ describe('GH issue 2242', () => {
     const orm = await MikroORM.init({
       entities: [Restriction, RestrictionItem, PluginTestSettings, PluginSettings],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
       id: '771309736129200140',
@@ -186,9 +187,9 @@ describe('GH issue 2242', () => {
     const orm = await MikroORM.init({
       entities: [Restriction, PluginSettings, RestrictionItem, PluginTestSettings],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
       id: '771309736129200140',
@@ -205,9 +206,9 @@ describe('GH issue 2242', () => {
     const orm = await MikroORM.init({
       entities: [RestrictionItem, Restriction, PluginTestSettings, PluginSettings],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
       id: '771309736129200140',
@@ -224,9 +225,9 @@ describe('GH issue 2242', () => {
     const orm = await MikroORM.init({
       entities: [RestrictionItem, Restriction, PluginSettings, PluginTestSettings],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
 
     const item = orm.em.create(PluginTestSettings, {
       id: '771309736129200140',

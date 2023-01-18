@@ -89,9 +89,19 @@ export class ObjectCriteriaNode extends CriteriaNode {
           $and.push({ [key]: o[key] }, { [key]: payload[k] });
           delete o[key];
           o.$and = $and;
+        } else if (Utils.isOperator(k) && Array.isArray(payload[k])) {
+            o[key] = payload[k].map((child: Dictionary) => Object.keys(child).reduce((o, childKey) => {
+              const key = (this.isPrefixed(childKey) || Utils.isOperator(childKey))
+                ? childKey
+                : `${childAlias}.${childKey}`;
+              o[key] = child[childKey];
+              return o;
+            }, {}));
         } else {
           o[key] = payload[k];
         }
+      } else if (ObjectCriteriaNode.isCustomExpression(k)) {
+        o[k] = payload[k];
       } else {
         o[`${childAlias}.${k}`] = payload[k];
       }

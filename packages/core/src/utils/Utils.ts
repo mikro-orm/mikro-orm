@@ -7,12 +7,25 @@ import type { URL } from 'url';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { pathExists } from 'fs-extra';
 import { createHash } from 'crypto';
-import { recovery } from 'escaya';
+// @ts-ignore
+import { parse } from 'acorn-loose';
+import { simple as walk } from 'acorn-walk';
 import { clone } from './clone';
-import type { AnyEntity, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityName, EntityProperty, IMetadataStorage, Primary } from '../typings';
+import type {
+  Dictionary,
+  EntityClass,
+  EntityData,
+  EntityDictionary,
+  EntityMetadata,
+  EntityName,
+  EntityProperty,
+  IMetadataStorage,
+  Primary,
+} from '../typings';
 import { GroupOperator, PlainObject, QueryOperator, ReferenceType } from '../enums';
-import type { Collection } from '../entity';
+import type { Collection } from '../entity/Collection';
 import type { Platform } from '../platforms';
+import { helper } from '../entity/wrap';
 
 export const ObjectBindingPattern = Symbol('ObjectBindingPattern');
 
@@ -59,7 +72,7 @@ export function compareObjects(a: any, b: any) {
   return true;
 }
 
-export function compareArrays(a: any[], b: any[]) {
+export function compareArrays(a: any[] | string, b: any[] | string) {
   const length = a.length;
 
   if (length !== b.length) {
@@ -74,6 +87,13 @@ export function compareArrays(a: any[], b: any[]) {
   }
 
   return true;
+}
+
+export function compareBooleans(a: unknown, b: unknown): boolean {
+  a = typeof a === 'number' ? Boolean(a) : a;
+  b = typeof b === 'number' ? Boolean(b) : b;
+
+  return a === b;
 }
 
 export function compareBuffers(a: Buffer, b: Buffer): boolean {
@@ -112,7 +132,7 @@ export function equals(a: any, b: any): boolean {
     return compareObjects(a, b);
   }
 
-  return false;
+  return Number.isNaN(a) && Number.isNaN(b);
 }
 
 const equalsFn = equals;
@@ -120,6 +140,9 @@ const equalsFn = equals;
 export class Utils {
 
   static readonly PK_SEPARATOR = '~~~';
+
+  /* istanbul ignore next */
+  static dynamicImportProvider = (id: string) => import(id);
 
   /**
    * Checks if the argument is not undefined
@@ -267,6 +290,10 @@ export class Utils {
 
     if (Utils.isObject(target) && Utils.isPlainObject(source)) {
       Object.entries(source).forEach(([key, value]) => {
+        if (typeof value === 'undefined') {
+          return;
+        }
+
         if (Utils.isPlainObject(value)) {
           if (!(key in target)) {
             Object.assign(target, { [key]: {} });
@@ -318,8 +345,8 @@ export class Utils {
   /**
    * Creates deep copy of given object.
    */
-  static copy<T>(entity: T): T {
-    return clone(entity);
+  static copy<T>(entity: T, respectCustomCloneMethod = true): T {
+    return clone(entity, respectCustomCloneMethod);
   }
 
   /**
@@ -334,7 +361,7 @@ export class Utils {
       return Array.from(data);
     }
 
-    return Array.isArray(data!) ? data : [data!];
+    return Array.isArray(data!) ? data : [data as T];
   }
 
   /**
@@ -345,7 +372,7 @@ export class Utils {
       Object.keys(payload).forEach(key => {
         const value = payload[key];
         delete payload[key];
-        payload[from === key ? to : key] = value;
+        payload[from === key ? to : key as keyof T] = value;
       }, payload);
     }
   }
@@ -355,23 +382,23 @@ export class Utils {
    */
   static getParamNames(func: { toString(): string } | string, methodName?: string): string[] {
     const ret: string[] = [];
-    const parsed = recovery(func.toString(), 'entity.js', { next: true, module: true });
+    const parsed = parse(func.toString(), { ecmaVersion: 2022 });
 
-    const checkNode = (node: Dictionary) => {
-      if (methodName && node.name?.name !== methodName) {
+    const checkNode = (node: any, methodName?: string) => {
+      if (methodName && !(node.key && (node.key as any).name === methodName)) {
         return;
       }
 
-      const params = node.uniqueFormalParameters ?? node.params;
+      const params = node.value ? node.value.params : node.params;
       ret.push(...params.map((p: any) => {
         switch (p.type) {
-          case 'BindingElement':
-            if (p.left.type === 'ObjectBindingPattern') {
+          case 'AssignmentPattern':
+            if (p.left.type === 'ObjectPattern') {
               return ObjectBindingPattern;
             }
 
             return p.left.name;
-          case 'BindingRestElement':
+          case 'RestElement':
             return '...' + p.argument.name;
           default:
             return p.name;
@@ -379,34 +406,19 @@ export class Utils {
       }));
     };
 
-    Utils.walkNode(parsed, checkNode);
+    walk(parsed, {
+      MethodDefinition: (node: any) => checkNode(node, methodName),
+      FunctionDeclaration: (node: any) => checkNode(node, methodName),
+    });
 
     return ret;
-  }
-
-  private static walkNode(node: Dictionary, checkNode: (node: Dictionary) => void): void {
-    if (['MethodDefinition', 'FunctionDeclaration'].includes(node.type!)) {
-      checkNode(node);
-    }
-
-    if (Array.isArray(node.leafs)) {
-      node.leafs.forEach((row: Dictionary) => Utils.walkNode(row, checkNode));
-    }
-
-    if (Array.isArray(node.elements)) {
-      node.elements.forEach(element => Utils.walkNode(element, checkNode));
-    }
-
-    if (node.method) {
-      Utils.walkNode(node.method, checkNode);
-    }
   }
 
   /**
    * Checks whether the argument looks like primary key (string, number or ObjectId).
    */
   static isPrimaryKey<T>(key: any, allowComposite = false): key is Primary<T> {
-    if (allowComposite && Array.isArray(key) && key.every((v, i) => Utils.isPrimaryKey(v, true))) {
+    if (allowComposite && Array.isArray(key) && key.every(v => Utils.isPrimaryKey(v, true))) {
       return true;
     }
 
@@ -420,13 +432,13 @@ export class Utils {
   /**
    * Extracts primary key from `data`. Accepts objects or primary keys directly.
    */
-  static extractPK<T extends AnyEntity<T>>(data: any, meta?: EntityMetadata<T>, strict = false): Primary<T> | string | null {
+  static extractPK<T>(data: any, meta?: EntityMetadata<T>, strict = false): Primary<T> | string | null {
     if (Utils.isPrimaryKey(data)) {
       return data as Primary<T>;
     }
 
     if (Utils.isEntity<T>(data, true)) {
-      return data.__helper!.getPrimaryKey();
+      return helper(data).getPrimaryKey();
     }
 
     if (strict && meta && Utils.getObjectKeysSize(data) !== meta.primaryKeys.length) {
@@ -435,7 +447,7 @@ export class Utils {
 
     if (Utils.isPlainObject(data) && meta) {
       if (meta.compositePK) {
-        return Utils.getCompositeKeyHash(data as T, meta);
+        return this.getCompositeKeyValue(data as T, meta);
       }
 
       return data[meta.primaryKeys[0]] || data[meta.serializedPrimaryKey] || null;
@@ -444,17 +456,25 @@ export class Utils {
     return null;
   }
 
-  static getCompositeKeyHash<T extends AnyEntity<T>>(data: EntityData<T>, meta: EntityMetadata<T>): string {
-    const pks = meta.primaryKeys.map(pk => {
-      const value = data[pk as string];
+  static getCompositeKeyValue<T>(data: EntityData<T>, meta: EntityMetadata<T>, convertCustomTypes = false, platform?: Platform): Primary<T> {
+    return meta.primaryKeys.map((pk, idx) => {
+      const value = Array.isArray(data) ? data[idx] : data[pk as string];
       const prop = meta.properties[pk];
 
       if (prop.targetMeta && Utils.isPlainObject(value)) {
-        return this.getCompositeKeyHash(value, prop.targetMeta);
+        return this.getCompositeKeyValue(value, prop.targetMeta);
+      }
+
+      if (prop.customType && platform && convertCustomTypes) {
+        return prop.customType.convertToJSValue(value, platform);
       }
 
       return value;
-    });
+    }) as Primary<T>;
+  }
+
+  static getCompositeKeyHash<T>(data: EntityData<T>, meta: EntityMetadata<T>, convertCustomTypes = false, platform?: Platform): string {
+    const pks = this.getCompositeKeyValue(data, meta, convertCustomTypes, platform);
 
     return Utils.getPrimaryKeyHash(pks as string[]);
   }
@@ -467,7 +487,7 @@ export class Utils {
     return key.split(this.PK_SEPARATOR);
   }
 
-  static getPrimaryKeyValues<T extends AnyEntity<T>>(entity: T, primaryKeys: string[], allowScalar = false, convertCustomTypes = false) {
+  static getPrimaryKeyValues<T>(entity: T, primaryKeys: string[], allowScalar = false, convertCustomTypes = false) {
     if (allowScalar && primaryKeys.length === 1) {
       if (Utils.isEntity(entity[primaryKeys[0]], true)) {
         return entity[primaryKeys[0]].__helper!.getPrimaryKey(convertCustomTypes);
@@ -493,7 +513,7 @@ export class Utils {
     }, [] as Primary<T>[]);
   }
 
-  static getPrimaryKeyCond<T extends AnyEntity<T>>(entity: T, primaryKeys: string[]): Record<string, Primary<T>> | null {
+  static getPrimaryKeyCond<T>(entity: T, primaryKeys: string[]): Record<string, Primary<T>> | null {
     const cond = primaryKeys.reduce((o, pk) => {
       o[pk] = Utils.extractPK(entity[pk]);
       return o;
@@ -506,19 +526,19 @@ export class Utils {
     return cond;
   }
 
-  static getPrimaryKeyCondFromArray<T extends AnyEntity<T>>(pks: Primary<T>[], meta: EntityMetadata<T>): Record<string, Primary<T>> {
+  static getPrimaryKeyCondFromArray<T>(pks: Primary<T>[], meta: EntityMetadata<T>): Record<string, Primary<T>> {
     return meta.getPrimaryProps().reduce((o, pk, idx) => {
       if (Array.isArray(pks[idx]) && pk.targetMeta) {
-        o[pk.name] = Utils.getPrimaryKeyCondFromArray(pks[idx] as unknown[], pk.targetMeta);
+        o[pk.name] = pks[idx];
       } else {
-        o[pk.name] = Utils.extractPK<T>(pks[idx]);
+        o[pk.name] = Utils.extractPK<T>(pks[idx], meta);
       }
 
       return o;
     }, {} as any);
   }
 
-  static getOrderedPrimaryKeys<T extends AnyEntity<T>>(id: Primary<T> | Record<string, Primary<T>>, meta: EntityMetadata<T>, platform?: Platform, convertCustomTypes?: boolean): Primary<T>[] {
+  static getOrderedPrimaryKeys<T>(id: Primary<T> | Record<string, Primary<T>>, meta: EntityMetadata<T>, platform?: Platform, convertCustomTypes?: boolean): Primary<T>[] {
     const data = (Utils.isPrimaryKey(id) ? { [meta.primaryKeys[0]]: id } : id) as Record<string, Primary<T>>;
     const pks = meta.primaryKeys.map((pk, idx) => {
       const prop = meta.properties[pk];
@@ -545,7 +565,7 @@ export class Utils {
   /**
    * Checks whether given object is an entity instance.
    */
-  static isEntity<T = AnyEntity>(data: any, allowReference = false): data is T {
+  static isEntity<T = unknown>(data: any, allowReference = false): data is T {
     if (!Utils.isObject(data)) {
       return false;
     }
@@ -555,6 +575,21 @@ export class Utils {
     }
 
     return !!data.__entity;
+  }
+
+  /**
+   * Checks whether given object is an entity instance.
+   */
+  static isEntityClass<T = unknown>(data: any, allowReference = false): data is EntityClass<T> {
+    if (!('prototype' in data)) {
+      return false;
+    }
+
+    if (allowReference && !!data.prototype.__reference) {
+      return true;
+    }
+
+    return !!data.prototype.__entity;
   }
 
   /**
@@ -609,10 +644,17 @@ export class Utils {
   static lookupPathFromDecorator(name: string, stack?: string[]): string {
     // use some dark magic to get source path to caller
     stack = stack || new Error().stack!.split('\n');
-    let line = stack.findIndex(line => line.includes('__decorate'))!;
+    // In some situations (e.g. swc 1.3.4+), the presence of a source map can obscure the call to
+    // __decorate(), replacing it with the constructor name. To support these cases we look for
+    // Reflect.decorate() as well.
+    let line = stack.findIndex(line => line.includes('__decorate') || line.includes('Reflect.decorate'))!;
 
     if (line === -1) {
       return name;
+    }
+
+    if (stack[line].includes('Reflect.decorate')) {
+      line++;
     }
 
     if (Utils.normalizePath(stack[line]).includes('node_modules/tslib/tslib')) {
@@ -663,12 +705,8 @@ export class Utils {
     return ret;
   }
 
-  static isCollection<T, O = unknown>(item: any, prop?: EntityProperty<T>, type?: ReferenceType): item is Collection<T, O> {
-    if (!item?.__collection) {
-      return false;
-    }
-
-    return !(prop && type) || prop.reference === type;
+  static isCollection<T extends object, O extends object = object>(item: any): item is Collection<T, O> {
+    return item?.__collection;
   }
 
   static fileURLToPath(url: string | URL) {
@@ -814,6 +852,22 @@ export class Utils {
     return !!GroupOperator[key];
   }
 
+  static hasNestedKey(object: unknown, key: string): boolean {
+    if (!object) {
+      return false;
+    }
+
+    if (Array.isArray(object)) {
+      return object.some(o => this.hasNestedKey(o, key));
+    }
+
+    if (typeof object === 'object') {
+      return Object.entries(object).some(([k, v]) => k === key || this.hasNestedKey(v, key));
+    }
+
+    return false;
+  }
+
   static getGlobalStorage(namespace: string): Dictionary {
     const key = `mikro-orm-${namespace}`;
     global[key] = global[key] || {};
@@ -824,9 +878,9 @@ export class Utils {
   /**
    * Require a module from a specific location
    * @param id The module to require
-   * @param from Location to start the node resolution
+   * @param [from] Location to start the node resolution
    */
-  static requireFrom<T extends Dictionary>(id: string, from: string): T {
+  static requireFrom<T extends Dictionary>(id: string, from = process.cwd()): T {
     if (!extname(from)) {
       from = join(from, '__fake.js');
     }
@@ -840,17 +894,26 @@ export class Utils {
    * @see https://github.com/microsoft/TypeScript/issues/43329#issuecomment-922544562
    */
   static async dynamicImport<T = any>(id: string): Promise<T> {
-    if (!process.env.MIKRO_ORM_DYNAMIC_IMPORTS) {
-      return import(id);
+    if (id.endsWith('.json') || process.env.TS_JEST) {
+      return require(id);
     }
 
     /* istanbul ignore next */
     if (platform() === 'win32') {
-      id = pathToFileURL(id).toString();
+      try {
+        id = pathToFileURL(id).toString();
+      } catch {
+        // ignore
+      }
     }
 
     /* istanbul ignore next */
-    return Function(`return import('${id}')`)();
+    return this.dynamicImportProvider(id);
+  }
+
+  /* istanbul ignore next */
+  static setDynamicImportProvider(provider: (id: string) => Promise<unknown>): void {
+    this.dynamicImportProvider = provider;
   }
 
   static getORMVersion(): string {
@@ -888,13 +951,13 @@ export class Utils {
 
         if (position) {
           const lines = code.split('\n').map((line, idx) => {
-            if (idx === +position[1] - 4) {
+            if (idx === +position[1] - 5) {
               return '> ' + line;
             }
 
             return '  ' + line;
           });
-          lines.splice(+position[1] - 3, 0, ' '.repeat(+position[2] - 4) + '^');
+          lines.splice(+position[1] - 4, 0, ' '.repeat(+position[2]) + '^');
           code = lines.join('\n');
         }
 
@@ -959,7 +1022,7 @@ export class Utils {
         ret.push([target, i]);
       }
     };
-    follow(entity);
+    follow(entity as Dictionary);
 
     return ret;
   }
@@ -1009,7 +1072,7 @@ export class Utils {
     });
   }
 
-  static tryRequire<T = any>({ module, from, allowError, warning }: { module: string; warning: string; from?: string; allowError?: string }): T | undefined {
+  static tryRequire<T extends Dictionary = any>({ module, from, allowError, warning }: { module: string; warning: string; from?: string; allowError?: string }): T | undefined {
     allowError ??= `Cannot find module '${module}'`;
     from ??= process.cwd();
 

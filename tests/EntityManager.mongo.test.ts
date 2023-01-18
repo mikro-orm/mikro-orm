@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson';
 import type { EntityProperty } from '@mikro-orm/core';
-import { Collection, Configuration, MikroORM, QueryOrder, Reference, wrap, UniqueConstraintViolationException, IdentityMap, EntitySchema, NullHighlighter } from '@mikro-orm/core';
-import { EntityManager, MongoConnection, MongoDriver, MongoPlatform } from '@mikro-orm/mongodb';
+import { Collection, Configuration, QueryOrder, Reference, wrap, UniqueConstraintViolationException, IdentityMap, EntitySchema, NullHighlighter, FlushMode } from '@mikro-orm/core';
+import { EntityManager, MongoConnection, MongoDriver, MongoPlatform, MikroORM } from '@mikro-orm/mongodb';
 import { MongoHighlighter } from '@mikro-orm/mongo-highlighter';
 
 import { Author, Book, BookTag, Publisher, PublisherType, Test } from './entities';
@@ -12,22 +12,25 @@ import { FooBaz } from './entities/FooBaz';
 
 describe('EntityManagerMongo', () => {
 
-  let orm: MikroORM<MongoDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => orm = await initORMMongo(true));
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
 
   afterAll(async () => {
-    await orm.close(true);
+    await orm.close();
     await closeReplSets();
   });
 
   test('should load entities', async () => {
-    expect(orm).toBeInstanceOf(MikroORM);
     expect(orm.em).toBeInstanceOf(EntityManager);
 
     const god = new Author('God', 'hello@heaven.god');
     const bible = new Book('Bible', god);
+
+    const bible2 = new Book('Bible of wall life', god);
+    orm.em.persist(bible2);
+
     await orm.em.persistAndFlush(bible);
 
     const author = new Author('Jon Snow', 'snow@wall.st');
@@ -72,6 +75,16 @@ describe('EntityManagerMongo', () => {
     const jon = (await authorRepository.findOne({ name: 'Jon Snow' }, { populate: ['books', 'favouriteBook'] }))!;
     const authors = await authorRepository.findAll({ populate: ['books', 'favouriteBook'] });
     expect(await authorRepository.findOne({ email: 'not existing' })).toBeNull();
+
+    // full text search test
+    const fullTextBooks2 = (await booksRepository.find({ author: god.id, $fulltext: 'life wall' }))!;
+    expect(fullTextBooks2.length).toBe(1);
+
+    const fullTextBooks = (await booksRepository.find({ $fulltext: 'life wall' }))!;
+    expect(fullTextBooks.length).toBe(4);
+
+    await expect(booksRepository.find({ title: { $fulltext: 'life wall' } })).rejects.toThrowError('Full text search is only supported on the top level of the query object.');
+    await expect(booksRepository.find({ author: { name: { $fulltext: 'god' } } })).rejects.toThrowError('Full text search is only supported on the top level of the query object.');
 
     // count test
     const count = await authorRepository.count();
@@ -248,6 +261,19 @@ describe('EntityManagerMongo', () => {
     expect(b.name).toBe('fz');
   });
 
+  test('unsetting 1:1 relation (GH #3233)', async () => {
+    const bars = [FooBar.create('fb1'), FooBar.create('fb2'), FooBar.create('fb3'), FooBar.create('fb4')];
+    bars[0].fooBar = bars[3];
+    await orm.em.persist(bars).flush();
+    bars[1].fooBar = bars[0].fooBar;
+    bars[0].fooBar = undefined;
+    await orm.em.flush();
+
+    bars[2].fooBar = bars[1].fooBar;
+    bars[1].fooBar = undefined;
+    await orm.em.flush();
+  });
+
   test(`entity.init() and collection.init() works only for managed entities`, async () => {
     const author = new Author('a', 'b');
     await expect(wrap(author).init()).rejects.toThrowError('Entity Author is not managed. An entity is managed if its fetched from the database or registered as new through EntityManager.persist()');
@@ -358,7 +384,7 @@ describe('EntityManagerMongo', () => {
 
     const books = await orm.em.fork().find(Book, {});
     expect(books).toHaveLength(3);
-    expect(books.map(b => b.publisher)).toEqual([null, null, null]);
+    expect(books.map(b => b.publisher)).toEqual([undefined, undefined, undefined]);
   });
 
   test('removing persisted entity via PK', async () => {
@@ -370,7 +396,7 @@ describe('EntityManagerMongo', () => {
     const mock = mockLogger(orm);
 
     await orm.em.nativeDelete(Author, author.id);
-    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.deleteMany\({ _id: ObjectId\('\w+'\) }, { session: undefined }\)/);
+    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.deleteMany\({ _id: ObjectId\('\w+'\) }, {}\)/);
   });
 
   test('should throw when trying to merge entity without id', async () => {
@@ -380,8 +406,8 @@ describe('EntityManagerMongo', () => {
 
   test('transactions', async () => {
     const god1 = new Author('God1', 'hello@heaven1.god');
-    await orm.em.begin();
-    await orm.em.persist(god1);
+    await orm.em.begin({ readPreference: 'secondary' });
+    await orm.em.persist(god1).flush();
     await orm.em.rollback();
     const res1 = await orm.em.findOne(Author, { name: 'God1' });
     expect(res1).toBeNull();
@@ -425,9 +451,16 @@ describe('EntityManagerMongo', () => {
     expect(fork.getMetadata()).toBe(orm.em.getMetadata());
     expect(fork.getUnitOfWork().getIdentityMap()).toEqual(new IdentityMap());
 
-    // request context is not started so we can use UoW and EF getters
+    // request context is not started, so we can use UoW and EF getters
     expect(fork.getUnitOfWork().getIdentityMap()).not.toBe(orm.em.getUnitOfWork().getIdentityMap());
     expect(fork.getEntityFactory()).not.toBe(orm.em.getEntityFactory());
+
+    const spy = jest.spyOn(EntityManager.prototype, 'getContext');
+    const fork2 = orm.em.fork({ disableContextResolution: true });
+    expect(spy).toBeCalledTimes(2);
+
+    const fork3 = orm.em.fork({ disableContextResolution: false });
+    expect(spy).toBeCalledTimes(5);
   });
 
   test('findOne with empty where will throw', async () => {
@@ -593,28 +626,33 @@ describe('EntityManagerMongo', () => {
   });
 
   test('should use user and password as connection options', async () => {
-    const config = new Configuration({ type: 'mongo', user: 'usr', password: 'pw' } as any, false);
+    const config = new Configuration({ driver: MongoDriver, user: 'usr', password: 'pw' } as any, false);
     const connection = new MongoConnection(config);
     await expect(connection.getConnectionOptions()).toEqual({
       auth: { username: 'usr', password: 'pw' },
     });
   });
 
+  test('using $exists operator', async () => {
+    await orm.em.nativeInsert(Author, { name: 'n', email: 'e' });
+    await orm.em.findOneOrFail(Author, { foo: { $exists: false } });
+  });
+
   test('connection returns correct URL', async () => {
     const conn1 = new MongoConnection(new Configuration({
-      type: 'mongo',
+      driver: MongoDriver,
       clientUrl: 'mongodb://example.host.com:34500',
       dbName: 'test-db-name',
       user: 'usr',
       password: 'pw',
     } as any, false));
     await expect(conn1.getClientUrl()).toBe('mongodb://usr:*****@example.host.com:34500');
-    const conn2 = new MongoConnection(new Configuration({ type: 'mongo' } as any, false));
+    const conn2 = new MongoConnection(new Configuration({ driver: MongoDriver } as any, false));
     await expect(conn2.getClientUrl()).toBe('mongodb://127.0.0.1:27017');
     const clientUrl = 'mongodb://user:Q#ais@2d-Aa_43:ui!0d.ai6d@mongodb-replicaset-0.cluster.local:27017,mongodb-replicaset-1.cluster.local:27018,...';
-    const conn3 = new MongoConnection(new Configuration({ type: 'mongo', clientUrl } as any, false));
+    const conn3 = new MongoConnection(new Configuration({ driver: MongoDriver, clientUrl } as any, false));
     await expect(conn3.getClientUrl()).toBe('mongodb://user:*****@mongodb-replicaset-0.cluster.local:27017,mongodb-replicaset-1.cluster.local:27018,...');
-    const conn4 = new MongoConnection(new Configuration({ type: 'mongo', clientUrl: 'invalid-url-that-was-not-properly-parsed' } as any, false));
+    const conn4 = new MongoConnection(new Configuration({ driver: MongoDriver, clientUrl: 'invalid-url-that-was-not-properly-parsed' } as any, false));
     await expect(conn4.getClientUrl()).toBe('invalid-url-that-was-not-properly-parsed');
   });
 
@@ -730,7 +768,7 @@ describe('EntityManagerMongo', () => {
     // ensure we don't have separate update queries for collection sync
     expect(mock.mock.calls).toHaveLength(5);
     expect(mock.mock.calls[1][0]).toMatch(`db.getCollection('book-tag').insertMany(`);
-    expect(mock.mock.calls[2][0]).toMatch(`db.getCollection('author').insertOne(`);
+    expect(mock.mock.calls[2][0]).toMatch(`db.getCollection('author').insertMany(`);
     expect(mock.mock.calls[3][0]).toMatch(`db.getCollection('books-table').insertMany(`);
     orm.em.clear();
 
@@ -883,7 +921,7 @@ describe('EntityManagerMongo', () => {
     });
     orm.em.clear();
 
-    a = (await orm.em.findOne(Author, a.id, { populate: ['books'] }))!;
+    a = await orm.em.findOneOrFail(Author, a.id, { populate: ['books'] });
     expect(a.toJSON()).toMatchObject({
       books: [],
     });
@@ -912,7 +950,7 @@ describe('EntityManagerMongo', () => {
 
     // merge cached author with his references
     orm.em.clear();
-    const cachedAuthor = orm.em.merge<Author>(Author, cache);
+    const cachedAuthor = orm.em.create(Author, cache, { managed: true });
     expect(cachedAuthor).toBe(cachedAuthor.favouriteBook?.author);
     expect(orm.em.getUnitOfWork().getIdentityMap().keys()).toEqual([
       'Author-' + author.id,
@@ -1468,15 +1506,15 @@ describe('EntityManagerMongo', () => {
     expect(res9).toBe(1);
 
     expect(mock.mock.calls.length).toBe(9);
-    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.insertOne\({ name: 'native name 1' }, { session: undefined }\);/);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('author'\)\.updateMany\({ name: 'native name 1' }, { '\$set': { name: 'new native name' } }, { session: undefined }\);/);
-    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('author'\)\.aggregate\(\[ { '\$match': { name: 'new native name' } } ], { session: undefined }\)\.toArray\(\);/);
-    expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\('author'\)\.deleteMany\({ name: 'new native name' }, { session: undefined }\)/);
-    expect(mock.mock.calls[4][0]).toMatch(/db\.getCollection\('author'\)\.insertOne\({ createdAt: ISODate\('.*'\), updatedAt: ISODate\('.*'\), name: 'native name 2' }, { session: undefined }\);/);
-    expect(mock.mock.calls[5][0]).toMatch(/db\.getCollection\('author'\)\.updateMany\({ name: 'native name 2' }, { '\$set': { name: 'new native name', updatedAt: ISODate\('.*'\) } }, { session: undefined }\);/);
-    expect(mock.mock.calls[6][0]).toMatch(/db\.getCollection\('test'\)\.insertOne\({ name: 'native name 1', test: 'abc' }, { session: undefined }\);/);
-    expect(mock.mock.calls[7][0]).toMatch(/db\.getCollection\('test'\)\.updateMany\({ name: 'native name 1' }, { '\$unset': { test: 1 } }, { session: undefined }\);/);
-    expect(mock.mock.calls[8][0]).toMatch(/db\.getCollection\('test'\)\.deleteMany\({ name: 'native name 1' }, { session: undefined }\)/);
+    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('author'\)\.insertOne\({ name: 'native name 1' }, {}\);/);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('author'\)\.updateMany\({ name: 'native name 1' }, { '\$set': { name: 'new native name' } }, {}\);/);
+    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('author'\)\.aggregate\(\[ { '\$match': { name: 'new native name' } } ], {}\)\.toArray\(\);/);
+    expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\('author'\)\.deleteMany\({ name: 'new native name' }, {}\)/);
+    expect(mock.mock.calls[4][0]).toMatch(/db\.getCollection\('author'\)\.insertOne\({ createdAt: ISODate\('.*'\), updatedAt: ISODate\('.*'\), name: 'native name 2' }, {}\);/);
+    expect(mock.mock.calls[5][0]).toMatch(/db\.getCollection\('author'\)\.updateMany\({ name: 'native name 2' }, { '\$set': { name: 'new native name', updatedAt: ISODate\('.*'\) } }, {}\);/);
+    expect(mock.mock.calls[6][0]).toMatch(/db\.getCollection\('test'\)\.insertOne\({ name: 'native name 1', test: 'abc' }, {}\);/);
+    expect(mock.mock.calls[7][0]).toMatch(/db\.getCollection\('test'\)\.updateMany\({ name: 'native name 1' }, { '\$unset': { test: 1 } }, {}\);/);
+    expect(mock.mock.calls[8][0]).toMatch(/db\.getCollection\('test'\)\.deleteMany\({ name: 'native name 1' }, {}\)/);
   });
 
   test('1:m collection is initialized when entity loaded from EM', async () => {
@@ -1595,7 +1633,7 @@ describe('EntityManagerMongo', () => {
     // check fired queries
     expect(mock.mock.calls.length).toBe(6);
     expect(mock.mock.calls[0][0]).toMatch(/db\.begin\(\);/);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('author'\)\.insertOne\({ createdAt: ISODate\('.*'\), updatedAt: ISODate\('.*'\), foo: '.*', name: '.*', email: '.*', termsAccepted: .* }, { session: '\[ClientSession]' }\);/);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('author'\)\.insertMany\(\[ { createdAt: ISODate\('.*'\), updatedAt: ISODate\('.*'\), foo: '.*', name: '.*', email: '.*', termsAccepted: .* } ], { session: '\[ClientSession]' }\);/);
     expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('books-table'\)\.insertMany\(\[ { createdAt: ISODate\('.*'\), title: 'b1', author: ObjectId\('.*'\) }, { createdAt: ISODate\('.*'\), title: 'b2', author: ObjectId\('.*'\) }, { createdAt: ISODate\('.*'\), title: 'b3', author: ObjectId\('.*'\) } ], { session: '\[ClientSession]' }\);/);
     expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\('author'\)\.updateMany\({ _id: ObjectId\('.*'\) }, { '\$set': { favouriteAuthor: ObjectId\('.*'\), updatedAt: ISODate\('.*'\) } }, { session: '\[ClientSession]' }\);/);
     expect(mock.mock.calls[4][0]).toMatch(/db\.commit\(\);/);
@@ -1671,7 +1709,7 @@ describe('EntityManagerMongo', () => {
     await expect(orm.em.findOne(FooBaz, baz2)).resolves.not.toBeNull();
 
     // replacing reference with null will trigger orphan removal
-    bar.baz = null;
+    bar.baz = undefined as any;
     await orm.em.persistAndFlush(bar);
     await expect(orm.em.findOne(FooBaz, baz2)).resolves.toBeNull();
 
@@ -1685,6 +1723,7 @@ describe('EntityManagerMongo', () => {
   test('loading connected entity will not update identity map for associations', async () => {
     const author = new Author('Jon Snow', 'snow@wall.st');
     author.favouriteBook = new Book('b1', author);
+    orm.em.setFlushMode(FlushMode.COMMIT);
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 
@@ -1692,17 +1731,25 @@ describe('EntityManagerMongo', () => {
     expect(a).not.toBe(author);
     a.name = 'test 1';
     a.favouriteBook!.title = 'test 2';
-    const a1 = (await orm.em.findOne(Author, { favouriteBook: a.favouriteBook }))!;
-    const b1 = (await orm.em.findOne(Book, { author }))!;
+    expect(wrap(a, true).__originalEntityData).toMatchObject({ name: 'Jon Snow' });
+    expect(wrap(a.favouriteBook, true).__originalEntityData).toMatchObject({ title: 'b1' });
+    const a1 = await orm.em.findOneOrFail(Author, { favouriteBook: a.favouriteBook });
+    expect(wrap(a, true).__originalEntityData).toMatchObject({ name: 'Jon Snow' });
+    expect(wrap(a.favouriteBook, true).__originalEntityData).toMatchObject({ title: 'b1' });
+    const b1 = await orm.em.findOneOrFail(Book, { author });
     expect(a.name).toBe('test 1');
     expect(a.favouriteBook?.title).toBe('test 2');
     expect(a1.name).toBe('test 1');
     expect(b1.title).toBe('test 2');
-    await orm.em.persistAndFlush(a);
+    expect(wrap(a, true).__originalEntityData).toMatchObject({ name: 'Jon Snow' });
+    expect(wrap(a.favouriteBook, true).__originalEntityData).toMatchObject({ title: 'b1' });
+    await orm.em.flush();
+    expect(wrap(a, true).__originalEntityData).toMatchObject({ name: 'test 1' });
+    expect(wrap(a.favouriteBook, true).__originalEntityData).toMatchObject({ title: 'test 2' });
     orm.em.clear();
 
-    const a2 = (await orm.em.findOne(Author, author))!;
-    const b2 = (await orm.em.findOne(Book, { author }))!;
+    const a2 = await orm.em.findOneOrFail(Author, author);
+    const b2 = await orm.em.findOneOrFail(Book, { author });
     expect(a2.name).toBe('test 1');
     expect(b2.title).toBe('test 2');
   });
@@ -1780,8 +1827,8 @@ describe('EntityManagerMongo', () => {
 
     await orm.em.flush();
     expect(mock.mock.calls[0][0]).toMatch(/db\.begin\(\);/);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('author'\)\.insertOne\({ createdAt: ISODate\(.*\), updatedAt: ISODate\(.*\), foo: 'bar', name: 'Jon Snow', email: 'snow@wall\.st', termsAccepted: false }, { session: '\[ClientSession]' }\);/);
-    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('books-table'\)\.insertOne\({ createdAt: ISODate\('.*'\), title: 'B123', author: ObjectId\('.*'\) }, { session: '\[ClientSession]' }\);/);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('author'\)\.insertMany\(\[ { createdAt: ISODate\(.*\), updatedAt: ISODate\(.*\), foo: 'bar', name: 'Jon Snow', email: 'snow@wall\.st', termsAccepted: false } ], { session: '\[ClientSession]' }\);/);
+    expect(mock.mock.calls[2][0]).toMatch(/db\.getCollection\('books-table'\)\.insertMany\(\[ { createdAt: ISODate\('.*'\), title: 'B123', author: ObjectId\('.*'\) } ], { session: '\[ClientSession]' }\);/);
     expect(mock.mock.calls[3][0]).toMatch(/db\.commit\(\);/);
     expect(mock.mock.calls[4][0]).toMatch(/db\.begin\(\);/);
     expect(mock.mock.calls[5][0]).toMatch(/db\.getCollection\('books-table'\)\.updateMany\({ _id: ObjectId\('.*'\) }, { '\$set': { tags: \[ ObjectId\('0000007b5c9c61c332380f78'\), ObjectId\('0000007b5c9c61c332380f79'\) ] } }, { session: '\[ClientSession]' }\);/);
@@ -1813,8 +1860,8 @@ describe('EntityManagerMongo', () => {
     orm.em.clear();
     god = (await orm.em.findOne(Author, god.id))!;
     expect(god).toBeInstanceOf(Author);
-    expect(god.age).toBeNull();
-    expect(god.born).toBeNull();
+    expect(god.age).toBeUndefined();
+    expect(god.born).toBeUndefined();
   });
 
   test('reference wrapper', async () => {
@@ -1825,7 +1872,7 @@ describe('EntityManagerMongo', () => {
 
     const ref = orm.em.getReference<Author, 'id' | '_id'>(Author, author.id, { wrapped: true });
     const ref1 = orm.em.getRepository(Author).getReference<'id' | '_id'>(author.id, { wrapped: true });
-    expect(ref).not.toBe(ref1);
+    expect(ref).toBe(ref1);
     expect(ref.unwrap()).toBe(ref1.unwrap());
     // @ts-expect-error private getter
     expect(ref.__platform).toBeInstanceOf(MongoPlatform);
@@ -1906,7 +1953,7 @@ describe('EntityManagerMongo', () => {
     await orm.em.persistAndFlush(author);
 
     expect(mock.mock.calls.length).toBe(3);
-    expect(mock.mock.calls[1][0]).toMatch(/\[39mdb\[0m\.\[0mgetCollection\(\[33m'author'\[39m\)\[0m\.\[0minsertOne\({ \[36mcreatedAt\[39m\[0m:\[0m ISODate\(\[33m'.*'\[39m\)\[0m,\[0m \[36mupdatedAt\[39m\[0m:\[0m ISODate\(\[33m'.*'\[39m\)\[0m,\[0m \[36mfoo\[39m\[0m:\[0m \[33m'bar'\[39m\[0m,\[0m \[36mname\[39m\[0m:\[0m \[33m'Jon Snow'\[39m\[0m,\[0m \[36memail\[39m\[0m:\[0m \[33m'snow@wall.st'\[39m\[0m,\[0m \[36mage\[39m\[0m:\[0m \[32m30\[39m\[0m,\[0m \[36mtermsAccepted\[39m\[0m:\[0m \[32mfalse\[39m }\[0m,\[0m { \[36msession\[39m\[0m:\[0m \[33m'\[ClientSession]'\[39m }\)\[0m;\[0m/);
+    expect(mock.mock.calls[1][0]).toMatch(/\[90m\[query] \[39mdb\[0m.\[0mgetCollection\(\[33m'author'\[39m\)\[0m.\[0minsertMany\(\[ \{ createdAt: ISODate\('.*'\), updatedAt: ISODate\(.*\), foo: 'bar', name: 'Jon Snow', email: 'snow@wall.st', age: 30, termsAccepted: false } ], \{ session: '\[ClientSession]' }\);\[90m \[took \d+ ms]\[39m/);
 
     Object.assign(orm.config.getLogger(), { highlighter: new NullHighlighter() });
   });
@@ -2165,7 +2212,7 @@ describe('EntityManagerMongo', () => {
       entities: [Author, Book, Publisher, BookTag, Test],
       host: 'foo',
       dbName: 'bar',
-      type: 'mongo',
+      driver: MongoDriver,
     })).rejects.toThrowError('Mongo driver does not support `host` options, use `clientUrl` instead!');
   });
 
@@ -2174,7 +2221,7 @@ describe('EntityManagerMongo', () => {
     await expect(MikroORM.init({
       entities: [schema],
       dbName: 'bar',
-      type: 'mongo',
+      driver: MongoDriver,
     })).rejects.toThrowError(`WrongPrimaryKeyEntity.id has wrong field name, '_id' is required in current driver`);
   });
 

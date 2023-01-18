@@ -73,13 +73,15 @@ export class CriteriaNode implements ICriteriaNode {
   }
 
   renameFieldToPK<T>(qb: IQueryBuilder<T>): string {
-    const alias = qb.getAliasForJoinPath(this.getPath()) ?? qb.alias;
+    const joinAlias = qb.getAliasForJoinPath(this.getPath());
+    const alias = joinAlias ?? qb.alias;
 
     if (this.prop!.reference === ReferenceType.MANY_TO_MANY) {
       return Utils.getPrimaryKeyHash(this.prop!.inverseJoinColumns.map(col => `${alias}.${col}`));
     }
 
-    if (this.prop!.joinColumns.length > 1) {
+    // if we found a matching join, we need to use the target table column names, as we use that alias instead of the root
+    if (!joinAlias && this.prop!.owner && this.prop!.joinColumns.length > 1) {
       return Utils.getPrimaryKeyHash(this.prop!.joinColumns.map(col => `${alias}.${col}`));
     }
 

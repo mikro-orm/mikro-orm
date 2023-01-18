@@ -18,7 +18,7 @@ export default class FooBar {
   baz!: FooBaz | null;
 
   @OneToOne(() => FooBar, undefined, { nullable: true })
-  fooBar!: FooBar;
+  fooBar?: FooBar;
 
   @Property({ nullable: true })
   blob?: Buffer;

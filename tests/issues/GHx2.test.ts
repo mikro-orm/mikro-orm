@@ -1,4 +1,5 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 
 @Entity()
@@ -10,7 +11,6 @@ export class Author {
   @Property()
   name: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => Book, b => b.author)
   books = new Collection<Book>(this);
 
@@ -42,10 +42,10 @@ export class Book {
 test(`default value for relation property`, async () => {
   const orm = await MikroORM.init({
     entities: [Author, Book],
-    type: 'sqlite',
+    driver: SqliteDriver,
     dbName: ':memory:',
   });
-  await orm.getSchemaGenerator().refreshDatabase();
+  await orm.schema.refreshDatabase();
 
   const a = orm.em.create(Book, { title: 'b', author: { name: 'a' } });
   await orm.em.persist(a).flush();

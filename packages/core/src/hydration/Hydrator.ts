@@ -1,11 +1,13 @@
-import type { AnyEntity, EntityData, EntityMetadata, EntityProperty, IHydrator } from '../typings';
-import type { EntityFactory } from '../entity';
+import type { EntityData, EntityMetadata, EntityProperty, IHydrator } from '../typings';
+import type { EntityFactory } from '../entity/EntityFactory';
 import type { Platform } from '../platforms/Platform';
 import type { MetadataStorage } from '../metadata/MetadataStorage';
 import type { Configuration } from '../utils/Configuration';
 
 /* istanbul ignore next */
 export abstract class Hydrator implements IHydrator {
+
+  protected running = false;
 
   constructor(protected readonly metadata: MetadataStorage,
               protected readonly platform: Platform,
@@ -14,24 +16,32 @@ export abstract class Hydrator implements IHydrator {
   /**
    * @inheritDoc
    */
-  hydrate<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'returning' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string): void {
+  hydrate<T>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'returning' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string): void {
+    this.running = true;
     const props = this.getProperties(meta, type);
 
     for (const prop of props) {
       this.hydrateProperty(entity, prop, data, factory, newEntity, convertCustomTypes);
     }
+    this.running = false;
   }
 
   /**
    * @inheritDoc
    */
-  hydrateReference<T extends AnyEntity<T>>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes?: boolean, schema?: string): void {
+  hydrateReference<T>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes?: boolean, schema?: string): void {
+    this.running = true;
     meta.primaryKeys.forEach(pk => {
       this.hydrateProperty<T>(entity, meta.properties[pk], data, factory, false, convertCustomTypes);
     });
+    this.running = false;
   }
 
-  protected getProperties<T extends AnyEntity<T>>(meta: EntityMetadata<T>, type: 'full' | 'returning' | 'reference'): EntityProperty<T>[] {
+  isRunning(): boolean {
+    return this.running;
+  }
+
+  protected getProperties<T>(meta: EntityMetadata<T>, type: 'full' | 'returning' | 'reference'): EntityProperty<T>[] {
     if (type === 'reference') {
       return meta.primaryKeys.map(pk => meta.properties[pk]);
     }
@@ -43,7 +53,7 @@ export abstract class Hydrator implements IHydrator {
     return meta.hydrateProps;
   }
 
-  protected hydrateProperty<T extends AnyEntity<T>>(entity: T, prop: EntityProperty, data: EntityData<T>, factory: EntityFactory, newEntity?: boolean, convertCustomTypes?: boolean): void {
+  protected hydrateProperty<T>(entity: T, prop: EntityProperty, data: EntityData<T>, factory: EntityFactory, newEntity?: boolean, convertCustomTypes?: boolean): void {
     entity[prop.name] = data[prop.name];
   }
 

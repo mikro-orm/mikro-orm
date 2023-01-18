@@ -21,6 +21,7 @@ import {
   LockMode,
   Platform,
 } from '@mikro-orm/core';
+import { MongoDriver } from '@mikro-orm/mongodb';
 
 class Platform1 extends Platform { }
 
@@ -33,15 +34,15 @@ class Driver extends DatabaseDriver<Connection> implements IDatabaseDriver {
     super(config, dependencies);
   }
 
-  async count<T>(entityName: string, where: ObjectQuery<T>, options: CountOptions<T>): Promise<number> {
+  async count<T extends object>(entityName: string, where: ObjectQuery<T>, options: CountOptions<T>): Promise<number> {
     return 0;
   }
 
-  async find<T, P extends string = never>(entityName: string, where: ObjectQuery<T>, options: FindOptions<T, P> | undefined): Promise<EntityData<T>[]> {
+  async find<T extends object, P extends string = never>(entityName: string, where: ObjectQuery<T>, options: FindOptions<T, P> | undefined): Promise<EntityData<T>[]> {
     return [];
   }
 
-  async findOne<T, P extends string = never>(entityName: string, where: ObjectQuery<T>, options: FindOneOptions<T, P> | undefined): Promise<EntityData<T> | null> {
+  async findOne<T extends object, P extends string = never>(entityName: string, where: ObjectQuery<T>, options: FindOneOptions<T, P> | undefined): Promise<EntityData<T> | null> {
     return null;
   }
 
@@ -65,9 +66,10 @@ class Driver extends DatabaseDriver<Connection> implements IDatabaseDriver {
 
 describe('DatabaseDriver', () => {
 
+  const config = new Configuration({ driver: MongoDriver, allowGlobalContext: true } as any, false);
+  const driver = new Driver(config, []);
+
   test('default validations', async () => {
-    const config = new Configuration({ type: 'mongo', allowGlobalContext: true } as any, false);
-    const driver = new Driver(config, []);
     expect(driver.createEntityManager()).toBeInstanceOf(EntityManager);
     expect(driver.getPlatform().getRepositoryClass()).toBe(EntityRepository);
     expect(driver.getPlatform().quoteValue('a')).toBe('a');
@@ -78,6 +80,13 @@ describe('DatabaseDriver', () => {
     const e2 = driver.convertException(e1);
     expect(e1).toBe(e2);
     expect(() => driver.getPlatform().getSchemaGenerator(driver)).toThrowError('Driver does not support SchemaGenerator');
+  });
+
+  test('not supported', async () => {
+    expect(() => driver.getPlatform().getMigrator({} as any)).toThrowError('Platform1 does not support Migrator');
+    expect(() => driver.getPlatform().getFullTextWhereClause({} as any)).toThrowError('Full text searching is not supported by this driver.');
+    expect(() => driver.getPlatform().supportsCreatingFullTextIndex()).toThrowError('Full text searching is not supported by this driver.');
+    expect(() => driver.getPlatform().getFullTextIndexExpression({} as any, {} as any, {} as any, {} as any)).toThrowError('Full text searching is not supported by this driver.');
   });
 
 });

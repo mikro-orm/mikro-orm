@@ -1,5 +1,6 @@
 import { Entity, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class B {
@@ -25,15 +26,15 @@ export class A {
 
 describe('GH issue 1115', () => {
 
-  let orm: MikroORM<AbstractSqlDriver>;
+  let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A, B],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(() => orm.close(true));

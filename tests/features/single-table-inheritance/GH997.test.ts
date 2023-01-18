@@ -1,5 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property, OneToMany, ManyToOne, Collection, QueryOrder } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 abstract class Base {
 
@@ -18,7 +18,6 @@ class Parent extends Base {
   @Property()
   type!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => Relation1, e => e.parent)
   qaInfo = new Collection<Relation1>(this);
 
@@ -35,7 +34,6 @@ class Relation1 extends Base {
 @Entity({ discriminatorValue: 'Child1' })
 class Child1 extends Parent {
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => Child1Specific, e => e.child1)
   rel = new Collection<Child1Specific>(this);
 
@@ -61,9 +59,9 @@ describe('GH issue 997', () => {
     orm = await MikroORM.init({
       entities: [Base, Relation1, Child1Specific, Parent, Child1, Child2],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(async () => {
@@ -125,7 +123,7 @@ describe('GH issue 997', () => {
   });
 
   test(`GH issue 2356`, async () => {
-    await expect(orm.getSchemaGenerator().getCreateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot();
+    await expect(orm.schema.getCreateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot();
   });
 
 });

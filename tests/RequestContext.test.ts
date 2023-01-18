@@ -1,6 +1,6 @@
 import { RequestContext, MikroORM, wrap } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
-import { Author4, BaseEntity5, Book4, BookTag4, FooBar4, FooBaz4, Publisher4, Test4 } from './entities-schema';
+import { Author4, BaseEntity5, Book4, BookTag4, FooBar4, FooBaz4, Publisher4, Test4, IdentitySchema } from './entities-schema';
 import { initORMMongo } from './bootstrap';
 import { Author, Book } from './entities';
 
@@ -9,7 +9,7 @@ describe('RequestContext', () => {
   let orm: MikroORM;
 
   beforeAll(async () => orm = await initORMMongo());
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
 
   test('create new context', async () => {
     expect(RequestContext.getEntityManager()).toBeUndefined();
@@ -72,7 +72,7 @@ describe('MultiRequestContext', () => {
 
   beforeAll(async () => {
     orm1 = await MikroORM.init<SqliteDriver>({
-      entities: [Author4, Book4, BookTag4, Publisher4, Test4, BaseEntity5],
+      entities: [Author4, Book4, BookTag4, Publisher4, Test4, BaseEntity5, IdentitySchema],
       dbName: ':memory:',
       driver: SqliteDriver,
       contextName: 'orm1',
@@ -123,7 +123,7 @@ describe('MultiRequestContext', () => {
       expect(em2).not.toBe(orm2.em);
       expect(em2.name).toBe(orm2.em.name);
       expect(em1).not.toBe(em2);
-      // access UoW via property so we do not get the one from request context automatically
+      // access UoW via property, so we do not get the one from request context automatically
       // @ts-ignore
       expect(em2.unitOfWork.getIdentityMap()).not.toBe(orm2.em.unitOfWork.getIdentityMap());
 

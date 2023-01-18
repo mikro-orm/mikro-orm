@@ -1,4 +1,5 @@
 import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Embeddable()
 export class D {
@@ -44,9 +45,9 @@ describe('GH issue 1616', () => {
     const orm = await MikroORM.init({
       entities: [C, D, A, B],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    const schema = await orm.getSchemaGenerator().getCreateSchemaSQL({ wrap: false });
+    const schema = await orm.schema.getCreateSchemaSQL({ wrap: false });
     expect(schema).toMatchSnapshot();
     await orm.close();
   });

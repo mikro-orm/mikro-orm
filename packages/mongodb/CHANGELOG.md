@@ -3,6 +3,232 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.7](https://github.com/mikro-orm/mikro-orm/compare/v5.6.6...v5.6.7) (2023-01-13)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+## [5.6.6](https://github.com/mikro-orm/mikro-orm/compare/v5.6.5...v5.6.6) (2023-01-10)
+
+
+### Bug Fixes
+
+* **core:** do not allow functions and symbols in `FilterQuery` ([85b1fc1](https://github.com/mikro-orm/mikro-orm/commit/85b1fc13399a04539f8dcfa31ef12aaef540aa95)), closes [#3928](https://github.com/mikro-orm/mikro-orm/issues/3928)
+* **core:** make `FilterQuery` strict again! ([5427097](https://github.com/mikro-orm/mikro-orm/commit/5427097c9987e3d428c43df12373dcc4496b38f8))
+
+
+
+
+
+## [5.6.5](https://github.com/mikro-orm/mikro-orm/compare/v5.6.4...v5.6.5) (2023-01-09)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+## [5.6.4](https://github.com/mikro-orm/mikro-orm/compare/v5.6.3...v5.6.4) (2023-01-04)
+
+
+### Bug Fixes
+
+* **core:** improve inference of driver exported `MikroORM.init()` ([497f274](https://github.com/mikro-orm/mikro-orm/commit/497f27451bbca37c7dd9222716257692724d3a0d))
+* **mongo:** respect field names in batch update conditions ([3466c86](https://github.com/mikro-orm/mikro-orm/commit/3466c86e9bf6bbffea1f661186c854b9d1c976e9)), closes [#3897](https://github.com/mikro-orm/mikro-orm/issues/3897)
+
+
+
+
+
+## [5.6.3](https://github.com/mikro-orm/mikro-orm/compare/v5.6.2...v5.6.3) (2022-12-28)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+## [5.6.2](https://github.com/mikro-orm/mikro-orm/compare/v5.6.1...v5.6.2) (2022-12-25)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+## [5.6.1](https://github.com/mikro-orm/mikro-orm/compare/v5.6.0...v5.6.1) (2022-12-20)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+# [5.6.0](https://github.com/mikro-orm/mikro-orm/compare/v5.5.3...v5.6.0) (2022-12-09)
+
+
+### Bug Fixes
+
+* **core:** make `ChangeSet.getPrimaryKey()` response stable ([d32c956](https://github.com/mikro-orm/mikro-orm/commit/d32c956aa3ff66796e4b48b060242195b223c162))
+
+
+### Features
+
+* **core:** add `em.upsertMany` ([#3825](https://github.com/mikro-orm/mikro-orm/issues/3825)) ([83ac12a](https://github.com/mikro-orm/mikro-orm/commit/83ac12a4d517b199a2efd364f61356cc6b08407a))
+* **core:** introduce ORM extensions ([#3773](https://github.com/mikro-orm/mikro-orm/issues/3773)) ([0f36967](https://github.com/mikro-orm/mikro-orm/commit/0f36967d3c227465ea9c23aa8f290cd8fe383bad))
+
+
+
+
+
+## [5.5.3](https://github.com/mikro-orm/mikro-orm/compare/v5.5.2...v5.5.3) (2022-11-10)
+
+
+### Features
+
+* **mongo:** allow passing transaction options to the mongo client ([d52c747](https://github.com/mikro-orm/mikro-orm/commit/d52c747156b59f14f0b2883ac9615c5b1a85bea0)), closes [#3703](https://github.com/mikro-orm/mikro-orm/issues/3703)
+
+
+
+
+
+## [5.5.2](https://github.com/mikro-orm/mikro-orm/compare/v5.5.1...v5.5.2) (2022-11-07)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+## [5.5.1](https://github.com/mikro-orm/mikro-orm/compare/v5.5.0...v5.5.1) (2022-11-05)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+# [5.5.0](https://github.com/mikro-orm/mikro-orm/compare/v5.4.2...v5.5.0) (2022-10-23)
+
+
+### Bug Fixes
+
+* **mongo:** fix populating 1:1 owners from inverse side ([25ee03a](https://github.com/mikro-orm/mikro-orm/commit/25ee03a4da35949db5b6e63288133aac6411342c))
+
+
+### Features
+
+* **core:** add `defineConfig` helper ([#3500](https://github.com/mikro-orm/mikro-orm/issues/3500)) ([67d3c68](https://github.com/mikro-orm/mikro-orm/commit/67d3c682bf11d8e9369e351da6e4ee20958b9581))
+* **core:** add `em.upsert()` method ([#3525](https://github.com/mikro-orm/mikro-orm/issues/3525)) ([3285cdb](https://github.com/mikro-orm/mikro-orm/commit/3285cdb6a615420bb7e079e17f945007e0b07a46)), closes [#3515](https://github.com/mikro-orm/mikro-orm/issues/3515)
+* **core:** add `MikroORM` and `Options` exports to each driver package ([#3499](https://github.com/mikro-orm/mikro-orm/issues/3499)) ([b68ed47](https://github.com/mikro-orm/mikro-orm/commit/b68ed47acac2da8b845ec33d6f30692b88c04acd))
+
+
+### Performance Improvements
+
+* **schema:** improve schema inspection speed in SQL drivers ([#3549](https://github.com/mikro-orm/mikro-orm/issues/3549)) ([74dc3b1](https://github.com/mikro-orm/mikro-orm/commit/74dc3b1aba07666911fb6fc74b55f6547b2c5b4b))
+
+
+
+
+
+## [5.4.2](https://github.com/mikro-orm/mikro-orm/compare/v5.4.1...v5.4.2) (2022-09-12)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+## [5.4.1](https://github.com/mikro-orm/mikro-orm/compare/v5.4.0...v5.4.1) (2022-09-08)
+
+
+### Bug Fixes
+
+* **core:** change internal dependencies to use `~` instead of `^` ([fdbf67c](https://github.com/mikro-orm/mikro-orm/commit/fdbf67c53055a6a4b455208dec3b815736a55e3b)), closes [#3468](https://github.com/mikro-orm/mikro-orm/issues/3468)
+
+
+
+
+
+# [5.4.0](https://github.com/mikro-orm/mikro-orm/compare/v5.3.1...v5.4.0) (2022-09-01)
+
+
+### Bug Fixes
+
+* **core:** update to TypeScript 4.8 and improve `EntityDTO` type ([#3389](https://github.com/mikro-orm/mikro-orm/issues/3389)) ([f2957fb](https://github.com/mikro-orm/mikro-orm/commit/f2957fb14141294cfdffebf6cce6eaa937538cfb))
+* **knex:** support `em.count()` on virtual entities ([5bb4ebe](https://github.com/mikro-orm/mikro-orm/commit/5bb4ebedfcb5df4d2e27dce66bcdc644e6d7d611))
+
+
+
+
+
+## [5.3.1](https://github.com/mikro-orm/mikro-orm/compare/v5.3.0...v5.3.1) (2022-08-04)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+# [5.3.0](https://github.com/mikro-orm/mikro-orm/compare/v5.2.4...v5.3.0) (2022-08-01)
+
+
+### Features
+
+* add support for full text searches ([#3317](https://github.com/mikro-orm/mikro-orm/issues/3317)) ([8b8f140](https://github.com/mikro-orm/mikro-orm/commit/8b8f14071b92e91161a32aa272315a0ecce1bc0b))
+* **core:** add support for virtual entities ([#3351](https://github.com/mikro-orm/mikro-orm/issues/3351)) ([dcd62ac](https://github.com/mikro-orm/mikro-orm/commit/dcd62ac1155e20e7e58d7de4c5fe1a22a422e201))
+* **mongo:** add support for migrations in mongo driver ([#3347](https://github.com/mikro-orm/mikro-orm/issues/3347)) ([c5c6115](https://github.com/mikro-orm/mikro-orm/commit/c5c61152e0ad1b98fe9b00875ce0da9039b34d4a))
+* **mongo:** allow reusing mongo client via `driverOptions` ([df59ebf](https://github.com/mikro-orm/mikro-orm/commit/df59ebf6cc46121a81c008a0d174b1dff7256997)), closes [#3352](https://github.com/mikro-orm/mikro-orm/issues/3352)
+
+
+
+
+
+## [5.2.4](https://github.com/mikro-orm/mikro-orm/compare/v5.2.3...v5.2.4) (2022-07-25)
+
+**Note:** Version bump only for package @mikro-orm/mongodb
+
+
+
+
+
+## [5.2.3](https://github.com/mikro-orm/mikro-orm/compare/v5.2.2...v5.2.3) (2022-07-08)
+
+
+### Bug Fixes
+
+* **mongo:** fix wrog filter of entity name ([#3276](https://github.com/mikro-orm/mikro-orm/issues/3276)) ([da20e1f](https://github.com/mikro-orm/mikro-orm/commit/da20e1f74329f6fe6913e4a483bde7e71bfec17b))
+
+
+
+
+
+## [5.2.2](https://github.com/mikro-orm/mikro-orm/compare/v5.2.1...v5.2.2) (2022-07-03)
+
+
+### Bug Fixes
+
+* **mongo:** retry only 3 times if ensuring indexes fails ([#3272](https://github.com/mikro-orm/mikro-orm/issues/3272)) ([299a028](https://github.com/mikro-orm/mikro-orm/commit/299a028739879d87e5b16a497d3333780502a112))
+
+
+
+
+
+## [5.2.1](https://github.com/mikro-orm/mikro-orm/compare/v5.2.0...v5.2.1) (2022-06-21)
+
+
+### Bug Fixes
+
+* **mongo:** recreate indexes when they differ ([60fc7f6](https://github.com/mikro-orm/mikro-orm/commit/60fc7f65b52a503abb3ccf7d99766ca4d4ba820c)), closes [#3118](https://github.com/mikro-orm/mikro-orm/issues/3118)
+* **mongo:** use `$unset` when property value is `undefined` ([f059811](https://github.com/mikro-orm/mikro-orm/commit/f05981135d984b73b5f8144758ab7055c533d3cc)), closes [#3233](https://github.com/mikro-orm/mikro-orm/issues/3233)
+
+
+
+
+
 # [5.2.0](https://github.com/mikro-orm/mikro-orm/compare/v5.1.5...v5.2.0) (2022-06-10)
 
 

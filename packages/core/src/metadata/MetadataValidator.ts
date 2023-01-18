@@ -1,4 +1,4 @@
-import type { EntityMetadata, EntityProperty } from '../typings';
+import type { EntityName, EntityMetadata, EntityProperty } from '../typings';
 import { Utils } from '../utils';
 import { MetadataError } from '../errors';
 import { ReferenceType } from '../enums';
@@ -22,6 +22,20 @@ export class MetadataValidator {
 
   validateEntityDefinition(metadata: MetadataStorage, name: string): void {
     const meta = metadata.get(name);
+
+    if (meta.virtual || meta.expression) {
+      for (const prop of Object.values(meta.properties)) {
+        if (![ReferenceType.SCALAR, ReferenceType.EMBEDDED].includes(prop.reference)) {
+          throw new MetadataError(`Only scalar and embedded properties are allowed inside virtual entity. Found '${prop.reference}' in ${meta.className}.${prop.name}`);
+        }
+
+        if (prop.primary) {
+          throw new MetadataError(`Virtual entity ${meta.className} cannot have primary key ${meta.className}.${prop.name}`);
+        }
+      }
+
+      return;
+    }
 
     // entities have PK
     if (!meta.embeddable && (!meta.primaryKeys || meta.primaryKeys.length === 0)) {
@@ -60,12 +74,35 @@ export class MetadataValidator {
       .replace(/\[]$/, '')          // remove array suffix
       .replace(/\((.*)\)/, '$1');   // unwrap union types
 
+    const name = <T> (p: EntityName<T> | (() => EntityName<T>)): string => {
+      if (typeof p === 'function') {
+        return Utils.className((p as () => EntityName<T>)());
+      }
+
+      return Utils.className(p);
+    };
+
+    const pivotProps = new Map<string, { prop: EntityProperty; meta: EntityMetadata }[]>();
+
     // check for not discovered entities
     discovered.forEach(meta => Object.values(meta.properties).forEach(prop => {
       if (prop.reference !== ReferenceType.SCALAR && !unwrap(prop.type).split(/ ?\| ?/).every(type => discovered.find(m => m.className === type))) {
         throw MetadataError.fromUnknownEntity(prop.type, `${meta.className}.${prop.name}`);
       }
+
+      if (prop.pivotEntity) {
+        const props = pivotProps.get(name(prop.pivotEntity)) ?? [];
+        props.push({ meta, prop });
+        pivotProps.set(name(prop.pivotEntity), props);
+      }
     }));
+
+    pivotProps.forEach(props => {
+      // if the pivot entity is used in more than one property, check if they are linked
+      if (props.length > 1 && props.every(p => !p.prop.mappedBy && !p.prop.inversedBy)) {
+        throw MetadataError.invalidManyToManyWithPivotEntity(props[0].meta, props[0].prop, props[1].meta, props[1].prop);
+      }
+    });
   }
 
   private validateReference(meta: EntityMetadata, prop: EntityProperty, metadata: MetadataStorage): void {
@@ -134,6 +171,10 @@ export class MetadataValidator {
 
     if (!valid.find(spec => spec.owner === owner.reference && spec.inverse === prop.reference)) {
       throw MetadataError.fromWrongReferenceType(meta, owner, prop);
+    }
+
+    if (prop.primary) {
+      throw MetadataError.fromInversideSidePrimary(meta, owner, prop);
     }
   }
 

@@ -1,5 +1,5 @@
 import { Cascade, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 export class Country {
@@ -89,11 +89,11 @@ describe('adding m:1 with composite PK (FK as PK + scalar PK) (GH 1687, 1695)', 
     orm = await MikroORM.init({
       entities: [City, User, Country, State],
       dbName: `mikro_orm_test_gh_1687`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().execute(`
+    await orm.schema.ensureDatabase();
+    await orm.schema.dropSchema();
+    await orm.schema.execute(`
       create table "country" ("id" serial primary key, "name" varchar(255) not null, "currency" varchar(255) not null, "currency_symbol" varchar(255) not null);
       create table "state" ("country_id" int4 not null, "id" int4 not null, "name" varchar(255) not null);
       alter table "state" add constraint "state_pkey" primary key ("country_id", "id");

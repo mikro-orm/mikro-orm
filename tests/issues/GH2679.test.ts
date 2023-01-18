@@ -1,5 +1,5 @@
 import { ArrayType, Entity, LoadStrategy, ManyToOne, MikroORM, PrimaryKey, Property, wrap } from '@mikro-orm/core';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 export class User {
@@ -20,10 +20,10 @@ describe('GH issue 2679', () => {
     orm = await MikroORM.init({
       entities: [User],
       dbName: 'mikro_orm_test_gh_2679',
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
 
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   beforeEach(async () => {
@@ -98,5 +98,16 @@ describe('GH issue 2679', () => {
 
     const loaded = (await orm.em.find(User, {}))[0];
     expect(loaded.groups).toEqual(['', 'f{o}o', '', '{bar}', '']);
+  });
+
+  test('special chars in array items (#3037) - With double quotes', async () => {
+    const create = orm.em.create(User, {
+      groups: ['', 'f"o', '', '"bar"', ''],
+    });
+    await orm.em.persistAndFlush(create);
+    orm.em.clear();
+
+    const loaded = (await orm.em.find(User, {}))[0];
+    expect(loaded.groups).toEqual(['', 'f"o', '', '"bar"', '']);
   });
 });

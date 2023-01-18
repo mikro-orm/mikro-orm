@@ -1,5 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 import { parse, stringify, v4 as uuid } from 'uuid';
 
 class UUID extends Type<string, Buffer> {
@@ -38,9 +38,9 @@ describe('GH issue 1263', () => {
     orm = await MikroORM.init({
       entities: [User],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {

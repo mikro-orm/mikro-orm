@@ -1,6 +1,7 @@
 import { Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, PrimaryKeyType, Property, Reference } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { mockLogger } from '../helpers';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 class Node {
@@ -50,17 +51,17 @@ describe('GH issue 1111', () => {
     orm = await MikroORM.init({
       entities: [Node, A, B],
       dbName: `mikro_orm_test_gh_1111`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
       cache: { enabled: false },
     });
     mockLogger(orm, ['query', 'query-params'], log);
-    await orm.getSchemaGenerator().ensureDatabase();
+    await orm.schema.ensureDatabase();
   });
 
 
   beforeEach(async () => {
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.dropSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(() => orm.close(true));

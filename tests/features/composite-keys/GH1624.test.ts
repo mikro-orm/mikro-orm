@@ -1,6 +1,7 @@
 import { Collection, Entity, IdentifiedReference, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType, Property, Reference, Unique, wrap } from '@mikro-orm/core';
 import { v4 } from 'uuid';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 export class Organization {
@@ -165,15 +166,15 @@ export class Site {
 
 describe('GH issue 1624, 1658 (postgres)', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [User, UserRole, Organization, Role, Program, Site],
       dbName: 'mikro_orm_test_1624',
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(async () => {
@@ -263,9 +264,9 @@ describe('GH issue 1624, 1658 (sqlite)', () => {
     orm = await MikroORM.init({
       entities: [User, UserRole, Organization, Role, Program, Site],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {

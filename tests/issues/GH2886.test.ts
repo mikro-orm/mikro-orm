@@ -1,4 +1,5 @@
 import { Entity, ManyToOne, OneToMany, Collection, MikroORM, PrimaryKey } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Provider {
@@ -83,9 +84,9 @@ describe('GH #2886', () => {
     orm = await MikroORM.init({
       entities: [Provider, User, Member, Session, Participant],
       dbName: `:memory:`,
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {

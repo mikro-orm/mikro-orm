@@ -1,5 +1,5 @@
 import { Collection, Entity, ManyToMany, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, t, wrap } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 import { v4 } from 'uuid';
 import { mockLogger } from '../../helpers';
 
@@ -12,11 +12,9 @@ export class Recipe {
   @Property()
   name!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany({ entity: () => Ingredient, mappedBy: 'recipe', orphanRemoval: true })
   ingredients = new Collection<Ingredient>(this);
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToMany({ entity: () => User })
   authors = new Collection<User>(this);
 
@@ -55,9 +53,9 @@ describe('GH issue 1811', () => {
     orm = await MikroORM.init({
       entities: [Ingredient, Recipe, User],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {
@@ -110,7 +108,7 @@ describe('GH issue 1811', () => {
     await orm.em.flush();
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into `ingredient` (`id`, `name`, `recipe_id`) values (?, ?, ?)');
+    expect(mock.mock.calls[1][0]).toMatch('insert into `ingredient` (`id`, `recipe_id`, `name`) values (?, ?, ?)');
     expect(mock.mock.calls[2][0]).toMatch('delete from `ingredient` where `id` in (?)');
     expect(mock.mock.calls[3][0]).toMatch('commit');
 

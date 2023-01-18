@@ -1,4 +1,5 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, wrap } from '@mikro-orm/core';
+import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
 
 @Entity()
 export class SomeMany {
@@ -9,7 +10,6 @@ export class SomeMany {
   @Property()
   arrVal!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToOne(() => Test)
   ref!: any;
 
@@ -35,9 +35,9 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Test, SomeMany],
     dbName: ':memory:',
-    type: 'better-sqlite',
+    driver: BetterSqliteDriver,
   });
-  await orm.getSchemaGenerator().createSchema();
+  await orm.schema.createSchema();
 });
 
 afterAll(async () => {

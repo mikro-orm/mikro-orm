@@ -49,10 +49,10 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError(`Entity of type ${prop.type} expected for property ${owner.constructor.name}.${prop.name}, ${inspect(data)} of type ${type} given. If you are using Object.assign(entity, data), use em.assign(entity, data) instead.`);
   }
 
-  static notDiscoveredEntity(data: any, meta?: EntityMetadata): ValidationError {
+  static notDiscoveredEntity(data: any, meta?: EntityMetadata, action = 'persist'): ValidationError {
     /* istanbul ignore next */
     const type = meta?.className ?? Object.prototype.toString.call(data).match(/\[object (\w+)]/)![1].toLowerCase();
-    let err = `Trying to persist not discovered entity of type ${type}.`;
+    let err = `Trying to ${action} not discovered entity of type ${type}.`;
 
     /* istanbul ignore else */
     if (meta) {
@@ -106,7 +106,7 @@ export class ValidationError<T extends AnyEntity = AnyEntity> extends Error {
     return new ValidationError('Using global EntityManager instance methods for context specific actions is disallowed. If you need to work with the global instance\'s identity map, use `allowGlobalContext` configuration option or `fork()` instead.');
   }
 
-  static cannotUseOperatorsInsideEmbeddables(className: string, propName: string, payload: Dictionary): ValidationError {
+  static cannotUseOperatorsInsideEmbeddables(className: string, propName: string, payload: unknown): ValidationError {
     return new ValidationError(`Using operators inside embeddables is not allowed, move the operator above. (property: ${className}.${propName}, payload: ${inspect(payload)})`);
   }
 
@@ -171,6 +171,10 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
     return new MetadataError(`${meta.className}.${prop.name} is of type ${prop.reference} which is incompatible with its owning side ${prop.type}.${owner.name} of type ${owner.reference}`);
   }
 
+  static fromInversideSidePrimary(meta: EntityMetadata, owner: EntityProperty, prop: EntityProperty): MetadataError {
+    return new MetadataError(`${meta.className}.${prop.name} cannot be primary key as it is defined as inverse side. Maybe you should swap the use of 'inversedBy' and 'mappedBy'.`);
+  }
+
   /* istanbul ignore next */
   static entityNotFound(name: string, path: string): MetadataError {
     return new MetadataError(`Entity '${name}' not found in ${path}`);
@@ -219,6 +223,12 @@ export class MetadataError<T extends AnyEntity = AnyEntity> extends ValidationEr
 
   static invalidPrimaryKey(meta: EntityMetadata, prop: EntityProperty, requiredName: string) {
     return this.fromMessage(meta, prop, `has wrong field name, '${requiredName}' is required in current driver`);
+  }
+
+  static invalidManyToManyWithPivotEntity(meta1: EntityMetadata, prop1: EntityProperty, meta2: EntityMetadata, prop2: EntityProperty) {
+    const p1 = `${meta1.className}.${prop1.name}`;
+    const p2 = `${meta2.className}.${prop2.name}`;
+    return new MetadataError(`${p1} and ${p2} use the same 'pivotEntity', but don't form a bidirectional relation. Specify 'inversedBy' or 'mappedBy' to link them.`);
   }
 
   private static fromMessage(meta: EntityMetadata, prop: EntityProperty, message: string): MetadataError {

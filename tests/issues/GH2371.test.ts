@@ -1,5 +1,5 @@
 import { Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity({ tableName: 'vehicle', discriminatorColumn: 'type', abstract: true })
 class Vehicle {
@@ -7,7 +7,6 @@ class Vehicle {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToOne(() => Garage, { wrappedReference: true })
   garage!: IdentifiedReference<Garage>;
 
@@ -31,6 +30,9 @@ class Garage {
   @OneToMany(() => Car, v => v.garage)
   cars = new Collection<Car>(this);
 
+  @OneToMany(() => Truck, v => v.garage)
+  trucks = new Collection<Truck>(this);
+
 }
 
 describe('GH issue 2371', () => {
@@ -41,9 +43,9 @@ describe('GH issue 2371', () => {
     orm = await MikroORM.init({
       entities: [Car, Vehicle, Truck, Garage],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(() => orm.close(true));
@@ -54,12 +56,13 @@ describe('GH issue 2371', () => {
 
     expect(garage.cars.contains(car)).toBe(true);
     expect(garage.vehicles.contains(car)).toBe(true);
+    expect(garage.trucks.length).toBe(0);
     await orm.em.fork().persistAndFlush(garage);
 
-    const g = await orm.em.findOneOrFail(Garage, garage, { populate: ['cars', 'vehicles'] });
+    const g = await orm.em.findOneOrFail(Garage, garage, { populate: ['cars', 'vehicles', 'trucks'] });
     const c = await orm.em.findOneOrFail(Car, car);
     expect(g.cars.contains(c)).toBe(true);
     expect(g.vehicles.contains(c)).toBe(true);
+    expect(g.trucks.length).toBe(0);
   });
-
 });

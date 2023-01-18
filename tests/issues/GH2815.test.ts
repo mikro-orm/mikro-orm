@@ -1,5 +1,5 @@
 import { Entity, MikroORM, OneToOne, PrimaryKey } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Position {
@@ -7,7 +7,6 @@ export class Position {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToOne(() => Leg, (leg: Leg) => leg.position, { owner: true, nullable: true })
   leg?: any;
 
@@ -30,7 +29,6 @@ export class Position2 {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToOne(() => Leg2, (leg: Leg2) => leg.position, { owner: true, nullable: true , orphanRemoval: true })
   leg?: any;
 
@@ -53,15 +51,15 @@ describe('GH issue 2815', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      type: 'sqlite',
+      driver: SqliteDriver,
       dbName: ':memory:',
       entities: [Position, Leg, Position2, Leg2],
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   beforeEach(async () => {
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(async () => {

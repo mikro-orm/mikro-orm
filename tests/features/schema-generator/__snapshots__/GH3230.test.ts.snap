@@ -1,0 +1,16 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`mediumint column type in mysql as FK 1`] = `
+"set names utf8mb4;
+set foreign_key_checks = 0;
+
+create table \`author\` (\`id\` mediumint unsigned auto_increment not null primary key, \`name\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;
+
+create table \`book\` (\`book_id\` mediumint unsigned auto_increment not null primary key, \`title\` varchar(255) not null, \`author_id\` mediumint unsigned not null) default character set utf8mb4 engine = InnoDB;
+alter table \`book\` add index \`book_author_id_index\`(\`author_id\`);
+
+alter table \`book\` add constraint \`book_author_id_foreign\` foreign key (\`author_id\`) references \`author\` (\`id\`) on update cascade;
+
+set foreign_key_checks = 1;
+"
+`;

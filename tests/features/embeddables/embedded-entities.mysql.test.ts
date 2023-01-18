@@ -1,5 +1,5 @@
 import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
-import type { MySqlDriver } from '@mikro-orm/mysql';
+import { MySqlDriver } from '@mikro-orm/mysql';
 import { mockLogger } from '../../helpers';
 
 @Embeddable()
@@ -98,10 +98,10 @@ describe('embedded entities in mysql', () => {
     orm = await MikroORM.init({
       entities: [User],
       dbName: `mikro_orm_test_embeddables`,
-      type: 'mysql',
+      driver: MySqlDriver,
       port: 3308,
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(() => orm.close(true));
@@ -148,9 +148,9 @@ describe('embedded entities in mysql', () => {
   });
 
   test('schema', async () => {
-    await expect(orm.getSchemaGenerator().getCreateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('embeddables 1');
-    await expect(orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('embeddables 2');
-    await expect(orm.getSchemaGenerator().getDropSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('embeddables 3');
+    await expect(orm.schema.getCreateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('embeddables 1');
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('embeddables 2');
+    await expect(orm.schema.getDropSchemaSQL({ wrap: false })).resolves.toMatchSnapshot('embeddables 3');
   });
 
   test('persist and load', async () => {
@@ -164,7 +164,7 @@ describe('embedded entities in mysql', () => {
     await orm.em.persistAndFlush(user);
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into `user` (`addr_city`, `addr_country`, `addr_postal_code`, `addr_street`, `address1_city`, `address1_country`, `address1_postal_code`, `address1_street`, `address4`, `city`, `country`, `postal_code`, `street`) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[1][0]).toMatch('insert into `user` (`address1_street`, `address1_postal_code`, `address1_city`, `address1_country`, `addr_street`, `addr_postal_code`, `addr_city`, `addr_country`, `street`, `postal_code`, `city`, `country`, `address4`) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
     expect(mock.mock.calls[2][0]).toMatch('commit');
 
     const u = await orm.em.findOneOrFail(User, user.id);
@@ -300,7 +300,7 @@ describe('embedded entities in mysql', () => {
     await expect(MikroORM.init({
       entities: [Address1, UserWithCity],
       dbName: `mikro_orm_test_embeddables`,
-      type: 'mysql',
+      driver: MySqlDriver,
       port: 3308,
     })).rejects.toThrow(err);
   });

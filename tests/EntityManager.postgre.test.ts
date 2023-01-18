@@ -1,14 +1,15 @@
 import { v4 } from 'uuid';
-import type { EventSubscriber, ChangeSet, AnyEntity, FlushEventArgs, FilterQuery, EntityDTO } from '@mikro-orm/core';
+import type { EventSubscriber, ChangeSet, AnyEntity, FlushEventArgs, FilterQuery } from '@mikro-orm/core';
 import {
   Collection, Configuration, EntityManager, LockMode, MikroORM, QueryFlag, QueryOrder, Reference, ValidationError, ChangeSetType, wrap, expr,
   UniqueConstraintViolationException, TableNotFoundException, NotNullConstraintViolationException, TableExistsException, SyntaxErrorException,
-  NonUniqueFieldNameException, InvalidFieldNameException, LoadStrategy, IsolationLevel, PopulateHint, FlushMode,
+  NonUniqueFieldNameException, InvalidFieldNameException, LoadStrategy, IsolationLevel, PopulateHint, ref,
 } from '@mikro-orm/core';
 import { PostgreSqlDriver, PostgreSqlConnection } from '@mikro-orm/postgresql';
 import { Address2, Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, PublisherType, PublisherType2, Test2, Label2 } from './entities-sql';
 import { initORMPostgreSql, mockLogger } from './bootstrap';
 import { performance } from 'perf_hooks';
+import { Test2Subscriber } from './subscribers/Test2Subscriber';
 
 describe('EntityManagerPostgre', () => {
 
@@ -20,9 +21,9 @@ describe('EntityManagerPostgre', () => {
     const book2 = new Book2('My Life on The Wall, part 2', author);
     const book3 = new Book2('My Life on The Wall, part 3', author);
     const publisher = new Publisher2();
-    book1.publisher = wrap(publisher).toReference();
-    book2.publisher = wrap(publisher).toReference();
-    book3.publisher = wrap(publisher).toReference();
+    book1.publisher = ref(publisher);
+    book2.publisher = ref(publisher);
+    book3.publisher = ref(publisher);
     const tag1 = new BookTag2('silly');
     const tag2 = new BookTag2('funny');
     const tag3 = new BookTag2('sick');
@@ -36,7 +37,7 @@ describe('EntityManagerPostgre', () => {
   }
 
   beforeAll(async () => orm = await initORMPostgreSql());
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
 
   test('isConnected()', async () => {
     await expect(orm.isConnected()).resolves.toBe(true);
@@ -48,7 +49,7 @@ describe('EntityManagerPostgre', () => {
 
   test('getConnectionOptions()', async () => {
     const config = new Configuration({
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
       clientUrl: 'postgre://root@127.0.0.1:1234/db_name',
       host: '127.0.0.10',
       password: 'secret',
@@ -143,6 +144,13 @@ describe('EntityManagerPostgre', () => {
     ]);
   });
 
+  test('multi insert maps PKs', async () => {
+    const tests = [1, 2, 3, 4, 5].map(n => orm.em.create(Test2, { name: `n${n}` }, { persist: false }));
+    await orm.em.insertMany(tests);
+    expect(tests.map(t => t.id)).toEqual([1, 2, 3, 4, 5]);
+    expect(orm.em.getUnitOfWork().getIdentityMap().values()).toHaveLength(0);
+  });
+
   test('driver appends errored query', async () => {
     const driver = orm.em.getDriver();
     const err1 = `insert into "not_existing" ("foo") values ('bar') - relation "not_existing" does not exist`;
@@ -153,14 +161,14 @@ describe('EntityManagerPostgre', () => {
 
   test('connection returns correct URL', async () => {
     const conn1 = new PostgreSqlConnection(new Configuration({
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
       clientUrl: 'postgre://example.host.com',
       port: 1234,
       user: 'usr',
       password: 'pw',
     } as any, false));
     await expect(conn1.getClientUrl()).toBe('postgre://usr:*****@example.host.com:1234');
-    const conn2 = new PostgreSqlConnection(new Configuration({ type: 'postgresql', port: 5433 } as any, false));
+    const conn2 = new PostgreSqlConnection(new Configuration({ driver: PostgreSqlDriver, port: 5433 } as any, false));
     await expect(conn2.getClientUrl()).toBe('postgresql://postgres@127.0.0.1:5433');
   });
 
@@ -226,7 +234,7 @@ describe('EntityManagerPostgre', () => {
     } catch { }
 
     expect(mock.mock.calls[0][0]).toMatch('begin isolation level read uncommitted');
-    expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "email", "name", "terms_accepted", "updated_at") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"');
+    expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"');
     expect(mock.mock.calls[2][0]).toMatch('rollback');
   });
 
@@ -275,9 +283,9 @@ describe('EntityManagerPostgre', () => {
     expect(mock.mock.calls.length).toBe(6);
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('savepoint trx');
-    expect(mock.mock.calls[2][0]).toMatch('insert into "author2" ("created_at", "email", "name", "terms_accepted", "updated_at") values ($1, $2, $3, $4, $5) returning "id"');
+    expect(mock.mock.calls[2][0]).toMatch('insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id"');
     expect(mock.mock.calls[3][0]).toMatch('rollback to savepoint trx');
-    expect(mock.mock.calls[4][0]).toMatch('insert into "author2" ("created_at", "email", "name", "terms_accepted", "updated_at") values ($1, $2, $3, $4, $5) returning "id"');
+    expect(mock.mock.calls[4][0]).toMatch('insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id"');
     expect(mock.mock.calls[5][0]).toMatch('commit');
     await expect(orm.em.findOne(Author2, { name: 'God Persisted!' })).resolves.not.toBeNull();
   });
@@ -320,6 +328,34 @@ describe('EntityManagerPostgre', () => {
   test('em.commit/rollback validation', async () => {
     await expect(orm.em.commit()).rejects.toThrowError('An open transaction is required for this operation');
     await expect(orm.em.rollback()).rejects.toThrowError('An open transaction is required for this operation');
+  });
+
+  test('findOne supports optimistic locking [testMultipleFlushesDoIncrementalUpdates]', async () => {
+    expect(Test2Subscriber.log).toEqual([]);
+    const a = await orm.em.createQueryBuilder(Test2).insert({ name: '123' });
+    const r1 = await orm.em.createQueryBuilder(Test2).where({ name: '123' });
+    orm.em.clear();
+    const test = new Test2();
+
+    for (let i = 0; i < 5; i++) {
+      test.name = 'test' + i;
+      await orm.em.persistAndFlush(test);
+      expect(typeof test.version).toBe('number');
+      expect(test.version).toBe(i + 1);
+    }
+
+    expect(Test2Subscriber.log.map(r => r[0])).toEqual([
+      'onFlush',
+      'afterFlush',
+      'onFlush',
+      'afterFlush',
+      'onFlush',
+      'afterFlush',
+      'onFlush',
+      'afterFlush',
+      'onFlush',
+      'afterFlush',
+    ]);
   });
 
   test('should load entities', async () => {
@@ -371,6 +407,10 @@ describe('EntityManagerPostgre', () => {
     const jon = (await authorRepository.findOne({ name: 'Jon Snow' }, { populate: ['books', 'favouriteBook'] }))!;
     const authors = await authorRepository.findAll({ populate: ['books', 'favouriteBook'] });
     await expect(authorRepository.findOne({ email: 'not existing' })).resolves.toBeNull();
+
+    // full text search test
+    const fullTextBooks = (await booksRepository.find({ title: { $fulltext: 'life wall' } }))!;
+    expect(fullTextBooks.length).toBe(3);
 
     // count test
     const count = await authorRepository.count();
@@ -480,13 +520,11 @@ describe('EntityManagerPostgre', () => {
   });
 
   test('order by json properties', async () => {
-    await orm.em.nativeDelete(Book2, {});
-    await orm.em.nativeDelete(Author2, {});
     await orm.em.nativeInsert(Author2, { name: 'n', email: 'e', id: 1 });
-    await orm.em.getDriver().nativeInsertMany(Book2.name, [
-      { uuid: '123e4567-e89b-12d3-a456-426614174001', title: 't1', author: 1, meta: { nested: { foo: 3, deep: { str: 'c', baz: 3 } } } },
-      { uuid: '123e4567-e89b-12d3-a456-426614174002', title: 't2', author: 1, meta: { nested: { foo: 2, deep: { str: 'b', baz: 1 } } } },
-      { uuid: '123e4567-e89b-12d3-a456-426614174003', title: 't3', author: 1, meta: { nested: { foo: 1, deep: { str: 'a', baz: 2 } } } },
+    await orm.em.insertMany(Book2, [
+      { uuid: '123e4567-e89b-12d3-a456-426614174001', title: 't1', author: 1, meta: { nested: { foo: '3', deep: { str: 'c', baz: 3 } } } },
+      { uuid: '123e4567-e89b-12d3-a456-426614174002', title: 't2', author: 1, meta: { nested: { foo: '2', deep: { str: 'b', baz: 1 } } } },
+      { uuid: '123e4567-e89b-12d3-a456-426614174003', title: 't3', author: 1, meta: { nested: { foo: '1', deep: { str: 'a', baz: 2 } } } },
     ]);
 
     const res14 = await orm.em.fork().find(Book2, {}, { orderBy: { meta: { nested: { foo: 'asc' } } } });
@@ -513,6 +551,11 @@ describe('EntityManagerPostgre', () => {
 
     const b2 = await orm.em.findOneOrFail(FooBar2, bar);
     expect(b2.nameWithSpace).toBe('456');
+  });
+
+  test('em.create and reference property in constructor parameters', async () => {
+    const book = orm.em.create(Book2, { title: 'b', author: 1 });
+    expect(wrap(book.author).isInitialized()).toBe(false);
   });
 
   test('unsetting 1:1 inverse (GH #1872)', async () => {
@@ -772,7 +815,7 @@ describe('EntityManagerPostgre', () => {
     });
     expect(mock.mock.calls.length).toBe(3);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."price", "b0".price * 1.19 as "price_taxed", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "a1"."id" as "a1__id", "a1"."created_at" as "a1__created_at", "a1"."updated_at" as "a1__updated_at", "a1"."name" as "a1__name", "a1"."email" as "a1__email", "a1"."age" as "a1__age", "a1"."terms_accepted" as "a1__terms_accepted", "a1"."optional" as "a1__optional", "a1"."identities" as "a1__identities", "a1"."born" as "a1__born", "a1"."born_time" as "a1__born_time", "a1"."favourite_book_uuid_pk" as "a1__favourite_book_uuid_pk", "a1"."favourite_author_id" as "a1__favourite_author_id", "b0".price * 1.19 as "price_taxed" from "book2" as "b0" left join "author2" as "a1" on "b0"."author_id" = "a1"."id" where "b0"."author_id" is not null for update of "b0" skip locked');
+    expect(mock.mock.calls[1][0]).toMatch('select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."price", "b0".price * 1.19 as "price_taxed", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "a1"."id" as "a1__id", "a1"."created_at" as "a1__created_at", "a1"."updated_at" as "a1__updated_at", "a1"."name" as "a1__name", "a1"."email" as "a1__email", "a1"."age" as "a1__age", "a1"."terms_accepted" as "a1__terms_accepted", "a1"."optional" as "a1__optional", "a1"."identities" as "a1__identities", "a1"."born" as "a1__born", "a1"."born_time" as "a1__born_time", "a1"."favourite_book_uuid_pk" as "a1__favourite_book_uuid_pk", "a1"."favourite_author_id" as "a1__favourite_author_id" from "book2" as "b0" left join "author2" as "a1" on "b0"."author_id" = "a1"."id" where "b0"."author_id" is not null for update of "b0" skip locked');
     expect(mock.mock.calls[2][0]).toMatch('commit');
   });
 
@@ -1211,7 +1254,7 @@ describe('EntityManagerPostgre', () => {
 
     expect(mock.mock.calls[0][0]).toMatch(`select "b0"."uuid_pk", "b0"."created_at", "b0"."title", "b0"."price", "b0"."double", "b0"."meta", "b0"."author_id", "b0"."publisher_id", "b0".price * 1.19 as "price_taxed" from "book2" as "b0" where "b0"."author_id" is not null and "b0"."author_id" = $1 order by "b0"."title" asc`);
     expect(mock.mock.calls[1][0]).toMatch(`begin`);
-    expect(mock.mock.calls[2][0]).toMatch(`insert into "book2" ("author_id", "created_at", "price", "title", "uuid_pk") values ($1, $2, $3, $4, $5) returning "uuid_pk", "created_at", "title"`);
+    expect(mock.mock.calls[2][0]).toMatch(`insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values ($1, $2, $3, $4, $5) returning "uuid_pk", "created_at", "title"`);
     expect(mock.mock.calls[3][0]).toMatch(`commit`);
   });
 
@@ -1441,7 +1484,7 @@ describe('EntityManagerPostgre', () => {
     // check fired queries
     expect(mock.mock.calls).toHaveLength(6);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "email", "name", "terms_accepted", "updated_at") values ($1, $2, $3, $4, $5)');
+    expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5)');
     expect(mock.mock.calls[2][0]).toMatch('insert into "book2" ("uuid_pk", "created_at", "title", "author_id") values ($1, $2, $3, $4), ($5, $6, $7, $8), ($9, $10, $11, $12)');
     expect(mock.mock.calls[3][0]).toMatch('update "author2" set "favourite_author_id" = $1, "updated_at" = $2 where "id" = $3');
     expect(mock.mock.calls[4][0]).toMatch('commit');
@@ -1831,7 +1874,7 @@ describe('EntityManagerPostgre', () => {
 
   test('getConnection() with replicas (GH issue #1963)', async () => {
     const config = new Configuration({
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
       clientUrl: 'postgre://root@127.0.0.1:1234/db_name',
       host: '127.0.0.10',
       password: 'secret',
@@ -1859,7 +1902,7 @@ describe('EntityManagerPostgre', () => {
     });
   });
 
-  // this should run in ~600ms (when running single test locally)
+  // this should run in ~200ms (when running single test locally)
   test('perf: one to many', async () => {
     const author = new Author2('Jon Snow', 'snow@wall.st');
     await orm.em.persistAndFlush(author);
@@ -1873,7 +1916,24 @@ describe('EntityManagerPostgre', () => {
     expect(author.books.getItems().every(b => b.uuid)).toBe(true);
   });
 
-  // this should run in ~800ms (when running single test locally)
+  // this should run in ~70ms (when running single test locally)
+  test('perf: one to many via em.create()', async () => {
+    const books = [] as Book2[];
+    for (let i = 1; i <= 10000; i++) {
+      const b = new Book2('My Life on The Wall, part ' + i, undefined as any);
+      books.push(b);
+    }
+
+    console.time('one to many via em.create()');
+    const author = orm.em.create(Author2,{
+      name: 'Jon Snow',
+      email: 'snow@wall.st',
+      books,
+    });
+    console.timeEnd('one to many via em.create()');
+  });
+
+  // this should run in ~400ms (when running single test locally)
   test('perf: batch insert and update', async () => {
     const authors = new Set<Author2>();
 
@@ -1897,7 +1957,7 @@ describe('EntityManagerPostgre', () => {
     expect(() => orm.em.create(Author2, { name: 'a1', email: 'e1' })).toThrowError(err);
     const author = new Author2('a', 'e');
     expect(() => orm.em.persist(author)).toThrowError(err);
-    expect(() => orm.em.assign(author, { name: 'b' })).not.toThrowError(err);
+    expect(() => orm.em.assign(author, { name: 'b' })).toThrowError(err);
     expect(() => orm.em.assign(author, { books: ['1', '2', '3'] })).toThrowError(err);
     await expect(orm.em.flush()).rejects.toThrowError(err);
 
@@ -1958,8 +2018,8 @@ describe('EntityManagerPostgre', () => {
     expect(b.publisher.unwrap()).toBe(ref2);
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "email", "name", "terms_accepted", "updated_at") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"');
-    expect(mock.mock.calls[2][0]).toMatch('insert into "book2" ("author_id", "created_at", "price", "publisher_id", "title", "uuid_pk") values ($1, $2, $3, $4, $5, $6) returning "uuid_pk", "created_at", "title"');
+    expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"');
+    expect(mock.mock.calls[2][0]).toMatch('insert into "book2" ("uuid_pk", "created_at", "title", "price", "publisher_id", "author_id") values ($1, $2, $3, $4, $5, $6) returning "uuid_pk", "created_at", "title"');
     expect(mock.mock.calls[3][0]).toMatch('commit');
     expect(mock.mock.calls[4][0]).toMatch('begin');
     expect(mock.mock.calls[5][0]).toMatch('update "book2" set "publisher_id" = $1 where "uuid_pk" = $2');
@@ -2035,28 +2095,29 @@ describe('EntityManagerPostgre', () => {
 
     // flushing things at different time will create multiple transactions
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
-    expect(mock.mock.calls[1][0]).toMatch(`insert into "author2" ("created_at", "email", "name", "terms_accepted", "updated_at") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"`);
-    expect(mock.mock.calls[2][0]).toMatch(`insert into "book2" ("author_id", "created_at", "price", "title", "uuid_pk") values ($1, $2, $3, $4, $5) returning "uuid_pk", "created_at", "title"`);
+    expect(mock.mock.calls[1][0]).toMatch(`insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"`);
+    expect(mock.mock.calls[2][0]).toMatch(`insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values ($1, $2, $3, $4, $5) returning "uuid_pk", "created_at", "title"`);
     expect(mock.mock.calls[3][0]).toMatch(`commit`);
     expect(mock.mock.calls[4][0]).toMatch(`begin`);
-    expect(mock.mock.calls[5][0]).toMatch(`insert into "author2" ("created_at", "email", "name", "terms_accepted", "updated_at") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"`);
-    expect(mock.mock.calls[6][0]).toMatch(`insert into "book2" ("author_id", "created_at", "price", "title", "uuid_pk") values ($1, $2, $3, $4, $5) returning "uuid_pk", "created_at", "title"`);
+    expect(mock.mock.calls[5][0]).toMatch(`insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"`);
+    expect(mock.mock.calls[6][0]).toMatch(`insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values ($1, $2, $3, $4, $5) returning "uuid_pk", "created_at", "title"`);
     expect(mock.mock.calls[7][0]).toMatch(`commit`);
     expect(mock.mock.calls[8][0]).toMatch(`begin`);
-    expect(mock.mock.calls[9][0]).toMatch(`insert into "author2" ("created_at", "email", "name", "terms_accepted", "updated_at") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"`);
-    expect(mock.mock.calls[10][0]).toMatch(`insert into "book2" ("author_id", "created_at", "price", "title", "uuid_pk") values ($1, $2, $3, $4, $5) returning "uuid_pk", "created_at", "title"`);
+    expect(mock.mock.calls[9][0]).toMatch(`insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"`);
+    expect(mock.mock.calls[10][0]).toMatch(`insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id") values ($1, $2, $3, $4, $5) returning "uuid_pk", "created_at", "title"`);
     expect(mock.mock.calls[11][0]).toMatch(`commit`);
 
     mock.mockRestore();
   });
 
   test('GH #2934', async () => {
-    const users = [
-      { name: 'A', email: 'A' },
-      { name: 'B', email: 'B' },
-      { name: 'C', email: 'C' },
-      { name: 'D', email: 'D' },
-    ];
+    // This test used to be flaky in CI where it runs with fewer resources. To mimic this behaviour, we can run it with
+    // larger payload and many times in a row via turning `heavy` to `true`.
+    const heavy = false; // heavy mode takes around 10 minutes to complete (half a million entities, each doing select + insert)
+    const length = heavy ? 50 : 4;
+    const runs = heavy ? 10000 : 3;
+
+    const users = Array.from({ length }).map((_, i) => ({ name: `name ${i}`, email: `email ${i}` }));
 
     async function saveUser(options: FilterQuery<Author2>): Promise<Author2> {
       let user = await orm.em.findOne(Author2, options);
@@ -2071,8 +2132,12 @@ describe('EntityManagerPostgre', () => {
       return user;
     }
 
-    const res = await Promise.all(users.map(userData => saveUser(userData)));
-    res.forEach(user => expect(user.id).toBeDefined());
+    for (let i = 0; i < runs; i++) {
+      await orm.em.nativeDelete(Author2, {});
+      orm.em.clear();
+      const res = await Promise.all(users.map(userData => saveUser(userData)));
+      res.forEach(user => expect(user.id).toBeDefined());
+    }
   });
 
   test('required fields validation', async () => {
@@ -2102,6 +2167,13 @@ describe('EntityManagerPostgre', () => {
     const c = await orm.em.fork().findOne(FooBar2, bar);
     expect(c).toBeDefined();
     expect(c!.id).toBe(321);
+  });
+
+  test('validation in em.populate() for non discovered entities', async () => {
+    await expect(orm.em.populate({}, ['foo'] as never[])).rejects.toThrow(`Trying to populate not discovered entity of type object.`);
+    class Book2 {}
+    await expect(orm.em.populate(new Book2(), ['author'] as never[])).rejects.toThrow('Trying to populate not discovered entity of type Book2. ' +
+      'Entity with this name was discovered, but not the prototype you are passing to the ORM. If using EntitySchema, be sure to point to the implementation via `class`.');
   });
 
   test('changing PK (batch)', async () => {

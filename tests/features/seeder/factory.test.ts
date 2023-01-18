@@ -6,6 +6,7 @@ import { House } from './entities/house.entity';
 import { Project } from './entities/project.entity';
 import { User } from './entities/user.entity';
 import SpyInstance = jest.SpyInstance;
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 export class ProjectFactory extends Factory<Project> {
 
@@ -15,7 +16,7 @@ export class ProjectFactory extends Factory<Project> {
     return {
       name: 'Money vault',
       owner: {
-        name: faker.name.findName(),
+        name: faker.name.fullName(),
         email: faker.internet.email(),
         password: faker.internet.password(),
       } as User,
@@ -46,10 +47,10 @@ describe('Factory', () => {
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Project, House, User],
-      type: 'sqlite',
+      driver: SqliteDriver,
       dbName: ':memory:',
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
     persistSpy = jest.spyOn(orm.em, 'persist');
     flushSpy = jest.spyOn(orm.em, 'flush');
   });

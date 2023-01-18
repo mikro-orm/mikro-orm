@@ -1,8 +1,8 @@
-import type { AnyEntity, EntityName, EntityRepository, GetRepository } from '@mikro-orm/core';
+import type { EntityName, EntityRepository, GetRepository, TransactionOptions, EntityManagerType } from '@mikro-orm/core';
 import { EntityManager, Utils } from '@mikro-orm/core';
 import type { MongoDriver } from './MongoDriver';
 import type { MongoEntityRepository } from './MongoEntityRepository';
-import type { Collection } from 'mongodb';
+import type { Collection, Document, TransactionOptions as MongoTransactionOptions } from 'mongodb';
 
 /**
  * @inheritDoc
@@ -17,12 +17,29 @@ export class MongoEntityManager<D extends MongoDriver = MongoDriver> extends Ent
     return this.getDriver().aggregate(entityName, pipeline);
   }
 
-  getCollection(entityName: EntityName<any>): Collection {
+  getCollection<T extends Document>(entityName: EntityName<any>): Collection<T> {
     return this.getConnection().getCollection(entityName);
   }
 
-  getRepository<T extends AnyEntity<T>, U extends EntityRepository<T> = MongoEntityRepository<T>>(entityName: EntityName<T>): GetRepository<T, U> {
+  /**
+   * @inheritDoc
+   */
+  getRepository<T extends object, U extends EntityRepository<T> = MongoEntityRepository<T>>(entityName: EntityName<T>): GetRepository<T, U> {
     return super.getRepository<T, U>(entityName);
+  }
+
+  /**
+   * @inheritDoc
+   */
+  async begin(options: TransactionOptions & MongoTransactionOptions = {}): Promise<void> {
+    return super.begin(options);
+  }
+
+  /**
+   * @inheritDoc
+   */
+  async transactional<T>(cb: (em: D[typeof EntityManagerType]) => Promise<T>, options: TransactionOptions & MongoTransactionOptions = {}): Promise<T> {
+    return super.transactional(cb, options);
   }
 
 }

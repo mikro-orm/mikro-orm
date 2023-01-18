@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import type { Constructor } from '@mikro-orm/core';
 import { Entity, MikroORM, PrimaryKey, t } from '@mikro-orm/core';
-import type { PostgreSqlDriver, SchemaGenerator } from '@mikro-orm/postgresql';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity({ tableName: 'user' })
 class User0 {
@@ -57,32 +57,29 @@ class User5 {
 describe('changing PK column type [postgres] (GH 1480)', () => {
 
   let orm: MikroORM<PostgreSqlDriver>;
-  let generator: SchemaGenerator;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [User0],
       dbName: 'mikro_orm_test_gh_1480',
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
-    generator = orm.getSchemaGenerator();
-    await generator.ensureDatabase();
-    await generator.dropSchema();
+    await orm.schema.ensureDatabase();
+    await orm.schema.dropSchema();
   });
 
   afterAll(() => orm.close(true));
 
   test('changing PK type', async () => {
-    const generator = orm.getSchemaGenerator();
     const testMigration = async (e1: Constructor, e2: Constructor | undefined, snap: string) => {
       if (e2) {
         await orm.discoverEntity(e2);
         orm.getMetadata().reset(e1.name);
       }
 
-      const diff = await generator.getUpdateSchemaMigrationSQL({ wrap: false });
+      const diff = await orm.schema.getUpdateSchemaMigrationSQL({ wrap: false });
       expect(diff).toMatchSnapshot(snap);
-      await generator.execute(diff.up);
+      await orm.schema.execute(diff.up);
 
       return diff.down;
     };
@@ -93,12 +90,12 @@ describe('changing PK column type [postgres] (GH 1480)', () => {
     down.push(await testMigration(User1, User2, '2. add new PK (make it composite PK)'));
     down.push(await testMigration(User2, User3, '3. remove old PK (make it single PK again)'));
     down.push(await testMigration(User3, User4, '4. change PK type from int to serial'));
-    await expect(generator.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
     down.push(await testMigration(User4, User5, '5. change PK type from serial to text'));
-    await expect(generator.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
 
     for (const sql of down.reverse()) {
-      await generator.execute(sql);
+      await orm.schema.execute(sql);
     }
   });
 

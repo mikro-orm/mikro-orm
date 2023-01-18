@@ -1,4 +1,5 @@
 import { Entity, PrimaryKey, MikroORM, ManyToOne, PrimaryKeyType, Property, wrap, OneToMany, Collection, ManyToMany } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Order {
@@ -6,11 +7,9 @@ export class Order {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => OrderItem, item => item.order)
   items = new Collection<OrderItem>(this);
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToMany({ entity: () => Product, pivotEntity: () => OrderItem })
   products = new Collection<Product>(this);
 
@@ -80,17 +79,17 @@ describe('custom pivot entity for m:n with additional properties (bidirectional)
     orm = await MikroORM.init({
       entities: [Product, OrderItem, Order],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(() => orm.close(true));
 
-  beforeEach(() => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(() => orm.schema.clearDatabase());
 
   test(`schema`, async () => {
-    const sql = await orm.getSchemaGenerator().getCreateSchemaSQL();
+    const sql = await orm.schema.getCreateSchemaSQL();
     expect(sql).toMatchSnapshot();
   });
 

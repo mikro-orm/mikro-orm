@@ -6,7 +6,7 @@
 
 import { EventEmitter } from 'events';
 
-export function clone<T>(parent: T): T {
+export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
   const allParents: unknown[] = [];
   const allChildren: unknown[] = [];
 
@@ -18,6 +18,10 @@ export function clone<T>(parent: T): T {
 
     if (typeof parent !== 'object' || parent instanceof EventEmitter) {
       return parent;
+    }
+
+    if (respectCustomCloneMethod && 'clone' in parent && typeof parent.clone === 'function') {
+      return parent.clone();
     }
 
     let child: unknown;

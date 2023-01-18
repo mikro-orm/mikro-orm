@@ -9,7 +9,7 @@ import {
   Collection,
   LoadStrategy,
 } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Owner {
@@ -83,12 +83,12 @@ describe('GH issue 1553', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      type: 'sqlite',
+      driver: SqliteDriver,
       dbName: ':memory:',
       entities: [Radio, RadioOption, Owner],
       loadStrategy: LoadStrategy.JOINED,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {

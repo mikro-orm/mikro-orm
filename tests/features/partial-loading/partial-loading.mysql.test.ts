@@ -1,6 +1,6 @@
 import type { MikroORM } from '@mikro-orm/core';
 import { LoadStrategy } from '@mikro-orm/core';
-import type { MySqlDriver } from '@mikro-orm/mysql';
+import { MySqlDriver } from '@mikro-orm/mysql';
 import { Author2, Book2, BookTag2 } from '../../entities-sql';
 import { initORMMySql, mockLogger } from '../../bootstrap';
 
@@ -9,7 +9,7 @@ describe('partial loading (mysql)', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
   afterAll(async () => orm.close(true));
 
   async function createEntities() {
@@ -39,6 +39,12 @@ describe('partial loading (mysql)', () => {
     expect(a.name).toBe('Jon Snow');
     expect(a.email).toBeUndefined();
     expect(a.born).toBeUndefined();
+    orm.em.clear();
+
+    const a2 = (await orm.em.findOne(Author2, author, { fields: ['*'] }))!;
+    expect(a2.name).toBe('Jon Snow');
+    expect(a2.email).toBe('snow@wall.st');
+    expect(a2.born).toEqual(new Date('1990-03-23'));
   });
 
   test('partial nested loading (1:m)', async () => {
@@ -193,6 +199,24 @@ describe('partial loading (mysql)', () => {
     expect(r3[0].books[0].author.email).toBe(god.email);
     expect(mock.mock.calls).toHaveLength(1);
     expect(mock.mock.calls[0][0]).toMatch('select `b0`.`id`, `b0`.`name`, ' +
+      '`b1`.`uuid_pk` as `b1__uuid_pk`, `b1`.`title` as `b1__title`, `b1`.`author_id` as `b1__author_id`, ' +
+      '`a3`.`id` as `a3__id`, `a3`.`email` as `a3__email` ' +
+      'from `book_tag2` as `b0` ' +
+      'left join `book2_tags` as `b2` on `b0`.`id` = `b2`.`book_tag2_id` ' +
+      'left join `book2` as `b1` on `b2`.`book2_uuid_pk` = `b1`.`uuid_pk` ' +
+      'left join `author2` as `a3` on `b1`.`author_id` = `a3`.`id`');
+
+    mock.mockReset();
+
+    const r2 = await orm.em.find(BookTag2, {}, {
+      fields: ['*', 'books.title', 'books.author', 'books.author.email'],
+      populate: ['books.author'],
+      filters: false,
+      strategy: LoadStrategy.JOINED,
+    });
+    expect(r2).toHaveLength(6);
+    expect(mock.mock.calls).toHaveLength(1);
+    expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, ' +
       '`b1`.`uuid_pk` as `b1__uuid_pk`, `b1`.`title` as `b1__title`, `b1`.`author_id` as `b1__author_id`, ' +
       '`a3`.`id` as `a3__id`, `a3`.`email` as `a3__email` ' +
       'from `book_tag2` as `b0` ' +

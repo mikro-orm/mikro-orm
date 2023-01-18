@@ -6,6 +6,7 @@ import {
   PrimaryKey,
   Property,
 } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Embeddable()
 class Nested {
@@ -49,9 +50,9 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Parent],
     dbName: ':memory:',
-    type: 'sqlite',
+    driver: SqliteDriver,
   });
-  await orm.getSchemaGenerator().refreshDatabase();
+  await orm.schema.refreshDatabase();
 });
 
 afterAll(() => orm.close(true));

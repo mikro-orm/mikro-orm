@@ -26,11 +26,13 @@ exports[`embedded entities in postgres diffing 1`] = `
         ret.profile1_identity_links = [];
         entity.profile1.identity.links.forEach((_, idx_0) => {
 
+          if (entity.profile1.identity.links[idx_0] === null) ret.profile1_identity_links[idx_0] = null;
           if (entity.profile1.identity.links[idx_0] != null) {
             ret.profile1_identity_links[idx_0] = {};
             ret.profile1_identity_links[idx_0].url = clone(entity.profile1.identity.links[idx_0].url);
             ret.profile1_identity_links[idx_0].createdAt = clone(entity.profile1.identity.links[idx_0].createdAt);
 
+            if (entity.profile1.identity.links[idx_0].meta === null) ret.profile1_identity_links[idx_0].meta = null;
             if (entity.profile1.identity.links[idx_0].meta != null) {
               ret.profile1_identity_links[idx_0].meta = {};
               ret.profile1_identity_links[idx_0].meta.foo = clone(entity.profile1.identity.links[idx_0].meta.foo);
@@ -41,6 +43,7 @@ exports[`embedded entities in postgres diffing 1`] = `
               ret.profile1_identity_links[idx_0].metas = [];
               entity.profile1.identity.links[idx_0].metas.forEach((_, idx_1) => {
 
+                if (entity.profile1.identity.links[idx_0].metas[idx_1] === null) ret.profile1_identity_links[idx_0].metas[idx_1] = null;
                 if (entity.profile1.identity.links[idx_0].metas[idx_1] != null) {
                   ret.profile1_identity_links[idx_0].metas[idx_1] = {};
                   ret.profile1_identity_links[idx_0].metas[idx_1].foo = clone(entity.profile1.identity.links[idx_0].metas[idx_1].foo);
@@ -58,14 +61,17 @@ exports[`embedded entities in postgres diffing 1`] = `
 
   }
 
+  if (entity.profile2 === null) ret.profile2 = null;
   if (entity.profile2 != null) {
     ret.profile2 = {};
     ret.profile2.username = clone(entity.profile2.username);
 
+    if (entity.profile2.identity === null) ret.profile2.identity = null;
     if (entity.profile2.identity != null) {
       ret.profile2.identity = {};
       ret.profile2.identity.email = clone(entity.profile2.identity.email);
 
+      if (entity.profile2.identity.meta === null) ret.profile2.identity.meta = null;
       if (entity.profile2.identity.meta != null) {
         ret.profile2.identity.meta = {};
         ret.profile2.identity.meta.foo = clone(entity.profile2.identity.meta.foo);
@@ -76,11 +82,13 @@ exports[`embedded entities in postgres diffing 1`] = `
         ret.profile2.identity.links = [];
         entity.profile2.identity.links.forEach((_, idx_2) => {
 
+          if (entity.profile2.identity.links[idx_2] === null) ret.profile2.identity.links[idx_2] = null;
           if (entity.profile2.identity.links[idx_2] != null) {
             ret.profile2.identity.links[idx_2] = {};
             ret.profile2.identity.links[idx_2].url = clone(entity.profile2.identity.links[idx_2].url);
             ret.profile2.identity.links[idx_2].createdAt = clone(entity.profile2.identity.links[idx_2].createdAt);
 
+            if (entity.profile2.identity.links[idx_2].meta === null) ret.profile2.identity.links[idx_2].meta = null;
             if (entity.profile2.identity.links[idx_2].meta != null) {
               ret.profile2.identity.links[idx_2].meta = {};
               ret.profile2.identity.links[idx_2].meta.foo = clone(entity.profile2.identity.links[idx_2].meta.foo);
@@ -91,6 +99,7 @@ exports[`embedded entities in postgres diffing 1`] = `
               ret.profile2.identity.links[idx_2].metas = [];
               entity.profile2.identity.links[idx_2].metas.forEach((_, idx_3) => {
 
+                if (entity.profile2.identity.links[idx_2].metas[idx_3] === null) ret.profile2.identity.links[idx_2].metas[idx_3] = null;
                 if (entity.profile2.identity.links[idx_2].metas[idx_3] != null) {
                   ret.profile2.identity.links[idx_2].metas[idx_3] = {};
                   ret.profile2.identity.links[idx_2].metas[idx_3].foo = clone(entity.profile2.identity.links[idx_2].metas[idx_3].foo);
@@ -113,7 +122,7 @@ exports[`embedded entities in postgres diffing 1`] = `
 `;
 
 exports[`embedded entities in postgres schema: nested embeddables 1 1`] = `
-"create table \\"user\\" (\\"id\\" serial primary key, \\"name\\" varchar(255) not null, \\"profile1_username\\" varchar(255) not null, \\"profile1_identity_email\\" varchar(255) not null, \\"profile1_identity_meta_foo\\" varchar(255) null, \\"profile1_identity_links\\" jsonb not null, \\"profile1_identity_meta_bar\\" varchar(255) null, \\"profile2\\" jsonb not null);
+"create table "user" ("id" serial primary key, "name" varchar(255) not null, "profile1_username" varchar(255) not null, "profile1_identity_email" varchar(255) not null, "profile1_identity_meta_foo" varchar(255) null, "profile1_identity_links" jsonb not null, "profile1_identity_meta_bar" varchar(255) null, "profile2" jsonb not null);
 
 "
 `;
@@ -121,7 +130,7 @@ exports[`embedded entities in postgres schema: nested embeddables 1 1`] = `
 exports[`embedded entities in postgres schema: nested embeddables 2 1`] = `""`;
 
 exports[`embedded entities in postgres schema: nested embeddables 3 1`] = `
-"drop table if exists \\"user\\" cascade;
+"drop table if exists "user" cascade;
 
 "
 `;

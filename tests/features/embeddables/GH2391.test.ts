@@ -1,5 +1,5 @@
 import { Embeddable, Embedded, Entity, MikroORM, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers';
 
 @Embeddable()
@@ -57,9 +57,9 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
     orm = await MikroORM.init({
       entities: [MyEntity],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {

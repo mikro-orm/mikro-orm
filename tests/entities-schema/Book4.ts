@@ -16,6 +16,7 @@ export interface IBook4 extends Omit<IBaseEntity5, typeof OptionalProps> {
   [OptionalProps]?: 'meta' | IBaseEntity5[typeof OptionalProps];
   title: string;
   price?: number;
+  priceTaxed?: string;
   author?: IAuthor4;
   publisher?: Reference<IPublisher4>;
   tags: Collection<IBookTag4>;
@@ -29,6 +30,7 @@ export const Book4 = new EntitySchema<IBook4, IBaseEntity5>({
   properties: {
     title: { type: t.string },
     price: { type: t.float, nullable: true },
+    priceTaxed: { type: t.float, formula: alias => `${alias}.price * 1.19`, persist: false },
     author: { reference: 'm:1', entity: 'Author4', inversedBy: 'books', nullable: true },
     publisher: { reference: 'm:1', entity: 'Publisher4', inversedBy: 'books', wrappedReference: true, nullable: true },
     tags: { reference: 'm:n', entity: 'BookTag4', inversedBy: 'books', pivotTable: 'tags_ordered', fixedOrder: true },

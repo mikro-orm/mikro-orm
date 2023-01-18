@@ -1,5 +1,6 @@
 import { Entity, EntityRepositoryType, ManyToOne, MikroORM, PrimaryKey } from '@mikro-orm/core';
 import { EntityRepository } from '@mikro-orm/knex';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 class ProviderRepository extends EntityRepository<Provider> {}
 class UserRepository extends EntityRepository<User> {}
@@ -13,7 +14,7 @@ class ParticipantRepository extends EntityRepository<Participant> {
 
 }
 
-@Entity({ customRepository: () => ProviderRepository })
+@Entity({ repository: () => ProviderRepository })
 export class Provider {
 
   [EntityRepositoryType]?: ProviderRepository;
@@ -27,7 +28,7 @@ export class Provider {
 
 }
 
-@Entity({ customRepository: () => UserRepository })
+@Entity({ repository: () => UserRepository })
 export class User {
 
   [EntityRepositoryType]?: UserRepository;
@@ -41,7 +42,7 @@ export class User {
 
 }
 
-@Entity({ customRepository: () => MemberRepository })
+@Entity({ repository: () => MemberRepository })
 export class Member {
 
   [EntityRepositoryType]?: MemberRepository;
@@ -59,7 +60,7 @@ export class Member {
 
 }
 
-@Entity({ customRepository: () => SessionRepository })
+@Entity({ repository: () => SessionRepository })
 export class Session {
 
   [EntityRepositoryType]?: SessionRepository;
@@ -70,7 +71,6 @@ export class Session {
   @ManyToOne(() => Member, { eager: true })
   owner: Member;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToOne(() => Participant, { nullable: true, default: null, eager: true })
   lastActionBy: Participant | null = null;
 
@@ -81,7 +81,7 @@ export class Session {
 
 }
 
-@Entity({ customRepository: () => ParticipantRepository })
+@Entity({ repository: () => ParticipantRepository })
 export class Participant {
 
   [EntityRepositoryType]?: ParticipantRepository;
@@ -107,9 +107,9 @@ describe('GH #2647, #2742', () => {
     orm = await MikroORM.init({
       entities: [Provider, User, Member, Session, Participant],
       dbName: `:memory:`,
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {

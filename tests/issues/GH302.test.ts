@@ -1,5 +1,5 @@
-import { Entity, IdentifiedReference, MikroORM, PrimaryKey, Property, Reference, ManyToOne, OneToMany, Collection } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { Entity, Ref, MikroORM, PrimaryKey, Property, Reference, ManyToOne, OneToMany, Collection } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class A {
@@ -10,9 +10,8 @@ export class A {
   @Property()
   name: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  @ManyToOne({ entity: () => B, inversedBy: 'a', wrappedReference: true, nullable: true })
-  b?: IdentifiedReference<B>;
+  @ManyToOne({ entity: () => B, inversedBy: 'a', ref: true, nullable: true })
+  b?: Ref<B>;
 
   constructor(id: number, name: string) {
     this.id = id;
@@ -43,10 +42,10 @@ describe('GH issue 302', () => {
     orm = await MikroORM.init({
       entities: [A, B],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.dropSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(() => orm.close(true));

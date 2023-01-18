@@ -4,11 +4,11 @@ import type { EntityProperty } from '../typings';
 
 export class BlobType extends Type<Buffer | null> {
 
-  convertToDatabaseValue(value: Buffer, platform: Platform): Buffer {
+  convertToDatabaseValue(value: Buffer): Buffer {
     return value;
   }
 
-  convertToJSValue(value: Buffer, platform: Platform): Buffer | null {
+  convertToJSValue(value: Buffer): Buffer | null {
     if (value as unknown instanceof Buffer || !value) {
       return value;
     }

@@ -14,7 +14,7 @@ exports[`GH issue 2930 postgresql (PK not override) should not generate a sql na
 "set names 'utf8';
 set session_replication_role = 'replica';
 
-create table \\"a\\" (\\"id\\" serial primary key, \\"prop\\" varchar(255) not null);
+create table "a" ("id" serial primary key, "prop" varchar(255) not null);
 
 set session_replication_role = 'origin';
 "
@@ -24,8 +24,7 @@ exports[`GH issue 2930 postgresql (PK override) should not ignore custom pk name
 "set names 'utf8';
 set session_replication_role = 'replica';
 
-create table \\"a\\" (\\"id\\" serial, \\"prop\\" varchar(255) not null);
-alter table \\"a\\" add constraint \\"pk_a_id\\" primary key (\\"id\\");
+create table "a" ("id" serial, "prop" varchar(255) not null, constraint "pk_a_id" primary key ("id"));
 
 set session_replication_role = 'origin';
 "

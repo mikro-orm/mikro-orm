@@ -1,5 +1,5 @@
 import { Collection, Entity, Enum, ManyToMany, MikroORM, PrimaryKey } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity({
   discriminatorColumn: 'type',
@@ -23,7 +23,6 @@ export class Person extends BasePerson {
 @Entity()
 export class Employee extends BasePerson {
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToMany({ entity: () => PhotoFile, inversedBy: 'employees' })
   photos = new Collection<PhotoFile>(this);
 
@@ -64,9 +63,9 @@ describe('bidirectional many to many with multiple STI entities', () => {
     orm = await MikroORM.init({
       entities: [BasePerson, Employee, Person, File, CustomFile, PhotoFile],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(() => orm.close(true));

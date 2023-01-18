@@ -1,9 +1,10 @@
 import { inspect } from 'util';
+import { pathExistsSync } from 'fs-extra';
 
 import type { NamingStrategy } from '../naming-strategy';
 import type { CacheAdapter } from '../cache';
 import { FileCacheAdapter, NullCacheAdapter } from '../cache';
-import type { EntityRepository } from '../entity';
+import type { EntityRepository } from '../entity/EntityRepository';
 import type {
   AnyEntity,
   Constructor,
@@ -37,13 +38,16 @@ import { RequestContext } from './RequestContext';
 import { FlushMode, LoadStrategy, PopulateHint } from '../enums';
 import { MemoryCacheAdapter } from '../cache/MemoryCacheAdapter';
 import { EntityComparator } from './EntityComparator';
+import type { Type } from '../types/Type';
+import type { MikroORM } from '../MikroORM';
 
 export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
-  static readonly DEFAULTS = {
+  static readonly DEFAULTS: MikroORMOptions = {
     pool: {},
     entities: [],
     entitiesTs: [],
+    extensions: [],
     subscribers: [],
     filters: {},
     discovery: {
@@ -71,10 +75,11 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     autoJoinOneToOneOwner: true,
     propagateToOneOwner: true,
     populateAfterFlush: true,
-    persistOnCreate: false,
+    persistOnCreate: true,
     forceEntityConstructor: false,
     forceUndefined: false,
     forceUtcTimezone: false,
+    ensureDatabase: true,
     ensureIndexes: false,
     batchSize: 300,
     debug: false,
@@ -122,8 +127,10 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       fileName: (className: string) => className,
     },
     preferReadReplicas: true,
+    dynamicImportProvider: /* istanbul ignore next */ (id: string) => import(id),
   };
 
+  // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
   static readonly PLATFORMS = {
     'mongo': { className: 'MongoDriver', module: () => require('@mikro-orm/mongodb') },
     'mysql': { className: 'MySqlDriver', module: () => require('@mikro-orm/mysql') },
@@ -138,8 +145,13 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   private readonly driver: D;
   private readonly platform: Platform;
   private readonly cache = new Map<string, any>();
+  private readonly extensions = new Map<string, unknown>();
 
   constructor(options: Options, validate = true) {
+    if (options.dynamicImportProvider) {
+      Utils.setDynamicImportProvider(options.dynamicImportProvider);
+    }
+
     this.options = Utils.merge({}, Configuration.DEFAULTS, options);
     this.options.baseDir = Utils.absolutePath(this.options.baseDir);
 
@@ -157,6 +169,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     this.driver = this.initDriver();
     this.platform = this.driver.getPlatform();
     this.platform.setConfig(this);
+    this.detectSourceFolder(options);
     this.init();
   }
 
@@ -212,6 +225,14 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   getDriver(): D {
     return this.driver;
+  }
+
+  registerExtension(name: string, instance: unknown): void {
+    this.extensions.set(name, instance);
+  }
+
+  getExtension<T>(name: string): T | undefined {
+    return this.extensions.get(name) as T;
   }
 
   /**
@@ -326,6 +347,39 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     }
   }
 
+  /**
+   * Checks if `src` folder exists, it so, tries to adjust the migrations and seeders paths automatically to use it.
+   * If there is a `dist` or `build` folder, it will be used for the JS variant (`path` option), while the `src` folder will be
+   * used for the TS variant (`pathTs` option).
+   *
+   * If the default folder exists (e.g. `/migrations`), the config will respect that, so this auto-detection should not
+   * break existing projects, only help with the new ones.
+   */
+  private detectSourceFolder(options: Options): void {
+    if (!pathExistsSync(this.options.baseDir + '/src')) {
+      return;
+    }
+
+    const migrationsPathExists = pathExistsSync(this.options.baseDir + '/' + this.options.migrations.path);
+    const seedersPathExists = pathExistsSync(this.options.baseDir + '/' + this.options.seeder.path);
+    const distDir = pathExistsSync(this.options.baseDir + '/dist');
+    const buildDir = pathExistsSync(this.options.baseDir + '/build');
+    // if neither `dist` nor `build` exist, we use the `src` folder as it might be a JS project without building, but with `src` folder
+    const path = distDir ? './dist' : (buildDir ? './build' : './src');
+
+    // only if the user did not provide any values and if the default path does not exist
+    if (!options.migrations?.path && !options.migrations?.pathTs && !migrationsPathExists) {
+      this.options.migrations.path = `${path}/migrations`;
+      this.options.migrations.pathTs = './src/migrations';
+    }
+
+    // only if the user did not provide any values and if the default path does not exist
+    if (!options.seeder?.path && !options.seeder?.pathTs && !seedersPathExists) {
+      this.options.seeder.path = `${path}/seeders`;
+      this.options.seeder.pathTs = './src/seeders';
+    }
+  }
+
   private validateOptions(): void {
     if (!this.options.type && !this.options.driver) {
       throw new Error('No platform type specified, please fill in `type` or provide custom driver class in `driver` option. Available platforms types: ' + inspect(Object.keys(Configuration.PLATFORMS)));
@@ -353,6 +407,13 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     return new this.options.driver!(this);
   }
 
+}
+
+/**
+ * Type helper to make it easier to use `mikro-orm.config.js`.
+ */
+export function defineConfig<D extends IDatabaseDriver>(options: Options<D>) {
+  return options;
 }
 
 export interface DynamicPassword {
@@ -386,6 +447,7 @@ export type MigrationsOptions = {
   dropTables?: boolean;
   safe?: boolean;
   snapshot?: boolean;
+  snapshotName?: string;
   emit?: 'js' | 'ts';
   generator?: Constructor<IMigrationGenerator>;
   fileName?: (timestamp: string) => string;
@@ -426,8 +488,9 @@ export interface PoolConfig {
 }
 
 export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> extends ConnectionOptions {
-  entities: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema<any>)[]; // `any` required here for some TS weirdness
-  entitiesTs: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema<any>)[]; // `any` required here for some TS weirdness
+  entities: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[]; // `any` required here for some TS weirdness
+  entitiesTs: (string | EntityClass<AnyEntity> | EntityClassGroup<AnyEntity> | EntitySchema)[]; // `any` required here for some TS weirdness
+  extensions: { register: (orm: MikroORM) => void }[];
   subscribers: EventSubscriber[];
   filters: Dictionary<{ name?: string } & Omit<FilterDef, 'name'>>;
   discovery: {
@@ -435,13 +498,16 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
     requireEntitiesArray?: boolean;
     alwaysAnalyseProperties?: boolean;
     disableDynamicFileAccess?: boolean;
+    getMappedType?: (type: string, platform: Platform) => Type<unknown> | undefined;
   };
+  /** @deprecated type option will be removed in v6, use `defineConfig` exported from the driver package to define your ORM config */
   type?: keyof typeof Configuration.PLATFORMS;
   driver?: { new(config: Configuration): D };
   driverOptions: Dictionary;
   namingStrategy?: { new(): NamingStrategy };
   implicitTransactions?: boolean;
   connect: boolean;
+  verbose: boolean;
   autoJoinOneToOneOwner: boolean;
   propagateToOneOwner: boolean;
   populateAfterFlush: boolean;
@@ -450,6 +516,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   forceUndefined: boolean;
   forceUtcTimezone: boolean;
   timezone?: string;
+  ensureDatabase: boolean;
   ensureIndexes: boolean;
   useBatchInserts?: boolean;
   useBatchUpdates?: boolean;
@@ -479,10 +546,13 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
     disableForeignKeys?: boolean;
     createForeignKeyConstraints?: boolean;
     ignoreSchema?: string[];
+    managementDbName?: string;
   };
   entityGenerator: {
     bidirectionalRelations?: boolean;
     identifiedReferences?: boolean;
+    entitySchema?: boolean;
+    esmImport?: boolean;
   };
   cache: {
     enabled?: boolean;
@@ -498,6 +568,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
   metadataProvider: { new(config: Configuration): MetadataProvider };
   seeder: SeederOptions;
   preferReadReplicas: boolean;
+  dynamicImportProvider: (id: string) => Promise<unknown>;
 }
 
 export type Options<D extends IDatabaseDriver = IDatabaseDriver> =

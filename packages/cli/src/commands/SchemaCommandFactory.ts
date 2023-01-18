@@ -1,8 +1,5 @@
 import type { ArgumentsCamelCase, Argv, CommandModule } from 'yargs';
-import type { MikroORM } from '@mikro-orm/core';
 import { colors } from '@mikro-orm/core';
-import type { AbstractSqlDriver } from '@mikro-orm/knex';
-import { SchemaGenerator } from '@mikro-orm/knex';
 import { CLIHelper } from '../CLIHelper';
 
 export class SchemaCommandFactory {
@@ -95,14 +92,21 @@ export class SchemaCommandFactory {
       return CLIHelper.showHelp();
     }
 
-    const orm = await CLIHelper.getORM() as MikroORM<AbstractSqlDriver>;
-    const generator = new SchemaGenerator(orm.em);
+    const orm = await CLIHelper.getORM();
+    const generator = orm.getSchemaGenerator();
     const params = { wrap: args.fkChecks == null ? undefined : !args.fkChecks, ...args };
 
     if (args.dump) {
       const m = `get${method.substr(0, 1).toUpperCase()}${method.substr(1)}SchemaSQL` as 'getCreateSchemaSQL' | 'getUpdateSchemaSQL' | 'getDropSchemaSQL';
       const dump = await generator[m](params);
-      CLIHelper.dump(dump, orm.config);
+
+      /* istanbul ignore next */
+      if (dump) {
+        CLIHelper.dump(dump, orm.config);
+        successMessage = '';
+      } else {
+        successMessage = 'Schema is up-to-date';
+      }
     } else if (method === 'fresh') {
       await generator.dropSchema(params);
       await generator.createSchema(params);

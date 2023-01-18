@@ -2,7 +2,7 @@ import { URL } from 'url';
 import type { Configuration, ConnectionOptions, DynamicPassword } from '../utils';
 import type { LogContext } from '../logging';
 import type { MetadataStorage } from '../metadata';
-import type { AnyEntity, ConnectionType, Dictionary, MaybePromise, Primary } from '../typings';
+import type { ConnectionType, Dictionary, MaybePromise, Primary } from '../typings';
 import type { Platform } from '../platforms/Platform';
 import type { TransactionEventBroadcaster } from '../events/TransactionEventBroadcaster';
 import type { IsolationLevel } from '../enums';
@@ -130,7 +130,7 @@ export abstract class Connection {
 
 }
 
-export interface QueryResult<T extends AnyEntity<T> = { id: number }> {
+export interface QueryResult<T = { id: number }> {
   affectedRows: number;
   insertId: Primary<T>;
   row?: Dictionary;

@@ -1,6 +1,5 @@
-import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import type { MongoDriver } from '@mikro-orm/mongodb';
-import { ObjectId, MongoConnection } from '@mikro-orm/mongodb';
+import { Embeddable, Embedded, Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { MikroORM, ObjectId, MongoConnection } from '@mikro-orm/mongodb';
 import { mockLogger } from '../../helpers';
 
 @Embeddable()
@@ -70,25 +69,24 @@ class User {
 
 describe('embedded entities in mongo', () => {
 
-  let orm: MikroORM<MongoDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [User],
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test-nested-embeddables',
-      type: 'mongo',
     });
   });
 
   afterAll(async () => {
-    await orm.getSchemaGenerator().dropSchema();
+    await orm.schema.dropSchema();
     await orm.close(true);
   });
 
   test('create collections', async () => {
     const createCollection = jest.spyOn(MongoConnection.prototype, 'createCollection');
     createCollection.mockResolvedValue({} as any);
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
     expect(createCollection.mock.calls.map(c => c[0])).toEqual(['user']);
     createCollection.mockRestore();
   });
@@ -111,11 +109,11 @@ describe('embedded entities in mongo', () => {
     const mock = mockLogger(orm);
     await orm.em.persistAndFlush([user1, user2]);
     orm.em.clear();
-    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('user').insertMany([ { name: 'Uwe', profile1_username: 'u1', profile1_identity_email: 'e1', profile1_identity_meta_foo: 'f1', profile1_identity_meta_bar: 'b1', profile2: { username: 'u2', identity: { email: 'e2', meta: { foo: 'f2', bar: 'b2' } } } }, { name: 'Uschi', profile1_username: 'u3', profile1_identity_email: 'e3', profile2: { username: 'u4', identity: { email: 'e4', meta: { foo: 'f4' } } } } ], { session: undefined });`);
+    expect(mock.mock.calls[0][0]).toMatch(`db.getCollection('user').insertMany([ { name: 'Uwe', profile1_username: 'u1', profile1_identity_email: 'e1', profile1_identity_meta_foo: 'f1', profile1_identity_meta_bar: 'b1', profile2: { username: 'u2', identity: { email: 'e2', meta: { foo: 'f2', bar: 'b2' } } } }, { name: 'Uschi', profile1_username: 'u3', profile1_identity_email: 'e3', profile2: { username: 'u4', identity: { email: 'e4', meta: { foo: 'f4' } } } } ], {});`);
 
     const u1 = await orm.em.findOneOrFail(User, user1._id);
     const u2 = await orm.em.findOneOrFail(User, user2._id);
-    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('user'\)\.find\({ _id: .* }, { session: undefined }\)\.limit\(1\).toArray\(\);/);
+    expect(mock.mock.calls[1][0]).toMatch(/db\.getCollection\('user'\)\.find\({ _id: .* }, {}\)\.limit\(1\).toArray\(\);/);
     expect(u1.profile1).toBeInstanceOf(Profile);
     expect(u1.profile1).toEqual({
       username: 'u1',
@@ -164,7 +162,7 @@ describe('embedded entities in mongo', () => {
     u1.profile1!.identity.meta!.foo = 'foooooooo';
     u1.profile2!.identity.meta!.bar = 'bababar';
     await orm.em.flush();
-    expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\('user'\)\.updateMany\({ _id: .* }, { '\$set': { profile1_identity_email: 'e123', profile1_identity_meta_foo: 'foooooooo', profile2: { username: 'u2', identity: { email: 'e2', meta: { foo: 'f2', bar: 'bababar' } } } } }, { session: undefined }\);/);
+    expect(mock.mock.calls[3][0]).toMatch(/db\.getCollection\('user'\)\.updateMany\({ _id: .* }, { '\$set': { profile1_identity_email: 'e123', profile1_identity_meta_foo: 'foooooooo', profile2: { username: 'u2', identity: { email: 'e2', meta: { foo: 'f2', bar: 'bababar' } } } } }, {}\);/);
     orm.em.clear();
     mock.mock.calls.length = 0;
 
@@ -172,7 +170,7 @@ describe('embedded entities in mongo', () => {
       profile1: { identity: { email: 'e123', meta: { foo: 'foooooooo' } } },
       profile2: { identity: { email: 'e2', meta: { foo: 'f2', bar: 'bababar' } } },
     });
-    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('user'\)\.find\({ profile1_identity_email: 'e123', profile1_identity_meta_foo: 'foooooooo', 'profile2\.identity\.email': 'e2', 'profile2\.identity\.meta\.foo': 'f2', 'profile2\.identity\.meta\.bar': 'bababar' }, { session: undefined }\)\.limit\(1\).toArray\(\);/);
+    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('user'\)\.find\({ profile1_identity_email: 'e123', profile1_identity_meta_foo: 'foooooooo', 'profile2\.identity\.email': 'e2', 'profile2\.identity\.meta\.foo': 'f2', 'profile2\.identity\.meta\.bar': 'bababar' }, {}\)\.limit\(1\).toArray\(\);/);
     expect(u3._id).toEqual(u1._id);
     orm.em.clear();
     mock.mock.calls.length = 0;
@@ -182,12 +180,12 @@ describe('embedded entities in mongo', () => {
       profile2: { identity: { email: 'e2', meta: { foo: 'f2', bar: /(ba)+r/ } } },
     });
     expect(u4._id).toEqual(u1._id);
-    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('user'\)\.find\({ profile1_identity_email: 'e123', profile1_identity_meta_foo: \/fo\+\/, 'profile2\.identity\.email': 'e2', 'profile2\.identity\.meta\.foo': 'f2', 'profile2\.identity\.meta\.bar': \/\(ba\)\+r\/ }, { session: undefined }\)\.limit\(1\).toArray\(\);/);
+    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('user'\)\.find\({ profile1_identity_email: 'e123', profile1_identity_meta_foo: \/fo\+\/, 'profile2\.identity\.email': 'e2', 'profile2\.identity\.meta\.foo': 'f2', 'profile2\.identity\.meta\.bar': \/\(ba\)\+r\/ }, {}\)\.limit\(1\).toArray\(\);/);
     orm.em.clear();
     mock.mock.calls.length = 0;
 
     const u5 = await orm.em.findOneOrFail(User, { $or: [{ profile1: { identity: { meta: { foo: 'foooooooo' } } } }, { profile2: { identity: { meta: { bar: 'bababar' } } } }] });
-    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('user'\)\.find\({ '\$or': \[ { profile1_identity_meta_foo: 'foooooooo' }, { 'profile2\.identity\.meta\.bar': 'bababar' } ] }, { session: undefined }\)\.limit\(1\).toArray\(\);/);
+    expect(mock.mock.calls[0][0]).toMatch(/db\.getCollection\('user'\)\.find\({ '\$or': \[ { profile1_identity_meta_foo: 'foooooooo' }, { 'profile2\.identity\.meta\.bar': 'bababar' } ] }, {}\)\.limit\(1\).toArray\(\);/);
     expect(u5._id).toEqual(u1._id);
 
     const err1 = `Invalid query for entity 'User', property 'city' does not exist in embeddable 'Identity'`;

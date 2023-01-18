@@ -1,4 +1,5 @@
 import { Collection, Entity, ManyToMany, MikroORM, PrimaryKey, Property, t } from '@mikro-orm/core';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity({
   schema: 'accounting',
@@ -9,11 +10,9 @@ class Account {
   @PrimaryKey({ type: t.bigint })
   id!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToMany({ entity: () => Customer, mappedBy: c => c.accounts })
   customers: Collection<Customer> = new Collection<Customer>(this);
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToMany({ entity: () => Company, mappedBy: c => c.accounts })
   companies: Collection<Company> = new Collection<Company>(this);
 
@@ -71,9 +70,9 @@ describe('GH issue 2919', () => {
     orm = await MikroORM.init({
       entities: [Account, Customer, Company],
       dbName: 'mikro_orm_test_2919',
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(async () => {

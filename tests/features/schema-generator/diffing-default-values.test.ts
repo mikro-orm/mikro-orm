@@ -1,4 +1,8 @@
 import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { MySqlDriver } from '@mikro-orm/mysql';
+import { MariaDbDriver } from '@mikro-orm/mariadb';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 export class Foo {
 
@@ -49,12 +53,12 @@ describe('diffing default values (GH #2385)', () => {
     const orm = await MikroORM.init({
       entities: [Foo1],
       dbName: 'mikro_orm_test_gh_2385',
-      type: 'mysql',
+      driver: MySqlDriver,
       port: 3308,
     });
-    await orm.getSchemaGenerator().refreshDatabase();
-    expect(await orm.getSchemaGenerator().getCreateSchemaSQL()).toMatchSnapshot();
-    await expect(orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+    await orm.schema.refreshDatabase();
+    expect(await orm.schema.getCreateSchemaSQL()).toMatchSnapshot();
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
     await orm.close();
   });
 
@@ -62,12 +66,12 @@ describe('diffing default values (GH #2385)', () => {
     const orm = await MikroORM.init({
       entities: [Foo1],
       dbName: 'mikro_orm_test_gh_2385',
-      type: 'mariadb',
+      driver: MariaDbDriver,
       port: 3309,
     });
-    await orm.getSchemaGenerator().refreshDatabase();
-    expect(await orm.getSchemaGenerator().getCreateSchemaSQL()).toMatchSnapshot();
-    await expect(orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+    await orm.schema.refreshDatabase();
+    expect(await orm.schema.getCreateSchemaSQL()).toMatchSnapshot();
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
     await orm.close();
   });
 
@@ -75,11 +79,11 @@ describe('diffing default values (GH #2385)', () => {
     const orm = await MikroORM.init({
       entities: [Foo2],
       dbName: 'mikro_orm_test_gh_2385',
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
-    await orm.getSchemaGenerator().refreshDatabase();
-    expect(await orm.getSchemaGenerator().getCreateSchemaSQL()).toMatchSnapshot();
-    await expect(orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+    await orm.schema.refreshDatabase();
+    expect(await orm.schema.getCreateSchemaSQL()).toMatchSnapshot();
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
     await orm.close();
   });
 
@@ -87,11 +91,11 @@ describe('diffing default values (GH #2385)', () => {
     const orm = await MikroORM.init({
       entities: [Foo3],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
-    expect(await orm.getSchemaGenerator().getCreateSchemaSQL()).toMatchSnapshot();
-    await expect(orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+    await orm.schema.createSchema();
+    expect(await orm.schema.getCreateSchemaSQL()).toMatchSnapshot();
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
     await orm.close();
   });
 

@@ -4,6 +4,7 @@ import type { MetadataStorage } from '../metadata';
 import type { AnyEntity, EntityData, EntityProperty } from '../typings';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import type { Collection, EntityValidator } from '../entity';
+import { helper } from '../entity';
 import type { Platform } from '../platforms';
 import { ReferenceType } from '../enums';
 
@@ -17,27 +18,34 @@ export class ChangeSetComputer {
               private readonly platform: Platform,
               private readonly config: Configuration) { }
 
-  computeChangeSet<T extends AnyEntity<T>>(entity: T): ChangeSet<T> | null {
-    const meta = this.metadata.get(entity.constructor.name);
+  computeChangeSet<T>(entity: T): ChangeSet<T> | null {
+    const meta = this.metadata.get((entity as AnyEntity).constructor.name);
 
     if (meta.readonly) {
       return null;
     }
 
-    const type = entity.__helper!.__originalEntityData ? ChangeSetType.UPDATE : ChangeSetType.CREATE;
+    const wrapped = helper(entity);
+    const type = wrapped.__originalEntityData ? ChangeSetType.UPDATE : ChangeSetType.CREATE;
     const map = new Map<T, [string, unknown][]>();
 
     // Execute `onCreate` and `onUpdate` on properties recursively, saves `onUpdate` results
     // to the `map` as we want to apply those only if something else changed.
-    for (const prop of meta.hydrateProps) {
-      this.processPropertyInitializers(entity, prop, type, map);
+    if (type === ChangeSetType.CREATE) { // run update hooks only after we know there are other changes
+      for (const prop of meta.hydrateProps) {
+        this.processPropertyInitializers(entity, prop, type, map);
+      }
+    }
+
+    if (type === ChangeSetType.UPDATE && !wrapped.__initialized && !wrapped.isTouched()) {
+      return null;
     }
 
     const changeSet = new ChangeSet(entity, type, this.computePayload(entity), meta);
-    changeSet.originalEntity = entity.__helper!.__originalEntityData;
+    changeSet.originalEntity = wrapped.__originalEntityData;
 
     if (this.config.get('validate')) {
-      this.validator.validate<T>(changeSet.entity, changeSet.payload, meta);
+      this.validator.validate(changeSet.entity, changeSet.payload, meta);
     }
 
     for (const prop of meta.relations) {
@@ -46,6 +54,14 @@ export class ChangeSetComputer {
 
     if (changeSet.type === ChangeSetType.UPDATE && !Utils.hasObjectKeys(changeSet.payload)) {
       return null;
+    }
+
+    // Execute `onCreate` and `onUpdate` on properties recursively, saves `onUpdate` results
+    // to the `map` as we want to apply those only if something else changed.
+    if (type === ChangeSetType.UPDATE) {
+      for (const prop of meta.hydrateProps) {
+        this.processPropertyInitializers(entity, prop, type, map);
+      }
     }
 
     if (map.size > 0) {
@@ -66,7 +82,7 @@ export class ChangeSetComputer {
   /**
    * Traverses entity graph and executes `onCreate` and `onUpdate` methods, assigning the values to given properties.
    */
-  private processPropertyInitializers<T extends AnyEntity<T>>(entity: T, prop: EntityProperty<T>, type: ChangeSetType, map: Map<T, [string, unknown][]>, nested?: boolean): void {
+  private processPropertyInitializers<T>(entity: T, prop: EntityProperty<T>, type: ChangeSetType, map: Map<T, [string, unknown][]>, nested?: boolean): void {
     if (prop.onCreate && type === ChangeSetType.CREATE && entity[prop.name] == null) {
       entity[prop.name] = prop.onCreate(entity);
     }
@@ -84,10 +100,10 @@ export class ChangeSetComputer {
     }
   }
 
-  private computePayload<T extends AnyEntity<T>>(entity: T, ignoreUndefined = false): EntityData<T> {
+  private computePayload<T>(entity: T, ignoreUndefined = false): EntityData<T> {
     const data = this.comparator.prepareEntity(entity);
-    const entityName = entity.__meta!.root.className;
-    const originalEntityData = entity.__helper!.__originalEntityData;
+    const entityName = helper(entity).__meta!.root.className;
+    const originalEntityData = helper(entity).__originalEntityData;
 
     if (originalEntityData) {
       const comparator = this.comparator.getEntityComparator(entityName);
@@ -105,16 +121,10 @@ export class ChangeSetComputer {
     return data;
   }
 
-  private processProperty<T extends AnyEntity<T>>(changeSet: ChangeSet<T>, prop: EntityProperty<T>, target?: unknown): void {
+  private processProperty<T>(changeSet: ChangeSet<T>, prop: EntityProperty<T>, target?: unknown): void {
     if (!target) {
-      const targets = Utils.unwrapProperty(changeSet.entity, changeSet.entity.__meta!, prop);
+      const targets = Utils.unwrapProperty(changeSet.entity, changeSet.meta, prop);
       targets.forEach(([t]) => this.processProperty(changeSet, prop, t));
-
-      if (targets.length === 0) {
-        if (changeSet.type === ChangeSetType.UPDATE && changeSet.payload[prop.name] == null && prop.onDelete?.toLowerCase() === 'cascade') {
-          delete changeSet.payload[prop.name];
-        }
-      }
 
       return;
     }
@@ -128,14 +138,14 @@ export class ChangeSetComputer {
     }
   }
 
-  private processToOne<T extends AnyEntity<T>>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
+  private processToOne<T>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
     const isToOneOwner = prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
 
     if (!isToOneOwner || prop.mapToPk) {
       return;
     }
 
-    const targets = Utils.unwrapProperty(changeSet.entity, changeSet.entity.__meta!, prop) as [AnyEntity, number[]][];
+    const targets = Utils.unwrapProperty(changeSet.entity, changeSet.meta, prop) as [AnyEntity, number[]][];
 
     targets.forEach(([target, idx]) => {
       if (!target.__helper!.hasPrimaryKey()) {
@@ -144,7 +154,7 @@ export class ChangeSetComputer {
     });
   }
 
-  private processToMany<T extends AnyEntity<T>>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
+  private processToMany<T>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
     const target = changeSet.entity[prop.name] as unknown as Collection<any>;
 
     if (!target.isDirty()) {

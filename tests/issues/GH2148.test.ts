@@ -1,5 +1,5 @@
 import { Entity, IdentifiedReference, ManyToOne, MikroORM, PrimaryKey, Reference } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
 export class First {
@@ -35,15 +35,15 @@ export class Third {
 
 describe('GH issue 2148', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [First, Second, Third],
       dbName: 'mikro_orm_test_2148',
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(() => orm.close(true));

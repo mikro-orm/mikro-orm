@@ -1,5 +1,5 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity({ tableName: 'brands' })
 export class Brand {
@@ -7,7 +7,6 @@ export class Brand {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany({ entity: () => BrandSiteRestriction, mappedBy: 'brand' })
   brandSiteRestrictions = new Collection<BrandSiteRestriction>(this);
 
@@ -19,7 +18,6 @@ export class BrandSiteRestriction {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToOne({ entity: () => Site })
   site!: any;
 
@@ -34,11 +32,9 @@ export class Placement {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToOne({ entity: () => Publisher, nullable: true })
   publisher?: any;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @ManyToOne({ entity: () => Site })
   site!: any;
 
@@ -47,7 +43,6 @@ export class Placement {
 @Entity({ tableName: 'publishers' })
 export class Publisher {
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany({ entity: () => Site, mappedBy: 'publisher' })
   sites = new Collection<Site>(this);
 
@@ -84,10 +79,10 @@ describe('GH issue 1009', () => {
     orm = await MikroORM.init({
       entities: [BrandSiteRestriction, Site, Brand, Publisher, Placement],
       dbName: `:memory:`,
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
 
-    const generator = orm.getSchemaGenerator();
+    const generator = orm.schema;
     await generator.createSchema();
   });
 

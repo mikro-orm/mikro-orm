@@ -1,5 +1,5 @@
 import type { MikroORM } from '@mikro-orm/core';
-import type { MySqlDriver } from '@mikro-orm/mysql';
+import { MySqlDriver } from '@mikro-orm/mysql';
 import { Author2, Book2 } from '../entities-sql';
 import { initORMMySql, mockLogger } from '../bootstrap';
 import { Author2Subscriber } from '../subscribers/Author2Subscriber';
@@ -12,7 +12,7 @@ describe('read-replicas', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql());
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
   afterEach(() => {
     orm.config.set('debug', false);
     Author2Subscriber.log.length = 0;

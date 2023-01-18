@@ -1,5 +1,5 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, wrap } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 class Category {
@@ -31,9 +31,9 @@ describe('GH issue 2059', () => {
     orm = await MikroORM.init({
       entities: [Category],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {
@@ -72,7 +72,7 @@ describe('GH issue 2059', () => {
     expect(categories[0].children[0].children[0].name).toBe('A11');
     await categories[0].children[0].children[0].children.init();
     expect(categories[0].children[0].children[0].children[0].name).toBe('A111');
-    expect(wrap(categories[0]).toObject().children[0].children[0].children).toBeUndefined();
+    expect(wrap(categories[0]).toObject().children[0].children[0].children).toEqual([5]);
     expect(wrap(categories[0]).toObject()).toMatchObject({
       name: 'A',
       children: [

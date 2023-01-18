@@ -2,7 +2,7 @@ import type { ReferenceOptions } from './Property';
 import { MetadataStorage, MetadataValidator } from '../metadata';
 import { Utils } from '../utils';
 import { ReferenceType } from '../enums';
-import type { AnyEntity, EntityName, EntityProperty } from '../typings';
+import type { AnyEntity, AnyString, EntityName, EntityProperty } from '../typings';
 
 export function ManyToOne<T, O>(
   entity: ManyToOneOptions<T, O> | string | ((e?: any) => EntityName<T>) = {},
@@ -22,12 +22,14 @@ export function ManyToOne<T, O>(
 export interface ManyToOneOptions<T, O> extends ReferenceOptions<T, O> {
   inversedBy?: (string & keyof T) | ((e: T) => any);
   wrappedReference?: boolean;
+  /** alias for `wrappedReference` */
+  ref?: boolean;
   primary?: boolean;
   mapToPk?: boolean;
   joinColumn?: string;
   joinColumns?: string[];
   referenceColumnName?: string;
   referencedColumnNames?: string[];
-  onDelete?: 'cascade' | 'no action' | 'set null' | 'set default' | string;
-  onUpdateIntegrity?: 'cascade' | 'no action' | 'set null' | 'set default' | string;
+  onDelete?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
+  onUpdateIntegrity?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
 }

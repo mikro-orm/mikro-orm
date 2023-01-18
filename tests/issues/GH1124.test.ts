@@ -1,5 +1,5 @@
 import { Entity, MikroORM, OneToOne, PrimaryKey } from '@mikro-orm/core';
-import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class B {
@@ -22,22 +22,24 @@ export class A {
 
 describe('GH issue 1124', () => {
 
-  let orm: MikroORM<AbstractSqlDriver>;
+  let orm: MikroORM<SqliteDriver>;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [A, B],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(() => orm.close(true));
 
   test('According to docs we can use mapToPk option on M:1 and 1:1 relations and it does not work for 1:1', async () => {
-    const a = orm.em.create(A, { entity: new B() });
+    const a = new A();
     await orm.em.persistAndFlush(a);
+    a.entity = new B();
+    await orm.em.flush();
     orm.em.clear();
 
     const entity = await orm.em.findOneOrFail(A, { id: 1 });

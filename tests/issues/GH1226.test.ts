@@ -1,5 +1,5 @@
 import { Entity, MikroORM, PrimaryKey } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Example {
@@ -27,19 +27,19 @@ describe('GH issue 1226', () => {
 
   beforeAll(async () => {
     orm1 = await MikroORM.init({
-      type: 'sqlite',
+      driver: SqliteDriver,
       dbName: ':memory:',
       forceEntityConstructor: true,
       entities: [Example],
     });
     orm2 = await MikroORM.init({
-      type: 'sqlite',
+      driver: SqliteDriver,
       dbName: ':memory:',
       forceEntityConstructor: [Example],
       entities: [Example],
     });
     orm3 = await MikroORM.init({
-      type: 'sqlite',
+      driver: SqliteDriver,
       dbName: ':memory:',
       forceEntityConstructor: ['Example'],
       entities: [Example],

@@ -1,5 +1,5 @@
 import { Collection, Entity, Enum, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 class Book {
@@ -7,7 +7,6 @@ class Book {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => Author, c => c.book)
   children = new Collection<Author>(this);
 
@@ -37,9 +36,9 @@ beforeAll(async () => {
   orm = await MikroORM.init({
     entities: [Author, Book],
     dbName: ':memory:',
-    type: 'sqlite',
+    driver: SqliteDriver,
   });
-  await orm.getSchemaGenerator().createSchema();
+  await orm.schema.createSchema();
 });
 
 afterAll(async () => {

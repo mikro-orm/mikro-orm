@@ -1,6 +1,6 @@
 import { inspect } from 'util';
 import type { Dictionary, EntityProperty } from '@mikro-orm/core';
-import { BooleanType, DateTimeType } from '@mikro-orm/core';
+import { BooleanType, DateTimeType, Utils } from '@mikro-orm/core';
 import type { Check, Column, ForeignKey, Index, SchemaDifference, TableDifference } from '../typings';
 import type { DatabaseSchema } from './DatabaseSchema';
 import type { DatabaseTable } from './DatabaseTable';
@@ -130,6 +130,7 @@ export class SchemaComparator {
       renamedColumns: {},
       renamedIndexes: {},
       fromTable,
+      toTable,
     };
 
     if (this.diffComment(fromTable.comment, toTable.comment)) {
@@ -397,15 +398,23 @@ export class SchemaComparator {
     const changedProperties = new Set<string>();
     const prop1 = this.mapColumnToProperty({ ...column1, autoincrement: false });
     const prop2 = this.mapColumnToProperty({ ...column2, autoincrement: false });
-    const columnType1 = column1.mappedType.getColumnType(prop1, this.platform);
-    const columnType2 = column2.mappedType.getColumnType(prop2, this.platform);
+    const columnType1 = column1.mappedType.getColumnType(prop1, this.platform).toLowerCase();
+    const columnType2 = column2.mappedType.getColumnType(prop2, this.platform).toLowerCase();
     const log = (msg: string, params: Dictionary) => {
       if (tableName) {
-        this.log(msg, params);
+        const copy = Utils.copy(params);
+        Utils.dropUndefinedProperties(copy);
+        this.log(msg, copy);
       }
     };
 
-    if (columnType1 !== columnType2) {
+    if (
+      columnType1 !== columnType2 &&
+      !(
+        column1.ignoreSchemaChanges?.includes('type') ||
+        column2.ignoreSchemaChanges?.includes('type')
+      )
+    ) {
       log(`'type' changed for column ${tableName}.${column1.name}`, { columnType1, columnType2 });
       changedProperties.add('type');
     }
@@ -440,7 +449,13 @@ export class SchemaComparator {
       changedProperties.add('enumItems');
     }
 
-    if ((column1.extra || '').toLowerCase() !== (column2.extra || '').toLowerCase()) {
+    if (
+      (column1.extra || '').toLowerCase() !== (column2.extra || '').toLowerCase() &&
+      !(
+        column1.ignoreSchemaChanges?.includes('extra') ||
+        column2.ignoreSchemaChanges?.includes('extra')
+      )
+    ) {
       log(`'extra' changed for column ${tableName}.${column1.name}`, { column1, column2 });
       changedProperties.add('extra');
     }
@@ -463,8 +478,8 @@ export class SchemaComparator {
    * Compares index1 with index2 and returns index2 if there are any differences or false in case there are no differences.
    */
   diffIndex(index1: Index, index2: Index): boolean {
-    // if one of them is a custom expression, compare only by name
-    if (index1.expression || index2.expression) {
+    // if one of them is a custom expression or full text index, compare only by name
+    if (index1.expression || index2.expression || index1.type === 'fulltext' || index2.type === 'fulltext') {
       return index1.keyName !== index2.keyName;
     }
 
@@ -509,8 +524,10 @@ export class SchemaComparator {
   }
 
   diffCheck(check1: Check, check2: Check): boolean {
-    const unquote = (str?: string) => str?.replace(/['"`]/g, '');
-    return unquote(check1.expression as string) !== unquote(check2.expression as string);
+    // check constraint definition might be normalized by the driver,
+    // e.g. quotes might be added (https://github.com/mikro-orm/mikro-orm/issues/3827)
+    const simplify = (str?: string) => str?.replace(/['"`()]/g, '').toLowerCase();
+    return simplify(check1.expression as string) !== simplify(check2.expression as string);
   }
 
   hasSameDefaultValue(from: Column, to: Column): boolean {

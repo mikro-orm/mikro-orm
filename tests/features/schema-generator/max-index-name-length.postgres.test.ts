@@ -1,5 +1,6 @@
 import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 
 @Entity({ tableName: 'very_long_table_name_64_chars_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' })
@@ -34,19 +35,19 @@ describe('index and FK names should be a max of 64 chars in mysql (GH 1915)', ()
     orm = await MikroORM.init({
       entities: [ParentEntity, ChildEntity],
       dbName: `mikro_orm_test_gh_1915`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
+    await orm.schema.ensureDatabase();
+    await orm.schema.dropSchema();
   });
 
   afterAll(() => orm.close(true));
 
   test('index and FK names should be a max of 64 chars in mysql', async () => {
-    const sql = await orm.getSchemaGenerator().getCreateSchemaSQL();
+    const sql = await orm.schema.getCreateSchemaSQL();
     expect(sql).toMatchSnapshot();
-    await orm.getSchemaGenerator().execute(sql);
-    const diff = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    await orm.schema.execute(sql);
+    const diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toBe('');
   });
 

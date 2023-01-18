@@ -2,8 +2,7 @@ import {
   Cascade, Collection, Entity, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey,
   PrimaryKeyType, Property, ValidationError, wrap, LoadStrategy,
 } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
-import { AbstractSqlConnection } from '@mikro-orm/sqlite';
+import { AbstractSqlConnection, SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers';
 
 @Entity()
@@ -241,12 +240,12 @@ describe('composite keys in sqlite', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      type: 'sqlite',
+      driver: SqliteDriver,
       dbName: ':memory:',
       entities: [Author2, Address2, FooBar2, FooBaz2, FooParam2, Configuration2, Test2, User2, Car2, CarOwner2, Sandwich],
     });
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.dropSchema();
+    await orm.schema.createSchema();
   });
   beforeEach(async () => {
     await orm.em.execute('pragma foreign_keys = off');
@@ -469,10 +468,10 @@ describe('composite keys in sqlite', () => {
     expect(c1).toBe(u2.cars[0]);
 
     await orm.em.remove(u2).flush();
+    expect(u2.cars[0]).toBeUndefined();
     const o3 = await orm.em.findOne(User2, u1);
     expect(o3).toBeNull();
     const c2 = await orm.em.findOneOrFail(Car2, car1);
-    expect(c2).toBe(u2.cars[0]);
     await orm.em.remove(c2).flush();
     const c3 = await orm.em.findOne(Car2, car1);
     expect(c3).toBeNull();
@@ -542,7 +541,6 @@ describe('composite keys in sqlite', () => {
     const o3 = await orm.em.findOne(User2, u1);
     expect(o3).toBeNull();
     const c2 = await orm.em.findOneOrFail(Sandwich, sandwich1, { populate: ['users'] });
-    expect(c2).toBe(u2.sandwiches[0]);
     await orm.em.remove(c2).flush();
     const c3 = await orm.em.findOne(Sandwich, sandwich1);
     expect(c3).toBeNull();

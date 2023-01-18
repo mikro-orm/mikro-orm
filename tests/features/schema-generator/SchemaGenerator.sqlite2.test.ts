@@ -4,7 +4,7 @@ describe('SchemaGenerator [sqlite2]', () => {
 
   test('generate schema from metadata [sqlite2]', async () => {
     const orm = await initORMSqlite2();
-    const generator = orm.getSchemaGenerator();
+    const generator = orm.schema;
     const dump = await generator.generate();
     expect(dump).toMatchSnapshot('sqlite2-schema-dump');
 

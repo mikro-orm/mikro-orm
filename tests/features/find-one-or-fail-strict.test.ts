@@ -1,4 +1,5 @@
 import { BigIntType, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 class Author {
@@ -9,7 +10,6 @@ class Author {
   @Property()
   name!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany({ entity: () => Book, mappedBy: (book: Book) => book.author, orphanRemoval: true })
   books: Collection<Book> = new Collection<Book>(this);
 
@@ -36,10 +36,10 @@ describe('GH issue 3051', () => {
     orm = await MikroORM.init({
       entities: [Author, Book],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
 
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
     const author = orm.em.create(Author, {
       name: 'Jon Snow',
       books: [{ title: 'b1' }, { title: 'b2' }, { title: 'b3' }],

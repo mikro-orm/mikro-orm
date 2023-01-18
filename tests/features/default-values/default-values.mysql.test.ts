@@ -1,5 +1,6 @@
 import { Entity, PrimaryKey, Property, MikroORM } from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
+import { MySqlDriver } from '@mikro-orm/mysql';
 
 @Entity()
 class A {
@@ -29,13 +30,17 @@ describe('default values in mysql', () => {
     orm = await MikroORM.init({
       entities: [A],
       dbName: `mikro_orm_test_default_values`,
-      type: 'mysql',
+      driver: MySqlDriver,
       port: 3308,
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(() => orm.close(true));
+
+  test(`runtime default values are inferred if the entity can be created without any constructor parameters`, async () => {
+    expect(await orm.schema.getCreateSchemaSQL()).toMatchSnapshot();
+  });
 
   test(`database defaults will be available after flush`, async () => {
     const mock = mockLogger(orm, ['query']);

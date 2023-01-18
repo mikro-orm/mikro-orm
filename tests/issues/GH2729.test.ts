@@ -1,4 +1,5 @@
 import { Collection, Entity, ManyToOne, OneToMany, PrimaryKey, Property, MikroORM } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity({
   tableName: 'person',
@@ -11,7 +12,6 @@ export class PersonEntity {
   @Property()
   name!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => TaskEntity, task => task.person)
   tasks = new Collection<TaskEntity>(this);
 
@@ -39,11 +39,11 @@ describe('GH #2729', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      type: 'sqlite',
+      driver: SqliteDriver,
       dbName: ':memory:',
       entities: [PersonEntity, TaskEntity],
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
 
     await orm.em.nativeInsert(TaskEntity, {
       description: 'person zero task',

@@ -1,7 +1,7 @@
 import { ObjectId } from 'bson';
 import type {
   IPrimaryKey, Primary, NamingStrategy, Constructor, EntityRepository, EntityProperty,
-  PopulateOptions, EntityMetadata, IDatabaseDriver , EntityManager,
+  PopulateOptions, EntityMetadata, IDatabaseDriver, EntityManager, Configuration, MikroORM,
 } from '@mikro-orm/core';
 import { Platform, MongoNamingStrategy, Utils, ReferenceType, MetadataError } from '@mikro-orm/core';
 import { MongoExceptionConverter } from './MongoExceptionConverter';
@@ -12,16 +12,34 @@ export class MongoPlatform extends Platform {
 
   protected readonly exceptionConverter = new MongoExceptionConverter();
 
+  setConfig(config: Configuration) {
+    config.set('autoJoinOneToOneOwner', false);
+    super.setConfig(config);
+  }
+
   getNamingStrategy(): { new(): NamingStrategy} {
     return MongoNamingStrategy;
   }
 
-  getRepositoryClass<T>(): Constructor<EntityRepository<T>> {
-    return MongoEntityRepository;
+  getRepositoryClass<T extends object>(): Constructor<EntityRepository<T>> {
+    return MongoEntityRepository as Constructor<EntityRepository<T>>;
   }
 
+  /** @inheritDoc */
+  lookupExtensions(orm: MikroORM): void {
+    MongoSchemaGenerator.register(orm);
+  }
+
+  // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
   getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): MongoSchemaGenerator {
     return new MongoSchemaGenerator(em ?? driver as any);
+  }
+
+  // TODO remove in v6 (https://github.com/mikro-orm/mikro-orm/issues/3743)
+  getMigrator(em: EntityManager) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { Migrator } = require('@mikro-orm/migrations-mongodb');
+    return this.config.getCachedService(Migrator, em);
   }
 
   normalizePrimaryKey<T extends number | string = number | string>(data: Primary<T> | IPrimaryKey | ObjectId): T {
@@ -77,6 +95,10 @@ export class MongoPlatform extends Platform {
     if (pk && pk.fieldNames?.[0] !== '_id') {
       throw MetadataError.invalidPrimaryKey(meta, pk, '_id');
     }
+  }
+
+  isAllowedTopLevelOperator(operator: string) {
+    return ['$not', '$fulltext'].includes(operator);
   }
 
 }

@@ -2,7 +2,6 @@ export * from './EntityRepository';
 export * from './EntityIdentifier';
 export * from './EntityValidator';
 export * from './EntityAssigner';
-export * from './EntityTransformer';
 export * from './EntityHelper';
 export * from './EntityFactory';
 export * from './ArrayCollection';

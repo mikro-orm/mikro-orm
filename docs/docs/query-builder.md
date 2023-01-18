@@ -96,17 +96,17 @@ console.log(res2.map(p => p.name));
 
 const res3 = await em.qb(Publisher).count().where({ name: 'p1' });
 // res3 is number
-console.log(res3 > 0);
+console.log(res3 > 0); // true
 
 const res4 = await em.qb(Publisher)
   .update({ type: PublisherType.LOCAL })
   .where({ name: 'p1' });
 // res4 is QueryResult<Publisher>
-console.log(res4.affectedRows > 0);
+console.log(res4.affectedRows > 0); // true
 
 const res5 = await em.qb(Publisher).delete().where({ name: 'p1' });
-// res4 is QueryResult<Publisher>
-console.log(res4.affectedRows > 0);
+// res5 is QueryResult<Publisher>
+console.log(res5.affectedRows > 0); // true
 expect(res5.affectedRows > 0).toBe(true); // test the type
 ```
 
@@ -218,7 +218,7 @@ This will produce following query:
 select `e0`.* 
 from `user` as `e0`
 where lower(email) = 'foo@bar.baz'
-order by (point(loc_latitude, loclongitude) <@> point(0, 0)) asc
+order by (point(loc_latitude, loc_longitude) <@> point(0, 0)) asc
 ```
 
 ### Custom SQL in where
@@ -271,7 +271,7 @@ console.log(qb.getQuery());
 
 ## Count queries
 
-To create a count query, we can ue `qb.count()`, which will intialize a select clause with `count()` function. By default, it will use the primary key.
+To create a count query, we can ue `qb.count()`, which will initialize a select clause with `count()` function. By default, it will use the primary key.
 
 ```ts
 const qb = em.createQueryBuilder(Test);
@@ -295,6 +295,55 @@ const count = await qb.getCount();
 ```
 
 This will also remove any existing limit and offset from the query (the QB will be cloned under the hood, so calling `getCount()` does not mutate the original QB state).
+
+## Pagination
+
+If we want to paginate the results of a QueryBuilder, we can use `qb.getResultAndCount()` method. It returns an ordered tuple, the first item being an array of results, and the second one being the total count of items, discarding the limit and offset clause.
+
+```ts
+const qb = em.createQueryBuilder(User);
+qb.select('*')
+  .where({ age: 18 })
+  .limit(10);
+const [results, count] = await qb.getResultAndCount();
+
+console.log(results.length); // max 10, as we used the limit clause
+console.log(count); // total count regardless limit and offset, e.g. 1327
+```
+
+## Overriding FROM clause
+
+You can specify the table used in the `FROM` clause, replacing the current table name if one has already been specified. This is typically used to specify a sub-query expression in SQL. 
+
+```ts
+const qb = em.createQueryBuilder(Book2);
+qb.select('*').from(Author2).where({ id: { $gt: 2 } });
+
+console.log(qb.getQuery());
+// select `e0`.* from `author2` as `e0` where `e0`.`id` > 2;
+```
+
+You can also use sub-queries in the `FROM` like this:
+
+```ts
+const qb1 = em.createQueryBuilder(Book2).where({ id: { $lte: new Date() } }).orderBy({ id: 'DESC' }).limit(10);
+const qb2 = em.createQueryBuilder(qb1.clone())
+qb2.select('*').orderBy({ id: 'ASC' });
+
+console.log(qb2.getQuery());
+// select `e1`.* from (select `e0`.* from `book2` as `e0` where `e0`.`id` <= ? order by `e0`.`id` desc limit ?) as `e1` order by `e1`.`id`;
+```
+
+To set up an alias to refer to a table in a `SELECT` statement, pass the second argument as follows:
+
+```ts
+const qb1 = em.createQueryBuilder(Book2, 'b1').where({ id: { $lte: new Date() } }).orderBy({ id: 'DESC' }).limit(10);
+const qb2 = em.createQueryBuilder(qb1.clone(), 'b2')
+qb2.select('*').orderBy({ id: 'ASC' });
+
+console.log(qb2.getQuery());
+// select `b2`.* from (select `b1`.* from `book2` as `b1` where `b1`.`id` <= ? order by `b1`.`id` desc limit ?) as `b2` order by `b2`.`id`;
+```
 
 ## Using sub-queries
 

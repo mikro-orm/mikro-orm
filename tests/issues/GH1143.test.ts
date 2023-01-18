@@ -1,5 +1,5 @@
 import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity({
   tableName: 'test.DEVICES',
@@ -16,16 +16,16 @@ export class Device {
 
 describe('GH issue 1143', () => {
 
-  let orm: MikroORM<SqliteDriver>;
+  let orm: MikroORM<PostgreSqlDriver>;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Device],
       dbName: `mikro_orm_test_gh_1143`,
-      type: 'postgresql',
+      driver: PostgreSqlDriver,
     });
 
-    const generator = orm.getSchemaGenerator();
+    const generator = orm.schema;
     await generator.ensureDatabase();
     await generator.dropSchema();
     await generator.execute(`drop schema if exists "test" cascade`);
@@ -37,7 +37,7 @@ describe('GH issue 1143', () => {
   });
 
   it('diffing schema with custom schema name', async () => {
-    const generator = orm.getSchemaGenerator();
+    const generator = orm.schema;
     const sql = await generator.getUpdateSchemaSQL({ wrap: false });
     expect(sql).toBe('');
   });

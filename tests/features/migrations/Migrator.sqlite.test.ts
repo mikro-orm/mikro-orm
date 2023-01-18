@@ -2,8 +2,8 @@
 import { Umzug } from 'umzug';
 import { MetadataStorage, MikroORM } from '@mikro-orm/core';
 import { Migration, MigrationStorage, Migrator } from '@mikro-orm/migrations';
-import type { DatabaseTable, SqliteDriver } from '@mikro-orm/sqlite';
-import { DatabaseSchema } from '@mikro-orm/sqlite';
+import type { DatabaseTable } from '@mikro-orm/sqlite';
+import { DatabaseSchema, SqliteDriver } from '@mikro-orm/sqlite';
 import { remove } from 'fs-extra';
 import { initORMSqlite2, mockLogger, TEMP_DIR } from '../../bootstrap';
 import { BaseEntity5, FooBar4, FooBaz4 } from '../../entities-schema';
@@ -48,7 +48,7 @@ describe('Migrator (sqlite)', () => {
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
     orm.config.set('migrations', { ...migrationsSettings, emit: 'js' }); // Set migration type to js
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-js-dump');
     orm.config.set('migrations', migrationsSettings); // Revert migration config changes
@@ -60,7 +60,7 @@ describe('Migrator (sqlite)', () => {
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
     const migrationsSettings = orm.config.get('migrations');
     orm.config.set('migrations', { ...migrationsSettings, fileName: time => `migration-${time}` });
-    const migrator = orm.getMigrator();
+    const migrator = orm.migrator;
     const migration = await migrator.createMigration();
     expect(migration).toMatchSnapshot('migration-dump');
     const upMock = jest.spyOn(Umzug.prototype, 'up');
@@ -306,12 +306,12 @@ describe('Migrator (sqlite)', () => {
 
   test('snapshots with absolute path to database', async () => {
     const orm = await MikroORM.init({
-      type: 'sqlite',
+      driver: SqliteDriver,
       entities: [FooBar4, FooBaz4, BaseEntity5],
       dbName: TEMP_DIR + '/test.db',
       baseDir: TEMP_DIR,
     });
-    await expect(orm.getMigrator().createMigration()).resolves.not.toThrow();
+    await expect(orm.migrator.createMigration()).resolves.not.toThrow();
     await orm.close();
   });
 

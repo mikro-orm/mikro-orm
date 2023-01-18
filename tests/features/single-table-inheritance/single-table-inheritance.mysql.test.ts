@@ -1,15 +1,16 @@
 import type { Dictionary } from '@mikro-orm/core';
 import { Entity, MetadataDiscovery, MetadataStorage, MikroORM, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
-import type { MySqlDriver } from '@mikro-orm/mysql';
+import { MySqlDriver } from '@mikro-orm/mysql';
 import { BaseUser2, CompanyOwner2, Employee2, Manager2, Type } from '../../entities-sql';
 import { initORMMySql, mockLogger } from '../../bootstrap';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 describe('single table inheritance in mysql', () => {
 
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
 
   async function createEntities() {
     const employee1 = new Employee2('Emp', '1');
@@ -231,10 +232,10 @@ describe('single table inheritance in mysql', () => {
 
     const orm = await MikroORM.init({
       entities: [Person, Employee],
-      type: 'sqlite',
+      driver: SqliteDriver,
       dbName: ':memory:',
     });
-    const sql = await orm.getSchemaGenerator().getCreateSchemaSQL({ wrap: false });
+    const sql = await orm.schema.getCreateSchemaSQL({ wrap: false });
     expect(sql).toMatchSnapshot();
     await orm.close(true);
   });

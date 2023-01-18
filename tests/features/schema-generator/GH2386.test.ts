@@ -1,5 +1,5 @@
-import { Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
-import type { MySqlDriver } from '@mikro-orm/mysql';
+import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/mysql';
 
 @Entity({ tableName: 'book' })
 export class Book1 {
@@ -45,34 +45,33 @@ export class Book3 {
 
 describe('changing column in mysql (GH 2386)', () => {
 
-  let orm: MikroORM<MySqlDriver>;
+  let orm: MikroORM;
 
   beforeAll(async () => {
     orm = await MikroORM.init({
       entities: [Book1],
       dbName: `mikro_orm_test_gh_2386`,
-      type: 'mysql',
       port: 3308,
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(() => orm.close(true));
 
   test('schema generator respect indexes on FKs on column update', async () => {
-    const diff0 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    const diff0 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff0).toBe('');
     await orm.discoverEntity(Book2);
     orm.getMetadata().reset('Book1');
-    const diff1 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    const diff1 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff1).toBe('alter table `book` modify `updated_at` timestamp not null default current_timestamp;\n\n');
-    await orm.getSchemaGenerator().execute(diff1);
+    await orm.schema.execute(diff1);
 
     await orm.discoverEntity(Book3);
     orm.getMetadata().reset('Book2');
-    const diff3 = await orm.getSchemaGenerator().getUpdateSchemaSQL({ wrap: false });
+    const diff3 = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff3).toBe('alter table `book` modify `updated_at` timestamp not null default current_timestamp on update current_timestamp;\n\n');
-    await orm.getSchemaGenerator().execute(diff3);
+    await orm.schema.execute(diff3);
   });
 
 });

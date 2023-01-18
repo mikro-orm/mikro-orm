@@ -1,5 +1,5 @@
 import { MikroORM, Entity, PrimaryKey, PrimaryKeyType, Unique, Collection, ManyToOne, OneToMany, Property, Filter, LoadStrategy, OptionalProps } from '@mikro-orm/core';
-import type { SqliteDriver } from '@mikro-orm/sqlite';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity({ tableName: 'users' })
 export class UserEntity {
@@ -14,7 +14,6 @@ export class UserEntity {
   @Property({ type: 'string' })
   email!: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => UserTenantEntity, item => item.user)
   items = new Collection<UserTenantEntity>(this);
 
@@ -38,7 +37,6 @@ export class TenantEntity {
   @Property({ type: 'boolean', fieldName: 'isEnabled' })
   isEnabled: boolean = true;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToMany(() => UserTenantEntity, item => item.tenant)
   items = new Collection<UserTenantEntity>(this);
 
@@ -71,9 +69,9 @@ describe('GH issue 1902', () => {
     orm = await MikroORM.init({
       entities: [UserEntity, TenantEntity, UserTenantEntity],
       dbName: ':memory:',
-      type: 'sqlite',
+      driver: SqliteDriver,
     });
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {

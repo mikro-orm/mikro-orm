@@ -1,11 +1,11 @@
-import { wrap } from '@mikro-orm/core';
-import type { IdentifiedReference, Reference, Collection, EntityManager, EntityName } from '@mikro-orm/core';
+import { OptionalProps, Ref, wrap } from '@mikro-orm/core';
+import type { BaseEntity, IdentifiedReference, Reference, Collection, EntityManager, EntityName, RequiredEntityData } from '@mikro-orm/core';
 import type { Has, IsExact } from 'conditional-type-checks';
 import { assert } from 'conditional-type-checks';
 import type { ObjectId } from 'bson';
 import type { EntityData, EntityDTO, FilterQuery, FilterValue, Loaded, OperatorMap, Primary, PrimaryKeyType, Query } from '../packages/core/src/typings';
 import type { Author2, Book2, BookTag2, Car2, FooBar2, FooParam2, Publisher2, User2 } from './entities-sql';
-import type { Author } from './entities';
+import type { Author, Book } from './entities';
 
 type IsAssignable<T, Expected> = Expected extends T ? true : false;
 
@@ -15,6 +15,7 @@ describe('check typings', () => {
     assert<IsExact<Primary<Book2>, string>>(true);
     assert<IsExact<Primary<Book2>, number>>(false);
     assert<IsExact<Primary<Author2>, number>>(true);
+    assert<IsExact<Primary<{ id?: number }>, number>>(true);
     assert<IsExact<Primary<Author2>, string>>(false);
 
     // PrimaryKeyType symbol has priority
@@ -76,7 +77,7 @@ describe('check typings', () => {
   });
 
   test('EntityDTO', async () => {
-    const b = { author: { books: [{}], identities: [''] } } as EntityDTO<Book2>;
+    const b = { author: { books: [{}], identities: [''] } } as unknown as EntityDTO<Loaded<Book2, 'publisher'>>;
     const b1 = b.author.name;
     const b2 = b.test?.name;
     const b3 = b.test?.book?.author.books2;
@@ -97,7 +98,7 @@ describe('check typings', () => {
     // @ts-expect-error
     b.test?.getConfiguration?.();
 
-    const a = { books: [{ tags: [{}] }] } as EntityDTO<Loaded<Author2, 'books.tags' | 'books.publisher'>>;
+    const a = { books: [{ tags: [{}] }] } as unknown as EntityDTO<Loaded<Author2, 'books.tags' | 'books.publisher'>>;
     const a11 = a.books;
     const a12 = a.books[0];
     const a1 = a.books[0].tags;
@@ -291,6 +292,38 @@ describe('check typings', () => {
     const baz = compositeRef.baz;
   });
 
+  test('ObjectQuery with readonly properties (#3836)', async () => {
+    interface Publisher {
+      readonly id: string;
+      readonly name: string;
+    }
+    interface User {
+      readonly id: number;
+      readonly name: string;
+      readonly age?: number;
+      readonly born?: Date;
+      readonly rel?: Publisher;
+      readonly relRef?: Reference<Publisher>;
+      readonly relIdRef?: IdentifiedReference<Publisher, 'id'>;
+      readonly rels?: Collection<Publisher>;
+    }
+
+    let ok01: FilterQuery<User>;
+    ok01 = {};
+    ok01 = { name: 'foo' };
+    ok01 = { born: { $gte: new Date() } };
+    ok01 = { age: { $gte: 1 } };
+    ok01 = { age: 1 };
+    ok01 = { rel: 'abc' };
+    ok01 = { rel: ['abc'] };
+    ok01 = { relRef: 'abc' };
+    ok01 = { relRef: ['abc'] };
+    ok01 = { relIdRef: 'abc' };
+    ok01 = { relIdRef: ['abc'] };
+    ok01 = { rels: 'abc' };
+    ok01 = { rels: ['abc'] };
+  });
+
   test('AutoPath with optional nullable properties', async () => {
     interface MessageRecipient {
       id: string;
@@ -321,12 +354,36 @@ describe('check typings', () => {
     });
   });
 
-  test('FilterQueryOrPrimary ok assignments', async () => {
+  test('RequiredEntityData requires required properties, and allows null only if explicitly used in the property type', async () => {
+    interface User {
+      id: number;
+      email: string;
+      foo?: string;
+      bar: string | null;
+    }
+
+    let email: RequiredEntityData<User>['email'];
+    email = '';
+    // @ts-expect-error should not allow `null` on required props
+    email = null;
+
+    let foo: RequiredEntityData<User>['foo'];
+    foo = '';
+    // @ts-expect-error should not allow `null` on required props
+    foo = null;
+
+    let bar: RequiredEntityData<User>['bar'];
+    bar = '';
+    bar = null;
+  });
+
+  test('FilterQuery ok assignments', async () => {
     let ok01: FilterQuery<Author2>;
     ok01 = {};
     ok01 = { born: new Date() };
     ok01 = { born: { $gte: new Date() } };
     ok01 = { age: { $gte: 1 } };
+    ok01 = { age: 1 };
     ok01 = { favouriteBook: '1' };
     ok01 = { favouriteBook: ['1', '2'] };
     ok01 = { favouriteBook: null };
@@ -373,7 +430,7 @@ describe('check typings', () => {
     ok07.$or = [{ name: '231' }];
   });
 
-  test('FilterQueryOrPrimary bad assignments', async () => {
+  test('FilterQuery bad assignments', async () => {
     let fail01: FilterQuery<Author2>;
     // @ts-expect-error
     fail01 = { born: 123 };
@@ -409,6 +466,100 @@ describe('check typings', () => {
     fail02 = { author: { born: [123] } };
     // @ts-expect-error
     fail02 = { author: { born: { $in: [123] } } };
+  });
+
+  test('Loaded<T> type is assignable to T', async () => {
+    let b1 = {} as Book2;
+    b1 = {} as Loaded<Book2>;
+    let b2 = {} as Book2;
+    b2 = {} as Loaded<Book2, 'publisher'>;
+
+    function test<T>() {
+      let b3 = {} as T;
+      b3 = {} as Loaded<T, 'publisher'>;
+    }
+  });
+
+  function createEntity<T>(): T {
+    const ret = {} as any;
+    ret.__helper = ret;
+    ret.toObject = () => ({});
+
+    return ret;
+  }
+
+  test('Loaded type with EntityDTO (no base entities)', async () => {
+    const b1 = createEntity<Loaded<Book2>>();
+    const o1 = wrap(b1).toObject();
+    // @ts-expect-error o1.publisher is now just number, as it's not populated
+    const id1 = o1.publisher?.id;
+    const b2 = createEntity<Loaded<Book2, 'publisher'>>();
+    const o2 = wrap(b2).toObject();
+    const id2 = o2.publisher?.id;
+    // @ts-expect-error Book2 should not have methods from base entity
+    const o22 = b2.toObject();
+  });
+
+  test('Loaded type with EntityDTO (with ORM base entities)', async () => {
+    const b1 = createEntity<Loaded<Book>>();
+    const o11 = wrap(b1).toObject();
+    const o12 = b1.toObject();
+    // @ts-expect-error o11.publisher is now just number, as it's not populated
+    const id11 = o11.publisher?.id;
+    // @ts-expect-error o12.publisher is now just number, as it's not populated
+    const id12 = o12.publisher?.id;
+    const b2 = createEntity<Loaded<Book, 'publisher'>>();
+    const o21 = wrap(b2).toObject();
+    const o22 = b2.toObject();
+    const id21 = o21.publisher?.id;
+    const id22 = o22.publisher?.id;
+    assert<IsExact<typeof id21, string | undefined>>(true);
+    assert<IsExact<typeof id22, string | undefined>>(true);
+  });
+
+  test('Loaded type and assignability with extending the ORM BaseEntity (#3865)', async () => {
+    interface MemberNotification extends BaseEntity<MemberNotification, 'id'> {
+      id: string;
+      notification?: Ref<Notification>;
+    }
+
+    interface Notification extends BaseEntity<Notification, 'id'> {
+      id: string;
+    }
+
+    const test: MemberNotification = {} as Loaded<MemberNotification, 'notification'>;
+  });
+
+  test('inference of entity type', async () => {
+    interface MemberNotification {
+      id: string;
+      notification?: Ref<Notification>;
+    }
+
+    interface Notification {
+      id: string;
+    }
+
+    const em = { findOne: jest.fn() as any } as EntityManager;
+    const res: Loaded<MemberNotification> | null = await em.findOne('MemberNotification' as EntityName<MemberNotification>, {} as MemberNotification | string);
+  });
+
+  test('exclusion', async () => {
+    interface Notification {
+      id: string;
+      readonly foo: number;
+      getBar(): string;
+      get bar(): string;
+      [OptionalProps]?: 'bar';
+    }
+
+    let q: FilterQuery<Notification>;
+    q = { foo: 123 };
+    q = { bar: '' }; // getter is still a property, only functions and symbols are excluded
+    // @ts-expect-error
+    q = { getBar: () => '' };
+    // @ts-expect-error
+    q = { [OptionalProps]: 'bar' };
   });
 
 });

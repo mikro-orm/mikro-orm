@@ -1,4 +1,5 @@
-import { Entity, Index, ManyToOne, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, Index, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/mariadb';
 
 @Entity()
 export class UserAction {
@@ -50,19 +51,18 @@ describe('complex FKs in mariadb (GH 2844)', () => {
     orm = await MikroORM.init({
       entities: [Component, Step, UserAction],
       dbName: `mikro_orm_test_gh_2844`,
-      type: 'mariadb',
       port: 3309,
     });
-    await orm.getSchemaGenerator().ensureDatabase();
-    await orm.getSchemaGenerator().dropSchema();
+    await orm.schema.ensureDatabase();
+    await orm.schema.dropSchema();
   });
 
   afterAll(() => orm.close(true));
 
   test('schema generator adds the m:1 columns and FK properly', async () => {
-    const sql = await orm.getSchemaGenerator().getCreateSchemaSQL();
+    const sql = await orm.schema.getCreateSchemaSQL();
     expect(sql).toMatchSnapshot();
-    await orm.getSchemaGenerator().execute(sql);
+    await orm.schema.execute(sql);
   });
 
 });

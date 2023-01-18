@@ -1,4 +1,5 @@
 import { Entity, LoadStrategy, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Checkout {
@@ -6,7 +7,6 @@ export class Checkout {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToOne(() => Discount, discount => discount.checkout, {
     nullable: true,
   })
@@ -41,7 +41,6 @@ export class Checkout2 {
   @PrimaryKey()
   id!: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   @OneToOne(() => Discount2, discount => discount.checkout, {
     nullable: true,
     orphanRemoval: true,
@@ -73,15 +72,15 @@ describe('Remove entity issue (GH 2273)', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      type: 'sqlite',
+      driver: SqliteDriver,
       dbName: ':memory:',
       entities: [Discount, Checkout, Discount2, Checkout2],
     });
   });
 
   beforeEach(async () => {
-    await orm.getSchemaGenerator().dropSchema();
-    await orm.getSchemaGenerator().createSchema();
+    await orm.schema.dropSchema();
+    await orm.schema.createSchema();
     orm.em.clear();
   });
 

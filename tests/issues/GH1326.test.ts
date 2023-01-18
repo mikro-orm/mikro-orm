@@ -1,4 +1,5 @@
-import { Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { Collection, Entity, IdentifiedReference, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/mysql';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -52,12 +53,11 @@ describe('GH issue 1326', () => {
 
   beforeAll(async () => {
     orm = await MikroORM.init({
-      type: 'mysql',
       dbName: `mikro_orm_test_gh_1326`,
       port: 3308,
       entities: [Driver, License, LicenseType],
     });
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(async () => {
@@ -81,7 +81,7 @@ describe('GH issue 1326', () => {
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into `license_type` (`name`) values (?)');
     expect(mock.mock.calls[2][0]).toMatch('insert into `driver` (`name`) values (?)');
-    expect(mock.mock.calls[3][0]).toMatch('insert into `license` (`driver_id`, `expires_at`, `license_type_id`) values (?, ?, ?)');
+    expect(mock.mock.calls[3][0]).toMatch('insert into `license` (`expires_at`, `driver_id`, `license_type_id`) values (?, ?, ?)');
     expect(mock.mock.calls[4][0]).toMatch('commit');
     expect(newDriver.id).toBeDefined();
     expect(newDriver.licenses[0].id).toBeDefined();
@@ -106,7 +106,7 @@ describe('GH issue 1326', () => {
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into `license_type` (`name`) values (?)');
     expect(mock.mock.calls[2][0]).toMatch('insert into `driver` (`name`) values (?)');
-    expect(mock.mock.calls[3][0]).toMatch('insert into `license` (`driver_id`, `expires_at`, `license_type_id`) values (?, ?, ?)');
+    expect(mock.mock.calls[3][0]).toMatch('insert into `license` (`expires_at`, `driver_id`, `license_type_id`) values (?, ?, ?)');
     expect(mock.mock.calls[4][0]).toMatch('commit');
     expect(newDriver.id).toBeDefined();
     expect(newDriver.licenses[0].id).toBeDefined();

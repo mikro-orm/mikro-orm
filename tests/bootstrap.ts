@@ -1,25 +1,27 @@
 import 'reflect-metadata';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import type { Options } from '@mikro-orm/core';
-import { JavaScriptMetadataProvider, LoadStrategy, MikroORM, Utils } from '@mikro-orm/core';
+import { JavaScriptMetadataProvider, LoadStrategy, MikroORM, ReflectMetadataProvider, Utils } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/knex';
 import { SqlEntityRepository } from '@mikro-orm/knex';
 import { SqliteDriver } from '@mikro-orm/sqlite';
-import type { MongoDriver } from '@mikro-orm/mongodb';
-import type { MySqlDriver } from '@mikro-orm/mysql';
-import type { MariaDbDriver } from '@mikro-orm/mariadb';
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { MongoDriver } from '@mikro-orm/mongodb';
+import { MySqlDriver } from '@mikro-orm/mysql';
+import { MariaDbDriver } from '@mikro-orm/mariadb';
+import { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
 
 import {
   Author2, Book2, BookTag2, FooBar2, FooBaz2, Publisher2, Test2, Label2, Configuration2, Address2, FooParam2,
 } from './entities-sql';
 import FooBar from './entities/FooBar';
-import { Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5 } from './entities-schema';
+import { Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5, IdentitySchema } from './entities-schema';
 import { Author2Subscriber } from './subscribers/Author2Subscriber';
 import { Test2Subscriber } from './subscribers/Test2Subscriber';
 import { EverythingSubscriber } from './subscribers/EverythingSubscriber';
 import { FlushSubscriber } from './subscribers/FlushSubscriber';
 import { BASE_DIR } from './helpers';
+import { Book5 } from './entities-5';
 
 const { BaseEntity4, Author3, Book3, BookTag3, Publisher3, Test3 } = require('./entities-js/index');
 
@@ -55,19 +57,19 @@ export async function initORMMongo(replicaSet = false) {
     ? await initMongoReplSet('mikro-orm-test')
     : 'mongodb://localhost:27017/mikro-orm-test';
 
-  const orm = await MikroORM.init<MongoDriver>({
+  const orm = await MikroORM.init({
     entities: ['entities'],
     tsNode: false,
     clientUrl,
     baseDir: BASE_DIR,
-    debug: true,
     logger: i => i,
-    type: 'mongo',
+    driver: MongoDriver,
     ensureIndexes,
     implicitTransactions: replicaSet,
     validate: true,
     filters: { allowedFooBars: { cond: args => ({ id: { $in: args.allowed } }), entity: ['FooBar'], default: false } },
     pool: { min: 1, max: 3 },
+    migrations: { path: BASE_DIR + '/../temp/migrations-mongo' },
   });
 
   ensureIndexes = false;
@@ -89,22 +91,19 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
     multipleStatements: true,
     populateAfterFlush: false,
     entityRepository: SqlEntityRepository,
-    type,
+    driver: type === 'mysql' ? MySqlDriver : MariaDbDriver,
     replicas: [{ name: 'read-1' }, { name: 'read-2' }], // create two read replicas with same configuration, just for testing purposes
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
   }, additionalOptions));
 
-  const schemaGenerator = orm.getSchemaGenerator();
-  await schemaGenerator.ensureDatabase();
-  await schemaGenerator.dropSchema();
+  await orm.schema.ensureDatabase();
   const connection = orm.em.getConnection();
   await connection.loadFile(__dirname + '/mysql-schema.sql');
 
   if (!simple) {
     orm.config.set('dbName', 'mikro_orm_test_schema_2');
-    await schemaGenerator.ensureDatabase();
-    await orm.em.getDriver().reconnect();
-    await schemaGenerator.dropSchema();
+    await orm.schema.ensureDatabase();
+    await orm.reconnect();
     await connection.loadFile(__dirname + '/mysql-schema.sql');
     await orm.close(true);
     orm.config.set('dbName', 'mikro_orm_test');
@@ -120,11 +119,11 @@ export async function initORMMySql<D extends MySqlDriver | MariaDbDriver = MySql
 }
 
 export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, entities: any[] = []) {
-  const orm = await MikroORM.init<PostgreSqlDriver>({
+  const orm = await MikroORM.init({
     entities: [Author2, Address2, Book2, BookTag2, Publisher2, Test2, FooBar2, FooBaz2, FooParam2, Label2, Configuration2, ...entities],
     dbName: `mikro_orm_test`,
     baseDir: BASE_DIR,
-    type: 'postgresql',
+    driver: PostgreSqlDriver,
     debug: ['query', 'query-params'],
     forceUtcTimezone: true,
     autoJoinOneToOneOwner: false,
@@ -135,8 +134,7 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, e
     loadStrategy,
   });
 
-  const schemaGenerator = orm.getSchemaGenerator();
-  await schemaGenerator.ensureDatabase();
+  await orm.schema.ensureDatabase();
   const connection = orm.em.getConnection();
   await connection.loadFile(__dirname + '/postgre-schema.sql');
   Author2Subscriber.log.length = 0;
@@ -158,6 +156,7 @@ export async function initORMSqlite() {
     logger: i => i,
     metadataProvider: JavaScriptMetadataProvider,
     cache: { enabled: true, pretty: true },
+    persistOnCreate: false,
   });
 
   const connection = orm.em.getConnection();
@@ -167,22 +166,38 @@ export async function initORMSqlite() {
 }
 
 export async function initORMSqlite2(type: 'sqlite' | 'better-sqlite' = 'sqlite') {
-  const orm = await MikroORM.init<SqliteDriver>({
-    entities: [Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5],
+  const orm = await MikroORM.init<any>({
+    entities: [Author4, Book4, BookTag4, Publisher4, Test4, FooBar4, FooBaz4, BaseEntity5, IdentitySchema],
     dbName: ':memory:',
     baseDir: BASE_DIR,
-    type,
+    driver: type === 'sqlite' ? SqliteDriver : BetterSqliteDriver,
     debug: ['query'],
     propagateToOneOwner: false,
     forceUndefined: true,
-    persistOnCreate: true,
     logger: i => i,
     cache: { pretty: true },
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
   });
-  const schemaGenerator = orm.getSchemaGenerator();
-  await schemaGenerator.dropSchema();
-  await schemaGenerator.createSchema();
+  await orm.schema.refreshDatabase();
+
+  return orm;
+}
+
+export async function initORMSqlite3() {
+  const orm = await MikroORM.init<SqliteDriver>({
+    entities: [Book5],
+    dbName: ':memory:',
+    baseDir: BASE_DIR,
+    driver: SqliteDriver,
+    debug: ['query'],
+    forceUtcTimezone: true,
+    logger: i => i,
+    metadataProvider: ReflectMetadataProvider,
+    cache: { enabled: true, pretty: true },
+  });
+
+  const connection = orm.em.getConnection();
+  await connection.loadFile(__dirname + '/sqlite-schema-virtual.sql');
 
   return orm;
 }

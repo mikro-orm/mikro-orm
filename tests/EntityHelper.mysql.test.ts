@@ -1,6 +1,6 @@
 import type { MikroORM } from '@mikro-orm/core';
 import { wrap } from '@mikro-orm/core';
-import type { MySqlDriver } from '@mikro-orm/mysql';
+import { MySqlDriver } from '@mikro-orm/mysql';
 import { initORMMySql } from './bootstrap';
 import { FooBar2, FooBaz2 } from './entities-sql';
 
@@ -9,7 +9,7 @@ describe('EntityHelperMySql', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
 
   test(`toObject allows to hide PK (GH issue 644)`, async () => {
     const bar = FooBar2.create('fb');

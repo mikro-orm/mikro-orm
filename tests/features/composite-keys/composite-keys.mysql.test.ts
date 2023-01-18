@@ -1,7 +1,6 @@
 import type { MikroORM, ValidationError } from '@mikro-orm/core';
 import { LoadStrategy, wrap } from '@mikro-orm/core';
-import type { MySqlDriver } from '@mikro-orm/mysql';
-import { AbstractSqlConnection } from '@mikro-orm/mysql';
+import { AbstractSqlConnection, MySqlDriver } from '@mikro-orm/mysql';
 import { Author2, Configuration2, FooBar2, FooBaz2, FooParam2, Test2, Address2, Car2, CarOwner2, User2, Sandwich } from '../../entities-sql';
 import { initORMMySql, mockLogger } from '../../bootstrap';
 
@@ -10,7 +9,7 @@ describe('composite keys in mysql', () => {
   let orm: MikroORM<MySqlDriver>;
 
   beforeAll(async () => orm = await initORMMySql('mysql', {}, true));
-  beforeEach(async () => orm.getSchemaGenerator().clearDatabase());
+  beforeEach(async () => orm.schema.clearDatabase());
 
   test('dynamic attributes', async () => {
     const test = Test2.create('t');
@@ -219,7 +218,6 @@ describe('composite keys in mysql', () => {
     const o3 = await orm.em.findOne(User2, u1);
     expect(o3).toBeNull();
     const c2 = await orm.em.findOneOrFail(Car2, car1);
-    expect(c2).toBe(u2.cars[0]);
     await orm.em.remove(c2).flush();
     const c3 = await orm.em.findOne(Car2, car1);
     expect(c3).toBeNull();
@@ -268,7 +266,6 @@ describe('composite keys in mysql', () => {
     const o3 = await orm.em.findOne(User2, u1);
     expect(o3).toBeNull();
     const c2 = await orm.em.findOneOrFail(Sandwich, sandwich1, { populate: ['users'] });
-    expect(c2).toBe(u2.sandwiches[0]);
     await orm.em.remove(c2).flush();
     const c3 = await orm.em.findOne(Sandwich, sandwich1);
     expect(c3).toBeNull();
@@ -358,7 +355,7 @@ describe('composite keys in mysql', () => {
     const mock = mockLogger(orm);
     await orm.em.flush();
     expect(mock).toBeCalledTimes(3);
-    expect(mock.mock.calls[1][0]).toMatch("update `car2` set `year` = 2015 where `name` = 'Audi A8' and `year` = 2010");
+    expect(mock.mock.calls[1][0]).toMatch("update `car2` set `year` = 2015 where (`name`, `year`) in (('Audi A8', 2010))");
 
     const c = await orm.em.fork().findOne(Car2, car);
     expect(c).toBeDefined();

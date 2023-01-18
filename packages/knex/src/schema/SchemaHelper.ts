@@ -3,8 +3,9 @@ import type { Connection, Dictionary } from '@mikro-orm/core';
 import { BigIntType, EnumType, Utils } from '@mikro-orm/core';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
-import type { Check, Column, Index, TableDifference } from '../typings';
+import type { Check, Column, Index, Table, TableDifference } from '../typings';
 import type { DatabaseTable } from './DatabaseTable';
+import type { DatabaseSchema } from './DatabaseSchema';
 
 export abstract class SchemaHelper {
 
@@ -34,9 +35,9 @@ export abstract class SchemaHelper {
     return true;
   }
 
-  async getPrimaryKeys(connection: AbstractSqlConnection, indexes: Index[], tableName: string, schemaName?: string): Promise<string[]> {
-    const pk = indexes.find(i => i.primary);
-    return pk ? pk.columnNames : [];
+  async getPrimaryKeys(connection: AbstractSqlConnection, indexes: Index[] = [], tableName: string, schemaName?: string): Promise<string[]> {
+    const pks = indexes.filter(i => i.primary).map(pk => pk.columnNames);
+    return Utils.flatten(pks);
   }
 
   async getForeignKeys(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Dictionary> {
@@ -44,20 +45,52 @@ export abstract class SchemaHelper {
     return this.mapForeignKeys(fks, tableName, schemaName);
   }
 
+  protected getTableKey(t: Table) {
+    const unquote = (str: string) => str.replace(/['"`]/g, '');
+    const parts = t.table_name.split('.');
+
+    if (parts.length > 1) {
+      return `${unquote(parts[0])}.${unquote(parts[1])}`;
+    }
+
+    if (t.schema_name) {
+      return `${unquote(t.schema_name)}.${unquote(t.table_name)}`;
+    }
+
+    return unquote(t.table_name);
+  }
+
   async getEnumDefinitions(connection: AbstractSqlConnection, checks: Check[], tableName: string, schemaName?: string): Promise<Dictionary<string[]>> {
     return {};
+  }
+
+  async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[]): Promise<void> {
+    for (const t of tables) {
+      const table = schema.addTable(t.table_name, t.schema_name);
+      table.comment = t.table_comment;
+      const cols = await this.getColumns(connection, table.name, table.schema);
+      const indexes = await this.getIndexes(connection, table.name, table.schema);
+      const checks = await this.getChecks(connection, table.name, table.schema, cols);
+      const pks = await this.getPrimaryKeys(connection, indexes, table.name, table.schema);
+      const fks = await this.getForeignKeys(connection, table.name, table.schema);
+      const enums = await this.getEnumDefinitions(connection, checks, table.name, table.schema);
+      table.init(cols, indexes, checks, pks, fks, enums);
+    }
   }
 
   getListTablesSQL(schemaName?: string): string {
     throw new Error('Not supported by given driver');
   }
 
-  getRenameColumnSQL(tableName: string, oldColumnName: string, to: Column): string {
+  getRenameColumnSQL(tableName: string, oldColumnName: string, to: Column, schemaName?: string): string {
     tableName = this.platform.quoteIdentifier(tableName);
     oldColumnName = this.platform.quoteIdentifier(oldColumnName);
     const columnName = this.platform.quoteIdentifier(to.name);
 
-    return `alter table ${tableName} rename column ${oldColumnName} to ${columnName}`;
+    const schemaReference = (schemaName !== undefined && schemaName !== 'public') ? ('"' + schemaName + '".') : '';
+    const tableReference = schemaReference + tableName;
+
+    return `alter table ${tableReference} rename column ${oldColumnName} to ${columnName}`;
   }
 
   getCreateIndexSQL(tableName: string, index: Index): string {

@@ -1,5 +1,5 @@
 import { Entity, LoadStrategy, ManyToOne, MikroORM, PrimaryKey, Property, t, Type } from '@mikro-orm/core';
-import type { MySqlDriver } from '@mikro-orm/mysql';
+import { MySqlDriver } from '@mikro-orm/mysql';
 import { mockLogger } from '../../helpers';
 
 export class Point {
@@ -85,11 +85,11 @@ describe('custom types [mysql]', () => {
     orm = await MikroORM.init<MySqlDriver>({
       entities: [Location, Address],
       dbName: `mikro_orm_test_custom_types`,
-      type: 'mysql',
+      driver: MySqlDriver,
       port: 3308,
     });
 
-    await orm.getSchemaGenerator().refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
   beforeEach(async () => {
     await orm.em.nativeDelete(Address, {});
@@ -113,7 +113,7 @@ describe('custom types [mysql]', () => {
     expect(l1.extendedPoint).toBeInstanceOf(Point);
     expect(l1.extendedPoint).toMatchObject({ latitude: 5.23, longitude: 9.56 });
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into `location` (`extended_point`, `point`) values (ST_PointFromText(\'point(5.23 9.56)\'), ST_PointFromText(\'point(1.23 4.56)\'))');
+    expect(mock.mock.calls[1][0]).toMatch('insert into `location` (`point`, `extended_point`) values (ST_PointFromText(?), ST_PointFromText(?))');
     expect(mock.mock.calls[2][0]).toMatch('insert into `address` (`location_id`) values (?)');
     expect(mock.mock.calls[3][0]).toMatch('commit');
     expect(mock.mock.calls[4][0]).toMatch('select `l0`.*, ST_AsText(`l0`.`point`) as `point`, ST_AsText(`l0`.`extended_point`) as `extended_point` from `location` as `l0` where `l0`.`id` = ? limit ?');
