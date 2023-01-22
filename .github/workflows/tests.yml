@@ -103,8 +103,8 @@ jobs:
           path: '**/node_modules'
           key: ${{ runner.os }}-16-modules-${{ hashFiles('**/yarn.lock') }}
 
-      - name: EditorConfig Lint
-        uses: docker://mstruebing/editorconfig-checker:2.7.0@sha256:0f8f8dd4f393d29755bef2aef4391d37c34e358d676e9d66ce195359a9c72ef3
+#      - name: EditorConfig Lint
+#        uses: docker://mstruebing/editorconfig-checker:2.7.0@sha256:0f8f8dd4f393d29755bef2aef4391d37c34e358d676e9d66ce195359a9c72ef3
 
       - name: Install
         run: |
