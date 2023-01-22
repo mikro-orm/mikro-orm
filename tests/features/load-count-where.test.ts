@@ -86,7 +86,7 @@ describe('Collection.loadCount where option', () => {
     await orm.em.persistAndFlush(booking2);
     bookingCount = await endUser.bookings.loadCount(true);
     expect(bookingCount).toBe(2);
-    const userFirstPartyBookingCount = await endUser.bookings.loadCount(true, { where: { event: event1 } });
+    const userFirstPartyBookingCount = await endUser.bookings.loadCount({ where: { event: event1 } });
     expect(userFirstPartyBookingCount).toBe(1);
   });
 });
