@@ -60,7 +60,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          corepack prepare yarn@3.2.4 --activate
+          corepack prepare yarn@stable --activate
           yarn
 
       - name: Init docker
@@ -104,7 +104,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          corepack prepare yarn@3.2.4 --activate
+          corepack prepare yarn@stable --activate
           yarn
 
       - name: Build

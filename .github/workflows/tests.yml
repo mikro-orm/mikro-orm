@@ -37,7 +37,7 @@ jobs:
 
       - name: Install
         run: |
-          corepack prepare yarn@3.2.4 --activate
+          corepack prepare yarn@stable --activate
           yarn
 
       - name: Test TS
@@ -71,7 +71,7 @@ jobs:
 
       - name: Install
         run: |
-          corepack prepare yarn@3.2.4 --activate
+          corepack prepare yarn@stable --activate
           yarn
 
       - name: Build & deploy docs
@@ -108,7 +108,7 @@ jobs:
 
       - name: Install
         run: |
-          corepack prepare yarn@3.2.4 --activate
+          corepack prepare yarn@stable --activate
           yarn
 
       - name: Lint
@@ -147,7 +147,7 @@ jobs:
 
       - name: Install
         run: |
-          corepack prepare yarn@3.2.4 --activate
+          corepack prepare yarn@stable --activate
           yarn
 
       - name: Set CC Required env vars
