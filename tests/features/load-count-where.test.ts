@@ -17,7 +17,7 @@ export class EndUser {
   name!: string;
 
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  @OneToMany(() => Booking, booking => booking.endUser, { default: [] })
+  @OneToMany(() => Booking, booking => booking.endUser)
   bookings = new Collection<Booking>(this);
 
 }
@@ -55,7 +55,7 @@ export class Booking {
 
 }
 
-describe('GH issue 3527', () => {
+describe('Collection.loadCount where option', () => {
 
   let orm: MikroORM;
 
@@ -70,8 +70,8 @@ describe('GH issue 3527', () => {
 
   afterAll(() => orm.close(true));
 
-  test('GH issue 3527', async () => {
-    const endUser1 = orm.em.create(EndUser, { id: 1 ,name: 'Revò' });
+  test('Collection.loadCount with where option should work', async () => {
+    const endUser1 = orm.em.create(EndUser, { id: 1, name: 'Revò' });
     const event1 = orm.em.create(Event, { id: 1, name: 'MikroORM party' });
     const event2 = orm.em.create(Event, { id: 2, name: 'MikroORM second party!' });
     await orm.em.persistAndFlush([endUser1, event1, event2]);
@@ -89,5 +89,4 @@ describe('GH issue 3527', () => {
     const userFirstPartyBookingCount = await endUser.bookings.loadCount(true, { where: { event: event1 } });
     expect(userFirstPartyBookingCount).toBe(1);
   });
-
 });
