@@ -41,42 +41,195 @@ export function Property<T>(options: PropertyOptions<T> = {}) {
 }
 
 export type PropertyOptions<T> = {
+  /**
+   * Alias for `fieldName`.
+   */
   name?: string;
+  /**
+   * Specify database column name for this property.
+   *
+   * @see https://mikro-orm.io/docs/naming-strategy
+   */
   fieldName?: string;
+  /**
+   * Specify database column names for this property.
+   * Same as `fieldName` but for composite FKs.
+   *
+   * @see https://mikro-orm.io/docs/naming-strategy
+   */
   fieldNames?: string[];
+  /**
+   * Explicitly specify the mapped type instance for this property.
+   *
+   * @see https://mikro-orm.io/docs/custom-types
+   */
   customType?: Type<any>;
+  /**
+   * Specify exact database column type for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}. (SQL only)
+   */
   columnType?: ColumnType | AnyString;
+  /**
+   * Explicitly specify the runtime type.
+   *
+   * @see https://mikro-orm.io/docs/metadata-providers
+   * @see https://mikro-orm.io/docs/custom-types
+   */
   type?: keyof typeof types | 'ObjectId' | Date | Constructor<AnyEntity> | Constructor<Type<any>> | Type<any> | (() => unknown) | ColumnType | AnyString;
+  /**
+   * Set length of database column, used for datetime/timestamp/varchar column types for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}. (SQL only)
+   */
   length?: number;
+  /**
+   * Set precision of database column to represent the number of significant digits. (SQL only)
+   */
   precision?: number;
+  /**
+   * Set scale of database column to represents the number of digits after the decimal point. (SQL only)
+   */
   scale?: number;
+  /**
+   * Explicitly specify the auto increment of the primary key.
+   */
   autoincrement?: boolean;
+  /**
+   * Automatically set the property value when entity gets created, executed during flush operation.
+   * @param entity
+   */
   onCreate?: (entity: T) => any;
+  /**
+   * Automatically update the property value every time entity gets updated, executed during flush operation.
+   * @param entity
+   */
   onUpdate?: (entity: T) => any;
+  /**
+   * Specify default column value for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}.
+   * This is a runtime value, assignable to the entity property. (SQL only)
+   */
   default?: string | string[] | number | number[] | boolean | null;
+  /**
+   * Specify SQL functions for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}. (SQL only)
+   * Since v4 you should use defaultRaw for SQL functions. e.g. now()
+   */
   defaultRaw?: string;
+  /**
+   * Set to map some SQL snippet for the entity.
+   *
+   * @see https://mikro-orm.io/docs/defining-entities#formulas Formulas}
+   */
   formula?: string | ((alias: string) => string);
+  /**
+   * Set column as nullable for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}.
+   */
   nullable?: boolean;
+  /**
+   * Set column as unsigned for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}. (SQL only)
+   */
   unsigned?: boolean;
+  /**
+   * Set false to define {@link https://mikro-orm.io/docs/serializing#shadow-properties Shadow Property}.
+   */
   persist?: boolean;
+  /**
+   * Set false to disable change tracking on a property level.
+   *
+   * @see https://mikro-orm.io/docs/unit-of-work#change-tracking-and-performance-considerations
+   */
   trackChanges?: boolean;
+  /**
+   * Set to true to omit the property when {@link https://mikro-orm.io/docs/serializing Serializing}.
+   */
   hidden?: boolean;
+  /**
+   * Set to true to enable {@link https://mikro-orm.io/docs/transactions#optimistic-locking Optimistic Locking} via version field. (SQL only)
+   */
   version?: boolean;
+  /**
+   * Set to true to enable {@link https://mikro-orm.io/docs/transactions#optimistic-locking Optimistic Locking} via concurrency fields.
+   */
   concurrencyCheck?: boolean;
+  /**
+   * Explicitly specify index on a property.
+   */
   index?: boolean | string;
+  /**
+   * Set column as unique for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}. (SQL only)
+   */
   unique?: boolean | string;
+  /**
+   * Specify column with check constraints. (Postgres driver only)
+   *
+   * @see https://mikro-orm.io/docs/defining-entities#check-constraints
+   */
   check?: string | CheckCallback<T>;
+  /**
+   * Set to omit the property from the select clause for lazy loading.
+   *
+   * @see https://mikro-orm.io/docs/defining-entities#lazy-scalar-properties
+   */
   lazy?: boolean;
+  /**
+   * Set true to define entity's unique primary key identifier.
+   * Alias for `@PrimaryKey()` decorator
+   *
+   * @see https://mikro-orm.io/docs/decorators#primarykey
+   */
   primary?: boolean;
+  /**
+   * Set true to define the properties as setter. (virtual)
+   *
+   * @example
+   * ```
+   * @Property({ setter: true })
+   * set address(value: string) {
+   *     this._address = value.toLocaleLowerCase();
+   * }
+   * ```
+   */
   setter?: boolean;
+  /**
+   * Set true to define the properties as getter. (virtual)
+   *
+   * @example
+   * ```
+   * @Property({ getter: true })
+   * get fullName() {
+   *   return this.firstName + this.lastName;
+   * }
+   * ```
+   */
   getter?: boolean;
+  /**
+   * Set to define serialized primary key for MongoDB. (virtual)
+   * Alias for `@SerializedPrimaryKey()` decorator.
+   *
+   * @see https://mikro-orm.io/docs/decorators#serializedprimarykey
+   */
   serializedPrimaryKey?: boolean;
+  /**
+   * Set to use serialize property. Allow to specify a callback that will be used when serializing a property.
+   *
+   * @see https://mikro-orm.io/docs/serializing#property-serializers
+   */
   serializer?: (value: any) => any;
+  /**
+   * Specify name of key for the serialized value.
+   */
   serializedName?: string;
+  /**
+   * Specify a custom order based on the values. (SQL only)
+   */
   customOrder?: string[] | number[] | boolean[];
+  /**
+   * Specify comment of column for {@link https://mikro-orm.io/docs/schema-generator Schema Generator}. (SQL only)
+   */
   comment?: string;
   /** mysql only */
   extra?: string;
+  /**
+   * Set to avoid a perpetual diff from the {@link https://mikro-orm.io/docs/schema-generator Schema Generator} when columns are generated.
+   *
+   * @see https://mikro-orm.io/docs/defining-entities#sql-generated-columns
+   */
   ignoreSchemaChanges?: ('type' | 'extra')[];
 };
 

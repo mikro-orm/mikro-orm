@@ -4,6 +4,9 @@ title: Decorators
 
 ## Entity Definition
 
+> Some options affect how the [Schema Generator](schema-generator.md) works, and those are SQL only,
+> meaning they affect only SQL drivers - whereas, mongo has no schema.
+
 ### @Entity()
 
 `@Entity` decorator is used to mark your model classes as entities. Do not use it for 
