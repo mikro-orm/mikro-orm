@@ -58,10 +58,10 @@ export class Collection<T extends object, O extends object = object> extends Arr
    * The value is cached, use `refresh = true` to force reload it.
    */
   async loadCount(options: LoadCountOptions<T> | boolean = false): Promise<number> {
-    const refresh = typeof options === 'boolean' ? options : typeof options === 'object';
+    const refresh = typeof options === 'boolean' ? options : typeof options === 'object' ? options.refresh ?? false : false;
     const { where } = options as LoadCountOptions<T>;
 
-    if (!refresh && Utils.isDefined(this._count)) {
+    if (!refresh && !where && Utils.isDefined(this._count)) {
       return this._count!;
     }
 
@@ -446,5 +446,6 @@ export interface InitOptions<T, P extends string = never> {
 }
 
 export interface LoadCountOptions<T> {
+  refresh?: boolean;
   where?: FilterQuery<T>;
 }
