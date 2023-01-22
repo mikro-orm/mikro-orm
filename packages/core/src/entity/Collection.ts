@@ -66,8 +66,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
     const pivotMeta = em.getMetadata().find(this.property.pivotEntity)!;
 
     if (!em.getPlatform().usesPivotTable() && this.property.reference === ReferenceType.MANY_TO_MANY) {
-      this._count = this.length;
-      return this._count;
+      return this._count = this.length;
     } else if (this.property.pivotTable && !(this.property.inversedBy || this.property.mappedBy)) {
       const count = await em.count(this.property.type, this.createLoadCountCondition(options.where ?? {} as FilterQuery<T>, pivotMeta), { populate: [{ field: this.property.pivotEntity }] });
       if (!options.where) {
@@ -76,7 +75,9 @@ export class Collection<T extends object, O extends object = object> extends Arr
       return count;
     }
       const count = await em.count(this.property.type, this.createLoadCountCondition(options.where ?? {} as FilterQuery<T>, pivotMeta));
-      if (!options.where) { this._count = count; }
+      if (!options.where) {
+        this._count = count;
+      }
       return count;
 
   }
