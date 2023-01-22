@@ -57,8 +57,8 @@ export class Collection<T extends object, O extends object = object> extends Arr
    * Gets the count of collection items from database instead of counting loaded items.
    * The value is cached, use `refresh = true` to force reload it.
    */
-  async loadCount(refresh = false, cond?: FilterQuery<T>): Promise<number> {
-    if (!refresh && !cond && Utils.isDefined(this._count)) {
+  async loadCount(refresh = false, options: LoadCountOptions<T> = {}): Promise<number> {
+    if (!refresh && !options.where && Utils.isDefined(this._count)) {
       return this._count!;
     }
 
@@ -69,14 +69,14 @@ export class Collection<T extends object, O extends object = object> extends Arr
       this._count = this.length;
       return this._count;
     } else if (this.property.pivotTable && !(this.property.inversedBy || this.property.mappedBy)) {
-      const count = await em.count(this.property.type, this.createLoadCountCondition(cond ?? {} as FilterQuery<T>, pivotMeta), { populate: [{ field: this.property.pivotEntity }] });
-      if (!cond) {
+      const count = await em.count(this.property.type, this.createLoadCountCondition(options.where ?? {} as FilterQuery<T>, pivotMeta), { populate: [{ field: this.property.pivotEntity }] });
+      if (!options.where) {
         this._count = count;
       }
       return count;
     }
-      const count = await em.count(this.property.type, this.createLoadCountCondition(cond ?? {} as FilterQuery<T>, pivotMeta));
-      if (!cond) { this._count = count; }
+      const count = await em.count(this.property.type, this.createLoadCountCondition(options.where ?? {} as FilterQuery<T>, pivotMeta));
+      if (!options.where) { this._count = count; }
       return count;
 
   }
@@ -439,4 +439,8 @@ export interface InitOptions<T, P extends string = never> {
   where?: FilterQuery<T>;
   lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
   connectionType?: ConnectionType;
+}
+
+export interface LoadCountOptions<T> {
+  where?: FilterQuery<T>;
 }
