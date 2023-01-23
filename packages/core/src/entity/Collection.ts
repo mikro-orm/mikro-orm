@@ -55,8 +55,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
 
   /**
    * Gets the count of collection items from database instead of counting loaded items.
-   * The value is cached, use `refresh = true` to force reload it.
-   * The value CAN'T be cached if `where` option is provided.
+   * The value is cached (unless you use the `where` option), use `refresh: true` to force reload it.
    */
   async loadCount(options: LoadCountOptions<T> | boolean = {}): Promise<number> {
     options = typeof options === 'boolean' ? { refresh: options } : options;
