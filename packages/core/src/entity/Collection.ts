@@ -75,14 +75,12 @@ export class Collection<T extends object, O extends object = object> extends Arr
         this._count = count;
       }
       return count;
-      /* eslint-disable no-else-return */
-    } else {
-      const count = await em.count(this.property.type, this.createLoadCountCondition(options.where ?? {} as FilterQuery<T>, pivotMeta));
-      if (!options.where) {
-        this._count = count;
-      }
-      return count;
     }
+    const count = await em.count(this.property.type, this.createLoadCountCondition(options.where ?? {} as FilterQuery<T>, pivotMeta));
+    if (!options.where) {
+      this._count = count;
+    }
+    return count;
   }
 
   async matching<P extends string = never>(options: MatchingOptions<T, P>): Promise<Loaded<T, P>[]> {
