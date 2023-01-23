@@ -63,7 +63,6 @@ describe('Collection.loadCount where option', () => {
     orm = await MikroORM.init({
       entities: [EndUser, Booking, Event],
       dbName: ':memory:',
-      type: 'sqlite',
     });
     await orm.getSchemaGenerator().refreshDatabase();
   });
