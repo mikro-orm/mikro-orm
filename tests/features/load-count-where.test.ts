@@ -1,11 +1,11 @@
 import {
   Collection,
   Entity, ManyToOne,
-  MikroORM,
   OneToMany,
   PrimaryKey,
   Property,
 } from '@mikro-orm/core';
+import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 export class EndUser {
