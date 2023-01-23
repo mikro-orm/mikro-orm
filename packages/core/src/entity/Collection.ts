@@ -55,10 +55,12 @@ export class Collection<T extends object, O extends object = object> extends Arr
 
   /**
    * Gets the count of collection items from database instead of counting loaded items.
-   * The value is cached, use `refresh = true` to force reload it.
+   * The value is cached (unless you use the `where` option), use `refresh: true` to force reload it.
    */
-  async loadCount(refresh = false): Promise<number> {
-    if (!refresh && Utils.isDefined(this._count)) {
+  async loadCount(options: LoadCountOptions<T> | boolean = {}): Promise<number> {
+    options = typeof options === 'boolean' ? { refresh: options } : options;
+
+    if (!options.refresh && !options.where && Utils.isDefined(this._count)) {
       return this._count!;
     }
 
@@ -66,14 +68,19 @@ export class Collection<T extends object, O extends object = object> extends Arr
     const pivotMeta = em.getMetadata().find(this.property.pivotEntity)!;
 
     if (!em.getPlatform().usesPivotTable() && this.property.reference === ReferenceType.MANY_TO_MANY) {
-      this._count = this.length;
+      return this._count = this.length;
     } else if (this.property.pivotTable && !(this.property.inversedBy || this.property.mappedBy)) {
-      this._count = await em.count(this.property.type, this.createLoadCountCondition({} as FilterQuery<T>, pivotMeta), { populate: [{ field: this.property.pivotEntity }] });
-    } else {
-      this._count = await em.count(this.property.type, this.createLoadCountCondition({} as FilterQuery<T>, pivotMeta));
+      const count = await em.count(this.property.type, this.createLoadCountCondition(options.where ?? {} as FilterQuery<T>, pivotMeta), { populate: [{ field: this.property.pivotEntity }] });
+      if (!options.where) {
+        this._count = count;
+      }
+      return count;
     }
-
-    return this._count!;
+    const count = await em.count(this.property.type, this.createLoadCountCondition(options.where ?? {} as FilterQuery<T>, pivotMeta));
+    if (!options.where) {
+      this._count = count;
+    }
+    return count;
   }
 
   async matching<P extends string = never>(options: MatchingOptions<T, P>): Promise<Loaded<T, P>[]> {
@@ -434,4 +441,9 @@ export interface InitOptions<T, P extends string = never> {
   where?: FilterQuery<T>;
   lockMode?: Exclude<LockMode, LockMode.OPTIMISTIC>;
   connectionType?: ConnectionType;
+}
+
+export interface LoadCountOptions<T> {
+  refresh?: boolean;
+  where?: FilterQuery<T>;
 }
