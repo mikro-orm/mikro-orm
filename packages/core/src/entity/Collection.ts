@@ -57,11 +57,10 @@ export class Collection<T extends object, O extends object = object> extends Arr
    * Gets the count of collection items from database instead of counting loaded items.
    * The value is cached, use `refresh = true` to force reload it.
    */
-  async loadCount(options: LoadCountOptions<T> | boolean = false): Promise<number> {
-    const refresh = typeof options === 'boolean' ? options : typeof options === 'object' ? options.refresh ?? false : false;
-    const { where } = options as LoadCountOptions<T>;
+  async loadCount(options: LoadCountOptions<T> | boolean = {}): Promise<number> {
+    options = typeof options === 'boolean' ? { refresh: options } : options;
 
-    if (!refresh && !where && Utils.isDefined(this._count)) {
+    if (!options.refresh && !options.where && Utils.isDefined(this._count)) {
       return this._count!;
     }
 
@@ -71,14 +70,14 @@ export class Collection<T extends object, O extends object = object> extends Arr
     if (!em.getPlatform().usesPivotTable() && this.property.reference === ReferenceType.MANY_TO_MANY) {
       return this._count = this.length;
     } else if (this.property.pivotTable && !(this.property.inversedBy || this.property.mappedBy)) {
-      const count = await em.count(this.property.type, this.createLoadCountCondition(where ?? {} as FilterQuery<T>, pivotMeta), { populate: [{ field: this.property.pivotEntity }] });
-      if (!where) {
+      const count = await em.count(this.property.type, this.createLoadCountCondition(options.where ?? {} as FilterQuery<T>, pivotMeta), { populate: [{ field: this.property.pivotEntity }] });
+      if (!options.where) {
         this._count = count;
       }
       return count;
     } else {
-      const count = await em.count(this.property.type, this.createLoadCountCondition(where ?? {} as FilterQuery<T>, pivotMeta));
-      if (!where) {
+      const count = await em.count(this.property.type, this.createLoadCountCondition(options.where ?? {} as FilterQuery<T>, pivotMeta));
+      if (!options.where) {
         this._count = count;
       }
       return count; 
