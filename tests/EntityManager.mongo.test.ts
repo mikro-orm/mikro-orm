@@ -564,6 +564,7 @@ describe('EntityManagerMongo', () => {
     await expect(driver.getConnection().execute('')).rejects.toThrowError('MongoConnection does not support generic execute method');
     expect(driver.getConnection().getCollection(BookTag).collectionName).toBe('book-tag');
     expect(orm.em.getCollection(BookTag).collectionName).toBe('book-tag');
+    expect(orm.em.getRepository(BookTag).getCollection().collectionName).toBe('book-tag');
 
     expect(() => driver.getPlatform().generateCustomOrder('foo', [1, 2, 3])).toThrow();
 

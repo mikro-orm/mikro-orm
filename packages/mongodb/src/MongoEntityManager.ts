@@ -1,8 +1,8 @@
 import type { EntityName, EntityRepository, GetRepository, TransactionOptions, EntityManagerType } from '@mikro-orm/core';
 import { EntityManager, Utils } from '@mikro-orm/core';
+import type { Collection, Document, TransactionOptions as MongoTransactionOptions } from 'mongodb';
 import type { MongoDriver } from './MongoDriver';
 import type { MongoEntityRepository } from './MongoEntityRepository';
-import type { Collection, Document, TransactionOptions as MongoTransactionOptions } from 'mongodb';
 
 /**
  * @inheritDoc
@@ -17,7 +17,7 @@ export class MongoEntityManager<D extends MongoDriver = MongoDriver> extends Ent
     return this.getDriver().aggregate(entityName, pipeline);
   }
 
-  getCollection<T extends Document>(entityName: EntityName<any>): Collection<T> {
+  getCollection<T extends Document>(entityName: EntityName<T>): Collection<T> {
     return this.getConnection().getCollection(entityName);
   }
 
