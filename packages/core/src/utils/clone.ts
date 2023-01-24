@@ -115,6 +115,7 @@ export function clone<T>(parent: T, respectCustomCloneMethod = true): T {
         const symbol = symbols[i];
         const descriptor = Object.getOwnPropertyDescriptor(parent, symbol);
 
+        /* istanbul ignore next */
         if (descriptor && !descriptor.enumerable) {
           continue;
         }

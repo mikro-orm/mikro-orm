@@ -329,14 +329,23 @@ export class ChangeSetPersister {
       return;
     }
 
+    reloadProps.unshift(...meta.getPrimaryProps());
     const pk = Utils.getPrimaryKeyHash(meta.primaryKeys);
-    const pks = changeSets.map(cs => helper(cs.entity).getPrimaryKey(true));
+    const pks = changeSets.map(cs => {
+      const val = helper(cs.entity).getPrimaryKey(true);
+
+      if (Utils.isPlainObject(val)) {
+        return Utils.getCompositeKeyValue(val, meta, false, this.platform);
+      }
+
+      return val;
+    });
     options = this.propagateSchemaFromMetadata(meta, options, {
-      fields: reloadProps.map(prop => prop.fieldNames[0]),
+      fields: Utils.unique(reloadProps.map(prop => prop.name)),
     });
     const data = await this.driver.find<T>(meta.name!, { [pk]: { $in: pks } } as FilterQuery<T>, options);
     const map = new Map<string, Dictionary>();
-    data.forEach(item => map.set(Utils.getCompositeKeyHash(item, meta, true, this.platform), item));
+    data.forEach(item => map.set(Utils.getCompositeKeyHash(item, meta, true, this.platform, true), item));
 
     for (const changeSet of changeSets) {
       const data = map.get(helper(changeSet.entity).getSerializedPrimaryKey());

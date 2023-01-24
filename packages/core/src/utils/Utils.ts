@@ -473,8 +473,12 @@ export class Utils {
     }) as Primary<T>;
   }
 
-  static getCompositeKeyHash<T>(data: EntityData<T>, meta: EntityMetadata<T>, convertCustomTypes = false, platform?: Platform): string {
-    const pks = this.getCompositeKeyValue(data, meta, convertCustomTypes, platform);
+  static getCompositeKeyHash<T>(data: EntityData<T>, meta: EntityMetadata<T>, convertCustomTypes = false, platform?: Platform, flat = false): string {
+    let pks = this.getCompositeKeyValue(data, meta, convertCustomTypes, platform);
+
+    if (flat) {
+      pks = Utils.flatten(pks as unknown[][]) as Primary<T>;
+    }
 
     return Utils.getPrimaryKeyHash(pks as string[]);
   }
