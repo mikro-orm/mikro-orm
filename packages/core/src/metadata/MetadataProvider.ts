@@ -17,8 +17,14 @@ export abstract class MetadataProvider {
    */
   loadFromCache(meta: EntityMetadata, cache: EntityMetadata): void {
     Object.values(cache.properties).forEach(prop => {
+      const metaProp = meta.properties[prop.name];
+
       if (prop.customType) {
-        prop.customType = meta.properties[prop.name].customType;
+        prop.customType = metaProp.customType;
+      }
+
+      if (metaProp?.enum && Array.isArray(metaProp.items)) {
+        delete prop.items;
       }
     });
 
