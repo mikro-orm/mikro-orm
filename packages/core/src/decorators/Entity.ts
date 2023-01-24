@@ -24,6 +24,7 @@ export type EntityOptions<T> = {
   discriminatorColumn?: string;
   discriminatorMap?: Dictionary<string>;
   discriminatorValue?: number | string;
+  forceConstructor?: boolean;
   comment?: string;
   abstract?: boolean;
   readonly?: boolean;

@@ -1,7 +1,7 @@
 import { Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
-@Entity()
+@Entity({ forceConstructor: true })
 export class Parent {
 
   @PrimaryKey()
@@ -12,7 +12,7 @@ export class Parent {
 
 }
 
-@Entity()
+@Entity({ forceConstructor: true })
 export class Child {
 
   @PrimaryKey()
@@ -31,7 +31,6 @@ describe('GH issue 2406', () => {
     orm = await MikroORM.init({
       entities: [Parent, Child],
       dbName: ':memory:',
-      forceEntityConstructor: true,
       driver: SqliteDriver,
     });
     await orm.schema.createSchema();
@@ -39,7 +38,7 @@ describe('GH issue 2406', () => {
 
   afterAll(() => orm.close(true));
 
-  test('should fetch children when forceEntityConstructor is turned on', async () => {
+  test('should fetch children when forceConstructor is turned on', async () => {
     const parent = orm.em.create(Parent, {});
     expect(parent.children.isInitialized()).toBe(true);
     expect(parent.children.isDirty()).toBe(false);
