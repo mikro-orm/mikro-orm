@@ -2694,8 +2694,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/better-sqlite@workspace:packages/better-sqlite"
   dependencies:
-    "@mikro-orm/core": ^5.6.7
-    "@mikro-orm/knex": ~5.6.7
+    "@mikro-orm/core": ^5.6.8
+    "@mikro-orm/knex": ~5.6.8
     better-sqlite3: 8.0.1
     fs-extra: 11.1.0
     sqlstring-sqlite: 0.1.1
@@ -2719,11 +2719,11 @@ __metadata:
   resolution: "@mikro-orm/cli@workspace:packages/cli"
   dependencies:
     "@jercle/yargonaut": 1.1.5
-    "@mikro-orm/core": ~5.6.7
-    "@mikro-orm/entity-generator": ^5.6.7
-    "@mikro-orm/knex": ~5.6.7
-    "@mikro-orm/migrations": ^5.6.7
-    "@mikro-orm/seeder": ^5.6.7
+    "@mikro-orm/core": ~5.6.8
+    "@mikro-orm/entity-generator": ^5.6.8
+    "@mikro-orm/knex": ~5.6.8
+    "@mikro-orm/migrations": ^5.6.8
+    "@mikro-orm/seeder": ^5.6.8
     fs-extra: 11.1.0
     tsconfig-paths: 4.1.2
     yargs: 15.4.1
@@ -2765,7 +2765,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mikro-orm/core@^5.6.7, @mikro-orm/core@workspace:packages/core, @mikro-orm/core@~5.6.7":
+"@mikro-orm/core@^5.6.8, @mikro-orm/core@workspace:packages/core, @mikro-orm/core@~5.6.8":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/core@workspace:packages/core"
   dependencies:
@@ -2774,7 +2774,7 @@ __metadata:
     dotenv: 16.0.3
     fs-extra: 11.1.0
     globby: 11.1.0
-    mikro-orm: ~5.6.7
+    mikro-orm: ~5.6.8
     reflect-metadata: 0.1.13
   peerDependencies:
     "@mikro-orm/better-sqlite": ^5.0.0
@@ -2811,23 +2811,23 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mikro-orm/entity-generator@^5.6.7, @mikro-orm/entity-generator@workspace:packages/entity-generator":
+"@mikro-orm/entity-generator@^5.6.8, @mikro-orm/entity-generator@workspace:packages/entity-generator":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/entity-generator@workspace:packages/entity-generator"
   dependencies:
-    "@mikro-orm/core": ^5.6.7
-    "@mikro-orm/knex": ~5.6.7
+    "@mikro-orm/core": ^5.6.8
+    "@mikro-orm/knex": ~5.6.8
     fs-extra: 11.1.0
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
   languageName: unknown
   linkType: soft
 
-"@mikro-orm/knex@workspace:packages/knex, @mikro-orm/knex@~5.6.7":
+"@mikro-orm/knex@workspace:packages/knex, @mikro-orm/knex@~5.6.8":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/knex@workspace:packages/knex"
   dependencies:
-    "@mikro-orm/core": ^5.6.7
+    "@mikro-orm/core": ^5.6.8
     fs-extra: 11.1.0
     knex: 2.4.2
     sqlstring: 2.3.3
@@ -2865,8 +2865,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/mariadb@workspace:packages/mariadb"
   dependencies:
-    "@mikro-orm/core": ^5.6.7
-    "@mikro-orm/knex": ~5.6.7
+    "@mikro-orm/core": ^5.6.8
+    "@mikro-orm/knex": ~5.6.8
     mariadb: 2.5.6
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
@@ -2887,8 +2887,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/migrations-mongodb@workspace:packages/migrations-mongodb"
   dependencies:
-    "@mikro-orm/core": ^5.6.7
-    "@mikro-orm/mongodb": ~5.6.7
+    "@mikro-orm/core": ^5.6.8
+    "@mikro-orm/mongodb": ~5.6.8
     fs-extra: 11.1.0
     mongodb: 4.13.0
     umzug: 3.2.1
@@ -2897,12 +2897,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mikro-orm/migrations@^5.6.7, @mikro-orm/migrations@workspace:packages/migrations":
+"@mikro-orm/migrations@^5.6.8, @mikro-orm/migrations@workspace:packages/migrations":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/migrations@workspace:packages/migrations"
   dependencies:
-    "@mikro-orm/core": ^5.6.7
-    "@mikro-orm/knex": ~5.6.7
+    "@mikro-orm/core": ^5.6.8
+    "@mikro-orm/knex": ~5.6.8
     fs-extra: 11.1.0
     knex: 2.4.2
     umzug: 3.2.1
@@ -2920,11 +2920,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mikro-orm/mongodb@workspace:packages/mongodb, @mikro-orm/mongodb@~5.6.7":
+"@mikro-orm/mongodb@workspace:packages/mongodb, @mikro-orm/mongodb@~5.6.8":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/mongodb@workspace:packages/mongodb"
   dependencies:
-    "@mikro-orm/core": ^5.6.7
+    "@mikro-orm/core": ^5.6.8
     bson: ^4.7.0
     mongodb: 4.13.0
   peerDependencies:
@@ -2949,8 +2949,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/mysql@workspace:packages/mysql"
   dependencies:
-    "@mikro-orm/core": ^5.6.7
-    "@mikro-orm/knex": ~5.6.7
+    "@mikro-orm/core": ^5.6.8
+    "@mikro-orm/knex": ~5.6.8
     mysql2: 2.3.3
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
@@ -2971,8 +2971,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/postgresql@workspace:packages/postgresql"
   dependencies:
-    "@mikro-orm/core": ^5.6.7
-    "@mikro-orm/knex": ~5.6.7
+    "@mikro-orm/core": ^5.6.8
+    "@mikro-orm/knex": ~5.6.8
     pg: 8.8.0
   peerDependencies:
     "@mikro-orm/core": ^5.0.0
@@ -2993,7 +2993,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/reflection@workspace:packages/reflection"
   dependencies:
-    "@mikro-orm/core": ^5.6.7
+    "@mikro-orm/core": ^5.6.8
     globby: 11.1.0
     ts-morph: 17.0.1
   peerDependencies:
@@ -3042,12 +3042,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@mikro-orm/seeder@^5.6.7, @mikro-orm/seeder@workspace:packages/seeder":
+"@mikro-orm/seeder@^5.6.8, @mikro-orm/seeder@workspace:packages/seeder":
   version: 0.0.0-use.local
   resolution: "@mikro-orm/seeder@workspace:packages/seeder"
   dependencies:
     "@faker-js/faker": 7.6.0
-    "@mikro-orm/core": ^5.6.7
+    "@mikro-orm/core": ^5.6.8
     fs-extra: 11.1.0
     globby: 11.1.0
   peerDependencies:
@@ -3068,8 +3068,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@mikro-orm/sqlite@workspace:packages/sqlite"
   dependencies:
-    "@mikro-orm/core": ^5.6.7
-    "@mikro-orm/knex": ~5.6.7
+    "@mikro-orm/core": ^5.6.8
+    "@mikro-orm/knex": ~5.6.8
     fs-extra: 11.1.0
     sqlite3: 5.1.4
     sqlstring-sqlite: 0.1.1
@@ -8402,7 +8402,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mikro-orm@workspace:packages/mikro-orm, mikro-orm@~5.6.7":
+"mikro-orm@workspace:packages/mikro-orm, mikro-orm@~5.6.8":
   version: 0.0.0-use.local
   resolution: "mikro-orm@workspace:packages/mikro-orm"
   languageName: unknown
