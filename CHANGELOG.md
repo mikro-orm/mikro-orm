@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.8](https://github.com/mikro-orm/mikro-orm/compare/v5.6.7...v5.6.8) (2023-01-25)
+
+
+### Bug Fixes
+
+* **mysql:** fix reloading of database defaults for complex composite PKs ([d36af00](https://github.com/mikro-orm/mikro-orm/commit/d36af00514d96d1060fb18e68ac66b1117e706cb)), closes [#3965](https://github.com/mikro-orm/mikro-orm/issues/3965)
+* **reflection:** do not rehydrate metadata cache for enum items unless needed ([e4761b6](https://github.com/mikro-orm/mikro-orm/commit/e4761b66f556476544ebbed240178e6cfc582a99)), closes [#3955](https://github.com/mikro-orm/mikro-orm/issues/3955)
+
+
+### Features
+
+* **core:** add `forceConstructor` option to `@Entity()` decorator ([c89b4af](https://github.com/mikro-orm/mikro-orm/commit/c89b4af628e8fc895f4dfd49a8ccb53692979808))
+* **core:** add `hydrate` option to `@Property()` decorator ([f4ba092](https://github.com/mikro-orm/mikro-orm/commit/f4ba0928d8cf6109b9c88b2220ec8eac8cb6981c)), closes [#3936](https://github.com/mikro-orm/mikro-orm/issues/3936)
+* **core:** allow filtering in `Collection.loadCount()` ([#3958](https://github.com/mikro-orm/mikro-orm/issues/3958)) ([08ea320](https://github.com/mikro-orm/mikro-orm/commit/08ea320f3c13e73db9e995eaf5b9b22a45f33fe9)), closes [#3527](https://github.com/mikro-orm/mikro-orm/issues/3527)
+* **migrations-mongo:** replace backslash in the glob to fix windows support ([d904ba0](https://github.com/mikro-orm/mikro-orm/commit/d904ba0039847638dd8f1b3ecb33b594fdddd812)), closes [#3957](https://github.com/mikro-orm/mikro-orm/issues/3957)
+* **mongo:** add missing `MongoEntityRepository.getCollection()` shortcut ([5e4e126](https://github.com/mikro-orm/mikro-orm/commit/5e4e1266eb704d458c98bed902c6424d2e358b70)), closes [#3951](https://github.com/mikro-orm/mikro-orm/issues/3951)
+
+
+
+
+
 ## [5.6.7](https://github.com/mikro-orm/mikro-orm/compare/v5.6.6...v5.6.7) (2023-01-13)
 
 

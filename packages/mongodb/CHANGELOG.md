@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.8](https://github.com/mikro-orm/mikro-orm/compare/v5.6.7...v5.6.8) (2023-01-25)
+
+
+### Features
+
+* **mongo:** add missing `MongoEntityRepository.getCollection()` shortcut ([5e4e126](https://github.com/mikro-orm/mikro-orm/commit/5e4e1266eb704d458c98bed902c6424d2e358b70)), closes [#3951](https://github.com/mikro-orm/mikro-orm/issues/3951)
+
+
+
+
+
 ## [5.6.7](https://github.com/mikro-orm/mikro-orm/compare/v5.6.6...v5.6.7) (2023-01-13)
 
 **Note:** Version bump only for package @mikro-orm/mongodb
