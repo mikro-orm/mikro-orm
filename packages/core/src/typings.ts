@@ -277,6 +277,7 @@ export interface EntityProperty<T = any> {
   unsigned?: boolean;
   mapToPk?: boolean;
   persist?: boolean;
+  hydrate?: boolean;
   trackChanges?: boolean;
   hidden?: boolean;
   enum?: boolean;
@@ -388,7 +389,7 @@ export class EntityMetadata<T = any> {
       const discriminator = this.root.discriminatorColumn === prop.name && prop.userDefined === false;
       // even if we don't have a setter, do not ignore value from database!
       const onlyGetter = prop.getter && !prop.setter && prop.persist === false;
-      return !prop.inherited && !discriminator && !prop.embedded && !onlyGetter;
+      return !prop.inherited && prop.hydrate !== false && !discriminator && !prop.embedded && !onlyGetter;
     });
     this.selfReferencing = this.relations.some(prop => [this.className, this.root.className].includes(prop.type));
     this.virtual = !!this.expression;

@@ -130,6 +130,10 @@ export type PropertyOptions<T> = {
    */
   persist?: boolean;
   /**
+   * Set false to disable hydration of this property. Useful for persisted getters.
+   */
+  hydrate?: boolean;
+  /**
    * Set false to disable change tracking on a property level.
    *
    * @see https://mikro-orm.io/docs/unit-of-work#change-tracking-and-performance-considerations
