@@ -68,7 +68,7 @@ export class Migrator implements IMigrator {
     this.storage = new MigrationStorage(this.driver, this.options);
 
     let migrations: InputMigrations<any> = {
-      glob: join(this.absolutePath, this.options.glob!),
+      glob: join(this.absolutePath, this.options.glob!).replace(/\\/g, '/'),
       resolve: (params: MigrationParams<any>) => this.resolve(params),
     };
 
