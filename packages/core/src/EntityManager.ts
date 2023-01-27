@@ -1,6 +1,6 @@
 import { inspect } from 'util';
 import type { Configuration } from './utils';
-import { QueryHelper, TransactionContext, Utils } from './utils';
+import { Cursor, QueryHelper, TransactionContext, Utils } from './utils';
 import type { AssignOptions, EntityLoaderOptions, EntityRepository, IdentifiedReference } from './entity';
 import { EntityAssigner, EntityFactory, EntityLoader, EntityValidator, helper, Reference } from './entity';
 import { ChangeSet, ChangeSetType, UnitOfWork } from './unit-of-work';
@@ -399,6 +399,34 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
+   * TODO
+   */
+  async findByCursor<
+    Entity extends object,
+    Hint extends string = never,
+  >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindOptions<Entity, Hint> = {}): Promise<Cursor<Entity, Hint>> {
+    const em = this.getContext(false);
+    entityName = Utils.className(entityName);
+    const meta = em.metadata.get<Entity>(entityName);
+
+    // ordering is required, default to order by PK
+    if (Utils.isEmpty(options.orderBy)) {
+      options.orderBy = meta.getPrimaryProps().flatMap(pk => {
+        return pk.fieldNames.map(name => {
+          return { [name]: 'asc' };
+        });
+      });
+    }
+
+    const [entities, count] = await Promise.all([
+      em.find<Entity, Hint>(entityName, where, options),
+      em.count(entityName, where, options),
+    ]);
+
+    return new Cursor<Entity, Hint>(entities, count, options);
+  }
+
+  /**
    * Refreshes the persistent state of an entity from the database, overriding any local changes that have not yet been persisted.
    */
   async refresh<
@@ -752,7 +780,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return [...entities.keys()];
     }
 
-    const ret = await em.driver.nativeUpdateMany(entityName, allWhere, allData, { ctx: em.transactionContext, upsert: true, ...options });
+    const ret = await em.driver.nativeUpdateMany(entityName, allWhere, allData, {
+      ctx: em.transactionContext,
+      upsert: true, ...options,
+    });
 
     if (ret.rows?.length) {
       const prop = meta.getPrimaryProps()[0];
@@ -849,7 +880,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async begin(options: TransactionOptions = {}): Promise<void> {
     const em = this.getContext(false);
-    em.transactionContext = await em.getConnection('write').begin({ ...options, eventBroadcaster: new TransactionEventBroadcaster(em) });
+    em.transactionContext = await em.getConnection('write').begin({
+      ...options,
+      eventBroadcaster: new TransactionEventBroadcaster(em),
+    });
   }
 
   /**
@@ -1008,7 +1042,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }
     });
 
-    return this.merge<Entity>(entityName, data as EntityData<Entity>, { convertCustomTypes: true, refresh: true, ...options });
+    return this.merge<Entity>(entityName, data as EntityData<Entity>, {
+      convertCustomTypes: true,
+      refresh: true, ...options,
+    });
   }
 
   /**
@@ -1578,9 +1615,17 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       let data: R;
 
       if (Array.isArray(cached) && merge) {
-        data = cached.map(item => em.entityFactory.create<T>(entityName, item, { merge: true, convertCustomTypes: true, refresh })) as unknown as R;
+        data = cached.map(item => em.entityFactory.create<T>(entityName, item, {
+          merge: true,
+          convertCustomTypes: true,
+          refresh,
+        })) as unknown as R;
       } else if (Utils.isObject<EntityData<T>>(cached) && merge) {
-        data = em.entityFactory.create<T>(entityName, cached, { merge: true, convertCustomTypes: true, refresh }) as unknown as R;
+        data = em.entityFactory.create<T>(entityName, cached, {
+          merge: true,
+          convertCustomTypes: true,
+          refresh,
+        }) as unknown as R;
       } else {
         data = cached;
       }

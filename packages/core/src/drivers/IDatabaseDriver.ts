@@ -10,6 +10,7 @@ import type { Collection } from '../entity/Collection';
 import type { EntityManager } from '../EntityManager';
 import type { DriverException } from '../exceptions';
 import type { Configuration } from '../utils/Configuration';
+import type { Cursor } from '../utils/Cursor';
 
 export const EntityManagerType = Symbol('EntityManagerType');
 
@@ -101,6 +102,14 @@ export interface FindOptions<T, P extends string = never> {
   cache?: boolean | number | [string, number];
   limit?: number;
   offset?: number;
+  /** Cursor based pagination */
+  before?: string | Cursor<any>;
+  /** Cursor based pagination */
+  after?: string | Cursor<any>;
+  /** Cursor based pagination */
+  first?: number;
+  /** Cursor based pagination */
+  last?: number;
   refresh?: boolean;
   convertCustomTypes?: boolean;
   disableIdentityMap?: boolean;

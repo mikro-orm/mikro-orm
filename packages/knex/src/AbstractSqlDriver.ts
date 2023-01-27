@@ -1,11 +1,47 @@
 import type { Knex } from 'knex';
 import type {
-  AnyEntity, Collection, ConnectionType, Configuration, Constructor, CountOptions, DeleteOptions, Dictionary,
-  DriverMethodOptions, EntityData, EntityDictionary, EntityField, EntityManager, EntityMetadata, EntityName, EntityProperty, FilterQuery,
-  FindOneOptions, FindOptions, IDatabaseDriver, LockOptions, NativeInsertUpdateManyOptions, NativeInsertUpdateOptions,
-  PopulateOptions, Primary, QueryOrderMap, QueryResult, RequiredEntityData, Transaction,
+  AnyEntity,
+  Collection,
+  ConnectionType,
+  Configuration,
+  Constructor,
+  CountOptions,
+  DeleteOptions,
+  Dictionary,
+  DriverMethodOptions,
+  EntityData,
+  EntityDictionary,
+  EntityField,
+  EntityManager,
+  EntityMetadata,
+  EntityName,
+  EntityProperty,
+  FilterQuery,
+  FindOneOptions,
+  FindOptions,
+  IDatabaseDriver,
+  LockOptions,
+  NativeInsertUpdateManyOptions,
+  NativeInsertUpdateOptions,
+  PopulateOptions,
+  Primary,
+  QueryOrderMap,
+  QueryResult,
+  RequiredEntityData,
+  Transaction,
+  QueryOrder,
 } from '@mikro-orm/core';
-import { DatabaseDriver, EntityManagerType, helper, LoadStrategy, QueryFlag, QueryHelper, ReferenceType, Utils } from '@mikro-orm/core';
+import {
+  Cursor,
+  DatabaseDriver,
+  EntityManagerType,
+  helper,
+  LoadStrategy,
+  QueryFlag,
+  QueryHelper, QueryOrderNumeric,
+  ReferenceType,
+  Utils,
+} from '@mikro-orm/core';
 import type { AbstractSqlConnection } from './AbstractSqlConnection';
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform';
 import { QueryBuilder, QueryType } from './query';
@@ -48,18 +84,82 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const qb = this.createQueryBuilder<T>(entityName, options.ctx, options.connectionType, false);
     const fields = this.buildFields(meta, populate, joinedProps, qb, options.fields as Field<T>[]);
     const joinedPropsOrderBy = this.buildJoinedPropsOrderBy(entityName, qb, meta, joinedProps);
+    const orderBy = [...Utils.asArray(options.orderBy), ...joinedPropsOrderBy];
 
     if (Utils.isPrimaryKey(where, meta.compositePK)) {
       where = { [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where } as FilterQuery<T>;
     }
 
+    const { first, last, before, after } = options;
+    const isCursorPagination = [first, last, before, after].some(v => v != null);
+    const limit = first || last;
+    const isLast = !first && !!last;
+
+    function buildWhere(definition: (readonly [keyof T, QueryOrder])[], offsets: unknown[], inverse = false): FilterQuery<T> {
+      const [order, ...otherOrders] = definition;
+      const [offset, ...otherOffsets] = offsets;
+      const [prop, direction] = order;
+      // FIXME is this correct?
+      // const desc = Utils.xor(direction as unknown === QueryOrderNumeric.DESC || direction.toLowerCase() === 'desc', isLast);
+      const desc = direction as unknown === QueryOrderNumeric.DESC || direction.toLowerCase() === 'desc';
+      const operator = Utils.xor(desc, inverse) ? '$lt' : '$gt';
+
+      if (!otherOrders.length) {
+        return { [prop]: { [operator]: offset } } as FilterQuery<T>;
+      }
+
+      return {
+        [prop]: { [`${operator}e`]: offset },
+        $or: [
+          { [prop]: { [operator]: offset } },
+          buildWhere(otherOrders, otherOffsets, inverse),
+        ],
+      } as FilterQuery<T>;
+    }
+
     qb.select(fields)
       .populate(populate, joinedProps.length > 0 ? options.populateWhere : undefined)
       .where(where)
-      .orderBy([...Utils.asArray(options.orderBy), ...joinedPropsOrderBy])
       .groupBy(options.groupBy!)
       .having(options.having!)
       .withSchema(this.getSchemaName(meta, options));
+
+    if (isCursorPagination) {
+      const definition = Cursor.getDefinition(options);
+
+      // rebuild order statements
+      qb.orderBy(definition.map(([prop, direction]) => {
+        const desc = Utils.xor(direction as unknown === QueryOrderNumeric.DESC || direction.toLowerCase() === 'desc', isLast);
+        return ({ [prop]: desc ? 'desc' : 'asc' });
+      }));
+
+      if (after) {
+        const def = after instanceof Cursor ? after.endCursor : after;
+        // FIXME how to handle empty values, is empty string better than undefined/null?
+        const offsets = Cursor.decode(def!);
+
+        if (offsets && definition.length === offsets.length) {
+          const paginateWhere = buildWhere(definition, offsets);
+          qb.andWhere(paginateWhere);
+        }
+      }
+
+      if (before) {
+        const def = before instanceof Cursor ? before.startCursor : before;
+        const offsets = Cursor.decode(def);
+
+        if (offsets && definition.length === offsets.length) {
+          const paginateWhere = buildWhere(definition, offsets, true);
+          qb.andWhere(paginateWhere);
+        }
+      }
+
+      if (limit) {
+        options.limit = limit + 1;
+      }
+    } else {
+      qb.orderBy(orderBy);
+    }
 
     if (options.limit !== undefined) {
       qb.limit(options.limit, options.offset);
@@ -760,7 +860,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return qb;
   }
 
-  protected resolveConnectionType(args: { ctx?: Transaction<Knex.Transaction>; connectionType?: ConnectionType}) {
+  protected resolveConnectionType(args: { ctx?: Transaction<Knex.Transaction>; connectionType?: ConnectionType }) {
     if (args.ctx) {
       return 'write';
     } else if (args.connectionType) {
@@ -841,7 +941,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     /* istanbul ignore else */
     if (this.platform.allowsMultiInsert()) {
-      await this.nativeInsertMany<T>(prop.pivotEntity, items as EntityData<T>[], { ...options, convertCustomTypes: false, processCollections: false });
+      await this.nativeInsertMany<T>(prop.pivotEntity, items as EntityData<T>[], {
+        ...options,
+        convertCustomTypes: false,
+        processCollections: false,
+      });
     } else {
       await Utils.runSerial(items, item => {
         return this.createQueryBuilder(prop.pivotEntity, options?.ctx, 'write')
