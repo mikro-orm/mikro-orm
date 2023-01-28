@@ -667,4 +667,11 @@ describe('simple cursor based pagination', () => {
       { id: 6, name: 'User 6' },
     ]);
   });
+
+  test('validation', async () => {
+    await expect(orm.em.findByCursor(User, {}, {
+      before: Cursor.for({ id: 5 }, { id: -1 }),
+      after: Cursor.for({ id: 15 }, { id: -1 }),
+    })).rejects.toThrow('Explicit `orderBy` option required');
+  });
 });

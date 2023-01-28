@@ -391,9 +391,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     Entity extends object,
     Hint extends string = never,
   >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindOptions<Entity, Hint> = {}): Promise<[Loaded<Entity, Hint>[], number]> {
+    const em = this.getContext(false);
     const [entities, count] = await Promise.all([
-      this.find<Entity, Hint>(entityName, where, options),
-      this.count(entityName, where, options),
+      em.find<Entity, Hint>(entityName, where, options),
+      em.count(entityName, where, options),
     ]);
 
     return [entities, count];
@@ -447,21 +448,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindByCursorOptions<Entity, Hint> = {}): Promise<Cursor<Entity, Hint>> {
     const em = this.getContext(false);
     entityName = Utils.className(entityName);
-    const meta = em.metadata.get<Entity>(entityName);
 
-    // ordering is required, default to order by PK
     if (Utils.isEmpty(options.orderBy)) {
-      options.orderBy = meta.getPrimaryProps().flatMap(pk => {
-        return pk.fieldNames.map(name => {
-          return { [name]: 'asc' };
-        });
-      });
+      throw new Error('Explicit `orderBy` option required');
     }
 
-    const [entities, count] = await Promise.all([
-      em.find<Entity, Hint>(entityName, where, options),
-      em.count(entityName, where, options),
-    ]);
+    const [entities, count] = await em.findAndCount(entityName, where, options);
 
     return new Cursor<Entity, Hint>(entities, count, options);
   }
