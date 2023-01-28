@@ -95,21 +95,15 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 type FieldsMap<T, P extends string = never> = { [K in keyof T]?: EntityField<ExpandProperty<T[K]>>[] };
 export type EntityField<T, P extends string = never> = keyof T | '*' | AutoPath<T, P, '*'> | FieldsMap<T, P>;
 
+export type OrderDefinition<T> = (QueryOrderMap<T> & { 0?: never }) | QueryOrderMap<T>[];
+
 export interface FindOptions<T, P extends string = never> {
   populate?: readonly AutoPath<T, P>[] | boolean;
   populateWhere?: ObjectQuery<T> | PopulateHint;
-  orderBy?: (QueryOrderMap<T> & { 0?: never }) | QueryOrderMap<T>[];
+  orderBy?: OrderDefinition<T>;
   cache?: boolean | number | [string, number];
   limit?: number;
   offset?: number;
-  /** Cursor based pagination */
-  before?: string | Cursor<any>;
-  /** Cursor based pagination */
-  after?: string | Cursor<any>;
-  /** Cursor based pagination */
-  first?: number;
-  /** Cursor based pagination */
-  last?: number;
   refresh?: boolean;
   convertCustomTypes?: boolean;
   disableIdentityMap?: boolean;
@@ -125,6 +119,17 @@ export interface FindOptions<T, P extends string = never> {
   lockTableAliases?: string[];
   ctx?: Transaction;
   connectionType?: ConnectionType;
+}
+
+export interface FindByCursorOptions<T extends object, P extends string = never> extends Omit<FindOptions<T, P>, 'limit' | 'offset'> {
+  /** Fetch items `before` this cursor */
+  before?: string | Cursor<any>;
+  /** Fetch items `after` this cursor */
+  after?: string | Cursor<any>;
+  /** Fetch `first` N items */
+  first?: number;
+  /** Fetch `last` N items */
+  last?: number;
 }
 
 export interface FindOneOptions<T extends object, P extends string = never> extends Omit<FindOptions<T, P>, 'limit' | 'lockMode'> {

@@ -30,6 +30,7 @@ import type {
   RequiredEntityData,
   Transaction,
   QueryOrder,
+  FindByCursorOptions,
 } from '@mikro-orm/core';
 import {
   Cursor,
@@ -90,7 +91,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       where = { [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where } as FilterQuery<T>;
     }
 
-    const { first, last, before, after } = options;
+    const { first, last, before, after } = options as FindByCursorOptions<T>;
     const isCursorPagination = [first, last, before, after].some(v => v != null);
     const limit = first || last;
     const isLast = !first && !!last;
@@ -99,8 +100,6 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       const [order, ...otherOrders] = definition;
       const [offset, ...otherOffsets] = offsets;
       const [prop, direction] = order;
-      // FIXME is this correct?
-      // const desc = Utils.xor(direction as unknown === QueryOrderNumeric.DESC || direction.toLowerCase() === 'desc', isLast);
       const desc = direction as unknown === QueryOrderNumeric.DESC || direction.toLowerCase() === 'desc';
       const operator = Utils.xor(desc, inverse) ? '$lt' : '$gt';
 
@@ -125,7 +124,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       .withSchema(this.getSchemaName(meta, options));
 
     if (isCursorPagination) {
-      const definition = Cursor.getDefinition(options);
+      const definition = Cursor.getDefinition(orderBy);
 
       // rebuild order statements
       qb.orderBy(definition.map(([prop, direction]) => {
@@ -135,10 +134,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       if (after) {
         const def = after instanceof Cursor ? after.endCursor : after;
-        // FIXME how to handle empty values, is empty string better than undefined/null?
-        const offsets = Cursor.decode(def!);
+        const offsets = def ? Cursor.decode(def) : [];
 
-        if (offsets && definition.length === offsets.length) {
+        if (definition.length === offsets.length) {
           const paginateWhere = buildWhere(definition, offsets);
           qb.andWhere(paginateWhere);
         }
@@ -146,9 +144,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       if (before) {
         const def = before instanceof Cursor ? before.startCursor : before;
-        const offsets = Cursor.decode(def);
+        const offsets = def ? Cursor.decode(def) : [];
 
-        if (offsets && definition.length === offsets.length) {
+        if (definition.length === offsets.length) {
           const paginateWhere = buildWhere(definition, offsets, true);
           qb.andWhere(paginateWhere);
         }

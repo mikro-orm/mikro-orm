@@ -9,6 +9,7 @@ import type {
   DeleteOptions,
   EntityField,
   EntityManagerType,
+  FindByCursorOptions,
   FindOneOptions,
   FindOneOrFailOptions,
   FindOptions,
@@ -399,12 +400,54 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
-   * TODO
+   * Calls `em.find()` and `em.count()` with the same arguments (where applicable) and returns the results as {@apilink Cursor} object.
+   * Supports `before`, `after`, `first` and `last` options while disallowing `limit` and `offset`. Explicit `orderBy` option
+   * is required.
+   *
+   * Use `first` and `after` for forward pagination, or `last` and `before` for backward pagination.
+   *
+   * - `first` and `last` are numbers and serve as an alternative to `offset`, those options are mutually exclusive, use only one at a time
+   * - `before` and `after` specify the previous cursor value
+   *
+   * ```ts
+   * const currentCursor = await em.findByCursor(User, {}, {
+   *   first: 10,
+   *   after: previousCursor, // can be either string or `Cursor` instance
+   *   orderBy: { id: 'desc' },
+   * });
+   *
+   * // to fetch next page
+   * const nextCursor = await em.findByCursor(User, {}, {
+   *   first: 10,
+   *   after: currentCursor, // or currentCursor.endCursor
+   *   orderBy: { id: 'desc' },
+   * });
+   * ```
+   *
+   * The `Cursor` object provides following interface:
+   *
+   * ```ts
+   * Cursor<User> {
+   *   items: [
+   *     User { ... },
+   *     User { ... },
+   *     User { ... },
+   *   ],
+   *   totalCount: 50,
+   *   startCursor: 'WzRd',
+   *   endCursor: 'WzZd',
+   *   hasPrevPage: true,
+   *   hasNextPage: true,
+   * }
+   * ```
+   *
+   * - `before` and `after` take the cursor type as described in the cursor field section.
+   * - `first` takes a non-negative integer.
    */
   async findByCursor<
     Entity extends object,
     Hint extends string = never,
-  >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindOptions<Entity, Hint> = {}): Promise<Cursor<Entity, Hint>> {
+  >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindByCursorOptions<Entity, Hint> = {}): Promise<Cursor<Entity, Hint>> {
     const em = this.getContext(false);
     entityName = Utils.className(entityName);
     const meta = em.metadata.get<Entity>(entityName);

@@ -284,6 +284,54 @@ console.log(authors.length); // based on limit parameter, e.g. 10
 console.log(count); // total count, e.g. 1327
 ```
 
+### Cursor-based pagination
+
+As an alternative to the offset based pagination with `limit` and `offset`, we can paginate based on a cursor. A cursor is an opaque string that defines specific place in ordered entity graph. You can use `em.findByCursor()` to access those options. Under the hood, it will call `em.find()` and `em.count()` just like the `em.findAndCount()` method, but will use the cursor options instead.
+
+Supports `before`, `after`, `first` and `last` options while disallowing `limit` and `offset`. Explicit `orderBy` option is required.
+
+Use `first` and `after` for forward pagination, or `last` and `before` for backward pagination.
+
+- `first` and `last` are numbers and serve as an alternative to `offset`, those options are mutually exclusive, use only one at a time
+- `before` and `after` specify the previous cursor value
+
+```ts
+const currentCursor = await em.findByCursor(User, {}, {
+  first: 10,
+  after: previousCursor, // can be either string or `Cursor` instance
+  orderBy: { id: 'desc' },
+});
+
+// to fetch next page
+const nextCursor = await em.findByCursor(User, {}, {
+  first: 10,
+  after: currentCursor.endCursor, // or currentCursor.endCursor
+  orderBy: { id: 'desc' },
+});
+```
+
+The `Cursor` object provides following interface:
+
+```ts
+Cursor<User> {
+  items: [
+    User { ... },
+    User { ... },
+    User { ... },
+    ...
+  ],
+  totalCount: 50,
+  length: 10,
+  startCursor: 'WzRd',
+  endCursor: 'WzZd',
+  hasPrevPage: true,
+  hasNextPage: true,
+}
+```
+
+- `before` and `after` take the cursor type as described in the cursor field section.
+- `first` takes a non-negative integer.
+
 ### Handling Not Found Entities
 
 When we call `em.findOne()` and no entity is found based on our criteria, `null` will be returned. If we rather have an `Error` instance thrown, we can use `em.findOneOrFail()`:
