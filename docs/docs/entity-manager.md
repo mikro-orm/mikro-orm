@@ -329,9 +329,6 @@ Cursor<User> {
 }
 ```
 
-- `before` and `after` take the cursor type as described in the cursor field section.
-- `first` takes a non-negative integer.
-
 ### Handling Not Found Entities
 
 When we call `em.findOne()` and no entity is found based on our criteria, `null` will be returned. If we rather have an `Error` instance thrown, we can use `em.findOneOrFail()`:

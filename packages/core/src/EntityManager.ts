@@ -440,9 +440,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    *   hasNextPage: true,
    * }
    * ```
-   *
-   * - `before` and `after` take the cursor type as described in the cursor field section.
-   * - `first` takes a non-negative integer.
    */
   async findByCursor<
     Entity extends object,

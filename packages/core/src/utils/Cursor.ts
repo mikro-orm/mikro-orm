@@ -50,9 +50,6 @@ import type { QueryOrder } from '../enums';
  *   hasNextPage: true,
  * }
  * ```
- *
- * - `before` and `after` take the cursor type as described in the cursor field section.
- * - `first` takes a non-negative integer.
  */
 export class Cursor<Entity extends object, Hint extends string = never> {
 
