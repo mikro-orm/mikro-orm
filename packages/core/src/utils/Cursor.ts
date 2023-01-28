@@ -60,11 +60,11 @@ export class Cursor<Entity extends object, Hint extends string = never> {
   }
 
   static encode<Data extends unknown[]>(value: Data): string {
-    return Buffer.from(JSON.stringify(value)).toString('base64').replace(/\+/g, '-').replace(/\//g, '_');
+    return Buffer.from(JSON.stringify(value)).toString('base64url');
   }
 
   static decode<Data extends unknown[]>(value: string): Data {
-    return JSON.parse(Buffer.from(value.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8'));
+    return JSON.parse(Buffer.from(value, 'base64url').toString('utf8'));
   }
 
   static getDefinition<Entity extends object>(options: FindOptions<Entity, any>) {

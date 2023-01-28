@@ -1,4 +1,4 @@
-import { Cursor, Entity, MikroORM, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/core';
+import { Cursor, Entity, FilterQuery, MikroORM, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers';
 
@@ -50,65 +50,72 @@ afterAll(() => orm.close(true));
 
 test('complex cursor based pagination using `first` and `after` (id asc)', async () => {
   const mock = mockLogger(orm, ['query', 'query-params']);
+  const where = { $or: [{ termsAccepted: true }, { name: 'User 1' }, { age: { $lte: 30 } }], $not: { name: 'User 2' } } satisfies FilterQuery<User>;
+  const orderBy = { name: 'desc', age: 'asc', email: 'asc' } as const;
 
   // 1. page
-  const cursor1 = await orm.em.findByCursor(User, { termsAccepted: true }, {
+  const cursor1 = await orm.em.findByCursor(User, where, {
     first: 10,
-    orderBy: { age: 'asc', name: 'desc', email: 'asc' },
+    orderBy,
   });
   expect(cursor1).toBeInstanceOf(Cursor);
   expect(cursor1.items).toMatchObject([
-    { age: 26, name: 'User 2', email: 'email-52', id: 49, termsAccepted: true },
-    { age: 28, name: 'User 1', email: 'email-55', id: 46, termsAccepted: true },
-    { age: 29, name: 'User 3', email: 'email-58', id: 43, termsAccepted: true },
-    { age: 31, name: 'User 3', email: 'email-61', id: 40, termsAccepted: true },
-    { age: 32, name: 'User 2', email: 'email-64', id: 37, termsAccepted: true },
-    { age: 34, name: 'User 2', email: 'email-67', id: 34, termsAccepted: true },
-    { age: 35, name: 'User 1', email: 'email-70', id: 31, termsAccepted: true },
-    { age: 37, name: 'User 3', email: 'email-73', id: 28, termsAccepted: true },
-    { age: 38, name: 'User 3', email: 'email-76', id: 25, termsAccepted: true },
-    { age: 40, name: 'User 2', email: 'email-79', id: 22, termsAccepted: true },
+    { name: 'User 3', age: 26, email: 'email-51', termsAccepted: false, id: 50 },
+    { name: 'User 3', age: 27, email: 'email-53', termsAccepted: false, id: 48 },
+    { name: 'User 3', age: 28, email: 'email-56', termsAccepted: false, id: 45 },
+    { name: 'User 3', age: 29, email: 'email-58', termsAccepted: true, id: 43 },
+    { name: 'User 3', age: 31, email: 'email-61', termsAccepted: true, id: 40 },
+    { name: 'User 3', age: 37, email: 'email-73', termsAccepted: true, id: 28 },
+    { name: 'User 3', age: 38, email: 'email-76', termsAccepted: true, id: 25 },
+    { name: 'User 3', age: 44, email: 'email-88', termsAccepted: true, id: 13 },
+    { name: 'User 3', age: 46, email: 'email-91', termsAccepted: true, id: 10 },
+    { name: 'User 1', age: 28, email: 'email-55', termsAccepted: true, id: 46 },
   ]);
-  expect(cursor1.totalCount).toBe(17);
-  expect(cursor1.startCursor).toBe('WzI2LCJVc2VyIDIiLCJlbWFpbC01MiJd');
-  expect(cursor1.endCursor).toBe('WzQwLCJVc2VyIDIiLCJlbWFpbC03OSJd');
+  expect(cursor1.totalCount).toBe(19);
+  expect(cursor1.startCursor).toBe('WyJVc2VyIDMiLDI2LCJlbWFpbC01MSJd');
+  expect(cursor1.endCursor).toBe('WyJVc2VyIDEiLDI4LCJlbWFpbC01NSJd');
   expect(cursor1.hasNextPage).toBe(true);
   expect(cursor1.hasPrevPage).toBe(false);
   let queries = mock.mock.calls.map(call => call[0]).sort();
   expect(queries).toEqual([
-    '[query] select `u0`.* from `user` as `u0` where `u0`.`terms_accepted` = true order by `u0`.`age` asc, `u0`.`name` desc, `u0`.`email` asc limit 11',
-    '[query] select count(*) as `count` from `user` as `u0` where `u0`.`terms_accepted` = true',
+    '[query] select `u0`.* from `user` as `u0`' +
+    " where (`u0`.`terms_accepted` = true or `u0`.`name` = 'User 1' or `u0`.`age` <= 30) and not (`u0`.`name` = 'User 2')" +
+    ' order by `u0`.`name` desc, `u0`.`age` asc, `u0`.`email` asc limit 11',
+    "[query] select count(*) as `count` from `user` as `u0` where (`u0`.`terms_accepted` = true or `u0`.`name` = 'User 1' or `u0`.`age` <= 30) and not (`u0`.`name` = 'User 2')",
   ]);
   orm.em.clear();
   mock.mockReset();
 
   // 2. page
-  const cursor2 = await orm.em.findByCursor(User, { termsAccepted: true }, {
+  const cursor2 = await orm.em.findByCursor(User, where, {
     first: 10,
     after: cursor1,
-    orderBy: { age: 'asc', name: 'desc', email: 'asc' },
+    orderBy,
   });
   expect(cursor2).toBeInstanceOf(Cursor);
   expect(cursor2.items).toMatchObject([
-    { age: 41, name: 'User 2', email: 'email-82', termsAccepted: true, id: 19 },
-    { age: 43, name: 'User 1', email: 'email-85', termsAccepted: true, id: 16 },
-    { age: 44, name: 'User 3', email: 'email-88', termsAccepted: true, id: 13 },
-    { age: 46, name: 'User 3', email: 'email-91', termsAccepted: true, id: 10 },
-    { age: 47, name: 'User 2', email: 'email-94', termsAccepted: true, id: 7 },
-    { age: 49, name: 'User 2', email: 'email-97', termsAccepted: true, id: 4 },
-    { age: 50, name: 'User 1', email: 'email-100', termsAccepted: true, id: 1 },
+    { name: 'User 1', age: 30, email: 'email-60', termsAccepted: false, id: 41 },
+    { name: 'User 1', age: 33, email: 'email-65', termsAccepted: false, id: 36 },
+    { name: 'User 1', age: 35, email: 'email-70', termsAccepted: true, id: 31 },
+    { name: 'User 1', age: 38, email: 'email-75', termsAccepted: false, id: 26 },
+    { name: 'User 1', age: 40, email: 'email-80', termsAccepted: false, id: 21 },
+    { name: 'User 1', age: 43, email: 'email-85', termsAccepted: true, id: 16 },
+    { name: 'User 1', age: 45, email: 'email-90', termsAccepted: false, id: 11 },
+    { name: 'User 1', age: 48, email: 'email-95', termsAccepted: false, id: 6 },
+    { name: 'User 1', age: 50, email: 'email-100', termsAccepted: true, id: 1 },
   ]);
-  expect(cursor2.totalCount).toBe(17);
-  expect(cursor2.startCursor).toBe('WzQxLCJVc2VyIDIiLCJlbWFpbC04MiJd');
-  expect(cursor2.endCursor).toBe('WzUwLCJVc2VyIDEiLCJlbWFpbC0xMDAiXQ==');
+  expect(cursor2.totalCount).toBe(19);
+  expect(cursor2.startCursor).toBe('WyJVc2VyIDEiLDMwLCJlbWFpbC02MCJd');
+  expect(cursor2.endCursor).toBe('WyJVc2VyIDEiLDUwLCJlbWFpbC0xMDAiXQ');
   expect(cursor2.hasNextPage).toBe(false);
   // expect(cursor2.hasPrevPage).toBe(true); // FIXME
   queries = mock.mock.calls.map(call => call[0]).sort();
   expect(queries).toEqual([
     '[query] select `u0`.* from `user` as `u0`' +
-    " where `u0`.`terms_accepted` = true and `u0`.`age` >= 40 and (`u0`.`age` > 40 or (`u0`.`name` <= 'User 2' and (`u0`.`name` < 'User 2' or `u0`.`email` > 'email-79')))" +
-    ' order by `u0`.`age` asc, `u0`.`name` desc, `u0`.`email` asc limit 11',
-    '[query] select count(*) as `count` from `user` as `u0` where `u0`.`terms_accepted` = true',
+    " where (`u0`.`terms_accepted` = true or `u0`.`name` = 'User 1' or `u0`.`age` <= 30) and not (`u0`.`name` = 'User 2')" +
+    " and `u0`.`name` <= 'User 1' and (`u0`.`name` < 'User 1' or (`u0`.`age` >= 28 and (`u0`.`age` > 28 or `u0`.`email` > 'email-55')))" +
+    ' order by `u0`.`name` desc, `u0`.`age` asc, `u0`.`email` asc limit 11',
+    "[query] select count(*) as `count` from `user` as `u0` where (`u0`.`terms_accepted` = true or `u0`.`name` = 'User 1' or `u0`.`age` <= 30) and not (`u0`.`name` = 'User 2')",
   ]);
   orm.em.clear();
   mock.mockReset();

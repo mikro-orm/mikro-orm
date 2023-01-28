@@ -136,8 +136,8 @@ test('simple cursor based pagination using `first` and `after` (id asc)', async 
   expect(cursor4.items[0]).toMatchObject({ id: 10, name: 'User 10' });
   expect(cursor4.items[39]).toMatchObject({ id: 49, name: 'User 49' });
   expect(cursor4.totalCount).toBe(50);
-  expect(cursor4.startCursor).toBe('WzEwXQ==');
-  expect(cursor4.endCursor).toBe('WzQ5XQ==');
+  expect(cursor4.startCursor).toBe('WzEwXQ');
+  expect(cursor4.endCursor).toBe('WzQ5XQ');
   expect(cursor4.hasNextPage).toBe(true);
   // expect(cursor4.hasPrevPage).toBe(true); // FIXME
   queries = mock.mock.calls.map(call => call[0]).sort();
@@ -157,8 +157,8 @@ test('simple cursor based pagination using `first` and `after` (id asc)', async 
   expect(cursor5).toBeInstanceOf(Cursor);
   expect(cursor5.items).toMatchObject([{ id: 50, name: 'User 50' }]);
   expect(cursor5.totalCount).toBe(50);
-  expect(cursor5.startCursor).toBe('WzUwXQ==');
-  expect(cursor5.endCursor).toBe('WzUwXQ==');
+  expect(cursor5.startCursor).toBe('WzUwXQ');
+  expect(cursor5.endCursor).toBe('WzUwXQ');
   expect(cursor5.hasNextPage).toBe(false);
   // expect(cursor5.hasPrevPage).toBe(true); // FIXME
   queries = mock.mock.calls.map(call => call[0]).sort();
@@ -206,8 +206,8 @@ test('simple cursor based pagination using `first` and `after` (id desc)', async
     { id: 48, name: 'User 48' },
   ]);
   expect(cursor1.totalCount).toBe(50);
-  expect(cursor1.startCursor).toBe('WzUwXQ==');
-  expect(cursor1.endCursor).toBe('WzQ4XQ==');
+  expect(cursor1.startCursor).toBe('WzUwXQ');
+  expect(cursor1.endCursor).toBe('WzQ4XQ');
   expect(cursor1.hasNextPage).toBe(true);
   expect(cursor1.hasPrevPage).toBe(false);
   let queries = mock.mock.calls.map(call => call[0]).sort();
@@ -231,8 +231,8 @@ test('simple cursor based pagination using `first` and `after` (id desc)', async
     { id: 45, name: 'User 45' },
   ]);
   expect(cursor2.totalCount).toBe(50);
-  expect(cursor2.startCursor).toBe('WzQ3XQ==');
-  expect(cursor2.endCursor).toBe('WzQ1XQ==');
+  expect(cursor2.startCursor).toBe('WzQ3XQ');
+  expect(cursor2.endCursor).toBe('WzQ1XQ');
   expect(cursor2.hasNextPage).toBe(true);
   // expect(cursor2.hasPrevPage).toBe(true); // FIXME
   queries = mock.mock.calls.map(call => call[0]).sort();
@@ -256,8 +256,8 @@ test('simple cursor based pagination using `first` and `after` (id desc)', async
     { id: 42, name: 'User 42' },
   ]);
   expect(cursor3.totalCount).toBe(50);
-  expect(cursor3.startCursor).toBe('WzQ0XQ==');
-  expect(cursor3.endCursor).toBe('WzQyXQ==');
+  expect(cursor3.startCursor).toBe('WzQ0XQ');
+  expect(cursor3.endCursor).toBe('WzQyXQ');
   expect(cursor3.hasNextPage).toBe(true);
   // expect(cursor3.hasPrevPage).toBe(true); // FIXME
   queries = mock.mock.calls.map(call => call[0]).sort();
@@ -279,7 +279,7 @@ test('simple cursor based pagination using `first` and `after` (id desc)', async
   expect(cursor4.items[0]).toMatchObject({ id: 41, name: 'User 41' });
   expect(cursor4.items[39]).toMatchObject({ id: 2, name: 'User 2' });
   expect(cursor4.totalCount).toBe(50);
-  expect(cursor4.startCursor).toBe('WzQxXQ==');
+  expect(cursor4.startCursor).toBe('WzQxXQ');
   expect(cursor4.endCursor).toBe('WzJd');
   expect(cursor4.hasNextPage).toBe(true);
   // expect(cursor4.hasPrevPage).toBe(true); // FIXME
@@ -349,8 +349,8 @@ test('simple cursor based pagination using `last` and `before` (id asc)', async 
     { id: 50, name: 'User 50' },
   ]);
   expect(cursor1.totalCount).toBe(50);
-  expect(cursor1.startCursor).toBe('WzQ4XQ==');
-  expect(cursor1.endCursor).toBe('WzUwXQ==');
+  expect(cursor1.startCursor).toBe('WzQ4XQ');
+  expect(cursor1.endCursor).toBe('WzUwXQ');
   expect(cursor1.hasNextPage).toBe(false);
   expect(cursor1.hasPrevPage).toBe(true);
   let queries = mock.mock.calls.map(call => call[0]).sort();
@@ -374,8 +374,8 @@ test('simple cursor based pagination using `last` and `before` (id asc)', async 
     { id: 47, name: 'User 47' },
   ]);
   expect(cursor2.totalCount).toBe(50);
-  expect(cursor2.startCursor).toBe('WzQ1XQ==');
-  expect(cursor2.endCursor).toBe('WzQ3XQ==');
+  expect(cursor2.startCursor).toBe('WzQ1XQ');
+  expect(cursor2.endCursor).toBe('WzQ3XQ');
   // expect(cursor2.hasNextPage).toBe(true); // FIXME
   expect(cursor2.hasPrevPage).toBe(true);
   queries = mock.mock.calls.map(call => call[0]).sort();
@@ -399,8 +399,8 @@ test('simple cursor based pagination using `last` and `before` (id asc)', async 
     { id: 44, name: 'User 44' },
   ]);
   expect(cursor3.totalCount).toBe(50);
-  expect(cursor3.startCursor).toBe('WzQyXQ==');
-  expect(cursor3.endCursor).toBe('WzQ0XQ==');
+  expect(cursor3.startCursor).toBe('WzQyXQ');
+  expect(cursor3.endCursor).toBe('WzQ0XQ');
   // expect(cursor3.hasNextPage).toBe(true); // FIXME
   expect(cursor3.hasPrevPage).toBe(true);
   queries = mock.mock.calls.map(call => call[0]).sort();
@@ -423,7 +423,7 @@ test('simple cursor based pagination using `last` and `before` (id asc)', async 
   expect(cursor4.items[39]).toMatchObject({ id: 41, name: 'User 41' });
   expect(cursor4.totalCount).toBe(50);
   expect(cursor4.startCursor).toBe('WzJd');
-  expect(cursor4.endCursor).toBe('WzQxXQ==');
+  expect(cursor4.endCursor).toBe('WzQxXQ');
   // expect(cursor4.hasNextPage).toBe(true); // FIXME
   expect(cursor4.hasPrevPage).toBe(true);
   queries = mock.mock.calls.map(call => call[0]).sort();
@@ -565,8 +565,8 @@ test('simple cursor based pagination using `last` and `before` (id desc)', async
   expect(cursor4.items[0]).toMatchObject({ id: 49, name: 'User 49' });
   expect(cursor4.items[39]).toMatchObject({ id: 10, name: 'User 10' });
   expect(cursor4.totalCount).toBe(50);
-  expect(cursor4.startCursor).toBe('WzQ5XQ==');
-  expect(cursor4.endCursor).toBe('WzEwXQ==');
+  expect(cursor4.startCursor).toBe('WzQ5XQ');
+  expect(cursor4.endCursor).toBe('WzEwXQ');
   // expect(cursor4.hasNextPage).toBe(true); // FIXME
   expect(cursor4.hasPrevPage).toBe(true);
   queries = mock.mock.calls.map(call => call[0]).sort();
@@ -586,8 +586,8 @@ test('simple cursor based pagination using `last` and `before` (id desc)', async
   expect(cursor5).toBeInstanceOf(Cursor);
   expect(cursor5.items).toMatchObject([{ id: 50, name: 'User 50' }]);
   expect(cursor5.totalCount).toBe(50);
-  expect(cursor5.startCursor).toBe('WzUwXQ==');
-  expect(cursor5.endCursor).toBe('WzUwXQ==');
+  expect(cursor5.startCursor).toBe('WzUwXQ');
+  expect(cursor5.endCursor).toBe('WzUwXQ');
   expect(cursor5.hasNextPage).toBe(false);
   // expect(cursor5.hasPrevPage).toBe(true); // FIXME
   queries = mock.mock.calls.map(call => call[0]).sort();
