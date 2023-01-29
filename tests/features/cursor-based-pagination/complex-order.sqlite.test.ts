@@ -1,4 +1,13 @@
-import { Cursor, Entity, FilterQuery, MikroORM, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/core';
+import {
+  Cursor,
+  Entity,
+  FilterQuery,
+  MikroORM,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  SimpleLogger,
+} from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers';
 
@@ -20,6 +29,9 @@ export class User {
   @Property()
   termsAccepted!: boolean;
 
+  @ManyToOne(() => User, { nullable: true })
+  bestFriend?: User;
+
 }
 
 let orm: MikroORM;
@@ -32,14 +44,21 @@ beforeAll(async () => {
     loggerFactory: options => new SimpleLogger(options),
   });
   await orm.schema.refreshDatabase();
+  const users: User[] = [];
 
   for (let i = 0; i < 50; i++) {
-    orm.em.create(User, {
+    const u = orm.em.create(User, {
+      id: i + 1,
       name: `User ${Math.round((i * 2) % 5 / 2) + 1}`,
       email: `email-${100 - i}`,
       termsAccepted: i % 3 === 0,
       age: Math.round((100 - i) / 2),
     });
+    users.push(u);
+
+    if (i % 5 === 4) {
+      u.bestFriend = users[i % 5];
+    }
   }
 
   await orm.em.flush();
@@ -108,7 +127,7 @@ test('complex cursor based pagination using `first` and `after` (id asc)', async
   expect(cursor2.startCursor).toBe('WyJVc2VyIDEiLDMwLCJlbWFpbC02MCJd');
   expect(cursor2.endCursor).toBe('WyJVc2VyIDEiLDUwLCJlbWFpbC0xMDAiXQ');
   expect(cursor2.hasNextPage).toBe(false);
-  // expect(cursor2.hasPrevPage).toBe(true); // FIXME
+  expect(cursor2.hasPrevPage).toBe(true);
   queries = mock.mock.calls.map(call => call[0]).sort();
   expect(queries).toEqual([
     '[query] select `u0`.* from `user` as `u0`' +

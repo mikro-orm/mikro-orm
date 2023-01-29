@@ -92,7 +92,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor2.startCursor).toBe('WzRd');
     expect(cursor2.endCursor).toBe('WzZd');
     expect(cursor2.hasNextPage).toBe(true);
-    // expect(cursor2.hasPrevPage).toBe(true); // FIXME
+    expect(cursor2.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
     expect(queries).toEqual([
       '[query] select `u0`.* from `user` as `u0` where `u0`.`id` > 3 order by `u0`.`id` asc limit 4',
@@ -117,7 +117,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor3.startCursor).toBe('Wzdd');
     expect(cursor3.endCursor).toBe('Wzld');
     expect(cursor3.hasNextPage).toBe(true);
-    // expect(cursor3.hasPrevPage).toBe(true); // FIXME
+    expect(cursor3.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
     expect(queries).toEqual([
       '[query] select `u0`.* from `user` as `u0` where `u0`.`id` > 6 order by `u0`.`id` asc limit 4',
@@ -140,7 +140,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor4.startCursor).toBe('WzEwXQ');
     expect(cursor4.endCursor).toBe('WzQ5XQ');
     expect(cursor4.hasNextPage).toBe(true);
-    // expect(cursor4.hasPrevPage).toBe(true); // FIXME
+    expect(cursor4.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
     expect(queries).toEqual([
       '[query] select `u0`.* from `user` as `u0` where `u0`.`id` > 9 order by `u0`.`id` asc limit 41',
@@ -161,7 +161,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor5.startCursor).toBe('WzUwXQ');
     expect(cursor5.endCursor).toBe('WzUwXQ');
     expect(cursor5.hasNextPage).toBe(false);
-    // expect(cursor5.hasPrevPage).toBe(true); // FIXME
+    expect(cursor5.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
     expect(queries).toEqual([
       '[query] select `u0`.* from `user` as `u0` where `u0`.`id` > 49 order by `u0`.`id` asc limit 41',
@@ -182,7 +182,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor6.startCursor).toBeNull();
     expect(cursor6.endCursor).toBeNull();
     expect(cursor6.hasNextPage).toBe(false);
-    // expect(cursor6.hasPrevPage).toBe(true); // FIXME
+    expect(cursor6.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
     expect(queries).toEqual([
       '[query] select `u0`.* from `user` as `u0` where `u0`.`id` > 50 order by `u0`.`id` asc limit 2',
@@ -235,7 +235,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor2.startCursor).toBe('WzQ3XQ');
     expect(cursor2.endCursor).toBe('WzQ1XQ');
     expect(cursor2.hasNextPage).toBe(true);
-    // expect(cursor2.hasPrevPage).toBe(true); // FIXME
+    expect(cursor2.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
     expect(queries).toEqual([
       '[query] select `u0`.* from `user` as `u0` where `u0`.`id` < 48 order by `u0`.`id` desc limit 4',
@@ -260,7 +260,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor3.startCursor).toBe('WzQ0XQ');
     expect(cursor3.endCursor).toBe('WzQyXQ');
     expect(cursor3.hasNextPage).toBe(true);
-    // expect(cursor3.hasPrevPage).toBe(true); // FIXME
+    expect(cursor3.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
     expect(queries).toEqual([
       '[query] select `u0`.* from `user` as `u0` where `u0`.`id` < 45 order by `u0`.`id` desc limit 4',
@@ -283,7 +283,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor4.startCursor).toBe('WzQxXQ');
     expect(cursor4.endCursor).toBe('WzJd');
     expect(cursor4.hasNextPage).toBe(true);
-    // expect(cursor4.hasPrevPage).toBe(true); // FIXME
+    expect(cursor4.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
     expect(queries).toEqual([
       '[query] select `u0`.* from `user` as `u0` where `u0`.`id` < 42 order by `u0`.`id` desc limit 41',
@@ -304,7 +304,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor5.startCursor).toBe('WzFd');
     expect(cursor5.endCursor).toBe('WzFd');
     expect(cursor5.hasNextPage).toBe(false);
-    // expect(cursor5.hasPrevPage).toBe(true); // FIXME
+    expect(cursor5.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
     expect(queries).toEqual([
       '[query] select `u0`.* from `user` as `u0` where `u0`.`id` < 2 order by `u0`.`id` desc limit 41',
@@ -325,7 +325,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor6.startCursor).toBeNull();
     expect(cursor6.endCursor).toBeNull();
     expect(cursor6.hasNextPage).toBe(false);
-    // expect(cursor6.hasPrevPage).toBe(true); // FIXME
+    expect(cursor6.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
     expect(queries).toEqual([
       '[query] select `u0`.* from `user` as `u0` where `u0`.`id` < 1 order by `u0`.`id` desc limit 2',
@@ -377,7 +377,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor2.totalCount).toBe(50);
     expect(cursor2.startCursor).toBe('WzQ1XQ');
     expect(cursor2.endCursor).toBe('WzQ3XQ');
-    // expect(cursor2.hasNextPage).toBe(true); // FIXME
+    expect(cursor2.hasNextPage).toBe(true);
     expect(cursor2.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
     expect(queries).toEqual([
@@ -402,7 +402,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor3.totalCount).toBe(50);
     expect(cursor3.startCursor).toBe('WzQyXQ');
     expect(cursor3.endCursor).toBe('WzQ0XQ');
-    // expect(cursor3.hasNextPage).toBe(true); // FIXME
+    expect(cursor3.hasNextPage).toBe(true);
     expect(cursor3.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
     expect(queries).toEqual([
@@ -425,7 +425,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor4.totalCount).toBe(50);
     expect(cursor4.startCursor).toBe('WzJd');
     expect(cursor4.endCursor).toBe('WzQxXQ');
-    // expect(cursor4.hasNextPage).toBe(true); // FIXME
+    expect(cursor4.hasNextPage).toBe(true);
     expect(cursor4.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
     expect(queries).toEqual([
@@ -447,7 +447,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor5.startCursor).toBe('WzFd');
     expect(cursor5.endCursor).toBe('WzFd');
     expect(cursor5.hasNextPage).toBe(false);
-    // expect(cursor5.hasPrevPage).toBe(true); // FIXME
+    expect(cursor5.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
     expect(queries).toEqual([
       '[query] select `u0`.* from `user` as `u0` where `u0`.`id` < 2 order by `u0`.`id` desc limit 41',
@@ -468,7 +468,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor6.startCursor).toBeNull();
     expect(cursor6.endCursor).toBeNull();
     expect(cursor6.hasNextPage).toBe(false);
-    // expect(cursor6.hasPrevPage).toBe(true); // FIXME
+    expect(cursor6.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
     expect(queries).toEqual([
       '[query] select `u0`.* from `user` as `u0` where `u0`.`id` < 1 order by `u0`.`id` desc limit 2',
@@ -520,7 +520,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor2.totalCount).toBe(50);
     expect(cursor2.startCursor).toBe('WzZd');
     expect(cursor2.endCursor).toBe('WzRd');
-    // expect(cursor2.hasNextPage).toBe(true); // FIXME
+    expect(cursor2.hasNextPage).toBe(true);
     expect(cursor2.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
     expect(queries).toEqual([
@@ -545,7 +545,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor3.totalCount).toBe(50);
     expect(cursor3.startCursor).toBe('Wzld');
     expect(cursor3.endCursor).toBe('Wzdd');
-    // expect(cursor3.hasNextPage).toBe(true); // FIXME
+    expect(cursor3.hasNextPage).toBe(true);
     expect(cursor3.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
     expect(queries).toEqual([
@@ -568,7 +568,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor4.totalCount).toBe(50);
     expect(cursor4.startCursor).toBe('WzQ5XQ');
     expect(cursor4.endCursor).toBe('WzEwXQ');
-    // expect(cursor4.hasNextPage).toBe(true); // FIXME
+    expect(cursor4.hasNextPage).toBe(true);
     expect(cursor4.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
     expect(queries).toEqual([
@@ -590,7 +590,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor5.startCursor).toBe('WzUwXQ');
     expect(cursor5.endCursor).toBe('WzUwXQ');
     expect(cursor5.hasNextPage).toBe(false);
-    // expect(cursor5.hasPrevPage).toBe(true); // FIXME
+    expect(cursor5.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
     expect(queries).toEqual([
       '[query] select `u0`.* from `user` as `u0` where `u0`.`id` > 49 order by `u0`.`id` asc limit 41',
@@ -611,7 +611,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor6.startCursor).toBeNull();
     expect(cursor6.endCursor).toBeNull();
     expect(cursor6.hasNextPage).toBe(false);
-    // expect(cursor6.hasPrevPage).toBe(true); // FIXME
+    expect(cursor6.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
     expect(queries).toEqual([
       '[query] select `u0`.* from `user` as `u0` where `u0`.`id` > 50 order by `u0`.`id` asc limit 2',
@@ -623,8 +623,8 @@ describe('simple cursor based pagination', () => {
 
   test('using both `before` and `after` (id desc)', async () => {
     const cursor1 = await orm.em.findByCursor(User, {}, {
-      before: Cursor.for({ id: 5 }, { id: -1 }),
-      after: Cursor.for({ id: 15 }, { id: -1 }),
+      before: { id: 5 },
+      after: { id: 15 },
       orderBy: { id: 'desc' },
     });
     expect([...cursor1]).toMatchObject([
@@ -640,8 +640,8 @@ describe('simple cursor based pagination', () => {
     ]);
 
     const cursor2 = await orm.em.findByCursor(User, {}, {
-      before: Cursor.for({ id: 5 }, { id: -1 }),
-      after: Cursor.for({ id: 15 }, { id: -1 }),
+      before: { id: 5 },
+      after: { id: 15 },
       first: 5,
       orderBy: { id: 'desc' },
     });
@@ -654,8 +654,8 @@ describe('simple cursor based pagination', () => {
     ]);
 
     const cursor3 = await orm.em.findByCursor(User, {}, {
-      before: Cursor.for({ id: 5 }, { id: -1 }),
-      after: Cursor.for({ id: 15 }, { id: -1 }),
+      before: { id: 5 },
+      after: { id: 15 },
       last: 5,
       orderBy: { id: 'desc' },
     });
@@ -668,10 +668,57 @@ describe('simple cursor based pagination', () => {
     ]);
   });
 
+  test('using both `before` and `after` with `em.find` (id desc)', async () => {
+    const items1 = await orm.em.find(User, {}, {
+      before: { id: 5 },
+      after: { id: 15 },
+      orderBy: { id: 'desc' },
+    });
+    expect(items1).toMatchObject([
+      { id: 14, name: 'User 14' },
+      { id: 13, name: 'User 13' },
+      { id: 12, name: 'User 12' },
+      { id: 11, name: 'User 11' },
+      { id: 10, name: 'User 10' },
+      { id: 9, name: 'User 9' },
+      { id: 8, name: 'User 8' },
+      { id: 7, name: 'User 7' },
+      { id: 6, name: 'User 6' },
+    ]);
+
+    const items2 = await orm.em.find(User, {}, {
+      before: { id: 5 },
+      after: { id: 15 },
+      first: 5,
+      orderBy: { id: 'desc' },
+    });
+    expect(items2).toMatchObject([
+      { id: 14, name: 'User 14' },
+      { id: 13, name: 'User 13' },
+      { id: 12, name: 'User 12' },
+      { id: 11, name: 'User 11' },
+      { id: 10, name: 'User 10' },
+    ]);
+
+    const items3 = await orm.em.find(User, {}, {
+      before: { id: 5 },
+      after: { id: 15 },
+      last: 5,
+      orderBy: { id: 'desc' },
+    });
+    expect(items3).toMatchObject([
+      { id: 10, name: 'User 10' },
+      { id: 9, name: 'User 9' },
+      { id: 8, name: 'User 8' },
+      { id: 7, name: 'User 7' },
+      { id: 6, name: 'User 6' },
+    ]);
+  });
+
   test('validation', async () => {
     await expect(orm.em.findByCursor(User, {}, {
-      before: Cursor.for({ id: 5 }, { id: -1 }),
-      after: Cursor.for({ id: 15 }, { id: -1 }),
+      before: { id: 5 },
+      after: { id: 15 },
     })).rejects.toThrow('Explicit `orderBy` option required');
   });
 });

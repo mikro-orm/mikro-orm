@@ -29,17 +29,15 @@ import type {
   QueryResult,
   RequiredEntityData,
   Transaction,
-  QueryOrder,
   FindByCursorOptions,
 } from '@mikro-orm/core';
 import {
-  Cursor,
   DatabaseDriver,
   EntityManagerType,
   helper,
   LoadStrategy,
   QueryFlag,
-  QueryHelper, QueryOrderNumeric,
+  QueryHelper,
   ReferenceType,
   Utils,
 } from '@mikro-orm/core';
@@ -93,28 +91,6 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     const { first, last, before, after } = options as FindByCursorOptions<T>;
     const isCursorPagination = [first, last, before, after].some(v => v != null);
-    const limit = first || last;
-    const isLast = !first && !!last;
-
-    function buildWhere(definition: (readonly [keyof T, QueryOrder])[], offsets: unknown[], inverse = false): FilterQuery<T> {
-      const [order, ...otherOrders] = definition;
-      const [offset, ...otherOffsets] = offsets;
-      const [prop, direction] = order;
-      const desc = direction as unknown === QueryOrderNumeric.DESC || direction.toLowerCase() === 'desc';
-      const operator = Utils.xor(desc, inverse) ? '$lt' : '$gt';
-
-      if (!otherOrders.length) {
-        return { [prop]: { [operator]: offset } } as FilterQuery<T>;
-      }
-
-      return {
-        [prop]: { [`${operator}e`]: offset },
-        $or: [
-          { [prop]: { [operator]: offset } },
-          buildWhere(otherOrders, otherOffsets, inverse),
-        ],
-      } as FilterQuery<T>;
-    }
 
     qb.select(fields)
       .populate(populate, joinedProps.length > 0 ? options.populateWhere : undefined)
@@ -124,37 +100,8 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       .withSchema(this.getSchemaName(meta, options));
 
     if (isCursorPagination) {
-      const definition = Cursor.getDefinition(orderBy);
-
-      // rebuild order statements
-      qb.orderBy(definition.map(([prop, direction]) => {
-        const desc = Utils.xor(direction as unknown === QueryOrderNumeric.DESC || direction.toLowerCase() === 'desc', isLast);
-        return ({ [prop]: desc ? 'desc' : 'asc' });
-      }));
-
-      if (after) {
-        const def = after instanceof Cursor ? after.endCursor : after;
-        const offsets = def ? Cursor.decode(def) : [];
-
-        if (definition.length === offsets.length) {
-          const paginateWhere = buildWhere(definition, offsets);
-          qb.andWhere(paginateWhere);
-        }
-      }
-
-      if (before) {
-        const def = before instanceof Cursor ? before.startCursor : before;
-        const offsets = def ? Cursor.decode(def) : [];
-
-        if (definition.length === offsets.length) {
-          const paginateWhere = buildWhere(definition, offsets, true);
-          qb.andWhere(paginateWhere);
-        }
-      }
-
-      if (limit) {
-        options.limit = limit + 1;
-      }
+      const { orderBy: newOrderBy, where } = this.processCursorOptions(meta, options, orderBy);
+      qb.andWhere(where).orderBy(newOrderBy);
     } else {
       qb.orderBy(orderBy);
     }
@@ -169,6 +116,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     Utils.asArray(options.flags).forEach(flag => qb.setFlag(flag));
     const result = await this.rethrow(qb.execute('all'));
+
+    if (isCursorPagination && !first && !!last) {
+      result.reverse();
+    }
 
     if (joinedProps.length > 0) {
       return this.mergeJoinedResult(result, meta);

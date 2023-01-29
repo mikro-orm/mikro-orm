@@ -448,6 +448,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindByCursorOptions<Entity, Hint> = {}): Promise<Cursor<Entity, Hint>> {
     const em = this.getContext(false);
     entityName = Utils.className(entityName);
+    options.overfetch ??= true;
 
     if (Utils.isEmpty(options.orderBy)) {
       throw new Error('Explicit `orderBy` option required');
@@ -455,7 +456,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     const [entities, count] = await em.findAndCount(entityName, where, options);
 
-    return new Cursor<Entity, Hint>(entities, count, options);
+    return new Cursor<Entity, Hint>(entities, count, options, this.metadata.get(entityName));
   }
 
   /**

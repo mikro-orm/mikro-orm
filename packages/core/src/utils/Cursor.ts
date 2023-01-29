@@ -1,8 +1,9 @@
 import { inspect } from 'util';
-import type { Loaded } from '../typings';
+import type { EntityMetadata, FilterObject, Loaded } from '../typings';
 import type { FindByCursorOptions, OrderDefinition } from '../drivers/IDatabaseDriver';
 import { Utils } from './Utils';
 import type { QueryOrder } from '../enums';
+import { ReferenceType } from '../enums';
 
 /**
  * As an alternative to the offset based pagination with `limit` and `offset`, we can paginate based on a cursor.
@@ -62,23 +63,24 @@ export class Cursor<Entity extends object, Hint extends string = never> {
     readonly items: Loaded<Entity, Hint>[],
     readonly totalCount: number,
     options: FindByCursorOptions<Entity, Hint>,
+    meta: EntityMetadata<Entity>,
   ) {
-    const { first, last, orderBy } = options;
+    const { first, last, before, after, orderBy, overfetch } = options;
     const limit = first || last;
     const isLast = !first && !!last;
-    const hasMorePages = limit != null && items.length > limit;
-    this.hasPrevPage = isLast && hasMorePages;
-    this.hasNextPage = !isLast && hasMorePages;
+    const hasMorePages = !!overfetch && limit != null && items.length > limit;
+    this.hasPrevPage = before || after ? true : (isLast && hasMorePages);
+    this.hasNextPage = !(isLast && !before && !after) && hasMorePages;
 
     if (hasMorePages) {
-      items.pop();
+      if (isLast) {
+        items.shift();
+      } else {
+        items.pop();
+      }
     }
 
-    if (isLast) {
-      items.reverse();
-    }
-
-    this.definition = Cursor.getDefinition(orderBy!);
+    this.definition = Cursor.getDefinition(meta, orderBy!);
   }
 
   get startCursor(): string | null {
@@ -86,7 +88,7 @@ export class Cursor<Entity extends object, Hint extends string = never> {
       return null;
     }
 
-    return this.for(this.items[0]);
+    return this.from(this.items[0]);
   }
 
   get endCursor(): string | null {
@@ -94,13 +96,13 @@ export class Cursor<Entity extends object, Hint extends string = never> {
       return null;
     }
 
-    return this.for(this.items[this.items.length - 1]);
+    return this.from(this.items[this.items.length - 1]);
   }
 
   /**
    * Computes the cursor value for given entity.
    */
-  for(entity: Entity) {
+  from(entity: Entity) {
     return Cursor.encode(this.definition.map(([key]) => entity[key]));
   }
 
@@ -117,9 +119,9 @@ export class Cursor<Entity extends object, Hint extends string = never> {
   /**
    * Computes the cursor value for given entity and order definition.
    */
-  static for<Entity extends object>(entity: Entity, orderBy: OrderDefinition<Entity>) {
-    const definition = this.getDefinition(orderBy);
-    return Cursor.encode(definition.map(([key]) => entity[key]));
+  static for<Entity extends object>(meta: EntityMetadata<Entity>, entity: FilterObject<Entity>, orderBy: OrderDefinition<Entity>) {
+    const definition = this.getDefinition(meta, orderBy);
+    return Cursor.encode(definition.map(([key]) => entity[key as string]));
   }
 
   static encode(value: unknown[]): string {
@@ -130,9 +132,12 @@ export class Cursor<Entity extends object, Hint extends string = never> {
     return JSON.parse(Buffer.from(value, 'base64url').toString('utf8'));
   }
 
-  static getDefinition<Entity extends object>(orderBy: OrderDefinition<Entity>) {
+  static getDefinition<Entity extends object>(meta: EntityMetadata<Entity>, orderBy: OrderDefinition<Entity>) {
     return Utils.asArray(orderBy).flatMap(order => {
-      return Object.keys(order).map(key => [key as keyof Entity, order[key] as QueryOrder] as const);
+      return Object.keys(order)
+        .map(key => meta.properties[key])
+        .filter(prop => [ReferenceType.SCALAR, ReferenceType.MANY_TO_ONE].includes(prop.reference) || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner))
+        .map(prop => [prop.name, order[prop.name]] as const);
     });
   }
 

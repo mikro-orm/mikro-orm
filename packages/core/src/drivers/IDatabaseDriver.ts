@@ -1,6 +1,6 @@
 import type {
   ConnectionType, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary, Dictionary, QBFilterQuery,
-  IPrimaryKey, PopulateOptions, EntityDictionary, ExpandProperty, AutoPath, ObjectQuery,
+  IPrimaryKey, PopulateOptions, EntityDictionary, ExpandProperty, AutoPath, ObjectQuery, FilterObject,
 } from '../typings';
 import type { Connection, QueryResult, Transaction } from '../connections';
 import type { FlushMode, LockMode, QueryOrderMap, QueryFlag, LoadStrategy, PopulateHint } from '../enums';
@@ -104,6 +104,16 @@ export interface FindOptions<T, P extends string = never> {
   cache?: boolean | number | [string, number];
   limit?: number;
   offset?: number;
+  /** Fetch items `before` this cursor. */
+  before?: string | { startCursor: string | null } | FilterObject<T>;
+  /** Fetch items `after` this cursor. */
+  after?: string | { endCursor: string | null } | FilterObject<T>;
+  /** Fetch `first` N items. */
+  first?: number;
+  /** Fetch `last` N items. */
+  last?: number;
+  /** Fetch one more item than `first`/`last`, enabled automatically in `em.findByCursor` to check if there is a next page. */
+  overfetch?: boolean;
   refresh?: boolean;
   convertCustomTypes?: boolean;
   disableIdentityMap?: boolean;
@@ -122,14 +132,6 @@ export interface FindOptions<T, P extends string = never> {
 }
 
 export interface FindByCursorOptions<T extends object, P extends string = never> extends Omit<FindOptions<T, P>, 'limit' | 'offset'> {
-  /** Fetch items `before` this cursor */
-  before?: string | Cursor<any>;
-  /** Fetch items `after` this cursor */
-  after?: string | Cursor<any>;
-  /** Fetch `first` N items */
-  first?: number;
-  /** Fetch `last` N items */
-  last?: number;
 }
 
 export interface FindOneOptions<T extends object, P extends string = never> extends Omit<FindOptions<T, P>, 'limit' | 'lockMode'> {
