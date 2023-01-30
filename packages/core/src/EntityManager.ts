@@ -408,19 +408,29 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    * Use `first` and `after` for forward pagination, or `last` and `before` for backward pagination.
    *
    * - `first` and `last` are numbers and serve as an alternative to `offset`, those options are mutually exclusive, use only one at a time
-   * - `before` and `after` specify the previous cursor value
+   * - `before` and `after` specify the previous cursor value, it can be one of the:
+   *     - `Cursor` instance
+   *     - opaque string provided by `startCursor/endCursor` properties
+   *     - POJO/entity instance
    *
    * ```ts
    * const currentCursor = await em.findByCursor(User, {}, {
    *   first: 10,
-   *   after: previousCursor, // can be either string or `Cursor` instance
+   *   after: previousCursor, // cursor instance
    *   orderBy: { id: 'desc' },
    * });
    *
    * // to fetch next page
    * const nextCursor = await em.findByCursor(User, {}, {
    *   first: 10,
-   *   after: currentCursor, // or currentCursor.endCursor
+   *   after: currentCursor.endCursor, // opaque string
+   *   orderBy: { id: 'desc' },
+   * });
+   *
+   * // to fetch next page
+   * const nextCursor2 = await em.findByCursor(User, {}, {
+   *   first: 10,
+   *   after: { id: lastSeenId }, // entity-like POJO
    *   orderBy: { id: 'desc' },
    * });
    * ```
