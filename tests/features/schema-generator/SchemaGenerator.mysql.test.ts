@@ -80,8 +80,6 @@ describe('SchemaGenerator', () => {
   test('generate schema from metadata [mysql]', async () => {
     const orm = await initORMMySql('mysql', {}, true);
     await orm.schema.ensureDatabase();
-    const dump = await orm.schema.generate();
-    expect(dump).toMatchSnapshot('mysql-schema-dump');
 
     const dropDump = await orm.schema.getDropSchemaSQL();
     expect(dropDump).toMatchSnapshot('mysql-drop-schema-dump');
@@ -98,14 +96,12 @@ describe('SchemaGenerator', () => {
   test('generate schema from metadata [mariadb]', async () => {
     const orm = await initORMMySql('mariadb', {}, true);
     await orm.schema.ensureDatabase();
-    const dump = await orm.schema.generate();
-    // expect(dump).toMatchSnapshot('mariadb-schema-dump');
 
     const dropDump = await orm.schema.getDropSchemaSQL();
     expect(dropDump).toMatchSnapshot('mariadb-drop-schema-dump');
 
     const createDump = await orm.schema.getCreateSchemaSQL();
-    // expect(createDump).toMatchSnapshot('mariadb-create-schema-dump');
+    expect(createDump).toMatchSnapshot('mariadb-create-schema-dump');
 
     const updateDump = await orm.schema.getUpdateSchemaSQL();
     expect(updateDump).toMatchSnapshot('mariadb-update-schema-dump');

@@ -313,9 +313,9 @@ describe('QueryBuilder', () => {
       .leftJoinAndSelect('fb.tests', 't')
       .orderBy({ name: 1 });
 
-    await orm.em.nativeInsert(Test2, { id: 1, name: 't' });
-    await orm.em.nativeInsert(FooBar2, { id: 1, name: 'fb 1', tests: [] });
-    await orm.em.nativeInsert(FooBar2, { id: 2, name: 'fb 2', tests: [1] });
+    await orm.em.insert(Test2, { id: 1, name: 't' });
+    await orm.em.insert(FooBar2, { id: 1, name: 'fb 1', tests: [] });
+    await orm.em.insert(FooBar2, { id: 2, name: 'fb 2', tests: [1] });
     const res = await qb.getResultList();
     expect(res[0].tests.isInitialized()).toBe(true);
     expect(res[0].tests.getItems()).toHaveLength(0);
@@ -1752,10 +1752,10 @@ describe('QueryBuilder', () => {
       .where({ name: 'fb 1' })
       .limit(2);
 
-    await orm.em.nativeInsert(FooBar2, { id: 1, name: 'fb 1' });
-    await orm.em.nativeInsert(FooBar2, { id: 2, name: 'fb 2' });
-    await orm.em.nativeInsert(FooBar2, { id: 3, name: 'fb 1' });
-    await orm.em.nativeInsert(FooBar2, { id: 4, name: 'fb 1' });
+    await orm.em.insert(FooBar2, { id: 1, name: 'fb 1' });
+    await orm.em.insert(FooBar2, { id: 2, name: 'fb 2' });
+    await orm.em.insert(FooBar2, { id: 3, name: 'fb 1' });
+    await orm.em.insert(FooBar2, { id: 4, name: 'fb 1' });
 
     // when
     const [results, count] = await qb.getResultAndCount();

@@ -996,14 +996,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
-   * alias for `em.insert()`
-   * @deprecated use `em.insert()` instead
-   */
-  async nativeInsert<Entity extends object>(entityNameOrEntity: EntityName<Entity> | Entity, data?: EntityData<Entity> | Entity, options: NativeInsertUpdateOptions<Entity> = {}): Promise<Primary<Entity>> {
-    return this.insert(entityNameOrEntity, data, options);
-  }
-
-  /**
    * Fires native insert query. Calling this has no side effects on the context (identity map).
    */
   async insert<Entity extends object>(entityNameOrEntity: EntityName<Entity> | Entity, data?: EntityData<Entity> | Entity, options: NativeInsertUpdateOptions<Entity> = {}): Promise<Primary<Entity>> {
@@ -1298,16 +1290,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   /**
-   * Tells the EntityManager to make an instance managed and persistent.
-   * The entity will be entered into the database at or before transaction commit or as a result of the flush operation.
-   *
-   * @deprecated use `persist()`
-   */
-  persistLater(entity: AnyEntity | AnyEntity[]): void {
-    this.persist(entity);
-  }
-
-  /**
    * Marks entity for removal.
    * A removed entity will be removed from the database at or before transaction commit or as a result of the flush operation.
    *
@@ -1342,16 +1324,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async removeAndFlush(entity: AnyEntity | Reference<AnyEntity>): Promise<void> {
     await this.remove(entity).flush();
-  }
-
-  /**
-   * Marks entity for removal.
-   * A removed entity will be removed from the database at or before transaction commit or as a result of the flush operation.
-   *
-   * @deprecated use `remove()`
-   */
-  removeLater<Entity extends object>(entity: Entity): void {
-    this.remove(entity);
   }
 
   /**
