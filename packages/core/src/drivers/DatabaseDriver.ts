@@ -1,12 +1,34 @@
-import type { CountOptions, LockOptions, DeleteOptions, FindOneOptions, FindOptions, IDatabaseDriver, NativeInsertUpdateManyOptions, NativeInsertUpdateOptions, DriverMethodOptions } from './IDatabaseDriver';
+import type {
+  CountOptions,
+  DeleteOptions,
+  DriverMethodOptions,
+  FindOneOptions,
+  FindOptions,
+  IDatabaseDriver,
+  LockOptions,
+  NativeInsertUpdateManyOptions,
+  NativeInsertUpdateOptions,
+  OrderDefinition,
+} from './IDatabaseDriver';
 import { EntityManagerType } from './IDatabaseDriver';
-import type { ConnectionType, Dictionary, EntityData, EntityDictionary, EntityMetadata, EntityProperty, FilterQuery, PopulateOptions, Primary } from '../typings';
+import type {
+  ConnectionType,
+  Dictionary,
+  EntityData,
+  EntityDictionary,
+  EntityMetadata,
+  EntityProperty,
+  FilterObject,
+  FilterQuery,
+  PopulateOptions,
+  Primary,
+} from '../typings';
 import type { MetadataStorage } from '../metadata';
 import type { Connection, QueryResult, Transaction } from '../connections';
 import type { Configuration, ConnectionOptions } from '../utils';
-import { EntityComparator, Utils } from '../utils';
-import type { QueryOrderMap } from '../enums';
-import { QueryOrder, ReferenceType } from '../enums';
+import { Cursor, EntityComparator, Utils } from '../utils';
+import type { QueryOrderKeys, QueryOrderMap } from '../enums';
+import { QueryOrder, QueryOrderNumeric, ReferenceType } from '../enums';
 import type { Platform } from '../platforms';
 import type { Collection } from '../entity/Collection';
 import { EntityManager } from '../EntityManager';
@@ -137,6 +159,98 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
   getDependencies(): string[] {
     return this.dependencies;
+  }
+
+  protected processCursorOptions<T extends object, P extends string>(meta: EntityMetadata<T>, options: FindOptions<T, P>, orderBy: OrderDefinition<T>): { orderBy: OrderDefinition<T>[]; where: FilterQuery<T> } {
+    const { first, last, before, after, overfetch } = options;
+    const limit = first || last;
+    const isLast = !first && !!last;
+    const definition = Cursor.getDefinition(meta, orderBy);
+    const $and: FilterQuery<T>[] = [];
+
+    // allow POJO as well, we care only about the correct key being present
+    const isCursor = (val: unknown, key: 'startCursor' | 'endCursor'): val is Cursor<T, any> => {
+      return !!val && typeof val === 'object' && key in val;
+    };
+    const createCursor = (val: unknown, key: 'startCursor' | 'endCursor', inverse = false) => {
+      let def = isCursor(val, key) ? val[key] : val;
+
+      if (Utils.isPlainObject<FilterObject<T>>(def)) {
+        def = Cursor.for<T>(meta, def, orderBy);
+      }
+
+      const offsets = def ? Cursor.decode(def as string) as Dictionary[] : [];
+
+      if (definition.length === offsets.length) {
+        return this.createCursorCondition<T>(definition, offsets, inverse);
+      }
+
+      return {} as FilterQuery<T>;
+    };
+
+    if (after) {
+      $and.push(createCursor(after, 'endCursor'));
+    }
+
+    if (before) {
+      $and.push(createCursor(before, 'startCursor', true));
+    }
+
+    if (limit) {
+      options.limit = limit + (overfetch ? 1 : 0);
+    }
+
+    const createOrderBy = (prop: string, direction: QueryOrderKeys<T>): OrderDefinition<T> => {
+      if (Utils.isPlainObject(direction)) {
+        const value = Object.keys(direction).reduce((o, key) => {
+          Object.assign(o, createOrderBy(key, direction[key]));
+          return o;
+        }, {});
+        return ({ [prop]: value }) as OrderDefinition<T>;
+      }
+
+      const desc = direction as unknown === QueryOrderNumeric.DESC || direction.toString().toLowerCase() === 'desc';
+      const dir = Utils.xor(desc, isLast) ? 'desc' : 'asc';
+      return ({ [prop]: dir }) as OrderDefinition<T>;
+    };
+
+    return {
+      orderBy: definition.map(([prop, direction]) => createOrderBy(prop, direction)),
+      where: ($and.length > 1 ? { $and } : { ...$and[0] }) as FilterQuery<T>,
+    };
+  }
+
+  protected createCursorCondition<T extends object>(definition: (readonly [keyof T & string, QueryOrder])[], offsets: Dictionary[], inverse = false): FilterQuery<T> {
+    const createCondition = (prop: string, direction: QueryOrderKeys<T>, offset: Dictionary, eq = false) => {
+      if (Utils.isPlainObject(direction)) {
+        const value = Object.keys(direction).reduce((o, key) => {
+          Object.assign(o, createCondition(key, direction[key], offset[prop][key], eq));
+          return o;
+        }, {});
+        return ({ [prop]: value });
+      }
+
+      const desc = direction as unknown === QueryOrderNumeric.DESC || direction.toString().toLowerCase() === 'desc';
+      const operator = Utils.xor(desc, inverse) ? '$lt' : '$gt';
+
+      return { [prop]: { [operator + (eq ? 'e' : '')]: offset } } as FilterQuery<T>;
+    };
+
+    const [order, ...otherOrders] = definition;
+    const [offset, ...otherOffsets] = offsets;
+    const [prop, direction] = order;
+
+    if (!otherOrders.length) {
+      return createCondition(prop, direction, offset) as FilterQuery<T>;
+    }
+
+    return {
+      ...createCondition(prop, direction, offset, true),
+      $or: [
+        createCondition(prop, direction, offset),
+        this.createCursorCondition(otherOrders, otherOffsets, inverse),
+      ],
+    } as FilterQuery<T>;
   }
 
   protected inlineEmbeddables<T>(meta: EntityMetadata<T>, data: T, where?: boolean): void {

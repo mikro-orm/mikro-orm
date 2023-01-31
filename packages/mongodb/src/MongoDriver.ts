@@ -4,12 +4,12 @@ import type {
   EntityData, FilterQuery, Configuration, FindOneOptions, FindOptions,
   QueryResult, Transaction, IDatabaseDriver, EntityManager, Dictionary, PopulateOptions,
   CountOptions, EntityDictionary, EntityField, NativeInsertUpdateOptions, NativeInsertUpdateManyOptions,
+  FindByCursorOptions,
 } from '@mikro-orm/core';
 import { DatabaseDriver, EntityManagerType, ReferenceType, Utils } from '@mikro-orm/core';
 import { MongoConnection } from './MongoConnection';
 import { MongoPlatform } from './MongoPlatform';
 import { MongoEntityManager } from './MongoEntityManager';
-import type { CreateSchemaOptions } from './MongoSchemaGenerator';
 
 export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
@@ -31,8 +31,36 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       return this.findVirtual(entityName, where, options);
     }
 
+    const { first, last, before, after } = options as FindByCursorOptions<T>;
     const fields = this.buildFields(entityName, options.populate as unknown as PopulateOptions<T>[] || [], options.fields);
     where = this.renameFields(entityName, where, true);
+    const isCursorPagination = [first, last, before, after].some(v => v != null);
+
+    if (isCursorPagination) {
+      const andWhere = (cond1: FilterQuery<T>, cond2: FilterQuery<T>): FilterQuery<T> => {
+        if (Utils.isEmpty(cond1)) {
+          return cond2;
+        }
+
+        if (Utils.isEmpty(cond2)) {
+          return cond1;
+        }
+
+        return { $and: [cond1, cond2] } as FilterQuery<T>;
+      };
+      const meta = this.metadata.find<T>(entityName)!;
+      const { orderBy: newOrderBy, where: newWhere } = this.processCursorOptions(meta, options, options.orderBy!);
+      const newWhereConverted = this.renameFields(entityName, newWhere as FilterQuery<T>, true);
+      const orderBy = Utils.asArray(newOrderBy).map(order => this.renameFields(entityName, order));
+      const res = await this.rethrow(this.getConnection('read').find(entityName, andWhere(where, newWhereConverted), orderBy, options.limit, options.offset, fields, options.ctx));
+
+      if (isCursorPagination && !first && !!last) {
+        res.reverse();
+      }
+
+      return res.map(r => this.mapResult<T>(r, this.metadata.find<T>(entityName))!);
+    }
+
     const orderBy = Utils.asArray(options.orderBy).map(orderBy =>
       this.renameFields(entityName, orderBy, false),
     );
