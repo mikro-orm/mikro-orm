@@ -19,6 +19,7 @@ const methods = {
   upsertMany: jest.fn(),
   find: jest.fn(),
   findAndCount: jest.fn(),
+  findByCursor: jest.fn(),
   remove: jest.fn(),
   removeAndFlush: jest.fn(),
   removeLater: jest.fn(),
@@ -60,6 +61,8 @@ describe('EntityRepository', () => {
     expect(methods.find.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, undefined]);
     await repo.findAndCount({ name: 'bar' });
     expect(methods.findAndCount.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, undefined]);
+    await repo.findByCursor({ name: 'bar' }, { first: 10, after: '...' });
+    expect(methods.findByCursor.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, { first: 10, after: '...' }]);
     await repo.findOne('bar');
     expect(methods.findOne.mock.calls[0]).toEqual([Publisher, 'bar', undefined]);
     await repo.findOneOrFail('bar');
