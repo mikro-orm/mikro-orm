@@ -2,8 +2,9 @@ import { inspect } from 'util';
 import type { EntityMetadata, FilterObject, Loaded } from '../typings';
 import type { FindByCursorOptions, OrderDefinition } from '../drivers/IDatabaseDriver';
 import { Utils } from './Utils';
-import type { QueryOrder } from '../enums';
+import type { QueryOrder, QueryOrderKeys } from '../enums';
 import { ReferenceType } from '../enums';
+import { Reference } from '../entity/Reference';
 
 /**
  * As an alternative to the offset based pagination with `limit` and `offset`, we can paginate based on a cursor.
@@ -103,7 +104,23 @@ export class Cursor<Entity extends object, Hint extends string = never> {
    * Computes the cursor value for given entity.
    */
   from(entity: Entity) {
-    return Cursor.encode(this.definition.map(([key]) => entity[key]));
+    const processEntity = <T> (entity: T, prop: string, direction: QueryOrderKeys<T>, object = false) => {
+      if (Utils.isPlainObject(direction)) {
+        const value = Object.keys(direction).reduce((o, key) => {
+          Object.assign(o, processEntity(Reference.unwrapReference(entity[prop]), key, direction[key], true));
+          return o;
+        }, {});
+        return ({ [prop]: value });
+      }
+
+      if (object) {
+        return ({ [prop]: entity[prop] });
+      }
+
+      return entity[prop];
+    };
+    const value = this.definition.map(([key, direction]) => processEntity(entity, key as string, direction));
+    return Cursor.encode(value);
   }
 
   * [Symbol.iterator](): IterableIterator<Loaded<Entity, Hint>> {

@@ -1,13 +1,13 @@
 import type {
   CountOptions,
-  LockOptions,
   DeleteOptions,
+  DriverMethodOptions,
   FindOneOptions,
   FindOptions,
   IDatabaseDriver,
+  LockOptions,
   NativeInsertUpdateManyOptions,
   NativeInsertUpdateOptions,
-  DriverMethodOptions,
   OrderDefinition,
 } from './IDatabaseDriver';
 import { EntityManagerType } from './IDatabaseDriver';
@@ -27,7 +27,7 @@ import type { MetadataStorage } from '../metadata';
 import type { Connection, QueryResult, Transaction } from '../connections';
 import type { Configuration, ConnectionOptions } from '../utils';
 import { Cursor, EntityComparator, Utils } from '../utils';
-import type { QueryOrderMap } from '../enums';
+import type { QueryOrderKeys, QueryOrderMap } from '../enums';
 import { QueryOrder, QueryOrderNumeric, ReferenceType } from '../enums';
 import type { Platform } from '../platforms';
 import type { Collection } from '../entity/Collection';
@@ -179,7 +179,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
         def = Cursor.for<T>(meta, def, orderBy);
       }
 
-      const offsets = def ? Cursor.decode(def as string) : [];
+      const offsets = def ? Cursor.decode(def as string) as Dictionary[] : [];
 
       if (definition.length === offsets.length) {
         return this.createCursorCondition<T>(definition, offsets, inverse);
@@ -200,30 +200,54 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       options.limit = limit + (overfetch ? 1 : 0);
     }
 
+    const createOrderBy = (prop: string, direction: QueryOrderKeys<T>) => {
+      if (Utils.isPlainObject(direction)) {
+        const value = Object.keys(direction).reduce((o, key) => {
+          Object.assign(o, createOrderBy(key, direction[key]));
+          return o;
+        }, {});
+        return ({ [prop]: value });
+      }
+
+      const desc = direction as unknown === QueryOrderNumeric.DESC || direction.toString().toLowerCase() === 'desc';
+      const dir = Utils.xor(desc, isLast) ? 'desc' : 'asc';
+      return ({ [prop]: dir });
+    };
+
     return {
-      orderBy: definition.map(([prop, direction]) => {
-        const desc = Utils.xor(direction as unknown === QueryOrderNumeric.DESC || direction.toLowerCase() === 'desc', isLast);
-        return ({ [prop]: desc ? 'desc' : 'asc' });
-      }),
-      where: { $and },
+      orderBy: definition.map(([prop, direction]) => createOrderBy(prop, direction)),
+      where: $and.length > 1 ? { $and } : { ...$and[0] },
     };
   }
 
-  protected createCursorCondition<T extends object>(definition: (readonly [keyof T, QueryOrder])[], offsets: unknown[], inverse = false): FilterQuery<T> {
+  protected createCursorCondition<T extends object>(definition: (readonly [keyof T & string, QueryOrder])[], offsets: Dictionary[], inverse = false): FilterQuery<T> {
+    const createCondition = (prop: string, direction: QueryOrderKeys<T>, offset: Dictionary, eq = false) => {
+      if (Utils.isPlainObject(direction)) {
+        const value = Object.keys(direction).reduce((o, key) => {
+          Object.assign(o, createCondition(key, direction[key], offset[prop][key], eq));
+          return o;
+        }, {});
+        return ({ [prop]: value });
+      }
+
+      const desc = direction as unknown === QueryOrderNumeric.DESC || direction.toString().toLowerCase() === 'desc';
+      const operator = Utils.xor(desc, inverse) ? '$lt' : '$gt';
+
+      return { [prop]: { [operator + (eq ? 'e' : '')]: offset } } as FilterQuery<T>;
+    };
+
     const [order, ...otherOrders] = definition;
     const [offset, ...otherOffsets] = offsets;
     const [prop, direction] = order;
-    const desc = direction as unknown === QueryOrderNumeric.DESC || direction.toLowerCase() === 'desc';
-    const operator = Utils.xor(desc, inverse) ? '$lt' : '$gt';
 
     if (!otherOrders.length) {
-      return { [prop]: { [operator]: offset } } as FilterQuery<T>;
+      return createCondition(prop, direction, offset) as FilterQuery<T>;
     }
 
     return {
-      [prop]: { [`${operator}e`]: offset },
+      ...createCondition(prop, direction, offset, true),
       $or: [
-        { [prop]: { [operator]: offset } },
+        createCondition(prop, direction, offset),
         this.createCursorCondition(otherOrders, otherOffsets, inverse),
       ],
     } as FilterQuery<T>;
