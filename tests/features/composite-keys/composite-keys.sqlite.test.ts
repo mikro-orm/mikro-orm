@@ -555,7 +555,7 @@ describe('composite keys in sqlite', () => {
   });
 
   test('composite key in em.create()', async () => {
-    await orm.em.nativeInsert(Car2, { name: 'n4', year: 2000, price: 456 });
+    await orm.em.insert(Car2, { name: 'n4', year: 2000, price: 456 });
 
     const c1 = new Car2('n1', 2000, 1);
     const c2 = { name: 'n3', year: 2000, price: 123 };
