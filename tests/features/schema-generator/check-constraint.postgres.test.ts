@@ -39,8 +39,7 @@ describe('check constraint [postgres]', () => {
   test('check constraint diff [postgres]', async () => {
     const orm = await initORMPostgreSql();
     const meta = orm.getMetadata();
-    const generator = orm.schema;
-    await generator.updateSchema();
+    await orm.schema.updateSchema();
 
     const newTableMeta = new EntitySchema({
       properties: {
@@ -68,32 +67,32 @@ describe('check constraint [postgres]', () => {
 
     let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-check-constraint-diff-1');
-    await generator.execute(diff);
+    await orm.schema.execute(diff);
 
     // Update a check expression
     newTableMeta.checks = [{ name: 'foo', expression: 'price > 0' }];
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-check-constraint-diff-2');
-    await generator.execute(diff);
+    await orm.schema.execute(diff);
 
     // Remove a check constraint
     newTableMeta.checks = [];
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-check-constraint-diff-3');
-    await generator.execute(diff);
+    await orm.schema.execute(diff);
 
     // Add new check
     newTableMeta.checks = [{ name: 'bar', expression: 'price > 0 and price < 123' }];
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-check-constraint-diff-4');
-    await generator.execute(diff);
+    await orm.schema.execute(diff);
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toBe('');
 
     // Skip existing check
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('postgres-check-constraint-diff-5');
-    await generator.execute(diff);
+    await orm.schema.execute(diff);
 
     await orm.close();
   });

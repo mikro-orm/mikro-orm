@@ -603,7 +603,7 @@ describe('GH issue 1175', () => {
         subscribers: [testSubscriber],
       });
       await orm.em.nativeDelete(Entity1175, {});
-      await orm.em.nativeInsert(Entity1175, { username: 'test1' });
+      await orm.em.insert(Entity1175, { username: 'test1' });
       await orm.schema.ensureIndexes();
     });
 

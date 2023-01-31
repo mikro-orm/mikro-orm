@@ -45,9 +45,8 @@ describe('check constraint [mysql8]', () => {
     });
 
     const meta = orm.getMetadata();
-    const generator = orm.schema;
-    await generator.refreshDatabase();
-    await generator.execute('drop table if exists new_table');
+    await orm.schema.refreshDatabase();
+    await orm.schema.execute('drop table if exists new_table');
 
     const newTableMeta = new EntitySchema({
       properties: {
@@ -75,30 +74,30 @@ describe('check constraint [mysql8]', () => {
 
     let diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('mysql8-check-constraint-diff-1');
-    await generator.execute(diff);
+    await orm.schema.execute(diff);
 
     // Update a check expression
     newTableMeta.checks = [{ name: 'foo', expression: 'priceColumn > 0' }];
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('mysql8-check-constraint-diff-2');
-    await generator.execute(diff);
+    await orm.schema.execute(diff);
 
     // Remove a check constraint
     newTableMeta.checks = [];
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('mysql8-check-constraint-diff-3');
-    await generator.execute(diff);
+    await orm.schema.execute(diff);
 
     // Add new check
     newTableMeta.checks = [{ name: 'bar', expression: 'priceColumn > 0' }];
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('mysql8-check-constraint-diff-4');
-    await generator.execute(diff);
+    await orm.schema.execute(diff);
 
     // Skip existing check
     diff = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(diff).toMatchSnapshot('mysql8-check-constraint-diff-5');
-    await generator.execute(diff);
+    await orm.schema.execute(diff);
 
     await orm.close();
   });
