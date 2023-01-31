@@ -43,23 +43,23 @@ describe('GH #2729', () => {
     });
     await orm.schema.createSchema();
 
-    await orm.em.nativeInsert(TaskEntity, {
+    await orm.em.insert(TaskEntity, {
       description: 'person zero task',
-      person: await orm.em.nativeInsert(PersonEntity, {
+      person: await orm.em.insert(PersonEntity, {
         id: 0,
         name: 'zero',
       }),
     });
-    await orm.em.nativeInsert(TaskEntity, {
+    await orm.em.insert(TaskEntity, {
       description: 'person one task',
-      person: await orm.em.nativeInsert(PersonEntity, {
+      person: await orm.em.insert(PersonEntity, {
         id: 1,
         name: 'one',
       }),
     });
-    await orm.em.nativeInsert(TaskEntity, {
+    await orm.em.insert(TaskEntity, {
       description: 'person two task',
-      person: await orm.em.nativeInsert(PersonEntity, {
+      person: await orm.em.insert(PersonEntity, {
         id: 2,
         name: 'two',
       }),

@@ -349,7 +349,7 @@ describe('EntityManagerMongo', () => {
     expect([...orm.em.getUnitOfWork().getIdentityMap().keys()]).toEqual([`Author-${author2.id}`]);
     author2.name = 'lol';
     repo.persist(author2);
-    orm.em.removeLater(author3);
+    orm.em.remove(author3);
     await repo.flush();
   });
 
@@ -635,7 +635,7 @@ describe('EntityManagerMongo', () => {
   });
 
   test('using $exists operator', async () => {
-    await orm.em.nativeInsert(Author, { name: 'n', email: 'e' });
+    await orm.em.insert(Author, { name: 'n', email: 'e' });
     await orm.em.findOneOrFail(Author, { foo: { $exists: false } });
   });
 
@@ -1485,7 +1485,7 @@ describe('EntityManagerMongo', () => {
     const mock = mockLogger(orm);
 
 
-    const res1 = await orm.em.nativeInsert(Author, { name: 'native name 1' });
+    const res1 = await orm.em.insert(Author, { name: 'native name 1' });
     expect(res1).toBeInstanceOf(ObjectId);
 
     const res2 = await orm.em.nativeUpdate(Author, { name: 'native name 1' }, { name: 'new native name' });
@@ -1498,13 +1498,13 @@ describe('EntityManagerMongo', () => {
     const res4 = await orm.em.nativeDelete(Author, { name: 'new native name' });
     expect(res4).toBe(1);
 
-    const res5 = await orm.em.nativeInsert(Author, { createdAt: new Date('1989-11-17'), updatedAt: new Date('2018-10-28'), name: 'native name 2' });
+    const res5 = await orm.em.insert(Author, { createdAt: new Date('1989-11-17'), updatedAt: new Date('2018-10-28'), name: 'native name 2' });
     expect(res5).toBeInstanceOf(ObjectId);
 
     const res6 = await orm.em.nativeUpdate(Author, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
     expect(res6).toBe(1);
 
-    const res7 = await orm.em.nativeInsert<any>('test', { name: 'native name 1', test: 'abc' });
+    const res7 = await orm.em.insert<any>('test', { name: 'native name 1', test: 'abc' });
     expect(res7).toBeInstanceOf(ObjectId);
 
     const res8 = await orm.em.nativeUpdate<any>('test', { name: 'native name 1' }, { $unset: { test: 1 } });
@@ -2073,8 +2073,8 @@ describe('EntityManagerMongo', () => {
   });
 
   test('custom types', async () => {
-    await orm.em.nativeInsert(FooBar, { name: 'n1', array: [1, 2, 3] });
-    await orm.em.nativeInsert(FooBar, { name: 'n2', array: [] });
+    await orm.em.insert(FooBar, { name: 'n1', array: [1, 2, 3] });
+    await orm.em.insert(FooBar, { name: 'n2', array: [] });
 
     const bar = FooBar.create('b1');
     bar.blob = Buffer.from([1, 2, 3, 4, 5]);
