@@ -738,7 +738,7 @@ export class Utils {
   /**
    * Checks whether the value is POJO (e.g. `{ foo: 'bar' }`, and not instance of `Foo`)
    */
-  static isPlainObject(value: any): value is Dictionary {
+  static isPlainObject<T extends Dictionary>(value: any): value is T {
     return (
       value !== null
       && typeof value === 'object'
@@ -1167,6 +1167,10 @@ export class Utils {
 
       return args;
     }, {} as Dictionary) as T;
+  }
+
+  static xor(a: boolean, b: boolean): boolean {
+    return (a || b) && !(a && b);
   }
 
 }
