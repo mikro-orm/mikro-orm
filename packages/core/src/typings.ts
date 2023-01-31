@@ -80,10 +80,11 @@ export type OperatorMap<T> = {
 
 export type FilterValue2<T> = T | ExpandScalar<T> | Primary<T>;
 export type FilterValue<T> = OperatorMap<FilterValue2<T>> | FilterValue2<T> | FilterValue2<T>[] | null;
+export type FilterObject<T> = { -readonly [K in keyof T as ExcludeFunctions<T, K>]?: Query<ExpandProperty<T[K]>> | FilterValue<ExpandProperty<T[K]>> | null };
 type ExpandObject<T> = T extends object
   ? T extends Scalar
     ? never
-    : { -readonly [K in keyof T as ExcludeFunctions<T, K>]?: Query<ExpandProperty<T[K]>> | FilterValue<ExpandProperty<T[K]>> | null }
+    : FilterObject<T>
   : never;
 
 export type Query<T> = T extends object
