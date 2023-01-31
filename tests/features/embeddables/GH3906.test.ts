@@ -42,7 +42,7 @@ test('null value instead of object inside embedded property', async () => {
     name: 'Peter Pan',
     profiles: [null as any],
   });
-  await orm.em.nativeInsert(user);
+  await orm.em.insert(user);
   expect(user.id).toBeDefined();
 
   const u = await orm.em.fork().findOneOrFail(User, user);
