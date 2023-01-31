@@ -1,12 +1,5 @@
 import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
-import {
-  Entity,
-  MikroORM,
-  PrimaryKey,
-  Embedded,
-  Embeddable,
-  Property,
-} from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Embeddable()
 export class Settings {
@@ -45,10 +38,7 @@ beforeAll(async () => {
     driver: BetterSqliteDriver,
   });
 
-  const generator = orm.schema;
-  await generator.ensureDatabase();
-  await generator.dropSchema();
-  await generator.createSchema();
+  await orm.schema.refreshDatabase();
 });
 
 afterAll(() => orm.close(true));

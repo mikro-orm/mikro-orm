@@ -61,9 +61,9 @@ describe('GH issue 519', () => {
     const registration1 = new Registration(user1, competition);
     const registration2 = new Registration(user2, competition);
     const registration3 = new Registration(user3, competition);
-    orm.em.persistLater(registration1);
-    orm.em.persistLater(registration2);
-    orm.em.persistLater(registration3);
+    orm.em.persist(registration1);
+    orm.em.persist(registration2);
+    orm.em.persist(registration3);
     await orm.em.flush();
     orm.em.clear();
 

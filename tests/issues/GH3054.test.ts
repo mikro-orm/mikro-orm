@@ -26,7 +26,7 @@ afterAll(async () => {
 });
 
 test(`GH issue 3054`, async () => {
-  await orm.em.nativeInsert(User, { id: '123', data: { id: 'test' } });
+  await orm.em.insert(User, { id: '123', data: { id: 'test' } });
   const r = await orm.em.findOneOrFail(User, {
     data: {
       id: 'test',
