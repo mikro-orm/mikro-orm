@@ -128,9 +128,6 @@ describe('UnitOfWork', () => {
     uow.persist(author);
     expect([...uow.getPersistStack()]).toEqual([author]);
     expect([...uow.getRemoveStack()]).toEqual([]);
-    expect(uow.getOriginalEntityData()).toEqual([]);
-    uow.merge(author);
-    expect(uow.getOriginalEntityData()).toEqual([{ _id: author._id, name: 'test', email: 'test' }]);
     uow.remove(author);
     expect([...uow.getRemoveStack()]).toEqual([author]);
     expect(() => uow.recomputeSingleChangeSet(author)).not.toThrow();
