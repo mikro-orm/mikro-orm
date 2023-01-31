@@ -1,6 +1,6 @@
 import type {
   ConnectionType, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary, Dictionary, QBFilterQuery,
-  IPrimaryKey, PopulateOptions, EntityDictionary, ExpandProperty, AutoPath, ObjectQuery,
+  IPrimaryKey, PopulateOptions, EntityDictionary, ExpandProperty, AutoPath, ObjectQuery, FilterObject,
 } from '../typings';
 import type { Connection, QueryResult, Transaction } from '../connections';
 import type { FlushMode, LockMode, QueryOrderMap, QueryFlag, LoadStrategy, PopulateHint } from '../enums';
@@ -10,6 +10,7 @@ import type { Collection } from '../entity/Collection';
 import type { EntityManager } from '../EntityManager';
 import type { DriverException } from '../exceptions';
 import type { Configuration } from '../utils/Configuration';
+import type { Cursor } from '../utils/Cursor';
 
 export const EntityManagerType = Symbol('EntityManagerType');
 
@@ -94,13 +95,25 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 type FieldsMap<T, P extends string = never> = { [K in keyof T]?: EntityField<ExpandProperty<T[K]>>[] };
 export type EntityField<T, P extends string = never> = keyof T | '*' | AutoPath<T, P, '*'> | FieldsMap<T, P>;
 
+export type OrderDefinition<T> = (QueryOrderMap<T> & { 0?: never }) | QueryOrderMap<T>[];
+
 export interface FindOptions<T, P extends string = never> {
   populate?: readonly AutoPath<T, P>[] | boolean;
   populateWhere?: ObjectQuery<T> | PopulateHint;
-  orderBy?: (QueryOrderMap<T> & { 0?: never }) | QueryOrderMap<T>[];
+  orderBy?: OrderDefinition<T>;
   cache?: boolean | number | [string, number];
   limit?: number;
   offset?: number;
+  /** Fetch items `before` this cursor. */
+  before?: string | { startCursor: string | null } | FilterObject<T>;
+  /** Fetch items `after` this cursor. */
+  after?: string | { endCursor: string | null } | FilterObject<T>;
+  /** Fetch `first` N items. */
+  first?: number;
+  /** Fetch `last` N items. */
+  last?: number;
+  /** Fetch one more item than `first`/`last`, enabled automatically in `em.findByCursor` to check if there is a next page. */
+  overfetch?: boolean;
   refresh?: boolean;
   convertCustomTypes?: boolean;
   disableIdentityMap?: boolean;
@@ -116,6 +129,9 @@ export interface FindOptions<T, P extends string = never> {
   lockTableAliases?: string[];
   ctx?: Transaction;
   connectionType?: ConnectionType;
+}
+
+export interface FindByCursorOptions<T extends object, P extends string = never> extends Omit<FindOptions<T, P>, 'limit' | 'offset'> {
 }
 
 export interface FindOneOptions<T extends object, P extends string = never> extends Omit<FindOptions<T, P>, 'limit' | 'lockMode'> {
