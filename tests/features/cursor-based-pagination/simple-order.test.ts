@@ -1,11 +1,11 @@
-import { Cursor, Entity, MikroORM, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/core';
-import { SqliteDriver } from '@mikro-orm/sqlite';
+import { Cursor, Entity, MikroORM, Options, PrimaryKey, Property, SimpleLogger } from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
+import { PLATFORMS } from '../../bootstrap';
 
 @Entity()
-export class User {
+class User {
 
-  @PrimaryKey()
+  @PrimaryKey({ name: '_id' })
   id!: number;
 
   @Property()
@@ -22,33 +22,42 @@ export class User {
 
 }
 
-let orm: MikroORM;
+describe.each(['sqlite', 'better-sqlite', 'mysql', 'postgresql', 'mongo'] as const)('simple cursor based pagination (%s)', type => {
 
-beforeAll(async () => {
-  orm = await MikroORM.init({
-    entities: [User],
-    dbName: ':memory:',
-    driver: SqliteDriver,
-    loggerFactory: options => new SimpleLogger(options),
-  });
-  await orm.schema.refreshDatabase();
+  let orm: MikroORM;
 
-  for (let i = 0; i < 50; i++) {
-    orm.em.create(User, {
-      name: `User ${i + 1}`,
-      email: `email-${100 - i}`,
-      termsAccepted: i % 5 === 0,
-      age: Math.round((100 - i) / 2),
+  beforeAll(async () => {
+    const options: Options = {};
+
+    if (type === 'mysql') {
+      options.port = 3308;
+    }
+
+    orm = await MikroORM.init({
+      entities: [User],
+      dbName: type.includes('sqlite') ? ':memory:' : 'mikro_orm_cursor',
+      driver: PLATFORMS[type],
+      loggerFactory: options => new SimpleLogger(options),
+      ...options,
     });
-  }
+    await orm.schema.refreshDatabase();
 
-  await orm.em.flush();
-  orm.em.clear();
-});
+    for (let i = 0; i < 50; i++) {
+      orm.em.create(User, {
+        id: i + 1,
+        name: `User ${i + 1}`,
+        email: `email-${100 - i}`,
+        termsAccepted: i % 5 === 0,
+        age: Math.round((100 - i) / 2),
+      });
+    }
 
-afterAll(() => orm.close(true));
+    await orm.em.flush();
+    orm.em.clear();
+  });
 
-describe('simple cursor based pagination', () => {
+  afterAll(() => orm.close(true));
+
   test('using `first` and `after` (id asc)', async () => {
     const mock = mockLogger(orm, ['query', 'query-params']);
 
@@ -69,10 +78,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor1.hasNextPage).toBe(true);
     expect(cursor1.hasPrevPage).toBe(false);
     let queries = mock.mock.calls.map(call => call[0]).sort();
-    expect(queries).toEqual([
-      '[query] select `u0`.* from `user` as `u0` order by `u0`.`id` asc limit 4',
-      '[query] select count(*) as `count` from `user` as `u0`',
-    ]);
+    expect(queries).toMatchSnapshot();
     orm.em.clear();
     mock.mockReset();
 
@@ -94,10 +100,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor2.hasNextPage).toBe(true);
     expect(cursor2.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
-    expect(queries).toEqual([
-      '[query] select `u0`.* from `user` as `u0` where `u0`.`id` > 3 order by `u0`.`id` asc limit 4',
-      '[query] select count(*) as `count` from `user` as `u0`',
-    ]);
+    expect(queries).toMatchSnapshot();
     orm.em.clear();
     mock.mockReset();
 
@@ -119,10 +122,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor3.hasNextPage).toBe(true);
     expect(cursor3.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
-    expect(queries).toEqual([
-      '[query] select `u0`.* from `user` as `u0` where `u0`.`id` > 6 order by `u0`.`id` asc limit 4',
-      '[query] select count(*) as `count` from `user` as `u0`',
-    ]);
+    expect(queries).toMatchSnapshot();
     orm.em.clear();
     mock.mockReset();
 
@@ -142,10 +142,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor4.hasNextPage).toBe(true);
     expect(cursor4.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
-    expect(queries).toEqual([
-      '[query] select `u0`.* from `user` as `u0` where `u0`.`id` > 9 order by `u0`.`id` asc limit 41',
-      '[query] select count(*) as `count` from `user` as `u0`',
-    ]);
+    expect(queries).toMatchSnapshot();
     orm.em.clear();
     mock.mockReset();
 
@@ -163,10 +160,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor5.hasNextPage).toBe(false);
     expect(cursor5.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
-    expect(queries).toEqual([
-      '[query] select `u0`.* from `user` as `u0` where `u0`.`id` > 49 order by `u0`.`id` asc limit 41',
-      '[query] select count(*) as `count` from `user` as `u0`',
-    ]);
+    expect(queries).toMatchSnapshot();
     orm.em.clear();
     mock.mockReset();
 
@@ -184,10 +178,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor6.hasNextPage).toBe(false);
     expect(cursor6.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
-    expect(queries).toEqual([
-      '[query] select `u0`.* from `user` as `u0` where `u0`.`id` > 50 order by `u0`.`id` asc limit 2',
-      '[query] select count(*) as `count` from `user` as `u0`',
-    ]);
+    expect(queries).toMatchSnapshot();
     orm.em.clear();
     mock.mockReset();
   });
@@ -212,10 +203,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor1.hasNextPage).toBe(true);
     expect(cursor1.hasPrevPage).toBe(false);
     let queries = mock.mock.calls.map(call => call[0]).sort();
-    expect(queries).toEqual([
-      '[query] select `u0`.* from `user` as `u0` order by `u0`.`id` desc limit 4',
-      '[query] select count(*) as `count` from `user` as `u0`',
-    ]);
+    expect(queries).toMatchSnapshot();
     orm.em.clear();
     mock.mockReset();
 
@@ -237,10 +225,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor2.hasNextPage).toBe(true);
     expect(cursor2.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
-    expect(queries).toEqual([
-      '[query] select `u0`.* from `user` as `u0` where `u0`.`id` < 48 order by `u0`.`id` desc limit 4',
-      '[query] select count(*) as `count` from `user` as `u0`',
-    ]);
+    expect(queries).toMatchSnapshot();
     orm.em.clear();
     mock.mockReset();
 
@@ -262,10 +247,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor3.hasNextPage).toBe(true);
     expect(cursor3.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
-    expect(queries).toEqual([
-      '[query] select `u0`.* from `user` as `u0` where `u0`.`id` < 45 order by `u0`.`id` desc limit 4',
-      '[query] select count(*) as `count` from `user` as `u0`',
-    ]);
+    expect(queries).toMatchSnapshot();
     orm.em.clear();
     mock.mockReset();
 
@@ -285,10 +267,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor4.hasNextPage).toBe(true);
     expect(cursor4.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
-    expect(queries).toEqual([
-      '[query] select `u0`.* from `user` as `u0` where `u0`.`id` < 42 order by `u0`.`id` desc limit 41',
-      '[query] select count(*) as `count` from `user` as `u0`',
-    ]);
+    expect(queries).toMatchSnapshot();
     orm.em.clear();
     mock.mockReset();
 
@@ -306,10 +285,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor5.hasNextPage).toBe(false);
     expect(cursor5.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
-    expect(queries).toEqual([
-      '[query] select `u0`.* from `user` as `u0` where `u0`.`id` < 2 order by `u0`.`id` desc limit 41',
-      '[query] select count(*) as `count` from `user` as `u0`',
-    ]);
+    expect(queries).toMatchSnapshot();
     orm.em.clear();
     mock.mockReset();
 
@@ -327,10 +303,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor6.hasNextPage).toBe(false);
     expect(cursor6.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
-    expect(queries).toEqual([
-      '[query] select `u0`.* from `user` as `u0` where `u0`.`id` < 1 order by `u0`.`id` desc limit 2',
-      '[query] select count(*) as `count` from `user` as `u0`',
-    ]);
+    expect(queries).toMatchSnapshot();
     orm.em.clear();
     mock.mockReset();
   });
@@ -355,10 +328,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor1.hasNextPage).toBe(false);
     expect(cursor1.hasPrevPage).toBe(true);
     let queries = mock.mock.calls.map(call => call[0]).sort();
-    expect(queries).toEqual([
-      '[query] select `u0`.* from `user` as `u0` order by `u0`.`id` desc limit 4',
-      '[query] select count(*) as `count` from `user` as `u0`',
-    ]);
+    expect(queries).toMatchSnapshot();
     orm.em.clear();
     mock.mockReset();
 
@@ -380,10 +350,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor2.hasNextPage).toBe(true);
     expect(cursor2.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
-    expect(queries).toEqual([
-      '[query] select `u0`.* from `user` as `u0` where `u0`.`id` < 48 order by `u0`.`id` desc limit 4',
-      '[query] select count(*) as `count` from `user` as `u0`',
-    ]);
+    expect(queries).toMatchSnapshot();
     orm.em.clear();
     mock.mockReset();
 
@@ -405,10 +372,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor3.hasNextPage).toBe(true);
     expect(cursor3.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
-    expect(queries).toEqual([
-      '[query] select `u0`.* from `user` as `u0` where `u0`.`id` < 45 order by `u0`.`id` desc limit 4',
-      '[query] select count(*) as `count` from `user` as `u0`',
-    ]);
+    expect(queries).toMatchSnapshot();
     orm.em.clear();
     mock.mockReset();
 
@@ -428,10 +392,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor4.hasNextPage).toBe(true);
     expect(cursor4.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
-    expect(queries).toEqual([
-      '[query] select `u0`.* from `user` as `u0` where `u0`.`id` < 42 order by `u0`.`id` desc limit 41',
-      '[query] select count(*) as `count` from `user` as `u0`',
-    ]);
+    expect(queries).toMatchSnapshot();
     orm.em.clear();
     mock.mockReset();
 
@@ -449,10 +410,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor5.hasNextPage).toBe(false);
     expect(cursor5.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
-    expect(queries).toEqual([
-      '[query] select `u0`.* from `user` as `u0` where `u0`.`id` < 2 order by `u0`.`id` desc limit 41',
-      '[query] select count(*) as `count` from `user` as `u0`',
-    ]);
+    expect(queries).toMatchSnapshot();
     orm.em.clear();
     mock.mockReset();
 
@@ -470,10 +428,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor6.hasNextPage).toBe(false);
     expect(cursor6.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
-    expect(queries).toEqual([
-      '[query] select `u0`.* from `user` as `u0` where `u0`.`id` < 1 order by `u0`.`id` desc limit 2',
-      '[query] select count(*) as `count` from `user` as `u0`',
-    ]);
+    expect(queries).toMatchSnapshot();
     orm.em.clear();
     mock.mockReset();
   });
@@ -498,10 +453,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor1.hasNextPage).toBe(false);
     expect(cursor1.hasPrevPage).toBe(true);
     let queries = mock.mock.calls.map(call => call[0]).sort();
-    expect(queries).toEqual([
-      '[query] select `u0`.* from `user` as `u0` order by `u0`.`id` asc limit 4',
-      '[query] select count(*) as `count` from `user` as `u0`',
-    ]);
+    expect(queries).toMatchSnapshot();
     orm.em.clear();
     mock.mockReset();
 
@@ -523,10 +475,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor2.hasNextPage).toBe(true);
     expect(cursor2.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
-    expect(queries).toEqual([
-      '[query] select `u0`.* from `user` as `u0` where `u0`.`id` > 3 order by `u0`.`id` asc limit 4',
-      '[query] select count(*) as `count` from `user` as `u0`',
-    ]);
+    expect(queries).toMatchSnapshot();
     orm.em.clear();
     mock.mockReset();
 
@@ -548,10 +497,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor3.hasNextPage).toBe(true);
     expect(cursor3.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
-    expect(queries).toEqual([
-      '[query] select `u0`.* from `user` as `u0` where `u0`.`id` > 6 order by `u0`.`id` asc limit 4',
-      '[query] select count(*) as `count` from `user` as `u0`',
-    ]);
+    expect(queries).toMatchSnapshot();
     orm.em.clear();
     mock.mockReset();
 
@@ -571,10 +517,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor4.hasNextPage).toBe(true);
     expect(cursor4.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
-    expect(queries).toEqual([
-      '[query] select `u0`.* from `user` as `u0` where `u0`.`id` > 9 order by `u0`.`id` asc limit 41',
-      '[query] select count(*) as `count` from `user` as `u0`',
-    ]);
+    expect(queries).toMatchSnapshot();
     orm.em.clear();
     mock.mockReset();
 
@@ -592,10 +535,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor5.hasNextPage).toBe(false);
     expect(cursor5.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
-    expect(queries).toEqual([
-      '[query] select `u0`.* from `user` as `u0` where `u0`.`id` > 49 order by `u0`.`id` asc limit 41',
-      '[query] select count(*) as `count` from `user` as `u0`',
-    ]);
+    expect(queries).toMatchSnapshot();
     orm.em.clear();
     mock.mockReset();
 
@@ -613,10 +553,7 @@ describe('simple cursor based pagination', () => {
     expect(cursor6.hasNextPage).toBe(false);
     expect(cursor6.hasPrevPage).toBe(true);
     queries = mock.mock.calls.map(call => call[0]).sort();
-    expect(queries).toEqual([
-      '[query] select `u0`.* from `user` as `u0` where `u0`.`id` > 50 order by `u0`.`id` asc limit 2',
-      '[query] select count(*) as `count` from `user` as `u0`',
-    ]);
+    expect(queries).toMatchSnapshot();
     orm.em.clear();
     mock.mockReset();
   });

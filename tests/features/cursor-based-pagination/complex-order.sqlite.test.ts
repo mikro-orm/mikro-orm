@@ -7,6 +7,9 @@ import {
   PrimaryKey,
   Property,
   SimpleLogger,
+  Ref,
+  ref,
+  serialize,
 } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers';
@@ -20,7 +23,7 @@ export class User {
   @Property()
   name!: string;
 
-  @Property()
+  @Property({ unique: true })
   email!: string;
 
   @Property()
@@ -29,8 +32,8 @@ export class User {
   @Property()
   termsAccepted!: boolean;
 
-  @ManyToOne(() => User, { nullable: true })
-  bestFriend?: User;
+  @ManyToOne(() => User, { ref: true, nullable: true })
+  bestFriend?: Ref<User>;
 
 }
 
@@ -57,7 +60,7 @@ beforeAll(async () => {
     users.push(u);
 
     if (i % 5 === 4) {
-      u.bestFriend = users[i % 5];
+      u.bestFriend = ref(users[i % 5]);
     }
   }
 
@@ -135,6 +138,77 @@ test('complex cursor based pagination using `first` and `after` (id asc)', async
     " and `u0`.`name` <= 'User 1' and (`u0`.`name` < 'User 1' or (`u0`.`age` >= 28 and (`u0`.`age` > 28 or `u0`.`email` > 'email-55')))" +
     ' order by `u0`.`name` desc, `u0`.`age` asc, `u0`.`email` asc limit 11',
     "[query] select count(*) as `count` from `user` as `u0` where (`u0`.`terms_accepted` = true or `u0`.`name` = 'User 1' or `u0`.`age` <= 30) and not (`u0`.`name` = 'User 2')",
+  ]);
+  orm.em.clear();
+  mock.mockReset();
+});
+
+test('complex joined cursor based pagination using `last` and `before` (id asc)', async () => {
+  const mock = mockLogger(orm, ['query', 'query-params']);
+  const where = { bestFriend: { name: 'User 3' } } satisfies FilterQuery<User>;
+  const orderBy = { bestFriend: { email: 'asc', name: 'asc' }, name: 'desc', age: 'asc', email: 'asc' } as const;
+
+  // 1. page
+  const cursor1 = await orm.em.findByCursor(User, where, {
+    last: 5,
+    orderBy,
+    populate: ['bestFriend'],
+  });
+  expect(cursor1).toBeInstanceOf(Cursor);
+  expect(serialize(cursor1.items, { populate: ['bestFriend'] })).toMatchObject([
+    { bestFriend: { email: 'email-96', name: 'User 3' }, name: 'User 3', age: 38, email: 'email-76' },
+    { bestFriend: { email: 'email-96', name: 'User 3' }, name: 'User 3', age: 41, email: 'email-81' },
+    { bestFriend: { email: 'email-96', name: 'User 3' }, name: 'User 3', age: 43, email: 'email-86' },
+    { bestFriend: { email: 'email-96', name: 'User 3' }, name: 'User 3', age: 46, email: 'email-91' },
+    { bestFriend: { email: 'email-96', name: 'User 3' }, name: 'User 3', age: 48, email: 'email-96' },
+  ]);
+  expect(cursor1.totalCount).toBe(10);
+  expect(cursor1.startCursor).toBe('W3siYmVzdEZyaWVuZCI6eyJlbWFpbCI6ImVtYWlsLTk2IiwibmFtZSI6IlVzZXIgMyJ9fSwiVXNlciAzIiwzOCwiZW1haWwtNzYiXQ');
+  expect(cursor1.endCursor).toBe('W3siYmVzdEZyaWVuZCI6eyJlbWFpbCI6ImVtYWlsLTk2IiwibmFtZSI6IlVzZXIgMyJ9fSwiVXNlciAzIiw0OCwiZW1haWwtOTYiXQ');
+  expect(cursor1.hasNextPage).toBe(false);
+  expect(cursor1.hasPrevPage).toBe(true);
+  let queries = mock.mock.calls.map(call => call[0]).sort();
+  expect(queries).toEqual([
+    '[query] select `u0`.* from `user` as `u0`' +
+    ' left join `user` as `u1` on `u0`.`best_friend_id` = `u1`.`id`' +
+    " where `u1`.`name` = 'User 3' order by `u1`.`email` desc, `u1`.`name` desc, `u0`.`name` asc, `u0`.`age` desc, `u0`.`email` desc limit 6",
+    '[query] select count(*) as `count` from `user` as `u0`' +
+    " left join `user` as `u1` on `u0`.`best_friend_id` = `u1`.`id` where `u1`.`name` = 'User 3'",
+  ]);
+  orm.em.clear();
+  mock.mockReset();
+
+  // 2. page
+  const cursor2 = await orm.em.findByCursor(User, where, {
+    last: 5,
+    before: cursor1,
+    orderBy,
+    populate: ['bestFriend'],
+  });
+  expect(cursor2).toBeInstanceOf(Cursor);
+  expect(serialize(cursor2.items, { populate: ['bestFriend'] })).toMatchObject([
+    { bestFriend: { email: 'email-96', name: 'User 3' }, name: 'User 3', age: 26, email: 'email-51' },
+    { bestFriend: { email: 'email-96', name: 'User 3' }, name: 'User 3', age: 28, email: 'email-56' },
+    { bestFriend: { email: 'email-96', name: 'User 3' }, name: 'User 3', age: 31, email: 'email-61' },
+    { bestFriend: { email: 'email-96', name: 'User 3' }, name: 'User 3', age: 33, email: 'email-66' },
+    { bestFriend: { email: 'email-96', name: 'User 3' }, name: 'User 3', age: 36, email: 'email-71' },
+  ]);
+  expect(cursor2.totalCount).toBe(10);
+  expect(cursor2.startCursor).toBe('W3siYmVzdEZyaWVuZCI6eyJlbWFpbCI6ImVtYWlsLTk2IiwibmFtZSI6IlVzZXIgMyJ9fSwiVXNlciAzIiwyNiwiZW1haWwtNTEiXQ');
+  expect(cursor2.endCursor).toBe('W3siYmVzdEZyaWVuZCI6eyJlbWFpbCI6ImVtYWlsLTk2IiwibmFtZSI6IlVzZXIgMyJ9fSwiVXNlciAzIiwzNiwiZW1haWwtNzEiXQ');
+  expect(cursor2.hasNextPage).toBe(false);
+  expect(cursor2.hasPrevPage).toBe(true);
+  queries = mock.mock.calls.map(call => call[0]).sort();
+  expect(queries).toEqual([
+    '[query] select `u0`.* from `user` as `u0`' +
+    ' left join `user` as `u1` on `u0`.`best_friend_id` = `u1`.`id`' +
+    " where `u1`.`name` = 'User 3'" +
+    " and `u1`.`email` <= 'email-96' and `u1`.`name` <= 'User 3'" +
+    " and ((`u1`.`email` < 'email-96' and `u1`.`name` < 'User 3') or (`u0`.`name` >= 'User 3' and (`u0`.`name` > 'User 3' or (`u0`.`age` <= 38 and (`u0`.`age` < 38 or `u0`.`email` < 'email-76')))))" +
+    ' order by `u1`.`email` desc, `u1`.`name` desc, `u0`.`name` asc, `u0`.`age` desc, `u0`.`email` desc limit 6',
+    '[query] select `u0`.* from `user` as `u0` where `u0`.`id` in (5) order by `u0`.`email` asc, `u0`.`name` asc, `u0`.`id` asc',
+    '[query] select count(*) as `count` from `user` as `u0`' +
+    " left join `user` as `u1` on `u0`.`best_friend_id` = `u1`.`id` where `u1`.`name` = 'User 3'",
   ]);
   orm.em.clear();
   mock.mockReset();
