@@ -1,11 +1,46 @@
 import type { Knex } from 'knex';
 import type {
-  AnyEntity, Collection, ConnectionType, Configuration, Constructor, CountOptions, DeleteOptions, Dictionary,
-  DriverMethodOptions, EntityData, EntityDictionary, EntityField, EntityManager, EntityMetadata, EntityName, EntityProperty, FilterQuery,
-  FindOneOptions, FindOptions, IDatabaseDriver, LockOptions, NativeInsertUpdateManyOptions, NativeInsertUpdateOptions,
-  PopulateOptions, Primary, QueryOrderMap, QueryResult, RequiredEntityData, Transaction,
+  AnyEntity,
+  Collection,
+  ConnectionType,
+  Configuration,
+  Constructor,
+  CountOptions,
+  DeleteOptions,
+  Dictionary,
+  DriverMethodOptions,
+  EntityData,
+  EntityDictionary,
+  EntityField,
+  EntityManager,
+  EntityMetadata,
+  EntityName,
+  EntityProperty,
+  FilterQuery,
+  FindOneOptions,
+  FindOptions,
+  IDatabaseDriver,
+  LockOptions,
+  NativeInsertUpdateManyOptions,
+  NativeInsertUpdateOptions,
+  PopulateOptions,
+  Primary,
+  QueryOrderMap,
+  QueryResult,
+  RequiredEntityData,
+  Transaction,
+  FindByCursorOptions,
 } from '@mikro-orm/core';
-import { DatabaseDriver, EntityManagerType, helper, LoadStrategy, QueryFlag, QueryHelper, ReferenceType, Utils } from '@mikro-orm/core';
+import {
+  DatabaseDriver,
+  EntityManagerType,
+  helper,
+  LoadStrategy,
+  QueryFlag,
+  QueryHelper,
+  ReferenceType,
+  Utils,
+} from '@mikro-orm/core';
 import type { AbstractSqlConnection } from './AbstractSqlConnection';
 import type { AbstractSqlPlatform } from './AbstractSqlPlatform';
 import { QueryBuilder, QueryType } from './query';
@@ -48,18 +83,28 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const qb = this.createQueryBuilder<T>(entityName, options.ctx, options.connectionType, false);
     const fields = this.buildFields(meta, populate, joinedProps, qb, options.fields as Field<T>[]);
     const joinedPropsOrderBy = this.buildJoinedPropsOrderBy(entityName, qb, meta, joinedProps);
+    const orderBy = [...Utils.asArray(options.orderBy), ...joinedPropsOrderBy];
 
     if (Utils.isPrimaryKey(where, meta.compositePK)) {
       where = { [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where } as FilterQuery<T>;
     }
 
+    const { first, last, before, after } = options as FindByCursorOptions<T>;
+    const isCursorPagination = [first, last, before, after].some(v => v != null);
+
     qb.select(fields)
       .populate(populate, joinedProps.length > 0 ? options.populateWhere : undefined)
       .where(where)
-      .orderBy([...Utils.asArray(options.orderBy), ...joinedPropsOrderBy])
       .groupBy(options.groupBy!)
       .having(options.having!)
       .withSchema(this.getSchemaName(meta, options));
+
+    if (isCursorPagination) {
+      const { orderBy: newOrderBy, where } = this.processCursorOptions(meta, options, orderBy);
+      qb.andWhere(where).orderBy(newOrderBy);
+    } else {
+      qb.orderBy(orderBy);
+    }
 
     if (options.limit !== undefined) {
       qb.limit(options.limit, options.offset);
@@ -71,6 +116,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     Utils.asArray(options.flags).forEach(flag => qb.setFlag(flag));
     const result = await this.rethrow(qb.execute('all'));
+
+    if (isCursorPagination && !first && !!last) {
+      result.reverse();
+    }
 
     if (joinedProps.length > 0) {
       return this.mergeJoinedResult(result, meta);
@@ -781,7 +830,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return qb;
   }
 
-  protected resolveConnectionType(args: { ctx?: Transaction<Knex.Transaction>; connectionType?: ConnectionType}) {
+  protected resolveConnectionType(args: { ctx?: Transaction<Knex.Transaction>; connectionType?: ConnectionType }) {
     if (args.ctx) {
       return 'write';
     } else if (args.connectionType) {
@@ -862,7 +911,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     /* istanbul ignore else */
     if (this.platform.allowsMultiInsert()) {
-      await this.nativeInsertMany<T>(prop.pivotEntity, items as EntityData<T>[], { ...options, convertCustomTypes: false, processCollections: false });
+      await this.nativeInsertMany<T>(prop.pivotEntity, items as EntityData<T>[], {
+        ...options,
+        convertCustomTypes: false,
+        processCollections: false,
+      });
     } else {
       await Utils.runSerial(items, item => {
         return this.createQueryBuilder(prop.pivotEntity, options?.ctx, 'write')

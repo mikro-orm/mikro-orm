@@ -1,9 +1,20 @@
 import type { CreateOptions, EntityManager, MergeOptions } from '../EntityManager';
 import type { AssignOptions } from './EntityAssigner';
 import type { EntityData, EntityName, AnyEntity, Primary, Loaded, FilterQuery, EntityDictionary, AutoPath, RequiredEntityData } from '../typings';
-import type { CountOptions, DeleteOptions, FindOneOptions, FindOneOrFailOptions, FindOptions, GetReferenceOptions, NativeInsertUpdateOptions, UpdateOptions } from '../drivers/IDatabaseDriver';
+import type {
+  CountOptions,
+  DeleteOptions,
+  FindByCursorOptions,
+  FindOneOptions,
+  FindOneOrFailOptions,
+  FindOptions,
+  GetReferenceOptions,
+  NativeInsertUpdateOptions,
+  UpdateOptions,
+} from '../drivers/IDatabaseDriver';
 import type { IdentifiedReference, Reference } from './Reference';
 import type { EntityLoaderOptions } from './EntityLoader';
+import type { Cursor } from '../utils/Cursor';
 
 export class EntityRepository<T extends object> {
 
@@ -120,6 +131,13 @@ export class EntityRepository<T extends object> {
    */
   async findAndCount<P extends string = never>(where: FilterQuery<T>, options?: FindOptions<T, P>): Promise<[Loaded<T, P>[], number]> {
     return this.em.findAndCount<T, P>(this.entityName, where, options);
+  }
+
+  /**
+   * @inheritDoc EntityManager.findByCursor
+   */
+  async findByCursor<P extends string = never>(where: FilterQuery<T>, options?: FindByCursorOptions<T, P>): Promise<Cursor<T, P>> {
+    return this.em.findByCursor<T, P>(this.entityName, where, options);
   }
 
   /**
