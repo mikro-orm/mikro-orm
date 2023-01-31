@@ -161,7 +161,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return this.dependencies;
   }
 
-  protected processCursorOptions<T extends object, P extends string>(meta: EntityMetadata<T>, options: FindOptions<T, P>, orderBy: OrderDefinition<T>) {
+  protected processCursorOptions<T extends object, P extends string>(meta: EntityMetadata<T>, options: FindOptions<T, P>, orderBy: OrderDefinition<T>): { orderBy: OrderDefinition<T>[]; where: FilterQuery<T> } {
     const { first, last, before, after, overfetch } = options;
     const limit = first || last;
     const isLast = !first && !!last;
@@ -200,23 +200,23 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
       options.limit = limit + (overfetch ? 1 : 0);
     }
 
-    const createOrderBy = (prop: string, direction: QueryOrderKeys<T>) => {
+    const createOrderBy = (prop: string, direction: QueryOrderKeys<T>): OrderDefinition<T> => {
       if (Utils.isPlainObject(direction)) {
         const value = Object.keys(direction).reduce((o, key) => {
           Object.assign(o, createOrderBy(key, direction[key]));
           return o;
         }, {});
-        return ({ [prop]: value });
+        return ({ [prop]: value }) as OrderDefinition<T>;
       }
 
       const desc = direction as unknown === QueryOrderNumeric.DESC || direction.toString().toLowerCase() === 'desc';
       const dir = Utils.xor(desc, isLast) ? 'desc' : 'asc';
-      return ({ [prop]: dir });
+      return ({ [prop]: dir }) as OrderDefinition<T>;
     };
 
     return {
       orderBy: definition.map(([prop, direction]) => createOrderBy(prop, direction)),
-      where: $and.length > 1 ? { $and } : { ...$and[0] },
+      where: ($and.length > 1 ? { $and } : { ...$and[0] }) as FilterQuery<T>,
     };
   }
 
