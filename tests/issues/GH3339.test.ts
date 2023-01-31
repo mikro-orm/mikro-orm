@@ -50,11 +50,7 @@ describe('GH issue 3339', () => {
       schema: 'gh3339',
       entities: [ Customer1 ],
     });
-    const generator = orm.schema;
-    await generator.ensureDatabase();
-    await generator.dropSchema();
-    await generator.createSchema();
-    await generator.refreshDatabase();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(() => orm.close(true));
