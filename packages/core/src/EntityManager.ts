@@ -1,5 +1,12 @@
 import { inspect } from 'util';
-import { type Configuration, getOnConflictReturningFields, QueryHelper, TransactionContext, Utils } from './utils';
+import {
+  type Configuration,
+  type Cursor,
+  getOnConflictReturningFields,
+  QueryHelper,
+  TransactionContext,
+  Utils,
+} from './utils';
 import {
   type AssignOptions,
   EntityAssigner,
@@ -17,6 +24,7 @@ import type {
   DeleteOptions,
   EntityField,
   EntityManagerType,
+  FindByCursorOptions,
   FindOneOptions,
   FindOneOrFailOptions,
   FindOptions,
@@ -449,12 +457,82 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     Entity extends object,
     Hint extends string = never,
   >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindOptions<Entity, Hint> = {}): Promise<[Loaded<Entity, Hint>[], number]> {
+    const em = this.getContext(false);
     const [entities, count] = await Promise.all([
-      this.find<Entity, Hint>(entityName, where, options),
-      this.count(entityName, where, options),
+      em.find<Entity, Hint>(entityName, where, options),
+      em.count(entityName, where, options),
     ]);
 
     return [entities, count];
+  }
+
+  /**
+   * Calls `em.find()` and `em.count()` with the same arguments (where applicable) and returns the results as {@apilink Cursor} object.
+   * Supports `before`, `after`, `first` and `last` options while disallowing `limit` and `offset`. Explicit `orderBy` option
+   * is required.
+   *
+   * Use `first` and `after` for forward pagination, or `last` and `before` for backward pagination.
+   *
+   * - `first` and `last` are numbers and serve as an alternative to `offset`, those options are mutually exclusive, use only one at a time
+   * - `before` and `after` specify the previous cursor value, it can be one of the:
+   *     - `Cursor` instance
+   *     - opaque string provided by `startCursor/endCursor` properties
+   *     - POJO/entity instance
+   *
+   * ```ts
+   * const currentCursor = await em.findByCursor(User, {}, {
+   *   first: 10,
+   *   after: previousCursor, // cursor instance
+   *   orderBy: { id: 'desc' },
+   * });
+   *
+   * // to fetch next page
+   * const nextCursor = await em.findByCursor(User, {}, {
+   *   first: 10,
+   *   after: currentCursor.endCursor, // opaque string
+   *   orderBy: { id: 'desc' },
+   * });
+   *
+   * // to fetch next page
+   * const nextCursor2 = await em.findByCursor(User, {}, {
+   *   first: 10,
+   *   after: { id: lastSeenId }, // entity-like POJO
+   *   orderBy: { id: 'desc' },
+   * });
+   * ```
+   *
+   * The `Cursor` object provides following interface:
+   *
+   * ```ts
+   * Cursor<User> {
+   *   items: [
+   *     User { ... },
+   *     User { ... },
+   *     User { ... },
+   *   ],
+   *   totalCount: 50,
+   *   startCursor: 'WzRd',
+   *   endCursor: 'WzZd',
+   *   hasPrevPage: true,
+   *   hasNextPage: true,
+   * }
+   * ```
+   */
+  async findByCursor<
+    Entity extends object,
+    Hint extends string = never,
+  >(entityName: EntityName<Entity>, where: FilterQuery<Entity>, options: FindByCursorOptions<Entity, Hint> = {}): Promise<Cursor<Entity, Hint>> {
+    const em = this.getContext(false);
+    entityName = Utils.className(entityName);
+    options.overfetch ??= true;
+
+    if (Utils.isEmpty(options.orderBy)) {
+      throw new Error('Explicit `orderBy` option required');
+    }
+
+    const [entities, count] = await em.findAndCount(entityName, where, options);
+
+    return new Cursor<Entity, Hint>(entities, count, options, this.metadata.get(entityName));
   }
 
   /**
@@ -1016,7 +1094,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const em = this.getContext(false);
-    em.transactionContext = await em.getConnection('write').begin({ ...options, eventBroadcaster: new TransactionEventBroadcaster(em) });
+    em.transactionContext = await em.getConnection('write').begin({
+      ...options,
+      eventBroadcaster: new TransactionEventBroadcaster(em),
+    });
   }
 
   /**
@@ -1194,7 +1275,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }
     });
 
-    return this.merge<Entity>(entityName, data as EntityData<Entity>, { convertCustomTypes: true, refresh: true, ...options });
+    return this.merge<Entity>(entityName, data as EntityData<Entity>, {
+      convertCustomTypes: true,
+      refresh: true, ...options,
+    });
   }
 
   /**
@@ -1790,9 +1874,17 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       let data: R;
 
       if (Array.isArray(cached) && merge) {
-        data = cached.map(item => em.entityFactory.create<T>(entityName, item, { merge: true, convertCustomTypes: true, refresh })) as unknown as R;
+        data = cached.map(item => em.entityFactory.create<T>(entityName, item, {
+          merge: true,
+          convertCustomTypes: true,
+          refresh,
+        })) as unknown as R;
       } else if (Utils.isObject<EntityData<T>>(cached) && merge) {
-        data = em.entityFactory.create<T>(entityName, cached, { merge: true, convertCustomTypes: true, refresh }) as unknown as R;
+        data = em.entityFactory.create<T>(entityName, cached, {
+          merge: true,
+          convertCustomTypes: true,
+          refresh,
+        }) as unknown as R;
       } else {
         data = cached;
       }

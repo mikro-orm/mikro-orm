@@ -19,6 +19,7 @@ import {
   type EntityName,
   type EntityProperty,
   type FilterQuery,
+  type FindByCursorOptions,
   type FindOneOptions,
   type FindOptions,
   getOnConflictFields,
@@ -84,21 +85,31 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const qb = this.createQueryBuilder<T>(entityName, options.ctx, options.connectionType, false);
     const fields = this.buildFields(meta, populate, joinedProps, qb, options.fields as Field<T>[]);
     const joinedPropsOrderBy = this.buildJoinedPropsOrderBy(entityName, qb, meta, joinedProps);
+    const orderBy = [...Utils.asArray(options.orderBy), ...joinedPropsOrderBy];
 
     if (Utils.isPrimaryKey(where, meta.compositePK)) {
       where = { [Utils.getPrimaryKeyHash(meta.primaryKeys)]: where } as FilterQuery<T>;
     }
 
+    const { first, last, before, after } = options as FindByCursorOptions<T>;
+    const isCursorPagination = [first, last, before, after].some(v => v != null);
+
     qb.select(fields)
       .populate(populate, joinedProps.length > 0 ? options.populateWhere : undefined)
       .where(where)
-      .orderBy([...Utils.asArray(options.orderBy), ...joinedPropsOrderBy])
       .groupBy(options.groupBy!)
       .having(options.having!)
       .indexHint(options.indexHint!)
       .comment(options.comments!)
       .hintComment(options.hintComments!)
       .withSchema(this.getSchemaName(meta, options));
+
+    if (isCursorPagination) {
+      const { orderBy: newOrderBy, where } = this.processCursorOptions(meta, options, orderBy);
+      qb.andWhere(where).orderBy(newOrderBy);
+    } else {
+      qb.orderBy(orderBy);
+    }
 
     if (options.limit !== undefined) {
       qb.limit(options.limit, options.offset);
@@ -110,6 +121,10 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     Utils.asArray(options.flags).forEach(flag => qb.setFlag(flag));
     const result = await this.rethrow(qb.execute('all'));
+
+    if (isCursorPagination && !first && !!last) {
+      result.reverse();
+    }
 
     if (joinedProps.length > 0) {
       return this.mergeJoinedResult(result, meta, joinedProps);
@@ -876,7 +891,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return qb;
   }
 
-  protected resolveConnectionType(args: { ctx?: Transaction<Knex.Transaction>; connectionType?: ConnectionType}) {
+  protected resolveConnectionType(args: { ctx?: Transaction<Knex.Transaction>; connectionType?: ConnectionType }) {
     if (args.ctx) {
       return 'write';
     } else if (args.connectionType) {
@@ -959,7 +974,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     /* istanbul ignore else */
     if (this.platform.allowsMultiInsert()) {
-      await this.nativeInsertMany<T>(prop.pivotEntity, items as EntityData<T>[], { ...options, convertCustomTypes: false, processCollections: false });
+      await this.nativeInsertMany<T>(prop.pivotEntity, items as EntityData<T>[], {
+        ...options,
+        convertCustomTypes: false,
+        processCollections: false,
+      });
     } else {
       await Utils.runSerial(items, item => {
         return this.createQueryBuilder(prop.pivotEntity, options?.ctx, 'write')
