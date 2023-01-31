@@ -10,7 +10,6 @@ const methods = {
   getReference: jest.fn(),
   persist: jest.fn(),
   persistAndFlush: jest.fn(),
-  persistLater: jest.fn(),
   createQueryBuilder: jest.fn(),
   qb: jest.fn(),
   findOne: jest.fn(),
@@ -21,14 +20,13 @@ const methods = {
   findByCursor: jest.fn(),
   remove: jest.fn(),
   removeAndFlush: jest.fn(),
-  removeLater: jest.fn(),
   flush: jest.fn(),
   canPopulate: jest.fn(),
   populate: jest.fn(),
   count: jest.fn(),
   create: jest.fn(),
   assign: jest.fn(),
-  nativeInsert: jest.fn(),
+  insert: jest.fn(),
   nativeUpdate: jest.fn(),
   nativeDelete: jest.fn(),
   aggregate: jest.fn(),
@@ -54,8 +52,6 @@ describe('EntityRepository', () => {
     expect(methods.persist.mock.calls[0]).toEqual([e]);
     await repo.persistAndFlush(e);
     expect(methods.persistAndFlush.mock.calls[0]).toEqual([e]);
-    repo.persistLater(e);
-    expect(methods.persistLater.mock.calls[0]).toEqual([e]);
     await repo.find({ name: 'bar' });
     expect(methods.find.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, undefined]);
     await repo.findAndCount({ name: 'bar' });
@@ -77,8 +73,6 @@ describe('EntityRepository', () => {
     const entity = {} as AnyEntity;
     await repo.removeAndFlush(entity);
     expect(methods.removeAndFlush.mock.calls[0]).toEqual([entity]);
-    repo.removeLater(entity);
-    expect(methods.removeLater.mock.calls[0]).toEqual([entity]);
     await repo.create({ name: 'bar' });
     expect(methods.create.mock.calls[0]).toEqual([Publisher, { name: 'bar' }]);
     await repo.assign(e, { name: 'bar' });
@@ -86,8 +80,8 @@ describe('EntityRepository', () => {
     await repo.populate([] as Publisher[], ['books']);
     expect(methods.populate.mock.calls[0]).toEqual([[], ['books'], undefined]);
 
-    await repo.nativeInsert({ name: 'bar' });
-    expect(methods.nativeInsert.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, undefined]);
+    await repo.insert({ name: 'bar' });
+    expect(methods.insert.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, undefined]);
     await repo.nativeUpdate({ name: 'bar' }, { name: 'baz' });
     expect(methods.nativeUpdate.mock.calls[0]).toEqual([Publisher, { name: 'bar' }, { name: 'baz' }, undefined]);
     await repo.nativeDelete({ name: 'bar' });

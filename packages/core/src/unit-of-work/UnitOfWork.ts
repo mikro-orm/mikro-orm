@@ -174,11 +174,6 @@ export class UnitOfWork {
   }
 
   /**
-   * @deprecated use `uow.getOriginalEntityData(entity)`
-   */
-  getOriginalEntityData<T extends object>(): AnyEntity[];
-
-  /**
    * Returns stored snapshot of entity state that is used for change set computation.
    */
   getOriginalEntityData<T extends object>(entity: T): EntityData<T> | undefined;
@@ -187,12 +182,6 @@ export class UnitOfWork {
    * Returns stored snapshot of entity state that is used for change set computation.
    */
   getOriginalEntityData<T extends object>(entity?: T): EntityData<AnyEntity>[] | EntityData<T> | undefined {
-    if (!entity) {
-      return this.identityMap.values().map(e => {
-        return e.__helper!.__originalEntityData!;
-      });
-    }
-
     return helper(entity as T).__originalEntityData;
   }
 

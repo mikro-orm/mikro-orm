@@ -38,16 +38,6 @@ export class EntityRepository<T extends object> {
   }
 
   /**
-   * Tells the EntityManager to make an instance managed and persistent.
-   * The entity will be entered into the database at or before transaction commit or as a result of the flush operation.
-   *
-   * @deprecated use `persist()`
-   */
-  persistLater(entity: AnyEntity | AnyEntity[]): void {
-    this.em.persistLater(entity);
-  }
-
-  /**
    * Finds first entity matching your `where` query.
    */
   async findOne<P extends string = never>(where: FilterQuery<T>, options?: FindOneOptions<T, P>): Promise<Loaded<T, P> | null> {
@@ -137,16 +127,6 @@ export class EntityRepository<T extends object> {
   }
 
   /**
-   * Marks entity for removal.
-   * A removed entity will be removed from the database at or before transaction commit or as a result of the flush operation.
-   *
-   * @deprecated use `remove()`
-   */
-  removeLater(entity: AnyEntity): void {
-    this.em.removeLater(entity);
-  }
-
-  /**
    * Flushes all changes to objects that have been queued up to now to the database.
    * This effectively synchronizes the in-memory state of managed objects with the database.
    * This method is a shortcut for `em.flush()`, in other words, it will flush the whole UoW,
@@ -157,10 +137,17 @@ export class EntityRepository<T extends object> {
   }
 
   /**
-   * Fires native insert query. Calling this has no side effects on the context (identity map).
+   * @inheritDoc EntityManager.insert
    */
-  async nativeInsert(data: T | EntityData<T>, options?: NativeInsertUpdateOptions<T>): Promise<Primary<T>> {
-    return this.em.nativeInsert<T>(this.entityName, data, options);
+  async insert(data: T | EntityData<T>, options?: NativeInsertUpdateOptions<T>): Promise<Primary<T>> {
+    return this.em.insert<T>(this.entityName, data, options);
+  }
+
+  /**
+   * @inheritDoc EntityManager.insert
+   */
+  async insertMany(data: T[] | EntityData<T>[], options?: NativeInsertUpdateOptions<T>): Promise<Primary<T>[]> {
+    return this.em.insertMany<T>(this.entityName, data, options);
   }
 
   /**
