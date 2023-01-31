@@ -98,3 +98,11 @@ Use `EntitySchema` instead, for easy migration there is `EntitySchema.fromMetada
 +@Property({ type: new ArrayType() })
 foo: string[];
 ```
+
+## Removal of deprecated methods
+
+- `em.nativeInsert()` -> `em.insert()`
+- `em.persistLater()` -> `em.persist()`
+- `em.removeLater()` -> `em.remove()`
+- `uow.getOriginalEntityData()` without parameters 
+- `orm.schema.generate()` 

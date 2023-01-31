@@ -32,7 +32,7 @@ afterAll(async () => {
 });
 
 test(`3847`, async () => {
-  const r = await orm.em.nativeInsert(Test, { name: 'n', born: new Date() });
+  const r = await orm.em.insert(Test, { name: 'n', born: new Date() });
 
   await orm.em.findOne(Test, { id: r });
   await orm.em.findOne(Test, { name: 'n' });
