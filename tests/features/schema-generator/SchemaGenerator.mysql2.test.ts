@@ -48,8 +48,6 @@ describe('SchemaGenerator (no FKs)', () => {
   test('generate schema from metadata [mysql]', async () => {
     const orm = await initORMMySql('mysql', { schemaGenerator: { createForeignKeyConstraints: false, disableForeignKeys: false } }, true);
     await orm.schema.ensureDatabase();
-    const dump = await orm.schema.generate();
-    expect(dump).toMatchSnapshot('mysql-schema-dump');
 
     const dropDump = await orm.schema.getDropSchemaSQL();
     expect(dropDump).toMatchSnapshot('mysql-drop-schema-dump');

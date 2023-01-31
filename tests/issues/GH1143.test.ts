@@ -23,11 +23,10 @@ describe('GH issue 1143', () => {
       dbName: `mikro_orm_test_gh_1143`,
     });
 
-    const generator = orm.schema;
-    await generator.ensureDatabase();
-    await generator.dropSchema();
-    await generator.execute(`drop schema if exists "test" cascade`);
-    await generator.createSchema();
+    await orm.schema.ensureDatabase();
+    await orm.schema.dropSchema();
+    await orm.schema.execute(`drop schema if exists "test" cascade`);
+    await orm.schema.createSchema();
   });
 
   afterAll(async () => {
@@ -35,8 +34,7 @@ describe('GH issue 1143', () => {
   });
 
   it('diffing schema with custom schema name', async () => {
-    const generator = orm.schema;
-    const sql = await generator.getUpdateSchemaSQL({ wrap: false });
+    const sql = await orm.schema.getUpdateSchemaSQL({ wrap: false });
     expect(sql).toBe('');
   });
 
