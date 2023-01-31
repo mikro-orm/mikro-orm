@@ -93,7 +93,7 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
   });
 
   test('transactions respect the tx context', async () => {
-    const god1 = await orm.em.nativeInsert(Author4, { name: 'God1', email: 'hello@heaven1.god' });
+    const god1 = await orm.em.insert(Author4, { name: 'God1', email: 'hello@heaven1.god' });
 
     // this repo is based on `orm.em`, but thanks `TransactionContext` helper,
     // it will use the right EM behind the scenes when used inside `em.transactional()`
@@ -881,7 +881,7 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
 
   test('EM supports native insert/update/delete', async () => {
     orm.config.getLogger().setDebugMode(false);
-    const res1 = await orm.em.nativeInsert<IAuthor4>('Author4', { name: 'native name 1', email: 'native1@email.com' });
+    const res1 = await orm.em.insert<IAuthor4>('Author4', { name: 'native name 1', email: 'native1@email.com' });
     expect(typeof res1).toBe('number');
 
     const res2 = await orm.em.nativeUpdate(Author4, { name: 'native name 1' }, { name: 'new native name' });
@@ -890,7 +890,7 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     const res3 = await orm.em.nativeDelete(Author4, { name: 'new native name' });
     expect(res3).toBe(1);
 
-    const res4 = await orm.em.nativeInsert(Author4, { createdAt: new Date('1989-11-17'), updatedAt: new Date('2018-10-28'), name: 'native name 2', email: 'native2@email.com' });
+    const res4 = await orm.em.insert(Author4, { createdAt: new Date('1989-11-17'), updatedAt: new Date('2018-10-28'), name: 'native name 2', email: 'native2@email.com' });
     expect(typeof res4).toBe('number');
 
     const res5 = await orm.em.nativeUpdate(Author4, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
@@ -1004,8 +1004,8 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
   });
 
   test('custom types', async () => {
-    await orm.em.nativeInsert(FooBar4, { id: 123, name: 'n1', array: [1, 2, 3] });
-    await orm.em.nativeInsert(FooBar4, { id: 456, name: 'n2', array: [] });
+    await orm.em.insert(FooBar4, { id: 123, name: 'n1', array: [1, 2, 3] });
+    await orm.em.insert(FooBar4, { id: 456, name: 'n2', array: [] });
 
     const bar = orm.em.create(FooBar4, { name: 'b1 \'the bad\' lol' });
     bar.blob = Buffer.from([1, 2, 3, 4, 5]);
