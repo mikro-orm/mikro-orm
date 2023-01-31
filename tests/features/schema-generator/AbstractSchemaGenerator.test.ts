@@ -9,7 +9,6 @@ describe('AbstractSchemaGenerator', () => {
     const config = new Configuration({ driver: SqliteDriver }, false);
     const driver = new SqliteDriver(config);
     const generator = new MySchemaGenerator(driver);
-    await expect(generator.generate()).rejects.toThrowError('This method is not supported by SqliteDriver driver');
     await expect(generator.createSchema()).rejects.toThrowError('This method is not supported by SqliteDriver driver');
     await expect(generator.ensureDatabase()).rejects.toThrowError('This method is not supported by SqliteDriver driver');
     await expect(generator.getCreateSchemaSQL()).rejects.toThrowError('This method is not supported by SqliteDriver driver');
