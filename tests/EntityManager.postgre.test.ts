@@ -524,7 +524,7 @@ describe('EntityManagerPostgre', () => {
   });
 
   test('order by json properties', async () => {
-    await orm.em.nativeInsert(Author2, { name: 'n', email: 'e', id: 1 });
+    await orm.em.insert(Author2, { name: 'n', email: 'e', id: 1 });
     await orm.em.insertMany(Book2, [
       { uuid: '123e4567-e89b-12d3-a456-426614174001', title: 't1', author: 1, meta: { nested: { foo: '3', deep: { str: 'c', baz: 3 } } } },
       { uuid: '123e4567-e89b-12d3-a456-426614174002', title: 't2', author: 1, meta: { nested: { foo: '2', deep: { str: 'b', baz: 1 } } } },
@@ -1426,7 +1426,7 @@ describe('EntityManagerPostgre', () => {
 
   test('EM supports native insert/update/delete', async () => {
     orm.config.getLogger().setDebugMode(false);
-    const res1 = await orm.em.nativeInsert(Author2, { name: 'native name 1', email: 'native1@email.com' });
+    const res1 = await orm.em.insert(Author2, { name: 'native name 1', email: 'native1@email.com' });
     expect(typeof res1).toBe('number');
 
     const res2 = await orm.em.nativeUpdate(Author2, { name: 'native name 1' }, { name: 'new native name' });
@@ -1435,7 +1435,7 @@ describe('EntityManagerPostgre', () => {
     const res3 = await orm.em.nativeDelete(Author2, { name: 'new native name' });
     expect(res3).toBe(1);
 
-    const res4 = await orm.em.nativeInsert(Author2, { createdAt: new Date('1989-11-17'), updatedAt: new Date('2018-10-28'), name: 'native name 2', email: 'native2@email.com' });
+    const res4 = await orm.em.insert(Author2, { createdAt: new Date('1989-11-17'), updatedAt: new Date('2018-10-28'), name: 'native name 2', email: 'native2@email.com' });
     expect(typeof res4).toBe('number');
 
     const res5 = await orm.em.nativeUpdate(Author2, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
@@ -1448,7 +1448,7 @@ describe('EntityManagerPostgre', () => {
     expect(b.createdAt).toBeInstanceOf(Date);
 
     const mock = mockLogger(orm, ['query', 'query-params']);
-    await orm.em.nativeInsert(Author2, { name: 'native name 1', email: 'native1@email.com' });
+    await orm.em.insert(Author2, { name: 'native name 1', email: 'native1@email.com' });
     expect(mock.mock.calls[0][0]).toMatch('insert into "author2" ("email", "name") values (\'native1@email.com\', \'native name 1\') returning "id", "created_at", "updated_at"');
     orm.config.set('debug', ['query']);
   });
@@ -1686,8 +1686,8 @@ describe('EntityManagerPostgre', () => {
   });
 
   test('custom types', async () => {
-    await orm.em.nativeInsert(FooBar2, { id: 123, name: 'n1', array: [1, 2, 3] });
-    await orm.em.nativeInsert(FooBar2, { id: 456, name: 'n2', array: [] });
+    await orm.em.insert(FooBar2, { id: 123, name: 'n1', array: [1, 2, 3] });
+    await orm.em.insert(FooBar2, { id: 456, name: 'n2', array: [] });
 
     const bar = FooBar2.create('b1 "b" \'1\'');
     bar.blob = Buffer.from([1, 2, 3, 4, 5]);
@@ -1980,7 +1980,7 @@ describe('EntityManagerPostgre', () => {
   test('working with global identity map will not throw if disableIdentityMap is used', async () => {
     orm.config.set('allowGlobalContext', false);
 
-    await orm.em.nativeInsert(FooBar2, { name: 'bar 1' });
+    await orm.em.insert(FooBar2, { name: 'bar 1' });
     const res1 = await orm.em.getRepository(FooBar2).find({}, { disableIdentityMap: true });
     expect(res1).toHaveLength(1);
 

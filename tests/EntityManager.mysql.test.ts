@@ -1677,7 +1677,7 @@ describe('EntityManagerMySql', () => {
   test('EM supports native insert/update/delete', async () => {
     orm.config.getLogger().setDebugMode(false);
     const a = new Author2('native name 1', 'native1@email.com');
-    const res1 = await orm.em.nativeInsert(a);
+    const res1 = await orm.em.insert(a);
     expect(typeof res1).toBe('number');
 
     const res2 = await orm.em.nativeUpdate(Author2, { name: 'native name 1' }, { name: 'new native name' });
@@ -1686,7 +1686,7 @@ describe('EntityManagerMySql', () => {
     const res3 = await orm.em.nativeDelete(Author2, { name: 'new native name' });
     expect(res3).toBe(1);
 
-    const res4 = await orm.em.nativeInsert(Author2, { createdAt: new Date('1989-11-17'), updatedAt: new Date('2018-10-28'), name: 'native name 2', email: 'native2@email.com' });
+    const res4 = await orm.em.insert(Author2, { createdAt: new Date('1989-11-17'), updatedAt: new Date('2018-10-28'), name: 'native name 2', email: 'native2@email.com' });
     expect(typeof res4).toBe('number');
 
     const res5 = await orm.em.nativeUpdate(Author2, { name: 'native name 2' }, { name: 'new native name', updatedAt: new Date('2018-10-28') });
@@ -1698,7 +1698,7 @@ describe('EntityManagerMySql', () => {
     const res7 = await orm.em.nativeDelete<Author2>('author2', res4);
     expect(res7).toBe(1);
 
-    const id = await orm.em.nativeInsert(Author2, { name: 'native name 1', email: 'native1@email.com' });
+    const id = await orm.em.insert(Author2, { name: 'native name 1', email: 'native1@email.com' });
 
     const res8 = await orm.em.nativeUpdate(Author2, id, { friends: [id] });
     expect(res8).toBe(0);
@@ -2295,8 +2295,8 @@ describe('EntityManagerMySql', () => {
   });
 
   test('custom types', async () => {
-    await orm.em.nativeInsert(FooBar2, { id: 123, name: 'n1', array: [1, 2, 3] });
-    await orm.em.nativeInsert(FooBar2, { id: 456, name: 'n2', array: [] });
+    await orm.em.insert(FooBar2, { id: 123, name: 'n1', array: [1, 2, 3] });
+    await orm.em.insert(FooBar2, { id: 456, name: 'n2', array: [] });
 
     const bar = FooBar2.create('b1');
     bar.blob = Buffer.from([1, 2, 3, 4, 5]);
@@ -2345,9 +2345,9 @@ describe('EntityManagerMySql', () => {
   });
 
   test('exceptions', async () => {
-    await orm.em.nativeInsert(Author2, { name: 'author', email: 'email' });
-    await expect(orm.em.nativeInsert(Author2, { name: 'author', email: 'email' })).rejects.toThrow(UniqueConstraintViolationException);
-    await expect(orm.em.nativeInsert<any>('not_existing', { foo: 'bar' })).rejects.toThrow(TableNotFoundException);
+    await orm.em.insert(Author2, { name: 'author', email: 'email' });
+    await expect(orm.em.insert(Author2, { name: 'author', email: 'email' })).rejects.toThrow(UniqueConstraintViolationException);
+    await expect(orm.em.insert<any>('not_existing', { foo: 'bar' })).rejects.toThrow(TableNotFoundException);
     await expect(orm.em.execute('create table author2 (foo text not null)')).rejects.toThrow(TableExistsException);
     await expect(orm.em.execute('foo bar 123')).rejects.toThrow(SyntaxErrorException);
     await expect(orm.em.execute('select id from author2, foo_bar2')).rejects.toThrow(NonUniqueFieldNameException);
