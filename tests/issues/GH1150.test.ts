@@ -56,10 +56,7 @@ describe('GH issue 1150', () => {
       dbName: `mikro_orm_test_gh_1150`,
     });
 
-    const generator = orm.schema;
-    await generator.ensureDatabase();
-    await generator.dropSchema();
-    await generator.createSchema();
+    await orm.schema.refreshDatabase();
   });
 
   afterAll(async () => {
@@ -83,8 +80,7 @@ describe('GH issue 1150', () => {
   });
 
   it('numeric enum diffing (GH issue #1096)', async () => {
-    const generator = orm.schema;
-    await expect(generator.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
+    await expect(orm.schema.getUpdateSchemaSQL({ wrap: false })).resolves.toBe('');
   });
 
 });

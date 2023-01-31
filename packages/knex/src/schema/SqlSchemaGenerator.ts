@@ -16,16 +16,6 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
     orm.config.registerExtension('@mikro-orm/schema-generator', () => new SqlSchemaGenerator(orm.em));
   }
 
-  /** @deprecated use `dropSchema` and `createSchema` commands respectively */
-  async generate(): Promise<string> {
-    const [dropSchema, createSchema] = await Promise.all([
-      this.getDropSchemaSQL({ wrap: false }),
-      this.getCreateSchemaSQL({ wrap: false }),
-    ]);
-
-    return this.wrapSchema(dropSchema + createSchema);
-  }
-
   async createSchema(options?: { wrap?: boolean; schema?: string }): Promise<void> {
     await this.ensureDatabase();
     const sql = await this.getCreateSchemaSQL(options);

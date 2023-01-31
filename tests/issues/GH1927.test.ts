@@ -54,10 +54,10 @@ describe('GH issue 1927', () => {
   });
 
   test(`GH issue 1927`, async () => {
-    await orm.em.nativeInsert(Author, { name: 'a1' });
-    await orm.em.nativeInsert(Book, { name: 'b1', author: 1 });
-    await orm.em.nativeInsert(Book, { name: 'b2', author: 1 });
-    await orm.em.nativeInsert(Book, { name: 'b3', author: 1 });
+    await orm.em.insert(Author, { name: 'a1' });
+    await orm.em.insert(Book, { name: 'b1', author: 1 });
+    await orm.em.insert(Book, { name: 'b2', author: 1 });
+    await orm.em.insert(Book, { name: 'b3', author: 1 });
     const result = await orm.em.execute('SELECT * FROM "book"');
     const books = result.map(data => orm.em.map(Book, data));
     await orm.em.populate(books, ['author']);
