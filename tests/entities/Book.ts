@@ -11,7 +11,7 @@ import { BookRepository } from '../repositories/BookRepository';
 @Index({ properties: 'title', type: 'fulltext' })
 @Index({ options: { point: '2dsphere', title: -1 } })
 @Filter({ name: 'writtenBy', cond: args => ({ author: args.author }) })
-export class Book extends BaseEntity3<Book> {
+export class Book extends BaseEntity3 {
 
   [OptionalProps]?: 'createdAt';
 

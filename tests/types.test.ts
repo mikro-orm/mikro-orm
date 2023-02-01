@@ -518,12 +518,12 @@ describe('check typings', () => {
   });
 
   test('Loaded type and assignability with extending the ORM BaseEntity (#3865)', async () => {
-    interface MemberNotification extends BaseEntity<MemberNotification, 'id'> {
+    interface MemberNotification extends BaseEntity {
       id: string;
       notification?: Ref<Notification>;
     }
 
-    interface Notification extends BaseEntity<Notification, 'id'> {
+    interface Notification extends BaseEntity {
       id: string;
     }
 

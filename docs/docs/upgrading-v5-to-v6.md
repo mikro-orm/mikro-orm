@@ -106,3 +106,12 @@ foo: string[];
 - `em.removeLater()` -> `em.remove()`
 - `uow.getOriginalEntityData()` without parameters 
 - `orm.schema.generate()` 
+
+## `BaseEntity` no longer has generic type arguments
+
+Instead, the `this` type is used.
+
+```diff
+-class User extends BaseEntity<User> { ... }
++class User extends BaseEntity { ... }
+```

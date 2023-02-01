@@ -2,7 +2,7 @@ import { BaseEntity, Collection, MikroORM, Entity, ManyToOne, OneToMany, Primary
 import type { IdentifiedReference } from '@mikro-orm/sqlite';
 
 @Entity()
-export class Parent extends BaseEntity<Parent, 'id'> {
+export class Parent extends BaseEntity {
 
   @PrimaryKey()
   id!: string;
@@ -13,7 +13,7 @@ export class Parent extends BaseEntity<Parent, 'id'> {
 }
 
 @Entity()
-export class Child extends BaseEntity<Parent, 'id'> {
+export class Child extends BaseEntity {
 
   @PrimaryKey()
   id!: string;
