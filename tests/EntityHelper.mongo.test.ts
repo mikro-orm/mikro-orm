@@ -122,11 +122,11 @@ describe('EntityHelperMongo', () => {
     await orm.em.persistAndFlush(author);
     orm.em.clear();
 
-    const jon = await orm.em.findOne(Author, author.id);
+    const jon = await orm.em.findOneOrFail(Author, author.id);
     await orm.em.nativeUpdate(Author, { id: author.id }, { name: 'Changed!' });
-    expect(jon!.name).toBe('Jon Snow');
+    expect(jon.name).toBe('Jon Snow');
     await wrap(jon).init();
-    expect(jon!.name).toBe('Changed!');
+    expect(jon.name).toBe('Changed!');
   });
 
   test('should have string id getter and setter', async () => {
@@ -142,7 +142,9 @@ describe('EntityHelperMongo', () => {
   });
 
   test('wrap helper returns the argument when its falsy', async () => {
+    // @ts-expect-error
     expect(wrap(null)).toBeNull();
+    // @ts-expect-error
     expect(wrap(undefined)).toBeUndefined();
   });
 

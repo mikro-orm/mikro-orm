@@ -1,5 +1,5 @@
 import { MikroORM } from '@mikro-orm/mongodb';
-import type { Options, PrimaryProperty, Cast, IsUnknown, EntityMetadata } from '@mikro-orm/core';
+import type { Options, PrimaryProperty, EntityMetadata } from '@mikro-orm/core';
 import { Collection as Collection_, Reference as Reference_, ReferenceType, EnumArrayType } from '@mikro-orm/core';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { Author, Book, Publisher, BaseEntity, BaseEntity3, BookTagSchema, Test, FooBaz } from './entities';
@@ -8,7 +8,7 @@ import FooBar from './entities/FooBar';
 // we need to define those to get around typescript issues with reflection (ts-morph would return `any` for the type otherwise)
 export class Collection<T extends object> extends Collection_<T> { }
 export class Reference<T extends object> extends Reference_<T> { }
-export type Ref<T extends object, PK extends keyof T | unknown = PrimaryProperty<T>> = true extends IsUnknown<PK> ? Reference<T> : ({ [K in Cast<PK, keyof T>]?: T[K] } & Reference<T>);
+export type Ref<T extends object> = ({ [K in PrimaryProperty<T> & keyof T]?: T[K] } & Reference<T>);
 
 describe('TsMorphMetadataProvider', () => {
 

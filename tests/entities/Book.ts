@@ -32,7 +32,7 @@ export class Book extends BaseEntity3 {
 
   @ManyToOne(() => Publisher, { wrappedReference: true, cascade: [Cascade.PERSIST, Cascade.REMOVE], nullable: true })
   @Index({ name: 'publisher_idx' })
-  publisher!: Ref<Publisher, '_id' | 'id'> | null;
+  publisher!: Ref<Publisher> | null;
 
   @ManyToMany(() => BookTag)
   tags = new Collection<BookTag>(this);

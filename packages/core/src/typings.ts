@@ -42,7 +42,7 @@ export type Primary<T> = T extends { [PrimaryKeyType]?: infer PK }
   ? ReadonlyPrimary<PK> : never;
 export type PrimaryProperty<T> = T extends { [PrimaryKeyProp]?: infer PK }
   ? PK : T extends { _id?: any }
-  ? '_id' | string : T extends { uuid?: any }
+  ? '_id' : T extends { uuid?: any }
   ? 'uuid' : T extends { id?: any }
   ? 'id' : never;
 export type IPrimaryKeyValue = number | string | bigint | Date | { toHexString(): string };
@@ -103,15 +103,14 @@ export type FilterQuery<T> =
 export type QBFilterQuery<T = any> = FilterQuery<T> | Dictionary;
 
 export interface IWrappedEntity<
-  T,
-  PK extends keyof T | unknown = PrimaryProperty<T>,
+  T extends object,
   P extends string = string,
 > {
   isInitialized(): boolean;
   isTouched(): boolean;
   populated(populated?: boolean): void;
   init<P extends string = never>(populated?: boolean, populate?: Populate<T, P>, lockMode?: LockMode, connectionType?: ConnectionType): Promise<Loaded<T, P>>;
-  toReference<PK2 extends PK | unknown = PrimaryProperty<T>, P2 extends string = string>(): Ref<T, PK2> & LoadedReference<T>;
+  toReference(): Ref<T> & LoadedReference<T>;
   toObject(ignoreFields?: string[]): EntityDTO<T>;
   toJSON(...args: any[]): EntityDTO<T>;
   toPOJO(): EntityDTO<T>;
@@ -121,10 +120,9 @@ export interface IWrappedEntity<
 }
 
 export interface IWrappedEntityInternal<
-  T,
-  PK extends keyof T | unknown = PrimaryProperty<T>,
+  T extends object,
   P extends string = string,
-> extends IWrappedEntity<T, PK, P> {
+> extends IWrappedEntity<T, P> {
   hasPrimaryKey(): boolean;
   getPrimaryKey(convertCustomTypes?: boolean): Primary<T> | null;
   getPrimaryKeys(convertCustomTypes?: boolean): Primary<T>[] | null;
@@ -212,7 +210,9 @@ type Relation<T> = {
 /** Identity type that can be used to get around issues with cycles in bidirectional relations. */
 export type Rel<T> = T;
 
-export type Ref<T, PK extends keyof T | unknown = PrimaryProperty<T>> = true extends IsUnknown<PK> ? Reference<T> : ({ [K in Cast<PK, keyof T>]: T[K] } & Reference<T>);
+export type Ref<T extends object> = true extends IsUnknown<PrimaryProperty<T>>
+  ? Reference<T>
+  : ({ [K in PrimaryProperty<T> & keyof T]: T[K] } & Reference<T>);
 
 export type EntityDTOProp<T> = T extends Scalar
   ? T
@@ -696,7 +696,7 @@ type LoadedLoadable<T, E extends object> = T extends Collection<any, any>
 type Prefix<K> = K extends `${infer S}.${string}` ? S : K;
 type IsPrefixed<K, L extends string> = K extends Prefix<L> ? K : never;
 type Suffix<K> = K extends `${string}.${infer S}` ? S : never;
-type Defined<T> = Exclude<T, null | undefined>;
+type Defined<T> = Exclude<T, null | undefined> & {};
 
 // For each property on T check if it is included in prefix of keys to load L:
 //   1. It yes, mark the collection or reference loaded and resolve its inner type recursively (passing suffix).

@@ -15,7 +15,7 @@ export class Book extends BaseEntity3 {
   author: Author;
 
   @ManyToOne({ cascade: [Cascade.PERSIST, Cascade.REMOVE] })
-  publisher!: Ref<Publisher, '_id' | 'id'>;
+  publisher!: Ref<Publisher>;
 
   @ManyToMany()
   tags = new Collection<BookTag>(this);

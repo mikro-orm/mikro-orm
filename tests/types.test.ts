@@ -260,7 +260,7 @@ describe('check typings', () => {
       name: string;
       publisher?: Publisher;
       publisherRef?: Reference<Publisher>;
-      publisherIdRef?: Ref<Publisher, 'id'>;
+      publisherIdRef?: Ref<Publisher>;
     }
 
     // simulate usage of ORM base entity so `wrap` will return its parameter
@@ -270,20 +270,16 @@ describe('check typings', () => {
     book.publisher = publisher;
     // @ts-expect-error
     book.publisher = wrap(publisher).toReference();
-    // @ts-expect-error
-    book.publisher = wrap(publisher).toReference<'id'>();
 
     const id = book.publisherIdRef?.id;
 
     // @ts-expect-error
     book.publisherRef = publisher;
     book.publisherRef = wrap(publisher).toReference();
-    book.publisherRef = wrap(publisher).toReference<'id'>();
 
     // @ts-expect-error
     book.publisherIdRef = publisher;
     book.publisherIdRef = wrap(publisher).toReference();
-    book.publisherIdRef = wrap(publisher).toReference<'id'>();
 
     // composite keys
     const compositePks: Primary<FooParam2> = [1, 2];
@@ -304,7 +300,7 @@ describe('check typings', () => {
       readonly born?: Date;
       readonly rel?: Publisher;
       readonly relRef?: Reference<Publisher>;
-      readonly relIdRef?: Ref<Publisher, 'id'>;
+      readonly relIdRef?: Ref<Publisher>;
       readonly rels?: Collection<Publisher>;
     }
 

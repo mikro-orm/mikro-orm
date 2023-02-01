@@ -6,7 +6,7 @@ import { BaseEntity3 } from './BaseEntity3';
 export declare class Book extends BaseEntity3 {
     title: string;
     author: Author;
-    publisher: Ref<Publisher, '_id' | 'id'>;
+    publisher: Ref<Publisher>;
     tags: Collection<BookTag>;
     metaObject?: object;
     metaArray?: any[];

@@ -174,7 +174,7 @@ export class EntityRepository<T extends object> {
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<PK extends keyof T>(id: Primary<T>, options: Omit<GetReferenceOptions, 'wrapped'> & { wrapped: true }): Ref<T, PK>;
+  getReference(id: Primary<T>, options: Omit<GetReferenceOptions, 'wrapped'> & { wrapped: true }): Ref<T>;
 
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
@@ -189,7 +189,7 @@ export class EntityRepository<T extends object> {
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<PK extends keyof T = keyof T>(id: Primary<T>, options?: GetReferenceOptions): T | Reference<T> {
+  getReference(id: Primary<T>, options?: GetReferenceOptions): T | Reference<T> {
     return this.em.getReference<T>(this.entityName, id, options);
   }
 

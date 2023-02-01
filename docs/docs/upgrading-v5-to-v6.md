@@ -116,3 +116,14 @@ Instead, the `this` type is used.
 -class User extends BaseEntity<User> { ... }
 +class User extends BaseEntity { ... }
 ```
+
+## `wrap` helper no longer accepts `undefined` on type level
+
+The runtime implementation still checks for this case and returns the argument, but on type level this will fail to compile. It was never correct to pass in nullable values inside as it were not allowed in the return type.
+
+Note that if you used it for converting entity instance to reference wrapper, the new `ref()` helper does a better job at that (and accepts nullable values).
+
+## Primary key inference
+
+Some methods allowed you to pass in the primary key property via second generic type argument, this is now removed in favour of the automatic inference. To set the PK type explicitly, use the `PrimaryKeyProp` symbol.
+

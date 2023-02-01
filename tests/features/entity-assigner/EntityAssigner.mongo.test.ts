@@ -66,9 +66,9 @@ describe('EntityAssignerMongo', () => {
   test('#assign() should merge references', async () => {
     const jon = new Author('Jon Snow', 'snow@wall.st');
     orm.em.assign(jon, { favouriteBook: { _id: ObjectId.createFromTime(1), title: 'b1' } }, { merge: false });
-    expect(wrap(jon.favouriteBook, true).__em).toBeUndefined();
+    expect(wrap(jon.favouriteBook!, true).__em).toBeUndefined();
     orm.em.assign(jon, { favouriteBook: { _id: ObjectId.createFromTime(1), title: 'b1' } }, { merge: true });
-    expect(wrap(jon.favouriteBook, true).__em).not.toBeUndefined();
+    expect(wrap(jon.favouriteBook!, true).__em).not.toBeUndefined();
   });
 
   test('#assign() should merge collection items', async () => {

@@ -15,7 +15,7 @@ import type { EntityIdentifier } from './EntityIdentifier';
 import { helper } from './wrap';
 import type { SerializationContext } from '../serialization/SerializationContext';
 
-export class WrappedEntity<T extends object, PK extends keyof T> {
+export class WrappedEntity<T extends object> {
 
   __initialized = true;
   __touched = false;
@@ -60,9 +60,9 @@ export class WrappedEntity<T extends object, PK extends keyof T> {
     this.__lazyInitialized = false;
   }
 
-  toReference(): Ref<T, PK> {
+  toReference(): Ref<T> {
     this.__reference ??= new Reference(this.entity);
-    return this.__reference as Ref<T, PK>;
+    return this.__reference as Ref<T>;
   }
 
   toObject(ignoreFields: string[] = []): EntityData<T> {
