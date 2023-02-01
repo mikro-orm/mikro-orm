@@ -1,4 +1,4 @@
-import { Entity, IdentifiedReference, JsonType, ManyToOne, MikroORM, OneToOne, PrimaryKey, PrimaryKeyType, Property } from '@mikro-orm/sqlite';
+import { Entity, Ref, JsonType, ManyToOne, MikroORM, OneToOne, PrimaryKey, PrimaryKeyType, Property } from '@mikro-orm/sqlite';
 
 @Entity()
 export class A {
@@ -16,7 +16,7 @@ export class B1 {
 
   [PrimaryKeyType]?: number;
   @ManyToOne({ entity: () => A, primary: true, wrappedReference: true })
-  a!: IdentifiedReference<A>;
+  a!: Ref<A>;
 
 }
 
@@ -28,7 +28,7 @@ export class B2 {
 
   [PrimaryKeyType]?: number;
   @OneToOne({ entity: () => A, primary: true, wrappedReference: true })
-  a!: IdentifiedReference<A>;
+  a!: Ref<A>;
 
 }
 
@@ -37,7 +37,7 @@ export class B3 {
 
   [PrimaryKeyType]?: number;
   @OneToOne({ entity: () => A, primary: true, wrappedReference: true })
-  a!: IdentifiedReference<A>;
+  a!: Ref<A>;
 
 }
 
@@ -49,7 +49,7 @@ export class B4 {
 
   [PrimaryKeyType]?: number;
   @OneToOne({ entity: () => A, primary: true, wrappedReference: true })
-  a!: IdentifiedReference<A>;
+  a!: Ref<A>;
 
 }
 
@@ -60,16 +60,16 @@ export class C {
   id!: number;
 
   @ManyToOne({ entity: () => B1, wrappedReference: true })
-  b1!: IdentifiedReference<B1>;
+  b1!: Ref<B1>;
 
   @ManyToOne({ entity: () => B2, wrappedReference: true })
-  b2!: IdentifiedReference<B2>;
+  b2!: Ref<B2>;
 
   @ManyToOne({ entity: () => B3, wrappedReference: true })
-  b3!: IdentifiedReference<B3>;
+  b3!: Ref<B3>;
 
   @ManyToOne({ entity: () => B4, wrappedReference: true })
-  b4!: IdentifiedReference<B4>;
+  b4!: Ref<B4>;
 
 }
 

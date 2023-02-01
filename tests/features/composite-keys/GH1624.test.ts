@@ -1,4 +1,4 @@
-import { Collection, Entity, IdentifiedReference, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType, Property, Reference, Unique, wrap } from '@mikro-orm/core';
+import { Collection, Entity, Ref, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType, Property, Reference, Unique, wrap } from '@mikro-orm/core';
 import { v4 } from 'uuid';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
@@ -39,7 +39,7 @@ export class User {
     cascade: [],
     onDelete: 'no action',
   })
-  organization!: IdentifiedReference<Organization>;
+  organization!: Ref<Organization>;
 
   @Property({ columnType: 'varchar' })
   firstName!: string;
@@ -90,7 +90,7 @@ export class UserRole {
     cascade: [],
     onDelete: 'cascade',
   })
-  user!: IdentifiedReference<User>;
+  user!: Ref<User>;
 
   @ManyToOne({
     entity: () => Role,
@@ -100,7 +100,7 @@ export class UserRole {
     cascade: [],
     onDelete: 'no action',
   })
-  role!: IdentifiedReference<Role>;
+  role!: Ref<Role>;
 
   [PrimaryKeyType]?: [string, string, string];
 
@@ -122,7 +122,7 @@ export class Program {
     primary: true,
     wrappedReference: true,
   })
-  organization!: IdentifiedReference<Organization>;
+  organization!: Ref<Organization>;
 
   @OneToMany({ entity: 'Site', mappedBy: 'program', cascade: [] })
   sites = new Collection<Site, Program>(this);

@@ -1,6 +1,5 @@
-import type { IdentifiedReference } from './Reference';
 import { Reference } from './Reference';
-import type { EntityData, EntityDTO, Loaded } from '../typings';
+import type { Ref, EntityData, EntityDTO, Loaded } from '../typings';
 import type { AssignOptions } from './EntityAssigner';
 import { EntityAssigner } from './EntityAssigner';
 import { helper } from './wrap';
@@ -19,7 +18,7 @@ export abstract class BaseEntity {
     helper(this).populated(populated);
   }
 
-  toReference(): IdentifiedReference<this> {
+  toReference(): Ref<this> {
     return Reference.create(this);
   }
 

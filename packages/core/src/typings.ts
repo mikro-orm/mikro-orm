@@ -1,7 +1,7 @@
 import type { Transaction } from './connections';
 import type { Cascade, EventType, LoadStrategy, LockMode, QueryOrderMap } from './enums';
 import { ReferenceType } from './enums';
-import type { AssignOptions, Collection, EntityFactory, EntityIdentifier, EntityRepository, IdentifiedReference, Reference } from './entity';
+import type { AssignOptions, Collection, EntityFactory, EntityIdentifier, EntityRepository, Reference } from './entity';
 import type { SerializationContext } from './serialization';
 import type { EntitySchema, MetadataStorage } from './metadata';
 import type { Type, types } from './types';
@@ -111,7 +111,7 @@ export interface IWrappedEntity<
   isTouched(): boolean;
   populated(populated?: boolean): void;
   init<P extends string = never>(populated?: boolean, populate?: Populate<T, P>, lockMode?: LockMode, connectionType?: ConnectionType): Promise<Loaded<T, P>>;
-  toReference<PK2 extends PK | unknown = PrimaryProperty<T>, P2 extends string = string>(): IdentifiedReference<T, PK2> & LoadedReference<T>;
+  toReference<PK2 extends PK | unknown = PrimaryProperty<T>, P2 extends string = string>(): Ref<T, PK2> & LoadedReference<T>;
   toObject(ignoreFields?: string[]): EntityDTO<T>;
   toJSON(...args: any[]): EntityDTO<T>;
   toPOJO(): EntityDTO<T>;
@@ -145,7 +145,7 @@ export interface IWrappedEntityInternal<
   __schema?: string;
   __populated: boolean;
   __onLoadFired: boolean;
-  __reference?: Reference<T>;
+  __reference?: Ref<T>;
   __lazyInitialized: boolean;
   __pk?: Primary<T>;
   __primaryKeys: Primary<T>[];
@@ -212,8 +212,7 @@ type Relation<T> = {
 /** Identity type that can be used to get around issues with cycles in bidirectional relations. */
 export type Rel<T> = T;
 
-/** Shortcut for `IdentifiedReference`. */
-export type Ref<T, PK extends keyof T | unknown = PrimaryProperty<T>> = IdentifiedReference<T, PK>;
+export type Ref<T, PK extends keyof T | unknown = PrimaryProperty<T>> = true extends IsUnknown<PK> ? Reference<T> : ({ [K in Cast<PK, keyof T>]: T[K] } & Reference<T>);
 
 export type EntityDTOProp<T> = T extends Scalar
   ? T

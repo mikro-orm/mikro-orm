@@ -1,5 +1,5 @@
-import { OptionalProps, Ref, wrap } from '@mikro-orm/core';
-import type { BaseEntity, IdentifiedReference, Reference, Collection, EntityManager, EntityName, RequiredEntityData } from '@mikro-orm/core';
+import { OptionalProps, wrap } from '@mikro-orm/core';
+import type { BaseEntity, Ref, Reference, Collection, EntityManager, EntityName, RequiredEntityData } from '@mikro-orm/core';
 import type { Has, IsExact } from 'conditional-type-checks';
 import { assert } from 'conditional-type-checks';
 import type { ObjectId } from 'bson';
@@ -44,7 +44,7 @@ describe('check typings', () => {
     b = { publisher: null };
     b = { publisher: { name: 'p' } };
     b = { publisher: {} as Publisher2 };
-    b = { publisher: {} as IdentifiedReference<Publisher2> };
+    b = { publisher: {} as Ref<Publisher2> };
 
     // @ts-expect-error
     b = { name: 'a' };
@@ -260,7 +260,7 @@ describe('check typings', () => {
       name: string;
       publisher?: Publisher;
       publisherRef?: Reference<Publisher>;
-      publisherIdRef?: IdentifiedReference<Publisher, 'id'>;
+      publisherIdRef?: Ref<Publisher, 'id'>;
     }
 
     // simulate usage of ORM base entity so `wrap` will return its parameter
@@ -287,7 +287,7 @@ describe('check typings', () => {
 
     // composite keys
     const compositePks: Primary<FooParam2> = [1, 2];
-    const compositeRef = {} as IdentifiedReference<FooParam2>;
+    const compositeRef = {} as Ref<FooParam2>;
     const bar = compositeRef.bar;
     const baz = compositeRef.baz;
   });
@@ -304,7 +304,7 @@ describe('check typings', () => {
       readonly born?: Date;
       readonly rel?: Publisher;
       readonly relRef?: Reference<Publisher>;
-      readonly relIdRef?: IdentifiedReference<Publisher, 'id'>;
+      readonly relIdRef?: Ref<Publisher, 'id'>;
       readonly rels?: Collection<Publisher>;
     }
 

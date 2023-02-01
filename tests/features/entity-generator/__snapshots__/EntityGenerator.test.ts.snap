@@ -74,11 +74,11 @@ export enum Publisher2Type2 {
 
 exports[`EntityGenerator generate EntitySchema with bidirectional relations and reference wrappers [mysql]: mysql-entity-schema-bidirectional-dump 1`] = `
 [
-  "import { EntitySchema, IdentifiedReference } from '@mikro-orm/core';
+  "import { EntitySchema, Ref } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
 export class Address2 {
-  author!: IdentifiedReference<Author2>;
+  author!: Ref<Author2>;
   value!: string;
 }
 
@@ -97,7 +97,7 @@ export const Address2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, IdentifiedReference } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, Ref } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 export class Author2 {
@@ -112,8 +112,8 @@ export class Author2 {
   identities?: string;
   born?: string;
   bornTime?: string;
-  favouriteBook?: IdentifiedReference<Book2>;
-  favouriteAuthor?: IdentifiedReference<Author2>;
+  favouriteBook?: Ref<Book2>;
+  favouriteAuthor?: Ref<Author2>;
   authorToFriend = new Collection<Author2>(this);
   following = new Collection<Author2>(this);
   authorInverse = new Collection<Book2>(this);
@@ -187,7 +187,7 @@ export const Author2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, IdentifiedReference } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, Ref } from '@mikro-orm/core';
 
 export class BaseUser2 {
   id!: number;
@@ -195,12 +195,12 @@ export class BaseUser2 {
   lastName!: string;
   type!: BaseUser2Type;
   ownerProp?: string;
-  favouriteEmployee?: IdentifiedReference<BaseUser2>;
-  favouriteManager?: IdentifiedReference<BaseUser2>;
+  favouriteEmployee?: Ref<BaseUser2>;
+  favouriteManager?: Ref<BaseUser2>;
   employeeProp?: number;
   managerProp?: string;
   favouriteEmployeeInverse = new Collection<BaseUser2>(this);
-  favouriteManagerInverse?: IdentifiedReference<BaseUser2>;
+  favouriteManagerInverse?: Ref<BaseUser2>;
 }
 
 export enum BaseUser2Type {
@@ -266,7 +266,7 @@ export const BookTag2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, IdentifiedReference } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, Ref } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
@@ -281,13 +281,13 @@ export class Book2 {
   price?: string;
   double?: string;
   meta?: any;
-  author!: IdentifiedReference<Author2>;
-  publisher?: IdentifiedReference<Publisher2>;
+  author!: Ref<Author2>;
+  publisher?: Ref<Publisher2>;
   foo?: string;
   bookToTagUnordered = new Collection<BookTag2>(this);
   favouriteBookInverse = new Collection<Author2>(this);
   book2Inverse = new Collection<Book2Tags>(this);
-  bookInverse?: IdentifiedReference<Test2>;
+  bookInverse?: Ref<Test2>;
 }
 
 export const Book2Schema = new EntitySchema({
@@ -328,14 +328,14 @@ export const Book2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, IdentifiedReference } from '@mikro-orm/core';
+  "import { EntitySchema, Ref } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { BookTag2 } from './BookTag2';
 
 export class Book2Tags {
   order!: number;
-  book2!: IdentifiedReference<Book2>;
-  bookTag2!: IdentifiedReference<BookTag2>;
+  book2!: Ref<Book2>;
+  bookTag2!: Ref<BookTag2>;
 }
 
 export const Book2TagsSchema = new EntitySchema({
@@ -360,13 +360,13 @@ export const Book2TagsSchema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, IdentifiedReference } from '@mikro-orm/core';
+  "import { EntitySchema, Ref } from '@mikro-orm/core';
 import { Car2 } from './Car2';
 
 export class CarOwner2 {
   id!: number;
   name!: string;
-  car!: IdentifiedReference<Car2>;
+  car!: Ref<Car2>;
 }
 
 export const CarOwner2Schema = new EntitySchema({
@@ -383,7 +383,7 @@ export const CarOwner2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, IdentifiedReference } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, Ref } from '@mikro-orm/core';
 import { CarOwner2 } from './CarOwner2';
 import { User2 } from './User2';
 
@@ -392,7 +392,7 @@ export class Car2 {
   year!: number;
   price!: number;
   carInverse = new Collection<CarOwner2>(this);
-  favouriteCarInverse?: IdentifiedReference<User2>;
+  favouriteCarInverse?: Ref<User2>;
   carsInverse = new Collection<User2>(this);
 }
 
@@ -413,12 +413,12 @@ export const Car2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, IdentifiedReference } from '@mikro-orm/core';
+  "import { EntitySchema, Ref } from '@mikro-orm/core';
 import { Test2 } from './Test2';
 
 export class Configuration2 {
   property!: string;
-  test!: IdentifiedReference<Test2>;
+  test!: Ref<Test2>;
   value!: string;
 }
 
@@ -450,7 +450,7 @@ export const Dummy2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, IdentifiedReference } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, Ref } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
 import { Test2 } from './Test2';
@@ -459,13 +459,13 @@ export class FooBar2 {
   id!: number;
   name!: string;
   nameWithSpace?: string;
-  baz?: IdentifiedReference<FooBaz2>;
-  fooBar?: IdentifiedReference<FooBar2>;
+  baz?: Ref<FooBaz2>;
+  fooBar?: Ref<FooBar2>;
   version!: Date;
   blob?: Buffer;
   array?: string;
   objectProperty?: any;
-  fooBarInverse?: IdentifiedReference<Test2>;
+  fooBarInverse?: Ref<Test2>;
   barInverse = new Collection<FooParam2>(this);
   barsInverse = new Collection<Test2>(this);
 }
@@ -527,13 +527,13 @@ export const FooBaz2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, IdentifiedReference } from '@mikro-orm/core';
+  "import { EntitySchema, Ref } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
 export class FooParam2 {
-  bar!: IdentifiedReference<FooBar2>;
-  baz!: IdentifiedReference<FooBaz2>;
+  bar!: Ref<FooBar2>;
+  baz!: Ref<FooBaz2>;
   value!: string;
   version!: Date;
 }
@@ -615,14 +615,14 @@ export const Publisher2Schema = new EntitySchema({
   },
 });
 ",
-  "import { EntitySchema, IdentifiedReference } from '@mikro-orm/core';
+  "import { EntitySchema, Ref } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
 
 export class Publisher2Tests {
   id!: number;
-  publisher2!: IdentifiedReference<Publisher2>;
-  test2!: IdentifiedReference<Test2>;
+  publisher2!: Ref<Publisher2>;
+  test2!: Ref<Test2>;
 }
 
 export const Publisher2TestsSchema = new EntitySchema({
@@ -667,7 +667,7 @@ export const SandwichSchema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, IdentifiedReference } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, Ref } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Configuration2 } from './Configuration2';
 import { FooBar2 } from './FooBar2';
@@ -676,10 +676,10 @@ import { Publisher2Tests } from './Publisher2Tests';
 export class Test2 {
   id!: number;
   name?: string;
-  book?: IdentifiedReference<Book2>;
-  parent?: IdentifiedReference<Test2>;
+  book?: Ref<Book2>;
+  parent?: Ref<Test2>;
   version: number = 1;
-  fooBar?: IdentifiedReference<FooBar2>;
+  fooBar?: Ref<FooBar2>;
   fooBaz?: number;
   bars = new Collection<FooBar2>(this);
   testInverse = new Collection<Configuration2>(this);
@@ -730,7 +730,7 @@ export const Test2Schema = new EntitySchema({
   },
 });
 ",
-  "import { Collection, EntitySchema, IdentifiedReference } from '@mikro-orm/core';
+  "import { Collection, EntitySchema, Ref } from '@mikro-orm/core';
 import { Car2 } from './Car2';
 import { Sandwich } from './Sandwich';
 
@@ -738,7 +738,7 @@ export class User2 {
   firstName!: string;
   lastName!: string;
   foo?: number;
-  favouriteCar?: IdentifiedReference<Car2>;
+  favouriteCar?: Ref<Car2>;
   cars = new Collection<Car2>(this);
   sandwiches = new Collection<Sandwich>(this);
 }
@@ -2421,21 +2421,21 @@ export class User2 {
 
 exports[`EntityGenerator generate entities with bidirectional relations and reference wrappers [mysql]: mysql-entity-bidirectional-dump 1`] = `
 [
-  "import { Entity, IdentifiedReference, OneToOne, Property } from '@mikro-orm/core';
+  "import { Entity, Ref, OneToOne, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 
 @Entity()
 export class Address2 {
 
   @OneToOne({ entity: () => Author2, wrappedReference: true, onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
-  author!: IdentifiedReference<Author2>;
+  author!: Ref<Author2>;
 
   @Property({ length: 255 })
   value!: string;
 
 }
 ",
-  "import { Collection, Entity, IdentifiedReference, Index, ManyToMany, ManyToOne, OneToMany, OptionalProps, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Ref, Index, ManyToMany, ManyToOne, OneToMany, OptionalProps, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 
 @Entity()
@@ -2485,10 +2485,10 @@ export class Author2 {
   bornTime?: string;
 
   @ManyToOne({ entity: () => Book2, wrappedReference: true, onDelete: 'cascade', nullable: true })
-  favouriteBook?: IdentifiedReference<Book2>;
+  favouriteBook?: Ref<Book2>;
 
   @ManyToOne({ entity: () => Author2, wrappedReference: true, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
-  favouriteAuthor?: IdentifiedReference<Author2>;
+  favouriteAuthor?: Ref<Author2>;
 
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
   authorToFriend = new Collection<Author2>(this);
@@ -2510,7 +2510,7 @@ export class Author2 {
 
 }
 ",
-  "import { Collection, Entity, Enum, IdentifiedReference, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Enum, Ref, Index, ManyToOne, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class BaseUser2 {
@@ -2532,10 +2532,10 @@ export class BaseUser2 {
   ownerProp?: string;
 
   @ManyToOne({ entity: () => BaseUser2, wrappedReference: true, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
-  favouriteEmployee?: IdentifiedReference<BaseUser2>;
+  favouriteEmployee?: Ref<BaseUser2>;
 
   @OneToOne({ entity: () => BaseUser2, wrappedReference: true, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
-  favouriteManager?: IdentifiedReference<BaseUser2>;
+  favouriteManager?: Ref<BaseUser2>;
 
   @Property({ nullable: true })
   employeeProp?: number;
@@ -2547,7 +2547,7 @@ export class BaseUser2 {
   favouriteEmployeeInverse = new Collection<BaseUser2>(this);
 
   @OneToOne({ entity: () => BaseUser2, wrappedReference: true, mappedBy: 'favouriteManager' })
-  favouriteManagerInverse?: IdentifiedReference<BaseUser2>;
+  favouriteManagerInverse?: Ref<BaseUser2>;
 
 }
 
@@ -2578,7 +2578,7 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, IdentifiedReference, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Ref, Index, ManyToMany, ManyToOne, OneToMany, OneToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2';
 import { Book2Tags } from './Book2Tags';
 import { BookTag2 } from './BookTag2';
@@ -2613,10 +2613,10 @@ export class Book2 {
   meta?: any;
 
   @ManyToOne({ entity: () => Author2, wrappedReference: true })
-  author!: IdentifiedReference<Author2>;
+  author!: Ref<Author2>;
 
   @ManyToOne({ entity: () => Publisher2, wrappedReference: true, onUpdateIntegrity: 'cascade', onDelete: 'cascade', nullable: true })
-  publisher?: IdentifiedReference<Publisher2>;
+  publisher?: Ref<Publisher2>;
 
   @Property({ length: 255, nullable: true, default: 'lol' })
   foo?: string;
@@ -2631,11 +2631,11 @@ export class Book2 {
   book2Inverse = new Collection<Book2Tags>(this);
 
   @OneToOne({ entity: () => Test2, wrappedReference: true, mappedBy: 'book' })
-  bookInverse?: IdentifiedReference<Test2>;
+  bookInverse?: Ref<Test2>;
 
 }
 ",
-  "import { Entity, IdentifiedReference, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+  "import { Entity, Ref, ManyToOne, PrimaryKey } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { BookTag2 } from './BookTag2';
 
@@ -2646,14 +2646,14 @@ export class Book2Tags {
   order!: number;
 
   @ManyToOne({ entity: () => Book2, wrappedReference: true, onUpdateIntegrity: 'cascade', onDelete: 'cascade' })
-  book2!: IdentifiedReference<Book2>;
+  book2!: Ref<Book2>;
 
   @ManyToOne({ entity: () => BookTag2, wrappedReference: true, onUpdateIntegrity: 'cascade', onDelete: 'cascade' })
-  bookTag2!: IdentifiedReference<BookTag2>;
+  bookTag2!: Ref<BookTag2>;
 
 }
 ",
-  "import { Entity, IdentifiedReference, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Ref, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Car2 } from './Car2';
 
 @Entity()
@@ -2666,11 +2666,11 @@ export class CarOwner2 {
   name!: string;
 
   @ManyToOne({ entity: () => Car2, wrappedReference: true, onUpdateIntegrity: 'cascade' })
-  car!: IdentifiedReference<Car2>;
+  car!: Ref<Car2>;
 
 }
 ",
-  "import { Collection, Entity, IdentifiedReference, Index, ManyToMany, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Ref, Index, ManyToMany, OneToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { CarOwner2 } from './CarOwner2';
 import { User2 } from './User2';
 
@@ -2692,14 +2692,14 @@ export class Car2 {
   carInverse = new Collection<CarOwner2>(this);
 
   @OneToOne({ entity: () => User2, wrappedReference: true, mappedBy: 'favouriteCar' })
-  favouriteCarInverse?: IdentifiedReference<User2>;
+  favouriteCarInverse?: Ref<User2>;
 
   @ManyToMany({ entity: () => User2, mappedBy: 'cars' })
   carsInverse = new Collection<User2>(this);
 
 }
 ",
-  "import { Entity, IdentifiedReference, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Ref, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Test2 } from './Test2';
 
 @Entity()
@@ -2709,7 +2709,7 @@ export class Configuration2 {
   property!: string;
 
   @ManyToOne({ entity: () => Test2, wrappedReference: true, onUpdateIntegrity: 'cascade', primary: true })
-  test!: IdentifiedReference<Test2>;
+  test!: Ref<Test2>;
 
   @Property({ length: 255 })
   value!: string;
@@ -2726,7 +2726,7 @@ export class Dummy2 {
 
 }
 ",
-  "import { Collection, Entity, IdentifiedReference, ManyToMany, OneToMany, OneToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Ref, ManyToMany, OneToMany, OneToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2';
 import { FooParam2 } from './FooParam2';
 import { Test2 } from './Test2';
@@ -2746,10 +2746,10 @@ export class FooBar2 {
   nameWithSpace?: string;
 
   @OneToOne({ entity: () => FooBaz2, wrappedReference: true, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
-  baz?: IdentifiedReference<FooBaz2>;
+  baz?: Ref<FooBaz2>;
 
   @OneToOne({ entity: () => FooBar2, wrappedReference: true, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
-  fooBar?: IdentifiedReference<FooBar2>;
+  fooBar?: Ref<FooBar2>;
 
   @Property({ defaultRaw: \`CURRENT_TIMESTAMP\` })
   version!: Date;
@@ -2764,7 +2764,7 @@ export class FooBar2 {
   objectProperty?: any;
 
   @OneToOne({ entity: () => Test2, wrappedReference: true, mappedBy: 'fooBar' })
-  fooBarInverse?: IdentifiedReference<Test2>;
+  fooBarInverse?: Ref<Test2>;
 
   @OneToMany({ entity: () => FooParam2, mappedBy: 'bar' })
   barInverse = new Collection<FooParam2>(this);
@@ -2796,7 +2796,7 @@ export class FooBaz2 {
 
 }
 ",
-  "import { Entity, IdentifiedReference, ManyToOne, OptionalProps, Property } from '@mikro-orm/core';
+  "import { Entity, Ref, ManyToOne, OptionalProps, Property } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2';
 import { FooBaz2 } from './FooBaz2';
 
@@ -2806,10 +2806,10 @@ export class FooParam2 {
   [OptionalProps]?: 'version';
 
   @ManyToOne({ entity: () => FooBar2, wrappedReference: true, onUpdateIntegrity: 'cascade', primary: true })
-  bar!: IdentifiedReference<FooBar2>;
+  bar!: Ref<FooBar2>;
 
   @ManyToOne({ entity: () => FooBaz2, wrappedReference: true, onUpdateIntegrity: 'cascade', primary: true })
-  baz!: IdentifiedReference<FooBaz2>;
+  baz!: Ref<FooBaz2>;
 
   @Property({ length: 255 })
   value!: string;
@@ -2881,7 +2881,7 @@ export enum Publisher2Enum5 {
   A = 'a',
 }
 ",
-  "import { Entity, IdentifiedReference, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+  "import { Entity, Ref, ManyToOne, PrimaryKey } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2';
 import { Test2 } from './Test2';
 
@@ -2892,10 +2892,10 @@ export class Publisher2Tests {
   id!: number;
 
   @ManyToOne({ entity: () => Publisher2, wrappedReference: true, onUpdateIntegrity: 'cascade', onDelete: 'cascade' })
-  publisher2!: IdentifiedReference<Publisher2>;
+  publisher2!: Ref<Publisher2>;
 
   @ManyToOne({ entity: () => Test2, wrappedReference: true, onUpdateIntegrity: 'cascade', onDelete: 'cascade' })
-  test2!: IdentifiedReference<Test2>;
+  test2!: Ref<Test2>;
 
 }
 ",
@@ -2919,7 +2919,7 @@ export class Sandwich {
 
 }
 ",
-  "import { Collection, Entity, IdentifiedReference, ManyToMany, ManyToOne, OneToMany, OneToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Ref, ManyToMany, ManyToOne, OneToMany, OneToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Configuration2 } from './Configuration2';
 import { FooBar2 } from './FooBar2';
@@ -2937,16 +2937,16 @@ export class Test2 {
   name?: string;
 
   @OneToOne({ entity: () => Book2, wrappedReference: true, onDelete: 'set null', nullable: true })
-  book?: IdentifiedReference<Book2>;
+  book?: Ref<Book2>;
 
   @ManyToOne({ entity: () => Test2, wrappedReference: true, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
-  parent?: IdentifiedReference<Test2>;
+  parent?: Ref<Test2>;
 
   @Property({ default: 1 })
   version: number = 1;
 
   @OneToOne({ entity: () => FooBar2, wrappedReference: true, fieldName: 'foo___bar', onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
-  fooBar?: IdentifiedReference<FooBar2>;
+  fooBar?: Ref<FooBar2>;
 
   @Property({ fieldName: 'foo___baz', nullable: true })
   fooBaz?: number;
@@ -2965,7 +2965,7 @@ export class Test2 {
 
 }
 ",
-  "import { Collection, Entity, IdentifiedReference, ManyToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Ref, ManyToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Car2 } from './Car2';
 import { Sandwich } from './Sandwich';
 
@@ -2982,7 +2982,7 @@ export class User2 {
   foo?: number;
 
   @OneToOne({ entity: () => Car2, wrappedReference: true, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
-  favouriteCar?: IdentifiedReference<Car2>;
+  favouriteCar?: Ref<Car2>;
 
   @ManyToMany({ entity: () => Car2, joinColumns: ['user2_first_name', 'user2_last_name'], inverseJoinColumns: ['car2_name', 'car2_year'] })
   cars = new Collection<Car2>(this);
@@ -2997,21 +2997,21 @@ export class User2 {
 
 exports[`EntityGenerator generate entities with reference wrappers and named import [mysql]: mysql-entity-named-dump 1`] = `
 [
-  "import { Entity, IdentifiedReference, OneToOne, Property } from '@mikro-orm/core';
+  "import { Entity, Ref, OneToOne, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2.js';
 
 @Entity()
 export class Address2 {
 
   @OneToOne({ entity: () => Author2, wrappedReference: true, onUpdateIntegrity: 'cascade', onDelete: 'cascade', primary: true })
-  author!: IdentifiedReference<Author2>;
+  author!: Ref<Author2>;
 
   @Property({ length: 255 })
   value!: string;
 
 }
 ",
-  "import { Collection, Entity, IdentifiedReference, Index, ManyToMany, ManyToOne, OptionalProps, PrimaryKey, Property, Unique } from '@mikro-orm/core';
+  "import { Collection, Entity, Ref, Index, ManyToMany, ManyToOne, OptionalProps, PrimaryKey, Property, Unique } from '@mikro-orm/core';
 import { Book2 } from './Book2.js';
 
 @Entity()
@@ -3061,10 +3061,10 @@ export class Author2 {
   bornTime?: string;
 
   @ManyToOne({ entity: () => Book2, wrappedReference: true, onDelete: 'cascade', nullable: true })
-  favouriteBook?: IdentifiedReference<Book2>;
+  favouriteBook?: Ref<Book2>;
 
   @ManyToOne({ entity: () => Author2, wrappedReference: true, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
-  favouriteAuthor?: IdentifiedReference<Author2>;
+  favouriteAuthor?: Ref<Author2>;
 
   @ManyToMany({ entity: () => Author2, pivotTable: 'author_to_friend', joinColumn: 'author2_1_id', inverseJoinColumn: 'author2_2_id' })
   authorToFriend = new Collection<Author2>(this);
@@ -3074,7 +3074,7 @@ export class Author2 {
 
 }
 ",
-  "import { Entity, Enum, IdentifiedReference, Index, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Enum, Ref, Index, ManyToOne, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity()
 export class BaseUser2 {
@@ -3096,10 +3096,10 @@ export class BaseUser2 {
   ownerProp?: string;
 
   @ManyToOne({ entity: () => BaseUser2, wrappedReference: true, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
-  favouriteEmployee?: IdentifiedReference<BaseUser2>;
+  favouriteEmployee?: Ref<BaseUser2>;
 
   @OneToOne({ entity: () => BaseUser2, wrappedReference: true, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
-  favouriteManager?: IdentifiedReference<BaseUser2>;
+  favouriteManager?: Ref<BaseUser2>;
 
   @Property({ nullable: true })
   employeeProp?: number;
@@ -3128,7 +3128,7 @@ export class BookTag2 {
 
 }
 ",
-  "import { Collection, Entity, IdentifiedReference, Index, ManyToMany, ManyToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Ref, Index, ManyToMany, ManyToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { Author2 } from './Author2.js';
 import { BookTag2 } from './BookTag2.js';
 import { Publisher2 } from './Publisher2.js';
@@ -3161,10 +3161,10 @@ export class Book2 {
   meta?: any;
 
   @ManyToOne({ entity: () => Author2, wrappedReference: true })
-  author!: IdentifiedReference<Author2>;
+  author!: Ref<Author2>;
 
   @ManyToOne({ entity: () => Publisher2, wrappedReference: true, onUpdateIntegrity: 'cascade', onDelete: 'cascade', nullable: true })
-  publisher?: IdentifiedReference<Publisher2>;
+  publisher?: Ref<Publisher2>;
 
   @Property({ length: 255, nullable: true, default: 'lol' })
   foo?: string;
@@ -3174,7 +3174,7 @@ export class Book2 {
 
 }
 ",
-  "import { Entity, IdentifiedReference, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+  "import { Entity, Ref, ManyToOne, PrimaryKey } from '@mikro-orm/core';
 import { Book2 } from './Book2.js';
 import { BookTag2 } from './BookTag2.js';
 
@@ -3185,14 +3185,14 @@ export class Book2Tags {
   order!: number;
 
   @ManyToOne({ entity: () => Book2, wrappedReference: true, onUpdateIntegrity: 'cascade', onDelete: 'cascade' })
-  book2!: IdentifiedReference<Book2>;
+  book2!: Ref<Book2>;
 
   @ManyToOne({ entity: () => BookTag2, wrappedReference: true, onUpdateIntegrity: 'cascade', onDelete: 'cascade' })
-  bookTag2!: IdentifiedReference<BookTag2>;
+  bookTag2!: Ref<BookTag2>;
 
 }
 ",
-  "import { Entity, IdentifiedReference, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Ref, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Car2 } from './Car2.js';
 
 @Entity()
@@ -3205,7 +3205,7 @@ export class CarOwner2 {
   name!: string;
 
   @ManyToOne({ entity: () => Car2, wrappedReference: true, onUpdateIntegrity: 'cascade' })
-  car!: IdentifiedReference<Car2>;
+  car!: Ref<Car2>;
 
 }
 ",
@@ -3227,7 +3227,7 @@ export class Car2 {
 
 }
 ",
-  "import { Entity, IdentifiedReference, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Ref, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Test2 } from './Test2.js';
 
 @Entity()
@@ -3237,7 +3237,7 @@ export class Configuration2 {
   property!: string;
 
   @ManyToOne({ entity: () => Test2, wrappedReference: true, onUpdateIntegrity: 'cascade', primary: true })
-  test!: IdentifiedReference<Test2>;
+  test!: Ref<Test2>;
 
   @Property({ length: 255 })
   value!: string;
@@ -3254,7 +3254,7 @@ export class Dummy2 {
 
 }
 ",
-  "import { Entity, IdentifiedReference, OneToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Entity, Ref, OneToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { FooBaz2 } from './FooBaz2.js';
 
 @Entity()
@@ -3272,10 +3272,10 @@ export class FooBar2 {
   nameWithSpace?: string;
 
   @OneToOne({ entity: () => FooBaz2, wrappedReference: true, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
-  baz?: IdentifiedReference<FooBaz2>;
+  baz?: Ref<FooBaz2>;
 
   @OneToOne({ entity: () => FooBar2, wrappedReference: true, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
-  fooBar?: IdentifiedReference<FooBar2>;
+  fooBar?: Ref<FooBar2>;
 
   @Property({ defaultRaw: \`CURRENT_TIMESTAMP\` })
   version!: Date;
@@ -3309,7 +3309,7 @@ export class FooBaz2 {
 
 }
 ",
-  "import { Entity, IdentifiedReference, ManyToOne, OptionalProps, Property } from '@mikro-orm/core';
+  "import { Entity, Ref, ManyToOne, OptionalProps, Property } from '@mikro-orm/core';
 import { FooBar2 } from './FooBar2.js';
 import { FooBaz2 } from './FooBaz2.js';
 
@@ -3319,10 +3319,10 @@ export class FooParam2 {
   [OptionalProps]?: 'version';
 
   @ManyToOne({ entity: () => FooBar2, wrappedReference: true, onUpdateIntegrity: 'cascade', primary: true })
-  bar!: IdentifiedReference<FooBar2>;
+  bar!: Ref<FooBar2>;
 
   @ManyToOne({ entity: () => FooBaz2, wrappedReference: true, onUpdateIntegrity: 'cascade', primary: true })
-  baz!: IdentifiedReference<FooBaz2>;
+  baz!: Ref<FooBaz2>;
 
   @Property({ length: 255 })
   value!: string;
@@ -3386,7 +3386,7 @@ export enum Publisher2Enum5 {
   A = 'a',
 }
 ",
-  "import { Entity, IdentifiedReference, ManyToOne, PrimaryKey } from '@mikro-orm/core';
+  "import { Entity, Ref, ManyToOne, PrimaryKey } from '@mikro-orm/core';
 import { Publisher2 } from './Publisher2.js';
 import { Test2 } from './Test2.js';
 
@@ -3397,10 +3397,10 @@ export class Publisher2Tests {
   id!: number;
 
   @ManyToOne({ entity: () => Publisher2, wrappedReference: true, onUpdateIntegrity: 'cascade', onDelete: 'cascade' })
-  publisher2!: IdentifiedReference<Publisher2>;
+  publisher2!: Ref<Publisher2>;
 
   @ManyToOne({ entity: () => Test2, wrappedReference: true, onUpdateIntegrity: 'cascade', onDelete: 'cascade' })
-  test2!: IdentifiedReference<Test2>;
+  test2!: Ref<Test2>;
 
 }
 ",
@@ -3420,7 +3420,7 @@ export class Sandwich {
 
 }
 ",
-  "import { Collection, Entity, IdentifiedReference, ManyToMany, ManyToOne, OneToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Ref, ManyToMany, ManyToOne, OneToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { Book2 } from './Book2.js';
 import { FooBar2 } from './FooBar2.js';
 
@@ -3436,16 +3436,16 @@ export class Test2 {
   name?: string;
 
   @OneToOne({ entity: () => Book2, wrappedReference: true, onDelete: 'set null', nullable: true })
-  book?: IdentifiedReference<Book2>;
+  book?: Ref<Book2>;
 
   @ManyToOne({ entity: () => Test2, wrappedReference: true, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
-  parent?: IdentifiedReference<Test2>;
+  parent?: Ref<Test2>;
 
   @Property({ default: 1 })
   version: number = 1;
 
   @OneToOne({ entity: () => FooBar2, wrappedReference: true, fieldName: 'foo___bar', onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
-  fooBar?: IdentifiedReference<FooBar2>;
+  fooBar?: Ref<FooBar2>;
 
   @Property({ fieldName: 'foo___baz', nullable: true })
   fooBaz?: number;
@@ -3455,7 +3455,7 @@ export class Test2 {
 
 }
 ",
-  "import { Collection, Entity, IdentifiedReference, ManyToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
+  "import { Collection, Entity, Ref, ManyToMany, OneToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Car2 } from './Car2.js';
 import { Sandwich } from './Sandwich.js';
 
@@ -3472,7 +3472,7 @@ export class User2 {
   foo?: number;
 
   @OneToOne({ entity: () => Car2, wrappedReference: true, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
-  favouriteCar?: IdentifiedReference<Car2>;
+  favouriteCar?: Ref<Car2>;
 
   @ManyToMany({ entity: () => Car2, joinColumns: ['user2_first_name', 'user2_last_name'], inverseJoinColumns: ['car2_name', 'car2_year'] })
   cars = new Collection<Car2>(this);

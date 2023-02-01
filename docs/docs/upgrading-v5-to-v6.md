@@ -104,8 +104,9 @@ foo: string[];
 - `em.nativeInsert()` -> `em.insert()`
 - `em.persistLater()` -> `em.persist()`
 - `em.removeLater()` -> `em.remove()`
-- `uow.getOriginalEntityData()` without parameters 
-- `orm.schema.generate()` 
+- `IdentifiedReference` -> `Ref`
+- `uow.getOriginalEntityData()` without parameters
+- `orm.schema.generate()`
 
 ## `BaseEntity` no longer has generic type arguments
 

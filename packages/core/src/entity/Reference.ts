@@ -17,8 +17,6 @@ import type { LockMode } from '../enums';
 import { helper, wrap } from './wrap';
 import { Utils } from '../utils/Utils';
 
-export type IdentifiedReference<T, PK extends keyof T | unknown = PrimaryProperty<T>> = true extends IsUnknown<PK> ? Reference<T> : ({ [K in Cast<PK, keyof T>]: T[K] } & Reference<T>);
-
 export class Reference<T> {
 
   constructor(private entity: T) {
@@ -42,9 +40,9 @@ export class Reference<T> {
     }
   }
 
-  static create<T extends object, PK extends keyof T | unknown = PrimaryProperty<T>>(entity: T | IdentifiedReference<T, PK>): IdentifiedReference<T, PK> {
+  static create<T extends object, PK extends keyof T | unknown = PrimaryProperty<T>>(entity: T | Ref<T, PK>): Ref<T, PK> {
     const unwrapped = Reference.unwrapReference(entity);
-    const ref = helper(entity).toReference() as IdentifiedReference<T, PK>;
+    const ref = helper(entity).toReference() as Ref<T, PK>;
 
     if (unwrapped !== ref.unwrap()) {
       ref.set(unwrapped);
@@ -53,7 +51,7 @@ export class Reference<T> {
     return ref;
   }
 
-  static createFromPK<T extends object, PK extends keyof T | unknown = PrimaryProperty<T>>(entityType: EntityClass<T>, pk: Primary<T>, options?: { schema?: string }): IdentifiedReference<T, PK> {
+  static createFromPK<T extends object, PK extends keyof T | unknown = PrimaryProperty<T>>(entityType: EntityClass<T>, pk: Primary<T>, options?: { schema?: string }): Ref<T, PK> {
     const ref = this.createNakedFromPK(entityType, pk, options);
     return helper(ref).toReference();
   }
@@ -122,7 +120,7 @@ export class Reference<T> {
     return this.entity;
   }
 
-  set(entity: T | IdentifiedReference<T>): void {
+  set(entity: T | Ref<T>): void {
     this.entity = Reference.unwrapReference(entity as T & object);
     delete helper(this.entity).__reference;
   }

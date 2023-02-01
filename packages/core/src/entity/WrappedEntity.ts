@@ -2,9 +2,8 @@ import { inspect } from 'util';
 import type { EntityManager } from '../EntityManager';
 import type {
   AnyEntity, ConnectionType, Dictionary, EntityData, EntityDictionary, EntityMetadata,
-  IWrappedEntityInternal, Populate, PopulateOptions, Primary,
+  IWrappedEntityInternal, Populate, PopulateOptions, Primary, Ref,
 } from '../typings';
-import type { IdentifiedReference } from './Reference';
 import { Reference } from './Reference';
 import { EntityTransformer } from '../serialization/EntityTransformer';
 import type { AssignOptions } from './EntityAssigner';
@@ -61,9 +60,9 @@ export class WrappedEntity<T extends object, PK extends keyof T> {
     this.__lazyInitialized = false;
   }
 
-  toReference(): IdentifiedReference<T, PK> {
+  toReference(): Ref<T, PK> {
     this.__reference ??= new Reference(this.entity);
-    return this.__reference as IdentifiedReference<T, PK>;
+    return this.__reference as Ref<T, PK>;
   }
 
   toObject(ignoreFields: string[] = []): EntityData<T> {

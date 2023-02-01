@@ -1,5 +1,5 @@
 import { BaseEntity, Collection, MikroORM, Entity, ManyToOne, OneToMany, PrimaryKey } from '@mikro-orm/sqlite';
-import type { IdentifiedReference } from '@mikro-orm/sqlite';
+import type { Ref } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Parent extends BaseEntity {
@@ -24,7 +24,7 @@ export class Child extends BaseEntity {
     index: true,
     onDelete: 'cascade',
   })
-  parent!: IdentifiedReference<Parent>;
+  parent!: Ref<Parent>;
 
 }
 

@@ -2,7 +2,7 @@ import { Cascade, Entity, ManyToMany, ManyToOne, Property } from '@mikro-orm/cor
 import type { Publisher } from './Publisher';
 import { Author } from './Author';
 import type { BookTag } from './BookTag';
-import { Collection, IdentifiedReference } from '../TsMorphMetadataProvider.test';
+import { Collection, Ref } from '../TsMorphMetadataProvider.test';
 import { BaseEntity3 } from './BaseEntity3';
 
 @Entity()
@@ -15,7 +15,7 @@ export class Book extends BaseEntity3 {
   author: Author;
 
   @ManyToOne({ cascade: [Cascade.PERSIST, Cascade.REMOVE] })
-  publisher!: IdentifiedReference<Publisher, '_id' | 'id'>;
+  publisher!: Ref<Publisher, '_id' | 'id'>;
 
   @ManyToMany()
   tags = new Collection<BookTag>(this);

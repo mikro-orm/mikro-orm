@@ -1,6 +1,6 @@
 import type { CreateOptions, EntityManager, MergeOptions } from '../EntityManager';
 import type { AssignOptions } from './EntityAssigner';
-import type { EntityData, EntityName, AnyEntity, Primary, Loaded, FilterQuery, EntityDictionary, AutoPath, RequiredEntityData } from '../typings';
+import type { EntityData, EntityName, AnyEntity, Primary, Loaded, FilterQuery, EntityDictionary, AutoPath, RequiredEntityData, Ref } from '../typings';
 import type {
   CountOptions,
   DeleteOptions,
@@ -12,7 +12,7 @@ import type {
   NativeInsertUpdateOptions,
   UpdateOptions,
 } from '../drivers/IDatabaseDriver';
-import type { IdentifiedReference, Reference } from './Reference';
+import type { Reference } from './Reference';
 import type { EntityLoaderOptions } from './EntityLoader';
 import type { Cursor } from '../utils/Cursor';
 
@@ -174,7 +174,7 @@ export class EntityRepository<T extends object> {
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<PK extends keyof T>(id: Primary<T>, options: Omit<GetReferenceOptions, 'wrapped'> & { wrapped: true }): IdentifiedReference<T, PK>;
+  getReference<PK extends keyof T>(id: Primary<T>, options: Omit<GetReferenceOptions, 'wrapped'> & { wrapped: true }): Ref<T, PK>;
 
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
