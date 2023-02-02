@@ -22,7 +22,7 @@ export class Child extends BaseEntity {
     entity: () => Parent,
     ref: true,
     index: true,
-    onDelete: 'cascade',
+    deleteRule: 'cascade',
   })
   parent!: Ref<Parent>;
 

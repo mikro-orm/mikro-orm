@@ -18,6 +18,6 @@ export interface OneToOneOptions<T, O> extends Partial<Omit<OneToManyOptions<T, 
   ref?: boolean;
   primary?: boolean;
   mapToPk?: boolean;
-  onDelete?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
-  onUpdateIntegrity?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
+  deleteRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
+  updateRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
 }

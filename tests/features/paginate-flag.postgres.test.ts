@@ -130,14 +130,14 @@ export class A {
 
   @ManyToOne(() => TC, {
     nullable: false,
-    onDelete: 'cascade',
+    deleteRule: 'cascade',
   })
   tc!: TC;
 
   @OneToOne(() => B, undefined, {
     nullable: true,
     inversedBy: b => b.a,
-    onDelete: 'set null',
+    deleteRule: 'set null',
     eager: true,
   })
   b?: any;
@@ -154,7 +154,7 @@ export class B {
   @ManyToOne(() => C)
   sub!: C;
 
-  @OneToOne(() => A, a => a.b, { nullable: true, onDelete: 'set null' })
+  @OneToOne(() => A, a => a.b, { nullable: true, deleteRule: 'set null' })
   a?: A;
 
 }

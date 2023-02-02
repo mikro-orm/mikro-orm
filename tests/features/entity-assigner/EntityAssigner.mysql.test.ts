@@ -196,7 +196,7 @@ describe('EntityAssignerMySql', () => {
     expect(book.meta).toEqual({ items: 3, category: 'bar' });
     wrap(book).assign({ meta: { category: 'bar 1' } });
     expect(book.meta).toEqual({ items: 3, category: 'bar 1' });
-    wrap(book).assign({ meta: { category: 'bar 2' } }, { mergeObjects: false });
+    wrap(book).assign({ meta: { category: 'bar 2' } }, { mergeObjectProperties: false });
     expect(book.meta).toEqual({ category: 'bar 2' });
     jon.identities = ['1', '2'];
     wrap(jon).assign({ identities: ['3', '4'] });
