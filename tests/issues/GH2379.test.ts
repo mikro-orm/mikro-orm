@@ -12,10 +12,10 @@ export class VendorBuyerRelationship {
   @Property({ onCreate: () => new Date() })
   created!: Date;
 
-  @ManyToOne(() => Member, { wrappedReference: true })
+  @ManyToOne(() => Member, { ref: true })
   buyer!: Ref<Member>;
 
-  @ManyToOne(() => Member, { wrappedReference: true })
+  @ManyToOne(() => Member, { ref: true })
   vendor!: Ref<Member>;
 
   @OneToMany(() => Order, o => o.buyerRel)
@@ -43,7 +43,7 @@ export class Member {
   @OneToMany(() => Order, order => order.vendor)
   orders = new Collection<Order>(this);
 
-  @ManyToOne(() => Member, { wrappedReference: true, nullable: true })
+  @ManyToOne(() => Member, { ref: true, nullable: true })
   parent?: Ref<Member>;
 
 }
@@ -56,28 +56,28 @@ export class Job {
   @PrimaryKey({ type: BigIntType })
   id!: string;
 
-  @ManyToOne(() => Member, { wrappedReference: true, nullable: true })
+  @ManyToOne(() => Member, { ref: true, nullable: true })
   member?: Ref<Member>;
 
-  @ManyToOne(() => Order, { wrappedReference: true, nullable: true })
+  @ManyToOne(() => Order, { ref: true, nullable: true })
   order?: Ref<Order>;
 
   @OneToMany(() => Job, job => job.parent)
   children = new Collection<Job>(this);
 
-  @ManyToOne(() => Job, { wrappedReference: true, nullable: true })
+  @ManyToOne(() => Job, { ref: true, nullable: true })
   parent?: Ref<Job>;
 
   @Property()
   rejected: boolean = false;
 
-  @ManyToOne(() => VendorBuyerRelationship, { wrappedReference: true, nullable: true })
+  @ManyToOne(() => VendorBuyerRelationship, { ref: true, nullable: true })
   buyer?: Ref<VendorBuyerRelationship>;
 
-  @ManyToOne(() => Job, { wrappedReference: true, nullable: true })
+  @ManyToOne(() => Job, { ref: true, nullable: true })
   delegate?: Ref<Job>;
 
-  @ManyToOne(() => Member, { wrappedReference: true, nullable: true })
+  @ManyToOne(() => Member, { ref: true, nullable: true })
   assignee?: Ref<Member>;
 
 }
@@ -93,13 +93,13 @@ export class Order {
   @Property({ onCreate: () => new Date() })
   created!: Date;
 
-  @ManyToOne(() => VendorBuyerRelationship, { wrappedReference: true, nullable: true })
+  @ManyToOne(() => VendorBuyerRelationship, { ref: true, nullable: true })
   buyerRel?: Ref<VendorBuyerRelationship>;
 
   @OneToMany(() => Job, job => job.order)
   jobs = new Collection<Job>(this);
 
-  @ManyToOne(() => Member, { wrappedReference: true, nullable: true })
+  @ManyToOne(() => Member, { ref: true, nullable: true })
   vendor?: Ref<Member>;
 
 }
