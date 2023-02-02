@@ -1,5 +1,5 @@
 import { ensureDir, writeFile } from 'fs-extra';
-import { ReferenceType, Utils, type EntityMetadata, type EntityProperty, type GenerateOptions, type MikroORM } from '@mikro-orm/core';
+import { ReferenceKind, Utils, type EntityMetadata, type EntityProperty, type GenerateOptions, type MikroORM } from '@mikro-orm/core';
 import { DatabaseSchema, type EntityManager } from '@mikro-orm/knex';
 import { SourceFile } from './SourceFile';
 import { EntitySchemaSourceFile } from './EntitySchemaSourceFile';
@@ -88,7 +88,7 @@ export class EntityGenerator {
         meta.primaryKeys.length === meta.relations.length &&                        // all relations are PKs
         meta.relations.length === 2 &&                                              // there are exactly two relation properties
         meta.relations.length === meta.props.length &&                              // all properties are relations
-        meta.relations.every(prop => prop.reference === ReferenceType.MANY_TO_ONE)  // all relations are m:1
+        meta.relations.every(prop => prop.kind === ReferenceKind.MANY_TO_ONE)       // all relations are m:1
       ) {
         meta.pivotTable = true;
         const owner = metadata.find(m => m.className === meta.relations[0].type);
@@ -100,7 +100,7 @@ export class EntityGenerator {
         const name = this.namingStrategy.columnNameToProperty(meta.tableName.replace(new RegExp('^' + owner.tableName + '_'), ''));
         owner.addProperty({
           name,
-          reference: ReferenceType.MANY_TO_MANY,
+          kind: ReferenceKind.MANY_TO_MANY,
           pivotTable: meta.tableName,
           type: meta.relations[1].type,
           joinColumns: meta.relations[0].fieldNames,
@@ -123,13 +123,13 @@ export class EntityGenerator {
           mappedBy: prop.name,
         } as EntityProperty;
 
-        if (prop.reference === ReferenceType.MANY_TO_ONE) {
-          newProp.reference = ReferenceType.ONE_TO_MANY;
-        } else if (prop.reference === ReferenceType.ONE_TO_ONE && !prop.mappedBy) {
-          newProp.reference = ReferenceType.ONE_TO_ONE;
+        if (prop.kind === ReferenceKind.MANY_TO_ONE) {
+          newProp.kind = ReferenceKind.ONE_TO_MANY;
+        } else if (prop.kind === ReferenceKind.ONE_TO_ONE && !prop.mappedBy) {
+          newProp.kind = ReferenceKind.ONE_TO_ONE;
           newProp.nullable = true;
-        } else if (prop.reference === ReferenceType.MANY_TO_MANY && !prop.mappedBy) {
-          newProp.reference = ReferenceType.MANY_TO_MANY;
+        } else if (prop.kind === ReferenceKind.MANY_TO_MANY && !prop.mappedBy) {
+          newProp.kind = ReferenceKind.MANY_TO_MANY;
         } else {
           continue;
         }
@@ -142,7 +142,7 @@ export class EntityGenerator {
   private generateIdentifiedReferences(metadata: EntityMetadata[]): void {
     for (const meta of metadata.filter(m => !m.pivotTable)) {
       for (const prop of meta.relations) {
-        if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference)) {
+        if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
           prop.wrappedReference = true;
         }
       }

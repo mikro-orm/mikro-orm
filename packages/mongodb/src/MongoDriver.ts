@@ -3,7 +3,7 @@ import { ObjectId } from 'bson';
 import {
   DatabaseDriver,
   EntityManagerType,
-  ReferenceType,
+  ReferenceKind,
   Utils,
   type EntityData,
   type FilterQuery,
@@ -275,9 +275,9 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
         const prop = meta.properties[k];
         let isObjectId = false;
 
-        if (prop.reference === ReferenceType.SCALAR) {
+        if (prop.kind === ReferenceKind.SCALAR) {
           isObjectId = prop.type.toLowerCase() === 'objectid';
-        } else if (prop.reference !== ReferenceType.EMBEDDED) {
+        } else if (prop.kind !== ReferenceKind.EMBEDDED) {
           const meta2 = this.metadata.find(prop.type)!;
           const pk = meta2.properties[meta2.primaryKeys[0]];
           isObjectId = pk.type.toLowerCase() === 'objectid';

@@ -23,7 +23,7 @@ export class D {
   order!: number;
 
   @ManyToOne({
-      entity: () => C,
+    entity: () => C,
     wrappedReference: true,
     nullable: true,
   })
@@ -41,7 +41,7 @@ export class C {
   order!: number;
 
   @ManyToOne({
-      entity: () => B,
+    entity: () => B,
     wrappedReference: true,
     nullable: true,
   })
@@ -69,7 +69,7 @@ export class B {
   order!: number;
 
   @ManyToOne({
-      entity: () => A,
+    entity: () => A,
     wrappedReference: true,
     nullable: true,
   })
@@ -155,7 +155,7 @@ describe('GH issue 1331', () => {
 
     const loadedA = await orm.em.findOneOrFail(A, a.id);
     expect(loadedA.bs.getItems().map(b => b.order)).toStrictEqual([0, 1, 2]);
-    expect(loadedA.bs[0].cs.getIdentifiers('order')).toEqual([1,  3, 4]);
+    expect(loadedA.bs[0].cs.getIdentifiers('order')).toEqual([1, 3, 4]);
     expect(loadedA.bs[2].cs.getIdentifiers('order')).toEqual([2, 5, 11]);
     expect(loadedA.bs[1].cs.getIdentifiers('order')).toEqual([0, 1, 4]);
     expect(loadedA.bs[0].cs[1].ds.getIdentifiers('order')).toEqual([2, 5, 11]);

@@ -98,7 +98,7 @@ export enum QueryFlag {
 
 export const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date', 'Buffer', 'RegExp'];
 
-export enum ReferenceType {
+export enum ReferenceKind {
   SCALAR = 'scalar',
   ONE_TO_ONE = '1:1',
   ONE_TO_MANY = '1:m',

@@ -1,4 +1,4 @@
-import { EntitySchema, MikroORM, ReferenceType } from '@mikro-orm/core';
+import { EntitySchema, MikroORM, ReferenceKind } from '@mikro-orm/core';
 import type { EntityManager } from '@mikro-orm/better-sqlite';
 import { mockLogger } from '../../bootstrap';
 import type { IAuthor4 } from '../../entities-schema';
@@ -28,7 +28,7 @@ const AuthorProfileSchema = new EntitySchema({
     age: { type: 'string' },
     totalBooks: { type: 'number' },
     usedTags: { type: 'string[]' },
-    identity: { type: 'Identity', reference: ReferenceType.EMBEDDED, object: true },
+    identity: { type: 'Identity', kind: ReferenceKind.EMBEDDED, object: true },
   },
 });
 
