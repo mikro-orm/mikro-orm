@@ -32,7 +32,7 @@ export const Book4 = new EntitySchema<IBook4, IBaseEntity5>({
     price: { type: t.float, nullable: true },
     priceTaxed: { type: t.float, formula: alias => `${alias}.price * 1.19`, persist: false },
     author: { kind: 'm:1', entity: 'Author4', inversedBy: 'books', nullable: true },
-    publisher: { kind: 'm:1', entity: 'Publisher4', inversedBy: 'books', wrappedReference: true, nullable: true },
+    publisher: { kind: 'm:1', entity: 'Publisher4', inversedBy: 'books', ref: true, nullable: true },
     tags: { kind: 'm:n', entity: 'BookTag4', inversedBy: 'books', pivotTable: 'tags_ordered', fixedOrder: true },
     tagsUnordered: { kind: 'm:n', entity: 'BookTag4', inversedBy: 'books', pivotTable: 'tags_unordered' },
     meta: { type: 'json', nullable: true },

@@ -17,7 +17,7 @@ export class Child {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Parent, wrappedReference: true })
+  @ManyToOne({ entity: () => Parent, ref: true })
   parent!: Ref<Parent>;
 
 }
