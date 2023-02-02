@@ -12,7 +12,7 @@ class Part {
   @ManyToOne(() => Car, {
     ref: true,
     nullable: true,
-    onDelete: 'cascade',
+    deleteRule: 'cascade',
   })
   car?: Ref<Car>;
 

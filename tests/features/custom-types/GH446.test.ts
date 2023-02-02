@@ -67,7 +67,7 @@ class D {
   @PrimaryKey({ type: UuidBinaryType })
   id: string = v4();
 
-  @ManyToOne({ onDelete: 'cascade' })
+  @ManyToOne({ deleteRule: 'cascade' })
   a!: A;
 
 }
