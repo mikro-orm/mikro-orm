@@ -21,7 +21,7 @@ export class MongoPlatform extends Platform {
   }
 
   getRepositoryClass<T extends object>(): Constructor<EntityRepository<T>> {
-    return MongoEntityRepository as Constructor<EntityRepository<T>>;
+    return MongoEntityRepository as unknown as Constructor<EntityRepository<T>>;
   }
 
   /** @inheritDoc */

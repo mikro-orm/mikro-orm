@@ -75,7 +75,7 @@ class ProjectUsersSubscriber implements EventSubscriber<ProjectUser> {
       .getChangeSets()
       .filter(cs => cs.entity instanceof ProjectUser);
     for (const cs of changeSets) {
-      const pk = cs.getPrimaryKey(true) as Record<string, unknown>;
+      const pk = cs.getPrimaryKey(true)! as Record<string, unknown>;
       expect(pk).toBeInstanceOf(Object);
       expect(Array.isArray(pk)).toBe(false);
       expect(Object.keys(pk)).toMatchObject(['project', 'user']);

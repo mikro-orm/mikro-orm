@@ -4,7 +4,7 @@ import {
   PrimaryKey,
   Property,
   ManyToOne,
-  IdentifiedReference,
+  Ref,
   OneToMany,
   Collection,
   LoadStrategy,
@@ -20,7 +20,7 @@ export class Owner {
   name!: string;
 
   @ManyToOne('Radio', { wrappedReference: true })
-  radio!: IdentifiedReference<Radio>;
+  radio!: Ref<Radio>;
 
   constructor(name: string) {
     this.name = name;
@@ -38,7 +38,7 @@ export class RadioOption {
   enabled!: boolean;
 
   @ManyToOne('Radio', { wrappedReference: true })
-  radio!: IdentifiedReference<Radio>;
+  radio!: Ref<Radio>;
 
 
   constructor(enabled: boolean) {

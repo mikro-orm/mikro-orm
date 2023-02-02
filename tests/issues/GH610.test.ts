@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, ManyToOne, IdentifiedReference, Property, MikroORM, wrap, ObjectBindingPattern } from '@mikro-orm/sqlite';
+import { Entity, PrimaryKey, ManyToOne, Ref, Property, MikroORM, wrap, ObjectBindingPattern } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -11,7 +11,7 @@ export class Test {
   name!: string;
 
   @ManyToOne(() => Test, { nullable: true, wrappedReference: true })
-  rootNode?: IdentifiedReference<Test>;
+  rootNode?: Ref<Test>;
 
   constructor({ name }: Partial<Test> = {}) {
     this.name = name!;

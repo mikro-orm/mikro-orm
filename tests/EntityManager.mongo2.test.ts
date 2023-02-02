@@ -43,7 +43,7 @@ describe('EntityManagerMongo2', () => {
     expect(book5.tags.$[0].name).toBe('t1');
 
     const pub2 = orm.em.create(Publisher, { name: 'asd' });
-    const wrapped0 = wrap(pub2).toReference<'id' | '_id'>();
+    const wrapped0 = wrap(pub2).toReference();
     // @ts-expect-error
     expect(wrapped0.books).toBeUndefined();
     book5.publisher = wrapped0;

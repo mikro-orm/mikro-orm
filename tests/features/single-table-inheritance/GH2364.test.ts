@@ -1,4 +1,4 @@
-import { BigIntType, Entity, Enum, IdentifiedReference, ManyToOne, MikroORM, PrimaryKey, QueryOrder } from '@mikro-orm/core';
+import { BigIntType, Entity, Enum, Ref, ManyToOne, MikroORM, PrimaryKey, QueryOrder } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 export enum EntityType {
@@ -13,7 +13,7 @@ abstract class BaseEntity {
   id!: string;
 
   @ManyToOne(() => BaseEntity, { wrappedReference: true, nullable: true })
-  parent?: IdentifiedReference<BaseEntity>;
+  parent?: Ref<BaseEntity>;
 
   @Enum({ type: () => EntityType })
   type!: EntityType;

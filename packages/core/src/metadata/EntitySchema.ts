@@ -212,8 +212,8 @@ export class EntitySchema<T = any, U = never> {
     this._meta.uniques.push(options as any);
   }
 
-  setCustomRepository(repository: () => Constructor<EntityRepository<any>>): void {
-    this._meta.customRepository = repository;
+  setCustomRepository(repository: () => Constructor): void {
+    this._meta.customRepository = repository as () => Constructor<EntityRepository<any>>;
   }
 
   setExtends(base: string): void {

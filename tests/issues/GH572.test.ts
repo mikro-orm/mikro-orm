@@ -1,4 +1,4 @@
-import { Entity, IdentifiedReference, MikroORM, OneToOne, PrimaryKey, Property, QueryOrder } from '@mikro-orm/sqlite';
+import { Entity, Ref, MikroORM, OneToOne, PrimaryKey, Property, QueryOrder } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -8,7 +8,7 @@ export class A {
   id!: number;
 
   @OneToOne('B', 'a', { wrappedReference: true })
-  b!: IdentifiedReference<B>;
+  b!: Ref<B>;
 
 }
 
@@ -22,7 +22,7 @@ export class B {
   camelCaseField?: string;
 
   @OneToOne('A', 'b', { owner: true, wrappedReference: true })
-  a!: IdentifiedReference<A>;
+  a!: Ref<A>;
 
 }
 
