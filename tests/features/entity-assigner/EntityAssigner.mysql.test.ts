@@ -122,7 +122,7 @@ describe('EntityAssignerMySql', () => {
     expect(Reference.isReference(book2.author)).toEqual(false);
     expect(wrap(book2.author).isInitialized()).toEqual(false);
 
-    expect(wrap(book2.publisher).isInitialized()).toEqual(false);
+    expect(wrap(book2.publisher!).isInitialized()).toEqual(false);
     expect(Reference.isReference(book2.publisher)).toEqual(true);
 
     const value = Reference.unwrapReference(book2.publisher!);
@@ -146,12 +146,12 @@ describe('EntityAssignerMySql', () => {
 
     const book2 = (await orm.em.getRepository(Book2).findOne(id))!;
 
-    expect(wrap(book2.publisher).isInitialized()).toEqual(false);
+    expect(wrap(book2.publisher!).isInitialized()).toEqual(false);
     expect(Reference.isReference(book2.publisher)).toEqual(true);
 
     await book2.publisher?.load();
 
-    expect(wrap(book2.publisher).isInitialized()).toEqual(true);
+    expect(wrap(book2.publisher!).isInitialized()).toEqual(true);
 
     const originalValue = Reference.unwrapReference(book2.publisher!);
     const originalRef = book2.publisher!;

@@ -1,25 +1,29 @@
-import type { Dictionary, IWrappedEntity, IWrappedEntityInternal, PrimaryProperty } from '../typings';
+import type { Dictionary, IWrappedEntity, IWrappedEntityInternal } from '../typings';
 
 /**
  * returns WrappedEntity instance associated with this entity. This includes all the internal properties like `__meta` or `__em`.
  */
-export function wrap<T, PK extends keyof T | unknown = PrimaryProperty<T>>(entity: T, preferHelper: true): IWrappedEntityInternal<T, PK>;
+export function wrap<T extends object>(entity: T, preferHelper: true): IWrappedEntityInternal<T>;
 
 /**
  * wraps entity type with WrappedEntity internal properties and helpers like init/isInitialized/populated/toJSON
  */
-export function wrap<T, PK extends keyof T | unknown = PrimaryProperty<T>>(entity: T, preferHelper?: false): IWrappedEntity<T, PK>;
+export function wrap<T extends object>(entity: T, preferHelper?: false): IWrappedEntity<T>;
 
 /**
  * wraps entity type with WrappedEntity internal properties and helpers like init/isInitialized/populated/toJSON
  * use `preferHelper = true` to have access to the internal `__` properties like `__meta` or `__em`
  */
-export function wrap<T, PK extends keyof T | unknown = PrimaryProperty<T>>(entity: T & Dictionary, preferHelper = false): IWrappedEntity<T, PK> | IWrappedEntityInternal<T, PK> {
-  if (entity?.__baseEntity && !preferHelper) {
-    return entity as unknown as IWrappedEntity<T, PK>;
+export function wrap<T extends object>(entity: T & Dictionary, preferHelper = false): IWrappedEntity<T> | IWrappedEntityInternal<T> {
+  if (!entity) {
+    return entity;
   }
 
-  return entity?.__helper ?? entity;
+  if (entity.__baseEntity && !preferHelper) {
+    return entity as unknown as IWrappedEntity<T>;
+  }
+
+  return entity.__helper ?? entity;
 }
 
 /**
@@ -27,6 +31,6 @@ export function wrap<T, PK extends keyof T | unknown = PrimaryProperty<T>>(entit
  * use `preferHelper = true` to have access to the internal `__` properties like `__meta` or `__em`
  * @internal
  */
-export function helper<T, PK extends keyof T | unknown = PrimaryProperty<T>>(entity: T): IWrappedEntityInternal<T, PK> {
+export function helper<T extends object>(entity: T): IWrappedEntityInternal<T> {
   return (entity as Dictionary).__helper;
 }

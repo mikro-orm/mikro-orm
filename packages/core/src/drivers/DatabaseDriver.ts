@@ -358,7 +358,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     return ret;
   }
 
-  async lockPessimistic<T>(entity: T, options: LockOptions): Promise<void> {
+  async lockPessimistic<T extends object>(entity: T, options: LockOptions): Promise<void> {
     throw new Error(`Pessimistic locks are not supported by ${this.constructor.name} driver`);
   }
 
