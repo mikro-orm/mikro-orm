@@ -165,7 +165,7 @@ export class ChangeSetComputer {
       } else {
         changeSet.payload[prop.name] = target.getItems(false).map((item: AnyEntity) => item.__helper!.__identifier ?? item.__helper!.getPrimaryKey());
       }
-    } else if (prop.reference === ReferenceType.ONE_TO_MANY && target.getSnapshot() === undefined) {
+    } else if (prop.kind === ReferenceKind.ONE_TO_MANY && target.getSnapshot() === undefined) {
       this.collectionUpdates.add(target);
     } else {
       target.setDirty(false); // inverse side with only populated items, nothing to persist

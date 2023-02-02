@@ -42,7 +42,7 @@ export class EntityGenerator {
     for (const meta of metadata) {
       for (const prop of meta.relations) {
         if (options.skipTables?.includes(prop.referencedTableName)) {
-          prop.reference = ReferenceType.SCALAR;
+          prop.kind = ReferenceKind.SCALAR;
           const meta2 = metadata.find(m => m.className === prop.type)!;
           prop.type = meta2.getPrimaryProps().map(pk => pk.type).join(' | ');
         }

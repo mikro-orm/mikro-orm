@@ -24,7 +24,7 @@ export class Book {
   @Property()
   name!: string;
 
-  @ManyToOne({ entity: () => Author, onDelete: 'cascade' })
+  @ManyToOne({ entity: () => Author, deleteRule: 'cascade' })
   author!: Author;
 
 }

@@ -48,13 +48,13 @@ export class CustomAuthorRepository extends EntityRepository<Author> {
 And register the repository via `@Entity` decorator:
 
 ```ts
-@Entity({ customRepository: () => CustomAuthorRepository })
+@Entity({ repository: () => CustomAuthorRepository })
 export class Author {
   // ...
 }
 ```
 
-> `@Repository()` decorator has been removed in v5, use `@Entity({ customRepository: () => MyRepository })` instead.
+> `@Repository()` decorator has been removed in v5, use `@Entity({ repository: () => MyRepository })` instead.
 
 Note that we need to pass that repository reference inside a callback so we will not run into circular dependency issues when using entity references inside that repository.
 
@@ -65,7 +65,7 @@ Now we can access our custom repository via `em.getRepository()` method.
 To have the `em.getRepository()` method return correctly typed custom repository instead of the generic `EntityRepository<T>`, we can use `EntityRepositoryType` symbol:
 
 ```ts
-@Entity({ customRepository: () => AuthorRepository })
+@Entity({ repository: () => AuthorRepository })
 export class Author {
 
   [EntityRepositoryType]?: AuthorRepository;
@@ -75,6 +75,6 @@ export class Author {
 const repo = em.getRepository(Author); // repo has type AuthorRepository
 ```
 
-> We can also register custom base repository (for all entities where we do not specify `customRepository`) globally, via `MikroORM.init({ entityRepository: CustomBaseRepository })`.
+> We can also register custom base repository (for all entities where we do not specify `repository`) globally, via `MikroORM.init({ entityRepository: CustomBaseRepository })`.
 
 For more examples, take a look at [`tests/EntityManager.mongo.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts) or [`tests/EntityManager.mysql.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/EntityManager.mysql.test.ts).

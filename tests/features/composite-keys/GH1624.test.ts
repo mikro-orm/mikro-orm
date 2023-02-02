@@ -51,7 +51,7 @@ export class User {
     ref: true,
     index: true,
     cascade: [],
-    onDelete: 'no action',
+    deleteRule: 'no action',
   })
   organization!: Ref<Organization>;
 
@@ -102,7 +102,7 @@ export class UserRole {
     primary: true,
     ref: true,
     cascade: [],
-    onDelete: 'cascade',
+    deleteRule: 'cascade',
   })
   user!: Ref<User>;
 
@@ -112,7 +112,7 @@ export class UserRole {
     primary: true,
     ref: true,
     cascade: [],
-    onDelete: 'no action',
+    deleteRule: 'no action',
   })
   role!: Ref<Role>;
 
@@ -162,8 +162,8 @@ export class Site {
     primary: true,
     ref: true,
     cascade: [],
-    onUpdateIntegrity: 'no action',
-    onDelete: 'no action',
+    updateRule: 'no action',
+    deleteRule: 'no action',
   })
   program!: Reference<Program>;
 

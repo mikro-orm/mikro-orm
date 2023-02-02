@@ -63,7 +63,7 @@ export class Filter {
   @ManyToOne(() => Project, {
     serializer: p => p.id,
     ref: true,
-    onDelete: 'cascade',
+    deleteRule: 'cascade',
   })
   project!: Ref<Project>;
 
@@ -81,7 +81,7 @@ export class FilterValue {
   @ManyToOne(() => Filter, {
     serializer: f => f.id,
     ref: true,
-    onDelete: 'cascade',
+    deleteRule: 'cascade',
   })
   filter!: Ref<Filter>;
 
