@@ -33,10 +33,10 @@ describe('EntityFactory', () => {
     expect(metadata[Author.name].properties.foo.type).toBe('string');
     expect(metadata[Author.name].properties.age.type).toBe('number');
     expect(metadata[Author.name].properties.age.nullable).toBe(true); // nullable is sniffed via ts-morph too
-    expect(metadata[Author.name].customRepository()).toBe(AuthorRepository);
+    expect(metadata[Author.name].repository()).toBe(AuthorRepository);
     expect(metadata[Book.name].properties.author.type).toBe(Author.name);
     expect(metadata[Book.name].properties.author.kind).toBe(ReferenceKind.MANY_TO_ONE);
-    expect(metadata[Book.name].customRepository()).toBe(BookRepository);
+    expect(metadata[Book.name].repository()).toBe(BookRepository);
     expect(metadata[Publisher.name].properties.tests.owner).toBe(true);
   });
 

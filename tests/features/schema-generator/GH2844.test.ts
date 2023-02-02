@@ -19,7 +19,7 @@ export class Step {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ primary: true, onDelete: 'cascade' })
+  @ManyToOne({ primary: true, deleteRule: 'cascade' })
   userAction!: UserAction;
 
 }
@@ -30,7 +30,7 @@ export class Component {
   @PrimaryKey()
   idComponent!: string;
 
-  @ManyToOne({ onDelete: 'cascade' })
+  @ManyToOne({ deleteRule: 'cascade' })
   step!: Step;
 
   @OneToOne({
