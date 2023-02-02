@@ -6,7 +6,7 @@ export class NodeEntity {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => NodeEntity, onDelete: 'cascade', onUpdateIntegrity: 'cascade', nullable: true })
+  @ManyToOne({ entity: () => NodeEntity, deleteRule: 'cascade', updateRule: 'cascade', nullable: true })
   parent?: NodeEntity | null;
 
 }
@@ -16,7 +16,7 @@ export class ElementEntity {
 
   [PrimaryKeyProp]?: 'node';
 
-  @OneToOne({ entity: () => NodeEntity, primary: true, onDelete: 'cascade', onUpdateIntegrity: 'cascade' })
+  @OneToOne({ entity: () => NodeEntity, primary: true, deleteRule: 'cascade', updateRule: 'cascade' })
   node!: NodeEntity;
 
   @OneToMany({ entity: () => DependentEntity, mappedBy: 'element', cascade: [Cascade.ALL] })
@@ -30,7 +30,7 @@ export class DependentEntity {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => ElementEntity, { onDelete: 'cascade' })
+  @ManyToOne(() => ElementEntity, { deleteRule: 'cascade' })
   element!: ElementEntity;
 
 }

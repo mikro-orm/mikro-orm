@@ -34,7 +34,7 @@ class LogEntry {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => Dependent, { onDelete: 'cascade' })
+  @ManyToOne(() => Dependent, { deleteRule: 'cascade' })
   dependent!: Dependent;
 
   @Property()

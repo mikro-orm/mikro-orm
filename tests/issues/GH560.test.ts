@@ -51,7 +51,7 @@ describe('GH issue 560', () => {
     orm = await MikroORM.init({
       entities: [ASchema, BaseSchema],
       dbName: `mikro_orm_test_gh_560`,
-      cache: { enabled: false },
+      metadataCache: { enabled: false },
     });
     await orm.schema.refreshDatabase();
   });

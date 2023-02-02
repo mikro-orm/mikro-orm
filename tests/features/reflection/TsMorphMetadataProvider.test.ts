@@ -17,7 +17,7 @@ describe('TsMorphMetadataProvider', () => {
       entities: [Author, Book, Publisher, BaseEntity, BaseEntity3, BookTagSchema, Test, FooBaz, FooBar],
       baseDir: __dirname,
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
-      cache: { enabled: false },
+      metadataCache: { enabled: false },
       discovery: { alwaysAnalyseProperties: false },
       metadataProvider: TsMorphMetadataProvider,
     });
@@ -32,7 +32,7 @@ describe('TsMorphMetadataProvider', () => {
       tsNode: false,
       baseDir: __dirname,
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
-      cache: { enabled: false },
+      metadataCache: { enabled: false },
       discovery: { alwaysAnalyseProperties: false },
       metadataProvider: TsMorphMetadataProvider,
     });
@@ -48,7 +48,7 @@ describe('TsMorphMetadataProvider', () => {
       tsNode: false,
       baseDir: __dirname,
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
-      cache: { enabled: false },
+      metadataCache: { enabled: false },
       metadataProvider: TsMorphMetadataProvider,
       connect: false,
     };
@@ -61,7 +61,7 @@ describe('TsMorphMetadataProvider', () => {
       entities: ['entities'],
       baseDir: __dirname,
       clientUrl: 'mongodb://localhost:27017/mikro-orm-test',
-      cache: { pretty: true },
+      metadataCache: { pretty: true },
       metadataProvider: TsMorphMetadataProvider,
     });
 
