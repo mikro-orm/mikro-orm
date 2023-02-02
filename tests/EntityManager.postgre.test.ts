@@ -936,17 +936,17 @@ describe('EntityManagerPostgre', () => {
     expect(jon.name).toBe('Jon Snow');
     expect(jon.born).toEqual(new Date('1990-03-23'));
     expect(jon.favouriteBook).toBeInstanceOf(Book2);
-    expect(wrap(jon.favouriteBook).isInitialized()).toBe(false);
+    expect(wrap(jon.favouriteBook!).isInitialized()).toBe(false);
 
-    await wrap(jon.favouriteBook).init();
+    await wrap(jon.favouriteBook!).init();
     expect(jon.favouriteBook).toBeInstanceOf(Book2);
-    expect(wrap(jon.favouriteBook).isInitialized()).toBe(true);
+    expect(wrap(jon.favouriteBook!).isInitialized()).toBe(true);
     expect(jon.favouriteBook!.title).toBe('Bible');
 
     const em2 = orm.em.fork();
     const bible2 = await em2.findOneOrFail(Book2, { uuid: bible.uuid });
     expect(wrap(bible2, true).__em!.id).toBe(em2.id);
-    expect(wrap(bible2.publisher, true).__em!.id).toBe(em2.id);
+    expect(wrap(bible2.publisher!, true).__em!.id).toBe(em2.id);
     const publisher2 = await bible2.publisher!.load();
     expect(wrap(publisher2, true).__em!.id).toBe(em2.id);
   });
@@ -1296,7 +1296,7 @@ describe('EntityManagerPostgre', () => {
     expect(tags[0].books[0].author.name).toBe('Jon Snow');
     expect(tags[0].books[0].publisher).toBeInstanceOf(Reference);
     expect(tags[0].books[0].publisher!.unwrap()).toBeInstanceOf(Publisher2);
-    expect(wrap(tags[0].books[0].publisher).isInitialized()).toBe(true);
+    expect(wrap(tags[0].books[0].publisher!).isInitialized()).toBe(true);
     expect(tags[0].books[0].publisher!.unwrap().tests.isInitialized(true)).toBe(true);
     expect(tags[0].books[0].publisher!.unwrap().tests.count()).toBe(2);
     expect(tags[0].books[0].publisher!.unwrap().tests[0].name).toBe('t11');

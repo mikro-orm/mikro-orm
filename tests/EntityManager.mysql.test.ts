@@ -257,8 +257,8 @@ describe('EntityManagerMySql', () => {
 
     const repo = orm.em.getRepository(FooBar2);
     const a = await repo.findOne(bar.id, { populate: ['baz'], flags: [QueryFlag.DISTINCT] });
-    expect(wrap(a!.baz).isInitialized()).toBe(true);
-    expect(wrap(a!.baz!.bar).isInitialized()).toBe(true);
+    expect(wrap(a!.baz!).isInitialized()).toBe(true);
+    expect(wrap(a!.baz!.bar!).isInitialized()).toBe(true);
   });
 
   test('factory should support a primary key value of 0', async () => {
@@ -289,7 +289,7 @@ describe('EntityManagerMySql', () => {
     orm.em.clear();
     const repo = orm.em.getRepository(FooBar2);
     const a = await repo.findOne(fooBar.id, { populate: ['baz'] });
-    expect(wrap(a!.baz).isInitialized()).toBe(true);
+    expect(wrap(a!.baz!).isInitialized()).toBe(true);
     expect(a!.baz!.id).toBe(0);
     expect(a!.baz!.name).toBe('testBaz');
   });
@@ -315,7 +315,7 @@ describe('EntityManagerMySql', () => {
     expect(a1.name).toBe('fz');
     expect(a1.bar).toBeInstanceOf(FooBar2);
     expect(a1.version).toBeUndefined();
-    expect(wrap(a1.bar).isInitialized()).toBe(false);
+    expect(wrap(a1.bar!).isInitialized()).toBe(false);
   });
 
   test('transactions', async () => {
@@ -534,7 +534,7 @@ describe('EntityManagerMySql', () => {
         expect(wrap(book.author).isInitialized()).toBe(true);
         expect(book.publisher).toBeInstanceOf(Reference);
         expect(book.publisher!.unwrap()).toBeInstanceOf(Publisher2);
-        expect(wrap(book.publisher).isInitialized()).toBe(false);
+        expect(wrap(book.publisher!).isInitialized()).toBe(false);
       }
     }
 
@@ -866,7 +866,7 @@ describe('EntityManagerMySql', () => {
     expect(res1!.createdAt).toBeDefined();
     expect((res1 as any).created_at).not.toBeDefined();
     expect(res1!.meta).toEqual({ category: 'foo', items: 1 });
-    expect(wrap(res1).isInitialized()).toBe(true);
+    expect(wrap(res1!).isInitialized()).toBe(true);
     const qb2 = orm.em.createQueryBuilder(Book2);
     const res2 = await qb2.select('*').where({ title: 'not exists' }).getSingleResult();
     expect(res2).toBeNull();
@@ -953,11 +953,11 @@ describe('EntityManagerMySql', () => {
     expect(jon).not.toBeNull();
     expect(jon.name).toBe('Jon Snow');
     expect(jon.favouriteBook).toBeInstanceOf(Book2);
-    expect(wrap(jon.favouriteBook).isInitialized()).toBe(false);
+    expect(wrap(jon.favouriteBook!).isInitialized()).toBe(false);
 
-    await wrap(jon.favouriteBook).init();
+    await wrap(jon.favouriteBook!).init();
     expect(jon.favouriteBook).toBeInstanceOf(Book2);
-    expect(wrap(jon.favouriteBook).isInitialized()).toBe(true);
+    expect(wrap(jon.favouriteBook!).isInitialized()).toBe(true);
     expect(jon.favouriteBook!.title).toBe('Bible');
   });
 
@@ -987,7 +987,7 @@ describe('EntityManagerMySql', () => {
     expect(mock.mock.calls[0][0]).toMatch('select `f0`.*, `f1`.`id` as `bar_id` from `foo_baz2` as `f0` left join `foo_bar2` as `f1` on `f0`.`id` = `f1`.`baz_id` where `f0`.`id` = ? limit ?');
     expect(b0.bar).toBeDefined();
     expect(b0.bar).toBeInstanceOf(FooBar2);
-    expect(wrap(b0.bar).isInitialized()).toBe(false);
+    expect(wrap(b0.bar!).isInitialized()).toBe(false);
     orm.em.clear();
 
     const b1 = (await orm.em.findOne(FooBaz2, { id: baz.id }, { populate: ['bar'] }))!;
@@ -1348,7 +1348,7 @@ describe('EntityManagerMySql', () => {
     expect(tags[0].books[0].author.name).toBe('Jon Snow');
     expect(tags[0].books[0].publisher).toBeInstanceOf(Reference);
     expect(tags[0].books[0].publisher!.unwrap()).toBeInstanceOf(Publisher2);
-    expect(wrap(tags[0].books[0].publisher).isInitialized()).toBe(true);
+    expect(wrap(tags[0].books[0].publisher!).isInitialized()).toBe(true);
     expect(tags[0].books[0].publisher!.unwrap().tests.isInitialized(true)).toBe(true);
     expect(tags[0].books[0].publisher!.unwrap().tests.count()).toBe(2);
     expect(tags[0].books[0].publisher!.unwrap().tests[0].name).toBe('t11');
@@ -1367,7 +1367,7 @@ describe('EntityManagerMySql', () => {
     expect(books[0].author.name).toBe('Jon Snow');
     expect(books[0].publisher).toBeInstanceOf(Reference);
     expect(books[0].publisher!.unwrap()).toBeInstanceOf(Publisher2);
-    expect(wrap(books[0].publisher).isInitialized()).toBe(true);
+    expect(wrap(books[0].publisher!).isInitialized()).toBe(true);
     expect(books[0].publisher!.unwrap().tests.isInitialized(true)).toBe(true);
     expect(books[0].publisher!.unwrap().tests.count()).toBe(2);
     expect(books[0].publisher!.unwrap().tests[0].name).toBe('t11');
@@ -1819,7 +1819,7 @@ describe('EntityManagerMySql', () => {
     const res1 = await orm.em.find(Book2, { author: { name: 'Jon Snow' } }, { populate: ['perex'] });
     expect(res1).toHaveLength(3);
     expect(res1[0].test).toBeInstanceOf(Test2);
-    expect(wrap(res1[0].test).isInitialized()).toBe(false);
+    expect(wrap(res1[0].test!).isInitialized()).toBe(false);
     expect(mock.mock.calls).toHaveLength(1);
     expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t2`.`id` as `test_id` ' +
       'from `book2` as `b0` ' +
@@ -1832,7 +1832,7 @@ describe('EntityManagerMySql', () => {
     const res2 = await orm.em.find(Book2, { author: { favouriteBook: { author: { name: 'Jon Snow' } } } }, { populate: ['perex'] });
     expect(res2).toHaveLength(3);
     expect(res2[0].test).toBeInstanceOf(Test2);
-    expect(wrap(res2[0].test).isInitialized()).toBe(false);
+    expect(wrap(res2[0].test!).isInitialized()).toBe(false);
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t4`.`id` as `test_id` ' +
       'from `book2` as `b0` ' +
@@ -1847,7 +1847,7 @@ describe('EntityManagerMySql', () => {
     const res3 = await orm.em.find(Book2, { author: { favouriteBook: book3 } }, { populate: ['perex'] });
     expect(res3).toHaveLength(3);
     expect(res3[0].test).toBeInstanceOf(Test2);
-    expect(wrap(res3[0].test).isInitialized()).toBe(false);
+    expect(wrap(res3[0].test!).isInitialized()).toBe(false);
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t2`.`id` as `test_id` ' +
       'from `book2` as `b0` ' +
@@ -1860,7 +1860,7 @@ describe('EntityManagerMySql', () => {
     const res4 = await orm.em.find(Book2, { author: { favouriteBook: { $or: [{ author: { name: 'Jon Snow' } }] } } }, { populate: ['perex'] });
     expect(res4).toHaveLength(3);
     expect(res4[0].test).toBeInstanceOf(Test2);
-    expect(wrap(res4[0].test).isInitialized()).toBe(false);
+    expect(wrap(res4[0].test!).isInitialized()).toBe(false);
     expect(mock.mock.calls.length).toBe(1);
     expect(mock.mock.calls[0][0]).toMatch('select `b0`.*, `b0`.price * 1.19 as `price_taxed`, `t4`.`id` as `test_id` ' +
       'from `book2` as `b0` ' +

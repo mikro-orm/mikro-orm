@@ -1,4 +1,4 @@
-import { Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, PrimaryKeyType, Property, Reference } from '@mikro-orm/postgresql';
+import { Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Reference } from '@mikro-orm/postgresql';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -12,10 +12,9 @@ class Node {
 @Entity()
 class A {
 
-  [PrimaryKeyType]?: number;
   [PrimaryKeyProp]?: 'node';
   @OneToOne({ entity: () => Node, wrappedReference: true, primary: true, onDelete: 'cascade', onUpdateIntegrity: 'cascade' })
-  node!: IdentifiedReference<Node>;
+  node!: Ref<Node>;
 
   @OneToMany('B', 'a', { eager: true, orphanRemoval: true })
   bs = new Collection<B>(this);
@@ -63,7 +62,7 @@ describe('GH issue 1111', () => {
 
   afterAll(() => orm.close(true));
 
-  test('FK as PK with IdentifiedReference - single insert', async () => {
+  test('FK as PK with Ref - single insert', async () => {
     const a1 = new A();
     a1.name = 'test';
     a1.node = Reference.create(new Node());
@@ -83,7 +82,7 @@ describe('GH issue 1111', () => {
     expect(a2.bs.count()).toBe(1);
   });
 
-  test('FK as PK with IdentifiedReference - multiple inserts', async () => {
+  test('FK as PK with Ref - multiple inserts', async () => {
     const a1 = new A();
     a1.name = 'test';
     a1.node = Reference.create(new Node());
