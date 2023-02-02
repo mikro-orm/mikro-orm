@@ -6,7 +6,7 @@ class User {
   @PrimaryKey({ type: BigIntType, fieldName: 'id' })
   id!: number;
 
-  @ManyToOne('Member', { fieldName: 'ownerMemberId', nullable: true, wrappedReference: true })
+  @ManyToOne('Member', { fieldName: 'ownerMemberId', nullable: true, ref: true })
   ownerMember?: Ref<Member>;
 
 }
@@ -31,10 +31,10 @@ class MemberUser {
   @PrimaryKey({ type: BigIntType, fieldName: 'id' })
   id!: number;
 
-  @ManyToOne(() => Member, { fieldName: 'memberId', wrappedReference: true })
+  @ManyToOne(() => Member, { fieldName: 'memberId', ref: true })
   member!: Ref<Member>;
 
-  @ManyToOne(() => User, { fieldName: 'userId', wrappedReference: true })
+  @ManyToOne(() => User, { fieldName: 'userId', ref: true })
   user?: Ref<User>;
 
 }

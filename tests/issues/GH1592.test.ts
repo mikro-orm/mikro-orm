@@ -12,7 +12,7 @@ export class RadioOption {
   @Property()
   createdAt: Date = new Date();
 
-  @OneToOne({ entity: 'Radio', wrappedReference: true, mappedBy: 'option' })
+  @OneToOne({ entity: 'Radio', ref: true, mappedBy: 'option' })
   radio!: Ref<Radio>;
 
   constructor(enabled: boolean) {
@@ -30,7 +30,7 @@ export class Radio {
   @Property()
   question: string = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 10);
 
-  @OneToOne({ entity: () => RadioOption, wrappedReference: true, eager: true })
+  @OneToOne({ entity: () => RadioOption, ref: true, eager: true })
   option!: Ref<RadioOption>;
 
 }
