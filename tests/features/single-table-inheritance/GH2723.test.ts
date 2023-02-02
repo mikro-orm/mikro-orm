@@ -9,7 +9,7 @@ export class Cat {
   @PrimaryKey()
   name!: string;
 
-  @ManyToOne(() => User, { primary: true, onDelete: 'CASCADE', wrappedReference: true })
+  @ManyToOne(() => User, { primary: true, onDelete: 'CASCADE', ref: true })
   user!: Ref<User>;
 
 }

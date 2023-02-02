@@ -282,8 +282,7 @@ export interface EntityProperty<T = any> {
   precision?: number;
   scale?: number;
   kind: ReferenceKind;
-  /** @deprecated use `ref` instead, `wrappedReference` option will be removed in v6 */
-  wrappedReference?: boolean;
+  ref?: boolean;
   fieldNames: string[];
   fieldNameRaw?: string;
   default?: string | number | boolean | null;
