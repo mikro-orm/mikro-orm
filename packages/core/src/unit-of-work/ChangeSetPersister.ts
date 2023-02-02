@@ -9,7 +9,7 @@ import type { Configuration } from '../utils';
 import { Utils } from '../utils';
 import type { DriverMethodOptions, IDatabaseDriver } from '../drivers';
 import { OptimisticLockError } from '../errors';
-import { ReferenceType } from '../enums';
+import { ReferenceKind } from '../enums';
 
 export class ChangeSetPersister {
 
@@ -358,7 +358,7 @@ export class ChangeSetPersister {
     const values = Utils.unwrapProperty(changeSet.payload, meta, prop, true); // for object embeddables
     const value = changeSet.payload[prop.name] as unknown; // for inline embeddables
 
-    if (prop.reference === ReferenceType.MANY_TO_MANY && Array.isArray(value)) {
+    if (prop.kind === ReferenceKind.MANY_TO_MANY && Array.isArray(value)) {
       changeSet.payload[prop.name] = value.map(val => val instanceof EntityIdentifier ? val.getValue() : val);
     }
 

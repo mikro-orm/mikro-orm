@@ -7,7 +7,7 @@ import type {
   OneToOneOptions,
   Platform,
 } from '@mikro-orm/core';
-import { ReferenceType, UnknownType, Utils } from '@mikro-orm/core';
+import { ReferenceKind, UnknownType, Utils } from '@mikro-orm/core';
 
 export class SourceFile {
 
@@ -94,7 +94,7 @@ export class SourceFile {
   protected getPropertyDefinition(prop: EntityProperty, padLeft: number): string {
     const padding = ' '.repeat(padLeft);
 
-    if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference)) {
+    if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
       this.coreImports.add('Collection');
       this.entityImports.add(prop.type);
       return `${padding}${prop.name} = new Collection<${prop.type}>(this);\n`;
@@ -161,11 +161,11 @@ export class SourceFile {
     let decorator = this.getDecoratorType(prop);
     this.coreImports.add(decorator.substring(1));
 
-    if (prop.reference === ReferenceType.MANY_TO_MANY) {
+    if (prop.kind === ReferenceKind.MANY_TO_MANY) {
       this.getManyToManyDecoratorOptions(options, prop);
-    } else if (prop.reference === ReferenceType.ONE_TO_MANY) {
+    } else if (prop.kind === ReferenceKind.ONE_TO_MANY) {
       this.getOneToManyDecoratorOptions(options, prop);
-    } else if (prop.reference !== ReferenceType.SCALAR) {
+    } else if (prop.kind !== ReferenceKind.SCALAR) {
       this.getForeignKeyDecoratorOptions(options, prop);
     } else {
       this.getScalarPropertyDecoratorOptions(options, prop);
@@ -187,7 +187,7 @@ export class SourceFile {
   }
 
   protected getPropertyIndexes(prop: EntityProperty, options: Dictionary): string[] {
-    if (prop.reference === ReferenceType.SCALAR) {
+    if (prop.kind === ReferenceKind.SCALAR) {
       const ret: string[] = [];
 
       if (prop.index) {
@@ -212,7 +212,7 @@ export class SourceFile {
       options[type] = defaultName === prop[type] ? 'true' : `'${prop[type]}'`;
       const expected = {
         index: this.platform.indexForeignKeys(),
-        unique: prop.reference === ReferenceType.ONE_TO_ONE,
+        unique: prop.kind === ReferenceKind.ONE_TO_ONE,
       };
 
       if (expected[type] && options[type] === 'true') {
@@ -345,19 +345,19 @@ export class SourceFile {
   }
 
   protected getDecoratorType(prop: EntityProperty): string {
-    if (prop.reference === ReferenceType.ONE_TO_ONE) {
+    if (prop.kind === ReferenceKind.ONE_TO_ONE) {
       return '@OneToOne';
     }
 
-    if (prop.reference === ReferenceType.MANY_TO_ONE) {
+    if (prop.kind === ReferenceKind.MANY_TO_ONE) {
       return '@ManyToOne';
     }
 
-    if (prop.reference === ReferenceType.ONE_TO_MANY) {
+    if (prop.kind === ReferenceKind.ONE_TO_MANY) {
       return '@OneToMany';
     }
 
-    if (prop.reference === ReferenceType.MANY_TO_MANY) {
+    if (prop.kind === ReferenceKind.MANY_TO_MANY) {
       return '@ManyToMany';
     }
 

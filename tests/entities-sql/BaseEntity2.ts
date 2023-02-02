@@ -1,4 +1,4 @@
-import { BeforeCreate, Collection, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
+import { BeforeCreate, Collection, PrimaryKey, Property, ReferenceKind, Utils, wrap } from '@mikro-orm/core';
 
 export abstract class BaseEntity2 {
 
@@ -11,8 +11,8 @@ export abstract class BaseEntity2 {
   protected constructor() {
     const props = wrap(this, true).__meta.properties;
 
-    Object.keys(props).forEach(prop => {
-      if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(props[prop].reference)) {
+    Utils.keys(props).forEach(prop => {
+      if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(props[prop].kind)) {
         (this as any)[prop] = new Collection(this);
       }
     });

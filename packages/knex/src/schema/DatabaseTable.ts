@@ -1,5 +1,5 @@
 import type { Dictionary, EntityMetadata, EntityProperty, NamingStrategy } from '@mikro-orm/core';
-import { Cascade, DateTimeType, DecimalType, EntitySchema, ReferenceType, t, Utils } from '@mikro-orm/core';
+import { Cascade, DateTimeType, DecimalType, EntitySchema, ReferenceKind, t, Utils } from '@mikro-orm/core';
 import type { SchemaHelper } from './SchemaHelper';
 import type { CheckDef, Column, ForeignKey, IndexDef } from '../typings';
 import type { AbstractSqlPlatform } from '../AbstractSqlPlatform';
@@ -82,7 +82,7 @@ export class DatabaseTable {
         prop.length ??= this.platform.getDefaultDateTimeLength();
       }
 
-      const primary = !meta.compositePK && !!prop.primary && prop.reference === ReferenceType.SCALAR && this.platform.isNumericColumn(mappedType);
+      const primary = !meta.compositePK && !!prop.primary && prop.kind === ReferenceKind.SCALAR && this.platform.isNumericColumn(mappedType);
       this.columns[field] = {
         name: prop.fieldNames[idx],
         type: prop.columnTypes[idx],
@@ -105,7 +105,7 @@ export class DatabaseTable {
       this.columns[field].default = defaultValue as string;
     });
 
-    if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference)) {
+    if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
       const constraintName = this.getIndexName(true, prop.fieldNames, 'foreign');
       let schema = prop.targetMeta!.schema === '*' ? this.schema : prop.targetMeta!.schema ?? this.schema;
 
@@ -194,8 +194,8 @@ export class DatabaseTable {
 
     const meta = schema.init().meta;
     meta.relations
-      .filter(prop => prop.primary && prop.reference === ReferenceType.MANY_TO_ONE && !meta.compositePK)
-      .forEach(prop => prop.reference = ReferenceType.ONE_TO_ONE);
+      .filter(prop => prop.primary && prop.kind === ReferenceKind.MANY_TO_ONE && !meta.compositePK)
+      .forEach(prop => prop.kind = ReferenceKind.ONE_TO_ONE);
 
     return meta;
   }
@@ -254,7 +254,7 @@ export class DatabaseTable {
     const prop = this.getPropertyName(namingStrategy, column);
     const index = compositeFkIndexes[prop] || this.indexes.find(idx => idx.columnNames[0] === column.name && !idx.composite && !idx.unique && !idx.primary);
     const unique = compositeFkUniques[prop] || this.indexes.find(idx => idx.columnNames[0] === column.name && !idx.composite && idx.unique && !idx.primary);
-    const reference = this.getReferenceType(fk, unique);
+    const kind = this.getReferenceKind(fk, unique);
     const type = this.getPropertyType(namingStrategy, column, fk);
     const fkOptions: Partial<EntityProperty> = {};
 
@@ -269,7 +269,7 @@ export class DatabaseTable {
     return {
       name: prop,
       type,
-      reference,
+      kind,
       columnType: column.type,
       default: this.getPropertyDefaultValue(schemaHelper, column, type),
       defaultRaw: this.getPropertyDefaultValue(schemaHelper, column, type, true),
@@ -285,16 +285,16 @@ export class DatabaseTable {
     };
   }
 
-  private getReferenceType(fk?: ForeignKey, unique?: { keyName: string }): ReferenceType {
+  private getReferenceKind(fk?: ForeignKey, unique?: { keyName: string }): ReferenceKind {
     if (fk && unique) {
-      return ReferenceType.ONE_TO_ONE;
+      return ReferenceKind.ONE_TO_ONE;
     }
 
     if (fk) {
-      return ReferenceType.MANY_TO_ONE;
+      return ReferenceKind.MANY_TO_ONE;
     }
 
-    return ReferenceType.SCALAR;
+    return ReferenceKind.SCALAR;
   }
 
   private getPropertyName(namingStrategy: NamingStrategy, column: Column): string {
