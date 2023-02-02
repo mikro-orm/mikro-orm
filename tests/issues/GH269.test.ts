@@ -1,4 +1,4 @@
-import { Entity, IdentifiedReference, MikroORM, OneToOne, PrimaryKey, Property, wrap, Reference } from '@mikro-orm/sqlite';
+import { Entity, Ref, MikroORM, OneToOne, PrimaryKey, Property, wrap, Reference } from '@mikro-orm/sqlite';
 
 @Entity()
 export class A {
@@ -7,7 +7,7 @@ export class A {
   id!: number;
 
   @OneToOne({ entity: () => B, inversedBy: 'a', wrappedReference: true, nullable: true })
-  b?: IdentifiedReference<B>;
+  b?: Ref<B>;
 
   @Property()
   name!: string;
@@ -21,7 +21,7 @@ export class B {
   id!: number;
 
   @OneToOne({ entity: () => A, mappedBy: 'b', wrappedReference: true, nullable: true })
-  a?: IdentifiedReference<A>;
+  a?: Ref<A>;
 
   @Property()
   name!: string;

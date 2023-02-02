@@ -1,4 +1,4 @@
-import { Entity, IdentifiedReference, Index, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, Ref, Index, ManyToOne, MikroORM, PrimaryKey, Property } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
@@ -20,10 +20,10 @@ export class Book1 {
   id!: number;
 
   @ManyToOne(() => Author, { wrappedReference: true })
-  author1!: IdentifiedReference<Author>;
+  author1!: Ref<Author>;
 
   @ManyToOne(() => Author, { wrappedReference: true })
-  author2!: IdentifiedReference<Author>;
+  author2!: Ref<Author>;
 
   @ManyToOne(() => Author)
   author3!: Author;
@@ -45,11 +45,11 @@ export class Book2 {
   id!: number;
 
   @ManyToOne(() => Author, { wrappedReference: true })
-  author1!: IdentifiedReference<Author>;
+  author1!: Ref<Author>;
 
   @ManyToOne(() => Author, { wrappedReference: true })
   @Index()
-  author2!: IdentifiedReference<Author>;
+  author2!: Ref<Author>;
 
   @ManyToOne(() => Author)
   author3!: Author;
@@ -73,11 +73,11 @@ export class Book3 {
   id!: number;
 
   @ManyToOne(() => Author, { wrappedReference: true })
-  author1!: IdentifiedReference<Author>;
+  author1!: Ref<Author>;
 
   @ManyToOne(() => Author, { wrappedReference: true })
   @Index()
-  author2!: IdentifiedReference<Author>;
+  author2!: Ref<Author>;
 
   @ManyToOne(() => Author)
   author3!: Author;
@@ -101,11 +101,11 @@ export class Book4 {
   id!: number;
 
   @ManyToOne(() => Author, { wrappedReference: true })
-  author1!: IdentifiedReference<Author>;
+  author1!: Ref<Author>;
 
   @ManyToOne(() => Author, { wrappedReference: true })
   @Index()
-  author2!: IdentifiedReference<Author>;
+  author2!: Ref<Author>;
 
   @ManyToOne(() => Author)
   author3!: Author;
