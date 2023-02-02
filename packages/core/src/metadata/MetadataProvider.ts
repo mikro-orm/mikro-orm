@@ -32,7 +32,7 @@ export abstract class MetadataProvider {
   }
 
   useCache(): boolean {
-    return this.config.get('cache').enabled ?? false;
+    return this.config.get('metadataCache').enabled ?? false;
   }
 
   protected async initProperties(meta: EntityMetadata, fallback: (prop: EntityProperty) => void | Promise<void>): Promise<void> {

@@ -302,8 +302,8 @@ export interface EntityProperty<T = any> {
   orphanRemoval?: boolean;
   onCreate?: (entity: T) => any;
   onUpdate?: (entity: T) => any;
-  onDelete?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
-  onUpdateIntegrity?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
+  deleteRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
+  updateRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
   strategy?: LoadStrategy;
   owner: boolean;
   inversedBy: string;
@@ -380,10 +380,6 @@ export class EntityMetadata<T = any> {
 
   set tableName(name: string) {
     this.collection = name;
-  }
-
-  set repository(repo: () => Constructor<EntityRepository<any>>) {
-    this.customRepository = repo;
   }
 
   sync(initIndexes = false) {
@@ -512,7 +508,7 @@ export interface EntityMetadata<T = any> {
   indexes: { properties: (keyof T & string) | (keyof T & string)[]; name?: string; type?: string; options?: Dictionary; expression?: string }[];
   uniques: { properties: (keyof T & string) | (keyof T & string)[]; name?: string; options?: Dictionary }[];
   checks: CheckConstraint<T>[];
-  customRepository: () => Constructor<EntityRepository<any>>;
+  repository: () => Constructor<EntityRepository<any>>;
   hooks: { [K in EventType]?: (keyof T | EventSubscriber<T>[EventType])[] };
   prototype: T;
   class: Constructor<T>;

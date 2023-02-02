@@ -331,12 +331,12 @@ export class SourceFile {
       options.fieldName = this.quote(prop.fieldNames[0]);
     }
 
-    if (!['no action', 'restrict'].includes(prop.onUpdateIntegrity!.toLowerCase())) {
-      options.onUpdateIntegrity = this.quote(prop.onUpdateIntegrity!);
+    if (!['no action', 'restrict'].includes(prop.updateRule!.toLowerCase())) {
+      options.updateRule = this.quote(prop.updateRule!);
     }
 
-    if (!['no action', 'restrict'].includes(prop.onDelete!.toLowerCase())) {
-      options.onDelete = this.quote(prop.onDelete!);
+    if (!['no action', 'restrict'].includes(prop.deleteRule!.toLowerCase())) {
+      options.deleteRule = this.quote(prop.deleteRule!);
     }
 
     if (prop.primary) {
