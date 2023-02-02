@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import type { EntityMetadata, EntityProperty } from '../typings';
 import { MetadataProvider } from './MetadataProvider';
-import { ReferenceType } from '../enums';
+import { ReferenceKind } from '../enums';
 
 export class ReflectMetadataProvider extends MetadataProvider {
 
@@ -12,7 +12,7 @@ export class ReflectMetadataProvider extends MetadataProvider {
   protected initPropertyType(meta: EntityMetadata, prop: EntityProperty) {
     const type = Reflect.getMetadata('design:type', meta.prototype, prop.name);
 
-    if (!type || (type === Object && prop.reference !== ReferenceType.SCALAR)) {
+    if (!type || (type === Object && prop.kind !== ReferenceKind.SCALAR)) {
       throw new Error(`Please provide either 'type' or 'entity' attribute in ${meta.className}.${prop.name}`);
     }
 

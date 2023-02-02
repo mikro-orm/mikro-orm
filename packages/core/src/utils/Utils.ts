@@ -22,7 +22,7 @@ import type {
   IMetadataStorage,
   Primary,
 } from '../typings';
-import { GroupOperator, PlainObject, QueryOperator, ReferenceType } from '../enums';
+import { GroupOperator, PlainObject, QueryOperator, ReferenceKind } from '../enums';
 import type { Collection } from '../entity/Collection';
 import type { Platform } from '../platforms';
 import { helper } from '../entity/wrap';
@@ -549,7 +549,7 @@ export class Utils {
       // `data` can be a composite PK in form of array of PKs, or a DTO
       let value = Array.isArray(data) ? data[idx] : data[pk];
 
-      if (prop.reference !== ReferenceType.SCALAR && prop.targetMeta) {
+      if (prop.kind !== ReferenceKind.SCALAR && prop.targetMeta) {
         const value2 = this.getOrderedPrimaryKeys(value, prop.targetMeta, platform); // do not convert custom types yet
         value = value2.length > 1 ? value2 : value2[0];
       }
@@ -1117,6 +1117,10 @@ export class Utils {
 
   static xor(a: boolean, b: boolean): boolean {
     return (a || b) && !(a && b);
+  }
+
+  static keys<T extends object>(obj: T) {
+    return Object.keys(obj) as (keyof T)[];
   }
 
 }

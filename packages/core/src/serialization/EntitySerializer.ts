@@ -3,7 +3,7 @@ import type { AutoPath, EntityDTO, EntityMetadata, IPrimaryKey, Loaded } from '.
 import { helper } from '../entity/wrap';
 import type { Platform } from '../platforms';
 import { Utils } from '../utils/Utils';
-import { ReferenceType } from '../enums';
+import { ReferenceKind } from '../enums';
 import { Reference } from '../entity/Reference';
 import { SerializationContext } from './SerializationContext';
 
@@ -48,7 +48,7 @@ export class EntitySerializer {
 
     if (!wrapped.__serializationContext.root) {
       const root = new SerializationContext<T>();
-      SerializationContext.propagate(root, entity, (meta, prop) => meta.properties[prop]?.reference !== ReferenceType.SCALAR);
+      SerializationContext.propagate(root, entity, (meta, prop) => meta.properties[prop]?.kind !== ReferenceKind.SCALAR);
       contextCreated = true;
     }
 
@@ -137,7 +137,7 @@ export class EntitySerializer {
     }
 
     /* istanbul ignore next */
-    if (property?.reference === ReferenceType.EMBEDDED) {
+    if (property?.kind === ReferenceKind.EMBEDDED) {
       if (Array.isArray(entity[prop])) {
         return (entity[prop] as object[]).map(item => helper(item).toJSON()) as T[keyof T];
       }

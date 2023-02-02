@@ -4,7 +4,7 @@ import type { EntityManager } from '../EntityManager';
 import type { AnyEntity, Dictionary, EntityData, EntityDTO, EntityMetadata, EntityProperty, Primary, RequiredEntityData } from '../typings';
 import { Utils } from '../utils/Utils';
 import { Reference } from './Reference';
-import { ReferenceType, SCALAR_TYPES } from '../enums';
+import { ReferenceKind, SCALAR_TYPES } from '../enums';
 import { EntityValidator } from './EntityValidator';
 import { helper, wrap } from './wrap';
 
@@ -48,11 +48,11 @@ export class EntityAssigner {
 
       const customType = props[prop]?.customType;
 
-      if (options.convertCustomTypes && customType && props[prop].reference === ReferenceType.SCALAR && !Utils.isEntity(data)) {
+      if (options.convertCustomTypes && customType && props[prop].kind === ReferenceKind.SCALAR && !Utils.isEntity(data)) {
         value = props[prop].customType.convertToJSValue(value, wrapped.__platform);
       }
 
-      if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(props[prop]?.reference) && value != null) {
+      if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(props[prop]?.kind) && value != null) {
         // eslint-disable-next-line no-prototype-builtins
         if (options.updateNestedEntities && (entity as object).hasOwnProperty(prop) && Utils.isEntity(entity[prop], true) && Utils.isPlainObject(value)) {
           const unwrappedEntity = Reference.unwrapReference(entity[prop]);
@@ -81,11 +81,11 @@ export class EntityAssigner {
         return EntityAssigner.assignReference<T>(entity, value, props[prop], em, options);
       }
 
-      if (props[prop]?.reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(props[prop].type) && (props[prop].setter || !props[prop].getter)) {
+      if (props[prop]?.kind === ReferenceKind.SCALAR && SCALAR_TYPES.includes(props[prop].type) && (props[prop].setter || !props[prop].getter)) {
         return entity[prop as keyof T] = validator.validateProperty(props[prop], value, entity);
       }
 
-      if (props[prop]?.reference === ReferenceType.EMBEDDED && EntityAssigner.validateEM(em)) {
+      if (props[prop]?.kind === ReferenceKind.EMBEDDED && EntityAssigner.validateEM(em)) {
         return EntityAssigner.assignEmbeddable(entity, value, props[prop], em, options);
       }
 
@@ -106,7 +106,7 @@ export class EntityAssigner {
    * @internal
    */
   static autoWireOneToOne<T>(prop: EntityProperty, entity: T): void {
-    if (prop.reference !== ReferenceType.ONE_TO_ONE || !Utils.isEntity(entity[prop.name])) {
+    if (prop.kind !== ReferenceKind.ONE_TO_ONE || !Utils.isEntity(entity[prop.name])) {
       return;
     }
 
@@ -223,7 +223,7 @@ export class EntityAssigner {
     Object.keys(value).forEach(key => {
       const childProp = prop.embeddedProps[key];
 
-      if (childProp && childProp.reference === ReferenceType.EMBEDDED) {
+      if (childProp && childProp.kind === ReferenceKind.EMBEDDED) {
         return EntityAssigner.assignEmbeddable(entity[propName], value[key], childProp, em, options);
       }
 

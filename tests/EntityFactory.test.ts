@@ -1,6 +1,6 @@
 import { ObjectId } from 'bson';
 import type { MikroORM, EntityFactory } from '@mikro-orm/core';
-import { Collection, ReferenceType, wrap } from '@mikro-orm/core';
+import { Collection, ReferenceKind, wrap } from '@mikro-orm/core';
 import { Book, Author, Publisher, Test, BookTag } from './entities';
 import { initORMMongo, mockLogger } from './bootstrap';
 import { AuthorRepository } from './repositories/AuthorRepository';
@@ -26,13 +26,13 @@ describe('EntityFactory', () => {
     expect(metadata[Author.name].toJsonParams).toEqual(['strict', 'strip']);
     expect(metadata[Author.name].properties).toBeInstanceOf(Object);
     expect(metadata[Author.name].properties.books.type).toBe(Book.name);
-    expect(metadata[Author.name].properties.books.reference).toBe(ReferenceType.ONE_TO_MANY);
+    expect(metadata[Author.name].properties.books.kind).toBe(ReferenceKind.ONE_TO_MANY);
     expect(metadata[Author.name].properties.foo.type).toBe('string');
     expect(metadata[Author.name].properties.age.type).toBe('number');
     expect(metadata[Author.name].properties.age.nullable).toBe(true); // nullable is sniffed via ts-morph too
     expect(metadata[Author.name].customRepository()).toBe(AuthorRepository);
     expect(metadata[Book.name].properties.author.type).toBe(Author.name);
-    expect(metadata[Book.name].properties.author.reference).toBe(ReferenceType.MANY_TO_ONE);
+    expect(metadata[Book.name].properties.author.kind).toBe(ReferenceKind.MANY_TO_ONE);
     expect(metadata[Book.name].customRepository()).toBe(BookRepository);
     expect(metadata[Publisher.name].properties.tests.owner).toBe(true);
   });
