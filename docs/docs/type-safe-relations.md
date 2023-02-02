@@ -158,8 +158,6 @@ console.log(book.author.getProperty('name')); // ok, author already loaded
 
 If you use different metadata provider than `TsMorphMetadataProvider` (e.g. `ReflectMetadataProvider`), you will also need to explicitly set `ref` parameter:
 
-> The `ref` option is an alias for `wrappedReference`, and `Ref` is an alias for `IdentifiedReference` type, both added in v5.5.
-
 ```ts
 @ManyToOne(() => Author, { ref: true })
 author!: Ref<Author>;
