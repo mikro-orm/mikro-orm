@@ -1,4 +1,4 @@
-import { EntitySchema, ReferenceType, Utils, MikroORM, Type, EnumType } from '@mikro-orm/core';
+import { EntitySchema, ReferenceKind, Utils, MikroORM, Type, EnumType } from '@mikro-orm/core';
 import { FullTextType, PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { BASE_DIR, initORMPostgreSql } from '../../bootstrap';
 import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from '../../entities-sql';
@@ -169,7 +169,7 @@ describe('SchemaGenerator [postgres]', () => {
     const newTableMeta = EntitySchema.fromMetadata({
       properties: {
         id: {
-          reference: ReferenceType.SCALAR,
+          kind: ReferenceKind.SCALAR,
           primary: true,
           name: 'id',
           type: 'number',
@@ -178,7 +178,7 @@ describe('SchemaGenerator [postgres]', () => {
           autoincrement: true,
         },
         createdAt: {
-          reference: ReferenceType.SCALAR,
+          kind: ReferenceKind.SCALAR,
           length: 3,
           defaultRaw: 'current_timestamp(3)',
           name: 'createdAt',
@@ -187,7 +187,7 @@ describe('SchemaGenerator [postgres]', () => {
           columnTypes: ['timestamp(3)'],
         },
         updatedAt: {
-          reference: ReferenceType.SCALAR,
+          kind: ReferenceKind.SCALAR,
           length: 3,
           defaultRaw: 'current_timestamp(3)',
           name: 'updatedAt',
@@ -196,7 +196,7 @@ describe('SchemaGenerator [postgres]', () => {
           columnTypes: ['timestamp(3)'],
         },
         name: {
-          reference: ReferenceType.SCALAR,
+          kind: ReferenceKind.SCALAR,
           name: 'name',
           type: 'string',
           fieldNames: ['name'],

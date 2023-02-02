@@ -3,7 +3,7 @@ import type { EntityMetadata, FilterObject, Loaded } from '../typings';
 import type { FindByCursorOptions, OrderDefinition } from '../drivers/IDatabaseDriver';
 import { Utils } from './Utils';
 import type { QueryOrder, QueryOrderKeys } from '../enums';
-import { ReferenceType } from '../enums';
+import { ReferenceKind } from '../enums';
 import { Reference } from '../entity/Reference';
 
 /**
@@ -153,7 +153,7 @@ export class Cursor<Entity extends object, Hint extends string = never> {
     return Utils.asArray(orderBy).flatMap(order => {
       return Object.keys(order)
         .map(key => meta.properties[key])
-        .filter(prop => [ReferenceType.SCALAR, ReferenceType.MANY_TO_ONE].includes(prop.reference) || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner))
+        .filter(prop => [ReferenceKind.SCALAR, ReferenceKind.MANY_TO_ONE].includes(prop.kind) || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner))
         .map(prop => [prop.name, order[prop.name]] as const);
     });
   }

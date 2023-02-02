@@ -26,7 +26,7 @@ import type {
 import type { MetadataStorage } from '../metadata';
 import type { Connection, QueryResult, Transaction } from '../connections';
 import { EntityComparator, Utils, type Configuration, type ConnectionOptions, Cursor } from '../utils';
-import { QueryOrder, ReferenceType, type QueryOrderMap, type QueryOrderKeys, QueryOrderNumeric } from '../enums';
+import { QueryOrder, ReferenceKind, type QueryOrderMap, type QueryOrderKeys, QueryOrderNumeric } from '../enums';
 import type { Platform } from '../platforms';
 import type { Collection } from '../entity/Collection';
 import { EntityManager } from '../EntityManager';
@@ -259,11 +259,11 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     });
 
     meta.props.forEach(prop => {
-      if (prop.reference === ReferenceType.EMBEDDED && prop.object && !where && Utils.isObject(data[prop.name])) {
+      if (prop.kind === ReferenceKind.EMBEDDED && prop.object && !where && Utils.isObject(data[prop.name])) {
         return;
       }
 
-      if (prop.reference === ReferenceType.EMBEDDED && Utils.isObject(data[prop.name])) {
+      if (prop.kind === ReferenceKind.EMBEDDED && Utils.isObject(data[prop.name])) {
         const props = prop.embeddedProps;
         let unknownProp = false;
 
@@ -277,7 +277,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
           if (prop.object && where) {
             const inline: (payload: any, sub: EntityProperty, path: string[]) => void = (payload: any, sub: EntityProperty, path: string[]) => {
-              if (sub.reference === ReferenceType.EMBEDDED && Utils.isObject(payload[sub.embedded![1]])) {
+              if (sub.kind === ReferenceKind.EMBEDDED && Utils.isObject(payload[sub.embedded![1]])) {
                 return Object.keys(payload[sub.embedded![1]]).forEach(kkk => {
                   if (!sub.embeddedProps[kkk]) {
                     throw ValidationError.invalidEmbeddableQuery(meta.className, kkk, sub.type);

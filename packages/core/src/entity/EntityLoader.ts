@@ -4,7 +4,7 @@ import { QueryHelper } from '../utils/QueryHelper';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
 import type { Collection } from './Collection';
-import { LoadStrategy, QueryOrder, ReferenceType, type LockMode, type PopulateHint, type QueryOrderMap } from '../enums';
+import { LoadStrategy, QueryOrder, ReferenceKind, type LockMode, type PopulateHint, type QueryOrderMap } from '../enums';
 import { Reference } from './Reference';
 import type { EntityField, FindOptions } from '../drivers/IDatabaseDriver';
 import type { MetadataStorage } from '../metadata/MetadataStorage';
@@ -160,7 +160,7 @@ export class EntityLoader {
     const meta = this.metadata.find<T>(entityName)!;
     const prop = meta.properties[field as string] as EntityProperty;
 
-    if (prop.reference === ReferenceType.SCALAR && prop.lazy) {
+    if (prop.kind === ReferenceKind.SCALAR && prop.lazy) {
       const filtered = entities.filter(e => options.refresh || e[prop.name] === undefined);
 
       if (options.ignoreLazyScalarProperties || filtered.length === 0) {
@@ -181,7 +181,7 @@ export class EntityLoader {
       return entities as AnyEntity[];
     }
 
-    if (prop.reference === ReferenceType.EMBEDDED) {
+    if (prop.kind === ReferenceKind.EMBEDDED) {
       return [];
     }
 
@@ -201,7 +201,7 @@ export class EntityLoader {
       .filter(orderBy => Utils.isObject(orderBy[prop.name]))
       .map(orderBy => orderBy[prop.name]);
 
-    if (prop.reference === ReferenceType.MANY_TO_MANY && this.driver.getPlatform().usesPivotTable()) {
+    if (prop.kind === ReferenceKind.MANY_TO_MANY && this.driver.getPlatform().usesPivotTable()) {
       return this.findChildrenFromPivotTable<T>(filtered, prop, options, innerOrderBy, populate);
     }
 
@@ -213,11 +213,11 @@ export class EntityLoader {
   }
 
   private initializeCollections<T extends object>(filtered: T[], prop: EntityProperty, field: keyof T, children: AnyEntity[]): void {
-    if (prop.reference === ReferenceType.ONE_TO_MANY) {
+    if (prop.kind === ReferenceKind.ONE_TO_MANY) {
       this.initializeOneToMany<T>(filtered, children, prop, field);
     }
 
-    if (prop.reference === ReferenceType.MANY_TO_MANY && !prop.owner && !this.driver.getPlatform().usesPivotTable()) {
+    if (prop.kind === ReferenceKind.MANY_TO_MANY && !prop.owner && !this.driver.getPlatform().usesPivotTable()) {
       this.initializeManyToMany<T>(filtered, children, prop, field);
     }
   }
@@ -264,11 +264,11 @@ export class EntityLoader {
     let fk = Utils.getPrimaryKeyHash(meta.primaryKeys);
     let schema: string | undefined = options.schema;
 
-    if (prop.reference === ReferenceType.ONE_TO_MANY || (prop.reference === ReferenceType.MANY_TO_MANY && !prop.owner)) {
+    if (prop.kind === ReferenceKind.ONE_TO_MANY || (prop.kind === ReferenceKind.MANY_TO_MANY && !prop.owner)) {
       fk = meta.properties[prop.mappedBy].name;
     }
 
-    if (prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner && populate.strategy !== LoadStrategy.JOINED && !this.em.config.get('autoJoinOneToOneOwner')) {
+    if (prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner && populate.strategy !== LoadStrategy.JOINED && !this.em.config.get('autoJoinOneToOneOwner')) {
       children.length = 0;
       fk = meta.properties[prop.mappedBy].name;
       children.push(...this.filterByReferences(entities, prop.name, options.refresh) as AnyEntity[]);
@@ -278,7 +278,7 @@ export class EntityLoader {
       return [];
     }
 
-    if (!schema && [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference)) {
+    if (!schema && [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind)) {
       schema = children.find(e => e.__helper!.__schema)?.__helper!.__schema;
     }
 
@@ -308,7 +308,7 @@ export class EntityLoader {
   private async populateField<T extends object>(entityName: string, entities: T[], populate: PopulateOptions<T>, options: Required<EntityLoaderOptions<T>>): Promise<void> {
     const prop = this.metadata.find(entityName)!.properties[populate.field] as EntityProperty<T>;
 
-    if (prop.reference === ReferenceType.SCALAR && !prop.lazy) {
+    if (prop.kind === ReferenceKind.SCALAR && !prop.lazy) {
       return;
     }
 
@@ -327,7 +327,7 @@ export class EntityLoader {
         children.push(entity[populate.field].unwrap());
       } else if (Utils.isCollection(entity[populate.field])) {
         children.push(...entity[populate.field].getItems());
-      } else if (entity[populate.field] && prop.reference === ReferenceType.EMBEDDED) {
+      } else if (entity[populate.field] && prop.kind === ReferenceKind.EMBEDDED) {
         children.push(...Utils.asArray(entity[populate.field]));
       }
     }
@@ -461,7 +461,7 @@ export class EntityLoader {
     }
 
     // we need to automatically select the FKs too, e.g. for 1:m relations to be able to wire them with the items
-    if (prop.reference === ReferenceType.ONE_TO_MANY) {
+    if (prop.kind === ReferenceKind.ONE_TO_MANY) {
       const owner = prop.targetMeta!.properties[prop.mappedBy] as EntityProperty<T>;
 
       if (!ret.includes(owner.name)) {
@@ -476,11 +476,11 @@ export class EntityLoader {
     const filtered = this.filterCollections(entities, prop.name, refresh);
     const children: AnyEntity[] = [];
 
-    if (prop.reference === ReferenceType.ONE_TO_MANY) {
+    if (prop.kind === ReferenceKind.ONE_TO_MANY) {
       children.push(...filtered.map(e => (e[prop.name] as unknown as Collection<T, AnyEntity>).owner));
-    } else if (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner) {
+    } else if (prop.kind === ReferenceKind.MANY_TO_MANY && prop.owner) {
       children.push(...filtered.reduce((a, b) => [...a, ...(b[prop.name] as unknown as Collection<AnyEntity>).getItems()], [] as AnyEntity[]));
-    } else if (prop.reference === ReferenceType.MANY_TO_MANY) { // inverse side
+    } else if (prop.kind === ReferenceKind.MANY_TO_MANY) { // inverse side
       children.push(...filtered as AnyEntity[]);
     } else { // MANY_TO_ONE or ONE_TO_ONE
       children.push(...this.filterReferences(entities, prop.name, refresh) as AnyEntity[]);

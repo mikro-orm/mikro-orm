@@ -2,7 +2,7 @@ import type { ReferenceOptions } from './Property';
 import { MetadataStorage, MetadataValidator } from '../metadata';
 import { Utils } from '../utils';
 import type { EntityName, EntityProperty, AnyEntity } from '../typings';
-import { ReferenceType, type QueryOrderMap } from '../enums';
+import { ReferenceKind, type QueryOrderMap } from '../enums';
 
 export function ManyToMany<T, O>(
   entity?: ManyToManyOptions<T, O> | string | (() => EntityName<T>),
@@ -12,8 +12,8 @@ export function ManyToMany<T, O>(
   return function (target: AnyEntity, propertyName: string) {
     options = Utils.processDecoratorParameters<ManyToManyOptions<T, O>>({ entity, mappedBy, options });
     const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
-    MetadataValidator.validateSingleDecorator(meta, propertyName, ReferenceType.MANY_TO_MANY);
-    const property = { name: propertyName, reference: ReferenceType.MANY_TO_MANY } as EntityProperty<T>;
+    MetadataValidator.validateSingleDecorator(meta, propertyName, ReferenceKind.MANY_TO_MANY);
+    const property = { name: propertyName, kind: ReferenceKind.MANY_TO_MANY } as EntityProperty<T>;
     meta.properties[propertyName] = Object.assign(meta.properties[propertyName] ?? {}, property, options);
 
     return Utils.propertyDecoratorReturnValue();

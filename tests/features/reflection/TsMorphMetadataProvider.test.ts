@@ -1,6 +1,6 @@
 import { MikroORM } from '@mikro-orm/mongodb';
 import type { Options, PrimaryProperty, EntityMetadata } from '@mikro-orm/core';
-import { Collection as Collection_, Reference as Reference_, ReferenceType, EnumArrayType } from '@mikro-orm/core';
+import { Collection as Collection_, Reference as Reference_, ReferenceKind, EnumArrayType } from '@mikro-orm/core';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { Author, Book, Publisher, BaseEntity, BaseEntity3, BookTagSchema, Test, FooBaz } from './entities';
 import FooBar from './entities/FooBar';
@@ -71,7 +71,7 @@ describe('TsMorphMetadataProvider', () => {
     expect(metadata[Author.name].path).toBe('./entities/Author.ts');
     expect(metadata[Author.name].properties).toBeInstanceOf(Object);
     expect(metadata[Author.name].properties.books.type).toBe(Book.name);
-    expect(metadata[Author.name].properties.books.reference).toBe(ReferenceType.ONE_TO_MANY);
+    expect(metadata[Author.name].properties.books.kind).toBe(ReferenceKind.ONE_TO_MANY);
     expect(metadata[Author.name].properties.identities.array).toBe(true);
     expect(metadata[Author.name].properties.identities.type).toBe('string[]');
     expect(metadata[Author.name].properties.foo.type).toBe('string');
@@ -79,7 +79,7 @@ describe('TsMorphMetadataProvider', () => {
     expect(metadata[Author.name].properties.age.optional).toBe(true);
     expect(metadata[Author.name].properties.age.nullable).toBe(true); // nullable is sniffed via ts-morph too
     expect(metadata[Book.name].properties.author.type).toBe(Author.name);
-    expect(metadata[Book.name].properties.author.reference).toBe(ReferenceType.MANY_TO_ONE);
+    expect(metadata[Book.name].properties.author.kind).toBe(ReferenceKind.MANY_TO_ONE);
     expect(metadata[Book.name].properties.metaArray.type).toBe('any[]');
     expect(metadata[Book.name].properties.metaArray.array).toBe(true);
     expect(metadata[Book.name].properties.metaArrayOfStrings.type).toBe('string[]');

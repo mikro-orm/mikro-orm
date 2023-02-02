@@ -1,4 +1,4 @@
-import { ReferenceType } from '../enums';
+import { ReferenceKind } from '../enums';
 import { createOneToDecorator, type OneToManyOptions } from './OneToMany';
 import type { AnyString, EntityName } from '../typings';
 
@@ -9,7 +9,7 @@ export function OneToOne<T, O>(
 ) {
   const mappedBy = typeof mappedByOrOptions === 'object' ? mappedByOrOptions.mappedBy : mappedByOrOptions;
   options = typeof mappedByOrOptions === 'object' ? { ...mappedByOrOptions, ...options } : options;
-  return createOneToDecorator<T, O>(entity as string, mappedBy, options, ReferenceType.ONE_TO_ONE);
+  return createOneToDecorator<T, O>(entity as string, mappedBy, options, ReferenceKind.ONE_TO_ONE);
 }
 
 export interface OneToOneOptions<T, O> extends Partial<Omit<OneToManyOptions<T, O>, 'orderBy'>> {
