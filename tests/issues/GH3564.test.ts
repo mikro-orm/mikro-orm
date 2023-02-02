@@ -1,4 +1,4 @@
-import { MikroORM, Collection, Entity, IdentifiedReference, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { MikroORM, Collection, Entity, Ref, ManyToOne, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Entity()
 class Part {
@@ -14,13 +14,13 @@ class Part {
     nullable: true,
     onDelete: 'cascade',
   })
-  car?: IdentifiedReference<Car>;
+  car?: Ref<Car>;
 
   @ManyToOne(() => Part, {
     wrappedReference: true,
     nullable: true,
   })
-  part?: IdentifiedReference<Part>;
+  part?: Ref<Part>;
 
   @OneToMany(() => Part, fV => fV.part, {
     orphanRemoval: true,

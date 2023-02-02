@@ -146,7 +146,7 @@ export class EntityAssigner {
     if (Utils.isEntity(value, true)) {
       entity[prop.name] = Reference.wrapReference(value, prop);
     } else if (Utils.isPrimaryKey(value, true) && EntityAssigner.validateEM(em)) {
-      entity[prop.name] = prop.mapToPk ? value : Reference.wrapReference(em.getReference<T>(prop.type, value, options), prop);
+      entity[prop.name] = prop.mapToPk ? value : Reference.wrapReference(em.getReference<T>(prop.type, value as Primary<T>, options), prop);
     } else if (Utils.isPlainObject(value) && options.merge && EntityAssigner.validateEM(em)) {
       entity[prop.name] = Reference.wrapReference(em.merge(prop.type, value, options), prop);
     } else if (Utils.isPlainObject(value) && EntityAssigner.validateEM(em)) {
@@ -255,7 +255,7 @@ export class EntityAssigner {
 
     invalid.push(item);
 
-    return item;
+    return item as T;
   }
 
 }

@@ -1,4 +1,4 @@
-import { Collection, Entity, IdentifiedReference, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { Collection, Entity, Ref, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Manager {
@@ -10,7 +10,7 @@ export class Manager {
   name!: string;
 
   @ManyToOne('Project', { wrappedReference: true })
-  project!: IdentifiedReference<Project>;
+  project!: Ref<Project>;
 
   constructor(name: string) {
     this.name = name;
@@ -28,7 +28,7 @@ export class Owner {
   name!: string;
 
   @ManyToOne('Risk', { wrappedReference: true })
-  risk!: IdentifiedReference<Risk>;
+  risk!: Ref<Risk>;
 
   constructor(name: string) {
     this.name = name;
@@ -49,7 +49,7 @@ export class Risk {
   owners = new Collection<Owner>(this);
 
   @ManyToOne('Project', { wrappedReference: true })
-  project!: IdentifiedReference<Project>;
+  project!: Ref<Project>;
 
   constructor(value: string) {
     this.value = value;

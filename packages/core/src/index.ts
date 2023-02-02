@@ -4,7 +4,7 @@
  */
 /* istanbul ignore file */
 export {
-  Constructor, ConnectionType, Dictionary, PrimaryKeyType, PrimaryKeyProp, Primary, IPrimaryKey, ObjectQuery, FilterQuery, IWrappedEntity, EntityName, EntityData, Highlighter,
+  Constructor, ConnectionType, Dictionary, PrimaryKeyProp, Primary, IPrimaryKey, ObjectQuery, FilterQuery, IWrappedEntity, EntityName, EntityData, Highlighter,
   AnyEntity, EntityClass, EntityProperty, EntityMetadata, QBFilterQuery, PopulateOptions, Populate, Loaded, New, LoadedReference, LoadedCollection, IMigrator, IMigrationGenerator,
   GetRepository, EntityRepositoryType, MigrationObject, DeepPartial, PrimaryProperty, Cast, IsUnknown, EntityDictionary, EntityDTO, MigrationDiff, FilterObject,
   IEntityGenerator, ISeedManager, EntityClassGroup, OptionalProps, RequiredEntityData, CheckCallback, SimpleColumnMeta, Rel, Ref, ISchemaGenerator,

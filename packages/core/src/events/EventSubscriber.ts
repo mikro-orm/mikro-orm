@@ -6,14 +6,14 @@ import type { Transaction } from '../connections';
 export interface EventArgs<T> {
   entity: T;
   em: EntityManager;
-  changeSet?: ChangeSet<T>;
+  changeSet?: ChangeSet<T & {}>;
 }
 
-export interface FlushEventArgs extends Omit<EventArgs<unknown>, 'entity'> {
+export interface FlushEventArgs extends Omit<EventArgs<any>, 'entity' | 'changeSet'> {
   uow: UnitOfWork;
 }
 
-export interface TransactionEventArgs extends Omit<EventArgs<unknown>, 'entity' | 'changeSet'> {
+export interface TransactionEventArgs extends Omit<EventArgs<any>, 'entity' | 'changeSet'> {
   transaction?: Transaction;
   uow?: UnitOfWork;
 }
