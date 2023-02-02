@@ -1,6 +1,14 @@
-import { Collection, Entity, Index, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyType, Property, t } from '@mikro-orm/core';
+import {
+  Collection,
+  Entity,
+  Index,
+  ManyToMany,
+  PrimaryKey,
+  PrimaryKeyProp,
+  Property,
+  t,
+} from '@mikro-orm/core';
 import { User2 } from './User2';
-import { Test2 } from './Test2';
 
 @Entity()
 export class Car2 {
@@ -19,7 +27,7 @@ export class Car2 {
   @ManyToMany(() => User2, u => u.cars)
   users = new Collection<User2>(this);
 
-  [PrimaryKeyType]?: [string, number];
+  [PrimaryKeyProp]?: ['name', 'year'];
 
   constructor(name: string, year: number, price: number) {
     this.name = name;

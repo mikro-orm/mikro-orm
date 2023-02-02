@@ -1,7 +1,7 @@
 import { inspect } from 'util';
 import type { Configuration } from './utils';
 import { Cursor, QueryHelper, TransactionContext, Utils } from './utils';
-import type { AssignOptions, EntityLoaderOptions, EntityRepository, IdentifiedReference } from './entity';
+import type { AssignOptions, EntityLoaderOptions, EntityRepository } from './entity';
 import { EntityAssigner, EntityFactory, EntityLoader, EntityValidator, helper, Reference } from './entity';
 import { ChangeSet, ChangeSetType, UnitOfWork } from './unit-of-work';
 import type {
@@ -38,6 +38,7 @@ import type {
   PopulateOptions,
   Primary,
   RequiredEntityData,
+  Ref,
 } from './typings';
 import type { TransactionOptions } from './enums';
 import { EventType, FlushMode, LoadStrategy, LockMode, PopulateHint, ReferenceType, SCALAR_TYPES } from './enums';
@@ -556,7 +557,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     await em.unitOfWork.dispatchOnLoadEvent();
-    await em.storeCache(options.cache, cached!, () => helper(entity).toPOJO());
+    await em.storeCache(options.cache, cached!, () => helper(entity!).toPOJO());
 
     return entity as Loaded<Entity, Hint>;
   }
@@ -1212,7 +1213,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
    */
-  getReference<Entity extends object, PK extends keyof Entity>(entityName: EntityName<Entity>, id: Primary<Entity>, options: Omit<GetReferenceOptions, 'wrapped'> & { wrapped: true }): IdentifiedReference<Entity, PK>;
+  getReference<Entity extends object>(entityName: EntityName<Entity>, id: Primary<Entity>, options: Omit<GetReferenceOptions, 'wrapped'> & { wrapped: true }): Ref<Entity>;
 
   /**
    * Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded
