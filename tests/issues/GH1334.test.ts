@@ -1,4 +1,4 @@
-import { Collection, Entity, IdentifiedReference, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, QueryOrder } from '@mikro-orm/sqlite';
+import { Collection, Entity, Ref, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, QueryOrder } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -14,7 +14,7 @@ export class RadioOption {
   order!: number;
 
   @ManyToOne('Radio', { wrappedReference: true })
-  radio!: IdentifiedReference<Radio>;
+  radio!: Ref<Radio>;
 
 }
 
@@ -31,7 +31,7 @@ export class Radio {
   question: string = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 10);
 
   @ManyToOne('Project', { wrappedReference: true })
-  project!: IdentifiedReference<Project>;
+  project!: Ref<Project>;
 
   @OneToMany(
     () => RadioOption,

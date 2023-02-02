@@ -1,7 +1,7 @@
 import { BaseEntity, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Entity()
-export class Group extends BaseEntity<Group, 'id'> {
+export class Group extends BaseEntity {
 
   @PrimaryKey()
   id!: number;
