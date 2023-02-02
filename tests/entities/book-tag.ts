@@ -21,6 +21,6 @@ export const schema = new EntitySchema({
     _id: { type: 'ObjectId', primary: true },
     id: { type: 'string', serializedPrimaryKey: true },
     name: { type: 'string' },
-    books: { reference: 'm:n', entity: () => Book, mappedBy: 'tags' },
+    books: { kind: 'm:n', entity: () => Book, mappedBy: 'tags' },
   },
 });
