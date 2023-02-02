@@ -131,7 +131,7 @@ In other words, as long as we name the repository same was as the entity is call
 `**./author.entity.ts**`
 
 ```ts
-@Entity({ customRepository: () => AuthorRepository })
+@Entity({ repository: () => AuthorRepository })
 export class Author {
 
   // to allow inference in `em.getRepository()`
