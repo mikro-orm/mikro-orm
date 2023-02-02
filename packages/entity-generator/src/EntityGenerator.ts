@@ -118,7 +118,7 @@ export class EntityGenerator {
     for (const meta of metadata.filter(m => !m.pivotTable)) {
       for (const prop of meta.relations) {
         if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
-          prop.wrappedReference = true;
+          prop.ref = true;
         }
       }
     }
