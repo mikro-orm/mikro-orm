@@ -1,4 +1,4 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType, Reference, Ref } from '@mikro-orm/postgresql';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Reference, Ref } from '@mikro-orm/postgresql';
 
 @Entity()
 export class User {
@@ -22,8 +22,6 @@ export class Chat {
 
   @ManyToOne(() => User, { nullable: true })
   User?: User;
-
-  [PrimaryKeyType]?: [number, number];
 
   constructor(owner: User, recipient: User) {
     this.owner = Reference.create(owner);

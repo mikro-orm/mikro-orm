@@ -3,7 +3,7 @@ import type { BaseEntity, Ref, Reference, Collection, EntityManager, EntityName,
 import type { Has, IsExact } from 'conditional-type-checks';
 import { assert } from 'conditional-type-checks';
 import type { ObjectId } from 'bson';
-import type { EntityData, EntityDTO, FilterQuery, FilterValue, Loaded, OperatorMap, Primary, PrimaryKeyType, Query } from '../packages/core/src/typings';
+import type { EntityData, EntityDTO, FilterQuery, FilterValue, Loaded, OperatorMap, Primary, PrimaryKeyProp, Query } from '../packages/core/src/typings';
 import type { Author2, Book2, BookTag2, Car2, FooBar2, FooParam2, Publisher2, User2 } from './entities-sql';
 import type { Author, Book } from './entities';
 
@@ -18,8 +18,8 @@ describe('check typings', () => {
     assert<IsExact<Primary<{ id?: number }>, number>>(true);
     assert<IsExact<Primary<Author2>, string>>(false);
 
-    // PrimaryKeyType symbol has priority
-    type Test = { _id: ObjectId; id: string; uuid: number; [PrimaryKeyType]?: Date };
+    // PrimaryKeyProp symbol has priority
+    type Test = { _id: ObjectId; id: string; uuid: number; foo: Date; [PrimaryKeyProp]?: 'foo' };
     assert<IsExact<Primary<Test>, Date>>(true);
     assert<IsExact<Primary<Test>, ObjectId>>(false);
     assert<IsExact<Primary<Test>, string>>(false);
@@ -63,6 +63,7 @@ describe('check typings', () => {
     c = { name: 'n', price: 123, year: 2021, users: [{ firstName: 'f', lastName: 'l' }] };
     c = { name: 'n', price: 123, year: 2021, users: [{} as User2] };
     c = { name: 'n', price: 123, year: 2021, users: [['f', 'l']] };
+    type T = Primary<User2>;
 
     // @ts-expect-error
     c = { name: 'n', price: 123, year: '2021' };

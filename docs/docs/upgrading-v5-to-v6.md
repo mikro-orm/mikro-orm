@@ -127,3 +127,21 @@ Note that if you used it for converting entity instance to reference wrapper, th
 
 Some methods allowed you to pass in the primary key property via second generic type argument, this is now removed in favour of the automatic inference. To set the PK type explicitly, use the `PrimaryKeyProp` symbol.
 
+`PrimaryKeyType` symbol has been removed, use `PrimaryKeyProp` instead if needed. Moreover, the value for composite PKs now has to be a tuple instead of a union to ensure we preserve the order of keys:
+
+```diff
+@Entity()
+export class Foo {
+
+  @ManyToOne(() => Bar, { primary: true })
+  bar!: Bar;
+
+  @ManyToOne(() => Baz, { primary: true })
+  baz!: Baz;
+
+-  [PrimaryKeyType]?: [number, number];
+-  [PrimaryKeyProp]?: 'bar' | 'baz';
++  [PrimaryKeyProp]?: ['bar', 'baz'];
+
+}
+```

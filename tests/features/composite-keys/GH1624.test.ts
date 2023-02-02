@@ -1,4 +1,18 @@
-import { Collection, Entity, Ref, LoadStrategy, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType, Property, Reference, Unique, wrap } from '@mikro-orm/core';
+import {
+  Collection,
+  Entity,
+  Ref,
+  LoadStrategy,
+  ManyToOne,
+  MikroORM,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  Reference,
+  Unique,
+  wrap,
+  PrimaryKeyProp,
+} from '@mikro-orm/core';
 import { v4 } from 'uuid';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
@@ -53,7 +67,7 @@ export class User {
   @OneToMany({ entity: 'UserRole', mappedBy: 'user' })
   userRoles = new Collection<UserRole>(this);
 
-  [PrimaryKeyType]?: [string, string];
+  [PrimaryKeyProp]?: ['id', 'organization'];
 
   constructor(value: Partial<User> = {}) {
     Object.assign(this, value);
@@ -102,7 +116,7 @@ export class UserRole {
   })
   role!: Ref<Role>;
 
-  [PrimaryKeyType]?: [string, string, string];
+  [PrimaryKeyProp]?: ['user', 'role'];
 
   constructor(value: Partial<UserRole> = {}) {
     Object.assign(this, value);
@@ -156,7 +170,7 @@ export class Site {
   @Property({ columnType: 'varchar' })
   name!: string;
 
-  [PrimaryKeyType]?: [string, string, string];
+  [PrimaryKeyProp]?: ['id', 'program'];
 
   constructor(value: Partial<Site> = {}) {
     Object.assign(this, value);

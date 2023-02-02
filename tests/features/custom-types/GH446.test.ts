@@ -1,5 +1,16 @@
 import { v4, parse, stringify } from 'uuid';
-import { Entity, LoadStrategy, ManyToOne, MikroORM, OneToOne, PrimaryKey, PrimaryKeyType, Property, Type, wrap } from '@mikro-orm/core';
+import {
+  Entity,
+  LoadStrategy,
+  ManyToOne,
+  MikroORM,
+  OneToOne,
+  PrimaryKey,
+  PrimaryKeyProp,
+  Property,
+  Type,
+  wrap,
+} from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 
 export class UuidBinaryType extends Type<string, Buffer> {
@@ -35,6 +46,8 @@ class B {
   @OneToOne({ primary: true })
   a!: A;
 
+  [PrimaryKeyProp]?: 'a';
+
 }
 
 @Entity()
@@ -43,7 +56,7 @@ class C {
   @OneToOne({ primary: true })
   b!: B;
 
-  [PrimaryKeyType]?: B | A | string;
+  [PrimaryKeyProp]?: 'b';
 
 }
 

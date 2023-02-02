@@ -30,18 +30,27 @@ export type DeepPartial<T> = T & {
 };
 
 export const EntityRepositoryType = Symbol('EntityRepositoryType');
-export const PrimaryKeyType = Symbol('PrimaryKeyType');
 export const PrimaryKeyProp = Symbol('PrimaryKeyProp');
 export const OptionalProps = Symbol('OptionalProps');
 
+export type UnwrapPrimary<T> = T extends Scalar
+  ? T
+  : T extends Reference<infer U>
+    ? Primary<U>
+    : Primary<T>;
+
+type PrimaryPropToType<T, Keys extends (keyof T)[]> = {
+  [Index in keyof Keys]: UnwrapPrimary<T[Keys[Index]]>;
+};
+
 type ReadonlyPrimary<T> = T extends any[] ? Readonly<T> : T;
-export type Primary<T> = T extends { [PrimaryKeyType]?: infer PK }
-  ? ReadonlyPrimary<PK> : T extends { _id?: infer PK }
+export type Primary<T> = T extends { [PrimaryKeyProp]?: infer PK }
+  ? (PK extends keyof T ? ReadonlyPrimary<UnwrapPrimary<T[PK]>> : (PK extends (keyof T)[] ? ReadonlyPrimary<PrimaryPropToType<T, PK>> : PK)) : T extends { _id?: infer PK }
   ? ReadonlyPrimary<PK> | string : T extends { uuid?: infer PK }
   ? ReadonlyPrimary<PK> : T extends { id?: infer PK }
-  ? ReadonlyPrimary<PK> : never;
+  ? ReadonlyPrimary<PK> : T;
 export type PrimaryProperty<T> = T extends { [PrimaryKeyProp]?: infer PK }
-  ? PK : T extends { _id?: any }
+  ? (PK extends keyof T ? PK : (PK extends any[] ? PK[number] : never)) : T extends { _id?: any }
   ? '_id' : T extends { uuid?: any }
   ? 'uuid' : T extends { id?: any }
   ? 'id' : never;

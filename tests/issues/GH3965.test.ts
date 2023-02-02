@@ -1,4 +1,14 @@
-import { Collection, Entity, Property, ManyToOne, OneToMany, PrimaryKey, PrimaryKeyType, Cascade, Ref } from '@mikro-orm/core';
+import {
+  Collection,
+  Entity,
+  Property,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Cascade,
+  Ref,
+  PrimaryKeyProp, Primary,
+} from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/mysql';
 import { randomUUID } from 'crypto';
 
@@ -41,7 +51,7 @@ export class Article {
   })
   category!: Ref<Category>;
 
-  [PrimaryKeyType]?: [string, string];
+  [PrimaryKeyProp]?: ['id', 'category'];
 
   @OneToMany(() => ArticleAttribute, attr => attr.article, {
     cascade: [Cascade.ALL],
@@ -67,9 +77,11 @@ export class ArticleAttribute {
   })
   article!: Ref<Article>;
 
-  [PrimaryKeyType]?: [string, [string, string]];
+  [PrimaryKeyProp]?: ['id', 'article'];
 
 }
+
+type T = Primary<ArticleAttribute>;
 
 let orm: MikroORM;
 
@@ -101,4 +113,7 @@ test('3965', async () => {
   await orm.em.persistAndFlush(category);
   expect(category.createdAt).toBeDefined();
   expect(category.createdAt).toBeInstanceOf(Date);
+
+  const miss = await orm.em.findOne(ArticleAttribute, ['a', ['1', '1']]);
+  expect(miss).toBeNull();
 });

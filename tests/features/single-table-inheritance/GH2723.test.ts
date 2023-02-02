@@ -1,10 +1,10 @@
-import { Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType } from '@mikro-orm/core';
+import { Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Cat {
 
-  [PrimaryKeyType]?: [string, string];
+  [PrimaryKeyProp]?: ['name', 'user'];
 
   @PrimaryKey()
   name!: string;

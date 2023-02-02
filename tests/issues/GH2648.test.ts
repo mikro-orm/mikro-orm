@@ -1,4 +1,4 @@
-import { Entity, Ref, JsonType, ManyToOne, MikroORM, OneToOne, PrimaryKey, PrimaryKeyType, Property } from '@mikro-orm/sqlite';
+import { Entity, Ref, JsonType, ManyToOne, MikroORM, OneToOne, PrimaryKey, Property } from '@mikro-orm/sqlite';
 
 @Entity()
 export class A {
@@ -14,7 +14,6 @@ export class A {
 @Entity()
 export class B1 {
 
-  [PrimaryKeyType]?: number;
   @ManyToOne({ entity: () => A, primary: true, wrappedReference: true })
   a!: Ref<A>;
 
@@ -26,7 +25,6 @@ export class B2 {
   @PrimaryKey()
   id!: number;
 
-  [PrimaryKeyType]?: number;
   @OneToOne({ entity: () => A, primary: true, wrappedReference: true })
   a!: Ref<A>;
 
@@ -35,7 +33,6 @@ export class B2 {
 @Entity()
 export class B3 {
 
-  [PrimaryKeyType]?: number;
   @OneToOne({ entity: () => A, primary: true, wrappedReference: true })
   a!: Ref<A>;
 
@@ -47,7 +44,6 @@ export class B4 {
   @PrimaryKey()
   id!: number;
 
-  [PrimaryKeyType]?: number;
   @OneToOne({ entity: () => A, primary: true, wrappedReference: true })
   a!: Ref<A>;
 

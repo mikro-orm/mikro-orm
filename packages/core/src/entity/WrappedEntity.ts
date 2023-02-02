@@ -129,9 +129,9 @@ export class WrappedEntity<T extends object> {
 
         if (Utils.isEntity(child, true)) {
           const childPk = helper(child).getPrimaryKeys(convertCustomTypes);
-          ret.push(...childPk!);
+          ret.push(...childPk as Primary<T>[]);
         } else {
-          ret.push(child as Primary<unknown>);
+          ret.push(child as Primary<T>);
         }
 
         return ret;

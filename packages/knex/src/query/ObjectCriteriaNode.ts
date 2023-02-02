@@ -66,7 +66,7 @@ export class ObjectCriteriaNode extends CriteriaNode {
 
   shouldInline(payload: any): boolean {
     const customExpression = ObjectCriteriaNode.isCustomExpression(this.key!);
-    const scalar = Utils.isPrimaryKey(payload) || payload instanceof RegExp || payload instanceof Date || customExpression;
+    const scalar = Utils.isPrimaryKey(payload) || payload as unknown instanceof RegExp || payload as unknown instanceof Date || customExpression;
     const operator = Utils.isObject(payload) && Object.keys(payload).every(k => Utils.isOperator(k, false));
 
     return !!this.prop && this.prop.reference !== ReferenceType.SCALAR && !scalar && !operator;
@@ -133,7 +133,7 @@ export class ObjectCriteriaNode extends CriteriaNode {
   private autoJoin<T>(qb: IQueryBuilder<T>, alias: string): string {
     const nestedAlias = qb.getNextAlias(this.prop?.pivotTable ?? this.entityName);
     const customExpression = ObjectCriteriaNode.isCustomExpression(this.key!);
-    const scalar = Utils.isPrimaryKey(this.payload) || this.payload instanceof RegExp || this.payload instanceof Date || customExpression;
+    const scalar = Utils.isPrimaryKey(this.payload) || this.payload as unknown instanceof RegExp || this.payload as unknown instanceof Date || customExpression;
     const operator = Utils.isPlainObject(this.payload) && Object.keys(this.payload).every(k => Utils.isOperator(k, false));
     const field = `${alias}.${this.prop!.name}`;
 

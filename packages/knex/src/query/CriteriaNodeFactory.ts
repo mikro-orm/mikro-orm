@@ -13,7 +13,7 @@ export class CriteriaNodeFactory {
 
   static createNode(metadata: MetadataStorage, entityName: string, payload: any, parent?: ICriteriaNode, key?: string): ICriteriaNode {
     const customExpression = CriteriaNode.isCustomExpression(key || '');
-    const scalar = Utils.isPrimaryKey(payload) || payload instanceof RegExp || payload instanceof Date || customExpression;
+    const scalar = Utils.isPrimaryKey(payload) || payload as unknown instanceof RegExp || payload as unknown instanceof Date || customExpression;
 
     if (Array.isArray(payload) && !scalar) {
       return this.createArrayNode(metadata, entityName, payload, parent, key);
