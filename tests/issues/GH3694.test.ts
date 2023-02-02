@@ -29,7 +29,7 @@ class UserAccount {
   @PrimaryKey()
   id: number;
 
-  @ManyToOne(() => User, { onDelete: 'cascade', ref: true })
+  @ManyToOne(() => User, { deleteRule: 'cascade', ref: true })
   user: Ref<User>;
 
   constructor(init: { id: number; user: Ref<User> }) {

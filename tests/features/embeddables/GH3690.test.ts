@@ -46,7 +46,7 @@ beforeAll(async () => {
     entities: [P, PTE],
     dbName: ':memory:',
     metadataProvider: TsMorphMetadataProvider,
-    cache: { enabled: false },
+    metadataCache: { enabled: false },
   });
   await orm.schema.createSchema();
 });

@@ -124,7 +124,7 @@ tableName: string; // alias for `collection: string`
 properties: { [K in keyof T & string]: EntityProperty<T[K]> };
 indexes: { properties: string | string[]; name?: string; type?: string }[];
 uniques: { properties: string | string[]; name?: string }[];
-customRepository: () => Constructor<EntityRepository<T>>;
+repository: () => Constructor<EntityRepository<T>>;
 hooks: Partial<Record<keyof typeof EventType, ((string & keyof T) | NonNullable<EventSubscriber[keyof EventSubscriber]>)[]>>;
 abstract: boolean;
 ```
@@ -143,7 +143,7 @@ export const schema = new EntitySchema<FooBar>({
   tableName: 'tbl_foo_bar',
   indexes: [{ name: 'idx1', properties: 'name' }],
   uniques: [{ name: 'unq1', properties: ['name', 'email'] }],
-  customRepository: () => FooBarRepository,
+  repository: () => FooBarRepository,
   properties: {
     id: { type: 'number', primary: true },
     name: { type: 'string' },

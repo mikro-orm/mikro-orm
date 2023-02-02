@@ -46,7 +46,7 @@ describe('GH issue 450', () => {
     orm = await MikroORM.init({
       entities: [Task, TaskAssignee],
       dbName: `mikro_orm_test_gh_450`,
-      cache: { enabled: false },
+      metadataCache: { enabled: false },
     });
     await orm.schema.ensureDatabase();
 

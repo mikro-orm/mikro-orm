@@ -370,8 +370,7 @@ MikroORM.init({
 
 ## Custom Repository
 
-You can also register custom base repository (for all entities where you do not specify 
-`customRepository`) globally:
+You can also register custom base repository (for all entities where you do not specify `repository` option) globally:
 
 > You can still use entity specific repositories in combination with global base repository.
 

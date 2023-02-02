@@ -23,7 +23,7 @@ export class EntityAssigner {
     options = {
       updateNestedEntities: true,
       updateByPrimaryKey: true,
-      mergeObjects: true,
+      mergeObjectProperties: true,
       schema: wrapped.__schema,
       ...options, // allow overriding the defaults
     };
@@ -89,7 +89,7 @@ export class EntityAssigner {
         return EntityAssigner.assignEmbeddable(entity, value, props[prop], em, options);
       }
 
-      if (options.mergeObjects && Utils.isPlainObject(value)) {
+      if (options.mergeObjectProperties && Utils.isPlainObject(value)) {
         entity[prop] ??= {};
         Utils.merge(entity[prop], value);
       } else if (!props[prop] || props[prop].setter || !props[prop].getter) {
@@ -216,9 +216,9 @@ export class EntityAssigner {
 
     const create = () => EntityAssigner.validateEM(em) && em!.getEntityFactory().createEmbeddable<T>(prop.type, value, {
       convertCustomTypes: options.convertCustomTypes,
-      newEntity: options.mergeObjects ? !entity[propName] : true,
+      newEntity: options.mergeObjectProperties ? !entity[propName] : true,
     });
-    entity[propName] = options.mergeObjects ? (entity[propName] || create()) : create();
+    entity[propName] = options.mergeObjectProperties ? (entity[propName] || create()) : create();
 
     Object.keys(value).forEach(key => {
       const childProp = prop.embeddedProps[key];
@@ -262,7 +262,7 @@ export interface AssignOptions {
   updateByPrimaryKey?: boolean;
   onlyProperties?: boolean;
   convertCustomTypes?: boolean;
-  mergeObjects?: boolean;
+  mergeObjectProperties?: boolean;
   merge?: boolean;
   schema?: string;
   em?: EntityManager;

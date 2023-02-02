@@ -214,7 +214,7 @@ export class EntitySchema<T = any, U = never> {
   }
 
   setCustomRepository(repository: () => Constructor): void {
-    this._meta.customRepository = repository as () => Constructor<EntityRepository<any>>;
+    this._meta.repository = repository as () => Constructor<EntityRepository<any>>;
   }
 
   setExtends(base: string): void {
@@ -328,7 +328,7 @@ export class EntitySchema<T = any, U = never> {
 
     // FK used as PK, we need to cascade
     if (pks.length === 1 && pks[0].kind !== ReferenceKind.SCALAR) {
-      pks[0].onDelete = 'cascade';
+      pks[0].deleteRule = 'cascade';
     }
 
     if (pks.length === 1 && pks[0].type === 'number') {
