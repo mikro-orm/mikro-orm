@@ -18,7 +18,7 @@ export class Order {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ onDelete: 'cascade' })
+  @ManyToOne({ deleteRule: 'cascade' })
   user!: User;
 
 }
