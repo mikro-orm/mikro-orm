@@ -36,7 +36,7 @@ export class OrderItem {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => Order, { onDelete: 'cascade' })
+  @ManyToOne(() => Order, { deleteRule: 'cascade' })
   order!: Order;
 
   @Property({ type: CustomType })

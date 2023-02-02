@@ -34,7 +34,7 @@ describe('EntitySchema', () => {
     expect(meta.properties.termsAccepted.type).toBe('boolean');
     expect(meta.properties.age.type).toBe('number');
     expect(meta.properties.age.nullable).toBe(true);
-    expect(meta.customRepository()).toBe(AuthorRepository);
+    expect(meta.repository()).toBe(AuthorRepository);
     expect(meta.indexes).toEqual([{ properties: 'name' }]);
     expect(meta.uniques).toEqual([{ properties: ['name', 'email'] }]);
   });

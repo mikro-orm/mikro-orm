@@ -25,7 +25,7 @@ export class B {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => A, onDelete: 'cascade' })
+  @ManyToOne({ entity: () => A, deleteRule: 'cascade' })
   a!: A;
 
 }

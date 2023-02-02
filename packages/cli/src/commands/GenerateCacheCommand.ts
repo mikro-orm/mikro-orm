@@ -22,7 +22,7 @@ export class GenerateCacheCommand<T> implements CommandModule<T, CacheArgs> {
   async handler(args: ArgumentsCamelCase<CacheArgs>) {
     const config = await CLIHelper.getConfiguration();
 
-    if (!config.get('cache').enabled) {
+    if (!config.get('metadataCache').enabled) {
       return CLIHelper.dump(colors.red('Metadata cache is disabled in your configuration. Set cache.enabled to true to use this command.'));
     }
 

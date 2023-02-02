@@ -75,7 +75,7 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
 
     if (discovery.disableDynamicFileAccess) {
       this.config.set('metadataProvider', ReflectMetadataProvider);
-      this.config.set('cache', { adapter: NullCacheAdapter });
+      this.config.set('metadataCache', { adapter: NullCacheAdapter });
       discovery.requireEntitiesArray = true;
     }
 

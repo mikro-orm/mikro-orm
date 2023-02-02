@@ -126,12 +126,12 @@ export class DatabaseTable {
 
       const cascade = prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL);
 
-      if (prop.onDelete || cascade || prop.nullable) {
-        this.foreignKeys[constraintName].deleteRule = prop.onDelete || (cascade ? 'cascade' : 'set null');
+      if (prop.deleteRule || cascade || prop.nullable) {
+        this.foreignKeys[constraintName].deleteRule = prop.deleteRule || (cascade ? 'cascade' : 'set null');
       }
 
-      if (prop.onUpdateIntegrity || prop.cascade.includes(Cascade.PERSIST) || prop.cascade.includes(Cascade.ALL)) {
-        this.foreignKeys[constraintName].updateRule = prop.onUpdateIntegrity || 'cascade';
+      if (prop.updateRule || prop.cascade.includes(Cascade.PERSIST) || prop.cascade.includes(Cascade.ALL)) {
+        this.foreignKeys[constraintName].updateRule = prop.updateRule || 'cascade';
       }
     }
 
@@ -265,8 +265,8 @@ export class DatabaseTable {
       fkOptions.fieldNames = fk.columnNames;
       fkOptions.referencedTableName = fk.referencedTableName;
       fkOptions.referencedColumnNames = fk.referencedColumnNames;
-      fkOptions.onUpdateIntegrity = fk.updateRule?.toLowerCase();
-      fkOptions.onDelete = fk.deleteRule?.toLowerCase();
+      fkOptions.updateRule = fk.updateRule?.toLowerCase();
+      fkOptions.deleteRule = fk.deleteRule?.toLowerCase();
     }
 
     return {
