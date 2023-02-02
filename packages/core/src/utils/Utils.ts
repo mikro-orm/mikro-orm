@@ -615,7 +615,7 @@ export class Utils {
   /**
    * Checks whether given object is an entity instance.
    */
-  static isEntity<T = unknown>(data: any, allowReference = false): data is T {
+  static isEntity<T = unknown>(data: any, allowReference = false): data is T & {} {
     if (!Utils.isObject(data)) {
       return false;
     }

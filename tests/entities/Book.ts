@@ -1,5 +1,5 @@
 import { ObjectId } from 'bson';
-import { EntityDTO, IdentifiedReference, Dictionary, Collection, Cascade, Entity, Index, ManyToMany, ManyToOne, PrimaryKey, Property, Unique, wrap, Filter, OptionalProps } from '@mikro-orm/core';
+import { EntityDTO, Ref, Dictionary, Collection, Cascade, Entity, Index, ManyToMany, ManyToOne, PrimaryKey, Property, Unique, wrap, Filter, OptionalProps } from '@mikro-orm/core';
 import { Publisher } from './Publisher';
 import { Author } from './Author';
 import { BookTag } from './book-tag';
@@ -11,7 +11,7 @@ import { BookRepository } from '../repositories/BookRepository';
 @Index({ properties: 'title', type: 'fulltext' })
 @Index({ options: { point: '2dsphere', title: -1 } })
 @Filter({ name: 'writtenBy', cond: args => ({ author: args.author }) })
-export class Book extends BaseEntity3<Book> {
+export class Book extends BaseEntity3 {
 
   [OptionalProps]?: 'createdAt';
 
@@ -32,7 +32,7 @@ export class Book extends BaseEntity3<Book> {
 
   @ManyToOne(() => Publisher, { wrappedReference: true, cascade: [Cascade.PERSIST, Cascade.REMOVE], nullable: true })
   @Index({ name: 'publisher_idx' })
-  publisher!: IdentifiedReference<Publisher, '_id' | 'id'> | null;
+  publisher!: Ref<Publisher> | null;
 
   @ManyToMany(() => BookTag)
   tags = new Collection<BookTag>(this);

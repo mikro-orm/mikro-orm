@@ -243,7 +243,7 @@ describe('embedded entities in mongo', () => {
     expect(u1.profile1.identity.meta).toBeInstanceOf(IdentityMeta);
     expect(u1.profile1.source).toBeInstanceOf(Source);
     expect(u1.profile1.identity.source).toBeInstanceOf(Source);
-    expect(wrap(u1.profile1.identity.source).isInitialized()).toBe(false);
+    expect(wrap(u1.profile1.identity.source!).isInitialized()).toBe(false);
     expect(u1.profile1).toMatchObject({
       username: 'u1',
       identity: {
@@ -404,11 +404,11 @@ describe('embedded entities in mongo', () => {
     expect(mock.mock.calls[3][0]).toMatch(`db.getCollection('source').find({ _id: { '$in': [ ObjectId('600000000000000000000002') ] } }, {}).sort([ [ '_id', 1 ] ]).toArray();`);
     expect(mock.mock.calls[4][0]).toMatch(`db.getCollection('source').find({ _id: { '$in': [ ObjectId('600000000000000000000014'), ObjectId('600000000000000000000015') ] } }, {}).sort([ [ '_id', 1 ] ]).toArray();`);
     expect(mock.mock.calls[5][0]).toMatch(`db.getCollection('source').find({ _id: { '$in': [ ObjectId('600000000000000000000016'), ObjectId('600000000000000000000017'), ObjectId('600000000000000000000018'), ObjectId('600000000000000000000019'), ObjectId('60000000000000000000001a'), ObjectId('60000000000000000000001b') ] } }, {}).sort([ [ '_id', 1 ] ]).toArray();`);
-    expect(wrap(users[0].profile1.source).isInitialized()).toBe(true);
+    expect(wrap(users[0].profile1.source!).isInitialized()).toBe(true);
     expect(users[0].profile1.source!.name).toBe('s1');
-    expect(wrap(users[1].profile1.identity.links[1].source).isInitialized()).toBe(true);
+    expect(wrap(users[1].profile1.identity.links[1].source!).isInitialized()).toBe(true);
     expect(users[1].profile1.identity.links[1].source!.name).toBe('ils32');
-    expect(wrap(users[1].profile1.identity.links[1].metas[2].source).isInitialized()).toBe(true);
+    expect(wrap(users[1].profile1.identity.links[1].metas[2].source!).isInitialized()).toBe(true);
     expect(users[1].profile1.identity.links[1].metas[2].source!.name).toBe('ilms323');
 
     // test serialization context

@@ -1,4 +1,4 @@
-import { Entity, MikroORM, PrimaryKey, Property, IdentifiedReference, LoadStrategy, OneToOne } from '@mikro-orm/sqlite';
+import { Entity, MikroORM, PrimaryKey, Property, Ref, LoadStrategy, OneToOne } from '@mikro-orm/sqlite';
 
 @Entity()
 export class RadioOption {
@@ -13,7 +13,7 @@ export class RadioOption {
   createdAt: Date = new Date();
 
   @OneToOne({ entity: 'Radio', wrappedReference: true, mappedBy: 'option' })
-  radio!: IdentifiedReference<Radio>;
+  radio!: Ref<Radio>;
 
   constructor(enabled: boolean) {
     this.enabled = enabled;
@@ -31,7 +31,7 @@ export class Radio {
   question: string = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 10);
 
   @OneToOne({ entity: () => RadioOption, wrappedReference: true, eager: true })
-  option!: IdentifiedReference<RadioOption>;
+  option!: Ref<RadioOption>;
 
 }
 
