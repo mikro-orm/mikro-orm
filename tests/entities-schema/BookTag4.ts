@@ -15,7 +15,7 @@ export const BookTag4 = new EntitySchema<IBookTag4, IBaseEntity5>({
   extends: 'BaseEntity5',
   properties: {
     name: { type: 'string' },
-    books: { reference: 'm:n', entity: 'Book4', mappedBy: 'tags' },
+    books: { kind: 'm:n', entity: 'Book4', mappedBy: 'tags' },
     version: { type: 'Date', version: true },
   },
 });

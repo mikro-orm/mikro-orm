@@ -1,7 +1,7 @@
 import { Reference } from '../entity/Reference';
 import { Utils } from './Utils';
 import type { Dictionary, EntityMetadata, EntityProperty, FilterDef, FilterQuery, ObjectQuery } from '../typings';
-import { ARRAY_OPERATORS, GroupOperator, ReferenceType } from '../enums';
+import { ARRAY_OPERATORS, GroupOperator, ReferenceKind } from '../enums';
 import type { Platform } from '../platforms';
 import type { MetadataStorage } from '../metadata/MetadataStorage';
 import { JsonType } from '../types/JsonType';
@@ -66,7 +66,7 @@ export class QueryHelper {
           return false;
         }
 
-        if (meta.properties[k].primary && [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(meta.properties[k].reference)) {
+        if (meta.properties[k].primary && [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(meta.properties[k].kind)) {
           return this.inlinePrimaryKeyObjects(where[k], meta.properties[k].targetMeta, metadata, v);
         }
 
@@ -115,7 +115,7 @@ export class QueryHelper {
       let cond = { [rootPrimaryKey]: { $in: where } } as FilterQuery<T>;
 
       // detect tuple comparison, use `$or` in case the number of constituents don't match
-      if (meta && !where.every(c => Utils.isPrimaryKey(c) || Array.isArray(c) && c.length === meta.primaryKeys.length && c.every(i => Utils.isPrimaryKey(i)))) {
+      if (meta && !where.every(c => Utils.isPrimaryKey(c as unknown) || Array.isArray(c) && c.length === meta.primaryKeys.length && c.every(i => Utils.isPrimaryKey(i)))) {
         cond = { $or: where } as FilterQuery<T>;
       }
 

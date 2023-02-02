@@ -1,4 +1,4 @@
-import { ReferenceType, type Configuration, type Dictionary, type EntityMetadata, type EntityProperty } from '@mikro-orm/core';
+import { ReferenceKind, type Configuration, type Dictionary, type EntityMetadata, type EntityProperty } from '@mikro-orm/core';
 import { DatabaseTable } from './DatabaseTable';
 import type { AbstractSqlConnection } from '../AbstractSqlConnection';
 import type { Table } from '../typings';
@@ -95,18 +95,18 @@ export class DatabaseSchema {
       return false;
     }
 
-    if (meta.pivotTable || (ReferenceType.EMBEDDED && prop.object)) {
+    if (meta.pivotTable || (ReferenceKind.EMBEDDED && prop.object)) {
       return true;
     }
 
     const getRootProperty: (prop: EntityProperty) => EntityProperty = (prop: EntityProperty) => prop.embedded ? getRootProperty(meta.properties[prop.embedded[0]]) : prop;
     const rootProp = getRootProperty(prop);
 
-    if (rootProp.reference === ReferenceType.EMBEDDED) {
+    if (rootProp.kind === ReferenceKind.EMBEDDED) {
       return prop === rootProp || !rootProp.object;
     }
 
-    return [ReferenceType.SCALAR, ReferenceType.MANY_TO_ONE].includes(prop.reference) || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
+    return [ReferenceKind.SCALAR, ReferenceKind.MANY_TO_ONE].includes(prop.kind) || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner);
   }
 
   toJSON(): Dictionary {

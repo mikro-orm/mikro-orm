@@ -1,4 +1,4 @@
-import { ReferenceType, Utils, type Dictionary } from '@mikro-orm/core';
+import { ReferenceKind, Utils, type Dictionary } from '@mikro-orm/core';
 import { CriteriaNode } from './CriteriaNode';
 import type { IQueryBuilder } from '../typings';
 import { QueryType } from './enums';
@@ -68,7 +68,7 @@ export class ObjectCriteriaNode extends CriteriaNode {
     const scalar = Utils.isPrimaryKey(payload) || payload as unknown instanceof RegExp || payload as unknown instanceof Date || customExpression;
     const operator = Utils.isObject(payload) && Object.keys(payload).every(k => Utils.isOperator(k, false));
 
-    return !!this.prop && this.prop.reference !== ReferenceType.SCALAR && !scalar && !operator;
+    return !!this.prop && this.prop.kind !== ReferenceKind.SCALAR && !scalar && !operator;
   }
 
   private inlineChildPayload<T>(o: Dictionary, payload: Dictionary, field: string, alias?: string, childAlias?: string) {
@@ -112,15 +112,15 @@ export class ObjectCriteriaNode extends CriteriaNode {
       return false;
     }
 
-    const embeddable = this.prop.reference === ReferenceType.EMBEDDED;
-    const knownKey = [ReferenceType.SCALAR, ReferenceType.MANY_TO_ONE, ReferenceType.EMBEDDED].includes(this.prop.reference) || (this.prop.reference === ReferenceType.ONE_TO_ONE && this.prop.owner);
+    const embeddable = this.prop.kind === ReferenceKind.EMBEDDED;
+    const knownKey = [ReferenceKind.SCALAR, ReferenceKind.MANY_TO_ONE, ReferenceKind.EMBEDDED].includes(this.prop.kind) || (this.prop.kind === ReferenceKind.ONE_TO_ONE && this.prop.owner);
     const operatorKeys = knownKey && Object.keys(this.payload).every(key => Utils.isOperator(key, false));
     const primaryKeys = knownKey && Object.keys(this.payload).every(key => {
       const meta = this.metadata.find(this.entityName)!;
       if (!meta.primaryKeys.includes(key)) {
         return false;
       }
-      if (!Utils.isPlainObject(this.payload[key].payload) || ![ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(meta.properties[key].reference)) {
+      if (!Utils.isPlainObject(this.payload[key].payload) || ![ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(meta.properties[key].kind)) {
         return true;
       }
       return Object.keys(this.payload[key].payload).every(k => meta.properties[key].targetMeta!.primaryKeys.includes(k));
@@ -136,7 +136,7 @@ export class ObjectCriteriaNode extends CriteriaNode {
     const operator = Utils.isPlainObject(this.payload) && Object.keys(this.payload).every(k => Utils.isOperator(k, false));
     const field = `${alias}.${this.prop!.name}`;
 
-    if (this.prop!.reference === ReferenceType.MANY_TO_MANY && (scalar || operator)) {
+    if (this.prop!.kind === ReferenceKind.MANY_TO_MANY && (scalar || operator)) {
       qb.join(field, nestedAlias, undefined, 'pivotJoin', this.getPath());
     } else {
       const prev = qb._fields?.slice();

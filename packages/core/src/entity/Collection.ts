@@ -2,7 +2,7 @@ import type { AnyEntity, EntityData, EntityDTO, EntityMetadata, FilterQuery, Loa
 import { ArrayCollection } from './ArrayCollection';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
-import { QueryOrder, ReferenceType, type LockMode, type QueryOrderMap } from '../enums';
+import { QueryOrder, ReferenceKind, type LockMode, type QueryOrderMap } from '../enums';
 import { Reference } from './Reference';
 import type { Transaction } from '../connections/Connection';
 import type { FindOptions } from '../drivers/IDatabaseDriver';
@@ -67,7 +67,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
     const em = this.getEntityManager();
     const pivotMeta = em.getMetadata().find(this.property.pivotEntity)!;
 
-    if (!em.getPlatform().usesPivotTable() && this.property.reference === ReferenceType.MANY_TO_MANY) {
+    if (!em.getPlatform().usesPivotTable() && this.property.kind === ReferenceKind.MANY_TO_MANY) {
       return this._count = this.length;
     } else if (this.property.pivotTable && !(this.property.inversedBy || this.property.mappedBy)) {
       const count = await em.count(this.property.type, this.createLoadCountCondition(options.where ?? {} as FilterQuery<T>, pivotMeta), { populate: [{ field: this.property.pivotEntity }] });
@@ -89,7 +89,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
     opts.orderBy = this.createOrderBy(opts.orderBy);
     let items: Loaded<T, P>[];
 
-    if (this.property.reference === ReferenceType.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
+    if (this.property.kind === ReferenceKind.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
       const cond = await em.applyFilters(this.property.type, where, options.filters ?? {}, 'read');
       const map = await em.getDriver().loadFromPivotTable(this.property, [helper(this.owner).__primaryKeys], cond, opts.orderBy, ctx, options);
       items = map[helper(this.owner).getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, { convertCustomTypes: true }));
@@ -283,7 +283,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
 
     const em = this.getEntityManager();
 
-    if (!this.initialized && this.property.reference === ReferenceType.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
+    if (!this.initialized && this.property.kind === ReferenceKind.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
       const cond = await em.applyFilters(this.property.type, options.where, {}, 'read');
       const map = await em.getDriver().loadFromPivotTable(this.property, [helper(this.owner).__primaryKeys], cond, options.orderBy, undefined, options);
       this.hydrate(map[helper(this.owner).getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, { convertCustomTypes: true })), true);
@@ -293,7 +293,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
     }
 
     // do not make db call if we know we will get no results
-    if (this.property.reference === ReferenceType.MANY_TO_MANY && (this.property.owner || em.getPlatform().usesPivotTable()) && this.length === 0) {
+    if (this.property.kind === ReferenceKind.MANY_TO_MANY && (this.property.owner || em.getPlatform().usesPivotTable()) && this.length === 0) {
       this.initialized = true;
       this.dirty = false;
       this._lazyInitialized = true;
@@ -377,7 +377,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
   }
 
   private createCondition(cond: FilterQuery<T> = {} as FilterQuery<T>): FilterQuery<T> {
-    if (this.property.reference === ReferenceType.ONE_TO_MANY) {
+    if (this.property.kind === ReferenceKind.ONE_TO_MANY) {
       cond[this.property.mappedBy] = helper(this.owner).getPrimaryKey();
     } else { // MANY_TO_MANY
       this.createManyToManyCondition(cond);
@@ -387,7 +387,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
   }
 
   private createOrderBy(orderBy: QueryOrderMap<T> | QueryOrderMap<T>[] = []): QueryOrderMap<T>[] {
-    if (Utils.isEmpty(orderBy) && this.property.reference === ReferenceType.ONE_TO_MANY) {
+    if (Utils.isEmpty(orderBy) && this.property.kind === ReferenceKind.ONE_TO_MANY) {
       const defaultOrder = this.property.referencedColumnNames.map(name => {
         return { [name]: QueryOrder.ASC };
       });
@@ -412,7 +412,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
     const wrapped = helper(this.owner);
     const val = wrapped.__meta.compositePK ? { $in: wrapped.__primaryKeys } : wrapped.getPrimaryKey();
 
-    if (this.property.reference === ReferenceType.ONE_TO_MANY) {
+    if (this.property.kind === ReferenceKind.ONE_TO_MANY) {
       cond[this.property.mappedBy] = val;
     } else if (pivotMeta && this.property.owner && !this.property.inversedBy) {
       const key = `${this.property.pivotEntity}.${pivotMeta.relations[0].name}`;
@@ -445,7 +445,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
    * re-orders items after searching with `$in` operator
    */
   private reorderItems(items: T[], order: T[]): void {
-    if (this.property.reference === ReferenceType.MANY_TO_MANY && this.property.owner) {
+    if (this.property.kind === ReferenceKind.MANY_TO_MANY && this.property.owner) {
       items.sort((a, b) => order.indexOf(a) - order.indexOf(b));
     }
   }
@@ -483,7 +483,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
         return false;
       }
 
-      return !item[this.property.mappedBy] && this.property.reference === ReferenceType.MANY_TO_MANY;
+      return !item[this.property.mappedBy] && this.property.kind === ReferenceKind.MANY_TO_MANY;
     };
 
     // throw if we are modifying inverse side of M:N collection when owning side is initialized (would be ignored when persisting)
