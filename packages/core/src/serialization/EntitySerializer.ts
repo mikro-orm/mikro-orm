@@ -156,7 +156,7 @@ export class EntitySerializer {
       }
 
       if (Utils.isObject(entity[prop])) {
-        return helper(entity[prop]).toJSON() as T[keyof T];
+        return helper(entity[prop]!).toJSON() as T[keyof T];
       }
     }
 

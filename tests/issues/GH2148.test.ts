@@ -1,4 +1,4 @@
-import { Entity, IdentifiedReference, ManyToOne, MikroORM, PrimaryKey, Reference } from '@mikro-orm/postgresql';
+import { Entity, Ref, ManyToOne, MikroORM, PrimaryKey, Reference } from '@mikro-orm/postgresql';
 
 @Entity()
 export class First {
@@ -20,10 +20,10 @@ export class Second {
 export class Third {
 
   @ManyToOne({ primary: true, entity: () => First, wrappedReference: true })
-  first: IdentifiedReference<First>;
+  first: Ref<First>;
 
   @ManyToOne({ primary: true, entity: () => Second, wrappedReference: true })
-  second: IdentifiedReference<Second>;
+  second: Ref<Second>;
 
   constructor(first: First, second: Second) {
     this.first = Reference.create(first);
