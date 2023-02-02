@@ -1,5 +1,5 @@
 import { MetadataStorage, MetadataValidator } from '../metadata';
-import { ReferenceType } from '../enums';
+import { ReferenceKind } from '../enums';
 import type { PropertyOptions } from './Property';
 import type { AnyEntity, EntityProperty } from '../typings';
 import { Utils } from '../utils/Utils';
@@ -7,10 +7,10 @@ import { Utils } from '../utils/Utils';
 function createDecorator<T>(options: PrimaryKeyOptions<T> | SerializedPrimaryKeyOptions<T>, serialized: boolean) {
   return function (target: AnyEntity, propertyName: string) {
     const meta = MetadataStorage.getMetadataFromDecorator(target.constructor);
-    MetadataValidator.validateSingleDecorator(meta, propertyName, ReferenceType.SCALAR);
+    MetadataValidator.validateSingleDecorator(meta, propertyName, ReferenceKind.SCALAR);
     const k = serialized ? 'serializedPrimaryKey' as const : 'primary' as const;
     options[k] = true;
-    meta.properties[propertyName] = Object.assign({ name: propertyName, reference: ReferenceType.SCALAR }, options) as EntityProperty;
+    meta.properties[propertyName] = Object.assign({ name: propertyName, kind: ReferenceKind.SCALAR }, options) as EntityProperty;
 
     return Utils.propertyDecoratorReturnValue();
   };

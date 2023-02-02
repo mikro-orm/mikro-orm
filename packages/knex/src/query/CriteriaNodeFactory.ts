@@ -1,5 +1,5 @@
 import type { Dictionary, EntityMetadata, MetadataStorage } from '@mikro-orm/core';
-import { ReferenceType, Utils, ValidationError } from '@mikro-orm/core';
+import { ReferenceKind, Utils, ValidationError } from '@mikro-orm/core';
 import { ObjectCriteriaNode } from './ObjectCriteriaNode';
 import { ArrayCriteriaNode } from './ArrayCriteriaNode';
 import { ScalarCriteriaNode } from './ScalarCriteriaNode';
@@ -48,7 +48,7 @@ export class CriteriaNodeFactory {
   static createObjectNode(metadata: MetadataStorage, entityName: string, payload: Dictionary, parent?: ICriteriaNode, key?: string): ICriteriaNode {
     const meta = metadata.find(entityName);
 
-    if (!parent && Object.keys(payload).every(k => meta?.properties[k]?.reference === ReferenceType.SCALAR)) {
+    if (!parent && Object.keys(payload).every(k => meta?.properties[k]?.kind === ReferenceKind.SCALAR)) {
       return this.createScalarNode(metadata, entityName, payload, parent, key);
     }
 
@@ -64,8 +64,8 @@ export class CriteriaNodeFactory {
   static createObjectItemNode(metadata: MetadataStorage, entityName: string, node: ICriteriaNode, payload: Dictionary, item: string, meta?: EntityMetadata) {
     const prop = meta?.properties[item];
 
-    if (prop?.reference !== ReferenceType.EMBEDDED) {
-      const childEntity = prop && prop.reference !== ReferenceType.SCALAR ? prop.type : entityName;
+    if (prop?.kind !== ReferenceKind.EMBEDDED) {
+      const childEntity = prop && prop.kind !== ReferenceKind.SCALAR ? prop.type : entityName;
       return this.createNode(metadata, childEntity, payload[item], node, item);
     }
 
