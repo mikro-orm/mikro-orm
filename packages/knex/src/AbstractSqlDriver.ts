@@ -36,7 +36,7 @@ import {
   QueryHelper,
   type QueryOrderMap,
   type QueryResult,
-  ReferenceType,
+  ReferenceKind,
   type RequiredEntityData,
   type Transaction,
   type UpsertManyOptions,
@@ -274,7 +274,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
       if (!hasPK) {
         // initialize empty collections
-        if ([ReferenceType.MANY_TO_MANY, ReferenceType.ONE_TO_MANY].includes(relation.reference)) {
+        if ([ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(relation.kind)) {
           result[relation.name] = result[relation.name] || [] as unknown as T[keyof T & string];
         }
 
@@ -302,7 +302,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         map[key] = result;
       }
 
-      if ([ReferenceType.MANY_TO_MANY, ReferenceType.ONE_TO_MANY].includes(relation.reference)) {
+      if ([ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(relation.kind)) {
         result[relation.name] = result[relation.name] || [] as unknown as T[keyof T & string];
         this.appendToCollection(meta2, result[relation.name] as Dictionary[], relationPojo);
       } else {
@@ -648,7 +648,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       insertDiff.push(...current);
     }
 
-    if (coll.property.reference === ReferenceType.ONE_TO_MANY) {
+    if (coll.property.kind === ReferenceKind.ONE_TO_MANY) {
       const cols = coll.property.referencedColumnNames;
       const qb = this.createQueryBuilder(coll.property.type, ctx, 'write')
         .withSchema(this.getSchemaName(meta, options));
@@ -768,7 +768,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     const relationsToPopulate = populate.map(({ field }) => field);
     const toPopulate: PopulateOptions<T>[] = meta.relations
-      .filter(prop => prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner && !relationsToPopulate.includes(prop.name))
+      .filter(prop => prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner && !relationsToPopulate.includes(prop.name))
       .filter(prop => fields.length === 0 || fields.some(f => prop.name === f || prop.name.startsWith(`${String(f)}.`)))
       .map(prop => ({ field: prop.name, strategy: prop.strategy }));
 
@@ -778,7 +778,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   protected joinedProps<T>(meta: EntityMetadata, populate: PopulateOptions<T>[]): PopulateOptions<T>[] {
     return populate.filter(p => {
       const prop = meta.properties[p.field] || {};
-      return (p.strategy || prop.strategy || this.config.get('loadStrategy')) === LoadStrategy.JOINED && prop.reference !== ReferenceType.SCALAR;
+      return (p.strategy || prop.strategy || this.config.get('loadStrategy')) === LoadStrategy.JOINED && prop.kind !== ReferenceKind.SCALAR;
     });
   }
 
@@ -911,7 +911,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     const ret: EntityData<T> = {};
 
     this.metadata.find(entityName)!.relations.forEach(prop => {
-      if (prop.reference === ReferenceType.MANY_TO_MANY && data[prop.name]) {
+      if (prop.kind === ReferenceKind.MANY_TO_MANY && data[prop.name]) {
         ret[prop.name] = data[prop.name].map((item: Primary<T>) => Utils.asArray(item));
         delete data[prop.name];
       }
@@ -1043,11 +1043,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
   }
 
   protected processField<T extends object>(meta: EntityMetadata<T>, prop: EntityProperty<T> | undefined, field: string, ret: Field<T>[], populate: PopulateOptions<T>[], joinedProps: PopulateOptions<T>[], qb: QueryBuilder<T>): void {
-    if (!prop || (prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner)) {
+    if (!prop || (prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner)) {
       return;
     }
 
-    if (prop.reference === ReferenceType.EMBEDDED) {
+    if (prop.kind === ReferenceKind.EMBEDDED) {
       if (prop.object) {
         ret.push(prop.name);
         return;

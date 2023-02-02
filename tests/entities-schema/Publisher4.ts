@@ -25,7 +25,7 @@ export const Publisher4 = new EntitySchema<IPublisher4, IBaseEntity5>({
     name: { type: 'string', default: 'asd' },
     type: { enum: true, items: () => PublisherType, default: PublisherType.LOCAL },
     enum3: { enum: true, items: [1, 2, 3], nullable: true },
-    books: { reference: '1:m', entity: 'Book4', mappedBy: 'publisher' },
-    tests: { reference: 'm:n', entity:  'Test4', fixedOrder: true },
+    books: { kind: '1:m', entity: 'Book4', mappedBy: 'publisher' },
+    tests: { kind: 'm:n', entity:  'Test4', fixedOrder: true },
   },
 });
