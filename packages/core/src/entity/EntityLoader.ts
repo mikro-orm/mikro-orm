@@ -210,7 +210,7 @@ export class EntityLoader {
     return data;
   }
 
-  private initializeCollections<T>(filtered: T[], prop: EntityProperty, field: keyof T, children: AnyEntity[]): void {
+  private initializeCollections<T extends object>(filtered: T[], prop: EntityProperty, field: keyof T, children: AnyEntity[]): void {
     if (prop.reference === ReferenceType.ONE_TO_MANY) {
       this.initializeOneToMany<T>(filtered, children, prop, field);
     }
@@ -220,7 +220,7 @@ export class EntityLoader {
     }
   }
 
-  private initializeOneToMany<T>(filtered: T[], children: AnyEntity[], prop: EntityProperty, field: keyof T): void {
+  private initializeOneToMany<T extends object>(filtered: T[], children: AnyEntity[], prop: EntityProperty, field: keyof T): void {
     for (const entity of filtered) {
       const items = children.filter(child => {
         if (prop.targetMeta!.properties[prop.mappedBy].mapToPk) {

@@ -158,13 +158,13 @@ describe('single table inheritance in mysql', () => {
     const owner = await orm.em.findOneOrFail(CompanyOwner2, { firstName: 'Bruce' });
     expect(owner).toBeInstanceOf(CompanyOwner2);
     expect(owner.favouriteEmployee).toBeInstanceOf(Employee2);
-    expect(wrap(owner.favouriteEmployee).isInitialized()).toBe(false);
-    await wrap(owner.favouriteEmployee).init();
-    expect(wrap(owner.favouriteEmployee).isInitialized()).toBe(true);
+    expect(wrap(owner.favouriteEmployee!).isInitialized()).toBe(false);
+    await wrap(owner.favouriteEmployee!).init();
+    expect(wrap(owner.favouriteEmployee!).isInitialized()).toBe(true);
     expect(owner.favouriteManager).toBeInstanceOf(Manager2);
-    expect(wrap(owner.favouriteManager).isInitialized()).toBe(false);
-    await wrap(owner.favouriteManager).init();
-    expect(wrap(owner.favouriteManager).isInitialized()).toBe(true);
+    expect(wrap(owner.favouriteManager!).isInitialized()).toBe(false);
+    await wrap(owner.favouriteManager!).init();
+    expect(wrap(owner.favouriteManager!).isInitialized()).toBe(true);
   });
 
   test('loading base type with discriminator condition', async () => {

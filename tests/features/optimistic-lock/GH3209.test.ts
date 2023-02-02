@@ -1,6 +1,17 @@
 /* eslint-disable eqeqeq */
 import type { Platform } from '@mikro-orm/core';
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, OptionalProps, PrimaryKey, PrimaryKeyType, Property, Type } from '@mikro-orm/core';
+import {
+  Collection,
+  Entity,
+  ManyToOne,
+  MikroORM,
+  OneToMany,
+  OptionalProps,
+  PrimaryKey,
+  PrimaryKeyProp,
+  Property,
+  Type,
+} from '@mikro-orm/core';
 import { mockLogger } from '../../helpers';
 import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
 
@@ -41,7 +52,7 @@ export class Author {
   @PrimaryKey({ type: TransformType })
   deletedDate: Date | 0 = 0;
 
-  [PrimaryKeyType]?: [string, number];
+  [PrimaryKeyProp]?: ['id', 'deletedDate'];
 
   [OptionalProps]?: 'deletedDate' | 'version';
 

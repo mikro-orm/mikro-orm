@@ -1,4 +1,4 @@
-import { BigIntType, Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, OptionalProps, PrimaryKey, Property } from '@mikro-orm/sqlite';
+import { BigIntType, Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, OptionalProps, PrimaryKey, Property } from '@mikro-orm/sqlite';
 import { performance } from 'perf_hooks';
 
 @Entity()
@@ -13,10 +13,10 @@ export class VendorBuyerRelationship {
   created!: Date;
 
   @ManyToOne(() => Member, { wrappedReference: true })
-  buyer!: IdentifiedReference<Member>;
+  buyer!: Ref<Member>;
 
   @ManyToOne(() => Member, { wrappedReference: true })
-  vendor!: IdentifiedReference<Member>;
+  vendor!: Ref<Member>;
 
   @OneToMany(() => Order, o => o.buyerRel)
   orders = new Collection<Order>(this);
@@ -44,7 +44,7 @@ export class Member {
   orders = new Collection<Order>(this);
 
   @ManyToOne(() => Member, { wrappedReference: true, nullable: true })
-  parent?: IdentifiedReference<Member>;
+  parent?: Ref<Member>;
 
 }
 
@@ -57,28 +57,28 @@ export class Job {
   id!: string;
 
   @ManyToOne(() => Member, { wrappedReference: true, nullable: true })
-  member?: IdentifiedReference<Member>;
+  member?: Ref<Member>;
 
   @ManyToOne(() => Order, { wrappedReference: true, nullable: true })
-  order?: IdentifiedReference<Order>;
+  order?: Ref<Order>;
 
   @OneToMany(() => Job, job => job.parent)
   children = new Collection<Job>(this);
 
   @ManyToOne(() => Job, { wrappedReference: true, nullable: true })
-  parent?: IdentifiedReference<Job>;
+  parent?: Ref<Job>;
 
   @Property()
   rejected: boolean = false;
 
   @ManyToOne(() => VendorBuyerRelationship, { wrappedReference: true, nullable: true })
-  buyer?: IdentifiedReference<VendorBuyerRelationship>;
+  buyer?: Ref<VendorBuyerRelationship>;
 
   @ManyToOne(() => Job, { wrappedReference: true, nullable: true })
-  delegate?: IdentifiedReference<Job>;
+  delegate?: Ref<Job>;
 
   @ManyToOne(() => Member, { wrappedReference: true, nullable: true })
-  assignee?: IdentifiedReference<Member>;
+  assignee?: Ref<Member>;
 
 }
 
@@ -94,13 +94,13 @@ export class Order {
   created!: Date;
 
   @ManyToOne(() => VendorBuyerRelationship, { wrappedReference: true, nullable: true })
-  buyerRel?: IdentifiedReference<VendorBuyerRelationship>;
+  buyerRel?: Ref<VendorBuyerRelationship>;
 
   @OneToMany(() => Job, job => job.order)
   jobs = new Collection<Job>(this);
 
   @ManyToOne(() => Member, { wrappedReference: true, nullable: true })
-  vendor?: IdentifiedReference<Member>;
+  vendor?: Ref<Member>;
 
 }
 

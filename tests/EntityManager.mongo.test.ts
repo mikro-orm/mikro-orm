@@ -195,7 +195,7 @@ describe('EntityManagerMongo', () => {
     const repo = orm.em.getRepository(FooBar);
     const a = await repo.findOne(bar.id, { populate: ['baz.bar'] });
     expect(wrap(a!.baz!).isInitialized()).toBe(true);
-    expect(wrap(a!.baz!.book).isInitialized()).toBe(true);
+    expect(wrap(a!.baz!.book!).isInitialized()).toBe(true);
     expect(a!.baz!.book!.title).toBe('FooBar vs FooBaz');
   });
 
@@ -730,11 +730,11 @@ describe('EntityManagerMongo', () => {
     expect(jon.name).toBe('Jon Snow');
     expect(jon.born).toEqual(new Date('1990-03-23'));
     expect(jon.favouriteBook).toBeInstanceOf(Book);
-    expect(wrap(jon.favouriteBook).isInitialized()).toBe(false);
+    expect(wrap(jon.favouriteBook!).isInitialized()).toBe(false);
 
-    await wrap(jon.favouriteBook).init();
+    await wrap(jon.favouriteBook!).init();
     expect(jon.favouriteBook).toBeInstanceOf(Book);
-    expect(wrap(jon.favouriteBook).isInitialized()).toBe(true);
+    expect(wrap(jon.favouriteBook!).isInitialized()).toBe(true);
     expect(jon.favouriteBook?.title).toBe('Bible');
   });
 
@@ -1703,20 +1703,20 @@ describe('EntityManagerMongo', () => {
     a.name = 'test 1';
     a.favouriteBook!.title = 'test 2';
     expect(wrap(a, true).__originalEntityData).toMatchObject({ name: 'Jon Snow' });
-    expect(wrap(a.favouriteBook, true).__originalEntityData).toMatchObject({ title: 'b1' });
+    expect(wrap(a.favouriteBook!, true).__originalEntityData).toMatchObject({ title: 'b1' });
     const a1 = await orm.em.findOneOrFail(Author, { favouriteBook: a.favouriteBook });
     expect(wrap(a, true).__originalEntityData).toMatchObject({ name: 'Jon Snow' });
-    expect(wrap(a.favouriteBook, true).__originalEntityData).toMatchObject({ title: 'b1' });
+    expect(wrap(a.favouriteBook!, true).__originalEntityData).toMatchObject({ title: 'b1' });
     const b1 = await orm.em.findOneOrFail(Book, { author });
     expect(a.name).toBe('test 1');
     expect(a.favouriteBook?.title).toBe('test 2');
     expect(a1.name).toBe('test 1');
     expect(b1.title).toBe('test 2');
     expect(wrap(a, true).__originalEntityData).toMatchObject({ name: 'Jon Snow' });
-    expect(wrap(a.favouriteBook, true).__originalEntityData).toMatchObject({ title: 'b1' });
+    expect(wrap(a.favouriteBook!, true).__originalEntityData).toMatchObject({ title: 'b1' });
     await orm.em.flush();
     expect(wrap(a, true).__originalEntityData).toMatchObject({ name: 'test 1' });
-    expect(wrap(a.favouriteBook, true).__originalEntityData).toMatchObject({ title: 'test 2' });
+    expect(wrap(a.favouriteBook!, true).__originalEntityData).toMatchObject({ title: 'test 2' });
     orm.em.clear();
 
     const a2 = await orm.em.findOneOrFail(Author, author);
@@ -1841,8 +1841,8 @@ describe('EntityManagerMongo', () => {
     await orm.em.persistAndFlush([author, author2]);
     orm.em.clear();
 
-    const ref = orm.em.getReference<Author, 'id' | '_id'>(Author, author.id, { wrapped: true });
-    const ref1 = orm.em.getRepository(Author).getReference<'id' | '_id'>(author.id, { wrapped: true });
+    const ref = orm.em.getReference<Author>(Author, author.id, { wrapped: true });
+    const ref1 = orm.em.getRepository(Author).getReference(author.id, { wrapped: true });
     expect(ref).toBe(ref1);
     expect(ref.unwrap()).toBe(ref1.unwrap());
     // @ts-expect-error private getter
@@ -1871,7 +1871,7 @@ describe('EntityManagerMongo', () => {
     expect(wrap(ent).isInitialized()).toBe(true);
     orm.em.clear();
 
-    const ref4 = orm.em.getReference<Author, 'id' | '_id'>(Author, author.id, { wrapped: true });
+    const ref4 = orm.em.getReference(Author, author.id, { wrapped: true });
     expect(ref4.isInitialized()).toBe(false);
     await expect(ref4.load('name')).resolves.toBe('God');
     expect(ref4.isInitialized()).toBe(true);

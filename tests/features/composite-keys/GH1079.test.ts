@@ -1,4 +1,15 @@
-import { Entity, PrimaryKey, MikroORM, ManyToOne, Enum, PrimaryKeyType, Property, BigIntType, wrap, OptionalProps } from '@mikro-orm/core';
+import {
+  Entity,
+  PrimaryKey,
+  MikroORM,
+  ManyToOne,
+  Enum,
+  Property,
+  BigIntType,
+  wrap,
+  OptionalProps,
+  PrimaryKeyProp,
+} from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { v4 } from 'uuid';
 import { mockLogger } from '../../helpers';
@@ -14,7 +25,7 @@ class User {
 @Entity()
 class Wallet {
 
-  [PrimaryKeyType]?: [string, string];
+  [PrimaryKeyProp]?: ['currencyRef', 'owner'];
 
   @PrimaryKey()
   currencyRef!: string;
@@ -56,7 +67,7 @@ enum DepositStatus {
 @Entity()
 export class Deposit extends AbstractDeposit<'status'> {
 
-  [PrimaryKeyType]?: [string, string, string];
+  [PrimaryKeyProp]?: ['txRef', 'wallet'];
 
   @PrimaryKey()
   txRef!: string;

@@ -138,7 +138,7 @@ export class ObjectHydratorOld {
     const meta = this.metadata.find(prop.type)!;
 
     if (Utils.isPrimaryKey(value, meta.compositePK)) {
-      return factory.createReference<T>(prop.type, value, { merge: true });
+      return factory.createReference<T>(prop.type, value as any, { merge: true });
     }
 
     if (Utils.isEntity<T>(value)) {

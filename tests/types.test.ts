@@ -1,9 +1,9 @@
-import { OptionalProps, Ref, wrap } from '@mikro-orm/core';
-import type { BaseEntity, IdentifiedReference, Reference, Collection, EntityManager, EntityName, RequiredEntityData } from '@mikro-orm/core';
+import { OptionalProps, wrap } from '@mikro-orm/core';
+import type { BaseEntity, Ref, Reference, Collection, EntityManager, EntityName, RequiredEntityData } from '@mikro-orm/core';
 import type { Has, IsExact } from 'conditional-type-checks';
 import { assert } from 'conditional-type-checks';
 import type { ObjectId } from 'bson';
-import type { EntityData, EntityDTO, FilterQuery, FilterValue, Loaded, OperatorMap, Primary, PrimaryKeyType, Query } from '../packages/core/src/typings';
+import type { EntityData, EntityDTO, FilterQuery, FilterValue, Loaded, OperatorMap, Primary, PrimaryKeyProp, Query } from '../packages/core/src/typings';
 import type { Author2, Book2, BookTag2, Car2, FooBar2, FooParam2, Publisher2, User2 } from './entities-sql';
 import type { Author, Book } from './entities';
 
@@ -18,8 +18,8 @@ describe('check typings', () => {
     assert<IsExact<Primary<{ id?: number }>, number>>(true);
     assert<IsExact<Primary<Author2>, string>>(false);
 
-    // PrimaryKeyType symbol has priority
-    type Test = { _id: ObjectId; id: string; uuid: number; [PrimaryKeyType]?: Date };
+    // PrimaryKeyProp symbol has priority
+    type Test = { _id: ObjectId; id: string; uuid: number; foo: Date; [PrimaryKeyProp]?: 'foo' };
     assert<IsExact<Primary<Test>, Date>>(true);
     assert<IsExact<Primary<Test>, ObjectId>>(false);
     assert<IsExact<Primary<Test>, string>>(false);
@@ -44,7 +44,7 @@ describe('check typings', () => {
     b = { publisher: null };
     b = { publisher: { name: 'p' } };
     b = { publisher: {} as Publisher2 };
-    b = { publisher: {} as IdentifiedReference<Publisher2> };
+    b = { publisher: {} as Ref<Publisher2> };
 
     // @ts-expect-error
     b = { name: 'a' };
@@ -63,6 +63,7 @@ describe('check typings', () => {
     c = { name: 'n', price: 123, year: 2021, users: [{ firstName: 'f', lastName: 'l' }] };
     c = { name: 'n', price: 123, year: 2021, users: [{} as User2] };
     c = { name: 'n', price: 123, year: 2021, users: [['f', 'l']] };
+    type T = Primary<User2>;
 
     // @ts-expect-error
     c = { name: 'n', price: 123, year: '2021' };
@@ -260,7 +261,7 @@ describe('check typings', () => {
       name: string;
       publisher?: Publisher;
       publisherRef?: Reference<Publisher>;
-      publisherIdRef?: IdentifiedReference<Publisher, 'id'>;
+      publisherIdRef?: Ref<Publisher>;
     }
 
     // simulate usage of ORM base entity so `wrap` will return its parameter
@@ -270,24 +271,20 @@ describe('check typings', () => {
     book.publisher = publisher;
     // @ts-expect-error
     book.publisher = wrap(publisher).toReference();
-    // @ts-expect-error
-    book.publisher = wrap(publisher).toReference<'id'>();
 
     const id = book.publisherIdRef?.id;
 
     // @ts-expect-error
     book.publisherRef = publisher;
     book.publisherRef = wrap(publisher).toReference();
-    book.publisherRef = wrap(publisher).toReference<'id'>();
 
     // @ts-expect-error
     book.publisherIdRef = publisher;
     book.publisherIdRef = wrap(publisher).toReference();
-    book.publisherIdRef = wrap(publisher).toReference<'id'>();
 
     // composite keys
     const compositePks: Primary<FooParam2> = [1, 2];
-    const compositeRef = {} as IdentifiedReference<FooParam2>;
+    const compositeRef = {} as Ref<FooParam2>;
     const bar = compositeRef.bar;
     const baz = compositeRef.baz;
   });
@@ -304,7 +301,7 @@ describe('check typings', () => {
       readonly born?: Date;
       readonly rel?: Publisher;
       readonly relRef?: Reference<Publisher>;
-      readonly relIdRef?: IdentifiedReference<Publisher, 'id'>;
+      readonly relIdRef?: Ref<Publisher>;
       readonly rels?: Collection<Publisher>;
     }
 
@@ -518,12 +515,12 @@ describe('check typings', () => {
   });
 
   test('Loaded type and assignability with extending the ORM BaseEntity (#3865)', async () => {
-    interface MemberNotification extends BaseEntity<MemberNotification, 'id'> {
+    interface MemberNotification extends BaseEntity {
       id: string;
       notification?: Ref<Notification>;
     }
 
-    interface Notification extends BaseEntity<Notification, 'id'> {
+    interface Notification extends BaseEntity {
       id: string;
     }
 
