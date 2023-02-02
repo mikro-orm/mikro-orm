@@ -25,10 +25,10 @@ export class EventManager {
       });
   }
 
-  dispatchEvent<T>(event: TransactionEventType, args: TransactionEventArgs): unknown;
-  dispatchEvent<T>(event: EventType.onInit, args: Partial<EventArgs<T>>): unknown;
-  dispatchEvent<T>(event: EventType, args: Partial<EventArgs<T> | FlushEventArgs>): Promise<unknown>;
-  dispatchEvent<T>(event: EventType, args: Partial<AnyEventArgs<T>>): Promise<unknown> | unknown {
+  dispatchEvent<T extends object>(event: TransactionEventType, args: TransactionEventArgs): unknown;
+  dispatchEvent<T extends object>(event: EventType.onInit, args: Partial<EventArgs<T>>): unknown;
+  dispatchEvent<T extends object>(event: EventType, args: Partial<EventArgs<T> | FlushEventArgs>): Promise<unknown>;
+  dispatchEvent<T extends object>(event: EventType, args: Partial<AnyEventArgs<T>>): Promise<unknown> | unknown {
     const listeners: AsyncFunction[] = [];
     const entity = (args as EventArgs<T>).entity;
 
@@ -86,4 +86,4 @@ export class EventManager {
 
 }
 
-type AnyEventArgs<T> = EventArgs<T> | FlushEventArgs | TransactionEventArgs;
+type AnyEventArgs<T extends object> = EventArgs<T> | FlushEventArgs | TransactionEventArgs;

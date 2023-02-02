@@ -57,7 +57,7 @@ export class ArrayCollection<T extends object, O extends object> {
 
     return items.map(i => {
       if (Utils.isEntity(i[field as keyof T], true)) {
-        return wrap(i[field as keyof T], true).getPrimaryKey();
+        return wrap(i[field as keyof T]!, true).getPrimaryKey();
       }
 
       return i[field as keyof T];

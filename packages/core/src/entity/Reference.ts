@@ -1,15 +1,12 @@
 import { inspect } from 'util';
 import type {
-  Cast,
   ConnectionType,
   Dictionary,
   EntityClass,
   EntityProperty,
-  IsUnknown,
   LoadedReference,
   Populate,
   Primary,
-  PrimaryProperty,
   Ref,
 } from '../typings';
 import type { EntityFactory } from './EntityFactory';
@@ -17,9 +14,7 @@ import type { LockMode } from '../enums';
 import { helper, wrap } from './wrap';
 import { Utils } from '../utils/Utils';
 
-export type IdentifiedReference<T, PK extends keyof T | unknown = PrimaryProperty<T>> = true extends IsUnknown<PK> ? Reference<T> : ({ [K in Cast<PK, keyof T>]: T[K] } & Reference<T>);
-
-export class Reference<T> {
+export class Reference<T extends object> {
 
   constructor(private entity: T) {
     this.set(entity);
@@ -42,9 +37,9 @@ export class Reference<T> {
     }
   }
 
-  static create<T extends object, PK extends keyof T | unknown = PrimaryProperty<T>>(entity: T | IdentifiedReference<T, PK>): IdentifiedReference<T, PK> {
+  static create<T extends object>(entity: T | Ref<T>): Ref<T> {
     const unwrapped = Reference.unwrapReference(entity);
-    const ref = helper(entity).toReference() as IdentifiedReference<T, PK>;
+    const ref = helper(entity).toReference() as Ref<T>;
 
     if (unwrapped !== ref.unwrap()) {
       ref.set(unwrapped);
@@ -53,12 +48,12 @@ export class Reference<T> {
     return ref;
   }
 
-  static createFromPK<T extends object, PK extends keyof T | unknown = PrimaryProperty<T>>(entityType: EntityClass<T>, pk: Primary<T>, options?: { schema?: string }): IdentifiedReference<T, PK> {
+  static createFromPK<T extends object>(entityType: EntityClass<T>, pk: Primary<T>, options?: { schema?: string }): Ref<T> {
     const ref = this.createNakedFromPK(entityType, pk, options);
     return helper(ref).toReference();
   }
 
-  static createNakedFromPK<T extends object, PK extends keyof T | unknown = PrimaryProperty<T>>(entityType: EntityClass<T>, pk: Primary<T>, options?: { schema?: string }): T {
+  static createNakedFromPK<T extends object>(entityType: EntityClass<T>, pk: Primary<T>, options?: { schema?: string }): T {
     const factory = entityType.prototype.__factory as EntityFactory;
     return factory.createReference(entityType, pk, {
       merge: false,
@@ -122,7 +117,7 @@ export class Reference<T> {
     return this.entity;
   }
 
-  set(entity: T | IdentifiedReference<T>): void {
+  set(entity: T | Ref<T>): void {
     this.entity = Reference.unwrapReference(entity as T & object);
     delete helper(this.entity).__reference;
   }
@@ -189,17 +184,17 @@ export interface LoadReferenceOptions<T, P extends string = never> {
 /**
  * shortcut for `wrap(entity).toReference()`
  */
-export function ref<T extends object, PK extends keyof T | unknown = PrimaryProperty<T>>(entity: T | Ref<T, any>): Ref<T, PK> & LoadedReference<T>;
+export function ref<T extends object>(entity: T | Ref<T>): Ref<T> & LoadedReference<T>;
 
 /**
  * shortcut for `Reference.createFromPK(entityType, pk)`
  */
-export function ref<T extends object, PK extends keyof T | unknown = PrimaryProperty<T>, PKV extends Primary<T> = Primary<T>>(entityType: EntityClass<T>, pk?: T | PKV): Ref<T, PK>;
+export function ref<T extends object, PKV extends Primary<T> = Primary<T>>(entityType: EntityClass<T>, pk?: T | PKV): Ref<T>;
 
 /**
  * shortcut for `wrap(entity).toReference()`
  */
-export function ref<T extends object, PK extends keyof T | unknown = PrimaryProperty<T>, PKV extends Primary<T> = Primary<T>>(entityOrType?: T | Ref<T, any> | EntityClass<T>, pk?: T | PKV): Ref<T, PK> | undefined | null {
+export function ref<T extends object, PKV extends Primary<T> = Primary<T>>(entityOrType?: T | Ref<T> | EntityClass<T>, pk?: T | PKV): Ref<T> | undefined | null {
   if (entityOrType == null) {
     return pk as null;
   }
@@ -210,10 +205,10 @@ export function ref<T extends object, PK extends keyof T | unknown = PrimaryProp
 
   if (Utils.isEntityClass(entityOrType)) {
     if (pk == null) {
-      return pk;
+      return pk as null;
     }
 
-    return Reference.createFromPK<T, PK>(entityOrType as EntityClass<T>, pk);
+    return Reference.createFromPK<T>(entityOrType as EntityClass<T>, pk);
   }
 
   return (entityOrType as Dictionary).__helper.toReference();

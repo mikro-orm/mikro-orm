@@ -123,8 +123,8 @@ export class Author extends BaseEntity<Author, 'termsAccepted' | 'code2' | 'vers
     Author.afterDestroyCalled += 1;
   }
 
-  assign(data: any): Author {
-    return EntityAssigner.assign<Author>(this, data);
+  assign(data: any): this {
+    return EntityAssigner.assign(this, data);
   }
 
   toJSON(strict = true, strip = ['id', 'email'], ...args: any[]): EntityDTO<this> {

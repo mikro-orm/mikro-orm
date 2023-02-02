@@ -1,4 +1,4 @@
-import { Entity, MikroORM, PrimaryKey, Property, ManyToOne, PrimaryKeyType } from '@mikro-orm/better-sqlite';
+import { Entity, MikroORM, PrimaryKey, Property, ManyToOne } from '@mikro-orm/better-sqlite';
 
 @Entity()
 class Main {
@@ -8,8 +8,6 @@ class Main {
 
   @Property({ primary: true })
   pk_two!: string;
-
-  [PrimaryKeyType]?: [string, string];
 
   @Property()
   type!: string;
@@ -24,8 +22,6 @@ class Dependent {
 
   @PrimaryKey()
   id!: string;
-
-  [PrimaryKeyType]?: [string, string, string];
 
   @Property()
   bar!: string;

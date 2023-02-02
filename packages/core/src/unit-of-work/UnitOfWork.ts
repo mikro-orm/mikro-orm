@@ -559,7 +559,7 @@ export class UnitOfWork {
 
     return wrapped.__meta.uniqueProps.map(prop => {
       if (entity[prop.name]) {
-        return prop.reference === ReferenceType.SCALAR || prop.mapToPk ? entity[prop.name] : helper(entity[prop.name]).getSerializedPrimaryKey();
+        return prop.reference === ReferenceType.SCALAR || prop.mapToPk ? entity[prop.name] : helper(entity[prop.name]!).getSerializedPrimaryKey();
       }
 
       if (wrapped.__originalEntityData?.[prop.name as string]) {

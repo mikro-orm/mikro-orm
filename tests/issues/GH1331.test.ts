@@ -1,7 +1,7 @@
 import {
   Collection,
   Entity,
-  IdentifiedReference,
+  Ref,
   LoadStrategy,
   ManyToOne,
   MikroORM,
@@ -27,7 +27,7 @@ export class D {
     wrappedReference: true,
     nullable: true,
   })
-  c?: IdentifiedReference<C>;
+  c?: Ref<C>;
 
 }
 
@@ -45,7 +45,7 @@ export class C {
     wrappedReference: true,
     nullable: true,
   })
-  b?: IdentifiedReference<B>;
+  b?: Ref<B>;
 
   @OneToMany(
     () => D,
@@ -73,7 +73,7 @@ export class B {
     wrappedReference: true,
     nullable: true,
   })
-  a?: IdentifiedReference<A>;
+  a?: Ref<A>;
 
   @OneToMany(
     () => C,
