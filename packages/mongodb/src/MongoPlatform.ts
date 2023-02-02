@@ -1,6 +1,6 @@
 import { ObjectId } from 'bson';
 import {
- Platform, MongoNamingStrategy, Utils, ReferenceType, MetadataError, type
+ Platform, MongoNamingStrategy, Utils, ReferenceKind, MetadataError, type
   IPrimaryKey, type Primary, type NamingStrategy, type Constructor, type EntityRepository, type EntityProperty, type
   PopulateOptions, type EntityMetadata, type IDatabaseDriver, type EntityManager, type Configuration, type MikroORM } from '@mikro-orm/core';
 import { MongoExceptionConverter } from './MongoExceptionConverter';
@@ -86,7 +86,7 @@ export class MongoPlatform extends Platform {
       return true;
     }
 
-    return prop.reference === ReferenceType.MANY_TO_MANY && prop.owner;
+    return prop.kind === ReferenceKind.MANY_TO_MANY && prop.owner;
   }
 
   validateMetadata(meta: EntityMetadata): void {

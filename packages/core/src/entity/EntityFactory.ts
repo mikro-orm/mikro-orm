@@ -2,7 +2,7 @@ import { Utils } from '../utils/Utils';
 import type { Dictionary, EntityData, EntityMetadata, EntityName, EntityProperty, New, Primary } from '../typings';
 import type { EntityManager } from '../EntityManager';
 import { QueryHelper } from '../utils/QueryHelper';
-import { EventType, ReferenceType } from '../enums';
+import { EventType, ReferenceKind } from '../enums';
 import { Reference } from './Reference';
 import { helper } from './wrap';
 import type { EntityComparator } from '../utils/EntityComparator';
@@ -122,7 +122,7 @@ export class EntityFactory {
 
     // but always add collection properties and formulas if they are part of the `data`
     Object.keys(data)
-      .filter(key => meta.properties[key]?.formula || [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(meta.properties[key]?.reference))
+      .filter(key => meta.properties[key]?.formula || [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(meta.properties[key]?.kind))
       .forEach(key => diff2[key] = data[key]);
 
     // rehydrated with the new values, skip those changed by user
@@ -133,7 +133,7 @@ export class EntityFactory {
     Object.keys(diff2).forEach(key => {
       const prop = meta.properties[key];
 
-      if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && Utils.isPlainObject(data[prop.name])) {
+      if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && Utils.isPlainObject(data[prop.name])) {
         diff2[key] = entity[prop.name] ? helper(entity[prop.name]).getPrimaryKey(options.convertCustomTypes) : null;
       }
 
@@ -143,7 +143,7 @@ export class EntityFactory {
 
     // in case of joined loading strategy, we need to cascade the merging to possibly loaded relations manually
     meta.relations.forEach(prop => {
-      if ([ReferenceType.MANY_TO_MANY, ReferenceType.ONE_TO_MANY].includes(prop.reference) && Array.isArray(data[prop.name as string])) {
+      if ([ReferenceKind.MANY_TO_MANY, ReferenceKind.ONE_TO_MANY].includes(prop.kind) && Array.isArray(data[prop.name as string])) {
         // instead of trying to match the collection items (which could easily fail if the collection was loaded with different ordering),
         // we just create the entity from scratch, which will automatically pick the right one from the identity map and call `mergeData` on it
         (data[prop.name as string] as EntityData<T>[])
@@ -153,7 +153,7 @@ export class EntityFactory {
         return;
       }
 
-      if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && Utils.isPlainObject(data[prop.name as string]) && entity[prop.name] && helper(entity[prop.name]!).__initialized) {
+      if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && Utils.isPlainObject(data[prop.name as string]) && entity[prop.name] && helper(entity[prop.name]!).__initialized) {
         this.create(prop.type, data[prop.name as string] as EntityData<T>, options); // we can ignore the value, we just care about the `mergeData` call
       }
     });
@@ -169,7 +169,7 @@ export class EntityFactory {
 
     if (Array.isArray(id)) {
       // composite FK as PK needs to be wrapped for `getPrimaryKeyCondFromArray` to work correctly
-      if (!meta.compositePK && meta.getPrimaryProps()[0].reference !== ReferenceType.SCALAR) {
+      if (!meta.compositePK && meta.getPrimaryProps()[0].kind !== ReferenceKind.SCALAR) {
         id = [id] as Primary<T>[];
       }
 
@@ -233,7 +233,7 @@ export class EntityFactory {
 
       if (!options.newEntity) {
         meta.relations
-          .filter(prop => [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference))
+          .filter(prop => [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind))
           .forEach(prop => delete entity[prop.name]);
 
         if (options.initialized && !(entity as Dictionary).__gettersDefined) {
@@ -328,7 +328,7 @@ export class EntityFactory {
    */
   private extractConstructorParams<T>(meta: EntityMetadata<T>, data: EntityData<T>, options: FactoryOptions): T[keyof T][] {
     return meta.constructorParams.map(k => {
-      if (meta.properties[k] && [ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(meta.properties[k].reference) && data[k]) {
+      if (meta.properties[k] && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(meta.properties[k].kind) && data[k]) {
         const entity = this.unitOfWork.getById(meta.properties[k].type, data[k], options.schema) as T[keyof T];
 
         if (entity) {
@@ -347,7 +347,7 @@ export class EntityFactory {
         return this.createReference(meta.properties[k].type, data[k], rest);
       }
 
-      if (meta.properties[k]?.reference === ReferenceType.EMBEDDED && data[k]) {
+      if (meta.properties[k]?.kind === ReferenceKind.EMBEDDED && data[k]) {
         /* istanbul ignore next */
         if (Utils.isEntity<T>(data[k])) {
           return data[k];
