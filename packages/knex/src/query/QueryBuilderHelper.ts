@@ -1,7 +1,7 @@
 import type { Knex } from 'knex';
 import { inspect } from 'util';
 import type { Dictionary, EntityData, EntityMetadata, EntityProperty, FlatQueryOrderMap, QBFilterQuery } from '@mikro-orm/core';
-import { LockMode, OptimisticLockError, GroupOperator, QueryOperator, QueryOrderNumeric, ReferenceType, Utils } from '@mikro-orm/core';
+import { LockMode, OptimisticLockError, GroupOperator, QueryOperator, QueryOrderNumeric, ReferenceKind, Utils } from '@mikro-orm/core';
 import { QueryType } from './enums';
 import type { Field, JoinOptions } from '../typings';
 import type { AbstractSqlDriver } from '../AbstractSqlDriver';
@@ -321,7 +321,7 @@ export class QueryBuilderHelper {
   }
 
   mapJoinColumns(type: QueryType, join: JoinOptions): (string | Knex.Raw)[] {
-    if (join.prop && join.prop.reference === ReferenceType.ONE_TO_ONE && !join.prop.owner) {
+    if (join.prop && join.prop.kind === ReferenceKind.ONE_TO_ONE && !join.prop.owner) {
       return join.prop.fieldNames.map((fieldName, idx) => {
         return this.mapper(`${join.alias}.${join.inverseJoinColumns![idx]}`, type, undefined, fieldName);
       });
@@ -337,7 +337,7 @@ export class QueryBuilderHelper {
     const meta = this.metadata.find(this.entityName)!;
     const prop = meta.properties[field];
 
-    return prop && prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner;
+    return prop && prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner;
   }
 
   getTableName(entityName: string): string {
@@ -736,7 +736,7 @@ export class QueryBuilderHelper {
     if (alias && meta) {
       const prop = meta.properties[alias];
 
-      if (prop?.reference === ReferenceType.EMBEDDED) {
+      if (prop?.kind === ReferenceKind.EMBEDDED) {
         // we want to select the full object property so hydration works as expected
         if (prop.object) {
           return prop;

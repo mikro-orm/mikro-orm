@@ -16,7 +16,7 @@ import { ChangeSetPersister } from './ChangeSetPersister';
 import { CommitOrderCalculator } from './CommitOrderCalculator';
 import { Utils } from '../utils/Utils';
 import type { EntityManager } from '../EntityManager';
-import { Cascade, EventType, LockMode, ReferenceType } from '../enums';
+import { Cascade, EventType, LockMode, ReferenceKind } from '../enums';
 import { OptimisticLockError, ValidationError } from '../errors';
 import type { Transaction } from '../connections';
 import { TransactionEventBroadcaster } from '../events';
@@ -305,7 +305,7 @@ export class UnitOfWork {
       const relation = Reference.unwrapReference(entity[prop.name] as object);
       const prop2 = prop.targetMeta!.properties[inverseProp];
 
-      if (prop.reference === ReferenceType.ONE_TO_MANY && prop2.nullable && Utils.isCollection<AnyEntity>(relation)) {
+      if (prop.kind === ReferenceKind.ONE_TO_MANY && prop2.nullable && Utils.isCollection<AnyEntity>(relation)) {
         relation.getItems(false).forEach(item => delete item[inverseProp]);
         continue;
       }
@@ -589,7 +589,7 @@ export class UnitOfWork {
 
     const simpleUniqueHashes = wrapped.__meta.uniqueProps.map(prop => {
       if (entity[prop.name] != null) {
-        return prop.reference === ReferenceType.SCALAR || prop.mapToPk ? entity[prop.name] : helper(entity[prop.name]!).getSerializedPrimaryKey();
+        return prop.kind === ReferenceKind.SCALAR || prop.mapToPk ? entity[prop.name] : helper(entity[prop.name]!).getSerializedPrimaryKey();
       }
 
       if (wrapped.__originalEntityData?.[prop.name as string] != null) {
@@ -630,7 +630,7 @@ export class UnitOfWork {
 
     const pk = wrapped.__meta.getPrimaryProps()[0];
 
-    if (pk.reference === ReferenceType.SCALAR) {
+    if (pk.kind === ReferenceKind.SCALAR) {
       wrapped.__identifier = new EntityIdentifier();
     } else if (entity[pk.name]) {
       this.initIdentifier(entity[pk.name] as object);
@@ -639,7 +639,7 @@ export class UnitOfWork {
   }
 
   private processReference<T extends object>(parent: T, prop: EntityProperty<T>, reference: any, visited: Set<AnyEntity>, idx: number): void {
-    const isToOne = prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE;
+    const isToOne = prop.kind === ReferenceKind.MANY_TO_ONE || prop.kind === ReferenceKind.ONE_TO_ONE;
 
     if (isToOne && Utils.isEntity(reference)) {
       return this.processToOneReference(reference, visited, idx);
@@ -653,7 +653,7 @@ export class UnitOfWork {
           item.__helper!.__schema ??= helper(parent).__schema;
         });
 
-      if (prop.reference === ReferenceType.MANY_TO_MANY && reference.isDirty()) {
+      if (prop.kind === ReferenceKind.MANY_TO_MANY && reference.isDirty()) {
         this.processToManyReference(reference, visited, parent, prop);
       }
     }
@@ -751,13 +751,13 @@ export class UnitOfWork {
 
     const reference = Reference.unwrapReference(entity[prop.name] as object) as T | Collection<AnyEntity>;
 
-    if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && Utils.isEntity(reference)) {
+    if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && Utils.isEntity(reference)) {
       return this.cascade(reference as T, type, visited, options);
     }
 
     const collection = reference as Collection<AnyEntity>;
 
-    if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference) && collection) {
+    if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) && collection) {
       if (type === Cascade.MERGE && collection.isInitialized()) {
         collection.populated();
       }
@@ -819,7 +819,7 @@ export class UnitOfWork {
   private fixMissingReference<T extends object>(entity: T, prop: EntityProperty<T>): void {
     const reference = Reference.unwrapReference(entity[prop.name] as object);
 
-    if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && reference && !prop.mapToPk) {
+    if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && reference && !prop.mapToPk) {
       if (!Utils.isEntity(reference)) {
         entity[prop.name] = this.em.getReference(prop.type, reference as Primary<T[string & keyof T]>, { wrapped: !!prop.wrappedReference }) as T[string & keyof T];
       } else if (!helper(reference).__initialized && !helper(reference).__em) {
@@ -828,7 +828,7 @@ export class UnitOfWork {
       }
     }
 
-    const isCollection = [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference);
+    const isCollection = [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind);
 
     if (isCollection && Array.isArray(reference)) {
       const collection = new Collection<AnyEntity>(entity);
@@ -893,7 +893,7 @@ export class UnitOfWork {
     }
 
     const props = changeSets[0].meta.relations.filter(prop => {
-      return (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner) || prop.reference === ReferenceType.MANY_TO_ONE;
+      return (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner) || prop.kind === ReferenceKind.MANY_TO_ONE;
     });
 
     for (const changeSet of changeSets) {
@@ -1071,7 +1071,7 @@ export class UnitOfWork {
       }
 
       // cascade to m:1 relations as we need to snapshot the 1:m inverse side (for `removeAll()` with orphan removal)
-      if (prop.reference === ReferenceType.MANY_TO_ONE && value) {
+      if (prop.kind === ReferenceKind.MANY_TO_ONE && value) {
         this.takeCollectionSnapshots(Reference.unwrapReference(value), visited);
       }
     });

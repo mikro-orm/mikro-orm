@@ -41,7 +41,7 @@ import type {
   Ref,
 } from './typings';
 import type { TransactionOptions } from './enums';
-import { EventType, FlushMode, LoadStrategy, LockMode, PopulateHint, ReferenceType, SCALAR_TYPES } from './enums';
+import { EventType, FlushMode, LoadStrategy, LockMode, PopulateHint, ReferenceKind, SCALAR_TYPES } from './enums';
 import type { MetadataStorage } from './metadata';
 import type { Transaction } from './connections';
 import type { FlushEventArgs } from './events';
@@ -1123,7 +1123,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     Object.keys(data).forEach(k => {
       const prop = meta.properties[k];
 
-      if (prop && prop.reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(prop.type) && (prop.setter || !prop.getter)) {
+      if (prop && prop.kind === ReferenceKind.SCALAR && SCALAR_TYPES.includes(prop.type) && (prop.setter || !prop.getter)) {
         data[k] = this.validator.validateProperty(prop, data[k], data);
       }
     });
