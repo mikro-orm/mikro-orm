@@ -2,8 +2,8 @@ import { inspect } from 'util';
 import type { EntityDTO, EntityProperty, IPrimaryKey, Primary } from '../typings';
 import { Reference } from './Reference';
 import { helper, wrap } from './wrap';
-import { ReferenceType } from '../enums';
 import { MetadataError, ValidationError } from '../errors';
+import { ReferenceKind } from '../enums';
 import { Utils } from '../utils/Utils';
 
 export class ArrayCollection<T extends object, O extends object> {
@@ -379,11 +379,11 @@ export class ArrayCollection<T extends object, O extends object> {
   protected propagateToOwningSide(item: T, method: 'add' | 'remove' | 'takeSnapshot'): void {
     const collection = item[this.property.mappedBy as keyof T] as unknown as ArrayCollection<O, T>;
 
-    if (this.property.reference === ReferenceType.MANY_TO_MANY) {
+    if (this.property.kind === ReferenceKind.MANY_TO_MANY) {
       if (this.shouldPropagateToCollection(collection, method)) {
         collection[method](this.owner);
       }
-    } else if (this.property.reference === ReferenceType.ONE_TO_MANY && method !== 'takeSnapshot') {
+    } else if (this.property.kind === ReferenceKind.ONE_TO_MANY && method !== 'takeSnapshot') {
       const prop2 = this.property.targetMeta!.properties[this.property.mappedBy];
       const owner = prop2.mapToPk ? helper(this.owner).getPrimaryKey() : this.owner;
       const value = method === 'add' ? owner : null;

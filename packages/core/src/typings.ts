@@ -1,5 +1,5 @@
 import type { Transaction } from './connections';
-import { ReferenceType, type Cascade, type EventType, type LoadStrategy, type LockMode, type QueryOrderMap } from './enums';
+import { ReferenceKind, type Cascade, type EventType, type LoadStrategy, type LockMode, type QueryOrderMap } from './enums';
 import {
   EntityHelper,
   Reference,
@@ -280,7 +280,7 @@ export interface EntityProperty<T = any> {
   length?: number;
   precision?: number;
   scale?: number;
-  reference: ReferenceType;
+  kind: ReferenceKind;
   /** @deprecated use `ref` instead, `wrappedReference` option will be removed in v6 */
   wrappedReference?: boolean;
   fieldNames: string[];
@@ -404,7 +404,7 @@ export class EntityMetadata<T = any> {
     this.root ??= this;
     const props = Object.values<EntityProperty<T>>(this.properties).sort((a, b) => this.propertyOrder.get(a.name)! - this.propertyOrder.get(b.name)!);
     this.props = [...props.filter(p => p.primary), ...props.filter(p => !p.primary)];
-    this.relations = this.props.filter(prop => prop.reference !== ReferenceType.SCALAR && prop.reference !== ReferenceType.EMBEDDED);
+    this.relations = this.props.filter(prop => prop.kind !== ReferenceKind.SCALAR && prop.kind !== ReferenceKind.EMBEDDED);
     this.bidirectionalRelations = this.relations.filter(prop => prop.mappedBy || prop.inversedBy);
     this.uniqueProps = this.props.filter(prop => prop.unique);
     this.comparableProps = this.props.filter(prop => EntityComparator.isComparable(prop, this.root));
@@ -435,8 +435,8 @@ export class EntityMetadata<T = any> {
     }
 
     this.definedProperties = this.props.reduce((o, prop) => {
-      const isCollection = [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference);
-      const isReference = [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk;
+      const isCollection = [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind);
+      const isReference = [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk;
 
       if (isReference) {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -489,7 +489,7 @@ export class EntityMetadata<T = any> {
   private initIndexes(prop: EntityProperty<T>): void {
     const simpleIndex = this.indexes.find(index => index.properties === prop.name && !index.options && !index.type && !index.expression);
     const simpleUnique = this.uniques.find(index => index.properties === prop.name && !index.options);
-    const owner = prop.reference === ReferenceType.MANY_TO_ONE;
+    const owner = prop.kind === ReferenceKind.MANY_TO_ONE;
 
     if (!prop.index && simpleIndex) {
       Utils.defaultValue(simpleIndex, 'name', true);
