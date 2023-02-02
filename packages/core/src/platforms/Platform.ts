@@ -12,7 +12,7 @@ import {
   TinyIntType, Type, UuidType, StringType, IntegerType, FloatType, DateTimeType, TextType, EnumType, UnknownType, MediumIntType,
 } from '../types';
 import { Utils } from '../utils/Utils';
-import { ReferenceType } from '../enums';
+import { ReferenceKind } from '../enums';
 import type { MikroORM } from '../MikroORM';
 
 export const JsonProperty = Symbol('JsonProperty');
@@ -420,15 +420,15 @@ export abstract class Platform {
       return false;
     }
 
-    if ([ReferenceType.SCALAR, ReferenceType.MANY_TO_ONE].includes(prop.reference)) {
+    if ([ReferenceKind.SCALAR, ReferenceKind.MANY_TO_ONE].includes(prop.kind)) {
       return true;
     }
 
-    if (prop.reference === ReferenceType.EMBEDDED) {
+    if (prop.kind === ReferenceKind.EMBEDDED) {
       return !!prop.object;
     }
 
-    return prop.reference === ReferenceType.ONE_TO_ONE && prop.owner;
+    return prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner;
   }
 
   /**

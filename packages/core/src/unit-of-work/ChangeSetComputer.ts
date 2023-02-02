@@ -6,7 +6,7 @@ import { ChangeSet, ChangeSetType } from './ChangeSet';
 import type { Collection, EntityValidator } from '../entity';
 import { helper } from '../entity';
 import type { Platform } from '../platforms';
-import { ReferenceType } from '../enums';
+import { ReferenceKind } from '../enums';
 
 export class ChangeSetComputer {
 
@@ -93,7 +93,7 @@ export class ChangeSetComputer {
       map.set(entity, pairs);
     }
 
-    if (prop.reference === ReferenceType.EMBEDDED && entity[prop.name]) {
+    if (prop.kind === ReferenceKind.EMBEDDED && entity[prop.name]) {
       for (const embeddedProp of prop.targetMeta!.hydrateProps) {
         this.processPropertyInitializers(entity[prop.name], embeddedProp, type, map, nested || prop.object);
       }
@@ -133,13 +133,13 @@ export class ChangeSetComputer {
       this.processToMany(prop, changeSet);
     }
 
-    if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference)) {
+    if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
       this.processToOne(prop, changeSet);
     }
   }
 
   private processToOne<T extends object>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
-    const isToOneOwner = prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
+    const isToOneOwner = prop.kind === ReferenceKind.MANY_TO_ONE || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner);
 
     if (!isToOneOwner || prop.mapToPk) {
       return;

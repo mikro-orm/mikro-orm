@@ -1,7 +1,7 @@
 import type { EntityName, EntityMetadata, EntityProperty } from '../typings';
 import { Utils } from '../utils';
 import { MetadataError } from '../errors';
-import { ReferenceType } from '../enums';
+import { ReferenceKind } from '../enums';
 import type { MetadataStorage } from './MetadataStorage';
 
 /**
@@ -14,8 +14,8 @@ export class MetadataValidator {
    * on the same property. One should use only `@ManyToOne()` in such case.
    * We allow the existence of the property in metadata if the reference type is the same, this should allow things like HMR to work.
    */
-  static validateSingleDecorator(meta: EntityMetadata, propertyName: string, reference: ReferenceType): void {
-    if (meta.properties[propertyName] && meta.properties[propertyName].reference !== reference) {
+  static validateSingleDecorator(meta: EntityMetadata, propertyName: string, reference: ReferenceKind): void {
+    if (meta.properties[propertyName] && meta.properties[propertyName].kind !== reference) {
       throw MetadataError.multipleDecorators(meta.className, propertyName);
     }
   }
@@ -25,8 +25,8 @@ export class MetadataValidator {
 
     if (meta.virtual || meta.expression) {
       for (const prop of Object.values(meta.properties)) {
-        if (![ReferenceType.SCALAR, ReferenceType.EMBEDDED].includes(prop.reference)) {
-          throw new MetadataError(`Only scalar and embedded properties are allowed inside virtual entity. Found '${prop.reference}' in ${meta.className}.${prop.name}`);
+        if (![ReferenceKind.SCALAR, ReferenceKind.EMBEDDED].includes(prop.kind)) {
+          throw new MetadataError(`Only scalar and embedded properties are allowed inside virtual entity. Found '${prop.kind}' in ${meta.className}.${prop.name}`);
         }
 
         if (prop.primary) {
@@ -47,7 +47,7 @@ export class MetadataValidator {
     this.validateIndexes(meta, meta.uniques ?? [], 'unique');
 
     for (const prop of Object.values(meta.properties)) {
-      if (prop.reference !== ReferenceType.SCALAR) {
+      if (prop.kind !== ReferenceKind.SCALAR) {
         this.validateReference(meta, prop, metadata);
         this.validateBidirectional(meta, prop, metadata);
       } else if (metadata.has(prop.type)) {
@@ -89,7 +89,7 @@ export class MetadataValidator {
 
     // check for not discovered entities
     discovered.forEach(meta => Object.values(meta.properties).forEach(prop => {
-      if (prop.reference !== ReferenceType.SCALAR && !unwrap(prop.type).split(/ ?\| ?/).every(type => discovered.find(m => m.className === type))) {
+      if (prop.kind !== ReferenceKind.SCALAR && !unwrap(prop.type).split(/ ?\| ?/).every(type => discovered.find(m => m.className === type))) {
         throw MetadataError.fromUnknownEntity(prop.type, `${meta.className}.${prop.name}`);
       }
 
@@ -171,13 +171,13 @@ export class MetadataValidator {
 
     // owning side is not defined as inverse
     const valid = [
-      { owner: ReferenceType.MANY_TO_ONE, inverse: ReferenceType.ONE_TO_MANY },
-      { owner: ReferenceType.MANY_TO_MANY, inverse: ReferenceType.MANY_TO_MANY },
-      { owner: ReferenceType.ONE_TO_ONE, inverse: ReferenceType.ONE_TO_ONE },
+      { owner: ReferenceKind.MANY_TO_ONE, inverse: ReferenceKind.ONE_TO_MANY },
+      { owner: ReferenceKind.MANY_TO_MANY, inverse: ReferenceKind.MANY_TO_MANY },
+      { owner: ReferenceKind.ONE_TO_ONE, inverse: ReferenceKind.ONE_TO_ONE },
     ];
 
-    if (!valid.find(spec => spec.owner === owner.reference && spec.inverse === prop.reference)) {
-      throw MetadataError.fromWrongReferenceType(meta, owner, prop);
+    if (!valid.find(spec => spec.owner === owner.kind && spec.inverse === prop.kind)) {
+      throw MetadataError.fromWrongReferenceKind(meta, owner, prop);
     }
 
     if (prop.primary) {
