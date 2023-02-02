@@ -12,7 +12,7 @@ import {
   MikroORM,
   PrimaryKey,
   Property, Reference,
-  ReferenceType,
+  ReferenceKind,
   Utils,
 } from '@mikro-orm/core';
 import { performance } from 'perf_hooks';
@@ -63,13 +63,13 @@ export class ObjectHydratorOld {
   }
 
   protected hydrateProperty<T extends object>(entity: T, prop: EntityProperty, data: EntityData<T>, factory: EntityFactory, newEntity: boolean, convertCustomTypes: boolean): void {
-    if (prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE) {
+    if (prop.kind === ReferenceKind.MANY_TO_ONE || prop.kind === ReferenceKind.ONE_TO_ONE) {
       this.hydrateToOne(data[prop.name], entity, prop, factory);
-    } else if (prop.reference === ReferenceType.ONE_TO_MANY || prop.reference === ReferenceType.MANY_TO_MANY) {
+    } else if (prop.kind === ReferenceKind.ONE_TO_MANY || prop.kind === ReferenceKind.MANY_TO_MANY) {
       this.hydrateToMany(entity, prop, data[prop.name], factory, newEntity);
-    } else if (prop.reference === ReferenceType.EMBEDDED) {
+    } else if (prop.kind === ReferenceKind.EMBEDDED) {
       this.hydrateEmbeddable(entity, prop, data);
-    } else { // ReferenceType.SCALAR
+    } else { // ReferenceKind.SCALAR
       this.hydrateScalar(entity, prop, data, convertCustomTypes);
     }
   }
@@ -166,7 +166,7 @@ export class EntityComparatorOld {
         return;
       }
 
-      if (prop.reference === ReferenceType.EMBEDDED) {
+      if (prop.kind === ReferenceKind.EMBEDDED) {
         return meta.props.filter(p => p.embedded?.[0] === prop.name).forEach(childProp => {
           ret[childProp.name as any] = Utils.copy(entity[prop.name][childProp.embedded![1]]);
         });
@@ -209,7 +209,7 @@ export class EntityComparatorOld {
     const noPkProp = prop.primary && value == null;
 
     // bidirectional 1:1 and m:1 fields are defined as setters, we need to check for `undefined` explicitly
-    const isSetter = [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy);
+    const isSetter = [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind) && (prop.inversedBy || prop.mappedBy);
     const emptyRef = isSetter && value === undefined;
 
     return noPkProp || noPkRef || emptyRef || prop.version;

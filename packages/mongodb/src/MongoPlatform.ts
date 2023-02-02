@@ -3,7 +3,7 @@ import type {
   IPrimaryKey, Primary, NamingStrategy, Constructor, EntityRepository, EntityProperty,
   PopulateOptions, EntityMetadata, IDatabaseDriver, EntityManager, Configuration, MikroORM,
 } from '@mikro-orm/core';
-import { Platform, MongoNamingStrategy, Utils, ReferenceType, MetadataError } from '@mikro-orm/core';
+import { Platform, MongoNamingStrategy, Utils, ReferenceKind, MetadataError } from '@mikro-orm/core';
 import { MongoExceptionConverter } from './MongoExceptionConverter';
 import { MongoEntityRepository } from './MongoEntityRepository';
 import { MongoSchemaGenerator } from './MongoSchemaGenerator';
@@ -87,7 +87,7 @@ export class MongoPlatform extends Platform {
       return true;
     }
 
-    return prop.reference === ReferenceType.MANY_TO_MANY && prop.owner;
+    return prop.kind === ReferenceKind.MANY_TO_MANY && prop.owner;
   }
 
   validateMetadata(meta: EntityMetadata): void {

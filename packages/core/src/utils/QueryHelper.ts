@@ -1,7 +1,7 @@
 import { Reference } from '../entity/Reference';
 import { Utils } from './Utils';
 import type { Dictionary, EntityMetadata, EntityProperty, FilterDef, ObjectQuery, FilterQuery } from '../typings';
-import { ARRAY_OPERATORS, GroupOperator, ReferenceType } from '../enums';
+import { ARRAY_OPERATORS, GroupOperator, ReferenceKind } from '../enums';
 import type { Platform } from '../platforms';
 import type { MetadataStorage } from '../metadata/MetadataStorage';
 import { JsonType } from '../types/JsonType';
@@ -66,7 +66,7 @@ export class QueryHelper {
           return false;
         }
 
-        if (meta.properties[k].primary && [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(meta.properties[k].reference)) {
+        if (meta.properties[k].primary && [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(meta.properties[k].kind)) {
           return this.inlinePrimaryKeyObjects(where[k], meta.properties[k].targetMeta, metadata, v);
         }
 
