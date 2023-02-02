@@ -6,7 +6,7 @@ import type {
   CountOptions, EntityDictionary, EntityField, NativeInsertUpdateOptions, NativeInsertUpdateManyOptions,
   FindByCursorOptions,
 } from '@mikro-orm/core';
-import { DatabaseDriver, EntityManagerType, ReferenceType, Utils } from '@mikro-orm/core';
+import { DatabaseDriver, EntityManagerType, ReferenceKind, Utils } from '@mikro-orm/core';
 import { MongoConnection } from './MongoConnection';
 import { MongoPlatform } from './MongoPlatform';
 import { MongoEntityManager } from './MongoEntityManager';
@@ -223,9 +223,9 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
         const prop = meta.properties[k];
         let isObjectId = false;
 
-        if (prop.reference === ReferenceType.SCALAR) {
+        if (prop.kind === ReferenceKind.SCALAR) {
           isObjectId = prop.type.toLowerCase() === 'objectid';
-        } else if (prop.reference !== ReferenceType.EMBEDDED) {
+        } else if (prop.kind !== ReferenceKind.EMBEDDED) {
           const meta2 = this.metadata.find(prop.type)!;
           const pk = meta2.properties[meta2.primaryKeys[0]];
           isObjectId = pk.type.toLowerCase() === 'objectid';
