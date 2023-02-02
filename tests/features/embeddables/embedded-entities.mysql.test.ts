@@ -1,4 +1,4 @@
-import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, MikroORM, PrimaryKey, Property, ReferenceKind, wrap } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { mockLogger } from '../../helpers';
 
@@ -116,33 +116,33 @@ describe('embedded entities in mysql', () => {
     });
     expect(orm.getMetadata().get('User').properties.address1).toMatchObject({
       name: 'address1',
-      reference: ReferenceType.EMBEDDED,
+      kind: ReferenceKind.EMBEDDED,
       type: 'Address1',
     });
     expect(orm.getMetadata().get('User').properties.address1_street).toMatchObject({
       name: 'address1_street',
-      reference: ReferenceType.SCALAR,
+      kind: ReferenceKind.SCALAR,
       type: 'string',
     });
     expect(orm.getMetadata().get('User').properties.address2).toMatchObject({
       name: 'address2',
-      reference: ReferenceType.EMBEDDED,
+      kind: ReferenceKind.EMBEDDED,
       type: 'Address2',
     });
     expect(orm.getMetadata().get('User').properties.addr_street).toMatchObject({
       name: 'addr_street',
-      reference: ReferenceType.SCALAR,
+      kind: ReferenceKind.SCALAR,
       type: 'string',
       nullable: true,
     });
     expect(orm.getMetadata().get('User').properties.address3).toMatchObject({
       name: 'address3',
-      reference: ReferenceType.EMBEDDED,
+      kind: ReferenceKind.EMBEDDED,
       type: 'Address1',
     });
     expect(orm.getMetadata().get('User').properties.street).toMatchObject({
       name: 'street',
-      reference: ReferenceType.SCALAR,
+      kind: ReferenceKind.SCALAR,
       type: 'string',
     });
   });

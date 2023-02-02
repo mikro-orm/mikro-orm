@@ -1,5 +1,5 @@
 import type { Dictionary } from '@mikro-orm/core';
-import { Entity, MetadataDiscovery, MetadataStorage, MikroORM, PrimaryKey, Property, ReferenceType, wrap } from '@mikro-orm/core';
+import { Entity, MetadataDiscovery, MetadataStorage, MikroORM, PrimaryKey, Property, ReferenceKind, wrap } from '@mikro-orm/core';
 import { MySqlDriver } from '@mikro-orm/mysql';
 import { BaseUser2, CompanyOwner2, Employee2, Manager2, Type } from '../../entities-sql';
 import { initORMMySql, mockLogger } from '../../bootstrap';
@@ -177,9 +177,9 @@ describe('single table inheritance in mysql', () => {
 
   test('generated discriminator map', async () => {
     const storage = new MetadataStorage({
-      A: { name: 'A', className: 'A', primaryKeys: ['id'], discriminatorColumn: 'type', properties: { id: { name: 'id', type: 'string', reference: ReferenceType.SCALAR } } },
-      B: { name: 'B', className: 'B', primaryKeys: ['id'], extends: 'A', properties: { id: { name: 'id', type: 'string', reference: ReferenceType.SCALAR } } },
-      C: { name: 'C', className: 'C', primaryKeys: ['id'], extends: 'A', properties: { id: { name: 'id', type: 'string', reference: ReferenceType.SCALAR } } },
+      A: { name: 'A', className: 'A', primaryKeys: ['id'], discriminatorColumn: 'type', properties: { id: { name: 'id', type: 'string', kind: ReferenceKind.SCALAR } } },
+      B: { name: 'B', className: 'B', primaryKeys: ['id'], extends: 'A', properties: { id: { name: 'id', type: 'string', kind: ReferenceKind.SCALAR } } },
+      C: { name: 'C', className: 'C', primaryKeys: ['id'], extends: 'A', properties: { id: { name: 'id', type: 'string', kind: ReferenceKind.SCALAR } } },
     } as Dictionary);
     class A {
 

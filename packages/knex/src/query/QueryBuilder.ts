@@ -28,7 +28,7 @@ import {
   PopulateHint,
   QueryFlag,
   QueryHelper,
-  ReferenceType,
+  ReferenceKind,
   serialize,
   Utils,
   ValidationError,
@@ -636,7 +636,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
     const entities: T[] = [];
 
-    function propagatePopulateHint<U>(entity: U, hint: PopulateOptions<U>[]) {
+    function propagatePopulateHint<U extends object>(entity: U, hint: PopulateOptions<U>[]) {
       helper(entity).__serializationContext.populate ??= hint;
       hint.forEach(pop => {
         const value = entity[pop.field];
@@ -808,9 +808,9 @@ export class QueryBuilder<T extends object = AnyEntity> {
     let aliasedName = `${fromAlias}.${prop.name}#${alias}`;
     path ??= `${(Object.values(this._joins).find(j => j.alias === fromAlias)?.path ?? entityName)}.${prop.name}`;
 
-    if (prop.reference === ReferenceType.ONE_TO_MANY) {
+    if (prop.kind === ReferenceKind.ONE_TO_MANY) {
       this._joins[aliasedName] = this.helper.joinOneToReference(prop, fromAlias, alias, type, cond);
-    } else if (prop.reference === ReferenceType.MANY_TO_MANY) {
+    } else if (prop.kind === ReferenceKind.MANY_TO_MANY) {
       let pivotAlias = alias;
 
       if (type !== 'pivotJoin') {
@@ -822,7 +822,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
       const joins = this.helper.joinManyToManyReference(prop, fromAlias, alias, pivotAlias, type, cond, path);
       Object.assign(this._joins, joins);
       this.createAlias(prop.pivotEntity, pivotAlias);
-    } else if (prop.reference === ReferenceType.ONE_TO_ONE) {
+    } else if (prop.kind === ReferenceKind.ONE_TO_ONE) {
       this._joins[aliasedName] = this.helper.joinOneToReference(prop, fromAlias, alias, type, cond);
     } else { // MANY_TO_ONE
       this._joins[aliasedName] = this.helper.joinManyToOneReference(prop, fromAlias, alias, type, cond);
@@ -853,7 +853,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
       const prop = this.helper.getProperty(f, a);
 
       /* istanbul ignore next */
-      if (prop && [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference)) {
+      if (prop && [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
         return;
       }
 
@@ -863,7 +863,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
         return;
       }
 
-      if (prop?.reference === ReferenceType.EMBEDDED) {
+      if (prop?.kind === ReferenceKind.EMBEDDED) {
         if (prop.object) {
           ret.push(this.helper.mapper(prop.fieldNames[0], this.type) as string);
         } else {
@@ -899,7 +899,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
         ret.push(...cols as string[]);
       }
 
-      if (this._joins[f].prop.reference !== ReferenceType.ONE_TO_ONE && this._joins[f].inverseJoinColumns) {
+      if (this._joins[f].prop.kind !== ReferenceKind.ONE_TO_ONE && this._joins[f].inverseJoinColumns) {
         this._joins[f].inverseJoinColumns!.forEach(inverseJoinColumn => {
           Utils.renameKey(this._cond, inverseJoinColumn, `${this._joins[f].alias}.${inverseJoinColumn!}`);
         });
@@ -1001,7 +1001,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     if (meta && this.flags.has(QueryFlag.AUTO_JOIN_ONE_TO_ONE_OWNER)) {
       const relationsToPopulate = this._populate.map(({ field }) => field);
       meta.relations
-        .filter(prop => prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner && !relationsToPopulate.includes(prop.name))
+        .filter(prop => prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner && !relationsToPopulate.includes(prop.name))
         .map(prop => ({ field: prop.name }))
         .forEach(item => this._populate.push(item));
     }
@@ -1060,7 +1060,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
   private hasToManyJoins(): boolean {
     return Object.values(this._joins).some(join => {
-      return [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(join.prop.reference);
+      return [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(join.prop.kind);
     });
   }
 
