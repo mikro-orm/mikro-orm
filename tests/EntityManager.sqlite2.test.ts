@@ -200,7 +200,7 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     const authorRepository = orm.em.getRepository(Author4);
     const booksRepository = orm.em.getRepository(Book4);
     const books = await booksRepository.findAll({ populate: ['author'] });
-    expect(wrap(books[0].author).isInitialized()).toBe(true);
+    expect(wrap(books[0].author!).isInitialized()).toBe(true);
     expect(await authorRepository.findOne({ favouriteBook: bible.id })).not.toBe(null);
     orm.em.clear();
 
@@ -250,9 +250,9 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
         expect(book.title).toMatch(/My Life on The Wall, part \d/);
 
         expect(book.author!.constructor.name).toBe('Author4');
-        expect(wrap(book.author).isInitialized()).toBe(true);
+        expect(wrap(book.author!).isInitialized()).toBe(true);
         expect(book.publisher!.unwrap().constructor.name).toBe('Publisher4');
-        expect(wrap(book.publisher).isInitialized()).toBe(false);
+        expect(wrap(book.publisher!).isInitialized()).toBe(false);
       }
     }
 
@@ -280,7 +280,7 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     expect(lastBook.length).toBe(1);
     expect(lastBook[0].title).toBe('My Life on The Wall, part 1');
     expect(lastBook[0].author!.constructor.name).toBe('Author4');
-    expect(wrap(lastBook[0].author).isInitialized()).toBe(true);
+    expect(wrap(lastBook[0].author!).isInitialized()).toBe(true);
     await orm.em.getRepository(Book4).remove(lastBook[0]).flush();
   });
 
@@ -576,11 +576,11 @@ describe.each(['sqlite', 'better-sqlite'] as const)('EntityManager (%s)', driver
     expect(jon2).not.toBeNull();
     expect(jon2.name).toBe('Jon Snow');
     expect(jon2.favouriteBook!.constructor.name).toBe('Book4');
-    expect(wrap(jon2.favouriteBook).isInitialized()).toBe(false);
+    expect(wrap(jon2.favouriteBook!).isInitialized()).toBe(false);
 
-    await wrap(jon2.favouriteBook).init();
+    await wrap(jon2.favouriteBook!).init();
     expect(jon2.favouriteBook!.constructor.name).toBe('Book4');
-    expect(wrap(jon2.favouriteBook).isInitialized()).toBe(true);
+    expect(wrap(jon2.favouriteBook!).isInitialized()).toBe(true);
     expect(jon2.favouriteBook!.title).toBe('Bible');
   });
 

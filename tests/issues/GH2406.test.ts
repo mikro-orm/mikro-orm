@@ -1,4 +1,4 @@
-import { Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/sqlite';
+import { Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/sqlite';
 
 @Entity({ forceConstructor: true })
 export class Parent {
@@ -18,7 +18,7 @@ export class Child {
   id!: number;
 
   @ManyToOne({ entity: () => Parent, wrappedReference: true })
-  parent!: IdentifiedReference<Parent>;
+  parent!: Ref<Parent>;
 
 }
 

@@ -1,11 +1,10 @@
-import type { IdentifiedReference } from './Reference';
 import { Reference } from './Reference';
-import type { EntityData, EntityDTO, Loaded } from '../typings';
+import type { Ref, EntityData, EntityDTO, Loaded } from '../typings';
 import type { AssignOptions } from './EntityAssigner';
 import { EntityAssigner } from './EntityAssigner';
 import { helper } from './wrap';
 
-export abstract class BaseEntity<Entity extends object, Primary extends keyof Entity, Populate extends string = string> {
+export abstract class BaseEntity {
 
   isInitialized(): boolean {
     return helper(this).__initialized;
@@ -19,8 +18,8 @@ export abstract class BaseEntity<Entity extends object, Primary extends keyof En
     helper(this).populated(populated);
   }
 
-  toReference(): IdentifiedReference<Entity, Primary> {
-    return Reference.create(this as unknown as Entity);
+  toReference(): Ref<this> {
+    return Reference.create(this);
   }
 
   toObject(ignoreFields: string[] = []): EntityDTO<this> {
@@ -35,13 +34,12 @@ export abstract class BaseEntity<Entity extends object, Primary extends keyof En
     return helper(this).toPOJO();
   }
 
-  assign(data: EntityData<Entity>, options?: AssignOptions): Entity {
-    return EntityAssigner.assign(this as object, data, options) as Entity;
+  assign(data: EntityData<this>, options?: AssignOptions): this {
+    return EntityAssigner.assign(this as object, data, options) as this;
   }
 
-  init<Populate extends string = never>(populated = true): Promise<Loaded<Entity, Populate>> {
-    // using `Loaded<this>` results in issues with assignability unfortunately
-    return helper(this as unknown as Entity).init<Populate>(populated);
+  init<Populate extends string = never>(populated = true): Promise<Loaded<this, Populate>> {
+    return helper(this).init<Populate>(populated);
   }
 
   getSchema(): string | undefined {

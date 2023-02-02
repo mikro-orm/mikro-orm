@@ -1,4 +1,4 @@
-import { BigIntType, Cascade, Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/sqlite';
+import { BigIntType, Cascade, Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/sqlite';
 
 @Entity({ tableName: 'user' })
 class User {
@@ -7,7 +7,7 @@ class User {
   id!: number;
 
   @ManyToOne('Member', { fieldName: 'ownerMemberId', nullable: true, wrappedReference: true })
-  ownerMember?: IdentifiedReference<Member>;
+  ownerMember?: Ref<Member>;
 
 }
 
@@ -32,10 +32,10 @@ class MemberUser {
   id!: number;
 
   @ManyToOne(() => Member, { fieldName: 'memberId', wrappedReference: true })
-  member!: IdentifiedReference<Member>;
+  member!: Ref<Member>;
 
   @ManyToOne(() => User, { fieldName: 'userId', wrappedReference: true })
-  user?: IdentifiedReference<User>;
+  user?: Ref<User>;
 
 }
 

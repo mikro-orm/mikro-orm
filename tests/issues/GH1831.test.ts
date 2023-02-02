@@ -1,7 +1,7 @@
 import {
   Collection,
   Entity,
-  IdentifiedReference,
+  Ref,
   ManyToOne,
   MikroORM,
   OneToMany,
@@ -20,7 +20,7 @@ export class FilterValue {
   name!: string;
 
   @ManyToOne('Filter', { wrappedReference: true })
-  filter!: IdentifiedReference<Filter>;
+  filter!: Ref<Filter>;
 
 }
 
@@ -34,7 +34,7 @@ export class Filter {
   name!: string;
 
   @ManyToOne('Project', { wrappedReference: true })
-  project!: IdentifiedReference<Project>;
+  project!: Ref<Project>;
 
   @OneToMany('FilterValue', 'filter')
   values = new Collection<FilterValue>(this);
