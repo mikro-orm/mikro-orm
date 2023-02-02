@@ -1,4 +1,4 @@
-import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType } from '@mikro-orm/core';
+import { Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/core';
 import type { AbstractSqlDriver } from '@mikro-orm/sqlite';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
@@ -43,7 +43,7 @@ export class SiteCategory {
   @ManyToOne({ entity: () => Category, primary: true })
   category!: Category;
 
-  [PrimaryKeyType]?: [number, number];
+  [PrimaryKeyProp]?: ['site', 'category'];
 
 }
 

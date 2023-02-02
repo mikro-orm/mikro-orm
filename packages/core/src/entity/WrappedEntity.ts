@@ -2,9 +2,9 @@ import { inspect } from 'util';
 import type { EntityManager } from '../EntityManager';
 import type {
   AnyEntity, ConnectionType, Dictionary, EntityData, EntityDictionary, EntityMetadata, IHydrator,
-  IWrappedEntityInternal, Populate, PopulateOptions, Primary, AutoPath, Loaded,
+  IWrappedEntityInternal, Populate, PopulateOptions, Primary, AutoPath, Loaded, Ref,
 } from '../typings';
-import { Reference, type IdentifiedReference } from './Reference';
+import { Reference } from './Reference';
 import { EntityTransformer } from '../serialization/EntityTransformer';
 import { EntityAssigner, type AssignOptions } from './EntityAssigner';
 import type { EntityLoaderOptions } from './EntityLoader';
@@ -15,7 +15,7 @@ import type { EntityIdentifier } from './EntityIdentifier';
 import { helper } from './wrap';
 import type { SerializationContext } from '../serialization/SerializationContext';
 
-export class WrappedEntity<T extends object, PK extends keyof T> {
+export class WrappedEntity<T extends object> {
 
   __initialized = true;
   __touched = false;
@@ -61,9 +61,9 @@ export class WrappedEntity<T extends object, PK extends keyof T> {
     this.__lazyInitialized = false;
   }
 
-  toReference(): IdentifiedReference<T, PK> {
+  toReference(): Ref<T> {
     this.__reference ??= new Reference(this.entity);
-    return this.__reference as IdentifiedReference<T, PK>;
+    return this.__reference as Ref<T>;
   }
 
   toObject(ignoreFields: string[] = []): EntityData<T> {
@@ -149,9 +149,9 @@ export class WrappedEntity<T extends object, PK extends keyof T> {
 
         if (Utils.isEntity(child, true)) {
           const childPk = helper(child).getPrimaryKeys(convertCustomTypes);
-          ret.push(...childPk!);
+          ret.push(...childPk as Primary<T>[]);
         } else {
-          ret.push(child as Primary<unknown>);
+          ret.push(child as Primary<T>);
         }
 
         return ret;

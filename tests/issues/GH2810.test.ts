@@ -1,4 +1,4 @@
-import { Cascade, Collection, Entity, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, PrimaryKeyType } from '@mikro-orm/sqlite';
+import { Cascade, Collection, Entity, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp } from '@mikro-orm/sqlite';
 
 @Entity()
 export class NodeEntity {
@@ -14,7 +14,6 @@ export class NodeEntity {
 @Entity()
 export class ElementEntity {
 
-  [PrimaryKeyType]?: number;
   [PrimaryKeyProp]?: 'node';
 
   @OneToOne({ entity: () => NodeEntity, primary: true, onDelete: 'cascade', onUpdateIntegrity: 'cascade' })

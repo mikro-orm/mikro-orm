@@ -1,4 +1,17 @@
-import { DateType, DecimalType, ReferenceType, UnknownType, Utils, type Dictionary, type EntityMetadata, type EntityOptions, type EntityProperty, type NamingStrategy, type Platform } from '@mikro-orm/core';
+import {
+  DateType,
+  DecimalType,
+  ReferenceType,
+  UnknownType,
+  Utils,
+  type Dictionary,
+  type EntityMetadata,
+  type EntityOptions,
+  type EntityProperty,
+  type NamingStrategy,
+  type Platform,
+  type OneToOneOptions,
+} from '@mikro-orm/core';
 
 export class SourceFile {
 
@@ -316,7 +329,7 @@ export class SourceFile {
     options.mappedBy = this.quote(prop.mappedBy);
   }
 
-  protected getForeignKeyDecoratorOptions(options: Dictionary, prop: EntityProperty) {
+  protected getForeignKeyDecoratorOptions(options: OneToOneOptions<any, any>, prop: EntityProperty) {
     const parts = prop.referencedTableName.split('.', 2);
     const className = this.namingStrategy.getClassName(parts.length > 1 ? parts[1] : parts[0], '_');
     this.entityImports.add(className);
