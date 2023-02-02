@@ -7,7 +7,7 @@ export class Cat {
   @PrimaryKey()
   name!: string;
 
-  @ManyToOne(() => User, { wrappedReference: true })
+  @ManyToOne(() => User, { ref: true })
   user!: Ref<User>;
 
 }

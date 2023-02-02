@@ -10,14 +10,14 @@ class Part {
   value!: string;
 
   @ManyToOne(() => Car, {
-    wrappedReference: true,
+    ref: true,
     nullable: true,
     onDelete: 'cascade',
   })
   car?: Ref<Car>;
 
   @ManyToOne(() => Part, {
-    wrappedReference: true,
+    ref: true,
     nullable: true,
   })
   part?: Ref<Part>;
