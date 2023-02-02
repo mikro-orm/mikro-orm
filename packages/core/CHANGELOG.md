@@ -279,7 +279,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 * **core:** add `em.repo()` shortcut ([feebd7c](https://github.com/mikro-orm/mikro-orm/commit/feebd7c80096a0b497f025f4f909eccd0ae05e4c))
 * **core:** add `EntityOptions.repository` shortcut ([2cbb129](https://github.com/mikro-orm/mikro-orm/commit/2cbb129f5efab59d607908c891b55cc5e03f8020))
 * **core:** add `EntityRepository.upsert()` shortcut ([31d6d77](https://github.com/mikro-orm/mikro-orm/commit/31d6d77c65dcf9ad3bb782af59f3a919845e531c))
-* **core:** add `ref` alias for `wrappedReference` relation property option ([249a407](https://github.com/mikro-orm/mikro-orm/commit/249a4074e3367213898ed8c6fd26cc874ae1d7cf))
+* **core:** add `ref` alias for `ref` relation property option ([249a407](https://github.com/mikro-orm/mikro-orm/commit/249a4074e3367213898ed8c6fd26cc874ae1d7cf))
 * **core:** add `Rel<T>` and `Ref<T>` relation types ([44acefb](https://github.com/mikro-orm/mikro-orm/commit/44acefb6ca538788f2c8d89e43755571ad747cfd))
 * **core:** add context param to `Type.convertToDatabaseValue()` ([a933e98](https://github.com/mikro-orm/mikro-orm/commit/a933e98e98f366014e1a5af2c1444aaf330a09a0)), closes [#3567](https://github.com/mikro-orm/mikro-orm/issues/3567)
 * **core:** allow using second argument of `@OneToOne` as options ([115462d](https://github.com/mikro-orm/mikro-orm/commit/115462db343276fa3ae4ddcd68f8e27c2647b737))

@@ -60,7 +60,7 @@ export class Book2 {
   @ManyToOne({ entity: 'Author2', cascade: [] })
   author: Author2;
 
-  @ManyToOne(() => Publisher2, { cascade: [Cascade.PERSIST, Cascade.REMOVE], nullable: true, wrappedReference: true })
+  @ManyToOne(() => Publisher2, { cascade: [Cascade.PERSIST, Cascade.REMOVE], nullable: true, ref: true })
   publisher?: Ref<Publisher2>;
 
   @OneToOne({ cascade: [], mappedBy: 'book', nullable: true })
