@@ -15,10 +15,10 @@ export class Book {
   @Property({ length: 255, nullable: true })
   name?: string;
 
-  @ManyToOne({ entity: () => Author, onUpdateIntegrity: 'cascade', onDelete: 'cascade', nullable: true })
+  @ManyToOne({ entity: () => Author, updateRule: 'cascade', deleteRule: 'cascade', nullable: true })
   author?: Author;
 
-  @ManyToOne({ entity: () => Book, onUpdateIntegrity: 'cascade', onDelete: 'set null', nullable: true })
+  @ManyToOne({ entity: () => Book, updateRule: 'cascade', deleteRule: 'set null', nullable: true })
   basedOn?: Book;
 
   @ManyToMany({ entity: () => BookTag, joinColumn: 'book_id', inverseJoinColumn: 'book_tag_id' })

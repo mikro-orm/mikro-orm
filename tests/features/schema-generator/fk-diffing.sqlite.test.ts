@@ -85,7 +85,7 @@ describe('dropping tables with FKs in postgres', () => {
     const orm = await MikroORM.init({
       entities: [Sequence0, Door],
       dbName: `:memory:`,
-      cache: { enabled: false },
+      metadataCache: { enabled: false },
     });
     await orm.schema.refreshDatabase();
 
