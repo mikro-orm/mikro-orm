@@ -87,7 +87,7 @@ export const Address2Schema = new EntitySchema({
   properties: {
     author: {
       primary: true,
-      reference: '1:1',
+      kind: '1:1',
       entity: () => Author2,
       ref: true,
       onUpdateIntegrity: 'cascade',
@@ -153,14 +153,14 @@ export const Author2Schema = new EntitySchema({
     },
     bornTime: { type: 'string', columnType: 'time', nullable: true, index: 'born_time_idx' },
     favouriteBook: {
-      reference: 'm:1',
+      kind: 'm:1',
       entity: () => Book2,
       ref: true,
       onDelete: 'cascade',
       nullable: true,
     },
     favouriteAuthor: {
-      reference: 'm:1',
+      kind: 'm:1',
       entity: () => Author2,
       ref: true,
       onUpdateIntegrity: 'cascade',
@@ -168,22 +168,22 @@ export const Author2Schema = new EntitySchema({
       nullable: true,
     },
     authorToFriend: {
-      reference: 'm:n',
+      kind: 'm:n',
       entity: () => Author2,
       pivotTable: 'author_to_friend',
       joinColumn: 'author2_1_id',
       inverseJoinColumn: 'author2_2_id',
     },
     following: {
-      reference: 'm:n',
+      kind: 'm:n',
       entity: () => Author2,
       joinColumn: 'author2_1_id',
       inverseJoinColumn: 'author2_2_id',
     },
-    authorInverse: { reference: '1:m', entity: () => Book2, mappedBy: 'author' },
-    favouriteAuthorInverse: { reference: '1:m', entity: () => Author2, mappedBy: 'favouriteAuthor' },
-    authorToFriendInverse: { reference: 'm:n', entity: () => Author2, mappedBy: 'authorToFriend' },
-    followingInverse: { reference: 'm:n', entity: () => Author2, mappedBy: 'following' },
+    authorInverse: { kind: '1:m', entity: () => Book2, mappedBy: 'author' },
+    favouriteAuthorInverse: { kind: '1:m', entity: () => Author2, mappedBy: 'favouriteAuthor' },
+    authorToFriendInverse: { kind: 'm:n', entity: () => Author2, mappedBy: 'authorToFriend' },
+    followingInverse: { kind: 'm:n', entity: () => Author2, mappedBy: 'following' },
   },
 });
 ",
@@ -218,7 +218,7 @@ export const BaseUser2Schema = new EntitySchema({
     type: { enum: true, items: () => BaseUser2Type, index: 'base_user2_type_index' },
     ownerProp: { type: 'string', length: 255, nullable: true },
     favouriteEmployee: {
-      reference: 'm:1',
+      kind: 'm:1',
       entity: () => BaseUser2,
       ref: true,
       onUpdateIntegrity: 'cascade',
@@ -226,7 +226,7 @@ export const BaseUser2Schema = new EntitySchema({
       nullable: true,
     },
     favouriteManager: {
-      reference: '1:1',
+      kind: '1:1',
       entity: () => BaseUser2,
       ref: true,
       onUpdateIntegrity: 'cascade',
@@ -235,9 +235,9 @@ export const BaseUser2Schema = new EntitySchema({
     },
     employeeProp: { type: 'number', nullable: true },
     managerProp: { type: 'string', length: 255, nullable: true },
-    favouriteEmployeeInverse: { reference: '1:m', entity: () => BaseUser2, mappedBy: 'favouriteEmployee' },
+    favouriteEmployeeInverse: { kind: '1:m', entity: () => BaseUser2, mappedBy: 'favouriteEmployee' },
     favouriteManagerInverse: {
-      reference: '1:1',
+      kind: '1:1',
       entity: () => BaseUser2,
       ref: true,
       mappedBy: 'favouriteManager',
@@ -261,8 +261,8 @@ export const BookTag2Schema = new EntitySchema({
   properties: {
     id: { primary: true, type: 'string', columnType: 'bigint' },
     name: { type: 'string', length: 50 },
-    bookToTagUnorderedInverse: { reference: 'm:n', entity: () => Book2, mappedBy: 'bookToTagUnordered' },
-    bookTag2Inverse: { reference: '1:m', entity: () => Book2Tags, mappedBy: 'bookTag2' },
+    bookToTagUnorderedInverse: { kind: 'm:n', entity: () => Book2, mappedBy: 'bookToTagUnordered' },
+    bookTag2Inverse: { kind: '1:m', entity: () => Book2Tags, mappedBy: 'bookTag2' },
   },
 });
 ",
@@ -300,9 +300,9 @@ export const Book2Schema = new EntitySchema({
     price: { type: 'string', columnType: 'decimal(8,2)', nullable: true },
     double: { type: 'string', columnType: 'double', nullable: true },
     meta: { type: 'any', columnType: 'json', nullable: true },
-    author: { reference: 'm:1', entity: () => Author2, ref: true },
+    author: { kind: 'm:1', entity: () => Author2, ref: true },
     publisher: {
-      reference: 'm:1',
+      kind: 'm:1',
       entity: () => Publisher2,
       ref: true,
       onUpdateIntegrity: 'cascade',
@@ -311,15 +311,15 @@ export const Book2Schema = new EntitySchema({
     },
     foo: { type: 'string', length: 255, nullable: true, default: 'lol' },
     bookToTagUnordered: {
-      reference: 'm:n',
+      kind: 'm:n',
       entity: () => BookTag2,
       pivotTable: 'book_to_tag_unordered',
       joinColumn: 'book2_uuid_pk',
       inverseJoinColumn: 'book_tag2_id',
     },
-    favouriteBookInverse: { reference: '1:m', entity: () => Author2, mappedBy: 'favouriteBook' },
-    book2Inverse: { reference: '1:m', entity: () => Book2Tags, mappedBy: 'book2' },
-    bookInverse: { reference: '1:1', entity: () => Test2, ref: true, mappedBy: 'book' },
+    favouriteBookInverse: { kind: '1:m', entity: () => Author2, mappedBy: 'favouriteBook' },
+    book2Inverse: { kind: '1:m', entity: () => Book2Tags, mappedBy: 'book2' },
+    bookInverse: { kind: '1:1', entity: () => Test2, ref: true, mappedBy: 'book' },
   },
 });
 ",
@@ -339,14 +339,14 @@ export const Book2TagsSchema = new EntitySchema({
   properties: {
     order: { primary: true, type: 'number' },
     book2: {
-      reference: 'm:1',
+      kind: 'm:1',
       entity: () => Book2,
       ref: true,
       onUpdateIntegrity: 'cascade',
       onDelete: 'cascade',
     },
     bookTag2: {
-      reference: 'm:1',
+      kind: 'm:1',
       entity: () => BookTag2,
       ref: true,
       onUpdateIntegrity: 'cascade',
@@ -369,12 +369,7 @@ export const CarOwner2Schema = new EntitySchema({
   properties: {
     id: { primary: true, type: 'number' },
     name: { type: 'string', length: 255 },
-    car: {
-      reference: 'm:1',
-      entity: () => Car2,
-      ref: true,
-      onUpdateIntegrity: 'cascade',
-    },
+    car: { kind: 'm:1', entity: () => Car2, ref: true, onUpdateIntegrity: 'cascade' },
   },
 });
 ",
@@ -397,9 +392,9 @@ export const Car2Schema = new EntitySchema({
     name: { primary: true, type: 'string', length: 100, index: 'car2_name_index' },
     year: { primary: true, type: 'number', index: 'car2_year_index' },
     price: { type: 'number' },
-    carInverse: { reference: '1:m', entity: () => CarOwner2, mappedBy: 'car' },
-    favouriteCarInverse: { reference: '1:1', entity: () => User2, ref: true, mappedBy: 'favouriteCar' },
-    carsInverse: { reference: 'm:n', entity: () => User2, mappedBy: 'cars' },
+    carInverse: { kind: '1:m', entity: () => CarOwner2, mappedBy: 'car' },
+    favouriteCarInverse: { kind: '1:1', entity: () => User2, ref: true, mappedBy: 'favouriteCar' },
+    carsInverse: { kind: 'm:n', entity: () => User2, mappedBy: 'cars' },
   },
 });
 ",
@@ -418,7 +413,7 @@ export const Configuration2Schema = new EntitySchema({
     property: { primary: true, type: 'string', length: 255 },
     test: {
       primary: true,
-      reference: 'm:1',
+      kind: 'm:1',
       entity: () => Test2,
       ref: true,
       onUpdateIntegrity: 'cascade',
@@ -467,7 +462,7 @@ export const FooBar2Schema = new EntitySchema({
     name: { type: 'string', length: 255 },
     nameWithSpace: { type: 'string', fieldName: 'name with space', length: 255, nullable: true },
     baz: {
-      reference: '1:1',
+      kind: '1:1',
       entity: () => FooBaz2,
       ref: true,
       onUpdateIntegrity: 'cascade',
@@ -475,7 +470,7 @@ export const FooBar2Schema = new EntitySchema({
       nullable: true,
     },
     fooBar: {
-      reference: '1:1',
+      kind: '1:1',
       entity: () => FooBar2,
       ref: true,
       onUpdateIntegrity: 'cascade',
@@ -486,9 +481,9 @@ export const FooBar2Schema = new EntitySchema({
     blob: { type: 'Buffer', length: 65535, nullable: true },
     array: { type: 'string', columnType: 'text', length: 65535, nullable: true },
     objectProperty: { type: 'any', columnType: 'json', nullable: true },
-    fooBarInverse: { reference: '1:1', entity: () => Test2, ref: true, mappedBy: 'fooBar' },
-    barInverse: { reference: '1:m', entity: () => FooParam2, mappedBy: 'bar' },
-    barsInverse: { reference: 'm:n', entity: () => Test2, mappedBy: 'bars' },
+    fooBarInverse: { kind: '1:1', entity: () => Test2, ref: true, mappedBy: 'fooBar' },
+    barInverse: { kind: '1:m', entity: () => FooParam2, mappedBy: 'bar' },
+    barsInverse: { kind: 'm:n', entity: () => Test2, mappedBy: 'bars' },
   },
 });
 ",
@@ -508,7 +503,7 @@ export const FooBaz2Schema = new EntitySchema({
     id: { primary: true, type: 'number' },
     name: { type: 'string', length: 255 },
     version: { type: 'Date', length: 3, defaultRaw: \`current_timestamp(3)\` },
-    bazInverse: { reference: '1:m', entity: () => FooParam2, mappedBy: 'baz' },
+    bazInverse: { kind: '1:m', entity: () => FooParam2, mappedBy: 'baz' },
   },
 });
 ",
@@ -528,14 +523,14 @@ export const FooParam2Schema = new EntitySchema({
   properties: {
     bar: {
       primary: true,
-      reference: 'm:1',
+      kind: 'm:1',
       entity: () => FooBar2,
       ref: true,
       onUpdateIntegrity: 'cascade',
     },
     baz: {
       primary: true,
-      reference: 'm:1',
+      kind: 'm:1',
       entity: () => FooBaz2,
       ref: true,
       onUpdateIntegrity: 'cascade',
@@ -595,8 +590,8 @@ export const Publisher2Schema = new EntitySchema({
     enum3: { type: 'number', columnType: 'tinyint', nullable: true },
     enum4: { enum: true, items: () => Publisher2Enum4, nullable: true },
     enum5: { enum: true, items: () => Publisher2Enum5, nullable: true },
-    publisherInverse: { reference: '1:m', entity: () => Book2, mappedBy: 'publisher' },
-    publisher2Inverse: { reference: '1:m', entity: () => Publisher2Tests, mappedBy: 'publisher2' },
+    publisherInverse: { kind: '1:m', entity: () => Book2, mappedBy: 'publisher' },
+    publisher2Inverse: { kind: '1:m', entity: () => Publisher2Tests, mappedBy: 'publisher2' },
   },
 });
 ",
@@ -616,14 +611,14 @@ export const Publisher2TestsSchema = new EntitySchema({
   properties: {
     id: { primary: true, type: 'number' },
     publisher2: {
-      reference: 'm:1',
+      kind: 'm:1',
       entity: () => Publisher2,
       ref: true,
       onUpdateIntegrity: 'cascade',
       onDelete: 'cascade',
     },
     test2: {
-      reference: 'm:1',
+      kind: 'm:1',
       entity: () => Test2,
       ref: true,
       onUpdateIntegrity: 'cascade',
@@ -648,7 +643,7 @@ export const SandwichSchema = new EntitySchema({
     id: { primary: true, type: 'number' },
     name: { type: 'string', length: 255 },
     price: { type: 'number' },
-    sandwichesInverse: { reference: 'm:n', entity: () => User2, mappedBy: 'sandwiches' },
+    sandwichesInverse: { kind: 'm:n', entity: () => User2, mappedBy: 'sandwiches' },
   },
 });
 ",
@@ -678,14 +673,14 @@ export const Test2Schema = new EntitySchema({
     id: { primary: true, type: 'number' },
     name: { type: 'string', length: 255, nullable: true },
     book: {
-      reference: '1:1',
+      kind: '1:1',
       entity: () => Book2,
       ref: true,
       onDelete: 'set null',
       nullable: true,
     },
     parent: {
-      reference: 'm:1',
+      kind: 'm:1',
       entity: () => Test2,
       ref: true,
       onUpdateIntegrity: 'cascade',
@@ -694,7 +689,7 @@ export const Test2Schema = new EntitySchema({
     },
     version: { type: 'number', default: 1 },
     fooBar: {
-      reference: '1:1',
+      kind: '1:1',
       entity: () => FooBar2,
       ref: true,
       fieldName: 'foo___bar',
@@ -704,14 +699,14 @@ export const Test2Schema = new EntitySchema({
     },
     fooBaz: { type: 'number', fieldName: 'foo___baz', nullable: true },
     bars: {
-      reference: 'm:n',
+      kind: 'm:n',
       entity: () => FooBar2,
       joinColumn: 'test2_id',
       inverseJoinColumn: 'foo_bar2_id',
     },
-    testInverse: { reference: '1:m', entity: () => Configuration2, mappedBy: 'test' },
-    test2Inverse: { reference: '1:m', entity: () => Publisher2Tests, mappedBy: 'test2' },
-    parentInverse: { reference: '1:m', entity: () => Test2, mappedBy: 'parent' },
+    testInverse: { kind: '1:m', entity: () => Configuration2, mappedBy: 'test' },
+    test2Inverse: { kind: '1:m', entity: () => Publisher2Tests, mappedBy: 'test2' },
+    parentInverse: { kind: '1:m', entity: () => Test2, mappedBy: 'parent' },
   },
 });
 ",
@@ -735,7 +730,7 @@ export const User2Schema = new EntitySchema({
     lastName: { primary: true, type: 'string', length: 100 },
     foo: { type: 'number', nullable: true },
     favouriteCar: {
-      reference: '1:1',
+      kind: '1:1',
       entity: () => Car2,
       ref: true,
       onUpdateIntegrity: 'cascade',
@@ -743,13 +738,13 @@ export const User2Schema = new EntitySchema({
       nullable: true,
     },
     cars: {
-      reference: 'm:n',
+      kind: 'm:n',
       entity: () => Car2,
       joinColumns: ['user2_first_name', 'user2_last_name'],
       inverseJoinColumns: ['car2_name', 'car2_year'],
     },
     sandwiches: {
-      reference: 'm:n',
+      kind: 'm:n',
       entity: () => Sandwich,
       joinColumns: ['user2_first_name', 'user2_last_name'],
       inverseJoinColumn: 'sandwich_id',
