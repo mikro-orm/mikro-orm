@@ -20,7 +20,7 @@ export class Child extends BaseEntity {
 
   @ManyToOne({
     entity: () => Parent,
-    wrappedReference: true,
+    ref: true,
     index: true,
     onDelete: 'cascade',
   })
