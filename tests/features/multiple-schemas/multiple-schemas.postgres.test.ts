@@ -40,7 +40,7 @@ export class Book extends BaseEntity {
   @Property({ nullable: true })
   name?: string;
 
-  @ManyToOne(() => Author, { nullable: true, onDelete: 'cascade' })
+  @ManyToOne(() => Author, { nullable: true, deleteRule: 'cascade' })
   author?: Author;
 
   @ManyToOne(() => Book, { nullable: true })

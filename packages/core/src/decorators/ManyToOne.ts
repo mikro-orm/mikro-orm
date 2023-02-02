@@ -28,6 +28,6 @@ export interface ManyToOneOptions<T, O> extends ReferenceOptions<T, O> {
   joinColumns?: string[];
   referenceColumnName?: string;
   referencedColumnNames?: string[];
-  onDelete?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
-  onUpdateIntegrity?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
+  deleteRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
+  updateRule?: 'cascade' | 'no action' | 'set null' | 'set default' | AnyString;
 }
