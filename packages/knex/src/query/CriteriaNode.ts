@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import { ReferenceType, Utils, type Dictionary, type EntityProperty, type MetadataStorage } from '@mikro-orm/core';
+import { ReferenceKind, Utils, type Dictionary, type EntityProperty, type MetadataStorage } from '@mikro-orm/core';
 import type { ICriteriaNode, IQueryBuilder } from '../typings';
 
 /**
@@ -52,7 +52,7 @@ export class CriteriaNode implements ICriteriaNode {
   }
 
   shouldRename(payload: any): boolean {
-    const type = this.prop ? this.prop.reference : null;
+    const type = this.prop ? this.prop.kind : null;
     const composite = this.prop?.joinColumns ? this.prop.joinColumns.length > 1 : false;
     const customExpression = CriteriaNode.isCustomExpression(this.key!);
     const scalar = payload === null || Utils.isPrimaryKey(payload) || payload as unknown instanceof RegExp || payload as unknown instanceof Date || customExpression;
@@ -63,10 +63,10 @@ export class CriteriaNode implements ICriteriaNode {
     }
 
     switch (type) {
-      case ReferenceType.MANY_TO_ONE: return false;
-      case ReferenceType.ONE_TO_ONE: return !this.prop!.owner;
-      case ReferenceType.ONE_TO_MANY: return scalar || operator;
-      case ReferenceType.MANY_TO_MANY: return scalar || operator;
+      case ReferenceKind.MANY_TO_ONE: return false;
+      case ReferenceKind.ONE_TO_ONE: return !this.prop!.owner;
+      case ReferenceKind.ONE_TO_MANY: return scalar || operator;
+      case ReferenceKind.MANY_TO_MANY: return scalar || operator;
       default: return false;
     }
   }
@@ -75,7 +75,7 @@ export class CriteriaNode implements ICriteriaNode {
     const joinAlias = qb.getAliasForJoinPath(this.getPath());
     const alias = joinAlias ?? qb.alias;
 
-    if (this.prop!.reference === ReferenceType.MANY_TO_MANY) {
+    if (this.prop!.kind === ReferenceKind.MANY_TO_MANY) {
       return Utils.getPrimaryKeyHash(this.prop!.inverseJoinColumns.map(col => `${alias}.${col}`));
     }
 
@@ -89,7 +89,7 @@ export class CriteriaNode implements ICriteriaNode {
 
   getPath(addIndex = false): string {
     // use index on parent only if we are processing to-many relation
-    const addParentIndex = this.prop && [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(this.prop.reference);
+    const addParentIndex = this.prop && [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(this.prop.kind);
     const parentPath = this.parent?.getPath(addParentIndex) ?? this.entityName;
     const index = addIndex && this.index != null ? `[${this.index}]` : '';
     // ignore group operators to allow easier mapping (e.g. for orderBy)
@@ -113,7 +113,7 @@ export class CriteriaNode implements ICriteriaNode {
     const scalar = this.payload === null || Utils.isPrimaryKey(this.payload) || this.payload as unknown instanceof RegExp || this.payload as unknown instanceof Date || customExpression;
     const operator = Utils.isObject(this.payload) && Object.keys(this.payload).every(k => Utils.isOperator(k, false));
 
-    return this.prop.reference === ReferenceType.MANY_TO_MANY && (scalar || operator);
+    return this.prop.kind === ReferenceKind.MANY_TO_MANY && (scalar || operator);
   }
 
   getPivotPath(path: string): string {

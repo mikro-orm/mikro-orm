@@ -1,15 +1,4 @@
-import {
-  Embeddable,
-  Embedded,
-  Entity,
-  expr,
-  ManyToOne,
-  MikroORM,
-  PrimaryKey,
-  Property,
-  ReferenceType, Rel,
-  t,
-} from '@mikro-orm/core';
+import { Embeddable, Embedded, Entity, expr, MikroORM, PrimaryKey, Property, ReferenceKind, t, ManyToOne, Rel } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { mockLogger } from '../../helpers';
 
@@ -134,33 +123,33 @@ describe('embedded entities in postgresql', () => {
     });
     expect(orm.getMetadata().get('User').properties.address1).toMatchObject({
       name: 'address1',
-      reference: ReferenceType.EMBEDDED,
+      kind: ReferenceKind.EMBEDDED,
       type: 'Address1',
     });
     expect(orm.getMetadata().get('User').properties.address1_street).toMatchObject({
       name: 'address1_street',
-      reference: ReferenceType.SCALAR,
+      kind: ReferenceKind.SCALAR,
       type: 'string',
     });
     expect(orm.getMetadata().get('User').properties.address2).toMatchObject({
       name: 'address2',
-      reference: ReferenceType.EMBEDDED,
+      kind: ReferenceKind.EMBEDDED,
       type: 'Address2',
     });
     expect(orm.getMetadata().get('User').properties.addr_street).toMatchObject({
       name: 'addr_street',
-      reference: ReferenceType.SCALAR,
+      kind: ReferenceKind.SCALAR,
       type: 'string',
       nullable: true,
     });
     expect(orm.getMetadata().get('User').properties.address3).toMatchObject({
       name: 'address3',
-      reference: ReferenceType.EMBEDDED,
+      kind: ReferenceKind.EMBEDDED,
       type: 'Address1',
     });
     expect(orm.getMetadata().get('User').properties.street).toMatchObject({
       name: 'street',
-      reference: ReferenceType.SCALAR,
+      kind: ReferenceKind.SCALAR,
       type: 'string',
     });
   });

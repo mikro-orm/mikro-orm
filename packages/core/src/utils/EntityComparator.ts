@@ -8,7 +8,7 @@ import type {
   IMetadataStorage,
   Primary,
 } from '../typings';
-import { ReferenceType } from '../enums';
+import { ReferenceKind } from '../enums';
 import type { Platform } from '../platforms';
 import { compareArrays, compareBooleans, compareBuffers, compareObjects, equals, parseJsonSafe, Utils } from './Utils';
 import { JsonType } from '../types/JsonType';
@@ -79,7 +79,7 @@ export class EntityComparator {
     if (meta.primaryKeys.length > 1) {
       lines.push(`  const cond = {`);
       meta.primaryKeys.forEach(pk => {
-        if (meta.properties[pk].reference !== ReferenceType.SCALAR) {
+        if (meta.properties[pk].kind !== ReferenceKind.SCALAR) {
           lines.push(`    ${pk}: (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) ? entity${this.wrap(pk)}.__helper.getPrimaryKey() : entity${this.wrap(pk)},`);
         } else {
           lines.push(`    ${pk}: entity${this.wrap(pk)},`);
@@ -91,7 +91,7 @@ export class EntityComparator {
     } else {
       const pk = meta.primaryKeys[0];
 
-      if (meta.properties[pk].reference !== ReferenceType.SCALAR) {
+      if (meta.properties[pk].kind !== ReferenceKind.SCALAR) {
         lines.push(`  if (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) return entity${this.wrap(pk)}.__helper.getPrimaryKey();`);
       }
 
@@ -123,7 +123,7 @@ export class EntityComparator {
     if (meta.primaryKeys.length > 1) {
       lines.push(`  const cond = {`);
       meta.primaryKeys.forEach(pk => {
-        if (meta.properties[pk].reference !== ReferenceType.SCALAR) {
+        if (meta.properties[pk].kind !== ReferenceKind.SCALAR) {
           lines.push(`    ${pk}: (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) ? entity${this.wrap(pk)}.__helper.getPrimaryKey(true) : entity${this.wrap(pk)},`);
         } else {
           if (meta.properties[pk].customType) {
@@ -141,7 +141,7 @@ export class EntityComparator {
     } else {
       const pk = meta.primaryKeys[0];
 
-      if (meta.properties[pk].reference !== ReferenceType.SCALAR) {
+      if (meta.properties[pk].kind !== ReferenceKind.SCALAR) {
         lines.push(`  if (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) return entity${this.wrap(pk)}.__helper.getPrimaryKey(true);`);
       }
 
@@ -180,7 +180,7 @@ export class EntityComparator {
     if (meta.primaryKeys.length > 1) {
       lines.push(`  const pks = entity.__helper.__pk ? getCompositeKeyValue(entity.__helper.__pk) : [`);
       meta.primaryKeys.forEach(pk => {
-        if (meta.properties[pk].reference !== ReferenceType.SCALAR) {
+        if (meta.properties[pk].kind !== ReferenceKind.SCALAR) {
           lines.push(`    (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) ? entity${this.wrap(pk)}.__helper.getSerializedPrimaryKey() : entity${this.wrap(pk)},`);
         } else {
           lines.push(`    entity${this.wrap(pk)},`);
@@ -191,7 +191,7 @@ export class EntityComparator {
     } else {
       const pk = meta.primaryKeys[0];
 
-      if (meta.properties[pk].reference !== ReferenceType.SCALAR) {
+      if (meta.properties[pk].kind !== ReferenceKind.SCALAR) {
         lines.push(`  if (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) return entity${this.wrap(pk)}.__helper.getSerializedPrimaryKey();`);
       }
 
@@ -238,7 +238,7 @@ export class EntityComparator {
     meta.comparableProps
       .filter(prop => {
         const root = getRootProperty(prop);
-        return prop === root || root.reference !== ReferenceType.EMBEDDED;
+        return prop === root || root.kind !== ReferenceKind.EMBEDDED;
       })
       .forEach(prop => lines.push(this.getPropertySnapshot(meta, prop, context, this.wrap(prop.name), this.wrap(prop.name), [prop.name])));
 
@@ -318,7 +318,7 @@ export class EntityComparator {
           lines.push(`    ${propName(prop.fieldNames[0], 'mapped')} = true;`);
           lines.push(`  }`);
         }
-      } else if (prop.reference === ReferenceType.EMBEDDED && prop.object && !this.platform.convertsJsonAutomatically()) {
+      } else if (prop.kind === ReferenceKind.EMBEDDED && prop.object && !this.platform.convertsJsonAutomatically()) {
         context.set('parseJsonSafe', parseJsonSafe);
         lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') {`);
         lines.push(`    ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : parseJsonSafe(${propName(prop.fieldNames[0])});`);
@@ -434,11 +434,11 @@ export class EntityComparator {
       const childEntityKey = [...path, childProp.embedded![1]].map(k => this.wrap(k)).join('');
       const childCond = `typeof entity${childEntityKey} !== 'undefined'`;
 
-      if (childProp.reference === ReferenceType.EMBEDDED) {
+      if (childProp.kind === ReferenceKind.EMBEDDED) {
         return this.getPropertySnapshot(meta, childProp, context, childDataKey, childEntityKey, [...path, childProp.embedded![1]], level + 1, prop.object);
       }
 
-      if (childProp.reference !== ReferenceType.SCALAR) {
+      if (childProp.kind !== ReferenceKind.SCALAR) {
         return this.getPropertySnapshot(meta, childProp, context, childDataKey, childEntityKey, [...path, childProp.embedded![1]], level, prop.object)
           .split('\n').map(l => padding + l).join('\n');
       }
@@ -472,7 +472,7 @@ export class EntityComparator {
       return ret + `    ret${dataKey} = entity${entityKey};\n  }\n`;
     }
 
-    if (prop.reference === ReferenceType.EMBEDDED) {
+    if (prop.kind === ReferenceKind.EMBEDDED) {
       if (prop.array) {
         return this.getEmbeddedArrayPropertySnapshot(meta, prop, context, level, path, dataKey) + '\n';
       }
@@ -480,7 +480,7 @@ export class EntityComparator {
       return this.getEmbeddedPropertySnapshot(meta, prop, context, level, path, dataKey, object) + '\n';
     }
 
-    if (prop.reference === ReferenceType.ONE_TO_ONE || prop.reference === ReferenceType.MANY_TO_ONE) {
+    if (prop.kind === ReferenceKind.ONE_TO_ONE || prop.kind === ReferenceKind.MANY_TO_ONE) {
       if (prop.mapToPk) {
         if (prop.customType) {
           context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
@@ -569,7 +569,7 @@ export class EntityComparator {
   private getPropertyComparator<T>(prop: EntityProperty<T>): string {
     let type = prop.type.toLowerCase();
 
-    if (prop.reference !== ReferenceType.SCALAR && prop.reference !== ReferenceType.EMBEDDED) {
+    if (prop.kind !== ReferenceKind.SCALAR && prop.kind !== ReferenceKind.EMBEDDED) {
       const meta2 = this.metadata.find(prop.type)!;
 
       if (meta2.primaryKeys.length > 1) {
@@ -635,9 +635,9 @@ export class EntityComparator {
    */
   static isComparable<T>(prop: EntityProperty<T>, root: EntityMetadata) {
     const virtual = prop.persist === false;
-    const inverse = prop.reference === ReferenceType.ONE_TO_ONE && !prop.owner;
+    const inverse = prop.kind === ReferenceKind.ONE_TO_ONE && !prop.owner;
     const discriminator = prop.name === root.discriminatorColumn;
-    const collection = prop.reference === ReferenceType.ONE_TO_MANY || prop.reference === ReferenceType.MANY_TO_MANY;
+    const collection = prop.kind === ReferenceKind.ONE_TO_MANY || prop.kind === ReferenceKind.MANY_TO_MANY;
 
     return !virtual && !collection && !inverse && !discriminator && !prop.version;
   }

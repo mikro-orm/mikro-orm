@@ -37,7 +37,7 @@ const ASchema = new EntitySchema<A, Base>({
     },
     childrenA: {
       entity: () => A,
-      reference: 'm:1',
+      kind: 'm:1',
       nullable: true,
     },
   },

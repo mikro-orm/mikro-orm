@@ -1,5 +1,5 @@
 import type { Collection, EventArgs } from '@mikro-orm/core';
-import { EntitySchema, DateType, TimeType, BooleanType, t, ReferenceType, wrap } from '@mikro-orm/core';
+import { EntitySchema, DateType, TimeType, BooleanType, t, ReferenceKind, wrap } from '@mikro-orm/core';
 import type { IBaseEntity5 } from './BaseEntity5';
 import type { IBook4 } from './Book4';
 
@@ -52,10 +52,10 @@ export const Author4 = new EntitySchema<IAuthor4, IBaseEntity5>({
     identities: { type: 'string[]', nullable: true },
     born: { type: DateType, nullable: true, length: 3 },
     bornTime: { type: TimeType, nullable: true, length: 3 },
-    books: { reference: '1:m', type: 'Book4', mappedBy: book => book.author },
-    favouriteBook: { reference: 'm:1', type: 'Book4', nullable: true },
+    books: { kind: '1:m', type: 'Book4', mappedBy: book => book.author },
+    favouriteBook: { kind: 'm:1', type: 'Book4', nullable: true },
     version: { type: 'number', persist: false },
-    identity: { type: 'Identity', reference: ReferenceType.EMBEDDED, nullable: true, object: true },
+    identity: { type: 'Identity', kind: ReferenceKind.EMBEDDED, nullable: true, object: true },
   },
   hooks: {
     onLoad: [randomHook],
