@@ -476,7 +476,7 @@ export class MetadataDiscovery {
 
     // FK used as PK, we need to cascade
     if (pks.length === 1 && pks[0].kind !== ReferenceKind.SCALAR) {
-      pks[0].onDelete ??= 'cascade';
+      pks[0].deleteRule ??= 'cascade';
     }
 
     meta.forceConstructor = this.shouldForceConstructorUsage(meta);

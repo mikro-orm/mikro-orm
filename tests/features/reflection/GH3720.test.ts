@@ -17,7 +17,7 @@ let orm: MikroORM;
 
 beforeAll(async () => {
   orm = await MikroORM.init({
-    cache: { enabled: false },
+    metadataCache: { enabled: false },
     entities: [A],
     dbName: 'mikro_orm_test_3720',
     metadataProvider: TsMorphMetadataProvider,

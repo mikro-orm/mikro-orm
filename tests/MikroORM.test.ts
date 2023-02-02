@@ -229,7 +229,7 @@ describe('MikroORM', () => {
       driver: SqliteDriver,
       dbName: ':memory:',
       entities: [Car2, CarOwner2, User2, Sandwich],
-      cache: { adapter: Adapter, enabled: true },
+      metadataCache: { adapter: Adapter, enabled: true },
       resultCache: { adapter: Adapter },
       connect: false,
     });

@@ -13,7 +13,7 @@ class Node {
 class A {
 
   [PrimaryKeyProp]?: 'node';
-  @OneToOne({ entity: () => Node, ref: true, primary: true, onDelete: 'cascade', onUpdateIntegrity: 'cascade' })
+  @OneToOne({ entity: () => Node, ref: true, primary: true, deleteRule: 'cascade', updateRule: 'cascade' })
   node!: Ref<Node>;
 
   @OneToMany('B', 'a', { eager: true, orphanRemoval: true })
@@ -48,7 +48,7 @@ describe('GH issue 1111', () => {
     orm = await MikroORM.init({
       entities: [Node, A, B],
       dbName: `mikro_orm_test_gh_1111`,
-      cache: { enabled: false },
+      metadataCache: { enabled: false },
     });
     mockLogger(orm, ['query', 'query-params'], log);
     await orm.schema.ensureDatabase();

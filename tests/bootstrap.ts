@@ -144,7 +144,7 @@ export async function initORMPostgreSql(loadStrategy = LoadStrategy.SELECT_IN, e
     forceUtcTimezone: true,
     autoJoinOneToOneOwner: false,
     logger: i => i,
-    cache: { enabled: true },
+    metadataCache: { enabled: true },
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
     forceEntityConstructor: [FooBar2],
     loadStrategy,
@@ -171,7 +171,7 @@ export async function initORMSqlite() {
     debug: ['query'],
     forceUtcTimezone: true,
     logger: i => i,
-    cache: { enabled: true, pretty: true },
+    metadataCache: { enabled: true, pretty: true },
     persistOnCreate: false,
     extensions: [Migrator, SeedManager, EntityGenerator],
   });
@@ -192,7 +192,7 @@ export async function initORMSqlite2(type: 'sqlite' | 'better-sqlite' = 'sqlite'
     propagateToOneOwner: false,
     forceUndefined: true,
     logger: i => i,
-    cache: { pretty: true },
+    metadataCache: { pretty: true },
     migrations: { path: BASE_DIR + '/../temp/migrations', snapshot: false },
     extensions: [Migrator, SeedManager, EntityGenerator],
   });
@@ -211,7 +211,7 @@ export async function initORMSqlite3() {
     forceUtcTimezone: true,
     logger: i => i,
     metadataProvider: ReflectMetadataProvider,
-    cache: { enabled: true, pretty: true },
+    metadataCache: { enabled: true, pretty: true },
     extensions: [Migrator, SeedManager, EntityGenerator],
   });
 
