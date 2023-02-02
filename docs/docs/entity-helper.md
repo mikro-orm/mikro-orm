@@ -39,14 +39,14 @@ wrap(book).assign({
 }, { em });
 ```
 
-By default, `assign(data)` behaves similar to `Object.assign(entity, data)`, e.g. it does not merge things recursively. To enable deep merging of object properties (not referenced entities), use second parameter to enable `mergeObjects` flag:
+By default, `entity.assign(data)` behaves similar to `Object.assign(entity, data)`, e.g. it does not merge things recursively. To enable deep merging of object properties (not referenced entities), use second parameter to enable `mergeObjectProperties` flag:
 
 ```ts
 import { wrap } from '@mikro-orm/core';
 
 book.meta = { foo: 1, bar: 2 };
 
-wrap(book).assign({ meta: { foo: 3 } }, { mergeObjects: true });
+wrap(book).assign({ meta: { foo: 3 } }, { mergeObjectProperties: true });
 console.log(book.meta); // { foo: 3, bar: 2 }
 
 wrap(book).assign({ meta: { foo: 4 } });
@@ -177,7 +177,7 @@ Then you can work with those methods directly:
 
 ```ts
 book.meta = { foo: 1, bar: 2 };
-book.assign({ meta: { foo: 3 } }, { mergeObjects: true });
+book.assign({ meta: { foo: 3 } }, { mergeObjectProperties: true });
 console.log(book.meta); // { foo: 3, bar: 2 }
 ```
 
