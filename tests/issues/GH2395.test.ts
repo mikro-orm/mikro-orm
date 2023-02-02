@@ -23,7 +23,7 @@ export class Child {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => Parent, { wrappedReference: true })
+  @ManyToOne(() => Parent, { ref: true })
   parent!: Ref<Parent>;
 
 }
@@ -34,7 +34,7 @@ export class Child2 {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => Parent, { wrappedReference: true, cascade: [Cascade.ALL] })
+  @ManyToOne(() => Parent, { ref: true, cascade: [Cascade.ALL] })
   parent!: Ref<Parent>;
 
 }
@@ -45,7 +45,7 @@ export class Child3 {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => Parent, { wrappedReference: true })
+  @ManyToOne(() => Parent, { ref: true })
   parent!: Ref<Parent>;
 
 }
