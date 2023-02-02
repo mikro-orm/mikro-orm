@@ -130,7 +130,7 @@ export class SourceFile {
     const useDefault = prop.default != null && isEnumOrNonStringDefault;
     const optional = prop.nullable ? '?' : (useDefault ? '' : '!');
 
-    if (prop.wrappedReference) {
+    if (prop.ref) {
       this.coreImports.add('Ref');
       this.entityImports.add(prop.type);
       return `${padding}${prop.name}${optional}: Ref<${prop.type}>;\n`;
@@ -356,7 +356,7 @@ export class SourceFile {
     this.entityImports.add(className);
     options.entity = `() => ${className}`;
 
-    if (prop.wrappedReference) {
+    if (prop.ref) {
       options.ref = true;
     }
 

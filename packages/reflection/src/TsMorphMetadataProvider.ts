@@ -162,7 +162,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     prop.type = m[1];
 
     if (['Ref', 'Reference', 'Ref'].includes(wrapper)) {
-      prop.wrappedReference = true;
+      prop.ref = true;
     }
   }
 

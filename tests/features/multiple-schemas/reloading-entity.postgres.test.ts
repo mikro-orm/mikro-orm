@@ -18,7 +18,7 @@ export class License {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne({ entity: () => Customer, wrappedReference: true })
+  @ManyToOne({ entity: () => Customer, ref: true })
   customer: Ref<Customer>;
 
   constructor(customer: Customer | Ref<Customer>) {
