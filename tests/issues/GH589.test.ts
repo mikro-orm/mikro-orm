@@ -14,10 +14,10 @@ export class User {
 @Entity()
 export class Chat {
 
-  @ManyToOne(() => User, { primary: true, wrappedReference: true })
+  @ManyToOne(() => User, { primary: true, ref: true })
   owner: Ref<User>;
 
-  @ManyToOne(() => User, { primary: true, wrappedReference: true })
+  @ManyToOne(() => User, { primary: true, ref: true })
   recipient: Ref<User>;
 
   @ManyToOne(() => User, { nullable: true })
