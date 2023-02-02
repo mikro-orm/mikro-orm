@@ -1,4 +1,17 @@
-import { MikroORM, Entity, PrimaryKey, PrimaryKeyType, Unique, Collection, ManyToOne, OneToMany, Property, Filter, LoadStrategy, OptionalProps } from '@mikro-orm/sqlite';
+import {
+  MikroORM,
+  Entity,
+  PrimaryKey,
+  Unique,
+  Collection,
+  ManyToOne,
+  OneToMany,
+  Property,
+  Filter,
+  LoadStrategy,
+  OptionalProps,
+  PrimaryKeyProp,
+} from '@mikro-orm/sqlite';
 
 @Entity({ tableName: 'users' })
 export class UserEntity {
@@ -52,7 +65,7 @@ class UserTenantEntity {
   @ManyToOne({ primary: true, entity: () => TenantEntity, fieldName: 'tenantId', cascade: [] })
   tenant!: TenantEntity;
 
-  [PrimaryKeyType]?: [number, number];
+  [PrimaryKeyProp]?: ['user', 'tenant'];
   [OptionalProps]?: 'isActive';
 
   @Property({ type: 'boolean', fieldName: 'isActive' })

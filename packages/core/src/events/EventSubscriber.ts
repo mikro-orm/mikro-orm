@@ -7,14 +7,14 @@ export interface EventArgs<T> {
   entity: T;
   em: EntityManager;
   meta: EntityMetadata<T>;
-  changeSet?: ChangeSet<T>;
+  changeSet?: ChangeSet<T & {}>;
 }
 
-export interface FlushEventArgs extends Omit<EventArgs<unknown>, 'entity' | 'meta'> {
+export interface FlushEventArgs extends Omit<EventArgs<any>, 'entity' | 'changeSet' | 'meta'> {
   uow: UnitOfWork;
 }
 
-export interface TransactionEventArgs extends Omit<EventArgs<unknown>, 'entity' | 'meta' | 'changeSet'> {
+export interface TransactionEventArgs extends Omit<EventArgs<any>, 'entity' | 'meta' | 'changeSet'> {
   transaction?: Transaction;
   uow?: UnitOfWork;
 }

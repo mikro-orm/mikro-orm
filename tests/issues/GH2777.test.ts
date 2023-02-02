@@ -92,7 +92,7 @@ describe('GH issue 2777', () => {
     const ret = await orm.em.find(Customer, {});
     expect(ret[0]).toBe(ret[0].product.image!.customer);
     expect(wrap(ret[0].product).isInitialized()).toBe(true);
-    expect(wrap(ret[0].product.image).isInitialized()).toBe(true);
+    expect(wrap(ret[0].product.image!).isInitialized()).toBe(true);
     expect(wrap(ret[0].product.image!.customer).isInitialized()).toBe(true);
   });
 

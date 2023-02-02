@@ -1,4 +1,4 @@
-import { Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/sqlite';
+import { Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/sqlite';
 
 @Entity({ tableName: 'vehicle', discriminatorColumn: 'type', abstract: true })
 class Vehicle {
@@ -7,7 +7,7 @@ class Vehicle {
   id!: number;
 
   @ManyToOne(() => Garage, { wrappedReference: true })
-  garage!: IdentifiedReference<Garage>;
+  garage!: Ref<Garage>;
 
 }
 

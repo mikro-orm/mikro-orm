@@ -16,7 +16,7 @@ export class ChangeSetComputer {
               private readonly platform: Platform,
               private readonly config: Configuration) { }
 
-  computeChangeSet<T>(entity: T): ChangeSet<T> | null {
+  computeChangeSet<T extends object>(entity: T): ChangeSet<T> | null {
     const meta = this.metadata.get((entity as AnyEntity).constructor.name);
 
     if (meta.readonly) {
@@ -98,7 +98,7 @@ export class ChangeSetComputer {
     }
   }
 
-  private computePayload<T>(entity: T, ignoreUndefined = false): EntityData<T> {
+  private computePayload<T extends object>(entity: T, ignoreUndefined = false): EntityData<T> {
     const data = this.comparator.prepareEntity(entity);
     const entityName = helper(entity).__meta!.root.className;
     const originalEntityData = helper(entity).__originalEntityData;
@@ -119,7 +119,7 @@ export class ChangeSetComputer {
     return data;
   }
 
-  private processProperty<T>(changeSet: ChangeSet<T>, prop: EntityProperty<T>, target?: unknown): void {
+  private processProperty<T extends object>(changeSet: ChangeSet<T>, prop: EntityProperty<T>, target?: unknown): void {
     if (!target) {
       const targets = Utils.unwrapProperty(changeSet.entity, changeSet.meta, prop);
       targets.forEach(([t]) => this.processProperty(changeSet, prop, t));
@@ -136,7 +136,7 @@ export class ChangeSetComputer {
     }
   }
 
-  private processToOne<T>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
+  private processToOne<T extends object>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
     const isToOneOwner = prop.reference === ReferenceType.MANY_TO_ONE || (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner);
 
     if (!isToOneOwner || prop.mapToPk) {
@@ -152,7 +152,7 @@ export class ChangeSetComputer {
     });
   }
 
-  private processToMany<T>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
+  private processToMany<T extends object>(prop: EntityProperty<T>, changeSet: ChangeSet<T>): void {
     const target = changeSet.entity[prop.name] as unknown as Collection<any>;
 
     if (!target.isDirty()) {

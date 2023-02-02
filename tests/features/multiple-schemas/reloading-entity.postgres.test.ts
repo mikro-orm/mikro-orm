@@ -1,4 +1,4 @@
-import { Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, PrimaryKey, Reference } from '@mikro-orm/core';
+import { Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, PrimaryKey, Reference } from '@mikro-orm/core';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 
 @Entity()
@@ -19,9 +19,9 @@ export class License {
   id!: number;
 
   @ManyToOne({ entity: () => Customer, wrappedReference: true })
-  customer: IdentifiedReference<Customer>;
+  customer: Ref<Customer>;
 
-  constructor(customer: Customer | IdentifiedReference<Customer>) {
+  constructor(customer: Customer | Ref<Customer>) {
     this.customer = Reference.create(customer);
   }
 

@@ -11,7 +11,7 @@ export class QueryHelper {
 
   static readonly SUPPORTED_OPERATORS = ['>', '<', '<=', '>=', '!', '!='];
 
-  static processParams(params: any): any {
+  static processParams(params: unknown): any {
     if (Reference.isReference(params)) {
       params = params.unwrap();
     }
