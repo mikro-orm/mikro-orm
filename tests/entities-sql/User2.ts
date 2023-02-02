@@ -1,4 +1,12 @@
-import { Collection, Entity, ManyToMany, OneToOne, PrimaryKey, PrimaryKeyType, Property } from '@mikro-orm/core';
+import {
+  Collection,
+  Entity,
+  ManyToMany,
+  OneToOne,
+  PrimaryKey,
+  PrimaryKeyProp,
+  Property,
+} from '@mikro-orm/core';
 import { Car2 } from './Car2';
 import { Sandwich } from './sandwich';
 
@@ -23,7 +31,7 @@ export class User2 {
   @OneToOne({ entity: () => Car2, nullable: true })
   favouriteCar?: Car2;
 
-  [PrimaryKeyType]?: [string, string];
+  [PrimaryKeyProp]?: ['firstName', 'lastName'];
 
   constructor(firstName: string, lastName: string) {
     this.firstName = firstName;

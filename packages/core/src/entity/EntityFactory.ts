@@ -137,7 +137,7 @@ export class EntityFactory {
         return;
       }
 
-      if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && Utils.isPlainObject(data[prop.name as string]) && entity[prop.name] && helper(entity[prop.name]).__initialized) {
+      if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && Utils.isPlainObject(data[prop.name as string]) && entity[prop.name] && helper(entity[prop.name]!).__initialized) {
         this.create(prop.type, data[prop.name as string] as EntityData<T>, options); // we can ignore the value, we just care about the `mergeData` call
       }
     });
