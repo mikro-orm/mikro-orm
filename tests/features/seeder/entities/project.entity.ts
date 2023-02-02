@@ -1,4 +1,4 @@
-import { Collection, Entity, IdentifiedReference, ManyToOne, OneToMany, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
+import { Collection, Entity, Ref, ManyToOne, OneToMany, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { House } from './house.entity';
 import { User } from './user.entity';
 
@@ -14,7 +14,7 @@ export class Project {
   name!: string;
 
   @ManyToOne({ entity: () => User, wrappedReference: true })
-  owner!: IdentifiedReference<User>;
+  owner!: Ref<User>;
 
   @Property()
   worth!: number;

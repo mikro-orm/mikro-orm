@@ -1,6 +1,6 @@
 import {
   Cascade, Collection, Entity, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey,
-  PrimaryKeyType, Property, ValidationError, wrap, LoadStrategy,
+  Property, ValidationError, wrap, LoadStrategy, PrimaryKeyProp,
 } from '@mikro-orm/core';
 import { AbstractSqlConnection, SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers';
@@ -50,7 +50,7 @@ export class FooParam2 {
   @Property({ version: true })
   version!: Date;
 
-  [PrimaryKeyType]?: [number, number];
+  [PrimaryKeyProp]?: ['bar', 'baz'];
 
   constructor(bar: FooBar2, baz: FooBaz2, value: string) {
     this.bar = bar;
@@ -154,7 +154,7 @@ export class Car2 {
   @ManyToMany('User2', 'cars')
   users = new Collection<User2>(this);
 
-  [PrimaryKeyType]?: [string, number];
+  [PrimaryKeyProp]?: ['name', 'year'];
 
   constructor(name: string, year: number, price: number) {
     this.name = name;
@@ -185,7 +185,7 @@ export class User2 {
   @OneToOne({ entity: () => Car2, nullable: true })
   favouriteCar?: Car2;
 
-  [PrimaryKeyType]?: [string, string];
+  [PrimaryKeyProp]?: ['firstName', 'lastName'];
 
   constructor(firstName: string, lastName: string) {
     this.firstName = firstName;
@@ -290,7 +290,7 @@ describe('composite keys in sqlite', () => {
     orm.em.clear();
 
     // test populating a PK
-    const p1 = await orm.em.findOneOrFail(FooParam2, [param.bar.id, param.baz.id], { populate: ['bar'] });
+    const p1 = await orm.em.findOneOrFail(FooParam2, [param.bar.id, param.baz.id] as const, { populate: ['bar'] });
     expect(wrap(p1).toJSON().bar).toMatchObject(wrap(p1.bar).toJSON());
     expect(wrap(p1).toJSON().baz).toBe(p1.baz.id);
 

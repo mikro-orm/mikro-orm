@@ -427,7 +427,7 @@ describe('Joined loading strategy', () => {
     expect(tags[0].books[0].author.name).toBe('Jon Snow');
     expect(tags[0].books[0].publisher).toBeInstanceOf(Reference);
     expect(tags[0].books[0].publisher!.unwrap()).toBeInstanceOf(Publisher2);
-    expect(wrap(tags[0].books[0].publisher).isInitialized()).toBe(true);
+    expect(wrap(tags[0].books[0].publisher!).isInitialized()).toBe(true);
     expect(tags[0].books[0].publisher!.unwrap().tests.isInitialized(true)).toBe(true);
     expect(tags[0].books[0].publisher!.unwrap().tests.count()).toBe(2);
     expect(tags[0].books[0].publisher!.unwrap().tests[0].name).toBe('t21');

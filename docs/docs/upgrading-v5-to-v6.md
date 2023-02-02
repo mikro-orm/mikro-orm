@@ -104,5 +104,44 @@ foo: string[];
 - `em.nativeInsert()` -> `em.insert()`
 - `em.persistLater()` -> `em.persist()`
 - `em.removeLater()` -> `em.remove()`
-- `uow.getOriginalEntityData()` without parameters 
-- `orm.schema.generate()` 
+- `IdentifiedReference` -> `Ref`
+- `uow.getOriginalEntityData()` without parameters
+- `orm.schema.generate()`
+
+## `BaseEntity` no longer has generic type arguments
+
+Instead, the `this` type is used.
+
+```diff
+-class User extends BaseEntity<User> { ... }
++class User extends BaseEntity { ... }
+```
+
+## `wrap` helper no longer accepts `undefined` on type level
+
+The runtime implementation still checks for this case and returns the argument, but on type level this will fail to compile. It was never correct to pass in nullable values inside as it were not allowed in the return type.
+
+Note that if you used it for converting entity instance to reference wrapper, the new `ref()` helper does a better job at that (and accepts nullable values).
+
+## Primary key inference
+
+Some methods allowed you to pass in the primary key property via second generic type argument, this is now removed in favour of the automatic inference. To set the PK type explicitly, use the `PrimaryKeyProp` symbol.
+
+`PrimaryKeyType` symbol has been removed, use `PrimaryKeyProp` instead if needed. Moreover, the value for composite PKs now has to be a tuple instead of a union to ensure we preserve the order of keys:
+
+```diff
+@Entity()
+export class Foo {
+
+  @ManyToOne(() => Bar, { primary: true })
+  bar!: Bar;
+
+  @ManyToOne(() => Baz, { primary: true })
+  baz!: Baz;
+
+-  [PrimaryKeyType]?: [number, number];
+-  [PrimaryKeyProp]?: 'bar' | 'baz';
++  [PrimaryKeyProp]?: ['bar', 'baz'];
+
+}
+```

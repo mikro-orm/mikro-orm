@@ -1,4 +1,4 @@
-import { Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, PrimaryKeyType, Property, Reference } from '@mikro-orm/postgresql';
+import { Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey, PrimaryKeyProp, Property, Reference } from '@mikro-orm/postgresql';
 import { mockLogger } from '../helpers';
 
 @Entity()
@@ -24,10 +24,9 @@ class B {
 @Entity()
 class A {
 
-  [PrimaryKeyType]?: number;
   [PrimaryKeyProp]?: 'node';
   @OneToOne({ entity: 'Node', wrappedReference: true, primary: true, onDelete: 'cascade', onUpdateIntegrity: 'cascade' })
-  node!: IdentifiedReference<Node>;
+  node!: Ref<Node>;
 
   @Property()
   name!: string;

@@ -2,7 +2,7 @@ import { MikroORM, SqliteDriver } from '@mikro-orm/sqlite';
 import { BaseEntity, Entity, PrimaryKey, ManyToOne, ManyToMany, Collection } from '@mikro-orm/core';
 
 @Entity()
-export class Car extends BaseEntity<User, 'id'> {
+export class Car extends BaseEntity {
 
   @PrimaryKey()
   id!: number;
@@ -10,7 +10,7 @@ export class Car extends BaseEntity<User, 'id'> {
 }
 
 @Entity()
-export class User extends BaseEntity<User, 'id'> {
+export class User extends BaseEntity {
 
   @PrimaryKey()
   id!: number;
