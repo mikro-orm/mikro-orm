@@ -6,7 +6,7 @@ import { EntityTransformer } from '../serialization/EntityTransformer';
 import { Reference } from './Reference';
 import { Utils } from '../utils/Utils';
 import { WrappedEntity } from './WrappedEntity';
-import { ReferenceType } from '../enums';
+import { ReferenceKind } from '../enums';
 import { helper } from './wrap';
 import { EntityRepositoryType, OptionalProps, PrimaryKeyProp } from '../typings';
 
@@ -82,8 +82,8 @@ export class EntityHelper {
     Object
       .values<EntityProperty<T>>(meta.properties)
       .forEach(prop => {
-        const isCollection = [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference);
-        const isReference = [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk;
+        const isCollection = [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind);
+        const isReference = [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk;
 
         if (isReference) {
           return Object.defineProperty(meta.prototype, prop.name, {
@@ -181,15 +181,15 @@ export class EntityHelper {
     for (const prop2 of inverseProps) {
       const inverse = value?.[prop2.name as string];
 
-      if (prop.reference === ReferenceType.MANY_TO_ONE && Utils.isCollection<O, T>(inverse) && inverse.isInitialized()) {
+      if (prop.kind === ReferenceKind.MANY_TO_ONE && Utils.isCollection<O, T>(inverse) && inverse.isInitialized()) {
         inverse.add(owner);
       }
 
-      if (prop.reference === ReferenceType.ONE_TO_ONE && entity && helper(entity).__initialized && Reference.unwrapReference(inverse) !== owner && value != null) {
+      if (prop.kind === ReferenceKind.ONE_TO_ONE && entity && helper(entity).__initialized && Reference.unwrapReference(inverse) !== owner && value != null) {
         EntityHelper.propagateOneToOne(entity, owner, prop, prop2, value, old);
       }
 
-      if (prop.reference === ReferenceType.ONE_TO_ONE && entity && helper(entity).__initialized && entity[prop2.name] != null && value == null) {
+      if (prop.kind === ReferenceKind.ONE_TO_ONE && entity && helper(entity).__initialized && entity[prop2.name] != null && value == null) {
         EntityHelper.propagateOneToOne(entity, owner, prop, prop2, value, old);
       }
     }

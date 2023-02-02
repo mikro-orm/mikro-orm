@@ -8,7 +8,7 @@ import type { Configuration } from '../utils/Configuration';
 import { MetadataValidator } from './MetadataValidator';
 import { MetadataStorage } from './MetadataStorage';
 import { EntitySchema } from './EntitySchema';
-import { Cascade, ReferenceType } from '../enums';
+import { Cascade, ReferenceKind } from '../enums';
 import { MetadataError } from '../errors';
 import type { Platform } from '../platforms';
 import { ArrayType, BigIntType, BlobType, EnumArrayType, JsonType, Type, t } from '../types';
@@ -117,7 +117,7 @@ export class MetadataDiscovery {
       .replace(/\((.*)\)/, '$1');   // unwrap union types
 
     const missing = this.discovered.flatMap(meta => Object.values(meta.properties).filter(prop => {
-      return prop.reference !== ReferenceType.SCALAR && !unwrap(prop.type).split(/ ?\| ?/).every(type => this.discovered.find(m => m.className === type));
+      return prop.kind !== ReferenceKind.SCALAR && !unwrap(prop.type).split(/ ?\| ?/).every(type => this.discovered.find(m => m.className === type));
     }));
 
     for (const prop of missing) {
@@ -313,11 +313,11 @@ export class MetadataDiscovery {
   }
 
   private initNullability(prop: EntityProperty): void {
-    if (prop.reference === ReferenceType.MANY_TO_ONE) {
+    if (prop.kind === ReferenceKind.MANY_TO_ONE) {
       return Utils.defaultValue(prop, 'nullable', prop.optional || prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL));
     }
 
-    if (prop.reference === ReferenceType.ONE_TO_ONE) {
+    if (prop.kind === ReferenceKind.ONE_TO_ONE) {
       return Utils.defaultValue(prop, 'nullable', prop.optional || !prop.owner || prop.cascade.includes(Cascade.REMOVE) || prop.cascade.includes(Cascade.ALL));
     }
 
@@ -329,15 +329,15 @@ export class MetadataDiscovery {
       this.initFieldName(prop);
     }
 
-    if (prop.reference === ReferenceType.MANY_TO_MANY) {
+    if (prop.kind === ReferenceKind.MANY_TO_MANY) {
       this.initManyToManyFields(meta, prop);
     }
 
-    if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference)) {
+    if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
       this.initManyToOneFields(prop);
     }
 
-    if (prop.reference === ReferenceType.ONE_TO_MANY) {
+    if (prop.kind === ReferenceKind.ONE_TO_MANY) {
       this.initOneToManyFields(prop);
     }
   }
@@ -347,11 +347,11 @@ export class MetadataDiscovery {
       return;
     }
 
-    if (prop.reference === ReferenceType.SCALAR || (prop.reference === ReferenceType.EMBEDDED && prop.object)) {
+    if (prop.kind === ReferenceKind.SCALAR || (prop.kind === ReferenceKind.EMBEDDED && prop.object)) {
       prop.fieldNames = [this.namingStrategy.propertyToColumnName(prop.name)];
-    } else if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference)) {
+    } else if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
       prop.fieldNames = this.initManyToOneFieldName(prop, prop.name);
-    } else if (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner) {
+    } else if (prop.kind === ReferenceKind.MANY_TO_MANY && prop.owner) {
       prop.fieldNames = this.initManyToManyFieldName(prop, prop.name);
     }
   }
@@ -453,7 +453,7 @@ export class MetadataDiscovery {
     meta.compositePK = pks.length > 1;
 
     // FK used as PK, we need to cascade
-    if (pks.length === 1 && pks[0].reference !== ReferenceType.SCALAR) {
+    if (pks.length === 1 && pks[0].kind !== ReferenceKind.SCALAR) {
       pks[0].onDelete ??= 'cascade';
     }
 
@@ -481,7 +481,7 @@ export class MetadataDiscovery {
 
     if (this.platform.usesPivotTable()) {
       const pivotProps = Object.values(meta.properties).filter(prop => {
-        return prop.reference === ReferenceType.MANY_TO_MANY && prop.owner && prop.pivotTable;
+        return prop.kind === ReferenceKind.MANY_TO_MANY && prop.owner && prop.pivotTable;
       });
       await Utils.runSerial(pivotProps, async prop => {
         return ret.push(await this.definePivotTableEntity(meta, prop));
@@ -577,7 +577,7 @@ export class MetadataDiscovery {
     const primaryProp = {
       name: pk,
       type: 'number',
-      reference: ReferenceType.SCALAR,
+      kind: ReferenceKind.SCALAR,
       primary: true,
       autoincrement: true,
       unsigned: this.platform.supportsUnsigned(),
@@ -599,7 +599,7 @@ export class MetadataDiscovery {
     const ret = {
       name,
       type,
-      reference: ReferenceType.MANY_TO_ONE,
+      kind: ReferenceKind.MANY_TO_ONE,
       cascade: [Cascade.ALL],
       fixedOrder: prop.fixedOrder,
       fixedOrderColumn: prop.fixedOrderColumn,
@@ -650,7 +650,7 @@ export class MetadataDiscovery {
 
   private autoWireBidirectionalProperties(meta: EntityMetadata): void {
     Object.values(meta.properties)
-      .filter(prop => prop.reference !== ReferenceType.SCALAR && !prop.owner && prop.mappedBy)
+      .filter(prop => prop.kind !== ReferenceKind.SCALAR && !prop.owner && prop.mappedBy)
       .forEach(prop => {
         const meta2 = this.metadata.get(prop.type);
         const prop2 = meta2.properties[prop.mappedBy];
@@ -704,7 +704,7 @@ export class MetadataDiscovery {
   }
 
   private initPolyEmbeddables(embeddedProp: EntityProperty, discovered: EntityMetadata[], visited = new Set<EntityProperty>()): void {
-    if (embeddedProp.reference !== ReferenceType.EMBEDDED || visited.has(embeddedProp)) {
+    if (embeddedProp.kind !== ReferenceKind.EMBEDDED || visited.has(embeddedProp)) {
       return;
     }
 
@@ -751,7 +751,7 @@ export class MetadataDiscovery {
   }
 
   private initEmbeddables(meta: EntityMetadata, embeddedProp: EntityProperty, visited = new Set<EntityProperty>()): void {
-    if (embeddedProp.reference !== ReferenceType.EMBEDDED || visited.has(embeddedProp)) {
+    if (embeddedProp.kind !== ReferenceKind.EMBEDDED || visited.has(embeddedProp)) {
       return;
     }
 
@@ -771,7 +771,7 @@ export class MetadataDiscovery {
       const prefix = embeddedProp.prefix === false ? '' : embeddedProp.prefix === true ? embeddedProp.name + '_' : embeddedProp.prefix;
       const name = prefix + prop.name;
 
-      if (meta.properties[name] !== undefined && getRootProperty(meta.properties[name]).reference !== ReferenceType.EMBEDDED) {
+      if (meta.properties[name] !== undefined && getRootProperty(meta.properties[name]).kind !== ReferenceKind.EMBEDDED) {
         throw MetadataError.conflictingPropertyName(meta.className, name, embeddedProp.name);
       }
 
@@ -877,7 +877,7 @@ export class MetadataDiscovery {
       name: meta.discriminatorColumn!,
       type: 'string',
       enum: true,
-      reference: ReferenceType.SCALAR,
+      kind: ReferenceKind.SCALAR,
       userDefined: false,
     } as EntityProperty);
   }
@@ -1013,11 +1013,11 @@ export class MetadataDiscovery {
       prop.columnTypes ??= [prop.customType.getColumnType(prop, this.platform)];
     }
 
-    if (Type.isMappedType(prop.customType) && prop.reference === ReferenceType.SCALAR && !prop.type?.toString().endsWith('[]')) {
+    if (Type.isMappedType(prop.customType) && prop.kind === ReferenceKind.SCALAR && !prop.type?.toString().endsWith('[]')) {
       prop.type = prop.customType.constructor.name;
     }
 
-    if (prop.reference === ReferenceType.SCALAR) {
+    if (prop.kind === ReferenceKind.SCALAR) {
       const mappedType = this.getMappedType(prop);
       prop.columnTypes ??= [mappedType.getColumnType(prop, this.platform)];
 
@@ -1030,7 +1030,7 @@ export class MetadataDiscovery {
   }
 
   private initRelation(prop: EntityProperty): void {
-    if (prop.reference === ReferenceType.SCALAR) {
+    if (prop.kind === ReferenceKind.SCALAR) {
       return;
     }
 
@@ -1055,13 +1055,13 @@ export class MetadataDiscovery {
       await this.initEnumValues(meta, prop, path);
     }
 
-    if (prop.reference === ReferenceType.SCALAR) {
+    if (prop.kind === ReferenceKind.SCALAR) {
       const mappedType = this.getMappedType(prop);
       prop.columnTypes = [mappedType.getColumnType(prop, this.platform)];
       return;
     }
 
-    if (prop.reference === ReferenceType.EMBEDDED && prop.object && !prop.columnTypes) {
+    if (prop.kind === ReferenceKind.EMBEDDED && prop.object && !prop.columnTypes) {
       prop.columnTypes = [this.platform.getJsonDeclarationSQL()];
       return;
     }
@@ -1123,7 +1123,7 @@ export class MetadataDiscovery {
   }
 
   private initUnsigned(prop: EntityProperty): void {
-    if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference)) {
+    if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind)) {
       const meta2 = this.metadata.get(prop.type);
 
       meta2.primaryKeys.forEach(primaryKey => {
@@ -1139,7 +1139,7 @@ export class MetadataDiscovery {
   }
 
   private initIndexes(prop: EntityProperty): void {
-    if (prop.reference === ReferenceType.MANY_TO_ONE && this.platform.indexForeignKeys()) {
+    if (prop.kind === ReferenceKind.MANY_TO_ONE && this.platform.indexForeignKeys()) {
       prop.index ??= true;
     }
   }

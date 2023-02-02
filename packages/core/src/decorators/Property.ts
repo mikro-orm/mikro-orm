@@ -1,7 +1,7 @@
 import { MetadataStorage, MetadataValidator } from '../metadata';
 import { Utils } from '../utils';
 import type { Cascade, LoadStrategy } from '../enums';
-import { ReferenceType } from '../enums';
+import { ReferenceKind } from '../enums';
 import type { EntityName, EntityProperty, Constructor, CheckCallback, Dictionary, AnyString, AnyEntity } from '../typings';
 import type { Type, types } from '../types';
 
@@ -9,7 +9,7 @@ export function Property<T>(options: PropertyOptions<T> = {}) {
   return function (target: any, propertyName: string) {
     const meta = MetadataStorage.getMetadataFromDecorator<T>(target.constructor as T & Dictionary);
     const desc = Object.getOwnPropertyDescriptor(target, propertyName) || {};
-    MetadataValidator.validateSingleDecorator(meta, propertyName, ReferenceType.SCALAR);
+    MetadataValidator.validateSingleDecorator(meta, propertyName, ReferenceKind.SCALAR);
     const name = options.name || propertyName;
 
     if (propertyName !== name && !(desc.value instanceof Function)) {
@@ -18,7 +18,7 @@ export function Property<T>(options: PropertyOptions<T> = {}) {
 
     options.name = propertyName;
     const { check, ...opts } = options;
-    const prop = { reference: ReferenceType.SCALAR, ...opts } as EntityProperty;
+    const prop = { kind: ReferenceKind.SCALAR, ...opts } as EntityProperty;
     prop.getter = !!desc.get;
     prop.setter = !!desc.set;
 

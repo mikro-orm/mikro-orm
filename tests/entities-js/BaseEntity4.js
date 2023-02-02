@@ -1,4 +1,4 @@
-const { Collection, BaseEntity, EntitySchema, ReferenceType, wrap } = require('@mikro-orm/core');
+const { Collection, BaseEntity, EntitySchema, ReferenceKind, wrap } = require('@mikro-orm/core');
 
 /**
  * @property {number} id
@@ -10,7 +10,7 @@ class BaseEntity4 extends BaseEntity {
     const props = wrap(this, true).__meta.properties;
 
     Object.keys(props).forEach(prop => {
-      if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(props[prop].reference)) {
+      if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(props[prop].kind)) {
         this[prop] = new Collection(this);
       }
     });
