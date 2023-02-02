@@ -14,7 +14,7 @@ export class A {
 @Entity()
 export class B1 {
 
-  @ManyToOne({ entity: () => A, primary: true, wrappedReference: true })
+  @ManyToOne({ entity: () => A, primary: true, ref: true })
   a!: Ref<A>;
 
 }
@@ -25,7 +25,7 @@ export class B2 {
   @PrimaryKey()
   id!: number;
 
-  @OneToOne({ entity: () => A, primary: true, wrappedReference: true })
+  @OneToOne({ entity: () => A, primary: true, ref: true })
   a!: Ref<A>;
 
 }
@@ -33,7 +33,7 @@ export class B2 {
 @Entity()
 export class B3 {
 
-  @OneToOne({ entity: () => A, primary: true, wrappedReference: true })
+  @OneToOne({ entity: () => A, primary: true, ref: true })
   a!: Ref<A>;
 
 }
@@ -44,7 +44,7 @@ export class B4 {
   @PrimaryKey()
   id!: number;
 
-  @OneToOne({ entity: () => A, primary: true, wrappedReference: true })
+  @OneToOne({ entity: () => A, primary: true, ref: true })
   a!: Ref<A>;
 
 }
@@ -55,16 +55,16 @@ export class C {
   @PrimaryKey({ type: Number })
   id!: number;
 
-  @ManyToOne({ entity: () => B1, wrappedReference: true })
+  @ManyToOne({ entity: () => B1, ref: true })
   b1!: Ref<B1>;
 
-  @ManyToOne({ entity: () => B2, wrappedReference: true })
+  @ManyToOne({ entity: () => B2, ref: true })
   b2!: Ref<B2>;
 
-  @ManyToOne({ entity: () => B3, wrappedReference: true })
+  @ManyToOne({ entity: () => B3, ref: true })
   b3!: Ref<B3>;
 
-  @ManyToOne({ entity: () => B4, wrappedReference: true })
+  @ManyToOne({ entity: () => B4, ref: true })
   b4!: Ref<B4>;
 
 }
