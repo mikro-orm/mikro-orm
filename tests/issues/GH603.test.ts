@@ -34,7 +34,7 @@ const TaskSchema = new EntitySchema<TaskProps>({
     },
     projects: {
       entity: () => ProjectProps,
-      reference: 'm:n',
+      kind: 'm:n',
       inversedBy: 'tasks',
     },
   },
@@ -55,7 +55,7 @@ const ProjectSchema = new EntitySchema<ProjectProps>({
     tasks: {
       entity: () => TaskProps,
       mappedBy: 'projects',
-      reference: 'm:n',
+      kind: 'm:n',
     },
   },
 });

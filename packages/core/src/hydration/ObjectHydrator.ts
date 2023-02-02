@@ -3,7 +3,7 @@ import { Hydrator } from './Hydrator';
 import { Collection } from '../entity/Collection';
 import { Reference } from '../entity/Reference';
 import { parseJsonSafe, Utils } from '../utils/Utils';
-import { ReferenceType } from '../enums';
+import { ReferenceKind } from '../enums';
 import type { EntityFactory } from '../entity/EntityFactory';
 
 type EntityHydrator<T extends object> = (entity: T, data: EntityData<T>, factory: EntityFactory, newEntity: boolean, convertCustomTypes: boolean, schema?: string) => void;
@@ -146,7 +146,7 @@ export class ObjectHydrator extends Hydrator {
       ret.push(`    }`);
       ret.push(`  }`);
 
-      if (prop.reference === ReferenceType.ONE_TO_ONE) {
+      if (prop.kind === ReferenceKind.ONE_TO_ONE) {
         const meta2 = this.metadata.get(prop.type);
         const prop2 = meta2.properties[prop.inversedBy || prop.mappedBy];
 
@@ -227,7 +227,7 @@ export class ObjectHydrator extends Hydrator {
         meta.props
           .filter(p => p.embedded?.[0] === prop.name)
           .forEach(p => {
-            if (p.reference === ReferenceType.EMBEDDED && !p.object && !p.array) {
+            if (p.kind === ReferenceKind.EMBEDDED && !p.object && !p.array) {
               conds.push(...createCond(p, dataKey + this.wrap(p.embedded![1]), cond));
               return;
             }
@@ -308,11 +308,11 @@ export class ObjectHydrator extends Hydrator {
       dataKey = dataKey ?? (object ? entityKey : this.wrap(prop.name));
       const ret: string[] = [];
 
-      if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && !prop.mapToPk) {
+      if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && !prop.mapToPk) {
         ret.push(...hydrateToOne(prop, dataKey, entityKey));
-      } else if (prop.reference === ReferenceType.ONE_TO_MANY || prop.reference === ReferenceType.MANY_TO_MANY) {
+      } else if (prop.kind === ReferenceKind.ONE_TO_MANY || prop.kind === ReferenceKind.MANY_TO_MANY) {
         ret.push(...hydrateToMany(prop, dataKey, entityKey));
-      } else if (prop.reference === ReferenceType.EMBEDDED) {
+      } else if (prop.kind === ReferenceKind.EMBEDDED) {
         if (prop.array) {
           ret.push(...hydrateEmbeddedArray(prop, path, dataKey));
         } else {
@@ -322,7 +322,7 @@ export class ObjectHydrator extends Hydrator {
             ret.push(...hydrateEmbedded({ ...prop, object: true }, path, dataKey));
           }
         }
-      } else { // ReferenceType.SCALAR
+      } else { // ReferenceKind.SCALAR
         ret.push(...hydrateScalar(prop, object, path, dataKey));
       }
 

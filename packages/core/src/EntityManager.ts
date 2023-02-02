@@ -65,7 +65,7 @@ import {
   LoadStrategy,
   LockMode,
   PopulateHint,
-  ReferenceType,
+  ReferenceKind,
   SCALAR_TYPES,
   type TransactionOptions,
 } from './enums';
@@ -368,7 +368,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     if (options.populate) {
       for (const hint of (options.populate as unknown as PopulateOptions<Entity>[])) {
         const prop = meta.properties[hint.field];
-        const joined = (hint.strategy || prop.strategy || this.config.get('loadStrategy')) === LoadStrategy.JOINED && prop.reference !== ReferenceType.SCALAR;
+        const joined = (hint.strategy || prop.strategy || this.config.get('loadStrategy')) === LoadStrategy.JOINED && prop.reference !== ReferenceKind.SCALAR;
 
         if (!joined) {
           continue;
@@ -1281,7 +1281,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     Object.keys(data).forEach(k => {
       const prop = meta.properties[k];
 
-      if (prop && prop.reference === ReferenceType.SCALAR && SCALAR_TYPES.includes(prop.type) && (prop.setter || !prop.getter)) {
+      if (prop && prop.kind === ReferenceKind.SCALAR && SCALAR_TYPES.includes(prop.type) && (prop.setter || !prop.getter)) {
         data[k] = this.validator.validateProperty(prop, data[k], data);
       }
     });

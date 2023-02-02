@@ -3,7 +3,7 @@ import type { AnyEntity, EntityData, EntityMetadata, IPrimaryKey } from '../typi
 import { helper, wrap } from '../entity/wrap';
 import type { Platform } from '../platforms';
 import { Utils } from '../utils/Utils';
-import { ReferenceType } from '../enums';
+import { ReferenceKind } from '../enums';
 import type { Reference } from '../entity/Reference';
 import { SerializationContext } from './SerializationContext';
 
@@ -126,7 +126,7 @@ export class EntityTransformer {
       return EntityTransformer.processEntity(prop, entity, wrapped.__platform, raw);
     }
 
-    if (property.reference === ReferenceType.EMBEDDED) {
+    if (property.kind === ReferenceKind.EMBEDDED) {
       if (Array.isArray(entity[prop])) {
         return (entity[prop] as object[]).map(item => {
           const wrapped = item && helper(item);

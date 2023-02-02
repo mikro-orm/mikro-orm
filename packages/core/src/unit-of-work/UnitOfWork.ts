@@ -16,7 +16,7 @@ import { ChangeSetPersister } from './ChangeSetPersister';
 import { CommitOrderCalculator } from './CommitOrderCalculator';
 import { Utils } from '../utils/Utils';
 import type { EntityManager } from '../EntityManager';
-import { Cascade, EventType, LockMode, ReferenceType } from '../enums';
+import { Cascade, EventType, LockMode, ReferenceKind } from '../enums';
 import { OptimisticLockError, ValidationError } from '../errors';
 import type { Transaction } from '../connections';
 import { TransactionEventBroadcaster } from '../events';
@@ -106,7 +106,7 @@ export class UnitOfWork {
       });
 
       wrapped.__meta.props.forEach(prop => {
-        if (prop.reference === ReferenceType.EMBEDDED && !prop.object && Utils.isPlainObject(data[prop.name as string])) {
+        if (prop.kind === ReferenceKind.EMBEDDED && !prop.object && Utils.isPlainObject(data[prop.name as string])) {
           prop.targetMeta?.props.forEach(p => {
             const prefix = prop.prefix === false ? '' : prop.prefix === true ? prop.name + '_' : prop.prefix;
             data[prefix + p.name] = data[prop.name as string][p.name];
@@ -305,7 +305,7 @@ export class UnitOfWork {
       const relation = Reference.unwrapReference(entity[prop.name] as object);
       const prop2 = prop.targetMeta!.properties[inverseProp];
 
-      if (prop.reference === ReferenceType.ONE_TO_MANY && prop2.nullable && Utils.isCollection<AnyEntity>(relation)) {
+      if (prop.kind === ReferenceKind.ONE_TO_MANY && prop2.nullable && Utils.isCollection<AnyEntity>(relation)) {
         relation.getItems(false).forEach(item => delete item[inverseProp]);
         continue;
       }
@@ -426,7 +426,7 @@ export class UnitOfWork {
         continue;
       }
 
-      // there is a value, and it is still a self-reference (e.g. not replaced by user manually)
+      // there is a value, and it is still a self-kind (e.g. not replaced by user manually)
       if (!Utils.isCollection(rel) && rel?.[inverse] && entity === Reference.unwrapReference(rel[inverse])) {
         delete helper(rel).__data[inverse];
       }
@@ -556,8 +556,8 @@ export class UnitOfWork {
     for (const prop of helper(entity).__meta.relations) {
       const targets = Utils.unwrapProperty(entity, helper(entity).__meta, prop);
       targets.forEach(([target]) => {
-        const reference = Reference.unwrapReference(target as object);
-        this.processReference(entity, prop, reference, visited, processed, idx);
+        const kind = Reference.unwrapReference(target as object);
+        this.processReference(entity, prop, kind, visited, processed, idx);
       });
     }
 
@@ -592,7 +592,7 @@ export class UnitOfWork {
 
     const simpleUniqueHashes = wrapped.__meta.uniqueProps.map(prop => {
       if (entity[prop.name] != null) {
-        return prop.reference === ReferenceType.SCALAR || prop.mapToPk ? entity[prop.name] : helper(entity[prop.name]!).getSerializedPrimaryKey();
+        return prop.kind === ReferenceKind.SCALAR || prop.mapToPk ? entity[prop.name] : helper(entity[prop.name]!).getSerializedPrimaryKey();
       }
 
       if (wrapped.__originalEntityData?.[prop.name as string] != null) {
@@ -608,7 +608,7 @@ export class UnitOfWork {
       if (props.every(prop => entity[prop] != null)) {
         return Utils.getPrimaryKeyHash(props.map(p => {
           const prop = wrapped.__meta.properties[p];
-          return prop.reference === ReferenceType.SCALAR || prop.mapToPk ? entity[prop.name] : helper(entity[prop.name]).getSerializedPrimaryKey();
+          return prop.kind === ReferenceKind.SCALAR || prop.mapToPk ? entity[prop.name] : helper(entity[prop.name]!).getSerializedPrimaryKey();
         }) as any);
       }
 
@@ -633,7 +633,7 @@ export class UnitOfWork {
 
     const pk = wrapped.__meta.getPrimaryProps()[0];
 
-    if (pk.reference === ReferenceType.SCALAR) {
+    if (pk.kind === ReferenceKind.SCALAR) {
       wrapped.__identifier = new EntityIdentifier();
     } else if (entity[pk.name]) {
       this.initIdentifier(entity[pk.name] as object);
@@ -641,30 +641,30 @@ export class UnitOfWork {
     }
   }
 
-  private processReference<T extends object>(parent: T, prop: EntityProperty<T>, reference: any, visited: Set<AnyEntity>, processed: Set<AnyEntity>, idx: number): void {
-    const isToOne = prop.reference === ReferenceType.MANY_TO_ONE || prop.reference === ReferenceType.ONE_TO_ONE;
+  private processReference<T extends object>(parent: T, prop: EntityProperty<T>, kind: any, visited: Set<AnyEntity>, processed: Set<AnyEntity>, idx: number): void {
+    const isToOne = prop.kind === ReferenceKind.MANY_TO_ONE || prop.kind === ReferenceKind.ONE_TO_ONE;
 
-    if (isToOne && Utils.isEntity(reference)) {
-      return this.processToOneReference(reference, visited, processed, idx);
+    if (isToOne && Utils.isEntity(kind)) {
+      return this.processToOneReference(kind, visited, processed, idx);
     }
 
-    if (Utils.isCollection<any>(reference)) {
-      reference.getItems(false)
+    if (Utils.isCollection<any>(kind)) {
+      kind.getItems(false)
         .filter(item => !item.__helper!.__originalEntityData)
         .forEach(item => {
           // propagate schema from parent
           item.__helper!.__schema ??= helper(parent).__schema;
         });
 
-      if (prop.reference === ReferenceType.MANY_TO_MANY && reference.isDirty()) {
-        this.processToManyReference(reference, visited, processed, parent, prop);
+      if (prop.kind === ReferenceKind.MANY_TO_MANY && kind.isDirty()) {
+        this.processToManyReference(kind, visited, processed, parent, prop);
       }
     }
   }
 
-  private processToOneReference(reference: any, visited: Set<AnyEntity>, processed: Set<AnyEntity>, idx: number): void {
-    if (!reference.__helper!.__managed) {
-      this.findNewEntities(reference, visited, idx, processed);
+  private processToOneReference(kind: any, visited: Set<AnyEntity>, processed: Set<AnyEntity>, idx: number): void {
+    if (!kind.__helper!.__managed) {
+      this.findNewEntities(kind, visited, idx, processed);
     }
   }
 
@@ -756,15 +756,15 @@ export class UnitOfWork {
       return;
     }
 
-    const reference = Reference.unwrapReference(entity[prop.name] as object) as T | Collection<AnyEntity>;
+    const kind = Reference.unwrapReference(entity[prop.name] as object) as T | Collection<AnyEntity>;
 
-    if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && Utils.isEntity(reference)) {
-      return this.cascade(reference as T, type, visited, options);
+    if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && Utils.isEntity(kind)) {
+      return this.cascade(kind as T, type, visited, options);
     }
 
-    const collection = reference as Collection<AnyEntity>;
+    const collection = kind as Collection<AnyEntity>;
 
-    if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference) && collection) {
+    if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) && collection) {
       if (type === Cascade.MERGE && collection.isInitialized()) {
         collection.populated();
       }
@@ -824,29 +824,29 @@ export class UnitOfWork {
   }
 
   private fixMissingReference<T extends object>(entity: T, prop: EntityProperty<T>): void {
-    const reference = Reference.unwrapReference(entity[prop.name] as object);
+    const kind = Reference.unwrapReference(entity[prop.name] as object);
 
-    if ([ReferenceType.MANY_TO_ONE, ReferenceType.ONE_TO_ONE].includes(prop.reference) && reference && !prop.mapToPk) {
-      if (!Utils.isEntity(reference)) {
-        entity[prop.name] = this.em.getReference(prop.type, reference as Primary<T[string & keyof T]>, { wrapped: !!prop.wrappedReference }) as T[string & keyof T];
-      } else if (!helper(reference).__initialized && !helper(reference).__em) {
-        const pk = helper(reference).getPrimaryKey();
+    if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && kind && !prop.mapToPk) {
+      if (!Utils.isEntity(kind)) {
+        entity[prop.name] = this.em.getReference(prop.type, kind as Primary<T[string & keyof T]>, { wrapped: !!prop.wrappedReference }) as T[string & keyof T];
+      } else if (!helper(kind).__initialized && !helper(kind).__em) {
+        const pk = helper(kind).getPrimaryKey();
         entity[prop.name] = this.em.getReference(prop.type, pk as Primary<T[string & keyof T]>, { wrapped: !!prop.wrappedReference }) as T[string & keyof T];
       }
     }
 
     // perf: set the `Collection._property` to skip the getter, as it can be slow when there is a lot of relations
-    if (Utils.isCollection<AnyEntity, T>(reference)) {
-      reference.property = prop;
+    if (Utils.isCollection<AnyEntity, T>(kind)) {
+      kind.property = prop;
     }
 
-    const isCollection = [ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference);
+    const isCollection = [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind);
 
-    if (isCollection && Array.isArray(reference)) {
+    if (isCollection && Array.isArray(kind)) {
       const collection = new Collection<AnyEntity>(entity);
       collection.property = prop as EntityProperty;
       entity[prop.name as keyof T] = collection as unknown as T[keyof T];
-      collection.set(reference as AnyEntity[]);
+      collection.set(kind as AnyEntity[]);
     }
   }
 
@@ -906,9 +906,9 @@ export class UnitOfWork {
     }
 
     const props = changeSets[0].meta.relations.filter(prop => {
-      return (prop.reference === ReferenceType.ONE_TO_ONE && prop.owner)
-        || prop.reference === ReferenceType.MANY_TO_ONE
-        || (prop.reference === ReferenceType.MANY_TO_MANY && prop.owner && !this.platform.usesPivotTable());
+      return (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner)
+        || prop.kind === ReferenceKind.MANY_TO_ONE
+        || (prop.kind === ReferenceKind.MANY_TO_MANY && prop.owner && !this.platform.usesPivotTable());
     });
 
     for (const changeSet of changeSets) {
@@ -1100,7 +1100,7 @@ export class UnitOfWork {
       }
 
       // cascade to m:1 relations as we need to snapshot the 1:m inverse side (for `removeAll()` with orphan removal)
-      if (prop.reference === ReferenceType.MANY_TO_ONE && value) {
+      if (prop.kind === ReferenceKind.MANY_TO_ONE && value) {
         this.takeCollectionSnapshots(Reference.unwrapReference(value), visited);
       }
     });

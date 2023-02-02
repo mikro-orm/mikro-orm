@@ -45,16 +45,16 @@ const schema = new EntitySchema({
       default: '',
     },
     author: {
-      reference: 'm:1',
+      kind: 'm:1',
       type: 'Author3',
     },
     publisher: {
-      reference: 'm:1',
+      kind: 'm:1',
       type: 'Publisher3',
       nullable: true,
     },
     tags: {
-      reference: 'm:n',
+      kind: 'm:n',
       owner: true,
       fixedOrder: true,
       inversedBy: 'books',

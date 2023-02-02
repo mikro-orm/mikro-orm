@@ -1,4 +1,4 @@
-import { ReferenceType, Utils, ValidationError, type Dictionary, type EntityMetadata, type MetadataStorage } from '@mikro-orm/core';
+import { ReferenceKind, Utils, ValidationError, type Dictionary, type EntityMetadata, type MetadataStorage } from '@mikro-orm/core';
 import { ObjectCriteriaNode } from './ObjectCriteriaNode';
 import { ArrayCriteriaNode } from './ArrayCriteriaNode';
 import { ScalarCriteriaNode } from './ScalarCriteriaNode';
@@ -58,9 +58,9 @@ export class CriteriaNodeFactory {
 
   static createObjectItemNode(metadata: MetadataStorage, entityName: string, node: ICriteriaNode, payload: Dictionary, item: string, meta?: EntityMetadata) {
     const prop = meta?.properties[item];
-    const childEntity = prop && prop.reference !== ReferenceType.SCALAR ? prop.type : entityName;
+    const childEntity = prop && prop.kind !== ReferenceKind.SCALAR ? prop.type : entityName;
 
-    if (prop?.reference !== ReferenceType.EMBEDDED) {
+    if (prop?.kind !== ReferenceKind.EMBEDDED) {
       return this.createNode(metadata, childEntity, payload[item], node, item);
     }
 
