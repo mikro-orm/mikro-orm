@@ -984,7 +984,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     }
   }
 
-  async lockPessimistic<T>(entity: T, options: LockOptions): Promise<void> {
+  async lockPessimistic<T extends object>(entity: T, options: LockOptions): Promise<void> {
     const meta = helper(entity).__meta;
     const qb = this.createQueryBuilder((entity as object).constructor.name, options.ctx).unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES).withSchema(options.schema ?? meta.schema);
     const cond = Utils.getPrimaryKeyCond(entity, meta.primaryKeys);

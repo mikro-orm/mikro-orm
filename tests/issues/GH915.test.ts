@@ -1,4 +1,4 @@
-import { Entity, MikroORM, OneToOne, PrimaryKey, PrimaryKeyType } from '@mikro-orm/sqlite';
+import { Entity, MikroORM, OneToOne, PrimaryKey } from '@mikro-orm/sqlite';
 
 @Entity()
 export class A {
@@ -10,8 +10,6 @@ export class A {
 
 @Entity()
 export class B {
-
-  [PrimaryKeyType]?: number;
 
   @OneToOne({ primary: true, cascade: [] })
   object!: A;

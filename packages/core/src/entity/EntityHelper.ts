@@ -1,7 +1,7 @@
 import { inspect } from 'util';
 
 import type { EntityManager } from '../EntityManager';
-import { EntityRepositoryType, OptionalProps, PrimaryKeyProp, PrimaryKeyType, type AnyEntity, type Dictionary, type EntityMetadata, type EntityProperty, type IHydrator } from '../typings';
+import { EntityRepositoryType, OptionalProps, PrimaryKeyProp, type AnyEntity, type Dictionary, type EntityMetadata, type EntityProperty, type IHydrator } from '../typings';
 import { EntityTransformer } from '../serialization/EntityTransformer';
 import { Reference } from './Reference';
 import { Utils } from '../utils/Utils';
@@ -55,7 +55,7 @@ export class EntityHelper {
       __platform: { value: em.getPlatform() },
       __factory: { value: em.getEntityFactory() },
       __helper: {
-        get(): WrappedEntity<T, keyof T> {
+        get(): WrappedEntity<T> {
           Object.defineProperty(this, '__helper', {
             value: new WrappedEntity(this, em.getHydrator(), ...helperParams),
             enumerable: false,
@@ -76,7 +76,7 @@ export class EntityHelper {
    * First defines a setter on the prototype, once called, actual get/set handlers are registered on the instance rather
    * than on its prototype. Thanks to this we still have those properties enumerable (e.g. part of `Object.keys(entity)`).
    */
-  private static defineProperties<T>(meta: EntityMetadata<T>, em: EntityManager): void {
+  private static defineProperties<T extends object>(meta: EntityMetadata<T>, em: EntityManager): void {
     Object
       .values<EntityProperty<T>>(meta.properties)
       .forEach(prop => {
@@ -118,9 +118,9 @@ export class EntityHelper {
     meta.prototype[inspect.custom] ??= function (this: T, depth: number) {
       const object = { ...this };
       // ensure we dont have internal symbols in the POJO
-      [OptionalProps, EntityRepositoryType, PrimaryKeyType, PrimaryKeyProp].forEach(sym => delete object[sym]);
+      [OptionalProps, EntityRepositoryType, PrimaryKeyProp].forEach(sym => delete object[sym]);
       const ret = inspect(object, { depth });
-      let name = (this as object).constructor.name;
+      let name = (this).constructor.name;
 
       const showEM = ['true', 't', '1'].includes(process.env.MIKRO_ORM_LOG_EM_ID?.toString().toLowerCase() ?? '');
 

@@ -9,7 +9,6 @@ import {
   type EntityIdentifier,
   type EntityLoaderOptions,
   type EntityRepository,
-  type IdentifiedReference,
 } from './entity';
 import type { SerializationContext } from './serialization';
 import type { EntitySchema, MetadataStorage } from './metadata';
@@ -40,19 +39,28 @@ export type DeepPartial<T> = T & {
 };
 
 export const EntityRepositoryType = Symbol('EntityRepositoryType');
-export const PrimaryKeyType = Symbol('PrimaryKeyType');
 export const PrimaryKeyProp = Symbol('PrimaryKeyProp');
 export const OptionalProps = Symbol('OptionalProps');
 
+export type UnwrapPrimary<T> = T extends Scalar
+  ? T
+  : T extends Reference<infer U>
+    ? Primary<U>
+    : Primary<T>;
+
+type PrimaryPropToType<T, Keys extends (keyof T)[]> = {
+  [Index in keyof Keys]: UnwrapPrimary<T[Keys[Index]]>;
+};
+
 type ReadonlyPrimary<T> = T extends any[] ? Readonly<T> : T;
-export type Primary<T> = T extends { [PrimaryKeyType]?: infer PK }
-  ? ReadonlyPrimary<PK> : T extends { _id?: infer PK }
+export type Primary<T> = T extends { [PrimaryKeyProp]?: infer PK }
+  ? (PK extends keyof T ? ReadonlyPrimary<UnwrapPrimary<T[PK]>> : (PK extends (keyof T)[] ? ReadonlyPrimary<PrimaryPropToType<T, PK>> : PK)) : T extends { _id?: infer PK }
   ? ReadonlyPrimary<PK> | string : T extends { uuid?: infer PK }
   ? ReadonlyPrimary<PK> : T extends { id?: infer PK }
-  ? ReadonlyPrimary<PK> : never;
+  ? ReadonlyPrimary<PK> : T;
 export type PrimaryProperty<T> = T extends { [PrimaryKeyProp]?: infer PK }
-  ? PK : T extends { _id?: any }
-  ? '_id' | string : T extends { uuid?: any }
+  ? (PK extends keyof T ? PK : (PK extends any[] ? PK[number] : never)) : T extends { _id?: any }
+  ? '_id' : T extends { uuid?: any }
   ? 'uuid' : T extends { id?: any }
   ? 'id' : never;
 export type IPrimaryKeyValue = number | string | bigint | Date | { toHexString(): string };
@@ -113,8 +121,7 @@ export type FilterQuery<T> =
 export type QBFilterQuery<T = any> = ObjectQuery<T> | Dictionary;
 
 export interface IWrappedEntity<
-  T,
-  PK extends keyof T | unknown = PrimaryProperty<T>,
+  T extends object,
   P extends string = string,
 > {
   isInitialized(): boolean;
@@ -122,7 +129,7 @@ export interface IWrappedEntity<
   populated(populated?: boolean): void;
   populate<Hint extends string = never>(populate: AutoPath<T, Hint>[] | boolean, options?: EntityLoaderOptions<T, Hint>): Promise<Loaded<T, Hint>>;
   init<P extends string = never>(populated?: boolean, populate?: Populate<T, P>, lockMode?: LockMode, connectionType?: ConnectionType): Promise<Loaded<T, P>>;
-  toReference<PK2 extends PK | unknown = PrimaryProperty<T>, P2 extends string = string>(): IdentifiedReference<T, PK2> & LoadedReference<T>;
+  toReference(): Ref<T> & LoadedReference<T>;
   toObject(ignoreFields?: string[]): EntityDTO<T>;
   toJSON(...args: any[]): EntityDTO<T>;
   toPOJO(): EntityDTO<T>;
@@ -132,10 +139,9 @@ export interface IWrappedEntity<
 }
 
 export interface IWrappedEntityInternal<
-  T,
-  PK extends keyof T | unknown = PrimaryProperty<T>,
+  T extends object,
   P extends string = string,
-> extends IWrappedEntity<T, PK, P> {
+> extends IWrappedEntity<T, P> {
   hasPrimaryKey(): boolean;
   getPrimaryKey(convertCustomTypes?: boolean): Primary<T> | null;
   getPrimaryKeys(convertCustomTypes?: boolean): Primary<T>[] | null;
@@ -157,7 +163,7 @@ export interface IWrappedEntityInternal<
   __schema?: string;
   __populated: boolean;
   __onLoadFired: boolean;
-  __reference?: Reference<T>;
+  __reference?: Ref<T>;
   __lazyInitialized: boolean;
   __pk?: Primary<T>;
   __primaryKeys: Primary<T>[];
@@ -224,8 +230,9 @@ type Relation<T> = {
 /** Identity type that can be used to get around issues with cycles in bidirectional relations. */
 export type Rel<T> = T;
 
-/** Shortcut for `IdentifiedReference`. */
-export type Ref<T, PK extends keyof T | unknown = PrimaryProperty<T>> = IdentifiedReference<T, PK>;
+export type Ref<T extends object> = true extends IsUnknown<PrimaryProperty<T>>
+  ? Reference<T>
+  : ({ [K in PrimaryProperty<T> & keyof T]: T[K] } & Reference<T>);
 
 export type EntityDTOProp<T> = T extends Scalar
   ? T
@@ -762,7 +769,7 @@ type LoadedLoadable<T, E extends object> = T extends Collection<any, any>
 type Prefix<K> = K extends `${infer S}.${string}` ? S : K;
 type IsPrefixed<K, L extends string> = K extends Prefix<L> ? K : never;
 type Suffix<K> = K extends `${string}.${infer S}` ? S : never;
-type Defined<T> = Exclude<T, null | undefined>;
+type Defined<T> = Exclude<T, null | undefined> & {};
 
 // For each property on T check if it is included in prefix of keys to load L:
 //   1. It yes, mark the collection or reference loaded and resolve its inner type recursively (passing suffix).
