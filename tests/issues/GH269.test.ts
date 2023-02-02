@@ -6,7 +6,7 @@ export class A {
   @PrimaryKey({ type: 'number' })
   id!: number;
 
-  @OneToOne({ entity: () => B, inversedBy: 'a', wrappedReference: true, nullable: true })
+  @OneToOne({ entity: () => B, inversedBy: 'a', ref: true, nullable: true })
   b?: Ref<B>;
 
   @Property()
@@ -20,7 +20,7 @@ export class B {
   @PrimaryKey({ type: 'number' })
   id!: number;
 
-  @OneToOne({ entity: () => A, mappedBy: 'b', wrappedReference: true, nullable: true })
+  @OneToOne({ entity: () => A, mappedBy: 'b', ref: true, nullable: true })
   a?: Ref<A>;
 
   @Property()

@@ -19,7 +19,7 @@ export class FilterValue {
   @Property()
   name!: string;
 
-  @ManyToOne('Filter', { wrappedReference: true })
+  @ManyToOne('Filter', { ref: true })
   filter!: Ref<Filter>;
 
 }
@@ -33,7 +33,7 @@ export class Filter {
   @Property()
   name!: string;
 
-  @ManyToOne('Project', { wrappedReference: true })
+  @ManyToOne('Project', { ref: true })
   project!: Ref<Project>;
 
   @OneToMany('FilterValue', 'filter')

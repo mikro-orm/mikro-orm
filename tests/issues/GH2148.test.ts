@@ -19,10 +19,10 @@ export class Second {
 @Entity()
 export class Third {
 
-  @ManyToOne({ primary: true, entity: () => First, wrappedReference: true })
+  @ManyToOne({ primary: true, entity: () => First, ref: true })
   first: Ref<First>;
 
-  @ManyToOne({ primary: true, entity: () => Second, wrappedReference: true })
+  @ManyToOne({ primary: true, entity: () => Second, ref: true })
   second: Ref<Second>;
 
   constructor(first: First, second: Second) {

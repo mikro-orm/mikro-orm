@@ -6,7 +6,7 @@ class Vehicle {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => Garage, { wrappedReference: true })
+  @ManyToOne(() => Garage, { ref: true })
   garage!: Ref<Garage>;
 
 }
