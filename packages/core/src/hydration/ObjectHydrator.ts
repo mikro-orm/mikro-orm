@@ -129,7 +129,7 @@ export class ObjectHydrator extends Hydrator {
 
       if (prop.mapToPk) {
         ret.push(`      entity${entityKey} = data${dataKey};`);
-      } else if (prop.wrappedReference) {
+      } else if (prop.ref) {
         ret.push(`      entity${entityKey} = Reference.create(factory.createReference('${prop.type}', data${dataKey}, { merge: true, convertCustomTypes, schema }));`);
       } else {
         ret.push(`      entity${entityKey} = factory.createReference('${prop.type}', data${dataKey}, { merge: true, convertCustomTypes, schema });`);
@@ -139,7 +139,7 @@ export class ObjectHydrator extends Hydrator {
 
       if (prop.mapToPk) {
         ret.push(`      entity${entityKey} = data${dataKey};`);
-      } else if (prop.wrappedReference) {
+      } else if (prop.ref) {
         ret.push(`      entity${entityKey} = Reference.create(factory.create('${prop.type}', data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, schema }));`);
       } else {
         ret.push(`      entity${entityKey} = factory.create('${prop.type}', data${dataKey}, { initialized: true, merge: true, newEntity, convertCustomTypes, schema });`);
@@ -154,7 +154,7 @@ export class ObjectHydrator extends Hydrator {
 
         if (prop2 && !prop2.mapToPk) {
           ret.push(`  if (entity${entityKey} && !entity${entityKey}.${this.safeKey(prop2.name)}) {`);
-          ret.push(`    entity${entityKey}.${prop.wrappedReference ? 'unwrap().' : ''}${this.safeKey(prop2.name)} = ${prop2.wrappedReference ? 'Reference.create(entity)' : 'entity'};`);
+          ret.push(`    entity${entityKey}.${prop.ref ? 'unwrap().' : ''}${this.safeKey(prop2.name)} = ${prop2.ref ? 'Reference.create(entity)' : 'entity'};`);
           ret.push(`  }`);
         }
       }
@@ -352,7 +352,7 @@ export class ObjectHydrator extends Hydrator {
 
     if (prop2?.primary) {
       lines.push(`    if (typeof value === 'object' && value?.['${prop2.name}'] == null) {`);
-      lines.push(`      value = { ...value, ['${prop2.name}']: Reference.wrapReference(entity, { wrappedReference: ${prop2.wrappedReference} }) };`);
+      lines.push(`      value = { ...value, ['${prop2.name}']: Reference.wrapReference(entity, { ref: ${prop2.ref} }) };`);
       lines.push(`    }`);
     }
 
@@ -361,7 +361,7 @@ export class ObjectHydrator extends Hydrator {
 
     if (prop2 && !prop2.primary) {
       lines.push(`    if (typeof value === 'object' && value?.['${prop2.name}'] == null) {`);
-      lines.push(`      value = { ...value, ['${prop2.name}']: Reference.wrapReference(entity, { wrappedReference: ${prop2.wrappedReference} }) };`);
+      lines.push(`      value = { ...value, ['${prop2.name}']: Reference.wrapReference(entity, { ref: ${prop2.ref} }) };`);
       lines.push(`    }`);
     }
 

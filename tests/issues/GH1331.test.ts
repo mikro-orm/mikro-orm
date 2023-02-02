@@ -24,7 +24,7 @@ export class D {
 
   @ManyToOne({
     entity: () => C,
-    wrappedReference: true,
+    ref: true,
     nullable: true,
   })
   c?: Ref<C>;
@@ -42,7 +42,7 @@ export class C {
 
   @ManyToOne({
     entity: () => B,
-    wrappedReference: true,
+    ref: true,
     nullable: true,
   })
   b?: Ref<B>;
@@ -70,7 +70,7 @@ export class B {
 
   @ManyToOne({
     entity: () => A,
-    wrappedReference: true,
+    ref: true,
     nullable: true,
   })
   a?: Ref<A>;
