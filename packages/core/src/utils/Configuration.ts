@@ -106,7 +106,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
       bidirectionalRelations: false,
       identifiedReferences: false,
     },
-    cache: {
+    metadataCache: {
       pretty: false,
       adapter: FileCacheAdapter,
       options: { cacheDir: process.cwd() + '/temp' },
@@ -267,7 +267,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
    * Gets instance of CacheAdapter. (cached)
    */
   getCacheAdapter(): CacheAdapter {
-    return this.getCachedService(this.options.cache.adapter!, this.options.cache.options, this.options.baseDir, this.options.cache.pretty);
+    return this.getCachedService(this.options.metadataCache.adapter!, this.options.metadataCache.options, this.options.baseDir, this.options.metadataCache.pretty);
   }
 
   /**
@@ -280,9 +280,9 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
   /**
    * Gets EntityRepository class to be instantiated.
    */
-  getRepositoryClass(customRepository: () => Constructor<EntityRepository<AnyEntity>>): MikroORMOptions<D>['entityRepository'] {
-    if (customRepository) {
-      return customRepository();
+  getRepositoryClass(repository: () => Constructor<EntityRepository<AnyEntity>>): MikroORMOptions<D>['entityRepository'] {
+    if (repository) {
+      return repository();
     }
 
     if (this.options.entityRepository) {
@@ -310,11 +310,11 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
 
   private init(): void {
     if (!this.getMetadataProvider().useCache()) {
-      this.options.cache.adapter = NullCacheAdapter;
+      this.options.metadataCache.adapter = NullCacheAdapter;
     }
 
-    if (!('enabled' in this.options.cache)) {
-      this.options.cache.enabled = this.getMetadataProvider().useCache();
+    if (!('enabled' in this.options.metadataCache)) {
+      this.options.metadataCache.enabled = this.getMetadataProvider().useCache();
     }
 
     if (!this.options.clientUrl) {
@@ -545,7 +545,7 @@ export interface MikroORMOptions<D extends IDatabaseDriver = IDatabaseDriver> ex
     entitySchema?: boolean;
     esmImport?: boolean;
   };
-  cache: {
+  metadataCache: {
     enabled?: boolean;
     pretty?: boolean;
     adapter?: { new(...params: any[]): CacheAdapter };
