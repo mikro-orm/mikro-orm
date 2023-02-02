@@ -5,7 +5,7 @@ import {
   Entity,
   Filter,
   Formula,
-  IdentifiedReference,
+  Ref,
   Index,
   ManyToMany,
   ManyToOne,
@@ -61,7 +61,7 @@ export class Book2 {
   author: Author2;
 
   @ManyToOne(() => Publisher2, { cascade: [Cascade.PERSIST, Cascade.REMOVE], nullable: true, wrappedReference: true })
-  publisher?: IdentifiedReference<Publisher2>;
+  publisher?: Ref<Publisher2>;
 
   @OneToOne({ cascade: [], mappedBy: 'book', nullable: true })
   test?: Test2;

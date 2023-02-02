@@ -1,4 +1,12 @@
-import type { Dictionary, EntityMetadata, EntityOptions, EntityProperty, NamingStrategy, Platform } from '@mikro-orm/core';
+import type {
+  Dictionary,
+  EntityMetadata,
+  EntityOptions,
+  EntityProperty,
+  NamingStrategy,
+  OneToOneOptions,
+  Platform,
+} from '@mikro-orm/core';
 import { ReferenceType, UnknownType, Utils } from '@mikro-orm/core';
 
 export class SourceFile {
@@ -98,9 +106,9 @@ export class SourceFile {
     const optional = prop.nullable ? '?' : (useDefault ? '' : '!');
 
     if (prop.wrappedReference) {
-      this.coreImports.add('IdentifiedReference');
+      this.coreImports.add('Ref');
       this.entityImports.add(prop.type);
-      return `${padding}${prop.name}${optional}: IdentifiedReference<${prop.type}>;\n`;
+      return `${padding}${prop.name}${optional}: Ref<${prop.type}>;\n`;
     }
 
     const ret = `${prop.name}${optional}: ${prop.type}`;
@@ -304,14 +312,14 @@ export class SourceFile {
     options.mappedBy = this.quote(prop.mappedBy);
   }
 
-  protected getForeignKeyDecoratorOptions(options: Dictionary, prop: EntityProperty) {
+  protected getForeignKeyDecoratorOptions(options: OneToOneOptions<any, any>, prop: EntityProperty) {
     const parts = prop.referencedTableName.split('.', 2);
     const className = this.namingStrategy.getClassName(parts.length > 1 ? parts[1] : parts[0], '_');
     this.entityImports.add(className);
     options.entity = `() => ${className}`;
 
     if (prop.wrappedReference) {
-      options.wrappedReference = true;
+      options.ref = true;
     }
 
     if (prop.mappedBy) {

@@ -1,7 +1,7 @@
 import {
   Collection,
   Entity,
-  IdentifiedReference,
+  Ref,
   ManyToMany,
   ManyToOne,
   OneToMany,
@@ -36,7 +36,7 @@ export class Risk {
   title!: string;
 
   @ManyToOne(() => Project, { serializer: p => p.id, wrappedReference: true })
-  project!: IdentifiedReference<Project>;
+  project!: Ref<Project>;
 
   @ManyToMany({
       entity: () => FilterValue,
@@ -65,7 +65,7 @@ export class Filter {
     wrappedReference: true,
     onDelete: 'cascade',
   })
-  project!: IdentifiedReference<Project>;
+  project!: Ref<Project>;
 
 }
 
@@ -83,7 +83,7 @@ export class FilterValue {
     wrappedReference: true,
     onDelete: 'cascade',
   })
-  filter!: IdentifiedReference<Filter>;
+  filter!: Ref<Filter>;
 
   @ManyToMany(() => Risk, risk => risk.filterValues, {
     hidden: true,
