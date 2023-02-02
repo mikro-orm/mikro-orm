@@ -1,4 +1,4 @@
-import { Entity, PrimaryKey, Property, MikroORM, wrap, IdentifiedReference, OneToOne } from '@mikro-orm/postgresql';
+import { Entity, PrimaryKey, Property, MikroORM, wrap, Ref, OneToOne } from '@mikro-orm/postgresql';
 
 @Entity()
 class A {
@@ -12,7 +12,7 @@ class A {
     wrappedReference: true,
     nullable: true,
   })
-  b!: IdentifiedReference<B>;
+  b!: Ref<B>;
 
   @Property({ persist: false })
   get calcProp() {
@@ -28,7 +28,7 @@ class B {
   id!: number;
 
   @OneToOne({ entity: () => A, wrappedReference: true })
-  a!: IdentifiedReference<A>;
+  a!: Ref<A>;
 
   @Property()
   prop: string = 'foo';

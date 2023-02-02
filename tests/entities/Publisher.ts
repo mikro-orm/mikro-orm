@@ -1,5 +1,17 @@
 import { ObjectId } from 'bson';
-import { Collection, Entity, ManyToMany, OneToMany, PrimaryKey, Property, BeforeCreate, Enum, SerializedPrimaryKey, OptionalProps } from '@mikro-orm/core';
+import {
+  Collection,
+  Entity,
+  ManyToMany,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  BeforeCreate,
+  Enum,
+  SerializedPrimaryKey,
+  OptionalProps,
+  PrimaryKeyProp,
+} from '@mikro-orm/core';
 import { Book } from './Book';
 import { Test } from './test.model';
 import { PublisherType } from './PublisherType';
@@ -8,6 +20,7 @@ import { PublisherType } from './PublisherType';
 export class Publisher {
 
   [OptionalProps]?: 'type';
+  [PrimaryKeyProp]?: 'id' | '_id';
 
   @PrimaryKey()
   _id!: ObjectId;

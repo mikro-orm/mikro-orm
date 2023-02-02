@@ -3,7 +3,7 @@ import type { EntityData, EntityMetadata, EntityDictionary, Primary } from '../t
 import { helper } from '../entity/wrap';
 import { Utils } from '../utils/Utils';
 
-export class ChangeSet<T> {
+export class ChangeSet<T extends object> {
 
   private primaryKey?: Primary<T> | null;
   private serializedPrimaryKey?: string;

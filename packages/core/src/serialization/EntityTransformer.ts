@@ -134,7 +134,7 @@ export class EntityTransformer {
         }) as T[keyof T];
       }
 
-      const wrapped = entity[prop] && helper(entity[prop]);
+      const wrapped = entity[prop] && helper(entity[prop]!);
       return wrapped ? wrapped.toJSON() as T[keyof T] : entity[prop];
     }
 

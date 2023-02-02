@@ -206,7 +206,7 @@ describe('EntityFactory', () => {
     expect(a1.books[0].title).toBe('B1');
     expect(a1.books[0].author).toBe(a1); // propagation to owning side
     expect(a1.books[0].publisher!.id).toBe('5b0d19b28b21c648c2c8a600');
-    expect(wrap(a1.books[0].publisher).isInitialized()).toBe(false);
+    expect(wrap(a1.books[0].publisher!).isInitialized()).toBe(false);
     expect(a1.books[0].tags.isInitialized()).toBe(true);
     expect(a1.books[0].tags.isDirty()).toBe(true); // owning side
     expect(a1.books[0].tags[0].name).toBe('t1');
@@ -237,7 +237,7 @@ describe('EntityFactory', () => {
     expect(a2.books[0].title).toBe('B1');
     expect(a2.books[0].author).toBe(a2); // propagation to owning side
     expect(a2.books[0].publisher!.id).toBe('5b0d19b28b21c648c2c8a600');
-    expect(wrap(a2.books[0].publisher).isInitialized()).toBe(false);
+    expect(wrap(a2.books[0].publisher!).isInitialized()).toBe(false);
     expect(a2.books[0].tags.isInitialized()).toBe(true);
     expect(a2.books[0].tags.isDirty()).toBe(true); // owning side
     expect(a2.books[0].tags[0].name).toBe('t1');
