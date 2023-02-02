@@ -1,5 +1,5 @@
 import type { FilterQuery, FindOptions, Loaded } from '@mikro-orm/core';
-import { EntityRepository } from '@mikro-orm/core';
+import { EntityRepository } from '@mikro-orm/mongodb';
 import type { Author } from '../entities';
 
 export class AuthorRepository extends EntityRepository<Author> {

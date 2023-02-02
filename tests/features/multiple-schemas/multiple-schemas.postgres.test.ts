@@ -21,7 +21,7 @@ export class Author {
 }
 
 @Entity({ schema: '*' })
-export class BookTag extends BaseEntity<BookTag, 'id'> {
+export class BookTag extends BaseEntity {
 
   @PrimaryKey()
   id!: number;
@@ -32,7 +32,7 @@ export class BookTag extends BaseEntity<BookTag, 'id'> {
 }
 
 @Entity({ schema: '*' })
-export class Book extends BaseEntity<Book, 'id'> {
+export class Book extends BaseEntity {
 
   @PrimaryKey()
   id!: number;

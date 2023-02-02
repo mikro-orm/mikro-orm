@@ -1,4 +1,4 @@
-import { Cascade, Collection, Entity, IdentifiedReference, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/sqlite';
+import { Cascade, Collection, Entity, Ref, ManyToOne, MikroORM, OneToMany, PrimaryKey } from '@mikro-orm/sqlite';
 
 @Entity()
 export class Parent {
@@ -24,7 +24,7 @@ export class Child {
   id!: number;
 
   @ManyToOne(() => Parent, { wrappedReference: true })
-  parent!: IdentifiedReference<Parent>;
+  parent!: Ref<Parent>;
 
 }
 
@@ -35,7 +35,7 @@ export class Child2 {
   id!: number;
 
   @ManyToOne(() => Parent, { wrappedReference: true, cascade: [Cascade.ALL] })
-  parent!: IdentifiedReference<Parent>;
+  parent!: Ref<Parent>;
 
 }
 
@@ -46,7 +46,7 @@ export class Child3 {
   id!: number;
 
   @ManyToOne(() => Parent, { wrappedReference: true })
-  parent!: IdentifiedReference<Parent>;
+  parent!: Ref<Parent>;
 
 }
 

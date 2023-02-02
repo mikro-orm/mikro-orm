@@ -82,7 +82,7 @@ describe('GH issue 450', () => {
 
     const t2 = await orm.em.findOneOrFail(Task, t.id, { populate: ['assignee'] });
     expect(t2.assignee).toBeInstanceOf(TaskAssignee);
-    expect(wrap(t2.assignee).isInitialized()).toBe(true);
+    expect(wrap(t2.assignee!).isInitialized()).toBe(true);
   });
 
 });
