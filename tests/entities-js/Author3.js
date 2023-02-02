@@ -1,4 +1,4 @@
-const { Collection, ReferenceType, EntitySchema, t } = require('@mikro-orm/core');
+const { Collection, ReferenceKind, EntitySchema, t } = require('@mikro-orm/core');
 const { BaseEntity4 } = require('./index').BaseEntity4;
 
 /**
@@ -121,12 +121,12 @@ const schema = new EntitySchema({
       length: 3,
     },
     books: {
-      reference: ReferenceType.ONE_TO_MANY,
+      kind: ReferenceKind.ONE_TO_MANY,
       mappedBy: 'author',
       type: 'Book3',
     },
     favouriteBook: {
-      reference: 'm:1',
+      kind: 'm:1',
       type: 'Book3',
       nullable: true,
     },

@@ -6,7 +6,7 @@ import type {
 } from '../decorators';
 import type { EntityRepository } from '../entity/EntityRepository';
 import { BaseEntity } from '../entity/BaseEntity';
-import { Cascade, ReferenceType } from '../enums';
+import { Cascade, ReferenceKind } from '../enums';
 import { Type } from '../types';
 import { Utils } from '../utils';
 import { EnumArrayType } from '../types/EnumArrayType';
@@ -14,11 +14,11 @@ import { EnumArrayType } from '../types/EnumArrayType';
 type TypeType = string | NumberConstructor | StringConstructor | BooleanConstructor | DateConstructor | ArrayConstructor | Constructor<Type<any>> | Type<any>;
 type TypeDef<T> = { type: TypeType } | { entity: string | (() => string | EntityName<T>) };
 type Property<T, O> =
-  | ({ reference: ReferenceType.MANY_TO_ONE | 'm:1' } & TypeDef<T> & ManyToOneOptions<T, O>)
-  | ({ reference: ReferenceType.ONE_TO_ONE | '1:1' } & TypeDef<T> & OneToOneOptions<T, O>)
-  | ({ reference: ReferenceType.ONE_TO_MANY | '1:m' } & TypeDef<T> & OneToManyOptions<T, O>)
-  | ({ reference: ReferenceType.MANY_TO_MANY | 'm:n' } & TypeDef<T> & ManyToManyOptions<T, O>)
-  | ({ reference: ReferenceType.EMBEDDED | 'embedded' } & TypeDef<T> & EmbeddedOptions & PropertyOptions<O>)
+  | ({ kind: ReferenceKind.MANY_TO_ONE | 'm:1' } & TypeDef<T> & ManyToOneOptions<T, O>)
+  | ({ kind: ReferenceKind.ONE_TO_ONE | '1:1' } & TypeDef<T> & OneToOneOptions<T, O>)
+  | ({ kind: ReferenceKind.ONE_TO_MANY | '1:m' } & TypeDef<T> & OneToManyOptions<T, O>)
+  | ({ kind: ReferenceKind.MANY_TO_MANY | 'm:n' } & TypeDef<T> & ManyToManyOptions<T, O>)
+  | ({ kind: ReferenceKind.EMBEDDED | 'embedded' } & TypeDef<T> & EmbeddedOptions & PropertyOptions<O>)
   | ({ enum: true } & EnumOptions<O>)
   | (TypeDef<T> & PropertyOptions<O>);
 type Metadata<T, U> =
@@ -84,7 +84,7 @@ export class EntitySchema<T = any, U = never> {
     rename(options, 'referenceColumnName', 'referencedColumnNames');
     rename(options, 'columnType', 'columnTypes');
 
-    const prop = { name, reference: ReferenceType.SCALAR, ...options, type: this.normalizeType(options, type) } as EntityProperty<T>;
+    const prop = { name, kind: ReferenceKind.SCALAR, ...options, type: this.normalizeType(options, type) } as EntityProperty<T>;
 
     if (type && Type.isMappedType((type as Constructor).prototype)) {
       prop.type = type as string;
@@ -145,13 +145,13 @@ export class EntitySchema<T = any, U = never> {
     this._meta.properties[name] = {
       name,
       type: this.normalizeType(options),
-      reference: ReferenceType.EMBEDDED,
+      kind: ReferenceKind.EMBEDDED,
       ...options,
     } as EntityProperty<T>;
   }
 
   addManyToOne<K = AnyEntity>(name: string & keyof T, type: TypeType, options: ManyToOneOptions<K, T>): void {
-    const prop = this.createProperty(ReferenceType.MANY_TO_ONE, options);
+    const prop = this.createProperty(ReferenceKind.MANY_TO_ONE, options);
     prop.owner = true;
 
     if (prop.joinColumns && !prop.fieldNames) {
@@ -176,17 +176,17 @@ export class EntitySchema<T = any, U = never> {
       Utils.renameKey(options, 'mappedBy', 'inversedBy');
     }
 
-    const prop = this.createProperty(ReferenceType.MANY_TO_MANY, options);
+    const prop = this.createProperty(ReferenceKind.MANY_TO_MANY, options);
     this.addProperty(name, type, prop);
   }
 
   addOneToMany<K = AnyEntity>(name: string & keyof T, type: TypeType, options: OneToManyOptions<K, T>): void {
-    const prop = this.createProperty<T>(ReferenceType.ONE_TO_MANY, options);
+    const prop = this.createProperty<T>(ReferenceKind.ONE_TO_MANY, options);
     this.addProperty(name, type, prop);
   }
 
   addOneToOne<K = AnyEntity>(name: string & keyof T, type: TypeType, options: OneToOneOptions<K, T>): void {
-    const prop = this.createProperty(ReferenceType.ONE_TO_ONE, options) as EntityProperty;
+    const prop = this.createProperty(ReferenceKind.ONE_TO_ONE, options) as EntityProperty;
     Utils.defaultValue(prop, 'owner', !!prop.inversedBy || !prop.mappedBy);
     Utils.defaultValue(prop, 'unique', prop.owner);
 
@@ -274,7 +274,7 @@ export class EntitySchema<T = any, U = never> {
     this.initProperties();
     this.initPrimaryKeys();
     this._meta.props = Object.values(this._meta.properties);
-    this._meta.relations = this._meta.props.filter(prop => prop.reference !== ReferenceType.SCALAR && prop.reference !== ReferenceType.EMBEDDED);
+    this._meta.relations = this._meta.props.filter(prop => prop.kind !== ReferenceKind.SCALAR && prop.kind !== ReferenceKind.EMBEDDED);
     this.initialized = true;
 
     return this;
@@ -286,20 +286,20 @@ export class EntitySchema<T = any, U = never> {
         options.type ??= options.type?.constructor.name;
       }
 
-      switch ((options as EntityProperty).reference) {
-        case ReferenceType.ONE_TO_ONE:
+      switch ((options as EntityProperty).kind) {
+        case ReferenceKind.ONE_TO_ONE:
           this.addOneToOne(name as keyof T & string, options.type as string, options as OneToOneOptions<T, T>);
           break;
-        case ReferenceType.ONE_TO_MANY:
+        case ReferenceKind.ONE_TO_MANY:
           this.addOneToMany(name as keyof T & string, options.type as string, options as OneToManyOptions<T, T>);
           break;
-        case ReferenceType.MANY_TO_ONE:
+        case ReferenceKind.MANY_TO_ONE:
           this.addManyToOne(name as keyof T & string, options.type as string, options as ManyToOneOptions<T, T>);
           break;
-        case ReferenceType.MANY_TO_MANY:
+        case ReferenceKind.MANY_TO_MANY:
           this.addManyToMany(name as keyof T & string, options.type as string, options as ManyToManyOptions<T, T>);
           break;
-        case ReferenceType.EMBEDDED:
+        case ReferenceKind.EMBEDDED:
           this.addEmbedded(name as keyof T & string, options as EmbeddedOptions);
           break;
         default:
@@ -324,7 +324,7 @@ export class EntitySchema<T = any, U = never> {
     if (pks.length > 0) {
       this._meta.primaryKeys = pks.map(prop => prop.name);
       this._meta.compositePK = pks.length > 1;
-      this._meta.simplePK = !this._meta.compositePK && pks[0].reference === ReferenceType.SCALAR && !pks[0].customType;
+      this._meta.simplePK = !this._meta.compositePK && pks[0].kind === ReferenceKind.SCALAR && !pks[0].customType;
     }
 
     if (pks.length === 1 && pks[0].type === 'number') {
@@ -359,9 +359,9 @@ export class EntitySchema<T = any, U = never> {
     return type;
   }
 
-  private createProperty<T>(reference: ReferenceType, options: PropertyOptions<T> | EntityProperty): EntityProperty<T> {
+  private createProperty<T>(kind: ReferenceKind, options: PropertyOptions<T> | EntityProperty): EntityProperty<T> {
     return {
-      reference,
+      kind,
       cascade: [Cascade.PERSIST],
       ...options,
     } as EntityProperty<T>;

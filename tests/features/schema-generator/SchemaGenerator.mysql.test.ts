@@ -1,4 +1,4 @@
-import { EntitySchema, EnumType, MikroORM, ReferenceType, Type, Utils } from '@mikro-orm/core';
+import { EntitySchema, EnumType, MikroORM, ReferenceKind, Type, Utils } from '@mikro-orm/core';
 import { SchemaGenerator } from '@mikro-orm/knex';
 import { BASE_DIR, initORMMySql } from '../../bootstrap';
 import { Address2, Author2, Book2, BookTag2, Configuration2, FooBar2, FooBaz2, Publisher2, Test2 } from '../../entities-sql';
@@ -116,7 +116,7 @@ describe('SchemaGenerator', () => {
     const newTableMeta = EntitySchema.fromMetadata({
       properties: {
         id: {
-          reference: ReferenceType.SCALAR,
+          kind: ReferenceKind.SCALAR,
           primary: true,
           name: 'id',
           type: 'number',
@@ -125,7 +125,7 @@ describe('SchemaGenerator', () => {
           autoincrement: true,
         },
         createdAt: {
-          reference: ReferenceType.SCALAR,
+          kind: ReferenceKind.SCALAR,
           length: 3,
           defaultRaw: 'current_timestamp(3)',
           name: 'createdAt',
@@ -134,7 +134,7 @@ describe('SchemaGenerator', () => {
           columnTypes: ['datetime(3)'],
         },
         updatedAt: {
-          reference: ReferenceType.SCALAR,
+          kind: ReferenceKind.SCALAR,
           length: 3,
           defaultRaw: 'current_timestamp(3)',
           name: 'updatedAt',
@@ -143,7 +143,7 @@ describe('SchemaGenerator', () => {
           columnTypes: ['datetime(3)'],
         },
         name: {
-          reference: ReferenceType.SCALAR,
+          kind: ReferenceKind.SCALAR,
           name: 'name',
           type: 'string',
           fieldNames: ['name'],
@@ -228,10 +228,10 @@ describe('SchemaGenerator', () => {
     await orm.schema.execute(diff);
 
     // clean up old references manually (they would not be valid if we did a full meta sync)
-    meta.get('author2_following').props.forEach(prop => prop.reference = ReferenceType.SCALAR);
-    meta.get('author_to_friend').props.forEach(prop => prop.reference = ReferenceType.SCALAR);
-    meta.get('Book2').properties.author.reference = ReferenceType.SCALAR;
-    meta.get('Address2').properties.author.reference = ReferenceType.SCALAR;
+    meta.get('author2_following').props.forEach(prop => prop.kind = ReferenceKind.SCALAR);
+    meta.get('author_to_friend').props.forEach(prop => prop.kind = ReferenceKind.SCALAR);
+    meta.get('Book2').properties.author.kind = ReferenceKind.SCALAR;
+    meta.get('Address2').properties.author.kind = ReferenceKind.SCALAR;
     meta.get('Address2').properties.author.autoincrement = false;
 
     // remove 1:1 relation
