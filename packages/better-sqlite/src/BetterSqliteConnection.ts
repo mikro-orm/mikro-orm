@@ -133,8 +133,8 @@ export class BetterSqliteConnection extends AbstractSqlConnection {
       // no need for temp tables if we just add a column
       if (addColumnQuery) {
         const onUpdate = foreignInfo.onUpdate ? ` on update ${foreignInfo.onUpdate}` : '';
-        const onDelete = foreignInfo.onDelete ? ` on delete ${foreignInfo.onDelete}` : '';
-        addColumnQuery.sql += ` constraint ${keyName} references ${inTable} (${references})${onUpdate}${onDelete}`;
+        const deleteRule = foreignInfo.deleteRule ? ` on delete ${foreignInfo.deleteRule}` : '';
+        addColumnQuery.sql += ` constraint ${keyName} references ${inTable} (${references})${onUpdate}${deleteRule}`;
         return;
       }
 

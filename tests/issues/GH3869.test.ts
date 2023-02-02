@@ -28,7 +28,7 @@ test('validation of FK as PK being the owning side', async () => {
   await expect(MikroORM.init({
     entities: [Profile, Rating],
     dbName: `mikro_orm_test_gh_3869`,
-    cache: { enabled: false },
+    metadataCache: { enabled: false },
     connect: false,
   })).rejects.toThrow(`Rating.profile cannot be primary key as it is defined as inverse side. Maybe you should swap the use of 'inversedBy' and 'mappedBy'.`);
 });
