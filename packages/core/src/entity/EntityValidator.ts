@@ -1,5 +1,5 @@
 import type { Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery } from '../typings';
-import { ReferenceType } from '../enums';
+import { ReferenceKind } from '../enums';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
 import { helper } from './wrap';
@@ -14,13 +14,13 @@ export class EntityValidator {
         return;
       }
 
-      if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference)) {
+      if ([ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind)) {
         this.validateCollection(entity, prop);
       }
 
       const SCALAR_TYPES = ['string', 'number', 'boolean', 'Date'];
 
-      if (prop.reference !== ReferenceType.SCALAR || !SCALAR_TYPES.includes(prop.type)) {
+      if (prop.kind !== ReferenceKind.SCALAR || !SCALAR_TYPES.includes(prop.type)) {
         return;
       }
 
@@ -50,7 +50,7 @@ export class EntityValidator {
         !prop.defaultRaw &&
         !prop.onCreate &&
         !prop.embedded &&
-        ![ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference) &&
+        ![ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(prop.kind) &&
         prop.name !== wrapped.__meta.root.discriminatorColumn &&
         prop.type.toLowerCase() !== 'objectid' &&
         prop.persist !== false &&

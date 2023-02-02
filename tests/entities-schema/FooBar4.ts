@@ -19,8 +19,8 @@ export const FooBar4 = new EntitySchema<IFooBar4, IBaseEntity5>({
   extends: 'BaseEntity5',
   properties: {
     name: { type: 'string', default: 'asd' },
-    baz: { reference: '1:1', entity: 'FooBaz4', orphanRemoval: true, nullable: true },
-    fooBar: { reference: '1:1', entity: 'FooBar4', nullable: true },
+    baz: { kind: '1:1', entity: 'FooBaz4', orphanRemoval: true, nullable: true },
+    fooBar: { kind: '1:1', entity: 'FooBar4', nullable: true },
     version: { type: 'number', version: true },
     blob: { type: BlobType, nullable: true },
     array: { type: new ArrayType(i => +i), nullable: true },
