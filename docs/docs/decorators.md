@@ -16,8 +16,8 @@ title: Decorators
 | `schema`              | `string`                 | yes      | Sets the schema name.                                                            |
 | `collection`          | `string`                 | yes      | Alias for `tableName`.                                                           |
 | `comment`             | `string`                 | yes      | Specify comment to table. **(SQL only)**                                         |
-| `customRepository`    | `() => EntityRepository` | yes      | Set [custom repository class](repositories.md#custom-repository).                |
-| `discriminatorColumn` | `string`                 | yes      | For [Single Table Inheritance](inheritance-mapping.md#single-table-inheritance). |
+| `repository`          | `() => EntityRepository` | yes      | Set [custom repository class](repositories.md#custom-repository).                |
+| `discriminatorColumn` | `string`                 | yes      | For [Single Table Inheritance](inheritance-mapping.md#single-table-inheritance). |                 
 | `discriminatorMap`    | `Dictionary<string>`     | yes      | For [Single Table Inheritance](inheritance-mapping.md#single-table-inheritance). |
 | `discriminatorValue`  | `number` &#124; `string` | yes      | For [Single Table Inheritance](inheritance-mapping.md#single-table-inheritance). |
 | `forceConstructor`    | `boolean`                | yes      | Enforce use of constructor when creating managed entity instances                |
@@ -249,17 +249,16 @@ Many instances of the current Entity refer to One instance of the referred Entit
 
 See [Defining Entities](relationships.md#manytoone) for more examples.
 
-| Parameter | Type | Optional | Description |
-| --- | --- | --- | --- |
-| `entity` | `string` &#124; `() => EntityName` | yes | Set target entity type. |
-| `cascade` | `Cascade[]` | yes | Set what actions on owning entity should be cascaded to the relationship. Defaults to `[Cascade.PERSIST, Cascade.MERGE]` (see [Cascading](cascading.md)). |
-| `eager` | `boolean` | yes | Always load the relationship. |
-| `inversedBy` | `(string & keyof T) ` &#124; ` (e: T) => any` | yes | Point to the inverse side property name. |
-| `wrappedReference` | `boolean` | yes | Wrap the entity in [`Reference` wrapper](type-safe-relations.md). |
-| `ref` | `boolean` | yes | Alias for `wrappedReference`. |
-| `primary` | `boolean` | yes | Use this relation as primary key. |
-| `onDelete` | `string` | yes | [Referential integrity](cascading.md#declarative-referential-integrity). |
-| `onUpdateIntegrity` | `string` | yes | [Referential integrity](cascading.md#declarative-referential-integrity). |
+| Parameter    | Type | Optional | Description                                                                                                                                               |
+|--------------|------|----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `entity`     | `string` &#124; `() => EntityName` | yes | Set target entity type.                                                                                                                                   |
+| `cascade`    | `Cascade[]` | yes | Set what actions on owning entity should be cascaded to the relationship. Defaults to `[Cascade.PERSIST, Cascade.MERGE]` (see [Cascading](cascading.md)). |
+| `eager`      | `boolean` | yes | Always load the relationship.                                                                                                                             |
+| `inversedBy` | `(string & keyof T) ` &#124; ` (e: T) => any` | yes | Point to the inverse side property name.                                                                                                                  |
+| `ref`        | `boolean` | yes | Wrap the entity in [`Reference` wrapper](type-safe-relations.md).                                                                                         |
+| `primary`    | `boolean` | yes | Use this relation as primary key.                                                                                                                         |
+| `deleteRule`   | `string` | yes | [Referential integrity](cascading.md#declarative-referential-integrity).                                                                                  |
+| `updateRule` | `string` | yes | [Referential integrity](cascading.md#declarative-referential-integrity).                                                                                  |
 
 ```ts
 @ManyToOne()
@@ -280,21 +279,21 @@ One instance of the current Entity refers to One instance of the referred Entity
 
 See [Defining Entities](relationships.md#onetoone) for more examples, including bi-directional 1:1.
 
-| Parameter | Type | Optional | Description |
-| --- | --- | --- | --- |
-| `entity` | `string` &#124; `() => EntityName` | yes | Set target entity type. |
-| `cascade` | `Cascade[]` | yes | Set what actions on owning entity should be cascaded to the relationship. Defaults to `[Cascade.PERSIST, Cascade.MERGE]` (see [Cascading](cascading.md)). |
-| `eager` | `boolean` | yes | Always load the relationship. |
-| `owner` | `boolean` | yes | Explicitly set as owning side (same as providing `inversedBy`). |
-| `inversedBy` | `(string & keyof T) ` &#124; ` (e: T) => any` | yes | Point to the inverse side property name. |
-| `mappedBy` | `(string & keyof T)` &#124; `(e: T) => any` | yes | Point to the owning side property name. |
-| `wrappedReference` | `boolean` | yes | Wrap the entity in [`Reference` wrapper](type-safe-relations.md). |
-| `ref` | `boolean` | yes | Alias for `wrappedReference`. |
-| `orphanRemoval` | `boolean` | yes | Remove the entity when it gets disconnected from the relationship (see [Cascading](cascading.md#orphan-removal)). |
-| `joinColumn` | `string` | yes | Override default database column name on the owning side (see [Naming Strategy](naming-strategy.md)). |
-| `primary` | `boolean` | yes | Use this relation as primary key. |
-| `onDelete` | `string` | yes | [Referential integrity](cascading.md#declarative-referential-integrity). |
-| `onUpdateIntegrity` | `string` | yes | [Referential integrity](cascading.md#declarative-referential-integrity). |
+| Parameter       | Type                                          | Optional | Description                                                                                                                                                |
+|-----------------|-----------------------------------------------|----------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `entity`        | `string` &#124; `() => EntityName`            | yes      | Set target entity type.                                                                                                                                    |
+| `cascade`       | `Cascade[]`                                   | yes      | Set what actions on owning entity should be cascaded to the relationship. Defaults to `[Cascade.PERSIST, Cascade.MERGE]` (see [Cascading](cascading.md)).  |
+| `eager`         | `boolean`                                     | yes      | Always load the relationship.                                                                                                                              |
+| `owner`         | `boolean`                                     | yes      | Explicitly set as owning side (same as providing `inversedBy`).                                                                                            |
+| `inversedBy`    | `(string & keyof T) ` &#124; ` (e: T) => any` | yes      | Point to the inverse side property name.                                                                                                                   |
+| `mappedBy`      | `(string & keyof T)` &#124; `(e: T) => any`   | yes      | Point to the owning side property name.                                                                                                                    |
+| `ref`           | `boolean`                                     | yes      | Wrap the entity in [`Reference` wrapper](type-safe-relations.md).                                                                                          |
+| `orphanRemoval` | `boolean`                                     | yes      | Remove the entity when it gets disconnected from the relationship (see [Cascading](cascading.md#orphan-removal)).                                          |
+| `joinColumn`    | `string`                                      | yes      | Override default database column name on the owning side (see [Naming Strategy](naming-strategy.md)).                                                      |
+| `primary`       | `boolean`                                     | yes      | Use this relation as primary key.                                                                                                                          |
+| `deleteRule`    | `string`                                      | yes      | [Referential integrity](cascading.md#declarative-referential-integrity).                                                                                   |
+| `updateRule`    | `string`                                      | yes      | [Referential integrity](cascading.md#declarative-referential-integrity).                                                                                   |
+>>>>>>> 8bdda20b8 (refactor: rename various options)
 
 ```ts
 // when none of `owner/inverseBy/mappedBy` is provided, it will be considered owning side
@@ -320,16 +319,16 @@ See [Defining Entities](relationships.md#onetomany) for more examples, including
 
 > You need to initialize the value with `Collection<T>` instance.
 
-| Parameter | Type | Optional | Description |
-| --- | --- | --- | --- |
-| `mappedBy` | `(string & keyof T)` &#124; `(e: T) => any` | no | Point to the owning side property name. |
-| `entity` | `string` &#124; `() => EntityName` | yes | Set target entity type. |
-| `cascade` | `Cascade[]` | yes | Set what actions on owning entity should be cascaded to the relationship. Defaults to `[Cascade.PERSIST, Cascade.MERGE]` (see [Cascading](cascading.md)). |
-| `eager` | `boolean` | yes | Always load the relationship. |
-| `orphanRemoval` | `boolean` | yes | Remove the entity when it gets disconnected from the connection (see [Cascading](cascading.md#orphan-removal)). |
-| `orderBy` | `{ [field: string]: QueryOrder }` | yes | Set default ordering condition. |
-| `joinColumn` | `string` | yes | Override default database column name on the owning side (see [Naming Strategy](naming-strategy.md)). |
-| `inverseJoinColumn` | `string` | yes | Override default database column name on the inverse side (see [Naming Strategy](naming-strategy.md)). |
+| Parameter           | Type                                        | Optional | Description                                                                                                                                               |
+|---------------------|---------------------------------------------|----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `mappedBy`          | `(string & keyof T)` &#124; `(e: T) => any` | no       | Point to the owning side property name.                                                                                                                   |
+| `entity`            | `string` &#124; `() => EntityName`          | yes      | Set target entity type.                                                                                                                                   |
+| `cascade`           | `Cascade[]`                                 | yes      | Set what actions on owning entity should be cascaded to the relationship. Defaults to `[Cascade.PERSIST, Cascade.MERGE]` (see [Cascading](cascading.md)). |
+| `eager`             | `boolean`                                   | yes      | Always load the relationship.                                                                                                                             |
+| `orphanRemoval`     | `boolean`                                   | yes      | Remove the entity when it gets disconnected from the connection (see [Cascading](cascading.md#orphan-removal)).                                           |
+| `orderBy`           | `{ [field: string]: QueryOrder }`           | yes      | Set default ordering condition.                                                                                                                           |
+| `joinColumn`        | `string`                                    | yes      | Override default database column name on the owning side (see [Naming Strategy](naming-strategy.md)).                                                     |
+| `inverseJoinColumn` | `string`                                    | yes      | Override default database column name on the inverse side (see [Naming Strategy](naming-strategy.md)).                                                    |
 
 ```ts
 @OneToMany(() => Book, book => book.author)
@@ -349,20 +348,20 @@ See [Defining Entities](relationships.md#manytomany) for more examples, includin
 
 > You need to initialize the value with `Collection<T>` instance.
 
-| Parameter | Type | Optional | Description |
-| --- | --- | --- | --- |
-| `entity` | `string` &#124; `() => EntityName` | yes | Set target entity type. |
-| `cascade` | `Cascade[]` | yes | Set what actions on owning entity should be cascaded to the relationship. Defaults to `[Cascade.PERSIST, Cascade.MERGE]` (see [Cascading](cascading.md)). |
-| `eager` | `boolean` | yes | Always load the relationship. |
-| `owner` | `boolean` | yes | Explicitly set as owning side (same as providing `inversedBy`). |
-| `inversedBy` | `(string & keyof T) ` &#124; ` (e: T) => any` | yes | Point to the inverse side property name. |
-| `mappedBy` | `(string & keyof T)` &#124; `(e: T) => any` | yes | Point to the owning side property name. |
-| `orderBy` | `{ [field: string]: QueryOrder }` | yes | Set default ordering condition. |
-| `fixedOrder` | `boolean` | yes | Force stable insertion order of items in the collection (see [Collections](collections.md#forcing-fixed-order-of-collection-items)). |
-| `fixedOrderColumn` | `string` | yes | Override default order column name (`id`). |
-| `pivotTable` | `string` | yes | Override default name for pivot table (see [Naming Strategy](naming-strategy.md)). |
-| `joinColumn` | `string` | yes | Override default database column name on the owning side (see [Naming Strategy](naming-strategy.md)). |
-| `inverseJoinColumn` | `string` | yes | Override default database column name on the inverse side (see [Naming Strategy](naming-strategy.md)). |
+| Parameter           | Type                                          | Optional | Description                                                                                                                                               |
+|---------------------|-----------------------------------------------|----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `entity`            | `string` &#124; `() => EntityName`            | yes      | Set target entity type.                                                                                                                                   |
+| `cascade`           | `Cascade[]`                                   | yes      | Set what actions on owning entity should be cascaded to the relationship. Defaults to `[Cascade.PERSIST, Cascade.MERGE]` (see [Cascading](cascading.md)). |
+| `eager`             | `boolean`                                     | yes      | Always load the relationship.                                                                                                                             |
+| `owner`             | `boolean`                                     | yes      | Explicitly set as owning side (same as providing `inversedBy`).                                                                                           |
+| `inversedBy`        | `(string & keyof T) ` &#124; ` (e: T) => any` | yes      | Point to the inverse side property name.                                                                                                                  |
+| `mappedBy`          | `(string & keyof T)` &#124; `(e: T) => any`   | yes      | Point to the owning side property name.                                                                                                                   |
+| `orderBy`           | `{ [field: string]: QueryOrder }`             | yes      | Set default ordering condition.                                                                                                                           |
+| `fixedOrder`        | `boolean`                                     | yes      | Force stable insertion order of items in the collection (see [Collections](collections.md#forcing-fixed-order-of-collection-items)).                      |
+| `fixedOrderColumn`  | `string`                                      | yes      | Override default order column name (`id`).                                                                                                                |
+| `pivotTable`        | `string`                                      | yes      | Override default name for pivot table (see [Naming Strategy](naming-strategy.md)).                                                                        |
+| `joinColumn`        | `string`                                      | yes      | Override default database column name on the owning side (see [Naming Strategy](naming-strategy.md)).                                                     |
+| `inverseJoinColumn` | `string`                                      | yes      | Override default database column name on the inverse side (see [Naming Strategy](naming-strategy.md)).                                                    |
 
 ```ts
 @ManyToMany({ entity: () => BookTag, cascade: [], fixedOrderColumn: 'order' })
