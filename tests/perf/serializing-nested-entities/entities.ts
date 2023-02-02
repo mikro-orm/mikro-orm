@@ -35,7 +35,7 @@ export class Risk {
   @Property()
   title!: string;
 
-  @ManyToOne(() => Project, { serializer: p => p.id, wrappedReference: true })
+  @ManyToOne(() => Project, { serializer: p => p.id, ref: true })
   project!: Ref<Project>;
 
   @ManyToMany({
@@ -62,7 +62,7 @@ export class Filter {
 
   @ManyToOne(() => Project, {
     serializer: p => p.id,
-    wrappedReference: true,
+    ref: true,
     onDelete: 'cascade',
   })
   project!: Ref<Project>;
@@ -80,7 +80,7 @@ export class FilterValue {
 
   @ManyToOne(() => Filter, {
     serializer: f => f.id,
-    wrappedReference: true,
+    ref: true,
     onDelete: 'cascade',
   })
   filter!: Ref<Filter>;

@@ -25,7 +25,7 @@ class B {
 class A {
 
   [PrimaryKeyProp]?: 'node';
-  @OneToOne({ entity: 'Node', wrappedReference: true, primary: true, onDelete: 'cascade', onUpdateIntegrity: 'cascade' })
+  @OneToOne({ entity: 'Node', ref: true, primary: true, onDelete: 'cascade', onUpdateIntegrity: 'cascade' })
   node!: Ref<Node>;
 
   @Property()

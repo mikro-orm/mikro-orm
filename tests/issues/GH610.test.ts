@@ -10,7 +10,7 @@ export class Test {
   @Property()
   name!: string;
 
-  @ManyToOne(() => Test, { nullable: true, wrappedReference: true })
+  @ManyToOne(() => Test, { nullable: true, ref: true })
   rootNode?: Ref<Test>;
 
   constructor({ name }: Partial<Test> = {}) {

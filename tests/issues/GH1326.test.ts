@@ -38,10 +38,10 @@ export class License {
   @Property()
   expiresAt!: Date;
 
-  @ManyToOne(() => Driver, { inversedBy: 'licenses', wrappedReference: true })
+  @ManyToOne(() => Driver, { inversedBy: 'licenses', ref: true })
   driver!: Ref<Driver>;
 
-  @ManyToOne('LicenseType', { inversedBy: 'licenses', wrappedReference: true })
+  @ManyToOne('LicenseType', { inversedBy: 'licenses', ref: true })
   licenseType!: Ref<LicenseType>;
 
 }
