@@ -19,10 +19,10 @@ export class Book1 {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => Author, { wrappedReference: true })
+  @ManyToOne(() => Author, { ref: true })
   author1!: Ref<Author>;
 
-  @ManyToOne(() => Author, { wrappedReference: true })
+  @ManyToOne(() => Author, { ref: true })
   author2!: Ref<Author>;
 
   @ManyToOne(() => Author)
@@ -44,10 +44,10 @@ export class Book2 {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => Author, { wrappedReference: true })
+  @ManyToOne(() => Author, { ref: true })
   author1!: Ref<Author>;
 
-  @ManyToOne(() => Author, { wrappedReference: true })
+  @ManyToOne(() => Author, { ref: true })
   @Index()
   author2!: Ref<Author>;
 
@@ -72,10 +72,10 @@ export class Book3 {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => Author, { wrappedReference: true })
+  @ManyToOne(() => Author, { ref: true })
   author1!: Ref<Author>;
 
-  @ManyToOne(() => Author, { wrappedReference: true })
+  @ManyToOne(() => Author, { ref: true })
   @Index()
   author2!: Ref<Author>;
 
@@ -100,10 +100,10 @@ export class Book4 {
   @PrimaryKey()
   id!: number;
 
-  @ManyToOne(() => Author, { wrappedReference: true })
+  @ManyToOne(() => Author, { ref: true })
   author1!: Ref<Author>;
 
-  @ManyToOne(() => Author, { wrappedReference: true })
+  @ManyToOne(() => Author, { ref: true })
   @Index()
   author2!: Ref<Author>;
 

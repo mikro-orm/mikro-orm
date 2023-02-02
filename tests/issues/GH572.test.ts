@@ -7,7 +7,7 @@ export class A {
   @PrimaryKey()
   id!: number;
 
-  @OneToOne('B', 'a', { wrappedReference: true })
+  @OneToOne('B', 'a', { ref: true })
   b!: Ref<B>;
 
 }
@@ -21,7 +21,7 @@ export class B {
   @Property()
   camelCaseField?: string;
 
-  @OneToOne('A', 'b', { owner: true, wrappedReference: true })
+  @OneToOne('A', 'b', { owner: true, ref: true })
   a!: Ref<A>;
 
 }

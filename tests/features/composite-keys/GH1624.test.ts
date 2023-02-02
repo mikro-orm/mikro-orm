@@ -48,7 +48,7 @@ export class User {
   @ManyToOne({
     entity: () => Organization,
     primary: true,
-    wrappedReference: true,
+    ref: true,
     index: true,
     cascade: [],
     onDelete: 'no action',
@@ -100,7 +100,7 @@ export class UserRole {
     entity: () => User,
     inversedBy: x => x.userRoles,
     primary: true,
-    wrappedReference: true,
+    ref: true,
     cascade: [],
     onDelete: 'cascade',
   })
@@ -110,7 +110,7 @@ export class UserRole {
     entity: () => Role,
     inversedBy: x => x.userRoles,
     primary: true,
-    wrappedReference: true,
+    ref: true,
     cascade: [],
     onDelete: 'no action',
   })
@@ -134,7 +134,7 @@ export class Program {
     entity: () => Organization,
     inversedBy: 'programs',
     primary: true,
-    wrappedReference: true,
+    ref: true,
   })
   organization!: Ref<Organization>;
 
@@ -160,7 +160,7 @@ export class Site {
     entity: () => Program,
     inversedBy: 'sites',
     primary: true,
-    wrappedReference: true,
+    ref: true,
     cascade: [],
     onUpdateIntegrity: 'no action',
     onDelete: 'no action',

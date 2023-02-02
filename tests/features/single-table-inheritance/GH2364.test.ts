@@ -12,7 +12,7 @@ abstract class BaseEntity {
   @PrimaryKey({ type: BigIntType })
   id!: string;
 
-  @ManyToOne(() => BaseEntity, { wrappedReference: true, nullable: true })
+  @ManyToOne(() => BaseEntity, { ref: true, nullable: true })
   parent?: Ref<BaseEntity>;
 
   @Enum({ type: () => EntityType })

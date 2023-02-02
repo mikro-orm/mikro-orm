@@ -828,10 +828,10 @@ export class UnitOfWork {
 
     if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && kind && !prop.mapToPk) {
       if (!Utils.isEntity(kind)) {
-        entity[prop.name] = this.em.getReference(prop.type, kind as Primary<T[string & keyof T]>, { wrapped: !!prop.wrappedReference }) as T[string & keyof T];
+        entity[prop.name] = this.em.getReference(prop.type, kind as Primary<T[string & keyof T]>, { wrapped: !!prop.ref }) as T[string & keyof T];
       } else if (!helper(kind).__initialized && !helper(kind).__em) {
         const pk = helper(kind).getPrimaryKey();
-        entity[prop.name] = this.em.getReference(prop.type, pk as Primary<T[string & keyof T]>, { wrapped: !!prop.wrappedReference }) as T[string & keyof T];
+        entity[prop.name] = this.em.getReference(prop.type, pk as Primary<T[string & keyof T]>, { wrapped: !!prop.ref }) as T[string & keyof T];
       }
     }
 
