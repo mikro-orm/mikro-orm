@@ -268,7 +268,7 @@ export interface EntityProperty<T = any> {
   precision?: number;
   scale?: number;
   kind: ReferenceKind;
-  wrappedReference?: boolean;
+  ref?: boolean;
   fieldNames: string[];
   fieldNameRaw?: string;
   default?: string | number | boolean | null;
