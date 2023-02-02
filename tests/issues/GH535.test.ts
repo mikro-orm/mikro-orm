@@ -9,7 +9,7 @@ class A {
   @OneToOne({
     entity: 'B',
     mappedBy: 'a',
-    wrappedReference: true,
+    ref: true,
     nullable: true,
   })
   b!: Ref<B>;
@@ -27,7 +27,7 @@ class B {
   @PrimaryKey()
   id!: number;
 
-  @OneToOne({ entity: () => A, wrappedReference: true })
+  @OneToOne({ entity: () => A, ref: true })
   a!: Ref<A>;
 
   @Property()

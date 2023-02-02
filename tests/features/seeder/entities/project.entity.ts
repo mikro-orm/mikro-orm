@@ -13,7 +13,7 @@ export class Project {
   @Property()
   name!: string;
 
-  @ManyToOne({ entity: () => User, wrappedReference: true })
+  @ManyToOne({ entity: () => User, ref: true })
   owner!: Ref<User>;
 
   @Property()

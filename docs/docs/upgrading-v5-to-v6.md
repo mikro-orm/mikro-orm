@@ -149,3 +149,7 @@ export class Foo {
 ## `ReferenceType` renamed to `ReferenceKind`
 
 Also `EntityProperty.reference` is renamed to `kind`, this is used when defining entities via `EntitySchema`, and internally in the ORM metadata.
+
+## `PropertyOptions.wrappedReference` removed
+
+Use just `ref: true` instead.

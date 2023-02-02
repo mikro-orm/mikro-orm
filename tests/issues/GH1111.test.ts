@@ -13,7 +13,7 @@ class Node {
 class A {
 
   [PrimaryKeyProp]?: 'node';
-  @OneToOne({ entity: () => Node, wrappedReference: true, primary: true, onDelete: 'cascade', onUpdateIntegrity: 'cascade' })
+  @OneToOne({ entity: () => Node, ref: true, primary: true, onDelete: 'cascade', onUpdateIntegrity: 'cascade' })
   node!: Ref<Node>;
 
   @OneToMany('B', 'a', { eager: true, orphanRemoval: true })
