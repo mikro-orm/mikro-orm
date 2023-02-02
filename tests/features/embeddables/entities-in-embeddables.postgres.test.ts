@@ -219,7 +219,7 @@ describe('embedded entities in postgres', () => {
     expect(u1.profile1.identity.meta).toBeInstanceOf(IdentityMeta);
     expect(u1.profile1.source).toBeInstanceOf(Source);
     expect(u1.profile1.identity.source).toBeInstanceOf(Source);
-    expect(wrap(u1.profile1.identity.source).isInitialized()).toBe(false);
+    expect(wrap(u1.profile1.identity.source!).isInitialized()).toBe(false);
     expect(u1.profile1).toMatchObject({
       username: 'u1',
       identity: {
@@ -394,7 +394,7 @@ describe('embedded entities in postgres', () => {
     expect(mock.mock.calls[2][0]).toMatch(`select "s0".* from "source" as "s0" where "s0"."id" in (2, 8) order by "s0"."id" asc`);
     expect(mock.mock.calls[3][0]).toMatch(`select "s0".* from "source" as "s0" where "s0"."id" in (3) order by "s0"."id" asc`);
     expect(mock.mock.calls[4][0]).toMatch(`select "s0".* from "source" as "s0" where "s0"."id" in (11, 12, 13, 14, 15, 16) order by "s0"."id" asc`);
-    expect(wrap(users[1].profile1.identity.links[1].metas[2].source).isInitialized()).toBe(true);
+    expect(wrap(users[1].profile1.identity.links[1].metas[2].source!).isInitialized()).toBe(true);
     expect(users[1].profile1.identity.links[1].metas[2].source!.name).toBe('ilms323');
 
     // test serialization context

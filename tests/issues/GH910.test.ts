@@ -1,5 +1,5 @@
 import type { Platform } from '@mikro-orm/sqlite';
-import { Cascade, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, PrimaryKeyType, Property, Type } from '@mikro-orm/sqlite';
+import { Cascade, Collection, Entity, ManyToOne, MikroORM, OneToMany, PrimaryKey, Property, Type } from '@mikro-orm/sqlite';
 import { mockLogger } from '../helpers';
 
 export class Sku {
@@ -64,8 +64,6 @@ export class CartItem {
 
   @PrimaryKey({ type: SkuType })
   readonly sku: Sku;
-
-  [PrimaryKeyType]?: [string, string];
 
   @Property()
   quantity: number;
