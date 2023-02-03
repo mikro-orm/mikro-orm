@@ -5,6 +5,7 @@ import { Reference } from '../entity/Reference';
 import { Utils } from '../utils/Utils';
 import { ReferenceType } from '../enums';
 import type { EntityFactory } from '../entity/EntityFactory';
+import { JsonType } from '../types/JsonType';
 
 type EntityHydrator<T> = (entity: T, data: EntityData<T>, factory: EntityFactory, newEntity: boolean, convertCustomTypes: boolean, schema?: string) => void;
 
@@ -95,7 +96,14 @@ export class ObjectHydrator extends Hydrator {
           `  if (${preCond}typeof data${dataKey} !== 'undefined') {`,
           `    if (convertCustomTypes) {`,
           `      const value = convertToJSValue_${convertorKey}(data${dataKey});`,
-          `      data${dataKey} = convertToDatabaseValue_${convertorKey}(value);`, // make sure the value is comparable
+        );
+
+        // make sure the value is comparable, but skip this for JSON props as it can result in double encoding
+        if (!(prop.customType instanceof JsonType)) {
+          ret.push(`      data${dataKey} = convertToDatabaseValue_${convertorKey}(value);`);
+        }
+
+        ret.push(
           `      entity${entityKey} = value;`,
           `    } else {`,
           `      entity${entityKey} = data${dataKey};`,
