@@ -381,23 +381,6 @@ export class PhotoService {
 }
 ```
 
-## Testing
-
-The `nestjs-mikro-orm` package exposes `getRepositoryToken()` function that returns prepared token based on a given entity to allow mocking the repository.
-
-```typescript
-@Module({
-  providers: [
-    PhotoService,
-    {
-      provide: getRepositoryToken(Photo),
-      useValue: mockedRepository,
-    },
-  ],
-})
-export class PhotoModule {}
-```
-
 ## Serialization caveat
 
 [NestJS built-in serialization](https://docs.nestjs.com/techniques/serialization) relies on [class-transformer](https://github.com/typestack/class-transformer). Since MikroORM wraps every single entity relation in a `Reference` or a `Collection` instance (for type-safety), this will make the built-in `ClassSerializerInterceptor` blind to any wrapped relations. In other words, if you return MikroORM entities from your HTTP or WebSocket handlers, all of their relations will NOT be serialized.
