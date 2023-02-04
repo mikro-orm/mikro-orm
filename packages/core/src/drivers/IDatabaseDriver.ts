@@ -10,7 +10,6 @@ import type { Collection } from '../entity/Collection';
 import type { EntityManager } from '../EntityManager';
 import type { DriverException } from '../exceptions';
 import type { Configuration } from '../utils/Configuration';
-import type { Cursor } from '../utils/Cursor';
 
 export const EntityManagerType = Symbol('EntityManagerType');
 
@@ -98,6 +97,7 @@ export type EntityField<T, P extends string = never> = keyof T | '*' | AutoPath<
 export type OrderDefinition<T> = (QueryOrderMap<T> & { 0?: never }) | QueryOrderMap<T>[];
 
 export interface FindOptions<T, P extends string = never> {
+  where?: FilterQuery<T>;
   populate?: readonly AutoPath<T, P>[] | boolean;
   populateWhere?: ObjectQuery<T> | PopulateHint;
   orderBy?: OrderDefinition<T>;

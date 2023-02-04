@@ -2,7 +2,7 @@ import { inspect } from 'util';
 import type {
   ConnectionType,
   Dictionary,
-  EntityClass,
+  EntityClass, EntityKey,
   EntityProperty,
   LoadedReference,
   Populate,
@@ -111,7 +111,7 @@ export class Reference<T extends object> {
     }
 
     if (opts.prop) {
-      return this.entity[opts.prop];
+      return this.entity[opts.prop as EntityKey];
     }
 
     return this.entity;
@@ -154,7 +154,7 @@ export class Reference<T extends object> {
   [inspect.custom](depth: number) {
     const object = { ...this };
     const hidden = ['meta'];
-    hidden.forEach(k => delete object[k]);
+    hidden.forEach(k => delete object[k as keyof this]);
     const ret = inspect(object, { depth });
     const wrapped = helper(this.entity);
     const meta = wrapped.__meta;
