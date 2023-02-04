@@ -7,7 +7,7 @@ import { SqliteDriver } from '@mikro-orm/sqlite';
 export class D {
 
   @PrimaryKey()
-  id = v4();
+  id: string = v4();
 
   @ManyToOne({ entity: 'A' })
   a!: any;
@@ -18,7 +18,7 @@ export class D {
 export class C {
 
   @PrimaryKey()
-  id = v4();
+  id: string = v4();
 
 }
 
@@ -26,7 +26,7 @@ export class C {
 export class B {
 
   @PrimaryKey()
-  id = v4();
+  id: string = v4();
 
 }
 

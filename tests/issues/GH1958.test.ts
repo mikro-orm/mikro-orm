@@ -5,10 +5,10 @@ import { SqliteDriver } from '@mikro-orm/sqlite';
 class LoopOptions {
 
   @Property()
-  'enabled-prop' = false;
+  'enabled-prop': boolean = false;
 
   @Property()
-  'type-prop' = 'a';
+  'type-prop': string = 'a';
 
 }
 

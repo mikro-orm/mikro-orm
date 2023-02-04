@@ -10,10 +10,17 @@ export class ReflectMetadataProvider extends MetadataProvider {
   }
 
   protected initPropertyType(meta: EntityMetadata, prop: EntityProperty) {
-    const type = Reflect.getMetadata('design:type', meta.prototype, prop.name);
+    let type = Reflect.getMetadata('design:type', meta.prototype, prop.name);
 
     if (!type || (type === Object && prop.reference !== ReferenceType.SCALAR)) {
       throw new Error(`Please provide either 'type' or 'entity' attribute in ${meta.className}.${prop.name}`);
+    }
+
+    // Instead of requiring the type everywhere, we default to string, which maintains the behaviour,
+    // as we were mapping it to UnknownType which is a string. This is to prevent defaulting to JSON
+    // column type, which can be often hard to revert and cause hard to understand issues with PKs.
+    if (prop.reference === ReferenceType.SCALAR && type === Object) {
+      type = String;
     }
 
     prop.type = type.name;

@@ -1,5 +1,5 @@
 import { MikroORM } from '@mikro-orm/postgresql';
-import { Embedded, Entity, PrimaryKey, Embeddable, OneToOne, Property, t } from '@mikro-orm/core';
+import { Embedded, Entity, PrimaryKey, Embeddable, OneToOne, Property } from '@mikro-orm/core';
 
 @Embeddable()
 export class Page {
@@ -7,7 +7,7 @@ export class Page {
   private _attestations!: string[];
   static log: unknown[] = [];
 
-  @Property({ type: t.json })
+  @Property({ type: 'jsonb' })
   get attestations(): string[] {
     return this._attestations;
   }
