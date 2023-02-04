@@ -28,17 +28,17 @@ jobs:
       - name: Enable corepack
         run: |
           corepack enable
+          corepack prepare yarn@stable --activate
 
-      - name: Cache node_modules
-        uses: actions/cache@v3
+      # Yarn dependencies cannot be cached until yarn is installed
+      # WORKAROUND: https://github.com/actions/setup-node/issues/531
+      - name: Extract cached dependencies
+        uses: actions/setup-node@v3
         with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-16-modules-${{ hashFiles('**/yarn.lock') }}
+          cache: yarn
 
       - name: Install
-        run: |
-          corepack prepare yarn@stable --activate
-          yarn
+        run: yarn
 
       - name: Test TS
         run: yarn tsc-check-tests
