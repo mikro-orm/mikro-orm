@@ -14,6 +14,8 @@ beforeAll(async () => {
         if (type === 'string') {
           return Type.getType(TextType);
         }
+
+        return undefined;
       },
     },
   });
