@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import type { EntityMetadata, FilterObject, Loaded } from '../typings';
+import type { Dictionary, EntityKey, EntityMetadata, FilterObject, Loaded } from '../typings';
 import type { FindByCursorOptions, OrderDefinition } from '../drivers/IDatabaseDriver';
 import { Utils } from './Utils';
 import type { QueryOrder, QueryOrderKeys } from '../enums';
@@ -58,7 +58,7 @@ export class Cursor<Entity extends object, Hint extends string = never> {
   readonly hasPrevPage: boolean;
   readonly hasNextPage: boolean;
 
-  private readonly definition: (readonly [keyof Entity, QueryOrder])[];
+  private readonly definition: (readonly [EntityKey<Entity>, QueryOrder])[];
 
   constructor(
     readonly items: Loaded<Entity, Hint>[],
@@ -104,12 +104,12 @@ export class Cursor<Entity extends object, Hint extends string = never> {
    * Computes the cursor value for given entity.
    */
   from(entity: Entity) {
-    const processEntity = <T> (entity: T, prop: string, direction: QueryOrderKeys<T>, object = false) => {
+    const processEntity = <T extends object> (entity: T, prop: EntityKey<T>, direction: QueryOrderKeys<T>, object = false) => {
       if (Utils.isPlainObject(direction)) {
-        const value = Object.keys(direction).reduce((o, key) => {
-          Object.assign(o, processEntity(Reference.unwrapReference(entity[prop]), key, direction[key], true));
+        const value = Utils.keys(direction).reduce((o, key) => {
+          Object.assign(o, processEntity(Reference.unwrapReference(entity[prop] as T), key as EntityKey<T>, direction[key] as QueryOrderKeys<T>, true));
           return o;
-        }, {});
+        }, {} as Dictionary);
         return ({ [prop]: value });
       }
 
@@ -119,7 +119,7 @@ export class Cursor<Entity extends object, Hint extends string = never> {
 
       return entity[prop];
     };
-    const value = this.definition.map(([key, direction]) => processEntity(entity, key as string, direction));
+    const value = this.definition.map(([key, direction]) => processEntity(entity, key, direction));
     return Cursor.encode(value);
   }
 
@@ -138,7 +138,7 @@ export class Cursor<Entity extends object, Hint extends string = never> {
    */
   static for<Entity extends object>(meta: EntityMetadata<Entity>, entity: FilterObject<Entity>, orderBy: OrderDefinition<Entity>) {
     const definition = this.getDefinition(meta, orderBy);
-    return Cursor.encode(definition.map(([key]) => entity[key as string]));
+    return Cursor.encode(definition.map(([key]) => entity[key]));
   }
 
   static encode(value: unknown[]): string {
@@ -151,10 +151,10 @@ export class Cursor<Entity extends object, Hint extends string = never> {
 
   static getDefinition<Entity extends object>(meta: EntityMetadata<Entity>, orderBy: OrderDefinition<Entity>) {
     return Utils.asArray(orderBy).flatMap(order => {
-      return Object.keys(order)
-        .map(key => meta.properties[key])
+      return Utils.keys(order)
+        .map(key => meta.properties[key as EntityKey<Entity>])
         .filter(prop => [ReferenceKind.SCALAR, ReferenceKind.MANY_TO_ONE].includes(prop.kind) || (prop.kind === ReferenceKind.ONE_TO_ONE && prop.owner))
-        .map(prop => [prop.name, order[prop.name]] as const);
+        .map(prop => [prop.name, order[prop.name] as QueryOrder] as const);
     });
   }
 

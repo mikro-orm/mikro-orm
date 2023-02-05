@@ -1,7 +1,7 @@
 import { inspect } from 'util';
 
 import type { EntityManager } from '../EntityManager';
-import { EntityRepositoryType, OptionalProps, PrimaryKeyProp, type AnyEntity, type Dictionary, type EntityMetadata, type EntityProperty, type IHydrator } from '../typings';
+import { EntityRepositoryType, OptionalProps, PrimaryKeyProp, type AnyEntity, type Dictionary, type EntityMetadata, type EntityProperty, type IHydrator, type EntityValue } from '../typings';
 import { EntityTransformer } from '../serialization/EntityTransformer';
 import { Reference } from './Reference';
 import { Utils } from '../utils/Utils';
@@ -115,8 +115,9 @@ export class EntityHelper {
         });
       });
 
+    // @ts-ignore
     meta.prototype[inspect.custom] ??= function (this: T, depth: number) {
-      const object = { ...this };
+      const object = { ...this } as any;
       // ensure we dont have internal symbols in the POJO
       [OptionalProps, EntityRepositoryType, PrimaryKeyProp].forEach(sym => delete object[sym]);
       const ret = inspect(object, { depth });
@@ -154,7 +155,7 @@ export class EntityHelper {
 
         // when propagation from inside hydration, we set the FK to the entity data immediately
         if (val && hydrator.isRunning() && wrapped.__originalEntityData && prop.owner) {
-          wrapped.__originalEntityData[prop.name as string] = helper(wrapped.__data[prop.name]).getPrimaryKey(true);
+          wrapped.__originalEntityData[prop.name] = helper(wrapped.__data[prop.name]).getPrimaryKey(true);
         } else {
           wrapped.__touched = true;
         }
@@ -166,26 +167,24 @@ export class EntityHelper {
     });
   }
 
-  static propagate<T extends object, O extends object>(meta: EntityMetadata<O>, entity: T, owner: O, prop: EntityProperty<O>, value?: T[keyof T & string], old?: object): void {
-    const inverseProps = prop.targetMeta!.bidirectionalRelations.filter(prop2 =>
-      (prop2.inversedBy || prop2.mappedBy) === prop.name
-      && (
-        prop2.targetMeta!.abstract ?
-          prop2.targetMeta!.root.className === meta.root.className :
-          prop2.targetMeta!.className === meta.className
-      ),
-    );
+  static propagate<T extends object>(meta: EntityMetadata<T>, entity: T, owner: T, prop: EntityProperty<T>, value?: T[keyof T & string], old?: T): void {
+    const inverseProps = prop.targetMeta!.bidirectionalRelations
+      .filter(prop2 => (prop2.inversedBy || prop2.mappedBy) === prop.name)
+      .filter(prop2 => {
+        const meta2 = prop2.targetMeta!;
+        return meta2.abstract ? meta2.root.className === meta.root.className : meta2.className === meta.className;
+      }) as EntityProperty<T>[];
 
     for (const prop2 of inverseProps) {
-      const inverse = value?.[prop2.name as string];
+      const inverse = value?.[prop2.name];
 
-      if (prop.kind === ReferenceKind.MANY_TO_ONE && Utils.isCollection<O, T>(inverse) && inverse.isInitialized()) {
+      if (prop.kind === ReferenceKind.MANY_TO_ONE && Utils.isCollection<T, T>(inverse) && inverse.isInitialized()) {
         inverse.add(owner);
       }
 
       if (prop.kind === ReferenceKind.ONE_TO_ONE && entity && (!prop.owner || helper(entity).__initialized)) {
         if (
-          (value != null && Reference.unwrapReference(inverse) !== owner) ||
+          (value != null && Reference.unwrapReference(inverse!) !== owner) ||
           (value == null && entity[prop2.name] != null)
         ) {
           EntityHelper.propagateOneToOne(entity, owner, prop, prop2, value, old as T);
@@ -194,12 +193,12 @@ export class EntityHelper {
     }
   }
 
-  private static propagateOneToOne<T extends object, O extends object>(entity: T, owner: O, prop: EntityProperty<O>, prop2: EntityProperty<T>, value?: T[keyof T & string], old?: T): void {
+  private static propagateOneToOne<T extends object>(entity: T, owner: T, prop: EntityProperty<T>, prop2: EntityProperty<T>, value?: T[keyof T & string], old?: T): void {
     helper(entity).__pk = helper(entity).getPrimaryKey()!;
 
     // the inverse side will be changed on the `value` too, so we need to clean-up and schedule orphan removal there too
-    if (!prop.primary && !prop2.mapToPk && value?.[prop2.name as string] != null && Reference.unwrapReference(value[prop2.name as string]) !== entity) {
-      const other = Reference.unwrapReference(value[prop2.name as string]);
+    if (!prop.primary && !prop2.mapToPk && value?.[prop2.name] != null && Reference.unwrapReference(value[prop2.name]!) !== entity) {
+      const other = Reference.unwrapReference(value![prop2.name]!);
       delete helper(other).__data[prop.name];
 
       if (prop2.orphanRemoval) {
@@ -208,11 +207,11 @@ export class EntityHelper {
     }
 
     if (value == null) {
-      entity[prop2.name] = value as T[keyof T & string];
+      entity[prop2.name] = value as EntityValue<T>;
     } else if (prop2.mapToPk) {
-      entity[prop2.name] = helper(owner).getPrimaryKey() as T[keyof T & string];
+      entity[prop2.name] = helper(owner).getPrimaryKey() as EntityValue<T>;
     } else {
-      entity[prop2.name] = Reference.wrapReference(owner, prop) as T[keyof T & string];
+      entity[prop2.name] = Reference.wrapReference(owner, prop) as EntityValue<T>;
     }
 
     if (old && prop.orphanRemoval) {

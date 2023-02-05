@@ -391,10 +391,10 @@ export class DatabaseTable {
 
   toJSON(): Dictionary {
     const { platform, columns, ...rest } = this;
-    const columnsMapped = Object.keys(columns).reduce((o, col) => {
+    const columnsMapped = Utils.keys(columns).reduce((o, col) => {
       const { mappedType, ...restCol } = columns[col];
       o[col] = restCol;
-      o[col].mappedType = Object.keys(t).find(k => t[k] === mappedType.constructor);
+      o[col].mappedType = Utils.keys(t).find(k => t[k] === mappedType.constructor);
 
       return o;
     }, {} as Dictionary);

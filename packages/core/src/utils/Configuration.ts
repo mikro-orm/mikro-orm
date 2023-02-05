@@ -190,7 +190,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
    * Resets the configuration to its default value
    */
   reset<T extends keyof MikroORMOptions<D>, U extends MikroORMOptions<D>[T]>(key: T): void {
-    this.options[key] = Configuration.DEFAULTS[key as string];
+    this.options[key] = (Configuration.DEFAULTS as MikroORMOptions<D>)[key];
   }
 
   /**
