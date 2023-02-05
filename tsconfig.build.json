@@ -1,14 +1,14 @@
 {
   "compilerOptions": {
     "module": "Node16",
-    "target": "es2020",
-    "lib": ["es2020"],
+    "target": "es2021",
+    "lib": ["es2021"],
     "declaration": true,
     "sourceMap": false,
     "strict": true,
     "esModuleInterop": true,
     "preserveConstEnums": true,
-    "ignoreDeprecations": "5.0"
+    "forceConsistentCasingInFileNames": true
   },
   "exclude": [
     "**/node_modules",
