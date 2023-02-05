@@ -61,7 +61,7 @@ export class MariaDbSchemaHelper extends SchemaHelper {
         from information_schema.statistics where table_schema = database()
         and table_name in (${tables.map(t => this.platform.quoteValue(t.table_name)).join(', ')})`;
     const allIndexes = await connection.execute<any[]>(sql);
-    const ret = {};
+    const ret = {} as Dictionary;
 
     for (const index of allIndexes) {
       const key = this.getTableKey(index);
@@ -100,7 +100,7 @@ export class MariaDbSchemaHelper extends SchemaHelper {
     const allColumns = await connection.execute<any[]>(sql);
     const str = (val?: string | number | null) => val != null ? '' + val : val;
     const extra = (val: string) => val.replace(/auto_increment|default_generated/i, '').trim();
-    const ret = {};
+    const ret = {} as Dictionary;
 
 
     for (const col of allColumns) {
@@ -133,7 +133,7 @@ export class MariaDbSchemaHelper extends SchemaHelper {
   async getAllChecks(connection: AbstractSqlConnection, tables: Table[], columns?: Dictionary<Column[]>): Promise<Dictionary<CheckDef[]>> {
     const sql = this.getChecksSQL(tables);
     const allChecks = await connection.execute<{ name: string; column_name: string; schema_name: string; table_name: string; expression: string }[]>(sql);
-    const ret = {};
+    const ret = {} as Dictionary;
 
     for (const check of allChecks) {
       const key = this.getTableKey(check);
@@ -166,7 +166,7 @@ export class MariaDbSchemaHelper extends SchemaHelper {
       + `where (${tables.map(t => `k.table_name = '${t.table_name}'`).join(' or ')}) `
       + `and k.table_schema = database() and c.constraint_schema = database() and k.referenced_column_name is not null`;
     const allFks = await connection.execute<any[]>(sql);
-    const ret = {};
+    const ret = {} as Dictionary;
 
     for (const fk of allFks) {
       const key = this.getTableKey(fk);

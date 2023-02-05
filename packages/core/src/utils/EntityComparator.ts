@@ -3,6 +3,7 @@ import type {
   Dictionary,
   EntityData,
   EntityDictionary,
+  EntityKey,
   EntityMetadata,
   EntityProperty,
   IMetadataStorage,
@@ -221,7 +222,7 @@ export class EntityComparator {
       lines.push(`  ret${this.wrap(meta.root.discriminatorColumn!)} = '${meta.discriminatorValue}'`);
     }
 
-    const getRootProperty: (prop: EntityProperty) => EntityProperty = (prop: EntityProperty) => prop.embedded ? getRootProperty(meta.properties[prop.embedded[0]]) : prop;
+    const getRootProperty: (prop: EntityProperty) => EntityProperty = (prop: EntityProperty) => prop.embedded ? getRootProperty(meta.properties[prop.embedded[0] as EntityKey<T>]) : prop;
 
     // copy all comparable props, ignore collections and references, process custom types
     meta.comparableProps
