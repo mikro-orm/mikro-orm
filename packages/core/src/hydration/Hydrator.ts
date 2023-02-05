@@ -1,4 +1,4 @@
-import type { EntityData, EntityMetadata, EntityProperty, IHydrator } from '../typings';
+import type { EntityData, EntityMetadata, EntityProperty, EntityValue, IHydrator } from '../typings';
 import type { EntityFactory } from '../entity/EntityFactory';
 import type { Platform } from '../platforms/Platform';
 import type { MetadataStorage } from '../metadata/MetadataStorage';
@@ -55,8 +55,8 @@ export abstract class Hydrator implements IHydrator {
     return meta.hydrateProps;
   }
 
-  protected hydrateProperty<T extends object>(entity: T, prop: EntityProperty, data: EntityData<T>, factory: EntityFactory, newEntity?: boolean, convertCustomTypes?: boolean): void {
-    entity[prop.name] = data[prop.name];
+  protected hydrateProperty<T extends object>(entity: T, prop: EntityProperty<T>, data: EntityData<T>, factory: EntityFactory, newEntity?: boolean, convertCustomTypes?: boolean): void {
+    entity[prop.name] = data[prop.name] as EntityValue<T>;
   }
 
 }

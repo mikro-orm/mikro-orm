@@ -43,10 +43,12 @@ export class MongoConnection extends Connection {
   constructor(config: Configuration, options?: ConnectionOptions, type: ConnectionType = 'write') {
     super(config, options, type);
 
+    // @ts-ignore
     ObjectId.prototype[inspect.custom] = function () {
       return `ObjectId('${this.toHexString()}')`;
     };
 
+    // @ts-ignore
     Date.prototype[inspect.custom] = function () {
       return `ISODate('${this.toISOString()}')`;
     };
@@ -347,13 +349,14 @@ export class MongoConnection extends Connection {
 
   private createUpdatePayload<T extends object>(row: T): { $set?: unknown[]; $unset?: unknown[] } {
     const doc: Dictionary = { $set: row };
-    const keys = Object.keys(row);
-    const $unset: { $set?: unknown[]; $unset?: unknown[] } = {};
+    const $unset: { $set?: unknown[]; $unset?: unknown[]; [K: PropertyKey]: unknown } = {};
 
-    keys.filter(k => typeof row[k] === 'undefined').forEach(k => {
-      $unset[k] = '';
-      delete row[k];
-    });
+    Utils.keys(row)
+      .filter(k => typeof row[k] === 'undefined')
+      .forEach(k => {
+        $unset[k] = '';
+        delete row[k];
+      });
 
     if (Utils.hasObjectKeys($unset)) {
       doc.$unset = $unset;

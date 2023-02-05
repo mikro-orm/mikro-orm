@@ -16,6 +16,7 @@ import type {
   EntityClass,
   EntityData,
   EntityDictionary,
+  EntityKey,
   EntityMetadata,
   EntityName,
   EntityProperty,
@@ -472,7 +473,7 @@ export class Utils {
     }
 
     if (Utils.isEntity<T>(data, true)) {
-      return helper(data).getPrimaryKey();
+      return helper(data).getPrimaryKey() as string;
     }
 
     if (strict && meta && Utils.getObjectKeysSize(data) !== meta.primaryKeys.length) {
@@ -497,11 +498,11 @@ export class Utils {
     platform?: Platform,
   ): Primary<T> {
     return meta.primaryKeys.map((pk, idx) => {
-      const value = Array.isArray(data) ? data[idx] : data[pk as string];
+      const value = Array.isArray(data) ? data[idx] : data[pk as EntityKey<T>];
       const prop = meta.properties[pk];
 
       if (prop.targetMeta && Utils.isPlainObject(value)) {
-        return this.getCompositeKeyValue(value, prop.targetMeta);
+        return this.getCompositeKeyValue(value as T, prop.targetMeta);
       }
 
       if (prop.customType && platform && convertCustomTypes) {
@@ -527,8 +528,8 @@ export class Utils {
     return pks.map(pk => Buffer.isBuffer(pk) ? pk.toString('hex') : pk).join(this.PK_SEPARATOR);
   }
 
-  static splitPrimaryKeys(key: string): string[] {
-    return key.split(this.PK_SEPARATOR);
+  static splitPrimaryKeys<T extends object>(key: string): EntityKey<T>[] {
+    return key.split(this.PK_SEPARATOR) as EntityKey<T>[];
   }
 
   static getPrimaryKeyValues<T>(entity: T, primaryKeys: string[], allowScalar = false, convertCustomTypes = false) {
@@ -563,7 +564,7 @@ export class Utils {
     return [pk];
   }
 
-  static getPrimaryKeyCond<T>(entity: T, primaryKeys: string[]): Record<string, Primary<T>> | null {
+  static getPrimaryKeyCond<T>(entity: T, primaryKeys: EntityKey<T>[]): Record<string, Primary<T>> | null {
     const cond = primaryKeys.reduce((o, pk) => {
       o[pk] = Utils.extractPK(entity[pk]);
       return o;
@@ -681,6 +682,7 @@ export class Utils {
   static detectTsNode(): boolean {
     /* istanbul ignore next */
     return process.argv[0].endsWith('ts-node') // running via ts-node directly
+      // @ts-ignore
       || !!process[Symbol.for('ts-node.register.instance')] // check if internal ts-node symbol exists
       || !!process.env.TS_JEST // check if ts-jest is used (works only with v27.0.4+)
       || process.argv.slice(1).some(arg => arg.includes('ts-node')) // registering ts-node runner
@@ -890,16 +892,16 @@ export class Utils {
     return ([] as T[]).concat.apply([], arrays);
   }
 
-  static isOperator(key: string, includeGroupOperators = true): boolean {
+  static isOperator(key: PropertyKey, includeGroupOperators = true): boolean {
     if (!includeGroupOperators) {
-      return !!QueryOperator[key];
+      return key in QueryOperator;
     }
 
-    return !!GroupOperator[key] || !!QueryOperator[key];
+    return key in GroupOperator || key in QueryOperator;
   }
 
-  static isGroupOperator(key: string): boolean {
-    return !!GroupOperator[key];
+  static isGroupOperator(key: PropertyKey): boolean {
+    return key in GroupOperator;
   }
 
   static hasNestedKey(object: unknown, key: string): boolean {
@@ -919,10 +921,10 @@ export class Utils {
   }
 
   static getGlobalStorage(namespace: string): Dictionary {
-    const key = `mikro-orm-${namespace}`;
-    global[key] = global[key] || {};
+    const key = `mikro-orm-${namespace}` as keyof typeof globalThis;
+    (globalThis as Dictionary)[key] = globalThis[key] || {};
 
-    return global[key];
+    return globalThis[key];
   }
 
   /**
@@ -1033,7 +1035,7 @@ export class Utils {
     const path: string[] = [];
 
     function isObjectProperty(prop: EntityProperty): boolean {
-      return prop.embedded ? prop.object || prop.array || isObjectProperty(meta.properties[prop.embedded[0]]) : prop.object || !!prop.array;
+      return prop.embedded ? prop.object || prop.array || isObjectProperty(meta.properties[prop.embedded[0] as EntityKey<T>]) : prop.object || !!prop.array;
     }
 
     if (!isObjectProperty(prop) && !prop.embedded) {
@@ -1079,7 +1081,7 @@ export class Utils {
 
   static setPayloadProperty<T>(entity: EntityDictionary<T>, meta: EntityMetadata<T>, prop: EntityProperty<T>, value: unknown, idx: number[] = []): void {
     function isObjectProperty(prop: EntityProperty): boolean {
-      return prop.embedded ? prop.object || prop.array || isObjectProperty(meta.properties[prop.embedded[0]]) : prop.object || !!prop.array;
+      return prop.embedded ? prop.object || prop.array || isObjectProperty(meta.properties[prop.embedded[0] as EntityKey<T>]) : prop.object || !!prop.array;
     }
 
     if (!isObjectProperty(prop)) {
@@ -1171,6 +1173,10 @@ export class Utils {
 
   static values<T extends object>(obj: T) {
     return Object.values(obj) as T[keyof T][];
+  }
+
+  static entries<T extends object>(obj: T) {
+    return Object.entries(obj) as [keyof T, T[keyof T]][];
   }
 
 }

@@ -255,7 +255,7 @@ export class Migrator implements IMigrator {
       Object.keys(columns).forEach(col => {
         const column = { ...columns[col] };
         /* istanbul ignore next */
-        column.mappedType = Type.getType(t[columns[col].mappedType] ?? UnknownType);
+        column.mappedType = Type.getType(t[columns[col].mappedType as keyof typeof t] as any ?? UnknownType);
         table.addColumn(column);
       });
 
@@ -342,7 +342,7 @@ export class Migrator implements IMigrator {
       delete options.transaction;
     }
 
-    ['from', 'to'].filter(k => options[k]).forEach(k => options[k] = this.getMigrationFilename(options[k]));
+    (['from', 'to'] as const).filter(k => options[k]).forEach(k => options[k] = this.getMigrationFilename(options[k] as string));
 
     return options as MigrateUpOptions;
   }

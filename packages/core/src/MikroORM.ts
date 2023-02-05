@@ -115,8 +115,8 @@ export class MikroORM<D extends IDatabaseDriver = IDatabaseDriver> {
    */
   async reconnect(options: Options = {}): Promise<void> {
     /* istanbul ignore next */
-    for (const key of Object.keys(options)) {
-      this.config.set(key as keyof Options, options[key]);
+    for (const key of Utils.keys(options)) {
+      this.config.set(key, options[key]);
     }
 
     await this.driver.reconnect();

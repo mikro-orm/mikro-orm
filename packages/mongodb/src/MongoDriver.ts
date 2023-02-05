@@ -4,7 +4,7 @@ import type {
   EntityData, FilterQuery, Configuration, FindOneOptions, FindOptions,
   QueryResult, Transaction, IDatabaseDriver, EntityManager, Dictionary, PopulateOptions,
   CountOptions, EntityDictionary, EntityField, NativeInsertUpdateOptions, NativeInsertUpdateManyOptions,
-  FindByCursorOptions,
+  FindByCursorOptions, EntityKey,
 } from '@mikro-orm/core';
 import { DatabaseDriver, EntityManagerType, ReferenceKind, Utils } from '@mikro-orm/core';
 import { MongoConnection } from './MongoConnection';
@@ -165,7 +165,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return this.platform;
   }
 
-  private renameFields<T>(entityName: string, data: T, where = false): T {
+  private renameFields<T extends object>(entityName: string, data: T, where = false): T {
     // copy to new variable to prevent changing the T type or doing as unknown casts
     const copiedData: Dictionary = Object.assign({}, data); // copy first
     Utils.renameKey(copiedData, 'id', '_id');
@@ -202,11 +202,11 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       throw new Error('Full text search is only supported on the top level of the query object.');
     }
 
-    Object.keys(copiedData).forEach(k => {
+    Utils.keys(copiedData).forEach(k => {
       if (Utils.isGroupOperator(k)) {
         /* istanbul ignore else */
         if (Array.isArray(copiedData[k])) {
-          copiedData[k] = copiedData[k].map((v: any) => this.renameFields(entityName, v));
+          copiedData[k] = (copiedData[k] as any[]).map(v => this.renameFields(entityName, v));
         } else {
           copiedData[k] = this.renameFields(entityName, copiedData[k]);
         }
@@ -214,7 +214,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
         return;
       }
 
-      if (meta?.properties[k]) {
+      if (meta?.properties[k as EntityKey<T>]) {
         const prop = meta.properties[k];
         let isObjectId = false;
 
@@ -291,7 +291,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
           continue;
         }
 
-        let prop = meta.properties[field as keyof T & string];
+        let prop = meta.properties[field as EntityKey<T>];
 
         /* istanbul ignore else */
         if (prop) {
