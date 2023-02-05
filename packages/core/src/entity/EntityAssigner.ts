@@ -6,8 +6,8 @@ import type {
   Dictionary,
   EntityData,
   EntityDTO,
-  EntityMetadata,
-  EntityProperty, EntityValue,
+  EntityProperty,
+  EntityValue,
   Primary,
   RequiredEntityData,
 } from '../typings';

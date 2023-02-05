@@ -552,7 +552,7 @@ describe('check typings', () => {
       parent: Ref<Parent>;
     }
 
-    const parent = {} as Ref<Parent>;
+    const parent = { load: jest.fn() as any } as Ref<Parent>;
 
     // @ts-expect-error Loaded<Parent, never> is not assignable
     const populated01: Loaded<Parent, 'children'> = {} as Loaded<Ref<Parent>>;
@@ -593,6 +593,59 @@ describe('check typings', () => {
     q = { getBar: () => '' };
     // @ts-expect-error
     q = { [OptionalProps]: 'bar' };
+  });
+
+  test('GH #3277', async () => {
+    interface Owner {
+      id: number;
+      vehicles: Collection<Vehicle>;
+      vehicle: Ref<Vehicle>;
+    }
+
+    interface Manufacturer {
+      id: number;
+    }
+
+    interface Type {
+      id: number;
+      owner: Ref<Owner>;
+    }
+
+    interface Vehicle {
+      id: number;
+      owner: Ref<Owner>;
+      manufacturer: Ref<Manufacturer>;
+      type: Ref<Type>;
+    }
+
+    function preloaded1(owner: Loaded<Owner, 'vehicles'>) {
+      // const a: number = owner.vehicles.$[0].type.$.owner.id;
+    }
+
+    function preloaded2(owner: Loaded<Owner, 'vehicles.type'>) {
+      // const a: number = owner.vehicles.$[0].type.$.owner.id;
+    }
+
+    const owner1 = {} as Loaded<Owner, 'vehicles.manufacturer' | 'vehicles.type'>;
+    const owner2 = {} as Loaded<Owner, 'vehicles.type.owner.vehicles'>;
+    const owner3 = {} as Loaded<Owner, 'vehicle'>;
+    const owner4 = {} as Loaded<Owner>;
+
+    preloaded1(owner1);
+    preloaded1(owner2);
+    // @ts-expect-error
+    preloaded1(owner3);
+    // @ts-expect-error
+    preloaded1(owner4);
+    preloaded2(owner1);
+    preloaded2(owner2);
+    // @ts-expect-error
+    preloaded2(owner3);
+    // @ts-expect-error
+    preloaded2(owner4);
+
+    // const foo = await owner1.vehicles.$.loadItems({ populate: ['owner'] });
+    // const v1 = foo[0].owner.$.vehicles;
   });
 
 });

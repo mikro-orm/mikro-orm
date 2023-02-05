@@ -56,12 +56,12 @@ export class Collection<T extends object, O extends object = object> extends Arr
   /**
    * Initializes the collection and returns the items
    */
-  async loadItems<P extends string = never>(options?: InitOptions<T, P>): Promise<Loaded<T, P>[]> {
+  async loadItems<TT extends T, P extends string = never>(options?: InitOptions<TT, P>): Promise<Loaded<TT, P>[]> {
     if (!this.isInitialized(true)) {
-      await this.init(options);
+      await this.init(options as unknown as InitOptions<T, P>);
     }
 
-    return super.getItems() as Loaded<T, P>[];
+    return super.getItems() as Loaded<TT, P>[];
   }
 
   /**
@@ -94,11 +94,11 @@ export class Collection<T extends object, O extends object = object> extends Arr
     return count;
   }
 
-  async matching<P extends string = never>(options: MatchingOptions<T, P>): Promise<Loaded<T, P>[]> {
+  async matching<TT extends T, P extends string = never>(options: MatchingOptions<T, P>): Promise<Loaded<TT, P>[]> {
     const em = this.getEntityManager();
     const { where, ctx, ...opts } = options;
     opts.orderBy = this.createOrderBy(opts.orderBy);
-    let items: Loaded<T, P>[];
+    let items: Loaded<TT, P>[];
 
     if (this.property.kind === ReferenceKind.MANY_TO_MANY && em.getPlatform().usesPivotTable()) {
       const cond = await em.applyFilters(this.property.type, where, options.filters ?? {}, 'read');
@@ -128,15 +128,15 @@ export class Collection<T extends object, O extends object = object> extends Arr
     return super.getItems();
   }
 
-  toJSON(): EntityDTO<T>[] {
+  toJSON<TT extends T>(): EntityDTO<TT>[] {
     if (!this.isInitialized()) {
       return [];
     }
 
-    return super.toJSON();
+    return super.toJSON() as unknown as EntityDTO<TT>[];
   }
 
-  add(entity: T | Reference<T> | (T | Reference<T>)[], ...entities: (T | Reference<T>)[]): void {
+  add<TT extends T>(entity: TT | Reference<TT> | (TT | Reference<TT>)[], ...entities: (TT | Reference<TT>)[]): void {
     entities = Utils.asArray(entity).concat(entities);
     const unwrapped = entities.map(i => Reference.unwrapReference(i)) as T[];
     unwrapped.forEach(entity => this.validateItemType(entity));
@@ -144,13 +144,13 @@ export class Collection<T extends object, O extends object = object> extends Arr
     this.cancelOrphanRemoval(unwrapped);
   }
 
-  set(items: (T | Reference<T>)[]): void {
+  set<TT extends T>(items: (TT | Reference<TT>)[]): void {
     if (!this.initialized) {
       this.initialized = true;
       this.snapshot = undefined;
     }
 
-    super.set(items);
+    super.set(items as T[]);
   }
 
   /**
@@ -165,10 +165,10 @@ export class Collection<T extends object, O extends object = object> extends Arr
   /**
    * @inheritDoc
    */
-  remove(entity: T | Reference<T> | (T | Reference<T>)[] | ((item: T) => boolean), ...entities: (T | Reference<T>)[]): void {
+  remove<TT extends T>(entity: TT | Reference<TT> | (TT | Reference<TT>)[] | ((item: TT) => boolean), ...entities: (TT | Reference<TT>)[]): void {
     if (entity instanceof Function) {
       for (const item of this.items) {
-        if (entity(item)) {
+        if (entity(item as TT)) {
           this.remove(item);
         }
       }
@@ -196,12 +196,12 @@ export class Collection<T extends object, O extends object = object> extends Arr
     super.removeAll();
   }
 
-  contains(item: T | Reference<T>, check = true): boolean {
+  contains<TT extends T>(item: TT | Reference<TT>, check = true): boolean {
     if (check) {
       this.checkInitialized();
     }
 
-    return super.contains(item);
+    return super.contains(item as T);
   }
 
   count(): number {
@@ -218,14 +218,14 @@ export class Collection<T extends object, O extends object = object> extends Arr
     this._lazyInitialized = false;
   }
 
-  async init<P extends string = never>(options: InitOptions<T, P> = {}): Promise<LoadedCollection<Loaded<T, P>>> {
+  async init<TT extends T, P extends string = never>(options: InitOptions<TT, P> = {}): Promise<LoadedCollection<Loaded<TT, P>>> {
     if (this.dirty) {
       const items = [...this.items];
       this.dirty = false;
       await this.init(options);
       items.forEach(i => this.add(i));
 
-      return this as unknown as LoadedCollection<Loaded<T, P>>;
+      return this as unknown as LoadedCollection<Loaded<TT, P>>;
     }
 
     const em = this.getEntityManager();
@@ -236,7 +236,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
       this.hydrate(map[helper(this.owner).getSerializedPrimaryKey()].map((item: EntityData<T>) => em.merge(this.property.type, item, { convertCustomTypes: true })), true);
       this._lazyInitialized = true;
 
-      return this as unknown as LoadedCollection<Loaded<T, P>>;
+      return this as unknown as LoadedCollection<Loaded<TT, P>>;
     }
 
     // do not make db call if we know we will get no results
@@ -245,16 +245,16 @@ export class Collection<T extends object, O extends object = object> extends Arr
       this.dirty = false;
       this._lazyInitialized = true;
 
-      return this as unknown as LoadedCollection<Loaded<T, P>>;
+      return this as unknown as LoadedCollection<Loaded<TT, P>>;
     }
 
-    const where = this.createCondition(options.where);
+    const where = this.createCondition(options.where as FilterQuery<T>);
     const order = [...this.items]; // copy order of references
     const customOrder = !!options.orderBy;
     const items: T[] = await em.find(this.property.type, where, {
       populate: options.populate,
       lockMode: options.lockMode,
-      orderBy: this.createOrderBy(options.orderBy),
+      orderBy: this.createOrderBy(options.orderBy as QueryOrderMap<T>),
       connectionType: options.connectionType,
       schema: this.property.targetMeta!.schema === '*'
         ? helper(this.owner).__schema
@@ -276,7 +276,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
     this.dirty = false;
     this._lazyInitialized = true;
 
-    return this as unknown as LoadedCollection<Loaded<T, P>>;
+    return this as unknown as LoadedCollection<Loaded<TT, P>>;
   }
 
   /**

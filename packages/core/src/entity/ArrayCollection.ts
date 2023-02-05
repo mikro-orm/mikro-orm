@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import type { Dictionary, EntityDTO, EntityProperty, EntityValue, IPrimaryKey, Primary } from '../typings';
+import type { Dictionary, EntityDTO, EntityKey, EntityProperty, EntityValue, IPrimaryKey, Primary } from '../typings';
 import { Reference } from './Reference';
 import { helper, wrap } from './wrap';
 import { ReferenceKind } from '../enums';
@@ -31,7 +31,7 @@ export class ArrayCollection<T extends object, O extends object> {
     return [...this.items];
   }
 
-  toArray(): EntityDTO<T>[] {
+  toArray<TT extends T>(): EntityDTO<TT>[] {
     if (this.items.size === 0) {
       return [];
     }
@@ -39,7 +39,7 @@ export class ArrayCollection<T extends object, O extends object> {
     const meta = this.property.targetMeta!;
     const args = [...meta.toJsonParams.map(() => undefined)];
 
-    return this.getItems().map(item => wrap(item).toJSON(...args));
+    return this.getItems().map(item => wrap(item as TT).toJSON(...args));
   }
 
   toJSON(): EntityDTO<T>[] {
@@ -196,7 +196,7 @@ export class ArrayCollection<T extends object, O extends object> {
   /**
    * @internal
    */
-  get property(): EntityProperty<T> {
+  get property(): EntityProperty { // cannot be typed to `EntityProperty<T>` as it causes issues in assignability of `Loaded` type
     if (!this._property) {
       const meta = helper(this.owner).__meta;
 
@@ -229,14 +229,15 @@ export class ArrayCollection<T extends object, O extends object> {
   }
 
   protected propagateToOwningSide(item: T, method: 'add' | 'remove' | 'takeSnapshot'): void {
-    const collection = item[this.property.mappedBy as keyof T] as unknown as ArrayCollection<O, T>;
+    const mappedBy = this.property.mappedBy as EntityKey<T>;
+    const collection = item[mappedBy as keyof T] as unknown as ArrayCollection<O, T>;
 
     if (this.property.kind === ReferenceKind.MANY_TO_MANY) {
       if (this.shouldPropagateToCollection(collection, method)) {
         collection[method as 'add'](this.owner);
       }
     } else if (this.property.kind === ReferenceKind.ONE_TO_MANY && method !== 'takeSnapshot') {
-      const prop2 = this.property.targetMeta!.properties[this.property.mappedBy];
+      const prop2 = this.property.targetMeta!.properties[mappedBy];
       const owner = prop2.mapToPk ? helper(this.owner).getPrimaryKey() : this.owner;
       const value = method === 'add' ? owner : null;
 
@@ -246,8 +247,8 @@ export class ArrayCollection<T extends object, O extends object> {
       }
 
       // skip if already propagated
-      if (Reference.unwrapReference(item[this.property.mappedBy] as object) !== value) {
-        item[this.property.mappedBy] = value as EntityValue<T>;
+      if (Reference.unwrapReference(item[mappedBy] as object) !== value) {
+        item[mappedBy] = value as EntityValue<T>;
       }
     }
   }
