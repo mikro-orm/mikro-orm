@@ -131,11 +131,11 @@ const options = {
   'mongo': { dbName: 'mikro_orm_upsert' },
 };
 
-describe.each(Object.keys(options))('em.upsert [%s]',  type => {
+describe.each(Utils.keys(options))('em.upsert [%s]',  type => {
   let orm: MikroORM;
 
   beforeAll(async () => {
-    orm = await MikroORM.init({
+    orm = await MikroORM.init<IDatabaseDriver>({
       entities: [Author, Book, FooBar, FooBarWithEmbeddable],
       driver: PLATFORMS[type],
       loggerFactory: options => new SimpleLogger(options),

@@ -67,7 +67,7 @@ export class MetadataStorage {
       return undefined;
     }
 
-    const type = meta.root.discriminatorMap![value];
+    const type = meta.root.discriminatorMap![value as string];
 
     return this.metadata[type];
   }

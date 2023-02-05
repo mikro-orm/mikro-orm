@@ -59,11 +59,11 @@ export class Book extends BaseEntity3 {
     this.author = author!;
   }
 
-  toJSON(strict = true, strip = ['metaObject', 'metaArray', 'metaArrayOfStrings'], ...args: any[]): EntityDTO<this> {
-    const o = wrap(this).toObject(...args);
+  toJSON<T extends this = this>(strict = true, strip: string[] = ['metaObject', 'metaArray', 'metaArrayOfStrings'], ...args: any[]): EntityDTO<T> {
+    const o = wrap(this as T).toObject(...args);
 
     if (strict) {
-      strip.forEach(k => delete o[k]);
+      strip.forEach(k => delete o[k as keyof typeof o]);
     }
 
     return o;

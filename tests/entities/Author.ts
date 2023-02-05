@@ -127,12 +127,12 @@ export class Author extends BaseEntity<Author, 'termsAccepted' | 'code2' | 'vers
     return EntityAssigner.assign(this, data);
   }
 
-  toJSON(strict = true, strip = ['id', 'email'], ...args: any[]): EntityDTO<this> {
+  toJSON(strict = true, strip: (keyof this)[] = ['id', 'email'], ...args: any[]): EntityDTO<this> {
     const o = this.toObject(...args);
     (o as Dictionary).fooBar = 123;
 
     if (strict) {
-      strip.forEach(k => delete o[k]);
+      strip.forEach(k => delete o[k as keyof typeof o]);
     }
 
     return o;

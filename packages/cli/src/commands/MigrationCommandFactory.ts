@@ -125,7 +125,7 @@ export class MigrationCommandFactory {
     });
   }
 
-  private static async handleUpDownCommand(args: ArgumentsCamelCase<Opts>, migrator: IMigrator, method: MigratorMethod) {
+  private static async handleUpDownCommand(args: ArgumentsCamelCase<Opts>, migrator: IMigrator, method: 'up' | 'down') {
     const opts = MigrationCommandFactory.getUpDownOptions(args);
     await migrator[method](opts as string[]);
     const message = this.getUpDownSuccessMessage(method as 'up' | 'down', opts);
@@ -212,7 +212,7 @@ export class MigrationCommandFactory {
 
     const ret: MigrateOptions = {};
 
-    ['from', 'to'].filter(k => flags[k]).forEach(k => ret[k] = flags[k] === '0' ? 0 : flags[k]);
+    (['from', 'to'] as const).filter(k => flags[k]).forEach(k => ret[k] = flags[k] === '0' ? 0 : flags[k]);
 
     return ret;
   }

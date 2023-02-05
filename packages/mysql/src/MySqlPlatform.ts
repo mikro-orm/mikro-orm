@@ -1,7 +1,7 @@
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { MySqlSchemaHelper } from './MySqlSchemaHelper';
 import { MySqlExceptionConverter } from './MySqlExceptionConverter';
-import { Utils, type SimpleColumnMeta, type Type, type TransformContext, type expr } from '@mikro-orm/core';
+import { Utils, type SimpleColumnMeta, type Dictionary, type Type, type TransformContext } from '@mikro-orm/core';
 
 export class MySqlPlatform extends AbstractSqlPlatform {
 
@@ -33,7 +33,7 @@ export class MySqlPlatform extends AbstractSqlPlatform {
     const map = {
       int: 'integer',
       timestamp: 'datetime',
-    };
+    } as Dictionary;
 
     return super.getDefaultMappedType(map[normalizedType] ?? type);
   }
