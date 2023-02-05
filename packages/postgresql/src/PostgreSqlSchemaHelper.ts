@@ -15,11 +15,11 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     'null::timestamp without time zone': ['null'],
   };
 
-  getSchemaBeginning(charset: string): string {
+  override getSchemaBeginning(charset: string): string {
     return `set names '${charset}';\n${this.disableForeignKeysSQL()}\n\n`;
   }
 
-  getListTablesSQL(): string {
+  override getListTablesSQL(): string {
     return `select table_name, table_schema as schema_name, `
       + `(select pg_catalog.obj_description(c.oid) from pg_catalog.pg_class c
           where c.oid = (select ('"' || table_schema || '"."' || table_name || '"')::regclass::oid) and c.relname = table_name) as table_comment `
@@ -29,7 +29,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       + `order by table_name`;
   }
 
-  async getNamespaces(connection: AbstractSqlConnection): Promise<string[]> {
+  override async getNamespaces(connection: AbstractSqlConnection): Promise<string[]> {
     const sql = `select schema_name from information_schema.schemata `
       + `where ${this.getIgnoredNamespacesConditionSQL()} `
       + `order by schema_name`;
@@ -56,7 +56,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return `${ignoredPrefixes} and "${column}" not in (${ignored})`;
   }
 
-  async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[]): Promise<void> {
+  override async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[]): Promise<void> {
     if (tables.length === 0) {
       return;
     }
@@ -196,7 +196,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  async getEnumDefinitions(connection: AbstractSqlConnection, checks: CheckDef[], tableName?: string, schemaName?: string): Promise<Dictionary<string[]>> {
+  override async getEnumDefinitions(connection: AbstractSqlConnection, checks: CheckDef[], tableName?: string, schemaName?: string): Promise<Dictionary<string[]>> {
     const found: number[] = [];
     const enums = checks.reduce((o, item, index) => {
       // check constraints are defined as one of:
@@ -235,7 +235,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return enums;
   }
 
-  createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>) {
+  override createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>) {
     const pk = fromTable.getPrimaryKey();
     const primaryKey = column.primary && !changedProperties && !this.hasNonDefaultPrimaryKeyName(fromTable);
 
@@ -260,7 +260,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return table.specificType(column.name, column.type);
   }
 
-  configureColumn(column: Column, col: Knex.ColumnBuilder, knex: Knex, changedProperties?: Set<string>) {
+  override configureColumn(column: Column, col: Knex.ColumnBuilder, knex: Knex, changedProperties?: Set<string>) {
     const guard = (key: string) => !changedProperties || changedProperties.has(key);
 
     Utils.runIfNotEmpty(() => col.nullable(), column.nullable && guard('nullable'));
@@ -272,7 +272,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return col;
   }
 
-  getPreAlterTable(tableDiff: TableDifference, safe: boolean): string {
+  override getPreAlterTable(tableDiff: TableDifference, safe: boolean): string {
     const ret: string[] = [];
 
     const parts = tableDiff.name.split('.');
@@ -300,7 +300,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return ret.join(';\n');
   }
 
-  getAlterColumnAutoincrement(tableName: string, column: Column, schemaName?: string): string {
+  override getAlterColumnAutoincrement(tableName: string, column: Column, schemaName?: string): string {
     const ret: string[] = [];
     const quoted = (val: string) => this.platform.quoteIdentifier(val);
     const name = (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName;
@@ -318,13 +318,13 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return ret.join(';\n');
   }
 
-  getChangeColumnCommentSQL(tableName: string, to: Column, schemaName?: string): string {
+  override getChangeColumnCommentSQL(tableName: string, to: Column, schemaName?: string): string {
     const name = this.platform.quoteIdentifier((schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName);
     const value = to.comment ? this.platform.quoteValue(to.comment) : 'null';
     return `comment on column ${name}."${to.name}" is ${value}`;
   }
 
-  normalizeDefaultValue(defaultValue: string, length: number) {
+  override normalizeDefaultValue(defaultValue: string, length: number) {
     if (!defaultValue) {
       return defaultValue;
     }
@@ -342,27 +342,27 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     return super.normalizeDefaultValue(defaultValue, length, PostgreSqlSchemaHelper.DEFAULT_VALUES);
   }
 
-  getDatabaseExistsSQL(name: string): string {
+  override getDatabaseExistsSQL(name: string): string {
     return `select 1 from pg_database where datname = '${name}'`;
   }
 
-  getDatabaseNotExistsError(dbName: string): string {
+  override getDatabaseNotExistsError(dbName: string): string {
     return `database "${dbName}" does not exist`;
   }
 
-  getManagementDbName(): string {
+  override getManagementDbName(): string {
     return this.platform.getConfig().get('schemaGenerator', {} as Dictionary).managementDbName ?? 'postgres';
   }
 
-  disableForeignKeysSQL(): string {
+  override disableForeignKeysSQL(): string {
     return `set session_replication_role = 'replica';`;
   }
 
-  enableForeignKeysSQL(): string {
+  override enableForeignKeysSQL(): string {
     return `set session_replication_role = 'origin';`;
   }
 
-  getRenameIndexSQL(tableName: string, index: IndexDef, oldIndexName: string): string {
+  override getRenameIndexSQL(tableName: string, index: IndexDef, oldIndexName: string): string {
     oldIndexName = this.platform.quoteIdentifier(oldIndexName);
     const keyName = this.platform.quoteIdentifier(index.keyName);
 
@@ -394,19 +394,19 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   }
 
   /* istanbul ignore next */
-  async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName: string, columns?: Column[]): Promise<CheckDef[]> {
+  override async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName: string, columns?: Column[]): Promise<CheckDef[]> {
     const res = await this.getAllChecks(connection, [{ table_name: tableName, schema_name: schemaName }]);
     return res[tableName];
   }
 
   /* istanbul ignore next */
-  async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Column[]> {
+  override async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Column[]> {
     const res = await this.getAllColumns(connection, [{ table_name: tableName, schema_name: schemaName }]);
     return res[tableName];
   }
 
   /* istanbul ignore next */
-  async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<IndexDef[]> {
+  override async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<IndexDef[]> {
     const res = await this.getAllIndexes(connection, [{ table_name: tableName, schema_name: schemaName }]);
     return res[tableName];
   }

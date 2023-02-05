@@ -2,15 +2,15 @@ import { Entity, MikroORM, PrimaryKey, Property, Type } from '@mikro-orm/sqlite'
 
 class MyType extends Type<string, number> {
 
-  convertToDatabaseValue(jsValue: string): number {
+  override convertToDatabaseValue(jsValue: string): number {
     return Number.parseInt(jsValue);
   }
 
-  convertToJSValue(dbValue: number): string {
+  override convertToJSValue(dbValue: number): string {
     return dbValue.toString();
   }
 
-  getColumnType() {
+  override getColumnType() {
     return 'integer';
   }
 

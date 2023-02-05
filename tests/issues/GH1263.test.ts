@@ -3,15 +3,15 @@ import { parse, stringify, v4 as uuid } from 'uuid';
 
 class UUID extends Type<string, Buffer> {
 
-  convertToJSValue(value: Buffer) {
+  override convertToJSValue(value: Buffer) {
     return stringify(value);
   }
 
-  convertToDatabaseValue(value: string) {
+  override convertToDatabaseValue(value: string) {
     return Buffer.from(parse(value));
   }
 
-  getColumnType() {
+  override getColumnType() {
     return 'binary(16)';
   }
 
