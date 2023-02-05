@@ -9,7 +9,7 @@ import { QueryType } from './enums';
  */
 export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
 
-  process(qb: IQueryBuilder<T>, alias?: string): any {
+  override process(qb: IQueryBuilder<T>, alias?: string): any {
     const nestedAlias = qb.getAliasForJoinPath(this.getPath());
     const ownerAlias = alias || qb.alias;
 
@@ -46,7 +46,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     }, {} as Dictionary);
   }
 
-  willAutoJoin(qb: IQueryBuilder<T>, alias?: string) {
+  override willAutoJoin(qb: IQueryBuilder<T>, alias?: string) {
     const nestedAlias = qb.getAliasForJoinPath(this.getPath());
     const ownerAlias = alias || qb.alias;
 
@@ -64,7 +64,7 @@ export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
     });
   }
 
-  shouldInline(payload: any): boolean {
+  override shouldInline(payload: any): boolean {
     const customExpression = ObjectCriteriaNode.isCustomExpression(this.key!);
     const scalar = Utils.isPrimaryKey(payload) || payload as unknown instanceof RegExp || payload as unknown instanceof Date || customExpression;
     const operator = Utils.isObject(payload) && Object.keys(payload).every(k => Utils.isOperator(k, false));

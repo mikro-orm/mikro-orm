@@ -21,7 +21,7 @@ export class ObjectHydrator extends Hydrator {
   /**
    * @inheritDoc
    */
-  hydrate<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'returning' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string): void {
+  override hydrate<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, type: 'full' | 'returning' | 'reference', newEntity = false, convertCustomTypes = false, schema?: string): void {
     const hydrate = this.getEntityHydrator(meta, type);
     const running = this.running;
     this.running = true;
@@ -32,7 +32,7 @@ export class ObjectHydrator extends Hydrator {
   /**
    * @inheritDoc
    */
-  hydrateReference<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes = false, schema?: string): void {
+  override hydrateReference<T extends object>(entity: T, meta: EntityMetadata<T>, data: EntityData<T>, factory: EntityFactory, convertCustomTypes = false, schema?: string): void {
     const hydrate = this.getEntityHydrator(meta, 'reference');
     const running = this.running;
     this.running = true;
