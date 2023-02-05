@@ -1,4 +1,4 @@
-import type { Dictionary } from '@mikro-orm/core';
+import type { Dictionary, EntityKey } from '@mikro-orm/core';
 import { ReferenceKind, Utils } from '@mikro-orm/core';
 import { CriteriaNode } from './CriteriaNode';
 import type { IQueryBuilder } from '../typings';
@@ -7,9 +7,9 @@ import { QueryType } from './enums';
 /**
  * @internal
  */
-export class ObjectCriteriaNode extends CriteriaNode {
+export class ObjectCriteriaNode<T extends object> extends CriteriaNode<T> {
 
-  process<T>(qb: IQueryBuilder<T>, alias?: string): any {
+  process(qb: IQueryBuilder<T>, alias?: string): any {
     const nestedAlias = qb.getAliasForJoinPath(this.getPath());
     const ownerAlias = alias || qb.alias;
 
@@ -22,7 +22,7 @@ export class ObjectCriteriaNode extends CriteriaNode {
     }
 
     return Object.keys(this.payload).reduce((o, field) => {
-      const childNode = this.payload[field] as CriteriaNode;
+      const childNode = this.payload[field] as CriteriaNode<T>;
       const payload = childNode.process(qb, this.prop ? alias : ownerAlias);
       const operator = Utils.isOperator(field);
       const customExpression = ObjectCriteriaNode.isCustomExpression(field);
@@ -33,7 +33,7 @@ export class ObjectCriteriaNode extends CriteriaNode {
 
       if (childNode.shouldInline(payload)) {
         const childAlias = qb.getAliasForJoinPath(childNode.getPath());
-        this.inlineChildPayload(o, payload, field, alias, childAlias);
+        this.inlineChildPayload(o, payload, field as EntityKey, alias, childAlias);
       } else if (childNode.shouldRename(payload)) {
         o[childNode.renameFieldToPK(qb)] = payload;
       } else if (primaryKey || virtual || operator || customExpression || field.includes('.') || ![QueryType.SELECT, QueryType.COUNT].includes(qb.type ?? QueryType.SELECT)) {
@@ -43,10 +43,10 @@ export class ObjectCriteriaNode extends CriteriaNode {
       }
 
       return o;
-    }, {});
+    }, {} as Dictionary);
   }
 
-  willAutoJoin<T>(qb: IQueryBuilder<T>, alias?: string) {
+  willAutoJoin(qb: IQueryBuilder<T>, alias?: string) {
     const nestedAlias = qb.getAliasForJoinPath(this.getPath());
     const ownerAlias = alias || qb.alias;
 
@@ -59,7 +59,7 @@ export class ObjectCriteriaNode extends CriteriaNode {
     }
 
     return Object.keys(this.payload).some(field => {
-      const childNode = this.payload[field] as CriteriaNode;
+      const childNode = this.payload[field] as CriteriaNode<T>;
       return childNode.willAutoJoin(qb, this.prop ? alias : ownerAlias);
     });
   }
@@ -72,8 +72,8 @@ export class ObjectCriteriaNode extends CriteriaNode {
     return !!this.prop && this.prop.kind !== ReferenceKind.SCALAR && !scalar && !operator;
   }
 
-  private inlineChildPayload<T>(o: Dictionary, payload: Dictionary, field: string, alias?: string, childAlias?: string) {
-    const prop = this.metadata.find(this.entityName)!.properties[field];
+  private inlineChildPayload<T>(o: Dictionary, payload: Dictionary, field: EntityKey<T>, alias?: string, childAlias?: string) {
+    const prop = this.metadata.find<T>(this.entityName)!.properties[field];
 
     for (const k of Object.keys(payload)) {
       if (Utils.isOperator(k, false)) {
@@ -81,7 +81,7 @@ export class ObjectCriteriaNode extends CriteriaNode {
         delete payload[k];
         o[`${alias}.${field}`] = { [k]: tmp, ...(o[`${alias}.${field}`] || {}) };
       } else if (this.isPrefixed(k) || Utils.isOperator(k) || !childAlias) {
-        const idx = prop.referencedPKs.indexOf(k);
+        const idx = prop.referencedPKs.indexOf(k as EntityKey);
         const key = idx !== -1 && !childAlias ? prop.joinColumns[idx] : k;
 
         if (key in o) {
@@ -96,7 +96,7 @@ export class ObjectCriteriaNode extends CriteriaNode {
                 : `${childAlias}.${childKey}`;
               o[key] = child[childKey];
               return o;
-            }, {}));
+            }, {} as Dictionary));
         } else {
           o[key] = payload[k];
         }
