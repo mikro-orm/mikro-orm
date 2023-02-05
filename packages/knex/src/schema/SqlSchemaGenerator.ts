@@ -452,7 +452,8 @@ export class SqlSchemaGenerator extends AbstractSchemaGenerator<AbstractSqlDrive
 
     if (this.platform.supportsMultipleStatements()) {
       const query = lines.join('\n');
-      return void await this.driver.execute(query);
+      await this.driver.execute(query);
+      return;
     }
 
     await Utils.runSerial(lines, line => this.driver.execute(line));
