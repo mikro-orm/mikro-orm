@@ -15,9 +15,6 @@ export class Book extends BaseEntity3 {
 
   [OptionalProps]?: 'createdAt';
 
-  @PrimaryKey()
-  _id!: ObjectId;
-
   @Property()
   createdAt: Date = new Date();
 
