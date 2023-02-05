@@ -86,12 +86,13 @@ export class EntityHelper {
         const isReference = [ReferenceKind.ONE_TO_ONE, ReferenceKind.MANY_TO_ONE].includes(prop.kind) && (prop.inversedBy || prop.mappedBy) && !prop.mapToPk;
 
         if (isReference) {
-          return Object.defineProperty(meta.prototype, prop.name, {
+          Object.defineProperty(meta.prototype, prop.name, {
             set(val: AnyEntity) {
               EntityHelper.defineReferenceProperty(meta, prop, this, hydrator);
               this[prop.name] = val;
             },
           });
+          return;
         }
 
         if (prop.inherited || prop.primary || prop.persist === false || prop.trackChanges === false || prop.embedded || isCollection) {
