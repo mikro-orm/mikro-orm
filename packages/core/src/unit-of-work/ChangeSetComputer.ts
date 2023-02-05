@@ -1,6 +1,6 @@
 import { Utils, type Configuration } from '../utils';
 import type { MetadataStorage } from '../metadata';
-import type { AnyEntity, EntityData, EntityProperty } from '../typings';
+import type { AnyEntity, EntityData, EntityKey, EntityProperty, EntityValue } from '../typings';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { helper, type Collection, type EntityValidator } from '../entity';
 import type { Platform } from '../platforms';
@@ -25,7 +25,7 @@ export class ChangeSetComputer {
 
     const wrapped = helper(entity);
     const type = wrapped.__originalEntityData ? ChangeSetType.UPDATE : ChangeSetType.CREATE;
-    const map = new Map<T, [string, unknown][]>();
+    const map = new Map<T, [EntityKey<T>, unknown][]>();
 
     // Execute `onCreate` and `onUpdate` on properties recursively, saves `onUpdate` results
     // to the `map` as we want to apply those only if something else changed.
@@ -65,7 +65,7 @@ export class ChangeSetComputer {
     if (map.size > 0) {
       for (const [entity, pairs] of map) {
         for (const [prop, value] of pairs) {
-          entity[prop] = value;
+          entity[prop] = value as EntityValue<T>;
         }
       }
 
@@ -93,7 +93,7 @@ export class ChangeSetComputer {
 
     if (prop.kind === ReferenceKind.EMBEDDED && entity[prop.name]) {
       for (const embeddedProp of prop.targetMeta!.hydrateProps) {
-        this.processPropertyInitializers(entity[prop.name], embeddedProp, type, map, nested || prop.object);
+        this.processPropertyInitializers(entity[prop.name] as T, embeddedProp, type, map, nested || prop.object);
       }
     }
   }
@@ -108,7 +108,7 @@ export class ChangeSetComputer {
       const diff = comparator(originalEntityData, data);
 
       if (ignoreUndefined) {
-        Object.keys(diff)
+        Utils.keys(diff)
           .filter(k => diff[k] === undefined)
           .forEach(k => delete diff[k]);
       }

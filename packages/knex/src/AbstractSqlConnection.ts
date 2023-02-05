@@ -69,7 +69,7 @@ export abstract class AbstractSqlConnection extends Connection {
     if (!options.ctx) {
       await options.eventBroadcaster?.dispatchEvent(EventType.afterTransactionStart, trx);
     } else {
-      trx[parentTransactionSymbol] = options.ctx;
+      trx[parentTransactionSymbol as unknown as keyof Knex.Transaction] = options.ctx;
     }
 
     return trx;

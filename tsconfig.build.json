@@ -6,7 +6,6 @@
     "declaration": true,
     "sourceMap": false,
     "strict": true,
-    "suppressImplicitAnyIndexErrors": true,
     "esModuleInterop": true,
     "preserveConstEnums": true,
     "ignoreDeprecations": "5.0"
