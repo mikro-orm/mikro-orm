@@ -19,7 +19,7 @@ export class ReflectMetadataProvider extends MetadataProvider {
     // Instead of requiring the type everywhere, we default to string, which maintains the behaviour,
     // as we were mapping it to UnknownType which is a string. This is to prevent defaulting to JSON
     // column type, which can be often hard to revert and cause hard to understand issues with PKs.
-    if (prop.reference === ReferenceType.SCALAR && type === Object) {
+    if (prop.kind === ReferenceKind.SCALAR && type === Object) {
       type = String;
     }
 
