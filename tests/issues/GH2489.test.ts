@@ -6,7 +6,7 @@ export class IntegerArrayType extends Type<number[], string> {
     super();
   }
 
-  convertToDatabaseValue(value: number[]): string {
+  override convertToDatabaseValue(value: number[]): string {
     if (this.length && value.length !== this.length) {
       throw new Error('...');
     }
@@ -14,7 +14,7 @@ export class IntegerArrayType extends Type<number[], string> {
     return `{${value.join(',')}}`;
   }
 
-  convertToJSValue(value: number[]): number[] {
+  override convertToJSValue(value: number[]): number[] {
     if (!Array.isArray(value)) {
       throw new Error('...');
     }
@@ -26,11 +26,11 @@ export class IntegerArrayType extends Type<number[], string> {
     return value;
   }
 
-  compareAsType(): string {
+  override compareAsType(): string {
     return 'array';
   }
 
-  getColumnType(): string {
+  override getColumnType(): string {
     return 'int4[]';
   }
 

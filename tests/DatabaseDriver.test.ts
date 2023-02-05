@@ -27,10 +27,10 @@ class Platform1 extends Platform { }
 
 class Driver extends DatabaseDriver<Connection> implements IDatabaseDriver {
 
-  protected readonly platform = new Platform1();
+  protected override readonly platform = new Platform1();
 
-  constructor(readonly config: Configuration,
-              protected readonly dependencies: string[]) {
+  constructor(override readonly config: Configuration,
+              dependencies: string[]) {
     super(config, dependencies);
   }
 
