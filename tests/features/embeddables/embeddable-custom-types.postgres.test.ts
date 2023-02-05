@@ -5,15 +5,15 @@ import { mockLogger } from '../../helpers';
 
 export class AlwaysConvertsToAbc extends Type<string, string> {
 
-  convertToDatabaseValue(value: string, platform: Platform): string {
+  override convertToDatabaseValue(value: string, platform: Platform): string {
     return 'abc';
   }
 
-  convertToJSValue(value: string, platform: Platform): string {
+  override convertToJSValue(value: string, platform: Platform): string {
     return value;
   }
 
-  getColumnType(): string {
+  override getColumnType(): string {
     return 'varchar';
   }
 
@@ -69,15 +69,15 @@ class Parent {
 
 export class Numeric extends Type<number, string> {
 
-  convertToDatabaseValue(value: number): string {
+  override convertToDatabaseValue(value: number): string {
     return value.toString();
   }
 
-  convertToJSValue(value: string): number {
+  override convertToJSValue(value: string): number {
     return Number(value);
   }
 
-  getColumnType(prop: EntityProperty, platform: Platform): string {
+  override getColumnType(prop: EntityProperty, platform: Platform): string {
     return 'numeric(14,2)';
   }
 
