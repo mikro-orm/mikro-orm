@@ -1,4 +1,4 @@
-import { Cascade, Collection, Entity, EntityData, ManyToOne, OneToMany, PrimaryKey, PrimaryKeyType, Property, Ref, SimpleLogger } from '@mikro-orm/core';
+import { Cascade, Collection, Entity, EntityData, ManyToOne, OneToMany, PrimaryKey, PrimaryKeyProp, Property, Ref, SimpleLogger } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/mysql';
 import { mockLogger } from '../helpers';
 
@@ -31,7 +31,7 @@ class Article {
   })
   category!: Ref<Category>;
 
-  [PrimaryKeyType]?: [string, string];
+  [PrimaryKeyProp]?: ['id', 'category'];
 
   @OneToMany(() => ArticleAttribute, attr => attr.article, {
     cascade: [Cascade.ALL],
@@ -59,9 +59,9 @@ class ArticleAttribute {
     primary: true,
     ref: true,
   })
-  article!: Ref<Article, 'id' | 'category'>;
+  article!: Ref<Article>;
 
-  [PrimaryKeyType]?: [string, [string, string]];
+  [PrimaryKeyProp]?: [string, [string, string]];
 
   @Property({
     defaultRaw: 'CURRENT_TIMESTAMP',

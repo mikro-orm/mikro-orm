@@ -80,7 +80,7 @@ export class SerializationContext<T> {
       const exists = populate.find(p => p.field === segment[1]) as PopulateOptions<T>;
 
       if (exists) {
-        populate = exists.children;
+        populate = exists.children as PopulateOptions<T>[];
       }
     }
 
