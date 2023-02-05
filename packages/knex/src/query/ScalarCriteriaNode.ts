@@ -7,7 +7,7 @@ import type { IQueryBuilder } from '../typings';
  */
 export class ScalarCriteriaNode<T extends object> extends CriteriaNode<T> {
 
-  process(qb: IQueryBuilder<T>, alias?: string): any {
+  override process(qb: IQueryBuilder<T>, alias?: string): any {
     if (this.shouldJoin()) {
       const path = this.getPath();
       const parentPath = this.parent!.getPath(); // the parent is always there, otherwise `shouldJoin` would return `false`

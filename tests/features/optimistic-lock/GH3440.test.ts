@@ -24,7 +24,7 @@ export function fromBinaryUuid(uuid: Buffer): string {
 
 export class Guid extends Type<string, Buffer> {
 
-  convertToDatabaseValue(value: string): Buffer {
+  override convertToDatabaseValue(value: string): Buffer {
     if (typeof value !== 'string' || value.replace(/-/g, '').length !== 32) {
       throw ValidationError.invalidType(Guid, value, 'JS');
     }
@@ -32,11 +32,11 @@ export class Guid extends Type<string, Buffer> {
     return toBinaryUuid(value);
   }
 
-  convertToJSValue(value: Buffer): string {
+  override convertToJSValue(value: Buffer): string {
     return fromBinaryUuid(value);
   }
 
-  getColumnType() {
+  override getColumnType() {
     return `BINARY(16)`;
   }
 

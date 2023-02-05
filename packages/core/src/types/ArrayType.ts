@@ -10,7 +10,7 @@ export class ArrayType<T extends string | number = string> extends Type<T[] | nu
     super();
   }
 
-  convertToDatabaseValue(value: T[] | null, platform: Platform, context?: TransformContext | boolean): string | null {
+  override convertToDatabaseValue(value: T[] | null, platform: Platform, context?: TransformContext | boolean): string | null {
     if (!value) {
       return value as null;
     }
@@ -27,7 +27,7 @@ export class ArrayType<T extends string | number = string> extends Type<T[] | nu
     throw ValidationError.invalidType(ArrayType, value, 'JS');
   }
 
-  convertToJSValue(value: T[] | string | null, platform: Platform): T[] | null {
+  override convertToJSValue(value: T[] | string | null, platform: Platform): T[] | null {
     if (value == null) {
       return value as null;
     }
@@ -39,15 +39,15 @@ export class ArrayType<T extends string | number = string> extends Type<T[] | nu
     return value.map(i => this.hydrate(i as string));
   }
 
-  compareAsType(): string {
+  override compareAsType(): string {
     return 'string[]';
   }
 
-  toJSON(value: T[]): T[] {
+  override toJSON(value: T[]): T[] {
     return value;
   }
 
-  getColumnType(prop: EntityProperty, platform: Platform): string {
+  override getColumnType(prop: EntityProperty, platform: Platform): string {
     return platform.getArrayDeclarationSQL();
   }
 
