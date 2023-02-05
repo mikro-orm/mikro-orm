@@ -13,19 +13,19 @@ export class MySqlSchemaHelper extends SchemaHelper {
     '0': ['0', 'false'],
   };
 
-  getSchemaBeginning(charset: string): string {
+  override getSchemaBeginning(charset: string): string {
     return `set names ${charset};\n${this.disableForeignKeysSQL()}\n\n`;
   }
 
-  disableForeignKeysSQL(): string {
+  override disableForeignKeysSQL(): string {
     return 'set foreign_key_checks = 0;';
   }
 
-  enableForeignKeysSQL(): string {
+  override enableForeignKeysSQL(): string {
     return 'set foreign_key_checks = 1;';
   }
 
-  finalizeTable(table: Knex.CreateTableBuilder, charset: string, collate?: string): void {
+  override finalizeTable(table: Knex.CreateTableBuilder, charset: string, collate?: string): void {
     table.engine('InnoDB');
     table.charset(charset);
 
@@ -34,11 +34,11 @@ export class MySqlSchemaHelper extends SchemaHelper {
     }
   }
 
-  getListTablesSQL(): string {
+  override getListTablesSQL(): string {
     return `select table_name as table_name, nullif(table_schema, schema()) as schema_name, table_comment as table_comment from information_schema.tables where table_type = 'BASE TABLE' and table_schema = schema()`;
   }
 
-  async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[]): Promise<void> {
+  override async loadInformationSchema(schema: DatabaseSchema, connection: AbstractSqlConnection, tables: Table[]): Promise<void> {
     if (tables.length === 0) {
       return;
     }
@@ -177,7 +177,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return ret;
   }
 
-  getPreAlterTable(tableDiff: TableDifference, safe: boolean): string {
+  override getPreAlterTable(tableDiff: TableDifference, safe: boolean): string {
     // Dropping primary keys requires to unset autoincrement attribute on the particular column first.
     const pk = Object.values(tableDiff.removedIndexes).find(idx => idx.primary);
 
@@ -193,7 +193,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
       .join(';\n');
   }
 
-  configureColumnDefault(column: Column, col: Knex.ColumnBuilder, knex: Knex, changedProperties?: Set<string>) {
+  override configureColumnDefault(column: Column, col: Knex.ColumnBuilder, knex: Knex, changedProperties?: Set<string>) {
     if (changedProperties || column.default !== undefined) {
       if (column.default == null) {
         col.defaultTo(null);
@@ -205,7 +205,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return col;
   }
 
-  getRenameColumnSQL(tableName: string, oldColumnName: string, to: Column): string {
+  override getRenameColumnSQL(tableName: string, oldColumnName: string, to: Column): string {
     tableName = this.platform.quoteIdentifier(tableName);
     oldColumnName = this.platform.quoteIdentifier(oldColumnName);
     const columnName = this.platform.quoteIdentifier(to.name);
@@ -213,7 +213,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return `alter table ${tableName} change ${oldColumnName} ${columnName} ${this.getColumnDeclarationSQL(to)}`;
   }
 
-  getRenameIndexSQL(tableName: string, index: IndexDef, oldIndexName: string): string {
+  override getRenameIndexSQL(tableName: string, index: IndexDef, oldIndexName: string): string {
     tableName = this.platform.quoteIdentifier(tableName);
     oldIndexName = this.platform.quoteIdentifier(oldIndexName);
     const keyName = this.platform.quoteIdentifier(index.keyName);
@@ -221,14 +221,14 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return `alter table ${tableName} rename index ${oldIndexName} to ${keyName}`;
   }
 
-  getChangeColumnCommentSQL(tableName: string, to: Column): string {
+  override getChangeColumnCommentSQL(tableName: string, to: Column): string {
     tableName = this.platform.quoteIdentifier(tableName);
     const columnName = this.platform.quoteIdentifier(to.name);
 
     return `alter table ${tableName} modify ${columnName} ${this.getColumnDeclarationSQL(to)}`;
   }
 
-  createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>) {
+  override createTableColumn(table: Knex.TableBuilder, column: Column, fromTable: DatabaseTable, changedProperties?: Set<string>) {
     if (column.mappedType instanceof MediumIntType) {
       return table.specificType(column.name, this.getColumnDeclarationSQL(column, true));
     }
@@ -236,7 +236,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
     return super.createTableColumn(table, column, fromTable, changedProperties);
   }
 
-  configureColumn(column: Column, col: Knex.ColumnBuilder, knex: Knex, changedProperties?: Set<string>) {
+  override configureColumn(column: Column, col: Knex.ColumnBuilder, knex: Knex, changedProperties?: Set<string>) {
     if (column.mappedType instanceof MediumIntType) {
       return col;
     }
@@ -262,7 +262,7 @@ export class MySqlSchemaHelper extends SchemaHelper {
   }
 
   /* istanbul ignore next kept for BC */
-  getForeignKeysSQL(tableName: string, schemaName?: string): string {
+  override getForeignKeysSQL(tableName: string, schemaName?: string): string {
     return `select distinct k.constraint_name as constraint_name, k.column_name as column_name, k.referenced_table_name as referenced_table_name, k.referenced_column_name as referenced_column_name, c.update_rule as update_rule, c.delete_rule as delete_rule `
       + `from information_schema.key_column_usage k `
       + `inner join information_schema.referential_constraints c on c.constraint_name = k.constraint_name and c.table_name = '${tableName}' `
@@ -305,30 +305,30 @@ export class MySqlSchemaHelper extends SchemaHelper {
   }
 
   /* istanbul ignore next */
-  async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName: string, columns?: Column[]): Promise<CheckDef[]> {
+  override async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName: string, columns?: Column[]): Promise<CheckDef[]> {
     const res = await this.getAllChecks(connection, [{ table_name: tableName, schema_name: schemaName }]);
     return res[tableName];
   }
 
   /* istanbul ignore next */
-  async getEnumDefinitions(connection: AbstractSqlConnection, checks: CheckDef[], tableName: string, schemaName?: string): Promise<Dictionary<string[]>> {
+  override async getEnumDefinitions(connection: AbstractSqlConnection, checks: CheckDef[], tableName: string, schemaName?: string): Promise<Dictionary<string[]>> {
     const res = await this.getAllEnumDefinitions(connection, [{ table_name: tableName, schema_name: schemaName }]);
     return res[tableName];
   }
 
   /* istanbul ignore next */
-  async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Column[]> {
+  override async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<Column[]> {
     const res = await this.getAllColumns(connection, [{ table_name: tableName, schema_name: schemaName }]);
     return res[tableName];
   }
 
   /* istanbul ignore next */
-  async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<IndexDef[]> {
+  override async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<IndexDef[]> {
     const res = await this.getAllIndexes(connection, [{ table_name: tableName, schema_name: schemaName }]);
     return res[tableName];
   }
 
-  normalizeDefaultValue(defaultValue: string, length: number) {
+  override normalizeDefaultValue(defaultValue: string, length: number) {
     return super.normalizeDefaultValue(defaultValue, length, MySqlSchemaHelper.DEFAULT_VALUES);
   }
 

@@ -11,11 +11,11 @@ type Point = { x: number; y: number };
 
 class PointType extends Type<Point, Knex.Raw> {
 
-  convertToDatabaseValue(value: Point): Knex.Raw {
+  override convertToDatabaseValue(value: Point): Knex.Raw {
     return knex({ client: 'pg' }).raw(`point(?,?)`, [value.x, value.y]);
   }
 
-  convertToJSValue(value: any): Point {
+  override convertToJSValue(value: any): Point {
     if (typeof value === 'object') {
       return value; // pg connector is automatically converting point to { x, y }
     }
@@ -24,7 +24,7 @@ class PointType extends Type<Point, Knex.Raw> {
     return { x: value[0], y: value[1] };
   }
 
-  getColumnType() {
+  override getColumnType() {
     return 'point';
   }
 

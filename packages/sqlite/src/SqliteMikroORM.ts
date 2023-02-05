@@ -12,7 +12,7 @@ export class SqliteMikroORM extends MikroORM<SqliteDriver> {
   /**
    * @inheritDoc
    */
-  static async init<D extends IDatabaseDriver = SqliteDriver>(options?: Options<D>): Promise<MikroORM<D>> {
+  static override async init<D extends IDatabaseDriver = SqliteDriver>(options?: Options<D>): Promise<MikroORM<D>> {
     return super.init(options);
   }
 

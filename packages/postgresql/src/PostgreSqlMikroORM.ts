@@ -12,7 +12,7 @@ export class PostgreSqlMikroORM extends MikroORM<PostgreSqlDriver> {
   /**
    * @inheritDoc
    */
-  static async init<D extends IDatabaseDriver = PostgreSqlDriver>(options?: Options<D>): Promise<MikroORM<D>> {
+  static override async init<D extends IDatabaseDriver = PostgreSqlDriver>(options?: Options<D>): Promise<MikroORM<D>> {
     return super.init(options);
   }
 

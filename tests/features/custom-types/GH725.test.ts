@@ -25,7 +25,7 @@ export type TimestampTypeOptions = {
 
 export class DateTimeType extends Type<Maybe<DateTime>, Maybe<Date>> {
 
-  convertToDatabaseValue(value: unknown): Maybe<Date> {
+  override convertToDatabaseValue(value: unknown): Maybe<Date> {
     if (value === undefined || value === null || value instanceof Date) {
       return value;
     }
@@ -37,7 +37,7 @@ export class DateTimeType extends Type<Maybe<DateTime>, Maybe<Date>> {
     throw ValidationError.invalidType(DateTimeType, value, 'JS');
   }
 
-  convertToJSValue(value: unknown): Maybe<DateTime> {
+  override convertToJSValue(value: unknown): Maybe<DateTime> {
     if (value === undefined || value === null) {
       return value;
     }
@@ -49,7 +49,7 @@ export class DateTimeType extends Type<Maybe<DateTime>, Maybe<Date>> {
     throw ValidationError.invalidType(DateTimeType, value, 'database');
   }
 
-  getColumnType(): string {
+  override getColumnType(): string {
     return 'timestamptz';
   }
 

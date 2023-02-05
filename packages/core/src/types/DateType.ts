@@ -5,7 +5,7 @@ import { ValidationError } from '../errors';
 
 export class DateType extends Type<Date, string> {
 
-  convertToDatabaseValue(value: Date | string | undefined | null, platform: Platform): string {
+  override convertToDatabaseValue(value: Date | string | undefined | null, platform: Platform): string {
     if (value instanceof Date) {
       return value.toISOString().substr(0, 10);
     }
@@ -17,7 +17,7 @@ export class DateType extends Type<Date, string> {
     throw ValidationError.invalidType(DateType, value, 'JS');
   }
 
-  convertToJSValue(value: Date | string | null | undefined, platform: Platform): Date {
+  override convertToJSValue(value: Date | string | null | undefined, platform: Platform): Date {
     if (!value || value instanceof Date) {
       return value as Date;
     }
@@ -31,15 +31,15 @@ export class DateType extends Type<Date, string> {
     return date;
   }
 
-  compareAsType(): string {
+  override compareAsType(): string {
     return 'string';
   }
 
-  getColumnType(prop: EntityProperty, platform: Platform): string {
+  override getColumnType(prop: EntityProperty, platform: Platform): string {
     return platform.getDateTypeDeclarationSQL(prop.length);
   }
 
-  toJSON(value: Date, platform: Platform): Date | string {
+  override toJSON(value: Date, platform: Platform): Date | string {
     return this.convertToDatabaseValue(value, platform);
   }
 

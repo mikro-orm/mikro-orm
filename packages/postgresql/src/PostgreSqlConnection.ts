@@ -14,7 +14,7 @@ export class PostgreSqlConnection extends AbstractSqlConnection {
     return 'postgresql://postgres@127.0.0.1:5432';
   }
 
-  getConnectionOptions(): Knex.PgConnectionConfig {
+  override getConnectionOptions(): Knex.PgConnectionConfig {
     const ret = super.getConnectionOptions() as Knex.PgConnectionConfig;
     [1082].forEach(oid => types.setTypeParser(oid, str => str)); // date type
 

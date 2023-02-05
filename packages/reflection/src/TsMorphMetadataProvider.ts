@@ -14,7 +14,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
 
   private sources!: SourceFile[];
 
-  useCache(): boolean {
+  override useCache(): boolean {
     return this.config.get('metadataCache').enabled ?? true;
   }
 
@@ -36,7 +36,7 @@ export class TsMorphMetadataProvider extends MetadataProvider {
     return (await this.getSourceFile(tsPath, validate))!;
   }
 
-  protected async initProperties(meta: EntityMetadata): Promise<void> {
+  protected override async initProperties(meta: EntityMetadata): Promise<void> {
     // load types and column names
     for (const prop of Object.values(meta.properties)) {
       const type = this.extractType(prop);

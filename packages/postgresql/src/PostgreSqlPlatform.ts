@@ -7,18 +7,18 @@ import { PostgreSqlExceptionConverter } from './PostgreSqlExceptionConverter';
 
 export class PostgreSqlPlatform extends AbstractSqlPlatform {
 
-  protected readonly schemaHelper: PostgreSqlSchemaHelper = new PostgreSqlSchemaHelper(this);
-  protected readonly exceptionConverter = new PostgreSqlExceptionConverter();
+  protected override readonly schemaHelper: PostgreSqlSchemaHelper = new PostgreSqlSchemaHelper(this);
+  protected override readonly exceptionConverter = new PostgreSqlExceptionConverter();
 
-  usesReturningStatement(): boolean {
+  override usesReturningStatement(): boolean {
     return true;
   }
 
-  usesCascadeStatement(): boolean {
+  override usesCascadeStatement(): boolean {
     return true;
   }
 
-  supportsCustomPrimaryKeyNames(): boolean {
+  override supportsCustomPrimaryKeyNames(): boolean {
     return true;
   }
 
@@ -27,28 +27,28 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
    * This flag will result in postponing 1:1 updates (removing them from the batched query).
    * @see https://stackoverflow.com/questions/5403437/atomic-multi-row-update-with-a-unique-constraint
    */
-  allowsUniqueBatchUpdates() {
+  override allowsUniqueBatchUpdates() {
     return false;
   }
 
-  getCurrentTimestampSQL(length: number): string {
+  override getCurrentTimestampSQL(length: number): string {
     return `current_timestamp(${length})`;
   }
 
-  getDateTimeTypeDeclarationSQL(column: { length?: number }): string {
+  override getDateTimeTypeDeclarationSQL(column: { length?: number }): string {
     /* istanbul ignore next */
     return 'timestamptz' + (column.length != null ? `(${column.length})` : '');
   }
 
-  getDefaultDateTimeLength(): number {
+  override getDefaultDateTimeLength(): number {
     return 6; // timestamptz actually means timestamptz(6)
   }
 
-  getTimeTypeDeclarationSQL(): string {
+  override getTimeTypeDeclarationSQL(): string {
     return 'time(0)';
   }
 
-  getIntegerTypeDeclarationSQL(column: { length?: number; autoincrement?: boolean }): string {
+  override getIntegerTypeDeclarationSQL(column: { length?: number; autoincrement?: boolean }): string {
     if (column.autoincrement) {
       return `serial`;
     }
@@ -56,7 +56,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return `int`;
   }
 
-  getBigIntTypeDeclarationSQL(column: { autoincrement?: boolean }): string {
+  override getBigIntTypeDeclarationSQL(column: { autoincrement?: boolean }): string {
     /* istanbul ignore next */
     if (column.autoincrement) {
       return `bigserial`;
@@ -65,15 +65,15 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return 'bigint';
   }
 
-  getTinyIntTypeDeclarationSQL(column: { length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
+  override getTinyIntTypeDeclarationSQL(column: { length?: number; unsigned?: boolean; autoincrement?: boolean }): string {
     return 'smallint';
   }
 
-  getUuidTypeDeclarationSQL(column: { length?: number }): string {
+  override getUuidTypeDeclarationSQL(column: { length?: number }): string {
     return `uuid`;
   }
 
-  getFullTextWhereClause(prop: EntityProperty): string {
+  override getFullTextWhereClause(prop: EntityProperty): string {
     if (prop.columnTypes[0] === 'tsvector') {
       return `:column: @@ plainto_tsquery('simple', :query)`;
     }
@@ -81,11 +81,11 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return `to_tsvector('simple', :column:) @@ plainto_tsquery('simple', :query)`;
   }
 
-  supportsCreatingFullTextIndex(): boolean {
+  override supportsCreatingFullTextIndex(): boolean {
     return true;
   }
 
-  getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
+  override getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
     const quotedTableName = this.quoteIdentifier(schemaName ? `${schemaName}.${tableName}` : tableName);
     const quotedColumnNames = columns.map(c => this.quoteIdentifier(c.name));
     const quotedIndexName = this.quoteIdentifier(indexName);
@@ -97,7 +97,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return `create index ${quotedIndexName} on ${quotedTableName} using gin(to_tsvector('simple', ${quotedColumnNames.join(` || ' ' || `)}))`;
   }
 
-  getRegExpOperator(val?: unknown, flags?: string): string {
+  override getRegExpOperator(val?: unknown, flags?: string): string {
     if ((val instanceof RegExp && val.flags.includes('i')) || flags?.includes('i')) {
       return '~*';
     }
@@ -105,7 +105,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return '~';
   }
 
-  getRegExpValue(val: RegExp): { $re: string; $flags?: string } {
+  override getRegExpValue(val: RegExp): { $re: string; $flags?: string } {
     if (val.flags.includes('i')) {
       return { $re: val.source, $flags: val.flags };
     }
@@ -113,23 +113,23 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return { $re: val.source };
   }
 
-  isBigIntProperty(prop: EntityProperty): boolean {
+  override isBigIntProperty(prop: EntityProperty): boolean {
     return super.isBigIntProperty(prop) || (['bigserial', 'int8'].includes(prop.columnTypes?.[0]));
   }
 
-  getArrayDeclarationSQL(): string {
+  override getArrayDeclarationSQL(): string {
     return 'text[]';
   }
 
-  getFloatDeclarationSQL(): string {
+  override getFloatDeclarationSQL(): string {
     return 'real';
   }
 
-  getDoubleDeclarationSQL(): string {
+  override getDoubleDeclarationSQL(): string {
     return 'double precision';
   }
 
-  getEnumTypeDeclarationSQL(column: { fieldNames: string[]; items?: unknown[] }): string {
+  override getEnumTypeDeclarationSQL(column: { fieldNames: string[]; items?: unknown[] }): string {
     if (column.items?.every(item => Utils.isString(item))) {
       return 'text';
     }
@@ -137,16 +137,16 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return `smallint`;
   }
 
-  supportsMultipleStatements(): boolean {
+  override supportsMultipleStatements(): boolean {
     return true;
   }
 
-  marshallArray(values: string[]): string {
+  override marshallArray(values: string[]): string {
     const quote = (v: string) => v === '' || v.match(/["{},]/) ? JSON.stringify(v) : v;
     return `{${values.map(v => quote('' + v)).join(',')}}`;
   }
 
-  unmarshallArray(value: string): string[] {
+  override unmarshallArray(value: string): string[] {
     if (value === '{}') {
       return [];
     }
@@ -155,15 +155,15 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return value.substring(1, value.length - 1).split(',').map(v => v === `""` ? '' : v);
   }
 
-  getBlobDeclarationSQL(): string {
+  override getBlobDeclarationSQL(): string {
     return 'bytea';
   }
 
-  getJsonDeclarationSQL(): string {
+  override getJsonDeclarationSQL(): string {
     return 'jsonb';
   }
 
-  getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
+  override getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
     const first = path.shift();
     const last = path.pop();
     const root = aliased ? expr(alias => this.quoteIdentifier(`${alias}.${first}`)) : this.quoteIdentifier(first!);
@@ -180,11 +180,11 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return cast(`${root}->${path.map(a => this.quoteValue(a)).join('->')}->>'${last}'`);
   }
 
-  quoteIdentifier(id: string, quote = '"'): string {
+  override quoteIdentifier(id: string, quote = '"'): string {
     return `${quote}${id.replace('.', `${quote}.${quote}`)}${quote}`;
   }
 
-  quoteValue(value: any): string {
+  override quoteValue(value: any): string {
     /* istanbul ignore if */
     if (Utils.isPlainObject(value) || value?.[JsonProperty]) {
       value = JSON.stringify(value);
@@ -205,11 +205,11 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return super.quoteValue(value);
   }
 
-  indexForeignKeys() {
+  override indexForeignKeys() {
     return false;
   }
 
-  getDefaultMappedType(type: string): Type<unknown> {
+  override getDefaultMappedType(type: string): Type<unknown> {
     const normalizedType = this.extractSimpleType(type);
     const map = {
       'int2': 'smallint',
@@ -236,11 +236,11 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return super.getDefaultMappedType(map[normalizedType as keyof typeof map] ?? type);
   }
 
-  supportsSchemas(): boolean {
+  override supportsSchemas(): boolean {
     return true;
   }
 
-  getDefaultSchemaName(): string | undefined {
+  override getDefaultSchemaName(): string | undefined {
     return 'public';
   }
 
@@ -248,7 +248,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
    * Returns the default name of index for the given columns
    * cannot go past 64 character length for identifiers in MySQL
    */
-  getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
+  override getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
     const indexName = super.getIndexName(tableName, columns, type);
     if (indexName.length > 64) {
       return `${indexName.substring(0, 56 - type.length)}_${Utils.hash(indexName, 5)}_${type}`;
@@ -257,7 +257,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     return indexName;
   }
 
-  getDefaultPrimaryName(tableName: string, columns: string[]): string {
+  override getDefaultPrimaryName(tableName: string, columns: string[]): string {
     const indexName = `${tableName}_pkey`;
     if (indexName.length > 64) {
       return `${indexName.substring(0, 56 - 'primary'.length)}_${Utils.hash(indexName, 5)}_primary`;
@@ -269,7 +269,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
   /**
    * @inheritDoc
    */
-  castColumn(prop?: EntityProperty): string {
+  override castColumn(prop?: EntityProperty): string {
     switch (prop?.columnTypes?.[0]) {
       case this.getUuidTypeDeclarationSQL({}): return '::text';
       case this.getBooleanTypeDeclarationSQL(): return '::int';
