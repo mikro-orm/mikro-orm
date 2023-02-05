@@ -541,6 +541,42 @@ describe('check typings', () => {
     const res: Loaded<MemberNotification> | null = await em.findOne('MemberNotification' as EntityName<MemberNotification>, {} as MemberNotification | string);
   });
 
+  test('Ref.load() returns Loaded type (#3755)', async () => {
+    interface Parent {
+      id: number;
+      children: Collection<Child>;
+    }
+
+    interface Child {
+      id: number;
+      parent: Ref<Parent>;
+    }
+
+    const parent = {} as Ref<Parent>;
+
+    // @ts-expect-error Loaded<Parent, never> is not assignable
+    const populated01: Loaded<Parent, 'children'> = {} as Loaded<Ref<Parent>>;
+    // @ts-expect-error Loaded<Parent, never> is not assignable
+    const populated02: Loaded<Parent, 'children'> = {} as Loaded<Parent>;
+    let populated1: Loaded<Parent, 'children'>;
+    function foo(e: Loaded<Parent, 'children'>) {
+      //
+    }
+    const e = await parent.load();
+    // @ts-expect-error Loaded<Parent, never> is not assignable
+    foo(e);
+    // populated1 = await parent.load();
+    // @ts-expect-error Loaded<Parent, never> is not assignable
+    const populated2: Loaded<Parent, 'children'> = await parent.load({ populate: [] });
+
+    // only this should pass
+    const populated3: Loaded<Parent, 'children'> = await parent.load({ populate: ['children'] });
+    const populated4: Loaded<Parent, 'children'> = await parent.load({ populate: ['children', 'id'] });
+
+    // this fails because of https://github.com/mikro-orm/mikro-orm/issues/3277
+    // const populated5: Loaded<Parent, 'children'> = await parent.load({ populate: ['children.parent'] });
+  });
+
   test('exclusion', async () => {
     interface Notification {
       id: string;
