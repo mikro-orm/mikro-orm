@@ -1,6 +1,6 @@
 import {
   Cascade, Collection, Entity, ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, PrimaryKey,
-  Property, ValidationError, wrap, LoadStrategy, PrimaryKeyProp,
+  Property, ValidationError, wrap, LoadStrategy, PrimaryKeyProp, Dictionary,
 } from '@mikro-orm/core';
 import { AbstractSqlConnection, SqliteDriver } from '@mikro-orm/sqlite';
 import { mockLogger } from '../../helpers';
@@ -100,7 +100,7 @@ export class Test2 {
   }
 
   getConfiguration(): Record<string, string> {
-    return this.config.getItems().reduce((c, v) => { c[v.property] = v.value; return c; }, {});
+    return this.config.getItems().reduce((c, v) => { c[v.property] = v.value; return c; }, {} as Dictionary);
   }
 
 }

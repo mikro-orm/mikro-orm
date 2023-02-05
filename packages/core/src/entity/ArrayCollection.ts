@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import type { EntityDTO, EntityProperty, IPrimaryKey, Primary } from '../typings';
+import type { Dictionary, EntityDTO, EntityProperty, EntityValue, IPrimaryKey, Primary } from '../typings';
 import { Reference } from './Reference';
 import { helper, wrap } from './wrap';
 import { ReferenceKind } from '../enums';
@@ -205,7 +205,7 @@ export class ArrayCollection<T extends object, O extends object> {
         throw MetadataError.fromUnknownEntity((this.owner as object).constructor.name, 'Collection.property getter, maybe you just forgot to initialize the ORM?');
       }
 
-      const field = Object.keys(meta.properties).find(k => this.owner[k] === this);
+      const field = Utils.keys(meta.properties).find(k => this.owner[k] === this);
       this._property = meta.properties[field!];
     }
 
@@ -224,7 +224,7 @@ export class ArrayCollection<T extends object, O extends object> {
     const collection = item[this.property.inversedBy as keyof T] as unknown as ArrayCollection<O, T>;
 
     if (this.shouldPropagateToCollection(collection, method)) {
-      collection[method](this.owner);
+      collection[method as 'add'](this.owner);
     }
   }
 
@@ -233,7 +233,7 @@ export class ArrayCollection<T extends object, O extends object> {
 
     if (this.property.kind === ReferenceKind.MANY_TO_MANY) {
       if (this.shouldPropagateToCollection(collection, method)) {
-        collection[method](this.owner);
+        collection[method as 'add'](this.owner);
       }
     } else if (this.property.kind === ReferenceKind.ONE_TO_MANY && method !== 'takeSnapshot') {
       const prop2 = this.property.targetMeta!.properties[this.property.mappedBy];
@@ -246,8 +246,8 @@ export class ArrayCollection<T extends object, O extends object> {
       }
 
       // skip if already propagated
-      if (Reference.unwrapReference(item[this.property.mappedBy]) !== value) {
-        item[this.property.mappedBy] = value;
+      if (Reference.unwrapReference(item[this.property.mappedBy] as object) !== value) {
+        item[this.property.mappedBy] = value as EntityValue<T>;
       }
     }
   }
@@ -274,7 +274,7 @@ export class ArrayCollection<T extends object, O extends object> {
   }
 
   [inspect.custom](depth: number) {
-    const object = { ...this };
+    const object = { ...this } as Dictionary;
     const hidden = ['items', 'owner', '_property', '_count', 'snapshot', '_populated', '_lazyInitialized'];
     hidden.forEach(k => delete object[k]);
     const ret = inspect(object, { depth });

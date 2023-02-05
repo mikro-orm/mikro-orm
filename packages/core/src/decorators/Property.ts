@@ -2,12 +2,20 @@ import { MetadataStorage, MetadataValidator } from '../metadata';
 import { Utils } from '../utils';
 import type { Cascade, LoadStrategy } from '../enums';
 import { ReferenceKind } from '../enums';
-import type { EntityName, EntityProperty, Constructor, CheckCallback, Dictionary, AnyString, AnyEntity } from '../typings';
+import type {
+  EntityName,
+  EntityProperty,
+  Constructor,
+  CheckCallback,
+  AnyString,
+  AnyEntity,
+  EntityKey,
+} from '../typings';
 import type { Type, types } from '../types';
 
-export function Property<T>(options: PropertyOptions<T> = {}) {
+export function Property<T extends object>(options: PropertyOptions<T> = {}) {
   return function (target: any, propertyName: string) {
-    const meta = MetadataStorage.getMetadataFromDecorator<T>(target.constructor as T & Dictionary);
+    const meta = MetadataStorage.getMetadataFromDecorator(target.constructor as T);
     const desc = Object.getOwnPropertyDescriptor(target, propertyName) || {};
     MetadataValidator.validateSingleDecorator(meta, propertyName, ReferenceKind.SCALAR);
     const name = options.name || propertyName;
@@ -18,7 +26,7 @@ export function Property<T>(options: PropertyOptions<T> = {}) {
 
     options.name = propertyName;
     const { check, ...opts } = options;
-    const prop = { kind: ReferenceKind.SCALAR, ...opts } as EntityProperty;
+    const prop = { kind: ReferenceKind.SCALAR, ...opts } as EntityProperty<T>;
     prop.getter = !!desc.get;
     prop.setter = !!desc.set;
 
@@ -26,8 +34,8 @@ export function Property<T>(options: PropertyOptions<T> = {}) {
       prop.getter = true;
       prop.persist = false;
       prop.type = 'method';
-      prop.getterName = propertyName;
-      prop.name = name;
+      prop.getterName = propertyName as EntityKey<T>;
+      prop.name = name as EntityKey<T>;
     }
 
     if (check) {
