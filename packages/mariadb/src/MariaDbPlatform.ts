@@ -1,3 +1,4 @@
+import type { Dictionary } from '@mikro-orm/knex';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { MariaDbSchemaHelper } from './MariaDbSchemaHelper';
 import { MariaDbExceptionConverter } from './MariaDbExceptionConverter';
@@ -25,7 +26,7 @@ export class MariaDbPlatform extends AbstractSqlPlatform {
     const map = {
       int: 'integer',
       timestamp: 'datetime',
-    };
+    } as Dictionary;
 
     return super.getDefaultMappedType(map[normalizedType] ?? type);
   }

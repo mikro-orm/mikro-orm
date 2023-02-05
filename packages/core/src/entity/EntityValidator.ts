@@ -8,7 +8,7 @@ export class EntityValidator {
 
   constructor(private strict: boolean) { }
 
-  validate<T extends object>(entity: T, payload: any, meta: EntityMetadata): void {
+  validate<T extends object>(entity: T, payload: any, meta: EntityMetadata<T>): void {
     meta.props.forEach(prop => {
       if (prop.inherited) {
         return;
@@ -98,7 +98,7 @@ export class EntityValidator {
     }
   }
 
-  validatePrimaryKey<T>(entity: EntityData<T>, meta: EntityMetadata): void {
+  validatePrimaryKey<T>(entity: EntityData<T>, meta: EntityMetadata<T>): void {
     const pkExists = meta.primaryKeys.every(pk => entity[pk] != null) || entity[meta.serializedPrimaryKey] != null;
 
     if (!entity || !pkExists) {

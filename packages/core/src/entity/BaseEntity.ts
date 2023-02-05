@@ -25,20 +25,16 @@ export abstract class BaseEntity {
     return helper(this as This).populate(populate, options);
   }
 
-  toReference(): Ref<this> {
-    return Reference.create(this);
+  toReference<T extends this = this>(): Ref<T> {
+    return Reference.create(this as unknown as T);
   }
 
-  toObject(ignoreFields: string[] = []): EntityDTO<this> {
-    return helper(this).toObject(ignoreFields);
+  toObject<T extends this = this>(ignoreFields: string[] = []): EntityDTO<T> {
+    return helper(this as unknown as T).toObject(ignoreFields);
   }
 
-  toJSON(...args: any[]): EntityDTO<this> {
-    return this.toObject(...args);
-  }
-
-  toPOJO(): EntityDTO<this> {
-    return helper(this).toPOJO();
+  toPOJO<T extends this = this>(): EntityDTO<T> {
+    return helper(this as unknown as T).toPOJO();
   }
 
   assign(data: EntityData<this>, options?: AssignOptions): this {

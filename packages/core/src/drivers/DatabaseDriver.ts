@@ -16,6 +16,7 @@ import type {
   Dictionary,
   EntityData,
   EntityDictionary,
+  EntityKey,
   EntityMetadata,
   EntityProperty,
   FilterObject,
@@ -200,8 +201,8 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
 
     const createOrderBy = (prop: string, direction: QueryOrderKeys<T>): OrderDefinition<T> => {
       if (Utils.isPlainObject(direction)) {
-        const value = Object.keys(direction).reduce((o, key) => {
-          Object.assign(o, createOrderBy(key, direction[key]));
+        const value = Utils.keys(direction).reduce((o, key) => {
+          Object.assign(o, createOrderBy(key as string, direction[key] as QueryOrderKeys<T>));
           return o;
         }, {});
         return ({ [prop]: value }) as OrderDefinition<T>;
@@ -221,8 +222,8 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
   protected createCursorCondition<T extends object>(definition: (readonly [keyof T & string, QueryOrder])[], offsets: Dictionary[], inverse = false): FilterQuery<T> {
     const createCondition = (prop: string, direction: QueryOrderKeys<T>, offset: Dictionary, eq = false) => {
       if (Utils.isPlainObject(direction)) {
-        const value = Object.keys(direction).reduce((o, key) => {
-          Object.assign(o, createCondition(key, direction[key], offset[prop][key], eq));
+        const value = Utils.keys(direction).reduce((o, key) => {
+          Object.assign(o, createCondition(key as string, direction[key] as QueryOrderKeys<T>, offset[prop][key], eq));
           return o;
         }, {});
         return ({ [prop]: value });
@@ -251,10 +252,10 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
     } as FilterQuery<T>;
   }
 
-  protected inlineEmbeddables<T>(meta: EntityMetadata<T>, data: T, where?: boolean): void {
-    Object.keys(data as Dictionary).forEach(k => {
-      if (Utils.isOperator(k)) {
-        Utils.asArray(data[k]).forEach(payload => this.inlineEmbeddables(meta, payload, where));
+  protected inlineEmbeddables<T extends object>(meta: EntityMetadata<T>, data: T, where?: boolean): void {
+    Utils.keys(data).forEach(k => {
+      if (Utils.isOperator(k as string)) {
+        Utils.asArray(data[k]).forEach(payload => this.inlineEmbeddables(meta, payload as T, where));
       }
     });
 
@@ -287,7 +288,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
                 });
               }
 
-              data[`${path.join('.')}.${sub.embedded![1]}`] = payload[sub.embedded![1]];
+              data[`${path.join('.')}.${sub.embedded![1]}` as EntityKey<T>] = payload[sub.embedded![1]];
             };
 
             const parentPropName = kk.substring(0, kk.indexOf('.'));
@@ -301,7 +302,7 @@ export abstract class DatabaseDriver<C extends Connection> implements IDatabaseD
               unknownProp = true;
             }
           } else if (props[kk]) {
-            data[props[kk].name] = data[prop.name][props[kk].embedded![1]];
+            data[props[kk].name as EntityKey<T>] = data[prop.name][props[kk].embedded![1] as EntityKey<T>] as T[EntityKey<T>];
           } else {
             throw ValidationError.invalidEmbeddableQuery(meta.className, kk, prop.type);
           }
