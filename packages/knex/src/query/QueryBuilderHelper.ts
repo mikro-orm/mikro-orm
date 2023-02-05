@@ -1,6 +1,14 @@
 import type { Knex } from 'knex';
 import { inspect } from 'util';
-import type { Dictionary, EntityData, EntityMetadata, EntityProperty, FlatQueryOrderMap, QBFilterQuery } from '@mikro-orm/core';
+import type {
+  Dictionary,
+  EntityData,
+  EntityKey,
+  EntityMetadata,
+  EntityProperty,
+  FlatQueryOrderMap,
+  QBFilterQuery,
+} from '@mikro-orm/core';
 import { LockMode, OptimisticLockError, GroupOperator, QueryOperator, QueryOrderNumeric, ReferenceKind, Utils } from '@mikro-orm/core';
 import { QueryType } from './enums';
 import type { Field, JoinOptions } from '../typings';
@@ -62,7 +70,7 @@ export class QueryBuilderHelper {
 
     let ret = field;
     const customExpression = QueryBuilderHelper.isCustomExpression(field, !!alias);
-    const [a, f] = this.splitField(field);
+    const [a, f] = this.splitField(field as EntityKey);
     const prop = this.getProperty(f, a);
 
     // embeddable nested path instead of a regular property with table alias, reset alias
@@ -261,7 +269,7 @@ export class QueryBuilderHelper {
     }
 
     if (operator === '$fulltext') {
-      const [fromAlias, fromField] = this.splitField(key);
+      const [fromAlias, fromField] = this.splitField(key as EntityKey);
       const property = this.getProperty(fromField, fromAlias);
       const query = this.knex.raw(this.platform.getFullTextWhereClause(property!), {
         column: this.mapper(key),
@@ -317,7 +325,7 @@ export class QueryBuilderHelper {
       return parts[0];
     }
 
-    return `(${parts.join(` ${GroupOperator[operator]} `)})`;
+    return `(${parts.join(` ${GroupOperator[operator as keyof typeof GroupOperator]} `)})`;
   }
 
   mapJoinColumns(type: QueryType, join: JoinOptions): (string | Knex.Raw)[] {
@@ -393,9 +401,9 @@ export class QueryBuilderHelper {
 
         if (Utils.isObject(item.merge)) {
           mergeParam = {};
-          Object.keys(item.merge).forEach(key => {
-            const k = this.mapper(key, type) as string;
-            mergeParam[k] = item.merge![key];
+          Utils.keys(item.merge).forEach(key => {
+            const k = this.mapper(key as string, type);
+            (mergeParam as Dictionary)[k] = item.merge![key];
           });
         }
 
@@ -502,7 +510,7 @@ export class QueryBuilderHelper {
     }
 
     if (op === '$fulltext') {
-      const [a, f] = this.splitField(key);
+      const [a, f] = this.splitField(key as EntityKey);
       const prop = this.getProperty(f, a);
 
       /* istanbul ignore next */
@@ -521,7 +529,7 @@ export class QueryBuilderHelper {
   }
 
   private getOperatorReplacement(op: string, value: Dictionary): string {
-    let replacement = QueryOperator[op];
+    let replacement: string = QueryOperator[op as keyof typeof QueryOperator];
 
     if (op === '$exists') {
       replacement = value[op] ? 'is not' : 'is';
@@ -593,8 +601,8 @@ export class QueryBuilderHelper {
     }
   }
 
-  splitField(field: string, greedyAlias = false): [string, string] {
-    const parts = field.split('.');
+  splitField<T>(field: EntityKey<T>, greedyAlias = false): [string, EntityKey<T>] {
+    const parts = field.split('.') as EntityKey<T>[];
 
     if (parts.length === 1) {
       return [this.alias, parts[0]];
@@ -607,7 +615,7 @@ export class QueryBuilderHelper {
     }
 
     const fromAlias = parts.shift()!;
-    const fromField = parts.join('.');
+    const fromField = parts.join('.') as EntityKey<T>;
 
     return [fromAlias, fromField];
   }

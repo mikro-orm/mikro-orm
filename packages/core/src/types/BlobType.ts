@@ -4,7 +4,7 @@ import type { EntityProperty } from '../typings';
 
 export class BlobType extends Type<Buffer | null> {
 
-  convertToDatabaseValue(value: Buffer): Buffer {
+  convertToDatabaseValue(value: Buffer | null): Buffer | null {
     return value;
   }
 

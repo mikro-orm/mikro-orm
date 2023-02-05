@@ -1,4 +1,4 @@
-import type { Dictionary, EntityMetadata, MetadataStorage } from '@mikro-orm/core';
+import type { Dictionary, EntityKey, EntityMetadata, MetadataStorage } from '@mikro-orm/core';
 import { ReferenceKind, Utils, ValidationError } from '@mikro-orm/core';
 import { ObjectCriteriaNode } from './ObjectCriteriaNode';
 import { ArrayCriteriaNode } from './ArrayCriteriaNode';
@@ -11,7 +11,7 @@ import type { ICriteriaNode } from '../typings';
  */
 export class CriteriaNodeFactory {
 
-  static createNode(metadata: MetadataStorage, entityName: string, payload: any, parent?: ICriteriaNode, key?: string): ICriteriaNode {
+  static createNode<T extends object>(metadata: MetadataStorage, entityName: string, payload: any, parent?: ICriteriaNode<T>, key?: EntityKey<T>): ICriteriaNode<T> {
     const customExpression = CriteriaNode.isCustomExpression(key || '');
     const scalar = Utils.isPrimaryKey(payload) || payload as unknown instanceof RegExp || payload as unknown instanceof Date || customExpression;
 
@@ -26,15 +26,15 @@ export class CriteriaNodeFactory {
     return this.createScalarNode(metadata, entityName, payload, parent, key);
   }
 
-  static createScalarNode(metadata: MetadataStorage, entityName: string, payload: any, parent?: ICriteriaNode, key?: string): ICriteriaNode {
-    const node = new ScalarCriteriaNode(metadata, entityName, parent, key);
+  static createScalarNode<T extends object>(metadata: MetadataStorage, entityName: string, payload: any, parent?: ICriteriaNode<T>, key?: EntityKey<T>): ICriteriaNode<T> {
+    const node = new ScalarCriteriaNode<T>(metadata, entityName, parent, key);
     node.payload = payload;
 
     return node;
   }
 
-  static createArrayNode(metadata: MetadataStorage, entityName: string, payload: any[], parent?: ICriteriaNode, key?: string): ICriteriaNode {
-    const node = new ArrayCriteriaNode(metadata, entityName, parent, key);
+  static createArrayNode<T extends object>(metadata: MetadataStorage, entityName: string, payload: any[], parent?: ICriteriaNode<T>, key?: EntityKey<T>): ICriteriaNode<T> {
+    const node = new ArrayCriteriaNode<T>(metadata, entityName, parent, key);
     node.payload = payload.map((item, index) => {
       const n = this.createNode(metadata, entityName, item, node);
       n.index = key === '$and' ? index : undefined; // we care about branching only for $and
@@ -45,7 +45,7 @@ export class CriteriaNodeFactory {
     return node;
   }
 
-  static createObjectNode(metadata: MetadataStorage, entityName: string, payload: Dictionary, parent?: ICriteriaNode, key?: string): ICriteriaNode {
+  static createObjectNode<T extends object>(metadata: MetadataStorage, entityName: string, payload: Dictionary, parent?: ICriteriaNode<T>, key?: EntityKey<T>): ICriteriaNode<T> {
     const meta = metadata.find(entityName);
 
     if (!parent && Object.keys(payload).every(k => meta?.properties[k]?.kind === ReferenceKind.SCALAR)) {
@@ -56,35 +56,35 @@ export class CriteriaNodeFactory {
     node.payload = Object.keys(payload).reduce((o, item) => {
       o[item] = this.createObjectItemNode(metadata, entityName, node, payload, item, meta);
       return o;
-    }, {});
+    }, {} as Dictionary);
 
     return node;
   }
 
-  static createObjectItemNode(metadata: MetadataStorage, entityName: string, node: ICriteriaNode, payload: Dictionary, item: string, meta?: EntityMetadata) {
-    const prop = meta?.properties[item];
+  static createObjectItemNode<T extends object>(metadata: MetadataStorage, entityName: string, node: ICriteriaNode<T>, payload: Dictionary, key: EntityKey<T>, meta?: EntityMetadata<T>) {
+    const prop = meta?.properties[key];
 
     if (prop?.kind !== ReferenceKind.EMBEDDED) {
       const childEntity = prop && prop.kind !== ReferenceKind.SCALAR ? prop.type : entityName;
-      return this.createNode(metadata, childEntity, payload[item], node, item);
+      return this.createNode(metadata, childEntity, payload[key], node, key);
     }
 
-    const operator = Object.keys(payload[item]).some(f => Utils.isOperator(f));
+    const operator = Object.keys(payload[key]).some(f => Utils.isOperator(f));
 
     if (operator) {
       throw ValidationError.cannotUseOperatorsInsideEmbeddables(entityName, prop.name, payload);
     }
 
-    const map = Object.keys(payload[item]).reduce((oo, k) => {
+    const map = Object.keys(payload[key]).reduce((oo, k) => {
       if (!prop.embeddedProps[k]) {
         throw ValidationError.invalidEmbeddableQuery(entityName, k, prop.type);
       }
 
-      oo[prop.embeddedProps[k].name] = payload[item][k];
+      oo[prop.embeddedProps[k].name] = payload[key][k];
       return oo;
-    }, {});
+    }, {} as Dictionary);
 
-    return this.createNode(metadata, entityName, map, node, item);
+    return this.createNode(metadata, entityName, map, node, key);
   }
 
 }

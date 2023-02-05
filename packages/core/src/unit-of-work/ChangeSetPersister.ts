@@ -73,7 +73,12 @@ export class ChangeSetPersister {
     }
   }
 
-  private async runForEachSchema<T extends object>(changeSets: ChangeSet<T>[], method: string, options?: DriverMethodOptions, ...args: unknown[]): Promise<void> {
+  private async runForEachSchema<T extends object>(
+    changeSets: ChangeSet<T>[],
+    method: 'executeInserts' | 'executeUpdates' | 'executeDeletes',
+    options?: DriverMethodOptions,
+    ...args: unknown[]
+  ): Promise<void> {
     const groups = new Map<string, ChangeSet<T>[]>();
     changeSets.forEach(cs => {
       const group = groups.get(cs.schema!) ?? [];
@@ -83,6 +88,7 @@ export class ChangeSetPersister {
 
     for (const [key, group] of groups.entries()) {
       options = { ...options, schema: key };
+      // @ts-ignore
       await this[method](group, ...args, options, true);
     }
   }
@@ -190,7 +196,7 @@ export class ChangeSetPersister {
     cond = Utils.isPlainObject(cond) ? cond : { [meta.primaryKeys[0]]: cond };
 
     for (const key of meta.concurrencyCheckKeys) {
-      cond[key as string] = changeSet.originalEntity![key as string];
+      cond[key] = changeSet.originalEntity![key];
 
       if (changeSet.payload[key]) {
         tmp.push(key);
@@ -286,7 +292,8 @@ export class ChangeSetPersister {
       const cond = Utils.getPrimaryKeyCond<T>(cs.originalEntity as T, meta.primaryKeys.concat(...meta.concurrencyCheckKeys)) as FilterQuery<T>;
 
       if (meta.versionProperty) {
-        cond[meta.versionProperty as string] = this.platform.quoteVersionValue(cs.entity[meta.versionProperty] as unknown as Date, meta.properties[meta.versionProperty]);
+        // @ts-ignore
+        cond[meta.versionProperty] = this.platform.quoteVersionValue(cs.entity[meta.versionProperty] as unknown as Date, meta.properties[meta.versionProperty]);
       }
 
       return cond;

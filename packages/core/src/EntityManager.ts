@@ -38,6 +38,7 @@ import type {
   Primary,
   RequiredEntityData,
   Ref,
+  EntityKey,
 } from './typings';
 import type { TransactionOptions } from './enums';
 import { FlushMode, LoadStrategy, LockMode, PopulateHint, ReferenceKind, SCALAR_TYPES } from './enums';
@@ -306,7 +307,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   }
 
   protected applyDiscriminatorCondition<Entity extends object>(entityName: string, where: FilterQuery<Entity>): FilterQuery<Entity> {
-    const meta = this.metadata.find(entityName);
+    const meta = this.metadata.find<Entity>(entityName);
 
     if (!meta?.discriminatorValue) {
       return where;
@@ -322,7 +323,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return children;
     };
     lookUpChildren(children, meta.className);
-    where![meta.root.discriminatorColumn!] = children.length > 0 ? { $in: [meta.discriminatorValue, ...children.map(c => c.discriminatorValue)] } : meta.discriminatorValue;
+    (where as Dictionary)[meta.root.discriminatorColumn!] = children.length > 0 ? { $in: [meta.discriminatorValue, ...children.map(c => c.discriminatorValue)] } : meta.discriminatorValue;
 
     return where;
   }
@@ -359,6 +360,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       let cond: Dictionary;
 
       if (filter.cond instanceof Function) {
+        // @ts-ignore
         const args = Utils.isPlainObject(options[filter.name]) ? options[filter.name] : this.getContext().filterParams[filter.name];
 
         if (!args && filter.cond.length > 0 && filter.args !== false) {
@@ -632,7 +634,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       entityName = Utils.className(entityNameOrEntity as EntityName<Entity>);
     }
 
-    const meta = this.metadata.get(entityName);
+    const meta = this.metadata.get<Entity>(entityName);
     const convertCustomTypes = !Utils.isEntity(data);
 
     if (Utils.isEntity(data)) {
@@ -669,7 +671,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
             where = Utils.asArray(u.properties).reduce((o, key) => {
               o[key] = data![key];
               return o;
-            }, {} as FilterQuery<Entity>);
+            }, {} as any);
             break;
           }
         }
@@ -677,7 +679,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     if (where == null) {
-      const compositeUniqueProps = meta.uniques.map(u => Utils.asArray(u.properties).join(' + '));
+      const compositeUniqueProps = meta.uniques.map(u => Utils.asArray(u.properties).join(' + ')) as EntityKey<Entity>[];
       const uniqueProps = meta.primaryKeys.concat(...unique).concat(compositeUniqueProps);
       throw new Error(`Unique property value required for upsert, provide one of: ${uniqueProps.join(', ')}`);
     }
@@ -748,13 +750,13 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     let propIndex: number;
 
     if (data === undefined) {
-      entityName = entityNameOrEntity[0].constructor.name;
+      entityName = (entityNameOrEntity as Entity[])[0].constructor.name;
       data = entityNameOrEntity as Entity[];
     } else {
       entityName = Utils.className(entityNameOrEntity as EntityName<Entity>);
     }
 
-    const meta = this.metadata.get(entityName);
+    const meta = this.metadata.get<Entity>(entityName);
     const convertCustomTypes = !Utils.isEntity(data[0]);
     const allData: EntityData<Entity>[] = [];
     const allWhere: FilterQuery<Entity>[] = [];
@@ -793,14 +795,14 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
       if (where == null) {
         if (propIndex >= 0) {
-          where = { [unique[propIndex]]: row[unique[propIndex]] } as FilterQuery<Entity>;
+          where = { [unique[propIndex]]: row[unique[propIndex] as EntityKey<Entity>] } as FilterQuery<Entity>;
         } else if (meta.uniques.length > 0) {
           for (const u of meta.uniques) {
             if (Utils.asArray(u.properties).every(p => row![p])) {
               where = Utils.asArray(u.properties).reduce((o, key) => {
                 o[key] = row![key];
                 return o;
-              }, {} as FilterQuery<Entity>);
+              }, {} as Dictionary) as FilterQuery<Entity>;
               break;
             }
           }
@@ -809,7 +811,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
       if (where == null) {
         const compositeUniqueProps = meta.uniques.map(u => Utils.asArray(u.properties).join(' + '));
-        const uniqueProps = meta.primaryKeys.concat(...unique).concat(compositeUniqueProps);
+        const uniqueProps = (meta.primaryKeys as string[]).concat(...unique).concat(compositeUniqueProps);
         throw new Error(`Unique property value required for upsert, provide one of: ${uniqueProps.join(', ')}`);
       }
 
@@ -1001,7 +1003,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     let entityName;
 
     if (data === undefined) {
-      entityName = (entityNameOrEntities[0] as Dictionary).constructor.name;
+      entityName = ((entityNameOrEntities as Entity[])[0] as Dictionary).constructor.name;
       data = entityNameOrEntities as Entity[];
     } else {
       entityName = Utils.className(entityNameOrEntities as EntityName<Entity>);
@@ -1536,7 +1538,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
   private buildFields<T extends object, P extends string>(fields: readonly EntityField<T, P>[]): readonly AutoPath<T, P>[] {
     return fields.reduce((ret, f) => {
       if (Utils.isPlainObject(f)) {
-        Object.keys(f).forEach(ff => ret.push(...this.buildFields(f[ff]).map(field => `${ff}.${field}` as never)));
+        Utils.keys(f).forEach(ff => ret.push(...this.buildFields(f[ff]!).map(field => `${ff as string}.${field}` as never)));
       } else {
         ret.push(f as never);
       }

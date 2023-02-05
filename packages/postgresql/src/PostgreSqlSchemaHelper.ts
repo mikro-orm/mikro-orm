@@ -79,7 +79,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const sql = this.getIndexesSQL(tables);
     const unquote = (str: string) => str.replace(/['"`]/g, '');
     const allIndexes = await connection.execute<any[]>(sql);
-    const ret = {};
+    const ret = {} as Dictionary;
 
     for (const index of allIndexes) {
       const key = this.getTableKey(index);
@@ -114,7 +114,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
 
     const allColumns = await connection.execute<any[]>(sql);
     const str = (val: string | number | undefined) => val != null ? '' + val : val;
-    const ret = {};
+    const ret = {} as Dictionary;
 
     for (const col of allColumns) {
       const mappedType = connection.getPlatform().getMappedType(col.data_type);
@@ -142,7 +142,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
   async getAllChecks(connection: AbstractSqlConnection, tables: Table[]): Promise<Dictionary<CheckDef[]>> {
     const sql = this.getChecksSQL(tables);
     const allChecks = await connection.execute<{ name: string; column_name: string; schema_name: string; table_name: string; expression: string }[]>(sql);
-    const ret = {};
+    const ret = {} as Dictionary;
 
     for (const check of allChecks) {
       const key = this.getTableKey(check);
@@ -178,7 +178,7 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
       and tco.constraint_type = 'FOREIGN KEY'
       order by kcu.table_schema, kcu.table_name, kcu.ordinal_position, kcu.constraint_name`;
     const allFks = await connection.execute<any[]>(sql);
-    const ret = {};
+    const ret = {} as Dictionary;
 
     for (const fk of allFks) {
       const key = this.getTableKey(fk);
