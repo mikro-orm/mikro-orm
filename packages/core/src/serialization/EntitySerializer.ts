@@ -131,7 +131,7 @@ export class EntitySerializer {
     return prop;
   }
 
-  private static processProperty<T extends object>(prop: EntityKey<T>, entity: T, options: SerializeOptions<T, any>): T[keyof T] | undefined {
+  private static processProperty<T extends object>(prop: EntityKey<T>, entity: T, options: SerializeOptions<T, any>): EntityValue<T> | undefined {
     const parts = prop.split('.');
     prop = parts[0] as EntityKey<T>;
     const wrapped = helper(entity);
@@ -163,11 +163,11 @@ export class EntitySerializer {
     /* istanbul ignore next */
     if (property?.kind === ReferenceKind.EMBEDDED) {
       if (Array.isArray(entity[prop])) {
-        return (entity[prop] as object[]).map(item => helper(item).toJSON()) as T[keyof T];
+        return (entity[prop] as object[]).map(item => helper(item).toJSON()) as EntityValue<T>;
       }
 
       if (Utils.isObject(entity[prop])) {
-        return helper(entity[prop]!).toJSON() as T[keyof T];
+        return helper(entity[prop]!).toJSON() as EntityValue<T>;
       }
     }
 
@@ -177,7 +177,7 @@ export class EntitySerializer {
       return customType.toJSON(entity[prop], wrapped.__platform);
     }
 
-    return wrapped.__platform.normalizePrimaryKey(entity[prop] as unknown as IPrimaryKey) as unknown as T[keyof T];
+    return wrapped.__platform.normalizePrimaryKey(entity[prop] as unknown as IPrimaryKey) as unknown as EntityValue<T>;
   }
 
   private static extractChildOptions<T extends object, U extends object>(options: SerializeOptions<T, any>, prop: EntityKey<T>): SerializeOptions<U, any> {
@@ -194,20 +194,20 @@ export class EntitySerializer {
     } as SerializeOptions<U, any>;
   }
 
-  private static processEntity<T extends object>(prop: EntityKey<T>, entity: T, platform: Platform, options: SerializeOptions<T, any>): T[keyof T] | undefined {
+  private static processEntity<T extends object>(prop: EntityKey<T>, entity: T, platform: Platform, options: SerializeOptions<T, any>): EntityValue<T> | undefined {
     const child = Reference.unwrapReference(entity[prop] as T);
     const wrapped = helper(child);
     const populated = isPopulated(child, prop, options) && wrapped.isInitialized();
     const expand = populated || options.forceObject || !wrapped.__managed;
 
     if (expand) {
-      return this.serialize(child, this.extractChildOptions(options, prop)) as T[keyof T];
+      return this.serialize(child, this.extractChildOptions(options, prop)) as EntityValue<T>;
     }
 
-    return platform.normalizePrimaryKey(wrapped.getPrimaryKey() as IPrimaryKey) as T[keyof T];
+    return platform.normalizePrimaryKey(wrapped.getPrimaryKey() as IPrimaryKey) as EntityValue<T>;
   }
 
-  private static processCollection<T extends object>(prop: EntityKey<T>, entity: T, options: SerializeOptions<T, any>): T[keyof T] | undefined {
+  private static processCollection<T extends object>(prop: EntityKey<T>, entity: T, options: SerializeOptions<T, any>): EntityValue<T> | undefined {
     const col = entity[prop] as unknown as Collection<T>;
 
     if (!col.isInitialized()) {
@@ -220,7 +220,7 @@ export class EntitySerializer {
       }
 
       return helper(item).getPrimaryKey();
-    }) as unknown as T[keyof T];
+    }) as unknown as EntityValue<T>;
   }
 
 }
