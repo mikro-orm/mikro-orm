@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import type { EntityData, EntityMetadata, EntityDictionary, Primary } from '../typings';
+import type { EntityData, EntityMetadata, EntityDictionary, Primary, Dictionary } from '../typings';
 import { helper } from '../entity/wrap';
 import { Utils } from '../utils/Utils';
 
@@ -45,7 +45,7 @@ export class ChangeSet<T extends object> {
   }
 
   [inspect.custom](depth: number) {
-    const object = { ...this };
+    const object = { ...this } as Dictionary;
     const hidden = ['meta', 'serializedPrimaryKey'];
     hidden.forEach(k => delete object[k]);
     const ret = inspect(object, { depth });

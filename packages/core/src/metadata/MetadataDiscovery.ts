@@ -8,6 +8,7 @@ import type { Configuration } from '../utils/Configuration';
 import { MetadataValidator } from './MetadataValidator';
 import { MetadataStorage } from './MetadataStorage';
 import { EntitySchema } from './EntitySchema';
+import type { EventType } from '../enums';
 import { Cascade, ReferenceKind } from '../enums';
 import { MetadataError } from '../errors';
 import type { Platform } from '../platforms';
@@ -315,7 +316,7 @@ export class MetadataDiscovery {
     copy.props
       .filter(prop => Type.isMappedType(prop.type))
       .forEach(prop => {
-        ['type', 'customType']
+        (['type', 'customType'] as const)
           .filter(k => Type.isMappedType(prop[k]))
           .forEach(k => delete (prop as Dictionary)[k]);
       });
@@ -515,8 +516,8 @@ export class MetadataDiscovery {
   }
 
   private initFactoryField<T>(meta: EntityMetadata<T>, prop: EntityProperty<T>): void {
-    ['mappedBy', 'inversedBy', 'pivotEntity'].forEach(type => {
-      const value = prop[type];
+    (['mappedBy', 'inversedBy', 'pivotEntity'] as const).forEach(type => {
+      const value = prop[type] as unknown;
 
       if (value instanceof Function) {
         const meta2 = this.metadata.get(prop.type);
@@ -711,8 +712,8 @@ export class MetadataDiscovery {
       meta.primaryKeys = pks;
     }
 
-    Object.keys(base.hooks).forEach(type => {
-      meta.hooks[type] = Utils.unique([...base.hooks[type], ...(meta.hooks[type] || [])]);
+    Utils.keys(base.hooks).forEach(type => {
+      meta.hooks[type] = Utils.unique([...base.hooks[type as EventType]!, ...(meta.hooks[type] || [])]);
     });
 
     if (meta.constructorParams.length === 0 && base.constructorParams.length > 0) {

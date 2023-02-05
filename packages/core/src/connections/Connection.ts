@@ -45,7 +45,7 @@ export abstract class Connection {
   async close(force?: boolean): Promise<void> {
     Object.keys(this.options)
       .filter(k => k !== 'name')
-      .forEach(k => delete this.options[k]);
+      .forEach(k => delete this.options[k as keyof ConnectionOptions]);
   }
 
   /**

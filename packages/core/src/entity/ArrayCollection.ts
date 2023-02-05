@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import type { EntityDTO, EntityProperty, IPrimaryKey, Primary } from '../typings';
+import type { Dictionary, EntityDTO, EntityProperty, EntityValue, IPrimaryKey, Primary } from '../typings';
 import { Reference } from './Reference';
 import { helper, wrap } from './wrap';
 import { MetadataError, ValidationError } from '../errors';
@@ -250,7 +250,7 @@ export class ArrayCollection<T extends object, O extends object> {
     const collection = item[this.property.inversedBy as keyof T] as unknown as ArrayCollection<O, T>;
 
     if (this.shouldPropagateToCollection(collection, method)) {
-      collection[method](this.owner);
+      collection[method as 'add'](this.owner);
     }
   }
 
@@ -259,7 +259,7 @@ export class ArrayCollection<T extends object, O extends object> {
 
     if (this.property.kind === ReferenceKind.MANY_TO_MANY) {
       if (this.shouldPropagateToCollection(collection, method)) {
-        collection[method](this.owner);
+        collection[method as 'add'](this.owner);
       }
     } else if (this.property.kind === ReferenceKind.ONE_TO_MANY && method !== 'takeSnapshot') {
       const prop2 = this.property.targetMeta!.properties[this.property.mappedBy];
@@ -271,7 +271,7 @@ export class ArrayCollection<T extends object, O extends object> {
         helper(item).__pk = helper(item).getPrimaryKey()!;
       }
 
-      if (!prop2.nullable && prop2.onDelete !== 'cascade' && method === 'remove') {
+      if (!prop2.nullable && prop2.updateRule !== 'cascade' && method === 'remove') {
         if (!this.property.orphanRemoval) {
           throw ValidationError.cannotRemoveFromCollectionWithoutOrphanRemoval(this.owner, this.property);
         }
@@ -280,8 +280,8 @@ export class ArrayCollection<T extends object, O extends object> {
       }
 
       // skip if already propagated
-      if (Reference.unwrapReference(item[this.property.mappedBy]) !== value) {
-        item[this.property.mappedBy] = value;
+      if (Reference.unwrapReference(item[this.property.mappedBy] as object) !== value) {
+        item[this.property.mappedBy] = value as EntityValue<T>;
       }
     }
   }
@@ -308,7 +308,7 @@ export class ArrayCollection<T extends object, O extends object> {
   }
 
   [inspect.custom](depth: number) {
-    const object = { ...this };
+    const object = { ...this } as Dictionary;
     const hidden = ['items', 'owner', '_property', '_count', 'snapshot', '_populated', '_lazyInitialized'];
     hidden.forEach(k => delete object[k]);
     const ret = inspect(object, { depth });

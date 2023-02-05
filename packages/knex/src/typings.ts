@@ -13,7 +13,6 @@ export type KnexStringRef = Knex.Ref<string, {
   [alias: string]: string;
 }>;
 
-// eslint-disable-next-line @typescript-eslint/ban-types
 type AnyString = string & {};
 
 export type Field<T> = AnyString | keyof T | KnexStringRef | Knex.QueryBuilder;
@@ -149,16 +148,16 @@ export interface IQueryBuilder<T> {
   raw(field: string): any;
 }
 
-export interface ICriteriaNode {
+export interface ICriteriaNode<T extends object> {
   readonly entityName: string;
-  readonly parent?: ICriteriaNode | undefined;
+  readonly parent?: ICriteriaNode<T> | undefined;
   readonly key?: string | undefined;
   payload: any;
   prop?: EntityProperty;
   index?: number;
-  process<T>(qb: IQueryBuilder<T>, alias?: string): any;
+  process(qb: IQueryBuilder<T>, alias?: string): any;
   shouldInline(payload: any): boolean;
-  willAutoJoin<T>(qb: IQueryBuilder<T>, alias?: string): boolean;
+  willAutoJoin(qb: IQueryBuilder<T>, alias?: string): boolean;
   shouldRename(payload: any): boolean;
   renameFieldToPK<T>(qb: IQueryBuilder<T>): string;
   getPath(addIndex?: boolean): string;
