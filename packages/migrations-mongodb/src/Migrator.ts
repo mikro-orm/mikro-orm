@@ -184,7 +184,7 @@ export class Migrator implements IMigrator {
       delete options.transaction;
     }
 
-    ['from', 'to'].filter(k => options[k]).forEach(k => options[k] = this.getMigrationFilename(options[k]));
+    (['from', 'to'] as const).filter(k => options[k]).forEach(k => options[k] = this.getMigrationFilename(options[k] as string));
 
     return options as MigrateUpOptions;
   }
