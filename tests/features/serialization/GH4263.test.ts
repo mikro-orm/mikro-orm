@@ -40,7 +40,7 @@ afterAll(() => orm.close(true));
 
 test('serialization with nulls', async () => {
   const expDto = { id: '1', details: { code: 2 } };
-  await orm.em.nativeInsert(ListEntity2Test, expDto);
+  await orm.em.insert(ListEntity2Test, expDto);
   const entity = await orm.em.findOneOrFail(ListEntity2Test, { id: '1' });
   const dto = serialize(entity, { skipNull: true });
   expect(dto).toEqual(expDto);

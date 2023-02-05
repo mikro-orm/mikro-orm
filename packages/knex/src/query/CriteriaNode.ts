@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import { ReferenceKind, Utils, type Dictionary, type EntityProperty, type MetadataStorage } from '@mikro-orm/core';
+import { ReferenceKind, Utils, type Dictionary, type EntityProperty, type MetadataStorage, type EntityKey } from '@mikro-orm/core';
 import type { ICriteriaNode, IQueryBuilder } from '../typings';
 
 /**
@@ -7,21 +7,21 @@ import type { ICriteriaNode, IQueryBuilder } from '../typings';
  * Auto-joins relations and converts payload from { books: { publisher: { name: '...' } } } to { 'publisher_alias.name': '...' }
  * @internal
  */
-export class CriteriaNode implements ICriteriaNode {
+export class CriteriaNode<T extends object> implements ICriteriaNode<T> {
 
   payload: any;
-  prop?: EntityProperty;
+  prop?: EntityProperty<T>;
   index?: number;
 
   constructor(protected readonly metadata: MetadataStorage,
               readonly entityName: string,
-              readonly parent?: ICriteriaNode,
-              readonly key?: string,
+              readonly parent?: ICriteriaNode<T>,
+              readonly key?: EntityKey<T>,
               validate = true) {
-    const meta = parent && metadata.find(parent.entityName);
+    const meta = parent && metadata.find<T>(parent.entityName);
 
     if (meta && key) {
-      const pks = Utils.splitPrimaryKeys(key);
+      const pks = Utils.splitPrimaryKeys<T>(key);
 
       if (pks.length > 1) {
         return;
@@ -39,7 +39,7 @@ export class CriteriaNode implements ICriteriaNode {
     }
   }
 
-  process<T>(qb: IQueryBuilder<T>, alias?: string): any {
+  process(qb: IQueryBuilder<T>, alias?: string): any {
     return this.payload;
   }
 
@@ -47,7 +47,7 @@ export class CriteriaNode implements ICriteriaNode {
     return false;
   }
 
-  willAutoJoin<T>(qb: IQueryBuilder<T>, alias?: string) {
+  willAutoJoin(qb: IQueryBuilder<T>, alias?: string) {
     return false;
   }
 
@@ -122,7 +122,7 @@ export class CriteriaNode implements ICriteriaNode {
 
   [inspect.custom]() {
     const o: Dictionary = {};
-    ['entityName', 'key', 'index', 'payload']
+    (['entityName', 'key', 'index', 'payload'] as const)
       .filter(k => this[k] !== undefined)
       .forEach(k => o[k] = this[k]);
 

@@ -1,5 +1,5 @@
 import type { Collection } from '../entity/Collection';
-import type { AnyEntity, EntityData, EntityMetadata, IPrimaryKey } from '../typings';
+import type { AnyEntity, EntityData, EntityKey, EntityMetadata, EntityValue, IPrimaryKey } from '../typings';
 import { helper, wrap } from '../entity/wrap';
 import type { Platform } from '../platforms';
 import { Utils } from '../utils/Utils';
@@ -7,7 +7,7 @@ import { ReferenceKind } from '../enums';
 import type { Reference } from '../entity/Reference';
 import { SerializationContext } from './SerializationContext';
 
-function isVisible<T extends object>(meta: EntityMetadata<T>, propName: string, ignoreFields: string[] = []): boolean {
+function isVisible<T extends object>(meta: EntityMetadata<T>, propName: EntityKey<T>, ignoreFields: string[] = []): boolean {
   const prop = meta.properties[propName];
   const visible = prop && !prop.hidden;
   const prefixed = prop && !prop.primary && propName.startsWith('_'); // ignore prefixed properties, if it's not a PK
@@ -34,7 +34,7 @@ export class EntityTransformer {
     const root = wrapped.__serializationContext.root!;
     const meta = wrapped.__meta;
     const ret = {} as EntityData<T>;
-    const keys = new Set<string>();
+    const keys = new Set<EntityKey<T>>();
 
     if (meta.serializedPrimaryKey && !meta.compositePK) {
       keys.add(meta.serializedPrimaryKey);
@@ -43,7 +43,7 @@ export class EntityTransformer {
     }
 
     if (wrapped.isInitialized() || !wrapped.hasPrimaryKey()) {
-      Object.keys(entity as object).forEach(prop => keys.add(prop));
+      Utils.keys(entity as object).forEach(prop => keys.add(prop));
     }
 
     const visited = root.visited.has(entity);
@@ -61,16 +61,16 @@ export class EntityTransformer {
           return [prop, undefined];
         }
 
-        const val = EntityTransformer.processProperty<T>(prop as keyof T & string, entity, raw);
+        const val = EntityTransformer.processProperty<T>(prop, entity, raw);
 
         if (!cycle) {
           root.leave(meta.className, prop);
         }
 
-        return [prop, val];
+        return [prop, val] as const;
       })
       .filter(([, value]) => typeof value !== 'undefined')
-      .forEach(([prop, value]) => ret[this.propertyName(meta, prop as keyof T & string, wrapped.__platform)] = value as T[keyof T & string]);
+      .forEach(([prop, value]) => ret[this.propertyName(meta, prop!, wrapped.__platform)] = value as EntityValue<T>);
 
     if (!visited) {
       root.visited.delete(entity);
@@ -83,11 +83,13 @@ export class EntityTransformer {
     // decorated getters
     meta.props
       .filter(prop => prop.getter && prop.getterName === undefined && !prop.hidden && typeof entity[prop.name] !== 'undefined')
+      // @ts-ignore
       .forEach(prop => ret[this.propertyName(meta, prop.name, wrapped.__platform)] = this.processProperty(prop.name, entity, raw));
 
     // decorated get methods
     meta.props
       .filter(prop => prop.getterName && !prop.hidden && entity[prop.getterName] as unknown instanceof Function)
+      // @ts-ignore
       .forEach(prop => ret[this.propertyName(meta, prop.name, wrapped.__platform)] = this.processProperty(prop.getterName as keyof T & string, entity, raw));
 
     if (contextCreated) {
@@ -97,19 +99,19 @@ export class EntityTransformer {
     return ret;
   }
 
-  private static propertyName<T>(meta: EntityMetadata<T>, prop: keyof T & string, platform?: Platform): string {
+  private static propertyName<T>(meta: EntityMetadata<T>, prop: EntityKey<T>, platform?: Platform): EntityKey<T> {
     if (meta.properties[prop].serializedName) {
-      return meta.properties[prop].serializedName as keyof T & string;
+      return meta.properties[prop].serializedName as EntityKey<T>;
     }
 
     if (meta.properties[prop].primary && platform) {
-      return platform.getSerializedPrimaryKeyField(prop) as keyof T & string;
+      return platform.getSerializedPrimaryKeyField(prop) as EntityKey<T>;
     }
 
     return prop;
   }
 
-  private static processProperty<T extends object>(prop: keyof T & string, entity: T, raw: boolean): T[keyof T] | undefined {
+  private static processProperty<T extends object>(prop: EntityKey<T>, entity: T, raw: boolean): T[keyof T] | undefined {
     const wrapped = helper(entity);
     const property = wrapped.__meta.properties[prop];
     const serializer = property?.serializer;
