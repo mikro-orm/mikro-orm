@@ -329,6 +329,8 @@ export interface EntityProperty<T = any> {
 
 export class EntityMetadata<T = any> {
 
+  private static counter = 0;
+  readonly _id = 1000 * EntityMetadata.counter++; // keep the id >= 1000 to allow computing cache keys by simple addition
   readonly propertyOrder = new Map<string, number>();
 
   constructor(meta: Partial<EntityMetadata> = {}) {
@@ -519,6 +521,8 @@ export interface EntityMetadata<T = any> {
   polymorphs?: EntityMetadata[];
   root: EntityMetadata<T>;
   definedProperties: Dictionary;
+  /** @internal can be used for computed numeric cache keys */
+  readonly _id: number;
 }
 
 export interface ISchemaGenerator {
