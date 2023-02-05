@@ -54,9 +54,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
   [EntityManagerType]!: SqlEntityManager<this>;
 
-  protected readonly connection: Connection;
-  protected readonly replicas: Connection[] = [];
-  protected readonly platform: Platform;
+  protected override readonly connection: Connection;
+  protected override readonly replicas: Connection[] = [];
+  protected override readonly platform: Platform;
 
   protected constructor(config: Configuration, platform: Platform, connection: Constructor<Connection>, connector: string[]) {
     super(config, connector);
@@ -65,11 +65,11 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     this.platform = platform;
   }
 
-  getPlatform(): Platform {
+  override getPlatform(): Platform {
     return this.platform;
   }
 
-  createEntityManager<D extends IDatabaseDriver = IDatabaseDriver>(useContext?: boolean): D[typeof EntityManagerType] {
+  override createEntityManager<D extends IDatabaseDriver = IDatabaseDriver>(useContext?: boolean): D[typeof EntityManagerType] {
     return new SqlEntityManager(this.config, this, this.metadata, useContext) as unknown as EntityManager<D>;
   }
 
@@ -151,7 +151,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return res[0] || null;
   }
 
-  async findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any>): Promise<EntityData<T>[]> {
+  override async findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any>): Promise<EntityData<T>[]> {
     const meta = this.metadata.get<T>(entityName);
 
     /* istanbul ignore next */
@@ -175,7 +175,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return res as EntityData<T>[];
   }
 
-  async countVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: CountOptions<T>): Promise<number> {
+  override async countVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: CountOptions<T>): Promise<number> {
     const meta = this.metadata.get<T>(entityName);
 
     /* istanbul ignore next */
@@ -230,7 +230,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return res.map(row => this.mapResult(row, meta)!);
   }
 
-  mapResult<T extends object>(result: EntityData<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[] = [], qb?: QueryBuilder<T>, map: Dictionary = {}): EntityData<T> | null {
+  override mapResult<T extends object>(result: EntityData<T>, meta: EntityMetadata<T>, populate: PopulateOptions<T>[] = [], qb?: QueryBuilder<T>, map: Dictionary = {}): EntityData<T> | null {
     const ret = super.mapResult(result, meta);
 
     /* istanbul ignore if */
@@ -479,7 +479,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return res;
   }
 
-  async nativeUpdateMany<T extends object>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
+  override async nativeUpdateMany<T extends object>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
     options.processCollections ??= true;
     options.convertCustomTypes ??= true;
     const meta = this.metadata.get<T>(entityName);
@@ -586,7 +586,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return this.rethrow(qb.execute('run', false));
   }
 
-  async syncCollection<T extends object, O extends object>(coll: Collection<T, O>, options?: DriverMethodOptions): Promise<void> {
+  override async syncCollection<T extends object, O extends object>(coll: Collection<T, O>, options?: DriverMethodOptions): Promise<void> {
     const wrapped = helper(coll.owner);
     const meta = wrapped.__meta;
     const pks = wrapped.getPrimaryKeys(true)!;
@@ -631,7 +631,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     return this.rethrow(this.updateCollectionDiff<T, O>(meta, coll.property, pks, deleteDiff, insertDiff, options));
   }
 
-  async loadFromPivotTable<T extends object, O extends object>(prop: EntityProperty, owners: Primary<O>[][], where: FilterQuery<any> = {} as FilterQuery<any>, orderBy?: QueryOrderMap<T>[], ctx?: Transaction, options?: FindOptions<T, any>): Promise<Dictionary<T[]>> {
+  override async loadFromPivotTable<T extends object, O extends object>(prop: EntityProperty, owners: Primary<O>[][], where: FilterQuery<any> = {} as FilterQuery<any>, orderBy?: QueryOrderMap<T>[], ctx?: Transaction, options?: FindOptions<T, any>): Promise<Dictionary<T[]>> {
     const pivotProp2 = this.getPivotInverseProperty(prop);
     const ownerMeta = this.metadata.find(pivotProp2.type)!;
     const pivotMeta = this.metadata.find(prop.pivotEntity)!;
@@ -917,7 +917,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
     }
   }
 
-  async lockPessimistic<T extends object>(entity: T, options: LockOptions): Promise<void> {
+  override async lockPessimistic<T extends object>(entity: T, options: LockOptions): Promise<void> {
     const meta = helper(entity).__meta;
     const qb = this.createQueryBuilder((entity as object).constructor.name, options.ctx).unsetFlag(QueryFlag.CONVERT_CUSTOM_TYPES).withSchema(options.schema ?? meta.schema);
     const cond = Utils.getPrimaryKeyCond(entity, meta.primaryKeys);

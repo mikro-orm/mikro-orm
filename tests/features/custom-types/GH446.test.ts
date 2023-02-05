@@ -15,15 +15,15 @@ import { MySqlDriver } from '@mikro-orm/mysql';
 
 export class UuidBinaryType extends Type<string, Buffer> {
 
-  convertToDatabaseValue(value: string): Buffer {
+  override convertToDatabaseValue(value: string): Buffer {
     return Buffer.from(parse(value) as number[]);
   }
 
-  convertToJSValue(value: Buffer): string {
+  override convertToJSValue(value: Buffer): string {
     return stringify(value);
   }
 
-  getColumnType(): string {
+  override getColumnType(): string {
     return 'binary(16)';
   }
 

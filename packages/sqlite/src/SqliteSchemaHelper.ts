@@ -4,24 +4,24 @@ import { SchemaHelper } from '@mikro-orm/knex';
 
 export class SqliteSchemaHelper extends SchemaHelper {
 
-  disableForeignKeysSQL(): string {
+  override disableForeignKeysSQL(): string {
     return 'pragma foreign_keys = off;';
   }
 
-  enableForeignKeysSQL(): string {
+  override enableForeignKeysSQL(): string {
     return 'pragma foreign_keys = on;';
   }
 
-  supportsSchemaConstraints(): boolean {
+  override supportsSchemaConstraints(): boolean {
     return false;
   }
 
-  getListTablesSQL(): string {
+  override getListTablesSQL(): string {
     return `select name as table_name from sqlite_master where type = 'table' and name != 'sqlite_sequence' and name != 'geometry_columns' and name != 'spatial_ref_sys' `
       + `union all select name as table_name from sqlite_temp_master where type = 'table' order by name`;
   }
 
-  async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<any[]> {
+  override async getColumns(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<any[]> {
     const columns = await connection.execute<any[]>(`pragma table_info('${tableName}')`);
     const sql = `select sql from sqlite_master where type = ? and name = ?`;
     const tableDefinition = await connection.execute<{ sql: string }>(sql, ['table', tableName], 'get');
@@ -44,7 +44,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
     });
   }
 
-  async getEnumDefinitions(connection: AbstractSqlConnection, checks: CheckDef[], tableName: string, schemaName: string): Promise<Dictionary<string[]>> {
+  override async getEnumDefinitions(connection: AbstractSqlConnection, checks: CheckDef[], tableName: string, schemaName: string): Promise<Dictionary<string[]>> {
     const sql = `select sql from sqlite_master where type = ? and name = ?`;
     const tableDefinition = await connection.execute<{ sql: string }>(sql, ['table', tableName], 'get');
 
@@ -63,14 +63,14 @@ export class SqliteSchemaHelper extends SchemaHelper {
     }, {} as Dictionary<string[]>);
   }
 
-  async getPrimaryKeys(connection: AbstractSqlConnection, indexes: IndexDef[], tableName: string, schemaName?: string): Promise<string[]> {
+  override async getPrimaryKeys(connection: AbstractSqlConnection, indexes: IndexDef[], tableName: string, schemaName?: string): Promise<string[]> {
     const sql = `pragma table_info(\`${tableName}\`)`;
     const cols = await connection.execute<{ pk: number; name: string }[]>(sql);
 
     return cols.filter(col => !!col.pk).map(col => col.name);
   }
 
-  async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<IndexDef[]> {
+  override async getIndexes(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<IndexDef[]> {
     const sql = `pragma table_info(\`${tableName}\`)`;
     const cols = await connection.execute<{ pk: number; name: string }[]>(sql);
     const indexes = await connection.execute<any[]>(`pragma index_list(\`${tableName}\`)`);
@@ -98,16 +98,16 @@ export class SqliteSchemaHelper extends SchemaHelper {
     return this.mapIndexes(ret);
   }
 
-  async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<CheckDef[]> {
+  override async getChecks(connection: AbstractSqlConnection, tableName: string, schemaName?: string): Promise<CheckDef[]> {
     // Not supported at the moment.
     return [];
   }
 
-  getForeignKeysSQL(tableName: string): string {
+  override getForeignKeysSQL(tableName: string): string {
     return `pragma foreign_key_list(\`${tableName}\`)`;
   }
 
-  mapForeignKeys(fks: any[], tableName: string): Dictionary {
+  override mapForeignKeys(fks: any[], tableName: string): Dictionary {
     return fks.reduce((ret, fk: any) => {
       ret[fk.from] = {
         constraintName: this.platform.getIndexName(tableName, [fk.from], 'foreign'),
@@ -125,7 +125,7 @@ export class SqliteSchemaHelper extends SchemaHelper {
     }, {});
   }
 
-  async databaseExists(connection: Connection, name: string): Promise<boolean> {
+  override async databaseExists(connection: Connection, name: string): Promise<boolean> {
     return true;
   }
 

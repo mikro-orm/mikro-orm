@@ -5,7 +5,7 @@ import { Utils } from '../utils';
 
 export class JsonType extends Type<unknown, string | null> {
 
-  convertToDatabaseValue(value: unknown, platform: Platform): string | null {
+  override convertToDatabaseValue(value: unknown, platform: Platform): string | null {
     if (platform.convertsJsonAutomatically(true) || value === null) {
       return value as string;
     }
@@ -13,7 +13,7 @@ export class JsonType extends Type<unknown, string | null> {
     return JSON.stringify(value);
   }
 
-  convertToJSValue(value: string | unknown, platform: Platform): unknown {
+  override convertToJSValue(value: string | unknown, platform: Platform): unknown {
     if (!platform.convertsJsonAutomatically() && Utils.isString(value)) {
       return JSON.parse(value);
     }
@@ -21,7 +21,7 @@ export class JsonType extends Type<unknown, string | null> {
     return value;
   }
 
-  getColumnType(prop: EntityProperty, platform: Platform): string {
+  override getColumnType(prop: EntityProperty, platform: Platform): string {
     return platform.getJsonDeclarationSQL();
   }
 

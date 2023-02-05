@@ -12,7 +12,7 @@ export class MongoMikroORM extends MikroORM<MongoDriver> {
   /**
    * @inheritDoc
    */
-  static async init<D extends IDatabaseDriver = MongoDriver>(options?: Options<D>): Promise<MikroORM<D>> {
+  static override async init<D extends IDatabaseDriver = MongoDriver>(options?: Options<D>): Promise<MikroORM<D>> {
     return super.init(options);
   }
 
