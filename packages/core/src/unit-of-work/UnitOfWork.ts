@@ -5,6 +5,7 @@ import type {
   EntityData,
   EntityMetadata,
   EntityProperty,
+  EntityValue,
   FilterQuery,
   IPrimaryKeyValue,
   Primary,
@@ -100,8 +101,8 @@ export class UnitOfWork {
       Object.keys(data).forEach(key => wrapped.__loadedProperties.add(key));
 
       wrapped.__meta.relations.forEach(prop => {
-        if (Utils.isPlainObject(data[prop.name as string])) {
-          data[prop.name as string] = Utils.getPrimaryKeyValues(data[prop.name as string], prop.targetMeta!.primaryKeys, true);
+        if (Utils.isPlainObject(data[prop.name])) {
+          data[prop.name] = Utils.getPrimaryKeyValues(data[prop.name], prop.targetMeta!.primaryKeys, true);
         }
       });
 
@@ -116,7 +117,7 @@ export class UnitOfWork {
       });
 
       if (this.em.config.get('forceUndefined')) {
-        Object.keys(data).forEach(key => {
+        Utils.keys(data).forEach(key => {
           if (data[key] === null) {
             data[key] = undefined;
           }
@@ -302,7 +303,7 @@ export class UnitOfWork {
     // remove from referencing relations that are nullable
     for (const prop of helper(entity).__meta.bidirectionalRelations) {
       const inverseProp = prop.mappedBy || prop.inversedBy;
-      const relation = Reference.unwrapReference(entity[prop.name] as object);
+      const relation = Reference.unwrapReference(entity[prop.name] as T);
       const prop2 = prop.targetMeta!.properties[inverseProp];
 
       if (prop.kind === ReferenceKind.ONE_TO_MANY && prop2.nullable && Utils.isCollection<AnyEntity>(relation)) {
@@ -311,6 +312,7 @@ export class UnitOfWork {
       }
 
       if (relation && Utils.isCollection(relation[inverseProp])) {
+        // @ts-expect-error TS fails to respect the type guard on object props
         relation[inverseProp].removeWithoutPropagation(entity);
       }
     }
@@ -588,8 +590,8 @@ export class UnitOfWork {
         return prop.kind === ReferenceKind.SCALAR || prop.mapToPk ? entity[prop.name] : helper(entity[prop.name]!).getSerializedPrimaryKey();
       }
 
-      if (wrapped.__originalEntityData?.[prop.name as string] != null) {
-        return Utils.getPrimaryKeyHash(Utils.asArray(wrapped.__originalEntityData![prop.name as string]));
+      if (wrapped.__originalEntityData?.[prop.name] != null) {
+        return Utils.getPrimaryKeyHash(Utils.asArray(wrapped.__originalEntityData![prop.name] as string));
       }
 
       return undefined;
@@ -698,8 +700,8 @@ export class UnitOfWork {
     Object.assign(changeSet.payload, diff);
     const wrapped = helper(changeSet.entity);
 
-    if (wrapped.__identifier && diff[wrapped.__meta.primaryKeys[0] as string]) {
-      wrapped.__identifier.setValue(diff[wrapped.__meta.primaryKeys[0] as string] as IPrimaryKeyValue);
+    if (wrapped.__identifier && diff[wrapped.__meta.primaryKeys[0]]) {
+      wrapped.__identifier.setValue(diff[wrapped.__meta.primaryKeys[0]] as IPrimaryKeyValue);
     }
 
     this.insideHooks = false;
@@ -821,10 +823,10 @@ export class UnitOfWork {
 
     if ([ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(prop.kind) && kind && !prop.mapToPk) {
       if (!Utils.isEntity(kind)) {
-        entity[prop.name] = this.em.getReference(prop.type, kind as Primary<T[string & keyof T]>, { wrapped: !!prop.ref }) as T[string & keyof T];
+        entity[prop.name] = this.em.getReference(prop.type, kind, { wrapped: !!prop.ref }) as EntityValue<T>;
       } else if (!helper(kind).__initialized && !helper(kind).__em) {
         const pk = helper(kind).getPrimaryKey();
-        entity[prop.name] = this.em.getReference(prop.type, pk as Primary<T[string & keyof T]>, { wrapped: !!prop.ref }) as T[string & keyof T];
+        entity[prop.name] = this.em.getReference(prop.type, pk, { wrapped: !!prop.ref }) as EntityValue<T>;
       }
     }
 
@@ -950,7 +952,7 @@ export class UnitOfWork {
     const props = changeSet.meta.uniqueProps;
 
     for (const prop of props) {
-      const insert = inserts.find(c => Utils.equals(c.payload[prop.name], changeSet.originalEntity![prop.name as string]));
+      const insert = inserts.find(c => Utils.equals(c.payload[prop.name], changeSet.originalEntity![prop.name]));
       const propEmpty = changeSet.payload[prop.name] === null || changeSet.payload[prop.name] === undefined;
 
       if (
@@ -1006,7 +1008,7 @@ export class UnitOfWork {
 
     for (const extraUpdate of this.extraUpdates) {
       if (Array.isArray(extraUpdate[1])) {
-        extraUpdate[1].forEach((p, i) => extraUpdate[0][p] = extraUpdate[2][i]);
+        extraUpdate[1].forEach((p, i) => extraUpdate[0][p] = (extraUpdate[2] as unknown[])[i]);
       } else {
         extraUpdate[0][extraUpdate[1]] = extraUpdate[2];
       }
