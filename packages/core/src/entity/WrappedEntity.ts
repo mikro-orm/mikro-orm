@@ -2,7 +2,7 @@ import { inspect } from 'util';
 import type { EntityManager } from '../EntityManager';
 import type {
   AnyEntity, ConnectionType, Dictionary, EntityData, EntityDictionary, EntityMetadata, IHydrator,
-  IWrappedEntityInternal, Populate, PopulateOptions, Primary, AutoPath, Loaded, Ref,
+  IWrappedEntityInternal, Populate, PopulateOptions, Primary, AutoPath, Loaded, Ref, EntityValue,
 } from '../typings';
 import { Reference } from './Reference';
 import { EntityTransformer } from '../serialization/EntityTransformer';
@@ -170,7 +170,7 @@ export class WrappedEntity<T extends object> {
   }
 
   setPrimaryKey(id: Primary<T> | null) {
-    this.entity[this.__meta!.primaryKeys[0] as string] = id;
+    this.entity[this.__meta!.primaryKeys[0]] = id as EntityValue<T>;
     this.__pk = id!;
   }
 
@@ -187,7 +187,7 @@ export class WrappedEntity<T extends object> {
   }
 
   get __primaryKeys(): Primary<T>[] {
-    return Utils.getPrimaryKeyValues(this.entity, this.__meta!.primaryKeys);
+    return Utils.getPrimaryKeyValues(this.entity, this.__meta!.primaryKeys) as Primary<T>[];
   }
 
   [inspect.custom]() {
