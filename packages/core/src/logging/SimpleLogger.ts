@@ -6,7 +6,7 @@ export class SimpleLogger extends DefaultLogger {
   /**
    * @inheritDoc
    */
-  log(namespace: LoggerNamespace, message: string, context?: LogContext): void {
+  override log(namespace: LoggerNamespace, message: string, context?: LogContext): void {
     if (!this.isEnabled(namespace)) {
       return;
     }
@@ -20,7 +20,7 @@ export class SimpleLogger extends DefaultLogger {
   /**
    * @inheritDoc
    */
-  logQuery(context: { query: string } & LogContext): void {
+  override logQuery(context: { query: string } & LogContext): void {
     if (!this.isEnabled('query')) {
       return;
     }

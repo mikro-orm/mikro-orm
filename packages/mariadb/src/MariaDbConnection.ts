@@ -21,7 +21,7 @@ export class MariaDbConnection extends AbstractSqlConnection {
     return 'mysql://root@127.0.0.1:3306';
   }
 
-  getConnectionOptions(): Knex.MySqlConnectionConfig {
+  override getConnectionOptions(): Knex.MySqlConnectionConfig {
     const ret = super.getConnectionOptions() as Knex.MySqlConnectionConfig;
 
     if (this.config.get('multipleStatements')) {

@@ -69,7 +69,7 @@ export class MongoConnection extends Connection {
     this.connected = true;
   }
 
-  async close(force?: boolean): Promise<void> {
+  override async close(force?: boolean): Promise<void> {
     await this.client?.close(!!force);
     this.connected = false;
   }
@@ -103,7 +103,7 @@ export class MongoConnection extends Connection {
     return 'mongodb://127.0.0.1:27017';
   }
 
-  getConnectionOptions(): MongoClientOptions & ConnectionConfig {
+  override getConnectionOptions(): MongoClientOptions & ConnectionConfig {
     const ret: MongoClientOptions = {};
     const pool = this.config.get('pool')!;
     const username = this.config.get('user');
@@ -128,7 +128,7 @@ export class MongoConnection extends Connection {
     return Utils.mergeConfig(ret, this.config.get('driverOptions'));
   }
 
-  getClientUrl(): string {
+  override getClientUrl(): string {
     const options = this.getConnectionOptions();
     const clientUrl = this.config.getClientUrl(true);
     const match = clientUrl.match(/^(\w+):\/\/((.*@.+)|.+)$/);
@@ -224,7 +224,7 @@ export class MongoConnection extends Connection {
     return this.runQuery<T, number>('countDocuments', collection, undefined, where, ctx);
   }
 
-  async transactional<T>(cb: (trx: Transaction<ClientSession>) => Promise<T>, options: { isolationLevel?: IsolationLevel; ctx?: Transaction<ClientSession>; eventBroadcaster?: TransactionEventBroadcaster } & TransactionOptions = {}): Promise<T> {
+  override async transactional<T>(cb: (trx: Transaction<ClientSession>) => Promise<T>, options: { isolationLevel?: IsolationLevel; ctx?: Transaction<ClientSession>; eventBroadcaster?: TransactionEventBroadcaster } & TransactionOptions = {}): Promise<T> {
     const session = await this.begin(options);
 
     try {
@@ -240,7 +240,7 @@ export class MongoConnection extends Connection {
     }
   }
 
-  async begin(options: { isolationLevel?: IsolationLevel; ctx?: ClientSession; eventBroadcaster?: TransactionEventBroadcaster } & TransactionOptions = {}): Promise<ClientSession> {
+  override async begin(options: { isolationLevel?: IsolationLevel; ctx?: ClientSession; eventBroadcaster?: TransactionEventBroadcaster } & TransactionOptions = {}): Promise<ClientSession> {
     const { ctx, isolationLevel, eventBroadcaster, ...txOptions } = options;
 
     if (!ctx) {
@@ -254,14 +254,14 @@ export class MongoConnection extends Connection {
     return session;
   }
 
-  async commit(ctx: ClientSession, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
+  override async commit(ctx: ClientSession, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
     await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionCommit, ctx);
     await ctx.commitTransaction();
     this.logQuery('db.commit();');
     await eventBroadcaster?.dispatchEvent(EventType.afterTransactionCommit, ctx);
   }
 
-  async rollback(ctx: ClientSession, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
+  override async rollback(ctx: ClientSession, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
     await eventBroadcaster?.dispatchEvent(EventType.beforeTransactionRollback, ctx);
     await ctx.abortTransaction();
     this.logQuery('db.rollback();');
