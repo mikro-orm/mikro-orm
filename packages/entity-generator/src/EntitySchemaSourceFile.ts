@@ -3,7 +3,7 @@ import { SourceFile } from './SourceFile';
 
 export class EntitySchemaSourceFile extends SourceFile {
 
-  generate(): string {
+  override generate(): string {
     this.coreImports.add('EntitySchema');
     let ret = `export class ${this.meta.className} {`;
     const enumDefinitions: string[] = [];
@@ -84,7 +84,7 @@ export class EntitySchemaSourceFile extends SourceFile {
     return ret;
   }
 
-  getBaseName() {
+  override getBaseName() {
     return this.meta.className + '.ts';
   }
 

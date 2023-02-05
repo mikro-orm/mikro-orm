@@ -4,11 +4,11 @@ import type { EntityProperty } from '../typings';
 
 export class UuidType extends Type<string | null | undefined> {
 
-  getColumnType(prop: EntityProperty, platform: Platform) {
+  override getColumnType(prop: EntityProperty, platform: Platform) {
     return platform.getUuidTypeDeclarationSQL(prop);
   }
 
-  compareAsType(): string {
+  override compareAsType(): string {
     return 'string';
   }
 
