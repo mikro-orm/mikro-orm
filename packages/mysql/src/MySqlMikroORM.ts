@@ -11,7 +11,7 @@ export class MySqlMikroORM extends MikroORM<MySqlDriver> {
   /**
    * @inheritDoc
    */
-  static async init<D extends IDatabaseDriver = MySqlDriver>(options?: Options<D>): Promise<MikroORM<D>> {
+  static override async init<D extends IDatabaseDriver = MySqlDriver>(options?: Options<D>): Promise<MikroORM<D>> {
     return super.init(options);
   }
 

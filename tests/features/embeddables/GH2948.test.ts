@@ -71,19 +71,19 @@ function removeUnderscorePrefix(value: string): string {
 
 export class CustomNamingStrategy extends UnderscoreNamingStrategy {
 
-  joinColumnName(propertyName: string): string {
+  override joinColumnName(propertyName: string): string {
     return removeUnderscorePrefix(super.joinColumnName(propertyName));
   }
 
-  joinKeyColumnName(entityName: string, referencedColumnName?: string): string {
+  override joinKeyColumnName(entityName: string, referencedColumnName?: string): string {
     return removeUnderscorePrefix(super.joinKeyColumnName(entityName, referencedColumnName));
   }
 
-  propertyToColumnName(propertyName: string): string {
+  override propertyToColumnName(propertyName: string): string {
     return removeUnderscorePrefix(super.propertyToColumnName(propertyName));
   }
 
-  referenceColumnName(): string {
+  override referenceColumnName(): string {
     return removeUnderscorePrefix(super.referenceColumnName());
   }
 

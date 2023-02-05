@@ -27,7 +27,7 @@ class MigrationTest2 extends Migration {
     expect(res).toEqual([{ count1: 2 }]);
   }
 
-  isTransactional(): boolean {
+  override isTransactional(): boolean {
     return false;
   }
 
