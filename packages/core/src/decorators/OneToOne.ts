@@ -2,7 +2,7 @@ import { ReferenceKind } from '../enums';
 import { createOneToDecorator, type OneToManyOptions } from './OneToMany';
 import type { AnyString, EntityName } from '../typings';
 
-export function OneToOne<T, O>(
+export function OneToOne<T extends object, O>(
   entity?: OneToOneOptions<T, O> | string | ((e?: any) => EntityName<T>),
   mappedByOrOptions?: (string & keyof T) | ((e: T) => any) | Partial<OneToOneOptions<T, O>>,
   options: Partial<OneToOneOptions<T, O>> = {},

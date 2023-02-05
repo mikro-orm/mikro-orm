@@ -114,7 +114,7 @@ export class SchemaCommandFactory {
       await generator.dropSchema(params);
       await generator.createSchema(params);
     } else {
-      const m = method + 'Schema';
+      const m = method + 'Schema' as 'createSchema';
       await generator[m](params);
     }
 

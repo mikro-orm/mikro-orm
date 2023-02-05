@@ -6,7 +6,7 @@ export class OrderSummary {
 
   @OneToOne({
     entity: () => Order,
-    onDelete: 'cascade',
+    deleteRule: 'cascade',
     primary: true,
     mapToPk: true,
   })

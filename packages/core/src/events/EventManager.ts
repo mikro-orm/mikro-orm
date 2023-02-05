@@ -16,11 +16,11 @@ export class EventManager {
   registerSubscriber(subscriber: EventSubscriber): void {
     this.subscribers.push(subscriber);
     this.entities.set(subscriber, this.getSubscribedEntities(subscriber));
-    Object.keys(EventType)
+    Utils.keys(EventType)
       .filter(event => event in subscriber)
       .forEach(event => {
-        this.listeners[event] = this.listeners[event] || [];
-        this.listeners[event].push(subscriber);
+        this.listeners[event] ??= [];
+        this.listeners[event]!.push(subscriber);
       });
   }
 
