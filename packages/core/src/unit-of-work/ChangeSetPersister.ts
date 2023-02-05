@@ -93,7 +93,7 @@ export class ChangeSetPersister {
   private processProperties<T extends object>(changeSet: ChangeSet<T>): void {
     const meta = this.metadata.find(changeSet.name)!;
 
-    for (const prop of meta.props) {
+    for (const prop of meta.relations) {
       this.processProperty(changeSet, prop);
     }
 
@@ -362,16 +362,23 @@ export class ChangeSetPersister {
 
   private processProperty<T extends object>(changeSet: ChangeSet<T>, prop: EntityProperty<T>): void {
     const meta = this.metadata.find(changeSet.name)!;
-    const values = Utils.unwrapProperty(changeSet.payload, meta, prop, true); // for object embeddables
     const value = changeSet.payload[prop.name] as unknown; // for inline embeddables
+
+    if (value instanceof EntityIdentifier) {
+      changeSet.payload[prop.name] = value.getValue();
+      return;
+    }
 
     if (prop.kind === ReferenceKind.MANY_TO_MANY && Array.isArray(value)) {
       changeSet.payload[prop.name] = value.map(val => val instanceof EntityIdentifier ? val.getValue() : val);
+      return;
     }
 
-    if (value instanceof EntityIdentifier) {
-      Utils.setPayloadProperty<T>(changeSet.payload, meta, prop, value.getValue());
+    if (prop.name in changeSet.payload) {
+      return;
     }
+
+    const values = Utils.unwrapProperty(changeSet.payload, meta, prop, true); // for object embeddables
 
     values.forEach(([value, indexes]) => {
       if (value instanceof EntityIdentifier) {
