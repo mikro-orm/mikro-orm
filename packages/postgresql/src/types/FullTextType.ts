@@ -2,15 +2,15 @@ import { Type } from '@mikro-orm/core';
 
 export class FullTextType extends Type<string, string> {
 
-  compareAsType(): string {
+  override compareAsType(): string {
     return 'string';
   }
 
-  getColumnType(): string {
+  override getColumnType(): string {
     return 'tsvector';
   }
 
-  convertToDatabaseValueSQL(key: string) {
+  override convertToDatabaseValueSQL(key: string) {
     return `to_tsvector('simple', ${key})`;
   }
 

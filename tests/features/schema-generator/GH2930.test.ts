@@ -31,7 +31,7 @@ describe('GH issue 2930', () => {
         driver: PostgreSqlDriver,
         namingStrategy: class extends UnderscoreNamingStrategy {
 
-          indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check'): string {
+          override indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check'): string {
             if (type === 'primary') {
               return `pk_${tableName}_${columns.join('_')}`;
             }
@@ -60,7 +60,7 @@ describe('GH issue 2930', () => {
         driver: PostgreSqlDriver,
         namingStrategy: class extends UnderscoreNamingStrategy {
 
-          indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check'): string {
+          override indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check'): string {
             return super.indexName(tableName, columns, type);
           }
 
@@ -87,7 +87,7 @@ describe('GH issue 2930', () => {
         port: 3308,
         namingStrategy: class extends UnderscoreNamingStrategy {
 
-          indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check'): string {
+          override indexName(tableName: string, columns: string[], type: 'primary' | 'foreign' | 'unique' | 'index' | 'sequence' | 'check'): string {
             if (type === 'primary') {
               return `pk_${tableName}_${columns.join('_')}`;
             }

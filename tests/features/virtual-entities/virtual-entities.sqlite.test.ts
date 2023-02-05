@@ -50,7 +50,7 @@ const AuthorProfileSchema2 = new EntitySchema({
     age: { type: 'string' },
     totalBooks: { type: 'number' },
     usedTags: { type: 'string[]' },
-    identity: { type: 'Identity', reference: ReferenceType.EMBEDDED, object: true },
+    identity: { type: 'Identity', reference: ReferenceKind.EMBEDDED, object: true },
   },
 });
 

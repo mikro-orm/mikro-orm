@@ -7,7 +7,7 @@ import type { EntityProperty } from '../typings';
  */
 export class BigIntType extends Type<string | bigint | null | undefined, string | null | undefined> {
 
-  convertToDatabaseValue(value: string | bigint | null | undefined): string | null | undefined {
+  override convertToDatabaseValue(value: string | bigint | null | undefined): string | null | undefined {
     if (value == null) {
       return value as null | undefined;
     }
@@ -15,7 +15,7 @@ export class BigIntType extends Type<string | bigint | null | undefined, string 
     return '' + value;
   }
 
-  convertToJSValue(value: string | bigint | null | undefined): string | null | undefined {
+  override convertToJSValue(value: string | bigint | null | undefined): string | null | undefined {
     if (value == null) {
       return value as null | undefined;
     }
@@ -23,11 +23,11 @@ export class BigIntType extends Type<string | bigint | null | undefined, string 
     return '' + value;
   }
 
-  getColumnType(prop: EntityProperty, platform: Platform) {
+  override getColumnType(prop: EntityProperty, platform: Platform) {
     return platform.getBigIntTypeDeclarationSQL(prop);
   }
 
-  compareAsType(): string {
+  override compareAsType(): string {
     return 'string';
   }
 
