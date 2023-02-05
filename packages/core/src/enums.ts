@@ -1,4 +1,4 @@
-import type { Dictionary, ExcludeFunctions, ExpandProperty } from './typings';
+import type { Dictionary, EntityKey, ExcludeFunctions, ExpandProperty } from './typings';
 import type { Transaction } from './connections';
 
 export enum FlushMode {
@@ -76,7 +76,7 @@ export type QueryOrderKeysFlat = QueryOrder | QueryOrderNumeric | keyof typeof Q
 export type QueryOrderKeys<T> = QueryOrderKeysFlat | QueryOrderMap<T>;
 
 export type QueryOrderMap<T> = {
-  [K in keyof T as ExcludeFunctions<T, K>]?: QueryOrderKeys<ExpandProperty<T[K]>>;
+  [K in EntityKey<T>]?: QueryOrderKeys<ExpandProperty<T[K]>>;
 };
 
 export type QBQueryOrderMap<T> = QueryOrderMap<T> | Dictionary;

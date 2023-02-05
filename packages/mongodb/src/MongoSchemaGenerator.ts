@@ -159,7 +159,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
         properties.forEach(prop => spec[prop] = index.type!);
         fieldOrSpec = spec;
       } else {
-        fieldOrSpec = properties.reduce((o, i) => { o[i] = 1; return o; }, {});
+        fieldOrSpec = properties.reduce((o, i) => { o[i] = 1; return o; }, {} as Dictionary);
       }
 
       res.push([collection.collectionName, collection.createIndex(fieldOrSpec, {
@@ -176,7 +176,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     const res: [string, Promise<string>][] = [];
     meta.uniques.forEach(index => {
       const properties = Utils.flatten(Utils.asArray(index.properties).map(prop => meta.properties[prop].fieldNames));
-      const fieldOrSpec = properties.reduce((o, i) => { o[i] = 1; return o; }, {});
+      const fieldOrSpec = properties.reduce((o, i) => { o[i] = 1; return o; }, {} as Dictionary);
       const collection = this.connection.getCollection(meta.name!);
       res.push([collection.collectionName, collection.createIndex(fieldOrSpec, {
         name: index.name,
@@ -194,7 +194,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     }
 
     const collection = this.connection.getCollection(meta.name!);
-    const fieldOrSpec = prop.fieldNames.reduce((o, i) => { o[i] = 1; return o; }, {});
+    const fieldOrSpec = prop.fieldNames.reduce((o, i) => { o[i] = 1; return o; }, {} as Dictionary);
 
     return [[collection.collectionName, collection.createIndex(fieldOrSpec, {
       name: (Utils.isString(prop[type]) ? prop[type] : undefined) as string,

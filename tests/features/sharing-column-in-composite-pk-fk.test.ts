@@ -5,7 +5,7 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryKey,
-  PrimaryKeyType,
+  PrimaryKeyProp,
   Property,
   ref,
   Ref,
@@ -65,8 +65,6 @@ class OrderItem {
 @Entity()
 class Organization {
 
-  [PrimaryKeyType]?: string;
-
   @PrimaryKey({ type: 'uuid' })
   id!: string;
 
@@ -102,7 +100,7 @@ class Product {
 @Entity()
 class ProductInfo {
 
-  [PrimaryKeyType]?: [string, string];
+  [PrimaryKeyProp]?: ['id', 'organization'];
 
   @PrimaryKey({ type: 'uuid' })
   id!: string;

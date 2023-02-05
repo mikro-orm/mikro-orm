@@ -1,4 +1,15 @@
-import { Collection, Entity, ManyToMany, ManyToOne, OneToMany, OneToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
+import {
+  Collection,
+  Dictionary,
+  Entity,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  OptionalProps,
+  PrimaryKey,
+  Property,
+} from '@mikro-orm/core';
 import { Book2 } from './Book2';
 import { Configuration2 } from './Configuration2';
 import { FooBar2 } from './FooBar2';
@@ -43,7 +54,7 @@ export class Test2 {
   }
 
   getConfiguration(): Record<string, string> {
-    return this.config.getItems().reduce((c, v) => { c[v.property] = v.value; return c; }, {});
+    return this.config.getItems().reduce((c, v) => { c[v.property] = v.value; return c; }, {} as Dictionary);
   }
 
 }

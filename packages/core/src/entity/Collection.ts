@@ -1,4 +1,15 @@
-import type { AnyEntity, EntityData, EntityDTO, EntityMetadata, FilterQuery, Loaded, LoadedCollection, Populate, Primary, ConnectionType } from '../typings';
+import type {
+  AnyEntity,
+  EntityData,
+  EntityDTO,
+  EntityMetadata,
+  FilterQuery,
+  Loaded,
+  LoadedCollection,
+  Populate,
+  Primary,
+  ConnectionType, Dictionary, FilterKey,
+} from '../typings';
 import { ArrayCollection } from './ArrayCollection';
 import { Utils } from '../utils/Utils';
 import { ValidationError } from '../errors';
@@ -313,9 +324,9 @@ export class Collection<T extends object, O extends object = object> extends Arr
     return em;
   }
 
-  private createCondition(cond: FilterQuery<T> = {} as FilterQuery<T>): FilterQuery<T> {
+  private createCondition(cond: FilterQuery<T> = {}): FilterQuery<T> {
     if (this.property.kind === ReferenceKind.ONE_TO_MANY) {
-      cond[this.property.mappedBy] = helper(this.owner).getPrimaryKey();
+      cond[this.property.mappedBy as FilterKey<T>] = helper(this.owner).getPrimaryKey() as any;
     } else { // MANY_TO_MANY
       this.createManyToManyCondition(cond);
     }
@@ -335,28 +346,31 @@ export class Collection<T extends object, O extends object = object> extends Arr
   }
 
   private createManyToManyCondition(cond: FilterQuery<T>) {
+    const dict = cond as Dictionary;
+
     if (this.property.owner || this.property.pivotTable) {
       // we know there is at least one item as it was checked in load method
       const pk = this.property.targetMeta!.primaryKeys[0];
-      cond[pk] = { $in: [] };
-      this.items.forEach(item => cond[pk].$in.push(helper(item).getPrimaryKey()));
+      dict[pk] = { $in: [] };
+      this.items.forEach(item => dict[pk].$in.push(helper(item).getPrimaryKey()));
     } else {
-      cond[this.property.mappedBy] = helper(this.owner).getPrimaryKey();
+      dict[this.property.mappedBy] = helper(this.owner).getPrimaryKey();
     }
   }
 
   private createLoadCountCondition(cond: FilterQuery<T>, pivotMeta?: EntityMetadata) {
     const wrapped = helper(this.owner);
     const val = wrapped.__meta.compositePK ? { $in: wrapped.__primaryKeys } : wrapped.getPrimaryKey();
+    const dict = cond as Dictionary;
 
     if (this.property.kind === ReferenceKind.ONE_TO_MANY) {
-      cond[this.property.mappedBy] = val;
+      dict[this.property.mappedBy] = val;
     } else if (pivotMeta && this.property.owner && !this.property.inversedBy) {
       const key = `${this.property.pivotEntity}.${pivotMeta.relations[0].name}`;
-      cond[key] = val;
+      dict[key] = val;
     } else {
       const key = this.property.owner ? this.property.inversedBy : this.property.mappedBy;
-      cond[key] = val;
+      dict[key] = val;
     }
 
     return cond;
