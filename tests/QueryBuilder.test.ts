@@ -16,7 +16,7 @@ describe('QueryBuilder', () => {
     orm = await initORMMySql('mysql', {
       namingStrategy: class NS extends UnderscoreNamingStrategy {
 
-        aliasName(entityName: string, index: number): string {
+        override aliasName(entityName: string, index: number): string {
           return 'e' + index;
         }
 

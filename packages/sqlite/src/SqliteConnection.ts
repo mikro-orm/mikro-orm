@@ -20,17 +20,17 @@ export class SqliteConnection extends AbstractSqlConnection {
     return '';
   }
 
-  getClientUrl(): string {
+  override getClientUrl(): string {
     return '';
   }
 
-  async loadFile(path: string): Promise<void> {
+  override async loadFile(path: string): Promise<void> {
     const conn = await this.client.client.acquireConnection();
     await conn.exec((await readFile(path)).toString());
     await this.client.client.releaseConnection(conn);
   }
 
-  protected getKnexOptions(type: string): Knex.Config {
+  protected override getKnexOptions(type: string): Knex.Config {
     return Utils.merge({
       client: type,
       connection: {

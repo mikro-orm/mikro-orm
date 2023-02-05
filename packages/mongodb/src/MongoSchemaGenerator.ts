@@ -8,7 +8,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     orm.config.registerExtension('@mikro-orm/schema-generator', () => new MongoSchemaGenerator(orm.em));
   }
 
-  async createSchema(options: CreateSchemaOptions = {}): Promise<void> {
+  override async createSchema(options: CreateSchemaOptions = {}): Promise<void> {
     options.ensureIndexes ??= true;
     const existing = await this.connection.listCollections();
     const metadata = this.getOrderedMetadata();
@@ -32,7 +32,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     await Promise.all(promises);
   }
 
-  async dropSchema(): Promise<void> {
+  override async dropSchema(): Promise<void> {
     const db = this.connection.getDb();
     const collections = await db.listCollections().toArray();
     const existing = collections.map(c => c.name);
@@ -44,15 +44,15 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     await Promise.all(promises);
   }
 
-  async updateSchema(options: CreateSchemaOptions = {}): Promise<void> {
+  override async updateSchema(options: CreateSchemaOptions = {}): Promise<void> {
     await this.createSchema(options);
   }
 
-  async ensureDatabase(): Promise<boolean> {
+  override async ensureDatabase(): Promise<boolean> {
     return false;
   }
 
-  async refreshDatabase(options: CreateSchemaOptions = {}): Promise<void> {
+  override async refreshDatabase(options: CreateSchemaOptions = {}): Promise<void> {
     await this.ensureDatabase();
     await this.dropSchema();
     await this.createSchema(options);
@@ -83,7 +83,7 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
     await Promise.all(promises);
   }
 
-  async ensureIndexes(options: EnsureIndexesOptions = {}): Promise<void> {
+  override async ensureIndexes(options: EnsureIndexesOptions = {}): Promise<void> {
     options.ensureCollections ??= true;
     options.retryLimit ??= 3;
 
