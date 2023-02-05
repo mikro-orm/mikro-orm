@@ -109,7 +109,7 @@ export class EntityTransformer {
     return prop;
   }
 
-  private static processProperty<T extends object>(prop: EntityKey<T>, entity: T, raw: boolean): T[keyof T] | undefined {
+  private static processProperty<T extends object>(prop: EntityKey<T>, entity: T, raw: boolean): EntityValue<T> | undefined {
     const wrapped = helper(entity);
     const property = wrapped.__meta.properties[prop];
     const serializer = property?.serializer;
@@ -131,11 +131,11 @@ export class EntityTransformer {
         return (entity[prop] as object[]).map(item => {
           const wrapped = item && helper(item);
           return wrapped ? wrapped.toJSON() : item;
-        }) as T[keyof T];
+        }) as EntityValue<T>;
       }
 
       const wrapped = entity[prop] && helper(entity[prop]!);
-      return wrapped ? wrapped.toJSON() as T[keyof T] : entity[prop];
+      return wrapped ? wrapped.toJSON() as EntityValue<T> : entity[prop];
     }
 
     const customType = property?.customType;
@@ -144,39 +144,41 @@ export class EntityTransformer {
       return customType.toJSON(entity[prop], wrapped.__platform);
     }
 
-    return wrapped.__platform.normalizePrimaryKey(entity[prop] as unknown as IPrimaryKey) as unknown as T[keyof T];
+    return wrapped.__platform.normalizePrimaryKey(entity[prop] as unknown as IPrimaryKey) as unknown as EntityValue<T>;
   }
 
-  private static processEntity<T extends object>(prop: keyof T, entity: T, platform: Platform, raw: boolean): T[keyof T] | undefined {
+  private static processEntity<T extends object>(prop: keyof T, entity: T, platform: Platform, raw: boolean): EntityValue<T> | undefined {
     const child = entity[prop] as unknown as T | Reference<T>;
     const wrapped = helper(child);
 
     if (raw && wrapped.isInitialized() && child !== entity) {
-      return wrapped.toPOJO() as unknown as T[keyof T];
+      return wrapped.toPOJO() as unknown as EntityValue<T>;
     }
 
     if (wrapped.isInitialized() && (wrapped.__populated || !wrapped.__managed) && child !== entity && !wrapped.__lazyInitialized) {
       const args = [...wrapped.__meta.toJsonParams.map(() => undefined)];
-      return wrap(child).toJSON(...args) as T[keyof T];
+      return wrap(child).toJSON(...args) as EntityValue<T>;
     }
 
-    return platform.normalizePrimaryKey(wrapped.getPrimaryKey() as IPrimaryKey) as unknown as T[keyof T];
+    return platform.normalizePrimaryKey(wrapped.getPrimaryKey() as IPrimaryKey) as unknown as EntityValue<T>;
   }
 
-  private static processCollection<T>(prop: keyof T, entity: T, raw: boolean): T[keyof T] | undefined {
-    const col = entity[prop] as unknown as Collection<AnyEntity>;
+  private static processCollection<T>(prop: keyof T, entity: T, raw: boolean): EntityValue<T> | undefined {
+    const col = entity[prop] as Collection<AnyEntity>;
 
     if (raw && col.isInitialized(true)) {
-      return col.getItems().map(item => wrap(item).toPOJO()) as unknown as T[keyof T];
+      return col.getItems().map(item => wrap(item).toPOJO()) as EntityValue<T>;
     }
 
     if (col.isInitialized(true) && col.shouldPopulate()) {
-      return col.toArray() as unknown as T[keyof T];
+      return col.toArray() as EntityValue<T>;
     }
 
     if (col.isInitialized()) {
-      return col.getIdentifiers() as unknown as T[keyof T];
+      return col.getIdentifiers() as EntityValue<T>;
     }
+
+    return undefined;
   }
 
 }
