@@ -10,32 +10,32 @@ import { MongoSchemaGenerator } from './MongoSchemaGenerator';
 
 export class MongoPlatform extends Platform {
 
-  protected readonly exceptionConverter = new MongoExceptionConverter();
+  protected override readonly exceptionConverter = new MongoExceptionConverter();
 
-  setConfig(config: Configuration) {
+  override setConfig(config: Configuration) {
     config.set('autoJoinOneToOneOwner', false);
     super.setConfig(config);
   }
 
-  getNamingStrategy(): { new(): NamingStrategy} {
+  override getNamingStrategy(): { new(): NamingStrategy} {
     return MongoNamingStrategy;
   }
 
-  getRepositoryClass<T extends object>(): Constructor<EntityRepository<T>> {
+  override getRepositoryClass<T extends object>(): Constructor<EntityRepository<T>> {
     return MongoEntityRepository as unknown as Constructor<EntityRepository<T>>;
   }
 
   /** @inheritDoc */
-  lookupExtensions(orm: MikroORM): void {
+  override lookupExtensions(orm: MikroORM): void {
     MongoSchemaGenerator.register(orm);
   }
 
   /* istanbul ignore next: kept for type inference only */
-  getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): MongoSchemaGenerator {
+  override getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): MongoSchemaGenerator {
     return new MongoSchemaGenerator(em ?? driver as any);
   }
 
-  normalizePrimaryKey<T extends number | string = number | string>(data: Primary<T> | IPrimaryKey | ObjectId): T {
+  override normalizePrimaryKey<T extends number | string = number | string>(data: Primary<T> | IPrimaryKey | ObjectId): T {
     if (data instanceof ObjectId) {
       return data.toHexString() as T;
     }
@@ -43,38 +43,38 @@ export class MongoPlatform extends Platform {
     return data as T;
   }
 
-  denormalizePrimaryKey(data: number | string): IPrimaryKey {
+  override denormalizePrimaryKey(data: number | string): IPrimaryKey {
     return new ObjectId(data);
   }
 
-  getSerializedPrimaryKeyField(field: string): string {
+  override getSerializedPrimaryKeyField(field: string): string {
     return 'id';
   }
 
-  usesDifferentSerializedPrimaryKey(): boolean {
+  override usesDifferentSerializedPrimaryKey(): boolean {
     return true;
   }
 
-  usesImplicitTransactions(): boolean {
+  override usesImplicitTransactions(): boolean {
     return false;
   }
 
-  convertsJsonAutomatically(marshall = false): boolean {
+  override convertsJsonAutomatically(marshall = false): boolean {
     return true;
   }
 
-  marshallArray(values: string[]): string {
+  override marshallArray(values: string[]): string {
     return values as unknown as string;
   }
 
-  cloneEmbeddable<T>(data: T): T {
+  override cloneEmbeddable<T>(data: T): T {
     const ret = super.cloneEmbeddable(data);
     Utils.dropUndefinedProperties(ret);
 
     return ret;
   }
 
-  shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[]): boolean {
+  override shouldHaveColumn<T>(prop: EntityProperty<T>, populate: PopulateOptions<T>[]): boolean {
     if (super.shouldHaveColumn(prop, populate)) {
       return true;
     }
@@ -82,7 +82,7 @@ export class MongoPlatform extends Platform {
     return prop.kind === ReferenceKind.MANY_TO_MANY && prop.owner;
   }
 
-  validateMetadata(meta: EntityMetadata): void {
+  override validateMetadata(meta: EntityMetadata): void {
     const pk = meta.getPrimaryProps()[0];
 
     if (pk && pk.fieldNames?.[0] !== '_id') {
@@ -90,7 +90,7 @@ export class MongoPlatform extends Platform {
     }
   }
 
-  isAllowedTopLevelOperator(operator: string) {
+  override isAllowedTopLevelOperator(operator: string) {
     return ['$not', '$fulltext'].includes(operator);
   }
 

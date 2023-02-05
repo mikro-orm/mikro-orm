@@ -6,14 +6,14 @@ import { expr, Utils } from '@mikro-orm/core';
 
 export class MySqlPlatform extends AbstractSqlPlatform {
 
-  protected readonly schemaHelper: MySqlSchemaHelper = new MySqlSchemaHelper(this);
-  protected readonly exceptionConverter = new MySqlExceptionConverter();
+  protected override readonly schemaHelper: MySqlSchemaHelper = new MySqlSchemaHelper(this);
+  protected override readonly exceptionConverter = new MySqlExceptionConverter();
 
-  getDefaultCharset(): string {
+  override getDefaultCharset(): string {
     return 'utf8mb4';
   }
 
-  getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
+  override getSearchJsonPropertyKey(path: string[], type: string, aliased: boolean): string {
     const [a, ...b] = path;
 
     if (aliased) {
@@ -23,11 +23,11 @@ export class MySqlPlatform extends AbstractSqlPlatform {
     return `${this.quoteIdentifier(a)}->'$.${b.join('.')}'`;
   }
 
-  getBooleanTypeDeclarationSQL(): string {
+  override getBooleanTypeDeclarationSQL(): string {
     return 'tinyint(1)';
   }
 
-  getDefaultMappedType(type: string): Type<unknown> {
+  override getDefaultMappedType(type: string): Type<unknown> {
     if (type === 'tinyint(1)') {
       return super.getDefaultMappedType('boolean');
     }
@@ -41,7 +41,7 @@ export class MySqlPlatform extends AbstractSqlPlatform {
     return super.getDefaultMappedType(map[normalizedType] ?? type);
   }
 
-  supportsUnsigned(): boolean {
+  override supportsUnsigned(): boolean {
     return true;
   }
 
@@ -49,7 +49,7 @@ export class MySqlPlatform extends AbstractSqlPlatform {
    * Returns the default name of index for the given columns
    * cannot go past 64 character length for identifiers in MySQL
    */
-  getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
+  override getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
     if (type === 'primary') {
       return this.getDefaultPrimaryName(tableName, columns);
     }
@@ -62,19 +62,19 @@ export class MySqlPlatform extends AbstractSqlPlatform {
     return indexName;
   }
 
-  getDefaultPrimaryName(tableName: string, columns: string[]): string {
+  override getDefaultPrimaryName(tableName: string, columns: string[]): string {
     return 'PRIMARY'; // https://dev.mysql.com/doc/refman/8.0/en/create-table.html#create-table-indexes-keys
   }
 
-  supportsCreatingFullTextIndex(): boolean {
+  override supportsCreatingFullTextIndex(): boolean {
     return true;
   }
 
-  getFullTextWhereClause(): string {
+  override getFullTextWhereClause(): string {
     return `match(:column:) against (:query in boolean mode)`;
   }
 
-  getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
+  override getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
     /* istanbul ignore next */
     const quotedTableName = this.quoteIdentifier(schemaName ? `${schemaName}.${tableName}` : tableName);
     const quotedColumnNames = columns.map(c => this.quoteIdentifier(c.name));

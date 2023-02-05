@@ -11,14 +11,14 @@ export class MySqlDriver extends AbstractSqlDriver<MySqlConnection, MySqlPlatfor
     super(config, new MySqlPlatform(), MySqlConnection, ['knex', 'mysql2']);
   }
 
-  async init(): Promise<void> {
+  override async init(): Promise<void> {
     await super.init();
     // the increment step may differ when running a cluster, see https://github.com/mikro-orm/mikro-orm/issues/3828
     const res = await this.connection.execute(`show variables like 'auto_increment_increment'`);
     this.autoIncrementIncrement = res[0]?.auto_increment_increment ? +res[0]?.auto_increment_increment : 1;
   }
 
-  async nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
+  override async nativeInsertMany<T extends object>(entityName: string, data: EntityDictionary<T>[], options: NativeInsertUpdateManyOptions<T> = {}): Promise<QueryResult<T>> {
     options.processCollections ??= true;
     const res = await super.nativeInsertMany(entityName, data, options);
     const pks = this.getPrimaryKeyFields(entityName);
