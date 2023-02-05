@@ -2,8 +2,10 @@ import { inspect } from 'util';
 import type {
   ConnectionType,
   Dictionary,
-  EntityClass, EntityKey,
+  EntityClass,
   EntityProperty,
+  Loaded,
+  EntityKey,
   LoadedReference,
   Populate,
   Primary,
@@ -97,7 +99,7 @@ export class Reference<T extends object> {
    * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
    * Returns the entity.
    */
-  async load<K extends keyof T = never, P extends string = never>(options?: LoadReferenceOptions<T, P>): Promise<T>;
+  async load<TT extends T, P extends string = never>(options?: LoadReferenceOptions<T, P>): Promise<Loaded<TT, P>>;
 
   /**
    * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
@@ -109,7 +111,7 @@ export class Reference<T extends object> {
    * Ensures the underlying entity is loaded first (without reloading it if it already is loaded).
    * Returns either the whole entity, or the requested property.
    */
-  async load<K extends keyof T = never, P extends string = never>(options?: LoadReferenceOptions<T, P> | K): Promise<T | T[K]> {
+  async load<TT extends T, K extends keyof T = never, P extends string = never>(options?: LoadReferenceOptions<T, P> | K): Promise<Loaded<TT, P> | T[K]> {
     const opts: Dictionary = typeof options === 'object' ? options : { prop: options };
 
     if (!this.isInitialized()) {
@@ -120,7 +122,7 @@ export class Reference<T extends object> {
       return this.entity[opts.prop as EntityKey];
     }
 
-    return this.entity;
+    return this.entity as Loaded<TT, P>;
   }
 
   set(entity: T | Ref<T>): void {
