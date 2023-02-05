@@ -4,7 +4,7 @@ import { mockLogger } from '../helpers';
 
 export class GuidType extends Type<Guid | undefined, string | undefined> {
 
-  convertToDatabaseValue(value: Guid | undefined): string | undefined {
+  override convertToDatabaseValue(value: Guid | undefined): string | undefined {
     if (!value) {
       return value;
     }
@@ -12,7 +12,7 @@ export class GuidType extends Type<Guid | undefined, string | undefined> {
     return value.toString();
   }
 
-  convertToJSValue(value: string | undefined): Guid | undefined {
+  override convertToJSValue(value: string | undefined): Guid | undefined {
     if (!value) {
       return undefined;
     }
@@ -20,7 +20,7 @@ export class GuidType extends Type<Guid | undefined, string | undefined> {
     return Guid.parse(value);
   }
 
-  getColumnType(): string {
+  override getColumnType(): string {
     return 'text';
   }
 

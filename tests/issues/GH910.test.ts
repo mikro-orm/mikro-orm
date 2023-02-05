@@ -18,11 +18,11 @@ export class Sku {
 
 export class SkuType extends Type<Sku, string> {
 
-  convertToDatabaseValue(value: Sku | string, platform: Platform, fromQuery?: boolean): string {
+  override convertToDatabaseValue(value: Sku | string, platform: Platform, fromQuery?: boolean): string {
     return value.toString();
   }
 
-  convertToJSValue(value: Sku | string, platform: Platform): Sku {
+  override convertToJSValue(value: Sku | string, platform: Platform): Sku {
     if (value instanceof Sku) {
       return value;
     }

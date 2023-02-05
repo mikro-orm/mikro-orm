@@ -5,8 +5,8 @@ import type { QueryBuilder } from './query';
 
 export class SqlEntityRepository<T extends object> extends EntityRepository<T> {
 
-  constructor(protected readonly _em: SqlEntityManager,
-              protected readonly entityName: EntityName<T>) {
+  constructor(protected override readonly _em: SqlEntityManager,
+              entityName: EntityName<T>) {
     super(_em, entityName);
   }
 
@@ -41,7 +41,7 @@ export class SqlEntityRepository<T extends object> extends EntityRepository<T> {
   /**
    * @inheritDoc
    */
-  protected get em(): SqlEntityManager {
+  protected override get em(): SqlEntityManager {
     return this._em;
   }
 

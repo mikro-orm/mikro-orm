@@ -8,7 +8,7 @@ import {
 import { mockLogger } from '../helpers';
 export class NativeBigIntType extends BigIntType {
 
-  convertToJSValue(value: any): any {
+  override convertToJSValue(value: any): any {
     if (!value) {
       return value;
     }
