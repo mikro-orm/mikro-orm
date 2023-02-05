@@ -143,7 +143,8 @@ export class MongoSchemaGenerator extends AbstractSchemaGenerator<MongoDriver> {
       const collection = this.connection.getCollection(meta.name!);
 
       if (index.options && properties.length === 0) {
-        return res.push([collection.collectionName, collection.createIndex(index.options)]);
+        res.push([collection.collectionName, collection.createIndex(index.options)]);
+        return;
       }
 
       if (index.type) {
