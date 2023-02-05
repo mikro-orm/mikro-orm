@@ -505,7 +505,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
       const queryOrder = this.helper.getQueryOrder(this.type ?? QueryType.SELECT, this._orderBy as FlatQueryOrderMap[], this._populateMap);
 
       if (queryOrder) {
-        return qb.orderByRaw(queryOrder);
+        qb.orderByRaw(queryOrder);
+        return;
       }
     }, this._orderBy);
     Utils.runIfNotEmpty(() => qb.limit(this._limit!), this._limit != null);
@@ -847,13 +848,15 @@ export class QueryBuilder<T extends object = AnyEntity> {
 
     fields.forEach(field => {
       if (!Utils.isString(field)) {
-        return ret.push(field);
+        ret.push(field);
+        return;
       }
 
       const join = Object.keys(this._joins).find(k => field === k.substring(0, k.indexOf('#')))!;
 
       if (join && type === 'where') {
-        return ret.push(...this.helper.mapJoinColumns(this.type ?? QueryType.SELECT, this._joins[join]) as string[]);
+        ret.push(...this.helper.mapJoinColumns(this.type ?? QueryType.SELECT, this._joins[join]) as string[]);
+        return;
       }
 
       const [a, f] = this.helper.splitField(field as EntityKey<T>);
@@ -1019,7 +1022,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
       const join = Object.keys(this._joins).find(k => `${aliasedField}#${this._joins[k].alias}` === k);
 
       if (join && this._joins[join] && this.helper.isOneToOneInverse(fromField)) {
-        return this._populateMap[join] = this._joins[join].alias;
+        this._populateMap[join] = this._joins[join].alias;
+        return;
       }
 
       if (this.metadata.find(field)?.pivotTable) { // pivot table entity
