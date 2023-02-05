@@ -4,11 +4,11 @@ import type { Platform } from '../platforms/Platform';
 
 export class UnknownType extends StringType {
 
-  getColumnType(prop: EntityProperty, platform: Platform) {
+  override getColumnType(prop: EntityProperty, platform: Platform) {
     return prop.columnTypes?.[0] ?? platform.getVarcharTypeDeclarationSQL(prop);
   }
 
-  compareAsType(): string {
+  override compareAsType(): string {
     return 'unknown';
   }
 

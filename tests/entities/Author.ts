@@ -123,7 +123,7 @@ export class Author extends BaseEntity<Author, 'termsAccepted' | 'code2' | 'vers
     Author.afterDestroyCalled += 1;
   }
 
-  assign(data: any): this {
+  override assign(data: any): this {
     return EntityAssigner.assign(this, data);
   }
 

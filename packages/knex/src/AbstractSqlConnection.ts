@@ -18,7 +18,7 @@ function isRootTransaction<T>(trx: Transaction<T>) {
 export abstract class AbstractSqlConnection extends Connection {
 
   private static __patched = false;
-  protected platform!: AbstractSqlPlatform;
+  protected override platform!: AbstractSqlPlatform;
   protected client!: Knex;
 
   constructor(config: Configuration, options?: ConnectionOptions, type?: 'read' | 'write') {
@@ -30,7 +30,7 @@ export abstract class AbstractSqlConnection extends Connection {
     return this.client;
   }
 
-  async close(force?: boolean): Promise<void> {
+  override async close(force?: boolean): Promise<void> {
     await super.close(force);
     await this.client.destroy();
   }
@@ -44,7 +44,7 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
-  async transactional<T>(cb: (trx: Transaction<Knex.Transaction>) => Promise<T>, options: { isolationLevel?: IsolationLevel; ctx?: Knex.Transaction; eventBroadcaster?: TransactionEventBroadcaster } = {}): Promise<T> {
+  override async transactional<T>(cb: (trx: Transaction<Knex.Transaction>) => Promise<T>, options: { isolationLevel?: IsolationLevel; ctx?: Knex.Transaction; eventBroadcaster?: TransactionEventBroadcaster } = {}): Promise<T> {
     const trx = await this.begin(options);
 
     try {
@@ -58,7 +58,7 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
-  async begin(options: { isolationLevel?: IsolationLevel; ctx?: Knex.Transaction; eventBroadcaster?: TransactionEventBroadcaster } = {}): Promise<Knex.Transaction> {
+  override async begin(options: { isolationLevel?: IsolationLevel; ctx?: Knex.Transaction; eventBroadcaster?: TransactionEventBroadcaster } = {}): Promise<Knex.Transaction> {
     if (!options.ctx) {
       await options.eventBroadcaster?.dispatchEvent(EventType.beforeTransactionStart);
     }
@@ -74,7 +74,7 @@ export abstract class AbstractSqlConnection extends Connection {
     return trx;
   }
 
-  async commit(ctx: Knex.Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
+  override async commit(ctx: Knex.Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
     const runTrxHooks = isRootTransaction(ctx);
 
     if (runTrxHooks) {
@@ -89,7 +89,7 @@ export abstract class AbstractSqlConnection extends Connection {
     }
   }
 
-  async rollback(ctx: Knex.Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
+  override async rollback(ctx: Knex.Transaction, eventBroadcaster?: TransactionEventBroadcaster): Promise<void> {
     const runTrxHooks = isRootTransaction(ctx);
 
     if (runTrxHooks) {

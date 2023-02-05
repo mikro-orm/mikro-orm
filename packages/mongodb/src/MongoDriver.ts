@@ -15,14 +15,14 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
   [EntityManagerType]!: MongoEntityManager<this>;
 
-  protected readonly connection = new MongoConnection(this.config);
-  protected readonly platform = new MongoPlatform();
+  protected override readonly connection = new MongoConnection(this.config);
+  protected override readonly platform = new MongoPlatform();
 
   constructor(config: Configuration) {
     super(config, ['mongodb']);
   }
 
-  createEntityManager<D extends IDatabaseDriver = IDatabaseDriver>(useContext?: boolean): D[typeof EntityManagerType] {
+  override createEntityManager<D extends IDatabaseDriver = IDatabaseDriver>(useContext?: boolean): D[typeof EntityManagerType] {
     return new MongoEntityManager(this.config, this, this.metadata, useContext) as unknown as EntityManager<D>;
   }
 
@@ -90,7 +90,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return this.mapResult<T>(res[0], this.metadata.find(entityName)!);
   }
 
-  async findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any>): Promise<EntityData<T>[]> {
+  override async findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any>): Promise<EntityData<T>[]> {
     const meta = this.metadata.find(entityName)!;
 
     if (meta.expression instanceof Function) {
@@ -139,7 +139,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return this.rethrow(this.getConnection('write').updateMany(entityName, where as object, data, options.ctx, options.upsert)) as unknown as Promise<QueryResult<T>>;
   }
 
-  async nativeUpdateMany<T extends object>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateOptions<T> = {}): Promise<QueryResult<T>> {
+  override async nativeUpdateMany<T extends object>(entityName: string, where: FilterQuery<T>[], data: EntityDictionary<T>[], options: NativeInsertUpdateOptions<T> = {}): Promise<QueryResult<T>> {
     where = where.map(row => {
       if (Utils.isPlainObject(row)) {
         return this.renameFields(entityName, row, true);
@@ -162,11 +162,11 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return this.rethrow(this.getConnection('write').deleteMany(entityName, where as object, options.ctx)) as unknown as Promise<QueryResult<T>>;
   }
 
-  async aggregate(entityName: string, pipeline: any[], ctx?: Transaction<ClientSession>): Promise<any[]> {
+  override async aggregate(entityName: string, pipeline: any[], ctx?: Transaction<ClientSession>): Promise<any[]> {
     return this.rethrow(this.getConnection('read').aggregate(entityName, pipeline, ctx));
   }
 
-  getPlatform(): MongoPlatform {
+  override getPlatform(): MongoPlatform {
     return this.platform;
   }
 

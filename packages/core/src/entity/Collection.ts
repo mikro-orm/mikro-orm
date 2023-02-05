@@ -69,7 +69,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
    * Gets the count of collection items from database instead of counting loaded items.
    * The value is cached (unless you use the `where` option), use `refresh: true` to force reload it.
    */
-  async loadCount(options: LoadCountOptions<T> | boolean = {}): Promise<number> {
+  override async loadCount(options: LoadCountOptions<T> | boolean = {}): Promise<number> {
     options = typeof options === 'boolean' ? { refresh: options } : options;
 
     if (!options.refresh && !options.where && Utils.isDefined(this._count)) {
@@ -121,7 +121,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
   /**
    * Returns the items (the collection must be initialized)
    */
-  getItems(check = true): T[] {
+  override getItems(check = true): T[] {
     if (check) {
       this.checkInitialized();
     }
@@ -129,7 +129,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
     return super.getItems();
   }
 
-  toJSON<TT extends T>(): EntityDTO<TT>[] {
+  override toJSON<TT extends T>(): EntityDTO<TT>[] {
     if (!this.isInitialized()) {
       return [];
     }
@@ -137,7 +137,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
     return super.toJSON() as unknown as EntityDTO<TT>[];
   }
 
-  add<TT extends T>(entity: TT | Reference<TT> | (TT | Reference<TT>)[], ...entities: (TT | Reference<TT>)[]): void {
+  override add<TT extends T>(entity: TT | Reference<TT> | (TT | Reference<TT>)[], ...entities: (TT | Reference<TT>)[]): void {
     entities = Utils.asArray(entity).concat(entities);
     const unwrapped = entities.map(i => Reference.unwrapReference(i)) as T[];
     unwrapped.forEach(entity => this.validateItemType(entity));
@@ -145,7 +145,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
     this.cancelOrphanRemoval(unwrapped);
   }
 
-  set<TT extends T>(items: (TT | Reference<TT>)[]): void {
+  override set<TT extends T>(items: (TT | Reference<TT>)[]): void {
     if (!this.initialized) {
       this.initialized = true;
       this.snapshot = undefined;
@@ -157,7 +157,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
   /**
    * @internal
    */
-  hydrate(items: T[], forcePropagate?: boolean): void {
+  override hydrate(items: T[], forcePropagate?: boolean): void {
     this.initialized = true;
     super.hydrate(items);
     this.takeSnapshot(forcePropagate);
@@ -166,7 +166,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
   /**
    * @inheritDoc
    */
-  remove<TT extends T>(entity: TT | Reference<TT> | (TT | Reference<TT>)[] | ((item: TT) => boolean), ...entities: (TT | Reference<TT>)[]): void {
+  override remove<TT extends T>(entity: TT | Reference<TT> | (TT | Reference<TT>)[] | ((item: TT) => boolean), ...entities: (TT | Reference<TT>)[]): void {
     if (entity instanceof Function) {
       for (const item of this.items) {
         if (entity(item as TT)) {
@@ -192,12 +192,12 @@ export class Collection<T extends object, O extends object = object> extends Arr
   /**
    * @inheritDoc
    */
-  removeAll(): void {
+  override removeAll(): void {
     this.checkInitialized();
     super.removeAll();
   }
 
-  contains<TT extends T>(item: TT | Reference<TT>, check = true): boolean {
+  override contains<TT extends T>(item: TT | Reference<TT>, check = true): boolean {
     if (check) {
       this.checkInitialized();
     }
@@ -205,7 +205,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
     return super.contains(item as T);
   }
 
-  count(): number {
+  override count(): number {
     this.checkInitialized();
     return super.count();
   }

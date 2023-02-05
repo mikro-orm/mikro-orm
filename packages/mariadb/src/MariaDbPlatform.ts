@@ -7,18 +7,18 @@ import { expr, Utils } from '@mikro-orm/core';
 
 export class MariaDbPlatform extends AbstractSqlPlatform {
 
-  protected readonly schemaHelper: MariaDbSchemaHelper = new MariaDbSchemaHelper(this);
-  protected readonly exceptionConverter = new MariaDbExceptionConverter();
+  protected override readonly schemaHelper: MariaDbSchemaHelper = new MariaDbSchemaHelper(this);
+  protected override readonly exceptionConverter = new MariaDbExceptionConverter();
 
-  getDefaultCharset(): string {
+  override getDefaultCharset(): string {
     return 'utf8mb4';
   }
 
-  getBooleanTypeDeclarationSQL(): string {
+  override getBooleanTypeDeclarationSQL(): string {
     return 'tinyint(1)';
   }
 
-  getDefaultMappedType(type: string): Type<unknown> {
+  override getDefaultMappedType(type: string): Type<unknown> {
     if (type === 'tinyint(1)') {
       return super.getDefaultMappedType('boolean');
     }
@@ -32,7 +32,7 @@ export class MariaDbPlatform extends AbstractSqlPlatform {
     return super.getDefaultMappedType(map[normalizedType] ?? type);
   }
 
-  supportsUnsigned(): boolean {
+  override supportsUnsigned(): boolean {
     return true;
   }
 
@@ -40,7 +40,7 @@ export class MariaDbPlatform extends AbstractSqlPlatform {
    * Returns the default name of index for the given columns
    * cannot go past 64 character length for identifiers in MySQL
    */
-  getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
+  override getIndexName(tableName: string, columns: string[], type: 'index' | 'unique' | 'foreign' | 'primary' | 'sequence'): string {
     if (type === 'primary') {
       return this.getDefaultPrimaryName(tableName, columns);
     }
@@ -55,19 +55,19 @@ export class MariaDbPlatform extends AbstractSqlPlatform {
     return indexName;
   }
 
-  getDefaultPrimaryName(tableName: string, columns: string[]): string {
+  override getDefaultPrimaryName(tableName: string, columns: string[]): string {
     return 'PRIMARY'; // https://dev.mysql.com/doc/refman/8.0/en/create-table.html#create-table-indexes-keys
   }
 
-  supportsCreatingFullTextIndex(): boolean {
+  override supportsCreatingFullTextIndex(): boolean {
     return true;
   }
 
-  getFullTextWhereClause(): string {
+  override getFullTextWhereClause(): string {
     return `match(:column:) against (:query in boolean mode)`;
   }
 
-  getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
+  override getFullTextIndexExpression(indexName: string, schemaName: string | undefined, tableName: string, columns: SimpleColumnMeta[]): string {
     /* istanbul ignore next */
     const quotedTableName = this.quoteIdentifier(schemaName ? `${schemaName}.${tableName}` : tableName);
     const quotedColumnNames = columns.map(c => this.quoteIdentifier(c.name));

@@ -38,7 +38,7 @@ class MigrationTest2 extends Migration {
     expect(res).toEqual([{ count1: 2 }]);
   }
 
-  isTransactional(): boolean {
+  override isTransactional(): boolean {
     return false;
   }
 
@@ -86,12 +86,12 @@ describe('Migrator (postgres)', () => {
     const migrationsSettings = orm.config.get('migrations');
     orm.config.set('migrations', { ...migrationsSettings, generator: class extends TSMigrationGenerator {
 
-      generateMigrationFile(className: string, diff: { up: string[]; down: string[] }): string {
+      override generateMigrationFile(className: string, diff: { up: string[]; down: string[] }): string {
         const comment = '// this file was generated via custom migration generator\n\n';
         return comment + super.generateMigrationFile(className, diff);
       }
 
-      createStatement(sql: string, padLeft: number): string {
+      override createStatement(sql: string, padLeft: number): string {
         sql = sql.split('\n').map((l, i) => i === 0 ? l : `${' '.repeat(padLeft + 13)}${l}`).join('\n');
 
         return super.createStatement(sql, padLeft);
