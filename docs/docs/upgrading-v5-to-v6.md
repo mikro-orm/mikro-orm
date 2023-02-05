@@ -146,6 +146,14 @@ export class Foo {
 }
 ```
 
+## Removed `BaseEntity.toJSON` method
+
+The signature became more complex on type level which made it harder to override, and as this was the only method meant for overriding, it should provide better experience when there won't be any.
+
+The method was only forwarding the call to `BaseEntity.toObject`, so use that in the code instead.
+
+> The method is still present on the prototype as with any other entity, regardless of whether they extend from the `BaseEntity`.
+
 ## Renames
 
 - `PropertyOptions.onUpdateIntegrity` -> `PropertyOptions.updateRule`
