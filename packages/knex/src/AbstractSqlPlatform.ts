@@ -9,33 +9,33 @@ export abstract class AbstractSqlPlatform extends Platform {
 
   protected readonly schemaHelper?: SchemaHelper;
 
-  usesPivotTable(): boolean {
+  override usesPivotTable(): boolean {
     return true;
   }
 
-  indexForeignKeys() {
+  override indexForeignKeys() {
     return true;
   }
 
-  getRepositoryClass<T extends object>(): Constructor<EntityRepository<T>> {
+  override getRepositoryClass<T extends object>(): Constructor<EntityRepository<T>> {
     return SqlEntityRepository as unknown as Constructor<EntityRepository<T>>;
   }
 
-  getSchemaHelper(): SchemaHelper | undefined {
+  override getSchemaHelper(): SchemaHelper | undefined {
     return this.schemaHelper;
   }
 
   /** @inheritDoc */
-  lookupExtensions(orm: MikroORM): void {
+  override lookupExtensions(orm: MikroORM): void {
     SqlSchemaGenerator.register(orm);
   }
 
   /* istanbul ignore next: kept for type inference only */
-  getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): SqlSchemaGenerator {
+  override getSchemaGenerator(driver: IDatabaseDriver, em?: EntityManager): SqlSchemaGenerator {
     return new SqlSchemaGenerator(em ?? driver as any);
   }
 
-  quoteValue(value: any): string {
+  override quoteValue(value: any): string {
     if (this.isRaw(value)) {
       return value;
     }
@@ -82,11 +82,11 @@ export abstract class AbstractSqlPlatform extends Platform {
     return ret;
   }
 
-  getSearchJsonPropertySQL(path: string, type: string, aliased: boolean): string {
+  override getSearchJsonPropertySQL(path: string, type: string, aliased: boolean): string {
     return this.getSearchJsonPropertyKey(path.split('->'), type, aliased);
   }
 
-  isRaw(value: any): boolean {
+  override isRaw(value: any): boolean {
     return super.isRaw(value) || (typeof value === 'object' && value !== null && value.client && ['Ref', 'Raw'].includes(value.constructor.name));
   }
 
@@ -95,7 +95,7 @@ export abstract class AbstractSqlPlatform extends Platform {
   }
 
   /** @inheritDoc */
-  generateCustomOrder(escapedColumn: string, values: unknown[]): string {
+  override generateCustomOrder(escapedColumn: string, values: unknown[]): string {
     let ret = '(case ';
     values.forEach((v, i) => {
       ret += `when ${escapedColumn} = ${this.quoteValue(v)} then ${i} `;

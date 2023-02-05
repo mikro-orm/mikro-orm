@@ -4,11 +4,11 @@ import type { EntityProperty } from '../typings';
 
 export class BlobType extends Type<Buffer | null> {
 
-  convertToDatabaseValue(value: Buffer | null): Buffer | null {
+  override convertToDatabaseValue(value: Buffer | null): Buffer | null {
     return value;
   }
 
-  convertToJSValue(value: Buffer): Buffer | null {
+  override convertToJSValue(value: Buffer): Buffer | null {
     if (value as unknown instanceof Buffer || !value) {
       return value;
     }
@@ -22,7 +22,7 @@ export class BlobType extends Type<Buffer | null> {
     return Buffer.from(value);
   }
 
-  compareAsType(): string {
+  override compareAsType(): string {
     return 'Buffer';
   }
 
@@ -30,7 +30,7 @@ export class BlobType extends Type<Buffer | null> {
     return false;
   }
 
-  getColumnType(prop: EntityProperty, platform: Platform): string {
+  override getColumnType(prop: EntityProperty, platform: Platform): string {
     return platform.getBlobDeclarationSQL();
   }
 

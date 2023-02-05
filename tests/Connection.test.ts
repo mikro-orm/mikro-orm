@@ -7,7 +7,7 @@ class CustomConnection extends Connection {
 
   protected client: any;
 
-  async close(force?: boolean): Promise<void> {
+  override async close(force?: boolean): Promise<void> {
     return undefined;
   }
 
