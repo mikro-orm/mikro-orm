@@ -1,5 +1,5 @@
 import { Client } from 'pg';
-import type { EntityProperty, Type, SimpleColumnMeta } from '@mikro-orm/core';
+import type { EntityProperty, Type, SimpleColumnMeta, Dictionary } from '@mikro-orm/core';
 import { expr, JsonProperty, Utils } from '@mikro-orm/core';
 import { AbstractSqlPlatform } from '@mikro-orm/knex';
 import { PostgreSqlSchemaHelper } from './PostgreSqlSchemaHelper';
@@ -170,7 +170,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
     const types = {
       number: 'float8',
       boolean: 'bool',
-    };
+    } as Dictionary;
     const cast = (key: string) => type in types ? `(${key})::${types[type]}` : key;
 
     if (path.length === 0) {
@@ -233,7 +233,7 @@ export class PostgreSqlPlatform extends AbstractSqlPlatform {
       'character varying': 'varchar',
     };
 
-    return super.getDefaultMappedType(map[normalizedType] ?? type);
+    return super.getDefaultMappedType(map[normalizedType as keyof typeof map] ?? type);
   }
 
   supportsSchemas(): boolean {
