@@ -17,15 +17,15 @@ import { BetterSqliteDriver } from '@mikro-orm/better-sqlite';
 
 class TransformType extends Type<0 | number | Date> {
 
-  getColumnType() {
+  override getColumnType() {
     return 'integer';
   }
 
-  convertToJSValue(value: 0 | number | Date): 0 | number | Date {
+  override convertToJSValue(value: 0 | number | Date): 0 | number | Date {
     return (value as unknown == '0' || value == null || value == 0) ? 0 : new Date(value);
   }
 
-  convertToDatabaseValue(value: 0 | number | Date): 0 | number | Date {
+  override convertToDatabaseValue(value: 0 | number | Date): 0 | number | Date {
     if (value == null || value as unknown == '0' || value == 0) {
       return 0;
     }
@@ -37,7 +37,7 @@ class TransformType extends Type<0 | number | Date> {
     return new Date(value).getTime();
   }
 
-  toJSON(value: 0 | number | Date, platform: Platform): 0 | number | Date {
+  override toJSON(value: 0 | number | Date, platform: Platform): 0 | number | Date {
     return super.convertToDatabaseValue(value, platform);
   }
 

@@ -22,7 +22,7 @@ class MigrationTest2 extends Migration {
     await this.driver.nativeDelete('Book', { foo: false }, { ctx: this.ctx });
   }
 
-  isTransactional(): boolean {
+  override isTransactional(): boolean {
     return false;
   }
 
