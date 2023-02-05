@@ -165,6 +165,11 @@ export enum EventType {
   afterTransactionRollback = 'afterTransactionRollback',
 }
 
+export const EventTypeMap = Object.keys(EventType).reduce((a, b, i) => {
+  a[b as EventType] = i;
+  return a;
+}, {} as Record<EventType, number>);
+
 export type TransactionEventType = EventType.beforeTransactionStart | EventType.afterTransactionStart | EventType.beforeTransactionCommit | EventType.afterTransactionCommit | EventType.beforeTransactionRollback | EventType.afterTransactionRollback;
 
 export interface TransactionOptions {

@@ -2,12 +2,13 @@ import type { AnyEntity, AsyncFunction, EntityMetadata } from '../typings';
 import type { EventArgs, EventSubscriber, FlushEventArgs, TransactionEventArgs } from './EventSubscriber';
 import { Utils } from '../utils';
 import type { TransactionEventType } from '../enums';
-import { EventType } from '../enums';
+import { EventType, EventTypeMap } from '../enums';
 
 export class EventManager {
 
   private readonly listeners: { [K in EventType]?: EventSubscriber[] } = {};
   private readonly entities: Map<EventSubscriber, string[]> = new Map();
+  private readonly cache: Map<number, boolean> = new Map();
   private readonly subscribers: EventSubscriber[] = [];
 
   constructor(subscribers: EventSubscriber[]) {
@@ -17,6 +18,7 @@ export class EventManager {
   registerSubscriber(subscriber: EventSubscriber): void {
     this.subscribers.push(subscriber);
     this.entities.set(subscriber, this.getSubscribedEntities(subscriber));
+    this.cache.clear();
     Utils.keys(EventType)
       .filter(event => event in subscriber)
       .forEach(event => {
@@ -56,9 +58,16 @@ export class EventManager {
   }
 
   hasListeners<T>(event: EventType, meta: EntityMetadata<T>): boolean {
+    const cacheKey = meta._id + EventTypeMap[event];
+
+    if (this.cache.has(cacheKey)) {
+      return this.cache.get(cacheKey)!;
+    }
+
     const hasHooks = meta.hooks[event]?.length;
 
     if (hasHooks) {
+      this.cache.set(cacheKey, true);
       return true;
     }
 
@@ -66,10 +75,12 @@ export class EventManager {
       const entities = this.entities.get(listener)!;
 
       if (entities.length === 0 || entities.includes(meta.className)) {
+        this.cache.set(cacheKey, true);
         return true;
       }
     }
 
+    this.cache.set(cacheKey, false);
     return false;
   }
 
