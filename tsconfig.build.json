@@ -8,7 +8,8 @@
     "strict": true,
     "esModuleInterop": true,
     "preserveConstEnums": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitOverride": true
   },
   "exclude": [
     "**/node_modules",

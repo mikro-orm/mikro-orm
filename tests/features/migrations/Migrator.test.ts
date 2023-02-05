@@ -14,7 +14,7 @@ class MigrationTest1 extends Migration {
     this.addSql('select 1 + 1');
   }
 
-  async down(): Promise<void> {
+  override async down(): Promise<void> {
     this.addSql('select 1 - 1');
   }
 
@@ -31,7 +31,7 @@ class MigrationTest2 extends Migration {
     expect(res).toEqual([{ count1: 2 }]);
   }
 
-  async down(): Promise<void> {
+  override async down(): Promise<void> {
     this.addSql('select 1 - 1');
     const knex = this.getKnex();
     this.addSql(knex.raw('select 1 - 1'));
@@ -40,7 +40,7 @@ class MigrationTest2 extends Migration {
     expect(res).toEqual([{ count1: 2 }]);
   }
 
-  isTransactional(): boolean {
+  override isTransactional(): boolean {
     return false;
   }
 
