@@ -148,19 +148,19 @@ export class BookSeeder extends Seeder {
 
 ## Entity factories
 
-When testing you may insert entities in the database before starting a test. Instead of specifying every attribute of every entity by hand, you could also use a `Factory` to define a set of default
-attributes for an entity using entity factories.
+When testing you may insert entities in the database before starting a test. Instead of specifying every attribute of every entity by hand, you could also use a `Factory` to define a set of default attributes for an entity using entity factories.
 
-Lets have a look at an example factory for an [Author entity](http://mikro-orm.io/docs/defining-entities).
+Let's have a look at an example factory for an [Author entity](http://mikro-orm.io/docs/defining-entities).
 
 ```ts
-import { Factory, Faker } from '@mikro-orm/seeder';
+import { Factory } from '@mikro-orm/seeder';
+import { faker } from '@faker-js/faker';
 import { Author } from './entities/author.entity';
 
 export class AuthorFactory extends Factory<Author> {
   model = Author;
 
-  definition(faker: Faker): Partial<Author> {
+  definition(): Partial<Author> {
     return {
       name: faker.person.findName(),
       email: faker.internet.email(),
@@ -170,10 +170,11 @@ export class AuthorFactory extends Factory<Author> {
 }
 ``` 
 
-Basically you extend the base `Factory` class, define a `model` property and a `definition` method. The `model` defines for which entity the factory generates entity instances. The `definition` method
-returns the default set of attribute values that should be applied when creating an entity using the factory.
+Here we extend the base `Factory` class, define a `model` property and a `definition` method. The `model` defines for which entity the factory generates entity instances. The `definition` method returns the default set of attribute values that should be applied when creating an entity using the factory.
 
-Via the faker property, factories have access to the [Faker library](https://github.com/faker-js/faker), which allows you to conveniently generate various kinds of random data for testing.
+In this example, we use a library called [Faker](https://github.com/faker-js/faker), which allows you to conveniently generate various kinds of random data for testing.
+
+> Since v6, Faker is no longer re-exported from the seeder package and needs to be installed separately.
 
 ### Creating entities using factories
 
