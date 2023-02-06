@@ -1,5 +1,3 @@
-import type { Faker } from '@faker-js/faker';
-import { faker } from '@faker-js/faker';
 import type { RequiredEntityData, EntityData, EntityManager, Constructor } from '@mikro-orm/core';
 
 export abstract class Factory<T extends object> {
@@ -9,7 +7,7 @@ export abstract class Factory<T extends object> {
 
   constructor(private readonly em: EntityManager) { }
 
-  protected abstract definition(faker: Faker): EntityData<T>;
+  protected abstract definition(): EntityData<T>;
 
   /**
    * Make a single entity instance, without persisting it.
@@ -17,7 +15,7 @@ export abstract class Factory<T extends object> {
    */
   makeEntity(overrideParameters?: EntityData<T>): T {
     const entity = this.em.create(this.model, {
-      ...this.definition(faker),
+      ...this.definition(),
       ...overrideParameters,
     } as unknown as RequiredEntityData<T>, { persist: false });
 

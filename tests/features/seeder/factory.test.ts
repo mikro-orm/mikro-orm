@@ -1,7 +1,6 @@
 import { MikroORM } from '@mikro-orm/core';
 import type { EntityData } from '@mikro-orm/core';
 import { Factory } from '@mikro-orm/seeder';
-import type { Faker } from '@mikro-orm/seeder';
 import { House } from './entities/house.entity';
 import { Project } from './entities/project.entity';
 import { User } from './entities/user.entity';
@@ -12,13 +11,13 @@ export class ProjectFactory extends Factory<Project> {
 
   model = Project;
 
-  definition(faker: Faker): EntityData<Project> {
+  definition(): EntityData<Project> {
     return {
       name: 'Money vault',
       owner: {
-        name: faker.name.fullName(),
-        email: faker.internet.email(),
-        password: faker.internet.password(),
+        name: 'name',
+        email: 'email',
+        password: 'pass',
       } as User,
       worth: 120000,
     };
@@ -30,9 +29,9 @@ export class HouseFactory extends Factory<House> {
 
   model = House;
 
-  definition(faker: Faker): Partial<House> {
+  definition(): Partial<House> {
     return {
-      address: faker.address.city(),
+      address: 'addr',
     };
   }
 
