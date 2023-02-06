@@ -164,3 +164,26 @@ The method was only forwarding the call to `BaseEntity.toObject`, so use that in
 - `AssignOptions.mergeObjects` -> `AssignOptions.mergeObjectProperties`
 - `EntityOptions.customRepository` -> `EntityOptions.repository`
 - `Options.cache` -> `Options.metadataCache`
+
+## Removed dependency on `faker` in seeder package
+
+Faker is rather fat library that can result in perf degradation just by importing it, and since we were not working with the library anyhow, there is no reason to keep it in the dependencies. Users who want to use faker can just install it and use it directly, having the faker import under their own control.
+
+```diff
+-import { Factory, Faker } from '@mikro-orm/seeder';
++import { Factory } from '@mikro-orm/seeder';
++import { faker } from '@faker-js/faker/locale/en';
+
+export class ProjectFactory extends Factory<Project> {
+
+  model = Project;
+
+-  definition(faker: Faker): Partial<Project> {
++  definition(): Partial<Project> {
+    return {
+      name: faker.company.name(),
+    };
+  }
+
+}
+```
