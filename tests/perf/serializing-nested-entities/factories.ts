@@ -1,13 +1,13 @@
 import { Filter, FilterValue, Project, Risk } from './entities';
-import { Factory, Faker } from '@mikro-orm/seeder';
+import { Factory } from '@mikro-orm/seeder';
 
 export class ProjectFactory extends Factory<Project> {
 
   model = Project;
 
-  definition(faker: Faker): Partial<Project> {
+  definition(): Partial<Project> {
     return {
-      name: faker.company.name(),
+      name: 'foo',
     };
   }
 
@@ -17,9 +17,9 @@ export class RiskFactory extends Factory<Risk> {
 
   model = Risk;
 
-  definition(faker: Faker): Partial<Risk> {
+  definition(): Partial<Risk> {
     return {
-      title: faker.internet.domainWord(),
+      title: 'bar',
     };
   }
 
@@ -29,9 +29,9 @@ export class FilterFactory extends Factory<Filter> {
 
   model = Filter;
 
-  definition(faker: Faker): Partial<Filter> {
+  definition(): Partial<Filter> {
     return {
-      name: faker.word.noun(),
+      name: 'baz',
     };
   }
 
@@ -41,9 +41,9 @@ export class FilterValueFactory extends Factory<FilterValue> {
 
   model = FilterValue;
 
-  definition(faker: Faker): Partial<FilterValue> {
+  definition(): Partial<FilterValue> {
     return {
-      value: faker.word.noun(),
+      value: 'lol',
     };
   }
 
