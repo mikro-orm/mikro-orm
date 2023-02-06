@@ -48,7 +48,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@faker-js/faker": "7.6.0",
     "fs-extra": "11.1.0",
     "globby": "11.1.0"
   },
