@@ -88,7 +88,7 @@ export class Configuration<D extends IDatabaseDriver = IDatabaseDriver> {
     migrations: {
       tableName: 'mikro_orm_migrations',
       path: './migrations',
-      glob: '!(*.d).{js,ts}',
+      glob: '!(*.d).{js,ts,cjs}',
       transactional: true,
       disableForeignKeys: true,
       allOrNothing: true,
@@ -448,7 +448,7 @@ export type MigrationsOptions = {
   safe?: boolean;
   snapshot?: boolean;
   snapshotName?: string;
-  emit?: 'js' | 'ts';
+  emit?: 'js' | 'ts' | 'cjs';
   generator?: Constructor<IMigrationGenerator>;
   fileName?: (timestamp: string) => string;
   migrationsList?: MigrationObject[];

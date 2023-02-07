@@ -123,7 +123,7 @@ export class Migrator implements IMigrator {
 
     if (this.options.generator) {
       this.generator = new this.options.generator(this.driver, this.config.getNamingStrategy(), this.options);
-    } else if (this.options.emit === 'js') {
+    } else if (this.options.emit === 'js' || this.options.emit === 'cjs') {
       this.generator = new JSMigrationGenerator(this.driver, this.config.getNamingStrategy(), this.options);
     } else {
       this.generator = new TSMigrationGenerator(this.driver, this.config.getNamingStrategy(), this.options);
