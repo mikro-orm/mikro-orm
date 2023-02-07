@@ -68,6 +68,18 @@ describe('Migrator', () => {
     await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
   });
 
+  test('generate cjs schema migration', async () => {
+    const dateMock = jest.spyOn(Date.prototype, 'toISOString');
+    dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
+    const migrationsSettings = orm.config.get('migrations');
+    orm.config.set('migrations', { ...migrationsSettings, emit: 'cjs' }); // Set migration type to js
+    const migration = await orm.migrator.createMigration();
+    expect(migration).toMatchSnapshot('migration-cjs-dump');
+    orm.config.set('migrations', migrationsSettings); // Revert migration config changes
+    expect(migration.code).toContain('require');
+    await remove(process.cwd() + '/temp/migrations/' + migration.fileName);
+  });
+
   test('generate migration with custom name', async () => {
     const dateMock = jest.spyOn(Date.prototype, 'toISOString');
     dateMock.mockReturnValue('2019-10-13T21:48:13.382Z');
