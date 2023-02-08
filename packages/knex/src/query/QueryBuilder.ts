@@ -1135,7 +1135,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
           return replaceOnConditions(cond[k]);
         }
 
-        const [a] = this.helper.splitField(k);
+        const [a] = this.helper.splitField(k as EntityKey);
         const join = joins.find(j => j.alias === a);
 
         if (join) {
