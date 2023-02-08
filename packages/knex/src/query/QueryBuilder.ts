@@ -1059,6 +1059,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
         .forEach(field => this.addSelect(field));
     }
 
+    this.processPopulateWhere();
+
     QueryHelper.processObjectParams(this._data);
     QueryHelper.processObjectParams(this._cond);
     QueryHelper.processObjectParams(this._having);
@@ -1079,6 +1081,46 @@ export class QueryBuilder<T extends object = AnyEntity> {
     this.finalized = true;
   }
 
+  private processPopulateWhere() {
+    if (this._populateWhere == null || this._populateWhere === PopulateHint.ALL) {
+      return;
+    }
+
+    const joins = Object.values(this._joins);
+    joins.forEach(join => {
+      join.cond_ = join.cond;
+      join.cond = {};
+    });
+
+    const replaceOnConditions = (cond: Dictionary) => {
+      Object.keys(cond).forEach(k => {
+        if (Utils.isOperator(k)) {
+          if (Array.isArray(cond[k])) {
+            return cond[k].forEach((c: Dictionary) => replaceOnConditions(c));
+          }
+
+          return replaceOnConditions(cond[k]);
+        }
+
+        const [a] = this.helper.splitField(k as EntityKey);
+        const join = joins.find(j => j.alias === a);
+
+        if (join) {
+          join.cond = { ...join.cond, [k]: cond[k] };
+        }
+      });
+    };
+
+    if (this._populateWhere === PopulateHint.INFER) {
+      replaceOnConditions(this._cond);
+    } else if (typeof this._populateWhere === 'object') {
+      const cond = CriteriaNodeFactory
+        .createNode<T>(this.metadata, this.mainAlias.entityName, this._populateWhere)
+        .process(this);
+      replaceOnConditions(cond);
+    }
+  }
+
   private hasToManyJoins(): boolean {
     return Object.values(this._joins).some(join => {
       return [ReferenceKind.ONE_TO_MANY, ReferenceKind.MANY_TO_MANY].includes(join.prop.kind);
@@ -1088,6 +1130,8 @@ export class QueryBuilder<T extends object = AnyEntity> {
   private wrapPaginateSubQuery(meta: EntityMetadata): void {
     const pks = this.prepareFields(meta.primaryKeys, 'sub-query') as string[];
     const subQuery = this.clone().select(pks).groupBy(pks).limit(this._limit!);
+    // revert the on conditions added via populateWhere, we want to apply those only once
+    Object.values(subQuery._joins).forEach(join => join.cond = join.cond_ ?? {});
 
     if (this._offset) {
       subQuery.offset(this._offset);
@@ -1142,14 +1186,7 @@ export class QueryBuilder<T extends object = AnyEntity> {
     (subSubQuery as Dictionary).__raw = true; // tag it as there is now way to check via `instanceof`
     this._limit = undefined;
     this._offset = undefined;
-    const cond = this._cond;
     this.select(this._fields!).where({ [Utils.getPrimaryKeyHash(meta.primaryKeys)]: { $in: subSubQuery } });
-
-    if (this._populateWhere === PopulateHint.INFER) {
-      this.andWhere(cond);
-    } else if (typeof this._populateWhere === 'object') {
-      this.andWhere(this._populateWhere);
-    }
   }
 
   private wrapModifySubQuery(meta: EntityMetadata): void {
