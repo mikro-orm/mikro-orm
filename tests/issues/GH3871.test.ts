@@ -1,69 +1,68 @@
 import {
     Collection,
-    Entity,
-    LoadStrategy,
-    ManyToOne,
-    OneToMany,
-    PrimaryKey,
-    Property,
-    ref,
-    Ref,
+  Entity,
+  LoadStrategy,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property, ref,
+  Ref,
 } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/sqlite';
 
 @Entity()
 class User {
 
-    @PrimaryKey()
-    id!: number;
+  @PrimaryKey()
+  id!: number;
 
-    @OneToMany(() => Pet, p => p.user)
-    pets = new Collection<Pet>(this);
+  @OneToMany(() => Pet, p => p.user)
+  pets = new Collection<Pet>(this);
 
 }
 
 @Entity()
 class Pet {
 
-    @PrimaryKey()
-    id!: number;
+  @PrimaryKey()
+  id!: number;
 
-    @Property({ type: 'text', default: 'yo' })
-    name: string;
+  @Property({ type: 'text', default: 'yo' })
+  name: string;
 
-    @ManyToOne(() => User, {
-        ref: true,
-        nullable: true,
-    })
-    user: Ref<User> | null = null;
+  @ManyToOne(() => User, {
+    ref: true,
+    nullable: true,
+  })
+  user: Ref<User> | null = null;
 
-    @ManyToOne(() => Action, {
-        ref: true,
-        nullable: true,
-    })
-    action: Ref<Action> | null = null;
+  @ManyToOne(() => Action, {
+    ref: true,
+    nullable: true,
+  })
+  action: Ref<Action> | null = null;
 
-    constructor(name: string) {
-        this.name = name;
-    }
+  constructor(name: string) {
+    this.name = name;
+  }
 
 }
 
 @Entity()
 class Action {
 
-    @PrimaryKey()
-    id!: number;
+  @PrimaryKey()
+  id!: number;
 
-    @Property({ type: 'text' })
-    name: string;
+  @Property({ type: 'text' })
+  name: string;
 
-    @OneToMany(() => Pet, p => p.action)
-    pets = new Collection<Pet>(this);
+  @OneToMany(() => Pet, p => p.action)
+  pets = new Collection<Pet>(this);
 
-    constructor(name: string) {
-        this.name = name;
-    }
+  constructor(name: string) {
+    this.name = name;
+  }
 
 }
 
