@@ -15,15 +15,12 @@ import type { FindOptions } from './drivers';
 
 export type Constructor<T = unknown> = new (...args: any[]) => T;
 export type Dictionary<T = any> = { [k: string]: T };
-// export type EntityKey<T> = string & keyof { [K in keyof T as ExcludeFunctions<T, K>]?: unknown };
 export type EntityKey<T = unknown> = string & keyof { [K in keyof T as ExcludeFunctions<T, K>]?: unknown };
 export type EntityValue<T> = T[EntityKey<T>];
 export type FilterKey<T> = keyof FilterQuery<T>;
 export type AsyncFunction<R = any, T = Dictionary> = (args: T) => Promise<T>;
 type Compute<T> = {[K in keyof T]: T[K]} & {};
 export type ExcludeFunctions<T, K extends keyof T> = T[K] extends Function ? never : (K extends symbol ? never : K);
-// export type ExcludeFunctions<T, K extends keyof T & string> = T[K] extends Function ? never : (K extends symbol ? never : K);
-// export type EntityKey<T> = NonNullable<{ [K in keyof T & string]: T[K] extends Function ? never : K }[keyof T & string]>;
 export type Cast<T, R> = T extends R ? T : R;
 export type IsUnknown<T> = T extends unknown ? unknown extends T ? true : never : never;
 
