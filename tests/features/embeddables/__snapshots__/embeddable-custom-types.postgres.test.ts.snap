@@ -25,10 +25,10 @@ exports[`embedded entities with custom types snapshot generator 1`] = `
   }
 
   if (entity.nested != null) {
-    ret.nested_someValue = clone(convertToDatabaseValue_nested_someValue(entity.nested.someValue));
+    if (typeof entity.nested.someValue !== 'undefined') ret.nested_someValue = clone(convertToDatabaseValue_nested_someValue(entity.nested.someValue));
 
     if (entity.nested.deep != null) {
-      ret.nested_deep_someValue = clone(convertToDatabaseValue_nested_deep_someValue(entity.nested.deep.someValue));
+      if (typeof entity.nested.deep.someValue !== 'undefined') ret.nested_deep_someValue = clone(convertToDatabaseValue_nested_deep_someValue(entity.nested.deep.someValue));
     }
 
   }
@@ -36,12 +36,12 @@ exports[`embedded entities with custom types snapshot generator 1`] = `
   if (entity.nested2 === null) ret.nested2 = null;
   if (entity.nested2 != null) {
     ret.nested2 = {};
-    ret.nested2.someValue = clone(convertToDatabaseValue_nested2_someValue(entity.nested2.someValue));
+    if (typeof entity.nested2.someValue !== 'undefined') ret.nested2.someValue = clone(convertToDatabaseValue_nested2_someValue(entity.nested2.someValue));
 
     if (entity.nested2.deep === null) ret.nested2.deep = null;
     if (entity.nested2.deep != null) {
       ret.nested2.deep = {};
-      ret.nested2.deep.someValue = clone(convertToDatabaseValue_nested2_deep_someValue(entity.nested2.deep.someValue));
+      if (typeof entity.nested2.deep.someValue !== 'undefined') ret.nested2.deep.someValue = clone(convertToDatabaseValue_nested2_deep_someValue(entity.nested2.deep.someValue));
     }
 
     ret.nested2 = cloneEmbeddable(ret.nested2);

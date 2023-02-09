@@ -92,19 +92,19 @@ exports[`polymorphic embeddables in sqlite diffing 2`] = `
   }
 
   if (entity.pet != null) {
-    ret.pet_canBark = clone(entity.pet.canBark);
-    ret.pet_type = clone(entity.pet.type);
-    ret.pet_name = clone(entity.pet.name);
-    ret.pet_canMeow = clone(entity.pet.canMeow);
+    if (typeof entity.pet.canBark !== 'undefined') ret.pet_canBark = clone(entity.pet.canBark);
+    if (typeof entity.pet.type !== 'undefined') ret.pet_type = clone(entity.pet.type);
+    if (typeof entity.pet.name !== 'undefined') ret.pet_name = clone(entity.pet.name);
+    if (typeof entity.pet.canMeow !== 'undefined') ret.pet_canMeow = clone(entity.pet.canMeow);
   }
 
   if (entity.pet2 === null) ret.pet2 = null;
   if (entity.pet2 != null) {
     ret.pet2 = {};
-    ret.pet2.canBark = clone(entity.pet2.canBark);
-    ret.pet2.type = clone(entity.pet2.type);
-    ret.pet2.name = clone(entity.pet2.name);
-    ret.pet2.canMeow = clone(entity.pet2.canMeow);
+    if (typeof entity.pet2.canBark !== 'undefined') ret.pet2.canBark = clone(entity.pet2.canBark);
+    if (typeof entity.pet2.type !== 'undefined') ret.pet2.type = clone(entity.pet2.type);
+    if (typeof entity.pet2.name !== 'undefined') ret.pet2.name = clone(entity.pet2.name);
+    if (typeof entity.pet2.canMeow !== 'undefined') ret.pet2.canMeow = clone(entity.pet2.canMeow);
     ret.pet2 = cloneEmbeddable(ret.pet2);
   }
 
@@ -115,10 +115,10 @@ exports[`polymorphic embeddables in sqlite diffing 2`] = `
       if (entity.pets[idx_0] === null) ret.pets[idx_0] = null;
       if (entity.pets[idx_0] != null) {
         ret.pets[idx_0] = {};
-        ret.pets[idx_0].canBark = clone(entity.pets[idx_0].canBark);
-        ret.pets[idx_0].type = clone(entity.pets[idx_0].type);
-        ret.pets[idx_0].name = clone(entity.pets[idx_0].name);
-        ret.pets[idx_0].canMeow = clone(entity.pets[idx_0].canMeow);
+        if (typeof entity.pets[idx_0].canBark !== 'undefined') ret.pets[idx_0].canBark = clone(entity.pets[idx_0].canBark);
+        if (typeof entity.pets[idx_0].type !== 'undefined') ret.pets[idx_0].type = clone(entity.pets[idx_0].type);
+        if (typeof entity.pets[idx_0].name !== 'undefined') ret.pets[idx_0].name = clone(entity.pets[idx_0].name);
+        if (typeof entity.pets[idx_0].canMeow !== 'undefined') ret.pets[idx_0].canMeow = clone(entity.pets[idx_0].canMeow);
       }
     });
     ret.pets = cloneEmbeddable(ret.pets);

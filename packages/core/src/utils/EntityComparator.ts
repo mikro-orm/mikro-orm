@@ -401,6 +401,7 @@ export class EntityComparator {
     ret += meta.props.filter(p => p.embedded?.[0] === prop.name).map(childProp => {
       const childDataKey = prop.object ? dataKey + this.wrap(childProp.embedded![1]) : this.wrap(childProp.name);
       const childEntityKey = [...path, childProp.embedded![1]].map(k => this.wrap(k)).join('');
+      const childCond = `typeof entity${childEntityKey} !== 'undefined'`;
 
       if (childProp.reference === ReferenceType.EMBEDDED) {
         return this.getPropertySnapshot(meta, childProp, context, childDataKey, childEntityKey, [...path, childProp.embedded![1]], level + 1, prop.object);
@@ -416,13 +417,13 @@ export class EntityComparator {
         context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => childProp.customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
 
         if (['number', 'string', 'boolean'].includes(childProp.customType.compareAsType().toLowerCase())) {
-          return `${padding}  ret${childDataKey} = convertToDatabaseValue_${convertorKey}(entity${childEntityKey});`;
+          return `${padding}  if (${childCond}) ret${childDataKey} = convertToDatabaseValue_${convertorKey}(entity${childEntityKey});`;
         }
 
-        return `${padding}  ret${childDataKey} = clone(convertToDatabaseValue_${convertorKey}(entity${childEntityKey}));`;
+        return `${padding}  if (${childCond}) ret${childDataKey} = clone(convertToDatabaseValue_${convertorKey}(entity${childEntityKey}));`;
       }
 
-      return `${padding}  ret${childDataKey} = clone(entity${childEntityKey});`;
+      return `${padding}  if (${childCond}) ret${childDataKey} = clone(entity${childEntityKey});`;
     }).join('\n') + `\n`;
 
     if (this.shouldSerialize(prop, dataKey)) {

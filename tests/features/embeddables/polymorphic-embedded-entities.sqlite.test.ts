@@ -148,7 +148,7 @@ describe('polymorphic embeddables in sqlite', () => {
     const mock = mockLogger(orm, ['query']);
     await orm.em.persistAndFlush([ent1, ent2, ent3]);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into `owner` (`name`, `pet_can_bark`, `pet_type`, `pet_name`, `pet_can_meow`, `pet2`, `pets`) values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[1][0]).toMatch('insert into `owner` (`name`, `pet_type`, `pet_name`, `pet_can_meow`, `pet2`, `pets`, `pet_can_bark`) values (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?), (?, ?, ?, ?, ?, ?, ?)');
     expect(mock.mock.calls[2][0]).toMatch('commit');
     orm.em.clear();
 
@@ -282,7 +282,7 @@ describe('polymorphic embeddables in sqlite', () => {
     const mock = mockLogger(orm, ['query']);
     await orm.em.persistAndFlush(owner);
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into `owner` (`name`, `pet_can_bark`, `pet_type`, `pet_name`, `pet_can_meow`, `pet2`, `pets`) values (?, ?, ?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[1][0]).toMatch('insert into `owner` (`name`, `pet_type`, `pet_name`, `pet_can_meow`, `pet2`, `pets`) values (?, ?, ?, ?, ?, ?)');
     expect(mock.mock.calls[2][0]).toMatch('commit');
 
     orm.em.assign(owner, {

@@ -12,14 +12,14 @@ exports[`embedded entities in postgres diffing 1`] = `
   }
 
   if (entity.profile1 != null) {
-    ret.profile1_username = clone(entity.profile1.username);
+    if (typeof entity.profile1.username !== 'undefined') ret.profile1_username = clone(entity.profile1.username);
 
     if (entity.profile1.identity != null) {
-      ret.profile1_identity_email = clone(entity.profile1.identity.email);
+      if (typeof entity.profile1.identity.email !== 'undefined') ret.profile1_identity_email = clone(entity.profile1.identity.email);
 
       if (entity.profile1.identity.meta != null) {
-        ret.profile1_identity_meta_foo = clone(entity.profile1.identity.meta.foo);
-        ret.profile1_identity_meta_bar = clone(entity.profile1.identity.meta.bar);
+        if (typeof entity.profile1.identity.meta.foo !== 'undefined') ret.profile1_identity_meta_foo = clone(entity.profile1.identity.meta.foo);
+        if (typeof entity.profile1.identity.meta.bar !== 'undefined') ret.profile1_identity_meta_bar = clone(entity.profile1.identity.meta.bar);
         if (typeof entity.profile1 !== 'undefined' && typeof entity.profile1.identity !== 'undefined' && typeof entity.profile1.identity.meta !== 'undefined' && (entity.profile1.identity.meta.source == null || entity.profile1.identity.meta.source.__helper?.hasPrimaryKey())) {
           ret.profile1_identity_meta_source = getPrimaryKeyValues_profile1_identity_meta_source(entity.profile1.identity.meta.source);
         }
@@ -33,14 +33,14 @@ exports[`embedded entities in postgres diffing 1`] = `
           if (entity.profile1.identity.links[idx_0] === null) ret.profile1_identity_links[idx_0] = null;
           if (entity.profile1.identity.links[idx_0] != null) {
             ret.profile1_identity_links[idx_0] = {};
-            ret.profile1_identity_links[idx_0].url = clone(entity.profile1.identity.links[idx_0].url);
-            ret.profile1_identity_links[idx_0].createdAt = clone(entity.profile1.identity.links[idx_0].createdAt);
+            if (typeof entity.profile1.identity.links[idx_0].url !== 'undefined') ret.profile1_identity_links[idx_0].url = clone(entity.profile1.identity.links[idx_0].url);
+            if (typeof entity.profile1.identity.links[idx_0].createdAt !== 'undefined') ret.profile1_identity_links[idx_0].createdAt = clone(entity.profile1.identity.links[idx_0].createdAt);
 
             if (entity.profile1.identity.links[idx_0].meta === null) ret.profile1_identity_links[idx_0].meta = null;
             if (entity.profile1.identity.links[idx_0].meta != null) {
               ret.profile1_identity_links[idx_0].meta = {};
-              ret.profile1_identity_links[idx_0].meta.foo = clone(entity.profile1.identity.links[idx_0].meta.foo);
-              ret.profile1_identity_links[idx_0].meta.bar = clone(entity.profile1.identity.links[idx_0].meta.bar);
+              if (typeof entity.profile1.identity.links[idx_0].meta.foo !== 'undefined') ret.profile1_identity_links[idx_0].meta.foo = clone(entity.profile1.identity.links[idx_0].meta.foo);
+              if (typeof entity.profile1.identity.links[idx_0].meta.bar !== 'undefined') ret.profile1_identity_links[idx_0].meta.bar = clone(entity.profile1.identity.links[idx_0].meta.bar);
               if (typeof entity.profile1 !== 'undefined' && typeof entity.profile1.identity !== 'undefined' && typeof entity.profile1.identity.links !== 'undefined' && typeof entity.profile1.identity.links[idx_0].meta !== 'undefined' && (entity.profile1.identity.links[idx_0].meta.source == null || entity.profile1.identity.links[idx_0].meta.source.__helper?.hasPrimaryKey())) {
                 ret.profile1_identity_links[idx_0].meta.source = getPrimaryKeyValues_profile1_identity_links_meta_source(entity.profile1.identity.links[idx_0].meta.source);
               }
@@ -54,8 +54,8 @@ exports[`embedded entities in postgres diffing 1`] = `
                 if (entity.profile1.identity.links[idx_0].metas[idx_1] === null) ret.profile1_identity_links[idx_0].metas[idx_1] = null;
                 if (entity.profile1.identity.links[idx_0].metas[idx_1] != null) {
                   ret.profile1_identity_links[idx_0].metas[idx_1] = {};
-                  ret.profile1_identity_links[idx_0].metas[idx_1].foo = clone(entity.profile1.identity.links[idx_0].metas[idx_1].foo);
-                  ret.profile1_identity_links[idx_0].metas[idx_1].bar = clone(entity.profile1.identity.links[idx_0].metas[idx_1].bar);
+                  if (typeof entity.profile1.identity.links[idx_0].metas[idx_1].foo !== 'undefined') ret.profile1_identity_links[idx_0].metas[idx_1].foo = clone(entity.profile1.identity.links[idx_0].metas[idx_1].foo);
+                  if (typeof entity.profile1.identity.links[idx_0].metas[idx_1].bar !== 'undefined') ret.profile1_identity_links[idx_0].metas[idx_1].bar = clone(entity.profile1.identity.links[idx_0].metas[idx_1].bar);
                   if (typeof entity.profile1 !== 'undefined' && typeof entity.profile1.identity !== 'undefined' && typeof entity.profile1.identity.links !== 'undefined' && typeof entity.profile1.identity.links[idx_0].metas !== 'undefined' && (entity.profile1.identity.links[idx_0].metas[idx_1].source == null || entity.profile1.identity.links[idx_0].metas[idx_1].source.__helper?.hasPrimaryKey())) {
                     ret.profile1_identity_links[idx_0].metas[idx_1].source = getPrimaryKeyValues_profile1_identity_links_metas_source(entity.profile1.identity.links[idx_0].metas[idx_1].source);
                   }
@@ -88,18 +88,18 @@ exports[`embedded entities in postgres diffing 1`] = `
   if (entity.profile2 === null) ret.profile2 = null;
   if (entity.profile2 != null) {
     ret.profile2 = {};
-    ret.profile2.username = clone(entity.profile2.username);
+    if (typeof entity.profile2.username !== 'undefined') ret.profile2.username = clone(entity.profile2.username);
 
     if (entity.profile2.identity === null) ret.profile2.identity = null;
     if (entity.profile2.identity != null) {
       ret.profile2.identity = {};
-      ret.profile2.identity.email = clone(entity.profile2.identity.email);
+      if (typeof entity.profile2.identity.email !== 'undefined') ret.profile2.identity.email = clone(entity.profile2.identity.email);
 
       if (entity.profile2.identity.meta === null) ret.profile2.identity.meta = null;
       if (entity.profile2.identity.meta != null) {
         ret.profile2.identity.meta = {};
-        ret.profile2.identity.meta.foo = clone(entity.profile2.identity.meta.foo);
-        ret.profile2.identity.meta.bar = clone(entity.profile2.identity.meta.bar);
+        if (typeof entity.profile2.identity.meta.foo !== 'undefined') ret.profile2.identity.meta.foo = clone(entity.profile2.identity.meta.foo);
+        if (typeof entity.profile2.identity.meta.bar !== 'undefined') ret.profile2.identity.meta.bar = clone(entity.profile2.identity.meta.bar);
         if (typeof entity.profile2 !== 'undefined' && typeof entity.profile2.identity !== 'undefined' && typeof entity.profile2.identity.meta !== 'undefined' && (entity.profile2.identity.meta.source == null || entity.profile2.identity.meta.source.__helper?.hasPrimaryKey())) {
           ret.profile2.identity.meta.source = getPrimaryKeyValues_profile2_identity_meta_source(entity.profile2.identity.meta.source);
         }
@@ -113,14 +113,14 @@ exports[`embedded entities in postgres diffing 1`] = `
           if (entity.profile2.identity.links[idx_2] === null) ret.profile2.identity.links[idx_2] = null;
           if (entity.profile2.identity.links[idx_2] != null) {
             ret.profile2.identity.links[idx_2] = {};
-            ret.profile2.identity.links[idx_2].url = clone(entity.profile2.identity.links[idx_2].url);
-            ret.profile2.identity.links[idx_2].createdAt = clone(entity.profile2.identity.links[idx_2].createdAt);
+            if (typeof entity.profile2.identity.links[idx_2].url !== 'undefined') ret.profile2.identity.links[idx_2].url = clone(entity.profile2.identity.links[idx_2].url);
+            if (typeof entity.profile2.identity.links[idx_2].createdAt !== 'undefined') ret.profile2.identity.links[idx_2].createdAt = clone(entity.profile2.identity.links[idx_2].createdAt);
 
             if (entity.profile2.identity.links[idx_2].meta === null) ret.profile2.identity.links[idx_2].meta = null;
             if (entity.profile2.identity.links[idx_2].meta != null) {
               ret.profile2.identity.links[idx_2].meta = {};
-              ret.profile2.identity.links[idx_2].meta.foo = clone(entity.profile2.identity.links[idx_2].meta.foo);
-              ret.profile2.identity.links[idx_2].meta.bar = clone(entity.profile2.identity.links[idx_2].meta.bar);
+              if (typeof entity.profile2.identity.links[idx_2].meta.foo !== 'undefined') ret.profile2.identity.links[idx_2].meta.foo = clone(entity.profile2.identity.links[idx_2].meta.foo);
+              if (typeof entity.profile2.identity.links[idx_2].meta.bar !== 'undefined') ret.profile2.identity.links[idx_2].meta.bar = clone(entity.profile2.identity.links[idx_2].meta.bar);
               if (typeof entity.profile2 !== 'undefined' && typeof entity.profile2.identity !== 'undefined' && typeof entity.profile2.identity.links !== 'undefined' && typeof entity.profile2.identity.links[idx_2].meta !== 'undefined' && (entity.profile2.identity.links[idx_2].meta.source == null || entity.profile2.identity.links[idx_2].meta.source.__helper?.hasPrimaryKey())) {
                 ret.profile2.identity.links[idx_2].meta.source = getPrimaryKeyValues_profile2_identity_links_meta_source(entity.profile2.identity.links[idx_2].meta.source);
               }
@@ -134,8 +134,8 @@ exports[`embedded entities in postgres diffing 1`] = `
                 if (entity.profile2.identity.links[idx_2].metas[idx_3] === null) ret.profile2.identity.links[idx_2].metas[idx_3] = null;
                 if (entity.profile2.identity.links[idx_2].metas[idx_3] != null) {
                   ret.profile2.identity.links[idx_2].metas[idx_3] = {};
-                  ret.profile2.identity.links[idx_2].metas[idx_3].foo = clone(entity.profile2.identity.links[idx_2].metas[idx_3].foo);
-                  ret.profile2.identity.links[idx_2].metas[idx_3].bar = clone(entity.profile2.identity.links[idx_2].metas[idx_3].bar);
+                  if (typeof entity.profile2.identity.links[idx_2].metas[idx_3].foo !== 'undefined') ret.profile2.identity.links[idx_2].metas[idx_3].foo = clone(entity.profile2.identity.links[idx_2].metas[idx_3].foo);
+                  if (typeof entity.profile2.identity.links[idx_2].metas[idx_3].bar !== 'undefined') ret.profile2.identity.links[idx_2].metas[idx_3].bar = clone(entity.profile2.identity.links[idx_2].metas[idx_3].bar);
                   if (typeof entity.profile2 !== 'undefined' && typeof entity.profile2.identity !== 'undefined' && typeof entity.profile2.identity.links !== 'undefined' && typeof entity.profile2.identity.links[idx_2].metas !== 'undefined' && (entity.profile2.identity.links[idx_2].metas[idx_3].source == null || entity.profile2.identity.links[idx_2].metas[idx_3].source.__helper?.hasPrimaryKey())) {
                     ret.profile2.identity.links[idx_2].metas[idx_3].source = getPrimaryKeyValues_profile2_identity_links_metas_source(entity.profile2.identity.links[idx_2].metas[idx_3].source);
                   }

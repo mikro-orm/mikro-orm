@@ -32,7 +32,7 @@ class Address2 {
   @Property()
   street!: string;
 
-  @Property()
+  @Property({ nullable: true })
   postalCode?: string;
 
   @Property()
@@ -164,7 +164,7 @@ describe('embedded entities in mysql', () => {
     await orm.em.persistAndFlush(user);
     orm.em.clear();
     expect(mock.mock.calls[0][0]).toMatch('begin');
-    expect(mock.mock.calls[1][0]).toMatch('insert into `user` (`address1_street`, `address1_postal_code`, `address1_city`, `address1_country`, `addr_street`, `addr_postal_code`, `addr_city`, `addr_country`, `street`, `postal_code`, `city`, `country`, `address4`) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+    expect(mock.mock.calls[1][0]).toMatch('insert into `user` (`address1_street`, `address1_postal_code`, `address1_city`, `address1_country`, `addr_street`, `addr_city`, `addr_country`, `street`, `postal_code`, `city`, `country`, `address4`) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
     expect(mock.mock.calls[2][0]).toMatch('commit');
 
     const u = await orm.em.findOneOrFail(User, user.id);
