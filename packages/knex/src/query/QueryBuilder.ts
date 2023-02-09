@@ -22,6 +22,7 @@ import type {
   RequiredEntityData,
 } from '@mikro-orm/core';
 import {
+  helper,
   LoadStrategy,
   LockMode,
   PopulateHint,
@@ -632,7 +633,30 @@ export class QueryBuilder<T extends object = AnyEntity> {
       res = this.driver.mergeJoinedResult(res, this.mainAlias.metadata!);
     }
 
-    return res.map(r => this.em!.map<T>(this.mainAlias.entityName, r, { schema: this._schema }));
+    const entities: T[] = [];
+
+    function propagatePopulateHint<U>(entity: U, hint: PopulateOptions<U>[]) {
+      helper(entity).__serializationContext.populate ??= hint;
+      hint.forEach(pop => {
+        const value = entity[pop.field];
+
+        if (Utils.isEntity<U>(value, true)) {
+          helper(value).populated();
+          propagatePopulateHint(value, pop.children ?? []);
+        } else if (Utils.isCollection(value)) {
+          value.populated();
+          value.getItems(false).forEach(item => propagatePopulateHint(item, pop.children ?? []));
+        }
+      });
+    }
+
+    for (const r of res) {
+      const entity = this.em!.map<T>(this.mainAlias.entityName, r, { schema: this._schema });
+      propagatePopulateHint(entity, this._populate);
+      entities.push(entity);
+    }
+
+    return entities;
   }
 
   /**

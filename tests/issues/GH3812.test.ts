@@ -173,6 +173,7 @@ test('GH 3812', async () => {
   const res1 = await orm.em.find(SerialNumber, {}, { populate: ['logs.step'] });
   expect(res1).toHaveLength(1);
   expect(wrap(res1[0]).toJSON().logs[0].serialNumber).toBe('559fccf7-11f0-4e5a-8e15-ae29b98ddeb3');
+  expect(wrap(res1[0]).toJSON().logs[0].step?.name).toBe('ASSY');
 
   orm.em.clear();
 
@@ -185,4 +186,5 @@ test('GH 3812', async () => {
     .getResultList();
   expect(res2).toHaveLength(1);
   expect(wrap(res2[0]).toJSON().logs[0].serialNumber).toBe('559fccf7-11f0-4e5a-8e15-ae29b98ddeb3');
+  expect(wrap(res2[0]).toJSON().logs[0].step?.name).toBe('ASSY');
 });
