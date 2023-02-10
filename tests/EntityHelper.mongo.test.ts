@@ -205,6 +205,16 @@ describe('EntityHelperMongo', () => {
       "  baz: (FooBaz) { _id: ObjectId('5b0ff0619fbec620008d2414') }\n" +
       '}');
 
+    process.env.MIKRO_ORM_LOG_EM_ID = '1';
+    actual = inspect(bar);
+    process.env.MIKRO_ORM_LOG_EM_ID = '0';
+
+    expect(actual).toBe('FooBar [not managed] {\n' +
+      '  meta: { onCreateCalled: false, onUpdateCalled: false },\n' +
+      "  name: 'bar',\n" +
+      "  baz: (FooBaz [managed by 1]) { _id: ObjectId('5b0ff0619fbec620008d2414') }\n" +
+      '}');
+
     const god = new Author('God', 'hello@heaven.god');
     const bible = new Book('Bible', god);
     bible.createdAt = new Date('2020-07-18T17:31:08.535Z');

@@ -124,6 +124,16 @@ export class EntityHelper {
       const ret = inspect(object, { depth });
       let name = (this as object).constructor.name;
 
+      const showEM = ['true', 't', '1'].includes(process.env.MIKRO_ORM_LOG_EM_ID?.toString().toLowerCase() ?? '');
+
+      if (showEM) {
+        if (helper(this).__em) {
+          name += ` [managed by ${helper(this).__em.id}]`;
+        } else {
+          name += ` [not managed]`;
+        }
+      }
+
       // distinguish not initialized entities
       if (!helper(this).__initialized) {
         name = `(${name})`;
