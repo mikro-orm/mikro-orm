@@ -16,6 +16,7 @@ const methods = {
   findOne: jest.fn(),
   findOneOrFail: jest.fn(),
   upsert: jest.fn(),
+  upsertMany: jest.fn(),
   find: jest.fn(),
   findAndCount: jest.fn(),
   remove: jest.fn(),
@@ -65,6 +66,8 @@ describe('EntityRepository', () => {
     expect(methods.findOneOrFail.mock.calls[0]).toEqual([Publisher, 'bar', undefined]);
     await repo.upsert({ name: 'bar', id: '1' });
     expect(methods.upsert.mock.calls[0]).toEqual([Publisher, { name: 'bar', id: '1' }, undefined]);
+    await repo.upsertMany([{ name: 'bar', id: '1' }]);
+    expect(methods.upsertMany.mock.calls[0]).toEqual([Publisher, [{ name: 'bar', id: '1' }], undefined]);
     await repo.createQueryBuilder();
     expect(methods.createQueryBuilder.mock.calls[0]).toEqual([Publisher, undefined]);
     await repo.qb();

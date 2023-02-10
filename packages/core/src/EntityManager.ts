@@ -653,7 +653,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
    *
    * ```ts
    * // insert into "author" ("age", "email") values (33, 'foo@bar.com') on conflict ("email") do update set "age" = 41
-   * const author = await em.upsert(Author, { email: 'foo@bar.com', age: 33 });
+   * const authors = await em.upsertMany(Author, [{ email: 'foo@bar.com', age: 33 }, ...]);
    * ```
    *
    * The entity data needs to contain either the primary key, or any other unique property. Let's consider the following example, where `Author.email` is a unique property:

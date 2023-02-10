@@ -79,6 +79,35 @@ export class EntityRepository<T extends object> {
   }
 
   /**
+   * Creates or updates the entity, based on whether it is already present in the database.
+   * This method performs an `insert on conflict merge` query ensuring the database is in sync, returning a managed
+   * entity instance.
+   *
+   * ```ts
+   * // insert into "author" ("age", "email") values (33, 'foo@bar.com') on conflict ("email") do update set "age" = 41
+   * const authors = await em.getRepository(Author).upsertMany([{ email: 'foo@bar.com', age: 33 }, ...]);
+   * ```
+   *
+   * The entity data needs to contain either the primary key, or any other unique property. Let's consider the following example, where `Author.email` is a unique property:
+   *
+   * ```ts
+   * // insert into "author" ("age", "email") values (33, 'foo@bar.com'), (666, 'lol@lol.lol') on conflict ("email") do update set "age" = excluded."age"
+   * // select "id" from "author" where "email" = 'foo@bar.com'
+   * const author = await em.getRepository(Author).upsertMany([
+   *   { email: 'foo@bar.com', age: 33 },
+   *   { email: 'lol@lol.lol', age: 666 },
+   * ]);
+   * ```
+   *
+   * Depending on the driver support, this will either use a returning query, or a separate select query, to fetch the primary key if it's missing from the `data`.
+   *
+   * If the entity is already present in current context, there won't be any queries - instead, the entity data will be assigned and an explicit `flush` will be required for those changes to be persisted.
+   */
+  async upsertMany(entitiesOrData?: EntityData<T>[] | T[], options?: NativeInsertUpdateOptions<T>): Promise<T[]> {
+    return this.em.upsertMany<T>(this.entityName, entitiesOrData, options);
+  }
+
+  /**
    * Finds all entities matching your `where` query. You can pass additional options via the `options` parameter.
    */
   async find<P extends string = never>(where: FilterQuery<T>, options?: FindOptions<T, P>): Promise<Loaded<T, P>[]> {
