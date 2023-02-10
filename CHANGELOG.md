@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.9](https://github.com/mikro-orm/mikro-orm/compare/v5.6.8...v5.6.9) (2023-02-10)
+
+
+### Bug Fixes
+
+* **core:** add missing `repo.upsertMany` shortcut ([c101d51](https://github.com/mikro-orm/mikro-orm/commit/c101d51dcb550acb4705653a42bfd3066b2fd347))
+* **core:** do not serialize JSON values twice ([f06eeb0](https://github.com/mikro-orm/mikro-orm/commit/f06eeb02a9e9038f107a338b1a51a5db1973e83d))
+* **core:** do not snapshot missing embedded properties as `undefined` ([4ad4cdf](https://github.com/mikro-orm/mikro-orm/commit/4ad4cdf7a8a081b4bfa1e14695bd446dac49d9e1))
+* **core:** ensure json type is recognized with `type: 'jsonb'` ([e1f82bc](https://github.com/mikro-orm/mikro-orm/commit/e1f82bc5b63ea7547685244fa42a7f612250b909)), closes [#3998](https://github.com/mikro-orm/mikro-orm/issues/3998)
+* **core:** improve handling of not managed references created via `ref()/rel()` ([2e814e8](https://github.com/mikro-orm/mikro-orm/commit/2e814e89e78a3ac0d5dcedf88d9acdb1be06e287)), closes [#4027](https://github.com/mikro-orm/mikro-orm/issues/4027)
+* **query-builder:** respect `qb.joinAndSelect` when serializing ([4025869](https://github.com/mikro-orm/mikro-orm/commit/4025869c5183899b459c6dc7a88d8b60cd4e2689)), closes [#4034](https://github.com/mikro-orm/mikro-orm/issues/4034) [#3812](https://github.com/mikro-orm/mikro-orm/issues/3812)
+
+
+### Features
+
+* **core:** optionally log if entity is managed or not ([68e073b](https://github.com/mikro-orm/mikro-orm/commit/68e073bc07281ebbfe0cef4008a3c2ff0006d953))
+* **migrations:** add `cjs` option for emit ([#4016](https://github.com/mikro-orm/mikro-orm/issues/4016)) ([d5cfa22](https://github.com/mikro-orm/mikro-orm/commit/d5cfa2239e7a2686b6d820371e9dd06920cf75fd)), closes [#4005](https://github.com/mikro-orm/mikro-orm/issues/4005)
+
+
+
+
+
 ## [5.6.8](https://github.com/mikro-orm/mikro-orm/compare/v5.6.7...v5.6.8) (2023-01-25)
 
 
