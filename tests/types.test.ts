@@ -595,7 +595,7 @@ describe('check typings', () => {
     q = { [OptionalProps]: 'bar' };
   });
 
-  test('GH #3277', async () => {
+  test('GH #3277 (1)', async () => {
     interface Owner {
       id: number;
       vehicles: Collection<Vehicle>;
@@ -646,6 +646,48 @@ describe('check typings', () => {
 
     // const foo = await owner1.vehicles.$.loadItems({ populate: ['owner'] });
     // const v1 = foo[0].owner.$.vehicles;
+  });
+
+  test('GH #3277 (2)', async () => {
+    interface Person {
+      foobar: Collection<{}>;
+    }
+
+    interface Calendar {
+      events: Collection<CalendarEvent>;
+      owner: Ref<Person>;
+    }
+
+    interface CalendarEvent {
+      order: Ref<Order>;
+      calendar: Ref<Calendar>;
+    }
+
+    interface Order {
+      customer: Ref<Customer>;
+      foobar: Collection<{}>;
+    }
+
+    interface Customer {
+      foobar: Collection<{}>;
+    }
+
+
+    function preloaded(event: Loaded<CalendarEvent, 'calendar.owner'>) {
+      // no-op
+    }
+
+    const event1 = {} as Loaded<CalendarEvent, 'calendar.owner' | 'order.customer.foobar'>;
+    const event2 = {} as Loaded<CalendarEvent, 'calendar.owner.foobar' | 'order.customer'>;
+    const event3 = {} as Loaded<CalendarEvent, 'calendar.owner' | 'order.customer'>;
+    const event4 = {} as Loaded<CalendarEvent, 'calendar.owner' | 'order'>;
+    const event5 = {} as Loaded<CalendarEvent, 'calendar.owner' | 'order.foobar'>;
+
+    preloaded(event1);
+    preloaded(event2);
+    preloaded(event3);
+    preloaded(event4);
+    preloaded(event5);
   });
 
 });
