@@ -125,7 +125,7 @@ export class Reference<T extends object> {
     return this.entity as Loaded<TT, P>;
   }
 
-  set(entity: T | Ref<T>): void {
+  set<TT extends T>(entity: TT | Ref<TT>): void {
     this.entity = Reference.unwrapReference(entity as T & object);
     delete helper(this.entity).__reference;
   }
