@@ -5,6 +5,7 @@ import { QueryHelper } from '../utils/QueryHelper';
 import { EventType, ReferenceType } from '../enums';
 import { Reference } from './Reference';
 import { helper } from './wrap';
+import type { EntityComparator } from '../utils/EntityComparator';
 
 export interface FactoryOptions {
   initialized?: boolean;
@@ -176,6 +177,10 @@ export class EntityFactory {
     const meta2 = this.processDiscriminatorColumn<T>(meta, data);
 
     return this.createEntity(data, meta2, options);
+  }
+
+  getComparator(): EntityComparator {
+    return this.comparator;
   }
 
   private createEntity<T extends object>(data: EntityData<T>, meta: EntityMetadata<T>, options: FactoryOptions): T {

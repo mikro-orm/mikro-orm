@@ -718,7 +718,6 @@ export class UnitOfWork {
     }
 
     const collection = reference as Collection<AnyEntity>;
-    const requireFullyInitialized = type === Cascade.PERSIST; // only cascade persist needs fully initialized items
 
     if ([ReferenceType.ONE_TO_MANY, ReferenceType.MANY_TO_MANY].includes(prop.reference) && collection) {
       if (type === Cascade.MERGE && collection.isInitialized()) {
@@ -727,7 +726,6 @@ export class UnitOfWork {
 
       collection
         .getItems(false)
-        .filter(item => !requireFullyInitialized || helper(item).__initialized)
         .forEach(item => this.cascade(item, type, visited, options));
     }
   }
