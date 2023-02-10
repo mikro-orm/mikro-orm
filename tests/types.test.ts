@@ -690,4 +690,54 @@ describe('check typings', () => {
     // const v1 = foo[0].owner.$.vehicles;
   });
 
+  test('GH #3277 (2)', async () => {
+    interface Person {
+      id: number;
+      foobar: Collection<FooBar>;
+    }
+
+    interface Calendar {
+      id: number;
+      events: Collection<CalendarEvent>;
+      owner: Ref<Person>;
+    }
+
+    interface FooBar {
+      id: number;
+    }
+
+    interface CalendarEvent {
+      id: number;
+      order: Ref<Order>;
+      calendar: Ref<Calendar>;
+    }
+
+    interface Order {
+      id: number;
+      customer: Ref<Customer>;
+      foobar: Collection<FooBar>;
+    }
+
+    interface Customer {
+      foobar: Collection<FooBar>;
+    }
+
+
+    function preloaded(event: Loaded<CalendarEvent, 'calendar.owner'>) {
+      // no-op
+    }
+
+    const event1 = {} as Loaded<CalendarEvent, 'calendar.owner' | 'order.customer.foobar'>;
+    const event2 = {} as Loaded<CalendarEvent, 'calendar.owner.foobar' | 'order.customer'>;
+    const event3 = {} as Loaded<CalendarEvent, 'calendar.owner' | 'order.customer'>;
+    const event4 = {} as Loaded<CalendarEvent, 'calendar.owner' | 'order'>;
+    const event5 = {} as Loaded<CalendarEvent, 'calendar.owner' | 'order.foobar'>;
+
+    preloaded(event1);
+    preloaded(event2);
+    preloaded(event3);
+    preloaded(event4);
+    preloaded(event5);
+  });
+
 });
