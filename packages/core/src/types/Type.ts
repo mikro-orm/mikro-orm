@@ -80,6 +80,13 @@ export abstract class Type<JSType = string, DBType = JSType> {
     return !!data?.__mappedType;
   }
 
+  /**
+   * Checks whether the argument is instance of custom `Type` class provided by the user.
+   */
+  static isCustomType(data: any): data is Type<any> {
+    return false;
+  }
+
   [inspect.custom](depth: number) {
     const object = { ...this };
     const hidden = ['prop', 'platform', 'meta'];

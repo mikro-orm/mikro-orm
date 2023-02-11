@@ -11,7 +11,7 @@ import { EntitySchema } from './EntitySchema';
 import { Cascade, ReferenceType } from '../enums';
 import { MetadataError } from '../errors';
 import type { Platform } from '../platforms';
-import { ArrayType, BigIntType, BlobType, EnumArrayType, JsonType, Type } from '../types';
+import { ArrayType, BigIntType, BlobType, EnumArrayType, JsonType, Type, t } from '../types';
 import { colors } from '../logging/colors';
 
 export class MetadataDiscovery {
@@ -1005,6 +1005,17 @@ export class MetadataDiscovery {
 
     if (Type.isMappedType(prop.customType) && prop.reference === ReferenceType.SCALAR && !prop.type?.toString().endsWith('[]')) {
       prop.type = prop.customType.constructor.name;
+    }
+
+    if (prop.reference === ReferenceType.SCALAR) {
+      const mappedType = this.getMappedType(prop);
+      prop.columnTypes ??= [mappedType.getColumnType(prop, this.platform)];
+
+      // use only custom types provided by user, we don't need to use the ones provided by ORM,
+      // with exception for ArrayType and JsonType, those two are handled in
+      if (!Object.values(t).some(type => type === mappedType.constructor)) {
+        prop.customType ??= mappedType;
+      }
     }
   }
 

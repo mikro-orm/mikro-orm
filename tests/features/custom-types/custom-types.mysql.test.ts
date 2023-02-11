@@ -54,10 +54,10 @@ export class Location {
   @Property({ type: t.float, nullable: true })
   rank?: number;
 
-  @Property({ type: PointType, nullable: true })
+  @Property({ type: 'point', nullable: true })
   point?: Point;
 
-  @Property({ type: ExtendedPointType, nullable: true })
+  @Property({ type: 'point-extended', nullable: true })
   extendedPoint?: Point;
 
 }
@@ -87,6 +87,14 @@ describe('custom types [mysql]', () => {
       dbName: `mikro_orm_test_custom_types`,
       driver: MySqlDriver,
       port: 3308,
+      discovery: {
+        getMappedType(type) {
+          switch (type) {
+            case 'point': return new PointType();
+            case 'point-extended': return new ExtendedPointType();
+          }
+        },
+      },
     });
 
     await orm.schema.refreshDatabase();

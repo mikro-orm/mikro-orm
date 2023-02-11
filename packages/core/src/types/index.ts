@@ -48,6 +48,7 @@ export const types = {
   string: StringType,
   uuid: UuidType,
   text: TextType,
+  unknown: UnknownType,
 };
 
 export const t = types;
