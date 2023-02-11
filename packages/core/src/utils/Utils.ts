@@ -456,7 +456,12 @@ export class Utils {
     return null;
   }
 
-  static getCompositeKeyValue<T>(data: EntityData<T>, meta: EntityMetadata<T>, convertCustomTypes = false, platform?: Platform): Primary<T> {
+  static getCompositeKeyValue<T>(
+    data: EntityData<T>,
+    meta: EntityMetadata<T>,
+    convertCustomTypes: boolean | 'convertToDatabaseValue' | 'convertToJSValue' = false,
+    platform?: Platform,
+  ): Primary<T> {
     return meta.primaryKeys.map((pk, idx) => {
       const value = Array.isArray(data) ? data[idx] : data[pk as string];
       const prop = meta.properties[pk];
@@ -466,7 +471,8 @@ export class Utils {
       }
 
       if (prop.customType && platform && convertCustomTypes) {
-        return prop.customType.convertToJSValue(value, platform);
+        const method = typeof convertCustomTypes === 'string' ? convertCustomTypes : 'convertToJSValue';
+        return prop.customType[method](value, platform);
       }
 
       return value;

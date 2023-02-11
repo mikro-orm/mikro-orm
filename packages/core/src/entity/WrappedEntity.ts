@@ -105,8 +105,14 @@ export class WrappedEntity<T extends object, PK extends keyof T> {
   }
 
   getPrimaryKey(convertCustomTypes = false): Primary<T> | null {
-    if (this.__pk && this.__meta.compositePK) {
-      return Utils.getCompositeKeyValue(this.__pk, this.__meta, convertCustomTypes, this.__platform);
+    const prop = this.__meta.getPrimaryProps()[0];
+
+    if (this.__pk != null && this.__meta.compositePK) {
+      return Utils.getCompositeKeyValue(this.__pk, this.__meta, convertCustomTypes ? 'convertToDatabaseValue' : false, this.__platform);
+    }
+
+    if (convertCustomTypes && this.__pk != null && prop.customType) {
+      return prop.customType.convertToDatabaseValue(this.__pk, this.__platform);
     }
 
     if (convertCustomTypes) {
