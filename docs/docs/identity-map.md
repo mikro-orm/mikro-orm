@@ -82,15 +82,17 @@ The `RequestContext.getEntityManager()` method then checks `AsyncLocalStorage` s
 
 The [`AsyncLocalStorage`](https://nodejs.org/api/async_context.html#class-asynclocalstorage) class from Node.js core is the magician here. It allows us to track the context throughout the async calls. It allows us to decouple the `EntityManager` fork creation (usually in a middleware as shown in previous section) from its usage through the global `EntityManager` instance.
 
-## `@UseRequestContext()` decorator
+## `@CreateRequestContext()` decorator
+
+> Before v6, `@CreateRequestContext()` was called `@UseRequestContext()`.
 
 Middlewares are executed only for regular HTTP request handlers, what if we need a request scoped method outside that? One example of that is queue handlers or scheduled tasks (e.g. CRON jobs).
 
-We can use the `@UseRequestContext()` decorator. It requires us to first inject the `MikroORM` instance to current context, it will be then used to create the context for us. Under the hood, the decorator will register new request context for our method and execute it inside the context.
+We can use the `@CreateRequestContext()` decorator. It requires us to first inject the `MikroORM` instance to current context, it will be then used to create the context for us. Under the hood, the decorator will register new request context for our method and execute it inside the context.
 
 This decorator will wrap the underlying method in `RequestContext.createAsync()` call. Every call to such method will create new context (new `EntityManager` fork) which will be used inside.
 
-> `@UseRequestContext()` should be used only on the top level methods. It should not be nested - a method decorated with it should not call another method that is also decorated with it.
+> `@CreateRequestContext()` should be used only on the top level methods. It should not be nested - a method decorated with it should not call another method that is also decorated with it.
 
 ```ts
 @Injectable()
@@ -98,7 +100,7 @@ export class MyService {
 
   constructor(private readonly orm: MikroORM) { }
 
-  @UseRequestContext()
+  @CreateRequestContext()
   async doSomething() {
     // this will be executed in a separate context
   }
@@ -113,13 +115,17 @@ import { DI } from '..';
 
 export class MyService {
 
-  @UseRequestContext(() => DI.orm)
+  @CreateRequestContext(() => DI.orm)
   async doSomething() {
     // this will be executed in a separate context
   }
 
 }
 ```
+
+## `@EnsureRequestContext()` decorator
+
+Sometimes you may prefer to just ensure the method is executed inside a request context, and reuse the existing context if available. You can use the `@EnsureRequestContext()` decorator here, it behaves exactly like the `@CreateRequestContext`, but only creates new context if necessary, reusing the existing one if possible.
 
 ## Why is Request Context needed?
 
