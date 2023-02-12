@@ -9,8 +9,9 @@ import {
   ReferenceKind,
   Utils,
   Subscriber,
-  UseRequestContext,
   CreateRequestContext,
+  EnsureRequestContext,
+  RequestContext,
 } from '@mikro-orm/core';
 import type { Dictionary } from '@mikro-orm/core';
 import { Test } from './entities';
@@ -59,33 +60,32 @@ class TestClass2 {
 
   constructor(private readonly orm: MikroORM) {}
 
-  @UseRequestContext()
+  @EnsureRequestContext()
   async asyncMethodReturnsValue() {
     return TEST_VALUE;
   }
 
-  @UseRequestContext()
+  @EnsureRequestContext()
   methodReturnsValue() {
     return TEST_VALUE;
   }
 
-  @UseRequestContext()
+  @EnsureRequestContext()
   async asyncMethodReturnsNothing() {
     //
   }
 
-  @UseRequestContext()
+  @EnsureRequestContext()
   methodReturnsNothing() {
     //
   }
 
-  @UseRequestContext(() => DI.orm)
+  @EnsureRequestContext(() => DI.orm)
   methodWithCallback() {
     //
   }
 
 }
-
 
 describe('decorators', () => {
 
@@ -178,7 +178,7 @@ describe('decorators', () => {
     await expect(test2.asyncMethodReturnsValue()).rejects.toThrow(err);
   });
 
-  test('UseRequestContext', async () => {
+  test('EnsureRequestContext', async () => {
     const orm = Object.create(MikroORM.prototype, { em: { value: { name: 'default', fork: jest.fn() } } });
     const test = new TestClass2(orm);
 
@@ -199,8 +199,12 @@ describe('decorators', () => {
     const ret6 = await test2.methodWithCallback();
     expect(ret6).toBeUndefined();
 
-    const err = '@UseRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property, or with a callback parameter like `@UseRequestContext(() => orm)`';
+    const err = '@EnsureRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property, or with a callback parameter like `@EnsureRequestContext(() => orm)`';
     await expect(test2.asyncMethodReturnsValue()).rejects.toThrow(err);
+
+    await RequestContext.create(orm.em, async () => {
+      await expect(test2.asyncMethodReturnsValue()).resolves.toBe(TEST_VALUE);
+    });
   });
 
 });
