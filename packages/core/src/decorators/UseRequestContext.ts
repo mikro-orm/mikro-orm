@@ -13,7 +13,7 @@ export function UseRequestContext<T>(getContext?: MikroORM | ((type?: T) => Mikr
         throw new Error('@UseRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property, or with a callback parameter like `@UseRequestContext(() => orm)`');
       }
 
-      return await RequestContext.createAsync(orm.em, async () => {
+      return await RequestContext.create(orm.em, () => {
         return originalMethod.apply(this, args);
       });
     };
