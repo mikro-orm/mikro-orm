@@ -383,7 +383,8 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
 
     const addParams = (prop: EntityProperty<T>, row: Dictionary) => {
       if (options.convertCustomTypes && prop.customType) {
-        return params.push(prop.customType.convertToDatabaseValue(row[prop.name], this.platform, { key: prop.name, mode: 'query-data' }));
+        params.push(prop.customType.convertToDatabaseValue(row[prop.name], this.platform, { key: prop.name, mode: 'query-data' }));
+        return;
       }
 
       params.push(row[prop.name]);
