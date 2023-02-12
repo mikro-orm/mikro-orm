@@ -174,7 +174,7 @@ describe('decorators', () => {
     const ret6 = await test2.methodWithCallback();
     expect(ret6).toBeUndefined();
 
-    const err = '@CreateRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property, or with a callback parameter like `@UseRequestContext(() => orm)`';
+    const err = '@CreateRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property, or with a callback parameter like `@CreateRequestContext(() => orm)`';
     await expect(test2.asyncMethodReturnsValue()).rejects.toThrow(err);
   });
 
