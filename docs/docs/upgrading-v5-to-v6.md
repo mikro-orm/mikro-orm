@@ -196,3 +196,8 @@ Use `RequestContext.create` instead, it can be awaited now.
 -const ret = await RequestContext.createAsync(em, async () => { ... });
 +const ret = await RequestContext.create(em, async () => { ... });
 ```
+
+## Renamed `@UseRequestContext()`
+
+The decorator was renamed to `@CreateRequestContext()` to make it clear it always creates new context, and a new `@EnsureRequestContext()` decorator was added that will reuse existing contexts if available. 
+
