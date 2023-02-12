@@ -905,7 +905,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     });
     options.ctx ??= em.transactionContext;
 
-    return TransactionContext.createAsync(fork, async () => {
+    return TransactionContext.create(fork, async () => {
       return fork.getConnection().transactional(async trx => {
         fork.transactionContext = trx;
         fork.eventManager.registerSubscriber({
