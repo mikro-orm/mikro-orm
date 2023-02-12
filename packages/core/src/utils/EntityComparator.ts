@@ -121,7 +121,13 @@ export class EntityComparator {
         if (meta.properties[pk].reference !== ReferenceType.SCALAR) {
           lines.push(`    ${pk}: (entity${this.wrap(pk)} != null && (entity${this.wrap(pk)}.__entity || entity${this.wrap(pk)}.__reference)) ? entity${this.wrap(pk)}.__helper.getPrimaryKey(true) : entity${this.wrap(pk)},`);
         } else {
-          lines.push(`    ${pk}: entity${this.wrap(pk)},`);
+          if (meta.properties[pk].customType) {
+            const convertorKey = this.safeKey(pk);
+            context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => meta.properties[pk].customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
+            lines.push(`    ${pk}: convertToDatabaseValue_${convertorKey}(entity${this.wrap(pk)}),`);
+          } else {
+            lines.push(`    ${pk}: entity${this.wrap(pk)},`);
+          }
         }
       });
       lines.push(`  };`);
@@ -451,20 +457,16 @@ export class EntityComparator {
 
     if (prop.reference === ReferenceType.ONE_TO_ONE || prop.reference === ReferenceType.MANY_TO_ONE) {
       if (prop.mapToPk) {
-        ret += `    ret${dataKey} = entity${entityKey};\n`;
-      } else {
-        context.set(`getPrimaryKeyValues_${convertorKey}`, (val: any) => val && Utils.getPrimaryKeyValues(val, this.metadata.find(prop.type)!.primaryKeys, true));
-        ret += `    ret${dataKey} = getPrimaryKeyValues_${convertorKey}(entity${entityKey});\n`;
-      }
-
-      if (prop.customType) {
-        context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
-
-        if (['number', 'string', 'boolean'].includes(prop.customType.compareAsType().toLowerCase())) {
-          return ret + `    ret${dataKey} = convertToDatabaseValue_${convertorKey}(ret${dataKey});\n  }\n`;
+        if (prop.customType) {
+          context.set(`convertToDatabaseValue_${convertorKey}`, (val: any) => prop.customType.convertToDatabaseValue(val, this.platform, { mode: 'serialization' }));
+          ret += `    ret${dataKey} = convertToDatabaseValue_${convertorKey}(entity${entityKey});\n`;
+        } else {
+          ret += `    ret${dataKey} = entity${entityKey};\n`;
         }
-
-        return ret + `    ret${dataKey} = clone(convertToDatabaseValue_${convertorKey}(ret${dataKey}));\n  }\n`;
+      } else {
+        const meta2 = this.metadata.find(prop.type);
+        context.set(`getPrimaryKeyValues_${convertorKey}`, (val: any) => val && Utils.getPrimaryKeyValues(val, meta2!.primaryKeys, true, true));
+        ret += `    ret${dataKey} = getPrimaryKeyValues_${convertorKey}(entity${entityKey});\n`;
       }
 
       return ret + '  }\n';

@@ -498,29 +498,35 @@ export class Utils {
   }
 
   static getPrimaryKeyValues<T>(entity: T, primaryKeys: string[], allowScalar = false, convertCustomTypes = false) {
-    if (allowScalar && primaryKeys.length === 1) {
-      if (Utils.isEntity(entity[primaryKeys[0]], true)) {
-        return entity[primaryKeys[0]].__helper!.getPrimaryKey(convertCustomTypes);
-      }
-
-      return entity[primaryKeys[0]];
+    if (entity == null) {
+      return entity;
     }
 
-    return primaryKeys.reduce((ret, pk) => {
-      if (Utils.isEntity(entity[pk], true)) {
-        const childPk = entity[pk].__helper!.getPrimaryKey(convertCustomTypes);
-
-        if (entity[pk].__meta.compositePK) {
-          ret.push(...Object.values(childPk) as Primary<T>[]);
-        } else {
-          ret.push(childPk);
-        }
-      } else {
-        ret.push(entity[pk]);
+    function toArray(val: unknown): unknown {
+      if (Utils.isPlainObject(val)) {
+        return Object.values(val).flatMap(v => toArray(v));
       }
 
-      return ret;
-    }, [] as Primary<T>[]);
+      return val;
+    }
+
+    const pk = Utils.isEntity(entity, true)
+      ? helper(entity).getPrimaryKey(convertCustomTypes)
+      : primaryKeys.reduce((o, pk) => { o[pk] = entity[pk]; return o; }, {} as Dictionary);
+
+    if (primaryKeys.length > 1) {
+      return toArray(pk!);
+    }
+
+    if (allowScalar) {
+      if (Utils.isPlainObject(pk)) {
+        return pk[primaryKeys[0]];
+      }
+
+      return pk;
+    }
+
+    return [pk];
   }
 
   static getPrimaryKeyCond<T>(entity: T, primaryKeys: string[]): Record<string, Primary<T>> | null {
