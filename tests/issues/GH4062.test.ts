@@ -61,7 +61,7 @@ class ArticleAttribute {
   })
   article!: Ref<Article>;
 
-  [PrimaryKeyProp]?: [string, [string, string]];
+  [PrimaryKeyProp]?: ['id', ['id', 'category']];
 
   @Property({
     defaultRaw: 'CURRENT_TIMESTAMP',
