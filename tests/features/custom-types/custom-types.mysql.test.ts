@@ -93,6 +93,7 @@ describe('custom types [mysql]', () => {
             case 'point': return new PointType();
             case 'point-extended': return new ExtendedPointType();
           }
+          return undefined;
         },
       },
     });
