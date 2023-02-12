@@ -1,4 +1,18 @@
-import { ManyToMany, ManyToOne, MikroORM, OneToMany, OneToOne, Property, MetadataStorage, ReferenceKind, Utils, Subscriber, UseRequestContext } from '@mikro-orm/core';
+import {
+  ManyToMany,
+  ManyToOne,
+  MikroORM,
+  OneToMany,
+  OneToOne,
+  Property,
+  MetadataStorage,
+  ReferenceKind,
+  Utils,
+  Subscriber,
+  CreateRequestContext,
+  EnsureRequestContext,
+  RequestContext,
+} from '@mikro-orm/core';
 import type { Dictionary } from '@mikro-orm/core';
 import { Test } from './entities';
 
@@ -15,33 +29,63 @@ class TestClass {
 
   constructor(private readonly orm: MikroORM) {}
 
-  @UseRequestContext()
+  @CreateRequestContext()
   async asyncMethodReturnsValue() {
     return TEST_VALUE;
   }
 
-  @UseRequestContext()
+  @CreateRequestContext()
   methodReturnsValue() {
     return TEST_VALUE;
   }
 
-  @UseRequestContext()
+  @CreateRequestContext()
   async asyncMethodReturnsNothing() {
     //
   }
 
-  @UseRequestContext()
+  @CreateRequestContext()
   methodReturnsNothing() {
     //
   }
 
-  @UseRequestContext(() => DI.orm)
+  @CreateRequestContext(() => DI.orm)
   methodWithCallback() {
     //
   }
 
 }
 
+class TestClass2 {
+
+  constructor(private readonly orm: MikroORM) {}
+
+  @EnsureRequestContext()
+  async asyncMethodReturnsValue() {
+    return TEST_VALUE;
+  }
+
+  @EnsureRequestContext()
+  methodReturnsValue() {
+    return TEST_VALUE;
+  }
+
+  @EnsureRequestContext()
+  async asyncMethodReturnsNothing() {
+    //
+  }
+
+  @EnsureRequestContext()
+  methodReturnsNothing() {
+    //
+  }
+
+  @EnsureRequestContext(() => DI.orm)
+  methodWithCallback() {
+    //
+  }
+
+}
 
 describe('decorators', () => {
 
@@ -109,7 +153,7 @@ describe('decorators', () => {
     expect(ret3).toBeUndefined();
   });
 
-  test('UseRequestContext', async () => {
+  test('CreateRequestContext', async () => {
     const orm = Object.create(MikroORM.prototype, { em: { value: { name: 'default', fork: jest.fn() } } });
     const test = new TestClass(orm);
 
@@ -130,8 +174,37 @@ describe('decorators', () => {
     const ret6 = await test2.methodWithCallback();
     expect(ret6).toBeUndefined();
 
-    const err = '@UseRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property, or with a callback parameter like `@UseRequestContext(() => orm)`';
+    const err = '@CreateRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property, or with a callback parameter like `@UseRequestContext(() => orm)`';
     await expect(test2.asyncMethodReturnsValue()).rejects.toThrow(err);
+  });
+
+  test('EnsureRequestContext', async () => {
+    const orm = Object.create(MikroORM.prototype, { em: { value: { name: 'default', fork: jest.fn() } } });
+    const test = new TestClass2(orm);
+
+    const ret1 = await test.asyncMethodReturnsValue();
+    expect(ret1).toEqual(TEST_VALUE);
+    const ret2 = await test.methodReturnsValue();
+    expect(ret2).toEqual(TEST_VALUE);
+    const ret3 = await test.asyncMethodReturnsNothing();
+    expect(ret3).toBeUndefined();
+    const ret4 = await test.methodReturnsNothing();
+    expect(ret4).toBeUndefined();
+    const ret5 = await test.methodWithCallback();
+    expect(ret5).toBeUndefined();
+
+    const notOrm = jest.fn() as unknown as MikroORM;
+    const test2 = new TestClass2(notOrm);
+    DI.orm = orm;
+    const ret6 = await test2.methodWithCallback();
+    expect(ret6).toBeUndefined();
+
+    const err = '@EnsureRequestContext() decorator can only be applied to methods of classes with `orm: MikroORM` property, or with a callback parameter like `@EnsureRequestContext(() => orm)`';
+    await expect(test2.asyncMethodReturnsValue()).rejects.toThrow(err);
+
+    await RequestContext.create(orm.em, async () => {
+      await expect(test2.asyncMethodReturnsValue()).resolves.toBe(TEST_VALUE);
+    });
   });
 
 });
