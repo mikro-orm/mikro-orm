@@ -187,3 +187,12 @@ export class ProjectFactory extends Factory<Project> {
 
 }
 ```
+
+## Removed `RequestContext.createAsync`
+
+Use `RequestContext.create` instead, it can be awaited now.
+
+```diff
+-const ret = await RequestContext.createAsync(em, async () => { ... });
++const ret = await RequestContext.create(em, async () => { ... });
+```
