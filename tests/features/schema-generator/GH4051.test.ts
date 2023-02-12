@@ -42,7 +42,7 @@ class Article2 extends Base {
     primary: true,
     ref: true,
     cascade: [],
-    onDelete: 'no action',
+    deleteRule: 'no action',
   })
   category!: Ref<Category>;
 
