@@ -11,9 +11,8 @@ export class TransactionContext {
   /**
    * Creates new TransactionContext instance and runs the code inside its domain.
    */
-  static createAsync<T>(em: EntityManager, next: (...args: any[]) => Promise<T>): Promise<T> {
+  static create<T>(em: EntityManager, next: (...args: any[]) => T): T {
     const context = new TransactionContext(em);
-
     return this.storage.run(context, next);
   }
 
