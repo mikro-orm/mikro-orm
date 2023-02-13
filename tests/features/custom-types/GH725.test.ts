@@ -58,6 +58,7 @@ export class DateTimeType extends Type<Maybe<DateTime>, Maybe<Date>> {
 export class Test {
 
   id!: string;
+  uuid!: string;
   createdAt!: DateTime;
   updatedAt!: DateTime;
 
@@ -68,6 +69,11 @@ export const TestSchema = new EntitySchema<Test>({
   properties: {
     id: {
       primary: true,
+      type: String,
+      columnType: 'uuid',
+      defaultRaw: 'uuid_generate_v4()',
+    },
+    uuid: {
       type: String,
       columnType: 'uuid',
       defaultRaw: 'uuid_generate_v4()',
@@ -114,14 +120,19 @@ describe('GH issue 725', () => {
     await orm.schema.createSchema();
 
     const test = new Test();
-    orm.em.persist(test);
+    const test2 = new Test();
+    orm.em.persist([test, test2]);
     expect(test.id).toBeUndefined();
+    expect(test.uuid).toBeUndefined();
     expect(test.createdAt).toBeUndefined();
 
     await orm.em.flush();
     expect(typeof test.id).toBe('string');
     expect(test.id).toHaveLength(36);
+    expect(test.uuid).toHaveLength(36);
     expect(test.createdAt).toBeInstanceOf(DateTime);
+
+    expect(test.uuid).not.toBe(test2.uuid);
 
     test.createdAt = DateTime.fromString('2020-01-01T00:00:00Z');
     await orm.em.flush();

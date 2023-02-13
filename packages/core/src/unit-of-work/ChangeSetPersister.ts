@@ -110,7 +110,7 @@ export class ChangeSetPersister {
       this.mapPrimaryKey(meta, res.insertId as number, changeSet);
     }
 
-    this.mapReturnedValues(changeSet, res, meta);
+    this.mapReturnedValues(changeSet.entity, res.row, meta);
     this.markAsPopulated(changeSet, meta);
     wrapped.__initialized = true;
     wrapped.__managed = true;
@@ -159,7 +159,7 @@ export class ChangeSetPersister {
         this.mapPrimaryKey(meta, res.rows![i][field], changeSet);
       }
 
-      this.mapReturnedValues(changeSet, res, meta);
+      this.mapReturnedValues(changeSet.entity, res.rows![i], meta);
       this.markAsPopulated(changeSet, meta);
       wrapped.__initialized = true;
       wrapped.__managed = true;
@@ -378,23 +378,18 @@ export class ChangeSetPersister {
    * No need to handle composite keys here as they need to be set upfront.
    * We do need to map to the change set payload too, as it will be used in the originalEntityData for new entities.
    */
-  private mapReturnedValues<T extends object>(changeSet: ChangeSet<T>, res: QueryResult<T>, meta: EntityMetadata<T>): void {
-    if (this.platform.usesReturningStatement() && res.row && Utils.hasObjectKeys(res.row)) {
+  private mapReturnedValues<T extends object>(entity: T, row: Dictionary | undefined, meta: EntityMetadata<T>): void {
+    if (this.platform.usesReturningStatement() && row && Utils.hasObjectKeys(row)) {
       const data = meta.props.reduce((ret, prop) => {
-        if (prop.primary && !helper(changeSet.entity).hasPrimaryKey()) {
-          this.mapPrimaryKey(meta, res.row![prop.fieldNames[0]], changeSet);
-          return ret;
-        }
-
-        if (prop.fieldNames && res.row![prop.fieldNames[0]] != null && changeSet.entity[prop.name] == null) {
-          ret[prop.name] = changeSet.payload[prop.name] = res.row![prop.fieldNames[0]];
+        if (prop.fieldNames && row[prop.fieldNames[0]] != null && entity[prop.name] == null) {
+          ret[prop.name] = row[prop.fieldNames[0]];
         }
 
         return ret;
       }, {} as Dictionary);
 
       if (Utils.hasObjectKeys(data)) {
-        this.hydrator.hydrate(changeSet.entity, meta, data as EntityData<T>, this.factory, 'returning', false, true);
+        this.hydrator.hydrate(entity, meta, data as EntityData<T>, this.factory, 'returning', false, true);
       }
     }
   }
