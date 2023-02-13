@@ -619,18 +619,14 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       ...options,
     });
 
-    if (ret.row) {
-      const prop = meta.getPrimaryProps()[0];
-      const value = ret.row[prop.fieldNames[0]];
-      data[prop.name] = prop.customType ? prop.customType.convertToJSValue(value, this.getPlatform()) : value;
-    }
-
     entity ??= em.entityFactory.create(entityName, data, {
       refresh: true,
       initialized: true,
       schema: options.schema,
       convertCustomTypes: true,
     });
+
+    em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, ret.row, meta);
 
     if (!helper(entity).hasPrimaryKey()) {
       const pk = await this.driver.findOne(meta.className, where, {
@@ -754,18 +750,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
 
     const ret = await em.driver.nativeUpdateMany(entityName, allWhere, allData, { ctx: em.transactionContext, upsert: true, ...options });
 
-    if (ret.rows?.length) {
-      const prop = meta.getPrimaryProps()[0];
-      ret.rows.forEach((row, idx) => {
-        const value = row[prop.fieldNames[0]];
-        allData[idx][prop.name] = prop.customType ? prop.customType.convertToJSValue(value, this.getPlatform()) : value;
-
-        if (Utils.isEntity(data![idx])) {
-          em.entityFactory.mergeData(meta, data![idx], { [prop.name]: value });
-        }
-      });
-    }
-
     entities.clear();
     const loadPK = new Map<Entity, FilterQuery<Entity>>();
 
@@ -776,6 +760,8 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         schema: options.schema,
         convertCustomTypes: true,
       });
+
+      em.unitOfWork.getChangeSetPersister().mapReturnedValues(entity, ret.rows?.[i], meta);
 
       if (!helper(entity).hasPrimaryKey()) {
         loadPK.set(entity, allWhere[i]);
