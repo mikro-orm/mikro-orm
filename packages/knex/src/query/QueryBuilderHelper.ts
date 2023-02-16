@@ -778,7 +778,7 @@ export class QueryBuilderHelper {
       }
 
       if (prop.joinColumns && Array.isArray(data[k])) {
-        const copy = data[k];
+        const copy = Utils.flatten(data[k]);
         delete data[k];
         prop.joinColumns.forEach((joinColumn, idx) => data[joinColumn] = copy[idx]);
 

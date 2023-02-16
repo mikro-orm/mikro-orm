@@ -464,7 +464,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
         ignoreLazyScalarProperties: true,
         lookup: false,
       });
-      em.unitOfWork.saveSnapshots();
 
       return cached.data;
     }
@@ -637,7 +636,9 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       em.entityFactory.mergeData(meta, entity, pk!);
     }
 
-    em.unitOfWork.registerManaged(entity, data, { refresh: true });
+    // recompute the data as there might be some values missing (e.g. those with db column defaults)
+    const snapshot = this.comparator.prepareEntity(entity);
+    em.unitOfWork.registerManaged(entity, snapshot, { refresh: true });
 
     return entity;
   }
@@ -787,8 +788,10 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       }
     }
 
-    for (const [entity, data] of entities) {
-      em.unitOfWork.registerManaged(entity, data, { refresh: true });
+    for (const [entity] of entities) {
+      // recompute the data as there might be some values missing (e.g. those with db column defaults)
+      const snapshot = this.comparator.prepareEntity(entity);
+      em.unitOfWork.registerManaged(entity, snapshot, { refresh: true });
     }
 
     return [...entities.keys()];
@@ -1034,7 +1037,6 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     entity = Utils.isEntity<Entity>(data) ? data : em.entityFactory.create<Entity>(entityName, data as EntityData<Entity>, { merge: true, ...options });
     em.validator.validate(entity, data, childMeta ?? meta);
     em.unitOfWork.merge(entity);
-    em.unitOfWork.saveSnapshots();
 
     return entity!;
   }

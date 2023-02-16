@@ -3,7 +3,7 @@
 exports[`embedded entities in postgres diffing 1`] = `
 "function(entity) {
   const ret = {};
-  if (typeof entity.id !== 'undefined' && entity.id != null) {
+  if (typeof entity.id !== 'undefined') {
     ret.id = entity.id;
   }
 

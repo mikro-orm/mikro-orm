@@ -2019,7 +2019,7 @@ describe('EntityManagerPostgre', () => {
 
     expect(mock.mock.calls[0][0]).toMatch('begin');
     expect(mock.mock.calls[1][0]).toMatch('insert into "author2" ("created_at", "updated_at", "name", "email", "terms_accepted") values ($1, $2, $3, $4, $5) returning "id", "created_at", "updated_at", "age", "terms_accepted"');
-    expect(mock.mock.calls[2][0]).toMatch('insert into "book2" ("uuid_pk", "created_at", "title", "price", "publisher_id", "author_id") values ($1, $2, $3, $4, $5, $6) returning "uuid_pk", "created_at", "title"');
+    expect(mock.mock.calls[2][0]).toMatch('insert into "book2" ("uuid_pk", "created_at", "title", "price", "author_id", "publisher_id") values ($1, $2, $3, $4, $5, $6) returning "uuid_pk", "created_at", "title"');
     expect(mock.mock.calls[3][0]).toMatch('commit');
     expect(mock.mock.calls[4][0]).toMatch('begin');
     expect(mock.mock.calls[5][0]).toMatch('update "book2" set "publisher_id" = $1 where "uuid_pk" = $2');

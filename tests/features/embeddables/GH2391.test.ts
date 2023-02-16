@@ -67,7 +67,7 @@ describe('onCreate and onUpdate in embeddables (GH 2283 and 2391)', () => {
   });
 
   test(`GH issue 2283, 2391`, async () => {
-    let line = orm.em.create(MyEntity, {});
+    let line = orm.em.create(MyEntity, {}, { persist: false });
     await orm.em.fork().persistAndFlush(line);
 
     expect(!!line.audit1.created).toBeTruthy();

@@ -272,6 +272,10 @@ export class EntityComparator {
         idx += pk.fieldNames.length;
       }
 
+      if (parts.length < 2) {
+        return parts[0];
+      }
+
       return '[' + parts.join(', ') + ']';
     };
 
@@ -292,6 +296,16 @@ export class EntityComparator {
 
       if (prop.type === 'boolean') {
         lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') { ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : !!${propName(prop.fieldNames[0])}; ${propName(prop.fieldNames[0], 'mapped')} = true; }`);
+      } else if (prop.type.toLowerCase() === 'date') {
+        if (prop.embedded && meta.properties[prop.embedded[0]].object) {
+          const entityKey = 'ret.' + prop.fieldNames[0];
+          const entityKeyOptional = entityKey.replace(/\./g, '?.');
+          lines.push(`  if (typeof ${entityKeyOptional} !== 'undefined') { ${entityKey} = ${entityKey} == null ? ${entityKey} : new Date(${entityKey}); }`);
+        } else {
+          lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') { ret${this.wrap(prop.name)} = new Date(${propName(prop.fieldNames[0])}); ${propName(prop.fieldNames[0], 'mapped')} = true; }`);
+        }
+      } else if (prop.reference === ReferenceType.EMBEDDED && prop.object && !this.platform.convertsJsonAutomatically()) {
+        lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') { ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : JSON.parse(${propName(prop.fieldNames[0])}); ${propName(prop.fieldNames[0], 'mapped')} = true; }`);
       } else {
         lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') { ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])}; ${propName(prop.fieldNames[0], 'mapped')} = true; }`);
       }
@@ -314,7 +328,7 @@ export class EntityComparator {
     }
 
     let tail = '';
-    let ret = parts
+    const ret = parts
       .map(k => {
         if (k.match(/^\[idx_\d+]$/)) {
           tail += k;
@@ -328,16 +342,6 @@ export class EntityComparator {
       })
       .filter(k => k)
       .join(' && ');
-    const isRef = [ReferenceType.ONE_TO_ONE, ReferenceType.MANY_TO_ONE].includes(prop.reference) && !prop.mapToPk;
-    const isSetter = isRef && !!(prop.inversedBy || prop.mappedBy);
-
-    if (prop.primary || isSetter) {
-      ret += ` && entity${entityKey} != null`;
-    }
-
-    if (isRef) {
-      ret += ` && (entity${entityKey} == null || entity${entityKey}.__helper?.hasPrimaryKey())`;
-    }
 
     return ret;
   }
@@ -464,9 +468,20 @@ export class EntityComparator {
           ret += `    ret${dataKey} = entity${entityKey};\n`;
         }
       } else {
-        const meta2 = this.metadata.find(prop.type);
-        context.set(`getPrimaryKeyValues_${convertorKey}`, (val: any) => val && Utils.getPrimaryKeyValues(val, meta2!.primaryKeys, true, true));
-        ret += `    ret${dataKey} = getPrimaryKeyValues_${convertorKey}(entity${entityKey});\n`;
+        const toArray = (val: unknown): unknown => {
+          if (Utils.isPlainObject(val)) {
+            return Object.values(val).map(v => toArray(v));
+          }
+
+          return val;
+        };
+
+        context.set('toArray', toArray);
+        ret += `    if (entity${entityKey} === null) {\n`;
+        ret += `      ret${dataKey} = null;\n`;
+        ret += `    } else if (typeof entity${entityKey} !== 'undefined') {\n`;
+        ret += `      ret${dataKey} = toArray(entity${entityKey}.__helper.getPrimaryKey(true));\n`;
+        ret += `    }\n`;
       }
 
       return ret + '  }\n';

@@ -3,7 +3,7 @@
 exports[`embedded entities in postgres diffing 1`] = `
 "function(entity) {
   const ret = {};
-  if (typeof entity.id !== 'undefined' && entity.id != null) {
+  if (typeof entity.id !== 'undefined') {
     ret.id = entity.id;
   }
 
@@ -20,8 +20,12 @@ exports[`embedded entities in postgres diffing 1`] = `
       if (entity.profile1.identity.meta != null) {
         if (typeof entity.profile1.identity.meta.foo !== 'undefined') ret.profile1_identity_meta_foo = clone(entity.profile1.identity.meta.foo);
         if (typeof entity.profile1.identity.meta.bar !== 'undefined') ret.profile1_identity_meta_bar = clone(entity.profile1.identity.meta.bar);
-        if (typeof entity.profile1 !== 'undefined' && typeof entity.profile1.identity !== 'undefined' && typeof entity.profile1.identity.meta !== 'undefined' && (entity.profile1.identity.meta.source == null || entity.profile1.identity.meta.source.__helper?.hasPrimaryKey())) {
-          ret.profile1_identity_meta_source = getPrimaryKeyValues_profile1_identity_meta_source(entity.profile1.identity.meta.source);
+        if (typeof entity.profile1 !== 'undefined' && typeof entity.profile1.identity !== 'undefined' && typeof entity.profile1.identity.meta !== 'undefined') {
+          if (entity.profile1.identity.meta.source === null) {
+            ret.profile1_identity_meta_source = null;
+          } else if (typeof entity.profile1.identity.meta.source !== 'undefined') {
+            ret.profile1_identity_meta_source = toArray(entity.profile1.identity.meta.source.__helper.getPrimaryKey(true));
+          }
         }
       
       }
@@ -41,8 +45,12 @@ exports[`embedded entities in postgres diffing 1`] = `
               ret.profile1_identity_links[idx_0].meta = {};
               if (typeof entity.profile1.identity.links[idx_0].meta.foo !== 'undefined') ret.profile1_identity_links[idx_0].meta.foo = clone(entity.profile1.identity.links[idx_0].meta.foo);
               if (typeof entity.profile1.identity.links[idx_0].meta.bar !== 'undefined') ret.profile1_identity_links[idx_0].meta.bar = clone(entity.profile1.identity.links[idx_0].meta.bar);
-              if (typeof entity.profile1 !== 'undefined' && typeof entity.profile1.identity !== 'undefined' && typeof entity.profile1.identity.links !== 'undefined' && typeof entity.profile1.identity.links[idx_0].meta !== 'undefined' && (entity.profile1.identity.links[idx_0].meta.source == null || entity.profile1.identity.links[idx_0].meta.source.__helper?.hasPrimaryKey())) {
-                ret.profile1_identity_links[idx_0].meta.source = getPrimaryKeyValues_profile1_identity_links_meta_source(entity.profile1.identity.links[idx_0].meta.source);
+              if (typeof entity.profile1 !== 'undefined' && typeof entity.profile1.identity !== 'undefined' && typeof entity.profile1.identity.links !== 'undefined' && typeof entity.profile1.identity.links[idx_0].meta !== 'undefined') {
+                if (entity.profile1.identity.links[idx_0].meta.source === null) {
+                  ret.profile1_identity_links[idx_0].meta.source = null;
+                } else if (typeof entity.profile1.identity.links[idx_0].meta.source !== 'undefined') {
+                  ret.profile1_identity_links[idx_0].meta.source = toArray(entity.profile1.identity.links[idx_0].meta.source.__helper.getPrimaryKey(true));
+                }
               }
             
             }
@@ -56,16 +64,24 @@ exports[`embedded entities in postgres diffing 1`] = `
                   ret.profile1_identity_links[idx_0].metas[idx_1] = {};
                   if (typeof entity.profile1.identity.links[idx_0].metas[idx_1].foo !== 'undefined') ret.profile1_identity_links[idx_0].metas[idx_1].foo = clone(entity.profile1.identity.links[idx_0].metas[idx_1].foo);
                   if (typeof entity.profile1.identity.links[idx_0].metas[idx_1].bar !== 'undefined') ret.profile1_identity_links[idx_0].metas[idx_1].bar = clone(entity.profile1.identity.links[idx_0].metas[idx_1].bar);
-                  if (typeof entity.profile1 !== 'undefined' && typeof entity.profile1.identity !== 'undefined' && typeof entity.profile1.identity.links !== 'undefined' && typeof entity.profile1.identity.links[idx_0].metas !== 'undefined' && (entity.profile1.identity.links[idx_0].metas[idx_1].source == null || entity.profile1.identity.links[idx_0].metas[idx_1].source.__helper?.hasPrimaryKey())) {
-                    ret.profile1_identity_links[idx_0].metas[idx_1].source = getPrimaryKeyValues_profile1_identity_links_metas_source(entity.profile1.identity.links[idx_0].metas[idx_1].source);
+                  if (typeof entity.profile1 !== 'undefined' && typeof entity.profile1.identity !== 'undefined' && typeof entity.profile1.identity.links !== 'undefined' && typeof entity.profile1.identity.links[idx_0].metas !== 'undefined') {
+                    if (entity.profile1.identity.links[idx_0].metas[idx_1].source === null) {
+                      ret.profile1_identity_links[idx_0].metas[idx_1].source = null;
+                    } else if (typeof entity.profile1.identity.links[idx_0].metas[idx_1].source !== 'undefined') {
+                      ret.profile1_identity_links[idx_0].metas[idx_1].source = toArray(entity.profile1.identity.links[idx_0].metas[idx_1].source.__helper.getPrimaryKey(true));
+                    }
                   }
                 
                 }
               });
             }
 
-            if (typeof entity.profile1 !== 'undefined' && typeof entity.profile1.identity !== 'undefined' && typeof entity.profile1.identity.links !== 'undefined' && (entity.profile1.identity.links[idx_0].source == null || entity.profile1.identity.links[idx_0].source.__helper?.hasPrimaryKey())) {
-              ret.profile1_identity_links[idx_0].source = getPrimaryKeyValues_profile1_identity_links_source(entity.profile1.identity.links[idx_0].source);
+            if (typeof entity.profile1 !== 'undefined' && typeof entity.profile1.identity !== 'undefined' && typeof entity.profile1.identity.links !== 'undefined') {
+              if (entity.profile1.identity.links[idx_0].source === null) {
+                ret.profile1_identity_links[idx_0].source = null;
+              } else if (typeof entity.profile1.identity.links[idx_0].source !== 'undefined') {
+                ret.profile1_identity_links[idx_0].source = toArray(entity.profile1.identity.links[idx_0].source.__helper.getPrimaryKey(true));
+              }
             }
           
           }
@@ -73,14 +89,22 @@ exports[`embedded entities in postgres diffing 1`] = `
         ret.profile1_identity_links = cloneEmbeddable(ret.profile1_identity_links);
       }
 
-      if (typeof entity.profile1 !== 'undefined' && typeof entity.profile1.identity !== 'undefined' && (entity.profile1.identity.source == null || entity.profile1.identity.source.__helper?.hasPrimaryKey())) {
-        ret.profile1_identity_source = getPrimaryKeyValues_profile1_identity_source(entity.profile1.identity.source);
+      if (typeof entity.profile1 !== 'undefined' && typeof entity.profile1.identity !== 'undefined') {
+        if (entity.profile1.identity.source === null) {
+          ret.profile1_identity_source = null;
+        } else if (typeof entity.profile1.identity.source !== 'undefined') {
+          ret.profile1_identity_source = toArray(entity.profile1.identity.source.__helper.getPrimaryKey(true));
+        }
       }
     
     }
 
-    if (typeof entity.profile1 !== 'undefined' && (entity.profile1.source == null || entity.profile1.source.__helper?.hasPrimaryKey())) {
-      ret.profile1_source = getPrimaryKeyValues_profile1_source(entity.profile1.source);
+    if (typeof entity.profile1 !== 'undefined') {
+      if (entity.profile1.source === null) {
+        ret.profile1_source = null;
+      } else if (typeof entity.profile1.source !== 'undefined') {
+        ret.profile1_source = toArray(entity.profile1.source.__helper.getPrimaryKey(true));
+      }
     }
   
   }
@@ -100,8 +124,12 @@ exports[`embedded entities in postgres diffing 1`] = `
         ret.profile2.identity.meta = {};
         if (typeof entity.profile2.identity.meta.foo !== 'undefined') ret.profile2.identity.meta.foo = clone(entity.profile2.identity.meta.foo);
         if (typeof entity.profile2.identity.meta.bar !== 'undefined') ret.profile2.identity.meta.bar = clone(entity.profile2.identity.meta.bar);
-        if (typeof entity.profile2 !== 'undefined' && typeof entity.profile2.identity !== 'undefined' && typeof entity.profile2.identity.meta !== 'undefined' && (entity.profile2.identity.meta.source == null || entity.profile2.identity.meta.source.__helper?.hasPrimaryKey())) {
-          ret.profile2.identity.meta.source = getPrimaryKeyValues_profile2_identity_meta_source(entity.profile2.identity.meta.source);
+        if (typeof entity.profile2 !== 'undefined' && typeof entity.profile2.identity !== 'undefined' && typeof entity.profile2.identity.meta !== 'undefined') {
+          if (entity.profile2.identity.meta.source === null) {
+            ret.profile2.identity.meta.source = null;
+          } else if (typeof entity.profile2.identity.meta.source !== 'undefined') {
+            ret.profile2.identity.meta.source = toArray(entity.profile2.identity.meta.source.__helper.getPrimaryKey(true));
+          }
         }
       
       }
@@ -121,8 +149,12 @@ exports[`embedded entities in postgres diffing 1`] = `
               ret.profile2.identity.links[idx_2].meta = {};
               if (typeof entity.profile2.identity.links[idx_2].meta.foo !== 'undefined') ret.profile2.identity.links[idx_2].meta.foo = clone(entity.profile2.identity.links[idx_2].meta.foo);
               if (typeof entity.profile2.identity.links[idx_2].meta.bar !== 'undefined') ret.profile2.identity.links[idx_2].meta.bar = clone(entity.profile2.identity.links[idx_2].meta.bar);
-              if (typeof entity.profile2 !== 'undefined' && typeof entity.profile2.identity !== 'undefined' && typeof entity.profile2.identity.links !== 'undefined' && typeof entity.profile2.identity.links[idx_2].meta !== 'undefined' && (entity.profile2.identity.links[idx_2].meta.source == null || entity.profile2.identity.links[idx_2].meta.source.__helper?.hasPrimaryKey())) {
-                ret.profile2.identity.links[idx_2].meta.source = getPrimaryKeyValues_profile2_identity_links_meta_source(entity.profile2.identity.links[idx_2].meta.source);
+              if (typeof entity.profile2 !== 'undefined' && typeof entity.profile2.identity !== 'undefined' && typeof entity.profile2.identity.links !== 'undefined' && typeof entity.profile2.identity.links[idx_2].meta !== 'undefined') {
+                if (entity.profile2.identity.links[idx_2].meta.source === null) {
+                  ret.profile2.identity.links[idx_2].meta.source = null;
+                } else if (typeof entity.profile2.identity.links[idx_2].meta.source !== 'undefined') {
+                  ret.profile2.identity.links[idx_2].meta.source = toArray(entity.profile2.identity.links[idx_2].meta.source.__helper.getPrimaryKey(true));
+                }
               }
             
             }
@@ -136,30 +168,46 @@ exports[`embedded entities in postgres diffing 1`] = `
                   ret.profile2.identity.links[idx_2].metas[idx_3] = {};
                   if (typeof entity.profile2.identity.links[idx_2].metas[idx_3].foo !== 'undefined') ret.profile2.identity.links[idx_2].metas[idx_3].foo = clone(entity.profile2.identity.links[idx_2].metas[idx_3].foo);
                   if (typeof entity.profile2.identity.links[idx_2].metas[idx_3].bar !== 'undefined') ret.profile2.identity.links[idx_2].metas[idx_3].bar = clone(entity.profile2.identity.links[idx_2].metas[idx_3].bar);
-                  if (typeof entity.profile2 !== 'undefined' && typeof entity.profile2.identity !== 'undefined' && typeof entity.profile2.identity.links !== 'undefined' && typeof entity.profile2.identity.links[idx_2].metas !== 'undefined' && (entity.profile2.identity.links[idx_2].metas[idx_3].source == null || entity.profile2.identity.links[idx_2].metas[idx_3].source.__helper?.hasPrimaryKey())) {
-                    ret.profile2.identity.links[idx_2].metas[idx_3].source = getPrimaryKeyValues_profile2_identity_links_metas_source(entity.profile2.identity.links[idx_2].metas[idx_3].source);
+                  if (typeof entity.profile2 !== 'undefined' && typeof entity.profile2.identity !== 'undefined' && typeof entity.profile2.identity.links !== 'undefined' && typeof entity.profile2.identity.links[idx_2].metas !== 'undefined') {
+                    if (entity.profile2.identity.links[idx_2].metas[idx_3].source === null) {
+                      ret.profile2.identity.links[idx_2].metas[idx_3].source = null;
+                    } else if (typeof entity.profile2.identity.links[idx_2].metas[idx_3].source !== 'undefined') {
+                      ret.profile2.identity.links[idx_2].metas[idx_3].source = toArray(entity.profile2.identity.links[idx_2].metas[idx_3].source.__helper.getPrimaryKey(true));
+                    }
                   }
                 
                 }
               });
             }
 
-            if (typeof entity.profile2 !== 'undefined' && typeof entity.profile2.identity !== 'undefined' && typeof entity.profile2.identity.links !== 'undefined' && (entity.profile2.identity.links[idx_2].source == null || entity.profile2.identity.links[idx_2].source.__helper?.hasPrimaryKey())) {
-              ret.profile2.identity.links[idx_2].source = getPrimaryKeyValues_profile2_identity_links_source(entity.profile2.identity.links[idx_2].source);
+            if (typeof entity.profile2 !== 'undefined' && typeof entity.profile2.identity !== 'undefined' && typeof entity.profile2.identity.links !== 'undefined') {
+              if (entity.profile2.identity.links[idx_2].source === null) {
+                ret.profile2.identity.links[idx_2].source = null;
+              } else if (typeof entity.profile2.identity.links[idx_2].source !== 'undefined') {
+                ret.profile2.identity.links[idx_2].source = toArray(entity.profile2.identity.links[idx_2].source.__helper.getPrimaryKey(true));
+              }
             }
           
           }
         });
       }
 
-      if (typeof entity.profile2 !== 'undefined' && typeof entity.profile2.identity !== 'undefined' && (entity.profile2.identity.source == null || entity.profile2.identity.source.__helper?.hasPrimaryKey())) {
-        ret.profile2.identity.source = getPrimaryKeyValues_profile2_identity_source(entity.profile2.identity.source);
+      if (typeof entity.profile2 !== 'undefined' && typeof entity.profile2.identity !== 'undefined') {
+        if (entity.profile2.identity.source === null) {
+          ret.profile2.identity.source = null;
+        } else if (typeof entity.profile2.identity.source !== 'undefined') {
+          ret.profile2.identity.source = toArray(entity.profile2.identity.source.__helper.getPrimaryKey(true));
+        }
       }
     
     }
 
-    if (typeof entity.profile2 !== 'undefined' && (entity.profile2.source == null || entity.profile2.source.__helper?.hasPrimaryKey())) {
-      ret.profile2.source = getPrimaryKeyValues_profile2_source(entity.profile2.source);
+    if (typeof entity.profile2 !== 'undefined') {
+      if (entity.profile2.source === null) {
+        ret.profile2.source = null;
+      } else if (typeof entity.profile2.source !== 'undefined') {
+        ret.profile2.source = toArray(entity.profile2.source.__helper.getPrimaryKey(true));
+      }
     }
   
     ret.profile2 = cloneEmbeddable(ret.profile2);

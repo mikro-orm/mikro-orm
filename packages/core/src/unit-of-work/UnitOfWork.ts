@@ -1,5 +1,14 @@
 import { AsyncLocalStorage } from 'async_hooks';
-import type { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, IPrimaryKeyValue, Primary } from '../typings';
+import type {
+  AnyEntity,
+  Dictionary,
+  EntityData,
+  EntityMetadata,
+  EntityProperty,
+  FilterQuery,
+  IPrimaryKeyValue,
+  Primary,
+} from '../typings';
 import { Collection, EntityIdentifier, helper, Reference } from '../entity';
 import { ChangeSet, ChangeSetType } from './ChangeSet';
 import { ChangeSetComputer } from './ChangeSetComputer';
@@ -37,7 +46,6 @@ export class UnitOfWork {
   private readonly queuedActions = new Set<string>();
   private readonly loadedEntities = new Set<AnyEntity>();
   private readonly flushQueue: (() => Promise<void>)[] = [];
-  private readonly snapshotQueue: (() => void)[] = [];
   private working = false;
   private insideHooks = false;
 
@@ -63,22 +71,10 @@ export class UnitOfWork {
     // as there can be some entity with already changed state that is not yet flushed
     if (wrapped.__initialized && (!visited || !wrapped.__originalEntityData)) {
       wrapped.__originalEntityData = this.comparator.prepareEntity(entity);
-      this.queuedActions.delete(wrapped.__meta.className);
       wrapped.__touched = false;
     }
 
     this.cascade(entity, Cascade.MERGE, visited ?? new Set<AnyEntity>());
-  }
-
-  /**
-   * @internal
-   */
-  saveSnapshots() {
-    for (const callback of this.snapshotQueue) {
-      callback();
-    }
-
-    this.snapshotQueue.length = 0;
   }
 
   /**
@@ -91,31 +87,25 @@ export class UnitOfWork {
       return entity;
     }
 
-    if (options?.loaded && helper(entity).__initialized && !helper(entity).__onLoadFired) {
+    const wrapped = helper(entity);
+
+    if (options?.loaded && wrapped.__initialized && !wrapped.__onLoadFired) {
       this.loadedEntities.add(entity as AnyEntity);
     }
 
-    const wrapped = helper(entity);
     wrapped.__em ??= this.em;
     wrapped.__managed = true;
 
     if (data && (options?.refresh || !wrapped.__originalEntityData)) {
-      Object.keys(data).forEach(key => helper(entity).__loadedProperties.add(key));
-      this.queuedActions.delete(wrapped.__meta.className);
+      Object.keys(data).forEach(key => wrapped.__loadedProperties.add(key));
 
-      // assign the data early, delay recompute via snapshot queue unless we refresh the state
-      if (options?.refresh) {
-        wrapped.__originalEntityData = this.comparator.prepareEntity(entity);
-      } else {
-        wrapped.__originalEntityData = data;
-      }
-
-      wrapped.__touched = false;
-      this.snapshotQueue.push(() => {
-        // we can't use the `data` directly here as it can contain fetch joined data, that can't be used for diffing the state
-        wrapped.__originalEntityData = this.comparator.prepareEntity(entity);
-        wrapped.__touched = false;
+      wrapped.__meta.relations.forEach(prop => {
+        if (Utils.isPlainObject(data[prop.name as string])) {
+          data[prop.name as string] = Utils.getPrimaryKeyValues(data[prop.name as string], wrapped.__meta.primaryKeys, true);
+        }
       });
+      wrapped.__originalEntityData = data;
+      wrapped.__touched = false;
     }
 
     return entity;
@@ -125,8 +115,6 @@ export class UnitOfWork {
    * @internal
    */
   async dispatchOnLoadEvent(): Promise<void> {
-    this.saveSnapshots();
-
     for (const entity of this.loadedEntities) {
       if (this.eventManager.hasListeners(EventType.onLoad, entity.__meta!)) {
         await this.eventManager.dispatchEvent(EventType.onLoad, { entity, em: this.em });
@@ -248,7 +236,6 @@ export class UnitOfWork {
     this.initIdentifier(entity);
     this.changeSets.set(entity, cs);
     this.persistStack.delete(entity);
-    this.queuedActions.delete(cs.name);
     helper(entity).__originalEntityData = this.comparator.prepareEntity(entity);
     helper(entity).__touched = false;
   }
@@ -863,8 +850,6 @@ export class UnitOfWork {
     for (const changeSet of this.changeSets.values()) {
       this.takeCollectionSnapshots(changeSet.entity, visited);
     }
-
-    this.saveSnapshots();
   }
 
   private async commitCreateChangeSets<T extends object>(changeSets: ChangeSet<T>[], ctx?: Transaction): Promise<void> {
@@ -887,8 +872,6 @@ export class UnitOfWork {
       this.registerManaged<T>(changeSet.entity, changeSet.payload, { refresh: true });
       await this.runHooks(EventType.afterCreate, changeSet);
     }
-
-    this.saveSnapshots();
   }
 
   private findExtraUpdates<T extends object>(changeSet: ChangeSet<T>, props: EntityProperty<T>[]): void {

@@ -340,7 +340,7 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
         props.forEach(prop => {
           if (prop.fieldNames.length > 1) {
             params.push(...(row[prop.name] as unknown[] ?? prop.fieldNames.map(() => null)));
-            keys.push(...prop.fieldNames.map(_ => '?'));
+            keys.push(...(row[prop.name] as unknown[] ?? prop.fieldNames).map(() => '?'));
           } else if (prop.customType && 'convertToDatabaseValueSQL' in prop.customType && !this.platform.isRaw(row[prop.name])) {
             keys.push(prop.customType.convertToDatabaseValueSQL!('?', this.platform));
             params.push(row[prop.name]);

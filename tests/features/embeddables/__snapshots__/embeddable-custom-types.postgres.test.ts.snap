@@ -20,7 +20,7 @@ drop table if exists "parent" cascade;
 exports[`embedded entities with custom types snapshot generator 1`] = `
 "function(entity) {
   const ret = {};
-  if (typeof entity.id !== 'undefined' && entity.id != null) {
+  if (typeof entity.id !== 'undefined') {
     ret.id = entity.id;
   }
 
