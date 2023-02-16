@@ -208,7 +208,7 @@ describe('embedded entities in postgres', () => {
 
     expect(mock.mock.calls[0][0]).toMatch(`begin`);
     expect(mock.mock.calls[1][0]).toMatch(`insert into "source" ("name") values ('s1'), ('is1'), ('ims1'), ('s2'), ('is2'), ('ims2'), ('s3'), ('is3'), ('ils31'), ('ils32'), ('ilms311'), ('ilms312'), ('ilms313'), ('ilms321'), ('ilms322'), ('ilms323'), ('s4'), ('is4'), ('ils41'), ('ils42') returning "id"`);
-    expect(mock.mock.calls[2][0]).toMatch(`insert into "user" ("name", "profile1_username", "profile1_identity_email", "profile1_identity_meta_foo", "profile1_identity_meta_bar", "profile1_identity_links", "profile2", "profile1_source_id", "profile1_identity_source_id", "profile1_identity_meta_source_id") values ('Uwe', 'u1', 'e1', 'f1', 'b1', '[]', '{"username":"u2","identity":{"email":"e2","meta":{"foo":"f2","bar":"b2","source":6},"links":[],"source":5},"source":4}', 1, 2, 3), ('Uschi', 'u3', 'e3', NULL, NULL, '[{"url":"l1","meta":{"foo":"f1","bar":"b1"},"metas":[{"foo":"f2","bar":"b2","source":11},{"foo":"f3","bar":"b3","source":12},{"foo":"f4","bar":"b4","source":13}],"source":9},{"url":"l2","meta":{"foo":"f1","bar":"b1"},"metas":[{"foo":"f2","bar":"b2","source":14},{"foo":"f3","bar":"b3","source":15},{"foo":"f4","bar":"b4","source":16}],"source":10}]', '{"username":"u4","identity":{"email":"e4","meta":{"foo":"f4"},"links":[{"url":"l3","meta":{"foo":"f1","bar":"b1"},"metas":[{"foo":"f2","bar":"b2"},{"foo":"f3","bar":"b3"},{"foo":"f4","bar":"b4"}],"source":19},{"url":"l4","meta":{"foo":"f1","bar":"b1"},"metas":[{"foo":"f2","bar":"b2"},{"foo":"f3","bar":"b3"},{"foo":"f4","bar":"b4"}],"source":20}],"source":18},"source":17}', 7, 8, NULL) returning "id"`);
+    expect(mock.mock.calls[2][0]).toMatch(`insert into "user" ("name", "profile1_username", "profile1_identity_email", "profile1_identity_meta_foo", "profile1_identity_meta_bar", "profile1_identity_meta_source_id", "profile1_identity_links", "profile1_identity_source_id", "profile1_source_id", "profile2") values ('Uwe', 'u1', 'e1', 'f1', 'b1', 3, '[]', 2, 1, '{"username":"u2","identity":{"email":"e2","meta":{"foo":"f2","bar":"b2","source":6},"links":[],"source":5},"source":4}'), ('Uschi', 'u3', 'e3', NULL, NULL, NULL, '[{"url":"l1","meta":{"foo":"f1","bar":"b1"},"metas":[{"foo":"f2","bar":"b2","source":11},{"foo":"f3","bar":"b3","source":12},{"foo":"f4","bar":"b4","source":13}],"source":9},{"url":"l2","meta":{"foo":"f1","bar":"b1"},"metas":[{"foo":"f2","bar":"b2","source":14},{"foo":"f3","bar":"b3","source":15},{"foo":"f4","bar":"b4","source":16}],"source":10}]', 8, 7, '{"username":"u4","identity":{"email":"e4","meta":{"foo":"f4"},"links":[{"url":"l3","meta":{"foo":"f1","bar":"b1"},"metas":[{"foo":"f2","bar":"b2"},{"foo":"f3","bar":"b3"},{"foo":"f4","bar":"b4"}],"source":19},{"url":"l4","meta":{"foo":"f1","bar":"b1"},"metas":[{"foo":"f2","bar":"b2"},{"foo":"f3","bar":"b3"},{"foo":"f4","bar":"b4"}],"source":20}],"source":18},"source":17}') returning "id"`);
     expect(mock.mock.calls[3][0]).toMatch(`commit`);
 
     const u1 = await orm.em.findOneOrFail(User, user1.id);
@@ -265,16 +265,26 @@ describe('embedded entities in postgres', () => {
       identity: {
         email: 'e3',
         links: [
-          { url: 'l1', meta: { bar: 'b1', foo: 'f1' }, source: { id: u2.profile1.identity.links[0].source!.id }, metas: [
-            { bar: 'b2', foo: 'f2', source: { id: u2.profile1.identity.links[0].metas[0].source!.id } },
-            { bar: 'b3', foo: 'f3', source: { id: u2.profile1.identity.links[0].metas[1].source!.id } },
-            { bar: 'b4', foo: 'f4', source: { id: u2.profile1.identity.links[0].metas[2].source!.id } },
-          ] },
-          { url: 'l2', meta: { bar: 'b1', foo: 'f1' }, source: { id: u2.profile1.identity.links[1].source!.id }, metas: [
-            { bar: 'b2', foo: 'f2', source: { id: u2.profile1.identity.links[1].metas[0].source!.id } },
-            { bar: 'b3', foo: 'f3', source: { id: u2.profile1.identity.links[1].metas[1].source!.id } },
-            { bar: 'b4', foo: 'f4', source: { id: u2.profile1.identity.links[1].metas[2].source!.id } },
-          ] },
+          {
+            url: 'l1',
+            meta: { bar: 'b1', foo: 'f1' },
+            source: { id: u2.profile1.identity.links[0].source!.id },
+            metas: [
+              { bar: 'b2', foo: 'f2', source: { id: u2.profile1.identity.links[0].metas[0].source!.id } },
+              { bar: 'b3', foo: 'f3', source: { id: u2.profile1.identity.links[0].metas[1].source!.id } },
+              { bar: 'b4', foo: 'f4', source: { id: u2.profile1.identity.links[0].metas[2].source!.id } },
+            ],
+          },
+          {
+            url: 'l2',
+            meta: { bar: 'b1', foo: 'f1' },
+            source: { id: u2.profile1.identity.links[1].source!.id },
+            metas: [
+              { bar: 'b2', foo: 'f2', source: { id: u2.profile1.identity.links[1].metas[0].source!.id } },
+              { bar: 'b3', foo: 'f3', source: { id: u2.profile1.identity.links[1].metas[1].source!.id } },
+              { bar: 'b4', foo: 'f4', source: { id: u2.profile1.identity.links[1].metas[2].source!.id } },
+            ],
+          },
         ],
         source: { id: u2.profile1.identity.source!.id },
       },
@@ -293,16 +303,26 @@ describe('embedded entities in postgres', () => {
       identity: {
         email: 'e4',
         links: [
-          { url: 'l3', meta: { bar: 'b1', foo: 'f1' }, source: { id: u2.profile2.identity.links[0].source!.id }, metas: [
+          {
+            url: 'l3',
+            meta: { bar: 'b1', foo: 'f1' },
+            source: { id: u2.profile2.identity.links[0].source!.id },
+            metas: [
               { bar: 'b2', foo: 'f2' },
               { bar: 'b3', foo: 'f3' },
               { bar: 'b4', foo: 'f4' },
-            ] },
-          { url: 'l4', meta: { bar: 'b1', foo: 'f1' }, source: { id: u2.profile2.identity.links[1].source!.id }, metas: [
+            ],
+          },
+          {
+            url: 'l4',
+            meta: { bar: 'b1', foo: 'f1' },
+            source: { id: u2.profile2.identity.links[1].source!.id },
+            metas: [
               { bar: 'b2', foo: 'f2' },
               { bar: 'b3', foo: 'f3' },
               { bar: 'b4', foo: 'f4' },
-            ] },
+            ],
+          },
         ],
         meta: {
           foo: 'f4',

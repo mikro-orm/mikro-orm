@@ -265,9 +265,7 @@ export class EntityLoader {
       schema = children.find(e => e.__helper!.__schema)?.__helper!.__schema;
     }
 
-    const ids = Utils.unique(children.map(e => {
-      return Utils.getPrimaryKeyValues(Reference.unwrapReference(e), e.__meta!.primaryKeys, true);
-    }));
+    const ids = Utils.unique(children.map(e => e.__helper.getPrimaryKey()));
     const where = this.mergePrimaryCondition<T>(ids, fk, options, meta, this.metadata, this.driver.getPlatform());
     const fields = this.buildFields(options.fields, prop);
     const { refresh, filters, convertCustomTypes, lockMode, strategy, populateWhere, connectionType } = options;

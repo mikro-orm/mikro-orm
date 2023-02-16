@@ -152,19 +152,24 @@ export class EntityFactory {
     const schema = this.driver.getSchemaName(meta, options);
 
     if (Array.isArray(id)) {
+      // composite FK as PK needs to be wrapped for `getPrimaryKeyCondFromArray` to work correctly
+      if (!meta.compositePK && meta.getPrimaryProps()[0].reference !== ReferenceType.SCALAR) {
+        id = [id] as Primary<T>[];
+      }
+
       id = Utils.getPrimaryKeyCondFromArray(id, meta);
     }
 
     const pks = Utils.getOrderedPrimaryKeys<T>(id, meta, this.platform, options.convertCustomTypes);
 
-    if (Utils.isPrimaryKey(id)) {
-      id = { [meta.primaryKeys[0]]: id as Primary<T> };
-    }
-
-    const exists = this.unitOfWork.getById<T>(entityName, pks, schema);
+    const exists = this.unitOfWork.getById<T>(entityName, pks as Primary<T>, schema);
 
     if (exists) {
       return exists;
+    }
+
+    if (Utils.isPrimaryKey(id)) {
+      id = { [meta.primaryKeys[0]]: id as Primary<T> };
     }
 
     return this.create<T>(entityName, id as EntityData<T>, { ...options, initialized: false }) as T;

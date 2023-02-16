@@ -1,24 +1,9 @@
-import { Entity, EntityRepositoryType, ManyToOne, MikroORM, PrimaryKey } from '@mikro-orm/core';
-import { EntityRepository } from '@mikro-orm/knex';
+import { Entity, ManyToOne, MikroORM, PrimaryKey } from '@mikro-orm/core';
 import { SqliteDriver } from '@mikro-orm/sqlite';
 
-class ProviderRepository extends EntityRepository<Provider> {}
-class UserRepository extends EntityRepository<User> {}
-class MemberRepository extends EntityRepository<Member> {}
-class SessionRepository extends EntityRepository<Session> {}
-class ParticipantRepository extends EntityRepository<Participant> {
-
-  async get(session: Session, member: Member) {
-    return this.findOne({ session, member });
-  }
-
-}
-
-@Entity({ repository: () => ProviderRepository })
+@Entity()
 export class Provider {
 
-  [EntityRepositoryType]?: ProviderRepository;
-
   @PrimaryKey()
   id: number;
 
@@ -28,11 +13,9 @@ export class Provider {
 
 }
 
-@Entity({ repository: () => UserRepository })
+@Entity()
 export class User {
 
-  [EntityRepositoryType]?: UserRepository;
-
   @PrimaryKey()
   id: number;
 
@@ -42,10 +25,8 @@ export class User {
 
 }
 
-@Entity({ repository: () => MemberRepository })
+@Entity()
 export class Member {
-
-  [EntityRepositoryType]?: MemberRepository;
 
   @ManyToOne(() => Provider, { eager: true, primary: true })
   provider: Provider;
@@ -60,10 +41,8 @@ export class Member {
 
 }
 
-@Entity({ repository: () => SessionRepository })
+@Entity()
 export class Session {
-
-  [EntityRepositoryType]?: SessionRepository;
 
   @PrimaryKey()
   id: number;
@@ -81,10 +60,8 @@ export class Session {
 
 }
 
-@Entity({ repository: () => ParticipantRepository })
+@Entity()
 export class Participant {
-
-  [EntityRepositoryType]?: ParticipantRepository;
 
   @ManyToOne(() => Session, { eager: true, primary: true })
   session: Session;
@@ -144,6 +121,8 @@ describe('GH #2647, #2742', () => {
     const res = await orm.em.find(Participant, { session, member });
     expect(res).toHaveLength(1);
     expect(res[0]).toBe(res[0].session.lastActionBy);
+    await orm.em.getUnitOfWork().computeChangeSets();
+    expect(orm.em.getUnitOfWork().getChangeSets()).toHaveLength(0);
   });
 
   it('should be able to find entity with nested composite key (multi insert)', async () => {
