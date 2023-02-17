@@ -4,9 +4,16 @@ on:
   push:
     branches:
       - master
+  workflow_dispatch:
 
 jobs:
   build:
+    environment:
+      name: github-pages
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
     runs-on: ubuntu-latest
 
     steps:
@@ -15,6 +22,7 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: 16
+        token: ${{ secrets.GH_TOKEN }}
 
     - name: Enable corepack
       run: |
@@ -47,14 +55,22 @@ jobs:
         corepack prepare yarn@stable --activate
         yarn
 
-    - name: Build & deploy docs
+    - name: Build docs
       run: |
         cd docs
         yarn
-        yarn deploy
-      env:
-        GIT_USER: "B4nan:${{ secrets.GH_TOKEN }}"
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        yarn build
+
+    - name: Set up GitHub Pages
+      uses: actions/configure-pages@v3
+
+    - name: Upload GitHub Pages artifact
+      uses: actions/upload-pages-artifact@v1
+      with:
+        path: ./docs/build
+
+    - name: Deploy artifact to GitHub Pages
+      uses: actions/deploy-pages@v1
 
   squash:
     runs-on: ubuntu-latest
