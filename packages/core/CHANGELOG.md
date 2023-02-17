@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.11](https://github.com/mikro-orm/mikro-orm/compare/v5.6.10...v5.6.11) (2023-02-17)
+
+
+### Bug Fixes
+
+* **core:** do not process custom types twice in `em.upsertMany` ([3928e78](https://github.com/mikro-orm/mikro-orm/commit/3928e789d9efec0def8fd62f24d11b020a70ca25)), closes [#3787](https://github.com/mikro-orm/mikro-orm/issues/3787)
+* **core:** fix mapping of `null` in datetime columns ([73e483a](https://github.com/mikro-orm/mikro-orm/commit/73e483ae7bb821a6abd188803765ed3ff0b25775)), closes [#4057](https://github.com/mikro-orm/mikro-orm/issues/4057)
+* **core:** infer custom type even if there is explicit `columnType` option ([a901112](https://github.com/mikro-orm/mikro-orm/commit/a9011124fbcc5b5e1db9a655fa37f290a2d7771f))
+* **schema:** fix merging of primary keys from base entity ([c40e15c](https://github.com/mikro-orm/mikro-orm/commit/c40e15ca5c500878acd047a2f22adbe3e83d50a9)), closes [#4051](https://github.com/mikro-orm/mikro-orm/issues/4051)
+
+
+
+
+
 ## [5.6.10](https://github.com/mikro-orm/mikro-orm/compare/v5.6.9...v5.6.10) (2023-02-17)
 
 
