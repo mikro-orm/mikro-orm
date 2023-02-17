@@ -96,11 +96,12 @@ jobs:
         run: |
           corepack enable
 
-      - name: Cache node_modules
-        uses: actions/cache@v3
+      # Yarn dependencies cannot be cached until yarn is installed
+      # WORKAROUND: https://github.com/actions/setup-node/issues/531
+      - name: Extract cached dependencies
+        uses: actions/setup-node@v3
         with:
-          path: '**/node_modules'
-          key: ${{ runner.os }}-${{ matrix.node-version }}-modules-${{ hashFiles('**/yarn.lock') }}
+          cache: yarn
 
       - name: Install Dependencies
         run: |
