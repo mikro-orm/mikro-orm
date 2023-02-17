@@ -276,3 +276,50 @@ module.exports = {
 To run Webpack execute `webpack` (or `npx webpack` if not installed globally) in the root 
 of the project. It will probably throw a few warnings but you can ignore the errors regarding 
 MikroORM: the mentioned pieces of code won't be executed if properly bundled with Webpack.
+
+## Deploy a bundle of entities and dependencies with [esbuild](https://esbuild.github.io/)
+
+esbuild can be used to bundle MikroORM entities and dependencies: you get a single file that contains 
+every required module/file.
+
+### Required shim for Knex with esbuild
+
+[Knex](https://knexjs.org/) has a known incompatibility with esbuild - Knex attempts to use dynamic imports to handle the various possible database dialects (mySQL, MongoDB, Oracle, etc.) but esbuild does not provide support for dynamic import functionality (see [this Github issue](https://github.com/evanw/esbuild/issues/473)).
+
+In order to work around this issue, you can define a shim module as shown below which intercepts Knex's client resolution at runtime and handles the operation itself (thus avoiding the dynamic import code). This enables `esbuild` bundling to work correctly.
+
+Define a file `knex.d.ts` as follows:
+
+```
+declare module 'knex/lib/dialects/postgres' {
+  import { Knex } from 'esbuild-support/knex';
+  const client: Knex.Client;
+  export = client;
+}
+```
+
+### Excluding dependencies from esbuild
+
+By default esbuild will bundle all of MikroORM's packages, including all database dialects (and their dependencies on database drivers). This is likely undesirable since it will create quite a large bundle, and most applications will only need to interact with one database platform. To exclude these unnecessary dependencies, pass a list of exclusions to esbuild via the [external](https://esbuild.github.io/api/#external) configuration option. For example, if using the `postgresql` platform you can exclude other unneeded dependencies as follows:
+
+```
+external: [
+  '@mikro-orm/better-sqlite',
+  '@mikro-orm/migrations',
+  '@mikro-orm/entity-generator',
+  '@mikro-orm/mariadb',
+  '@mikro-orm/mongodb',
+  '@mikro-orm/mysql',
+  '@mikro-orm/seeder',
+  '@mikro-orm/sqlite',
+  '@vscode/sqlite3',
+  'sqlite3',
+  'better-sqlite3',
+  'mysql',
+  'mysql2',
+  'oracledb',
+  'pg-native',
+  'pg-query-stream',
+  'tedious',
+]
+```
