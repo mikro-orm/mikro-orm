@@ -975,20 +975,20 @@ export class MetadataDiscovery {
     }
 
     // for number arrays we make sure to convert the items to numbers
-    if (!prop.customType && !prop.columnTypes && prop.type === 'number[]') {
+    if (!prop.customType && prop.type === 'number[]') {
       prop.customType = new ArrayType(i => +i);
     }
 
     // `string[]` can be returned via ts-morph, while reflect metadata will give us just `array`
-    if (!prop.customType && !prop.columnTypes && (prop.type === 'array' || prop.type?.toString().endsWith('[]'))) {
+    if (!prop.customType && (prop.type === 'array' || prop.type?.toString().endsWith('[]'))) {
       prop.customType = new ArrayType();
     }
 
-    if (!prop.customType && !prop.columnTypes && prop.type === 'Buffer') {
+    if (!prop.customType && prop.type === 'Buffer') {
       prop.customType = new BlobType();
     }
 
-    if (!prop.customType && !prop.columnTypes && prop.type === 'json') {
+    if (!prop.customType && prop.type === 'json') {
       prop.customType = new JsonType();
     }
 
