@@ -749,7 +749,12 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
       return [...entities.keys()];
     }
 
-    const ret = await em.driver.nativeUpdateMany(entityName, allWhere, allData, { ctx: em.transactionContext, upsert: true, ...options });
+    const ret = await em.driver.nativeUpdateMany(entityName, allWhere, allData, {
+      ctx: em.transactionContext,
+      upsert: true,
+      convertCustomTypes: false,
+      ...options,
+    });
 
     entities.clear();
     const loadPK = new Map<Entity, FilterQuery<Entity>>();
