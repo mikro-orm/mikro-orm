@@ -447,6 +447,12 @@ export class MetadataDiscovery {
     const pks = Object.values(meta.properties).filter(prop => prop.primary);
     meta.primaryKeys = pks.map(prop => prop.name);
     meta.compositePK = pks.length > 1;
+
+    // FK used as PK, we need to cascade
+    if (pks.length === 1 && pks[0].reference !== ReferenceType.SCALAR) {
+      pks[0].onDelete ??= 'cascade';
+    }
+
     meta.forceConstructor = this.shouldForceConstructorUsage(meta);
     this.validator.validateEntityDefinition(this.metadata, meta.name!);
 

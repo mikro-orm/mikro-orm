@@ -306,11 +306,6 @@ export class EntitySchema<T = any, U = never> {
       this._meta.compositePK = pks.length > 1;
     }
 
-    // FK used as PK, we need to cascade
-    if (pks.length === 1 && pks[0].reference !== ReferenceType.SCALAR) {
-      pks[0].onDelete = 'cascade';
-    }
-
     if (pks.length === 1 && pks[0].type === 'number') {
       pks[0].autoincrement ??= true;
     }
