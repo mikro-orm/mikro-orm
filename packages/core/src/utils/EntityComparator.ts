@@ -295,19 +295,33 @@ export class EntityComparator {
       }
 
       if (prop.type === 'boolean') {
-        lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') { ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : !!${propName(prop.fieldNames[0])}; ${propName(prop.fieldNames[0], 'mapped')} = true; }`);
+        lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') {`);
+        lines.push(`    ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : !!${propName(prop.fieldNames[0])};`);
+        lines.push(`    ${propName(prop.fieldNames[0], 'mapped')} = true;`);
+        lines.push(`  }`);
       } else if (prop.type.toLowerCase() === 'date') {
         if (prop.embedded && meta.properties[prop.embedded[0]].object) {
           const entityKey = 'ret.' + prop.fieldNames[0];
           const entityKeyOptional = entityKey.replace(/\./g, '?.');
-          lines.push(`  if (typeof ${entityKeyOptional} !== 'undefined') { ${entityKey} = ${entityKey} == null ? ${entityKey} : new Date(${entityKey}); }`);
+          lines.push(`  if (typeof ${entityKeyOptional} !== 'undefined') {`);
+          lines.push(`    ${entityKey} = ${entityKey} == null ? ${entityKey} : new Date(${entityKey});`);
+          lines.push(`  }`);
         } else {
-          lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') { ret${this.wrap(prop.name)} = new Date(${propName(prop.fieldNames[0])}); ${propName(prop.fieldNames[0], 'mapped')} = true; }`);
+          lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') {`);
+          lines.push(`    ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? null : new Date(${propName(prop.fieldNames[0])});`);
+          lines.push(`    ${propName(prop.fieldNames[0], 'mapped')} = true;`);
+          lines.push(`  }`);
         }
       } else if (prop.reference === ReferenceType.EMBEDDED && prop.object && !this.platform.convertsJsonAutomatically()) {
-        lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') { ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : JSON.parse(${propName(prop.fieldNames[0])}); ${propName(prop.fieldNames[0], 'mapped')} = true; }`);
+        lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') {`);
+        lines.push(`    ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])} == null ? ${propName(prop.fieldNames[0])} : JSON.parse(${propName(prop.fieldNames[0])});`);
+        lines.push(`    ${propName(prop.fieldNames[0], 'mapped')} = true;`);
+        lines.push(`  }`);
       } else {
-        lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') { ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])}; ${propName(prop.fieldNames[0], 'mapped')} = true; }`);
+        lines.push(`  if (typeof ${propName(prop.fieldNames[0])} !== 'undefined') {`);
+        lines.push(`    ret${this.wrap(prop.name)} = ${propName(prop.fieldNames[0])};`);
+        lines.push(`    ${propName(prop.fieldNames[0], 'mapped')} = true;`);
+        lines.push(`  }`);
       }
     });
     lines.push(`  for (let k in result) { if (result.hasOwnProperty(k) && !mapped[k]) ret[k] = result[k]; }`);
