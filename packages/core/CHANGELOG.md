@@ -3,6 +3,26 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.10](https://github.com/mikro-orm/mikro-orm/compare/v5.6.9...v5.6.10) (2023-02-17)
+
+
+### Bug Fixes
+
+* **core:** convert custom types in delete queries from orphan removal ([b32df88](https://github.com/mikro-orm/mikro-orm/commit/b32df88db95e4aa3da703026b25d9dc7b78eca3f)), closes [#4033](https://github.com/mikro-orm/mikro-orm/issues/4033)
+* **core:** convert custom types when snapshotting scalar composite keys ([391732e](https://github.com/mikro-orm/mikro-orm/commit/391732ee9fd35d1f245f2420f99d58bc986a6375)), closes [#3988](https://github.com/mikro-orm/mikro-orm/issues/3988)
+* **core:** map returned values correctly after batch insert ([a61a84f](https://github.com/mikro-orm/mikro-orm/commit/a61a84f82caa0185bdc809fb7c76854bdf259811))
+* **core:** map values from returning statement in `em.upsert` ([bed72fe](https://github.com/mikro-orm/mikro-orm/commit/bed72fe20ff236a059756a6b20f21fc13bed7d2a)), closes [#4020](https://github.com/mikro-orm/mikro-orm/issues/4020)
+* **core:** use types from `discovery.getMappedType` on runtime too ([2f682e3](https://github.com/mikro-orm/mikro-orm/commit/2f682e33587bf31c5020d66b1d963d60cbc39cac)), closes [#4042](https://github.com/mikro-orm/mikro-orm/issues/4042)
+
+
+### Performance Improvements
+
+* **core:** improve result mapping and snapshotting ([#4053](https://github.com/mikro-orm/mikro-orm/issues/4053)) ([8bb0268](https://github.com/mikro-orm/mikro-orm/commit/8bb0268a6d67143b0aa4dd0a5c6a6fb1bd0f8374))
+
+
+
+
+
 ## [5.6.9](https://github.com/mikro-orm/mikro-orm/compare/v5.6.8...v5.6.9) (2023-02-10)
 
 
