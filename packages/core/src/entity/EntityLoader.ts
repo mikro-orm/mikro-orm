@@ -539,9 +539,11 @@ export class EntityLoader {
         if (nested.length > 0) {
           ret.push(...nested);
         } else {
+          const selfReferencing = [meta.className, meta.root.className].includes(prop.type);
           ret.push({
             field: prefixed,
-            strategy: strategy ?? prop.strategy,
+            // enforce select-in strategy for self-referencing relations
+            strategy: selfReferencing ? LoadStrategy.SELECT_IN : strategy ?? prop.strategy,
           });
         }
       });
