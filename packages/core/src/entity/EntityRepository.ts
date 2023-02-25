@@ -266,7 +266,7 @@ export class EntityRepository<T extends object> {
   }
 
   protected get em(): EntityManager {
-    return this._em.getContext(false);
+    return this._em;
   }
 
 }
