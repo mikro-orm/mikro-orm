@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.12](https://github.com/mikro-orm/mikro-orm/compare/v5.6.11...v5.6.12) (2023-02-26)
+
+
+### Bug Fixes
+
+* **mongo:** move $fulltext from $and to top level ([#4066](https://github.com/mikro-orm/mikro-orm/issues/4066)) ([680a99c](https://github.com/mikro-orm/mikro-orm/commit/680a99c19a5636e9cdb3ec06ec5d4b185f077eeb)), closes [#4065](https://github.com/mikro-orm/mikro-orm/issues/4065)
+
+
+
+
+
 ## [5.6.11](https://github.com/mikro-orm/mikro-orm/compare/v5.6.10...v5.6.11) (2023-02-17)
 
 **Note:** Version bump only for package @mikro-orm/mongodb

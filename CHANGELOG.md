@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.12](https://github.com/mikro-orm/mikro-orm/compare/v5.6.11...v5.6.12) (2023-02-26)
+
+
+### Bug Fixes
+
+* **core:** enforce select-in strategy for self-referencing eager relations ([cc07c6b](https://github.com/mikro-orm/mikro-orm/commit/cc07c6b3393e220da8afb7bec615b2fd553921ed)), closes [#4061](https://github.com/mikro-orm/mikro-orm/issues/4061)
+* **core:** ensure custom types are processed in `em.upsert/upsertMany/insertMany` ([53a08ac](https://github.com/mikro-orm/mikro-orm/commit/53a08acfa285edb0c9da7185a3de9c763361245d)), closes [#4070](https://github.com/mikro-orm/mikro-orm/issues/4070)
+* **core:** move repository cache to the EM fork ([05fabb9](https://github.com/mikro-orm/mikro-orm/commit/05fabb9c3b06fa8a811a9ef475281c0df5836ee2)), closes [#3074](https://github.com/mikro-orm/mikro-orm/issues/3074)
+* **mongo:** move $fulltext from $and to top level ([#4066](https://github.com/mikro-orm/mikro-orm/issues/4066)) ([680a99c](https://github.com/mikro-orm/mikro-orm/commit/680a99c19a5636e9cdb3ec06ec5d4b185f077eeb)), closes [#4065](https://github.com/mikro-orm/mikro-orm/issues/4065)
+* **mysql:** fix reloading of db defaults for complex composite PKs ([8dcc1bd](https://github.com/mikro-orm/mikro-orm/commit/8dcc1bd5a9039475f97d1d817e13d1d32af5271d)), closes [#4062](https://github.com/mikro-orm/mikro-orm/issues/4062)
+
+
+
+
+
 ## [5.6.11](https://github.com/mikro-orm/mikro-orm/compare/v5.6.10...v5.6.11) (2023-02-17)
 
 
