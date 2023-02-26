@@ -211,7 +211,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
       }
     });
 
-    return copiedData;
+    return copiedData as T;
   }
 
   private convertObjectIds<T extends ObjectId | Dictionary | any[]>(data: T): T {
