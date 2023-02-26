@@ -20,6 +20,7 @@ export type AsyncFunction<R = any, T = Dictionary> = (args: T) => Promise<T>;
 export type ExcludeFunctions<T, K extends keyof T> = T[K] extends Function ? never : (K extends symbol ? never : K);
 export type Cast<T, R> = T extends R ? T : R;
 export type IsUnknown<T> = T extends unknown ? unknown extends T ? true : never : never;
+export type NoInfer<T> = [T][T extends any ? 0 : never];
 
 export type DeepPartial<T> = T & {
   [P in keyof T]?: T[P] extends (infer U)[]
