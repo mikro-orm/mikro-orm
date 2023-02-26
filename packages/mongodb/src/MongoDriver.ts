@@ -153,7 +153,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
         const and = copiedData.$and[i];
         if ('$fulltext' in and) {
           if ('$fulltext' in copiedData) {
-            throw new Error('Cannot merge multiple full text searches to top level of the query object.');
+            throw new Error('Cannot merge multiple $fulltext conditions to top level of the query object.');
           }
           copiedData.$fulltext = and.$fulltext!;
           delete and.$fulltext;
