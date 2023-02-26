@@ -138,12 +138,27 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
 
   private renameFields<T>(entityName: string, data: T, where = false): T {
     // copy to new variable to prevent changing the T type or doing as unknown casts
-    const copiedData: T & { $fulltext?: string; $text?: { $search: string } } = Object.assign({}, data); // copy first
+    const copiedData: Dictionary = Object.assign({}, data); // copy first
     Utils.renameKey(copiedData, 'id', '_id');
     const meta = this.metadata.find(entityName);
 
     if (meta) {
       this.inlineEmbeddables(meta, copiedData, where);
+    }
+
+    // If we had a query with $fulltext and some filter we end up with $and with $fulltext in it.
+    // We will try to move $fulltext to top level.
+    if (copiedData.$and) {
+      for (let i = 0; i < copiedData.$and.length; i++) {
+        const and = copiedData.$and[i];
+        if ('$fulltext' in and) {
+          if ('$fulltext' in copiedData) {
+            throw new Error('Cannot merge multiple $fulltext conditions to top level of the query object.');
+          }
+          copiedData.$fulltext = and.$fulltext!;
+          delete and.$fulltext;
+        }
+      }
     }
 
     // move search terms from data['$fulltext'] to mongo's structure: data['$text']['search']
