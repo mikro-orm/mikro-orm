@@ -539,7 +539,7 @@ export class EntityLoader {
         if (nested.length > 0) {
           ret.push(...nested);
         } else {
-          const selfReferencing = [meta.className, meta.root.className].includes(prop.type);
+          const selfReferencing = [meta.className, meta.root.className].includes(prop.type) && prop.eager;
           ret.push({
             field: prefixed,
             // enforce select-in strategy for self-referencing relations
