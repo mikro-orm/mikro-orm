@@ -277,10 +277,9 @@ To run Webpack execute `webpack` (or `npx webpack` if not installed globally) in
 of the project. It will probably throw a few warnings but you can ignore the errors regarding 
 MikroORM: the mentioned pieces of code won't be executed if properly bundled with Webpack.
 
-## Deploy a bundle of entities and dependencies with [esbuild](https://esbuild.github.io/)
+## Deploy a bundle of entities and dependencies with `esbuild`
 
-esbuild can be used to bundle MikroORM entities and dependencies: you get a single file that contains 
-every required module/file.
+[`esbuild`](https://esbuild.github.io/) can be used to bundle MikroORM entities and dependencies: you get a single file that contains every required module/file. Due to how the bundling works, there are few issues that needs to be properly addressed to make `esbuild` work with MikroORM.
 
 ### Required shim for Knex with esbuild
 
