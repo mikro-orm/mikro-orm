@@ -561,6 +561,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const meta = this.metadata.get(entityName);
+    const convertCustomTypes = !Utils.isEntity(data);
 
     if (Utils.isEntity(data)) {
       entity = data as Entity;
@@ -614,7 +615,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const ret = await em.driver.nativeUpdate(entityName, where, data, {
       ctx: em.transactionContext,
       upsert: true,
-      convertCustomTypes: false,
+      convertCustomTypes,
       ...options,
     });
 
@@ -682,6 +683,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     }
 
     const meta = this.metadata.get(entityName);
+    const convertCustomTypes = !Utils.isEntity(data[0]);
     const allData: EntityData<Entity>[] = [];
     const allWhere: FilterQuery<Entity>[] = [];
     const entities = new Map<Entity, EntityData<Entity>>();
@@ -752,7 +754,7 @@ export class EntityManager<D extends IDatabaseDriver = IDatabaseDriver> {
     const ret = await em.driver.nativeUpdateMany(entityName, allWhere, allData, {
       ctx: em.transactionContext,
       upsert: true,
-      convertCustomTypes: false,
+      convertCustomTypes,
       ...options,
     });
 

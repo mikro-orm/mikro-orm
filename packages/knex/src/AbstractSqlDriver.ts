@@ -334,6 +334,14 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
       sql += ' ' + data.map(() => `select null as ${this.platform.quoteIdentifier(pks[0])}`).join(' union all ');
     }
 
+    const addParams = (prop: EntityProperty<T>, row: Dictionary) => {
+      if (options.convertCustomTypes && prop.customType) {
+        return params.push(prop.customType.convertToDatabaseValue(row[prop.name], this.platform, { key: prop.name, mode: 'query' }));
+      }
+
+      params.push(row[prop.name]);
+    };
+
     if (fields.length > 0 || this.platform.usesDefaultKeyword()) {
       sql += data.map(row => {
         const keys: string[] = [];
@@ -343,9 +351,9 @@ export abstract class AbstractSqlDriver<Connection extends AbstractSqlConnection
             keys.push(...(row[prop.name] as unknown[] ?? prop.fieldNames).map(() => '?'));
           } else if (prop.customType && 'convertToDatabaseValueSQL' in prop.customType && !this.platform.isRaw(row[prop.name])) {
             keys.push(prop.customType.convertToDatabaseValueSQL!('?', this.platform));
-            params.push(row[prop.name]);
+            addParams(prop, row);
           } else {
-            params.push(row[prop.name]);
+            addParams(prop, row);
             keys.push('?');
           }
         });
