@@ -272,20 +272,21 @@ export class PostgreSqlSchemaHelper extends SchemaHelper {
     const schemaName = parts.pop();
     /* istanbul ignore next */
     const name = (schemaName && schemaName !== this.platform.getDefaultSchemaName() ? schemaName + '.' : '') + tableName;
+    const quotedName = this.platform.quoteIdentifier(name);
 
     // detect that the column was an enum before and remove the check constraint in such case here
     const changedEnums = Object.values(tableDiff.changedColumns).filter(col => col.fromColumn.mappedType instanceof EnumType);
 
     for (const col of changedEnums) {
       const constraintName = `${tableName}_${col.column.name}_check`;
-      ret.push(`alter table "${name}" drop constraint if exists "${constraintName}"`);
+      ret.push(`alter table ${quotedName} drop constraint if exists "${constraintName}"`);
     }
 
     // changing uuid column type requires to cast it to text first
     const uuids = Object.values(tableDiff.changedColumns).filter(col => col.changedProperties.has('type') && col.fromColumn.type === 'uuid');
 
     for (const col of uuids) {
-      ret.push(`alter table "${name}" alter column "${col.column.name}" type text using ("${col.column.name}"::text)`);
+      ret.push(`alter table ${quotedName} alter column "${col.column.name}" type text using ("${col.column.name}"::text)`);
     }
 
     return ret.join(';\n');
