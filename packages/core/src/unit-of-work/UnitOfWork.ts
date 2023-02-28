@@ -134,7 +134,7 @@ export class UnitOfWork {
     }
 
     const meta = this.metadata.find(entityName)!.root;
-    let hash = Array.isArray(id) ? Utils.getPrimaryKeyHash(id as string[]) : '' + id;
+    let hash = Array.isArray(id) ? Utils.getPrimaryKeyHash(Utils.flatten(id as string[][])) : '' + id;
     schema ??= meta.schema;
 
     if (schema) {

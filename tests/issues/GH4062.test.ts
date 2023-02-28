@@ -1,5 +1,6 @@
-import { Cascade, Collection, Entity, EntityData, ManyToOne, OneToMany, PrimaryKey, PrimaryKeyType, Property, Ref } from '@mikro-orm/core';
+import { Cascade, Collection, Entity, EntityData, ManyToOne, OneToMany, PrimaryKey, PrimaryKeyType, Property, Ref, SimpleLogger } from '@mikro-orm/core';
 import { MikroORM } from '@mikro-orm/mysql';
+import { mockLogger } from '../helpers';
 
 @Entity()
 class Category {
@@ -51,6 +52,9 @@ class ArticleAttribute {
   @PrimaryKey()
   id!: string;
 
+  @Property()
+  name!: string;
+
   @ManyToOne(() => Article, {
     primary: true,
     ref: true,
@@ -73,6 +77,7 @@ beforeAll(async () => {
     entities: [Category],
     dbName: `mikro_orm_4062`,
     port: 3308,
+    loggerFactory: options => new SimpleLogger(options),
   });
 
   await orm.schema.refreshDatabase();
@@ -92,6 +97,7 @@ test('4062', async () => {
 
   const articleAttribute = new ArticleAttribute();
   articleAttribute.id = 'articleAttribute1';
+  articleAttribute.name = 'nameBeforeUpdate';
   article.attributes.add(articleAttribute);
 
   await orm.em.persistAndFlush(category);
@@ -106,10 +112,12 @@ test('4062', async () => {
           {
             id: articleAttribute.id,
             article: [article.id, category.id],
+            name: 'nameAfterUpdate',
           },
           {
             id: 'articleAttribute2',
             article: [article.id, category.id],
+            name: 'secondNameAfterUpdate',
           },
         ],
       },
@@ -127,5 +135,16 @@ test('4062', async () => {
   );
 
   orm.em.assign(loaded, plainUpdate);
+
+  const mock = mockLogger(orm);
   await orm.em.flush();
+  expect(mock.mock.calls).toEqual([
+    ['[query] begin'],
+    ["[query] insert into `article` (`id`, `category_id`) values ('article2', 'category1')"],
+    ["[query] select `a0`.`id`, `a0`.`category_id`, `a0`.`created_at` from `article` as `a0` where (`a0`.`id`, `a0`.`category_id`) in (('article2', 'category1'))"],
+    ["[query] insert into `article_attribute` (`id`, `article_id`, `article_category_id`, `name`) values ('articleAttribute2', 'article1', 'category1', 'secondNameAfterUpdate')"],
+    ["[query] select `a0`.`id`, `a0`.`article_id`, `a0`.`article_category_id`, `a0`.`created_at` from `article_attribute` as `a0` where (`a0`.`id`, `a0`.`article_id`, `a0`.`article_category_id`) in (('articleAttribute2', 'article1', 'category1'))"],
+    ["[query] update `article_attribute` set `name` = 'nameAfterUpdate' where (`id`, `article_id`, `article_category_id`) in (('articleAttribute1', 'article1', 'category1'))"],
+    ['[query] commit'],
+  ]);
 });
