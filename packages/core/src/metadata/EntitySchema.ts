@@ -224,7 +224,7 @@ export class EntitySchema<T = any, U = never> {
   }
 
   get name(): EntityName<T>  {
-    return this._meta.name!;
+    return this._meta.className;
   }
 
   /**
