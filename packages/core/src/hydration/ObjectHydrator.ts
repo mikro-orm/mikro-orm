@@ -96,14 +96,7 @@ export class ObjectHydrator extends Hydrator {
           `  if (${preCond}typeof data${dataKey} !== 'undefined') {`,
           `    if (convertCustomTypes) {`,
           `      const value = convertToJSValue_${convertorKey}(data${dataKey});`,
-        );
-
-        // make sure the value is comparable, but skip this for JSON props as it can result in double encoding
-        if (!(prop.customType instanceof JsonType)) {
-          ret.push(`      data${dataKey} = convertToDatabaseValue_${convertorKey}(value);`);
-        }
-
-        ret.push(
+          `      data${dataKey} = convertToDatabaseValue_${convertorKey}(value);`, // make sure the value is comparable
           `      entity${entityKey} = value;`,
           `    } else {`,
           `      entity${entityKey} = data${dataKey};`,
