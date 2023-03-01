@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.13](https://github.com/mikro-orm/mikro-orm/compare/v5.6.12...v5.6.13) (2023-03-01)
+
+
+### Bug Fixes
+
+* **core:** fix deep assigning of collection items with complex composite keys ([95631f4](https://github.com/mikro-orm/mikro-orm/commit/95631f4234cfc943c215c11097a21df325a1709d)), closes [#4074](https://github.com/mikro-orm/mikro-orm/issues/4074)
+* **core:** fix diffing of JSON properties ([2e9a026](https://github.com/mikro-orm/mikro-orm/commit/2e9a02689adb7129f9671aa4038076d3504fa986)), closes [#4078](https://github.com/mikro-orm/mikro-orm/issues/4078)
+* **core:** log abstract entity names during discovery ([e721ad7](https://github.com/mikro-orm/mikro-orm/commit/e721ad757ecf6df7da466c589bce772f4589fc72)), closes [#4080](https://github.com/mikro-orm/mikro-orm/issues/4080)
+* **postgres:** use quoted schema+table name when dropping constraints ([#4079](https://github.com/mikro-orm/mikro-orm/issues/4079)) ([ff1dfb6](https://github.com/mikro-orm/mikro-orm/commit/ff1dfb69ff9841d45cb9ce78c37341748df47c08))
+
+
+
+
+
 ## [5.6.12](https://github.com/mikro-orm/mikro-orm/compare/v5.6.11...v5.6.12) (2023-02-26)
 
 

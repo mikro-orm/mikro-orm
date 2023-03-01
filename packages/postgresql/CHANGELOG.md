@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.13](https://github.com/mikro-orm/mikro-orm/compare/v5.6.12...v5.6.13) (2023-03-01)
+
+
+### Bug Fixes
+
+* **postgres:** use quoted schema+table name when dropping constraints ([#4079](https://github.com/mikro-orm/mikro-orm/issues/4079)) ([ff1dfb6](https://github.com/mikro-orm/mikro-orm/commit/ff1dfb69ff9841d45cb9ce78c37341748df47c08))
+
+
+
+
+
 ## [5.6.12](https://github.com/mikro-orm/mikro-orm/compare/v5.6.11...v5.6.12) (2023-02-26)
 
 **Note:** Version bump only for package @mikro-orm/postgresql
