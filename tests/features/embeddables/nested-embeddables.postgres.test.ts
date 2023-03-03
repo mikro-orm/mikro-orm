@@ -300,7 +300,9 @@ describe('embedded entities in postgres', () => {
     await orm.em.fork().find(User, {}, { fields: ['profile1.identity.meta.foo'] });
     await orm.em.fork().find(User, {}, { fields: ['profile2.identity.meta.foo'] });
 
+    // @ts-expect-error old syntax is still technically supported, but not on type level
     await orm.em.fork().find(User, {}, { fields: [{ profile1: ['identity'] }] });
+    // @ts-expect-error old syntax is still technically supported, but not on type level
     await orm.em.fork().find(User, {}, { fields: [{ profile2: ['identity'] }] });
 
     expect(mock.mock.calls[0][0]).toMatch('select "u0"."id", "u0"."profile1_username", "u0"."profile1_identity_email", "u0"."profile1_identity_meta_foo", "u0"."profile1_identity_meta_bar", "u0"."profile1_identity_links" from "user" as "u0"');

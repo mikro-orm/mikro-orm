@@ -59,7 +59,7 @@ export class RoleResourcePermission {
 
   @ManyToOne(() => Role, {
     primary: true,
-    onDelete: 'cascade',
+    deleteRule: 'cascade',
   })
   role!: Role;
 
