@@ -36,7 +36,7 @@ describe('automatic refreshing of already loaded entities', () => {
   test('em.find()', async () => {
     const { god } = await createEntities();
 
-    const r1 = await orm.em.find(Author2, god, { fields: ['id'], populate: ['books'] });
+    const r1 = await orm.em.find(Author2, god, { fields: ['id'] as never, populate: ['books'] });
     r1[0].email = 'lol';
     expect(r1).toHaveLength(1);
     expect(r1[0].id).toBe(god.id);
@@ -61,7 +61,7 @@ describe('automatic refreshing of already loaded entities', () => {
   test('em.find() with relations and joined strategy 1', async () => {
     const { god } = await createEntities();
 
-    const r1 = await orm.em.find(Author2, god, { fields: ['id'] });
+    const r1 = await orm.em.find(Author2, god, { fields: ['id' as '*'] });
     r1[0].email = 'lol@lol.lol';
     expect(r1).toHaveLength(1);
     expect(r1[0].id).toBe(god.id);
@@ -90,16 +90,21 @@ describe('automatic refreshing of already loaded entities', () => {
     const { god } = await createEntities();
 
     const r1 = await orm.em.find(Author2, god, { fields: ['id', 'books.title', 'books.author'], populate: ['books'], strategy: LoadStrategy.JOINED });
+    // @ts-expect-error
     r1[0].email = 'lol@lol.lol';
     r1[0].books[0].title = 'lol';
     expect(r1).toHaveLength(1);
     expect(r1[0].id).toBe(god.id);
+    // @ts-expect-error
     expect(r1[0].name).toBeUndefined();
+    // @ts-expect-error
     expect(r1[0].termsAccepted).toBeUndefined();
     expect(r1[0].books[0].uuid).toBeDefined();
     expect(r1[0].books[0].title).toBeDefined();
     expect(r1[0].books[0].author).toBeDefined();
+    // @ts-expect-error
     expect(r1[0].books[0].price).toBeUndefined();
+    // @ts-expect-error
     expect(r1[0].books[0].perex).toBeUndefined();
     // with auto-flush mode, this would trigger flushing as we have dirty author and we query for authors
     const r2 = await orm.em.find(Author2, god, { populate: ['books', 'books.perex'], strategy: LoadStrategy.JOINED, flushMode: FlushMode.COMMIT });
@@ -125,13 +130,17 @@ describe('automatic refreshing of already loaded entities', () => {
     const { god } = await createEntities();
 
     const r1 = await orm.em.find(Author2, god, { fields: ['id', 'favouriteAuthor.name'], populate: ['favouriteAuthor'], strategy: LoadStrategy.JOINED });
+    // @ts-expect-error
     r1[0].email = 'lol@lol.lol';
     expect(r1).toHaveLength(1);
     expect(r1[0].id).toBe(god.id);
+    // @ts-expect-error
     expect(r1[0].name).toBeUndefined();
+    // @ts-expect-error
     expect(r1[0].termsAccepted).toBeUndefined();
     expect(r1[0].favouriteAuthor!.id).toBeDefined();
     expect(r1[0].favouriteAuthor!.name).toBeDefined();
+    // @ts-expect-error
     expect(r1[0].favouriteAuthor!.age).toBeUndefined();
     r1[0].favouriteAuthor!.name = 'lol';
     // with auto-flush mode, this would trigger flushing as we have dirty author and we query for authors
@@ -161,9 +170,13 @@ describe('automatic refreshing of already loaded entities', () => {
     expect(a1.id).toBe(god.id);
     expect(a1.email).toBe(god.email);
     a1.email = 'lol';
+    // @ts-expect-error
     expect(a1.name).toBeUndefined();
+    // @ts-expect-error
     expect(a1.termsAccepted).toBeUndefined();
+    // @ts-expect-error
     expect(a1.age).toBeUndefined();
+    // @ts-expect-error
     expect(a1.identities).toBeUndefined();
 
     // reloading with same fields won't fire the query
@@ -176,7 +189,9 @@ describe('automatic refreshing of already loaded entities', () => {
     // with auto-flush mode, this would trigger flushing as we have dirty author and we query for authors
     const a12 = await orm.em.findOneOrFail(Author2, god, { fields: ['id', 'age'], flushMode: FlushMode.COMMIT });
     expect(a12).toBe(a1);
+    // @ts-expect-error
     expect(a1.age).toBe(999);
+    // @ts-expect-error
     a1.age = 1000;
     expect(mock).toBeCalledTimes(3);
 
@@ -216,9 +231,13 @@ describe('automatic refreshing of already loaded entities', () => {
     expect(a1.id).toBe(god.id);
     expect(a1.email).toBe(god.email);
     a1.email = 'lol';
+    // @ts-expect-error
     expect(a1.name).toBeUndefined();
+    // @ts-expect-error
     expect(a1.termsAccepted).toBeUndefined();
+    // @ts-expect-error
     expect(a1.age).toBeUndefined();
+    // @ts-expect-error
     expect(a1.identities).toBeUndefined();
 
     // reloading with same fields won't fire the query
@@ -231,7 +250,9 @@ describe('automatic refreshing of already loaded entities', () => {
     // with auto-flush mode, this would trigger flushing as we have dirty author and we query for authors
     const a12 = await orm.em.findOneOrFail(Author2, god, { fields: ['id', 'age'], flushMode: FlushMode.COMMIT });
     expect(a12).toBe(a1);
+    // @ts-expect-error
     expect(a1.age).toBe(999);
+    // @ts-expect-error
     a1.age = 1000;
     expect(mock).toBeCalledTimes(2);
 
