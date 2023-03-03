@@ -8,7 +8,7 @@ import type {
   LoadedCollection,
   Populate,
   Primary,
-  ConnectionType, Dictionary, FilterKey,
+  ConnectionType, Dictionary, FilterKey, EntityKey,
 } from '../typings';
 import { ArrayCollection } from './ArrayCollection';
 import { Utils } from '../utils/Utils';
@@ -43,7 +43,7 @@ export class Collection<T extends object, O extends object = object> extends Arr
    */
   static create<T extends object, O extends object = object>(owner: O, prop: keyof O & string, items: undefined | T[], initialized: boolean): Collection<T, O> {
     const coll = new Collection<T, O>(owner, undefined, initialized);
-    coll.property = helper(owner).__meta.properties[prop];
+    coll.property = helper(owner).__meta.properties[prop as EntityKey];
     owner[prop] = coll as unknown as O[keyof O & string];
 
     if (items) {

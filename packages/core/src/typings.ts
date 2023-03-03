@@ -27,7 +27,7 @@ export type EntityKey<T = unknown> = string & keyof { [K in keyof T as ExcludeFu
 export type EntityValue<T> = T[EntityKey<T>];
 export type FilterKey<T> = keyof FilterQuery<T>;
 export type AsyncFunction<R = any, T = Dictionary> = (args: T) => Promise<T>;
-type Compute<T> = {[K in keyof T]: T[K]} & {};
+type Compute<T> = { [K in keyof T]: T[K] } & {};
 export type ExcludeFunctions<T, K extends keyof T> = T[K] extends Function ? never : (K extends symbol ? never : K);
 export type Cast<T, R> = T extends R ? T : R;
 export type IsUnknown<T> = T extends unknown ? unknown extends T ? true : never : never;
@@ -63,7 +63,7 @@ export type Primary<T> = T extends { [PrimaryKeyProp]?: infer PK }
   ? ReadonlyPrimary<PK> : T;
 export type PrimaryProperty<T> = T extends { [PrimaryKeyProp]?: infer PK }
   ? (PK extends keyof T ? PK : (PK extends any[] ? PK[number] : never)) : T extends { _id?: any }
-  ? '_id' : T extends { uuid?: any }
+  ? (T extends { id?: any } ? 'id' | '_id' : '_id') : T extends { uuid?: any }
   ? 'uuid' : T extends { id?: any }
   ? 'id' : never;
 export type IPrimaryKeyValue = number | string | bigint | Date | { toHexString(): string };
@@ -755,21 +755,37 @@ export type ExpandProperty<T> = T extends Reference<infer U>
       : NonNullable<T>;
 
 type LoadedLoadable<T, E extends object> = T extends Collection<any, any>
-  ? T & LoadedCollection<E>
-  : (T extends Reference<any> ? T & LoadedReference<E> : T & E);
+  ? LoadedCollection<E>
+  : (T extends Reference<any> ? LoadedReference<E> : E);
 
-type Prefix<K> = K extends `${infer S}.${string}` ? S : K;
-type IsPrefixed<K, L extends string> = K extends Prefix<L> ? K : never;
-type Suffix<K> = K extends `${string}.${infer S}` ? S : never;
-type Defined<T> = Exclude<T, null | undefined> & {};
+type Prefix<T, K> = K extends `${infer S}.${string}` ? S : (K extends '*' ? keyof T : K);
+type IsPrefixed<T, K, L extends string> = K extends Prefix<T, L> ? K : never;
+type IsPrefixedOnly1<T, K, L extends string, F extends string> = K extends Prefix<T, F> ? never : (K extends Prefix<T, L> ? K : never);
+type IsPrefixedOnly2<T, K, L extends string, F extends string> = K extends Prefix<T, L> ? never : (K extends Prefix<T, F> ? K : (K extends PrimaryProperty<T> ? K : never));
+type IsPrefixed1and2<T, K, L extends string, F extends string> = K extends Prefix<T, F> ? (K extends Prefix<T, L> ? K : never) : never;
+
+type Suffix<K> = K extends `${string}.${infer S}` ? S : (K extends '*' ? '*' : never);
+type Defined<T> = T & {};
+
+type AddOptional<T, K extends keyof T> = undefined | null extends T[K] ? null | undefined : null extends T[K] ? null : undefined extends T[K] ? undefined : never;
+
+export type Selected<T, L extends string = never, F extends string = '*'> = {
+  // only populate hint
+  [K in keyof T as IsPrefixedOnly1<T, K, L, F>]: LoadedLoadable<Defined<T[K]>, Loaded<ExtractType<Defined<T[K]>>, Suffix<L>>>;
+} & {
+  // both populate and selected hints
+  [K in keyof T as IsPrefixed1and2<T, K, L, F>]: LoadedLoadable<Defined<T[K]>, Loaded<ExtractType<Defined<T[K]>>, Suffix<L>, Suffix<F>>> | AddOptional<T, K>;
+} & {
+  // only selected hint
+  [K in keyof T as IsPrefixedOnly2<T, K, L, F>]: LoadedLoadable<Defined<T[K]>, Loaded<ExtractType<Defined<T[K]>>, never, Suffix<F>>>;
+};
 
 // For each property on T check if it is included in prefix of keys to load L:
 //   1. It yes, mark the collection or reference loaded and resolve its inner type recursively (passing suffix).
 //   2. If no, just return it as-is (scalars will be included, loadables too but not loaded).
-export type Loaded<T, L extends string = never> = T & {
-  // this feels more correct, but breaks serialization methods on base entity, see #3865
-  [K in keyof T as IsPrefixed<K, L>]: LoadedLoadable<T[K], Loaded<ExtractType<T[K]>, Suffix<L>>>;
-};
+export type Loaded<T, L extends string = never, F extends string = '*'> = [F] extends ['*'] ? (T & {
+  [K in keyof T as IsPrefixed<T, K, L>]: LoadedLoadable<Defined<T[K]>, Loaded<ExtractType<Defined<T[K]>>, Suffix<L>>> | AddOptional<T, K>;
+}) : Selected<T, L, F>;
 
 export interface LoadedReference<T> extends Reference<Defined<T>> {
   $: Defined<T>;

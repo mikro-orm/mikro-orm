@@ -116,7 +116,7 @@ test('GH issue 3543 without orphan removal builds correct query', async () => {
   expect(() => order.events.removeAll()).toThrowError(
     'Removing items from collection Order.events without `orphanRemoval: true` would break non-null constraint on the owning side. You have several options: \n' +
     ' - add `orphanRemoval: true` to the collection options\n' +
-    ' - add `onDelete: \'cascade\'` to the owning side options\n' +
+    ' - add `deleteRule: \'cascade\'` to the owning side options\n' +
     ' - add `nullable: true` to the owning side options',
   );
 });
