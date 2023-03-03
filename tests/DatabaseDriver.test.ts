@@ -38,11 +38,11 @@ class Driver extends DatabaseDriver<Connection> implements IDatabaseDriver {
     return 0;
   }
 
-  async find<T extends object, P extends string = never>(entityName: string, where: ObjectQuery<T>, options: FindOptions<T, P> | undefined): Promise<EntityData<T>[]> {
+  async find<T extends object, P extends string = never, F extends string = '*'>(entityName: string, where: ObjectQuery<T>, options: FindOptions<T, P, F> | undefined): Promise<EntityData<T>[]> {
     return [];
   }
 
-  async findOne<T extends object, P extends string = never>(entityName: string, where: ObjectQuery<T>, options: FindOneOptions<T, P> | undefined): Promise<EntityData<T> | null> {
+  async findOne<T extends object, P extends string = never, F extends string = '*'>(entityName: string, where: ObjectQuery<T>, options: FindOneOptions<T, P, F> | undefined): Promise<EntityData<T> | null> {
     return null;
   }
 
