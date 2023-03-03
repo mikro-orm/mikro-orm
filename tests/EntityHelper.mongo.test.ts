@@ -171,7 +171,7 @@ describe('EntityHelperMongo', () => {
     const bar = FooBar.create('bar');
     const baz = FooBaz.create('baz');
     bar.baz = baz;
-    expect(baz.bar).toBe(bar);
+    expect(baz.bar.unwrap()).toBe(bar);
     await orm.em.persistAndFlush(bar);
     orm.em.clear();
 
@@ -193,10 +193,7 @@ describe('EntityHelperMongo', () => {
     expect(actual).toBe('FooBar {\n' +
       '  meta: { onCreateCalled: false, onUpdateCalled: false },\n' +
       "  name: 'bar',\n" +
-      '  baz: FooBaz {\n' +
-      "    name: 'baz',\n" +
-      "    bar: FooBar { meta: [Object], name: 'bar', baz: [FooBaz] }\n" +
-      '  }\n' +
+      "  baz: FooBaz { name: 'baz', bar: Ref<FooBar> { entity: [FooBar] } }\n" +
       '}');
 
     expect(inspect((bar as AnyEntity).__helper)).toBe('[WrappedEntity<FooBar>]');
