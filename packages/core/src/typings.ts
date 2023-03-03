@@ -37,6 +37,7 @@ export type DeepPartial<T> = T & {
 export const EntityRepositoryType = Symbol('EntityRepositoryType');
 export const PrimaryKeyProp = Symbol('PrimaryKeyProp');
 export const OptionalProps = Symbol('OptionalProps');
+export const EagerProps = Symbol('EagerProps');
 
 export type UnwrapPrimary<T> = T extends Scalar
   ? T
@@ -119,7 +120,7 @@ export interface IWrappedEntity<
   isTouched(): boolean;
   populated(populated?: boolean): void;
   init<P extends string = never>(populated?: boolean, populate?: Populate<T, P>, lockMode?: LockMode, connectionType?: ConnectionType): Promise<Loaded<T, P>>;
-  toReference(): Ref<T> & LoadedReference<T>;
+  toReference(): Ref<T> & LoadedReference<Loaded<T, AddEager<T>>>;
   toObject(ignoreFields?: string[]): EntityDTO<T>;
   toJSON(...args: any[]): EntityDTO<T>;
   toPOJO(): EntityDTO<T>;
@@ -210,6 +211,8 @@ type RequiredKeys<T, K extends keyof T> = IsOptional<T, K> extends false ? K : n
 export type EntityData<T> = { [K in EntityKey<T>]?: EntityDataItem<T[K]> };
 export type RequiredEntityData<T> = EntityData<T> & { [K in keyof T as RequiredKeys<T, K>]: T[K] | EntityDataProp<T[K]> };
 export type EntityDictionary<T> = EntityData<T> & Record<any, any>;
+
+type ExtractEagerProps<T> = T extends { [EagerProps]?: infer PK } ? PK : never;
 
 type Relation<T> = {
   [P in keyof T as T[P] extends unknown[] | Record<string | number | symbol, unknown> ? P : never]?: T[P]
@@ -741,23 +744,24 @@ type Defined<T> = T & {};
 
 type AddOptional<T> = undefined | null extends T ? null | undefined : null extends T ? null : undefined extends T ? undefined : never;
 type LoadedProp<T, L extends string = never, F extends string = '*'> = LoadedLoadable<Defined<T>, Loaded<ExtractType<Defined<T>>, L, F>> | AddOptional<T>;
+export type AddEager<T> = ExtractEagerProps<T> & string;
 
 export type Selected<T, L extends string = never, F extends string = '*'> = {
   // only populate hint
-  [K in keyof T as IsPrefixedL<T, K, L, F>]: LoadedProp<T[K], Suffix<L>>;
+  [K in keyof T as IsPrefixedL<T, K, L | AddEager<T>, F>]: LoadedProp<T[K], Suffix<L>>;
 } & {
   // both populate and selected hints
-  [K in keyof T as IsPrefixedLF<T, K, L, F>]: LoadedProp<T[K], Suffix<L>, Suffix<F>>;
+  [K in keyof T as IsPrefixedLF<T, K, L | AddEager<T>, F>]: LoadedProp<T[K], Suffix<L>, Suffix<F>>;
 } & {
   // only selected hint
-  [K in keyof T as IsPrefixedF<T, K, L, F>]: LoadedProp<T[K], never, Suffix<F>>;
+  [K in keyof T as IsPrefixedF<T, K, L | AddEager<T>, F>]: LoadedProp<T[K], never, Suffix<F>>;
 };
 
 /**
  * Represents entity with its loaded relations (`populate` hint) and selected properties (`fields` hint).
  */
 export type Loaded<T, L extends string = never, F extends string = '*'> = [F] extends ['*'] ? (T & {
-  [K in keyof T as IsPrefixed<T, K, L>]: LoadedProp<T[K], Suffix<L>>;
+  [K in keyof T as IsPrefixed<T, K, L | AddEager<T>>]: LoadedProp<T[K], Suffix<L>>;
 }) : Selected<T, L, F>;
 
 export interface LoadedReference<T> extends Reference<Defined<T>> {
