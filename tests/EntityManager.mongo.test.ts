@@ -778,19 +778,21 @@ describe('EntityManagerMongo', () => {
 
     // test inverse side
     const tagRepository = orm.em.getRepository(BookTag);
-    let tags = await tagRepository.findAll({ populate: ['books'] });
-    expect(tags).toBeInstanceOf(Array);
-    expect(tags.length).toBe(5);
-    expect(tags[0]).toBeInstanceOf(BookTag);
-    expect(tags[0].name).toBe('silly');
-    expect(tags[0].books).toBeInstanceOf(Collection);
-    expect(tags[0].books.isInitialized()).toBe(true);
-    expect(tags[0].books.isDirty()).toBe(false);
-    expect(tags[0].books.count()).toBe(2);
-    expect(tags[0].books.length).toBe(2);
+    {
+      const tags = await tagRepository.findAll({ populate: ['books'] });
+      expect(tags).toBeInstanceOf(Array);
+      expect(tags.length).toBe(5);
+      expect(tags[0]).toBeInstanceOf(BookTag);
+      expect(tags[0].name).toBe('silly');
+      expect(tags[0].books).toBeInstanceOf(Collection);
+      expect(tags[0].books.isInitialized()).toBe(true);
+      expect(tags[0].books.isDirty()).toBe(false);
+      expect(tags[0].books.count()).toBe(2);
+      expect(tags[0].books.length).toBe(2);
+    }
 
     orm.em.clear();
-    tags = await orm.em.find(BookTag, {});
+    const tags = await orm.em.find(BookTag, {});
     expect(tags[0].books.isInitialized()).toBe(false);
     expect(tags[0].books.isDirty()).toBe(false);
     expect(() => tags[0].books.getItems()).toThrowError(/Collection<Book> of entity BookTag\[\w{24}] not initialized/);
@@ -1915,6 +1917,7 @@ describe('EntityManagerMongo', () => {
 
     const [authors2, count2] = await orm.em.findAndCount(Author, {}, { limit: 10, offset: 25, fields: ['name'] });
     expect(authors2).toHaveLength(5);
+    // @ts-expect-error
     expect(authors2[0].email).toBeUndefined();
     expect(count2).toBe(30);
     expect(authors2[0].name).toBe('God 26');
