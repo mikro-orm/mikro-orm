@@ -1,5 +1,5 @@
 import { Reference } from './Reference';
-import type { AutoPath, EntityData, EntityDTO, Loaded, Ref } from '../typings';
+import type { AutoPath, Ref, EntityData, EntityDTO, Loaded, AddEager, LoadedReference } from '../typings';
 import type { AssignOptions } from './EntityAssigner';
 import { EntityAssigner } from './EntityAssigner';
 import type { EntityLoaderOptions } from './EntityLoader';
@@ -26,8 +26,8 @@ export abstract class BaseEntity {
     return helper(this as This).populate(populate, options);
   }
 
-  toReference<T extends this = this>(): Ref<T> {
-    return Reference.create(this as unknown as T);
+  toReference<T extends this = this>(): Ref<T> & LoadedReference<Loaded<T, AddEager<T>>> {
+    return Reference.create(this) as unknown as Ref<T> & LoadedReference<Loaded<T, AddEager<T>>>;
   }
 
   toObject<T extends this = this>(ignoreFields: string[] = []): EntityDTO<T> {

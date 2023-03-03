@@ -3,6 +3,7 @@ import {
   ArrayType,
   Entity,
   Index,
+  EagerProps,
   JsonType,
   OneToOne,
   PrimaryKey,
@@ -17,6 +18,8 @@ import { FooBaz } from './FooBaz';
   { weights: { name: 10, str: 5 } },
 ] })
 export default class FooBar {
+
+  [EagerProps]?: 'baz';
 
   @PrimaryKey()
   _id!: ObjectId;
