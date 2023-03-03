@@ -747,31 +747,32 @@ type LoadedLoadable<T, E extends object> = T extends Collection<any, any>
 
 type Prefix<T, K> = K extends `${infer S}.${string}` ? S : (K extends '*' ? keyof T : K);
 type IsPrefixed<T, K, L extends string> = K extends Prefix<T, L> ? K : never;
-type IsPrefixedOnly1<T, K, L extends string, F extends string> = K extends Prefix<T, F> ? never : (K extends Prefix<T, L> ? K : never);
-type IsPrefixedOnly2<T, K, L extends string, F extends string> = K extends Prefix<T, L> ? never : (K extends Prefix<T, F> ? K : (K extends PrimaryProperty<T> ? K : never));
-type IsPrefixed1and2<T, K, L extends string, F extends string> = K extends Prefix<T, F> ? (K extends Prefix<T, L> ? K : never) : never;
+type IsPrefixedL<T, K, L extends string, F extends string> = K extends Prefix<T, F> ? never : (K extends Prefix<T, L> ? K : never);
+type IsPrefixedF<T, K, L extends string, F extends string> = K extends Prefix<T, L> ? never : (K extends Prefix<T, F> ? K : (K extends PrimaryProperty<T> ? K : never));
+type IsPrefixedLF<T, K, L extends string, F extends string> = K extends Prefix<T, F> ? (K extends Prefix<T, L> ? K : never) : never;
 
 type Suffix<K> = K extends `${string}.${infer S}` ? S : (K extends '*' ? '*' : never);
 type Defined<T> = T & {};
 
-type AddOptional<T, K extends keyof T> = undefined | null extends T[K] ? null | undefined : null extends T[K] ? null : undefined extends T[K] ? undefined : never;
+type AddOptional<T> = undefined | null extends T ? null | undefined : null extends T ? null : undefined extends T ? undefined : never;
+type LoadedProp<T, L extends string = never, F extends string = '*'> = LoadedLoadable<Defined<T>, Loaded<ExtractType<Defined<T>>, L, F>> | AddOptional<T>;
 
 export type Selected<T, L extends string = never, F extends string = '*'> = {
   // only populate hint
-  [K in keyof T as IsPrefixedOnly1<T, K, L, F>]: LoadedLoadable<Defined<T[K]>, Loaded<ExtractType<Defined<T[K]>>, Suffix<L>>>;
+  [K in keyof T as IsPrefixedL<T, K, L, F>]: LoadedProp<T[K], Suffix<L>>;
 } & {
   // both populate and selected hints
-  [K in keyof T as IsPrefixed1and2<T, K, L, F>]: LoadedLoadable<Defined<T[K]>, Loaded<ExtractType<Defined<T[K]>>, Suffix<L>, Suffix<F>>> | AddOptional<T, K>;
+  [K in keyof T as IsPrefixedLF<T, K, L, F>]: LoadedProp<T[K], Suffix<L>, Suffix<F>>;
 } & {
   // only selected hint
-  [K in keyof T as IsPrefixedOnly2<T, K, L, F>]: LoadedLoadable<Defined<T[K]>, Loaded<ExtractType<Defined<T[K]>>, never, Suffix<F>>>;
+  [K in keyof T as IsPrefixedF<T, K, L, F>]: LoadedProp<T[K], never, Suffix<F>>;
 };
 
-// For each property on T check if it is included in prefix of keys to load L:
-//   1. It yes, mark the collection or reference loaded and resolve its inner type recursively (passing suffix).
-//   2. If no, just return it as-is (scalars will be included, loadables too but not loaded).
+/**
+ * Represents entity with its loaded relations (`populate` hint) and selected properties (`fields` hint).
+ */
 export type Loaded<T, L extends string = never, F extends string = '*'> = [F] extends ['*'] ? (T & {
-  [K in keyof T as IsPrefixed<T, K, L>]: LoadedLoadable<Defined<T[K]>, Loaded<ExtractType<Defined<T[K]>>, Suffix<L>>> | AddOptional<T, K>;
+  [K in keyof T as IsPrefixed<T, K, L>]: LoadedProp<T[K], Suffix<L>>;
 }) : Selected<T, L, F>;
 
 export interface LoadedReference<T> extends Reference<Defined<T>> {
