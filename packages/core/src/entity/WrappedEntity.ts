@@ -1,8 +1,8 @@
 import { inspect } from 'util';
 import type { EntityManager } from '../EntityManager';
 import type {
-  AnyEntity, ConnectionType, Dictionary, EntityData, EntityDictionary, EntityMetadata, IHydrator,
-  IWrappedEntityInternal, Populate, PopulateOptions, Primary, AutoPath, Loaded, Ref, EntityValue,
+  AnyEntity, ConnectionType, Dictionary, EntityData, EntityDictionary, EntityMetadata, IHydrator, EntityValue,
+  IWrappedEntityInternal, Populate, PopulateOptions, Primary, AutoPath, Loaded, Ref, AddEager, Loaded, LoadedReference,
 } from '../typings';
 import { Reference } from './Reference';
 import { EntityTransformer } from '../serialization/EntityTransformer';
@@ -63,9 +63,9 @@ export class WrappedEntity<T extends object> {
     this.__lazyInitialized = false;
   }
 
-  toReference(): Ref<T> {
+  toReference(): Ref<T> & LoadedReference<Loaded<T, AddEager<T>>> {
     this.__reference ??= new Reference(this.entity);
-    return this.__reference as Ref<T>;
+    return this.__reference as Ref<T> & LoadedReference<Loaded<T, AddEager<T>>>;
   }
 
   toObject(ignoreFields: string[] = []): EntityData<T> {
