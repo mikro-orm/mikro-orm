@@ -317,7 +317,7 @@ export class EntityFactory {
   /**
    * returns parameters for entity constructor, creating references from plain ids
    */
-  private extractConstructorParams<T>(meta: EntityMetadata<T>, data: EntityData<T>, options: FactoryOptions): EntityValue<T>[] {
+  private extractConstructorParams<T extends object>(meta: EntityMetadata<T>, data: EntityData<T>, options: FactoryOptions): EntityValue<T>[] {
     return meta.constructorParams.map(k => {
       if (meta.properties[k] && [ReferenceKind.MANY_TO_ONE, ReferenceKind.ONE_TO_ONE].includes(meta.properties[k].kind) && data[k]) {
         const entity = this.unitOfWork.getById(meta.properties[k].type, data[k] as any, options.schema) as T[keyof T];
