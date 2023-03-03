@@ -26,7 +26,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return new MongoEntityManager(this.config, this, this.metadata, useContext) as unknown as EntityManager<D>;
   }
 
-  async find<T extends object, P extends string = never>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, P> = {}): Promise<EntityData<T>[]> {
+  async find<T extends object, P extends string = never, F extends string = '*'>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, P, F> = {}): Promise<EntityData<T>[]> {
     if (this.metadata.find(entityName)?.virtual) {
       return this.findVirtual(entityName, where, options);
     }
@@ -85,7 +85,7 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     return this.mapResult<T>(res[0], this.metadata.find(entityName)!);
   }
 
-  override async findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any>): Promise<EntityData<T>[]> {
+  override async findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any, any>): Promise<EntityData<T>[]> {
     const meta = this.metadata.find(entityName)!;
 
     if (meta.expression instanceof Function) {
@@ -286,15 +286,23 @@ export class MongoDriver extends DatabaseDriver<MongoConnection> {
     const ret: string[] = [];
 
     if (fields) {
-      for (const field of fields) {
-        if (Utils.isPlainObject(field) || field.toString().includes('.')) {
+      for (let field of fields) {
+        if (Utils.isPlainObject(field)) {
           continue;
+        }
+
+        if (field.toString().includes('.')) {
+          field = field.toString().substring(0, field.toString().indexOf('.')) as EntityField<T, P>;
         }
 
         let prop = meta.properties[field as EntityKey<T>];
 
         /* istanbul ignore else */
         if (prop) {
+          if (!prop.fieldNames) {
+            continue;
+          }
+
           prop = prop.serializedPrimaryKey ? meta.getPrimaryProps()[0] : prop;
           ret.push(prop.fieldNames[0]);
         } else if (field === '*') {
