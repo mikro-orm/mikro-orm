@@ -11,6 +11,7 @@ import {
   SerializedPrimaryKey,
   OptionalProps,
   PrimaryKeyProp,
+  EagerProps,
 } from '@mikro-orm/core';
 import { Book } from './Book';
 import { Test } from './test.model';
@@ -21,6 +22,7 @@ export class Publisher {
 
   [OptionalProps]?: 'type';
   [PrimaryKeyProp]?: 'id' | '_id';
+  [EagerProps]?: 'tests';
 
   @PrimaryKey()
   _id!: ObjectId;

@@ -1,6 +1,18 @@
 import { ObjectId } from 'bson';
 import type { EntityProperty } from '@mikro-orm/core';
-import { Collection, Configuration, QueryOrder, Reference, wrap, UniqueConstraintViolationException, IdentityMap, EntitySchema, NullHighlighter, FlushMode } from '@mikro-orm/core';
+import {
+  Collection,
+  Configuration,
+  QueryOrder,
+  Reference,
+  wrap,
+  UniqueConstraintViolationException,
+  IdentityMap,
+  EntitySchema,
+  NullHighlighter,
+  FlushMode,
+  ref,
+} from '@mikro-orm/core';
 import { EntityManager, MongoConnection, MongoDriver, MongoPlatform, MikroORM } from '@mikro-orm/mongodb';
 import { MongoHighlighter } from '@mikro-orm/mongo-highlighter';
 
@@ -187,8 +199,8 @@ describe('EntityManagerMongo', () => {
   test('eager loading', async () => {
     const bar = FooBar.create('fb');
     bar.baz = FooBaz.create('fz');
-    bar.baz.book = new Book('FooBar vs FooBaz');
-    bar.baz.book.author = new Author('a', 'b');
+    bar.baz.book = ref(new Book('FooBar vs FooBaz'));
+    bar.baz.book.unwrap().author = new Author('a', 'b');
     await orm.em.persistAndFlush(bar);
     orm.em.clear();
 
@@ -196,7 +208,9 @@ describe('EntityManagerMongo', () => {
     const a = await repo.findOne(bar.id, { populate: ['baz.bar'] });
     expect(wrap(a!.baz!).isInitialized()).toBe(true);
     expect(wrap(a!.baz!.book!).isInitialized()).toBe(true);
-    expect(a!.baz!.book!.title).toBe('FooBar vs FooBaz');
+
+    // `baz.book` is not part of the loaded hint, but inferred via `EagerProps` symbol
+    expect(a!.baz!.book!.$.title).toBe('FooBar vs FooBaz');
   });
 
   test('property serializer', async () => {
@@ -217,7 +231,7 @@ describe('EntityManagerMongo', () => {
     const bar = FooBar.create('fb');
     const baz = FooBaz.create('fz');
     bar.baz = baz;
-    baz.bar = bar;
+    baz.bar = ref(bar);
     await orm.em.persistAndFlush(bar);
     orm.em.clear();
 
@@ -225,7 +239,7 @@ describe('EntityManagerMongo', () => {
     const b = await orm.em.findOneOrFail(FooBaz, baz.id);
     expect(a.baz).toBe(b);
     expect(a.name).toBe('fb');
-    expect(b.bar).toBe(a);
+    expect(b.bar.$).toBe(a);
     expect(b.name).toBe('fz');
   });
 
@@ -233,7 +247,7 @@ describe('EntityManagerMongo', () => {
     const bar = FooBar.create('fb');
     const baz = FooBaz.create('fz');
     bar.baz = baz;
-    baz.bar = bar;
+    baz.bar = ref(bar);
     await orm.em.persistAndFlush(baz);
     orm.em.clear();
 
@@ -241,7 +255,7 @@ describe('EntityManagerMongo', () => {
     const b = await orm.em.findOneOrFail(FooBaz, baz.id);
     expect(a.baz).toBe(b);
     expect(a.name).toBe('fb');
-    expect(b.bar).toBe(a);
+    expect(b.bar.$).toBe(a);
     expect(b.name).toBe('fz');
   });
 
@@ -257,7 +271,7 @@ describe('EntityManagerMongo', () => {
     const b = await orm.em.findOneOrFail(FooBaz, bar.baz!.id);
     expect(a.baz).toBe(b);
     expect(a.name).toBe('fb');
-    expect(b.bar).toBe(a);
+    expect(b.bar.$).toBe(a);
     expect(b.name).toBe('fz');
   });
 
@@ -297,7 +311,7 @@ describe('EntityManagerMongo', () => {
     const b = await orm.em.findOneOrFail(FooBaz, baz.id);
     expect(a.baz).toBe(b);
     expect(a.name).toBe('fb');
-    expect(b.bar).toBe(a);
+    expect(b.bar.$).toBe(a);
     expect(b.name).toBe('fz');
   });
 
