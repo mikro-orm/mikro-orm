@@ -893,11 +893,13 @@ describe('EntityManagerPostgre', () => {
     god.books.add(new Book2('Bible', god));
     await orm.em.fork().persistAndFlush(god);
 
+    // when populating collections, the owner is selected automatically (here book.author)
     const newGod = await orm.em.findOneOrFail(Author2, god.id, {
       populate: ['books'],
-      fields: [{ books: ['title'] }],
+      fields: ['books.title'],
     });
     const json = wrap(newGod).toJSON();
+    // @ts-expect-error
     expect(json.books[0].author).toBe(newGod.id);
   });
 
