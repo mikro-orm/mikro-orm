@@ -285,6 +285,7 @@ describe('embedded entities in postgresql', () => {
 
     const mock = mockLogger(orm, ['query']);
     await orm.em.fork().find(User, {}, { fields: ['address2'] });
+    // @ts-expect-error old syntax is still technically supported, but not on type level
     await orm.em.fork().find(User, {}, { fields: [{ address2: ['street', 'city'] }] });
     await orm.em.fork().find(User, {}, { fields: ['address2.street', 'address2.city'] });
     expect(mock.mock.calls[0][0]).toMatch('select "u0"."id", "u0"."addr_street", "u0"."addr_postal_code", "u0"."addr_city", "u0"."addr_country" from "user" as "u0"');

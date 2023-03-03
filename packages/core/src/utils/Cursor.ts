@@ -53,7 +53,7 @@ import { Reference } from '../entity/Reference';
  * }
  * ```
  */
-export class Cursor<Entity extends object, Hint extends string = never> {
+export class Cursor<Entity extends object, Hint extends string = never, Fields extends string = '*'> {
 
   readonly hasPrevPage: boolean;
   readonly hasNextPage: boolean;
@@ -61,9 +61,9 @@ export class Cursor<Entity extends object, Hint extends string = never> {
   private readonly definition: (readonly [EntityKey<Entity>, QueryOrder])[];
 
   constructor(
-    readonly items: Loaded<Entity, Hint>[],
+    readonly items: Loaded<Entity, Hint, Fields>[],
     readonly totalCount: number,
-    options: FindByCursorOptions<Entity, Hint>,
+    options: FindByCursorOptions<Entity, Hint, Fields>,
     meta: EntityMetadata<Entity>,
   ) {
     const { first, last, before, after, orderBy, overfetch } = options;
@@ -103,7 +103,7 @@ export class Cursor<Entity extends object, Hint extends string = never> {
   /**
    * Computes the cursor value for given entity.
    */
-  from(entity: Entity) {
+  from(entity: Entity | Loaded<Entity, Hint, Fields>) {
     const processEntity = <T extends object> (entity: T, prop: EntityKey<T>, direction: QueryOrderKeys<T>, object = false) => {
       if (Utils.isPlainObject(direction)) {
         const value = Utils.keys(direction).reduce((o, key) => {
@@ -119,11 +119,11 @@ export class Cursor<Entity extends object, Hint extends string = never> {
 
       return entity[prop];
     };
-    const value = this.definition.map(([key, direction]) => processEntity(entity, key, direction));
+    const value = this.definition.map(([key, direction]) => processEntity(entity as Entity, key, direction));
     return Cursor.encode(value);
   }
 
-  * [Symbol.iterator](): IterableIterator<Loaded<Entity, Hint>> {
+  * [Symbol.iterator](): IterableIterator<Loaded<Entity, Hint, Fields>> {
     for (const item of this.items) {
       yield item;
     }

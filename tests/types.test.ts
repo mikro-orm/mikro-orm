@@ -604,15 +604,14 @@ describe('check typings', () => {
     // @ts-expect-error Loaded<Parent, never> is not assignable
     foo(e);
     // populated1 = await parent.load();
+    const populated22 = await parent.load({ populate: [] });
     // @ts-expect-error Loaded<Parent, never> is not assignable
-    const populated2: Loaded<Parent, 'children'> = await parent.load({ populate: [] });
+    const populated2: Loaded<Parent, 'children'> = populated22;
 
     // only this should pass
     const populated3: Loaded<Parent, 'children'> = await parent.load({ populate: ['children'] });
     const populated4: Loaded<Parent, 'children'> = await parent.load({ populate: ['children', 'id'] });
-
-    // this fails because of https://github.com/mikro-orm/mikro-orm/issues/3277
-    // const populated5: Loaded<Parent, 'children'> = await parent.load({ populate: ['children.parent'] });
+    const populated5: Loaded<Parent, 'children'> = await parent.load({ populate: ['children.parent'] });
   });
 
   test('exclusion', async () => {

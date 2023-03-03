@@ -1,6 +1,6 @@
 import type {
   ConnectionType, EntityData, EntityMetadata, EntityProperty, FilterQuery, Primary, Dictionary, QBFilterQuery,
-  IPrimaryKey, PopulateOptions, EntityDictionary, ExpandProperty, AutoPath, ObjectQuery, FilterObject,
+  IPrimaryKey, PopulateOptions, EntityDictionary, AutoPath, ObjectQuery, FilterObject,
 } from '../typings';
 import type { Connection, QueryResult, Transaction } from '../connections';
 import type { FlushMode, LockMode, QueryOrderMap, QueryFlag, LoadStrategy, PopulateHint } from '../enums';
@@ -33,12 +33,12 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
   /**
    * Finds selection of entities
    */
-  find<T extends object, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T, P>): Promise<EntityData<T>[]>;
+  find<T extends object, P extends string = never, F extends string = '*'>(entityName: string, where: FilterQuery<T>, options?: FindOptions<T, P, F>): Promise<EntityData<T>[]>;
 
   /**
    * Finds single entity (table row, document)
    */
-  findOne<T extends object, P extends string = never>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P>): Promise<EntityData<T> | null>;
+  findOne<T extends object, P extends string = never, F extends string = '*'>(entityName: string, where: FilterQuery<T>, options?: FindOneOptions<T, P, F>): Promise<EntityData<T> | null>;
 
   findVirtual<T extends object>(entityName: string, where: FilterQuery<T>, options: FindOptions<T, any>): Promise<EntityData<T>[]>;
 
@@ -91,12 +91,11 @@ export interface IDatabaseDriver<C extends Connection = Connection> {
 
 }
 
-type FieldsMap<T, P extends string = never> = { [K in keyof T]?: EntityField<ExpandProperty<T[K]>>[] };
-export type EntityField<T, P extends string = never> = keyof T | '*' | AutoPath<T, P, '*'> | FieldsMap<T, P>;
+export type EntityField<T, P extends string = never> = keyof T | '*' | AutoPath<T, P, '*'>;
 
 export type OrderDefinition<T> = (QueryOrderMap<T> & { 0?: never }) | QueryOrderMap<T>[];
 
-export interface FindOptions<T, P extends string = never> {
+export interface FindOptions<T, P extends string = never, F extends string = '*'> {
   where?: FilterQuery<T>;
   populate?: readonly AutoPath<T, P>[] | boolean;
   populateWhere?: ObjectQuery<T> | PopulateHint;
@@ -117,7 +116,7 @@ export interface FindOptions<T, P extends string = never> {
   refresh?: boolean;
   convertCustomTypes?: boolean;
   disableIdentityMap?: boolean;
-  fields?: readonly EntityField<T, P>[];
+  fields?: readonly EntityField<T, F>[];
   schema?: string;
   flags?: QueryFlag[];
   /** sql only */
@@ -141,15 +140,15 @@ export interface FindOptions<T, P extends string = never> {
   hintComments?: string | string[];
 }
 
-export interface FindByCursorOptions<T extends object, P extends string = never> extends Omit<FindOptions<T, P>, 'limit' | 'offset'> {
+export interface FindByCursorOptions<T extends object, P extends string = never, F extends string = never> extends Omit<FindOptions<T, P, F>, 'limit' | 'offset'> {
 }
 
-export interface FindOneOptions<T extends object, P extends string = never> extends Omit<FindOptions<T, P>, 'limit' | 'lockMode'> {
+export interface FindOneOptions<T extends object, P extends string = never, F extends string = never> extends Omit<FindOptions<T, P, F>, 'limit' | 'lockMode'> {
   lockMode?: LockMode;
   lockVersion?: number | Date;
 }
 
-export interface FindOneOrFailOptions<T extends object, P extends string = never> extends FindOneOptions<T, P> {
+export interface FindOneOrFailOptions<T extends object, P extends string = never, F extends string = never> extends FindOneOptions<T, P, F> {
   failHandler?: (entityName: string, where: Dictionary | IPrimaryKey | any) => Error;
   strict?: boolean;
 }
