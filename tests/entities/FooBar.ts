@@ -1,9 +1,20 @@
 import { ObjectId } from 'bson';
-import { ArrayType, Entity, JsonType, OneToOne, PrimaryKey, Property, SerializedPrimaryKey } from '@mikro-orm/core';
+import {
+  ArrayType,
+  EagerProps,
+  Entity,
+  JsonType,
+  OneToOne,
+  PrimaryKey,
+  Property,
+  SerializedPrimaryKey,
+} from '@mikro-orm/core';
 import { FooBaz } from './FooBaz';
 
 @Entity()
 export default class FooBar {
+
+  [EagerProps]?: 'baz';
 
   @PrimaryKey()
   _id!: ObjectId;

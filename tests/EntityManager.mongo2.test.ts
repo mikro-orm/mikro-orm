@@ -1,5 +1,5 @@
 import type { MikroORM } from '@mikro-orm/core';
-import { wrap } from '@mikro-orm/core';
+import { ref, wrap } from '@mikro-orm/core';
 import type { MongoDriver } from '@mikro-orm/mongodb';
 
 import { Author, Book, BookTag, Publisher } from './entities';
@@ -45,7 +45,7 @@ describe('EntityManagerMongo2', () => {
     expect(book5.tags.$[0].name).toBe('t1');
 
     const pub2 = orm.em.create(Publisher, { name: 'asd' });
-    const wrapped0 = wrap(pub2).toReference();
+    const wrapped0 = ref(pub2);
     // @ts-expect-error
     expect(wrapped0.books).toBeUndefined();
     book5.publisher = wrapped0;
