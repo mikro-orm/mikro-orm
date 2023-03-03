@@ -279,6 +279,8 @@ await em.flush();
 Since v5 we can also create entity references without access to `EntityManager`. This can be handy if you want to create a reference from inside entity constructor:
 
 ```ts
+import { Entity, ManyToOne, Rel, rel } from '@mikro-orm/core';
+
 @Entity()
 export class Book {
 
@@ -286,7 +288,7 @@ export class Book {
   author!: Ref<Author>;
 
   constructor(authorId: number) {
-    this.author = Reference.createFromPK(Author, authorId);
+    this.author = rel(Author, authorId);
   }
 
 }
