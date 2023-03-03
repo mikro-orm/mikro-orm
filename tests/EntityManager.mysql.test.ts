@@ -314,6 +314,7 @@ describe('EntityManagerMySql', () => {
     });
     expect(a1.name).toBe('fz');
     expect(a1.bar).toBeInstanceOf(FooBar2);
+    // @ts-expect-error
     expect(a1.version).toBeUndefined();
     expect(wrap(a1.bar!).isInitialized()).toBe(false);
   });
@@ -1922,6 +1923,7 @@ describe('EntityManagerMySql', () => {
 
     const [authors2, count2] = await orm.em.findAndCount(Author2, {}, { limit: 10, offset: 25, fields: ['name'], orderBy: { id: QueryOrder.ASC } });
     expect(authors2).toHaveLength(5);
+    // @ts-expect-error
     expect(authors2[0].email).toBeUndefined();
     expect(count2).toBe(30);
     expect(authors2[0].name).toBe('God 26');
@@ -2274,6 +2276,7 @@ describe('EntityManagerMySql', () => {
     const r1 = await orm.em.find(Author2, god, { fields: ['id'], populate: ['books'] });
     expect(r1).toHaveLength(1);
     expect(r1[0].id).toBe(god.id);
+    // @ts-expect-error
     expect(r1[0].name).toBeUndefined();
     const r2 = await orm.em.find(Author2, god, { refresh: true, populate: ['books'] });
     expect(r2).toHaveLength(1);

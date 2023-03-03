@@ -12,6 +12,25 @@ Support for older node versions was dropped.
 
 Support for older TypeScript versions was dropped. 
 
+## Strict partial loading
+
+The `Loaded` type is now improved to support the partial loading hints (`fields` option). When used, the returned type will only allow accessing selected properties. Primary keys are automatically selected.
+
+```ts
+// book is typed to `Selected<Book, 'author', 'title' | 'author.email'>`
+const book = await em.findOneOrFail(Book, 1, { 
+  fields: ['title', 'author.email'], 
+  populate: ['author'],
+});
+
+const id = book.id; // ok, PK is selected automatically
+const title = book.title; // ok, title is selected
+const publisher = book.publisher; // fail, not selected
+const author = book.author.id; // ok, PK is selected automatically
+const email = book.author.email; // ok, selected
+const name = book.author.name; // fail, not selected
+```
+
 ## Removal of static require calls
 
 There were some places where we did a static `require()` call, e.g. when loading the driver implementation based on the `type` option. Those places were problematic for bundlers like webpack, as well as new school build systems like vite.
