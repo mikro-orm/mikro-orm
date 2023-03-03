@@ -454,7 +454,7 @@ export class Utils {
   /**
    * Extracts primary key from `data`. Accepts objects or primary keys directly.
    */
-  static extractPK<T>(data: any, meta?: EntityMetadata<T>, strict = false): Primary<T> | string | null {
+  static extractPK<T extends object>(data: any, meta?: EntityMetadata<T>, strict = false): Primary<T> | string | null {
     if (Utils.isPrimaryKey(data)) {
       return data as Primary<T>;
     }
@@ -564,7 +564,7 @@ export class Utils {
     return cond;
   }
 
-  static getPrimaryKeyCondFromArray<T>(pks: Primary<T>[], meta: EntityMetadata<T>): Record<string, Primary<T>> {
+  static getPrimaryKeyCondFromArray<T extends object>(pks: Primary<T>[], meta: EntityMetadata<T>): Record<string, Primary<T>> {
     return meta.getPrimaryProps().reduce((o, pk, idx) => {
       if (Array.isArray(pks[idx]) && pk.targetMeta) {
         o[pk.name] = pks[idx];
