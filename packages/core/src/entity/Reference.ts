@@ -9,7 +9,7 @@ import type {
   LoadedReference,
   Populate,
   Primary,
-  Ref,
+  Ref, AddEager,
 } from '../typings';
 import type { EntityFactory } from './EntityFactory';
 import type { LockMode } from '../enums';
@@ -192,7 +192,7 @@ export interface LoadReferenceOptions<T, P extends string = never> {
 /**
  * shortcut for `wrap(entity).toReference()`
  */
-export function ref<T extends object>(entity: T | Ref<T>): Ref<T> & LoadedReference<T>;
+export function ref<T extends object>(entity: T | Ref<T>): Ref<T> & LoadedReference<Loaded<T, AddEager<T>>>;
 
 /**
  * shortcut for `Reference.createFromPK(entityType, pk)`
