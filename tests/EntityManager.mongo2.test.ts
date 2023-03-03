@@ -36,7 +36,9 @@ describe('EntityManagerMongo2', () => {
       fields: ['*', 'publisher.name'],
     });
     expect(books[0].publisher!.get().books.get()[0].publisher!.$.name).toBe('Publisher 123');
-    expect(books[0].publisher!.$.type).toBeUndefined();
+    expect(books[0].publisher!.$
+      // @ts-expect-error
+      .type).toBeUndefined();
 
     const book5 = await orm.em.findOneOrFail(Book, bible, { populate: ['publisher', 'tags', 'perex'] });
     expect(book5.publisher!.$.name).toBe('Publisher 123');
