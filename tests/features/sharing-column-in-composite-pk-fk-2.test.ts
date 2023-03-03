@@ -7,7 +7,6 @@ import {
   OneToMany,
   PrimaryKey,
   PrimaryKeyProp,
-  PrimaryKeyType,
   Property,
   Ref,
   Unique,
@@ -37,7 +36,6 @@ class User {
 class Reader {
 
   [PrimaryKeyProp]?: ['user_id', 'company_id', 'book_id'];
-  [PrimaryKeyType]?: [string, string, string];
 
   @ManyToOne({
     entity: () => User,
@@ -56,7 +54,7 @@ class Reader {
   @ManyToOne({
     entity: () => Book,
     ref: true,
-    onDelete: 'cascade',
+    deleteRule: 'cascade',
     primary: true,
     joinColumns: ['book_id', 'company_id'],
   })
@@ -67,7 +65,6 @@ class Reader {
 @Entity()
 class Book {
 
-  [PrimaryKeyType]?: [string, string];
   [PrimaryKeyProp]?: ['id', 'company_id'];
 
   @Unique({ name: 'book_id_unique' })
@@ -100,8 +97,6 @@ class Book {
 @Entity()
 class BookReviewer {
 
-  [PrimaryKeyType]?: [string, string];
-
   @Unique({ name: 'book_reviewer_id_unique' })
   @PrimaryKey({ columnType: 'uuid' })
   id: string = v4();
@@ -116,7 +111,7 @@ class BookReviewer {
   @ManyToOne({
     entity: () => Book,
     ref: true,
-    onDelete: 'cascade',
+    deleteRule: 'cascade',
     joinColumns: ['book_id', 'company_id'],
   })
   book!: Ref<Book>;
