@@ -46,7 +46,7 @@ class Product {
   @Property({ type: 'text' })
   name!: string;
 
-  @ManyToOne(() => Store, { ref: true, onDelete: 'cascade' })
+  @ManyToOne(() => Store, { ref: true, deleteRule: 'cascade' })
   store!: Ref<Store>;
 
 }
