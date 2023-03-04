@@ -54,6 +54,29 @@ describe('partial loading (mysql)', () => {
 
   test('partial nested loading (1:m)', async () => {
     const god = await createEntities();
+
+    const rr = await orm.em.findOneOrFail(Author2, god, {
+      fields: ['name', 'favouriteBook.title', 'favouriteBook.double', 'books.publisher.name'],
+      disableIdentityMap: true,
+    });
+
+    // @ts-expect-error
+    rr.favouriteBook?.author;
+    rr.favouriteBook?.title;
+    rr.favouriteBook?.double;
+    rr.favouriteBook?.
+      // @ts-expect-error
+      publisher?.$.name;
+
+    // @ts-expect-error
+    rr.books.$[0].title;
+    rr.books.$[0].publisher?.$.name;
+    // @ts-expect-error
+    rr.books.$[0].publisher?.$.type;
+
+    // test working with scalars
+    expect(`This is User #${rr.id.toFixed()} with name '${rr.name.substring(0, 3)}'`).toBe(`This is User #1 with name 'God'`);
+
     const mock = mockLogger(orm, ['query']);
 
     const r1 = await orm.em.find(Author2, god, { fields: ['id', 'books.author', 'books.title'] });
