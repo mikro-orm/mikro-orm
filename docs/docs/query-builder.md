@@ -408,11 +408,11 @@ console.log(qb4.getQuery());
 
 ## Referring to column in update queries
 
-You can use `qb.raw()` to insert raw SQL snippets like this:
+You can use static `raw()` helper to insert raw SQL snippets like this:
 
 ```ts
 const qb = em.createQueryBuilder(Book);
-qb.update({ price: qb.raw('price + 1') }).where({ uuid: '123' });
+qb.update({ price: raw('price + 1') }).where({ uuid: '123' });
 
 console.log(qb.getQuery());
 // update `book` set `price` = price + 1 where `uuid_pk` = ?

@@ -1,5 +1,5 @@
 import type { MetadataStorage } from '../metadata';
-import type { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, FilterQuery, IHydrator, IPrimaryKey } from '../typings';
+import type { AnyEntity, Dictionary, EntityData, EntityMetadata, EntityProperty, EntityKey, FilterQuery, IHydrator, IPrimaryKey } from '../typings';
 import type { EntityFactory, EntityValidator, Collection } from '../entity';
 import { EntityIdentifier, helper } from '../entity';
 import type { ChangeSet } from './ChangeSet';
@@ -165,7 +165,10 @@ export class ChangeSetPersister {
         this.mapPrimaryKey(meta, res.rows![i][field], changeSet);
       }
 
-      this.mapReturnedValues(changeSet.entity, res.rows![i], meta);
+      if (res.rows) {
+        this.mapReturnedValues(changeSet.entity, res.rows[i], meta);
+      }
+
       this.markAsPopulated(changeSet, meta);
       wrapped.__initialized = true;
       wrapped.__managed = true;
@@ -177,6 +180,7 @@ export class ChangeSetPersister {
     const meta = this.metadata.find(changeSet.name)!;
     const res = await this.updateEntity(meta, changeSet, options);
     this.checkOptimisticLock(meta, changeSet, res);
+    this.mapReturnedValues(changeSet.entity, res.row, meta);
     await this.reloadVersionValues(meta, [changeSet], options);
     changeSet.persisted = true;
   }
@@ -220,8 +224,15 @@ export class ChangeSetPersister {
       this.checkConcurrencyKeys(meta, changeSet, cond[idx]);
     });
 
-    await this.driver.nativeUpdateMany(meta.className, cond, changeSets.map(cs => cs.payload), options);
-    changeSets.forEach(cs => cs.persisted = true);
+    const res = await this.driver.nativeUpdateMany(meta.className, cond, changeSets.map(cs => cs.payload), options);
+
+    changeSets.forEach((changeSet, idx) => {
+      if (res.rows) {
+        this.mapReturnedValues(changeSet.entity, res.rows[idx], meta);
+      }
+
+      changeSet.persisted = true;
+    });
   }
 
   private mapPrimaryKey<T extends object>(meta: EntityMetadata<T>, value: IPrimaryKey, changeSet: ChangeSet<T>): void {
@@ -321,15 +332,30 @@ export class ChangeSetPersister {
   }
 
   /**
-   * This method also handles reloading of database default values for inserts, so we use
-   * a single query in case of both versioning and default values is used.
+   * This method also handles reloading of database default values for inserts and raw property updates,
+   * so we use a single query in case of both versioning and default values is used.
    */
   private async reloadVersionValues<T extends object>(meta: EntityMetadata<T>, changeSets: ChangeSet<T>[], options?: DriverMethodOptions) {
     const reloadProps = meta.versionProperty ? [meta.properties[meta.versionProperty]] : [];
 
     if (changeSets[0].type === ChangeSetType.CREATE) {
       // do not reload things that already had a runtime value
-      reloadProps.push(...meta.props.filter(prop => prop.defaultRaw && prop.defaultRaw.toLowerCase() !== 'null' && changeSets[0].entity[prop.name] == null));
+      meta.hydrateProps
+        .filter(prop => prop.persist !== false && ((prop.primary && prop.autoincrement) || prop.defaultRaw))
+        .filter(prop => (changeSets[0].entity[prop.name] == null && prop.defaultRaw !== 'null') || Utils.isRawSql(changeSets[0].entity[prop.name]))
+        .forEach(prop => reloadProps.push(prop));
+    }
+
+    if (changeSets[0].type === ChangeSetType.UPDATE) {
+      const returning = new Set<EntityProperty<T>>();
+      changeSets.forEach(cs => {
+        Utils.keys(cs.payload).forEach(k => {
+          if (Utils.isRawSql(cs.payload[k]) && Utils.isRawSql(cs.entity[k as EntityKey<T>])) {
+            returning.add(meta.properties[k as EntityKey<T>]);
+          }
+        });
+      });
+      reloadProps.push(...returning);
     }
 
     if (reloadProps.length === 0) {
@@ -395,7 +421,7 @@ export class ChangeSetPersister {
   mapReturnedValues<T extends object>(entity: T, row: Dictionary | undefined, meta: EntityMetadata<T>): void {
     if (this.platform.usesReturningStatement() && row && Utils.hasObjectKeys(row)) {
       const data = meta.props.reduce((ret, prop) => {
-        if (prop.fieldNames && row[prop.fieldNames[0]] != null && entity[prop.name] == null) {
+        if (prop.fieldNames && row[prop.fieldNames[0]] != null && (entity[prop.name] == null || Utils.isRawSql(entity[prop.name]))) {
           ret[prop.name] = row[prop.fieldNames[0]];
         }
 

@@ -220,3 +220,13 @@ Use `RequestContext.create` instead, it can be awaited now.
 
 The decorator was renamed to `@CreateRequestContext()` to make it clear it always creates new context, and a new `@EnsureRequestContext()` decorator was added that will reuse existing contexts if available. 
 
+## Removed `em.raw()` and `qb.raw()`
+
+Both removed in favour of new static `raw()` helper, which can be also used to do atomic updates via `flush`:
+
+```ts
+const ref = em.getReference(User, 1);
+ref.age = raw(`age * 2`);
+await em.flush();
+console.log(ref.age); // real value is available after flush
+```
