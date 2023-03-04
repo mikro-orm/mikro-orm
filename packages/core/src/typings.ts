@@ -757,17 +757,23 @@ export type ExpandProperty<T> = T extends Reference<infer U>
       ? NonNullable<U>
       : NonNullable<T>;
 
-type LoadedLoadable<T, E extends object> = T extends Collection<any, any>
+type LoadedLoadable<T, E extends object> =
+  T extends Collection<any, any>
   ? LoadedCollection<E>
-  : (T extends Reference<any> ? LoadedReference<E> : E);
+  : T extends Reference<any>
+    ? LoadedReference<E>
+    : T extends Scalar | Scalar[]
+        ? T
+        : E;
 
 type Prefix<T, K> = K extends `${infer S}.${string}` ? S : (K extends '*' ? keyof T : K);
-type IsPrefixed<T, K, L extends string> = K extends Prefix<T, L> ? K : never;
-type IsPrefixedL<T, K, L extends string, F extends string> = K extends Prefix<T, F> ? never : (K extends Prefix<T, L> ? K : never);
-type IsPrefixedF<T, K, L extends string, F extends string> = K extends Prefix<T, L> ? never : (K extends Prefix<T, F> ? K : (K extends PrimaryProperty<T> ? K : never));
-type IsPrefixedLF<T, K, L extends string, F extends string> = K extends Prefix<T, F> ? (K extends Prefix<T, L> ? K : never) : never;
+type IsPrefixed<T, K, L extends string> = K extends Prefix<T, L> ? K : (K extends PrimaryProperty<T> ? K : never);
 
-type Suffix<K> = K extends `${string}.${infer S}` ? S : (K extends '*' ? '*' : never);
+// filter by prefix and map to suffix
+type Suffix<Key, Hint extends string> = Hint extends `${infer Pref}.${infer Suf}`
+  ? (Pref extends Key ? Suf : never)
+  : (Hint extends '*' ? '*' : never);
+
 type Defined<T> = T & {};
 
 type AddOptional<T> = undefined | null extends T ? null | undefined : null extends T ? null : undefined extends T ? undefined : never;
@@ -775,21 +781,14 @@ type LoadedProp<T, L extends string = never, F extends string = '*'> = LoadedLoa
 export type AddEager<T> = ExtractEagerProps<T> & string;
 
 export type Selected<T, L extends string = never, F extends string = '*'> = {
-  // only populate hint
-  [K in keyof T as IsPrefixedL<T, K, L | AddEager<T>, F>]: LoadedProp<T[K], Suffix<L>>;
-} & {
-  // both populate and selected hints
-  [K in keyof T as IsPrefixedLF<T, K, L | AddEager<T>, F>]: LoadedProp<T[K], Suffix<L>, Suffix<F>>;
-} & {
-  // only selected hint
-  [K in keyof T as IsPrefixedF<T, K, L | AddEager<T>, F>]: LoadedProp<T[K], never, Suffix<F>>;
+  [K in keyof T as IsPrefixed<T, K, L | F | AddEager<T>>]: LoadedProp<T[K], Suffix<K, L>, Suffix<K, F>>;
 };
 
 /**
  * Represents entity with its loaded relations (`populate` hint) and selected properties (`fields` hint).
  */
 export type Loaded<T, L extends string = never, F extends string = '*'> = [F] extends ['*'] ? (T & {
-  [K in keyof T as IsPrefixed<T, K, L | AddEager<T>>]: LoadedProp<T[K], Suffix<L>>;
+  [K in keyof T as IsPrefixed<T, K, L | AddEager<T>>]: LoadedProp<T[K], Suffix<K, L>>;
 }) : Selected<T, L, F>;
 
 export interface LoadedReference<T> extends Reference<Defined<T>> {
