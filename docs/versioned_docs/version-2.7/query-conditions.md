@@ -2,8 +2,7 @@
 title: Smart query conditions
 ---
 
-When you want to make complex queries, you can easily end up with a lot of boilerplate code
-full of curly brackets:
+When you want to make complex queries, you can easily end up with a lot of boilerplate code full of curly brackets:
 
 ```typescript
 const res = await orm.em.find(Author, { $and: [
@@ -20,8 +19,8 @@ const res = await orm.em.find(Author, { $and: [
 For AND condition with single field, you can also do this:
 
 ```typescript
-const res = await orm.em.find(Author, { 
-  id: { 
+const res = await orm.em.find(Author, {
+  id: {
     $in: [1, 2, 7],
     $nin: [3, 4],
     $gt: 5,
@@ -59,8 +58,7 @@ const res = await orm.em.find(Author, { $and: [
 ] });
 ```
 
-There is also shortcut for `$in` - simply provide array as value and it 
-will be converted automatically:
+There is also shortcut for `$in` - simply provide array as value and it will be converted automatically:
 
 ```typescript
 const res = await orm.em.find(Author, { favouriteBook: [1, 2, 7] });

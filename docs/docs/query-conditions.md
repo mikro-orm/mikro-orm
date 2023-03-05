@@ -2,8 +2,7 @@
 title: Smart Query Conditions
 ---
 
-When you want to make complex queries, we can easily end up with a lot of boilerplate code
-full of curly brackets:
+When you want to make complex queries, we can easily end up with a lot of boilerplate code full of curly brackets:
 
 ```ts
 const res = await orm.em.find(Author, { $and: [
@@ -20,8 +19,8 @@ const res = await orm.em.find(Author, { $and: [
 For AND condition with single field, we can also do this:
 
 ```ts
-const res = await orm.em.find(Author, { 
-  id: { 
+const res = await orm.em.find(Author, {
+  id: {
     $in: [1, 2, 7],
     $nin: [3, 4],
     $gt: 5,
@@ -33,8 +32,7 @@ const res = await orm.em.find(Author, {
 });
 ```
 
-There is also shortcut for `$in` - simply provide array as value and it 
-will be converted automatically:
+There is also shortcut for `$in` - simply provide array as value and it will be converted automatically:
 
 ```ts
 const res = await orm.em.find(Author, { favouriteBook: [1, 2, 7] });
@@ -50,30 +48,30 @@ const res = await orm.em.find(Author, [1, 2, 7]);
 
 ### Comparison
 
-| operator | name               | description |
-|----------|--------------------|-------------|
-| `$eq`	   | equals             | Matches values that are equal to a specified value. |
-| `$gt`	   | greater            | Matches values that are greater than a specified value. |
-| `$gte`   | greater or equal   | Matches values that are greater than or equal to a specified value. |
-| `$in`	   | contains           | Matches any of the values specified in an array. |
-| `$lt`	   | lower              | Matches values that are less than a specified value. |
-| `$lte`   | lower or equal     | Matches values that are less than or equal to a specified value. |
-| `$ne`	   | not equal          | Matches all values that are not equal to a specified value. |
-| `$nin`   | not contains       | Matches none of the values specified in an array. |
-| `$like`  | like               | Uses LIKE operator |
-| `$re`    | regexp             | Uses REGEXP operator |
-| `$fulltext` | full text       | A driver specific full text search function. See requirements [below](#full-text-searching) |
-| `$ilike` | ilike              | (postgres only) |
-| `$overlap` | &&               | (postgres only) |
-| `$contains` | @>              | (postgres only) |
-| `$contained` | <@             | (postgres only) |
+| operator     | name             | description                                                                                 |
+| ------------ | ---------------- | ------------------------------------------------------------------------------------------- |
+| `$eq`        | equals           | Matches values that are equal to a specified value.                                         |
+| `$gt`        | greater          | Matches values that are greater than a specified value.                                     |
+| `$gte`       | greater or equal | Matches values that are greater than or equal to a specified value.                         |
+| `$in`        | contains         | Matches any of the values specified in an array.                                            |
+| `$lt`        | lower            | Matches values that are less than a specified value.                                        |
+| `$lte`       | lower or equal   | Matches values that are less than or equal to a specified value.                            |
+| `$ne`        | not equal        | Matches all values that are not equal to a specified value.                                 |
+| `$nin`       | not contains     | Matches none of the values specified in an array.                                           |
+| `$like`      | like             | Uses LIKE operator                                                                          |
+| `$re`        | regexp           | Uses REGEXP operator                                                                        |
+| `$fulltext`  | full text        | A driver specific full text search function. See requirements [below](#full-text-searching) |
+| `$ilike`     | ilike            | (postgres only)                                                                             |
+| `$overlap`   | &&               | (postgres only)                                                                             |
+| `$contains`  | @>               | (postgres only)                                                                             |
+| `$contained` | <@               | (postgres only)                                                                             |
 
 ### Logical
 
-| operator | description |
-|----------|-------------|
+| operator | description                                                                                             |
+| -------- | ------------------------------------------------------------------------------------------------------- |
 | `$and`   | Joins query clauses with a logical AND returns all documents that match the conditions of both clauses. |
-| `$not`   | Inverts the effect of a query expression and returns documents that do not match the query expression. |
+| `$not`   | Inverts the effect of a query expression and returns documents that do not match the query expression.  |
 | `$or`    | Joins query clauses with a logical OR returns all documents that match the conditions of either clause. |
 
 ## Full text searching
@@ -136,6 +134,7 @@ And to find results: `repository.findOne({ title: { $fulltext: 'query' } })`
 </Tabs>
 
 ### MySQL, MariaDB
+
 MySQL and MariaDB allow full text searches on all columns with a fulltext index.
 
 Refer to the [MySQL documentation](https://dev.mysql.com/doc/refman/8.0/en/fulltext-boolean.html) or [MariaDB documentation](https://mariadb.com/kb/en/full-text-index-overview/#in-boolean-mode) for possible queries.
@@ -158,7 +157,6 @@ And to find results: `repository.findOne({ title: { $fulltext: 'query' } })`
 MongoDB allows full text searches on all columns with a text index. However, when executing a full text search, it selects matches based on all fields with a text index: it's only possible to add one query and only on the top-level of the query object. Refer to the [MongoDB documentation](https://www.mongodb.com/docs/manual/reference/operator/query/text/#behavior) for more information on this behavior.
 
 Refer to the [MongoDB documentation](https://www.mongodb.com/docs/manual/reference/operator/query/text/#definition) for possible queries.
-
 
 ```ts title="./entities/Book.ts"
 @Entity()

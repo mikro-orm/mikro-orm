@@ -2,13 +2,11 @@
 title: Seeding
 ---
 
-When initializing your application or testing it can be exhausting to create sample data for your database. The solution is to use seeding. Create factories for your entities and use them in the seed
-script or combine multiple seed scripts.
+When initializing your application or testing it can be exhausting to create sample data for your database. The solution is to use seeding. Create factories for your entities and use them in the seed script or combine multiple seed scripts.
 
 ## Configuration
 
-> `seeder.path` and `seeder.pathTs` works the same way as `entities` and
-> `entitiesTs` in entity discovery.
+> `seeder.path` and `seeder.pathTs` works the same way as `entities` and `entitiesTs` in entity discovery.
 
 The seeder has a few default settings that can be changed easily through the MikroORM config. Underneath you find the configuration options with their defaults.
 
@@ -35,8 +33,7 @@ We can also override these default using the [environment variables](configurati
 
 ## Seeders
 
-A seeder class contains one method `run`. This method is called when you use the command `npx mikro-orm seeder:run`. In the `run` method you define how and what data you want to insert into the
-database. You can create entities using the [EntityManager](http://mikro-orm.io/docs/entity-manager) or you can use [Factories](#using-entity-factories).
+A seeder class contains one method `run`. This method is called when you use the command `npx mikro-orm seeder:run`. In the `run` method you define how and what data you want to insert into the database. You can create entities using the [EntityManager](http://mikro-orm.io/docs/entity-manager) or you can use [Factories](#using-entity-factories).
 
 You can create your own seeder classes using the following CLI command:
 
@@ -46,15 +43,11 @@ npx mikro-orm seeder:create test            # generates the class TestSeeder
 npx mikro-orm seeder:create project-names   # generates the class ProjectNamesSeeder
 ```
 
-This creates a new seeder class. By default, it will be generated in the `./seeders/` directory. You can configure the directory in the config with the key `seeder.path` or using
-the [environment variable](configuration.md#using-environment-variables) `MIKRO_ORM_SEEDER_PATH`. You are allowed to call the `seeder:create` command with a name, class name or hyphenated name.
+This creates a new seeder class. By default, it will be generated in the `./seeders/` directory. You can configure the directory in the config with the key `seeder.path` or using the [environment variable](configuration.md#using-environment-variables) `MIKRO_ORM_SEEDER_PATH`. You are allowed to call the `seeder:create` command with a name, class name or hyphenated name.
 
 As an example we will look at a very basic seeder.
 
-> Note that the `EntityManager` available in seeders will have `persistOnCreate`
-> enabled, hence calling `em.create()` will automatically call `em.persist()`
-> on the created entity. If we use entity constructor instead, we need to call
-> `em.persist()` explicitly.
+> Note that the `EntityManager` available in seeders will have `persistOnCreate` enabled, hence calling `em.create()` will automatically call `em.persist()` on the created entity. If we use entity constructor instead, we need to call `em.persist()` explicitly.
 
 ```ts title="./database/seeder/database.seeder.ts"
 import { EntityManager } from '@mikro-orm/core';
@@ -80,8 +73,7 @@ export class DatabaseSeeder extends Seeder {
 
 ### Using entity factories
 
-Instead of specifying all the attributes for every entity, you can also use [entity factories](#entity-factories). These can be used to generate large amounts of database records. Please read
-the [documentation on how to define factories](#entity-factories) to learn how to define your factories.
+Instead of specifying all the attributes for every entity, you can also use [entity factories](#entity-factories). These can be used to generate large amounts of database records. Please read the [documentation on how to define factories](#entity-factories) to learn how to define your factories.
 
 As an example we will generate 10 authors.
 
@@ -100,8 +92,7 @@ export class DatabaseSeeder extends Seeder {
 
 ### Calling additional seeders
 
-Inside the `run` method you can specify other seeder classes. You can use the `call` method to break up the database seeder into multiple files to prevent a seeder file from becoming too large.
-The `call` method requires an `em` and an array of seeder classes.
+Inside the `run` method you can specify other seeder classes. You can use the `call` method to break up the database seeder into multiple files to prevent a seeder file from becoming too large. The `call` method requires an `em` and an array of seeder classes.
 
 ```ts
 import { EntityManager } from '@mikro-orm/core';
@@ -148,8 +139,7 @@ export class BookSeeder extends Seeder {
 
 ## Entity factories
 
-When testing you may insert entities in the database before starting a test. Instead of specifying every attribute of every entity by hand, you could also use a `Factory` to define a set of default
-attributes for an entity using entity factories.
+When testing you may insert entities in the database before starting a test. Instead of specifying every attribute of every entity by hand, you could also use a `Factory` to define a set of default attributes for an entity using entity factories.
 
 Lets have a look at an example factory for an [Author entity](http://mikro-orm.io/docs/defining-entities).
 
@@ -168,10 +158,9 @@ export class AuthorFactory extends Factory<Author> {
     };
   }
 }
-``` 
+```
 
-Basically you extend the base `Factory` class, define a `model` property and a `definition` method. The `model` defines for which entity the factory generates entity instances. The `definition` method
-returns the default set of attribute values that should be applied when creating an entity using the factory.
+Basically you extend the base `Factory` class, define a `model` property and a `definition` method. The `model` defines for which entity the factory generates entity instances. The `definition` method returns the default set of attribute values that should be applied when creating an entity using the factory.
 
 Via the faker property, factories have access to the [Faker library](https://github.com/faker-js/faker), which allows you to conveniently generate various kinds of random data for testing.
 
@@ -190,18 +179,17 @@ Generate multiple entities by calling the `make` method. The parameter of the `m
 ```ts
 // Generate 5 authors
 const authors = new AuthorFactory(orm.em).make(5);
-``` 
+```
 
 #### Overriding attributes
 
-If you would like to override some of the default values of your factories, you may pass an object to the make method. Only the specified attributes will be replaced while the rest of the attributes
-remain set to their default values as specified by the factory.
+If you would like to override some of the default values of your factories, you may pass an object to the make method. Only the specified attributes will be replaced while the rest of the attributes remain set to their default values as specified by the factory.
 
 ```ts
 const author = new AuthorFactory(orm.em).make({
   name: 'John Snow',
 });
-``` 
+```
 
 ### Persisting entities
 
@@ -231,9 +219,7 @@ const authors = await new AuthorFactory(orm.em).create(5, {
 
 ### Factory relationships
 
-It is nice to create large quantities of data for one entity, but most of the time we want to create data for multiple entities and also have relations between these. For this we can use the `each`
-method which can be chained on a factory. The `each` method can be called with a function that transforms output entity from the factory before returning it. Lets look at some examples for the
-different relations.
+It is nice to create large quantities of data for one entity, but most of the time we want to create data for multiple entities and also have relations between these. For this we can use the `each` method which can be chained on a factory. The `each` method can be called with a function that transforms output entity from the factory before returning it. Lets look at some examples for the different relations.
 
 #### ManyToOne and OneToOne relations
 
@@ -241,7 +227,7 @@ different relations.
 const books: Book[] = new BookFactory(orm.em).each(book => {
   book.author = new AuthorFactory(orm.em).makeOne();
 }).make(5);
-``` 
+```
 
 #### OneToMany and ManyToMany
 
@@ -249,13 +235,11 @@ const books: Book[] = new BookFactory(orm.em).each(book => {
 const books: Book[] = new BookFactory(orm.em).each(book => {
   book.owners.set(new OwnerFactory(orm.em).make(5));
 }).make(5);
-``` 
+```
 
 ## Use with CLI
 
-You may execute the `seeder:run` MikroORM CLI command to seed your database. By default, the `seeder:run` command runs the `DatabaseSeeder` class, which may in turn invoke other seed classes. You can
-configure the default seeder using the key `seeder.defaultSeeder` or using the [environment variable](configuration.md#using-environment-variables) `MIKRO_ORM_SEEDER_DEFAULT_SEEDER`. You can also use
-the `--class` option to specify a seeder class:
+You may execute the `seeder:run` MikroORM CLI command to seed your database. By default, the `seeder:run` command runs the `DatabaseSeeder` class, which may in turn invoke other seed classes. You can configure the default seeder using the key `seeder.defaultSeeder` or using the [environment variable](configuration.md#using-environment-variables) `MIKRO_ORM_SEEDER_DEFAULT_SEEDER`. You can also use the `--class` option to specify a seeder class:
 
 ```shell script
 npx mikro-orm seeder:run
@@ -263,8 +247,7 @@ npx mikro-orm seeder:run
 npx mikro-orm seeder:run --class=BookSeeder
 ```
 
-You may also seed your database using the [`migrate:fresh`](migrations.md#using-via-cli) or [`schema:fresh`](schema-generator.md) command in combination with the `--seed` option, which will drop all
-tables and re-run all of your migrations or generate the database based on the current entities. This command is useful for completely re-building your database:
+You may also seed your database using the [`migrate:fresh`](migrations.md#using-via-cli) or [`schema:fresh`](schema-generator.md) command in combination with the `--seed` option, which will drop all tables and re-run all of your migrations or generate the database based on the current entities. This command is useful for completely re-building your database:
 
 ```shell script
 npx mikro-orm migration:fresh --seed    # will drop the database, run all migrations and the DatabaseSeeder class
@@ -272,8 +255,7 @@ npx mikro-orm migration:fresh --seed    # will drop the database, run all migrat
 npx mikro-orm schema:fresh --seed       # will recreate the database and run the DatabaseSeeder class
 ```
 
-If you do not want to run the `DatabaseSeeder` class you can either specify what the default seeder class should be. This can be done by changing the [default settings](#default-settings). Another
-option is to explicitly define the seeder class you want to run.
+If you do not want to run the `DatabaseSeeder` class you can either specify what the default seeder class should be. This can be done by changing the [default settings](#default-settings). Another option is to explicitly define the seeder class you want to run.
 
 ```shell script
 npx mikro-orm migration:fresh --seed TestSeeder       # will drop the database, run all migrations and the TestSeeder class
@@ -327,6 +309,4 @@ await MikroORM.init({
 });
 ```
 
-This should allow using CLI to generate TS seeder files (as in CLI we probably
-have TS support enabled), while using compiled JS files in production, where ts-node
-is not registered.
+This should allow using CLI to generate TS seeder files (as in CLI we probably have TS support enabled), while using compiled JS files in production, where ts-node is not registered.

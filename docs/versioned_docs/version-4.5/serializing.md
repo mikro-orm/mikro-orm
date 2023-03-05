@@ -12,9 +12,7 @@ export interface AnyEntity<K = number | string> {
 }
 ```
 
-When you serialize your entity via `JSON.stringify(entity)`, its `toJSON` method will be 
-called automatically. You can provide custom implementation for `toJSON`, while using 
-`toObject` for initial serialization:
+When you serialize your entity via `JSON.stringify(entity)`, its `toJSON` method will be called automatically. You can provide custom implementation for `toJSON`, while using `toObject` for initial serialization:
 
 ```typescript
 @Entity()
@@ -35,13 +33,11 @@ export class Book {
 }
 ```
 
-> Do not forget to pass rest params when calling `toObject(...args)`, otherwise the results
-> might not be stable.
+> Do not forget to pass rest params when calling `toObject(...args)`, otherwise the results might not be stable.
 
 ## Hidden Properties
 
-If you want to omit some properties from serialized result, you can mark them with `hidden`
-flag on `@Property()` decorator:
+If you want to omit some properties from serialized result, you can mark them with `hidden` flag on `@Property()` decorator:
 
 ```typescript
 @Entity()
@@ -59,13 +55,9 @@ console.log(wrap(book).toJSON().hiddenField); // undefined
 
 ## Shadow Properties
 
-The opposite situation where you want to define a property that lives only in memory (is 
-not persisted into database) can be solved by defining your property as `persist: false`. 
-Such property can be assigned via one of `Entity.assign()`, `em.create()` and 
-`em.merge()`. It will be also part of serialized result. 
+The opposite situation where you want to define a property that lives only in memory (is not persisted into database) can be solved by defining your property as `persist: false`. Such property can be assigned via one of `Entity.assign()`, `em.create()` and `em.merge()`. It will be also part of serialized result.
 
-This can be handle when dealing with additional values selected via `QueryBuilder` or 
-MongoDB's aggregations.
+This can be handle when dealing with additional values selected via `QueryBuilder` or MongoDB's aggregations.
 
 ```typescript
 @Entity()
@@ -84,8 +76,7 @@ console.log(wrap(book).toJSON().count); // 123
 
 ## Property Serializers
 
-As an alternative to custom `toJSON()` method, we can also use property serializers.
-They allow to specify a callback that will be used when serializing a property:
+As an alternative to custom `toJSON()` method, we can also use property serializers. They allow to specify a callback that will be used when serializing a property:
 
 ```typescript
 @Entity()

@@ -5,9 +5,7 @@ sidebar_label: Loading Strategies
 
 > `JOINED` loading strategy is SQL only feature.
 
-Controls how relationships get loaded when querying. By default, populated relationships
-are loaded via the `select-in` strategy. This strategy issues one additional `SELECT`
-statement per relation being loaded.
+Controls how relationships get loaded when querying. By default, populated relationships are loaded via the `select-in` strategy. This strategy issues one additional `SELECT` statement per relation being loaded.
 
 The loading strategy can be specified both at mapping time and when loading entities.
 
@@ -29,8 +27,7 @@ export class Book {
 }
 ```
 
-The following will issue two SQL statements.
-One to load the author and another to load all the books belonging to that author:
+The following will issue two SQL statements. One to load the author and another to load all the books belonging to that author:
 
 ```typescript
 const author = await orm.em.findOne(Author, 1, ['books']);
@@ -58,12 +55,11 @@ The following will issue **one** SQL statement:
 const author = await orm.em.findOne(Author, 1, ['books']);
 ```
 
-You can also specify the load strategy as needed. This will override whatever strategy is declared in the mapping.
-This also works for nested populates:
+You can also specify the load strategy as needed. This will override whatever strategy is declared in the mapping. This also works for nested populates:
 
 ```typescript
 // one level
-const author = await orm.em.findOne(Author, 1, { 
+const author = await orm.em.findOne(Author, 1, {
   populate: {
     books: LoadStrategy.JOINED,
   },
@@ -88,5 +84,4 @@ MikroORM.init({
 });
 ```
 
-This value will be used as the default, specifying the loading strategy on
-property level has precedence, as well as specifying it in the `FindOptions`.
+This value will be used as the default, specifying the loading strategy on property level has precedence, as well as specifying it in the `FindOptions`.

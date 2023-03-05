@@ -58,12 +58,12 @@ const userRef = em.getReference(User, 1);
 console.log(userRef);
 ```
 
-This will log something like `(User) { id: 1 }`, note the class name being wrapped in parens - this tells you the entity is not-initialized state and represents just the primary key. 
+This will log something like `(User) { id: 1 }`, note the class name being wrapped in parens - this tells you the entity is not-initialized state and represents just the primary key.
 
 Here is an example of common actions you can do with a reference instead of a fully loaded entity:
 
 ```ts
-// setting relation properties 
+// setting relation properties
 author.favouriteBook = em.getReference(Book, 1);
 
 // removing entity by reference
@@ -144,7 +144,7 @@ You can also use `em.populate()` helper to populate relations (or to ensure they
 const authors = await em.createQueryBuilder(Author).select('*').getResult();
 await em.populate(authors, { populate: ['books.tags'] });
 
-// now our Author entities will have `books` collections populated, 
+// now our Author entities will have `books` collections populated,
 // as well as they will have their `tags` collections populated.
 console.log(authors[0].books[0].tags[0]); // initialized BookTag
 ```
@@ -327,7 +327,7 @@ const users = await em.find(User, { [expr('lower(email)')]: 'foo@bar.baz' }, {
 This will produce following query:
 
 ```sql
-select `e0`.* 
+select `e0`.*
 from `user` as `e0`
 where lower(email) = 'foo@bar.baz'
 order by (point(loc_latitude, loc_longitude) <@> point(0, 0)) asc
@@ -430,13 +430,13 @@ for (const user of users) {
 await em.flush();
 
 // update `user` set
-//   `name` = case 
-//     when (`id` = 1) then 'Peter 1 changed!' 
-//     when (`id` = 2) then 'Peter 2 changed!' 
-//     when (`id` = 3) then 'Peter 3 changed!' 
-//     when (`id` = 4) then 'Peter 4 changed!' 
-//     when (`id` = 5) then 'Peter 5 changed!' 
-//     else `priority` end 
+//   `name` = case
+//     when (`id` = 1) then 'Peter 1 changed!'
+//     when (`id` = 2) then 'Peter 2 changed!'
+//     when (`id` = 3) then 'Peter 3 changed!'
+//     when (`id` = 4) then 'Peter 4 changed!'
+//     when (`id` = 5) then 'Peter 5 changed!'
+//     else `priority` end
 //   where `id` in (1, 2, 3, 4, 5)
 ```
 
@@ -459,7 +459,7 @@ const users = await em.find(User, { email: 'foo@bar.baz' }, {
   populate: ['cars.brand'],
 });
 users[0].name = 'changed';
-await em.flush(); // calling flush have no effect, as the entity is not managed  
+await em.flush(); // calling flush have no effect, as the entity is not managed
 ```
 
 > Keep in mind that this can also have [negative effect on the performance](https://stackoverflow.com/questions/9259480/entity-framework-mergeoption-notracking-bad-performance).

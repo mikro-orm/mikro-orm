@@ -2,18 +2,17 @@
 title: Creating Custom Driver
 ---
 
-If you want to use database that is not currently supported, you can implement your own driver.
-To do so, you will need to design 4 classes:
+If you want to use database that is not currently supported, you can implement your own driver. To do so, you will need to design 4 classes:
 
 ## Platform
 
-Platform is a class that provides information about available features of given driver: 
+Platform is a class that provides information about available features of given driver:
 
 ```typescript
 import { Platform } from 'mikro-orm';
 
 export class MyCustomPlatform extends Platform {
-  
+
   protected readonly schemaHelper: MyCustomSchemaHelper;
 
   // here you can override default settings
@@ -39,7 +38,7 @@ Part of platform is a `SchemaHelper`, that provides information about how to bui
 import { SchemaHelper } from 'mikro-orm';
 
 export class MyCustomSchemaHelper extends SchemaHelper {
-  
+
   // here you can override default settings
   getIdentifierQuoteCharacter(): string;
   getSchemaBeginning(): string;
@@ -67,7 +66,7 @@ Next part is connection wrapper, that will be responsible for querying the datab
 import { Connection } from 'mikro-orm';
 
 export class MyCustomConnection extends Connection {
-  
+
   // implement abstract methods
   connect(): Promise<void>;
   isConnected(): Promise<boolean>;
@@ -80,12 +79,9 @@ export class MyCustomConnection extends Connection {
 
 ## Driver
 
-Last part is driver, that is responsible for using the connection to persist changes to 
-database. If you are building SQL driver, it might be handy to extend `AbstractSqlDriver`, 
-if not, extend `DatabaseDriver` abstract class. 
+Last part is driver, that is responsible for using the connection to persist changes to database. If you are building SQL driver, it might be handy to extend `AbstractSqlDriver`, if not, extend `DatabaseDriver` abstract class.
 
-If you want to have absolute control, you can implement the whole driver yourself via
-`IDatabaseDriver` interface. 
+If you want to have absolute control, you can implement the whole driver yourself via `IDatabaseDriver` interface.
 
 ```typescript
 import { DatabaseDriver } from 'mikro-orm';

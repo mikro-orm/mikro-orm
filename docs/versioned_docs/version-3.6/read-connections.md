@@ -2,8 +2,7 @@
 title: Read Replica Connections
 ---
 
-Users can specify multiple read connections via `replicas` option. You can provide only fields 
-that differ from master connection, rest will be taken from it.
+Users can specify multiple read connections via `replicas` option. You can provide only fields that differ from master connection, rest will be taken from it.
 
 ```typescript
 const orm = await MikroORM.init({
@@ -19,8 +18,7 @@ const orm = await MikroORM.init({
 });
 ```
 
-By default select queries will use random read connection if not inside transaction. You can 
-specify connection type manually in `em.getConnection(type: 'read' | 'write')`.
+By default select queries will use random read connection if not inside transaction. You can specify connection type manually in `em.getConnection(type: 'read' | 'write')`.
 
 ```typescript
 const connection = orm.em.getConnection(); // write connection

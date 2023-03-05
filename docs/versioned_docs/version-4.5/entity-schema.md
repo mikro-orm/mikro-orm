@@ -2,7 +2,7 @@
 title: Defining Entities via EntitySchema
 ---
 
-With `EntitySchema` helper you define the schema programmatically. 
+With `EntitySchema` helper you define the schema programmatically.
 
 ```typescript title="./entities/Book.ts"
 export interface Book extends BaseEntity {
@@ -24,8 +24,7 @@ export const schema = new EntitySchema<Book, BaseEntity>({
 });
 ```
 
-When creating new entity instances, you will need to use `em.create()` method that will
-create instance of internally created class. 
+When creating new entity instances, you will need to use `em.create()` method that will create instance of internally created class.
 
 ```typescript
 const repo = em.getRepository<Author>('Author');
@@ -36,13 +35,14 @@ await repo.persistAndFlush(author);
 > Using this approach, metadata caching is automatically disabled as it is not needed.
 
 #### Using DTO class
+
 It is very common to define a DTO (Data Transfer Object) to validate incoming request bodies and pass the request body data on to the other parts of your application. If you pass the DTO directly to the `create` method it could lead to unexpected results. The data for the `create` method should be provided as a POJO (Plain Old JS Object `{}`).
 
 You can achieve this by letting your DTO class extend the `PlainObject` class. This way MikroORM knows it should be treated as such.
 
 ## Using custom entity classes
 
-You can optionally use custom class for entity instances.  
+You can optionally use custom class for entity instances.
 
 ```typescript title="./entities/Author.ts"
 export class Author extends BaseEntity {
@@ -55,7 +55,7 @@ export class Author extends BaseEntity {
   books = new Collection<Book>(this);
   favouriteBook?: Book;
   version?: number;
-  
+
   constructor(name: string, email: string) {
     this.name = name;
     this.email = email;
@@ -88,7 +88,7 @@ await repo.persistAndFlush(author);
 
 ## Using BaseEntity
 
-Do not forget that base entities needs to be discovered just like normal entities. 
+Do not forget that base entities needs to be discovered just like normal entities.
 
 ```typescript title="./entities/BaseEntity.ts"
 export interface BaseEntity {
@@ -110,9 +110,7 @@ export const schema = new EntitySchema<BaseEntity>({
 
 ## Configuration Reference
 
-The parameter of `EntitySchema` requires to provide either `name` or `class` parameters. 
-When using `class`, `extends` will be automatically inferred. You can optionally pass 
-these additional parameters:
+The parameter of `EntitySchema` requires to provide either `name` or `class` parameters. When using `class`, `extends` will be automatically inferred. You can optionally pass these additional parameters:
 
 ```typescript
 name: string;
@@ -127,8 +125,7 @@ hooks: Partial<Record<HookType, (string & keyof T)[]>>;
 abstract: boolean;
 ```
 
-Every property then needs to contain a type specification - one of `type`/`customType`/`entity`.
-Here are some examples of various property types:
+Every property then needs to contain a type specification - one of `type`/`customType`/`entity`. Here are some examples of various property types:
 
 ```typescript
 export enum MyEnum {

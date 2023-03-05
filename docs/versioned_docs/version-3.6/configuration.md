@@ -4,8 +4,7 @@ title: Advanced Configuration
 
 ## Entity Discovery
 
-You can either provide array of entity instances via `entities`, or let the ORM look up your 
-entities in selected folders. 
+You can either provide array of entity instances via `entities`, or let the ORM look up your entities in selected folders.
 
 ```typescript
 MikroORM.init({
@@ -13,11 +12,9 @@ MikroORM.init({
 });
 ```
 
-When using `entitiesDirs`, you can optionally provide also set of directories with TS source files, 
-that will be used to look up missing types (see more at [Metadata Providers](metadata-providers.md)).
+When using `entitiesDirs`, you can optionally provide also set of directories with TS source files, that will be used to look up missing types (see more at [Metadata Providers](metadata-providers.md)).
 
-> The `entitiesDirsTs` option is used only with the default `TsMorphMetadataProvider`. By default, all your 
-> source files will be scanned, based on your `tsconfig.json`. 
+> The `entitiesDirsTs` option is used only with the default `TsMorphMetadataProvider`. By default, all your source files will be scanned, based on your `tsconfig.json`.
 
 ```typescript
 MikroORM.init({
@@ -29,12 +26,9 @@ MikroORM.init({
 });
 ```
 
-By default, `TsMorphMetadataProvider` is used that analyses your entity source files. You can
-use `ReflectMetadataProvider` if you do not want the source file analyses to happen. 
-If you aim to use plain JavaScript instead of TypeScript, use the `JavaScriptMetadataProvider`.
+By default, `TsMorphMetadataProvider` is used that analyses your entity source files. You can use `ReflectMetadataProvider` if you do not want the source file analyses to happen. If you aim to use plain JavaScript instead of TypeScript, use the `JavaScriptMetadataProvider`.
 
-> You can also implement your own metadata provider and use it instead. To do so, extend the 
-> `MetadataProvider` class.
+> You can also implement your own metadata provider and use it instead. To do so, extend the `MetadataProvider` class.
 
 ```typescript
 MikroORM.init({
@@ -57,8 +51,7 @@ MikroORM.init({
 });
 ```
 
-> If you disable `discovery.alwaysAnalyseProperties` option, you will need to explicitly 
-> provide `nullable` and `wrappedReference` parameters (where applicable).
+> If you disable `discovery.alwaysAnalyseProperties` option, you will need to explicitly provide `nullable` and `wrappedReference` parameters (where applicable).
 
 Read more about this in [Metadata Providers](metadata-providers.md) sections.
 
@@ -66,19 +59,17 @@ Read more about this in [Metadata Providers](metadata-providers.md) sections.
 
 To select driver, you can either use `type` option, or provide the driver class reference.
 
-| type | driver name | dependency | note |
-|------|-------------|------------|------|
-| `mongo` | `MongoDriver` | `mongodb^3.3.4` | default driver |
-| `mysql` | `MySqlDriver` | `mysql2^2.0.0` | compatible with MariaDB |
-| `mariadb` | `MariaDbDriver` | `mariadb^2.0.0` | compatible with MySQL |
-| `postgresql` | `PostgreSqlDriver` | `pg^7.0.0` | - |
-| `sqlite` | `SqliteDriver` | `sqlite3^4.0.0` | - |
+| type         | driver name        | dependency      | note                    |
+| ------------ | ------------------ | --------------- | ----------------------- |
+| `mongo`      | `MongoDriver`      | `mongodb^3.3.4` | default driver          |
+| `mysql`      | `MySqlDriver`      | `mysql2^2.0.0`  | compatible with MariaDB |
+| `mariadb`    | `MariaDbDriver`    | `mariadb^2.0.0` | compatible with MySQL   |
+| `postgresql` | `PostgreSqlDriver` | `pg^7.0.0`      | -                       |
+| `sqlite`     | `SqliteDriver`     | `sqlite3^4.0.0` | -                       |
 
-> Driver and connection implementations are not directly exported from `mikro-orm` module. 
-> You can import them from `mikro-orm/dist/drivers`.
+> Driver and connection implementations are not directly exported from `mikro-orm` module. You can import them from `mikro-orm/dist/drivers`.
 
-> You can pass additional options to the underlying driver (e.g. `mysql2`) via `driverOptions`. 
-> The object will be deeply merged, overriding all internally used options.
+> You can pass additional options to the underlying driver (e.g. `mysql2`) via `driverOptions`. The object will be deeply merged, overriding all internally used options.
 
 ```typescript
 import { MySqlDriver } from 'mikro-orm/dist/drivers/MySqlDriver';
@@ -100,8 +91,7 @@ MikroORM.init({
 
 ## Connection
 
-Each platform (driver) provides default connection string, you can override it as a whole
-through `clientUrl`, or partially through one of following options:
+Each platform (driver) provides default connection string, you can override it as a whole through `clientUrl`, or partially through one of following options:
 
 ```typescript
 export interface ConnectionOptions {
@@ -119,15 +109,14 @@ export interface ConnectionOptions {
 
 Following table shows default client connection strings:
 
-| type | default connection url |
-|------|------------------------|
-| `mongo` | `mongodb://127.0.0.1:27017` |
-| `mysql` | `mysql://root@127.0.0.1:3306` |
-| `mariadb` | `mysql://root@127.0.0.1:3306` |
+| type         | default connection url                 |
+| ------------ | -------------------------------------- |
+| `mongo`      | `mongodb://127.0.0.1:27017`            |
+| `mysql`      | `mysql://root@127.0.0.1:3306`          |
+| `mariadb`    | `mysql://root@127.0.0.1:3306`          |
 | `postgresql` | `postgresql://postgres@127.0.0.1:5432` |
 
-To set up read replicas, you can use `replicas` option. You can provide only those parts of the 
-`ConnectionOptions` interface, they will be used to override the `master` connection options.
+To set up read replicas, you can use `replicas` option. You can provide only those parts of the `ConnectionOptions` interface, they will be used to override the `master` connection options.
 
 ```typescript
 MikroORM.init({
@@ -148,10 +137,7 @@ Read more about this in [Installation](installation.md) and [Read Connections](r
 
 ## Auto-flush
 
-Since MikroORM v3, default value for `autoFlush` is `false`. That means you need to call 
-`em.flush()` yourself to persist changes into database. You can still change this via ORM's 
-options to ease the transition but generally it is not recommended as it can cause unwanted 
-small transactions being created around each `persist`. 
+Since MikroORM v3, default value for `autoFlush` is `false`. That means you need to call `em.flush()` yourself to persist changes into database. You can still change this via ORM's options to ease the transition but generally it is not recommended as it can cause unwanted small transactions being created around each `persist`.
 
 ```typescript
 MikroORM.init({
@@ -166,8 +152,7 @@ Read more about this in [Entity Manager](entity-manager.md#auto-flushing) docs.
 
 ## Naming Strategy
 
-When mapping your entities to database tables and columns, their names will be defined by naming 
-strategy. There are 3 basic naming strategies you can choose from:
+When mapping your entities to database tables and columns, their names will be defined by naming strategy. There are 3 basic naming strategies you can choose from:
 
 - `UnderscoreNamingStrategy` - default of all SQL drivers
 - `MongoNamingStrategy` - default of `MongoDriver`
@@ -185,9 +170,7 @@ Read more about this in [Naming Strategy](naming-strategy.md) section.
 
 ## Auto-join of 1:1 owners
 
-By default, owning side of 1:1 relation will be auto-joined when you select the inverse side 
-so we can have the reference to it. You can disable this behaviour via `autoJoinOneToOneOwner` 
-configuration toggle.
+By default, owning side of 1:1 relation will be auto-joined when you select the inverse side so we can have the reference to it. You can disable this behaviour via `autoJoinOneToOneOwner` configuration toggle.
 
 ```typescript
 MikroORM.init({
@@ -197,8 +180,7 @@ MikroORM.init({
 
 ## Propagation of 1:1 and m:1 owners
 
-MikroORM defines getter and setter for every owning side of m:1 and 1:1 relation. This is 
-then used for propagation of changes to the inverse side of bi-directional relations.
+MikroORM defines getter and setter for every owning side of m:1 and 1:1 relation. This is then used for propagation of changes to the inverse side of bi-directional relations.
 
 ```typescript
 const author = new Author('n', 'e');
@@ -217,9 +199,7 @@ MikroORM.init({
 
 ## Forcing UTC Timezone
 
-Use `forceUtcTimezone` option to force the `Date`s to be saved in UTC in datetime columns 
-without timezone. It works for MySQL (`datetime` type) and PostgreSQL (`timestamp` type). 
-SQLite does this by default. 
+Use `forceUtcTimezone` option to force the `Date`s to be saved in UTC in datetime columns without timezone. It works for MySQL (`datetime` type) and PostgreSQL (`timestamp` type). SQLite does this by default.
 
 ```typescript
 MikroORM.init({
@@ -229,8 +209,7 @@ MikroORM.init({
 
 ## Custom Hydrator
 
-Hydrator is responsible for assigning values from the database to entities. 
-You can implement your custom `Hydrator` (by extending the abstract `Hydrator` class):
+Hydrator is responsible for assigning values from the database to entities. You can implement your custom `Hydrator` (by extending the abstract `Hydrator` class):
 
 ```typescript
 MikroORM.init({
@@ -240,8 +219,7 @@ MikroORM.init({
 
 ## Custom Repository
 
-You can also register custom base repository (for all entities where you do not specify 
-`customRepository`) globally:
+You can also register custom base repository (for all entities where you do not specify `customRepository`) globally:
 
 > You can still use entity specific repositories in combination with global base repository.
 
@@ -255,10 +233,7 @@ Read more about this in [Repositories](repositories.md) section.
 
 ## Strict Mode
 
-`MikroORM` will validate your properties before actual persisting happens. It will try to fix wrong 
-data types for you automatically. If automatic conversion fails, it will throw an error. You can 
-enable strict mode to disable this feature and let ORM throw errors instead. Validation is triggered 
-when persisting the entity. 
+`MikroORM` will validate your properties before actual persisting happens. It will try to fix wrong data types for you automatically. If automatic conversion fails, it will throw an error. You can enable strict mode to disable this feature and let ORM throw errors instead. Validation is triggered when persisting the entity.
 
 ```typescript
 MikroORM.init({
@@ -270,8 +245,7 @@ Read more about this in [Property Validation](property-validation.md) section.
 
 ## Debugging & Logging
 
-You can enable logging with `debug` option. Either set it to `true` to log everything, or 
-provide array of `'query' | 'query-params' | 'discovery' | 'info'` namespaces.
+You can enable logging with `debug` option. Either set it to `true` to log everything, or provide array of `'query' | 'query-params' | 'discovery' | 'info'` namespaces.
 
 ```typescript
 MikroORM.init({
@@ -286,8 +260,7 @@ Read more about this in [Debugging](debugging.md) section.
 
 ## Custom Fail Handler
 
-When no entity is found during `em.findOneOrFail()` call, `new Error()` will be thrown. 
-You can customize how the `Error` instance is created via `findOneOrFailHandler`:
+When no entity is found during `em.findOneOrFail()` call, `new Error()` will be thrown. You can customize how the `Error` instance is created via `findOneOrFailHandler`:
 
 ```typescript
 MikroORM.init({
@@ -301,8 +274,7 @@ Read more about this in [Entity Manager](entity-manager.md#handling-not-found-en
 
 ## Migrations
 
-Under the `migrations` namespace, you can adjust how the integrated migrations support works.
-Following example shows all possible options and their defaults:
+Under the `migrations` namespace, you can adjust how the integrated migrations support works. Following example shows all possible options and their defaults:
 
 ```typescript
 MikroORM.init({
@@ -322,8 +294,7 @@ Read more about this in [Migrations](migrations.md) section.
 
 ## Caching
 
-By default, metadata discovery results are cached. You can either disable caching, or adjust 
-how it works. Following example shows all possible options and their defaults:
+By default, metadata discovery results are cached. You can either disable caching, or adjust how it works. Following example shows all possible options and their defaults:
 
 ```typescript
 MikroORM.init({

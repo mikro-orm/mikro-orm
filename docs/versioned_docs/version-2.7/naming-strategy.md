@@ -2,14 +2,12 @@
 title: Naming strategy
 ---
 
-When mapping your entities to database tables and columns, their names will be defined by naming 
-strategy. There are 2 basic naming strategies you can choose from:
+When mapping your entities to database tables and columns, their names will be defined by naming strategy. There are 2 basic naming strategies you can choose from:
 
 - `UnderscoreNamingStrategy` - default of `MySqlDriver` and `SqliteDriver`
 - `MongoNamingStrategy` - default of `MongoDriver`
 
-You can override this when initializing ORM. You can also provide your own naming strategy, just 
-implement `NamingStrategy` interface and provide your implementation when bootstrapping ORM:
+You can override this when initializing ORM. You can also provide your own naming strategy, just implement `NamingStrategy` interface and provide your implementation when bootstrapping ORM:
 
 ```typescript
 class YourCustomNamingStrategy implements NamingStrategy {
@@ -25,15 +23,13 @@ const orm = await MikroORM.init({
 
 ## Naming strategy in mongo driver
 
-`MongoNamingStrategy` will simply use all field names as they are defined. Collection names will
-be translated into lower-cased dashed form:
+`MongoNamingStrategy` will simply use all field names as they are defined. Collection names will be translated into lower-cased dashed form:
 
 `MyCoolEntity` will be translated into `my-cool-entity` collection name.
 
 ## Naming strategy in SQL drivers
 
-`MySqlDriver` defaults to `UnderscoreNamingStrategy`, which means your all your database tables and
-columns will be lower-cased and words divided by underscored:
+`MySqlDriver` defaults to `UnderscoreNamingStrategy`, which means your all your database tables and columns will be lower-cased and words divided by underscored:
 
 ```sql
 CREATE TABLE `author` (
@@ -48,4 +44,3 @@ CREATE TABLE `author` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 ```
-

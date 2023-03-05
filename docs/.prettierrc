@@ -1,0 +1,11 @@
+printWidth: 160
+tabWidth: 2
+semi: true
+singleQuote: true
+quoteProps: consistent
+trailingComma: 'all'
+bracketSpacing: true
+arrowParens: avoid
+proseWrap: never
+bracketSameLine: true
+embeddedLanguageFormatting: off

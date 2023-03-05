@@ -4,11 +4,9 @@ title: Migrations
 
 > To use migrations we need to first install `@mikro-orm/migrations` package.
 
-MikroORM has integrated support for migrations via [umzug](https://github.com/sequelize/umzug).
-It allows you to generate migrations with current schema differences.
+MikroORM has integrated support for migrations via [umzug](https://github.com/sequelize/umzug). It allows you to generate migrations with current schema differences.
 
-By default, each migration will be all executed inside a transaction, and all of them will 
-be wrapped in one master transaction, so if one of them fails, everything will be rolled back. 
+By default, each migration will be all executed inside a transaction, and all of them will be wrapped in one master transaction, so if one of them fails, everything will be rolled back.
 
 ## Migration class
 
@@ -26,32 +24,25 @@ export class Migration20191019195930 extends Migration {
 }
 ```
 
-To support undoing those changed, you can implement the `down` method, which throws an error by default. 
+To support undoing those changed, you can implement the `down` method, which throws an error by default.
 
-Migrations are by default wrapped in a transaction. You can override this behaviour on 
-per migration basis by implementing the `isTransactional(): boolean` method.
+Migrations are by default wrapped in a transaction. You can override this behaviour on per migration basis by implementing the `isTransactional(): boolean` method.
 
 `Configuration` object and driver instance are available in the `Migration` class context.
 
-You can execute queries in the migration via `Migration.execute()` method, which 
-will run queries in the same transaction as the rest of the migration. The 
-`Migration.addSql()` method also accepts instances of knex. Knex instance can be 
-accessed via `Migration.getKnex()`; 
+You can execute queries in the migration via `Migration.execute()` method, which will run queries in the same transaction as the rest of the migration. The `Migration.addSql()` method also accepts instances of knex. Knex instance can be accessed via `Migration.getKnex()`;
 
 ## Initial migration
 
-If you want to start using migrations, and you already have the schema generated, 
-you can do so by creating so called initial migration:
+If you want to start using migrations, and you already have the schema generated, you can do so by creating so called initial migration:
 
-> Initial migration can be created only if there are no migrations previously
-> generated or executed. 
+> Initial migration can be created only if there are no migrations previously generated or executed.
 
 ```sh
 npx mikro-orm migration:create --initial
 ```
 
-This will create the initial migration, containing the schema dump from 
-`schema:create` command. The migration will be automatically marked as executed. 
+This will create the initial migration, containing the schema dump from `schema:create` command. The migration will be automatically marked as executed.
 
 ## Configuration
 
@@ -74,7 +65,7 @@ await MikroORM.init({
 
 ## Using via CLI
 
-You can use it via CLI: 
+You can use it via CLI:
 
 ```sh
 npx mikro-orm migration:create   # Create new migration with current schema diff
@@ -84,11 +75,9 @@ npx mikro-orm migration:list     # List all executed migrations
 npx mikro-orm migration:pending  # List all pending migrations
 ```
 
-> To create blank migration file, we can use
-> `npx mikro-orm migration:create --blank`.
+> To create blank migration file, we can use `npx mikro-orm migration:create --blank`.
 
-For `migration:up` and `migration:down` commands you can specify `--from` (`-f`), `--to` (`-t`) 
-and `--only` (`-o`) options to run only a subset of migrations:
+For `migration:up` and `migration:down` commands you can specify `--from` (`-f`), `--to` (`-t`) and `--only` (`-o`) options to run only a subset of migrations:
 
 ```sh
 npx mikro-orm migration:up --from 2019101911 --to 2019102117  # the same as above
@@ -96,8 +85,7 @@ npx mikro-orm migration:up --only 2019101923                  # apply a single m
 npx mikro-orm migration:down --to 0                           # migrate down all migrations
 ```
 
-> To run TS migration files, you will need to [enable `useTsNode` flag](installation.md) 
-> in your `package.json`.
+> To run TS migration files, you will need to [enable `useTsNode` flag](installation.md) in your `package.json`.
 
 ## Using the Migrator programmatically
 
@@ -144,8 +132,7 @@ await orm.em.transactional(async em => {
 
 ## Importing migrations statically
 
-If you do not want to dynamically import a folder (e.g. when bundling your code with webpack) you can import migrations
-directly.
+If you do not want to dynamically import a folder (e.g. when bundling your code with webpack) you can import migrations directly.
 
 ```typescript
 import { MikroORM } from '@mikro-orm/core';
@@ -163,8 +150,7 @@ await MikroORM.init({
 });
 ```
 
-With the help of [webpack's context module api](https://webpack.js.org/guides/dependency-management/#context-module-api)
-we can dynamically import the migrations making it possible to import all files in a folder.
+With the help of [webpack's context module api](https://webpack.js.org/guides/dependency-management/#context-module-api) we can dynamically import the migrations making it possible to import all files in a folder.
 
 ```typescript
 import { MikroORM } from '@mikro-orm/core';
@@ -196,9 +182,7 @@ await MikroORM.init({
 
 ### MySQL
 
-There is no way to rollback DDL changes in MySQL. An implicit commit is forced for those 
-queries automatically, so transactions are not working as expected. 
+There is no way to rollback DDL changes in MySQL. An implicit commit is forced for those queries automatically, so transactions are not working as expected.
 
 - https://github.com/mikro-orm/mikro-orm/issues/217
 - https://dev.mysql.com/doc/refman/5.7/en/implicit-commit.html
-

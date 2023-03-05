@@ -2,15 +2,12 @@
 title: Smart Nested Populate
 ---
 
-`MikroORM` is capable of loading large nested structures while maintaining good 
-performance, querying each database table only once. Imagine you have this nested 
-structure:
+`MikroORM` is capable of loading large nested structures while maintaining good performance, querying each database table only once. Imagine you have this nested structure:
 
 - `Book` has one `Publisher` (M:1), one `Author` (M:1) and many `BookTag`s (M:N)
 - `Publisher` has many `Test`s (M:N)
 
-When you use nested populate while querying all `BookTag`s, this is what happens in
-the background:
+When you use nested populate while querying all `BookTag`s, this is what happens in the background:
 
 ```typescript
 const tags = await orm.em.findAll(BookTag, ['books.publisher.tests', 'books.author']);
@@ -56,8 +53,7 @@ db.getCollection("author").find({"_id":{"$in":[...]}}).toArray();
 
 ## Using EntityLoader manually
 
-Under the hood, EntityManager uses EntityLoader to populate other entities. You can use it
-manually if you already have list of entities (e.g. queried via QueryBuilder):
+Under the hood, EntityManager uses EntityLoader to populate other entities. You can use it manually if you already have list of entities (e.g. queried via QueryBuilder):
 
 ```typescript
 import { EntityLoader } from 'mikro-orm';
@@ -67,8 +63,7 @@ const res = await orm.em.createQueryBuilder(Author).select('*').execute();
 const authors = res.map(data => orm.em.merge(Author, data));
 await loader.populate(Author, authors, ['books.tags']);
 
-// now your Author entities will have `books` collections populated, 
+// now your Author entities will have `books` collections populated,
 // as well as they will have their `tags` collections populated.
 console.log(authors[0].books[0].tags[0]); // initialized BookTag
 ```
-

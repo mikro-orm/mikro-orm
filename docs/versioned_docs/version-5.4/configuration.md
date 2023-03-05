@@ -4,8 +4,7 @@ title: Configuration
 
 ## Entity Discovery
 
-You can either provide array of entity instances via `entities`, or let the ORM look up your 
-entities in selected folders. 
+You can either provide array of entity instances via `entities`, or let the ORM look up your entities in selected folders.
 
 ```ts
 MikroORM.init({
@@ -13,14 +12,9 @@ MikroORM.init({
 });
 ```
 
-We can also use folder based discovery by providing list of paths to the entities
-we want to discover (globs are supported as well). This way we also need to specify
-`entitiesTs`, where we point the paths to the TS source files instead of the JS 
-compiled files (see more at [Metadata Providers](metadata-providers.md)).
+We can also use folder based discovery by providing list of paths to the entities we want to discover (globs are supported as well). This way we also need to specify `entitiesTs`, where we point the paths to the TS source files instead of the JS compiled files (see more at [Metadata Providers](metadata-providers.md)).
 
-> The `entitiesTs` option is used when running the app via `ts-node`, as the ORM 
-> needs to discover the TS files. Always specify this option if you use folder/file
-> based discovery. 
+> The `entitiesTs` option is used when running the app via `ts-node`, as the ORM needs to discover the TS files. Always specify this option if you use folder/file based discovery.
 
 ```ts
 MikroORM.init({
@@ -31,19 +25,11 @@ MikroORM.init({
 });
 ```
 
-> Be careful when overriding the `baseDir` with dynamic values like `__dirname`, 
-> as you can end up with valid paths from `ts-node`, but invalid paths from `node`.
-> Ideally you should keep the default of `process.cwd()` there to always have the 
-> same base path regardless of how you run the app.
+> Be careful when overriding the `baseDir` with dynamic values like `__dirname`, as you can end up with valid paths from `ts-node`, but invalid paths from `node`. Ideally you should keep the default of `process.cwd()` there to always have the same base path regardless of how you run the app.
 
-By default, `ReflectMetadataProvider` is used that leverages the `reflect-metadata`. 
-You can also use `TsMorphMetadataProvider` by installing `@mikro-orm/reflection`. 
-This provider will analyse your entity source files (or `.d.ts` type definition files). 
-If you aim to use plain JavaScript instead of TypeScript, use `EntitySchema` or 
-the `JavaScriptMetadataProvider`.
+By default, `ReflectMetadataProvider` is used that leverages the `reflect-metadata`. You can also use `TsMorphMetadataProvider` by installing `@mikro-orm/reflection`. This provider will analyse your entity source files (or `.d.ts` type definition files). If you aim to use plain JavaScript instead of TypeScript, use `EntitySchema` or the `JavaScriptMetadataProvider`.
 
-> You can also implement your own metadata provider and use it instead. To do so, extend the 
-> `MetadataProvider` class.
+> You can also implement your own metadata provider and use it instead. To do so, extend the `MetadataProvider` class.
 
 ```ts
 import { MikroORM } from '@mikro-orm/core';
@@ -66,8 +52,7 @@ MikroORM.init({
 });
 ```
 
-> If you disable `discovery.alwaysAnalyseProperties` option, you will need to explicitly 
-> provide `nullable` and `wrappedReference` parameters (where applicable).
+> If you disable `discovery.alwaysAnalyseProperties` option, you will need to explicitly provide `nullable` and `wrappedReference` parameters (where applicable).
 
 Read more about this in [Metadata Providers](metadata-providers.md) sections.
 
@@ -96,19 +81,17 @@ const orm = await MikroORM.init({
 
 To select driver, you can either use `type` option, or provide the driver class reference.
 
-| type | driver name | dependency | note |
-|------|-------------|------------|------|
-| `mongo` | `MongoDriver` | `mongodb^3.3.4` | - |
-| `mysql` | `MySqlDriver` | `mysql2^2.0.0` | compatible with MariaDB |
-| `mariadb` | `MariaDbDriver` | `mariadb^2.0.0` | compatible with MySQL |
-| `postgresql` | `PostgreSqlDriver` | `pg^7.0.0` | - |
-| `sqlite` | `SqliteDriver` | `sqlite3^4.0.0` | - |
+| type         | driver name        | dependency      | note                    |
+| ------------ | ------------------ | --------------- | ----------------------- |
+| `mongo`      | `MongoDriver`      | `mongodb^3.3.4` | -                       |
+| `mysql`      | `MySqlDriver`      | `mysql2^2.0.0`  | compatible with MariaDB |
+| `mariadb`    | `MariaDbDriver`    | `mariadb^2.0.0` | compatible with MySQL   |
+| `postgresql` | `PostgreSqlDriver` | `pg^7.0.0`      | -                       |
+| `sqlite`     | `SqliteDriver`     | `sqlite3^4.0.0` | -                       |
 
-> Driver and connection implementations are not directly exported from `@mikro-orm/core` module. 
-> You can import them from the driver packages (e.g. `import { PostgreSqlDriver } from '@mikro-orm/postgresql'`).
+> Driver and connection implementations are not directly exported from `@mikro-orm/core` module. You can import them from the driver packages (e.g. `import { PostgreSqlDriver } from '@mikro-orm/postgresql'`).
 
-> You can pass additional options to the underlying driver (e.g. `mysql2`) via `driverOptions`. 
-> The object will be deeply merged, overriding all internally used options.
+> You can pass additional options to the underlying driver (e.g. `mysql2`) via `driverOptions`. The object will be deeply merged, overriding all internally used options.
 
 ```ts
 import { MySqlDriver } from '@mikro-orm/mysql';
@@ -130,8 +113,7 @@ MikroORM.init({
 
 ## Connection
 
-Each platform (driver) provides default connection string, you can override it as a whole
-through `clientUrl`, or partially through one of following options:
+Each platform (driver) provides default connection string, you can override it as a whole through `clientUrl`, or partially through one of following options:
 
 ```ts
 export interface DynamicPassword {
@@ -155,17 +137,16 @@ export interface ConnectionOptions {
 
 Following table shows default client connection strings:
 
-| type | default connection url |
-|------|------------------------|
-| `mongo` | `mongodb://127.0.0.1:27017` |
-| `mysql` | `mysql://root@127.0.0.1:3306` |
-| `mariadb` | `mysql://root@127.0.0.1:3306` |
+| type         | default connection url                 |
+| ------------ | -------------------------------------- |
+| `mongo`      | `mongodb://127.0.0.1:27017`            |
+| `mysql`      | `mysql://root@127.0.0.1:3306`          |
+| `mariadb`    | `mysql://root@127.0.0.1:3306`          |
 | `postgresql` | `postgresql://postgres@127.0.0.1:5432` |
 
 ### Read Replicas
 
-To set up read replicas, you can use `replicas` option. You can provide only those parts of the 
-`ConnectionOptions` interface, they will be used to override the `master` connection options.
+To set up read replicas, you can use `replicas` option. You can provide only those parts of the `ConnectionOptions` interface, they will be used to override the `master` connection options.
 
 ```ts
 MikroORM.init({
@@ -186,10 +167,7 @@ Read more about this in [Installation](installation.md) and [Read Connections](r
 
 ### Using short-lived tokens
 
-Many cloud providers include alternative methods for connecting to database instances 
-using short-lived authentication tokens. MikroORM supports dynamic passwords via 
-a callback function, either synchronous or asynchronous. The callback function must 
-resolve to a string.
+Many cloud providers include alternative methods for connecting to database instances using short-lived authentication tokens. MikroORM supports dynamic passwords via a callback function, either synchronous or asynchronous. The callback function must resolve to a string.
 
 ```ts
 MikroORM.init({
@@ -199,8 +177,7 @@ MikroORM.init({
 });
 ```
 
-The password callback value will be cached, to invalidate this cache we can specify
-`expirationChecker` callback:
+The password callback value will be cached, to invalidate this cache we can specify `expirationChecker` callback:
 
 ```ts
 MikroORM.init({
@@ -215,8 +192,7 @@ MikroORM.init({
 
 ## Naming Strategy
 
-When mapping your entities to database tables and columns, their names will be defined by naming 
-strategy. There are 3 basic naming strategies you can choose from:
+When mapping your entities to database tables and columns, their names will be defined by naming strategy. There are 3 basic naming strategies you can choose from:
 
 - `UnderscoreNamingStrategy` - default of all SQL drivers
 - `MongoNamingStrategy` - default of `MongoDriver`
@@ -234,9 +210,7 @@ Read more about this in [Naming Strategy](naming-strategy.md) section.
 
 ## Auto-join of 1:1 owners
 
-By default, owning side of 1:1 relation will be auto-joined when you select the inverse side 
-so we can have the reference to it. You can disable this behaviour via `autoJoinOneToOneOwner` 
-configuration toggle.
+By default, owning side of 1:1 relation will be auto-joined when you select the inverse side so we can have the reference to it. You can disable this behaviour via `autoJoinOneToOneOwner` configuration toggle.
 
 ```ts
 MikroORM.init({
@@ -246,8 +220,7 @@ MikroORM.init({
 
 ## Propagation of 1:1 and m:1 owners
 
-MikroORM defines getter and setter for every owning side of m:1 and 1:1 relation. This is 
-then used for propagation of changes to the inverse side of bi-directional relations.
+MikroORM defines getter and setter for every owning side of m:1 and 1:1 relation. This is then used for propagation of changes to the inverse side of bi-directional relations.
 
 ```ts
 const author = new Author('n', 'e');
@@ -266,9 +239,7 @@ MikroORM.init({
 
 ## Forcing UTC Timezone
 
-Use `forceUtcTimezone` option to force the `Date`s to be saved in UTC in datetime columns 
-without timezone. It works for MySQL (`datetime` type) and PostgreSQL (`timestamp` type). 
-SQLite does this by default. 
+Use `forceUtcTimezone` option to force the `Date`s to be saved in UTC in datetime columns without timezone. It works for MySQL (`datetime` type) and PostgreSQL (`timestamp` type). SQLite does this by default.
 
 ```ts
 MikroORM.init({
@@ -278,9 +249,7 @@ MikroORM.init({
 
 ## Mapping `null` values to `undefined`
 
-By default `null` values from nullable database columns are hydrated as `null`. 
-Using `forceUndefined` we can tell the ORM to convert those `null` values to
-`undefined` instead. 
+By default `null` values from nullable database columns are hydrated as `null`. Using `forceUndefined` we can tell the ORM to convert those `null` values to `undefined` instead.
 
 ```ts
 MikroORM.init({
@@ -290,13 +259,9 @@ MikroORM.init({
 
 ## Serialization of new entities
 
-After flushing a new entity, all relations are marked as populated,
-just like if the entity was loaded from the db. This aligns the serialized
-output of `e.toJSON()` of a loaded entity and just-inserted one.
+After flushing a new entity, all relations are marked as populated, just like if the entity was loaded from the db. This aligns the serialized output of `e.toJSON()` of a loaded entity and just-inserted one.
 
-In v4 this behaviour was disabled by default, so even after the new entity was 
-flushed, the serialized form contained only FKs for its relations. We can opt in 
-to this old behaviour via `populateAfterFlush: false`.
+In v4 this behaviour was disabled by default, so even after the new entity was flushed, the serialized form contained only FKs for its relations. We can opt in to this old behaviour via `populateAfterFlush: false`.
 
 ```ts
 MikroORM.init({
@@ -308,30 +273,21 @@ MikroORM.init({
 
 > This applies only to SELECT_IN strategy, as JOINED strategy implies the inference.
 
-In v4, when we used populate hints in `em.find()` and similar methods, the
-query for our entity would be analysed and parts of it extracted and used for
-the population. Following example would find all authors that have books with
-given IDs, and populate their books collection, again using this PK condition,
-resulting in only such books being in those collections.
+In v4, when we used populate hints in `em.find()` and similar methods, the query for our entity would be analysed and parts of it extracted and used for the population. Following example would find all authors that have books with given IDs, and populate their books collection, again using this PK condition, resulting in only such books being in those collections.
 
 ```ts
 // this would end up with `Author.books` collections having only books of PK 1, 2, 3
 const a = await em.find(Author, { books: [1, 2, 3] }, { populate: ['books'] });
 ```
 
-Following this example, if we wanted to load all books, we would need a separate
-`em.populate()` call:
+Following this example, if we wanted to load all books, we would need a separate `em.populate()` call:
 
 ```ts
 const a = await em.find(Author, { books: [1, 2, 3] });
 await em.populate(a, ['books']);
 ```
 
-This behaviour changed and is now configurable both globally and locally, via
-`populateWhere` option. Globally we can specify one of `PopulateHint.ALL` and
-`PopulateHint.INFER`, the former being the default in v5, the latter being the
-default behaviour in v4. Locally (via `FindOptions`) we can also specify custom
-where condition that will be passed to `em.populate()` call.
+This behaviour changed and is now configurable both globally and locally, via `populateWhere` option. Globally we can specify one of `PopulateHint.ALL` and `PopulateHint.INFER`, the former being the default in v5, the latter being the default behaviour in v4. Locally (via `FindOptions`) we can also specify custom where condition that will be passed to `em.populate()` call.
 
 ```ts
 MikroORM.init({
@@ -342,8 +298,7 @@ MikroORM.init({
 
 ## Custom Hydrator
 
-Hydrator is responsible for assigning values from the database to entities. 
-You can implement your custom `Hydrator` (by extending the abstract `Hydrator` class):
+Hydrator is responsible for assigning values from the database to entities. You can implement your custom `Hydrator` (by extending the abstract `Hydrator` class):
 
 ```ts
 MikroORM.init({
@@ -353,8 +308,7 @@ MikroORM.init({
 
 ## Custom Repository
 
-You can also register custom base repository (for all entities where you do not specify 
-`customRepository`) globally:
+You can also register custom base repository (for all entities where you do not specify `customRepository`) globally:
 
 > You can still use entity specific repositories in combination with global base repository.
 
@@ -368,14 +322,9 @@ Read more about this in [Repositories](repositories.md) section.
 
 ## Strict Mode and property validation
 
-> Since v4.0.3 the validation needs to be explicitly enabled via `validate: true`.
-> It has performance implications and usually should not be needed, as long as
-> you don't modify your entities via `Object.assign()`.
+> Since v4.0.3 the validation needs to be explicitly enabled via `validate: true`. It has performance implications and usually should not be needed, as long as you don't modify your entities via `Object.assign()`.
 
-`MikroORM` will validate your properties before actual persisting happens. It will try to fix wrong 
-data types for you automatically. If automatic conversion fails, it will throw an error. You can 
-enable strict mode to disable this feature and let ORM throw errors instead. Validation is triggered 
-when persisting the entity. 
+`MikroORM` will validate your properties before actual persisting happens. It will try to fix wrong data types for you automatically. If automatic conversion fails, it will throw an error. You can enable strict mode to disable this feature and let ORM throw errors instead. Validation is triggered when persisting the entity.
 
 ```ts
 MikroORM.init({
@@ -388,12 +337,9 @@ Read more about this in [Property Validation](property-validation.md) section.
 
 ## Required properties validation
 
-Since v5, new entities are validated on runtime (just before executing insert
-queries), based on the entity metadata. This means that mongo users now need 
-to use `nullable: true` on their optional properties too).
+Since v5, new entities are validated on runtime (just before executing insert queries), based on the entity metadata. This means that mongo users now need to use `nullable: true` on their optional properties too).
 
-This behaviour can be disabled globally via `validateRequired: false` in the 
-ORM config.
+This behaviour can be disabled globally via `validateRequired: false` in the ORM config.
 
 ```ts
 MikroORM.init({
@@ -403,8 +349,7 @@ MikroORM.init({
 
 ## Debugging & Logging
 
-You can enable logging with `debug` option. Either set it to `true` to log everything, or 
-provide array of `'query' | 'query-params' | 'discovery' | 'info'` namespaces.
+You can enable logging with `debug` option. Either set it to `true` to log everything, or provide array of `'query' | 'query-params' | 'discovery' | 'info'` namespaces.
 
 ```ts
 MikroORM.init({
@@ -419,8 +364,7 @@ Read more about this in [Debugging](logging.md) section.
 
 ## Custom Fail Handler
 
-When no entity is found during `em.findOneOrFail()` call, `new Error()` will be thrown. 
-You can customize how the `Error` instance is created via `findOneOrFailHandler`:
+When no entity is found during `em.findOneOrFail()` call, `new Error()` will be thrown. You can customize how the `Error` instance is created via `findOneOrFailHandler`:
 
 ```ts
 MikroORM.init({
@@ -447,8 +391,7 @@ MikroORM.init({
 
 ## Migrations
 
-Under the `migrations` namespace, you can adjust how the integrated migrations support works.
-Following example shows all possible options and their defaults:
+Under the `migrations` namespace, you can adjust how the integrated migrations support works. Following example shows all possible options and their defaults:
 
 ```ts
 MikroORM.init({
@@ -483,8 +426,7 @@ Read more about this in [seeding docs](seeding.md).
 
 ## Caching
 
-By default, metadata discovery results are cached. You can either disable caching, or adjust 
-how it works. Following example shows all possible options and their defaults:
+By default, metadata discovery results are cached. You can either disable caching, or adjust how it works. Following example shows all possible options and their defaults:
 
 ```ts
 MikroORM.init({
@@ -510,30 +452,24 @@ MikroORM.init({
   ...
 });
 ```
- > This should be disabled in production environments for added security.
+
+> This should be disabled in production environments for added security.
 
 ## Using native private properties
 
-If we want to use native private properties inside entities, the default approach of 
-how MikroORM creates entity instances via `Object.create()` is not viable (more about this
-in the [issue](https://github.com/mikro-orm/mikro-orm/issues/1226)). To force usage of entity
-constructors, we can use `forceEntityConstructor` toggle:
+If we want to use native private properties inside entities, the default approach of how MikroORM creates entity instances via `Object.create()` is not viable (more about this in the [issue](https://github.com/mikro-orm/mikro-orm/issues/1226)). To force usage of entity constructors, we can use `forceEntityConstructor` toggle:
 
 ```ts
 MikroORM.init({
-  forceEntityConstructor: true, // or specify just some entities via `[Author, 'Book', ...]` 
+  forceEntityConstructor: true, // or specify just some entities via `[Author, 'Book', ...]`
 });
 ```
 
-## Persist created entities automatically 
+## Persist created entities automatically
 
-If we create new entity via `em.create()`, we still need to mark it via 
-`em.persist()` to make the `EntityManager` aware of it. Alternatively we
-can enable `persistOnCreate` flag, which will make this work automatically.
+If we create new entity via `em.create()`, we still need to mark it via `em.persist()` to make the `EntityManager` aware of it. Alternatively we can enable `persistOnCreate` flag, which will make this work automatically.
 
-> This flag affects only `em.create()`, entities created via constructors
-> still need explicit `em.persist()` call or they need to be part of entity 
-> graph of some already managed entity.
+> This flag affects only `em.create()`, entities created via constructors still need explicit `em.persist()` call or they need to be part of entity graph of some already managed entity.
 
 ```ts
 MikroORM.init({
@@ -543,26 +479,19 @@ MikroORM.init({
 
 ## Using global Identity Map
 
-In v5, it is no longer possible to use the global identity map. This was a
-common issue that led to weird bugs, as using the global EM without request
-context is almost always wrong, we always need to have a dedicated context for
-each request, so they do not interfere.
+In v5, it is no longer possible to use the global identity map. This was a common issue that led to weird bugs, as using the global EM without request context is almost always wrong, we always need to have a dedicated context for each request, so they do not interfere.
 
-We still can disable this check via `allowGlobalContext` configuration, or
-a connected environment variable `MIKRO_ORM_ALLOW_GLOBAL_CONTEXT` - this can
-be handy especially in unit tests.
+We still can disable this check via `allowGlobalContext` configuration, or a connected environment variable `MIKRO_ORM_ALLOW_GLOBAL_CONTEXT` - this can be handy especially in unit tests.
 
 ```ts
 MikroORM.init({
-  allowGlobalContext: true, 
+  allowGlobalContext: true,
 });
 ```
 
 ## Using environment variables
 
-Since v4.5 it is possible to set most of the ORM options via environment variables.
-By default `.env` file from the root directory is loaded - it is also possible to
-set full path to the env file you want to use via `MIKRO_ORM_ENV` environment variable.
+Since v4.5 it is possible to set most of the ORM options via environment variables. By default `.env` file from the root directory is loaded - it is also possible to set full path to the env file you want to use via `MIKRO_ORM_ENV` environment variable.
 
 > Environment variables always have precedence.
 
@@ -582,53 +511,53 @@ MIKRO_ORM_FORCE_UNDEFINED = true
 
 Full list of supported options:
 
-| env variable | config key |
-|--------------|------------|
-| `MIKRO_ORM_BASE_DIR` | `baseDir` |
-| `MIKRO_ORM_TYPE` | `type` |
-| `MIKRO_ORM_ENTITIES` | `entities` |
-| `MIKRO_ORM_ENTITIES_TS` | `entitiesTs` |
-| `MIKRO_ORM_CLIENT_URL` | `clientUrl` |
-| `MIKRO_ORM_HOST` | `host` |
-| `MIKRO_ORM_PORT` | `port` |
-| `MIKRO_ORM_USER` | `user` |
-| `MIKRO_ORM_PASSWORD` | `password` |
-| `MIKRO_ORM_DB_NAME` | `dbName` |
-| `MIKRO_ORM_LOAD_STRATEGY` | `loadStrategy` |
-| `MIKRO_ORM_BATCH_SIZE` | `batchSize` |
-| `MIKRO_ORM_USE_BATCH_INSERTS` | `useBatchInserts` |
-| `MIKRO_ORM_USE_BATCH_UPDATES` | `useBatchUpdates` |
-| `MIKRO_ORM_STRICT` | `strict` |
-| `MIKRO_ORM_VALIDATE` | `validate` |
-| `MIKRO_ORM_AUTO_JOIN_ONE_TO_ONE_OWNER` | `autoJoinOneToOneOwner` |
-| `MIKRO_ORM_PROPAGATE_TO_ONE_OWNER` | `propagateToOneOwner` |
-| `MIKRO_ORM_POPULATE_AFTER_FLUSH` | `populateAfterFlush` |
-| `MIKRO_ORM_FORCE_ENTITY_CONSTRUCTOR` | `forceEntityConstructor` |
-| `MIKRO_ORM_FORCE_UNDEFINED` | `forceUndefined` |
-| `MIKRO_ORM_FORCE_UTC_TIMEZONE` | `forceUtcTimezone` |
-| `MIKRO_ORM_TIMEZONE` | `timezone` |
-| `MIKRO_ORM_ENSURE_INDEXES` | `ensureIndexes` |
-| `MIKRO_ORM_IMPLICIT_TRANSACTIONS` | `implicitTransactions` |
-| `MIKRO_ORM_DEBUG` | `debug` |
-| `MIKRO_ORM_VERBOSE` | `verbose` |
-| `MIKRO_ORM_DISCOVERY_WARN_WHEN_NO_ENTITIES` | `discovery.warnWhenNoEntities` |
-| `MIKRO_ORM_DISCOVERY_REQUIRE_ENTITIES_ARRAY` | `discovery.requireEntitiesArray` |
-| `MIKRO_ORM_DISCOVERY_ALWAYS_ANALYSE_PROPERTIES` | `discovery.alwaysAnalyseProperties` |
-| `MIKRO_ORM_DISCOVERY_DISABLE_DYNAMIC_FILE_ACCESS` | `discovery.disableDynamicFileAccess` |
-| `MIKRO_ORM_MIGRATIONS_TABLE_NAME` | `migrations.tableName` |
-| `MIKRO_ORM_MIGRATIONS_PATH` | `migrations.path` |
-| `MIKRO_ORM_MIGRATIONS_PATH_TS` | `migrations.pathTs` |
-| `MIKRO_ORM_MIGRATIONS_GLOB` | `migrations.glob` |
-| `MIKRO_ORM_MIGRATIONS_TRANSACTIONAL` | `migrations.transactional` |
-| `MIKRO_ORM_MIGRATIONS_DISABLE_FOREIGN_KEYS` | `migrations.disableForeignKeys` |
-| `MIKRO_ORM_MIGRATIONS_ALL_OR_NOTHING` | `migrations.allOrNothing` |
-| `MIKRO_ORM_MIGRATIONS_DROP_TABLES` | `migrations.dropTables` |
-| `MIKRO_ORM_MIGRATIONS_SAFE` | `migrations.safe` |
-| `MIKRO_ORM_MIGRATIONS_EMIT` | `migrations.emit` |
-| `MIKRO_ORM_SCHEMA_GENERATOR_DISABLE_FOREIGN_KEYS` | `migrations.disableForeignKeys` |
+| env variable                                                | config key                               |
+| ----------------------------------------------------------- | ---------------------------------------- |
+| `MIKRO_ORM_BASE_DIR`                                        | `baseDir`                                |
+| `MIKRO_ORM_TYPE`                                            | `type`                                   |
+| `MIKRO_ORM_ENTITIES`                                        | `entities`                               |
+| `MIKRO_ORM_ENTITIES_TS`                                     | `entitiesTs`                             |
+| `MIKRO_ORM_CLIENT_URL`                                      | `clientUrl`                              |
+| `MIKRO_ORM_HOST`                                            | `host`                                   |
+| `MIKRO_ORM_PORT`                                            | `port`                                   |
+| `MIKRO_ORM_USER`                                            | `user`                                   |
+| `MIKRO_ORM_PASSWORD`                                        | `password`                               |
+| `MIKRO_ORM_DB_NAME`                                         | `dbName`                                 |
+| `MIKRO_ORM_LOAD_STRATEGY`                                   | `loadStrategy`                           |
+| `MIKRO_ORM_BATCH_SIZE`                                      | `batchSize`                              |
+| `MIKRO_ORM_USE_BATCH_INSERTS`                               | `useBatchInserts`                        |
+| `MIKRO_ORM_USE_BATCH_UPDATES`                               | `useBatchUpdates`                        |
+| `MIKRO_ORM_STRICT`                                          | `strict`                                 |
+| `MIKRO_ORM_VALIDATE`                                        | `validate`                               |
+| `MIKRO_ORM_AUTO_JOIN_ONE_TO_ONE_OWNER`                      | `autoJoinOneToOneOwner`                  |
+| `MIKRO_ORM_PROPAGATE_TO_ONE_OWNER`                          | `propagateToOneOwner`                    |
+| `MIKRO_ORM_POPULATE_AFTER_FLUSH`                            | `populateAfterFlush`                     |
+| `MIKRO_ORM_FORCE_ENTITY_CONSTRUCTOR`                        | `forceEntityConstructor`                 |
+| `MIKRO_ORM_FORCE_UNDEFINED`                                 | `forceUndefined`                         |
+| `MIKRO_ORM_FORCE_UTC_TIMEZONE`                              | `forceUtcTimezone`                       |
+| `MIKRO_ORM_TIMEZONE`                                        | `timezone`                               |
+| `MIKRO_ORM_ENSURE_INDEXES`                                  | `ensureIndexes`                          |
+| `MIKRO_ORM_IMPLICIT_TRANSACTIONS`                           | `implicitTransactions`                   |
+| `MIKRO_ORM_DEBUG`                                           | `debug`                                  |
+| `MIKRO_ORM_VERBOSE`                                         | `verbose`                                |
+| `MIKRO_ORM_DISCOVERY_WARN_WHEN_NO_ENTITIES`                 | `discovery.warnWhenNoEntities`           |
+| `MIKRO_ORM_DISCOVERY_REQUIRE_ENTITIES_ARRAY`                | `discovery.requireEntitiesArray`         |
+| `MIKRO_ORM_DISCOVERY_ALWAYS_ANALYSE_PROPERTIES`             | `discovery.alwaysAnalyseProperties`      |
+| `MIKRO_ORM_DISCOVERY_DISABLE_DYNAMIC_FILE_ACCESS`           | `discovery.disableDynamicFileAccess`     |
+| `MIKRO_ORM_MIGRATIONS_TABLE_NAME`                           | `migrations.tableName`                   |
+| `MIKRO_ORM_MIGRATIONS_PATH`                                 | `migrations.path`                        |
+| `MIKRO_ORM_MIGRATIONS_PATH_TS`                              | `migrations.pathTs`                      |
+| `MIKRO_ORM_MIGRATIONS_GLOB`                                 | `migrations.glob`                        |
+| `MIKRO_ORM_MIGRATIONS_TRANSACTIONAL`                        | `migrations.transactional`               |
+| `MIKRO_ORM_MIGRATIONS_DISABLE_FOREIGN_KEYS`                 | `migrations.disableForeignKeys`          |
+| `MIKRO_ORM_MIGRATIONS_ALL_OR_NOTHING`                       | `migrations.allOrNothing`                |
+| `MIKRO_ORM_MIGRATIONS_DROP_TABLES`                          | `migrations.dropTables`                  |
+| `MIKRO_ORM_MIGRATIONS_SAFE`                                 | `migrations.safe`                        |
+| `MIKRO_ORM_MIGRATIONS_EMIT`                                 | `migrations.emit`                        |
+| `MIKRO_ORM_SCHEMA_GENERATOR_DISABLE_FOREIGN_KEYS`           | `migrations.disableForeignKeys`          |
 | `MIKRO_ORM_SCHEMA_GENERATOR_CREATE_FOREIGN_KEY_CONSTRAINTS` | `migrations.createForeignKeyConstraints` |
-| `MIKRO_ORM_SEEDER_PATH` | `seeder.path` |
-| `MIKRO_ORM_SEEDER_PATH_TS` | `seeder.pathTs` |
-| `MIKRO_ORM_SEEDER_GLOB` | `seeder.glob` |
-| `MIKRO_ORM_SEEDER_EMIT` | `seeder.emit` |
-| `MIKRO_ORM_SEEDER_DEFAULT_SEEDER` | `seeder.defaultSeeder` |
+| `MIKRO_ORM_SEEDER_PATH`                                     | `seeder.path`                            |
+| `MIKRO_ORM_SEEDER_PATH_TS`                                  | `seeder.pathTs`                          |
+| `MIKRO_ORM_SEEDER_GLOB`                                     | `seeder.glob`                            |
+| `MIKRO_ORM_SEEDER_EMIT`                                     | `seeder.emit`                            |
+| `MIKRO_ORM_SEEDER_DEFAULT_SEEDER`                           | `seeder.defaultSeeder`                   |

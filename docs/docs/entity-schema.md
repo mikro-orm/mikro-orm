@@ -2,7 +2,7 @@
 title: Defining Entities via EntitySchema
 ---
 
-With `EntitySchema` helper we define the schema programmatically. 
+With `EntitySchema` helper we define the schema programmatically.
 
 ```ts title="./entities/Book.ts"
 export interface Book extends CustomBaseEntity {
@@ -13,7 +13,7 @@ export interface Book extends CustomBaseEntity {
 }
 
 // The second type argument is optional, and should be used only with custom
-// base entities, not with the `BaseEntity` class exported from `@mikro-orm/core`. 
+// base entities, not with the `BaseEntity` class exported from `@mikro-orm/core`.
 export const schema = new EntitySchema<Book, CustomBaseEntity>({
   // name should be used only with interfaces
   name: 'Book',
@@ -29,8 +29,7 @@ export const schema = new EntitySchema<Book, CustomBaseEntity>({
 });
 ```
 
-When creating new entity instances, you will need to use `em.create()` method that will
-create instance of internally created class. 
+When creating new entity instances, you will need to use `em.create()` method that will create instance of internally created class.
 
 ```ts
 const repo = em.getRepository<Author>('Author');
@@ -42,7 +41,7 @@ await repo.persistAndFlush(author);
 
 ## Using custom entity classes
 
-You can optionally use custom class for entity instances.  
+You can optionally use custom class for entity instances.
 
 ```ts title="./entities/Author.ts"
 export class Author extends CustomBaseEntity {
@@ -55,7 +54,7 @@ export class Author extends CustomBaseEntity {
   books = new Collection<Book>(this);
   favouriteBook?: Book;
   version?: number;
-  
+
   constructor(name: string, email: string) {
     super();
     this.name = name;
@@ -90,7 +89,7 @@ await repo.persistAndFlush(author);
 
 ## Using custom base entity
 
-Do not forget that base entities needs to be discovered just like normal entities. 
+Do not forget that base entities needs to be discovered just like normal entities.
 
 ```ts title="./entities/BaseEntity.ts"
 export interface CustomBaseEntity {
@@ -112,9 +111,7 @@ export const schema = new EntitySchema<CustomBaseEntity>({
 
 ## Configuration Reference
 
-The parameter of `EntitySchema` requires to provide either `name` or `class` parameters. 
-When using `class`, `extends` will be automatically inferred. You can optionally pass 
-these additional parameters:
+The parameter of `EntitySchema` requires to provide either `name` or `class` parameters. When using `class`, `extends` will be automatically inferred. You can optionally pass these additional parameters:
 
 ```ts
 name: string;
@@ -129,8 +126,7 @@ hooks: Partial<Record<keyof typeof EventType, ((string & keyof T) | NonNullable<
 abstract: boolean;
 ```
 
-Every property then needs to contain a type specification - one of `type`/`customType`/`entity`.
-Here are some examples of various property types:
+Every property then needs to contain a type specification - one of `type`/`customType`/`entity`. Here are some examples of various property types:
 
 ```ts
 export enum MyEnum {
@@ -187,10 +183,7 @@ export const schema = new EntitySchema<BookTag>({
 
 ## Hooks example
 
-Entity hooks can be defined either as a property name, or as a function.
-When defined as a function, the `this` argument will be the entity instance.
-Arrow functions can be used if desired, and the entity will be available at args.entity.
-See [Events and Lifecycle Hooks](events.md) section for more details on `EventArgs`.
+Entity hooks can be defined either as a property name, or as a function. When defined as a function, the `this` argument will be the entity instance. Arrow functions can be used if desired, and the entity will be available at args.entity. See [Events and Lifecycle Hooks](events.md) section for more details on `EventArgs`.
 
 ```ts
 export class BookTag {

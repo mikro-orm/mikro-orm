@@ -2,11 +2,9 @@
 title: Migrations
 ---
 
-MikroORM has integrated support for migrations via [umzug](https://github.com/sequelize/umzug).
-It allows you to generate migrations with current schema differences.
+MikroORM has integrated support for migrations via [umzug](https://github.com/sequelize/umzug). It allows you to generate migrations with current schema differences.
 
-By default, each migration will be all executed inside a transaction, and all of them will 
-be wrapped in one master transaction, so if one of them fails, everything will be rolled back. 
+By default, each migration will be all executed inside a transaction, and all of them will be wrapped in one master transaction, so if one of them fails, everything will be rolled back.
 
 ## Migration class
 
@@ -22,10 +20,9 @@ export class Migration20191019195930 extends Migration {
 }
 ```
 
-To support undoing those changed, you can implement the `down` method, which throws an error by default. 
+To support undoing those changed, you can implement the `down` method, which throws an error by default.
 
-Migrations are by default wrapped in a transaction. You can override this behaviour on 
-per migration basis by implementing the `isTransactional(): boolean` method.
+Migrations are by default wrapped in a transaction. You can override this behaviour on per migration basis by implementing the `isTransactional(): boolean` method.
 
 `Configuration` object and driver instance are available in the `Migration` class context.
 
@@ -50,7 +47,7 @@ await MikroORM.init({
 
 ## Using via CLI
 
-You can use it via CLI: 
+You can use it via CLI:
 
 ```sh
 npx mikro-orm migration:create   # Create new migration with current schema diff
@@ -60,8 +57,7 @@ npx mikro-orm migration:list     # List all executed migrations
 npx mikro-orm migration:pending  # List all pending migrations
 ```
 
-For `migration:up` and `migration:down` commands you can specify `--from` (`-f`), `--to` (`-t`) 
-and `--only` (`-o`) options to run only a subset of migrations:
+For `migration:up` and `migration:down` commands you can specify `--from` (`-f`), `--to` (`-t`) and `--only` (`-o`) options to run only a subset of migrations:
 
 ```sh
 npx mikro-orm migration:up --from 2019101911 --to 2019102117  # the same as above
@@ -69,8 +65,7 @@ npx mikro-orm migration:up --only 2019101923                  # apply a single m
 npx mikro-orm migration:down --to 0                           # migrate down all migrations
 ```
 
-> To run TS migration files, you will need to [enable `useTsNode` flag](installation.md) 
-> in your `package.json`.
+> To run TS migration files, you will need to [enable `useTsNode` flag](installation.md) in your `package.json`.
 
 ## Using the Migrator programmatically
 
@@ -109,9 +104,7 @@ $ ts-node migrate
 
 ### MySQL
 
-There is no way to rollback DDL changes in MySQL. An implicit commit is forced for those 
-queries automatically, so transactions are not working as expected. 
+There is no way to rollback DDL changes in MySQL. An implicit commit is forced for those queries automatically, so transactions are not working as expected.
 
 - https://github.com/mikro-orm/mikro-orm/issues/217
 - https://dev.mysql.com/doc/refman/5.7/en/implicit-commit.html
-

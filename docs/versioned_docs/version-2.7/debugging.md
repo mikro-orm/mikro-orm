@@ -20,8 +20,7 @@ By doing this `MikroORM` will start using provided logger function to dump all q
 [query-logger] COMMIT [took 2 ms]
 ```
 
-It is also useful for debugging problems with entity discovery, as you will see information
-about every processed entity:
+It is also useful for debugging problems with entity discovery, as you will see information about every processed entity:
 
 ```
 ORM entity discovery started

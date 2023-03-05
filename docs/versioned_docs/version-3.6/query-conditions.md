@@ -2,8 +2,7 @@
 title: Smart Query Conditions
 ---
 
-When you want to make complex queries, you can easily end up with a lot of boilerplate code
-full of curly brackets:
+When you want to make complex queries, you can easily end up with a lot of boilerplate code full of curly brackets:
 
 ```typescript
 const res = await orm.em.find(Author, { $and: [
@@ -20,8 +19,8 @@ const res = await orm.em.find(Author, { $and: [
 For AND condition with single field, you can also do this:
 
 ```typescript
-const res = await orm.em.find(Author, { 
-  id: { 
+const res = await orm.em.find(Author, {
+  id: {
     $in: [1, 2, 7],
     $nin: [3, 4],
     $gt: 5,
@@ -59,12 +58,9 @@ const res = await orm.em.find(Author, { $and: [
 ] });
 ```
 
-> Keys with operators like this will cause TypeScript errors as there is no way to support 
-> them on the typings side. They are still supported, but you will need to cast the condition
-> to `any` to use them. 
+> Keys with operators like this will cause TypeScript errors as there is no way to support them on the typings side. They are still supported, but you will need to cast the condition to `any` to use them.
 
-There is also shortcut for `$in` - simply provide array as value and it 
-will be converted automatically:
+There is also shortcut for `$in` - simply provide array as value and it will be converted automatically:
 
 ```typescript
 const res = await orm.em.find(Author, { favouriteBook: [1, 2, 7] });
@@ -80,23 +76,23 @@ const res = await orm.em.find(Author, [1, 2, 7]);
 
 ### Comparison
 
-| operator | name               | description |
-|----------|--------------------|-------------|
-| `$eq`	   | equals             | Matches values that are equal to a specified value. |
-| `$gt`	   | greater            | Matches values that are greater than a specified value. |
-| `$gte`   | greater or equal   | Matches values that are greater than or equal to a specified value. |
-| `$in`	   | contains           | Matches any of the values specified in an array. |
-| `$lt`	   | lower              | Matches values that are less than a specified value. |
-| `$lte`   | lower or equal     | Matches values that are less than or equal to a specified value. |
-| `$ne`	   | not equal          | Matches all values that are not equal to a specified value. |
-| `$nin`   | not contains       | Matches none of the values specified in an array. |
-| `$like`  | like               | Uses LIKE operator |
-| `$re`    | regexp             | Uses REGEXP operator |
+| operator | name             | description                                                         |
+| -------- | ---------------- | ------------------------------------------------------------------- |
+| `$eq`    | equals           | Matches values that are equal to a specified value.                 |
+| `$gt`    | greater          | Matches values that are greater than a specified value.             |
+| `$gte`   | greater or equal | Matches values that are greater than or equal to a specified value. |
+| `$in`    | contains         | Matches any of the values specified in an array.                    |
+| `$lt`    | lower            | Matches values that are less than a specified value.                |
+| `$lte`   | lower or equal   | Matches values that are less than or equal to a specified value.    |
+| `$ne`    | not equal        | Matches all values that are not equal to a specified value.         |
+| `$nin`   | not contains     | Matches none of the values specified in an array.                   |
+| `$like`  | like             | Uses LIKE operator                                                  |
+| `$re`    | regexp           | Uses REGEXP operator                                                |
 
 ### Logical
 
-| operator | description |
-|----------|-------------|
+| operator | description                                                                                             |
+| -------- | ------------------------------------------------------------------------------------------------------- |
 | `$and`   | Joins query clauses with a logical AND returns all documents that match the conditions of both clauses. |
-| `$not`   | Inverts the effect of a query expression and returns documents that do not match the query expression. |
+| `$not`   | Inverts the effect of a query expression and returns documents that do not match the query expression.  |
 | `$or`    | Joins query clauses with a logical OR returns all documents that match the conditions of either clause. |

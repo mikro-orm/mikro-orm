@@ -2,12 +2,9 @@
 title: Installation & Usage
 ---
 
-First install the module via `yarn` or `npm` and do not forget to install the 
-driver package as well:
+First install the module via `yarn` or `npm` and do not forget to install the driver package as well:
 
-> Since v4, we should install the driver package, but not the db connector itself,
-> e.g. install `@mikro-orm/sqlite`, but not `sqlite3` as that is already included
-> in the driver package.
+> Since v4, we should install the driver package, but not the db connector itself, e.g. install `@mikro-orm/sqlite`, but not `sqlite3` as that is already included in the driver package.
 
 ```sh
 yarn add @mikro-orm/core @mikro-orm/mongodb     # for mongo
@@ -27,8 +24,7 @@ npm i -s @mikro-orm/core @mikro-orm/postgresql  # for postgresql
 npm i -s @mikro-orm/core @mikro-orm/sqlite      # for sqlite
 ```
 
-Next we will need to enable support for [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html)
-as well as `esModuleInterop` in `tsconfig.json` via:
+Next we will need to enable support for [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html) as well as `esModuleInterop` in `tsconfig.json` via:
 
 ```json
 "experimentalDecorators": true,
@@ -38,9 +34,7 @@ as well as `esModuleInterop` in `tsconfig.json` via:
 
 Then call `MikroORM.init` as part of bootstrapping our app:
 
-> To access driver specific methods like `em.createQueryBuilder()` we need to specify
-> the driver type when calling `MikroORM.init<D>()`. Alternatively we can cast the
-> `orm.em` to `EntityManager` exported from the driver package:
+> To access driver specific methods like `em.createQueryBuilder()` we need to specify the driver type when calling `MikroORM.init<D>()`. Alternatively we can cast the `orm.em` to `EntityManager` exported from the driver package:
 >
 > ```ts
 > import { EntityManager } from '@mikro-orm/postgresql';
@@ -62,10 +56,7 @@ console.log(orm.em); // access EntityManager via `em` property
 
 > Read more about all the possible configuration options in [Advanced Configuration](configuration.md) section.
 
-We can also provide paths where we store our entities via `entities` array. Internally
-it uses [`globby`](https://github.com/sindresorhus/globby) so we can use 
-[globbing patterns](https://github.com/sindresorhus/globby#globbing-patterns), 
-including negative globs. 
+We can also provide paths where we store our entities via `entities` array. Internally it uses [`globby`](https://github.com/sindresorhus/globby) so we can use [globbing patterns](https://github.com/sindresorhus/globby#globbing-patterns), including negative globs.
 
 ```ts
 const orm = await MikroORM.init<PostgreSqlDriver>({
@@ -75,21 +66,17 @@ const orm = await MikroORM.init<PostgreSqlDriver>({
 });
 ```
 
-If we are experiencing problems with folder based discovery, try using `mikro-orm debug`
-CLI command to check what paths are actually being used.
+If we are experiencing problems with folder based discovery, try using `mikro-orm debug` CLI command to check what paths are actually being used.
 
 > Since v4, we can also use file globs, like `./dist/app/**/entities/*.entity.js`.
 
 We can also set the configuration via [environment variables](configuration.md#using-environment-variables).
 
-> We can pass additional options to the underlying driver (e.g. `mysql2`) via `driverOptions`. 
-> The object will be deeply merged, overriding all internally used options.
+> We can pass additional options to the underlying driver (e.g. `mysql2`) via `driverOptions`. The object will be deeply merged, overriding all internally used options.
 
 ## Possible issues with circular dependencies
 
-Our entities will most probably contain circular dependencies (e.g. if we use bi-directional 
-relationship). While this is fine, there might be issues caused by wrong order of entities 
-during discovery, especially when we are using the folder based way.
+Our entities will most probably contain circular dependencies (e.g. if we use bi-directional relationship). While this is fine, there might be issues caused by wrong order of entities during discovery, especially when we are using the folder based way.
 
 The errors caused by circular dependencies are usually similar to this one:
 
@@ -110,17 +97,12 @@ TypeError: Cannot read property 'name' of undefined
 
 If we encounter this, we have basically two options:
 
-- Use entity references in `entities` array to have control over the order of discovery. 
-  We might need to play with the actual order we provide here, or possibly with the 
-  order of import statements.
-- Use strings instead of references (e.g. `@OneToMany('Book', 'author')`). The downside 
-  here is that we will lose the typechecking capabilities of the decorators. 
+- Use entity references in `entities` array to have control over the order of discovery. We might need to play with the actual order we provide here, or possibly with the order of import statements.
+- Use strings instead of references (e.g. `@OneToMany('Book', 'author')`). The downside here is that we will lose the typechecking capabilities of the decorators.
 
 ## Entity Discovery in TypeScript
 
-In v4 the default metadata provider is `ReflectMetadataProvider`. If we want to use
-`ts-morph` based discovery (that reads actual TS types via the compiler API), we 
-need to install `@mikro-orm/reflection`.
+In v4 the default metadata provider is `ReflectMetadataProvider`. If we want to use `ts-morph` based discovery (that reads actual TS types via the compiler API), we need to install `@mikro-orm/reflection`.
 
 ```ts
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
@@ -141,19 +123,16 @@ const orm = await MikroORM.init<PostgreSqlDriver>({
 });
 ```
 
-> It is important that `entities` will point to the compiled JS files, and `entitiesTs`
-> will point to the TS source files. We should not mix those. 
+> It is important that `entities` will point to the compiled JS files, and `entitiesTs` will point to the TS source files. We should not mix those.
 
-> For `ts-morph` discovery to work in production, we need to deploy `.d.ts` declaration
-> files. Be sure to enable `compilerOptions.declaration` in our `tsconfig.json`.
+> For `ts-morph` discovery to work in production, we need to deploy `.d.ts` declaration files. Be sure to enable `compilerOptions.declaration` in our `tsconfig.json`.
 
 We can also use different [metadata provider](metadata-providers.md) or even write custom one:
 
 - `ReflectMetadataProvider` that uses `reflect-metadata` instead of `ts-morph`
 - `JavaScriptMetadataProvider` that allows us to manually provide the entity schema (mainly for Vanilla JS)
 
-> Using [`EntitySchema`](entity-schema.md) is another way to define our entities, which is better
-> suited than using `JavaScriptMetadataProvider`.
+> Using [`EntitySchema`](entity-schema.md) is another way to define our entities, which is better suited than using `JavaScriptMetadataProvider`.
 
 ```ts
 const orm = await MikroORM.init<PostgreSqlDriver>({
@@ -175,8 +154,7 @@ app.use((req, res, next) => {
 });
 ```
 
-> If the `next` handler needs to be awaited (like in Koa), 
-> use `RequestContext.createAsync()` instead.
+> If the `next` handler needs to be awaited (like in Koa), use `RequestContext.createAsync()` instead.
 >
 > ```ts
 > app.use((ctx, next) => RequestContext.createAsync(orm.em, next));
@@ -186,12 +164,9 @@ More info about `RequestContext` is described [here](identity-map.md#request-con
 
 ## Setting up the Commandline Tool
 
-MikroORM ships with a number of command line tools that are very helpful during development, 
-like `SchemaGenerator` and `EntityGenerator`. We can call this command from the NPM binary 
-directory or use `npx`:
+MikroORM ships with a number of command line tools that are very helpful during development, like `SchemaGenerator` and `EntityGenerator`. We can call this command from the NPM binary directory or use `npx`:
 
-> To work with the CLI, first install `@mikro-orm/cli` package locally.
-> The version needs to be aligned with the `@mikro-orm/core` package.
+> To work with the CLI, first install `@mikro-orm/cli` package locally. The version needs to be aligned with the `@mikro-orm/core` package.
 
 ```sh
 # install the CLI package first!
@@ -207,15 +182,11 @@ $ npx mikro-orm
 $ yarn mikro-orm
 ```
 
-For CLI to be able to access our database, we will need to create `mikro-orm.config.js` file that exports our ORM configuration. 
+For CLI to be able to access our database, we will need to create `mikro-orm.config.js` file that exports our ORM configuration.
 
-> ORM configuration file can export the Promise, like:
-> `export default Promise.resolve({...});`.
+> ORM configuration file can export the Promise, like: `export default Promise.resolve({...});`.
 
-TypeScript is also supported, just enable `useTsNode` flag in our
-`package.json` file. There we can also set up array of possible paths to `mikro-orm.config` file,
-as well as use different file name. The `package.json` file can be located in 
-the current working directory, or in one of its parent folders.
+TypeScript is also supported, just enable `useTsNode` flag in our `package.json` file. There we can also set up array of possible paths to `mikro-orm.config` file, as well as use different file name. The `package.json` file can be located in the current working directory, or in one of its parent folders.
 
 We can use these environment variables to override CLI settings:
 
@@ -225,13 +196,9 @@ We can use these environment variables to override CLI settings:
 
 > Do not forget to install `ts-node` when enabling `useTsNode` flag.
 
-> The `useTsNode` is used only when executing the CLI, it is not respected when 
-> running our app.
+> The `useTsNode` is used only when executing the CLI, it is not respected when running our app.
 
-MikroORM will always try to load the first available config file, based on the 
-order in `configPaths`. This means that if we specify the first item as the TS 
-config, but we do not have `ts-node` enabled and installed, it will fail to 
-load it.
+MikroORM will always try to load the first available config file, based on the order in `configPaths`. This means that if we specify the first item as the TS config, but we do not have `ts-node` enabled and installed, it will fail to load it.
 
 ```json title="./package.json"
 {
@@ -277,23 +244,16 @@ export default defineConfig({
 });
 ```
 
-When we have `useTsNode` disabled and `ts-node` is not already registered and detected,
-TS config files will be ignored.
+When we have `useTsNode` disabled and `ts-node` is not already registered and detected, TS config files will be ignored.
 
-Once we have the CLI config properly set up, we can omit the `MikroORM.init()` options
-parameter, and the CLI config will be automatically used. This process may fail if we
-use bundlers that use tree shaking. As the config file is not referenced anywhere 
-statically, it would not be compiled - for that the best approach is to provide the config
-explicitly:
+Once we have the CLI config properly set up, we can omit the `MikroORM.init()` options parameter, and the CLI config will be automatically used. This process may fail if we use bundlers that use tree shaking. As the config file is not referenced anywhere statically, it would not be compiled - for that the best approach is to provide the config explicitly:
 
 ```ts
 import config from './mikro-orm.config';
 const orm = await MikroORM.init(config);
 ```
 
-> We can also use different names for this file, simply rename it in the `configPaths` array
-> our in `package.json`. We can also use `MIKRO_ORM_CLI` environment variable with the path
-> to override `configPaths` value.
+> We can also use different names for this file, simply rename it in the `configPaths` array our in `package.json`. We can also use `MIKRO_ORM_CLI` environment variable with the path to override `configPaths` value.
 
 Now we should be able to start using the CLI. All available commands are listed in the CLI help:
 
@@ -330,10 +290,8 @@ Examples:
 
 To verify our setup, we can use `mikro-orm debug` command.
 
-> When we have CLI config properly set up, we can omit the `options` parameter
-> when calling `MikroORM.init()`.
+> When we have CLI config properly set up, we can omit the `options` parameter when calling `MikroORM.init()`.
 
-> Note: When importing a dump file we need `multipleStatements: true` in our
-> configuration. Please check the configuration documentation for more information.
+> Note: When importing a dump file we need `multipleStatements: true` in our configuration. Please check the configuration documentation for more information.
 
 Now we can start [defining our entities](defining-entities.md).

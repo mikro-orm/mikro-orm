@@ -6,23 +6,19 @@ You can define custom types by extending `Type` abstract class. It has 4 optiona
 
 - `convertToDatabaseValue(value: any, platform: Platform): any`
 
-  Converts a value from its JS representation to its database representation of this type.
-  By default returns unchanged `value`.
+  Converts a value from its JS representation to its database representation of this type. By default returns unchanged `value`.
 
 - `convertToJSValue(value: any, platform: Platform): any`
 
-  Converts a value from its database representation to its JS representation of this type.
-  By default returns unchanged `value`.
+  Converts a value from its database representation to its JS representation of this type. By default returns unchanged `value`.
 
 - `toJSON(value: any, platform: Platform): any`
 
-  Converts a value from its JS representation to its serialized JSON form of this type.
-  By default converts to the database value.
-  
+  Converts a value from its JS representation to its serialized JSON form of this type. By default converts to the database value.
+
 - `getColumnType(prop: EntityProperty, platform: Platform): string`
 
-  Gets the SQL declaration snippet for a field of this type.
-  By default returns `columnType` of given property.
+  Gets the SQL declaration snippet for a field of this type. By default returns `columnType` of given property.
 
 > `DateType` and `TimeType` types are already implemented in the ORM.
 

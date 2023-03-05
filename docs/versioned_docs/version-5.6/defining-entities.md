@@ -5,43 +5,27 @@ title: Defining Entities
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-Entities are simple javascript objects (so called POJO) without restrictions and without the need to extend base classes. Using [entity constructors](entity-constructors.md) works as well - they are never executed for managed entities (loaded from database). 
-Every entity is required to have a primary key.
+Entities are simple javascript objects (so called POJO) without restrictions and without the need to extend base classes. Using [entity constructors](entity-constructors.md) works as well - they are never executed for managed entities (loaded from database). Every entity is required to have a primary key.
 
 Entities can be defined in two ways:
 
-- Decorated classes - the attributes of the entity, as well as each property are provided
-  via decorators. We use `@Entity()` decorator on the class. Entity properties are decorated 
-  either with `@Property` decorator, or with one of reference decorators: 
-  `@ManyToOne`, `@OneToMany`, `@OneToOne` and `@ManyToMany`.
-  Check out the full [decorator reference](decorators.md).
-- `EntitySchema` helper - With `EntitySchema` helper we define the schema programmatically.
-  We can use regular classes as well as interfaces. This approach also allows to re-use 
-  partial entity definitions (e.g. traits/mixins). Read more about this 
-  in [Defining Entities via EntitySchema section](entity-schema.md).
+- Decorated classes - the attributes of the entity, as well as each property are provided via decorators. We use `@Entity()` decorator on the class. Entity properties are decorated either with `@Property` decorator, or with one of reference decorators: `@ManyToOne`, `@OneToMany`, `@OneToOne` and `@ManyToMany`. Check out the full [decorator reference](decorators.md).
+- `EntitySchema` helper - With `EntitySchema` helper we define the schema programmatically. We can use regular classes as well as interfaces. This approach also allows to re-use partial entity definitions (e.g. traits/mixins). Read more about this in [Defining Entities via EntitySchema section](entity-schema.md).
 
-Moreover, how the metadata extraction from decorators happens is controlled 
-via `MetadataProvider`. Two main metadata providers are:
+Moreover, how the metadata extraction from decorators happens is controlled via `MetadataProvider`. Two main metadata providers are:
 
-- `ReflectMetadataProvider` - uses `reflect-metadata` to read the property types. Faster
-  but simpler and more verbose. 
-- `TsMorphMetadataProvider` - uses `ts-morph` to read the type information from the
-  TypeScript compiled API. Heavier (requires full TS as a dependency), but allows DRY 
-  entity definition. With `ts-morph` we are able to extract the type as it is defined in
-  the code, including interface names, as well as optionality of properties. 
+- `ReflectMetadataProvider` - uses `reflect-metadata` to read the property types. Faster but simpler and more verbose.
+- `TsMorphMetadataProvider` - uses `ts-morph` to read the type information from the TypeScript compiled API. Heavier (requires full TS as a dependency), but allows DRY entity definition. With `ts-morph` we are able to extract the type as it is defined in the code, including interface names, as well as optionality of properties.
 
 Read more about them in the [Metadata Providers section](metadata-providers.md).
 
-> Current set of decorators in MikroORM is designed to work with the `tsc`. 
-> Using `babel` is also possible, but requires some additional setup. Read more about it
-> [here](usage-with-babel.md). For notes about `webpack`, read the [deployment section](deployment.md).
+> Current set of decorators in MikroORM is designed to work with the `tsc`. Using `babel` is also possible, but requires some additional setup. Read more about it [here](usage-with-babel.md). For notes about `webpack`, read the [deployment section](deployment.md).
 >
 > `ts-morph` is compatible only with the `tsc` approach.
 
 > From v3 we can also use default exports when defining your entity.
 
-Example definition of a `Book` entity follows. We can switch the tabs to see the difference
-for various ways:
+Example definition of a `Book` entity follows. We can switch the tabs to see the difference for various ways:
 
 <Tabs
   groupId="entity-def"
@@ -123,8 +107,7 @@ export const Book = new EntitySchema<IBook, CustomBaseEntity>({
 
 > Including `{ wrappedEntity: true }` in your `Ref` property definitions will wrap the reference, providing access to helper methods like `.load` and `.unwrap`, which can be helpful for loading data and changing the type of your references where you plan to use them.
 
-Here is another example of `Author` entity, that was referenced from the `Book` one, this
-time defined for mongo:
+Here is another example of `Author` entity, that was referenced from the `Book` one, this time defined for mongo:
 
 <Tabs
   groupId="entity-def"
@@ -306,9 +289,7 @@ For an example of Vanilla JavaScript usage, take a look [here](usage-with-js.md)
 
 ## Optional Properties
 
-With the default `reflect-metadata` provider, we need to mark each optional property as `nullable: true`.
-When using `ts-morph`, if you define the property as optional (marked with `?`), this will be automatically considered
-as nullable property (mainly for SQL schema generator).
+With the default `reflect-metadata` provider, we need to mark each optional property as `nullable: true`. When using `ts-morph`, if you define the property as optional (marked with `?`), this will be automatically considered as nullable property (mainly for SQL schema generator).
 
 <Tabs
   groupId="entity-def"
@@ -350,21 +331,18 @@ properties: {
 
 We can set default value of a property in 2 ways:
 
-1. Use runtime default value of the property. This approach should be preferred as long
-as we are not using any native database function like `now()`. With this approach our
-entities will have the default value set even before it is actually persisted into the
-database (e.g. when we instantiate new entity via `new Author()` or `em.create(Author, { ... })`.
+1. Use runtime default value of the property. This approach should be preferred as long as we are not using any native database function like `now()`. With this approach our entities will have the default value set even before it is actually persisted into the database (e.g. when we instantiate new entity via `new Author()` or `em.create(Author, { ... })`.
 
 <Tabs
-groupId="entity-def"
-defaultValue="reflect-metadata"
-values={[
-{label: 'reflect-metadata', value: 'reflect-metadata'},
-{label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
-]
-}>
-<TabItem value="reflect-metadata">
+  groupId="entity-def"
+  defaultValue="reflect-metadata"
+  values={[
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+  }>
+  <TabItem value="reflect-metadata">
 
 ```ts title="./entities/Author.ts"
 @Property()
@@ -405,23 +383,20 @@ properties: {
   </TabItem>
 </Tabs>
 
-2. Use `default` parameter of `@Property` decorator. This way the actual default value
-will be provided by the database, and automatically mapped to the entity property after
-it is being persisted (after flush). To use SQL functions like `now()`, use `defaultRaw`.
+2. Use `default` parameter of `@Property` decorator. This way the actual default value will be provided by the database, and automatically mapped to the entity property after it is being persisted (after flush). To use SQL functions like `now()`, use `defaultRaw`.
 
-  > Since v4 you should use `defaultRaw` for SQL functions, as `default` with string values
-  > will be automatically quoted.
+> Since v4 you should use `defaultRaw` for SQL functions, as `default` with string values will be automatically quoted.
 
 <Tabs
-groupId="entity-def"
-defaultValue="reflect-metadata"
-values={[
-{label: 'reflect-metadata', value: 'reflect-metadata'},
-{label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
-]
-}>
-<TabItem value="reflect-metadata">
+  groupId="entity-def"
+  defaultValue="reflect-metadata"
+  values={[
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+  }>
+  <TabItem value="reflect-metadata">
 
 ```ts title="./entities/Author.ts"
 @Property({ default: 1 })
@@ -466,25 +441,22 @@ properties: {
 
 To define an enum property, use `@Enum()` decorator. Enums can be either numeric or string values.
 
-For schema generator to work properly in case of string enums, we need to define the enum
-in the same file as where it is used, so its values can be automatically discovered. If we want
-to define the enum in another file, we should re-export it also in place where we use it.
+For schema generator to work properly in case of string enums, we need to define the enum in the same file as where it is used, so its values can be automatically discovered. If we want to define the enum in another file, we should re-export it also in place where we use it.
 
-Another possibility is to provide the reference to the enum implementation in the decorator
-via `@Enum(() => UserRole)`.
+Another possibility is to provide the reference to the enum implementation in the decorator via `@Enum(() => UserRole)`.
 
 > We can also set enum items manually via `items: string[]` attribute.
 
 <Tabs
-groupId="entity-def"
-defaultValue="reflect-metadata"
-values={[
-{label: 'reflect-metadata', value: 'reflect-metadata'},
-{label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
-]
-}>
-<TabItem value="reflect-metadata">
+  groupId="entity-def"
+  defaultValue="reflect-metadata"
+  values={[
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+  }>
+  <TabItem value="reflect-metadata">
 
 ```ts title="./entities/Author.ts"
 import { OutsideEnum } from './OutsideEnum.ts';
@@ -580,19 +552,18 @@ properties: {
 
 ## Enum arrays
 
-We can also use array of values for enum, in that case, `EnumArrayType` type
-will be used automatically, that will validate items on flush.
+We can also use array of values for enum, in that case, `EnumArrayType` type will be used automatically, that will validate items on flush.
 
 <Tabs
-groupId="entity-def"
-defaultValue="reflect-metadata"
-values={[
-{label: 'reflect-metadata', value: 'reflect-metadata'},
-{label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
-]
-}>
-<TabItem value="reflect-metadata">
+  groupId="entity-def"
+  defaultValue="reflect-metadata"
+  values={[
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+  }>
+  <TabItem value="reflect-metadata">
 
 ```ts title="./entities/User.ts"
 enum Role {
@@ -636,19 +607,18 @@ properties: {
 
 ## Mapping directly to primary keys
 
-Sometimes we might want to work only with the primary key of a relation.
-To do that, we can use `mapToPk` option on M:1 and 1:1 relations:
+Sometimes we might want to work only with the primary key of a relation. To do that, we can use `mapToPk` option on M:1 and 1:1 relations:
 
 <Tabs
-groupId="entity-def"
-defaultValue="reflect-metadata"
-values={[
-{label: 'reflect-metadata', value: 'reflect-metadata'},
-{label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
-]
-}>
-<TabItem value="reflect-metadata">
+  groupId="entity-def"
+  defaultValue="reflect-metadata"
+  values={[
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+  }>
+  <TabItem value="reflect-metadata">
 
 ```ts title="./entities/User.ts"
 @ManyToOne(() => User, { mapToPk: true })
@@ -675,19 +645,18 @@ properties: {
   </TabItem>
 </Tabs>
 
-For composite keys, this will give us ordered tuple representing the raw PKs,
-which is the internal format of composite PK:
+For composite keys, this will give us ordered tuple representing the raw PKs, which is the internal format of composite PK:
 
 <Tabs
-groupId="entity-def"
-defaultValue="reflect-metadata"
-values={[
-{label: 'reflect-metadata', value: 'reflect-metadata'},
-{label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
-]
-}>
-<TabItem value="reflect-metadata">
+  groupId="entity-def"
+  defaultValue="reflect-metadata"
+  values={[
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+  }>
+  <TabItem value="reflect-metadata">
 
 ```ts title="./entities/User.ts"
 @ManyToOne(() => User, { mapToPk: true })
@@ -717,19 +686,18 @@ properties: {
 
 ## Formulas
 
-`@Formula()` decorator can be used to map some SQL snippet to your entity.
-The SQL fragment can be as complex as you want and even include subselects.
+`@Formula()` decorator can be used to map some SQL snippet to your entity. The SQL fragment can be as complex as you want and even include subselects.
 
 <Tabs
-groupId="entity-def"
-defaultValue="reflect-metadata"
-values={[
-{label: 'reflect-metadata', value: 'reflect-metadata'},
-{label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
-]
-}>
-<TabItem value="reflect-metadata">
+  groupId="entity-def"
+  defaultValue="reflect-metadata"
+  values={[
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+  }>
+  <TabItem value="reflect-metadata">
 
 ```ts title="./entities/Box.ts"
 @Formula('obj_length * obj_height * obj_width')
@@ -757,20 +725,18 @@ properties: {
 </Tabs>
 ```
 
-Formulas will be added to the select clause automatically. In case you are facing
-problems with `NonUniqueFieldNameException`, you can define the formula as a
-callback that will receive the entity alias in the parameter:
+Formulas will be added to the select clause automatically. In case you are facing problems with `NonUniqueFieldNameException`, you can define the formula as a callback that will receive the entity alias in the parameter:
 
 <Tabs
-groupId="entity-def"
-defaultValue="reflect-metadata"
-values={[
-{label: 'reflect-metadata', value: 'reflect-metadata'},
-{label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
-]
-}>
-<TabItem value="reflect-metadata">
+  groupId="entity-def"
+  defaultValue="reflect-metadata"
+  values={[
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+  }>
+  <TabItem value="reflect-metadata">
 
 ```ts title="./entities/Box.ts"
 @Formula(alias => `${alias}.obj_length * ${alias}.obj_height * ${alias}.obj_width`)
@@ -799,21 +765,20 @@ properties: {
 
 ## Indexes
 
-We can define indexes via `@Index()` decorator, for unique indexes, we can 
-use `@Unique()` decorator. We can use it either on entity class, or on entity property. 
+We can define indexes via `@Index()` decorator, for unique indexes, we can use `@Unique()` decorator. We can use it either on entity class, or on entity property.
 
 To define complex indexes, we can use index expressions. They allow us to specify the final `create index` query and an index name - this name is then used for index diffing, so the schema generator will only try to create it if it's not there yet, or remove it, if it's no longer defined in the entity. Index expressions are not bound to any property, rather to the entity itself (we can still define them on both entity and property level).
 
 <Tabs
-groupId="entity-def"
-defaultValue="reflect-metadata"
-values={[
-{label: 'reflect-metadata', value: 'reflect-metadata'},
-{label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
-]
-}>
-<TabItem value="reflect-metadata">
+  groupId="entity-def"
+  defaultValue="reflect-metadata"
+  values={[
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+  }>
+  <TabItem value="reflect-metadata">
 
 ```ts title="./entities/Author.ts"
 @Entity()
@@ -899,32 +864,28 @@ export const AuthorSchema = new EntitySchema<Author, CustomBaseEntity>({
 
 ## Check constraints
 
-We can define check constraints via `@Check()` decorator. We can use it 
-either on entity class, or on entity property. It has a required `expression`
-property, that can be either a string or a callback, that receives map of
-property names to column names. Note that we need to use the generic type 
-argument if we want TypeScript suggestions for the property names.
+We can define check constraints via `@Check()` decorator. We can use it either on entity class, or on entity property. It has a required `expression` property, that can be either a string or a callback, that receives map of property names to column names. Note that we need to use the generic type argument if we want TypeScript suggestions for the property names.
 
 > Check constraints are currently supported only in postgres driver.
 
 <Tabs
-groupId="entity-def"
-defaultValue="reflect-metadata"
-values={[
-{label: 'reflect-metadata', value: 'reflect-metadata'},
-{label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
-]
-}>
-<TabItem value="reflect-metadata">
+  groupId="entity-def"
+  defaultValue="reflect-metadata"
+  values={[
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+  }>
+  <TabItem value="reflect-metadata">
 
 ```ts title="./entities/Book.ts"
 @Entity()
-// with generated name based on the table name 
+// with generated name based on the table name
 @Check({ expression: 'price1 >= 0' })
-// with explicit name 
+// with explicit name
 @Check({ name: 'foo', expression: columns => `${columns.price1} >= 0` })
-// with explicit type argument we get autocomplete on `columns` 
+// with explicit type argument we get autocomplete on `columns`
 @Check<FooEntity>({ expression: columns => `${columns.price1} >= 0` })
 export class Book {
 
@@ -949,11 +910,11 @@ export class Book {
 
 ```ts title="./entities/Book.ts"
 @Entity()
-// with generated name based on the table name 
+// with generated name based on the table name
 @Check({ expression: 'price1 >= 0' })
-// with explicit name 
+// with explicit name
 @Check({ name: 'foo', expression: columns => `${columns.price1} >= 0` })
-// with explicit type argument we get autocomplete on `columns` 
+// with explicit type argument we get autocomplete on `columns`
 @Check<FooEntity>({ expression: columns => `${columns.price1} >= 0` })
 export class Book {
 
@@ -1012,8 +973,7 @@ We can define custom types by extending `Type` abstract class. It has 4 optional
 
 - `toJSON(value: any, platform: Platform): any`
 
-  Converts a value from its JS representation to its serialized JSON form of this type.
-  By default converts to the database value.
+  Converts a value from its JS representation to its serialized JSON form of this type. By default converts to the database value.
 
 - `getColumnType(prop: EntityProperty, platform: Platform): string`
 
@@ -1023,20 +983,18 @@ More information can be found in [Custom Types](custom-types.md) section.
 
 ## Lazy scalar properties
 
-We can mark any property as `lazy: true` to omit it from the select clause.
-This can be handy for properties that are too large, and you want to have them
-available only sometimes, like a full text of an article.
+We can mark any property as `lazy: true` to omit it from the select clause. This can be handy for properties that are too large, and you want to have them available only sometimes, like a full text of an article.
 
 <Tabs
-groupId="entity-def"
-defaultValue="reflect-metadata"
-values={[
-{label: 'reflect-metadata', value: 'reflect-metadata'},
-{label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
-]
-}>
-<TabItem value="reflect-metadata">
+  groupId="entity-def"
+  defaultValue="reflect-metadata"
+  values={[
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+  }>
+  <TabItem value="reflect-metadata">
 
 ```ts title="./entities/Book.ts"
 @Property({ columnType: 'text', lazy: true })
@@ -1070,30 +1028,26 @@ const b1 = await em.find(Book, 1); // this will omit the `text` property
 const b2 = await em.find(Book, 1, { populate: ['text'] }); // this will load the `text` property
 ```
 
-> If the entity is already loaded and you need to populate a lazy scalar property,
-> you might need to pass `refresh: true` in the `FindOptions`.
+> If the entity is already loaded and you need to populate a lazy scalar property, you might need to pass `refresh: true` in the `FindOptions`.
 
 ## Virtual Properties
 
 We can define our properties as virtual, either as a method, or via JavaScript `get/set`.
 
-Following example defines User entity with `firstName` and `lastName` database fields, that
-are both hidden from the serialized response, replaced with virtual properties `fullName`
-(defined as a classic method) and `fullName2` (defined as a JavaScript getter).
+Following example defines User entity with `firstName` and `lastName` database fields, that are both hidden from the serialized response, replaced with virtual properties `fullName` (defined as a classic method) and `fullName2` (defined as a JavaScript getter).
 
-> For JavaScript getter you need to provide `{ persist: false }` option otherwise the value
-> would be stored in the database.
+> For JavaScript getter you need to provide `{ persist: false }` option otherwise the value would be stored in the database.
 
 <Tabs
-groupId="entity-def"
-defaultValue="reflect-metadata"
-values={[
-{label: 'reflect-metadata', value: 'reflect-metadata'},
-{label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
-]
-}>
-<TabItem value="reflect-metadata">
+  groupId="entity-def"
+  defaultValue="reflect-metadata"
+  values={[
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+  }>
+  <TabItem value="reflect-metadata">
 
 ```ts title="./entities/User.ts"
 @Entity()
@@ -1183,29 +1137,26 @@ console.log(wrap(author).toJSON()); // { fullName: 'Jon Snow', fullName2: 'Jon S
 
 ## Entity file names
 
-Starting with MikroORM 4.2, there is no limitation for entity file names. It is now
-also possible to define multiple entities in a single file using folder based discovery.
+Starting with MikroORM 4.2, there is no limitation for entity file names. It is now also possible to define multiple entities in a single file using folder based discovery.
 
 ## Using custom base entity
 
-We can define our own base entity with properties that are required on all entities, like
-primary key and created/updated time. Single table inheritance is also supported.
+We can define our own base entity with properties that are required on all entities, like primary key and created/updated time. Single table inheritance is also supported.
 
 Read more about this topic in [Inheritance Mapping](inheritance-mapping.md) section.
 
-> If you are initializing the ORM via `entities` option, you need to specify all your
-> base entities as well.
+> If you are initializing the ORM via `entities` option, you need to specify all your base entities as well.
 
 <Tabs
-groupId="entity-def"
-defaultValue="reflect-metadata"
-values={[
-{label: 'reflect-metadata', value: 'reflect-metadata'},
-{label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
-]
-}>
-<TabItem value="reflect-metadata">
+  groupId="entity-def"
+  defaultValue="reflect-metadata"
+  values={[
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+  }>
+  <TabItem value="reflect-metadata">
 
 ```ts title="./entities/CustomBaseEntity.ts"
 import { v4 } from 'uuid';
@@ -1270,9 +1221,7 @@ export const schema = new EntitySchema<CustomBaseEntity>({
   </TabItem>
 </Tabs>
 
-There is a special case, when we need to annotate the base entity - if we are using
-folder based discovery, and the base entity is not using any decorators (e.g. it does
-not define any decorated property). In that case, we need to mark it as abstract:
+There is a special case, when we need to annotate the base entity - if we are using folder based discovery, and the base entity is not using any decorators (e.g. it does not define any decorated property). In that case, we need to mark it as abstract:
 
 ```ts
 @Entity({ abstract: true })
@@ -1283,20 +1232,18 @@ export abstract class CustomBaseEntity {
 
 ## SQL Generated columns
 
-Knex currently does not support generated columns, so the schema generator
-cannot properly diff them. To work around this, we can set `ignoreSchemaChanges`
-on a property to avoid a perpetual diff from the schema generator
+Knex currently does not support generated columns, so the schema generator cannot properly diff them. To work around this, we can set `ignoreSchemaChanges` on a property to avoid a perpetual diff from the schema generator
 
 <Tabs
-groupId="entity-def"
-defaultValue="reflect-metadata"
-values={[
-{label: 'reflect-metadata', value: 'reflect-metadata'},
-{label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
-]
-}>
-<TabItem value="reflect-metadata">
+  groupId="entity-def"
+  defaultValue="reflect-metadata"
+  values={[
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+  }>
+  <TabItem value="reflect-metadata">
 
 ```ts title="./entities/Book.ts"
 @Entity
@@ -1359,15 +1306,15 @@ export const Book = new EntitySchema<IBook>({
 ### Using id as primary key (SQL drivers)
 
 <Tabs
-groupId="entity-def"
-defaultValue="reflect-metadata"
-values={[
-{label: 'reflect-metadata', value: 'reflect-metadata'},
-{label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
-]
-}>
-<TabItem value="reflect-metadata">
+  groupId="entity-def"
+  defaultValue="reflect-metadata"
+  values={[
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+  }>
+  <TabItem value="reflect-metadata">
 
 ```ts title="./entities/Book.ts"
 @Entity()
@@ -1437,15 +1384,15 @@ export const BookSchema = new EntitySchema<Book>({
 ### Using UUID as primary key (SQL drivers)
 
 <Tabs
-groupId="entity-def"
-defaultValue="reflect-metadata"
-values={[
-{label: 'reflect-metadata', value: 'reflect-metadata'},
-{label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
-]
-}>
-<TabItem value="reflect-metadata">
+  groupId="entity-def"
+  defaultValue="reflect-metadata"
+  values={[
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+  }>
+  <TabItem value="reflect-metadata">
 
 ```ts title="./entities/Book.ts"
 import { v4 } from 'uuid';
@@ -1514,15 +1461,15 @@ export const Book = new EntitySchema<IBook>({
 Requires enabling the module via: `create extension "uuid-ossp";`
 
 <Tabs
-groupId="entity-def"
-defaultValue="reflect-metadata"
-values={[
-{label: 'reflect-metadata', value: 'reflect-metadata'},
-{label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
-]
-}>
-<TabItem value="reflect-metadata">
+  groupId="entity-def"
+  defaultValue="reflect-metadata"
+  values={[
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+  }>
+  <TabItem value="reflect-metadata">
 
 ```ts title="./entities/Book.ts"
 @Entity()
@@ -1584,19 +1531,18 @@ export const BookSchema = new EntitySchema<Book>({
 
 ### Using BigInt as primary key (MySQL and PostgreSQL)
 
-We can use `BigIntType` to support `bigint`s. By default, it will represent the value as
-a `string`.
+We can use `BigIntType` to support `bigint`s. By default, it will represent the value as a `string`.
 
 <Tabs
-groupId="entity-def"
-defaultValue="reflect-metadata"
-values={[
-{label: 'reflect-metadata', value: 'reflect-metadata'},
-{label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
-]
-}>
-<TabItem value="reflect-metadata">
+  groupId="entity-def"
+  defaultValue="reflect-metadata"
+  values={[
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+  }>
+  <TabItem value="reflect-metadata">
 
 ```ts title="./entities/CustomBaseEntity.ts"
 @Entity()
@@ -1638,15 +1584,15 @@ If you want to use native `bigint`s, read the following guide: [Using native Big
 ### Example of Mongo entity
 
 <Tabs
-groupId="entity-def"
-defaultValue="reflect-metadata"
-values={[
-{label: 'reflect-metadata', value: 'reflect-metadata'},
-{label: 'ts-morph', value: 'ts-morph'},
-{label: 'EntitySchema', value: 'entity-schema'},
-]
-}>
-<TabItem value="reflect-metadata">
+  groupId="entity-def"
+  defaultValue="reflect-metadata"
+  values={[
+    {label: 'reflect-metadata', value: 'reflect-metadata'},
+    {label: 'ts-morph', value: 'ts-morph'},
+    {label: 'EntitySchema', value: 'entity-schema'},
+  ]
+  }>
+  <TabItem value="reflect-metadata">
 
 ```ts title="./entities/Book.ts"
 @Entity()
@@ -1715,8 +1661,7 @@ export const Book = new EntitySchema<IBook>({
 
 ### Using MikroORM's BaseEntity (previously WrappedEntity)
 
-From v4 `BaseEntity` class is provided with `init`, `isInitialized`, `assign`
-and other methods that are otherwise available via the `wrap()` helper.
+From v4 `BaseEntity` class is provided with `init`, `isInitialized`, `assign` and other methods that are otherwise available via the `wrap()` helper.
 
 > Usage of the `BaseEntity` is optional.
 
@@ -1741,5 +1686,4 @@ const book = new Book();
 console.log(book.isInitialized()); // true
 ```
 
-Having the entities set up, we can now start [using entity manager](entity-manager.md) and
-[repositories](repositories.md) as described in following sections.
+Having the entities set up, we can now start [using entity manager](entity-manager.md) and [repositories](repositories.md) as described in following sections.

@@ -2,9 +2,7 @@
 title: Schema generator
 ---
 
-To generate schema from your entity metadata, you can use `SchemaGenerator`
-helper. You will need to create simple script where you initialize MikroORM
-like this:
+To generate schema from your entity metadata, you can use `SchemaGenerator` helper. You will need to create simple script where you initialize MikroORM like this:
 
 ```typescript title="./create-schema.ts"
 import { MikroORM, SchemaGenerator } from 'mikro-orm';

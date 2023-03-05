@@ -75,8 +75,7 @@ module.exports.entity = Author;
 module.exports.schema = schema;
 ```
 
-> Do not forget to provide `name` and `path` schema parameters as well as `entity` 
-> and `schema` exports.
+> Do not forget to provide `name` and `path` schema parameters as well as `entity` and `schema` exports.
 
 Reference parameter can be one of (where `SCALAR` is the default one):
 
@@ -99,7 +98,4 @@ const orm = await MikroORM.init({
 });
 ```
 
-For more examples of plain JavaScript entity definitions take a look
-[at the tests](https://github.com/mikro-orm/mikro-orm/blob/master/tests/entities-js) or at
-[Express JavaScript example](https://github.com/mikro-orm/mikro-orm-examples/tree/master/express-js). 
-
+For more examples of plain JavaScript entity definitions take a look [at the tests](https://github.com/mikro-orm/mikro-orm/blob/master/tests/entities-js) or at [Express JavaScript example](https://github.com/mikro-orm/mikro-orm-examples/tree/master/express-js).

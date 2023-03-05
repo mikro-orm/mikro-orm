@@ -5,28 +5,17 @@ sidebar_label: Entity Manager
 
 ## Persist and flush
 
-There are 2 methods we should first describe to understand how persisting works in MikroORM: 
-`em.persist()` and `em.flush()`.
+There are 2 methods we should first describe to understand how persisting works in MikroORM: `em.persist()` and `em.flush()`.
 
-`em.persist(entity, flush?: boolean)` is used to mark new entities for future persisting. 
-It will make the entity managed by given `EntityManager` and once `flush` will be called, it 
-will be written to the database. Second boolean parameter can be used to invoke `flush` 
-immediately. Its default value is configurable via `autoFlush` option.
+`em.persist(entity, flush?: boolean)` is used to mark new entities for future persisting. It will make the entity managed by given `EntityManager` and once `flush` will be called, it will be written to the database. Second boolean parameter can be used to invoke `flush` immediately. Its default value is configurable via `autoFlush` option.
 
-To understand `flush`, lets first define what managed entity is: An entity is managed if 
-it’s fetched from the database (via `em.find()`, `em.findOne()` or via other managed entity) 
-or registered as new through `em.persist()`.
+To understand `flush`, lets first define what managed entity is: An entity is managed if it’s fetched from the database (via `em.find()`, `em.findOne()` or via other managed entity) or registered as new through `em.persist()`.
 
-`em.flush()` will go through all managed entities, compute appropriate change sets and 
-perform according database queries. As an entity loaded from database becomes managed 
-automatically, you do not have to call persist on those, and flush is enough to update 
-them.
+`em.flush()` will go through all managed entities, compute appropriate change sets and perform according database queries. As an entity loaded from database becomes managed automatically, you do not have to call persist on those, and flush is enough to update them.
 
 ## Persisting and cascading
 
-To save entity state to database, you need to persist it. Persist determines 
-whether to use `insert` or `update` and computes appropriate change-set. Entity references
-that are not persisted yet (does not have identifier) will be cascade persisted automatically. 
+To save entity state to database, you need to persist it. Persist determines whether to use `insert` or `update` and computes appropriate change-set. Entity references that are not persisted yet (does not have identifier) will be cascade persisted automatically.
 
 ```typescript
 // use constructors in your entities for required parameters
@@ -48,14 +37,13 @@ await orm.em.persistAndFlush([book1, book2, book3]);
 // or one by one
 orm.em.persistLater(book1);
 orm.em.persistLater(book2);
-orm.em.persistLater(book3); 
+orm.em.persistLater(book3);
 await orm.em.flush(); // flush everything to database at once
 ```
 
 ### Auto flushing
 
-By default, `EntityManager.persist()` will **flush your changes automatically**. You can use
-its second parameter to disable auto-flushing, and use `EntityManager.flush()` manually. 
+By default, `EntityManager.persist()` will **flush your changes automatically**. You can use its second parameter to disable auto-flushing, and use `EntityManager.flush()` manually.
 
 You can also disable this feature globally via `autoFlush` option when initializing the ORM:
 
@@ -69,13 +57,11 @@ await orm.em.flush();
 await orm.em.persist(new Entity(), true); // you can still use second parameter to auto-flush
 ```
 
-> Default value of `autoFlush` is currently set to `true`, which will change in upcoming major 
-> release. Users are encouraged to either set `autoFlush` to `false` or use `em.persistLater()` 
-> (equal to `em.persist(entity, false)`) and `em.persistAndFlush()` methods instead. 
+> Default value of `autoFlush` is currently set to `true`, which will change in upcoming major release. Users are encouraged to either set `autoFlush` to `false` or use `em.persistLater()` (equal to `em.persist(entity, false)`) and `em.persistAndFlush()` methods instead.
 
 ## Fetching entities with EntityManager
 
-To fetch entities from database you can use `find()` and `findOne()` of `EntityManager`: 
+To fetch entities from database you can use `find()` and `findOne()` of `EntityManager`:
 
 Example:
 
@@ -112,8 +98,7 @@ console.log(author.email); // undefined
 
 ## Type of fetched entities
 
-Both `EntityManager.find` and `EntityManager.findOne()` methods have generic return types.
-All of following examples are equal and will let typescript correctly infer the entity type:
+Both `EntityManager.find` and `EntityManager.findOne()` methods have generic return types. All of following examples are equal and will let typescript correctly infer the entity type:
 
 ```typescript
 const author1 = await orm.em.findOne<Author>(Author.name, '...id...');
@@ -121,30 +106,23 @@ const author2 = await orm.em.findOne<Author>('Author', '...id...');
 const author3 = await orm.em.findOne(Author, '...id...');
 ```
 
-As the last one is the least verbose, it should be preferred. 
+As the last one is the least verbose, it should be preferred.
 
 ## Entity repositories
 
-Although you can use `EntityManager` directly, much more convenient way is to use 
-[`EntityRepository` instead](https://mikro-orm.io/repositories/). You can register
-your repositories in dependency injection container like [InversifyJS](http://inversify.io/)
-so you do not need to get them from `EntityManager` each time.
+Although you can use `EntityManager` directly, much more convenient way is to use [`EntityRepository` instead](https://mikro-orm.io/repositories/). You can register your repositories in dependency injection container like [InversifyJS](http://inversify.io/) so you do not need to get them from `EntityManager` each time.
 
-For more examples, take a look at
-[`tests/EntityManager.mongo.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts)
-or [`tests/EntityManager.mysql.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/EntityManager.mysql.test.ts).
+For more examples, take a look at [`tests/EntityManager.mongo.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/EntityManager.mongo.test.ts) or [`tests/EntityManager.mysql.test.ts`](https://github.com/mikro-orm/mikro-orm/blob/master/tests/EntityManager.mysql.test.ts).
 
 ## EntityManager API
 
 #### `getRepository<T extends IEntity>(entityName: string | EntityClass<T>): EntityRepository<T>`
 
-Returns `EntityRepository` for given entity, respects `customRepository` option of `@Entity`
-and `entityRepository` option of `MikroORM.init()`.
+Returns `EntityRepository` for given entity, respects `customRepository` option of `@Entity` and `entityRepository` option of `MikroORM.init()`.
 
 #### `find<T extends IEntity>(entityName: string | EntityClass<T>, where?: FilterQuery<T>, options?: FindOptions): Promise<T[]>`
 
-Returns array of entities found for given condition. You can specify `FindOptions` to request
-population of referenced entities or control the pagination:
+Returns array of entities found for given condition. You can specify `FindOptions` to request population of referenced entities or control the pagination:
 
 ```typescript
 export interface FindOptions {
@@ -159,51 +137,43 @@ export interface FindOptions {
 
 #### `find<T extends IEntity>(entityName: string | EntityClass<T>, where?: FilterQuery<T>, populate?: string[], orderBy?: { [k: string]: QueryOrder }, limit?: number, offset?: number): Promise<T[]>`
 
-Same as previous `find` method, just with dedicated parameters for `populate`, `orderBy`, `limit`
-and `offset`.
+Same as previous `find` method, just with dedicated parameters for `populate`, `orderBy`, `limit` and `offset`.
 
 ---
 
 #### `findOne<T extends IEntity>(entityName: string | EntityClass<T>, where: FilterQuery<T> | string, populate?: string[]): Promise<T | null>`
 
-Finds an entity by given `where` condition. You can use primary key as `where` value, then
-if the entity is already managed, no database call will be made. 
+Finds an entity by given `where` condition. You can use primary key as `where` value, then if the entity is already managed, no database call will be made.
 
 ---
 
 #### `merge<T extends IEntity>(entityName: string | EntityClass<T>, data: EntityData<T>): T`
 
-Adds given entity to current Identity Map. After merging, entity becomes managed. 
-This is useful when you want to work with cached entities. 
+Adds given entity to current Identity Map. After merging, entity becomes managed. This is useful when you want to work with cached entities.
 
 ---
 
 #### `map<T extends IEntity>(entityName: string | EntityClass<T>, data: EntityData<T>): T`
 
-Maps raw DB result to entity, adding it to current Identity Map. Equivalent to 
-`IDatabaseDriver.mapResult()` followed by `EntityManager.merge()`.
+Maps raw DB result to entity, adding it to current Identity Map. Equivalent to `IDatabaseDriver.mapResult()` followed by `EntityManager.merge()`.
 
 ---
 
 #### `getReference<T extends IEntity>(entityName: string | EntityClass<T>, id: string): T`
 
-Gets a reference to the entity identified by the given type and identifier without actually 
-loading it, if the entity is not yet loaded.
+Gets a reference to the entity identified by the given type and identifier without actually loading it, if the entity is not yet loaded.
 
 ---
 
 #### `count(entityName: string | EntityClass<T>, where: any): Promise<number>`
 
-Gets count of entities matching the `where` condition. 
+Gets count of entities matching the `where` condition.
 
 ---
 
 #### `persist(entity: IEntity | IEntity[], flush?: boolean): Promise<void>`
 
-Tells the EntityManager to make an instance managed and persistent. The entity will be 
-entered into the database at or before transaction commit or as a result of the flush 
-operation. You can control immediate flushing via `flush` parameter and via `autoFlush`
-configuration option. 
+Tells the EntityManager to make an instance managed and persistent. The entity will be entered into the database at or before transaction commit or as a result of the flush operation. You can control immediate flushing via `flush` parameter and via `autoFlush` configuration option.
 
 ---
 
@@ -215,7 +185,7 @@ Shortcut for `persist` & `flush`.
 
 #### `persistLater(entity: IEntity | IEntity[]): void`
 
-Shortcut for just `persist`, without flushing. 
+Shortcut for just `persist`, without flushing.
 
 ---
 
@@ -227,20 +197,17 @@ Flushes all changes to objects that have been queued up to now to the database.
 
 #### `remove(entityName: string | EntityClass<T>, where: IEntity | any, flush?: boolean): Promise<number>`
 
-When provided entity instance as `where` value, then it calls `removeEntity(entity, flush)`, 
-otherwise it fires delete query with given `where` condition. 
+When provided entity instance as `where` value, then it calls `removeEntity(entity, flush)`, otherwise it fires delete query with given `where` condition.
 
-This method fires `beforeDelete` and `afterDelete` hooks only if you provide entity instance.  
+This method fires `beforeDelete` and `afterDelete` hooks only if you provide entity instance.
 
 ---
 
 #### `removeEntity(entity: IEntity, flush?: boolean): Promise<number>`
 
-Removes an entity instance. A removed entity will be removed from the database at or before 
-transaction commit or as a result of the flush operation. You can control immediate flushing 
-via `flush` parameter and via `autoFlush` configuration option.
+Removes an entity instance. A removed entity will be removed from the database at or before transaction commit or as a result of the flush operation. You can control immediate flushing via `flush` parameter and via `autoFlush` configuration option.
 
-This method fires `beforeDelete` and `afterDelete` hooks.  
+This method fires `beforeDelete` and `afterDelete` hooks.
 
 ---
 
@@ -252,21 +219,18 @@ Shortcut for `removeEntity` & `flush`.
 
 #### `removeLater(entity: IEntity): void`
 
-Shortcut for `removeEntity` without flushing. 
+Shortcut for `removeEntity` without flushing.
 
 ---
 
 #### `clear(): void`
 
-Clears the EntityManager. All entities that are currently managed by this EntityManager 
-become detached.
+Clears the EntityManager. All entities that are currently managed by this EntityManager become detached.
 
 ---
 
 #### `canPopulate(entityName: string | EntityClass<T>, property: string): boolean`
 
-Returns whether given entity has given property which can be populated (is reference or
-collection).
+Returns whether given entity has given property which can be populated (is reference or collection).
 
 ---
-

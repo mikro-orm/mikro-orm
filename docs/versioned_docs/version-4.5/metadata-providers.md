@@ -2,17 +2,13 @@
 title: Metadata Providers
 ---
 
-As part of entity discovery process, MikroORM uses so called `MetadataProvider` to get necessary
-type information about your entities' properties. There are 3 built-in metadata providers you can 
-use:
+As part of entity discovery process, MikroORM uses so called `MetadataProvider` to get necessary type information about your entities' properties. There are 3 built-in metadata providers you can use:
 
 > You can also implement custom metadata provider by extending abstract `MetadataProvider` class.
 
 ## TsMorphMetadataProvider
 
-With `TsMorphMetadataProvider` MikroORM will use [`ts-morph`](https://github.com/dsherret/ts-morph) to read 
-TypeScript source files of all entities to be able to detect all types. Thanks to this, 
-defining the type is enough for runtime validation.
+With `TsMorphMetadataProvider` MikroORM will use [`ts-morph`](https://github.com/dsherret/ts-morph) to read TypeScript source files of all entities to be able to detect all types. Thanks to this, defining the type is enough for runtime validation.
 
 To use it, first install the `@mikro-orm/reflection` package.
 
@@ -25,18 +21,11 @@ await MikroORM.init({
 });
 ```
 
-If you use folder-based discovery, you should specify paths to
-the compiled entities via `entities` as well as paths to the TS source files of
-those entities via `entitiesTs`. When you run the ORM via `ts-node`, the latter
-will be used automatically, or if you explicitly pass `tsNode: true` in the config.
+If you use folder-based discovery, you should specify paths to the compiled entities via `entities` as well as paths to the TS source files of those entities via `entitiesTs`. When you run the ORM via `ts-node`, the latter will be used automatically, or if you explicitly pass `tsNode: true` in the config.
 
-> When running via `node`, `.d.ts` files are used to obtain the type, so we 
-> need to ship them in the production build. TS source files are no longer 
-> needed (since v4). Be sure to enable `compilerOptions.declaration` in your
-> `tsconfig.json`.
+> When running via `node`, `.d.ts` files are used to obtain the type, so we need to ship them in the production build. TS source files are no longer needed (since v4). Be sure to enable `compilerOptions.declaration` in your `tsconfig.json`.
 
-After the discovery process ends, all [metadata will be cached](metadata-cache.md). By default, 
-`FileCacheAdapter` will be used to store the cache inside `./temp` folder in JSON files. 
+After the discovery process ends, all [metadata will be cached](metadata-cache.md). By default, `FileCacheAdapter` will be used to store the cache inside `./temp` folder in JSON files.
 
 > You can generate production cache via CLI command `mikro-orm cache:generate`.
 
@@ -44,11 +33,9 @@ After the discovery process ends, all [metadata will be cached](metadata-cache.m
 
 ## ReflectMetadataProvider
 
-`ReflectMetadataProvider` uses `reflect-metadata` module to read the type from decorator 
-metadata exported by TypeScript compiler. 
+`ReflectMetadataProvider` uses `reflect-metadata` module to read the type from decorator metadata exported by TypeScript compiler.
 
-You will need to install `reflect-metadata` module and import at the top of your app's 
-bootstrap script (e.g. `main.ts` or `app.ts`). 
+You will need to install `reflect-metadata` module and import at the top of your app's bootstrap script (e.g. `main.ts` or `app.ts`).
 
 ```typescript
 import 'reflect-metadata';
@@ -56,7 +43,7 @@ import 'reflect-metadata';
 
 Next step is to enable `emitDecoratorMetadata` flag in your `tsconfig.json`.
 
-> As this approach does not have performance impact, metadata caching is not really necessary. 
+> As this approach does not have performance impact, metadata caching is not really necessary.
 
 ```typescript
 await MikroORM.init({
@@ -99,8 +86,7 @@ prop?: string;
 
 #### Enums
 
-By default, enum is considered as numeric type. For string enums, you need to explicitly 
-provide one of:
+By default, enum is considered as numeric type. For string enums, you need to explicitly provide one of:
 
 - reference to the enum (which will force you to define the enum before defining the entity)
   ```typescript
@@ -120,31 +106,24 @@ provide one of:
 
 #### Circular dependencies
 
-Reading type of referenced entity in `@ManyToOne` and `@OneToOne` properties fails if there is 
-circular dependency. You will need to explicitly define the type in the decorator (preferably 
-via `entity: () => ...` callback).
+Reading type of referenced entity in `@ManyToOne` and `@OneToOne` properties fails if there is circular dependency. You will need to explicitly define the type in the decorator (preferably via `entity: () => ...` callback).
 
 ```typescript
 @ManyToOne({ entity: () => Author })
 author: Author;
-``` 
+```
 
-> There can be recursion issues when you define multiple entities (with circular dependencies 
-> between each other) in single file. In that case, you might want to provide the type via decorator's
-> `type` or `entity` attributes and set the TS property type to something else (like `any` or `object`).
+> There can be recursion issues when you define multiple entities (with circular dependencies between each other) in single file. In that case, you might want to provide the type via decorator's `type` or `entity` attributes and set the TS property type to something else (like `any` or `object`).
 
 #### Additional typings might be required
 
-You might have to install additional typings, one example is use of `ObjectId` in MongoDB, 
-which requires `@types/mongodb` to be installed. 
+You might have to install additional typings, one example is use of `ObjectId` in MongoDB, which requires `@types/mongodb` to be installed.
 
 ## JavaScriptMetadataProvider
 
 > `JavaScriptMetadataProvider` is deprecated, [use `EntitySchema` instead](entity-schema.md).
 
-This provider should be used only if you are not using TypeScript at all and therefore you do 
-not use decorators to annotate your properties. It will require you to specify the whole schema 
-manually. 
+This provider should be used only if you are not using TypeScript at all and therefore you do not use decorators to annotate your properties. It will require you to specify the whole schema manually.
 
 ```typescript
 await MikroORM.init({

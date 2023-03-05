@@ -188,7 +188,7 @@ To fetch entities from database you can use `find()` and `findOne()` methods of 
 
 ```typescript
 // find all authors with name matching 'Jon', and populate all of their books
-const authors = await orm.em.find(Author, { name: /Jon/ }, ['books']); 
+const authors = await orm.em.find(Author, { name: /Jon/ }, ['books']);
 
 for (const author of authors) {
   console.log(author.name); // Jon Snow
@@ -217,7 +217,7 @@ const booksRepository = orm.em.getRepository(Book);
 const books = await booksRepository.find({ author: '...' }, ['author'], { title: QueryOrder.DESC }, 2, 1);
 
 // or with options object
-const books = await booksRepository.find({ author: '...' }, { 
+const books = await booksRepository.find({ author: '...' }, {
   populate: ['author'],
   limit: 1,
   offset: 2,
@@ -245,7 +245,7 @@ console.log(author.name); // undefined
 console.log(author === book.author); // true
 
 // this will trigger db call, we could also use `orm.em.findOne(Author, author.id)` to do the same
-await author.init(); 
+await author.init();
 console.log(author.isInitialized()); // true
 console.log(author.name); // defined
 ```
@@ -305,14 +305,14 @@ More information about collections can be found [in the docs](https://b4nan.gith
 
 So you read through the whole article, got here and still not satisfied? There are more articles to come (beginning with integration manual for popular frameworks like [Express](https://expressjs.com/) or [NestJS](https://nestjs.com/)), but you can take a look at some advanced features covered in docs right now:
 
-*   [Smart nested populate](https://b4nan.github.io/mikro-orm/nested-populate/)
-*   [Smart query conditions](https://b4nan.github.io/mikro-orm/query-conditions/)
-*   [Updating entity values with `IEntity.assign()`](https://b4nan.github.io/mikro-orm/entity-helper/) 
-*   [Property validation](https://b4nan.github.io/mikro-orm/property-validation/)
-*   [Lifecycle hooks](https://b4nan.github.io/mikro-orm/lifecycle-hooks/)
-*   [Naming strategy](https://b4nan.github.io/mikro-orm/naming-strategy/)
-*   [Usage with NestJS](https://b4nan.github.io/mikro-orm/usage-with-nestjs/)
-*   [Usage with JavaScript](https://b4nan.github.io/mikro-orm/usage-with-js/)
+- [Smart nested populate](https://b4nan.github.io/mikro-orm/nested-populate/)
+- [Smart query conditions](https://b4nan.github.io/mikro-orm/query-conditions/)
+- [Updating entity values with `IEntity.assign()`](https://b4nan.github.io/mikro-orm/entity-helper/)
+- [Property validation](https://b4nan.github.io/mikro-orm/property-validation/)
+- [Lifecycle hooks](https://b4nan.github.io/mikro-orm/lifecycle-hooks/)
+- [Naming strategy](https://b4nan.github.io/mikro-orm/naming-strategy/)
+- [Usage with NestJS](https://b4nan.github.io/mikro-orm/usage-with-nestjs/)
+- [Usage with JavaScript](https://b4nan.github.io/mikro-orm/usage-with-js/)
 
 ![](https://cdn-images-1.medium.com/max/800/1*4877k4Hq9dPdtmvg9hnGFA.jpeg)
 

@@ -167,7 +167,7 @@ export class MyService {
 
 > `autoLoadEntities` option was added in v4.1.0
 
-Manually adding entities to the entities array of the connection options can be tedious. In addition, referencing entities from the root module breaks application domain boundaries and causes leaking implementation details to other parts of the  application. To solve this issue, static glob paths can be used.
+Manually adding entities to the entities array of the connection options can be tedious. In addition, referencing entities from the root module breaks application domain boundaries and causes leaking implementation details to other parts of the application. To solve this issue, static glob paths can be used.
 
 Note, however, that glob paths are not supported by webpack, so if you are building your application within a monorepo, you won't be able to use them. To address this issue, an alternative solution is provided. To automatically load entities, set the `autoLoadEntities` property of the configuration object (passed into the `forRoot()` method) to `true`, as shown below:
 
@@ -183,35 +183,23 @@ Note, however, that glob paths are not supported by webpack, so if you are build
 export class AppModule {}
 ```
 
-With that option specified, every entity registered through the `forFeature()`
-method will be automatically added to the entities array of the configuration
-object.
+With that option specified, every entity registered through the `forFeature()` method will be automatically added to the entities array of the configuration object.
 
-> Note that entities that aren't registered through the `forFeature()` method, but
-> are only referenced from the entity (via a relationship), won't be included by
-> way of the `autoLoadEntities` setting.
+> Note that entities that aren't registered through the `forFeature()` method, but are only referenced from the entity (via a relationship), won't be included by way of the `autoLoadEntities` setting.
 
-> Using `autoLoadEntities` also has no effect on the MikroORM CLI - for that we
-> still need CLI config with the full list of entities. On the other hand, we can
-> use globs there, as the CLI won't go through webpack.
+> Using `autoLoadEntities` also has no effect on the MikroORM CLI - for that we still need CLI config with the full list of entities. On the other hand, we can use globs there, as the CLI won't go through webpack.
 
 ## Request scoped handlers in queues
 
 > `@UseRequestContext()` decorator was added in v4.1.0
 
-> Since v5, `@UseRequestContext()` decorator is available in the `@mikro-orm/core`
-> package. It is valid approach not just for nestjs projects.
+> Since v5, `@UseRequestContext()` decorator is available in the `@mikro-orm/core` package. It is valid approach not just for nestjs projects.
 
 As mentioned in the [docs](identity-map.md), we need a clean state for each request. That is handled automatically thanks to the `RequestContext` helper registered via middleware.
 
-But middlewares are executed only for regular HTTP request handles, what if we need
-a request scoped method outside of that? One example of that is queue handlers or
-scheduled tasks.
+But middlewares are executed only for regular HTTP request handles, what if we need a request scoped method outside of that? One example of that is queue handlers or scheduled tasks.
 
-We can use the `@UseRequestContext()` decorator. It requires you to first inject the
-`MikroORM` instance to current context, it will be then used to create the context
-for you. Under the hood, the decorator will register new request context for your
-method and execute it inside the context.
+We can use the `@UseRequestContext()` decorator. It requires you to first inject the `MikroORM` instance to current context, it will be then used to create the context for you. Under the hood, the decorator will register new request context for your method and execute it inside the context.
 
 Keep in mind, that all handlers that are decorated with @UseRequestContext(), should NOT return anything.
 
@@ -244,9 +232,7 @@ export class MyService {
 }
 ```
 
-Another thing to look out for how you combine them with other decorators.
-For example if you use it in combination with NestJS's "[BullJS queues module](https://docs.nestjs.com/techniques/queues)", a safe bet is to extract the part of the code that needs a clean [docs](identity-map.md),
-either in a new method or inject a separate service.
+Another thing to look out for how you combine them with other decorators. For example if you use it in combination with NestJS's "[BullJS queues module](https://docs.nestjs.com/techniques/queues)", a safe bet is to extract the part of the code that needs a clean [docs](identity-map.md), either in a new method or inject a separate service.
 
 ```ts
 @Processor({
@@ -275,27 +261,27 @@ The GraphQL module in NestJS uses `apollo-server-express` which enables `bodypar
 
 This can be done by adding bodyparser to your main.ts file
 
- ```ts
+```ts
 import { NestFactory } from '@nestjs/core';
 import express from 'express';
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule,{ bodyParser: false });
-  app.use(express.json());
-  await app.listen(5555);
+ const app = await NestFactory.create(AppModule,{ bodyParser: false });
+ app.use(express.json());
+ await app.listen(5555);
 }
- ```
+```
 
 And at the same time disabling the bodyparser in the GraphQL Module
 
- ```ts
- @Module({
-  imports: [
-    GraphQLModule.forRoot({
-      bodyParserConfig: false,
-    }),
-  ],
+```ts
+@Module({
+ imports: [
+   GraphQLModule.forRoot({
+     bodyParserConfig: false,
+   }),
+ ],
 })
- ```
+```
 
 ## App shutdown and cleanup
 
@@ -430,8 +416,9 @@ export class PhotoModule {}
 ## Using `AsyncLocalStorage` for request context
 
 :::info
-Since v5 `AsyncLocalStorage` is used inside `RequestContext` helper so this section
-is no longer valid.
+
+Since v5 `AsyncLocalStorage` is used inside `RequestContext` helper so this section is no longer valid.
+
 :::
 
 In older versions, the `domain` api was used in the `RequestContext` helper. Since `@mikro-orm/core@4.0.3`, we can use the new `AsyncLocalStorage` too, if you are on up to date node version:
@@ -486,7 +473,7 @@ export class AuthorSubscriber implements EventSubscriber<Author> {
   }
 
   async afterUpdate(args: EventArgs<Author>): Promise<void> {
-    // ... 
+    // ...
   }
 
 }

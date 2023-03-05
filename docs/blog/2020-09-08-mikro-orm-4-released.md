@@ -122,7 +122,7 @@ export class AuthorSubscriber implements EventSubscriber<Author> {
   }
 
   async afterUpdate(args: EventArgs<Author>): Promise<void> {
-    // ... 
+    // ...
   }
 
 }
@@ -166,7 +166,7 @@ await em.persistAndFlush(bar);
 
 ### Joined loading strategy
 
-Loading of complex relations now support so called [JOINED strategy](https://mikro-orm.io/docs/loading-strategies/). Its name is quite self-explanatory — instead of the default (SELECT\_IN) strategy, it uses single SQL query and maps the result to multiple entities.
+Loading of complex relations now support so called [JOINED strategy](https://mikro-orm.io/docs/loading-strategies/). Its name is quite self-explanatory — instead of the default (SELECT_IN) strategy, it uses single SQL query and maps the result to multiple entities.
 
 ```ts
 // with the default SELECT_IN strategy, following will issue 2 queries
@@ -228,7 +228,7 @@ export class User {
 
 @Embeddable()
 export class Address {
-  
+
   @Property()
   street!: string;
 
@@ -300,7 +300,7 @@ export class Book {
 
   @ManyToMany(() => BookTag)
   tags = new Collection<BookTag>(this);
-    
+
 }
 ```
 
@@ -346,8 +346,8 @@ qb1.count('b.uuid', true).where({ author: qb1.ref('a.id') });
 const qb2 = em.createQueryBuilder(Author, 'a');
 qb2.select(['*', qb1.as('Author.booksTotal')]).orderBy({ booksTotal: 'desc' });
 
-// select `a`.*, (select count(distinct `b`.`uuid_pk`) as `count` from `book` as `b` where `b`.`author_id` = `a`.`id`) as `books_total` 
-// from `author` as `a` 
+// select `a`.*, (select count(distinct `b`.`uuid_pk`) as `count` from `book` as `b` where `b`.`author_id` = `a`.`id`) as `books_total`
+// from `author` as `a`
 // order by `books_total` desc
 ```
 
@@ -360,7 +360,7 @@ const qb1 = em.createQueryBuilder(Book, 'b').count('b.uuid', true).where({ autho
 const qb2 = em.createQueryBuilder(Author, 'a');
 qb2.select('*').withSubQuery(qb1, 'a.booksTotal').where({ 'a.booksTotal': { $in: [1, 2, 3] } });
 
-// select `a`.* 
+// select `a`.*
 // from `author` as `a`
 // where (select count(distinct `b`.`uuid_pk`) as `count` from `book` as `b` where `b`.`author_id` = `a`.`id`) in (?, ?, ?)
 ```
@@ -369,7 +369,7 @@ qb2.select('*').withSubQuery(qb1, 'a.booksTotal').where({ 'a.booksTotal': { $in:
 const qb = em.createQueryBuilder(Publisher);
 qb.update({ name: 'test 123' }).where({ $or: [{ books: { author: 123 } }, { books: { title: 'book' } }] });
 
-// update `publisher` set `name` = ? 
+// update `publisher` set `name` = ?
 // where `id` in (select `e0`.`id` from (
 //   select distinct `e0`.`id` from `publisher` as `e0` left join `book` as `e1` on `e0`.`id` = `e1`.`publisher_id` where (`e1`.`author_id` = ? or `e1`.`title` = ?)
 // ) as `e0`)
@@ -402,8 +402,8 @@ For smooth upgrading, read the full [upgrading guide](https://mikro-orm.io/docs/
 - @mikro-orm/core package is not dependent on knex, and therefore cannot provide methods like createQueryBuilder() — instead, those methods exist on SqlEntityManager. You can import it from the driver package, e.g. import { EntityManager } from '@mikro-orm/mysql;.
 - To use CLI, you need to install @mikro-orm/cli package.
 - When using folder based discovery, the options entitiesDirs and entitiesDirsTs are now removed in favour of entities and entitiesTs. You can now mix entity references with folders and file globs, negative globs are also supported.
-- For Nest.js users, there is a new [@mikro-orm/nestjs](https://github.com/mikro-orm/nestjs) package, which is a fork of the [nestjs-mikro-orm](https://github.com/dario1985/nestjs-mikro-orm) module with changes needed for   
-MikroORM 4.
+- For Nest.js users, there is a new [@mikro-orm/nestjs](https://github.com/mikro-orm/nestjs) package, which is a fork of the [nestjs-mikro-orm](https://github.com/dario1985/nestjs-mikro-orm) module with changes needed for  
+  MikroORM 4.
 
 ### What’s next?
 

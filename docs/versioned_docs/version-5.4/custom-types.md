@@ -22,13 +22,11 @@ You can define custom types by extending `Type` abstract class. It has several o
 
 - `convertToDatabaseValueSQL(key: string, platform: Platform): string`
 
-  Converts a value from its JS representation to its database representation of this type.
-  _(added in v4.4.2)_
+  Converts a value from its JS representation to its database representation of this type. _(added in v4.4.2)_
 
 - `convertToJSValueSQL(key: string, platform: Platform): string`
 
-  Modifies the SQL expression (identifier, parameter) to convert to a JS value.
-  _(added in v4.4.2)_
+  Modifies the SQL expression (identifier, parameter) to convert to a JS value. _(added in v4.4.2)_
 
 - `compareAsType(): string`
 
@@ -101,9 +99,7 @@ born?: string;
 
 In this example we will combine mapping values via database as well as during runtime.
 
-> The Point type is part of the Spatial extension of MySQL and enables you to store
-> a single location in a coordinate space by using x and y coordinates. You can use
-> the Point type to store a longitude/latitude pair to represent a geographic location.
+> The Point type is part of the Spatial extension of MySQL and enables you to store a single location in a coordinate space by using x and y coordinates. You can use the Point type to store a longitude/latitude pair to represent a geographic location.
 
 First let's define the `Point` class that will be used to represent the value during runtime:
 
@@ -201,8 +197,7 @@ update `location` set `point` = ST_PointFromText('point(2.34 9.87)') where `id` 
 commit
 ```
 
-We do a 2-step conversion here. In the first step, we convert the Point object into a string representation before saving to the database (in the convertToDatabaseValue method) and back into an object
-after fetching the value from the database (in the convertToJSValue method).
+We do a 2-step conversion here. In the first step, we convert the Point object into a string representation before saving to the database (in the convertToDatabaseValue method) and back into an object after fetching the value from the database (in the convertToJSValue method).
 
 The format of the string representation format is called Well-known text (WKT). The advantage of this format is, that it is both human readable and parsable by MySQL.
 
@@ -212,9 +207,7 @@ This is where the `convertToJSValueSQL` and `convertToDatabaseValueSQL` methods 
 
 This methods wrap a sql expression (the WKT representation of the Point) into MySQL functions ST_PointFromText and ST_AsText which convert WKT strings to and from the internal format of MySQL.
 
-> When using DQL queries, the `convertToJSValueSQL` and `convertToDatabaseValueSQL` methods
-> only apply to identification variables and path expressions in SELECT clauses. Expressions
-> in WHERE clauses are not wrapped!
+> When using DQL queries, the `convertToJSValueSQL` and `convertToDatabaseValueSQL` methods only apply to identification variables and path expressions in SELECT clauses. Expressions in WHERE clauses are not wrapped!
 
 ## Types provided by MikroORM
 
@@ -260,18 +253,11 @@ export const types = {
 
 ### ArrayType
 
-In PostgreSQL and MongoDB, it uses native arrays, otherwise it concatenates the values into string separated by commas. This means that you can't use values that contain comma with the `ArrayType` (
-but you can create custom array type that will handle this case, e.g. by using different separator).
+In PostgreSQL and MongoDB, it uses native arrays, otherwise it concatenates the values into string separated by commas. This means that you can't use values that contain comma with the `ArrayType` ( but you can create custom array type that will handle this case, e.g. by using different separator).
 
-By default, array of strings is returned from the type. You can also have arrays of numbers or other data types - to do so, you will need to implement custom
-`hydrate` method that is used for converting the array values to the right type.
+By default, array of strings is returned from the type. You can also have arrays of numbers or other data types - to do so, you will need to implement custom `hydrate` method that is used for converting the array values to the right type.
 
-> `ArrayType` will be used automatically if `type` is set to `array` (default behaviour
-> of reflect-metadata) or `string[]` or `number[]` (either manually or via ts-morph).
-> In case of `number[]` it will automatically handle the conversion to numbers.
-> This means that the following examples would both have the `ArrayType` used
-> automatically (but with reflect-metadata we would have a string array for both
-> unless we specify the type manually as `type: 'number[]')
+> `ArrayType` will be used automatically if `type` is set to `array` (default behaviour of reflect-metadata) or `string[]` or `number[]` (either manually or via ts-morph). In case of `number[]` it will automatically handle the conversion to numbers. This means that the following examples would both have the `ArrayType` used automatically (but with reflect-metadata we would have a string array for both unless we specify the type manually as `type: 'number[]')
 
 ```ts
 @Property({ type: ArrayType, nullable: true })
@@ -294,9 +280,7 @@ id: string;
 
 Blob type can be used to store binary data in the database.
 
-> `BlobType` will be used automatically if you specify the type hint as `Buffer`.
-> This means that the following example should work even without the explicit
-> `type: BlobType` option (with both reflect-metadata and ts-morph providers).
+> `BlobType` will be used automatically if you specify the type hint as `Buffer`. This means that the following example should work even without the explicit `type: BlobType` option (with both reflect-metadata and ts-morph providers).
 
 ```ts
 @Property({ type: BlobType, nullable: true })
@@ -305,8 +289,7 @@ blob?: Buffer;
 
 ### JsonType
 
-To store objects we can use `JsonType`. As some drivers are handling objects automatically and some don't, this type will handle the serialization in a driver independent way (calling `parse`
-and `stringify` only when needed).
+To store objects we can use `JsonType`. As some drivers are handling objects automatically and some don't, this type will handle the serialization in a driver independent way (calling `parse` and `stringify` only when needed).
 
 ```ts
 @Property({ type: JsonType, nullable: true })
@@ -315,8 +298,7 @@ object?: { foo: string; bar: number };
 
 ### DateType
 
-To store dates without time information, we can use `DateType`. It does use `date`
-column type and maps it to the `Date` object.
+To store dates without time information, we can use `DateType`. It does use `date` column type and maps it to the `Date` object.
 
 ```ts
 @Property({ type: DateType, nullable: true })
@@ -325,8 +307,7 @@ born?: Date;
 
 ### TimeType
 
-As opposed to the `DateType`, to store only the time information, we can use
-`TimeType`. It will use the `time` column type, the runtime type is string.
+As opposed to the `DateType`, to store only the time information, we can use `TimeType`. It will use the `time` column type, the runtime type is string.
 
 ```ts
 @Property({ type: TimeType, nullable: true })

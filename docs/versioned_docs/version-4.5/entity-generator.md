@@ -2,9 +2,9 @@
 title: Entity Generator
 ---
 
-To generate entities from existing database schema, you can use `EntityGenerator` helper. 
+To generate entities from existing database schema, you can use `EntityGenerator` helper.
 
-You can use it via CLI: 
+You can use it via CLI:
 
 ```sh
 npx mikro-orm generate-entities --dump  # Dumps all generated entities
@@ -19,14 +19,14 @@ import { MikroORM } from '@mikro-orm/core';
 (async () => {
   const orm = await MikroORM.init({
     discovery: {
-      // we need to disable validation for no entities 
+      // we need to disable validation for no entities
       warnWhenNoEntities: false,
     },
     dbName: 'your-db-name',
     // ...
   });
   const generator = orm.getEntityGenerator();
-  const dump = await generator.generate({ 
+  const dump = await generator.generate({
     save: true,
     baseDir: process.cwd() + '/my-entities',
   });

@@ -3,12 +3,9 @@ title: Entity References
 sidebar_label: Entity References and Reference<T> Wrapper
 ---
 
-Every single entity relation is mapped to an entity reference. Reference is an entity that has
-only its identifier. This reference is stored in identity map so you will get the same object 
-reference when fetching the same document from database.
+Every single entity relation is mapped to an entity reference. Reference is an entity that has only its identifier. This reference is stored in identity map so you will get the same object reference when fetching the same document from database.
 
-You can call `await entity.init()` to initialize the entity. This will trigger database call 
-and populate itself, keeping the same reference in identity map. 
+You can call `await entity.init()` to initialize the entity. This will trigger database call and populate itself, keeping the same reference in identity map.
 
 ```typescript
 const author = orm.em.getReference('...id...');
@@ -23,8 +20,7 @@ console.log(author.name); // defined
 
 # Better Type-safety with `Reference<T>` Wrapper
 
-When you define `@ManyToOne` and `@OneToOne` properties on your entity, TypeScript compiler
-will think that desired entities are always loaded:
+When you define `@ManyToOne` and `@OneToOne` properties on your entity, TypeScript compiler will think that desired entities are always loaded:
 
 ```typescript
 @Entity()
@@ -48,13 +44,9 @@ console.log(book.author.isInitialized()); // false
 console.log(book.author.name); // undefined as `Author` is not loaded yet
 ```
 
-You can overcome this issue by using the `Reference<T>` wrapper. It simply wraps the entity, 
-defining `load(): Promise<T>` method that will first lazy load the association if not already
-available. You can also use `unwrap(): T` method to access the underlying entity without loading
-it.
+You can overcome this issue by using the `Reference<T>` wrapper. It simply wraps the entity, defining `load(): Promise<T>` method that will first lazy load the association if not already available. You can also use `unwrap(): T` method to access the underlying entity without loading it.
 
-You can also use `load<K extends keyof T>(prop: K): Promise<T[K]>`, which works like `load()`
-but returns the specified property.
+You can also use `load<K extends keyof T>(prop: K): Promise<T[K]>`, which works like `load()` but returns the specified property.
 
 ```typescript
 import { Entity, IdentifiedReference, ManyToOne, PrimaryKey, Reference } from 'mikro-orm';
@@ -84,9 +76,7 @@ console.log((await book.author.load()).name); // ok, author already loaded
 console.log(book.author.unwrap().name); // ok, author already loaded
 ```
 
-There are also `getEntity()` and `getProperty()` methods that are synchronous getters, 
-that will first check if the wrapped entity is initialized, and if not, it will throw 
-and error.
+There are also `getEntity()` and `getProperty()` methods that are synchronous getters, that will first check if the wrapped entity is initialized, and if not, it will throw and error.
 
 ```typescript
 const book = await orm.em.findOne(Book, 1);
@@ -98,9 +88,7 @@ console.log((await book.author.get('name'))); // ok, loading the author first
 console.log(book.author.getProperty('name')); // ok, author already loaded
 ```
 
-If you use different metadata provider than `TsMorphMetadataProvider` 
-(e.g. `ReflectMetadataProvider`), you will also need to explicitly set `wrappedReference` 
-parameter:
+If you use different metadata provider than `TsMorphMetadataProvider` (e.g. `ReflectMetadataProvider`), you will also need to explicitly set `wrappedReference` parameter:
 
 ```typescript
 @ManyToOne(() => Author, { wrappedReference: true })
@@ -109,9 +97,7 @@ author!: IdentifiedReference<Author>;
 
 ## Assigning to Reference Properties
 
-When you define the property as `Reference` wrapper, you will need to assign the `Reference`
-to it instead of the entity. You can create it via `Reference.create()` factory, or use `wrapped`
-parameter of `em.getReference()`:
+When you define the property as `Reference` wrapper, you will need to assign the `Reference` to it instead of the entity. You can create it via `Reference.create()` factory, or use `wrapped` parameter of `em.getReference()`:
 
 ```typescript
 const book = await orm.em.findOne(Book, 1);
@@ -124,8 +110,7 @@ book.author = Reference.create(repo.getReference(2));
 await orm.em.flush();
 ```
 
-Another way is to use `toReference()` method available as part of 
-[`WrappedEntity` interface](entity-helper.md#wrappedentity-and-wrap-helper):
+Another way is to use `toReference()` method available as part of [`WrappedEntity` interface](entity-helper.md#wrappedentity-and-wrap-helper):
 
 ```typescript
 const author = new Author(...)
@@ -140,11 +125,9 @@ book.author.set(new Author(...));
 
 ## What is IdentifiedReference?
 
-`IdentifiedReference` is an intersection type that adds primary key property to the `Reference` 
-interface. It allows to get the primary key from `Reference` instance directly.
+`IdentifiedReference` is an intersection type that adds primary key property to the `Reference` interface. It allows to get the primary key from `Reference` instance directly.
 
-By default it defines the PK property as `id`, you can override this via second generic type
-argument.
+By default it defines the PK property as `id`, you can override this via second generic type argument.
 
 ```typescript
 const book = await orm.em.findOne(Book, 1);
@@ -169,8 +152,7 @@ const book = await orm.em.findOne(Book, 1);
 console.log(book.author.uuid); // ok, returns the PK
 ```
 
-For MongoDB, define the PK generic type argument as `'id' | '_id'` to access both `string` 
-and `ObjectId` PK values:
+For MongoDB, define the PK generic type argument as `'id' | '_id'` to access both `string` and `ObjectId` PK values:
 
 ```typescript
 @Entity()
@@ -192,5 +174,4 @@ console.log(book.author.id); // ok, returns string PK
 console.log(book.author._id); // ok, returns ObjectId PK
 ```
 
-> As opposed to `Entity.init()` which always refreshes the entity, `Reference.load()` 
-> method will query the database only if the entity is not already loaded in Identity Map. 
+> As opposed to `Entity.init()` which always refreshes the entity, `Reference.load()` method will query the database only if the entity is not already loaded in Identity Map.

@@ -237,12 +237,12 @@ MikroORM supports Pessimistic Locking at the database level. Every Entity can be
 
 MikroORM currently supports two pessimistic lock modes:
 
-*   Pessimistic Write (`LockMode.PESSIMISTIC_WRITE`), locks the underlying database rows for concurrent Read and Write Operations.
-*   Pessimistic Read (`LockMode.PESSIMISTIC_READ`), locks other concurrent requests that attempt to update or lock rows in write mode.
+- Pessimistic Write (`LockMode.PESSIMISTIC_WRITE`), locks the underlying database rows for concurrent Read and Write Operations.
+- Pessimistic Read (`LockMode.PESSIMISTIC_READ`), locks other concurrent requests that attempt to update or lock rows in write mode.
 
 You can use pessimistic locks in three different scenarios:
 
-1.  Using `em.findOne(className, id, { lockMode  })`
+1.  Using `em.findOne(className, id, { lockMode })`
 2.  Using `em.lock(entity, lockMode)`
 3.  Using `QueryBuilder.setLockMode(lockMode)`
 
