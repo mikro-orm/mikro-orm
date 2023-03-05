@@ -142,10 +142,10 @@ const expectedVersion = 184;
 const entity = await orm.em.findOne(User, theEntityId);
 
 try {
-    // assert version
-    await orm.em.lock(entity, LockMode.OPTIMISTIC, expectedVersion);
+  // assert version
+  await orm.em.lock(entity, LockMode.OPTIMISTIC, expectedVersion);
 } catch (e) {
-    console.log('Sorry, but someone else has already changed this entity. Please apply the changes again!');
+  console.log('Sorry, but someone else has already changed this entity. Please apply the changes again!');
 }
 ```
 
@@ -232,7 +232,7 @@ Your frontend app loads an entity from API, the response includes the version pr
 
 MikroORM supports Pessimistic Locking at the database level. No attempt is being made to implement pessimistic locking inside MikroORM, rather vendor-specific and ANSI-SQL commands are used to acquire row-level locks. Every Entity can be part of a pessimistic lock, there is no special metadata required to use this feature.
 
-However, for Pessimistic Locking to work you have to disable the Auto-Commit Mode of your Database and start a transaction around your pessimistic lock use-case using the "Approach 2: Explicit Transaction Demarcation" described above. MikroORM will throw an Exception if you attempt to acquire a pessimistic lock and no transaction is running.
+For Pessimistic Locking to work, an open transaction is required. MikroORM will throw an Exception if you attempt to acquire a pessimistic lock and no transaction is running.
 
 MikroORM currently supports 6 pessimistic lock modes:
 
