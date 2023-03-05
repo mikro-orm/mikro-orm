@@ -1513,7 +1513,7 @@ describe('QueryBuilder', () => {
   });
 
   test('trying to call qb.update/delete() after qb.where() will throw', async () => {
-    const err1 ='You are trying to call `qb.where().update()`. Calling `qb.update()` before `qb.where()` is required.';
+    const err1 = 'You are trying to call `qb.where().update()`. Calling `qb.update()` before `qb.where()` is required.';
     expect(() => orm.em.qb(Publisher2).where({ id: 123, type: PublisherType.LOCAL }).update({ name: 'test 123', type: PublisherType.GLOBAL })).toThrowError(err1);
     expect(() => orm.em.qb(Book2).where({ uuid: { $in: ['1', '2', '3'] }, author: 123 }).update({ author: 321 })).toThrowError(err1);
     expect(() => orm.em.qb(FooParam2).where({ bar: { baz: 123 } }).update({ value: 'test 123' })).toThrowError(err1);
@@ -1526,7 +1526,7 @@ describe('QueryBuilder', () => {
     }).update({ name: '123' })).toThrowError(err1);
 
     const qb2 = orm.em.createQueryBuilder(FooParam2);
-    const err2 ='You are trying to call `qb.where().delete()`. Calling `qb.delete()` before `qb.where()` is required.';
+    const err2 = 'You are trying to call `qb.where().delete()`. Calling `qb.delete()` before `qb.where()` is required.';
     expect(() => qb2.where({ bar: { baz: 123 } }).delete()).toThrowError(err2);
   });
 
