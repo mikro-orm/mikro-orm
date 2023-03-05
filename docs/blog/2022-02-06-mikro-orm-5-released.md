@@ -169,7 +169,7 @@ Creating new migration will now automatically save the target schema snapshot in
 
 Up until now, flushing was always an explicit action. With v5, we can configure the flushing strategy, similarly to how JPA/hibernate work. We have 3 flush modes:
 
-- `FlushMode.COMMIT` - The `EntityManager` tries to delay the flush until the current transaction is committed, although it might flush prematurely too.
+- `FlushMode.COMMIT` - The `EntityManager` delays the flush until the current Transaction is committed.
 - `FlushMode.AUTO` - This is the default mode, and it flushes the `EntityManager` only if necessary.
 - `FlushMode.ALWAYS` - Flushes the `EntityManager` before every query.
 

@@ -77,7 +77,7 @@ You can find more information about transactions in [Transactions and concurrenc
 
 The flushing strategy is given by the `flushMode` of the current running `EntityManager`.
 
-- `FlushMode.COMMIT` - The `EntityManager` tries to delay the flush until the current Transaction is committed, although it might flush prematurely too.
+- `FlushMode.COMMIT` - The `EntityManager` delays the flush until the current Transaction is committed.
 - `FlushMode.AUTO` - This is the default mode, and it flushes the `EntityManager` only if necessary.
 - `FlushMode.ALWAYS` - Flushes the `EntityManager` before every query.
 
